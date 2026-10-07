@@ -1,0 +1,2 @@
+ROW roswell static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT roswell 0

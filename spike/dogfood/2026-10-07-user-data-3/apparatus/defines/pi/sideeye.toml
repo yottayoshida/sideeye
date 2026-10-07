@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.pi"
+
+[define]
+operation = "pi install /s/pi-in/ext2"
+cwd       = "/s/pi-in"

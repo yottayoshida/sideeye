@@ -1,0 +1,6 @@
+[world]
+state = "/s/mz"
+
+[define]
+operation = "minizip -e /s/mz/a.zip b.bin"
+cwd       = "/s/mz-in"

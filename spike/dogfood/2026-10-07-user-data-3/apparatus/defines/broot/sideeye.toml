@@ -1,0 +1,6 @@
+[world]
+state = "/s/broot/home"
+
+[define]
+operation = "broot --install"
+cwd       = "/s/broot-in"

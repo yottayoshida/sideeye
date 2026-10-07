@@ -1,0 +1,6 @@
+[world]
+state = "/s/acme/conf"
+
+[define]
+operation = "/s/acme/acme.sh --home /s/acme --config-home /s/acme/conf --set-default-ca --server letsencrypt"
+cwd       = "/s/acme-in"

@@ -1,0 +1,18 @@
+== alacritty
+== kitty
+== kitten
+== broot
+== tiddlywiki
+spike/blind-hunt/ledger.md:64:    the "fully todo.txt compliant" claim; the pointer to the TiddlyWiki docs.
+spike/blind-hunt/ledger.md:65:  - topydo 0.14 documentation (`.../0.14/docs/index.html`, TiddlyWiki): tiddlers
+spike/blind-hunt/declaration/topydo/declaration.md:23:| `transcripts/docs-tiddlers.txt` | the topydo 0.14 documentation (TiddlyWiki), relevant tiddlers extracted; Changelog tiddlers deliberately not extracted (fixed-bug listings a
+== prek
+== toot
+== libzip
+spike/dogfood/2026-10-03-user-data/apparatus/Dockerfile:26:             liblzma-dev libsecp256k1-dev libjpeg-dev libxml2-dev libzip-dev jpegoptim optipng \
+== ziptool
+== clipse
+== grass
+== dnscontrol
+== octodns
+== lnav

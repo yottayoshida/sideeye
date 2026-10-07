@@ -1,0 +1,14 @@
+UNKNOWN  unresolvable_path
+         an operation was observed whose path could not be determined (unlinked-fd write fd:7, pid 129, last named /s/ost/repo/#536284), so it cannot be placed among the crash points
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+cwd         /s/ost-in
+
+atomicity   9 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): config
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   not established: no boundary was recorded by the shim, and the strace account was not read
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

@@ -1,0 +1,364 @@
+== novelty pre-scan: nih-at/libzip
+== date: 2026-10-07T06:57:34Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          29 hit(s) (all listed)
+      #576 open 2026-09-06 Preserve explicit crypto buffer clearing across backends
+      #583 open 2026-09-23 zip_file_is_seekable() silently reported encrypted entries as seekable (1.10.0–1.11.4)
+      #580 open 2026-09-18 Compute allocation sizes with a checked helper
+      #550 closed 2026-07-13 Fix zip_source_is_seekable for non-layered sources
+      #536 merged 2026-06-04 ossfuzz: add zip_write_roundtrip_fuzzer for the write/serialize paths
+      #526 merged 2026-05-26 ossfuzz: add zip_read_metadata_fuzzer for extra-field and metadata paths
+      #516 closed 2026-01-10 fix undefined behavior in EOCD backward scan
+      #514 closed 2025-11-16 zip_file_set_comment() segmentation fault
+      #315 closed 2022-07-30 Crash with buffer_read() during compressing files
+      #351 closed 2023-01-28 Libzip trigger program crash(memory corruption) on closing archive after a adding a file on archive with a source buffer(with freep != 0)
+      #243 closed 2021-06-15 `zip_source_free` will crash after calling `zip_source_buffer_create` with data that is not allocated by `malloc`.
+      #182 closed 2020-06-30 Memory leak in _zip_dirent_write() line 881: inlined call to _zip_u2d_time()
+      #475 closed 2024-12-02 Segmentation Fault in zip_open_from_source() with Null Error Pointer
+      #304 closed 2022-06-20 Replacing files within archives in place
+      #325 closed 2022-08-26 libzip fails to set the compression or close the archive, 'Unkown error'
+      #433 closed 2024-05-14 Enhance documentation of `zip_source_zip_file` and `zip_source_zip`
+      #174 closed 2020-05-12 Implement zip_commit()
+      #284 closed 2022-02-11 `zip_source_buffer_create` frees data even when `freed` is 0
+      #234 closed 2021-03-16 Consider "ulimit -n" on linux
+      #511 closed 2025-11-01 OOB read in `zip_file_rename` when original name is empty
+  corrupt        17 hit(s) (all listed)
+      #606 open 2026-10-04 bzip2: size the compression buffer for the documented worst case
+      #600 open 2026-09-30 Central directory reading has no per-entry failure isolation: one bad entry rejects the whole archive
+      #571 merged 2026-08-29 Reset WinZip AES HMAC state when reopening a source
+      #563 closed 2026-08-18 verify authentication code for zero-length winzip aes entries
+      #215 closed 2020-10-13 Cannot open ZIP archives with data prepended (e.g. self-extractor stubs, `CRX` bundles...)
+      #545 closed 2026-06-24 unziped/uncompressed archived file larger than original
+      #542 closed 2026-06-16 Use a constant-time comparison for WinZip AES authentication tag verification
+      #117 closed 2019-07-26 calling zip_close after a function return corrupts the archive
+      #288 closed 2022-03-15 Is there a way to check if there is corrupt file in zip package?
+      #478 closed 2025-01-03 HMAC errors not reported when reading compressed and encrypted files (AE-2)
+      #403 closed 2023-08-23 Bad archive
+      #359 closed 2023-02-03 `zip_close()` does not make use of `stat.crc` if provided for uncompressed data, recomputes it instead
+      #235 closed 2021-03-17 "Zip archive inconsistent" error, although supported by other unpackers
+      #298 closed 2022-06-15 Implement a getter for DOS time (`zip_file_get_dostime`)
+      #304 closed 2022-06-20 Replacing files within archives in place
+      #261 closed 2021-09-15 zip_fread reports a CRC error at the end of an AES-encrypted file
+      #105 closed 2019-06-08 zip_open with empty file
+  corruption     12 hit(s) (all listed)
+      #612 open 2026-10-04 Reject local records overlapping the central directory
+      #606 open 2026-10-04 bzip2: size the compression buffer for the documented worst case
+      #611 closed 2026-10-04 Reject local records overlapping the central directory
+      #531 closed 2026-06-01 Guard ZIP_CHECKCONS Overflow
+      #478 closed 2025-01-03 HMAC errors not reported when reading compressed and encrypted files (AE-2)
+      #351 closed 2023-01-28 Libzip trigger program crash(memory corruption) on closing archive after a adding a file on archive with a source buffer(with freep != 0)
+      #117 closed 2019-07-26 calling zip_close after a function return corrupts the archive
+      #235 closed 2021-03-17 "Zip archive inconsistent" error, although supported by other unpackers
+      #284 closed 2022-02-11 `zip_source_buffer_create` frees data even when `freed` is 0
+      #390 closed 2023-06-28 Allow adding files being appended to by another process.
+      #491 closed 2025-05-04 Implement a means to preserve & modify general purpose flag bits when opening an existing archive
+      #335 closed 2022-10-18 `zip_discard`,`zip_fopen`,`zip_fclose` order
+  truncated      9 hit(s) (all listed)
+      #416 closed 2023-10-06 Add a different error code for truncated ZIPs
+      #607 open 2026-10-04 compare file names over their full length, including bytes after embedded NUL
+      #570 merged 2026-08-27 check for NUL in filename after applying unicode path extra field
+      #542 closed 2026-06-16 Use a constant-time comparison for WinZip AES authentication tag verification
+      #393 closed 2023-07-19 compat.h:170:46: error: ‘__builtin_strncpy’ output truncated before terminating nul copying as many bytes from a string as its length [-Werror=stringop-truncation]
+      #186 closed 2020-07-04 zip archive inconsistent
+      #390 closed 2023-06-28 Allow adding files being appended to by another process.
+      #372 closed 2023-04-07 How to create zip in memory or by providing FILE* stream?
+      #309 closed 2022-07-08 Address potential buffer overrun issues
+  truncate       34 hit(s) (all listed)
+      #607 open 2026-10-04 compare file names over their full length, including bytes after embedded NUL
+      #416 closed 2023-10-06 Add a different error code for truncated ZIPs
+      #580 open 2026-09-18 Compute allocation sizes with a checked helper
+      #541 closed 2026-06-15 Avoid Win32 file source I/O length truncation
+      #570 merged 2026-08-27 check for NUL in filename after applying unicode path extra field
+      #609 merged 2026-10-04 close the descriptor when fdopen fails and report ftruncate errors when preparing the clone target
+      #525 closed 2026-05-16 Potential bug in check secret length old code 32-bit
+      #537 closed 2026-06-04 reject filenames longer than 65535 bytes in _zip_set_name
+      #542 closed 2026-06-16 Use a constant-time comparison for WinZip AES authentication tag verification
+      #393 closed 2023-07-19 compat.h:170:46: error: ‘__builtin_strncpy’ output truncated before terminating nul copying as many bytes from a string as its length [-Werror=stringop-truncation]
+      #383 closed 2023-05-19 Pointer-cast error leading to truncation of temporary zip name on Windows
+      #299 closed 2022-06-15 How to create empty archive
+      #186 closed 2020-07-04 zip archive inconsistent
+      #290 closed 2022-03-17 How to add new files to an existing ZIP file
+      #304 closed 2022-06-20 Replacing files within archives in place
+      #271 closed 2021-11-12 zip_fseek and zip_ftell not working with encrypted (uncompressed) data
+      #385 closed 2023-06-13 Memory leaks with zip_file_set_encryption() and zip_file_set_mtime()
+      #362 closed 2023-02-27 Removing a `zip_source_t` is too sticky
+      #390 closed 2023-06-28 Allow adding files being appended to by another process.
+      #118 closed 2019-07-27 Adding directories form other zip archive gives them invalid permissions
+  empty          41 hit(s) (all listed)
+      #589 open 2026-09-24 zip_error_to_str: fix format string vulnerability and handle NULL/empty buffer
+      #613 open 2026-10-04 Use source compression metadata when reading pending buffer entries
+      #597 open 2026-09-28 Check that partial reads of stored files don’t go past their data.
+      #580 open 2026-09-18 Compute allocation sizes with a checked helper
+      #588 closed 2026-09-24 zip_close: check for allocation overflow and set error on failure
+      #601 closed 2026-09-30 guard against size underflow in window source stat
+      #571 merged 2026-08-29 Reset WinZip AES HMAC state when reopening a source
+      #608 closed 2026-10-04 write the Zip64 records when the entry count equals 0xffff
+      #563 closed 2026-08-18 verify authentication code for zero-length winzip aes entries
+      #529 merged 2026-05-29 fix out-of-bounds read in zip_dir_add for empty name
+      #545 closed 2026-06-24 unziped/uncompressed archived file larger than original
+      #511 closed 2025-11-01 OOB read in `zip_file_rename` when original name is empty
+      #350 closed 2023-01-23 Creation of empty archives
+      #299 closed 2022-06-15 How to create empty archive
+      #391 closed 2023-07-06 Regression failure to open empty, encrypted file
+      #455 closed 2024-09-19 [1.11] LIBZIP_VERSION_MICRO empty breaks build
+      #204 closed 2020-08-12 zip_fopen_index() fails with ZIP_ER_INVAL "Invalid argument" instead of ZIP_ER_WRONGPASSWD "Wrong password"
+      #362 closed 2023-02-27 Removing a `zip_source_t` is too sticky
+      #505 closed 2025-09-24 Trailing null bytes in zip entry names are converted to spaces even with raw encoding flag
+      #433 closed 2024-05-14 Enhance documentation of `zip_source_zip_file` and `zip_source_zip`
+  atomic         8 hit(s) (all listed)
+      #587 open 2026-09-24 Use close-on-exec duplication in zip_fdopen
+      #568 merged 2026-08-24 win32: keep replacement temp private until commit
+      #360 closed 2023-02-10 Please make zip_source_t refcounting thread-safe
+      #174 closed 2020-05-12 Implement zip_commit()
+      #384 closed 2023-05-26 Fix read/write an archive through symbolic link on Windows
+      #371 closed 2023-03-30 Add MOVEFILE_COPY_ALLOWED Attribute to move_file op
+      #372 closed 2023-04-07 How to create zip in memory or by providing FILE* stream?
+      #55 closed 2018-07-18 What is this error?
+  atomically     2 hit(s) (all listed)
+      #384 closed 2023-05-26 Fix read/write an archive through symbolic link on Windows
+      #372 closed 2023-04-07 How to create zip in memory or by providing FILE* stream?
+  interrupted    0 hit(s)
+  interrupt      4 hit(s) (all listed)
+      #135 closed 2019-10-25 zip_close interruption
+      #479 closed 2025-01-09 Request to Implement zip_commit()
+      #174 closed 2020-05-12 Implement zip_commit()
+      #145 closed 2019-12-25 Skip file on error in zip_source_function callback
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         0 hit(s)
+  power          1 hit(s) (all listed)
+      #304 closed 2022-06-20 Replacing files within archives in place
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           28 hit(s) (all listed)
+      #594 open 2026-09-28 Zip64 extra field: 24-byte field with disk number 0xFFFF is accepted, disk number start taken from other fields
+      #604 open 2026-10-01 reject central directory entries with non-zero disk number start
+      #598 open 2026-09-28 Reject 24 byte Zip64 extra field if disk number start is 0xFFFF.
+      #543 open 2026-06-16 ossfuzz: add zip_source_zip_fuzzer for partial-window extraction paths
+      #307 closed 2022-06-30 does libzip support Multi-disk ZIP?
+      #503 closed 2025-09-05 Documentation: thread safety clarification
+      #171 closed 2020-04-28 Large files with a ZIP64 field containing zeros cannot be unzipped
+      #326 closed 2022-08-30 Reading into > 4GB buffer results in data being shifted
+      #174 closed 2020-05-12 Implement zip_commit()
+      #471 closed 2024-11-15 Support for storage device synchronization 
+      #315 closed 2022-07-30 Crash with buffer_read() during compressing files
+      #300 closed 2022-06-15 Deprecate/respecify behavior of `file_set_encryption`
+      #234 closed 2021-03-16 Consider "ulimit -n" on linux
+      #263 closed 2021-09-29 Filenames with invalid Windows NTFS characters
+      #208 closed 2020-09-03 zip_close is slow
+      #235 closed 2021-03-17 "Zip archive inconsistent" error, although supported by other unpackers
+      #396 closed 2023-07-26 Bypassing Linux file cache
+      #114 closed 2019-07-08 memory leak with open() + close()
+      #261 closed 2021-09-15 zip_fread reports a CRC error at the end of an AES-encrypted file
+      #185 closed 2020-07-03 Add function to duplicate file handle zip_file_t
+  partial        11 hit(s) (all listed)
+      #597 open 2026-09-28 Check that partial reads of stored files don’t go past their data.
+      #543 open 2026-06-16 ossfuzz: add zip_source_zip_fuzzer for partial-window extraction paths
+      #584 open 2026-09-23 Support zip_fseek() for stored entries encrypted with WinZip AES
+      #613 open 2026-10-04 Use source compression metadata when reading pending buffer entries
+      #555 closed 2026-07-21 Fix source error handling across reopen
+      #530 merged 2026-05-31 free owned source on window_new failure in zip_source_zip_file_create
+      #205 closed 2020-08-16 Cannot link against static libzip with additional dependencies by default
+      #166 closed 2020-04-19 [Windows] error C2065: S_IWUSR
+      #367 closed 2023-03-14 Writing an archive can be inefficient because of seeks
+      #286 merged 2022-02-26 Allow changed reads
+      #266 closed 2021-10-09 macOS many tests filed
+  incomplete     16 hit(s) (all listed)
+      #600 open 2026-09-30 Central directory reading has no per-entry failure isolation: one bad entry rejects the whole archive
+      #416 closed 2023-10-06 Add a different error code for truncated ZIPs
+      #161 closed 2020-03-24 error: field ‘ctx_128’ has incomplete type
+      #129 closed 2019-10-14 The META-INF/CERT.RSA character array in the read apk file is incomplete.
+      #148 closed 2020-01-12 Compile error on CentOS 7.7
+      #125 closed 2019-09-22 It doesn't work very well on Android
+      #233 closed 2021-03-04 How to read binary data from a zip
+      #198 closed 2020-07-24 Regarding LZMA1 (LZMA Alone, Method ID 14) in libzip (Follow-up of #195)
+      #318 closed 2022-08-04 Android NDK Compile Error
+      #390 closed 2023-06-28 Allow adding files being appended to by another process.
+      #372 closed 2023-04-07 How to create zip in memory or by providing FILE* stream?
+      #257 closed 2021-09-06 fix linking errors without SSL
+      #48 closed 2018-06-14 Update CMakeLists.txt
+      #7 closed 2017-09-03 CMake improvements
+      #52 closed 2018-07-17 Cmake doesn't work, Why?
+      #55 closed 2018-07-18 What is this error?
+  dataloss       0 hit(s)
+  recover        7 hit(s) (all listed)
+      #583 open 2026-09-23 zip_file_is_seekable() silently reported encrypted entries as seekable (1.10.0–1.11.4)
+      #600 open 2026-09-30 Central directory reading has no per-entry failure isolation: one bad entry rejects the whole archive
+      #580 open 2026-09-18 Compute allocation sizes with a checked helper
+      #235 closed 2021-03-17 "Zip archive inconsistent" error, although supported by other unpackers
+      #367 closed 2023-03-14 Writing an archive can be inefficient because of seeks
+      #390 closed 2023-06-28 Allow adding files being appended to by another process.
+      #431 closed 2024-05-07 Crash with illegal instruction under Windows 11 x64 ARM virtualization
+  recovery       1 hit(s) (all listed)
+      #600 open 2026-09-30 Central directory reading has no per-entry failure isolation: one bad entry rejects the whole archive
+  rollback       7 hit(s) (all listed)
+      #579 closed 2026-09-14 Preserve buffer-source data during cloned writes
+      #417 closed 2023-11-15 zip_close failed cause filesystem handle to leak.
+      #146 closed 2019-12-26 Mtime changes are ignored after zip_file_add
+      #210 closed 2020-09-17 Add a extra "static" compile target, named "zipstatic" and add set(CMAKE_DEBUG_POSTFIX "d") under MSVC
+      #372 closed 2023-04-07 How to create zip in memory or by providing FILE* stream?
+      #269 closed 2021-11-03 Api description in document needs to be updated. 
+      #55 closed 2018-07-18 What is this error?
+  resume         1 hit(s) (all listed)
+      #185 closed 2020-07-03 Add function to duplicate file handle zip_file_t
+  half-written   0 hit(s)
+  wipe           3 hit(s) (all listed)
+      #532 merged 2026-06-01 zero default password before free
+      #535 merged 2026-06-03 clear keystream state before free in _zip_winzip_aes_free
+      #528 merged 2026-05-29 clear derived key buffer in _zip_winzip_aes_new
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        1 hit(s) (all listed)
+      #591 open 2026-09-25 Fix error reporting and resource cleanup across sources and constructors
+  destroys       0 hit(s)
+  overwrite      24 hit(s) (all listed)
+      #579 closed 2026-09-14 Preserve buffer-source data during cloned writes
+      #124 closed 2019-09-14 [zipmerge] add option to append files instead of overwriting
+      #514 closed 2025-11-16 zip_file_set_comment() segmentation fault
+      #290 closed 2022-03-17 How to add new files to an existing ZIP file
+      #117 closed 2019-07-26 calling zip_close after a function return corrupts the archive
+      #164 closed 2020-04-11 Cannot read changed data
+      #146 closed 2019-12-26 Mtime changes are ignored after zip_file_add
+      #304 closed 2022-06-20 Replacing files within archives in place
+      #278 closed 2022-01-07 zip_close failed, return "Renaming temporary file failed: Permission denied" on Windows 
+      #326 closed 2022-08-30 Reading into > 4GB buffer results in data being shifted
+      #315 closed 2022-07-30 Crash with buffer_read() during compressing files
+      #284 closed 2022-02-11 `zip_source_buffer_create` frees data even when `freed` is 0
+      #351 closed 2023-01-28 Libzip trigger program crash(memory corruption) on closing archive after a adding a file on archive with a source buffer(with freep != 0)
+      #382 closed 2023-05-11 zip_open fails with symbolic link on Windows
+      #348 closed 2023-01-19 Memory leak with zip_file_add() + zip_source_function()
+      #360 closed 2023-02-10 Please make zip_source_t refcounting thread-safe
+      #235 closed 2021-03-17 "Zip archive inconsistent" error, although supported by other unpackers
+      #398 closed 2023-08-03 adding file to an existing archive change the mode of the archive file
+      #478 closed 2025-01-03 HMAC errors not reported when reading compressed and encrypted files (AE-2)
+      #367 closed 2023-03-14 Writing an archive can be inefficient because of seeks
+  clobber        1 hit(s) (all listed)
+      #55 closed 2018-07-18 What is this error?
+  blank          4 hit(s) (all listed)
+      #177 closed 2020-05-24 Version number blank, unable to compile with libzip as a dependency
+      #399 closed 2023-08-21 Incorrect .pc file with 1.10.0 versus 1.9.2
+      #205 closed 2020-08-16 Cannot link against static libzip with additional dependencies by default
+      #372 closed 2023-04-07 How to create zip in memory or by providing FILE* stream?
+  unreadable     2 hit(s) (all listed)
+      #600 open 2026-09-30 Central directory reading has no per-entry failure isolation: one bad entry rejects the whole archive
+      #568 merged 2026-08-24 win32: keep replacement temp private until commit
+  garbage        4 hit(s) (all listed)
+      #600 open 2026-09-30 Central directory reading has no per-entry failure isolation: one bad entry rejects the whole archive
+      #563 closed 2026-08-18 verify authentication code for zero-length winzip aes entries
+      #117 closed 2019-07-26 calling zip_close after a function return corrupts the archive
+      #478 closed 2025-01-03 HMAC errors not reported when reading compressed and encrypted files (AE-2)
+  mangled        2 hit(s) (all listed)
+      #212 closed 2020-09-22 Mangled file names (Mojibake) despite ZIP_FL_ENC_GUESS
+      #466 closed 2024-10-16 Groff warnings and typos in manpages
+  contents       27 hit(s) (all listed)
+      #587 open 2026-09-24 Use close-on-exec duplication in zip_fdopen
+      #580 open 2026-09-18 Compute allocation sizes with a checked helper
+      #568 merged 2026-08-24 win32: keep replacement temp private until commit
+      #560 closed 2026-08-07 ios build -
+      #542 closed 2026-06-16 Use a constant-time comparison for WinZip AES authentication tag verification
+      #545 closed 2026-06-24 unziped/uncompressed archived file larger than original
+      #505 closed 2025-09-24 Trailing null bytes in zip entry names are converted to spaces even with raw encoding flag
+      #117 closed 2019-07-26 calling zip_close after a function return corrupts the archive
+      #367 closed 2023-03-14 Writing an archive can be inefficient because of seeks
+      #124 closed 2019-09-14 [zipmerge] add option to append files instead of overwriting
+      #358 closed 2023-02-02 Getter for zip_set_file_compression()
+      #118 closed 2019-07-27 Adding directories form other zip archive gives them invalid permissions
+      #364 closed 2023-03-08 Add minimum permissions for workflows
+      #382 closed 2023-05-11 zip_open fails with symbolic link on Windows
+      #350 closed 2023-01-23 Creation of empty archives
+      #396 closed 2023-07-26 Bypassing Linux file cache
+      #507 closed 2025-10-08 Fix trailing null byte to space conversion
+      #353 closed 2023-01-30 Insufficient documentation regarding stat.size, stat.comp_size, and stat.comp_method
+      #361 closed 2023-02-22 `zip_file_set_dostime()` shifts the time around DST changes
+      #198 closed 2020-07-24 Regarding LZMA1 (LZMA Alone, Method ID 14) in libzip (Follow-up of #195)
+  in-place       25 hit(s) (all listed)
+      #594 open 2026-09-28 Zip64 extra field: 24-byte field with disk number 0xFFFF is accepted, disk number start taken from other fields
+      #590 open 2026-09-25 zip_stat()'s mtime ignores higher-precision NTFS/Unix extended-timestamp extra fields
+      #583 open 2026-09-23 zip_file_is_seekable() silently reported encrypted entries as seekable (1.10.0–1.11.4)
+      #580 open 2026-09-18 Compute allocation sizes with a checked helper
+      #259 closed 2021-09-14 Add zip_file_is_seekable() to check if zip_file_t supports seeking
+      #215 closed 2020-10-13 Cannot open ZIP archives with data prepended (e.g. self-extractor stubs, `CRX` bundles...)
+      #304 closed 2022-06-20 Replacing files within archives in place
+      #432 closed 2024-05-14 Fix documentation of `zip_source_win32handle`
+      #326 closed 2022-08-30 Reading into > 4GB buffer results in data being shifted
+      #263 closed 2021-09-29 Filenames with invalid Windows NTFS characters
+      #393 closed 2023-07-19 compat.h:170:46: error: ‘__builtin_strncpy’ output truncated before terminating nul copying as many bytes from a string as its length [-Werror=stringop-truncation]
+      #394 closed 2023-07-19 Incorrectly created ZIP_EM_TRAD_PKWARE-encrypted entries from sources which have no mtime
+      #433 closed 2024-05-14 Enhance documentation of `zip_source_zip_file` and `zip_source_zip`
+      #358 closed 2023-02-02 Getter for zip_set_file_compression()
+      #166 closed 2020-04-19 [Windows] error C2065: S_IWUSR
+      #344 closed 2022-12-20 Factor our realloc handling to a separate function
+      #436 merged 2024-05-23 Make the library compile when targeting GDK
+      #371 closed 2023-03-30 Add MOVEFILE_COPY_ALLOWED Attribute to move_file op
+      #333 closed 2022-10-08 Documentation: zip_fread() can be called repeatedly
+      #309 closed 2022-07-08 Address potential buffer overrun issues
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      3 hit(s) (all listed)
+      #543 open 2026-06-16 ossfuzz: add zip_source_zip_fuzzer for partial-window extraction paths
+      #471 closed 2024-11-15 Support for storage device synchronization 
+      #273 closed 2021-12-11 Don't hide the temp file
+  data+loss      6 hit(s) (all listed)
+      #304 closed 2022-06-20 Replacing files within archives in place
+      #234 closed 2021-03-16 Consider "ulimit -n" on linux
+      #348 closed 2023-01-19 Memory leak with zip_file_add() + zip_source_function()
+      #390 closed 2023-06-28 Allow adding files being appended to by another process.
+      #384 closed 2023-05-26 Fix read/write an archive through symbolic link on Windows
+      #372 closed 2023-04-07 How to create zip in memory or by providing FILE* stream?
+  partial+write  3 hit(s) (all listed)
+      #166 closed 2020-04-19 [Windows] error C2065: S_IWUSR
+      #367 closed 2023-03-14 Writing an archive can be inefficient because of seeks
+      #286 merged 2022-02-26 Allow changed reads
+  crash+safe     0 hit(s)
+  atomic+write   2 hit(s) (all listed)
+      #568 merged 2026-08-24 win32: keep replacement temp private until commit
+      #372 closed 2023-04-07 How to create zip in memory or by providing FILE* stream?
+  lock+file      1 hit(s) (all listed)
+      #360 closed 2023-02-10 Please make zip_source_t refcounting thread-safe
+  write+failure  12 hit(s) (all listed)
+      #580 open 2026-09-18 Compute allocation sizes with a checked helper
+      #600 open 2026-09-30 Central directory reading has no per-entry failure isolation: one bad entry rejects the whole archive
+      #609 merged 2026-10-04 close the descriptor when fdopen fails and report ftruncate errors when preparing the clone target
+      #588 closed 2026-09-24 zip_close: check for allocation overflow and set error on failure
+      #579 closed 2026-09-14 Preserve buffer-source data during cloned writes
+      #568 merged 2026-08-24 win32: keep replacement temp private until commit
+      #114 closed 2019-07-08 memory leak with open() + close()
+      #348 closed 2023-01-19 Memory leak with zip_file_add() + zip_source_function()
+      #390 closed 2023-06-28 Allow adding files being appended to by another process.
+      #407 merged 2023-09-01 Fuzzing Coverage Expansion
+      #286 merged 2022-02-26 Allow changed reads
+      #105 closed 2019-06-08 zip_open with empty file
+  file+contents  26 hit(s) (all listed)
+      #587 open 2026-09-24 Use close-on-exec duplication in zip_fdopen
+      #580 open 2026-09-18 Compute allocation sizes with a checked helper
+      #568 merged 2026-08-24 win32: keep replacement temp private until commit
+      #560 closed 2026-08-07 ios build -
+      #545 closed 2026-06-24 unziped/uncompressed archived file larger than original
+      #542 closed 2026-06-16 Use a constant-time comparison for WinZip AES authentication tag verification
+      #505 closed 2025-09-24 Trailing null bytes in zip entry names are converted to spaces even with raw encoding flag
+      #117 closed 2019-07-26 calling zip_close after a function return corrupts the archive
+      #367 closed 2023-03-14 Writing an archive can be inefficient because of seeks
+      #124 closed 2019-09-14 [zipmerge] add option to append files instead of overwriting
+      #358 closed 2023-02-02 Getter for zip_set_file_compression()
+      #118 closed 2019-07-27 Adding directories form other zip archive gives them invalid permissions
+      #382 closed 2023-05-11 zip_open fails with symbolic link on Windows
+      #507 closed 2025-10-08 Fix trailing null byte to space conversion
+      #396 closed 2023-07-26 Bypassing Linux file cache
+      #350 closed 2023-01-23 Creation of empty archives
+      #353 closed 2023-01-30 Insufficient documentation regarding stat.size, stat.comp_size, and stat.comp_method
+      #361 closed 2023-02-22 `zip_file_set_dostime()` shifts the time around DST changes
+      #198 closed 2020-07-24 Regarding LZMA1 (LZMA Alone, Method ID 14) in libzip (Follow-up of #195)
+      #431 closed 2024-05-07 Crash with illegal instruction under Windows 11 x64 ARM virtualization
+
+== 51 terms run; 34 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

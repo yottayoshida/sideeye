@@ -1,0 +1,2 @@
+static: /opt/bin/goaccess: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=b499e275288a5bff9baec7e7d5267247e8c767fb, for GNU/Linux 3.7.0, with debug_info, not stripped
+next: This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.

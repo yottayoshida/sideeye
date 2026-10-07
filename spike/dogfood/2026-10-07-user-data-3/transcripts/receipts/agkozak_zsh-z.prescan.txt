@@ -1,0 +1,141 @@
+== novelty pre-scan: agkozak/zsh-z
+== date: 2026-10-07T05:49:07Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          2 hit(s) (all listed)
+      #59 closed 2021-11-16 Crash after installation
+      #12 closed 2020-01-08 Benefits over z.sh?
+  corrupt        3 hit(s) (all listed)
+      #48 closed 2021-07-28 Failed to jump to path containing CJK characters
+      #33 closed 2020-12-02 How do you recover from zshz divide by zero?
+      #22 closed 2020-06-25 _zshz_update_datafile:37: division by zero
+  corruption     1 hit(s) (all listed)
+      #104 merged 2026-08-10 Zsh-z v2.0.0
+  truncated      1 hit(s) (all listed)
+      #48 closed 2021-07-28 Failed to jump to path containing CJK characters
+  truncate       1 hit(s) (all listed)
+      #48 closed 2021-07-28 Failed to jump to path containing CJK characters
+  empty          10 hit(s) (all listed)
+      #96 open 2025-02-23 XDG compliance
+      #104 merged 2026-08-10 Zsh-z v2.0.0
+      #101 merged 2026-06-03 Add test suite
+      #86 closed 2024-03-25 zsh-z fails to work if `.z` is mapped to docker host file
+      #85 closed 2023-11-12 [Need help]How to set the variables for zsh-z?
+      #76 merged 2023-02-01 Intruduce ZSHZ_CD variable that allows to change the 'builtin cd' command
+      #63 closed 2022-03-21 Strange file created in home directory
+      #55 closed 2021-10-09 Integrating with ranger
+      #40 closed 2021-04-17 Prefer exact matches over partial ones
+      #35 merged 2021-01-03 cd to arg if it's a dir and not in DB
+  atomic         2 hit(s) (all listed)
+      #104 merged 2026-08-10 Zsh-z v2.0.0
+      #63 closed 2022-03-21 Strange file created in home directory
+  atomically     0 hit(s)
+  interrupted    1 hit(s) (all listed)
+      #63 closed 2022-03-21 Strange file created in home directory
+  interrupt      1 hit(s) (all listed)
+      #63 closed 2022-03-21 Strange file created in home directory
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         1 hit(s) (all listed)
+      #98 closed 2025-06-14 zsh-z.plugin.zsh:766: parse error near `>&'
+  power          0 hit(s)
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           1 hit(s) (all listed)
+      #104 merged 2026-08-10 Zsh-z v2.0.0
+  partial        2 hit(s) (all listed)
+      #93 open 2024-06-24 implement in z does not work 
+      #40 closed 2021-04-17 Prefer exact matches over partial ones
+  incomplete     1 hit(s) (all listed)
+      #33 closed 2020-12-02 How do you recover from zshz divide by zero?
+  dataloss       0 hit(s)
+  recover        2 hit(s) (all listed)
+      #76 merged 2023-02-01 Intruduce ZSHZ_CD variable that allows to change the 'builtin cd' command
+      #33 closed 2020-12-02 How do you recover from zshz divide by zero?
+  recovery       1 hit(s) (all listed)
+      #104 merged 2026-08-10 Zsh-z v2.0.0
+  rollback       0 hit(s)
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           2 hit(s) (all listed)
+      #104 merged 2026-08-10 Zsh-z v2.0.0
+      #84 closed 2023-11-07 Performance Delay After Using z Command to Navigate Directories
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      3 hit(s) (all listed)
+      #105 closed 2026-09-06 Failure to create data file and/or add entries when noclobber opt is set
+      #19 closed 2020-05-15 z overwrites symlinks
+      #1 closed 2018-12-15 [Feature Request] Tab complete stored locations
+  clobber        5 hit(s) (all listed)
+      #105 closed 2026-09-06 Failure to create data file and/or add entries when noclobber opt is set
+      #81 closed 2023-06-30 tmpfd file error on macOS / zinit installation
+      #104 merged 2026-08-10 Zsh-z v2.0.0
+      #67 merged 2022-06-11 Avoid clobbering db on `no space left on device`
+      #1 closed 2018-12-15 [Feature Request] Tab complete stored locations
+  blank          2 hit(s) (all listed)
+      #84 closed 2023-11-07 Performance Delay After Using z Command to Navigate Directories
+      #40 closed 2021-04-17 Prefer exact matches over partial ones
+  unreadable     0 hit(s)
+  garbage        0 hit(s)
+  mangled        1 hit(s) (all listed)
+      #14 closed 2020-02-10 Don't z into subdirectories
+  contents       7 hit(s) (all listed)
+      #90 closed 2024-05-03 Tab suggestions no longer working
+      #63 closed 2022-03-21 Strange file created in home directory
+      #16 closed 2020-02-26 Tab completion not working
+      #33 closed 2020-12-02 How do you recover from zshz divide by zero?
+      #12 closed 2020-01-08 Benefits over z.sh?
+      #34 closed 2020-12-29 complete_aliases breaks completion
+      #36 closed 2021-01-17 pushdignoredups is not respected - after using 'z' duplicates appear on the dirstack
+  in-place       10 hit(s) (all listed)
+      #54 open 2021-09-04 Feature request: disambiguating subdirectories
+      #20 open 2020-05-22 Make it XDG compliant
+      #104 merged 2026-08-10 Zsh-z v2.0.0
+      #14 closed 2020-02-10 Don't z into subdirectories
+      #55 closed 2021-10-09 Integrating with ranger
+      #44 closed 2021-05-28 Declare ZSHZ_EXCLUDE_DIRS so that it can be appended to
+      #33 closed 2020-12-02 How do you recover from zshz divide by zero?
+      #40 closed 2021-04-17 Prefer exact matches over partial ones
+      #26 closed 2020-07-08 [Question] How do I reduce the max size of the zsh-z database file?
+      #1 closed 2018-12-15 [Feature Request] Tab complete stored locations
+  unclean        0 hit(s)
+  shutdown       1 hit(s) (all listed)
+      #1 closed 2018-12-15 [Feature Request] Tab complete stored locations
+  reboot         1 hit(s) (all listed)
+      #106 closed 2026-09-14 Directory index gets lost with password-protected volumes
+  disk+full      1 hit(s) (all listed)
+      #104 merged 2026-08-10 Zsh-z v2.0.0
+  data+loss      1 hit(s) (all listed)
+      #104 merged 2026-08-10 Zsh-z v2.0.0
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   2 hit(s) (all listed)
+      #104 merged 2026-08-10 Zsh-z v2.0.0
+      #63 closed 2022-03-21 Strange file created in home directory
+  lock+file      4 hit(s) (all listed)
+      #105 closed 2026-09-06 Failure to create data file and/or add entries when noclobber opt is set
+      #104 merged 2026-08-10 Zsh-z v2.0.0
+      #86 closed 2024-03-25 zsh-z fails to work if `.z` is mapped to docker host file
+      #12 closed 2020-01-08 Benefits over z.sh?
+  write+failure  1 hit(s) (all listed)
+      #104 merged 2026-08-10 Zsh-z v2.0.0
+  file+contents  6 hit(s) (all listed)
+      #90 closed 2024-05-03 Tab suggestions no longer working
+      #63 closed 2022-03-21 Strange file created in home directory
+      #16 closed 2020-02-26 Tab completion not working
+      #33 closed 2020-12-02 How do you recover from zshz divide by zero?
+      #36 closed 2021-01-17 pushdignoredups is not respected - after using 'z' duplicates appear on the dirstack
+      #12 closed 2020-01-08 Benefits over z.sh?
+
+== 51 terms run; 30 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

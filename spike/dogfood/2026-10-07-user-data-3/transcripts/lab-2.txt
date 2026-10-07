@@ -1,0 +1,236 @@
+=== sfntedit: the entry point and the binary behind it
+  image: /opt/py/bin/sfntedit: Python script, ASCII text executable
+#!/opt/py/bin/python3
+# -*- coding: utf-8 -*-
+import re
+import sys
+from afdko._deprecated import sfntedit_wrapper
+if __name__ == '__main__':
+    sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
+    sys.exit(sfntedit_wrapper())
+/opt/py/bin/sfntedit
+=== duplicacy set -no-backup
+$ duplicacy set -no-backup
+New options for storage /s/dup/storage have been saved
+  -> exit 0
+  state: fa1be05f82e0 -> a4e4a75e551b
+"no_backup": true
+=== plakar with a passphrase from the environment
+$ plakar -disable-security-check
+security check disabled
+  -> exit 0
+$ plakar at /s/plakar/repo create
+  -> exit 0
+$ plakar at /s/plakar/repo backup /s/plakar/data
+8782d069: OK ✓ /s/plakar
+8782d069: OK ✓ /s
+8782d069: OK ✓ /s/plakar/data
+8782d069: OK ✓ /
+8782d069: OK ✓ /s/plakar/data/a
+8782d069: backup completed without errors in 17.706584ms (in: 0 B, out: 2.2 MiB)
+  -> exit 0
+$ plakar at /s/plakar/repo backup /s/plakar/data
+87ecda45: OK ✓ /s/plakar
+87ecda45: OK ✓ /s
+87ecda45: OK ✓ /s/plakar/data/a
+87ecda45: OK ✓ /s/plakar/data
+87ecda45: OK ✓ /
+87ecda45: OK ✓ /s/plakar/data/b
+87ecda45: backup completed without errors in 22.494625ms (in: 3.3 KiB, out: 2.2 MiB)
+  -> exit 0
+$ plakar at /s/plakar/repo ls
+2026-10-07T05:39:24Z   87ecda45       4 B        0s /s/plakar/data
+2026-10-07T05:39:23Z   8782d069       2 B        0s /s/plakar/data
+  -> exit 0
+  first snapshot: [87ecda45]
+$ plakar at /s/plakar/repo rm 87ecda45
+rm: would remove these 1 snapshot(s), run with -apply to proceed
+2026-10-07T05:39:24Z   87ecda45       4 B        0s /s/plakar/data
+  -> exit 0
+  state: 692e234f9f8e -> 692e234f9f8e
+=== ferium profile switch / delete / configure
+  image: /opt/bin/ferium: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, stripped
+$ ferium profiles
+p1
+          Output directory:   /s/ferium/p1
+          Minecraft Version:  1.20.1
+          Mod Loader:         Fabric
+          Mods:               0
+
+p2
+          Output directory:   /s/ferium/p2
+          Minecraft Version:  1.20.1
+          Mod Loader:         Fabric
+          Mods:               0
+
+  -> exit 0
+$ ferium profile switch --profile-name p1
+error: unexpected argument '--profile-name' found
+
+  tip: to pass '--profile-name' as a value, use '-- --profile-name'
+
+Usage: ferium profile switch [PROFILE_NAME]
+
+For more information, try '--help'.
+  -> exit 2
+  state: 83f504e9a513 -> 83f504e9a513
+$ ferium profile configure --name p1b
+  -> exit 0
+  state: 83f504e9a513 -> 701e9ddeb67c
+$ ferium profile delete --profile-name p2
+error: unexpected argument '--profile-name' found
+
+  tip: to pass '--profile-name' as a value, use '-- --profile-name'
+
+Usage: ferium profile delete [OPTIONS] [PROFILE_NAME]
+
+For more information, try '--help'.
+  -> exit 2
+  state: 701e9ddeb67c -> 701e9ddeb67c
+=== espsecure sign-data in place
+$ espsecure sign-data -h
+espsecure v5.4.0
+                                                                                
+ Usage: espsecure sign-data [OPTIONS] DATAFILE                                  
+                                                                                
+ Sign a data file for use with secure boot.                                     
+                                                                                
+╭─ Arguments ───────────────────────────────────────────────�
+│ *  DATAFILE  FILENAME  [required]                                            │
+╰────────────────────────────────────────────────────�
+╭─ Options ────────────────────────────────────────────────�
+│ *  --version            -v  [1|2]       Version of the secure boot signing   │
+│                                         scheme to use. [required]            │
+  -> exit 0
+$ espsecure sign-data --version 2 --keyfile=k.pem fw.bin
+espsecure v5.4.0
+                                                                                
+ Usage: espsecure sign-data [OPTIONS] DATAFILE                                  
+                                                                                
+ Try 'espsecure sign-data -h' for help                                          
+╭─ Error ─────────────────────────────────────────────────
+│ Missing argument 'DATAFILE'.                                                 │
+╰────────────────────────────────────────────────────�
+                                                                                
+  -> exit 2
+  state: 1be8b3137258 -> 1be8b3137258
+total 68
+-rw-r--r-- 1 root root 65536 Oct  7 05:39 fw.bin
+-rw-r--r-- 1 root root   227 Oct  7 05:39 k.pem
+$ espsecure sign-data fw.bin --version 2 --keyfile k.pem
+espsecure v5.4.0
+1 signing key(s) found.
+Signed 65536 bytes of data from "fw.bin". Signature sector now has 1 signature blocks.
+  -> exit 0
+  state: 1be8b3137258 -> 94e2fc0ec2e8
+total 72
+-rw-r--r-- 1 root root 69632 Oct  7 05:39 fw.bin
+-rw-r--r-- 1 root root   227 Oct  7 05:39 k.pem
+=== acme.sh --set-default-ca (installed offline from its tag)
+  image: /usr/bin/sh: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aa
+$ ./acme.sh --install --home /s/acme --config-home /s/acme/conf --nocron --noprofile --accountemail ops@example.invalid
+[Wed Oct  7 05:39:26 UTC 2026] Installing to /s/acme
+[Wed Oct  7 05:39:26 UTC 2026] Installed to /s/acme/acme.sh
+[Wed Oct  7 05:39:26 UTC 2026] bash has been found. Changing the shebang to use bash as preferred.
+[Wed Oct  7 05:39:26 UTC 2026] Please refer to https://curl.haxx.se/libcurl/c/libcurl-errors.html for error code: 6
+[Wed Oct  7 05:39:26 UTC 2026] Please refer to https://curl.haxx.se/libcurl/c/libcurl-errors.html for error code: 6
+[Wed Oct  7 05:39:26 UTC 2026] OK
+  -> exit 0
+drwx------ 2 root root 4096 Oct  7 05:39 .
+drwx------ 6 root root 4096 Oct  7 05:39 ..
+-rw------- 1 root root  146 Oct  7 05:39 account.conf
+-rw-r--r-- 1 root root    0 Oct  7 05:39 http.header
+$ /s/acme/acme.sh --home /s/acme --config-home /s/acme/conf --set-default-ca --server letsencrypt
+[Wed Oct  7 05:39:26 UTC 2026] Changed default CA to: https://acme-v02.api.letsencrypt.org/directory
+  -> exit 0
+  state: a7f29837adcd -> 8afaee25b840
+$ /s/acme/acme.sh --home /s/acme --config-home /s/acme/conf --set-notify --notify-level 1
+[Wed Oct  7 05:39:26 UTC 2026] Set notify level to: 1
+  -> exit 0
+  state: 8afaee25b840 -> 4ccf0a26e0d6
+=== easyrsa revoke
+  image: /opt/bin/easyrsa: POSIX shell script, ASCII text executable
+$ easyrsa init-pki
+
+Notice
+------
+'init-pki' complete; you may now create a CA or requests.
+
+Your newly created PKI dir is:
+* /s/pki-w/pki
+
+  -> exit 0
+$ easyrsa build-ca nopass
+
+Notice
+------
+CA creation complete. Your new CA certificate is at:
+* /s/pki-w/pki/ca.crt
+
+Build-ca completed successfully.
+
+  -> exit 0
+$ easyrsa build-client-full c1 nopass
+...+..+.........+...+............+....+++++++++++++++++++++++++++++++++++++++*.......+.+.....+............+.+...............+..+...+++++++++++++++++++++++++++++
+..+..........+...........+.+..+................+.........+..+......+....+........+.+......+...........+.......+.....+.+......+......+..+......+......+.+.....+..
+-----
+
+Notice
+------
+Private-Key and Public-Certificate-Request files created.
+Your files are:
+* req: /s/pki-w/pki/reqs/c1.req
+* key: /s/pki-w/pki/private/c1.key
+
+Using configuration from /s/pki-w/pki/cc1c79de/temp.02
+  -> exit 0
+$ easyrsa build-client-full c2 nopass
+...+++++++++++++++++++++++++++++++++++++++*...+.........+...+....+...+++++++++++++++++++++++++++++++++++++++*........+.........+......+..........+...+.........+
+.+++++++++++++++++++++++++++++++++++++++*......+...+.......+.....+.......+..+....+...........+...+...+....+.........+.........+...+..+.+.....+++++++++++++++++++
+-----
+
+Notice
+------
+Private-Key and Public-Certificate-Request files created.
+Your files are:
+* req: /s/pki-w/pki/reqs/c2.req
+* key: /s/pki-w/pki/private/c2.key
+
+Using configuration from /s/pki-w/pki/0e5ea7be/temp.02
+  -> exit 0
+$ easyrsa revoke c1
+
+WARNING
+=======
+This process is destructive!
+
+These files will be MOVED to the 'revoked' sub-directory:
+* /s/pki-w/pki/issued/c1.crt
+* /s/pki-w/pki/private/c1.key
+* /s/pki-w/pki/reqs/c1.req
+
+These files will be DELETED:
+All PKCS files for commonName: c1
+  -> exit 0
+  state: e95a43cfde98 -> 484b581de5a6
+=== git-lfs install / uninstall
+  image: /opt/bin/git-lfs: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=I11_HBRdWq-7I9t9jNHa/z
+$ git-lfs install --skip-repo
+Git LFS initialized.
+  -> exit 0
+  home: 04bd5261991a -> 44c1a45ae56a
+[user]
+	name = t
+	email = t@example.invalid
+[filter "lfs"]
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+$ git-lfs uninstall --skip-repo
+Global Git LFS configuration has been removed.
+  -> exit 0
+  home: 44c1a45ae56a -> 04bd5261991a
+[user]
+	name = t
+	email = t@example.invalid

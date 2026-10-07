@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.9.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/dxf",
+    "operation": "ezdxf strip /s/dxf/drawing.dxf",
+    "cwd": "/s/dxf-in",
+    "expected_status": 0
+  },
+  "k": 9,
+  "ops_total": 10,
+  "prefix_hash": "b049057940bcbbc8",
+  "after_class": "rename",
+  "after_path": "/s/dxf/drawing.dxf",
+  "before_class": "rename",
+  "before_path": "/s/dxf/drawing.ezdxf.tmp",
+  "violation": "missing"
+}

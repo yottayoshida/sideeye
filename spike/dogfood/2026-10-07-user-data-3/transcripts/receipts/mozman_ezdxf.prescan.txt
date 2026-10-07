@@ -1,0 +1,273 @@
+== novelty pre-scan: mozman/ezdxf
+== date: 2026-10-07T07:35:08Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          53 hit(s) (all listed)
+      #1410 closed 2026-08-27 # Bug: `explode_block_reference()` corrupts `DIMENSION` geometry by unconditional re-rendering
+      #1412 closed 2026-08-29 TypeError saving a binary DXF when an entity has a proxy graphic
+      #1362 open 2025-12-22 Matplotlib export: layouts renders only frame (entities missing)
+      #1380 closed 2026-04-22 Bug: ValueError in lldxf.encoding._decode when parsing CIF (\U+xxxx) with lowercase hex characters
+      #1357 merged 2025-12-09 fix: stable arrow render in mlead when proxy is ignored
+      #1235 closed 2025-02-03 X11 crash due to a screen use conflict
+      #1279 closed 2025-04-09 ``ezdxf audit`` does not repair the drawing
+      #1241 closed 2025-02-20 MULTILEADER spam AcDbMLeader, possible solution
+      #1166 closed 2024-09-18 Patch crash in mline.py when getting elevation using Vec3
+      #1168 merged 2024-09-18 Fix mline.py crash due to passing int instead of float
+      #1167 closed 2024-09-18 mline.py crashes trying to replace a Vec3 with ints instead of floats
+      #902 closed 2023-06-16 Corrupt Font Causes Appl to Crash (fonttools then ezdxf)
+      #917 closed 2023-08-06 Default font "Arial.ttf" not found on macOS
+      #836 closed 2023-02-16 Could not recover a DXF created by Microsoft Visio Professional: ezdxf.lldxf.const.DXFStructureError: HATCH: unknown edge type: 0
+      #778 closed 2022-11-17 'vertices' must be 2D with shape (M, 2). Your input has shape (0,).
+      #707 closed 2022-07-19 With Ubuntu 22.04 + ODAFileConverter version (22.10, 22.12 or 23.6) return code is 131, which means `_odafc_failed` always returns true
+      #473 closed 2021-06-18 Curve drawing regression
+      #663 closed 2022-04-04 Calling "path.flattening()" on some DXF files crashes the Python interpreter
+      #621 closed 2022-01-21 3dface crash
+      #601 closed 2022-01-06 ValueError: could not convert string to float: '1.000000000000000E 20' 285, tagger.py
+  corrupt        20 hit(s) (all listed)
+      #1410 closed 2026-08-27 # Bug: `explode_block_reference()` corrupts `DIMENSION` geometry by unconditional re-rendering
+      #1409 closed 2026-08-27 Refactor dimension rendering logic
+      #1399 closed 2026-07-19 HATCH.transform() re-rotates the pattern lines by pattern_angle on every transform (a pure translation rotates the pattern)
+      #1287 closed 2025-04-22 suggested bug fix for 1286
+      #1373 closed 2026-02-17 Body.copy_data() shallow-copies _temporary_transformation, corrupting originals on copy+transform
+      #1351 closed 2025-11-28 Inconsistent text layout when text style non-default
+      #1286 closed 2025-04-22 cant read MULTILEADER as ProxyGraphic
+      #1289 closed 2025-04-28 Cannot read dxf file due to ezdxf.lldxf.const.DXFStructureError: Invalid group code
+      #969 closed 2023-11-19  'import ezdxf' fails
+      #902 closed 2023-06-16 Corrupt Font Causes Appl to Crash (fonttools then ezdxf)
+      #159 closed 2020-05-11 AttributeError: 'Block' object has no attribute 'doc' when calling saveas method
+      #831 closed 2023-02-10 Corrputed spline with two identical control points causes ZeroDivisionError: float division by zero
+      #836 closed 2023-02-16 Could not recover a DXF created by Microsoft Visio Professional: ezdxf.lldxf.const.DXFStructureError: HATCH: unknown edge type: 0
+      #800 closed 2022-12-15 ELLIPSE should accept an axis ratio as small as 1e-10
+      #706 closed 2022-07-13 Missing hatch compare to the Autocad
+      #702 closed 2022-07-07 Incorrect of virtual entities for Insert with ellipse
+      #352 closed 2021-02-17 `print_entity()` is not defined
+      #65 closed 2019-01-18 invalid handle while importing block entity
+      #85 closed 2019-05-24 ezdxf.lldxf.const.DXFStructureError: DXFStructureError: missing EOF tag.
+      #137 closed 2020-04-07 Big difference in extents
+  corruption     2 hit(s) (all listed)
+      #1410 closed 2026-08-27 # Bug: `explode_block_reference()` corrupts `DIMENSION` geometry by unconditional re-rendering
+      #744 closed 2022-09-20 DXFTableEntryError: Layer of Entity not in Layers
+  truncated      2 hit(s) (all listed)
+      #1420 merged 2026-10-03 Fix Korean Johab MIF decoding
+      #953 closed 2023-11-01 Importing package occurs UnicodeDecodeError
+  truncate       3 hit(s) (all listed)
+      #1420 merged 2026-10-03 Fix Korean Johab MIF decoding
+      #1396 merged 2026-06-30 Fix calendardate()/juliandate() round-trip losing one second
+      #953 closed 2023-11-01 Importing package occurs UnicodeDecodeError
+  empty          39 hit(s) (all listed)
+      #1338 closed 2025-10-21 Result of insert.virtual_entities() different from AutoCAD visualization
+      #1402 closed 2026-08-09 DXFPolygon.transform() never translates hatch pattern base points — pattern phase shifts relative to the boundary under any translation (still on master, cf. #1392)
+      #1382 closed 2026-05-07 ClippingPortal push/pop imbalance in addons.drawing.Frontend causes empty SVG output when DXF contains INSERT entities
+      #1377 closed 2026-03-30 xref.load_modelspace() fails on empty polylines in blocks
+      #1394 closed 2026-06-17 Enhance pattern transformation in DXFPolygon and OCSTransform
+      #1392 closed 2026-06-15 Bug: DXFPolygon.transform() fails to apply rotation and translation to hatch pattern base_point inside nested INSERT
+      #1369 merged 2026-01-15 Fix bug 1368: Layer linetype patterns are empty when using custom lay…
+      #1368 closed 2026-01-15 Layer linetype patterns are empty when using custom layout_properties in Frontend.draw_layout()
+      #1279 closed 2025-04-09 ``ezdxf audit`` does not repair the drawing
+      #1289 closed 2025-04-28 Cannot read dxf file due to ezdxf.lldxf.const.DXFStructureError: Invalid group code
+      #1219 closed 2024-12-25 MESH created with ezdxf can be read with edrawings but not freeCAD or Autodesk
+      #1096 closed 2024-05-30 ezdxf.npshapes.EmptyShapeError: empty shape has no extends
+      #1068 closed 2024-04-22 Cannot read ACAD_TABLE in DXF 2004 Format
+      #1101 closed 2024-06-07 InvertedClippingPolygon2d.clip_polyline returns incorrect result
+      #972 closed 2023-11-23 R13 Minimum TABLE requirements
+      #997 closed 2023-12-22 Read messed up LAYOUT structure created by QGIS
+      #923 closed 2023-08-15 Building font manager cache fails with FileExistsError in Windows
+      #873 closed 2023-05-05 ACAD_PROXY_ENTITY extrusion (0.0, 0.0, -1.0) is rendered at mirrored position in X-axis
+      #830 closed 2023-02-09 Complex MText.text with only a whitespace raises ValueError("invalid width, no usable space left")
+      #855 closed 2023-03-28 MTEXT entities not correct on ezdxf view
+  atomic         2 hit(s) (all listed)
+      #923 closed 2023-08-15 Building font manager cache fails with FileExistsError in Windows
+      #810 closed 2022-12-25 cylinder_2p in negative z-direction
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         2 hit(s) (all listed)
+      #1203 closed 2024-11-15 Copying dynamic blocks via clipboard removes dynamic features
+      #1279 closed 2025-04-09 ``ezdxf audit`` does not repair the drawing
+  power          2 hit(s) (all listed)
+      #573 closed 2021-11-04 HATCH rendering issue of text box boundary paths
+      #567 closed 2021-10-27 DXF-SVG conversion :  DIMENSION entities' text size
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           3 hit(s) (all listed)
+      #1413 closed 2026-09-05 Add ascii_tag_compiler(), a fused ASCII tag loader [+15% dxf reading speed]
+      #999 merged 2023-12-29 Drawing image support
+      #425 merged 2021-05-04 Define LW as Lightweight Polyline
+  partial        1 hit(s) (all listed)
+      #713 closed 2022-07-30 Two test failures on non-x86 architectures
+  incomplete     13 hit(s) (all listed)
+      #1271 open 2025-03-28 Unable to Extract Arabic Script Text from DXF File Using ezdxf
+      #1079 closed 2024-05-12 XData
+      #1049 closed 2024-03-15 Some DXF files generated by ezdxf 1.2.0 cannot be opened by AutoCAD
+      #906 closed 2023-06-30 ACAD_PROXY_ENTITY creates extra hatch with ezdxf view
+      #833 closed 2023-02-15 saveas() error:  AssertionError: dictionary handle not resolved
+      #493 closed 2021-07-11 Crash Log from a reporting program.
+      #381 closed 2021-04-01 DXF file can be opened by cad2007 or above, but not by cad2007
+      #30 closed 2018-03-14 "Invalid XDATA structure" error
+      #40 closed 2018-08-06 MText change text issue
+      #58 closed 2018-11-20 Too fast end in the TABLE BLOCK RECORD.
+      #52 closed 2018-10-09 Generated DXF files can not be opened in TrueView
+      #164 closed 2020-06-04 dxf2code doesn't work if I open the file in Autodesk
+      #43 closed 2018-09-03 Prevent missing linetype error in table addon.
+  dataloss       0 hit(s)
+  recover        55 hit(s) (all listed)
+      #1322 open 2025-08-05 Recover does not decode MIF notation if it is split into two different tags
+      #1271 open 2025-03-28 Unable to Extract Arabic Script Text from DXF File Using ezdxf
+      #1275 open 2025-04-02 High CPU usage and eventually OOM when trying to draw layout
+      #1413 closed 2026-09-05 Add ascii_tag_compiler(), a fused ASCII tag loader [+15% dxf reading speed]
+      #1385 closed 2026-05-18 xref.load_modelspace() fails with name has to be a string, got <class 'NoneType'> error
+      #1306 closed 2025-06-19 two dxf file merge
+      #1289 closed 2025-04-28 Cannot read dxf file due to ezdxf.lldxf.const.DXFStructureError: Invalid group code
+      #1285 closed 2025-04-15 Copying clipped blocks via clipboard removes clipping
+      #1272 closed 2025-03-28 Livelock while drawing layout with MText
+      #1203 closed 2024-11-15 Copying dynamic blocks via clipboard removes dynamic features
+      #1219 closed 2024-12-25 MESH created with ezdxf can be read with edrawings but not freeCAD or Autodesk
+      #1136 closed 2024-07-31 An issue when opening LibreDWG (v0.13.3) generated DXF file.
+      #1081 closed 2024-05-14 Error with bbox.extents()
+      #1063 closed 2024-04-10 Unicode not rendering properly
+      #997 closed 2023-12-22 Read messed up LAYOUT structure created by QGIS
+      #960 closed 2023-11-10 Added save convert function
+      #932 closed 2023-09-20 "\M+5D7DF\M+5CFDF\M+5BCDC" is invalid value for layer name
+      #933 closed 2023-09-28 Extrusion attribute not read if extrusion.x (210) is not present 
+      #907 closed 2023-07-03 Invalid export of version- and lock_position tags in ATTDEF and ATTRIB
+      #906 closed 2023-06-30 ACAD_PROXY_ENTITY creates extra hatch with ezdxf view
+  recovery       5 hit(s) (all listed)
+      #1420 merged 2026-10-03 Fix Korean Johab MIF decoding
+      #1240 closed 2025-02-11 PlotSettings make saved CAD invalid
+      #907 closed 2023-07-03 Invalid export of version- and lock_position tags in ATTDEF and ATTRIB
+      #183 closed 2020-07-13 Exception when drawing block which does not exist
+      #231 closed 2020-09-14 Reprojection of DXF
+  rollback       0 hit(s)
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           1 hit(s) (all listed)
+      #205 closed 2020-08-03 Wipeout support?
+  wipes          0 hit(s)
+  erase          2 hit(s) (all listed)
+      #498 merged 2021-07-20 added basic OLE2FRAME drawing support
+      #9 closed 2017-03-16 Copy to clipboard failed. 
+  erasing        0 hit(s)
+  erased         2 hit(s) (all listed)
+      #498 merged 2021-07-20 added basic OLE2FRAME drawing support
+      #9 closed 2017-03-16 Copy to clipboard failed. 
+  destroy        14 hit(s) (all listed)
+      #1374 closed 2026-02-18 Fix Body.copy_data() sharing _temporary_transformation between original and copy
+      #1373 closed 2026-02-17 Body.copy_data() shallow-copies _temporary_transformation, corrupting originals on copy+transform
+      #1359 closed 2025-12-12 xref.load_modelspace fails with AttributeError when merging DXF files (BLOCK_RECORD has no BLOCK)
+      #1219 closed 2024-12-25 MESH created with ezdxf can be read with edrawings but not freeCAD or Autodesk
+      #1156 closed 2024-09-02 Required anonymous geometry block for DIMENSION not defined.
+      #890 closed 2023-05-19 MTextExplode renders overlapping lines
+      #889 closed 2023-05-19 mtext.load_mtext_content' makes me can't specified the tail
+      #913 closed 2023-07-20 Test failures with Cython 3
+      #592 closed 2021-12-20 merge dxf files each one to different layers
+      #495 closed 2021-07-19 Support for AEC entities?
+      #482 closed 2021-06-22 Crash drawing hatch
+      #40 closed 2018-08-06 MText change text issue
+      #210 closed 2020-08-09 Multiple Inserts with different geometries
+      #133 closed 2020-04-02 ezdxf '0.11.1' : AttributeError: 'Insert' object has no attribute 'dxf' when using __str__
+  destroys       1 hit(s) (all listed)
+      #210 closed 2020-08-09 Multiple Inserts with different geometries
+  overwrite      5 hit(s) (all listed)
+      #1402 closed 2026-08-09 DXFPolygon.transform() never translates hatch pattern base points — pattern phase shifts relative to the boundary under any translation (still on master, cf. #1392)
+      #1410 closed 2026-08-27 # Bug: `explode_block_reference()` corrupts `DIMENSION` geometry by unconditional re-rendering
+      #1407 merged 2026-08-19 Fix #1402: translate hatch pattern base points in DXFPolygon.transform()
+      #960 closed 2023-11-10 Added save convert function
+      #504 closed 2021-07-21 Question: why some inserts (or attribs) are invisible?
+  clobber        0 hit(s)
+  blank          7 hit(s) (all listed)
+      #1362 open 2025-12-22 Matplotlib export: layouts renders only frame (entities missing)
+      #1286 closed 2025-04-22 cant read MULTILEADER as ProxyGraphic
+      #1078 closed 2024-05-11 boundingbox calculation problem
+      #27 closed 2018-02-02 Images don't show in AutoCAD until you manually Reload them in the xref manager
+      #376 closed 2021-03-26 How to remove the blank border of the ezdxf drawing
+      #380 closed 2021-03-31 Drawing problem on ARRAYCLASSIC presentation
+      #181 closed 2020-07-13 Information Scrubbing Script
+  unreadable     3 hit(s) (all listed)
+      #1306 closed 2025-06-19 two dxf file merge
+      #27 closed 2018-02-02 Images don't show in AutoCAD until you manually Reload them in the xref manager
+      #145 closed 2020-04-26 ocs_vertices with z && div by zero
+  garbage        3 hit(s) (all listed)
+      #617 closed 2022-01-19 Don't Wrap Instance Methods with 'functools.lru_cache' 
+      #19 closed 2017-08-24 Release memory after usage
+      #88 closed 2019-06-04 Help converting from UTF-8 to CP932
+  mangled        0 hit(s)
+  contents       16 hit(s) (all listed)
+      #1379 closed 2026-04-20 PDF generated by ezdxf.addons.drawing.pymupdf contains invalid token {lineJoin} in content stream (PyMuPDF 1.27.2.2, ezdxf 1.4.3)
+      #1410 closed 2026-08-27 # Bug: `explode_block_reference()` corrupts `DIMENSION` geometry by unconditional re-rendering
+      #1231 closed 2025-01-22 RecursionError when pickle dump/loading dxf file
+      #1176 closed 2024-10-07 I can't make odafc-addon to work (for windows).
+      #1156 closed 2024-09-02 Required anonymous geometry block for DIMENSION not defined.
+      #1069 closed 2024-04-24 .stb file won't parse
+      #989 closed 2023-12-14 Polyline Transform Bug + Viewer Inconsistency
+      #903 closed 2023-06-17 [ODA File Converter] Exec format error even though set a+x
+      #833 closed 2023-02-15 saveas() error:  AssertionError: dictionary handle not resolved
+      #681 closed 2022-05-10 The new DXF file laser printing software won't open
+      #559 closed 2021-10-13 Entity Color (ForeGround Color)
+      #258 closed 2020-11-02 Strange behaviour of attribs
+      #30 closed 2018-03-14 "Invalid XDATA structure" error
+      #120 closed 2020-01-30 reading/writing dxf file error
+      #325 closed 2021-01-25 fonts for text - standard and incompatibility with (other) CAD programs
+      #70 closed 2019-02-05 converting drawing to text string?
+  in-place       39 hit(s) (all listed)
+      #1417 merged 2026-09-30 Export the MTEXT attachment point as code 70 of the embedded object
+      #1326 open 2025-09-03 Invalid PROXY  decoding when WIPEOUT exist 
+      #1259 open 2025-03-12 Support for RTL text in MTextExplode
+      #1416 closed 2026-09-30 MTEXT embedded object: group code 70 (attachment point) is always exported as 1
+      #1401 merged 2026-08-01 Honour plot style table color for ACI 7
+      #1400 closed 2026-07-31 virtual_entities() flips X sign for LWPOLYLINE when block is mirrored (negative xscale) and rotated 90°
+      #1378 merged 2026-04-17 docs: clarify LWPolyline.transform extrusion-flip behavior
+      #1320 closed 2025-08-01 fix: render viewport as regular entity
+      #1321 closed 2025-08-03 [Frontend] Invalid text stacking with hatch in block reference
+      #1241 closed 2025-02-20 MULTILEADER spam AcDbMLeader, possible solution
+      #1162 closed 2024-09-12 Add `Enum` types for color and flags arguments
+      #1078 closed 2024-05-11 boundingbox calculation problem
+      #1033 closed 2024-02-20 Error with matplotlib backend when rendering Japanese whitespace to PNG
+      #1000 merged 2023-12-29 Improve draw command
+      #939 closed 2023-10-13 Error in matplotlib img export of nested polylines in 1.1.X
+      #936 closed 2023-10-11 Drawing problem on Chinese text
+      #872 merged 2023-04-30 adjusted some code lines in documents
+      #27 closed 2018-02-02 Images don't show in AutoCAD until you manually Reload them in the xref manager
+      #634 closed 2022-02-09 Option draw_viewports_first Does not work when plotting layout paperspace
+      #620 closed 2022-01-21 Text drawing regressions
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      1 hit(s) (all listed)
+      #999 merged 2023-12-29 Drawing image support
+  data+loss      2 hit(s) (all listed)
+      #504 closed 2021-07-21 Question: why some inserts (or attribs) are invisible?
+      #1 closed 2017-01-25 loading and writing a DXF modifies it (and breaks converters).
+  partial+write  0 hit(s)
+  crash+safe     1 hit(s) (all listed)
+      #295 closed 2021-01-07 MLEADER crash
+  atomic+write   0 hit(s)
+  lock+file      3 hit(s) (all listed)
+      #963 closed 2023-11-17 Does it support reading and modifying the value of the enhancement attribute, I've tried a lot but I can't read it.
+      #907 closed 2023-07-03 Invalid export of version- and lock_position tags in ATTDEF and ATTRIB
+      #446 merged 2021-05-27 Fixed RuntimeError when loading new document in cad_viewer
+  write+failure  0 hit(s)
+  file+contents  13 hit(s) (all listed)
+      #1410 closed 2026-08-27 # Bug: `explode_block_reference()` corrupts `DIMENSION` geometry by unconditional re-rendering
+      #1231 closed 2025-01-22 RecursionError when pickle dump/loading dxf file
+      #1176 closed 2024-10-07 I can't make odafc-addon to work (for windows).
+      #1069 closed 2024-04-24 .stb file won't parse
+      #989 closed 2023-12-14 Polyline Transform Bug + Viewer Inconsistency
+      #903 closed 2023-06-17 [ODA File Converter] Exec format error even though set a+x
+      #833 closed 2023-02-15 saveas() error:  AssertionError: dictionary handle not resolved
+      #681 closed 2022-05-10 The new DXF file laser printing software won't open
+      #258 closed 2020-11-02 Strange behaviour of attribs
+      #325 closed 2021-01-25 fonts for text - standard and incompatibility with (other) CAD programs
+      #30 closed 2018-03-14 "Invalid XDATA structure" error
+      #120 closed 2020-01-30 reading/writing dxf file error
+      #70 closed 2019-02-05 converting drawing to text string?
+
+== 51 terms run; 30 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

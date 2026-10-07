@@ -1,0 +1,24 @@
+=== tiddlywiki: delete a tiddler from a single-file wiki and save it over itself
+total 2496
+-rw-r--r-- 1 root root 2552578 Oct  7 06:16 wiki.html
+3
+$ tiddlywiki --load /s/tw/wiki.html --deletetiddlers [[Beta]] --output /s/tw --render $:/core/save/all wiki.html text/plain
+  -> exit 0
+  state: 9dab32c8ac47 -> de6b0694069e
+2
+total 2504
+drwxr-xr-x 2 root root    4096 Oct  7 06:16 .
+drwxr-xr-x 5 root root    4096 Oct  7 06:16 ..
+-rw-r--r-- 1 root root 2552499 Oct  7 06:16 wiki.html
+=== lnav: write a config value
+$ lnav -n -c :config /ui/theme monocai /s/lnav-in/app.log
+2026-10-07T00:00:00Z host app[1]: started
+  -> exit 0
+find: '/s/aux/home/.config/lnav': No such file or directory
+/ap/lab-4.sh: 8: cd: can't cd to /s/aux/home/.config/lnav
+$ lnav -n -c :config /ui/theme eldar /s/lnav-in/app.log
+2026-10-07T00:00:00Z host app[1]: started
+  -> exit 0
+/ap/lab-4.sh: 8: cd: can't cd to /s/aux/home/.config/lnav
+  state:  -> 
+find: '/s/aux/home/.config/lnav': No such file or directory

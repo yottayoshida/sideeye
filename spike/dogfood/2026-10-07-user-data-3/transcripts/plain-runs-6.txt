@@ -1,0 +1,6 @@
+PLAIN alacritty exit=0 state=changed  (Successfully migrated "/s/alac/alacritty.toml")
+PLAIN goaccess exit=0 state=changed  (/s/goa-in/b.log              0   0/s  -Cleaning up resources...)
+PLAIN ostree exit=0 state=changed  ()
+PLAIN gitmoji exit=0 state=changed  (✔ Gitmoji commit hook created successfully)
+PLAIN capacitor exit=0 state=changed  ([success] You have opted out of telemetry on this machine.)
+PLAIN astro exit=0 state=changed  ()

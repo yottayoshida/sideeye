@@ -1,0 +1,106 @@
+=== alacritty migrate
+  image: /opt/bin/alacritty: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aa
+$ alacritty migrate -c /s/alac/alacritty.toml
+Successfully migrated import "/s/alac/colors.toml"
+Successfully migrated "/s/alac/alacritty.toml"
+  -> exit 0
+  state: 08eaa2aaa5ec -> b24dbc8bae01
+drwxr-xr-x 2 root root 4096 Oct  7 08:01 .
+drwxr-xr-x 4 root root 4096 Oct  7 08:01 ..
+-rw------- 1 root root  156 Oct  7 08:01 alacritty.toml
+-rw------- 1 root root   40 Oct  7 08:01 colors.toml
+
+[terminal.shell]
+program = "/bin/bash"
+args = ["-l"]
+
+[font]
+size = 13.0
+
+[general]
+live_config_reload = true
+import = ["/s/alac/colors.toml"]
+
+[terminal]
+=== goaccess --persist --restore
+  image: /opt/bin/goaccess: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aa
+$ goaccess /s/goa-in/a.log --log-format=COMBINED --persist --db-path=/s/goa/db -o /s/goa-in/a.html
+/s/goa-in/a.log              0   0/s  -Cleaning up resources...
+  -> exit 0
+drwxr-xr-x 2 root root 12288 Oct  7 08:01 .
+drwxr-xr-x 3 root root  4096 Oct  7 08:01 ..
+-rw-r--r-- 1 root root    21 Oct  7 08:01 I32_DATES.db
+-rw-r--r-- 1 root root  4156 Oct  7 08:01 IGLP_LAST_PARSE.db
+-rw-r--r-- 1 root root    30 Oct  7 08:01 IGSL_BROWSERS_MTRC_AGENTS.db
+-rw-r--r-- 1 root root    30 Oct  7 08:01 IGSL_HOSTS_MTRC_AGENTS.db
+-rw-r--r-- 1 root root    30 Oct  7 08:01 IGSL_NOT_FOUND_MTRC_AGENTS.db
+-rw-r--r-- 1 root root    30 Oct  7 08:01 IGSL_OS_MTRC_AGENTS.db
+158
+$ goaccess /s/goa-in/b.log --log-format=COMBINED --persist --restore --db-path=/s/goa/db -o /s/goa-in/b.html
+/s/goa-in/b.log              0   0/s  -Cleaning up resources...
+  -> exit 0
+  state: f446fa878b9c -> 6df57c2f40cd
+=== ostree config set / remote add
+  image: /opt/bin/ostree: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aa
+$ ostree --repo=/s/ost/repo init --mode=archive
+  -> exit 0
+[core]
+repo_version=1
+mode=archive-z2
+$ ostree --repo=/s/ost/repo config set core.min-free-space-percent 5
+  -> exit 0
+  state: ecf9b807945f -> 9e789d1f44f9
+$ ostree --repo=/s/ost/repo remote add --no-gpg-verify origin https://example.invalid/repo
+  -> exit 0
+  state: 9e789d1f44f9 -> fb7bf9741bc3
+[core]
+repo_version=1
+mode=archive-z2
+min-free-space-percent=5
+
+[remote "origin"]
+url=https://example.invalid/repo
+gpg-verify=false
+=== gitmoji -i over a hand-written hook
+  image: /usr/bin/node: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aa
+$ gitmoji -i
+- Creating the gitmoji commit hook
+ Gitmoji commit hook created successfully
+  -> exit 0
+  hooks: 70a1178ee736 -> 7eb09a53a98d
+total 76
+drwxr-xr-x 2 root root 4096 Oct  7 08:01 .
+drwxr-xr-x 7 root root 4096 Oct  7 08:01 ..
+-rwxr-xr-x 1 root root  172 Oct  7 08:01 prepare-commit-msg
+#!/usr/bin/env bash
+# gitmoji as a commit hook
+if npx -v >&/dev/null
+=== capacitor telemetry off / astro preferences
+  image: /opt/node22/bin/cap: Node.js script executable, ASCII text
+$ cap telemetry off
+[success] You have opted out of telemetry on this machine.
+  -> exit 0
+  home: 13ca32bcd5a7 -> 6e364240b01a
+/s/aux/home/.config/capacitor/sysconfig.json
+$ cap telemetry on
+[success] You have opted in for telemetry on this machine.
+
+Thank you for helping to make Capacitor better! 
+Information about the data we collect is available on our website: https://capacitorjs.com/docs/next/cli/telemetry
+  -> exit 0
+/s/aux/home/.config/capacitor/sysconfig.json
+$ astro preferences disable devToolbar --global
+ devToolbar is now  disabled 
+
+  -> exit 0
+/s/aux/home/.config/astro/settings.json
+$ astro preferences enable devToolbar --global
+ devToolbar is now  enabled 
+
+  -> exit 0
+  /s/aux/home/.config/astro/settings.json: e5535157bfe6 -> 38211f9ca63c
+{
+	"devToolbar": {
+		"enabled": true
+	}
+}

@@ -1,0 +1,2 @@
+ROW openssl static=0 preflight_rc=0 gate=0 detail=accepted, 8 operations
+EXIT openssl 0

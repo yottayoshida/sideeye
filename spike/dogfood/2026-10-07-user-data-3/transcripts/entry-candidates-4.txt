@@ -1,0 +1,10 @@
+ROW minizip static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+EXIT minizip 0
+ROW xbps static=0 preflight_rc=0 gate=0 detail=accepted, 5 operations
+EXIT xbps 0
+ROW mcpm static=0 preflight_rc=0 gate=0 detail=accepted, 32 operations
+EXIT mcpm 0
+ROW sndfile static=0 preflight_rc=0 gate=0 detail=accepted, 3 operations
+EXIT sndfile 0
+ROW ezdxf static=0 preflight_rc=0 gate=0 detail=accepted, 10 operations
+EXIT ezdxf 0

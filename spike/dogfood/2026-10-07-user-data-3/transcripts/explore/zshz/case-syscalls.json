@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.9.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/z/data",
+    "operation": "zsh /s/z-in/op.zsh",
+    "cwd": "/s/z-in",
+    "expected_status": 0
+  },
+  "k": 5,
+  "ops_total": 6,
+  "prefix_hash": "c6d0d04515fb9f0c",
+  "after_class": "open",
+  "after_path": "/s/z/data/.z",
+  "before_class": "write",
+  "before_path": "/s/z/data/.z",
+  "violation": "rewritten"
+}

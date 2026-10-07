@@ -1,0 +1,6 @@
+[world]
+state = "/s/ca"
+
+[define]
+operation = "openssl ca -config /s/ca/ca.cnf -revoke /s/ca/b.crt -batch"
+cwd       = "/s/ca-in"

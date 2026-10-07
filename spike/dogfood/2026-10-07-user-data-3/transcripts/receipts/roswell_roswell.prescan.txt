@@ -1,0 +1,265 @@
+== novelty pre-scan: roswell/roswell
+== date: 2026-10-07T09:06:30Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          9 hit(s) (all listed)
+      #522 open 2022-06-05 How to solve corrupted .cache directory issue after system crash during ros install ?
+      #92 open 2015-12-01 After the crash during the development, a junk file prevents roswell from loading fasl
+      #606 open 2025-08-09 `ros install clasp` fails due to archived externals-clasp dependency
+      #273 open 2017-11-04 Segfault at install on Windows 7 x64
+      #430 closed 2020-06-11 roswell unhandled error on updating unknown system
+      #568 closed 2023-09-28 ros crashes on macOS 14
+      #268 closed 2017-10-20 option for installing develop branch (ECL)
+      #331 closed 2018-06-24 Debian package - unnamed dependencies on make and bzip2
+      #367 closed 2019-03-31 ros crashes after fresh install on Mojave
+  corrupt        3 hit(s) (all listed)
+      #522 open 2022-06-05 How to solve corrupted .cache directory issue after system crash during ros install ?
+      #484 open 2021-07-08 User can cause segfaults by running "ros" with a relative path (applies to all platforms, probably all versions)
+      #469 closed 2021-03-13 PGP auth error while attempting to install msys2 on Windows 10
+  corruption     3 hit(s) (all listed)
+      #621 open 2026-08-31 sbcl-bin/2.6.8: corruption warning on loading /etc/roswell/init.lisp
+      #606 open 2025-08-09 `ros install clasp` fails due to archived externals-clasp dependency
+      #218 closed 2017-02-15 getting a core dump on `ros setup`
+  truncated      1 hit(s) (all listed)
+      #208 closed 2017-01-17 Don't overwrite existing files when building
+  truncate       3 hit(s) (all listed)
+      #548 closed 2023-03-04 Attempting to install the scripts in roswell/ subdirectory of the system... No roswell scripts found.
+      #208 closed 2017-01-17 Don't overwrite existing files when building
+      #361 closed 2019-03-22 SLIME hanging on connect to CCL, with fresh Roswell installation
+  empty          17 hit(s) (all listed)
+      #451 open 2021-01-10 ros list versions sbcl-bin returns empty list
+      #522 open 2022-06-05 How to solve corrupted .cache directory issue after system crash during ros install ?
+      #497 open 2021-10-24 Unable to install latest ASDF version
+      #491 open 2021-07-29 ccl 1.12.1 installation fails on win32-headers directory
+      #488 open 2021-07-12 Un-checked "system" call leads to segfault when spawned program exits abnormally
+      #560 open 2023-07-24 Failure under wine
+      #478 open 2021-06-02 ros setup tries several times to install quicklisp but seems to silently fail
+      #395 open 2019-10-22 `ros install sbcl` fails on Windows
+      #517 closed 2022-03-17 Error information when build ros
+      #499 closed 2021-11-01 Unclear on structuring porject and .ros file in order to create executable with `ros build`
+      #467 closed 2021-03-03 Can't install asdf on FreeBSD
+      #216 closed 2017-02-11 Unable to install sbcl on OSX
+      #218 closed 2017-02-15 getting a core dump on `ros setup`
+      #265 closed 2017-10-03 Segfault when installing on debian sid
+      #359 closed 2019-03-15 Autotools compliance: out of source build fails on Windows 10 mingw64
+      #407 closed 2019-12-27 First partial fix to issue "`ros install sbcl` fails on Windows #395"
+      #360 merged 2019-03-21 Fix #359
+  atomic         1 hit(s) (all listed)
+      #548 closed 2023-03-04 Attempting to install the scripts in roswell/ subdirectory of the system... No roswell scripts found.
+  atomically     0 hit(s)
+  interrupted    19 hit(s) (all listed)
+      #383 open 2019-08-08 Segfault on Arch
+      #395 open 2019-10-22 `ros install sbcl` fails on Windows
+      #65 closed 2015-08-29 error in install sbcl
+      #467 closed 2021-03-03 Can't install asdf on FreeBSD
+      #127 closed 2016-02-13 Missing package QL
+      #166 closed 2016-08-19 Version 0.0.6.65(9b667a2) does not work on OSX
+      #125 closed 2016-02-08 debian jessie: "ros install sbcl" error
+      #216 closed 2017-02-11 Unable to install sbcl on OSX
+      #192 closed 2016-11-25 Calling 'ros' without parameters fails
+      #212 closed 2017-01-24 "ros" command on Mac
+      #134 closed 2016-03-12 ros setup
+      #169 closed 2016-08-26 Is it possible to install scripts from github?
+      #380 closed 2019-07-31 ros build fails with sbcl 1.5.4
+      #382 closed 2019-08-02 ros init test -> ros build test.ros fails
+      #437 closed 2020-08-05 Can't install qlot on mac Catalina (10.15.6) using ros
+      #75 closed 2015-10-06 Roswell on armv7, Gentoo
+      #89 closed 2015-11-16 Fail to upgrade via homebrew
+      #90 closed 2015-11-24 "ros list installed" fails
+      #84 merged 2015-10-26 armhf platform fixes
+  interrupt      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #591 open 2024-08-24 Upon first install, `ros install` ignores non `-bin` invocations
+      #383 open 2019-08-08 Segfault on Arch
+      #228 open 2017-04-02 terminal freeze on windows when C-c
+      #599 open 2025-01-21 After installing on arch linux need a configuration file
+      #600 open 2025-01-21 After installing on arch linux need a configuration file
+      #340 open 2018-08-23 An installation causes full CPU overhead without any progress.
+      #456 open 2021-01-16 Failed to run on Windows 10
+      #570 open 2023-09-29 Loading of McClim fails under Roswell but not plain SBCL [Win & Linux]
+      #434 open 2020-06-21 'ros run' exits immediately when running from 'ros:exec' (i.e. 'qlot exec')
+      #503 open 2021-12-31 Script Template Does Not Properly Handle Script Names 
+      #511 open 2022-02-02 ABCL install fails with install-for-ci.sh
+      #531 open 2022-10-31 Big regression for launch time of sbcl versus sbcl-bin
+      #507 open 2022-01-26 Failed to install clasp
+      #443 open 2020-10-03 ros list tries to install SBCL, then fails with Lisp error
+      #330 open 2018-06-22 roswell not working installed via homebrew on macos
+      #151 open 2016-06-02 A user experience report for ros on Windows
+      #524 open 2022-06-30 Error installing sbcl 2.0.1 & manual patch for src?
+      #431 open 2020-06-11 Error executing `ros shell` per wiki entry on Windows dev
+      #336 open 2018-08-04 ros setup fails on ubuntu 18.04
+      #364 open 2019-03-25 Roswell continues to install a system from other sources after installing it from a local path
+  sigkill        0 hit(s)
+  sigint         1 hit(s) (all listed)
+      #228 open 2017-04-02 terminal freeze on windows when C-c
+  ctrl-c         6 hit(s) (all listed)
+      #228 open 2017-04-02 terminal freeze on windows when C-c
+      #383 open 2019-08-08 Segfault on Arch
+      #537 open 2022-12-28 Segmentation fault encountered on msys2
+      #488 open 2021-07-12 Un-checked "system" call leads to segfault when spawned program exits abnormally
+      #531 open 2022-10-31 Big regression for launch time of sbcl versus sbcl-bin
+      #231 closed 2017-04-24 roswell can't install clasp
+  power          2 hit(s) (all listed)
+      #522 open 2022-06-05 How to solve corrupted .cache directory issue after system crash during ros install ?
+      #296 closed 2018-02-13 Slime installation failed (and 7zip+) [Windows10 64bit] [Power Shell]
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           2 hit(s) (all listed)
+      #379 closed 2019-07-28 Infinitely hooked on trying to install ASDF
+      #436 closed 2020-07-30 Load state into an image before it is built / installed
+  partial        11 hit(s) (all listed)
+      #414 open 2020-03-26 Bug: should comply with XDG Base Directory Specification
+      #387 open 2019-08-26 Guix package
+      #330 open 2018-06-22 roswell not working installed via homebrew on macos
+      #567 open 2023-09-18 Roswell tries to use installed CL libraries when SBCL installed with Guix
+      #610 closed 2025-12-09 Installing qlot fails via homebrew roswell
+      #609 closed 2025-12-02 roswell is no longer installable on Debian-based amd64 Linux (sbcl-2.5.11)
+      #613 closed 2025-12-18 Set up with SBCL 2.5.11 fails due to a bug in named-readtables
+      #501 closed 2021-11-11 `ros setup` fails when ROSWELL_HOME is given
+      #359 closed 2019-03-15 Autotools compliance: out of source build fails on Windows 10 mingw64
+      #361 closed 2019-03-22 SLIME hanging on connect to CCL, with fresh Roswell installation
+      #407 closed 2019-12-27 First partial fix to issue "`ros install sbcl` fails on Windows #395"
+  incomplete     3 hit(s) (all listed)
+      #261 open 2017-09-22 Windows Installation Glitch
+      #577 closed 2023-12-29 Download Failed with status 2. sbcl could not be downloaded due to an incomplete github release
+      #212 closed 2017-01-24 "ros" command on Mac
+  dataloss       0 hit(s)
+  recover        2 hit(s) (all listed)
+      #198 open 2016-12-27 Cannot build when using ECL
+      #522 open 2022-06-05 How to solve corrupted .cache directory issue after system crash during ros install ?
+  recovery       2 hit(s) (all listed)
+      #164 closed 2016-08-14 Can't open ros.exe on windows
+      #267 closed 2017-10-13 ros emacs invoked default old emacs
+  rollback       1 hit(s) (all listed)
+      #387 open 2019-08-26 Guix package
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           1 hit(s) (all listed)
+      #271 open 2017-10-29 Symlinked local-project directory causes the wrong installation dir
+  wipes          0 hit(s)
+  erase          1 hit(s) (all listed)
+      #351 closed 2019-02-07 ros setup fails on Ubuntu 18.04
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        5 hit(s) (all listed)
+      #92 open 2015-12-01 After the crash during the development, a junk file prevents roswell from loading fasl
+      #608 closed 2025-10-04 Dump's option --destroy-packages-sbcl does not work for SBCL 2.5.4 and above
+      #246 closed 2017-06-17 A proposal of interface for roswell
+      #244 merged 2017-06-03 delete-debug-info, delete-compiler-information-sbcl (reduces +20MB)
+      #243 merged 2017-05-31 Ts3
+  destroys       1 hit(s) (all listed)
+      #246 closed 2017-06-17 A proposal of interface for roswell
+  overwrite      32 hit(s) (all listed)
+      #264 open 2017-09-25 Unhandled condition when installing ECL 
+      #151 open 2016-06-02 A user experience report for ros on Windows
+      #266 open 2017-10-10 Clasp installation failed
+      #522 open 2022-06-05 How to solve corrupted .cache directory issue after system crash during ros install ?
+      #395 open 2019-10-22 `ros install sbcl` fails on Windows
+      #362 open 2019-03-22 slime installation problem in lisp/install-slime.lisp Window 10, mingw64
+      #330 open 2018-06-22 roswell not working installed via homebrew on macos
+      #567 open 2023-09-18 Roswell tries to use installed CL libraries when SBCL installed with Guix
+      #610 closed 2025-12-09 Installing qlot fails via homebrew roswell
+      #609 closed 2025-12-02 roswell is no longer installable on Debian-based amd64 Linux (sbcl-2.5.11)
+      #613 closed 2025-12-18 Set up with SBCL 2.5.11 fails due to a bug in named-readtables
+      #65 closed 2015-08-29 error in install sbcl
+      #467 closed 2021-03-03 Can't install asdf on FreeBSD
+      #189 closed 2016-11-04 clisp install fails on ubuntu16.04 during `make install` ffcall and clisp
+      #279 closed 2017-11-18 ros build ignores default lisp implementation and fails if -L ccl-bin given
+      #250 closed 2017-07-01 [Windows] `ros shell` restarting infinitely on error
+      #152 closed 2016-06-02 'ros install sbcl' failed on Kubuntu 16.04
+      #177 closed 2016-09-08 Can't install SBCL on Debian
+      #125 closed 2016-02-08 debian jessie: "ros install sbcl" error
+      #216 closed 2017-02-11 Unable to install sbcl on OSX
+  clobber        0 hit(s)
+  blank          4 hit(s) (all listed)
+      #287 open 2017-12-13 uiop/run-program:subprocess-error Caused by Blank Characters in File Path 
+      #13 closed 2015-01-08 [question] How to run a script?
+      #31 closed 2015-03-02 protect impl from deleting
+      #117 closed 2016-01-28 Website (based on gh-pages)
+  unreadable     0 hit(s)
+  garbage        2 hit(s) (all listed)
+      #432 open 2020-06-12 ros exec doesn't seem to honor dynamic-space-size
+      #351 closed 2019-02-07 ros setup fails on Ubuntu 18.04
+  mangled        0 hit(s)
+  contents       13 hit(s) (all listed)
+      #263 open 2017-09-24 Generating executable via CCL instead of SBCL lacks correct file extension
+      #273 open 2017-11-04 Segfault at install on Windows 7 x64
+      #469 closed 2021-03-13 PGP auth error while attempting to install msys2 on Windows 10
+      #517 closed 2022-03-17 Error information when build ros
+      #597 merged 2024-11-18 Upgrade allegro CL to release 11.0express, beta version unavailable yet
+      #291 closed 2017-12-29 Error installing allegro
+      #480 merged 2021-06-03 Update directory name for macOS
+      #207 closed 2017-01-12 built image returns exit code 1
+      #354 closed 2019-03-02 slime-compile-file fails due to read error
+      #5 closed 2014-11-24 Setting default-external-format in ~/.sbclrc doesn't work on SLIME
+      #78 closed 2015-10-09 make failed on my mac
+      #117 closed 2016-01-28 Website (based on gh-pages)
+      #108 merged 2016-01-09 bash completion
+  in-place       22 hit(s) (all listed)
+      #414 open 2020-03-26 Bug: should comply with XDG Base Directory Specification
+      #290 open 2017-12-25 Making roswell available in msys2 on Windows?
+      #490 open 2021-07-29 Proposal: ros should skip evaluating ~/.roswell/init.lisp
+      #186 open 2016-10-13 Policy for User Interaction & Error handling & Return Code & Documentation & Testing
+      #256 open 2017-07-28 install via distribution/os native package manager.
+      #524 open 2022-06-30 Error installing sbcl 2.0.1 & manual patch for src?
+      #144 open 2016-04-24 Don't hardcode locations of remote files
+      #474 open 2021-04-20 SBCL.exe not found
+      #488 open 2021-07-12 Un-checked "system" call leads to segfault when spawned program exits abnormally
+      #362 open 2019-03-22 slime installation problem in lisp/install-slime.lisp Window 10, mingw64
+      #481 closed 2021-06-07 On latest Emacs 28.0.50 from git, roswell slime throws (wrong-number-of-arguments (3 . 4) 2)
+      #276 closed 2017-11-12 Want to install a lisp: how to bypass SBCL's ensure_space error ?
+      #254 closed 2017-07-17 ros install ccl-bin fails on Windows, attempts to download nonexistent file
+      #218 closed 2017-02-15 getting a core dump on `ros setup`
+      #173 closed 2016-09-07 Cannot use allegro on Travis
+      #267 closed 2017-10-13 ros emacs invoked default old emacs
+      #281 closed 2017-11-23 Old Quicklisp dist does not find recent libraries
+      #312 closed 2018-03-24 Use qlfile when installing a script from GitHub
+      #327 closed 2018-06-10 ros setup faild on windows10 32bit.
+      #354 closed 2019-03-02 slime-compile-file fails due to read error
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         2 hit(s) (all listed)
+      #267 closed 2017-10-13 ros emacs invoked default old emacs
+      #351 closed 2019-02-07 ros setup fails on Ubuntu 18.04
+  disk+full      0 hit(s)
+  data+loss      0 hit(s)
+  partial+write  1 hit(s) (all listed)
+      #361 closed 2019-03-22 SLIME hanging on connect to CCL, with fresh Roswell installation
+  crash+safe     1 hit(s) (all listed)
+      #522 open 2022-06-05 How to solve corrupted .cache directory issue after system crash during ros install ?
+  atomic+write   0 hit(s)
+  lock+file      15 hit(s) (all listed)
+      #92 open 2015-12-01 After the crash during the development, a junk file prevents roswell from loading fasl
+      #570 open 2023-09-29 Loading of McClim fails under Roswell but not plain SBCL [Win & Linux]
+      #387 open 2019-08-26 Guix package
+      #452 open 2021-01-14 "ros help install" not working on Ubuntu 18.04
+      #454 open 2021-01-14 "ros install" not working on Ubuntu 18.04
+      #551 closed 2023-03-31 ros install arrival :  READ error during COMPILE-FILE:
+      #532 closed 2022-11-02 Malicous links on the installation page?
+      #530 closed 2022-10-26 ros commands giving error
+      #317 closed 2018-04-12 ccl-bin does not read the init file
+      #192 closed 2016-11-25 Calling 'ros' without parameters fails
+      #235 closed 2017-05-01 ros: command not foundconfig
+      #204 closed 2017-01-06 Error when running every command on ubuntu
+      #355 closed 2019-03-04 Roswell core build fails on SBCL 1.5.0
+      #351 closed 2019-02-07 ros setup fails on Ubuntu 18.04
+      #361 closed 2019-03-22 SLIME hanging on connect to CCL, with fresh Roswell installation
+  write+failure  1 hit(s) (all listed)
+      #232 closed 2017-04-27 How to use Roswell to run code from my GitHub repo and take PRs into account and find test system?
+  file+contents  8 hit(s) (all listed)
+      #263 open 2017-09-24 Generating executable via CCL instead of SBCL lacks correct file extension
+      #469 closed 2021-03-13 PGP auth error while attempting to install msys2 on Windows 10
+      #597 merged 2024-11-18 Upgrade allegro CL to release 11.0express, beta version unavailable yet
+      #291 closed 2017-12-29 Error installing allegro
+      #480 merged 2021-06-03 Update directory name for macOS
+      #354 closed 2019-03-02 slime-compile-file fails due to read error
+      #5 closed 2014-11-24 Setting default-external-format in ~/.sbclrc doesn't work on SLIME
+      #117 closed 2016-01-28 Website (based on gh-pages)
+
+== 51 terms run; 33 returned hits, 1 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

@@ -1,0 +1,193 @@
+=== pi install / remove a local extension
+  image: /opt/node22/bin/node: ELF 64-bit LSB executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux-a
+$ pi install /s/pi-in/ext1
+Installing /s/pi-in/ext1...
+Installed /s/pi-in/ext1
+  -> exit 0
+/s/aux/home/.pi/agent/settings.json
+$ pi install /s/pi-in/ext2
+Installing /s/pi-in/ext2...
+Installed /s/pi-in/ext2
+  -> exit 0
+  state: 3b70c50935e9 -> 4c198aa7320f
+$ pi remove /s/pi-in/ext1
+Removing /s/pi-in/ext1...
+Removed /s/pi-in/ext1
+  -> exit 0
+  state: 4c198aa7320f -> 5aa2b8e3a18c
+{
+  "packages": [
+    "../../../../pi-in/ext2"
+  ]
+}
+=== cspell link add / remove
+$ cspell link add /s/cspell-in/a.json
+Adding:
+filename            | errors
+/s/cspell-in/a.json |       
+  -> exit 0
+/s/aux/home/.config/cspell/cspell.json
+$ cspell link add /s/cspell-in/b.json
+Adding:
+filename            | errors
+/s/cspell-in/b.json |       
+  -> exit 0
+  state: 83332eceac30 -> 705ea25907d3
+$ cspell link remove /s/cspell-in/a.json
+Removing:
+  -> exit 1
+  state: 705ea25907d3 -> 6940a7a982ff
+=== ruler apply / revert
+  image: /usr/bin/node: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aa
+$ ruler apply --agents claude,codex
+[ruler] Applying rules for Claude Code...
+[ruler] Applying rules for OpenAI Codex CLI...
+[ruler] Updated .gitignore with 6 unique path(s) in the Ruler block.
+Ruler apply completed successfully.
+  -> exit 0
+  state: df4a7bad5b77 -> 269accb0ad01
+drwxr-xr-x 4 root root 4096 Oct  7 07:52 .
+drwxr-xr-x 6 root root 4096 Oct  7 07:52 ..
+drwxr-xr-x 7 root root 4096 Oct  7 07:52 .git
+-rw-r--r-- 1 root root  155 Oct  7 07:52 .gitignore
+drwxr-xr-x 2 root root 4096 Oct  7 07:52 .ruler
+-rw-r--r-- 1 root root  110 Oct  7 07:52 AGENTS.md
+-rw-r--r-- 1 root root   82 Oct  7 07:52 CLAUDE.md
+-rw-r--r-- 1 root root   35 Oct  7 07:52 CLAUDE.md.bak
+$ ruler revert
+[ruler] Reverting GitHub Copilot...
+[ruler] Reverting Claude Code...
+[ruler] Reverting OpenAI Codex CLI...
+[ruler] Reverting Cursor...
+[ruler] Reverting Windsurf...
+[ruler] Reverting Cline...
+[ruler] Reverting Aider...
+[ruler] Reverting Firebase Studio...
+[ruler] Reverting Open Hands...
+[ruler] Reverting Gemini CLI...
+  -> exit 0
+  state: 269accb0ad01 -> df4a7bad5b77
+drwxr-xr-x 4 root root 4096 Oct  7 07:52 .
+drwxr-xr-x 6 root root 4096 Oct  7 07:52 ..
+drwxr-xr-x 7 root root 4096 Oct  7 07:52 .git
+drwxr-xr-x 2 root root 4096 Oct  7 07:52 .ruler
+-rw-r--r-- 1 root root   35 Oct  7 07:52 CLAUDE.md
+=== doit forget / ignore with the json backend
+  image: /opt/py/bin/python3: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch6
+$ doit run --backend json --db-file /s/doit/state/d.json
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/doit/dependency.py", line 90, in dump
+    db_file = open(self.name, 'w')
+FileNotFoundError: [Errno 2] No such file or directory: '/s/doit/state/d.json'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/doit/doit_cmd.py", line 294, in run
+    return command.parse_execute(args)
+  -> exit 3
+$ doit run --backend json --db-file /s/doit/state/d.json
+.  a
+.  b
+  -> exit 0
+drwxr-xr-x 2 root root 4096 Oct  7 07:52 .
+drwxr-xr-x 4 root root 4096 Oct  7 07:52 ..
+-rw-r--r-- 1 root root  278 Oct  7 07:52 d.json
+$ doit forget --backend json --db-file /s/doit/state/d.json a
+forgetting a
+  -> exit 0
+  state: c3cf7344f893 -> 5effac97ac1f
+$ doit ignore --backend json --db-file /s/doit/state/d.json b
+ignoring b
+  -> exit 0
+  state: 5effac97ac1f -> ee44568cf147
+=== thv config
+  image: /opt/bin/thv: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=fGluD5liTZ9vxj7UV_vq/8
+$ thv config usage-metrics disable
+{"time":"2026-10-07T07:52:49Z","level":"ERROR","msg":"no container runtime available. ToolHive requires a Docker-compatible container runtime (Docker, Podman, o
+  -> exit 1
+$ thv config set-registry /s/thv-reg.json
+{"time":"2026-10-07T07:52:49Z","level":"ERROR","msg":"no container runtime available. ToolHive requires a Docker-compatible container runtime (Docker, Podman, o
+  -> exit 1
+  state:  -> 
+=== kitten themes, offline on a cached archive
+  image: /opt/bin/kitten: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=EptDYotLBDSyUY9REoAW/w
+$ kitten themes --help
+Usage: kitten themes [options] [theme name to switch to]
+
+Change the kitty theme. If no theme name is supplied, run interactively,
+otherwise change the current theme to the specified theme name.
+
+Options:
+  --cache-age [=1]
+    Check for new themes only after the specified number of days. A value of
+    zero will always check for new themes. A negative value will never check for
+    new themes, instead raising an error if a local copy of the themes is not
+  -> exit 0
+$ kitten themes --cache-age=-1 --reload-in=none Dracula
+Error: No cache found and max cache age is negative
+  -> exit 1
+  state: aa1b2552c68c -> aa1b2552c68c
+drwxr-xr-x 2 root root 4096 Oct  7 07:52 .
+drwxr-xr-x 4 root root 4096 Oct  7 07:52 ..
+-rw-r--r-- 1 root root   31 Oct  7 07:52 kitty.conf
+# my kitty.conf
+font_size 13.0
+=== testdisk: find a lost partition and write it back
+  partitioned
+  ext2 written
+/s/td/disk.img1 : start=        2048, size=       40960, type=83
+  partition table zeroed
+sector-size: 512
+$ testdisk /cmd /s/td/disk.img analyze,quicksearch,write
+TestDisk 7.2, Data Recovery Utility, February 2024
+Christophe GRENIER <grenier@cgsecurity.org>
+https://www.cgsecurity.org
+)0[1;24r[m[4l[?7h[39;49m[?25l[?1c[39;49m[m[39;49m[37m[40m[H[JTestDisk 7.2, Data Recovery Utility, February 2024[2dChristophe GRENIER <grenier
+  -> exit 0
+  disk.img: 325ee2c537d0 -> 325ee2c537d0
+sector-size: 512
+p.img
+=== lasinfo on a file txt2las wrote
+$ txt2las -i /s/las-in/pts.txt -o /s/las/a.las -parse xyz
+done with '/s/las/a.las'. total time 0.000215 sec.
+  -> exit 0
+-rw-r--r-- 1 root root 627 Oct  7 07:52 a.las
+$ lasinfo -i /s/las/a.las -set_file_source_ID 7
+WARNING: set_version used. File may become invalid.
+WARNING: set_version used. File may become invalid.
+WARNING: unknown version 255.255 (allowed 1.0-1.5)
+WARNING: LAS version 255.255 does not allow point format 0
+lasinfo (260505) report for '/s/las/a.las'
+reporting all LAS header entries:
+  file signature:             'LASF'
+  file source ID:             7
+  global_encoding:            0 [GeoTiff,GpsWeek]
+  project ID GUID data 1-4:   00000000-0000-0000-0000-000000000000
+  -> exit 1
+  state: 7e647f8403e5 -> f9fd1de4acfd
+$ lasinfo -i /s/las/a.las -set_system_identifier relabelled
+WARNING: set_version used. File may become invalid.
+WARNING: set_version used. File may become invalid.
+WARNING: unknown version 255.255 (allowed 1.0-1.5)
+WARNING: LAS version 255.255 does not allow point format 0
+lasinfo (260505) report for '/s/las/a.las'
+reporting all LAS header entries:
+  file signature:             'LASF'
+  file source ID:             7
+  global_encoding:            0 [GeoTiff,GpsWeek]
+  project ID GUID data 1-4:   00000000-0000-0000-0000-000000000000
+  -> exit 1
+  state: f9fd1de4acfd -> bc09ea1ae95a
+$ lasinfo -i /s/las/a.las -nv -nmm
+WARNING: unknown version 255.255 (allowed 1.0-1.5)
+WARNING: LAS version 255.255 does not allow point format 0
+lasinfo (260505) report for '/s/las/a.las'
+reporting all LAS header entries:
+  file signature:             'LASF'
+  file source ID:             7
+  global_encoding:            0 [GeoTiff,GpsWeek]
+  project ID GUID data 1-4:   00000000-0000-0000-0000-000000000000
+  version major.minor:        255.255
+  system identifier:          'relabelled'
+  -> exit 1

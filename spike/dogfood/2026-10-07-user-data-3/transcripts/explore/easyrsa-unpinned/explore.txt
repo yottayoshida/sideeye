@@ -1,0 +1,18 @@
+Using configuration from /s/easyrsa/pki/5728e18d/temp.00
+Revoking Certificate D2919EED9FC0CA6EF07F03985F2A2E75.
+Database updated
+UNKNOWN  child_touched_state_dir
+         process 184 mutated the judged directory in the oracle's account and recorded nothing of its own, so its operations hold no crash-point number and the sequence the crash points were read from is incomplete. Its shim announced itself and recorded no operation, so its writes went around the interposed entry points — a buffered stream flushed inside libc does that; the oracle's capture at /out/easyrsa/work-explore/oracle.txt holds the child's own lines, its execve among them
+next        Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.
+cwd         /s/easyrsa-in
+
+atomicity   24 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): index.txt.old
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   a process other than the subject operated on the judged directory; its operations have no crash-point address
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=88ba9743343ad4c28084f97fe439b97e980135ddb926f5e79f8c6f1526d426c2;

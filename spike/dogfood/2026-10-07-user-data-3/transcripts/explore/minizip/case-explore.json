@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.9.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/mz",
+    "operation": "minizip -e /s/mz/a.zip b.bin",
+    "cwd": "/s/mz-in",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "1a1a8d6a95044f7b",
+  "after_class": "rename",
+  "after_path": "/s/mz/a.zip",
+  "before_class": "rename",
+  "before_path": "/s/aux/tmp/mz_dZzDaJ/1791357636x",
+  "violation": "missing"
+}

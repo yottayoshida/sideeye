@@ -1,0 +1,8 @@
+ROW tiddlywiki static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+EXIT tiddlywiki 0
+ROW broot static=0 preflight_rc=0 gate=0 detail=accepted, 22 operations
+EXIT broot 0
+ROW ziptool static=0 preflight_rc=2 gate=0 detail=FOLLOW --observe syscalls (oracle_missed_operation)
+EXIT ziptool 0
+ROW prek static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected
+EXIT prek 1

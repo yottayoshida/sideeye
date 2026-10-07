@@ -1,0 +1,36 @@
+=== the seeded file
+file 32044 bytes; head b'RIFF'
+RIFF size field 32036 -> file should be 32044 bytes (agrees)
+chunk b'fmt ' at 12, size 16: 
+chunk b'data' at 36, size 32000: samples intact
+=== after a completed run
+file 32072 bytes; head b'RIFF'
+RIFF size field 32064 -> file should be 32072 bytes (agrees)
+chunk b'fmt ' at 12, size 16: 
+chunk b'data' at 36, size 32000: samples intact
+chunk b'LIST' at 32044, size 20: b'INFOICMT\x08\x00\x00\x00edited\x00\x00'
+=== each crashed world, through [recovery] (defines/sndfile-lab11)
+FAIL  1 of 4 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 3 of 3
+            after  write(/s/snd/a.wav)
+            before write(/s/snd/a.wav)
+path        a.wav
+observed    holding neither the old nor the new content
+explored    4 worlds (crash points 3 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 3 operations (179 syscall lines examined, 41 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /tmp/w11/cases/000001.json
+replay      sideeye replay /tmp/w11/cases/000001.json --shim /opt/se/sideeye-v1.9.0-aarch64-linux/libsideeye_shim.so --recovery '/opt/py/bin/python -I /ap/inspect-wav.py /s/snd/a.wav' --recovery-check
+evidence    /tmp/w11/evidence/000001.json
+cwd         /s/snd-in
+recovery    configured; no recovery result was recorded: the recovery checker accepted a state whose every file had been overwritten with distinct junk; ran against 0 of 1 failing world(s), the contro
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/snd SIDEEYE_TRACE_PATH=/tmp/w11/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.9.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=3 SIDEEYE_SEQ_BASE= <operation>

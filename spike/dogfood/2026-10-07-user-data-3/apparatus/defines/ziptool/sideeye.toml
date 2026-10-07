@@ -1,0 +1,6 @@
+[world]
+state = "/s/zip"
+
+[define]
+operation = "ziptool /s/zip/a.zip delete 0"
+cwd       = "/s/zip-in"

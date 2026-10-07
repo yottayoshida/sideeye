@@ -1,0 +1,311 @@
+== novelty pre-scan: pathintegral-institute/mcpm.sh
+== date: 2026-10-07T07:24:59Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          14 hit(s) (all listed)
+      #312 open 2026-02-28 Add 0nMCP — Universal AI API Orchestrator (564 tools, 26 services)
+      #406 merged 2026-09-19 feat(registry): add Markovo MCP server
+      #315 merged 2026-03-20 feat: add `mcpm update` command for server update management
+      #266 merged 2025-09-18 Fix install prompt on headless Windows environments
+      #272 merged 2025-10-22 Specify working pydantic version
+      #261 merged 2025-09-13 fix: set working directory if current is invalid
+      #204 closed 2025-07-07 feat: Add native Docker integration to MCPM
+      #265 merged 2025-09-17 fix: remove auto v1 migration prompt
+      #244 merged 2025-08-20 [generate_manifest] improve registry workflow
+      #190 closed 2025-06-27 [General]: `mcpm add` with `@claude-desktop` as the active client raises a `TypeError`
+      #163 closed 2025-06-04 FIX: Ensure ASGI Compliance in `mcpm.router.app.py` SSE Handling
+      #191 merged 2025-06-28 chore: support lucien deeplink in registry page
+      #202 merged 2025-07-02 BREAKING CHANGE: introducing mcpm v2
+      #233 merged 2025-08-15 feat: add script and workflow for contributing registry
+  corrupt        4 hit(s) (all listed)
+      #313 merged 2026-03-14 feat: add OpenCode client manager + per-server enabled/disabled flag
+      #315 merged 2026-03-20 feat: add `mcpm update` command for server update management
+      #264 closed 2025-09-15 [Bug]: Windows stdio mode outputs formatted logs to stdout, breaking MCP JSON-RPC protocol
+      #268 merged 2025-09-30 feat: add Qwen CLI client manager support
+  corruption     1 hit(s) (all listed)
+      #315 merged 2026-03-20 feat: add `mcpm update` command for server update management
+  truncated      5 hit(s) (all listed)
+      #305 open 2026-02-10 chore(deps): bump the uv group across 1 directory with 6 updates
+      #290 open 2025-12-26 chore(deps): bump fastmcp from 2.13.0 to 2.14.0 in the pip group across 1 directory
+      #307 open 2026-02-16 chore(deps): bump fastmcp from 2.13.0 to 2.14.5
+      #309 open 2026-02-16 chore(deps-dev): bump jsonschema from 4.24.0 to 4.26.0
+      #274 merged 2025-10-29 chore(deps): bump fastmcp from 2.10.2 to 2.13.0 in the pip group across 1 directory
+  truncate       7 hit(s) (all listed)
+      #305 open 2026-02-10 chore(deps): bump the uv group across 1 directory with 6 updates
+      #290 open 2025-12-26 chore(deps): bump fastmcp from 2.13.0 to 2.14.0 in the pip group across 1 directory
+      #307 open 2026-02-16 chore(deps): bump fastmcp from 2.13.0 to 2.14.5
+      #309 open 2026-02-16 chore(deps-dev): bump jsonschema from 4.24.0 to 4.26.0
+      #274 merged 2025-10-29 chore(deps): bump fastmcp from 2.10.2 to 2.13.0 in the pip group across 1 directory
+      #247 merged 2025-08-21 [generate_manifest] deprecate the former workflow & improve the script
+      #233 merged 2025-08-15 feat: add script and workflow for contributing registry
+  empty          44 hit(s) (all listed)
+      #375 open 2026-08-22 feat: Add MCP manifest for yyeongjin-secret_mcp
+      #404 open 2026-09-18 Add server: adtest-mcp
+      #401 open 2026-09-13 Add server: orcareplay
+      #403 open 2026-09-17 Add AffixIO local ACTION attestation MCP to registry
+      #424 open 2026-10-06 Add server: rhein-ruhr-fahrplan-mcp
+      #376 open 2026-08-23 Add Famulor MCP server
+      #390 open 2026-09-02 Prefer URL client configs over stdio mcpm run
+      #354 open 2026-06-20 feat: add StandupCraft and StatusCraft MCP server manifests
+      #381 open 2026-08-26 Add ImagePay MCP server (x402 pay-per-call)
+      #382 open 2026-08-27 Add Merlonix MCP server (infrastructure monitoring)
+      #344 open 2026-06-07 feat: add ProposalCraft MCP server manifest
+      #410 merged 2026-09-27 feat(registry): add local-mcp server
+      #284 open 2025-11-28 feat(core): Modernize Dependency Management with Auto-UVX
+      #328 closed 2026-04-28 feat: add Kiro client manager
+      #329 closed 2026-04-28 feat: add Sourcegraph Amp client manager
+      #313 merged 2026-03-14 feat: add OpenCode client manager + per-server enabled/disabled flag
+      #327 closed 2026-04-28 feat(clients): add OpenCode client adapter
+      #305 open 2026-02-10 chore(deps): bump the uv group across 1 directory with 6 updates
+      #315 merged 2026-03-20 feat: add `mcpm update` command for server update management
+      #300 merged 2026-01-15 fix: Update VSCode manager to use mcp.json with correct structure
+  atomic         3 hit(s) (all listed)
+      #424 open 2026-10-06 Add server: rhein-ruhr-fahrplan-mcp
+      #315 merged 2026-03-20 feat: add `mcpm update` command for server update management
+      #288 merged 2025-12-04 feat: add AI agent docs integration to install script
+  atomically     1 hit(s) (all listed)
+      #315 merged 2026-03-20 feat: add `mcpm update` command for server update management
+  interrupted    3 hit(s) (all listed)
+      #410 merged 2026-09-27 feat(registry): add local-mcp server
+      #214 merged 2025-07-11 add support sse for `run` command
+      #202 merged 2025-07-02 BREAKING CHANGE: introducing mcpm v2
+  interrupt      4 hit(s) (all listed)
+      #410 merged 2026-09-27 feat(registry): add local-mcp server
+      #315 merged 2026-03-20 feat: add `mcpm update` command for server update management
+      #214 merged 2025-07-11 add support sse for `run` command
+      #202 merged 2025-07-02 BREAKING CHANGE: introducing mcpm v2
+  sigkill        0 hit(s)
+  sigint         1 hit(s) (all listed)
+      #306 open 2026-02-16 chore(deps): bump prompt-toolkit from 3.0.51 to 3.0.52
+  ctrl-c         2 hit(s) (all listed)
+      #266 merged 2025-09-18 Fix install prompt on headless Windows environments
+      #202 merged 2025-07-02 BREAKING CHANGE: introducing mcpm v2
+  power          5 hit(s) (all listed)
+      #320 open 2026-04-15 update exa search description
+      #290 open 2025-12-26 chore(deps): bump fastmcp from 2.13.0 to 2.14.0 in the pip group across 1 directory
+      #312 open 2026-02-28 Add 0nMCP — Universal AI API Orchestrator (564 tools, 26 services)
+      #305 open 2026-02-10 chore(deps): bump the uv group across 1 directory with 6 updates
+      #182 merged 2025-06-20 Qodo Merge Auto-Generated Best Practices 🚀
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           6 hit(s) (all listed)
+      #331 open 2026-05-05 fix(deps): bump fastmcp from 2.13.0 to >=2.14.5,<3.0.0
+      #362 closed 2026-07-25 stdio `mcpm run` multiplies into hundreds of processes under parallel MCP clients
+      #274 merged 2025-10-29 chore(deps): bump fastmcp from 2.10.2 to 2.13.0 in the pip group across 1 directory
+      #315 merged 2026-03-20 feat: add `mcpm update` command for server update management
+      #294 merged 2026-01-11 fix: correct Windows CLI detection for npm-installed tools
+      #283 merged 2025-11-27 feat: Enhanced Non-Interactive Mode for Automation
+  partial        11 hit(s) (all listed)
+      #358 open 2026-07-07 Add AgentServices — 50 x402 APIs for AI Agents (Finance, Analytics, Web Services)
+      #220 open 2025-07-20 [Feature]: Allow running all enabled MCP servers
+      #284 open 2025-11-28 feat(core): Modernize Dependency Management with Auto-UVX
+      #299 merged 2026-01-15 fix: correct JSON syntax in MediaWiki-MCP-Server manifest
+      #300 merged 2026-01-15 fix: Update VSCode manager to use mcp.json with correct structure
+      #272 merged 2025-10-22 Specify working pydantic version
+      #294 merged 2026-01-11 fix: correct Windows CLI detection for npm-installed tools
+      #288 merged 2025-12-04 feat: add AI agent docs integration to install script
+      #277 merged 2025-11-01 Add mcp-notify server manifest
+      #283 merged 2025-11-27 feat: Enhanced Non-Interactive Mode for Automation
+      #221 merged 2025-07-21 🤖 Add Comprehensive AI Agent Friendly CLI Support
+  incomplete     6 hit(s) (all listed)
+      #355 open 2026-06-24 Add server: openrouter-fusion
+      #311 merged 2026-02-19 Add RAGMap to registry
+      #315 merged 2026-03-20 feat: add `mcpm update` command for server update management
+      #191 merged 2025-06-28 chore: support lucien deeplink in registry page
+      #244 merged 2025-08-20 [generate_manifest] improve registry workflow
+      #283 merged 2025-11-27 feat: Enhanced Non-Interactive Mode for Automation
+  dataloss       0 hit(s)
+  recover        0 hit(s)
+  recovery       2 hit(s) (all listed)
+      #396 open 2026-09-07 Add server: Wellness Project
+      #410 merged 2026-09-27 feat(registry): add local-mcp server
+  rollback       0 hit(s)
+  resume         10 hit(s) (all listed)
+      #290 open 2025-12-26 chore(deps): bump fastmcp from 2.13.0 to 2.14.0 in the pip group across 1 directory
+      #413 merged 2026-09-30 Add Court Rules to registry
+      #409 merged 2026-09-26 Add server: sendsets
+      #410 merged 2026-09-27 feat(registry): add local-mcp server
+      #305 open 2026-02-10 chore(deps): bump the uv group across 1 directory with 6 updates
+      #311 merged 2026-02-19 Add RAGMap to registry
+      #313 merged 2026-03-14 feat: add OpenCode client manager + per-server enabled/disabled flag
+      #315 merged 2026-03-20 feat: add `mcpm update` command for server update management
+      #211 merged 2025-07-09 feat: refactor commands to v2 structure and add HTTP server support
+      #221 merged 2025-07-21 🤖 Add Comprehensive AI Agent Friendly CLI Support
+  half-written   1 hit(s) (all listed)
+      #315 merged 2026-03-20 feat: add `mcpm update` command for server update management
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      15 hit(s) (all listed)
+      #308 open 2026-02-16 chore(deps): bump ruamel-yaml from 0.18.14 to 0.19.1
+      #310 open 2026-02-19 chore(deps): bump lodash from 4.17.21 to 4.17.23 in the npm_and_yarn group across 1 directory
+      #306 open 2026-02-16 chore(deps): bump prompt-toolkit from 3.0.51 to 3.0.52
+      #309 open 2026-02-16 chore(deps-dev): bump jsonschema from 4.24.0 to 4.26.0
+      #290 open 2025-12-26 chore(deps): bump fastmcp from 2.13.0 to 2.14.0 in the pip group across 1 directory
+      #307 open 2026-02-16 chore(deps): bump fastmcp from 2.13.0 to 2.14.5
+      #305 open 2026-02-10 chore(deps): bump the uv group across 1 directory with 6 updates
+      #303 merged 2026-01-22 chore(deps): bump the npm_and_yarn group across 1 directory with 2 updates
+      #313 merged 2026-03-14 feat: add OpenCode client manager + per-server enabled/disabled flag
+      #289 merged 2025-12-05 chore(deps): bump glob from 10.4.5 to removed in the npm_and_yarn group across 1 directory
+      #283 merged 2025-11-27 feat: Enhanced Non-Interactive Mode for Automation
+      #281 merged 2025-11-16 chore(deps-dev): bump js-yaml from 4.1.0 to 4.1.1 in the npm_and_yarn group across 1 directory
+      #221 merged 2025-07-21 🤖 Add Comprehensive AI Agent Friendly CLI Support
+      #268 merged 2025-09-30 feat: add Qwen CLI client manager support
+      #274 merged 2025-10-29 chore(deps): bump fastmcp from 2.10.2 to 2.13.0 in the pip group across 1 directory
+  clobber        1 hit(s) (all listed)
+      #329 closed 2026-04-28 feat: add Sourcegraph Amp client manager
+  blank          58 hit(s) (all listed)
+      #427 open 2026-10-07 feat(registry): add Bestax MCP server
+      #375 open 2026-08-22 feat: Add MCP manifest for yyeongjin-secret_mcp
+      #403 open 2026-09-17 Add AffixIO local ACTION attestation MCP to registry
+      #418 open 2026-10-01 feat: Add MCP manifest for evaboot-team-evaboot-mcp
+      #415 open 2026-10-01 feat: Add MCP manifest for Get-Concord-AI-concord-mcp
+      #425 open 2026-10-06 feat(registry): add PDFtoMarkdown.ai MCP server
+      #361 open 2026-07-24 feat: Add MCP manifest for WebhoundAI-webhound-mcp
+      #369 open 2026-08-04 feat: Add MCP manifest for PicsArt-gen-ai-skills
+      #376 open 2026-08-23 Add Famulor MCP server
+      #426 open 2026-10-06 Add server: maqami-travel
+      #386 open 2026-08-30 Add Process Street MCP server
+      #384 open 2026-08-28 Add ddmarketer to the registry
+      #389 open 2026-09-02 Add Melaya (remote, OAuth 2.1, Android phone + browser control)
+      #401 open 2026-09-13 Add server: orcareplay
+      #405 open 2026-09-18 Add server: mobopinions-survey-light
+      #359 open 2026-07-22 Add Glif server manifest
+      #404 open 2026-09-18 Add server: adtest-mcp
+      #394 open 2026-09-05 feat: add ParlayAPI MCP server manifest
+      #395 open 2026-09-07 Add server: sigtap-agent-tools (remote MCP, x402/USDC on Base)
+      #349 open 2026-06-12 Add server: dos-kernel
+  unreadable     1 hit(s) (all listed)
+      #315 merged 2026-03-20 feat: add `mcpm update` command for server update management
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       14 hit(s) (all listed)
+      #366 open 2026-07-26 Add OpenPost MCP server
+      #305 open 2026-02-10 chore(deps): bump the uv group across 1 directory with 6 updates
+      #243 closed 2025-08-19 [Bug]: Claude Desktop raises invalid JSON due to banner
+      #240 merged 2025-08-18 chore: Add MCP manifest for hustcc-mcp-mermaid
+      #241 closed 2025-08-18 chore: Add MCP manifest for modelcontextprotocol-servers-tree-main-src-memory
+      #252 merged 2025-08-23 ci: add condition on codex trigger to avoid error
+      #239 merged 2025-08-18 [generate_manifest] use mcpm registry bot
+      #236 merged 2025-08-18 [generate_manifest] use GITHUB_TOKEN to create PR & improve commit message
+      #237 merged 2025-08-18 [generate_manifest] use GitHub app instead of token
+      #263 merged 2025-09-13 ci: fix semantic release skipped due to head conflict
+      #231 merged 2025-08-12 sync mcp.science servers
+      #268 merged 2025-09-30 feat: add Qwen CLI client manager support
+      #221 merged 2025-07-21 🤖 Add Comprehensive AI Agent Friendly CLI Support
+      #233 merged 2025-08-15 feat: add script and workflow for contributing registry
+  in-place       15 hit(s) (all listed)
+      #355 open 2026-06-24 Add server: openrouter-fusion
+      #365 open 2026-07-26 Add server: orphograph
+      #406 merged 2026-09-19 feat(registry): add Markovo MCP server
+      #343 closed 2026-06-06 feat: add TWZRD Agent Intel MCP server
+      #313 merged 2026-03-14 feat: add OpenCode client manager + per-server enabled/disabled flag
+      #315 merged 2026-03-20 feat: add `mcpm update` command for server update management
+      #300 merged 2026-01-15 fix: Update VSCode manager to use mcp.json with correct structure
+      #283 merged 2025-11-27 feat: Enhanced Non-Interactive Mode for Automation
+      #165 merged 2025-06-04 docs: Add documentation for mcpm share command
+      #237 merged 2025-08-18 [generate_manifest] use GitHub app instead of token
+      #215 merged 2025-07-14 [registry]fix: replace hyphen to underscore in server name
+      #138 closed 2025-04-30 [General]: Configuring support for “bun x” instead of “npx”
+      #234 merged 2025-08-15 [generate-manifest] add repository_dispatch Trigger
+      #187 closed 2025-06-24 chores: switch registry
+      #233 merged 2025-08-15 feat: add script and workflow for contributing registry
+  unclean        0 hit(s)
+  shutdown       5 hit(s) (all listed)
+      #364 closed 2026-07-25 Add server: bernstein
+      #46 merged 2025-04-11 add router config management and improve error handling in shutdown
+      #189 merged 2025-06-25 refactor: extract core logic of router
+      #142 closed 2025-05-07 refactor: separate file watcher from router
+      #67 merged 2025-04-17 feat: add event tracking and query API for monitoring MCP operations
+  reboot         0 hit(s)
+  disk+full      4 hit(s) (all listed)
+      #331 open 2026-05-05 fix(deps): bump fastmcp from 2.13.0 to >=2.14.5,<3.0.0
+      #274 merged 2025-10-29 chore(deps): bump fastmcp from 2.10.2 to 2.13.0 in the pip group across 1 directory
+      #315 merged 2026-03-20 feat: add `mcpm update` command for server update management
+      #283 merged 2025-11-27 feat: Enhanced Non-Interactive Mode for Automation
+  data+loss      3 hit(s) (all listed)
+      #300 merged 2026-01-15 fix: Update VSCode manager to use mcp.json with correct structure
+      #294 merged 2026-01-11 fix: correct Windows CLI detection for npm-installed tools
+      #185 merged 2025-06-23 fix: compatible with goose builtin config
+  partial+write  5 hit(s) (all listed)
+      #288 merged 2025-12-04 feat: add AI agent docs integration to install script
+      #300 merged 2026-01-15 fix: Update VSCode manager to use mcp.json with correct structure
+      #294 merged 2026-01-11 fix: correct Windows CLI detection for npm-installed tools
+      #283 merged 2025-11-27 feat: Enhanced Non-Interactive Mode for Automation
+      #221 merged 2025-07-21 🤖 Add Comprehensive AI Agent Friendly CLI Support
+  crash+safe     7 hit(s) (all listed)
+      #312 open 2026-02-28 Add 0nMCP — Universal AI API Orchestrator (564 tools, 26 services)
+      #315 merged 2026-03-20 feat: add `mcpm update` command for server update management
+      #261 merged 2025-09-13 fix: set working directory if current is invalid
+      #266 merged 2025-09-18 Fix install prompt on headless Windows environments
+      #244 merged 2025-08-20 [generate_manifest] improve registry workflow
+      #265 merged 2025-09-17 fix: remove auto v1 migration prompt
+      #233 merged 2025-08-15 feat: add script and workflow for contributing registry
+  atomic+write   2 hit(s) (all listed)
+      #315 merged 2026-03-20 feat: add `mcpm update` command for server update management
+      #288 merged 2025-12-04 feat: add AI agent docs integration to install script
+  lock+file      18 hit(s) (all listed)
+      #333 open 2026-05-07 Relax pydantic upper bound to support Python 3.14
+      #331 open 2026-05-05 fix(deps): bump fastmcp from 2.13.0 to >=2.14.5,<3.0.0
+      #424 open 2026-10-06 Add server: rhein-ruhr-fahrplan-mcp
+      #398 open 2026-09-08 Add SHAR Production Metadata MCP registry entry
+      #366 open 2026-07-26 Add OpenPost MCP server
+      #310 open 2026-02-19 chore(deps): bump lodash from 4.17.21 to 4.17.23 in the npm_and_yarn group across 1 directory
+      #344 open 2026-06-07 feat: add ProposalCraft MCP server manifest
+      #284 open 2025-11-28 feat(core): Modernize Dependency Management with Auto-UVX
+      #362 closed 2026-07-25 stdio `mcpm run` multiplies into hundreds of processes under parallel MCP clients
+      #303 merged 2026-01-22 chore(deps): bump the npm_and_yarn group across 1 directory with 2 updates
+      #313 merged 2026-03-14 feat: add OpenCode client manager + per-server enabled/disabled flag
+      #315 merged 2026-03-20 feat: add `mcpm update` command for server update management
+      #271 closed 2025-10-16 [Bug]: Unable to start `mcpm`
+      #262 merged 2025-09-13 fix(ci): only trigger release for mcpm update
+      #231 merged 2025-08-12 sync mcp.science servers
+      #189 merged 2025-06-25 refactor: extract core logic of router
+      #211 merged 2025-07-09 feat: refactor commands to v2 structure and add HTTP server support
+      #187 closed 2025-06-24 chores: switch registry
+  write+failure  18 hit(s) (all listed)
+      #359 open 2026-07-22 Add Glif server manifest
+      #326 closed 2026-04-28 feat(doctor): add --json output flag
+      #315 merged 2026-03-20 feat: add `mcpm update` command for server update management
+      #313 merged 2026-03-14 feat: add OpenCode client manager + per-server enabled/disabled flag
+      #288 merged 2025-12-04 feat: add AI agent docs integration to install script
+      #294 merged 2026-01-11 fix: correct Windows CLI detection for npm-installed tools
+      #236 merged 2025-08-18 [generate_manifest] use GITHUB_TOKEN to create PR & improve commit message
+      #239 merged 2025-08-18 [generate_manifest] use mcpm registry bot
+      #237 merged 2025-08-18 [generate_manifest] use GitHub app instead of token
+      #283 merged 2025-11-27 feat: Enhanced Non-Interactive Mode for Automation
+      #252 merged 2025-08-23 ci: add condition on codex trigger to avoid error
+      #247 merged 2025-08-21 [generate_manifest] deprecate the former workflow & improve the script
+      #233 merged 2025-08-15 feat: add script and workflow for contributing registry
+      #244 merged 2025-08-20 [generate_manifest] improve registry workflow
+      #235 closed 2025-08-18 feat: Add MCP manifest for hustcc-mcp-mermaid
+      #185 merged 2025-06-23 fix: compatible with goose builtin config
+      #186 merged 2025-06-24 feat: support custom node runtime config
+      #221 merged 2025-07-21 🤖 Add Comprehensive AI Agent Friendly CLI Support
+  file+contents  13 hit(s) (all listed)
+      #366 open 2026-07-26 Add OpenPost MCP server
+      #305 open 2026-02-10 chore(deps): bump the uv group across 1 directory with 6 updates
+      #240 merged 2025-08-18 chore: Add MCP manifest for hustcc-mcp-mermaid
+      #241 closed 2025-08-18 chore: Add MCP manifest for modelcontextprotocol-servers-tree-main-src-memory
+      #252 merged 2025-08-23 ci: add condition on codex trigger to avoid error
+      #239 merged 2025-08-18 [generate_manifest] use mcpm registry bot
+      #236 merged 2025-08-18 [generate_manifest] use GITHUB_TOKEN to create PR & improve commit message
+      #237 merged 2025-08-18 [generate_manifest] use GitHub app instead of token
+      #268 merged 2025-09-30 feat: add Qwen CLI client manager support
+      #263 merged 2025-09-13 ci: fix semantic release skipped due to head conflict
+      #231 merged 2025-08-12 sync mcp.science servers
+      #221 merged 2025-07-21 🤖 Add Comprehensive AI Agent Friendly CLI Support
+      #233 merged 2025-08-15 feat: add script and workflow for contributing registry
+
+== 51 terms run; 34 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

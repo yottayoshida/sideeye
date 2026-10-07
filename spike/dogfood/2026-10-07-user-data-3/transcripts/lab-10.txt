@@ -1,0 +1,131 @@
+=== lxc: config.yml at zero bytes
+$ lxc alias list
++-------+--------+
+| ALIAS | TARGET |
++-------+--------+
+  -> exit 0
+$ lxc remote list
++----------------------+---------------------------------------------------+---------------+-------------+--------+--------+--------+
+|         NAME         |                        URL                        |   PROTOCOL    |  AUTH TYPE  | PUBLIC | STATIC | GLOBAL |
++----------------------+---------------------------------------------------+---------------+-------------+--------+--------+--------+
+| images               | https://images.lxd.canonical.com                  | simplestreams | none        | YES    | YES    | NO     |
++----------------------+---------------------------------------------------+---------------+-------------+--------+--------+--------+
+| local (current)      | unix://                                           | lxd           | file access | NO     | YES    | NO     |
++----------------------+---------------------------------------------------+---------------+-------------+--------+--------+--------+
+| ubuntu               | https://cloud-images.ubuntu.com/releases/         | simplestreams | none        | YES    | YES    | NO     |
+  -> exit 0
+  config.yml now 0 bytes
+=== duplicacy: preferences at zero bytes
+$ duplicacy list
+Failed to parse the preference file for repository /s/dup/repo: unexpected end of JSON input
+  -> exit 100
+$ duplicacy backup
+Failed to parse the preference file for repository /s/dup/repo: unexpected end of JSON input
+  -> exit 100
+=== ferium: config.json at zero bytes
+$ ferium profiles
+EOF while parsing a value at line 1 column 0
+  -> exit 1
+  config.json now 0 bytes
+$ ferium profile create --name p9 --game-version 1.20.1 --mod-loader fabric --output-dir /s/ferium-in/p9
+EOF while parsing a value at line 1 column 0
+  -> exit 1
+  config.json now 0 bytes
+
+=== TiddlyWiki: wiki.html at zero bytes
+$ tiddlywiki --load /s/tw/wiki.html --output /s/tw-in/out --render $:/core/save/all check.html text/plain
+  -> exit 0
+-rw-r--r-- 1 root root 2445163 Oct  7 09:11 check.html
+=== mcpm: servers.json at zero bytes
+$ mcpm ls
+Error loading global servers from /s/aux/home/.config/mcpm/servers.json: Expecting value: line 1 column 1 (char 0)
+Error loading global servers from /s/aux/home/.config/mcpm/servers.json: Expecting value: line 1 column 1 (char 0)
+Error loading global servers from /s/aux/home/.config/mcpm/servers.json: Expecting value: line 1 column 1 (char 0)
+Error loading global servers from /s/aux/home/.config/mcpm/servers.json: Expecting value: line 1 column 1 (char 0)
+Error loading global servers from /s/aux/home/.config/mcpm/servers.json: Expecting value: line 1 column 1 (char 0)
+Error loading global servers from /s/aux/home/.config/mcpm/servers.json: Expecting value: line 1 column 1 (char 0)
+Error loading global servers from /s/aux/home/.config/mcpm/servers.json: Expecting value: line 1 column 1 (char 0)
+Error loading global servers from /s/aux/home/.config/mcpm/servers.json: Expecting value: line 1 column 1 (char 0)
+  -> exit 0
+$ mcpm new third --type stdio --command true --force
+Error loading global servers from /s/aux/home/.config/mcpm/servers.json: Expecting value: line 1 column 1 (char 0)
+Error loading global servers from /s/aux/home/.config/mcpm/servers.json: Expecting value: line 1 column 1 (char 0)
+Error loading global servers from /s/aux/home/.config/mcpm/servers.json: Expecting value: line 1 column 1 (char 0)
+Error loading global servers from /s/aux/home/.config/mcpm/servers.json: Expecting value: line 1 column 1 (char 0)
+Error loading global servers from /s/aux/home/.config/mcpm/servers.json: Expecting value: line 1 column 1 (char 0)
+Error loading global servers from /s/aux/home/.config/mcpm/servers.json: Expecting value: line 1 column 1 (char 0)
+Error loading global servers from /s/aux/home/.config/mcpm/servers.json: Expecting value: line 1 column 1 (char 0)
+Error loading global servers from /s/aux/home/.config/mcpm/servers.json: Expecting value: line 1 column 1 (char 0)
+  -> exit 0
+  servers.json now 139 bytes
+=== pi: settings.json at zero bytes and its lock directory left behind
+drwxr-xr-x 3 root root 4096 Oct  7 09:11 .
+drwxr-xr-x 3 root root 4096 Oct  7 09:11 ..
+-rw-r--r-- 1 root root    0 Oct  7 09:11 settings.json
+drwxr-xr-x 2 root root 4096 Oct  7 09:11 settings.json.lock
+$ timeout 30 pi install /s/pi-in/ext2
+Warning (package command, global settings): Lock file is already being held
+Error: Lock file is already being held
+    at file:///opt/node22/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-VLMAON6X.js:3:17518
+    at newFs.<computed> [as stat] (file:///opt/node22/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-VLMAON6X.js:3:21917)
+    at file:///opt/node22/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-VLMAON6X.js:3:17327
+    at newFs.<computed> [as mkdir] (file:///opt/node22/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-VLMAON6X.js:3:21903)
+    at acquireLock (file:///opt/node22/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-VLMAON6X.js:3:16930)
+    at RetryOperation._fn (file:///opt/node22/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-VLMAON6X.js:3:19942)
+  -> exit 0
+drwxr-xr-x 3 root root 4096 Oct  7 09:11 .
+drwxr-xr-x 3 root root 4096 Oct  7 09:11 ..
+-rw-r--r-- 1 root root    0 Oct  7 09:11 settings.json
+drwxr-xr-x 2 root root 4096 Oct  7 09:11 settings.json.lock
+
+$ timeout 30 pi list
+Warning (package command, global settings): Lock file is already being held
+Error: Lock file is already being held
+    at file:///opt/node22/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-VLMAON6X.js:3:17518
+    at newFs.<computed> [as stat] (file:///opt/node22/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-VLMAON6X.js:3:21917)
+    at file:///opt/node22/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-VLMAON6X.js:3:17327
+    at newFs.<computed> [as mkdir] (file:///opt/node22/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-VLMAON6X.js:3:21903)
+    at acquireLock (file:///opt/node22/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-VLMAON6X.js:3:16930)
+    at RetryOperation._fn (file:///opt/node22/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks/chunk-VLMAON6X.js:3:19942)
+  -> exit 0
+=== doit: d.json at zero bytes
+$ doit run --backend json --db-file /s/doit/state/d.json
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/doit/dependency.py", line 75, in _load
+    return self.codec.decode(db_file.read())
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/doit/dependency.py", line 54, in decode
+    return self.decoder.decode(data)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.13/json/decoder.py", line 345, in decode
+  -> exit 3
+$ doit list --backend json --db-file /s/doit/state/d.json
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/doit/dependency.py", line 75, in _load
+    return self.codec.decode(db_file.read())
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/doit/dependency.py", line 54, in decode
+    return self.decoder.decode(data)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.13/json/decoder.py", line 345, in decode
+  -> exit 3
+=== astro: settings.json at zero bytes
+$ astro preferences list --global
+
+ Your Preferences 
+
+No preferences set
+
+ Default Preferences 
+
+ Preference              Value  
+  -> exit 0
+$ astro preferences disable devToolbar --global
+ devToolbar is now  disabled 
+
+  -> exit 0
+{
+	"devToolbar": {
+		"enabled": false
+	}
+}

@@ -1,0 +1,32 @@
+Using configuration from /s/ca/ca.cnf
+Revoking Certificate 1001.
+Database updated
+Using configuration from /s/ca/ca.cnf
+Revoking Certificate 1001.
+Using configuration from /s/ca/ca.cnf
+Revoking Certificate 1001.
+Database updated
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 6 of 8
+            after  rename(/s/ca/index.txt)
+            before rename(/s/ca/index.txt.new)
+path        index.txt
+observed    present before and after the operation, but gone from the crashed state
+explored    2 worlds (crash points 8 + 1 baseline)
+expected    exit 0
+atomicity   23 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): index.txt.old
+oracle      agreed on 8 operations (217 syscall lines examined, 72 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/openssl/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+cwd         /s/ca-in
+processes   single process
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+reproduce   SIDEEYE_STATE_DIR=/s/ca SIDEEYE_TRACE_PATH=/out/openssl/work-explore-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.9.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=6 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=7da9b862d04c69f8c74875945d45cb73ce6b782725c49bf783992930ce05f3f4;

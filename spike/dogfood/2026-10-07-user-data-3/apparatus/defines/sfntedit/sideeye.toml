@@ -1,0 +1,6 @@
+[world]
+state = "/s/font"
+
+[define]
+operation = "sfntedit -a TEST=/s/font-in/blob.bin /s/font/f.ttf"
+cwd       = "/s/font-in"

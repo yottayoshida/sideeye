@@ -1,0 +1,29 @@
+=== kitten themes, offline on a cached archive with its comment
+$ kitten themes --cache-age=-1 --reload-in=none Dracula
+  -> exit 0
+  state: aa1b2552c68c -> 6eaf36979ba4
+drwxr-xr-x 2 root root 4096 Oct  7 07:54 .
+drwxr-xr-x 3 root root 4096 Oct  7 07:54 ..
+-rw-r--r-- 1 root root  792 Oct  7 07:54 current-theme.conf
+-rw-r--r-- 1 root root  107 Oct  7 07:54 kitty.conf
+-rw-r--r-- 1 root root   31 Oct  7 07:54 kitty.conf.bak
+# BEGIN_KITTY_THEME
+# Dracula
+include current-theme.conf
+# END_KITTY_THEME=== testdisk with noconfirm
+$ testdisk /cmd /s/td/disk.img analyze,quicksearch,noconfirm,write
+TestDisk 7.2, Data Recovery Utility, February 2024
+Christophe GRENIER <grenier@cgsecurity.org>
+https://www.cgsecurity.org
+)0TestDisk 7.2, Data Recovery Utility, February 2024Christophe GRENIER <grenier@cgsecurity.org>https://www.cgsecurity.orgPlease wait...Disk /s/td/disk.img - 33 
+  -> exit 0
+  disk.img: 911e74122ee2 -> 911e74122ee2
+sector-size: 512
+$ testdisk /cmd /s/td/disk.img analyze,quicksearch,write,noconfirm
+TestDisk 7.2, Data Recovery Utility, February 2024
+Christophe GRENIER <grenier@cgsecurity.org>
+https://www.cgsecurity.org
+)0TestDisk 7.2, Data Recovery Utility, February 2024Christophe GRENIER <grenier@cgsecurity.org>https://www.cgsecurity.orgPlease wait...Disk /s/td/disk.img - 33 
+  -> exit 0
+  disk.img: 911e74122ee2 -> 911e74122ee2
+sector-size: 512

@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.9.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/aux/home/.config/mcpm",
+    "operation": "mcpm edit srv --env=K=v --force",
+    "cwd": "/s/mcpm-in",
+    "expected_status": 0
+  },
+  "k": 29,
+  "ops_total": 32,
+  "prefix_hash": "51c79fc50907a436",
+  "after_class": "open",
+  "after_path": "/s/aux/home/.config/mcpm/servers.json",
+  "before_class": "write",
+  "before_path": "/s/aux/home/.config/mcpm/servers.json",
+  "violation": "hybrid"
+}

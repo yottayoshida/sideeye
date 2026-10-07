@@ -1,0 +1,16 @@
+== tinc
+== mosquitto
+== testdisk
+== libsndfile
+== minizip
+== ezdxf
+== lasinfo
+== extract-xiso
+== qalc
+== TIC-80
+== tic80
+== Limine
+== xbps
+== mcpm
+== krew
+== rgbfix

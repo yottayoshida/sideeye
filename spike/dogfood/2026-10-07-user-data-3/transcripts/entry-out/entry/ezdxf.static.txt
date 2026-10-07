@@ -1,0 +1,2 @@
+static: /opt/py/bin/ezdxf: Python script, ASCII text executable
+next: sideeye explore --state /s/dxf --cwd "/s/dxf-in" --operation "ezdxf strip /s/dxf/drawing.dxf" \

@@ -1,0 +1,16 @@
+UNKNOWN  oracle_missed_operation
+         the oracle saw a state-directory operation the shim did not record; divergence at operation 4: the oracle saw: 22    renameat(AT_FDCWD</s/alac-in>, "/s/alac/.tmpA6mq1F", AT_FDCWD</s/alac-in>, "/s/alac/colors.toml") = 0; the shim recorded: open("/s/alac/.tmpOzW2ra")
+next        Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.
+divergence  renameat
+cwd         /s/alac-in
+
+atomicity   2 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=2ad47bb283266d53e85ed750abfcdf1f8d16a2cc31e59f2bfad4d61dd144f157;

@@ -1,0 +1,2 @@
+static: /opt/py/bin/sfntedit: Python script, ASCII text executable
+next: sideeye explore --state /s/font --cwd "/s/font-in" --operation "sfntedit -a TEST=/s/font-in/blob.bin /s/font/f.ttf" \

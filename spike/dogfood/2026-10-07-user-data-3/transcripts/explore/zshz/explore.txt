@@ -1,0 +1,16 @@
+UNKNOWN  oracle_missed_operation
+         the oracle saw a state-directory operation the shim did not record; divergence at operation 2: the oracle saw: 26    openat(AT_FDCWD</s/z-in>, "/s/z/data/.z.31340", O_WRONLY|O_CREAT|O_NOCTTY|O_TRUNC, 0666) = 3</s/z/data/.z.31340>; the shim recorded: write("/s/z/data/.z.31340")
+next        Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.
+divergence  openat
+cwd         /s/z-in
+
+atomicity   1 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): .z
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=d593a2d5469bd3e32f40952b5b1ab66c68bc6f23acc70122cba4699f49bfa795;

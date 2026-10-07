@@ -1,0 +1,33 @@
+scan ended for minizip (zlib-ng/minizip-ng); exploring 2026-10-07T07:20:34Z
+=== minizip 2026-10-07T07:20:34Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for xbps (void-linux/xbps); exploring 2026-10-07T07:25:16Z
+=== xbps 2026-10-07T07:25:16Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+scan ended for mcpm (pathintegral-institute/mcpm.sh); exploring 2026-10-07T07:29:58Z
+=== mcpm 2026-10-07T07:29:58Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for sndfile (libsndfile/libsndfile); exploring 2026-10-07T07:35:23Z
+=== sndfile 2026-10-07T07:35:23Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for ezdxf (mozman/ezdxf); exploring 2026-10-07T07:40:28Z
+=== ezdxf 2026-10-07T07:40:28Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+explore-after-scan: done 2026-10-07T07:40:36Z

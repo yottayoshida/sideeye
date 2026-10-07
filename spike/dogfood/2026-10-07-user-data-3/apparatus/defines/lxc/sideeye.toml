@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.config/lxc"
+
+[define]
+operation = "lxc alias remove l1"
+cwd       = "/s/lxc-in"

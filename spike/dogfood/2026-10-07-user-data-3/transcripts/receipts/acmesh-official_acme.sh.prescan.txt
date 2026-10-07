@@ -1,0 +1,653 @@
+== novelty pre-scan: acmesh-official/acme.sh
+== date: 2026-10-07T06:30:25Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          16 hit(s) (all listed)
+      #7201 closed 2026-08-20 Support for HTTP-date in HTTP Retry-After Header (RFC9110)
+      #6343 closed 2025-05-02 acme.sh deployment fails on TrueNAS SCALE 24.10+ with truenas.sh and truenas_ws.sh hooks due to xargs crash
+      #6914 closed 2026-04-17 [Bug] dns_dnsexit plugin fails with 503 error due to deprecated legacy endpoint (update.dnsexit.com)
+      #4845 closed 2023-10-30 [Feature] 新增一个deploy重试机制，在cron中重试deploy
+      #2440 closed 2019-08-13 Privilege separation
+      #6621 closed 2025-11-18 Key/Certifiate mismatch with --always-force-new-domain-key if renewal fails
+      #5024 closed 2024-02-26 deploy hook synology_dsm fails when running on Synolgy SRM and SYNO_USE_TEMP_ADMIN=1
+      #4983 closed 2024-02-02 OPNsense deploy to ProxmoxVE Fails
+      #4498 closed 2023-02-09 Verify error:”error”:{ 
+      #4151 merged 2022-06-22 Added new 'dns' provider script for https://dns.services
+      #3699 closed 2021-09-10 Vault CLI deploy hook does not store env variables
+      #1526 closed 2018-04-16 What is eligible to backup to ensure crash recovering when having a lot of cert ?
+      #1047 closed 2017-09-27 Crashes of 2.7.4 in Standalone mode server
+      #2739 closed 2020-02-19 Move to another system after crash
+      #210 closed 2016-06-05 Ensure that LE_WORKING_DIR actually exists
+      #2481 merged 2019-09-12 Add OPNsense Bind API Support
+  corrupt        22 hit(s) (all listed)
+      #684 closed 2017-03-01 Renewals create corrupt or missing CA.cer files
+      #7159 closed 2026-07-24 Solaris: grep: illegal option -- A
+      #6953 merged 2026-05-07 ARI - Add support for Mass Revocation
+      #2507 closed 2019-09-26 Certificate is saved even if _checkcert fails
+      #1713 closed 2018-07-04 Error deploying certificate with cPanel Uapi command
+      #6824 closed 2026-03-02 Error 6003 When trying to issue new Cert
+      #6319 closed 2025-04-19 DNS Cloudflare doesn't working -> error code 6003
+      #7184 merged 2026-08-07 Add UniFi OS Server deploy hook
+      #3832 closed 2021-11-29 acme.sh not longer working
+      #6270 closed 2025-03-13 Issue with provider DDNSS.de
+      #1041 closed 2017-09-24 --cron is apparently renewing freshly issued cert
+      #6891 merged 2026-04-02 [dnsapi] add SiteHost DNS API hook
+      #6844 merged 2026-03-10 Add DNS API for Baidu Cloud DNS dns_baidu.sh
+      #6436 merged 2025-07-07 Add 'localcopy' deploy-hook 
+      #6764 merged 2026-01-26 Add dns_czechia DNS API plugin
+      #3461 closed 2021-03-27 Docker deploy hook - Why not restart container to reload certificate?
+      #3318 closed 2020-12-23 Wild goose chase in wiki's tutorial links
+      #1328 closed 2018-03-05 php -r error in cpanel_uapi.sh - Error in argument 1, char 2: option not found r
+      #2208 closed 2019-04-06 Auto renewal broken: integer expression expected
+      #2515 closed 2019-09-30 syntax error: unterminated quoted string
+  corruption     6 hit(s) (all listed)
+      #6887 open 2026-03-31 dns_aws: add AWS_ROLE_ARN support for cross-account Route53 access
+      #3972 closed 2022-03-07 Synology DSM double free or corruption (out)
+      #7183 closed 2026-08-07 Add UISP (nico640/docker-unms) deploy hook
+      #275 closed 2016-08-25 Keys, dhparam.pem, acme.sh - everything to 0 bytes and not possible to issue a new cert
+      #2659 closed 2020-01-01 Include init process in docker image
+      #3461 closed 2021-03-27 Docker deploy hook - Why not restart container to reload certificate?
+  truncated      21 hit(s) (all listed)
+      #7278 merged 2026-09-21 fix: keep the conf intact when writing it fails (#7247)
+      #4596 closed 2023-04-13 Base64 decoding of eab-hmac-key larger than 64 characters fails on CentOS 6
+      #7243 merged 2026-09-09 Add Optidata Cloud DNS API (dns_optidata)
+      #3616 closed 2021-07-22 dns_ovh.sh: random cert issuance failure / dns zone pollution
+      #3750 closed 2021-10-10 Account.conf SAVED_ Variables with Dot or Hyphen incomparable with _readaccountconf_mutable() Function
+      #6636 closed 2025-11-24 [Bug/request] Add `-traditional` to `openssl genrsa` command if using openssl3
+      #3832 closed 2021-11-29 acme.sh not longer working
+      #7254 merged 2026-09-12 Add JetKVM SSH deploy hook
+      #4678 closed 2023-06-19 Verify error: "error": {
+      #2180 closed 2019-03-20 Report bugs to deSEC.io API
+      #2119 closed 2019-02-26 Force domain key renewal breaks current certificate/key match
+      #1260 closed 2018-02-12 Feature Request: NSD DNS server support using nsd-control
+      #5043 merged 2024-03-07 Add deploy/zyxel_gs1900.sh
+      #5239 closed 2024-08-04 Fixed TXT record name in dns_desec.sh
+      #5070 closed 2024-03-27 External Account Binding doesn't work for Google
+      #4570 closed 2023-03-29 Using OPNsense option for DNS causes Cloudflare txt purging
+      #3854 merged 2021-12-13 Allow optional "NEW" in CSR header and footer
+      #3318 closed 2020-12-23 Wild goose chase in wiki's tutorial links
+      #93 closed 2016-03-10 Verify error:Error parsing key authorization file: Invalid key authorization: malformed token
+      #1328 closed 2018-03-05 php -r error in cpanel_uapi.sh - Error in argument 1, char 2: option not found r
+  truncate       32 hit(s) (all listed)
+      #7278 merged 2026-09-21 fix: keep the conf intact when writing it fails (#7247)
+      #6887 open 2026-03-31 dns_aws: add AWS_ROLE_ARN support for cross-account Route53 access
+      #7220 merged 2026-08-29 Add AK & SK based Huawei Cloud DNS API
+      #7092 merged 2026-07-06 wiki-guard: log the number of write-access members loaded
+      #4596 closed 2023-04-13 Base64 decoding of eab-hmac-key larger than 64 characters fails on CentOS 6
+      #7243 merged 2026-09-09 Add Optidata Cloud DNS API (dns_optidata)
+      #3616 closed 2021-07-22 dns_ovh.sh: random cert issuance failure / dns zone pollution
+      #2426 closed 2019-08-04 acme.sh --deploy destroys `.conf` file
+      #3750 closed 2021-10-10 Account.conf SAVED_ Variables with Dot or Hyphen incomparable with _readaccountconf_mutable() Function
+      #6636 closed 2025-11-24 [Bug/request] Add `-traditional` to `openssl genrsa` command if using openssl3
+      #3832 closed 2021-11-29 acme.sh not longer working
+      #4988 closed 2024-02-05 After issue the cert, cannot use ssh to connect the VPS
+      #7254 merged 2026-09-12 Add JetKVM SSH deploy hook
+      #7008 merged 2026-06-04 sync
+      #2119 closed 2019-02-26 Force domain key renewal breaks current certificate/key match
+      #4678 closed 2023-06-19 Verify error: "error": {
+      #6933 merged 2026-04-27 Improve Simply.com API
+      #2180 closed 2019-03-20 Report bugs to deSEC.io API
+      #1260 closed 2018-02-12 Feature Request: NSD DNS server support using nsd-control
+      #6889 merged 2026-03-31 Add BytePlus ALB deployment script
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #7247 open 2026-09-10 $domain.conf emptied when disk is full
+      #5104 open 2024-04-22 Triggered _on_issue_err with "config file is empty, can not read CA_KEY_HASH" notice before
+      #7160 open 2026-07-24 ARI: pick renewal offset with openssl CSPRNG
+      #7164 open 2026-07-26 deploy/keyhelp_api: allow custom cert name, skip key on PUT, URL-encode name
+      #7030 open 2026-06-17 Fix/issue 7029 efficientip post validation cleanup
+      #7206 open 2026-08-22 New deploy hook: TrueNAS via WebSocket without midclt/Python (for remote deployment from non-TrueNAS hosts)
+      #7276 open 2026-09-20 Add deploy hook for Redfish-compatible BMCs
+      #6781 open 2026-02-11 use specified DNS accounts per domain, is it possible ?
+      #6722 open 2025-12-29 Add script/hook for Proxmox Mail Gateway deployment via API
+      #4382 open 2022-11-06 Fix dns_transip: Added support for API KEY variable
+      #6901 open 2026-04-12 Add certificate upload via CPanel JSON API
+      #6606 open 2025-11-12 [dnsapi] add MVMNET dns api
+      #4397 open 2022-11-16 Openhabian Deployment script
+      #6395 open 2025-06-10 Deploy to plex
+      #6350 open 2025-05-11 Add WEXBO DNS API
+      #7177 closed 2026-08-04 dns_manual renew loses Le_OrderFinalize and Le_LinkOrder causing empty finalize URL
+      #6209 open 2025-01-23 Add Support for hosttech.ch/hosttech.eu
+      #4210 open 2022-07-29 Report bug to Yandex Cloud dns api
+      #6887 open 2026-03-31 dns_aws: add AWS_ROLE_ARN support for cross-account Route53 access
+      #7232 merged 2026-09-03 fix: poweradmin dnsapi leaves hanging txt records
+  atomic         6 hit(s) (all listed)
+      #7254 merged 2026-09-12 Add JetKVM SSH deploy hook
+      #6607 closed 2025-11-12 Add Postfix deploy hookCreate postfix.sh
+      #2440 closed 2019-08-13 Privilege separation
+      #4848 closed 2023-10-31 Concatenate fullchain.cer file without empty lines - broken chain in haproxy
+      #1261 closed 2018-02-13 Update dns api to support v2 wildcard cert
+      #949 merged 2017-07-24 Candlerb/unifi
+  atomically     0 hit(s)
+  interrupted    9 hit(s) (all listed)
+      #6466 open 2025-08-04 new: [dnsapi] RESTENA DNS API
+      #5104 open 2024-04-22 Triggered _on_issue_err with "config file is empty, can not read CA_KEY_HASH" notice before
+      #5106 closed 2024-04-23 During secondary validation: Incorrect TXT record
+      #6636 closed 2025-11-24 [Bug/request] Add `-traditional` to `openssl genrsa` command if using openssl3
+      #6188 closed 2025-01-06 复制的证书为什么是空的？
+      #4924 closed 2023-12-22 "renew" exit code as configurable option
+      #6255 closed 2025-02-28 Private Key Not Generated When Using ACME for Wildcard Certificate with ECC Encryption
+      #1682 closed 2018-06-18 Add domain at SAN problem
+      #4706 merged 2023-07-19 Add SYNO_USE_TEMP_ADMIN variable & Fix broken logic
+  interrupt      17 hit(s) (all listed)
+      #6394 open 2025-06-10 Feature request: Support for New Name.com API (v4 Deprecated from 2026)
+      #6466 open 2025-08-04 new: [dnsapi] RESTENA DNS API
+      #5104 open 2024-04-22 Triggered _on_issue_err with "config file is empty, can not read CA_KEY_HASH" notice before
+      #5106 closed 2024-04-23 During secondary validation: Incorrect TXT record
+      #6636 closed 2025-11-24 [Bug/request] Add `-traditional` to `openssl genrsa` command if using openssl3
+      #6188 closed 2025-01-06 复制的证书为什么是空的？
+      #4924 closed 2023-12-22 "renew" exit code as configurable option
+      #6436 merged 2025-07-07 Add 'localcopy' deploy-hook 
+      #6255 closed 2025-02-28 Private Key Not Generated When Using ACME for Wildcard Certificate with ECC Encryption
+      #1682 closed 2018-06-18 Add domain at SAN problem
+      #2727 closed 2020-02-09 Report bugs for Synology DSM deploy hook
+      #4965 closed 2024-01-25 time for manual renewal of ecc cert to process
+      #4706 merged 2023-07-19 Add SYNO_USE_TEMP_ADMIN variable & Fix broken logic
+      #3915 closed 2022-01-29 Dockerfile: run crond foreground
+      #117 closed 2016-04-02 Slackware 14.2 (-current prerelease) - le is unable to find /etc/httpd/httpd.conf 
+      #93 closed 2016-03-10 Verify error:Error parsing key authorization file: Invalid key authorization: malformed token
+      #1271 closed 2018-02-16 Need option to limit/specify which NIC/interface to listen on for multihosted  multi-nic router
+  sigkill        2 hit(s) (all listed)
+      #7183 closed 2026-08-07 Add UISP (nico640/docker-unms) deploy hook
+      #2659 closed 2020-01-01 Include init process in docker image
+  sigint         2 hit(s) (all listed)
+      #2376 closed 2019-07-03 Docker image does not run on ARM processors
+      #3461 closed 2021-03-27 Docker deploy hook - Why not restart container to reload certificate?
+  ctrl-c         11 hit(s) (all listed)
+      #4968 closed 2024-01-26 Fix "static" cronjob timing with the Docker image
+      #310 closed 2016-10-02 TLS challenge problem on a server with IPv6/IPv4 dual stack network.
+      #3732 closed 2021-10-03 Report bugs to cPanel dns api
+      #5098 closed 2024-04-19 Custom csr support in _createcsr function
+      #4038 closed 2022-04-15 docker: use `sleep infinity` instead `sleep 1`
+      #3915 closed 2022-01-29 Dockerfile: run crond foreground
+      #93 closed 2016-03-10 Verify error:Error parsing key authorization file: Invalid key authorization: malformed token
+      #2062 closed 2019-01-27 不能自动续期，请教该如何处理
+      #2302 closed 2019-05-29 Having problems renewing certs
+      #2518 closed 2019-10-01 Domain validation never completes due to curl error
+      #2757 closed 2020-02-27 Have crond as PID 1 in container
+  power          33 hit(s) (all listed)
+      #5330 open 2024-10-14 Power-MIAB create
+      #6570 open 2025-10-17 Feature Request: Enforce --days renewal schedule and add pre-issuance validity check
+      #2348 closed 2019-06-19 Add support for Aurora DNS
+      #4337 closed 2022-10-05 Portunity DNS support
+      #3067 closed 2020-07-23 Tunable _hash_url
+      #4473 closed 2023-01-24 Preview Environments for PRs on acme.sh — Uffizzi Integration
+      #2550 closed 2019-10-22 Report MailinaBox DNS API Bugs
+      #5258 closed 2024-08-21 MIAB DNS script TXT record bug
+      #6674 closed 2025-12-08 DNS auth creates TXT record with "value=" prepended to the payload causing validation failure.
+      #6212 closed 2025-01-29 Synology: unable to replace expired cert with --force
+      #4002 closed 2022-03-29 Do not use spaces for indentation
+      #2401 closed 2019-07-23 Certificates have issues Fake LE Intermediate X1 without using --staging/--test
+      #6557 closed 2025-10-09 Acme.sh doesnt issue certificates starting version 3.0.6
+      #4383 closed 2022-11-07 更新出问题，并且附上日志，请大家帮忙看看问题出在哪里？
+      #4954 closed 2024-01-19 How to issue a certificate for Nginx installed via binary?
+      #2440 closed 2019-08-13 Privilege separation
+      #6743 closed 2026-01-05 Wiki edited
+      #2784 closed 2020-03-09 Preparation to use acme.sh Webroot mode on machine with certbot and certificates installed?
+      #2727 closed 2020-02-09 Report bugs for Synology DSM deploy hook
+      #5327 closed 2024-10-14 Power-Mail-in-a-Box create
+  outage         9 hit(s) (all listed)
+      #3841 closed 2021-12-06 Can not init api, for https://acme.zerossl.com/v2/DV90
+      #3775 closed 2021-10-22 DNS解析失败
+      #4026 closed 2022-04-10 Certificate does not renew, started to show error, what to do?
+      #6212 closed 2025-01-29 Synology: unable to replace expired cert with --force
+      #3850 closed 2021-12-10 Issuing request gives 504 gateway timeout error
+      #4645 closed 2023-05-28 acme.sh get status invalid response from zerossl, but token is there and I can curl it
+      #3096 closed 2020-08-09 --always-force-new-domain-key should pre-generate the future domain key pair
+      #4376 closed 2022-10-30 renew证书失败
+      #2015 closed 2019-01-08 DNS mode: use dns over https to poll the dns status, instead of a fixed sleep time
+  ENOSPC         0 hit(s)
+  disk           41 hit(s) (all listed)
+      #7247 open 2026-09-10 $domain.conf emptied when disk is full
+      #4397 open 2022-11-16 Openhabian Deployment script
+      #7278 merged 2026-09-21 fix: keep the conf intact when writing it fails (#7247)
+      #7254 merged 2026-09-12 Add JetKVM SSH deploy hook
+      #7139 closed 2026-07-18 -deploy-hook cpanel_uapi getting [uapi] This program must be passed the --user flag when run by root!
+      #1523 closed 2018-04-15 acme.sh leaves empty tmp files forever
+      #7006 merged 2026-06-03 acme.sh: validate cert response before writing .cer
+      #5012 closed 2024-02-21 Empty private key file generated
+      #1368 closed 2018-03-14 How to maintain multiple nodes generating certificates using acme.sh?
+      #6437 closed 2025-07-07 Can't (?) remove ECC certificates
+      #2296 closed 2019-05-27 Poor performance when managing a lot of domains
+      #1260 closed 2018-02-12 Feature Request: NSD DNS server support using nsd-control
+      #6635 closed 2025-11-23 enhancement: cert display in logs
+      #2011 closed 2019-01-07 Failed to generate certificate in docker using Gandi API
+      #3684 closed 2021-08-29 Register account error
+      #7167 closed 2026-07-31 Doesn't work anymore since may 1st
+      #6609 closed 2025-11-15 环境缺失openssl-tool时生成的accout证书有问题
+      #6436 merged 2025-07-07 Add 'localcopy' deploy-hook 
+      #1317 closed 2018-03-01 Unable to install the Let's Encrypt cert on my Synology
+      #2727 closed 2020-02-09 Report bugs for Synology DSM deploy hook
+  partial        29 hit(s) (all listed)
+      #7122 open 2026-07-13 dns_aws: add IAM Roles Anywhere (X.509) authentication
+      #6887 open 2026-03-31 dns_aws: add AWS_ROLE_ARN support for cross-account Route53 access
+      #7278 merged 2026-09-21 fix: keep the conf intact when writing it fails (#7247)
+      #3242 closed 2020-11-01 Saved GD Key and GD Secret should be stored per domain rather than globally
+      #6811 merged 2026-02-26 Add Calrissia.be API
+      #6807 closed 2026-02-25 acme_challenge dns record not removed after issue succesfull finalized using cPanel
+      #2590 closed 2019-11-15 signcsr with autodns doesn't work with challenge-alias
+      #6915 merged 2026-04-17 fix: panos commit overhaul
+      #2743 closed 2020-02-20 Request: Add method to EXPAND an already existing certificate
+      #1261 closed 2018-02-13 Update dns api to support v2 wildcard cert
+      #1766 closed 2018-08-04 Unsuccesful update of multi domain certificates (verify error:Invalid response)
+      #3973 closed 2022-03-08 dns_edgedns: Akamai Edge DNS API requests intermittently fail due to use of an unreliable time source
+      #6782 closed 2026-02-11 Wiki edited
+      #6928 merged 2026-04-24 sync
+      #6666 closed 2025-12-05 Wiki edited
+      #6664 closed 2025-12-05 Wiki edited
+      #6562 closed 2025-10-10 Wiki edited
+      #6561 closed 2025-10-10 Wiki edited
+      #6558 closed 2025-10-10 Wiki edited
+      #6536 closed 2025-09-27 Wiki edited
+  incomplete     21 hit(s) (all listed)
+      #6693 open 2025-12-18 [dnsapi] dns_inwx: Improve handling of multiple TXT records in removal by filtering on content like dns_cf.sh
+      #6901 open 2026-04-12 Add certificate upload via CPanel JSON API
+      #4396 closed 2022-11-16 Why is the certificate chain incomplete when using myssl to detect domain names?
+      #7098 closed 2026-07-06 DNS Comlaude DNS Provider
+      #4497 closed 2023-02-09 Improve Wiki page for running acme.sh on OpenWrt
+      #1594 closed 2018-05-13 Puzzled...keytool
+      #4788 closed 2023-09-07 Deploy tool is not working as expected for HAProxy
+      #6256 closed 2025-03-01 CURL Info: SSL certificate problem: unable to get local issuer certificate
+      #6725 closed 2025-12-30 Make sure the grep command  works on Linux as well as BSD variants to login to a Synology NAS with 2FA enabled
+      #3616 closed 2021-07-22 dns_ovh.sh: random cert issuance failure / dns zone pollution
+      #6607 closed 2025-11-12 Add Postfix deploy hookCreate postfix.sh
+      #6802 closed 2026-02-22 Wiki edited
+      #5008 merged 2024-02-21 Fix for empty error objects in response breaking extraction of domain validation types
+      #4581 merged 2023-04-04 haproxy deploy hook updates existing certificate over stats socket
+      #2659 closed 2020-01-01 Include init process in docker image
+      #4151 merged 2022-06-22 Added new 'dns' provider script for https://dns.services
+      #618 closed 2017-02-14 acme.sh file names confusion (nodejs config)
+      #1230 closed 2018-02-01 --httpport is not working
+      #1315 closed 2018-02-28 HE.net doesn't work with more than one zone
+      #1285 closed 2018-02-18 Trying to find a better stand-alone (socat) solution 
+  dataloss       0 hit(s)
+  recover        17 hit(s) (all listed)
+      #7250 open 2026-09-11 fix: honor account email precedence and registration semantics
+      #6205 open 2025-01-18 Add Exponential Backoff for Route53 Throttling in dns_aws.sh
+      #3707 closed 2021-09-21 [QUESTION] How to recover lost private key?
+      #1478 closed 2018-04-01 fails to recover if apache conf has error
+      #7102 closed 2026-07-07 Add DNS API support for ps.kz
+      #7184 merged 2026-08-07 Add UniFi OS Server deploy hook
+      #4921 closed 2023-12-20 Lexicon support is not correctly differentiating between a Zone and a Domain
+      #3841 closed 2021-12-06 Can not init api, for https://acme.zerossl.com/v2/DV90
+      #4026 closed 2022-04-10 Certificate does not renew, started to show error, what to do?
+      #3359 closed 2021-01-11 Report bugs to unifi deploy hook
+      #830 closed 2017-05-08 [Question] Recreate account from existing certificate/private key to renew/expand certificate
+      #146 closed 2016-04-16 Only RSA or EC Key is supported.
+      #1599 closed 2018-05-14 Quotes or special characters in reload command
+      #1526 closed 2018-04-16 What is eligible to backup to ensure crash recovering when having a lot of cert ?
+      #1164 closed 2018-01-06 not idn domain, but ask install 'idn' command first. 
+      #1913 closed 2018-11-06 How to migrate acme.sh to another computer G
+      #2044 closed 2019-01-20 unable to get certificate using LetsEncrypt plugin in OpnSense
+  recovery       5 hit(s) (all listed)
+      #6474 closed 2025-08-13 Synology no longer works without socat
+      #4988 closed 2024-02-05 After issue the cert, cannot use ssh to connect the VPS
+      #6255 closed 2025-02-28 Private Key Not Generated When Using ACME for Wildcard Certificate with ECC Encryption
+      #3388 closed 2021-01-31 Re deploy failed hook on next renew time that skip renew
+      #1526 closed 2018-04-16 What is eligible to backup to ensure crash recovering when having a lot of cert ?
+  rollback       10 hit(s) (all listed)
+      #4397 open 2022-11-16 Openhabian Deployment script
+      #1884 closed 2018-10-18 VMware VCSA 6.7 and VCSA 6.7U1 Rollback Issues
+      #6506 closed 2025-09-08 set-notify  error on macos，debian work.
+      #6272 closed 2025-03-14 ACME Error add txt for domain
+      #3309 closed 2020-12-16 Feature Request: Keep last {n} certificates
+      #6864 merged 2026-03-17 Add bHosted.nl DNS API
+      #6499 merged 2025-09-02 socat rejects TCP-LISTEN on ipv6 only networks
+      #5162 closed 2024-05-30 fornex.com API v.2.2.0 support
+      #85 closed 2016-03-03 Is there a rationale behind using "cp -p" instead of "mv"
+      #84 closed 2016-03-03 Removed redundant backup in installcert 
+  resume         6 hit(s) (all listed)
+      #7237 merged 2026-09-06 Poll the order this run created, not the one the previous cert came from
+      #7176 closed 2026-08-04 Feature request: Prevent regeneration of TXT _acme_challenge in DNS manual mode when CA needs more time to validate DNS
+      #7177 closed 2026-08-04 dns_manual renew loses Le_OrderFinalize and Le_LinkOrder causing empty finalize URL
+      #7085 closed 2026-07-05 dns persist mode + lets encrypt broken
+      #4599 closed 2023-04-16 Replace Yandex PDD api with Yandex360 api
+      #3910 closed 2022-01-26 The supported validation types are: http-01 dns-01 , but you specified: tls-alpn-01
+  half-written   5 hit(s) (all listed)
+      #7197 merged 2026-08-15 fix: dynv6 record parsing
+      #1111 closed 2017-11-12 Adding tinydns format when printing the TXT record needed for DNS verification
+      #5062 closed 2024-03-21 Zerossl Register account Error
+      #1655 closed 2018-06-05 Please move the project away from GitHub
+      #4041 closed 2022-04-18 [BUG]The certificate is not up-to-date after renewal
+  wipe           27 hit(s) (all listed)
+      #7276 open 2026-09-20 Add deploy hook for Redfish-compatible BMCs
+      #6350 open 2025-05-11 Add WEXBO DNS API
+      #6173 open 2024-12-27 Add script for facileManager DNS API client
+      #6466 open 2025-08-04 new: [dnsapi] RESTENA DNS API
+      #6885 open 2026-03-30 Add Abion.com DNS API
+      #7213 closed 2026-08-27 `--renew` destroy `cert.conf` file + the default downloaded/upgraded version is not the latest GitHub release
+      #6963 closed 2026-05-12 Hosts doesn't need to exist for  a new TXT host entry to be written.
+      #7145 merged 2026-07-22 Feat: Shelly deploy hook for firmware 2.0.0+
+      #3079 closed 2020-07-30 Existing Cron Jobs Disapeared After Install
+      #7126 merged 2026-07-14 sync
+      #7078 merged 2026-07-03 sync
+      #4529 closed 2023-03-01 SSH deploy hook fails because hosts are not saved in conf file
+      #885 closed 2017-06-17 Renewal certificate Synology not working
+      #6843 merged 2026-03-10 Microwavenby dns hostinger
+      #5213 closed 2024-07-20 Report bugs to Yandex 360 for Business DNS API
+      #1186 closed 2018-01-15 AWS key not being picked up
+      #3359 closed 2021-01-11 Report bugs to unifi deploy hook
+      #6241 merged 2025-02-21 Multideploy: Deploy to multiple hooks of the same type
+      #2444 closed 2019-08-14 Le_ReloadCmd Base64?
+      #3424 closed 2021-02-24 ZeroSSL - Certificate Issueance Failed - Terms Of Service Have Changed
+  wipes          8 hit(s) (all listed)
+      #6350 open 2025-05-11 Add WEXBO DNS API
+      #6885 open 2026-03-30 Add Abion.com DNS API
+      #7145 merged 2026-07-22 Feat: Shelly deploy hook for firmware 2.0.0+
+      #5213 closed 2024-07-20 Report bugs to Yandex 360 for Business DNS API
+      #6843 merged 2026-03-10 Microwavenby dns hostinger
+      #885 closed 2017-06-17 Renewal certificate Synology not working
+      #220 closed 2016-06-23 Add option on --install to skip cron job installation
+      #2052 closed 2019-01-23 Namecheap dns replaces '+' with ' ' in existing txt records
+  erase          15 hit(s) (all listed)
+      #7249 closed 2026-09-10 `ssh` deploy hook fails on first-ever deploy when `DEPLOY_SSH_BACKUP` is enabled (default) - backup step doesn't check whether the source file exists before `cp`
+      #2703 closed 2020-01-23 Dynu dnsapi does not DELETE dns record via wget
+      #4537 closed 2023-03-04 feature request: wolfSSL support
+      #1261 closed 2018-02-13 Update dns api to support v2 wildcard cert
+      #2217 closed 2019-04-12 Certificate Expired, but it shows renewed and gets skipped
+      #6244 closed 2025-02-24 DNS Verification Configurable Timeout and Retry Interval
+      #5280 closed 2024-09-07 Synology Deploy hook "Unable to find certificate: syn01.mydomain.com and  is not set."
+      #3674 merged 2021-08-25 Deploy ssh certs/key using scp instead of stdout over ssh channel
+      #4050 closed 2022-04-25 ssh deploy doesn't work if remote dir nonexistent
+      #3560 closed 2021-06-16 v3.0 - ssh deploy tries to deploy zerossl certs from letsencrypt directory
+      #1637 closed 2018-05-30 SSH Deploy 时会在log中记录私钥
+      #2164 closed 2019-03-14 OVH API - Error on renewal / signing "Verify error:Incorrect TXT record"
+      #2300 closed 2019-05-29 Ovh dns api script bug
+      #2991 closed 2020-06-13 Cron install over wrote crontab 
+      #2481 merged 2019-09-12 Add OPNsense Bind API Support
+  erasing        1 hit(s) (all listed)
+      #6244 closed 2025-02-24 DNS Verification Configurable Timeout and Retry Interval
+  erased         9 hit(s) (all listed)
+      #7249 closed 2026-09-10 `ssh` deploy hook fails on first-ever deploy when `DEPLOY_SSH_BACKUP` is enabled (default) - backup step doesn't check whether the source file exists before `cp`
+      #2703 closed 2020-01-23 Dynu dnsapi does not DELETE dns record via wget
+      #2217 closed 2019-04-12 Certificate Expired, but it shows renewed and gets skipped
+      #3674 merged 2021-08-25 Deploy ssh certs/key using scp instead of stdout over ssh channel
+      #4050 closed 2022-04-25 ssh deploy doesn't work if remote dir nonexistent
+      #3560 closed 2021-06-16 v3.0 - ssh deploy tries to deploy zerossl certs from letsencrypt directory
+      #1637 closed 2018-05-30 SSH Deploy 时会在log中记录私钥
+      #2164 closed 2019-03-14 OVH API - Error on renewal / signing "Verify error:Incorrect TXT record"
+      #2991 closed 2020-06-13 Cron install over wrote crontab 
+  destroy        14 hit(s) (all listed)
+      #7213 closed 2026-08-27 `--renew` destroy `cert.conf` file + the default downloaded/upgraded version is not the latest GitHub release
+      #2426 closed 2019-08-04 acme.sh --deploy destroys `.conf` file
+      #1073 closed 2017-10-15 ran acme.sh --issue --apache and it destroyed my apache config.
+      #7187 closed 2026-08-09 Acme.sh adds TXT record to Bind9 but then starts querying Cloudflare
+      #4996 closed 2024-02-12 Can't issue Multi Domain on the same challenge-alias - dns_nsupdate 
+      #3040 closed 2020-07-12 Error add txt for domain when trying to use nsupdate to automatically issue cert
+      #4221 closed 2022-08-04 Acme DNS can issue only 1 subdomain
+      #292 closed 2016-09-18 certificate and key deleted on automatic renewal
+      #2363 closed 2019-06-29 The domain '*.betestar888.com' is not a cert name
+      #4659 closed 2023-06-08 acme.sh runs arbitrary commands from a remote server
+      #3699 closed 2021-09-10 Vault CLI deploy hook does not store env variables
+      #191 closed 2016-05-21 can not get domain token $d
+      #2031 closed 2019-01-14 Invalid Domain with DNS Made Easy DNS
+      #41 closed 2016-01-27 FYI, pfsense doesn't work
+  destroys       2 hit(s) (all listed)
+      #2426 closed 2019-08-04 acme.sh --deploy destroys `.conf` file
+      #4221 closed 2022-08-04 Acme DNS can issue only 1 subdomain
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6887 open 2026-03-31 dns_aws: add AWS_ROLE_ARN support for cross-account Route53 access
+      #7099 open 2026-07-07 deploy: add ali_cas and ali_cas_oss hooks
+      #7268 closed 2026-09-19 Wiki edited
+      #7284 closed 2026-09-24 Wiki edited
+      #7266 closed 2026-09-19 Wiki edited
+      #7267 open 2026-09-19 Add deploy hook for nginx proxy manager and NPM plus
+      #6885 open 2026-03-30 Add Abion.com DNS API
+      #7250 open 2026-09-11 fix: honor account email precedence and registration semantics
+      #3770 closed 2021-10-18 Suggestion: installcert use config instead of overwriting it
+      #3444 closed 2021-03-09 Renewal of certificate overwrites current certificate with a zero byte file.
+      #7163 closed 2026-07-25 Clean up `http.header` file
+      #7105 closed 2026-07-08 Manual DNS renewal downloads previous cert due to stale Le_LinkOrder/Le_LinkCert reuse
+      #7106 closed 2026-07-08 --Keylength doesn't work with --cron modus
+      #7249 closed 2026-09-10 `ssh` deploy hook fails on first-ever deploy when `DEPLOY_SSH_BACKUP` is enabled (default) - backup step doesn't check whether the source file exists before `cp`
+      #6222 closed 2025-02-07 DNS challenge multiple INFOMANIAK token per domain
+      #7080 merged 2026-07-04 Add support for Account Key Rollover
+      #7033 merged 2026-06-19 Adding custom Port definitions for truenas
+      #1037 closed 2017-09-23 running test and prod, asks for force
+      #7086 merged 2026-07-06 sync
+      #3935 closed 2022-02-10 Feature request: separate certificates in ca-server-based directories
+  clobber        10 hit(s) (all listed)
+      #7135 closed 2026-07-17 Feature request: when system-installed, do not clobber in .acme.sh/acme.sh
+      #7163 closed 2026-07-25 Clean up `http.header` file
+      #2840 closed 2020-04-05 Report bugs to Joker.com DNS API
+      #4848 closed 2023-10-31 Concatenate fullchain.cer file without empty lines - broken chain in haproxy
+      #908 closed 2017-06-28 Unable to generate certicate "status": 400
+      #1330 closed 2018-03-06 ACME v2 fullchain.cer missing CA
+      #23 closed 2016-01-13 Should not skip regenerating CSR if SubjectAltNames have changed
+      #1331 merged 2018-03-06 Test ACME v2 before copying certificate to fullchain (again)
+      #1591 merged 2018-05-10 Update haproxy deploy hook
+      #2546 merged 2019-10-15 Improve debug capabilities when using bash
+  blank          64 hit(s) (all listed)
+      #6789 open 2026-02-14 Fix dns_arvan: Correct API usage for domain lookup and improve error handling
+      #6395 open 2025-06-10 Deploy to plex
+      #7284 closed 2026-09-24 Wiki edited
+      #7177 closed 2026-08-04 dns_manual renew loses Le_OrderFinalize and Le_LinkOrder causing empty finalize URL
+      #7123 closed 2026-07-13 Wiki Guard workflow action fails on forked repo
+      #7214 merged 2026-08-27 Update netcup DNS API to support new API
+      #7254 merged 2026-09-12 Add JetKVM SSH deploy hook
+      #7132 merged 2026-07-17 sync
+      #1940 closed 2018-12-01 extra line in fullchain
+      #7133 merged 2026-07-17 sync
+      #3110 closed 2020-08-18 Unexpected empty line between end certificate and begin certificate
+      #7227 merged 2026-08-31 Add support for Private DNS zones on Azure
+      #4602 closed 2023-04-17 Key Authorization file doesn't match challenge. Using Pebble for testing.
+      #6388 closed 2025-06-06 Acme.sh looks for domain.conf when deploying ignoring the env
+      #4812 closed 2023-09-28 _acme-challenge TXT Record Not Being Written To Zone File
+      #7033 merged 2026-06-19 Adding custom Port definitions for truenas
+      #7166 merged 2026-07-29 Refactor dns_freemyip.sh for enhanced compatibility
+      #3009 closed 2020-06-27 Inconsistent Usage message needs a thorough clean up
+      #4291 closed 2022-09-06  Report bugs to selfhost dns api
+      #6691 closed 2025-12-18 fix: improve Servercow DNS API
+  unreadable     5 hit(s) (all listed)
+      #7254 merged 2026-09-12 Add JetKVM SSH deploy hook
+      #2214 closed 2019-04-11 Problematic folder-permissions on renew
+      #4457 merged 2023-01-04 Allow renew time relative to the expiration date
+      #825 closed 2017-05-04 dns_nsupdate.sh error -  key xxxx is unreadable
+      #414 merged 2016-11-21 Cyon.ch DNS API
+  garbage        7 hit(s) (all listed)
+      #4382 open 2022-11-06 Fix dns_transip: Added support for API KEY variable
+      #6955 open 2026-05-09 _FILE support for reading in convention based Docker secrets from the environment
+      #7163 closed 2026-07-25 Clean up `http.header` file
+      #4145 closed 2022-06-18 Can't find error, hence can't fix PR tests & useless docs
+      #4151 merged 2022-06-22 Added new 'dns' provider script for https://dns.services
+      #3686 closed 2021-09-01 acme.sh should NOT default to zerossl
+      #1147 closed 2017-12-17 Verify error: Invalid Response
+  mangled        3 hit(s) (all listed)
+      #7232 merged 2026-09-03 fix: poweradmin dnsapi leaves hanging txt records
+      #5043 merged 2024-03-07 Add deploy/zyxel_gs1900.sh
+      #3041 closed 2020-07-12 Dynu DNS Authentication fails silently
+  contents       76 hit(s) (all listed)
+      #7122 open 2026-07-13 dns_aws: add IAM Roles Anywhere (X.509) authentication
+      #7244 merged 2026-09-09 Add Opteamax DNS API
+      #968 closed 2017-08-10 DD-WRT NGINX proxy gives error sed: bad regex '.*\("error":\{[^\}]*\).*': Invalid contents of {}
+      #7091 merged 2026-07-06 wiki-guard: trust repo/org members with write access in all rule checks
+      #7095 merged 2026-07-06 sync
+      #7096 merged 2026-07-06 one-click revert and ban
+      #6399 closed 2025-06-16 Request support for Haproxy when creating .pem Certs
+      #4337 closed 2022-10-05 Portunity DNS support
+      #2968 closed 2020-05-29 acme.sh: line 7140: acme.sh: command not found
+      #3803 closed 2021-11-11 when certificate and key for --install-cert are symbolic links pointing to same file, functionality is broken
+      #7042 merged 2026-06-22 Implemented support for Aruba Business DNS API
+      #1942 closed 2018-12-02 renewed certificate not installed into /etc/nginx
+      #7005 merged 2026-06-03 ci: Add GitHub Container Registry (ghcr.io) publishing
+      #839 closed 2017-05-12 Options to modify SAN domains on an existing managed cert would be nice
+      #1111 closed 2017-11-12 Adding tinydns format when printing the TXT record needed for DNS verification
+      #2078 closed 2019-02-04 Acme.sh revoke issues
+      #1843 closed 2018-09-13 acme.sh does not work on webfolder path including spaces
+      #1506 closed 2018-04-10 AWS Route53 rate exceeded on certificate renewal cron
+      #6974 merged 2026-05-19 Add LaoDC DNS API (dns_laodc)
+      #3212 closed 2020-10-08 Synology renewing wrong certificate
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #7182 open 2026-08-07 Report bugs to unifios deploy hook
+      #4210 open 2022-07-29 Report bug to Yandex Cloud dns api
+      #7290 open 2026-09-28 Add optional SYNO_USE_TOKEN switch for Synology SRM compatibility
+      #7001 open 2026-06-02 Report bugs to creoline DNS API
+      #4521 open 2023-02-27 Added deploy script for minio
+      #7198 open 2026-08-16 Add hp_ews deploy hook for HP printers
+      #7297 closed 2026-10-04 Report bugs to MVMNET DNS API
+      #7241 closed 2026-09-09 Report bugs to Optidata Cloud DNS API (dns_optidata)
+      #7278 merged 2026-09-21 fix: keep the conf intact when writing it fails (#7247)
+      #6885 open 2026-03-30 Add Abion.com DNS API
+      #2702 open 2020-01-23 Report bugs to dynv6 DNS API 
+      #7181 closed 2026-08-07 Report bugs to uisp deploy hook
+      #7243 merged 2026-09-09 Add Optidata Cloud DNS API (dns_optidata)
+      #7225 closed 2026-08-30 Wiki edited
+      #7242 closed 2026-09-09 Wiki edited
+      #7135 closed 2026-07-17 Feature request: when system-installed, do not clobber in .acme.sh/acme.sh
+      #7152 closed 2026-07-24 Report bugs to Realtoxmedia Cloudpanel DNS API (dns_rltx)
+      #7240 closed 2026-09-08 Cannot find hook file for matrix
+      #7222 closed 2026-08-30 Wiki edited
+      #2305 open 2019-06-02 Report bugs to FreeDNS dns api
+  unclean        0 hit(s)
+  shutdown       20 hit(s) (all listed)
+      #7086 merged 2026-07-06 sync
+      #7187 closed 2026-08-09 Acme.sh adds TXT record to Bind9 but then starts querying Cloudflare
+      #4996 closed 2024-02-12 Can't issue Multi Domain on the same challenge-alias - dns_nsupdate 
+      #1317 closed 2018-03-01 Unable to install the Let's Encrypt cert on my Synology
+      #1088 closed 2017-10-30 Verify Error:Connection Refused on latest Kong DD-WRT builds.
+      #3040 closed 2020-07-12 Error add txt for domain when trying to use nsupdate to automatically issue cert
+      #968 closed 2017-08-10 DD-WRT NGINX proxy gives error sed: bad regex '.*\("error":\{[^\}]*\).*': Invalid contents of {}
+      #4646 merged 2023-05-28 Remove external OTP dependency from deploy hook Synology_DSM.sh
+      #4659 closed 2023-06-08 acme.sh runs arbitrary commands from a remote server
+      #2659 closed 2020-01-01 Include init process in docker image
+      #3524 closed 2021-05-25 Can't renew wildcard for VPS automatically.
+      #3172 closed 2020-09-14 Upgrading to api version 2
+      #296 closed 2016-09-20 standalone/tls: port test failures because of containers on hosts of OpenVZ guests
+      #828 closed 2017-05-06 pfsense response='{"type":"urn:acme:error:malformed","detail":"Unable to update challenge :: The challenge is not pending.","status": 400}'
+      #817 closed 2017-05-02 ipv6 option is broken
+      #931 closed 2017-07-05 Leading space reported in subject name
+      #821 closed 2017-05-03 nginx fails with no server name
+      #1078 closed 2017-10-20 pfSense acme.sh version  0.1.20 can't issue new cert by any http method, but can renew existing cert
+      #1276 closed 2018-02-16 socat timing problems ??
+      #1285 closed 2018-02-18 Trying to find a better stand-alone (socat) solution 
+  reboot         32 hit(s) (all listed)
+      #6446 open 2025-07-14 Deploy hook for TPLink Omada Controller
+      #7254 merged 2026-09-12 Add JetKVM SSH deploy hook
+      #7255 closed 2026-09-13 Wiki edited
+      #7145 merged 2026-07-22 Feat: Shelly deploy hook for firmware 2.0.0+
+      #7186 closed 2026-08-08 Wiki edited
+      #6124 closed 2024-12-01 acme.sh image requires root access when using Docker
+      #7148 closed 2026-07-22 Wiki edited
+      #7175 closed 2026-08-04 Feature request: defer reload until the last certificate
+      #1226 closed 2018-01-26 Create Edgemax deploy script.
+      #2721 closed 2020-02-06 deploy: mac os x: security import, control serveradmin /etc/certificates generation
+      #275 closed 2016-08-25 Keys, dhparam.pem, acme.sh - everything to 0 bytes and not possible to issue a new cert
+      #7024 closed 2026-06-15 ARI failed to renew certificate on suggested time.
+      #5215 closed 2024-07-20 [cron] sleep random seconds (<59), if not interactive or forced
+      #4968 closed 2024-01-26 Fix "static" cronjob timing with the Docker image
+      #1197 closed 2018-01-16 A couple issues with the Synology NAS Guide
+      #1098 closed 2017-11-01 Using LetsEncrypt certificates with DD-WRT
+      #3991 closed 2022-03-19 feat: Add deploy script for HP iLO (using Redfish REST API)
+      #6709 merged 2025-12-23 Docker with non-root using supercronic
+      #4845 closed 2023-10-30 [Feature] 新增一个deploy重试机制，在cron中重试deploy
+      #1317 closed 2018-03-01 Unable to install the Let's Encrypt cert on my Synology
+  disk+full      15 hit(s) (all listed)
+      #7247 open 2026-09-10 $domain.conf emptied when disk is full
+      #7278 merged 2026-09-21 fix: keep the conf intact when writing it fails (#7247)
+      #7139 closed 2026-07-18 -deploy-hook cpanel_uapi getting [uapi] This program must be passed the --user flag when run by root!
+      #7167 closed 2026-07-31 Doesn't work anymore since may 1st
+      #6436 merged 2025-07-07 Add 'localcopy' deploy-hook 
+      #1317 closed 2018-03-01 Unable to install the Let's Encrypt cert on my Synology
+      #2727 closed 2020-02-09 Report bugs for Synology DSM deploy hook
+      #2217 closed 2019-04-12 Certificate Expired, but it shows renewed and gets skipped
+      #4646 merged 2023-05-28 Remove external OTP dependency from deploy hook Synology_DSM.sh
+      #3096 closed 2020-08-09 --always-force-new-domain-key should pre-generate the future domain key pair
+      #4372 merged 2022-10-27 Reduce `acmetest` `git clone` depth to speed up CI pipeline
+      #194 closed 2016-05-25 FreeBSD fetch additionally to curl/wget
+      #371 closed 2016-11-07 Randomized hour/minute for cronjob instead of exactly midnight at install time
+      #1581 closed 2018-05-02 "Only RSA or EC key is supported" error on Tomato router os
+      #1417 closed 2018-03-18 Can not find account url
+  data+loss      9 hit(s) (all listed)
+      #7059 merged 2026-07-01 Add Glesys dnsapi provider
+      #6255 closed 2025-02-28 Private Key Not Generated When Using ACME for Wildcard Certificate with ECC Encryption
+      #4152 closed 2022-06-24 Report bugs to DNS.Services dns api
+      #1133 closed 2017-12-07 Issue create the certificate LetsEncrypt  : acme.sh standalone mode
+      #3096 closed 2020-08-09 --always-force-new-domain-key should pre-generate the future domain key pair
+      #3727 closed 2021-10-02 Please refer to https://curl.haxx.se/libcurl/c/libcurl-errors.html for error code: 60
+      #203 closed 2016-05-30 Error, can not get domain token 
+      #1556 closed 2018-04-24 How to upgrade acme.sh if installed as Docker daemon?
+      #3603 closed 2021-07-13 failed to use acme.sh to generate cert 
+  partial+write  3 hit(s) (all listed)
+      #7278 merged 2026-09-21 fix: keep the conf intact when writing it fails (#7247)
+      #2727 closed 2020-02-09 Report bugs for Synology DSM deploy hook
+      #4646 merged 2023-05-28 Remove external OTP dependency from deploy hook Synology_DSM.sh
+  crash+safe     2 hit(s) (all listed)
+      #6914 closed 2026-04-17 [Bug] dns_dnsexit plugin fails with 503 error due to deprecated legacy endpoint (update.dnsexit.com)
+      #4151 merged 2022-06-22 Added new 'dns' provider script for https://dns.services
+  atomic+write   5 hit(s) (all listed)
+      #7254 merged 2026-09-12 Add JetKVM SSH deploy hook
+      #6607 closed 2025-11-12 Add Postfix deploy hookCreate postfix.sh
+      #2440 closed 2019-08-13 Privilege separation
+      #4848 closed 2023-10-31 Concatenate fullchain.cer file without empty lines - broken chain in haproxy
+      #949 merged 2017-07-24 Candlerb/unifi
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5104 open 2024-04-22 Triggered _on_issue_err with "config file is empty, can not read CA_KEY_HASH" notice before
+      #4898 closed 2023-12-04 Prevent multiple parallel --renew runs on same domain
+      #1625 closed 2018-05-27 无法找到NGINX_CONF
+      #7036 closed 2026-06-21 Google Trust Services gave Invalid or unrecognized query parameter.
+      #2440 closed 2019-08-13 Privilege separation
+      #2401 closed 2019-07-23 Certificates have issues Fake LE Intermediate X1 without using --staging/--test
+      #3216 closed 2020-10-12 DYNU DNS : Invalid domain. Error add txt for domain:_acme-challenge.XXXX.dynu.net
+      #4672 closed 2023-06-13 Register account Error
+      #1390 closed 2018-03-15 Le_OrderFinalize not found - Detail: Parse error reading JWS
+      #2733 closed 2020-02-13 error: Create new order error. Le_OrderFinalize not found.
+      #1853 closed 2018-09-25 使用dns alias模式某些域名无法签发通配符证书
+      #1692 closed 2018-06-25 Ali API wildcard domain 
+      #1479 closed 2018-04-01 IDN doesn't work well
+      #3983 closed 2022-03-16 timeout
+      #1887 closed 2018-10-18 Can't sign CSR because domain key exists.
+      #4972 closed 2024-01-30 Error, can not get domain token entry *.domain.tld for dns-01
+      #6936 closed 2026-05-01 Wiki edited
+      #1710 closed 2018-07-03 Verify error
+      #4566 closed 2023-03-27 Verify error on / behind haproxy
+      #968 closed 2017-08-10 DD-WRT NGINX proxy gives error sed: bad regex '.*\("error":\{[^\}]*\).*': Invalid contents of {}
+  write+failure  32 hit(s) (all listed)
+      #7278 merged 2026-09-21 fix: keep the conf intact when writing it fails (#7247)
+      #6885 open 2026-03-30 Add Abion.com DNS API
+      #6908 open 2026-04-16 Add DNScale DNS API support
+      #7254 merged 2026-09-12 Add JetKVM SSH deploy hook
+      #7249 closed 2026-09-10 `ssh` deploy hook fails on first-ever deploy when `DEPLOY_SSH_BACKUP` is enabled (default) - backup step doesn't check whether the source file exists before `cp`
+      #7092 merged 2026-07-06 wiki-guard: log the number of write-access members loaded
+      #7166 merged 2026-07-29 Refactor dns_freemyip.sh for enhanced compatibility
+      #7094 merged 2026-07-06 wiki-guard: use WIKI_GUARD_TOKEN (PAT with read:org) to enumerate org…
+      #7188 closed 2026-08-09 netcup CloudDNS zones are not reachable via the legacy CCP DNS API
+      #7150 merged 2026-07-23 dns_yc: fix TXT record removal failing with "Unknown key file format"
+      #6851 closed 2026-03-11 dns_infomaniak plugin creates invalid zone endpoint (/2/zones/{/records)
+      #7184 merged 2026-08-07 Add UniFi OS Server deploy hook
+      #7006 merged 2026-06-03 acme.sh: validate cert response before writing .cer
+      #6607 closed 2025-11-12 Add Postfix deploy hookCreate postfix.sh
+      #6843 merged 2026-03-10 Microwavenby dns hostinger
+      #5213 closed 2024-07-20 Report bugs to Yandex 360 for Business DNS API
+      #1355 closed 2018-03-13 请教too many failed authorizations recently的原因
+      #2647 closed 2019-12-21 Report bugs to easyDNS dns api
+      #6889 merged 2026-03-31 Add BytePlus ALB deployment script
+      #6859 merged 2026-03-13 Add BEST-HOSTING DNS API
+  file+contents  53 hit(s) (all listed)
+      #7122 open 2026-07-13 dns_aws: add IAM Roles Anywhere (X.509) authentication
+      #7244 merged 2026-09-09 Add Opteamax DNS API
+      #7091 merged 2026-07-06 wiki-guard: trust repo/org members with write access in all rule checks
+      #2305 open 2019-06-02 Report bugs to FreeDNS dns api
+      #7096 merged 2026-07-06 one-click revert and ban
+      #2968 closed 2020-05-29 acme.sh: line 7140: acme.sh: command not found
+      #3803 closed 2021-11-11 when certificate and key for --install-cert are symbolic links pointing to same file, functionality is broken
+      #1942 closed 2018-12-02 renewed certificate not installed into /etc/nginx
+      #839 closed 2017-05-12 Options to modify SAN domains on an existing managed cert would be nice
+      #1111 closed 2017-11-12 Adding tinydns format when printing the TXT record needed for DNS verification
+      #684 closed 2017-03-01 Renewals create corrupt or missing CA.cer files
+      #6399 closed 2025-06-16 Request support for Haproxy when creating .pem Certs
+      #275 closed 2016-08-25 Keys, dhparam.pem, acme.sh - everything to 0 bytes and not possible to issue a new cert
+      #1506 closed 2018-04-10 AWS Route53 rate exceeded on certificate renewal cron
+      #4337 closed 2022-10-05 Portunity DNS support
+      #3212 closed 2020-10-08 Synology renewing wrong certificate
+      #6937 merged 2026-05-02 sync
+      #6843 merged 2026-03-10 Microwavenby dns hostinger
+      #2059 closed 2019-01-25 Report bugs to Active24.cz dns api
+      #2163 closed 2019-03-14 acme.sh does not handle spaces in --home parameter paths properly
+
+== 51 terms run; 47 returned hits, 4 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

@@ -1,0 +1,22 @@
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+
+cwd          /s/tw-in
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 2 operations (11483 syscall lines examined, 326 in scope of the judged state), witness strace
+processes    single process in the recording; the second observed run recorded the subject replacing its own image, and that run's capture is never parsed, so nothing accounts for it; the shim recorded 6 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 5 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2010 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/tw --cwd "/s/tw-in" --operation "tiddlywiki --load /s/tw/wiki.html --deletetiddlers [[Beta]] --output /s/tw --render $:/core/save/all wiki.html text/plain" \
+               --check <your-invariant.sh> --shim /opt/se/sideeye-v1.9.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace
+sideeye: warning: operation: `tiddlywiki --load /s/tw/wiki.html --deletetiddlers [[Beta]] --output /s/tw --render $:/core/save/all wiki.html text/plain` holds `$:/core/save/all`, which reaches the program as written: a string-form command is split on spaces and never run by a shell; nothing expands it; a command that needs a shell belongs in a script the define names

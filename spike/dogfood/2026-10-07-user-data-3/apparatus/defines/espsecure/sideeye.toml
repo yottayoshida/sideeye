@@ -1,0 +1,6 @@
+[world]
+state = "/s/esp"
+
+[define]
+operation = "espsecure sign-data /s/esp/fw.bin --version 2 --keyfile /s/esp/k.pem"
+cwd       = "/s/esp-in"

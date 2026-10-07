@@ -1,0 +1,347 @@
+== novelty pre-scan: adobe-type-tools/afdko
+== date: 2026-10-07T06:25:22Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          69 hit(s) (all listed)
+      #1632 open 2023-03-30 [tx] Raise better errors when extract t1 from UFO fails (e.g. rogue point, quadratic curve)
+      #1345 open 2021-04-18 [makeinstancesufo] "index must represent an on curve point" error and no warning/error when interpolation fails
+      #1110 closed 2020-03-27 [makeotf] hit a crash in otl.c: freeCoverage
+      #1806 closed 2025-10-10 mergefonts can crash with an all whitespace value
+      #1726 closed 2023-11-08 [tx] Crashing without error when using -decid option in -t1 mode
+      #1809 closed 2025-12-01 Update dependency fontTools to v4.60.2 [SECURITY] - autoclosed
+      #1717 closed 2023-10-07 Update all dependencies - autoclosed
+      #1621 closed 2023-03-06 3.9.3 makeoftexe_test and makeotf_test failures.
+      #1654 merged 2023-05-14 [hotconv] fix warning for negative TypoLineGap.
+      #1629 merged 2023-03-24 Add python `otfautohint` into afdko
+      #1649 merged 2023-05-05 [tx] fix segfaults due to old function call
+      #1516 closed 2022-06-14 Generating italic TTFs messes up spacing.
+      #1602 merged 2023-01-21 Update all dependencies
+      #1273 closed 2020-12-18 for glyphs named uniXXXX, is makeotf following the documented GOADB behavior?
+      #1538 closed 2022-07-14 [mergefonts] Crash on M1
+      #1560 closed 2022-09-18 proofpdf test_round_glyph_bounds_values_bug128[ttf] failing with fonttools 4.37.2
+      #1556 merged 2022-08-31 [tx] Replace UFO .glif file parsing with libxml2
+      #1559 merged 2022-09-17 Update all dependencies
+      #1532 merged 2022-07-04 Scheduled weekly dependency update for week 27
+      #1497 merged 2022-04-06 [uforead.c] Fix Memory Crashes
+  corrupt        9 hit(s) (all listed)
+      #1572 open 2022-11-01 [tx] subroutinizer produces corrupted outlines
+      #1090 open 2020-02-17 [checkoutlinesufo] writes hashes even when not in -e mode
+      #1809 closed 2025-12-01 Update dependency fontTools to v4.60.2 [SECURITY] - autoclosed
+      #1573 closed 2022-11-01 Merge chars font with last-resort font
+      #1472 closed 2022-02-21 Failed to install AFDKO on new Windows 11 laptop
+      #1355 closed 2021-05-03 Subroutinizing doesn't work in windows
+      #1319 closed 2021-02-28 Reusing components / subroutinezation is missing?
+      #657 closed 2018-10-28 [buildcff2vf] Cantarell VF corrupt
+      #35 closed 2015-02-11 cvXX featureNames yields corrupt binary code
+  corruption     5 hit(s) (all listed)
+      #1809 closed 2025-12-01 Update dependency fontTools to v4.60.2 [SECURITY] - autoclosed
+      #1724 closed 2023-10-29 [otfautohint] points “optimized away” in flex-like scenario (print only)
+      #1576 merged 2022-11-15 [tx][libxml2-improved] Move FDArray from fontinfo.plist to lib.plist
+      #403 merged 2018-05-28 Scheduled weekly dependency update for week 21
+      #657 closed 2018-10-28 [buildcff2vf] Cantarell VF corrupt
+  truncated      9 hit(s) (all listed)
+      #1773 open 2025-02-28 [comparefamily] does not report length of nameID 1 > 31
+      #1761 closed 2024-11-15 [makeotfexe] 4.0.2 fails on Linux
+      #1717 closed 2023-10-07 Update all dependencies - autoclosed
+      #1809 closed 2025-12-01 Update dependency fontTools to v4.60.2 [SECURITY] - autoclosed
+      #403 merged 2018-05-28 Scheduled weekly dependency update for week 21
+      #325 merged 2018-04-20 travis: set 'language: python' else Travis thinks this is Ruby...
+      #400 closed 2018-05-25 [makeotfexe] another case of "Unnecessary truncation of the Format 4 'cmap' subtable"
+      #242 closed 2018-01-16 Unnecessary truncation of the Format 4 'cmap' subtable
+      #1207 closed 2020-08-11 [comparefamily] [agd] trouble with five-digit code points
+  truncate       10 hit(s) (all listed)
+      #1773 open 2025-02-28 [comparefamily] does not report length of nameID 1 > 31
+      #1761 closed 2024-11-15 [makeotfexe] 4.0.2 fails on Linux
+      #1717 closed 2023-10-07 Update all dependencies - autoclosed
+      #1809 closed 2025-12-01 Update dependency fontTools to v4.60.2 [SECURITY] - autoclosed
+      #403 merged 2018-05-28 Scheduled weekly dependency update for week 21
+      #325 merged 2018-04-20 travis: set 'language: python' else Travis thinks this is Ruby...
+      #396 merged 2018-05-24 [spot] Fix a crash due to buffer overrun errors from long glyph names.
+      #400 closed 2018-05-25 [makeotfexe] another case of "Unnecessary truncation of the Format 4 'cmap' subtable"
+      #242 closed 2018-01-16 Unnecessary truncation of the Format 4 'cmap' subtable
+      #1207 closed 2020-08-11 [comparefamily] [agd] trouble with five-digit code points
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #971 open 2019-09-25 [spec] Empty named glyph classes
+      #1848 open 2026-07-07 Fix CID Mac cmap: suppress empty stub, fix -cl off-by-one
+      #1549 open 2022-08-01 [makeotf] Should not allow writing of empty UVS cmap format 14
+      #1411 open 2021-09-13 [makeotfexe] Warn, not error, on empty name strings in .fea files
+      #1842 open 2026-06-11 [addfeatures] Macintosh cmap subtable: unconditional empty stub for CID fonts; `-cl` value is written without the spec-required +1
+      #1600 open 2023-01-18 [tx] subsetting CIDFont with `-t1 -decid -g '/0'` option fails
+      #1090 open 2020-02-17 [checkoutlinesufo] writes hashes even when not in -e mode
+      #1350 open 2021-04-22 [spec] Variable FEA Syntax
+      #1645 closed 2023-04-25 [uforead] tx dump of CID-keyed UFO reports an extra empty FDict in the FDArray
+      #153 open 2016-10-17 [fea syntax] OpenType Variation support?
+      #1769 closed 2024-12-05 [ufowrite]  setVersionMajor function does not handle leading zero correctly 
+      #1761 closed 2024-11-15 [makeotfexe] 4.0.2 fails on Linux
+      #1809 closed 2025-12-01 Update dependency fontTools to v4.60.2 [SECURITY] - autoclosed
+      #1811 closed 2026-01-06 [tx] optimizing .otf > CFF add custom encoding.
+      #1719 closed 2023-10-18 Add typing to otfautohint
+      #1829 closed 2026-03-27 Build failure when building version 5.0.0 of the package
+      #1717 closed 2023-10-07 Update all dependencies - autoclosed
+      #1397 closed 2021-07-31 [tx] Glyph name for non-BMP glyph not detected using -pdf option
+      #1593 closed 2023-01-04 [comparefamily]  doFamilyTest18 should skip rest of tests if there are no bluezones
+      #1606 closed 2023-01-30 [checkoutlinesufo] FileNotFoundError when glyphs.com.adobe.type.processedglyphs is empty
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    3 hit(s) (all listed)
+      #1739 closed 2024-03-23 Pytest Error Encountered During AFDKO Compilation on Arch Linux
+      #1676 closed 2023-04-12 CJKSparseVar.subset.hinted.otf test failure
+      #129 closed 2016-04-12 [Wish] a few more autohint options
+  interrupt      3 hit(s) (all listed)
+      #1739 closed 2024-03-23 Pytest Error Encountered During AFDKO Compilation on Arch Linux
+      #130 closed 2016-04-15 MakeOTFUserGuide needs update
+      #129 closed 2016-04-12 [Wish] a few more autohint options
+  sigkill        0 hit(s)
+  sigint         1 hit(s) (all listed)
+      #403 merged 2018-05-28 Scheduled weekly dependency update for week 21
+  ctrl-c         1 hit(s) (all listed)
+      #403 merged 2018-05-28 Scheduled weekly dependency update for week 21
+  power          2 hit(s) (all listed)
+      #1674 closed 2023-08-03 Migrating scikit-build to scikit-build-core?
+      #255 merged 2018-02-01 Run flake8 on cleaned up scripts
+  outage         1 hit(s) (all listed)
+      #1651 open 2023-05-09 [spec] Multiple substitution with classes syntax
+  ENOSPC         0 hit(s)
+  disk           10 hit(s) (all listed)
+      #1346 closed 2021-04-19 Scheduled weekly dependency update for week 16
+      #1341 closed 2021-04-12 Scheduled weekly dependency update for week 15
+      #1337 closed 2021-04-05 Scheduled weekly dependency update for week 14
+      #289 merged 2018-03-28 make Travis deploy dev releases to PyPI
+      #443 merged 2018-06-25 Scheduled weekly dependency update for week 25
+      #429 merged 2018-06-18 Scheduled weekly dependency update for week 24
+      #284 closed 2018-03-15 [checkoutlinesufo] Don’t create hash if there is no processed glyphs layer
+      #349 closed 2018-05-01 [checkoutlinesufo] Hash is stale on first run when writing to default layer
+      #778 closed 2019-03-25 [makeinstancesufo] fail better when source files are missing
+      #1288 closed 2021-01-28  Could not build wheels for afdko which use PEP 517 and cannot be installed directly
+  partial        14 hit(s) (all listed)
+      #1326 open 2021-03-04 [checkoutlinesufo] progress bar improvements
+      #153 open 2016-10-17 [fea syntax] OpenType Variation support?
+      #1809 closed 2025-12-01 Update dependency fontTools to v4.60.2 [SECURITY] - autoclosed
+      #66 closed 2015-09-18 [otf2otc] Support `glyf` table merging
+      #1629 merged 2023-03-24 Add python `otfautohint` into afdko
+      #443 merged 2018-06-25 Scheduled weekly dependency update for week 25
+      #536 merged 2018-08-08 [detype1] Fix exit code for known options
+      #571 merged 2018-08-20 [travis] Leverage cibuildwheel to generate and test Mac & Linux wheels
+      #368 merged 2018-05-11 Remove "CID charsets"
+      #429 merged 2018-06-18 Scheduled weekly dependency update for week 24
+      #400 closed 2018-05-25 [makeotfexe] another case of "Unnecessary truncation of the Format 4 'cmap' subtable"
+      #196 closed 2017-10-03 [makeotfexe] generates incorrect secondary lookups with useMarkFilteringSet flag
+      #1128 closed 2020-04-30 codecov.io no longer shows coverage for C code
+      #80 closed 2015-11-02 makeInstancesUFO fails to generate Source Sans Pro instances
+  incomplete     18 hit(s) (all listed)
+      #1851 open 2026-07-07 Handle extension tables automatically in addfeatures
+      #1371 closed 2021-06-09 Failed to build with Visual Studio 2019
+      #1502 closed 2022-04-21 Failed to install AFDKO in Windows 7 32bit
+      #1472 closed 2022-02-21 Failed to install AFDKO on new Windows 11 laptop
+      #1439 closed 2021-12-06 Scheduled weekly dependency update for week 49
+      #1445 closed 2021-12-13 Scheduled weekly dependency update for week 50
+      #1451 closed 2021-12-20 Scheduled weekly dependency update for week 51
+      #1455 closed 2021-12-27 Scheduled weekly dependency update for week 52
+      #1458 merged 2022-01-03 Scheduled weekly dependency update for week 01
+      #1308 closed 2021-02-18 buildcff2vf: errors on validating STAT axis values
+      #93 closed 2016-01-06 Incomplete GNU/Linux build instructions at Read_Me_First.html
+      #483 merged 2018-07-15 ttxn fixes
+      #403 merged 2018-05-28 Scheduled weekly dependency update for week 21
+      #105 closed 2016-02-05 [spec] Syntax of ignore sub statement is incomplete
+      #186 closed 2017-07-07 Text and information missing in FDK Build Notes
+      #1297 closed 2021-02-04 Unicode range in glyph class
+      #25 closed 2014-12-09 Question about com.adobe.type.autohint in UFO
+      #41 closed 2015-03-10 Packaging 
+  dataloss       0 hit(s)
+  recover        3 hit(s) (all listed)
+      #66 closed 2015-09-18 [otf2otc] Support `glyf` table merging
+      #1000 merged 2019-10-16 Enhance otf2ttf for ttc, parallel, and file wildcards
+      #1173 merged 2020-06-22 Scheduled weekly dependency update for week 25
+  recovery       1 hit(s) (all listed)
+      #1409 closed 2021-09-09 Make OTF latest version big disaster!
+  rollback       2 hit(s) (all listed)
+      #1838 closed 2026-05-23 Add `--version` / `-v` flag to the top-level `afdko` command
+      #464 closed 2018-07-10 Update ufoLib to 2.2.4
+  resume         3 hit(s) (all listed)
+      #1740 open 2024-05-03 Bump tqdm from 4.66.1 to 4.66.3
+      #1741 closed 2024-05-03 Update dependency tqdm to v4.66.3 [SECURITY] - autoclosed
+      #645 closed 2018-10-11 Update ufoLib to v3.0.0
+  half-written   0 hit(s)
+  wipe           4 hit(s) (all listed)
+      #1401 closed 2021-08-05 [makeinstancesufo] should not wipe out lib.plist in generated instances
+      #1366 closed 2021-05-27 [uforead] Some outlines are getting wiped out during UFO read
+      #1349 closed 2021-04-21 [makeotf] heap use after free - with STAT some name table fields get wiped out 
+      #212 closed 2017-11-16 Move FDK install directory from ~/bin to /usr/bin
+  wipes          1 hit(s) (all listed)
+      #1401 closed 2021-08-05 [makeinstancesufo] should not wipe out lib.plist in generated instances
+  erase          1 hit(s) (all listed)
+      #403 merged 2018-05-28 Scheduled weekly dependency update for week 21
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        2 hit(s) (all listed)
+      #153 open 2016-10-17 [fea syntax] OpenType Variation support?
+      #1068 closed 2019-12-18 [tx] How to subroutinize CFF2 font?
+  destroys       1 hit(s) (all listed)
+      #1068 closed 2019-12-18 [tx] How to subroutinize CFF2 font?
+  overwrite      21 hit(s) (all listed)
+      #1400 open 2021-08-03 [tx] UFO output should overwrite existing UFO
+      #639 open 2018-10-08 ttfcomponentizer to-dos
+      #1078 open 2020-01-10 `table GSUB`, `table GPOS` and multiple FEA files
+      #1012 open 2019-10-21 [makeotfexe] nameIDs 1, 4, 16 without FontMenuNameDB?
+      #1740 open 2024-05-03 Bump tqdm from 4.66.1 to 4.66.3
+      #1809 closed 2025-12-01 Update dependency fontTools to v4.60.2 [SECURITY] - autoclosed
+      #66 closed 2015-09-18 [otf2otc] Support `glyf` table merging
+      #1635 closed 2023-04-12 3.9.4 new test failures
+      #1602 merged 2023-01-21 Update all dependencies
+      #1568 merged 2022-10-13 [uforead] Refactor setFontDictKey into separate file functions
+      #1547 merged 2022-07-25 [dependencies] update all
+      #1446 merged 2021-12-13 Bump lxml from 4.6.3 to 4.6.5
+      #614 merged 2018-09-17 Scheduled weekly dependency update for week 37
+      #443 merged 2018-06-25 Scheduled weekly dependency update for week 25
+      #551 merged 2018-08-13 Scheduled weekly dependency update for week 32
+      #429 merged 2018-06-18 Scheduled weekly dependency update for week 24
+      #1181 merged 2020-07-13 Scheduled weekly dependency update for week 28
+      #1179 merged 2020-07-05 makeotfexe STAT/name table fixes
+      #683 closed 2018-11-16 Is there a way to manually set the head.xMin/yMin/xMax/yMax value when makeotf generates fonts?
+      #1178 closed 2020-07-03 makeotfexe can silently overwrite name records
+  clobber        0 hit(s)
+  blank          16 hit(s) (all listed)
+      #1694 open 2023-08-30 [buildmasterotfs] + [buildcff2vf] – merge tools?
+      #1239 open 2020-10-16 UFO: version string format in CFF TopDict
+      #1761 closed 2024-11-15 [makeotfexe] 4.0.2 fails on Linux
+      #1739 closed 2024-03-23 Pytest Error Encountered During AFDKO Compilation on Arch Linux
+      #1273 closed 2020-12-18 for glyphs named uniXXXX, is makeotf following the documented GOADB behavior?
+      #1573 closed 2022-11-01 Merge chars font with last-resort font
+      #1576 merged 2022-11-15 [tx][libxml2-improved] Move FDArray from fontinfo.plist to lib.plist
+      #1556 merged 2022-08-31 [tx] Replace UFO .glif file parsing with libxml2
+      #589 merged 2018-08-24 [tx] fix bounding box for empty glyphs, also make PDFs more consistent
+      #694 merged 2018-12-13 [ufotools] Fix checkHashMaps method
+      #587 closed 2018-08-24 [tx] mtx option produces wrong {left,bottom,right,top} values for blank glyphs
+      #1080 closed 2020-01-17 [makeotfexe] Bad font built when feature file has multiple languagesystems and feature parameters
+      #791 closed 2019-04-29 [buildcff2vf] Please add option to suppress Macintosh 'name' table strings
+      #813 closed 2019-06-19 The "spot" output for OS/2.ulUnicodeRange{1,2,3,4} is not up-to-date
+      #1047 closed 2019-12-08 About the linespace
+      #1249 closed 2020-10-29 [makeotf] documentation insufficiently describes required feature file elements
+  unreadable     3 hit(s) (all listed)
+      #170 merged 2017-02-20 Improve output & wrapping of FinishInstall... scripts.
+      #631 merged 2018-09-28 [makeotfexe] garbage in subtable overflow message 
+      #1092 closed 2020-02-18 [waterfallplot] crashes if requested waterfall range overflows
+  garbage        12 hit(s) (all listed)
+      #1576 merged 2022-11-15 [tx][libxml2-improved] Move FDArray from fontinfo.plist to lib.plist
+      #1389 closed 2021-07-19 Scheduled weekly dependency update for week 29
+      #1392 closed 2021-07-26 Scheduled weekly dependency update for week 30
+      #1388 closed 2021-07-12 Scheduled weekly dependency update for week 28
+      #1000 merged 2019-10-16 Enhance otf2ttf for ttc, parallel, and file wildcards
+      #631 merged 2018-09-28 [makeotfexe] garbage in subtable overflow message 
+      #584 merged 2018-08-23 [rotatefont] Failures on Linux c-tools 
+      #403 merged 2018-05-28 Scheduled weekly dependency update for week 21
+      #112 closed 2016-03-18 [spec] size parameters description is not clear
+      #174 closed 2017-04-13 [makeotfexe] FontMatrix values not compiled precisely enough, causing wrong UPM values down the line
+      #313 closed 2018-04-18 [makeotfexe] garbage in subtable overflow message
+      #758 closed 2019-03-05 [tx] coding bug in cffread saveDeltaArray()
+  mangled        1 hit(s) (all listed)
+      #1724 closed 2023-10-29 [otfautohint] points “optimized away” in flex-like scenario (print only)
+  contents       51 hit(s) (all listed)
+      #1824 open 2026-03-07 [makeotf] order of options still relevant?
+      #972 open 2019-09-25 [makeotf] Merging PairPos format 2 tables with same coverage but different value formats puts XAdvance in wrong spot
+      #1345 open 2021-04-18 [makeinstancesufo] "index must represent an on curve point" error and no warning/error when interpolation fails
+      #1145 open 2020-05-27 [makeinstancesufo] should surface more info when failing
+      #1090 open 2020-02-17 [checkoutlinesufo] writes hashes even when not in -e mode
+      #153 open 2016-10-17 [fea syntax] OpenType Variation support?
+      #1809 closed 2025-12-01 Update dependency fontTools to v4.60.2 [SECURITY] - autoclosed
+      #1793 merged 2025-06-16 docs updates [skip ci]
+      #1702 merged 2023-09-26 Do not expect a contents.plist file to exist in glyphs.com.adobe.type.processedglyphs
+      #1712 merged 2023-09-29 remove PUA code points from resource files
+      #1606 closed 2023-01-30 [checkoutlinesufo] FileNotFoundError when glyphs.com.adobe.type.processedglyphs is empty
+      #1659 closed 2023-06-07 [change] add 'noaccess' directive to t1write_flexothers.h for consistency with source document
+      #1629 merged 2023-03-24 Add python `otfautohint` into afdko
+      #1601 merged 2023-01-20 Stop forcing static LibXML2 build on Linux
+      #1543 merged 2022-07-20 [tx] Replace UFO content.plist/glyphList parsing with libxml2
+      #1130 closed 2020-05-03 Convert ufo that lack a lib.plist?
+      #1525 closed 2022-06-27 Cannot open shared object file: No such file or directory
+      #1439 closed 2021-12-06 Scheduled weekly dependency update for week 49
+      #1436 closed 2021-11-29 Scheduled weekly dependency update for week 48
+      #1433 closed 2021-11-22 Scheduled weekly dependency update for week 47
+  in-place       96 hit(s) (all listed)
+      #1078 open 2020-01-10 `table GSUB`, `table GPOS` and multiple FEA files
+      #1655 open 2023-05-22 [buildcff2vf] unexpected behavior for non-interpolating glyph
+      #97 open 2016-01-11 [spec] Explicitly forbid statements of wrong type in `feature aalt`
+      #1239 open 2020-10-16 UFO: version string format in CFF TopDict
+      #1407 open 2021-09-01 Please allow use of system antlr4 to compile
+      #475 open 2018-07-12 [tx] Improvements to UFO handling
+      #1827 open 2026-03-24 feat: allow usage of '-u' flag with commands
+      #1767 open 2024-12-03 [tx] non-ASCII in CFF TopDict
+      #1083 open 2020-01-30 [tx] bug handling CIDFont FDArray with non-default FontMatrix entries
+      #1145 open 2020-05-27 [makeinstancesufo] should surface more info when failing
+      #153 open 2016-10-17 [fea syntax] OpenType Variation support?
+      #1552 open 2022-08-03 remove overlaps failures
+      #1782 closed 2025-05-27 `supportenvironment.h` seriously flawed
+      #1745 closed 2024-05-28 [buildmasterotfs] incompatible sources produced
+      #1432 closed 2021-11-15 Conversion T1 → OTF: how to assign Unicode code points?
+      #1770 closed 2024-12-19 [otfautohint] will not hint if zones are too close
+      #1728 closed 2023-11-19 [otfautohint] Mishinting of glyph?
+      #1592 closed 2023-01-04 [comparefamily] doSingleTest4 "Warning: Version string is not greater than 1.0000 for Font" - Typo + why?
+      #1628 merged 2023-03-23 Updates to CID-keyed UFO handling
+      #1245 closed 2020-10-26 [tx] (t1w) glyph type doesn't match font type
+  unclean        0 hit(s)
+  shutdown       4 hit(s) (all listed)
+      #1398 merged 2021-08-02 Scheduled weekly dependency update for week 31
+      #1472 closed 2022-02-21 Failed to install AFDKO on new Windows 11 laptop
+      #443 merged 2018-06-25 Scheduled weekly dependency update for week 25
+      #429 merged 2018-06-18 Scheduled weekly dependency update for week 24
+  reboot         0 hit(s)
+  disk+full      2 hit(s) (all listed)
+      #443 merged 2018-06-25 Scheduled weekly dependency update for week 25
+      #429 merged 2018-06-18 Scheduled weekly dependency update for week 24
+  data+loss      3 hit(s) (all listed)
+      #443 merged 2018-06-25 Scheduled weekly dependency update for week 25
+      #429 merged 2018-06-18 Scheduled weekly dependency update for week 24
+      #25 closed 2014-12-09 Question about com.adobe.type.autohint in UFO
+  partial+write  4 hit(s) (all listed)
+      #1809 closed 2025-12-01 Update dependency fontTools to v4.60.2 [SECURITY] - autoclosed
+      #66 closed 2015-09-18 [otf2otc] Support `glyf` table merging
+      #443 merged 2018-06-25 Scheduled weekly dependency update for week 25
+      #429 merged 2018-06-18 Scheduled weekly dependency update for week 24
+  crash+safe     4 hit(s) (all listed)
+      #1717 closed 2023-10-07 Update all dependencies - autoclosed
+      #1556 merged 2022-08-31 [tx] Replace UFO .glif file parsing with libxml2
+      #1547 merged 2022-07-25 [dependencies] update all
+      #403 merged 2018-05-28 Scheduled weekly dependency update for week 21
+  atomic+write   0 hit(s)
+  lock+file      1 hit(s) (all listed)
+      #41 closed 2015-03-10 Packaging 
+  write+failure  9 hit(s) (all listed)
+      #1576 merged 2022-11-15 [tx][libxml2-improved] Move FDArray from fontinfo.plist to lib.plist
+      #1418 closed 2021-10-15 port to ufonormalizer-0.6.1 (from 0.6.0)
+      #1502 closed 2022-04-21 Failed to install AFDKO in Windows 7 32bit
+      #1339 closed 2021-04-10 makeotf fails to build on darwin
+      #645 closed 2018-10-11 Update ufoLib to v3.0.0
+      #410 closed 2018-06-08 spot crashes with a long a path on Windows
+      #703 closed 2018-12-18 [checkoutlinesUFO] glyph file names might not correspond to existing file names …
+      #1216 closed 2020-08-27 Tests are broken on aarch64
+      #801 closed 2019-05-28 How to solve the error "makeotf [Error] Failed to build output font file 'c:\users\......."?
+  file+contents  39 hit(s) (all listed)
+      #1824 open 2026-03-07 [makeotf] order of options still relevant?
+      #972 open 2019-09-25 [makeotf] Merging PairPos format 2 tables with same coverage but different value formats puts XAdvance in wrong spot
+      #1345 open 2021-04-18 [makeinstancesufo] "index must represent an on curve point" error and no warning/error when interpolation fails
+      #1145 open 2020-05-27 [makeinstancesufo] should surface more info when failing
+      #1090 open 2020-02-17 [checkoutlinesufo] writes hashes even when not in -e mode
+      #153 open 2016-10-17 [fea syntax] OpenType Variation support?
+      #1809 closed 2025-12-01 Update dependency fontTools to v4.60.2 [SECURITY] - autoclosed
+      #1702 merged 2023-09-26 Do not expect a contents.plist file to exist in glyphs.com.adobe.type.processedglyphs
+      #1606 closed 2023-01-30 [checkoutlinesufo] FileNotFoundError when glyphs.com.adobe.type.processedglyphs is empty
+      #1629 merged 2023-03-24 Add python `otfautohint` into afdko
+      #1601 merged 2023-01-20 Stop forcing static LibXML2 build on Linux
+      #1130 closed 2020-05-03 Convert ufo that lack a lib.plist?
+      #1439 closed 2021-12-06 Scheduled weekly dependency update for week 49
+      #1436 closed 2021-11-29 Scheduled weekly dependency update for week 48
+      #1451 closed 2021-12-20 Scheduled weekly dependency update for week 51
+      #1455 closed 2021-12-27 Scheduled weekly dependency update for week 52
+      #1433 closed 2021-11-22 Scheduled weekly dependency update for week 47
+      #1445 closed 2021-12-13 Scheduled weekly dependency update for week 50
+      #1458 merged 2022-01-03 Scheduled weekly dependency update for week 01
+      #1268 merged 2020-12-07 Scheduled weekly dependency update for week 49
+
+== 51 terms run; 39 returned hits, 1 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

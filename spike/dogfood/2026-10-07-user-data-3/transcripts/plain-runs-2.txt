@@ -1,0 +1,4 @@
+PLAIN tiddlywiki exit=0 state=changed  ()
+PLAIN broot exit=0 state=changed  ()
+PLAIN ziptool exit=0 state=changed  ()
+PLAIN prek exit=0 state=changed  (Installed Git hook at `.git/hooks/pre-commit`)

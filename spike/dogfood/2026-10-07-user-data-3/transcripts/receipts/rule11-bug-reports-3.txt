@@ -1,0 +1,128 @@
+== alacritty/alacritty (label (none matched; last issues of any label))
+#9061 2026-09-26 comments=0 first_project_reply=none
+#9060 2026-09-24 comments=1 first_project_reply=MEMBER 2026-09-24
+#9058 2026-09-23 comments=4 first_project_reply=MEMBER 2026-09-23
+#9057 2026-09-21 comments=3 first_project_reply=MEMBER 2026-09-21
+#9055 2026-09-20 comments=2 first_project_reply=MEMBER 2026-09-20
+#9054 2026-09-20 comments=1 first_project_reply=MEMBER 2026-09-20
+#9053 2026-09-19 comments=1 first_project_reply=none
+#9052 2026-09-17 comments=0 first_project_reply=none
+#9049 2026-09-14 comments=1 first_project_reply=none
+#9047 2026-09-12 comments=6 first_project_reply=MEMBER 2026-09-12
+
+== kovidgoyal/kitty (label bug)
+#10619 2026-10-06 comments=0 first_project_reply=none
+#10618 2026-10-06 comments=0 first_project_reply=none
+#10616 2026-10-06 comments=1 first_project_reply=OWNER 2026-10-06
+#10612 2026-10-05 comments=1 first_project_reply=OWNER 2026-10-06
+#10609 2026-10-05 comments=3 first_project_reply=OWNER 2026-10-05
+#10602 2026-10-04 comments=0 first_project_reply=none
+#10599 2026-10-04 comments=1 first_project_reply=none
+#10597 2026-10-04 comments=0 first_project_reply=none
+#10593 2026-10-02 comments=7 first_project_reply=OWNER 2026-10-03
+#10586 2026-10-01 comments=1 first_project_reply=OWNER 2026-10-01
+
+== Canop/broot (label bug)
+#1220 2026-09-28 comments=1 first_project_reply=OWNER 2026-09-28
+#1216 2026-09-07 comments=1 first_project_reply=OWNER 2026-09-07
+#1214 2026-09-02 comments=0 first_project_reply=none
+#1209 2026-09-01 comments=1 first_project_reply=OWNER 2026-09-01
+#1195 2026-08-11 comments=3 first_project_reply=OWNER 2026-08-11
+#1194 2026-08-11 comments=4 first_project_reply=OWNER 2026-08-11
+#1176 2026-07-01 comments=3 first_project_reply=OWNER 2026-07-01
+#1165 2026-05-16 comments=2 first_project_reply=OWNER 2026-05-16
+#1163 2026-05-14 comments=2 first_project_reply=OWNER 2026-05-14
+#1162 2026-05-13 comments=3 first_project_reply=OWNER 2026-05-14
+
+== TiddlyWiki/TiddlyWiki5 (label bug)
+#10013 2026-09-06 comments=2 first_project_reply=MEMBER 2026-09-06
+#10006 2026-09-02 comments=1 first_project_reply=MEMBER 2026-09-03
+#10001 2026-08-29 comments=2 first_project_reply=MEMBER 2026-08-29
+#9995 2026-08-26 comments=0 first_project_reply=none
+#9987 2026-08-24 comments=3 first_project_reply=CONTRIBUTOR 2026-08-26
+#9976 2026-08-21 comments=3 first_project_reply=CONTRIBUTOR 2026-08-21
+#9974 2026-08-17 comments=3 first_project_reply=MEMBER 2026-08-17
+#9972 2026-08-17 comments=10 first_project_reply=MEMBER 2026-08-17
+#9950 2026-07-27 comments=0 first_project_reply=none
+#9949 2026-07-27 comments=0 first_project_reply=none
+
+== j178/prek (label bug)
+#2842 2026-10-06 comments=0 first_project_reply=none
+#2825 2026-10-03 comments=1 first_project_reply=OWNER 2026-10-03
+#2824 2026-10-03 comments=1 first_project_reply=OWNER 2026-10-03
+#2801 2026-09-29 comments=2 first_project_reply=OWNER 2026-09-29
+#2711 2026-09-13 comments=0 first_project_reply=none
+#2700 2026-09-07 comments=0 first_project_reply=none
+#2687 2026-09-06 comments=0 first_project_reply=none
+#2604 2026-08-25 comments=4 first_project_reply=OWNER 2026-08-25
+#2544 2026-08-11 comments=1 first_project_reply=OWNER 2026-08-12
+#2505 2026-08-07 comments=1 first_project_reply=OWNER 2026-08-08
+
+== ihabunek/toot (label bug)
+#41 2018-01-15 comments=0 first_project_reply=none
+#40 2018-01-15 comments=0 first_project_reply=none
+
+== nih-at/libzip (label bug)
+#615 2026-10-07 comments=0 first_project_reply=none
+#500 2025-07-31 comments=5 first_project_reply=MEMBER 2025-07-31
+#484 2025-02-14 comments=8 first_project_reply=MEMBER 2025-02-27
+#480 2025-01-23 comments=1 first_project_reply=MEMBER 2025-01-23
+#478 2025-01-03 comments=9 first_project_reply=MEMBER 2025-01-08
+#477 2024-12-03 comments=1 first_project_reply=MEMBER 2024-12-03
+#475 2024-12-02 comments=1 first_project_reply=MEMBER 2024-12-11
+#474 2024-11-27 comments=1 first_project_reply=MEMBER 2024-12-11
+#473 2024-11-26 comments=7 first_project_reply=MEMBER 2024-11-26
+#467 2024-10-25 comments=1 first_project_reply=MEMBER 2024-10-25
+
+== savedra1/clipse (label bug)
+#363 2026-05-01 comments=0 first_project_reply=none
+#330 2026-02-09 comments=3 first_project_reply=OWNER 2026-03-30
+#326 2026-02-08 comments=2 first_project_reply=OWNER 2026-03-30
+#317 2026-01-09 comments=5 first_project_reply=OWNER 2026-01-09
+#312 2026-01-02 comments=9 first_project_reply=OWNER 2026-01-23
+#305 2025-12-27 comments=4 first_project_reply=OWNER 2025-12-28
+#271 2025-10-24 comments=6 first_project_reply=OWNER 2025-10-30
+#258 2025-09-28 comments=2 first_project_reply=OWNER 2025-09-28
+#253 2025-09-21 comments=0 first_project_reply=none
+#204 2025-05-21 comments=9 first_project_reply=OWNER 2025-09-20
+
+== OSGeo/grass (label bug)
+#8027 2026-10-06 comments=0 first_project_reply=none
+#7944 2026-09-24 comments=7 first_project_reply=MEMBER 2026-09-24
+#7914 2026-09-12 comments=1 first_project_reply=none
+#7909 2026-09-07 comments=1 first_project_reply=MEMBER 2026-09-10
+#7860 2026-08-28 comments=1 first_project_reply=CONTRIBUTOR 2026-09-10
+#7858 2026-08-27 comments=0 first_project_reply=none
+#7850 2026-08-26 comments=0 first_project_reply=none
+#7832 2026-08-20 comments=1 first_project_reply=CONTRIBUTOR 2026-08-20
+#7828 2026-08-17 comments=1 first_project_reply=CONTRIBUTOR 2026-08-17
+#7810 2026-08-08 comments=5 first_project_reply=MEMBER 2026-08-08
+
+== DNSControl/dnscontrol (label type: bug)
+#3965 2026-01-06 comments=6 first_project_reply=COLLABORATOR 2026-01-06
+#3399 2025-01-22 comments=3 first_project_reply=CONTRIBUTOR 2025-01-23
+#3040 2024-07-09 comments=2 first_project_reply=CONTRIBUTOR 2024-07-09
+#1863 2022-12-24 comments=0 first_project_reply=none
+#1420 2022-02-25 comments=5 first_project_reply=CONTRIBUTOR 2022-02-28
+#1416 2022-02-18 comments=7 first_project_reply=CONTRIBUTOR 2022-02-18
+#1402 2022-02-07 comments=6 first_project_reply=CONTRIBUTOR 2022-02-07
+#1378 2022-01-24 comments=1 first_project_reply=none
+#1362 2022-01-04 comments=16 first_project_reply=CONTRIBUTOR 2022-01-04
+#1348 2021-12-24 comments=2 first_project_reply=CONTRIBUTOR 2021-12-24
+
+== octodns/octodns (label bug)
+#1088 2023-05-02 comments=9 first_project_reply=CONTRIBUTOR 2023-05-03
+
+== tstack/lnav (label bug)
+#1753 2026-09-26 comments=12 first_project_reply=OWNER 2026-09-27
+#1751 2026-09-14 comments=0 first_project_reply=none
+#1750 2026-09-12 comments=1 first_project_reply=OWNER 2026-09-12
+#1749 2026-09-08 comments=2 first_project_reply=none
+#1748 2026-09-07 comments=2 first_project_reply=OWNER 2026-09-08
+#1745 2026-08-31 comments=0 first_project_reply=none
+#1742 2026-08-18 comments=1 first_project_reply=none
+#1741 2026-08-14 comments=1 first_project_reply=OWNER 2026-09-08
+#1738 2026-08-13 comments=5 first_project_reply=OWNER 2026-08-20
+#1734 2026-07-29 comments=0 first_project_reply=none
+
+rule11-all: done 2026-10-07T06:11:57Z

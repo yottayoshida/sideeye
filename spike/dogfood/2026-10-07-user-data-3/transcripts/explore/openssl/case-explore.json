@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.9.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/ca",
+    "operation": "openssl ca -config /s/ca/ca.cnf -revoke /s/ca/b.crt -batch",
+    "cwd": "/s/ca-in",
+    "expected_status": 0
+  },
+  "k": 6,
+  "ops_total": 8,
+  "prefix_hash": "c2f94b64f10d10c9",
+  "after_class": "rename",
+  "after_path": "/s/ca/index.txt",
+  "before_class": "rename",
+  "before_path": "/s/ca/index.txt.new",
+  "violation": "missing"
+}

@@ -1,0 +1,12 @@
+alacritty/alacritty stars=65898 pushed=2026-10-05 archived=false issues=true full=alacritty/alacritty
+kovidgoyal/kitty stars=35181 pushed=2026-10-07 archived=false issues=true full=kovidgoyal/kitty
+Canop/broot stars=13042 pushed=2026-10-04 archived=false issues=true full=Canop/broot
+TiddlyWiki/TiddlyWiki5 stars=8674 pushed=2026-10-05 archived=false issues=true full=TiddlyWiki/TiddlyWiki5
+j178/prek stars=8573 pushed=2026-10-05 archived=false issues=true full=j178/prek
+ihabunek/toot stars=1325 pushed=2026-09-12 archived=false issues=true full=ihabunek/toot
+nih-at/libzip stars=1053 pushed=2026-10-04 archived=false issues=true full=nih-at/libzip
+savedra1/clipse stars=1049 pushed=2026-06-09 archived=false issues=true full=savedra1/clipse
+OSGeo/grass stars=1176 pushed=2026-10-07 archived=false issues=true full=OSGeo/grass
+DNSControl/dnscontrol stars=3961 pushed=2026-10-06 archived=false issues=true full=DNSControl/dnscontrol
+octodns/octodns stars=3772 pushed=2026-10-05 archived=false issues=true full=octodns/octodns
+tstack/lnav stars=10723 pushed=2026-10-06 archived=false issues=true full=tstack/lnav

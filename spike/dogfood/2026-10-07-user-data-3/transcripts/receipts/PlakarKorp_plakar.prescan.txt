@@ -1,0 +1,471 @@
+== novelty pre-scan: PlakarKorp/plakar
+== date: 2026-10-07T06:10:32Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          20 hit(s) (all listed)
+      #1889 open 2026-01-19 The local cache directory fills up all diskspace
+      #2392 closed 2026-09-28 build(deps): bump github.com/PlakarKorp/kloset from 1.1.6 to 1.1.8
+      #2278 open 2026-07-21 config: unify Get{Source,Store,Destination} behaviour
+      #2351 closed 2026-08-28 [Bug]: memory spikes in plakar maintenance
+      #2045 closed 2026-03-17 [Bug]: Fuse mounts are not backuped
+      #2172 closed 2026-05-29 Specs suggestions for VMware protection.
+      #2247 merged 2026-06-26 test: extend coverage toward 80%
+      #1976 merged 2026-02-20 fix repair crash through agent
+      #2011 merged 2026-03-08 subcommands/cached: use strict perms for the crash log
+      #2164 merged 2026-05-28 builder: Do not fail if we have a stale lock.
+      #1761 closed 2025-10-24 Dangling non-freeable objects in plakar repository after having Ctrl-c'd a backup operation
+      #1759 closed 2025-10-23 Crash with some values of -cpu and -concurrency
+      #1828 merged 2025-12-18 Poolp org/better mount
+      #1258 closed 2025-07-08 Raspberry pi B3+ OOM
+      #950 closed 2025-05-07 agent crash on maintenance task
+      #1238 closed 2025-07-07 Avoid cache size restrictions
+      #811 merged 2025-04-07 backup: Provide a check cache if check is specified.
+      #730 merged 2025-03-24 Add an objects.RandomMAC() function to generate random identifiers.
+      #313 merged 2025-01-25 Gchehade/spawn daemon agent
+      #123 merged 2024-11-21 86 fix fuse
+  corrupt        14 hit(s) (all listed)
+      #2400 open 2026-09-29 subcommands/doctor: add a storage read self-test
+      #2196 open 2026-06-09 introduce a helper for yaml.NewEncoder() to always close it
+      #2326 open 2026-08-20 [Bug]: maintenance discards the underlying error from ResolveEntry, making a 90-minute failed run undiagnosable
+      #2364 closed 2026-09-04 [Bug]: Full check intermittently reports corruption on a valid Backblaze B2 S3 store
+      #2295 merged 2026-07-31 ls: report the errors recorded in a snapshot
+      #2393 merged 2026-09-28 build(deps): bump google.golang.org/grpc from 1.83.2 to 1.84.0
+      #2146 merged 2026-05-25 subcommands/check: add tests for Parse, Execute flag/path handling
+      #2074 merged 2026-04-07 Fix code preview for large files
+      #1993 closed 2026-03-02 [Bug]: plakar check reporting errors on Scaleway which seem incorrect
+      #1365 closed 2025-07-25 Contradictory output message while restoring
+      #1462 closed 2025-08-06 QA: test check
+      #159 closed 2024-11-26 plakar check reports corrupted directory
+      #160 merged 2024-11-26 do not report corrupted directory if !regular file
+      #221 merged 2024-12-14 fix directory errors
+  corruption     10 hit(s) (all listed)
+      #2403 open 2026-10-04 [Bug]: `plakar maintenance` fails on repositories containing a **lowercase** Windows drive root (`/c:`)
+      #2400 open 2026-09-29 subcommands/doctor: add a storage read self-test
+      #2364 closed 2026-09-04 [Bug]: Full check intermittently reports corruption on a valid Backblaze B2 S3 store
+      #2296 merged 2026-07-31 api: treat missing packfiles as internal errors
+      #2129 closed 2026-05-23 fix(tui): fix races, ctrl+c terminal corruption and display bugs
+      #450 closed 2025-02-08 api: treat ErrPackfileNotFound as 500
+      #2074 merged 2026-04-07 Fix code preview for large files
+      #1543 closed 2025-08-17 commit pre-fetching code
+      #882 merged 2025-04-28 backup: Remove a erroneous PutBlob(OBJECT)
+      #221 merged 2024-12-14 fix directory errors
+  truncated      26 hit(s) (all listed)
+      #2196 open 2026-06-09 introduce a helper for yaml.NewEncoder() to always close it
+      #2006 open 2026-03-06 [Bug]: plakar info -errors <snapshot> ; doesn't give all errors list
+      #2326 open 2026-08-20 [Bug]: maintenance discards the underlying error from ResolveEntry, making a 90-minute failed run undiagnosable
+      #1269 closed 2025-07-09 Include errors in API endpoints listing files
+      #2045 closed 2026-03-17 [Bug]: Fuse mounts are not backuped
+      #2393 merged 2026-09-28 build(deps): bump google.golang.org/grpc from 1.83.2 to 1.84.0
+      #2242 merged 2026-06-26 test: push coverage past 70% (and stop CI timeout truncation)
+      #2334 merged 2026-08-24 build(deps): bump github.com/stretchr/testify from 1.11.1 to 1.12.1
+      #1993 closed 2026-03-02 [Bug]: plakar check reporting errors on Scaleway which seem incorrect
+      #1377 merged 2025-07-28 Bump github.com/charmbracelet/glamour from 0.9.1 to 0.10.0
+      #1426 merged 2025-08-04 Bump github.com/prometheus/client_golang from 1.22.0 to 1.23.0
+      #307 merged 2025-01-24 fix checksum json unmarshalling
+      #1309 merged 2025-07-16 Bump github.com/charmbracelet/bubbletea from 1.3.4 to 1.3.6
+      #1560 merged 2025-08-25 Bump github.com/stretchr/testify from 1.10.0 to 1.11.0
+      #1310 closed 2025-07-16 Bump github.com/creack/pty from 1.1.9 to 1.1.24
+      #1338 merged 2025-07-21 Bump github.com/minio/minio-go/v7 from 7.0.89 to 7.0.94
+      #1427 merged 2025-08-04 Bump github.com/go-playground/validator/v10 from 10.25.0 to 10.27.0
+      #1376 merged 2025-07-28 Bump github.com/prometheus/client_golang from 1.21.1 to 1.22.0
+      #220 merged 2024-12-13 improve error handling (for the apis but not only)
+      #25 merged 2024-02-13 Bump postcss and react-scripts in /ui/v2/frontend
+  truncate       30 hit(s) (all listed)
+      #2196 open 2026-06-09 introduce a helper for yaml.NewEncoder() to always close it
+      #1286 open 2025-07-11 sparse file support for Virtual Machine backups
+      #2326 open 2026-08-20 [Bug]: maintenance discards the underlying error from ResolveEntry, making a 90-minute failed run undiagnosable
+      #2006 open 2026-03-06 [Bug]: plakar info -errors <snapshot> ; doesn't give all errors list
+      #2172 closed 2026-05-29 Specs suggestions for VMware protection.
+      #2242 merged 2026-06-26 test: push coverage past 70% (and stop CI timeout truncation)
+      #1269 closed 2025-07-09 Include errors in API endpoints listing files
+      #2045 closed 2026-03-17 [Bug]: Fuse mounts are not backuped
+      #2334 merged 2026-08-24 build(deps): bump github.com/stretchr/testify from 1.11.1 to 1.12.1
+      #2393 merged 2026-09-28 build(deps): bump google.golang.org/grpc from 1.83.2 to 1.84.0
+      #2129 closed 2026-05-23 fix(tui): fix races, ctrl+c terminal corruption and display bugs
+      #1993 closed 2026-03-02 [Bug]: plakar check reporting errors on Scaleway which seem incorrect
+      #1397 closed 2025-07-30 plakar panics when reading invalid ptar
+      #1377 merged 2025-07-28 Bump github.com/charmbracelet/glamour from 0.9.1 to 0.10.0
+      #1426 merged 2025-08-04 Bump github.com/prometheus/client_golang from 1.22.0 to 1.23.0
+      #1309 merged 2025-07-16 Bump github.com/charmbracelet/bubbletea from 1.3.4 to 1.3.6
+      #1560 merged 2025-08-25 Bump github.com/stretchr/testify from 1.10.0 to 1.11.0
+      #307 merged 2025-01-24 fix checksum json unmarshalling
+      #1310 closed 2025-07-16 Bump github.com/creack/pty from 1.1.9 to 1.1.24
+      #1338 merged 2025-07-21 Bump github.com/minio/minio-go/v7 from 7.0.89 to 7.0.94
+  empty          83 hit(s) (all listed)
+      #2277 open 2026-07-21 [Bug]: Windows client hangs indefinitely rebuilding a large repository state (cold cache); Linux converges on the same repo
+      #2309 open 2026-08-14 cached: unblock the state rebuild when the context is cancelled
+      #2186 open 2026-06-07 [Bug]: backup -ignore does not behave as documented in v1.1.0
+      #2288 open 2026-07-25 backup: clean partial scan cache on create failure
+      #2278 open 2026-07-21 config: unify Get{Source,Store,Destination} behaviour
+      #2331 merged 2026-08-21 pkg add: accept @latest as the default version
+      #2393 merged 2026-09-28 build(deps): bump google.golang.org/grpc from 1.83.2 to 1.84.0
+      #2261 closed 2026-07-10 mount: handle snapshot root path
+      #2364 closed 2026-09-04 [Bug]: Full check intermittently reports corruption on a valid Backblaze B2 S3 store
+      #2132 merged 2026-05-23 prune: don't clobber policy filters with empty CLI overrides
+      #2291 merged 2026-07-27 build(deps): bump go.yaml.in/yaml/v3 from 3.0.4 to 3.0.5
+      #2293 merged 2026-07-28 api: consolidate coverage
+      #2282 merged 2026-07-23 config: improve restrictions on config names
+      #2243 merged 2026-06-26 lint: fix ineffectual assignments
+      #2303 closed 2026-08-06 [Bug]: backup to S3/B2 hangs indefinitely with zero I/O progress, never times out and leaves /tmp working dirs behind
+      #2265 merged 2026-07-13 build(deps): bump golang.org/x/tools from 0.47.0 to 0.48.0
+      #2185 closed 2026-06-05 Error unknown service store.Store
+      #2152 merged 2026-05-25 main: add tests for pure helpers in main.go, pkg.go, term.go
+      #2245 merged 2026-06-26 lint: fix staticcheck findings
+      #2223 merged 2026-06-16 test: cover mount/http dynamic handler and chroot serving
+  atomic         21 hit(s) (all listed)
+      #2288 open 2026-07-25 backup: clean partial scan cache on create failure
+      #2309 open 2026-08-14 cached: unblock the state rebuild when the context is cancelled
+      #2289 open 2026-07-26 diff: clarify recursive directory output
+      #2298 closed 2026-07-31 api: list repository sources
+      #2299 merged 2026-07-31 login: report auth rate limits as 429
+      #2331 merged 2026-08-21 pkg add: accept @latest as the default version
+      #2287 merged 2026-07-25 Surface packfile temp creation failures during backup
+      #2307 closed 2026-08-12 backup: warn when -ignore used with non-local importer
+      #2222 merged 2026-06-16 build: exclude testing/ from coverage locally and tidy codecov ignore
+      #2129 closed 2026-05-23 fix(tui): fix races, ctrl+c terminal corruption and display bugs
+      #1930 merged 2026-01-28 cached: Switch from atomics to a waitgroup for inflight tracking.
+      #2028 merged 2026-03-12 assorted archive fixes
+      #2023 closed 2026-03-10 Enhance Archive option to use a single defined target
+      #1938 closed 2026-02-04 plakar/v1.1.0-beta.3 - plakar restore without `-to` parameter fails with `no such file or directory`
+      #1355 merged 2025-07-24 since configuration is now atomic, we no longer need to have an agent
+      #1762 closed 2025-10-25 failed to create snapshot: encoding/hex: invalid byte: U+002E
+      #1572 merged 2025-08-28 Poolp org/improve locateoptions
+      #941 closed 2025-05-07 agent should have a command to reload tasks atomically
+      #960 merged 2025-05-08 941 agent should have a command to reload tasks atomically
+      #798 merged 2025-04-05 Poolp org/storage returns size
+  atomically     2 hit(s) (all listed)
+      #941 closed 2025-05-07 agent should have a command to reload tasks atomically
+      #960 merged 2025-05-08 941 agent should have a command to reload tasks atomically
+  interrupted    9 hit(s) (all listed)
+      #2366 open 2026-09-05 config: support repository passphrase env
+      #2277 open 2026-07-21 [Bug]: Windows client hangs indefinitely rebuilding a large repository state (cold cache); Linux converges on the same repo
+      #2288 open 2026-07-25 backup: clean partial scan cache on create failure
+      #2254 open 2026-07-01 [Bug]: Plakar backup fails when cache drive is full
+      #1673 open 2025-09-12 The repository storage is not being cleaned up
+      #1656 closed 2025-09-10 plakar login: unexpected 500 error after shell interruption
+      #913 closed 2025-05-02 interrupting clone leads to local state lying what it's in there
+      #1777 merged 2025-11-20 context: Adapt to KContext changes.
+      #1192 closed 2025-06-28 Interrupting backup doesn't cleanup repository data
+  interrupt      24 hit(s) (all listed)
+      #2366 open 2026-09-05 config: support repository passphrase env
+      #2254 open 2026-07-01 [Bug]: Plakar backup fails when cache drive is full
+      #2277 open 2026-07-21 [Bug]: Windows client hangs indefinitely rebuilding a large repository state (cold cache); Linux converges on the same repo
+      #2288 open 2026-07-25 backup: clean partial scan cache on create failure
+      #1673 open 2025-09-12 The repository storage is not being cleaned up
+      #1656 closed 2025-09-10 plakar login: unexpected 500 error after shell interruption
+      #2129 closed 2026-05-23 fix(tui): fix races, ctrl+c terminal corruption and display bugs
+      #2106 closed 2026-05-09 [Bug]: Panic on Ctrl+C
+      #1921 merged 2026-01-26 do not display interrupt msg inconditionally
+      #1923 merged 2026-01-26 tui: Only fire the interrupt event once.
+      #913 closed 2025-05-02 interrupting clone leads to local state lying what it's in there
+      #1290 closed 2025-07-12 event processor vs interruption
+      #1777 merged 2025-11-20 context: Adapt to KContext changes.
+      #1349 closed 2025-07-23 Panic in scheduler
+      #1688 closed 2025-09-17 Bug with plakar maintenance
+      #1192 closed 2025-06-28 Interrupting backup doesn't cleanup repository data
+      #1297 closed 2025-07-15 Invalid error message to restart the agent on version mismatch
+      #1113 merged 2025-06-12 move passphrase prompting in Parse()
+      #1213 closed 2025-07-02 SIGINT on plakar cat leads to panic.
+      #952 closed 2025-05-07 failed commands hang plakar
+  sigkill        1 hit(s) (all listed)
+      #2329 closed 2026-08-21 [Bug]: `plakar backup` deadlocks — delta-state flusher and packer pipeline never wake
+  sigint         3 hit(s) (all listed)
+      #2130 closed 2026-05-23 mount/fuse: make the FUSE backend rock solid
+      #1213 closed 2025-07-02 SIGINT on plakar cat leads to panic.
+      #949 merged 2025-05-07 send SIGINT when using plakar agent stop
+  ctrl-c         16 hit(s) (all listed)
+      #1658 open 2025-09-11 Add Quit button to UI
+      #1673 open 2025-09-12 The repository storage is not being cleaned up
+      #2106 closed 2026-05-09 [Bug]: Panic on Ctrl+C
+      #1761 closed 2025-10-24 Dangling non-freeable objects in plakar repository after having Ctrl-c'd a backup operation
+      #2129 closed 2026-05-23 fix(tui): fix races, ctrl+c terminal corruption and display bugs
+      #1656 closed 2025-09-10 plakar login: unexpected 500 error after shell interruption
+      #1349 closed 2025-07-23 Panic in scheduler
+      #1104 closed 2025-06-06 ctrl-c vs plakar create
+      #997 closed 2025-05-12 commands like `plakar server` should run in the agent if possible
+      #702 closed 2025-03-18 Handle ctrl+C on `plakar mount`
+      #1290 closed 2025-07-12 event processor vs interruption
+      #1113 merged 2025-06-12 move passphrase prompting in Parse()
+      #1192 closed 2025-06-28 Interrupting backup doesn't cleanup repository data
+      #1014 merged 2025-05-13 entrypoint: delay the signal trapping after subcommand.Parse
+      #952 closed 2025-05-07 failed commands hang plakar
+      #714 merged 2025-03-19 add subcommand mount test
+  power          6 hit(s) (all listed)
+      #2157 open 2026-05-26 UI: disable automatic preview mode
+      #2400 open 2026-09-29 subcommands/doctor: add a storage read self-test
+      #1266 open 2025-07-09 Add ptar Specification and support to other libraries e.g. libarchive
+      #1757 closed 2025-10-21 Add optional conditions to scheduler
+      #967 closed 2025-05-09 Google Drive storage connector
+      #902 merged 2025-04-30 Potential fix for code scanning alert no. 70: Workflow does not contain permissions
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           47 hit(s) (all listed)
+      #2390 open 2026-09-27 pkg: add "plakar pkg registry" and registries.yml
+      #1286 open 2025-07-11 sparse file support for Virtual Machine backups
+      #2196 open 2026-06-09 introduce a helper for yaml.NewEncoder() to always close it
+      #1908 open 2026-01-23 cat /dev/dm-x | plakar at <store> backup stdin:<name> finished and no data in backup
+      #1570 open 2025-08-27 Display stored size instead of backend usage in UI
+      #1788 closed 2025-11-28 'plakar maintenance' command does not recover disk space.
+      #2277 open 2026-07-21 [Bug]: Windows client hangs indefinitely rebuilding a large repository state (cold cache); Linux converges on the same repo
+      #1932 open 2026-01-30 backup as root, access the kloset (fs) as unprivileged user
+      #2172 closed 2026-05-29 Specs suggestions for VMware protection.
+      #1864 open 2026-01-05 plakar mount hangs
+      #1761 closed 2025-10-24 Dangling non-freeable objects in plakar repository after having Ctrl-c'd a backup operation
+      #8 closed 2021-11-10 Allow providing an option to limit disk I/O
+      #2210 merged 2026-06-15 test: add coverage for the cached package (0% → ~82%)
+      #2050 closed 2026-03-19 On disk packfile temporary directory not cleaned on SIGTERM
+      #2152 merged 2026-05-25 main: add tests for pure helpers in main.go, pkg.go, term.go
+      #2131 merged 2026-05-23 Add exhaustive maintenance subcommand test coverage
+      #2023 closed 2026-03-10 Enhance Archive option to use a single defined target
+      #1927 merged 2026-01-26 sync: Default to on disk storage for packfile builds.
+      #1542 closed 2025-08-17 disk-backed packfiles
+      #1898 merged 2026-01-22 switch packfile building to disk-based packfiles by default
+  partial        11 hit(s) (all listed)
+      #2297 open 2026-07-31 api: keep partial vfs search with mime filters
+      #2288 open 2026-07-25 backup: clean partial scan cache on create failure
+      #2196 open 2026-06-09 introduce a helper for yaml.NewEncoder() to always close it
+      #2277 open 2026-07-21 [Bug]: Windows client hangs indefinitely rebuilding a large repository state (cold cache); Linux converges on the same repo
+      #2006 open 2026-03-06 [Bug]: plakar info -errors <snapshot> ; doesn't give all errors list
+      #2393 merged 2026-09-28 build(deps): bump google.golang.org/grpc from 1.83.2 to 1.84.0
+      #2129 closed 2026-05-23 fix(tui): fix races, ctrl+c terminal corruption and display bugs
+      #1762 closed 2025-10-25 failed to create snapshot: encoding/hex: invalid byte: U+002E
+      #656 merged 2025-03-07 vfs: speed up Files()
+      #86 closed 2024-11-18 fix FUSE
+      #21 merged 2024-02-13 Bump minimatch and react-scripts in /ui/v2/frontend
+  incomplete     8 hit(s) (all listed)
+      #1821 open 2025-12-15 Restore should fail if errors are reported in the snapshot
+      #2196 open 2026-06-09 introduce a helper for yaml.NewEncoder() to always close it
+      #2277 open 2026-07-21 [Bug]: Windows client hangs indefinitely rebuilding a large repository state (cold cache); Linux converges on the same repo
+      #2295 merged 2026-07-31 ls: report the errors recorded in a snapshot
+      #2292 merged 2026-07-28 pkg/create: Simplify the ptar creation.
+      #2095 merged 2026-05-04 move configuration handling code to the config package.
+      #1236 closed 2025-07-06 Relative pathnames through agent fix from 1.0.2 is incomplete
+      #503 merged 2025-02-14 rework sync to that it actually works
+  dataloss       0 hit(s)
+  recover        10 hit(s) (all listed)
+      #2390 open 2026-09-27 pkg: add "plakar pkg registry" and registries.yml
+      #2288 open 2026-07-25 backup: clean partial scan cache on create failure
+      #2226 open 2026-06-17 Log management and dysfunctions in Plakman 0.9.0
+      #1788 closed 2025-11-28 'plakar maintenance' command does not recover disk space.
+      #2371 merged 2026-09-10 login: harden sign-ins with a completion code
+      #2032 closed 2026-03-13 [Bug]: The cursor my terminal disappears after a plakar command is launched.
+      #1680 merged 2025-09-15 Bump github.com/charmbracelet/bubbletea from 1.3.7 to 1.3.9
+      #527 merged 2025-02-17 differentiate between resource versions for btree root wrapper and nodes
+      #221 merged 2024-12-14 fix directory errors
+      #6 closed 2021-11-09 Index should provide reverse lookups
+  recovery       5 hit(s) (all listed)
+      #2288 open 2026-07-25 backup: clean partial scan cache on create failure
+      #2172 closed 2026-05-29 Specs suggestions for VMware protection.
+      #2258 merged 2026-07-06 build(deps): bump google.golang.org/grpc from 1.81.1 to 1.82.0
+      #2069 merged 2026-04-06 build(deps): bump google.golang.org/grpc from 1.79.3 to 1.80.0
+      #221 merged 2024-12-14 fix directory errors
+  rollback       1 hit(s) (all listed)
+      #670 merged 2025-03-11 Backup checkpoints
+  resume         2 hit(s) (all listed)
+      #2326 open 2026-08-20 [Bug]: maintenance discards the underlying error from ResolveEntry, making a 90-minute failed run undiagnosable
+      #1309 merged 2025-07-16 Bump github.com/charmbracelet/bubbletea from 1.3.4 to 1.3.6
+  half-written   0 hit(s)
+  wipe           5 hit(s) (all listed)
+      #2403 open 2026-10-04 [Bug]: `plakar maintenance` fails on repositories containing a **lowercase** Windows drive root (`/c:`)
+      #2132 merged 2026-05-23 prune: don't clobber policy filters with empty CLI overrides
+      #446 closed 2025-02-07 memory locking for secret key handling
+      #707 merged 2025-03-19 backup: Fix the last checkpoint of a backup.
+      #95 merged 2024-11-18 reintroduce children API which got wiped somehow
+  wipes          0 hit(s)
+  erase          1 hit(s) (all listed)
+      #1533 closed 2025-08-12 Provide official docker image
+  erasing        0 hit(s)
+  erased         1 hit(s) (all listed)
+      #1533 closed 2025-08-12 Provide official docker image
+  destroy        3 hit(s) (all listed)
+      #1329 open 2025-07-18 Add a destroy command for a kloset store
+      #1330 closed 2025-07-18 implement `plakar destroy` to remove a kloset
+      #2 closed 2021-10-06 `plakar rm` is broken
+  destroys       0 hit(s)
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2058 open 2026-03-26 Add restore options
+      #2393 merged 2026-09-28 build(deps): bump google.golang.org/grpc from 1.83.2 to 1.84.0
+      #2172 closed 2026-05-29 Specs suggestions for VMware protection.
+      #2291 merged 2026-07-27 build(deps): bump go.yaml.in/yaml/v3 from 3.0.4 to 3.0.5
+      #2392 closed 2026-09-28 build(deps): bump github.com/PlakarKorp/kloset from 1.1.6 to 1.1.8
+      #2394 merged 2026-09-28 build(deps): bump github.com/PlakarKorp/pkg from 1.1.5 to 1.1.7
+      #2375 closed 2026-09-14 build(deps): bump github.com/PlakarKorp/pkg from 1.1.5 to 1.1.6
+      #2396 merged 2026-09-28 build(deps): bump github.com/dustin/go-humanize from 1.0.1 to 1.1.0
+      #2368 merged 2026-09-07 build(deps): bump github.com/PlakarKorp/integrations/fs from 1.1.6 to 1.1.7
+      #2395 merged 2026-09-28 build(deps): bump github.com/PlakarKorp/integrations/fs from 1.1.7 to 1.1.8
+      #2384 merged 2026-09-21 build(deps): bump golang.org/x/tools from 0.49.0 to 0.50.0
+      #2385 merged 2026-09-21 build(deps): bump github.com/PlakarKorp/kloset from 1.1.5 to 1.1.6
+      #2377 merged 2026-09-14 build(deps): bump golang.org/x/sys from 0.47.0 to 0.48.0
+      #2354 closed 2026-08-31 build(deps): bump github.com/PlakarKorp/pkg from 1.1.3-0.20260817121456-e41c09352892 to 1.1.3
+      #2355 merged 2026-08-31 build(deps): bump github.com/PlakarKorp/integration-grpc from 1.1.0 to 1.1.1
+      #2311 merged 2026-08-17 build(deps): bump golang.org/x/mod from 0.38.0 to 0.40.0
+      #2353 merged 2026-08-31 build(deps): bump google.golang.org/grpc from 1.83.1 to 1.83.2
+      #2312 closed 2026-08-17 build(deps): bump golang.org/x/tools from 0.48.0 to 0.49.0
+      #2332 merged 2026-08-24 build(deps): bump google.golang.org/grpc from 1.83.0 to 1.83.1
+      #2263 merged 2026-07-13 build(deps): bump golang.org/x/mod from 0.37.0 to 0.38.0
+  clobber        2 hit(s) (all listed)
+      #2132 merged 2026-05-23 prune: don't clobber policy filters with empty CLI overrides
+      #18 merged 2023-12-18 Bump golang.org/x/crypto from 0.14.0 to 0.17.0
+  blank          20 hit(s) (all listed)
+      #2196 open 2026-06-09 introduce a helper for yaml.NewEncoder() to always close it
+      #2278 open 2026-07-21 config: unify Get{Source,Store,Destination} behaviour
+      #2365 closed 2026-09-04 Add web API for diag chunkmap
+      #2330 merged 2026-08-21 [OSS] Enable search and filtering on the integrations page
+      #2302 merged 2026-08-04 ci: Pull the go-junit-report as a dependency.
+      #2282 merged 2026-07-23 config: improve restrictions on config names
+      #2290 merged 2026-07-26 pkg: remove mkstruct()
+      #2279 merged 2026-07-22 ci: actually propagate tests failure
+      #2280 merged 2026-07-23 filepath assorted fixes
+      #2292 merged 2026-07-28 pkg/create: Simplify the ptar creation.
+      #2281 merged 2026-07-23 backup: document multiple targets and the path override
+      #2035 merged 2026-03-14 build: publish multi-arch container images to GHCR on release
+      #2070 closed 2026-04-06 [Bug]: ~/.config/plakar created even when `-config` is specified
+      #2293 merged 2026-07-28 api: consolidate coverage
+      #2095 merged 2026-05-04 move configuration handling code to the config package.
+      #1853 closed 2025-12-29 one more refactor for config handling
+      #2074 merged 2026-04-07 Fix code preview for large files
+      #1801 merged 2025-12-05 Jcastets/auth token
+      #1376 merged 2025-07-28 Bump github.com/prometheus/client_golang from 1.21.1 to 1.22.0
+      #22 merged 2024-02-13 Bump jsdom and react-scripts in /ui/v2/frontend
+  unreadable     7 hit(s) (all listed)
+      #1984 open 2026-02-26 plakar help on windows is unreadable
+      #2262 open 2026-07-10 Warn on snapshot backup errors during restore
+      #2277 open 2026-07-21 [Bug]: Windows client hangs indefinitely rebuilding a large repository state (cold cache); Linux converges on the same repo
+      #2295 merged 2026-07-31 ls: report the errors recorded in a snapshot
+      #2208 merged 2026-06-15 test: raise stdio/json/cookies/services/httpd coverage to ~100%
+      #2107 merged 2026-05-11 build(deps): bump google.golang.org/grpc from 1.80.0 to 1.81.0
+      #1557 closed 2025-08-24 Transfert vers un support FAT or exFAT impossible
+  garbage        8 hit(s) (all listed)
+      #2403 open 2026-10-04 [Bug]: `plakar maintenance` fails on repositories containing a **lowercase** Windows drive root (`/c:`)
+      #1761 closed 2025-10-24 Dangling non-freeable objects in plakar repository after having Ctrl-c'd a backup operation
+      #1702 closed 2025-09-22 Add ability to set grace period
+      #1867 merged 2026-01-06 tests: Set CacheDir everywhere.
+      #1831 closed 2025-12-21 Please clarify Plakar backup and management features
+      #1785 merged 2025-11-24 build(deps): bump google.golang.org/grpc from 1.76.0 to 1.77.0
+      #277 merged 2025-01-13 backup: create BubbleTea output
+      #26 merged 2024-02-14 Bump node-forge and react-scripts in /ui/v2/frontend
+  mangled        0 hit(s)
+  contents       22 hit(s) (all listed)
+      #2157 open 2026-05-26 UI: disable automatic preview mode
+      #2156 open 2026-05-26 UI: improve loading for tables
+      #1539 open 2025-08-16 Bug: sync results in missing snapshots
+      #2273 open 2026-07-21 Add ctime & inode ignore
+      #2046 open 2026-03-17 Dashboard enhancements
+      #2335 open 2026-08-24 maintenance resolves every VFS entry individually while a per-directory traversal already exists in the same package
+      #2276 merged 2026-07-21 ptar: add ignore options (1811)
+      #2364 closed 2026-09-04 [Bug]: Full check intermittently reports corruption on a valid Backblaze B2 S3 store
+      #1757 closed 2025-10-21 Add optional conditions to scheduler
+      #2002 closed 2026-03-04 [Bug]:Bad Help text display in cmd & powershell terminal
+      #1271 closed 2025-07-09 Questions on the server mode (tls, authentication, authorization, etc.)
+      #1767 closed 2025-10-29 Large backup sizes even when nothing changed
+      #1763 merged 2025-10-27 Configure CI to test plakar installation every day
+      #1261 closed 2025-07-08 How to use client/server ?
+      #1801 merged 2025-12-05 Jcastets/auth token
+      #1236 closed 2025-07-06 Relative pathnames through agent fix from 1.0.2 is incomplete
+      #1097 merged 2025-06-04 Setup goreleaser
+      #1196 closed 2025-06-30 Scan dir / Root dir is not respected anymore on FS backup.
+      #902 merged 2025-04-30 Potential fix for code scanning alert no. 70: Workflow does not contain permissions
+      #452 closed 2025-02-08 ability to handle large, flat directories without blowing up memory
+  in-place       51 hit(s) (all listed)
+      #2380 open 2026-09-16 Use XDG_DATA_DIRS for plugins too
+      #2058 open 2026-03-26 Add restore options
+      #2336 open 2026-08-24 Feature: a storage connector self-test (`plakar doctor`) — measure read reliability and latency on demand
+      #2326 open 2026-08-20 [Bug]: maintenance discards the underlying error from ResolveEntry, making a 90-minute failed run undiagnosable
+      #2322 closed 2026-08-18 subcommands: let create and ptar pick the compression algorithm
+      #2364 closed 2026-09-04 [Bug]: Full check intermittently reports corruption on a valid Backblaze B2 S3 store
+      #2281 merged 2026-07-23 backup: document multiple targets and the path override
+      #2306 merged 2026-08-12 Poolp org/cobra conversion
+      #2299 merged 2026-07-31 login: report auth rate limits as 429
+      #2280 merged 2026-07-23 filepath assorted fixes
+      #2287 merged 2026-07-25 Surface packfile temp creation failures during backup
+      #2242 merged 2026-06-26 test: push coverage past 70% (and stop CI timeout truncation)
+      #2216 merged 2026-06-15 test: raise subcommands/config coverage
+      #2303 closed 2026-08-06 [Bug]: backup to S3/B2 hangs indefinitely with zero I/O progress, never times out and leaves /tmp working dirs behind
+      #2229 merged 2026-06-18 bump integrations/http ; document its store options
+      #2258 merged 2026-07-06 build(deps): bump google.golang.org/grpc from 1.81.1 to 1.82.0
+      #2164 merged 2026-05-28 builder: Do not fail if we have a stale lock.
+      #1893 closed 2026-01-20 Scheduler for Windows: Unsupported Operation?
+      #2004 merged 2026-03-05 build: add Dockerfile for CI/CD pipeline use
+      #2023 closed 2026-03-10 Enhance Archive option to use a single defined target
+  unclean        0 hit(s)
+  shutdown       6 hit(s) (all listed)
+      #2218 merged 2026-06-15 test: cover dup, ui/v2 server, and main encryption helpers
+      #2223 merged 2026-06-16 test: cover mount/http dynamic handler and chroot serving
+      #2221 merged 2026-06-16 test: cover subcommands registry, ui, login parse, and fileinfo mock
+      #2208 merged 2026-06-15 test: raise stdio/json/cookies/services/httpd coverage to ~100%
+      #2129 closed 2026-05-23 fix(tui): fix races, ctrl+c terminal corruption and display bugs
+      #1530 merged 2025-08-11 Bump golang.org/x/tools from 0.35.0 to 0.36.0
+  reboot         3 hit(s) (all listed)
+      #2180 closed 2026-06-03 Control Plane Appliance to give infos on its setup status and its config
+      #2002 closed 2026-03-04 [Bug]:Bad Help text display in cmd & powershell terminal
+      #1227 closed 2025-07-05 plakar ui not working
+  disk+full      10 hit(s) (all listed)
+      #1286 open 2025-07-11 sparse file support for Virtual Machine backups
+      #2277 open 2026-07-21 [Bug]: Windows client hangs indefinitely rebuilding a large repository state (cold cache); Linux converges on the same repo
+      #1570 open 2025-08-27 Display stored size instead of backend usage in UI
+      #2210 merged 2026-06-15 test: add coverage for the cached package (0% → ~82%)
+      #2152 merged 2026-05-25 main: add tests for pure helpers in main.go, pkg.go, term.go
+      #1761 closed 2025-10-24 Dangling non-freeable objects in plakar repository after having Ctrl-c'd a backup operation
+      #1692 closed 2025-09-18 refactor: major architectural improvements following SOLID principles and security enhancements
+      #1312 merged 2025-07-16 Bump github.com/cockroachdb/pebble/v2 from 2.0.3 to 2.0.6
+      #1238 closed 2025-07-07 Avoid cache size restrictions
+      #88 closed 2024-11-18 finalize objects structures in repository
+  data+loss      0 hit(s)
+  partial+write  6 hit(s) (all listed)
+      #2196 open 2026-06-09 introduce a helper for yaml.NewEncoder() to always close it
+      #2277 open 2026-07-21 [Bug]: Windows client hangs indefinitely rebuilding a large repository state (cold cache); Linux converges on the same repo
+      #2006 open 2026-03-06 [Bug]: plakar info -errors <snapshot> ; doesn't give all errors list
+      #2393 merged 2026-09-28 build(deps): bump google.golang.org/grpc from 1.83.2 to 1.84.0
+      #2129 closed 2026-05-23 fix(tui): fix races, ctrl+c terminal corruption and display bugs
+      #1762 closed 2025-10-25 failed to create snapshot: encoding/hex: invalid byte: U+002E
+  crash+safe     1 hit(s) (all listed)
+      #2278 open 2026-07-21 config: unify Get{Source,Store,Destination} behaviour
+  atomic+write   4 hit(s) (all listed)
+      #2129 closed 2026-05-23 fix(tui): fix races, ctrl+c terminal corruption and display bugs
+      #2023 closed 2026-03-10 Enhance Archive option to use a single defined target
+      #1938 closed 2026-02-04 plakar/v1.1.0-beta.3 - plakar restore without `-to` parameter fails with `no such file or directory`
+      #1762 closed 2025-10-25 failed to create snapshot: encoding/hex: invalid byte: U+002E
+  lock+file      13 hit(s) (all listed)
+      #1670 open 2025-09-12 Do not fail if shared locks can't be removed
+      #2210 merged 2026-06-15 test: add coverage for the cached package (0% → ~82%)
+      #2247 merged 2026-06-26 test: extend coverage toward 80%
+      #2303 closed 2026-08-06 [Bug]: backup to S3/B2 hangs indefinitely with zero I/O progress, never times out and leaves /tmp working dirs behind
+      #2164 merged 2026-05-28 builder: Do not fail if we have a stale lock.
+      #1987 closed 2026-02-26 [Bug]: Locks files blocking backups on Windows
+      #2013 merged 2026-03-09 build(deps): bump github.com/PlakarKorp/integration-fs from 1.1.0-beta.4 to 1.1.0-beta.5
+      #1692 closed 2025-09-18 refactor: major architectural improvements following SOLID principles and security enhancements
+      #1382 closed 2025-07-28 Plakar does not restore from the top directory
+      #1191 closed 2025-06-28 -exclude folder not working
+      #257 closed 2025-01-09 cold storage
+      #339 merged 2025-01-29 for now do not allow the agent socket to be configurable, this
+      #5 closed 2021-11-09 snapshot instance should rebuild a filesystem view
+  write+failure  5 hit(s) (all listed)
+      #2196 open 2026-06-09 introduce a helper for yaml.NewEncoder() to always close it
+      #2277 open 2026-07-21 [Bug]: Windows client hangs indefinitely rebuilding a large repository state (cold cache); Linux converges on the same repo
+      #2303 closed 2026-08-06 [Bug]: backup to S3/B2 hangs indefinitely with zero I/O progress, never times out and leaves /tmp working dirs behind
+      #2337 closed 2026-08-24 State handling: TopoSort is O(n²), states are never compacted, and each one is read twice
+      #2095 merged 2026-05-04 move configuration handling code to the config package.
+  file+contents  14 hit(s) (all listed)
+      #2157 open 2026-05-26 UI: disable automatic preview mode
+      #2156 open 2026-05-26 UI: improve loading for tables
+      #2273 open 2026-07-21 Add ctime & inode ignore
+      #2335 open 2026-08-24 maintenance resolves every VFS entry individually while a per-directory traversal already exists in the same package
+      #2276 merged 2026-07-21 ptar: add ignore options (1811)
+      #2364 closed 2026-09-04 [Bug]: Full check intermittently reports corruption on a valid Backblaze B2 S3 store
+      #1757 closed 2025-10-21 Add optional conditions to scheduler
+      #2002 closed 2026-03-04 [Bug]:Bad Help text display in cmd & powershell terminal
+      #1767 closed 2025-10-29 Large backup sizes even when nothing changed
+      #1801 merged 2025-12-05 Jcastets/auth token
+      #1191 closed 2025-06-28 -exclude folder not working
+      #452 closed 2025-02-08 ability to handle large, flat directories without blowing up memory
+      #902 merged 2025-04-30 Potential fix for code scanning alert no. 70: Workflow does not contain permissions
+      #517 closed 2025-02-17 Feature: `plakar scan`
+
+== 51 terms run; 41 returned hits, 1 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

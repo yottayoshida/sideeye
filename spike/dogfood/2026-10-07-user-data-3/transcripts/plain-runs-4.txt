@@ -1,0 +1,1 @@
+PLAIN mcpm exit=0 state=changed  (✅ Successfully updated server 'srv')

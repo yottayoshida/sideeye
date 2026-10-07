@@ -1,0 +1,6 @@
+[world]
+state = "/s/doit/state"
+
+[define]
+operation = "doit forget --backend json --db-file /s/doit/state/d.json a"
+cwd       = "/s/doit"

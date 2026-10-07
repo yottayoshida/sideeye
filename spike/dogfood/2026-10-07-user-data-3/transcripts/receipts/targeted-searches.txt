@@ -1,0 +1,148 @@
+== openssl/openssl :: "index.txt"
+total 47
+  #33136 open 2026-10-07 test_ocsp_cert_chain.t leaks its ocsp/s_server test fixtures on HP-UX, causing a later libcrypto.so.3 relink failure
+  #27064 open 2025-03-14 Date boundary bug with "openssl ca revoke" in openssl 3.4.0
+  #31129 open 2026-05-09 `openssl ocsp` responder stops accepting new requests after idle client closes before sending request line
+  #6788 open 2018-07-25 openssl crl does not work properly if -CAfile contains multiple CA certs with the same subject
+  #32368 open 2026-08-14 [robustness] asn_pack.c:58 ASN1_item_unpack drops the decode cursor: openssl ocsp verifies non-DER OCSP responses with trailing garbage
+  #23109 closed 2023-12-20 Update CRL version number
+  #26760 open 2025-02-14 OpenSSL 3.3.2 & 3.4.1 fail to load afalg engine on 486?
+  #31036 closed 2026-04-29 openssl ca with corrupted serial file returns wrong error message
+  #22966 closed 2023-12-06 3.2.0: Problem with "openssl req" and "-extensions v3_ca"
+  #19987 closed 2023-01-03 20:unable to get local issuer certificate
+  #28761 closed 2025-10-06 OpenSSL 3.5.4 fails to sign CSRs that worked in versions <= 3.3.5
+  #13356 closed 2020-11-09 How to make ocsp responder busy
+  #29057 closed 2025-11-04 Avoid empty AKID/SKID extensions in CSRs and certs
+  #25597 closed 2024-10-02 `NONE` cofactor mode interprets as return code
+  #20532 closed 2023-03-17 failed (SSL: error:140AB18E:SSL routines:SSL_CTX_use_certificate:ca md too weak)
+== openssl/openssl :: rotate_index
+total 1
+  #14099 closed 2021-02-07 Concept for testing do_updatedb
+== openssl/openssl :: index.txt.new
+total 1
+  #2867 closed 2017-03-06 CA file rotation is not atomic
+== canonical/lxd :: "config.yml" empty
+total 7
+  #1615 closed 2016-02-16 Add default unix-like command aliases
+  #16895 closed 2025-11-05 Feature : Alias show - Alias edit
+  #8896 closed 2021-06-15 limits.cpu does not apply with cgroupsV2 on Gentoo
+  #9032 closed 2021-07-22 LXC: Improvements to default config handling
+  #8570 closed 2021-03-15 User config inconsistency with snap packages
+  #4427 closed 2018-04-09 lxd 3.0.0: config.yml reset and database empty
+  #4428 closed 2018-04-09 lxd 3.0.0: client.crt / client.key missing. how to force lxc to regenerate it?
+== canonical/lxd :: "config.yml" corrupt
+total 1
+  #17795 closed 2026-03-03 lxc/config/file: include path to bogus or missing file in errors
+== gilbertchen/duplicacy :: preferences empty
+total 12
+  #57 open 2017-06-02 Ignoring keys in preferences
+  #526 open 2018-12-30 Using "set" to set a storage password that contains an ampersand ("&") stores the wrong password due to unicode encoding
+  #636 open 2022-10-20 Live backup preview (mount)
+  #158 open 2017-09-05 SFTP encrypted private key
+  #465 open 2018-07-23 Pruning Vertical Backup storage gone awry
+  #480 open 2018-08-09 WebDav (URL request & PROPFIND - TLS handshake timeout)
+  #4 open 2016-03-23 WebDAV Support
+  #458 closed 2018-07-12 wasabi backend fails with "Failed to fossilize chunk" when pruning (fixed with pull request)
+  #189 closed 2017-09-13 "Info" command does not work for encrypted, non-default storage with keyrings.
+  #284 closed 2017-12-01 Bit identical copy of an unencrypted storage to an encrypted storage waives encryption?
+  #352 closed 2018-02-04 Question: Should an Incomplete/Resumed Job leave Unreferenced Chunks?
+  #209 closed 2017-09-22 B2 efficiency
+== gilbertchen/duplicacy :: preferences corrupt
+total 2
+  #380 open 2018-03-15 Backing up to two rotating removable drives and online storage
+  #234 closed 2017-10-15 Repair "missing chunks"
+== gorilla-devs/ferium :: config.json empty
+total 2
+  #520 open 2026-08-05 Pick cursor option if no version was selected
+  #466 closed 2025-03-28 Stuck when ferium upgrade
+== gorilla-devs/ferium :: config corrupt
+total 1
+  #79 closed 2022-05-15 Support for modpacks
+== TiddlyWiki/TiddlyWiki5 :: render "empty file"
+total 10
+  #1733 open 2015-05-13 lynx knowledge navigator
+  #9826 closed 2026-04-21 [Report] textarea minHeight handling
+  #7545 closed 2023-06-14 [BUG] CodeMirror plugin not working in HTA mode since TiddlyWiki v5.2.1
+  #7096 closed 2022-12-07 Allow overriding the coreURL used by external-js
+  #6300 closed 2021-12-03 [BUG] "ListWidget Counter variable" fail to render/export with "--render" command
+  #5708 closed 2021-05-20 Add support for JSON-formatted tiddler store, and make it the default
+  #3630 closed 2018-12-09 The download saver's file name has changed incompatibly in 5.1.18
+  #1770 closed 2015-06-04 RenderTiddlers dont take into account macro
+  #1231 closed 2014-12-13 Specify filename when using tm-download-file
+  #703 closed 2014-07-25 rendertiddler command is not export static CSS file as expected
+== TiddlyWiki/TiddlyWiki5 :: savewikifolder truncated
+total 0
+== adobe-type-tools/afdko :: sfntedit
+total 51
+  #594 open 2018-08-31 Replace hacky temp file solutions
+  #1551 open 2022-08-02 Investigate issue with converting CFF2 to CFF using tx
+  #1572 open 2022-11-01 [tx] subroutinizer produces corrupted outlines
+  #1761 closed 2024-11-15 [makeotfexe] 4.0.2 fails on Linux
+  #1425 closed 2021-10-28 aarch64-linux test failure
+  #1739 closed 2024-03-23 Pytest Error Encountered During AFDKO Compilation on Arch Linux
+  #1658 closed 2023-05-29 [sfntedit] Wrong missing filename shown
+  #1696 closed 2023-08-31 [sfntedit] Fix bug when attempting to add non-existent file
+  #66 closed 2015-09-18 [otf2otc] Support `glyf` table merging
+  #1502 closed 2022-04-21 Failed to install AFDKO in Windows 7 32bit
+  #1437 closed 2021-12-05 Generating CFF2 tables
+  #1339 closed 2021-04-10 makeotf fails to build on darwin
+  #1355 closed 2021-05-03 Subroutinizing doesn't work in windows
+  #1319 closed 2021-02-28 Reusing components / subroutinezation is missing?
+  #1216 closed 2020-08-27 Tests are broken on aarch64
+== earendil-works/pi :: "settings.json" empty
+total 49
+  #9361 open 2026-09-09 Windows: settings shellPath is non-deterministically ignored when extensions are loaded; PATH fallback executes via WSL System32 bash.exe
+  #10478 closed 2026-10-05 Fix empty defaultTools selections when merging settings layers
+  #8810 open 2026-08-29 Extension-registered providers: fresh sessions intermittently ignore defaultProvider/defaultModel and start on another provider's default
+  #6600 open 2026-07-13 pi update --extensions and npm scripts: npm 11.16.0 warns, npm 12 blocks
+  #9592 closed 2026-09-14 /new silently resets the selected model to the startup default
+  #9196 closed 2026-09-05 Show default value in `/settings` description
+  #7829 closed 2026-08-08 Invalid settings.json silently ignored; misleading 'bash not found' error on Windows
+  #8764 closed 2026-08-28 fix(coding-agent): honor settings.shellPath for config/header '!' command resolution
+  #8326 closed 2026-08-18 feat: add `disabledCommands` setting to block built-in slash commands
+  #6922 closed 2026-07-21 Default model cannot be a llama.cpp model: startup shows "No models available"
+  #7739 open 2026-08-06 Set a startup-time budget targeting jcode-comparable latency and memory
+  #8763 closed 2026-08-28 Windows: '!'-prefixed config/header shell commands silently fail (resolve via getShellConfig() ignores settings shellPath, picks WSL bash shim)
+  #8916 closed 2026-08-31 gpt-oss-120b (openai-completions) degrades to reasoning-only turns in subagent harness at large agentic context
+  #8620 closed 2026-08-25 0.84.3 bundled CLI: every global extension fails with "Cannot find module '@earendil-works/pi-coding-agent'"
+  #4945 open 2026-05-24 openai-codex Connection Reliability Issues
+== earendil-works/pi :: "settings.json" corrupt
+total 6
+  #9361 open 2026-09-09 Windows: settings shellPath is non-deterministically ignored when extensions are loaded; PATH fallback executes via WSL System32 bash.exe
+  #9828 closed 2026-09-21 Fullscreen exit with default fullscreenExitOutput ("transcript") corrupts scrollback during teardown handoff
+  #8584 closed 2026-08-24 TUI row corruption during streaming: assistant text rendered one word per line after long tool output
+  #534 closed 2026-01-07 config folder is out of place on Linux
+  #1060 closed 2026-01-29 Prevent settings.json from being overwritten when JSON is invalid
+  #1216 closed 2026-02-03 Support installing local extension using `pi install`
+== earendil-works/pi :: "settings.json.lock"
+total 0
+== earendil-works/pi :: settings lost
+total 32
+  #10437 open 2026-10-03 fix(coding-agent): report settings save failures in interactive mode
+  #9361 open 2026-09-09 Windows: settings shellPath is non-deterministically ignored when extensions are loaded; PATH fallback executes via WSL System32 bash.exe
+  #10558 open 2026-10-06 Clipboard copy fails when DISPLAY/WAYLAND_DISPLAY are exported without a working socket
+  #10538 closed 2026-10-06 fix(coding-agent): extension bash tools inherit session shell settings; skip WSL launchers in Windows bash discovery
+  #9972 closed 2026-09-23 Saving a default model overwrites global scope with a project override
+  #10357 closed 2026-10-02 pi-durable: make the progress commit interval configurable
+  #10083 closed 2026-09-26 Fullscreen: refocusing Pi with a click also activates a built-in selector row
+  #9445 closed 2026-09-10 pi-ssh-remote re-registered bash tool ignores settings.shellPath (macOS falls back to system bash 3.2)
+  #10350 closed 2026-10-02 Extensions cannot tell cache-warming refreshes from real agent requests
+  #9240 closed 2026-09-06 regular TUI: line changes above the viewport trigger destructive full redraw (ESC[3J + full replay) — scroll position lost mid-task
+  #9735 closed 2026-09-18 Retry classifier misses premature stream endings worded by a proxy, e.g. CLIProxyAPI
+  #7880 closed 2026-08-10 Proposal: five small bug fixes across tui, ai, and coding-agent
+  #8620 closed 2026-08-25 0.84.3 bundled CLI: every global extension fails with "Cannot find module '@earendil-works/pi-coding-agent'"
+  #8606 closed 2026-08-25 Crash (uncaughtException) when terminal is narrow: "Rendered line exceeds terminal width (24 > 22)" — diff summary bar not truncated
+  #9822 closed 2026-09-21 0.86.x: Codex tool calls leak as raw harmony text (to=functions.*) after compaction on gpt-5.6-luna
+== mcpm :: "servers.json"
+{"message":"Validation Failed","errors":[{"message":"The listed users and repositories cannot be searched either because the resources do not exist or you do not have permission to view them.","resource":"Search","field":"q","code":"invalid"}],"documentation_url":"https://docs.github.com/v3/search/","status":"422"}gh: Validation Failed (HTTP 422)
+== pathintegral-institute/mcpm.sh :: "servers.json"
+total 9
+  #390 open 2026-09-02 Prefer URL client configs over stdio mcpm run
+  #380 open 2026-08-26 [Bug]: Multiple client integration issues with MCPM on WSL
+  #371 closed 2026-08-15 [Bug]: client configs spawn stdio `mcpm run` even when servers.json already has a URL
+  #362 closed 2026-07-25 stdio `mcpm run` multiplies into hundreds of processes under parallel MCP clients
+  #315 closed 2026-03-20 feat: add `mcpm update` command for server update management
+  #241 closed 2025-08-18 chore: Add MCP manifest for modelcontextprotocol-servers-tree-main-src-memory
+  #64 closed 2025-04-17 [General]: Can https://mcpm.sh/api/servers.json be used freely?
+  #187 closed 2025-06-24 chores: switch registry
+  #194 closed 2025-06-30 Add server: Elevenlabs official mcp server

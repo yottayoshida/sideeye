@@ -1,0 +1,6 @@
+[world]
+state = "/s/dxf"
+
+[define]
+operation = "ezdxf strip /s/dxf/drawing.dxf"
+cwd       = "/s/dxf-in"

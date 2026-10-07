@@ -1,0 +1,6 @@
+PLAIN minizip exit=0 state=changed  (Copying c.bin)
+PLAIN xbps exit=0 state=changed  ()
+PLAIN mcpm seed-failed: 
+PLAIN sndfile exit=0 state=changed  ()
+PLAIN ezdxf exit=0 state=changed  ("drawing.dxf" - 1 tag removed)
+PLAIN qalc seed-failed: 

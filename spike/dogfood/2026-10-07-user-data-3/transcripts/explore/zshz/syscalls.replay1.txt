@@ -1,0 +1,24 @@
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 5 of 6
+            after  open(/s/z/data/.z)
+            before write(/s/z/data/.z)
+path        .z
+observed    present, but its recorded history is no longer a prefix of its content
+explored    2 worlds (crash points 6 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): .z
+oracle      agreed on 6 operations (1064 syscall lines examined, 62 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+metadata    2 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmodat x2. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/zshz/work-syscalls/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+cwd         /s/z-in
+processes   1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+reproduce   SIDEEYE_STATE_DIR=/s/z/data SIDEEYE_TRACE_PATH=/out/zshz/work-syscalls-replay1/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.9.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=5 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=349bf6578d2e9188451756aaff129aebf1fcaaf604f844dbf7c43de2dcc403ef;

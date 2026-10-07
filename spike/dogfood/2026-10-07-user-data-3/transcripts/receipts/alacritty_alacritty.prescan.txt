@@ -1,0 +1,843 @@
+== novelty pre-scan: alacritty/alacritty
+== date: 2026-10-07T08:30:09Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6130 open 2022-06-14 Immediate crash on launch
+      #5197 open 2021-06-01 Alacritty crashed on macos
+      #4890 open 2021-03-12 Crash on/after macOS sleep
+      #8948 open 2026-05-15 Alacritty crashes when trying to use hints in tui applications
+      #7615 open 2024-01-12 [Windows] Alacritty crashed and froze when working_directory is invalid
+      #3500 open 2020-03-22 Crash at large window size in X
+      #3076 open 2019-12-06 Alacritty crashes when no monitors are left
+      #5203 open 2021-06-03 Zooming in Gomuks when a image is displayed crashes Alacritty?
+      #7091 open 2023-07-17 Alacritty crashes on startup after updating to the latest available version
+      #2516 open 2019-06-07 Script that turns off `xrandr` displays hangs in `alacritty`.
+      #5230 open 2021-06-11 Alacritty: Runtime Error; panicked at 'assertion failed: hr == 0'
+      #3602 open 2020-04-18 [Windows] Setting config 'decorations' option to 'none' prevents window snapping
+      #7763 open 2024-02-22 Can not input Chinese  punctuation
+      #8037 open 2024-06-13 Move tabs with the keyboard
+      #1344 open 2018-05-31 XCB aborting
+      #7742 open 2024-02-16 Dvorak-QWERTY keyboard layout no longer respecting QWERTY layer
+      #481 open 2017-03-15 Variation selector handling causes incorrect character width with some programs / Unicode characters
+      #2200 open 2019-03-21 The fonts error on the windows10 system.
+      #1388 open 2018-06-21 Fail to launch from Spotlight
+      #8566 open 2025-05-08 Crash on startup debian trixie; x11; Error: Error { raw_code: Some(2), raw_os_message: Some("BadValue (integer parameter out of range for operation)"), kind: BadAttribute }
+  corrupt        31 hit(s) (all listed)
+      #4685 open 2021-01-11 Screen corruption when using neovim
+      #8974 closed 2026-06-11 CJK font corrupt when page up.
+      #9000 closed 2026-07-15 Fix stale content after resize with damage tracking
+      #8147 open 2024-08-26 Freeze on large amounts of color escape sequences - Windows 10
+      #8786 closed 2025-12-16 Wide character (CJK) rendering corruption in vim/helix on incremental updates
+      #8555 closed 2025-04-23 Corrupt text on Windows
+      #2355 closed 2019-04-23 Insert cursor disappearing in Neovim
+      #7730 closed 2024-02-15 command recall with up arrow at a mysql> prompt issues
+      #6773 closed 2023-03-12 Terminal apps crash on dpms resume
+      #7146 closed 2023-08-16 alacritty crashes when closed. Hyprland, Wayland
+      #6616 closed 2023-01-12 wrong repo
+      #5585 closed 2021-11-02 CreateNewWindow core dump
+      #6411 closed 2022-10-17 Dragging causes ui typography confusion
+      #3559 merged 2020-04-04 Use frame callbacks instead of vsync on Wayland
+      #5000 closed 2021-04-22 Font is corrupted and nothing isn't visible clearly.
+      #5212 closed 2021-06-06 Alacritty doesn't exit fullscreen mode when goes in from maximized mode
+      #4688 closed 2021-01-11 Corrupt Text on Windows
+      #4373 closed 2020-11-03 [wip] New faster renderer
+      #2885 closed 2019-10-16 Entering a Unicode character corrupts the displayed text
+      #4682 closed 2021-01-09 Windows + Alacritty + Powershell multiple tmux status bars
+  corruption     22 hit(s) (all listed)
+      #4685 open 2021-01-11 Screen corruption when using neovim
+      #8983 closed 2026-06-18 Alacritty crashes on sway when window is small and font is big
+      #8786 closed 2025-12-16 Wide character (CJK) rendering corruption in vim/helix on incremental updates
+      #6970 closed 2023-05-31 alacritty won't start on my windows 10 host
+      #7146 closed 2023-08-16 alacritty crashes when closed. Hyprland, Wayland
+      #6944 closed 2023-05-22 Since winit 0.28.0 upgrade, alacritty causes zsh to segfault
+      #2005 closed 2019-01-13 Newline in neovim makes text glitch with line numbers are enabled
+      #5585 closed 2021-11-02 CreateNewWindow core dump
+      #4878 closed 2021-03-06 Graphics corruption and sway crash
+      #5205 closed 2021-06-03 column setting causes empty lines with tiling WMs on startup
+      #4746 closed 2021-01-29 Cursor becomes scalene triangle (graphical corruption?)
+      #4373 closed 2020-11-03 [wip] New faster renderer
+      #461 closed 2017-03-06 Running tig within Alacritty invokes Zalgo
+      #648 closed 2017-07-02 Performance regression
+      #9 closed 2016-09-23 Scrolling vim in tmux while a separate pane is printing causes corruption
+      #745 closed 2017-08-22 differences with rendering between xterm and alacritty / screen corruption with tmux + vim
+      #493 closed 2017-03-24 [Regression] broken `htop` display
+      #2363 closed 2019-04-25 Display becomes corrupted in Emacs when inserting text
+      #2205 closed 2019-03-23 Color Rendering Issues
+      #2885 closed 2019-10-16 Entering a Unicode character corrupts the displayed text
+  truncated      24 hit(s) (all listed)
+      #910 open 2017-11-21 Add support for libsixel
+      #7198 closed 2023-09-06 Capital letter tops being cut off by a few pixels
+      #8076 closed 2024-07-05 MySQL Console Command Input Truncated with MesloLGS Nerd Font Mono
+      #7485 closed 2023-12-28 Alacritty freezes Arch Linux, Wayland, Nvidia
+      #7871 closed 2024-03-27 Keybinding not work after upgrading from 0.13.1 to 0.13.2
+      #6848 closed 2023-04-09 Truncated text on copy to clipboard
+      #6455 closed 2022-10-28 Crashing on GNOME Wayland
+      #5756 closed 2022-01-07 Alacritty randomly slow under wayland
+      #5333 closed 2021-07-15 Random Characters printed with fish shell
+      #343 closed 2017-01-22 Inner Borders like rxvt-unicode
+      #791 closed 2017-09-22 Glyphs sometimes cut off (need to draw background in single pass)
+      #721 closed 2017-08-11 Touchpad scrolling is janky
+      #2409 closed 2019-05-03 alacritty 0.3.2:  URL parser drops trailing /
+      #3047 closed 2019-11-28 Rendering issue with minimize windows
+      #3109 closed 2019-12-18 Alacritty receive characters when I use a shortcut to switch between XFCE desktop.
+      #3341 closed 2020-02-14 Alacritty doesn't work well with Lynx Browser
+      #3669 closed 2020-05-01 Mac Os x [ ] issue
+      #1284 merged 2018-04-29 Improve the resizing implementation
+      #657 closed 2017-07-12 Implementation of scrollback
+      #3115 merged 2019-12-20 Fix grid.len() and grid.history_size() misreporting
+  truncate       57 hit(s) (all listed)
+      #5438 open 2021-08-22 memory usage
+      #9040 closed 2026-09-05 Include keyboard and mouse bindings in IPC get-config
+      #910 open 2017-11-21 Add support for libsixel
+      #8830 closed 2026-01-29 Opening link with click truncates to before first "&"
+      #7198 closed 2023-09-06 Capital letter tops being cut off by a few pixels
+      #7145 closed 2023-08-15 Fix scaling for offset and glyph offset
+      #8076 closed 2024-07-05 MySQL Console Command Input Truncated with MesloLGS Nerd Font Mono
+      #8175 closed 2024-09-15 Release some permissions to allow users to access and parse into stan…
+      #7485 closed 2023-12-28 Alacritty freezes Arch Linux, Wayland, Nvidia
+      #7762 closed 2024-02-22 Alacritty prints strange escape sequences and truncates the output
+      #7871 closed 2024-03-27 Keybinding not work after upgrading from 0.13.1 to 0.13.2
+      #5066 closed 2021-05-07 Config error: history: exceeded maximum scrolling history
+      #6848 closed 2023-04-09 Truncated text on copy to clipboard
+      #7220 merged 2023-09-16 Update winit to 0.29.2
+      #7492 closed 2023-12-29 Certain modifiers fail in `kakoune`
+      #7264 merged 2023-10-03 Fix regex matches ending on multiline
+      #6455 closed 2022-10-28 Crashing on GNOME Wayland
+      #7011 closed 2023-06-17 Double-tap by touchpad on the titlebar doesn't maximize/unmaximize the window in GNOME 44, Wayland
+      #6139 merged 2022-06-16 Add support for hyperlink escape sequence
+      #5756 closed 2022-01-07 Alacritty randomly slow under wayland
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5300 open 2021-07-03 Alacritty should avoid rendering cells as early as possible
+      #4244 open 2020-09-22 Inputted text from Talon ends up out-of-order
+      #6899 open 2023-05-04 tmux prefix key is not working. ctrl+b writes "D"
+      #4264 open 2020-09-27 Alacritty sometimes fails to invert cursor color (e.g. black cursor in vim with dark colorscheme)
+      #3927 open 2020-07-07 Scrolling in windows other than Alacritty affects the amount that Alacritty scrolls the next time it receives a wheel event.
+      #8319 open 2024-11-20 windows clearing clipboard via osc fails
+      #8907 open 2026-04-11 Stops responding to keyboard after exiting Vi mode on X11 with fcitx5
+      #3145 open 2020-01-03 Do not allow selecting unoccupied cells
+      #4253 open 2020-09-25 Significant input lag after installing im-config 0.44-1ubuntu1.2 on Ubuntu 20.04
+      #846 open 2017-10-17 Takes X keyboard focus upon startup
+      #7340 open 2023-11-04 ConPty/MPV - Normal arrow keys interpreted as Keypad arrow keys (KP_*)
+      #8865 open 2026-03-08 When shell command input is at bottom of terminal, wrapping goes to start of the same line instead of to a new line
+      #5606 open 2021-11-12 Alacritty causes stuttering in games/GPU-heavy apps, even when minimized
+      #4622 open 2020-12-29 Xmodmap mappings do not work with modifiers
+      #6419 open 2022-10-18 window.opacity doesn't seem to work
+      #7418 open 2023-12-05 Cannot paste text yanked from Vim
+      #8596 open 2025-06-10 Configuration and symbolic link : report errors but configuration is reloaded
+      #5703 open 2021-12-19 Window contents not redrawn after output (=display) disabled and re-enabled
+      #6942 open 2023-05-22 Keyboard input does not work with CJK IME (macOS, 0.12.1)
+      #3331 open 2020-02-12 Text jiggles when resizing on macOS
+  atomic         42 hit(s) (all listed)
+      #6863 open 2023-04-15 Throttle update sending to the WM
+      #8596 open 2025-06-10 Configuration and symbolic link : report errors but configuration is reloaded
+      #8764 closed 2025-11-25 macOS: IME commit with 2+ characters triggers unexpected clipboard paste when clipboard contains image
+      #7548 closed 2024-01-02 Any plans to have Wgpu support and have OpenGL as a fallback?
+      #910 open 2017-11-21 Add support for libsixel
+      #8784 closed 2025-12-14 Ptyxis-like container awareness
+      #4763 open 2021-02-05 Support for graphics in the terminal
+      #8719 closed 2025-10-21 i would like to maintain flatpak manifest
+      #8628 closed 2025-07-20 Execute commands on the host when running in a flatpak sandbox
+      #8549 closed 2025-04-16 Redraw flicker when window is shrinking
+      #7775 closed 2024-02-26 Cursor flickering in Vim
+      #5066 closed 2021-05-07 Config error: history: exceeded maximum scrolling history
+      #7349 merged 2023-11-08 Add `--option` argument to `create-window`
+      #7084 closed 2023-07-14 Cannot start alacritty - Error: failed to find suitable GL configuration
+      #6664 closed 2023-02-02 Refactor: Set IME purpose before enable
+      #6175 closed 2022-06-30 Use timer based rendering instead of vsync
+      #6632 closed 2023-01-20 the requested context Api isn't supported.
+      #2073 merged 2019-02-04 Replace deprecated ATOMIC_USIZE_INIT
+      #5495 closed 2021-09-17 Try running in 30bpp (10-bit color) if default fails
+      #6206 closed 2022-07-13 Improve dirty detection when scrolling and typing characters
+  atomically     3 hit(s) (all listed)
+      #7548 closed 2024-01-02 Any plans to have Wgpu support and have OpenGL as a fallback?
+      #8764 closed 2025-11-25 macOS: IME commit with 2+ characters triggers unexpected clipboard paste when clipboard contains image
+      #7775 closed 2024-02-26 Cursor flickering in Vim
+  interrupted    16 hit(s) (all listed)
+      #8136 closed 2024-08-18 TUI rendering error with `yazi`
+      #8599 closed 2025-06-18 alacritty installation chokes on adobe acrobat ¿?!
+      #7845 closed 2024-03-19 `SIGINT` not being sent to process running in spawned `SpawnNewInstance`
+      #7706 closed 2024-02-09 Unexpected tmux crashes when copying
+      #7746 closed 2024-02-18 Build is Unstable & Error - Ubuntu Jammy
+      #7325 closed 2023-10-27 Visual bell animation on Mac is really long
+      #8010 closed 2024-05-30 Long lines are copied with line breaks instead of as a single line
+      #5350 closed 2021-07-19 On aarch64, crash on suspend/sleep since glutin 0.27 bump
+      #5313 closed 2021-07-07 Reload config on SIGUSR1
+      #5335 merged 2021-07-16 Fix copying interrupted tab characters
+      #2677 closed 2019-07-26 Support for Font Ligatures using Harfbuzz on Linux
+      #5277 closed 2021-06-24 Alacritty window doesn't like to be really wide
+      #4768 merged 2021-02-05 Add support for synchronized updates 
+      #76 closed 2017-01-06 'pty reader' panic: Interrupted System Call when using ^Z and fg/bg
+      #1512 closed 2018-08-18 [WIP/PoC] Add automatic scrolling during selection
+      #2787 merged 2019-09-08 Fix #1165 - Implement the "hold" feature
+  interrupt      49 hit(s) (all listed)
+      #8805 closed 2025-12-31 alacritty --daemon doesn't close its socket
+      #8136 closed 2024-08-18 TUI rendering error with `yazi`
+      #3696 closed 2020-05-07 How do SIGINT with Ctrl C and use Ctrl C for Copy?
+      #1919 closed 2018-12-24 Linux: copy paste with ctrl-c/v
+      #8599 closed 2025-06-18 alacritty installation chokes on adobe acrobat ¿?!
+      #3577 closed 2020-04-11 CopyPaste Action
+      #8269 merged 2024-10-25 Add window.level to set window level (Normal, AlwaysOnTop).
+      #7845 closed 2024-03-19 `SIGINT` not being sent to process running in spawned `SpawnNewInstance`
+      #7869 closed 2024-03-27 OSC52 clipboard in neovim, copy works but paste doesn't
+      #4722 closed 2021-01-20 MacOS - Allow opening `*.command` files with alacritty?
+      #7841 closed 2024-03-17 [Feature] Adding visual indication to selection type, during vi mode
+      #7706 closed 2024-02-09 Unexpected tmux crashes when copying
+      #7746 closed 2024-02-18 Build is Unstable & Error - Ubuntu Jammy
+      #183 closed 2017-01-07 Add a Vulkan Renderer
+      #7325 closed 2023-10-27 Visual bell animation on Mac is really long
+      #824 closed 2017-10-09 Redraw randomly hangs until a keypress
+      #8010 closed 2024-05-30 Long lines are copied with line breaks instead of as a single line
+      #6846 merged 2023-04-08 Port from mio to polling, take 2
+      #6695 merged 2023-02-12 Add touch input support
+      #7328 closed 2023-10-29 Alacritty may need updates to disallowedPasteControls or other xterm
+  sigkill        8 hit(s) (all listed)
+      #8805 closed 2025-12-31 alacritty --daemon doesn't close its socket
+      #3997 closed 2020-07-19 Feature: Add a ResetAndClear action (edited)
+      #6835 closed 2023-04-04 Freeze when reading from /dev/urandom
+      #1813 closed 2018-11-18 Logfiles not deleted when process is killed
+      #3430 closed 2020-03-07 Could not compile 'alacritty' process didn't exit successfully:
+      #4347 closed 2020-10-25 error: could not compile `alacritty`
+      #4291 closed 2020-10-06 Cargo build fails on ARMv7
+      #4343 closed 2020-10-24 Alacritty not opening 
+  sigint         21 hit(s) (all listed)
+      #8847 merged 2026-02-20 Fix resource cleanup for signal shutdown
+      #8805 closed 2025-12-31 alacritty --daemon doesn't close its socket
+      #1919 closed 2018-12-24 Linux: copy paste with ctrl-c/v
+      #8807 closed 2026-01-01 Flickering rendering when using VT synchronization and tmux
+      #3696 closed 2020-05-07 How do SIGINT with Ctrl C and use Ctrl C for Copy?
+      #7845 closed 2024-03-19 `SIGINT` not being sent to process running in spawned `SpawnNewInstance`
+      #3757 closed 2020-05-22 Rebinding Terminate, kill and Background commands
+      #7752 closed 2024-02-19 Conditional keyboard bindings
+      #7622 closed 2024-01-15 How do SIGINT with Ctrl C and use Ctrl C for Copy? COPY OF "#3696"
+      #1307 closed 2018-05-14 Copy Paste not not working
+      #7751 closed 2024-02-19 Ctrl+Shift+C has stopped working with non-latin layouts
+      #7007 closed 2023-06-16 Key marked as `ReceiveChar` is being forwarded with its modifiers still attached
+      #7866 closed 2024-03-26 alacritty believes its active but it is not
+      #6734 closed 2023-02-24 about Ctrl+C Copy or SIGINT signal?
+      #28 closed 2016-12-17 Windows Support
+      #1917 closed 2018-12-20 Ctrl-C does not work when using with alternative layouts (e.g. Dvorak)
+      #3091 closed 2019-12-12 Mirror escape terminator for legacy support
+      #3570 closed 2020-04-08 fcitx doesn't work in alacritty
+      #3738 closed 2020-05-17 Broken pipe or Big amount of data typing fast with wtype crashes alacritty on Wayland
+      #4836 closed 2021-02-23 Alacritty process does not exit when window is closed with WM_DELETE_WINDOW event under X11
+  ctrl-c         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1703 open 2018-10-25 key bindings in windows (mapping Ctrl+Space)
+      #9023 open 2026-08-15 Entering Vi mode removes input method
+      #3789 open 2020-05-29 Alacritty "hangs" (input broken) when setxkbmap is ran from bashrc
+      #1803 open 2018-11-15 Alacritty stops responding shortly after first few keyboard strokes on Mac OS
+      #4622 open 2020-12-29 Xmodmap mappings do not work with modifiers
+      #8709 open 2025-10-16 IME pre-edit is rendered differently than the committed text
+      #6899 open 2023-05-04 tmux prefix key is not working. ctrl+b writes "D"
+      #3058 open 2019-11-30 Key Bindings: Wrong escape sequence sent, if it starts with ^[[r...
+      #5398 open 2021-08-05 Copying text from Alacritty doesn't work intermittently
+      #700 open 2017-07-30 macOS: Inconsistent result when using alt modifier key
+      #8852 open 2026-02-24 ToggleFullscreen does not work.
+      #379 open 2017-02-02 Add way to produce escape sequences symbolically
+      #7688 open 2024-02-04 Hotkeys do not work for other keyboard layouts
+      #6373 open 2022-10-02 Make Control+Insert a default keybinding for Copy
+      #7060 open 2023-07-08 Control behaving like shift on macos
+      #1687 open 2018-10-19 tmux will not open on Windows with error "open terminal failed: not a terminal"
+      #866 open 2017-10-25 Add unicode shortcut ctrl+Shift+u support
+      #5182 open 2021-05-27 Alacrity Blank White Screen & Not Responding
+      #6550 open 2022-12-05 Memory usage doesn't fully drop after killing alacritty
+      #8754 open 2025-11-18 Terminal screen rendering lost
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #500 open 2017-03-29 Alacritty freezes if focused when putting Mac to sleep 
+      #8510 open 2025-03-11 White screen on startup
+      #1388 open 2018-06-21 Fail to launch from Spotlight
+      #3587 open 2020-04-13 Alacritty Does Not Use GPU In Hybrid Graphics Mode
+      #8836 open 2026-02-11 Kitty Keyboard Protocol flags not enabled
+      #2516 open 2019-06-07 Script that turns off `xrandr` displays hangs in `alacritty`.
+      #2587 open 2019-06-24 Alacritty with Tmux half speed of Konsole with Tmux?
+      #774 open 2017-09-06 RFC: Unlimited Scrollback
+      #8631 open 2025-07-21 Windows: Pasting a Unicode character beyond BMP outputs a single surrogate byte
+      #8425 open 2025-01-10 Add option to adjust to monitor's real physical DPI 
+      #6786 open 2023-03-15 Visual inconsistencies of builtin block & box drawing character across point sizes
+      #5438 open 2021-08-22 memory usage
+      #8566 open 2025-05-08 Crash on startup debian trixie; x11; Error: Error { raw_code: Some(2), raw_os_message: Some("BadValue (integer parameter out of range for operation)"), kind: BadAttribute }
+      #5767 closed 2022-01-11 Powering off screns results in inconsistent DPI/font-size
+      #910 open 2017-11-21 Add support for libsixel
+      #3500 open 2020-03-22 Crash at large window size in X
+      #8884 closed 2026-03-26 Repeating keyboard input during higher load (gnome/wayland)
+      #8858 closed 2026-03-02 Fix flash terminfo capability to use BEL character
+      #4763 open 2021-02-05 Support for graphics in the terminal
+      #4673 closed 2021-01-07 Notarize macOS Binaries
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           55 hit(s) (all listed)
+      #774 open 2017-09-06 RFC: Unlimited Scrollback
+      #669 open 2017-07-17 Remember last closed position and size on macOS
+      #5182 open 2021-05-27 Alacrity Blank White Screen & Not Responding
+      #2303 open 2019-04-12 One-time very slow startup and high CPU usage on v0.3.0
+      #8827 closed 2026-01-23 Save scrollback buffer to disk
+      #8765 closed 2025-11-27 Alacritty keeps asking for permissions on MacOS
+      #8793 closed 2025-12-19 Alacritty not rendering some utf8 characters of starship.rs on linux
+      #4673 closed 2021-01-07 Notarize macOS Binaries
+      #6607 closed 2023-01-07 Windows 10 1909 Unable to start alacritty
+      #1119 closed 2018-02-15 Support drop down windows similar to Guake and iTerm
+      #7251 closed 2023-09-28 Alacritty not updating prompt after a command
+      #8153 closed 2024-08-30 Mesa cache db file descriptors are not closed and stay open in the shell
+      #5840 closed 2022-01-31 Alacritty keeps asking for permissions
+      #5066 closed 2021-05-07 Config error: history: exceeded maximum scrolling history
+      #7280 closed 2023-10-09 Misaligned address error with mesa 23.2.1
+      #7953 closed 2024-05-06 App crashes on start up with `shell.program` set but works from terminal
+      #6651 closed 2023-01-28 alacritty.yml should be included by default in somewhere not only github
+      #2876 closed 2019-10-14 Key repeat sluggish, take 2
+      #2978 closed 2019-11-14 Alacritty window randomly disappears on sway/wayland
+      #6751 closed 2023-03-02 use printf over echo + remove make install + update PHONY list
+  partial        62 hit(s) (all listed)
+      #5843 open 2022-02-02 Perform partial rendering when possible
+      #5863 open 2022-02-07 Use buffer age to perform partial rendering
+      #5687 open 2021-12-14 Pass partial result of `regex` instead of entire matching line?
+      #9022 closed 2026-08-14 Cells erased with EL/ED render black instead of the background colour during partial redraws
+      #4244 open 2020-09-22 Inputted text from Talon ends up out-of-order
+      #9040 closed 2026-09-05 Include keyboard and mouse bindings in IPC get-config
+      #4175 open 2020-08-27 Inertial scrolling support
+      #910 open 2017-11-21 Add support for libsixel
+      #3145 open 2020-01-03 Do not allow selecting unoccupied cells
+      #9000 closed 2026-07-15 Fix stale content after resize with damage tracking
+      #8986 closed 2026-06-22 CJK (double-width) characters render as black boxes under tmux until the cell is redrawn
+      #8944 closed 2026-05-09 Alt + Arrow key escape sequences behave differently in Alacritty compared to macOS Terminal
+      #8050 open 2024-06-18 Some icons won't show up in alacritty
+      #50 open 2017-01-04 Support for ligatures
+      #3500 open 2020-03-22 Crash at large window size in X
+      #5696 closed 2021-12-17 Support for Font Ligatures using harfbuzz
+      #1119 closed 2018-02-15 Support drop down windows similar to Guake and iTerm
+      #8431 merged 2025-01-12 Bump vte to 0.14.1
+      #7928 closed 2024-04-23 MacOS handles window opacity better
+      #7873 closed 2024-03-27 Fix logic for reflowing cursor when growing columns, after shrinking columns
+  incomplete     34 hit(s) (all listed)
+      #9048 closed 2026-09-12 Strip ANSI escape sequences at PTY boundaries
+      #7416 open 2023-12-05 Makefile fails on macos - pointing to wrong directory
+      #1616 open 2018-10-02 Percent (`%`) as first line when I start Alacritty
+      #9010 closed 2026-07-29 Add option to extend edge cell backgrounds into padding
+      #774 open 2017-09-06 RFC: Unlimited Scrollback
+      #663 open 2017-07-15 Add support for Bi-directional text for RTL languages
+      #50 open 2017-01-04 Support for ligatures
+      #4763 open 2021-02-05 Support for graphics in the terminal
+      #8556 closed 2025-04-24 Incomplete installation instructions
+      #5696 closed 2021-12-17 Support for Font Ligatures using harfbuzz
+      #1860 closed 2018-12-03 Some font characters look cut-off (incomplete rendering)
+      #4230 closed 2020-09-14 Allow launching additional Alacritty instances/windows in an empty workspace Mac OS
+      #8203 closed 2024-09-26 I am unable to open Alacritty because "it is damaged or incomplete", despite uninstalling it and reinstalling it.
+      #8245 closed 2024-10-15 Unable to watch config file: Too many open files (os error 24)
+      #8134 closed 2024-08-17 c++ compiler missing in dependencies
+      #1307 closed 2018-05-14 Copy Paste not not working
+      #7142 closed 2023-08-12 Alacritty starts unfocused, incompletely resized in GNOME/Wayland on Debian 12
+      #6846 merged 2023-04-08 Port from mio to polling, take 2
+      #833 closed 2017-10-12 Incomplete support for running background process in subshell
+      #6237 closed 2022-08-03 Window title bar on secondary monitor is click through
+  dataloss       0 hit(s)
+  recover        43 hit(s) (all listed)
+      #8918 open 2026-04-20 [Windows] Changing display scale causes Alacritty to hang.
+      #8907 open 2026-04-11 Stops responding to keyboard after exiting Vi mode on X11 with fcitx5
+      #8566 open 2025-05-08 Crash on startup debian trixie; x11; Error: Error { raw_code: Some(2), raw_os_message: Some("BadValue (integer parameter out of range for operation)"), kind: BadAttribute }
+      #2079 open 2019-02-05 Create a cross platform pty crate
+      #5398 open 2021-08-05 Copying text from Alacritty doesn't work intermittently
+      #1803 open 2018-11-15 Alacritty stops responding shortly after first few keyboard strokes on Mac OS
+      #9026 closed 2026-08-16 Fix Windows PTY deadlock on sustained output
+      #3426 closed 2020-03-06 Confirm exit prompt?
+      #4442 open 2020-11-18 cmatrix breaks alacritty
+      #7147 closed 2023-08-16 Feature request: Show runtime configuration
+      #5975 closed 2022-03-26 Reopening Terminal
+      #6530 merged 2022-11-26 Handle GPU resets
+      #8074 closed 2024-07-04 clear and reset the screen
+      #7873 closed 2024-03-27 Fix logic for reflowing cursor when growing columns, after shrinking columns
+      #7811 closed 2024-03-06 Crash when moving window - Needs hard reboot to recover system
+      #4220 closed 2020-09-12 HELP: Alacritty don't use pywal colors at startup
+      #3997 closed 2020-07-19 Feature: Add a ResetAndClear action (edited)
+      #7162 closed 2023-08-23 All text suddenly disappears if running on Wayland
+      #7054 closed 2023-07-05 Crash during leaving search with selection
+      #5213 closed 2021-06-07 Font size become small when re-connect display, but recovered after resizing window
+  recovery       8 hit(s) (all listed)
+      #8820 closed 2026-01-16 Feature/add agent instructions
+      #8385 closed 2024-12-31 Alacritty is likely sending repeat events for Enter, Tab, and Backspace
+      #7891 closed 2024-04-04 AMD Driver Timeout when using 8700G on Windows
+      #3997 closed 2020-07-19 Feature: Add a ResetAndClear action (edited)
+      #6817 closed 2023-03-25 Since 0.12.0 keyboard input does not work (macOS)
+      #5177 closed 2021-05-25 Crash when going full screen on large monitor in i3
+      #2677 closed 2019-07-26 Support for Font Ligatures using Harfbuzz on Linux
+      #4152 closed 2020-08-20 added ResetAndClear action
+  rollback       6 hit(s) (all listed)
+      #8820 closed 2026-01-16 Feature/add agent instructions
+      #8309 closed 2024-11-17 Scaling text with Ctrl-+/- is irreversible on a multi-DPI setup
+      #7698 closed 2024-02-07 SelectNextTab and SelectNextTab not working on macOS after upgrading to 0.13.x
+      #6360 closed 2022-09-25 Can't use C-w on v0.11.0 RC2
+      #4908 closed 2021-03-21 PasteSelection leaves pasted text inverted
+      #3476 closed 2020-03-18 #3315 breaks arrow key navigation in Neovim
+  resume         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8209 open 2024-10-01 How can I make Alacritty handle key combinations with the fn key correctly?
+      #6385 open 2022-10-10 wrong lines/geometry after resume in i3 - SIGWINCH ignored?
+      #7074 open 2023-07-12 Alacritty deletes scrollback history scrollback on resuming after being hidden on Windows
+      #6942 open 2023-05-22 Keyboard input does not work with CJK IME (macOS, 0.12.1)
+      #6881 open 2023-04-24 Alacritty does not return the cursor correctly when FISH prompt contains a command in Xorg
+      #7948 open 2024-05-04 Alacritty/winit event loop stalls and delays keyboard events
+      #5197 open 2021-06-01 Alacritty crashed on macos
+      #8205 open 2024-09-29 [Enhancement] Default Dead Key Behavior (Diacritic/Accents)
+      #6419 open 2022-10-18 window.opacity doesn't seem to work
+      #4244 open 2020-09-22 Inputted text from Talon ends up out-of-order
+      #8041 open 2024-06-14 `WARN: Unable to store text in clipboard: NSPasteboard#writeObjects: returned false` when selecting with mouse at MacOS
+      #8147 open 2024-08-26 Freeze on large amounts of color escape sequences - Windows 10
+      #4253 open 2020-09-25 Significant input lag after installing im-config 0.44-1ubuntu1.2 on Ubuntu 20.04
+      #6884 open 2023-04-24 `-o window.dimensions` creates windows of the incorrect size in i3wm
+      #8001 open 2024-05-25 Clipboard stop working after S3 sleep/wake up cycle
+      #5203 open 2021-06-03 Zooming in Gomuks when a image is displayed crashes Alacritty?
+      #7734 open 2024-02-15 keyboard hangs, window otherwise works
+      #2555 open 2019-06-17 [Feature] Support Scroll Lock functionality
+      #7582 open 2024-01-08 ToggleSimpleFullscreen from SimpleFullscreen to normal window is not work on multiple display monitor
+      #5827 open 2022-01-28 not setting window default size according to config.
+  half-written   30 hit(s) (all listed)
+      #9059 closed 2026-09-23 fix(window): set padding-aware minimum size for resize increments
+      #9049 closed 2026-09-14 Compact scrollback storage: dense viewport, prefix + repeated tail in history
+      #6786 open 2023-03-15 Visual inconsistencies of builtin block & box drawing character across point sizes
+      #1615 open 2018-10-02 Piping visible text to external programs
+      #6476 open 2022-11-09 Alacritty ignores the minus-charset option
+      #910 open 2017-11-21 Add support for libsixel
+      #775 open 2017-09-07 RFC: Optional Scrollbar
+      #50 open 2017-01-04 Support for ligatures
+      #3129 closed 2019-12-29 Tabs support in the terminal
+      #6999 closed 2023-06-13 Example toml config
+      #6592 closed 2022-12-28 Switch to TOML for configuration file
+      #625 merged 2017-06-18 Implement user actions for font resize
+      #7107 closed 2023-07-22 Use inline toml for defaults in alacritty(5)
+      #6717 closed 2023-02-19 Hints are *very* slow
+      #6075 merged 2022-05-21 Add support for GL_EXT_blend_func_extended in GLES2 renderer
+      #607 closed 2017-06-11 Support multiple windows
+      #128 closed 2017-01-07 Support GPUs without OpenGL 3.3+ drivers
+      #2724 closed 2019-08-16 Track and report damage to compatible compositors
+      #2677 closed 2019-07-26 Support for Font Ligatures using Harfbuzz on Linux
+      #5 closed 2016-09-20 Native clipboard support on X11 and Wayland
+  wipe           10 hit(s) (all listed)
+      #4175 open 2020-08-27 Inertial scrolling support
+      #8089 closed 2024-07-16 xdg-terminal-exec support
+      #1440 closed 2018-07-17 "error: linker `cc` not found" on Ubuntu 18.04 LTS, using X11
+      #1977 closed 2019-01-06 Doesn't display italic font
+      #5573 closed 2021-10-30 Clear the screen without a newline before the top-most line?
+      #2226 closed 2019-03-28 Padding does not take effect until I start typing
+      #4878 closed 2021-03-06 Graphics corruption and sway crash
+      #657 closed 2017-07-12 Implementation of scrollback
+      #2715 closed 2019-08-11 Fix wayland clipboard integration
+      #3163 merged 2020-01-07 Rework fontconfig fallback to use fallback list computed from font_sort
+  wipes          1 hit(s) (all listed)
+      #657 closed 2017-07-12 Implementation of scrollback
+  erase          59 hit(s) (all listed)
+      #8961 open 2026-05-29 Track OSC 133 Prompts and Clear on Resize
+      #6425 open 2022-10-19 MacOS Lag generated when "~" typed in spanish keyboard
+      #9022 closed 2026-08-14 Cells erased with EL/ED render black instead of the background colour during partial redraws
+      #4763 open 2021-02-05 Support for graphics in the terminal
+      #2587 open 2019-06-24 Alacritty with Tmux half speed of Konsole with Tmux?
+      #910 open 2017-11-21 Add support for libsixel
+      #7216 closed 2023-09-15 Can't clear screen when a command is running
+      #8740 closed 2025-11-03 [question] Is it possible to override a single keybind from a command line?
+      #3932 closed 2020-07-08 Backspace and CTRL+L do not work over SSH
+      #8459 closed 2025-01-29 Broken job control
+      #1208 closed 2018-03-27 Issue while using Fish + Tmux + SSH + Vim
+      #7873 closed 2024-03-27 Fix logic for reflowing cursor when growing columns, after shrinking columns
+      #5714 closed 2021-12-23 Background sometimes does not show up correctly when it is set to be different than the terminal color
+      #7803 closed 2024-03-04 random visual bug 
+      #7850 closed 2024-03-21 tput init clears the terminal (behaviour differs from other terminals)
+      #7762 closed 2024-02-22 Alacritty prints strange escape sequences and truncates the output
+      #3402 closed 2020-03-01 No colors in vim
+      #5095 closed 2021-05-10 Can't change default font for Allacritty on Windows
+      #6624 merged 2023-01-15 Preserve last column with erase in line right
+      #6809 closed 2023-03-22 Scrollback buffer cannot be cleared
+  erasing        13 hit(s) (all listed)
+      #8961 open 2026-05-29 Track OSC 133 Prompts and Clear on Resize
+      #910 open 2017-11-21 Add support for libsixel
+      #1208 closed 2018-03-27 Issue while using Fish + Tmux + SSH + Vim
+      #5095 closed 2021-05-10 Can't change default font for Allacritty on Windows
+      #6682 closed 2023-02-07 Retain selection of unchanged text
+      #6159 closed 2022-06-27 Erase in Line ANSI code (\e[K) deletes the character that precedes it
+      #6296 closed 2022-08-30 just after apply default alacritty.yml file this error have been seen
+      #3317 closed 2020-02-10 Backspace not working with tmux on macOS
+      #6011 closed 2022-04-19 Multiline prompt redraw 
+      #5426 closed 2021-08-17 "Garbage characters" on current line in vim/nvim
+      #5335 merged 2021-07-16 Fix copying interrupted tab characters
+      #85 closed 2017-01-06 alacritty does not draw background color for (some) invisible characters
+      #2006 closed 2019-01-13 Display issue with mutt + alacritty, possibly curses-related?
+  erased         10 hit(s) (all listed)
+      #9022 closed 2026-08-14 Cells erased with EL/ED render black instead of the background colour during partial redraws
+      #4763 open 2021-02-05 Support for graphics in the terminal
+      #7762 closed 2024-02-22 Alacritty prints strange escape sequences and truncates the output
+      #6913 closed 2023-05-08 Automatic scrolling through history doesn't work properly.
+      #6809 closed 2023-03-22 Scrollback buffer cannot be cleared
+      #271 closed 2017-01-10 `cat` blocks input
+      #85 closed 2017-01-06 alacritty does not draw background color for (some) invisible characters
+      #3054 closed 2019-11-29 Fix deadlock issue in Conpty drop implementation
+      #2785 merged 2019-09-08 Rework default bindings
+      #2015 merged 2019-01-18 Fix off-by-one error in erase_chars
+  destroy        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8962 open 2026-06-01 window.dimensions option is ignored
+      #8205 open 2024-09-29 [Enhancement] Default Dead Key Behavior (Diacritic/Accents)
+      #6550 open 2022-12-05 Memory usage doesn't fully drop after killing alacritty
+      #8041 open 2024-06-14 `WARN: Unable to store text in clipboard: NSPasteboard#writeObjects: returned false` when selecting with mouse at MacOS
+      #4763 open 2021-02-05 Support for graphics in the terminal
+      #910 open 2017-11-21 Add support for libsixel
+      #3500 open 2020-03-22 Crash at large window size in X
+      #8705 closed 2025-10-12 Alacritty crashes on start
+      #7132 closed 2023-08-04 Config error: did not find expected <document start> at line 125 column 5 
+      #8667 closed 2025-08-25 Hints for files/dirs don't work with xdg-open
+      #8680 closed 2025-09-06 alacritty crashes with egl-wayland2 on Nvidia GPU
+      #8201 closed 2024-09-26 Alacritty 0.13.x immediately closes on macOS
+      #8584 closed 2025-05-21 Alacritty freezes pasting some content in Hyprland.
+      #8489 closed 2025-02-18 Getting a warning saying `wl_registry#31 still attached`
+      #7498 closed 2023-12-29 Failed to spawn command '/bin/zsh' 
+      #7631 closed 2024-01-16 Error: provided display handle is not supported
+      #7372 closed 2023-11-15 upgrade to NVidia 545.29.02 crashses Alacritty
+      #1354 closed 2018-06-06 Disable mouse?
+      #8306 closed 2024-11-14 key stuck
+      #8049 closed 2024-06-18 Alacritty crashes when hyprland disables a monitor
+  destroys       3 hit(s) (all listed)
+      #5740 merged 2022-01-02 Use builtin font for box drawing unicode characters
+      #2199 closed 2019-03-21 Ctrl-L should at least optionally not remove contents from the scrollback buffer
+      #4683 closed 2021-01-09 Cross compile macOS app for arm64 and x86_64
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1134 open 2018-03-03 Alacritty overwrites previous output with prompt
+      #8865 open 2026-03-08 When shell command input is at bottom of terminal, wrapping goes to start of the same line instead of to a new line
+      #4890 open 2021-03-12 Crash on/after macOS sleep
+      #910 open 2017-11-21 Add support for libsixel
+      #4655 closed 2021-01-03 Default Directory
+      #50 open 2017-01-04 Support for ligatures
+      #4763 open 2021-02-05 Support for graphics in the terminal
+      #8623 closed 2025-07-12 Feature Request: Add option to disable all default key bindings
+      #8727 closed 2025-10-26 Crash when running fullscreen on macOS 26 after waking from sleep
+      #5246 closed 2021-06-16 Don't open links on click
+      #8260 closed 2024-10-22 TOML Syntax to disable URL launching
+      #474 closed 2017-03-09 Alt-Left/Right and Home/End don't work and prevent alacritty from closing
+      #1919 closed 2018-12-24 Linux: copy paste with ctrl-c/v
+      #2142 closed 2019-03-01 Allow configuration files per OS
+      #8532 closed 2025-04-02 Using --title prevents changing title at runtime
+      #8475 closed 2025-02-08 Emojis using ZWJ sometimes get "stuck" on the screen
+      #5450 closed 2021-08-24 Neovim cursor change
+      #8506 closed 2025-03-11 Alacritty crushes on MacOs
+      #8406 closed 2025-01-05 Crash When typing Korean.
+      #8322 closed 2024-11-22 Crash when open a top window (including input methods)
+  clobber        5 hit(s) (all listed)
+      #5994 closed 2022-04-08 Dev profile segmentation fault on MacOS M1
+      #28 closed 2016-12-17 Windows Support
+      #2773 closed 2019-09-03 Patch to make alacritty work on gru-kevin-coreboot rk3399 w/ Mali860 GPU under sway
+      #311 merged 2017-01-14 Start using the log-crate instead of printing to stdout
+      #3771 merged 2020-05-26 Prevent SHELL clobbering on not macos.
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2324 open 2019-04-18 WSL + ConPTY + vim -> paste with blanks lines
+      #5182 open 2021-05-27 Alacrity Blank White Screen & Not Responding
+      #7759 open 2024-02-21 Freeze on startup with blank white screen - Windows 11
+      #1616 open 2018-10-02 Percent (`%`) as first line when I start Alacritty
+      #8961 open 2026-05-29 Track OSC 133 Prompts and Clear on Resize
+      #1471 open 2018-07-26 Background on macOS becomes transparent when resizing
+      #6793 open 2023-03-17 White screen on wake from sleep and full screen (Windows)
+      #6035 open 2022-04-30  `alacritty` on fullscreen takes somehow 3-4s to switch tabs to another application
+      #4685 open 2021-01-11 Screen corruption when using neovim
+      #9049 closed 2026-09-14 Compact scrollback storage: dense viewport, prefix + repeated tail in history
+      #9052 closed 2026-09-17 bounds_to_string reads the wrapped wide char from the wrong row, panicking on the topmost line
+      #4725 open 2021-01-22 Alacritty freezes in primary display when using in multimonitor setup
+      #3927 open 2020-07-07 Scrolling in windows other than Alacritty affects the amount that Alacritty scrolls the next time it receives a wheel event.
+      #8968 closed 2026-06-04 U+2800 rendering issues.
+      #2800 open 2019-09-15 macOS font fallback
+      #1043 open 2018-01-21 Monaco font not displaying correctly
+      #6476 open 2022-11-09 Alacritty ignores the minus-charset option
+      #8983 closed 2026-06-18 Alacritty crashes on sway when window is small and font is big
+      #957 open 2017-12-23 RFC: Font Configuration
+      #8875 closed 2026-03-17 docs: fix README grammar
+  unreadable     31 hit(s) (all listed)
+      #1343 open 2018-05-31 Selection not cancelled when selection is made in different application. Selection color cannot be changed
+      #4264 open 2020-09-27 Alacritty sometimes fails to invert cursor color (e.g. black cursor in vim with dark colorscheme)
+      #8742 closed 2025-11-05 Fixes RTL zero-width character rendering
+      #5696 closed 2021-12-17 Support for Font Ligatures using harfbuzz
+      #8351 closed 2024-12-10 Mouse offset from actual window (ChromeOS)
+      #8082 closed 2024-07-10 Text readability when foreground and background colour are the same
+      #7923 closed 2024-04-21 Refactoring required
+      #7875 merged 2024-03-28 Update wxs to fix Open Alacritty Here in Windows
+      #6186 merged 2022-07-06 Fix thin strokes on macOS
+      #7788 merged 2024-02-29 Allow setting terminal env vars via pty options
+      #7107 closed 2023-07-22 Use inline toml for defaults in alacritty(5)
+      #7043 closed 2023-06-30 Kerning is terrible
+      #7130 closed 2023-08-04 Limiting color palette to 16 ansi colors
+      #1883 closed 2018-12-08 An utility to update the config file automatically?
+      #3830 closed 2020-06-07 Unicode diacritics which should be rendered before character not rendered correctly.
+      #6213 closed 2022-07-18 Problem with the default color scheme
+      #6297 closed 2022-08-31 Accurate and sane color defaults
+      #2047 closed 2019-01-29 Add wayland dark themed client decorations option
+      #5627 closed 2021-11-22 Implement just_frame visual bell mode
+      #5536 closed 2021-10-10 Add `min_dpr` and `max_dpr` config values + minor fix
+  garbage        75 hit(s) (all listed)
+      #4123 open 2020-08-13 Support for OpenType fonts with an SVG table.
+      #8037 open 2024-06-13 Move tabs with the keyboard
+      #3061 open 2019-12-02 Weird resize lag when launching Alacritty in tiling mode
+      #6458 open 2022-10-31 Undercurls too thin
+      #4175 open 2020-08-27 Inertial scrolling support
+      #910 open 2017-11-21 Add support for libsixel
+      #4763 open 2021-02-05 Support for graphics in the terminal
+      #8891 closed 2026-03-29 SIXEL not working
+      #8877 closed 2026-03-20 docs: fix README feature overview wording
+      #1663 closed 2018-10-16 Mouse interactions do not appear to be working properly on windows
+      #8799 closed 2025-12-27 Want support for CSI > q (extended terminal attributes, I.e. terminal name and version)
+      #6079 merged 2022-05-23 Bump glutin to 0.29.0
+      #8737 closed 2025-11-01 Alacrity need a new icon in Mac OS 26
+      #6999 closed 2023-06-13 Example toml config
+      #5696 closed 2021-12-17 Support for Font Ligatures using harfbuzz
+      #8481 closed 2025-02-14 Window snapping fails on MacOS
+      #6592 closed 2022-12-28 Switch to TOML for configuration file
+      #8288 merged 2024-11-02 On macOS, explicitly focus the new window in case Alacritty isn't the active app, otherwise it won't get focus automatically
+      #8228 closed 2024-10-10 Using SelectTab command inserts a character into the terminal
+      #7851 closed 2024-03-22 Garbage unicode characters in vim based editors when using numpad
+  mangled        5 hit(s) (all listed)
+      #7934 closed 2024-04-26 Cunieform is mangled in output
+      #782 closed 2017-09-12 Significant startup time
+      #3360 closed 2020-02-19 Nano/vim in SSH session respond with "Error opening terminal: alacritty." and other weird things.
+      #6390 merged 2022-10-12 Update glutin to 0.30.0
+      #2631 closed 2019-07-09 no method named `set_urgent` found for type `window::Window` in the current scope
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5703 open 2021-12-19 Window contents not redrawn after output (=display) disabled and re-enabled
+      #3331 open 2020-02-12 Text jiggles when resizing on macOS
+      #6557 open 2022-12-07 External display re-drawing issue
+      #1388 open 2018-06-21 Fail to launch from Spotlight
+      #297 open 2017-01-12 Blink issue (window flash white during startup)
+      #4278 open 2020-10-02 Use SAVE_TARGETS to persist X11 clipboard content on exit
+      #3023 open 2019-11-25 title bar/decorations no longer appear in fullscreen mode
+      #6385 open 2022-10-10 wrong lines/geometry after resume in i3 - SIGWINCH ignored?
+      #700 open 2017-07-30 macOS: Inconsistent result when using alt modifier key
+      #7418 open 2023-12-05 Cannot paste text yanked from Vim
+      #6793 open 2023-03-17 White screen on wake from sleep and full screen (Windows)
+      #663 open 2017-07-15 Add support for Bi-directional text for RTL languages
+      #4070 open 2020-08-03 Background opacity doesn't work is full screen mode or nvim
+      #2303 open 2019-04-12 One-time very slow startup and high CPU usage on v0.3.0
+      #969 open 2017-12-26 resizing seems really slow
+      #3145 open 2020-01-03 Do not allow selecting unoccupied cells
+      #8147 open 2024-08-26 Freeze on large amounts of color escape sequences - Windows 10
+      #9003 closed 2026-07-19 alacritty clears screen-lines after cancelling or accepting a search
+      #7582 open 2024-01-08 ToggleSimpleFullscreen from SimpleFullscreen to normal window is not work on multiple display monitor
+      #1615 open 2018-10-02 Piping visible text to external programs
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3245 open 2020-01-23 Missing native menu items on macOS
+      #8425 open 2025-01-10 Add option to adjust to monitor's real physical DPI 
+      #4590 open 2020-12-18 Feature: Reload config SIGUSR1
+      #7688 open 2024-02-04 Hotkeys do not work for other keyboard layouts
+      #3023 open 2019-11-25 title bar/decorations no longer appear in fullscreen mode
+      #7967 open 2024-05-11 Vi copy mode: Reset cursor position after yank. At possibly ClearSelection or at action to be created?
+      #8631 open 2025-07-21 Windows: Pasting a Unicode character beyond BMP outputs a single surrogate byte
+      #663 open 2017-07-15 Add support for Bi-directional text for RTL languages
+      #2869 open 2019-10-11 Allow adjusting scroll sensitivity
+      #8961 open 2026-05-29 Track OSC 133 Prompts and Clear on Resize
+      #9058 closed 2026-09-23 Combining diaeresis is misplaced in NFD text with Menlo on macOS
+      #1982 open 2019-01-07 feature request: change background dependening on focus
+      #312 open 2017-01-14 Fading option
+      #5606 open 2021-11-12 Alacritty causes stuttering in games/GPU-heavy apps, even when minimized
+      #3331 open 2020-02-12 Text jiggles when resizing on macOS
+      #4523 open 2020-12-06 Infinite window resizing if Alacritty is resizing to adjust for pixel density but the window is between two monitors
+      #1895 open 2018-12-13 Can't bring up input menu
+      #8486 open 2025-02-17 Allow to specify button to use in hints.mouse
+      #4175 open 2020-08-27 Inertial scrolling support
+      #910 open 2017-11-21 Add support for libsixel
+  unclean        5 hit(s) (all listed)
+      #1336 closed 2018-05-29 Binding to "Grave" key stopped working
+      #1482 closed 2018-07-30 Tabstop documentation lacking terminfo mention
+      #3866 closed 2020-06-18 Unclean drawing of font on small point size
+      #937 merged 2017-12-06 Add custom underline, beam and box cursors
+      #1468 merged 2018-07-25 fix a couple of clippy findings and run subcrate tests on travis
+  shutdown       51 hit(s) (all listed)
+      #675 open 2017-07-19 alacritty doesn't respond to shutdown or restart event on macOS.
+      #9042 open 2026-09-06 Improve temp file cleanup
+      #481 open 2017-03-15 Variation selector handling causes incorrect character width with some programs / Unicode characters
+      #6130 open 2022-06-14 Immediate crash on launch
+      #3500 open 2020-03-22 Crash at large window size in X
+      #6844 open 2023-04-07 occasional noticeable input lag in Vim, new in Alacritty v0.12, bisects to "use timer based rendering instead of vsync"
+      #8847 merged 2026-02-20 Fix resource cleanup for signal shutdown
+      #8863 merged 2026-03-06 Fix signal cleanup polling
+      #8768 closed 2025-11-30 Closing Alacritty window does not allow Git bash to save history.
+      #8434 merged 2025-01-13 Add an option to drain child process output before termination
+      #7936 merged 2024-04-28 Fix shutdown of config monitor
+      #7983 closed 2024-05-16 alacritty msg create-window leaves a unix fifo behind
+      #7935 merged 2024-04-27 Bump winit to 0.30.0
+      #1034 closed 2018-01-17 Create new window on startup if none exist
+      #7794 merged 2024-03-01 Send exit code events on child process exit
+      #5779 closed 2022-01-13 Slow window repainting/resizing on Nvidia BSPWM
+      #5177 closed 2021-05-25 Crash when going full screen on large monitor in i3
+      #6232 closed 2022-07-30 SIGBUS on exit
+      #5113 closed 2021-05-12 Cannot start Alacritty if only window in i3 workspace
+      #6161 closed 2022-06-27 Alacritty on ultra-wide monitor starts, but is not displayed if it is the only window on the workspace
+  reboot         81 hit(s) (all listed)
+      #8826 open 2026-01-22 Pasting from a stopped application brings alacritty to a busy loop
+      #5182 open 2021-05-27 Alacrity Blank White Screen & Not Responding
+      #2303 open 2019-04-12 One-time very slow startup and high CPU usage on v0.3.0
+      #4253 open 2020-09-25 Significant input lag after installing im-config 0.44-1ubuntu1.2 on Ubuntu 20.04
+      #4806 open 2021-02-18 Memory leaks. from 80MB to 800MB 
+      #9033 closed 2026-08-21 Alacritty daemon is unstable; Overusing file descriptors.
+      #8933 closed 2026-04-26 CSD seems to sometimes have a race condition, failing to colour it as it should
+      #6055 closed 2022-05-10 Implement text blinking
+      #7283 closed 2023-10-09 opacity not work on windows 11.
+      #8682 closed 2025-09-10 Font configuration causes the app to refuse drawing
+      #3014 closed 2019-11-24 Control + / (Slash) unconditional triggers the system alert sound on macOS
+      #8476 closed 2025-02-09 Crashing on startup after updating Debian Trixie
+      #8454 closed 2025-01-27 Alacritty + Tmux + resurrect + continuum
+      #4170 closed 2020-08-26 Unable to watch config file: other os error
+      #4995 closed 2021-04-21 Nonexistent starting directory
+      #4217 closed 2020-09-10 opacity doesn't work inside VM
+      #8091 closed 2024-07-17 Alacritty crashes on start with error in clipboard.rs
+      #8025 closed 2024-06-08 Wayland NoCompositor Error
+      #8017 closed 2024-06-02 Win11 + Radeon 780M + transparency/opacity not working
+      #972 closed 2017-12-27 Background blur
+  disk+full      32 hit(s) (all listed)
+      #5182 open 2021-05-27 Alacrity Blank White Screen & Not Responding
+      #2303 open 2019-04-12 One-time very slow startup and high CPU usage on v0.3.0
+      #8765 closed 2025-11-27 Alacritty keeps asking for permissions on MacOS
+      #4673 closed 2021-01-07 Notarize macOS Binaries
+      #1119 closed 2018-02-15 Support drop down windows similar to Guake and iTerm
+      #7251 closed 2023-09-28 Alacritty not updating prompt after a command
+      #5840 closed 2022-01-31 Alacritty keeps asking for permissions
+      #5066 closed 2021-05-07 Config error: history: exceeded maximum scrolling history
+      #2978 closed 2019-11-14 Alacritty window randomly disappears on sway/wayland
+      #5632 closed 2021-11-24 macOS M1 - Full disk access keeps reverting when accessing restricted directories
+      #1544 closed 2018-09-17 Investigate macOS tabs
+      #5776 closed 2022-01-13 m1 mac full disk access not working..never-ending permission request window
+      #6210 closed 2022-07-16 Memory leaks when idle
+      #3090 closed 2019-12-12 Permission error on ~/Desktop with Alacritty but not Terminal.app
+      #5819 closed 2022-01-26 Cannot access web cam Alacrity 0.10 (Mac OS M1)
+      #5546 closed 2021-10-16 Always asking me to give access permission event i already allow
+      #5228 closed 2021-06-10 Alacritty doesn't start if the disk is full
+      #5603 closed 2021-11-11 Wrong window size
+      #128 closed 2017-01-07 Support GPUs without OpenGL 3.3+ drivers
+      #4231 closed 2020-09-14 all alacritty windows stop drawing and accepting input simultaniously without a clear cause
+  data+loss      10 hit(s) (all listed)
+      #5696 closed 2021-12-17 Support for Font Ligatures using harfbuzz
+      #3075 closed 2019-12-06 [Question] Why use Alacritty on Windows?
+      #285 closed 2017-01-11 alacrity fancy icon!
+      #4660 closed 2021-01-04 Add colored underline support
+      #5706 closed 2021-12-20 Build fails due to crossfont dependency 
+      #2724 closed 2019-08-16 Track and report damage to compatible compositors
+      #2236 closed 2019-03-31 Slow startup on v0.3.0-rc1
+      #3984 closed 2020-07-16 Add better visual feedback for active Vi mode
+      #1403 merged 2018-06-30 Glutin 0.18 upgrade
+      #3126 closed 2019-12-26 Add Text Objects
+  partial+write  24 hit(s) (all listed)
+      #9040 closed 2026-09-05 Include keyboard and mouse bindings in IPC get-config
+      #910 open 2017-11-21 Add support for libsixel
+      #50 open 2017-01-04 Support for ligatures
+      #1119 closed 2018-02-15 Support drop down windows similar to Guake and iTerm
+      #5696 closed 2021-12-17 Support for Font Ligatures using harfbuzz
+      #6565 closed 2022-12-13 Unable to open links on MacOS
+      #3997 closed 2020-07-19 Feature: Add a ResetAndClear action (edited)
+      #7177 merged 2023-08-27 Update dependencies
+      #6378 closed 2022-10-05 Add support for the kitty keyboard protocol
+      #6632 closed 2023-01-20 the requested context Api isn't supported.
+      #2724 closed 2019-08-16 Track and report damage to compatible compositors
+      #5773 merged 2022-01-12 Add damage tracking and reporting to compatible compositors
+      #2677 closed 2019-07-26 Support for Font Ligatures using Harfbuzz on Linux
+      #4373 closed 2020-11-03 [wip] New faster renderer
+      #28 closed 2016-12-17 Windows Support
+      #542 closed 2017-05-04 [Feature] Hide window
+      #673 closed 2017-07-18 Improve input latency
+      #1490 closed 2018-08-02 influx shell flashes constantly
+      #2709 closed 2019-08-08 Compton inactive dimming often fails with Alacritty
+      #2919 closed 2019-10-25 Synchronize updates with terminal clients
+  crash+safe     34 hit(s) (all listed)
+      #8918 open 2026-04-20 [Windows] Changing display scale causes Alacritty to hang.
+      #8826 open 2026-01-22 Pasting from a stopped application brings alacritty to a busy loop
+      #910 open 2017-11-21 Add support for libsixel
+      #4763 open 2021-02-05 Support for graphics in the terminal
+      #8835 closed 2026-02-10 macOS: Reset Mach exception ports in PTY child `pre_exec`
+      #8312 merged 2024-11-18 Use `objc2`, `objc2-foundation` and `objc2-app-kit`
+      #8268 closed 2024-10-25 macOS specific keyboard input crashes alacritty 0.14.0
+      #7996 merged 2024-05-23 fix IO Safety violation from dropping `OwnedFd` multiple times
+      #7562 closed 2024-01-03 Intermittent crashes on macOS
+      #5403 merged 2021-08-07 Add multi-window support
+      #7953 closed 2024-05-06 App crashes on start up with `shell.program` set but works from terminal
+      #7309 closed 2023-10-22 SIGSEGV at exit on master (80d4dac)
+      #6426 closed 2022-10-20 Alacritty quits on launch
+      #6023 closed 2022-04-25 Crashes immediately because vsync could not be set up
+      #241 closed 2017-01-08 daemon mode
+      #5575 merged 2021-10-31 Implement passing options via IPC
+      #5313 closed 2021-07-07 Reload config on SIGUSR1
+      #5773 merged 2022-01-12 Add damage tracking and reporting to compatible compositors
+      #2677 closed 2019-07-26 Support for Font Ligatures using Harfbuzz on Linux
+      #3704 closed 2020-05-09 alacritty crashes with XIO: fatal IO error 11 (Resource temporarily unavailable) on X server ":0"
+  atomic+write   16 hit(s) (all listed)
+      #4763 open 2021-02-05 Support for graphics in the terminal
+      #910 open 2017-11-21 Add support for libsixel
+      #7349 merged 2023-11-08 Add `--option` argument to `create-window`
+      #7084 closed 2023-07-14 Cannot start alacritty - Error: failed to find suitable GL configuration
+      #6632 closed 2023-01-20 the requested context Api isn't supported.
+      #6206 closed 2022-07-13 Improve dirty detection when scrolling and typing characters
+      #128 closed 2017-01-07 Support GPUs without OpenGL 3.3+ drivers
+      #4231 closed 2020-09-14 all alacritty windows stop drawing and accepting input simultaniously without a clear cause
+      #2271 closed 2019-04-08 Terminal no longer adjusted DPI based on the monitor it's currently on
+      #2976 closed 2019-11-13 background_opacity has no effect
+      #2974 closed 2019-11-13 Starship prompt is off by one line
+      #3022 closed 2019-11-25 After waking from suspend, terminal has tiny font rendering
+      #4878 closed 2021-03-06 Graphics corruption and sway crash
+      #2114 merged 2019-02-15 Fix lingering window after child process exit on unix
+      #3084 merged 2019-12-10 Fix deadlock with closing on Windows using Conpty
+      #2917 merged 2019-10-25 Fix for WinPTY freeze on termination
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8631 open 2025-07-21 Windows: Pasting a Unicode character beyond BMP outputs a single surrogate byte
+      #8001 open 2024-05-25 Clipboard stop working after S3 sleep/wake up cycle
+      #8918 open 2026-04-20 [Windows] Changing display scale causes Alacritty to hang.
+      #4622 open 2020-12-29 Xmodmap mappings do not work with modifiers
+      #1704 open 2018-10-25 Won't stay on top after switching desktops
+      #6467 open 2022-11-03 Better optimization with "codegen-units=1" at the cost of some compilation speed
+      #3245 open 2020-01-23 Missing native menu items on macOS
+      #3720 open 2020-05-12 Can't enable application keypad mode
+      #9033 closed 2026-08-21 Alacritty daemon is unstable; Overusing file descriptors.
+      #8962 open 2026-06-01 window.dimensions option is ignored
+      #2735 open 2019-08-20 Alacritty using up multiple X-clients for each terminal
+      #1359 open 2018-06-08 Ctrl+q not working
+      #775 open 2017-09-07 RFC: Optional Scrollbar
+      #50 open 2017-01-04 Support for ligatures
+      #6476 open 2022-11-09 Alacritty ignores the minus-charset option
+      #957 open 2017-12-23 RFC: Font Configuration
+      #4763 open 2021-02-05 Support for graphics in the terminal
+      #4673 closed 2021-01-07 Notarize macOS Binaries
+      #4550 closed 2020-12-10 Allow for Commands to take visible or all text as input (Revived)
+      #4442 open 2020-11-18 cmatrix breaks alacritty
+  write+failure  39 hit(s) (all listed)
+      #8918 open 2026-04-20 [Windows] Changing display scale causes Alacritty to hang.
+      #910 open 2017-11-21 Add support for libsixel
+      #8839 closed 2026-02-15 Fix Windows PTY stalls and coalesce redraw wakeups
+      #8873 closed 2026-03-15 fix: replace unsafe unwrap() calls with proper error handling
+      #6978 closed 2023-06-05 Unable to store text in clipboard: Failed to set new owner of XCB selection
+      #8104 closed 2024-07-26 Initial implementation for #3245. Implement basic menu.
+      #6673 merged 2023-02-04 Switch to TOML configuration format
+      #7536 merged 2024-01-02 Ignore null values in `alacritty migrate`
+      #7272 closed 2023-10-08 Crashing on startup on MacOS
+      #6846 merged 2023-04-08 Port from mio to polling, take 2
+      #782 closed 2017-09-12 Significant startup time
+      #5095 closed 2021-05-10 Can't change default font for Allacritty on Windows
+      #1544 closed 2018-09-17 Investigate macOS tabs
+      #5575 merged 2021-10-31 Implement passing options via IPC
+      #5740 merged 2022-01-02 Use builtin font for box drawing unicode characters
+      #2724 closed 2019-08-16 Track and report damage to compatible compositors
+      #3210 merged 2020-01-15 Remove fs::canonicalize from Windows pty startup
+      #128 closed 2017-01-07 Support GPUs without OpenGL 3.3+ drivers
+      #1244 closed 2018-04-12 Fix recording new ref-tests with scrollback
+      #1334 closed 2018-05-28 Opens and quits immediately on macOS High Sierra
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6557 open 2022-12-07 External display re-drawing issue
+      #297 open 2017-01-12 Blink issue (window flash white during startup)
+      #7418 open 2023-12-05 Cannot paste text yanked from Vim
+      #1388 open 2018-06-21 Fail to launch from Spotlight
+      #663 open 2017-07-15 Add support for Bi-directional text for RTL languages
+      #2303 open 2019-04-12 One-time very slow startup and high CPU usage on v0.3.0
+      #4070 open 2020-08-03 Background opacity doesn't work is full screen mode or nvim
+      #1615 open 2018-10-02 Piping visible text to external programs
+      #9031 closed 2026-08-19 ci: Add automated Linux package builds (DEB, RPM, Arch) on release
+      #3587 open 2020-04-13 Alacritty Does Not Use GPU In Hybrid Graphics Mode
+      #957 open 2017-12-23 RFC: Font Configuration
+      #3082 open 2019-12-09 Windows colored emoji support
+      #8050 open 2024-06-18 Some icons won't show up in alacritty
+      #4890 open 2021-03-12 Crash on/after macOS sleep
+      #2528 open 2019-06-12 Very High ram usage
+      #6884 open 2023-04-24 `-o window.dimensions` creates windows of the incorrect size in i3wm
+      #1359 open 2018-06-08 Ctrl+q not working
+      #2324 open 2019-04-18 WSL + ConPTY + vim -> paste with blanks lines
+      #107 closed 2017-01-06 Support for image viewing in shell
+      #7056 open 2023-07-06 Window is getting stuck until a key press with NVIDIA drivers
+
+== 51 terms run; 48 returned hits, 12 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

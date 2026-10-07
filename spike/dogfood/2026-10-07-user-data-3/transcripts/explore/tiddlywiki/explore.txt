@@ -1,0 +1,26 @@
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 2
+            after  open(/s/tw/wiki.html)
+            before write(/s/tw/wiki.html)
+path        wiki.html
+observed    holding neither the old nor the new content
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 2 operations (11479 syscall lines examined, 326 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/tiddlywiki/work-explore/cases/000001.json
+replay      sideeye replay /out/tiddlywiki/work-explore/cases/000001.json --shim /opt/se/sideeye-v1.9.0-aarch64-linux/libsideeye_shim.so
+evidence    /out/tiddlywiki/work-explore/evidence/000001.json
+cwd         /s/tw-in
+warning     operation: `tiddlywiki --load /s/tw/wiki.html --deletetiddlers [[Beta]] --output /s/tw --render $:/core/save/all wiki.html text/plain` holds `$:/core/save/all`, which reaches the program as written: a string-form command is split on spaces and never run by a shell; nothing expands it; a command that needs a shell belongs in a script the define names
+processes   single process in the recording; the subject replaced its own image in an explored world, which runs with no oracle; the shim recorded 6 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 5 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/tw SIDEEYE_TRACE_PATH=/out/tiddlywiki/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.9.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>
+sideeye: warning: operation: `tiddlywiki --load /s/tw/wiki.html --deletetiddlers [[Beta]] --output /s/tw --render $:/core/save/all wiki.html text/plain` holds `$:/core/save/all`, which reaches the program as written: a string-form command is split on spaces and never run by a shell; nothing expands it; a command that needs a shell belongs in a script the define names
+sideeye: json sha256=9062675a47035f1329ea28479229066676db96d2fe0d5781f6e32d8b31288c7f;

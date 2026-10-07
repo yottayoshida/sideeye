@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.config/mcpm"
+
+[define]
+operation = "mcpm edit srv --env=K=v --force"
+cwd       = "/s/mcpm-in"

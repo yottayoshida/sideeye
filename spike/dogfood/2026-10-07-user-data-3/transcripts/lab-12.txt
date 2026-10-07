@@ -1,0 +1,49 @@
+=== killed at crash point 1
+Killed
+  exit 137
+  file 32044 bytes; head b'RIFF'
+  RIFF size field 32036 -> file should be 32044 bytes (agrees)
+  chunk b'fmt ' at 12, size 16: 
+  chunk b'data' at 36, size 32000: samples intact
+  info: Length : 32044
+  info: RIFF : 32036
+  info: data : 32000
+  info: Frames      : 16000
+  info: Duration    : 00:00:02.000
+  sndfile-convert exit 0 ()
+  converted: file 32044 bytes; head b'RIFF'
+  converted: RIFF size field 32036 -> file should be 32044 bytes (agrees)
+  converted: chunk b'data' at 36, size 32000: samples intact
+=== killed at crash point 2
+Killed
+  exit 137
+  file 32044 bytes; head b'RIFF'
+  RIFF size field 32036 -> file should be 32044 bytes (agrees)
+  chunk b'fmt ' at 12, size 16: 
+  chunk b'data' at 36, size 32000: samples intact
+  info: Length : 32044
+  info: RIFF : 32036
+  info: data : 32000
+  info: Frames      : 16000
+  info: Duration    : 00:00:02.000
+  sndfile-convert exit 0 ()
+  converted: file 32044 bytes; head b'RIFF'
+  converted: RIFF size field 32036 -> file should be 32044 bytes (agrees)
+  converted: chunk b'data' at 36, size 32000: samples intact
+=== killed at crash point 3
+Killed
+  exit 137
+  file 32072 bytes; head b'RIFF'
+  RIFF size field 32036 -> file should be 32044 bytes (DISAGREES)
+  chunk b'fmt ' at 12, size 16: 
+  chunk b'data' at 36, size 32000: samples intact
+  chunk b'LIST' at 32044, size 20: b'INFOICMT\x08\x00\x00\x00edited\x00\x00'
+  info: Length : 32072
+  info: RIFF : 32036
+  info: data : 32000
+  info: Frames      : 16000
+  info: Duration    : 00:00:02.000
+  sndfile-convert exit 0 ()
+  converted: file 32072 bytes; head b'RIFF'
+  converted: RIFF size field 32064 -> file should be 32072 bytes (agrees)
+  converted: chunk b'data' at 64, size 32000: samples intact

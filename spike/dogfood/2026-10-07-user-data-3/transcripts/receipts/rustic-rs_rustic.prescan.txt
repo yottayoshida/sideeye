@@ -1,0 +1,465 @@
+== novelty pre-scan: rustic-rs/rustic
+== date: 2026-10-07T05:53:26Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          48 hit(s) (all listed)
+      #1878 open 2026-08-08 rustic-rs Crash Report
+      #1877 open 2026-08-08 rustic-rs Crash Report
+      #1790 open 2026-06-29 rustic-rs Crash Report
+      #1915 open 2026-09-15 Panic on broken pipe when stdout is closed (e.g. piping to head)
+      #1534 open 2025-08-21 Crash invoking webdav when port 8000 is already in use
+      #1435 open 2025-03-20 rustic-rs Crash Report (windows/restore)
+      #1400 open 2025-01-11 rustic-rs Crash Report (rustic prune)
+      #1909 open 2026-09-04 fix: do not write console logs over the interactive TUI
+      #110 open 2022-08-07 Concerns for using Rustic in a production environment?
+      #1914 open 2026-09-15 Panic in restore.rs:625 on unwrap() when a backend read fails persistently
+      #1804 open 2026-07-11 "The volume does not contain a recognized file system" on Windows rclone mount
+      #1918 closed 2026-09-24 Bug: System Recovery / Rustic triggers reproducible kernel panic on UGREEN NAS
+      #1558 open 2025-09-12 Time for version 1?
+      #1205 open 2024-08-22 Restoring paths which are not valid on windows
+      #981 open 2023-12-31  Expose more connection parameters to users + define reasonable defaults
+      #1164 open 2024-06-13 Unrepairable repository corruption when using flaky FUSE drive as repository
+      #1731 open 2026-04-15 Running out of diskspace for `local` backend results in a repository rustic cannot handle
+      #1875 closed 2026-08-07 race condition when tree packs are accessed in parallel
+      #1808 closed 2026-07-16 chore(deps): update rust crate serde_with to v3.21.0 [security] - autoclosed
+      #1780 closed 2026-06-09 Segfault since v0.11.3 at backup on OpenBSD
+  corrupt        16 hit(s) (all listed)
+      #635 open 2023-05-04 Restores corrupted files on Windows
+      #1937 open 2026-10-05 fix(tui): handle directory nodes without subtree in ls view to prevent panics
+      #1804 open 2026-07-11 "The volume does not contain a recognized file system" on Windows rclone mount
+      #1401 open 2025-01-13 Data is too short (less than 16 bytes), cannot decrypt.
+      #110 open 2022-08-07 Concerns for using Rustic in a production environment?
+      #1154 open 2024-05-16 `error: data decryption failed` - Can't List Snapshots
+      #1174 open 2024-07-08 Backing up Docker Desktop Volume via Windows network share runs forever
+      #1731 open 2026-04-15 Running out of diskspace for `local` backend results in a repository rustic cannot handle
+      #1800 closed 2026-07-06 Critical: set_uid(gid) instead of set_gid(gid) in tar dump — group ownership silently corrupted
+      #1696 closed 2026-03-08 Check fails and tells to repair index, but repairing do not fix the issue
+      #1662 closed 2026-02-04 RUSTSEC-2026-0007: Integer overflow in `BytesMut::reserve`
+      #1661 closed 2026-02-03 chore(deps): update rust crate bytes to v1.11.1 [security] - autoclosed
+      #1055 closed 2024-02-07 `find`: design and implement a command for finding files in snapshots
+      #793 closed 2023-08-04 Access repository without config file
+      #368 closed 2023-01-06 repair subcommand fails to repair repository
+      #88 closed 2022-07-28 repacking compressed blobs without --repack-fast corrupts these blobs
+  corruption     16 hit(s) (all listed)
+      #1164 open 2024-06-13 Unrepairable repository corruption when using flaky FUSE drive as repository
+      #110 open 2022-08-07 Concerns for using Rustic in a production environment?
+      #1880 closed 2026-08-12 RUSTSEC-2026-0253: Potential use-after-free due to lack of panic safety in `LruCache::pop()`
+      #1731 open 2026-04-15 Running out of diskspace for `local` backend results in a repository rustic cannot handle
+      #1800 closed 2026-07-06 Critical: set_uid(gid) instead of set_gid(gid) in tar dump — group ownership silently corrupted
+      #1707 closed 2026-03-20 build(deps): bump tar from 0.4.44 to 0.4.45
+      #1449 closed 2025-04-11 RUSTSEC-2025-0024: crossbeam-channel: double free on Drop
+      #1219 closed 2024-09-02 Larger Storage Footprint after Prune and Corruption
+      #1380 closed 2024-12-06 Crash when dumping tar.gz or tar format from snapshot
+      #1161 closed 2024-06-07 backend openDAL Backend cannot be loaded: scheme is not enabled or supported
+      #753 closed 2023-07-16 Move to Zstd 1.5.5 to avoid corruption in high compression scenarios
+      #793 closed 2023-08-04 Access repository without config file
+      #315 closed 2022-11-30 Deadlock during `backup`
+      #89 merged 2022-07-28 prune: fix repo corruption with compressed blobs
+      #368 closed 2023-01-06 repair subcommand fails to repair repository
+      #300 merged 2022-11-17 build(deps): bump Swatinem/rust-cache from 1 to 2
+  truncated      58 hit(s) (all listed)
+      #1731 open 2026-04-15 Running out of diskspace for `local` backend results in a repository rustic cannot handle
+      #1233 closed 2024-09-09 rustic v0.8.1 - TUI browser small files view - no long lines wrapping
+      #1568 open 2025-09-22 Recurrent cache reading errors when pruning
+      #1722 closed 2026-04-02 feat: add interactive setup wizard, improve progress bar UI, and rename get_snapots_from_ids to get_snapshots_from_ids
+      #1668 closed 2026-02-05 build(deps): bump time from 0.3.44 to 0.3.47
+      #1326 closed 2024-10-16 Rustic backup to B2 dies after error instead of retrying
+      #1447 closed 2025-04-08 build(deps): bump tokio from 1.41.1 to 1.43.1
+      #973 merged 2023-12-26 feat(commands): Add `mount` command
+      #1091 closed 2024-03-06 Handle storage failures more gracefully
+      #967 merged 2023-12-15 build(deps): bump zerocopy from 0.7.25 to 0.7.31
+      #870 closed 2023-09-08 build(deps): bump clap_complete from 4.3.2 to 4.4.1
+      #863 merged 2023-09-04 build(deps): bump actions/checkout from 3 to 4
+      #851 closed 2023-08-24 build(deps): bump clap_complete from 4.3.2 to 4.4.0
+      #865 closed 2023-09-05 build(deps): bump chrono from 0.4.26 to 0.4.29
+      #868 closed 2023-09-08 build(deps): bump chrono from 0.4.26 to 0.4.30
+      #861 closed 2023-09-01 build(deps): bump chrono from 0.4.26 to 0.4.28
+      #725 merged 2023-07-05 build(deps): bump clap_complete from 4.3.1 to 4.3.2
+      #582 closed 2023-04-14 build(deps): bump clap from 3.2.23 to 4.2.2
+      #553 closed 2023-03-30 build(deps): bump clap from 3.2.23 to 4.2.1
+      #551 closed 2023-03-29 build(deps): bump clap_complete from 3.2.5 to 4.2.0
+  truncate       68 hit(s) (all listed)
+      #1889 open 2026-08-25 merge command: allow setting the parent snapshot and username
+      #1731 open 2026-04-15 Running out of diskspace for `local` backend results in a repository rustic cannot handle
+      #220 open 2022-09-21 Access Denied when initializing a repo on S3
+      #1205 open 2024-08-22 Restoring paths which are not valid on windows
+      #1851 merged 2026-08-01 fix: allow scrolling long read-only TUI text
+      #1233 closed 2024-09-09 rustic v0.8.1 - TUI browser small files view - no long lines wrapping
+      #1568 open 2025-09-22 Recurrent cache reading errors when pruning
+      #1722 closed 2026-04-02 feat: add interactive setup wizard, improve progress bar UI, and rename get_snapots_from_ids to get_snapshots_from_ids
+      #1668 closed 2026-02-05 build(deps): bump time from 0.3.44 to 0.3.47
+      #1515 closed 2025-07-23 fix(deps): lock file maintenance rust dependencies
+      #1326 closed 2024-10-16 Rustic backup to B2 dies after error instead of retrying
+      #1447 closed 2025-04-08 build(deps): bump tokio from 1.41.1 to 1.43.1
+      #973 merged 2023-12-26 feat(commands): Add `mount` command
+      #1108 closed 2024-03-15 `restore`: folder permission are always 755, folder owner is the `restore` user
+      #1091 closed 2024-03-06 Handle storage failures more gracefully
+      #967 merged 2023-12-15 build(deps): bump zerocopy from 0.7.25 to 0.7.31
+      #870 closed 2023-09-08 build(deps): bump clap_complete from 4.3.2 to 4.4.1
+      #863 merged 2023-09-04 build(deps): bump actions/checkout from 3 to 4
+      #851 closed 2023-08-24 build(deps): bump clap_complete from 4.3.2 to 4.4.0
+      #865 closed 2023-09-05 build(deps): bump chrono from 0.4.26 to 0.4.29
+  empty          71 hit(s) (all listed)
+      #1932 open 2026-09-27 Accept an explicit empty as-path value
+      #1884 open 2026-08-19 RUSTSEC-2026-0258: h2 unbounded empty DATA frames
+      #1716 open 2026-03-27 Skip empty folders
+      #1135 open 2024-04-24 --as-path <PATH> option skips empty string
+      #1157 open 2024-05-22 Empty dir as source is not backuped
+      #1444 open 2025-04-06 Dropbox (and possibly all other local cloud storages) under ~/Library/CloudStorage/ are not backed up // macOS
+      #1840 closed 2026-08-01 fix: accept an empty backup as-path
+      #981 open 2023-12-31  Expose more connection parameters to users + define reasonable defaults
+      #664 open 2023-06-06 Please backup `exclude-if-present` file itself
+      #1499 open 2025-07-06 `rustic webdav` doesn't work with `lftp`, `cadaver`...
+      #1905 open 2026-08-30 backup: multiple source paths drop the second source's files (or panic with StripPrefixError)
+      #1390 open 2024-12-21 Experiment - Building Rustic, on Haiku
+      #1861 closed 2026-08-01 feat: support source-level skip-if-command
+      #1808 closed 2026-07-16 chore(deps): update rust crate serde_with to v3.21.0 [security] - autoclosed
+      #1799 closed 2026-07-03 RUSTSEC-2026-0195: Unbounded namespace-declaration allocation in `NsReader` enables memory-exhaustion denial of service
+      #1797 closed 2026-07-03 RUSTSEC-2026-0195: Unbounded namespace-declaration allocation in `NsReader` enables memory-exhaustion denial of service
+      #1795 closed 2026-07-03 RUSTSEC-2026-0195: Unbounded namespace-declaration allocation in `NsReader` enables memory-exhaustion denial of service
+      #1397 closed 2025-01-09 Using `one-file-system = true` with a sources of `/` causes nothing to be found
+      #1807 closed 2026-07-15 build(deps): bump serde_with from 3.20.0 to 3.21.0
+      #1665 closed 2026-02-05 program_version in snapshot metadata stuck at 0.9.0 despite CLI being 0.10.3
+  atomic         12 hit(s) (all listed)
+      #1936 open 2026-09-29 Feature Request - Restore - Atomic publication of newly restored files during in-place restore
+      #1731 open 2026-04-15 Running out of diskspace for `local` backend results in a repository rustic cannot handle
+      #1802 closed 2026-07-07 RUSTSEC-2026-0204: Invalid pointer dereference in `fmt::Pointer` impl for `Atomic` and `Shared` when the underlying pointer is invalid
+      #1875 closed 2026-08-07 race condition when tree packs are accessed in parallel
+      #677 merged 2023-06-13 build(deps): bump log from 0.4.18 to 0.4.19
+      #338 merged 2022-12-12 build(deps): bump serde from 1.0.149 to 1.0.150
+      #482 closed 2023-03-10 build(deps): bump serde_with from 2.2.0 to 2.3.0
+      #328 closed 2022-12-05 build(deps): bump indicatif from 0.17.0 to 0.17.2
+      #288 merged 2022-11-08 build(deps): bump indicatif from 0.17.1 to 0.17.2
+      #155 merged 2022-08-22 build(deps): bump serde from 1.0.143 to 1.0.144
+      #272 closed 2022-10-21 build(deps): bump futures from 0.3.24 to 0.3.25
+      #163 merged 2022-08-29 build(deps): bump futures from 0.3.23 to 0.3.24
+  atomically     3 hit(s) (all listed)
+      #1936 open 2026-09-29 Feature Request - Restore - Atomic publication of newly restored files during in-place restore
+      #1731 open 2026-04-15 Running out of diskspace for `local` backend results in a repository rustic cannot handle
+      #1875 closed 2026-08-07 race condition when tree packs are accessed in parallel
+  interrupted    7 hit(s) (all listed)
+      #1486 open 2025-06-27 Keeps tons of `~/.local/state/.ssh-connectionsXXX`
+      #1878 open 2026-08-08 rustic-rs Crash Report
+      #1916 open 2026-09-22 dry run does not report correct backup size
+      #1346 open 2024-11-06 match `restic` exit codes
+      #1905 open 2026-08-30 backup: multiple source paths drop the second source's files (or panic with StripPrefixError)
+      #1731 open 2026-04-15 Running out of diskspace for `local` backend results in a repository rustic cannot handle
+      #90 merged 2022-07-29 restore: use existing fileparts
+  interrupt      11 hit(s) (all listed)
+      #1936 open 2026-09-29 Feature Request - Restore - Atomic publication of newly restored files during in-place restore
+      #1486 open 2025-06-27 Keeps tons of `~/.local/state/.ssh-connectionsXXX`
+      #1878 open 2026-08-08 rustic-rs Crash Report
+      #1916 open 2026-09-22 dry run does not report correct backup size
+      #1346 open 2024-11-06 match `restic` exit codes
+      #1905 open 2026-08-30 backup: multiple source paths drop the second source's files (or panic with StripPrefixError)
+      #1731 open 2026-04-15 Running out of diskspace for `local` backend results in a repository rustic cannot handle
+      #1798 closed 2026-07-03 RUSTSEC-2026-0194: Quadratic run time when checking a start tag for duplicate attribute names
+      #1796 closed 2026-07-03 RUSTSEC-2026-0194: Quadratic run time when checking a start tag for duplicate attribute names
+      #1794 closed 2026-07-03 RUSTSEC-2026-0194: Quadratic run time when checking a start tag for duplicate attribute names
+      #90 merged 2022-07-29 restore: use existing fileparts
+  sigkill        2 hit(s) (all listed)
+      #1919 open 2026-09-25 support signals for pause/resume
+      #1820 open 2026-08-01 musl builds: mallocng vs mimalloc
+  sigint         4 hit(s) (all listed)
+      #1919 open 2026-09-25 support signals for pause/resume
+      #1401 open 2025-01-13 Data is too short (less than 16 bytes), cannot decrypt.
+      #1346 open 2024-11-06 match `restic` exit codes
+      #1905 open 2026-08-30 backup: multiple source paths drop the second source's files (or panic with StripPrefixError)
+  ctrl-c         7 hit(s) (all listed)
+      #1904 open 2026-08-30 s3 repository mount error
+      #1787 open 2026-06-22 rustic tui gets stuck on startup if password is provided interactively
+      #1806 open 2026-07-14 Error (Excluding `io::ErrorKind::WouldBlock`): unexpected end of file
+      #1487 closed 2025-06-27 Can't use with hetzner storagebox
+      #1364 merged 2024-11-23 feat: shut down gracefully with ctrl+c
+      #1341 merged 2024-10-25 chore: release v0.9.5
+      #910 closed 2023-10-15 Unable to backup after termination of a running backup
+  power          5 hit(s) (all listed)
+      #1937 open 2026-10-05 fix(tui): handle directory nodes without subtree in ls view to prevent panics
+      #1938 open 2026-10-06 fix(mount): avoid panics on integer overflow and malformed xattr names in FUSE handler
+      #171 open 2022-09-01 Add possibility to use rustic as client/server application
+      #1431 merged 2025-03-16 fix(commands): remove SIGPIPE default handler
+      #151 closed 2022-08-20 Stability in case of power failure etc.
+  outage         0 hit(s)
+  ENOSPC         1 hit(s) (all listed)
+      #1731 open 2026-04-15 Running out of diskspace for `local` backend results in a repository rustic cannot handle
+  disk           19 hit(s) (all listed)
+      #564 open 2023-04-05 rustic produces loads of errors when no disk space is left
+      #1174 open 2024-07-08 Backing up Docker Desktop Volume via Windows network share runs forever
+      #1381 open 2024-12-08  Parse tar data backed up via stdin
+      #1731 open 2026-04-15 Running out of diskspace for `local` backend results in a repository rustic cannot handle
+      #955 open 2023-11-26 Feature request: prevent blobs fragmentation by saving files in separate packs
+      #171 open 2022-09-01 Add possibility to use rustic as client/server application
+      #1905 open 2026-08-30 backup: multiple source paths drop the second source's files (or panic with StripPrefixError)
+      #1553 closed 2025-09-06 How to backup a S3 bucket
+      #1599 closed 2025-11-10 [Feature Request] Avoid trying to backup xattrs
+      #1588 closed 2025-10-25 Ignoring Error Reading Parent Snapshot: TreeStackEmptyError
+      #1480 merged 2025-06-16 feat(interactive)!: Add interactive diff / overwork diff output
+      #1380 closed 2024-12-06 Crash when dumping tar.gz or tar format from snapshot
+      #1181 closed 2024-07-20 Some backend (i.e. opendal:*, rclone) implementations are incompatible with async features (i.e. Webdav) which result in runtime crashes
+      #1156 closed 2024-05-17 Feature request: nice readable backup summary print
+      #650 closed 2023-05-22 Crash during backup
+      #611 closed 2023-04-25 Report how much space would be saved if one or more snapshots were removed (pruned)
+      #554 closed 2023-03-30 backup: Parallelize processing of files
+      #310 closed 2022-11-28 cannot use rustic with --password-command
+      #49 closed 2022-07-02 feature request: `--no-cache` equivalent
+  partial        13 hit(s) (all listed)
+      #1935 open 2026-09-27 Add an explicit no-color terminal override
+      #1614 open 2025-12-03 Feature Request: Web-GUI
+      #1905 open 2026-08-30 backup: multiple source paths drop the second source's files (or panic with StripPrefixError)
+      #1914 open 2026-09-15 Panic in restore.rs:625 on unwrap() when a backend read fails persistently
+      #1327 open 2024-10-19 Warnings repeated during backups prevent completion and log files grow rapidly.
+      #1168 open 2024-06-19 Feature: Configurable exceptions for gitignore
+      #1713 open 2026-03-24 Feature: Prometheus metrics for `rustic forget` and `rustic forget --prune`
+      #1707 closed 2026-03-20 build(deps): bump tar from 0.4.44 to 0.4.45
+      #1690 closed 2026-02-28 Support rclone connection strings with special characters.
+      #1432 merged 2025-03-18 build(deps): bump zip from 2.2.1 to 2.3.0
+      #368 closed 2023-01-06 repair subcommand fails to repair repository
+      #299 merged 2022-11-16 build(deps): bump serde_with from 2.0.1 to 2.1.0
+      #138 merged 2022-08-15 build(deps): bump futures from 0.3.21 to 0.3.23
+  incomplete     8 hit(s) (all listed)
+      #1908 open 2026-09-02 fix: return exit code 3 when backup source files are unreadable
+      #1936 open 2026-09-29 Feature Request - Restore - Atomic publication of newly restored files during in-place restore
+      #1539 open 2025-08-25 Allow limiting space to use it more intelligently
+      #1731 open 2026-04-15 Running out of diskspace for `local` backend results in a repository rustic cannot handle
+      #1431 merged 2025-03-16 fix(commands): remove SIGPIPE default handler
+      #1407 closed 2025-02-03 pack xxxxxx not referenced in index
+      #1062 closed 2024-02-13 `rustic prune --max-unused 0%` no more respected in rustic 0.7.0
+      #552 closed 2023-03-29 Error removing xattr
+  dataloss       0 hit(s)
+  recover        17 hit(s) (all listed)
+      #1731 open 2026-04-15 Running out of diskspace for `local` backend results in a repository rustic cannot handle
+      #1905 open 2026-08-30 backup: multiple source paths drop the second source's files (or panic with StripPrefixError)
+      #1914 open 2026-09-15 Panic in restore.rs:625 on unwrap() when a backend read fails persistently
+      #1157 open 2024-05-22 Empty dir as source is not backuped
+      #1752 closed 2026-05-01 [bug] memory usage is really high
+      #1680 closed 2026-02-19 rustic-rs Crash Report
+      #1686 closed 2026-02-27 Unable to prune remote REST server - hanging then HTTP 400
+      #1428 closed 2025-03-09 `prune --dry-run` issues warm-up command
+      #1218 merged 2024-08-30 feat(config): Add hooks
+      #1219 closed 2024-09-02 Larger Storage Footprint after Prune and Corruption
+      #1062 closed 2024-02-13 `rustic prune --max-unused 0%` no more respected in rustic 0.7.0
+      #70 merged 2022-07-14 prune: Add option --instant-delete
+      #603 merged 2023-04-23 forget: Interpret '--keep-X -1' as 'keep all X'
+      #388 closed 2023-01-15 prune rewrites a lot of data
+      #368 closed 2023-01-06 repair subcommand fails to repair repository
+      #12 merged 2022-06-10 prune: do not recover uneccessarily
+      #112 closed 2022-08-07 config command invalidates config file (Error: crypto error)
+  recovery       12 hit(s) (all listed)
+      #1918 closed 2026-09-24 Bug: System Recovery / Rustic triggers reproducible kernel panic on UGREEN NAS
+      #1168 open 2024-06-19 Feature: Configurable exceptions for gitignore
+      #1914 open 2026-09-15 Panic in restore.rs:625 on unwrap() when a backend read fails persistently
+      #110 open 2022-08-07 Concerns for using Rustic in a production environment?
+      #1905 open 2026-08-30 backup: multiple source paths drop the second source's files (or panic with StripPrefixError)
+      #1824 closed 2026-08-01 docs: add a production-readiness checklist
+      #1833 closed 2026-08-01 docs: add a Windows VSS backup helper
+      #1412 open 2025-02-17 Support Volume Shadow Copy on Windows
+      #171 open 2022-09-01 Add possibility to use rustic as client/server application
+      #1752 closed 2026-05-01 [bug] memory usage is really high
+      #1588 closed 2025-10-25 Ignoring Error Reading Parent Snapshot: TreeStackEmptyError
+      #1218 merged 2024-08-30 feat(config): Add hooks
+  rollback       0 hit(s)
+  resume         9 hit(s) (all listed)
+      #1919 open 2026-09-25 support signals for pause/resume
+      #1401 open 2025-01-13 Data is too short (less than 16 bytes), cannot decrypt.
+      #1905 open 2026-08-30 backup: multiple source paths drop the second source's files (or panic with StripPrefixError)
+      #635 open 2023-05-04 Restores corrupted files on Windows
+      #518 closed 2023-03-23 Support for exclude/include with `restore`
+      #517 closed 2023-03-23 [Windows] Non-unicode filenames issue
+      #105 closed 2022-08-05 restore with existing files/dirs but wrong type or permission
+      #90 merged 2022-07-29 restore: use existing fileparts
+      #151 closed 2022-08-20 Stability in case of power failure etc.
+  half-written   2 hit(s) (all listed)
+      #1731 open 2026-04-15 Running out of diskspace for `local` backend results in a repository rustic cannot handle
+      #1326 closed 2024-10-16 Rustic backup to B2 dies after error instead of retrying
+  wipe           2 hit(s) (all listed)
+      #1686 closed 2026-02-27 Unable to prune remote REST server - hanging then HTTP 400
+      #787 merged 2023-07-27 Refactor `rustic_core` API & add more documentation to `rustic_core`
+  wipes          0 hit(s)
+  erase          1 hit(s) (all listed)
+      #1404 merged 2025-01-20 feat: push prometheus metrics to pushgateway on-demand
+  erasing        1 hit(s) (all listed)
+      #1404 merged 2025-01-20 feat: push prometheus metrics to pushgateway on-demand
+  erased         0 hit(s)
+  destroy        5 hit(s) (all listed)
+      #1731 open 2026-04-15 Running out of diskspace for `local` backend results in a repository rustic cannot handle
+      #171 open 2022-09-01 Add possibility to use rustic as client/server application
+      #787 merged 2023-07-27 Refactor `rustic_core` API & add more documentation to `rustic_core`
+      #332 closed 2022-12-10 [ERROR] non-existing file, but restore algo returned existing file??!??
+      #112 closed 2022-08-07 config command invalidates config file (Error: crypto error)
+  destroys       1 hit(s) (all listed)
+      #112 closed 2022-08-07 config command invalidates config file (Error: crypto error)
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #926 open 2023-11-05 `rustic snapshots` does not render multi-line descriptions correctly
+      #1438 open 2025-03-23 Option to merge tags in config files
+      #568 open 2023-04-06 `restore`: Differentiate between removing/changing/creating
+      #1934 open 2026-09-27 Show effective defaults in cat config
+      #1909 open 2026-09-04 fix: do not write console logs over the interactive TUI
+      #1726 open 2026-04-08 feat(api): add draft Utoipa scheme
+      #1731 open 2026-04-15 Running out of diskspace for `local` backend results in a repository rustic cannot handle
+      #1676 closed 2026-02-13 [Feature request] rustic ls --name <name>
+      #1815 closed 2026-07-28 build(deps): bump quinn-proto from 0.11.14 to 0.11.16
+      #1807 closed 2026-07-15 build(deps): bump serde_with from 3.20.0 to 3.21.0
+      #1739 closed 2026-04-22 build(deps): bump rand from 0.8.5 to 0.8.6
+      #1732 merged 2026-04-15 build(deps): bump thin-vec from 0.2.14 to 0.2.16
+      #1707 closed 2026-03-20 build(deps): bump tar from 0.4.44 to 0.4.45
+      #1745 merged 2026-04-24 build(deps): bump rustls-webpki from 0.103.10 to 0.103.13
+      #1703 merged 2026-03-11 build(deps): bump quinn-proto from 0.11.13 to 0.11.14
+      #1630 closed 2026-01-06 build(deps): bump rsa from 0.9.8 to 0.9.10
+      #1593 closed 2025-11-03 password error after upgrading from v0.9.5 to v0.10.0
+      #1668 closed 2026-02-05 build(deps): bump time from 0.3.44 to 0.3.47
+      #1660 closed 2026-02-03 build(deps): bump bytes from 1.10.1 to 1.11.1
+      #1544 merged 2025-08-29 build(deps): bump tracing-subscriber from 0.3.19 to 0.3.20
+  clobber        0 hit(s)
+  blank          5 hit(s) (all listed)
+      #1157 open 2024-05-22 Empty dir as source is not backuped
+      #1824 closed 2026-08-01 docs: add a production-readiness checklist
+      #1722 closed 2026-04-02 feat: add interactive setup wizard, improve progress bar UI, and rename get_snapots_from_ids to get_snapshots_from_ids
+      #373 merged 2023-01-09 build(deps): bump serde_with from 2.1.0 to 2.2.0
+      #290 merged 2022-11-11 Change prettytable -> comfy-table
+  unreadable     2 hit(s) (all listed)
+      #1908 open 2026-09-02 fix: return exit code 3 when backup source files are unreadable
+      #1914 open 2026-09-15 Panic in restore.rs:625 on unwrap() when a backend read fails persistently
+  garbage        3 hit(s) (all listed)
+      #1382 open 2024-12-08 Add `--include-if-present` or a way to generate list of files to backup
+      #1128 closed 2024-04-20 Warn about missing permissions before attempting to back up to a repository
+      #428 closed 2023-02-15 Does Rustic use the same index structure as Restic? Has it been changed to improve memory management?
+  mangled        0 hit(s)
+  contents       35 hit(s) (all listed)
+      #1427 open 2025-03-09 Webdav: Update contents
+      #1736 open 2026-04-20 The first `backup` after a `restore` is much slow than subsequent `backup`s
+      #664 open 2023-06-06 Please backup `exclude-if-present` file itself
+      #981 open 2023-12-31  Expose more connection parameters to users + define reasonable defaults
+      #635 open 2023-05-04 Restores corrupted files on Windows
+      #434 open 2023-02-17 Unencrypted backups 
+      #1771 merged 2026-06-03 feat: Add ls option to backup command
+      #171 open 2022-09-01 Add possibility to use rustic as client/server application
+      #1553 closed 2025-09-06 How to backup a S3 bucket
+      #1571 closed 2025-09-25 Adding any `backup.globs` file results in no data getting backed up.
+      #973 merged 2023-12-26 feat(commands): Add `mount` command
+      #1383 closed 2024-12-09 Restore from cold storage errors with: The operation is not valid for the object's storage class
+      #1024 merged 2024-01-28 feat: add webdav command
+      #1084 closed 2024-03-02 `repair index` has no effect
+      #1067 closed 2024-02-17 Unreasonably high memory consumption during restore
+      #395 closed 2023-01-17 Allow treating stdin as a tar archive
+      #565 merged 2023-04-05 restore: Treat all existing contents correctly
+      #518 closed 2023-03-23 Support for exclude/include with `restore`
+      #711 merged 2023-06-26 Fix prune abort when time is unset for pack-to-delete + add test to check 
+      #539 closed 2023-03-27 Inconsistency in elapsed time while restoring the same backup to different destinations
+  in-place       58 hit(s) (all listed)
+      #1936 open 2026-09-29 Feature Request - Restore - Atomic publication of newly restored files during in-place restore
+      #1922 open 2026-09-27 Clarify how snapshot globs combine with shared patterns
+      #1298 open 2024-10-06 webdav: add some credential feature
+      #1470 open 2025-05-31 [Feature Request] Environment variable specify config/profile directory
+      #835 open 2023-08-19 chore(meta): Create issue templates and PR template, add authors.md
+      #707 open 2023-06-25 Include and exclude globs cause all files to be ignored in backup
+      #171 open 2022-09-01 Add possibility to use rustic as client/server application
+      #1390 open 2024-12-21 Experiment - Building Rustic, on Haiku
+      #1412 open 2025-02-17 Support Volume Shadow Copy on Windows
+      #1568 open 2025-09-22 Recurrent cache reading errors when pruning
+      #1798 closed 2026-07-03 RUSTSEC-2026-0194: Quadratic run time when checking a start tag for duplicate attribute names
+      #1796 closed 2026-07-03 RUSTSEC-2026-0194: Quadratic run time when checking a start tag for duplicate attribute names
+      #1794 closed 2026-07-03 RUSTSEC-2026-0194: Quadratic run time when checking a start tag for duplicate attribute names
+      #1751 merged 2026-05-01 feat: add JSON progress output option
+      #1696 closed 2026-03-08 Check fails and tells to repair index, but repairing do not fix the issue
+      #1686 closed 2026-02-27 Unable to prune remote REST server - hanging then HTTP 400
+      #1688 closed 2026-02-27 0.11.0 can't ls local files
+      #1620 merged 2025-12-18 feat: Progress Update on non-interactive runs (#1395)
+      #1377 closed 2024-12-04 [WARN] ignoring error reading parent snapshot: TreeStackEmptyError
+      #1492 closed 2025-07-04 When backing up "." path is not expanded
+  unclean        0 hit(s)
+  shutdown       8 hit(s) (all listed)
+      #1726 open 2026-04-08 feat(api): add draft Utoipa scheme
+      #1515 closed 2025-07-23 fix(deps): lock file maintenance rust dependencies
+      #1181 closed 2024-07-20 Some backend (i.e. opendal:*, rclone) implementations are incompatible with async features (i.e. Webdav) which result in runtime crashes
+      #927 closed 2023-11-05 Rustic returns exit code 0 when errors occur
+      #1220 merged 2024-09-02 fix: return exitcode
+      #1218 merged 2024-08-30 feat(config): Add hooks
+      #1095 merged 2024-03-07 feat(commands)!: show-config now outputs toml
+      #1100 closed 2024-03-12 After switch to opendal, existing Hetzner storagebox repository can't backup anymore
+  reboot         3 hit(s) (all listed)
+      #1918 closed 2026-09-24 Bug: System Recovery / Rustic triggers reproducible kernel panic on UGREEN NAS
+      #1157 open 2024-05-22 Empty dir as source is not backuped
+      #517 closed 2023-03-23 [Windows] Non-unicode filenames issue
+  disk+full      8 hit(s) (all listed)
+      #1905 open 2026-08-30 backup: multiple source paths drop the second source's files (or panic with StripPrefixError)
+      #1731 open 2026-04-15 Running out of diskspace for `local` backend results in a repository rustic cannot handle
+      #171 open 2022-09-01 Add possibility to use rustic as client/server application
+      #564 open 2023-04-05 rustic produces loads of errors when no disk space is left
+      #1588 closed 2025-10-25 Ignoring Error Reading Parent Snapshot: TreeStackEmptyError
+      #1480 merged 2025-06-16 feat(interactive)!: Add interactive diff / overwork diff output
+      #1380 closed 2024-12-06 Crash when dumping tar.gz or tar format from snapshot
+      #650 closed 2023-05-22 Crash during backup
+  data+loss      5 hit(s) (all listed)
+      #1914 open 2026-09-15 Panic in restore.rs:625 on unwrap() when a backend read fails persistently
+      #1905 open 2026-08-30 backup: multiple source paths drop the second source's files (or panic with StripPrefixError)
+      #1588 closed 2025-10-25 Ignoring Error Reading Parent Snapshot: TreeStackEmptyError
+      #787 merged 2023-07-27 Refactor `rustic_core` API & add more documentation to `rustic_core`
+      #392 closed 2023-01-16 Prune removes packs if they contain needed blobs multiple times
+  partial+write  1 hit(s) (all listed)
+      #1905 open 2026-08-30 backup: multiple source paths drop the second source's files (or panic with StripPrefixError)
+  crash+safe     1 hit(s) (all listed)
+      #110 open 2022-08-07 Concerns for using Rustic in a production environment?
+  atomic+write   2 hit(s) (all listed)
+      #1731 open 2026-04-15 Running out of diskspace for `local` backend results in a repository rustic cannot handle
+      #328 closed 2022-12-05 build(deps): bump indicatif from 0.17.0 to 0.17.2
+  lock+file      44 hit(s) (all listed)
+      #1936 open 2026-09-29 Feature Request - Restore - Atomic publication of newly restored files during in-place restore
+      #1926 open 2026-09-27 Handle invalid and hook-created glob files
+      #1066 open 2024-02-16 feat(commands): Add lock command
+      #1327 open 2024-10-19 Warnings repeated during backups prevent completion and log files grow rapidly.
+      #1820 open 2026-08-01 musl builds: mallocng vs mimalloc
+      #635 open 2023-05-04 Restores corrupted files on Windows
+      #875 open 2023-09-10 Dependency Dashboard
+      #1748 open 2026-04-29 [Feature Proposal]: OpenTelemetry Traces for Operations
+      #1844 closed 2026-08-01 fix: validate and load glob files
+      #1843 closed 2026-08-01 test: cover include and exclude glob rules
+      #1831 closed 2026-08-01 test: cover backup summary log output
+      #1568 open 2025-09-22 Recurrent cache reading errors when pruning
+      #1865 closed 2026-08-01 feat: allow selecting snapshot table columns
+      #1862 closed 2026-08-01 feat: support source-specific backup log files
+      #48 open 2022-07-02 rustic `check` needs a lot system cpu
+      #1412 open 2025-02-17 Support Volume Shadow Copy on Windows
+      #1718 merged 2026-03-28 feat: add exclude-if-xattr option
+      #1680 closed 2026-02-19 rustic-rs Crash Report
+      #1515 closed 2025-07-23 fix(deps): lock file maintenance rust dependencies
+      #1080 closed 2024-02-24 Log file - add more info about performed operations
+  write+failure  9 hit(s) (all listed)
+      #1905 open 2026-08-30 backup: multiple source paths drop the second source's files (or panic with StripPrefixError)
+      #1731 open 2026-04-15 Running out of diskspace for `local` backend results in a repository rustic cannot handle
+      #1876 open 2026-08-08 Add archive-backed backup sources to the scanner
+      #1205 open 2024-08-22 Restoring paths which are not valid on windows
+      #1515 closed 2025-07-23 fix(deps): lock file maintenance rust dependencies
+      #1218 merged 2024-08-30 feat(config): Add hooks
+      #787 merged 2023-07-27 Refactor `rustic_core` API & add more documentation to `rustic_core`
+      #419 merged 2023-02-06 build(deps): bump binrw from 0.10.0 to 0.11.1
+      #151 closed 2022-08-20 Stability in case of power failure etc.
+  file+contents  29 hit(s) (all listed)
+      #1736 open 2026-04-20 The first `backup` after a `restore` is much slow than subsequent `backup`s
+      #664 open 2023-06-06 Please backup `exclude-if-present` file itself
+      #981 open 2023-12-31  Expose more connection parameters to users + define reasonable defaults
+      #635 open 2023-05-04 Restores corrupted files on Windows
+      #434 open 2023-02-17 Unencrypted backups 
+      #171 open 2022-09-01 Add possibility to use rustic as client/server application
+      #1771 merged 2026-06-03 feat: Add ls option to backup command
+      #1571 closed 2025-09-25 Adding any `backup.globs` file results in no data getting backed up.
+      #973 merged 2023-12-26 feat(commands): Add `mount` command
+      #1383 closed 2024-12-09 Restore from cold storage errors with: The operation is not valid for the object's storage class
+      #1084 closed 2024-03-02 `repair index` has no effect
+      #1067 closed 2024-02-17 Unreasonably high memory consumption during restore
+      #395 closed 2023-01-17 Allow treating stdin as a tar archive
+      #518 closed 2023-03-23 Support for exclude/include with `restore`
+      #711 merged 2023-06-26 Fix prune abort when time is unset for pack-to-delete + add test to check 
+      #787 merged 2023-07-27 Refactor `rustic_core` API & add more documentation to `rustic_core`
+      #539 closed 2023-03-27 Inconsistency in elapsed time while restoring the same backup to different destinations
+      #561 closed 2023-04-04 rustic tries to create already existing symlinks when restoring twice to the same location
+      #552 closed 2023-03-29 Error removing xattr
+      #541 closed 2023-03-27 rustic backup always show 1 dir as changed
+
+== 51 terms run; 43 returned hits, 1 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

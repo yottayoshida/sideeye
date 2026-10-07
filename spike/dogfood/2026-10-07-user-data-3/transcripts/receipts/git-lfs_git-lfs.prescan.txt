@@ -1,0 +1,794 @@
+== novelty pre-scan: git-lfs/git-lfs
+== date: 2026-10-07T06:41:00Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          83 hit(s) (all listed)
+      #6346 open 2026-09-15 Git LFS crashes when Batch API responses include duplicate objects
+      #4309 open 2020-11-17 Avoid failing when receiving a 429 without a Retry-After header
+      #4306 open 2020-11-16 Possible index out of range error on status 429
+      #6186 open 2026-01-08 SEGFAULT during `dnf install`
+      #3074 open 2018-06-18 git lfs looses execute flag on hook scripts
+      #6234 open 2026-04-07 Improve throughput by pipelining batch API calls
+      #6242 open 2026-04-16 Proposals for improving Git LFS custom transfer agents and local storage
+      #6120 closed 2025-09-25 Error "panic: unclosed character class" on checkout
+      #6262 closed 2026-05-06 Ubuntu Resolute Raccoon support
+      #6214 open 2026-03-09 Make git-lfs consider url scheme when picking up TLS-related configs
+      #6252 merged 2026-04-23 Fix standalone adapter crash and ignore invalid custom adapter names
+      #4429 open 2021-03-09 git lfs fails to use Kerberos and also fails to fall back to Basic auth
+      #2147 open 2017-04-10 Disable local LFS cache?
+      #6144 closed 2025-11-17 Git lfs crashes (null-dereference) when fetching with ssh (macos)
+      #4974 closed 2022-04-28 Help triaging git-lfs checkout failure
+      #4061 open 2020-03-09 BSOD/timeouts when performing git push
+      #6295 merged 2026-07-01 build(deps): bump github.com/klauspost/compress from 1.18.3 to 1.18.7
+      #6017 closed 2025-03-19 git-lfs-transfer does not exit, blocking git push from completing
+      #282 open 2015-05-04 support tracking by file size
+      #5880 closed 2024-10-07 Crash during pure SSH object transfer with multiple objects
+  corrupt        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6230 open 2026-03-30 Using `sudo install.sh` (on MacOS) corrupts permissions on local `.gitconfig`
+      #5407 open 2023-06-27 Push was rejected due to missing or corrupt local objects
+      #5433 open 2023-07-21 Your push was rejected due to missing or corrupt local objects
+      #6006 open 2025-03-05 Detect and react to potential conflict markers in pointer files
+      #2032 open 2017-03-15 Fsck only tells you that files are corrupt / missing etc. without any way to actually restore/force download/fix the files.
+      #5548 open 2023-10-17 [BUG] unexpected lfs object oid
+      #3775 open 2019-08-15 Support Windows 10 long path names
+      #3066 open 2018-06-14 Feature: Add Batch API for locking and unlocking
+      #5867 open 2024-09-17 `git lfs fsck` `could not be checked: no such file or directory`
+      #6171 open 2025-12-20 attempt to fix merge ff with multiple remotes and multiple lfs commits
+      #3865 open 2019-10-17 Harden pointer parsing
+      #6274 merged 2026-06-02 Add corrupt object download tests
+      #3587 open 2019-03-30 git lfs missing object
+      #4893 open 2022-02-28 git-lfs SHA-256 mismatch on migration to new remote 
+      #2147 open 2017-04-10 Disable local LFS cache?
+      #4010 open 2020-01-31 RFC on idea for a new mechanism to checkout very large data
+      #6336 closed 2026-08-27 `migrate import` overwrites `.gitignore` and/or `.gitmodules`
+      #5315 open 2023-03-20 git lfs does not migrate all files
+      #4974 closed 2022-04-28 Help triaging git-lfs checkout failure
+      #260 open 2015-04-23 Support for compressing files in the lfs folder?
+  corruption     35 hit(s) (all listed)
+      #6312 open 2026-07-30 Zero-filled working tree files on Windows ReFS/Dev Drive: checkout block-clones objects before they are flushed to disk
+      #5548 open 2023-10-17 [BUG] unexpected lfs object oid
+      #5892 open 2024-10-21 Git LFS index: gitobj/pack: bad pack header
+      #4461 open 2021-03-31 Request: alternative hashing algorithms for better performance
+      #4010 open 2020-01-31 RFC on idea for a new mechanism to checkout very large data
+      #3587 open 2019-03-30 git lfs missing object
+      #6006 open 2025-03-05 Detect and react to potential conflict markers in pointer files
+      #6295 merged 2026-07-01 build(deps): bump github.com/klauspost/compress from 1.18.3 to 1.18.7
+      #5675 closed 2024-03-08 Windows: runtime VirtualAlloc failed with Out Of Memory despite 20GB+ free commit & Physical RAM
+      #5478 closed 2023-08-20 fatal: clean filter 'lfs' failed' 'exit status 128'
+      #2434 closed 2017-07-24 Git on Windows client corrupts files > 4Gb
+      #4955 closed 2022-04-20 Corrupted tbz2 files
+      #4960 merged 2022-04-25 Adjust test helpers and tests related to path filtering
+      #4933 closed 2022-04-08 Colab to Github Permissioning Not Working
+      #4768 merged 2021-12-07 filter-process: don't print large file warning on fixed versions
+      #3519 closed 2019-02-13 external filter 'git-lfs filter-process' failed .... smudge filter lfs failed on Mac
+      #4488 closed 2021-04-25 git lfs pull: failed to copy downloaded file: due to concurrent cleanup of tmp dir from clean filter command
+      #597 closed 2015-08-19 Handling validation errors in the batch API
+      #1205 closed 2016-05-06 Server error while pushing to repo with message "The provided 'x-amz-content-sha256' header does not match what was computed."
+      #2202 closed 2017-05-06 git-lfs proceeds git push before all git LFS data is confirmed uploaded which can lead to missing files
+  truncated      39 hit(s) (all listed)
+      #6106 open 2025-09-04 git lfs pull seems to not respect 429 retry-after headers
+      #6354 open 2026-10-01 build(deps): bump github.com/klauspost/compress from 1.19.2 to 1.20.1
+      #4764 open 2021-12-04 Migrate import doesn't clean all commits
+      #6342 merged 2026-09-01 build(deps): bump github.com/ssgelm/cookiejarparser from 1.0.1 to 1.1.0
+      #282 open 2015-05-04 support tracking by file size
+      #6207 merged 2026-02-26 Fix and refactor HTTP encoding and retry tests
+      #6340 merged 2026-09-01 build(deps): bump github.com/stretchr/testify from 1.11.1 to 1.12.1
+      #6313 merged 2026-08-01 build(deps): bump actions/setup-go from 6 to 7
+      #6283 merged 2026-06-11 build(deps): bump golang.org/x/net from 0.55.0 to 0.56.0
+      #6296 merged 2026-07-01 build(deps): bump github.com/spf13/cobra from 1.7.0 to 1.10.2
+      #6281 merged 2026-06-11 build(deps): bump github.com/pkg/errors from 0.0.0-20170505043639-c605e284fe17 to 0.9.1
+      #4061 open 2020-03-09 BSOD/timeouts when performing git push
+      #6293 merged 2026-07-01 build(deps): bump github.com/leonelquinteros/gotext from 1.5.0 to 1.7.2
+      #6294 merged 2026-07-01 build(deps): bump github.com/stretchr/testify from 1.6.1 to 1.11.1
+      #6261 merged 2026-05-01 build(deps): bump git-for-windows/setup-git-for-windows-sdk from 1 to 2
+      #6292 merged 2026-07-01 build(deps): bump actions/checkout from 6 to 7
+      #4446 merged 2021-03-17 Pure SSH-based protocol
+      #6153 merged 2025-12-01 build(deps): bump actions/checkout from 5 to 6
+      #6133 merged 2025-11-01 build(deps): bump actions/upload-artifact from 4 to 5
+      #6102 merged 2025-09-01 build(deps): bump actions/download-artifact from 4 to 5
+  truncate       46 hit(s) (all listed)
+      #6106 open 2025-09-04 git lfs pull seems to not respect 429 retry-after headers
+      #6354 open 2026-10-01 build(deps): bump github.com/klauspost/compress from 1.19.2 to 1.20.1
+      #4764 open 2021-12-04 Migrate import doesn't clean all commits
+      #6342 merged 2026-09-01 build(deps): bump github.com/ssgelm/cookiejarparser from 1.0.1 to 1.1.0
+      #6340 merged 2026-09-01 build(deps): bump github.com/stretchr/testify from 1.11.1 to 1.12.1
+      #6197 closed 2026-01-21 git lfs pull truncating hostname
+      #282 open 2015-05-04 support tracking by file size
+      #6313 merged 2026-08-01 build(deps): bump actions/setup-go from 6 to 7
+      #6157 closed 2025-12-05 Access denied during `git lfs pull` for some objects
+      #6283 merged 2026-06-11 build(deps): bump golang.org/x/net from 0.55.0 to 0.56.0
+      #6207 merged 2026-02-26 Fix and refactor HTTP encoding and retry tests
+      #6296 merged 2026-07-01 build(deps): bump github.com/spf13/cobra from 1.7.0 to 1.10.2
+      #6281 merged 2026-06-11 build(deps): bump github.com/pkg/errors from 0.0.0-20170505043639-c605e284fe17 to 0.9.1
+      #4061 open 2020-03-09 BSOD/timeouts when performing git push
+      #6293 merged 2026-07-01 build(deps): bump github.com/leonelquinteros/gotext from 1.5.0 to 1.7.2
+      #6294 merged 2026-07-01 build(deps): bump github.com/stretchr/testify from 1.6.1 to 1.11.1
+      #6261 merged 2026-05-01 build(deps): bump git-for-windows/setup-git-for-windows-sdk from 1 to 2
+      #6292 merged 2026-07-01 build(deps): bump actions/checkout from 6 to 7
+      #4446 merged 2021-03-17 Pure SSH-based protocol
+      #6153 merged 2025-12-01 build(deps): bump actions/checkout from 5 to 6
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2863 open 2018-02-13 empty file with lfs.extension.
+      #6346 open 2026-09-15 Git LFS crashes when Batch API responses include duplicate objects
+      #4243 open 2020-09-10 git-lfs fails when fetching from a lfs repo into an empty repo
+      #5978 open 2025-01-26 git lfs prune doesn't cleanup folders in .git\lfs\objects if they become empty.
+      #6309 open 2026-07-25 t-prune.sh flaky since Git 2.54
+      #6358 open 2026-10-02 Stray Authorization header for URL with embedded username
+      #6326 open 2026-08-13 feat: Add lfs.negotiateAccess.canonicalizeHostname
+      #6323 open 2026-08-09 Flush Windows block clone sources before cloning
+      #5730 open 2024-05-03 Git LFS behind a proxy
+      #5119 open 2022-09-20 LFS files aren't reported in git lfs ls-files command
+      #3865 open 2019-10-17 Harden pointer parsing
+      #5811 open 2024-06-27 [QUESTION] How to get upload lfs objects when pre-receive
+      #1053 open 2016-02-29 Document remote name requirements, show better errors
+      #6214 open 2026-03-09 Make git-lfs consider url scheme when picking up TLS-related configs
+      #3706 open 2019-07-08 Why does git lfs install or clone overwrite hooks silently?
+      #5184 open 2022-11-14 Problems with parsing and reporting SSH endpoint connection strings
+      #5511 open 2023-09-16 LFS can track and clean `.gitattributes`, breaking itself (again)
+      #1991 open 2017-03-01 GIT LFS tracking old data
+      #4893 open 2022-02-28 git-lfs SHA-256 mismatch on migration to new remote 
+      #5124 open 2022-09-23 0 byte files reported as "LFS" by "git lfs status"
+  atomic         46 hit(s) (all listed)
+      #3669 open 2019-05-28 Feature request: "steal lock" option when locking a file
+      #6329 open 2026-08-15 Return a non-zero exit code when checkout fails
+      #3066 open 2018-06-14 Feature: Add Batch API for locking and unlocking
+      #4893 open 2022-02-28 git-lfs SHA-256 mismatch on migration to new remote 
+      #802 open 2015-10-29 Please add multipart file downloads
+      #6157 closed 2025-12-05 Access denied during `git lfs pull` for some objects
+      #1101 open 2016-03-21 remove git lfs history
+      #6215 closed 2026-03-09 lfs: fix Access denied on Windows Server 2019 in SmudgeToFile
+      #6148 closed 2025-11-22 Hierarchy rework
+      #6047 merged 2025-05-03 Cache a file path filter match result
+      #5676 closed 2024-03-09 Error: "stale NFS file handle" with lfs.storage
+      #5664 closed 2024-02-29 Any news on ssh/sftp support ?
+      #5331 closed 2023-04-04 Hosting a public file server which doubles as a Git LFS server?
+      #2434 closed 2017-07-24 Git on Windows client corrupts files > 4Gb
+      #2012 closed 2017-03-07 Include annex style "get" and "drop" options.
+      #1963 closed 2017-02-20 Panic in retryCollector
+      #1554 closed 2016-10-03 git-lfs install not working
+      #1704 closed 2016-11-22 Git push hangs only when git lfs is tracking files
+      #1956 closed 2017-02-17 go install runtime/internal/atomic: open /usr/lib/go/pkg/linux_amd64/runtime/internal/atomic.a: permission denied
+      #2913 closed 2018-03-13 Locked file but no write-access
+  atomically     13 hit(s) (all listed)
+      #3669 open 2019-05-28 Feature request: "steal lock" option when locking a file
+      #4893 open 2022-02-28 git-lfs SHA-256 mismatch on migration to new remote 
+      #802 open 2015-10-29 Please add multipart file downloads
+      #6157 closed 2025-12-05 Access denied during `git lfs pull` for some objects
+      #6215 closed 2026-03-09 lfs: fix Access denied on Windows Server 2019 in SmudgeToFile
+      #2012 closed 2017-03-07 Include annex style "get" and "drop" options.
+      #122 merged 2014-09-18 Smarter push, no queues
+      #1742 merged 2016-12-06 tq: implement `*tq.WorkerQueue` type
+      #2220 merged 2017-05-15 git/odb: loose object read/write
+      #1958 merged 2017-02-17 tq: decrement uploaded bytes in basic_upload before retry
+      #3826 merged 2019-09-19 More robust handling of parallel attempts to download the same file
+      #3880 merged 2019-10-25 Stop replacing files in LFS storage when downloading them concurrently on Windows
+      #3873 closed 2019-10-23 Stop replacing files in LFS storage when downloading them concurrently
+  interrupted    22 hit(s) (all listed)
+      #6320 open 2026-08-06 Document resumable downloads via `.part` files in `git lfs fetch`
+      #6106 open 2025-09-04 git lfs pull seems to not respect 429 retry-after headers
+      #2257 open 2017-05-24 lame support request: "git lfs fetch" and "git lfs pull" seems to always be no-ops
+      #6207 merged 2026-02-26 Fix and refactor HTTP encoding and retry tests
+      #6196 merged 2026-01-21 add lfs.httpDownloadEncoding with zstd and gzip support
+      #6018 merged 2025-03-19 transform DoWithAuth from recursive to loop approach to prevent endless authentication attempts
+      #5543 closed 2023-10-15 All files inside git repo show up as lfs pointers
+      #4450 closed 2021-03-24 invalid memory address or nil pointer dereference, after SIGINT
+      #920 closed 2016-01-04 git lfs push crash when progress meter width greater than terminal
+      #1061 closed 2016-03-08 Git LFS Push problems
+      #445 closed 2015-06-27 LFS resyncing all my assets
+      #2038 closed 2017-03-16 Windows: realloc error when downloading largish file
+      #1542 closed 2016-09-26 Progress Meter should not duplicate bytes sent after retries
+      #2202 closed 2017-05-06 git-lfs proceeds git push before all git LFS data is confirmed uploaded which can lead to missing files
+      #1433 closed 2016-08-10 `git lfs clone` errors with `unexpected EOF`
+      #3797 closed 2019-08-27 "git commit" of single file takes 5 minutes, mounted fileystem/diskimage with 50G GIT repo + 900G of builds articles
+      #3614 closed 2019-04-17 "error: external filter git-lfs smudge -- %f failed 66" when doing any LFS operations on a Windows container
+      #376 closed 2015-06-10 git-lfs is unusable slow (especially on Windows)
+      #714 merged 2015-10-06 Add NTLM Auth
+      #476 merged 2015-07-09 Batches of n
+  interrupt      63 hit(s) (all listed)
+      #6320 open 2026-08-06 Document resumable downloads via `.part` files in `git lfs fetch`
+      #3334 open 2018-10-19 pushing the commit does nothing when using lfs
+      #6106 open 2025-09-04 git lfs pull seems to not respect 429 retry-after headers
+      #2325 open 2017-06-13 git status: modified files from git lfs, inconsistent
+      #6044 open 2025-05-01 git-lfs not offline-friendly?
+      #2257 open 2017-05-24 lame support request: "git lfs fetch" and "git lfs pull" seems to always be no-ops
+      #2480 open 2017-08-04 pre-push hook failing on refs/for/master
+      #5794 open 2024-06-06 pure SSH protocol connection failed: Unable to negotiate version with remote side (unable to read capabilities): EOF
+      #6112 open 2025-09-12 Inconsistent git config parsing
+      #858 open 2015-11-24 Git LFS asks for authentication after every lfs-tracked file
+      #3935 open 2019-11-29 Improve "Basic Authentication" behind reverse-proxy
+      #6196 merged 2026-01-21 add lfs.httpDownloadEncoding with zstd and gzip support
+      #6207 merged 2026-02-26 Fix and refactor HTTP encoding and retry tests
+      #6239 closed 2026-04-10 Git LFS appears to hang indefinitely when Azure OAuth token expires while using core.askPass
+      #6018 merged 2025-03-19 transform DoWithAuth from recursive to loop approach to prevent endless authentication attempts
+      #6068 closed 2025-06-23 Pure SSH hangs with LFS upload after Idle timeout
+      #5893 closed 2024-10-22 Can't push to GitHub repos with git-lfs
+      #3003 closed 2018-05-14 git lfs fetch hangs
+      #5579 closed 2023-12-02 git lfs fetch crash the system by stuck everything to ram
+      #5820 closed 2024-07-05 pure SSH protocol connection failed: Unable to negotiate version with remote side (unable to read capabilities): EOF
+  sigkill        5 hit(s) (all listed)
+      #6215 closed 2026-03-09 lfs: fix Access denied on Windows Server 2019 in SmudgeToFile
+      #4912 closed 2022-03-13 error: git-lfs died of signal 9
+      #1304 closed 2016-06-14 git lfs track "filename" hangs
+      #2825 closed 2018-01-18 shared lfs.storage is not threadsafe
+      #763 merged 2015-10-20 [wip] rewrite the atomic file writes
+  sigint         6 hit(s) (all listed)
+      #4450 closed 2021-03-24 invalid memory address or nil pointer dereference, after SIGINT
+      #4463 merged 2021-04-04 Avoid panic on SIGINT by skipping cleanup when config uninitialized
+      #4488 closed 2021-04-25 git lfs pull: failed to copy downloaded file: due to concurrent cleanup of tmp dir from clean filter command
+      #1304 closed 2016-06-14 git lfs track "filename" hangs
+      #1542 closed 2016-09-26 Progress Meter should not duplicate bytes sent after retries
+      #763 merged 2015-10-20 [wip] rewrite the atomic file writes
+  ctrl-c         35 hit(s) (all listed)
+      #3334 open 2018-10-19 pushing the commit does nothing when using lfs
+      #2480 open 2017-08-04 pre-push hook failing on refs/for/master
+      #6044 open 2025-05-01 git-lfs not offline-friendly?
+      #5890 open 2024-10-16 Uploading infinitly but stuck at 0%
+      #5870 open 2024-09-19 Git push in Cygwin gets stuck uploading LFS objects at 0% and then times out
+      #4429 open 2021-03-09 git lfs fails to use Kerberos and also fails to fall back to Basic auth
+      #3684 closed 2019-06-13 E: Unable to locate package git-lfs
+      #1220 closed 2016-05-15 git push with LFS can stall on bad internet connections, and it will never notice and do something useful like retry
+      #3003 closed 2018-05-14 git lfs fetch hangs
+      #266 closed 2015-04-28 Git LFS partial download
+      #5661 closed 2024-02-27 Error When Attempting to Merge Branch Into Original 
+      #3474 closed 2019-01-14 installation in ubuntu is not working
+      #5484 closed 2023-08-24 Zero objects after Removing LFS
+      #5427 closed 2023-07-17 Need more information about how git lfs migrate export should work.
+      #5419 closed 2023-07-10 git-lfs-authenticate Stalls after returning JSON string
+      #4918 closed 2022-03-27 git lfs fetch v3.0.2 reports an error "lookup <IP4address>: dnsquery: DNS name does not exist."
+      #2014 closed 2017-03-08 git push broken: endless login loop
+      #2667 closed 2017-10-15 cannot spawn .git/hooks/pre-push: No such file or directory
+      #4288 closed 2020-10-22 Git lfs prune hangs on windows
+      #4488 closed 2021-04-25 git lfs pull: failed to copy downloaded file: due to concurrent cleanup of tmp dir from clean filter command
+  power          35 hit(s) (all listed)
+      #5324 open 2023-03-28 git lfs pull with reference repository twice slower than pull direct from remote server
+      #1101 open 2016-03-21 remove git lfs history
+      #5433 open 2023-07-21 Your push was rejected due to missing or corrupt local objects
+      #2671 open 2017-10-17 Locked files should unlock after pushing them to a remote repository
+      #6217 closed 2026-03-12 Create Custom Python AI Agent for GitHub ↔ Cyngersists CRM Integration
+      #4446 merged 2021-03-17 Pure SSH-based protocol
+      #6000 closed 2025-03-01 LFS Files Over 50MB Rejected by AWS Server (SignatureDoesNotMatch Error)
+      #5387 closed 2023-06-07 Infinite loop pulling git LFS files 
+      #5270 closed 2023-01-31 Can not push LFS files to Azure DevOps Server
+      #4234 closed 2020-09-04 Git lfs connection to Azure DevOps Server with ntlm causes HTTP Error 401. The requested resource requires user authentication
+      #4778 closed 2021-12-13 Authentication error since version 3
+      #2667 closed 2017-10-15 cannot spawn .git/hooks/pre-push: No such file or directory
+      #4481 closed 2021-04-14 Files are Locked Across Branches
+      #4901 closed 2022-03-03 Smudge error for git-lfs tracked file and certificate signed by unknown authority
+      #4431 closed 2021-03-10 Possibility to have "git lfs install" include a pre-commit hook to automatically pass binary files through lfs?
+      #912 closed 2015-12-23 fetchinclude
+      #1858 closed 2017-01-13 batch response: Fatal error: Server error
+      #2000 closed 2017-03-03 Consider alternative man generation format toolchain to drop ronn dependency
+      #1783 closed 2016-12-16 Proposal: `lfsapi` package for v2.0.0
+      #1866 closed 2017-01-16 Unexpected server error when trying to pull objects.
+  outage         5 hit(s) (all listed)
+      #5996 closed 2025-02-27 packagecloud debians are unavailable with error 500
+      #2667 closed 2017-10-15 cannot spawn .git/hooks/pre-push: No such file or directory
+      #1897 closed 2017-01-31 Fatal error: http: error getting verify links
+      #3309 closed 2018-10-10 Fatal error: error getting verify links (403 Forbidden)
+      #3494 closed 2019-01-24 LFS Client Error (InvalidArgumentError)
+  ENOSPC         0 hit(s)
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6312 open 2026-07-30 Zero-filled working tree files on Windows ReFS/Dev Drive: checkout block-clones objects before they are flushed to disk
+      #6323 open 2026-08-09 Flush Windows block clone sources before cloning
+      #6039 open 2025-04-23 Fix leaking directories
+      #1189 open 2016-04-28 Add command to undo fetch and checkout
+      #4375 open 2021-01-19 Add option to git-lfs migrate import to incrementally push
+      #4010 open 2020-01-31 RFC on idea for a new mechanism to checkout very large data
+      #6010 open 2025-03-12 Can git lfs only clone the latest version
+      #2147 open 2017-04-10 Disable local LFS cache?
+      #4373 open 2021-01-18 Add command(s) to prune working directory
+      #5799 open 2024-06-12 git lfs migrate object map wit less objects than git filterrepo map. 
+      #6087 open 2025-07-30 git lfs on Windows has severe performance degradations
+      #3437 open 2018-12-18 How to diff between commits that have files converted into lfs, and the other not
+      #6303 open 2026-07-10 Git LFS filter-process continuously fills .git/lfs/tmp with hundreds of gigabytes of temporary files
+      #2629 open 2017-09-28 git lfs pull misreporting amount of data pulled 
+      #3635 open 2019-05-06 Pruning automatically
+      #1063 open 2016-03-09 Syntax error ")" unexpected during git lfs install
+      #5860 open 2024-09-06  Slow checkout when many LFS files need to be copied to working directory
+      #260 open 2015-04-23 Support for compressing files in the lfs folder?
+      #3608 open 2019-04-14 Add configuration option for `lfs fetch --all` 
+      #3471 open 2019-01-12 Range headers can cause broken servers to return 500
+  partial        71 hit(s) (all listed)
+      #4335 open 2020-12-04 git lfs prune does not work with partial clone
+      #6004 open 2025-03-04 git lfs pull not working correctly with partial checkout in 3.6.1
+      #6320 open 2026-08-06 Document resumable downloads via `.part` files in `git lfs fetch`
+      #6358 open 2026-10-02 Stray Authorization header for URL with embedded username
+      #6010 open 2025-03-12 Can git lfs only clone the latest version
+      #5333 open 2023-04-07 Read `FETCH_HEAD` when no remote is present
+      #3628 open 2019-04-25 Undeprecate git lfs clone
+      #4196 open 2020-07-24 Feature request: alternative smudge filter to turn pointer files into broken symlinks
+      #6354 open 2026-10-01 build(deps): bump github.com/klauspost/compress from 1.19.2 to 1.20.1
+      #802 open 2015-10-29 Please add multipart file downloads
+      #6234 open 2026-04-07 Improve throughput by pipelining batch API calls
+      #3962 open 2019-12-20 git lfs push --all origin master fails with missing object - when run from subdir
+      #6021 open 2025-03-24 RFC: batch locking API
+      #5528 open 2023-10-01 URL substitution via insteadOf broken when NewEndpointFromCloneURL is used
+      #5001 open 2022-05-10 Running into what appears to be a fairly common issue with git-lfs failing to authenticate during push (verify locks)
+      #3799 open 2019-08-28 Debugging hang with git lfs pull (or clone, or fetch...)
+      #6187 open 2026-01-08 git-lfs interacts with case sensitivity across platforms poorly
+      #282 open 2015-05-04 support tracking by file size
+      #6006 open 2025-03-05 Detect and react to potential conflict markers in pointer files
+      #6196 merged 2026-01-21 add lfs.httpDownloadEncoding with zstd and gzip support
+  incomplete     68 hit(s) (all listed)
+      #6320 open 2026-08-06 Document resumable downloads via `.part` files in `git lfs fetch`
+      #6056 open 2025-05-22 Fetch fails to download files after initial failure
+      #3172 open 2018-08-06 basic transfer adapter tries to resume already complete file
+      #2629 open 2017-09-28 git lfs pull misreporting amount of data pulled 
+      #6303 open 2026-07-10 Git LFS filter-process continuously fills .git/lfs/tmp with hundreds of gigabytes of temporary files
+      #5553 open 2023-10-20 git lfs status both --porcelain and --json flags produce output unusable for programs compared to regular git lfs status
+      #6214 open 2026-03-09 Make git-lfs consider url scheme when picking up TLS-related configs
+      #2342 open 2017-06-21 `git lfs clone` does not respect `--mirror` (bare)
+      #943 open 2016-01-21 git lfs fetch fails when repo is owned by another user but is group-writable
+      #6324 merged 2026-08-11 gitattr: handle invalid wildmatch patterns
+      #6119 open 2025-09-21 feature: bulk transfer adapters
+      #3344 open 2018-10-25 Support multiple lfs.url configuration options
+      #5945 open 2024-12-25 Automatically Prevent Problems When Running git-lfs-track
+      #6261 merged 2026-05-01 build(deps): bump git-for-windows/setup-git-for-windows-sdk from 1 to 2
+      #6207 merged 2026-02-26 Fix and refactor HTTP encoding and retry tests
+      #4446 merged 2021-03-17 Pure SSH-based protocol
+      #6173 closed 2025-12-29 Hey @chrisd8088 !
+      #6027 merged 2025-04-03 Report missing objects consistently when pushing
+      #2727 closed 2017-11-13 Specify SSH Key for remote commands
+      #5893 closed 2024-10-22 Can't push to GitHub repos with git-lfs
+  dataloss       0 hit(s)
+  recover        63 hit(s) (all listed)
+      #2887 open 2018-02-27 Pushing fails periodically with `dial tcp: lookup github.com: no such host` error, disrupts network
+      #2117 open 2017-03-30 HUP abort leaves world in inconsistent state
+      #3032 open 2018-05-28 Undo git lfs migrate import
+      #5934 open 2024-12-11 How to download a specific file from Git LFS using version, oid, and size?
+      #4893 open 2022-02-28 git-lfs SHA-256 mismatch on migration to new remote 
+      #5021 open 2022-05-23 Bogus "Files... that should have been pointers" after migration
+      #1189 open 2016-04-28 Add command to undo fetch and checkout
+      #6004 open 2025-03-04 git lfs pull not working correctly with partial checkout in 3.6.1
+      #6120 closed 2025-09-25 Error "panic: unclosed character class" on checkout
+      #5001 open 2022-05-10 Running into what appears to be a fairly common issue with git-lfs failing to authenticate during push (verify locks)
+      #1939 closed 2017-02-14 Encountered 1 file(s) that should have been pointers, but weren't
+      #5637 merged 2024-01-31 Fix git lfs prune is deleting staged files in the index
+      #5463 closed 2023-08-10 reverting files
+      #641 closed 2015-09-06 Question: How to revert tracked pointer files?
+      #2434 closed 2017-07-24 Git on Windows client corrupts files > 4Gb
+      #5193 closed 2022-11-21 Released tar files have wrong extension of .tar.gz
+      #4942 merged 2022-04-14 remove unused `Pipe[Media]Command()` functions
+      #3123 closed 2018-07-10 Git lfs migrate just delete a whole bunch of unstaged file changes out of my repository.
+      #2518 closed 2017-08-18 Can't pull from repo - smudge filter lfs failed
+      #2989 closed 2018-05-02 cloned git repository on local drive, how to retrieve files from lfs pointers?
+  recovery       9 hit(s) (all listed)
+      #5945 open 2024-12-25 Automatically Prevent Problems When Running git-lfs-track
+      #1189 open 2016-04-28 Add command to undo fetch and checkout
+      #6239 closed 2026-04-10 Git LFS appears to hang indefinitely when Azure OAuth token expires while using core.askPass
+      #4927 closed 2022-04-04 A missing file found with 'git lfs fsck' cannot be restored easily, not even if you have a backup available
+      #1195 closed 2016-05-03 git checkout doesn't fail cleanly
+      #1120 closed 2016-04-03 Windows installer issues
+      #3745 merged 2019-07-30 Add clone file on MacOS X (darwin).
+      #437 merged 2015-06-24 initial json schemas for batch api
+      #527 merged 2015-07-27 Add checkout & pull commands, changes and fixes to fetch
+  rollback       4 hit(s) (all listed)
+      #6149 open 2025-11-23 New feature request: lfs export w/o rewriting the commit history
+      #5027 closed 2022-05-27 The stucture of release archive has been changed in the freshest release.
+      #4148 closed 2020-06-03 Help with removing git lfs refs
+      #1068 closed 2016-03-10 Unable to sync commit with LFS files
+  resume         72 hit(s) (all listed)
+      #6320 open 2026-08-06 Document resumable downloads via `.part` files in `git lfs fetch`
+      #3172 open 2018-08-06 basic transfer adapter tries to resume already complete file
+      #6056 open 2025-05-22 Fetch fails to download files after initial failure
+      #5015 open 2022-05-20 upload using gzip
+      #5237 open 2022-12-22 git lfs migrate export way too long without userfeedback
+      #3962 open 2019-12-20 git lfs push --all origin master fails with missing object - when run from subdir
+      #6344 closed 2026-09-02 Wiki: update the LFSX entry on the Implementations page
+      #3471 open 2019-01-12 Range headers can cause broken servers to return 500
+      #5062 open 2022-06-29 Git pull fails on a repo sitting on a standalone server with git-lfs over SSH
+      #5548 open 2023-10-17 [BUG] unexpected lfs object oid
+      #802 open 2015-10-29 Please add multipart file downloads
+      #6196 merged 2026-01-21 add lfs.httpDownloadEncoding with zstd and gzip support
+      #6207 merged 2026-02-26 Fix and refactor HTTP encoding and retry tests
+      #1220 closed 2016-05-15 git push with LFS can stall on bad internet connections, and it will never notice and do something useful like retry
+      #266 closed 2015-04-28 Git LFS partial download
+      #957 closed 2016-01-28 Workflow when reverting LFS tracked files
+      #4781 merged 2021-12-14 Mark almost all strings for translation
+      #190 closed 2015-04-08 Chunking
+      #4 closed 2013-10-22 reliability in syncing assets
+      #621 closed 2015-09-01 push does not resume after failure
+  half-written   8 hit(s) (all listed)
+      #6325 open 2026-08-12 config: normalize URL-scoped matches
+      #6196 merged 2026-01-21 add lfs.httpDownloadEncoding with zstd and gzip support
+      #1851 closed 2017-01-11 Adding large files exhausts memory
+      #1726 closed 2016-11-30 lfs tracked files are sometimes incorrectly shown as modified in "git status" output
+      #3194 closed 2018-08-23 Refactor URL access mode management
+      #878 closed 2015-12-02 if git-credential does not exist, git push fails to upload LFS files
+      #2220 merged 2017-05-15 git/odb: loose object read/write
+      #1932 merged 2017-02-11 Spool malformed pointers to avoid deadlock
+  wipe           20 hit(s) (all listed)
+      #6065 open 2025-06-17 git lfs wipes the settings.json file
+      #2623 open 2017-09-27 proposal: object expirations
+      #4461 open 2021-03-31 Request: alternative hashing algorithms for better performance
+      #5021 open 2022-05-23 Bogus "Files... that should have been pointers" after migration
+      #1189 open 2016-04-28 Add command to undo fetch and checkout
+      #5071 open 2022-07-08 Auto-Detection of Binary Files
+      #1101 open 2016-03-21 remove git lfs history
+      #3741 closed 2019-07-29 Improve warning that git lfs migrate will destroy uncommitted changes
+      #208 closed 2015-04-10 storing entire file on windows?
+      #326 closed 2015-05-22 Best practice for migrating an existing Git repo to support LFS?
+      #640 closed 2015-09-05 The Git init & fetch approach breaks Git LFS
+      #1068 closed 2016-03-10 Unable to sync commit with LFS files
+      #1726 closed 2016-11-30 lfs tracked files are sometimes incorrectly shown as modified in "git status" output
+      #2993 closed 2018-05-04 Install command always replaces the filter.lfs.smudge and filter.lfs.process config values
+      #2882 closed 2018-02-25 Not all history entries getting migrated
+      #3598 closed 2019-04-07 GIT LFS seems to have corrupted data online. Local machine data is still fine. Fails while executing on Google Colab
+      #3730 closed 2019-07-24 git checkout with lfs enabled fails if there's only one remote that's not named origin
+      #3641 closed 2019-05-12 I continue to get an error with git lfs where it says it's not installed
+      #2023 merged 2017-03-10 Add lfs.storage parameter for overriding LFS storage location
+      #642 merged 2015-09-06 basic nsis script
+  wipes          3 hit(s) (all listed)
+      #6065 open 2025-06-17 git lfs wipes the settings.json file
+      #1189 open 2016-04-28 Add command to undo fetch and checkout
+      #640 closed 2015-09-05 The Git init & fetch approach breaks Git LFS
+  erase          15 hit(s) (all listed)
+      #2284 open 2017-06-01 can not push pull synch ...Authentication perturbed by LFS parameter ..?
+      #1101 open 2016-03-21 remove git lfs history
+      #6148 closed 2025-11-22 Hierarchy rework
+      #2291 closed 2017-06-02 Authentication required : You must have push access to verify locks error.
+      #3704 closed 2019-07-06 No progress output on Windows
+      #5464 closed 2023-08-11 panic: runtime error: index out of range [0] with length 0  goroutine 27
+      #4003 closed 2020-01-27 The command "git lfs locks" never returns if credentials are invalid.
+      #5329 closed 2023-04-03 "Skipping object checkout, Git LFS is not installed for this repository." even when lfs is indeed installed
+      #4234 closed 2020-09-04 Git lfs connection to Azure DevOps Server with ntlm causes HTTP Error 401. The requested resource requires user authentication
+      #4877 merged 2022-02-15 Revert "Merge pull request #4795 from bk2204/actions-checkout-v2"
+      #4815 merged 2022-01-13 Fall back from Negotiate to Basic
+      #1261 closed 2016-05-29 Removing a file from git-LFS because no more space
+      #2223 closed 2017-05-17 Git LFS clone doesn't prompt  credential input for git lfs   and  fail to download LFS with "credential ... not found "
+      #1802 closed 2016-12-26 After installing git-lfs 1.5.3 on Fedora, `git lfs version` shows outdated version
+      #1369 merged 2016-07-13 test/zero-len: update test for git v2.9.1
+  erasing        2 hit(s) (all listed)
+      #4877 merged 2022-02-15 Revert "Merge pull request #4795 from bk2204/actions-checkout-v2"
+      #1802 closed 2016-12-26 After installing git-lfs 1.5.3 on Fedora, `git lfs version` shows outdated version
+  erased         2 hit(s) (all listed)
+      #1101 open 2016-03-21 remove git lfs history
+      #5329 closed 2023-04-03 "Skipping object checkout, Git LFS is not installed for this repository." even when lfs is indeed installed
+  destroy        25 hit(s) (all listed)
+      #4373 open 2021-01-18 Add command(s) to prune working directory
+      #4614 open 2021-09-02 Ability to Ignore unpushed when pruning lfs
+      #3066 open 2018-06-14 Feature: Add Batch API for locking and unlocking
+      #4530 open 2021-06-16 Sharing `lfs.storage` locations between distinct repositories.
+      #1101 open 2016-03-21 remove git lfs history
+      #1844 open 2017-01-09 Proposal: locking next steps - serialising changes on lock
+      #3029 merged 2018-05-26 Add `--no-rewrite` flag to `migrate import` command
+      #3231 closed 2018-09-06 remote: error: GH008: Your push referenced at least 3 unknown Git LFS objects:
+      #3970 closed 2020-01-05 git lfs dedup reports system not supported even though it should work
+      #5658 closed 2024-02-23 Some tests are functionally disabled due to `if $TRAVIS`
+      #5420 closed 2023-07-10 CRITICAL: Wiki pages deleted
+      #3123 closed 2018-07-10 Git lfs migrate just delete a whole bunch of unstaged file changes out of my repository.
+      #4923 closed 2022-03-30 Match pointer parsing to pointer specification
+      #4682 closed 2021-10-12 Can I pay for someone elses lfs?
+      #4041 closed 2020-02-24 Intermittent Authentication required error
+      #3741 closed 2019-07-29 Improve warning that git lfs migrate will destroy uncommitted changes
+      #4148 closed 2020-06-03 Help with removing git lfs refs
+      #1261 closed 2016-05-29 Removing a file from git-LFS because no more space
+      #4440 closed 2021-03-13 Is it possible to run `git fetch` between commits?
+      #4495 closed 2021-05-11 git lfs pull does now bring file content
+  destroys       1 hit(s) (all listed)
+      #4142 closed 2020-05-26 git push fails with "Unable to find Source" for files deleted earlier when using a new remote
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3706 open 2019-07-08 Why does git lfs install or clone overwrite hooks silently?
+      #6336 closed 2026-08-27 `migrate import` overwrites `.gitignore` and/or `.gitmodules`
+      #4265 open 2020-09-29 Documented behavior of `git lfs install` does not match observed behavior
+      #6297 open 2026-07-03 core.hooksPath=C:/Program Files/Git/dev/null resolves relative to repo root on Windows, causing hook files to be written under a literal dev/null/ directory
+      #2117 open 2017-03-30 HUP abort leaves world in inconsistent state
+      #3695 open 2019-06-27 git lfs fails with "Invalid remote name" for remote urls using remote-helpers
+      #4013 open 2020-02-07 'git lfs migrate' does not support the GIT_NOTES_REWRITE_REF/GIT_NOTES_REWRITE_MODE env. variable
+      #6355 open 2026-10-01 build(deps): bump golang.org/x/sync from 0.22.0 to 0.23.0
+      #6353 open 2026-10-01 build(deps): bump golang.org/x/sys from 0.47.0 to 0.48.0
+      #6352 open 2026-10-01 build(deps): bump golang.org/x/net from 0.58.0 to 0.59.0
+      #5938 open 2024-12-17 cloning should report the download progress of lfs objects
+      #2587 open 2017-09-15 Git LFS Windows installer does not update Git LFS installed by Git for Windows
+      #2978 open 2018-04-22 File locks are extremely slow and basically unusable
+      #3752 open 2019-08-01 Prune fails: too many files open
+      #2342 open 2017-06-21 `git lfs clone` does not respect `--mirror` (bare)
+      #3381 open 2018-11-14 "Git LFS objects not staged for commit", What to do with it?
+      #5945 open 2024-12-25 Automatically Prevent Problems When Running git-lfs-track
+      #6354 open 2026-10-01 build(deps): bump github.com/klauspost/compress from 1.19.2 to 1.20.1
+      #3237 open 2018-09-07 Gitlab-based sync process on pre-existing workspace repo with submodules intermittently throws "Skipping object checkout, Git LFS is not installed."
+      #6341 merged 2026-09-01 build(deps): bump golang.org/x/net from 0.57.0 to 0.58.0
+  clobber        16 hit(s) (all listed)
+      #5591 merged 2023-12-18 build(deps): bump golang.org/x/crypto from 0.14.0 to 0.17.0
+      #5329 closed 2023-04-03 "Skipping object checkout, Git LFS is not installed for this repository." even when lfs is indeed installed
+      #924 closed 2016-01-08 Troubleshooting: git-lfs seems to not find files that it knows about.
+      #1901 closed 2017-01-31 Failed to push large file
+      #1163 closed 2016-04-20 Adding Content-Length Header
+      #1615 closed 2016-11-01 git lfs push does not work as a subprocess
+      #1598 closed 2016-10-19 Credentials not found when `git pull` is run via subprocess
+      #1697 closed 2016-11-21 external filter 'git-lfs filter-process' failed
+      #2743 closed 2017-11-20 Absorb `progress` functionality into `git/githistory/log`
+      #233 closed 2015-04-15 Feedback on pointer file spec
+      #122 merged 2014-09-18 Smarter push, no queues
+      #263 merged 2015-04-24 Split push cmd
+      #2511 merged 2017-08-15 commands: teach 'delay' capability to `git-lfs-filter-process(1)`
+      #2733 merged 2017-11-16 lfsapi/auth: teach DoWithAuth to respect http.extraHeaders
+      #2963 closed 2018-04-10 Functionality to filter git lfs checkout with wildcards
+      #1620 merged 2016-11-02 filter_stream: Make ObjectScanner behave like a Scanner
+  blank          55 hit(s) (all listed)
+      #3530 open 2019-02-18 migrate import prepands GPG-signed commit message with blank
+      #4893 open 2022-02-28 git-lfs SHA-256 mismatch on migration to new remote 
+      #6264 open 2026-05-12 fix: chunked content length
+      #5948 open 2024-12-27 Add --append-old-sha option to migrate import command, appends old-SH…
+      #6348 merged 2026-09-19 Update code signing and notarization of macOS release assets
+      #6342 merged 2026-09-01 build(deps): bump github.com/ssgelm/cookiejarparser from 1.0.1 to 1.1.0
+      #6244 merged 2026-04-17 locking: ignore missing files after unlock
+      #5862 closed 2024-09-10 looking for job
+      #5882 merged 2024-10-09 Repair and restore all tests of cloning over TLS
+      #5898 merged 2024-10-29 Support relative paths to linked working trees
+      #5618 merged 2024-01-17 Add a `--local` argument to install.sh
+      #5424 closed 2023-07-13 Downloading git lfs files
+      #1133 closed 2016-04-08 Zsh completions
+      #5086 merged 2022-08-12 push: add ability to read refs/oids from stdin
+      #4887 closed 2022-02-24 Does LFS migrate import reduce the size of the repository?
+      #4859 merged 2022-02-07 fix `git lfs fsck --objects A..B` handling and drop all left/right ref terminology
+      #4551 closed 2021-07-16 add FAQ entry for git-diff on large text files on a per file/extension (.gitattributes entry) basis
+      #4627 closed 2021-09-11 error converting ".git" to absolute: EvalSymlinks: too many links
+      #1492 closed 2016-08-30 Don't work Git LFS for me
+      #2667 closed 2017-10-15 cannot spawn .git/hooks/pre-push: No such file or directory
+  unreadable     1 hit(s) (all listed)
+      #5938 open 2024-12-17 cloning should report the download progress of lfs objects
+  garbage        29 hit(s) (all listed)
+      #6351 open 2026-09-28 It seems impossible to get rid of LFS tracked files
+      #3606 open 2019-04-12 LFS Migration not tracking everything I set up
+      #5950 open 2024-12-28 After using Git LFS to manage files, the GitLab repository actually grew larger in size
+      #4899 open 2022-03-02 Mismatch between `git lfs fetch --all` and `git lfs push --all`
+      #3635 open 2019-05-06 Pruning automatically
+      #5072 open 2022-07-10 Severe performance issues with `git lfs migrate import` (+24 hours to migrate just a single branch)
+      #1101 open 2016-03-21 remove git lfs history
+      #5893 closed 2024-10-22 Can't push to GitHub repos with git-lfs
+      #2865 closed 2018-02-14 Issue with custom pre-push hook with git lfs install
+      #3238 closed 2018-09-09 Not all files are migrated with git lfs migrate import
+      #4581 closed 2021-08-15 Inconsistent list of files being tracked between git lfs status and git lfs ls-files
+      #4901 closed 2022-03-03 Smudge error for git-lfs tracked file and certificate signed by unknown authority
+      #326 closed 2015-05-22 Best practice for migrating an existing Git repo to support LFS?
+      #1355 closed 2016-07-08 pre_push command fails when there's deleted refs on a remote with huge amount of refs
+      #1065 closed 2016-03-09 Git LFS quota release
+      #2503 closed 2017-08-11 my project is unusable now
+      #2223 closed 2017-05-17 Git LFS clone doesn't prompt  credential input for git lfs   and  fail to download LFS with "credential ... not found "
+      #1750 closed 2016-12-09 git lfs track is very slow
+      #2575 closed 2017-09-12 Get the whole LFS object list from a repo
+      #3568 closed 2019-03-19 Tags pointing to other tags are not migrated
+  mangled        3 hit(s) (all listed)
+      #4394 closed 2021-02-03 Log file name when failing to decode pointer from file
+      #5484 closed 2023-08-24 Zero objects after Removing LFS
+      #473 closed 2015-07-09 Adding tracked files is triggering warnings of eol normalization on Windows
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6346 open 2026-09-15 Git LFS crashes when Batch API responses include duplicate objects
+      #6325 open 2026-08-12 config: normalize URL-scoped matches
+      #6006 open 2025-03-05 Detect and react to potential conflict markers in pointer files
+      #6329 open 2026-08-15 Return a non-zero exit code when checkout fails
+      #2284 open 2017-06-01 can not push pull synch ...Authentication perturbed by LFS parameter ..?
+      #5021 open 2022-05-23 Bogus "Files... that should have been pointers" after migration
+      #3437 open 2018-12-18 How to diff between commits that have files converted into lfs, and the other not
+      #2979 open 2018-04-23 when adding with git --work-tree and following commit the lfs tracked files or folders are ignored
+      #6004 open 2025-03-04 git lfs pull not working correctly with partial checkout in 3.6.1
+      #5990 open 2025-02-14 Git LFS diffs do not show conflict markers making `git diff --check` return the wrong status
+      #3367 open 2018-11-08 lfs migrate import changes gitattributes too early in history
+      #5896 open 2024-10-25 "git lfs prune" is slow on large repositories
+      #4051 open 2020-03-02 Documentation is ambiguous to set "lfs.fetchexclude" to directories names but not file names
+      #3382 open 2018-11-14 Sometimes on checkout lfs places pointer file to working copy instead of real file
+      #4457 open 2021-03-30 How to prevent LFS uploads for wrong repositories?
+      #5979 open 2025-01-27 `git lfs ls-files` reports may incorrectly report objects as present or absent
+      #5433 open 2023-07-21 Your push was rejected due to missing or corrupt local objects
+      #5895 open 2024-10-25 Facing issue while cloning datamobility domain fork. It gets stuck at Git LFS: (0 of 3695 files) and doesn't proceed further.
+      #6311 open 2026-07-30 git lfs checkout triggers refresh of full index (and racy behavior)
+      #6077 open 2025-07-12 ML model automatically showing as modified in git despite not taking any action to modify it (Xcode 26 beta)
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5505 open 2023-09-13 Speed-up pushing to a fork by fetching remote heads with `git ls-remote`
+      #6260 open 2026-04-30 Consider logging TLS information about HTTP connections
+      #2887 open 2018-02-27 Pushing fails periodically with `dial tcp: lookup github.com: no such host` error, disrupts network
+      #5915 open 2024-11-18 Many shell tests do not escape regular expression meta-characters properly
+      #4530 open 2021-06-16 Sharing `lfs.storage` locations between distinct repositories.
+      #6329 open 2026-08-15 Return a non-zero exit code when checkout fails
+      #3074 open 2018-06-18 git lfs looses execute flag on hook scripts
+      #6256 open 2026-04-27 The wrong port was used for the push
+      #5511 open 2023-09-16 LFS can track and clean `.gitattributes`, breaking itself (again)
+      #6264 open 2026-05-12 fix: chunked content length
+      #6358 open 2026-10-02 Stray Authorization header for URL with embedded username
+      #6006 open 2025-03-05 Detect and react to potential conflict markers in pointer files
+      #5948 open 2024-12-27 Add --append-old-sha option to migrate import command, appends old-SH…
+      #6309 open 2026-07-25 t-prune.sh flaky since Git 2.54
+      #5061 open 2022-06-29 [RFC] fetch: add batch-oids plumbing option
+      #4010 open 2020-01-31 RFC on idea for a new mechanism to checkout very large data
+      #3846 open 2019-10-06 Provide ARM 32-Bit Binary Support
+      #6325 open 2026-08-12 config: normalize URL-scoped matches
+      #4287 open 2020-10-20 gitattributes(5) should control paths' desired Git LFS extensions
+      #6312 open 2026-07-30 Zero-filled working tree files on Windows ReFS/Dev Drive: checkout block-clones objects before they are flushed to disk
+  unclean        8 hit(s) (all listed)
+      #6142 merged 2025-11-14 Detect invalid object IDs and repo names in test functions
+      #2791 closed 2017-12-18 After setting lfs.locksverify to False, authentication exits with status 255
+      #4488 closed 2021-04-25 git lfs pull: failed to copy downloaded file: due to concurrent cleanup of tmp dir from clean filter command
+      #1828 closed 2017-01-05 "Pointer file error: Unable to parse pointer" and "error: addinfo_cache failed for path"
+      #2663 closed 2017-10-12 .gitattributes filters don't seem to apply cleanly when a git operation is not run in repo root
+      #1369 merged 2016-07-13 test/zero-len: update test for git v2.9.1
+      #2647 merged 2017-10-04 potentially invoke lfs for 'git update-index'
+      #1566 merged 2016-10-08 Use "sha256sum" on Windows 
+  shutdown       19 hit(s) (all listed)
+      #5354 open 2023-04-28 The reported lfs.url is not completely honoured when lfs fetch fails
+      #6234 open 2026-04-07 Improve throughput by pipelining batch API calls
+      #6255 merged 2026-04-27 Use consistent exit functions for all commands
+      #6266 merged 2026-05-19 Reuse SSH sessions when possible and only close at client exit
+      #6254 merged 2026-04-26 Simplify client structure initializations
+      #6017 closed 2025-03-19 git-lfs-transfer does not exit, blocking git push from completing
+      #5880 closed 2024-10-07 Crash during pure SSH object transfer with multiple objects
+      #5887 merged 2024-10-14 t: increase portability
+      #5879 merged 2024-10-05 Run tests in parallel on Windows and always cleanup test directories
+      #5893 closed 2024-10-22 Can't push to GitHub repos with git-lfs
+      #5537 merged 2023-10-04 ssh: Specifically designate a master multiplex connection
+      #1401 closed 2016-07-28 Feature request: "lfs worktree add" command that's similar to "lfs clone"
+      #2873 closed 2018-02-19 NAT Traversal?
+      #1367 merged 2016-07-13 Enhanced transfers part 5: external custom transfer adapters
+      #2750 merged 2017-11-22 progress: move *progressLogger` implementation to package 'tools'
+      #2429 merged 2017-07-20 Allow using custom transfer agents directly
+      #540 merged 2015-07-30 Fix test race condition
+      #1617 merged 2016-11-02 Filter Protocol Support
+      #1566 merged 2016-10-08 Use "sha256sum" on Windows 
+  reboot         10 hit(s) (all listed)
+      #5548 open 2023-10-17 [BUG] unexpected lfs object oid
+      #4061 open 2020-03-09 BSOD/timeouts when performing git push
+      #3457 closed 2019-01-06 Git LFS push uses different remote URL than Git LFS pull
+      #5537 merged 2023-10-04 ssh: Specifically designate a master multiplex connection
+      #5419 closed 2023-07-10 git-lfs-authenticate Stalls after returning JSON string
+      #3605 closed 2019-04-12 Git LFS install fails on Google Colab even after successful installation using package cloud installer script.
+      #4886 closed 2022-02-24 Access is denied when trying to git lfs push
+      #919 closed 2016-01-04 Git LFS extension command "git lfs install" does not work.
+      #623 closed 2015-09-01 Installation fails on Raspbian 
+      #3612 closed 2019-04-16  Error: Unable to launch WebDriverAgent because of xcodebuild failure: "xcodebuild failed with code 70".
+  disk+full      47 hit(s) (all listed)
+      #6303 open 2026-07-10 Git LFS filter-process continuously fills .git/lfs/tmp with hundreds of gigabytes of temporary files
+      #3471 open 2019-01-12 Range headers can cause broken servers to return 500
+      #2629 open 2017-09-28 git lfs pull misreporting amount of data pulled 
+      #2147 open 2017-04-10 Disable local LFS cache?
+      #5792 open 2024-06-06 Mix of objects and pointers after cloning - prune -f not working
+      #1189 open 2016-04-28 Add command to undo fetch and checkout
+      #5453 open 2023-08-08 SetLockableReadonly performance with no lockable files
+      #6171 open 2025-12-20 attempt to fix merge ff with multiple remotes and multiple lfs commits
+      #6119 open 2025-09-21 feature: bulk transfer adapters
+      #3587 open 2019-03-30 git lfs missing object
+      #6187 open 2026-01-08 git-lfs interacts with case sensitivity across platforms poorly
+      #6336 closed 2026-08-27 `migrate import` overwrites `.gitignore` and/or `.gitmodules`
+      #282 open 2015-05-04 support tracking by file size
+      #5072 open 2022-07-10 Severe performance issues with `git lfs migrate import` (+24 hours to migrate just a single branch)
+      #2328 open 2017-06-14 Poor LFS performance even with latest Git and latest LFS.
+      #4974 closed 2022-04-28 Help triaging git-lfs checkout failure
+      #3803 closed 2019-09-01 git lfs pull don't respect sparsecheckout.
+      #3970 closed 2020-01-05 git lfs dedup reports system not supported even though it should work
+      #4853 closed 2022-02-03 Authentication problems with DevOps Server and LFS Client >= v3.0
+      #5644 closed 2024-02-05 git clone --mirror: remote missing object
+  data+loss      34 hit(s) (all listed)
+      #1189 open 2016-04-28 Add command to undo fetch and checkout
+      #5505 open 2023-09-13 Speed-up pushing to a fork by fetching remote heads with `git ls-remote`
+      #4530 open 2021-06-16 Sharing `lfs.storage` locations between distinct repositories.
+      #4899 open 2022-03-02 Mismatch between `git lfs fetch --all` and `git lfs push --all`
+      #6006 open 2025-03-05 Detect and react to potential conflict markers in pointer files
+      #3635 open 2019-05-06 Pruning automatically
+      #2117 open 2017-03-30 HUP abort leaves world in inconsistent state
+      #4193 open 2020-07-18 Feature request: Allow defining pointers to existing HTTP files
+      #4010 open 2020-01-31 RFC on idea for a new mechanism to checkout very large data
+      #4800 open 2021-12-24 git keeps creating hooks and lfs folders inside the root directory in WSL
+      #802 open 2015-10-29 Please add multipart file downloads
+      #6047 merged 2025-05-03 Cache a file path filter match result
+      #5961 closed 2025-01-13 git-lfs push --all does not push every object reported by git lfs ls-files --all
+      #1391 closed 2016-07-22 git lfs fetch with reference repo should not copy objects
+      #5676 closed 2024-03-09 Error: "stale NFS file handle" with lfs.storage
+      #5642 closed 2024-02-02 Proposal: Add a --safe option to LFS prune
+      #5623 closed 2024-01-19 git-lfs-transfer.. oh bummer, no gzip?
+      #5532 closed 2023-10-02 Can I overwrite git lfs pre-push hook with my own?
+      #3519 closed 2019-02-13 external filter 'git-lfs filter-process' failed .... smudge filter lfs failed on Mac
+      #4929 closed 2022-04-05 commands/update: add --append option
+  partial+write  20 hit(s) (all listed)
+      #6358 open 2026-10-02 Stray Authorization header for URL with embedded username
+      #3962 open 2019-12-20 git lfs push --all origin master fails with missing object - when run from subdir
+      #5001 open 2022-05-10 Running into what appears to be a fairly common issue with git-lfs failing to authenticate during push (verify locks)
+      #6234 open 2026-04-07 Improve throughput by pipelining batch API calls
+      #6187 open 2026-01-08 git-lfs interacts with case sensitivity across platforms poorly
+      #6006 open 2025-03-05 Detect and react to potential conflict markers in pointer files
+      #6021 open 2025-03-24 RFC: batch locking API
+      #282 open 2015-05-04 support tracking by file size
+      #6196 merged 2026-01-21 add lfs.httpDownloadEncoding with zstd and gzip support
+      #3803 closed 2019-09-01 git lfs pull don't respect sparsecheckout.
+      #6048 merged 2025-05-03 Use a git-update-ref script to update references
+      #5796 merged 2024-06-07 git: improve sparse checkout support
+      #4918 closed 2022-03-27 git lfs fetch v3.0.2 reports an error "lookup <IP4address>: dnsquery: DNS name does not exist."
+      #3519 closed 2019-02-13 external filter 'git-lfs filter-process' failed .... smudge filter lfs failed on Mac
+      #4 closed 2013-10-22 reliability in syncing assets
+      #4229 closed 2020-09-03 Expected OID errors for GitLFS v2.9.0 and above
+      #4168 closed 2020-06-24 Should lockable gitattribute be specific to Git LFS?
+      #94 merged 2014-07-28 Reliable smudge
+      #444 merged 2015-06-27 Design proposal for making Git LFS extensible
+      #1658 merged 2016-11-15 filter-process: less flushing
+  crash+safe     4 hit(s) (all listed)
+      #6242 open 2026-04-16 Proposals for improving Git LFS custom transfer agents and local storage
+      #6047 merged 2025-05-03 Cache a file path filter match result
+      #2913 closed 2018-03-13 Locked file but no write-access
+      #714 merged 2015-10-06 Add NTLM Auth
+  atomic+write   16 hit(s) (all listed)
+      #3066 open 2018-06-14 Feature: Add Batch API for locking and unlocking
+      #6157 closed 2025-12-05 Access denied during `git lfs pull` for some objects
+      #1101 open 2016-03-21 remove git lfs history
+      #6047 merged 2025-05-03 Cache a file path filter match result
+      #2434 closed 2017-07-24 Git on Windows client corrupts files > 4Gb
+      #1554 closed 2016-10-03 git-lfs install not working
+      #1956 closed 2017-02-17 go install runtime/internal/atomic: open /usr/lib/go/pkg/linux_amd64/runtime/internal/atomic.a: permission denied
+      #2913 closed 2018-03-13 Locked file but no write-access
+      #94 merged 2014-07-28 Reliable smudge
+      #763 merged 2015-10-20 [wip] rewrite the atomic file writes
+      #174 merged 2015-02-27 Simplify the API
+      #1744 closed 2016-12-06 tq: implement `*tq.Queue` type
+      #2732 merged 2017-11-16 progress: use git/githistory/log package for formatting
+      #2220 merged 2017-05-15 git/odb: loose object read/write
+      #3244 merged 2018-09-11 Create new lfshttp package
+      #3826 merged 2019-09-19 More robust handling of parallel attempts to download the same file
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5453 open 2023-08-08 SetLockableReadonly performance with no lockable files
+      #4055 open 2020-03-05 You can lock untracked files, but you cannot unlock untracked files
+      #3669 open 2019-05-28 Feature request: "steal lock" option when locking a file
+      #3788 open 2019-08-23 Uninformative error message when trying to lock already locked file
+      #5891 open 2024-10-18 Lockable files' write permissions and lock state not managed correctly in all cases
+      #4292 open 2020-10-29 Should I be prevented from pushing marked-locked-file which is not locked but modified?
+      #3246 open 2018-09-12 File Locking fails to make files readonly unless I make a new clone
+      #2671 open 2017-10-17 Locked files should unlock after pushing them to a remote repository
+      #4039 open 2020-02-24 LFS failure due to locked files when executing git push --tags 
+      #6358 open 2026-10-02 Stray Authorization header for URL with embedded username
+      #5493 open 2023-09-02 File Locking feature degrades user experience `git push` on non-LFS repos with ssh:// or file:// remotes
+      #6308 open 2026-07-23 add the git lfs lock to GitHub repo lfs
+      #3365 open 2018-11-06 [Request] Create better documentation for Lockable attribute and locks in general
+      #3066 open 2018-06-14 Feature: Add Batch API for locking and unlocking
+      #1844 open 2017-01-09 Proposal: locking next steps - serialising changes on lock
+      #3986 open 2020-01-16 LFS locks when deleting and renaming files
+      #5068 open 2022-07-05 Able to capture notes or comments while acquiring locks on a particular file in a repository and retrieve same with Fetch Locks REST API
+      #5825 open 2024-07-17 Add ability to bypass .lfsconfig in git-lfs-filter-process, git-lfs-filter-clean and git-lfs-filter-smudge
+      #6225 open 2026-03-19 pre-push: skip network calls when no LFS objects exist in the push range
+      #4246 open 2020-09-14 The negation of lockable (!lockable) in .gitattributes is not taken into account by the post-commit hook
+  write+failure  69 hit(s) (all listed)
+      #5242 open 2022-12-28 TCP Congestion Control disproportionately affects git-lfs
+      #3962 open 2019-12-20 git lfs push --all origin master fails with missing object - when run from subdir
+      #6006 open 2025-03-05 Detect and react to potential conflict markers in pointer files
+      #3695 open 2019-06-27 git lfs fails with "Invalid remote name" for remote urls using remote-helpers
+      #6187 open 2026-01-08 git-lfs interacts with case sensitivity across platforms poorly
+      #3066 open 2018-06-14 Feature: Add Batch API for locking and unlocking
+      #730 open 2015-10-11 Reject files based on size on add
+      #6021 open 2025-03-24 RFC: batch locking API
+      #1834 open 2017-01-06 Git LFS push hangs on time skew?
+      #5001 open 2022-05-10 Running into what appears to be a fairly common issue with git-lfs failing to authenticate during push (verify locks)
+      #282 open 2015-05-04 support tracking by file size
+      #4974 closed 2022-04-28 Help triaging git-lfs checkout failure
+      #4193 open 2020-07-18 Feature request: Allow defining pointers to existing HTTP files
+      #3029 merged 2018-05-26 Add `--no-rewrite` flag to `migrate import` command
+      #6170 merged 2025-12-20 Full support of special attributes in `migrate`
+      #6151 merged 2025-11-26 Correct and improve `grep -v` and `grep -c` usage in tests
+      #3569 merged 2019-03-19 Issue 3252: git-lfs locks should optionally denote own locks
+      #6093 merged 2025-08-11 feat: git lfs pointer support extensions
+      #4446 merged 2021-03-17 Pure SSH-based protocol
+      #6018 merged 2025-03-19 transform DoWithAuth from recursive to loop approach to prevent endless authentication attempts
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6325 open 2026-08-12 config: normalize URL-scoped matches
+      #6329 open 2026-08-15 Return a non-zero exit code when checkout fails
+      #6006 open 2025-03-05 Detect and react to potential conflict markers in pointer files
+      #5021 open 2022-05-23 Bogus "Files... that should have been pointers" after migration
+      #3437 open 2018-12-18 How to diff between commits that have files converted into lfs, and the other not
+      #6311 open 2026-07-30 git lfs checkout triggers refresh of full index (and racy behavior)
+      #2979 open 2018-04-23 when adding with git --work-tree and following commit the lfs tracked files or folders are ignored
+      #6004 open 2025-03-04 git lfs pull not working correctly with partial checkout in 3.6.1
+      #5990 open 2025-02-14 Git LFS diffs do not show conflict markers making `git diff --check` return the wrong status
+      #3367 open 2018-11-08 lfs migrate import changes gitattributes too early in history
+      #3382 open 2018-11-14 Sometimes on checkout lfs places pointer file to working copy instead of real file
+      #5896 open 2024-10-25 "git lfs prune" is slow on large repositories
+      #5979 open 2025-01-27 `git lfs ls-files` reports may incorrectly report objects as present or absent
+      #1189 open 2016-04-28 Add command to undo fetch and checkout
+      #5453 open 2023-08-08 SetLockableReadonly performance with no lockable files
+      #4051 open 2020-03-02 Documentation is ambiguous to set "lfs.fetchexclude" to directories names but not file names
+      #5433 open 2023-07-21 Your push was rejected due to missing or corrupt local objects
+      #4457 open 2021-03-30 How to prevent LFS uploads for wrong repositories?
+      #6077 open 2025-07-12 ML model automatically showing as modified in git despite not taking any action to modify it (Xcode 26 beta)
+      #5792 open 2024-06-06 Mix of objects and pointers after cloning - prune -f not working
+
+== 51 terms run; 49 returned hits, 8 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

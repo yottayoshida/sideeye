@@ -1,0 +1,72 @@
+=== sndfile-metadata-set
+$ sndfile-metadata-set --bext-description Take1 /s/snd/a.wav
+Error : Attempting in-place broadcast info update, but file does not
+        have a 'bext' chunk to modify. The solution is to specify both
+        input and output files on the command line.
+
+  -> exit 1
+  state: 45e34928380d -> 45e34928380d
+drwxr-xr-x 2 root root  4096 Oct  7 07:13 .
+drwxr-xr-x 4 root root  4096 Oct  7 07:13 ..
+-rw-r--r-- 1 root root 32044 Oct  7 07:13 a.wav
+$ sndfile-metadata-set --str-comment edited /s/snd/a.wav
+  -> exit 0
+  state: 45e34928380d -> 4a543c91964f
+drwxr-xr-x 2 root root  4096 Oct  7 07:13 .
+drwxr-xr-x 4 root root  4096 Oct  7 07:13 ..
+-rw-r--r-- 1 root root 32072 Oct  7 07:13 a.wav
+$ sndfile-info /s/snd/a.wav
+========================================
+File : /s/snd/a.wav
+Length : 32072
+RIFF : 32064
+WAVE
+fmt  : 16
+  Format        : 0x1 => WAVE_FORMAT_PCM
+  Channels      : 1
+  Sample Rate   : 8000
+  Block Align   : 2
+  -> exit 0
+=== ezdxf strip on a drawing with comments
+1
+$ ezdxf strip /s/dxf/drawing.dxf
+"drawing.dxf" - 1 tag removed
+  -> exit 0
+  state: 3086c26a8285 -> dd957c540526
+0
+drwxr-xr-x 2 root root  4096 Oct  7 07:13 .
+drwxr-xr-x 5 root root  4096 Oct  7 07:13 ..
+-rw-r--r-- 1 root root 17433 Oct  7 07:13 drawing.dxf
+=== qalc: a variable saved to disk
+$ qalc -f /s/qalc-in/a.txt
+save(42, "myrate") = 42
+definitions saved
+  -> exit 0
+/s/aux/home/.config/qalculate/qalc.cfg
+$ qalc -f /s/qalc-in/b.txt
+  -> exit 0
+$ qalc -f /s/qalc-in/c.txt
+save(44, "myrate", "", "myrate") = 44
+definitions saved
+  -> exit 0
+  state:  -> 
+=== testdisk: which file changes, with the log elsewhere
+  no mkfs.ext2
+  partition table zeroed
+$ testdisk /cmd /s/td/disk.img analyze,quicksearch,write
+TestDisk 7.2, Data Recovery Utility, February 2024
+Christophe GRENIER <grenier@cgsecurity.org>
+https://www.cgsecurity.org
+)0[1;24r[m[4l[?7h[39;49m[?25l[?1c[39;49m[m[39;49m[37m[40m[H[JTestDisk 7.2, Data Recovery Utility, February 2024[2dChristophe GRENIER <grenier
+  -> exit 0
+  disk.img: 83ee47245398 -> 83ee47245398
+total 12
+drwxr-xr-x 2 root root     4096 Oct  7 07:13 .
+drwxr-xr-x 8 root root     4096 Oct  7 07:13 ..
+-rw-r--r-- 1 root root 33554432 Oct  7 07:13 disk.img
+
+/s/td-in:
+total 8
+drwxr-xr-x 2 root root 4096 Oct  7 07:13 .
+drwxr-xr-x 8 root root 4096 Oct  7 07:13 ..
+/ap/lab-6.sh: 42: sfdisk: not found

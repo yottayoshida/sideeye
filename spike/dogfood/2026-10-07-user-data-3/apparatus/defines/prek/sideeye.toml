@@ -1,0 +1,6 @@
+[world]
+state = "/s/prek/repo/.git/hooks"
+
+[define]
+operation = "prek install"
+cwd       = "/s/prek/repo"

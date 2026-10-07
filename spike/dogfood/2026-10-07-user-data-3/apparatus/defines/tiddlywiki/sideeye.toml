@@ -1,0 +1,6 @@
+[world]
+state = "/s/tw"
+
+[define]
+operation = "tiddlywiki --load /s/tw/wiki.html --deletetiddlers [[Beta]] --output /s/tw --render $:/core/save/all wiki.html text/plain"
+cwd       = "/s/tw-in"

@@ -1,0 +1,6 @@
+[world]
+state = "/s/xbps/root/var/db/xbps"
+
+[define]
+operation = "xbps-pkgdb -r /s/xbps/root -m hold hello"
+cwd       = "/s/xbps-in"

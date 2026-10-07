@@ -1,0 +1,445 @@
+== novelty pre-scan: gilbertchen/duplicacy
+== date: 2026-10-07T06:05:25Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          25 hit(s) (all listed)
+      #491 open 2018-09-11 Crash during initial upload to Google Drive
+      #411 open 2018-04-25 Duplicacy crashes when backing up files with size 0
+      #631 open 2022-07-04 Backup crashes with index out of range if all files are of size 0
+      #680 open 2025-09-10 Can't use BackBlaze b2 CLI-generated API keys
+      #446 open 2018-06-10 Preparing duplicacy for a long-duration backup
+      #267 open 2017-11-17 Can't paste encryption password on Windows (2.0.9)
+      #251 open 2017-10-25 Runtime error: invalid memory address during duplicacy add
+      #206 open 2017-09-21 Fully document build environment used to produce releases.
+      #538 open 2019-02-10 duplicacy init can't use root path of sftp storage
+      #560 open 2019-05-03 duplicacy cat bigfile: runtime out of memory
+      #205 open 2017-09-20 Restore should not come to a full stop when a corrupt chunk is encountered.
+      #309 open 2017-12-20 Error: The process cannot access the file because another process has locked a portion of the file.
+      #4 open 2016-03-23 WebDAV Support
+      #649 merged 2023-03-21 Acquire verifiedChunksLock in saveVerifiedChunks
+      #207 closed 2017-09-21 'cipher: message authentication failed' when downloading chunks from wasabi
+      #221 merged 2017-10-01 Tbp/google rate limit exceeded
+      #201 closed 2017-09-19 Memory Issue on Raspberry Pi
+      #67 closed 2017-06-08 Failed to upload the chunk [chunkname]: sftp: "Failure" (SSH_FX_FAILURE)
+      #365 closed 2018-02-25 Random SSH_FX_FAILURE backing up to raspberry pi
+      #492 closed 2018-09-11 Restart initial backup after crash: wrong speed reported
+  corrupt        25 hit(s) (all listed)
+      #205 open 2017-09-20 Restore should not come to a full stop when a corrupt chunk is encountered.
+      #218 open 2017-09-28 Official build for mips64
+      #366 open 2018-02-26 Copy always fails at the same chunk
+      #195 open 2017-09-16 The incomplete snapshot file should be per-storage
+      #461 open 2018-07-13 Wasabi unexpected EOF
+      #544 open 2019-02-20 check -files doesn't resume after connection timeout
+      #439 open 2018-06-05 Restore fails with "Failed to decrypt the chunk"
+      #109 open 2017-08-11 Are parallel backups to same storage protected against corruption?
+      #188 open 2017-09-13 "Incomplete" status not tied with storage location, leading to inconsistencies?
+      #675 open 2025-03-26 runtime error: invalid memory address or nil pointer dereference
+      #500 open 2018-09-22 Snapshot uploaded chunk lengths
+      #380 open 2018-03-15 Backing up to two rotating removable drives and online storage
+      #309 open 2017-12-20 Error: The process cannot access the file because another process has locked a portion of the file.
+      #207 closed 2017-09-21 'cipher: message authentication failed' when downloading chunks from wasabi
+      #606 merged 2020-09-03 Implement Erasure Coding
+      #595 merged 2020-05-06 Adds -persist option to check and restore commands to continue despite errors
+      #214 merged 2017-09-26 Retry downloads with corrupted content up to three times.
+      #441 merged 2018-06-05 Implement multithreaded pruning
+      #50 closed 2017-04-21 Strange output for a null size file alone in a directory.
+      #229 closed 2017-10-10 'Cat' command adds newline, corrupting files when saved to disk.
+  corruption     9 hit(s) (all listed)
+      #109 open 2017-08-11 Are parallel backups to same storage protected against corruption?
+      #266 open 2017-11-17 check -files optimization?
+      #455 open 2018-06-21 Enhance the Wasabi backend to perform MD5 verification at the time of backup
+      #675 open 2025-03-26 runtime error: invalid memory address or nil pointer dereference
+      #188 open 2017-09-13 "Incomplete" status not tied with storage location, leading to inconsistencies?
+      #137 open 2017-08-28 Security weakness: PBKDF2 invocation uses static salt reducing effective security
+      #207 closed 2017-09-21 'cipher: message authentication failed' when downloading chunks from wasabi
+      #606 merged 2020-09-03 Implement Erasure Coding
+      #225 closed 2017-10-05 Ad-hoc style backups
+  truncated      1 hit(s) (all listed)
+      #4 open 2016-03-23 WebDAV Support
+  truncate       3 hit(s) (all listed)
+      #44 open 2017-03-05 enumerate chunks for a given pattern
+      #500 open 2018-09-22 Snapshot uploaded chunk lengths
+      #4 open 2016-03-23 WebDAV Support
+  empty          48 hit(s) (all listed)
+      #429 open 2018-05-25 Incremental restore fails when a directory has been replaced by a file with the same name (or vice versa)
+      #260 open 2017-11-08 SSH agent registered, but still asking for private key file
+      #424 open 2018-05-11 Prune should write in the log when there's nothing to be pruned
+      #526 open 2018-12-30 Using "set" to set a storage password that contains an ampersand ("&") stores the wrong password due to unicode encoding
+      #411 open 2018-04-25 Duplicacy crashes when backing up files with size 0
+      #377 open 2018-03-12 When is it unsafe to start prune?
+      #374 open 2018-03-10 Add Solaris/Illumos Support
+      #585 open 2020-01-18 duplicate chunk folder on gcd / google drive
+      #490 open 2018-08-31 Retry when a subdirectory cannot be listed
+      #508 open 2018-10-18 SFTP prompting for private key file
+      #3 open 2016-03-10 Request: flag for silent backup if nothing fails
+      #433 open 2018-06-02 Google Drive backend should respond to malware/spam warning
+      #421 open 2018-05-03 Some remarks on swift storage
+      #561 open 2019-05-04 BUG: backup skip chunk loop
+      #515 open 2018-11-06 [VERIFY] Folders ending with dots are not backed up
+      #636 open 2022-10-20 Live backup preview (mount)
+      #57 open 2017-06-02 Ignoring keys in preferences
+      #480 open 2018-08-09 WebDav (URL request & PROPFIND - TLS handshake timeout)
+      #346 open 2018-01-30 Restore Producing Unreliable Results & Not Handling 'Unusual' Directory Names Well?
+      #199 open 2017-09-18 Duplicacy backup slows down over time
+  atomic         4 hit(s) (all listed)
+      #137 open 2017-08-28 Security weakness: PBKDF2 invocation uses static salt reducing effective security
+      #465 open 2018-07-23 Pruning Vertical Backup storage gone awry
+      #211 merged 2017-09-25 default to single-dir-nesting for local and SFTP storages
+      #469 closed 2018-07-26 Pruning crashes on 2.1.1
+  atomically     1 hit(s) (all listed)
+      #137 open 2017-08-28 Security weakness: PBKDF2 invocation uses static salt reducing effective security
+  interrupted    16 hit(s) (all listed)
+      #363 open 2018-02-21 Incomplete snapshots should be stored for all interrupted backups, not just the initial one
+      #438 open 2018-06-05 Slow download speed while restoring
+      #406 open 2018-04-18 Failed to upload the chunk ... failed to send packet header: EOF
+      #188 open 2017-09-13 "Incomplete" status not tied with storage location, leading to inconsistencies?
+      #426 open 2018-05-12 Checkpointing during backup
+      #446 open 2018-06-10 Preparing duplicacy for a long-duration backup
+      #128 open 2017-08-26 Upload speed is wrong when chunks are skipped
+      #137 open 2017-08-28 Security weakness: PBKDF2 invocation uses static salt reducing effective security
+      #309 open 2017-12-20 Error: The process cannot access the file because another process has locked a portion of the file.
+      #658 open 2023-10-12 duplicacy command startup is extremely slow, does it do some network connection check?
+      #669 closed 2024-06-28 Add -keep-max option to the prune command
+      #529 merged 2019-01-16 Retry on 408 error from Google Drive (Update to duplicacy_gcdstorage.go)
+      #90 closed 2017-07-05 The file has a size of X but total size of chunks is 0
+      #101 closed 2017-07-27 Storage name not expanded in password problem (2.0.6)
+      #86 closed 2017-07-04 HubiC TLS timeout: Failed to list the revisions of the snapshot
+      #212 closed 2017-09-25 chunk can't be found after pruning
+  interrupt      20 hit(s) (all listed)
+      #363 open 2018-02-21 Incomplete snapshots should be stored for all interrupted backups, not just the initial one
+      #486 open 2018-08-21 Upload rate limit schedule
+      #438 open 2018-06-05 Slow download speed while restoring
+      #406 open 2018-04-18 Failed to upload the chunk ... failed to send packet header: EOF
+      #360 open 2018-02-12 Recommended way to backup both on local drive and cloud
+      #235 open 2017-10-16 During initial backup, duplicacy suddenly starts using 100% CPU and stops sending data
+      #188 open 2017-09-13 "Incomplete" status not tied with storage location, leading to inconsistencies?
+      #426 open 2018-05-12 Checkpointing during backup
+      #446 open 2018-06-10 Preparing duplicacy for a long-duration backup
+      #128 open 2017-08-26 Upload speed is wrong when chunks are skipped
+      #658 open 2023-10-12 duplicacy command startup is extremely slow, does it do some network connection check?
+      #137 open 2017-08-28 Security weakness: PBKDF2 invocation uses static salt reducing effective security
+      #309 open 2017-12-20 Error: The process cannot access the file because another process has locked a portion of the file.
+      #669 closed 2024-06-28 Add -keep-max option to the prune command
+      #529 merged 2019-01-16 Retry on 408 error from Google Drive (Update to duplicacy_gcdstorage.go)
+      #90 closed 2017-07-05 The file has a size of X but total size of chunks is 0
+      #101 closed 2017-07-27 Storage name not expanded in password problem (2.0.6)
+      #86 closed 2017-07-04 HubiC TLS timeout: Failed to list the revisions of the snapshot
+      #352 closed 2018-02-04 Question: Should an Incomplete/Resumed Job leave Unreferenced Chunks?
+      #212 closed 2017-09-25 chunk can't be found after pruning
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         6 hit(s) (all listed)
+      #426 open 2018-05-12 Checkpointing during backup
+      #4 open 2016-03-23 WebDAV Support
+      #658 open 2023-10-12 duplicacy command startup is extremely slow, does it do some network connection check?
+      #362 closed 2018-02-17 Restore is very slow
+      #273 closed 2017-11-23 Problem during backup an copy or check?
+      #492 closed 2018-09-11 Restart initial backup after crash: wrong speed reported
+  power          7 hit(s) (all listed)
+      #35 open 2017-01-02 Slow backup on Raspberry Pi 2 model b [Previously: Alternate compression settings for same storage per repo]
+      #533 open 2019-01-21 Request: Detect when Windows is going to sleep/shutting down and log message
+      #267 open 2017-11-17 Can't paste encryption password on Windows (2.0.9)
+      #188 open 2017-09-13 "Incomplete" status not tied with storage location, leading to inconsistencies?
+      #426 open 2018-05-12 Checkpointing during backup
+      #534 open 2019-01-25 Feature request: Yubikey support
+      #171 open 2017-09-09 Best practice for scheduling?
+  outage         3 hit(s) (all listed)
+      #188 open 2017-09-13 "Incomplete" status not tied with storage location, leading to inconsistencies?
+      #426 open 2018-05-12 Checkpointing during backup
+      #199 open 2017-09-18 Duplicacy backup slows down over time
+  ENOSPC         1 hit(s) (all listed)
+      #68 closed 2017-06-09 Sparse-file support
+  disk           53 hit(s) (all listed)
+      #691 open 2026-07-04 restore: stale symlink can cause out-of-repo write (CWE-59)
+      #340 open 2018-01-26 QNAP NAS performance (CPU and Memory)
+      #345 open 2018-01-30 Question: Backup Block Volumes
+      #335 open 2018-01-24 Unable to create backup without missing chunks
+      #576 open 2019-10-08 VSS not working on macOS Catalina
+      #692 open 2026-08-16 Path traversal in restore via unsanitized snapshot entry paths
+      #130 open 2017-08-27 Same storage, different protocols
+      #662 open 2024-01-15 periodically save check progress to verified_chunks
+      #436 open 2018-06-04 File size and storage usage
+      #27 open 2016-11-08 Request: Make use of deduplication during restore
+      #35 open 2017-01-02 Slow backup on Raspberry Pi 2 model b [Previously: Alternate compression settings for same storage per repo]
+      #47 open 2017-04-18 Stop at filesystem boundaries
+      #636 open 2022-10-20 Live backup preview (mount)
+      #470 open 2018-07-29 Restoring very large files.
+      #205 open 2017-09-20 Restore should not come to a full stop when a corrupt chunk is encountered.
+      #351 open 2018-02-02 Errors in CLI With BackBlaze & x64_2.0.10
+      #44 open 2017-03-05 enumerate chunks for a given pattern
+      #235 open 2017-10-16 During initial backup, duplicacy suddenly starts using 100% CPU and stops sending data
+      #670 open 2024-07-01 Duplicacy saves backup data in a way that kills the performance of usb 3.0 SMR hard drives.
+      #390 open 2018-03-27 Create snapshots from existing snapshots
+  partial        11 hit(s) (all listed)
+      #105 open 2017-07-28 Restore should support delete flag for partial restores
+      #216 open 2017-09-28 Allow include/exclude patterns to be applied to all files/folders
+      #360 open 2018-02-12 Recommended way to backup both on local drive and cloud
+      #266 open 2017-11-17 check -files optimization?
+      #128 open 2017-08-26 Upload speed is wrong when chunks are skipped
+      #536 open 2019-02-01 [Feature] Bidirectional sync job type
+      #330 open 2018-01-16 Adding a feature to help with server side data integrity verification
+      #309 open 2017-12-20 Error: The process cannot access the file because another process has locked a portion of the file.
+      #346 open 2018-01-30 Restore Producing Unreliable Results & Not Handling 'Unusual' Directory Names Well?
+      #179 closed 2017-09-11 B2 efficiency
+      #186 closed 2017-09-12 Restore - skip or resume
+  incomplete     39 hit(s) (all listed)
+      #395 open 2018-04-08 log info when starting loading incomplete snapshot
+      #195 open 2017-09-16 The incomplete snapshot file should be per-storage
+      #188 open 2017-09-13 "Incomplete" status not tied with storage location, leading to inconsistencies?
+      #363 open 2018-02-21 Incomplete snapshots should be stored for all interrupted backups, not just the initial one
+      #531 open 2019-01-18 ERROR UPLOAD_CHUNK Failed to upload the chunk
+      #426 open 2018-05-12 Checkpointing during backup
+      #159 open 2017-09-05 User configurable number of retries for the backup command
+      #128 open 2017-08-26 Upload speed is wrong when chunks are skipped
+      #577 open 2019-10-19 sftp connection handshake error doesn't produce non-zero exit code
+      #446 open 2018-06-10 Preparing duplicacy for a long-duration backup
+      #199 open 2017-09-18 Duplicacy backup slows down over time
+      #92 open 2017-07-14 Is backup Limited to 100m/sec?
+      #377 open 2018-03-12 When is it unsafe to start prune?
+      #360 open 2018-02-12 Recommended way to backup both on local drive and cloud
+      #309 open 2017-12-20 Error: The process cannot access the file because another process has locked a portion of the file.
+      #4 open 2016-03-23 WebDAV Support
+      #480 open 2018-08-09 WebDav (URL request & PROPFIND - TLS handshake timeout)
+      #540 open 2019-02-13 The 0 exit code is a little misleading
+      #669 closed 2024-06-28 Add -keep-max option to the prune command
+      #641 merged 2023-01-12 Fixed typo incomlete -> incomplete
+  dataloss       1 hit(s) (all listed)
+      #311 closed 2017-12-20 Proposal for a generic backup ignore file
+  recover        25 hit(s) (all listed)
+      #297 open 2017-12-10 Changing password via one of the repositories with shared storage requires manual intervention for the other 
+      #528 open 2019-01-12 Ransomware-proof backups (cloud storage without delete permission)
+      #116 open 2017-08-23 Restoring from one repoitory to another overwrites preferences
+      #44 open 2017-03-05 enumerate chunks for a given pattern
+      #523 open 2018-12-24 zero byte snapshot file causes backup to fail
+      #272 open 2017-11-22 Option to store Snapshot ID Encrypted or Hashed
+      #58 open 2017-06-05 Enhancement: Store passwords/keys/tokens encrypted in preferences file 
+      #335 open 2018-01-24 Unable to create backup without missing chunks
+      #668 open 2024-06-14 Security Enhancement Proposal
+      #205 open 2017-09-20 Restore should not come to a full stop when a corrupt chunk is encountered.
+      #360 open 2018-02-12 Recommended way to backup both on local drive and cloud
+      #346 open 2018-01-30 Restore Producing Unreliable Results & Not Handling 'Unusual' Directory Names Well?
+      #362 closed 2018-02-17 Restore is very slow
+      #606 merged 2020-09-03 Implement Erasure Coding
+      #595 merged 2020-05-06 Adds -persist option to check and restore commands to continue despite errors
+      #211 merged 2017-09-25 default to single-dir-nesting for local and SFTP storages
+      #187 merged 2017-09-12 add regex matching to include/exclude filters
+      #143 closed 2017-08-30 support for metadata, Mac extended attributes, etc.
+      #23 closed 2016-09-09 Restore from storage without knowing snapshot id
+      #41 closed 2017-01-25 Suggestion: add support for cold storage services
+  recovery       10 hit(s) (all listed)
+      #691 open 2026-07-04 restore: stale symlink can cause out-of-repo write (CWE-59)
+      #335 open 2018-01-24 Unable to create backup without missing chunks
+      #293 open 2017-12-08 Changing password silently fails
+      #371 open 2018-03-09 -pref-dir being ignored
+      #309 open 2017-12-20 Error: The process cannot access the file because another process has locked a portion of the file.
+      #96 closed 2017-07-17 Documentation : complete the "Include/Exclude Patterns" section
+      #157 closed 2017-09-04 Enhancement - Backup recovery with missing chunks
+      #186 closed 2017-09-12 Restore - skip or resume
+      #393 closed 2018-04-02 [RESEARCH] Backup of Veracrypt container
+      #389 closed 2018-03-27 Remove all references to a chunk
+  rollback       0 hit(s)
+  resume         22 hit(s) (all listed)
+      #544 open 2019-02-20 check -files doesn't resume after connection timeout
+      #128 open 2017-08-26 Upload speed is wrong when chunks are skipped
+      #195 open 2017-09-16 The incomplete snapshot file should be per-storage
+      #597 open 2020-05-16 `check -chunks` needs a progress bar
+      #360 open 2018-02-12 Recommended way to backup both on local drive and cloud
+      #363 open 2018-02-21 Incomplete snapshots should be stored for all interrupted backups, not just the initial one
+      #150 open 2017-09-03 backup triggers keychain popup for password despite env password
+      #199 open 2017-09-18 Duplicacy backup slows down over time
+      #603 open 2020-07-17 google drive use direct link to google oauth page for generating access token
+      #460 open 2018-07-12 duplicacy copy to b2 failing
+      #426 open 2018-05-12 Checkpointing during backup
+      #266 open 2017-11-17 check -files optimization?
+      #446 open 2018-06-10 Preparing duplicacy for a long-duration backup
+      #438 open 2018-06-05 Slow download speed while restoring
+      #205 open 2017-09-20 Restore should not come to a full stop when a corrupt chunk is encountered.
+      #456 open 2018-06-29 Bundle or chunk
+      #625 merged 2021-10-25 Rewrite the backup procedure to reduce memory usage
+      #211 merged 2017-09-25 default to single-dir-nesting for local and SFTP storages
+      #90 closed 2017-07-05 The file has a size of X but total size of chunks is 0
+      #352 closed 2018-02-04 Question: Should an Incomplete/Resumed Job leave Unreferenced Chunks?
+  half-written   1 hit(s) (all listed)
+      #540 open 2019-02-13 The 0 exit code is a little misleading
+  wipe           3 hit(s) (all listed)
+      #205 open 2017-09-20 Restore should not come to a full stop when a corrupt chunk is encountered.
+      #172 closed 2017-09-09 Can the "copy" chunk comparison be accomplished O(n) in memory?
+      #432 closed 2018-05-30 Not prompted for password during backup
+  wipes          0 hit(s)
+  erase          1 hit(s) (all listed)
+      #360 open 2018-02-12 Recommended way to backup both on local drive and cloud
+  erasing        0 hit(s)
+  erased         1 hit(s) (all listed)
+      #360 open 2018-02-12 Recommended way to backup both on local drive and cloud
+  destroy        2 hit(s) (all listed)
+      #655 open 2023-09-24 Use S3 ListObjectsV2 for listing files
+      #265 open 2017-11-14 Delete specific file from backups
+  destroys       0 hit(s)
+  overwrite      29 hit(s) (all listed)
+      #116 open 2017-08-23 Restoring from one repoitory to another overwrites preferences
+      #429 open 2018-05-25 Incremental restore fails when a directory has been replaced by a file with the same name (or vice versa)
+      #438 open 2018-06-05 Slow download speed while restoring
+      #111 open 2017-08-15 free restore in CLI version
+      #536 open 2019-02-01 [Feature] Bidirectional sync job type
+      #194 open 2017-09-15 Multiple local repositories with different default storage locations cannot use keyring.
+      #188 open 2017-09-13 "Incomplete" status not tied with storage location, leading to inconsistencies?
+      #691 open 2026-07-04 restore: stale symlink can cause out-of-repo write (CWE-59)
+      #93 open 2017-07-15 OneDrive issues
+      #297 open 2017-12-10 Changing password via one of the repositories with shared storage requires manual intervention for the other 
+      #136 open 2017-08-28 Is using "security" command on MacOS a good idea?
+      #684 open 2025-10-25 Change permission before in-place writing or deletion
+      #541 open 2019-02-13 Restore only seems to process one file at a time
+      #206 open 2017-09-21 Fully document build environment used to produce releases.
+      #334 open 2018-01-24 Inefficient Storage after Moving or Renaming Files?
+      #362 closed 2018-02-17 Restore is very slow
+      #613 closed 2020-11-29 Implement backing up of block devices on Unix
+      #545 closed 2019-02-21 Only log changed files when backing up with -hash.
+      #595 merged 2020-05-06 Adds -persist option to check and restore commands to continue despite errors
+      #82 closed 2017-06-22 restore command fails when -pref-dir and repository are on different filesystems
+  clobber        0 hit(s)
+  blank          9 hit(s) (all listed)
+      #474 open 2018-08-01 Mac OSX Keychain - Storage password set to blank after running init
+      #682 open 2025-09-28 Google Drive shared drives not working: insufficient authentication scopes
+      #631 open 2022-07-04 Backup crashes with index out of range if all files are of size 0
+      #421 open 2018-05-03 Some remarks on swift storage
+      #128 open 2017-08-26 Upload speed is wrong when chunks are skipped
+      #236 merged 2017-10-17 Post-review changes for GCD rate limit handling
+      #303 closed 2017-12-12 Skip making a new revision if there is nothing to backup.  Useful for…
+      #452 closed 2018-06-18 Total chunks column.
+      #467 closed 2018-07-26 INFO PRUNE_NEWSNAPSHOT introduces blank line
+  unreadable     2 hit(s) (all listed)
+      #366 open 2018-02-26 Copy always fails at the same chunk
+      #309 open 2017-12-20 Error: The process cannot access the file because another process has locked a portion of the file.
+  garbage        1 hit(s) (all listed)
+      #602 open 2020-07-04 High memory usage
+  mangled        0 hit(s)
+  contents       33 hit(s) (all listed)
+      #376 open 2018-03-12 Problems with exclusions: apply exclusion pattern before reading contents of directory
+      #691 open 2026-07-04 restore: stale symlink can cause out-of-repo write (CWE-59)
+      #692 open 2026-08-16 Path traversal in restore via unsanitized snapshot entry paths
+      #530 open 2019-01-18 Duplicacy incorrectly claims "Can't access the storage path backups/me: file does not exist"
+      #302 open 2017-12-11 Add separate config to force selected paths
+      #205 open 2017-09-20 Restore should not come to a full stop when a corrupt chunk is encountered.
+      #679 open 2025-08-12 Dubious claims in readme
+      #346 open 2018-01-30 Restore Producing Unreliable Results & Not Handling 'Unusual' Directory Names Well?
+      #228 open 2017-10-09 /Library/* cannot be opened during backup packing
+      #385 open 2018-03-18 Add -check option to the copy command (enhancement)
+      #524 open 2018-12-24 GVFS FUSE mount in $HOME/.gvfs causes whole home dir to be skipped
+      #148 open 2017-09-03 All commands should take allow option of path to preferences directory.
+      #583 open 2020-01-13 Why moving to a proprietary forum as an open-source project?
+      #199 open 2017-09-18 Duplicacy backup slows down over time
+      #448 open 2018-06-15 What is the recommended configuration for multiple-computer backup with safety?
+      #314 open 2017-12-26 Add a -filters option to the backup command
+      #334 open 2018-01-24 Inefficient Storage after Moving or Renaming Files?
+      #282 closed 2017-11-30 Question about "Lock-Free-Deduplication"
+      #207 closed 2017-09-21 'cipher: message authentication failed' when downloading chunks from wasabi
+      #214 merged 2017-09-26 Retry downloads with corrupted content up to three times.
+  in-place       70 hit(s) (all listed)
+      #684 open 2025-10-25 Change permission before in-place writing or deletion
+      #552 open 2019-03-12 Download B2 data via a custom end-point
+      #58 open 2017-06-05 Enhancement: Store passwords/keys/tokens encrypted in preferences file 
+      #419 open 2018-05-02 Backup multiple drives on Windows by adding possibility to move .duplicacy file / specify multiple backup roots
+      #133 open 2017-08-27 Here are some OSX bash scripts to help you manage how you execute duplicacy
+      #470 open 2018-07-29 Restoring very large files.
+      #603 open 2020-07-17 google drive use direct link to google oauth page for generating access token
+      #336 open 2018-01-24 File not included in some revisions, then it "reappears"
+      #541 open 2019-02-13 Restore only seems to process one file at a time
+      #27 open 2016-11-08 Request: Make use of deduplication during restore
+      #676 open 2025-03-28 Content Defined Chunking Attack.
+      #272 open 2017-11-22 Option to store Snapshot ID Encrypted or Hashed
+      #395 open 2018-04-08 log info when starting loading incomplete snapshot
+      #435 open 2018-06-04 Why are size stats units given as thousands?
+      #217 open 2017-09-28 Store the repository's root folders (plural) in the .duplicacy config file
+      #216 open 2017-09-28 Allow include/exclude patterns to be applied to all files/folders
+      #291 open 2017-12-06 hubic retry mechanism improvement
+      #113 open 2017-08-22 Comparison with Arq?
+      #534 open 2019-01-25 Feature request: Yubikey support
+      #346 open 2018-01-30 Restore Producing Unreliable Results & Not Handling 'Unusual' Directory Names Well?
+  unclean        0 hit(s)
+  shutdown       1 hit(s) (all listed)
+      #688 open 2026-04-16 Process exit sends TCP RST to S3 server on keep-alive connections (no graceful HTTP shutdown)
+  reboot         2 hit(s) (all listed)
+      #509 open 2018-10-24 Cannot connect to BackBlaze B2 - connection reset by peer
+      #371 open 2018-03-09 -pref-dir being ignored
+  disk+full      8 hit(s) (all listed)
+      #576 open 2019-10-08 VSS not working on macOS Catalina
+      #44 open 2017-03-05 enumerate chunks for a given pattern
+      #266 open 2017-11-17 check -files optimization?
+      #163 open 2017-09-06 Shipping local backups
+      #334 open 2018-01-24 Inefficient Storage after Moving or Renaming Files?
+      #225 closed 2017-10-05 Ad-hoc style backups
+      #68 closed 2017-06-09 Sparse-file support
+      #274 closed 2017-11-24 check -files should delete the temporary chunks sooner
+  data+loss      5 hit(s) (all listed)
+      #338 open 2018-01-24 Warn when backing up symlinks
+      #434 open 2018-06-03 Questions on restoring data
+      #540 open 2019-02-13 The 0 exit code is a little misleading
+      #211 merged 2017-09-25 default to single-dir-nesting for local and SFTP storages
+      #157 closed 2017-09-04 Enhancement - Backup recovery with missing chunks
+  partial+write  4 hit(s) (all listed)
+      #128 open 2017-08-26 Upload speed is wrong when chunks are skipped
+      #216 open 2017-09-28 Allow include/exclude patterns to be applied to all files/folders
+      #536 open 2019-02-01 [Feature] Bidirectional sync job type
+      #330 open 2018-01-16 Adding a feature to help with server side data integrity verification
+  crash+safe     2 hit(s) (all listed)
+      #309 open 2017-12-20 Error: The process cannot access the file because another process has locked a portion of the file.
+      #4 open 2016-03-23 WebDAV Support
+  atomic+write   2 hit(s) (all listed)
+      #137 open 2017-08-28 Security weakness: PBKDF2 invocation uses static salt reducing effective security
+      #211 merged 2017-09-25 default to single-dir-nesting for local and SFTP storages
+  lock+file      23 hit(s) (all listed)
+      #309 open 2017-12-20 Error: The process cannot access the file because another process has locked a portion of the file.
+      #559 open 2019-05-01 Zero-length and effectively zero-length file-handling issues
+      #377 open 2018-03-12 When is it unsafe to start prune?
+      #679 open 2025-08-12 Dubious claims in readme
+      #528 open 2019-01-12 Ransomware-proof backups (cloud storage without delete permission)
+      #658 open 2023-10-12 duplicacy command startup is extremely slow, does it do some network connection check?
+      #268 open 2017-11-20 Does it ready for large backups?
+      #576 open 2019-10-08 VSS not working on macOS Catalina
+      #109 open 2017-08-11 Are parallel backups to same storage protected against corruption?
+      #448 open 2018-06-15 What is the recommended configuration for multiple-computer backup with safety?
+      #560 open 2019-05-03 duplicacy cat bigfile: runtime out of memory
+      #206 open 2017-09-21 Fully document build environment used to produce releases.
+      #346 open 2018-01-30 Restore Producing Unreliable Results & Not Handling 'Unusual' Directory Names Well?
+      #334 open 2018-01-24 Inefficient Storage after Moving or Renaming Files?
+      #456 open 2018-06-29 Bundle or chunk
+      #649 merged 2023-03-21 Acquire verifiedChunksLock in saveVerifiedChunks
+      #282 closed 2017-11-30 Question about "Lock-Free-Deduplication"
+      #447 merged 2018-06-13 Acknowledge malware/spam warnings from GCD
+      #179 closed 2017-09-11 B2 efficiency
+      #278 closed 2017-11-29  googleapi: Error 403: The specified parent is not a folder., parentNotAFolder
+  write+failure  4 hit(s) (all listed)
+      #293 open 2017-12-08 Changing password silently fails
+      #540 open 2019-02-13 The 0 exit code is a little misleading
+      #342 open 2018-01-30 does not follow unc network share simlink
+      #4 open 2016-03-23 WebDAV Support
+  file+contents  29 hit(s) (all listed)
+      #691 open 2026-07-04 restore: stale symlink can cause out-of-repo write (CWE-59)
+      #692 open 2026-08-16 Path traversal in restore via unsanitized snapshot entry paths
+      #679 open 2025-08-12 Dubious claims in readme
+      #530 open 2019-01-18 Duplicacy incorrectly claims "Can't access the storage path backups/me: file does not exist"
+      #302 open 2017-12-11 Add separate config to force selected paths
+      #346 open 2018-01-30 Restore Producing Unreliable Results & Not Handling 'Unusual' Directory Names Well?
+      #205 open 2017-09-20 Restore should not come to a full stop when a corrupt chunk is encountered.
+      #524 open 2018-12-24 GVFS FUSE mount in $HOME/.gvfs causes whole home dir to be skipped
+      #228 open 2017-10-09 /Library/* cannot be opened during backup packing
+      #385 open 2018-03-18 Add -check option to the copy command (enhancement)
+      #148 open 2017-09-03 All commands should take allow option of path to preferences directory.
+      #314 open 2017-12-26 Add a -filters option to the backup command
+      #199 open 2017-09-18 Duplicacy backup slows down over time
+      #448 open 2018-06-15 What is the recommended configuration for multiple-computer backup with safety?
+      #334 open 2018-01-24 Inefficient Storage after Moving or Renaming Files?
+      #282 closed 2017-11-30 Question about "Lock-Free-Deduplication"
+      #207 closed 2017-09-21 'cipher: message authentication failed' when downloading chunks from wasabi
+      #225 closed 2017-10-05 Ad-hoc style backups
+      #233 closed 2017-10-12 Document which temporary folders are used (if any)
+      #5 closed 2016-03-23 Amazon Cloud Drive support?
+
+== 51 terms run; 42 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

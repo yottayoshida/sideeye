@@ -1,0 +1,29 @@
+- Creating the gitmoji commit hook
+✔ Gitmoji commit hook created successfully
+- Creating the gitmoji commit hook
+- Creating the gitmoji commit hook
+✔ Gitmoji commit hook created successfully
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 2
+            after  open(/s/gm/.git/hooks/prepare-commit-msg)
+            before write(/s/gm/.git/hooks/prepare-commit-msg)
+path        prepare-commit-msg
+observed    holding neither the old nor the new content
+explored    2 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 2 operations (7126 syscall lines examined, 5 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/gitmoji/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+cwd         /s/gm
+processes   2 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle; the shim recorded 10 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 9 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/gm/.git/hooks SIDEEYE_TRACE_PATH=/out/gitmoji/work-explore-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.9.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=9f44963fefee3a2dee4e659d245c0b585a719ac8b4904e2aa94b98ebd51ea1bb;

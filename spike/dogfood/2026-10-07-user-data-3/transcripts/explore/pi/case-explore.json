@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.9.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/aux/home/.pi",
+    "operation": "pi install /s/pi-in/ext2",
+    "cwd": "/s/pi-in",
+    "expected_status": 0
+  },
+  "k": 7,
+  "ops_total": 8,
+  "prefix_hash": "0edd651364ed1a22",
+  "after_class": "open",
+  "after_path": "/s/aux/home/.pi/agent/settings.json",
+  "before_class": "write",
+  "before_path": "/s/aux/home/.pi/agent/settings.json",
+  "violation": "hybrid"
+}

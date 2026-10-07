@@ -1,0 +1,342 @@
+== novelty pre-scan: libsndfile/libsndfile
+== date: 2026-10-07T07:29:58Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          47 hit(s) (all listed)
+      #805 open 2022-01-16 Crashes when parsing malformed FLAC file
+      #254 open 2017-05-02 Crash in 32-bit Windows DLL
+      #1175 open 2026-10-02 nist: Fix over-read on bad sample_coding field
+      #1151 open 2026-08-05 [Bug]signed integer overflow in mat4_read_header while validating a crafted MAT4 (MATLAB v4) file (CWE-190)
+      #1082 open 2025-06-04 libsndfile IRCAM File Processing Buffer Overflow
+      #1157 open 2026-08-23 SIGFPE in vorbis_rshort()
+      #1173 open 2026-09-29 [BUG] `sf_get_chunk_data()` divides by zero for an empty chunk with virtual I/O
+      #1099 open 2025-09-03 ircam: harden header parsing (mitigation for CVE-2025-52194)
+      #424 open 2018-10-04 problems writing ogg files
+      #949 open 2023-07-25 sf_open_fd() in release >=1.2.0 closes fd passed into it by caller on error, even if close_desc was false
+      #1014 open 2024-05-23 Multiple  use-of-uninitialized-value bugs
+      #1034 open 2024-08-29 Reachable assertion in mpeg_l3_encoder_close
+      #846 open 2022-06-30 Division by zero BugReport, Fuzzing suggestion
+      #1150 closed 2026-08-05 [Bug]misaligned 4-byte store in psf_binheader_readf while parsing a crafted WAV 'fmt ' chunk (CWE-704)
+      #1135 merged 2026-06-27 sds: avoid divide-by-zero in sds_byterate for zero-frame files
+      #1108 closed 2026-01-12 [BUG]  heap-buffer-overflow  in `sndfile.c`
+      #612 merged 2020-09-19 Fix MacOS 10.13 compatibility
+      #1035 closed 2024-08-29 Segmentation fault error in ogg_vorbis.c:417 vorbis_analysis_wrote()
+      #339 closed 2017-11-20 Crash under ARM when closing file after writing a large SF_STR_COMMENT
+      #973 closed 2023-10-01 Buffer overrun in alac_pakt_encode()
+  corrupt        21 hit(s) (all listed)
+      #1080 open 2025-05-22 libsndfile writes corrupted .ogg files if the SFC_SET_UPDATE_HEADER_AUTO feature is enabled
+      #1110 open 2026-01-20 Implement duplicate fmt chunk detection in rf64.c
+      #1151 open 2026-08-05 [Bug]signed integer overflow in mat4_read_header while validating a crafted MAT4 (MATLAB v4) file (CWE-190)
+      #1082 open 2025-06-04 libsndfile IRCAM File Processing Buffer Overflow
+      #1162 closed 2026-09-04 mat4: reject a negative row or frame count instead of overflowing
+      #809 open 2022-02-11 Total number of frames on a truncated ogg file (behavior difference between 1.0.28 and 1.0.30)
+      #1019 open 2024-06-05 flac: Add support for 32-bit FLAC files
+      #661 open 2020-11-30 Preliminary wavpack support
+      #1138 merged 2026-07-07 chunk: fix heap buffer overflow in psf_save_write_chunk (#1114)
+      #1150 closed 2026-08-05 [Bug]misaligned 4-byte store in psf_binheader_readf while parsing a crafted WAV 'fmt ' chunk (CWE-704)
+      #254 open 2017-05-02 Crash in 32-bit Windows DLL
+      #732 merged 2021-04-14 flac: Fix improper buffer reusing
+      #707 merged 2021-02-14 Fuzzer fixes
+      #235 closed 2017-04-13 Version 1.0.28 dll crash on sf_close
+      #228 closed 2017-04-11 invalid memory write in flac_buffer_copy (flac.c)
+      #309 closed 2017-08-21 Clamping sample values for integer formats
+      #332 closed 2017-10-18 Problems with WAVEX surround  file: "wave header missing extended part of fmt chunk"
+      #387 closed 2018-03-28 Problems to compile and to use libsndfile with Portaudio.
+      #368 closed 2018-03-11 sndfile-convert crashes in d2ulaw_array ()
+      #484 closed 2019-08-29 Error reading simple WAV file pcm_s16le in debian stretch
+  corruption     13 hit(s) (all listed)
+      #1099 open 2025-09-03 ircam: harden header parsing (mitigation for CVE-2025-52194)
+      #1122 open 2026-05-13 Floating point exception when calling `sf_current_byterate` on an opened file
+      #1151 open 2026-08-05 [Bug]signed integer overflow in mat4_read_header while validating a crafted MAT4 (MATLAB v4) file (CWE-190)
+      #1082 open 2025-06-04 libsndfile IRCAM File Processing Buffer Overflow
+      #1035 closed 2024-08-29 Segmentation fault error in ogg_vorbis.c:417 vorbis_analysis_wrote()
+      #973 closed 2023-10-01 Buffer overrun in alac_pakt_encode()
+      #499 merged 2019-11-20 MPEG Encode/Decode Support
+      #31 closed 2013-02-06 Heap corruption: valgrind reports "Invalid read of size 4" and "Invalid free() / delete /delete[] / realloc()"
+      #235 closed 2017-04-13 Version 1.0.28 dll crash on sf_close
+      #70 closed 2014-07-08 Data gets lost when opening and closing certain files in SFM_RDWR mode
+      #470 closed 2019-06-11 1.0.29 release plan?
+      #197 closed 2017-02-22 get variable number of cues cleaned
+      #196 closed 2017-02-21 get variable number of cues
+  truncated      18 hit(s) (all listed)
+      #809 open 2022-02-11 Total number of frames on a truncated ogg file (behavior difference between 1.0.28 and 1.0.30)
+      #1026 open 2024-06-21 Truncation of sample chunk data in command_test.c
+      #989 open 2023-12-31 Reading an Ogg file without EOS reports length as 6.6 million years
+      #1167 open 2026-09-22 mat4: reject negative channel counts and size the payload safely
+      #1103 open 2025-11-26 cmake: Version 3.14 is required
+      #1150 closed 2026-08-05 [Bug]misaligned 4-byte store in psf_binheader_readf while parsing a crafted WAV 'fmt ' chunk (CWE-704)
+      #254 open 2017-05-02 Crash in 32-bit Windows DLL
+      #926 merged 2023-04-10 fix #888, change diffrence of 'ret', 'offset' form Xiph.org's Opusfile: opusfile-0.12/src/opusfile.c
+      #880 closed 2022-09-30 libsndfile (soundfile) for mp3 not float32 but float64
+      #857 closed 2022-07-21 Build with CMake with mp3 support but resulting no mp3 support
+      #785 closed 2021-11-01 signed integer overflow in src/gsm610.c:153
+      #81 closed 2014-10-29 libsndfile truncates path at 512 characters when using sf_open
+      #370 closed 2018-03-13 Problem importing WAV files
+      #437 closed 2018-12-31 src/mpc2k.c compilation fails with 'error: ‘%s’ directive output may be truncated writing up to 255 bytes into a region of size 18 [-Werror=format-truncation=]'
+      #461 closed 2019-03-19 make check error
+      #447 closed 2019-01-28 warning while executing make command of libsndfile-1.0.28 X86_64 processor
+      #482 closed 2019-08-15 Read wav-gsm610 file, the buffer needs to be larger than frames, otherwise there will be exceptions
+      #527 closed 2020-06-12 install problem 
+  truncate       44 hit(s) (all listed)
+      #1026 open 2024-06-21 Truncation of sample chunk data in command_test.c
+      #809 open 2022-02-11 Total number of frames on a truncated ogg file (behavior difference between 1.0.28 and 1.0.30)
+      #989 open 2023-12-31 Reading an Ogg file without EOS reports length as 6.6 million years
+      #1167 open 2026-09-22 mat4: reject negative channel counts and size the payload safely
+      #1062 open 2025-01-24 memset and snprintf functions are (apparently) insecure
+      #511 open 2020-02-22 Instructions for cross-compiling with MingW?
+      #698 open 2021-02-05 Unable to find and test  arm-linux-androideabi-gcc binary in latest ndk for libsndfile using android_configure.sh script.
+      #1103 open 2025-11-26 cmake: Version 3.14 is required
+      #946 open 2023-07-03 IMA ADPCM decode reports higher amount of samples than present
+      #1027 open 2024-06-21 Fix broadcast test data
+      #1150 closed 2026-08-05 [Bug]misaligned 4-byte store in psf_binheader_readf while parsing a crafted WAV 'fmt ' chunk (CWE-704)
+      #1154 closed 2026-08-15 Compute the header byte rate without overflowing int
+      #254 open 2017-05-02 Crash in 32-bit Windows DLL
+      #1049 closed 2024-12-01 Build failure with GCC 15 (defaults to -std=gnu23)
+      #959 closed 2023-09-05 Fix truncation for float to PCM
+      #990 merged 2024-01-11 configure.ac: fix bashisms
+      #339 closed 2017-11-20 Crash under ARM when closing file after writing a large SF_STR_COMMENT
+      #926 merged 2023-04-10 fix #888, change diffrence of 'ret', 'offset' form Xiph.org's Opusfile: opusfile-0.12/src/opusfile.c
+      #880 closed 2022-09-30 libsndfile (soundfile) for mp3 not float32 but float64
+      #857 closed 2022-07-21 Build with CMake with mp3 support but resulting no mp3 support
+  empty          19 hit(s) (all listed)
+      #1173 open 2026-09-29 [BUG] `sf_get_chunk_data()` divides by zero for an empty chunk with virtual I/O
+      #937 open 2023-05-06 sf_set_string raises an error if passed an empty string 
+      #1039 open 2024-10-17 Certain MP3 files not correctly identified, and as a result, they are unplayable in a game.
+      #1023 open 2024-06-17 Stack overflow probabilistically occurs when the function `sf_writef_short` of `libsndfile_64bit.dll` is called using the Python library `soundfile`
+      #1136 merged 2026-07-01 Fix heap-buffer-overflow in vox_read_block (OKI ADPCM decoder)
+      #1098 closed 2025-09-01 error: cannot use keyword ‘false’ as enumeration constant
+      #1049 closed 2024-12-01 Build failure with GCC 15 (defaults to -std=gnu23)
+      #1035 closed 2024-08-29 Segmentation fault error in ogg_vorbis.c:417 vorbis_analysis_wrote()
+      #339 closed 2017-11-20 Crash under ARM when closing file after writing a large SF_STR_COMMENT
+      #880 closed 2022-09-30 libsndfile (soundfile) for mp3 not float32 but float64
+      #114 closed 2015-12-26 Problems with tags
+      #117 closed 2016-01-10 iXML metadata
+      #229 closed 2017-04-11 rf64 regression in string_multi_set_test
+      #345 closed 2017-12-11 Is SFC_GET_LOG_INFO documentation wrong ?
+      #364 closed 2018-02-23 Adding Opus audio in libsndfile ?
+      #413 closed 2018-09-12 How to open an ogg vorbis or flac file in libsndfile?
+      #158 closed 2016-09-12 configure.ac: check for inline #157
+      #193 closed 2017-01-19 Build system fixes
+      #325 closed 2017-09-27 sfe_copy_data_fp: check value of "max" variable for being normal
+  atomic         1 hit(s) (all listed)
+      #610 open 2020-09-14 Implement thread safe error reporting 
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      2 hit(s) (all listed)
+      #1048 open 2024-11-27 Unseekable Steams Support (pipes) for Virtual IOs
+      #464 closed 2019-04-03 Float point exception in function sf_open ()
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         0 hit(s)
+  power          4 hit(s) (all listed)
+      #431 open 2018-12-10 Failure to read flac files of 3 channels longer than 5592405 samples
+      #858 merged 2022-07-26 Read more than 2^24 samples from FLAC file with non-power-of-two channels
+      #643 closed 2020-10-22 missing samples when doing a partial read of ogg file from index till the end of file
+      #282 merged 2017-06-04 Autotools cleanup
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           11 hit(s) (all listed)
+      #929 open 2023-04-25 Unable to read past initial length of partially written file
+      #1152 closed 2026-08-10 common: Use memcpy for unaligned field stores
+      #915 open 2023-02-17 MP3 non-ASCII metadata encoding issues?
+      #973 closed 2023-10-01 Buffer overrun in alac_pakt_encode()
+      #796 merged 2021-11-25 Fuzzing: Add CIFuzz
+      #9 closed 2012-03-20 Four potentially malformed CAF ALAC files don't open in sndfile-info, but are okay in Apple's tools
+      #120 closed 2016-01-21 sf_read_float never returns less than items
+      #260 closed 2017-05-07 Convert stereo to mono?
+      #526 closed 2020-05-28 opening psd files on macOS get stuck in loop and crash
+      #478 closed 2019-07-19 Newly written file reports 0 frames
+      #480 merged 2019-07-27 Add ossfuzz support for libsndfile
+  partial        9 hit(s) (all listed)
+      #1172 open 2026-09-28 Variant analysis: 2 unfixed sibling safety gaps in libsndfile
+      #1137 merged 2026-07-03 nms_adpcm: Fix out-of-bounds write on short read
+      #794 closed 2021-11-23 opus: seeking to wrong location and reading 0 frames?
+      #643 closed 2020-10-22 missing samples when doing a partial read of ogg file from index till the end of file
+      #32 closed 2013-02-06 [patch] remove C99 style variable declaration / variable length automatic array in ALAC source
+      #24 closed 2012-10-30 ALAC encoder doesn't fill packet table header of pakt chunk
+      #435 closed 2018-12-27 heap-buffer-overflow in wav_write_header
+      #200 closed 2017-03-11 Add API exported functions visibility control
+      #150 closed 2016-09-10 Use io.h as partial replacement of unistd.h
+  incomplete     15 hit(s) (all listed)
+      #414 open 2018-09-13 Table of supported formats incomplete in index.html
+      #999 open 2024-03-06 make incomplete, cast discards 'const' qualifier from pointer target type
+      #280 open 2017-05-31 support for non-seekable input
+      #66 open 2014-05-19 Investigate switching to a BSD or MIT license
+      #1120 closed 2026-05-01 CVE-2026-37555: Integer overflow in WAV IMA-ADPCM path — incomplete fix for CVE-2022-33065
+      #916 closed 2023-02-18 errors configuring downstream project with cmake and static libsndfile
+      #894 closed 2022-11-26 cmake problem finding python
+      #687 closed 2021-01-15 heap-buffer-overflow in in msadpcm_decode_block
+      #89 closed 2014-12-12 Can the Windows installer actually "install" the DLL?
+      #116 closed 2016-01-02 can't write tags to rf64 or w64
+      #201 closed 2017-03-12 Incomplete documentation distibution
+      #262 closed 2017-05-09  When I use sndfile-info to see speex format file when the error,　　Internal error : SF_INFO struct incomplete.　　　why???
+      #425 closed 2018-10-05 Autogen
+      #392 closed 2018-05-07 Can't compile with cmake, in an external directory
+      #456 closed 2019-02-07 Incomplete fix for CVE-2018-19758
+  dataloss       0 hit(s)
+  recover        8 hit(s) (all listed)
+      #1167 open 2026-09-22 mat4: reject negative channel counts and size the payload safely
+      #1168 open 2026-09-22 aiff, wav, wavlike: index the cue array through a pointer
+      #1151 open 2026-08-05 [Bug]signed integer overflow in mat4_read_header while validating a crafted MAT4 (MATLAB v4) file (CWE-190)
+      #1099 open 2025-09-03 ircam: harden header parsing (mitigation for CVE-2025-52194)
+      #1150 closed 2026-08-05 [Bug]misaligned 4-byte store in psf_binheader_readf while parsing a crafted WAV 'fmt ' chunk (CWE-704)
+      #1152 closed 2026-08-10 common: Use memcpy for unaligned field stores
+      #890 merged 2022-10-26 Let wav parsing recover from invalid LIST chunks, fixing #374
+      #499 merged 2019-11-20 MPEG Encode/Decode Support
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         3 hit(s) (all listed)
+      #820 closed 2022-03-31 Handle EAGAIN when reading files
+      #419 closed 2018-09-13 Reduce size of libsndfile.so?
+      #464 closed 2019-04-03 Float point exception in function sf_open ()
+  half-written   2 hit(s) (all listed)
+      #797 closed 2021-11-25 Add support for Opus ambisonics and other channel mapping families
+      #499 merged 2019-11-20 MPEG Encode/Decode Support
+  wipe           1 hit(s) (all listed)
+      #1082 open 2025-06-04 libsndfile IRCAM File Processing Buffer Overflow
+  wipes          0 hit(s)
+  erase          2 hit(s) (all listed)
+      #653 open 2020-11-12 Support lowercase track tag in wave files
+      #302 closed 2017-07-28 Information leak in sndfile.c psf_close
+  erasing        0 hit(s)
+  erased         1 hit(s) (all listed)
+      #653 open 2020-11-12 Support lowercase track tag in wave files
+  destroy        10 hit(s) (all listed)
+      #661 open 2020-11-30 Preliminary wavpack support
+      #1052 closed 2024-12-06 Static build of libsndfile on macOS Sonoma, undefined symbols problem
+      #1030 closed 2024-06-28 Cannot build on Apple M1 Pro: found architecture 'x86_64', required architecture 'arm64'
+      #857 closed 2022-07-21 Build with CMake with mp3 support but resulting no mp3 support
+      #796 merged 2021-11-25 Fuzzing: Add CIFuzz
+      #294 closed 2017-06-15 Random artificial crackles when giving floating point samples to libsndfile to write into a 24bit flac file
+      #364 closed 2018-02-23 Adding Opus audio in libsndfile ?
+      #285 closed 2017-06-05 Compile error under mingw inside cygwin
+      #420 closed 2018-09-14 How to compile libsndfile-1.dll on Windows with CMake and vcpkg?
+      #470 closed 2019-06-11 1.0.29 release plan?
+  destroys       0 hit(s)
+  overwrite      11 hit(s) (all listed)
+      #1092 open 2025-07-14 A heap-buffer-overflow issue in sndfile-convert
+      #1082 open 2025-06-04 libsndfile IRCAM File Processing Buffer Overflow
+      #336 open 2017-11-05 Coding style discussion
+      #1110 open 2026-01-20 Implement duplicate fmt chunk detection in rf64.c
+      #1149 closed 2026-08-03 rf64, w64: ignore a second 'fmt ' chunk
+      #1108 closed 2026-01-12 [BUG]  heap-buffer-overflow  in `sndfile.c`
+      #77 closed 2014-09-18 Wrong number of frames in pipe-write mode
+      #70 closed 2014-07-08 Data gets lost when opening and closing certain files in SFM_RDWR mode
+      #289 closed 2017-06-13 Windows msvc cmake pkg-config: tiny bug in libname generation
+      #370 closed 2018-03-13 Problem importing WAV files
+      #323 closed 2017-09-23 Not able to build for android on ubuntu
+  clobber        0 hit(s)
+  blank          4 hit(s) (all listed)
+      #662 open 2020-12-05 Wishlist: Support Ogg Opus Ambisonics
+      #1158 closed 2026-08-24 Set oopus->buffer to NULL after freeing
+      #827 closed 2022-04-08 [1.1.0] `pkg-config --static --libs sndfile` output contains `@EXTERNAL_MPEG_LIBS@`
+      #705 merged 2021-02-14 Add commit message requirements to CONTRIBUTING.md
+  unreadable     0 hit(s)
+  garbage        9 hit(s) (all listed)
+      #393 open 2018-05-12 Better Unicode handling for Windows
+      #979 merged 2023-10-17 Fix various numeric overflow vulns throughout code (CVE-2022-33065)
+      #19 closed 2012-08-31 Fix ALAC compiler warnings from gcc on ARM
+      #50 closed 2013-10-29 CAF chunks after data chunk are read as garbage PCM
+      #248 closed 2017-04-28 checksum_test fails with VS2017 in debug mode
+      #191 closed 2016-11-22 fail to read .caf file with large free_MARKER chunk
+      #419 closed 2018-09-13 Reduce size of libsndfile.so?
+      #454 closed 2019-02-01 sf_read**** behaviour
+      #322 closed 2017-09-20 [WIP] MP3 support
+  mangled        0 hit(s)
+  contents       16 hit(s) (all listed)
+      #1175 open 2026-10-02 nist: Fix over-read on bad sample_coding field
+      #1078 open 2025-05-20 Interoperable carriage of little-endian LPCM in AIFF-C
+      #110 open 2015-12-10 Read/write Ogg Vorbis to pipe?
+      #887 open 2022-10-19 odd number of frames with an odd number of bytes-per-frame behaves odd
+      #1169 open 2026-09-25 [SECURITY] Uninitialized stack memory leaked into cue-point names via short 'labl' subchunk (CWE-457)
+      #1133 merged 2026-06-27 ci: set least-privilege GITHUB_TOKEN permissions
+      #1130 merged 2026-06-14 ci: add permissions block and pin actions/checkout to full commit SHA
+      #1059 open 2025-01-03 Building shared library on macOS fails when using external libraries support (like mp3), both cmake and autotools
+      #612 merged 2020-09-19 Fix MacOS 10.13 compatibility
+      #1030 closed 2024-06-28 Cannot build on Apple M1 Pro: found architecture 'x86_64', required architecture 'arm64'
+      #830 closed 2022-04-29 Test suite failure on x86_64-musl
+      #499 merged 2019-11-20 MPEG Encode/Decode Support
+      #45 closed 2013-08-10 ld: symbol(s) not found for architecture x86_64
+      #4 closed 2012-03-06 New ALAC support doesn't report proper file length for "Apple Loops"
+      #295 closed 2017-06-15 Build for Android
+      #370 closed 2018-03-13 Problem importing WAV files
+  in-place       55 hit(s) (all listed)
+      #1168 open 2026-09-22 aiff, wav, wavlike: index the cue array through a pointer
+      #1081 open 2025-05-24 (build-)depends on GNU autogen
+      #741 open 2021-05-15 static analysis issues
+      #1019 open 2024-06-05 flac: Add support for 32-bit FLAC files
+      #66 open 2014-05-19 Investigate switching to a BSD or MIT license
+      #15 open 2012-06-16 Add Wavpack support
+      #389 open 2018-04-18 Support for AAC in M4A (MP4) container
+      #610 open 2020-09-14 Implement thread safe error reporting 
+      #506 closed 2020-01-24 ogg_opus.c issue with opus header files
+      #979 merged 2023-10-17 Fix various numeric overflow vulns throughout code (CVE-2022-33065)
+      #961 merged 2023-09-09 pcm: Remove CPU clipping
+      #396 closed 2018-06-18 Installation with pip: sndfile.h: No such file or directory
+      #808 closed 2022-02-05 building for android with AndroidStudio and CMake
+      #942 merged 2023-06-02 AIFF fixes
+      #902 merged 2023-01-10 version 1.2.0, not 1.1.0
+      #861 closed 2022-08-04 Saving 8bit sample
+      #858 merged 2022-07-26 Read more than 2^24 samples from FLAC file with non-power-of-two channels
+      #804 closed 2022-01-04 How to compile libsndfile on Windows?
+      #788 closed 2021-11-03 opus: how much difference is expected after writing and reading data back?
+      #797 closed 2021-11-25 Add support for Opus ambisonics and other channel mapping families
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      0 hit(s)
+  data+loss      5 hit(s) (all listed)
+      #889 open 2022-10-25 limit on comment length when reading WAV files?
+      #15 open 2012-06-16 Add Wavpack support
+      #70 closed 2014-07-08 Data gets lost when opening and closing certain files in SFM_RDWR mode
+      #249 closed 2017-04-28 New cmake configure error when building with VS 2017
+      #304 closed 2017-07-29 Compilation warnings under Visual Studio 2015 x64
+  partial+write  4 hit(s) (all listed)
+      #1172 open 2026-09-28 Variant analysis: 2 unfixed sibling safety gaps in libsndfile
+      #32 closed 2013-02-06 [patch] remove C99 style variable declaration / variable length automatic array in ALAC source
+      #24 closed 2012-10-30 ALAC encoder doesn't fill packet table header of pakt chunk
+      #435 closed 2018-12-27 heap-buffer-overflow in wav_write_header
+  crash+safe     1 hit(s) (all listed)
+      #235 closed 2017-04-13 Version 1.0.28 dll crash on sf_close
+  atomic+write   1 hit(s) (all listed)
+      #610 open 2020-09-14 Implement thread safe error reporting 
+  lock+file      3 hit(s) (all listed)
+      #887 open 2022-10-19 odd number of frames with an odd number of bytes-per-frame behaves odd
+      #499 merged 2019-11-20 MPEG Encode/Decode Support
+      #279 closed 2017-05-31 thread safety
+  write+failure  13 hit(s) (all listed)
+      #1166 open 2026-09-18 paf, flac: avoid signed left shift of negative samples
+      #1162 closed 2026-09-04 mat4: reject a negative row or frame count instead of overflowing
+      #393 open 2018-05-12 Better Unicode handling for Windows
+      #1156 closed 2026-08-21 ogg_opus: fix double free of oopus->buffer on encoder setup failure
+      #1147 merged 2026-07-21 ircam: use psf_lrintf when reading samplerate
+      #504 closed 2020-01-02 Unable to complete round trip tests for a FLAC File using libsnd library
+      #77 closed 2014-09-18 Wrong number of frames in pipe-write mode
+      #34 closed 2013-03-02 sf_seek(handle, 0, SEEK_END) on a FLAC file returns -1 with error message "No Error"
+      #425 closed 2018-10-05 Autogen
+      #364 closed 2018-02-23 Adding Opus audio in libsndfile ?
+      #330 closed 2017-10-13 invalid memory write
+      #478 closed 2019-07-19 Newly written file reports 0 frames
+      #137 closed 2016-07-18 CMake Rewrite
+  file+contents  12 hit(s) (all listed)
+      #1175 open 2026-10-02 nist: Fix over-read on bad sample_coding field
+      #110 open 2015-12-10 Read/write Ogg Vorbis to pipe?
+      #1169 open 2026-09-25 [SECURITY] Uninitialized stack memory leaked into cue-point names via short 'labl' subchunk (CWE-457)
+      #887 open 2022-10-19 odd number of frames with an odd number of bytes-per-frame behaves odd
+      #1059 open 2025-01-03 Building shared library on macOS fails when using external libraries support (like mp3), both cmake and autotools
+      #1030 closed 2024-06-28 Cannot build on Apple M1 Pro: found architecture 'x86_64', required architecture 'arm64'
+      #830 closed 2022-04-29 Test suite failure on x86_64-musl
+      #499 merged 2019-11-20 MPEG Encode/Decode Support
+      #45 closed 2013-08-10 ld: symbol(s) not found for architecture x86_64
+      #4 closed 2012-03-06 New ALAC support doesn't report proper file length for "Apple Loops"
+      #295 closed 2017-06-15 Build for Android
+      #370 closed 2018-03-13 Problem importing WAV files
+
+== 51 terms run; 31 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

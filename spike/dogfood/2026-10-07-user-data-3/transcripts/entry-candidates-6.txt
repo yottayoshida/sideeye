@@ -1,0 +1,12 @@
+ROW alacritty static=0 preflight_rc=2 gate=0 detail=FOLLOW --observe syscalls (oracle_missed_operation)
+EXIT alacritty 0
+ROW goaccess static=0 preflight_rc=2 gate=1 detail=wall: 
+EXIT goaccess 1
+ROW ostree static=0 preflight_rc=2 gate=1 detail=wall: unresolvable_path
+EXIT ostree 1
+ROW gitmoji static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+EXIT gitmoji 0
+ROW capacitor static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected
+EXIT capacitor 1
+ROW astro static=0 preflight_rc=0 gate=0 detail=accepted, 3 operations
+EXIT astro 0

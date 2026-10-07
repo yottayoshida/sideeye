@@ -1,0 +1,2 @@
+static: /opt/py/bin/mcpm: Python script, ASCII text executable
+next: sideeye explore --state /s/aux/home/.config/mcpm --cwd "/s/mcpm-in" --operation "mcpm edit srv --env=K=v --force" \

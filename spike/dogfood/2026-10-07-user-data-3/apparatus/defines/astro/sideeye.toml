@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.config/astro"
+
+[define]
+operation = "astro preferences disable devToolbar --global"
+cwd       = "/s/astro-in"

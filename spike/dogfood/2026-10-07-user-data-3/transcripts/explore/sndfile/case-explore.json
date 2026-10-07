@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.9.0",
+  "contract_version": 18,
+  "define": {
+    "state": "/s/snd",
+    "operation": "sndfile-metadata-set --str-comment edited /s/snd/a.wav",
+    "cwd": "/s/snd-in",
+    "expected_status": 0
+  },
+  "k": 3,
+  "ops_total": 3,
+  "prefix_hash": "68aecca98566ffca",
+  "after_class": "write",
+  "after_path": "/s/snd/a.wav",
+  "before_class": "write",
+  "before_path": "/s/snd/a.wav",
+  "violation": "hybrid"
+}

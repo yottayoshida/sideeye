@@ -1,0 +1,142 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 e3cb964274494696b688f0953fa6b112ef233db9dac6ddca43777cb9b0ddaef3
+build: the page's (working tree)    sha256 e3cb964274494696b688f0953fa6b112ef233db9dac6ddca43777cb9b0ddaef3
+build: the page's at tag v1.9.0     sha256 45c7cc0c812e083a417914776f47758fc25bb4791cf862949c52906efe88c82d
+build: NOTE the page's installer has moved since v1.9.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 11.17kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 1.4s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/25] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.28kB done
+#5 DONE 0.0s
+
+#6 [ 2/25] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config
+#6 CACHED
+
+#7 [13/25] RUN set -u; cd /tmp/dl; mkdir -p x-openssl && tar xzf openssl.tgz -C x-openssl --strip-components=1 && cd x-openssl &&     ./Configure --prefix=/opt/openssl --openssldir=/opt/openssl/ssl --libdir=lib '-Wl,-rpath,/opt/openssl/lib' > /tmp/openssl-configure.log 2>&1 &&     make -j"$(nproc)" > /tmp/openssl-make.log 2>&1 && make install_sw install_ssldirs > /tmp/openssl-install.log 2>&1 &&     ln -sf /opt/openssl/bin/openssl /opt/bin/openssl && echo "openssl: $(/opt/bin/openssl version)" || { echo "openssl: FAILED"; tail -5 /tmp/openssl-make.log; }
+#7 CACHED
+
+#8 [17/25] RUN npm install -g --no-fund --no-audit netlify-cli@27.11.2 > /tmp/npm-netlify.log 2>&1 && echo "OK netlify-cli" || { echo "FAILED netlify-cli"; tail -3 /tmp/npm-netlify.log; }
+#8 CACHED
+
+#9 [ 8/25] RUN sh /opt/install-sideeye.sh v1.9.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#9 CACHED
+
+#10 [14/25] RUN set -u; cd /tmp/dl;     for t in step git-lfs plakar rustic easyrsa acme zshz; do mkdir -p x-$t && tar xzf $t.tgz -C x-$t && echo "untar $t: ok" || echo "untar $t: FAILED"; done;     mkdir -p x-ferium && unzip -q ferium.zip -d x-ferium && echo "unzip ferium: ok";     install -m 755 incus /opt/bin/incus; install -m 755 lxc /opt/bin/lxc; install -m 755 duplicacy /opt/bin/duplicacy;     for n in step git-lfs plakar rustic ferium; do       f=$(find /tmp/dl/x-* -type f -name "$n" | head -1);       [ -n "$f" ] && install -m 755 "$f" /opt/bin/$n && echo "bin $n <- $f" || echo "bin $n: NOT FOUND";     done;     d=$(dirname "$(find /tmp/dl/x-easyrsa -type f -name easyrsa | head -1)"); cp -a "$d" /opt/easyrsa && ln -sf /opt/easyrsa/easyrsa /opt/bin/easyrsa && echo "easyrsa <- $d";     d=$(find /tmp/dl/x-acme -maxdepth 1 -mindepth 1 -type d | head -1); cp -a "$d" /opt/acme.sh-src && echo "acme.sh src <- $d";     d=$(find /tmp/dl/x-zshz -maxdepth 1 -mindepth 1 -type d | head -1); cp -a "$d" /opt/zsh-z && echo "zsh-z <- $d";     ls -l /opt/bin
+#10 CACHED
+
+#11 [ 9/25] RUN "$(cat /install.path)" version
+#11 CACHED
+
+#12 [ 7/25] COPY install-sideeye.sh /opt/install-sideeye.sh
+#12 CACHED
+
+#13 [12/25] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/openssl/openssl/releases/download/openssl-4.0.3/openssl-4.0.3.tar.gz openssl.tgz;     get $gh/smallstep/cli/releases/download/v0.31.0/step_linux_0.31.0_arm64.tar.gz step.tgz;     get $gh/lxc/incus/releases/download/v7.5.1/bin.linux.incus.aarch64 incus;     get $gh/canonical/lxd/releases/download/lxd-6.9/bin.linux.lxc.aarch64 lxc;     get $gh/git-lfs/git-lfs/releases/download/v3.8.0/git-lfs-linux-arm64-v3.8.0.tar.gz git-lfs.tgz;     get $gh/gilbertchen/duplicacy/releases/download/v3.2.5/duplicacy_linux_arm64_3.2.5 duplicacy;     get $gh/PlakarKorp/plakar/releases/download/v1.1.7/plakar_1.1.7_linux_arm64.tar.gz plakar.tgz;     get $gh/rustic-rs/rustic/releases/download/v0.11.4/rustic-v0.11.4-aarch64-unknown-linux-gnu.tar.gz rustic.tgz;     get $gh/gorilla-devs/ferium/releases/download/v4.7.1/ferium-linux-arm64-nogui.zip ferium.zip;     get $gh/OpenVPN/easy-rsa/releases/download/v3.2.7/EasyRSA-3.2.7.tgz easyrsa.tgz;     get $gh/acmesh-official/acme.sh/archive/refs/tags/3.1.6.tar.gz acme.tgz;     get $gh/agkozak/zsh-z/archive/refs/tags/v2.0.1.tar.gz zshz.tgz;     ls -l /tmp/dl
+#13 CACHED
+
+#14 [ 4/25] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#14 CACHED
+
+#15 [18/25] RUN { for c in "openssl version" "minisign -v" "zsh --version" "step version" "incus version" "lxc version" "git-lfs version"         "duplicacy -h" "plakar version" "rustic --version" "ferium --version" "easyrsa --version" "certstrap --version" "sbctl --version"         "sfntedit -h" "legendary --version" "weectl --version" "snakemake --version" "esptool version" "netlify --version"; do         printf '%s: ' "$c"; sh -c "$c" 2>&1 | head -1; done; } > /versions.txt 2>&1; cat /versions.txt
+#15 CACHED
+
+#16 [15/25] RUN for p in certstrap@v1.3.0 sbctl@0.18; do       case "$p" in certstrap*) m=github.com/square/certstrap@v1.3.0 ;; sbctl*) m=github.com/foxboron/sbctl/cmd/sbctl@0.18 ;; esac;       GOFLAGS=-mod=mod go install "$m" > /tmp/go-$p.log 2>&1 && echo "OK go $p" || { echo "FAILED go $p"; tail -3 /tmp/go-$p.log; };     done; ls -l /root/go/bin
+#16 CACHED
+
+#17 [10/25] WORKDIR /w
+#17 CACHED
+
+#18 [11/25] RUN for p in minisign zsh; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done
+#18 CACHED
+
+#19 [ 5/25] RUN for p in nodejs npm ruby ruby-dev php-cli php-xml php-mbstring golang-go libfaketime faketime; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done | tee /tmp/apt-summary.txt
+#19 CACHED
+
+#20 [16/25] RUN for p in afdko==5.0.1 legendary-gl==0.21.1 weewx==5.5.2 snakemake==9.27.0 esptool==5.4.0; do       /opt/py/bin/pip install --no-cache-dir "$p" > /tmp/pip-$p.log 2>&1 && echo "OK $p" || { echo "FAILED $p"; tail -3 /tmp/pip-$p.log; };     done
+#20 CACHED
+
+#21 [ 3/25] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#21 CACHED
+
+#22 [ 6/25] RUN mkdir -p /opt/bin /tmp/dl && python3 -m venv /opt/py
+#22 CACHED
+
+#23 [19/25] RUN for p in keyring==25.7.0 keyrings.alt==5.0.2; do       /opt/py/bin/pip install --no-cache-dir "$p" > /tmp/pip-$p.log 2>&1 && echo "OK $p" || { echo "FAILED $p"; tail -3 /tmp/pip-$p.log; };     done; printf 'keyring --version: ' >> /versions.txt; /opt/py/bin/keyring --version >> /versions.txt 2>&1; tail -1 /versions.txt
+#23 CACHED
+
+#24 [20/25] RUN apt-get install -y --no-install-recommends cmake zlib1g-dev libbz2-dev liblzma-dev libzstd-dev > /tmp/apt-cmake.log 2>&1 && echo "OK cmake and zlib" || echo "MISSING cmake"
+#24 2.411 OK cmake and zlib
+#24 DONE 2.5s
+
+#25 [21/25] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/Canop/broot/releases/download/v1.61.0/broot_1.61.0.zip broot.zip;     get $gh/j178/prek/releases/download/v0.5.5/prek-aarch64-unknown-linux-gnu.tar.gz prek.tgz;     get $gh/savedra1/clipse/releases/download/v1.2.1/clipse_v1.2.1_linux_x11_arm64.tar.gz clipse.tgz;     get $gh/tstack/lnav/releases/download/v0.14.1/lnav-0.14.1-linux-musl-arm64.zip lnav.zip;     get $gh/nih-at/libzip/releases/download/v1.11.4/libzip-1.11.4.tar.gz libzip.tgz;     get $gh/fish-shell/fish-shell/releases/download/4.9.3/fish-4.9.3-linux-aarch64.tar.xz fish.txz;     get $gh/oh-my-fish/oh-my-fish/archive/refs/tags/v8.tar.gz omf.tgz;     ls -l /tmp/dl | tail -n 8
+#25 2.716 OK broot.zip
+#25 3.559 OK prek.tgz
+#25 4.600 OK clipse.tgz
+#25 6.846 OK lnav.zip
+#25 7.645 OK libzip.tgz
+#25 8.712 OK fish.txz
+#25 9.606 OK omf.tgz
+#25 9.612 drwxr-xr-x  2 root root     4096 Oct  7 04:27 x-ferium
+#25 9.612 drwxr-xr-x  3 root root     4096 Oct  7 04:27 x-git-lfs
+#25 9.612 drwxr-xr-x 26 root root     4096 Oct  7 04:27 x-openssl
+#25 9.612 drwxr-xr-x  3 root root     4096 Oct  7 04:27 x-plakar
+#25 9.612 drwxr-xr-x  4 root root     4096 Oct  7 04:27 x-rustic
+#25 9.612 drwxr-xr-x  3 root root     4096 Oct  7 04:27 x-step
+#25 9.612 drwxr-xr-x  3 root root     4096 Oct  7 04:27 x-zshz
+#25 9.612 -rw-r--r--  1 root root  1371980 Oct  7 04:26 zshz.tgz
+#25 DONE 9.7s
+
+#26 [22/25] RUN set -u; cd /tmp/dl;     mkdir -p x-broot && unzip -q broot.zip -d x-broot && f=$(find x-broot -path '*aarch64-unknown-linux-gnu*' -type f -name broot | head -1) && install -m 755 "$f" /opt/bin/broot && echo "bin broot <- $f";     mkdir -p x-prek && tar xzf prek.tgz -C x-prek && install -m 755 "$(find x-prek -type f -name prek | head -1)" /opt/bin/prek && echo "bin prek";     mkdir -p x-clipse && tar xzf clipse.tgz -C x-clipse && install -m 755 "$(find x-clipse -type f -name 'clipse*' ! -name '*.tar.gz' | head -1)" /opt/bin/clipse && echo "bin clipse";     mkdir -p x-lnav && unzip -q lnav.zip -d x-lnav && install -m 755 "$(find x-lnav -type f -name lnav | head -1)" /opt/bin/lnav && echo "bin lnav";     mkdir -p x-fish && tar xJf fish.txz -C x-fish && install -m 755 "$(find x-fish -type f -name fish | head -1)" /opt/bin/fish && echo "bin fish";     mkdir -p x-omf && tar xzf omf.tgz -C x-omf && d=$(find x-omf -maxdepth 1 -mindepth 1 -type d | head -1) && cp -a "$d" /opt/omf-src && echo "omf src <- $d"
+#26 0.872 bin broot <- x-broot/aarch64-unknown-linux-gnu/broot
+#26 0.938 bin prek
+#26 0.984 bin clipse
+#26 1.368 bin lnav
+#26 1.484 bin fish
+#26 1.493 omf src <- x-omf/oh-my-fish-8
+#26 DONE 1.7s
+
+#27 [23/25] RUN set -u; cd /tmp/dl; mkdir -p x-libzip && tar xzf libzip.tgz -C x-libzip --strip-components=1 && cd x-libzip && mkdir build && cd build &&     cmake .. -DCMAKE_INSTALL_PREFIX=/opt/libzip -DCMAKE_INSTALL_RPATH=/opt/libzip/lib -DENABLE_GNUTLS=OFF -DENABLE_OPENSSL=OFF -DENABLE_MBEDTLS=OFF -DBUILD_REGRESS=OFF -DBUILD_DOC=OFF > /tmp/libzip-cmake.log 2>&1 &&     make -j"$(nproc)" > /tmp/libzip-make.log 2>&1 && make install > /tmp/libzip-install.log 2>&1 &&     cp src/ziptool /opt/bin/ziptool 2>/dev/null || find . -type f -name ziptool -perm -u+x -exec cp {} /opt/bin/ziptool ; ;     ls -l /opt/bin/ziptool && echo "ziptool built" || { echo "ziptool: FAILED"; tail -5 /tmp/libzip-make.log; }
+#27 3.428 -rwxr-xr-x 1 root root 77456 Oct  7 06:13 /opt/bin/ziptool
+#27 3.428 ziptool built
+#27 DONE 3.4s
+
+#28 [24/25] RUN npm install -g --no-fund --no-audit tiddlywiki@5.4.1 > /tmp/npm-tiddlywiki.log 2>&1 && echo "OK tiddlywiki" || { echo "FAILED tiddlywiki"; tail -3 /tmp/npm-tiddlywiki.log; }
+#28 2.999 OK tiddlywiki
+#28 DONE 3.1s
+
+#29 [25/25] RUN { for c in "broot --version" "prek --version" "clipse -v" "lnav -V" "ziptool -h" "fish --version" "tiddlywiki --version"; do         printf '%s: ' "$c"; sh -c "$c" 2>&1 | head -1; done; } >> /versions.txt 2>&1; tail -7 /versions.txt
+#29 0.288 broot --version: broot 1.61.0
+#29 0.288 prek --version: prek 0.5.5
+#29 0.288 clipse -v: clipse: error while loading shared libraries: libX11.so.6: cannot open shared object file: No such file or directory
+#29 0.288 lnav -V: lnav 0.14.1
+#29 0.288 ziptool -h: usage: ziptool [-ceghnrst] [-l len] [-o offset] archive command1 [args] [command2 [args] ...]
+#29 0.288 fish --version: fish, version 4.9.3
+#29 0.288 tiddlywiki --version: 5.4.1
+#29 DONE 0.3s
+
+#30 exporting to image
+#30 exporting layers
+#30 exporting layers 7.3s done
+#30 exporting manifest sha256:e20981a262d03878b3718e137e25722d81ef93543c21bbc4495561d30b77c585 0.0s done
+#30 exporting config sha256:3832e84b34e6b74ec3b9a4c32e7c4912c77802fe930595815df63de369b8a0aa done
+#30 exporting attestation manifest sha256:b1b1d9ffdcdba49576d08b7cfeb5e092dba7eb563740335e0d5a3f4976a3c645 done
+#30 exporting manifest list sha256:080fc67e7c61d2e98e540e2b962d7e9b84e7e91634275b852101d037ebf1a17f done
+#30 naming to docker.io/library/sideeye-ud1007:latest done
+#30 unpacking to docker.io/library/sideeye-ud1007:latest
+#30 unpacking to docker.io/library/sideeye-ud1007:latest 2.1s done
+#30 DONE 9.4s
+build: sideeye-ud1007 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt

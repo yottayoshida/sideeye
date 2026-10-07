@@ -1,0 +1,178 @@
+== novelty pre-scan: gorilla-devs/ferium
+== date: 2026-10-07T06:15:49Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          18 hit(s) (all listed)
+      #508 open 2026-02-19 Crashes when a modpack has no versions
+      #514 open 2026-05-11 Crashes when a version has no version files
+      #463 open 2025-03-07 `error decoding response body` when listing some Modrinth projects
+      #510 closed 2026-03-05 Unable to install via cargo
+      #422 closed 2024-07-13 Crashes when duplicate files are scanned
+      #476 closed 2025-04-18 Dependency resolution: Print dependencies for manual installation
+      #267 closed 2023-01-20 The application is not working
+      #264 closed 2023-01-15 Downloading outdated version of a mod.
+      #229 closed 2022-11-11 thread 'main' panicked at `index out of bounds: the len is 1 but the index is 1` after deleting profile
+      #402 closed 2024-02-12 `No such file or directory (os error 2)` when downloading modpack
+      #273 closed 2023-02-07 "Mod Loader:" is broken in ferium profile list
+      #89 closed 2022-05-19 Network errors when downloading a large number of mods
+      #224 closed 2022-11-09 "error sending request for url" for Modrinth mods
+      #421 closed 2024-07-01 Specific version overrides
+      #283 closed 2023-03-10 Download only server side mods.
+      #407 closed 2024-02-26 Allow downloading "incompatible" versions of mods
+      #177 closed 2022-07-21 Pick specific version of mod
+      #24 closed 2022-04-26 Crafty-Crashes does not download correctly
+  corrupt        2 hit(s) (all listed)
+      #175 closed 2022-07-19 Add multiple mods at once
+      #79 merged 2022-05-15 Support for modpacks
+  corruption     0 hit(s)
+  truncated      0 hit(s)
+  truncate       0 hit(s)
+  empty          22 hit(s) (all listed)
+      #516 open 2026-05-21 fix(upgrade): skip Modrinth versions with empty files
+      #520 open 2026-08-05 Pick cursor option if no version was selected
+      #514 open 2026-05-11 Crashes when a version has no version files
+      #496 open 2025-12-04 CurseForge: "version" field should be optional
+      #94 open 2022-05-25 Ability to import a modpack to a profile
+      #365 open 2023-08-16 ZIPs with backslashes get installed incorrectly
+      #502 closed 2026-01-18 Modrinth: unknown variant ..., expected `required-resource-pack` or `optional-resource-pack`
+      #485 closed 2025-05-23 Modpack mods downloading is stuck on 0B/s (no progress)
+      #466 closed 2025-03-28 Stuck when ferium upgrade
+      #78 closed 2022-05-15 Not able to add Ars Creo even though it is compatible
+      #374 closed 2023-09-06 Correct build is not retrieved when using GitHub source
+      #402 closed 2024-02-12 `No such file or directory (os error 2)` when downloading modpack
+      #310 closed 2023-04-19 Change the way internet connection availability is checked
+      #320 closed 2023-05-16 Move mod files to backup folder on profile switch (mod caching)
+      #304 closed 2023-04-12 Download seperation + Seperate subcommands for client- & server-side mods
+      #256 closed 2022-12-31 Enhance `ferium upgrade` by splitting into `update`, `upgrade`, `pin`, `unpin` (similarly to package managers)
+      #17 closed 2022-04-16 Allow user added mods
+      #111 closed 2022-06-03 Make even more clear that adding mods won't actually download them
+      #105 closed 2022-06-02 Importing/exporting profiles (using ferium's profile format)
+      #2 merged 2022-01-23 Add curse projects to check_empty_profile.
+  atomic         1 hit(s) (all listed)
+      #113 closed 2022-06-04 Dependencies should be properly specified to support cargo's auto update
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         0 hit(s)
+  power          3 hit(s) (all listed)
+      #463 open 2025-03-07 `error decoding response body` when listing some Modrinth projects
+      #155 open 2022-06-28 Use a "filter" based system for more robust version resolution
+      #89 closed 2022-05-19 Network errors when downloading a large number of mods
+  outage         1 hit(s) (all listed)
+      #493 closed 2025-10-29 Cache libraries and other such files locally so launcher works when microsoft servers stop working
+  ENOSPC         0 hit(s)
+  disk           6 hit(s) (all listed)
+      #109 open 2022-06-03 Symlink mods to output directories from a common mod storage
+      #149 open 2022-06-22 Allow third-party restricted mods to be downloaded using a browser
+      #179 open 2022-07-22 Install a modpack from a zip file
+      #399 open 2024-01-28 Make use of incompatibilities specified for versions and files
+      #490 closed 2025-07-19 (Ubuntu Server) Frozen downloading when installing a large modpack
+      #89 closed 2022-05-19 Network errors when downloading a large number of mods
+  partial        2 hit(s) (all listed)
+      #256 closed 2022-12-31 Enhance `ferium upgrade` by splitting into `update`, `upgrade`, `pin`, `unpin` (similarly to package managers)
+      #176 closed 2022-07-19 Allow partial upgrades. Remember currently installed versions
+  incomplete     0 hit(s)
+  dataloss       0 hit(s)
+  recover        0 hit(s)
+  recovery       0 hit(s)
+  rollback       4 hit(s) (all listed)
+      #90 open 2022-05-19 Seperate config profiles into files
+      #469 closed 2025-04-01 Stuck on "Determining the Latest Compatible Versions"
+      #176 closed 2022-07-19 Allow partial upgrades. Remember currently installed versions
+      #23 merged 2022-04-25 Update AUR packages in the build and release workflow
+  resume         1 hit(s) (all listed)
+      #231 closed 2022-11-16 Ability to resume downloads
+  half-written   0 hit(s)
+  wipe           3 hit(s) (all listed)
+      #399 open 2024-01-28 Make use of incompatibilities specified for versions and files
+      #33 closed 2022-05-02 Offer to back up old mod files when creating a profile
+      #17 closed 2022-04-16 Allow user added mods
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      2 hit(s) (all listed)
+      #287 closed 2023-03-17 Extend CLI
+      #17 closed 2022-04-16 Allow user added mods
+  clobber        0 hit(s)
+  blank          0 hit(s)
+  unreadable     1 hit(s) (all listed)
+      #49 open 2022-05-08 Dry-runs, an upgrade confirmation prompt, and an option to view the changelog
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       10 hit(s) (all listed)
+      #140 open 2022-06-13 Files should be compared with hash rather than filename
+      #496 open 2025-12-04 CurseForge: "version" field should be optional
+      #143 open 2022-06-15 Support for server packs
+      #109 open 2022-06-03 Symlink mods to output directories from a common mod storage
+      #115 open 2022-06-04 Only update mods which are in the profile
+      #189 open 2022-08-11 Search functionality
+      #374 closed 2023-09-06 Correct build is not retrieved when using GitHub source
+      #273 closed 2023-02-07 "Mod Loader:" is broken in ferium profile list
+      #396 closed 2023-12-14 Analyze real mod version on upgrading
+      #187 closed 2022-08-08 Possible solution to "manual" mods
+  in-place       18 hit(s) (all listed)
+      #149 open 2022-06-22 Allow third-party restricted mods to be downloaded using a browser
+      #82 open 2022-05-16 Lock/pin a mod/modpack to a specific version
+      #470 open 2025-04-05 Prefer Windows Specific Path for Storing Configuration File
+      #76 open 2022-05-14 Feedback on why the version was considered incompatible
+      #370 open 2023-08-29 Specify a limit for the amount of simultaneous threads
+      #94 open 2022-05-25 Ability to import a modpack to a profile
+      #322 open 2023-05-16 Folder based profiles
+      #438 closed 2024-11-01 Seems the feature of automately dependency resolve is missing? 
+      #487 closed 2025-06-12 Parity with GDLauncher
+      #343 closed 2023-06-09 itsmeow/BetterTridentReturn on GitHub Releases doesn't work as expected
+      #344 closed 2023-06-09 Fractureiser safety procedures
+      #288 closed 2023-03-18 `ferium remove` not working
+      #418 merged 2024-06-13 feat(ci): publish to winget on release
+      #411 closed 2024-03-25 Documentation clarification for output directory
+      #413 closed 2024-04-11 How to uninstall Ferium?
+      #170 closed 2022-07-11 Use bulk endpoint for scanning
+      #195 closed 2022-08-24 Features for better scripting CLI use
+      #74 closed 2022-05-14 Support for shell auto completions
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         2 hit(s) (all listed)
+      #344 closed 2023-06-09 Fractureiser safety procedures
+      #435 closed 2024-10-06 ferium scan command does not work
+  disk+full      0 hit(s)
+  data+loss      0 hit(s)
+  partial+write  0 hit(s)
+  crash+safe     1 hit(s) (all listed)
+      #514 open 2026-05-11 Crashes when a version has no version files
+  atomic+write   0 hit(s)
+  lock+file      9 hit(s) (all listed)
+      #90 open 2022-05-19 Seperate config profiles into files
+      #155 open 2022-06-28 Use a "filter" based system for more robust version resolution
+      #484 closed 2025-05-14 Latest published version, 4.7.1, does not compile
+      #113 closed 2022-06-04 Dependencies should be properly specified to support cargo's auto update
+      #421 closed 2024-07-01 Specific version overrides
+      #403 closed 2024-02-21 Check for compatibility with the mod loader version
+      #412 closed 2024-04-07 Add a way to check if updates are available without applying them
+      #17 closed 2022-04-16 Allow user added mods
+      #67 closed 2022-05-12 Unable to install via cargo
+  write+failure  2 hit(s) (all listed)
+      #42 closed 2022-05-05 Publish to major package managers
+      #64 closed 2022-05-12 Add a log file and log actions
+  file+contents  8 hit(s) (all listed)
+      #140 open 2022-06-13 Files should be compared with hash rather than filename
+      #496 open 2025-12-04 CurseForge: "version" field should be optional
+      #109 open 2022-06-03 Symlink mods to output directories from a common mod storage
+      #143 open 2022-06-15 Support for server packs
+      #374 closed 2023-09-06 Correct build is not retrieved when using GitHub source
+      #273 closed 2023-02-07 "Mod Loader:" is broken in ferium profile list
+      #396 closed 2023-12-14 Analyze real mod version on upgrading
+      #187 closed 2022-08-08 Possible solution to "manual" mods
+
+== 51 terms run; 20 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

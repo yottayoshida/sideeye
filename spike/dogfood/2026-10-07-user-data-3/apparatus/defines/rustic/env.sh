@@ -1,0 +1,1 @@
+export RUSTIC_PASSWORD=examplepass RUSTIC_REPOSITORY=/s/rustic/repo RUSTIC_NO_PROGRESS=true RUSTIC_NO_CACHE=true

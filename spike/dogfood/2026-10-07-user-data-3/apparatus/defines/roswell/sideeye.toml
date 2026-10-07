@@ -1,0 +1,6 @@
+[world]
+state = "/s/ros/home"
+
+[define]
+operation = "ros config set dynamic-space-size 4gb"
+cwd       = "/s/ros-in"

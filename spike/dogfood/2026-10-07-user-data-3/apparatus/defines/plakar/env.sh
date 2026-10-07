@@ -1,0 +1,1 @@
+export PLAKAR_PASSPHRASE=examplepassphrase0001

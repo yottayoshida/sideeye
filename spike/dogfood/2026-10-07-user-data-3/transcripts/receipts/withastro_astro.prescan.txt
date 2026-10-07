@@ -1,0 +1,846 @@
+== novelty pre-scan: withastro/astro
+== date: 2026-10-07T08:48:19Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18104 open 2026-09-22 Fix release workflow package list after the Changesets v3 upgrade
+      #17967 open 2026-09-10 Add notFound() and NotFoundError to programmatically trigger 404 responses
+      #17694 open 2026-08-14 Fix MDX page directory boundary detection
+      #18022 merged 2026-09-16 Prevent Cloudflare dev crashes with the passthrough image service
+      #18015 open 2026-09-16 Add an experimental custom redirect page (`3xx.astro`)
+      #18132 closed 2026-09-25 Astro dev intermittently crashes when `astro:actions` is used in a server island
+      #17945 merged 2026-09-08 Pre-bundle renderer server entrypoints and the default logger to stop Cloudflare dev crashes
+      #18265 open 2026-10-06 Add `notFound()` handler to `astro/hono` and `astro/fetch` so prerendered 404 pages are served in custom worker entries
+      #17921 closed 2026-09-06 `optimizeDeps` has a chance to crash dev (on workerd) with reoptimization
+      #17895 merged 2026-09-02 Add missing optimizeDeps.include entries to @astrojs/cloudflare adapter to prevent cold-start crashes
+      #18280 open 2026-10-07 Update markdown
+      #17559 closed 2026-07-30 fix: prevent ENOENT crash from IDE temporary files during file save
+      #17554 closed 2026-07-30 Fix React check() crash on non-React object components
+      #17827 closed 2026-08-26 /index.html request to a dynamic page route crashes with TypeError: Missing parameter: <param>
+      #17983 closed 2026-09-12 Vue render-function components fail to build when @astrojs/react is enabled
+      #18041 merged 2026-09-17 Update dependency tinyclip to v1
+      #17569 merged 2026-08-02 fix(vercel): prevent EEXIST crash when output/server directory already exists
+      #17977 closed 2026-09-11 @astrojs/netlify: skew-protection doesn't pin /_astro/, so a lazily hydrated island after a redeploy loads a second React and crashes
+      #17985 merged 2026-09-12 Fix Vue render-function components crashing when @astrojs/react is enabled
+      #17785 closed 2026-08-21 server:defer with "getRelativeLocaleUrl" crashes with "undefined is not a function" on "virtual:astro:routes"
+  corrupt        86 hit(s) (all listed)
+      #18010 closed 2026-09-16 Redirect Location is corrupted when a route param value contains `$` replacement patterns
+      #17890 closed 2026-09-02 Yarn Berry with Pnpm Linker will corrupt ClientRouter / prefetch
+      #18102 open 2026-09-22 @astrojs/language-server 2.17.0: Organize Imports duplicates the last import when the frontmatter ends with an import
+      #17880 closed 2026-08-31 i18n fallback route is corrupted when a path segment starts with the locale code
+      #18012 closed 2026-09-16 Fix redirect Location corruption when route param value contains `$` replacement patterns
+      #17555 closed 2026-07-30 Smartypants corrupts Unicode punctuation when rendering MDX content collections via render() on Windows
+      #17861 merged 2026-08-30 fix(i18n): only swap whole locale segments when generating fallback routes
+      #18070 closed 2026-09-18 Markdown image alt and title attributes double-escape ampersands
+      #17868 closed 2026-08-31 [bug] @astrojs/cloudflare dev runner panics workerd on SSR module resolution failure, breaking route registry
+      #18126 merged 2026-09-25 Update dependency @solidjs/router to v1
+      #18009 closed 2026-09-15 Cloudflare 14.3.1: every prerendered page builds to `[object Object]` with nodejs_compat and compatibility_date >= 2025-10-01
+      #17333 merged 2026-07-08 Fix flakey tests in non-parallel path
+      #17962 closed 2026-09-10 @astrojs/node: trailing-slash redirect drops part of a query string that contains a second `?`
+      #17881 merged 2026-08-31 [ci] release
+      #17486 closed 2026-07-22 Neotraverse can't do forEach, and I can't build my site.
+      #17578 merged 2026-08-03 Update language-tools
+      #16313 closed 2026-04-14 URL Decoding in Dynamic Routes (SSR)
+      #17811 closed 2026-08-24 `@astrojs/language-server` 2.16.14: Organize Imports injects the generated `export { XAstroComponent as X }` into `.astro` source
+      #16315 closed 2026-04-14 plugin-chunk-imports corrupts dynamic imports with __vitePreload wrapper (skew protection broken on Vercel)
+      #17462 closed 2026-07-21 Fix dual React instances after mid-session SSR dep re-optimization in `@astrojs/cloudflare` dev
+  corruption     26 hit(s) (all listed)
+      #18012 closed 2026-09-16 Fix redirect Location corruption when route param value contains `$` replacement patterns
+      #17555 closed 2026-07-30 Smartypants corrupts Unicode punctuation when rendering MDX content collections via render() on Windows
+      #18129 merged 2026-09-25 Update dependency es-module-lexer to v3
+      #18009 closed 2026-09-15 Cloudflare 14.3.1: every prerendered page builds to `[object Object]` with nodejs_compat and compatibility_date >= 2025-10-01
+      #17462 closed 2026-07-21 Fix dual React instances after mid-session SSR dep re-optimization in `@astrojs/cloudflare` dev
+      #17903 closed 2026-09-03 `astro preview --ignore-lock` is refused whenever an AI agent is detected, so Playwright `webServer` cannot use it from an agent session
+      #17880 closed 2026-08-31 i18n fallback route is corrupted when a path segment starts with the locale code
+      #17811 closed 2026-08-24 `@astrojs/language-server` 2.16.14: Organize Imports injects the generated `export { XAstroComponent as X }` into `.astro` source
+      #17868 closed 2026-08-31 [bug] @astrojs/cloudflare dev runner panics workerd on SSR module resolution failure, breaking route registry
+      #16313 closed 2026-04-14 URL Decoding in Dynamic Routes (SSR)
+      #15671 closed 2026-02-26 #writeFileAtomic: deterministic temp filename causes ENOENT when file watchers interfere
+      #18175 merged 2026-09-29 Update dependency undici to v7.29.1 [SECURITY]
+      #18174 merged 2026-09-29 Update github-actions (major)
+      #16568 closed 2026-05-01 `create-astro`: Git's GPG signing with `pinentry-curses` breaks
+      #15453 closed 2026-02-09 Race condition in store.set can cause data store corruption
+      #18101 merged 2026-09-22 Update dependency undici to v8
+      #16453 closed 2026-04-23 CSS shared too widely between pages using client:only islands that ended up on same JS chunk
+      #16682 closed 2026-05-10 Crash when calling Map/Set methods saved in a content collection entry
+      #18020 merged 2026-09-16 Update dependency hono to v4.13.5 [SECURITY]
+      #15857 closed 2026-03-11 Dev Tool integrations are broken
+  truncated      60 hit(s) (all listed)
+      #18174 merged 2026-09-29 Update github-actions (major)
+      #17962 closed 2026-09-10 @astrojs/node: trailing-slash redirect drops part of a query string that contains a second `?`
+      #18246 merged 2026-10-05 Fix glob loader dropping content files whose paths contain `#` or `?`
+      #17047 closed 2026-06-11 Prerender error with @astrojs/cloudflare: build exits 0 and emits truncated HTML
+      #18036 merged 2026-09-16 Tighten @astrojs/mdx peer dependency on astro and improve version mismatch error message
+      #18022 merged 2026-09-16 Prevent Cloudflare dev crashes with the passthrough image service
+      #18031 closed 2026-09-16 Fix imageService: "compile" using wrong endpoint in dev when a custom image service is configured
+      #17832 closed 2026-08-26 Duplicate pathname rendering triggers misleading warning messages
+      #17665 closed 2026-08-11 fix(core): stop dropping every other frame from printed error stacks
+      #18175 merged 2026-09-29 Update dependency undici to v7.29.1 [SECURITY]
+      #16809 closed 2026-05-20 Cloudflare adapter with workerd prerendering: Missing import statement causes silent component render failures instead of showing an error
+      #17049 merged 2026-06-11 Fix Cloudflare adapter silently swallowing prerender errors
+      #16825 closed 2026-05-21 Fix silent rendering errors in Cloudflare adapter workerd prerenderer
+      #18101 merged 2026-09-22 Update dependency undici to v8
+      #18203 merged 2026-10-02 Update astro
+      #18124 merged 2026-09-25 Update Node.js
+      #16879 closed 2026-05-27 Fix silent rendering errors in Cloudflare adapter workerd prerenderer
+      #17048 closed 2026-06-11 fix(cloudflare): fail the build when prerendering throws in workerd
+      #16839 closed 2026-05-22 fallbackRoutes not expanded for getStaticPaths routes under fallbackType: rewrite (sitemap 3.7.2 follow-up to #14455)
+      #15671 closed 2026-02-26 #writeFileAtomic: deterministic temp filename causes ENOENT when file watchers interfere
+  truncate       80 hit(s) (all listed)
+      #17964 merged 2026-09-10 Fix trailing-slash redirect truncating query strings that contain a second `?`
+      #18174 merged 2026-09-29 Update github-actions (major)
+      #17962 closed 2026-09-10 @astrojs/node: trailing-slash redirect drops part of a query string that contains a second `?`
+      #18246 merged 2026-10-05 Fix glob loader dropping content files whose paths contain `#` or `?`
+      #17047 closed 2026-06-11 Prerender error with @astrojs/cloudflare: build exits 0 and emits truncated HTML
+      #17832 closed 2026-08-26 Duplicate pathname rendering triggers misleading warning messages
+      #18175 merged 2026-09-29 Update dependency undici to v7.29.1 [SECURITY]
+      #18036 merged 2026-09-16 Tighten @astrojs/mdx peer dependency on astro and improve version mismatch error message
+      #18022 merged 2026-09-16 Prevent Cloudflare dev crashes with the passthrough image service
+      #18031 closed 2026-09-16 Fix imageService: "compile" using wrong endpoint in dev when a custom image service is configured
+      #17665 closed 2026-08-11 fix(core): stop dropping every other frame from printed error stacks
+      #17497 closed 2026-07-25 feat(core): add truncateMiddle helper function to core utils
+      #16809 closed 2026-05-20 Cloudflare adapter with workerd prerendering: Missing import statement causes silent component render failures instead of showing an error
+      #17049 merged 2026-06-11 Fix Cloudflare adapter silently swallowing prerender errors
+      #16825 closed 2026-05-21 Fix silent rendering errors in Cloudflare adapter workerd prerenderer
+      #15671 closed 2026-02-26 #writeFileAtomic: deterministic temp filename causes ENOENT when file watchers interfere
+      #18020 merged 2026-09-16 Update dependency hono to v4.13.5 [SECURITY]
+      #18101 merged 2026-09-22 Update dependency undici to v8
+      #18203 merged 2026-10-02 Update astro
+      #18124 merged 2026-09-25 Update Node.js
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18226 merged 2026-10-04 fix(cookies): read empty request cookie values
+      #18276 open 2026-10-06 Astro actions response handlers
+      #18225 closed 2026-10-04 Astro.cookies.get() cannot read empty request cookie values
+      #18231 closed 2026-10-04 i18n `notFound` stays an empty 404 on the composable path
+      #18275 open 2026-10-06 Astro.cache is undefined when the 404 page is rendered after an API route method mismatch
+      #18265 open 2026-10-06 Add `notFound()` handler to `astro/hono` and `astro/fetch` so prerendered 404 pages are served in custom worker entries
+      #18104 open 2026-09-22 Fix release workflow package list after the Changesets v3 upgrade
+      #18232 open 2026-10-04 Prerendered 404 leaks `X-Astro-Error` from a custom worker
+      #18212 open 2026-10-02 fix: support headingoffset and headingreset global attributes
+      #18066 open 2026-09-18 fix(i18n): only swap whole locale segments when the base contains a locale code
+      #17937 merged 2026-09-08 Prune stale entries when a glob() collection becomes empty
+      #17872 merged 2026-08-31 Omit empty `srcset` on content collection Markdown images
+      #17076 open 2026-06-15 feat(cli): astro add cloudflare and netlify creates gitignore entries 
+      #18267 open 2026-10-06 security.checkOrigin: 7.3.6 checks every Content-Type, docs still say only form-like Content-Types are checked
+      #17477 open 2026-07-21 fix(create-astro): create astro uses correct project name when using directory "."
+      #18241 merged 2026-10-05 Render the 404 error page in the composable i18n() handler when a route has no locale prefix
+      #18094 closed 2026-09-22 Server islands render empty in dev when using a custom src/fetch.ts (renderers not loaded for built-in routes)
+      #18245 merged 2026-10-05 Reject multi-level percent-encoded paths in composable fetch handlers
+      #18102 open 2026-09-22 @astrojs/language-server 2.17.0: Organize Imports duplicates the last import when the frontmatter ends with an import
+      #18090 closed 2026-09-21 @astrojs/cloudflare: `astro/runtime/**` in `optimizeDeps.include` pre-bundles every `.d.ts` in `astro/dist/runtime`
+  atomic         26 hit(s) (all listed)
+      #17852 open 2026-08-28 feat(vscode): hand .astro to the TypeScript 7 content mapper when available
+      #17646 closed 2026-08-09 MDX + Sätteri math: inline math brace groups are scanned as JSX expressions and fail the compile
+      #18121 open 2026-09-24 Run Astro as a regular Vite plugin (astro/vite)
+      #17849 merged 2026-08-27 [ci] release
+      #17335 closed 2026-07-08 [7.x] Content collection markdown hot-reload does not update dynamic blog slug page until dev server restart
+      #15671 closed 2026-02-26 #writeFileAtomic: deterministic temp filename causes ENOENT when file watchers interfere
+      #16571 merged 2026-05-02 fix(cloudflare): inject headers for caching the assets folder
+      #17636 merged 2026-08-08 Refactor internal request handling into a functional core
+      #17536 merged 2026-07-28 fix(build): introduce two-staged build to prevent race condition with concurrent i18n rewrites
+      #18174 merged 2026-09-29 Update github-actions (major)
+      #16992 closed 2026-06-07 Regression (6.4.4): transition:persist fails to render elements containing native popover attributes
+      #17435 closed 2026-07-19 Update dependency undici to v8
+      #15200 merged 2026-01-14 feat(fonts)!: fontData instead of getFontData()
+      #11311 closed 2024-06-21 transition:persist doesnt work for iframes.
+      #15311 closed 2026-01-27 SyntaxError: invalid capture group name in regular expression when using astro:actions on iOS 15–16
+      #15013 closed 2025-12-13  Blog tags & search, reading time utility & UI redesign — header, dark mode
+      #12715 merged 2024-12-11 fix: use atomic writes for data store file operations
+      #9887 closed 2024-01-30 Emacs autosave files are not ignored
+      #8937 closed 2023-10-27 ViewTransitions (v3.2.0+) unusable with a content security policy
+      #10912 closed 2024-04-30 Can't forward concrete `HTMLAttributes` when using `Polymorphic` component
+  atomically     7 hit(s) (all listed)
+      #17646 closed 2026-08-09 MDX + Sätteri math: inline math brace groups are scanned as JSX expressions and fail the compile
+      #17852 open 2026-08-28 feat(vscode): hand .astro to the TypeScript 7 content mapper when available
+      #18121 open 2026-09-24 Run Astro as a regular Vite plugin (astro/vite)
+      #17536 merged 2026-07-28 fix(build): introduce two-staged build to prevent race condition with concurrent i18n rewrites
+      #17335 closed 2026-07-08 [7.x] Content collection markdown hot-reload does not update dynamic blog slug page until dev server restart
+      #17636 merged 2026-08-08 Refactor internal request handling into a functional core
+      #17435 closed 2026-07-19 Update dependency undici to v8
+  interrupted    14 hit(s) (all listed)
+      #18178 open 2026-09-29 Each dev server restart leaves the old server in memory
+      #17414 closed 2026-07-17 fix(node): Fix duplicate unhandled rejection logs for aborted requests
+      #18159 merged 2026-09-28 Fix Promise deadlock when a server island is used inside a slot in an MDX content collection entry
+      #18084 merged 2026-09-21 Update @astrojs/vue
+      #17721 closed 2026-08-16 `astro preview` backgrounds by default in 7.2.0 (regression from 7.1.6), breaking harnesses that supervise the process
+      #17822 closed 2026-08-25 View Transitions Break Instagram Embeds
+      #18040 merged 2026-09-17 Update pnpm to v11.27.0
+      #15284 closed 2026-01-22 Astro v6 with cloudflare adapter does not work with `<Code ...>` components
+      #11093 merged 2024-05-17 Enables view transition e2e tests with Firefox
+      #9696 closed 2024-01-14 fix(routing): supports encoded forward slashes in URI params
+      #10958 merged 2024-05-06 chore(deps): update all non-major dependencies
+      #7807 closed 2023-07-26 Dev server breaks after making code changes on fresh template install
+      #7151 merged 2023-05-20 Add MDX optimize option
+      #3140 merged 2022-04-18 Fix location of SolidJS pre-hydration code
+  interrupt      36 hit(s) (all listed)
+      #18178 open 2026-09-29 Each dev server restart leaves the old server in memory
+      #17414 closed 2026-07-17 fix(node): Fix duplicate unhandled rejection logs for aborted requests
+      #18159 merged 2026-09-28 Fix Promise deadlock when a server island is used inside a slot in an MDX content collection entry
+      #18084 merged 2026-09-21 Update @astrojs/vue
+      #17721 closed 2026-08-16 `astro preview` backgrounds by default in 7.2.0 (regression from 7.1.6), breaking harnesses that supervise the process
+      #17822 closed 2026-08-25 View Transitions Break Instagram Embeds
+      #18124 merged 2026-09-25 Update Node.js
+      #15921 closed 2026-03-15 client:only="vue" with View Transitions causes hydration to fail on first navigation
+      #18040 merged 2026-09-17 Update pnpm to v11.27.0
+      #15586 merged 2026-02-19 Respect remote image allowlists
+      #15284 closed 2026-01-22 Astro v6 with cloudflare adapter does not work with `<Code ...>` components
+      #15072 merged 2025-12-22 fix(deps): update all non-major dependencies
+      #13696 closed 2025-04-27 simple db crash dev server
+      #11302 merged 2024-06-20 Fall back to page reload when redirected to a cross origin URL
+      #12266 merged 2024-10-21 fix(deps): update all non-major dependencies
+      #10681 merged 2024-04-04 Prevent errors in finding workspaceId from interrupting link prompts
+      #11301 closed 2024-06-20 View transition router fails for cross origin redirects
+      #11093 merged 2024-05-17 Enables view transition e2e tests with Firefox
+      #10680 merged 2024-04-04 [ci] release
+      #8790 closed 2023-10-10 Throwing errors in component abruptly interrupts page rendering
+  sigkill        9 hit(s) (all listed)
+      #18005 open 2026-09-15 Add a dev server startup benchmark
+      #17328 merged 2026-07-08 Fix astro dev --force not replacing a running dev server
+      #17656 closed 2026-08-10 Another astro dev server is already running when using docker
+      #17146 closed 2026-06-22 [7.x] "astro dev --background" fails on Windows
+      #16610 merged 2026-05-05 Background dev server for AI coding agents
+      #16396 closed 2026-04-19 bug(adapter/cloudflare): turborepo terminates the process in midway when using `workerd` as prerender environment
+      #18174 merged 2026-09-29 Update github-actions (major)
+      #5253 closed 2022-10-30 @astrojs/image works locally but not on Vercel
+      #13074 merged 2025-01-27 fix(deps): update all non-major dependencies
+  sigint         3 hit(s) (all listed)
+      #17655 open 2026-08-10 feat(@astrojs/node): add graceful shutdown to standalone mode
+      #10524 closed 2024-03-21 Node.js ignoring `SIGINT` signals in Docker
+      #8830 closed 2023-10-13 graceful exit on ctrl+c with the dev server
+  ctrl-c         58 hit(s) (all listed)
+      #2266 closed 2021-12-23 🐛 BUG: sh: astro: command not found
+      #18174 merged 2026-09-29 Update github-actions (major)
+      #15770 merged 2026-03-05 Update stop command message in messages.ts
+      #16275 closed 2026-04-10 [Bug]: Vitest Astro fails at running Storybook tests
+      #15101 closed 2026-01-03 Transport invoke timed out after 60000ms / Docker and WSL issues
+      #15021 closed 2025-12-15 Server-side modules do not update via HMR when imported dependencies change
+      #15769 closed 2026-03-05 Missing collapseDuplicateLeadingSlashes
+      #14589 merged 2025-10-20 perf: switch to clack for CLI prompts
+      #18040 merged 2026-09-17 Update pnpm to v11.27.0
+      #15420 closed 2026-02-05 create-astro: --add input is interpreted as shell syntax
+      #15091 closed 2025-12-31 "dist\_astro\fonts" folder with font files is created in dev when using experimental fonts API and "q+enter" to stop dev server
+      #14583 closed 2025-10-20 Extraneous emnapi/runtime@1.5.0 package in Astro 5.14
+      #15372 merged 2026-02-02 fix(deps): update dependency vitest to v4
+      #13947 closed 2025-06-16 programmatic astro dev server hangs post-shutdown due to cloudflare adapter
+      #13993 closed 2025-06-21 Initializing project with pnpm installs wrong version of sharp
+      #13486 closed 2025-03-21 🐛 Bug Report: max-width Media Query Not Working in Astro
+      #12969 closed 2025-01-11 Browser shows "Cannot read properties of null (reading 'invalidateTypeCache')" error with "@astrojs/vue" integration
+      #12831 closed 2024-12-25 Unable to create a new project
+      #12784 closed 2024-12-19 The collection does not exist or is empty, even it's already existed on the file system on Windows
+      #12456 closed 2024-11-16 `RenderUndefinedEntryError` error when editing config with the `--force` content layer flag
+  power          97 hit(s) (all listed)
+      #17676 merged 2026-08-12 refactor(language-server): convert astro to tsx with rust astro2tsx
+      #18014 closed 2026-09-16 Adding the latest markdown satteri package raises the error that "@astrojs/markdown-satteri is too old to render .mdx files."
+      #17939 merged 2026-09-08 [ci] release
+      #18203 merged 2026-10-02 Update astro
+      #17310 closed 2026-07-06 Reverse v7's Default JSX Whitespace Handling
+      #17122 merged 2026-06-18 Generate default AGENTS.md in new projects
+      #15545 merged 2026-02-16 auto-triage improvements: security improvements, sandbox updates, skill refinements
+      #15849 closed 2026-03-11 Reference: Exports isn't defined (because of cookies on vitest)
+      #16596 merged 2026-05-04 [ci] release
+      #14617 closed 2025-10-24 feat: add support for running full middleware on static pages
+      #15708 merged 2026-03-02 fix(deps): update astro adapters
+      #14931 closed 2025-11-29 Custom Rehype plugin for transforming a `ul > li > img` into a CSS-powered Image Carousel (`div > figure`) is not applied for some reason
+      #16366 merged 2026-04-16 Advanced Routing - Experimental
+      #15285 closed 2026-01-22 `renderMarkdown` doesn't do what we all think it does
+      #16231 closed 2026-04-06 Update astro adapters - autoclosed
+      #14117 closed 2025-07-22 “Cannot read properties of undefined (reading '_zod')” with Zod 4 installed
+      #15476 merged 2026-02-11 Experiment: Automatic triage for new GitHub issues
+      #14815 merged 2025-11-19 chore: document core/infra architecture
+      #14549 merged 2025-10-16 refactor: support devtoolbar
+      #13793 closed 2025-05-13 Shiki powered codeblocks flagged by a11y audit
+  outage         6 hit(s) (all listed)
+      #18060 closed 2026-09-18 `astro dev`: CSS from unrelated pages leaks into a route's `<head>` via `virtual:astro:pages` (e.g. through `astro:config/server` or `astro:i18n`)
+      #17838 closed 2026-08-27 Cloudflare SSR manifest retains prerender-only entry specifiers that resolve to missing asset URLs
+      #18028 closed 2026-09-16 @astrojs/vercel: ISR routes can serve a cached redirect to /$0 when Vercel doesn't substitute the undocumented $0 token
+      #13354 closed 2025-03-03 [@astrojs/cloudflare] env.ASSETS can be undefined
+      #9384 closed 2023-12-08 `npx @astrojs/upgrade` fails with "Version latest could not be found"
+      #9566 merged 2024-01-02 Allow remark plugins to affect getImage call for .md files
+  ENOSPC         1 hit(s) (all listed)
+      #5376 closed 2022-11-11 System limit for number of file watchers reached.
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15686 open 2026-02-27 feat: create new middleware mode `"on-request"`
+      #18076 merged 2026-09-20 Clear stale compile metadata in HMR when markup and style change together
+      #18075 closed 2026-09-19 astro dev: scoped <style> of a .astro component is served stale when the HMR client requests the style module before the route is rendered in SSR
+      #18107 merged 2026-09-23 Update dependency chokidar to v5
+      #17937 merged 2026-09-08 Prune stale entries when a glob() collection becomes empty
+      #17994 merged 2026-09-14 Hash compiled CSS output in incremental build to detect Sass partial changes
+      #17705 merged 2026-08-15 Fix incremental build serving cached HTML with stale CSS filenames after stylesheet-only edits
+      #17974 closed 2026-09-11 `experimental.incrementalBuild` restores pages with stale CSS when only a Sass partial changes.
+      #17867 closed 2026-08-31 fix(content): don't mutate readonly schemas during image reference processing
+      #17864 closed 2026-08-30 fix(cache): prevent browser heuristic freshness on cached routes
+      #17806 closed 2026-08-24 Add `Cache-Control: public, max-age=0, must-revalidate` to cached routes with validators to prevent browser heuristic freshness
+      #17991 closed 2026-09-14 Content collections using glob loader with subdirectories fail to update on markdown edit in dev mode
+      #18055 closed 2026-09-18 Incremental builds never reuse pages on fresh CI machines (works fine locally)
+      #17803 closed 2026-08-24 Cached routes emit `Last-Modified` with no `Cache-Control`, putting every cached route on browser heuristic freshness
+      #17715 merged 2026-08-15 fix(check): include .astro files in checked project references
+      #17430 merged 2026-07-19 refactor: emit the content data store as a JSON string
+      #17335 closed 2026-07-08 [7.x] Content collection markdown hot-reload does not update dynamic blog slug page until dev server restart
+      #17898 closed 2026-09-03 astro@7.3.0 `astro:assets` imports unpublished `astro/_internal/logger`
+      #17950 closed 2026-09-09 Update dependency vitest to v4.1.11 [SECURITY]
+      #17272 merged 2026-07-02 Resolve extensionless imports in island component paths
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18061 open 2026-09-18 fix(dev): stop CSS traversal at virtual:astro:pages boundary
+      #17994 merged 2026-09-14 Hash compiled CSS output in incremental build to detect Sass partial changes
+      #18276 open 2026-10-06 Astro actions response handlers
+      #17974 closed 2026-09-11 `experimental.incrementalBuild` restores pages with stale CSS when only a Sass partial changes.
+      #17694 open 2026-08-14 Fix MDX page directory boundary detection
+      #17912 open 2026-09-05 fix(check): correct argument handling, watch mode output and project inference
+      #17609 open 2026-08-06 fix(dev) Match client style modules precisely during CSS HMR
+      #18234 open 2026-10-04 @astrojs/vercel always deploys on a Node runtime, even when built with Bun
+      #17809 open 2026-08-24 Remove: Unnecessary string.raw wraped call
+      #18073 open 2026-09-19 vercel adapter: redirects never match when trailingSlash: 'always'
+      #17976 closed 2026-09-11 fix(incremental): hash resolved stylesheets in the page dependency hash
+      #17530 open 2026-07-27 fix(content): preserve CSS cascade order for propagated assets
+      #17076 open 2026-06-15 feat(cli): astro add cloudflare and netlify creates gitignore entries 
+      #17315 open 2026-07-07 Resolve SolidJS dependency imports via framework crawling and fix test process.emit type error
+      #17020 open 2026-06-10 fix(transitions): skip ClientRouter transition when `from` and `to` are the same URL
+      #18280 open 2026-10-07 Update markdown
+      #17121 open 2026-06-18 Added config option for setting a hostname to be prepended to Server Island URLs
+      #18178 open 2026-09-29 Each dev server restart leaves the old server in memory
+      #17879 merged 2026-08-31 Preserve propagated assets in server islands
+      #17870 closed 2026-08-31 Scoped CSS missing for MDX components in deferred Server Islands
+  incomplete     94 hit(s) (all listed)
+      #18054 open 2026-09-17 `glob()` loader seems to swallow Markdown rendering errors and lets astro build exit successfully
+      #18272 open 2026-10-06 [ci] release
+      #17609 open 2026-08-06 fix(dev) Match client style modules precisely during CSS HMR
+      #18145 merged 2026-09-26 Fix `@astrojs/cloudflare` dependency scan incorrectly matching `import.meta` and `import()` as static imports
+      #18207 merged 2026-10-02 [ci] release (beta)
+      #18117 merged 2026-09-24 [ci] release (beta)
+      #18144 closed 2026-09-26 `@astrojs/cloudflare`: dev dependency scan fails when a frontmatter line opens with `import.meta`
+      #18035 merged 2026-09-16 [ci] release
+      #17966 closed 2026-09-10 Aborted request bodies cause duplicate unhandled rejection logs in @astrojs/node
+      #17915 merged 2026-09-05 [ci] release
+      #17414 closed 2026-07-17 fix(node): Fix duplicate unhandled rejection logs for aborted requests
+      #18119 merged 2026-09-24 Support Cloudflare Vite plugin v2
+      #17849 merged 2026-08-27 [ci] release
+      #17606 merged 2026-08-05 fix(test): provide experimental config in Cloudflare session-false test
+      #18070 closed 2026-09-18 Markdown image alt and title attributes double-escape ampersands
+      #17673 merged 2026-08-12 [ci] release
+      #17956 closed 2026-09-09 Release retries may skip unfinished VS Code/OpenVSX publication after npm succeeds
+      #17939 merged 2026-09-08 [ci] release
+      #17411 merged 2026-07-17 [ci] release
+      #17533 closed 2026-07-28 NoMatchingStaticPathFound when i18n fallback used with concurrency
+  dataloss       0 hit(s)
+  recover        44 hit(s) (all listed)
+      #18193 merged 2026-10-01 Fix emptyDir EPERM fallback to use rmSync instead of rmdirSync for Node 25+ compatibility
+      #18170 closed 2026-09-29 Windows: emptyDir EPERM fallback calls fs.rmdirSync with recursive, which Node.js 26 rejects
+      #17369 merged 2026-07-13 fix(astro-island): use query param for hydration import retry so recovery works in dev
+      #17840 closed 2026-08-27 Intermittent Vite dependency scan failure with .astro frontmatter
+      #17882 closed 2026-09-01 ClientRouter breaks when using history.pushState
+      #17373 merged 2026-07-13 [ci] release
+      #17292 merged 2026-07-03 Preserve styles for child components inside client:only islands during build
+      #16412 merged 2026-04-20 fix(astro): recover island hydration from transient import failures
+      #17114 merged 2026-06-17 Move issue triage to triagebot-action
+      #17691 merged 2026-08-13 [ci] release
+      #17757 merged 2026-08-20 Fix build error location reporting for MDX and aggregate plugin errors
+      #16097 closed 2026-03-26 astro dev does not recover from invalid content collection image path
+      #16341 closed 2026-04-15 astro-island: no error event, retry, or recovery when hydration import() fails
+      #13149 closed 2025-02-06 Changing image names in a content collection while the dev server is running breaks it
+      #13586 closed 2025-04-08 Content Layer Bug: ImageNotFound Error in Starlight Project After Updating Image Path
+      #14452 closed 2025-09-29 Race condition in content collections `image()` utility
+      #16248 closed 2026-04-07 Bug: Cloudflare adapter SSR environment does not pre-compile dependencies — cascading "program reload" and chunk-not-found errors in dev
+      #16981 merged 2026-06-05 feat: stabilise queued rendering
+      #12611 closed 2024-12-03 transport was disconnected, cannot call "fetchModule"
+      #15709 closed 2026-03-02 [v6] `resolveClientDir()` causes infinite loop when bundled with esbuild
+  recovery       35 hit(s) (all listed)
+      #17956 closed 2026-09-09 Release retries may skip unfinished VS Code/OpenVSX publication after npm succeeds
+      #17369 merged 2026-07-13 fix(astro-island): use query param for hydration import retry so recovery works in dev
+      #17421 merged 2026-07-18 fix(sessions): route session diagnostics through AstroLogger and reset partial state after regeneration failure
+      #17522 merged 2026-07-27 Update @astrojs/markdoc
+      #17462 closed 2026-07-21 Fix dual React instances after mid-session SSR dep re-optimization in `@astrojs/cloudflare` dev
+      #16341 closed 2026-04-15 astro-island: no error event, retry, or recovery when hydration import() fails
+      #17420 closed 2026-07-18 AstroSession: session diagnostics bypass AstroLogger; regenerate() leaves partial state after load failure
+      #17726 closed 2026-08-17 `astro build` fails unexpectedly with `build.format` set to `preserve`
+      #16647 closed 2026-05-07 refactor(astro): migrate astro-island-hydration-error e2e test to typescript
+      #18204 merged 2026-10-02 Update examples
+      #16412 merged 2026-04-20 fix(astro): recover island hydration from transient import failures
+      #17364 closed 2026-07-12 @astrojs/cloudflare: lazy SSR dependency optimization can trigger React invalid hook calls on first request
+      #16251 closed 2026-04-07 Svelte components still don't always get styles when rendered conditionally
+      #17042 merged 2026-06-11 chore: merge main into next
+      #16551 closed 2026-05-01 [bug] @astrojs/cloudflare: \\breturn\\b regex incorrectly replaces .return() method calls in frontmatter dep scan
+      #16240 closed 2026-04-07 Add an experimental static incremental build foundation
+      #16315 closed 2026-04-14 plugin-chunk-imports corrupts dynamic imports with __vitePreload wrapper (skew protection broken on Vercel)
+      #15764 merged 2026-03-04 Improve form action handling consistency during error page rendering
+      #16097 closed 2026-03-26 astro dev does not recover from invalid content collection image path
+      #16806 closed 2026-05-20 `@astrojs/node` middleware crashes on startup when deployed to Firebase (503)
+  rollback       26 hit(s) (all listed)
+      #17817 closed 2026-08-25 `@astrojs/cloudflare`: a cached route answers `304` after a code-only deploy, so a returning visitor keeps HTML whose `/_astro/*` assets are gone
+      #16000 closed 2026-03-20 [HMR Broken] File changes are not applied anymore in dynamic imported components
+      #15405 merged 2026-02-04 fix(deps): lock file maintenance astro dependencies
+      #13551 closed 2025-04-03 Configuration Error with i18n.routing.redirectToDefaultLocale in Starlight
+      #11532 closed 2024-07-23 Deploy on Vercel with server mode not working since 4.11.6
+      #2679 closed 2022-02-28 Reverting #2649 (fine-grained HMR support)
+      #10633 closed 2024-04-01 Hydration timing issue on larger pages
+      #11144 merged 2024-05-24 feat(container): provide a virtual module to load renderers
+      #11011 closed 2024-05-12 Page 404.html is not built when using internationalization
+      #10237 closed 2024-02-26 [astrojs/lit] web component DSD not adopting properly on some initial loads
+      #9999 merged 2024-02-06 Revert "fix(compiler): Support dynamic slot names (#9605)"
+      #9955 merged 2024-02-02 Revert "Provide better ignores for Vercel's file tracer (#9885)"
+      #9973 merged 2024-02-04 [ci] release
+      #10511 closed 2024-03-20 Astro DB - when using --remote flag I get "Invalid URL"
+      #7146 closed 2023-05-19 Astro fails to output a hoisted .js file in dist
+      #8916 closed 2023-10-25 HMR not working on clean install - any change causes full page reload
+      #3914 merged 2022-07-13 Rollback Nodejs Dependancy
+      #3908 closed 2022-07-12 🐛 BUG: Rollback Nodejs Dependancy
+      #6086 closed 2023-02-01 Rollup Failed to resolve on astrojs/netlify 2.1.0
+      #4662 merged 2022-09-07 Migrate examples to `type: module`
+  resume         51 hit(s) (all listed)
+      #18175 merged 2026-09-29 Update dependency undici to v7.29.1 [SECURITY]
+      #17956 closed 2026-09-09 Release retries may skip unfinished VS Code/OpenVSX publication after npm succeeds
+      #18101 merged 2026-09-22 Update dependency undici to v8
+      #18279 merged 2026-10-07 Update github-actions
+      #15595 merged 2026-02-20 Port Go's csrf protection
+      #15587 closed 2026-02-20 checkOrigin in v6.0.0-beta.14
+      #18040 merged 2026-09-17 Update pnpm to v11.27.0
+      #16487 closed 2026-04-27 Update astro adapters (major) - autoclosed
+      #16568 closed 2026-05-01 `create-astro`: Git's GPG signing with `pinentry-curses` breaks
+      #18020 merged 2026-09-16 Update dependency hono to v4.13.5 [SECURITY]
+      #15367 closed 2026-02-02 fix(deps): update astro adapters to v19 (major)
+      #15085 merged 2025-12-29 fix(deps): update astro client runtimes
+      #14978 merged 2025-12-08 fix(deps): update astro client runtimes
+      #15913 merged 2026-03-14 fix(deps): update astro dependencies
+      #15700 merged 2026-02-27 feat: identify different JSX frameworks during SSR
+      #14739 merged 2025-11-10 fix(deps): update astro dependencies
+      #6011 closed 2023-01-27 Additional whitespace-only text node between text elements
+      #14977 merged 2025-12-08 fix(deps): update all non-major dependencies
+      #15220 merged 2026-01-15 fix(deps): update dependency svelte to v5.46.4 [security]
+      #15373 merged 2026-02-02 fix(deps): update dependency zod to v4
+  half-written   6 hit(s) (all listed)
+      #18245 merged 2026-10-05 Reject multi-level percent-encoded paths in composable fetch handlers
+      #18266 merged 2026-10-06 Ignore `layout` frontmatter in Markdown content collection entries with `deferRender`
+      #17416 merged 2026-07-17 Skip URL normalization writes that would not change the path
+      #17713 merged 2026-08-15 fix: rebuild module imports after content entry deletion
+      #17600 closed 2026-08-05 `cf()` is missing four things `handle()` does: cookies/sessions, the CDN `no-store` default, the assets fallback, the prerender phase
+      #6653 merged 2023-03-24 [Markdoc] New config format with runtime variable support!
+  wipe           34 hit(s) (all listed)
+      #18133 merged 2026-09-25 Add .ts and .js to server environment optimizeDeps entries glob
+      #17972 closed 2026-09-11 Custom dev toolbar app loses its UI after a client-side navigation
+      #17868 closed 2026-08-31 [bug] @astrojs/cloudflare dev runner panics workerd on SSR module resolution failure, breaking route registry
+      #18130 closed 2026-09-25 Vite dependency optimization re-evaluates server modules during in-flight requests
+      #17919 closed 2026-09-06 glob() loader keeps stale entries when a collection's last file is deleted
+      #18099 merged 2026-09-22 Switch from js-yaml to yaml
+      #17105 closed 2026-06-17 if `head` contains a server:defer-ed component the server-island wipes all other head elements after a ClientRouter page transition
+      #17788 closed 2026-08-21 @astrojs/cloudflare: `optimizeDeps.include` misses `astro/assets/services/noop` and `astro/logger/json`, so cold `astro dev` re-optimizes and crashes
+      #16554 closed 2026-05-01 [bug] @astrojs/cloudflare: custom kv_namespaces get wiped out when SESSION binding is injected
+      #17237 merged 2026-06-30 [ci] release
+      #16387 closed 2026-04-18 Dev: @astrojs/cloudflare + Actions + React island causes `react-dom/client` SyntaxError on hydration
+      #16766 closed 2026-05-17 Bug: Vite optimizeDeps race condition causes React  not found in dev mode
+      #17084 merged 2026-06-15 Experimental incremental static builds
+      #16396 closed 2026-04-19 bug(adapter/cloudflare): turborepo terminates the process in midway when using `workerd` as prerender environment
+      #15026 merged 2025-12-15 Add more optimizeDeps for Cloudflare prebundling
+      #931 closed 2021-07-29 🐛 BUG: Directory not empty... on npm init astro 
+      #9345 closed 2023-12-06 Cannot build when using Sharp 0.33.0
+      #10485 closed 2024-03-19 Out of memory during build
+      #12373 merged 2024-11-04 Actions middleware
+      #11173 merged 2024-05-31 chore: bump @typescript-eslint/no-unused-vars to error internally
+  wipes          9 hit(s) (all listed)
+      #17919 closed 2026-09-06 glob() loader keeps stale entries when a collection's last file is deleted
+      #17105 closed 2026-06-17 if `head` contains a server:defer-ed component the server-island wipes all other head elements after a ClientRouter page transition
+      #17237 merged 2026-06-30 [ci] release
+      #17084 merged 2026-06-15 Experimental incremental static builds
+      #16766 closed 2026-05-17 Bug: Vite optimizeDeps race condition causes React  not found in dev mode
+      #8621 merged 2023-09-21 Add View Transitions announcer
+      #7541 merged 2023-06-30 feat(@astrojs/cloudfalre): add cloudflare envs to `Astro.locals`
+      #4030 merged 2022-07-23 Update `astro` version to `1.0.0-rc.0`
+      #5297 merged 2022-11-04 Experimental Prerender API
+  erase          15 hit(s) (all listed)
+      #18129 merged 2026-09-25 Update dependency es-module-lexer to v3
+      #15719 merged 2026-03-02 feat: erasableSyntaxOnly
+      #16568 closed 2026-05-01 `create-astro`: Git's GPG signing with `pinentry-curses` breaks
+      #14500 closed 2025-10-07 Image wrongly cached
+      #11229 closed 2024-06-10 Error in DB push
+      #12878 merged 2025-01-02 [ci] release
+      #11562 merged 2024-07-26 feat: use devalue to serialize content layer data
+      #10451 closed 2024-03-15 Unable to create indexes on astro db
+      #8954 merged 2023-10-30 feat(assets): Delete original assets unused outside of the optimization pipeline
+      #7150 merged 2023-05-20 fix(hybrid-output): no matched route when using `getStaticPaths`  
+      #5643 closed 2022-12-19 Astro 1.7.x deletes directory `./chunks` completely from `dist` after SSG
+      #5029 closed 2022-10-09 [@astrojs/svelte] passing `class` to island component behaves differently from passing to static component 
+      #4643 merged 2022-09-06 When removing duplicate CSS, also remove from metadata
+      #4635 closed 2022-09-06 Custom 404 page doesn't work in dynamic routes with Vercel
+      #245 closed 2021-05-25 🐛 Bug Bash!
+  erasing        3 hit(s) (all listed)
+      #14500 closed 2025-10-07 Image wrongly cached
+      #4643 merged 2022-09-06 When removing duplicate CSS, also remove from metadata
+      #4635 closed 2022-09-06 Custom 404 page doesn't work in dynamic routes with Vercel
+  erased         6 hit(s) (all listed)
+      #18129 merged 2026-09-25 Update dependency es-module-lexer to v3
+      #11229 closed 2024-06-10 Error in DB push
+      #12878 merged 2025-01-02 [ci] release
+      #11562 merged 2024-07-26 feat: use devalue to serialize content layer data
+      #10451 closed 2024-03-15 Unable to create indexes on astro db
+      #5029 closed 2022-10-09 [@astrojs/svelte] passing `class` to island component behaves differently from passing to static component 
+  destroy        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #17655 open 2026-08-10 feat(@astrojs/node): add graceful shutdown to standalone mode
+      #17883 open 2026-09-01 feat(node): add a keepAliveTimeout option to the standalone server
+      #17905 merged 2026-09-04 fix(dev-toolbar): keep app canvas content across client-side navigation
+      #17718 closed 2026-08-16 ensureSessionID() doesn't validate session cookie value before using it as storage key
+      #17749 closed 2026-08-19 ClientRouter: since 7.2.1, <audio>/<video> inside transition:persist elements are re-created on every navigation (playback stops)
+      #17719 merged 2026-08-16 Validate session cookie value is a UUID before using it as a storage key
+      #18124 merged 2026-09-25 Update Node.js
+      #18101 merged 2026-09-22 Update dependency undici to v8
+      #18175 merged 2026-09-29 Update dependency undici to v7.29.1 [SECURITY]
+      #17421 merged 2026-07-18 fix(sessions): route session diagnostics through AstroLogger and reset partial state after regeneration failure
+      #17989 merged 2026-09-14 Update @astrojs/sitemap
+      #17420 closed 2026-07-18 AstroSession: session diagnostics bypass AstroLogger; regenerate() leaves partial state after load failure
+      #16306 closed 2026-04-13 potential v6 regression: v6 getCollection returns an array with different order compared to v5
+      #16002 merged 2026-03-20 fix: destroy read streams to prevent file descriptor leaks
+      #17435 closed 2026-07-19 Update dependency undici to v8
+      #16628 closed 2026-05-06 chore: commit prebuilt files to git
+      #16230 merged 2026-04-06 fix(deps): update language tools
+      #16582 merged 2026-05-04 fix: gate svg processing behind a flag
+      #16326 closed 2026-04-15 test: port app/node unit test to TypeScript
+      #10820 closed 2024-04-19 Dependency Dashboard
+  destroys       9 hit(s) (all listed)
+      #17883 open 2026-09-01 feat(node): add a keepAliveTimeout option to the standalone server
+      #17749 closed 2026-08-19 ClientRouter: since 7.2.1, <audio>/<video> inside transition:persist elements are re-created on every navigation (playback stops)
+      #17989 merged 2026-09-14 Update @astrojs/sitemap
+      #18175 merged 2026-09-29 Update dependency undici to v7.29.1 [SECURITY]
+      #18101 merged 2026-09-22 Update dependency undici to v8
+      #15587 closed 2026-02-20 checkOrigin in v6.0.0-beta.14
+      #15806 closed 2026-03-09 fix(deps): update all non-major dependencies
+      #14162 closed 2025-07-30 `session.destroy` only deletes cookies, but not the session object stored on the backend.
+      #11133 closed 2024-05-23 View Transitions Breaking AlpineJs `alpine:init` Event
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18244 merged 2026-10-05 Fix localized error routes returning HTTP 200 through `pages()`
+      #17760 closed 2026-08-20 Defining `vite.environments.ssr` detaches the adapter server entrypoint — SSR entry is emitted as `index.mjs` and the Vercel adapter fails in `astro:build:done`
+      #18230 closed 2026-10-04 Localized error routes render as HTTP 200 through `pages()`
+      #18194 closed 2026-10-01 Bindings declared in cloudflare.config.ts are missing from Env
+      #17633 closed 2026-08-07 Incremental builds break images of cached pages
+      #17838 closed 2026-08-27 Cloudflare SSR manifest retains prerender-only entry specifiers that resolve to missing asset URLs
+      #17735 closed 2026-08-18 `astro build` not returning enough debugging information on a build error.
+      #17289 closed 2026-07-02 [cloudflare] DEFAULT_ASSETS_BINDING_NAME 'ASSETS' is reserved in Cloudflare Pages — breaks build with wrangler >=4.107.0
+      #17375 closed 2026-07-14 `@astrojs/cloudflare`: cacheCloudflare() overrides an explicit `cache.enabled: false` in wrangler config
+      #17679 closed 2026-08-13 `prerenderConflictBehavior` Doesn't Apply to Content Collections
+      #17737 closed 2026-08-18 Fix build errors reporting wrong file location for MDX and plugin transform errors
+      #17634 merged 2026-08-07 Fix incremental build dropping images for cached pages with compile-time image optimization
+      #16695 closed 2026-05-11 CollectionEntry.id is not invariant (it returns slug from frontmatter if slug field is defined)
+      #4138 merged 2022-08-04 make Remark rehype options available in astro config
+      #17298 closed 2026-07-03 Astro creates 2 identical CSS files when using sever output
+      #16598 closed 2026-05-04 i18n: computePreferredLocale's inner break only exits the inner loop
+      #16469 closed 2026-04-23 shell env variables no longer take priority over .env files (regression)
+      #17817 closed 2026-08-25 `@astrojs/cloudflare`: a cached route answers `304` after a code-only deploy, so a returning visitor keeps HTML whose `/_astro/*` assets are gone
+      #16491 closed 2026-04-27 Astro is unable to load .data and .wasm file
+      #16215 closed 2026-04-04 Position attribute in Picture and Image components has no effect.
+  clobber        12 hit(s) (all listed)
+      #18021 merged 2026-09-16 Update dependency svelte to v5.55.7 [SECURITY]
+      #17375 closed 2026-07-14 `@astrojs/cloudflare`: cacheCloudflare() overrides an explicit `cache.enabled: false` in wrangler config
+      #17803 closed 2026-08-24 Cached routes emit `Last-Modified` with no `Cache-Control`, putting every cached route on browser heuristic freshness
+      #16174 closed 2026-03-31 fix(language-server): preserve prettier config when resolveConfig returns null
+      #17428 merged 2026-07-18 Update pnpm to v11.13.1
+      #13393 merged 2025-03-11 fix(deps): update dependency prismjs to v1.30.0 [security]
+      #12177 merged 2024-10-10 Ensure router only targets scripts for execution
+      #10849 closed 2024-04-22 VIewTransitions break on presence of <input name="action">
+      #10352 merged 2024-03-06 Add `--remote` flag for remote connection
+      #6947 closed 2023-04-29 Index pages appear to be invalid according to web standards (i.e. Apache MultiViews and others)
+      #4578 merged 2022-08-31 No 👏 more 👏 server 👏 restarts 👏 on 👏 config 👏 changes
+      #2135 merged 2021-12-06 Make `fetch` injection safe to existing code
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18102 open 2026-09-22 @astrojs/language-server 2.17.0: Organize Imports duplicates the last import when the frontmatter ends with an import
+      #18061 open 2026-09-18 fix(dev): stop CSS traversal at virtual:astro:pages boundary
+      #18094 closed 2026-09-22 Server islands render empty in dev when using a custom src/fetch.ts (renderers not loaded for built-in routes)
+      #18040 merged 2026-09-17 Update pnpm to v11.27.0
+      #18135 open 2026-09-25 fix(vercel): don't force platform 404 on server-rendered catch-all routes
+      #17666 merged 2026-08-11 docs: format paragraphs correctly within `@deprecated` tags
+      #18182 closed 2026-09-29 @astrojs/cloudflare: the `process` banner meant for the Worker is prepended to every client script
+      #18078 merged 2026-09-20 fix: rewrite selects the wrong dynamic route
+      #17284 merged 2026-07-02 Render the custom 404 page when a middleware rewrite dead-ends in an empty 404
+      #17281 closed 2026-07-02 [Middleware] The 404 page is not working when using rewrite
+      #17888 merged 2026-09-02 chore(deps): update react to v19 in `0-css` fixture
+      #17428 merged 2026-07-18 Update pnpm to v11.13.1
+      #18002 merged 2026-09-15 Fix redirect targets when a param value contains a `$` replacement pattern
+      #17528 merged 2026-07-27 [ci] release
+      #17542 merged 2026-07-29 fix(language-server): strip AstroComponent suffix from Svelte and Vue auto-imports
+      #18203 merged 2026-10-02 Update astro
+      #17295 closed 2026-07-03 [Bug][regression] @astrojs/cloudflare v14 tunnel option causes HTTP 200 with empty response body in dev mode
+      #17104 merged 2026-06-17 Preserve `Astro.props.error` on the custom 500 page when middleware throws
+      #13083 closed 2025-01-28 Presence of symlinks generated by nix development environments breaks live reload / file watching
+      #18264 merged 2026-10-06 Merge main into next and point Smoke tests at docs main
+  unreadable     6 hit(s) (all listed)
+      #18124 merged 2026-09-25 Update Node.js
+      #15976 closed 2026-03-18 Content collection validation errors in v6 are no longer human-readable
+      #8676 closed 2023-09-27 Astro v3 markdown page router Chinese get unreadable characters
+      #9889 closed 2024-01-31 Pagination example generates typescript errors
+      #8571 merged 2023-09-15 API for clientside router
+      #66 closed 2021-04-07 Blog Support 2/3: Dynamic Routes
+  garbage        34 hit(s) (all listed)
+      #18178 open 2026-09-29 Each dev server restart leaves the old server in memory
+      #17440 merged 2026-07-19 Update dependency diff to v9
+      #16305 closed 2026-04-13 Fix syntax highlighting for multiline lang/type attributes in style and script tags
+      #17200 closed 2026-06-25 Vite `resolve.alias` behaviour change from Astro 6 to Astro 7
+      #16700 closed 2026-05-11 fix(content): cache image reference resolution to avoid redundant tra…
+      #14032 closed 2025-07-02 Scoping is wrong when using lightningcss transformer
+      #15485 merged 2026-02-12 Performance Optimization: Concurrent File I/O and Regex Refactoring 🚀 
+      #15784 merged 2026-03-05 chore(deps): update dependency fastify to v5.8.1 [security]
+      #16346 merged 2026-04-15 Update dependency fastify to v5.8.5 [SECURITY]
+      #10065 closed 2024-02-09 Styles are applied in the wrong order when using a layout that imports another layout that imports external CSS, but it is only in the wrong order using 'astro run build' or 'astro run preview'.
+      #11951 closed 2024-09-09 Is there a memory leak in Astro's SSR?
+      #15123 merged 2026-01-06 perf(astro): group chunks on emit
+      #17428 merged 2026-07-18 Update pnpm to v11.13.1
+      #16487 closed 2026-04-27 Update astro adapters (major) - autoclosed
+      #11454 closed 2024-07-11 Slow Rendering Performance (Astro is more than 10 times slower than Solid)
+      #15367 closed 2026-02-02 fix(deps): update astro adapters to v19 (major)
+      #15210 closed 2026-01-15 fix(deps): update dependency diff to v8 [security] - autoclosed
+      #15220 merged 2026-01-15 fix(deps): update dependency svelte to v5.46.4 [security]
+      #14070 closed 2025-07-13 Static generated pages from MDX files includes `.mdx` in rendered page url
+      #11133 closed 2024-05-23 View Transitions Breaking AlpineJs `alpine:init` Event
+  mangled        23 hit(s) (all listed)
+      #18158 open 2026-09-28 Add Preact 11 to `@astrojs/preact` peer dependencies
+      #17908 merged 2026-09-04 Fix i18n fallback rewriting the wrong path segment when locale code appears as a substring
+      #17907 closed 2026-09-04 i18n fallback rewrites the first substring, not the locale segment
+      #17915 merged 2026-09-05 [ci] release
+      #17861 merged 2026-08-30 fix(i18n): only swap whole locale segments when generating fallback routes
+      #16820 closed 2026-05-21 Node adapter in middleware mode doesn't work with serverless-http
+      #15831 closed 2026-03-10 Preact useId creates the same ID for every Island
+      #15285 closed 2026-01-22 `renderMarkdown` doesn't do what we all think it does
+      #14212 closed 2025-08-12 Asset imports from Vue's SFCs are mangled
+      #6047 closed 2023-01-30 WIP [Content Collections] Fix script bleed in prod builds
+      #9062 closed 2023-11-10 Astro.cookies.set() does not expose underlying cookie serialize options
+      #7985 merged 2023-08-07 Fix formatting in Lit README
+      #8477 closed 2023-09-09 Modifying response via middleware breaks built-in 'Image' component on dev server
+      #7399 merged 2023-06-15 Fix injected route edge case
+      #7226 closed 2023-05-27 Node Adapter writes server.writeHead(..) headers incorrectly
+      #5547 merged 2022-12-06 Update telemetry to use new errors information
+      #4538 closed 2022-08-29 Accented characters in markdown frontmatter get mangled when imported
+      #4337 closed 2022-08-15 Relative paths of inline script tags in nested folders get mangled by `astro dev` and `astro preview`
+      #4545 closed 2022-08-29 Can't return image from non-html route
+      #4549 merged 2022-08-30 Add support for custom non-html route encoding
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18161 open 2026-09-28 Fix: CSS Module HMR leaves server-rendered React components with stale class names when also used by a hydrated island
+      #18199 closed 2026-10-02 glob() loader skips content files with `#` in their name
+      #17728 closed 2026-08-18 `experimental.svgOptimizer` does not pass the file path to SVGO, so `prefixIds` uses the same prefix for every file
+      #18065 closed 2026-09-18 Dev server spends too much time to respond
+      #18045 closed 2026-09-17 [Bug] `satteriHeadingIdsPlugin` uses a non-reset `Slugger` instance across multiple posts
+      #17821 closed 2026-08-25 Make the SvgOptimizer optimize() path parameter optional
+      #17646 closed 2026-08-09 MDX + Sätteri math: inline math brace groups are scanned as JSX expressions and fail the compile
+      #18021 merged 2026-09-16 Update dependency svelte to v5.55.7 [SECURITY]
+      #18105 closed 2026-09-23 CSS Module HMR leaves server-rendered React components with stale class names when also used by a hydrated island
+      #18242 merged 2026-10-05 Prevent dev-toolbar source annotations from leaking into AstroContainer output under Vitest
+      #17705 merged 2026-08-15 Fix incremental build serving cached HTML with stale CSS filenames after stylesheet-only edits
+      #17730 closed 2026-08-18 fix(assets): forward the SVG file path to the optimizer
+      #18198 closed 2026-10-02 Astro 7 fails on Android/Termux due to Sätteri WASI preopen of filesystem root
+      #18068 closed 2026-09-18 Dev server: dependency scan fails when a `.astro` frontmatter comment contains a literal `<script` (7.3.2+)
+      #17882 closed 2026-09-01 ClientRouter breaks when using history.pushState
+      #17616 merged 2026-08-06 fix(incremental): use resolved file names for imported assets in the dependency hash
+      #17663 closed 2026-08-11 Hashes shouldn't be added to CSP if unsafe-inline is present
+      #17612 merged 2026-08-06 fix(transitions): preserve CSS HMR across ClientRouter navigations
+      #17903 closed 2026-09-03 `astro preview --ignore-lock` is refused whenever an AI agent is detected, so Playwright `webServer` cannot use it from an agent session
+      #17991 closed 2026-09-14 Content collections using glob loader with subdirectories fail to update on markdown edit in dev mode
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18251 merged 2026-10-05 Re-initialize content layer after in-place dev server restart
+      #18261 open 2026-10-06 Add end-to-end tests and changesets for external content storage
+      #18217 open 2026-10-03 Fix content collection updates after dev server restart
+      #18178 open 2026-09-29 Each dev server restart leaves the old server in memory
+      #16963 open 2026-06-03 Add retries for remote image dimension inference
+      #18273 open 2026-10-06 The Hono examples do not follow `astro()`
+      #17891 open 2026-09-02 feat(solid): Solid 2.0 support — @astrojs/solid-js v8
+      #18234 open 2026-10-04 @astrojs/vercel always deploys on a Node runtime, even when built with Bun
+      #17655 open 2026-08-10 feat(@astrojs/node): add graceful shutdown to standalone mode
+      #18265 open 2026-10-06 Add `notFound()` handler to `astro/hono` and `astro/fetch` so prerendered 404 pages are served in custom worker entries
+      #18119 merged 2026-09-24 Support Cloudflare Vite plugin v2
+      #18216 closed 2026-10-03 Content collection changes ignored after dev server restarts on config change
+      #18160 closed 2026-09-28 @astrojs/vercel: the /_astro/* immutable cache rule sits after { "handle": "filesystem" }, so hashed assets are served with max-age=0
+      #17798 closed 2026-08-22 fix(content): don't mutate frozen entry data when stripping image reference prefixes
+      #17857 merged 2026-08-29 perf(runtime): improve rendering performance
+      #18037 closed 2026-09-16 Tailwind screen function does not work
+      #18117 merged 2026-09-24 [ci] release (beta)
+      #18243 merged 2026-10-05 Fix props being null in context when actions() is mounted before middleware()
+      #17260 merged 2026-07-01 Keep component scripts in place when rendered via Astro.slots.render()
+      #18253 merged 2026-10-05 Mount i18n() before pages() in the Hono handler order
+  unclean        3 hit(s) (all listed)
+      #18175 merged 2026-09-29 Update dependency undici to v7.29.1 [SECURITY]
+      #18101 merged 2026-09-22 Update dependency undici to v8
+      #6948 merged 2023-04-29 Fix slot tags uncleaned in HTML String
+  shutdown       18 hit(s) (all listed)
+      #17655 open 2026-08-10 feat(@astrojs/node): add graceful shutdown to standalone mode
+      #17975 open 2026-09-11 Defer content initialization during dev startup
+      #18106 merged 2026-09-23 Update dependency @babel/core to v8
+      #17146 closed 2026-06-22 [7.x] "astro dev --background" fails on Windows
+      #18174 merged 2026-09-29 Update github-actions (major)
+      #15770 merged 2026-03-05 Update stop command message in messages.ts
+      #15178 merged 2026-01-12 fix: prevent font copying when stopping dev server with q+enter
+      #15784 merged 2026-03-05 chore(deps): update dependency fastify to v5.8.1 [security]
+      #14754 closed 2025-11-11 fix(cloudflare): properly dispose platformProxy to prevent Vitest hanging
+      #375 merged 2021-06-10 Add HMR port script when needed
+      #15612 merged 2026-02-23 fix(deps): update all non-major dependencies
+      #15806 closed 2026-03-09 fix(deps): update all non-major dependencies
+      #13947 closed 2025-06-16 programmatic astro dev server hangs post-shutdown due to cloudflare adapter
+      #15013 closed 2025-12-13  Blog tags & search, reading time utility & UI redesign — header, dark mode
+      #7241 closed 2023-05-30 Error: EMFILE: too many open files, open 'xxx.mdx' (x10) : Content and Pages at very large scale
+      #10406 closed 2024-03-12 Astro version >= 4.5.0 breaks app  environmental variables
+      #6245 closed 2023-02-14 Pages do not update when making changes to remark or rehype plugins
+      #6135 closed 2023-02-05 Astro running out of heap on inlined assets in markdown
+  reboot         5 hit(s) (all listed)
+      #17303 merged 2026-07-05 Pre-bundle astro/components virtual module in Cloudflare adapter
+      #14179 closed 2025-08-01 server:defer ran twice
+      #9577 closed 2024-01-02 The RSS spec does not require an item title, but astrojs/rss does
+      #5882 closed 2023-01-17 Cannot install astro (esbuild/arch linux)
+      #5145 closed 2022-10-21 HMR: Installing sass when in error state does not reload page
+  disk+full      71 hit(s) (all listed)
+      #18107 merged 2026-09-23 Update dependency chokidar to v5
+      #18075 closed 2026-09-19 astro dev: scoped <style> of a .astro component is served stale when the HMR client requests the style module before the route is rendered in SSR
+      #17974 closed 2026-09-11 `experimental.incrementalBuild` restores pages with stale CSS when only a Sass partial changes.
+      #17991 closed 2026-09-14 Content collections using glob loader with subdirectories fail to update on markdown edit in dev mode
+      #17715 merged 2026-08-15 fix(check): include .astro files in checked project references
+      #17996 closed 2026-09-15 [Regression] SVG styles are no longer being hashed
+      #17335 closed 2026-07-08 [7.x] Content collection markdown hot-reload does not update dynamic blog slug page until dev server restart
+      #17898 closed 2026-09-03 astro@7.3.0 `astro:assets` imports unpublished `astro/_internal/logger`
+      #17615 closed 2026-08-06 [Astro 7.2] Experimental incrementalBuild misses cache for image imports
+      #17513 merged 2026-07-25 Update dependency @fastify/static to v10 [SECURITY]
+      #17803 closed 2026-08-24 Cached routes emit `Last-Modified` with no `Cache-Control`, putting every cached route on browser heuristic freshness
+      #17049 merged 2026-06-11 Fix Cloudflare adapter silently swallowing prerender errors
+      #17707 closed 2026-08-15 the `content-modules.mjs` unable to remove old item after an item is deleted
+      #17484 closed 2026-07-22 Content Layer: glob loader with a negation pattern ingests unrelated files in dev; data store re-ingests itself and grows unboundedly
+      #16847 closed 2026-05-23 [Advanced Routing]: Missing static file requests
+      #17048 closed 2026-06-11 fix(cloudflare): fail the build when prerendering throws in workerd
+      #17713 merged 2026-08-15 fix: rebuild module imports after content entry deletion
+      #15897 closed 2026-03-13 [v6] Sass file resolution no longer respects "baseUrl" in tsconfig.json
+      #17322 closed 2026-07-08 Content collections reference() accepts invalid entry IDs
+      #17047 closed 2026-06-11 Prerender error with @astrojs/cloudflare: build exits 0 and emits truncated HTML
+  data+loss      22 hit(s) (all listed)
+      #18122 closed 2026-09-25 Server manifest `assets` array order is nondeterministic (unsorted client glob), breaking byte-identical builds
+      #18204 merged 2026-10-02 Update examples
+      #17838 closed 2026-08-27 Cloudflare SSR manifest retains prerender-only entry specifiers that resolve to missing asset URLs
+      #16563 closed 2026-05-01 session.delete() as the first mutation is not persisted (data loss on reload)
+      #16695 closed 2026-05-11 CollectionEntry.id is not invariant (it returns slug from frontmatter if slug field is defined)
+      #16608 closed 2026-05-05 app: responseSentSymbol set on Response in prod but readers check Request — diagnostic silently dropped
+      #16992 closed 2026-06-07 Regression (6.4.4): transition:persist fails to render elements containing native popover attributes
+      #16185 closed 2026-04-02 trailingSlash breaks static output
+      #16234 closed 2026-04-06 Internal server error: No Astro CSS at index 0
+      #15727 closed 2026-03-03 Safari 18: View Transitions break CSS rendering and cause WebGL context loss on transition:persist canvas
+      #15921 closed 2026-03-15 client:only="vue" with View Transitions causes hydration to fail on first navigation
+      #15987 closed 2026-03-18 `<ClientRouter />` breaks CSS Grid / container query layout in Vue islands hydrated with `client:load`
+      #15913 merged 2026-03-14 fix(deps): update astro dependencies
+      #15220 merged 2026-01-15 fix(deps): update dependency svelte to v5.46.4 [security]
+      #14624 merged 2025-10-27 fix(deps): update all non-major dependencies
+      #11079 closed 2024-05-17 Baffling loss of styles in Markdown
+      #11522 merged 2024-07-22 fix(deps): update all non-major dependencies
+      #11426 merged 2024-07-08 fix(deps): update all non-major dependencies
+      #10330 merged 2024-03-05 add back confirmation handling and output formatting in verify and push
+      #10397 merged 2024-03-11 [ci] release
+  partial+write  53 hit(s) (all listed)
+      #17809 open 2026-08-24 Remove: Unnecessary string.raw wraped call
+      #17530 open 2026-07-27 fix(content): preserve CSS cascade order for propagated assets
+      #18195 closed 2026-10-01 @astrojs/cloudflare 15 beta silently ignores wrangler.jsonc when cloudflare.config.ts is missing
+      #17870 closed 2026-08-31 Scoped CSS missing for MDX components in deferred Server Islands
+      #18194 closed 2026-10-01 Bindings declared in cloudflare.config.ts are missing from Env
+      #17933 closed 2026-09-08 Regression: since 7.2.1, middleware rebuilds on _every_ hotUpdate
+      #17966 closed 2026-09-10 Aborted request bodies cause duplicate unhandled rejection logs in @astrojs/node
+      #18211 closed 2026-10-02 Cloudflare Vite plugin v2: `require is not defined` when the worker entry imports `astro/app/entrypoint`
+      #17713 merged 2026-08-15 fix: rebuild module imports after content entry deletion
+      #18028 closed 2026-09-16 @astrojs/vercel: ISR routes can serve a cached redirect to /$0 when Vercel doesn't substitute the undocumented $0 token
+      #17332 merged 2026-07-08 fix(logger): use `console` API in JSON logger for cross-runtime compatibility
+      #17817 closed 2026-08-25 `@astrojs/cloudflare`: a cached route answers `304` after a code-only deploy, so a returning visitor keeps HTML whose `/_astro/*` assets are gone
+      #18175 merged 2026-09-29 Update dependency undici to v7.29.1 [SECURITY]
+      #17797 closed 2026-08-22 Prevent astro add cloudflare from generating unsupported compatibility dates
+      #17631 merged 2026-08-07 Resolve content collection images without cloning entry data
+      #17853 closed 2026-08-28 Fix Astro.logger producing no output in dev with the Cloudflare adapter
+      #17939 merged 2026-09-08 [ci] release
+      #17724 merged 2026-08-17 fix(collections): chunk writing of collections
+      #17596 closed 2026-08-05 fix(content): support non-cloneable values in content collection data
+      #17779 closed 2026-08-21 Append `.html` extension to `Astro.url.pathname` in dev when `build.format` is `file` or `preserve`
+  crash+safe     44 hit(s) (all listed)
+      #18265 open 2026-10-06 Add `notFound()` handler to `astro/hono` and `astro/fetch` so prerendered 404 pages are served in custom worker entries
+      #17798 closed 2026-08-22 fix(content): don't mutate frozen entry data when stripping image reference prefixes
+      #17983 closed 2026-09-12 Vue render-function components fail to build when @astrojs/react is enabled
+      #18175 merged 2026-09-29 Update dependency undici to v7.29.1 [SECURITY]
+      #17868 closed 2026-08-31 [bug] @astrojs/cloudflare dev runner panics workerd on SSR module resolution failure, breaking route registry
+      #17554 closed 2026-07-30 Fix React check() crash on non-React object components
+      #17574 closed 2026-08-02 Cloudflare dev: /_image 500s in workerd — assets/endpoint/dev.js imports `vite`, pulling rolldown's binding into the isolate
+      #17764 closed 2026-08-20 Dev: a dependency first discovered after hydration re-optimizes mid-session and loads a second React copy — every island crashes with "Invalid hook call"
+      #17552 closed 2026-07-30 react: check() crashes on non-React component objects - 48357typeof undefined
+      #17527 closed 2026-07-27 astro dev crashes with "Invalid URL" after startup when --host is a specific non-loopback address
+      #16275 closed 2026-04-10 [Bug]: Vitest Astro fails at running Storybook tests
+      #17714 closed 2026-08-15 fix(check): handle TypeScript 7 not exposing default export (#17268)
+      #16622 closed 2026-05-06 Regression (6.2.0): "this.logger.flush is not a function" in dev SSR
+      #16248 closed 2026-04-07 Bug: Cloudflare adapter SSR environment does not pre-compile dependencies — cascading "program reload" and chunk-not-found errors in dev
+      #16907 closed 2026-05-29 `experimental.advancedRouting` (`astro/hono`): unmatched routes throw `Cannot read properties of undefined (reading 'route')` instead of rendering the 404 page
+      #16569 closed 2026-05-02 fix(cloudflare): alias `debug` to obug-backed shim in server environments
+      #18101 merged 2026-09-22 Update dependency undici to v8
+      #16321 closed 2026-04-14 VSCode extension: use JSX comments instead of HTML comments for comment toggle
+      #18040 merged 2026-09-17 Update pnpm to v11.27.0
+      #15792 closed 2026-03-06 @astrojs/rss@4.0.15 crashes on build with Astro 6 — z.function(...).returns is not a function (Zod v4 breaking change)
+  atomic+write   10 hit(s) (all listed)
+      #17852 open 2026-08-28 feat(vscode): hand .astro to the TypeScript 7 content mapper when available
+      #18121 open 2026-09-24 Run Astro as a regular Vite plugin (astro/vite)
+      #17849 merged 2026-08-27 [ci] release
+      #17335 closed 2026-07-08 [7.x] Content collection markdown hot-reload does not update dynamic blog slug page until dev server restart
+      #15671 closed 2026-02-26 #writeFileAtomic: deterministic temp filename causes ENOENT when file watchers interfere
+      #16571 merged 2026-05-02 fix(cloudflare): inject headers for caching the assets folder
+      #17636 merged 2026-08-08 Refactor internal request handling into a functional core
+      #15311 closed 2026-01-27 SyntaxError: invalid capture group name in regular expression when using astro:actions on iOS 15–16
+      #15013 closed 2025-12-13  Blog tags & search, reading time utility & UI redesign — header, dark mode
+      #12715 merged 2024-12-11 fix: use atomic writes for data store file operations
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18005 open 2026-09-15 Add a dev server startup benchmark
+      #18061 open 2026-09-18 fix(dev): stop CSS traversal at virtual:astro:pages boundary
+      #17671 merged 2026-08-11 Detect stale dev server lock files after PID reuse
+      #17754 merged 2026-08-19 Fix stale lock file detection when PID is reused after container restart
+      #18165 closed 2026-09-28 PR workflow incorrectly updates lockfile
+      #18168 merged 2026-09-28 fix(triage): lockfile cleanup
+      #17903 closed 2026-09-03 `astro preview --ignore-lock` is refused whenever an AI agent is detected, so Playwright `webServer` cannot use it from an agent session
+      #18170 closed 2026-09-29 Windows: emptyDir EPERM fallback calls fs.rmdirSync with recursive, which Node.js 26 rejects
+      #17767 merged 2026-08-20 Add `--ignore-lock` flag support to `astro preview`
+      #18019 closed 2026-09-16 [CLI] `astro dev` auto-backgrounding in agent environments fails on Windows (Job Object cleanup & Vite race condition)
+      #18242 merged 2026-10-05 Prevent dev-toolbar source annotations from leaking into AstroContainer output under Vitest
+      #18249 merged 2026-10-05 Support "Variable" suffix in fontsource font family names
+      #17529 merged 2026-07-27 fix(cli): do not crash writing the dev lock file with a non-loopback `--host`
+      #17720 closed 2026-08-16 Cannot run multiple `preview` servers on Astro 7.2
+      #17851 merged 2026-08-27 Remove trailing-slash stream replacement workaround in sitemap integration
+      #18247 merged 2026-10-05 Return proper action errors for malformed JSON bodies and undecodable action names
+      #17744 closed 2026-08-19 Astro dev server is already running on  when using docker
+      #18164 merged 2026-09-28 Stable CSS Module class names in dev to prevent HMR stale class name mismatch
+      #17656 closed 2026-08-10 Another astro dev server is already running when using docker
+      #18078 merged 2026-09-20 fix: rewrite selects the wrong dynamic route
+  write+failure  84 hit(s) (all listed)
+      #18260 open 2026-10-06 Add @astrojs/content-store-sqlite, a libSQL content storage driver
+      #18265 open 2026-10-06 Add `notFound()` handler to `astro/hono` and `astro/fetch` so prerendered 404 pages are served in custom worker entries
+      #18237 merged 2026-10-05 Update @astrojs/netlify
+      #18194 closed 2026-10-01 Bindings declared in cloudflare.config.ts are missing from Env
+      #17755 merged 2026-08-20 Fix content collection edits serving stale content in dev on Windows
+      #18072 closed 2026-09-19 fix(head-metadata): invalidate component metadata only for module-graph files
+      #18007 merged 2026-09-15 fix(astro): stop the head-metadata plugin invalidating its own virtual module
+      #18090 closed 2026-09-21 @astrojs/cloudflare: `astro/runtime/**` in `optimizeDeps.include` pre-bundles every `.d.ts` in `astro/dist/runtime`
+      #18028 closed 2026-09-16 @astrojs/vercel: ISR routes can serve a cached redirect to /$0 when Vercel doesn't substitute the undocumented $0 token
+      #18211 closed 2026-10-02 Cloudflare Vite plugin v2: `require is not defined` when the worker entry imports `astro/app/entrypoint`
+      #18244 merged 2026-10-05 Fix localized error routes returning HTTP 200 through `pages()`
+      #17966 closed 2026-09-10 Aborted request bodies cause duplicate unhandled rejection logs in @astrojs/node
+      #18124 merged 2026-09-25 Update Node.js
+      #17753 merged 2026-08-19 [ci] release
+      #17868 closed 2026-08-31 [bug] @astrojs/cloudflare dev runner panics workerd on SSR module resolution failure, breaking route registry
+      #18108 merged 2026-09-23 Update dependency mocha to v12
+      #18132 closed 2026-09-25 Astro dev intermittently crashes when `astro:actions` is used in a server island
+      #17796 closed 2026-08-22 [Cloudflare] astro add can generate a compatibility_date unsupported by the installed workerd
+      #18009 closed 2026-09-15 Cloudflare 14.3.1: every prerendered page builds to `[object Object]` with nodejs_compat and compatibility_date >= 2025-10-01
+      #17849 merged 2026-08-27 [ci] release
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #18161 open 2026-09-28 Fix: CSS Module HMR leaves server-rendered React components with stale class names when also used by a hydrated island
+      #18199 closed 2026-10-02 glob() loader skips content files with `#` in their name
+      #17728 closed 2026-08-18 `experimental.svgOptimizer` does not pass the file path to SVGO, so `prefixIds` uses the same prefix for every file
+      #17821 closed 2026-08-25 Make the SvgOptimizer optimize() path parameter optional
+      #18068 closed 2026-09-18 Dev server: dependency scan fails when a `.astro` frontmatter comment contains a literal `<script` (7.3.2+)
+      #17705 merged 2026-08-15 Fix incremental build serving cached HTML with stale CSS filenames after stylesheet-only edits
+      #17730 closed 2026-08-18 fix(assets): forward the SVG file path to the optimizer
+      #18242 merged 2026-10-05 Prevent dev-toolbar source annotations from leaking into AstroContainer output under Vitest
+      #17646 closed 2026-08-09 MDX + Sätteri math: inline math brace groups are scanned as JSX expressions and fail the compile
+      #18198 closed 2026-10-02 Astro 7 fails on Android/Termux due to Sätteri WASI preopen of filesystem root
+      #17991 closed 2026-09-14 Content collections using glob loader with subdirectories fail to update on markdown edit in dev mode
+      #17950 closed 2026-09-09 Update dependency vitest to v4.1.11 [SECURITY]
+      #17616 merged 2026-08-06 fix(incremental): use resolved file names for imported assets in the dependency hash
+      #18123 closed 2026-09-25 CSS Modules are duplicated when a component is both server-rendered and used with client:only
+      #17903 closed 2026-09-03 `astro preview --ignore-lock` is refused whenever an AI agent is detected, so Playwright `webServer` cannot use it from an agent session
+      #17882 closed 2026-09-01 ClientRouter breaks when using history.pushState
+      #17762 closed 2026-08-20 Path math with `new URL()` on raw filesystem paths: a `:` in a content filename crashes the prerender write, and a Windows drive-letter glob `base` crashes the loader ("The URL must be of scheme file")
+      #17484 closed 2026-07-22 Content Layer: glob loader with a negation pattern ingests unrelated files in dev; data store re-ingests itself and grows unboundedly
+      #17084 merged 2026-06-15 Experimental incremental static builds
+      #18026 merged 2026-09-16 Update dependency vitest [SECURITY]
+
+== 51 terms run; 50 returned hits, 11 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

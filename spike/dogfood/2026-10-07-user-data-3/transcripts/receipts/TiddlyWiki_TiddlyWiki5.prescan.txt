@@ -1,0 +1,728 @@
+== novelty pre-scan: TiddlyWiki/TiddlyWiki5
+== date: 2026-10-07T06:47:03Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10007 open 2026-09-03 Markdown: Fix crash in inline look-ahead parsing
+      #8144 open 2024-04-15 [BUG] Crash on empty transclusion syntax inside button widget 
+      #9240 open 2025-08-09 [BUG] "Visible Transclusions" Tiddler on tiddlywiki.com crashes page
+      #3968 open 2019-06-04 File-based TW on Node crashes on loading a large number of skinny tiddlers (~2000)
+      #8155 open 2024-04-17 add button custom recursion detection and protection
+      #1313 open 2015-01-03 Small chance for data loss under node?
+      #8147 open 2024-04-16 implement dynamic config and check for max-widget-tree-depth recursion detection
+      #2825 open 2017-04-09 Request: Enter/exit edit mode directly
+      #9920 open 2026-07-12 Recover from malformed wikitext and surface parse diagnostics
+      #6536 open 2022-03-17 [IDEA] The th-renaming-tiddler should have a "wiki" argument
+      #2848 open 2017-05-07 possibilty using TW5 on Ipad - twedit is no longer available in appstore
+      #9245 open 2025-08-13 [IDEA] Tiddler Edit Mode - Move the Tiddler Buttons up to win Vertical Screen Space
+      #3934 open 2019-04-29 Request: Compound tiddlers
+      #2451 open 2016-05-18 Extend transclude to target identifiable segments in a tid
+      #5463 open 2021-02-01 [IDEA] implement a safety mechanism for regexes in filters
+      #9033 open 2025-04-15 [IDEA] Make Typed Blocks ($$$), Compound Tiddlers. and Data Widget one thing
+      #1530 open 2015-02-26 have node.js dynamically monitor the wiki file system to pick up changes made by outside agencies
+      #6970 merged 2022-10-01 Improve recursion detection
+      #9893 closed 2026-06-28 Add opt-in resilient render boundary
+      #3945 open 2019-05-15 Local Storage on 5.1.20
+  corrupt        42 hit(s) (all listed)
+      #9987 open 2026-08-24 [Report] invalid CSS syntax in $:/PaletteManager inputs immediately corrupts the page display
+      #9898 open 2026-07-02 [Report] Plugin wikitext-serialize corrupts inline code that contains a backtick
+      #6736 open 2022-06-24 [IDEA] Add filter operators for encrypting/decrypting text
+      #9861 open 2026-05-29 [IDEA] enable format:date[...] operator to accept non-numeric date strings as input
+      #8961 open 2025-02-21 [BUG] Pasting image in long tiddler causes import dialog to appear outside viewport
+      #9722 open 2026-03-10 feat: filter serialize, and mvvdisplayinline serializer
+      #9708 open 2026-03-05 Add wikitext inline checkbox syntax [ ] / [x] with checkbox filter operator
+      #9694 open 2026-02-25 Markdown frontmatter metadata support
+      #7104 open 2022-12-08 [IDEA] Better notification about plugin updates in libraries
+      #9676 merged 2026-02-22 Fix Freelinks Aho-Corasick: failure links, cache invalidation, longest-match, and Unicode safety
+      #4484 closed 2020-03-09 Built-in externalimages build corrupts original image files
+      #9495 merged 2025-12-13 Protect cached array data from external mutation
+      #1891 closed 2015-07-29 wiki source file corrupted after firefox crash
+      #2014 closed 2015-10-13 Corrupted editor cursor position when toggling sidebar with preview on.
+      #4161 closed 2019-08-06 Links do not update when tiddler titles change
+      #8960 closed 2025-02-21 [BUG] Pasting image in long tiddler causes import dialog to appear outside viewport
+      #8446 closed 2024-07-29 MultiWikiServer: Editing attachment tiddlers corrupts them
+      #7915 closed 2024-01-02 Introduce "Multi Wiki Server" Plugin
+      #7399 merged 2023-04-10 Docs: Fixed PR for getting started tweaks
+      #7157 closed 2022-12-28 [BUG] import some binary file will corrupted the file (eg. mp3 file)
+  corruption     10 hit(s) (all listed)
+      #7125 open 2022-12-15 add console-error to the Logger class
+      #4168 closed 2019-08-07 [tw.com] Add RSOE instrux
+      #8596 merged 2024-09-12 mws authentication
+      #4373 merged 2019-11-14 Fix syncer to handler errors properly
+      #7065 merged 2022-11-26 Fix issue with linked list remove
+      #6400 closed 2022-01-15 [BUG] JSON corruption errors cause a Red Screen of Embarrassment
+      #1611 closed 2015-03-23 nsort confused by non numeric values
+      #1673 closed 2015-04-21 bug: tw.com PDF demo not worky
+      #1249 merged 2014-12-19 make checkVersions consider build version
+      #4630 closed 2020-05-03 Fix file info
+  truncated      17 hit(s) (all listed)
+      #4408 open 2020-01-05 documentation plugin macros broken, docs unusable
+      #9974 open 2026-08-17 [Report] Month formating is wrong when the date has no days
+      #9810 open 2026-04-14 [RFC] File paths for tw-com edition
+      #9981 open 2026-08-22 Fix date parsing and DateFormat template tokens
+      #9903 merged 2026-07-08 Bump js-yaml from 4.1.1 to 4.3.0
+      #9766 closed 2026-03-24 [v5.4.0 prerelease] Macrocall <<name"parameter">> fails
+      #6724 closed 2022-06-14 [BUG] Whitespace incorrectly truncated between Markdown formatted text and CamelCase link
+      #8362 merged 2024-07-10 Improve view templates to show tag children
+      #7785 merged 2023-10-14 Fix: Evernote .enex image import
+      #6666 merged 2022-04-26 Parameterised transclusions
+      #5385 merged 2021-01-10 contain the long list inside a div which is 50% of vertical height
+      #1089 closed 2014-11-17 feature request: if filter parameter contains a limit and the list is truncated, there should be a visual indication
+      #1769 closed 2015-06-04 Show specific no. of chars from tiddler, possibly by extending operator "splitbefore"
+      #1671 closed 2015-04-20 ToC macros should not recurse indefinitely
+      #1772 closed 2015-06-04 The sidebar hide tiddlers list when click on tags > tag_name
+      #1863 merged 2015-07-03  New filter "recent"
+      #1407 closed 2015-01-22 allows to define behaviour when last tiddler in story is closed
+  truncate       28 hit(s) (all listed)
+      #1788 open 2015-06-11 FileSystemAdaptor should not truncate `.multids` files
+      #4408 open 2020-01-05 documentation plugin macros broken, docs unusable
+      #9974 open 2026-08-17 [Report] Month formating is wrong when the date has no days
+      #9810 open 2026-04-14 [RFC] File paths for tw-com edition
+      #9981 open 2026-08-22 Fix date parsing and DateFormat template tokens
+      #9003 open 2025-04-01 Filter inspection for debugging
+      #9836 merged 2026-04-26 Freelinks Plugin: Add configurable MaxLinks cap and remove search truncation
+      #6267 open 2021-11-22 [IDEA] Extend add filter operator for date math
+      #2271 open 2016-02-04 Tech specifications for proposal: "JavaScript anchors" to replace missing HTML anchor functionality.
+      #9903 merged 2026-07-08 Bump js-yaml from 4.1.1 to 4.3.0
+      #9766 closed 2026-03-24 [v5.4.0 prerelease] Macrocall <<name"parameter">> fails
+      #9783 closed 2026-04-04 [Report] 5.4.0: Text input box does not fully draw in Firefox
+      #6724 closed 2022-06-14 [BUG] Whitespace incorrectly truncated between Markdown formatted text and CamelCase link
+      #8362 merged 2024-07-10 Improve view templates to show tag children
+      #7785 merged 2023-10-14 Fix: Evernote .enex image import
+      #6666 merged 2022-04-26 Parameterised transclusions
+      #5385 merged 2021-01-10 contain the long list inside a div which is 50% of vertical height
+      #1089 closed 2014-11-17 feature request: if filter parameter contains a limit and the list is truncated, there should be a visual indication
+      #1304 closed 2015-01-02 Bug in generateTiddlerFilename
+      #1308 closed 2015-01-02 Suspicious behavior in generateTiddlerFilename 
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9871 open 2026-06-06 [IDEA] Allow empty lines to be rendered
+      #4017 open 2019-06-25 Empty Define breaks subsequent macros
+      #6870 open 2022-08-02 [IDEA] GettingStarted Tiddler in Empty.html
+      #9901 open 2026-07-02 [Report] An empty `$list-template` renders the default link template instead of nothing
+      #2137 open 2015-12-18 sort filters and empty value position
+      #4363 open 2019-10-31 Let us release standard and empty editions
+      #7677 open 2023-08-13 Filter variable 0 changed to empty string
+      #1451 open 2015-02-03 $tw.utils.stringifyList should not discard empty values
+      #8144 open 2024-04-15 [BUG] Crash on empty transclusion syntax inside button widget 
+      #9910 open 2026-07-09 Annotate the parse tree of "conditional shortcuts"
+      #9373 open 2025-10-29 [IDEA] How to handle partially empty inputs with some math operators
+      #9122 open 2025-06-30 [BUG] In "empty", the default Theme is not correctly marked out
+      #9998 open 2026-08-27 [Documentation Bug] The “Order of Tagged Tiddlers” documentation tiddler gives an incorrect description of the algorithm
+      #3843 open 2019-03-09 Should the transclude widget treat empty text the same as missing text
+      #9979 open 2026-08-21 Fix link widget tooltip and href generation
+      #10037 open 2026-09-21 Doc: Remove hardcoded versions values in TiddlyWiki Archive
+      #2117 open 2015-12-08 enhance the search & regexp filter to return an empty list for a blank operand
+      #4916 open 2020-10-27 [BUG] The syncer-browser-tiddlyweb  syncer is overly noisy
+      #9899 open 2026-07-02 Fix serializing inline code containing backticks
+      #6397 open 2022-01-14 [PROPOSAL] Possible improvement to show "caption" instead of "title" and "empty caption" fallback issue with TW lists
+  atomic         14 hit(s) (all listed)
+      #9947 open 2026-07-25 Harden and extend filesystem dynamic stores
+      #9806 open 2026-04-13 Live reloading of tiddler files
+      #3740 open 2019-01-31 text slicer format bug "one tiddler per heading, threaded" 
+      #3215 open 2018-04-16 transclusion inherit tags instead of inheriting title-as-tag (or copy-pasta tags en masse)
+      #345 open 2014-01-14 Introduce vocabulary parameter to wikitext content type
+      #196 open 2013-11-04 Renaming a tiddler break links, the user should be warned at least
+      #5940 open 2021-08-05 Chrome intends to drop support for confirm/alert/prompt in cross-origin iframes
+      #7329 open 2023-03-04 Developer demo of alternate wiki store implementation
+      #3069 closed 2017-12-21 Restructuring tiddlywiki.com | monolithic vs. multiple wikis vs. mixed
+      #9135 merged 2025-07-08 [5.4.0] Update eslint target to 2017 and do initial fixes
+      #8885 closed 2025-01-08 MWS: Use Promises for sql-tiddler-database.js
+      #1306 closed 2015-01-02 Updated documentation on developing for TiddlyWiki5 to hopefully help el...
+      #3590 closed 2018-11-28 make navigator update "focus-tiddler" field ...
+      #4630 closed 2020-05-03 Fix file info
+  atomically     0 hit(s)
+  interrupted    8 hit(s) (all listed)
+      #9197 open 2025-07-28 Slide.js - better animation and horizontal slide handling
+      #196 open 2013-11-04 Renaming a tiddler break links, the user should be warned at least
+      #5547 closed 2021-03-15 [DEFECT] Macro replacement can be interrupted in the call stack
+      #8844 closed 2024-12-22 Allow seeking throughout video files
+      #8644 closed 2024-09-28 Sidebar resizer: resizing the sidebar
+      #2976 closed 2017-09-14 How can I help to translate Tiddlywiki to Persian (Farsi)?
+      #5616 closed 2021-04-19 [BUG] Dropzone dragover state can incorrectly persist
+      #4157 merged 2019-08-04 add "preventScroll" option to tm-focus-selector message
+  interrupt      37 hit(s) (all listed)
+      #9197 open 2025-07-28 Slide.js - better animation and horizontal slide handling
+      #7415 open 2023-04-24 [BUG] The tag ‘$:/tags/Macro’ affects the animation of the Tiddler.
+      #9228 open 2025-08-06 Storyview update
+      #9987 open 2026-08-24 [Report] invalid CSS syntax in $:/PaletteManager inputs immediately corrupts the page display
+      #7265 open 2023-02-14 [IDEA] It should be possible to activate delayed actions on mouse events eg: dragenter 
+      #6948 open 2022-09-15 [IDEA] Safety limit on rendering preview
+      #10003 merged 2026-08-31 Fix plugin library iframes hanging if onload never fires by adding readiness handshake
+      #8433 open 2024-07-27 [IDEA] Add oEmbed / OpenGraph metatags
+      #6185 open 2021-11-09 [IDEA] $accordion widget or similar
+      #1223 open 2014-12-12 Suggested new behavior for tag dropdown list
+      #8997 open 2025-03-26 WIP: Create a more-info footer with several tabs
+      #7422 merged 2023-04-29 Add tm-http-request message for making HTTP requests
+      #196 open 2013-11-04 Renaming a tiddler break links, the user should be warned at least
+      #5547 closed 2021-03-15 [DEFECT] Macro replacement can be interrupted in the call stack
+      #6191 closed 2021-11-11 Add explanatory material to GettingStarted
+      #8888 closed 2025-01-09 MWS: Async rewrite
+      #8696 closed 2024-10-20 Fix: disable the storyview scroll in the "Open" tab
+      #7990 closed 2024-02-15 Simplify permalinks
+      #8887 closed 2025-01-09 MWS: Async rewrite
+      #8844 closed 2024-12-22 Allow seeking throughout video files
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         42 hit(s) (all listed)
+      #4742 open 2020-06-28 [BUG] Data loss on Node if one or more modified files isn't writable
+      #1313 open 2015-01-03 Small chance for data loss under node?
+      #6017 open 2021-09-02 [BUG] Node.js mode Does not Warn in UI of Sync errors
+      #1676 open 2015-04-25 Improve core support for static site generation
+      #4782 open 2020-07-31 [IDEA] - Navigating the story river with keyboard shortcuts
+      #4484 closed 2020-03-09 Built-in externalimages build corrupts original image files
+      #7591 closed 2023-07-08 [BUG] $:/core/modules/utils/fakedom.js:276
+      #8776 closed 2024-11-21 [MWS] Delete an active role, crashes the server
+      #5286 closed 2020-12-15 [IDEA] Automatically importing external web images through pasting the URL
+      #8720 closed 2024-11-01 [MWS] Server crash when accessing new user
+      #8596 merged 2024-09-12 mws authentication
+      #8716 merged 2024-10-31 add success and error message feedback for user profile operations
+      #7915 closed 2024-01-02 Introduce "Multi Wiki Server" Plugin
+      #8542 closed 2024-08-21 [Bug] "tiddlywiki invalid-path --listen" does start a server - IMO it should not
+      #7944 merged 2024-01-23 Add trimSelection parameter to text editor
+      #3703 closed 2019-01-17 Improve command line logging
+      #1970 closed 2015-09-28 generic EventWidget
+      #2695 closed 2017-01-04 TypeError: $tw.utils.replaceString is not a function in tiddlywebadaptor.js
+      #2858 closed 2017-05-14 XMLHttpRequest error code: 502
+      #7151 closed 2022-12-24 [BUG] With 8k+ tiddlers, in a NodeJS wiki everything is Slow 
+  power          90 hit(s) (all listed)
+      #9860 open 2026-05-27 FIT - Fields in Text - experiment
+      #2578 open 2016-09-14 Make syncadaptor interface more consistent providing complete tiddlers whenever possible
+      #1182 open 2014-12-02 add list-search to core providing simple list filtering
+      #7196 open 2023-01-09 [IDEA] Use of Modern Filter with $:/Advanced Search Through Predefined Filters
+      #9661 open 2026-02-13 Using upstream issues a personal TODO lists
+      #2952 open 2017-08-02 DataTiddlers: Make It Easier To Edit Records In Data Tiddlers
+      #9811 open 2026-04-16 [Report] Licensing issue with respect to LLM generated code
+      #2857 open 2017-05-13 Request: Feature rich embedded links
+      #7110 open 2022-12-11 Investigate tauri.app for building an alternative desktop/server GUI
+      #4697 open 2020-06-04 [IDEA] String manipulation operators should be able to deal with \n\t .. and others
+      #7832 open 2023-11-07 [IDEA] Add filter operator to sort by same method as tags
+      #8689 open 2024-10-19 Dynamic build commands
+      #3461 open 2018-10-01 Add support for running external shell tasks
+      #9064 open 2025-05-20 Compress plugin text field with fflate
+      #196 open 2013-11-04 Renaming a tiddler break links, the user should be warned at least
+      #9733 closed 2026-03-15 [Report] Simply opening a tiddler locks up my browser with TW 5.4 prerelease
+      #2953 closed 2017-08-04 "Powered By" for Core?
+      #9634 merged 2026-02-04 UI: Show cascade filter details in Advanced info tab
+      #6168 merged 2021-11-04 Add "cascade" filter run prefix and use it to control view templates
+      #4386 closed 2019-12-11 support saving directly to git
+  outage         2 hit(s) (all listed)
+      #5303 closed 2020-12-22 Update docs to reflect TiddlySpot status?
+      #680 merged 2014-07-12 "TiddlyWiki Architecture" needs to go into more depth
+  ENOSPC         0 hit(s)
+  disk           80 hit(s) (all listed)
+      #9937 open 2026-07-22 Allow in-memory wiki configuration in loadWikiTiddlers
+      #9947 open 2026-07-25 Harden and extend filesystem dynamic stores
+      #9806 open 2026-04-13 Live reloading of tiddler files
+      #8889 open 2025-01-09 Add NODE_DEV_PATH_STACKTRACE env var to show tiddler filepath instead for single tiddler files
+      #3060 open 2017-12-14 Reload changed tiddlers from disc 
+      #6359 open 2021-12-21 [BUG] Unexpected double encoding of URLs of static renderings
+      #5952 open 2021-08-14 tiddlywiki by node.js can't write tiddlers to server
+      #1073 open 2014-11-10 No encryption in node.js client-server mode
+      #2062 open 2015-11-08 Changing user name  - modifier appears changed but is saved as old user.
+      #7018 open 2022-10-31 Virtual Tiddler: An Issue or A Feature
+      #7930 open 2024-01-15 [IDEA] NodeJS should Delay binary file loading from filesystem if using lazy-all or lazy-image
+      #9658 open 2026-02-13 [IDEA] Add a grep-filter, based on regular expressions
+      #6684 open 2022-05-10 [IDEA] Last saved timestamp and what it may enable
+      #6017 open 2021-09-02 [BUG] Node.js mode Does not Warn in UI of Sync errors
+      #4224 open 2019-08-31 Update a timestamp tiddler when a wiki is saved
+      #9694 open 2026-02-25 Markdown frontmatter metadata support
+      #2108 open 2015-12-05 Expected behaviour when a tiddler open in edit mode is modifed from outside the draft?
+      #9491 open 2025-12-13 Fix create journal overwrite skinny tiddler
+      #9714 open 2026-03-07 [IDEA] Add warning when importing a plugin tiddler through drag-and-drop to a node.js wiki
+      #4125 open 2019-07-23 Proposal: The $ControlPanel provides possibilities for plugins to promote important content
+  partial        59 hit(s) (all listed)
+      #9947 open 2026-07-25 Harden and extend filesystem dynamic stores
+      #6826 open 2022-07-25 [BUG] toc-macros have still 1 text substitution: $sort$ -- So caching is prevented
+      #6621 open 2022-04-11 [IDEA] cascade to provide field-list to tiddlers in both edit and view templates
+      #7703 open 2023-08-29 added prettyannotatedlinks
+      #6892 open 2022-08-09 [IDEA] Filter operator `interleave` that merges two (or more) lists together
+      #6267 open 2021-11-22 [IDEA] Extend add filter operator for date math
+      #7688 open 2023-08-21 CopyTiddler Toolbar Button & Clipboard Action Widget
+      #6931 open 2022-08-28 [IDEA] Using Menubar with Sticky Tiddlers without Overlap.
+      #7822 open 2023-10-29 Fix 7701 filtered transclusion fails if "}" follows somewhere in the text
+      #9677 open 2026-02-22 [IDEA] Field schema
+      #7744 open 2023-09-15 Feat: allow link to ^id anchor
+      #4905 open 2020-10-24 [BUG] Search doesn't work for 'İ' and 'ı'
+      #6936 merged 2022-09-02 JSON Filter Operators (Revised Attempt)
+      #3060 open 2017-12-14 Reload changed tiddlers from disc 
+      #7701 closed 2023-08-26 [BUG] Filtered transclusion that is, much later, followed by curly brace
+      #9775 merged 2026-04-01 Bump minimatch from 3.1.2 to 3.1.5
+      #9893 closed 2026-06-28 Add opt-in resilient render boundary
+      #3710 closed 2019-01-19 Draggable links
+      #9075 closed 2025-06-03 Web Server route add put-file
+      #9078 merged 2025-06-05 Get-file web server route now support streaming
+  incomplete     54 hit(s) (all listed)
+      #2822 open 2017-04-04 InfoMechanism - incomplete doc tiddler
+      #4295 open 2019-10-07 Download saver incomplete when using lazy loading
+      #9941 open 2026-07-24 Improve $:/PaletteEditor usability
+      #3227 open 2018-04-25 Add a mechanism allowing the sync adaptor to notify the syncer of changes
+      #4425 open 2020-01-26 Hide "Stacked view" tab unless storyview active
+      #9065 open 2025-05-21 Planning v5.4.0
+      #7663 open 2023-08-03 If applied, this commit will give users a link to an open-source guide
+      #3948 open 2019-05-15 Hash based auth mechanism.
+      #9294 open 2025-09-17 [IDEA] Syntax highlighting filters in tiddlywiki.com
+      #9895 open 2026-06-29 AGENTS.md - contribution guide for LLMs
+      #9507 open 2025-12-18 Dragndrop - add enhanced dragndrop lists
+      #8957 open 2025-02-18 Introducing bundled sub plugins
+      #9002 open 2025-04-01 allow new tabs to be added to the plugin info box
+      #4718 open 2020-06-19 Compression
+      #9836 merged 2026-04-26 Freelinks Plugin: Add configurable MaxLinks cap and remove search truncation
+      #196 open 2013-11-04 Renaming a tiddler break links, the user should be warned at least
+      #7652 open 2023-07-31 Adopt Feather/Lucide icons
+      #9672 closed 2026-02-21 Improve Aho-Corasick search correctness and longest-match priority in Freelinks
+      #9463 closed 2025-11-26 [BUG] Weird behavior with `tagging[]`
+      #9389 closed 2025-11-02 Allow recursive `\import`
+  dataloss       1 hit(s) (all listed)
+      #2107 open 2015-12-03 Recording multiple users as modifiers
+  recover        26 hit(s) (all listed)
+      #9920 open 2026-07-12 Recover from malformed wikitext and surface parse diagnostics
+      #4254 open 2019-09-09 disabling "codeinline" parse-rule will break TW saving, without recovering possibility
+      #9914 open 2026-07-09 Block node spans and block position are inconsistent in the parse tree
+      #9117 open 2025-06-26 [5.5.0] Allow sync adapters to save/load/delete multiple titles at once
+      #7563 open 2023-06-26 [BUG] RSOD and Maximum Call Stack Reached
+      #4697 open 2020-06-04 [IDEA] String manipulation operators should be able to deal with \n\t .. and others
+      #7340 closed 2023-03-07 Add a filtered transclusion to the PageTemplate to wrap it in customizable content
+      #4013 closed 2019-06-23 True Variables Missing?
+      #7990 closed 2024-02-15 Simplify permalinks
+      #3788 closed 2019-02-21 Useful enhancement with Maths Operators?
+      #2695 closed 2017-01-04 TypeError: $tw.utils.replaceString is not a function in tiddlywebadaptor.js
+      #7620 closed 2023-07-20 Planning bug fix release v5.3.1
+      #7332 merged 2023-03-06 Improve the StoryTiddlerTemplate fallback
+      #2030 closed 2015-10-15 recycle bin / undo edits
+      #4767 closed 2020-07-23 [BUG] Renaming tiddler with lazy-loading enabled can delete other tiddlers' bodies
+      #4373 merged 2019-11-14 Fix syncer to handler errors properly
+      #7076 merged 2022-12-02 Add layout switcher page control button
+      #2130 closed 2015-12-15 Feature request: Support for WebTorrent 
+      #6311 closed 2021-12-05 [BUG]$tw.utils.decodeURIComponentSafe is not a function
+      #686 closed 2014-07-15 TW5 can miss the signal to re-hide the drag-and-drop target in Firefox 31.0a2
+  recovery       13 hit(s) (all listed)
+      #7357 open 2023-03-12 Improved super safe recovery mode layout
+      #9997 open 2026-08-27 Inline code spans reach across block boundaries
+      #9920 open 2026-07-12 Recover from malformed wikitext and surface parse diagnostics
+      #4742 open 2020-06-28 [BUG] Data loss on Node if one or more modified files isn't writable
+      #5463 open 2021-02-01 [IDEA] implement a safety mechanism for regexes in filters
+      #9836 merged 2026-04-26 Freelinks Plugin: Add configurable MaxLinks cap and remove search truncation
+      #7340 closed 2023-03-07 Add a filtered transclusion to the PageTemplate to wrap it in customizable content
+      #7990 closed 2024-02-15 Simplify permalinks
+      #7268 closed 2023-02-15 Modals in WikiText
+      #2695 closed 2017-01-04 TypeError: $tw.utils.replaceString is not a function in tiddlywebadaptor.js
+      #692 merged 2014-07-20 "Manually create an external image" instructions do not work 5.0.14-prerelease
+      #2614 merged 2016-10-15 WebDAV clobbering protection
+      #4944 closed 2020-10-30 Typo fix: "ot" should be "to"
+  rollback       1 hit(s) (all listed)
+      #7934 closed 2024-01-18 [IDEA] Allow nodejs manage multiple folder. Each as a "bag"
+  resume         18 hit(s) (all listed)
+      #9920 open 2026-07-12 Recover from malformed wikitext and surface parse diagnostics
+      #310 open 2013-12-27 Is it possible to encrypt single tiddler?
+      #1205 open 2014-12-07 Propose to remove bold from shadow titles
+      #9078 merged 2025-06-05 Get-file web server route now support streaming
+      #6176 closed 2021-11-06 [BUG] CSS parsing failure in one stylesheet can break the whole wiki
+      #1211 closed 2014-12-08 Support additional languages for highlight plugin
+      #3069 closed 2017-12-21 Restructuring tiddlywiki.com | monolithic vs. multiple wikis vs. mixed
+      #8967 closed 2025-02-28 [IDEA] SetTimeout / SetInterval / SetAlarmClock widget
+      #2807 closed 2017-03-16 Paste from clipboard
+      #7882 merged 2023-12-11 Introduced preliminary idea for infinite recurse exception
+      #79 closed 2013-03-27 TiddlyWiki5 NPM package is not updated
+      #371 closed 2014-01-28 After creating a new tiddler the title field should be auto-focussed (and probably auto select-all the text) for convenience
+      #4193 closed 2019-08-23 Sidebar not expandable/collapseable
+      #4868 closed 2020-09-29 [BUG] StoryList is shared among clients as of 5.1.22
+      #4596 closed 2020-04-25 [BUG] High cpu consume after upgrade to 5.1.22
+      #1887 merged 2015-07-20 Updated spelling of résumé, fixed settings for new resumes, other minor fixes
+      #1885 merged 2015-07-18 Added resume builder edition
+      #1886 merged 2015-07-20 Resume builder update
+  half-written   18 hit(s) (all listed)
+      #9806 open 2026-04-13 Live reloading of tiddler files
+      #9058 closed 2025-05-16 TEST: Use biome instead of eslint dprint
+      #9351 closed 2025-10-19 Improve `contains` operator
+      #8258 merged 2024-06-12 feat: serialize AST node back to wikitext string
+      #1891 closed 2015-07-29 wiki source file corrupted after firefox crash
+      #7836 closed 2023-11-14 [IDEA] Provide another generic slot widget
+      #7694 merged 2023-08-23 Add `join` attribute to list widget
+      #5444 closed 2021-01-25 Toolbar macro
+      #6034 merged 2021-09-16 removed pushtop from untagged filter
+      #4290 closed 2019-10-05 Improve p generation
+      #1066 closed 2014-11-07 Search results in a tab of the Sidebar
+      #228 closed 2013-11-22 Add RegEx support to filters
+      #2180 closed 2016-01-04 Simplify (and actually fix) PageScroller
+      #2343 closed 2016-03-26 [#1290 revisit] Nav to tiddler should align viewport with tiddlers top edge
+      #2912 closed 2017-06-18 Proposal for improving TW Documentation - Structure (part 1)
+      #3291 closed 2018-05-17 [highlight-boxes] improve documentation readability
+      #4838 closed 2020-09-02 [BUG] IMO html attribute parser creates strange effects, due to missing test
+      #5130 closed 2020-11-28 Timeline for 5.1.23 release?
+  wipe           12 hit(s) (all listed)
+      #6309 open 2021-12-04 [BUG] (Minor) Cancelled Tiddler close wipes New field definition
+      #4294 open 2019-10-07 local Storage Plugin  installed on tiddlywiki.com
+      #2931 open 2017-07-04 New Journal overwrites draft tiddler
+      #9560 closed 2026-01-07 [Report] tiddlywiki.files add tags in fields using directories
+      #5992 closed 2021-08-27 [IDEA] Add timestamp option/attribute to other widgets like action-setfield
+      #8138 closed 2024-04-09 Client-server data loss due to faulty cache handling
+      #1839 closed 2015-06-22 Modify server.js to enable cache headers to be explicitly specified in tiddlywiki.info
+      #5916 closed 2021-07-27 [IDEA] Painful gotcha in action-setfield macro
+      #2155 closed 2015-12-25 When and why are tiddler field-names forced to be lowercase?
+      #5028 closed 2020-11-13 [BUG] Type application/x-tiddler forced while importing .tid files from Windows Explorer
+      #165 merged 2013-09-22 Next and Previous filters plus tests and documentation
+      #1207 merged 2014-12-07 Altered command order for generating static sites in TW5.com how-to
+  wipes          3 hit(s) (all listed)
+      #6309 open 2021-12-04 [BUG] (Minor) Cancelled Tiddler close wipes New field definition
+      #9560 closed 2026-01-07 [Report] tiddlywiki.files add tags in fields using directories
+      #1207 merged 2014-12-07 Altered command order for generating static sites in TW5.com how-to
+  erase          19 hit(s) (all listed)
+      #1788 open 2015-06-11 FileSystemAdaptor should not truncate `.multids` files
+      #2199 open 2016-01-09 Proposal: Make bitmap drawing it TW more prominent
+      #2931 open 2017-07-04 New Journal overwrites draft tiddler
+      #4114 closed 2019-07-16 Attempting save with faulty field name should interrupt the save
+      #6152 closed 2021-10-29 [BUG] EditTextWidget - unexpected placeholder behaviour in missing tids
+      #6618 closed 2022-04-10 [BUG] Field Editor: Switching field name also clears the field value
+      #6066 closed 2021-09-23 [IDEA] slugify and some odd characters mishandling
+      #1333 closed 2015-01-06 Tag dropdow should list titles also not yet used as tags
+      #1066 closed 2014-11-07 Search results in a tab of the Sidebar
+      #1524 closed 2015-02-24 [mistakenly posted - please delete]
+      #184 closed 2013-10-21 Draft jumps out of view when typing.
+      #2343 closed 2016-03-26 [#1290 revisit] Nav to tiddler should align viewport with tiddlers top edge
+      #2424 closed 2016-05-06 Nest/Wrap style definitions with tc-tagged
+      #3409 closed 2018-08-23 Make closed drafts more visible
+      #1290 closed 2014-12-27 Proposal to change the default navigating behaviour of tiddlywiki
+      #1556 merged 2015-03-06 Missing advice in Contributing.tid 
+      #2893 merged 2017-06-11 Do not delete the user name on check login status
+      #2368 closed 2016-04-11 Spanish edition of TW5, based on the french one
+      #4684 merged 2020-05-27 Corrected issue with markdowns softbreaks AND whitespace between md markup
+  erasing        3 hit(s) (all listed)
+      #184 closed 2013-10-21 Draft jumps out of view when typing.
+      #2343 closed 2016-03-26 [#1290 revisit] Nav to tiddler should align viewport with tiddlers top edge
+      #2424 closed 2016-05-06 Nest/Wrap style definitions with tc-tagged
+  erased         8 hit(s) (all listed)
+      #1788 open 2015-06-11 FileSystemAdaptor should not truncate `.multids` files
+      #4114 closed 2019-07-16 Attempting save with faulty field name should interrupt the save
+      #6618 closed 2022-04-10 [BUG] Field Editor: Switching field name also clears the field value
+      #1524 closed 2015-02-24 [mistakenly posted - please delete]
+      #3409 closed 2018-08-23 Make closed drafts more visible
+      #1556 merged 2015-03-06 Missing advice in Contributing.tid 
+      #2893 merged 2017-06-11 Do not delete the user name on check login status
+      #4684 merged 2020-05-27 Corrected issue with markdowns softbreaks AND whitespace between md markup
+  destroy        57 hit(s) (all listed)
+      #7460 open 2023-05-16 [BUG] widget destroy() method fails testing.
+      #9440 open 2025-11-14 [BUG] Disabling some parsing rules can "destroy" the core UI
+      #7615 open 2023-07-19 Remove full rebuilds for tag indexer with every keystroke or UI click
+      #7455 open 2023-05-15 [Issue] Something strange is going on with the TagIndexer
+      #4466 open 2020-02-25 Cloning a Cloned Tiddler does not generate the expected Tiddler title
+      #7443 open 2023-05-10 [BUG] Doc examples should use best-practice for: button- and action-widgets
+      #1067 open 2014-11-07 Better handling of dragged links
+      #9556 open 2026-01-06 Add all codemirror-6 plugins
+      #497 open 2014-03-20 'Draft of' tiddler appears after tiddler is saved
+      #9673 open 2026-02-21 Feat/open focused toc use in tagtree of
+      #4742 open 2020-06-28 [BUG] Data loss on Node if one or more modified files isn't writable
+      #4395 open 2019-12-20 Proposal: Maybe filter tiddlers shouldn't be text/vnd.tiddlywiki, but instead be its own type.
+      #9893 closed 2026-06-28 Add opt-in resilient render boundary
+      #9097 merged 2025-06-17 Adds a widget destroy method
+      #7233 closed 2023-01-24 add depth first destroy method 
+      #4572 closed 2020-04-17 freelinks.js uses globalCache object, which is destroyed most of the time
+      #4536 closed 2020-04-04 [Question] using inline onclick to trigger javascript
+      #9075 closed 2025-06-03 Web Server route add put-file
+      #1784 closed 2015-06-10 Widget destruct / cleanup
+      #9215 closed 2025-08-03 test PR for bot integration
+  destroys       10 hit(s) (all listed)
+      #7455 open 2023-05-15 [Issue] Something strange is going on with the TagIndexer
+      #9893 closed 2026-06-28 Add opt-in resilient render boundary
+      #7918 closed 2024-01-05 Use Levenshtein distance to order search results
+      #8650 closed 2024-10-01 [IDEA] Allow setting temporary variables
+      #8664 merged 2024-10-05 Experiments: Refactoring HelloThere
+      #7317 merged 2023-03-03 fix 7142 search outline in chrome like browsers
+      #6026 closed 2021-09-08 Fix filesystem bugs
+      #7277 closed 2023-02-22 [IDEA] Delay the backlink indexer
+      #6864 closed 2022-08-01 [BUG] Empty CSS Class in WIkitext Construct Destroys the  Following Constructs
+      #1341 merged 2015-01-08 autolinks system tiddlers
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9491 open 2025-12-13 Fix create journal overwrite skinny tiddler
+      #9671 open 2026-02-20 Update eslint config and remove overwriting duplicates
+      #4121 open 2019-07-22 Confusing upgrade overwrite warning
+      #4416 open 2020-01-18 Clearer warning for import overwrite
+      #9906 open 2026-07-09 Hard linebreaks rule overwrites the rule names of its inner nodes
+      #2931 open 2017-07-04 New Journal overwrites draft tiddler
+      #5518 open 2021-02-28 [IDEA] Indicate overwrites that need attention from updates
+      #4261 open 2019-09-14 Gboard and chrome on Android overwrites text when editing tiddlers.
+      #7938 open 2024-01-19 [Bug] It's possible to have 2 NEW draft tiddlers that will overwrite each other
+      #9845 open 2026-04-29 Static tabs macro - Intended to be used with static output
+      #3649 open 2018-12-17 Rename tiddler hackability
+      #6547 open 2022-03-21 [IDEA] The tabs-macro should have a "condition" or a "template" that allows users to disable or remove tabs
+      #1616 open 2015-03-29 User should be warned of edit contention
+      #897 open 2014-09-22 feature request: The global macro handling should display a warning, if a "system" macro is overwritten.
+      #2961 open 2017-08-22 select widget defaults are a footgun
+      #1940 open 2015-09-15 global setup tiddler
+      #448 open 2014-02-27 Unexpected deletion when replacing a draft tiddler
+      #6560 open 2022-03-26 [IDEA]  Always create unique titles for tiddlers being imported
+      #2938 open 2017-07-12 XLSX importer not appending fields to list field
+      #4831 open 2020-08-25 [BUG] GitHub saver workflow is error prone. (may be GitLab too)
+  clobber        6 hit(s) (all listed)
+      #4905 open 2020-10-24 [BUG] Search doesn't work for 'İ' and 'ı'
+      #9703 merged 2026-02-28 Moved bulkops relink behavior into dedicated module
+      #4868 closed 2020-09-29 [BUG] StoryList is shared among clients as of 5.1.22
+      #3073 closed 2018-01-02 Ensure WebDAV clobbering protection retrieves ETag if necessary
+      #2614 merged 2016-10-15 WebDAV clobbering protection
+      #4952 merged 2020-10-31 Add keyboard shortcut to change the sidebar layout
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9872 open 2026-06-06 Blank line paragraph preservation
+      #9989 open 2026-08-24 Give each tiddler info tool its own block
+      #9929 open 2026-07-12 Annotate the parse tree of lists
+      #9930 open 2026-07-12 Record parse position and content mode on html nodes
+      #9723 open 2026-03-10 Improve TW CLI text output and formattedtext 
+      #9990 open 2026-08-24 Replace nested $set with $let in the plugin table
+      #9913 open 2026-07-09 Record parse position and content mode on html nodes
+      #9988 open 2026-08-24 $:/core/ui/TiddlerInfo/Tools - list vertical space is different if shown in story river
+      #10026 open 2026-09-14 Add the hard-line-breaks plugin
+      #873 open 2014-09-19 Zoomin storyview is blank if tiddler at top of history stack is closed
+      #2117 open 2015-12-08 enhance the search & regexp filter to return an empty list for a blank operand
+      #9871 open 2026-06-06 [IDEA] Allow empty lines to be rendered
+      #9927 open 2026-07-12 Annotate the parse tree of conditional shortcuts
+      #9925 open 2026-07-12 Let block terminators claim the preceding newline for consistency
+      #3843 open 2019-03-09 Should the transclude widget treat empty text the same as missing text
+      #9272 open 2025-08-25 [BUG] Custom widgets don't recognize its content when slot widget has $depth attribute
+      #9562 open 2026-01-08 [BUG] Markdown: multiline params don't work in markdown
+      #8212 open 2024-05-25 [IDEA] Allow Comments Inside $let
+      #9178 open 2025-07-23 [IDEA] Filter op to get tiddler title while current is the draft.
+      #10034 open 2026-09-17 [Proposal] Module header metadata: let filter operators describe their syntax
+  unreadable     34 hit(s) (all listed)
+      #9500 open 2025-12-16 [BUG] $:/palettes/Rocker select-tag-background uses foreground color
+      #9220 open 2025-08-04 [v5.4.0] Policy Decisions and Coding Guidelines for Development v5.4.0
+      #9938 open 2026-07-23 feat: conditionally hide editor preview types
+      #9117 open 2025-06-26 [5.5.0] Allow sync adapters to save/load/delete multiple titles at once
+      #10025 closed 2026-09-14 [IDEA] A pragma that makes a newline inside text a hard line break
+      #4262 open 2019-09-15 Please GZip $:/core, maybe?
+      #1696 open 2015-05-04 Add third-party plugins to the plugin library
+      #4459 closed 2020-02-16 Railroad diagrams are almost unreadable in prerelease
+      #9487 closed 2025-12-11 Modify and improve multi-valued variables implementation
+      #9563 closed 2026-01-08 Wikify button classes
+      #8663 closed 2024-10-04 Sidebar-resizer: change `$:/themes/...` tiddlers
+      #4769 closed 2020-07-26 [IDEA] Day/night palette toggle in PageControls
+      #9136 closed 2025-07-08 eslint rules experiments for es2017
+      #8622 closed 2024-09-23 MWS - Make eslint happy to allow inner function declarations for tests
+      #7379 closed 2023-03-27 [IDEA] Copy / pasting TW "permalinks" and "permaviews" to Talk should create Pretty Links
+      #8628 merged 2024-09-23 Update font stacks
+      #7944 merged 2024-01-23 Add trimSelection parameter to text editor
+      #8486 merged 2024-08-05 Update the editor file import UI to support markdown tiddlers
+      #8402 merged 2024-07-19 Make markdown wikitext links readable
+      #7888 closed 2023-12-14 fix edit toolbar button whitespace
+  garbage        29 hit(s) (all listed)
+      #4416 open 2020-01-18 Clearer warning for import overwrite
+      #9112 open 2025-06-23 [IDEA] Can a widget / procedure know the wikitext that it is being? So widget can edit itself
+      #9549 open 2026-01-04 Proposed addition to libraryPath searching to support NPM
+      #4395 open 2019-12-20 Proposal: Maybe filter tiddlers shouldn't be text/vnd.tiddlywiki, but instead be its own type.
+      #9676 merged 2026-02-22 Fix Freelinks Aho-Corasick: failure links, cache invalidation, longest-match, and Unicode safety
+      #4484 closed 2020-03-09 Built-in externalimages build corrupts original image files
+      #6037 closed 2021-09-17 Let's make TiddlyWiki lazy!!!
+      #9004 closed 2025-04-05 [BUG] testcase colours don't exist for anything other than vanilla
+      #6816 closed 2022-07-22 [Proposal] Change the Issue template to replace "value" elements with "placeholder"
+      #7836 closed 2023-11-14 [IDEA] Provide another generic slot widget
+      #7882 merged 2023-12-11 Introduced preliminary idea for infinite recurse exception
+      #7468 merged 2023-05-19 implemented destroy() function
+      #7702 merged 2023-08-29 Slightly speed up the `all` filter operator
+      #7679 merged 2023-08-15 Fix checkbox widget when listIndex field undefined
+      #2030 closed 2015-10-15 recycle bin / undo edits
+      #7217 closed 2023-01-18 [BUG] Deleting missing tiddler should close it
+      #6402 merged 2022-01-16 Compiled filters are cached
+      #6273 closed 2021-11-23 [BUG] Urgent: Dragging and dropping tiddler titles or links into CodeMirror does not work as expected.
+      #3306 closed 2018-05-21 <$list><$set><$set> nesting renders garbage closing tags
+      #5380 merged 2021-01-09 Memory efficient linked list
+  mangled        3 hit(s) (all listed)
+      #1267 open 2014-12-21 Preview Window lines up with where you are in code
+      #1324 open 2015-01-05 lookup-fields (or relationship-fields)
+      #6666 merged 2022-04-26 Parameterised transclusions
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1254 open 2014-12-21 editing transcluded contents
+      #8234 open 2024-06-04 [IDEA] Replace Plain Contents with Tree Contents in Plugin Tiddlers
+      #5364 open 2021-01-03 [IDEA] Allow access to clipboard contents
+      #8378 open 2024-07-14 [BUG] innerwiki scales contents to zero size
+      #1510 open 2015-02-16 Reorganise table of contents on tiddlywiki.com
+      #7603 open 2023-07-12 Make the "Contents" menu item caption configurable in MenuBar plugin
+      #9002 open 2025-04-01 allow new tabs to be added to the plugin info box
+      #6070 open 2021-09-25 [IDEA] changes to $:/language/ControlPanel/Saving/GitService/CommitMessage should not mark file as "dirty"
+      #5168 open 2020-12-01 Why no tm-set-field message?
+      #4744 open 2020-07-01 [BUG] Zoomin view doesn't scroll to tiddler
+      #3702 open 2019-01-17 tiddler comments not shown when the tiddler is displayed in a separate window
+      #5344 open 2020-12-30 Unable to edit tags on tiddlers created via tiddlywiki.files
+      #2832 open 2017-04-18 Feature Request : Count in table of content (or any list)
+      #1144 open 2014-11-26 Opening ToC entry should cause scroll if necessary for viewing content
+      #5685 open 2021-05-14 Enhance $tw.wiki.parseText() to define wikirules that should be part of the transformation
+      #5150 open 2020-11-30 [BUG] Anchor link targets "hide" under menu bar
+      #2849 open 2017-05-08 Switching timezone on Linux causes entries under recent tab to disappear
+      #4646 open 2020-05-09 [IDEA] Making in browser plugin library for content or third party plugins
+      #7498 open 2023-05-25 [IDEA] RevealWidget attribute for scrolling to the dropdown 
+      #8124 open 2024-03-30 [BUG] In parsing of transclusion in widget attributes
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9155 open 2025-07-17 [IDEA] Allow in place upgrades for single file TW
+      #9998 open 2026-08-27 [Documentation Bug] The “Order of Tagged Tiddlers” documentation tiddler gives an incorrect description of the algorithm
+      #9982 open 2026-08-22 Theme hackability: Add each stylesheet to its own css layer for easier styling and debugging
+      #9895 open 2026-06-29 AGENTS.md - contribution guide for LLMs
+      #9976 open 2026-08-21 [Report] Recusrion error in an example of tooltip for the LinkWidget
+      #8961 open 2025-02-21 [BUG] Pasting image in long tiddler causes import dialog to appear outside viewport
+      #9921 open 2026-07-12 Refuse a performance verdict the measurement cannot support
+      #1213 open 2014-12-10 Better support for read-only vs. edit modes
+      #4382 open 2019-12-01 Bug in Documentation macro wikitext-example-without-html
+      #1687 open 2015-04-28 Export panel, including Export current story
+      #5073 open 2020-11-19 [IDEA] format:number filter operator
+      #2082 open 2015-11-17 Middle clicking a tiddler needs some feedback
+      #7929 open 2024-01-13 [IDEA] Auto place model of "More" to avoid border
+      #3133 open 2018-02-21 Question: TaskPaper Import
+      #9386 open 2025-11-02 [IDEA] Control Panel Plugin View should respect the parent-pluign field
+      #3349 open 2018-07-03 Browser Messaging should be more secure
+      #9210 open 2025-08-01 [IDEA] Affordance for installing plugins on node.js
+      #1030 open 2014-11-01 Suggestion: Allow upgrade directly in the right language
+      #3748 open 2019-02-02 Button and Keyboard non logical invokeActionsString order
+      #2144 open 2015-12-22 In-text semantic annotation of links
+  unclean        0 hit(s)
+  shutdown       3 hit(s) (all listed)
+      #1276 open 2014-12-22 Multi-User Environments - Authentication and ACLs/Policies
+      #2858 closed 2017-05-14 XMLHttpRequest error code: 502
+      #5113 merged 2020-11-24 Fix filesystem adaptor
+  reboot         10 hit(s) (all listed)
+      #3945 open 2019-05-15 Local Storage on 5.1.20
+      #7729 merged 2023-09-10 Simplify Permalink/Permaview URLs
+      #1647 closed 2015-04-09 Style buttons to match TW graphical appareance
+      #4761 closed 2020-07-18 [BUG] multiline fields not saved as JSON on nodejs
+      #732 closed 2014-08-14 Version Number is missing
+      #22 closed 2012-06-12 <p> inside the edit button causes strange rendering
+      #2167 closed 2015-12-28 Crazy scrolling when a draft exists in river and edit button is pressed again
+      #2547 closed 2016-08-21 Provide a mechanism to register plugins after boot
+      #468 closed 2014-03-05 'no element found' when editing tiddler
+      #2488 closed 2016-06-30 TW5 crashes, then can't edit a wiki (Uncaught Error: EBUSY)
+  disk+full      23 hit(s) (all listed)
+      #9947 open 2026-07-25 Harden and extend filesystem dynamic stores
+      #1073 open 2014-11-10 No encryption in node.js client-server mode
+      #9491 open 2025-12-13 Fix create journal overwrite skinny tiddler
+      #3060 open 2017-12-14 Reload changed tiddlers from disc 
+      #9694 open 2026-02-25 Markdown frontmatter metadata support
+      #9806 open 2026-04-13 Live reloading of tiddler files
+      #1733 open 2015-05-13 lynx knowledge navigator
+      #5952 open 2021-08-14 tiddlywiki by node.js can't write tiddlers to server
+      #6684 open 2022-05-10 [IDEA] Last saved timestamp and what it may enable
+      #8532 open 2024-08-20 [IDEA] Add JSDoc to AST
+      #3945 open 2019-05-15 Local Storage on 5.1.20
+      #9113 closed 2025-06-25 [IDEA] Linting support for checking ES2017 compatiblity for v5.4.0
+      #8885 closed 2025-01-08 MWS: Use Promises for sql-tiddler-database.js
+      #7915 closed 2024-01-02 Introduce "Multi Wiki Server" Plugin
+      #8197 closed 2024-05-19 TW5-Syntax 2.0.0 Released
+      #176 merged 2013-10-11 Rudimentary fs.watch usage in filesystemadaptor
+      #6666 merged 2022-04-26 Parameterised transclusions
+      #5570 merged 2021-03-26 Fix faulty external-js single-file wiki
+      #468 closed 2014-03-05 'no element found' when editing tiddler
+      #2741 closed 2017-01-29 Add support for autosave with the download saver
+  data+loss      59 hit(s) (all listed)
+      #1313 open 2015-01-03 Small chance for data loss under node?
+      #5371 open 2021-01-06 [BUG] New image/jpeg tiddler occasionally does not save, leading to data loss
+      #4742 open 2020-06-28 [BUG] Data loss on Node if one or more modified files isn't writable
+      #7938 open 2024-01-19 [Bug] It's possible to have 2 NEW draft tiddlers that will overwrite each other
+      #5745 open 2021-06-01 [IDEA] I think, the Browser Local Storage plugin needs some love
+      #9491 open 2025-12-13 Fix create journal overwrite skinny tiddler
+      #8374 open 2024-07-13 [BUG] changed error handling by using a script published by EricShulman "EditLink" in newer TW versions
+      #4749 open 2020-07-05 [BUG] CheckboxWidget is missing default field value 
+      #1960 open 2015-09-24 Detect HTML file open in more than one tab
+      #4688 open 2020-05-30 [IDEA] TiddlerWidget fallback to current
+      #2107 open 2015-12-03 Recording multiple users as modifiers
+      #10011 open 2026-09-04 [IDEA] oncompletion/onerror support for tm-save-wiki and tm-download-file
+      #5895 open 2021-07-19 [BUG] The Edit ViewTemplate rich text input does not update when the draft-tiddler is programmatically updated.
+      #6017 open 2021-09-02 [BUG] Node.js mode Does not Warn in UI of Sync errors
+      #5952 open 2021-08-14 tiddlywiki by node.js can't write tiddlers to server
+      #8144 open 2024-04-15 [BUG] Crash on empty transclusion syntax inside button widget 
+      #2617 open 2016-10-18 Add support to read tiddler specs from JS
+      #7136 open 2022-12-19 [IDEA] Get and set window name and other possibilities
+      #2931 open 2017-07-04 New Journal overwrites draft tiddler
+      #3715 open 2019-01-20 Make the install process easier for new users
+  partial+write  10 hit(s) (all listed)
+      #9947 open 2026-07-25 Harden and extend filesystem dynamic stores
+      #7744 open 2023-09-15 Feat: allow link to ^id anchor
+      #3060 open 2017-12-14 Reload changed tiddlers from disc 
+      #9893 closed 2026-06-28 Add opt-in resilient render boundary
+      #9075 closed 2025-06-03 Web Server route add put-file
+      #7821 merged 2023-10-28 feat: t macro and docs
+      #5199 closed 2020-12-04 Introduce shortcut syntax for transclusion passing parameters via variables
+      #1493 closed 2015-02-11 textlength filter
+      #2739 closed 2017-01-28 SideBar should list, not have hard coded transclusions.
+      #3024 merged 2017-11-30 Invoke hook when server starts
+  crash+safe     11 hit(s) (all listed)
+      #5463 open 2021-02-01 [IDEA] implement a safety mechanism for regexes in filters
+      #3934 open 2019-04-29 Request: Compound tiddlers
+      #9893 closed 2026-06-28 Add opt-in resilient render boundary
+      #1891 closed 2015-07-29 wiki source file corrupted after firefox crash
+      #7768 merged 2023-10-04 Ensure {{}} doesn't cause a recursion error
+      #1947 closed 2015-09-19 tiddler format for multiline fields (esp. node.js)
+      #7013 merged 2022-10-25 Fixed PR to fix popup position if popup is triggered from within an offsetParent element
+      #4373 merged 2019-11-14 Fix syncer to handler errors properly
+      #5612 merged 2021-04-17 Add "average" filter operator for arithmetic mean
+      #5305 closed 2020-12-22 GHSL-2020-362: ReDoS in TiddlyWiki
+      #2032 closed 2015-10-16 Internal JavaScript Error -  Uncaught RangeError: Maximum call stack size exceeded
+  atomic+write   7 hit(s) (all listed)
+      #9947 open 2026-07-25 Harden and extend filesystem dynamic stores
+      #9806 open 2026-04-13 Live reloading of tiddler files
+      #196 open 2013-11-04 Renaming a tiddler break links, the user should be warned at least
+      #7329 open 2023-03-04 Developer demo of alternate wiki store implementation
+      #8885 closed 2025-01-08 MWS: Use Promises for sql-tiddler-database.js
+      #3590 closed 2018-11-28 make navigator update "focus-tiddler" field ...
+      #4630 closed 2020-05-03 Fix file info
+  lock+file      46 hit(s) (all listed)
+      #9947 open 2026-07-25 Harden and extend filesystem dynamic stores
+      #9892 open 2026-06-27 [IDEA] Improve _1 duplicate file handling
+      #9806 open 2026-04-13 Live reloading of tiddler files
+      #5559 open 2021-03-22 Introduce universal publishing framework for static/custom sites
+      #3967 open 2019-06-03 Implement more of TiddlyWiki's black box logic as customisable action strings
+      #8212 open 2024-05-25 [IDEA] Allow Comments Inside $let
+      #8889 open 2025-01-09 Add NODE_DEV_PATH_STACKTRACE env var to show tiddler filepath instead for single tiddler files
+      #1530 open 2015-02-26 have node.js dynamically monitor the wiki file system to pick up changes made by outside agencies
+      #9540 open 2025-12-30 Update base.tid to align tiddler-controls of edit-title
+      #7110 open 2022-12-11 Investigate tauri.app for building an alternative desktop/server GUI
+      #4224 open 2019-08-31 Update a timestamp tiddler when a wiki is saved
+      #9549 open 2026-01-04 Proposed addition to libraryPath searching to support NPM
+      #7329 open 2023-03-04 Developer demo of alternate wiki store implementation
+      #6168 merged 2021-11-04 Add "cascade" filter run prefix and use it to control view templates
+      #7233 closed 2023-01-24 add depth first destroy method 
+      #9113 closed 2025-06-25 [IDEA] Linting support for checking ES2017 compatiblity for v5.4.0
+      #7353 closed 2023-03-11 Updating the JavaScript dialect & CSS features used by the TiddlyWiki core
+      #8885 closed 2025-01-08 MWS: Use Promises for sql-tiddler-database.js
+      #7915 closed 2024-01-02 Introduce "Multi Wiki Server" Plugin
+      #8992 closed 2025-03-23 WIP: Add a simple see-also footer
+  write+failure  17 hit(s) (all listed)
+      #5952 open 2021-08-14 tiddlywiki by node.js can't write tiddlers to server
+      #4742 open 2020-06-28 [BUG] Data loss on Node if one or more modified files isn't writable
+      #5624 open 2021-04-23 [IDEA] make it easy to convert: Fr. Apr. 23 11:10  to  202104230910 UTC as used by TW
+      #6847 open 2022-07-29 Add support for comments within filters
+      #4319 open 2019-10-14 Proposal: a sidebar tab where we can save and restore stories
+      #9893 closed 2026-06-28 Add opt-in resilient render boundary
+      #7422 merged 2023-04-29 Add tm-http-request message for making HTTP requests
+      #4541 merged 2020-04-07 Bidirectional text improvements
+      #9113 closed 2025-06-25 [IDEA] Linting support for checking ES2017 compatiblity for v5.4.0
+      #8596 merged 2024-09-12 mws authentication
+      #8213 closed 2024-05-25 [BUG] Fix splitregexp operator JavaScript error on matches with undefined capture groups
+      #5570 merged 2021-03-26 Fix faulty external-js single-file wiki
+      #5708 merged 2021-05-20 Add support for JSON-formatted tiddler store, and make it the default
+      #1493 closed 2015-02-11 textlength filter
+      #2912 closed 2017-06-18 Proposal for improving TW Documentation - Structure (part 1)
+      #4195 closed 2019-08-23 Improve parser automatic paragraph generation
+      #5113 merged 2020-11-24 Fix filesystem adaptor
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6070 open 2021-09-25 [IDEA] changes to $:/language/ControlPanel/Saving/GitService/CommitMessage should not mark file as "dirty"
+      #5344 open 2020-12-30 Unable to edit tags on tiddlers created via tiddlywiki.files
+      #1510 open 2015-02-16 Reorganise table of contents on tiddlywiki.com
+      #9895 open 2026-06-29 AGENTS.md - contribution guide for LLMs
+      #1788 open 2015-06-11 FileSystemAdaptor should not truncate `.multids` files
+      #8124 open 2024-03-30 [BUG] In parsing of transclusion in widget attributes
+      #2966 open 2017-08-28 is there a way to convert Zim Wiki to TiddlyWiki?
+      #7961 open 2024-02-03 Work In Progress - Toc v5.3.x rewrite
+      #1530 open 2015-02-26 have node.js dynamically monitor the wiki file system to pick up changes made by outside agencies
+      #6359 open 2021-12-21 [BUG] Unexpected double encoding of URLs of static renderings
+      #1733 open 2015-05-13 lynx knowledge navigator
+      #8173 open 2024-05-01 [IDEA] Allow plugin.info to have translations
+      #1237 open 2014-12-15 Extend widgets with "static mode"
+      #9673 open 2026-02-21 Feat/open focused toc use in tagtree of
+      #3008 open 2017-11-10 Deleting a tid should also delete its draft
+      #5587 open 2021-04-06 Merge Client Tweak page into Control Panel
+      #4408 open 2020-01-05 documentation plugin macros broken, docs unusable
+      #2271 open 2016-02-04 Tech specifications for proposal: "JavaScript anchors" to replace missing HTML anchor functionality.
+      #7061 open 2022-11-25 WIP Improve redundant p tags
+      #3925 open 2019-04-17 [tw.com] Front page redesign proposal
+
+== 51 terms run; 46 returned hits, 7 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

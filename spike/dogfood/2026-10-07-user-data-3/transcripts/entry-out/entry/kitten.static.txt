@@ -1,0 +1,4 @@
+static: /opt/bin/kitten: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=EptDYotLBDSyUY9REoAW/w3tqoMslwcOkAsIAgLgJ/XNHt358mh5T9hPxEKkDW/ZgLe6c5EzZ6CIDOP-nUy, BuildID[sha1]=52b771fee9e3b5f70fe99cf41c1baf5d1f8b3934, stripped
+default mode: rc 2; no_shim_marker
+default next: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+next: sideeye explore --state /s/aux/home/.config/kitty --cwd "/s/kitten-in" --operation "kitten themes --cache-age=-1 --reload-in=none Dracula" \

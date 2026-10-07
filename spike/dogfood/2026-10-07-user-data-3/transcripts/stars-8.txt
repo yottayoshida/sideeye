@@ -1,0 +1,3 @@
+gatsbyjs/gatsby stars=55943 pushed=2026-10-05 archived=false issues=true full=gatsbyjs/gatsby
+ionic-team/capacitor stars=16795 pushed=2026-10-05 archived=false issues=true full=ionic-team/capacitor
+withastro/astro stars=63085 pushed=2026-10-07 archived=false issues=true full=withastro/astro

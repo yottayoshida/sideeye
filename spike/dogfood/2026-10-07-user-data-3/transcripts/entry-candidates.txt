@@ -1,0 +1,26 @@
+ROW acmesh static=0 preflight_rc=2 gate=0 detail=FOLLOW --observe syscalls (oracle_missed_operation)
+EXIT acmesh 0
+ROW duplicacy static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT duplicacy 0
+ROW easyrsa static=0 preflight_rc=2 gate=0 detail=FOLLOW --observe syscalls (child_touched_state_dir)
+EXIT easyrsa 0
+ROW espsecure static=0 preflight_rc=1 gate=1 detail=byte-repeatability: --twice found different bytes
+EXIT espsecure 1
+ROW ferium static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 3 operations
+EXIT ferium 0
+ROW gitlfs static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 17 operations
+EXIT gitlfs 0
+ROW keyring static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+EXIT keyring 0
+ROW lxc static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT lxc 0
+ROW openssl static=0 preflight_rc=1 gate=1 detail=byte-repeatability: --twice found different bytes
+EXIT openssl 1
+ROW plakar static=1 preflight_rc=1 gate=1 detail=SUPERVISED; byte-repeatability: --twice found different bytes
+EXIT plakar 1
+ROW rustic static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected
+EXIT rustic 1
+ROW sfntedit static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+EXIT sfntedit 0
+ROW zshz static=0 preflight_rc=2 gate=0 detail=FOLLOW --observe syscalls (oracle_missed_operation)
+EXIT zshz 0

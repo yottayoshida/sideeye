@@ -117,3 +117,16 @@ dynaconf	python3-dynaconf	outcome-funnel.tsv
 python-dotenv	python3-dotenv	outcome-funnel.tsv
 fitscheck	astropy-utils;python3-astropy	outcome-funnel.tsv
 go	golang-go	outcome-funnel.tsv (upstream's go1.27.1 measured; trixie ships 1.24)
+lxc	lxd;lxd-client	outcome-funnel.tsv (the LXD client: upstream's 6.9 measured, trixie ships 5.0; trixie's lxc package is LXC, another project)
+sndfile	sndfile-programs	outcome-funnel.tsv (libsndfile)
+ezdxf	python3-ezdxf	outcome-funnel.tsv
+doit	python3-doit	outcome-funnel.tsv
+sfntedit	afdko;python3-afdko	outcome-funnel.tsv
+easyrsa	easy-rsa	outcome-funnel.tsv
+acmesh	acme.sh	outcome-funnel.tsv
+zshz	-	outcome-funnel.tsv (zsh-z; trixie has none)
+espsecure	esptool	outcome-funnel.tsv
+keyring	python3-keyring	outcome-funnel.tsv
+pi	-	outcome-funnel.tsv (earendil-works/pi; trixie's pi is another program)
+capacitor	-	outcome-funnel.tsv (trixie's cap is capistrano)
+minizip	-	outcome-funnel.tsv (minizip-ng; trixie's minizip is zlib's contrib)

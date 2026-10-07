@@ -1,0 +1,15 @@
+eclipse-mosquitto/mosquitto stars=11254 pushed=2026-10-04 archived=false issues=true full=eclipse-mosquitto/mosquitto
+cgsecurity/testdisk stars=2623 pushed=2026-10-04 archived=false issues=true full=cgsecurity/testdisk
+libsndfile/libsndfile stars=1718 pushed=2026-09-01 archived=false issues=true full=libsndfile/libsndfile
+zlib-ng/minizip-ng stars=1503 pushed=2026-10-01 archived=false issues=true full=zlib-ng/minizip-ng
+mozman/ezdxf stars=1458 pushed=2026-10-04 archived=false issues=true full=mozman/ezdxf
+LAStools/LAStools stars=1072 pushed=2026-09-21 archived=false issues=true full=LAStools/LAStools
+XboxDev/extract-xiso stars=1187 pushed=2026-09-11 archived=false issues=true full=XboxDev/extract-xiso
+gsliepen/tinc stars=2253 pushed=2026-06-27 archived=false issues=true full=gsliepen/tinc
+Qalculate/libqalculate stars=2689 pushed=2026-10-06 archived=false issues=true full=Qalculate/libqalculate
+nesbox/TIC-80 stars=6151 pushed=2026-10-05 archived=false issues=true full=nesbox/TIC-80
+Limine-Bootloader/Limine stars=3808 pushed=2026-10-06 archived=false issues=true full=Limine-Bootloader/Limine
+void-linux/xbps stars=1163 pushed=2026-05-01 archived=false issues=true full=void-linux/xbps
+pathintegral-institute/mcpm.sh stars=1010 pushed=2026-10-06 archived=false issues=true full=pathintegral-institute/mcpm.sh
+kubernetes-sigs/krew stars=7041 pushed=2026-09-18 archived=false issues=true full=kubernetes-sigs/krew
+gbdev/rgbds stars=1657 pushed=2026-10-04 archived=false issues=true full=gbdev/rgbds

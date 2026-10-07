@@ -1,0 +1,2 @@
+static: /opt/node22/bin/astro: Node.js script executable, ASCII text
+next: sideeye explore --state /s/aux/home/.config/astro --cwd "/s/astro-in" --operation "astro preferences disable devToolbar --global" \

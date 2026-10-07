@@ -1,0 +1,589 @@
+== novelty pre-scan: ionic-team/capacitor
+== date: 2026-10-07T08:42:32Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8587 open 2026-09-03 [Bug]: App crashes on Android when minifyEnabled true
+      #8635 open 2026-09-29 fix(ios): guard plugin event listener state against concurrent access
+      #8157 open 2025-09-15 [Bug]: CAPPlugin Event Handling Causing Data Races on iOS
+      #8533 open 2026-07-19 fix(android): cap console message length before String.format to prevent OOM (#8532)
+      #8532 open 2026-07-19 bug: onConsoleMessage OOMs on low-RAM Android — String.format runs on unbounded console message before any log-level/config gate
+      #8589 open 2026-09-04 bug(android): R8 full mode folds PluginHandle.getPluginAnnotation() to null → Bridge.getPermissionStates becomes `throw null`; consumer ProGuard rules do not keep the annotation classes
+      #8202 open 2025-10-29 Introduce blob handling for Android & iOS
+      #7853 open 2025-01-29 [Bug]: Crash on Chromebooks running Android 11 in WebViewFeature.isFeatureSupported(WEB_MESSAGE_LISTENER)
+      #8336 open 2026-02-09 [Bug]: App does not load after transferring to a new iOS device if over the air updates are installed
+      #8530 open 2026-07-13 SystemBars: safe area CSS injection throws "Cannot read properties of null" on startup (Android 16)
+      #8432 open 2026-04-14 [Bug]: Keyboard pushes WebView up and scroll triggers back navigation on Android 16 (edge-to-edge enforcement)
+      #8399 closed 2026-03-24 [Bug]: getPermissionStates causes app crash
+      #8171 open 2025-09-26 [Bug]: Blank white screen on Ulefone Android 14 devices after code changes; fixed by clearing app cache
+      #8203 open 2025-10-29 feat: Bidirectional Blob Transfer API for Efficient Binary Data Transfer
+      #8578 closed 2026-08-19 feat!(iOS): support for source-based Swift package
+      #8400 merged 2026-03-24 fix(android): add null checks for plugin annotation when retrieving permissions
+      #8527 closed 2026-07-10 fix(ios): adopt UIScene life cycle in default iOS app templates
+      #6021 closed 2022-10-24 bug: Serving local videos occasionally fails on Android
+      #77 merged 2018-01-19 Fix crash on iPad modals
+      #7803 closed 2024-12-12 fix(android): Subsequent build crash with missing version data
+  corrupt        13 hit(s) (all listed)
+      #8403 open 2026-03-26 fix(http): correctly serialize Blob objects in request bodies and FormData
+      #8202 open 2025-10-29 Introduce blob handling for Android & iOS
+      #8231 open 2025-11-12 [Bug]: iOS App WebView viewport shrinks after exiting fullscreen mode
+      #2379 closed 2020-01-28 feat: Notify JS-layer when webview crashed
+      #7474 closed 2024-05-20 [Bug]: CapacitorHttp post return data is wrong
+      #6895 merged 2023-09-12 fix(android): make JSInjector replace first <head> only
+      #6624 closed 2023-06-01 When using Filesystem.writeFile to save large files (blobs) on Android 13, it results in a memory overflow, causing the app to crash!
+      #2513 closed 2020-03-03 bug: IOS suddenly won't build, 80 duplicate symbols for arm64
+      #4385 closed 2021-03-22 Veracode Security Flaws 
+      #5545 closed 2022-03-29 bug: @capacitor/android: 3.4.3 - ERR_SUBPROCESS_COMMAND_NOT_FOUND 
+      #2712 closed 2020-04-07 bug: App Crashes launching Camera Plugin (Capacitor v2.0.0)
+      #386 merged 2018-03-27 Handle Out of Memory error
+      #1782 merged 2019-07-21 fix(core/web): avoid appendFile/writeFile to overwrite existing directory entry
+  corruption     6 hit(s) (all listed)
+      #8403 open 2026-03-26 fix(http): correctly serialize Blob objects in request bodies and FormData
+      #8635 open 2026-09-29 fix(ios): guard plugin event listener state against concurrent access
+      #8411 closed 2026-03-27 CocoaPods unable to copy local pod sources from npm/pnpm node_modules — generates dummy sources instead
+      #5956 closed 2022-09-26 Android range requests
+      #6206 merged 2023-01-08 Http formdata and file support
+      #6748 closed 2023-07-19 bug: multipart/form-data encoding error in CapacitorUrlRequest.swift
+  truncated      29 hit(s) (all listed)
+      #8371 open 2026-03-02 [Bug]: HTTP Range Responses not within spec
+      #8533 open 2026-07-19 fix(android): cap console message length before String.format to prevent OOM (#8532)
+      #8532 open 2026-07-19 bug: onConsoleMessage OOMs on low-RAM Android — String.format runs on unbounded console message before any log-level/config gate
+      #3006 closed 2020-05-29 bug: LocalNotifications text body is truncated
+      #5346 closed 2022-01-04 bug: Android console messages get truncated
+      #3824 closed 2020-11-19 bug: CAPLog crashes iOS debugger when printing big cordova calls
+      #3716 merged 2020-10-22 chore(deps-dev): bump terser from 4.8.0 to 5.3.8
+      #3098 closed 2020-06-12 chore(deps-dev): bump marked from 0.5.2 to 1.1.0 in /site
+      #2158 closed 2019-11-12 chore(deps): bump handlebars from 4.0.11 to 4.5.1
+      #4274 closed 2021-03-03 chore(deps-dev): bump lerna from 3.22.1 to 4.0.0
+      #4212 closed 2021-02-16 chore(deps): bump commander from 6.2.1 to 7.1.0
+      #4382 closed 2021-03-22 chore(deps): bump commander from 6.2.1 to 7.2.0
+      #3679 closed 2020-10-15 chore(deps-dev): bump typedoc from 0.14.2 to 0.18.0
+      #3685 closed 2020-10-15 chore(deps-dev): bump terser from 4.8.0 to 5.3.5
+      #3703 closed 2020-10-20 chore(deps-dev): bump terser from 4.8.0 to 5.3.7
+      #4448 closed 2021-04-08 chore(deps-dev): bump typescript from 4.1.5 to 4.2.4
+      #4583 closed 2021-05-18 chore(deps): bump open from 7.4.2 to 8.0.9
+      #4551 closed 2021-05-07 chore(deps): bump open from 7.4.2 to 8.0.8
+      #4529 closed 2021-05-05 chore(deps-dev): bump @rollup/plugin-node-resolve from 10.0.0 to 13.0.0
+      #4468 closed 2021-04-16 chore(deps): bump open from 7.4.2 to 8.0.6
+  truncate       33 hit(s) (all listed)
+      #8418 open 2026-04-01 fix(android): range request truncation
+      #8371 open 2026-03-02 [Bug]: HTTP Range Responses not within spec
+      #8533 open 2026-07-19 fix(android): cap console message length before String.format to prevent OOM (#8532)
+      #8532 open 2026-07-19 bug: onConsoleMessage OOMs on low-RAM Android — String.format runs on unbounded console message before any log-level/config gate
+      #6309 closed 2023-02-20 bug: Using Capacitor Plugins with WebWorkers for Android app
+      #3006 closed 2020-05-29 bug: LocalNotifications text body is truncated
+      #5346 closed 2022-01-04 bug: Android console messages get truncated
+      #3824 closed 2020-11-19 bug: CAPLog crashes iOS debugger when printing big cordova calls
+      #5710 merged 2022-06-21 chore(ios): Truncate iOS logs at 4068 chars
+      #3825 closed 2020-11-19 truncate strings before logging them in CAPLog avoid crashing the iOS…
+      #3716 merged 2020-10-22 chore(deps-dev): bump terser from 4.8.0 to 5.3.8
+      #3098 closed 2020-06-12 chore(deps-dev): bump marked from 0.5.2 to 1.1.0 in /site
+      #2158 closed 2019-11-12 chore(deps): bump handlebars from 4.0.11 to 4.5.1
+      #4274 closed 2021-03-03 chore(deps-dev): bump lerna from 3.22.1 to 4.0.0
+      #4212 closed 2021-02-16 chore(deps): bump commander from 6.2.1 to 7.1.0
+      #4382 closed 2021-03-22 chore(deps): bump commander from 6.2.1 to 7.2.0
+      #3679 closed 2020-10-15 chore(deps-dev): bump typedoc from 0.14.2 to 0.18.0
+      #3685 closed 2020-10-15 chore(deps-dev): bump terser from 4.8.0 to 5.3.5
+      #3703 closed 2020-10-20 chore(deps-dev): bump terser from 4.8.0 to 5.3.7
+      #4448 closed 2021-04-08 chore(deps-dev): bump typescript from 4.1.5 to 4.2.4
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8593 open 2026-09-08 fix(cli): load default exports from JavaScript config
+      #8628 open 2026-09-26 fix(core): keep window listeners registered after removeAllListeners
+      #8575 open 2026-08-18 [Bug]: Android Keyboard reserves too much space on rapid re-focus after background-tap dismiss (keyboards with suggestion strip), causing double layout jump
+      #8076 open 2025-07-21 [Bug]: iOS not sending url encoded data if it's a number 
+      #8580 merged 2026-08-26 fix(cli): restore Cordova Package.swift generator for Cap 9
+      #8578 closed 2026-08-19 feat!(iOS): support for source-based Swift package
+      #8560 open 2026-08-08 [Bug]: 9.0.0-alpha.6 `Cordova.xcframework` ships a nested `Capacitor.framework`, causing App Store upload validation to fail
+      #8563 merged 2026-08-11 refactor(android)!: drop legacy @NativePlugin annotation support
+      #8400 merged 2026-03-24 fix(android): add null checks for plugin annotation when retrieving permissions
+      #8558 closed 2026-08-07 refactor(android)!: drop legacy @NativePlugin annotation support
+      #8572 merged 2026-08-13 fix(cli): replace usesCleartextTraffic with network-security-config
+      #5974 closed 2022-10-06 fix: #5971 empty body
+      #8517 merged 2026-06-23 chore(android-template): Update variables and google services plugin
+      #8480 merged 2026-05-25 fix(android): show only the requested system bar
+      #7535 closed 2024-06-26 Update WebColor.java to don't crash on empty string on colorString var
+      #8396 closed 2026-03-23 [Bug]: SystemBars orientation change overrides independent bar styles
+      #8449 merged 2026-04-29 fix(cli): conditionally add capacitor-cordova-android-plugins module
+      #8448 merged 2026-04-29 fix(cli): add cSettings support for compiler flags in generated Package.swift
+      #7844 closed 2025-01-24 [Bug]: iOS with golang static lib webview load failure
+      #7731 closed 2024-10-23 [Bug]: XMLHttpRequest.prototype is missing when `HttpPlugin` enabled
+  atomic         6 hit(s) (all listed)
+      #8635 open 2026-09-29 fix(ios): guard plugin event listener state against concurrent access
+      #5278 closed 2021-11-26 bug: service worker server.url not injecting capacitor
+      #4876 closed 2021-08-01 bug: npx cap update crashes on Apple Silicon
+      #4819 closed 2021-07-10 bug: Create IOS App with Apple M1
+      #5288 closed 2021-12-02 bug: My new computer is having trouble running compilation? (pod install)
+      #5337 closed 2021-12-22 bug: derivedDataPath breaks xcodebuild and ionic capacitor run ios -l --external
+  atomically     2 hit(s) (all listed)
+      #8635 open 2026-09-29 fix(ios): guard plugin event listener state against concurrent access
+      #5278 closed 2021-11-26 bug: service worker server.url not injecting capacitor
+  interrupted    5 hit(s) (all listed)
+      #7155 closed 2023-12-23 bug: Android crashes with Mediapipe
+      #2532 closed 2020-03-06 bug: EXC_BREAKPOINT in registerPlugins
+      #5970 closed 2022-10-04 Random crash (iOS 13/14/15/16)
+      #5814 closed 2022-08-01 bug: Error: "Storage" plugin is not implemented on android after Capacitor 4 update
+      #2712 closed 2020-04-07 bug: App Crashes launching Camera Plugin (Capacitor v2.0.0)
+  interrupt      16 hit(s) (all listed)
+      #8560 open 2026-08-08 [Bug]: 9.0.0-alpha.6 `Cordova.xcframework` ships a nested `Capacitor.framework`, causing App Store upload validation to fail
+      #8231 open 2025-11-12 [Bug]: iOS App WebView viewport shrinks after exiting fullscreen mode
+      #7961 closed 2025-04-06 CLIENT OF UIKIT REQUIRES UPDATE: This process does not adopt UIScene lifecycle. This will become an assert in a future version.
+      #7518 merged 2024-06-18 fix: boundary value extraction for form-data requests
+      #7155 closed 2023-12-23 bug: Android crashes with Mediapipe
+      #6840 closed 2023-08-27 Use of prompt(...) in native-bridge for CapacitorCookies/CapacitorHttp creates white flash / interrupts page transitions
+      #6441 closed 2023-03-27 feat: New webkit feature - Inspectable WebKit, inspect production apps
+      #2532 closed 2020-03-06 bug: EXC_BREAKPOINT in registerPlugins
+      #5970 closed 2022-10-04 Random crash (iOS 13/14/15/16)
+      #5839 closed 2022-08-07 bug: Failed to load resource: net::ERR_FAILED on multiple audio streams
+      #4837 closed 2021-07-15 bug: Push notifications don't work and run on iOS
+      #2441 closed 2020-02-14 bug: Capacitor Register for push but use OneSignal for receiving
+      #4920 closed 2021-08-12 bug: userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: not called
+      #4687 closed 2021-06-07 bug: PushNotifications registration on IOS doesn't return APNs token
+      #2712 closed 2020-04-07 bug: App Crashes launching Camera Plugin (Capacitor v2.0.0)
+      #2078 merged 2019-10-22 feat(ios): make didRegisterForRemoteNotificationsWithDeviceToken handle Data and String push tokens
+  sigkill        0 hit(s)
+  sigint         1 hit(s) (all listed)
+      #7563 merged 2024-07-11 fix(cli): enable cleartext for live reload
+  ctrl-c         14 hit(s) (all listed)
+      #8194 merged 2025-10-27 feat(cli): Add --https option for --live-reload
+      #8049 closed 2025-07-07 [Feature]: allow to use https on npx cap run --live-reload
+      #7067 closed 2023-11-14 bug: App no longer transferred to device with "ionic cap run android -l --external" when using angular 17 and esbuild.
+      #4947 closed 2021-08-19 bug: 'sh' is not recognized as an internal or external command
+      #4155 closed 2021-02-04 bug: Unable to find node_modules/@capacitor/ios. Are you sure @capacitor/ios is installed
+      #6079 closed 2022-11-14 bug: Can't deploy to device on iOS
+      #4745 closed 2021-06-18 cordova-plugin-telerik-imagepicker cause gradle build to fail in capacitor app
+      #5337 closed 2021-12-22 bug: derivedDataPath breaks xcodebuild and ionic capacitor run ios -l --external
+      #5378 closed 2022-01-17 bug:  Execution failed for task ':app:checkDebugAarMetadata'. [capacitor] > Could not resolve all files for configuration ':app:debugRuntimeClasspath'.
+      #5602 closed 2022-05-09 bug: Task :capacitor-cordova-android-plugins:compileDebugJavaWithJavac FAILED
+      #2133 closed 2019-11-03 bug(high): Camera restarting app even system app gets refreshed/crashed
+      #1278 closed 2019-02-28 Capacitor CLI not added to dev dependencies if initial `ionic capacitor add` is canceled
+      #1689 closed 2019-06-20 cap init prompt issues
+      #3470 merged 2020-08-25 chore(cli): replace inquirer with prompts
+  power          31 hit(s) (all listed)
+      #8205 closed 2025-10-30 [Bug]: Ios Youtube embed player issue -  Blocked a frame with origin "ionic://localhost" from accessing a frame with origin "https://www.youtube.com". Protocols must match.
+      #6234 closed 2023-01-19 bug: Capacitor listeners failing to be called from Android notifyListeners with foreground service
+      #8044 closed 2025-07-01 [Feature]: Enable WebGPU support in Capacitor apps for AI Apps
+      #8180 merged 2025-10-03 feat: System Bars Plugin
+      #1373 closed 2019-03-29 [IOS] Cookies problems in IOS
+      #7155 closed 2023-12-23 bug: Android crashes with Mediapipe
+      #6762 closed 2023-07-21 Clarify when server.url should be configured
+      #6737 closed 2023-07-17 bug: apk cannot be installed
+      #3545 closed 2020-09-13 bug: Video Elements will not autoplay on IOS
+      #1386 closed 2019-04-01 packaged app wont run
+      #2187 closed 2019-11-18 feat: Provide documentation on how to embed capacitor into an existing native app
+      #4369 closed 2021-03-19 feat: Provide documentation on how to embed capacitor into an existing native app.
+      #5062 closed 2021-09-19 bug: Push notification/Local notification issues on device reboot 
+      #2214 closed 2019-11-27 "Native progressive web app" explanation
+      #4370 closed 2021-03-19 feat: Provide documentation on how to embed capacitor 3 into an existing native app.
+      #2854 closed 2020-04-30 bug: Geolocation.getCurrentPosition() always returns "location unavailable" error message in Android simulator
+      #3424 closed 2020-08-15 Android: local notification repeat after reboot even if already shown
+      #1893 closed 2019-08-21 Geolocation on iOS is slow because it is always using high accuracy
+      #2517 closed 2020-03-03 iOS: XHR response headers missing
+      #2298 closed 2020-01-03 How to communicate between InappBrowser and my capacitor app?
+  outage         1 hit(s) (all listed)
+      #7257 closed 2024-02-15 [Bug]: PWAs no longer working in iOS 17.4 Beta
+  ENOSPC         0 hit(s)
+  disk           33 hit(s) (all listed)
+      #8203 open 2025-10-29 feat: Bidirectional Blob Transfer API for Efficient Binary Data Transfer
+      #8584 merged 2026-08-28 fix(cli): remove AGP 9 property shims and jcenter() in cap migrate
+      #3589 open 2020-09-22 bug: iOS 14 Black screen always on initial app launch prior to actually showing the splash screen [SplashScreen]
+      #7495 closed 2024-06-03 [Feature]: Provide an iOS privacy manifest compliant version of the device plugin
+      #7440 closed 2024-05-01 [Bug]: All plugins are "not implemented on android" after upgrading to Capacitor 6
+      #7221 closed 2024-01-29 [Bug]: duplicate HTTP header Cookie
+      #7423 closed 2024-04-23 [Bug]: Android live reload doesn't work, but build works fine. Error: java.lang.IllegalArgumentException: allowedOriginRules
+      #5903 closed 2022-09-08 bug: Invalid `Podfile` file: cannot load such file '../../node_modules/@capacitor/ios/scripts/pods_helpers'
+      #984 closed 2018-11-20 Support blob/large data
+      #6144 closed 2022-12-05 bug: Capacitor crashing when Webview Version is "Developer Build"
+      #6264 merged 2023-01-30 feat(android): add ability to create config from a custom file path
+      #2013 closed 2019-09-30 Capacitor Camera throwing "Unable to create photo on disk"
+      #2555 closed 2020-03-11 bug: Unable to create photo on disk when using Camera.getPhoto
+      #4514 closed 2021-04-30 bug: Camera plugin "Unable to create photo on disk" and CameraSource.Prompt missing promptLabelHeader
+      #555 closed 2018-05-23 localStorage durability
+      #5554 closed 2022-03-30 bug: Camera not working on android apk
+      #1845 closed 2019-08-04 Camera Plugin will crash the app if no photo app installed in Android
+      #1573 closed 2019-05-24 android: xhr GET request aren't working if your server URL is in `allowNavigation` config
+      #3489 closed 2020-08-31 Xcode Error "Operation not permitted"
+      #2725 closed 2020-04-08 bug: requests for local extension-less files fail
+  partial        16 hit(s) (all listed)
+      #8554 merged 2026-08-06 chore: merge 8.5.0 into next
+      #4096 closed 2021-01-20 feat: type-safe environment-dependent plugins
+      #7789 closed 2024-12-03 [Feature]: Add PMTiles Byte Range Request Support for Offline Maps (#7664 Follow-Up)
+      #7664 closed 2024-09-18 [Feature]: PMTiles Byte Range Request Support
+      #4040 closed 2021-01-11 Android v3 API Cleanup
+      #7296 closed 2024-02-28 [Bug]: npx cap run [platform] or ionic cap run [platform] either return an error or no devices found.
+      #6624 closed 2023-06-01 When using Filesystem.writeFile to save large files (blobs) on Android 13, it results in a memory overflow, causing the app to crash!
+      #1343 closed 2019-03-22 Files over HTTP do not support 206 Partial Content
+      #3722 closed 2020-10-23 bug: {"code":"auth/operation-not-supported-in-this-environment","message":"This operation is not supported in the environment this application is running on. \"location.protocol\" must be http, https
+      #4570 closed 2021-05-13 bug: Push Notification causing AppFlow Failure
+      #4740 closed 2021-06-18 APK filename and buildpath hardcoded in capacitor/cli
+      #5509 closed 2022-03-17 bug: Builds crash on emulated Android 6.0 with `SyntaxError` from an untranspiled arrow function
+      #1475 closed 2019-05-07 [Android] tapping push notification does nothing when app not running or in background
+      #503 merged 2018-04-27 statusTap event
+      #2799 closed 2020-04-19 PhotosPlugin - savePhoto Android implementation
+      #1220 merged 2019-02-11 retain actionPerformed events until consumed
+  incomplete     14 hit(s) (all listed)
+      #8087 open 2025-07-28 Use JSONTokener for application/json reponse parsing
+      #8251 closed 2025-11-21 [Bug]: iOS Prerequisite Checks & Cordova Package Generation Race
+      #6100 closed 2022-11-18 dark/light theme doesn't switch until app restart
+      #2763 closed 2020-04-14 bug: Fatal plugin error when using Filesystem API on Android
+      #2668 closed 2020-03-31 feat: share file
+      #3638 closed 2020-10-02 bug: Share API throws an exception while trying to share a local file
+      #1749 closed 2019-07-09 Docs: Push Notifications in iOS returns APNs token, not FCM token, and it is confusing
+      #1279 closed 2019-02-28 Android Capacitor geolocation not updating on getCurrentPosition
+      #4892 closed 2021-08-05 bug: WebGL Errors When Wrapping Jeeliz AR Library Project with Capacitor
+      #2246 closed 2019-12-13 Platform-specific preferences in capacitor.config.json
+      #439 closed 2018-04-07 cordova plugins error  AndroidManifest.xml file  how to fix this error 
+      #1247 closed 2019-02-20 Capacitor sync overwrite incomplete .js files
+      #2460 closed 2020-02-20 Adding capacitor-unimag-swiper to plugins.md
+      #3307 merged 2020-07-21 fix(android): LocalNotification `on` not working properly
+  dataloss       0 hit(s)
+  recover        11 hit(s) (all listed)
+      #8586 open 2026-09-03 [Bug]: CapacitorHttp requests do not fire on Android 17 randomly
+      #8231 open 2025-11-12 [Bug]: iOS App WebView viewport shrinks after exiting fullscreen mode
+      #2379 closed 2020-01-28 feat: Notify JS-layer when webview crashed
+      #7121 closed 2023-12-10 bug: 
+      #1035 closed 2018-12-05 Unable to simultaneously satisfy constraints
+      #6263 closed 2023-01-30 bug: Modal page breaks if keyboard open and back button pressed (or swipe back on iOS)
+      #2539 closed 2020-03-07 bug: Dont recover Exif data in ios 13
+      #4934 closed 2021-08-17 bug: ActionPerformed object miss the PushNotificationSchema object
+      #2897 closed 2020-05-09 bug: Camera Plugin Crashes on iOS with `processAssertionWasInvalidated`
+      #2712 closed 2020-04-07 bug: App Crashes launching Camera Plugin (Capacitor v2.0.0)
+      #647 closed 2018-07-11 ClassNotFoundException com.plugin.gcm.OneSignalPush
+  recovery       3 hit(s) (all listed)
+      #2379 closed 2020-01-28 feat: Notify JS-layer when webview crashed
+      #7536 closed 2024-06-26 [Feature]: Customizable "Webpage not available" screen
+      #4165 closed 2021-02-05 bug: Unable to install app to iOS simulator after upgrading to 3.0.0-beta.1
+  rollback       6 hit(s) (all listed)
+      #7876 closed 2025-02-07 [Bug]: plugin is not implemented on android
+      #6479 closed 2023-04-10 bug: Android Capacitor Http Issue "Attempt to invoke virtual method ... getClass"
+      #4280 closed 2021-03-03 bug: npm init @capacitor/app is broken for ios (3.0.0.beta-6)
+      #4713 closed 2021-06-10 `resume` event not firing since final v3.0.0 release - was working in the release candidates
+      #3041 closed 2020-06-02 `sync android` replaces 'androidx.legacy:legacy-support-v4' with 'com.android.support:support-v4' in `capacitor.build.gradle`
+      #1663 closed 2019-06-14  “error: package android.support.v4.content does not exist”
+  resume         69 hit(s) (all listed)
+      #8638 open 2026-09-30 fix(android): skip Cordova lifecycle events when the page has no bridge
+      #8637 open 2026-09-30 [Bug]: Android lifecycle events call triggerEvent when the bridge is unavailable
+      #8539 open 2026-07-23 [Bug]: prompt()-based cookie reads pause media playback on iOS
+      #8176 open 2025-09-30 [Bug]: webRTC not working properly on ios device
+      #8595 merged 2026-09-09 fix(ios): do not forward scene lifecycle events to the page before it has loaded
+      #8592 open 2026-09-08 [Bug]: <input type="file"> result is silently dropped when the app process is killed while the chooser activity is in the foreground
+      #8157 open 2025-09-15 [Bug]: CAPPlugin Event Handling Causing Data Races on iOS
+      #8562 open 2026-08-11 [Bug]: eval() runs on a destroyed WebView after activity recreate
+      #8554 merged 2026-08-06 chore: merge 8.5.0 into next
+      #1492 closed 2019-05-12 [Android] networkStatusChange-event fires when app becomes active
+      #8394 closed 2026-03-18 [Bug]: CSS safe-area-inset-x, is not being applied on Android mobiles with API <= 34
+      #6676 closed 2023-06-26 bug + fix: Push Notification handlers not called after webViewWebContentProcessDidTerminate
+      #6902 closed 2023-09-13 bug: App is stuck after the splash screen on Android (Huawei P20)
+      #7915 closed 2025-03-13 [Bug]: Unable to initialize `androidx.lifecycle.ReportFragment` on app launch
+      #7905 merged 2025-03-05 fix(ios): Reset plugin listeners when WebView process is terminated
+      #7943 closed 2025-03-26 [Bug]: Lost deep links when restoring terminated webview
+      #7793 closed 2024-12-04 [Bug]: iOS App Shows Blank White Screen After Being in Background for a Few Hours
+      #2896 closed 2020-05-09 bug: Angular application (Zone.js) + cordova.js file 
+      #7543 closed 2024-07-01 [Bug]: A change in active Bluetooth devices crashes app
+      #7646 closed 2024-09-06 [Bug]: HTML5 Audio pauses as soon as it is played - Real IOS Device only
+  half-written   0 hit(s)
+  wipe           15 hit(s) (all listed)
+      #8396 closed 2026-03-23 [Bug]: SystemBars orientation change overrides independent bar styles
+      #5721 closed 2022-06-27 bug: first party http cookie deleted after period of time (iOS/Android)
+      #6098 closed 2022-11-18 Receiving Platform Already Exists Error When Trying to Build iOS or Android App
+      #3889 closed 2020-12-02 bug: Camera.getPhoto causes error Volume external_primary not found
+      #2968 closed 2020-05-22 bug: Plugins.Browser.open({...}) closes opened website immediately
+      #4193 closed 2021-02-12 bug: Cordova plugins no longer sync during 'npx cap sync' (Capacitor 3)
+      #3943 closed 2020-12-12 feat: Capacitor v3 configuration file: Add version and android-versionCode fields
+      #2345 closed 2020-01-17 bug: iosScheme 'file' is not used as origin
+      #5193 closed 2021-11-01 bug: checksums changing on pod install since capacitor 3 upgrade
+      #4881 closed 2021-08-03 bug: media playback on ios unsuccessful: Required client entitlement is missing; Failed to acquire RBS MediaPlayback assertion 'WebKit Media Playback'
+      #1040 closed 2018-12-08 Read large files from the filesystem
+      #265 closed 2018-03-05 `npx cap copy` vs. `npx cap update`
+      #636 closed 2018-07-07 On app reboot `localStorage` is lost
+      #867 merged 2018-10-08 fix(cli): resolve node modules
+      #980 merged 2018-11-19 Fix android tests
+  wipes          1 hit(s) (all listed)
+      #265 closed 2018-03-05 `npx cap copy` vs. `npx cap update`
+  erase          4 hit(s) (all listed)
+      #7832 closed 2025-01-17 [Bug]: Splitting IndexedDB table when migrating from v5 to v6
+      #1642 closed 2019-06-06 cordova.plugins undefined
+      #340 closed 2018-03-15 Different bundle-ids for android and iOS
+      #624 closed 2018-06-29 @Strings of cordova plugins (i.e. cordova-plugin-facebook4)
+  erasing        0 hit(s)
+  erased         3 hit(s) (all listed)
+      #7832 closed 2025-01-17 [Bug]: Splitting IndexedDB table when migrating from v5 to v6
+      #340 closed 2018-03-15 Different bundle-ids for android and iOS
+      #624 closed 2018-06-29 @Strings of cordova plugins (i.e. cordova-plugin-facebook4)
+  destroy        46 hit(s) (all listed)
+      #8562 open 2026-08-11 [Bug]: eval() runs on a destroyed WebView after activity recreate
+      #8275 open 2025-12-04 fix(android): preserve file chooser callback across activity recreation
+      #8614 open 2026-09-20 fix(cli): default to apksigner for APK builds
+      #8435 open 2026-04-20 [Bug]: status-bar setStyle doesn't work properly
+      #7262 closed 2024-02-15 [Bug]: Inconsistent NextAuth cookie state
+      #6234 closed 2023-01-19 bug: Capacitor listeners failing to be called from Android notifyListeners with foreground service
+      #7766 closed 2024-11-19 [Bug]: BridgeFragment doesn't call WebView.destroy in Fragment.onDestroy()
+      #7788 closed 2024-12-03 [Bug]: Firebase new RecaptchaVerifier() on Capacitor iOS does not load
+      #7543 closed 2024-07-01 [Bug]: A change in active Bluetooth devices crashes app
+      #3012 closed 2020-05-29 bug: cookies not being persisted
+      #5872 closed 2022-08-17 fix(android): Avoid handling responses in WebViewLocalServer (#4240, #5394)
+      #6816 merged 2023-08-15 fix(http): disconnect active connections if call or bridge is destroyed
+      #5433 closed 2022-02-14 StartActivityForResult doestn't work if service is started on intent
+      #5278 closed 2021-11-26 bug: service worker server.url not injecting capacitor
+      #6795 closed 2023-08-07 bug: Android CapacitorHttp plugin produces memory leak on configuration change
+      #6745 closed 2023-07-18 feat: 
+      #2010 closed 2019-09-28 Splash Screen is destroyed on macOS
+      #2771 closed 2020-04-15 bug: cap sync android destroyes project if opened
+      #6263 closed 2023-01-30 bug: Modal page breaks if keyboard open and back button pressed (or swipe back on iOS)
+      #3209 closed 2020-07-06 bug: PWA doesn't load when offline mode is on and app is destroyed 
+  destroys       7 hit(s) (all listed)
+      #8275 open 2025-12-04 fix(android): preserve file chooser callback across activity recreation
+      #8435 open 2026-04-20 [Bug]: status-bar setStyle doesn't work properly
+      #2771 closed 2020-04-15 bug: cap sync android destroyes project if opened
+      #340 closed 2018-03-15 Different bundle-ids for android and iOS
+      #1475 closed 2019-05-07 [Android] tapping push notification does nothing when app not running or in background
+      #374 closed 2018-03-26 PDF Opener - Question
+      #3280 merged 2020-07-17 Pass custom plugins to BridgeFragment
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8435 open 2026-04-20 [Bug]: status-bar setStyle doesn't work properly
+      #8636 open 2026-09-30 fix(SystemBars): defer safe area CSS injection until the document exists
+      #5478 open 2022-03-02 bug: Blob downloads don't work on iOS & Android
+      #8572 merged 2026-08-13 fix(cli): replace usesCleartextTraffic with network-security-config
+      #8551 merged 2026-08-05 refactor(ios)!: remove deprecated Swift and Obj-C APIs for Capacitor 9
+      #7528 merged 2024-06-20 fix(cli): Don't overwrite config.server section with `--live-reload`
+      #8352 closed 2026-02-19 [Bug]: `editCapConfigForLiveReload` destructively replaces `server` object, stripping existing config fields
+      #7340 closed 2024-03-13 [Feature]: Make setting the global CookieManager configurable
+      #6275 closed 2023-02-06 feat: make patched document.cookie configurable
+      #6544 closed 2023-04-28 bug: Cookies set to wrong domain
+      #8308 closed 2026-01-19 [Security]: @capacitor/cli depends on vulnerable version of node-tar
+      #8103 closed 2025-08-11 [Bug]: Header is behind the statusbar on Android 13
+      #5295 closed 2021-12-05 Platform-specific config
+      #77 merged 2018-01-19 Fix crash on iPad modals
+      #5498 closed 2022-03-12 Introduce blob handling for Android & iOS 🚀🚀
+      #6582 closed 2023-05-10 bug: CapacitorHttp - No support for Server-Sent Events (EventSource API)
+      #8380 closed 2026-03-06 fix(cli): respect server config for host and port during live reload
+      #1373 closed 2019-03-29 [IOS] Cookies problems in IOS
+      #7959 closed 2025-04-05 [Feature]: Add an API to get informed when the user changes display language in system settings
+      #2896 closed 2020-05-09 bug: Angular application (Zone.js) + cordova.js file 
+  clobber        17 hit(s) (all listed)
+      #8435 open 2026-04-20 [Bug]: status-bar setStyle doesn't work properly
+      #8416 closed 2026-03-30 [Bug]: Edge-To-Edge-Mode not working
+      #2896 closed 2020-05-09 bug: Angular application (Zone.js) + cordova.js file 
+      #7746 closed 2024-11-03 [Feature]: Expose capacitor fetch without clobbering window.fetch
+      #6732 closed 2023-07-13 bug: cordova/plugin_list reorders clobbers, breaks compatibility with working Cordova plugins
+      #93 closed 2018-01-26 Cannot read property 'clobbers' of undefined
+      #164 closed 2018-02-21 Copy command clobbers update
+      #131 closed 2018-02-09 Clobber is not correctly formated when there are multiple clobbers on the same plugin
+      #1620 closed 2019-06-01 Cordova file plugin not working with Capacitor
+      #1615 closed 2019-05-31 Some plugins become undefined due to ordering of cordova plugin_list
+      #1523 closed 2019-05-17 App Center cordova plugins not working with capacitor
+      #63 merged 2018-01-12 More cordova
+      #132 merged 2018-02-09 Fix multiple clobbers formatting
+      #129 merged 2018-02-09 Avoid crash when plugin has no clobbers
+      #139 merged 2018-02-13 Also handle plugin merges
+      #1616 merged 2019-05-31 fix(cli): cordova plugins merges before clobbers
+      #1524 merged 2019-05-17 Order cordova plugins by clobber name
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8607 open 2026-09-16 [Bug]: `cap sync ios` doesn't support Xcode 27.2's JSON project format (`project.xcproj`)
+      #8617 open 2026-09-21 fix(android): update reply proxy before plugin call
+      #8171 open 2025-09-26 [Bug]: Blank white screen on Ulefone Android 14 devices after code changes; fixed by clearing app cache
+      #8608 open 2026-09-16 fix(cli): support Xcode's JSON project format (project.xcproj)
+      #8638 open 2026-09-30 fix(android): skip Cordova lifecycle events when the page has no bridge
+      #8272 open 2025-12-03 fix(core): fix buildUrlParams array handling and replace deprecated substr
+      #8232 open 2025-11-12 Add typo checking step to CI workflow
+      #8601 open 2026-09-14 [Bug]: SystemBars shrinks the WebView twice for the keyboard on Android 10 (API 29) when WebView >= 140 and viewport-fit=cover
+      #8230 open 2025-11-11 Fix typos and improve documentation across various files
+      #8202 open 2025-10-29 Introduce blob handling for Android & iOS
+      #8203 open 2025-10-29 feat: Bidirectional Blob Transfer API for Efficient Binary Data Transfer
+      #8054 open 2025-07-09 [Bug]: iOS margins broken after iframe goes fullscreen
+      #3589 open 2020-09-22 bug: iOS 14 Black screen always on initial app launch prior to actually showing the splash screen [SplashScreen]
+      #8366 closed 2026-03-01 fix(android): implement automatic edge-to-edge and universal keyboard handling
+      #8271 merged 2025-12-03 fix(core): prevent removeListener from removing wrong listener
+      #8400 merged 2026-03-24 fix(android): add null checks for plugin annotation when retrieving permissions
+      #8205 closed 2025-10-30 [Bug]: Ios Youtube embed player issue -  Blocked a frame with origin "ionic://localhost" from accessing a frame with origin "https://www.youtube.com". Protocols must match.
+      #8384 merged 2026-03-10 fix(SystemBars): use native safe area insets on Android
+      #8412 closed 2026-03-28 [Bug]: Extra spacing above the keypad
+      #8302 closed 2026-01-08 [Feature]: Preload network connectivity check before loading remote WebView URL
+  unreadable     2 hit(s) (all listed)
+      #1373 closed 2019-03-29 [IOS] Cookies problems in IOS
+      #6409 closed 2023-03-18 bug: Status bar doesn't change style when automatically changing day/night theme in iOS
+  garbage        4 hit(s) (all listed)
+      #7883 open 2025-02-11 [Bug]: Memory leak when calling native function repeatedly
+      #8202 open 2025-10-29 Introduce blob handling for Android & iOS
+      #1627 closed 2019-06-03 Splash Screen scaling displays twice
+      #3621 merged 2020-09-28 Permissions improvements
+  mangled        0 hit(s)
+  contents       89 hit(s) (all listed)
+      #8621 open 2026-09-23 [Bug]: Generated Android and iOS SPM plugin paths break with external virtual store
+      #8560 open 2026-08-08 [Bug]: 9.0.0-alpha.6 `Cordova.xcframework` ships a nested `Capacitor.framework`, causing App Store upload validation to fail
+      #8054 open 2025-07-09 [Bug]: iOS margins broken after iframe goes fullscreen
+      #8525 closed 2026-07-07 [Bug]: Capacitor v8.3.0 extra gray space when keyboard is visible
+      #8632 merged 2026-09-28 docs: adding AGENTS.md and ARCHITECTURE.md
+      #3589 open 2020-09-22 bug: iOS 14 Black screen always on initial app launch prior to actually showing the splash screen [SplashScreen]
+      #8474 closed 2026-05-18 [Bug]: swift-tools-version in SPM apps still hardcoded to 5.9 for Cordova plugins
+      #8412 closed 2026-03-28 [Bug]: Extra spacing above the keypad
+      #7961 closed 2025-04-06 CLIENT OF UIKIT REQUIRES UPDATE: This process does not adopt UIScene lifecycle. This will become an assert in a future version.
+      #8234 closed 2025-11-13 [Bug]: iOS app flashes between full page navigations
+      #7831 closed 2025-01-16 fix(ios): fix URL resolution when external frameworks are loaded
+      #6785 closed 2023-08-02 feat: (iOS) Support handling NSItemProvider items natively
+      #5498 closed 2022-03-12 Introduce blob handling for Android & iOS 🚀🚀
+      #974 closed 2018-11-18 Filesystem improvements
+      #8359 closed 2026-02-25 [Bug]: Error while building app for iOS using `pnpm cap run ios`
+      #8215 closed 2025-11-06 patch capacitor
+      #6902 closed 2023-09-13 bug: App is stuck after the splash screen on Android (Huawei P20)
+      #6861 closed 2023-09-03 [Bug]: Android Bridge Plugin Calls Queued - FileSystem.downloadFile blocking other requests
+      #7946 closed 2025-03-31 [Bug]:  iOS with physical keyboard
+      #7908 closed 2025-03-06 [Bug]: Safe Area no longer works on Android
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8643 open 2026-10-05 refactor(ios)!: remove CAPACITOR_DEBUG
+      #8644 open 2026-10-05 feat(cli): resolve the iOS Swift package from NPM package
+      #8617 open 2026-09-21 fix(android): update reply proxy before plugin call
+      #8600 open 2026-09-13 fix(cli): accept Kotlin source directory in cap doctor
+      #8623 open 2026-09-23 [Bug]: SystemBars injects non-zero --safe-area-inset-* when the WebView is not edge-to-edge (regression in 8.5.2)
+      #8511 open 2026-06-20 fix(http): make HttpResponse data type generic
+      #8418 open 2026-04-01 fix(android): range request truncation
+      #8432 open 2026-04-14 [Bug]: Keyboard pushes WebView up and scroll triggers back navigation on Android 16 (edge-to-edge enforcement)
+      #8478 open 2026-05-23 fix(http): support binary request bodies
+      #8622 open 2026-09-23 SystemBars: passthrough IME resize (viewport-fit=cover) ignores View.setPadding()/rewritten insets on some devices
+      #8607 open 2026-09-16 [Bug]: `cap sync ios` doesn't support Xcode 27.2's JSON project format (`project.xcproj`)
+      #8226 open 2025-11-11 [Bug]: Double tap-to-zoom  works in iOS Webview even though zoomEnabled is false
+      #8632 merged 2026-09-28 docs: adding AGENTS.md and ARCHITECTURE.md
+      #8562 open 2026-08-11 [Bug]: eval() runs on a destroyed WebView after activity recreate
+      #7976 open 2025-04-14 [Bug]: Volume of background app is lowered when I launch my Capacitor app
+      #8076 open 2025-07-21 [Bug]: iOS not sending url encoded data if it's a number 
+      #8604 merged 2026-09-15 feat(cli): add android edge-to-edge settings to migrator
+      #8599 merged 2026-09-11 feat(SystemBars): set default insets handling to 'native'
+      #8024 open 2025-06-03 [Bug]: Dynamically resolve target name in cap run ios
+      #8538 open 2026-07-23 [Bug]: plugin hooks not running in Nx app
+  unclean        1 hit(s) (all listed)
+      #3554 closed 2020-09-14 bug: Android Studio cannot find "android.support.v4.content.FileProvider". Unable to fix it with previous suggested fixes.
+  shutdown       9 hit(s) (all listed)
+      #6676 closed 2023-06-26 bug + fix: Push Notification handlers not called after webViewWebContentProcessDidTerminate
+      #7149 closed 2023-12-20 bug: npx cap run ios not working
+      #5375 closed 2022-01-14 bug: After jcenter shutdown and upgrade to Capacitor 3.x, Android app is crashing.
+      #5382 closed 2022-01-18 feat: Switch away from jcenter
+      #3424 closed 2020-08-15 Android: local notification repeat after reboot even if already shown
+      #5765 closed 2022-07-14 bug: Android 9 API 28 App launches with white screen
+      #4266 closed 2021-03-02 bintray/jcenter is deprecated
+      #5377 closed 2022-01-16 Remove all references to jcenter()
+      #2133 closed 2019-11-03 bug(high): Camera restarting app even system app gets refreshed/crashed
+  reboot         13 hit(s) (all listed)
+      #3589 open 2020-09-22 bug: iOS 14 Black screen always on initial app launch prior to actually showing the splash screen [SplashScreen]
+      #3912 closed 2020-12-08 feat: Support loading from alternate path
+      #7370 closed 2024-03-28 [Bug]: app crashes in IOS, call multiple endpoints
+      #5278 closed 2021-11-26 bug: service worker server.url not injecting capacitor
+      #6716 merged 2023-07-06 fix(cli): signing type option issue
+      #5062 closed 2021-09-19 bug: Push notification/Local notification issues on device reboot 
+      #3424 closed 2020-08-15 Android: local notification repeat after reboot even if already shown
+      #2830 closed 2020-04-26 bug: LocalNotifications are not persisted between device reboot on Android
+      #5441 closed 2022-02-16 bug: After App Update, App always opens in dark mode
+      #3506 closed 2020-09-04 bug: Local Notification channel creation not working
+      #3027 merged 2020-06-01 fix(android): restore local notifications after device reboot
+      #636 closed 2018-07-07 On app reboot `localStorage` is lost
+      #2815 merged 2020-04-22 fix(android) : App can crash on clipboard.read if empty
+  disk+full      5 hit(s) (all listed)
+      #7423 closed 2024-04-23 [Bug]: Android live reload doesn't work, but build works fine. Error: java.lang.IllegalArgumentException: allowedOriginRules
+      #984 closed 2018-11-20 Support blob/large data
+      #3489 closed 2020-08-31 Xcode Error "Operation not permitted"
+      #5554 closed 2022-03-30 bug: Camera not working on android apk
+      #1845 closed 2019-08-04 Camera Plugin will crash the app if no photo app installed in Android
+  data+loss      9 hit(s) (all listed)
+      #6582 closed 2023-05-10 bug: CapacitorHttp - No support for Server-Sent Events (EventSource API)
+      #6676 closed 2023-06-26 bug + fix: Push Notification handlers not called after webViewWebContentProcessDidTerminate
+      #7832 closed 2025-01-17 [Bug]: Splitting IndexedDB table when migrating from v5 to v6
+      #5942 closed 2022-09-22 feat: allow params types other than strings in CapacitorHttp
+      #3012 closed 2020-05-29 bug: cookies not being persisted
+      #6332 closed 2023-02-27 feat(android): update default scheme from http to https
+      #5052 closed 2021-09-14 feat: add Android autocomplete support
+      #2265 closed 2019-12-17 bug: Crash / restart due to OOM, when capturing a photo via <input> element
+      #1475 closed 2019-05-07 [Android] tapping push notification does nothing when app not running or in background
+  partial+write  1 hit(s) (all listed)
+      #1475 closed 2019-05-07 [Android] tapping push notification does nothing when app not running or in background
+  crash+safe     23 hit(s) (all listed)
+      #8202 open 2025-10-29 Introduce blob handling for Android & iOS
+      #8530 open 2026-07-13 SystemBars: safe area CSS injection throws "Cannot read properties of null" on startup (Android 16)
+      #7853 open 2025-01-29 [Bug]: Crash on Chromebooks running Android 11 in WebViewFeature.isFeatureSupported(WEB_MESSAGE_LISTENER)
+      #8432 open 2026-04-14 [Bug]: Keyboard pushes WebView up and scroll triggers back navigation on Android 16 (edge-to-edge enforcement)
+      #8203 open 2025-10-29 feat: Bidirectional Blob Transfer API for Efficient Binary Data Transfer
+      #8399 closed 2026-03-24 [Bug]: getPermissionStates causes app crash
+      #7802 closed 2024-12-12 [Bug]: Android capacitor crashes on subsequent launch if versionCode/versionName omitted
+      #1373 closed 2019-03-29 [IOS] Cookies problems in IOS
+      #7453 closed 2024-05-07 fix(ios): don't call urlSchemeTask methods if it was stopped
+      #5889 closed 2022-08-30 bug: Crash on iOS when you access the `storedCalls` on threads other than the "bridge"-`DispatchQueue`
+      #7480 merged 2024-05-22 [Bug]: add serial dispatch queue for `storedCalls` to avoid data-race
+      #7595 closed 2024-08-01 [Bug]: capacitorHttp cause ios App crash
+      #7116 closed 2023-12-05 bug: Call to objc_getClassList in CapacitorBridge causes crash if presenting Portals view based on Apple SDK availability
+      #6818 merged 2023-08-16 fix(http): route get requests through custom handler
+      #777 closed 2018-08-27 StatusBar.setBackgroundColor(color) for iOs or Plugin
+      #852 closed 2018-10-04 Create better docs about Android permissions
+      #4876 closed 2021-08-01 bug: npx cap update crashes on Apple Silicon
+      #4819 closed 2021-07-10 bug: Create IOS App with Apple M1
+      #5288 closed 2021-12-02 bug: My new computer is having trouble running compilation? (pod install)
+      #4127 merged 2021-01-28 feat(android): activity result use new API and updated permission result callbacks to match
+  atomic+write   5 hit(s) (all listed)
+      #5278 closed 2021-11-26 bug: service worker server.url not injecting capacitor
+      #4876 closed 2021-08-01 bug: npx cap update crashes on Apple Silicon
+      #4819 closed 2021-07-10 bug: Create IOS App with Apple M1
+      #5288 closed 2021-12-02 bug: My new computer is having trouble running compilation? (pod install)
+      #5337 closed 2021-12-22 bug: derivedDataPath breaks xcodebuild and ionic capacitor run ios -l --external
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8157 open 2025-09-15 [Bug]: CAPPlugin Event Handling Causing Data Races on iOS
+      #8571 closed 2026-08-12 cap sync ios generates an unresolvable Package.swift when IPHONEOS_DEPLOYMENT_TARGET >= 18 (.v18 vs default swift-tools-version 5.9)
+      #8577 closed 2026-08-19 [Bug]: Internal HTTP server doesn't return file when filename doesn't have "." in it
+      #8504 closed 2026-06-06 [Bug]: cap9-alpha Duplicate comma in Package.swift with npx cap sync ios
+      #6021 closed 2022-10-24 bug: Serving local videos occasionally fails on Android
+      #8411 closed 2026-03-27 CocoaPods unable to copy local pod sources from npm/pnpm node_modules — generates dummy sources instead
+      #2356 closed 2020-01-21 feat: Allow to remove all cordova related code
+      #8276 closed 2025-12-05 [Bug]: V8 min version 15.5
+      #8205 closed 2025-10-30 [Bug]: Ios Youtube embed player issue -  Blocked a frame with origin "ionic://localhost" from accessing a frame with origin "https://www.youtube.com". Protocols must match.
+      #8095 closed 2025-08-04 [Bug]: Keyboard Plugin (with `resize: "native"`+`resizeOnFullScreen: true`) resizes view wrong
+      #5718 closed 2022-06-23 feat: Capacitor CLI - Javascript API
+      #8229 closed 2025-11-11 [Bug]: Running application on 17.5 Simulator from Xcode 16.2 is crashing due to missing SwiftUICore.framework
+      #7845 closed 2025-01-24 [Bug]: Url without .html extension returns with the content of index.html
+      #586 closed 2018-06-18 Some Info.plist instructions appear unordered
+      #6782 closed 2023-08-02 feat: improving message when capacitor is already configured
+      #2443 closed 2020-02-17 feat: Better error handling for 'native' plugins.
+      #4178 closed 2021-02-09 bug: `addEventListener(undefined)` throws `TypeError: undefined is not an object (evaluating 'evt.toLowerCase')`
+      #4869 closed 2021-07-28 feat: Compress heavy images from files inputs, for fast upload
+      #8324 closed 2026-01-30 [Bug]: Writing/saving a file to cache directory no longer works?
+      #8310 closed 2026-01-19 [Bug]: Capacitor CLI 7.x is incompatible with tar@7.5.3
+  write+failure  15 hit(s) (all listed)
+      #8608 open 2026-09-16 fix(cli): support Xcode's JSON project format (project.xcproj)
+      #8202 open 2025-10-29 Introduce blob handling for Android & iOS
+      #8203 open 2025-10-29 feat: Bidirectional Blob Transfer API for Efficient Binary Data Transfer
+      #8632 merged 2026-09-28 docs: adding AGENTS.md and ARCHITECTURE.md
+      #3589 open 2020-09-22 bug: iOS 14 Black screen always on initial app launch prior to actually showing the splash screen [SplashScreen]
+      #7998 closed 2025-05-05 [Bug]:  Capacitor not set isCoreLibraryDesugaringEnabled
+      #3376 closed 2020-08-03 bug: gradle add dependency to some lib project instead of app
+      #5903 closed 2022-09-08 bug: Invalid `Podfile` file: cannot load such file '../../node_modules/@capacitor/ios/scripts/pods_helpers'
+      #6982 closed 2023-10-10 bug: Execution failed for task ':app:checkReleaseDuplicateClasses' after executing ./gradlew bundleRelease
+      #5278 closed 2021-11-26 bug: service worker server.url not injecting capacitor
+      #6622 closed 2023-05-29 bug: HTML5 video element refuses to play on all devices after update although it works on browser versions of Safari and Chrome
+      #6296 closed 2023-02-14 bug:  lint with error
+      #324 closed 2018-03-13 Support release builds from CLI
+      #5337 closed 2021-12-22 bug: derivedDataPath breaks xcodebuild and ionic capacitor run ios -l --external
+      #3440 closed 2020-08-19 chore(cli): remove init command
+  file+contents  58 hit(s) (all listed)
+      #8621 open 2026-09-23 [Bug]: Generated Android and iOS SPM plugin paths break with external virtual store
+      #8560 open 2026-08-08 [Bug]: 9.0.0-alpha.6 `Cordova.xcframework` ships a nested `Capacitor.framework`, causing App Store upload validation to fail
+      #8632 merged 2026-09-28 docs: adding AGENTS.md and ARCHITECTURE.md
+      #3589 open 2020-09-22 bug: iOS 14 Black screen always on initial app launch prior to actually showing the splash screen [SplashScreen]
+      #8525 closed 2026-07-07 [Bug]: Capacitor v8.3.0 extra gray space when keyboard is visible
+      #6785 closed 2023-08-02 feat: (iOS) Support handling NSItemProvider items natively
+      #7831 closed 2025-01-16 fix(ios): fix URL resolution when external frameworks are loaded
+      #974 closed 2018-11-18 Filesystem improvements
+      #8359 closed 2026-02-25 [Bug]: Error while building app for iOS using `pnpm cap run ios`
+      #5498 closed 2022-03-12 Introduce blob handling for Android & iOS 🚀🚀
+      #6902 closed 2023-09-13 bug: App is stuck after the splash screen on Android (Huawei P20)
+      #6861 closed 2023-09-03 [Bug]: Android Bridge Plugin Calls Queued - FileSystem.downloadFile blocking other requests
+      #5384 closed 2022-01-20 feat: Android 12 - Deactivate Stretch/Bounce effect scroll
+      #7905 merged 2025-03-05 fix(ios): Reset plugin listeners when WebView process is terminated
+      #2896 closed 2020-05-09 bug: Angular application (Zone.js) + cordova.js file 
+      #7847 closed 2025-01-28 [Bug]: Freshly created Ionic Vue project cannot be run on Android
+      #5250 closed 2021-11-18 bug: CAPACITOR_ANDROID_STUDIO_PATH does not work with JetBrains toolbox managed shell scripts.
+      #7323 closed 2024-03-07 [Bug]: Android Live Reload broken in Capacitor 5.7.2
+      #6708 merged 2023-07-05 feat(http): support for FormData requests
+      #7155 closed 2023-12-23 bug: Android crashes with Mediapipe
+
+== 51 terms run; 45 returned hits, 6 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.
