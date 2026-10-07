@@ -3009,12 +3009,12 @@ fn phaseExploration(run: *Run) void {
         // Where this world's checker wrote, so the evidence bundle can quote its last line
         // (#607). Null when there is no checker, or when the capture could not be opened.
         //
-        // Captured rather than inherited, which takes the output off the terminal the way
-        // #483 did for `--setup`. Two reasons rather than one: a checker that runs once per
-        // crash point printed its diagnosis n+1 times into the middle of nothing, and #134
-        // records unlabeled checker output reaching the transcript as a hazard in its own
-        // right. What the run says about the checker is the report's `checker` line, and
-        // for a FAIL the exhibit's own last line is now in the bundle.
+        // Captured rather than inherited, so the bundle can quote the exhibit's last line and
+        // the terminal copy can carry the world's mark (#707): inherited, a checker that runs
+        // once per crash point printed its diagnosis n+1 times with nothing saying which world
+        // spoke, and #134 records what a line nobody could attribute costs in a transcript (a
+        // gate line read as a world's). What the run says about the checker is the report's
+        // `checker` line, and for a FAIL the exhibit's own last line is in the bundle.
         var checker_out: ?[]const u8 = null;
         if (check_argv) |cargv| {
             var capture_opened = true;
@@ -3052,21 +3052,24 @@ fn phaseExploration(run: *Run) void {
             // written the line that says why, and the capture is what holds it.
             if (capture_opened) {
                 checker_out = co;
-                // Re-emitted UNLABELED, which is byte-for-byte what a world checker's output
-                // has always looked like on this stream. The capture is additive: the bundle
-                // gets the exhibit's last line, and the terminal keeps what it had.
+                // Re-emitted with the world's mark on every line (#707): `world 3: ` for crash
+                // point 3 — the number the report's `crash point 3 of n` and a recovery's
+                // `recovery world 3` carry — and `baseline: ` for the un-killed world. Until
+                // #707 the lines came out unlabeled, and a checker that printed a traceback put
+                // fifty lines ahead of the verdict that no reader could attribute to a world.
+                // The capture file keeps the checker's own bytes, unmarked; the mark is for the
+                // terminal.
                 //
-                // An earlier version of this change did not re-emit, on the reasoning that
-                // #134 records unlabeled checker output as a hazard. That misread #134: the
-                // hazard was the *gate's* output being harvested as a world's, and the fix
-                // was labeling the gate — the world side staying unlabeled is what makes the
-                // two tellable apart. `spike/acceptance.sh` counts BOTH sides for exactly
-                // that reason and went red on the version that dropped this (CI, 2026-09-17).
+                // Unlabeled was a reading of #134: the hazard there was the *gate's* output
+                // being harvested as a world's, and the fix labelled the gate (`falsify: `), so
+                // the world side staying bare was what told the two apart. A mark of its own
+                // tells them apart as well, and says which world. `spike/acceptance.sh` counts
+                // gate lines, world lines and unmarked checker lines, which must be none.
                 if (capture.readFileAllocCapped(arena, co, 1024 * 1024, .{ .no_follow = true })) |text| {
                     var lines = std.mem.splitScalar(u8, text, '\n');
                     while (lines.next()) |line| {
                         if (line.len == 0) continue;
-                        say("{s}\n", .{line});
+                        if (k > n) say("baseline: {s}\n", .{line}) else say("world {s}: {s}\n", .{ kstr, line });
                     }
                 }
                 // No else-branch saying so, unlike the gate's: a gate that cannot be read

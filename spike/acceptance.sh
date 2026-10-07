@@ -1016,20 +1016,25 @@ else
     fails=$((fails + 1))
 fi
 
-# ---- #134: the falsification gate's child output is labeled per line ----
+# ---- #134, #707: the gate's and each world's checker output are labeled per line ----
 # The gate produces, by design, exactly the output a real finding would — a target
 # failing over a broken store — and one unlabeled gate line was harvested as world
 # evidence (the buku correction, PR #133). The buggy run above has the checker
-# speaking in BOTH places: over the gate's corruption probe (must carry the
-# `falsify: ` prefix on every line) and in a failing world (must stay unlabeled).
+# speaking in BOTH places: over the gate's corruption probe (every line must carry
+# `falsify: `) and in a failing world (every line must carry `world N: `, #707 — until
+# then the world side stayed bare, which told the two apart but not which world).
 # Both sides are counted, not just grepped: a silent checker would make a
-# presence-only check pass vacuously.
+# presence-only check pass vacuously. And no checker line may come out unmarked.
+# The world's number is the report's: the checker speaks only in the failing world, which is
+# the earliest crash point, so its line must carry exactly that number.
 gate_n=$(printf '%s\n' "$o" | grep -c "^falsify: doctor says" || true)
-world_n=$(printf '%s\n' "$o" | grep -c "^doctor says" || true)
-if [ "${gate_n:-0}" -ge 1 ] && [ "${world_n:-0}" -ge 1 ]; then
-    echo "ok   gate output labeled (falsify: x$gate_n), world checker output unlabeled (x$world_n)"
+k134=$(printf '%s\n' "$o" | sed -n 's/^earliest *crash point \([0-9][0-9]*\) of .*/\1/p' | head -1)
+world_n=$(printf '%s\n' "$o" | grep -c "^world ${k134:-none}: doctor says" || true)
+bare_n=$(printf '%s\n' "$o" | grep -c "^doctor says" || true)
+if [ "${gate_n:-0}" -ge 1 ] && [ "${world_n:-0}" -ge 1 ] && [ "${bare_n:-0}" = 0 ]; then
+    echo "ok   gate output labeled (falsify: x$gate_n), world checker output labeled with the earliest crash point (world $k134: x$world_n), none bare"
 else
-    echo "FAIL #134 labeling: gate falsify-lines=$gate_n world unlabeled-lines=$world_n"
+    echo "FAIL #134/#707 labeling: gate falsify-lines=$gate_n world-$k134-lines=$world_n bare-lines=$bare_n"
     echo "$o" | sed 's/^/     | /'
     fails=$((fails + 1))
 fi
@@ -2202,6 +2207,54 @@ else
     printf '%s\n' "$o708" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi
+
+# ---- #707: every re-emitted checker line says which world it came from ----
+# The same define, with a checker that speaks on both streams in every world it runs in.
+# Each crash world's lines must carry `world N: ` with N running exactly 1..n, n the report's
+# crash point count; the un-killed world's `baseline: `; the gate's `falsify: `. The checker's
+# stderr line must come out on Sideeye's stdout with the same mark (the capture holds both
+# streams in order) and never on Sideeye's stderr. None may come out bare.
+printf '#!/bin/sh\necho "probe out"\necho "probe err" >&2\n[ "$(cat "$SIDEEYE_STATE_DIR/sentinel" 2>/dev/null)" = ok ]\n' > /tmp/acc-708/talk.sh
+chmod 755 /tmp/acc-708/talk.sh
+rm -rf /tmp/acc-708/state /tmp/acc-708/work
+o707=$("$SIDEEYE" explore --state /tmp/acc-708/state --work /tmp/acc-708/work \
+    --shim "$SHIM" --oracle /usr/bin/strace --setup /tmp/acc-708/setup.sh \
+    --operation "$OUT/toy-fixed rotate" --check /tmp/acc-708/talk.sh 2>/tmp/acc-708/err707)
+rc707=$?
+n707=$(printf '%s\n' "$o707" | sed -n 's/.*(crash points \([0-9][0-9]*\) + 1 baseline).*/\1/p' | head -1)
+seen707=$(printf '%s\n' "$o707" | sed -n 's/^world \([0-9][0-9]*\): probe out$/\1/p' | tr '\n' ' ')
+want707=$(seq 1 "${n707:-0}" 2>/dev/null | tr '\n' ' ')
+we707=$(printf '%s\n' "$o707" | grep -cE '^world [0-9]+: probe err$' || true)
+b707=$(printf '%s\n' "$o707" | grep -cE '^baseline: probe (out|err)$' || true)
+g707=$(printf '%s\n' "$o707" | grep -cE '^falsify: probe (out|err)$' || true)
+bare707=$(printf '%s\n' "$o707" | grep -cE '^probe (out|err)$' || true)
+err707=$(grep -c 'probe' /tmp/acc-708/err707 || true)
+if [ "$rc707" = "0" ] && [ -n "$want707" ] && [ "$seen707" = "$want707" ] && [ "${we707:-0}" = "${n707:-x}" ] &&
+   [ "${b707:-0}" = 2 ] && [ "${g707:-0}" -ge 1 ] && [ "${bare707:-0}" = 0 ] && [ "${err707:-0}" = 0 ]; then
+    echo "ok   #707: checker lines marked world 1..$n707 (stderr on stdout x$we707), baseline (x$b707), falsify (x$g707), none bare, none on Sideeye's stderr"
+else
+    echo "FAIL #707: exit $rc707; worlds seen [$seen707] wanted [$want707]; stderr-marked $we707; baseline $b707 (wanted 2); falsify $g707; bare $bare707; on Sideeye's stderr $err707 (wanted 0)"
+    printf '%s\n' "$o707" | sed 's/^/     | /' | head -12
+    fails=$((fails + 1))
+fi
+# The one path that cannot mark: a capture that cannot be opened (a non-empty directory where
+# the file goes) runs the checker uncaptured, its stdout and stderr reaching Sideeye's own
+# directly and unmarked, and the verdict standing. docs/cli.md says so; this holds it.
+rm -rf /tmp/acc-708/state /tmp/acc-708/work && mkdir -p /tmp/acc-708/work/checker-output.txt/x
+o707u=$("$SIDEEYE" explore --state /tmp/acc-708/state --work /tmp/acc-708/work \
+    --shim "$SHIM" --oracle /usr/bin/strace --setup /tmp/acc-708/setup.sh \
+    --operation "$OUT/toy-fixed rotate" --check /tmp/acc-708/talk.sh 2>/tmp/acc-708/err707u)
+rc707u=$?
+outu=$(printf '%s\n' "$o707u" | grep -c '^probe out$' || true)
+erru=$(grep -c '^probe err$' /tmp/acc-708/err707u || true)
+if [ "$rc707u" = "0" ] && [ "${outu:-0}" -ge 1 ] && [ "${erru:-0}" -ge 1 ]; then
+    echo "ok   #707: with no capture the checker's stdout and stderr reach Sideeye's own, unmarked, and the run still PASSes"
+else
+    echo "FAIL #707: no capture: exit $rc707u, bare stdout lines $outu, stderr lines $erru (wanted 0 exit and both >= 1)"
+    printf '%s\n' "$o707u" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-708/work
 
 echo ""
 echo "=========== check 2l: a state directory larger than one buffer ==========="
@@ -5197,6 +5250,14 @@ chmod 755 "$RD/recover-break.sh"
 r_explore b-break toy-bug --recovery "$RD/recover-break.sh" --recovery-check "$ROOT/spike/check-recovered-key.sh"
 r_want b-break exit "$(cat "$RD/b-break/rc")" 1
 r_want b-break earliest.recovery.result "$(field "$RD/b-break/r.json" earliest.recovery.result)" fail
+# #707: a recovery's lines carry the world's number — the exhibit's crash point. The recovery
+# checker says "the recovered key does not load" on this leg; before #707 it came out as
+# `recovery check: `, one mark shared by every exhibit's leg.
+b_k=$(field "$RD/b-break/r.json" earliest.crash_point)
+b_marked=$(grep -c "^recovery world ${b_k:-none} check: the recovered key does not load" "$RD/b-break/out.txt" || true)
+b_bare=$(grep -c '^recovery check: ' "$RD/b-break/out.txt" || true)
+r_want b-break "a line marked 'recovery world $b_k check: '" "$([ "${b_marked:-0}" -ge 1 ] && echo yes || echo "no (${b_marked:-0})")" yes
+r_want b-break "lines marked 'recovery check: ' with no world" "${b_bare:-0}" 0
 
 # (1c) No FAIL, nothing to recover: PASS, exit 0, no exhibit, the account says it did not run.
 r_explore c-fixed toy-fixed --recovery "$ROOT/spike/recover-key.sh" --recovery-check "$ROOT/spike/check-recovered-key.sh"
@@ -5210,8 +5271,16 @@ grep -q '"earliest"' "$RD/c-fixed/r.json" && { echo "     c-fixed: a PASS carrie
 # against that mutant); swapped would read fail/pass (predicted, not run). Each bundle carries its
 # own exhibit's result.
 TOY_SPLIT_REWRITE=1; export TOY_SPLIT_REWRITE
+# The recovery is recover-split.sh behind one line of its own, so every leg speaks and the
+# world each leg's lines name can be counted (#707, below).
+cat > "$RD/recover-split-say.sh" <<EOF
+#!/bin/sh
+echo "recovery ran"
+exec "$ROOT/spike/recover-split.sh"
+EOF
+chmod 755 "$RD/recover-split-say.sh"
 r_explore d-split toy-fixed --check "$ROOT/spike/check-split.sh" \
-    --recovery "$ROOT/spike/recover-split.sh" --recovery-check "$ROOT/spike/check-recovered-split.sh"
+    --recovery "$RD/recover-split-say.sh" --recovery-check "$ROOT/spike/check-recovered-split.sh"
 unset TOY_SPLIT_REWRITE
 r_want d-split earliest.crash_point "$(field "$RD/d-split/r.json" earliest.crash_point)" 2
 r_want d-split checker_earliest.crash_point "$(field "$RD/d-split/r.json" checker_earliest.crash_point)" 4
@@ -5219,6 +5288,13 @@ r_want d-split earliest.recovery.result "$(field "$RD/d-split/r.json" earliest.r
 r_want d-split checker_earliest.recovery.result "$(field "$RD/d-split/r.json" checker_earliest.recovery.result)" fail
 r_want d-split bundle-1.recovery "$(field "$(field "$RD/d-split/r.json" evidence)" recovery.result)" pass
 r_want d-split bundle-2.recovery "$(field "$(field "$RD/d-split/r.json" checker_earliest.evidence)" recovery.result)" fail
+# #707: two exhibits in two worlds, so each leg's lines carry its own world — the recovery
+# command's line once in world 2 and once in world 4, and the claim exhibit's failing recovery
+# check marked world 4. One number for both legs (the earliest's, or n) reads `2 2` or `4 4`.
+d_seen=$(sed -n 's/^recovery world \([0-9][0-9]*\): recovery ran$/\1/p' "$RD/d-split/out.txt" | sort -n | tr '\n' ' ')
+r_want d-split "worlds named on the recovery command's lines" "$d_seen" "2 4 "
+d_chk=$(grep -c '^recovery world 4 check: primary.txt holds neither' "$RD/d-split/out.txt" || true)
+r_want d-split "the claim exhibit's recovery check marked world 4" "$([ "${d_chk:-0}" -ge 1 ] && echo yes || echo "no (${d_chk:-0})")" yes
 
 # (1e) The replay line as printed — `sideeye` resolved to the binary under test, plus --work and
 # --json — reproduces the recovery; the same case replayed without the flags carries none.

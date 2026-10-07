@@ -129,9 +129,9 @@ names the second. When the two exhibits are one world there is one case and one 
 
 To quote the checker's last line, Sideeye has to have it. The checker's output in each
 explored world is therefore **also** captured to `<work>/checker-output.txt`, in addition to
-reaching your terminal the way it always has — the lines are re-emitted unlabeled, which is
-what distinguishes them from the falsification gate's, prefixed `falsify:` since #134. The
-file holds whichever world ran last, which is the un-killed baseline; the exhibit's own last
+reaching your terminal — re-emitted with the world it came from, `world N: ` or `baseline: `
+since #707, which also distinguishes them from the falsification gate's, prefixed `falsify:`
+since #134. The file keeps the checker's own bytes, unmarked, and holds whichever world ran last, which is the un-killed baseline; the exhibit's own last
 line is in the bundle, read in the world that produced it, and that is the copy worth keeping.
 
 If the capture cannot be opened, the checker still runs — the verdict rests on its exit

@@ -259,7 +259,12 @@ fn settled(ctx: Context) ?[]const u8 {
 fn leg(ctx: Context, d: Declared, ex: Exhibit) Leg {
     const tag = std.fmt.allocPrint(ctx.arena, "{d}", .{ex.k}) catch
         return unknownLeg(ex.k, posix.monotonicMs(), null, "out of memory");
-    return on(ctx, d, ex.k, ex.crashed, tag, "");
+    // #707: the world's number in the label, the one the world's own checker lines carry
+    // (`world 3: `) and the report's `crash point 3 of n` — two exhibits' legs, earliest and
+    // checker, were otherwise both `recovery: ` and could not be told apart.
+    const label = std.fmt.allocPrint(ctx.arena, " world {d}", .{ex.k}) catch
+        return unknownLeg(ex.k, posix.monotonicMs(), null, "out of memory");
+    return on(ctx, d, ex.k, ex.crashed, tag, label);
 }
 
 /// Rebuild `state`, run the recovery command, see the state stop changing, run the checker.
