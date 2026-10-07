@@ -2,7 +2,8 @@
 
 - **Status:** Accepted (2026-09-17)
 - **Scope:** `spike/outcome-funnel.tsv`, `spike/outcome-funnel-campaigns.tsv`,
-  `spike/outcome-funnel.py`, `docs/outcome-funnel.md` and the `outcome-funnel` CI job.
+  `spike/outcome-funnel.py`, `docs/outcome-funnel.md` and the `outcome-funnel` CI job;
+  `docs/found.md` since 2026-10-06 (decision 8).
   Not the engine, not the report schema, not `docs/target-classes.md` or
   `spike/upstream-reports.tsv`, which this record reads and does not change.
 
@@ -74,6 +75,12 @@ re-read".
 8. **The counts in `docs/outcome-funnel.md` are generated and compared byte for byte in
    CI.** ADR 0039 declined a figure check that would compare two hand-written records
    and call one of them the truth; this one has a source that is not hand-written prose.
+   *Extended 2026-10-06 (#713):* the same mechanism renders `docs/found.md` — one row per
+   report in `spike/upstream-reports.tsv`, with the furthest state this ledger records —
+   and `--check-doc` compares both pages. The README stopped quoting a count of reports
+   and links that page instead; the count it quoted had gone stale (27 against 35). `check`
+   also refuses a report the two ledgers disagree on whether it was withdrawn, since the
+   page shows the report ledger's word.
 
 ## Alternatives Considered
 

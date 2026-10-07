@@ -1448,8 +1448,9 @@ jobs:
   # The funnel from a define to an upstream fix (#605, ADR 0070). Its own job, and its
   # self-test first, for the reason the checkers beside it give: no toolchain, and a
   # checker nobody has seen red is a checker whose predicates are untested (#342). The
-  # third step is a separate entrance -- it compares the block in docs/outcome-funnel.md
-  # against a fresh rendering, so a figure edited by one digit on that page is red.
+  # third step is a separate entrance -- it compares the generated blocks in
+  # docs/outcome-funnel.md and docs/found.md (#713) against a fresh rendering, so a figure
+  # edited by one digit, or a report row edited by hand, is red.
   outcome-funnel:
     runs-on: ubuntu-latest
     steps:
@@ -1461,7 +1462,7 @@ jobs:
       - name: Every row holds to the record it names (#605)
         run: python3 spike/outcome-funnel.py check
 
-      - name: The page's figures are what the ledger renders
+      - name: The generated pages are what the ledgers render
         run: python3 spike/outcome-funnel.py --check-doc
 
   changelog-block:

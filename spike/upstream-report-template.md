@@ -1,7 +1,8 @@
 # Filing a finding upstream — the shape
 
-Thirty-five reports have gone out from this project (`upstream-reports.tsv`;
-thirty-four standing, one withdrawn). **Four** of them, filed 2026-09-04..05, are
+Every report this project files on GitHub goes in `spike/upstream-reports.tsv` (a
+report filed elsewhere, a Bugzilla say, has no row there yet), and `docs/found.md`
+lists those with their state. **Four** of them, filed 2026-09-04..05, are
 the worked examples this page was drawn from, and
 `ImageMagick/ImageMagick#8939` is the canonical instance — the owner's
 instruction on 2026-09-06 is that later reports go the same way. This page is
@@ -205,11 +206,13 @@ worse than the finding.
 
 ## After filing
 
-- **Both records, in the same sitting**: a row in `upstream-reports.tsv` and an
+- **Both records, in the same sitting**: a row in `spike/upstream-reports.tsv` and an
   `<!-- upstream-report: owner/repo#N -->` marker on that tool's row in
-  `docs/target-classes.md`. `check-upstream-ledger.sh` holds the two to each
+  `docs/target-classes.md`. `spike/check-upstream-ledger.sh` holds the two to each
   other and stays green over a filing that is in neither — that is the gap
-  `trash-cli#414` sat in for two days.
+  `trash-cli#414` sat in for two days. Then the campaign's row in
+  `spike/outcome-funnel.tsv` at `filed`, and `python3 spike/outcome-funnel.py
+  --write-doc` so `docs/found.md` lists the report; CI is red until both are done.
 - **Closing your own report uses `not planned`**, never `gh issue close`'s
   default `completed`.
 - **A third party's question on your issue gets an answer**, even when the

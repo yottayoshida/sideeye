@@ -20,7 +20,7 @@
 # The size bound is the other half. The page had grown to 33 KB by writing each
 # decision's record into it — issue numbers, ADR numbers, the reason behind each refusal —
 # and those have homes of their own (DESIGN.md, docs/, docs/adr/). The bound is a sum of what
-# the page must carry plus a fixed slack, not a target picked first: 9045 + 590 = 9635.
+# the page must carry plus a fixed slack, not a target picked first: 9069 + 590 = 9659.
 # The sum was corrected twice, upward, during the change that introduced this check, and both
 # corrections were elements it had never counted rather than drafts that would not fit. First
 # the 382-byte clause naming the one exception to "never a silent PASS", which an owner ruling
@@ -47,6 +47,9 @@
 # A seventh (#708, 2026-10-06): the 75 bytes that say the check, like the setup, is handed the
 # state directory in a named variable. A checker written from this page alone had to guess, and
 # located the state relative to its own path; the variable was named nowhere a README reader looks.
+# An eighth (#713, 2026-10-06): 24 bytes, the count of upstream reports turned into a link to
+# docs/found.md, which the ledgers generate and CI compares. A number typed into this page went
+# stale with the next filing — it said 27 when the ledger held 35.
 #
 # Sunset: if this has not failed once by 2026-12-04, delete it and its CI step.
 set -u
@@ -65,7 +68,7 @@ has() { grep -qF -e "$1" "$R"; }
 
 bytes=$(wc -c < "$R" | tr -d ' ')
 lines=$(wc -l < "$R" | tr -d ' ')
-if [ "$bytes" -le 9635 ]; then ok "size: $bytes bytes, at most 9635"; else bad "size: $bytes bytes, over 9635"; fi
+if [ "$bytes" -le 9659 ]; then ok "size: $bytes bytes, at most 9659"; else bad "size: $bytes bytes, over 9659"; fi
 if [ "$lines" -le 120 ]; then ok "length: $lines lines, at most 120"; else bad "length: $lines lines, over 120"; fi
 n=$(grep -cE '#[0-9]+' "$R")
 if [ "$n" -eq 0 ]; then ok "no issue numbers"; else bad "$n line(s) carry an issue number; the record belongs in the page the reason lives on"; fi
