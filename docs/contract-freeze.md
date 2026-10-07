@@ -241,6 +241,15 @@ stay the same.
    unchanged** — a sixth ruling would be its own. Its ledger row is a sweep's job, as the notes
    above give; `contract_version` does not move.
 
+   **One plain additive field, 2026-10-06 (#706, ADR 0095).** `define_warnings` (string[]) holds
+   a sentence per string-form command the define spelled for a shell — quotes, or a whole word
+   such as `&&` — saying how Sideeye reads it. Present only when there is one, like
+   `apparatus`, and not a closed set, so the allowance covers it with no ruling of its own.
+   Surface 1 is untouched by the same change: every such spelling is still accepted and runs as
+   before; the warning is all that is new. It matches the extraction's pattern, so the next
+   `check-freeze-audit.sh` reports it as drift, the sweep's job as above; `contract_version`
+   does not move.
+
 3. **Exit codes.** When a run produces a verdict, that verdict's exit code is
    fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is never 0.
    The promise runs in that direction. **Exit 0 is not reserved to PASS**: it

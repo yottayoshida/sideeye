@@ -99,6 +99,14 @@ related reason: the machine-readable form is the bundle file itself.
   check that caught a first version of this change for dropping the world side). A capture
   that cannot be opened leaves the diagnostic unreadable and does not refuse the run — an
   attachment must not turn a FAIL into an UNKNOWN.
+
+  **Amended 2026-10-06 (#707).** The world side is no longer bare: each line is re-emitted
+  with `world N: `, N the crash point, or `baseline: ` for the un-killed world, and a
+  recovery's lines carry `recovery world N`. A bare world side told the two sources apart
+  but not which world spoke, and a checker's traceback stood ahead of the verdict with no
+  owner. `spike/acceptance.sh` now counts the gate's lines, the marked world lines and the
+  bare checker lines, which must be none. The capture file still holds the checker's own
+  bytes, unmarked.
 - `evidence_version` can move without touching `case_version`, and #606's recovery result
   has a slot held open from version 1 (`"recovery": {"result": "not_configured"}`, a string
   rather than an enum) so adding it is a value change rather than a schema change.
