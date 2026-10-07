@@ -167,6 +167,7 @@ const usage_fmt =
     \\  sideeye mcp
     \\  sideeye help [<command>]
     \\  sideeye version
+    \\  sideeye completions zsh|bash|fish
     \\
     \\demo compiles a small planted-bug tool on this machine (it needs a C compiler)
     \\and explores it, printing the same FAIL report a real finding produces. The
@@ -195,6 +196,9 @@ const usage_fmt =
     \\upstream report. Every field is something the run measured or the word
     \\`unknown`; nothing is ranked. Takes the case's path or the bundle's own
     \\(docs/evidence.md).
+    \\
+    \\completions prints a completion script for zsh, bash or fish (docs/cli.md: how
+    \\to load it).
     \\
     \\replay re-runs one saved counterexample: the same pipeline as explore — the
     \\oracle comparison, the structural detectors, checker falsification, landing
@@ -838,6 +842,510 @@ pub fn answerEntry(arena: std.mem.Allocator, argv: []const []const u8) void {
         std.process.exit(@intFromEnum(contract.ExitCode.pass));
     }
     if (!isCommand(argv[1])) refuseUnknownCommand(arena, true, argv[1]);
+}
+
+// --------------------------------------------------------------- completions (#712)
+//
+// `sideeye completions zsh|bash|fish` prints a completion script for that shell. Its words are
+// the usage lines' own: the commands and each command's flags come from `synopsisCommands` and
+// `synopsisFlags` above, so the script cannot offer a flag the help does not list, and the
+// #273 block in `spike/acceptance.sh` already holds the help to the parser. What is read here
+// besides is what a completion needs and the help already says: what follows a flag (`<dir>`
+// is a path, `a|b|c` its words, anything else a value with nothing to offer) and what follows
+// the command word (`<case.json>`, `[<command>]`, `zsh|bash|fish`).
+
+/// What a word in a synopsis line asks for when it is a value or a positional argument.
+const Want = union(enum) {
+    none,
+    file,
+    words: []const u8,
+    commands,
+    opaque_value,
+};
+
+/// The value tags that name a path. `<strace>` is one: its flag summary says "path to strace".
+/// `spike/check-completions.py` keeps its own copy beside the tags that name no path, and stops
+/// on a tag in neither, so a new path tag cannot be read as opaque on both sides at once.
+const file_tags = [_][]const u8{ "<dir>", "<path>", "<lib>", "<case.json>", "<sideeye.toml>", "<strace>" };
+
+fn wantOf(token: []const u8) Want {
+    const t = std.mem.trim(u8, token, "[]");
+    if (std.mem.eql(u8, t, "<command>")) return .commands;
+    for (file_tags) |f| if (std.mem.eql(u8, t, f)) return .file;
+    if (t.len > 0 and t[0] == '<') return .opaque_value;
+    if (std.mem.indexOfScalar(u8, t, '|') != null and t.len > 1) return .{ .words = t };
+    return .none;
+}
+
+/// What the flag `flag` of `cmd` takes, read off the word after it on `cmd`'s synopsis lines.
+fn flagWant(cmd: []const u8, flag: []const u8) Want {
+    var lines = std.mem.splitScalar(u8, usage_fmt, '\n');
+    while (lines.next()) |line| {
+        const c = synopsisCommand(line) orelse continue;
+        if (!std.mem.eql(u8, c, cmd)) continue;
+        var words = std.mem.tokenizeScalar(u8, line, ' ');
+        while (words.next()) |w| {
+            if (!std.mem.eql(u8, std.mem.trim(u8, w, "[]"), flag)) continue;
+            const after = words.peek() orelse return .none;
+            if (std.mem.eql(u8, after, "|") or std.mem.startsWith(u8, std.mem.trimStart(u8, after, "["), "--")) return .none;
+            return wantOf(after);
+        }
+    }
+    return .none;
+}
+
+/// What follows `cmd`'s command word on its first synopsis line, when that is not a flag.
+fn positionalWant(cmd: []const u8) Want {
+    var lines = std.mem.splitScalar(u8, usage_fmt, '\n');
+    while (lines.next()) |line| {
+        const c = synopsisCommand(line) orelse continue;
+        if (!std.mem.eql(u8, c, cmd)) continue;
+        var words = std.mem.tokenizeScalar(u8, line[synopsis_prefix.len + c.len ..], ' ');
+        const first = words.next() orelse return .none;
+        if (std.mem.startsWith(u8, std.mem.trimStart(u8, first, "["), "--")) return .none;
+        return wantOf(first);
+    }
+    return .none;
+}
+
+/// The shells `completions` takes, as its own usage line spells them.
+fn shellNames(buf: [][]const u8) [][]const u8 {
+    const words = switch (positionalWant("completions")) {
+        .words => |w| w,
+        else => return buf[0..0],
+    };
+    var n: usize = 0;
+    var it = std.mem.splitScalar(u8, words, '|');
+    while (it.next()) |s| {
+        if (n == buf.len) break;
+        buf[n] = s;
+        n += 1;
+    }
+    return buf[0..n];
+}
+
+fn appendJoined(out: *std.ArrayList(u8), arena: std.mem.Allocator, items: []const []const u8, sep: []const u8) !void {
+    for (items, 0..) |it, i| {
+        if (i > 0) try out.appendSlice(arena, sep);
+        try out.appendSlice(arena, it);
+    }
+}
+
+fn appendWords(out: *std.ArrayList(u8), arena: std.mem.Allocator, words: []const u8) !void {
+    var it = std.mem.splitScalar(u8, words, '|');
+    var first = true;
+    while (it.next()) |w| {
+        if (!first) try out.append(arena, ' ');
+        first = false;
+        try out.appendSlice(arena, w);
+    }
+}
+
+fn renderBash(arena: std.mem.Allocator) ![]const u8 {
+    var out: std.ArrayList(u8) = .empty;
+    var cbuf: [max_names][]const u8 = undefined;
+    const cmds = synopsisCommands(&cbuf);
+    try out.appendSlice(arena,
+        \\# sideeye completions for bash, built from this binary's usage lines (sideeye help).
+        \\# Load it: eval "$(sideeye completions bash)". Written for bash 3.2 and later.
+        \\#
+        \\# File names one per line and whole: a name with a space stays one word, and none is
+        \\# expanded as a pattern. readline quotes them and gives a directory its slash through
+        \\# -o filenames -- set here on bash 4 and later, at registration on 3.2, which has no
+        \\# compopt (there it also applies to command and flag names, which matters only when a
+        \\# directory of that name sits where you are).
+        \\_sideeye_files() {
+        \\    local f
+        \\    COMPREPLY=()
+        \\    # The backslashes typed before a space or `:` come off first: compgen takes them
+        \\    # off itself inside a completion, but not when the function is called directly.
+        \\    while IFS= read -r f; do
+        \\        [ -n "$f" ] && COMPREPLY+=("$f")
+        \\    done < <(compgen -f -- "${cur//\\/}")
+        \\    compopt -o filenames 2>/dev/null
+        \\    return 0
+        \\}
+        \\_sideeye_offer() {
+        \\    if [ "$cword" -eq 1 ]; then
+        \\        COMPREPLY=( $(compgen -W "
+    );
+    try appendJoined(&out, arena, cmds, " ");
+    try out.appendSlice(arena,
+        \\" -- "$cur") )
+        \\        return 0
+        \\    fi
+        \\    case "$cmd" in
+        \\
+    );
+    for (cmds) |cmd| {
+        try out.print(arena, "    {s})\n", .{cmd});
+        const pos = positionalWant(cmd);
+        if (pos != .none) {
+            try out.appendSlice(arena, "        if [ \"$cword\" -eq 2 ]; then\n");
+            switch (pos) {
+                .file => try out.appendSlice(arena, "            _sideeye_files\n"),
+                .commands => {
+                    try out.appendSlice(arena, "            COMPREPLY=( $(compgen -W \"");
+                    try appendJoined(&out, arena, cmds, " ");
+                    try out.appendSlice(arena, "\" -- \"$cur\") )\n");
+                },
+                .words => |w| {
+                    try out.appendSlice(arena, "            COMPREPLY=( $(compgen -W \"");
+                    try appendWords(&out, arena, w);
+                    try out.appendSlice(arena, "\" -- \"$cur\") )\n");
+                },
+                else => {},
+            }
+            try out.appendSlice(arena, "            return 0\n        fi\n");
+        }
+        var fbuf: [max_names][]const u8 = undefined;
+        const flags = synopsisFlags(cmd, &fbuf);
+        if (flags.len == 0) {
+            try out.appendSlice(arena, "        ;;\n");
+            continue;
+        }
+        try out.appendSlice(arena, "        case \"$prev\" in\n");
+        for (flags) |f| {
+            switch (flagWant(cmd, f)) {
+                .none => {},
+                .file => try out.print(arena, "            {s}) _sideeye_files; return 0 ;;\n", .{f}),
+                .words => |w| {
+                    try out.print(arena, "            {s}) COMPREPLY=( $(compgen -W \"", .{f});
+                    try appendWords(&out, arena, w);
+                    try out.appendSlice(arena, "\" -- \"$cur\") ); return 0 ;;\n");
+                },
+                .commands, .opaque_value => try out.print(arena, "            {s}) return 0 ;;\n", .{f}),
+            }
+        }
+        try out.appendSlice(arena, "        esac\n        COMPREPLY=( $(compgen -W \"");
+        try appendJoined(&out, arena, flags, " ");
+        try out.appendSlice(arena, "\" -- \"$cur\") )\n        ;;\n");
+    }
+    try out.appendSlice(arena,
+        \\    esac
+        \\    return 0
+        \\}
+        \\# readline replaces only the part of a word past its last unquoted COMP_WORDBREAKS
+        \\# character -- past a `:` or `=`, from an `@` on -- so a reply is cut back to that part:
+        \\# `x:` completes to `x:y.json`, not `x:x:y.json`. bash 4 and later also cut COMP_WORDS
+        \\# there (`--state a:b` arrives as `a`, `:`, `b`); the words are joined back where the line
+        \\# has no blank between them, which leaves 3.2's uncut words as they were. Only the line up
+        \\# to the cursor is read, so a Tab pressed mid-line completes what is before it; COMP_POINT
+        \\# counts bytes, so the line is cut in the C locale.
+        \\_sideeye() {
+        \\    local cur prev cword cmd line i w lead tail cut
+        \\    local -a words
+        \\    line=$(LC_ALL=C; printf '%s.' "${COMP_LINE:0:COMP_POINT}")
+        \\    line=${line%.}
+        \\    for (( i = 0; i < COMP_CWORD; i++ )); do
+        \\        w=${COMP_WORDS[i]}
+        \\        lead=${line%%[![:space:]]*}
+        \\        if [ ${#words[@]} -eq 0 ] || [ -n "$lead" ]; then
+        \\            words[${#words[@]}]=$w
+        \\        else
+        \\            words[${#words[@]}-1]=${words[${#words[@]}-1]}$w
+        \\        fi
+        \\        line=${line#"$lead"}
+        \\        line=${line#"$w"}
+        \\    done
+        \\    lead=${line%%[![:space:]]*}
+        \\    line=${line#"$lead"}
+        \\    if [ ${#words[@]} -eq 0 ] || [ -n "$lead" ]; then
+        \\        words[${#words[@]}]=$line
+        \\    else
+        \\        words[${#words[@]}-1]=${words[${#words[@]}-1]}$line
+        \\    fi
+        \\    cword=$(( ${#words[@]} - 1 ))
+        \\    cur=${words[cword]}
+        \\    prev=
+        \\    [ "$cword" -gt 0 ] && prev=${words[cword-1]}
+        \\    cmd=${words[1]}
+        \\    COMPREPLY=()
+        \\    _sideeye_offer
+        \\    # Inside quotes, and at an escaped break character, readline replaces the whole word.
+        \\    case "$cur" in \'*|\"*) return 0 ;; esac
+        \\    tail=$cur
+        \\    case "$COMP_WORDBREAKS" in *:*) tail=${tail##*:} ;; esac
+        \\    case "$COMP_WORDBREAKS" in *=*) tail=${tail##*=} ;; esac
+        \\    case "$COMP_WORDBREAKS" in *@*) case "$tail" in *@*) tail=@${tail##*@} ;; esac ;; esac
+        \\    cut=${cur%"$tail"}
+        \\    case "$cut" in *\\|*\\[:=]) return 0 ;; esac
+        \\    # The replies are names as compgen gives them, without the backslashes typed before them.
+        \\    cut=${cut//\\/}
+        \\    if [ -n "$cut" ]; then
+        \\        for (( i = 0; i < ${#COMPREPLY[@]}; i++ )); do
+        \\            COMPREPLY[i]=${COMPREPLY[i]#"$cut"}
+        \\        done
+        \\    fi
+        \\    return 0
+        \\}
+        \\if type compopt >/dev/null 2>&1; then
+        \\    complete -F _sideeye sideeye
+        \\else
+        \\    complete -o filenames -F _sideeye sideeye
+        \\fi
+        \\
+    );
+    return out.items;
+}
+
+fn renderZsh(arena: std.mem.Allocator) ![]const u8 {
+    var out: std.ArrayList(u8) = .empty;
+    var cbuf: [max_names][]const u8 = undefined;
+    const cmds = synopsisCommands(&cbuf);
+    try out.appendSlice(arena,
+        \\#compdef sideeye
+        \\# sideeye completions for zsh, built from this binary's usage lines (sideeye help).
+        \\# Load it after compinit: eval "$(sideeye completions zsh)" -- or save it as _sideeye
+        \\# in a directory on $fpath.
+        \\_sideeye() {
+        \\    local cmd=${words[2]} prev=${words[CURRENT-1]}
+        \\    if (( CURRENT == 2 )); then
+        \\        compadd --
+    );
+    // The space after `--` outside the literal: a multiline literal does not keep a
+    // trailing space, and `compadd --demo` is an option, not the word demo.
+    try out.append(arena, ' ');
+    try appendJoined(&out, arena, cmds, " ");
+    try out.appendSlice(arena,
+        \\
+        \\        return
+        \\    fi
+        \\    case $cmd in
+        \\
+    );
+    for (cmds) |cmd| {
+        try out.print(arena, "    ({s})\n", .{cmd});
+        const pos = positionalWant(cmd);
+        if (pos != .none) {
+            try out.appendSlice(arena, "        if (( CURRENT == 3 )); then\n");
+            switch (pos) {
+                .file => try out.appendSlice(arena, "            _files\n"),
+                .commands => {
+                    try out.appendSlice(arena, "            compadd -- ");
+                    try appendJoined(&out, arena, cmds, " ");
+                    try out.append(arena, '\n');
+                },
+                .words => |w| {
+                    try out.appendSlice(arena, "            compadd -- ");
+                    try appendWords(&out, arena, w);
+                    try out.append(arena, '\n');
+                },
+                else => {},
+            }
+            try out.appendSlice(arena, "            return\n        fi\n");
+        }
+        var fbuf: [max_names][]const u8 = undefined;
+        const flags = synopsisFlags(cmd, &fbuf);
+        if (flags.len == 0) {
+            try out.appendSlice(arena, "        ;;\n");
+            continue;
+        }
+        try out.appendSlice(arena, "        case $prev in\n");
+        for (flags) |f| {
+            switch (flagWant(cmd, f)) {
+                .none => {},
+                .file => try out.print(arena, "        ({s}) _files; return ;;\n", .{f}),
+                .words => |w| {
+                    try out.print(arena, "        ({s}) compadd -- ", .{f});
+                    try appendWords(&out, arena, w);
+                    try out.appendSlice(arena, "; return ;;\n");
+                },
+                .commands, .opaque_value => try out.print(arena, "        ({s}) return ;;\n", .{f}),
+            }
+        }
+        try out.appendSlice(arena, "        esac\n        compadd -- ");
+        try appendJoined(&out, arena, flags, " ");
+        try out.appendSlice(arena, "\n        ;;\n");
+    }
+    try out.appendSlice(arena,
+        \\    esac
+        \\}
+        \\if [[ ${funcstack[1]} == _sideeye ]]; then _sideeye "$@"; else compdef _sideeye sideeye; fi
+        \\
+    );
+    return out.items;
+}
+
+fn renderFish(arena: std.mem.Allocator) ![]const u8 {
+    var out: std.ArrayList(u8) = .empty;
+    var cbuf: [max_names][]const u8 = undefined;
+    const cmds = synopsisCommands(&cbuf);
+    try out.appendSlice(arena,
+        \\# sideeye completions for fish, built from this binary's usage lines (sideeye help).
+        \\# Load it: sideeye completions fish > ~/.config/fish/completions/sideeye.fish
+        \\# The command is the first word, wherever another command's name appears later.
+        \\function __sideeye_at --description 'sideeye <command> with exactly N words typed'
+        \\    set -l w (commandline -opc)
+        \\    test (count $w) -eq $argv[2]; and test "$w[2]" = $argv[1]
+        \\end
+        \\function __sideeye_in --description 'sideeye <command> with at least N words typed'
+        \\    set -l w (commandline -opc)
+        \\    test (count $w) -ge $argv[2]; and test "$w[2]" = $argv[1]
+        \\end
+        \\complete -c sideeye -f
+        \\complete -c sideeye -n 'test (count (commandline -opc)) -eq 1' -a '
+    );
+    try appendJoined(&out, arena, cmds, " ");
+    try out.appendSlice(arena, "'\n");
+    for (cmds) |cmd| {
+        const pos = positionalWant(cmd);
+        switch (pos) {
+            .none, .opaque_value => {},
+            .file => try out.print(arena, "complete -c sideeye -n '__sideeye_at {s} 2' -F\n", .{cmd}),
+            .commands => {
+                try out.print(arena, "complete -c sideeye -n '__sideeye_at {s} 2' -a '", .{cmd});
+                try appendJoined(&out, arena, cmds, " ");
+                try out.appendSlice(arena, "'\n");
+            },
+            .words => |w| {
+                try out.print(arena, "complete -c sideeye -n '__sideeye_at {s} 2' -a '", .{cmd});
+                try appendWords(&out, arena, w);
+                try out.appendSlice(arena, "'\n");
+            },
+        }
+        const min: usize = if (pos == .none) 2 else 3;
+        var fbuf: [max_names][]const u8 = undefined;
+        for (synopsisFlags(cmd, &fbuf)) |f| {
+            try out.print(arena, "complete -c sideeye -n '__sideeye_in {s} {d}' -l {s}", .{ cmd, min, f[2..] });
+            switch (flagWant(cmd, f)) {
+                .none => {},
+                .file => try out.appendSlice(arena, " -r -F"),
+                .words => |w| {
+                    try out.appendSlice(arena, " -x -a '");
+                    try appendWords(&out, arena, w);
+                    try out.append(arena, '\'');
+                },
+                .commands, .opaque_value => try out.appendSlice(arena, " -x"),
+            }
+            try out.append(arena, '\n');
+        }
+    }
+    return out.items;
+}
+
+/// `sideeye completions <shell>`: the script on stdout and exit 0, or one line naming the
+/// mistake on stderr and exit 3 — a missing shell, one it does not know (with the nearest
+/// it does, when there is exactly one), or a word after the shell. Written straight to
+/// stdout, not through `say`, whose buffer is sized for a report.
+pub fn runCompletions(arena: std.mem.Allocator, argv: []const []const u8) noreturn {
+    var sbuf: [8][]const u8 = undefined;
+    const shells = shellNames(&sbuf);
+    const list = "zsh, bash or fish";
+    if (argv.len == 2) refuseOnStderr(arena, "sideeye completions takes one shell: " ++ list ++ " (sideeye help completions)", .{});
+    if (argv.len > 3) refuseOnStderr(arena, "sideeye completions takes one shell; got '{s}' after '{s}'", .{ defang.textShown(arena, argv[3]), defang.textShown(arena, argv[2]) });
+    const shell = argv[2];
+    const text = blk: {
+        if (std.mem.eql(u8, shell, "bash")) break :blk renderBash(arena);
+        if (std.mem.eql(u8, shell, "zsh")) break :blk renderZsh(arena);
+        if (std.mem.eql(u8, shell, "fish")) break :blk renderFish(arena);
+        refuseOnStderr(arena, "sideeye completions: unknown shell '{s}'{s} (it takes " ++ list ++ ")", .{
+            defang.textShown(arena, shell), didYouMean(arena, nearest(shell, shells)),
+        });
+    } catch refuseOnStderr(arena, "sideeye: out of memory rendering the {s} completions", .{shell});
+    var off: usize = 0;
+    while (off < text.len) {
+        const w = posix.write(1, text[off..].ptr, text.len - off);
+        if (w <= 0) refuseOnStderr(arena, "sideeye completions: could not write the {s} script to standard output", .{shell});
+        off += @intCast(w);
+    }
+    std.process.exit(@intFromEnum(contract.ExitCode.pass));
+}
+
+test "completions read what follows a flag and a command off the usage lines (#712)" {
+    const T = std.testing;
+    try T.expect(flagWant("explore", "--state") == .file);
+    try T.expect(flagWant("explore", "--oracle") == .file);
+    try T.expect(flagWant("explore", "--oracle-fs-usage") == .none);
+    try T.expect(flagWant("explore", "--allow-unverified") == .none);
+    try T.expect(flagWant("explore", "--recovery-check") == .opaque_value);
+    try T.expect(flagWant("explore", "--marker") == .opaque_value);
+    try T.expectEqualStrings("wrappers|syscalls|supervised", flagWant("explore", "--observe").words);
+    try T.expect(positionalWant("replay") == .file);
+    try T.expect(positionalWant("evidence") == .file);
+    try T.expect(positionalWant("help") == .commands);
+    try T.expectEqualStrings("zsh|bash|fish", positionalWant("completions").words);
+    try T.expect(positionalWant("explore") == .none);
+    try T.expect(positionalWant("demo") == .none);
+    try T.expect(positionalWant("mcp") == .none);
+    var sbuf: [8][]const u8 = undefined;
+    const shells = shellNames(&sbuf);
+    try T.expectEqual(@as(usize, 3), shells.len);
+    // #705's nearest over the three: a start is that name, two equally near answer nothing.
+    try T.expectEqualStrings("bash", nearest("bas", shells).?);
+    try T.expectEqualStrings("zsh", nearest("sh", shells).?);
+    try T.expect(nearest("bsh", shells) == null);
+    try T.expect(nearest("tcsh", shells) == null);
+}
+
+/// The text of one command's branch in a bash or zsh script: from its head line to the
+/// branch's closing `;;` at eight spaces.
+fn branchOf(script: []const u8, head: []const u8) ?[]const u8 {
+    const at = std.mem.indexOf(u8, script, head) orelse return null;
+    const end = std.mem.indexOfPos(u8, script, at, "\n        ;;\n") orelse return null;
+    return script[at..end];
+}
+
+/// `flag` as a whole word of `text`: not the start of a longer flag (`--oracle` is not found
+/// in `--oracle-fs-usage`).
+fn hasFlagWord(text: []const u8, flag: []const u8) bool {
+    var from: usize = 0;
+    while (std.mem.indexOfPos(u8, text, from, flag)) |at| {
+        const end = at + flag.len;
+        if (end == text.len or text[end] == ' ' or text[end] == ')' or text[end] == '"' or text[end] == ';' or text[end] == '\n') return true;
+        from = end;
+    }
+    return false;
+}
+
+test "each completion script gives every command its own branch holding its own flags (#712)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    const bash = try renderBash(arena);
+    const zsh = try renderZsh(arena);
+    const fish = try renderFish(arena);
+    var cbuf: [max_names][]const u8 = undefined;
+    const cmds = synopsisCommands(&cbuf);
+    try std.testing.expect(cmds.len >= 9);
+    var all_buf: [max_names][]const u8 = undefined;
+    const all = synopsisFlags(null, &all_buf);
+    for (cmds) |cmd| {
+        const b = branchOf(bash, try std.fmt.allocPrint(arena, "\n    {s})\n", .{cmd})) orelse return error.NoBashBranch;
+        const z = branchOf(zsh, try std.fmt.allocPrint(arena, "\n    ({s})\n", .{cmd})) orelse return error.NoZshBranch;
+        var fbuf: [max_names][]const u8 = undefined;
+        const own = synopsisFlags(cmd, &fbuf);
+        // Every flag of the command is in its branch, and no flag only another command takes.
+        for (all) |f| {
+            const mine = for (own) |o| {
+                if (std.mem.eql(u8, o, f)) break true;
+            } else false;
+            try std.testing.expectEqual(mine, hasFlagWord(b, f));
+            try std.testing.expectEqual(mine, hasFlagWord(z, f));
+            const fish_line = try std.fmt.allocPrint(arena, "'__sideeye_in {s} ", .{cmd});
+            const fish_flag = try std.fmt.allocPrint(arena, " -l {s}", .{f[2..]});
+            var in_fish = false;
+            var lines = std.mem.splitScalar(u8, fish, '\n');
+            while (lines.next()) |line| {
+                if (std.mem.indexOf(u8, line, fish_line) == null) continue;
+                const at = std.mem.indexOf(u8, line, fish_flag) orelse continue;
+                const end = at + fish_flag.len;
+                if (end == line.len or line[end] == ' ') in_fish = true;
+            }
+            try std.testing.expectEqual(mine, in_fish);
+        }
+    }
+}
+
+test "the whole help fits what one say can print (#712)" {
+    // `usage()` prints the help through `say`, which prints nothing on stdout past its
+    // buffer. The help is near it; a line added without room would empty `sideeye help`.
+    // The number is `report.say_capacity`, which a test in report.zig holds to it; read
+    // here as a number so this test root does not pull in report.zig's own tests.
+    const capacity = 16 * 1024;
+    var buf: [capacity]u8 = undefined;
+    const text = try std.fmt.bufPrint(&buf, usage_fmt, .{ version, contract.contract_version });
+    try std.testing.expect(text.len + 64 < capacity);
 }
 
 fn displayWidth(line: []const u8) usize {

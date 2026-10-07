@@ -42,6 +42,8 @@ const removeFile = files.removeFile;
 const writeWholeFile = files.writeWholeFile;
 
 var out_buf: [16 * 1024]u8 = undefined;
+/// What one `say` can print; past it the report goes to stderr as an error instead.
+pub const say_capacity = out_buf.len;
 
 /// Whether the verdict word is coloured (#712, docs/cli.md): only when standard output is a
 /// terminal, `NO_COLOR` is unset or empty (no-color.org), and `TERM` is not `dumb`. Pure, so
@@ -82,6 +84,10 @@ pub fn paint(comptime word: []const u8) []const u8 {
     else
         @compileError("paint takes a verdict word: PASS, FAIL, UNKNOWN or SETUP ERROR");
     return if (colourOn()) "\x1b[1;" ++ code ++ "m" ++ word ++ "\x1b[0m" else word;
+}
+
+test "say's capacity is the 16 KiB the whole help is held under in cli.zig (#712)" {
+    try std.testing.expectEqual(@as(usize, 16 * 1024), say_capacity);
 }
 
 test "the verdict is coloured only on a terminal, without NO_COLOR, and not for TERM=dumb (#712)" {

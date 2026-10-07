@@ -5824,6 +5824,23 @@ else
     fails=$((fails + 1))
 fi
 
+echo ""
+echo "=========== check 5c: completion scripts offer exactly what the usage lines list (#712) ==========="
+# docs/cli.md: `sideeye completions zsh|bash|fish` offers exactly the subcommands, then a
+# subcommand's positional argument and exactly the flags its usage line lists, each value
+# completed as its usage names it. spike/check-completions.py reads the usage lines out of
+# `sideeye help` on its own and asks each installed shell what the script completes at each
+# position. A shell this host lacks is NOT MEASURED, unless SIDEEYE_EXPECT_SHELLS=1 (CI
+# installs zsh and fish beside bash and sets it), where a missing one is red.
+if co=$(python3 "$ROOT/spike/check-completions.py" "$SIDEEYE" 2>&1); then
+    printf '%s\n' "$co" | sed -n '/^ok/p;/^NOT MEASURED/s/^/     /p'
+    case "$co" in *"NOT MEASURED"*) not_measured=$((not_measured + 1)) ;; esac
+else
+    echo "FAIL completion scripts:"
+    printf '%s\n' "$co" | sed 's/^/     | /' | head -10
+    fails=$((fails + 1))
+fi
+
 # The compiler ladder, exercised rather than claimed: a stub `cc` that always fails
 # must make the demo fall back to gcc — and the preamble names the compiler that won.
 STUB=/tmp/acc-ccstub
@@ -8640,7 +8657,8 @@ preflight-config|preflight --config $acc_nx.toml|--config|--config could not be 
 explore-define|explore --state $acc_nx --operation /usr/bin/true|--state --operation|does not exist (the leaf is created, the parent is not)
 explore-config|explore --config $acc_nx.toml|--config|--config could not be read
 replay|replay $acc_nx.json||the case file could not be read
-evidence|evidence $acc_nx.json||no evidence file could be read beside that case"
+evidence|evidence $acc_nx.json||no evidence file could be read beside that case
+completions|completions bash||# sideeye completions for bash, built from this binary's usage lines"
 
 acc_line_for() {
     case "$1" in
@@ -8652,6 +8670,9 @@ acc_line_for() {
         # Takes an argument, so it belongs here rather than with the argument-free modes
         # below: its line advertises no flags, and the differential proves it accepts none.
         evidence)       printf '%s\n' "$h1" | grep -E '^  sideeye evidence ' ;;
+        # Its base succeeds, printing the script; a flag after the shell is refused as an
+        # extra word, so the line's empty flag set is what the differential measures.
+        completions)    printf '%s\n' "$h1" | grep -E '^  sideeye completions ' ;;
     esac
 }
 
@@ -9068,6 +9089,11 @@ demo --frobnicate|demo takes only --shim <lib>; got '--frobnicate'
 demo --sim x|demo takes only^did you mean '--shim'
 evidence --frobnicate|got '--frobnicate', which is no file here
 evidence --frob x|got '--frob' too
+completions|takes one shell: zsh, bash or fish
+completions tcsh|unknown shell 'tcsh'^!did you mean
+completions bas|unknown shell 'bas'^did you mean 'bash'
+completions bsh|unknown shell 'bsh'^!did you mean
+completions bash extra|takes one shell; got 'extra' after 'bash'
 $help_esc|unknown command 'ex?]0;x?'
 HELP_705
 # A dash-led path is still a path when the file is there: read, not refused as an option.
