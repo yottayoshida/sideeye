@@ -1079,6 +1079,33 @@ pub fn sayApparatus(arena: std.mem.Allocator, comptime fmt: []const u8) void {
     if (apparatus_declared.len > 0) say(fmt, .{apparatusNote(arena)});
 }
 
+/// #706 (ADR 0095): a sentence per string-form command the define spelled for a shell, set by
+/// `phaseDefine` from `config.shellWarnings`; empty for a replay. Carried by the verdict blocks'
+/// `warning` lines, JSON `define_warnings` and MCP's summary, and written to stderr once at the
+/// end (`emitWarnings`) so a run that ends in a SETUP ERROR or a preflight report shows it too.
+pub var define_warnings: []const []const u8 = &.{};
+var warnings_emitted = false;
+
+/// The text report's warning lines, one per warning, in the calling block's own style.
+pub fn sayWarnings(comptime fmt: []const u8) void {
+    for (define_warnings) |w| say(fmt, .{w});
+}
+
+/// Each warning once, on stderr, as `sideeye: warning: …`. At the end and not when the define is
+/// read, for the seal's reason (below): a reader of merged output who takes its first line must
+/// still find the verdict there (`docs/cli.md`). Called by `emitSeal`, which every exit after a
+/// report reaches, and by preflight's two exits, which do not seal.
+pub fn emitWarnings() void {
+    if (warnings_emitted) return;
+    warnings_emitted = true;
+    const prefix = "sideeye: warning: ";
+    for (define_warnings) |w| {
+        _ = posix.write(2, prefix.ptr, prefix.len);
+        _ = posix.write(2, w.ptr, w.len);
+        _ = posix.write(2, "\n", 1);
+    }
+}
+
 /// The text report's recovery line, in the calling block's own style, only when a recovery was
 /// declared, read from the variable the JSON field reads. Printed where the apparatus line is —
 /// the verdict blocks and UNKNOWN's — and, like it, not on SETUP ERROR's text, whose JSON still
@@ -1410,6 +1437,8 @@ fn buildJson(
     // ADR 0041: present only when the define declared something (the presence rule
     // `next_step` and `divergence_syscall` follow), each entry as it was spelled; the
     // unchecked list is the same entries through the one predicate the text line uses.
+    // #706, ADR 0095: present only when there is a warning, the presence rule `apparatus` follows.
+    if (define_warnings.len > 0) try jsonArrayField(w, arena, "define_warnings", define_warnings, false);
     if (apparatus_declared.len > 0) {
         try jsonArrayField(w, arena, "apparatus", apparatus_declared, false);
         if (apparatusHasUnchecked()) try jsonArrayField(w, arena, "apparatus_unchecked", apparatus_declared, true);
@@ -1612,6 +1641,7 @@ fn recordSeal(digest: ?[32]u8) void {
 /// that can follow a report; a path that never reaches one leaves no token, which the readers of
 /// this token treat as a refusal — the safe direction.
 pub fn emitSeal() void {
+    emitWarnings();
     if (!seal_recorded or seal_emitted) return;
     seal_emitted = true;
     var buf: [seal_len]u8 = undefined;

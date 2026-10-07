@@ -882,6 +882,10 @@ fn phaseDefine(run: *Run) void {
                         if ((posix.kindOfPathNoFollow(cz.ptr) catch .other) == .file) refuse.toml_dir = dir;
                     } else |_| {}
                 }
+                // #706 (ADR 0095): read as written, before argv[0] is resolved against `dir`; the
+                // parser's own sentences (a value cut at an inner quote) first.
+                const spelled = config.shellWarnings(arena, .toml, d.setup, d.operation, d.check, d.recovery, d.recovery_check);
+                report.define_warnings = std.mem.concat(arena, []const u8, &.{ d.cut_at_comment, spelled }) catch spelled;
                 args.state = resolvePathAgainst(arena, dir, d.state);
                 args.setup = if (d.setup) |s| resolveCommand(arena, dir, s) else null;
                 args.operation = resolveCommand(arena, dir, d.operation);
@@ -910,6 +914,10 @@ fn phaseDefine(run: *Run) void {
             },
         }
     }
+    // #706 (ADR 0095): the flags' define, read as typed. Not a replay's: its case holds what an
+    // exploration already read, and a toml-born case holds argv[0] resolved to a path.
+    if (args.config == null and replay_case == null)
+        report.define_warnings = config.shellWarnings(arena_state.allocator(), .flags, args.setup, args.operation, args.check, args.recovery, args.recovery_check);
 
     const state = args.state orelse setupError(.define_invalid, "--state is required");
     const operation = args.operation orelse setupError(.define_invalid, "--operation is required");
@@ -1355,6 +1363,10 @@ fn phaseSetup(run: *Run) void {
         removeFile(setup_out);
         const term = posix.runChildCapture(gpa, setup_argv, &.{
             .{ "TOY_STATE", state_abs },
+            // #708: the variable the checker cookbook names for every define command. The
+            // operation, the check and the recovery had it; the setup had only the demo
+            // toy's name, so a setup written from the cookbook found an empty variable.
+            .{ contract.env.state_dir, state_abs },
         }, .{
             .path = setup_out,
             // #483 names stderr, which is where a setup writes its diagnosis. Capturing
@@ -3005,12 +3017,12 @@ fn phaseExploration(run: *Run) void {
         // Where this world's checker wrote, so the evidence bundle can quote its last line
         // (#607). Null when there is no checker, or when the capture could not be opened.
         //
-        // Captured rather than inherited, which takes the output off the terminal the way
-        // #483 did for `--setup`. Two reasons rather than one: a checker that runs once per
-        // crash point printed its diagnosis n+1 times into the middle of nothing, and #134
-        // records unlabeled checker output reaching the transcript as a hazard in its own
-        // right. What the run says about the checker is the report's `checker` line, and
-        // for a FAIL the exhibit's own last line is now in the bundle.
+        // Captured rather than inherited, so the bundle can quote the exhibit's last line and
+        // the terminal copy can carry the world's mark (#707): inherited, a checker that runs
+        // once per crash point printed its diagnosis n+1 times with nothing saying which world
+        // spoke, and #134 records what a line nobody could attribute costs in a transcript (a
+        // gate line read as a world's). What the run says about the checker is the report's
+        // `checker` line, and for a FAIL the exhibit's own last line is in the bundle.
         var checker_out: ?[]const u8 = null;
         if (check_argv) |cargv| {
             var capture_opened = true;
@@ -3048,21 +3060,24 @@ fn phaseExploration(run: *Run) void {
             // written the line that says why, and the capture is what holds it.
             if (capture_opened) {
                 checker_out = co;
-                // Re-emitted UNLABELED, which is byte-for-byte what a world checker's output
-                // has always looked like on this stream. The capture is additive: the bundle
-                // gets the exhibit's last line, and the terminal keeps what it had.
+                // Re-emitted with the world's mark on every line (#707): `world 3: ` for crash
+                // point 3 — the number the report's `crash point 3 of n` and a recovery's
+                // `recovery world 3` carry — and `baseline: ` for the un-killed world. Until
+                // #707 the lines came out unlabeled, and a checker that printed a traceback put
+                // fifty lines ahead of the verdict that no reader could attribute to a world.
+                // The capture file keeps the checker's own bytes, unmarked; the mark is for the
+                // terminal.
                 //
-                // An earlier version of this change did not re-emit, on the reasoning that
-                // #134 records unlabeled checker output as a hazard. That misread #134: the
-                // hazard was the *gate's* output being harvested as a world's, and the fix
-                // was labeling the gate — the world side staying unlabeled is what makes the
-                // two tellable apart. `spike/acceptance.sh` counts BOTH sides for exactly
-                // that reason and went red on the version that dropped this (CI, 2026-09-17).
+                // Unlabeled was a reading of #134: the hazard there was the *gate's* output
+                // being harvested as a world's, and the fix labelled the gate (`falsify: `), so
+                // the world side staying bare was what told the two apart. A mark of its own
+                // tells them apart as well, and says which world. `spike/acceptance.sh` counts
+                // gate lines, world lines and unmarked checker lines, which must be none.
                 if (capture.readFileAllocCapped(arena, co, 1024 * 1024, .{ .no_follow = true })) |text| {
                     var lines = std.mem.splitScalar(u8, text, '\n');
                     while (lines.next()) |line| {
                         if (line.len == 0) continue;
-                        say("{s}\n", .{line});
+                        if (k > n) say("baseline: {s}\n", .{line}) else say("world {s}: {s}\n", .{ kstr, line });
                     }
                 }
                 // No else-branch saying so, unlike the gate's: a gate that cannot be read
@@ -3530,6 +3545,7 @@ fn phaseReport(run: *Run) void {
         });
         report.sayCwd(arena, "cwd         {s}{s}\n");
         report.sayApparatus(arena, "apparatus   {s}\n");
+        report.sayWarnings("warning     {s}\n");
         report.sayRecovery("recovery    {s}\n");
         // Printed only when the two exhibits are different worlds; when the
         // earliest is itself checker-red — every FAIL this engine produced
@@ -3611,6 +3627,7 @@ fn phaseReport(run: *Run) void {
     , .{ report.paint("PASS"), report.explored, report.explored, report.singleCrashPointClause(n), report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged), report.explored, n, report.expected_status_val, report.l0_note, report.oracle_note, report.metadata_note, report.checker_note, report.l1_note, report.case_note, boundary.boundaryAccount(), report.notTestedText() });
     report.sayCwd(arena, "      cwd: {s}{s}\n");
     report.sayApparatus(arena, "      apparatus: {s}\n");
+    report.sayWarnings("      warning: {s}\n");
     report.sayRecovery("      recovery: {s}\n");
     report.saySingleCrashPointNote(n);
     if (args.json) |jp| report.writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null, null);
@@ -4162,6 +4179,7 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
         // forbids — a verdict arriving under a different code, or exit 0 read as proof a
         // check ran — but if the owner wants that reading written into §3, this comment
         // is the place that owes the reference.
+        report.emitWarnings();
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
     }
     // Under `--observe supervised` the next command names the mode, not a shim: there is no shim
@@ -4270,6 +4288,8 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
             , .{ textShown(arena, c.path), why, then, observe_part, oracle_part });
         },
     }
+    // #706: preflight seals nothing (it takes no --json), so the warnings go out here.
+    report.emitWarnings();
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
 

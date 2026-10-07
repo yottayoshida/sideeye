@@ -84,7 +84,7 @@ A FAIL saves its counterexample under `<work>/cases/` and prints the `sideeye re
 
 ## Writing the check
 
-The check is where your invariants live. This one cross-examines the tool's own diagnostic — a tool may be broken as long as it says so; the violation is the claim and the observable truth disagreeing:
+The check is where your invariants live; it is handed the state directory in `$SIDEEYE_STATE_DIR`, as the setup is. This one cross-examines the tool's own diagnostic — a tool may be broken as long as it says so; the violation is the claim and the observable truth disagreeing:
 
 ```sh
 claim=$("$TOY" doctor 2>/dev/null) || claim="unhealthy"
