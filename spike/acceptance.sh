@@ -3910,6 +3910,41 @@ else
     fails=$((fails + 1))
 fi
 
+# #689 (ADR 0098): a store through a shared mapping of a state file has no call behind
+# it, so the run is refused however the mapping became writable — mapped so, or made so
+# afterwards with mprotect, which strace did not trace before v19 and which judged PASS.
+# The control is bbolt's shape, a read-only shared mapping with the writes through
+# pwrite: it must still be judged, so a refusal of every shared mapping fails here. The
+# child shape is the one v15 admits — a reaped child whose other write the shim records —
+# where the mapping counted only as the child's touch until the oracle refused it too.
+mm_ok=1
+for shape in write protect child read; do
+    rm -rf /tmp/acc-mm && mkdir -p /tmp/acc-mm/state
+    o=$(TOY_MMAP=$shape "$SIDEEYE" explore --state /tmp/acc-mm/state \
+        --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+        --shim "$SHIM" --work /tmp/acc-mm/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    case $shape in
+        write) want='mmap(PROT_WRITE|MAP_SHARED)' ;;
+        protect) want='mprotect(PROT_WRITE) on a shared mapping of a state file' ;;
+        child) want='mmap(PROT_WRITE|MAP_SHARED)' ;;
+        read) want='' ;;
+    esac
+    if [ -n "$want" ]; then
+        { [ "$rc" = "2" ] && echo "$o" | grep -q "unsupported_syscall_observed" && echo "$o" | grep -qF "$want"; } || {
+            mm_ok=0; echo "     | TOY_MMAP=$shape: exit $rc, wanted UNKNOWN naming $want"; echo "$o" | sed 's/^/     | /' | head -4; }
+    else
+        { [ "$rc" = "0" ] || [ "$rc" = "1" ]; } || {
+            mm_ok=0; echo "     | TOY_MMAP=read: exit $rc, wanted a verdict"; echo "$o" | sed 's/^/     | /' | head -4; }
+    fi
+done
+if [ "$mm_ok" = "1" ]; then
+    echo "ok   a state file written through a shared mapping is refused, writable or made writable; a read-only map with pwrite is judged (#689)"
+else
+    echo "FAIL #689 shared mapping"
+    fails=$((fails + 1))
+fi
+
 echo ""
 echo "=========== check 2x: sideeye.toml is the define surface, and it fails closed ==========="
 # ADR 0007: the file owns state/setup/operation/check; what the parser accepts is the
@@ -9796,6 +9831,60 @@ if [ "$ok" = "1" ]; then
 else
     echo "FAIL --twice equal leg: exit $rc (wanted 0)"
     echo "$o" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+
+# #688: where two clean runs' bytes differ, said by the refusal and by --twice — and the
+# answer comes from outside the engine. TOY_NONDET_COUNTER makes run k write AAAA<k>BBBB,
+# k kept in a counter outside the state that init resets: the recording is run 1, and the
+# baseline runs last, so the counter's final value is what the re-run wrote. The expected
+# offset and stretch lengths are computed here from those two strings, not read back from
+# the report. The refusal reaches the JSON and MCP, so it must carry the shape and none of
+# the bytes; --twice, which has neither, must quote both stretches.
+rm -rf /tmp/acc-688 && mkdir -p /tmp/acc-688/state /tmp/acc-688/state2 /tmp/acc-688/ctr
+o=$(TOY_NONDET_COUNTER=1 TOY_COUNTER=/tmp/acc-688/ctr/n "$SIDEEYE" explore \
+    --state /tmp/acc-688/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc-688/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+k=$(cat /tmp/acc-688/ctr/n 2>/dev/null)
+exp=$(python3 - "$k" <<'EOP'
+import sys
+a = b"AAAA1BBBB\n"
+b = b"AAAA" + sys.argv[1].encode() + b"BBBB\n"
+p = 0
+while p < min(len(a), len(b)) and a[p] == b[p]:
+    p += 1
+s = 0
+while s < min(len(a), len(b)) - p and a[-1 - s] == b[-1 - s]:
+    s += 1
+print("the two runs' bytes first differ at byte offset %d, in a stretch %d byte(s) long in the recording and %d in the re-run (of %d and %d bytes)" % (p, len(a) - p - s, len(b) - p - s, len(a), len(b)))
+EOP
+)
+ok=1
+[ "$rc" = "2" ] || ok=0
+[ -n "$k" ] && [ "$k" -gt 1 ] || ok=0
+echo "$o" | grep -q "baseline_violates_invariant" || ok=0
+echo "$o" | grep -qF "$exp" || ok=0
+echo "$o" | grep -q "decimal digits" || ok=0
+echo "$o" | grep -q "preflight --twice quotes what two runs leave there" || ok=0
+# None of the bytes: a stretch is quoted only under --twice.
+echo "$o" | grep -qE "\"(1|$k)\"|AAAA" && ok=0
+o2=$(TOY_NONDET_COUNTER=1 TOY_COUNTER=/tmp/acc-688/ctr/n "$SIDEEYE" preflight --twice \
+    --state /tmp/acc-688/state2 \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc-688/work2 2>&1)
+rc2=$?
+k2=$(cat /tmp/acc-688/ctr/n 2>/dev/null)
+[ "$rc2" = "1" ] || ok=0
+[ "$k2" = "2" ] || ok=0
+echo "$o2" | grep -qF 'bytes first differ at byte offset 4: first run "1", second run "2" — 1 and 1 byte(s) of 10 and 10, both decimal digits' || ok=0
+if [ "$ok" = "1" ]; then
+    echo "ok   two runs' bytes: the refusal says where and what kind (counter $k), --twice quotes both (#688)"
+else
+    echo "FAIL #688 byte stretch: explore=$rc counter=$k preflight=$rc2 counter=$k2; wanted: $exp"
+    echo "$o" | sed 's/^/     | /' | head -4
+    echo "$o2" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi
 

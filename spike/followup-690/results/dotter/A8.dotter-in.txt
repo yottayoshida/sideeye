@@ -1,0 +1,7 @@
+total 24
+drwxr-xr-x 3 root root 4096 Oct  8 02:59 .
+drwxr-xr-x 3 root root 4096 Oct  8 02:59 ..
+drwxr-xr-x 2 root root 4096 Oct  8 02:59 cache
+-rw-r--r-- 1 root root   98 Oct  8 02:59 cache.toml
+-rw-r--r-- 1 root root  154 Oct  8 02:59 global.toml
+-rw-r--r-- 1 root root   23 Oct  8 02:59 local.toml

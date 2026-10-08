@@ -1,0 +1,14 @@
+0 878 878 shim_ready /work/st3/is
+0 878 878 cgroup /work/st3/is
+1 878 878 open /work/st3/is/a.py.isorted
+2 878 878 write /work/st3/is/a.py.isorted
+0 878 878 close /work/st3/is/a.py
+0 878 878 close /work/st3/is/a.py.isorted
+3 878 878 rename /work/st3/is/a.py.isorted
+4 878 878 unlink /work/st3/is/a.py.isorted
+5 878 878 open /work/st3/is/b.py.isorted
+6 878 878 write /work/st3/is/b.py.isorted
+0 878 878 close /work/st3/is/b.py
+0 878 878 close /work/st3/is/b.py.isorted
+7 878 878 rename /work/st3/is/b.py.isorted
+8 878 878 unlink /work/st3/is/b.py.isorted

@@ -1,0 +1,15 @@
+0 558 558 shim_ready /s/tombi/proj
+0 558 558 cgroup /s/tombi/proj
+0 558 558 thread 
+0 558 558 thread 
+0 558 558 thread 
+0 558 558 thread 
+0 558 558 thread 
+0 558 558 thread 
+0 558 558 thread 
+0 558 558 thread 
+0 558 558 thread 
+0 558 558 thread 
+0 558 558 thread 
+1 558 565 open /s/tombi/proj/a.toml
+2 558 565 kill_landed /s/tombi/proj/a.toml

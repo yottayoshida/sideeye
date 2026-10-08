@@ -1,0 +1,17 @@
+0 957 957 shim_ready /s/tombi/proj
+0 957 957 cgroup /s/tombi/proj
+0 957 957 thread 
+0 957 957 thread 
+0 957 957 thread 
+0 957 957 thread 
+0 957 957 thread 
+0 957 957 thread 
+0 957 957 thread 
+0 957 957 thread 
+0 957 957 thread 
+0 957 957 thread 
+0 957 957 thread 
+1 957 968 open /s/tombi/proj/a.toml
+2 957 968 truncate /s/tombi/proj/a.toml
+3 957 968 write /s/tombi/proj/a.toml
+0 957 968 close /s/tombi/proj/a.toml

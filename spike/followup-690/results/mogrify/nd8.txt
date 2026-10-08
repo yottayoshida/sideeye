@@ -1,0 +1,31 @@
+falsify: identify cannot read img1.png (25 bytes)
+world 2: img1.png is missing
+world 3: identify cannot read img1.png (0 bytes)
+world 6: img2.png is missing
+world 7: identify cannot read img2.png (0 bytes)
+world 10: img3.png is missing
+world 11: identify cannot read img3.png (0 bytes)
+FAIL  6 of 13 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 12
+            after  rename(/s/mog/img1.png)
+            before open(/s/mog/img1.png)
+path        img1.png
+observed    present before and after the operation, but gone from the crashed state
+explored    13 worlds (crash points 12 + 1 baseline)
+expected    exit 0
+atomicity   3 path(s) judged pre-or-post
+oracle      agreed on 12 operations (725 syscall lines examined, 222 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 13 world(s)
+l1          no marker configured
+case        /out/mogrify/nd8/cases/000001.json
+replay      sideeye replay /out/mogrify/nd8/cases/000001.json --shim /se/zig-out/lib/libsideeye_shim.so
+evidence    /out/mogrify/nd8/evidence/000001.json
+cwd         /work  (none declared: Sideeye's own)
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   SIDEEYE_STATE_DIR=/s/mog SIDEEYE_TRACE_PATH=/out/mogrify/nd8/trace-repro.bin LD_PRELOAD=/se/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= <operation>
+sideeye: json sha256=2c0535b559cbe189b341762b16abc613bf5703dd81b4c1ba8ab2ad3576249150;

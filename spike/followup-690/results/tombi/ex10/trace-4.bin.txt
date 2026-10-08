@@ -1,0 +1,17 @@
+0 839 839 shim_ready /s/tombi/proj
+0 839 839 cgroup /s/tombi/proj
+0 839 839 thread 
+0 839 839 thread 
+0 839 839 thread 
+0 839 839 thread 
+0 839 839 thread 
+0 839 839 thread 
+0 839 839 thread 
+0 839 839 thread 
+0 839 839 thread 
+0 839 839 thread 
+0 839 839 thread 
+1 839 842 open /s/tombi/proj/a.toml
+2 839 842 truncate /s/tombi/proj/a.toml
+3 839 842 write /s/tombi/proj/a.toml
+0 839 842 close /s/tombi/proj/a.toml

@@ -1,0 +1,30 @@
+mogrify explore 1 | UNKNOWN baseline_violates_invariant | crash_points=- | falsify: identify cannot read img1.png (25 bytes)
+mogrify explore 2 | FAIL - | crash_points=12 | falsify: identify cannot read img1.png (25 bytes)
+mogrify explore 3 | UNKNOWN baseline_violates_invariant | crash_points=- | falsify: identify cannot read img1.png (25 bytes)
+mogrify explore 4 | FAIL - | crash_points=12 | falsify: identify cannot read img1.png (25 bytes)
+mogrify explore 5 | FAIL - | crash_points=12 | falsify: identify cannot read img1.png (25 bytes)
+mogrify explore 6 | UNKNOWN baseline_violates_invariant | crash_points=- | falsify: identify cannot read img1.png (25 bytes)
+mogrify explore 7 | FAIL - | crash_points=12 | falsify: identify cannot read img1.png (25 bytes)
+mogrify explore 8 | UNKNOWN baseline_violates_invariant | crash_points=- | falsify: identify cannot read img1.png (25 bytes)
+mogrify explore 9 | UNKNOWN baseline_violates_invariant | crash_points=- | falsify: identify cannot read img1.png (25 bytes)
+mogrify explore 10 | FAIL - | crash_points=12 | falsify: identify cannot read img1.png (25 bytes)
+mogrify explore 11 | UNKNOWN baseline_violates_invariant | crash_points=- | falsify: identify cannot read img1.png (25 bytes)
+mogrify explore 12 | FAIL - | crash_points=12 | falsify: identify cannot read img1.png (25 bytes)
+mogrify explore 13 | FAIL - | crash_points=12 | falsify: identify cannot read img1.png (25 bytes)
+mogrify explore 14 | UNKNOWN baseline_violates_invariant | crash_points=- | falsify: identify cannot read img1.png (25 bytes)
+mogrify explore 15 | FAIL - | crash_points=12 | falsify: identify cannot read img1.png (25 bytes)
+mogrify explore 16 | UNKNOWN baseline_violates_invariant | crash_points=- | falsify: identify cannot read img1.png (25 bytes)
+mogrify explore 17 | UNKNOWN baseline_violates_invariant | crash_points=- | falsify: identify cannot read img1.png (25 bytes)
+mogrify explore 18 | FAIL - | crash_points=12 | falsify: identify cannot read img1.png (25 bytes)
+mogrify explore 19 | UNKNOWN baseline_violates_invariant | crash_points=- | falsify: identify cannot read img1.png (25 bytes)
+mogrify explore 20 | FAIL - | crash_points=12 | falsify: identify cannot read img1.png (25 bytes)
+mogrify twice 1 exit 1 | PREFLIGHT  not accepted — the two observed runs left different state
+mogrify twice 2 exit 1 | PREFLIGHT  not accepted — the two observed runs left different state
+mogrify twice 3 exit 1 | PREFLIGHT  not accepted — the two observed runs left different state
+mogrify twice 4 exit 1 | PREFLIGHT  not accepted — the two observed runs left different state
+mogrify twice 5 exit 1 | PREFLIGHT  not accepted — the two observed runs left different state
+mogrify twice 6 exit 1 | PREFLIGHT  not accepted — the two observed runs left different state
+mogrify twice 7 exit 1 | PREFLIGHT  not accepted — the two observed runs left different state
+mogrify twice 8 exit 1 | PREFLIGHT  not accepted — the two observed runs left different state
+mogrify twice 9 exit 1 | PREFLIGHT  not accepted — the two observed runs left different state
+mogrify twice 10 exit 1 | PREFLIGHT  not accepted — the two observed runs left different state

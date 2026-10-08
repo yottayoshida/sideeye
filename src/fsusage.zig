@@ -413,7 +413,10 @@ fn isMetadataCall(call_in: []const u8) bool {
 /// daemon walking a directory issues beside `getattrlist`, which is what a tail-less
 /// line's CALL is tested against (see `read`). `mmap` is the one member that is not
 /// strictly read-only — a shared writable mapping's writes leave no syscall line — and
-/// the shim does not interpose it either, so the two witnesses are symmetric there.
+/// this reader cannot tell a writable mapping from a read-only one. The shim can, and since
+/// contract v19 it refuses a writable shared mapping of a state file, and `PROT_WRITE`
+/// added later to a read-only one (#689, ADR 0098): through v18 the two witnesses were
+/// symmetric here in seeing nothing, and a run storing through such a mapping passed.
 fn isReadOnlyCall(call_in: []const u8) bool {
     const call = canonicalCall(call_in);
     const names = [_][]const u8{

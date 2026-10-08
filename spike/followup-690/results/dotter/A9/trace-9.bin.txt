@@ -1,0 +1,14 @@
+0 408 408 shim_ready /s/dotter
+0 408 408 cgroup /s/dotter
+0 408 408 close /s/dotter/home/.bashrc
+1 408 408 unlink /s/dotter/home/.bashrc
+2 408 408 open /s/dotter/home/.bashrc
+3 408 408 write /s/dotter/home/.bashrc
+4 408 408 write /s/dotter/home/.bashrc
+0 408 408 close /s/dotter/home/.bashrc
+0 408 408 close /s/dotter/home/.gitconfig
+5 408 408 unlink /s/dotter/home/.gitconfig
+6 408 408 open /s/dotter/home/.gitconfig
+7 408 408 write /s/dotter/home/.gitconfig
+8 408 408 write /s/dotter/home/.gitconfig
+0 408 408 close /s/dotter/home/.gitconfig

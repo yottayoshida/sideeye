@@ -69,6 +69,12 @@ export const sideeye_interposers linksection("__DATA,__interpose") = [_]Interpos
     // Refused in scope, never counted: an atomic contents swap has no place in the
     // restore model on either platform.
     entry(&ops.exchangedata, libc.exchangedata),
+    // The mapping calls (v19, #689, ADR 0098): a store through a shared mapping of a state
+    // file has no call behind it. A writable shared mapping is refused in scope, and so is
+    // `PROT_WRITE` added later to a read-only one — the refusal Linux's oracle issues, here
+    // where no oracle sees either call. Every other mapping passes straight through.
+    entry(&ops.mmap, libc.mmap),
+    entry(&ops.mprotect, libc.mprotect),
     // Metadata writers, except that ATTR_CMN_NAME renames — the one bit that turns
     // these into mutations of the tree the verdict reads.
     entry(&ops.setattrlist, libc.setattrlist),

@@ -74,6 +74,19 @@ unsatisfiable.
   and the refusal names the path — but the case file itself does not say
   which device was missing.
 
+## Reading a byte difference
+
+A byte-layer `baseline_violates_invariant` says where the two runs' bytes first differ, how long the differing stretch is in each run and what kind of bytes it holds; `preflight --twice` says the same and quotes both stretches (#688, [docs/cli.md](cli.md#usage)). Neither says what produced the difference — ten decimal digits are a clock in one tool and a counter in the next — so the table is where to start looking, not a diagnosis. The devices it names are the ones the cohorts used (below).
+
+| what the stretch holds | what to check first | how the define says it |
+|---|---|---|
+| decimal digits, the same length in both runs | whether the tool writes the time, a counter, or its process id | a pinned clock (`preload:libfaketime` with `env:FAKETIME=...`), or the tool's own switch for it, in `apparatus` |
+| hex digits | whether it is an id or a hash the tool draws fresh each run | a seeded or pinned source (`pythonpath:sitecustomize.py` pinning `os.urandom`) in `apparatus` |
+| any kind, in a file nothing reads back as state — a cache, a log, an editor's message file | whether anything the operation's user depends on reads that file | `scratch` for the path; the report then names it in `not tested` |
+| bytes outside printable text, inside a compressed or binary format | whether the format carries a time stamp or an id of its own (PNG text chunks, archive headers) | the tool's option that leaves it out, if it has one, on the operation's command line, and a `note:` saying so |
+
+A stretch the table does not cover is still an observation about the target: the run is refused because a second clean run does not leave what the first one did, which is the README's byte-repeatable-writes limit, and no declaration makes two different results the same one.
+
 ## Where the recipes came from
 
 The nine devices cohorts 2-4 used, and how each is declared:

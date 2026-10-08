@@ -1,0 +1,17 @@
+0 702 702 shim_ready /s/tombi/proj
+0 702 702 cgroup /s/tombi/proj
+0 702 702 thread 
+0 702 702 thread 
+0 702 702 thread 
+0 702 702 thread 
+0 702 702 thread 
+0 702 702 thread 
+0 702 702 thread 
+0 702 702 thread 
+0 702 702 thread 
+0 702 702 thread 
+0 702 702 thread 
+1 702 713 open /s/tombi/proj/a.toml
+2 702 713 truncate /s/tombi/proj/a.toml
+3 702 713 write /s/tombi/proj/a.toml
+0 702 713 close /s/tombi/proj/a.toml

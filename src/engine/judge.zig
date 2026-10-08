@@ -96,6 +96,14 @@ pub const L0Plan = struct {
     pub fn isScratch(self: L0Plan, rel: []const u8) bool {
         return scratchMatches(self.scratch, rel);
     }
+
+    /// The planned pair for `rel`, for a report that describes one the judge already named
+    /// (#688: what the recording left there, beside what the re-run left). Linear: its one
+    /// caller runs once, at a refusal, never inside a world's loop.
+    pub fn find(self: L0Plan, rel: []const u8) ?PlannedFile {
+        for (self.files.items) |f| if (std.mem.eql(u8, f.rel, rel)) return f;
+        return null;
+    }
 };
 
 /// The kinds the built-in invariants can compare: a (kind, content) pair is a whole

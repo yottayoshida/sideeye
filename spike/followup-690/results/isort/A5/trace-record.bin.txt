@@ -1,0 +1,14 @@
+0 512 512 shim_ready /work/st3/is
+0 512 512 cgroup /work/st3/is
+1 512 512 open /work/st3/is/a.py.isorted
+2 512 512 write /work/st3/is/a.py.isorted
+0 512 512 close /work/st3/is/a.py
+0 512 512 close /work/st3/is/a.py.isorted
+3 512 512 rename /work/st3/is/a.py.isorted
+4 512 512 unlink /work/st3/is/a.py.isorted
+5 512 512 open /work/st3/is/b.py.isorted
+6 512 512 write /work/st3/is/b.py.isorted
+0 512 512 close /work/st3/is/b.py
+0 512 512 close /work/st3/is/b.py.isorted
+7 512 512 rename /work/st3/is/b.py.isorted
+8 512 512 unlink /work/st3/is/b.py.isorted

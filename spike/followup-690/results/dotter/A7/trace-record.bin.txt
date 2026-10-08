@@ -1,0 +1,16 @@
+0 298 298 shim_ready /s/dotter
+0 298 298 cgroup /s/dotter
+0 298 298 close /s/dotter/home/.bashrc
+1 298 298 unlink /s/dotter/home/.bashrc
+2 298 298 mkdir /s/dotter/home
+3 298 298 open /s/dotter/home/.bashrc
+4 298 298 write /s/dotter/home/.bashrc
+5 298 298 write /s/dotter/home/.bashrc
+0 298 298 close /s/dotter/home/.bashrc
+0 298 298 close /s/dotter/home/.gitconfig
+6 298 298 unlink /s/dotter/home/.gitconfig
+7 298 298 mkdir /s/dotter/home
+8 298 298 open /s/dotter/home/.gitconfig
+9 298 298 write /s/dotter/home/.gitconfig
+10 298 298 write /s/dotter/home/.gitconfig
+0 298 298 close /s/dotter/home/.gitconfig

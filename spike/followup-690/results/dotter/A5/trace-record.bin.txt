@@ -1,0 +1,16 @@
+0 206 206 shim_ready /s/dotter
+0 206 206 cgroup /s/dotter
+0 206 206 close /s/dotter/home/.bashrc
+1 206 206 unlink /s/dotter/home/.bashrc
+2 206 206 mkdir /s/dotter/home
+3 206 206 open /s/dotter/home/.bashrc
+4 206 206 write /s/dotter/home/.bashrc
+5 206 206 write /s/dotter/home/.bashrc
+0 206 206 close /s/dotter/home/.bashrc
+0 206 206 close /s/dotter/home/.gitconfig
+6 206 206 unlink /s/dotter/home/.gitconfig
+7 206 206 mkdir /s/dotter/home
+8 206 206 open /s/dotter/home/.gitconfig
+9 206 206 write /s/dotter/home/.gitconfig
+10 206 206 write /s/dotter/home/.gitconfig
+0 206 206 close /s/dotter/home/.gitconfig
