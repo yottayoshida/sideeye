@@ -1731,6 +1731,7 @@ pub fn parse(argv: []const []const u8) Parsed {
         } else if (std.mem.eql(u8, argv[i], "--check")) {
             args.check = .{ .str = v };
             report.checker_note = report.checkerNoteFor(.named);
+            report.checker_declared = true;
         } else if (std.mem.eql(u8, argv[i], "--marker")) {
             args.marker = v;
             report.l1_note = report.l1NoteFor(.named);
