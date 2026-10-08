@@ -153,7 +153,7 @@ observed    present before and after the operation, but gone from the crashed st
 explored    6 worlds (crash points 5 + 1 baseline)
 expected    exit 0
 atomicity   1 path(s) judged pre-or-post
-oracle      agreed on 5 operations (82 syscall lines examined, 12 in scope of the judged state), witness strace
+oracle      agreed on 5 operations (88 syscall lines examined, 12 in scope of the judged state), witness strace
 metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
 checker     falsified before the run (corrupted state -> check failed); ran in 6 world(s)
 l1          no marker configured

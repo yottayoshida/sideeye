@@ -173,7 +173,18 @@ const std = @import("std");
 /// `unreadable` and `kill-returned` — and a v16 shim under a v17 engine would
 /// say nothing while the engine contained the run, and the version guard turns that
 /// pairing into `contract_version_mismatch` rather than a run read as uncontained.
-pub const contract_version: u32 = 18;
+/// v19 interposes `mmap` and `mprotect` on macOS (#689, ADR 0098). A store through a
+/// shared mapping of a state file has no call behind it, so no crash point can be placed
+/// before it; Linux's oracle refused a writable shared mapping, and macOS — where neither
+/// the shim nor fs_usage's reader saw one — reached PASS (measured on 2026-10-08: an
+/// `ftruncate`, two stores eight kilobytes apart and a `close` passed 3/3 under
+/// `--allow-unverified`, the stores never separated by a crash point). The shim now
+/// records `.unsupported` for a writable shared mapping of a state file, and for an
+/// `mprotect` that adds `PROT_WRITE` to a read-only one it saw made. No record changes
+/// shape and crash-point numbering is unchanged, but a v18 shim under a v19 engine would
+/// record neither while the engine relied on it, and the version guard turns that pairing
+/// into `contract_version_mismatch` rather than a PASS over stores nobody counted.
+pub const contract_version: u32 = 19;
 
 pub const magic = "SIDEEYE1";
 
@@ -519,6 +530,18 @@ test "a process is within the run's cgroup at it or below it, never beside it, w
     try std.testing.expectEqual(CgroupStanding.unknown, standingOf("12:memory:/x\n", "/sideeye-1-ab"));
     try std.testing.expectEqual(CgroupStanding.unknown, standingOf("10::/sideeye-1-ab\n", "/sideeye-1-ab"));
 }
+
+/// How a run that can store through a shared mapping of a state file is refused (#689, ADR
+/// 0098), spelled once for both observers: Linux's oracle issues the first two, the macOS shim
+/// all three, and a reader of either platform's report meets one wording for one fact.
+pub const shared_map_refusal = struct {
+    /// The mapping was made writable.
+    pub const writable = "mmap(PROT_WRITE|MAP_SHARED)";
+    /// A read-only shared mapping of a state file was given `PROT_WRITE` afterwards.
+    pub const made_writable = "mprotect(PROT_WRITE) on a shared mapping of a state file";
+    /// macOS only: past the shim's table, which range was touched cannot be told.
+    pub const past_table = "mprotect(PROT_WRITE) after more shared mappings of state files than the shim tracks";
+};
 
 pub const unresolved_kind = struct {
     /// The path could not be resolved at all (`resolveAt` failed).

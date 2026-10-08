@@ -390,7 +390,11 @@ fn runOperationObserved(
         // directory never appears anywhere. setsid/setpgid are named explicitly
         // because `%process` does not include them (measured), and an *unshimmed*
         // child detaching from the containment group is visible nowhere else.
-        for ([_][]const u8{ "-f", "-y", "-e", "trace=%file,%desc,%process,setsid,setpgid", "-o", oracle_out }) |a|
+        // `mprotect`, `pkey_mprotect` and `mremap` are not file calls either (#689, ADR
+        // 0098): they are how a state file mapped shared and read-only becomes writable or
+        // moves, and a store through it has no call of its own. `?` keeps an strace that
+        // has no name for `pkey_mprotect` from refusing to start.
+        for ([_][]const u8{ "-f", "-y", "-e", "trace=%file,%desc,%process,setsid,setpgid,mprotect,?pkey_mprotect,mremap", "-o", oracle_out }) |a|
             list.append(arena, a) catch setupError(.environment, "out of memory");
         const pairs = [_][2][]const u8{
             .{ "TOY_STATE", state_abs },

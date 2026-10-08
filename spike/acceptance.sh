@@ -3818,6 +3818,41 @@ else
     fails=$((fails + 1))
 fi
 
+# #689 (ADR 0098): a store through a shared mapping of a state file has no call behind
+# it, so the run is refused however the mapping became writable — mapped so, or made so
+# afterwards with mprotect, which strace did not trace before v19 and which judged PASS.
+# The control is bbolt's shape, a read-only shared mapping with the writes through
+# pwrite: it must still be judged, so a refusal of every shared mapping fails here. The
+# child shape is the one v15 admits — a reaped child whose other write the shim records —
+# where the mapping counted only as the child's touch until the oracle refused it too.
+mm_ok=1
+for shape in write protect child read; do
+    rm -rf /tmp/acc-mm && mkdir -p /tmp/acc-mm/state
+    o=$(TOY_MMAP=$shape "$SIDEEYE" explore --state /tmp/acc-mm/state \
+        --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+        --shim "$SHIM" --work /tmp/acc-mm/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    case $shape in
+        write) want='mmap(PROT_WRITE|MAP_SHARED)' ;;
+        protect) want='mprotect(PROT_WRITE) on a shared mapping of a state file' ;;
+        child) want='mmap(PROT_WRITE|MAP_SHARED)' ;;
+        read) want='' ;;
+    esac
+    if [ -n "$want" ]; then
+        { [ "$rc" = "2" ] && echo "$o" | grep -q "unsupported_syscall_observed" && echo "$o" | grep -qF "$want"; } || {
+            mm_ok=0; echo "     | TOY_MMAP=$shape: exit $rc, wanted UNKNOWN naming $want"; echo "$o" | sed 's/^/     | /' | head -4; }
+    else
+        { [ "$rc" = "0" ] || [ "$rc" = "1" ]; } || {
+            mm_ok=0; echo "     | TOY_MMAP=read: exit $rc, wanted a verdict"; echo "$o" | sed 's/^/     | /' | head -4; }
+    fi
+done
+if [ "$mm_ok" = "1" ]; then
+    echo "ok   a state file written through a shared mapping is refused, writable or made writable; a read-only map with pwrite is judged (#689)"
+else
+    echo "FAIL #689 shared mapping"
+    fails=$((fails + 1))
+fi
+
 echo ""
 echo "=========== check 2x: sideeye.toml is the define surface, and it fails closed ==========="
 # ADR 0007: the file owns state/setup/operation/check; what the parser accepts is the
