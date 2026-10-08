@@ -1,0 +1,14 @@
+0 970 970 shim_ready /s/tombi/proj
+0 970 970 cgroup /s/tombi/proj
+0 970 970 thread 
+0 970 970 thread 
+0 970 970 thread 
+0 970 970 thread 
+0 970 970 thread 
+0 970 970 thread 
+0 970 970 thread 
+0 970 970 thread 
+0 970 970 thread 
+0 970 970 thread 
+0 970 970 thread 
+1 970 973 kill_landed /s/tombi/proj/a.toml

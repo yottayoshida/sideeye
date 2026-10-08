@@ -1,0 +1,16 @@
+0 344 344 shim_ready /s/dotter
+0 344 344 cgroup /s/dotter
+0 344 344 close /s/dotter/home/.bashrc
+1 344 344 unlink /s/dotter/home/.bashrc
+2 344 344 mkdir /s/dotter/home
+3 344 344 open /s/dotter/home/.bashrc
+4 344 344 write /s/dotter/home/.bashrc
+5 344 344 write /s/dotter/home/.bashrc
+0 344 344 close /s/dotter/home/.bashrc
+0 344 344 close /s/dotter/home/.gitconfig
+6 344 344 unlink /s/dotter/home/.gitconfig
+7 344 344 mkdir /s/dotter/home
+8 344 344 open /s/dotter/home/.gitconfig
+9 344 344 write /s/dotter/home/.gitconfig
+10 344 344 write /s/dotter/home/.gitconfig
+0 344 344 close /s/dotter/home/.gitconfig

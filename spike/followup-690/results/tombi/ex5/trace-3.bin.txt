@@ -1,0 +1,16 @@
+0 401 401 shim_ready /s/tombi/proj
+0 401 401 cgroup /s/tombi/proj
+0 401 401 thread 
+0 401 401 thread 
+0 401 401 thread 
+0 401 401 thread 
+0 401 401 thread 
+0 401 401 thread 
+0 401 401 thread 
+0 401 401 thread 
+0 401 401 thread 
+0 401 401 thread 
+0 401 401 thread 
+1 401 403 open /s/tombi/proj/a.toml
+2 401 403 truncate /s/tombi/proj/a.toml
+3 401 403 kill_landed /s/tombi/proj/a.toml

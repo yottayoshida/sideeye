@@ -1,0 +1,15 @@
+0 1153 1153 shim_ready /s/tombi/proj
+0 1153 1153 cgroup /s/tombi/proj
+0 1153 1153 thread 
+0 1153 1153 thread 
+0 1153 1153 thread 
+0 1153 1153 thread 
+0 1153 1153 thread 
+0 1153 1153 thread 
+0 1153 1153 thread 
+0 1153 1153 thread 
+0 1153 1153 thread 
+0 1153 1153 thread 
+0 1153 1153 thread 
+1 1153 1160 open /s/tombi/proj/a.toml
+2 1153 1160 kill_landed /s/tombi/proj/a.toml

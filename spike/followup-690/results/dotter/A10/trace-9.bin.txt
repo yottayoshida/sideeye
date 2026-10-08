@@ -1,0 +1,14 @@
+0 454 454 shim_ready /s/dotter
+0 454 454 cgroup /s/dotter
+0 454 454 close /s/dotter/home/.bashrc
+1 454 454 unlink /s/dotter/home/.bashrc
+2 454 454 open /s/dotter/home/.bashrc
+3 454 454 write /s/dotter/home/.bashrc
+4 454 454 write /s/dotter/home/.bashrc
+0 454 454 close /s/dotter/home/.bashrc
+0 454 454 close /s/dotter/home/.gitconfig
+5 454 454 unlink /s/dotter/home/.gitconfig
+6 454 454 open /s/dotter/home/.gitconfig
+7 454 454 write /s/dotter/home/.gitconfig
+8 454 454 write /s/dotter/home/.gitconfig
+0 454 454 close /s/dotter/home/.gitconfig

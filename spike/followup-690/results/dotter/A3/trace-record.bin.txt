@@ -1,0 +1,16 @@
+0 114 114 shim_ready /s/dotter
+0 114 114 cgroup /s/dotter
+0 114 114 close /s/dotter/home/.bashrc
+1 114 114 unlink /s/dotter/home/.bashrc
+2 114 114 mkdir /s/dotter/home
+3 114 114 open /s/dotter/home/.bashrc
+4 114 114 write /s/dotter/home/.bashrc
+5 114 114 write /s/dotter/home/.bashrc
+0 114 114 close /s/dotter/home/.bashrc
+0 114 114 close /s/dotter/home/.gitconfig
+6 114 114 unlink /s/dotter/home/.gitconfig
+7 114 114 mkdir /s/dotter/home
+8 114 114 open /s/dotter/home/.gitconfig
+9 114 114 write /s/dotter/home/.gitconfig
+10 114 114 write /s/dotter/home/.gitconfig
+0 114 114 close /s/dotter/home/.gitconfig

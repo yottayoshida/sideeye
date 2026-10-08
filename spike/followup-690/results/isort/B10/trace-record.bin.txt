@@ -1,0 +1,14 @@
+0 2343 2343 shim_ready /localrun/st/wrappers/isort
+0 2343 2343 cgroup /localrun/st/wrappers/isort
+1 2343 2343 open /localrun/st/wrappers/isort/a.py.isorted
+2 2343 2343 write /localrun/st/wrappers/isort/a.py.isorted
+0 2343 2343 close /localrun/st/wrappers/isort/a.py
+0 2343 2343 close /localrun/st/wrappers/isort/a.py.isorted
+3 2343 2343 rename /localrun/st/wrappers/isort/a.py.isorted
+4 2343 2343 unlink /localrun/st/wrappers/isort/a.py.isorted
+5 2343 2343 open /localrun/st/wrappers/isort/b.py.isorted
+6 2343 2343 write /localrun/st/wrappers/isort/b.py.isorted
+0 2343 2343 close /localrun/st/wrappers/isort/b.py
+0 2343 2343 close /localrun/st/wrappers/isort/b.py.isorted
+7 2343 2343 rename /localrun/st/wrappers/isort/b.py.isorted
+8 2343 2343 unlink /localrun/st/wrappers/isort/b.py.isorted

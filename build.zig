@@ -79,7 +79,7 @@ pub fn build(b: *std.Build) void {
     // `spike/fsevents/survey.sh`'s L7a to ask what was recorded ABOUT a path rather than
     // whether the path appears at all (#344). Gated the same way for the same reason —
     // it is apparatus, and the tarball has no use for it.
-    const trace_ops = b.option(bool, "trace-ops", "also build trace-ops, a reader that prints one <op> <path> line per shim trace record, used only by spike/fsevents (#344)") orelse false;
+    const trace_ops = b.option(bool, "trace-ops", "also build trace-ops, a reader that prints one <op> <path> line per trace record (with --records, <seq> <pid> <tid> first), used only by spike/fsevents (#344) and spike/followup-690 (#690)") orelse false;
 
     // Every options module handed to a build of src/main.zig must carry the same field
     // set — the parts under src/engine/ and main.zig read them unconditionally, so a

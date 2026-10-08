@@ -1,0 +1,14 @@
+0 756 756 shim_ready /work/st3/is
+0 756 756 cgroup /work/st3/is
+1 756 756 open /work/st3/is/a.py.isorted
+2 756 756 write /work/st3/is/a.py.isorted
+0 756 756 close /work/st3/is/a.py
+0 756 756 close /work/st3/is/a.py.isorted
+3 756 756 rename /work/st3/is/a.py.isorted
+4 756 756 unlink /work/st3/is/a.py.isorted
+5 756 756 open /work/st3/is/b.py.isorted
+6 756 756 write /work/st3/is/b.py.isorted
+0 756 756 close /work/st3/is/b.py
+0 756 756 close /work/st3/is/b.py.isorted
+7 756 756 rename /work/st3/is/b.py.isorted
+8 756 756 unlink /work/st3/is/b.py.isorted

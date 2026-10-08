@@ -1,0 +1,14 @@
+0 316 316 shim_ready /s/dotter
+0 316 316 cgroup /s/dotter
+0 316 316 close /s/dotter/home/.bashrc
+1 316 316 unlink /s/dotter/home/.bashrc
+2 316 316 open /s/dotter/home/.bashrc
+3 316 316 write /s/dotter/home/.bashrc
+4 316 316 write /s/dotter/home/.bashrc
+0 316 316 close /s/dotter/home/.bashrc
+0 316 316 close /s/dotter/home/.gitconfig
+5 316 316 unlink /s/dotter/home/.gitconfig
+6 316 316 open /s/dotter/home/.gitconfig
+7 316 316 write /s/dotter/home/.gitconfig
+8 316 316 write /s/dotter/home/.gitconfig
+0 316 316 close /s/dotter/home/.gitconfig

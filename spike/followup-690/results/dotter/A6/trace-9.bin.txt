@@ -1,0 +1,14 @@
+0 270 270 shim_ready /s/dotter
+0 270 270 cgroup /s/dotter
+0 270 270 close /s/dotter/home/.bashrc
+1 270 270 unlink /s/dotter/home/.bashrc
+2 270 270 open /s/dotter/home/.bashrc
+3 270 270 write /s/dotter/home/.bashrc
+4 270 270 write /s/dotter/home/.bashrc
+0 270 270 close /s/dotter/home/.bashrc
+0 270 270 close /s/dotter/home/.gitconfig
+5 270 270 unlink /s/dotter/home/.gitconfig
+6 270 270 open /s/dotter/home/.gitconfig
+7 270 270 write /s/dotter/home/.gitconfig
+8 270 270 write /s/dotter/home/.gitconfig
+0 270 270 close /s/dotter/home/.gitconfig
