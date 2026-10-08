@@ -1679,6 +1679,9 @@ fn phaseRecording(run: *Run) void {
     // define came from a toml with no `cwd`, run from somewhere else.
     const op_obs = refuse.cwdObservation(arena, op_argv);
     const op_step = refuse.cwdStep(op_obs, boundary.fixDefineUnder(args.observe));
+    // #710 (ADR 0097): the two endings below name their own steps; `op_step` stays the marker's.
+    const exit_step = refuse.cwdStep(op_obs, boundary.recordingEndedStep(args.observe, true));
+    const sig_step = refuse.cwdStep(op_obs, boundary.recordingEndedStep(args.observe, false));
     switch (rec_term) {
         // 126 before the status comparison, and without the --expect-status advice: it
         // is the code the engine's own fork stub keeps for a child it could not arrange
@@ -1689,8 +1692,10 @@ fn phaseRecording(run: *Run) void {
         .exited => |code| if (code == 126 and code != expect_status)
             unknown(.recording_run_failed, "the operation exited 126 during the recording run: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the operation itself exited 126 — indistinguishable from here. Declaring 126 as the success convention would make a child that never ran read as a successful recording, so --expect-status is not the answer to this one", .environment)
         else if (code != expect_status)
-            unknown(.recording_run_failed, refuse.withObservation(arena, std.fmt.allocPrint(arena, "the operation exited {d} during the recording run where {d} was expected, so the crash points derived from it describe an execution that did not happen (a different success convention is declared with --expect-status or the toml's expected_status)", .{ code, expect_status }) catch "the operation exited with an unexpected status during the recording run", op_obs, op_step), op_step),
-        else => unknown(.recording_run_failed, refuse.withObservation(arena, "the operation did not exit normally during the recording run", op_obs, op_step), op_step),
+            unknown(.recording_run_failed, refuse.withObservation(arena, std.fmt.allocPrint(arena, "the operation exited {d} during the recording run where {d} was expected, so the crash points derived from it describe an execution that did not happen (a different success convention is declared with --expect-status or the toml's expected_status)", .{ code, expect_status }) catch "the operation exited with an unexpected status during the recording run", op_obs, exit_step), exit_step),
+        // The signal named (#710): it is the observation the step sends the reader to look into.
+        .signaled => |sig| unknown(.recording_run_failed, refuse.withObservation(arena, std.fmt.allocPrint(arena, "the operation did not exit normally during the recording run: it was killed by signal {d}", .{sig}) catch "the operation did not exit normally during the recording run", op_obs, sig_step), sig_step),
+        .unknown => unknown(.recording_run_failed, refuse.withObservation(arena, "the operation did not exit normally during the recording run", op_obs, sig_step), sig_step),
     }
 
     // A marker the clean run cannot produce would make every post-success obligation
@@ -1906,7 +1911,7 @@ fn phaseStructural(run: *Run) void {
     // own traces below. In front of the numbering check on purpose: the same race trips
     // that one too, and this is the refusal that says why.
     if (trace.second_writer_thread) |op|
-        unknown(.multiple_threads_detected, boundary.threadDetail(arena, trace.first_writer_thread, op, trace.first_writer_thread_detached, ""), .class_wall);
+        unknown(.multiple_threads_detected, boundary.threadDetail(arena, trace.first_writer_thread, op, trace.first_writer_thread_detached, ""), boundary.threadsStep(args.observe));
 
     // An unbroken self-exec chain is disclosed, never silent (#123 R1): the pid count
     // would otherwise read as one process while the crash points span more than one
@@ -2891,7 +2896,7 @@ fn phaseExploration(run: *Run) void {
         // the recording did not, and a second thread writing here is as unordered as one
         // in the recording. Nothing is inherited — the record names its thread.
         if (wtrace.second_writer_thread) |op|
-            unknown(.multiple_threads_detected, boundary.threadDetail(arena, wtrace.first_writer_thread, op, wtrace.first_writer_thread_detached, " in an explored world"), .class_wall);
+            unknown(.multiple_threads_detected, boundary.threadDetail(arena, wtrace.first_writer_thread, op, wtrace.first_writer_thread_detached, " in an explored world"), boundary.threadsStep(args.observe));
         // Run-wide since v15, like the recording run's copy. The world-side order needs
         // no change: the child-touch refusal above already answers first here.
         if (wtrace.kill_records != wtrace.kill_point_count)
@@ -2907,7 +2912,7 @@ fn phaseExploration(run: *Run) void {
         // armed at an awaited child's operation could never report a landing at all.
         const landed = wtrace.kill_landed_seq != null and wtrace.kill_landed_seq.? == k;
         if (k <= n and !landed)
-            unknown(.kill_did_not_land, "a world was asked to die before a given operation and did not", .fix_define);
+            unknown(.kill_did_not_land, "a world was asked to die before a given operation and did not", .kill_not_landed);
 
         // And it must have been the same operation. The address is an index into the
         // sequence the RECORDING produced, so a world that reached its k-th operation
@@ -2939,7 +2944,7 @@ fn phaseExploration(run: *Run) void {
             var rh: [16]u8 = undefined;
             const both = case.prefixHash(wtrace, k - 1, &wh) and case.prefixHash(trace, k - 1, &rh);
             if (!both or !std.mem.eql(u8, &wh, &rh))
-                unknown(.kill_did_not_land, "a world died at the operation number it was given, but the operations leading up to it are not the ones the recording numbered: the address names a different operation in this world than in the recording, so nothing died in front of the operation the crash point stands for. An operation whose sequence of state-directory calls varies between runs cannot be explored at a fixed index", .fix_define);
+                unknown(.kill_did_not_land, "a world died at the operation number it was given, but the operations leading up to it are not the ones the recording numbered: the address names a different operation in this world than in the recording, so nothing died in front of the operation the crash point stands for. An operation whose sequence of state-directory calls varies between runs cannot be explored at a fixed index", .not_repeating);
         }
         // A contained world's shim that could not kill it exits and says why (v17, #559) — the
         // one watch that answers ahead of an existing refusal, because this refusal would
@@ -3149,9 +3154,9 @@ fn phaseExploration(run: *Run) void {
         // target three measurements. It cannot tell a clock or a random id from a cache
         // keyed on an inode the restore moved (git's index), so the message reports the
         // observation and the path, never a cause; the limit itself — byte-repeatable
-        // writes — is the README's, beside `preflight --twice`, which is what the class
-        // wall points at. The marker and the checker are the define's own declarations,
-        // and stay `fix_define`. Bytes first, then the marker, then the checker; the
+        // writes — is the README's, beside `preflight --twice`; since #710 the step names
+        // that and `scratch` (ADR 0097). The marker and the checker are the define's own
+        // declarations, and stay `fix_define`. Bytes first, then the marker, then the checker; the
         // layers that also failed ride along as a clause.
         if (k > n and (l0 != null or l1 != null or l2_failed)) {
             // The checker layer alone follows the observation mode (#599, ADR 0069); the marker
@@ -3160,7 +3165,7 @@ fn phaseExploration(run: *Run) void {
             // green; it is red only when two runs of one mode disagree. The checker judges the
             // state from outside, so the same gap in both runs is red at the first clean state it
             // ever sees — this one: the falsification probe only ever shows it a corrupted state.
-            const step: contract.NextStep = if (l0 != null) .class_wall else if (l1 != null) .fix_define else boundary.fixDefineUnder(args.observe);
+            const step: contract.NextStep = if (l0 != null) .scratch_or_twice else if (l1 != null) .fix_define else boundary.fixDefineUnder(args.observe);
             // #700 (ADR 0093): the checker layer alone, where a checker with a relative argument
             // read under the wrong directory rejects every state. The line above is pinned by
             // spike/acceptance.sh, so the step is replaced here rather than there.
@@ -3818,8 +3823,8 @@ fn observeAgain(
         .exited => |code| if (code == 126 and code != expect_status)
             unknown(.recording_run_failed, "the second observed run exited 126: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the operation itself exited 126 — indistinguishable from here, and not a statement about repeatability", .environment)
         else if (code != expect_status)
-            unknown(.recording_run_failed, std.fmt.allocPrint(arena, "the second observed run exited {d} where {d} was expected, although the first run of the same command succeeded: the two runs cannot be compared", .{ code, expect_status }) catch "the second observed run exited with an unexpected status", .fix_define),
-        else => unknown(.recording_run_failed, "the second observed run did not exit normally, although the first run of the same command succeeded", .fix_define),
+            unknown(.recording_run_failed, std.fmt.allocPrint(arena, "the second observed run exited {d} where {d} was expected, although the first run of the same command succeeded: the two runs cannot be compared", .{ code, expect_status }) catch "the second observed run exited with an unexpected status", .second_run_diverged),
+        else => unknown(.recording_run_failed, "the second observed run did not exit normally, although the first run of the same command succeeded", .second_run_diverged),
     }
 
     var trace = refuse.readTraceOrRefuse(trace_b, trace_cap, "could not read the second observed run's trace");
@@ -3899,7 +3904,7 @@ fn observeAgain(
         containment.refuseDetach(arena, cg_b_ptr, " during the second observed run");
     // The thread rule, asked of run B's own trace (v16), as run A asks it of its own.
     if (trace.second_writer_thread) |op|
-        unknown(.multiple_threads_detected, boundary.threadDetail(arena, trace.first_writer_thread, op, trace.first_writer_thread_detached, " in the second observed run"), .class_wall);
+        unknown(.multiple_threads_detected, boundary.threadDetail(arena, trace.first_writer_thread, op, trace.first_writer_thread_detached, " in the second observed run"), boundary.threadsStep(observe));
     // A soft boundary in run B and not run A is still a boundary: the shim only sees
     // what loads it, and "was not seen" must not read as "did nothing" here either.
     //
