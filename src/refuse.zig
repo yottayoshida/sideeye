@@ -420,25 +420,16 @@ pub fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contrac
     // `next`, before the classification block, so the two lines the acceptance suite
     // anchors on (the reason, and the detail beneath it) keep their positions.
     if (report.divergence_syscall.len > 0) say("divergence  {s}\n", .{report.divergence_syscall});
-    // #647: under `next` (below `divergence`), where a reader of `recording_run_failed` is — the
-    // one line that can name the `cwd` an operation needed and did not get.
-    report.sayCwd(json_arena orelse std.heap.page_allocator, "cwd         {s}{s}\n");
-    report.sayApparatus(json_arena orelse std.heap.page_allocator, "apparatus   {s}\n");
-    report.sayWarnings("warning     {s}\n");
-    report.sayRecovery("recovery    {s}\n");
+    // The account block the verdicts share (#711), whose context lines open it — so `cwd` stays
+    // under `next` (below `divergence`), where a reader of `recording_run_failed` is: the one
+    // line that can name the `cwd` an operation needed and did not get (#647).
+    report.sayAccount(json_arena orelse std.heap.page_allocator, .unknown, 0);
     say(
-        \\
-        \\atomicity   {s}
-        \\l1          {s}
-        \\case        {s}
-        \\expected    exit {d}
-        \\processes   {s}
-        \\not tested  {s}
         \\
         \\Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
         \\caller has to decide deliberately what to do with it.
         \\
-    , .{ report.l0_note, report.l1_note, report.case_note, report.expected_status_val, boundary.boundaryAccount(), report.notTestedText() });
+    , .{});
     report.emitSeal();
     std.process.exit(@intFromEnum(contract.ExitCode.unknown));
 }

@@ -120,7 +120,7 @@ n=$(echo "$o" | grep -o 'crash points [0-9]*' | awk '{print $3}')
 # Anchored to the explored LINE ("explored N worlds"): the PASS headline now also
 # contains the word "explored", and `[0-9]*` matches zero digits — the unanchored
 # pattern silently picked it up as an empty value when the headline was relabeled.
-e=$(echo "$o" | grep -o 'explored [0-9][0-9]* worlds' | awk '{print $2}')
+e=$(echo "$o" | grep -o '^explored  *[0-9][0-9]* worlds' | awk '{print $2}')
 if [ -n "$n" ] && [ -n "$e" ] && [ "$e" = "$((n + 1))" ]; then
     echo "ok     ...explored ($e) == N ($n) + 1"
 else
@@ -589,8 +589,8 @@ dt_judged() {   # dt_judged <name> <toy> <exit>
     fi
     dt_run "$SIDEEYE" "$2"
     if [ "$dt_rc" != "$3" ]; then dt_fail "$1, contained: exit $dt_rc, wanted $3"
-    # Indented in a PASS's block and not in a FAIL's, so neither anchor alone reads both
-    # (the first version of this leg anchored at the margin and missed the PASS's line).
+    # Read wherever it is indented: a PASS indented it until #711, and the first version of
+    # this leg anchored at the margin and missed the PASS's line.
     elif ! printf '%s\n' "$dt_out" | grep -qE '^[[:space:]]*processes'; then dt_fail "$1, contained: the report carries no processes line"
     elif printf '%s\n' "$dt_out" | grep -E '^[[:space:]]*processes' | grep -qE "leaving the containment group|reports set(sid|pgid)"; then dt_fail "$1, contained: the processes account still names the detach as a refusal"
     else echo "ok   $1 reaches exit $3 where the run was contained"
@@ -2428,7 +2428,7 @@ bad706() {
 }
 r706 qcheck explore --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate" --check "/tmp/acc-708/check.sh 'a b'"
 if [ "$rc706" = 0 ] && printf '%s\n' "$e706" | grep -qF "sideeye: warning: check: \`/tmp/acc-708/check.sh 'a b'\`" &&
-   printf '%s\n' "$o706" | grep -qF "      warning: check: " &&
+   printf '%s\n' "$o706" | grep -qF "warning     check: " &&
    grep -qF 'the argv form groups what they meant: check = [\"/tmp/acc-708/check.sh\", \"a b\"]' /tmp/acc-706/qcheck.json; then
     echo "ok   #706: a check spelled with shell quotes runs, and stderr, the report and the JSON name the argv form it meant"
 else
@@ -2505,13 +2505,57 @@ else
 fi
 ctl706=$(printf '/tmp/acc-708/check.sh "a\001b"')
 r706 ctl explore --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate" --check "$ctl706"
-raw706=$( { printf '%s\n' "$e706"; printf '%s\n' "$o706" | grep 'warning: '; } | LC_ALL=C grep -c "$(printf '\001')" || true)
+raw706=$( { printf '%s\n' "$e706"; printf '%s\n' "$o706" | grep '^warning  '; } | LC_ALL=C grep -c "$(printf '\001')" || true)
 if printf '%s\n' "$e706" | grep -qF 'sideeye: warning: check: ' && [ "${raw706:-0}" = 0 ] &&
    ! printf '%s\n' "$e706" | grep -qF 'groups what they meant'; then
     echo "ok   #706: a control byte in a quoted flag is shown, not printed, and no argv is offered for it"
 else
     bad706 "a control byte in a quoted flag (raw bytes in the warning: $raw706)"
 fi
+
+# #711: the three verdict blocks print the account lines they share under one key, in one
+# twelve-column style and one order, and each verdict prints a fixed set of them. They were
+# three format strings — a FAIL's columns, a PASS's indented `key: value` in another order, an
+# UNKNOWN's columns in a third — and every line added since went into whichever block its change
+# was about. One define, three runs: the buggy toy (FAIL), the fixed one (PASS), the fixed one
+# with no oracle and no --allow-unverified (UNKNOWN completeness_not_verified). The define
+# declares an apparatus note, a recovery and a setup spelled with a shell quote, so the three
+# lines that print only when there is something to say are printed — a block that dropped one
+# of them reads the same as one that never had it unless the run gives it something to print.
+# The keys are compared as one string, which holds the set and the order at once.
+echo ""
+echo "=========== #711: one order and one spelling for the account lines ==========="
+rm -rf /tmp/acc-711 && mkdir -p /tmp/acc-711
+r711() {   # r711 <name> <toy> <flags...> — sets o711 (stdout), rc711
+    n711=$1; t711=$2; shift 2
+    mkdir -p /tmp/acc-711/$n711
+    o711=$("$SIDEEYE" explore --state /tmp/acc-711/$n711/state --work /tmp/acc-711/$n711/work --shim "$SHIM" \
+        --setup "$OUT/$t711 init '#711'" --operation "$OUT/$t711 rotate" --apparatus note:pr711 \
+        --recovery "$OUT/$t711 doctor" --recovery-check "$OUT/$t711 load-key" "$@" 2>/dev/null)
+    rc711=$?
+}
+keys711() {   # the account keys a block prints, in order, joined by commas
+    printf '%s\n' "$1" | awk '{ k = substr($0, 1, 12); sub(/ +$/, "", k); print k }' \
+        | grep -xE 'cwd|apparatus|warning|recovery|explored|expected|atomicity|oracle|metadata|checker|l1|case|replay|evidence|processes|not tested' \
+        | paste -sd, -
+}
+want711_fail="cwd,apparatus,warning,recovery,explored,expected,atomicity,oracle,metadata,checker,l1,case,replay,evidence,processes,not tested"
+want711_pass="cwd,apparatus,warning,recovery,explored,expected,atomicity,oracle,metadata,checker,l1,case,processes,not tested"
+want711_unknown="cwd,apparatus,warning,recovery,expected,atomicity,l1,case,processes,not tested"
+for v711 in fail:toy-bug:1 pass:toy-fixed:0 unknown:toy-fixed:2; do
+    name711=${v711%%:*}; rest711=${v711#*:}; toy711=${rest711%%:*}; want_rc711=${rest711#*:}
+    if [ "$name711" = unknown ]; then r711 "$name711" "$toy711"; else r711 "$name711" "$toy711" --oracle /usr/bin/strace; fi
+    eval "want711=\$want711_$name711"
+    got711=$(keys711 "$o711")
+    old711=$(printf '%s\n' "$o711" | grep -cE '^      [a-z][a-z ]*: ' || true)
+    if [ "$rc711" = "$want_rc711" ] && [ "$got711" = "$want711" ] && [ "$old711" = 0 ]; then
+        echo "ok   #711: the $name711 block prints its account lines in the one order and spelling"
+    else
+        echo "FAIL #711: the $name711 block (exit $rc711, wanted $want_rc711) printed [$got711], wanted [$want711]; $old711 line(s) in the old indented form"
+        printf '%s\n' "$o711" | sed 's/^/     | /' | head -40
+        fails=$((fails + 1))
+    fi
+done
 
 echo ""
 echo "=========== check 2l: a state directory larger than one buffer ==========="
@@ -3123,12 +3167,12 @@ if ! refused nothing_could_fail "$rc" "$o"; then
 elif [ -z "$got_ops" ]; then
     echo "FAIL raw-all: the run reported no oracle agreement at all — with an oracle"
     echo "     attached, that line is how this leg knows the two accounts were compared"
-    echo "$o" | grep -E "^ +oracle:|^(PASS|FAIL|UNKNOWN)" | sed 's/^/     | /' | head -4
+    echo "$o" | grep -E "^ *oracle[: ]|^(PASS|FAIL|UNKNOWN)" | sed 's/^/     | /' | head -4
     raw_fails=1
 elif [ "$got_ops" -lt "$want_ops" ]; then
     echo "FAIL raw-all: the two accounts agreed on only $got_ops operations on"
     echo "     $(uname -m), below the $want_ops this sequence issues on every architecture"
-    echo "$o" | grep -E "^ +oracle:|^(PASS|FAIL|UNKNOWN)" | sed 's/^/     | /' | head -4
+    echo "$o" | grep -E "^ *oracle[: ]|^(PASS|FAIL|UNKNOWN)" | sed 's/^/     | /' | head -4
     raw_fails=1
 fi
 # The contrast, on the same binary and the same sequence: without the filter the shim is
@@ -6269,7 +6313,7 @@ o=$(TOY_NONDET_REWRITE=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace \
     --scratch nondet.txt --json /tmp/acc/scratch.json 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -qF "atomicity: 1 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: nondet.txt)" \
+if [ "$rc" = "0" ] && echo "$o" | grep -qF "atomicity   1 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: nondet.txt)" \
    && echo "$o" | grep -qF "declared scratch paths (neither bytes nor presence judged)" \
    && python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d.get("scratch")==["nondet.txt"] and d["l0"].endswith("1 path(s) matched by scratch, not judged (declared: nondet.txt)") and "declared scratch paths (neither bytes nor presence judged)" in d["not_tested"] else 1)' /tmp/acc/scratch.json; then
     sc_ok "a nondeterministic rewrite declared scratch PASSes, and text, JSON and not_tested carry the declaration"
@@ -6423,7 +6467,7 @@ ap_leg "an env device set to another value is a SETUP ERROR naming the value" 3 
 # The device present: the run reaches a verdict and both renderings carry the declaration —
 # the text line here, the JSON's two arrays (the note listed as unchecked) just below.
 ap_leg "a device that is present runs to a verdict, and the text carries the declaration" 0 \
-    "      apparatus: env:TOY_PIN=1, note:hgrc revbranchcache.mmap = no (declared, not checked)" \
+    "apparatus   env:TOY_PIN=1, note:hgrc revbranchcache.mmap = no (declared, not checked)" \
     TOY_PIN=1 -- --apparatus env:TOY_PIN=1 --apparatus "note:hgrc revbranchcache.mmap = no" --json /tmp/acc/apparatus.json
 if python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d.get("apparatus")==["env:TOY_PIN=1","note:hgrc revbranchcache.mmap = no"] and d.get("apparatus_unchecked")==["note:hgrc revbranchcache.mmap = no"] else 1)' /tmp/acc/apparatus.json; then
     echo "ok   the JSON carries the declaration verbatim and the note as unchecked"
@@ -6432,7 +6476,7 @@ else
 fi
 mkdir -p /tmp/acc/pp && : > /tmp/acc/pp/sitecustomize.py
 ap_leg "a pythonpath device under the second PYTHONPATH entry is found" 0 \
-    "      apparatus: pythonpath:sitecustomize.py" PYTHONPATH=/nonexistent:/tmp/acc/pp -- --apparatus pythonpath:sitecustomize.py
+    "apparatus   pythonpath:sitecustomize.py" PYTHONPATH=/nonexistent:/tmp/acc/pp -- --apparatus pythonpath:sitecustomize.py
 ap_leg "a pythonpath device under no entry is a SETUP ERROR naming the entries looked at" 3 \
     "no entry of PYTHONPATH (/nonexistent) has sitecustomize.py directly under it" PYTHONPATH=/nonexistent -- --apparatus pythonpath:sitecustomize.py
 # The library the engine's own process preloads here is harmless (libc is already loaded);
@@ -6469,7 +6513,7 @@ o=$(TOY_DUP2=1 "$SIDEEYE" explore --state /tmp/acc/state \
 rc=$?
 ok=1
 [ "$rc" = "0" ] || ok=0
-echo "$o" | grep -q "explored 13 worlds (crash points 12 + 1 baseline)" || ok=0
+echo "$o" | grep -q "explored  *13 worlds (crash points 12 + 1 baseline)" || ok=0
 echo "$o" | grep -q "agreed on 12 operations" || ok=0
 if [ "$ok" = "1" ]; then
     echo "ok   state writes through fd 0/1/2 and rebound stdio are counted, and the oracle agrees"
@@ -6486,7 +6530,7 @@ rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
-if [ "$?" = "0" ] && echo "$o" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)"; then
+if [ "$?" = "0" ] && echo "$o" | grep -q "explored  *5 worlds (crash points 4 + 1 baseline)"; then
     echo "ok   ordinary stdout/stderr are still unrecorded (location, not number, decides)"
 else
     echo "FAIL plain-toy control drifted"
@@ -7085,7 +7129,7 @@ o=$(TOY_CLOSE_SWEEP=255 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)"; then
+if [ "$rc" = "0" ] && echo "$o" | grep -q "explored  *5 worlds (crash points 4 + 1 baseline)"; then
     echo "ok   a close(3..255) sweep misses the relocated trace fd; verdict untouched"
 else
     echo "FAIL sweep below the relocation floor: exit $rc"
@@ -7131,7 +7175,7 @@ o=$(TOY_ANONFD=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)"; then
+if [ "$rc" = "0" ] && echo "$o" | grep -q "explored  *5 worlds (crash points 4 + 1 baseline)"; then
     echo "ok   anon-inode descriptors (eventfd, epoll), and calls on a state file that change nothing"
     echo "     (epoll_ctl, faccessat2, xattr reads, inotify_add_watch, preadv/preadv2, the polls) are invisible to the verdict"
 else
@@ -7182,8 +7226,8 @@ o=$(TOY_EXIT_STATUS=3 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --expect-status 3 \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)" \
-    && echo "$o" | grep -q "expected status: 3"; then
+if [ "$rc" = "0" ] && echo "$o" | grep -q "explored  *5 worlds (crash points 4 + 1 baseline)" \
+    && echo "$o" | grep -q "^expected    exit 3$"; then
     echo "ok   declared right: explores in full, and the text report names the status"
 else
     echo "FAIL declared-right exploration: exit $rc"
@@ -7219,7 +7263,7 @@ TOML
 o=$(TOY_EXIT_STATUS=3 "$SIDEEYE" explore --config /tmp/acc/def.toml \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/es.json 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)" \
+if [ "$rc" = "0" ] && echo "$o" | grep -q "explored  *5 worlds (crash points 4 + 1 baseline)" \
     && python3 -c "import json,sys; sys.exit(0 if json.load(open('/tmp/acc/es.json'))['expected_status'] == 3 else 1)"; then
     echo "ok   the toml spelling explores too, and the report carries expected_status"
 else
@@ -7370,7 +7414,7 @@ o=$(TOY_EXIT_STATUS=137 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --expect-status 137 \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)"; then
+if [ "$rc" = "0" ] && echo "$o" | grep -q "explored  *5 worlds (crash points 4 + 1 baseline)"; then
     echo "ok   exit(137) is an exit status, not a SIGKILL: declared, it explores"
 else
     echo "FAIL 137/SIGKILL separation: exit $rc"
@@ -10222,12 +10266,12 @@ cwd_expect() { # $1 label, $2 report json, $3 text, $4 wanted path, $5 wanted de
 # Leg 6 — PASS, declared as "." from a toml one directory away: the resolved path, and `true`.
 cwd_toml $cw/proj/pass.toml "$OUT/toy-fixed init" "$OUT/toy-fixed rotate" "."
 o=$(cd $cw/from && "$SIDEEYE" explore --config $cw/proj/pass.toml --shim "$SHIM" --work $cw/w6 --oracle /usr/bin/strace --json $cw/r6.json 2>&1)
-cwd_expect "PASS carries the declared cwd, resolved, in both forms" $cw/r6.json "$o" "$proj_real" true "      cwd: $proj_real"
+cwd_expect "PASS carries the declared cwd, resolved, in both forms" $cw/r6.json "$o" "$proj_real" true "cwd         $proj_real"
 
 # Leg 7 — PASS, nothing declared: Sideeye's own directory, `false`, and the text says whose.
 cwd_toml $cw/proj/pass-none.toml "$OUT/toy-fixed init" "$OUT/toy-fixed rotate" ""
 o=$(cd $cw/from && "$SIDEEYE" explore --config $cw/proj/pass-none.toml --shim "$SHIM" --work $cw/w7 --oracle /usr/bin/strace --json $cw/r7.json 2>&1)
-cwd_expect "an undeclared cwd is Sideeye's own, and the report says so" $cw/r7.json "$o" "$from_real" false "      cwd: $from_real  (none declared: Sideeye's own)"
+cwd_expect "an undeclared cwd is Sideeye's own, and the report says so" $cw/r7.json "$o" "$from_real" false "cwd         $from_real  (none declared: Sideeye's own)"
 
 # Leg 8 — a run with no crash point (`doctor` only reads). It rendered a PASS block of its own
 # until ADR 0091; it is refused `nothing_could_fail` now, and the step it carries talks about
@@ -10264,11 +10308,14 @@ if [ "$rc" = "2" ] && [ "$(cwd_json $cw/r10.json unknown_reason)" = '"recording_
     cwd_expect "UNKNOWN carries it, for the refusal #647 recorded" $cw/r10.json "$o" "$from_real" false "cwd         $from_real  (none declared: Sideeye's own)"
     n_next=$(printf '%s\n' "$o" | grep -n '^next  ' | head -1 | cut -d: -f1)
     n_cwd=$(printf '%s\n' "$o" | grep -n '^cwd  ' | head -1 | cut -d: -f1)
-    n_atom=$(printf '%s\n' "$o" | grep -n '^atomicity  ' | head -1 | cut -d: -f1)
+    # Anchored on `expected`, the line ADR 0086 §2 names: `cwd` has to sit above it, or the
+    # reader sent to --expect-status reaches `expected` first. Since #711 `expected` opens the
+    # classification block, so it is also the line `atomicity` used to stand for here.
+    n_atom=$(printf '%s\n' "$o" | grep -n '^expected  ' | head -1 | cut -d: -f1)
     if [ -n "$n_next" ] && [ -n "$n_cwd" ] && [ -n "$n_atom" ] && [ "$n_next" -lt "$n_cwd" ] && [ "$n_cwd" -lt "$n_atom" ]; then
-        echo "ok   on UNKNOWN the cwd line sits under next, above the classification block"
+        echo "ok   on UNKNOWN the cwd line sits under next, above expected and the classification block"
     else
-        echo "FAIL the cwd line is not between next and atomicity (next=$n_next cwd=$n_cwd atomicity=$n_atom)"
+        echo "FAIL the cwd line is not between next and expected (next=$n_next cwd=$n_cwd expected=$n_atom)"
         cwd_fails=$((cwd_fails + 1))
     fi
 else
