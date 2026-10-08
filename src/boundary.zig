@@ -1113,14 +1113,43 @@ pub fn missedOperationNext(observe: contract.ObserveMode, on_linux: bool) contra
 }
 
 /// The step for a failure a process the syscall mode killed produces, where the site would say
-/// `fix_define` (#599, ADR 0069): the recording run's undeclared exit status, its signal, its
-/// missing success marker, and the baseline world's checker rejecting the state. Under
+/// `fix_define` (#599, ADR 0069): the recording run's missing success marker and the baseline
+/// world's checker rejecting the state. The recording run's undeclared exit status and its signal
+/// ask the same question through `recordingEndedStep` since #710 (ADR 0097). Under
 /// `--observe syscalls` the define-pointing advice at those sites would get a broken run judged.
 /// Not the 126 branches (`environment`, the engine's fork stub), nor `preflight --twice`'s second
 /// run, the baseline's exit or the baseline's marker layer: each compares against a recording the
 /// same mode already completed, so a kill present in both runs does not reach it.
 pub fn fixDefineUnder(observe: contract.ObserveMode) contract.NextStep {
     return if (observe == .syscalls) .syscalls_may_have_killed else .fix_define;
+}
+
+/// The step for the recording run's `recording_run_failed`, 126 aside (#710, ADR 0097): by hand
+/// first and then `--expect-status` for an exit status nobody declared, by hand to see what
+/// stopped it for a run that ended without one. Under `--observe syscalls` the mode's own step
+/// stays first, for `fixDefineUnder`'s reason: following either sentence there could have a
+/// broken run judged.
+pub fn recordingEndedStep(observe: contract.ObserveMode, exited: bool) contract.NextStep {
+    if (observe == .syscalls) return .syscalls_may_have_killed;
+    return if (exited) .run_then_expect_status else .run_by_hand_signalled;
+}
+
+/// The step for `multiple_threads_detected` (#710, ADR 0097): the README's own limit, except
+/// under `--observe supervised`, which records no join — the sentence there would send the
+/// reader to look for a join that mode cannot see, so it keeps the wall.
+pub fn threadsStep(observe: contract.ObserveMode) contract.NextStep {
+    return if (observe == .supervised) .class_wall else .threads_limit;
+}
+
+test "the recording run's end and the threads refusal choose their steps by mode (#710)" {
+    try std.testing.expectEqual(contract.NextStep.run_then_expect_status, recordingEndedStep(.wrappers, true));
+    try std.testing.expectEqual(contract.NextStep.run_by_hand_signalled, recordingEndedStep(.wrappers, false));
+    try std.testing.expectEqual(contract.NextStep.run_then_expect_status, recordingEndedStep(.supervised, true));
+    try std.testing.expectEqual(contract.NextStep.syscalls_may_have_killed, recordingEndedStep(.syscalls, true));
+    try std.testing.expectEqual(contract.NextStep.syscalls_may_have_killed, recordingEndedStep(.syscalls, false));
+    try std.testing.expectEqual(contract.NextStep.threads_limit, threadsStep(.wrappers));
+    try std.testing.expectEqual(contract.NextStep.threads_limit, threadsStep(.syscalls));
+    try std.testing.expectEqual(contract.NextStep.class_wall, threadsStep(.supervised));
 }
 
 /// The observation-to-step table above, taking its observation as an argument rather than
@@ -1145,7 +1174,12 @@ fn noShimNextFor(observed: ?image.Observation, mode: contract.ObserveMode, can_s
         // the detail said "another cause", the step said "the wall").
         .macho => |m| blk: {
             const s = m.signing orelse break :blk if (m.dyldlink) .check_shim else .class_wall;
-            if (s.platformNamed() or s.libraryValidation() or s.hardenedRuntime()) break :blk .class_wall;
+            // A platform first (#710, ADR 0097): the way past it is measured — a build that is
+            // not macOS's own — and it holds whatever else the code directory says, since an
+            // Apple binary carries the hardened runtime too. Library validation and the
+            // hardened runtime on a third-party image were not measured and keep the wall.
+            if (s.platformNamed()) break :blk .non_system_build;
+            if (s.libraryValidation() or s.hardenedRuntime()) break :blk .class_wall;
             break :blk .check_shim;
         },
         // Read, and not recognised as an executable image. `image.zig` reaches this from
@@ -1555,10 +1589,16 @@ test "noShimNextFor: the step each image observation takes (#481, ADR 0090)" {
     try std.testing.expectEqual(contract.NextStep.environment, noShimNextFor(obs(.{ .not_resolved = .not_found }), .supervised, true));
     try std.testing.expectEqual(contract.NextStep.environment, noShimNextFor(null, .supervised, true));
 
-    // The Mach-O arms are unchanged: the wall stays the wall, the shim stays the shim.
+    // The Mach-O arms: the shim stays the shim and the unmeasured walls stay walls. A code
+    // directory naming a platform takes the step that names a build not part of macOS (#710,
+    // ADR 0097), and keeps it with the hardened runtime beside it, as Apple's own binaries have.
     try std.testing.expectEqual(contract.NextStep.check_shim, next(obs(.{ .macho = .{ .dyldlink = true, .signing = null } })));
     try std.testing.expectEqual(contract.NextStep.class_wall, next(obs(.{ .macho = .{ .dyldlink = false, .signing = null } })));
-    try std.testing.expectEqual(contract.NextStep.class_wall, next(obs(.{ .macho = .{ .dyldlink = true, .signing = .{ .flags = 0, .platform = 1 } } })));
+    try std.testing.expectEqual(contract.NextStep.non_system_build, next(obs(.{ .macho = .{ .dyldlink = true, .signing = .{ .flags = 0, .platform = 1 } } })));
+    try std.testing.expectEqual(contract.NextStep.non_system_build, next(obs(.{ .macho = .{ .dyldlink = true, .signing = .{ .flags = image.cs_runtime, .platform = 1 } } })));
+    try std.testing.expectEqual(contract.NextStep.class_wall, next(obs(.{ .macho = .{ .dyldlink = true, .signing = .{ .flags = image.cs_runtime, .platform = 0 } } })));
+    try std.testing.expectEqual(contract.NextStep.class_wall, next(obs(.{ .macho = .{ .dyldlink = true, .signing = .{ .flags = image.cs_require_lv, .platform = 0 } } })));
+    try std.testing.expectEqual(contract.NextStep.check_shim, next(obs(.{ .macho = .{ .dyldlink = true, .signing = .{ .flags = 0, .platform = 0 } } })));
 
     // No observation at all — the run stopped before the image was read.
     try std.testing.expectEqual(contract.NextStep.check_shim, next(null));

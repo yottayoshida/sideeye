@@ -265,12 +265,33 @@ what was observed of it — gone, holding neither recorded content, or its
 recorded history no longer a prefix — and, where both runs left a file of one
 kind there, where their bytes first differ, how long the differing stretch is in
 each and what kind of bytes it holds (#688; never the bytes, which only
-`preflight --twice` prints, in its own output) — and `next_step` is the class wall: the
-README's limits list byte-repeatable writes beside `preflight --twice`, which
-measures them before a define exists. The engine does not name a cause; a
+`preflight --twice` prints, in its own output) — and `next_step` names what a
+define can do about such a path (#710, ADR 0097): declare it `scratch` when its
+bytes are not what the verdict should judge, and run `preflight --twice`, which
+names the paths two clean runs leave differently (a bounded list, scratch left
+out) before a define is explored. The README lists byte-repeatable writes among
+its limits. The engine does not name a cause; a
 clock, a random id and a cache keyed on an inode the restore moved all look
 the same from the bytes. For the success marker and the checker, `next_step`
 is `fix_define`.
+
+**Where #710 gave a refusal a step of its own** (ADR 0097, from the refusals the dogfood
+records and a first-time operator met most): `recording_run_failed` on an exit status nobody
+declared takes `run_then_expect_status` — run the operation by hand first, then
+`--expect-status` if that status is the tool's success — and on a run that ended on a signal
+(which `message` now names) `run_by_hand_signalled`; `preflight --twice`'s second run ending
+differently from the first takes `second_run_diverged`, which says the restore rebuilds the
+names, kinds and bytes under `--state` and not their modes, owners or timestamps, so a tool that
+checks the mode of a file under `--state` — an executable bit, a `0600` key, as in both
+records — ends this way too; `kill_did_not_land` takes `kill_not_landed` where no landing was
+recorded at the asked position and `not_repeating` where the world reached it through other
+operations; `multiple_threads_detected` takes `threads_limit`, which names the README's threads
+limit, except under `--observe supervised`, which records no join and keeps the class wall.
+Four refusals the records met keep the class wall because this build's step names no way past
+them and no README line names their limit: `unresolvable_path`, `unsupported_syscall_observed`,
+the supervised threads refusal, and `oracle_missed_operation` under `--observe syscalls`. For a
+static parent whose writer is a dynamic child, which reaches the last and `unresolvable_path`,
+`--observe supervised` is the way past; #685 is to name it.
 
 `child_process_detected` from the recording run's broken self-exec chain chooses
 its `next_step` from an observation on macOS (#703). When the operation's first
@@ -302,8 +323,12 @@ whether the operation names it by path or by a bare name found on the engine's
 its conditions (Linux 5.19 or later, aarch64 or x86_64, a cgroup v2 the engine can
 create cgroups in). A 32-bit static ELF, a static ELF off Linux or on a Linux build for
 another architecture, a Mach-O not linked
-against dyld, and one whose code directory names a platform or carries the
-library-validation or hardened-runtime flag take the class wall. A file that was
+against dyld, and one whose code directory carries the library-validation or
+hardened-runtime flag without naming a platform take the class wall. One whose
+code directory names a platform — the marker Apple's own binaries carry, whatever
+flags sit beside it — takes `non_system_build`, which names a build of the tool
+that is not part of macOS (#710, ADR 0097; measured on `/bin/cp`, an ad-hoc
+re-signed copy of it, which the system killed as it started, and Homebrew's `xz`). A file that was
 read and could not be recognised as an executable image — first four bytes
 unreadable, a magic none of the three families claims (where a `#!` script lands,
 named by path or by a bare name), an ELF magic followed by a class or data byte
@@ -334,21 +359,23 @@ and this page's 'What `--observe syscalls` does not see': that mode changes what
 some targets do. Under `--observe syscalls`, or off Linux, the step is the class
 wall; a Linux kernel without the trap answers the flag with
 `platform_unsupported`. The failures a process that mode killed produces follow
-the mode as well: where they would take `fix_define` — the recording run's exit
-status nobody declared, its signal, its success marker that never appeared, and
-the baseline world's checker rejecting the state — a run under `--observe
+the mode as well: where the default mode sends the reader to the define or to
+run the operation by hand — the recording run's exit status nobody declared and
+its signal (`run_then_expect_status`, `run_by_hand_signalled`), its success marker
+that never appeared, and the baseline world's checker rejecting the state
+(`fix_define`) — a run under `--observe
 syscalls` takes `syscalls_may_have_killed`, because following the site's own
 sentence (declare a different success convention, check the marker string, check
 the operation and the checker against each other) would have a broken run
 judged. The branches that exit 126 keep `environment`. `preflight --twice`'s
-second run, the baseline's exit and the baseline's marker layer keep
-`fix_define`: each compares against a recording the same mode already completed,
+second run (`second_run_diverged`), the baseline's exit and the baseline's marker
+layer (`fix_define`) keep their own steps: each compares against a recording the same mode already completed,
 so a kill that happened in both runs does not reach it. The checker is the
 exception because it judges the state from outside rather than against the
 recording, and the baseline is the first clean state it sees.
 
-A define read from a toml that declares no `cwd` takes `declare_cwd` where `recording_run_failed`,
-`marker_never_observed`, `checker_not_falsified` (the corrupted state accepted) and
+A define read from a toml that declares no `cwd` takes `declare_cwd` where `recording_run_failed` would say `run_then_expect_status` or
+`run_by_hand_signalled`, where `marker_never_observed`, `checker_not_falsified` (the corrupted state accepted) and
 `baseline_violates_invariant`'s checker layer would say `fix_define` — and where `nothing_could_fail` with no crash point would say `nothing_in_state` — when the command that failed
 carries an argument the engine found under the toml's directory and not under the one it ran in (or a
 directory above an argument that is under neither); `message` gains that observation as its last

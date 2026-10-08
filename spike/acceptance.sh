@@ -2607,6 +2607,55 @@ else
     bad706 "a control byte in a quoted flag (raw bytes in the warning: $raw706)"
 fi
 
+# #710, ADR 0097: the refusals the dogfood records met most say what to do, where they said "Change
+# the define" or "refused by design". One leg per site this suite can reach with a toy: the
+# recording run's exit status nobody declared (and, as the control, the same run under --observe
+# syscalls, whose own step outranks it), preflight --twice's second run, and two threads writing
+# with nothing ordering them. The baseline's byte layer is pinned by the #199 legs further down. The
+# recording run's signal has no toy here; the step it chooses is pinned by a unit test in
+# src/boundary.zig (`recordingEndedStep`), and the macOS shapes were measured by hand (ADR 0097).
+# The two kill_did_not_land shapes have neither a toy nor a test: their sites pass the member
+# directly, and the records that met them (ccache, dotter) are a campaign's, not this suite's.
+echo ""
+echo "=========== #710: the refusals met most name what to do ==========="
+stock710() {   # true when the next line is one of the two stock sentences
+    printf '%s\n' "$1" | grep '^next  ' | grep -qE 'Change the define: the detail above names|This target does something Sideeye refuses by design'
+}
+want710() {   # want710 <label> <output> <exit> <wanted exit> <reason> <fragment of next>
+    if [ "$3" = "$4" ] && printf '%s\n' "$2" | grep -qx "UNKNOWN  $5" && ! stock710 "$2" \
+        && printf '%s\n' "$2" | grep '^next  ' | grep -qF -- "$6"; then
+        echo "ok   #710: $1"
+    else
+        echo "FAIL #710: $1 (exit $3, wanted $4 $5 with next naming [$6])"
+        printf '%s\n' "$2" | grep -E '^(UNKNOWN|next) ' | sed 's/^/     | /'
+        fails=$((fails + 1))
+    fi
+}
+rm -rf /tmp/acc-710 && mkdir -p /tmp/acc-710/e /tmp/acc-710/s /tmp/acc-710/t /tmp/acc-710/w
+o=$(TOY_EXIT_STATUS=3 "$SIDEEYE" explore --state /tmp/acc-710/e/state --setup "$OUT/toy-fixed init" \
+    --operation "$OUT/toy-fixed rotate" --shim "$SHIM" --work /tmp/acc-710/e/work --oracle /usr/bin/strace 2>&1)
+want710 "an exit status nobody declared: run it by hand, then --expect-status" "$o" $? 2 recording_run_failed "--expect-status"
+if printf '%s\n' "$o" | grep '^next  ' | grep -q 'Run the operation once by hand'; then
+    echo "ok   #710: ...and running it by hand comes first"
+else
+    echo "FAIL #710: the exit-status step does not start with running the operation by hand"; fails=$((fails + 1))
+fi
+o=$(TOY_EXIT_STATUS=3 "$SIDEEYE" explore --state /tmp/acc-710/s/state --observe syscalls --setup "$OUT/toy-fixed init" \
+    --operation "$OUT/toy-fixed rotate" --shim "$SHIM" --work /tmp/acc-710/s/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = 2 ] && printf '%s\n' "$o" | grep '^next  ' | grep -q 'Under --observe syscalls a run also ends this way'; then
+    echo "ok   #710: under --observe syscalls the same refusal keeps that mode's step (the control)"
+else
+    echo "FAIL #710: under --observe syscalls the exit-status refusal did not keep syscalls_may_have_killed (exit $rc)"
+    printf '%s\n' "$o" | grep -E '^(UNKNOWN|next) ' | sed 's/^/     | /'; fails=$((fails + 1))
+fi
+o=$(TOY_TWICE_COUNTER=/tmp/acc-710/w/count "$SIDEEYE" preflight --twice --state /tmp/acc-710/w/state \
+    --setup "$OUT/toy-twice init" --operation "$OUT/toy-twice" --shim "$SHIM" --work /tmp/acc-710/w/work 2>&1)
+want710 "preflight --twice's second run ending differently names what the restore does not put back" "$o" $? 2 recording_run_failed "not their modes, owners or timestamps"
+o=$(TOY_THREAD_RACE=1 "$SIDEEYE" explore --state /tmp/acc-710/t/state --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-710/t/work --oracle /usr/bin/strace 2>&1)
+want710 "two threads writing unordered names the README's threads limit" "$o" $? 2 multiple_threads_detected "threads are judged where a creation or a join the shim saw orders their writes"
+
 # #711, ADR 0096: the figures the `oracle`, `checker` and `processes` sentences state, as optional
 # JSON fields. Each has to equal the number its sentence prints — read back out of the sentence
 # here, so a field counted from anywhere else goes red — and each has to be absent where nothing
@@ -2828,8 +2877,8 @@ echo "=========== check 2n: a failure that needs no crash is not a counterexampl
 # Reached here through the checker. The byte layer reaches the same refusal when the
 # re-run does not repeat the recorded bytes (the honesty pair and the `missing` leg
 # further down), and #199 has the message name which layer failed: this leg pins the
-# checker wording and `fix_define`; the byte legs pin the path, the kind and the class
-# wall. (An earlier comment here claimed only the checker can reach this refusal; the
+# checker wording and `fix_define`; the byte legs pin the path, the kind and, since #710,
+# the step that names `scratch` and `preflight --twice`. (An earlier comment here claimed only the checker can reach this refusal; the
 # first real target arrived through the bytes.)
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 unset TOY 2>/dev/null || true
@@ -6201,8 +6250,8 @@ rc2=$?
 if [ "$pf_ok" = "1" ] && [ "$rc2" = "2" ] && echo "$o2" | grep -q "baseline_violates_invariant" \
    && echo "$o2" | grep -q "the re-run from the restored state left nondet.txt holding neither the old nor the new content" \
    && ! echo "$o2" | grep -q "check the operation and the checker" \
-   && echo "$o2" | grep -q "refuses by design"; then
-    echo "ok   a recording-clean, exploration-refused target splits the claims: accepted + named unchecked vs refused, naming the path and the wall"
+   && echo "$o2" | grep -q "declare the path scratch" && echo "$o2" | grep -q "preflight --twice names the paths"; then
+    echo "ok   a recording-clean, exploration-refused target splits the claims: accepted + named unchecked vs refused, naming the path, scratch and preflight --twice"
 else
     echo "FAIL preflight honesty pair: preflight=$rc explore=$rc2"
     echo "$o" | sed 's/^/     | /' | head -4
@@ -6210,8 +6259,9 @@ else
     fails=$((fails + 1))
 fi
 
-# The wall that refusal points at has to exist in both documents the `class_wall` sentence
-# names (README's limits, DESIGN's known constraints). Its own leg, so a prose edit that
+# The limit that refusal stands at has to exist in both documents (README's limits, DESIGN's
+# known constraints) — the `class_wall` sentence named them until #710 gave the byte layer a step
+# that names `scratch` and `preflight --twice`, and the limit is still where a reader looks. Its own leg, so a prose edit that
 # drops the bullet fails here, under a line about the documents, not under the engine's.
 wall_readme="Byte-repeatable writes"
 wall_design="repeat byte-for-byte across two clean runs"
@@ -6237,8 +6287,8 @@ rc3=$?
 # `refused_uncredited`, not `refused`: this leg sits below the ledger gate (check 2b).
 if refused_uncredited baseline_violates_invariant "$rc3" "$o3" \
    && echo "$o3" | grep -q "the re-run from the restored state left nondet.txt gone, though the recording had it before and after" \
-   && echo "$o3" | grep -q "refuses by design"; then
-    echo "ok   a baseline re-run that removes a recorded file is refused naming the path as gone, with the class wall"
+   && echo "$o3" | grep -q "declare the path scratch"; then
+    echo "ok   a baseline re-run that removes a recorded file is refused naming the path as gone, and scratch as the way past it"
 else
     echo "FAIL baseline missing kind: exit $rc3"
     echo "$o3" | sed 's/^/     | /' | head -6

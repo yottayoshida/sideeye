@@ -582,10 +582,27 @@ fn existsUnder(arena: std.mem.Allocator, dir: []const u8, rel: []const u8) bool 
 }
 
 /// The step for a refusal `cwdObservation` found something for: `declare_cwd` where the site
-/// would have said `fix_define`, and the site's own step everywhere else — above all
+/// would have said `fix_define` or one of the recording run's two steps from #710, and the site's
+/// own step everywhere else — above all
 /// `syscalls_may_have_killed`, whose sentence says to check before changing the define.
 pub fn cwdStep(observation: ?[]const u8, step: contract.NextStep) contract.NextStep {
-    return if (observation != null and step == .fix_define) .declare_cwd else step;
+    if (observation == null) return step;
+    // The recording run's two steps from #710 (ADR 0097) are what those sites say instead of
+    // `fix_define` now, and the observation outranks them the way it outranked that: the run
+    // read an argument from the wrong directory, which explains its ending better than running
+    // it by hand would.
+    return switch (step) {
+        .fix_define, .run_then_expect_status, .run_by_hand_signalled => .declare_cwd,
+        else => step,
+    };
+}
+
+test "the cwd observation outranks the recording run's own steps, never the syscalls mode's (#710)" {
+    try std.testing.expectEqual(contract.NextStep.declare_cwd, cwdStep("x", .run_then_expect_status));
+    try std.testing.expectEqual(contract.NextStep.declare_cwd, cwdStep("x", .run_by_hand_signalled));
+    try std.testing.expectEqual(contract.NextStep.run_then_expect_status, cwdStep(null, .run_then_expect_status));
+    try std.testing.expectEqual(contract.NextStep.syscalls_may_have_killed, cwdStep("x", .syscalls_may_have_killed));
+    try std.testing.expectEqual(contract.NextStep.scratch_or_twice, cwdStep("x", .scratch_or_twice));
 }
 
 /// `detail`, with the observation as its last clause when there is one — and the line to add

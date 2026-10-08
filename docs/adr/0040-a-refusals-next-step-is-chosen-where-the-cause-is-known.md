@@ -65,6 +65,12 @@ and `unknown()` takes it as a required argument.**
   `environment`. And "an unresolved path" is narrower: a bare name is now looked up along
   the engine's `PATH` and read like a path, so only a bare name with `PATH` unset or found
   nowhere on it stays silent about linkage. Left standing, like the note above.
+
+  **Amended 2026-10-08 (ADR 0097, #710).** The Mach-O wall narrowed again: a code directory
+  that names a platform takes `non_system_build`, which names a build of the tool that is not
+  part of macOS; library validation and the hardened runtime without a platform keep the wall.
+  The same change gave seven more members to ten sites that said `fix_define` or `class_wall`, chosen from the refusals the dogfood records met most — the list ADR 0097 tables. The
+  framework this ADR set is unchanged; left standing, like the notes above.
 - The sentence is rendered once in `unknown()` and handed to both forms: the JSON
   `next_step` field (after `message`) and the text report's `next` line (after the
   detail line, which the acceptance suite reads as the line following the reason). The

@@ -1358,10 +1358,10 @@ pub const RecoveryResult = enum {
 /// design" is a fact about Sideeye, not a diagnosis of the target.
 pub const NextStep = enum {
     /// The define declares something this run contradicted — a checker that accepted a
-    /// corrupted store, a marker that never appeared, an exit status that was not the
-    /// declared one, a baseline whose checker or success marker failed there. A baseline
-    /// whose bytes did not repeat is not the define's to fix and goes to `class_wall`
-    /// (#199).
+    /// corrupted store, a marker that never appeared, a baseline whose checker or success
+    /// marker failed there. The recording run's exit status and signal, `preflight --twice`'s
+    /// second run and `kill_did_not_land` said this until #710 gave each a member of its own
+    /// (ADR 0097); a baseline whose bytes did not repeat takes `scratch_or_twice`.
     fix_define,
     /// A would-be PASS with no completeness witness: the weaker claim is available too.
     pass_oracle,
@@ -1371,11 +1371,10 @@ pub const NextStep = enum {
     account_boundary,
     /// A world outlived its `--world-timeout` budget.
     raise_world_timeout,
-    /// The target does something Sideeye refuses by design: static linking, threads,
-    /// other processes on the state, a syscall the restore model cannot reproduce, an
-    /// entry kind the snapshot does not hold, a write that does not repeat byte-for-byte
-    /// across two clean runs (the README's "Byte-repeatable writes", measured by
-    /// `preflight --twice`).
+    /// The target does something Sideeye refuses by design: static linking, other processes
+    /// on the state, a syscall the restore model cannot reproduce, an entry kind the snapshot
+    /// does not hold. Threads (outside `--observe supervised`), a baseline whose bytes did not
+    /// repeat, and a Mach-O naming a platform name their own way past since #710 (ADR 0097).
     class_wall,
     /// A boundary refusal in the recording run, where the operation may be a `#!` wrapper
     /// rather than a target of the refused class (#506).
@@ -1508,9 +1507,9 @@ pub const NextStep = enum {
     /// `next_step` is neither (ADR 0069 recorded the same when it added `observe_syscalls`).
     observe_supervised,
     /// A run's failures under `--observe syscalls` that a process the mode killed produces, where
-    /// the site would otherwise say `fix_define` (#599, ADR 0069): the recording run's undeclared
-    /// status, its signal and its missing success marker, and the baseline world's checker
-    /// rejecting the state. A child that exec'd an image the shim is not loaded into dies at its
+    /// the site would otherwise say `fix_define` (#599, ADR 0069) — the recording run's missing
+    /// success marker and the baseline world's checker rejecting the state — or, since #710 (ADR
+    /// 0097), the recording run's own `run_then_expect_status` and `run_by_hand_signalled`. A child that exec'd an image the shim is not loaded into dies at its
     /// first state-changing call; each site's own sentence then points at the define — declare a
     /// different success convention, check the marker string, check the operation and the checker
     /// against each other — and a reader sent here by `observe_syscalls` who followed it would have
@@ -1522,7 +1521,8 @@ pub const NextStep = enum {
     /// the state it leaves. It does not branch on whether the subject died of `SIGSYS`: that one is
     /// detectable, a child's death is not, and one sentence covers both.
     syscalls_may_have_killed,
-    /// Where a site would say `fix_define`, for a define read from a toml that declares no `cwd`,
+    /// Where a site would say `fix_define` — or, at the recording run, `run_then_expect_status` or
+    /// `run_by_hand_signalled` (#710) — for a define read from a toml that declares no `cwd`,
     /// whose commands therefore ran in Sideeye's own directory rather than the toml's — and only
     /// when the command that failed carries an argument — or a directory above one — the engine
     /// found under the toml's directory and not under the one it ran in (#700, ADR 0093). The
@@ -1553,6 +1553,53 @@ pub const NextStep = enum {
     /// what the define already has, or for what cannot judge anything (R1 of the plan, M6, and
     /// of the diff).
     declare_check,
+    // ---- #710, ADR 0097: the refusals the dogfood records and a first-time operator met most,
+    // each given the step its site's own observation names, where `fix_define` or `class_wall`
+    // used to stand. Neither of those says what to do: the one points at a declaration the
+    // detail often does not name, the other at the whole list of limits. ----
+    /// `recording_run_failed` on an exit status other than the declared one (not 126): the
+    /// detail names the status. Running the operation by hand comes first, then the flag:
+    /// declaring the status a failed run ended with would have the failure judged as a success,
+    /// the reasoning that keeps 126 off the flag (R1 of the plan, m9).
+    run_then_expect_status,
+    /// `recording_run_failed` on a run that ended without an exit status — a signal, which the
+    /// detail names, or a status the engine does not decode. Nothing a define declares accounts
+    /// for that, so the step is to see what stopped it. On macOS a SIGKILL at start is the shape
+    /// of an image whose signature the system will not run (measured: an ad-hoc re-signed copy of
+    /// `/bin/cp`, 2026-10-08).
+    run_by_hand_signalled,
+    /// `preflight --twice`'s second observed run ended differently from the first, which started
+    /// from a state the restore rebuilt — the names, kinds and bytes under `--state`, not their
+    /// modes, owners or timestamps — so what differed is a mode the tool checks, something outside
+    /// `--state`, or something that does not repeat. upx and argocd, the two the records hold,
+    /// were the first: each checks the mode of a file under `--state` — upx the executable bit,
+    /// argocd `0600`, both set by the define's setup (`docs/target-classes.md`) — which the
+    /// restore does not put back (R1 of the diff caught the first wording, which said
+    /// "outside --state").
+    second_run_diverged,
+    /// `baseline_violates_invariant` at the byte layer: a path the world nothing crashed left with
+    /// bytes the recording did not. What `#688` adds to the detail says how they differ; this says
+    /// what the define can do about a path whose bytes are not the verdict's business.
+    scratch_or_twice,
+    /// `kill_did_not_land` where no landing at the asked position was recorded. Only that is
+    /// observed — not that the world did fewer operations — so the step names the measurement
+    /// and keeps Sideeye's own side open (R2 of the plan, m1).
+    kill_not_landed,
+    /// `kill_did_not_land` where the world reached the number through other operations than the
+    /// recording's: observed, so the step can say the operation does not repeat itself.
+    not_repeating,
+    /// `multiple_threads_detected` outside `--observe supervised`: names the README's own limit
+    /// rather than the list it is in. No flag is offered — most of the targets the records met
+    /// (node, Go, Python) have none that runs them on one thread (R1 of the plan, M5). Under
+    /// supervised the step stays `class_wall`: that mode records no join, and this sentence
+    /// would send a reader to look for one it cannot see (R2 of the plan, M-c).
+    threads_limit,
+    /// `no_shim_marker` on a Mach-O whose code directory names a platform — the marker Apple's
+    /// own binaries carry, from which macOS strips an inserted library. Measured 2026-10-08:
+    /// `/bin/cp` refused, an ad-hoc re-signed copy of it killed at start, Homebrew's `xz` accepted.
+    /// Not for library validation or the hardened runtime on a third-party image, which were not
+    /// measured and keep `class_wall`.
+    non_system_build,
 
     pub fn render(self: NextStep) []const u8 {
         return switch (self) {
@@ -1582,6 +1629,14 @@ pub const NextStep = enum {
             .nothing_in_state => "The operation changed nothing in the state directory that the verdict judges (a change of ownership or permissions alone lands here too). If it should have, find where its store resolved: a define that declares no cwd runs its commands in Sideeye's own directory, and a relative argument resolves there — declare cwd, or point state at the store (docs/cli.md). An operation that is meant to change nothing has no crash point to test.",
             .declare_check_or_marker => "The built-in invariant judges only paths that exist both before and after the operation, and no crash point changed one, so nothing could have failed: declare a check that reads the state the target leaves (docs/checker-cookbook.md), or a marker for the success claim, which judges the files the operation created or removed.",
             .declare_check => "No crash point changed a path the built-in invariants judge, and no marker could judge the rest (none printed in a crash world, or nothing was created or removed outside scratch), so nothing could have failed: declare a check that reads the state the target leaves (docs/checker-cookbook.md).",
+            .run_then_expect_status => "Run the operation once by hand, after the setup and in the directory the report names on its cwd line (command_cwd in the JSON), and read what it prints: if the exit status the detail names is how the tool reports success, declare it in the define with --expect-status (expected_status in a sideeye.toml); if it is a failure, fix what it printed — declaring a failure as success would have the failure judged.",
+            .run_by_hand_signalled => "Run the operation once by hand, after the setup and in the directory the report names on its cwd line (command_cwd in the JSON), to see what stopped it: it ended without an exit status (the detail names the signal when there was one), which nothing a define declares accounts for — the README's limit 'A clean run exits its declared success status' is the one it stands at. On macOS, a SIGKILL as it starts can be the system refusing an image's signature.",
+            .second_run_diverged => "The second run started from the state the restore rebuilt for it — the names, kinds and bytes under --state, not their modes, owners or timestamps — and ended differently. A tool that checks the mode of a file under --state (an executable bit, a 0600 key) ends this way, and Sideeye cannot judge one yet; otherwise what the operation depends on lies outside --state or does not repeat (a lock, the clock). Run the operation twice by hand after the setup and compare; if what it needs lives in another directory, point --state at one that holds both.",
+            .scratch_or_twice => "The path the detail names did not come back with the bytes the recording left, in a world nothing crashed. If those bytes are not what the verdict should judge (a cache, a log, a timestamp), declare the path scratch in the define (--scratch, or scratch in a sideeye.toml); sideeye preflight --twice names the paths two clean runs leave differently, before an exploration.",
+            .kill_not_landed => "The world was armed to die in front of the operation the recording numbered, and no kill landed there, so the crash points cannot be trusted to name the same operations in every world. The restore rebuilds the names, kinds and bytes under --state — not their modes, owners or timestamps, and nothing outside it (a cache kept beside the configuration, a lock) — so a tool that reads those can take another path; sideeye preflight --twice compares what two clean runs leave. If neither explains it, file it with the report attached.",
+            .not_repeating => "The world reached the operation number it was given through other operations than the recording's, so the operation did not repeat itself from the state the restore rebuilt — the names, kinds and bytes under --state, not their modes, owners or timestamps, and nothing outside --state (a cache, a lock, the clock). sideeye preflight --twice compares what two clean runs leave, not the operations they perform.",
+            .threads_limit => "Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit the README states under 'What the target has to be': threads are judged where a creation or a join the shim saw orders their writes.",
+            .non_system_build => "The operation's image names a platform in its code directory, the marker Apple's own binaries carry, and macOS strips an inserted library from those; an ad-hoc re-signed copy did not start when that was measured. Make a build of the tool that is not part of macOS (Homebrew's, for example) the operation's first word.",
         };
     }
 };
