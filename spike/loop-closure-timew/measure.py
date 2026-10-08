@@ -793,11 +793,20 @@ def selftest():
     # The subject writes three lines, tries to truncate its stdout, then appends a fourth line to
     # the record BY NAME. Under `run` the file has four lines and the printed digest is the
     # digest of three — which a recorder that hashes the file afterwards cannot produce.
+    # When its stdout is a pipe (the recorded shape), the subject waits for the record to hold
+    # the three lines before appending: otherwise the recorder's write of them can land on the
+    # append and erase it, and the case fails by the race, not by the recorder (measured
+    # 2026-10-08: 10 of 60 runs idle, 46 of 60 under CPU load). Under `> file` there is
+    # nothing to wait for — the stream is the file, and ftruncate empties it.
     stub = os.path.join(work, "stub-truncate.py")
-    _write(stub, "import os, sys\n"
+    _write(stub, "import os, stat, sys, time\n"
                  "sys.stdout.write('one\\ntwo\\nthree\\n'); sys.stdout.flush()\n"
                  "try:\n    os.ftruncate(1, 0); print('truncated', file=sys.stderr)\n"
                  "except OSError as e:\n    print('ftruncate refused: %s' % e, file=sys.stderr)\n"
+                 "if stat.S_ISFIFO(os.fstat(1).st_mode):\n"
+                 "    end = time.monotonic() + 10\n"
+                 "    while os.path.getsize(sys.argv[1]) < 14 and time.monotonic() < end:\n"
+                 "        time.sleep(0.01)\n"
                  "open(sys.argv[1], 'a').write('four-by-name\\n')\n")
     out = os.path.join(work, "rec.jsonl")
     r = run_recorded([py, stub, out], out, os.path.join(work, "rec.err"), work, [], "docker-absent")
