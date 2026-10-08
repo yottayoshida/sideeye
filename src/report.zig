@@ -245,6 +245,23 @@ pub var checker_note: []const u8 = checkerNoteFor(.unparsed);
 /// same three-state rule for what it says before the recording run (#352).
 pub var l1_note: []const u8 = l1NoteFor(.unparsed);
 
+/// The figures the `oracle` and `checker` sentences state, kept as data for the JSON report's
+/// optional fields (#711, ADR 0096). Each is set on the line that writes the number into its
+/// sentence, from the same value, and stays `null` — the field absent — until then: a run that
+/// never reached the comparison, or never declared a checker, says nothing rather than zero.
+pub var oracle_operations_agreed: ?usize = null;
+/// Whether a checker was named, once that is known: set where `checker_note` becomes
+/// "configured" or "none configured" — the line that reads `--check`, or `settleDeclared` once
+/// every source has been read.
+pub var checker_declared: ?bool = null;
+/// How many worlds the checker ran in, set where the `checker` sentence says so.
+pub var checker_worlds: ?usize = null;
+/// Whether the recording run's process account is a measurement (#711): set once every check on
+/// the recording's trace has held, at the line `l0_judged_paths_touched` is set on, for that
+/// field's reason. A refusal on a trace cut short, renumbered or never announced carries counts
+/// read from part of it, so the `processes_*` fields are absent there rather than partial.
+pub var processes_measured: bool = false;
+
 /// What the parser and the define sources have established about a declared checker or
 /// marker (#352). Like `OracleAsked` but with no kind: the account names no source.
 const Declared = enum {
@@ -285,6 +302,7 @@ pub fn l1NoteFor(d: Declared) []const u8 {
 /// `--config`. Not later: the required-flag refusals and the marker vet sit after all three,
 /// and a run refused there with nothing declared must say "none", not "not established".
 pub fn settleDeclared(has_check: bool, has_marker: bool) void {
+    checker_declared = has_check;
     checker_note = checkerNoteFor(if (has_check) .named else .none);
     l1_note = l1NoteFor(if (has_marker) .named else .none);
 }
@@ -2090,6 +2108,29 @@ fn buildJson(
     // say what it did not look at is the kind of reassurance this tool refuses to give.
     try w.appendSlice(arena, ",\n  \"not_tested\": ");
     try w.appendSlice(arena, notTestedJson());
+    // #711, ADR 0096: what the `oracle`, `checker` and `processes` sentences state, as numbers and
+    // booleans beside them. Each is present only where it was measured — none is ever written as a
+    // zero or a false standing for "not known" — and none is a closed set. Before the judged set,
+    // which stays last (ADR 0079).
+    switch (oracle_asked) {
+        .named => |kind| {
+            try w.appendSlice(arena, ",\n  \"oracle_witness\": ");
+            try jsonString(w, arena, kind.name());
+        },
+        .unparsed, .none => {},
+    }
+    if (oracle_operations_agreed) |n| try w.print(arena, ",\n  \"oracle_operations_agreed\": {d}", .{n});
+    if (checker_declared) |d| try w.print(arena, ",\n  \"checker_declared\": {s}", .{if (d) "true" else "false"});
+    if (checker_worlds) |n| try w.print(arena, ",\n  \"checker_worlds\": {d}", .{n});
+    // The recording run's counts, which is all `boundary_ev` holds for them: the `processes`
+    // sentence also says what an explored world showed, and these fields do not.
+    if (processes_measured) {
+        const ev = boundary.boundary_ev;
+        try w.print(arena, ",\n  \"processes_children_admitted\": {s}", .{if (ev.children_judged) "true" else "false"});
+        try w.print(arena, ",\n  \"processes_image_changes\": {d}", .{ev.exec_continuations});
+        try w.print(arena, ",\n  \"processes_threads_created\": {d}", .{ev.threads});
+        try w.print(arena, ",\n  \"processes_writer_threads\": {d}", .{ev.writer_threads});
+    }
     // #638, ADR 0079. LAST in the document, and the position is the decision: this is the only
     // field whose length grows with the target's state tree, so anywhere else it pushes back
     // the fields a reader of a FAIL needs first — `message`, `next_step`, `earliest`. Written

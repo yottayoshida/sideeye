@@ -2313,6 +2313,8 @@ fn phaseOracle(run: *Run) void {
             "agreed on {d} operations ({d} syscall lines examined, {d} in scope of the judged state)",
             .{ parsed.classes.items.len, parsed.lines_seen, parsed.lines_in_scope },
         ) catch "agreed";
+        // The same number as data (#711, ADR 0096), from the value the sentence prints.
+        report.oracle_operations_agreed = parsed.classes.items.len;
         report.oracle_note = if (args.oracle_fs_usage)
             std.fmt.allocPrint(
                 arena,
@@ -2476,6 +2478,8 @@ fn phaseOracle(run: *Run) void {
     // the PASS gate reads are one measurement.
     run.rec.judgeable = refuse.measureJudgeable(gpa, arena, initial, final, run.rec.l0_plan, trace.ops.items, state_abs, if (alt_differs) state_alt else "");
     report.l0_judged_paths_touched = run.rec.judgeable.touched;
+    // The same point, for the same reason, for the process account's figures (#711, ADR 0096).
+    report.processes_measured = true;
 
     run.n = n;
 }
@@ -3259,6 +3263,7 @@ fn phaseExploration(run: *Run) void {
             "{s}; ran in {d} world(s)",
             .{ report.checker_note, checks_run },
         ) catch report.checker_note;
+        report.checker_worlds = checks_run;
     }
 
     run.firsts.first_failure = first_failure;

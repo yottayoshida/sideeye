@@ -2607,6 +2607,98 @@ else
     bad706 "a control byte in a quoted flag (raw bytes in the warning: $raw706)"
 fi
 
+# #711, ADR 0096: the figures the `oracle`, `checker` and `processes` sentences state, as optional
+# JSON fields. Each has to equal the number its sentence prints — read back out of the sentence
+# here, so a field counted from anywhere else goes red — and each has to be absent where nothing
+# was measured: no oracle, no checker, a shim that never announced itself, arguments not read to
+# the end. A field written as 0 or false for "not known" fails the absent half.
+echo ""
+echo "=========== #711: the account sentences carry their figures as data ==========="
+rm -rf /tmp/acc-711j && mkdir -p /tmp/acc-711j
+check711() {   # check711 <report.json> <fail|threads|plain|noshim|parse> — prints what is wrong
+    python3 -I -c '
+import json, re, sys
+d = json.load(open(sys.argv[1])); mode = sys.argv[2]
+proc = ("processes_children_admitted", "processes_image_changes", "processes_threads_created", "processes_writer_threads")
+bad = []
+def num(pat, s):
+    m = re.search(pat, s)
+    return int(m.group(1)) if m else None
+if mode == "fail":
+    if d.get("oracle_witness") != "strace": bad.append("oracle_witness")
+    if "oracle_operations_agreed" not in d or d["oracle_operations_agreed"] != num(r"agreed on (\d+) operations", d["oracle"]): bad.append("oracle_operations_agreed")
+    if d.get("checker_declared") is not True: bad.append("checker_declared")
+    if "checker_worlds" not in d or d["checker_worlds"] != num(r"ran in (\d+) world", d["checker"]): bad.append("checker_worlds")
+    bad += [f for f in proc if f not in d]
+elif mode == "threads":
+    if d.get("processes_threads_created") != num(r"(\d+) thread\(s\) created", d["processes"]): bad.append("processes_threads_created")
+    if d.get("processes_writer_threads") != num(r"and (\d+) thread id\(s\)", d["processes"]): bad.append("processes_writer_threads")
+elif mode == "plain":
+    bad += [f + " present" for f in ("oracle_witness", "oracle_operations_agreed", "checker_worlds") if f in d]
+    if d.get("checker_declared") is not False: bad.append("checker_declared")
+    bad += [f for f in proc if f not in d]
+elif mode == "kids":
+    if d.get("processes_children_admitted") is not True or "hold crash-point addresses" not in d["processes"]: bad.append("processes_children_admitted")
+elif mode == "exec":
+    if d.get("processes_image_changes") != num(r"image replaced (\d+) time", d["processes"]) or not d.get("processes_image_changes"): bad.append("processes_image_changes")
+elif mode == "noshim":
+    bad += [f + " present" for f in proc if f in d]
+elif mode == "gap":
+    if d.get("unknown_reason") != "sequence_numbering_broken": bad.append("unknown_reason " + str(d.get("unknown_reason")))
+    bad += [f + " present" for f in proc if f in d]
+elif mode == "parse":
+    bad += [f + " present" for f in ("oracle_witness", "oracle_operations_agreed", "checker_declared", "checker_worlds") + proc if f in d]
+print(" ".join(bad))
+sys.exit(1 if bad else 0)
+' "$1" "$2"
+}
+ok711() {   # ok711 <label> <exit> <wanted exit> <report.json> <mode>
+    w711=$(check711 "$4" "$5"); c711=$?
+    if [ "$2" = "$3" ] && [ "$c711" = 0 ]; then
+        echo "ok   #711: $1"
+    else
+        [ "$c711" = 0 ] && w711="the fields hold; the exit code does not"
+        echo "FAIL #711: $1 (exit $2, wanted $3): ${w711:-the report could not be read}"
+        fails=$((fails + 1))
+    fi
+}
+mkdir -p /tmp/acc-711j/f /tmp/acc-711j/t /tmp/acc-711j/p /tmp/acc-711j/n
+TOY="$OUT/toy-bug" "$SIDEEYE" explore --state /tmp/acc-711j/f/state --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --check "$ROOT/spike/check.sh" --shim "$SHIM" \
+    --work /tmp/acc-711j/f/work --oracle /usr/bin/strace --json /tmp/acc-711j/f.json >/dev/null 2>&1
+ok711 "a FAIL with an oracle and a checker carries the agreement and the worlds its sentences print" $? 1 /tmp/acc-711j/f.json fail
+TOY_THREAD_MANY=1 "$SIDEEYE" explore --state /tmp/acc-711j/t/state --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-711j/t/work --oracle /usr/bin/strace \
+    --json /tmp/acc-711j/t.json >/dev/null 2>&1
+ok711 "a run that created threads carries the counts its processes sentence prints" $? 1 /tmp/acc-711j/t.json threads
+"$SIDEEYE" explore --state /tmp/acc-711j/p/state --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc-711j/p/work --allow-unverified --json /tmp/acc-711j/p.json >/dev/null 2>&1
+ok711 "with no oracle and no checker, the oracle figures and the worlds are absent and the checker says false" $? 0 /tmp/acc-711j/p.json plain
+"$SIDEEYE" explore --state /tmp/acc-711j/n/state --setup "$OUT/toy-static init" --operation "$OUT/toy-static rotate" \
+    --shim "$SHIM" --work /tmp/acc-711j/n/work --allow-unverified --json /tmp/acc-711j/n.json >/dev/null 2>&1
+ok711 "a shim that never announced itself leaves the process figures absent, not zero" $? 2 /tmp/acc-711j/n.json noshim
+# A trace the shim announced and then renumbered (the gap shim check 2 builds): refused on the
+# recording's own trace, after the shim reported, so a count read from it would be a count of part
+# of a trace no verdict rests on.
+mkdir -p /tmp/acc-711j/g
+"$SIDEEYE" explore --state /tmp/acc-711j/g/state --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$ROOT/zig-out/lib/libsideeye_shim_testgap.so" --work /tmp/acc-711j/g/work --oracle /usr/bin/strace \
+    --json /tmp/acc-711j/g.json >/dev/null 2>&1
+ok711 "a recording refused on its own renumbered trace leaves the process figures absent" $? 2 /tmp/acc-711j/g.json gap
+# The two process figures the runs above leave at their defaults, each against its sentence: an
+# awaited writing child admitted (the fixture check 4 uses), and a subject that replaced its image.
+mkdir -p /tmp/acc-711j/k /tmp/acc-711j/x
+TOY_FORK_WRITES=1 TOY_STATE=/tmp/acc-711j/k/state "$SIDEEYE" explore --state /tmp/acc-711j/k/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-711j/k/work \
+    --oracle /usr/bin/strace --json /tmp/acc-711j/k.json >/dev/null 2>&1
+ok711 "a run that admitted a writing child says so as data, beside the sentence that says it" $? 1 /tmp/acc-711j/k.json kids
+TOY_SELFEXEC=1 "$SIDEEYE" explore --state /tmp/acc-711j/x/state --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-711j/x/work --oracle /usr/bin/strace \
+    --json /tmp/acc-711j/x.json >/dev/null 2>&1
+ok711 "a subject that replaced its image carries the count its processes sentence prints" $? 1 /tmp/acc-711j/x.json exec
+"$SIDEEYE" explore --json /tmp/acc-711j/a.json --no-such-flag --oracle /usr/bin/strace --check /bin/true >/dev/null 2>&1
+ok711 "arguments not read to the end leave all eight absent" $? 3 /tmp/acc-711j/a.json parse
+
 # #711: the three verdict blocks print the account lines they share under one key, in one
 # twelve-column style and one order, and each verdict prints a fixed set of them. They were
 # three format strings — a FAIL's columns, a PASS's indented `key: value` in another order, an
