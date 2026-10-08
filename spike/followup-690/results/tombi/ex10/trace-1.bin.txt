@@ -1,0 +1,14 @@
+0 800 800 shim_ready /s/tombi/proj
+0 800 800 cgroup /s/tombi/proj
+0 800 800 thread 
+0 800 800 thread 
+0 800 800 thread 
+0 800 800 thread 
+0 800 800 thread 
+0 800 800 thread 
+0 800 800 thread 
+0 800 800 thread 
+0 800 800 thread 
+0 800 800 thread 
+0 800 800 thread 
+1 800 801 kill_landed /s/tombi/proj/a.toml

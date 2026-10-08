@@ -1,0 +1,14 @@
+0 1245 1245 shim_ready /localrun/st/wrappers/isort
+0 1245 1245 cgroup /localrun/st/wrappers/isort
+1 1245 1245 open /localrun/st/wrappers/isort/a.py.isorted
+2 1245 1245 write /localrun/st/wrappers/isort/a.py.isorted
+0 1245 1245 close /localrun/st/wrappers/isort/a.py
+0 1245 1245 close /localrun/st/wrappers/isort/a.py.isorted
+3 1245 1245 rename /localrun/st/wrappers/isort/a.py.isorted
+4 1245 1245 unlink /localrun/st/wrappers/isort/a.py.isorted
+5 1245 1245 open /localrun/st/wrappers/isort/b.py.isorted
+6 1245 1245 write /localrun/st/wrappers/isort/b.py.isorted
+0 1245 1245 close /localrun/st/wrappers/isort/b.py
+0 1245 1245 close /localrun/st/wrappers/isort/b.py.isorted
+7 1245 1245 rename /localrun/st/wrappers/isort/b.py.isorted
+8 1245 1245 unlink /localrun/st/wrappers/isort/b.py.isorted

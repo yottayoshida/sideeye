@@ -1,0 +1,17 @@
+0 532 532 shim_ready /s/tombi/proj
+0 532 532 cgroup /s/tombi/proj
+0 532 532 thread 
+0 532 532 thread 
+0 532 532 thread 
+0 532 532 thread 
+0 532 532 thread 
+0 532 532 thread 
+0 532 532 thread 
+0 532 532 thread 
+0 532 532 thread 
+0 532 532 thread 
+0 532 532 thread 
+1 532 543 open /s/tombi/proj/a.toml
+2 532 543 truncate /s/tombi/proj/a.toml
+3 532 543 write /s/tombi/proj/a.toml
+0 532 543 close /s/tombi/proj/a.toml

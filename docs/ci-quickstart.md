@@ -152,7 +152,7 @@ not a FAIL — no counterexample was found, and none was looked for — it is th
 negative answer to the identity question the flag asked, with the differing
 paths named. A script that *branches* on `preflight --twice` (it is still not a
 gate, by the paragraph above) reads 0 as "go ahead and write the define", 1 as
-"pin what differs first", and 2 as the detector refusals it already handled.
+"pin what differs first", and 2 as the detector refusals it already handled. A split's output quotes, under each path it names whose content differs (up to eight), the stretch where the two runs' bytes differ — up to 48 bytes of the state from each run (#688) — so a CI log that keeps `preflight --twice`'s output keeps those bytes; on a runner whose logs are public, run it on state that holds nothing secret.
 
 The caution runs the other way: a wrapper that shares one `rc == 1 → a
 counterexample was found` branch across sideeye commands will mislabel a split.

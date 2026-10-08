@@ -749,6 +749,108 @@ fn returnedPid(line: []const u8) ?u64 {
     return if (v == 0) null else v;
 }
 
+/// A number as strace prints an argument: `NULL`, `0x…` or decimal (#689).
+fn traceNumber(text: ?[]const u8) ?u64 {
+    const t = std.mem.trim(u8, text orelse return null, " \t");
+    if (std.mem.eql(u8, t, "NULL")) return 0;
+    if (std.mem.startsWith(u8, t, "0x")) return std.fmt.parseInt(u64, t[2..], 16) catch null;
+    return std.fmt.parseInt(u64, t, 10) catch null;
+}
+
+/// The address a mapping call returned — the `0x…` after the last ` = ` — or null for a
+/// failure (`= -1 ENOMEM …`) and for a line with no return yet (#689).
+fn returnedAddress(line: []const u8) ?u64 {
+    const at = std.mem.lastIndexOf(u8, line, " = ") orelse return null;
+    const tail = std.mem.trim(u8, line[at + 3 ..], " \t");
+    const end = std.mem.indexOfAny(u8, tail, " \t") orelse tail.len;
+    if (!std.mem.startsWith(u8, tail[0..end], "0x")) return null;
+    return traceNumber(tail[0..end]);
+}
+
+/// The call named in a `<... NAME resumed>` half, or null for any other line.
+fn resumedCall(raw: []const u8) ?[]const u8 {
+    const line = stripPidPrefix(raw);
+    if (!std.mem.startsWith(u8, line, "<... ")) return null;
+    const rest = line["<... ".len..];
+    const end = std.mem.indexOf(u8, rest, " resumed>") orelse return null;
+    return rest[0..end];
+}
+
+/// A range of the subject's address space mapped `MAP_SHARED` from a file in the judged
+/// state without `PROT_WRITE` (#689, ADR 0098): a store through it changes the file with
+/// no call for either observer to count, so an `mprotect` that adds `PROT_WRITE` to it is
+/// refused the way a writable mapping is. `end` is rounded up to the page.
+const SharedMap = struct { start: u64, end: u64 };
+
+/// A split `mmap`/`mremap` whose address is still to come on its resumed half.
+const PendingMap = struct { pid: u32, len: u64 };
+
+fn pageUp(len: u64) u64 {
+    const page: u64 = std.heap.pageSize();
+    return (len + page - 1) / page * page;
+}
+
+fn overlapsShared(maps: []const SharedMap, start: u64, len: u64) bool {
+    const end = start +| pageUp(len);
+    for (maps) |m| if (start < m.end and m.start < end) return true;
+    return false;
+}
+
+fn takePendingMap(list: *std.ArrayList(PendingMap), pid: ?u32) ?u64 {
+    const p = pid orelse 0;
+    for (list.items, 0..) |e, i| if (e.pid == p) return list.swapRemove(i).len;
+    return null;
+}
+
+/// The state file a mapping call maps (argument 4's annotation), when it is one this run
+/// opened for writing — the only kind the kernel lets `PROT_WRITE` be added to later on a
+/// shared mapping (`EACCES` otherwise). A read-only file mapped and unmapped (memmap2's
+/// shape) is not remembered, so an address the allocator or a JIT reuses afterwards does not
+/// refuse the run (review).
+///
+/// The two sides are matched by name, and a name strace prints is the one the file had at
+/// that call: opened as `db.tmp` and renamed to `db` before it is mapped, or linked and the
+/// first name removed, it no longer matches (second review). So `narrowing` is given up the
+/// moment the run renames or links anything, and every state file mapped shared is
+/// remembered from then on — refusing more, never less.
+fn mapsWritableStateFile(line: []const u8, state: []const u8, alt: []const u8, rw_paths: []const []const u8, narrowing: bool) bool {
+    const p = argAnnotation(syscallArg(line, 4) orelse return false) orelse return false;
+    if (!insideEither(p, state, alt)) return false;
+    if (!narrowing) return true;
+    for (rw_paths) |w| if (std.mem.eql(u8, w, p)) return true;
+    return false;
+}
+
+/// The calls that give a file a name it was not opened under (second review of #689).
+fn renamesOrLinks(name: []const u8) bool {
+    for ([_][]const u8{ "rename", "renameat", "renameat2", "link", "linkat" }) |n| {
+        if (std.mem.eql(u8, name, n)) return true;
+    }
+    return false;
+}
+
+fn isOpenCall(name: []const u8) bool {
+    return std.mem.eql(u8, name, "open") or std.mem.eql(u8, name, "openat") or
+        std.mem.eql(u8, name, "openat2") or std.mem.eql(u8, name, "creat");
+}
+
+/// The path strace annotates the returned descriptor with (`= 3</tmp/s/db>`), or null.
+fn returnedPath(line: []const u8) ?[]const u8 {
+    const at = std.mem.lastIndexOf(u8, line, " = ") orelse return null;
+    return argAnnotation(std.mem.trim(u8, line[at + 3 ..], " \t"));
+}
+
+/// Whether the line shows the call failed. A line with no result yet — an unfinished half —
+/// did not visibly fail, and is counted, as the cgroup reader counts it.
+fn visiblyFailed(line: []const u8) bool {
+    // An unfinished half has no result at all; a ` = -` on it is inside an argument — a file
+    // name the target chose (second review).
+    if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) return false;
+    const at = std.mem.lastIndexOf(u8, line, " = ") orelse return false;
+    const rhs = std.mem.trim(u8, line[at + 3 ..], " \t");
+    return rhs.len > 0 and rhs[0] == '-';
+}
+
 /// Whether this is the `<... clone resumed>` half of a split clone line. The flags live
 /// on the other half, so which kind of clone it was has to have been remembered.
 fn isResumedClone(raw: []const u8) bool {
@@ -1286,6 +1388,19 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
     // what joins them. A thread created by a thread is the same case — the caller is a
     // subject id either way, which is what `isSubject` is asked before the entry is made.
     var pending_thread_clone: std.ArrayList(u32) = .empty;
+    // The state files mapped shared and read-only, and the split mappings whose address is
+    // still to come (#689). Not keyed by process: a forked child shares the parent's
+    // mappings, and a range left after an `munmap` (not traced) can only add a refusal.
+    var shared_maps: std.ArrayList(SharedMap) = .empty;
+    var pending_maps: std.ArrayList(PendingMap) = .empty;
+    // The state files this run opened for writing, by the path strace annotates the returned
+    // descriptor with; and the callers of a write-capable open whose result is on its
+    // resumed half (#689 review).
+    var rw_paths: std.ArrayList([]const u8) = .empty;
+    var pending_rw_open: std.ArrayList(u32) = .empty;
+    // False from the first rename or link that did not visibly fail: names no longer tie an
+    // open to a mapping (`mapsWritableStateFile`).
+    var rw_narrowing = true;
 
     // Writes appended but not yet known to have run, and the entries a refusal retracts.
     // See `PendingWrite` and `dropRetracted` for why the removal is deferred to the end.
@@ -1318,6 +1433,19 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         // process it started the target from — are not the target's.
         if (launched) {
             if (reapedPid(line)) |r| try noteEvent(arena, &out.reaps, r, out.lines_seen);
+            // The resumed half of a split shared mapping carries its address (#689).
+            if (resumedCall(line)) |rc| {
+                if (std.mem.eql(u8, rc, "mmap") or std.mem.eql(u8, rc, "mremap")) {
+                    if (takePendingMap(&pending_maps, pid)) |len| {
+                        if (returnedAddress(line)) |addr| try shared_maps.append(arena, .{ .start = addr, .end = addr +| pageUp(len) });
+                    }
+                } else if (isOpenCall(rc) and takeThreadClone(&pending_rw_open, pid)) {
+                    // The same pid-keyed pairing a split clone uses.
+                    if (returnedPath(line)) |p| {
+                        if (insideEither(p, state_dir, state_alt)) try rw_paths.append(arena, try arena.dupe(u8, p));
+                    }
+                }
+            }
             // The resumed half of a split clone carries the number and not the flags.
             // Whether it was a thread was decided on the unfinished half and remembered
             // by caller; a remembered one is the subject's new thread and not a spawn.
@@ -1394,6 +1522,55 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         // A move between cgroups (v17, #559), from any process, and here rather than below
         // because the process-syscall branch `continue`s a clone3 away.
         if (out.cgroup_move == null) out.cgroup_move = try cgroupMove(arena, name, line);
+
+        // A store through a shared mapping of a state file has no call behind it (#689, ADR
+        // 0098). A writable one is refused below; a read-only one is remembered here, from
+        // any process, so that an `mprotect` adding `PROT_WRITE` to it later is refused too.
+        // Here, ahead of the scope rules, because `mprotect` and `mremap` name no path and
+        // would be dropped as outside the state.
+        if (renamesOrLinks(name) and !visiblyFailed(line)) rw_narrowing = false;
+        if (isOpenCall(name) and !isReadOnlyOpen(name, line)) {
+            if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) {
+                try pending_rw_open.append(arena, pid orelse 0);
+            } else if (returnedPath(line)) |p| {
+                if (insideEither(p, state_dir, state_alt)) try rw_paths.append(arena, try arena.dupe(u8, p));
+            }
+        }
+        if (std.mem.eql(u8, name, "mmap") and argContains(line, 3, "MAP_SHARED") and
+            !argContains(line, 2, "PROT_WRITE") and mapsWritableStateFile(line, state_dir, state_alt, rw_paths.items, rw_narrowing))
+        {
+            if (traceNumber(syscallArg(line, 1))) |len| {
+                if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) {
+                    try pending_maps.append(arena, .{ .pid = pid orelse 0, .len = len });
+                } else if (returnedAddress(line)) |addr| {
+                    try shared_maps.append(arena, .{ .start = addr, .end = addr +| pageUp(len) });
+                }
+            }
+        }
+        if (std.mem.eql(u8, name, "mremap")) {
+            // A remembered range moved or grown: its new place is remembered too.
+            // `old_len` 0 duplicates the pages at `old` (review): the old range is asked about
+            // as at least one page, so an `old` inside a remembered range always counts.
+            if (traceNumber(syscallArg(line, 0))) |old| if (traceNumber(syscallArg(line, 1))) |old_len| if (traceNumber(syscallArg(line, 2))) |new_len| {
+                if (overlapsShared(shared_maps.items, old, @max(old_len, 1))) {
+                    if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) {
+                        try pending_maps.append(arena, .{ .pid = pid orelse 0, .len = new_len });
+                    } else if (returnedAddress(line)) |addr| {
+                        try shared_maps.append(arena, .{ .start = addr, .end = addr +| pageUp(new_len) });
+                    }
+                }
+            };
+            continue;
+        }
+        if (std.mem.eql(u8, name, "mprotect") or std.mem.eql(u8, name, "pkey_mprotect")) {
+            if (argContains(line, 2, "PROT_WRITE") and !visiblyFailed(line)) {
+                if (traceNumber(syscallArg(line, 0))) |addr| if (traceNumber(syscallArg(line, 1))) |len| {
+                    if (overlapsShared(shared_maps.items, addr, len) and out.unsupported == null)
+                        out.unsupported = try arena.dupe(u8, contract.shared_map_refusal.made_writable);
+                };
+            }
+            continue;
+        }
 
         if (isProcessSyscall(name)) {
             // A second execve by the *subject* is no longer a refusal here (#123,
@@ -1531,9 +1708,11 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         // for either observer to see. From the subject that is an unmodelled mutation;
         // from a child it is the touch condition. Read from mmap's prot and flags
         // arguments, not from the line — a filename could spell either token.
+        // A mapping that visibly failed (EACCES on a descriptor opened read-only) carries no
+        // store and is not one (#689 review).
         const is_shared_write_map = std.mem.eql(u8, name, "mmap") and
             argContains(line, 2, "PROT_WRITE") and
-            argContains(line, 3, "MAP_SHARED");
+            argContains(line, 3, "MAP_SHARED") and !visiblyFailed(line);
 
         if (!is_primary) {
             // The tolerance condition itself. Reads are allowed — they consume no
@@ -1542,6 +1721,11 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // child touching what only the subject may. `changesPersistentState` is the
             // single predicate for "not a read, not a close, not a write-incapable open"
             // (ADR 0003), so an in-scope and an unresolvable operation are judged alike.
+            // A child's writable shared mapping is refused as the subject's is (#689 review):
+            // as a touch alone, a child whose other writes the shim recorded is admitted by
+            // the v15 rule, and the stores through the mapping ride a PASS.
+            if (is_shared_write_map and out.unsupported == null)
+                out.unsupported = try arena.dupe(u8, contract.shared_map_refusal.writable);
             if (is_shared_write_map or changesPersistentState(name, line)) {
                 try noteEvent(arena, &out.mutations, pid.?, out.lines_seen);
                 if (isTrapped(name, line))
@@ -1561,7 +1745,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
 
         if (is_shared_write_map) {
             if (out.unsupported == null)
-                out.unsupported = try arena.dupe(u8, "mmap(PROT_WRITE|MAP_SHARED)");
+                out.unsupported = try arena.dupe(u8, contract.shared_map_refusal.writable);
             continue;
         }
         if (isReadOnly(name)) continue;
@@ -3003,6 +3187,174 @@ test "a shared writable mapping of a state file is a mutation nobody models" {
     ;
     const r = try parse(arena_state.allocator(), private, "/tmp/s", "", "/work");
     try std.testing.expect(!r.childTouched());
+}
+
+test "a shared mapping of a state file made writable later is refused, and nothing else is (#689, ADR 0098)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const want = "mprotect(PROT_WRITE) on a shared mapping of a state file";
+    const Case = struct { what: []const u8, text: []const u8, refused: ?[]const u8 };
+    const cases = [_]Case{
+        // Refused: the store path the writable-mapping rule cannot see.
+        .{ .what = "read-only shared map, then PROT_WRITE", .refused = want, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDWR) = 3</tmp/s/db>
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0) = 0x7f0000000000
+        \\42    mprotect(0x7f0000000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "a child's writable shared map (the v15 touch alone admitted it)", .refused = "mmap(PROT_WRITE|MAP_SHARED)", .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\4242  mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, 3</tmp/s/db>, 0) = 0x7f
+        \\
+        },
+        .{ .what = "an mprotect overlapping the range only in part", .refused = want, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDWR) = 3</tmp/s/db>
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0) = 0x7f0000010000
+        \\42    mprotect(0x7f0000000000, 0x11000, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "a forked child's mprotect on the parent's mapping", .refused = want, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDWR) = 3</tmp/s/db>
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0) = 0x7f0000000000
+        \\4242  mprotect(0x7f0000000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "a split mmap whose address is on the resumed half", .refused = want, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDWR) = 3</tmp/s/db>
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0 <unfinished ...>
+        \\43    getpid() = 43
+        \\42    <... mmap resumed>) = 0x7f0000000000
+        \\42    mprotect(0x7f0000000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "a range mremap moved", .refused = want, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDWR) = 3</tmp/s/db>
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0) = 0x7f0000000000
+        \\42    mremap(0x7f0000000000, 8192, 65536, MREMAP_MAYMOVE) = 0x7f1000000000
+        \\42    mprotect(0x7f1000000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "a duplicate mremap makes of the pages, with old_len 0", .refused = want, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDWR) = 3</tmp/s/db>
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0) = 0x7f0000000000
+        \\42    mremap(0x7f0000000000, 0, 8192, MREMAP_MAYMOVE) = 0x7f3000000000
+        \\42    mprotect(0x7f3000000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "a write-capable open split across its resumed half", .refused = want, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDWR <unfinished ...>
+        \\43    getpid() = 43
+        \\42    <... openat resumed>) = 3</tmp/s/db>
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0) = 0x7f0000000000
+        \\42    mprotect(0x7f0000000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "opened for writing as one name, renamed, then mapped (second review)", .refused = want, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/db.tmp", O_RDWR|O_CREAT, 0644) = 3</tmp/s/db.tmp>
+        \\42    rename("/tmp/s/db.tmp", "/tmp/s/db") = 0
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0) = 0x7f0000000000
+        \\42    mprotect(0x7f0000000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "opened for writing outside the state, renamed in, then mapped", .refused = want, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/work/staging", O_RDWR|O_CREAT, 0644) = 3</work/staging>
+        \\42    renameat2(AT_FDCWD, "/work/staging", AT_FDCWD, "/tmp/s/db", RENAME_NOREPLACE) = 0
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0) = 0x7f0000000000
+        \\42    mprotect(0x7f0000000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "linked, the first name removed, then mapped through the old descriptor", .refused = want, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/a", O_RDWR) = 3</tmp/s/a>
+        \\42    link("/tmp/s/a", "/tmp/s/b") = 0
+        \\42    unlink("/tmp/s/a") = 0
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/a (deleted)>, 0) = 0x7f0000000000
+        \\42    mprotect(0x7f0000000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "a split writable shared map whose file name holds ' = -'", .refused = "mmap(PROT_WRITE|MAP_SHARED)", .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, 3</tmp/s/x = -1>, 0 <unfinished ...>
+        \\43    getpid() = 43
+        \\42    <... mmap resumed>) = 0x7f0000000000
+        \\
+        },
+        // Not refused: what the rule must leave alone.
+        .{ .what = "a read-only open mapped, unmapped, and the address made writable by something else (memmap2)", .refused = null, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDONLY|O_CLOEXEC) = 3</tmp/s/db>
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0) = 0x7f0000000000
+        \\42    mprotect(0x7f0000000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "an mprotect that failed", .refused = null, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDWR) = 3</tmp/s/db>
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0) = 0x7f0000000000
+        \\42    mprotect(0x7f0000000000, 4096, PROT_READ|PROT_WRITE) = -1 EACCES (Permission denied)
+        \\
+        },
+        .{ .what = "a writable shared mapping that failed", .refused = null, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, 3</tmp/s/db>, 0) = -1 EACCES (Permission denied)
+        \\
+        },
+        .{ .what = "an anonymous mapping made writable (a JIT)", .refused = null, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f0000000000
+        \\42    mprotect(0x7f0000000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "a shared mapping of a file outside the state", .refused = null, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</usr/lib/gconv/gconv-modules.cache>, 0) = 0x7f0000000000
+        \\42    mprotect(0x7f0000000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "a private mapping of a state file made writable", .refused = null, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_PRIVATE, 3</tmp/s/db>, 0) = 0x7f0000000000
+        \\42    mprotect(0x7f0000000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "a failed mapping remembers nothing", .refused = null, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDWR) = 3</tmp/s/db>
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0) = -1 ENOMEM (Cannot allocate memory)
+        \\42    mprotect(0x7f0000000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "a read-only shared map kept read-only (bbolt's shape, writes through pwrite)", .refused = null, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDWR) = 3</tmp/s/db>
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0) = 0x7f0000000000
+        \\42    mprotect(0x7f0000000000, 4096, PROT_READ) = 0
+        \\42    mprotect(0x7f2000000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+    };
+    for (cases) |c| {
+        const p = try parse(a, c.text, "/tmp/s", "", "/work");
+        if (c.refused) |r| {
+            std.testing.expectEqualStrings(r, p.unsupported orelse "(none)") catch |e| {
+                std.debug.print("case: {s}\n", .{c.what});
+                return e;
+            };
+        } else if (p.unsupported) |u| {
+            std.debug.print("case: {s} refused as {s}\n", .{ c.what, u });
+            return error.TestUnexpectedResult;
+        }
+    }
 }
 
 test "a child's read-only open is a read, and its writing open is the touch" {
