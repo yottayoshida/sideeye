@@ -1943,17 +1943,21 @@ rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
-line=$(echo "$o" | grep '^reproduce' | sed 's/^reproduce  *//; s/ <operation>$//')
-if [ -z "$line" ]; then
-    echo "FAIL the report printed no reproduce line"
+# Since #711 the line is a whole command — `cd`, the world's variables and the operation's own
+# argv, each word quoted where a shell would read it otherwise — and it is run here as printed,
+# through a shell, with nothing added: not the operation (it used to end in `<operation>`, which
+# this leg stripped and replaced), and not TOY_STATE (the line does not carry it; the toy reads
+# SIDEEYE_STATE_DIR). `env -u` because a TOY_STATE left in this suite's environment would be
+# read instead of the line's own variable.
+line=$(echo "$o" | grep '^reproduce' | sed 's/^reproduce  *//')
+if [ -z "$line" ] || ! printf '%s\n' "$line" | grep -qF " $OUT/toy-bug rotate"; then
+    echo "FAIL the report printed no reproduce line ending in the operation's argv"
+    echo "     | $line"
     fails=$((fails + 1))
 else
     rm -rf /tmp/acc/state && mkdir -p /tmp/acc/state
     TOY_STATE=/tmp/acc/state "$OUT/toy-bug" init >/dev/null 2>&1
-    # Unquoted on purpose: the line is a sequence of VAR=VALUE words and `env` has to
-    # receive them as separate arguments, exactly as a person pasting it would.
-    # shellcheck disable=SC2086
-    env TOY_STATE=/tmp/acc/state $line "$OUT/toy-bug" rotate >/dev/null 2>&1
+    env -u TOY_STATE sh -c "$line" >/dev/null 2>&1
     rc=$?
     if [ "$rc" = "137" ] && [ ! -f /tmp/acc/state/key.json ] && [ -f /tmp/acc/state/key.json.tmp ]; then
         echo "ok   the printed line kills the target and leaves the reported state"
@@ -1963,6 +1967,96 @@ else
         fails=$((fails + 1))
     fi
 fi
+
+# Pasted a second time, the line still dies at k, and the shell it is pasted into survives it.
+# Second: the shim numbers from the highest number already in the trace, so a line that did not
+# empty its trace first counted on from where the first paste stopped, never reached k, and ran to
+# completion saying nothing (#711's review measured it). Survives: the line must not arm the group
+# kill, which the shim reads from SIDEEYE_KILL_GROUP's presence — #711's first version pinned it
+# empty and killed this suite's own shell. Asked of a shell one level up, which prints after the
+# line has run, because rc 137 alone is the same for a group kill and for the one process the kill
+# is meant for, and a shell running as a container's PID 1 does not die of a SIGKILL from inside.
+rm -rf /tmp/acc/state && mkdir -p /tmp/acc/state
+TOY_STATE=/tmp/acc/state "$OUT/toy-bug" init >/dev/null 2>&1
+alive=$(env -u TOY_STATE sh -c 'sh -c "$1" >/dev/null 2>&1; echo "alive $?"' _ "$line" 2>/dev/null)
+if [ "$alive" = "alive 137" ] && [ -f /tmp/acc/state/key.json.tmp ] && [ ! -f /tmp/acc/state/key.json ]; then
+    echo "ok   pasted again the line dies at the same crash point, and the shell it runs in outlives it"
+else
+    echo "FAIL a second paste of the reproduce line: printed [$alive], state: $(ls /tmp/acc/state | tr '\n' ' ')"
+    fails=$((fails + 1))
+fi
+
+# #709, #711: the FAIL's other two command lines run as printed too, with the build on PATH the
+# way Homebrew puts `sideeye` there. `evidence` names the command that renders the bundle (it
+# used to name the bundle's path alone); `replay` re-runs the case.
+ev=$(echo "$o" | sed -n 's/^evidence    //p'); rp=$(echo "$o" | sed -n 's/^replay      //p')
+PATH="$ROOT/zig-out/bin:$PATH" sh -c "$ev" > /tmp/acc/ev.md 2>&1; erc=$?
+case "$erc:$(head -1 /tmp/acc/ev.md)" in
+    0:'#'*) echo "ok   the printed evidence line renders the bundle as Markdown" ;;
+    *) echo "FAIL evidence line: exit $erc, first line [$(head -1 /tmp/acc/ev.md)]"; echo "     | $ev"; fails=$((fails + 1)) ;;
+esac
+PATH="$ROOT/zig-out/bin:$PATH" sh -c "$rp" > /tmp/acc/rp.txt 2>&1; rrc=$?
+if [ "$rrc" = 1 ] && grep -q "the case reproduced" /tmp/acc/rp.txt; then
+    echo "ok   the printed replay line replays the case to the same FAIL"
+else
+    echo "FAIL replay line: exit $rrc"; echo "     | $rp"; fails=$((fails + 1))
+fi
+
+# Under --observe syscalls the line carries SIDEEYE_OBSERVE=syscalls: without it the shim counts
+# the default mode's way, which sees none of toy-raw's calls (it reaches libc for none of them),
+# so the kill never fires. TOY_STATE is passed because toy-raw reads nothing else.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state --observe syscalls \
+    --setup "$OUT/toy-raw init" --operation "$OUT/toy-raw rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+line=$(echo "$o" | grep '^reproduce' | sed 's/^reproduce  *//')
+rm -rf /tmp/acc/state && mkdir -p /tmp/acc/state
+TOY_STATE=/tmp/acc/state "$OUT/toy-raw" init >/dev/null 2>&1
+TOY_STATE=/tmp/acc/state sh -c "$line" >/dev/null 2>&1
+lrc=$?
+lstate=$(ls /tmp/acc/state | tr '\n' ' ')
+# And the replay line names the mode: a case does not record it (ADR 0052), and replayed the
+# default way it answers case_no_longer_applies rather than the FAIL.
+rp=$(echo "$o" | sed -n 's/^replay      //p')
+PATH="$ROOT/zig-out/bin:$PATH" sh -c "$rp" > /tmp/acc/rp-sys.txt 2>&1; rrc=$?
+if [ "$rc" = 1 ] && [ "$lrc" = 137 ] && [ "$lstate" = "key.json.tmp " ] && [ "$rrc" = 1 ] \
+    && grep -q "the case reproduced" /tmp/acc/rp-sys.txt; then
+    echo "ok   under --observe syscalls the printed lines kill a target that bypasses libc, and replay it"
+else
+    echo "FAIL syscalls: explore exit $rc, reproduce exit $lrc (state after it: $lstate), replay exit $rrc"
+    printf '%s\n' "$line" "$rp" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+# One space in a directory above the state, the work directory and the commands' cwd, so a value
+# left unquoted anywhere in any of the three lines splits there. The commands are spelled in the
+# argv form, the only one that can name a path with a space, and run without an oracle: a FAIL
+# needs none.
+sp="/tmp/acc-711 sp/proj"
+rm -rf "/tmp/acc-711 sp" && mkdir -p "$sp" && cp "$OUT/toy-bug" "$sp/toy-bug"
+printf '%s\n' '[world]' 'state = "./state"' '[define]' 'cwd = "."' \
+    'setup = ["./toy-bug", "init"]' 'operation = ["./toy-bug", "rotate"]' > "$sp/sideeye.toml"
+o=$("$SIDEEYE" explore --config "$sp/sideeye.toml" --shim "$SHIM" --work "$sp/work" 2>&1)
+rc=$?
+line=$(echo "$o" | grep '^reproduce' | sed 's/^reproduce  *//')
+ev=$(echo "$o" | sed -n 's/^evidence    //p'); rp=$(echo "$o" | sed -n 's/^replay      //p')
+rm -rf "$sp/state" && mkdir -p "$sp/state"
+(cd "$sp" && TOY_STATE="$sp/state" ./toy-bug init >/dev/null 2>&1)
+env -u TOY_STATE sh -c "$line" >/dev/null 2>&1; lrc=$?
+# Read now: the replay below rebuilds the state it names.
+lstate=$(ls "$sp/state" | tr '\n' ' ')
+PATH="$ROOT/zig-out/bin:$PATH" sh -c "$ev" > /tmp/acc/ev-sp.md 2>&1; erc=$?
+PATH="$ROOT/zig-out/bin:$PATH" sh -c "$rp" > /tmp/acc/rp-sp.txt 2>&1; rrc=$?
+if [ "$rc" = 1 ] && [ "$lrc" = 137 ] && [ "$lstate" = "key.json.tmp " ] && [ "$erc" = 0 ] && [ "$rrc" = 1 ] \
+    && grep -q "the case reproduced" /tmp/acc/rp-sp.txt; then
+    echo "ok   with a space above the state, the work directory and the cwd, all three lines run as printed"
+else
+    echo "FAIL a space in the paths: explore exit $rc, reproduce $lrc (state after it: $lstate), evidence $erc, replay $rrc"
+    printf '%s\n' "$line" "$ev" "$rp" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+rm -rf "/tmp/acc-711 sp"
 
 echo ""
 echo "=========== check 2k: an empty oracle is not agreement ==========="
@@ -2612,15 +2706,16 @@ fi
 
 # And the reproduce line printed for it has to work when the target is pointed at the
 # spelling the caller used, which is the only spelling the caller knows.
-line=$(echo "$o" | grep '^reproduce' | sed 's/^reproduce  *//; s/ <operation>$//')
+# Since #711 the line is run whole through a shell; TOY_STATE comes from here, spelled the
+# caller's way, which is what makes the line's SIDEEYE_STATE_DIR_ALT the thing under test.
+line=$(echo "$o" | grep '^reproduce' | sed 's/^reproduce  *//')
 rm -rf /tmp/acc/state && mkdir -p /tmp/acc/state
 TOY_STATE=/tmp/acclink/state "$OUT/toy-bug" init >/dev/null 2>&1
 # No `set +e` / `set -e` pair here. This suite runs under `set -u` only, and a "restoring"
 # `set -e` would switch errexit *on* from that point — which it did: the next check runs
 # the buggy toy, sideeye correctly exits 1, and the whole suite ended there in silence,
 # after its last passing line. Commands whose failure is expected are simply not guarded.
-# shellcheck disable=SC2086
-env TOY_STATE=/tmp/acclink/state $line "$OUT/toy-bug" rotate >/dev/null 2>&1
+TOY_STATE=/tmp/acclink/state sh -c "$line" >/dev/null 2>&1
 rc=$?
 if [ "$rc" = "137" ] && [ ! -f /tmp/acc/state/key.json ] && [ -f /tmp/acc/state/key.json.tmp ]; then
     echo "ok   its reproduce line works through the symlink too"
