@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-10-08
+
 ### Added
 
 - **Eighteen tools whose state git does not hold, in four waves on the released v1.9.0: 11 FAIL, 5 PASS, 2 UNKNOWN, and nothing filed upstream** (`spike/dogfood/2026-10-07-user-data-3/`; `docs/target-classes.md`, `spike/dogfood/RUNS.md`, `spike/outcome-funnel.tsv`, the B2 exclusions). Nine FAILs are the truncating open and the kill before the write; ezdxf's `.bak` rotation and libsndfile's in-place WAV lose nothing a rename or a reader does not restore. No FAIL loses data its user cannot get back from the tool's own documented command, so none was reported. roswell, a static image starting a dynamic SBCL, is turned away under `unresolvable_path` as refused by design although `--observe supervised` judges it — the shape #685 records under `oracle_missed_operation`.
