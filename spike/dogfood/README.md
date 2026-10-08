@@ -26,7 +26,11 @@ Each run gets one directory, `YYYY-MM-DD-<slug>/`, holding two documents:
   novelty check is a claim nobody checked.
 
 Plus the apparatus (`apparatus/`) and the engine's own output (`transcripts/`),
-so a reader can re-run rather than believe.
+so a reader can re-run rather than believe. A `preflight --twice` that splits
+quotes up to 48 bytes of each differing file from each run (#688), so its
+transcript carries those bytes of the target's state: the states here are
+fixtures the apparatus wrote, and a run on anyone's real data keeps such
+transcripts out of the tree.
 
 ## The selection rules, and the one thing this directory adds
 

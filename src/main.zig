@@ -3166,8 +3166,10 @@ fn phaseExploration(run: *Run) void {
             // spike/acceptance.sh, so the step is replaced here rather than there.
             const base_obs: ?[]const u8 = if (l0 == null and l1 == null) (if (check_argv) |c| refuse.cwdObservation(arena, c) else null) else null;
             const base_step = refuse.cwdStep(base_obs, step);
+            // #688: the byte layer also says where the two runs' bytes differ, how long and
+            // what kind of bytes — the bytes themselves stay with `preflight --twice`.
             const what: []const u8 = if (l0) |v|
-                std.fmt.allocPrint(arena, "{s}{s}", .{ report.baselineObserved(arena, v), report.baselineAlsoFailed(l1 != null, l2_failed) }) catch "the re-run from the restored state did not leave the recorded bytes"
+                std.fmt.allocPrint(arena, "{s}{s}{s}", .{ report.baselineObserved(arena, v), report.baselineDiffers(arena, l0_plan, crashed, v), report.baselineAlsoFailed(l1 != null, l2_failed) }) catch "the re-run from the restored state did not leave the recorded bytes"
             else if (l1) |v|
                 std.fmt.allocPrint(arena, "the operation printed its success marker, and {s} did not hold the new state that marker promised{s}; check the marker and the operation against each other first", .{ textShown(arena, report.violationPath(v)), report.baselineAlsoFailed(false, l2_failed) }) catch "the success marker's promise did not hold in the un-killed re-run; check the marker and the operation against each other first"
             else
@@ -3695,7 +3697,16 @@ const Repeat = struct {
     gap_ms: u64,
     count: engine.DiffCount,
     diffs: []const engine.Difference,
+    /// Parallel to `diffs` (#688): where a `content_differs` path's two runs first differ,
+    /// with both stretches quoted, for the first `repeat_span_paths` such paths; null for
+    /// the rest and for every other kind of difference.
+    spans: []const ?[]const u8,
 };
+
+/// How many differing paths get a byte line under `--twice` (#688). Each line quotes up to
+/// two clipped stretches, a few hundred bytes at worst, and 64 of them would bury the
+/// paths they explain.
+const repeat_span_paths: usize = 8;
 
 /// Observe the operation a second time and compare the two post-states (#199).
 ///
@@ -3976,12 +3987,26 @@ fn observeAgain(
     // Copying into `arena` — the caller's, which outlives both snapshots — is the fix
     // rather than lifting `second` out, because the borrow rule belongs to the value:
     // a `Difference` that escapes its snapshots has to own its bytes.
-    for (diffs[0..count.stored]) |*d|
+    //
+    // #688: the byte line for a path whose content differs is built here too, while both
+    // snapshots are alive — `byteSpan` copies what it quotes into `arena`.
+    const spans = arena.alloc(?[]const u8, count.stored) catch setupError(.environment, "out of memory");
+    @memset(spans, null);
+    var with_bytes: usize = 0;
+    for (diffs[0..count.stored], spans) |*d, *sp| {
+        if (d.how == .content_differs and with_bytes < repeat_span_paths) {
+            if (first.find(d.rel)) |fe| if (second.find(d.rel)) |se| {
+                sp.* = report.byteSpan(arena, "first run", fe.content, "second run", se.content, .bytes);
+                with_bytes += 1;
+            };
+        }
         d.rel = arena.dupe(u8, d.rel) catch setupError(.environment, "out of memory");
+    }
     return .{
         .gap_ms = started -| first_started_ms,
         .count = count,
         .diffs = diffs[0..count.stored],
+        .spans = spans,
     };
 }
 
@@ -4047,6 +4072,7 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
                     .content_differs => "content differs",
                 };
                 say("difference   {s} ({s})\n", .{ rel, how });
+                if (r.spans[i]) |sp| say("             bytes {s}\n", .{sp});
             }
             if (r.count.total > shown)
                 say("             … and {d} more\n", .{r.count.total - shown});

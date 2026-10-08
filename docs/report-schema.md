@@ -251,7 +251,10 @@ is the same break the `unknown_reason` paragraph in `docs/contract-freeze.md` re
 `baseline_violates_invariant` says which layer failed in the world that was
 never killed (#199). For the byte layer the `message` names the first path and
 what was observed of it — gone, holding neither recorded content, or its
-recorded history no longer a prefix — and `next_step` is the class wall: the
+recorded history no longer a prefix — and, where both runs left a file of one
+kind there, where their bytes first differ, how long the differing stretch is in
+each and what kind of bytes it holds (#688; never the bytes, which only
+`preflight --twice` prints, in its own output) — and `next_step` is the class wall: the
 README's limits list byte-repeatable writes beside `preflight --twice`, which
 measures them before a define exists. The engine does not name a cause; a
 clock, a random id and a cache keyed on an inode the restore moved all look
