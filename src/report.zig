@@ -245,6 +245,23 @@ pub var checker_note: []const u8 = checkerNoteFor(.unparsed);
 /// same three-state rule for what it says before the recording run (#352).
 pub var l1_note: []const u8 = l1NoteFor(.unparsed);
 
+/// The figures the `oracle` and `checker` sentences state, kept as data for the JSON report's
+/// optional fields (#711, ADR 0096). Each is set on the line that writes the number into its
+/// sentence, from the same value, and stays `null` — the field absent — until then: a run that
+/// never reached the comparison, or never declared a checker, says nothing rather than zero.
+pub var oracle_operations_agreed: ?usize = null;
+/// Whether a checker was named, once that is known: set where `checker_note` becomes
+/// "configured" or "none configured" — the line that reads `--check`, or `settleDeclared` once
+/// every source has been read.
+pub var checker_declared: ?bool = null;
+/// How many worlds the checker ran in, set where the `checker` sentence says so.
+pub var checker_worlds: ?usize = null;
+/// Whether the recording run's process account is a measurement (#711): set once every check on
+/// the recording's trace has held, at the line `l0_judged_paths_touched` is set on, for that
+/// field's reason. A refusal on a trace cut short, renumbered or never announced carries counts
+/// read from part of it, so the `processes_*` fields are absent there rather than partial.
+pub var processes_measured: bool = false;
+
 /// What the parser and the define sources have established about a declared checker or
 /// marker (#352). Like `OracleAsked` but with no kind: the account names no source.
 const Declared = enum {
@@ -285,6 +302,7 @@ pub fn l1NoteFor(d: Declared) []const u8 {
 /// `--config`. Not later: the required-flag refusals and the marker vet sit after all three,
 /// and a run refused there with nothing declared must say "none", not "not established".
 pub fn settleDeclared(has_check: bool, has_marker: bool) void {
+    checker_declared = has_check;
     checker_note = checkerNoteFor(if (has_check) .named else .none);
     l1_note = l1NoteFor(if (has_marker) .named else .none);
 }
@@ -1138,6 +1156,232 @@ pub fn sayCwd(arena: std.mem.Allocator, comptime fmt: []const u8) void {
     if (command_cwd) |c| say(fmt, .{ defang.textShown(arena, c), if (command_cwd_declared) "" else "  (none declared: Sideeye's own)" });
 }
 
+/// A value single-quoted for a POSIX shell, the whole escape: every byte stands for itself
+/// inside `'…'`, and a `'` closes the quote, is written escaped, and reopens it.
+pub fn shellQuote(arena: std.mem.Allocator, s: []const u8) error{OutOfMemory}![]const u8 {
+    var out: std.ArrayList(u8) = .empty;
+    try out.append(arena, '\'');
+    for (s) |ch| {
+        if (ch == '\'') try out.appendSlice(arena, "'\\''") else try out.append(arena, ch);
+    }
+    try out.append(arena, '\'');
+    return out.items;
+}
+
+/// One word of a command line a reader pastes (#711): the value as it is when every byte is one
+/// a shell reads literally in an unquoted word, `shellQuote`d otherwise — so an ordinary path
+/// prints exactly as it always did, and one holding a space, a quote or a `$` still pastes as one
+/// argument. The set leaves out `=`, which would make a first word an assignment and which zsh
+/// (macOS's shell) expands at the start of a word, `~`, `*`, `?` and the brackets, which a shell
+/// expands, and everything a shell splits or redirects on; an empty value is `''`, which a bare
+/// word cannot spell.
+pub fn shellWord(arena: std.mem.Allocator, s: []const u8) error{OutOfMemory}![]const u8 {
+    if (s.len == 0) return shellQuote(arena, s);
+    for (s) |ch| {
+        if (!std.ascii.isAlphanumeric(ch) and std.mem.indexOfScalar(u8, "_./:@%+,-", ch) == null)
+            return shellQuote(arena, s);
+    }
+    return s;
+}
+
+test "a shell word is the value itself unless a shell would read it otherwise (#711)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    try std.testing.expectEqualStrings("/tmp/se/work/cases/000001.json", try shellWord(a, "/tmp/se/work/cases/000001.json"));
+    try std.testing.expectEqualStrings("'/tmp/a b/c'", try shellWord(a, "/tmp/a b/c"));
+    try std.testing.expectEqualStrings("''", try shellWord(a, ""));
+    try std.testing.expectEqualStrings("'NAME=x'", try shellWord(a, "NAME=x"));
+    try std.testing.expectEqualStrings("'it'\\''s'", try shellWord(a, "it's"));
+    try std.testing.expectEqualStrings("'$HOME'", try shellWord(a, "$HOME"));
+    try std.testing.expectEqualStrings("'~/x'", try shellWord(a, "~/x"));
+}
+
+/// The text report's `evidence` value (#709): the command that renders the bundle, which a
+/// reader pastes, rather than the bundle's path alone — the JSON field keeps the path
+/// (`docs/report-schema.md`), and the path is the command's argument, so nothing the text said
+/// is lost. `-` stays `-`: a bundle that was not written names no command.
+pub fn evidenceCommand(arena: std.mem.Allocator, bundle: []const u8) []const u8 {
+    if (std.mem.eql(u8, bundle, "-")) return bundle;
+    const word = shellWord(arena, bundle) catch return bundle;
+    return std.fmt.allocPrint(arena, "sideeye evidence {s}", .{word}) catch bundle;
+}
+
+/// What a FAIL's `reproduce` line is made of (#711): the values the engine hands a world, so a
+/// pasted line runs the operation the way a world did — except two kinds, which belong to a
+/// world's own process group and cgroup and which a pasted line runs in neither of. The cgroup
+/// ones are pinned empty, as the engine pins them for a recording: the shim reads empty as none,
+/// and a value left in the reader's shell from an earlier run would otherwise be read.
+/// `SIDEEYE_KILL_GROUP` is **unset** in the line's subshell, not pinned: the shim reads its
+/// presence, not its value, and with it the kill takes the reader's own shell down with the target
+/// (measured twice — see the FAIL block in `main.zig`; the second time was this line's first
+/// version, which pinned it empty and killed the acceptance suite's own shell). `TOY_STATE` is not
+/// carried: it is the demo toy's own name for the state directory, which the toy reads
+/// `SIDEEYE_STATE_DIR` for when it is unset, and printing it would hide whether the line's
+/// `SIDEEYE_STATE_DIR_ALT` reaches the shim (acceptance check 2m spells the state its own way).
+pub const Reproduce = struct {
+    cwd: ?[]const u8,
+    state: []const u8,
+    /// Only when it is a different spelling from `state`; pinned empty otherwise.
+    state_alt: ?[]const u8,
+    trace: []const u8,
+    preload_var: []const u8,
+    shim: []const u8,
+    kill_at: usize,
+    /// The observation mode's name: without `SIDEEYE_OBSERVE=syscalls` the shim counts the
+    /// default way, and under that mode the kill lands on another operation (measured).
+    observe: []const u8,
+    argv: []const []const u8,
+};
+
+/// A FAIL's `reproduce` line (#711): a command that runs as printed in a POSIX shell once the
+/// define's setup has left the state it starts from. In a subshell, so the reader's own shell
+/// stays where it was: `cd` to the directory the commands ran in, the world's variables, the
+/// operation's own argv — each word through `shellWord`, and a bare first word quoted too, so an
+/// alias of the same name in an interactive shell is not what runs — and standard input from
+/// `/dev/null`, which is where every command Sideeye runs reads it (`docs/cli.md`).
+///
+/// It used to end in the placeholder `<operation>`, and still does, with no `cd`, when the line
+/// cannot be printed as a command that means the same run: the argv or the directory holds a
+/// byte the report defangs (printed raw it would let a define's bytes forge report lines,
+/// printed defanged it would name another program or directory), Sideeye could not name the
+/// directory, or the line would not fit the text report's output buffer, which drops a write
+/// that overruns it.
+pub fn reproduceLine(arena: std.mem.Allocator, r: Reproduce) error{OutOfMemory}![]const u8 {
+    var env: std.ArrayList(u8) = .empty;
+    try env.print(arena, "{s}={s} {s}={s}", .{
+        contract.env.state_dir,     try shellWord(arena, r.state),
+        contract.env.state_dir_alt, if (r.state_alt) |alt| try shellWord(arena, alt) else "",
+    });
+    try env.print(arena, " {s}={s} {s}={s} {s}={d} {s}= {s}={s} {s}= {s}= {s}=", .{
+        contract.env.trace_path,  try shellWord(arena, r.trace),
+        r.preload_var,            try shellWord(arena, r.shim),
+        contract.env.kill_at,     r.kill_at,
+        contract.env.seq_base,    contract.env.observe,
+        r.observe,                contract.env.run_cgroup,
+        contract.env.kill_cgroup, contract.env.kill_aside,
+    });
+    const as_command = blk: {
+        const c = r.cwd orelse break :blk false;
+        if (r.argv.len == 0 or !std.mem.eql(u8, defang.textShown(arena, c), c)) break :blk false;
+        for (r.argv) |a| if (!std.mem.eql(u8, defang.textShown(arena, a), a)) break :blk false;
+        break :blk true;
+    };
+    const placeholder = try std.fmt.allocPrint(arena, "{s} <operation>", .{env.items});
+    if (!as_command) return placeholder;
+    var out: std.ArrayList(u8) = .empty;
+    // The trace emptied first: the shim numbers each operation from the highest number already in
+    // it (v15), so a second paste into the same file would count from where the first stopped and
+    // never reach k — the line ran to completion and said nothing (measured, #711's review).
+    try out.print(arena, "(cd {s} && unset {s} && : > {s} && {s}", .{
+        try shellWord(arena, r.cwd.?), contract.env.kill_group, try shellWord(arena, r.trace), env.items,
+    });
+    for (r.argv, 0..) |a, i| {
+        const bare_name = i == 0 and std.mem.indexOfScalar(u8, a, '/') == null;
+        try out.print(arena, " {s}", .{if (bare_name) try shellQuote(arena, a) else try shellWord(arena, a)});
+    }
+    try out.appendSlice(arena, " </dev/null)");
+    // "reproduce   " and the newline beside it, inside the one write `say` makes of the line.
+    if (out.items.len + 16 > say_capacity) return placeholder;
+    return out.items;
+}
+
+test "the reproduce line is a command in a subshell, or keeps the placeholder when it cannot mean the same run (#711)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const pins = " SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE=";
+    const base: Reproduce = .{
+        .cwd = "/w d",
+        .state = "/s",
+        .state_alt = null,
+        .trace = "/t/trace-repro.bin",
+        .preload_var = "LD_PRELOAD",
+        .shim = "/l/libsideeye_shim.so",
+        .kill_at = 5,
+        .observe = "wrappers",
+        .argv = &.{ "/bin/toy", "rotate", "a b" },
+    };
+    try std.testing.expectEqualStrings(
+        "(cd '/w d' && unset SIDEEYE_KILL_GROUP && : > /t/trace-repro.bin && SIDEEYE_STATE_DIR=/s SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/t/trace-repro.bin LD_PRELOAD=/l/libsideeye_shim.so SIDEEYE_KILL_AT=5 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers" ++ pins ++ " /bin/toy rotate 'a b' </dev/null)",
+        try reproduceLine(a, base),
+    );
+    var sys = base;
+    sys.observe = "syscalls";
+    sys.state_alt = "/link/s";
+    sys.argv = &.{ "toy", "rotate" };
+    try std.testing.expectEqualStrings(
+        "(cd '/w d' && unset SIDEEYE_KILL_GROUP && : > /t/trace-repro.bin && SIDEEYE_STATE_DIR=/s SIDEEYE_STATE_DIR_ALT=/link/s SIDEEYE_TRACE_PATH=/t/trace-repro.bin LD_PRELOAD=/l/libsideeye_shim.so SIDEEYE_KILL_AT=5 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=syscalls" ++ pins ++ " 'toy' rotate </dev/null)",
+        try reproduceLine(a, sys),
+    );
+    // The placeholder: a defanged byte in the argv or the directory, no directory, too long.
+    var ctl = base;
+    ctl.argv = &.{ "/bin/toy", "a\x01b" };
+    var ctl_cwd = base;
+    ctl_cwd.cwd = "/w\x1bd";
+    var no_cwd = base;
+    no_cwd.cwd = null;
+    var long = base;
+    const big = try a.alloc(u8, say_capacity);
+    @memset(big, 'x');
+    long.argv = &.{ "/bin/toy", big };
+    for ([_]Reproduce{ ctl, ctl_cwd, no_cwd, long }) |r| {
+        const line = try reproduceLine(a, r);
+        try std.testing.expect(std.mem.startsWith(u8, line, "SIDEEYE_STATE_DIR=/s "));
+        try std.testing.expect(std.mem.endsWith(u8, line, "SIDEEYE_KILL_ASIDE= <operation>"));
+    }
+    // Never an assignment of the group-kill variable, in either form: its presence alone arms it.
+    for ([_]Reproduce{ base, sys, ctl, no_cwd }) |r|
+        try std.testing.expect(std.mem.indexOf(u8, try reproduceLine(a, r), "SIDEEYE_KILL_GROUP=") == null);
+}
+
+/// Which verdict's text block `sayAccount` is printing for.
+pub const AccountOf = enum { fail, pass, unknown };
+
+/// The account lines the three verdict blocks share (#711): one order, one spelling, one
+/// twelve-column key. They were three format strings — a FAIL's `key   value`, a PASS's
+/// indented `key: value` in another order, an UNKNOWN's columns in a third — and every line
+/// added since went into whichever block its change was about, so a reader comparing two
+/// reports had to hunt for the same fact. One function is what keeps the next line from
+/// drifting the same way.
+///
+/// The context lines come first, so that on an UNKNOWN they sit directly under `next`, where
+/// ADR 0086 §2 put `cwd` (a line further down is not read); a blank line separates them from
+/// the rest, as it always did on an UNKNOWN. Which lines each verdict prints is fixed here, not
+/// at the call sites: a FAIL prints every one — `replay` and `evidence` even when they read
+/// `-`, because a case that could not be saved says so rather than going quiet (ADR 0071); a
+/// PASS every one but those two, which belong to a counterexample; an UNKNOWN the set it
+/// printed before #711. `explored`, `oracle`, `metadata` and `checker` stay off it: a refusal
+/// raised before the exploration would print "explored 0 worlds (crash points N + 1
+/// baseline)" beside crash points it never reached, and the JSON carries all four on every
+/// report.
+pub fn sayAccount(arena: std.mem.Allocator, of: AccountOf, points: usize) void {
+    sayCwd(arena, "cwd         {s}{s}\n");
+    sayApparatus(arena, "apparatus   {s}\n");
+    sayWarnings("warning     {s}\n");
+    sayRecovery("recovery    {s}\n");
+    say("\n", .{});
+    if (of != .unknown) {
+        say("explored    {d} worlds (crash points {d} + 1 baseline)\n", .{ explored, points });
+        if (of == .pass) saySingleCrashPointNote(points);
+    }
+    say("expected    exit {d}\n", .{expected_status_val});
+    say("atomicity   {s}\n", .{l0_note});
+    if (of != .unknown) {
+        say("oracle      {s}\n", .{oracle_note});
+        say("metadata    {s}\n", .{metadata_note});
+        say("checker     {s}\n", .{checker_note});
+    }
+    say("l1          {s}\n", .{l1_note});
+    say("case        {s}\n", .{case_note});
+    if (of == .fail) {
+        say("replay      {s}\n", .{replay_note});
+        say("evidence    {s}\n", .{evidenceCommand(arena, evidence_note)});
+    }
+    say("processes   {s}\n", .{boundary.boundaryAccount()});
+    say("not tested  {s}\n", .{notTestedText()});
+}
+
 /// One exhibit's recovery object, inside that exhibit's JSON object. `command_exit` is present
 /// only when the recovery command exited, as `setup_exit_code` is only when the setup did.
 fn jsonRecoveryField(w: *std.ArrayList(u8), arena: std.mem.Allocator, r: RecoveryResultJson) !void {
@@ -1202,13 +1446,12 @@ test "the untouched clause is empty whenever a judged path was touched, and name
 /// print in two places — the literal and after it — and there is no third caller to make a
 /// shared predicate worth its own name.
 ///
-/// A separate call after the block, the way `sayApparatus` is, rather than a `{s}` line
-/// inside the multiline literal: `\\      {s}` prints six spaces on every *other* PASS when
-/// the string is empty, and a check that greps for wording would never see that. The cost is
-/// the position — this lands under `not tested:` rather than beside the count — and the
-/// alternative was splitting the report's one `say` in two for a single line of advice.
-pub fn saySingleCrashPointNote(n: usize) void {
-    if (n == 1) say("      if the define expected more, check that the target's store resolves inside the state directory\n", .{});
+/// A call of its own rather than a `{s}` line inside a literal, which would print an indented
+/// blank on every *other* PASS. Since `sayAccount` (#711) the PASS block is a sequence of calls,
+/// so the note sits where it always belonged — under the `explored` line it qualifies, as a
+/// continuation in the block's twelve-column style — rather than under `not tested`.
+fn saySingleCrashPointNote(n: usize) void {
+    if (n == 1) say("            if the define expected more, check that the target's store resolves inside the state directory\n", .{});
 }
 
 /// A JSON array of strings as a report field; with `only_unchecked`, the entries
@@ -1865,6 +2108,29 @@ fn buildJson(
     // say what it did not look at is the kind of reassurance this tool refuses to give.
     try w.appendSlice(arena, ",\n  \"not_tested\": ");
     try w.appendSlice(arena, notTestedJson());
+    // #711, ADR 0096: what the `oracle`, `checker` and `processes` sentences state, as numbers and
+    // booleans beside them. Each is present only where it was measured — none is ever written as a
+    // zero or a false standing for "not known" — and none is a closed set. Before the judged set,
+    // which stays last (ADR 0079).
+    switch (oracle_asked) {
+        .named => |kind| {
+            try w.appendSlice(arena, ",\n  \"oracle_witness\": ");
+            try jsonString(w, arena, kind.name());
+        },
+        .unparsed, .none => {},
+    }
+    if (oracle_operations_agreed) |n| try w.print(arena, ",\n  \"oracle_operations_agreed\": {d}", .{n});
+    if (checker_declared) |d| try w.print(arena, ",\n  \"checker_declared\": {s}", .{if (d) "true" else "false"});
+    if (checker_worlds) |n| try w.print(arena, ",\n  \"checker_worlds\": {d}", .{n});
+    // The recording run's counts, which is all `boundary_ev` holds for them: the `processes`
+    // sentence also says what an explored world showed, and these fields do not.
+    if (processes_measured) {
+        const ev = boundary.boundary_ev;
+        try w.print(arena, ",\n  \"processes_children_admitted\": {s}", .{if (ev.children_judged) "true" else "false"});
+        try w.print(arena, ",\n  \"processes_image_changes\": {d}", .{ev.exec_continuations});
+        try w.print(arena, ",\n  \"processes_threads_created\": {d}", .{ev.threads});
+        try w.print(arena, ",\n  \"processes_writer_threads\": {d}", .{ev.writer_threads});
+    }
     // #638, ADR 0079. LAST in the document, and the position is the decision: this is the only
     // field whose length grows with the target's state tree, so anywhere else it pushes back
     // the fields a reader of a FAIL needs first — `message`, `next_step`, `earliest`. Written

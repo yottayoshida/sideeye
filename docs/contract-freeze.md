@@ -250,6 +250,17 @@ stay the same.
    `check-freeze-audit.sh` reports it as drift, the sweep's job as above; `contract_version`
    does not move.
 
+   **Eight plain additive fields, 2026-10-08 (#711, ADR 0096).** `oracle_witness`,
+   `oracle_operations_agreed`, `checker_declared`, `checker_worlds` and the four
+   `processes_*` fields carry what the `oracle`, `checker` and `processes` sentences state, as
+   numbers and booleans. Each is present only where it was measured, none is a closed set
+   (`oracle_witness` is documented as open), and the sentences beside them do not change, so
+   the allowance covers all eight with no ruling of their own. Flat names with the sentence's
+   own name as prefix, as `oracle_verified` and the `l0_` fields have, rather than one new
+   object: an object would make every member's presence a promise about the object's.
+   All eight match the extraction's pattern, so the next `check-freeze-audit.sh` reports them
+   as drift, the sweep's job as above; `contract_version` does not move.
+
 3. **Exit codes.** When a run produces a verdict, that verdict's exit code is
    fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is never 0.
    The promise runs in that direction. **Exit 0 is not reserved to PASS**: it

@@ -2318,6 +2318,8 @@ fn phaseOracle(run: *Run) void {
             "agreed on {d} operations ({d} syscall lines examined, {d} in scope of the judged state)",
             .{ parsed.classes.items.len, parsed.lines_seen, parsed.lines_in_scope },
         ) catch "agreed";
+        // The same number as data (#711, ADR 0096), from the value the sentence prints.
+        report.oracle_operations_agreed = parsed.classes.items.len;
         report.oracle_note = if (args.oracle_fs_usage)
             std.fmt.allocPrint(
                 arena,
@@ -2481,6 +2483,8 @@ fn phaseOracle(run: *Run) void {
     // the PASS gate reads are one measurement.
     run.rec.judgeable = refuse.measureJudgeable(gpa, arena, initial, final, run.rec.l0_plan, trace.ops.items, state_abs, if (alt_differs) state_alt else "");
     report.l0_judged_paths_touched = run.rec.judgeable.touched;
+    // The same point, for the same reason, for the process account's figures (#711, ADR 0096).
+    report.processes_measured = true;
 
     run.n = n;
 }
@@ -3264,6 +3268,7 @@ fn phaseExploration(run: *Run) void {
             "{s}; ran in {d} world(s)",
             .{ report.checker_note, checks_run },
         ) catch report.checker_note;
+        report.checker_worlds = checks_run;
     }
 
     run.firsts.first_failure = first_failure;
@@ -3364,14 +3369,6 @@ fn phaseReport(run: *Run) void {
         var repro_buf: [contract.max_path]u8 = undefined;
         const repro_trace = std.fmt.bufPrint(&repro_buf, "{s}/trace-repro.bin", .{args.work}) catch
             setupError(.define_invalid, "path too long");
-        // Only when the two spellings differ. Printing `A=x B=x` invites the reader to
-        // wonder which one matters, and the answer would be "neither, they are the same".
-        var alt_env_buf: [contract.max_path + 64]u8 = undefined;
-        const alt_env = if (alt_differs)
-            std.fmt.bufPrint(&alt_env_buf, " {s}={s}", .{ contract.env.state_dir_alt, state_alt }) catch
-                setupError(.define_invalid, "path too long")
-        else
-            "";
         // The counterexample outlives the console (ADR 0009). Saved on explore only:
         // a replay re-verifies an existing case, it does not mint another.
         const saved_case: ?[]const u8 = if (only_k == null) blk: {
@@ -3395,9 +3392,13 @@ fn phaseReport(run: *Run) void {
                 // No shim to name, and the mode must be: a case does not record the mode that
                 // produced it (ADR 0052), and replayed without it a static target has no shim
                 // to count through (#217).
-                std.fmt.allocPrint(arena, "sideeye replay {s} --observe supervised{s}", .{ sc, recovery_flags })
+                std.fmt.allocPrint(arena, "sideeye replay {s} --observe supervised{s}", .{ report.shellWord(arena, sc) catch sc, recovery_flags })
+            else if (args.observe == .syscalls)
+                // The same reason, for the mode that counts at the kernel boundary (#711): without
+                // the flag the replay counts the default way and answers `case_no_longer_applies`.
+                std.fmt.allocPrint(arena, "sideeye replay {s} --observe syscalls --shim {s}{s}", .{ report.shellWord(arena, sc) catch sc, report.shellWord(arena, shim) catch shim, recovery_flags })
             else
-                std.fmt.allocPrint(arena, "sideeye replay {s} --shim {s}{s}", .{ sc, shim, recovery_flags })) catch "-"
+                std.fmt.allocPrint(arena, "sideeye replay {s} --shim {s}{s}", .{ report.shellWord(arena, sc) catch sc, report.shellWord(arena, shim) catch shim, recovery_flags })) catch "-"
         else if (mode == .replay)
             "(this run is a replay; the case reproduced)"
         else
@@ -3465,9 +3466,11 @@ fn phaseReport(run: *Run) void {
                 replay_cmd
             else if (csaved) |cc|
                 (if (args.observe == .supervised)
-                    std.fmt.allocPrint(arena, "sideeye replay {s} --observe supervised{s}", .{ cc, recovery_flags })
+                    std.fmt.allocPrint(arena, "sideeye replay {s} --observe supervised{s}", .{ report.shellWord(arena, cc) catch cc, recovery_flags })
+                else if (args.observe == .syscalls)
+                    std.fmt.allocPrint(arena, "sideeye replay {s} --observe syscalls --shim {s}{s}", .{ report.shellWord(arena, cc) catch cc, report.shellWord(arena, shim) catch shim, recovery_flags })
                 else
-                    std.fmt.allocPrint(arena, "sideeye replay {s} --shim {s}{s}", .{ cc, shim, recovery_flags })) catch "-"
+                    std.fmt.allocPrint(arena, "sideeye replay {s} --shim {s}{s}", .{ report.shellWord(arena, cc) catch cc, report.shellWord(arena, shim) catch shim, recovery_flags })) catch "-"
             else
                 "-";
             // One bundle per case, so the shared-world case reuses the earliest's rather
@@ -3531,16 +3534,6 @@ fn phaseReport(run: *Run) void {
             \\            before {s}({s})
             \\path        {s}
             \\observed    {s}
-            \\explored    {d} worlds (crash points {d} + 1 baseline)
-            \\expected    exit {d}
-            \\atomicity   {s}
-            \\oracle      {s}
-            \\metadata    {s}
-            \\checker     {s}
-            \\l1          {s}
-            \\case        {s}
-            \\replay      {s}
-            \\evidence    {s}
             \\
         , .{
             report.violations,             report.explored,
@@ -3551,20 +3544,11 @@ fn phaseReport(run: *Run) void {
                                         after,
             textShown(arena, after_path),  before,
             textShown(arena, before_path), textShown(arena, path_shown),
-            what,                          report.explored,
-            n,                             report.expected_status_val,
-            report.l0_note,                report.oracle_note,
-            report.metadata_note,          report.checker_note,
-            report.l1_note,                case_shown,
-            replay_cmd,                    report.evidence_note,
+            what,
         });
-        report.sayCwd(arena, "cwd         {s}{s}\n");
-        report.sayApparatus(arena, "apparatus   {s}\n");
-        report.sayWarnings("warning     {s}\n");
-        report.sayRecovery("recovery    {s}\n");
-        // Printed only when the two exhibits are different worlds; when the
-        // earliest is itself checker-red — every FAIL this engine produced
-        // before poetry — the text above is byte-identical to what it was.
+        // The second exhibit beside the first (#711 moved it up from among the account lines).
+        // Printed only when the two exhibits are different worlds; when the earliest is itself
+        // checker-red — every FAIL this engine produced before poetry — nothing is added here.
         if (checker_detail) |cd| {
             if (cd.e.k != f.k) say(
                 \\checker red crash point {d} of {d} ({s})
@@ -3572,26 +3556,24 @@ fn phaseReport(run: *Run) void {
                 \\            replay   {s}
                 \\            evidence {s}
                 \\
-            , .{ cd.e.k, n, cd.e.invariant, cd.case, cd.replay, cd.evidence });
+            , .{ cd.e.k, n, cd.e.invariant, cd.case, cd.replay, report.evidenceCommand(arena, cd.evidence) });
         }
-        // **`SIDEEYE_KILL_GROUP` is deliberately not on this line** (v15). A world gets it
-        // because the engine put the target in its own process group first; a shell an
-        // operator types this into has done no such thing, and the kill would take that
-        // shell down with the target. Measured: an earlier draft group-killed
-        // unconditionally and the acceptance suite's own shell died at the leg that runs
-        // this line (SIGKILL, exit 137).
+        report.sayAccount(arena, .fail, n);
+        // **`SIDEEYE_KILL_GROUP` is deliberately not set by this line** (v15) — the line unsets
+        // it (#711). A world gets it because the engine put the target in its own process group
+        // first; a shell an operator types this into has done no such thing, and the kill would
+        // take that shell down with the target. Measured twice: an earlier draft group-killed
+        // unconditionally and the acceptance suite's own shell died at the leg that runs this
+        // line (SIGKILL, exit 137); and #711's first version pinned the variable empty, which
+        // the shim reads as set (it looks at presence, not value), with the same result. So the
+        // line unsets it, which also keeps one left in the reader's shell from arming it.
         //
         // What that costs is honest and small: the line dies in front of the same
         // operation, in the process that reaches it. Where that process is an awaited
         // child, the rest of the tree keeps running afterwards, so the line reproduces the
-        // crash point rather than the whole world. Adding the variable by hand reproduces
-        // the world exactly — from a shell you are willing to lose.
-        say(
-            \\processes   {s}
-            \\not tested  {s}
-            \\
-            \\
-        , .{ boundary.boundaryAccount(), report.notTestedText() });
+        // crash point rather than the whole world. Replacing the `unset` with the variable
+        // by hand reproduces the world exactly — from a shell you are willing to lose.
+        say("\n", .{});
         // Under `--observe supervised` there is no shim to preload: the crash point is the
         // engine's, counted from outside the target (#217), so the one command that reproduces
         // it is the replay line above.
@@ -3599,14 +3581,19 @@ fn phaseReport(run: *Run) void {
             // The replay line only where it is a command; a replay's own FAIL has none (review).
             say("reproduce   {s}  (the crash point is the engine's, from outside the operation; there is no shim to preload)\n", .{if (saved_case != null) replay_cmd else "this run again, with --observe supervised"})
         else
-            say("reproduce   SIDEEYE_STATE_DIR={s}{s} SIDEEYE_TRACE_PATH={s} {s}={s} SIDEEYE_KILL_AT={d} SIDEEYE_SEQ_BASE= <operation>\n", .{
-                state_abs,
-                alt_env,
-                repro_trace,
-                preload_var,
-                shim,
-                f.k,
-            });
+            // #711: a command that runs as printed once the setup has run — `cd`, the world's
+            // variables and the operation's own argv — where it used to end in `<operation>`.
+            say("reproduce   {s}\n", .{report.reproduceLine(arena, .{
+                .cwd = report.command_cwd,
+                .state = state_abs,
+                .state_alt = if (alt_differs) state_alt else null,
+                .trace = repro_trace,
+                .preload_var = preload_var,
+                .shim = shim,
+                .kill_at = f.k,
+                .observe = args.observe.name(),
+                .argv = run.rec.op_argv,
+            }) catch "(the line could not be built: out of memory)"});
         if (args.json) |jp| report.writeJsonReport(arena, jp, "FAIL", @intFromEnum(contract.ExitCode.fail), .{
             .k = f.k,
             .after = after,
@@ -3626,25 +3613,8 @@ fn phaseReport(run: *Run) void {
     // replay, whose one world answers a different question.
     if (only_k == null) refuse.requireSomethingCouldFail(arena, run.rec.judgeable, run.check_argv != null, args.marker != null, run.firsts.marker_worlds);
 
-    say(
-        \\{s}  {d}/{d} explored worlds satisfied the built-in atomicity invariant{s}{s}
-        \\      explored {d} worlds (crash points {d} + 1 baseline)
-        \\      expected status: {d}
-        \\      atomicity: {s}
-        \\      oracle: {s}
-        \\      metadata: {s}
-        \\      checker: {s}
-        \\      l1: {s}
-        \\      case: {s}
-        \\      processes: {s}
-        \\      not tested: {s}
-        \\
-    , .{ report.paint("PASS"), report.explored, report.explored, report.singleCrashPointClause(n), report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged), report.explored, n, report.expected_status_val, report.l0_note, report.oracle_note, report.metadata_note, report.checker_note, report.l1_note, report.case_note, boundary.boundaryAccount(), report.notTestedText() });
-    report.sayCwd(arena, "      cwd: {s}{s}\n");
-    report.sayApparatus(arena, "      apparatus: {s}\n");
-    report.sayWarnings("      warning: {s}\n");
-    report.sayRecovery("      recovery: {s}\n");
-    report.saySingleCrashPointNote(n);
+    say("{s}  {d}/{d} explored worlds satisfied the built-in atomicity invariant{s}{s}\n", .{ report.paint("PASS"), report.explored, report.explored, report.singleCrashPointClause(n), report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged) });
+    report.sayAccount(arena, .pass, n);
     if (args.json) |jp| report.writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null, null);
     report.emitSeal();
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
@@ -4467,16 +4437,7 @@ test "fs_usage sentinels: the shape, two names per run that differ from each oth
 /// for POSIX sh — inside single quotes nothing else is special, so this is the whole
 /// escape, not a denylist.
 fn shellSingleQuote(arena: std.mem.Allocator, s: []const u8) []const u8 {
-    var out: std.ArrayList(u8) = .empty;
-    out.append(arena, '\'') catch setupError(.environment, "out of memory");
-    for (s) |ch| {
-        if (ch == '\'')
-            out.appendSlice(arena, "'\\''") catch setupError(.environment, "out of memory")
-        else
-            out.append(arena, ch) catch setupError(.environment, "out of memory");
-    }
-    out.append(arena, '\'') catch setupError(.environment, "out of memory");
-    return out.items;
+    return report.shellQuote(arena, s) catch setupError(.environment, "out of memory");
 }
 
 test "shellSingleQuote neutralizes metacharacters and embedded quotes" {

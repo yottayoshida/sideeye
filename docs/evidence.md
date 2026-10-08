@@ -14,21 +14,18 @@ That is the whole promise, and the rest of this page is what it costs to keep it
 
 ## Using it
 
-A FAIL writes the bundle beside the case it saves and names it on the report's `evidence`
-line, in the text report and in `--json` alike:
+A FAIL writes the bundle beside the case it saves. The text report's `evidence` line is the
+command that renders it, ready to paste (#709); `--json` carries the bundle's path in its
+`evidence` field:
 
 ```
 case        /tmp/sideeye-work/cases/000001.json
 replay      sideeye replay /tmp/sideeye-work/cases/000001.json --shim …
-evidence    /tmp/sideeye-work/evidence/000001.json
+evidence    sideeye evidence /tmp/sideeye-work/evidence/000001.json
 ```
 
-```
-$ sideeye evidence /tmp/sideeye-work/cases/000001.json
-```
-
-Markdown on stdout, for pasting into an upstream issue. It takes the case's path or the
-bundle's own — either name reaches the same file. It runs nothing: the target is not
+`sideeye evidence` writes Markdown on stdout, for pasting into an upstream issue. It takes
+the case's path or the bundle's own — either name reaches the same file. It runs nothing: the target is not
 started, the state directory is not touched, and no verdict is produced.
 
 Exit codes: **0** when the bundle is rendered, **3** when it cannot be. Not 2 — that is

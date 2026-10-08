@@ -94,7 +94,8 @@ PY
     )
     rc=${timed%% *}; secs=${timed#* }
     # The engine's own account of what it ran: `explored N worlds (crash points K + 1 baseline)`.
-    line=$(grep -o 'explored [0-9]* worlds (crash points [0-9]* + 1 baseline)' "$d/out.txt" | head -1)
+    # One or more spaces: a PASS printed one until #711 gave the verdict blocks a FAIL's columns.
+    line=$(grep -oE 'explored +[0-9]+ worlds \(crash points [0-9]+ \+ 1 baseline\)' "$d/out.txt" | head -1)
     worlds=$(printf '%s' "$line" | awk '{print $2}')
     cps=$(printf '%s' "$line" | awk '{print $6}')
     python3 - "$name" "$nfiles" "$fsize" "$size" "$rc" "${worlds:-}" "${cps:-}" "$secs" <<'PY'

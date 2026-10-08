@@ -57,6 +57,10 @@
 # exception's two sentences became one clause in the same edit, which paid back 100 bytes, so
 # the page grew by 698. The line bound moves for the same reason and the same way: the page's
 # count plus two.
+# A tenth (#709, 2026-10-08): the 154-byte sentence under "After the first find" that names
+# `sideeye evidence`. The command has rendered a saved FAIL for an upstream report since ADR 0071,
+# and a FAIL's report printed the bundle's path and not the command, so a reader who learned
+# Sideeye from this page had no way to learn it existed; check 10 below holds it.
 #
 # Sunset: if this has not failed once by 2026-12-04, delete it and its CI step.
 set -u
@@ -75,7 +79,7 @@ has() { grep -qF -e "$1" "$R"; }
 
 bytes=$(wc -c < "$R" | tr -d ' ')
 lines=$(wc -l < "$R" | tr -d ' ')
-if [ "$bytes" -le 10357 ]; then ok "size: $bytes bytes, at most 10357"; else bad "size: $bytes bytes, over 10357"; fi
+if [ "$bytes" -le 10511 ]; then ok "size: $bytes bytes, at most 10511"; else bad "size: $bytes bytes, over 10511"; fi
 if [ "$lines" -le 137 ]; then ok "length: $lines lines, at most 137"; else bad "length: $lines lines, over 137"; fi
 n=$(grep -cE '#[0-9]+' "$R")
 if [ "$n" -eq 0 ]; then ok "no issue numbers"; else bad "$n line(s) carry an issue number; the record belongs in the page the reason lives on"; fi
@@ -140,6 +144,11 @@ if [ -n "$promise_line" ] && printf '%s\n' "$promise_sentence" | grep -qF 'paths
 else
     bad "\"never a silent PASS\" is gone, or its sentence no longer names paths_attributed_to_rename"
 fi
+
+# 10. The command that turns a saved FAIL into an upstream report (#709). Not one of run 1's seven:
+# the step after a first verdict, which the page names in the paragraph after it.
+if has 'sideeye evidence'; then ok "sideeye evidence, the step from a FAIL to an upstream report"
+else bad "sideeye evidence is gone; a reader of this page cannot learn a FAIL renders as a report"; fi
 
 if [ "$fails" -ne 0 ]; then
     echo "$fails check(s) failed on $R"
