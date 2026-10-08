@@ -52,6 +52,11 @@ pub const renameatx_np = @extern(*const fn (c_int, [*:0]const u8, c_int, [*:0]co
 /// Atomic contents swap — the mutation the restore model cannot reproduce, macOS's
 /// `RENAME_EXCHANGE`-shaped relative (v12). Interposed to refuse in scope, never to count.
 pub const exchangedata = @extern(*const fn ([*:0]const u8, [*:0]const u8, c_uint) callconv(.c) c_int, .{ .name = "exchangedata" });
+/// The mapping calls (v19, #689): a store through a shared mapping of a state file has no
+/// call behind it, so a writable one — made so, or by an `mprotect` later — is refused in
+/// scope, never counted. Interposed on this platform only: Linux's oracle sees both.
+pub const mmap = @extern(*const fn (?*anyopaque, usize, c_int, c_int, c_int, i64) callconv(.c) ?*anyopaque, .{ .name = "mmap" });
+pub const mprotect = @extern(*const fn (?*anyopaque, usize, c_int) callconv(.c) c_int, .{ .name = "mprotect" });
 /// The attrlist family (v12): metadata writers, except that `ATTR_CMN_NAME` renames.
 /// The `options` word is declared `unsigned int` in one SDK header and `unsigned long`
 /// in another — declared wide here, matching the wider header, since arm64 passes both

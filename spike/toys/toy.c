@@ -94,6 +94,22 @@
  *                       prefix of post, so the file stays on pre-or-post and the run
  *                       stays UNKNOWN — pinning that the relaxation for files that only
  *                       grow does not leak to files that are rewritten.
+ *   TOY_MMAP=<shape>    write mapped.db (two pages of 'A', made by init) through a shared
+ *                       mapping (#689, ADR 0098), inside the ordinary rotation and before
+ *                       its rename, so the run has mutations — and crash points after the
+ *                       stores — of its own. write: mapped writable; protect: mapped
+ *                       read-only, then mprotect adds PROT_WRITE; read: mapped read-only
+ *                       and written with pwrite — bbolt's shape, which must stay judged;
+ *                       child: a forked child maps it writable, stores, and pwrites, and
+ *                       the parent reaps it — the shape the v15 rule admits;
+ *                       many: 33 read-only shared views, then an anonymous page made
+ *                       writable — past the macOS shim's 32-slot table, refused there.
+ *   TOY_NONDET_COUNTER  the same rewrite with bytes a test can predict (#688): the k-th
+ *                       run writes "AAAA<k>BBBB\n", k read from and written back to the
+ *                       file TOY_COUNTER names (outside the state), which init resets
+ *                       to 0. The recording is run 1; whatever ran last left the
+ *                       counter's final value — so where two runs differ is computed
+ *                       from the counter, not from the engine's account of it.
  *
  * The five below exist for stdio observation at flush granularity (ADR 0005).
  *   TOY_STDIO          a plain-"r" read (must consume no address), then the
@@ -381,6 +397,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -954,10 +971,30 @@ static int cmd_init(void) {
         join_path(log, sizeof log, "log.txt");
         if (write_file(log, "born\n") != 0) return 1;
     }
-    if (getenv("TOY_NONDET_REWRITE") || getenv("TOY_NONDET_REMOVE")) {
+    if (getenv("TOY_NONDET_REWRITE") || getenv("TOY_NONDET_REMOVE") || getenv("TOY_NONDET_COUNTER")) {
         char nd[4096];
         join_path(nd, sizeof nd, "nondet.txt");
         if (write_file(nd, "seed\n") != 0) return 1;
+    }
+    if (getenv("TOY_NONDET_COUNTER")) {
+        const char *cp = getenv("TOY_COUNTER");
+        if (!cp) return 1;
+        FILE *cf = fopen(cp, "w");
+        if (!cf) return 1;
+        fputs("0\n", cf);
+        if (fclose(cf) != 0) return 1;
+    }
+    if (getenv("TOY_MMAP")) {
+        char mp[4096];
+        join_path(mp, sizeof mp, "mapped.db");
+        long pg = sysconf(_SC_PAGESIZE);
+        char *two = malloc((size_t)pg * 2 + 1);
+        if (!two) return 1;
+        memset(two, 'A', (size_t)pg * 2);
+        two[pg * 2] = '\0';
+        int rc = write_file(mp, two);
+        free(two);
+        if (rc != 0) return 1;
     }
     if (getenv("TOY_SPLIT_REWRITE")) {
         char d[4096], p[4096];
@@ -1522,6 +1559,83 @@ static int cmd_rotate_body(void) {
         join_path(f, sizeof f, "transient-fifo");
         if (mknod(f, S_IFIFO | 0644, 0) != 0) return 1;
         if (remove(f) != 0) return 1;
+    }
+
+    /* The same class with predictable bytes (#688): run k writes AAAA<k>BBBB. */
+    if (getenv("TOY_NONDET_COUNTER")) {
+        const char *cp = getenv("TOY_COUNTER");
+        if (!cp) return 1;
+        long k = 0;
+        FILE *cf = fopen(cp, "r");
+        if (cf) {
+            if (fscanf(cf, "%ld", &k) != 1) k = 0;
+            fclose(cf);
+        }
+        k += 1;
+        cf = fopen(cp, "w");
+        if (!cf) return 1;
+        fprintf(cf, "%ld\n", k);
+        if (fclose(cf) != 0) return 1;
+        char nd[4096];
+        join_path(nd, sizeof nd, "nondet.txt");
+        char content[64];
+        snprintf(content, sizeof content, "AAAA%ldBBBB\n", k);
+        if (write_file(nd, content) != 0) return 1;
+    }
+
+    /* Stores through a shared mapping (#689): no call behind them, so no crash point. */
+    const char *mm = getenv("TOY_MMAP");
+    if (mm) {
+        char mp[4096];
+        join_path(mp, sizeof mp, "mapped.db");
+        int fd = open(mp, O_RDWR);
+        if (fd < 0) return 1;
+        long pg = sysconf(_SC_PAGESIZE);
+        size_t len = (size_t)pg * 2;
+        if (strcmp(mm, "write") == 0 || strcmp(mm, "protect") == 0) {
+            int writable = strcmp(mm, "write") == 0;
+            char *p = mmap(NULL, len, writable ? (PROT_READ | PROT_WRITE) : PROT_READ, MAP_SHARED, fd, 0);
+            if (p == MAP_FAILED) return 1;
+            if (!writable && mprotect(p, len, PROT_READ | PROT_WRITE) != 0) return 1;
+            p[0] = 'X';
+            p[pg] = 'Y';
+            if (munmap(p, len) != 0) return 1;
+        } else if (strcmp(mm, "read") == 0) {
+            char *p = mmap(NULL, len, PROT_READ, MAP_SHARED, fd, 0);
+            if (p == MAP_FAILED) return 1;
+            char seen = p[0];
+            if (munmap(p, len) != 0) return 1;
+            if (seen != 'A') return 1;
+            if (pwrite(fd, "X", 1, 0) != 1 || pwrite(fd, "Y", 1, (off_t)pg) != 1) return 1;
+        } else if (strcmp(mm, "child") == 0) {
+            /* The writable mapping made by a child that also writes through a call the
+             * shim records, and that the parent reaps: the v15 rule admits such a child,
+             * and the stores rode the run until the oracle refused a child's mapping too. */
+            pid_t c = fork();
+            if (c < 0) return 1;
+            if (c == 0) {
+                char *p = mmap(NULL, len, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+                if (p == MAP_FAILED) _exit(1);
+                p[0] = 'X';
+                p[pg] = 'Y';
+                if (munmap(p, len) != 0) _exit(1);
+                if (pwrite(fd, "Z", 1, 1) != 1) _exit(1);
+                _exit(0);
+            }
+            int st = 0;
+            if (waitpid(c, &st, 0) != c || !WIFEXITED(st) || WEXITSTATUS(st) != 0) return 1;
+        } else if (strcmp(mm, "many") == 0) {
+            for (int i = 0; i < 33; i++)
+                if (mmap(NULL, (size_t)pg, PROT_READ, MAP_SHARED, fd, 0) == MAP_FAILED) return 1;
+            char *a = mmap(NULL, (size_t)pg, PROT_READ, MAP_PRIVATE | MAP_ANON, -1, 0);
+            if (a == MAP_FAILED) return 1;
+            if (mprotect(a, (size_t)pg, PROT_READ | PROT_WRITE) != 0) return 1;
+            a[0] = 1;
+            if (pwrite(fd, "X", 1, 0) != 1) return 1;
+        } else {
+            return 1;
+        }
+        if (close(fd) != 0) return 1;
     }
 
     /* A rewrite that no run repeats — the class the history form must NOT tolerate. */

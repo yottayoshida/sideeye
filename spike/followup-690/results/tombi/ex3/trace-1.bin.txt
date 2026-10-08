@@ -1,0 +1,14 @@
+0 205 205 shim_ready /s/tombi/proj
+0 205 205 cgroup /s/tombi/proj
+0 205 205 thread 
+0 205 205 thread 
+0 205 205 thread 
+0 205 205 thread 
+0 205 205 thread 
+0 205 205 thread 
+0 205 205 thread 
+0 205 205 thread 
+0 205 205 thread 
+0 205 205 thread 
+0 205 205 thread 
+1 205 210 kill_landed /s/tombi/proj/a.toml

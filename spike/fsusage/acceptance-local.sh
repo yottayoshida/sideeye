@@ -475,5 +475,88 @@ case "$c7_proc" in *"a process other than the subject operated"*) fail "check 7:
 echo "  PASS"
 
 echo "=================================================================="
-echo "all seven checks passed"
+echo "Check 8 — a state file written through a shared mapping is refused under fs_usage (#689)"
+echo "  predicate: write, protect and many exit 2 unsupported_syscall_observed, each naming how"
+echo "             the mapping became writable (many: past the shim's table); read (bbolt's shape: a read-only shared map, the"
+echo "             writes through pwrite) reaches a verdict"
+echo "  why here:  fs_usage's reader files mmap among the read-only calls and never sees an"
+echo "             mprotect, so on this platform the refusal is the shim's (contract v19, ADR"
+echo "             0098). Through v18 a run storing through such a mapping passed."
+cat > "$WORK/mmap_toy.c" <<'EOF'
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <unistd.h>
+/* argv[1]: write | protect | read | many. Two pages of db, stored or pwritten one byte each.
+ * many: 33 read-only shared views first, past the shim's 32 slots, then an anonymous page made
+ * writable. The ftruncate is a recorded mutation, so the zero-operations guard is not what
+ * refuses. */
+int main(int argc, char **argv) {
+    const char *dir = getenv("PROBE_STATE");
+    if (!dir || argc < 2) return 2;
+    char p[1024];
+    snprintf(p, sizeof p, "%s/db", dir);
+    int fd = open(p, O_RDWR);
+    if (fd < 0) return 1;
+    long pg = sysconf(_SC_PAGESIZE);
+    size_t len = (size_t)pg * 2;
+    if (ftruncate(fd, (off_t)len) != 0) return 1;
+    if (strcmp(argv[1], "many") == 0) {
+        for (int i = 0; i < 33; i++)
+            if (mmap(NULL, (size_t)pg, PROT_READ, MAP_SHARED, fd, 0) == MAP_FAILED) return 1;
+        char *a = mmap(NULL, (size_t)pg, PROT_READ, MAP_PRIVATE | MAP_ANON, -1, 0);
+        if (a == MAP_FAILED) return 1;
+        if (mprotect(a, (size_t)pg, PROT_READ | PROT_WRITE) != 0) return 1;
+        a[0] = 1;
+        if (pwrite(fd, "X", 1, 0) != 1) return 1;
+    } else if (strcmp(argv[1], "read") == 0) {
+        char *m = mmap(NULL, len, PROT_READ, MAP_SHARED, fd, 0);
+        if (m == MAP_FAILED) return 1;
+        char seen = m[0];
+        if (munmap(m, len) != 0 || seen != 'A') return 1;
+        if (pwrite(fd, "X", 1, 0) != 1 || pwrite(fd, "Y", 1, (off_t)pg) != 1) return 1;
+    } else {
+        int writable = strcmp(argv[1], "write") == 0;
+        char *m = mmap(NULL, len, writable ? (PROT_READ | PROT_WRITE) : PROT_READ, MAP_SHARED, fd, 0);
+        if (m == MAP_FAILED) return 1;
+        if (!writable && mprotect(m, len, PROT_READ | PROT_WRITE) != 0) return 1;
+        m[0] = 'X';
+        m[pg] = 'Y';
+        if (munmap(m, len) != 0) return 1;
+    }
+    return close(fd) == 0 ? 0 : 1;
+}
+EOF
+cc -O0 -o "$WORK/mmap_toy" "$WORK/mmap_toy.c" || fail "check 8: the toy did not build"
+PG=$(getconf PAGESIZE)
+for shape in write protect many read; do
+    mkdir -p "$WORK/state-c8$shape"
+    head -c $((PG * 2)) /dev/zero | tr '\0' A > "$WORK/state-c8$shape/db"
+    rc8=$(run "c8$shape" "mmap_toy $shape" --oracle-fs-usage)
+    reason=$(field "c8$shape" unknown_reason)
+    msg=$(field "c8$shape" message)
+    echo "  $shape: exit=$rc8 reason=$reason"
+    case $shape in
+        write) want='mmap(PROT_WRITE|MAP_SHARED)' ;;
+        protect) want='mprotect(PROT_WRITE) on a shared mapping of a state file' ;;
+        many) want='mprotect(PROT_WRITE) after more shared mappings of state files than the shim tracks' ;;
+        read) want='' ;;
+    esac
+    if [ -n "$want" ]; then
+        [ "$rc8" = "2" ] || { sed -n '1,12p' "$WORK/c8$shape.txt"; fail "check 8 $shape: expected exit 2, got $rc8"; }
+        [ "$reason" = "unsupported_syscall_observed" ] || fail "check 8 $shape: expected unsupported_syscall_observed, got $reason"
+        case "$msg" in *"$want"*) ;; *) fail "check 8 $shape: the refusal does not name $want: $msg" ;; esac
+    else
+        # A verdict, and one the second witness checked: a refusal of every shared mapping
+        # fails here, and so does a run the oracle did not verify.
+        { [ "$rc8" = "0" ] || [ "$rc8" = "1" ]; } || { sed -n '1,12p' "$WORK/c8read.txt"; fail "check 8 read: expected a verdict, got exit $rc8 ($reason)"; }
+        [ "$(field c8read oracle_verified)" = "True" ] || fail "check 8 read: the verdict is not oracle_verified"
+    fi
+done
+echo "  PASS"
+
+echo "=================================================================="
+echo "all eight checks passed"
 echo "artifacts: $WORK"

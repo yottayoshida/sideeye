@@ -1575,6 +1575,293 @@ pub fn baselineObserved(arena: std.mem.Allocator, v: engine.Violation) []const u
     return std.fmt.allocPrint(arena, "the re-run from the restored state left {s} {s}", .{ textShown(arena, violationPath(v)), tail }) catch "the re-run from the restored state did not leave the recorded bytes";
 }
 
+/// How `byteSpan` shows the two stretches (#688).
+pub const SpanShown = enum {
+    /// Where, how long and what kind of bytes — no bytes. A refusal carries this: it reaches
+    /// the JSON `message`, the MCP answer (ADR 0010) and reports pasted upstream, and the
+    /// stretch two runs disagree on is exactly where a per-run token or secret sits.
+    shape,
+    /// The same, plus both stretches quoted. Only `preflight --twice` prints this: it has no
+    /// `--json` and no MCP tool, so the bytes reach the terminal of whoever typed it.
+    bytes,
+};
+
+/// Raw bytes of each stretch `byteSpan` quotes before it says `…`.
+const span_shown_max: usize = 48;
+
+/// What kind of bytes a stretch holds, and — for `binary` — how many are not text, counted
+/// once: a stretch can be a whole file.
+const StretchKind = struct {
+    kind: enum { nothing, decimal, hex, text, binary },
+    non_text: usize = 0,
+
+    fn of(s: []const u8) StretchKind {
+        if (s.len == 0) return .{ .kind = .nothing };
+        var decimal = true;
+        var hex = true;
+        var has_digit = false;
+        var has_letter = false;
+        for (s) |c| {
+            if (std.ascii.isDigit(c)) has_digit = true else decimal = false;
+            if (!std.ascii.isHex(c)) hex = false else if (!std.ascii.isDigit(c)) has_letter = true;
+        }
+        if (decimal) return .{ .kind = .decimal };
+        // Digits and letters both (review): `A`→`B`, `bad`→`fee` are hex-shaped words, and the
+        // apparatus table sends "hex digits" to look for an id.
+        if (hex and has_digit and has_letter) return .{ .kind = .hex };
+        const n = defang.nonTextBytes(s);
+        return if (n == 0) .{ .kind = .text } else .{ .kind = .binary, .non_text = n };
+    }
+
+    fn text(self: StretchKind, arena: std.mem.Allocator) []const u8 {
+        return switch (self.kind) {
+            .nothing => "nothing",
+            .decimal => "decimal digits",
+            .hex => "hex digits",
+            .text => "printable text",
+            .binary => std.fmt.allocPrint(arena, "{d} byte(s) outside printable text", .{self.non_text}) catch "bytes outside printable text",
+        };
+    }
+};
+
+fn isUtf8Continuation(c: u8) bool {
+    return c & 0xc0 == 0x80;
+}
+
+/// The valid UTF-8 character that holds byte `i` of `s` without starting there — the one a
+/// stretch boundary at `i` would cut — or null when `s[i]` is not a continuation byte of one.
+fn charAround(s: []const u8, i: usize) ?struct { start: usize, end: usize } {
+    if (i >= s.len or !isUtf8Continuation(s[i])) return null;
+    var j = i;
+    while (j > 0 and i - j < 3) {
+        j -= 1;
+        if (!isUtf8Continuation(s[j])) break;
+    }
+    if (isUtf8Continuation(s[j])) return null;
+    const n = std.unicode.utf8ByteSequenceLength(s[j]) catch return null;
+    if (j + n <= i or j + n > s.len) return null;
+    if (!std.unicode.utf8ValidateSlice(s[j..][0..n])) return null;
+    return .{ .start = j, .end = j + n };
+}
+
+/// `s` cut to at most `max` bytes, the cut moved back (by up to three bytes) off the middle
+/// of a UTF-8 character so the quote does not end in a row of `\xNN`.
+fn clipAtCharacter(s: []const u8, max: usize) []const u8 {
+    if (s.len <= max) return s;
+    var n = max;
+    while (n > 0 and max - n < 3 and isUtf8Continuation(s[n])) n -= 1;
+    return s[0..n];
+}
+
+/// The difference between two byte strings two clean runs left at one path (#688), as an
+/// observation: where they first differ, how long the differing stretch is in each, and
+/// what kind of bytes it holds — never what produced them (ADR 0030; DESIGN: the engine
+/// does not guess whether it was a clock, a random id or an inode-keyed cache). The
+/// stretch is what is left after the common prefix and the common suffix are taken off
+/// both, so a changed number in the middle of a line is that number, and the two
+/// stretches can differ in length or be empty on one side. Offsets count from 0, and the
+/// offset is the first byte that differs; the stretch is then widened, by up to three
+/// shared bytes at either end, to whole UTF-8 characters — `café`→`cafè` differ only in
+/// the last byte of the `é`, and the stretch cut there was one continuation byte read as
+/// binary (review).
+pub fn byteSpan(arena: std.mem.Allocator, a_name: []const u8, a: []const u8, b_name: []const u8, b: []const u8, shown: SpanShown) []const u8 {
+    if (std.mem.eql(u8, a, b)) return "hold the same bytes";
+    const lim = @min(a.len, b.len);
+    var p: usize = 0;
+    while (p < lim and a[p] == b[p]) p += 1;
+    var s: usize = 0;
+    while (s < lim - p and a[a.len - 1 - s] == b[b.len - 1 - s]) s += 1;
+    // Widening crosses only shared bytes — everything before `p` and after the last `s` bytes
+    // is the same in both, so the two stretches grow by the same characters — and only to a
+    // character that is really there: a byte in 0x80–0xBF is a continuation only inside a
+    // valid sequence, and in a PNG or an sqlite page most of them are not (review: the first
+    // revision widened `41 90 85`/`41 90 86` to three bytes where one differs).
+    var q = p;
+    if (charAround(a, p)) |c| q = @min(q, c.start);
+    if (charAround(b, p)) |c| q = @min(q, c.start);
+    var end_a = a.len - s;
+    var end_b = b.len - s;
+    if (charAround(a, end_a)) |c| end_a = @max(end_a, c.end);
+    if (charAround(b, end_b)) |c| end_b = @max(end_b, c.end);
+    const t = @min(a.len - end_a, b.len - end_b);
+    const sa = a[q .. a.len - t];
+    const sb = b[q .. b.len - t];
+    const ka = StretchKind.of(sa);
+    const kb = StretchKind.of(sb);
+    const kinds: []const u8 = if (ka.kind == kb.kind and ka.kind == .binary)
+        std.fmt.allocPrint(arena, "both holding bytes outside printable text ({d} and {d})", .{ ka.non_text, kb.non_text }) catch "both holding bytes outside printable text"
+    else if (ka.kind == kb.kind)
+        std.fmt.allocPrint(arena, "both {s}", .{ka.text(arena)}) catch ""
+    else
+        std.fmt.allocPrint(arena, "{s} in {s}, {s} in {s}", .{ ka.text(arena), a_name, kb.text(arena), b_name }) catch "";
+    // A widened stretch says where it starts, so the offset and the length are not read as
+    // one range.
+    return switch (shown) {
+        .shape => std.fmt.allocPrint(arena, "first differ at byte offset {d}, in a stretch {d} byte(s) long in {s} and {d} in {s}{s} (of {d} and {d} bytes), {s}", .{
+            p,
+            sa.len,
+            a_name,
+            sb.len,
+            b_name,
+            if (q < p) std.fmt.allocPrint(arena, ", starting at byte offset {d} where that character begins", .{q}) catch "" else "",
+            a.len,
+            b.len,
+            kinds,
+        }) catch "differ",
+        .bytes => std.fmt.allocPrint(arena, "first differ at byte offset {d}{s}: {s} {s}{s}, {s} {s}{s} — {d} and {d} byte(s) of {d} and {d}, {s}", .{
+            p,
+            if (q < p) std.fmt.allocPrint(arena, " (stretch from byte offset {d})", .{q}) catch "" else "",
+            a_name,
+            defang.quotedForReport(arena, clipAtCharacter(sa, span_shown_max)) catch "\"?\"",
+            if (sa.len > span_shown_max) "…" else "",
+            b_name,
+            defang.quotedForReport(arena, clipAtCharacter(sb, span_shown_max)) catch "\"?\"",
+            if (sb.len > span_shown_max) "…" else "",
+            sa.len,
+            sb.len,
+            a.len,
+            b.len,
+            kinds,
+        }) catch "differ",
+    };
+}
+
+fn kindName(k: posix.Kind) []const u8 {
+    return switch (k) {
+        .file => "file",
+        .dir => "directory",
+        .symlink => "symbolic link",
+        .other => "special file",
+        .missing => "nothing",
+    };
+}
+
+/// The clause a byte-layer `baseline_violates_invariant` adds after `baselineObserved`
+/// (#688): what the recording left at the path the refusal names, against what the re-run
+/// left there. Shape only — see `SpanShown.shape` for why the bytes stay out — with the
+/// command that shows them named. Empty for `missing` (one side has no bytes) and whenever
+/// either side cannot be found, so the sentence it extends stays whole.
+pub fn baselineDiffers(arena: std.mem.Allocator, plan: engine.L0Plan, rerun: engine.Snapshot, v: engine.Violation) []const u8 {
+    const rel = switch (v) {
+        .hybrid, .rewritten => |p| p,
+        .missing, .not_durable => return "",
+    };
+    const f = plan.find(rel) orelse return "";
+    const e = rerun.find(rel) orelse return "";
+    if (e.kind != f.post_kind)
+        return std.fmt.allocPrint(arena, "; the recording left a {s} there and the re-run a {s}", .{ kindName(f.post_kind), kindName(e.kind) }) catch "";
+    if (std.mem.eql(u8, e.content, f.post_content)) return "";
+    return std.fmt.allocPrint(arena, "; the two runs' bytes {s}; preflight --twice quotes what two runs leave there", .{byteSpan(arena, "the recording", f.post_content, "the re-run", e.content, .shape)}) catch "";
+}
+
+test "byteSpan names where two runs' bytes differ, how long and what kind, and the bytes only when asked (#688)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    // A changed number mid-line: prefix and suffix come off, the stretch is the number.
+    try std.testing.expectEqualStrings(
+        "first differ at byte offset 4, in a stretch 1 byte(s) long in the recording and 1 in the re-run (of 9 and 9 bytes), both decimal digits",
+        byteSpan(a, "the recording", "AAAA1BBBB", "the re-run", "AAAA2BBBB", .shape),
+    );
+    // Three inputs whose common prefixes differ in length, so an offset that does not come
+    // from the bytes cannot pass all three.
+    try std.testing.expect(std.mem.startsWith(u8, byteSpan(a, "x", "run pid=1234 t=5", "y", "run pid=1299 t=5", .shape), "first differ at byte offset 10,"));
+    try std.testing.expect(std.mem.startsWith(u8, byteSpan(a, "x", "Z", "y", "Q", .shape), "first differ at byte offset 0,"));
+    try std.testing.expect(std.mem.startsWith(u8, byteSpan(a, "x", "AAAA1BBBB", "y", "AAAA12BBBB", .shape), "first differ at byte offset 5,"));
+    // ... and that last one is an insertion: nothing on one side.
+    try std.testing.expect(std.mem.indexOf(u8, byteSpan(a, "x", "AAAA1BBBB", "y", "AAAA12BBBB", .shape), "0 byte(s) long in x and 1 in y (of 9 and 10 bytes), nothing in x, decimal digits in y") != null);
+    // The shape form carries no byte of either stretch.
+    const shape = byteSpan(a, "first run", "tok=SECRETAAAA", "second run", "tok=OTHERVALUE", .shape);
+    try std.testing.expect(std.mem.indexOf(u8, shape, "SECRET") == null and std.mem.indexOf(u8, shape, "OTHER") == null);
+    // The bytes form quotes both, and a non-UTF-8 stretch is spelled, not turned into `?`.
+    try std.testing.expectEqualStrings(
+        "first differ at byte offset 4: first run \"1\", second run \"2\" — 1 and 1 byte(s) of 9 and 9, both decimal digits",
+        byteSpan(a, "first run", "AAAA1BBBB", "second run", "AAAA2BBBB", .bytes),
+    );
+    try std.testing.expect(std.mem.indexOf(u8, byteSpan(a, "f", "\x89PNG\x00\x01", "s", "\x89PNG\x00\x02", .bytes), "f \"\\x01\", s \"\\x02\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, byteSpan(a, "f", "\x89PNG\x00\x01", "s", "\x89PNG\x00\x02", .shape), "both holding bytes outside printable text (1 and 1)") != null);
+    // Hex, text, and the clip at 48 bytes with the full length still stated.
+    try std.testing.expect(std.mem.indexOf(u8, byteSpan(a, "f", "id=3fa9c1", "s", "id=b07e2d", .shape), "both hex digits") != null);
+    try std.testing.expect(std.mem.indexOf(u8, byteSpan(a, "f", "name=alpha;", "s", "name=omega;", .shape), "both printable text") != null);
+    const long_a = "x" ** 100;
+    const long_b = "y" ** 100;
+    const clipped = byteSpan(a, "f", long_a, "s", long_b, .bytes);
+    try std.testing.expect(std.mem.indexOf(u8, clipped, "f \"" ++ "x" ** 48 ++ "\"…, s \"" ++ "y" ** 48 ++ "\"… — 100 and 100 byte(s)") != null);
+    try std.testing.expectEqualStrings("hold the same bytes", byteSpan(a, "f", "same", "s", "same", .shape));
+}
+
+test "byteSpan reads text as text: whole UTF-8 characters, lines, and hex only with digits and letters (#688 review)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    // `é` (C3 A9) and `è` (C3 A8) differ in their last byte; the stretch is the character.
+    try std.testing.expectEqualStrings(
+        "first differ at byte offset 4 (stretch from byte offset 3): f \"é\", s \"è\" — 2 and 2 byte(s) of 6 and 6, both printable text",
+        byteSpan(a, "f", "caf\xc3\xa9\n", "s", "caf\xc3\xa8\n", .bytes),
+    );
+    // あ (E3 81 82) and い (E3 81 84) share two leading bytes: the offset is the third, the
+    // stretch is both characters whole.
+    try std.testing.expectEqualStrings(
+        "first differ at byte offset 2, in a stretch 3 byte(s) long in f and 3 in s, starting at byte offset 0 where that character begins (of 3 and 3 bytes), both printable text",
+        byteSpan(a, "f", "あ", "s", "い", .shape),
+    );
+    // Bytes in 0x80-0xBF that belong to no valid character are not widened over (review):
+    // one byte differs, at either end, and the stretch is that byte.
+    try std.testing.expectEqualStrings(
+        "first differ at byte offset 2, in a stretch 1 byte(s) long in f and 1 in s (of 3 and 3 bytes), both holding bytes outside printable text (1 and 1)",
+        byteSpan(a, "f", "\x41\x90\x85", "s", "\x41\x90\x86", .shape),
+    );
+    try std.testing.expectEqualStrings(
+        "first differ at byte offset 0, in a stretch 1 byte(s) long in f and 1 in s (of 3 and 3 bytes), both holding bytes outside printable text (1 and 1)",
+        byteSpan(a, "f", "\x01\x90\x90", "s", "\x02\x90\x90", .shape),
+    );
+    // A shared tail that begins on a lead byte is left alone: `aé`/`bé` differ in the first
+    // byte only.
+    try std.testing.expect(std.mem.indexOf(u8, byteSpan(a, "f", "a\xc3\xa9", "s", "b\xc3\xa9", .shape), "in a stretch 1 byte(s) long in f and 1 in s (of 3 and 3 bytes)") != null);
+    // A shared tail that begins mid-character is taken back to the character's end: `1ü`
+    // (C3 BC) against `2ļ` (C4 BC) share only the final BC, which belongs to each.
+    try std.testing.expect(std.mem.indexOf(u8, byteSpan(a, "f", "1\xc3\xbc", "s", "2\xc4\xbc", .shape), "in a stretch 3 byte(s) long in f and 3 in s (of 3 and 3 bytes)") != null);
+    // The stretch crosses a line: still text.
+    try std.testing.expect(std.mem.endsWith(u8, byteSpan(a, "f", "t=1\nu=2\n", "s", "t=3\nu=4\n", .shape), ", both printable text"));
+    // Hex-shaped words are text; an id with digits and letters is hex.
+    try std.testing.expect(std.mem.endsWith(u8, byteSpan(a, "f", "grade=A\n", "s", "grade=B\n", .shape), ", both printable text"));
+    try std.testing.expect(std.mem.endsWith(u8, byteSpan(a, "f", "w=bad\n", "s", "w=fee\n", .shape), ", both printable text"));
+    try std.testing.expect(std.mem.endsWith(u8, byteSpan(a, "f", "id=3fa9c1\n", "s", "id=b07e2d\n", .shape), ", both hex digits"));
+    // A clip that would end inside a character backs off to its start.
+    // Stretches of 51 bytes whose 48th and 49th bytes are one `é`.
+    const long_a = "a" ** 47 ++ "é" ++ "aaz";
+    const long_b = "b" ** 47 ++ "é" ++ "bbz";
+    try std.testing.expect(std.mem.indexOf(u8, byteSpan(a, "f", long_a, "s", long_b, .bytes), "f \"" ++ "a" ** 47 ++ "\"…, s \"" ++ "b" ** 47 ++ "\"…") != null);
+}
+
+test "baselineDiffers names a kind change, reads the history form, and says nothing for a missing path (#688 review)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    var pre = try engine.testSnapshot(std.testing.allocator, &.{ .{ "h.log", "one\n" }, .{ "k", "old" } });
+    defer pre.deinit();
+    var post = try engine.testSnapshot(std.testing.allocator, &.{ .{ "h.log", "one\ntwo\n" }, .{ "k", "new" } });
+    defer post.deinit();
+    var plan = try engine.classify(std.testing.allocator, pre, post);
+    defer plan.deinit();
+    // The history form: the re-run rewrote the log's first line.
+    var rerun = try engine.testSnapshot(std.testing.allocator, &.{ .{ "h.log", "ONE\ntwo\n" }, .{ "k", "new" } });
+    defer rerun.deinit();
+    try std.testing.expectEqualStrings(
+        "; the two runs' bytes first differ at byte offset 0, in a stretch 3 byte(s) long in the recording and 3 in the re-run (of 8 and 8 bytes), both printable text; preflight --twice quotes what two runs leave there",
+        baselineDiffers(a, plan, rerun, .{ .rewritten = "h.log" }),
+    );
+    // A directory where the recording left a file.
+    var dir_rerun: engine.Snapshot = .{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .entries = .empty };
+    defer dir_rerun.deinit();
+    try dir_rerun.entries.append(dir_rerun.arena.allocator(), .{ .rel = "k", .kind = .dir, .content = "" });
+    try std.testing.expectEqualStrings("; the recording left a file there and the re-run a directory", baselineDiffers(a, plan, dir_rerun, .{ .hybrid = "k" }));
+    // Nothing to compare for a path the re-run removed, and nothing for a path the plan does
+    // not hold — the sentence it extends stays whole.
+    try std.testing.expectEqualStrings("", baselineDiffers(a, plan, rerun, .{ .missing = "k" }));
+    try std.testing.expectEqualStrings("", baselineDiffers(a, plan, rerun, .{ .hybrid = "elsewhere" }));
+}
+
 pub fn violationObserved(v: ?engine.Violation) []const u8 {
     return if (v) |vv| switch (vv) {
         .missing => "present before and after the operation, but gone from the crashed state",

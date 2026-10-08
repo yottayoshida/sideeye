@@ -1,0 +1,16 @@
+0 911 911 shim_ready /s/tombi/proj
+0 911 911 cgroup /s/tombi/proj
+0 911 911 thread 
+0 911 911 thread 
+0 911 911 thread 
+0 911 911 thread 
+0 911 911 thread 
+0 911 911 thread 
+0 911 911 thread 
+0 911 911 thread 
+0 911 911 thread 
+0 911 911 thread 
+0 911 911 thread 
+1 911 917 open /s/tombi/proj/a.toml
+2 911 917 truncate /s/tombi/proj/a.toml
+3 911 917 kill_landed /s/tombi/proj/a.toml

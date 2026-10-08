@@ -1,0 +1,17 @@
+0 1009 1009 shim_ready /s/tombi/proj
+0 1009 1009 cgroup /s/tombi/proj
+0 1009 1009 thread 
+0 1009 1009 thread 
+0 1009 1009 thread 
+0 1009 1009 thread 
+0 1009 1009 thread 
+0 1009 1009 thread 
+0 1009 1009 thread 
+0 1009 1009 thread 
+0 1009 1009 thread 
+0 1009 1009 thread 
+0 1009 1009 thread 
+1 1009 1017 open /s/tombi/proj/a.toml
+2 1009 1017 truncate /s/tombi/proj/a.toml
+3 1009 1017 write /s/tombi/proj/a.toml
+0 1009 1017 close /s/tombi/proj/a.toml

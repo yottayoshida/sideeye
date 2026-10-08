@@ -1,0 +1,14 @@
+0 24 24 shim_ready /work/st3/is
+0 24 24 cgroup /work/st3/is
+1 24 24 open /work/st3/is/a.py.isorted
+2 24 24 write /work/st3/is/a.py.isorted
+0 24 24 close /work/st3/is/a.py
+0 24 24 close /work/st3/is/a.py.isorted
+3 24 24 rename /work/st3/is/a.py.isorted
+4 24 24 unlink /work/st3/is/a.py.isorted
+5 24 24 open /work/st3/is/b.py.isorted
+6 24 24 write /work/st3/is/b.py.isorted
+0 24 24 close /work/st3/is/b.py
+0 24 24 close /work/st3/is/b.py.isorted
+7 24 24 rename /work/st3/is/b.py.isorted
+8 24 24 unlink /work/st3/is/b.py.isorted
