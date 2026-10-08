@@ -1,0 +1,15 @@
+0 728 728 shim_ready /s/tombi/proj
+0 728 728 cgroup /s/tombi/proj
+0 728 728 thread 
+0 728 728 thread 
+0 728 728 thread 
+0 728 728 thread 
+0 728 728 thread 
+0 728 728 thread 
+0 728 728 thread 
+0 728 728 thread 
+0 728 728 thread 
+0 728 728 thread 
+0 728 728 thread 
+1 728 734 open /s/tombi/proj/a.toml
+2 728 734 kill_landed /s/tombi/proj/a.toml

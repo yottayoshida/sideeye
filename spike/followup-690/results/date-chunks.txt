@@ -1,0 +1,15 @@
+input made:    2026-10-08T03:42:52
+after touch:   mtime 2020-01-02 03:04:05  ctime 2026-10-08 03:42:54
+output made:   2026-10-08T03:42:57
+offset   8 IHDR (13 bytes)
+offset  33 cHRM (32 bytes)
+offset  77 PLTE (6 bytes)
+offset  95 bKGD (1 bytes)
+offset 108 pHYs (9 bytes)
+offset 129 tIME 2026-10-08T03:42:57 (seconds byte at offset 143)
+offset 148 IDAT (15 bytes)
+offset 175 tEXt date:create=2026-10-08T03:42:54+00:00
+offset 224 tEXt date:modify=2020-01-02T03:04:05+00:00
+offset 273 tEXt date:timestamp=2026-10-08T03:42:57+00:00
+offset 325 IEND (0 bytes)
+file length 337

@@ -75,13 +75,24 @@ WATCHED_INTERPOSED = {
     "setattrlist", "fsetattrlist", "setattrlistat",
     # The open variant libcopyfile imports beside plain open.
     "open_dprotected_np",
+    # The mapping calls (v19, #689, ADR 0098): a writable shared mapping of a state
+    # file, or PROT_WRITE added to a read-only one, is refused in scope — a store
+    # through it has no call to count.
+    "mmap", "mprotect",
 }
 NOT_INTERPOSED = {
     # The mmap/async class: the mutation is a memory store no wrapper can see; the
     # syscall is only the flush. Interposing msync would record SOME of the writes
-    # and lend the account a completeness it does not have. Filed as the #217-shape
-    # (a different observer, after 1.0).
+    # and lend the account a completeness it does not have. Since contract v19 the
+    # mapping is what is refused — `mmap` writable and shared, or `mprotect` adding
+    # PROT_WRITE to a shared one (#689, ADR 0098, which declines judging the stores) —
+    # through the public names; the paths that bypass them are listed in that ADR.
     "msync": "mmap-store class: the write itself is invisible to any wrapper",
+    # The syscall stubs `mmap` and `mprotect` wrap (`_mprotect` and `___mprotect` are
+    # one address). A program importing them by these names bypasses the interposed
+    # public ones; none has been seen to, and ADR 0098 names them among what stays unseen.
+    "__mmap": "syscall stub behind mmap: imported by name, it bypasses interposition (ADR 0098)",
+    "__mprotect": "syscall stub behind mprotect: imported by name, it bypasses interposition (ADR 0098)",
     "aio_write": "async class: completion, not issuance, changes the file; same 1.0+ observer question",
     # Creates entries the snapshot classifies `.other`, which every snapshot site
     # refuses (`unsupported_state_entry`) — measured: mkfifo-as-the-only-op refuses

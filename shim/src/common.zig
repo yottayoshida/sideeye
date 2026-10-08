@@ -2224,6 +2224,98 @@ pub fn noteUnsupportedInScopeFd(label: [*:0]const u8, fd: c_int) void {
     writeRecord(ts, .unsupported, 0, std.mem.span(label), "");
 }
 
+// --- shared mappings of state files (#689, ADR 0098) ---------------------------------
+//
+// A store through a `MAP_SHARED` mapping changes the file with no call behind it, so no
+// crash point can be placed before it. A writable mapping of a state file is refused where
+// it is made (`noteUnsupportedInScopeFd`, the same refusal Linux's oracle issues). A
+// read-only one is remembered here, so that an `mprotect` adding `PROT_WRITE` to it later
+// is refused too — macOS has no oracle that sees either call. Only a descriptor opened for
+// writing is remembered: the kernel refuses `PROT_WRITE` on a shared mapping of one opened
+// read-only (`EACCES`), so the table holds what can become writable and nothing else.
+//
+// Append-only and lock-free: a slot's `end` is published last, with release, and a reader
+// skips a slot whose `end` is still zero. Nothing is ever removed — `munmap` is not
+// interposed — so a range the target later unmapped can only add a refusal, never hide a
+// store. Past the last slot, every later `PROT_WRITE` mprotect is refused.
+
+pub const PROT_WRITE: c_int = 0x2;
+pub const MAP_SHARED: c_int = 0x1;
+/// `MAP_ANON` on Darwin; Linux's `MAP_ANONYMOUS`. Darwin passes a VM tag (a positive
+/// number) in the descriptor slot of an anonymous mapping, so the flag, not the
+/// descriptor, is what says there is no file.
+pub const MAP_ANON: c_int = if (is_darwin) 0x1000 else 0x20;
+const F_GETFL: c_int = 3;
+const shared_map_slots = 32;
+const SharedMapSlot = struct { start: usize = 0, end: usize = 0 };
+var shared_maps: [shared_map_slots]SharedMapSlot = [_]SharedMapSlot{.{}} ** shared_map_slots;
+var shared_map_next: usize = 0;
+var shared_map_overflow: bool = false;
+
+// Past the table the shim can no longer tell which ranges are state files, and says so rather
+// than naming one it did not see (review; ADR 0030): `contract.shared_map_refusal.past_table`.
+
+fn pageUp(len: usize) usize {
+    const page = std.heap.pageSize();
+    return (len +| (page - 1)) / page * page;
+}
+
+/// Remember a read-only shared mapping the target just made, when its descriptor is a
+/// state file opened for writing. Called after the real `mmap` succeeded.
+pub fn noteSharedMapping(fd: c_int, start: usize, len: usize) void {
+    if (!active) return;
+    if (fd < 0) return;
+    const fl = c.fcntl(fd, F_GETFL);
+    if (fl != -1 and (fl & O_ACCMODE) == 0) return; // read-only: can never become writable
+    const ts = mine();
+    if (ts.busy) return;
+    ts.busy = true;
+    defer ts.busy = false;
+    var deleted = false;
+    switch (fdKind(fd, &deleted)) {
+        .non_path => return,
+        // Cannot place it, so remember it: the table only ever adds a refusal.
+        .unresolvable => {},
+        .path_backed => {
+            var link_deleted = false;
+            if (fdPath(&ts.unsup_fd_path, fd, &link_deleted)) |resolved| {
+                if (!isInState(resolved)) return;
+            }
+        },
+    }
+    const i = @atomicRmw(usize, &shared_map_next, .Add, 1, .monotonic);
+    if (i >= shared_map_slots) {
+        @atomicStore(bool, &shared_map_overflow, true, .release);
+        return;
+    }
+    shared_maps[i].start = start;
+    @atomicStore(usize, &shared_maps[i].end, start +| pageUp(len), .release);
+}
+
+/// Refuse an `mprotect` that adds `PROT_WRITE` to a remembered range — or to anything, once
+/// the table has overflowed. Cheap when nothing was remembered: two atomic loads.
+pub fn noteMprotectWrite(start: usize, len: usize) void {
+    if (!active) return;
+    const n = @min(@atomicLoad(usize, &shared_map_next, .acquire), shared_map_slots);
+    const overflow = @atomicLoad(bool, &shared_map_overflow, .acquire);
+    if (n == 0 and !overflow) return;
+    var hit = false;
+    const end = start +| pageUp(len);
+    for (shared_maps[0..n]) |*m| {
+        const e = @atomicLoad(usize, &m.end, .acquire);
+        if (e != 0 and start < e and m.start < end) {
+            hit = true;
+            break;
+        }
+    }
+    if (!hit and !overflow) return;
+    const ts = mine();
+    if (ts.busy) return;
+    ts.busy = true;
+    defer ts.busy = false;
+    writeRecord(ts, .unsupported, 0, if (hit) contract.shared_map_refusal.made_writable else contract.shared_map_refusal.past_table, "");
+}
+
 pub fn noteFdFromTrap(op: contract.OpClass, fd: c_int) void {
     if (!active) return;
     // The ONLY early return keyed on the descriptor itself. Contract v8: no descriptor
@@ -2391,6 +2483,15 @@ pub inline fn callRenameatxNp(od: c_int, old: [*:0]const u8, nd: c_int, new: [*:
 }
 pub inline fn callExchangedata(p1: [*:0]const u8, p2: [*:0]const u8, opts: c_uint) c_int {
     if (is_darwin) return darwin.exchangedata(p1, p2, opts);
+    return optionalMissingInt();
+}
+// Darwin only (#689): on Linux the oracle sees mappings, and these are not exported there.
+pub inline fn callMmap(addr: ?*anyopaque, len: usize, prot: c_int, flags: c_int, fd: c_int, off: i64) ?*anyopaque {
+    if (is_darwin) return darwin.mmap(addr, len, prot, flags, fd, off);
+    return @ptrFromInt(std.math.maxInt(usize)); // MAP_FAILED
+}
+pub inline fn callMprotect(addr: ?*anyopaque, len: usize, prot: c_int) c_int {
+    if (is_darwin) return darwin.mprotect(addr, len, prot);
     return optionalMissingInt();
 }
 pub inline fn callSetattrlist(path: [*:0]const u8, al: *anyopaque, buf: ?*anyopaque, n: usize, opts: c_ulong) c_int {

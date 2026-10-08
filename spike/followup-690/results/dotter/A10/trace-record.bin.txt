@@ -1,0 +1,16 @@
+0 436 436 shim_ready /s/dotter
+0 436 436 cgroup /s/dotter
+0 436 436 close /s/dotter/home/.bashrc
+1 436 436 unlink /s/dotter/home/.bashrc
+2 436 436 mkdir /s/dotter/home
+3 436 436 open /s/dotter/home/.bashrc
+4 436 436 write /s/dotter/home/.bashrc
+5 436 436 write /s/dotter/home/.bashrc
+0 436 436 close /s/dotter/home/.bashrc
+0 436 436 close /s/dotter/home/.gitconfig
+6 436 436 unlink /s/dotter/home/.gitconfig
+7 436 436 mkdir /s/dotter/home
+8 436 436 open /s/dotter/home/.gitconfig
+9 436 436 write /s/dotter/home/.gitconfig
+10 436 436 write /s/dotter/home/.gitconfig
+0 436 436 close /s/dotter/home/.gitconfig

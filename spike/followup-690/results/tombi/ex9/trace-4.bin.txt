@@ -1,0 +1,17 @@
+0 754 754 shim_ready /s/tombi/proj
+0 754 754 cgroup /s/tombi/proj
+0 754 754 thread 
+0 754 754 thread 
+0 754 754 thread 
+0 754 754 thread 
+0 754 754 thread 
+0 754 754 thread 
+0 754 754 thread 
+0 754 754 thread 
+0 754 754 thread 
+0 754 754 thread 
+0 754 754 thread 
+1 754 758 open /s/tombi/proj/a.toml
+2 754 758 truncate /s/tombi/proj/a.toml
+3 754 758 write /s/tombi/proj/a.toml
+0 754 758 close /s/tombi/proj/a.toml

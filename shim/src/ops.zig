@@ -255,6 +255,33 @@ pub fn exchangedata(p1: [*:0]const u8, p2: [*:0]const u8, opts: c_uint) callconv
     return common.callExchangedata(p1, p2, opts);
 }
 
+/// A shared mapping of a state file (v19, #689, ADR 0098), exported on macOS only. The
+/// fast path comes first and touches nothing of the shim's: an anonymous or private mapping
+/// — malloc's, the loader's, a JIT's — goes straight through. A writable shared one is
+/// refused in scope; a read-only one is remembered once the real call has succeeded, so an
+/// `mprotect` that makes it writable is refused too.
+pub fn mmap(addr: ?*anyopaque, len: usize, prot: c_int, flags: c_int, fd: c_int, off: i64) callconv(.c) ?*anyopaque {
+    if ((flags & common.MAP_ANON) != 0 or (flags & common.MAP_SHARED) == 0)
+        return common.callMmap(addr, len, prot, flags, fd, off);
+    const r = common.callMmap(addr, len, prot, flags, fd, off);
+    // Only a mapping that exists can carry a store (review): a writable shared mapping of a
+    // descriptor opened read-only fails with EACCES and changes nothing.
+    const ok = if (r) |p| @intFromPtr(p) != std.math.maxInt(usize) else false;
+    if (!ok) return r;
+    if ((prot & common.PROT_WRITE) != 0) {
+        common.noteUnsupportedInScopeFd(contract.shared_map_refusal.writable, fd);
+    } else {
+        common.noteSharedMapping(fd, @intFromPtr(r.?), len);
+    }
+    return r;
+}
+
+/// `PROT_WRITE` added to a range `mmap` above remembered is refused (v19, #689).
+pub fn mprotect(addr: ?*anyopaque, len: usize, prot: c_int) callconv(.c) c_int {
+    if ((prot & common.PROT_WRITE) != 0) common.noteMprotectWrite(@intFromPtr(addr), len);
+    return common.callMprotect(addr, len, prot);
+}
+
 /// The one bit that turns a metadata call into a rename. `struct attrlist` is
 /// fixed-layout: `bitmapcount` u16, `reserved` u16, then `commonattr` u32 at offset 4.
 /// Everything else this family sets (xattrs, ACLs, times) falls under the report's

@@ -173,7 +173,18 @@ const std = @import("std");
 /// `unreadable` and `kill-returned` — and a v16 shim under a v17 engine would
 /// say nothing while the engine contained the run, and the version guard turns that
 /// pairing into `contract_version_mismatch` rather than a run read as uncontained.
-pub const contract_version: u32 = 18;
+/// v19 interposes `mmap` and `mprotect` on macOS (#689, ADR 0098). A store through a
+/// shared mapping of a state file has no call behind it, so no crash point can be placed
+/// before it; Linux's oracle refused a writable shared mapping, and macOS — where neither
+/// the shim nor fs_usage's reader saw one — reached PASS (measured on 2026-10-08: an
+/// `ftruncate`, two stores eight kilobytes apart and a `close` passed 3/3 under
+/// `--allow-unverified`, the stores never separated by a crash point). The shim now
+/// records `.unsupported` for a writable shared mapping of a state file, and for an
+/// `mprotect` that adds `PROT_WRITE` to a read-only one it saw made. No record changes
+/// shape and crash-point numbering is unchanged, but a v18 shim under a v19 engine would
+/// record neither while the engine relied on it, and the version guard turns that pairing
+/// into `contract_version_mismatch` rather than a PASS over stores nobody counted.
+pub const contract_version: u32 = 19;
 
 pub const magic = "SIDEEYE1";
 
@@ -519,6 +530,18 @@ test "a process is within the run's cgroup at it or below it, never beside it, w
     try std.testing.expectEqual(CgroupStanding.unknown, standingOf("12:memory:/x\n", "/sideeye-1-ab"));
     try std.testing.expectEqual(CgroupStanding.unknown, standingOf("10::/sideeye-1-ab\n", "/sideeye-1-ab"));
 }
+
+/// How a run that can store through a shared mapping of a state file is refused (#689, ADR
+/// 0098), spelled once for both observers: Linux's oracle issues the first two, the macOS shim
+/// all three, and a reader of either platform's report meets one wording for one fact.
+pub const shared_map_refusal = struct {
+    /// The mapping was made writable.
+    pub const writable = "mmap(PROT_WRITE|MAP_SHARED)";
+    /// A read-only shared mapping of a state file was given `PROT_WRITE` afterwards.
+    pub const made_writable = "mprotect(PROT_WRITE) on a shared mapping of a state file";
+    /// macOS only: past the shim's table, which range was touched cannot be told.
+    pub const past_table = "mprotect(PROT_WRITE) after more shared mappings of state files than the shim tracks";
+};
 
 pub const unresolved_kind = struct {
     /// The path could not be resolved at all (`resolveAt` failed).
@@ -1610,7 +1633,7 @@ pub const NextStep = enum {
             .run_by_hand_signalled => "Run the operation once by hand, after the setup and in the directory the report names on its cwd line (command_cwd in the JSON), to see what stopped it: it ended without an exit status (the detail names the signal when there was one), which nothing a define declares accounts for — the README's limit 'A clean run exits its declared success status' is the one it stands at. On macOS, a SIGKILL as it starts can be the system refusing an image's signature.",
             .second_run_diverged => "The second run started from the state the restore rebuilt for it — the names, kinds and bytes under --state, not their modes, owners or timestamps — and ended differently. A tool that checks the mode of a file under --state (an executable bit, a 0600 key) ends this way, and Sideeye cannot judge one yet; otherwise what the operation depends on lies outside --state or does not repeat (a lock, the clock). Run the operation twice by hand after the setup and compare; if what it needs lives in another directory, point --state at one that holds both.",
             .scratch_or_twice => "The path the detail names did not come back with the bytes the recording left, in a world nothing crashed. If those bytes are not what the verdict should judge (a cache, a log, a timestamp), declare the path scratch in the define (--scratch, or scratch in a sideeye.toml); sideeye preflight --twice names the paths two clean runs leave differently, before an exploration.",
-            .kill_not_landed => "The world was armed to die in front of the operation the recording numbered, and no kill landed there, so the crash points cannot be trusted to name the same operations in every world. The restore rebuilds the names, kinds and bytes under --state, not their modes, owners or timestamps, so a tool that reads those can take another path; sideeye preflight --twice compares what two clean runs leave. If neither explains it, file it with the report attached.",
+            .kill_not_landed => "The world was armed to die in front of the operation the recording numbered, and no kill landed there, so the crash points cannot be trusted to name the same operations in every world. The restore rebuilds the names, kinds and bytes under --state — not their modes, owners or timestamps, and nothing outside it (a cache kept beside the configuration, a lock) — so a tool that reads those can take another path; sideeye preflight --twice compares what two clean runs leave. If neither explains it, file it with the report attached.",
             .not_repeating => "The world reached the operation number it was given through other operations than the recording's, so the operation did not repeat itself from the state the restore rebuilt — the names, kinds and bytes under --state, not their modes, owners or timestamps, and nothing outside --state (a cache, a lock, the clock). sideeye preflight --twice compares what two clean runs leave, not the operations they perform.",
             .threads_limit => "Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit the README states under 'What the target has to be': threads are judged where a creation or a join the shim saw orders their writes.",
             .non_system_build => "The operation's image names a platform in its code directory, the marker Apple's own binaries carry, and macOS strips an inserted library from those; an ad-hoc re-signed copy did not start when that was measured. Make a build of the tool that is not part of macOS (Homebrew's, for example) the operation's first word.",

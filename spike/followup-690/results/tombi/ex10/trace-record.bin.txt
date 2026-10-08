@@ -1,0 +1,17 @@
+0 787 787 shim_ready /s/tombi/proj
+0 787 787 cgroup /s/tombi/proj
+0 787 787 thread 
+0 787 787 thread 
+0 787 787 thread 
+0 787 787 thread 
+0 787 787 thread 
+0 787 787 thread 
+0 787 787 thread 
+0 787 787 thread 
+0 787 787 thread 
+0 787 787 thread 
+0 787 787 thread 
+1 787 798 open /s/tombi/proj/a.toml
+2 787 798 truncate /s/tombi/proj/a.toml
+3 787 798 write /s/tombi/proj/a.toml
+0 787 798 close /s/tombi/proj/a.toml

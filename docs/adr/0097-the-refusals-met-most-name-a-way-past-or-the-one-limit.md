@@ -27,7 +27,7 @@ today's build, since the records hold the sentence of the build that ran them:
 | `baseline_violates_invariant` (6, all the byte layer) | baseline world | `class_wall` | `scratch_or_twice` |
 | `oracle_missed_operation` (5) | recording: 4 in the default mode on Linux; 1 under `--observe syscalls` (lefthook, a static parent whose dynamic child announced the shim) | `observe_syscalls`; `class_wall` | the first unchanged — already names a flag; the second an exception, #685's |
 | `unresolvable_path` (4) | a write through a file the target removed; a target that closed the trace | `class_wall` | unchanged — exception |
-| `kill_did_not_land` (3) | 2 where the operations before k differ, 1 where no landing was recorded | `fix_define` | `not_repeating`, `kill_not_landed` |
+| `kill_did_not_land` (3) | 2 where the operations before k differ, 1 where no landing was recorded (dotter, whose cause #690 measured as a cache kept outside the state) | `fix_define` | `not_repeating`, `kill_not_landed` |
 | `recording_run_failed` (3) | 2 in `preflight --twice`'s second run, 1 under `--observe syscalls` | `fix_define`, `syscalls_may_have_killed` | `second_run_diverged`; the syscalls one unchanged |
 | `no_shim_marker` (2) | a static ELF on Linux | `observe_supervised` | unchanged — already names a flag |
 | `child_touched_state_dir` (2), `child_process_detected` (1) | | `unwrap_or_class_wall` | unchanged — already a question and a way past |

@@ -1,0 +1,29 @@
+PREFLIGHT  not accepted — the two observed runs left different state
+
+difference   img1.png (content differs)
+             bytes first differ at byte offset 143: first run "\x09i\xe2\xf9\xaa\x00\x00\x00\x0fIDAT(\xcfc`\x18\x05\xa3\x80|\x00\x00\x02@\x00\x01\x8cūw\x00\x00\x00%tEXtdate:cre"…, second run "\x0b\x87옆\x00\x00\x00\x0fIDAT(\xcfc`\x18\x05\xa3\x80|\x00\x00\x02@\x00\x01\x8cūw\x00\x00\x00%tEXtdate:cre"… — 182 and 182 byte(s) of 337 and 337, both holding bytes outside printable text (37 and 41)
+difference   img2.png (content differs)
+             bytes first differ at byte offset 143: first run "\x09i\xe2\xf9\xaa\x00\x00\x00\x0fIDAT(\xcfc`\x18\x05\xa3\x80|\x00\x00\x02@\x00\x01\x8cūw\x00\x00\x00%tEXtdate:cre"…, second run "\x0c\x19\x88\x0d%\x00\x00\x00\x0fIDAT(\xcfc`\x18\x05\xa3\x80|\x00\x00\x02@\x00\x01\x8cūw\x00\x00\x00%tEXtdate:cre"… — 182 and 182 byte(s) of 337 and 337, both holding bytes outside printable text (37 and 41)
+difference   img3.png (content differs)
+             bytes first differ at byte offset 143: first run "\x09i\xe2\xf9\xaa\x00\x00\x00\x0fIDAT(\xcfc`\x18\x05\xa3\x80|\x00\x00\x02@\x00\x01\x8cūw\x00\x00\x00%tEXtdate:cre"…, second run "\x0c\x19\x88\x0d%\x00\x00\x00\x0fIDAT(\xcfc`\x18\x05\xa3\x80|\x00\x00\x02@\x00\x01\x8cūw\x00\x00\x00%tEXtdate:cre"… — 182 and 182 byte(s) of 337 and 337, both holding bytes outside printable text (37 and 41)
+
+cwd          /work  (none declared: Sideeye's own)
+atomicity    3 path(s) judged pre-or-post
+oracle       agreed on 12 operations (705 syscall lines examined, 222 in scope of the judged state), witness strace
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2007 ms apart differed under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         pin or relocate what differs, then re-run this command;
+             explore would reach the same divergence in its baseline
+             world, after a full define had been written

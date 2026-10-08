@@ -4,6 +4,8 @@ A checker is the declared invariant's sharp end: a command Sideeye runs over eac
 
 Before any exploration, Sideeye **falsifies** the checker: it corrupts a copy of the state on purpose and requires the checker to go red. A checker that cannot fail anything is refused (`checker_not_falsified`), never trusted. The recipes below are about the subtler failures that gate cannot catch.
 
+A refusal that is not about the checker but about two clean runs leaving different bytes (`baseline_violates_invariant` on the byte layer) is read with [docs/apparatus.md](apparatus.md#reading-a-byte-difference), which maps what the difference looks like to `scratch` and `apparatus`.
+
 A checker finds the state directory in `SIDEEYE_STATE_DIR`, the absolute path of the `state` you declared, resolved through any symlink — the setup, the operation and a recovery receive it too. Recipe 1's header also names `TOY_STATE`: the name the demo toy reads, which Sideeye sets to the same path for every command, so the checkers written against it keep working. A new checker reads `SIDEEYE_STATE_DIR`.
 
 ## Recipe 1 — cross-examine the tool's own diagnostic

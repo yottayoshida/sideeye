@@ -1,0 +1,22 @@
+falsify: identify cannot read img1.png (25 bytes)
+world 2: img1.png is missing
+world 3: identify cannot read img1.png (0 bytes)
+world 6: img2.png is missing
+world 7: identify cannot read img2.png (0 bytes)
+world 10: img3.png is missing
+world 11: identify cannot read img3.png (0 bytes)
+UNKNOWN  baseline_violates_invariant
+         the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing: the re-run from the restored state left img1.png holding neither the old nor the new content; the two runs' bytes first differ at byte offset 143, in a stretch 182 byte(s) long in the recording and 182 in the re-run (of 337 and 337 bytes), both holding bytes outside printable text (40 and 36); preflight --twice quotes what two runs leave there
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+cwd         /work  (none declared: Sideeye's own)
+
+atomicity   3 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+expected    exit 0
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=974996fd5e5092c156a9cecd01bfe54efae78ecda137ab0ee0a043471dc8cc2f;
