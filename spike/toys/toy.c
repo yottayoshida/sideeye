@@ -94,6 +94,12 @@
  *                       prefix of post, so the file stays on pre-or-post and the run
  *                       stays UNKNOWN — pinning that the relaxation for files that only
  *                       grow does not leak to files that are rewritten.
+ *   TOY_NONDET_COUNTER  the same rewrite with bytes a test can predict (#688): the k-th
+ *                       run writes "AAAA<k>BBBB\n", k read from and written back to the
+ *                       file TOY_COUNTER names (outside the state), which init resets
+ *                       to 0. The recording is run 1; whatever ran last left the
+ *                       counter's final value — so where two runs differ is computed
+ *                       from the counter, not from the engine's account of it.
  *
  * The five below exist for stdio observation at flush granularity (ADR 0005).
  *   TOY_STDIO          a plain-"r" read (must consume no address), then the
@@ -949,10 +955,18 @@ static int cmd_init(void) {
         join_path(log, sizeof log, "log.txt");
         if (write_file(log, "born\n") != 0) return 1;
     }
-    if (getenv("TOY_NONDET_REWRITE") || getenv("TOY_NONDET_REMOVE")) {
+    if (getenv("TOY_NONDET_REWRITE") || getenv("TOY_NONDET_REMOVE") || getenv("TOY_NONDET_COUNTER")) {
         char nd[4096];
         join_path(nd, sizeof nd, "nondet.txt");
         if (write_file(nd, "seed\n") != 0) return 1;
+    }
+    if (getenv("TOY_NONDET_COUNTER")) {
+        const char *cp = getenv("TOY_COUNTER");
+        if (!cp) return 1;
+        FILE *cf = fopen(cp, "w");
+        if (!cf) return 1;
+        fputs("0\n", cf);
+        if (fclose(cf) != 0) return 1;
     }
     if (getenv("TOY_SPLIT_REWRITE")) {
         char d[4096], p[4096];
@@ -1517,6 +1531,28 @@ static int cmd_rotate_body(void) {
         join_path(f, sizeof f, "transient-fifo");
         if (mknod(f, S_IFIFO | 0644, 0) != 0) return 1;
         if (remove(f) != 0) return 1;
+    }
+
+    /* The same class with predictable bytes (#688): run k writes AAAA<k>BBBB. */
+    if (getenv("TOY_NONDET_COUNTER")) {
+        const char *cp = getenv("TOY_COUNTER");
+        if (!cp) return 1;
+        long k = 0;
+        FILE *cf = fopen(cp, "r");
+        if (cf) {
+            if (fscanf(cf, "%ld", &k) != 1) k = 0;
+            fclose(cf);
+        }
+        k += 1;
+        cf = fopen(cp, "w");
+        if (!cf) return 1;
+        fprintf(cf, "%ld\n", k);
+        if (fclose(cf) != 0) return 1;
+        char nd[4096];
+        join_path(nd, sizeof nd, "nondet.txt");
+        char content[64];
+        snprintf(content, sizeof content, "AAAA%ldBBBB\n", k);
+        if (write_file(nd, content) != 0) return 1;
     }
 
     /* A rewrite that no run repeats — the class the history form must NOT tolerate. */

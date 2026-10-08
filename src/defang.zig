@@ -90,6 +90,95 @@ pub fn sanitizeForReport(arena: std.mem.Allocator, s: []const u8) ![]const u8 {
     return out.items;
 }
 
+/// The Unicode format characters that reorder or hide text on a terminal: the bidi
+/// embeddings, overrides and isolates, the zero-width marks and the byte-order mark.
+fn isDisplayControl(cp: u21) bool {
+    return cp == 0x061c or (cp >= 0x200b and cp <= 0x200f) or (cp >= 0x202a and cp <= 0x202e) or
+        (cp >= 0x2060 and cp <= 0x2064) or (cp >= 0x2066 and cp <= 0x2069) or cp == 0xfeff or
+        (cp >= 0xe0000 and cp <= 0xe007f);
+}
+
+/// `defangUnit` for file *contents* (#688): a file's bytes are freer than a file name's, so
+/// a display control that a name keeps under #167's rule is spelled out here — a quoted
+/// stretch holding U+202E could otherwise reverse the line it is printed on.
+fn contentUnit(s: []const u8, i: usize) DefangUnit {
+    const u = defangUnit(s, i);
+    if (u.defang or u.len == 1) return u;
+    const cp = std.unicode.utf8Decode(s[i..][0..u.len]) catch return .{ .len = u.len, .defang = true };
+    return .{ .len = u.len, .defang = isDisplayControl(cp) };
+}
+
+/// A target-chosen byte string shown as a quoted literal (#688): `\xNN` for every byte of a
+/// unit `contentUnit` defangs, plus `\"` and `\\`, so a stretch that ends in a space, holds
+/// a quote, or is empty still has visible edges and reads back as one thing. Used for file
+/// *contents*, which `textShown` would turn into a row of `?` the moment they are not UTF-8
+/// (a PNG, an sqlite page) — the bytes are the observation there.
+pub fn quotedForReport(arena: std.mem.Allocator, s: []const u8) error{OutOfMemory}![]const u8 {
+    var out: std.ArrayList(u8) = .empty;
+    try out.append(arena, '"');
+    var i: usize = 0;
+    while (i < s.len) {
+        const u = contentUnit(s, i);
+        if (u.defang) {
+            for (s[i..][0..u.len]) |ch| {
+                var nb: [4]u8 = undefined;
+                try out.appendSlice(arena, std.fmt.bufPrint(&nb, "\\x{x:0>2}", .{ch}) catch unreachable);
+            }
+        } else if (s[i] == '"' or s[i] == '\\') {
+            try out.append(arena, '\\');
+            try out.append(arena, s[i]);
+        } else {
+            try out.appendSlice(arena, s[i..][0..u.len]);
+        }
+        i += u.len;
+    }
+    try out.append(arena, '"');
+    return out.items;
+}
+
+/// How many bytes of `s` are not text, for a report that says what kind of bytes a stretch
+/// holds (#688): the bytes the report's own defang rule (#167) rejects, except a tab, a
+/// newline and a carriage return. Those are defanged for the terminal's sake, but a stretch
+/// that crosses a line of a text file is still text — counting them made a two-line log
+/// read as binary. Display controls are text here too (a ZWJ in an emoji, a ZWNJ in Persian)
+/// though `quotedForReport` spells them out: one rule protects the terminal, the other
+/// describes the file.
+pub fn nonTextBytes(s: []const u8) usize {
+    var n: usize = 0;
+    var i: usize = 0;
+    while (i < s.len) {
+        const u = defangUnit(s, i);
+        if (u.defang and !(u.len == 1 and (s[i] == '\t' or s[i] == '\n' or s[i] == '\r'))) n += u.len;
+        i += u.len;
+    }
+    return n;
+}
+
+test "quotedForReport gives a stretch visible edges and the same classification as the report's (#688)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    try std.testing.expectEqualStrings("\"\"", try quotedForReport(arena, ""));
+    try std.testing.expectEqualStrings("\"a b \"", try quotedForReport(arena, "a b "));
+    try std.testing.expectEqualStrings("\"q\\\"\\\\\"", try quotedForReport(arena, "q\"\\"));
+    try std.testing.expectEqualStrings("\"\\x89PNG\\x0d\\x0a\"", try quotedForReport(arena, "\x89PNG\r\n"));
+    try std.testing.expectEqualStrings("\"A\\xc2\\x9bB€\"", try quotedForReport(arena, "A\xc2\x9bB€"));
+    // A display control a file name keeps (#167) is spelled out in contents.
+    try std.testing.expectEqualStrings("\"a\\xe2\\x80\\xaeb\"", try quotedForReport(arena, "a\u{202e}b"));
+    try std.testing.expectEqualStrings("\"x\\xe2\\x80\\x8by\"", try quotedForReport(arena, "x\u{200b}y"));
+    try std.testing.expectEqualStrings("\"é\"", try quotedForReport(arena, "é"));
+    // Tab, newline and carriage return are quoted as bytes but counted as text.
+    try std.testing.expectEqual(@as(usize, 1), nonTextBytes("\x89PNG\r\n"));
+    try std.testing.expectEqual(@as(usize, 0), nonTextBytes("t=1\nu=2\r\n\tv"));
+    try std.testing.expectEqual(@as(usize, 2), nonTextBytes("A\xc2\x9bB€"));
+    try std.testing.expectEqual(@as(usize, 0), nonTextBytes("a\u{202e}b\u{200d}c"));
+    try std.testing.expectEqual(@as(usize, 0), nonTextBytes("plain"));
+    // The rest of the display controls (review): ALM, the invisible operators, a tag.
+    try std.testing.expectEqualStrings("\"\\xd8\\x9c\"", try quotedForReport(arena, "\u{061c}"));
+    try std.testing.expectEqualStrings("\"\\xe2\\x81\\xa0\"", try quotedForReport(arena, "\u{2060}"));
+    try std.testing.expectEqualStrings("\"\\xf3\\xa0\\x80\\x81\"", try quotedForReport(arena, "\u{e0001}"));
+}
+
 test "the defang classifier covers raw C1, encoded C1 and invalid bytes, and spares real UTF-8 (#167)" {
     // À is C3 80 and € is E2 82 AC — continuation bytes that *fall* inside the
     // C1 range. A lazy byte-wise widening would mangle both; é (C3 A9) would
