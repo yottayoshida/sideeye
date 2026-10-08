@@ -392,8 +392,13 @@ extern char **environ;
 #define KEY_NAME "key.json"
 #define TMP_NAME "key.json.tmp"
 
+/* TOY_STATE first, the name this toy has always read; then SIDEEYE_STATE_DIR, which the engine
+ * hands every define command the same value under and which the report's `reproduce` line
+ * carries without TOY_STATE (#711) — so the printed line finds the state as a world did. */
 static const char *state_dir(void) {
     const char *d = getenv("TOY_STATE");
+    if (d && *d) return d;
+    d = getenv("SIDEEYE_STATE_DIR");
     return (d && *d) ? d : "./state";
 }
 

@@ -929,16 +929,18 @@ jobs:
             --work /tmp/ci3/work \
             --allow-unverified 2>&1) || true
 
-          line=$(echo "$out" | grep '^reproduce' | sed 's/^reproduce  *//; s/ <operation>$//')
+          line=$(echo "$out" | grep '^reproduce' | sed 's/^reproduce  *//')
           [ -n "$line" ] || { echo "no reproduce line printed"; echo "$out"; exit 1; }
 
           rm -rf /tmp/ci3/state && mkdir -p /tmp/ci3/state
           TOY_STATE=/tmp/ci3/state /tmp/ci3/toy-bug init
 
           set +e
-          # Unquoted deliberately: `env` must receive the VAR=VALUE words separately,
-          # exactly as a person pasting the line would.
-          env -i TOY_STATE=/tmp/ci3/state $line /tmp/ci3/toy-bug rotate
+          # The whole line, through a shell, as a person pasting it would run it (#711: it
+          # carries the cd and the operation's argv now). TOY_STATE is the unresolved spelling,
+          # so the line's SIDEEYE_STATE_DIR_ALT is what lets the shim count /tmp against
+          # /private/tmp.
+          env -i TOY_STATE=/tmp/ci3/state /bin/sh -c "$line"
           rc=$?
           set -e
 
