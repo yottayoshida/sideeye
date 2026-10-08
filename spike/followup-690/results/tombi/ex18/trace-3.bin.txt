@@ -1,0 +1,16 @@
+0 1506 1506 shim_ready /s/tombi/proj
+0 1506 1506 cgroup /s/tombi/proj
+0 1506 1506 thread 
+0 1506 1506 thread 
+0 1506 1506 thread 
+0 1506 1506 thread 
+0 1506 1506 thread 
+0 1506 1506 thread 
+0 1506 1506 thread 
+0 1506 1506 thread 
+0 1506 1506 thread 
+0 1506 1506 thread 
+0 1506 1506 thread 
+1 1506 1512 open /s/tombi/proj/a.toml
+2 1506 1512 truncate /s/tombi/proj/a.toml
+3 1506 1512 kill_landed /s/tombi/proj/a.toml

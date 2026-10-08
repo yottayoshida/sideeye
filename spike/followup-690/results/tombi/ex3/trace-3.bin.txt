@@ -1,0 +1,16 @@
+0 231 231 shim_ready /s/tombi/proj
+0 231 231 cgroup /s/tombi/proj
+0 231 231 thread 
+0 231 231 thread 
+0 231 231 thread 
+0 231 231 thread 
+0 231 231 thread 
+0 231 231 thread 
+0 231 231 thread 
+0 231 231 thread 
+0 231 231 thread 
+0 231 231 thread 
+0 231 231 thread 
+1 231 232 open /s/tombi/proj/a.toml
+2 231 232 truncate /s/tombi/proj/a.toml
+3 231 232 kill_landed /s/tombi/proj/a.toml

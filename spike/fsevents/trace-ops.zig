@@ -1,4 +1,5 @@
-//! Print one `<op> <path>` line per record in a shim trace (#344).
+//! Print one `<op> <path>` line per record in a trace (#344) — with `--records`,
+//! `<seq> <pid> <tid> <op> <path>`, for spike/followup-690's tally (#690).
 //!
 //! Built only by `zig build -Dtrace-ops`, never shipped: it exists so
 //! `spike/fsevents/survey.sh`'s L7a can ask what the shim recorded ABOUT a path rather
@@ -34,7 +35,7 @@ fn selfTest() !void {
         .op = .write,
         .seq = 2,
         .pid = 7,
-        .tid = 7,
+        .tid = 8,
         .path = "/tmp/a",
         .aux = "",
     });
@@ -49,7 +50,7 @@ fn selfTest() !void {
 
     var out: std.ArrayList(u8) = .empty;
     defer out.deinit(std.heap.page_allocator);
-    try walk(buf[0..n], std.heap.page_allocator, &out);
+    try walk(buf[0..n], std.heap.page_allocator, &out, false);
 
     const want =
         "open /tmp/a\n" ++
@@ -60,12 +61,26 @@ fn selfTest() !void {
         return error.SelfTestFailed;
     }
 
+    // `--records` (#690): the same walk with sequence, process and thread in front. The second
+    // record is another thread's, so a reader that printed the pid twice fails here.
+    var rout: std.ArrayList(u8) = .empty;
+    defer rout.deinit(std.heap.page_allocator);
+    try walk(buf[0..n], std.heap.page_allocator, &rout, true);
+    const rwant =
+        "1 7 7 open /tmp/a\n" ++
+        "2 7 8 write /tmp/a\n" ++
+        "3 7 7 unlink /tmp/b\n";
+    if (!std.mem.eql(u8, rout.items, rwant)) {
+        std.debug.print("trace-ops --selftest: --records got\n{s}\nwanted\n{s}\n", .{ rout.items, rwant });
+        return error.SelfTestFailed;
+    }
+
     // A truncated trace must fail, not return a prefix. The caller reads absence as
     // evidence, so a short read that succeeds is a false negative with a success status
     // on it.
     var cut: std.ArrayList(u8) = .empty;
     defer cut.deinit(std.heap.page_allocator);
-    if (walk(buf[0 .. n - 3], std.heap.page_allocator, &cut)) |_| {
+    if (walk(buf[0 .. n - 3], std.heap.page_allocator, &cut, false)) |_| {
         std.debug.print("trace-ops --selftest: a truncated trace walked to the end\n", .{});
         return error.SelfTestFailed;
     } else |_| {}
@@ -77,7 +92,7 @@ fn selfTest() !void {
     wrong[contract.magic.len] +%= 1;
     var vout: std.ArrayList(u8) = .empty;
     defer vout.deinit(std.heap.page_allocator);
-    if (walk(wrong[0..n], std.heap.page_allocator, &vout)) |_| {
+    if (walk(wrong[0..n], std.heap.page_allocator, &vout, false)) |_| {
         std.debug.print("trace-ops --selftest: a trace from another contract was read anyway\n", .{});
         return error.SelfTestFailed;
     } else |_| {}
@@ -97,10 +112,18 @@ fn selfTest() !void {
 /// a 1012-byte trace to 700 returned 8 of its 12 lines with a success status. A future
 /// contract that adds an op class produces the same shape without any corruption, since
 /// `decodeRecord` answers `BadOpClass` for a tag it does not know.
-fn walk(bytes: []const u8, gpa: std.mem.Allocator, out: *std.ArrayList(u8)) !void {
+///
+/// `records` (#690) puts the record's sequence number, process and thread in front —
+/// `<seq> <pid> <tid> <op> <path>` — for a reader that has to name the first record where two
+/// runs part, and the thread that made it. The plain form stays what spike/fsevents reads.
+fn walk(bytes: []const u8, gpa: std.mem.Allocator, out: *std.ArrayList(u8), records: bool) !void {
     var off = try contract.decodeHeader(bytes);
     while (off < bytes.len) {
         const dec = try contract.decodeRecord(bytes[off..]);
+        if (records) {
+            var nb: [64]u8 = undefined;
+            try out.appendSlice(gpa, std.fmt.bufPrint(&nb, "{d} {d} {d} ", .{ dec.rec.seq, dec.rec.pid, dec.rec.tid }) catch unreachable);
+        }
         try out.appendSlice(gpa, @tagName(dec.rec.op));
         try out.append(gpa, ' ');
         try out.appendSlice(gpa, dec.rec.path);
@@ -120,15 +143,16 @@ pub fn main(init: std.process.Init.Minimal) !void {
         std.debug.print("trace-ops --selftest: ok\n", .{});
         return;
     }
-    if (args.len != 2) {
-        std.debug.print("usage: trace-ops <trace.bin> | trace-ops --selftest\n", .{});
+    const records = args.len == 3 and std.mem.eql(u8, args[1], "--records");
+    if (args.len != 2 and !records) {
+        std.debug.print("usage: trace-ops [--records] <trace.bin> | trace-ops --selftest\n", .{});
         return error.Usage;
     }
 
     // Read through libc rather than `std.Io`: this is apparatus, it runs on one file
     // named on the command line, and the 0.16 file API wants an `Io` instance the rest
     // of this program has no use for.
-    const path_z = try arena.dupeZ(u8, args[1]);
+    const path_z = try arena.dupeZ(u8, args[args.len - 1]);
     const fd = std.c.open(path_z.ptr, .{ .ACCMODE = .RDONLY });
     if (fd < 0) return error.OpenFailed;
     defer _ = std.c.close(fd);
@@ -145,7 +169,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
 
     var out: std.ArrayList(u8) = .empty;
     defer out.deinit(arena);
-    try walk(bytes.items, arena, &out);
+    try walk(bytes.items, arena, &out, records);
 
     if (out.items.len != 0) {
         const w = std.c.write(1, out.items.ptr, out.items.len);
