@@ -784,7 +784,7 @@ jobs:
           set -e
 
           [ "$rc" = "0" ] || { echo "expected PASS, got $rc"; echo "$out" | head -6; exit 1; }
-          echo "$out" | grep -q "explored 13 worlds (crash points 12 + 1 baseline)" \
+          echo "$out" | grep -q "explored  *13 worlds (crash points 12 + 1 baseline)" \
             || { echo "descriptor-borne writes not counted (want 12 + 1, matching Linux)"; echo "$out" | head -4; exit 1; }
 
       # The shim's own trace descriptor is a number a target can legally close.
@@ -815,7 +815,7 @@ jobs:
 
           run_toy TOY_CLOSE_SWEEP=150
           [ "$rc" = "0" ] || { echo "sweep below the floor moved the verdict: $rc"; echo "$out" | head -4; exit 1; }
-          echo "$out" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)" \
+          echo "$out" | grep -q "explored  *5 worlds (crash points 4 + 1 baseline)" \
             || { echo "sweep below the floor changed the count"; echo "$out" | head -4; exit 1; }
 
           rm -rf /tmp/ci-fd/state /tmp/ci-fd/work && mkdir -p /tmp/ci-fd/state
@@ -828,7 +828,7 @@ jobs:
           rm -rf /tmp/ci-fd/state /tmp/ci-fd/work && mkdir -p /tmp/ci-fd/state
           run_toy TOY_ANONFD=1
           [ "$rc" = "0" ] || { echo "a kqueue descriptor moved the verdict: $rc"; echo "$out" | head -4; exit 1; }
-          echo "$out" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)" \
+          echo "$out" | grep -q "explored  *5 worlds (crash points 4 + 1 baseline)" \
             || { echo "kqueue changed the count"; echo "$out" | head -4; exit 1; }
 
       # The parity claim, asserted rather than described: both platforms must reach the

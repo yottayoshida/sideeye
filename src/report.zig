@@ -1138,6 +1138,53 @@ pub fn sayCwd(arena: std.mem.Allocator, comptime fmt: []const u8) void {
     if (command_cwd) |c| say(fmt, .{ defang.textShown(arena, c), if (command_cwd_declared) "" else "  (none declared: Sideeye's own)" });
 }
 
+/// Which verdict's text block `sayAccount` is printing for.
+pub const AccountOf = enum { fail, pass, unknown };
+
+/// The account lines the three verdict blocks share (#711): one order, one spelling, one
+/// twelve-column key. They were three format strings — a FAIL's `key   value`, a PASS's
+/// indented `key: value` in another order, an UNKNOWN's columns in a third — and every line
+/// added since went into whichever block its change was about, so a reader comparing two
+/// reports had to hunt for the same fact. One function is what keeps the next line from
+/// drifting the same way.
+///
+/// The context lines come first, so that on an UNKNOWN they sit directly under `next`, where
+/// ADR 0086 §2 put `cwd` (a line further down is not read); a blank line separates them from
+/// the rest, as it always did on an UNKNOWN. Which lines each verdict prints is fixed here, not
+/// at the call sites: a FAIL prints every one — `replay` and `evidence` even when they read
+/// `-`, because a case that could not be saved says so rather than going quiet (ADR 0071); a
+/// PASS every one but those two, which belong to a counterexample; an UNKNOWN the set it
+/// printed before #711. `explored`, `oracle`, `metadata` and `checker` stay off it: a refusal
+/// raised before the exploration would print "explored 0 worlds (crash points N + 1
+/// baseline)" beside crash points it never reached, and the JSON carries all four on every
+/// report.
+pub fn sayAccount(arena: std.mem.Allocator, of: AccountOf, points: usize) void {
+    sayCwd(arena, "cwd         {s}{s}\n");
+    sayApparatus(arena, "apparatus   {s}\n");
+    sayWarnings("warning     {s}\n");
+    sayRecovery("recovery    {s}\n");
+    say("\n", .{});
+    if (of != .unknown) {
+        say("explored    {d} worlds (crash points {d} + 1 baseline)\n", .{ explored, points });
+        if (of == .pass) saySingleCrashPointNote(points);
+    }
+    say("expected    exit {d}\n", .{expected_status_val});
+    say("atomicity   {s}\n", .{l0_note});
+    if (of != .unknown) {
+        say("oracle      {s}\n", .{oracle_note});
+        say("metadata    {s}\n", .{metadata_note});
+        say("checker     {s}\n", .{checker_note});
+    }
+    say("l1          {s}\n", .{l1_note});
+    say("case        {s}\n", .{case_note});
+    if (of == .fail) {
+        say("replay      {s}\n", .{replay_note});
+        say("evidence    {s}\n", .{evidence_note});
+    }
+    say("processes   {s}\n", .{boundary.boundaryAccount()});
+    say("not tested  {s}\n", .{notTestedText()});
+}
+
 /// One exhibit's recovery object, inside that exhibit's JSON object. `command_exit` is present
 /// only when the recovery command exited, as `setup_exit_code` is only when the setup did.
 fn jsonRecoveryField(w: *std.ArrayList(u8), arena: std.mem.Allocator, r: RecoveryResultJson) !void {
@@ -1202,13 +1249,12 @@ test "the untouched clause is empty whenever a judged path was touched, and name
 /// print in two places — the literal and after it — and there is no third caller to make a
 /// shared predicate worth its own name.
 ///
-/// A separate call after the block, the way `sayApparatus` is, rather than a `{s}` line
-/// inside the multiline literal: `\\      {s}` prints six spaces on every *other* PASS when
-/// the string is empty, and a check that greps for wording would never see that. The cost is
-/// the position — this lands under `not tested:` rather than beside the count — and the
-/// alternative was splitting the report's one `say` in two for a single line of advice.
-pub fn saySingleCrashPointNote(n: usize) void {
-    if (n == 1) say("      if the define expected more, check that the target's store resolves inside the state directory\n", .{});
+/// A call of its own rather than a `{s}` line inside a literal, which would print an indented
+/// blank on every *other* PASS. Since `sayAccount` (#711) the PASS block is a sequence of calls,
+/// so the note sits where it always belonged — under the `explored` line it qualifies, as a
+/// continuation in the block's twelve-column style — rather than under `not tested`.
+fn saySingleCrashPointNote(n: usize) void {
+    if (n == 1) say("            if the define expected more, check that the target's store resolves inside the state directory\n", .{});
 }
 
 /// A JSON array of strings as a report field; with `only_unchecked`, the entries

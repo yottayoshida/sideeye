@@ -23,9 +23,10 @@
 #
 #   judged     a verdict is reached, carrying the oracle's agreement: exit 0 or 1, PASS or
 #              FAIL, and the report's oracle line saying it agreed on N operations —
-#              `oracle: agreed on …` under a PASS, `oracle      agreed on …` under a
-#              FAIL. The five creators the shim reimplements (contract v13, #39), in both
-#              modes; and `dprintf` and `dprintfbig` under `--observe syscalls`, where the
+#              `oracle      agreed on …` under both since #711 (a PASS indented it as
+#              `oracle: agreed on …` before, and `agreed_count` still reads that). The
+#              five creators the shim reimplements (contract v13, #39), in both modes;
+#              and `dprintf` and `dprintfbig` under `--observe syscalls`, where the
 #              kernel sees each `write` glibc splits them into (measured 2026-09-13, #541).
 #   wall       `dprintf` and `dprintfbig` under `--observe wrappers`: glibc splits a
 #              large write (measured 2026-08-31, spike/libc-internal/RESULTS.md). A
@@ -126,11 +127,12 @@ declared_for() { # $1 = entry, $2 = mode
     printf '%s' "$_v"
 }
 
-# How many operations a report says the oracle agreed on, or nothing. The engine spells
-# the line three ways — `      oracle: agreed on …` under a PASS, `oracle      agreed on …`
-# under a FAIL, and a third with seven spaces (src/main.zig) — so the line is read by its
-# shape rather than by one spelling. The first version matched the PASS spelling only
-# and read every FAIL as unjudged, a regression the second review caught.
+# How many operations a report says the oracle agreed on, or nothing. The engine has spelled
+# the line more than one way — `      oracle: agreed on …` under a PASS until #711 gave the
+# verdict blocks one spelling, `oracle      agreed on …` under a FAIL, and a third with seven
+# spaces (src/main.zig) — so the line is read by its shape rather than by one spelling, and a
+# report written by an older release still reads. The first version matched the PASS
+# spelling only and read every FAIL as unjudged, a regression the second review caught.
 agreed_count() { # $1 = report
     printf '%s\n' "$1" \
         | sed -n 's/^[[:space:]]*oracle:\{0,1\}[[:space:]][[:space:]]*agreed on \([0-9][0-9]*\) operation.*/\1/p' \
@@ -321,10 +323,11 @@ selftest() {
         esac
     }
 
-    # The two report shapes, as the engine prints them: the PASS from this script's own
+    # The two report shapes, as the engine printed them: the PASS from this script's own
     # 2026-09-13 run, the FAIL from spike/cohort2/borg-r3/explore-transcript.txt (lines 117
     # and 128). The FAIL's oracle line has no colon, which is what the first version of
-    # the classifier missed.
+    # the classifier missed. Since #711 a PASS is spelled the way the FAIL is; the older
+    # PASS shape is kept here because the committed transcripts carry it.
     pass_report='PASS  3/3 explored worlds satisfied the built-in atomicity invariant
       explored 3 worlds (crash points 2 + 1 baseline)
       oracle: agreed on 2 operations (70 syscall lines examined, 9 in scope of the judged state)'

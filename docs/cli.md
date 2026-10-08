@@ -143,6 +143,8 @@ earliest    crash point 5 of 5
             before rename(/tmp/se/state/key.json.tmp)
 path        key.json
 observed    present before and after the operation, but gone from the crashed state
+cwd         /work  (none declared: Sideeye's own)
+
 explored    6 worlds (crash points 5 + 1 baseline)
 expected    exit 0
 atomicity   1 path(s) judged pre-or-post
@@ -153,14 +155,13 @@ l1          no marker configured
 case        /tmp/se/work/cases/000001.json
 replay      sideeye replay /tmp/se/work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so
 evidence    /tmp/se/work/evidence/000001.json
-cwd         /work  (none declared: Sideeye's own)
 processes   single process
 not tested  power loss, torn writes, concurrent processes
 
 reproduce   SIDEEYE_STATE_DIR=/tmp/se/state SIDEEYE_TRACE_PATH=/tmp/se/work/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=5 SIDEEYE_SEQ_BASE= <operation>
 ```
 
-Read the account block, not just the verdict: `explored` says how much was looked at, `oracle` says a second witness (strace) checked the shim's account against the kernel's, `checker` says the invariant was proven able to fail before the run began, `cwd` says where the define's commands ran — Sideeye's own directory here, because this define declared none — and `not tested` names what this verdict is silent about.
+Read the account block, not just the verdict: `explored` says how much was looked at, `oracle` says a second witness (strace) checked the shim's account against the kernel's, `checker` says the invariant was proven able to fail before the run began, `cwd` says where the define's commands ran — Sideeye's own directory here, because this define declared none — and `not tested` names what this verdict is silent about. A PASS and an UNKNOWN print the lines they share with this block under the same keys, in the same columns and the same order — `cwd`, `apparatus`, `warning` and `recovery` first, then a blank line, then the rest — and each verdict prints a fixed set: a PASS has no `replay` or `evidence`, which belong to a counterexample, and an UNKNOWN leaves out `explored`, `oracle`, `metadata` and `checker`, because a refusal can be raised before the exploration and would print figures for crash points it never reached (the JSON report carries all of them on every verdict).
 
 The `check` script is where your invariants live. This one cross-examines the tool's own diagnostic — a tool is allowed to be broken as long as it says so; the violation is the claim and the observable truth disagreeing:
 

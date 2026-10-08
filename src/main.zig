@@ -3520,16 +3520,6 @@ fn phaseReport(run: *Run) void {
             \\            before {s}({s})
             \\path        {s}
             \\observed    {s}
-            \\explored    {d} worlds (crash points {d} + 1 baseline)
-            \\expected    exit {d}
-            \\atomicity   {s}
-            \\oracle      {s}
-            \\metadata    {s}
-            \\checker     {s}
-            \\l1          {s}
-            \\case        {s}
-            \\replay      {s}
-            \\evidence    {s}
             \\
         , .{
             report.violations,             report.explored,
@@ -3540,20 +3530,11 @@ fn phaseReport(run: *Run) void {
                                         after,
             textShown(arena, after_path),  before,
             textShown(arena, before_path), textShown(arena, path_shown),
-            what,                          report.explored,
-            n,                             report.expected_status_val,
-            report.l0_note,                report.oracle_note,
-            report.metadata_note,          report.checker_note,
-            report.l1_note,                case_shown,
-            replay_cmd,                    report.evidence_note,
+            what,
         });
-        report.sayCwd(arena, "cwd         {s}{s}\n");
-        report.sayApparatus(arena, "apparatus   {s}\n");
-        report.sayWarnings("warning     {s}\n");
-        report.sayRecovery("recovery    {s}\n");
-        // Printed only when the two exhibits are different worlds; when the
-        // earliest is itself checker-red — every FAIL this engine produced
-        // before poetry — the text above is byte-identical to what it was.
+        // The second exhibit beside the first (#711 moved it up from among the account lines).
+        // Printed only when the two exhibits are different worlds; when the earliest is itself
+        // checker-red — every FAIL this engine produced before poetry — nothing is added here.
         if (checker_detail) |cd| {
             if (cd.e.k != f.k) say(
                 \\checker red crash point {d} of {d} ({s})
@@ -3563,6 +3544,7 @@ fn phaseReport(run: *Run) void {
                 \\
             , .{ cd.e.k, n, cd.e.invariant, cd.case, cd.replay, cd.evidence });
         }
+        report.sayAccount(arena, .fail, n);
         // **`SIDEEYE_KILL_GROUP` is deliberately not on this line** (v15). A world gets it
         // because the engine put the target in its own process group first; a shell an
         // operator types this into has done no such thing, and the kill would take that
@@ -3575,12 +3557,7 @@ fn phaseReport(run: *Run) void {
         // child, the rest of the tree keeps running afterwards, so the line reproduces the
         // crash point rather than the whole world. Adding the variable by hand reproduces
         // the world exactly — from a shell you are willing to lose.
-        say(
-            \\processes   {s}
-            \\not tested  {s}
-            \\
-            \\
-        , .{ boundary.boundaryAccount(), report.notTestedText() });
+        say("\n", .{});
         // Under `--observe supervised` there is no shim to preload: the crash point is the
         // engine's, counted from outside the target (#217), so the one command that reproduces
         // it is the replay line above.
@@ -3615,25 +3592,8 @@ fn phaseReport(run: *Run) void {
     // replay, whose one world answers a different question.
     if (only_k == null) refuse.requireSomethingCouldFail(arena, run.rec.judgeable, run.check_argv != null, args.marker != null, run.firsts.marker_worlds);
 
-    say(
-        \\{s}  {d}/{d} explored worlds satisfied the built-in atomicity invariant{s}{s}
-        \\      explored {d} worlds (crash points {d} + 1 baseline)
-        \\      expected status: {d}
-        \\      atomicity: {s}
-        \\      oracle: {s}
-        \\      metadata: {s}
-        \\      checker: {s}
-        \\      l1: {s}
-        \\      case: {s}
-        \\      processes: {s}
-        \\      not tested: {s}
-        \\
-    , .{ report.paint("PASS"), report.explored, report.explored, report.singleCrashPointClause(n), report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged), report.explored, n, report.expected_status_val, report.l0_note, report.oracle_note, report.metadata_note, report.checker_note, report.l1_note, report.case_note, boundary.boundaryAccount(), report.notTestedText() });
-    report.sayCwd(arena, "      cwd: {s}{s}\n");
-    report.sayApparatus(arena, "      apparatus: {s}\n");
-    report.sayWarnings("      warning: {s}\n");
-    report.sayRecovery("      recovery: {s}\n");
-    report.saySingleCrashPointNote(n);
+    say("{s}  {d}/{d} explored worlds satisfied the built-in atomicity invariant{s}{s}\n", .{ report.paint("PASS"), report.explored, report.explored, report.singleCrashPointClause(n), report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged) });
+    report.sayAccount(arena, .pass, n);
     if (args.json) |jp| report.writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null, null);
     report.emitSeal();
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
