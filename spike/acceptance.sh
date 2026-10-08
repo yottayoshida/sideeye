@@ -120,7 +120,7 @@ n=$(echo "$o" | grep -o 'crash points [0-9]*' | awk '{print $3}')
 # Anchored to the explored LINE ("explored N worlds"): the PASS headline now also
 # contains the word "explored", and `[0-9]*` matches zero digits — the unanchored
 # pattern silently picked it up as an empty value when the headline was relabeled.
-e=$(echo "$o" | grep -o 'explored [0-9][0-9]* worlds' | awk '{print $2}')
+e=$(echo "$o" | grep -o '^explored  *[0-9][0-9]* worlds' | awk '{print $2}')
 if [ -n "$n" ] && [ -n "$e" ] && [ "$e" = "$((n + 1))" ]; then
     echo "ok     ...explored ($e) == N ($n) + 1"
 else
@@ -589,8 +589,8 @@ dt_judged() {   # dt_judged <name> <toy> <exit>
     fi
     dt_run "$SIDEEYE" "$2"
     if [ "$dt_rc" != "$3" ]; then dt_fail "$1, contained: exit $dt_rc, wanted $3"
-    # Indented in a PASS's block and not in a FAIL's, so neither anchor alone reads both
-    # (the first version of this leg anchored at the margin and missed the PASS's line).
+    # Read wherever it is indented: a PASS indented it until #711, and the first version of
+    # this leg anchored at the margin and missed the PASS's line.
     elif ! printf '%s\n' "$dt_out" | grep -qE '^[[:space:]]*processes'; then dt_fail "$1, contained: the report carries no processes line"
     elif printf '%s\n' "$dt_out" | grep -E '^[[:space:]]*processes' | grep -qE "leaving the containment group|reports set(sid|pgid)"; then dt_fail "$1, contained: the processes account still names the detach as a refusal"
     else echo "ok   $1 reaches exit $3 where the run was contained"
@@ -1943,17 +1943,21 @@ rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
-line=$(echo "$o" | grep '^reproduce' | sed 's/^reproduce  *//; s/ <operation>$//')
-if [ -z "$line" ]; then
-    echo "FAIL the report printed no reproduce line"
+# Since #711 the line is a whole command — `cd`, the world's variables and the operation's own
+# argv, each word quoted where a shell would read it otherwise — and it is run here as printed,
+# through a shell, with nothing added: not the operation (it used to end in `<operation>`, which
+# this leg stripped and replaced), and not TOY_STATE (the line does not carry it; the toy reads
+# SIDEEYE_STATE_DIR). `env -u` because a TOY_STATE left in this suite's environment would be
+# read instead of the line's own variable.
+line=$(echo "$o" | grep '^reproduce' | sed 's/^reproduce  *//')
+if [ -z "$line" ] || ! printf '%s\n' "$line" | grep -qF " $OUT/toy-bug rotate"; then
+    echo "FAIL the report printed no reproduce line ending in the operation's argv"
+    echo "     | $line"
     fails=$((fails + 1))
 else
     rm -rf /tmp/acc/state && mkdir -p /tmp/acc/state
     TOY_STATE=/tmp/acc/state "$OUT/toy-bug" init >/dev/null 2>&1
-    # Unquoted on purpose: the line is a sequence of VAR=VALUE words and `env` has to
-    # receive them as separate arguments, exactly as a person pasting it would.
-    # shellcheck disable=SC2086
-    env TOY_STATE=/tmp/acc/state $line "$OUT/toy-bug" rotate >/dev/null 2>&1
+    env -u TOY_STATE sh -c "$line" >/dev/null 2>&1
     rc=$?
     if [ "$rc" = "137" ] && [ ! -f /tmp/acc/state/key.json ] && [ -f /tmp/acc/state/key.json.tmp ]; then
         echo "ok   the printed line kills the target and leaves the reported state"
@@ -1963,6 +1967,96 @@ else
         fails=$((fails + 1))
     fi
 fi
+
+# Pasted a second time, the line still dies at k, and the shell it is pasted into survives it.
+# Second: the shim numbers from the highest number already in the trace, so a line that did not
+# empty its trace first counted on from where the first paste stopped, never reached k, and ran to
+# completion saying nothing (#711's review measured it). Survives: the line must not arm the group
+# kill, which the shim reads from SIDEEYE_KILL_GROUP's presence — #711's first version pinned it
+# empty and killed this suite's own shell. Asked of a shell one level up, which prints after the
+# line has run, because rc 137 alone is the same for a group kill and for the one process the kill
+# is meant for, and a shell running as a container's PID 1 does not die of a SIGKILL from inside.
+rm -rf /tmp/acc/state && mkdir -p /tmp/acc/state
+TOY_STATE=/tmp/acc/state "$OUT/toy-bug" init >/dev/null 2>&1
+alive=$(env -u TOY_STATE sh -c 'sh -c "$1" >/dev/null 2>&1; echo "alive $?"' _ "$line" 2>/dev/null)
+if [ "$alive" = "alive 137" ] && [ -f /tmp/acc/state/key.json.tmp ] && [ ! -f /tmp/acc/state/key.json ]; then
+    echo "ok   pasted again the line dies at the same crash point, and the shell it runs in outlives it"
+else
+    echo "FAIL a second paste of the reproduce line: printed [$alive], state: $(ls /tmp/acc/state | tr '\n' ' ')"
+    fails=$((fails + 1))
+fi
+
+# #709, #711: the FAIL's other two command lines run as printed too, with the build on PATH the
+# way Homebrew puts `sideeye` there. `evidence` names the command that renders the bundle (it
+# used to name the bundle's path alone); `replay` re-runs the case.
+ev=$(echo "$o" | sed -n 's/^evidence    //p'); rp=$(echo "$o" | sed -n 's/^replay      //p')
+PATH="$ROOT/zig-out/bin:$PATH" sh -c "$ev" > /tmp/acc/ev.md 2>&1; erc=$?
+case "$erc:$(head -1 /tmp/acc/ev.md)" in
+    0:'#'*) echo "ok   the printed evidence line renders the bundle as Markdown" ;;
+    *) echo "FAIL evidence line: exit $erc, first line [$(head -1 /tmp/acc/ev.md)]"; echo "     | $ev"; fails=$((fails + 1)) ;;
+esac
+PATH="$ROOT/zig-out/bin:$PATH" sh -c "$rp" > /tmp/acc/rp.txt 2>&1; rrc=$?
+if [ "$rrc" = 1 ] && grep -q "the case reproduced" /tmp/acc/rp.txt; then
+    echo "ok   the printed replay line replays the case to the same FAIL"
+else
+    echo "FAIL replay line: exit $rrc"; echo "     | $rp"; fails=$((fails + 1))
+fi
+
+# Under --observe syscalls the line carries SIDEEYE_OBSERVE=syscalls: without it the shim counts
+# the default mode's way, which sees none of toy-raw's calls (it reaches libc for none of them),
+# so the kill never fires. TOY_STATE is passed because toy-raw reads nothing else.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state --observe syscalls \
+    --setup "$OUT/toy-raw init" --operation "$OUT/toy-raw rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+line=$(echo "$o" | grep '^reproduce' | sed 's/^reproduce  *//')
+rm -rf /tmp/acc/state && mkdir -p /tmp/acc/state
+TOY_STATE=/tmp/acc/state "$OUT/toy-raw" init >/dev/null 2>&1
+TOY_STATE=/tmp/acc/state sh -c "$line" >/dev/null 2>&1
+lrc=$?
+lstate=$(ls /tmp/acc/state | tr '\n' ' ')
+# And the replay line names the mode: a case does not record it (ADR 0052), and replayed the
+# default way it answers case_no_longer_applies rather than the FAIL.
+rp=$(echo "$o" | sed -n 's/^replay      //p')
+PATH="$ROOT/zig-out/bin:$PATH" sh -c "$rp" > /tmp/acc/rp-sys.txt 2>&1; rrc=$?
+if [ "$rc" = 1 ] && [ "$lrc" = 137 ] && [ "$lstate" = "key.json.tmp " ] && [ "$rrc" = 1 ] \
+    && grep -q "the case reproduced" /tmp/acc/rp-sys.txt; then
+    echo "ok   under --observe syscalls the printed lines kill a target that bypasses libc, and replay it"
+else
+    echo "FAIL syscalls: explore exit $rc, reproduce exit $lrc (state after it: $lstate), replay exit $rrc"
+    printf '%s\n' "$line" "$rp" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+# One space in a directory above the state, the work directory and the commands' cwd, so a value
+# left unquoted anywhere in any of the three lines splits there. The commands are spelled in the
+# argv form, the only one that can name a path with a space, and run without an oracle: a FAIL
+# needs none.
+sp="/tmp/acc-711 sp/proj"
+rm -rf "/tmp/acc-711 sp" && mkdir -p "$sp" && cp "$OUT/toy-bug" "$sp/toy-bug"
+printf '%s\n' '[world]' 'state = "./state"' '[define]' 'cwd = "."' \
+    'setup = ["./toy-bug", "init"]' 'operation = ["./toy-bug", "rotate"]' > "$sp/sideeye.toml"
+o=$("$SIDEEYE" explore --config "$sp/sideeye.toml" --shim "$SHIM" --work "$sp/work" 2>&1)
+rc=$?
+line=$(echo "$o" | grep '^reproduce' | sed 's/^reproduce  *//')
+ev=$(echo "$o" | sed -n 's/^evidence    //p'); rp=$(echo "$o" | sed -n 's/^replay      //p')
+rm -rf "$sp/state" && mkdir -p "$sp/state"
+(cd "$sp" && TOY_STATE="$sp/state" ./toy-bug init >/dev/null 2>&1)
+env -u TOY_STATE sh -c "$line" >/dev/null 2>&1; lrc=$?
+# Read now: the replay below rebuilds the state it names.
+lstate=$(ls "$sp/state" | tr '\n' ' ')
+PATH="$ROOT/zig-out/bin:$PATH" sh -c "$ev" > /tmp/acc/ev-sp.md 2>&1; erc=$?
+PATH="$ROOT/zig-out/bin:$PATH" sh -c "$rp" > /tmp/acc/rp-sp.txt 2>&1; rrc=$?
+if [ "$rc" = 1 ] && [ "$lrc" = 137 ] && [ "$lstate" = "key.json.tmp " ] && [ "$erc" = 0 ] && [ "$rrc" = 1 ] \
+    && grep -q "the case reproduced" /tmp/acc/rp-sp.txt; then
+    echo "ok   with a space above the state, the work directory and the cwd, all three lines run as printed"
+else
+    echo "FAIL a space in the paths: explore exit $rc, reproduce $lrc (state after it: $lstate), evidence $erc, replay $rrc"
+    printf '%s\n' "$line" "$ev" "$rp" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+rm -rf "/tmp/acc-711 sp"
 
 echo ""
 echo "=========== check 2k: an empty oracle is not agreement ==========="
@@ -2428,7 +2522,7 @@ bad706() {
 }
 r706 qcheck explore --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate" --check "/tmp/acc-708/check.sh 'a b'"
 if [ "$rc706" = 0 ] && printf '%s\n' "$e706" | grep -qF "sideeye: warning: check: \`/tmp/acc-708/check.sh 'a b'\`" &&
-   printf '%s\n' "$o706" | grep -qF "      warning: check: " &&
+   printf '%s\n' "$o706" | grep -qF "warning     check: " &&
    grep -qF 'the argv form groups what they meant: check = [\"/tmp/acc-708/check.sh\", \"a b\"]' /tmp/acc-706/qcheck.json; then
     echo "ok   #706: a check spelled with shell quotes runs, and stderr, the report and the JSON name the argv form it meant"
 else
@@ -2505,7 +2599,7 @@ else
 fi
 ctl706=$(printf '/tmp/acc-708/check.sh "a\001b"')
 r706 ctl explore --setup /tmp/acc-708/setup.sh --operation "$OUT/toy-fixed rotate" --check "$ctl706"
-raw706=$( { printf '%s\n' "$e706"; printf '%s\n' "$o706" | grep 'warning: '; } | LC_ALL=C grep -c "$(printf '\001')" || true)
+raw706=$( { printf '%s\n' "$e706"; printf '%s\n' "$o706" | grep '^warning  '; } | LC_ALL=C grep -c "$(printf '\001')" || true)
 if printf '%s\n' "$e706" | grep -qF 'sideeye: warning: check: ' && [ "${raw706:-0}" = 0 ] &&
    ! printf '%s\n' "$e706" | grep -qF 'groups what they meant'; then
     echo "ok   #706: a control byte in a quoted flag is shown, not printed, and no argv is offered for it"
@@ -2605,6 +2699,50 @@ ok711 "a subject that replaced its image carries the count its processes sentenc
 "$SIDEEYE" explore --json /tmp/acc-711j/a.json --no-such-flag --oracle /usr/bin/strace --check /bin/true >/dev/null 2>&1
 ok711 "arguments not read to the end leave all eight absent" $? 3 /tmp/acc-711j/a.json parse
 
+# #711: the three verdict blocks print the account lines they share under one key, in one
+# twelve-column style and one order, and each verdict prints a fixed set of them. They were
+# three format strings — a FAIL's columns, a PASS's indented `key: value` in another order, an
+# UNKNOWN's columns in a third — and every line added since went into whichever block its change
+# was about. One define, three runs: the buggy toy (FAIL), the fixed one (PASS), the fixed one
+# with no oracle and no --allow-unverified (UNKNOWN completeness_not_verified). The define
+# declares an apparatus note, a recovery and a setup spelled with a shell quote, so the three
+# lines that print only when there is something to say are printed — a block that dropped one
+# of them reads the same as one that never had it unless the run gives it something to print.
+# The keys are compared as one string, which holds the set and the order at once.
+echo ""
+echo "=========== #711: one order and one spelling for the account lines ==========="
+rm -rf /tmp/acc-711 && mkdir -p /tmp/acc-711
+r711() {   # r711 <name> <toy> <flags...> — sets o711 (stdout), rc711
+    n711=$1; t711=$2; shift 2
+    mkdir -p /tmp/acc-711/$n711
+    o711=$("$SIDEEYE" explore --state /tmp/acc-711/$n711/state --work /tmp/acc-711/$n711/work --shim "$SHIM" \
+        --setup "$OUT/$t711 init '#711'" --operation "$OUT/$t711 rotate" --apparatus note:pr711 \
+        --recovery "$OUT/$t711 doctor" --recovery-check "$OUT/$t711 load-key" "$@" 2>/dev/null)
+    rc711=$?
+}
+keys711() {   # the account keys a block prints, in order, joined by commas
+    printf '%s\n' "$1" | awk '{ k = substr($0, 1, 12); sub(/ +$/, "", k); print k }' \
+        | grep -xE 'cwd|apparatus|warning|recovery|explored|expected|atomicity|oracle|metadata|checker|l1|case|replay|evidence|processes|not tested' \
+        | paste -sd, -
+}
+want711_fail="cwd,apparatus,warning,recovery,explored,expected,atomicity,oracle,metadata,checker,l1,case,replay,evidence,processes,not tested"
+want711_pass="cwd,apparatus,warning,recovery,explored,expected,atomicity,oracle,metadata,checker,l1,case,processes,not tested"
+want711_unknown="cwd,apparatus,warning,recovery,expected,atomicity,l1,case,processes,not tested"
+for v711 in fail:toy-bug:1 pass:toy-fixed:0 unknown:toy-fixed:2; do
+    name711=${v711%%:*}; rest711=${v711#*:}; toy711=${rest711%%:*}; want_rc711=${rest711#*:}
+    if [ "$name711" = unknown ]; then r711 "$name711" "$toy711"; else r711 "$name711" "$toy711" --oracle /usr/bin/strace; fi
+    eval "want711=\$want711_$name711"
+    got711=$(keys711 "$o711")
+    old711=$(printf '%s\n' "$o711" | grep -cE '^      [a-z][a-z ]*: ' || true)
+    if [ "$rc711" = "$want_rc711" ] && [ "$got711" = "$want711" ] && [ "$old711" = 0 ]; then
+        echo "ok   #711: the $name711 block prints its account lines in the one order and spelling"
+    else
+        echo "FAIL #711: the $name711 block (exit $rc711, wanted $want_rc711) printed [$got711], wanted [$want711]; $old711 line(s) in the old indented form"
+        printf '%s\n' "$o711" | sed 's/^/     | /' | head -40
+        fails=$((fails + 1))
+    fi
+done
+
 echo ""
 echo "=========== check 2l: a state directory larger than one buffer ==========="
 # restore() collects names into a fixed buffer before deleting. Stopping at the bound
@@ -2660,15 +2798,16 @@ fi
 
 # And the reproduce line printed for it has to work when the target is pointed at the
 # spelling the caller used, which is the only spelling the caller knows.
-line=$(echo "$o" | grep '^reproduce' | sed 's/^reproduce  *//; s/ <operation>$//')
+# Since #711 the line is run whole through a shell; TOY_STATE comes from here, spelled the
+# caller's way, which is what makes the line's SIDEEYE_STATE_DIR_ALT the thing under test.
+line=$(echo "$o" | grep '^reproduce' | sed 's/^reproduce  *//')
 rm -rf /tmp/acc/state && mkdir -p /tmp/acc/state
 TOY_STATE=/tmp/acclink/state "$OUT/toy-bug" init >/dev/null 2>&1
 # No `set +e` / `set -e` pair here. This suite runs under `set -u` only, and a "restoring"
 # `set -e` would switch errexit *on* from that point — which it did: the next check runs
 # the buggy toy, sideeye correctly exits 1, and the whole suite ended there in silence,
 # after its last passing line. Commands whose failure is expected are simply not guarded.
-# shellcheck disable=SC2086
-env TOY_STATE=/tmp/acclink/state $line "$OUT/toy-bug" rotate >/dev/null 2>&1
+TOY_STATE=/tmp/acclink/state sh -c "$line" >/dev/null 2>&1
 rc=$?
 if [ "$rc" = "137" ] && [ ! -f /tmp/acc/state/key.json ] && [ -f /tmp/acc/state/key.json.tmp ]; then
     echo "ok   its reproduce line works through the symlink too"
@@ -3215,12 +3354,12 @@ if ! refused nothing_could_fail "$rc" "$o"; then
 elif [ -z "$got_ops" ]; then
     echo "FAIL raw-all: the run reported no oracle agreement at all — with an oracle"
     echo "     attached, that line is how this leg knows the two accounts were compared"
-    echo "$o" | grep -E "^ +oracle:|^(PASS|FAIL|UNKNOWN)" | sed 's/^/     | /' | head -4
+    echo "$o" | grep -E "^ *oracle[: ]|^(PASS|FAIL|UNKNOWN)" | sed 's/^/     | /' | head -4
     raw_fails=1
 elif [ "$got_ops" -lt "$want_ops" ]; then
     echo "FAIL raw-all: the two accounts agreed on only $got_ops operations on"
     echo "     $(uname -m), below the $want_ops this sequence issues on every architecture"
-    echo "$o" | grep -E "^ +oracle:|^(PASS|FAIL|UNKNOWN)" | sed 's/^/     | /' | head -4
+    echo "$o" | grep -E "^ *oracle[: ]|^(PASS|FAIL|UNKNOWN)" | sed 's/^/     | /' | head -4
     raw_fails=1
 fi
 # The contrast, on the same binary and the same sequence: without the filter the shim is
@@ -6361,7 +6500,7 @@ o=$(TOY_NONDET_REWRITE=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace \
     --scratch nondet.txt --json /tmp/acc/scratch.json 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -qF "atomicity: 1 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: nondet.txt)" \
+if [ "$rc" = "0" ] && echo "$o" | grep -qF "atomicity   1 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: nondet.txt)" \
    && echo "$o" | grep -qF "declared scratch paths (neither bytes nor presence judged)" \
    && python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d.get("scratch")==["nondet.txt"] and d["l0"].endswith("1 path(s) matched by scratch, not judged (declared: nondet.txt)") and "declared scratch paths (neither bytes nor presence judged)" in d["not_tested"] else 1)' /tmp/acc/scratch.json; then
     sc_ok "a nondeterministic rewrite declared scratch PASSes, and text, JSON and not_tested carry the declaration"
@@ -6515,7 +6654,7 @@ ap_leg "an env device set to another value is a SETUP ERROR naming the value" 3 
 # The device present: the run reaches a verdict and both renderings carry the declaration —
 # the text line here, the JSON's two arrays (the note listed as unchecked) just below.
 ap_leg "a device that is present runs to a verdict, and the text carries the declaration" 0 \
-    "      apparatus: env:TOY_PIN=1, note:hgrc revbranchcache.mmap = no (declared, not checked)" \
+    "apparatus   env:TOY_PIN=1, note:hgrc revbranchcache.mmap = no (declared, not checked)" \
     TOY_PIN=1 -- --apparatus env:TOY_PIN=1 --apparatus "note:hgrc revbranchcache.mmap = no" --json /tmp/acc/apparatus.json
 if python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d.get("apparatus")==["env:TOY_PIN=1","note:hgrc revbranchcache.mmap = no"] and d.get("apparatus_unchecked")==["note:hgrc revbranchcache.mmap = no"] else 1)' /tmp/acc/apparatus.json; then
     echo "ok   the JSON carries the declaration verbatim and the note as unchecked"
@@ -6524,7 +6663,7 @@ else
 fi
 mkdir -p /tmp/acc/pp && : > /tmp/acc/pp/sitecustomize.py
 ap_leg "a pythonpath device under the second PYTHONPATH entry is found" 0 \
-    "      apparatus: pythonpath:sitecustomize.py" PYTHONPATH=/nonexistent:/tmp/acc/pp -- --apparatus pythonpath:sitecustomize.py
+    "apparatus   pythonpath:sitecustomize.py" PYTHONPATH=/nonexistent:/tmp/acc/pp -- --apparatus pythonpath:sitecustomize.py
 ap_leg "a pythonpath device under no entry is a SETUP ERROR naming the entries looked at" 3 \
     "no entry of PYTHONPATH (/nonexistent) has sitecustomize.py directly under it" PYTHONPATH=/nonexistent -- --apparatus pythonpath:sitecustomize.py
 # The library the engine's own process preloads here is harmless (libc is already loaded);
@@ -6561,7 +6700,7 @@ o=$(TOY_DUP2=1 "$SIDEEYE" explore --state /tmp/acc/state \
 rc=$?
 ok=1
 [ "$rc" = "0" ] || ok=0
-echo "$o" | grep -q "explored 13 worlds (crash points 12 + 1 baseline)" || ok=0
+echo "$o" | grep -q "explored  *13 worlds (crash points 12 + 1 baseline)" || ok=0
 echo "$o" | grep -q "agreed on 12 operations" || ok=0
 if [ "$ok" = "1" ]; then
     echo "ok   state writes through fd 0/1/2 and rebound stdio are counted, and the oracle agrees"
@@ -6578,7 +6717,7 @@ rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
-if [ "$?" = "0" ] && echo "$o" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)"; then
+if [ "$?" = "0" ] && echo "$o" | grep -q "explored  *5 worlds (crash points 4 + 1 baseline)"; then
     echo "ok   ordinary stdout/stderr are still unrecorded (location, not number, decides)"
 else
     echo "FAIL plain-toy control drifted"
@@ -7177,7 +7316,7 @@ o=$(TOY_CLOSE_SWEEP=255 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)"; then
+if [ "$rc" = "0" ] && echo "$o" | grep -q "explored  *5 worlds (crash points 4 + 1 baseline)"; then
     echo "ok   a close(3..255) sweep misses the relocated trace fd; verdict untouched"
 else
     echo "FAIL sweep below the relocation floor: exit $rc"
@@ -7223,7 +7362,7 @@ o=$(TOY_ANONFD=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)"; then
+if [ "$rc" = "0" ] && echo "$o" | grep -q "explored  *5 worlds (crash points 4 + 1 baseline)"; then
     echo "ok   anon-inode descriptors (eventfd, epoll), and calls on a state file that change nothing"
     echo "     (epoll_ctl, faccessat2, xattr reads, inotify_add_watch, preadv/preadv2, the polls) are invisible to the verdict"
 else
@@ -7274,8 +7413,8 @@ o=$(TOY_EXIT_STATUS=3 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --expect-status 3 \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)" \
-    && echo "$o" | grep -q "expected status: 3"; then
+if [ "$rc" = "0" ] && echo "$o" | grep -q "explored  *5 worlds (crash points 4 + 1 baseline)" \
+    && echo "$o" | grep -q "^expected    exit 3$"; then
     echo "ok   declared right: explores in full, and the text report names the status"
 else
     echo "FAIL declared-right exploration: exit $rc"
@@ -7311,7 +7450,7 @@ TOML
 o=$(TOY_EXIT_STATUS=3 "$SIDEEYE" explore --config /tmp/acc/def.toml \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/es.json 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)" \
+if [ "$rc" = "0" ] && echo "$o" | grep -q "explored  *5 worlds (crash points 4 + 1 baseline)" \
     && python3 -c "import json,sys; sys.exit(0 if json.load(open('/tmp/acc/es.json'))['expected_status'] == 3 else 1)"; then
     echo "ok   the toml spelling explores too, and the report carries expected_status"
 else
@@ -7462,7 +7601,7 @@ o=$(TOY_EXIT_STATUS=137 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --expect-status 137 \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "explored 5 worlds (crash points 4 + 1 baseline)"; then
+if [ "$rc" = "0" ] && echo "$o" | grep -q "explored  *5 worlds (crash points 4 + 1 baseline)"; then
     echo "ok   exit(137) is an exit status, not a SIGKILL: declared, it explores"
 else
     echo "FAIL 137/SIGKILL separation: exit $rc"
@@ -10314,12 +10453,12 @@ cwd_expect() { # $1 label, $2 report json, $3 text, $4 wanted path, $5 wanted de
 # Leg 6 — PASS, declared as "." from a toml one directory away: the resolved path, and `true`.
 cwd_toml $cw/proj/pass.toml "$OUT/toy-fixed init" "$OUT/toy-fixed rotate" "."
 o=$(cd $cw/from && "$SIDEEYE" explore --config $cw/proj/pass.toml --shim "$SHIM" --work $cw/w6 --oracle /usr/bin/strace --json $cw/r6.json 2>&1)
-cwd_expect "PASS carries the declared cwd, resolved, in both forms" $cw/r6.json "$o" "$proj_real" true "      cwd: $proj_real"
+cwd_expect "PASS carries the declared cwd, resolved, in both forms" $cw/r6.json "$o" "$proj_real" true "cwd         $proj_real"
 
 # Leg 7 — PASS, nothing declared: Sideeye's own directory, `false`, and the text says whose.
 cwd_toml $cw/proj/pass-none.toml "$OUT/toy-fixed init" "$OUT/toy-fixed rotate" ""
 o=$(cd $cw/from && "$SIDEEYE" explore --config $cw/proj/pass-none.toml --shim "$SHIM" --work $cw/w7 --oracle /usr/bin/strace --json $cw/r7.json 2>&1)
-cwd_expect "an undeclared cwd is Sideeye's own, and the report says so" $cw/r7.json "$o" "$from_real" false "      cwd: $from_real  (none declared: Sideeye's own)"
+cwd_expect "an undeclared cwd is Sideeye's own, and the report says so" $cw/r7.json "$o" "$from_real" false "cwd         $from_real  (none declared: Sideeye's own)"
 
 # Leg 8 — a run with no crash point (`doctor` only reads). It rendered a PASS block of its own
 # until ADR 0091; it is refused `nothing_could_fail` now, and the step it carries talks about
@@ -10356,11 +10495,14 @@ if [ "$rc" = "2" ] && [ "$(cwd_json $cw/r10.json unknown_reason)" = '"recording_
     cwd_expect "UNKNOWN carries it, for the refusal #647 recorded" $cw/r10.json "$o" "$from_real" false "cwd         $from_real  (none declared: Sideeye's own)"
     n_next=$(printf '%s\n' "$o" | grep -n '^next  ' | head -1 | cut -d: -f1)
     n_cwd=$(printf '%s\n' "$o" | grep -n '^cwd  ' | head -1 | cut -d: -f1)
-    n_atom=$(printf '%s\n' "$o" | grep -n '^atomicity  ' | head -1 | cut -d: -f1)
+    # Anchored on `expected`, the line ADR 0086 §2 names: `cwd` has to sit above it, or the
+    # reader sent to --expect-status reaches `expected` first. Since #711 `expected` opens the
+    # classification block, so it is also the line `atomicity` used to stand for here.
+    n_atom=$(printf '%s\n' "$o" | grep -n '^expected  ' | head -1 | cut -d: -f1)
     if [ -n "$n_next" ] && [ -n "$n_cwd" ] && [ -n "$n_atom" ] && [ "$n_next" -lt "$n_cwd" ] && [ "$n_cwd" -lt "$n_atom" ]; then
-        echo "ok   on UNKNOWN the cwd line sits under next, above the classification block"
+        echo "ok   on UNKNOWN the cwd line sits under next, above expected and the classification block"
     else
-        echo "FAIL the cwd line is not between next and atomicity (next=$n_next cwd=$n_cwd atomicity=$n_atom)"
+        echo "FAIL the cwd line is not between next and expected (next=$n_next cwd=$n_cwd expected=$n_atom)"
         cwd_fails=$((cwd_fails + 1))
     fi
 else
