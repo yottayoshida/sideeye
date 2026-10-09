@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 5,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/nv",
+    "operation": "nvim-0125 --headless -n -u NONE -i /s/nv/main.shada -S /s/nv-in/op.vim",
+    "check": "/s/nv-check.sh",
+    "cwd": "/s/nv-in",
+    "scratch": ["main.shada"],
+    "expected_status": 0
+  },
+  "k": 4,
+  "ops_total": 12,
+  "prefix_hash": "bc53074bdd14d539",
+  "after_class": "unlink",
+  "after_path": "/s/nv/main.shada",
+  "before_class": "rename",
+  "before_path": "/s/nv/main.shada.tmp.a",
+  "violation": "checker"
+}

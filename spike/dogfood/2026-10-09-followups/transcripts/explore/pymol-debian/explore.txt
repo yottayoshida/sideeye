@@ -1,0 +1,25 @@
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 2
+            after  open(/s/pm/model.pse)
+            before write(/s/pm/model.pse)
+path        model.pse
+observed    holding neither the old nor the new content
+cwd         /s/pm-in
+
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 2 operations (3509 syscall lines examined, 21 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/pymol-debian/work-explore/cases/000001.json
+replay      sideeye replay /out/pymol-debian/work-explore/cases/000001.json --shim /opt/se/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so
+evidence    sideeye evidence /out/pymol-debian/work-explore/evidence/000001.json
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/pm-in && unset SIDEEYE_KILL_GROUP && : > /out/pymol-debian/work-explore/trace-repro.bin && SIDEEYE_STATE_DIR=/s/pm SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/pymol-debian/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= /usr/bin/python3 -m pymol -cq /s/pm/model.pse /s/pm-in/edit.pml </dev/null)
+sideeye: json sha256=4afb9bd14baf71c2e3c03fbbffe62552cfc4353230919a743be10ff50006fc96;

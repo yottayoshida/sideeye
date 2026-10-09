@@ -67,12 +67,12 @@ RUN set -eu; cd /tmp/dl; \
     mkdir -p /opt/dwarfs-0158 /opt/dwarfs-work; \
     tar xJf dwarfs-0158.txz -C /opt/dwarfs-0158 --strip-components=1; \
     tar --zstd -xf dwarfs-work.tar.zst -C /opt/dwarfs-work --strip-components=1; \
-    ln -s "$(find /opt/dwarfs-0158 -type f -name mkdwarfs | head -1)" /opt/bin/mkdwarfs-0158; \
-    ln -s "$(find /opt/dwarfs-work -type f -name mkdwarfs | head -1)" /opt/bin/mkdwarfs-work; \
-    ln -s "$(find /opt/dwarfs-0158 -type f -name dwarfsck | head -1)" /opt/bin/dwarfsck-0158; \
+    ln -s /opt/dwarfs-0158/bin/mkdwarfs /opt/bin/mkdwarfs-0158; \
+    ln -s /opt/dwarfs-work/bin/mkdwarfs /opt/bin/mkdwarfs-work; \
+    ln -s /opt/dwarfs-0158/bin/dwarfsck /opt/bin/dwarfsck-0158; \
     mkdwarfs-0158 --help 2>&1 | head -1; mkdwarfs-work --help 2>&1 | head -1
 RUN { echo "nvim-nightly $(nvim-nightly --version | head -1)"; echo "nvim-0125 $(nvim-0125 --version | head -1)"; \
-      echo "pymol-debian $(python3 -c 'import pymol.cmd as c; print(c.get_version()[0])' 2>&1)"; \
+      echo "pymol-debian $(/usr/bin/python3 -c 'import pymol.cmd as c; print(c.get_version()[0])' 2>&1)"; \
       echo "pymol-main $(/opt/pymol-main/bin/python -c 'import pymol.cmd as c; print(c.get_version()[0])' 2>&1)"; \
       echo "mkdwarfs-0158 $(mkdwarfs-0158 --help 2>&1 | head -1)"; echo "mkdwarfs-work $(mkdwarfs-work --help 2>&1 | head -1)"; \
       echo "yarn $(yarn --version)"; echo "trash $(npm ls -g trash-cli 2>/dev/null | grep trash-cli)"; } | tee /versions.txt
