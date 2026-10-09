@@ -1,0 +1,16 @@
+== xmake default rc=1: PREFLIGHT not accepted — the two observed runs left different state
+difference   xmake.conf (content differs)
+             bytes first differ at byte offset 6: first run "__version = \"3.1.1\",\x0a    theme = \"plain\",\x0a    ne"…, second run "theme = \"plain\",\x0a    network = \"private\",\x0a    pr"… 
+repeatability  two runs 2002 ms apart differed under [world] state
+== meson default rc=1: PREFLIGHT not accepted — the two observed runs left different state
+difference   meson-logs/meson-log.txt (content differs)
+             bytes first differ at byte offset 35: first run "3.541195\x0aMain binary: /usr/bin/python3\x0aBuild Opt"…, second run "5.463932\x0aMain binary: /usr/bin/python3\x0aBuild Opt"… — 169
+difference   meson-private/build.dat (content differs)
+             bytes first differ at byte offset 10546: first run "\x07\x02\x00\x00j\xf2\x01\x00\x00j\xe4\x01\x00\x00j\xeb\x01\x00\x00j\x01\x02\x00\x00j\xfb\x01\x00\x00\x90\x8c\x0dall_languages\x94\x8f\
+difference   meson-private/coredata.dat (content differs)
+             bytes first differ at byte offset 9228: first run "\x8d\x01\x00\x00jx\x01\x00\x00jj\x01\x00\x00jq\x01\x00\x00j\x87\x01\x00\x00j\x81\x01\x00\x00\x90\x8c\x0dall_languages\x94\x8f\x94"…, s
+repeatability  two runs 2011 ms apart differed under [world] state
+== ocrmypdf default rc=1: PREFLIGHT not accepted — the two observed runs left different state
+difference   a.pdf (content differs)
+             bytes first differ at byte offset 117: first run "\xd0\x042UH\x10\x06\x8d\x0a\x83\x01[+Mhr\x13\x13\xbcA\x1c%f*\xff~w1)T괉\x90\x17\xdf\xdbs\xcf=\xb6\x0b\x0c\xda\xd0\xed\xc0"…, second ru
+repeatability  two runs 4361 ms apart differed under [world] state

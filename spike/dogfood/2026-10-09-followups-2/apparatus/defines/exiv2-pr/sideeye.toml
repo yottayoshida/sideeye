@@ -1,0 +1,7 @@
+[world]
+state = "/s/ex"
+
+[define]
+operation = "/opt/bin/exiv2-pr rm /s/ex/pic1.jpg /s/ex/pic2.jpg /s/ex/pic3.jpg"
+check     = "/s/ex-check.sh"
+cwd       = "/s/ex"

@@ -1,0 +1,27 @@
+PREFLIGHT  not accepted — the two observed runs left different state
+
+difference   fw.bin (content differs)
+             bytes first differ at byte offset 65638: first run "\xef\xe2\xbb/\xd4\xf2w`H\x0e\xa6\xa5*\xe7L\xd2܌\xa1h\xf1NC\xb3\xfa\x98p\xff#B\xf9\xc0ϱ2\x9c\x0b\xd7\xd8\xf4\x11\x80\xd0Y\xef\xc6+\xc4"…, second run "\x0b\xd4\x08<\xad\xf2\x10\x92\xce\\=\xd7J\xe9\xa2WI-캋ޔ\xeeQ\xb2\x88\x9c\x01\x7f\xd4:\xcf\xedƆ7|\xf2\xbeIZZ^\\\xc9_"… — 1098 and 1098 byte(s) of 69632 and 69632, both holding bytes outside printable text (1069 and 1062)
+
+cwd          /s/esp-in
+atomicity    1 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): fw.bin
+oracle       not run (no --oracle given)
+processes    not established: no boundary was recorded, but the shim sees only libc's own entry points (fork, vfork, posix_spawn, the exec family, pthread_create, setsid, setpgid) — a child created through a raw syscall would not appear here — and no second witness ran
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2003 ms apart differed under [world] state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside [world] state are
+               not compared, and two runs are not all runs
+
+note         no oracle checked the shim's account against a second witness;
+             explore's PASS will require --oracle <strace> (Linux) or
+             --allow-unverified (macOS)
+
+next         pin or relocate what differs, then re-run this command;
+             explore would reach the same divergence in its baseline
+             world, after a full define had been written

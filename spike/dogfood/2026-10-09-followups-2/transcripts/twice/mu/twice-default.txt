@@ -1,0 +1,29 @@
+PREFLIGHT  not accepted — the two observed runs left different state
+
+difference   home/xapian/docdata.glass (content differs)
+             bytes first differ at byte offset 16392: first run "\x06\x00\x13\x1f\xfd\x1e\xe8\x1d\xd3\x1c\xbe\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"…, second run "\x07\x00\x13\x1f\xfd\x1e\xe8\x1d\xd3\x1c\xbe\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"… — 8090 and 8090 byte(s) of 24576 and 24576, both holding bytes outside printable text (7461 and 7464)
+difference   home/xapian/postlist.glass (content differs)
+             bytes first differ at byte offset 16390: first run "\xe3\x17]\x00\x97\x1f\xfd\x1e\xc3\x1f\x0b\x1e\xe5\x1f1\x1fu\x1fQ\x16\xd0\x1f\xe7\x1f\x99\x17\x1a\x1f\xc9\x1f\xb3\x1a\x9e\x1a\x8d\x16|\x1al\x16f\x1a6\x16\x15\x19\xdd\x19"…, second run "\xc9\x17T\x00\x97\x1f\xfd\x1e\xc3\x1f\x0b\x1e\xe5\x1f1\x1fu\x1fQ\x16\xd0\x1f\xe7\x1f\x99\x17\x1a\x1f\xc9\x1f\xb3\x16o\x1a\x8d\x16b\x1al\x16L\x1a6\x15\xfb\x19\xdd\x19"… — 8109 and 8109 byte(s) of 24576 and 24576, both holding bytes outside printable text (6210 and 6189)
+
+cwd          /s/mu-in
+atomicity    18 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): home/xapian/docdata.glass
+oracle       not run (no --oracle given)
+processes    not established: no boundary was recorded, but the shim sees only libc's own entry points (fork, vfork, posix_spawn, the exec family, pthread_create, setsid, setpgid) — a child created through a raw syscall would not appear here — and no second witness ran
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2011 ms apart differed under [world] state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside [world] state are
+               not compared, and two runs are not all runs
+
+note         no oracle checked the shim's account against a second witness;
+             explore's PASS will require --oracle <strace> (Linux) or
+             --allow-unverified (macOS)
+
+next         pin or relocate what differs, then re-run this command;
+             explore would reach the same divergence in its baseline
+             world, after a full define had been written

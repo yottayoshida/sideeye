@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 5,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/bat/state",
+    "operation": ["batcat", "cache", "--build", "--source", "/s/bat/aux/batsrc", "--target", "/s/bat/state"],
+    "check": "/ap/defines/bat/check.sh",
+    "cwd": null,
+    "scratch": ["metadata.yaml"],
+    "expected_status": 0
+  },
+  "k": 7,
+  "ops_total": 7,
+  "prefix_hash": "718642bf3a3cb330",
+  "after_class": "open",
+  "after_path": "/s/bat/state/metadata.yaml",
+  "before_class": "write",
+  "before_path": "/s/bat/state/metadata.yaml",
+  "violation": "checker"
+}

@@ -1,0 +1,27 @@
+falsify: fw.bin's first 64 KiB are not the original (25 bytes)
+world 2: fw.bin's first 64 KiB are not the original (0 bytes)
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   the checker (L2)
+earliest    crash point 2 of 2
+            after  open(/s/esp/fw.bin)
+            before write(/s/esp/fw.bin)
+path        (named by the checker, not by path)
+observed    the checker exited non-zero after restart
+cwd         /s/esp-in
+
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: fw.bin)
+oracle      agreed on 2 operations (4087 syscall lines examined, 32 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+l1          no marker configured
+case        /out/espsecure/work-explore/cases/000001.json
+replay      sideeye replay /out/espsecure/work-explore/cases/000001.json --shim /opt/se/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so
+evidence    sideeye evidence /out/espsecure/work-explore/evidence/000001.json
+processes   single process
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+
+reproduce   (cd /s/esp-in && unset SIDEEYE_KILL_GROUP && : > /out/espsecure/work-explore/trace-repro.bin && SIDEEYE_STATE_DIR=/s/esp SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/espsecure/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'espsecure' sign-data /s/esp/fw.bin --version 2 --keyfile /s/esp/k.pem </dev/null)
+sideeye: json sha256=fb4fe2896a20aa796c59d47b630c63d637cbb1c61837329a9d29ae4284c5e81b;

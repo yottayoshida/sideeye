@@ -1,0 +1,25 @@
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 2
+            after  open(/s/bc/l.beancount)
+            before write(/s/bc/l.beancount)
+path        l.beancount
+observed    holding neither the old nor the new content
+cwd         /s/bc
+
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 2 operations (2251 syscall lines examined, 698 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/beanfmt/work-explore/cases/000001.json
+replay      sideeye replay /out/beanfmt/work-explore/cases/000001.json --shim /opt/se/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so
+evidence    sideeye evidence /out/beanfmt/work-explore/evidence/000001.json
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/bc && unset SIDEEYE_KILL_GROUP && : > /out/beanfmt/work-explore/trace-repro.bin && SIDEEYE_STATE_DIR=/s/bc SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/beanfmt/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'bean-format' -o /s/bc/l.beancount /s/bc/l.beancount </dev/null)
+sideeye: json sha256=eda4fc2ef96e581c04315b209a6e27ec4dfaa7af2a4260633721907877a6f720;

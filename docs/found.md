@@ -8,7 +8,7 @@ This is a list of counterexamples, not a badge: nothing on it says a tool is saf
 
 <!-- found:begin -->
 
-37 reports: 8 fixed upstream and re-measured, 1 fixed upstream, 27 filed, 1 withdrawn.
+39 reports: 8 fixed upstream and re-measured, 1 fixed upstream, 29 filed, 1 withdrawn.
 
 | Tool | Report | State | As of |
 |---|---|---|---|
@@ -48,6 +48,8 @@ This is a list of counterexamples, not a badge: nothing on it says a tool is saf
 | WP-CLI 2.12.0 `config set` | [wp-cli/config-command#233](https://github.com/wp-cli/config-command/issues/233) | filed (awaiting) | 2026-10-05 |
 | Subtitle Edit's SeConv 5.2.0 `subs.srt subrip --offset:-2000 --overwrite` | [SubtitleEdit/subtitleedit#15829](https://github.com/SubtitleEdit/subtitleedit/issues/15829) | filed (awaiting) | 2026-10-09 |
 | MCA Selector 2.9 `--mode delete --query "InhabitedTime < 1000"` | [Querz/mcaselector#613](https://github.com/Querz/mcaselector/issues/613) | filed (awaiting) | 2026-10-09 |
+| SoftHSM 2.6.1 `softhsm2-util --import` | [softhsm/SoftHSMv2#908](https://github.com/softhsm/SoftHSMv2/issues/908) | filed (awaiting) | 2026-10-09 |
+| OCRmyPDF 16.7.0 `--force-ocr a.pdf a.pdf` | [ocrmypdf/OCRmyPDF#1762](https://github.com/ocrmypdf/OCRmyPDF/issues/1762) | filed (awaiting) | 2026-10-09 |
 | devtodo | [alecthomas/devtodo#9](https://github.com/alecthomas/devtodo/issues/9) | withdrawn | 2026-08-14 |
 
 <!-- found:end -->

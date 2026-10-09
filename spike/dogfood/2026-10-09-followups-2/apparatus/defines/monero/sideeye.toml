@@ -1,0 +1,10 @@
+[world]
+state = "/s/xmr"
+
+[define]
+operation = "monero-wallet-cli --offline --wallet-file /s/xmr/w --password pw --log-file /s/xmr-in/log set_description rent-and-savings"
+cwd       = "/s/xmr-in"
+apparatus = ["env:FAKETIME=2026-10-01 00:00:00", "preload:libfaketime"]
+# the wallet cache w differs from byte 0 between two clean runs (transcripts/twice.txt); the checker opens it
+check     = "/ap/defines/monero/check.sh"
+scratch   = ["w"]

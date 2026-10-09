@@ -1,0 +1,15 @@
+UNKNOWN  baseline_violates_invariant
+         the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing: the re-run from the restored state left cipher/gocryptfs.conf holding neither the old nor the new content; the two runs' bytes first differ at byte offset 52, in a stretch 164 byte(s) long in the recording and 164 in the re-run (of 386 and 386 bytes), both printable text; preflight --twice quotes what two runs leave there
+next        The path the detail names did not come back with the bytes the recording left, in a world nothing crashed. If those bytes are not what the verdict should judge (a cache, a log, a timestamp), declare the path scratch in the define (--scratch, or scratch in a sideeye.toml); sideeye preflight --twice names the paths two clean runs leave differently, before an exploration.
+cwd         /s/gocryptfs-in
+
+expected    exit 0
+atomicity   3 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   single process in the recording; the subject replaced its own image in an explored world, which runs with no oracle; the supervising engine recorded 6 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=de23dcf7302188038f56ab68c8f7eadd16e212e8163aafef014607e657bb759f;
