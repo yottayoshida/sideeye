@@ -1,0 +1,10 @@
+# D2 measured: the first encrypt with an OS secret store (a stand-in secret-tool): the key goes to the store, not .env.keys
+[world]
+state = "/s/kc"
+
+[define]
+operation = "dotenvx encrypt -f /s/kc/.env"
+cwd       = "/s/kc"
+check     = "/ap/defines/native-encrypt/check.sh"
+# New key pairs, ciphertext and stand-in stores in every run; the checker finds the key wherever it is.
+scratch   = [".env", ".env.keys", "keyring.json", "keyring.json.tmp", "op.json", "op.json.tmp", "config"]

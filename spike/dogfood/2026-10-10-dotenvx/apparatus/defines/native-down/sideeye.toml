@@ -1,0 +1,10 @@
+# D2 measured: native down writes the key to .env.keys, then deletes it from the OS secret store
+[world]
+state = "/s/kc"
+
+[define]
+operation = "dotenvx native down -f /s/kc/.env"
+cwd       = "/s/kc"
+check     = "/ap/defines/native-down/check.sh"
+# New key pairs, ciphertext and stand-in stores in every run; the checker finds the key wherever it is.
+scratch   = [".env", ".env.keys", "keyring.json", "keyring.json.tmp", "op.json", "op.json.tmp", "config"]

@@ -1,0 +1,10 @@
+# C1: the repository ignores .env.keys by name, as `dotenvx gitignore --pattern .env.keys` (in `dotenvx help`) writes it; nothing git would stage may hold a private key.
+[world]
+state = "/s/repo"
+
+[define]
+operation = "dotenvx encrypt -f /s/repo/.env"
+cwd       = "/s/repo"
+check     = "/ap/defines/encrypt-leftover/check.sh"
+# New key pairs and fresh ciphertext in every run; the checker reads the values back.
+scratch   = [".env", ".env.keys", ".git"]

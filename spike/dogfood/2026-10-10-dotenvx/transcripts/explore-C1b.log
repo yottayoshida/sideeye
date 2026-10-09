@@ -1,0 +1,12 @@
+=== encrypt-second-leftover 2.34.2 2026-10-09T22:14:47Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== encrypt-second-leftover 2.32.4 2026-10-09T22:15:06Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0

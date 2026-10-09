@@ -1,0 +1,5 @@
+native-encrypt: after the operation the key is 0 in .env.keys, 2 in keyring, 0 in op; check 0; every key store emptied -> 1 [.env DB_PASSWORD: no key anywhere in the state decrypts it; dotenvx ge]
+native-up: after the operation the key is 0 in .env.keys, 2 in keyring, 0 in op; check 0; every key store emptied -> 1 [.env DB_PASSWORD: no key anywhere in the state decrypts it; dotenvx ge]
+native-down: after the operation the key is 1 in .env.keys, 0 in keyring, 0 in op; check 0; every key store emptied -> 1 [.env DB_PASSWORD: no key anywhere in the state decrypts it; dotenvx ge]
+onepassword-up: after the operation the key is 0 in .env.keys, 0 in keyring, 2 in op; check 0; every key store emptied -> 1 [.env DB_PASSWORD: no key anywhere in the state decrypts it; dotenvx ge]
+onepassword-down: after the operation the key is 1 in .env.keys, 0 in keyring, 0 in op; check 0; every key store emptied -> 1 [.env DB_PASSWORD: no key anywhere in the state decrypts it; dotenvx ge]

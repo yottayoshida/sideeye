@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 5,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/dx",
+    "operation": "dotenvx del API_TOKEN_PLACEHOLDER -f /s/dx/.env",
+    "check": "/ap/defines/del-encrypted/check.sh",
+    "cwd": "/s/dx",
+    "scratch": [".env", ".env.keys"],
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/dx/.env",
+  "before_class": "write",
+  "before_path": "/s/dx/.env",
+  "violation": "checker"
+}

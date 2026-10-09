@@ -1,0 +1,15 @@
+# dotenvx concurrent: two encrypt or two set at once, 20 rounds per version (filed as dotenvx/dotenvx#1017)
+   control 2.32.4, one after the other: a='secret-a' b='secret-b'; keys: DOTENV_PRIVATE_KEY=0fed9 DOTENV_PRIVATE_KEY=74397 
+   control 2.32.4, set A then set B: A='value-a' B='value-b'
+   E1 2.32.4 round 1: A='value-a' B=''
+   E2 2.32.4 round 1: a='secret-a' b='encrypted:BLOMIvWt7UEIo1NS0Tps'
+      .env.keys: 1 private key line(s)
+   E3 2.32.4 round 1: a='secret-a' b='encrypted:BHKDRGKnEbfAr8qkCY1y' c='secret-c'
+## 2.32.4: E1 lost a value in 20/20, E2 left a file undecryptable in 20/20, E3 in 20/20
+   control 2.34.2, one after the other: a='secret-a' b='secret-b'; keys: DOTENV_PRIVATE_KEY=d97b2 DOTENV_PRIVATE_KEY=165da 
+   control 2.34.2, set A then set B: A='value-a' B='value-b'
+   E1 2.34.2 round 1: A='' B='value-b'
+   E2 2.34.2 round 1: a='secret-a' b='encrypted:BEpJEaXvQNrKNtf8Tvsw'
+      .env.keys: 1 private key line(s)
+   E3 2.34.2 round 1: a='secret-a' b='encrypted:BPcSTYBnwR+kRu4GKDjW' c='secret-c'
+## 2.34.2: E1 lost a value in 20/20, E2 left a file undecryptable in 20/20, E3 in 20/20

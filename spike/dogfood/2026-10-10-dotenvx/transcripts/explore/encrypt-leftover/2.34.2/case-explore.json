@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 5,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/repo",
+    "operation": "dotenvx encrypt -f /s/repo/.env",
+    "check": "/ap/defines/encrypt-leftover/check.sh",
+    "cwd": "/s/repo",
+    "scratch": [".env", ".env.keys", ".git"],
+    "expected_status": 0
+  },
+  "k": 3,
+  "ops_total": 10,
+  "prefix_hash": "51b46a8246658ffc",
+  "after_class": "write",
+  "after_path": "/s/repo/.env.keys.3724148147",
+  "before_class": "fsync",
+  "before_path": "/s/repo/.env.keys.3724148147",
+  "violation": "checker"
+}

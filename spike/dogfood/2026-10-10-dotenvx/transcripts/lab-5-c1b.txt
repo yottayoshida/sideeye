@@ -1,0 +1,10 @@
+## C1b the same, where it matters: .env already encrypted and committed, then .env.production
+   exit 137
+   .env
+   .env.keys
+   .env.keys.318634236
+   .env.production
+   .gitignore
+   git status --short:
+     A  .env.keys.318634236
+   dotenvx get DB_PASSWORD -f .env -fk .env.keys.318634236: hunter2

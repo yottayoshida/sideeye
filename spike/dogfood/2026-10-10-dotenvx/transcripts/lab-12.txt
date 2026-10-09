@@ -1,0 +1,4 @@
+## 2.32.4, target present: .env.keys is symbolic link; secrets/: .env.keys ; get: hunter2
+## 2.32.4, target dangling: .env.keys is symbolic link; secrets/: .env.keys ; get: hunter2
+## 2.34.2, target present: .env.keys is symbolic link; secrets/: .env.keys ; get: hunter2
+## 2.34.2, target dangling: .env.keys is regular file; secrets/: ; get: hunter2

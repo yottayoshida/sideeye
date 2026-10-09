@@ -1,0 +1,8 @@
+# B1: a pre-commit hook of the user's own, with the block `dotenvx precommit --install` appended to it; `protect` takes the block out with fs.writeFileSync (uninstallPrecommitHook.js:62).
+[world]
+state = "/s/repo/.git/hooks"
+
+[define]
+operation = "dotenvx protect"
+cwd       = "/s/repo"
+check     = "/ap/defines/protect-hook/check.sh"

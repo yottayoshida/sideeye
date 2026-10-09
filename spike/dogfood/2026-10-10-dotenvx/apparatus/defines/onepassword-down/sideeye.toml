@@ -1,0 +1,10 @@
+# D3 measured: 1password down writes the key to .env.keys, reads it back, then deletes the 1Password item and its record
+[world]
+state = "/s/kc"
+
+[define]
+operation = "dotenvx 1password down -f /s/kc/.env"
+cwd       = "/s/kc"
+check     = "/ap/defines/onepassword-down/check.sh"
+# New key pairs, ciphertext and stand-in stores in every run; the checker finds the key wherever it is.
+scratch   = [".env", ".env.keys", "keyring.json", "keyring.json.tmp", "op.json", "op.json.tmp", "config"]

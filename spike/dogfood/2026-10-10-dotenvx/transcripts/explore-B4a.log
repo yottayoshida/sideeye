@@ -1,0 +1,6 @@
+=== protect-remove-ignore 2.34.2 2026-10-09T22:13:12Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0

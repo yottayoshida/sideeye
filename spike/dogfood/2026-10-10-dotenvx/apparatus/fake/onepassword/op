@@ -1,0 +1,42 @@
+#!/usr/bin/python3 -I
+# A stand-in for the 1Password CLI, for the five calls dotenvx makes: --version, whoami, signin,
+# item create (JSON on stdin), read op://<vault>/<item>/password, item delete. Items live in the JSON
+# file $FAKE_OP_STORE, saved through a temporary file and a rename (see fake/secret-tool).
+import json, os, sys, hashlib
+path = os.environ["FAKE_OP_STORE"]
+ACCOUNT = "a" * 26
+VAULT = "v" * 26
+def load():
+    try:
+        return json.load(open(path))
+    except FileNotFoundError:
+        return {}
+def save(d):
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(d, f); f.flush(); os.fsync(f.fileno())
+    os.rename(tmp, path)
+a = sys.argv[1:]
+if a[:1] == ["--version"]:
+    print("2.30.0")
+elif a[:1] == ["whoami"]:
+    print(json.dumps({"account_uuid": ACCOUNT}))
+elif a[:1] == ["signin"]:
+    pass
+elif a[:2] == ["item", "create"]:
+    body = json.loads(sys.stdin.read())
+    d = load()
+    item = hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()[:26]
+    d[item] = {f["id"]: f["value"] for f in body["fields"]}
+    save(d)
+    print(json.dumps({"id": item, "vault": {"id": VAULT}}))
+elif a[:1] == ["read"]:
+    _, _, vault, item, field = a[1].split("/")
+    d = load()
+    if item not in d:
+        sys.exit(1)
+    sys.stdout.write(d[item]["password"])
+elif a[:2] == ["item", "delete"]:
+    d = load(); d.pop(a[2], None); save(d)
+else:
+    sys.stderr.write("fake op: unhandled " + " ".join(a) + "\n"); sys.exit(2)

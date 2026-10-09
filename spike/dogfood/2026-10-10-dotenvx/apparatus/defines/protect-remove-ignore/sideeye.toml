@@ -1,0 +1,11 @@
+# B4a: unticking "Protect private keys" in the interactive `protect` calls protectSettings.removeIgnore(),
+# which rewrites the user's global git ignore file with fs.writeFileSync (protectSettings.js:23). The
+# prompt needs a terminal, so the operation calls that function directly — the same code, not the same entry.
+[world]
+state = "/s/xdg/git"
+
+[define]
+operation = ["node", "-e", "require('/opt/dx-2.34.2/lib/node_modules/@dotenvx/dotenvx/src/lib/helpers/protectSettings.js').removeIgnore()"]
+cwd       = "/s/repo"
+check     = "/ap/defines/protect-remove-ignore/check.sh"
+scratch   = ["config", "config.lock"]   # git's global config, rewritten by the git child (env.sh)

@@ -1,0 +1,13 @@
+# C1, the shape where it matters: .env is encrypted and committed, .env.keys holds its key and is
+# ignored by name (`dotenvx gitignore --pattern .env.keys`, as `dotenvx help` shows it), and
+# .env.production is encrypted next. The rewrite of .env.keys carries .env's key too; nothing
+# `git add -A` would stage may hold a key that decrypts the committed .env.
+[world]
+state = "/s/repo"
+
+[define]
+operation = "dotenvx encrypt -f /s/repo/.env.production"
+cwd       = "/s/repo"
+check     = "/ap/defines/encrypt-second-leftover/check.sh"
+# New key pairs and fresh ciphertext in every run; the checker reads the values back.
+scratch   = [".env", ".env.keys", ".env.production", ".git"]

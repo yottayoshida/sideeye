@@ -1,0 +1,10 @@
+# A4: set changes one value of an encrypted .env.
+[world]
+state = "/s/dx"
+
+[define]
+operation = "dotenvx set DB_PASSWORD changed-value-not-real -f /s/dx/.env"
+cwd       = "/s/dx"
+check     = "/ap/defines/set-encrypted/check.sh"
+# New key pairs and fresh ciphertext in every run; the checker reads the values back.
+scratch   = [".env", ".env.keys"]

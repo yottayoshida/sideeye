@@ -1,0 +1,36 @@
+## 2.32.4 lf: 27 keys read before; encrypt exit 0, decrypt exit 0
+   after encrypt: DOTENV_PUBLIC_KEY: None -> '03f588560c5cd8d778f78d4730b677aef99ad2bf3e3837a0263323f64d25808116'
+   after decrypt: DOLLAR_ESCAPED: '$HOME' -> '/s/lab9/home'
+   after decrypt: DOTENV_PUBLIC_KEY: None -> '03f588560c5cd8d778f78d4730b677aef99ad2bf3e3837a0263323f64d25808116'
+   decrypted file byte-identical to the original: False
+## 2.32.4 crlf: 27 keys read before; encrypt exit 0, decrypt exit 0
+   after encrypt: DOTENV_PUBLIC_KEY: None -> '02d5178ceca0b05f6106211f523765e9190ddec3a6b35f4f66f28f36a207aa3564'
+   after decrypt: DOLLAR_ESCAPED: '$HOME' -> '/s/lab9/home'
+   after decrypt: DOTENV_PUBLIC_KEY: None -> '02d5178ceca0b05f6106211f523765e9190ddec3a6b35f4f66f28f36a207aa3564'
+   decrypted file byte-identical to the original: False
+## 2.32.4 no-trailing-newline: 27 keys read before; encrypt exit 0, decrypt exit 0
+   after encrypt: DOTENV_PUBLIC_KEY: None -> '03e3af8585338c90f63bead2a2612e5c5b97d37127b96bc1a99c5a6e41919f273f'
+   after decrypt: DOLLAR_ESCAPED: '$HOME' -> '/s/lab9/home'
+   after decrypt: DOTENV_PUBLIC_KEY: None -> '03e3af8585338c90f63bead2a2612e5c5b97d37127b96bc1a99c5a6e41919f273f'
+   decrypted file byte-identical to the original: False
+## 2.32.4 set then get, 28 values: 2 differ
+   SQ: set 'single $HOME #notcomment' (exit 0) -> get 'single /s/lab9/home #notcomment'
+   SQ_DOLLAR: set '$HOME' (exit 0) -> get '/s/lab9/home'
+## 2.34.2 lf: 27 keys read before; encrypt exit 0, decrypt exit 0
+   after encrypt: DOTENV_PUBLIC_KEY: None -> '0301d23ff297dd447dc4290a82cd71954ae61801c822bcc03ca56c202ebeaa3ac5'
+   after decrypt: DOLLAR_ESCAPED: '$HOME' -> '/s/lab9/home'
+   after decrypt: DOTENV_PUBLIC_KEY: None -> '0301d23ff297dd447dc4290a82cd71954ae61801c822bcc03ca56c202ebeaa3ac5'
+   decrypted file byte-identical to the original: False
+## 2.34.2 crlf: 27 keys read before; encrypt exit 0, decrypt exit 0
+   after encrypt: DOTENV_PUBLIC_KEY: None -> '02ba612a18ca2727f43185556e2ccd0a911468f6b5b555a5732f42c19c83198504'
+   after decrypt: DOLLAR_ESCAPED: '$HOME' -> '/s/lab9/home'
+   after decrypt: DOTENV_PUBLIC_KEY: None -> '02ba612a18ca2727f43185556e2ccd0a911468f6b5b555a5732f42c19c83198504'
+   decrypted file byte-identical to the original: False
+## 2.34.2 no-trailing-newline: 27 keys read before; encrypt exit 0, decrypt exit 0
+   after encrypt: DOTENV_PUBLIC_KEY: None -> '0200a133835cb8aee58b9d68c82bc78beb3577ae500918fbcc6cbbc13b7c294712'
+   after decrypt: DOLLAR_ESCAPED: '$HOME' -> '/s/lab9/home'
+   after decrypt: DOTENV_PUBLIC_KEY: None -> '0200a133835cb8aee58b9d68c82bc78beb3577ae500918fbcc6cbbc13b7c294712'
+   decrypted file byte-identical to the original: False
+## 2.34.2 set then get, 28 values: 2 differ
+   SQ: set 'single $HOME #notcomment' (exit 0) -> get 'single /s/lab9/home #notcomment'
+   SQ_DOLLAR: set '$HOME' (exit 0) -> get '/s/lab9/home'
