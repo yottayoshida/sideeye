@@ -1,0 +1,6 @@
+[world]
+state = "/s/seconv"
+
+[define]
+operation = "seconv-pr subs.srt subrip --offset:-2000 --overwrite"
+cwd       = "/s/seconv"

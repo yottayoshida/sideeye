@@ -1,0 +1,2 @@
+explore exit 2: UNKNOWN kill_did_not_land
+next_step: The world reached the operation number it was given through other operations than the recording's, so the operation did not repeat itself from the state the restore rebuilt — the names, kinds and bytes under --state, not their modes, owners or timestamps, and nothing outside --state (a cache, a lock, the clock). sideeye preflight --twice compares what two clean runs leave, not the operations they perform.

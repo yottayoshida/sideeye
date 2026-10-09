@@ -1,0 +1,26 @@
+## monero
+total 408
+-rw------- 1 root root 410274 Oct  1  2026 w
+-rw------- 1 root root   1716 Oct  1  2026 w.keys
+Use "help <command>" to see a command's documentation.
+**********************************************************************
+no description found
+set exit 0
+Use "help <command>" to see a command's documentation.
+**********************************************************************
+description found: rent-and-savings
+Error: failed to load wallet: basic_string::_M_replace_aux
+Error: You may want to remove the file "/s/xmr/w" and try again
+cut exit 0
+## plakar
+CONFIG
+locks
+packfiles
+states
+2026-10-09T05:48:05Z   d3c21d0b       4 B        0s /s/plakar-in/data
+2026-10-09T05:48:04Z   cea0675d       2 B        0s /s/plakar-in/data
+rm exit 0
+2026-10-09T05:48:05Z   d3c21d0b       4 B        0s /s/plakar-in/data
+d3c21d0b: OK ✓ /s/plakar-in/data/b
+d3c21d0b: check completed without errors in 910.667µs (in: 2.4 KiB, out: 0 B)
+check exit 0

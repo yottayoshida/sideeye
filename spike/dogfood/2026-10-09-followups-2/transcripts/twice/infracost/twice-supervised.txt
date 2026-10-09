@@ -1,0 +1,27 @@
+PREFLIGHT  not accepted — the two observed runs left different state
+
+difference   .state.json (content differs)
+             bytes first differ at byte offset 14: first run "2ea38dac-0a63-41f9-b332-b5dc7993d4af", second run "5f8cc381-e300-4a3a-a1e3-99ef2147131e" — 36 and 36 byte(s) of 106 and 106, both printable text
+
+cwd          /s/infracost-in
+atomicity    2 path(s) judged pre-or-post
+oracle       not run (no --oracle given)
+processes    the supervising engine recorded a thread and no second witness ran; the second observed run recorded a thread, and that run's capture is never parsed, so nothing accounts for it; the supervising engine recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2004 ms apart differed under [world] state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside [world] state are
+               not compared, and two runs are not all runs
+
+note         no oracle checked the shim's account against a second witness;
+             explore's PASS will require --oracle <strace> (Linux) or
+             --allow-unverified (macOS)
+
+next         pin or relocate what differs, then re-run this command;
+             explore would reach the same divergence in its baseline
+             world, after a full define had been written

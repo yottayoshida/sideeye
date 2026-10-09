@@ -1,0 +1,15 @@
+UNKNOWN  multiple_threads_detected
+         two threads of process 185 wrote in the judged directory: tid 193 performed open(/s/plakar/repo/states/tmp.1018291634) and tid 189 performed write(/s/plakar/repo/states/tmp.1018291634). Nothing the supervising engine recorded orders the first of those before the second: under --observe supervised no join is recorded, nor which thread a creation made, so however the target orders them this run cannot establish that a crash point names the same operation on the next run, and writes from two or more threads of one process refuse. The modes that load a shim, which records creations and joins, judge a process whose threads' writes they order (v18)
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+cwd         /s/plakar-in
+
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post; 528 path(s) matched by scratch, not judged (declared: states, packfiles, locks)
+l1          no marker configured
+case        (none)
+processes   the supervising engine recorded a thread; the strace account was not read; the supervising engine recorded 9 thread(s) created, and 2 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=f83da35259162ccc405f6450217373a4df032a58fb33b0921eb1aff0dd98f21c;

@@ -1,0 +1,10 @@
+[world]
+state = "/s/hexapdf"
+
+[define]
+operation = "hexapdf -f modify -i 1-2 a.pdf a.pdf"
+cwd       = "/s/hexapdf"
+apparatus = ["env:FAKETIME=2026-10-01 00:00:00", "preload:libfaketime"]
+# a.pdf differs between two clean runs at its document ID (transcripts/twice.txt); the checker judges it
+check     = "/ap/defines/hexapdf/check.sh"
+scratch   = ["a.pdf"]

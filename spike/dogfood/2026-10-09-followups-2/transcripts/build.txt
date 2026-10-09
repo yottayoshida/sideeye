@@ -1,0 +1,124 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's (working tree)    sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's at tag v1.10.0     sha256 e3cb964274494696b688f0953fa6b112ef233db9dac6ddca43777cb9b0ddaef3
+build: NOTE the page's installer has moved since v1.10.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 7.16kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 1.5s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/14] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.28kB 0.0s done
+#5 DONE 0.0s
+
+#6 [ 2/14] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config zstd
+#6 CACHED
+
+#7 [ 3/14] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#7 CACHED
+
+#8 [ 4/14] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#8 CACHED
+
+#9 [ 5/14] RUN for p in nodejs npm libfaketime faketime; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done | tee /tmp/apt-summary.txt
+#9 CACHED
+
+#10 [ 6/14] RUN mkdir -p /opt/bin /tmp/dl /tmp/src && python3 -m venv /opt/py
+#10 DONE 1.6s
+
+#11 [ 7/14] COPY install-sideeye.sh /opt/install-sideeye.sh
+#11 DONE 0.0s
+
+#12 [ 8/14] RUN sh /opt/install-sideeye.sh v1.10.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#12 1.960 installer exit: 0
+#12 1.961 stdout: [/opt/se/sideeye-v1.10.0-aarch64-linux/sideeye]
+#12 1.962 install-sideeye: reading yottayoshida/sideeye release v1.10.0 (unauthenticated; shares this runner's rate limit)
+#12 1.962 install-sideeye: sideeye-v1.10.0-aarch64-linux.tar.gz published digest sha256:cb176c41df10611ec6eb2c255bf5d7f557edfb4159752e7f89959519c3c6a99a
+#12 1.962 install-sideeye: downloaded digest matches (cb176c41df10611ec6eb2c255bf5d7f557edfb4159752e7f89959519c3c6a99a)
+#12 1.962 install-sideeye: sideeye 1.10.0 (trace contract v19)
+#12 DONE 2.0s
+
+#13 [ 9/14] RUN "$(cat /install.path)" version
+#13 0.106 sideeye 1.10.0 (trace contract v19)
+#13 DONE 0.1s
+
+#14 [10/14] RUN apt-get install -y --no-install-recommends libicu76 awscli exiv2 beancount ffmpeg imagemagick cmake ninja-build       bison flex meson libexpat1-dev zlib1g-dev libinih-dev libbrotli-dev libpng-dev libfreetype-dev libcairo2-dev       libjson-c-dev libfontconfig-dev > /tmp/apt-controls.log 2>&1 && echo "OK controls and build deps" || { echo "MISSING"; tail -3 /tmp/apt-controls.log; }
+#14 56.04 OK controls and build deps
+#14 DONE 56.6s
+
+#15 [11/14] RUN set -eu; cd /tmp/dl; gh=https://github.com;     curl -fsSL -o seconv.tgz $gh/SubtitleEdit/subtitleedit/releases/download/v5.2.0/SeConv-Linux-ARM64.tar.gz;     mkdir -p /opt/seconv && tar xzf seconv.tgz -C /opt/seconv && f=$(find /opt/seconv -type f ( -name SeConv -o -name seconv ) | head -1) && chmod 755 "$f" && ln -sf "$f" /opt/bin/seconv;     curl -fsSL -o helm.tgz https://get.helm.sh/helm-v4.3.0-linux-arm64.tar.gz; mkdir -p x-helm && tar xzf helm.tgz -C x-helm && install -m 755 x-helm/linux-arm64/helm /opt/bin/helm;     cd /tmp/src && git clone -q --depth 1 -b v3.2 --recurse-submodules --shallow-submodules $gh/solvespace/solvespace       && cd solvespace && cmake -S . -B out -DCMAKE_BUILD_TYPE=Release -DENABLE_GUI=OFF -DENABLE_TESTS=OFF -DENABLE_OPENMP=OFF > /tmp/ss.log 2>&1       && cmake --build out -j4 --target solvespace-cli >> /tmp/ss.log 2>&1 && install -m 755 out/bin/solvespace-cli /opt/bin/solvespace-cli;     echo "controls installed"
+#15 6.765 Note: switching to '27b6a080c8b669421bd4d444650c3b8eddec5687'.
+#15 6.765 
+#15 6.765 You are in 'detached HEAD' state. You can look around, make experimental
+#15 6.765 changes and commit them, and you can discard any commits you make in this
+#15 6.765 state without impacting any branches by switching back to a branch.
+#15 6.765 
+#15 6.765 If you want to create a new branch to retain commits you create, you may
+#15 6.765 do so (now or later) by using -c with the switch command. Example:
+#15 6.765 
+#15 6.765   git switch -c <new-branch-name>
+#15 6.765 
+#15 6.765 Or undo this operation with:
+#15 6.765 
+#15 6.765   git switch -
+#15 6.765 
+#15 6.765 Turn off this advice by setting config variable advice.detachedHead to false
+#15 6.765 
+#15 105.3 controls installed
+#15 DONE 105.4s
+
+#16 [12/14] RUN printf '#!/bin/sh\nset -eu\n# fetchsha <repo url> <commit> <dir>\nmkdir -p "$3" && cd "$3" && git init -q && git fetch -q --depth 1 "$1" "$2" && git checkout -q FETCH_HEAD\n' > /usr/local/bin/fetchsha && chmod 755 /usr/local/bin/fetchsha
+#16 DONE 0.4s
+
+#17 [13/14] RUN b() { name=$1; shift; ( set -e; "$@" ) > /tmp/build-$name.log 2>&1 && echo "BUILT $name" || { echo "FAILED $name"; tail -12 /tmp/build-$name.log; }; };     gh=https://github.com;     b go sh -c "cd /tmp/dl && curl -fsSL -o go.tgz https://go.dev/dl/go1.26.9.linux-arm64.tar.gz && echo '4a97373d49fcacdcf3694fea368a500b00ee3e963974f3e7514132717632f052  go.tgz' | sha256sum -c && tar xzf go.tgz -C /opt";     b helm-pr sh -c "fetchsha $gh/jdymitarai/helm 09cda512f9beddf39e6ca964c5bef93459e018b3 /tmp/src/helm && cd /tmp/src/helm && /opt/go/bin/go build -o /opt/bin/helm-pr ./cmd/helm";     b aws-pr sh -c "python3 -m venv /opt/aws-pr && /opt/aws-pr/bin/pip install -q https://codeload.github.com/lazerg/aws-cli/tar.gz/c7999845b39cf3838928711916c3bb9e91e46111 && ln -s /opt/aws-pr/bin/aws /opt/bin/aws-pr";     b beancount-pr sh -c "python3 -m venv /opt/bc-pr && /opt/bc-pr/bin/pip install -q https://codeload.github.com/ryanduguid/beancount/tar.gz/cc591f7fcf61977e8527e0caa477db355378b920 && ln -s /opt/bc-pr/bin/bean-format /opt/bin/bean-format-pr";     b exiv2-pr sh -c "fetchsha $gh/jadhavgaurav/exiv2 8e2fc85ae210926a057cbffcaa1c451d01f6b706 /tmp/src/exiv2 && cd /tmp/src/exiv2 && cmake -S . -B out -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DEXIV2_BUILD_SAMPLES=OFF -DEXIV2_BUILD_UNIT_TESTS=OFF -DEXIV2_ENABLE_NLS=OFF -DEXIV2_ENABLE_INIH=OFF && cmake --build out --target exiv2 && install -m 755 out/bin/exiv2 /opt/bin/exiv2-pr";     b solvespace-pr sh -c "fetchsha $gh/solvespace/solvespace a3b470a591a0f30bd7829fc753fff56c06c40e37 /tmp/src/ss-pr && cd /tmp/src/ss-pr && git submodule update -q --init --depth 1 --recursive && cmake -S . -B out -DCMAKE_BUILD_TYPE=Release -DENABLE_GUI=OFF -DENABLE_TESTS=OFF -DENABLE_OPENMP=OFF && cmake --build out -j4 --target solvespace-cli && install -m 755 out/bin/solvespace-cli /opt/bin/solvespace-cli-pr";     b dotnet sh -c "cd /tmp/dl && curl -fsSL -o dotnet-install.sh https://dot.net/v1/dotnet-install.sh && bash dotnet-install.sh --channel 10.0 --install-dir /opt/dotnet";     b seconv-pr sh -c "fetchsha $gh/SubtitleEdit/subtitleedit 99f440ebf85aa909dbd9e7d77b0c22a171cba4ee /tmp/src/se && cd /tmp/src/se && DOTNET_CLI_TELEMETRY_OPTOUT=1 /opt/dotnet/dotnet publish src/seconv/SeConv.csproj -c Release -r linux-arm64 --self-contained true -o /opt/seconv-pr && ln -s /opt/seconv-pr/seconv /opt/bin/seconv-pr";     true
+#17 4.321 BUILT go
+#17 44.69 BUILT helm-pr
+#17 72.58 BUILT aws-pr
+#17 85.05 BUILT beancount-pr
+#17 137.8 BUILT exiv2-pr
+#17 239.5 BUILT solvespace-pr
+#17 258.5 BUILT dotnet
+#17 295.2 BUILT seconv-pr
+#17 DONE 295.5s
+
+#18 [14/14] RUN { echo "seconv $(seconv 2>&1 | head -1)"; echo "seconv-pr $(seconv-pr 2>&1 | head -1)";       echo "aws $(aws --version 2>&1)"; echo "aws-pr $(aws-pr --version 2>&1)";       echo "exiv2 $(exiv2 --version 2>&1 | head -1)"; echo "exiv2-pr $(exiv2-pr --version 2>&1 | head -1)";       echo "bean-format $(dpkg-query -W beancount 2>&1)"; echo "bean-format-pr $(/opt/bc-pr/bin/python -c 'import beancount; print(beancount.__version__)' 2>&1)";       echo "helm $(helm version --short 2>&1)"; echo "helm-pr $(helm-pr version --short 2>&1)";       echo "solvespace-cli $(ls -l /opt/bin/solvespace-cli 2>&1 | cut -c1-60)"; echo "solvespace-cli-pr $(ls -l /opt/bin/solvespace-cli-pr 2>&1 | cut -c1-60)"; } | tee /versions.txt
+#18 0.958 seconv ── Subtitle Edit 5.0 - Batch Converter ─────────────────────────────────────────
+#18 1.107 seconv-pr ── Subtitle Edit 5.0 - Batch Converter ─────────────────────────────────────────
+#18 1.624 aws aws-cli/2.23.6 Python/3.13.5 Linux/6.12.76-linuxkit source/aarch64.debian.13
+#18 1.877 aws-pr aws-cli/2.36.46 Python/3.13.5 Linux/6.12.76-linuxkit source/aarch64.debian.13
+#18 1.891 exiv2 exiv2 0.28.5
+#18 1.896 exiv2-pr exiv2 1.00.0.9
+#18 1.904 bean-format beancount	3.1.0-3
+#18 1.946 bean-format-pr 3.2.3
+#18 2.116 helm v4.3.0+gbec5b06
+#18 2.183 helm-pr v4.3
+#18 2.187 solvespace-cli -rwxr-xr-x 1 root root 3735232 Oct  9 05:25 /opt/bin/solvesp
+#18 2.189 solvespace-cli-pr -rwxr-xr-x 1 root root 3736080 Oct  9 05:29 /opt/bin/solvesp
+#18 DONE 2.2s
+
+#19 exporting to image
+#19 exporting layers
+#19 exporting layers 125.3s done
+#19 exporting manifest sha256:3108cea0d34b8a4ba53e3889da594e828e2280263117ae5cc1ea2cfb4ec353fd done
+#19 exporting config sha256:2462ed460d2d84da7c205a6d82fe0ec44c08555dbf4f66255661d6f585022148 done
+#19 exporting attestation manifest sha256:b5a7db3109019c12fa21bf89a0917f0214de1886488bd202fc8de3fd5032d7d6 0.0s done
+#19 exporting manifest list sha256:fa906ae1a480ebdffae930625526ab7e4097de5f82fb2f9928aac42ff85e1aa0 done
+#19 naming to docker.io/library/sideeye-fu2-1009:latest done
+#19 unpacking to docker.io/library/sideeye-fu2-1009:latest
+#19 unpacking to docker.io/library/sideeye-fu2-1009:latest 47.3s done
+#19 DONE 172.7s
+build: sideeye-fu2-1009 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt
+build rc=0

@@ -1,0 +1,8 @@
+[world]
+state = "/s/meson/state"
+
+[define]
+operation = "meson setup --reconfigure /s/meson/state /s/meson/aux/ms/src"
+check     = "/ap/defines/meson/check.sh"
+# meson-log.txt, build.dat and coredata.dat differ between two clean runs (transcripts/twice-oracle.txt); the checker was already meson introspect
+scratch   = ["meson-logs", "meson-private"]

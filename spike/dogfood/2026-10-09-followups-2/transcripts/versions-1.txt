@@ -1,0 +1,12 @@
+seconv ── Subtitle Edit 5.0 - Batch Converter ─────────────────────────────────────────
+seconv-pr ── Subtitle Edit 5.0 - Batch Converter ─────────────────────────────────────────
+aws aws-cli/2.23.6 Python/3.13.5 Linux/6.12.76-linuxkit source/aarch64.debian.13
+aws-pr aws-cli/2.36.46 Python/3.13.5 Linux/6.12.76-linuxkit source/aarch64.debian.13
+exiv2 exiv2 0.28.5
+exiv2-pr exiv2 1.00.0.9
+bean-format beancount	3.1.0-3
+bean-format-pr 3.2.3
+helm v4.3.0+gbec5b06
+helm-pr v4.3
+solvespace-cli -rwxr-xr-x 1 root root 3735232 Oct  9 05:25 /opt/bin/solvesp
+solvespace-cli-pr -rwxr-xr-x 1 root root 3736080 Oct  9 05:29 /opt/bin/solvesp

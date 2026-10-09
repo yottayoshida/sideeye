@@ -1,0 +1,132 @@
+falsify: the token does not list its keys: No slot with token named "t" found
+world 6: the token does not list its keys: No slot with token named "t" found
+world 21: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 22: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 23: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 25: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 26: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 27: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 29: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 30: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 31: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 33: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 34: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 35: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 37: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 38: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 39: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 41: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 42: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 43: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 45: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 46: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 47: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 49: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 50: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 51: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 53: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 54: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 55: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 57: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 58: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 59: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 61: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 62: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 63: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 65: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 66: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 67: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 69: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 70: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 71: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 73: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 74: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 75: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 77: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 78: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 79: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 81: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 82: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 83: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 85: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 86: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 87: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 89: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 90: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 91: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 93: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 94: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 95: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 97: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 98: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 99: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 101: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 102: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 103: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 105: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 106: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 107: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 109: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 110: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 111: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 113: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 114: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 115: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 117: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 118: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 119: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 121: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 122: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 123: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 125: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 126: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 127: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 129: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 130: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 131: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 133: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 134: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 135: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 137: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 138: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 139: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 141: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 142: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 143: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 145: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 146: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 147: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 149: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 150: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 151: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 153: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 154: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 155: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 157: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 158: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+world 159: the token's private keys are ' k1 ', neither k1 alone nor k1 and k2
+FAIL  106 of 283 explored worlds violated an invariant
+
+invariant   the checker (L2)
+earliest    crash point 6 of 282
+            after  truncate(/s/hsm/tokens/7d9c51eb-69dd-d293-8ef2-3e41802069b8/token.object)
+            before write(/s/hsm/tokens/7d9c51eb-69dd-d293-8ef2-3e41802069b8/token.object)
+path        (named by the checker, not by path)
+observed    the checker exited non-zero after restart
+cwd         /s/hsm-in
+
+explored    283 worlds (crash points 282 + 1 baseline)
+expected    exit 0
+atomicity   3 path(s) judged pre-or-post; 13 path(s) matched by scratch, not judged (declared: tokens)
+oracle      agreed on 282 operations (2926 syscall lines examined, 1759 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 283 world(s)
+l1          no marker configured
+case        /out/softhsm/work-explore/cases/000001.json
+replay      sideeye replay /out/softhsm/work-explore/cases/000001.json --shim /opt/se/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so
+evidence    sideeye evidence /out/softhsm/work-explore/evidence/000001.json
+processes   single process
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+
+reproduce   (cd /s/hsm-in && unset SIDEEYE_KILL_GROUP && : > /out/softhsm/work-explore/trace-repro.bin && SIDEEYE_STATE_DIR=/s/hsm SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/softhsm/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=6 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'softhsm2-util' --import /s/hsm/k2.pem --token t --pin 1234 --label k2 --id 02 </dev/null)
+sideeye: json sha256=0e51371c017a7bf9c9c8aeade64138f7ad673f2b162c418b1a9419f9da2c7430;
