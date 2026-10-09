@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 5,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/xm/.xmake",
+    "operation": "xmake g --theme=plain",
+    "check": "/ap/defines/xmake-fixed/check.sh",
+    "cwd": "/s/xm-in",
+    "scratch": ["xmake.conf"],
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 3,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/xm/.xmake/xmake.conf",
+  "before_class": "write",
+  "before_path": "/s/xm/.xmake/xmake.conf",
+  "violation": "checker"
+}

@@ -1,0 +1,31 @@
+falsify: 前に入れた a.c が cache から取り出せない（direct_cache_hit 0 -> 0）
+world 1: 前に入れた a.c が cache から取り出せない（direct_cache_hit 0 -> 0）
+world 2: 前に入れた a.c が cache から取り出せない（direct_cache_hit 0 -> 0）
+world 3: 前に入れた a.c が cache から取り出せない（direct_cache_hit 0 -> 0）
+world 4: 前に入れた a.c が cache から取り出せない（direct_cache_hit 0 -> 0）
+world 5: 前に入れた a.c が cache から取り出せない（direct_cache_hit 0 -> 0）
+world 6: 前に入れた a.c が cache から取り出せない（direct_cache_hit 0 -> 0）
+world 7: 前に入れた a.c が cache から取り出せない（direct_cache_hit 0 -> 0）
+world 8: 前に入れた a.c が cache から取り出せない（direct_cache_hit 0 -> 0）
+world 9: 前に入れた a.c が cache から取り出せない（direct_cache_hit 0 -> 0）
+world 10: 前に入れた a.c が cache から取り出せない（direct_cache_hit 0 -> 0）
+world 11: 前に入れた a.c が cache から取り出せない（direct_cache_hit 0 -> 0）
+world 12: 前に入れた a.c が cache から取り出せない（direct_cache_hit 0 -> 0）
+world 13: 前に入れた a.c が cache から取り出せない（direct_cache_hit 0 -> 0）
+world 14: 前に入れた a.c が cache から取り出せない（direct_cache_hit 0 -> 0）
+UNKNOWN  kill_did_not_land
+         a world died at the operation number it was given, but the operations leading up to it are not the ones the recording numbered: the address names a different operation in this world than in the recording, so nothing died in front of the operation the crash point stands for. An operation whose sequence of state-directory calls varies between runs cannot be explored at a fixed index
+next        The world reached the operation number it was given through other operations than the recording's, so the operation did not repeat itself from the state the restore rebuilt — the names, kinds and bytes under --state, not their modes, owners or timestamps, and nothing outside --state (a cache, a lock, the clock). sideeye preflight --twice compares what two clean runs leave, not the operations they perform.
+cwd         /  (none declared: Sideeye's own)
+apparatus   env:FAKETIME=2026-10-01 00:00:00, preload:libfaketime
+
+expected    exit 0
+atomicity   5 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that — it runs without an oracle — so it inherits this finding, and what each world does check is that the operations before its crash point are the ones the recording numbered; a process other than the subject operated on the judged directory in an explored world too — the class the recording admitted, which a world inherits rather than re-deciding because it runs without an oracle; the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=6ad251aa8d9302c058d7a2fd5ff80e31f96906487d88203dcd797ca8b5c77dae;

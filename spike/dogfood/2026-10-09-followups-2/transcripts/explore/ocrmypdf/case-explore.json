@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 5,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/ocrmypdf/ocr",
+    "operation": "ocrmypdf -q --force-ocr /s/ocrmypdf/ocr/a.pdf /s/ocrmypdf/ocr/a.pdf",
+    "check": "/ap/defines/ocrmypdf/check.sh",
+    "cwd": null,
+    "scratch": ["a.pdf"],
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/ocrmypdf/ocr/a.pdf",
+  "before_class": "write",
+  "before_path": "/s/ocrmypdf/ocr/a.pdf",
+  "violation": "checker"
+}

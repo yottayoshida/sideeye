@@ -1,0 +1,38 @@
+
+
+
+
+
+
+
+
+
+
+
+
+PREFLIGHT  not accepted — the two observed runs left different state
+
+difference   a.pdf (content differs)
+             bytes first differ at byte offset 117: first run "\xd0\x042UH\x10\x06\x8d\x0a\x83\x01[+Mhr\x13\x13\xbcA\x1c%f*\xff~w1)T괉\x90\x17\xdf\xdbs\xcf=\xb6\x0b\x0c\xda\xd0\xed\xc0"…, second run "@\x02\x99*$\x08\x83F-\x83\x01[+Mhr\x13\x13\xbcA\x1c%f*\xff~w1)T괉\x90\x17\xdf\xdbs\xcf=\xb6\x0b\x0c\xda\xd0\xebB\x07"… — 9541 and 9541 byte(s) of 9767 and 9767, both holding bytes outside printable text (4108 and 4113)
+
+cwd          /  (none declared: Sideeye's own)
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 2 operations (32181 syscall lines examined, 78 in scope of the judged state), witness strace
+processes    16 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the second observed run recorded a process boundary, and that run's capture is never parsed, so nothing accounts for it; the shim recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 7 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+checker      declared, not run: not refused as a command that cannot be
+             started, and the state holds something to corrupt
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail — only a real
+             exploration runs these
+
+repeatability  two runs 4361 ms apart differed under [world] state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside [world] state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         pin or relocate what differs, then re-run this command;
+             explore would reach the same divergence in its baseline
+             world, after a full define had been written

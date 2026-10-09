@@ -1,0 +1,30 @@
+PREFLIGHT  not accepted — the two observed runs left different state
+
+difference   meson-logs/meson-log.txt (content differs)
+             bytes first differ at byte offset 35: first run "3.541195\x0aMain binary: /usr/bin/python3\x0aBuild Opt"…, second run "5.463932\x0aMain binary: /usr/bin/python3\x0aBuild Opt"… — 1690 and 1690 byte(s) of 3042 and 3042, both printable text
+difference   meson-private/build.dat (content differs)
+             bytes first differ at byte offset 10546: first run "\x07\x02\x00\x00j\xf2\x01\x00\x00j\xe4\x01\x00\x00j\xeb\x01\x00\x00j\x01\x02\x00\x00j\xfb\x01\x00\x00\x90\x8c\x0dall_languages\x94\x8f\x94"…, second run "\xf2\x01\x00\x00j\x07\x02\x00\x00j\xeb\x01\x00\x00j\x01\x02\x00\x00j\xe4\x01\x00\x00j\xfb\x01\x00\x00\x90\x8c\x0dall_languages\x94\x8f\x94"… — 17880 and 17880 byte(s) of 30072 and 30072, both holding bytes outside printable text (3379 and 3380)
+difference   meson-private/coredata.dat (content differs)
+             bytes first differ at byte offset 9228: first run "\x8d\x01\x00\x00jx\x01\x00\x00jj\x01\x00\x00jq\x01\x00\x00j\x87\x01\x00\x00j\x81\x01\x00\x00\x90\x8c\x0dall_languages\x94\x8f\x94"…, second run "x\x01\x00\x00j\x8d\x01\x00\x00jq\x01\x00\x00j\x87\x01\x00\x00jj\x01\x00\x00j\x81\x01\x00\x00\x90\x8c\x0dall_languages\x94\x8f\x94"… — 17391 and 17391 byte(s) of 42250 and 42250, both holding bytes outside printable text (3275 and 3275)
+
+cwd          /  (none declared: Sideeye's own)
+atomicity    30 path(s) judged pre-or-post
+oracle       agreed on 109 operations (10471 syscall lines examined, 485 in scope of the judged state), witness strace
+processes    15 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the second observed run recorded a process boundary, and that run's capture is never parsed, so nothing accounts for it
+checker      declared, not run: not refused as a command that cannot be
+             started, and the state holds something to corrupt
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail — only a real
+             exploration runs these
+
+repeatability  two runs 2011 ms apart differed under [world] state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside [world] state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         pin or relocate what differs, then re-run this command;
+             explore would reach the same divergence in its baseline
+             world, after a full define had been written

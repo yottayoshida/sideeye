@@ -1,0 +1,22 @@
+== 3. one step further 2026-10-09T05:55:47Z
+=== xmake-fixed 2026-10-09T05:55:47Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== ccache-clock 2026-10-09T05:55:50Z
+explore exit 2: UNKNOWN kill_did_not_land
+explore exit 2: UNKNOWN kill_did_not_land
+next_step: The world reached the operation number it was given through other operations than the recording's, so the operation did not repeat itself from the state the restore rebuilt — the names, kinds and bytes under --state, not their modes, owners or timestamps, and nothing outside --state (a cache, a lock, the clock). sideeye preflight --twice compares what two clean runs leave, not the operations they perform.
+=== git-nogc-scratch 2026-10-09T05:55:52Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== gocryptfs-check, --observe supervised named 2026-10-09T05:55:53Z
+probe supervised exit 0
+PASS  5/5 explored worlds satisfied the built-in atomicity invariant, but the operation touched none of the 2 path(s) it judged
+cwd         /s/gocryptfs-in
+step3: done 2026-10-09T05:55:56Z

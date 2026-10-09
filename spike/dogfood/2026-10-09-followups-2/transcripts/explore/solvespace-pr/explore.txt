@@ -1,0 +1,19 @@
+Missing (absent) translation for group-name'#references'
+Missing (absent) translation for group-name'sketch-in-plane'
+Written '/s/ss/part.slvs'.
+UNKNOWN  oracle_missed_operation
+         the oracle saw a state-directory operation the shim did not record; divergence at operation 3: the oracle saw: 22    write(3</s/ss/part.slvs>, "003002a 1\n    84 8003002b 1\n    "..., 4096) = 4096; the shim's account ends after 2 operation(s)
+next        Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.
+divergence  write
+cwd         /s/ss-in
+
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=fc15adf2ffb3c8d3b7cdc8c6949f4bf22d8732c8dbcc3134c3beed0bd385b81b;

@@ -1,0 +1,140 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's (working tree)    sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's at tag v1.10.0     sha256 e3cb964274494696b688f0953fa6b112ef233db9dac6ddca43777cb9b0ddaef3
+build: NOTE the page's installer has moved since v1.10.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 10.17kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 1.6s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/19] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.28kB 0.0s done
+#5 DONE 0.0s
+
+#6 [ 9/19] RUN "$(cat /install.path)" version
+#6 CACHED
+
+#7 [ 3/19] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#7 CACHED
+
+#8 [ 2/19] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config zstd
+#8 CACHED
+
+#9 [ 8/19] RUN sh /opt/install-sideeye.sh v1.10.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#9 CACHED
+
+#10 [ 7/19] COPY install-sideeye.sh /opt/install-sideeye.sh
+#10 CACHED
+
+#11 [ 5/19] RUN for p in nodejs npm libfaketime faketime; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done | tee /tmp/apt-summary.txt
+#11 CACHED
+
+#12 [10/19] RUN apt-get install -y --no-install-recommends libicu76 awscli exiv2 beancount ffmpeg imagemagick cmake ninja-build       bison flex meson libexpat1-dev zlib1g-dev libinih-dev libbrotli-dev libpng-dev libfreetype-dev libcairo2-dev       libjson-c-dev libfontconfig-dev > /tmp/apt-controls.log 2>&1 && echo "OK controls and build deps" || { echo "MISSING"; tail -3 /tmp/apt-controls.log; }
+#12 CACHED
+
+#13 [11/19] RUN set -eu; cd /tmp/dl; gh=https://github.com;     curl -fsSL -o seconv.tgz $gh/SubtitleEdit/subtitleedit/releases/download/v5.2.0/SeConv-Linux-ARM64.tar.gz;     mkdir -p /opt/seconv && tar xzf seconv.tgz -C /opt/seconv && f=$(find /opt/seconv -type f ( -name SeConv -o -name seconv ) | head -1) && chmod 755 "$f" && ln -sf "$f" /opt/bin/seconv;     curl -fsSL -o helm.tgz https://get.helm.sh/helm-v4.3.0-linux-arm64.tar.gz; mkdir -p x-helm && tar xzf helm.tgz -C x-helm && install -m 755 x-helm/linux-arm64/helm /opt/bin/helm;     cd /tmp/src && git clone -q --depth 1 -b v3.2 --recurse-submodules --shallow-submodules $gh/solvespace/solvespace       && cd solvespace && cmake -S . -B out -DCMAKE_BUILD_TYPE=Release -DENABLE_GUI=OFF -DENABLE_TESTS=OFF -DENABLE_OPENMP=OFF > /tmp/ss.log 2>&1       && cmake --build out -j4 --target solvespace-cli >> /tmp/ss.log 2>&1 && install -m 755 out/bin/solvespace-cli /opt/bin/solvespace-cli;     echo "controls installed"
+#13 CACHED
+
+#14 [ 6/19] RUN mkdir -p /opt/bin /tmp/dl /tmp/src && python3 -m venv /opt/py
+#14 CACHED
+
+#15 [ 4/19] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#15 CACHED
+
+#16 [12/19] RUN printf '#!/bin/sh\nset -eu\n# fetchsha <repo url> <commit> <dir>\nmkdir -p "$3" && cd "$3" && git init -q && git fetch -q --depth 1 "$1" "$2" && git checkout -q FETCH_HEAD\n' > /usr/local/bin/fetchsha && chmod 755 /usr/local/bin/fetchsha
+#16 CACHED
+
+#17 [13/19] RUN b() { name=$1; shift; ( set -e; "$@" ) > /tmp/build-$name.log 2>&1 && echo "BUILT $name" || { echo "FAILED $name"; tail -12 /tmp/build-$name.log; }; };     gh=https://github.com;     b go sh -c "cd /tmp/dl && curl -fsSL -o go.tgz https://go.dev/dl/go1.26.9.linux-arm64.tar.gz && echo '4a97373d49fcacdcf3694fea368a500b00ee3e963974f3e7514132717632f052  go.tgz' | sha256sum -c && tar xzf go.tgz -C /opt";     b helm-pr sh -c "fetchsha $gh/jdymitarai/helm 09cda512f9beddf39e6ca964c5bef93459e018b3 /tmp/src/helm && cd /tmp/src/helm && /opt/go/bin/go build -o /opt/bin/helm-pr ./cmd/helm";     b aws-pr sh -c "python3 -m venv /opt/aws-pr && /opt/aws-pr/bin/pip install -q https://codeload.github.com/lazerg/aws-cli/tar.gz/c7999845b39cf3838928711916c3bb9e91e46111 && ln -s /opt/aws-pr/bin/aws /opt/bin/aws-pr";     b beancount-pr sh -c "python3 -m venv /opt/bc-pr && /opt/bc-pr/bin/pip install -q https://codeload.github.com/ryanduguid/beancount/tar.gz/cc591f7fcf61977e8527e0caa477db355378b920 && ln -s /opt/bc-pr/bin/bean-format /opt/bin/bean-format-pr";     b exiv2-pr sh -c "fetchsha $gh/jadhavgaurav/exiv2 8e2fc85ae210926a057cbffcaa1c451d01f6b706 /tmp/src/exiv2 && cd /tmp/src/exiv2 && cmake -S . -B out -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DEXIV2_BUILD_SAMPLES=OFF -DEXIV2_BUILD_UNIT_TESTS=OFF -DEXIV2_ENABLE_NLS=OFF -DEXIV2_ENABLE_INIH=OFF && cmake --build out --target exiv2 && install -m 755 out/bin/exiv2 /opt/bin/exiv2-pr";     b solvespace-pr sh -c "fetchsha $gh/solvespace/solvespace a3b470a591a0f30bd7829fc753fff56c06c40e37 /tmp/src/ss-pr && cd /tmp/src/ss-pr && git submodule update -q --init --depth 1 --recursive && cmake -S . -B out -DCMAKE_BUILD_TYPE=Release -DENABLE_GUI=OFF -DENABLE_TESTS=OFF -DENABLE_OPENMP=OFF && cmake --build out -j4 --target solvespace-cli && install -m 755 out/bin/solvespace-cli /opt/bin/solvespace-cli-pr";     b dotnet sh -c "cd /tmp/dl && curl -fsSL -o dotnet-install.sh https://dot.net/v1/dotnet-install.sh && bash dotnet-install.sh --channel 10.0 --install-dir /opt/dotnet";     b seconv-pr sh -c "fetchsha $gh/SubtitleEdit/subtitleedit 99f440ebf85aa909dbd9e7d77b0c22a171cba4ee /tmp/src/se && cd /tmp/src/se && DOTNET_CLI_TELEMETRY_OPTOUT=1 /opt/dotnet/dotnet publish src/seconv/SeConv.csproj -c Release -r linux-arm64 --self-contained true -o /opt/seconv-pr && ln -s /opt/seconv-pr/seconv /opt/bin/seconv-pr";     true
+#17 10.09 BUILT go
+#17 77.36 BUILT helm-pr
+#17 124.8 BUILT aws-pr
+#17 139.9 BUILT beancount-pr
+#17 191.8 BUILT exiv2-pr
+#17 283.9 BUILT solvespace-pr
+#17 302.8 BUILT dotnet
+#17 344.3 BUILT seconv-pr
+#17 DONE 345.0s
+
+#18 [14/19] RUN { echo "seconv $(seconv 2>&1 | head -1)"; echo "seconv-pr $(seconv-pr 2>&1 | head -1)";       echo "aws $(aws --version 2>&1)"; echo "aws-pr $(aws-pr --version 2>&1)";       echo "exiv2 $(exiv2 --version 2>&1 | head -1)"; echo "exiv2-pr $(exiv2-pr --version 2>&1 | head -1)";       echo "bean-format $(dpkg-query -W beancount 2>&1)"; echo "bean-format-pr $(/opt/bc-pr/bin/python -c 'import beancount; print(beancount.__version__)' 2>&1)";       echo "helm $(helm version --short 2>&1)"; echo "helm-pr $(helm-pr version --short 2>&1)";       echo "solvespace-cli $(ls -l /opt/bin/solvespace-cli 2>&1 | cut -c1-60)"; echo "solvespace-cli-pr $(ls -l /opt/bin/solvespace-cli-pr 2>&1 | cut -c1-60)"; } | tee /versions.txt
+#18 0.646 seconv ── Subtitle Edit 5.0 - Batch Converter ─────────────────────────────────────────
+#18 0.745 seconv-pr ── Subtitle Edit 5.0 - Batch Converter ─────────────────────────────────────────
+#18 1.039 aws aws-cli/2.23.6 Python/3.13.5 Linux/6.12.76-linuxkit source/aarch64.debian.13
+#18 1.230 aws-pr aws-cli/2.36.46 Python/3.13.5 Linux/6.12.76-linuxkit source/aarch64.debian.13
+#18 1.241 exiv2 exiv2 0.28.5
+#18 1.244 exiv2-pr exiv2 1.00.0.9
+#18 1.252 bean-format beancount	3.1.0-3
+#18 1.293 bean-format-pr 3.2.3
+#18 1.395 helm v4.3.0+gbec5b06
+#18 1.430 helm-pr v4.3
+#18 1.432 solvespace-cli -rwxr-xr-x 1 root root 3735232 Oct  9 05:25 /opt/bin/solvesp
+#18 1.432 solvespace-cli-pr -rwxr-xr-x 1 root root 3736080 Oct  9 05:39 /opt/bin/solvesp
+#18 DONE 1.5s
+
+#19 [15/19] RUN apt-get install -y --no-install-recommends ruby maildir-utils softhsm2 opensc bat ocrmypdf tesseract-ocr-eng ghostscript ccache       > /tmp/apt-group2.log 2>&1 && echo "OK group-2 apt" || { echo "MISSING"; tail -3 /tmp/apt-group2.log; }
+#19 15.46 OK group-2 apt
+#19 DONE 15.6s
+
+#20 [16/19] RUN gem install --no-document hexapdf -v 1.11.0 > /tmp/gem-hexapdf.log 2>&1; echo "gem hexapdf exit: $?";     /opt/py/bin/pip install --no-cache-dir esptool==5.4.0 > /tmp/pip-esptool.log 2>&1; echo "pip esptool exit: $?";     npm install -g --no-fund --no-audit firebase-tools@15.32.1 > /tmp/npm-firebase.log 2>&1; echo "npm firebase-tools exit: $?"
+#20 1.819 gem hexapdf exit: 1
+#20 9.732 pip esptool exit: 0
+#20 31.59 npm firebase-tools exit: 0
+#20 DONE 32.1s
+
+#21 [17/19] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get https://downloads.getmonero.org/cli/monero-linux-armv8-v0.18.5.1.tar.bz2 monero.tbz;     get $gh/infracost/infracost/releases/download/v0.10.46/infracost-linux-arm64.tar.gz infracost.tgz;     get $gh/PlakarKorp/plakar/releases/download/v1.1.7/plakar_1.1.7_linux_arm64.tar.gz plakar.tgz;     get $gh/rfjakob/gocryptfs/releases/download/v2.6.1/gocryptfs_v2.6.1_linux-static_arm64.tar.gz gcf.tgz;     mkdir -p x-monero x-infracost x-plakar x-gcf; tar xjf monero.tbz -C x-monero; tar xzf infracost.tgz -C x-infracost; tar xzf plakar.tgz -C x-plakar; tar xzf gcf.tgz -C x-gcf;     install -m 755 "$(find x-monero -type f -name monero-wallet-cli | head -1)" /opt/bin/monero-wallet-cli;     install -m 755 "$(find x-infracost -type f -name 'infracost*' | head -1)" /opt/bin/infracost;     install -m 755 "$(find x-plakar -type f -name plakar | head -1)" /opt/bin/plakar;     install -m 755 x-gcf/gocryptfs /opt/bin/gocryptfs; ls -l /opt/bin | wc -l
+#21 9.595 OK monero.tbz
+#21 14.22 OK infracost.tgz
+#21 17.88 OK plakar.tgz
+#21 19.23 OK gcf.tgz
+#21 25.08 14
+#21 DONE 25.5s
+
+#22 [18/19] RUN cd /tmp/src && curl -fsSL https://github.com/xmake-io/xmake/releases/download/v3.1.1/xmake-v3.1.1.tar.gz | tar xz     && cd xmake-3.1.1 && ./configure > /tmp/build-xmake.log 2>&1 && make -j4 >> /tmp/build-xmake.log 2>&1 && make install PREFIX=/usr/local >> /tmp/build-xmake.log 2>&1;     echo "xmake build exit: $?"; tail -2 /tmp/build-xmake.log
+#22 12.18 xmake build exit: 0
+#22 12.18 linking.release build/xmake
+#22 12.18 installing build/xmake to /usr/local/bin
+#22 DONE 12.5s
+
+#23 [19/19] RUN { echo "hexapdf $(hexapdf version 2>&1 | head -1)"; echo "mu $(mu --version 2>&1 | head -1)"; echo "monero $(monero-wallet-cli --version 2>&1 | head -1)";       echo "infracost $(infracost --version 2>&1 | head -1)"; echo "xmake $(XMAKE_ROOT=y xmake --version 2>&1 | head -1)"; echo "esptool $(esptool version 2>&1 | tail -1)";       echo "plakar $(plakar version 2>&1 | head -1)"; echo "softhsm2 $(softhsm2-util --version 2>&1)"; echo "bat $(batcat --version 2>&1)"; echo "meson $(meson --version 2>&1)";       echo "ocrmypdf $(ocrmypdf --version 2>&1)"; echo "ccache $(ccache --version 2>&1 | head -1)"; echo "git $(git --version)"; echo "firebase $(firebase --version 2>&1 | tail -1)";       echo "gocryptfs $(gocryptfs -version 2>&1 | head -1)"; } | tee -a /versions.txt
+#23 0.168 hexapdf /bin/sh: 1: hexapdf: not found
+#23 0.189 mu version 1.12.9
+#23 0.199 monero Monero 'Fluorine Fermi' (v0.18.5.1-release)
+#23 0.885 infracost Infracost v0.10.46
+#23 1.066 xmake [0m[1mxmake v3.1.1+20261009, A cross-platform build utility based on Lua[0m[0m
+#23 1.209 esptool 5.4.0
+#23 1.286 plakar Welcome to plakar !
+#23 1.290 softhsm2 2.6.1
+#23 1.443 bat bat 0.25.0
+#23 1.726 meson 1.7.0
+#23 1.979 ocrmypdf 16.7.0+dfsg1
+#23 1.988 ccache ccache version 4.11.2
+#23 1.990 git git version 2.47.3
+#23 4.970 firebase 15.32.1
+#23 4.980 gocryptfs gocryptfs v2.6.1 without_openssl; go-fuse v2.8.0; 2025-08-10 go1.24.6 linux/arm64
+#23 DONE 5.0s
+
+#24 exporting to image
+#24 exporting layers
+#24 exporting layers 101.0s done
+#24 exporting manifest sha256:59e47a2b86e357e979876492a3e7d377b5c7a07225ad6ce6eaef2739d6fd07be done
+#24 exporting config sha256:db21217598c66a8fb6421d86bfc95c64af12c55b46560eb031fd1e2bbf8b45e9 done
+#24 exporting attestation manifest sha256:cedc05709a0a95bd30d4ae8b8cc89fd5e06ba10519b248591be72a47837f943c done
+#24 exporting manifest list sha256:33ad36d2bec53ab2e869c16850d057241136181e2f8c1032d2b203f675da6e21 done
+#24 naming to docker.io/library/sideeye-fu2-1009:latest done
+#24 unpacking to docker.io/library/sideeye-fu2-1009:latest
+#24 unpacking to docker.io/library/sideeye-fu2-1009:latest 26.6s done
+#24 DONE 127.7s
+build: sideeye-fu2-1009 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt
+build rc=0
