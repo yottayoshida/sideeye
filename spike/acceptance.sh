@@ -3899,8 +3899,9 @@ if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
     # v18 sentence, which calls writes a join orders "judged" in a mode that records no join —
     # and no field of the report, text or JSON, names a shim this run never loaded (the JSON's
     # metadata account kept one until review found it). Both sides are asserted: the positive
-    # ones so a run with no sentence, or no JSON, cannot pass. preflight has no JSON form, so
-    # the JSON is an explore's, refused at its recording the same way.
+    # ones so a run with no sentence, or no JSON, cannot pass. Written when preflight had no
+    # JSON form (#717 gave it one), so the JSON is an explore's, refused at its recording the
+    # same way.
     rm -rf /tmp/acc-th/s /tmp/acc-th/w /tmp/acc-th-sup.json && mkdir -p /tmp/acc-th/s
     TOY_STATE=/tmp/acc-th/s "$SIDEEYE" explore --state /tmp/acc-th/s --setup "$OUT/toy-supthreads init" \
         --operation "$OUT/toy-supthreads rotate" --observe supervised --oracle /usr/bin/strace \
@@ -5673,10 +5674,94 @@ if grep -q 'oracle_verified_across_runs' "$SD/observe.json" 2>/dev/null; then
     echo "FAIL the syscalls fixture still carries oracle_verified_across_runs, withdrawn 2026-09-08"
     fails=$((fails + 1))
 fi
+# #717: preflight's own document, both outcomes, for the schema check below — and three
+# claims of its own. The accepted one comes from a toml that declares a marker, so
+# `marker_observed` is generated; the split one from `--twice` over a rewrite whose bytes
+# differ every run (a pid and a clock), which the text quotes and the document must not.
+# seal_ok <stderr file> <json file>: exactly one seal line, and it is the file's sha256.
+seal_ok() {
+    n=$(grep -o 'sideeye: json sha256=[0-9a-f]*;' "$1" | wc -l | tr -d ' ')
+    got=$(grep -o 'sideeye: json sha256=[0-9a-f]*;' "$1" | sed 's/.*=\([0-9a-f]*\);/\1/')
+    want=$(sha256sum "$2" | cut -d' ' -f1)
+    [ "$n" = "1" ] && [ "$got" = "$want" ]
+}
+rm -rf "$SD/pfa" "$SD/pfs" "$SD/pfr" "$SD/wpfa" "$SD/wpfs" "$SD/wpfr"
+mkdir -p "$SD/pfa/state" "$SD/pfs/state" "$SD/pfr/state"
+cat > "$SD/pfa/sideeye.toml" <<TOML
+[world]
+state = "./state"
+[define]
+setup     = "$OUT/toy-bug init"
+operation = "$OUT/toy-bug rotate"
+marker    = "COMMITTED"
+TOML
+TOY_MARKER=1 "$SIDEEYE" preflight --config "$SD/pfa/sideeye.toml" --shim "$SHIM" \
+    --work "$SD/wpfa" --oracle /usr/bin/strace --json "$SD/preflight-accepted.json" \
+    >"$SD/pfa.out" 2>"$SD/pfa.err"
+rc=$?
+if [ "$rc" = "0" ] && seal_ok "$SD/pfa.err" "$SD/preflight-accepted.json" \
+    && python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d["schema"]=="sideeye/preflight" and d["outcome"]=="recording_accepted" and d.get("marker_observed") is True and d["l0_judged_paths"] else 1)' "$SD/preflight-accepted.json"; then
+    echo "ok   preflight --json on an accepted recording writes sideeye/preflight, with the judged set, sealed once"
+else
+    echo "FAIL preflight --json, accepted: exit $rc, or the document or its seal is not what docs/report-schema.md says"
+    sed 's/^/     | /' "$SD/pfa.err" | head -4
+    fails=$((fails + 1))
+fi
+TOY_STATE=$SD/pfs/state TOY_NONDET_REWRITE=1 "$SIDEEYE" preflight --state "$SD/pfs/state" \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" --shim "$SHIM" \
+    --work "$SD/wpfs" --twice --json "$SD/preflight-split.json" >"$SD/pfs.out" 2>"$SD/pfs.err"
+rc=$?
+if [ "$rc" = "1" ] && seal_ok "$SD/pfs.err" "$SD/preflight-split.json" \
+    && python3 - "$SD/pfs.out" "$SD/preflight-split.json" "$SD/wpfs" <<'PY'
+import json, os, re, sys
+txt, raw, work = open(sys.argv[1]).read(), open(sys.argv[2]).read(), sys.argv[3]
+d = json.loads(raw)
+m = re.search(r'first run "((?:[^"\\]|\\.)*)", second run "((?:[^"\\]|\\.)*)"', txt)
+# Positive control first: the text has to quote the two stretches, or the absence below
+# says nothing.
+if not m or not all(m.groups()): sys.exit("the text quotes no stretch: the leg would be vacuous")
+for q in m.groups():
+    if q in raw: sys.exit("a quoted stretch reached the JSON: %r" % q)
+    for root, _, files in os.walk(work):
+        for f in files:
+            if q.encode() in open(os.path.join(root, f), "rb").read():
+                sys.exit("a quoted stretch is in the work directory: %s" % f)
+if d["outcome"] != "runs_differ" or d["exit_code"] != 1: sys.exit("outcome %r exit %r" % (d["outcome"], d["exit_code"]))
+nd = [x for x in d["differences"] if x["path"] == "nondet.txt"]
+if not nd or nd[0]["how"] != "content_differs" or "first differ at byte offset" not in nd[0].get("shape", ""):
+    sys.exit("nondet.txt is not named with where its bytes differ: %r" % d["differences"])
+PY
+then
+    echo "ok   preflight --twice --json names where two runs differ and carries no byte of either, sealed once"
+else
+    echo "FAIL preflight --twice --json: exit $rc, or a differing stretch reached the document or the work directory"
+    fails=$((fails + 1))
+fi
+# A refusal writes the report explore writes for the same define: same verdict, reason and step.
+TOY_STATE=$SD/pfr/state "$SIDEEYE" preflight --state "$SD/pfr/state" \
+    --setup "$OUT/toy-static init" --operation "$OUT/toy-static rotate" --shim "$SHIM" \
+    --work "$SD/wpfr" --json "$SD/preflight-refused.json" >/dev/null 2>"$SD/pfr.err"
+rc=$?
+rm -rf "$SD/pfr/state"; mkdir -p "$SD/pfr/state"
+TOY_STATE=$SD/pfr/state "$SIDEEYE" explore --state "$SD/pfr/state" \
+    --setup "$OUT/toy-static init" --operation "$OUT/toy-static rotate" --shim "$SHIM" \
+    --work "$SD/wpfr2" --json "$SD/explore-refused.json" >/dev/null 2>&1
+if [ "$rc" = "2" ] && seal_ok "$SD/pfr.err" "$SD/preflight-refused.json" \
+    && python3 -c '
+import json, sys
+p, e = (json.load(open(f)) for f in sys.argv[1:3])
+keys = ("schema", "verdict", "exit_code", "unknown_reason", "next_step")
+sys.exit(0 if p["schema"] == "sideeye/report" and all(p.get(k) == e.get(k) for k in keys) else "%r vs %r" % ({k: p.get(k) for k in keys}, {k: e.get(k) for k in keys}))' "$SD/preflight-refused.json" "$SD/explore-refused.json"; then
+    echo "ok   preflight --json on a refusal writes explore's report for the same define, sealed once"
+else
+    echo "FAIL preflight --json on a refusal: exit $rc, or it is not explore's report"
+    fails=$((fails + 1))
+fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
     "$ROOT/src/report.zig" \
-    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/warnings.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/children.json"; then
-    echo "ok   the schema page, the generated reports, the contract enum and buildJson's shared values agree"
+    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/warnings.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/children.json" \
+    "$SD/preflight-accepted.json" "$SD/preflight-split.json"; then
+    echo "ok   the schema page, the generated reports and preflight documents, the contract enum and the JSON writers' shared values agree"
 else
     echo "FAIL the report schema page drifted from the reports (or the reports from the page)"
     fails=$((fails + 1))
@@ -7848,7 +7933,7 @@ else
 fi
 
 # --- #518: the same observation as data, read off the JSON rather than the sentence ---
-# `explore` rather than `preflight`, which refuses --json. Whole-key matches with the
+# `explore` rather than `preflight`, which refused --json until #717. Whole-key matches with the
 # leading newline and indentation, as buildJson writes them: a bare `7` would match a pid.
 mkdir -p /tmp/acc-obs/j-state /tmp/acc-obs/j-work
 "$SIDEEYE" explore --state /tmp/acc-obs/j-state --setup /tmp/acc-obs/setup7.sh \
@@ -9389,7 +9474,8 @@ explore --frobnicate x|unknown option '--frobnicate'
 explore --stat x|unknown option '--stat'^did you mean '--state'
 explore --twic x|unknown option '--twic'^!did you mean
 explore --state-undr x|unknown option '--state-undr'^!did you mean
-preflight --jsn x|unknown option '--jsn'^!did you mean
+preflight --world-timeot x|unknown option '--world-timeot'^!did you mean
+preflight --jsn x|unknown option '--jsn'^did you mean '--json'
 explore foo|takes no positional argument here: 'foo'
 explore --state|an option is missing its value: --state takes one
 explore --state x --help|'--help' is answered only on its own^sideeye help explore
@@ -10082,7 +10168,7 @@ fi
 # `boundary_ev.second_run` is assigned above the four refusals that can fire between run
 # B's trace read and its boundary switch, which is what makes a refusal there say "the
 # second observed run" rather than describe run A. That placement was invisible until
-# now — preflight refuses `--json`, and the UNKNOWN text block carried no `processes`
+# now — preflight refused `--json` until #717, and the UNKNOWN text block carried no `processes`
 # line — so nothing would have noticed it drifting back down, and an earlier revision
 # had in fact sat below four of those refusals while claiming otherwise.
 #

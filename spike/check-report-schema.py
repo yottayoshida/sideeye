@@ -21,6 +21,12 @@ Six claims, each enforced:
 The verdict coverage itself is asserted too: the given reports must include all
 four verdicts, or the reverse direction would go vacuously green for the
 fields only some verdicts carry.
+
+Preflight's document (#717) is held the same way. A given file whose `schema` is
+"sideeye/preflight" is checked against the rows after the page's
+`<!-- schema: sideeye/preflight -->` anchor — claims 1, 2 and 6 — where a field the report
+also carries, with the same meaning, may stand on the report's row instead of a row of
+its own. When any are given, both outcomes must be among them.
 """
 import json
 import re
@@ -49,7 +55,13 @@ def main():
     zig_main = open(zig_main_path).read()
     md = open(md_path, encoding="utf-8").read()
 
-    reports = [json.load(open(p)) for p in report_paths]
+    loaded = [json.load(open(p)) for p in report_paths]
+    reports = [r for r in loaded if r.get("schema") != "sideeye/preflight"]
+    preflights = [r for r in loaded if r.get("schema") == "sideeye/preflight"]
+    anchor = "<!-- schema: sideeye/preflight -->"
+    if md.count(anchor) != 1:
+        sys.exit("the page must hold the preflight anchor %r exactly once" % anchor)
+    md_report, md_preflight = md.split(anchor)
     verdicts = {r.get("verdict") for r in reports}
     want = {"PASS", "FAIL", "UNKNOWN", "SETUP_ERROR"}
     if verdicts != want:
@@ -67,7 +79,7 @@ def main():
     observed = {k if not re.match(r"(checker_)?earliest\.(after|before)\.", k)
                 else k.rsplit(".", 1)[0] for k in observed}
 
-    documented = set(re.findall(r"^\| `([a-z0-9_.]+)`", md, re.M))
+    documented = set(re.findall(r"^\| `([a-z0-9_.]+)`", md_report, re.M))
 
     undocumented = sorted(observed - documented)
     ungenerated = sorted(documented - observed)
@@ -76,6 +88,32 @@ def main():
         problems.append("generated but not documented: %s" % ", ".join(undocumented))
     if ungenerated:
         problems.append("documented but never generated: %s" % ", ".join(ungenerated))
+
+    # Preflight's document: its own rows in both directions, the report's rows for the
+    # fields the two share. A page that documents it with no document given would skip this
+    # whole block and stay green, so that is a failure of its own.
+    if re.search(r"^\| `[a-z0-9_.]+`", md_preflight, re.M) and not preflights:
+        problems.append("the page documents sideeye/preflight and no preflight document was given")
+    if preflights:
+        outcomes = {r.get("outcome") for r in preflights}
+        if outcomes != {"recording_accepted", "runs_differ"}:
+            problems.append("preflight outcome coverage is %r, wanted both — the reverse "
+                            "check would be vacuous for the --twice fields" % sorted(map(str, outcomes)))
+        pf_observed = set()
+        for r in preflights:
+            pf_observed |= flatten(r)
+        pf_rows = set(re.findall(r"^\| `([a-z0-9_.]+)`", md_preflight, re.M))
+        if not pf_rows:
+            problems.append("the preflight section holds no field rows — this check did not run")
+        pf_undoc = sorted(pf_observed - pf_rows - documented)
+        pf_ungen = sorted(pf_rows - pf_observed)
+        if pf_undoc:
+            problems.append("preflight: generated but not documented: %s" % ", ".join(pf_undoc))
+        if pf_ungen:
+            problems.append("preflight: documented but never generated: %s" % ", ".join(pf_ungen))
+        pf_status = sorted({str(r.get("schema_status")) for r in preflights})
+        if pf_status != ["frozen"]:
+            problems.append("preflight schema_status is %s, wanted 'frozen'" % ", ".join(pf_status))
 
     zig = open(zig_path, encoding="utf-8").read()
     # The whole enum block, to its closing brace at column 0 — values declared
@@ -141,10 +179,14 @@ def main():
     # what catches that shape is the comptime table it now comes from. And `not_tested`
     # is appended directly rather than through `jsonString`, so it is outside this claim
     # entirely; acceptance check 2nt is what holds that field.
-    body = re.search(r"^fn buildJson\(.*?^\}$", zig_main, re.S | re.M)
-    if not body:
-        problems.append("could not find buildJson in %s" % zig_main_path)
-    else:
+    # Since #717 the report's shared parts live in four functions `buildJson` calls, and
+    # preflight's document is built beside it from the same ones; all six are read.
+    for fname in ("buildJson", "appendCwd", "appendDeclarations", "appendFigures",
+                  "appendJudgedSet", "buildPreflightJson"):
+        body = re.search(r"^fn %s\(.*?^\}$" % fname, zig_main, re.S | re.M)
+        if not body:
+            problems.append("could not find %s in %s" % (fname, zig_main_path))
+            continue
         calls = re.findall(r"jsonString\(w, arena, (.+?)\);", body.group(0))
         # Without this, a call split across lines is silently not examined: the pattern
         # would not match it and nothing would notice the shortfall. Counted against the
@@ -152,15 +194,15 @@ def main():
         # against `jsonString(w, arena,`, which does not, so both sides fell together and
         # the guard could never fire (measured).
         if len(calls) != body.group(0).count("jsonString("):
-            problems.append("a jsonString call in buildJson spans lines; this check "
-                            "reads single-line calls and would skip it silently")
-        if not calls:
-            problems.append("no jsonString calls found in buildJson — this check did not run")
+            problems.append("a jsonString call in %s spans lines; this check "
+                            "reads single-line calls and would skip it silently" % fname)
+        if not calls and fname in ("buildJson", "buildPreflightJson"):
+            problems.append("no jsonString calls found in %s — this check did not run" % fname)
         shared = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*(\(\))?$")
         for arg in calls:
             if not shared.match(arg.strip()):
-                problems.append("buildJson builds a value inline where the text report "
-                                "reads a shared one: jsonString(..., %s)" % arg.strip())
+                problems.append("%s builds a value inline where the text report "
+                                "reads a shared one: jsonString(..., %s)" % (fname, arg.strip()))
 
     # Claim 6 (#565). `schema_status` is the one envelope field whose documented content
     # is a literal, and no claim above reads a field's value. From v1.0.0 through v1.3.0
@@ -202,7 +244,7 @@ def main():
     if problems:
         sys.exit("; ".join(problems))
     print("schema page, %d reports (all four verdicts), the contract enum, schema_status "
-          "%r, and buildJson's %d shared values agree" % (len(reports), status_doc, len(calls)))
+          "%r, and the JSON writers' shared values agree; %d preflight document(s)" % (len(reports), status_doc, len(preflights)))
 
 
 if __name__ == "__main__":

@@ -261,6 +261,14 @@ stay the same.
    All eight match the extraction's pattern, so the next `check-freeze-audit.sh` reports them
    as drift, the sweep's job as above; `contract_version` does not move.
 
+   **A second document, 2026-10-09 (#717, ADR 0102).** `preflight --json` writes the report
+   above when preflight refuses or stops, and otherwise `sideeye/preflight`, documented in the
+   report-schema page's last section. Nothing in the report moves: a reader that rejects any
+   `schema` but `"sideeye/report"`, as the envelope says to, never reads the new one. The new
+   document is held to this surface's rule from its first release — fields may be added, none
+   removed or redefined — and says so in its own `schema_status`, `"frozen"`, since an MCP
+   tool hands it to agents from the same release.
+
 3. **Exit codes.** When a run produces a verdict, that verdict's exit code is
    fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is never 0.
    The promise runs in that direction. **Exit 0 is not reserved to PASS**: it

@@ -41,7 +41,9 @@ const appendSanitized = defang.appendSanitized;
 const removeFile = files.removeFile;
 const writeWholeFile = files.writeWholeFile;
 
-var out_buf: [16 * 1024]u8 = undefined;
+/// 32 KiB since #717: 16 held the whole help with 27 bytes to spare, and `preflight --json` was
+/// the next flag. The help is printed by one `say`, so its size and this buffer move together.
+var out_buf: [32 * 1024]u8 = undefined;
 /// What one `say` can print; past it the report goes to stderr as an error instead.
 pub const say_capacity = out_buf.len;
 
@@ -86,8 +88,8 @@ pub fn paint(comptime word: []const u8) []const u8 {
     return if (colourOn()) "\x1b[1;" ++ code ++ "m" ++ word ++ "\x1b[0m" else word;
 }
 
-test "say's capacity is the 16 KiB the whole help is held under in cli.zig (#712)" {
-    try std.testing.expectEqual(@as(usize, 16 * 1024), say_capacity);
+test "say's capacity is the 32 KiB the whole help is held under in cli.zig (#712, #717)" {
+    try std.testing.expectEqual(@as(usize, 32 * 1024), say_capacity);
 }
 
 test "the verdict is coloured only on a terminal, without NO_COLOR, and not for TERM=dumb (#712)" {
@@ -1118,7 +1120,8 @@ pub fn sayWarnings(comptime fmt: []const u8) void {
 /// Each warning once, on stderr, as `sideeye: warning: …`. At the end and not when the define is
 /// read, for the seal's reason (below): a reader of merged output who takes its first line must
 /// still find the verdict there (`docs/cli.md`). Called by `emitSeal`, which every exit after a
-/// report reaches, and by preflight's two exits, which do not seal.
+/// report reaches — preflight's two own exits included since #717, which seal only under
+/// `--json`.
 pub fn emitWarnings() void {
     if (warnings_emitted) return;
     warnings_emitted = true;
@@ -1599,8 +1602,9 @@ pub const SpanShown = enum {
     /// the JSON `message`, the MCP answer (ADR 0010) and reports pasted upstream, and the
     /// stretch two runs disagree on is exactly where a per-run token or secret sits.
     shape,
-    /// The same, plus both stretches quoted. Only `preflight --twice` prints this: it has no
-    /// `--json` and no MCP tool, so the bytes reach the terminal of whoever typed it.
+    /// The same, plus both stretches quoted. Only `preflight --twice`'s text prints this, so the
+    /// bytes reach the terminal of whoever typed it; its `--json` document carries the `.shape`
+    /// form (#717).
     bytes,
 };
 
@@ -1959,28 +1963,9 @@ fn buildJson(
     // is 3 must be distinguishable, by machine, from a PASS that required 0.
     try w.appendSlice(arena, ",\n  \"expected_status\": ");
     try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{expected_status_val}));
-    // #647: present on every report raised once the define's `cwd` has been resolved, a
-    // SETUP ERROR raised after that point included — whose text is one line by design and
-    // carries no `cwd` line, the way it carries no recovery line (see `sayCwd`). The string is the
-    // variable the text reads; `jsonString` escapes it, `textShown` defangs it.
-    if (command_cwd) |c| {
-        try w.appendSlice(arena, ",\n  \"command_cwd\": ");
-        try jsonString(w, arena, c);
-        try w.appendSlice(arena, ",\n  \"command_cwd_declared\": ");
-        try w.appendSlice(arena, if (command_cwd_declared) "true" else "false");
-    }
+    try appendCwd(w, arena);
 
-    // ADR 0041: present only when the define declared something (the presence rule
-    // `next_step` and `divergence_syscall` follow), each entry as it was spelled; the
-    // unchecked list is the same entries through the one predicate the text line uses.
-    // #706, ADR 0095: present only when there is a warning, the presence rule `apparatus` follows.
-    if (define_warnings.len > 0) try jsonArrayField(w, arena, "define_warnings", define_warnings, false);
-    if (apparatus_declared.len > 0) {
-        try jsonArrayField(w, arena, "apparatus", apparatus_declared, false);
-        if (apparatusHasUnchecked()) try jsonArrayField(w, arena, "apparatus_unchecked", apparatus_declared, true);
-    }
-    // ADR 0043: the same presence rule, the same slice the plan judged by.
-    if (scratch_declared.len > 0) try jsonArrayField(w, arena, "scratch", scratch_declared, false);
+    try appendDeclarations(w, arena);
     if (unknown_reason) |r| {
         try w.appendSlice(arena, ",\n  \"unknown_reason\": ");
         try jsonString(w, arena, r);
@@ -2108,6 +2093,45 @@ fn buildJson(
     // say what it did not look at is the kind of reassurance this tool refuses to give.
     try w.appendSlice(arena, ",\n  \"not_tested\": ");
     try w.appendSlice(arena, notTestedJson());
+    try appendFigures(w, arena);
+    try appendJudgedSet(w, arena);
+    try w.appendSlice(arena, "\n}\n");
+    return buf.items;
+}
+
+// The parts of the report the preflight document shares (#717): written by one function each,
+// so the two documents cannot spell the same field two ways. Moved out of `buildJson` whole,
+// in the order it writes them; the report's bytes do not move.
+const W = *std.ArrayList(u8);
+
+fn appendCwd(w: W, arena: std.mem.Allocator) !void {
+    // #647: present on every report raised once the define's `cwd` has been resolved, a
+    // SETUP ERROR raised after that point included — whose text is one line by design and
+    // carries no `cwd` line, the way it carries no recovery line (see `sayCwd`). The string is the
+    // variable the text reads; `jsonString` escapes it, `textShown` defangs it.
+    if (command_cwd) |c| {
+        try w.appendSlice(arena, ",\n  \"command_cwd\": ");
+        try jsonString(w, arena, c);
+        try w.appendSlice(arena, ",\n  \"command_cwd_declared\": ");
+        try w.appendSlice(arena, if (command_cwd_declared) "true" else "false");
+    }
+}
+
+fn appendDeclarations(w: W, arena: std.mem.Allocator) !void {
+    // ADR 0041: present only when the define declared something (the presence rule
+    // `next_step` and `divergence_syscall` follow), each entry as it was spelled; the
+    // unchecked list is the same entries through the one predicate the text line uses.
+    // #706, ADR 0095: present only when there is a warning, the presence rule `apparatus` follows.
+    if (define_warnings.len > 0) try jsonArrayField(w, arena, "define_warnings", define_warnings, false);
+    if (apparatus_declared.len > 0) {
+        try jsonArrayField(w, arena, "apparatus", apparatus_declared, false);
+        if (apparatusHasUnchecked()) try jsonArrayField(w, arena, "apparatus_unchecked", apparatus_declared, true);
+    }
+    // ADR 0043: the same presence rule, the same slice the plan judged by.
+    if (scratch_declared.len > 0) try jsonArrayField(w, arena, "scratch", scratch_declared, false);
+}
+
+fn appendFigures(w: W, arena: std.mem.Allocator) !void {
     // #711, ADR 0096: what the `oracle`, `checker` and `processes` sentences state, as numbers and
     // booleans beside them. Each is present only where it was measured — none is ever written as a
     // zero or a false standing for "not known" — and none is a closed set. Before the judged set,
@@ -2131,6 +2155,9 @@ fn buildJson(
         try w.print(arena, ",\n  \"processes_threads_created\": {d}", .{ev.threads});
         try w.print(arena, ",\n  \"processes_writer_threads\": {d}", .{ev.writer_threads});
     }
+}
+
+fn appendJudgedSet(w: W, arena: std.mem.Allocator) !void {
     // #638, ADR 0079. LAST in the document, and the position is the decision: this is the only
     // field whose length grows with the target's state tree, so anywhere else it pushes back
     // the fields a reader of a FAIL needs first — `message`, `next_step`, `earliest`. Written
@@ -2142,8 +2169,6 @@ fn buildJson(
         // After the two it qualifies, so it moves no byte that was there before it (#683).
         if (l0_judged_paths_touched) |t| try w.print(arena, ",\n  \"l0_judged_paths_touched\": {d}", .{t});
     }
-    try w.appendSlice(arena, "\n}\n");
-    return buf.items;
 }
 
 /// On stderr, not stdout: the text report is the process's output, and a diagnostic
@@ -2230,7 +2255,13 @@ pub fn writeJsonReport(
 ) void {
     const doc = buildJson(arena, verdict, exit_code, detail, checker_detail, unknown_reason, setup_error_reason, message, next_step) catch
         return jsonFailed("the document could not be built");
+    writeJsonDoc(path, doc);
+}
 
+/// `doc` to `path`, through a temporary name and a rename, then the seal over its bytes. The
+/// one writer for both documents `--json` produces — the report, and preflight's (#717) — so
+/// both land whole or not at all and both are sealed the same way.
+fn writeJsonDoc(path: []const u8, doc: []const u8) void {
     var pbuf: [contract.max_path]u8 = undefined;
     const pz = std.fmt.bufPrintZ(&pbuf, "{s}", .{path}) catch
         return jsonFailed("--json path is too long");
@@ -2262,6 +2293,104 @@ pub fn writeJsonReport(
     var digest: [32]u8 = undefined;
     std.crypto.hash.sha2.Sha256.hash(doc, &digest, .{});
     recordSeal(digest);
+}
+
+/// What `preflight --json` writes when preflight accepted the recording, or when `--twice`'s two
+/// runs differed (#717, ADR 0102). Preflight produces no verdict, and the report's `verdict` is a
+/// closed set of four, so these two outcomes get a document of their own; a refusal or a stop
+/// writes the report, through `unknown()` and `setupError` as explore's do. The account comes from
+/// the same variables the text block prints, written by the same functions the report uses.
+pub const PreflightDoc = struct {
+    runs_differ: bool,
+    /// State-changing operations the recording observed — its crash points.
+    operations: u32,
+    marker_declared: bool,
+    /// `--twice` only.
+    repeat: ?PreflightRepeat,
+};
+
+pub const PreflightRepeat = struct {
+    gap_ms: u64,
+    total: usize,
+    diffs: []const PreflightDiff,
+};
+
+pub const PreflightDiff = struct {
+    path: []const u8,
+    how: []const u8,
+    /// The byte line in its `.shape` form: where the runs first differ, how long each stretch
+    /// is and what kind of bytes it holds. Never the `.bytes` form — the stretch two runs
+    /// disagree on is where a per-run token or secret sits, and this document is what an MCP
+    /// call and a CI log keep.
+    shape: ?[]const u8,
+};
+
+test "a preflight difference's `how` is one of the four names docs/report-schema.md lists (#717)" {
+    // The document writes `@tagName` of the snapshot's enum, and its schema is frozen from the
+    // first release: a renamed member would rename a frozen value with no other test noticing.
+    const names = std.meta.fieldNames(engine.Difference.How);
+    try std.testing.expectEqual(@as(usize, 4), names.len);
+    for (names, [_][]const u8{ "only_in_first", "only_in_second", "kind_differs", "content_differs" }) |got, want|
+        try std.testing.expectEqualStrings(want, got);
+}
+
+/// What preflight's `not checked` line names. The text prints it and `--json` writes it as a
+/// list, both from here.
+pub const preflight_not_checked = [_][]const u8{ "kill landing", "world-side process boundaries", "baseline behavior", "checker falsification", "whether any world could fail" };
+
+pub fn writePreflightJson(arena: std.mem.Allocator, path: []const u8, pd: PreflightDoc) void {
+    const doc = buildPreflightJson(arena, pd) catch return jsonFailed("the document could not be built");
+    writeJsonDoc(path, doc);
+}
+
+fn buildPreflightJson(arena: std.mem.Allocator, pd: PreflightDoc) ![]const u8 {
+    var buf: std.ArrayList(u8) = .empty;
+    const w = &buf;
+    try w.appendSlice(arena, "{\n  \"schema\": \"sideeye/preflight\",\n  \"schema_status\": \"frozen\",\n");
+    try w.print(arena, "  \"contract_version\": {d}", .{contract.contract_version});
+    try w.print(arena, ",\n  \"outcome\": \"{s}\"", .{if (pd.runs_differ) "runs_differ" else "recording_accepted"});
+    // The process's own code: 0 accepted, 1 the two runs differed — the negative answer to the
+    // question `--twice` asked, not a FAIL (docs/cli.md).
+    try w.print(arena, ",\n  \"exit_code\": {d}", .{@as(u8, if (pd.runs_differ) 1 else 0)});
+    try w.print(arena, ",\n  \"crash_points\": {d}", .{pd.operations});
+    try w.print(arena, ",\n  \"expected_status\": {d}", .{expected_status_val});
+    try appendCwd(w, arena);
+    try appendDeclarations(w, arena);
+    try w.appendSlice(arena, ",\n  \"l0\": ");
+    try jsonString(w, arena, l0_note);
+    try w.appendSlice(arena, ",\n  \"oracle\": ");
+    try jsonString(w, arena, oracle_note);
+    if (recovery_note) |rn| {
+        try w.appendSlice(arena, ",\n  \"recovery\": ");
+        try jsonString(w, arena, rn);
+    }
+    try w.appendSlice(arena, ",\n  \"processes\": ");
+    try jsonString(w, arena, boundary.boundaryAccount());
+    // Present only when the define declared one, as the text line is: a marker that never
+    // appears is refused before a preflight document is written, so present means observed.
+    if (pd.marker_declared) try w.appendSlice(arena, ",\n  \"marker_observed\": true");
+    try jsonArrayField(w, arena, "not_checked", &preflight_not_checked, false);
+    if (pd.repeat) |r| {
+        try w.print(arena, ",\n  \"repeat_gap_ms\": {d}", .{r.gap_ms});
+        try w.print(arena, ",\n  \"differences_total\": {d}", .{r.total});
+        try w.appendSlice(arena, ",\n  \"differences\": [");
+        for (r.diffs, 0..) |d, i| {
+            try w.appendSlice(arena, if (i == 0) "\n    {\"path\": " else ",\n    {\"path\": ");
+            try jsonString(w, arena, d.path);
+            try w.appendSlice(arena, ", \"how\": ");
+            try jsonString(w, arena, d.how);
+            if (d.shape) |sh| {
+                try w.appendSlice(arena, ", \"shape\": ");
+                try jsonString(w, arena, sh);
+            }
+            try w.appendSlice(arena, "}");
+        }
+        try w.appendSlice(arena, if (r.diffs.len == 0) "]" else "\n  ]");
+    }
+    try appendFigures(w, arena);
+    try appendJudgedSet(w, arena);
+    try w.appendSlice(arena, "\n}\n");
+    return buf.items;
 }
 
 test "the seal token is one fixed-length line under PIPE_BUF, in both forms, over the known vector (#597)" {

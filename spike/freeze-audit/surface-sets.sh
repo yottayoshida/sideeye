@@ -46,7 +46,9 @@ extract_surface_set() {
       mcp_tools)
           grep -oE 'sideeye_[a-z_]+' ;;
       schema_fields)
-          grep -oE '^\| `[a-z_]+`' | grep -oE '`[a-z_]+`' | tr -d '`' ;;
+          # The report's rows only: the page's last section, after this anchor, documents
+          # preflight's own document (#717), which is not the report surface.
+          sed '/<!-- schema: sideeye\/preflight -->/q' | grep -oE '^\| `[a-z_]+`' | grep -oE '`[a-z_]+`' | tr -d '`' ;;
       *)
           echo "extract_surface_set: unknown set $1" >&2
           return 1 ;;
