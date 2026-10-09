@@ -3768,6 +3768,10 @@ const Repeat = struct {
     /// with both stretches quoted, for the first `repeat_span_paths` such paths; null for
     /// the rest and for every other kind of difference.
     spans: []const ?[]const u8,
+    /// The same lines in their `.shape` form — where, how long, what kind, no byte of either
+    /// run — for `--json` (#717). Made here beside `spans` because the second snapshot is
+    /// freed when `observeAgain` returns, so no later step could make them.
+    shapes: []const ?[]const u8,
 };
 
 /// How many differing paths get a byte line under `--twice` (#688). Each line quotes up to
@@ -3915,7 +3919,7 @@ fn observeAgain(
     // the run it is about. An earlier revision of this said "before the refusals" while
     // sitting after four of them (`no_shim_marker`, `trace_truncated`,
     // `child_touched_state_dir`, `contract_version_mismatch`) — harmless at the time,
-    // because preflight refuses `--json` and the UNKNOWN text block carried no `processes`
+    // because preflight refused `--json` (until #717) and the UNKNOWN text block carried no `processes`
     // line, and wrong for whoever built on the claim next. Caught by review. **The second
     // half of that excuse is gone as of #123**: the UNKNOWN block prints the account,
     // and each of those four refusals goes through it, so this assignment sitting above them
@@ -4059,11 +4063,14 @@ fn observeAgain(
     // snapshots are alive — `byteSpan` copies what it quotes into `arena`.
     const spans = arena.alloc(?[]const u8, count.stored) catch setupError(.environment, "out of memory");
     @memset(spans, null);
+    const shapes = arena.alloc(?[]const u8, count.stored) catch setupError(.environment, "out of memory");
+    @memset(shapes, null);
     var with_bytes: usize = 0;
-    for (diffs[0..count.stored], spans) |*d, *sp| {
+    for (diffs[0..count.stored], spans, shapes) |*d, *sp, *sh| {
         if (d.how == .content_differs and with_bytes < repeat_span_paths) {
             if (first.find(d.rel)) |fe| if (second.find(d.rel)) |se| {
                 sp.* = report.byteSpan(arena, "first run", fe.content, "second run", se.content, .bytes);
+                sh.* = report.byteSpan(arena, "first run", fe.content, "second run", se.content, .shape);
                 with_bytes += 1;
             };
         }
@@ -4074,6 +4081,7 @@ fn observeAgain(
         .count = count,
         .diffs = diffs[0..count.stored],
         .spans = spans,
+        .shapes = shapes,
     };
 }
 
@@ -4107,6 +4115,17 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
     // agreed. Calling a split "accepted" and returning a non-zero code would contradict
     // the frozen sentence; narrowing what acceptance means under this flag does not.
     const split = if (repeat) |r| !r.count.equal() else false;
+    // #717: what `--json` writes at either exit below — the figures here, the account from
+    // the report's own variables. Every path the comparison stored is listed, not only the ones
+    // the text has room for, with the byte line's shape beside the content differences.
+    const pf_doc: ?report.PreflightDoc = if (refuse.json_path != null) blk: {
+        const rep: ?report.PreflightRepeat = if (repeat) |r| rb: {
+            const out = arena.alloc(report.PreflightDiff, r.diffs.len) catch setupError(.environment, "out of memory");
+            for (r.diffs, r.shapes, out) |d, sh, *o| o.* = .{ .path = d.rel, .how = @tagName(d.how), .shape = sh };
+            break :rb .{ .gap_ms = r.gap_ms, .total = r.count.total, .diffs = out };
+        } else null;
+        break :blk .{ .runs_differ = split, .operations = n, .marker_declared = declared.marker, .repeat = rep };
+    } else null;
     if (split) {
         say("PREFLIGHT  not accepted — the two observed runs left different state\n\n", .{});
     } else {
@@ -4174,22 +4193,28 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
     // The parenthesis is #682's: with no check and no marker, explore can refuse an operation
     // that only creates files `nothing_could_fail`, which one recording cannot rule out. A toml
     // that declares either has said what makes a world fail, and the sentence would not apply.
+    // The five items are `report.preflight_not_checked`, which `--json` writes as a list: one
+    // definition for both forms (#717). Indexed rather than joined so the wrapping is the one
+    // these lines always had, and a sixth item is a compile error here rather than a silent
+    // difference between the two.
+    const nc = report.preflight_not_checked;
+    comptime std.debug.assert(nc.len == 5);
     if (declared.check or declared.marker) say(
         \\
-        \\not checked  kill landing, world-side process boundaries, baseline behavior,
-        \\             checker falsification, whether any world could fail — only a real
+        \\not checked  {s}, {s}, {s},
+        \\             {s}, {s} — only a real
         \\             exploration runs these
         \\
         \\
-    , .{}) else say(
+    , .{ nc[0], nc[1], nc[2], nc[3], nc[4] }) else say(
         \\
-        \\not checked  kill landing, world-side process boundaries, baseline behavior,
-        \\             checker falsification, whether any world could fail (with no
+        \\not checked  {s}, {s}, {s},
+        \\             {s}, {s} (with no
         \\             check or marker, an operation that only creates files is refused
         \\             nothing_could_fail) — only a real exploration runs these
         \\
         \\
-    , .{});
+    , .{ nc[0], nc[1], nc[2], nc[3], nc[4] });
     if (repeat) |r| {
         // Reported whether the runs agreed or split, and worded as an observation
         // rather than a property: two samples cannot establish that a target is
@@ -4276,7 +4301,8 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
         // forbids — a verdict arriving under a different code, or exit 0 read as proof a
         // check ran — but if the owner wants that reading written into §3, this comment
         // is the place that owes the reference.
-        report.emitWarnings();
+        if (refuse.json_path) |jp| report.writePreflightJson(arena, jp, pf_doc.?);
+        report.emitSeal();
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
     }
     // Under `--observe supervised` the next command names the mode, not a shim: there is no shim
@@ -4385,8 +4411,10 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
             , .{ textShown(arena, c.path), why, then, observe_part, oracle_part });
         },
     }
-    // #706: preflight seals nothing (it takes no --json), so the warnings go out here.
-    report.emitWarnings();
+    // #717: with `--json` the document is written and sealed here, the way a report is at
+    // explore's exit; without it `emitSeal` only puts out the warnings (#706), as before.
+    if (refuse.json_path) |jp| report.writePreflightJson(arena, jp, pf_doc.?);
+    report.emitSeal();
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
 
