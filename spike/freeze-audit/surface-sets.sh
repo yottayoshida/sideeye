@@ -44,7 +44,9 @@ extract_surface_set() {
       contract_version)
           grep -oE 'pub const contract_version: u32 = [0-9]+' ;;
       mcp_tools)
-          grep -oE 'sideeye_[a-z_]+' ;;
+          # The names in the tool catalogue's `"name":"…"` entries, not every `sideeye_` word
+          # in the file: `sideeye_shim` and `ev.sideeye_version` are not tools (#717).
+          grep -oE 'name\\":\\"sideeye_[a-z_]+' | grep -oE 'sideeye_[a-z_]+' ;;
       schema_fields)
           grep -oE '^\| `[a-z_]+`' | grep -oE '`[a-z_]+`' | tr -d '`' ;;
       *)
