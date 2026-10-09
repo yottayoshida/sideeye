@@ -162,3 +162,4 @@ Subtitle Edit's SeConv 5.2.0 `subs.srt subrip --offset:-2000 --overwrite`	-	upst
 MCA Selector 2.9 `--mode delete --query "InhabitedTime < 1000"`	-	upstream-reports.tsv (trixie has none)
 SoftHSM 2.6.1 `softhsm2-util --import`	-	upstream-reports.tsv (SoftHSMv2)
 OCRmyPDF 16.7.0 `--force-ocr a.pdf a.pdf`	-	upstream-reports.tsv (Debian's ocrmypdf)
+dotenvx 2.32.4 `encrypt`	-	upstream-reports.tsv (dotenvx)

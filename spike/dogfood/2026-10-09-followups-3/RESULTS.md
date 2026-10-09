@@ -1,0 +1,75 @@
+# Results — 2026-10-09 follow-ups 3
+
+The third "おわり？" of the day. The second recount (`2026-10-09-followups-2`) had left 49 unjudged targets
+as "behind walls v1.10.0 does not move", and two kinds of them were measurable after all: the threads
+wall had never been asked whether the target's own switch for one thread moves it, and five targets that
+cleared a gate in earlier campaigns had been set aside before their explore for reasons about filing, not
+about measuring. Released **v1.10.0** in one box (`apparatus/Dockerfile`, built five times). Predictions
+were committed before each run (`7033f95`, `b4f5f27`, `7a74533`, `56b7e20`, `8d52929`, `3704d22`).
+
+**33 targets: 14 FAIL, 9 PASS, 10 still behind a wall.** One filed upstream with the owner's approval:
+**dotenvx/dotenvx#1012**. And SubtitleEdit/subtitleedit#15829 was closed by its maintainer's fix (PR #15833,
+merged as a merge commit whose parent is the head this project measured in `2026-10-09-followups-2`; the
+seven commits beside it touch only the GUI), so that PASS is the landed fix's.
+
+## The threads wall, with each tool's switch for one thread
+
+`UV_THREADPOOL_SIZE=1` puts libuv's file calls on one thread; for yarn and trash-cli the gate stopped
+answering `multiple_threads_detected` (`transcripts/lab-1.txt`). Then for every Node target the wall had
+refused, and `GOMAXPROCS=1` for the Go ones, the documented switches for zstd (`--single-thread
+--no-asyncio`), lz4 (`-T1`) and beets (`threaded: no`), and `RAYON_NUM_THREADS=1 TOKIO_WORKER_THREADS=1`
+for the Rust ones:
+
+| target | result |
+|---|---|
+| yarn 4.18.1 `config set` | **FAIL** 1/3 — `.yarnrc.yml` truncated before its write |
+| trash-cli 7.2.0 `trash` | **PASS** 9/9 |
+| bibtex-tidy 1.15.1 | **FAIL** 1/3 — `refs.bib` |
+| dotenvx 2.32.4 `encrypt` (`.env` and `.env.keys` scratch, `dotenvx get` as checker) | **FAIL** 1/5 — `.env` emptied after `.env.keys` is written: the values gone. Reproduced without Sideeye (`lab-2.txt`); **filed: dotenvx/dotenvx#1012** |
+| glTF-Transform 4.5.1 `weld` onto its input | **FAIL** 1/3 — `terrain.glb` |
+| cspell 10.3.6 `link add` (Node 22) | **FAIL** 1/4 — `cspell.json` |
+| capacitor 8.5.2 `telemetry off` (Node 22) | **FAIL** 1/4 — `sysconfig.json` |
+| eslint 10.11.0 `--fix` | **FAIL** 1/3 — `a.js` |
+| prettier 3.9.7 `--write` | **FAIL** 1/3 — `a.js` |
+| stylelint 17.15.0 `--fix` | **PASS** 6/6 |
+| svgo 4.1.0 | **FAIL** 1/4 — `a.svg` |
+| npm 9.2.0 `pkg set` | **FAIL** 1/3 — `package.json` |
+| joplin 3.7.1 `mknote` (`database.sqlite`, `log.txt` and `tmp` scratch, `joplin ls` as checker) | **PASS** 49/49. The first checker passed `TestBook` to `ls`, a note pattern there, and refused the finished state; the second form FAILed on the profile's `tmp` directory alone |
+| gemini-cli 0.62.0, vercel 62.2.0, Bitwarden CLI 2026.8.0 | **UNKNOWN `multiple_threads_detected`** with one libuv thread too |
+| lingui 6.9.0 `extract` (Node 22) | **UNKNOWN `child_touched_state_dir`**, with `--workers 1` too. Its dependencies as npm resolves them today need Node 22 (`fs.globSync`), which 2026-10-05 did not |
+| doctl 1.177.0 (supervised, `GOMAXPROCS=1`) | **FAIL** 1/3 — `config.yaml` |
+| infracost 0.10.46 (supervised, `GOMAXPROCS=1`, `.state.json` scratch) | **FAIL** 1/5 — `credentials.yml` |
+| plakar 1.1.7 (supervised, `GOMAXPROCS=1`, the state files scratch, `plakar` as checker) | **PASS** 6/6 |
+| OpenTofu 1.13.1 (supervised, `GOMAXPROCS=1`) | **UNKNOWN `multiple_threads_detected`** |
+| zstd 1.5.7 `--rm` | `--single-thread` alone still met threads: zstd writes through an I/O thread by default. With `--no-asyncio` too it was `nothing_could_fail` (a new file, the input removed), and with a checker on the data **PASS** 8/8 |
+| lz4 1.10.0 `-T1 --rm` | **UNKNOWN `multiple_threads_detected`**: no switch for its I/O |
+| beets 2.1.0 `import` (`threaded: no`, `library.db` scratch, 2026-10-02's checker) | **PASS** 43/43 |
+| rustic 0.11.4, prek 0.5.5, codex 0.160.0, steamguard-cli 0.18.4 | **UNKNOWN `multiple_threads_detected`**: one rayon and one tokio worker leave the blocking pool |
+
+Not tried: electrum and basic-memory (Python threads with no switch for one).
+
+## Five that cleared a gate and were never explored
+
+| target | result |
+|---|---|
+| DokuWiki 2026-07-14c page save | **FAIL** 5/31 — `pages/wiki/start.txt` truncated before its write. Not filed: its tracker's #677 is this |
+| Lighthouse 8.2.3 validator definitions | **PASS** 8/8 |
+| jump 0.69.0 (supervised) | **PASS** 13/13 |
+| keyring 25.7.0 with keyrings.alt 5.0.2's plaintext file | **FAIL** 1/3 — `keyring_pass.cfg`. Not filed: the write is keyrings.alt's (29 stars) |
+| git-lfs 3.8.0 `install` | **PASS** 18/18 — not the `git config` child's wall predicted |
+
+## Not filed, with the reason
+
+yarn, cspell, capacitor, doctl, infracost: settings and keys a user re-issues. eslint, prettier, svgo, npm,
+bibtex-tidy: files that live under version control. glTF-Transform: in place only when the output names
+the input. DokuWiki: known. keyring: below rule 1.
+
+## What the round says about Sideeye v1.10.0
+
+- **`multiple_threads_detected`'s next step names the README's limit and nothing a user can try**, and for
+  nineteen targets a switch the tool or its runtime documents was enough to get past it: libuv's thread pool for Node,
+  `GOMAXPROCS` for three Go tools of four, zstd's `--no-asyncio`, beets' `threaded: no`. The step could
+  say that a pool size or an I/O thread is often the second writer.
+- **Two more of my own checkers were wrong**, joplin's and xmake's (#756). joplin's was caught as
+  `baseline_violates_invariant`, since it refused the finished state; xmake's refused only the untouched
+  one and read as a FAIL.

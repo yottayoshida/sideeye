@@ -1,0 +1,17 @@
+✔ Done in 0ms
+UNKNOWN  child_touched_state_dir
+         a process other than the subject (pid 54) performed mkdir(/s/lg/locales/en) and the oracle's account does not place it. That reader resolves a relative path against the subject's working directory, so a child that changed its own is invisible to it — and with only one witness for those operations, nothing can check that nobody else wrote while they ran; the oracle's capture at /out/lingui-w1/work-explore/oracle.txt holds the child's own lines, its execve among them
+next        Check whether the operation is a shell script wrapping another command — if it is, invoke that command as the operation instead; the refusal itself is one the README's 'What the target has to be' names, with DESIGN.md giving the reason.
+cwd         /s/lg
+apparatus   env:FAKETIME=2026-10-01 00:00:00, preload:libfaketime
+
+expected    exit 0
+atomicity   4 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   a process other than the subject operated on the judged directory; its operations have no crash-point address; the shim recorded 13 thread(s) created, and 0 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 11 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=15f6dd1a72183891c3ace41c0e8fb84e4a4cc40ba8c5beabc6d041e19026e3df;

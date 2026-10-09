@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/bibtex",
+    "operation": "bibtex-tidy refs.bib --modify --sort",
+    "cwd": "/s/bibtex",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/bibtex/refs.bib",
+  "before_class": "write",
+  "before_path": "/s/bibtex/refs.bib",
+  "violation": "hybrid"
+}

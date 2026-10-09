@@ -1,0 +1,2 @@
+== joplin-check default rc=0: PREFLIGHT recording accepted — 48 state-changing operation(s) observed
+repeatability  two runs 3065 ms apart left equal state under [world] state
