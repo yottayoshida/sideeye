@@ -1,0 +1,8 @@
+== rootrm preflight --observe supervised: exit 1
+PREFLIGHT  not accepted — the two observed runs left different state
+processes    12 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the second observed run recorded a process boundary, and that run's capture is never parsed
+next         pin or relocate what differs, then re-run this command;
+== iconvert preflight --observe supervised: exit 0
+PREFLIGHT  recording accepted — 6 state-changing operation(s) observed
+processes    single process in the recording; the second observed run recorded a thread, and that run's capture is never parsed, so nothing accounts for it; the supervising engine recorded 13 thread(s) created, and 1 thr
+next         sideeye explore --config '/ap/defines/iconvert/sideeye.toml' --observe supervised --oracle /usr/bin/strace

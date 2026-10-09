@@ -1,0 +1,3 @@
+PLAIN buildx exit=0 state=changed  (b1)
+PLAIN zvm seed-failed: 
+PLAIN zvm exit=0 state=changed  ()

@@ -1,0 +1,6 @@
+PLAIN stack exit=0 state=changed  (/s/aux/home/.stack/config.yaml has been updated.)
+PLAIN cabal exit=0 state=changed  (Writing merged config to /s/aux/home/.config/cabal/config.)
+PLAIN carapace exit=0 state=changed  ()
+PLAIN chdman exit=0 state=changed  (Metadata added)
+PLAIN kvantum exit=0 state=changed  ()
+PLAIN hunspell exit=0 state=changed  (@(#) International Ispell Version 3.2.06 (but really Hunspell 1.7.5))

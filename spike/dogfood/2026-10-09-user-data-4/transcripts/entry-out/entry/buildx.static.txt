@@ -1,0 +1,4 @@
+static: /opt/bin/buildx: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=ztPEnNARocSBiagizzBe/kCSsom6qSOm4c6MBx8AF/6ipTlB_CKW7jjzbygfCG/SeNl05cJeE9TL62LutTp, BuildID[sha1]=9d0e7df1566d1105acf950dd62a34f3b6f34d901, stripped
+default mode: rc 2; no_shim_marker
+default next: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+next: sideeye explore --state /s/aux/home/.docker/buildx --cwd "/s/bx" --operation "buildx create --append --name b1 --node b1x tcp://127.0.0.1:1236" \

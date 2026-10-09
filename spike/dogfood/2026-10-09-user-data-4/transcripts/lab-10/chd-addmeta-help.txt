@@ -1,0 +1,11 @@
+chdman - MAME Compressed Hunks of Data (CHD) manager 0.276 (unknown)
+Error: Required parameters missing
+
+Usage:
+   chdman addmeta [options], where valid options are:
+      --input, -i <filename>: input file name (required)
+      --tag, -t <tag>: 4-character tag for metadata (required)
+      --index, -ix <index>: indexed instance of this metadata tag
+      --valuetext, -vt <text>: text for the metadata
+      --valuefile, -vf <file>: file containing data to add
+      --nochecksum, -nocs: do not include this metadata information in the overall SHA-1

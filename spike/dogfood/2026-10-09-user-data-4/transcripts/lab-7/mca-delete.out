@@ -1,0 +1,26 @@
+2026-10-09T00:40:38.220651130Z main ERROR Could not determine local host name java.net.UnknownHostException: a37a32fb7076: a37a32fb7076: Temporary failure in name resolution
+	at java.base/java.net.InetAddress.getLocalHost(Unknown Source)
+	at org.apache.logging.log4j.core.util.NetUtils.getHostname(NetUtils.java:71)
+	at org.apache.logging.log4j.core.util.NetUtils.getLocalHostname(NetUtils.java:56)
+	at org.apache.logging.log4j.core.LoggerContext.lambda$setConfiguration$2(LoggerContext.java:667)
+	at java.base/java.util.concurrent.ConcurrentHashMap.computeIfAbsent(Unknown Source)
+	at org.apache.logging.log4j.core.LoggerContext.setConfiguration(LoggerContext.java:667)
+	at org.apache.logging.log4j.core.LoggerContext.reconfigure(LoggerContext.java:762)
+	at org.apache.logging.log4j.core.LoggerContext.reconfigure(LoggerContext.java:784)
+	at org.apache.logging.log4j.core.LoggerContext.start(LoggerContext.java:300)
+	at org.apache.logging.log4j.core.impl.Log4jContextFactory.getContext(Log4jContextFactory.java:153)
+	at org.apache.logging.log4j.core.impl.Log4jContextFactory.getContext(Log4jContextFactory.java:46)
+	at org.apache.logging.log4j.LogManager.getContext(LogManager.java:138)
+	at org.apache.logging.log4j.LogManager.getLogger(LogManager.java:555)
+	at net.querz.mcaselector.config.Config.<clinit>(Config.java:80)
+	at net.querz.mcaselector.Main.main(Main.java:27)
+Caused by: java.net.UnknownHostException: a37a32fb7076: Temporary failure in name resolution
+	at java.base/java.net.Inet6AddressImpl.lookupAllHostAddr(Native Method)
+	at java.base/java.net.Inet6AddressImpl.lookupAllHostAddr(Unknown Source)
+	at java.base/java.net.InetAddress$PlatformResolver.lookupByName(Unknown Source)
+	at java.base/java.net.InetAddress.getAddressesFromNameService(Unknown Source)
+	at java.base/java.net.InetAddress$NameServiceAddresses.get(Unknown Source)
+	at java.base/java.net.InetAddress.getAllByName0(Unknown Source)
+	... 15 more
+
+deleting chunks  ? % [                                     ] 0/1 (0:00:00 / ?) deleting chunks   0% [                                     ] 0/1 (0:00:00 / ?) deleting chunks 100% [======================] 1/1 (0:00:00 / 0:00:00) r.0.0.mcadeleting chunks 100% [======================] 1/1 (0:00:00 / 0:00:00) r.0.0.mca

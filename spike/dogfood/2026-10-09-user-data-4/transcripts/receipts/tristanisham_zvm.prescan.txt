@@ -1,0 +1,127 @@
+== novelty pre-scan: tristanisham/zvm
+== date: 2026-10-09T02:12:24Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          5 hit(s) (all listed)
+      #180 closed 2026-07-09 Show aliases in zvm ls output
+      #139 closed 2025-11-13 [BUG] zvm upgrade crash
+      #90 closed 2024-06-26 Install script doesn't work on Fedora 40
+      #84 closed 2024-06-12 [BUG] zvm upgrade crashed
+      #28 closed 2023-10-19 ZVM downloads macos-x86_64 on macos-aarch64 then crashes
+  corrupt        2 hit(s) (all listed)
+      #155 closed 2026-04-16 [BUG] Windows Install Error
+      #156 merged 2026-04-16 fix(install.ps1): extract directly to self dir and clarify Windows Defender error
+  corruption     2 hit(s) (all listed)
+      #168 closed 2026-05-25 HTTP Client Timeout
+      #170 merged 2026-05-26 Fix unzip error
+  truncated      0 hit(s)
+  truncate       3 hit(s) (all listed)
+      #138 closed 2025-10-23 Improve Resilience Against Mirror Errors - Install
+      #168 closed 2026-05-25 HTTP Client Timeout
+      #133 merged 2025-08-15 Use community mirrors
+  empty          9 hit(s) (all listed)
+      #170 merged 2026-05-26 Fix unzip error
+      #161 closed 2026-04-24 [BUG] Fish completion errors out
+      #168 closed 2026-05-25 HTTP Client Timeout
+      #141 closed 2025-11-25 Add support for installing dev versions
+      #133 merged 2025-08-15 Use community mirrors
+      #145 merged 2025-12-11 Update LS Print
+      #76 closed 2024-04-11 "zvm i" goes through the entire install process even if there is no new version
+      #68 closed 2024-03-29 ZLS not installing for mach nominated versions
+      #46 closed 2024-02-03 'zvm i -D=zls' fails to download ZLS on tagged releases
+  atomic         1 hit(s) (all listed)
+      #158 merged 2026-04-22 Feat/fix upgrade issue
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         1 hit(s) (all listed)
+      #33 closed 2023-11-02 `zvm upgrade` failure on ArchLinux
+  ctrl-c         1 hit(s) (all listed)
+      #155 closed 2026-04-16 [BUG] Windows Install Error
+  power          5 hit(s) (all listed)
+      #150 merged 2026-03-09 feat: add build tag to disable automatic updates
+      #148 merged 2026-01-26 Fix listing versions without color
+      #147 merged 2026-01-22 Fix links on Windows requires elevation
+      #144 closed 2025-12-11 Daily Canary Script and Updated LS Print
+      #145 merged 2025-12-11 Update LS Print
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           3 hit(s) (all listed)
+      #170 merged 2026-05-26 Fix unzip error
+      #158 merged 2026-04-22 Feat/fix upgrade issue
+      #33 closed 2023-11-02 `zvm upgrade` failure on ArchLinux
+  partial        1 hit(s) (all listed)
+      #161 closed 2026-04-24 [BUG] Fish completion errors out
+  incomplete     2 hit(s) (all listed)
+      #164 merged 2026-05-23 remove dependancy on system tar for xz and tar decompression
+      #28 closed 2023-10-19 ZVM downloads macos-x86_64 on macos-aarch64 then crashes
+  dataloss       0 hit(s)
+  recover        2 hit(s) (all listed)
+      #90 closed 2024-06-26 Install script doesn't work on Fedora 40
+      #26 merged 2023-09-27 Option to Install ZLS
+  recovery       0 hit(s)
+  rollback       2 hit(s) (all listed)
+      #158 merged 2026-04-22 Feat/fix upgrade issue
+      #12 closed 2023-05-11 Updating master installs? 
+  resume         2 hit(s) (all listed)
+      #179 merged 2026-07-09 Add adversarial driver/worker delegation loop
+      #1 closed 2022-11-09 Downloading large file, cURL
+  half-written   1 hit(s) (all listed)
+      #185 closed 2026-07-18 in docs/readme, i do not see the command to uninstall zvm from the system/computer.
+  wipe           2 hit(s) (all listed)
+      #33 closed 2023-11-02 `zvm upgrade` failure on ArchLinux
+      #26 merged 2023-09-27 Option to Install ZLS
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      4 hit(s) (all listed)
+      #173 merged 2026-05-27 added support for http.timeout
+      #141 closed 2025-11-25 Add support for installing dev versions
+      #140 merged 2025-11-20 Bump golang.org/x/crypto from 0.43.0 to 0.45.0
+      #12 closed 2023-05-11 Updating master installs? 
+  clobber        0 hit(s)
+  blank          0 hit(s)
+  unreadable     0 hit(s)
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       1 hit(s) (all listed)
+      #164 merged 2026-05-23 remove dependancy on system tar for xz and tar decompression
+  in-place       10 hit(s) (all listed)
+      #191 merged 2026-08-07 Fix executable permissions in Unix releases
+      #161 closed 2026-04-24 [BUG] Fish completion errors out
+      #149 closed 2026-01-30 [BUG] zvm upgrade fails on Windows release 0.8.12+
+      #144 closed 2025-12-11 Daily Canary Script and Updated LS Print
+      #122 closed 2025-02-25 Add support for zls
+      #83 closed 2024-06-08 [BUG] 'no such file or directory' error when attempting to rename zls
+      #59 closed 2024-03-05 Feat: Windows | Run commands without administrative mode
+      #42 closed 2024-01-30 --vmu flag set's version map flag in settings, but ZVM still installs from default
+      #33 closed 2023-11-02 `zvm upgrade` failure on ArchLinux
+      #15 closed 2023-05-22 Add zls
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      0 hit(s)
+  data+loss      0 hit(s)
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      0 hit(s)
+  write+failure  3 hit(s) (all listed)
+      #170 merged 2026-05-26 Fix unzip error
+      #168 closed 2026-05-25 HTTP Client Timeout
+      #156 merged 2026-04-16 fix(install.ps1): extract directly to self dir and clarify Windows Defender error
+  file+contents  1 hit(s) (all listed)
+      #164 merged 2026-05-23 remove dependancy on system tar for xz and tar decompression
+
+== 51 terms run; 22 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

@@ -1,0 +1,33 @@
+27    openat(AT_FDCWD, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3
+27    close(3)                          = 0
+27    openat(AT_FDCWD, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3
+27    close(3)                          = 0
+27    openat(AT_FDCWD, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3
+27    close(3)                          = 0
+27    openat(AT_FDCWD, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_CLOEXEC) = 3
+27    openat(AT_FDCWD, "/etc/localtime", O_RDONLY) = 4
+27    close(4)                          = 0
+27    openat(AT_FDCWD, "/opt/bin/scw", O_RDONLY|O_CLOEXEC) = 4
+27    close(4)                          = 0
+27    openat(AT_FDCWD, "/proc/self/auxv", O_RDONLY|O_CLOEXEC) = 4
+27    close(4)                          = 0
+27    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=27, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=27, si_uid=0} ---
+31    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=27, si_uid=0} ---
+34    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=27, si_uid=0} ---
+31    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=27, si_uid=0} ---
+27    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=27, si_uid=0} ---
+27    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=27, si_uid=0} ---
+30    openat(AT_FDCWD, "/s/aux/home/.config/scw/cli.yaml", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=27, si_uid=0} ---
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=27, si_uid=0} ---
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=27, si_uid=0} ---
+27    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=27, si_uid=0} ---
+32    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=27, si_uid=0} ---
+34    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=27, si_uid=0} ---
+27    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=27, si_uid=0} ---
+27    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=27, si_uid=0} ---
+27    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=27, si_uid=0} ---
+27    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=27, si_uid=0} ---
+27    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=27, si_uid=0} ---
+27    write(2, ""..., 104)              = 104

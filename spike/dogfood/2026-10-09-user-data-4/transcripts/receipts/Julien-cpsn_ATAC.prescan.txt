@@ -1,0 +1,122 @@
+== novelty pre-scan: Julien-cpsn/ATAC
+== date: 2026-10-09T02:38:35Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          13 hit(s) (all listed)
+      #216 open 2026-09-24 Added MQTT requests
+      #215 open 2026-09-23 Feature proposal: MQTT requests
+      #196 closed 2026-01-28 Change method crash with unwrap on Result
+      #193 merged 2025-12-27 Add JWT token auth by Amkarkhi
+      #180 closed 2025-10-10 Panic when creating Collection with "/" in name
+      #167 closed 2025-08-28 Feature Request: Add file filtering options for directory scanning
+      #152 merged 2025-05-19 Fixed app crash if response body fails to decode
+      #113 closed 2024-09-10 [BUG] Crash When Deleting Header
+      #110 closed 2024-09-05 ATAC crashes on request parameter deletion
+      #107 closed 2024-08-23 Application crashes when trying to send requests
+      #99 merged 2024-08-12 Accept invalid certs config
+      #32 closed 2024-04-18 Crash try use scroll
+      #62 closed 2024-05-03 Crash when sending a request (index out of bounds)
+  corrupt        1 hit(s) (all listed)
+      #201 closed 2026-02-16 Homebrew install creates invalid completions file
+  corruption     0 hit(s)
+  truncated      2 hit(s) (all listed)
+      #202 open 2026-03-09 Bump the github-actions group across 1 directory with 6 updates
+      #194 closed 2025-12-29 Bump the github-actions group with 2 updates
+  truncate       2 hit(s) (all listed)
+      #202 open 2026-03-09 Bump the github-actions group across 1 directory with 6 updates
+      #194 closed 2025-12-29 Bump the github-actions group with 2 updates
+  empty          9 hit(s) (all listed)
+      #216 open 2026-09-24 Added MQTT requests
+      #215 open 2026-09-23 Feature proposal: MQTT requests
+      #196 closed 2026-01-28 Change method crash with unwrap on Result
+      #91 closed 2024-08-10 ATAC not running in project directory 
+      #62 closed 2024-05-03 Crash when sending a request (index out of bounds)
+      #60 closed 2024-05-02 BUG: Error when sending a simple GET request
+      #97 closed 2024-08-12 error installing with cargo - error[E0308]: mismatched types     
+      #11 closed 2024-04-16 [bug] unexpected panic when specifying `--directory` of a tmpfs 
+      #32 closed 2024-04-18 Crash try use scroll
+  atomic         1 hit(s) (all listed)
+      #111 closed 2024-09-07 [BUG] Can't Install with Cargo
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      1 hit(s) (all listed)
+      #177 closed 2025-09-28 Feature: external editor support #123
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         5 hit(s) (all listed)
+      #198 closed 2026-02-08 Vim keybinding sample doesn't work
+      #10 closed 2024-04-16 Vim Motions
+      #121 closed 2024-11-06 Ctrl-C terminates app on Windows, losing all changes
+      #50 closed 2024-04-25 fix(quit): allow to quit atac inside selected requests
+      #95 closed 2024-08-11 Cancel request
+  power          0 hit(s)
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           1 hit(s) (all listed)
+      #109 open 2024-08-27 Feature request: parse .http files/directories
+  partial        0 hit(s)
+  incomplete     0 hit(s)
+  dataloss       0 hit(s)
+  recover        1 hit(s) (all listed)
+      #201 closed 2026-02-16 Homebrew install creates invalid completions file
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         1 hit(s) (all listed)
+      #216 open 2026-09-24 Added MQTT requests
+  half-written   1 hit(s) (all listed)
+      #30 closed 2024-04-18 Support the input file format to YAML
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      5 hit(s) (all listed)
+      #189 open 2025-11-09 Implementing exporting response to file
+      #202 open 2026-03-09 Bump the github-actions group across 1 directory with 6 updates
+      #128 closed 2025-01-20 Bump Justintime50/homebrew-releaser from 1 to 2 in the github-actions group
+      #194 closed 2025-12-29 Bump the github-actions group with 2 updates
+      #105 merged 2024-08-18 feat: continuous deployment for docker image
+  clobber        0 hit(s)
+  blank          2 hit(s) (all listed)
+      #189 open 2025-11-09 Implementing exporting response to file
+      #212 closed 2026-08-22 Fix basic auth text inputs writing to the wrong field
+  unreadable     2 hit(s) (all listed)
+      #215 open 2026-09-23 Feature proposal: MQTT requests
+      #178 closed 2025-10-05 fix(build):  borrow issues in the build and installation
+  garbage        1 hit(s) (all listed)
+      #216 open 2026-09-24 Added MQTT requests
+  mangled        0 hit(s)
+  contents       2 hit(s) (all listed)
+      #189 open 2025-11-09 Implementing exporting response to file
+      #185 closed 2025-10-21 Clipboard manager timeout when pressing Y
+  in-place       5 hit(s) (all listed)
+      #200 closed 2026-02-10 Error: 	Could not parse JSON collection "~/.config/atac/Movies.json" 	missing field `timeout` at line 62 column 4
+      #190 closed 2025-11-18 Feature to generate new GUIDs
+      #10 closed 2024-04-16 Vim Motions
+      #148 closed 2025-05-03 Path parameters
+      #15 closed 2024-04-16 'attempt to subtract with overflow' when pressing enter in response view
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      0 hit(s)
+  data+loss      0 hit(s)
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      1 hit(s) (all listed)
+      #97 closed 2024-08-12 error installing with cargo - error[E0308]: mismatched types     
+  write+failure  1 hit(s) (all listed)
+      #189 open 2025-11-09 Implementing exporting response to file
+  file+contents  1 hit(s) (all listed)
+      #189 open 2025-11-09 Implementing exporting response to file
+
+== 51 terms run; 21 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

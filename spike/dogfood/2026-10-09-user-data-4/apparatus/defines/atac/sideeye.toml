@@ -1,0 +1,7 @@
+[world]
+state = "/s/atac"
+
+[define]
+operation = "atac --directory /s/atac request new demo/pong -u http://localhost/2"
+cwd       = "/s/atac-in"
+scratch   = ["atac.log"]

@@ -1,0 +1,720 @@
+== novelty pre-scan: AcademySoftwareFoundation/OpenImageIO
+== date: 2026-10-09T00:43:40Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5493 open 2026-09-24 bug: Nuke crash when using OIIO to read or write images
+      #2688 open 2020-08-31 [BUG] reading .mp4 files results in crash
+      #3295 open 2022-01-23 [BUG] oiiotool crash/undefined behavior at exit
+      #4544 open 2024-11-29 [BUG] TextureSystem: sample with gray_to_rgb possible crash if there are filesystem errors
+      #3460 open 2022-06-29 building on Mac with Address Sanitizer. OpenImageIO_v_2_3::pvt::append_error gets null message and crashes
+      #4388 open 2024-08-24 [BUG] assert_fail is called 
+      #5505 closed 2026-09-28 bug:Out-of-bounds read in SgiInput::uncompress_rle_channel (bpc==1 RLE "run" branch lacks an input bounds check)
+      #5506 closed 2026-09-28 bug:Malformed EXR headers request multi-terabyte allocations (ImageInput::read_tiles / ImageBufImpl::new_pixels)
+      #5508 merged 2026-09-28 fix(iconvert): use a private ImageCache to gather subimage specs
+      #5504 closed 2026-09-28 fix(python): retain Windows DLL directory handles
+      #3438 closed 2022-06-12 Crash in FFmpegInput destructor
+      #5448 merged 2026-09-05 fix(heif): raw reads of irot-rotated files: transposed dims/OOB read + inverted irot direction
+      #5461 merged 2026-09-09 fix(jpeg2000): give OpenJPH error handler static lifetime
+      #5468 merged 2026-09-12 fix(tiff): Invalidate reader state when seek_subimage rejects a subimage
+      #3296 closed 2022-01-24 Stress Test:  Bad header crashes open
+      #4336 closed 2024-07-11 [BUG] fstream_mingw.h crashed at runtime
+      #5494 merged 2026-09-24 fix(ImageInput): Prevent integer overflow with large data window origins
+      #5463 merged 2026-09-10 iv: tolerate partially-written EXR files
+      #5303 merged 2026-07-07 fix(sgi): prevent oversized-allocation crash from bogus RLE length/offset table
+      #5365 merged 2026-08-03 fix(ptex): guard null face-data returns; add malformed-header tests
+  corrupt        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5520 merged 2026-09-29 fix(openexr): Work around OpenJPH < 0.27 HTJ2K encoder init race
+      #5378 merged 2026-08-07 fix(jpegxl): harden against corrupt input
+      #5457 merged 2026-09-08 fix(psd): bounds-check thumbnail, color data, and layer channel lengths
+      #5477 merged 2026-09-14 fix(fmath): make float_to_rational work for all float inputs
+      #5372 merged 2026-08-06 fix(zfile): check gzread returns for truncated or corrupt input
+      #5519 merged 2026-09-29 fix(ImageInput): Reject absurd tile/display sizes, and related fixes
+      #5466 merged 2026-09-12 fix(iff): clear tile staging buffer before decode to avoid heap reveal
+      #5503 merged 2026-09-27 fix(idiff): fail on pixel read errors instead of comparing garbage
+      #5337 merged 2026-07-25 fix(rla): better detection of corrupted RLE encoding
+      #5505 closed 2026-09-28 bug:Out-of-bounds read in SgiInput::uncompress_rle_channel (bpc==1 RLE "run" branch lacks an input bounds check)
+      #5455 merged 2026-09-08 fix(jpeg): Catch corruptions when retrieving thumbnails
+      #5325 merged 2026-07-16 fix(imagebuf): fix data race that could corrupt multithreaded reads
+      #5312 merged 2026-07-11 fix(raw): reject decompression-bomb / corrupt headers before unpack
+      #5307 merged 2026-07-08 fix(psd): guard row interleave bounds on corrupt data
+      #5305 merged 2026-07-07 fix(jxl): guard corrupt basic-info dimensions early
+      #5270 merged 2026-06-28 fix(jpeg2000): reject corrupt component geometry and subsampling
+      #5268 merged 2026-06-27 fix(iff): detect corrupt chunk sizes, flags, channel configs
+      #5258 merged 2026-06-26 fix(rla): better detection of corrupted RLE encoding
+      #5399 merged 2026-08-13 fix(exif): harden the shared Exif decoder against malformed input
+      #5271 merged 2026-06-28 fix(dpx): detect corrupt userbuf size, overflow guard
+  corruption     37 hit(s) (all listed)
+      #5455 merged 2026-09-08 fix(jpeg): Catch corruptions when retrieving thumbnails
+      #5376 merged 2026-08-06 fix(jpeg): more jpeg detection of corruptions
+      #5457 merged 2026-09-08 fix(psd): bounds-check thumbnail, color data, and layer channel lengths
+      #5506 closed 2026-09-28 bug:Malformed EXR headers request multi-terabyte allocations (ImageInput::read_tiles / ImageBufImpl::new_pixels)
+      #5467 merged 2026-09-12 fix(dpx): don't add to metadata any userdata that failed to read
+      #5403 merged 2026-08-15 fix(rla): terminate the subimage chain and bounds-check the offset table
+      #5259 merged 2026-06-26 fix(psd): identify corruptions of layer resolutions, eof in strings
+      #5415 merged 2026-08-20 fix(raw): fix undebayered flip mapping, buffer bounds, overflow, etc.
+      #5322 merged 2026-07-15 fix: beef up Exif error detection
+      #5371 merged 2026-08-06 fix(bmp): bomb guard, UB-safe height negation, and scanline bounds
+      #5265 merged 2026-06-27 ptex: More comprehensive valid_file and validation of header
+      #5342 merged 2026-07-27 fix: use check_open(), check_compression_ratio() in all readers lacking them
+      #5317 closed 2026-07-13 bug: SEGV in JpgOutput::close (src/jpeg.imageio/jpegoutput.cpp:526)
+      #5270 merged 2026-06-28 fix(jpeg2000): reject corrupt component geometry and subsampling
+      #5131 merged 2026-04-06 fix(dds): corruption protection: validate resolution + overflow care
+      #5088 merged 2026-03-13 fix(ico): Various validity checks and error handling for corruptions
+      #5165 merged 2026-04-24 fix(targa): Protection against corrupt, mis-sized palette
+      #5140 merged 2026-04-11 fix(jpeg): be a little more flexible with corrupt IPTC blocks
+      #5141 merged 2026-04-11 fix(sgi): Better detection of corrupt RLE info that could overflow
+      #5081 merged 2026-03-12 fix(jpeg): Improved safety and error reporting for jpeg and iptc
+  truncated      26 hit(s) (all listed)
+      #5372 merged 2026-08-06 fix(zfile): check gzread returns for truncated or corrupt input
+      #5503 merged 2026-09-27 fix(idiff): fail on pixel read errors instead of comparing garbage
+      #5455 merged 2026-09-08 fix(jpeg): Catch corruptions when retrieving thumbnails
+      #5463 merged 2026-09-10 iv: tolerate partially-written EXR files
+      #5467 merged 2026-09-12 fix(dpx): don't add to metadata any userdata that failed to read
+      #5457 merged 2026-09-08 fix(psd): bounds-check thumbnail, color data, and layer channel lengths
+      #5365 merged 2026-08-03 fix(ptex): guard null face-data returns; add malformed-header tests
+      #5476 merged 2026-09-14 testing: runtest.py add redirect_push() and redirect_pop()
+      #5289 merged 2026-07-02 fix(ico,png): avoid leaking error string across png_chunk_error longjmp
+      #5378 merged 2026-08-07 fix(jpegxl): harden against corrupt input
+      #5338 merged 2026-07-26 test(fuzz): changes to fuzz corpus seeding for better coverage
+      #5406 merged 2026-08-16 fix(ffmpeg): heap bounds, bad packet, checks at open, other fixes
+      #5142 merged 2026-04-12 fix(softimage): Prevent buffer overruns from corrupt RLE
+      #5203 merged 2026-05-16 fix(pnm,jxl): Prevent PNM/JXL readers from loading arbitrarily large non-image files
+      #5175 merged 2026-04-30 fix(webp): fix exif chunk bounds handling
+      #4807 merged 2025-06-19 iv: Add min/max/avg and sizing to pixel closeup view
+      #4559 merged 2024-12-05 fix: broken pgm having memory access error
+      #3954 merged 2023-08-22 fix: various protections against corrupted files
+      #2898 closed 2021-03-18 [BUG] Loading BMP crashes in open 
+      #400 merged 2012-07-12 Fix for quantize
+  truncate       50 hit(s) (all listed)
+      #5372 merged 2026-08-06 fix(zfile): check gzread returns for truncated or corrupt input
+      #5503 merged 2026-09-27 fix(idiff): fail on pixel read errors instead of comparing garbage
+      #5351 closed 2026-07-30 bug: Filesystem::fseek truncates offsets above 2 GiB in MinGW builds
+      #5455 merged 2026-09-08 fix(jpeg): Catch corruptions when retrieving thumbnails
+      #5463 merged 2026-09-10 iv: tolerate partially-written EXR files
+      #5467 merged 2026-09-12 fix(dpx): don't add to metadata any userdata that failed to read
+      #5476 merged 2026-09-14 testing: runtest.py add redirect_push() and redirect_pop()
+      #5457 merged 2026-09-08 fix(psd): bounds-check thumbnail, color data, and layer channel lengths
+      #5365 merged 2026-08-03 fix(ptex): guard null face-data returns; add malformed-header tests
+      #5494 merged 2026-09-24 fix(ImageInput): Prevent integer overflow with large data window origins
+      #5378 merged 2026-08-07 fix(jpegxl): harden against corrupt input
+      #5405 merged 2026-08-15 fix(xmp): audit - bound decode recursion and growth, escape encoder output
+      #5289 merged 2026-07-02 fix(ico,png): avoid leaking error string across png_chunk_error longjmp
+      #5507 merged 2026-09-28 fix(color): load the color config on first use, not on construction
+      #5338 merged 2026-07-26 test(fuzz): changes to fuzz corpus seeding for better coverage
+      #5303 merged 2026-07-07 fix(sgi): prevent oversized-allocation crash from bogus RLE length/offset table
+      #5293 merged 2026-07-03 fix(targa): reject implausible image dimensions before allocating
+      #5406 merged 2026-08-16 fix(ffmpeg): heap bounds, bad packet, checks at open, other fixes
+      #5290 closed 2026-07-03 fix(targa): reject implausible image dimensions before allocating
+      #5081 merged 2026-03-12 fix(jpeg): Improved safety and error reporting for jpeg and iptc
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5537 merged 2026-10-05 fix(oiiotool): don't read past an empty --info result
+      #5437 open 2026-08-30 fix(ImageBuf): IB::nmiplevels() returns 0 for non-IC ImageBuf
+      #5546 open 2026-10-07 feat(color): resolve namespaced Color Interop IDs
+      #5413 open 2026-08-20 fix(r3d): check decode status, validate clip geometry, report errors
+      #5541 open 2026-10-05 fix(IBA): resample() channel range and Highway row stride
+      #5493 open 2026-09-24 bug: Nuke crash when using OIIO to read or write images
+      #5400 open 2026-08-13 bug: ImageInput::read_image()/read_tiles() with an image_span transpose x and y on tiled files
+      #4537 open 2024-11-13 [DOCS] `ParamValue` is undocumented
+      #4350 open 2024-07-21 feat(ustring): ustring hash collision protection
+      #3293 open 2022-01-21 [BUG] Issues setting Python ImageSpec.channelnames values to byte strings
+      #3309 open 2022-01-26 [FEATURE REQUEST] Add oiiotool `--trim` functionality to ImageBufAlgo
+      #5521 open 2026-09-29 feat(color): add chromaticities and transfer gamma queries to ColorConfig
+      #4378 open 2024-08-14 [BUG] Unable to sample UDIMs from pre-populated in-memory ImageCache
+      #5178 open 2026-05-03 Fix/softimage channel bounds
+      #5518 open 2026-09-28 feat(color): recognize color spaces and query their properties
+      #5509 merged 2026-09-28 fix(jpegxl): propagate close-time encoder and write failures
+      #5460 merged 2026-09-09 build: remove FindOpenEXR.cmake module
+      #3105 open 2021-09-22 [FEATURE REQUEST] Improve Python ColorConfig support (in IBA, etc.)
+      #5516 open 2026-09-28 define which color metadata OpenImageIO trusts, and when it resolves it
+      #2910 open 2021-03-24 [BUG] ImageBufImpl::pixeladdr method fails on buffers with per channel formats
+  atomic         81 hit(s) (all listed)
+      #5461 merged 2026-09-09 fix(jpeg2000): give OpenJPH error handler static lifetime
+      #5429 merged 2026-08-27 Annotate spin_mutex and spin_rw_mutex for ThreadSanitizer
+      #3851 open 2023-05-26 [BUG] thread_pool shutdown dead lock
+      #4922 open 2025-10-07 [BUG] OpenImageIO's default thread pool initialization has a data race.
+      #5355 merged 2026-07-31 fix(IBA): detect iterator read errors in orientation functions
+      #5325 merged 2026-07-16 fix(imagebuf): fix data race that could corrupt multithreaded reads
+      #3295 open 2022-01-23 [BUG] oiiotool crash/undefined behavior at exit
+      #4336 closed 2024-07-11 [BUG] fstream_mingw.h crashed at runtime
+      #3405 closed 2022-05-01 [BUILD - Windows] Python can't load DLL
+      #4270 merged 2024-05-20 build: gcc-14 support, testing, CI
+      #4239 merged 2024-04-21 fix: Error retrieval safeguards for recycled objects
+      #3890 closed 2023-06-19 ctest -j16 failed about openimageio@2.4.12.0 on centos8
+      #2971 closed 2021-05-16 [BUILD] The CXX compiler identification is unknown
+      #3975 closed 2023-09-04 [BUG] Chromaticity values are missing in OpenEXR
+      #3773 closed 2023-02-13 [FEATURE REQUEST] make oiio easier to cross compile by not using check_cxx_source_runs
+      #1589 closed 2016-12-23 Link errors
+      #3560 merged 2022-09-20 Build: Fix cross-compiling on Android failing due to -latomic check
+      #3417 merged 2022-05-23 UDIM speedups by eliminating mutex
+      #3383 merged 2022-04-09 Speed up IBA::isConstantColor
+      #3348 merged 2022-02-25 Strutil::print vs sync::print
+  atomically     9 hit(s) (all listed)
+      #5429 merged 2026-08-27 Annotate spin_mutex and spin_rw_mutex for ThreadSanitizer
+      #3348 merged 2022-02-25 Strutil::print vs sync::print
+      #123 merged 2011-07-12 ustring: improve multithread perf by holding the lock just a bit less time
+      #965 merged 2014-09-29 Timer class changes -- more cleanly separate ticks versus seconds.
+      #1579 merged 2016-12-08 Add Strutil::printf and fprintf.
+      #1525 merged 2016-10-10 Make temporary texture filename unique to avoid classes on shared drives
+      #1797 merged 2017-10-28 File output safety for oiiotool
+      #2195 merged 2019-03-16 Timer dtr print, change from stream I/O to Strutil::printf
+      #720 closed 2013-10-26 ThreadSanitizer says ustring.cpp:179 has a data race
+  interrupted    1 hit(s) (all listed)
+      #4746 merged 2025-05-11 feat: CICP metadata support for PNG
+  interrupt      2 hit(s) (all listed)
+      #4746 merged 2025-05-11 feat: CICP metadata support for PNG
+      #3800 closed 2023-04-11 [BUG] Access violation using IBA::to_OpenCV() with an ImageCache-backed ImageBuf
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         5 hit(s) (all listed)
+      #5003 merged 2026-01-12 feat(iv): flip, rotate and save image
+      #4767 merged 2025-05-16 feat(iv): area probe
+      #4790 closed 2025-06-03 feat(iv): area probe overlay
+      #3805 merged 2023-04-15 fix: Controlled shutdown of IlmThread pool in all apps in which we use it.
+      #972 closed 2014-10-06 iv: Failed Assertion on Image Reload
+  power          44 hit(s) (all listed)
+      #5521 open 2026-09-29 feat(color): add chromaticities and transfer gamma queries to ColorConfig
+      #5518 open 2026-09-28 feat(color): recognize color spaces and query their properties
+      #5514 open 2026-09-28 recognize configured color spaces and report their primaries and gamma
+      #4102 open 2024-01-04 add wrap mode arg to st_warp
+      #5390 merged 2026-08-10 feat(color): Refactor writing color space metadata to share logic
+      #5173 merged 2026-04-30 feat(iconvert): allow -o for convenience
+      #5239 closed 2026-06-17 bug: Mismatched bit-depth on Mipmap tiles
+      #5379 closed 2026-08-08 Re: EXR issue #1887 - Existing single scanline patch does not affect OIIO
+      #5015 closed 2026-01-27 bug:oiio resize generates images which when used for mosaic generates debug output
+      #4746 merged 2025-05-11 feat: CICP metadata support for PNG
+      #4692 merged 2025-04-05 feat: Add python stub files
+      #1035 closed 2015-01-21 Fix broken bicubic texture sampling with non-power-of-two sized tiles
+      #4145 closed 2024-02-08 chromatic aberration correction with raw:aber doesn't work as expected
+      #3884 merged 2023-06-14 fix(exr): correction to dwa vs zip logic when outputting OpenEXR
+      #3071 closed 2021-08-23 [BUILD] Windows Build Issues with 2.2 and 2.3 Branches
+      #3821 closed 2023-04-26 [BUG] DWA Compression for single channel EXR images only works with tiles
+      #3952 closed 2023-08-21 AddressSanitizer: allocator is out of memory
+      #3596 merged 2022-10-11 Windows: fewer windows.h includes from platform.h
+      #3021 merged 2021-07-02 Overhaul of how to read/write thumbnails
+      #719 closed 2013-10-26 Raw input: Added new input format for camera raw formats. Uses LibRaw.
+  outage         4 hit(s) (all listed)
+      #5177 merged 2026-04-30 fix(psd): fix indexed transparency
+      #4514 merged 2024-10-29 ci: Retire deprecated macos12 runner, try beta macos15
+      #4080 merged 2023-12-18 Fix link to openexr test images
+      #3777 merged 2023-02-21 Add cmake option to disable the stacktrace functionality.
+  ENOSPC         0 hit(s)
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1929 open 2018-04-27 CUDA support for ImageBufAlgo (experimental and very incomplete)
+      #3385 open 2022-04-11 [BUG] EXR files are always assumed to be "Linear" without checking a previously existing value for oiio:ColorSpace
+      #4544 open 2024-11-29 [BUG] TextureSystem: sample with gray_to_rgb possible crash if there are filesystem errors
+      #4388 open 2024-08-24 [BUG] assert_fail is called 
+      #4554 open 2024-12-02 [INVESTIGATION] ImageBuffer iterators based on Space Filling Curves
+      #4938 open 2025-10-22 feat: CUDA/OptiX implementation of TextureSystem
+      #4563 open 2024-12-15 Add Wrap::UDIM mode for proper UDIM filtering
+      #5293 merged 2026-07-03 fix(targa): reject implausible image dimensions before allocating
+      #3957 open 2023-08-24 [BUG] Internal "contiguize" operation is incorrect
+      #5507 merged 2026-09-28 fix(color): load the color config on first use, not on construction
+      #5290 closed 2026-07-03 fix(targa): reject implausible image dimensions before allocating
+      #5261 merged 2026-06-27 fix(hdr): Make the HDR reader tolerant to CR in the ASCII header
+      #4276 closed 2024-05-28 [FEATURE REQUEST] Add additional approximate diff methods to oiiotool
+      #4155 closed 2024-02-19 Raise C++ standard minimmum to C++17 for OIIO 3.0
+      #4546 closed 2024-11-30 [FEATURE REQUEST] oiiotool command to split "layers" into subimages or separate images
+      #2902 open 2021-03-19 [FEATURE REQUEST]Read as little as possible from image during 'open' call
+      #5029 merged 2026-02-02 cleanup: remove left over tile emulation code for various formats
+      #5379 closed 2026-08-08 Re: EXR issue #1887 - Existing single scanline patch does not affect OIIO
+      #5192 merged 2026-05-12 fix(oiiotool): be cautious promoting to float due to color space name with --autocc
+      #3538 closed 2022-08-30 [FEATURE REQUEST] More complete camera RAW metadata available through OIIO
+  partial        63 hit(s) (all listed)
+      #5400 open 2026-08-13 bug: ImageInput::read_image()/read_tiles() with an image_span transpose x and y on tiled files
+      #5454 open 2026-09-07 feat(webp): add experimental OpenMeta (Apache 2.0) metadata decoding
+      #5509 merged 2026-09-28 fix(jpegxl): propagate close-time encoder and write failures
+      #5437 open 2026-08-30 fix(ImageBuf): IB::nmiplevels() returns 0 for non-IC ImageBuf
+      #4808 open 2025-06-20 [HELP] library conflicts with official Python wheels in 3dsMax
+      #5494 merged 2026-09-24 fix(ImageInput): Prevent integer overflow with large data window origins
+      #5516 open 2026-09-28 define which color metadata OpenImageIO trusts, and when it resolves it
+      #5531 merged 2026-10-02 fix(ImageInput/Output): honor data window origin in image_span read/write methods
+      #5463 merged 2026-09-10 iv: tolerate partially-written EXR files
+      #5295 merged 2026-07-04 fix(exr): use rectangle row stride for partial edge tile reads
+      #5404 merged 2026-08-15 fix(simd): NEON vfloat4::load(values,n) read past the end of the buffer
+      #5488 merged 2026-09-20 build: retry git clones a few times when they fail
+      #4713 closed 2025-04-25 iv: tolerate/display partially-written exr files (originally #1191).
+      #5470 merged 2026-09-13 fix(ImageInput): Don't leave a rejected subimage as the current one
+      #5358 closed 2026-08-01 build: New testsuite failures with 3.1.16.0
+      #1861 closed 2018-02-02 heap-buffer-overflow in dpx::WriteBuffer
+      #5111 merged 2026-03-25 Add OIIO_NODISCARD to ImageInput create/open/read methods
+      #4986 closed 2025-12-26 Add Google Highway SIMD acceleration for ImageBufAlgo operations
+      #5078 merged 2026-03-09 ci: Bump GitHub Actions to latest versions
+      #5063 closed 2026-02-27 bug: ImageBuf destructor crashes application if OIIO::print fails
+  incomplete     63 hit(s) (all listed)
+      #1929 open 2018-04-27 CUDA support for ImageBufAlgo (experimental and very incomplete)
+      #3313 open 2022-01-28 Docs are unclear/incomplete about how to preserve unassociated alpha
+      #5509 merged 2026-09-28 fix(jpegxl): propagate close-time encoder and write failures
+      #5512 merged 2026-09-28 feat(png): preserve mastering display metadata (mDCV)
+      #5466 merged 2026-09-12 fix(iff): clear tile staging buffer before decode to avoid heap reveal
+      #5488 merged 2026-09-20 build: retry git clones a few times when they fail
+      #5451 merged 2026-09-06 feat(simd): raise USE_SIMD default on x86_64 x86-64-v2
+      #4732 open 2025-05-01 [BUG] HEIF library impedance mismatch
+      #5505 closed 2026-09-28 bug:Out-of-bounds read in SgiInput::uncompress_rle_channel (bpc==1 RLE "run" branch lacks an input bounds check)
+      #5398 merged 2026-08-13 fix(ImageInput): guarantee close()-on-failure for all open() methods
+      #5358 closed 2026-08-01 build: New testsuite failures with 3.1.16.0
+      #5463 merged 2026-09-10 iv: tolerate partially-written EXR files
+      #5254 merged 2026-06-26 Unify pybind11 and nanobind into single-source bindings
+      #3816 closed 2023-04-23 [BUILD] OIIO Windows Build System Maintainer
+      #3538 closed 2022-08-30 [FEATURE REQUEST] More complete camera RAW metadata available through OIIO
+      #4895 closed 2025-09-17 [BUG] WebP `write_scanline` / `write_complete_data` needs refactor so as to not write out incomplete data in the middle of processing
+      #4973 merged 2025-12-04 fix(webp): Move write_complete_data() to close() for proper scanline …
+      #4956 closed 2025-11-14 [BUILD] Problems with FFmpeg8
+      #4964 merged 2025-11-27 feat: Auto convert between oiio:ColorSpace and CICP attributes in I/O
+      #4619 closed 2025-02-02 [HELP] I found a potential security bug but can't report it to security@openimageio.org
+  dataloss       0 hit(s)
+  recover        11 hit(s) (all listed)
+      #3460 open 2022-06-29 building on Mac with Address Sanitizer. OpenImageIO_v_2_3::pvt::append_error gets null message and crashes
+      #5471 closed 2026-09-13 bug: PFM writer flips rows per write_scanlines() chunk, scrambling float PFMs taller than one chunk
+      #4985 open 2025-12-23 bug: ffmpeg decoding of dnx36,prores, etc. not correct
+      #3891 closed 2023-06-21 [BUG] openImageIO/2.4.12.0/src/build-scripts/build_llvm.bash has bad pull URL
+      #3952 closed 2023-08-21 AddressSanitizer: allocator is out of memory
+      #3430 closed 2022-06-09 Unable to open GIF
+      #2927 merged 2021-03-30 Allow reading of JPEG files with mildly corrupted headers
+      #1456 merged 2016-07-22 Try/catch in ImageInput::create() and ImageOutput::create()
+      #2010 merged 2018-09-19 Basic OpenVDB read support
+      #720 closed 2013-10-26 ThreadSanitizer says ustring.cpp:179 has a data race
+      #951 closed 2014-09-10 OpenImageIO cannot open JPEG file took from phones with premature end
+  recovery       5 hit(s) (all listed)
+      #5470 merged 2026-09-13 fix(ImageInput): Don't leave a rejected subimage as the current one
+      #5201 merged 2026-05-16 api: add OIIO_NODISCARD_ERROR to ImageOutput methods
+      #138 merged 2011-08-13 Review: multi-scanline/tile reading and writing
+      #270 merged 2012-03-29 Added error recovery to IvGL::create_shaders
+      #1476 merged 2016-08-30 Fix unhelpful ASSERT(0) calls.
+  rollback       0 hit(s)
+  resume         1 hit(s) (all listed)
+      #5463 merged 2026-09-10 iv: tolerate partially-written EXR files
+  half-written   32 hit(s) (all listed)
+      #4474 open 2024-10-04 [BUG]Issue on transparent background with ImageBufAlgo.over
+      #5400 open 2026-08-13 bug: ImageInput::read_image()/read_tiles() with an image_span transpose x and y on tiled files
+      #5412 merged 2026-08-20 perf(simd.h): fill in missing NEON paths in simd.h
+      #5335 merged 2026-07-24 feat(jpeg): support Ultra HDR output
+      #5463 merged 2026-09-10 iv: tolerate partially-written EXR files
+      #5239 closed 2026-06-17 bug: Mismatched bit-depth on Mipmap tiles
+      #5192 merged 2026-05-12 fix(oiiotool): be cautious promoting to float due to color space name with --autocc
+      #5047 closed 2026-02-13 bug: (oiiotool) -d don't work with <subimagename>
+      #3405 closed 2022-05-01 [BUILD - Windows] Python can't load DLL
+      #4734 closed 2025-05-01 [FEATURE REQUEST] Ability to read unfinished/corrupted EXRs
+      #4907 merged 2025-09-26 feat(openexr): ACES Container hint for exr outputs
+      #4791 closed 2025-06-04 [FEATURE REQUEST] ACES Container compliant writer
+      #4678 closed 2025-03-24 Add ability to read PNG cICP chunk from PNG 3rd Edition via libpng
+      #4242 merged 2024-04-24 build: new system to build dependencies locally if needed
+      #3867 closed 2023-06-07 [BUG] converting to half with oiiotool actually converts to float
+      #3417 merged 2022-05-23 UDIM speedups by eliminating mutex
+      #3429 closed 2022-06-09 [BUG] read_native_tiles is much faster than read_tiles in some tiled OpenExr files.
+      #3041 closed 2021-07-30 [BUG] oiio always describes EXR as openexr:version: 1, even when presented with a v2 exr.
+      #1377 merged 2016-03-07 SIMD enhancements
+      #13 merged 2011-02-10 maketx update, added --prman support
+  wipe           7 hit(s) (all listed)
+      #4711 open 2025-04-25 iv: make a difference mode: shows you the absdiff between the current image and the last image.
+      #5480 merged 2026-09-17 feat(iv): image wipe compare
+      #4712 closed 2025-04-25 iv wipe mode
+      #3957 open 2023-08-24 [BUG] Internal "contiguize" operation is incorrect
+      #3972 closed 2023-09-01 Impossible to use OIIO libraries built from source
+      #292 closed 2012-04-10 iv - wipe mode
+      #1987 closed 2018-07-30 OIIO python api is not properly overwriting an image
+  wipes          2 hit(s) (all listed)
+      #5480 merged 2026-09-17 feat(iv): image wipe compare
+      #3957 open 2023-08-24 [BUG] Internal "contiguize" operation is incorrect
+  erase          46 hit(s) (all listed)
+      #5392 open 2026-08-10 [DRAFT — for visibility, not merging] Color metadata: the combined branch behind the upcoming PR series
+      #5490 closed 2026-09-22 bug: ImageInput::open() forces full OpenColorIO config initialization even when no color management is requested
+      #5507 merged 2026-09-28 fix(color): load the color config on first use, not on construction
+      #5433 open 2026-08-29 bug: `oiiotool --attrib` apply beyond the top image when `--dup` is used
+      #5516 open 2026-09-28 define which color metadata OpenImageIO trusts, and when it resolves it
+      #3385 open 2022-04-11 [BUG] EXR files are always assumed to be "Linear" without checking a previously existing value for oiio:ColorSpace
+      #5276 merged 2026-06-28 fix: avoid leaks in the per-ImageInput/Output error message
+      #5015 closed 2026-01-27 bug:oiio resize generates images which when used for mosaic generates debug output
+      #4791 closed 2025-06-04 [FEATURE REQUEST] ACES Container compliant writer
+      #4746 merged 2025-05-11 feat: CICP metadata support for PNG
+      #4763 merged 2025-05-16 feat(oiiotool): eraseattrib_fromfile
+      #4840 merged 2025-07-27 exr: Don't assume unlabeled OpenEXR files are lin_rec709
+      #4225 closed 2024-04-12 [BUG] OIIO::ImageBuf::nsubimages returns zero for existing image
+      #4292 merged 2024-06-14 Simplify tile cache clearing.
+      #4221 merged 2024-04-10 Remove boost thread_specific_ptr
+      #4008 merged 2023-10-09 fix(exr): suppress exr attributes that interfere with our hints
+      #4123 closed 2024-01-21 provide Orientation metadatum in HEIF files
+      #4145 closed 2024-02-08 chromatic aberration correction with raw:aber doesn't work as expected
+      #664 closed 2013-08-29 TGA unassociated alpha fixes
+      #3692 merged 2022-11-28 make_texture: allow existing DateTime to remain
+  erasing        7 hit(s) (all listed)
+      #4840 merged 2025-07-27 exr: Don't assume unlabeled OpenEXR files are lin_rec709
+      #4292 merged 2024-06-14 Simplify tile cache clearing.
+      #4123 closed 2024-01-21 provide Orientation metadatum in HEIF files
+      #664 closed 2013-08-29 TGA unassociated alpha fixes
+      #3692 merged 2022-11-28 make_texture: allow existing DateTime to remain
+      #802 merged 2014-02-09 Improved removal of SHA-1 hash upon reading in oiiotool and for IBA
+      #1393 merged 2016-03-30 Optimization of DeepData.
+  erased         8 hit(s) (all listed)
+      #3385 open 2022-04-11 [BUG] EXR files are always assumed to be "Linear" without checking a previously existing value for oiio:ColorSpace
+      #4746 merged 2025-05-11 feat: CICP metadata support for PNG
+      #1638 merged 2017-03-14 oiiotool --eraseattrib [regex]
+      #1826 merged 2017-12-12 IC Cache "clock" algorithm -- fix iterator invalidation problem
+      #2003 merged 2018-09-01 Fix ImageSpec::erase_attribute using backwards logic for casesensitive
+      #2632 merged 2020-07-06 oiiotool: Fix --eraseattrib not applying to all subimages
+      #1859 closed 2018-01-29 Building from source requires internet connection for robinmap / pybind11
+      #2623 closed 2020-07-01 [BUG] unordered_map_concurrent does not decrement size in erase
+  destroy        71 hit(s) (all listed)
+      #3295 open 2022-01-23 [BUG] oiiotool crash/undefined behavior at exit
+      #5521 open 2026-09-29 feat(color): add chromaticities and transfer gamma queries to ColorConfig
+      #5508 merged 2026-09-28 fix(iconvert): use a private ImageCache to gather subimage specs
+      #4185 open 2024-03-12 [BUG] When using ImageBuf, this file reports a divide-by-zero exception error. Please take a look
+      #5509 merged 2026-09-28 fix(jpegxl): propagate close-time encoder and write failures
+      #5341 merged 2026-07-27 docs(IC): convert ImageCache doc example into a compiling test
+      #4378 open 2024-08-14 [BUG] Unable to sample UDIMs from pre-populated in-memory ImageCache
+      #5419 merged 2026-08-21 fix(jpeg2000): enable ICC profile write
+      #5294 merged 2026-07-03 fix(tiff): avoid use-after-scope in multithreaded scanline reads
+      #4388 open 2024-08-24 [BUG] assert_fail is called 
+      #5276 merged 2026-06-28 fix: avoid leaks in the per-ImageInput/Output error message
+      #5371 merged 2026-08-06 fix(bmp): bomb guard, UB-safe height negation, and scanline bounds
+      #2240 closed 2019-05-24 DDS file lock not released when compression type is not supported
+      #3394 closed 2022-04-20 Segfault with jpeg2000 threading
+      #5379 closed 2026-08-08 Re: EXR issue #1887 - Existing single scanline patch does not affect OIIO
+      #5213 merged 2026-05-23 feat: allow freeing of ustring table for debugging cases
+      #5193 closed 2026-05-13 feat: allow freeing of ustring table for debugging cases
+      #5043 merged 2026-02-12 feat(heif): Monochrome channel read and write support, fix crash
+      #5184 closed 2026-05-05 feat(ktx): add initial KTX2 input/output support
+      #5211 closed 2026-05-20 fix(cmake): Make the cmake config files always pull in the required libraries
+  destroys       7 hit(s) (all listed)
+      #5213 merged 2026-05-23 feat: allow freeing of ustring table for debugging cases
+      #4225 closed 2024-04-12 [BUG] OIIO::ImageBuf::nsubimages returns zero for existing image
+      #4548 merged 2024-12-01 jpeg2000: valid_file implementation, much faster than trying to open
+      #4377 merged 2024-08-14 api: use shared_ptr for ImageCache and TextureSystem
+      #1840 merged 2018-01-03 testtex fixes
+      #2019 merged 2018-09-28 ImageCache/TextureSystem create/destroy adjustment
+      #1021 merged 2015-01-03 ImageBuf: Improve interppixel_NDC and add bicubic interpolation
+  overwrite      47 hit(s) (all listed)
+      #5493 open 2026-09-24 bug: Nuke crash when using OIIO to read or write images
+      #5019 open 2026-01-28 feat: Add --dark flag to iv for Dark Mode
+      #4289 closed 2024-06-11 [FEATURE REQUEST] oiiotool channel default
+      #5422 merged 2026-08-25 feat(exr): Follow CIF for color interop ID in multi-part files
+      #2240 closed 2019-05-24 DDS file lock not released when compression type is not supported
+      #5403 merged 2026-08-15 fix(rla): terminate the subimage chain and bounds-check the offset table
+      #3538 closed 2022-08-30 [FEATURE REQUEST] More complete camera RAW metadata available through OIIO
+      #5165 merged 2026-04-24 fix(targa): Protection against corrupt, mis-sized palette
+      #5395 merged 2026-08-10 perf(IBA): precompute the resample mapping into per-axis tables
+      #5201 merged 2026-05-16 api: add OIIO_NODISCARD_ERROR to ImageOutput methods
+      #5003 merged 2026-01-12 feat(iv): flip, rotate and save image
+      #4979 closed 2025-12-15 I'm running a test with ctest, but I'm getting a lot of errors.
+      #4925 merged 2025-10-11 fix(iff): Handle non-zero origin, protect against buffer overflows
+      #5015 closed 2026-01-27 bug:oiio resize generates images which when used for mosaic generates debug output
+      #4875 merged 2025-09-06 build: several OpenEXR and OpenJPH build related fixes
+      #4615 closed 2025-02-01 [BUILD] 3.0.3.0 ultrahdr test case failing
+      #4678 closed 2025-03-24 Add ability to read PNG cICP chunk from PNG 3rd Edition via libpng
+      #4674 merged 2025-03-21 feat: oiiotool --mergemeta pt 2: fold into --pastemeta
+      #4082 closed 2023-12-21 Avoid rebuilding 100+ OpenImageIO files when rerunning CMake due to rewriting the fmt proxy headers (external fmt case)
+      #4008 merged 2023-10-09 fix(exr): suppress exr attributes that interfere with our hints
+  clobber        25 hit(s) (all listed)
+      #5493 open 2026-09-24 bug: Nuke crash when using OIIO to read or write images
+      #5423 merged 2026-08-25 build: fix local dependency auto-build
+      #5380 merged 2026-08-08 fix(oiiotool): don't discard the reader's specific error message
+      #5463 merged 2026-09-10 iv: tolerate partially-written EXR files
+      #5015 closed 2026-01-27 bug:oiio resize generates images which when used for mosaic generates debug output
+      #4598 closed 2025-01-16 [FEATURE REQUEST] oiiotool to be able to create output directories that don't yet exist
+      #3115 closed 2021-09-29 [BUG] Invalid write crash when opening certain RAW images
+      #4111 closed 2024-01-15 [BUG] OIIO 2.5.7.0 fails to build on Fedora only on aarch64
+      #4145 closed 2024-02-08 chromatic aberration correction with raw:aber doesn't work as expected
+      #4123 closed 2024-01-21 provide Orientation metadatum in HEIF files
+      #1370 merged 2016-02-26 Rename clobber() -> clobber_all_memory().
+      #52 closed 2011-03-30 Review: add --no-clobber option to iconvert.
+      #265 merged 2012-03-27 Review: API changes to ImageInput -- create-with-open and valid_file
+      #485 closed 2013-01-05 maketx fix -- don't clobber the ImageDescription with the hash
+      #1066 merged 2015-02-18 JPEG: write density fields into header properly.
+      #1464 closed 2016-08-07 Updated FindOpenEXR.cmake
+      #1580 merged 2016-12-09 Debugging improvements
+      #1579 merged 2016-12-08 Add Strutil::printf and fprintf.
+      #1525 merged 2016-10-10 Make temporary texture filename unique to avoid classes on shared drives
+      #1755 merged 2017-08-28 Benchmark utilities
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5537 merged 2026-10-05 fix(oiiotool): don't read past an empty --info result
+      #5445 merged 2026-09-02 admin: main becomes the future 3.3 branch
+      #5521 open 2026-09-29 feat(color): add chromaticities and transfer gamma queries to ColorConfig
+      #4020 open 2023-10-13 imagebuf docs examples: c++ examples, outfile, run script, and doc (#3992)
+      #4720 open 2025-04-25 iv: Help menu / documentation
+      #5508 merged 2026-09-28 fix(iconvert): use a private ImageCache to gather subimage specs
+      #5465 merged 2026-09-11 testing: runtest.py refactor, simplification, new features, easy oiiotool docs
+      #5503 merged 2026-09-27 fix(idiff): fail on pixel read errors instead of comparing garbage
+      #5472 merged 2026-09-14 fix(dpx): ignore end-of-line padding when writing
+      #5520 merged 2026-09-29 fix(openexr): Work around OpenJPH < 0.27 HTJ2K encoder init race
+      #5474 merged 2026-09-14 fix(dicom): Fix rejected subimages, and reaching every frame
+      #5466 merged 2026-09-12 fix(iff): clear tile staging buffer before decode to avoid heap reveal
+      #5461 merged 2026-09-09 fix(jpeg2000): give OpenJPH error handler static lifetime
+      #5488 merged 2026-09-20 build: retry git clones a few times when they fail
+      #5467 merged 2026-09-12 fix(dpx): don't add to metadata any userdata that failed to read
+      #5475 merged 2026-09-14 fix(tiff): handle CMYK and odd bit depths in the tiled reader
+      #5457 merged 2026-09-08 fix(psd): bounds-check thumbnail, color data, and layer channel lengths
+      #5455 merged 2026-09-08 fix(jpeg): Catch corruptions when retrieving thumbnails
+      #5451 merged 2026-09-06 feat(simd): raise USE_SIMD default on x86_64 x86-64-v2
+      #4897 open 2025-09-20 Consider switching GUI toolkits for iv
+  unreadable     11 hit(s) (all listed)
+      #5400 open 2026-08-13 bug: ImageInput::read_image()/read_tiles() with an image_span transpose x and y on tiled files
+      #5463 merged 2026-09-10 iv: tolerate partially-written EXR files
+      #5406 merged 2026-08-16 fix(ffmpeg): heap bounds, bad packet, checks at open, other fixes
+      #4727 merged 2025-04-28 api!: add image_span versions of ImageOutput methods
+      #3867 closed 2023-06-07 [BUG] converting to half with oiiotool actually converts to float
+      #3677 merged 2022-11-16 PSD reading: don't reject padded thumbnails
+      #2241 closed 2019-05-24 ImageInput: Errors that cause open() to fail did not close the file handle.
+      #2195 merged 2019-03-16 Timer dtr print, change from stream I/O to Strutil::printf
+      #1022 closed 2015-01-03 TIFF: allow writing of half (fp16) pixels.
+      #1306 closed 2016-01-03 ImageOutput: AppendSubimage creates broken subimages when using multiple channelformats
+      #1220 closed 2015-09-24 Bizzarre tiff causes OIIO segfault.  To fix or not?
+  garbage        19 hit(s) (all listed)
+      #5503 merged 2026-09-27 fix(idiff): fail on pixel read errors instead of comparing garbage
+      #5404 merged 2026-08-15 fix(simd): NEON vfloat4::load(values,n) read past the end of the buffer
+      #5495 merged 2026-09-24 feat(openexr): Add support for the lj2k and zstd exr compression modes
+      #5407 merged 2026-08-17 fix(jpeg2000): guard the HTJ2K reader, not just the OpenJPEG one
+      #5340 merged 2026-07-27 fix: convert integer channels to OpenEXR instead of reinterpreting bytes
+      #5292 merged 2026-07-03 fix(gif): avoid int32 overflow in palette-split pixel-count math
+      #5448 merged 2026-09-05 fix(heif): raw reads of irot-rotated files: transposed dims/OOB read + inverted irot direction
+      #5286 merged 2026-07-02 fix(dds): reject corrupt bytes-per-pixel before it forces a huge allocation
+      #4462 merged 2024-09-29 [image output] Initialize pixels of partial tile conversion buffer.
+      #3943 closed 2023-08-16 using ImageBufAlgo to render text?
+      #3754 merged 2023-01-18 Spend less wasted time zeroing out ImageBuf
+      #3573 merged 2022-09-28 DDS: various improvements
+      #3379 merged 2022-03-30 ImageBufAlgo: Initial implementation of `st_warp` transform function
+      #2927 merged 2021-03-30 Allow reading of JPEG files with mildly corrupted headers
+      #818 merged 2014-03-08 Fix DPX handling of unsupported pixel data types
+      #55 closed 2011-03-31 Review: improve MIPmap generation quality with good filters
+      #428 closed 2012-08-24 Set error message for Windows
+      #1113 merged 2015-04-07 Many fixes to deep file handling
+      #1008 closed 2014-12-04 Bad GPS metadata will cause oiio crashing
+  mangled        10 hit(s) (all listed)
+      #4040 open 2023-10-30 [BUG] DPX from "Resolve Live" mangled conversion
+      #5361 merged 2026-08-03 build(deps): keep Homebrew out of local dependency child builds
+      #5096 merged 2026-03-18 fix: ImageSpec::metadata_val improved safety
+      #4423 merged 2024-09-13 deps: Add build recipe for PNG
+      #4206 closed 2024-03-28 Add Metadata for OpenEXR
+      #3973 merged 2023-09-02 build: Bump fmt minimum 7.0, fix fmt+gcc bugs
+      #2691 closed 2020-09-01 [BUG]Python ImageBuf.make_writeable() + write() causes bad values for image with mixed depth channels
+      #1614 merged 2017-02-10 For error conditions, print the full command line.
+      #2694 merged 2020-09-03 Python: Direct support for 'half' using numpy.float16 type
+      #1603 closed 2017-01-14 Does OpenImageIO support nChannel images
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4802 open 2025-06-14 ci:  Automatically push updates to stubs to the current branch
+      #5125 open 2026-04-01 Dear ImGui port of Image Viewer (imiv) with Vulkan/Metal/OpenGL backends for Windowns/Linux/MacOS
+      #5503 merged 2026-09-27 fix(idiff): fail on pixel read errors instead of comparing garbage
+      #5478 merged 2026-09-14 feat(IBA): `IBA::decorr_stretch()` and `oiiotool --decorrstretch`
+      #4720 open 2025-04-25 iv: Help menu / documentation
+      #5449 merged 2026-09-05 docs: Convert Sphinx documentation from RST to MyST Markdown
+      #4083 open 2023-12-21 [BUG] OpenEXR PixelAspectRatio
+      #4388 open 2024-08-24 [BUG] assert_fail is called 
+      #5248 merged 2026-06-20 fix(fits): Fix recursion stack overflow with too many header blocks
+      #5507 merged 2026-09-28 fix(color): load the color config on first use, not on construction
+      #5384 closed 2026-08-09 bug: Wrong channel count when reading FITS image
+      #5213 merged 2026-05-23 feat: allow freeing of ustring table for debugging cases
+      #5193 closed 2026-05-13 feat: allow freeing of ustring table for debugging cases
+      #5183 merged 2026-05-05 perf(dpx): use default_init_vector to speed up allocation for internal buffers
+      #5206 merged 2026-05-19 admin: Add AI coding assistant configuration
+      #5203 merged 2026-05-16 fix(pnm,jxl): Prevent PNM/JXL readers from loading arbitrarily large non-image files
+      #5177 merged 2026-04-30 fix(psd): fix indexed transparency
+      #5121 merged 2026-03-30 testing: speed up exr-decreasingy test
+      #5350 merged 2026-07-30 fix(IBA): reorient() cases for transpose and transverse
+      #5029 merged 2026-02-02 cleanup: remove left over tile emulation code for various formats
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5548 open 2026-10-08 docs: clarify oiiotool --dup reference semantics and in-place commands
+      #5524 open 2026-09-29 test(gif): Cover out-of-order and post-failure subimage seeks
+      #5433 open 2026-08-29 bug: `oiiotool --attrib` apply beyond the top image when `--dup` is used
+      #5493 open 2026-09-24 bug: Nuke crash when using OIIO to read or write images
+      #4980 open 2025-12-16 feat: Color Interop IDs and related color space improvements
+      #4535 open 2024-11-12 Added support for negative `nthreads` and resp. documentation.
+      #5185 open 2026-05-05 feat(ktx): add initial ktx input/output support.
+      #5542 merged 2026-10-05 build(tests): texture-device-devicecheck needs fmt headers first
+      #3413 open 2022-05-16 [FEATURE REQUEST] Optimize ImageInput::read_tiles for multi-part EXR
+      #5521 open 2026-09-29 feat(color): add chromaticities and transfer gamma queries to ColorConfig
+      #5019 open 2026-01-28 feat: Add --dark flag to iv for Dark Mode
+      #4411 open 2024-09-08 Ensure that the tests find the built python module vs an install
+      #4639 open 2025-02-14 deps: swap in zlib-ng for zlib with ENABLE_ZLIBNG=1
+      #4020 open 2023-10-13 imagebuf docs examples: c++ examples, outfile, run script, and doc (#3992)
+      #3207 open 2021-11-30 Add get_texture_info_type to query TypeDesc of arbitrary texture metadata
+      #4781 open 2025-05-24 [FEATURE REQUEST] Add [[nodiscard]] to image read/write methods
+      #3235 open 2021-12-16 [FEATURE REQUEST] - float_half maketx/make_texture conversion
+      #5400 open 2026-08-13 bug: ImageInput::read_image()/read_tiles() with an image_span transpose x and y on tiled files
+      #4985 open 2025-12-23 bug: ffmpeg decoding of dnx36,prores, etc. not correct
+      #5476 merged 2026-09-14 testing: runtest.py add redirect_push() and redirect_pop()
+  unclean        2 hit(s) (all listed)
+      #4692 merged 2025-04-05 feat: Add python stub files
+      #4746 merged 2025-05-11 feat: CICP metadata support for PNG
+  shutdown       14 hit(s) (all listed)
+      #3851 open 2023-05-26 [BUG] thread_pool shutdown dead lock
+      #5508 merged 2026-09-28 fix(iconvert): use a private ImageCache to gather subimage specs
+      #4388 open 2024-08-24 [BUG] assert_fail is called 
+      #5213 merged 2026-05-23 feat: allow freeing of ustring table for debugging cases
+      #2797 closed 2020-12-28 [BUG] Windows failing CI tests
+      #4548 merged 2024-12-01 jpeg2000: valid_file implementation, much faster than trying to open
+      #4377 merged 2024-08-14 api: use shared_ptr for ImageCache and TextureSystem
+      #3882 merged 2023-06-13 API: Add shutdown method
+      #2382 merged 2019-11-05 New function: default_thread_pool_shutdown()
+      #3805 merged 2023-04-15 fix: Controlled shutdown of IlmThread pool in all apps in which we use it.
+      #2070 merged 2018-11-16 zfile fix and test
+      #1931 merged 2018-05-02 I/O proxies
+      #1092 closed 2015-03-20 Free memory used by UstringTable on exit
+      #1991 closed 2018-08-02 Crash on exit with OSX
+  reboot         0 hit(s)
+  disk+full      30 hit(s) (all listed)
+      #4388 open 2024-08-24 [BUG] assert_fail is called 
+      #4938 open 2025-10-22 feat: CUDA/OptiX implementation of TextureSystem
+      #3957 open 2023-08-24 [BUG] Internal "contiguize" operation is incorrect
+      #5293 merged 2026-07-03 fix(targa): reject implausible image dimensions before allocating
+      #5290 closed 2026-07-03 fix(targa): reject implausible image dimensions before allocating
+      #5261 merged 2026-06-27 fix(hdr): Make the HDR reader tolerant to CR in the ASCII header
+      #2902 open 2021-03-19 [FEATURE REQUEST]Read as little as possible from image during 'open' call
+      #5192 merged 2026-05-12 fix(oiiotool): be cautious promoting to float due to color space name with --autocc
+      #5379 closed 2026-08-08 Re: EXR issue #1887 - Existing single scanline patch does not affect OIIO
+      #5006 merged 2026-01-14 api: OIIO_CONTRACT_ASSERT and other hardening improvements
+      #5015 closed 2026-01-27 bug:oiio resize generates images which when used for mosaic generates debug output
+      #4327 closed 2024-07-08 [BUILD] Can't build with latest OpenColorIO using vcpkg
+      #4746 merged 2025-05-11 feat: CICP metadata support for PNG
+      #4145 closed 2024-02-08 chromatic aberration correction with raw:aber doesn't work as expected
+      #4123 closed 2024-01-21 provide Orientation metadatum in HEIF files
+      #3972 closed 2023-09-01 Impossible to use OIIO libraries built from source
+      #2774 closed 2020-11-24 Invalid TIF file
+      #3025 merged 2021-07-06 Allow oiiotool to print metadata of computed images
+      #2858 closed 2021-02-05 [BUG] oiiotool unusable on Apple Silicon
+      #260 merged 2012-03-22 Review: Optimize texture MIPmap level switching for TIFF textures
+  data+loss      18 hit(s) (all listed)
+      #3525 open 2022-08-15 [HELP] Converting a DDS normal map to jpeg
+      #5335 merged 2026-07-24 feat(jpeg): support Ultra HDR output
+      #3405 closed 2022-05-01 [BUILD - Windows] Python can't load DLL
+      #4397 merged 2024-08-28 feat(raw): make the crop match in-camera JPEG
+      #4149 merged 2024-02-12 api: prototype using optional keyword/value params for ImageBufAlgo
+      #4219 closed 2024-04-07 black lanes in batched texture lookup
+      #3867 closed 2023-06-07 [BUG] converting to half with oiiotool actually converts to float
+      #3791 merged 2023-03-16 Disable writing TIFF with jpeg compression
+      #664 closed 2013-08-29 TGA unassociated alpha fixes
+      #3301 merged 2022-01-24 Hide Imath headers and types from most of the public API
+      #3045 merged 2021-08-01 RAW plugin improvements
+      #2887 closed 2021-03-05 [BUG] OIIO seems to consider that the alpha channel is gamma-compressed when reading/writing 8-bit formats
+      #163 closed 2011-09-05 Bugfix: PNG alpha + gamma lost all precision.  Also tentative fix to gamma in iv
+      #265 merged 2012-03-27 Review: API changes to ImageInput -- create-with-open and valid_file
+      #1014 merged 2014-12-22 oiiotool -native forces native data format read.
+      #2447 merged 2019-12-30 repremult: Fix subtle edge case in color conversion with unpremult=1
+      #960 closed 2014-09-21 alpha association (e.g. TIFFInput::unassalpha_to_assocalpha()) should be done on float data only.
+      #1770 closed 2017-09-22 DPX read_native_scanline() doesn't always read a native scanline
+  partial+write  24 hit(s) (all listed)
+      #5400 open 2026-08-13 bug: ImageInput::read_image()/read_tiles() with an image_span transpose x and y on tiled files
+      #5509 merged 2026-09-28 fix(jpegxl): propagate close-time encoder and write failures
+      #5494 merged 2026-09-24 fix(ImageInput): Prevent integer overflow with large data window origins
+      #5516 open 2026-09-28 define which color metadata OpenImageIO trusts, and when it resolves it
+      #5463 merged 2026-09-10 iv: tolerate partially-written EXR files
+      #1861 closed 2018-02-02 heap-buffer-overflow in dpx::WriteBuffer
+      #5063 closed 2026-02-27 bug: ImageBuf destructor crashes application if OIIO::print fails
+      #4746 merged 2025-05-11 feat: CICP metadata support for PNG
+      #4734 closed 2025-05-01 [FEATURE REQUEST] Ability to read unfinished/corrupted EXRs
+      #4585 merged 2025-01-06 fix(png): alpha premultiplication adjustment and attribute
+      #4461 closed 2024-09-29 [BUG] Floating  point operations performed on unitialized values.
+      #4322 merged 2024-07-04 api: add pvt::heapsize() and pvt::footprint() methods and image cache memory tracking
+      #1108 merged 2015-03-31 Fix occasional NaNs in alpha channel with 3 channel images.
+      #2338 closed 2019-09-09 Support for DDS S3TC BC4 to BC7 compression formats
+      #179 closed 2011-10-03 Now supports writing image buffers that have differing data and display windows to image formats that do not support differing data and display windows.
+      #138 merged 2011-08-13 Review: multi-scanline/tile reading and writing
+      #143 merged 2011-08-18 Review: Enforce new tile range semantics -- they have to be on tile boundaries
+      #397 closed 2012-07-10 Histograms
+      #437 merged 2012-09-28 Deep images, OpenEXR 2.0
+      #1072 merged 2015-02-25 maketx improvement: write to temp file, rename upon successful completion
+  crash+safe     23 hit(s) (all listed)
+      #5461 merged 2026-09-09 fix(jpeg2000): give OpenJPH error handler static lifetime
+      #5504 closed 2026-09-28 fix(python): retain Windows DLL directory handles
+      #5339 merged 2026-07-26 fix(hdr): address conflict between hdr and raw with .hdr files
+      #5359 merged 2026-08-01 testing: Fix brittle behavior of tests that need to cmake
+      #5175 merged 2026-04-30 fix(webp): fix exif chunk bounds handling
+      #5011 merged 2026-01-18 api(ImageBuf): IB::localpixels_as_[writable_]byte_image_span
+      #3843 closed 2023-05-16 IMB_ibImageFromMemory: unknown file-format
+      #5072 merged 2026-03-07 admin: Draft policy on use of AI coding assistants
+      #4641 closed 2025-02-18 [BUG] OpenImageIO crashes without error on some Windows systems
+      #4033 merged 2023-10-20 feat(ImageBuf): make IB::Iterator lazy in its making the image writable
+      #3824 closed 2023-04-27 [BUG] ASAN heap-use-after-free while concurrently opening PSD files
+      #3371 closed 2022-03-24 Heap corruption reading .mov file
+      #3128 closed 2021-10-14 [BUG] crash when float* is reinterpreted as simd type
+      #13 merged 2011-02-10 maketx update, added --prman support
+      #106 merged 2011-06-20 Gifimage plugin help
+      #352 closed 2012-05-06 Handle UTF-8 file paths on Windows
+      #2206 merged 2019-04-10 Fix crash reading certain old nconvert-written tiff files
+      #1706 merged 2017-06-09 ImageSpec::channel_name(int) returns channel name safely
+      #2730 merged 2020-09-29 WebP input overhaul (including animated webp and metadata)
+      #2659 merged 2020-08-06 Add support for reading DPX files from memory
+  atomic+write   13 hit(s) (all listed)
+      #5461 merged 2026-09-09 fix(jpeg2000): give OpenJPH error handler static lifetime
+      #5429 merged 2026-08-27 Annotate spin_mutex and spin_rw_mutex for ThreadSanitizer
+      #4922 open 2025-10-07 [BUG] OpenImageIO's default thread pool initialization has a data race.
+      #5355 merged 2026-07-31 fix(IBA): detect iterator read errors in orientation functions
+      #3417 merged 2022-05-23 UDIM speedups by eliminating mutex
+      #3054 merged 2021-08-08 Udim refactor and expose more helper functions
+      #123 merged 2011-07-12 ustring: improve multithread perf by holding the lock just a bit less time
+      #273 merged 2012-04-03 Make atomic_test and spinlock_test run for many more iterations, and time their results.
+      #388 merged 2012-06-26 Review: threading improvements (especially for IC/TS)
+      #1525 merged 2016-10-10 Make temporary texture filename unique to avoid classes on shared drives
+      #1797 merged 2017-10-28 File output safety for oiiotool
+      #720 closed 2013-10-26 ThreadSanitizer says ustring.cpp:179 has a data race
+      #1546 closed 2016-10-27 Lose Matadata on iff Format
+  lock+file      85 hit(s) (all listed)
+      #5437 open 2026-08-30 fix(ImageBuf): IB::nmiplevels() returns 0 for non-IC ImageBuf
+      #3851 open 2023-05-26 [BUG] thread_pool shutdown dead lock
+      #4888 open 2025-09-15 future feature: how to deal with multiple thumbnails?
+      #2240 closed 2019-05-24 DDS file lock not released when compression type is not supported
+      #3295 open 2022-01-23 [BUG] oiiotool crash/undefined behavior at exit
+      #5508 merged 2026-09-28 fix(iconvert): use a private ImageCache to gather subimage specs
+      #5493 open 2026-09-24 bug: Nuke crash when using OIIO to read or write images
+      #4897 open 2025-09-20 Consider switching GUI toolkits for iv
+      #5325 merged 2026-07-16 fix(imagebuf): fix data race that could corrupt multithreaded reads
+      #5507 merged 2026-09-28 fix(color): load the color config on first use, not on construction
+      #5470 merged 2026-09-13 fix(ImageInput): Don't leave a rejected subimage as the current one
+      #3394 closed 2022-04-20 Segfault with jpeg2000 threading
+      #5379 closed 2026-08-08 Re: EXR issue #1887 - Existing single scanline patch does not affect OIIO
+      #5213 merged 2026-05-23 feat: allow freeing of ustring table for debugging cases
+      #5201 merged 2026-05-16 api: add OIIO_NODISCARD_ERROR to ImageOutput methods
+      #5203 merged 2026-05-16 fix(pnm,jxl): Prevent PNM/JXL readers from loading arbitrarily large non-image files
+      #5152 closed 2026-04-20 bug: heap-buffer-overflow in RLAInput::decode_rle_span (src/rla.imageio/rlainput.cpp:503)
+      #4925 merged 2025-10-11 fix(iff): Handle non-zero origin, protect against buffer overflows
+      #4916 merged 2025-10-01 deps: Support for OpenColorIO 2.5
+      #4830 merged 2025-07-13 build: Raise minimum supported Python from 3.7 to 3.9
+  write+failure  75 hit(s) (all listed)
+      #5509 merged 2026-09-28 fix(jpegxl): propagate close-time encoder and write failures
+      #5518 open 2026-09-28 feat(color): recognize color spaces and query their properties
+      #5420 open 2026-08-22 doc: add Testing.md
+      #5400 open 2026-08-13 bug: ImageInput::read_image()/read_tiles() with an image_span transpose x and y on tiled files
+      #5178 open 2026-05-03 Fix/softimage channel bounds
+      #5512 merged 2026-09-28 feat(png): preserve mastering display metadata (mDCV)
+      #4938 open 2025-10-22 feat: CUDA/OptiX implementation of TextureSystem
+      #5520 merged 2026-09-29 fix(openexr): Work around OpenJPH < 0.27 HTJ2K encoder init race
+      #5186 open 2026-05-05 Add HWY-optimized push-pull hole filling
+      #4387 open 2024-08-22 [FEATURE REQUEST] Add self-building abilities for more dependencies
+      #4388 open 2024-08-24 [BUG] assert_fail is called 
+      #4639 open 2025-02-14 deps: swap in zlib-ng for zlib with ENABLE_ZLIBNG=1
+      #5419 merged 2026-08-21 fix(jpeg2000): enable ICC profile write
+      #5422 merged 2026-08-25 feat(exr): Follow CIF for color interop ID in multi-part files
+      #5125 open 2026-04-01 Dear ImGui port of Image Viewer (imiv) with Vulkan/Metal/OpenGL backends for Windowns/Linux/MacOS
+      #5335 merged 2026-07-24 feat(jpeg): support Ultra HDR output
+      #5391 merged 2026-08-10 feat(color): Add g24_rec709_scene interop ID and use consistently
+      #5294 merged 2026-07-03 fix(tiff): avoid use-after-scope in multithreaded scanline reads
+      #5236 merged 2026-06-15 feat(oiiotool): Add thumbnail get/set commands and fix TGA thumbnail I/O
+      #2688 open 2020-08-31 [BUG] reading .mp4 files results in crash
+  file+contents  69 hit(s) (all listed)
+      #5125 open 2026-04-01 Dear ImGui port of Image Viewer (imiv) with Vulkan/Metal/OpenGL backends for Windowns/Linux/MacOS
+      #4083 open 2023-12-21 [BUG] OpenEXR PixelAspectRatio
+      #5503 merged 2026-09-27 fix(idiff): fail on pixel read errors instead of comparing garbage
+      #5478 merged 2026-09-14 feat(IBA): `IBA::decorr_stretch()` and `oiiotool --decorrstretch`
+      #4388 open 2024-08-24 [BUG] assert_fail is called 
+      #4720 open 2025-04-25 iv: Help menu / documentation
+      #5449 merged 2026-09-05 docs: Convert Sphinx documentation from RST to MyST Markdown
+      #5384 closed 2026-08-09 bug: Wrong channel count when reading FITS image
+      #5507 merged 2026-09-28 fix(color): load the color config on first use, not on construction
+      #5248 merged 2026-06-20 fix(fits): Fix recursion stack overflow with too many header blocks
+      #5203 merged 2026-05-16 fix(pnm,jxl): Prevent PNM/JXL readers from loading arbitrarily large non-image files
+      #5350 merged 2026-07-30 fix(IBA): reorient() cases for transpose and transverse
+      #5003 merged 2026-01-12 feat(iv): flip, rotate and save image
+      #4976 merged 2025-12-09 fix(idiff): Fail comparison when images have different dimensions
+      #4792 closed 2025-06-04 feat: global attribute to enable/disable formats at runtime
+      #5015 closed 2026-01-27 bug:oiio resize generates images which when used for mosaic generates debug output
+      #3969 closed 2023-08-30 fix(exr): don't suppress "oiio:ColorSpace" attribute on output
+      #4869 merged 2025-08-23 api: Versioned namespace to preserve ABI compatibility between minor releases
+      #4855 merged 2025-08-11 fix: discard generated pystubs when in GHA environment
+      #4615 closed 2025-02-01 [BUILD] 3.0.3.0 ultrahdr test case failing
+
+== 51 terms run; 45 returned hits, 7 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

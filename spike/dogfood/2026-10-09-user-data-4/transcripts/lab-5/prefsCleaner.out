@@ -1,0 +1,21 @@
+
+
+
+                   ╔══════════════════════════╗
+                   ║     prefs.js cleaner     ║
+                   ║    by claustromaniac     ║
+                   ║           v2.1           ║
+                   ╚══════════════════════════╝
+
+This script should be run from your Firefox profile directory.
+
+It will remove any entries from prefs.js that also exist in user.js.
+This will allow inactive preferences to be reset to their default values.
+
+This Firefox profile shouldn't be in use during the process.
+
+
+prefs.js backed up: prefsjs_backups/prefs.js.backup.2026-10-09_0037
+Cleaning prefs.js...
+
+All done!

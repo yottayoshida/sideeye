@@ -1,0 +1,7 @@
+[world]
+state = "/s/ifc"
+
+[define]
+operation = "/opt/py/bin/python3 -m ifcpatch -i /s/ifc/model.ifc -r Optimise"
+cwd       = "/s/ifc-in"
+apparatus = ["env:FAKETIME=2026-10-01 00:00:00", "preload:libfaketime"]

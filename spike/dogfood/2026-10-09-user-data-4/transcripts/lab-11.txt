@@ -1,0 +1,51 @@
+## stack
+== stack: exit 0; 96 strace lines; 4 clone
+14    openat(AT_FDCWD, "/s/aux/home/.stack/pantry/pantry.sqlite3.pantry-write-lock", O_WRONLY|O_CREAT|O_LARGEFILE|O_CLOEXEC, 0666) = 13
+14    openat(AT_FDCWD, "/s/aux/home/.stack/pantry/pantry.sqlite3", O_RDWR|O_CREAT|O_LARGEFILE|O_NOFOLLOW|O_CLOEXEC, 0644) = 14
+14    openat(AT_FDCWD, "/s/aux/home/.stack/pantry/pantry.sqlite3-journal", O_RDWR|O_CREAT|O_LARGEFILE|O_NOFOLLOW|O_CLOEXEC, 0644) = 17
+14    fsync(17)                         = 0
+14    fsync(15)                         = 0
+14    fsync(17)                         = 0
+14    fsync(14)                         = 0
+14    unlinkat(AT_FDCWD, "/s/aux/home/.stack/pantry/pantry.sqlite3-journal", 0) = 0
+14    openat(AT_FDCWD, "/s/aux/home/.stack/pantry/pantry.sqlite3", O_RDWR|O_CREAT|O_LARGEFILE|O_NOFOLLOW|O_CLOEXEC, 0644) = 13
+14    openat(AT_FDCWD, "/s/aux/home/.stack/stack.sqlite3.pantry-write-lock", O_WRONLY|O_CREAT|O_LARGEFILE|O_CLOEXEC, 0666) = 14
+14    openat(AT_FDCWD, "/s/aux/home/.stack/stack.sqlite3", O_RDWR|O_CREAT|O_LARGEFILE|O_NOFOLLOW|O_CLOEXEC, 0644) = 15
+14    openat(AT_FDCWD, "/s/aux/home/.stack/stack.sqlite3-journal", O_RDWR|O_CREAT|O_LARGEFILE|O_NOFOLLOW|O_CLOEXEC, 0644) = 18
+14    fsync(18)                         = 0
+14    fsync(16)                         = 0
+/s/aux/home/.stack/config.yaml has been updated.
+/s/aux/home/.stack
+/s/aux/home/.stack/stack.sqlite3.pantry-write-lock
+/s/aux/home/.stack/config.yaml
+/s/aux/home/.stack/pantry
+/s/aux/home/.stack/pantry/pantry.sqlite3
+/s/aux/home/.stack/pantry/pantry.sqlite3.pantry-write-lock
+/s/aux/home/.stack/stack.sqlite3
+/s/aux/home/.stack/global-project
+/s/aux/home/.stack/global-project/stack.yaml
+# This file contains default non-project-specific settings for Stack.
+templates:
+  params: null
+install-ghc: false
+## chdman
+createraw exit 0
+Logical size: 1,048,576
+Compressing, 0.0% complete... (ratio=100.0%)  Compression complete ... final ratio = 0.0%            
+total 1028
+-rw-r--r-- 1 root root     167 Oct  9 01:30 d.chd
+-rw-r--r-- 1 root root 1048576 Oct  9 01:30 raw.bin
+== chdman-addmeta: exit 1; 103 strace lines; 0 clone
+chdman - MAME Compressed Hunks of Data (CHD) manager 0.276 (unknown)
+Error opening CHD file (d.chd): File not writeable
+Fatal error occurred: 1
+total 1028
+-rw-r--r-- 1 root root     167 Oct  9 01:30 d.chd
+-rw-r--r-- 1 root root 1048576 Oct  9 01:30 raw.bin
+== chdman-delmeta: exit 1; 103 strace lines; 0 clone
+chdman - MAME Compressed Hunks of Data (CHD) manager 0.276 (unknown)
+Error opening CHD file (d.chd): File not writeable
+Fatal error occurred: 1
+total 1028
+-rw-r--r-- 1 root root     167 Oct  9 01:30 d.chd
+-rw-r--r-- 1 root root 1048576 Oct  9 01:30 raw.bin

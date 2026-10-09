@@ -1,0 +1,13 @@
+SEEN  weechat  b2-exclusions:351
+SEEN  weechat  spike/dogfood/2026-09-05-userview/SELECTION.md:80
+SEEN  weechat  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  weechat  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+fresh buildx
+fresh zigup
+fresh zvm
+fresh scummvm
+fresh luanti
+fresh openttd
+SEEN  vfox  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:72
+fresh flameshot-skip
+fresh oc-skip

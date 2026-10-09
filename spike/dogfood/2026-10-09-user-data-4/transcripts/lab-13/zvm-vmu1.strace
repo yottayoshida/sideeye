@@ -1,0 +1,36 @@
+111   execve("/opt/bin/zvm", [...], 0xffffeaed0db8 /* 14 vars */) = 0
+111   openat(AT_FDCWD, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3
+111   close(3)                          = 0
+111   openat(AT_FDCWD, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3
+111   close(3)                          = 0
+111   openat(AT_FDCWD, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3
+111   close(3)                          = 0
+111   openat(AT_FDCWD, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_CLOEXEC) = 3
+111   clone(child_stack=0x386c71f0a000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 112
+111   clone(child_stack=0x386c71f5e000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 113
+111   clone(child_stack=0x386c71f5a000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 114
+113   clone(child_stack=0x386c71f98000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 115
+115   clone(child_stack=0x386c71f94000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 116
+111   openat(AT_FDCWD, "/s/aux/home/.zvm/settings.json", O_RDONLY|O_CLOEXEC) = 4
+111   close(4)                          = 0
+111   openat(AT_FDCWD, "/s/aux/home/.zvm/settings.json", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0755) = 4
+111   write(4, ""..., 336)              = 336
+111   close(4)                          = 0
+111   openat(AT_FDCWD, "/etc/localtime", O_RDONLY) = 4
+111   close(4)                          = 0
+111   openat(AT_FDCWD, "/s/aux/home/.zvm/settings.json", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0755) = 4
+111   write(4, ""..., 331)              = 331
+111   close(4)                          = 0
+115   openat(AT_FDCWD, "/etc/resolv.conf", O_RDONLY|O_CLOEXEC) = 4
+115   close(4)                          = 0
+115   openat(AT_FDCWD, "/etc/nsswitch.conf", O_RDONLY|O_CLOEXEC) = 4
+115   close(4)                          = 0
+115   openat(AT_FDCWD, "/etc/hosts", O_RDONLY|O_CLOEXEC) = 4
+115   close(4)                          = 0
+115   write(6, ""..., 8)                = 8
+115   close(4)                          = 0
+115   close(4 <unfinished ...>
+116   close(7 <unfinished ...>
+115   <... close resumed>)              = 0
+116   <... close resumed>)              = 0
+116   close(4)                          = 0

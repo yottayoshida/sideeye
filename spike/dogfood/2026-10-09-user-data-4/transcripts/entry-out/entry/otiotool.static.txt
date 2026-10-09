@@ -1,0 +1,2 @@
+static: /opt/py/bin/otiotool: Python script, ASCII text executable
+next: sideeye explore --state /s/otio --cwd "/s/otio" --operation "otiotool -i cut.otio --redact -o cut.otio" \

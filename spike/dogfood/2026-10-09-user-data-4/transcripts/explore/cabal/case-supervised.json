@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/aux/home/.config/cabal",
+    "operation": ["cabal", "user-config", "update", "-a", "jobs: 4"],
+    "cwd": "/s/cab",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 3,
+  "prefix_hash": "817ed58bdea5cbf8",
+  "after_class": "rename",
+  "after_path": "/s/aux/home/.config/cabal/config",
+  "before_class": "mkdir",
+  "before_path": "/s/aux/home/.config/cabal",
+  "violation": "missing"
+}

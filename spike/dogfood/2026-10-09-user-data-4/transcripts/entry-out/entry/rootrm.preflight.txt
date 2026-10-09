@@ -1,0 +1,17 @@
+
+ *** Break *** <>: rv violated at line 171 of `/home/conda/feedstock_root/build_artifacts/bld/rattler-build_root_base_1789855047/work/root-source/core/base/src/TUUID.cxx'
+aborting
+UNKNOWN  recording_run_failed
+         the operation did not exit normally during the recording run: it was killed by signal 6
+next        Run the operation once by hand, after the setup and in the directory the report names on its cwd line (command_cwd in the JSON), to see what stopped it: it ended without an exit status (the detail names the signal when there was one), which nothing a define declares accounts for — the README's limit 'A clean run exits its declared success status' is the one it stands at. On macOS, a SIGKILL as it starts can be the system refusing an image's signature.
+cwd         /s/rootf
+
+expected    exit 0
+atomicity   not classified (the run was refused before L0 classification)
+l1          no marker configured
+case        (none)
+processes   not established: this run was refused before the shim's account of it was read
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

@@ -1,0 +1,56 @@
+# Scout 6 (fresh subagent, read-only; 2026-10-09). Field: user configuration rewritten by single-binary CLIs. Its report, as handed back in two messages (re-sent after the first was lost on the way).
+
+scout 6（手元設定）報告 1/2: 規則をすべて満たすと確かめた 11 件の表と、判断が要る 2 件
+
+【要判断】2 件
+- goose（aaif-goose/goose ★55,095、規則6 4/10、Rust）: `goose schedule add --schedule-id x --cron @hourly --recipe-source r.yaml` が schedule.json を fs::write で書き直す。読めないと黙って空の一覧から始める（scheduler/full.rs）。会話の保存先が SQLite なので規則 5 で落とした。schedule.json を「主な保存先」と見るなら載せられる
+- OpenRCT2（★16,400、4/10、C++）: `openrct2-cli set-rct2 D` が config.ini を切り詰めて書き直す（D/Data/g1.dat があれば通る。中身は空でよい）。主な使い方が GUI のゲームなので規則 3 で落とした。arm64 は Debian trixie-backports contrib の openrct2（openrct2-cli も入っている）
+
+名前 | repo | 星 | push | 規則6 | コマンド | ファイル（書き方） | 言語 | arm64 | 懸念
+ddev | ddev/ddev | 3,907 | 10-09 | 9/10※1 | `ddev config global --instrumentation-opt-in=false` | ~/.ddev/global_config.yaml（os.WriteFile） | Go | release tar.gz/.deb | root だと起動を断る（main.go）。NoDocker 注記つきで Docker は要らない
+apptainer | apptainer/apptainer | 1,986 | 10-02 | 9/10※1 | `apptainer remote use r2`（準備: `remote add --no-login r2 example.invalid`） | ~/.apptainer/remote.yaml（Truncate(0)→write→fsync） | Go | 配布物なし（#3712）。tools/install-unprivileged.sh で EPEL の aarch64 RPM を展開 | --no-login を付けないと add がログインする
+cachix | cachix/cachix | 1,129 | 09-16 | 9/10 | `cachix authtoken dummy`（または `cachix config set hostname URL`） | ~/.config/cachix/cachix.dhall（writeFile） | Haskell | 配布物なし。Nix か cabal でビルド | 入れるのが重い
+kew | ravachol/kew | 3,142 | 10-08 | 7/10 | `kew path /music` | ~/.config/kew/kewrc（読んでから fopen "w"、fsync なし） | C | Debian arm64 の kew（版が古い、確度 60%）か make | 本体は TUI。tty_init は Linux では何もしない（確認済み）
+matugen | InioX/matugen | 2,055 | 10-08 | 5/10 | `matugen color hex "#ff0000"` | config.toml の output_path に書いた既存ファイル（上書き） | Rust | cargo install（release は x86_64 だけ） | 書き換える先は準備で置く
+wasmer | wasmerio/wasmer | 21,137 | 10-08 | 4/10 | `wasmer config set telemetry.enabled false` | ~/.wasmer/wasmer.toml | Rust | release linux-aarch64 | tokio のマルチスレッドで動く。registry.url の set はネットを使う
+rpk | redpanda-data/redpanda | 12,602 | 10-08 | 9/10 | `rpk profile use a`（準備: `profile create a`・`create b`） | ~/.config/rpk/rpk.yaml（一時ファイル→rename） | Go | release rpk-linux-arm64.zip | kind/bug にはブローカー本体の報告も混ざる
+kafkactl | deviceinsight/kafkactl | 1,071 | 10-08 | 5/10 | `kafkactl config use-context b` | ~/.config/kafkactl/current-context.yml（viper） | Go | release arm64 tar.gz/.deb | 直近 10 件は 2021〜2025 年
+atac | Julien-cpsn/ATAC | 3,740 | 09-03 | 8/9※2 | `atac --directory D request new demo/ping -u http://localhost/` | D/demo.json（一時ファイル→rename、fsync なし） | Rust | release aarch64 musl | TUI が主。ラベルを問わない直近 10 件では 5/10
+fly | concourse/concourse | 7,914 | 10-08 | 4/10 | `fly -t ci edit-target --team-name t2` | ~/.flyrc（os.WriteFile） | Go | release fly-linux-arm64.tgz | .flyrc は準備で手書きする（login はネットを使う）
+woodpecker-cli | woodpecker-ci/woodpecker | 7,967 | 10-09 | 3/10 | `woodpecker-cli --disable-update-check context use b` | ~/.config/woodpecker/contexts.json（os.WriteFile） | Go | release cli_linux_arm64 | 起動時の更新確認を切らないとネットを使う。規則 6 は下限ちょうど
+
+※1 ddev には bug ラベルが無い。apptainer の bug ラベルは 2022 年以降で 7 件だけ。どちらも外の人の bug 報告を新しい順に 10 件選んで数えた（apptainer をラベルで数えると 3/7）
+※2 bug ラベルの付いた issue が全部で 9 件
+規則 6 は apparatus/rule11.sh で数え、自分のコメントは除いた。zsh の分割漏れで本人のコメントを数えた分は直した。書き方は 11 件ともソースを開いて確かめた
+
+scout 6 報告 2/2: 128 件見て 11 件が残った。落とした 117 件の内訳
+
+見たのは 128 件。fresh.sh に当てた名前は別名を入れて約 150。既出が 79 件、fresh が 49 件で、そのうち 11 件を表に載せた。
+既出の当たり行は 1 行ずつ開いて、本物の既出だと確かめた。
+- 部分一致に見えたが本物だったもの: `gh`（09-27 に測った）、uv（10-05 の SELECTION に既出。`libuv` に当たったわけではない）、restic（b2-exclusions に `restic read`）
+- fly は flyctl に部分一致するので、concourse と flyrc で引いて fresh を確かめた
+
+既出（79）: starship jj mise asdf zoxide gh rclone minikube docker/cli podman incus lxd fish hledger ccache arduino-cli codex pixi talosctl argocd velero skaffold hcloud stripe-cli infracost newsboat sheldon ludusavi alacritty nix flatpak regctl sq broot juliaup kaf ferium rbw gopass xmake kubectx minio/mc pulumi doctl flyctl klog proto step yazi chezmoi git-lfs kubecm aliyun saml2aws jump bartib hstr lima volta aws-sso-util azure-dev kopia duplicacy espanso crush uv miller dasel yq czkawka turbo nushell toolhive k9s kitty rustic restic upx sd
+
+fresh で落とした 38 件
+- 規則1（星 1,000 未満）: singularity 996、natscli 831、scala-cli 645（Scala）、chatgpt-cli 962、flavours 584、influx-cli 75、jfrog-cli 597、gup 612、temporalio/cli 389
+- 規則2: earthly（最終 push 2025-10-23）、hishtory（2026-03-18。保存先も SQLite）、pet（03-13）、aichat（02-23）、mcptools（2025-12-18）、gdrive（2024-08）。archive 済み: shuttle、mods、mangal
+- 規則3（GUI が主）: OpenRCT2（要判断に書いた）、BoilR、nwg-look
+- 規則4:
+  - fastfetch: `--gen-config` は既存ファイルがあると止まる。force 版はもう無い
+  - fnm: default は symlink の張り替えで、前提の install にネットが要る（asdf と同じ理由）
+  - aqua: 追加するとレジストリを取りに行く
+  - rv: pin で書くのはプロジェクトの .ruby-version
+  - devspace: use context は kubeconfig を書く（kubectl と同じ部類）。bug ラベルも 2024 年で止まっている
+  - assh: 書き換えは `assh connect` の中で起き、本体がネットを使う。深くは確かめていない
+- 規則5: goose（要判断に書いた）
+- 規則6:
+  - zrok 1/10、vcluster 1/10（bug ラベルは 2024 年で止まっている）
+  - hubble 1/10（本体は cilium/cilium に移った）
+  - cloudfoundry/cli: bug ラベルでは 4/10 だが、答えたのは 2019 年の分だけ。2021 年以降は 0/6、ラベルを問わない直近も 0/5
+  - yabridge 0/10、forgecode 2/10、dioxus 0/10、kubeshark 2/10、picoclaw 2/10、OpenLoco 2/10
+
+メモ:
+- 送った先の owner は 11 件とも当たっていない
+- 表のコマンドは手元で一度も動かしていない（読むだけの約束どおり）。書き方とネットを使わないことは、ソースを読んで確かめた
+- kew の Debian 版と最新版で書き方が同じかは見ていない

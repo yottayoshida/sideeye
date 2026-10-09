@@ -1,0 +1,6 @@
+[world]
+state = "/s/hsm/tokens"
+
+[define]
+operation = "softhsm2-util --import /s/hsm/k2.pem --token t --pin 1234 --label k2 --id 02"
+cwd       = "/s/hsm-in"

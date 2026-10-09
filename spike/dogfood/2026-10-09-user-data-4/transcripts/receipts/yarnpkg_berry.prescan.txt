@@ -1,0 +1,642 @@
+== novelty pre-scan: yarnpkg/berry
+== date: 2026-10-09T01:18:08Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6062 open 2024-01-05 Fix crash case
+      #7029 open 2026-01-03 [Website] crash on package page
+      #1966 open 2020-10-12 [Bug] typescript? crash when adding a dependency
+      #6270 open 2024-05-03 [Bug]: Patched tsserver crashes when using client watch
+      #7222 open 2026-07-13 [Bug?]: Race condition when modifying workspace directory and calling `yarn pack` in parallel causes yarn to crash
+      #6177 open 2024-03-20 [Bug?]: Website crashes on packages with no `.` export condition
+      #7272 open 2026-09-12 [Bug?]: JS/TS language service immediately crashing in VSCode
+      #1020 open 2020-03-02 [Case Study] Electron
+      #7283 open 2026-09-25 feat(pack): refuse to pack public packages with patch: dependencies
+      #7000 open 2025-12-02 [Bug]: `yarn npm login --scope` crashes when loging in to the Github npm registry
+      #7007 open 2025-12-09 fix(#6990): reduce likelihood of libzip OOM in larger dependency graphs
+      #6888 open 2025-08-31 [Bug?]: 4.9.4 crash on "Resolution step" on MacOS Intel with node 22.19.0 LTS
+      #7067 open 2026-03-11 fix: fall back to copy when hard links fail in pnpm linker
+      #5737 open 2023-09-14 [Bug?]: yarn install hangs on TS repo, using 100% CPU and a lot of memory, sometimes crashes Zlib
+      #7249 merged 2026-08-09 fix(core): patch got to prevent crash on settled promise cancelation
+      #7106 open 2026-04-17 [Bug?]: ESLint "Oops! Something went wrong! :(" with Node 24.15.0 when using PnP
+      #6055 open 2024-01-03 [Bug]: Yarn doesn't de-dupe patches
+      #6613 open 2024-11-25 [Bug?]: fails to run in mac 15
+      #6006 open 2023-12-08 [Bug?]: "Libzip Error: Malloc failure" when installing certain packages
+      #3972 open 2022-01-12 [Bug?]: Couldn't allocate enough memory on Windows x86
+  corrupt        34 hit(s) (all listed)
+      #5096 open 2022-11-25 [Bug?]: Yarn fails to install on corrupt cache zip file rather than re-fetching
+      #4448 open 2022-05-12 [Bug?]: UTF-8 characters in path makes it impossible to use yarn on windows
+      #3717 open 2021-11-09 [Feature] Read only support for VSCode ZipFS
+      #6521 open 2024-09-26 [Bug?]: Integration glitches with nested projects
+      #637 open 2019-12-16 [Bug] `yarn add node` fails on PnP
+      #5349 open 2023-03-27 [Bug?]: Yarn runs multiple classic yarn installs on github deps without mutex. Causes cache issue/error.
+      #2973 open 2021-06-02 [Bug] Patching does not work reliably for transitive dependencies with version ranges
+      #3968 open 2022-01-10 [Feature] Allow vendor to control dependency versions
+      #6197 open 2024-04-01 [Bug]: Yarn requires state files even when they aren't necessary
+      #6576 closed 2024-10-25 [Bug?]: Invalid descriptor
+      #6731 closed 2025-03-18 [Bug?]: Unable to install any package on macOS 14.6.1: Decompression error
+      #5932 closed 2023-11-03 [Bug?]: Documentation incorrect - Fail to install yarn
+      #6066 merged 2024-01-08 Fix #5165 - missing executable perms when installing with pnpm linker
+      #5871 merged 2023-10-25 Waits for the manifests to be written before running the second loops
+      #4716 merged 2022-08-08 feat(core): implement `checksumBehavior: reset`
+      #2181 closed 2020-11-29 [Bug] Failing to install react-app dependancies with the latest yarn version
+      #4872 closed 2022-09-20 [Bug?]: yarn isn't loading @types packages after upgrading TS to 4.8.3
+      #4925 closed 2022-09-30 [Bug?]: Frequent and non-deterministic network issues from registry.yarnpkg.com
+      #4605 closed 2022-07-05 Assert existing linkType field in lockfile
+      #3811 merged 2021-11-28 fix(core): ignore corrupted install state
+  corruption     7 hit(s) (all listed)
+      #6726 closed 2025-03-15 [Feature] Reflink NM linker
+      #2751 open 2021-04-14 [Feature] RFC: Package Variants
+      #6101 merged 2024-01-22 fix(npm): stale metadata cache issue
+      #3209 closed 2021-07-31 [Bug?]: Modifications to yarn.lock resolution version field is not caught by immutable installs
+      #873 closed 2020-02-01 [Bug] full-icu is not supported
+      #1612 merged 2020-07-21 feat(plugin-file): make file: protocol update cache when folder changes
+      #516 merged 2019-10-08 Implements progress bars
+  truncated      22 hit(s) (all listed)
+      #3291 open 2021-08-14 [Feature] [interactive-tools] Improve UI on narrow terminals (80 col)
+      #5723 open 2023-09-09 [Bug?]: Unnecessary package name truncation in `upgrade-interactive`
+      #6733 open 2025-03-20 [Bug?]: Yarn Berry's internal shell component sometimes fails to flush output
+      #7097 open 2026-04-10 Bug: PnP TypeScript compat patch causes tsserver to recursively watch an arbitrary directory
+      #6827 closed 2025-06-18 [Bug?]: Wrong peer dependency warning due to hash collision
+      #7079 merged 2026-03-19 Add Re-release workflow to republish artifacts from a specific commit SHA
+      #5823 closed 2023-10-23 [Bug?]: `yarn set version berry` installs the version 4 instead of 3?
+      #2443 closed 2021-02-05 [Feature] Optional verbose output when running on CI
+      #3765 closed 2021-11-19 Add the registry of each pulled package to `yarn install` for audit purposes
+      #5651 closed 2023-08-10 [Bug?]: TS Server fatal error: Debug Failure.
+      #5365 closed 2023-04-01 [Bug?]: yarn workspace up changes package.json of unrelated workspace
+      #4517 closed 2022-06-03 [Feature] Flag to disable builtin package patches
+      #2358 closed 2021-01-11 feat(version): add support for changelog
+      #3770 closed 2021-11-20 [Bug]: React-Scripts with Typescript and PnP fails to compile JSON imports
+      #3513 merged 2021-09-30 fix(plugin-npm): Fix tarballUrl generation
+      #455 closed 2019-09-12 [Bug] use strict: command not found
+      #604 closed 2019-11-25 [Bug] Can't install dependencies in a project containing `node-sass`
+      #716 closed 2020-01-21 [Bug] Native dependencies fail to build if the project's path contains spaces
+      #849 closed 2020-01-30 [Bug] webpack-dev-server can't recompile: Can't open file: No file descriptors available
+      #1626 merged 2020-07-24 perf(cli): inline plugin names
+  truncate       32 hit(s) (all listed)
+      #5723 open 2023-09-09 [Bug?]: Unnecessary package name truncation in `upgrade-interactive`
+      #6733 open 2025-03-20 [Bug?]: Yarn Berry's internal shell component sometimes fails to flush output
+      #3291 open 2021-08-14 [Feature] [interactive-tools] Improve UI on narrow terminals (80 col)
+      #7242 open 2026-08-03 Update @types/semver
+      #3636 open 2021-10-25 [Feature] Verifying Yarn release binaries
+      #7097 open 2026-04-10 Bug: PnP TypeScript compat patch causes tsserver to recursively watch an arbitrary directory
+      #6827 closed 2025-06-18 [Bug?]: Wrong peer dependency warning due to hash collision
+      #7079 merged 2026-03-19 Add Re-release workflow to republish artifacts from a specific commit SHA
+      #6777 merged 2025-04-28 Docusaurus: Update Docusaurus to 3.7
+      #5823 closed 2023-10-23 [Bug?]: `yarn set version berry` installs the version 4 instead of 3?
+      #889 closed 2020-02-03 [Bug] absolute imports reported  as "Undeclared dependency" by @yarnpkg-doctor
+      #2443 closed 2021-02-05 [Feature] Optional verbose output when running on CI
+      #3765 closed 2021-11-19 Add the registry of each pulled package to `yarn install` for audit purposes
+      #5651 closed 2023-08-10 [Bug?]: TS Server fatal error: Debug Failure.
+      #5365 closed 2023-04-01 [Bug?]: yarn workspace up changes package.json of unrelated workspace
+      #4372 closed 2022-04-18 [Bug?]: `filehandle.truncate(len)` broken using `yarn node`
+      #4517 closed 2022-06-03 [Feature] Flag to disable builtin package patches
+      #2358 closed 2021-01-11 feat(version): add support for changelog
+      #4410 closed 2022-04-28 fix(fslib): fix `FileHandle` implementations
+      #778 closed 2020-01-26 [Bug] yarn doctor problem with git dependencies
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6402 open 2024-07-19 fix(cli): simplify empty event loop handling
+      #7271 open 2026-09-06 Ignore git warnings when diffing patch folders
+      #7299 open 2026-10-07 Prints the npm-notice header during web login
+      #7145 open 2026-05-20 [Bug?]: CDN returns white page on ratelimit ?
+      #7289 open 2026-09-29 [Bug?]: `yarn upgrade-interactive` silently ignores errors when checking package versions
+      #7106 open 2026-04-17 [Bug?]: ESLint "Oops! Something went wrong! :(" with Node 24.15.0 when using PnP
+      #3362 open 2021-08-29 [Bug?]: `ZipFS › should create archives with -rw-r--r--` fails locally
+      #4033 open 2022-01-28 [Bug?]: Combining redirections (>&) does not work
+      #738 open 2020-01-24 [Bug] running just `yarn` doesn't install
+      #6097 open 2024-01-22 [Bug?]: yarn 4.0.2 ignores npmAlwaysAuth in ${PROJECT}/.yarnrc.yml 
+      #7000 open 2025-12-02 [Bug]: `yarn npm login --scope` crashes when loging in to the Github npm registry
+      #6679 open 2025-02-06 [Bug?]: Env variable substitution syntax causes an Internal Error when used within `injectEnvironmentFiles` option
+      #5316 open 2023-03-10 [Bug?]: RFC - Version Plugin/Release Workflow Improvements
+      #6521 open 2024-09-26 [Bug?]: Integration glitches with nested projects
+      #6725 open 2025-03-14 [Bug?]: yarn patch-commit fails with unable to access '/.config/git/attributes': Permission denied
+      #3986 open 2022-01-15 [Bug]: The "file" argument must be of type string. Received undefined
+      #2562 open 2021-03-04 Feature proposal: ignore lists for upgrade-interactive
+      #7088 open 2026-03-30 [Feature] Exclude packages from installation
+      #2918 open 2021-05-22 [Feature] Only Refetch Checksums When Running yarn install --check-cache
+      #4461 open 2022-05-16 [Feature] Have Upgrade Interactive plugin respect defaultSemverRangePrefix
+  atomic         12 hit(s) (all listed)
+      #6615 open 2024-11-26 [Bug?]: Parallel execution of `yarn workspace $name version apply` is unstable
+      #3858 open 2021-12-10 PnP resolver failing to load packages in VS Code child process when using Jest
+      #6023 closed 2023-12-14 Add --no-progress to legacy flags
+      #5491 merged 2023-06-08 feat: cache npm metadata
+      #2688 merged 2021-04-05 feat(node-modules): Uses hardlinks to save space for node_modules installs
+      #4586 merged 2022-06-29 Implements content addressing inside copyPromise
+      #4650 merged 2022-07-20 test: jest improvements
+      #3465 merged 2021-09-20 fix(core): atomic cross-device cache
+      #2645 merged 2021-03-25 fix(core): use atomic writes for the global cache
+      #2630 closed 2021-03-22 [Bug] Many errors thrown when installing packages using Yarn 2
+      #1050 closed 2020-03-09 [Bug] Berry is not allowing installs in my monorepo
+      #1399 merged 2020-05-24 ci(e2e): add e2e test for parcel
+  atomically     1 hit(s) (all listed)
+      #6023 closed 2023-12-14 Add --no-progress to legacy flags
+  interrupted    5 hit(s) (all listed)
+      #7293 open 2026-09-29 fix(nm): avoid a race when concurrent installs create the store
+      #5057 closed 2022-11-14 [Feature] How do I continue installing NPM packages / dependencies?
+      #2445 closed 2021-02-06 yarn migrate to v2 timeout on resolution step
+      #1890 merged 2020-09-28 [node_modules] Survive interrupted installs
+      #914 merged 2020-02-06 StreamReport :: Limit fetch logs (YN0013) up to 5
+  interrupt      11 hit(s) (all listed)
+      #7293 open 2026-09-29 fix(nm): avoid a race when concurrent installs create the store
+      #6556 open 2024-10-11 [Feature] Verbose flag for installation
+      #1989 open 2020-10-16 [Bug] Dependencies with noisy prepare scripts fail to install
+      #6730 closed 2025-03-17 Accessibility & Performance: Refine Search Input and Optimize UI with React Concurrent Features
+      #1039 closed 2020-03-06 [Bug] Yarn 2 Response code 404 (not found) when installing from jfrog
+      #5057 closed 2022-11-14 [Feature] How do I continue installing NPM packages / dependencies?
+      #2619 closed 2021-03-20 Bug - Yarn run hangs when binary and package.json script share same name
+      #2445 closed 2021-02-06 yarn migrate to v2 timeout on resolution step
+      #1890 merged 2020-09-28 [node_modules] Survive interrupted installs
+      #958 closed 2020-02-16 [Bug] Module Not Found on Create-React-App
+      #914 merged 2020-02-06 StreamReport :: Limit fetch logs (YN0013) up to 5
+  sigkill        4 hit(s) (all listed)
+      #5786 open 2023-10-11 [Bug?]: Yarn does not exit when child process is killed
+      #3996 open 2022-01-19 [Bug]: yarn install silently stops if memory is set too low in a CI environment
+      #4327 closed 2022-04-06 [Bug]: yarn install hangs at Resolution Step
+      #991 closed 2020-02-25 [Bug] yarn v2 does not forward SIGTERM to child processes
+  sigint         9 hit(s) (all listed)
+      #2324 open 2021-01-03 [Feature] Cancel a command started using `execute` from `yarnpkg-shell`
+      #1741 closed 2020-08-23 [Bug] Unable to catch signals using Docker
+      #1622 closed 2020-07-24 [Bug] yarn workspaces foreach doesn't handle signals correctly
+      #2347 merged 2021-01-07 Handle propogating SIGTERM to spawned child processes
+      #2434 closed 2021-02-03 [Feature] Stop `workspaces foreach` after any of workspace commands fail
+      #991 closed 2020-02-25 [Bug] yarn v2 does not forward SIGTERM to child processes
+      #1637 merged 2020-07-27 feat(plugin-workspace-tools): handle SIGINT in workspaces foreach
+      #1038 merged 2020-03-05 Removes tmp
+      #1112 merged 2020-03-24 Fixes the Node emitter warning
+  ctrl-c         36 hit(s) (all listed)
+      #6374 open 2024-07-03 [Bug?]: Yarn v4.3.1 does not exit when "No upgrades found" with `yarn upgrade-interactive`
+      #3174 open 2021-07-25 [Bug?]: vscode zipfs Go To Definition fails from .vue files
+      #6951 open 2025-10-23 [Bug?]: Dependencies from `catalog:` are not upgraded using upgrade-interactive
+      #5723 open 2023-09-09 [Bug?]: Unnecessary package name truncation in `upgrade-interactive`
+      #4994 open 2022-10-28 [Bug?]: React rendering warnings from upgrade-interactive
+      #1678 open 2020-08-06 Clarify third party plugins distribution model and usage of builder / `yarn plugin import`
+      #7051 merged 2026-02-17 Add `c`/`r`/`l` bulk selection shortcuts to `upgrade-interactive`
+      #7054 closed 2026-02-28 Dev logs don't show up properly when using yarn workspaces foreach command
+      #7245 closed 2026-08-07 [Bug?]: Error: The `onCancel` handler was attached after the promise settled.
+      #6335 closed 2024-06-12 [Bug?]: Yarn pnp fails with synckit and prettier plugin in eslint context
+      #816 closed 2020-01-28 [Feature] add less verbose output
+      #3857 closed 2021-12-10 [Bug?]: `yarn dlx @yarnpkg/doctor` crashes with `plugin-version`
+      #4327 closed 2022-04-06 [Bug]: yarn install hangs at Resolution Step
+      #1622 closed 2020-07-24 [Bug] yarn workspaces foreach doesn't handle signals correctly
+      #1954 closed 2020-10-09 [Bug] typescript sdk instructions don't work
+      #4308 merged 2022-03-31 Adds notice support to the login command
+      #3150 closed 2021-07-21 [Bug?]: Yarn 2 PnP causes incorrect Typescript typings with redux-toolkit
+      #2083 closed 2020-11-05 [Bug] Missing `writev` method in patched FileHandle implementation
+      #4501 closed 2022-05-27 [Bug?]: Strange / inconsistent behavior with newer versions than `latest`
+      #3271 closed 2021-08-11 [Bug]: Yarn overwriting SSH command used for Git
+  power          57 hit(s) (all listed)
+      #7290 open 2026-09-29 fix: upgrade-interactive no more silently hides errors
+      #7259 open 2026-08-15 fix(pnp): cache package manifest lookups
+      #7242 open 2026-08-03 Update @types/semver
+      #7257 open 2026-08-12 fix(plugin-interactive-tools): add --no-time-gate support to upgrade-interactive (#7207)
+      #7250 open 2026-08-09 fix(plugin-npm): bypass npmMinimalAgeGate when publishTimes metadata …
+      #7204 open 2026-06-26 Fix unitest to pass on Win32
+      #7265 open 2026-08-22 fix(pnp): skip uninstalled unrelated packages when looking up binaries
+      #7256 open 2026-08-12 Fix/pnp require cache extensions 7234
+      #7252 open 2026-08-09 fix(core): strip package map option for external files in shims
+      #512 open 2019-10-07 [Feature] CLI autocomplete
+      #7137 open 2026-05-15 fix(core): Prevent concurrent yarn classic calls
+      #7176 open 2026-06-04 Ignore cache misses prior to fetch step to allow mode=update-lockfile
+      #7219 open 2026-07-13 fix(sdks): migrate VSCode TypeScript settings
+      #7132 open 2026-05-12 CI: Fix diff checks for testing chores steps
+      #2774 open 2021-04-19 `yarn pack` produces slightly different `.tgz` files on different operating systems
+      #7249 merged 2026-08-09 fix(core): patch got to prevent crash on settled promise cancelation
+      #3732 open 2021-11-15 [Feature] don't spin up an intermediate process when `yarn run` runs a script that `yarn run`s
+      #5905 open 2023-10-31 perf: Investigating perf regression
+      #7251 closed 2026-08-09 Investigate yarn issue 7210
+      #7220 merged 2026-07-13 Docs: fix catalog schema
+  outage         7 hit(s) (all listed)
+      #6654 closed 2025-01-14 [Bug?]: yarn fails to run with TypeError
+      #6980 closed 2025-11-18 [Outage] repo.yarnpkg.com returning HTTP 500 - Cloudflare global network incident (Nov 18, 2025)
+      #3434 closed 2021-09-13 [Bug]: Stack Overflow on Recursive Dependencies
+      #6802 closed 2025-05-20 [Bug?]: `yarn --version` prints `<version>-git.<timestamp>.hash-<commit-hash>` instead of just the version
+      #5906 closed 2023-10-31 [Bug?]: unable to use `npx xxx` after v4: `Permission denied`
+      #4234 closed 2022-03-17 [Bug?]: yarn set version berry: Tag stable not found
+      #109 closed 2019-04-30 [Bug] Azure OSX tests are broken
+  ENOSPC         2 hit(s) (all listed)
+      #6625 closed 2024-12-05 [Bug?]: TAR_ENTRY_ERROR ENOSPC: no space left on device
+      #4760 closed 2022-08-16 [Bug?]: Shrelock Playground gets stuck at "checking the repo" state with errors in Console
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6570 open 2024-10-21 [Bug?]: Error "Required package missing from disk" when building with Node 23.0.0
+      #7085 open 2026-03-28 fix: yarn up now updates catalog entries instead of rewriting package…
+      #6664 open 2025-01-24 [Bug?]: `yarn patch` may generate a patch with extraneous files
+      #7067 open 2026-03-11 fix: fall back to copy when hard links fail in pnpm linker
+      #6477 open 2024-08-29 [Bug?]: No candidates found in corporate environment
+      #7281 open 2026-09-25 [Bug?]: installs fail on latest version due to relative path in `got` dependency
+      #7009 open 2025-12-10 Compat: Refactor patch generation scripts
+      #6848 open 2025-07-15 [Bug?]: `yarn up` and `yarn up [--options]` not working
+      #6501 open 2024-09-13 [Bug?]:   Missing package: typescript@patch:typescript@npm
+      #5820 open 2023-10-23 [Bug?]: Migration to Yarn 4 does not remove Yarn 3 cache
+      #6366 open 2024-06-30 feat: copy LICENSE file from monorepo root on pack
+      #6359 open 2024-06-26 [Feature] Copy LICENSE file from monorepo root on publish
+      #2775 open 2021-04-19 [Feature]  Cache pruning support
+      #5441 open 2023-05-15 [Feature] support `--modules-folder`
+      #3179 open 2021-07-26 [Bug]: @yarnpkg/sdks@2.4.1 is missing the `lib` folder
+      #5281 open 2023-02-18 [Feature] Allow patch-commit on node_modules folder
+      #5416 open 2023-04-30 [Feature] .yarn/cache for each workspace (Rather than only at root)
+      #5149 open 2022-12-19 [Bug?]: A package installed via tarball cannot be used to satisfy dependencies.
+      #6834 open 2025-06-26 [Feature] Fuse linker
+      #6871 open 2025-08-07 [Bug?]: `node --watch` does not detect changes in workspaces that have peer dependencies
+  partial        45 hit(s) (all listed)
+      #7280 open 2026-09-23 [Feature] Allow opt-in`yarn workspaces focus` without pruning unneeded dependencies
+      #7068 open 2026-03-11 feat: --fail-on-warnings / failOnWarnings
+      #1967 open 2020-10-13 [Feature] Add configuration option for disabling UTF-8 symbols
+      #6161 open 2024-03-09 Refactors JailFS
+      #6259 open 2024-04-30 fix: propagate --ignore-scripts to yarn v1 dependency bootstrap if enableScripts=false
+      #4692 open 2022-07-29 [Feature][Breaking?] workspaces recursion issues
+      #3524 open 2021-10-05 [Feature] Add `--mode=skip-build` to `yarn workspaces focus --production`
+      #634 open 2019-12-13 [Case Study] Flow
+      #1020 open 2020-03-02 [Case Study] Electron
+      #527 open 2019-10-11 Create a AssemblyScript Resolver
+      #2575 open 2021-03-07 [Feature] Improve performance of `yarn run`
+      #6188 open 2024-03-27 Draft: Make `yarn run` faster
+      #2204 closed 2020-12-03 [Bug?] `logFilters` doesn't work with resolution warnings
+      #6807 merged 2025-05-25 fix(plugin-nm): set binary permissions for partial installs
+      #6551 closed 2024-10-09 [Bug?]: Yarn removes executable permissions when doing a partial install
+      #6376 merged 2024-07-03 Fix peer warning message requester
+      #6704 merged 2025-02-26 Fix #6029 Avoid undefined checksums after merge conflict resolution
+      #2088 closed 2020-11-05 [Bug] Bash source builtin does not work
+      #6357 merged 2024-06-26 Enhance ESLint config
+      #5607 closed 2023-07-25 Fix partial clone PR number
+  incomplete     24 hit(s) (all listed)
+      #7278 open 2026-09-23 fix(zipfs): respect descriptor cursor in readFile
+      #7292 open 2026-09-29 fix(nm): stop silently skipping files when store links fail
+      #4079 open 2022-02-07 [Feature] The in-built facts database for yarn constraints does not include transitive dependencies
+      #5842 open 2023-10-24 [Feature] add more context to pnpm linker workspace peer dependency error
+      #6224 open 2024-04-13 [Bug?]: Nested workspaces not installing local dependencies
+      #6384 open 2024-07-06 [Bug?]: yarn plugin import from sources fails
+      #6400 closed 2024-07-18 [Feature] Catalog like pnpm
+      #6399 merged 2024-07-17 fix(cli): ensure an empty event loop counts as an error
+      #5781 closed 2023-10-10 [Bug?]: yarn npm audit --recursive produces incomplete output (yarn 4)
+      #5712 merged 2023-09-01 Improves the message when a package isn't found due to an incomplete `supportedArchitectures` setting
+      #5784 merged 2023-10-10 Adds a blog section
+      #5455 closed 2023-05-20 [Feature] Implementing the `--installTypes` option in the `yarn add` command
+      #4778 closed 2022-08-18 [Bug?]: node 16.17.0 update cause yarn 3.2.2 build to fail
+      #4629 closed 2022-07-16 [Bug?]: Experimental ESM loader causes a crash with node v18.6.0
+      #4768 closed 2022-08-17 [Bug?]: PNP ESM Loader failing in Node 16.17.0
+      #3357 closed 2021-08-27 [Bug?]: Yarn link a local package not resolving peerDependencies
+      #1906 merged 2020-09-30 fix(pnpify): SDK template incomplete
+      #2481 merged 2021-02-15 feat(node-modules): Portal support
+      #880 closed 2020-01-30 Yarn 2.x installation is incomplete
+      #1992 closed 2020-10-17 [Bug] peerDependency-resolution is inconsistent (workspaces vs default)
+  dataloss       0 hit(s)
+  recover        14 hit(s) (all listed)
+      #7292 open 2026-09-29 fix(nm): stop silently skipping files when store links fail
+      #7194 open 2026-06-20 [Bug]: Windows - missing files at install on large packages
+      #6139 closed 2024-02-23 docs: Recover Sherlock documentation
+      #4960 merged 2022-10-13 ci: remove outdated workflow
+      #4900 merged 2022-09-24 test(shell): ensure that fields that aren't checked are empty
+      #1733 closed 2020-08-21 [Feature] Removing .yarn folder should yield an understandable error
+      #3488 merged 2021-09-24 fix(shell): make cd ENOENT error recoverable
+      #3811 merged 2021-11-28 fix(core): ignore corrupted install state
+      #2532 closed 2021-02-27 [Bug] importing the workspace-tools plugin when running from source causes subsequent calls yarn to fail
+      #2445 closed 2021-02-06 yarn migrate to v2 timeout on resolution step
+      #1995 merged 2020-10-17 fix(shell): make some errors recoverable
+      #766 closed 2020-01-25 [Feature] Discussion around release strategy of Yarn v2
+      #1851 merged 2020-09-21 fix(pnp): resolve the virtual path of the pnpapi instead of the issuer
+      #2113 merged 2020-11-10 feat(upgrade-interactive): Only show packages with upgrades available
+  recovery       4 hit(s) (all listed)
+      #7194 open 2026-06-20 [Bug]: Windows - missing files at install on large packages
+      #1733 closed 2020-08-21 [Feature] Removing .yarn folder should yield an understandable error
+      #1230 closed 2020-04-21 [Bug] Yarn does not work with WSL / UNC paths
+      #844 closed 2020-01-30 [Bug] PortablePath cannot handle Windows drive roots correctly
+  rollback       12 hit(s) (all listed)
+      #89 open 2019-04-23 [Feature] Explicitly allow or disallow licenses
+      #7245 closed 2026-08-07 [Bug?]: Error: The `onCancel` handler was attached after the promise settled.
+      #7001 closed 2025-12-03 Reconsider PR #6800: `@types/*` should be peer when the runtime dependency is peer
+      #6977 closed 2025-11-13 [Bug?]: .yarnrc.yml
+      #2244 closed 2020-12-16 Docs lack how to uninstall Yarn 2 
+      #5748 closed 2023-09-20 Yarn requires yarn release .cjs file to be committed to git repo
+      #5819 closed 2023-10-23 [Bug?]: Migration issue with 4.0.0, can't use 3.x
+      #5483 merged 2023-06-03 perf(pnp): use default `Module._load`
+      #4672 closed 2022-07-26 [Bug?]: yarn installation failed due to script-shell settings
+      #766 closed 2020-01-25 [Feature] Discussion around release strategy of Yarn v2
+      #474 merged 2019-09-18 Improve test core type definitions
+      #522 merged 2019-10-10 fixes pnpify --sdk generation by using json5
+  resume         4 hit(s) (all listed)
+      #6934 closed 2025-10-06 [Bug?]: Yarn npm audit crashes
+      #6627 closed 2024-12-08 [Bug?]: All packages returning 404 for registry registry.yarnpkg.com
+      #3910 closed 2021-12-26 PnP: ESLint fails to resolve external config's plugins
+      #2335 closed 2021-01-05 [Feature] save state of yarn install and resume from failure when internet connection is bad
+  half-written   3 hit(s) (all listed)
+      #6733 open 2025-03-20 [Bug?]: Yarn Berry's internal shell component sometimes fails to flush output
+      #2443 closed 2021-02-05 [Feature] Optional verbose output when running on CI
+      #3459 merged 2021-09-18 feat(workspace-tools): add `--since` option
+  wipe           16 hit(s) (all listed)
+      #7291 open 2026-09-29 fix(core): keep registry auth when keys differ by a trailing slash
+      #2775 open 2021-04-19 [Feature]  Cache pruning support
+      #6471 open 2024-08-25 [Bug?]: Installation doc is misleading, not applicable for an existing project
+      #6521 open 2024-09-26 [Bug?]: Integration glitches with nested projects
+      #6944 open 2025-10-14 [Bug?]: Yarn interferes with module resolution with Docusaurus and Webpack, node-modules linker
+      #3245 open 2021-08-07 [Feature] Use XDG_CONFIG_HOME for global config
+      #5831 open 2023-10-24 [Bug?]: Error: Dynamic require of "util" is not supported
+      #5231 closed 2023-01-31 [Feature] ESLint SDK should export `eslint/use-at-you-own-risk`
+      #631 closed 2019-12-12 [Feature] Yarn should look for yarn.lock files up until it finds a .yarn folder
+      #3843 closed 2021-12-06 [Feature] Support the `imports` field in the PnP API
+      #4493 closed 2022-05-25 [Feature] let workspaces/root devDependencies be a real feature
+      #4192 closed 2022-03-07 [Bug?] `yarn rebuild` resolves and links dependencies removed during focus
+      #1733 closed 2020-08-21 [Feature] Removing .yarn folder should yield an understandable error
+      #1758 closed 2020-08-24 [Bug] Go-to definition with ZipFS doesn't work in VSCode 1.48
+      #3125 closed 2021-07-16 [Feature] Better UX for yarn set version command
+      #238 closed 2019-06-18 [Bug] Registries with non-conventional tarball paths
+  wipes          2 hit(s) (all listed)
+      #7291 open 2026-09-29 fix(core): keep registry auth when keys differ by a trailing slash
+      #631 closed 2019-12-12 [Feature] Yarn should look for yarn.lock files up until it finds a .yarn folder
+  erase          9 hit(s) (all listed)
+      #3210 open 2021-08-01 [Feature] A flag to enforce consistency of unplugged files and node_modules
+      #7239 open 2026-08-01 Warn when an explicitly-set `cacheFolder` is discarded by `enableGlobalCache`
+      #6892 merged 2025-09-08 Updates tests for the merge conflict resolution v5
+      #180 closed 2019-05-19 [Discussion] Zero-install & repository size
+      #4189 closed 2022-03-07 [Bug?]: ts-node/esm does not work correctly
+      #1218 closed 2020-04-18 [Case Study] When yarn node program restarts itself, the new process lacks yarn context
+      #2329 merged 2021-01-04 fix(pnpify): preserve comments in arrays
+      #2235 merged 2020-12-13 Fixes running yarn version check -i without changes
+      #1026 closed 2020-03-03 [Feature] Do not overwrite .yarnrc.yml ufter install yarn2
+  erasing        3 hit(s) (all listed)
+      #6892 merged 2025-09-08 Updates tests for the merge conflict resolution v5
+      #4189 closed 2022-03-07 [Bug?]: ts-node/esm does not work correctly
+      #1026 closed 2020-03-03 [Feature] Do not overwrite .yarnrc.yml ufter install yarn2
+  erased         4 hit(s) (all listed)
+      #180 closed 2019-05-19 [Discussion] Zero-install & repository size
+      #1218 closed 2020-04-18 [Case Study] When yarn node program restarts itself, the new process lacks yarn context
+      #2329 merged 2021-01-04 fix(pnpify): preserve comments in arrays
+      #2235 merged 2020-12-13 Fixes running yarn version check -i without changes
+  destroy        32 hit(s) (all listed)
+      #4610 open 2022-07-06 [Feature] Allow `changesetIgnoreOverrides` option for yarn workspaces list/foreach
+      #7245 closed 2026-08-07 [Bug?]: Error: The `onCancel` handler was attached after the promise settled.
+      #6188 open 2024-03-27 Draft: Make `yarn run` faster
+      #6934 closed 2025-10-06 [Bug?]: Yarn npm audit crashes
+      #5340 closed 2023-03-23 YN0001 Exception Error
+      #6706 closed 2025-02-28 [Bug?]: `yarn pack` does not create sub-directories when using `--out`
+      #816 closed 2020-01-28 [Feature] add less verbose output
+      #5167 closed 2023-01-02 [Bug?]: Performance impact of `process.report.getReport()` is undesirable
+      #6086 closed 2024-01-16 [Bug?]: install Electron error
+      #6523 closed 2024-09-26 [Bug?]: yarn.lock file is not getting generated
+      #6389 closed 2024-07-09 [Bug?]: Yarn v4.3.1 times out on fetch step
+      #3597 closed 2021-10-20 [Bug?]: node17 compat: │ Error [ERR_STREAM_PREMATURE_CLOSE]: Premature close
+      #5452 closed 2023-05-17 Yarn 3.5.1 | YN0001: │ RequestError: Socket connection timeout
+      #3521 closed 2021-10-04 [Bug?]: yarn plugin import error:  certificate has expired
+      #6064 closed 2024-01-05 [Bug?]: Installing from git dependency fails with "Premature close"
+      #1044 closed 2020-03-07 yarn npm login is not compatible with verdaccio
+      #5419 closed 2023-05-02 [Bug?]: YN0001: │ RequestError: Socket connection timeout
+      #5639 closed 2023-08-03 [Bug?]: Receiving ENETDOWN error when internet is working.
+      #4986 closed 2022-10-25 [Bug?]:  Internal Error: Error when performing the request
+      #2257 closed 2020-12-21 [Bug] Failing to use "yarn install" behind a proxy
+  destroys       1 hit(s) (all listed)
+      #3150 closed 2021-07-21 [Bug?]: Yarn 2 PnP causes incorrect Typescript typings with redux-toolkit
+  overwrite      72 hit(s) (all listed)
+      #4099 open 2022-02-11 [Feature] Peer dependency resolutions
+      #6488 open 2024-09-09 [Bug?]: `fsBinding.cpSyncCheckPaths` error in Node 22
+      #6053 open 2024-01-02 [Bug?]: pnpm linker doesn't deal with case-sensitive name clashes inside packages
+      #5518 open 2023-06-23 ZipFS workspace not reloading when file is regenerated
+      #3670 open 2021-10-29 [Feature] Add `type` to `yarn init`
+      #6471 open 2024-08-25 [Bug?]: Installation doc is misleading, not applicable for an existing project
+      #2807 open 2021-04-26 [Feature] Provide a way to manually invoke plugin-typescript 
+      #6150 open 2024-03-01 [Feature] Allow plugins to resolve `yarn add`'s parameter
+      #1629 open 2020-07-24 [Feature] Support `yarnclean` functionality via resolutions or config
+      #7262 open 2026-08-19 Warn when enableGlobalCache discards an explicit cacheFolder
+      #6521 open 2024-09-26 [Bug?]: Integration glitches with nested projects
+      #4789 open 2022-08-23 [Feature] Better HTTP request error logs
+      #7239 open 2026-08-01 Warn when an explicitly-set `cacheFolder` is discarded by `enableGlobalCache`
+      #1998 open 2020-10-19 publish/whoami authorisation with Workspaces + Scoped packages + Custom Registry seems broken.
+      #7155 open 2026-05-27 feat(core): Add user-agent header to network requests and create yarn version file
+      #4030 open 2022-01-28 [Feature] allow packageLocations in .pnp.cjs to be absolute paths
+      #2751 open 2021-04-14 [Feature] RFC: Package Variants
+      #7216 merged 2026-07-09 fix(nm): prefer direct dependency binaries
+      #7039 closed 2026-01-22 [@yarnpkg/core] update tar to prevent vulnerability
+      #1223 open 2020-04-20 Individual lockfile per workspace
+  clobber        2 hit(s) (all listed)
+      #6604 open 2024-11-18 [Bug?]: PNP with ESM using Lambda Layers is broken with AWS SAM
+      #7239 open 2026-08-01 Warn when an explicitly-set `cacheFolder` is discarded by `enableGlobalCache`
+  blank          31 hit(s) (all listed)
+      #6656 open 2025-01-16 [Bug?]: yarn@4.6.0 reformats package.json on every execute - which changes the file when there's expected formatting
+      #7254 open 2026-08-10 up: Add example for undocumented no-argument usage
+      #7145 open 2026-05-20 [Bug?]: CDN returns white page on ratelimit ?
+      #7206 open 2026-06-27 fix(plugin-typescript): add a timeout to the Algolia auto-types lookup
+      #3291 open 2021-08-14 [Feature] [interactive-tools] Improve UI on narrow terminals (80 col)
+      #6944 open 2025-10-14 [Bug?]: Yarn interferes with module resolution with Docusaurus and Webpack, node-modules linker
+      #4610 open 2022-07-06 [Feature] Allow `changesetIgnoreOverrides` option for yarn workspaces list/foreach
+      #6768 merged 2025-04-15 feat: bump `js-yaml` to v4
+      #7138 closed 2026-05-16 [Bug?]: `approvedGitRepositories` overwritten with doublequotes
+      #7203 merged 2026-06-26 fix: preserve root path in tryWorkspaceByCwd when cwd is /
+      #6955 closed 2025-10-27 [Bug?]: VS Code Prettier+ESLint plugins with PnP
+      #6844 closed 2025-07-10 [Bug]: yarn@v4 install Rewrites package.json when it shouldn't, stripping blank lines & failing to execute postinstall when it should
+      #5996 closed 2023-12-02 [Bug?]: Can't get any intellisense in VSCode without adding TypeScript dependency
+      #6566 closed 2024-10-21 [Bug?]: `yarn config` commands break common YAML styling
+      #4231 closed 2022-03-16 [Bug]: Yarn patches are not applied for deps using `resolutions`
+      #4165 closed 2022-02-26 [Bug?]: Terminal output makes yarn install very slow
+      #3999 closed 2022-01-20 [Bug?]: typescript auto import does not work with VSCode typescript SDK when trying to import from workspace package
+      #468 merged 2019-09-16 Describes a bit the project history
+      #3220 closed 2021-08-04 [Bug]: Potential race condition in `workspace foreach -p`
+      #3938 closed 2022-01-04 Added support for .env file
+  unreadable     12 hit(s) (all listed)
+      #6440 open 2024-08-06 [Feature]: use terminal colors
+      #6664 open 2025-01-24 [Bug?]: `yarn patch` may generate a patch with extraneous files
+      #6070 closed 2024-01-09 [Bug?]: Nav bar issue in yarn website.
+      #6022 merged 2023-12-14 Fix site navigation being somewhat jumbled at certain viewport widths
+      #5509 merged 2023-06-19 Modernizes installs' output
+      #4717 closed 2022-08-08 > Removing `node_modules` folder is NodeJS equivalent of "have you tried restarting your pc"?
+      #1733 closed 2020-08-21 [Feature] Removing .yarn folder should yield an understandable error
+      #3655 merged 2021-10-27 fix(nm): Avoids usage of localeCompare for the strings
+      #262 closed 2019-06-27 [Bug] Unreadable virtual file added by yarn install
+      #2192 closed 2020-11-30 [Feature] archiveUrl in logs leads to lengthy and difficult to read output
+      #94 closed 2019-04-24 Adds prettier via eslint
+      #441 merged 2019-09-06 Add webpack e2e tests
+  garbage        20 hit(s) (all listed)
+      #4735 open 2022-08-11 Detect missing `package.json` file to prevent generating garbage
+      #3691 open 2021-11-02 feat: automatic ZipFS memory management
+      #2443 closed 2021-02-05 [Feature] Optional verbose output when running on CI
+      #5673 merged 2023-08-18 fix(pnp): fix infinite recursion when .pnp.cjs is a symlink and pnp inlining is disabled
+      #2670 closed 2021-04-01 [Bug] Syntax error in parsing package.json run scripts containing parameter substitutions or {}
+      #3470 closed 2021-09-22 [Feature] support for --expose-gc in `yarn run`
+      #4933 closed 2022-10-04 [Feature] --visual-verbose
+      #1593 merged 2020-07-16 feat(fslib): add time-to-live to the ZipOpenFS cache
+      #180 closed 2019-05-19 [Discussion] Zero-install & repository size
+      #2826 merged 2021-04-29 [website] Recommend using .gitattributes to treat release and plugin bundles as "binary"
+      #2508 merged 2021-02-23 Improves 'yarn patch'
+      #280 closed 2019-07-03 [Feature] Node process started via Yarn 2 should use less RAM
+      #2119 closed 2020-11-12 [Feature] load rc file at path configured via env
+      #1576 closed 2020-07-10 [Bug]  Too many open files with pnp linker
+      #1738 merged 2020-08-22 perf: reuse semver range objects
+      #745 merged 2020-01-24 Change data-structures used by hoisting algorithm to better fit its purpose
+      #895 merged 2020-02-04 Enables garbage collection on synchronous calls
+      #1091 merged 2020-03-19 Prevents the patch folders from being garbage collected
+      #1422 merged 2020-05-30 perf(core): skip await if response has already resolved
+      #580 merged 2019-11-17 Mael/package dependencies
+  mangled        4 hit(s) (all listed)
+      #5992 open 2023-11-29 [Bug?]: constraints + `workspaces focus` cause erroneous failures
+      #3291 open 2021-08-14 [Feature] [interactive-tools] Improve UI on narrow terminals (80 col)
+      #5853 closed 2023-10-24 [Bug?]: `yarn constraints --fix` leads to malformed package.jsons
+      #1533 closed 2020-07-01 [Bug] TypeScript auto imports are broken with yarn PNP on Windows
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #7128 open 2026-05-05 Patch: Stop mangling file when both pre- and post-patch file has no trailing newline
+      #7241 open 2026-08-03 [Bug?]: EISDIR when reading from a directory that has the same path as a previously existing zip file
+      #7192 open 2026-06-19 [Bug?]: Disabling global `npmMinimalAgeGate` does not disable scoped `npmMinimalAgeGate`
+      #4201 open 2022-03-09 Make `env` readonly in wrapScriptExecution
+      #6483 open 2024-09-04 Line numbers are buggy after line 99999 in the package file viewer
+      #7204 open 2026-06-26 Fix unitest to pass on Win32
+      #6018 open 2023-12-13 [Bug?]: yarn installation with local file resolutions
+      #7000 open 2025-12-02 [Bug]: `yarn npm login --scope` crashes when loging in to the Github npm registry
+      #7256 open 2026-08-12 Fix/pnp require cache extensions 7234
+      #4822 open 2022-09-06 fix: let preferUnplugged override pkg.conditions
+      #6068 open 2024-01-08 [Bug?]: Yarn checksums are dependent on user-configurable compression ratio
+      #6664 open 2025-01-24 [Bug?]: `yarn patch` may generate a patch with extraneous files
+      #7082 open 2026-03-27 [Feature] Exclude global gitignore from files/folders
+      #6485 open 2024-09-05 [Bug?]: Yarn doesn't make dependency executables available on PATH for `yarn run`
+      #5518 open 2023-06-23 ZipFS workspace not reloading when file is regenerated
+      #5649 open 2023-08-09 [Feature] Output published package info in output
+      #5316 open 2023-03-10 [Bug?]: RFC - Version Plugin/Release Workflow Improvements
+      #5872 open 2023-10-26 [Bug?]: .npmignore is not processed like gitignore; `**` doesn't match files at the root, order not respected
+      #3618 open 2021-10-22 feat: install git repositories that use pnpm
+      #4679 open 2022-07-27 [Feature] documentation for how to debug constraints
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #7277 open 2026-09-18 Keep prerelease id when applying deferred version bumps
+      #2967 open 2021-06-02 [Feature] reconsider prepare lifecycle script?
+      #7171 open 2026-06-03 [Feature] Publish yarn.js checksums somewhere alongside release
+      #7264 open 2026-08-22 [Bug?]: yarn run may fail on missing unrelated dependencies with pnp linker
+      #5281 open 2023-02-18 [Feature] Allow patch-commit on node_modules folder
+      #6994 open 2025-11-27 Add `beforeWorkspaceDependency` addition/replacement/removal hooks
+      #5936 open 2023-11-03 [Feature] Unable to reuse deps installed indirect bins
+      #4413 open 2022-04-28 Add a `yarn npm deprecate` command
+      #1382 open 2020-05-20 [Feature] Make plugin-typescript put types in dependencies instead of devDependencies
+      #5947 open 2023-11-07 [Feature] Better support for `resolutions` inside workspaces
+      #4342 open 2022-04-11 [Feature] Lifecycle precompile hook to support package.json comments via external package
+      #6657 open 2025-01-16 [Feature] Add hash for `packageManager` to `set version` CLI command
+      #4468 open 2022-05-17 [Feature] Add support of Vim hot keys in `upgrade-interactive`
+      #7009 open 2025-12-10 Compat: Refactor patch generation scripts
+      #4688 open 2022-07-29 [Feature] Able to forbid / block multiple instances of a package with peer dependencies
+      #3008 open 2021-06-09 [Feature] Add repo/website url column to the upgrade-interactive plugin
+      #1455 open 2020-06-09 [Case Study] One Scope, Multiple Registries
+      #4300 open 2022-03-30 [Bug?]: `yarn pack` always ignores nested `node_modules`
+      #6096 open 2024-01-20 chore: use prettier for formatting
+      #6429 open 2024-08-01 Website engineering: Rewrite CommandlineHighlight plugin
+  unclean        0 hit(s)
+  shutdown       5 hit(s) (all listed)
+      #7166 open 2026-06-02 fix(shell): support redirection-only commands
+      #1741 closed 2020-08-23 [Bug] Unable to catch signals using Docker
+      #5158 closed 2022-12-26 [Bug?]: Yarn does not wait for child process on SIGTERM for a graceful shutdown.
+      #991 closed 2020-02-25 [Bug] yarn v2 does not forward SIGTERM to child processes
+      #2113 merged 2020-11-10 feat(upgrade-interactive): Only show packages with upgrades available
+  reboot         3 hit(s) (all listed)
+      #6579 open 2024-10-26 [Bug?]: Executing a running task leaves you in the wrong directory.
+      #5651 closed 2023-08-10 [Bug?]: TS Server fatal error: Debug Failure.
+      #2800 closed 2021-04-24 [Bug] Unable to Load Prettier in 3.0.0-rc.2
+  disk+full      17 hit(s) (all listed)
+      #7281 open 2026-09-25 [Bug?]: installs fail on latest version due to relative path in `got` dependency
+      #1510 open 2020-06-23 [Feature] Changelog support in version (?) plugin
+      #1223 open 2020-04-20 Individual lockfile per workspace
+      #2701 closed 2021-04-06 [Bug] Cannot run script without installing dependencies even if the script is trying to `install`
+      #6688 merged 2025-02-14 Improve pnp loader speed and memory: jszip implementation
+      #6277 closed 2024-05-06 [Bug?]: yarn workspaces focus does not default to --immutable on CI
+      #2443 closed 2021-02-05 [Feature] Optional verbose output when running on CI
+      #5491 merged 2023-06-08 feat: cache npm metadata
+      #4261 merged 2022-03-24 Improves boot time
+      #180 closed 2019-05-19 [Discussion] Zero-install & repository size
+      #1659 closed 2020-07-31 [Feature] Add support for package.json script variables
+      #1406 closed 2020-05-26 🚀 Breaking changes for Yarn 3
+      #2908 closed 2021-05-20 [Feature] Lock file only updates (skip modules install)
+      #2651 closed 2021-03-28 [Feature] Skip install for workspace dependencies
+      #973 closed 2020-02-20 [Bug] Extremely slow `yarn run xxxx` commands on large monorepo 
+      #693 closed 2020-01-14 [Bug] PnP API cannot be consumed if file located outside workspace
+      #1366 merged 2020-05-17 fix(workspace-tools): focus command should persist install state
+  data+loss      4 hit(s) (all listed)
+      #6733 open 2025-03-20 [Bug?]: Yarn Berry's internal shell component sometimes fails to flush output
+      #7194 open 2026-06-20 [Bug]: Windows - missing files at install on large packages
+      #1463 open 2020-06-09 [Bug] Preserve comments and styling in YAML configuration
+      #1789 closed 2020-09-02 [Feature] "yarn workspaces focus" option `--prune-cache`
+  partial+write  2 hit(s) (all listed)
+      #527 open 2019-10-11 Create a AssemblyScript Resolver
+      #766 closed 2020-01-25 [Feature] Discussion around release strategy of Yarn v2
+  crash+safe     11 hit(s) (all listed)
+      #7222 open 2026-07-13 [Bug?]: Race condition when modifying workspace directory and calling `yarn pack` in parallel causes yarn to crash
+      #7249 merged 2026-08-09 fix(core): patch got to prevent crash on settled promise cancelation
+      #4711 open 2022-08-05 [Bug?]: yarn patch generated unparsable patch: URL
+      #7245 closed 2026-08-07 [Bug?]: Error: The `onCancel` handler was attached after the promise settled.
+      #5650 closed 2023-08-09 [Bug?]: 400 bad request on npm audit with --recursive flag
+      #5196 closed 2023-01-12 [Bug?]: Spawn error when running script files with Yarn on Node v19.1.0+
+      #1733 closed 2020-08-21 [Feature] Removing .yarn folder should yield an understandable error
+      #3828 merged 2021-12-01 fix(core): prevents findPackageLocation from being called from unactivated linkers
+      #2277 closed 2020-12-28 [Feature] Allow disabling plugin-compat while using node-modules linker.
+      #604 closed 2019-11-25 [Bug] Can't install dependencies in a project containing `node-sass`
+      #719 closed 2020-01-21 [Bug] Cannot install fsevents - Cannot apply hunk #1 
+  atomic+write   8 hit(s) (all listed)
+      #6615 open 2024-11-26 [Bug?]: Parallel execution of `yarn workspace $name version apply` is unstable
+      #3858 open 2021-12-10 PnP resolver failing to load packages in VS Code child process when using Jest
+      #5491 merged 2023-06-08 feat: cache npm metadata
+      #2688 merged 2021-04-05 feat(node-modules): Uses hardlinks to save space for node_modules installs
+      #2645 merged 2021-03-25 fix(core): use atomic writes for the global cache
+      #3465 merged 2021-09-20 fix(core): atomic cross-device cache
+      #2630 closed 2021-03-22 [Bug] Many errors thrown when installing packages using Yarn 2
+      #1399 merged 2020-05-24 ci(e2e): add e2e test for parcel
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #7194 open 2026-06-20 [Bug]: Windows - missing files at install on large packages
+      #5724 open 2023-09-11 [Bug?]: @typescript/lib-dom dependency from yarn 1 lock file not properly migrated
+      #7281 open 2026-09-25 [Bug?]: installs fail on latest version due to relative path in `got` dependency
+      #4610 open 2022-07-06 [Feature] Allow `changesetIgnoreOverrides` option for yarn workspaces list/foreach
+      #5998 open 2023-12-04 [Feature] Download and cache dependencies from yarn.lock lockfile
+      #5601 open 2023-07-23 [Bug?]: Yarn.lock in git submodule breaks `yarn run` in workspace
+      #3356 open 2021-08-27 [Feature] File protocol should not include gitignored / npmignored files
+      #6008 open 2023-12-08 [Bug?]: `yarn patch-commit` doesn't work when using custom `npmRegistryServer`
+      #596 open 2019-11-20 [Feature] Provide first steps recommendation on the first time running with berry
+      #5658 open 2023-08-12 [Feature] Provide fast way to check if yarn needs to be run (yarn check-install?)
+      #6549 open 2024-10-08 [Bug?]: Poor SCA behavior out of the box
+      #4529 open 2022-06-05 [Feature] Fetch dependencies from yarn.lock only
+      #1241 open 2020-04-23 [Feature] Support signed releases
+      #1223 open 2020-04-20 Individual lockfile per workspace
+      #6656 open 2025-01-16 [Bug?]: yarn@4.6.0 reformats package.json on every execute - which changes the file when there's expected formatting
+      #5890 open 2023-10-29 yarn install (v4) will fail the first time with packages from private registry (artifactory).
+      #6062 open 2024-01-05 Fix crash case
+      #7047 open 2026-02-07 [Bug]: Regression Yarn 4.3.0->Yarn 4.12.0 : OOM during resolution step — later fails with `RangeError: Invalid array length`
+      #1979 open 2020-10-14 [Feature] create, rename and move workspaces 
+      #6798 open 2025-05-15 [Bug]: Unable to parse patch resolutions
+  write+failure  23 hit(s) (all listed)
+      #7271 open 2026-09-06 Ignore git warnings when diffing patch folders
+      #7293 open 2026-09-29 fix(nm): avoid a race when concurrent installs create the store
+      #6733 open 2025-03-20 [Bug?]: Yarn Berry's internal shell component sometimes fails to flush output
+      #7194 open 2026-06-20 [Bug]: Windows - missing files at install on large packages
+      #7158 open 2026-05-28 [Bug?]: yarn npm login remove trailing slash
+      #3717 open 2021-11-09 [Feature] Read only support for VSCode ZipFS
+      #6006 open 2023-12-08 [Bug?]: "Libzip Error: Malloc failure" when installing certain packages
+      #1989 open 2020-10-16 [Bug] Dependencies with noisy prepare scripts fail to install
+      #2751 open 2021-04-14 [Feature] RFC: Package Variants
+      #4688 open 2022-07-29 [Feature] Able to forbid / block multiple instances of a package with peer dependencies
+      #1223 open 2020-04-20 Individual lockfile per workspace
+      #6750 merged 2025-04-02 feat(plugin-npm): add npm provenance support
+      #5748 closed 2023-09-20 Yarn requires yarn release .cjs file to be committed to git repo
+      #1276 closed 2020-04-30 [Feature] RFC: TypeScript Constraints
+      #3898 merged 2021-12-21 fix(nm): Better portal hoisting by giving priority to portal dependencies first
+      #3768 merged 2021-11-20 Added `wrapNetworkRequest` hook
+      #62 closed 2019-04-09 [Feature] `yarn workspaces foreach` features
+      #1443 closed 2020-06-05 [Bug] `yarn workspaces foreach exec` fails
+      #1819 merged 2020-09-08 [node_modules] Hoisting boundaries
+      #3459 merged 2021-09-18 feat(workspace-tools): add `--since` option
+  file+contents  79 hit(s) (all listed)
+      #7241 open 2026-08-03 [Bug?]: EISDIR when reading from a directory that has the same path as a previously existing zip file
+      #7128 open 2026-05-05 Patch: Stop mangling file when both pre- and post-patch file has no trailing newline
+      #7256 open 2026-08-12 Fix/pnp require cache extensions 7234
+      #6018 open 2023-12-13 [Bug?]: yarn installation with local file resolutions
+      #7204 open 2026-06-26 Fix unitest to pass on Win32
+      #6483 open 2024-09-04 Line numbers are buggy after line 99999 in the package file viewer
+      #7082 open 2026-03-27 [Feature] Exclude global gitignore from files/folders
+      #6664 open 2025-01-24 [Bug?]: `yarn patch` may generate a patch with extraneous files
+      #5518 open 2023-06-23 ZipFS workspace not reloading when file is regenerated
+      #5316 open 2023-03-10 [Bug?]: RFC - Version Plugin/Release Workflow Improvements
+      #6068 open 2024-01-08 [Bug?]: Yarn checksums are dependent on user-configurable compression ratio
+      #5872 open 2023-10-26 [Bug?]: .npmignore is not processed like gitignore; `**` doesn't match files at the root, order not respected
+      #5649 open 2023-08-09 [Feature] Output published package info in output
+      #3160 open 2021-07-22 [Bug?]: VSCode/PnP/TypeScript - Breakpoints not resolved in files that were imported via the package name
+      #6105 open 2024-01-25 [Bug?]: checksum is different from windows and unix for local packages
+      #7097 open 2026-04-10 Bug: PnP TypeScript compat patch causes tsserver to recursively watch an arbitrary directory
+      #705 open 2020-01-16 [Feature] pack/publish non-workspace folder
+      #1223 open 2020-04-20 Individual lockfile per workspace
+      #7059 closed 2026-03-07 feat(publish): add --tarball to publish
+      #5577 closed 2023-07-13 [Bug?]: yarn compiled scripts in my git repository
+
+== 51 terms run; 49 returned hits, 6 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

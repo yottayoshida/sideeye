@@ -1,0 +1,10 @@
+[world]
+state = "/s/gz"
+
+[define]
+operation = "libdeflate-gzip notes.txt"
+# The input is removed and the .gz is new: no path exists before and after, so the built-in
+# invariant has nothing to judge (nothing_could_fail, transcripts/explore-batch-7.txt); the checker
+# reads whether the text survives in either file.
+check     = "/s/gz-check.sh"
+cwd       = "/s/gz"

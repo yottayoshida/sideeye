@@ -142,28 +142,28 @@ review the way ADR 0039 rules for figures quoted from other records.
 ```
 outcome funnel -- every campaign
 
-284 encounters (one campaign meeting one target) over 30 campaigns, 24 of them
-recording every target they met; 222 distinct targets.
-204 rows are held to a report this repository committed; 80 name a written record only.
-976 candidates screened before the slates were fixed, over the 22 campaign(s) that
+313 encounters (one campaign meeting one target) over 31 campaigns, 25 of them
+recording every target they met; 251 distinct targets.
+226 rows are held to a report this repository committed; 87 name a written record only.
+1275 candidates screened before the slates were fixed, over the 23 campaign(s) that
 recorded one; the rest kept no such count.
 
-reach, over the 24 campaign(s) that recorded every target they met
-  attempted       275
-  explored        173
-  judged          164
-    PASS           48
-    FAIL          116
+reach, over the 25 campaign(s) that recorded every target they met
+  attempted       304
+  explored        195
+  judged          186
+    PASS           55
+    FAIL          131
 
 outcome            encounters   in full campaigns   distinct reports
-  novel                58              49             35
-  report_worthy        42              33             35
+  novel                60              51             35
+  report_worthy        44              35             35
   filed                39              30             35
   acknowledged          7               5              6
   fixed                 7               5              6
   revalidated           6               4              5
 
-why encounters stopped: awaiting 25, declined 4, discussing 2, known 21, no_content_lost 7, not_worth 55, wall 89, withdrawn 1
+why encounters stopped: awaiting 25, declined 4, discussing 2, known 21, no_content_lost 10, not_worth 65, wall 96, withdrawn 1
 upstream states last read between 2026-08-13 and 2026-10-05; spike/upstream-report-status.sh measures them now.
 ```
 

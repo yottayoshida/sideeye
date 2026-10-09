@@ -1,0 +1,12 @@
+ok   a target the funnel names comes back seen
+ok   a target only #618 names is still seen
+ok   another campaign's measured target still reads seen
+ok   an earlier campaign's own target reads seen from here
+ok   the previous campaign's own target (ast-grep) reads seen from here
+ok   the 2026-09-28 campaign's own target (kubectl) reads seen from here
+ok   the 2026-10-03 campaign's own target (mapshaper) reads seen from here
+ok   the 2026-10-05 campaign's own target (tenv) reads seen from here
+ok   the 2026-10-07 campaign's own target (roswell) reads seen from here
+note no own target named yet (set OWN once the slate is fixed)
+ok   an invented name comes back fresh
+fresh: selftest green

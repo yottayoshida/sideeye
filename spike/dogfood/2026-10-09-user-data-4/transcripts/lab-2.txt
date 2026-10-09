@@ -1,0 +1,15 @@
+## scw
+total 4
+-rw-r--r-- 1 root root 113 Oct  9 00:33 config.yaml
+== scw: exit 1; 45 strace lines
+22    openat(AT_FDCWD, "/s/aux/cache/scw/last-cli-checks", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0600) = 4
+default_region: nl-ams
+default_zone: nl-ams-1
+send_telemetry: false
+profiles:
+  prod:
+    default_region: fr-par
+total 12
+drwxr-xr-x 2 root root 4096 Oct  9 00:33 .
+drwxr-xr-x 3 root root 4096 Oct  9 00:33 ..
+-rw-r--r-- 1 root root  113 Oct  9 00:33 config.yaml

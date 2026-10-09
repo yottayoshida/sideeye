@@ -1,0 +1,8 @@
+fresh flameshot
+fresh qmk
+fresh qmk_cli
+fresh papirus-folders
+fresh flips
+fresh konfig
+fresh ionosctl
+fresh upctl

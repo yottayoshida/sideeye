@@ -1,0 +1,165 @@
+== novelty pre-scan: ebiggers/libdeflate
+== date: 2026-10-09T01:33:31Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          9 hit(s) (all listed)
+      #30 open 2017-06-26 filename and timestamps storing
+      #376 open 2024-06-26 Static builds and exported symbols
+      #238 closed 2022-10-04 Add option to choose which enable enhanced instruction set should be used
+      #180 closed 2022-04-21 [Question]  How to disable avx, avx2, avx512 and so on ?
+      #13 closed 2016-07-11 Rename adler32 to adler32_zlib
+      #29 closed 2017-06-26 ARM Neon CRC support
+      #7 closed 2016-02-02 Don't depend on undefined behavior
+      #35 closed 2018-11-21 libdeflate_gzip_compress fails for 32-bit windows builds
+      #33 closed 2018-06-02 Slow gzip decompression on corrupted data
+  corrupt        9 hit(s) (all listed)
+      #288 open 2023-01-09 Reject all DEFLATE streams that zlib rejects
+      #393 closed 2024-10-08 libdeflate_deflate_decompress return  error of 'LIBDEFLATE_BAD_DATA = 1'
+      #279 closed 2022-12-17 Indefinitely receiving Insufficient Space Error 
+      #157 closed 2022-01-14 OOM error on decompression with corrupted input file
+      #127 closed 2021-03-24 adding test file integrity option
+      #31 closed 2017-10-08 The generate gzip executable fails on some gzip files while "normal" gzip happily decompresses them.
+      #35 closed 2018-11-21 libdeflate_gzip_compress fails for 32-bit windows builds
+      #33 closed 2018-06-02 Slow gzip decompression on corrupted data
+      #44 closed 2019-05-21 Writes corrupt files when compressed data > 4GB
+  corruption     1 hit(s) (all listed)
+      #288 open 2023-01-09 Reject all DEFLATE streams that zlib rejects
+  truncated      3 hit(s) (all listed)
+      #420 closed 2025-02-26 libdeflate_deflate_decompress_ex actual_in_nbytes_ret off by 1
+      #44 closed 2019-05-21 Writes corrupt files when compressed data > 4GB
+      #120 closed 2021-02-24 Benchmark numbers against zlib
+  truncate       5 hit(s) (all listed)
+      #420 closed 2025-02-26 libdeflate_deflate_decompress_ex actual_in_nbytes_ret off by 1
+      #326 merged 2023-09-13 Don't use bzhi intrinsics on old MSVC versions
+      #11 closed 2016-05-28 64 bit MSVC warnings
+      #44 closed 2019-05-21 Writes corrupt files when compressed data > 4GB
+      #120 closed 2021-02-24 Benchmark numbers against zlib
+  empty          5 hit(s) (all listed)
+      #323 closed 2023-09-07 Windows Explorer cannot unpack some files generated with libdeflate (reward offered)
+      #255 merged 2022-11-24 Use _target_attribute instead of __attribute__((target(t)))
+      #69 closed 2020-07-20 Deflat Compressor Length 
+      #120 closed 2021-02-24 Benchmark numbers against zlib
+      #33 closed 2018-06-02 Slow gzip decompression on corrupted data
+  atomic         1 hit(s) (all listed)
+      #444 open 2026-02-10 ping/progress callbacks
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      1 hit(s) (all listed)
+      #391 closed 2024-10-05 Decompression data interrupt
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         2 hit(s) (all listed)
+      #451 closed 2026-04-30 Incorrect LIBDEFLATE_BAD_DATA because of _mm512_dpbusd_epi32 behaving incorrectly on some CPUs on a AMD EPYC 9384X 32-Core host.
+      #379 closed 2024-07-10 libdeflate_crc32 performance when buffer is 15 bytes or fewer
+  power          4 hit(s) (all listed)
+      #19 open 2016-10-24 Steaming; PGO
+      #448 merged 2026-03-16 Enable UNALIGNED_ACCESS_IS_FAST for all PowerPC variants
+      #362 closed 2024-03-25 Unaligned access on PowerPC: forgotten macros in `common_defs.h`
+      #300 closed 2023-02-04 Speed Benchmark: libdeflate vs BWTSATAN, BSC, 7zip, ZSTD, LZ4, LZSSE, BriefLZ, Satanichi
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           0 hit(s)
+  partial        4 hit(s) (all listed)
+      #338 closed 2024-02-14 crc32 is twice as fast in zlib-ng
+      #379 closed 2024-07-10 libdeflate_crc32 performance when buffer is 15 bytes or fewer
+      #69 closed 2020-07-20 Deflat Compressor Length 
+      #106 closed 2020-11-19 File decompressed correctly, but libdeflate returns a LIBDEFLATE_BAD_DATA status
+  incomplete     8 hit(s) (all listed)
+      #30 open 2017-06-26 filename and timestamps storing
+      #362 closed 2024-03-25 Unaligned access on PowerPC: forgotten macros in `common_defs.h`
+      #429 closed 2025-05-21 libdeflate being too strict
+      #325 closed 2023-09-11 Tests fail on Windows in Release mode with VS platform toolset v141
+      #323 closed 2023-09-07 Windows Explorer cannot unpack some files generated with libdeflate (reward offered)
+      #101 closed 2020-10-28 Add a CMakeLists.txt file
+      #169 closed 2022-02-24 Missing options for gzip wrappers
+      #53 closed 2019-08-24 test failure on ppc64el
+  dataloss       0 hit(s)
+  recover        2 hit(s) (all listed)
+      #30 open 2017-06-26 filename and timestamps storing
+      #209 closed 2022-06-27 run_test.sh log function works on macOS
+  recovery       1 hit(s) (all listed)
+      #288 open 2023-01-09 Reject all DEFLATE streams that zlib rejects
+  rollback       0 hit(s)
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        1 hit(s) (all listed)
+      #26 closed 2017-05-01 MinGW_w64 make errors with cr and libdeflate.lib
+  destroys       0 hit(s)
+  overwrite      1 hit(s) (all listed)
+      #71 closed 2020-08-13 Rename gzip application to deflate.
+  clobber        0 hit(s)
+  blank          1 hit(s) (all listed)
+      #257 closed 2022-11-25 Implement cpu_features for msvc
+  unreadable     0 hit(s)
+  garbage        1 hit(s) (all listed)
+      #357 closed 2024-03-18 analyzer warning regression: The left operand of '+' is a garbage value due to array index out of bounds
+  mangled        0 hit(s)
+  contents       10 hit(s) (all listed)
+      #354 closed 2024-03-12 arm_acle.h compiler errors when building for iOS with Xcode 15.3
+      #194 closed 2022-06-01 Building libdeflate on macOS with Apple Silicon
+      #193 closed 2022-06-01 Fix error: 'use of undeclared identifier NGROUPS_MAX' when compiling on macOS with Apple Silicon
+      #195 merged 2022-06-03 lib/arm/cpu_features: fix Apple build
+      #167 closed 2022-02-19 Makefile fails to set macOS install_name properly
+      #127 closed 2021-03-24 adding test file integrity option
+      #105 merged 2020-11-07 readme: Added table of contents
+      #5 closed 2016-01-31 Target attribute unsupported on lots of compilers
+      #23 closed 2017-04-11 compilation error - gcc does not see definitions from standard headers
+      #26 closed 2017-05-01 MinGW_w64 make errors with cr and libdeflate.lib
+  in-place       18 hit(s) (all listed)
+      #239 open 2022-10-08 Optional Dictionary based compression?
+      #364 open 2024-03-28 Implement brotli's version of lz_extend.
+      #410 closed 2025-02-10 Unable to build on i386 Mac OS 10.4
+      #313 merged 2023-05-20 Add support for per-(de)compressor malloc/free functions
+      #304 merged 2023-03-23 lib/cpu_features: fix intrinsic support detection with latest clang
+      #238 closed 2022-10-04 Add option to choose which enable enhanced instruction set should be used
+      #178 merged 2022-04-15 Use stdcall on 32-bit Windows only with DLL builds
+      #152 merged 2022-01-02 buildsys: android apk do not support soversion
+      #57 closed 2019-10-25 User control over minimum match length
+      #130 merged 2021-05-05 fix ICC compilation
+      #127 closed 2021-03-24 adding test file integrity option
+      #29 closed 2017-06-26 ARM Neon CRC support
+      #72 closed 2020-08-14 Make it (cross-)compile on Windows
+      #45 closed 2019-06-30 AArch64: feature detection on FreeBSD, faster native CRC32 instructions
+      #21 closed 2016-11-04 Compile failures with clang-3.7 and icc 16
+      #28 closed 2017-06-19 Greater max_codeword_len?
+      #64 closed 2020-04-28 ZLIB bad data
+      #86 closed 2020-10-10 level 0 fake compression not supported
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      0 hit(s)
+  data+loss      3 hit(s) (all listed)
+      #219 closed 2022-08-22 port arch-specific code to msvc
+      #101 closed 2020-10-28 Add a CMakeLists.txt file
+      #11 closed 2016-05-28 64 bit MSVC warnings
+  partial+write  0 hit(s)
+  crash+safe     1 hit(s) (all listed)
+      #7 closed 2016-02-02 Don't depend on undefined behavior
+  atomic+write   0 hit(s)
+  lock+file      1 hit(s) (all listed)
+      #40 closed 2019-01-09 Support for parallel processing
+  write+failure  1 hit(s) (all listed)
+      #127 closed 2021-03-24 adding test file integrity option
+  file+contents  8 hit(s) (all listed)
+      #354 closed 2024-03-12 arm_acle.h compiler errors when building for iOS with Xcode 15.3
+      #194 closed 2022-06-01 Building libdeflate on macOS with Apple Silicon
+      #193 closed 2022-06-01 Fix error: 'use of undeclared identifier NGROUPS_MAX' when compiling on macOS with Apple Silicon
+      #195 merged 2022-06-03 lib/arm/cpu_features: fix Apple build
+      #127 closed 2021-03-24 adding test file integrity option
+      #5 closed 2016-01-31 Target attribute unsupported on lots of compilers
+      #23 closed 2017-04-11 compilation error - gcc does not see definitions from standard headers
+      #26 closed 2017-05-01 MinGW_w64 make errors with cr and libdeflate.lib
+
+== 51 terms run; 25 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

@@ -1,0 +1,137 @@
+fresh rclone-skip
+SEEN  oc  funnel:4
+SEEN  oc  target-classes:5
+SEEN  oc  unknown-rate-exclusions:25
+SEEN  oc  blind-hunt3-taint:12
+SEEN  oc  authoring-cost-selection:2
+SEEN  oc  b2-exclusions:11
+SEEN  oc  b2-targets:28
+SEEN  oc  b2-candidates:17
+SEEN  oc  cohort4-rejected:18
+SEEN  oc  spike/dogfood/2026-09-05-userview/SELECTION.md:3
+SEEN  oc  spike/dogfood/2026-09-06-userview-2/SELECTION.md:4
+SEEN  oc  spike/dogfood/2026-09-11-past-walls/SELECTION.md:4
+SEEN  oc  spike/dogfood/2026-09-11-read-only-542/SELECTION.md:11
+SEEN  oc  spike/dogfood/2026-09-16-cargo-v16/SELECTION.md:4
+SEEN  oc  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:23
+SEEN  oc  spike/dogfood/2026-09-16-outside-git/SELECTION.md:9
+SEEN  oc  spike/dogfood/2026-09-16-threads-take-turns/SELECTION.md:10
+SEEN  oc  spike/dogfood/2026-09-16-userview-3/SELECTION.md:4
+SEEN  oc  spike/dogfood/2026-09-21-release-path/SELECTION.md:4
+SEEN  oc  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:21
+SEEN  oc  spike/dogfood/2026-09-22-shipped-v160/SELECTION.md:33
+SEEN  oc  spike/dogfood/2026-09-27-supervised-static/SELECTION.md:3
+SEEN  oc  spike/dogfood/2026-09-28-shipped-v170/SELECTION.md:4
+SEEN  oc  spike/dogfood/2026-10-02-gate-cleared-twelve/SELECTION.md:42
+SEEN  oc  spike/dogfood/2026-10-02-unjudged-on-v170/SELECTION.md:32
+SEEN  oc  spike/dogfood/2026-10-03-user-data/SELECTION.md:18
+SEEN  oc  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:71
+SEEN  oc  spike/dogfood/2026-10-07-user-data-3/SELECTION.md:36
+SEEN  oc  spike/authoring-cost/pool-atomic.txt:2
+SEEN  oc  spike/authoring-cost/pool-behavioural.txt:1
+SEEN  oc  spike/authoring-cost/pool-journaled.txt:2
+SEEN  oc  spike/authoring-cost/pool-scratch.txt:9
+SEEN  odo  funnel:106
+SEEN  odo  target-classes:30
+SEEN  odo  unknown-rate-exclusions:20
+SEEN  odo  blind-hunt3-taint:40
+SEEN  odo  b2-exclusions:87
+SEEN  odo  b2-candidates:249
+SEEN  odo  spike/dogfood/2026-09-05-userview/SELECTION.md:26
+SEEN  odo  spike/dogfood/2026-09-06-userview-2/SELECTION.md:25
+SEEN  odo  spike/dogfood/2026-09-16-userview-3/SELECTION.md:32
+SEEN  odo  spike/dogfood/2026-09-21-release-path/SELECTION.md:56
+SEEN  odo  spike/dogfood/2026-09-22-shipped-v160/SELECTION.md:93
+SEEN  odo  spike/dogfood/2026-09-28-shipped-v170/SELECTION.md:176
+SEEN  kn  funnel:10
+SEEN  kn  target-classes:3
+SEEN  kn  unknown-rate-exclusions:10
+SEEN  kn  blind-hunt3-taint:51
+SEEN  kn  b2-exclusions:25
+SEEN  kn  cohort4-rejected:34
+SEEN  kn  spike/dogfood/2026-09-05-userview/SELECTION.md:18
+SEEN  kn  spike/dogfood/2026-09-06-userview-2/SELECTION.md:19
+SEEN  kn  spike/dogfood/2026-09-11-past-walls/SELECTION.md:47
+SEEN  kn  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:68
+SEEN  kn  spike/dogfood/2026-09-16-outside-git/SELECTION.md:37
+SEEN  kn  spike/dogfood/2026-09-16-userview-3/SELECTION.md:26
+SEEN  kn  spike/dogfood/2026-09-21-release-path/SELECTION.md:24
+SEEN  kn  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:22
+SEEN  kn  spike/dogfood/2026-09-22-shipped-v160/SELECTION.md:133
+SEEN  kn  spike/dogfood/2026-10-02-gate-cleared-twelve/SELECTION.md:35
+SEEN  kn  spike/dogfood/2026-10-02-unjudged-on-v170/SELECTION.md:28
+SEEN  kn  spike/dogfood/2026-10-07-user-data-3/SELECTION.md:180
+fresh tkn
+fresh kubebuilder
+fresh operator-sdk
+fresh crossplane
+fresh kubevela
+fresh velad
+fresh kubefirst
+SEEN  eksctl  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:76
+fresh gcloud-skip
+fresh azd
+fresh devbox
+fresh flox
+fresh earthly
+fresh dagger
+SEEN  act  funnel:6
+SEEN  act  target-classes:3
+SEEN  act  blind-hunt3-taint:29
+SEEN  act  b2-exclusions:14
+SEEN  act  b2-candidates:91
+SEEN  act  cohort4-rejected:24
+SEEN  act  spike/dogfood/2026-09-05-userview/SELECTION.md:38
+SEEN  act  spike/dogfood/2026-09-06-userview-2/SELECTION.md:82
+SEEN  act  spike/dogfood/2026-09-11-past-walls/SELECTION.md:4
+SEEN  act  spike/dogfood/2026-09-16-cargo-v16/SELECTION.md:5
+SEEN  act  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:15
+SEEN  act  spike/dogfood/2026-09-16-outside-git/SELECTION.md:16
+SEEN  act  spike/dogfood/2026-09-16-threads-take-turns/SELECTION.md:1
+SEEN  act  spike/dogfood/2026-09-16-userview-3/SELECTION.md:20
+SEEN  act  spike/dogfood/2026-09-21-release-path/SELECTION.md:71
+SEEN  act  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:37
+SEEN  act  spike/dogfood/2026-09-22-shipped-v160/SELECTION.md:31
+SEEN  act  spike/dogfood/2026-09-27-supervised-static/SELECTION.md:41
+SEEN  act  spike/dogfood/2026-09-28-shipped-v170/SELECTION.md:34
+SEEN  act  spike/dogfood/2026-10-03-user-data/SELECTION.md:153
+SEEN  act  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:122
+SEEN  act  spike/dogfood/2026-10-07-user-data-3/SELECTION.md:116
+SEEN  act  spike/authoring-cost/pool-atomic.txt:1
+SEEN  act  spike/authoring-cost/pool-behavioural.txt:3
+SEEN  act  spike/authoring-cost/pool-journaled.txt:1
+fresh garden
+fresh tilt
+SEEN  skaffold  spike/dogfood/2026-10-03-user-data/SELECTION.md:59
+SEEN  skaffold  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:258
+fresh okteto
+fresh telepresence
+fresh mirrord
+SEEN  ko  funnel:193
+SEEN  ko  target-classes:84
+SEEN  ko  authoring-cost-selection:5
+SEEN  ko  b2-exclusions:34
+SEEN  ko  cohort4-rejected:29
+SEEN  ko  spike/dogfood/2026-09-06-userview-2/SELECTION.md:55
+SEEN  ko  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:58
+SEEN  ko  spike/dogfood/2026-09-16-userview-3/SELECTION.md:58
+SEEN  ko  spike/dogfood/2026-09-21-release-path/SELECTION.md:6
+SEEN  ko  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:126
+SEEN  ko  spike/dogfood/2026-09-22-shipped-v160/SELECTION.md:29
+SEEN  ko  spike/dogfood/2026-09-28-shipped-v170/SELECTION.md:141
+SEEN  ko  spike/dogfood/2026-10-03-user-data/SELECTION.md:81
+SEEN  ko  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:89
+SEEN  ko  spike/dogfood/2026-10-07-user-data-3/SELECTION.md:98
+SEEN  ko  spike/authoring-cost/pool-scratch.txt:13
+fresh helmfile
+fresh kapp
+fresh ytt
+fresh vendir
+fresh carvel
+SEEN  cue  b2-candidates:47
+SEEN  cue  spike/dogfood/2026-10-07-user-data-3/SELECTION.md:243
+fresh timoni
+fresh kpt
+fresh kubectl-neat
+fresh k3sup
+fresh arkade

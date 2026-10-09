@@ -1,0 +1,44 @@
+# Scout 3 (fresh Opus subagent, read-only; 2026-10-09). Field: personal data. Its report, as handed back.
+
+scout 3（個人データ）の報告: 147 件を見て 25 件を載せ、122 件を落とした。
+
+【要判断】
+1. fresh.sh が部分一致で 4 件を誤って SEEN にした。utt は neomutt、meli は timeline、f2 は otf2bdf（b2-targets 6 行目）、MPD は funnel 304 行の TMPDIR に当たった。MPD と f2 は fresh と判断して表に載せた。utt と meli は星不足で落ちるので影響はない。
+2. 書き込みが子プロセスになる候補が 2 件ある。profile-sync-daemon は rsync と mv、ffmpeg-normalize は ffmpeg が書く。10-07 の選定は「書き込みが全部子」を rule 10 で外していた。今回の規則 1-7 には無いので載せた。
+3. fixture の用意が重い候補がある。signalbackup-tools は本物の Signal バックアップと passphrase が要る。mvt・imessage-exporter・WhatsApp-Chat-Exporter は端末のバックアップか DB が要る。
+4. 指示違反が 1 件ある。照合結果を `~/.cctmp/scout3-b2.txt` に一度書いた。中身は fresh.sh の出力だけ。消していないが、7 日たてば sweep が拾う。
+
+名前 | repo | 星 | 最終push | 書き換えるコマンド | 書き換わるもの | 言語 | 入れ方 | 懸念
+- mvt | mvt-project/mvt | 15260 | 10-07 | `mvt-ios decrypt-backup -p PW -d out/ bk/` | 復号した iOS バックアップの木 | Py | pip | 暗号化バックアップの fixture。起動時に更新確認の通信あり
+- RetroArch | libretro/RetroArch | 14253 | 10-08 | `retroarch --scan=/roms` | playlists/*.lpl（JSON） | C | apt | GUI（rule 4 注記）。--scan は libretrodb 付きビルドだけで、照合 DB が要る
+- arkenfox prefsCleaner | arkenfox/user.js | 12877 | 09-09 | profile で `bash prefsCleaner.sh -s -d` | prefs.js | Shell | スクリプト | prefs.js を mv で控えへ移してから読み直して書く（L100・L113）。mv は子。-d で自己更新の通信を切る
+- CopyQ | hluk/CopyQ | 12386 | 10-08 | `copyq --start-server` の後に `copyq add x` / `copyq remove 0` | copyq_tab_*.dat | C++ | apt（AppImage は x86_64 だけ） | GUI（rule 4 注記）。書くのは別プロセスのサーバー。Qt は offscreen で動かす
+- chdman | mamedev/mame | 10581 | 10-09 | `chdman createcd -i g.cue -o g.chd` | .chd | C++ | apt mame-tools（確度 80%） | 圧縮スレッド。新しいファイルを書く
+- kcc-c2e | ciromattia/kcc | 5790 | 10-05 | `kcc-c2e -p KV -f EPUB -o out/ c.cbz` | EPUB/CBZ | Py | ソースと apt 依存。aarch64 AppImage は GUI | GUI が主（rule 4 注記）。multiprocessing と 7z の子
+- imessage-exporter | ReagentX/imessage-exporter | 5651 | 09-20 | `imessage-exporter -a iOS -p bk/ -f txt -o out/` | 書き出しの木と添付 | Rust | cargo（linux 資産なし） | 入力の SQLite は読むだけ
+- MCA Selector | Querz/mcaselector | 4884 | 09-24 | `java -jar mcaselector-2.9.jar --mode delete --world w --query "InhabitedTime < 300"` | region/*.mca をその場で | Java | jar と aarch64 deb | GUI が主で CLI モードあり（rule 4 注記）。JVM のスレッド
+- organize | tfeldmann/organize | 3160 | 10-06 | `organize run cfg.yaml`（EXIF 日付で振り分け） | 移動・改名された木 | Py | pip organize-tool | scout 4 と重なるかも
+- zk | zk-org/zk | 2833 | 10-08 | `zk new --title x --print-path` | ノートの .md と .zk/notebook.db | Go | arm64 tar | 索引は SQLite（主はノート）
+- MPD | MusicPlayerDaemon/MPD | 2789 | 10-08 | `mpd --no-daemon c.conf` の後に `mpc update` / `mpc save l` | db_file（平文か gzip）・state・*.m3u | C++ | apt | デーモン（rule 3 注記）。クライアント経由で操作する
+- abe | nelenkov/android-backup-extractor | 2597 | 10-08 | `java -jar abe.jar pack b.tar b.ab`、unpack も | .ab / .tar | Java | jar | fixture は tar から自作できる
+- steam-rom-manager | SteamGridDB/steam-rom-manager | 2576 | 10-08 | `steam-rom-manager add` | shortcuts.vdf ほか userdata | TS | arm64 deb | Electron（rule 4 注記、表示が要るかは未確認）。アートの取得は通信
+- f2 | ayoisaiah/f2 | 2453 | 10-04 | `f2 -f IMG_ -r trip_ -x` | 改名と取り消し用 JSON | Go | arm64 deb | 汎用の改名道具で EXIF 変数あり。scout 4 と重なるかも
+- sheets | maaslalani/sheets | 2317 | 07-18 | `sheets b.csv B7=10 B8=20` | CSV をその場で | Go | arm64 tar | 書き方は未確認
+- zim | zim-desktop-wiki/zim-desktop-wiki | 2207 | 10-07 | `zim --convert-notebook NB --format markdown` | 全ページの .txt/.md | Py | apt | GUI が主（rule 4 注記）。help に「EXPERIMENTAL MAKE A BACKUP FIRST」。--import もある
+- BoilR | PhilipK/BoilR | 1897 | 10-08 | `boilr --no-ui` | shortcuts.vdf | Rust | 資産は linux 1 本で arm64 の明記なし、ソースビルド | GUI 版で --no-ui を使う（rule 4 注記）。Steam の設定木が要る
+- ffmpeg-normalize | slhck/ffmpeg-normalize | 1538 | 10-05 | `ffmpeg-normalize a.flac -c:a flac -o o.flac` | 出力の音声 | Py | pip | 書くのは子の ffmpeg
+- signalbackup-tools | bepaald/signalbackup-tools | 1412 | 10-01 | `… in.backup PW --croptothreads 1 --output n.backup --opassphrase PW` | 新しい暗号化バックアップか HTML の木 | C++ | ソースビルド | fixture は要判断 3
+- cookcli | cooklang/cookcli | 1402 | 10-08 | `cook pantry add dairy milk --quantity "2%l"` | pantry.conf（TOML）をその場で | Rust | aarch64 musl | レシピ本体を書き換えるコマンドは無い
+- WhatsApp-Chat-Exporter | KnugiHK/WhatsApp-Chat-Exporter | 1258 | 08-12 | `wtsexporter -a -d msgstore.db -o out/` | HTML/JSON の木 | Py | pip | 入力の SQLite は読むだけ
+- evernote2md | wormi4ok/evernote2md | 1112 | 10-08 | `evernote2md n.enex out/` | .md と添付 | Go | arm64 tar | .enex は XML なので fixture は作れる
+- profile-sync-daemon | graysky2/profile-sync-daemon | 1064 | 07-03 | `profile-sync-daemon sync` / `unsync` | ブラウザのプロファイル木（tmpfs へ移して symlink） | Shell | make install | 書き込みは子。XDG_RUNTIME_DIR が要る。中断から戻す処理を持つ
+- memo | mattn/memo | 1028 | 05-29 | `memo new "t"`（config で editor = "true"） | memodir の .md | Go | arm64 tar | 題を渡さないと stdin で聞いて EOF で止まる。エディタは子
+- Chunker | HiveGamesOSS/Chunker | 1020 | 10-05 | `chunker-cli -i w -f <Java 版> -o out` | Java 版の region 木 | Java | arm64 zip | Bedrock 向けの出力は LevelDB なので rule 5 に当たる。Java 向けだけ使える
+
+落とした 122 件
+- SEEN（57 件）: papis, pubs, bibtex-tidy, betterbib, jabref, comictagger, calibre, ludusavi, legendary, czkawka, phockup, elodie, osxphotos, tageditor, m4b-tool, rsgain, todoman, todo.txt, taskbook, calcure, klog, bartib, timetrace, dokuwiki, visidata, sc-im, OCRmyPDF, obsidian-export, neomutt, mblaze, imap-backup, offlineimap, rss2email, newsboat, gpsbabel, darktable, rawtherapee, ultralist, mail-deduplicate, cmus, csvq, quodlibet(operon), mutagen, ferium, bottles, go-ethereum, agave, foundry, biber, snapraid, monero, ECT, image_optim, imgp, rimage, csvkit, pandoc
+- 星不足（25 件）: kepubify 894, igir 938, butler 993, ALEAPP 974, meli 898（issues off）, palworld-save-tools 869, signal-export 793, alot 749, nom 749, castero 684, Region-Fixer 622, tone 516, uesave 482, reckon 437, cbconvert 353, utt 351, afew 342, GPTH Neo 337（元のリポは 404）, ledger-autosync 322, aerc 302（issues off）, mpc 246, hledger-flow 219, notmuch 213（issues off）, getmail6 168, cardano-cli 72
+- issues off（2 件）: picard, dolphin（dolphin-tool）
+- push が古いか archive（14 件）: sortphotos, clipmenu, pet, yarle, kb, imagededup, anystyle, mozjpeg, steamtinkerlaunch, Overviewer, nap, tsv-utils, AAXtoMP3（archive）, taskell（archive）
+- rule 3-6（16 件）: 主な保存先が DB のもの（dooit, Libation, gpodder, termusic は SQLite、mu は Xapian、cliphist は bbolt）。git で戻るもの（nb は毎回自動で commit、packwiz・Backlog.md はリポの中に置く）。その場の書き換えが無い汎用 CSV 道具（xan, csvtk）。書き換える CLI が無いもの（gpxpy）、CLI を確かめられなかったもの（Amulet）。サーバーで、ブラウザから編集するもの（silverbullet）。初回に MC の client jar を取りに行くもの（BlueMap、確度 70%）。本体の鍵ファイルが要るもの（nsz）
+- 規則は満たす見込みだが、25 件の枠で外したもの（8 件、深掘りしていない）: cheat, monolith, libjxl, libheif, xlsx2csv, slack-export-viewer, iLEAPP, KindleUnpack

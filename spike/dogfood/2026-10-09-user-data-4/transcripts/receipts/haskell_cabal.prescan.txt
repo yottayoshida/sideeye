@@ -1,0 +1,847 @@
+== novelty pre-scan: haskell/cabal
+== date: 2026-10-09T01:43:55Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #12399 open 2026-09-30 fix(Makefile): fix parser-tests targets and include cabal-install suite
+      #12186 open 2026-07-30 cabal-3.18.1.0 with older lib:Cabal custom setup package crashes HLS
+      #11395 open 2026-01-07 `cabal` crashes in HLS CI while copying files
+      #11927 open 2026-06-02 cabal-3.17 crashes during configure process with GHC 10
+      #12287 open 2026-08-27 feat(CI): Add tests for cabalSpecLatest
+      #6752 open 2020-05-03 backpack crashes with an unclear error message when trying to work with digest
+      #12286 open 2026-08-26 Somewhere between 3.16 and 3.18 parseConditionConfVar got a new argument. I cannot find a changelog entry for it.
+      #10380 open 2024-09-20 Using ~ in `remote-repo-cache` crashes `cabal update` and isn't recognised by `cabal build`
+      #7300 open 2021-02-24 config section in ~/.cabal/config for the init workflow crashes when specifying newer cabal versions 
+      #9252 open 2023-09-12 "componentAvailableTargetStatus: impossible;" on 3.10.1.0
+      #4286 open 2017-01-31 Subsections in custom-setup
+      #10795 open 2025-02-17 Enabling tests via cabal config triggers internal error when building them
+      #8017 open 2022-02-26 Refactor clean and sdist to use NixStyleFlags
+      #5362 open 2018-06-05 "cabal clean" fails on Windows wth build-type Configure in 2.2
+      #5776 open 2018-12-07 Default number of jobs is unsafe (cabal-install)
+      #3751 open 2016-09-01 cabal ignores the 'cabal-version' field when solving for setup dependencies
+      #6153 open 2019-07-22 Backpack creashes on default type families
+      #890 open 2012-05-24 cabal no longer supports package version tags
+      #4042 open 2016-10-27 Make it possible to directly link a haskell library with an external static C library(.a).
+      #5850 open 2019-01-18 cabal cannot find cabal.project or *.cabal unless `packages` is defined
+  corrupt        83 hit(s) (all listed)
+      #4920 open 2017-11-30 Corrupt file header when dealing with Unicode normalization issues
+      #2783 open 2015-08-20 cabal-install should probably do a quick sanity check on downloaded tarballs
+      #5460 open 2018-07-27 IntegrationTests2 is stateful
+      #8409 open 2022-08-20 Useless and harmful advice to reconfigure given when saved package config cannot be read
+      #4119 open 2016-11-18 Be more robust to store corruption
+      #5518 open 2018-08-12 "truncated tar archive" on cabal update
+      #5795 open 2018-12-15 Unicode in package name causes build failure
+      #2691 open 2015-07-01 `cabal update` doesn't validate new package db
+      #1787 open 2014-04-18 cabal should lint ~/.cabal/config for compat with selected GHC
+      #3577 open 2016-07-21 Tracking ticket for Galois `new-build` requirements
+      #3126 open 2016-02-09 File monitor unit test failures on Windows
+      #3403 open 2016-05-05 cabal update weirdness behind multilevel proxy
+      #8087 open 2022-04-07 cabal-2.4.0.0 Could not deserialize <repo>/root.json
+      #12169 merged 2026-07-28 Avoid re-validating when decoding from Binary or Read
+      #7456 open 2021-06-22 Stack smashing when building some packages
+      #6508 open 2020-01-23 cabal v2-install does not re-register a package unregistered by ghc-pkg
+      #6391 open 2019-11-30 Reinstall of package breaks things
+      #6659 open 2020-04-06 cabal-3.2.0.0 fails to build/install several packages - assert fails
+      #11636 merged 2026-03-18 Add ghc-9.14 language extensions
+      #11349 closed 2025-12-15 `cabal check` complains about a missing `Setup.hs` script when using `build-type: Hooks`
+  corruption     37 hit(s) (all listed)
+      #4119 open 2016-11-18 Be more robust to store corruption
+      #5776 open 2018-12-07 Default number of jobs is unsafe (cabal-install)
+      #7502 open 2021-08-02 Per-Version Index Cache in ~/.cabal directory
+      #5582 open 2018-09-19 RFC: Remote cache support
+      #12169 merged 2026-07-28 Avoid re-validating when decoding from Binary or Read
+      #7456 open 2021-06-22 Stack smashing when building some packages
+      #11299 closed 2025-11-18 Replace `runner.os` with `matrix.os` in cache keys
+      #11077 merged 2025-07-17 Cabal library: allow setting the logging handle
+      #11296 merged 2025-11-17 Move `3.16` to `ubuntu-latest`
+      #5314 closed 2018-05-10 Include a prof subdirectory in dist-dir layout
+      #10092 merged 2024-06-09 rm-old-base: remove ifdefs for pre-4.13 bases
+      #9545 merged 2023-12-19 Fix wording of haddock-project help and curate list of commands
+      #9381 merged 2023-10-30 Use the newer haskell-actions organisation
+      #8097 closed 2022-04-15 Add manual workflow for flushing CI cache
+      #8840 merged 2023-03-12 CI: add GHC 9.6.1
+      #8892 closed 2023-04-03 Cabal-syntax lexer: out-of-bound array access with the JS backend
+      #8356 closed 2022-08-10 CI: cabal-testsuite tests fail with "double directory"
+      #8670 merged 2023-01-13 Fix #8400 by marking output of `cabal list-bin`
+      #8342 merged 2022-08-04 Bump package process dependency version to 1.6.15.0 and move from Cabal to cabal-install
+      #8504 closed 2022-09-30 Update/upgrade/switch away from our current doctest tool in CI
+  truncated      57 hit(s) (all listed)
+      #5518 open 2018-08-12 "truncated tar archive" on cabal update
+      #12065 open 2026-06-30 Refactoring in preparation of #11411
+      #2648 open 2015-06-07 Assertion failed in `invariant` in `Distribution.Simple.PackageIndex` from `mkPackageIndex`
+      #10368 open 2024-09-17 Reexporting from private library components discards documentation of all but one component
+      #12370 open 2026-09-21 Bump the github-actions group across 1 directory with 2 updates
+      #2759 open 2015-08-12 Solver chooses mono-traversable-0.4.0 when attempting to build stack-0.1.3.0
+      #12209 closed 2026-08-03 Bump haskell-actions/setup from 2 to 2.11.0 in the github-actions group
+      #12228 merged 2026-08-10 Bump packaging from 26.2 to 26.3 in /doc in the github-actions group
+      #12281 merged 2026-08-24 Bump the github-actions group in /doc with 2 updates
+      #12131 merged 2026-07-20 Bump the github-actions group across 1 directory with 4 updates
+      #8930 open 2023-04-30 `cabal` invokes `pkg-config` on every installed package, so `cabal run` or `cabal install` takes 20 minutes on my system
+      #12064 closed 2026-06-29 Bump the github-actions group across 1 directory with 3 updates
+      #11885 merged 2026-05-26 Bump the github-actions group across 1 directory with 3 updates
+      #11784 closed 2026-05-05 Bump packaging from 25.0 to 26.2 in /doc
+      #12002 closed 2026-06-22 Bump actions/checkout from 6 to 7 in the github-actions group
+      #11783 closed 2026-05-05 Bump sphinx from 8.2.3 to 9.1.0 in /doc
+      #11832 closed 2026-05-15 Bump the github-actions group in /doc with 7 updates
+      #11747 merged 2026-04-13 Bump softprops/action-gh-release from 2 to 3 in the github-actions group
+      #11811 closed 2026-05-11 Bump urllib3 from 2.6.3 to 2.7.0 in /doc in the uv group across 1 directory
+      #11836 closed 2026-05-16 Bump the github-actions group across 1 directory with 2 updates
+  truncate       76 hit(s) (all listed)
+      #5518 open 2018-08-12 "truncated tar archive" on cabal update
+      #12065 open 2026-06-30 Refactoring in preparation of #11411
+      #10935 open 2025-04-22 Add a `cabal vendor` command
+      #2648 open 2015-06-07 Assertion failed in `invariant` in `Distribution.Simple.PackageIndex` from `mkPackageIndex`
+      #10368 open 2024-09-17 Reexporting from private library components discards documentation of all but one component
+      #12370 open 2026-09-21 Bump the github-actions group across 1 directory with 2 updates
+      #9422 open 2023-11-08 Add separate cache for getPkgConfigDb
+      #8939 open 2023-05-06 Improving Cabal Solver Output for Better Readability and Usability
+      #2759 open 2015-08-12 Solver chooses mono-traversable-0.4.0 when attempting to build stack-0.1.3.0
+      #10900 open 2025-04-02 New field on library: `test-only: Bool`
+      #12209 closed 2026-08-03 Bump haskell-actions/setup from 2 to 2.11.0 in the github-actions group
+      #12228 merged 2026-08-10 Bump packaging from 26.2 to 26.3 in /doc in the github-actions group
+      #12281 merged 2026-08-24 Bump the github-actions group in /doc with 2 updates
+      #12131 merged 2026-07-20 Bump the github-actions group across 1 directory with 4 updates
+      #12064 closed 2026-06-29 Bump the github-actions group across 1 directory with 3 updates
+      #11062 closed 2025-07-10 Solver: shorten the skipping message if needed
+      #11885 merged 2026-05-26 Bump the github-actions group across 1 directory with 3 updates
+      #11784 closed 2026-05-05 Bump packaging from 25.0 to 26.2 in /doc
+      #12002 closed 2026-06-22 Bump actions/checkout from 6 to 7 in the github-actions group
+      #11783 closed 2026-05-05 Bump sphinx from 8.2.3 to 9.1.0 in /doc
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8450 open 2022-09-03 `addCmd` prints an empty string for unknown commands
+      #3143 open 2016-02-13 Cabal sometimes doesn't delete empty temporary directories
+      #5935 open 2019-03-13 Empty extra fields in config file breaks cabal
+      #6189 open 2019-08-11 Parsing: Negate the condition when `if` branch is empty.
+      #6202 open 2019-08-21 Remove default `optional-packages`, i.e .make it empty.
+      #7240 open 2021-01-10 Windows v2-build Error: unsatisfied constraints (The directory is not empty.)
+      #12398 open 2026-09-30 fix(Cabal): Do not pass `-optJSP` to GHC < 9.10.2
+      #12403 open 2026-09-30 Add links to each known program in docs
+      #12374 open 2026-09-22 Bump for ghc-10
+      #12358 open 2026-09-15 Build GHCi libraries with `ghc --merge-objs`
+      #11518 open 2026-02-24 Cabal V3.0 changes how "freeform" fields are parsed
+      #8832 open 2023-03-06 Clean but avoiding cloning the source repository packages again?
+      #2209 open 2014-11-10 Add feature to generate cabal_macros.h
+      #9168 open 2023-08-10 Unhelpful error when using cabal.project.local without cabal.project
+      #11255 open 2025-10-15 Non-deterministic removeDirectoryRecursive failures during package registration generation
+      #12340 open 2026-09-09 Cabal: tell configure scripts which compiler is in use
+      #9533 open 2023-12-17 Split dual purpose Cabal-7136 error
+      #3126 open 2016-02-09 File monitor unit test failures on Windows
+      #8679 open 2023-01-15 confusing error when missing `packages:`
+      #10813 open 2025-03-04 `cabal clean --help` still thinks that `dist` is the default `--builddir`
+  atomic         62 hit(s) (all listed)
+      #12407 open 2026-10-03 Fix cabal issue 7557: don’t run benchmarks in parallel or with the build
+      #11224 open 2025-09-21 `extra-libraries-static` of dependencies is ignored when linking fully statically
+      #5889 open 2019-02-13 During new-install regHooks doesn't know the temporary directory files are in.
+      #12350 merged 2026-09-11 FieldGrammar: less String, more Text
+      #5518 open 2018-08-12 "truncated tar archive" on cabal update
+      #8207 open 2022-06-10 cabal init --overwrite: openFile: app/Main.hs: does not exist (No such file or directory)
+      #5582 open 2018-09-19 RFC: Remote cache support
+      #4380 open 2017-03-07 Building with cabal produces linker errors
+      #4626 open 2017-07-25 Wacky version bounds reported from `cabal info`
+      #12356 open 2026-09-14 Cross-compilation support - take two
+      #5574 open 2018-09-08 Error: Could not read index. Did you call 'checkForUpdates'?
+      #11927 open 2026-06-02 cabal-3.17 crashes during configure process with GHC 10
+      #3737 open 2016-08-30 Manage a global package environment for easy GHCi access
+      #10964 closed 2025-05-17 Wip/write file atomic
+      #6271 open 2019-10-01 cabal-testsuite failures on Windows due to the max path length
+      #8930 open 2023-04-30 `cabal` invokes `pkg-config` on every installed package, so `cabal run` or `cabal install` takes 20 minutes on my system
+      #7693 open 2021-09-29 Install test executables with cabal install when "--enable-tests" present
+      #10938 closed 2025-04-23 writeFileAtomic retry strategy could be improved with threadDelay
+      #10191 closed 2024-07-09 Figure out why `MAX_PATH` is still a problem in Cabal
+      #10366 merged 2024-09-16 Create temp files in temp directory
+  atomically     18 hit(s) (all listed)
+      #12407 open 2026-10-03 Fix cabal issue 7557: don’t run benchmarks in parallel or with the build
+      #5889 open 2019-02-13 During new-install regHooks doesn't know the temporary directory files are in.
+      #8207 open 2022-06-10 cabal init --overwrite: openFile: app/Main.hs: does not exist (No such file or directory)
+      #5518 open 2018-08-12 "truncated tar archive" on cabal update
+      #10366 merged 2024-09-16 Create temp files in temp directory
+      #10191 closed 2024-07-09 Figure out why `MAX_PATH` is still a problem in Cabal
+      #4978 closed 2017-12-26 Fix path redundancy new-build output folders.
+      #9784 closed 2024-03-07 `cabal install Agda` fails in `Setup.hs` with `executable-dynamic: True` in config file (Linux)
+      #9654 closed 2024-01-24 Weird store path dir
+      #441 closed 2012-05-24 cabal-install needs new http download component
+      #447 closed 2012-05-24 file permissions of installed files on windows
+      #1062 closed 2012-10-09 cabal install buries compiler warnings in logs, making them less obvious
+      #2606 closed 2015-05-23 Check retrieved index length against content-length header
+      #3741 closed 2016-08-30 Locking in the store for concurrent builds.
+      #5458 closed 2018-07-26 Race condition with custom store directory and new-build on windows?
+      #331 closed 2012-05-24 use of HTTP needs overhauling
+      #262 closed 2012-05-24 Not having an up-to-date package list causes indexing out of bounds error
+      #5561 merged 2018-09-03 Clarify build-tool-depends a bit more
+  interrupted    14 hit(s) (all listed)
+      #657 open 2012-05-24 Confusion situation when linking ./dist/setup/setup is interrupted
+      #9584 open 2024-01-02 Add languages extension groups to grammar
+      #3179 open 2016-02-21 [nix-local-build] Recompilation avoidance ABA problem
+      #11767 merged 2026-04-27 Keep a running InstalledPackageIndex to skip expensive per-package ghc-pkg calls
+      #11472 merged 2026-02-03 cabal-install: Add newline at end of 'cabal target --help' output
+      #10210 closed 2024-07-18 Deploying Cabal on RISC-V Architecture
+      #8820 closed 2023-02-28 Ctrl-C kills cabal repl on windows
+      #6322 closed 2019-10-31 cabal-install doesn't respect ^C
+      #7929 merged 2022-01-25 Fix concurrency/exception bugs in asyncFetchPackages
+      #4635 closed 2017-07-27 build failure for cabal 2.1 with cabal 2.0
+      #1560 closed 2013-10-25 cabal sandbox + cabal repl + haskeline doesn't handle Ctrl-C
+      #1810 closed 2014-04-23 `cabal test` freezes but `cabal test --show-details=streaming` works
+      #2224 closed 2014-11-15 CABAL_SANDBOX_CONFIG error handling
+      #3773 merged 2016-09-03 stubMain now catches exceptions
+  interrupt      46 hit(s) (all listed)
+      #9913 open 2024-04-20 Interrupting `cabal test` may leave test executable running
+      #657 open 2012-05-24 Confusion situation when linking ./dist/setup/setup is interrupted
+      #3179 open 2016-02-21 [nix-local-build] Recompilation avoidance ABA problem
+      #9584 open 2024-01-02 Add languages extension groups to grammar
+      #9240 open 2023-09-08 Cabal REPL stack overflows when working around lack of support for multiple home units
+      #2398 open 2015-01-30 Setup.hs must be compiled with -threaded
+      #5518 open 2018-08-12 "truncated tar archive" on cabal update
+      #6391 open 2019-11-30 Reinstall of package breaks things
+      #11767 merged 2026-04-27 Keep a running InstalledPackageIndex to skip expensive per-package ghc-pkg calls
+      #11472 merged 2026-02-03 cabal-install: Add newline at end of 'cabal target --help' output
+      #10933 merged 2025-04-21 Duplicate project import as a warning only
+      #8208 closed 2022-06-11 Interrupting cabal-3.8.0.0.20220526 and master with ctrl+c makes it hang on windows
+      #10353 merged 2024-09-14 add Mergify config for high priority PRs
+      #9562 closed 2023-12-25 Show the import path when reporting solver rejections from project constraints?
+      #8820 closed 2023-02-28 Ctrl-C kills cabal repl on windows
+      #9886 merged 2024-04-11 CI: stop validating GHC 7
+      #10210 closed 2024-07-18 Deploying Cabal on RISC-V Architecture
+      #7929 merged 2022-01-25 Fix concurrency/exception bugs in asyncFetchPackages
+      #6322 closed 2019-10-31 cabal-install doesn't respect ^C
+      #8295 closed 2022-07-17 Revert "Merge pull request #7995 from robx/cleanup-processes"
+  sigkill        5 hit(s) (all listed)
+      #2813 open 2015-09-08 Print a user-friendly error message when ghc is killed
+      #11927 open 2026-06-02 cabal-3.17 crashes during configure process with GHC 10
+      #4960 closed 2017-12-19 ~/.cabal/packages/hackage.haskell.org/hackage-security-lock: createDirectory: already exists (File exists)
+      #8208 closed 2022-06-11 Interrupting cabal-3.8.0.0.20220526 and master with ctrl+c makes it hang on windows
+      #7309 closed 2021-02-28 cabal 3.4.0.0 is broken on Windows 7 (use_process_jobs vs. hsc2hs.exe)
+  sigint         14 hit(s) (all listed)
+      #2398 open 2015-01-30 Setup.hs must be compiled with -threaded
+      #11927 open 2026-06-02 cabal-3.17 crashes during configure process with GHC 10
+      #7757 closed 2021-10-16 Terminate child processes on sigINT/sigTERM
+      #8078 closed 2022-04-02 cabal-install  3.6 on OSX doesn't handle ctrl-c (interrupts) correctly
+      #7914 closed 2022-01-20 Cabal run leaves children running when killed
+      #971 closed 2012-07-09 After interrupting a build with Ctrl-C (SIGINT), cabal install just goes on to the next package
+      #3899 closed 2016-09-26 cabal new-repl does not handle SIGINT correctly
+      #5201 closed 2018-03-11 Cabal ~OOM (5G+ RSS) (likely duplicate of #4589)
+      #1810 closed 2014-04-23 `cabal test` freezes but `cabal test --show-details=streaming` works
+      #1345 closed 2013-05-23 cabal-install head ignores sigint (ctr+c) but responds to sigsusp (ctrl+z), sometimes (don't have a reproducable test case yet)
+      #2252 closed 2014-12-03 cabal install cabal-install fails
+      #1609 closed 2013-12-09 Ctrl-C in `cabal repl` shouldn't exit the repl (just like GHCi)
+      #1610 closed 2013-12-09 Ctrl-C in `cabal repl` shouldn't exit the repl (just like GHCi)
+      #7190 merged 2020-12-06 Cabal: Improve cmdline help readability by breaking long lines
+  ctrl-c         48 hit(s) (all listed)
+      #9913 open 2024-04-20 Interrupting `cabal test` may leave test executable running
+      #5574 open 2018-09-08 Error: Could not read index. Did you call 'checkForUpdates'?
+      #9540 open 2023-12-19 Use a local secure repositories in the test-suite.
+      #5518 open 2018-08-12 "truncated tar archive" on cabal update
+      #9240 open 2023-09-08 Cabal REPL stack overflows when working around lack of support for multiple home units
+      #3179 open 2016-02-21 [nix-local-build] Recompilation avoidance ABA problem
+      #976 open 2012-07-13 Parallelise cabal build over modules
+      #9987 closed 2024-05-08 Add support for logging handles in the Cabal library
+      #10980 merged 2025-06-08 Add revision information to plan.json
+      #8208 closed 2022-06-11 Interrupting cabal-3.8.0.0.20220526 and master with ctrl+c makes it hang on windows
+      #8820 closed 2023-02-28 Ctrl-C kills cabal repl on windows
+      #9723 merged 2024-02-16 How to use Cabal in Windows
+      #8968 closed 2023-05-22 cabal update tries to create folder under /home
+      #7929 merged 2022-01-25 Fix concurrency/exception bugs in asyncFetchPackages
+      #6322 closed 2019-10-31 cabal-install doesn't respect ^C
+      #8342 merged 2022-08-04 Bump package process dependency version to 1.6.15.0 and move from Cabal to cabal-install
+      #8312 closed 2022-07-22 Remove enableProcessJobs entirely
+      #8295 closed 2022-07-17 Revert "Merge pull request #7995 from robx/cleanup-processes"
+      #8420 merged 2022-08-22 Support GHC 9.4
+      #8321 merged 2022-07-25 Temporarily revert #7995 and #7921 due to #8208
+  power          85 hit(s) (all listed)
+      #12405 open 2026-10-02 `cabal-install` tarballs come with `plan.json`
+      #12269 open 2026-08-24 On windows cabal-install can't `cabal install` cabal-install.
+      #8187 open 2022-06-01 Package fails to build only as source-repository-package dependency, only in certain contexts
+      #10968 open 2025-05-20 `cabal haddock-project` does not generate an index file for all the transitive deps
+      #6353 open 2019-11-14 Add support for setting custom project file in cabal script-metadata 
+      #7300 open 2021-02-24 config section in ~/.cabal/config for the init workflow crashes when specifying newer cabal versions 
+      #8475 open 2022-09-16 [RFC] Improve 'Could not resolve dependencies' error messages
+      #2395 open 2015-01-28 Proposal for a Cabal plugin API (inversion of control)
+      #9436 open 2023-11-12 Exact printer
+      #10803 open 2025-02-24 Readme as Description
+      #7883 open 2021-12-28 `cabal test` doesn't always solve for tests (unless `--enable-tests` or `tests: True` is given)
+      #5696 open 2018-11-18 Beginner friendly cabal-install CLI
+      #12020 open 2026-06-25 Use AI to craft more readable error and warning messages
+      #8725 open 2023-02-02 Consider reverting default usage of `--enable-documentation` in cabal haddock
+      #7916 open 2022-01-20 API `Distribution.Types.VersionInterval` dropped `intersectVersionIntervals` etc. in 3.6
+      #9917 open 2024-04-22 Does cabal-3.10 impose `setup.Cabal < 3.12`?
+      #9240 open 2023-09-08 Cabal REPL stack overflows when working around lack of support for multiple home units
+      #10367 open 2024-09-17 Light reorganisation of the README
+      #5661 open 2018-11-04 RFC: `cabal init` by default pins the ghc version via `with-compiler`
+      #8998 open 2023-06-03 CPP guards for very old Cabal versions in the tests: what do we do?
+  outage         18 hit(s) (all listed)
+      #11491 merged 2026-02-15 Swap transformCaretLower and transformCaretUpper
+      #8674 closed 2023-01-14 [META] Regarding the release CI runners: GitHub or the Haskell GitLab?
+      #8657 merged 2023-01-07  cabal check: Warn if changelogs are omitted from extra-doc-files
+      #9858 closed 2024-03-31 CI validate-old-ghcs broken after haskell-actions/setup upgraded to node20
+      #8854 merged 2023-03-15 add the extension ListTuplePuns (GHC proposal 475)
+      #9565 merged 2023-12-26 Use package groups
+      #9234 merged 2023-09-05 gitlab-ci/brew.sh/curl: fail with more noise
+      #9409 merged 2023-11-06 Only move code to Simple/GHC/Build*
+      #9145 merged 2023-07-24 PD check: do not treat library names as package names (backport #9132)
+      #8726 merged 2023-02-02 Add support for loading multiple components into one repl session
+      #8115 merged 2022-04-27 Make `type` field optional for tests and benchmarks
+      #7413 merged 2021-05-31 Fix #6835 (instantiating a Hackage indefinite package with an inplace package doesn't work)
+      #7397 merged 2021-05-17 Add regression test for #5782, which requires extending test harness to v2-install
+      #7295 merged 2021-02-22 Add 'preferred-versions' support for LocalIndexRepo 
+      #1362 closed 2013-06-06 An 'add-source' package in sandbox always added as constraint
+      #5053 merged 2018-01-18 Rename `all-packages` to `package *`
+      #6388 merged 2019-11-28 Use hackage-security-0.6
+      #4014 merged 2016-10-21 Add InstallPlan invariant assertion checking, revealing cyclic dep problem
+  ENOSPC         0 hit(s)
+  disk           95 hit(s) (all listed)
+      #2707 open 2015-07-06 Only store compressed index, don't store 01-index.tar
+      #9840 open 2024-03-25 Re-design the ProgramDb abstraction to avoid accidentally dropping unconfigured programs
+      #4671 open 2017-08-06 Setting temporary directory
+      #5329 open 2018-05-17 cabal new-build state detection/write ordering issues 
+      #648 open 2012-05-24 for every install there should be an uninstall
+      #4739 open 2017-09-04 Filename case on macOS
+      #3250 open 2016-03-30 ProgramDb should be transparently lazy, or not lazy at all
+      #12084 merged 2026-07-04 [Fix #11850] Build dependencies of build tool on disk too
+      #11411 open 2026-01-12 Build tool not rerun when build tool version changes
+      #1257 open 2013-03-25 Add support for subcommands to `Distribution.Simple.Command`
+      #1529 open 2013-10-03 Add option to limit number of concurrent calls to linker when building with -j
+      #8416 open 2022-08-22 `PackageTests/NewBuild/CmdRun/Terminate` brittle, may fail on CI
+      #8826 open 2023-03-02 extra-bundled-libraries problem: cannot find existing library
+      #6999 open 2020-07-30 Environment files get written to $TMP when using cabal scripts
+      #12248 merged 2026-08-19 Capture help output for docs
+      #6096 open 2019-06-20 Rework data-file handling to be file-embed-like?
+      #12289 merged 2026-08-27 Allow minor Cabal version bumps without recompiling
+      #7690 open 2021-09-28 Weird problem: cabal-3.6.0.0 fails to build shared executables with `Assertion failed`
+      #11788 open 2026-05-05 Group installed multilib packages
+      #6507 open 2020-01-23 `cabal init` incorrectly writes non-ASCII file names in `library:exposed-modules`
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9329 open 2023-10-13 CPP macros suitable for partial evaluation
+      #7221 open 2021-01-01 `cabal v2-install`ed executables should be resilient against (partial) deletion of `.cabal/store`
+      #11221 open 2025-09-19 -dynload is a misfeature
+      #5258 open 2018-04-12 Named and nameless types
+      #11252 open 2025-10-10 Retain comments in field parser
+      #4519 open 2017-05-16 Document new verbosity modifiers
+      #5426 open 2018-07-11 new-update should deal with missing .cabal files
+      #9284 open 2023-09-23 Lack of Onboarding Documentation
+      #9163 open 2023-08-07 `hasLowerBound anyVersion`
+      #10272 open 2024-08-22 Adopt cabal-add?
+      #10495 open 2024-10-30 `extra-source-files` glob behavior is very slow
+      #7010 open 2020-08-11 Per-component settings in cabal.project and separation of concerns
+      #7471 open 2021-07-01 Resolve project, package and component from anywhere.
+      #2222 open 2014-11-14 Hackage changes render cabal.config settings inconsistent and result in configure failure
+      #9623 open 2024-01-18 Is the use of doctests in validate.sh up to date?
+      #5325 open 2018-05-15 Only choose buildable components for build-depends and build-tool-depends dependencies.
+      #3728 open 2016-08-29 Work with GHC_PACKAGE_PATH
+      #1575 open 2013-11-11 Handle apparent package dependency cycles due to test suites / benchmarks
+      #11172 open 2025-08-20 Project in-place builds mask issues with `install-includes`
+      #6309 open 2019-10-25 `new-build` dependency resolution performance problems with custom builds
+  incomplete     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9842 open 2024-03-25 Section on using secure repositories is incomplete
+      #5529 open 2018-08-17 RFC: Scheme for detecting incomplete package registration
+      #6431 open 2019-12-14 Rafactor TargetSelector, it's full of incomplete-uni-patterns
+      #12348 open 2026-09-11 Bump cabal-testsuite Cabal version to 3.18.1.0
+      #2012 open 2014-07-23 cabal repl fails to compile hsc2hs preprocessed files
+      #9741 open 2024-02-25 Bundle Cabal and Cabal-syntax source with cabal-install?
+      #619 open 2012-05-24 Package build error due to unicode
+      #9284 open 2023-09-23 Lack of Onboarding Documentation
+      #6343 open 2019-11-13 cabal.project ghc-options are not in plan.json
+      #3313 open 2016-04-11 `cabal sdist` concatenates `main-is`
+      #8007 open 2022-02-22 Template Haskell and system C++ libraries
+      #5424 open 2018-07-10 Which of constraints/preferences/allow-newer apply to setup-depends?
+      #9793 open 2024-03-09 Field Syntax Reference bugs
+      #9186 open 2023-08-18 Sections "Field Syntax Reference" and "Package Description" are out of sync and inconsistent
+      #10161 open 2024-06-29 PVP breakage: `Cabal-(syntax-)?3.12.1.0`
+      #8998 open 2023-06-03 CPP guards for very old Cabal versions in the tests: what do we do?
+      #10379 open 2024-09-20 Regression in 3.12: package system-filepath (with custom Setup) cannot be installed with GHC 8.0
+      #9110 open 2023-07-11 RFC: Applying HLint's
+      #2821 open 2015-09-14 Support for adding flag constraints in Cabal files
+      #11734 merged 2026-04-11 Remove -Wno-incomplete-uni-patterns
+  dataloss       0 hit(s)
+  recover        76 hit(s) (all listed)
+      #12319 open 2026-09-05 Formatter poc
+      #5242 open 2018-03-30 cabal 2.2 user config migration drops some fields
+      #4987 open 2018-01-01 cabal update fails: 01-index.tar: setModificationTime:setFileTimes: does not exist
+      #12340 open 2026-09-09 Cabal: tell configure scripts which compiler is in use
+      #3834 open 2016-09-12 Ability to surgically remove some packages from Nix global store
+      #648 open 2012-05-24 for every install there should be an uninstall
+      #3333 open 2016-04-13 [nix-local-build] Garbage collecting the store
+      #7221 open 2021-01-01 `cabal v2-install`ed executables should be resilient against (partial) deletion of `.cabal/store`
+      #12121 open 2026-07-16 Turn cabal-install into a build graph orchestrator
+      #7682 open 2021-09-23 Add `--cabal-dir` option to `cabal user-config init`
+      #9540 open 2023-12-19 Use a local secure repositories in the test-suite.
+      #5518 open 2018-08-12 "truncated tar archive" on cabal update
+      #2648 open 2015-06-07 Assertion failed in `invariant` in `Distribution.Simple.PackageIndex` from `mkPackageIndex`
+      #5681 open 2018-11-12 Cached dist-newstyle breaks ci (reproduced in appveyor) for non-master branches
+      #9101 open 2023-07-09 VersionRange abstract, role of VersionRangeF?
+      #4329 open 2017-02-15 die with verbosity
+      #4230 open 2017-01-12 calibrateMtimeChangeDelay takes 25s to execute on Mac OS X with HFS+ system
+      #5169 open 2018-02-25 Cannot find generated header files when building `unix-time` with Cabal 2.2
+      #7916 open 2022-01-20 API `Distribution.Types.VersionInterval` dropped `intersectVersionIntervals` etc. in 3.6
+      #3310 open 2016-04-10 topHandler drops useful exception info
+  recovery       9 hit(s) (all listed)
+      #12340 open 2026-09-09 Cabal: tell configure scripts which compiler is in use
+      #12145 open 2026-07-22 Relocatable build tree
+      #11747 merged 2026-04-13 Bump softprops/action-gh-release from 2 to 3 in the github-actions group
+      #6621 closed 2020-03-29 WIP/RFC: Parse .cabal files to a source code representation
+      #8662 merged 2023-01-09 Support for alternative GHC backends: extra-compilation-artifacts directory installation
+      #7972 merged 2022-02-12 Better recovery from a few index/tar errors
+      #2653 closed 2015-06-10 `ar` permission errors on OS X 10.11 `El Capitan` with GHC 7.8.4
+      #219 closed 2012-05-24 Cabal install should upgrade in the correct order.
+      #479 closed 2012-05-24 cabal-install's bootstrap.sh has no recovery strategy in case of errors
+  rollback       9 hit(s) (all listed)
+      #4200 open 2016-12-31 cabal updatelog
+      #6706 open 2020-04-13 Windows self-upgrade, does it work?
+      #11242 merged 2025-10-03 indicate which of the joined tests failed
+      #8076 closed 2022-03-31 `cabal build` error, don't warn and fallback to older state.
+      #8523 merged 2022-10-11 Export CompatFilePath and CompatLicenseFile
+      #8162 merged 2022-05-24 haddock-project command
+      #3332 closed 2016-04-13 [nix-local-build] new-install interface for installing executables
+      #2502 closed 2015-03-28 data-default-instances-old-locale build fails on Windows with GHC 7.10.1 and Cabal 1.22.2.0
+      #2394 merged 2015-01-28 rollback API changes about --enable-profiling
+  resume         27 hit(s) (all listed)
+      #10367 open 2024-09-17 Light reorganisation of the README
+      #8696 open 2023-01-24 Extend the InstalledPackageInfo record with 2 fields for artifacts.
+      #11224 open 2025-09-21 `extra-libraries-static` of dependencies is ignored when linking fully statically
+      #9016 open 2023-06-12 Move --allow-{newer,older} back to ./Setup.hs
+      #7240 open 2021-01-10 Windows v2-build Error: unsatisfied constraints (The directory is not empty.)
+      #9669 open 2024-01-29 Special treatment of pre-installed packages by the solver
+      #420 closed 2012-05-24 how to access temporary build-files/logs?
+      #11767 merged 2026-04-27 Keep a running InstalledPackageIndex to skip expensive per-package ghc-pkg calls
+      #11929 merged 2026-06-03 Running cabal doctest with ghc-9.12
+      #10193 closed 2024-07-11 Timeline for next Cabal release (support for profiled dynamic way)
+      #10352 closed 2024-09-14 [meta] Separate queue for high priority PRs?
+      #9177 merged 2023-08-16 Haddock recompilation avoidance
+      #10113 closed 2024-06-14 Use `Directory.canonicalizePath` to resolve `--with-compiler`
+      #10210 closed 2024-07-18 Deploying Cabal on RISC-V Architecture
+      #8854 merged 2023-03-15 add the extension ListTuplePuns (GHC proposal 475)
+      #7297 closed 2021-02-23 local options do not work with install on local packages (was: Run okay with profiling enabled, but installed exe has NO profiling enabled)
+      #9241 merged 2023-09-09 Allow bytestring-0.12
+      #8000 merged 2022-02-21 Post remove ci templates
+      #8045 merged 2022-03-14 Merge workflows
+      #7403 closed 2021-05-21 `cabal run/list-bin` does not default to exe component for package targets
+  half-written   20 hit(s) (all listed)
+      #12340 open 2026-09-09 Cabal: tell configure scripts which compiler is in use
+      #11792 open 2026-05-06 `runghc Setup.hs configure` fails with "Unsupported cabal format version", while the version should be supported
+      #6530 open 2020-02-07  Error parsing if/else block in test-suite stanza of cabal file
+      #7290 open 2021-02-21 Globbing support for mixins and rexported-modules
+      #9016 open 2023-06-12 Move --allow-{newer,older} back to ./Setup.hs
+      #7544 open 2021-08-14 Meta: Exact-printer Mega-issue
+      #976 open 2012-07-13 Parallelise cabal build over modules
+      #7548 open 2021-08-15 Migrate from the .cabal format to a widely supported format
+      #9901 closed 2024-04-17 project-cabal/pkgs/cabal.config: withBinaryFile: does not exist (No such file or directory)
+      #6481 open 2020-01-15 Separate `cabal install --lib` into own command (cabal env)
+      #9177 merged 2023-08-16 Haddock recompilation avoidance
+      #9292 closed 2023-09-29 Design a 'Hooks' build type to replace  'Custom' 
+      #6478 closed 2020-01-11 How to correctly install a locally-built library in Cabal 3?
+      #7952 merged 2022-02-04 Avoid templating GitHub Actions workflow
+      #7466 closed 2021-06-29 Cabal takes 3 minutes to resolve dependencies
+      #4542 closed 2017-05-27 Add config flag to control generation of .ghc.environment files
+      #1502 closed 2013-09-11 UI for freezing dependencies
+      #3846 merged 2016-09-16 Revive GHC 7.4 support and revise the GHC compatibility window for the Cabal library
+      #6137 merged 2019-07-07 Issue 5977
+      #3513 merged 2016-06-30 Count conflicts to speed up solver
+  wipe           60 hit(s) (all listed)
+      #9293 open 2023-09-29 Additional flag settings are ignored if the original ones are in a conditional block
+      #8855 open 2023-03-15 Consider using XDG directory structure for cabal in CI
+      #9136 open 2023-07-18 Local no-index repositories cache leads to bad UX
+      #9974 open 2024-05-05 cabal says "does not match server, will redownload: file length mismatch" but does not redownload
+      #7690 open 2021-09-28 Weird problem: cabal-3.6.0.0 fails to build shared executables with `Assertion failed`
+      #6060 open 2019-05-27 After removing some directories in store cabal calls error without proper description.
+      #9316 open 2023-10-07 ghc option "-ddump-splices" is cached and ignored in subsequent calls to "cabal build"
+      #8727 open 2023-02-02 Thank you
+      #6096 open 2019-06-20 Rework data-file handling to be file-embed-like?
+      #8235 open 2022-06-20 source-repository package git clone: fatal: '--detach' cannot be used with '-b/-B/--orphan'
+      #4987 open 2018-01-01 cabal update fails: 01-index.tar: setModificationTime:setFileTimes: does not exist
+      #3333 open 2016-04-13 [nix-local-build] Garbage collecting the store
+      #6659 open 2020-04-06 cabal-3.2.0.0 fails to build/install several packages - assert fails
+      #8335 open 2022-08-02 cabal install from a url doesn't work for libraries
+      #5818 open 2018-12-30 mysterious unwanted user goal being added to my new-install targets
+      #8455 open 2022-09-05 Cabal 3.8 expects `pkg-config --libs --static` to always work.
+      #6508 open 2020-01-23 cabal v2-install does not re-register a package unregistered by ghc-pkg
+      #12114 merged 2026-07-14 Lock store creation against concurrent processes
+      #976 open 2012-07-13 Parallelise cabal build over modules
+      #7456 open 2021-06-22 Stack smashing when building some packages
+  wipes          3 hit(s) (all listed)
+      #9678 closed 2024-01-31 Assertion failure with --package-db flag
+      #7857 closed 2021-12-06 Feature request: granular v2-clean 
+      #2939 closed 2015-11-30 Fix the regression of #1360: Impossible to delete a non-existent source
+  erase          20 hit(s) (all listed)
+      #12295 open 2026-08-28 Release checklist for `3.18.2.0` (minor release)
+      #10747 open 2025-01-13 Better exception throwing machinery
+      #12149 merged 2026-07-23 Use usageAlternatives with v2-clean
+      #7890 open 2022-01-01 RFC: Move GHC environment files into `dist-newstyle` and add `cabal shell`
+      #11630 merged 2026-03-17 Drop support for anything below GHC 8.0.0, base 4.9.0.0, Cabal 1.24.0.0
+      #10573 merged 2024-11-21 `cabal-validate`: Better output verbosity defaults 
+      #10554 merged 2024-11-18 Additional version bound checks
+      #9117 merged 2023-07-12 Fix issue/PR templates
+      #8427 merged 2022-08-24 Reimplement `cabal check`
+      #9953 merged 2024-04-29 State supported GHC versions in release notes
+      #9151 closed 2023-07-26 cabal init logs at loglevel "Log"?
+      #9007 merged 2023-06-07 Generate cabal-testsuite modules at configure time
+      #8296 merged 2022-07-18 print out dependency build failure during cabal build / repl
+      #7964 merged 2022-02-08 Add a doc section on cabal list-bin.
+      #7152 merged 2020-11-05 Clarify cabal.project documentation
+      #487 closed 2012-05-24 cabal-install cannot build docs that involve Paths_
+      #1519 merged 2013-09-24 Top-level command for Freezing dependencies
+      #997 merged 2012-08-10 'cabal build' implies 'cabal configure'; 'cabal test' and 'cabal bench' imply 'cabal build'
+      #6970 merged 2020-07-16 Move doc/ to the top-level of the repository
+      #6401 merged 2019-12-03 Backport batch 2 into 3.0
+  erasing        3 hit(s) (all listed)
+      #7890 open 2022-01-01 RFC: Move GHC environment files into `dist-newstyle` and add `cabal shell`
+      #11630 merged 2026-03-17 Drop support for anything below GHC 8.0.0, base 4.9.0.0, Cabal 1.24.0.0
+      #7964 merged 2022-02-08 Add a doc section on cabal list-bin.
+  erased         7 hit(s) (all listed)
+      #10747 open 2025-01-13 Better exception throwing machinery
+      #12149 merged 2026-07-23 Use usageAlternatives with v2-clean
+      #11630 merged 2026-03-17 Drop support for anything below GHC 8.0.0, base 4.9.0.0, Cabal 1.24.0.0
+      #10573 merged 2024-11-21 `cabal-validate`: Better output verbosity defaults 
+      #487 closed 2012-05-24 cabal-install cannot build docs that involve Paths_
+      #1519 merged 2013-09-24 Top-level command for Freezing dependencies
+      #997 merged 2012-08-10 'cabal build' implies 'cabal configure'; 'cabal test' and 'cabal bench' imply 'cabal build'
+  destroy        37 hit(s) (all listed)
+      #10098 open 2024-06-10 [RFC] Revive cabal sandboxes (UX)
+      #8411 open 2022-08-20 Why does `cabal configure` bother to create a `cabal.project.local` that only contains `ignore-project: False`?
+      #8409 open 2022-08-20 Useless and harmful advice to reconfigure given when saved package config cannot be read
+      #9101 open 2023-07-09 VersionRange abstract, role of VersionRangeF?
+      #6507 open 2020-01-23 `cabal init` incorrectly writes non-ASCII file names in `library:exposed-modules`
+      #7221 open 2021-01-01 `cabal v2-install`ed executables should be resilient against (partial) deletion of `.cabal/store`
+      #7833 open 2021-11-23 Adding support for revision pinning in dependency version
+      #5271 open 2018-04-18 Supporting builddir in cabal.project and global config
+      #7916 open 2022-01-20 API `Distribution.Types.VersionInterval` dropped `intersectVersionIntervals` etc. in 3.6
+      #10900 open 2025-04-02 New field on library: `test-only: Bool`
+      #3061 open 2016-01-18 Proposal for `provides`-mechanism
+      #5105 open 2018-02-04 Is it possible to force consistent versions for a library and an associated build tool with new-build?
+      #8930 open 2023-04-30 `cabal` invokes `pkg-config` on every installed package, so `cabal run` or `cabal install` takes 20 minutes on my system
+      #10254 merged 2024-08-12 Shallow and concurrent git clones
+      #6481 open 2020-01-15 Separate `cabal install --lib` into own command (cabal env)
+      #7548 open 2021-08-15 Migrate from the .cabal format to a widely supported format
+      #6621 closed 2020-03-29 WIP/RFC: Parse .cabal files to a source code representation
+      #8483 closed 2022-09-18 RFC: don't allow cabal install --lib to update environment files
+      #10794 closed 2025-02-17 rejecting: QuickCheck-2.15.0.1/installed-e799c2af (package is broken, missing dependency rndm-1.2.1.3-0bdccfc1
+      #9132 merged 2023-07-16 PD check: do not treat library names as package names
+  destroys       2 hit(s) (all listed)
+      #10098 open 2024-06-10 [RFC] Revive cabal sandboxes (UX)
+      #7916 open 2022-01-20 API `Distribution.Types.VersionInterval` dropped `intersectVersionIntervals` etc. in 3.6
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10396 open 2024-09-28 `--overwrite-policy` enhancements
+      #10180 open 2024-07-06 Normalizing output doesn't work properly in Windows
+      #8408 open 2022-08-20 `cabal configure` shouldn't overwrite a `cabal.project.local` it hasn't written so
+      #8207 open 2022-06-10 cabal init --overwrite: openFile: app/Main.hs: does not exist (No such file or directory)
+      #9817 open 2024-03-17 Install from hackage interprets target as port
+      #12269 open 2026-08-24 On windows cabal-install can't `cabal install` cabal-install.
+      #9501 open 2023-12-07 How to suppress "unsupported 'ghc' version detected" in test outputs?
+      #12120 open 2026-07-16 Introduce build profiles
+      #8401 open 2022-08-19 `cabal-tests --with-cabal` should have sensible default
+      #10687 open 2024-12-29 Setting `--libsubdir` without `$libname` leads to failure with auto-generated modules (Paths*)
+      #9577 open 2023-12-31 Generate haddock for multiple (sub)libraries at once
+      #6706 open 2020-04-13 Windows self-upgrade, does it work?
+      #6919 open 2020-06-18 cabal install run immediately after cabal build unnecessarily rebuilds the project
+      #8154 open 2022-05-22 If we don't need a package, then we don't use cabal.project.local
+      #6883 open 2020-06-07 cabal install should write sdist of local packages to tmp directory
+      #11236 open 2025-10-02 The directory layout of dist-newstyle is utterly broken
+      #3104 open 2016-02-02 [nix-local-build] Post-merge tasks
+      #8787 open 2023-02-20 cabal init will relocate and rename project structure
+      #9003 open 2023-06-05 cabal-testsuite/PackageTests/Get/OnlyDescription/cabal.test.hs isn't idempotent
+      #11927 open 2026-06-02 cabal-3.17 crashes during configure process with GHC 10
+  clobber        35 hit(s) (all listed)
+      #3343 open 2016-04-15 Inplace build profiles, to avoid clobbering old build products when you change some settings
+      #8787 open 2023-02-20 cabal init will relocate and rename project structure
+      #914 open 2012-05-24 symlink-bindir does not play nice with program-suffix
+      #3597 open 2016-07-22 LocalBuildInfo fields are poorly named or designed
+      #3545 open 2016-07-13 Moving location where library build files are generated
+      #7987 open 2022-02-17 haddock test related failures with GHC 9.0.2 and 9.2.{1,2,3}
+      #8568 open 2022-11-02 Semantics of index-state in cabal.project
+      #1009 closed 2012-08-21 cabal install thinks dangling symlink ==  already exists
+      #8565 merged 2022-10-31 Cabal: Expose flag assignment to configure script
+      #8607 merged 2022-11-19 no global packages auto written to env files
+      #2533 closed 2015-04-14 cabal install clobbers symlinked world file
+      #7541 closed 2021-08-13 Support equivalent of stack `--no-load` with `cabal repl`
+      #7466 closed 2021-06-29 Cabal takes 3 minutes to resolve dependencies
+      #4133 closed 2016-11-26 cabal exec PATH regression on Windows
+      #3854 closed 2016-09-17 Do something more reasonable when 00-index.tar is non-security but you try to cabal update with security enabled
+      #3738 closed 2016-08-30 multiple cabal.project files with different names
+      #4155 closed 2016-12-05 Reconsider how to specify dependencies on internal libraries
+      #5628 closed 2018-10-20 Allow `v2-install` to copy executables instead of symlinking
+      #2080 closed 2014-08-31 Implement 'cabal upload --haddock'
+      #2836 closed 2015-09-24 Per-component InstallDirs
+  blank          78 hit(s) (all listed)
+      #9757 open 2024-02-29 Leading blank spaces are confusing
+      #11297 open 2025-11-17 foreign-library does not apply pkgconfig-depends cflags to c-sources when using v2-build
+      #8626 open 2022-12-06 poor ergonomics of Cabal version mismatch errors
+      #11518 open 2026-02-24 Cabal V3.0 changes how "freeform" fields are parsed
+      #9399 open 2023-11-05 `cabal list --installed` is confusing with nix-style builds
+      #12358 open 2026-09-15 Build GHCi libraries with `ghc --merge-objs`
+      #12340 open 2026-09-09 Cabal: tell configure scripts which compiler is in use
+      #7690 open 2021-09-28 Weird problem: cabal-3.6.0.0 fails to build shared executables with `Assertion failed`
+      #6674 open 2020-04-08 RFC: target semantics of v2-run: deconflict
+      #7790 open 2021-11-01 `cabal run` should send info logging to stderr not stdout
+      #5625 open 2018-10-16 Change way Changelog is handled in pull-requests
+      #9320 open 2023-10-09 docs: standalone foreign libs are not Windows-only
+      #5374 open 2018-06-10 `cabal new-repl` only brings one module into scope
+      #11417 open 2026-01-13 cabal doesn't reconfigure ghc-pkg when binary on PATH changes
+      #11259 open 2025-10-18 cabal: filtering GHC args
+      #5958 open 2019-03-22 confusion with multiple extra-prog-path
+      #5741 open 2018-11-27 RFC: Create `cabal fix` command
+      #12356 open 2026-09-14 Cross-compilation support - take two
+      #12288 open 2026-08-27 Add per-file options to extra source files
+      #12333 closed 2026-09-08 fix(Cabal): Use the C toolchain GHC was configured with
+  unreadable     13 hit(s) (all listed)
+      #12065 open 2026-06-30 Refactoring in preparation of #11411
+      #2427 open 2015-02-20 Ignore `dist/setup-config` when `build-type: Custom`
+      #11560 open 2026-03-02 `cabal-install` does not fully respect the `umask`
+      #10259 open 2024-08-16 Cabal and Cabal-syntax API checking
+      #8674 closed 2023-01-14 [META] Regarding the release CI runners: GitHub or the Haskell GitLab?
+      #10546 merged 2024-11-11 Deduplicate "using config from" message
+      #10054 closed 2024-05-24 Fix predicate which determines whether to build a shared library
+      #3643 closed 2016-07-29 Add a 'status' command.
+      #521 closed 2012-05-24 Permissions on "cabal fetch" files too tight
+      #5784 closed 2018-12-09 Use absolute builddir path for building non-inplace packages
+      #3197 merged 2016-02-28 (Try to) add GHC 8.0.1 to the test-matrix
+      #3138 closed 2016-02-12 Reinstall add-source deps even when LBI can't be loaded.
+      #3702 closed 2016-08-17 Simple.SrcDist cleanup (fixes #3656)
+  garbage        50 hit(s) (all listed)
+      #10126 open 2024-06-19 RFC: Store garbage collection
+      #3333 open 2016-04-13 [nix-local-build] Garbage collecting the store
+      #9727 open 2024-02-20 `cabal user-config diff` returns garbage on windows
+      #11666 open 2026-03-27 Ripping out GitLab CI
+      #3834 open 2016-09-12 Ability to surgically remove some packages from Nix global store
+      #5411 open 2018-07-04 Support for `run-tool-depends`
+      #7258 open 2021-01-27 sdist ships (duplicate) generated modules in the source directories
+      #3577 open 2016-07-21 Tracking ticket for Galois `new-build` requirements
+      #9089 open 2023-07-06 RFC: Nix backend
+      #5300 open 2018-05-03 Bikeshedding "recompilation avoidance"-avoidance!
+      #7221 open 2021-01-01 `cabal v2-install`ed executables should be resilient against (partial) deletion of `.cabal/store`
+      #9314 open 2023-10-06 Global source-repository-packages
+      #6919 open 2020-06-18 cabal install run immediately after cabal build unnecessarily rebuilds the project
+      #11252 open 2025-10-10 Retain comments in field parser
+      #7209 open 2020-12-21 The Grinch stole all the vowels: Odd naming in .cabal/store (macOS) 
+      #11511 closed 2026-02-24 Caching downloaded remote source package tarballs is broken
+      #7303 closed 2021-02-24 [POC] Support qualified module renamings
+      #10912 merged 2025-04-06 Remove knowledge about haskell-suite and hmake
+      #9459 merged 2023-11-18 Use Base16 hash for script path.
+      #8358 merged 2022-08-10 only check for compiler when project file has conditionals
+  mangled        18 hit(s) (all listed)
+      #3326 open 2016-04-12 Integration tests mangles Unicode quotes
+      #6198 open 2019-08-18 cabal v2-test does not respect `--`
+      #4126 open 2016-11-22 Garbled output due to per-component parallelism
+      #6039 open 2019-05-07 Make the cabal-install solver multilibs-aware
+      #11360 merged 2025-12-17 Clean GHCup metadata script
+      #7454 closed 2021-06-22 Generalise `--` for `v2-test`, `v2-bench`, and `v2-run`
+      #7711 closed 2021-10-07 Linking step may be skipped, resulting in stale executable
+      #8739 merged 2023-02-07 Hack around CI problems by sudo chown and disabling cache for Windows validate
+      #8629 merged 2022-12-06 Downgrade ubuntu image to fix a CI linker failure to do with package resolve
+      #7344 merged 2021-03-30 Cabal Init Omnibus
+      #3487 closed 2016-06-09 Detect when sh cannot handle Windows short paths
+      #6874 closed 2020-06-04 Ambiguous TargetSelector crash
+      #2095 closed 2014-09-08 Can't handle unicode characters in test names
+      #757 closed 2012-05-24 Highlighted source code on hackage.haskell.org mangles Unicode
+      #866 closed 2012-05-24 Build fails for zlib 0.5
+      #883 closed 2012-05-24 Bad cabal build error message with mangled top of file
+      #5526 merged 2018-08-14 [GSoC2018] Add support for multiple public libraries in a single package
+      #3652 closed 2016-08-01 Change dist-newstyle layout from build/pid to build/ipkgid.
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11235 open 2025-10-02 Contents of haddock-prologue are not output even with -v3
+      #5743 open 2018-11-27 Contents of global store affect PackageTests/NewSdist/DeterministicTrivial/deterministic.test.hs
+      #6488 open 2020-01-18 Unit-Id hash doesn't record directories (i.e. contents of Paths_pkgname.hs)
+      #5756 open 2018-12-01 notice and friends generate interleaved output when used concurrently
+      #6688 open 2020-04-10 `cabal v2-build` fails to override global config with `--enable-static --disable-shared`
+      #9136 open 2023-07-18 Local no-index repositories cache leads to bad UX
+      #10818 open 2025-03-06 Can't access __HADDOCK_VERSION__
+      #8683 open 2023-01-16 "cabal list-bin" should list all available targets on failure
+      #10442 open 2024-10-10 Windows can't handle symlinks in the repository very well, especially broken ones
+      #4136 open 2016-11-27 hackage-security cannot gracefully handle absence of package cache directory for file-based remote repositories
+      #7128 open 2020-10-20 Check that all the Haskell resources are in the git repository, and warn otherwise
+      #4782 open 2017-09-21  `cabal unpack hackport-0.5.3` fails because of syminks in tarbal
+      #11236 open 2025-10-02 The directory layout of dist-newstyle is utterly broken
+      #9677 open 2024-01-31 Incorrectly allows trailing comments after section headers
+      #9584 open 2024-01-02 Add languages extension groups to grammar
+      #10157 open 2024-06-27 cabal-install `haddock-project` includes sub-libraries with `visibility: hidden`
+      #6390 open 2019-11-30 `-hide-package` and .ghc.environment files
+      #1556 open 2013-10-22 Add support for documentation for executables
+      #7565 open 2021-08-22 Cannot reference internal libraries with cabal-version: 3.4
+      #7221 open 2021-01-01 `cabal v2-install`ed executables should be resilient against (partial) deletion of `.cabal/store`
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11172 open 2025-08-20 Project in-place builds mask issues with `install-includes`
+      #7304 open 2021-02-24 Add `cabal gen-bounds` write-in-place option
+      #12332 open 2026-09-08 Cabal does not use the C toolchain GHC was configured with
+      #12217 open 2026-08-07 Deprecate legacy --prefer-oldest CLI flag
+      #12270 open 2026-08-24 Question: Behaviour of `cabal install` vs `cabal build`? (Placement of build artefacts)
+      #11858 open 2026-05-21 "cabal test without-tests with-tests" won't run tests
+      #10631 open 2024-12-10 Add glossary and disambiguate cabal vs Cabal
+      #12269 open 2026-08-24 On windows cabal-install can't `cabal install` cabal-install.
+      #11956 open 2026-06-10 Refactor: Improve rendering of -O and -g flags as numeric levels
+      #9552 open 2023-12-21 `cabal-version` semantics
+      #7587 open 2021-08-28 Option `--store-dir` not mentioned in help text of `build`
+      #1449 open 2013-08-30 feature request: $version in source-repository/tag
+      #12358 open 2026-09-15 Build GHCi libraries with `ghc --merge-objs`
+      #3744 open 2016-08-31 Distinguish human created and machine derived data in `.cabal` files
+      #11778 open 2026-05-04 Add verbosity utility functions
+      #9816 open 2024-03-16 source-repository-package type does not list supported version control types
+      #11298 open 2025-11-18 Race condition in "cabal run"
+      #9354 open 2023-10-20 Remove section "Bugs and Stability" from user guide
+      #2723 open 2015-07-15 cabal fails to recompile test when quasiquoter changes
+      #11818 open 2026-05-12 Better document uv setup
+  unclean        2 hit(s) (all listed)
+      #2426 closed 2015-02-20 "cabal update" is blocked by IWSS of TrendMicro. Is Exceed_File_Count_Limit.
+      #2137 merged 2014-09-29 'support sandboxes' in bootstrap
+  shutdown       6 hit(s) (all listed)
+      #11492 open 2026-02-16 `cabal init` should mostly (only?) use defaults instead of asking.
+      #8676 merged 2023-01-14 Fix --offline flag
+      #8078 closed 2022-04-02 cabal-install  3.6 on OSX doesn't handle ctrl-c (interrupts) correctly
+      #2202 closed 2014-11-05 Building cabal from scratch fails on 64-bit Windows 8.1
+      #2726 closed 2015-07-18 Error encountered when I run 'cabal install cabal-install'
+      #1785 closed 2014-04-17 Can't build 1.20 on Windows
+  reboot         5 hit(s) (all listed)
+      #4194 closed 2016-12-30 bootstrap.sh fully recompiles Setup.hs and Cabal after failure.
+      #2096 closed 2014-09-09 cabal install haskell-src-exts haddock --> failed during the configure step. The exception was: ExitFailure 1
+      #284 closed 2012-05-24 cabal-install cannot re-install itself on windows
+      #1587 closed 2013-11-21 cabal update gets a cabal:failed error
+      #3019 closed 2016-01-02 Last step in cabal-nix sometimes takes a loooooooooong time
+  disk+full      19 hit(s) (all listed)
+      #11788 open 2026-05-05 Group installed multilib packages
+      #6888 open 2020-06-09 source-repository-package branch failure
+      #12084 merged 2026-07-04 [Fix #11850] Build dependencies of build tool on disk too
+      #12335 merged 2026-09-08 Backport #11921: Don't use a shallow checkout as a git clone reference
+      #8787 open 2023-02-20 cabal init will relocate and rename project structure
+      #11921 merged 2026-05-31 Don't use a shallow checkout as a git clone reference
+      #2997 open 2015-12-25 --extra-lib-dirs and --extra-include-dirs ignored?
+      #10933 merged 2025-04-21 Duplicate project import as a warning only
+      #11465 closed 2026-01-26 Regression in 3.14: `cabal build` with custom setup segfaults on macOS Mojave (ARM)
+      #7264 closed 2021-01-28 source-repository-package generates fat clones
+      #9673 merged 2024-01-30 Merge two Globbing Modules and Fix #5349
+      #8726 merged 2023-02-02 Add support for loading multiple components into one repl session
+      #5883 closed 2019-02-10 Remove the concept of "file extension" from data-files/extra-source-files wildcards
+      #7927 closed 2022-01-25 cabal-install broken at Ubuntu 20.04.3 LTS
+      #7842 closed 2021-11-30 Better support for running scripts.
+      #7851 merged 2021-12-02 Better support for running scripts.
+      #5043 closed 2018-01-15 Why does mkFlagName not convert the string to lower-case?
+      #220 closed 2012-05-24 cabal-install doesn't consider build-tools as dependencies
+      #5287 merged 2018-04-26 Applying flag normalisation to local packages.
+  data+loss      11 hit(s) (all listed)
+      #7916 open 2022-01-20 API `Distribution.Types.VersionInterval` dropped `intersectVersionIntervals` etc. in 3.6
+      #8657 merged 2023-01-07  cabal check: Warn if changelogs are omitted from extra-doc-files
+      #10225 merged 2024-07-23 Various `cabal-testsuite` improvements
+      #9705 merged 2024-02-12 Add a warning when an env file is created
+      #10058 merged 2024-05-29 CI: add GHC 9.10 (backport #9914)
+      #4635 closed 2017-07-27 build failure for cabal 2.1 with cabal 2.0
+      #4542 closed 2017-05-27 Add config flag to control generation of .ghc.environment files
+      #1696 closed 2014-02-21 Cabal install fails to update with parse error
+      #1058 closed 2012-10-05 Installing from separate folder with Custom build type fails
+      #2797 closed 2015-08-27 Migrate integration tests to some Makefile/shell based format
+      #1381 closed 2013-07-02 cabal update doesn't work
+  partial+write  45 hit(s) (all listed)
+      #11252 open 2025-10-10 Retain comments in field parser
+      #9984 open 2024-05-07 How to freeze
+      #7471 open 2021-07-01 Resolve project, package and component from anywhere.
+      #8568 open 2022-11-02 Semantics of index-state in cabal.project
+      #5518 open 2018-08-12 "truncated tar archive" on cabal update
+      #10288 open 2024-08-27 `--offline` does not stop Cabal from attempting to access the network
+      #7916 open 2022-01-20 API `Distribution.Types.VersionInterval` dropped `intersectVersionIntervals` etc. in 3.6
+      #10900 open 2025-04-02 New field on library: `test-only: Bool`
+      #7548 open 2021-08-15 Migrate from the .cabal format to a widely supported format
+      #6481 open 2020-01-15 Separate `cabal install --lib` into own command (cabal env)
+      #7556 open 2021-08-18 RFC: Cabal support for LTS Snapshots
+      #6233 closed 2019-09-11 Fix c2hs handling in Cabal
+      #6172 closed 2019-08-02 Upload to specific repo
+      #8889 merged 2023-04-01 Replace cabal project parsing with Parsec
+      #8208 closed 2022-06-11 Interrupting cabal-3.8.0.0.20220526 and master with ctrl+c makes it hang on windows
+      #10289 closed 2024-08-27 Don't error if package index is missing
+      #8427 merged 2022-08-24 Reimplement `cabal check`
+      #8483 closed 2022-09-18 RFC: don't allow cabal install --lib to update environment files
+      #9565 merged 2023-12-26 Use package groups
+      #9292 closed 2023-09-29 Design a 'Hooks' build type to replace  'Custom' 
+  crash+safe     7 hit(s) (all listed)
+      #5776 open 2018-12-07 Default number of jobs is unsafe (cabal-install)
+      #11927 open 2026-06-02 cabal-3.17 crashes during configure process with GHC 10
+      #11832 closed 2026-05-15 Bump the github-actions group in /doc with 7 updates
+      #7929 merged 2022-01-25 Fix concurrency/exception bugs in asyncFetchPackages
+      #7309 closed 2021-02-28 cabal 3.4.0.0 is broken on Windows 7 (use_process_jobs vs. hsc2hs.exe)
+      #4542 closed 2017-05-27 Add config flag to control generation of .ghc.environment files
+      #1784 closed 2014-04-17 Lens fails to build on Windows with Cabal install 1.20RC2
+  atomic+write   23 hit(s) (all listed)
+      #5889 open 2019-02-13 During new-install regHooks doesn't know the temporary directory files are in.
+      #12350 merged 2026-09-11 FieldGrammar: less String, more Text
+      #5518 open 2018-08-12 "truncated tar archive" on cabal update
+      #8207 open 2022-06-10 cabal init --overwrite: openFile: app/Main.hs: does not exist (No such file or directory)
+      #5582 open 2018-09-19 RFC: Remote cache support
+      #5574 open 2018-09-08 Error: Could not read index. Did you call 'checkForUpdates'?
+      #12356 open 2026-09-14 Cross-compilation support - take two
+      #10964 closed 2025-05-17 Wip/write file atomic
+      #8930 open 2023-04-30 `cabal` invokes `pkg-config` on every installed package, so `cabal run` or `cabal install` takes 20 minutes on my system
+      #10366 merged 2024-09-16 Create temp files in temp directory
+      #4978 closed 2017-12-26 Fix path redundancy new-build output folders.
+      #9784 closed 2024-03-07 `cabal install Agda` fails in `Setup.hs` with `executable-dynamic: True` in config file (Linux)
+      #9654 closed 2024-01-24 Weird store path dir
+      #1062 closed 2012-10-09 cabal install buries compiler warnings in logs, making them less obvious
+      #5700 closed 2018-11-20 `cabal init -w`/`--with-compiler` pins GHC version in `cabal.project`
+      #2606 closed 2015-05-23 Check retrieved index length against content-length header
+      #7402 merged 2021-05-19 cabal v2-configure
+      #4749 closed 2017-09-08 Shadowed dependency problem
+      #5458 closed 2018-07-26 Race condition with custom store directory and new-build on windows?
+      #331 closed 2012-05-24 use of HTTP needs overhauling
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #10784 open 2025-02-08 Ability to promote freeze files to lock files
+      #10151 open 2024-06-25 withFile: resource busy (file is locked)
+      #12407 open 2026-10-03 Fix cabal issue 7557: don’t run benchmarks in parallel or with the build
+      #11590 open 2026-03-06 Throw better error when cannot remove log file
+      #9796 open 2024-03-11 cabal update is stuck on old index-state
+      #9224 open 2023-09-01 Building two components of the same package concurrently causes one to fail
+      #7548 open 2021-08-15 Migrate from the .cabal format to a widely supported format
+      #5072 open 2018-01-25 Cope with `FileLockingNotSupported` in Store logic
+      #8047 open 2022-03-14 Recommended way to use `cabal freeze` for an executable?
+      #4136 open 2016-11-27 hackage-security cannot gracefully handle absence of package cache directory for file-based remote repositories
+      #11226 open 2025-09-23 cabal-install 3.14: allow tar-0.7
+      #10288 open 2024-08-27 `--offline` does not stop Cabal from attempting to access the network
+      #9587 open 2024-01-05 Error: The process cannot access the file because it is being used by another process
+      #11818 open 2026-05-12 Better document uv setup
+      #7112 open 2020-10-10 cabal v2-update takes a long time
+      #4811 open 2017-10-03 Concurrent `cabal new-build` runs cause non-deterministic failures
+      #5741 open 2018-11-27 RFC: Create `cabal fix` command
+      #10560 open 2024-11-20 Have `make style` ignore well-known build dirs
+      #7437 open 2021-06-09 `--upgrade-dependencies` should be marked as deprecated in v2- commands (and a hundred other options as well)
+      #12388 merged 2026-09-28 Skip all MultiRepl tests on Windows CI; make Dogfooding ghc-9.10.3 optional
+  write+failure  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #12067 open 2026-07-01 Minimal repro for "stanzas explicitly disabled should not be available"
+      #11470 open 2026-02-02 Reject unconstrained dependency = `none|all|eq`
+      #9530 open 2023-12-16 curl errors with reject future index states test
+      #12145 open 2026-07-22 Relocatable build tree
+      #10947 open 2025-05-06 `cabal sdist`: Rename Cabal file to match the package name
+      #9846 open 2024-03-26 Cabal unusable in Windows when username has unicode characters
+      #2398 open 2015-01-30 Setup.hs must be compiled with -threaded
+      #9540 open 2023-12-19 Use a local secure repositories in the test-suite.
+      #11041 open 2025-07-04 Test failures on Alpine
+      #9154 open 2023-07-27 (partially) fix issue #6888, source-repository-package branch failure 
+      #9516 open 2023-12-13 When all Hackage mirrors fail, only the last is reported
+      #6811 open 2020-05-17 Unable to generate logs at the specified location.
+      #12356 open 2026-09-14 Cross-compilation support - take two
+      #9321 open 2023-10-09 Conditional test for detecting cross-compilation
+      #8416 open 2022-08-22 `PackageTests/NewBuild/CmdRun/Terminate` brittle, may fail on CI
+      #10617 open 2024-12-06 "configuration changed" is way too vague
+      #3126 open 2016-02-09 File monitor unit test failures on Windows
+      #5741 open 2018-11-27 RFC: Create `cabal fix` command
+      #10920 open 2025-04-11 curl error with `cabal upload -d` (regression in 3.14)
+      #7238 open 2021-01-09 How to programmatically interact with Cabal Store?
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6688 open 2020-04-10 `cabal v2-build` fails to override global config with `--enable-static --disable-shared`
+      #9136 open 2023-07-18 Local no-index repositories cache leads to bad UX
+      #10818 open 2025-03-06 Can't access __HADDOCK_VERSION__
+      #11235 open 2025-10-02 Contents of haddock-prologue are not output even with -v3
+      #8683 open 2023-01-16 "cabal list-bin" should list all available targets on failure
+      #10442 open 2024-10-10 Windows can't handle symlinks in the repository very well, especially broken ones
+      #4136 open 2016-11-27 hackage-security cannot gracefully handle absence of package cache directory for file-based remote repositories
+      #1556 open 2013-10-22 Add support for documentation for executables
+      #2783 open 2015-08-20 cabal-install should probably do a quick sanity check on downloaded tarballs
+      #7128 open 2020-10-20 Check that all the Haskell resources are in the git repository, and warn otherwise
+      #9677 open 2024-01-31 Incorrectly allows trailing comments after section headers
+      #6390 open 2019-11-30 `-hide-package` and .ghc.environment files
+      #4782 open 2017-09-21  `cabal unpack hackport-0.5.3` fails because of syminks in tarbal
+      #3556 open 2016-07-15 Goofy build product destination for generated C files
+      #7221 open 2021-01-01 `cabal v2-install`ed executables should be resilient against (partial) deletion of `.cabal/store`
+      #10157 open 2024-06-27 cabal-install `haddock-project` includes sub-libraries with `visibility: hidden`
+      #7355 open 2021-04-12 Need a way to embed git revision into executable when running cabal install
+      #6507 open 2020-01-23 `cabal init` incorrectly writes non-ASCII file names in `library:exposed-modules`
+      #6549 open 2020-02-19 `data-files` of relocatable libraries are inaccessible in template Haskell
+      #7565 open 2021-08-22 Cannot reference internal libraries with cabal-version: 3.4
+
+== 51 terms run; 49 returned hits, 10 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

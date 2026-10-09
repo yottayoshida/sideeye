@@ -1,0 +1,102 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's (working tree)    sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's at tag v1.10.0     sha256 e3cb964274494696b688f0953fa6b112ef233db9dac6ddca43777cb9b0ddaef3
+build: NOTE the page's installer has moved since v1.10.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 9.02kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 0.9s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/21] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.28kB done
+#5 DONE 0.0s
+
+#6 [ 8/21] RUN sh /opt/install-sideeye.sh v1.10.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#6 CACHED
+
+#7 [18/21] RUN npm install -g --no-fund --no-audit @yarnpkg/cli-dist@4.18.1 trash-cli > /tmp/npm-third.log 2>&1 && echo "OK yarn trash-cli" || { echo "FAILED yarn/trash-cli"; tail -3 /tmp/npm-third.log; }
+#7 CACHED
+
+#8 [ 2/21] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config
+#8 CACHED
+
+#9 [ 7/21] COPY install-sideeye.sh /opt/install-sideeye.sh
+#9 CACHED
+
+#10 [15/21] RUN { echo "cook $(cook --version 2>&1 | head -1)"; echo "prefsCleaner $(sha256sum /opt/arkenfox/prefsCleaner.sh | cut -c1-16) $(grep -m1 -i 'version' /opt/arkenfox/prefsCleaner.sh)"; echo "mcaselector $(ls /opt/mcaselector/bin 2>/dev/null | head -3 | tr '\n' ' ')"; } | tee -a /versions.txt
+#10 CACHED
+
+#11 [17/21] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/gravitl/netmaker/releases/download/v1.7.0/nmctl-linux-arm64 nmctl; install -m 755 nmctl /opt/bin/nmctl
+#11 CACHED
+
+#12 [ 6/21] RUN mkdir -p /opt/bin /tmp/dl && python3 -m venv /opt/py
+#12 CACHED
+
+#13 [10/21] RUN apt-get install -y --no-install-recommends openimageio-tools libicu76 > /tmp/apt-oiio.log 2>&1 && echo "OK openimageio-tools" || { echo "MISSING openimageio-tools"; tail -3 /tmp/apt-oiio.log; }
+#13 CACHED
+
+#14 [ 4/21] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#14 CACHED
+
+#15 [16/21] RUN apt-get install -y --no-install-recommends softhsm2 opensc > /tmp/apt-softhsm.log 2>&1 && echo "OK softhsm2" || { echo "MISSING softhsm2"; tail -3 /tmp/apt-softhsm.log; }
+#15 CACHED
+
+#16 [ 9/21] RUN "$(cat /install.path)" version
+#16 CACHED
+
+#17 [11/21] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/scaleway/scaleway-cli/releases/download/v2.65.1/scaleway-cli_2.65.1_linux_arm64 scw;     get $gh/ayoisaiah/f2/releases/download/v2.2.2/f2_2.2.2_linux_arm64.tar.gz f2.tgz;     get $gh/SubtitleEdit/subtitleedit/releases/download/v5.2.0/SeConv-Linux-ARM64.tar.gz seconv.tgz;     install -m 755 scw /opt/bin/scw;     mkdir -p x-f2 && tar xzf f2.tgz -C x-f2 && install -m 755 "$(find x-f2 -type f -name f2 | head -1)" /opt/bin/f2;     mkdir -p /opt/seconv && tar xzf seconv.tgz -C /opt/seconv && f=$(find /opt/seconv -type f ( -name SeConv -o -name seconv ) | head -1) && chmod 755 "$f" && ln -sf "$f" /opt/bin/seconv && echo "seconv <- $f";     ls -l /opt/bin
+#17 CACHED
+
+#18 [12/21] RUN /opt/py/bin/pip install --no-cache-dir opentimelineio==0.18.1 > /tmp/pip-otio.log 2>&1 && echo "OK opentimelineio" || { echo "FAILED opentimelineio"; tail -3 /tmp/pip-otio.log; }
+#18 CACHED
+
+#19 [13/21] RUN { echo "scw $(scw version 2>&1 | head -1)"; echo "f2 $(f2 --version 2>&1 | head -1)"; echo "seconv $(seconv 2>&1 | head -1)"; echo "iconvert $(iconvert --help 2>&1 | head -1)"; echo "otiotool $(otiotool --version 2>&1 | head -1)"; } | tee /versions.txt
+#19 CACHED
+
+#20 [ 3/21] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#20 CACHED
+
+#21 [ 5/21] RUN for p in nodejs npm ruby ruby-dev php-cli php-xml php-mbstring golang-go libfaketime faketime; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done | tee /tmp/apt-summary.txt
+#21 CACHED
+
+#22 [14/21] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/cooklang/cookcli/releases/download/v0.38.0/cook-aarch64-unknown-linux-musl.tar.gz cook.tgz;     get $gh/Querz/mcaselector/releases/download/2.9/mcaselector-2.9-aarch64.deb mcaselector.deb;     get https://raw.githubusercontent.com/arkenfox/user.js/bb45863be796d331717e2b5d6e490f0d3e3cf93f/prefsCleaner.sh prefsCleaner.sh;     get https://raw.githubusercontent.com/arkenfox/user.js/bb45863be796d331717e2b5d6e490f0d3e3cf93f/user.js user.js;     mkdir -p x-cook && tar xzf cook.tgz -C x-cook && install -m 755 "$(find x-cook -type f -name cook | head -1)" /opt/bin/cook;     mkdir -p /opt/arkenfox && install -m 755 prefsCleaner.sh /opt/arkenfox/prefsCleaner.sh && install -m 644 user.js /opt/arkenfox/user.js;     apt-get install -y --no-install-recommends xdg-utils > /tmp/apt-xdg.log 2>&1;     (dpkg -i mcaselector.deb > /tmp/dpkg-mca.log 2>&1 || apt-get install -y -f > /tmp/apt-mca.log 2>&1) && echo "OK mcaselector" || { echo "FAILED mcaselector"; tail -3 /tmp/dpkg-mca.log; };     ls -l /opt/bin; dpkg -L mcaselector 2>/dev/null | grep -E 'bin/|\.jar$' | head -5
+#22 CACHED
+
+#23 [19/21] RUN { echo "nmctl $(nmctl version 2>&1 | head -1)"; echo "yarn $(yarn --version 2>&1 | head -1)"; echo "trash $(npm ls -g trash-cli 2>/dev/null | grep trash-cli)"; echo "softhsm2 $(softhsm2-util --version 2>&1 | head -1)"; } | tee -a /versions.txt
+#23 CACHED
+
+#24 [20/21] RUN apt-get install -y --no-install-recommends cmake > /tmp/apt-cmake.log 2>&1 && echo "OK cmake" || echo "MISSING cmake"
+#24 3.037 MISSING cmake
+#24 DONE 3.1s
+
+#25 [21/21] RUN set -u; cd /tmp/dl; curl -fsSL -o libdeflate.tgz https://github.com/ebiggers/libdeflate/archive/refs/tags/v1.26.tar.gz && mkdir -p x-libdeflate && tar xzf libdeflate.tgz -C x-libdeflate --strip-components=1 &&     cmake -S x-libdeflate -B x-libdeflate/build -DCMAKE_BUILD_TYPE=Release -DLIBDEFLATE_BUILD_STATIC_LIB=OFF > /tmp/libdeflate-cmake.log 2>&1 && cmake --build x-libdeflate/build -j"$(nproc)" > /tmp/libdeflate-make.log 2>&1 &&     install -m 755 x-libdeflate/build/programs/libdeflate-gzip /opt/bin/libdeflate-gzip && install -m 755 x-libdeflate/build/libdeflate.so* /usr/local/lib/ 2>/dev/null; ldconfig;     echo "libdeflate-gzip $(libdeflate-gzip --version 2>&1 | head -1)" | tee -a /versions.txt || { echo "FAILED libdeflate"; tail -3 /tmp/libdeflate-make.log; }
+#25 3.362 libdeflate-gzip libdeflate-gzip: invalid option -- '-'
+#25 DONE 3.4s
+
+#26 exporting to image
+#26 exporting layers
+#26 exporting layers 1.3s done
+#26 exporting manifest sha256:9feb3cce2d6f9f46f63ef2f44025710801de2ee81cccdc48df141a222598356e
+#26 exporting manifest sha256:9feb3cce2d6f9f46f63ef2f44025710801de2ee81cccdc48df141a222598356e done
+#26 exporting config sha256:635efeadb0e578d0d7b5d9841ad63edd12b28908fd3a56fb0c0ac33dc622614f done
+#26 exporting attestation manifest sha256:bf4fa04ee2dd3b0cdbb88700b403c3c219b4ad80727df351984536a9287baee9 0.0s done
+#26 exporting manifest list sha256:855d6cd047851eab561fb520fc9b36927ff3a7e423eaeab70ee0433ce9533d6b 0.0s done
+#26 naming to docker.io/library/sideeye-ud1009:latest 0.0s done
+#26 unpacking to docker.io/library/sideeye-ud1009:latest
+#26 unpacking to docker.io/library/sideeye-ud1009:latest 19.9s done
+#26 DONE 21.5s
+build: sideeye-ud1009 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt
+build rc=0

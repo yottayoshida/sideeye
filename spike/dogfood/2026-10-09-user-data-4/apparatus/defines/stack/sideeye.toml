@@ -1,0 +1,7 @@
+[world]
+state = "/s/aux/home/.stack"
+
+[define]
+operation = "stack config set install-ghc false --global"
+cwd       = "/s/stk"
+scratch   = ["pantry", "stack.sqlite3", "stack.sqlite3-journal", "stack.sqlite3.pantry-write-lock"]

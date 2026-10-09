@@ -1,0 +1,74 @@
+## ifcpatch
+seed exit 1
+total 0
+usage: __main__.py [-h] -i INPUT [-o OUTPUT] -r RECIPE [-l LOG]
+                   [-a ARGUMENTS [ARGUMENTS ...]]
+
+Patches IFC files to fix badly formatted data
+
+options:
+  -h, --help            show this help message and exit
+  -i, --input INPUT     The IFC file to patch
+  -o, --output OUTPUT   The output file to save the patched IFC
+  -r, --recipe RECIPE   Name of the recipe to use when patching
+  -l, --log LOG         Specify a log file
+  -a, --arguments ARGUMENTS [ARGUMENTS ...]
+== ifcpatch: exit 1; 630 strace lines; 10 clone; 1 execve
+    raise FileNotFoundError(f"Path does not exist: '{path}'.")
+FileNotFoundError: Path does not exist: 'model.ifc'.
+# Loading IFC file ...
+total 0
+## rootrm
+seed exit 229
+total 8
+-rw-r--r-- 1 root root 4202 Oct  9 02:14 data.root
+h1  h2  h3
+== rootrm: exit 0; 839 strace lines; 15 clone; 10 execve
+89    openat(AT_FDCWD, "/s/aux/tmp/--06430c.o", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0666) = 3
+89    unlinkat(AT_FDCWD, "/s/aux/tmp/--06430c.o", 0) = 0
+89    openat(AT_FDCWD, "/s/rootf/data.root", O_RDWR|O_CREAT, 0666) = 3
+89    fsync(3)                          = 0
+89    fsync(3)                          = 0
+total 8
+-rw-r--r-- 1 root root 4202 Oct  9 02:14 data.root
+h1  h3
+## ckan
+seed exit 1
+  at CKAN.ServiceLocator.Init () [0x0006c] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+  at CKAN.ServiceLocator.get_Container () [0x00009] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+  at CKAN.CmdLine.MainClass.Main (System.String[] args) [0x000fa] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+== ckan: exit 1; 287 strace lines; 3 clone; 9 execve
+136   ftruncate(3, 4096)                = 0
+136   openat(AT_FDCWD, "/s/aux/tmp/CASESENSITIVETEST44d90eae99214ec2973858200e4a35b9", O_RDWR|O_CREAT|O_EXCL, 0666) = 3
+136   unlinkat(AT_FDCWD, "/s/aux/tmp/CASESENSITIVETEST44d90eae99214ec2973858200e4a35b9", 0) = 0
+  at CKAN.ServiceLocator.Init () [0x0006c] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+  at CKAN.ServiceLocator.get_Container () [0x00009] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+  at CKAN.CmdLine.MainClass.Main (System.String[] args) [0x000fa] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+## h2cli
+an existing drumkit.
+   -k, --kit drumkit_name - Load a drumkit at startup
+   -i, --install FILE - install a drumkit (*.h2drumkit)
+   -c, --check FILE - validates a drumkit (*.h2drumkit)
+                      against current drumkit format
+   -l, --legcay-check FILE - validates a drumkit (*.h2drumkit)
+== h2cli: exit 0; 1796 strace lines; 14 clone; 3 execve
+159   openat(AT_FDCWD, "/s/aux/home/.hydrogen/hydrogen.log", O_WRONLY|O_CREAT|O_TRUNC, 0666) = -1 ENOENT (No such file or directory)
+158   openat(AT_FDCWD, "/s/aux/home/.hydrogen/hydrogen.conf", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666 <unfinished ...>
+168   ftruncate(11, 67108864)           = 0
+158   openat(AT_FDCWD, "/s/h2/kit/drumkit.xml", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 7
+158   openat(AT_FDCWD, "/s/aux/home/.hydrogen/hydrogen.conf", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 7
+Provided drumkit [/s/h2/kit] upgraded
+[31m(E) AudioEngine::updateBpmAndTickSize [Transport] Something went wrong while calculating the tick size. [oldTS: 400.000000, newTS: 0.000000][0m
+[31m(E) AudioEngine::updateBpmAndTickSize [Queuing] Something went wrong while calculating the tick size. [oldTS: 400.000000, newTS: 0.000000][0m
+total 40
+drwxr-xr-x 2 root root 4096 Oct  9 02:15 .
+drwxr-xr-x 3 root root 4096 Oct  9 02:14 ..
+-rw-r--r-- 1 root root 2816 Oct  9 02:15 drumkit.xml
+-rw-r--r-- 1 root root  698 Oct  9 02:15 drumkit.xml.2026-10-09_02-15-07.bak
+-rw-r--r-- 1 root root 8864 Oct  9 02:14 kick.wav
+-rw-r--r-- 1 root root 8864 Oct  9 02:14 snare.wav
+<?xml version="1.0" encoding="UTF-8"?>
+<drumkit_info xmlns="http://www.hydrogen-music.org/drumkit" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+ <name>Box Kit</name>
+ <author>sideeye</author>
+ <info>a two-instrument kit written for the box</info>

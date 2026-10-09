@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/f2",
+    "operation": "f2 -f IMG_ -r trip_ -x",
+    "check": "/s/f2-check.sh",
+    "cwd": "/s/f2",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 3,
+  "prefix_hash": "1a1a8d6a95044f7b",
+  "after_class": "rename",
+  "after_path": "/s/f2/IMG_1.jpg",
+  "before_class": "rename",
+  "before_path": "/s/f2/IMG_2.jpg",
+  "violation": "checker"
+}

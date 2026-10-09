@@ -1,0 +1,29 @@
+72    execve("/opt/bin/cabal", [...], 0xffffcb693520 /* 14 vars */) = 0
+72    clone(child_stack=0xffff855ccaf0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[73], tls=0xffff855ccbe8, child_tidptr=0x2fe4a88) = 73
+72    clone(child_stack=0xffff8552eaf0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[74], tls=0xffff8552ebe8, child_tidptr=0x2fe4a88) = 74
+72    clone(child_stack=0xffff8550aaf0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[75], tls=0xffff8550abe8, child_tidptr=0x2fe4a88) = 75
+72    clone(child_stack=0xffff854e7af0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[76], tls=0xffff854e7be8, child_tidptr=0x2fe4a88) = 76
+72    openat(AT_FDCWD, "/s/aux/home/.config/cabal/config", O_RDONLY|O_NOCTTY|O_NONBLOCK|O_LARGEFILE) = 13
+72    close(13)                         = 0
+72    write(1, ""..., 45)               = 45
+72    write(1, ""..., 41)               = 41
+72    renameat(AT_FDCWD, "/s/aux/home/.config/cabal/config", AT_FDCWD, "/s/aux/home/.config/cabal/config.backup") = 0
+72    write(1, ""..., 59)               = 59
+72    mkdirat(AT_FDCWD, "/s/aux/home/.config/cabal", 0777) = -1 EEXIST (File exists)
+72    openat(AT_FDCWD, "/s/aux/tmp/config72-0.tmp", O_RDWR|O_CREAT|O_EXCL|O_NOCTTY|O_NONBLOCK|O_LARGEFILE, 0666) = 13
+72    write(13, ""..., 5620)            = 5620
+72    close(13)                         = 0
+72    renameat(AT_FDCWD, "/s/aux/tmp/config72-0.tmp", AT_FDCWD, "/s/aux/home/.config/cabal/config") = 0
+72    write(11, ""..., 1)               = 1
+72    write(8, ""..., 1)                = 1
+75    close(10)                         = 0
+75    close(11)                         = 0
+75    close(12)                         = 0
+74    close(6)                          = 0
+74    close(7)                          = 0
+74    close(8)                          = 0
+74    close(9)                          = 0
+72    write(5, ""..., 5)                = 5
+73    close(3)                          = 0
+72    close(4)                          = 0
+72    close(5)                          = 0

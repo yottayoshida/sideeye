@@ -1,0 +1,5 @@
+jbangdev/jbang stars=1873 pushed=2026-10-08 archived=false issues=true full=jbangdev/jbang
+dlang/dub stars=740 pushed=2026-09-29 archived=false issues=true full=dlang/dub
+coursier/coursier stars=2137 pushed=2026-10-09 archived=false issues=true full=coursier/coursier
+fortran-lang/fpm stars=1076 pushed=2026-09-03 archived=false issues=true full=fortran-lang/fpm
+nim-lang/nimble stars=1408 pushed=2026-10-08 archived=false issues=true full=nim-lang/nimble

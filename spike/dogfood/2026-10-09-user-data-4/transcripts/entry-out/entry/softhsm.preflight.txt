@@ -1,0 +1,31 @@
+PREFLIGHT  not accepted — the two observed runs left different state
+
+difference   6a149a6b-bb4a-b941-daa7-ccd8b317fafd/18704b0a-c94e-b9a4-2214-cb44cf6f289b.lock (only after the first run)
+difference   6a149a6b-bb4a-b941-daa7-ccd8b317fafd/18704b0a-c94e-b9a4-2214-cb44cf6f289b.object (only after the first run)
+difference   6a149a6b-bb4a-b941-daa7-ccd8b317fafd/a804525f-e2df-57e7-b5bc-286b53c127d3.lock (only after the second run)
+difference   6a149a6b-bb4a-b941-daa7-ccd8b317fafd/a804525f-e2df-57e7-b5bc-286b53c127d3.object (only after the second run)
+difference   6a149a6b-bb4a-b941-daa7-ccd8b317fafd/d19dfc5e-eadd-1ba7-18fa-3448b26eaaf5.lock (only after the first run)
+difference   6a149a6b-bb4a-b941-daa7-ccd8b317fafd/d19dfc5e-eadd-1ba7-18fa-3448b26eaaf5.object (only after the first run)
+difference   6a149a6b-bb4a-b941-daa7-ccd8b317fafd/fbf66673-8cfd-e94a-3fa8-fa70baaa57b6.lock (only after the second run)
+difference   6a149a6b-bb4a-b941-daa7-ccd8b317fafd/fbf66673-8cfd-e94a-3fa8-fa70baaa57b6.object (only after the second run)
+
+cwd          /s/hsm-in
+atomicity    8 path(s) judged pre-or-post
+oracle       agreed on 282 operations (2923 syscall lines examined, 1739 in scope of the judged state), witness strace
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2005 ms apart differed under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         pin or relocate what differs, then re-run this command;
+             explore would reach the same divergence in its baseline
+             world, after a full define had been written

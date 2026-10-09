@@ -1,0 +1,74 @@
+84    openat(AT_FDCWD, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3
+84    close(3)                          = 0
+84    openat(AT_FDCWD, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3
+84    close(3)                          = 0
+84    openat(AT_FDCWD, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3
+84    close(3)                          = 0
+84    openat(AT_FDCWD, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_CLOEXEC) = 3
+84    clone(child_stack=0x4b08cd362000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 85
+84    clone(child_stack=0x4b08cd3b6000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 86
+84    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+84    clone(child_stack=0x4b08cd3b2000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 87
+86    clone(child_stack=0x4b08cd418000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 88
+84    openat(AT_FDCWD, "/opt/bin/rpk", O_RDONLY|O_CLOEXEC) = 4
+84    close(4)                          = 0
+84    openat(AT_FDCWD, "/etc/machine-id", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+84    openat(AT_FDCWD, "/sys/class/dmi/id/product_uuid", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+84    openat(AT_FDCWD, "/proc/self/cpuset", O_RDONLY|O_CLOEXEC) = 4
+84    close(4)                          = 0
+88    clone(child_stack=0x4b08cd3ce000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 89
+88    clone(child_stack=0x4b08cd3ca000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 90
+89    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+89    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+84    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+84    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+90    clone(child_stack=0x4b08cd414000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM <unfinished ...>
+89    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+90    <... clone resumed>)              = 91
+86    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+89    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+86    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+84    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+84    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+84    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+84    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+84    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+84    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+88    clone(child_stack=0x4b08cdc90000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 92
+89    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+90    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+84    openat(AT_FDCWD, "/s/aux/home/.local/bin", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+84    openat(AT_FDCWD, "/opt/bin", O_RDONLY|O_CLOEXEC) = 4
+89    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+90    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+88    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+89    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+84    close(4)                          = 0
+84    openat(AT_FDCWD, "/opt/py/bin", O_RDONLY|O_CLOEXEC) = 4
+84    close(4)                          = 0
+84    openat(AT_FDCWD, "/usr/local/bin", O_RDONLY|O_CLOEXEC) = 4
+84    close(4)                          = 0
+84    openat(AT_FDCWD, "/root/go/bin", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+84    openat(AT_FDCWD, "/usr/local/sbin", O_RDONLY|O_CLOEXEC) = 4
+84    close(4)                          = 0
+84    openat(AT_FDCWD, "/usr/sbin", O_RDONLY|O_CLOEXEC) = 4
+84    close(4)                          = 0
+84    openat(AT_FDCWD, "/usr/bin", O_RDONLY|O_CLOEXEC) = 4
+84    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+88    close(4)                          = 0
+88    openat(AT_FDCWD, "/sbin", O_RDONLY|O_CLOEXEC) = 4
+88    close(4)                          = 0
+88    openat(AT_FDCWD, "/bin", O_RDONLY|O_CLOEXEC) = 4
+88    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+92    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+92    close(4)                          = 0
+92    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=84, si_uid=0} ---
+92    openat(AT_FDCWD, "/s/aux/home/.config/rpk/rpk.yaml", O_RDONLY|O_CLOEXEC) = 4
+92    close(4)                          = 0
+92    openat(AT_FDCWD, "/s/l18/redpanda.yaml", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+92    openat(AT_FDCWD, "/etc/redpanda/redpanda.yaml", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+92    openat(AT_FDCWD, "/s/aux/home/.config/rpk/redpanda-8706185271024422519", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0644) = 4
+92    write(4, ""..., 617)              = 617
+92    close(4)                          = 0
+92    renameat(AT_FDCWD, "/s/aux/home/.config/rpk/redpanda-8706185271024422519", AT_FDCWD, "/s/aux/home/.config/rpk/rpk.yaml") = 0
+92    write(1, ""..., 28)               = 28

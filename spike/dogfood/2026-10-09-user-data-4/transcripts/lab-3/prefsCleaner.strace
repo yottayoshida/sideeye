@@ -1,0 +1,66 @@
+125   openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+125   close(3)                          = 0
+125   openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = 3
+125   close(3)                          = 0
+125   openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+125   close(3)                          = 0
+125   openat(AT_FDCWD, "/dev/tty", O_RDWR|O_NONBLOCK) = -1 ENXIO (No such device or address)
+125   close(3)                          = 0
+125   close(3)                          = 0
+125   openat(AT_FDCWD, "/etc/nsswitch.conf", O_RDONLY|O_CLOEXEC) = 3
+125   close(3)                          = 0
+125   openat(AT_FDCWD, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 3
+125   close(3)                          = 0
+125   openat(AT_FDCWD, "/opt/arkenfox/prefsCleaner.sh", O_RDONLY) = 3
+125   close(3)                          = 0
+125   close(4 <unfinished ...>
+126   close(255 <unfinished ...>
+125   <... close resumed>)              = 0
+126   <... close resumed>)              = 0
+126   close(4)                          = 0
+126   close(3)                          = 0
+126   write(1, ""..., 13)               = 13
+125   --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=126, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+125   close(3)                          = 0
+125   close(4 <unfinished ...>
+127   close(255 <unfinished ...>
+125   <... close resumed>)              = 0
+127   <... close resumed>)              = 0
+127   close(4)                          = 0
+127   close(3)                          = 0
+128   openat(AT_FDCWD, "/dev/null", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 3
+128   close(3)                          = 0
+128   openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+128   close(3)                          = 0
+128   openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+128   close(3)                          = 0
+128   write(1, ""..., 30)               = 30
+128   close(1)                          = 0
+128   close(2)                          = 0
+127   --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=128, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+125   --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=127, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+125   close(3)                          = 0
+125   openat(AT_FDCWD, "/dev/null", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 3
+125   close(3)                          = 0
+125   write(1, ""..., 14)               = 14
+125   close(10)                         = 0
+125   close(4 <unfinished ...>
+129   close(255 <unfinished ...>
+125   <... close resumed>)              = 0
+129   <... close resumed>)              = 0
+129   close(4)                          = 0
+129   close(3)                          = 0
+129   openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+129   close(3)                          = 0
+129   openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+129   close(3)                          = 0
+129   write(1, ""..., 14)               = 14
+129   close(1)                          = 0
+125   close(3 <unfinished ...>
+129   close(2 <unfinished ...>
+125   <... close resumed>)              = 0
+129   <... close resumed>)              = 0
+125   --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=129, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+125   write(1, ""..., 1)                = 1
+125   write(1, ""..., 74)               = 74
+125   close(10)                         = 0

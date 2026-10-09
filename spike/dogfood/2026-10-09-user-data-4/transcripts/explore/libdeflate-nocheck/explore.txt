@@ -1,0 +1,15 @@
+UNKNOWN  nothing_could_fail
+         no world could have failed: no checker was declared, no marker was declared, and none of the 0 path(s) the built-in atomicity invariant judges was changed or named by a crash point
+next        The built-in invariant judges only paths that exist both before and after the operation, and no crash point changed one, so nothing could have failed: declare a check that reads the state the target leaves (docs/checker-cookbook.md), or a marker for the success claim, which judges the files the operation created or removed.
+cwd         /s/gz
+
+expected    exit 0
+atomicity   0 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=ca30d619ab229758fba7744f6341b58279170304b0ae6db01175717828c72c49;

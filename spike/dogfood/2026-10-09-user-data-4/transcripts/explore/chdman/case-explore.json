@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/chd",
+    "operation": "chdman addmeta -i d.chd -t NOTE -vt hello",
+    "cwd": "/s/chd",
+    "expected_status": 0
+  },
+  "k": 3,
+  "ops_total": 4,
+  "prefix_hash": "68aecca98566ffca",
+  "after_class": "write",
+  "after_path": "/s/chd/d.chd",
+  "before_class": "write",
+  "before_path": "/s/chd/d.chd",
+  "violation": "hybrid"
+}

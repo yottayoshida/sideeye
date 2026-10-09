@@ -1,0 +1,22 @@
+== sheets
+spike/authoring-cost/audit.py:365:    # `ungraded` until two sheets say otherwise: fewer than two is an unfinished measurement,
+spike/authoring-cost/audit.py:403:                    "its verdicts cannot be attached to revisions, and two graders' sheets "
+spike/authoring-cost/audit.py:451:        # PROTOCOL.md defines two graders. Three sheets would silently change the rule from
+spike/authoring-cost/audit.py:456:                f"{len(per_grader)} graded sheets in grades/ — the protocol defines two graders, "
+spike/authoring-cost/audit.py:529:def _grade_sheets(run, sheets):
+== cookcli
+spike/dogfood/2026-10-03-user-data/apparatus/pool-3.tsv:17:cookcli	cooklang/cookcli
+spike/dogfood/2026-10-03-user-data/apparatus/pool.tsv:63:cookcli	cooklang/cookcli
+== cooklang
+spike/dogfood/2026-10-03-user-data/apparatus/pool-3.tsv:17:cookcli	cooklang/cookcli
+spike/dogfood/2026-10-03-user-data/apparatus/pool.tsv:63:cookcli	cooklang/cookcli
+== organize
+spike/dogfood/2026-10-03-user-data/SELECTION.md:57:(4/10), luarocks (4/10), bibtex-tidy (4/10). Still out: organize 1, czkawka 0, image_optim 0 of 1,
+spike/dogfood/2026-10-03-user-data/SELECTION.md:74:| electrum, organize, imgp (first box) | 11 | out under the first reading; Electrum came back under the second |
+spike/dogfood/2026-10-03-user-data/apparatus/Dockerfile:71:# Python candidates, versions pinned. The first build also installed Electrum, organize and imgp;
+spike/dogfood/2026-10-03-user-data/apparatus/pool.tsv:6:organize	tfeldmann/organize
+== prefsCleaner
+== arkenfox
+== mcaselector
+== zim
+Binary file docs/sideeye.jpg matches

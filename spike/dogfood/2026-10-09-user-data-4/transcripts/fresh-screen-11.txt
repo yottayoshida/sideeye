@@ -1,0 +1,8 @@
+SEEN  john  spike/dogfood/2026-09-06-userview-2/SELECTION.md:40
+SEEN  john  spike/dogfood/2026-09-16-userview-3/SELECTION.md:56
+fresh openwall
+SEEN  devpod  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:70
+fresh loft-sh
+fresh pueue
+fresh hashcat
+fresh bbolt

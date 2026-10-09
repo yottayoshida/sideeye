@@ -1,0 +1,2 @@
+static: /usr/bin/setpriv: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=e42c298f7ecc86613f7e0f3c5f7357b3ba9351cf, for GNU/Linux 3.7.0, stripped
+next: Check whether the operation is a shell script wrapping another command — if it is, invoke that command as the operation instead; the refusal itself is one the README's 'What the target has to be' names, with DESIGN.md giving the reason.

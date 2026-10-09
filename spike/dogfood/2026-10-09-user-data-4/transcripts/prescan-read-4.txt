@@ -1,0 +1,106 @@
+== IfcOpenShell_IfcOpenShell.prescan.txt: 564 distinct issues listed, 69 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #9837 open 2026-10-06 ifctester: reject empty mandatory facet values
+   #9831 open 2026-10-06 [Ifctester] PropertyFacet should raise a validation error if baseName is empty
+   #9762 open 2026-10-01 IfcConvert 0.9.0 Manifold: crash during opening subtraction and unsupported swept-disk solid
+   #9733 open 2026-09-29 Bonsai: guard load decorations on empty members
+   #9717 open 2026-09-29 Reject an empty cut unless the tools cover the element
+   #9673 open 2026-09-29 Bonsai: don't let a non-Body representation overwrite an imported wall (#8026)
+   #9645 open 2026-09-29 Do not deduplicate appended assets by a blank name (#8045)
+   #9641 open 2026-09-29 Bonsai: uniquify drawing name on rename so SVGs don't overwrite each other (#5635)
+   #9625 open 2026-09-29 Guard append_asset against an empty aggregate attribute (#7261)
+   #9621 open 2026-09-29 Bonsai: editing a window/door no longer overwrites attributes of occurrences owning their own geometry
+   #9602 open 2026-09-25 [AI-generated, unverified] ifcparse: erase a deleted instance from the aggregates that name it in place
+   #9600 open 2026-09-25 `IfcConvert` fails (exit 1, "Type held ... is Blank and not string") when an `IfcElementQuantity` has a blank `GlobalId`
+   #9557 open 2026-09-20 Bonsai: put back sheet files renamed in a session that was not saved
+   #9459 open 2026-09-08 docs: write the five empty IFC concept sections (#9456)
+   #9428 open 2026-09-02 Bonsai: drawing a slab with an empty polyline crashes (#9426)
+   #9419 open 2026-09-01 ExtractElements / append_asset: IfcPresentationLayerAssignment copied with empty AssignedItems (SET [1:?])
+   #9406 closed 2026-08-31 Bonsai: editing a window/door no longer overwrites attributes of occurrences owning their own geometry
+   #9400 open 2026-08-31 Bonsai: comments in a filter query are lost when the query is edited
+   #9369 open 2026-08-28 Bonsai: a reference on a sheet renders blank when its SVG ids collide with the titleblock's
+   #9353 open 2026-08-24 Bonsai: parametric window edit overwrites OverallWidth/OverallHeight on all occurrences of the type
+   #9273 open 2026-08-06 ifctester: prohibited attribute passes when empty
+   #9258 open 2026-08-05 api: five removal functions write empty aggregates
+   #9239 open 2026-08-03 dev_environment.py: a locked file during symlinking leaves the extension half-linked with no recovery hint
+   #9234 open 2026-08-03 Bonsai: grid axis label truncation and duplicate axis objects (#9232)
+   #9232 open 2026-08-03 Grid axis viewport labels truncate AxisTags that contain a dot (e.g. `a.1` → `a`)
+   #9218 open 2026-08-01 Bonsai: switching a representation onto an empty object crashes in record_object_materials (NoneType BIMMeshProperties)
+   #9212 open 2026-08-01 geometry.unassign_representation: stop destroying shared geometry (#9207)
+   #9165 open 2026-07-30 ifcopenshell.api: five removal functions write empty aggregates that the schema forbids
+   #9164 open 2026-07-30 cost: fix CostQuantities left empty on removal
+   #9120 open 2026-07-30 bcf: fix a crash that loses the entire save, plus two silent data losses
+   #9105 open 2026-07-30 util.cost: stop get_product_quantity_names resurrecting names after an empty intersection
+   #9095 open 2026-07-30 Bonsai: return an empty list, not None, from the relating type enum callback
+   #9094 open 2026-07-30 Bonsai: stop the classification level browser crashing on empty and IFC2X3 libraries
+   #9091 open 2026-07-30 Bonsai: accumulate quantity names across quantity sets instead of overwriting
+   #9082 open 2026-07-30 ifc4d: stop MSP and P6 export truncating sub-day durations
+   #9078 open 2026-07-30 ifcsverchok: stop batched node inputs overwriting each other
+   #9060 open 2026-07-30 ifccsv: stop a blank spreadsheet cell writing "nan" into the model
+   #8997 open 2026-07-26 Bonsai: Quick Create authors a real door type on IFC2X3, not an empty one
+   #8917 open 2026-07-24 Bonsai: fix Drawing Underlay 'Add Style' wiping previously saved shading styles
+   #8793 closed 2026-07-19 ifcgeom: defer partial CGAL shells to the next hybrid kernel (fixes #8052)
+   #8743 open 2026-07-18 Bonsai: warn instead of silently destroying faces in the 3-point arc CAD tool
+   #8742 open 2026-07-18 ifcgeom: don't crash the iterator when IfcProject.UnitsInContext is blank on a non-conformant file
+   #8720 open 2026-07-18 Bonsai: compose element visibility with the Status filter instead of overwriting it
+   #8691 merged 2026-07-17 ifcwrap: keep geometry's owning element alive to fix silent data corruption
+   #8611 open 2026-07-16 File->Import->IFC (Geometry Only) can result in data loss.
+   #8610 open 2026-07-15 ifcpatch: fix MergeDuplicateTypes destroying distinct/cross-class types
+   #8609 open 2026-07-15 ifcpatch MergeDuplicateTypes: default merges distinct untagged types (data loss) and can crash on cross-class merges
+   #8567 merged 2026-07-12 Fix ci-bonsai-daily: get_dictionaries no longer clobbers injected bSDD client
+   #8555 closed 2026-07-12 Bonsai: don't let a non-Body representation overwrite an imported wall (#8026)
+   #8540 closed 2026-07-12 util.doc: stop truncating entity, type, pset and property descriptions at the first paragraph (#4624)
+   #8532 closed 2026-07-12 Bonsai: uniquify drawing name on rename so SVGs don't overwrite each other (#5635)
+   #8473 closed 2026-07-10 ifcparse: report INVALID_SYNTAX on a truncated file instead of success (#3460)
+   #8453 closed 2026-07-10 ifcparse: don't segfault on truncated / fuzzed STEP files (#6750)
+   #8452 open 2026-07-10 serializers: fix empty-optional dereference in glTF finalize (separate Z-up node)
+   #8341 merged 2026-07-07 ifcopenshell: atomic file writes to prevent corruption on interrupted save (#4797)
+   #8318 open 2026-07-06 Skip quantity takeoff for elements with empty geometry (#7147)
+   #8308 open 2026-07-06 Bonsai: don't cache a half-built IfcClassData on load failure (#6398)
+   #8251 open 2026-07-05 pset.edit_pset: treat an empty string for a numeric property as no value (#4112)
+   #8123 open 2026-05-29 Fix remove_drawing crash on corrupted drawing
+   #8122 open 2026-05-29 Can't `bim.remove_drawing` a corrupt drawing
+   #7501 closed 2025-12-17 False-positive IfcPropertyListValue.WR31 error when ListValues is empty
+   #6059 closed 2025-01-29 Erasing things from an IFC file
+   #5635 open 2024-10-24 Drawings with the same title overwrite each other when created
+   #4797 closed 2024-06-04 Save to temporary file and rename to prevent file corruption during file write
+   #4779 open 2024-05-31 Material management: overwrite (2) or more different material/style definitions with another designated material/style.
+   #3586 open 2023-08-15 Place the schedule on the sheet, but later change the column widths, the schedule gets truncated.
+   #3129 open 2023-05-09 Floor height precision loss
+   #2848 open 2023-03-09 IfcOpenshell.org C++ examples are empty
+   #2535 open 2022-10-25 Clip multiple things (ifcwall, for example) with (1) IfcHalfSpaceSolid?
+== concourse_concourse.prescan.txt: 555 distinct issues listed, 35 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #9722 closed 2026-09-17 baggageclaim: overlay driver Recover() stacks bind-mounts on each in-place restart → ENOSPC crash loop
+   #9636 closed 2026-07-09 RFC 8693 token exchange against embedded Dex always returns an empty 500 — StoreAccessToken middleware assumes every token respons
+   #9630 merged 2026-07-06 Have pipeline collector destroy archived pipelines after some duration (opt-in)
+   #9563 merged 2026-05-01 Emit a more useful error if we get the "rootfs empty" error
+   #9440 merged 2026-01-27 fly: skip destroy confirmation when pipeline does not exist
+   #9379 closed 2025-11-27 fix(atc): prevent partial redaction of overlapping secrets
+   #9293 merged 2025-09-10 Prevent resources from emitting empty versions
+   #9292 merged 2025-09-09 Update MD5 hashing migration to handle empty versions
+   #9160 closed 2025-03-25 refactor: modernize atomic usage in PlanFactory
+   #9158 merged 2025-03-25 refactor: optimize Counter and Gauge with atomic.Int64
+   #9033 closed 2024-11-29 Git version fetch flag fails, clobbered tags
+   #9027 closed 2024-11-12 containerd task execution sometimes fails with EINTR - interrupted system call
+   #8100 merged 2022-02-18 fixed a bug where a worker is pruned, volumes streamed from it should not be immediately destroyed
+   #7718 closed 2021-10-22 [7.4.x] replace atomic with mutex for event id's
+   #7370 merged 2021-07-30 Don't allow empty identifiers when renaming pipelines/teams
+   #7149 closed 2021-06-09 panic: unaligned 64-bit atomic operation when running on raspberry pi 4
+   #7023 merged 2021-05-17 worker/runtime: Don't overwrite $PATH
+   #6752 closed 2021-03-26 If containerd socket is interrupted, worker is stuck in limbo
+   #6057 merged 2020-09-10 Fix empty worker tags
+   #5191 closed 2020-02-17 atc(feat): graceful process termination when interrupted
+   #5181 closed 2020-02-13 WIP: Introduction of Graceful Interrupt Timeout (Abort, Error, Timeout, etc)
+   #5048 closed 2020-01-20 containerd: `Destroy` fails to send SIGKILL when grace period expires
+   #4784 merged 2019-11-18 worker: add Destroy functionality
+   #4656 closed 2019-10-27 Secret redaction incorrectly "redacts" empty string resulting in mangled logs.
+   #4264 closed 2019-08-12 empty volumes when using overlay on Prod
+   #4099 closed 2019-07-04 Flake (?): `guardian.api.garden-server.destroy.failed`
+   #3990 closed 2019-06-07 Use partial version matching for version pinning within pipeline config
+   #3858 closed 2019-05-14 Web crash: 'goroutine stack exceeds 1000000000-byte limit' 'stack overflow'
+   #3558 closed 2019-03-20 Calls to APIs with invalid or expired tokens can return empty 200s rather than 401
+   #3522 closed 2019-03-15 Support atomically switching pins
+   #3017 closed 2019-01-09 better icon for interrupted steps on build page when build is finished
+   #2838 closed 2018-11-21 Add abilitiy to automatically restart interruptible jobs
+   #1737 closed 2017-10-23 worker restart makes atc stall with volume can not destroyed / violates check constraint
+   #813 closed 2016-12-06 When baggageclaim volumes mount is full, baggageclaim should fall back on non-atomic removal
+   #722 closed 2016-10-25 Initial database setup is not atomic and can become wedged if interrupted

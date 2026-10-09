@@ -1,0 +1,4 @@
+ROW seconv static=0 preflight_rc=0 gate=0 detail=accepted, 3 operations
+EXIT seconv 0
+ROW iconvert static=0 preflight_rc=2 gate=DEFINE detail=define: recording_run_failed
+EXIT iconvert 3

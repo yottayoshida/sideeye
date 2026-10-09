@@ -1,0 +1,103 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's (working tree)    sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's at tag v1.10.0     sha256 e3cb964274494696b688f0953fa6b112ef233db9dac6ddca43777cb9b0ddaef3
+build: NOTE the page's installer has moved since v1.10.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 7.85kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 1.7s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/19] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.28kB done
+#5 DONE 0.0s
+
+#6 [ 8/19] RUN sh /opt/install-sideeye.sh v1.10.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#6 CACHED
+
+#7 [13/19] RUN { echo "scw $(scw version 2>&1 | head -1)"; echo "f2 $(f2 --version 2>&1 | head -1)"; echo "seconv $(seconv 2>&1 | head -1)"; echo "iconvert $(iconvert --help 2>&1 | head -1)"; echo "otiotool $(otiotool --version 2>&1 | head -1)"; } | tee /versions.txt
+#7 CACHED
+
+#8 [11/19] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/scaleway/scaleway-cli/releases/download/v2.65.1/scaleway-cli_2.65.1_linux_arm64 scw;     get $gh/ayoisaiah/f2/releases/download/v2.2.2/f2_2.2.2_linux_arm64.tar.gz f2.tgz;     get $gh/SubtitleEdit/subtitleedit/releases/download/v5.2.0/SeConv-Linux-ARM64.tar.gz seconv.tgz;     install -m 755 scw /opt/bin/scw;     mkdir -p x-f2 && tar xzf f2.tgz -C x-f2 && install -m 755 "$(find x-f2 -type f -name f2 | head -1)" /opt/bin/f2;     mkdir -p /opt/seconv && tar xzf seconv.tgz -C /opt/seconv && f=$(find /opt/seconv -type f ( -name SeConv -o -name seconv ) | head -1) && chmod 755 "$f" && ln -sf "$f" /opt/bin/seconv && echo "seconv <- $f";     ls -l /opt/bin
+#8 CACHED
+
+#9 [12/19] RUN /opt/py/bin/pip install --no-cache-dir opentimelineio==0.18.1 > /tmp/pip-otio.log 2>&1 && echo "OK opentimelineio" || { echo "FAILED opentimelineio"; tail -3 /tmp/pip-otio.log; }
+#9 CACHED
+
+#10 [ 3/19] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#10 CACHED
+
+#11 [ 6/19] RUN mkdir -p /opt/bin /tmp/dl && python3 -m venv /opt/py
+#11 CACHED
+
+#12 [ 9/19] RUN "$(cat /install.path)" version
+#12 CACHED
+
+#13 [ 4/19] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#13 CACHED
+
+#14 [ 5/19] RUN for p in nodejs npm ruby ruby-dev php-cli php-xml php-mbstring golang-go libfaketime faketime; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done | tee /tmp/apt-summary.txt
+#14 CACHED
+
+#15 [ 7/19] COPY install-sideeye.sh /opt/install-sideeye.sh
+#15 CACHED
+
+#16 [14/19] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/cooklang/cookcli/releases/download/v0.38.0/cook-aarch64-unknown-linux-musl.tar.gz cook.tgz;     get $gh/Querz/mcaselector/releases/download/2.9/mcaselector-2.9-aarch64.deb mcaselector.deb;     get https://raw.githubusercontent.com/arkenfox/user.js/bb45863be796d331717e2b5d6e490f0d3e3cf93f/prefsCleaner.sh prefsCleaner.sh;     get https://raw.githubusercontent.com/arkenfox/user.js/bb45863be796d331717e2b5d6e490f0d3e3cf93f/user.js user.js;     mkdir -p x-cook && tar xzf cook.tgz -C x-cook && install -m 755 "$(find x-cook -type f -name cook | head -1)" /opt/bin/cook;     mkdir -p /opt/arkenfox && install -m 755 prefsCleaner.sh /opt/arkenfox/prefsCleaner.sh && install -m 644 user.js /opt/arkenfox/user.js;     apt-get install -y --no-install-recommends xdg-utils > /tmp/apt-xdg.log 2>&1;     (dpkg -i mcaselector.deb > /tmp/dpkg-mca.log 2>&1 || apt-get install -y -f > /tmp/apt-mca.log 2>&1) && echo "OK mcaselector" || { echo "FAILED mcaselector"; tail -3 /tmp/dpkg-mca.log; };     ls -l /opt/bin; dpkg -L mcaselector 2>/dev/null | grep -E 'bin/|\.jar$' | head -5
+#16 CACHED
+
+#17 [10/19] RUN apt-get install -y --no-install-recommends openimageio-tools libicu76 > /tmp/apt-oiio.log 2>&1 && echo "OK openimageio-tools" || { echo "MISSING openimageio-tools"; tail -3 /tmp/apt-oiio.log; }
+#17 CACHED
+
+#18 [ 2/19] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config
+#18 CACHED
+
+#19 [15/19] RUN { echo "cook $(cook --version 2>&1 | head -1)"; echo "prefsCleaner $(sha256sum /opt/arkenfox/prefsCleaner.sh | cut -c1-16) $(grep -m1 -i 'version' /opt/arkenfox/prefsCleaner.sh)"; echo "mcaselector $(ls /opt/mcaselector/bin 2>/dev/null | head -3 | tr '\n' ' ')"; } | tee -a /versions.txt
+#19 CACHED
+
+#20 [16/19] RUN apt-get install -y --no-install-recommends softhsm2 opensc > /tmp/apt-softhsm.log 2>&1 && echo "OK softhsm2" || { echo "MISSING softhsm2"; tail -3 /tmp/apt-softhsm.log; }
+#20 3.245 MISSING softhsm2
+#20 3.246 Errors were encountered while processing:
+#20 3.246  mcaselector
+#20 3.246 E: Sub-process /usr/bin/dpkg returned an error code (1)
+#20 DONE 3.3s
+
+#21 [17/19] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/gravitl/netmaker/releases/download/v1.7.0/nmctl-linux-arm64 nmctl; install -m 755 nmctl /opt/bin/nmctl
+#21 2.928 OK nmctl
+#21 DONE 3.0s
+
+#22 [18/19] RUN npm install -g --no-fund --no-audit @yarnpkg/cli-dist@4.18.1 trash-cli > /tmp/npm-third.log 2>&1 && echo "OK yarn trash-cli" || { echo "FAILED yarn/trash-cli"; tail -3 /tmp/npm-third.log; }
+#22 4.659 OK yarn trash-cli
+#22 DONE 4.7s
+
+#23 [19/19] RUN { echo "nmctl $(nmctl version 2>&1 | head -1)"; echo "yarn $(yarn --version 2>&1 | head -1)"; echo "trash $(npm ls -g trash-cli 2>/dev/null | grep trash-cli)"; echo "softhsm2 $(softhsm2-util --version 2>&1 | head -1)"; } | tee -a /versions.txt
+#23 0.116 nmctl Error: unknown command "version" for "nmctl"
+#23 0.419 yarn 4.18.1
+#23 0.683 trash `-- trash-cli@7.2.0
+#23 0.685 softhsm2 2.6.1
+#23 DONE 0.7s
+
+#24 exporting to image
+#24 exporting layers
+#24 exporting layers 0.5s done
+#24 exporting manifest sha256:13d7daa1251e1ad4bc82f1941513e8ec0d397f758927e2d2fadfef650019c063 done
+#24 exporting config sha256:7f7af8f82323035cf6111d722428307352ab43a598c40193cc9677fc27fb495f done
+#24 exporting attestation manifest sha256:acbb686d40eaf1808e04ffa340d5677673762ef64e9c3f78011b59ef52905568 0.0s done
+#24 exporting manifest list sha256:1644243d3fd2b31299f73330861617cea82f28898ce9684b74187ed9b422e192 done
+#24 naming to docker.io/library/sideeye-ud1009:latest done
+#24 unpacking to docker.io/library/sideeye-ud1009:latest
+#24 unpacking to docker.io/library/sideeye-ud1009:latest 0.2s done
+#24 DONE 0.7s
+build: sideeye-ud1009 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt
+build rc=0

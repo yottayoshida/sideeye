@@ -1,0 +1,45 @@
+15    openat(AT_FDCWD, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3
+15    close(3)                          = 0
+15    openat(AT_FDCWD, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3
+15    close(3)                          = 0
+15    openat(AT_FDCWD, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3
+15    close(3)                          = 0
+15    openat(AT_FDCWD, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_CLOEXEC) = 3
+15    openat(AT_FDCWD, "/etc/localtime", O_RDONLY) = 4
+15    close(4)                          = 0
+15    openat(AT_FDCWD, "/opt/bin/scw", O_RDONLY|O_CLOEXEC) = 4
+15    close(4)                          = 0
+15    openat(AT_FDCWD, "/proc/self/auxv", O_RDONLY|O_CLOEXEC) = 4
+15    close(4)                          = 0
+15    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=15, si_uid=0} ---
+15    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=15, si_uid=0} ---
+18    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=15, si_uid=0} ---
+17    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=15, si_uid=0} ---
+15    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=15, si_uid=0} ---
+20    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=15, si_uid=0} ---
+21    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=15, si_uid=0} ---
+21    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=15, si_uid=0} ---
+21    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=15, si_uid=0} ---
+21    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=15, si_uid=0} ---
+21    openat(AT_FDCWD, "/s/aux/home/.config/scw/cli.yaml", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+21    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=15, si_uid=0} ---
+18    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=15, si_uid=0} ---
+22    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=15, si_uid=0} ---
+22    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=15, si_uid=0} ---
+22    write(2, ""..., 260)              = 260
+22    mkdirat(AT_FDCWD, "/s/aux/cache/scw", 0700) = 0
+22    openat(AT_FDCWD, "/s/aux/cache/scw/last-cli-checks", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0600) = 4
+22    close(4)                          = 0
+22    write(6, ""..., 8)                = 8
+22    openat(AT_FDCWD, "/etc/resolv.conf", O_RDONLY|O_CLOEXEC) = 4
+22    close(4)                          = 0
+22    openat(AT_FDCWD, "/etc/nsswitch.conf", O_RDONLY|O_CLOEXEC) = 4
+22    close(4)                          = 0
+22    openat(AT_FDCWD, "/etc/hosts", O_RDONLY|O_CLOEXEC) = 4
+22    close(4)                          = 0
+22    close(4)                          = 0
+19    close(7 <unfinished ...>
+22    close(4 <unfinished ...>
+19    <... close resumed>)              = 0
+22    <... close resumed>)              = 0
+19    close(4)                          = 0

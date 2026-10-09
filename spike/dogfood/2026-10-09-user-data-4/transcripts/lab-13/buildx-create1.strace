@@ -1,0 +1,62 @@
+14    execve("/opt/bin/buildx", [...], 0xffffe6591f50 /* 14 vars */) = 0
+14    openat(AT_FDCWD, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3
+14    close(3)                          = 0
+14    openat(AT_FDCWD, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3
+14    close(3)                          = 0
+14    openat(AT_FDCWD, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3
+14    close(3)                          = 0
+14    openat(AT_FDCWD, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_CLOEXEC) = 3
+14    clone(child_stack=0x23fcb5f9a000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 15
+14    clone(child_stack=0x23fcb5fee000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 16
+14    clone(child_stack=0x23fcb5fea000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 17
+14    clone(child_stack=0x23fcb6012000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM <unfinished ...>
+16    clone(child_stack=0x23fcb600e000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM <unfinished ...>
+14    <... clone resumed>)              = 18
+16    <... clone resumed>)              = 19
+14    openat(AT_FDCWD, "/opt/bin/buildx", O_RDONLY|O_CLOEXEC) = 4
+14    close(4)                          = 0
+14    openat(AT_FDCWD, "/proc/self/auxv", O_RDONLY|O_CLOEXEC) = 4
+14    close(4)                          = 0
+16    clone(child_stack=0x23fcb616a000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 20
+14    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=14, si_uid=0} ---
+14    clone(child_stack=0x23fcb6166000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 21
+18    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=14, si_uid=0} ---
+14    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=14, si_uid=0} ---
+20    clone(child_stack=0x23fcb65a6000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 22
+14    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=14, si_uid=0} ---
+14    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=14, si_uid=0} ---
+14    clone(child_stack=0x23fcb65a2000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 23
+22    openat(AT_FDCWD, "/s/aux/home/.docker/config.json", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+22    mkdirat(AT_FDCWD, "/s/aux/home/.docker", 0700) = 0
+22    mkdirat(AT_FDCWD, "/s/aux/home/.docker/buildx", 0700) = 0
+22    mkdirat(AT_FDCWD, "/s/aux/home/.docker/buildx/instances", 0700) = 0
+22    mkdirat(AT_FDCWD, "/s/aux/home/.docker/buildx/defaults", 0700) = 0
+22    mkdirat(AT_FDCWD, "/s/aux/home/.docker/buildx/activity", 0700) = 0
+22    openat(AT_FDCWD, "/s/aux/home/.docker/buildx/.lock", O_RDONLY|O_CREAT|O_CLOEXEC, 0600) = 4
+22    openat(AT_FDCWD, "/s/aux/home/.docker/contexts/meta", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+22    openat(AT_FDCWD, "/s/aux/home/.docker/buildx/instances/b1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+22    openat(AT_FDCWD, "/s/aux/home/.docker/buildx/activity/.tmp-b1879376373", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 7
+22    write(7, ""..., 20)               = 20
+22    fsync(7)                          = 0
+22    close(7)                          = 0
+22    renameat(AT_FDCWD, "/s/aux/home/.docker/buildx/activity/.tmp-b1879376373", AT_FDCWD, "/s/aux/home/.docker/buildx/activity/b1") = 0
+22    unlinkat(AT_FDCWD, "/s/aux/home/.docker/buildx/activity/.tmp-b1879376373", 0) = -1 ENOENT (No such file or directory)
+22    unlinkat(AT_FDCWD, "/s/aux/home/.docker/buildx/activity/.tmp-b1879376373", AT_REMOVEDIR) = -1 ENOENT (No such file or directory)
+22    openat(AT_FDCWD, "/s/aux/home/.docker/buildx/instances/.tmp-b1193557943", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 7
+22    write(7, ""..., 167)              = 167
+22    fsync(7)                          = 0
+22    close(7)                          = 0
+22    renameat(AT_FDCWD, "/s/aux/home/.docker/buildx/instances/.tmp-b1193557943", AT_FDCWD, "/s/aux/home/.docker/buildx/instances/b1") = 0
+22    unlinkat(AT_FDCWD, "/s/aux/home/.docker/buildx/instances/.tmp-b1193557943", 0) = -1 ENOENT (No such file or directory)
+22    unlinkat(AT_FDCWD, "/s/aux/home/.docker/buildx/instances/.tmp-b1193557943", AT_REMOVEDIR) = -1 ENOENT (No such file or directory)
+22    openat(AT_FDCWD, "/s/aux/home/.docker/buildx/instances/b1", O_RDONLY|O_CLOEXEC) = 7
+22    close(7)                          = 0
+22    openat(AT_FDCWD, "/s/aux/home/.docker/buildx/activity/b1", O_RDONLY|O_CLOEXEC) = 7
+22    close(7)                          = 0
+22    write(6, ""..., 8)                = 8
+22    close(7)                          = 0
+22    close(7)                          = 0
+22    openat(AT_FDCWD, "/s/aux/home/.docker/contexts/meta", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+20    close(7)                          = 0
+20    close(4)                          = 0
+20    write(1, ""..., 3)                = 3

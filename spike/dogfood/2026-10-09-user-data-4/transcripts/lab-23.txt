@@ -1,0 +1,8 @@
+== clone under the shim
+terminate called after throwing an instance of 'std::system_error'
+  what():  Unknown error -1
+== init order
+Aborted
+Aborted
+terminate called after throwing an instance of 'std::system_error'
+cat: '/tmp/ldd.*': No such file or directory

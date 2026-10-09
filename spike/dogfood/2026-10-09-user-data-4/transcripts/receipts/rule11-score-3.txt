@@ -1,0 +1,12 @@
+storj/storj                                1/10  FAIL       label=bug
+gravitl/netmaker                           3/10  pass       label=bug
+aptos-labs/aptos-core                      0/10  FAIL       label=bug
+yarnpkg/berry                              4/10  pass       label=bug
+openziti/ziti                              0/10  FAIL       label=bug
+authelia/authelia                          1/1   FAIL       label=(none matched; last issues of any label)
+softhsm/SoftHSMv2                          4/10  pass       label=bug
+in-toto/in-toto                            1/7   FAIL       label=bug
+SagerNet/sing-box                          0/10  FAIL       label=bug
+sindresorhus/trash-cli                     1/1   FAIL       label=bug
+authelia/authelia                          1/1   FAIL       label=(any label, asked for: the bug label held too few)
+sindresorhus/trash-cli                     3/10  pass       label=(any label, asked for: the bug label held too few)

@@ -1,0 +1,73 @@
+== novelty pre-scan: sindresorhus/trash-cli
+== date: 2026-10-09T01:30:02Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          0 hit(s)
+  corrupt        0 hit(s)
+  corruption     0 hit(s)
+  truncated      0 hit(s)
+  truncate       0 hit(s)
+  empty          3 hit(s) (all listed)
+      #43 open 2026-08-06 Fix literal paths being silently ignored
+      #42 closed 2026-01-26 Directories are silently ignored (not trashed) due to globby onlyFiles default
+      #24 closed 2019-01-15 File deleted but not in Recycle Bin 
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         0 hit(s)
+  power          0 hit(s)
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           0 hit(s)
+  partial        0 hit(s)
+  incomplete     0 hit(s)
+  dataloss       0 hit(s)
+  recover        1 hit(s) (all listed)
+      #9 closed 2016-08-03 Error: spawn E2BIG
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      0 hit(s)
+  clobber        0 hit(s)
+  blank          0 hit(s)
+  unreadable     0 hit(s)
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       2 hit(s) (all listed)
+      #28 open 2020-01-13 `sudo trash` still has no permission
+      #24 closed 2019-01-15 File deleted but not in Recycle Bin 
+  in-place       0 hit(s)
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         1 hit(s) (all listed)
+      #13 closed 2017-05-11 Strange file names in trash folder
+  disk+full      0 hit(s)
+  data+loss      0 hit(s)
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      0 hit(s)
+  write+failure  0 hit(s)
+  file+contents  2 hit(s) (all listed)
+      #28 open 2020-01-13 `sudo trash` still has no permission
+      #24 closed 2019-01-15 File deleted but not in Recycle Bin 
+
+== 51 terms run; 5 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

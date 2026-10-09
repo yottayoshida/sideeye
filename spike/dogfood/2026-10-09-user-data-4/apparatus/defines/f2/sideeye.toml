@@ -1,0 +1,10 @@
+[world]
+state = "/s/f2"
+
+[define]
+operation = "f2 -f IMG_ -r trip_ -x"
+# A batch rename leaves no path that exists both before and after, so the built-in invariant
+# has nothing to judge (nothing_could_fail under supervised, transcripts/explore-batch-1.txt);
+# the checker reads whether the batch is whole.
+check     = "/s/f2-check.sh"
+cwd       = "/s/f2"

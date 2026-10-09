@@ -1,0 +1,8 @@
+scan ended for mcaselector (Querz/mcaselector); exploring 2026-10-09T01:06:29Z
+=== mcaselector 2026-10-09T01:06:29Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+explore-after-scan: done 2026-10-09T01:06:46Z

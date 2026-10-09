@@ -1,0 +1,170 @@
+## stack
+== stack-first: exit 1; 113 strace lines; 4 clone; 1 execve
+14    openat(AT_FDCWD, "/s/aux/home/.stack/.config.yaml14-0.tmp", O_RDWR|O_CREAT|O_EXCL|O_NOCTTY|O_NONBLOCK|O_LARGEFILE, 0600) = 13
+14    openat(AT_FDCWD, "/s/aux/home/.stack/.config.yaml14-0.tmp", O_WRONLY|O_CREAT|O_NOCTTY|O_NONBLOCK|O_LARGEFILE, 0666) = 13
+14    ftruncate(13, 0)                  = 0
+14    renameat(AT_FDCWD, "/s/aux/home/.stack/.config.yaml14-0.tmp", AT_FDCWD, "/s/aux/home/.stack/config.yaml") = 0
+14    openat(AT_FDCWD, "/s/aux/home/.stack/pantry/pantry.sqlite3.pantry-write-lock", O_WRONLY|O_CREAT|O_LARGEFILE|O_CLOEXEC, 0666) = 13
+14    openat(AT_FDCWD, "/s/aux/home/.stack/pantry/pantry.sqlite3", O_RDWR|O_CREAT|O_LARGEFILE|O_NOFOLLOW|O_CLOEXEC, 0644) = 14
+14    openat(AT_FDCWD, "/s/aux/home/.stack/pantry/pantry.sqlite3-journal", O_RDWR|O_CREAT|O_LARGEFILE|O_NOFOLLOW|O_CLOEXEC, 0644) = 17
+14    fsync(17)                         = 0
+14    fsync(15)                         = 0
+14    fsync(17)                         = 0
+14    fsync(14)                         = 0
+14    unlinkat(AT_FDCWD, "/s/aux/home/.stack/pantry/pantry.sqlite3-journal", 0) = 0
+14    openat(AT_FDCWD, "/s/aux/home/.stack/pantry/pantry.sqlite3", O_RDWR|O_CREAT|O_LARGEFILE|O_NOFOLLOW|O_CLOEXEC, 0644) = 13
+14    openat(AT_FDCWD, "/s/aux/home/.stack/stack.sqlite3.pantry-write-lock", O_WRONLY|O_CREAT|O_LARGEFILE|O_CLOEXEC, 0666) = 14
+  proxySecureMode      = ProxySecureWithConnect
+}
+ (ConnectionFailure Network.Socket.getAddrInfo (called with preferred socket type/protocol: AddrInfo {addrFlags = [AI_ADDRCONFIG], addrFamily = AF_UNSPEC, addrSocketType = Stream, addrProtocol = 0, ad
+total 72
+drwxr-xr-x 4 root root  4096 Oct  9 01:29 .
+drwxr-xr-x 3 root root  4096 Oct  9 01:29 ..
+-rw------- 1 root root   921 Oct  9 01:29 config.yaml
+drwxr-xr-x 2 root root  4096 Oct  9 01:29 global-project
+drwxr-xr-x 2 root root  4096 Oct  9 01:29 pantry
+-rw-r--r-- 1 root root 53248 Oct  9 01:29 stack.sqlite3
+-rw-r--r-- 1 root root     0 Oct  9 01:29 stack.sqlite3.pantry-write-lock
+/s/aux/home/.stack
+/s/aux/home/.stack/stack.sqlite3.pantry-write-lock
+/s/aux/home/.stack/config.yaml
+/s/aux/home/.stack/pantry
+/s/aux/home/.stack/pantry/pantry.sqlite3
+/s/aux/home/.stack/pantry/pantry.sqlite3.pantry-write-lock
+/s/aux/home/.stack/stack.sqlite3
+/s/aux/home/.stack/global-project
+== stack-second: exit 1; 63 strace lines; 4 clone; 1 execve
+34    openat(AT_FDCWD, "/s/aux/home/.stack/pantry/pantry.sqlite3.pantry-write-lock", O_WRONLY|O_CREAT|O_LARGEFILE|O_CLOEXEC, 0666) = 13
+34    openat(AT_FDCWD, "/s/aux/home/.stack/pantry/pantry.sqlite3", O_RDWR|O_CREAT|O_LARGEFILE|O_NOFOLLOW|O_CLOEXEC, 0644) = 14
+34    openat(AT_FDCWD, "/s/aux/home/.stack/pantry/pantry.sqlite3", O_RDWR|O_CREAT|O_LARGEFILE|O_NOFOLLOW|O_CLOEXEC, 0644) = 13
+34    openat(AT_FDCWD, "/s/aux/home/.stack/stack.sqlite3.pantry-write-lock", O_WRONLY|O_CREAT|O_LARGEFILE|O_CLOEXEC, 0666) = 14
+34    openat(AT_FDCWD, "/s/aux/home/.stack/stack.sqlite3", O_RDWR|O_CREAT|O_LARGEFILE|O_NOFOLLOW|O_CLOEXEC, 0644) = 15
+34    openat(AT_FDCWD, "/s/aux/home/.stack/stack.sqlite3", O_RDWR|O_CREAT|O_LARGEFILE|O_NOFOLLOW|O_CLOEXEC, 0644) = 14
+34    openat(AT_FDCWD, "/s/aux/home/.stack/stack.sqlite3.pantry-write-lock", O_WRONLY|O_CREAT|O_LARGEFILE|O_CLOEXEC, 0666) = 15
+  proxySecureMode      = ProxySecureWithConnect
+}
+ (ConnectionFailure Network.Socket.getAddrInfo (called with preferred socket type/protocol: AddrInfo {addrFlags = [AI_ADDRCONFIG], addrFamily = AF_UNSPEC, addrSocketType = Stream, addrProtocol = 0, ad
+templates:
+  params:
+## cabal
+== cabal-init: exit 0; 26 strace lines; 4 clone; 1 execve
+54    openat(AT_FDCWD, "/s/aux/tmp/config54-0.tmp", O_RDWR|O_CREAT|O_EXCL|O_NOCTTY|O_NONBLOCK|O_LARGEFILE, 0666) = 13
+54    renameat(AT_FDCWD, "/s/aux/tmp/config54-0.tmp", AT_FDCWD, "/s/aux/home/.config/cabal/config") = 0
+Writing default configuration to /s/aux/home/.config/cabal/config
+/s/aux/home/.config/cabal
+/s/aux/home/.config/cabal/config
+== cabal-update: exit 0; 29 strace lines; 4 clone; 1 execve
+72    renameat(AT_FDCWD, "/s/aux/home/.config/cabal/config", AT_FDCWD, "/s/aux/home/.config/cabal/config.backup") = 0
+72    openat(AT_FDCWD, "/s/aux/tmp/config72-0.tmp", O_RDWR|O_CREAT|O_EXCL|O_NOCTTY|O_NONBLOCK|O_LARGEFILE, 0666) = 13
+72    renameat(AT_FDCWD, "/s/aux/tmp/config72-0.tmp", AT_FDCWD, "/s/aux/home/.config/cabal/config") = 0
+Renaming /s/aux/home/.config/cabal/config to
+/s/aux/home/.config/cabal/config.backup.
+Writing merged config to /s/aux/home/.config/cabal/config.
+/s/aux/home/.config/cabal/config:119:jobs: 4
+## carapace
+== carapace-first: exit 0; 18 strace lines; 5 clone; 1 execve
+91    openat(AT_FDCWD, "/s/aux/home/.config/carapace/styles.json", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0777) = 4
+/s/aux/home/.config/carapace/styles.json
+{
+  "carapace": {
+    "Value": "bold magenta"
+  }
+}== carapace-second: exit 0; 18 strace lines; 5 clone; 1 execve
+112   openat(AT_FDCWD, "/s/aux/home/.config/carapace/styles.json", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0777) = 4
+{
+  "carapace": {
+    "Description": "dim",
+    "Value": "bold magenta"
+  }
+}## chdman
+   chdman createraw: create a raw CHD from the input file
+   chdman addmeta: add metadata to the CHD
+   chdman delmeta: remove metadata from the CHD
+createraw exit 1
+total 1024
+-rw-r--r-- 1 root root 1048576 Oct  9 01:29 raw.bin
+chdman - MAME Compressed Hunks of Data (CHD) manager 0.276 (unknown)
+Error: Required parameters missing
+
+Usage:
+   chdman addmeta [options], where valid options are:
+      --input, -i <filename>: input file name (required)
+      --tag, -t <tag>: 4-character tag for metadata (required)
+      --index, -ix <index>: indexed instance of this metadata tag
+      --valuetext, -vt <text>: text for the metadata
+      --valuefile, -vf <file>: file containing data to add
+      --nochecksum, -nocs: do not include this metadata information in the overall SHA-1
+== chdman-addmeta: exit 1; 102 strace lines; 0 clone; 1 execve
+chdman - MAME Compressed Hunks of Data (CHD) manager 0.276 (unknown)
+Error opening CHD file (d.chd): No such file or directory
+Fatal error occurred: 1
+total 1024
+-rw-r--r-- 1 root root 1048576 Oct  9 01:29 raw.bin
+chdman - MAME Compressed Hunks of Data (CHD) manager 0.276 (unknown)
+Error opening CHD file (d.chd): No such file or directory
+Fatal error occurred: 1
+## kvantum
+KvAdapta
+KvAdaptaDark
+KvAmbiance
+KvAmbience
+KvArc
+KvArcDark
+KvBeige
+KvBlender
+KvBrown
+KvCurves
+kvantummanager
+kvantumpreview
+Kvantum Manager - A GUI for configuring Kvantum
+Usage:
+
+Start the GUI:
+	kvantummanager
+Show this help:
+	kvantummanager --help
+Show version information:
+	kvantummanager --version
+Activate a theme:
+	kvantummanager --set THEME
+Assign a theme to some application(s):
+== kvantum-first: exit 0; 411 strace lines; 0 clone; 1 execve
+165   openat(AT_FDCWD, "/s/aux/home/.config/Kvantum/kvantum.kvconfig.lock", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0666) = 4
+165   unlinkat(AT_FDCWD, "/s/aux/home/.config/Kvantum/kvantum.kvconfig.lock", 0) = 0
+165   openat(AT_FDCWD, "/var/cache/fontconfig//4c599c202bc5c08e2d34565a40eac3b2-le64.cache-9.TMP-Zy9qHf", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 5
+165   unlinkat(AT_FDCWD, "/var/cache/fontconfig//4c599c202bc5c08e2d34565a40eac3b2-le64.cache-9.TMP-Zy9qHf", 0) = 0
+165   unlinkat(AT_FDCWD, "/var/cache/fontconfig//4c599c202bc5c08e2d34565a40eac3b2-le64.cache-9.NEW", 0) = -1 ENOENT (No such file or directory)
+165   openat(AT_FDCWD, "/var/cache/fontconfig//4c599c202bc5c08e2d34565a40eac3b2-le64.cache-9.NEW", O_RDWR|O_CREAT|O_CLOEXEC, 0666) = 5
+165   renameat(AT_FDCWD, "/var/cache/fontconfig//4c599c202bc5c08e2d34565a40eac3b2-le64.cache-9.NEW", AT_FDCWD, "/var/cache/fontconfig//4c599c202bc5c08e2d34565a40eac3b2-le64.cache-9") = 0
+165   unlinkat(AT_FDCWD, "/var/cache/fontconfig//4c599c202bc5c08e2d34565a40eac3b2-le64.cache-9.LCK", 0) = 0
+165   openat(AT_FDCWD, "/var/cache/fontconfig//3830d5c3ddfd5cd38a049b759396e72e-le64.cache-9.TMP-64UlWb", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 5
+165   unlinkat(AT_FDCWD, "/var/cache/fontconfig//3830d5c3ddfd5cd38a049b759396e72e-le64.cache-9.TMP-64UlWb", 0) = 0
+165   unlinkat(AT_FDCWD, "/var/cache/fontconfig//3830d5c3ddfd5cd38a049b759396e72e-le64.cache-9.NEW", 0) = -1 ENOENT (No such file or directory)
+165   openat(AT_FDCWD, "/var/cache/fontconfig//3830d5c3ddfd5cd38a049b759396e72e-le64.cache-9.NEW", O_RDWR|O_CREAT|O_CLOEXEC, 0666) = 5
+165   renameat(AT_FDCWD, "/var/cache/fontconfig//3830d5c3ddfd5cd38a049b759396e72e-le64.cache-9.NEW", AT_FDCWD, "/var/cache/fontconfig//3830d5c3ddfd5cd38a049b759396e72e-le64.cache-9") = 0
+165   unlinkat(AT_FDCWD, "/var/cache/fontconfig//3830d5c3ddfd5cd38a049b759396e72e-le64.cache-9.LCK", 0) = 0
+Qt depends on a UTF-8 locale, and has switched to "C.UTF-8" instead.
+If this causes problems, reconfigure your locale. See the locale(1) manual
+for more information.
+/s/aux/home/.config/Kvantum/kvantum.kvconfig
+[General]
+theme=KvArc
+== kvantum-second: exit 0; 300 strace lines; 0 clone; 1 execve
+180   openat(AT_FDCWD, "/s/aux/home/.config/Kvantum/kvantum.kvconfig", O_RDWR|O_CREAT|O_CLOEXEC, 0666) = 4
+180   openat(AT_FDCWD, "/s/aux/home/.config/Kvantum/kvantum.kvconfig", O_RDWR|O_CREAT|O_CLOEXEC, 0666) = 4
+180   openat(AT_FDCWD, "/s/aux/home/.config/Kvantum/kvantum.kvconfig.lock", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0666) = 4
+180   renameat(AT_FDCWD, "/s/aux/home/.config/Kvantum/kvantum.kvconfig.jbqktZ", AT_FDCWD, "/s/aux/home/.config/Kvantum/kvantum.kvconfig") = 0
+180   unlinkat(AT_FDCWD, "/s/aux/home/.config/Kvantum/kvantum.kvconfig.lock", 0) = 0
+Qt depends on a UTF-8 locale, and has switched to "C.UTF-8" instead.
+If this causes problems, reconfigure your locale. See the locale(1) manual
+for more information.
+[General]
+theme=KvFlat
+## hunspell
+== hunspell: exit 0; 70 strace lines; 1 clone; 2 execve
+196   openat(AT_FDCWD, "/s/hun/my.dic", O_WRONLY|O_CREAT|O_APPEND, 0666) = 3
+@(#) International Ispell Version 3.2.06 (but really Hunspell 1.7.5)
+zzyzx
+qwerty
+flibbertigibbet
+snorkack

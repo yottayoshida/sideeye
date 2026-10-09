@@ -1,0 +1,2 @@
+the configuration of the current context is now managed in a separate file: /s/aux/home/.config/kafkactl/current-context.yml
+the parameter “current-context” in config.yml is no longer used. Please remove it to avoid confusion.

@@ -1,0 +1,48 @@
+13    openat(AT_FDCWD, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3
+13    close(3)                          = 0
+13    openat(AT_FDCWD, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3
+13    close(3)                          = 0
+13    openat(AT_FDCWD, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3
+13    close(3)                          = 0
+13    openat(AT_FDCWD, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_CLOEXEC) = 3
+13    clone(child_stack=0x58b6107ce000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 14
+13    clone(child_stack=0x58b610822000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 15
+15    clone(child_stack=0x58b61081e000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 16
+13    clone(child_stack=0x58b610840000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 17
+13    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+13    openat(AT_FDCWD, "/opt/bin/fly", O_RDONLY|O_CLOEXEC) = 4
+13    close(4)                          = 0
+13    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+13    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+16    clone(child_stack=0x58b61083c000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 18
+17    clone(child_stack=0x58b6108ae000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 19
+13    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+15    clone(child_stack=0x58b6108aa000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM <unfinished ...>
+18    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+15    <... clone resumed>)              = 20
+13    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+18    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+19    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+13    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+13    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+13    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+13    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+13    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+17    clone(child_stack=0x58b610cba000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 21
+13    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+13    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+13    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+20    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+17    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+17    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+18    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+13    openat(AT_FDCWD, "/s/aux/home/.flyrc", O_RDONLY|O_CLOEXEC) = 4
+18    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+21    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=13, si_uid=0} ---
+13    close(4)                          = 0
+13    openat(AT_FDCWD, "/s/aux/home/.flyrc", O_RDONLY|O_CLOEXEC) = 4
+13    close(4)                          = 0
+13    openat(AT_FDCWD, "/s/aux/home/.flyrc", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0600) = 4
+13    write(4, ""..., 176)              = 176
+13    close(4)                          = 0
+13    write(1, ""..., 19)               = 19

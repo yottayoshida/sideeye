@@ -1,0 +1,13 @@
+Subtitle Edit - Batch Converter
+
+┌───────────┬────────────────┐
+│ Parameter │ Value          │
+├───────────┼────────────────┤
+│ Pattern   │ subs.srt       │
+│ Format    │ subrip (*.srt) │
+└───────────┴────────────────┘
+
+1: subs.srt -> /s/seconv/subs.srt... done.
+
+✓ Conversion completed successfully!
+Converted 1 file(s) in 39 ms

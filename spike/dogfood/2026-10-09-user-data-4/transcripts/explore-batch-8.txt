@@ -1,0 +1,45 @@
+scan ended for stack (commercialhaskell/stack); exploring 2026-10-09T01:44:06Z
+=== stack 2026-10-09T01:44:06Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for cabal (haskell/cabal); exploring 2026-10-09T01:50:33Z
+=== cabal 2026-10-09T01:50:33Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for carapace (carapace-sh/carapace-bin); exploring 2026-10-09T01:55:36Z
+=== carapace 2026-10-09T01:55:36Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for chdman (mamedev/mame); exploring 2026-10-09T02:01:38Z
+=== chdman 2026-10-09T02:01:38Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for hunspell (hunspell/hunspell); exploring 2026-10-09T02:06:21Z
+=== hunspell 2026-10-09T02:06:22Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+explore-after-scan: done 2026-10-09T02:06:22Z

@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.config/rpk"
+
+[define]
+operation = "rpk profile use a"
+cwd       = "/s/rpk-in"

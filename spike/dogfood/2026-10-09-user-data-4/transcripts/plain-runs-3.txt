@@ -1,0 +1,2 @@
+PLAIN mcaselector exit=0 state=unchanged  ()
+PLAIN mcaselector exit=0 state=changed  (deleting chunks  ? % [                                     ] 0/1 (0:00:00 / ?) deleting )

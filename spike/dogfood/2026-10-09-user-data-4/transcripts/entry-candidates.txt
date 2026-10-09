@@ -1,0 +1,10 @@
+ROW scw static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT scw 0
+ROW f2 static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 3 operations
+EXIT f2 0
+ROW seconv static=0 preflight_rc=2 gate=1 detail=wall: unsupported_syscall_observed
+EXIT seconv 1
+ROW iconvert static=0 preflight_rc=2 gate=DEFINE detail=define: recording_run_failed
+EXIT iconvert 3
+ROW otiotool static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+EXIT otiotool 0

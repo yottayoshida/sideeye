@@ -1,0 +1,30 @@
+142   openat(AT_FDCWD, "/proc/self/cgroup", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3
+142   close(3)                          = 0
+142   openat(AT_FDCWD, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3
+142   close(3)                          = 0
+142   clone(child_stack=0xffff9aefc640, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[143], tls=0xffff9aefc740, child_tidptr=0x1196470) = 143
+142   clone(child_stack=0xffff9acf9640, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[144], tls=0xffff9acf9740, child_tidptr=0x1196470) = 144
+142   clone(child_stack=0xffff9aaf1640, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[145], tls=0xffff9aaf1740, child_tidptr=0x1196470) = 145
+142   clone(child_stack=0xffff9a8ea640, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[146], tls=0xffff9a8ea740, child_tidptr=0x1196470) = 146
+142   clone(child_stack=0xffff9a6e3640, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[147], tls=0xffff9a6e3740, child_tidptr=0x1196470) = 147
+142   clone(child_stack=0xffff9a4dc640, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[148], tls=0xffff9a4dc740, child_tidptr=0x1196470) = 148
+142   clone(child_stack=0xffff9a2d5640, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[149], tls=0xffff9a2d5740, child_tidptr=0x1196470) = 149
+142   clone(child_stack=0xffff9a0cd640, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[150], tls=0xffff9a0cd740, child_tidptr=0x1196470) = 150
+142   clone(child_stack=0xffff99ec6640, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[151], tls=0xffff99ec6740, child_tidptr=0x1196470) = 151
+142   clone(child_stack=0xffff99cbf640, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[152], tls=0xffff99cbf740, child_tidptr=0x1196470) = 152
+142   openat(AT_FDCWD, "/s/atac", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 6
+142   openat(AT_FDCWD, "/s/atac/demo.json", O_RDWR|O_CREAT|O_LARGEFILE|O_CLOEXEC, 0666) = 7
+142   close(7)                          = 0
+142   close(6)                          = 0
+142   openat(AT_FDCWD, "/s/atac/demo.json_", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 6
+142   write(6, ""..., 63)               = 63
+142   renameat(AT_FDCWD, "/s/atac/demo.json_", AT_FDCWD, "/s/atac/demo.json") = 0
+142   close(6)                          = 0
+142   openat(AT_FDCWD, "/s/atac/demo.json_", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 6
+142   write(6, ""..., 1358)             = 1358
+142   renameat(AT_FDCWD, "/s/atac/demo.json_", AT_FDCWD, "/s/atac/demo.json") = 0
+142   close(6)                          = 0
+142   write(4, ""..., 8)                = 8
+152   close(3)                          = 0
+152   close(5)                          = 0
+152   close(4)                          = 0

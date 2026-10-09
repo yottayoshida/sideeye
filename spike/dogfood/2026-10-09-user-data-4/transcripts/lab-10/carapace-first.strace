@@ -1,0 +1,18 @@
+91    execve("/opt/bin/carapace", [...], 0xffffc39d9ab0 /* 14 vars */) = 0
+91    openat(AT_FDCWD, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3
+91    close(3)                          = 0
+91    openat(AT_FDCWD, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3
+91    close(3)                          = 0
+91    openat(AT_FDCWD, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3
+91    close(3)                          = 0
+91    openat(AT_FDCWD, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_CLOEXEC) = 3
+91    clone(child_stack=0xe0c95022000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 92
+91    clone(child_stack=0xe0c95076000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 93
+91    clone(child_stack=0xe0c95072000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 94
+93    clone(child_stack=0xe0c950a0000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 95
+91    clone(child_stack=0xe0c9509c000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 96
+91    openat(AT_FDCWD, "/s/aux/home/.config/carapace/styles.json", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+91    mkdirat(AT_FDCWD, "/s/aux/home/.config/carapace", 0777) = 0
+91    openat(AT_FDCWD, "/s/aux/home/.config/carapace/styles.json", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0777) = 4
+91    write(4, ""..., 51)               = 51
+91    close(4)                          = 0

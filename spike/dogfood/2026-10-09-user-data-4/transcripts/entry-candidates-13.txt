@@ -1,0 +1,14 @@
+ROW fly static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT fly 0
+ROW kafkactl static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 3 operations
+EXIT kafkactl 0
+ROW rpk static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 3 operations
+EXIT rpk 0
+ROW atac static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 7 operations
+EXIT atac 0
+ROW ckan static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+EXIT ckan 0
+ROW ckan static=- preflight_rc=- gate=2 detail=seed.sh failed
+EXIT ckan 2
+ROW ckan static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+EXIT ckan 0

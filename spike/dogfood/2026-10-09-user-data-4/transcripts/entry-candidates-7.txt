@@ -1,0 +1,10 @@
+ROW nmctl static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT nmctl 0
+ROW yarn static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected
+EXIT yarn 1
+ROW trash static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected
+EXIT trash 1
+ROW softhsm static=0 preflight_rc=1 gate=1 detail=byte-repeatability: --twice found different bytes
+EXIT softhsm 1
+ROW yarn static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected
+EXIT yarn 1

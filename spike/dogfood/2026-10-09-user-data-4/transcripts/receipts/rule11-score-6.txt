@@ -1,0 +1,4 @@
+mamba-org/mamba                            0/10  FAIL       label=(none matched; last issues of any label)
+tsujan/Kvantum                             6/7   pass       label=bug
+hunspell/hunspell                          5/10  pass       label=bug
+mamba-org/mamba                            2/10  FAIL       label=type::bug

@@ -1,0 +1,301 @@
+== novelty pre-scan: carapace-sh/carapace-bin
+== date: 2026-10-09T01:50:20Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          6 hit(s) (all listed)
+      #3773 merged 2026-09-02 fix(npm): don't panic on search results without a description
+      #3705 merged 2026-08-14 fix: guard the error in filepath.Walk callbacks
+      #3771 closed 2026-09-02 `carapace npm export -- install <query>` panics with an index-out-of-range error for certain search terms, instead of returning normal completion output.
+      #2792 merged 2025-05-12 just: add support for private recipes and modules
+      #2336 merged 2024-04-05 build(deps): bump golang.org/x/mod from 0.16.0 to 0.17.0
+      #79 closed 2020-09-01 fish: docker container crashes
+  corrupt        0 hit(s)
+  corruption     0 hit(s)
+  truncated      27 hit(s) (all listed)
+      #3761 merged 2026-08-28 git completer fixes
+      #3370 closed 2026-04-26 [just] support recipe argument completion via just --json
+      #3288 closed 2026-02-26 pkg/util/embed/flag.go: Support short flags with more than one character
+      #3577 merged 2026-06-24 build(deps): bump actions/cache from 5 to 6
+      #3639 merged 2026-07-16 Bump actions/setup-go from 6 to 7
+      #3276 merged 2026-02-19 pixi: added completer with dynamic completions
+      #3663 merged 2026-07-31 Bump github/codeql-action from 4 to 4.37.3
+      #3557 merged 2026-06-19 build(deps): bump actions/checkout from 6 to 7
+      #3286 merged 2026-02-23 build(deps): bump goreleaser/goreleaser-action from 6 to 7
+      #3117 merged 2025-12-12 build(deps): bump actions/cache from 4 to 5
+      #3103 closed 2025-12-04 build(deps): bump github.com/spf13/cobra from 1.9.1 to 1.10.2
+      #2950 closed 2025-09-02 build(deps): bump github.com/spf13/cobra from 1.9.1 to 1.10.1
+      #2996 merged 2025-10-08 build(deps): bump github/codeql-action from 3 to 4
+      #3076 merged 2025-11-21 build(deps): bump actions/checkout from 5 to 6
+      #3032 merged 2025-10-27 build(deps): bump actions/upload-artifact from 4 to 5
+      #2912 merged 2025-08-06 build(deps): bump actions/download-artifact from 4 to 5
+      #2920 merged 2025-08-12 build(deps): bump actions/checkout from 4 to 5
+      #2644 merged 2024-12-16 build(deps): bump actions/cache from 3 to 4
+      #2707 merged 2025-02-17 build(deps): bump github.com/spf13/cobra from 1.8.1 to 1.9.1
+      #2685 merged 2025-01-21 build(deps): bump github.com/carapace-sh/carapace from 1.5.3 to 1.6.0
+  truncate       32 hit(s) (all listed)
+      #3761 merged 2026-08-28 git completer fixes
+      #3685 closed 2026-08-08 `carapace _carapace bash`: produces `complete -o noquote` which bash does not understand
+      #3370 closed 2026-04-26 [just] support recipe argument completion via just --json
+      #3577 merged 2026-06-24 build(deps): bump actions/cache from 5 to 6
+      #3288 closed 2026-02-26 pkg/util/embed/flag.go: Support short flags with more than one character
+      #3639 merged 2026-07-16 Bump actions/setup-go from 6 to 7
+      #3276 merged 2026-02-19 pixi: added completer with dynamic completions
+      #3663 merged 2026-07-31 Bump github/codeql-action from 4 to 4.37.3
+      #3557 merged 2026-06-19 build(deps): bump actions/checkout from 6 to 7
+      #3286 merged 2026-02-23 build(deps): bump goreleaser/goreleaser-action from 6 to 7
+      #3117 merged 2025-12-12 build(deps): bump actions/cache from 4 to 5
+      #3103 closed 2025-12-04 build(deps): bump github.com/spf13/cobra from 1.9.1 to 1.10.2
+      #2950 closed 2025-09-02 build(deps): bump github.com/spf13/cobra from 1.9.1 to 1.10.1
+      #2970 closed 2025-09-17 carapace: Setting up custom completion using yaml does not work in bash
+      #2996 merged 2025-10-08 build(deps): bump github/codeql-action from 3 to 4
+      #3076 merged 2025-11-21 build(deps): bump actions/checkout from 5 to 6
+      #3032 merged 2025-10-27 build(deps): bump actions/upload-artifact from 4 to 5
+      #2999 closed 2025-10-10 _carapace bash: generates invalid complete -F string
+      #2912 merged 2025-08-06 build(deps): bump actions/download-artifact from 4 to 5
+      #2920 merged 2025-08-12 build(deps): bump actions/checkout from 4 to 5
+  empty          60 hit(s) (all listed)
+      #3762 open 2026-08-30 fix(nushell): fallback to default completions when completion is not found by carapace
+      #3613 merged 2026-07-04 fix(nushell): fallback to default completions on empty
+      #3149 open 2025-12-29 Fish bridge not working
+      #2409 open 2024-06-11 carapace _caraspace | Out-String | Invoke-Expression
+      #3660 merged 2026-07-30 ps.ActionKillSignals should default to runtime.GOOS on empty
+      #3606 open 2026-07-03 darwin/amd64  arm64 ship a different set of bundled completers
+      #3773 merged 2026-09-02 fix(npm): don't panic on search results without a description
+      #3612 closed 2026-07-04 nushell: external completer blocks fallback on empty completions (gives "NO RECORDS FOUND")
+      #3771 closed 2026-09-02 `carapace npm export -- install <query>` panics with an index-out-of-range error for certain search terms, instead of returning normal completion output.
+      #3661 merged 2026-07-30 Update gh-stack completer to v0.1.0
+      #3665 merged 2026-07-31 Update but completer for v0.22.0
+      #3776 closed 2026-09-03 dotnet completer: build for Darwin/Linux, not just Windows
+      #3635 merged 2026-07-14 git completer: fix flag descriptions for consistency and correctness
+      #3677 closed 2026-08-06 cargo:  -p/--package fails with "exit status 101" in workspaces
+      #3578 merged 2026-06-24 git: add missing subcommands and flags for Git 2.55
+      #3519 merged 2026-06-01 fix: Default() and strings.ReplaceAll in pkg/actions
+      #3261 merged 2026-02-13 complete all variants for empty name
+      #3379 merged 2026-04-28 pixi: parse global environments from JSON output
+      #2826 closed 2025-06-09 `cobra` bridge doesn't work?
+      #3270 closed 2026-02-17 zsh bridge for nushell seems broken after recent changes
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      1 hit(s) (all listed)
+      #2406 open 2024-06-09 artisan completer
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         2 hit(s) (all listed)
+      #2971 closed 2025-09-18 Error with alias commands in ZSH
+      #2658 closed 2024-12-24 gcloud: Killed by signal in _gcloud_completion after 0s
+  power          3 hit(s) (all listed)
+      #3361 open 2026-04-11 Support user-controlled spec locations
+      #3312 closed 2026-03-08 feat: add completer for mise
+      #2031 merged 2023-11-15 fastfetch: initial commit
+  outage         0 hit(s)
+  ENOSPC         1 hit(s) (all listed)
+      #3742 merged 2026-08-24 build(deps): bump github/codeql-action from 4.37.7 to 4.37.8
+  disk           16 hit(s) (all listed)
+      #3835 merged 2026-10-06 update git completer for v2.56.0
+      #3341 open 2026-03-22 balooctl completer
+      #2829 open 2025-06-11 systemctl: does not find some/most services
+      #3803 merged 2026-09-21 build(deps): bump github/codeql-action from 4.38.0 to 4.38.1
+      #3742 merged 2026-08-24 build(deps): bump github/codeql-action from 4.37.7 to 4.37.8
+      #3735 merged 2026-08-23 fix: align darwin completer flags with macOS manpages
+      #3793 merged 2026-09-14 build(deps): bump github/codeql-action from 4.37.9 to 4.38.0
+      #3599 merged 2026-06-30 fix: use int64 for block device sizes to fix 32-bit build
+      #3611 merged 2026-07-04 add windows completers
+      #3487 closed 2026-05-22 mount: avoid linux-only completions on darwin
+      #3663 merged 2026-07-31 Bump github/codeql-action from 4 to 4.37.3
+      #3270 closed 2026-02-17 zsh bridge for nushell seems broken after recent changes
+      #3194 closed 2026-01-19 buildkit completer
+      #99 closed 2020-09-03 git completer
+      #2359 closed 2024-04-25 git: Filename completion with directory symlinks
+      #2031 merged 2023-11-15 fastfetch: initial commit
+  partial        12 hit(s) (all listed)
+      #3776 closed 2026-09-03 dotnet completer: build for Darwin/Linux, not just Windows
+      #3556 merged 2026-06-18 build(deps): bump github.com/carapace-sh/carapace-jjlex from 0.1.5 to 0.1.6
+      #3364 closed 2026-04-20 git: push --delete completes prefixed refs instead of bare remote branch names
+      #2880 merged 2025-07-20 kitty: fix partial directory completion
+      #2876 closed 2025-07-18 nushell: generated completion code is broken
+      #2971 closed 2025-09-18 Error with alias commands in ZSH
+      #2557 closed 2024-10-21 carapace _carapace | Out-String | Invoke-Expression: az completion throws error resolving sh on Windows
+      #2293 merged 2024-03-11 build(deps): bump actions/checkout from 2 to 4
+      #2115 closed 2024-01-04 git diff: filter file completion to paths containing changes
+      #1753 merged 2023-07-22 build(deps): bump github.com/rsteube/carapace from 0.39.1 to 0.39.3
+      #1487 merged 2023-01-20 ActionArgcomplete: fix partial positional not being completed
+      #1486 closed 2023-01-20 Argcomplete bridge does not autocomplete when positional arguments is partially typed
+  incomplete     8 hit(s) (all listed)
+      #3720 open 2026-08-18 fix: correct flag types and add missing subcommands in flutter completer
+      #3657 open 2026-07-29 paru: completion spec missing paru-specific flags (--makepkg and ~40 others)
+      #2035 open 2023-11-20 Unexpected filename completion behavior with carapace
+      #3159 merged 2025-12-31 ghostty: fix flags (incomplete)
+      #3256 closed 2026-02-12 Error after update in fish completions
+      #2471 closed 2024-08-08 `tools.python.CallFunction` macro
+      #2325 merged 2024-04-01 git: show - added missing flags (incomplete)
+      #97 merged 2020-09-03 added docker (incomplete)
+  dataloss       0 hit(s)
+  recover        0 hit(s)
+  recovery       2 hit(s) (all listed)
+      #3652 merged 2026-07-24 Add lexer reference and remove duplicated jq skill
+      #505 merged 2021-08-04 git: recovery completion
+  rollback       4 hit(s) (all listed)
+      #2406 open 2024-06-09 artisan completer
+      #3700 merged 2026-08-13 Update vercel completer to match latest CLI
+      #3670 merged 2026-08-03 Bump github/codeql-action from 4.37.3 to 4.37.4
+      #3354 merged 2026-04-05 nh: initial completer
+  resume         11 hit(s) (all listed)
+      #3341 open 2026-03-22 balooctl completer
+      #3608 open 2026-07-03 unchecked completers
+      #2406 open 2024-06-09 artisan completer
+      #3565 closed 2026-06-21 Add balooctl6 completer
+      #3685 closed 2026-08-08 `carapace _carapace bash`: produces `complete -o noquote` which bash does not understand
+      #3308 closed 2026-03-06 Carapace stops `ls` from auto-completing filenames if backup files exist in `~/.config/carapace/specs/`
+      #3192 closed 2026-01-18 move completers
+      #2970 closed 2025-09-17 carapace: Setting up custom completion using yaml does not work in bash
+      #2999 closed 2025-10-10 _carapace bash: generates invalid complete -F string
+      #225 merged 2020-11-20 added resume-cli
+      #236 closed 2020-12-05 kubectl
+  half-written   0 hit(s)
+  wipe           2 hit(s) (all listed)
+      #2406 open 2024-06-09 artisan completer
+      #3399 closed 2026-04-29 Add talosctl completer
+  wipes          0 hit(s)
+  erase          4 hit(s) (all listed)
+      #3245 closed 2026-02-09 CARAPACE_EXCLUDES still registers --no-files completions in fish, breaking default file completion
+      #2704 merged 2025-02-15 fish: erase existing for tombstone
+      #185 closed 2020-10-24 fish: erased functions still get autoloaded
+      #2518 closed 2024-08-22 fish vs carapace in 2024
+  erasing        2 hit(s) (all listed)
+      #3245 closed 2026-02-09 CARAPACE_EXCLUDES still registers --no-files completions in fish, breaking default file completion
+      #2518 closed 2024-08-22 fish vs carapace in 2024
+  erased         2 hit(s) (all listed)
+      #3245 closed 2026-02-09 CARAPACE_EXCLUDES still registers --no-files completions in fish, breaking default file completion
+      #185 closed 2020-10-24 fish: erased functions still get autoloaded
+  destroy        2 hit(s) (all listed)
+      #3827 open 2026-09-29 tofu: update completer to OpenTofu v1.12
+      #816 open 2021-12-28 waypoint completer
+  destroys       0 hit(s)
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3658 open 2026-07-29 Feature: don't override existing shell completers (no-override mode)
+      #2829 open 2025-06-11 systemctl: does not find some/most services
+      #3820 closed 2026-09-27 Latest Nushell Suggests a Deprecated Format Is Used
+      #3613 merged 2026-07-04 fix(nushell): fallback to default completions on empty
+      #3788 merged 2026-09-09 build(deps): bump golang.org/x/mod from 0.40.0 to 0.41.0
+      #3823 merged 2026-09-28 build(deps): bump github/codeql-action from 4.38.1 to 4.38.2
+      #3803 merged 2026-09-21 build(deps): bump github/codeql-action from 4.38.0 to 4.38.1
+      #3702 merged 2026-08-14 build(deps): bump golang.org/x/mod from 0.38.0 to 0.39.0
+      #3716 merged 2026-08-17 build(deps): bump golang.org/x/mod from 0.39.0 to 0.40.0
+      #3766 merged 2026-08-31 build(deps): bump github.com/carapace-sh/carapace from 1.15.2 to 1.15.3
+      #3793 merged 2026-09-14 build(deps): bump github/codeql-action from 4.37.9 to 4.38.0
+      #3574 merged 2026-06-23 feat: add tailscale completer
+      #3767 merged 2026-08-31 build(deps): bump github/codeql-action from 4.37.8 to 4.37.9
+      #3742 merged 2026-08-24 build(deps): bump github/codeql-action from 4.37.7 to 4.37.8
+      #3723 merged 2026-08-19 build(deps): bump github.com/micromdm/plist from 0.2.2 to 0.3.0
+      #3407 merged 2026-05-01 added 7z completer (p7zip)
+      #3717 merged 2026-08-17 build(deps): bump github/codeql-action from 4.37.6 to 4.37.7
+      #3770 merged 2026-09-02 build(deps): bump github.com/carapace-sh/carapace-spec from 1.8.0 to 1.8.1
+      #3626 merged 2026-07-09 Bump golang.org/x/mod from 0.37.0 to 0.38.0
+      #3682 merged 2026-08-07 Bump github/codeql-action from 4.37.5 to 4.37.6
+  clobber        2 hit(s) (all listed)
+      #3658 open 2026-07-29 Feature: don't override existing shell completers (no-override mode)
+      #2470 merged 2024-08-05 build(deps): bump golang.org/x/mod from 0.19.0 to 0.20.0
+  blank          3 hit(s) (all listed)
+      #2971 closed 2025-09-18 Error with alias commands in ZSH
+      #2281 closed 2024-02-29 `diff`: errs for missing `-u` & `-c` flags
+      #1270 merged 2022-08-22 nushell: fix script (omit blank line)
+  unreadable     3 hit(s) (all listed)
+      #3705 merged 2026-08-14 fix: guard the error in filepath.Walk callbacks
+      #3704 closed 2026-08-14 panic: nil FileInfo in filepath.Walk callbacks when the walked root is inaccessible
+      #2893 closed 2025-07-25 unreadable filename on completion
+  garbage        3 hit(s) (all listed)
+      #1401 open 2022-11-05 nix commands
+      #3772 closed 2026-09-02 yay: description text leaks into completion candidate (yay -Ss parsing)
+      #2971 closed 2025-09-18 Error with alias commands in ZSH
+  mangled        0 hit(s)
+  contents       12 hit(s) (all listed)
+      #3407 merged 2026-05-01 added 7z completer (p7zip)
+      #3346 closed 2026-03-25 feat(pixi): add nested command completion for exec/run
+      #3286 merged 2026-02-23 build(deps): bump goreleaser/goreleaser-action from 6 to 7
+      #2971 closed 2025-09-18 Error with alias commands in ZSH
+      #2725 merged 2025-03-14 jj_completer: updated to jujutsu 0.27.0
+      #2728 closed 2025-03-20 `nix build` completion does not eval from current file
+      #99 closed 2020-09-03 git completer
+      #2281 closed 2024-02-29 `diff`: errs for missing `-u` & `-c` flags
+      #1970 closed 2023-11-02 jj
+      #1968 closed 2023-11-02 Completions for `jj`
+      #1714 closed 2023-07-02 ar
+      #96 closed 2020-09-03 docker
+  in-place       14 hit(s) (all listed)
+      #3820 closed 2026-09-27 Latest Nushell Suggests a Deprecated Format Is Used
+      #3584 merged 2026-06-26 fix: adapt to new `pixi info --json` shape
+      #462 closed 2021-07-09 npm completer
+      #2970 closed 2025-09-17 carapace: Setting up custom completion using yaml does not work in bash
+      #2876 closed 2025-07-18 nushell: generated completion code is broken
+      #2546 closed 2024-10-07 added bazel
+      #2877 closed 2025-07-20 kitty completer
+      #2471 closed 2024-08-08 `tools.python.CallFunction` macro
+      #2579 closed 2024-11-02 Custom spec files not being loaded
+      #2387 closed 2024-05-25 Carapace setup not working
+      #2258 merged 2024-02-21 helm, kubectl: add namespace and kube-context completions
+      #2036 closed 2023-11-22 Support for generating specs from man pages?
+      #1651 closed 2023-04-11 Color meaning explanation
+      #1105 closed 2022-05-09 What is ${UserConfigDir} in 0.12.1?
+  unclean        0 hit(s)
+  shutdown       7 hit(s) (all listed)
+      #3834 merged 2026-10-05 add terminal-browser completer
+      #3192 closed 2026-01-18 move completers
+      #2845 merged 2025-06-24 Add/update completers for systemd 257
+      #2970 closed 2025-09-17 carapace: Setting up custom completion using yaml does not work in bash
+      #2999 closed 2025-10-10 _carapace bash: generates invalid complete -F string
+      #710 merged 2021-10-29 added shutdown
+      #718 closed 2021-11-02 doctl
+  reboot         9 hit(s) (all listed)
+      #2829 open 2025-06-11 systemctl: does not find some/most services
+      #3192 closed 2026-01-18 move completers
+      #2845 merged 2025-06-24 Add/update completers for systemd 257
+      #2970 closed 2025-09-17 carapace: Setting up custom completion using yaml does not work in bash
+      #2716 merged 2025-02-26 systemctl: added soft-reboot command
+      #2999 closed 2025-10-10 _carapace bash: generates invalid complete -F string
+      #711 merged 2021-10-29 added halt, poweroff, reboot
+      #648 merged 2021-10-06 added reboot
+      #718 closed 2021-11-02 doctl
+  disk+full      2 hit(s) (all listed)
+      #3663 merged 2026-07-31 Bump github/codeql-action from 4 to 4.37.3
+      #2031 merged 2023-11-15 fastfetch: initial commit
+  data+loss      0 hit(s)
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      13 hit(s) (all listed)
+      #3706 open 2026-08-14 Verify tmux completer against man page and add missing flag/positional completions
+      #1108 open 2022-05-09 tmux completer
+      #3695 merged 2026-08-11 Add Lore CLI compound skill
+      #3574 merged 2026-06-23 feat: add tailscale completer
+      #1289 closed 2022-09-18 git-extras
+      #202 closed 2020-10-28 cargo completer
+      #2125 closed 2024-01-06 git: dash completion
+      #3577 merged 2026-06-24 build(deps): bump actions/cache from 5 to 6
+      #3121 merged 2025-12-15 build(deps): bump actions/download-artifact from 6 to 7
+      #3122 merged 2025-12-15 build(deps): bump actions/upload-artifact from 5 to 6
+      #2971 closed 2025-09-18 Error with alias commands in ZSH
+      #2408 merged 2024-06-10 nix: updated completer flake-related flags
+      #1104 closed 2022-05-09 Improve TMUX completer?
+  write+failure  0 hit(s)
+  file+contents  11 hit(s) (all listed)
+      #3407 merged 2026-05-01 added 7z completer (p7zip)
+      #3346 closed 2026-03-25 feat(pixi): add nested command completion for exec/run
+      #3286 merged 2026-02-23 build(deps): bump goreleaser/goreleaser-action from 6 to 7
+      #2971 closed 2025-09-18 Error with alias commands in ZSH
+      #2728 closed 2025-03-20 `nix build` completion does not eval from current file
+      #99 closed 2020-09-03 git completer
+      #2281 closed 2024-02-29 `diff`: errs for missing `-u` & `-c` flags
+      #1970 closed 2023-11-02 jj
+      #1968 closed 2023-11-02 Completions for `jj`
+      #1714 closed 2023-07-02 ar
+      #96 closed 2020-09-03 docker
+
+== 51 terms run; 31 returned hits, 1 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

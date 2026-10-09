@@ -1,0 +1,31 @@
+# Scout 5 (fresh Opus subagent, read-only; 2026-10-09). Field: the remaining fields (in-place generic editors, system user config, firmware, 3D and game assets, AI-agent files, site content). Its report as it reached the run: cut by the message limit in its list of seen names, and the scout then stopped on its account's usage limit before it could re-send the rest. What follows is everything that arrived.
+
+dvc を除いた 12 件が残りました。報告をまとめます。
+
+【要判断】
+- **chdman を入れ直すか。** scout 3 は今日、chdman を「新しいファイルを書くだけ（`createcd`）」で落としました。ただ `addmeta`・`delmeta`・`verify -f` は、既にある .chd を書き込み可で開いてその場で書き換えます。chdman.cpp の `COMMAND_ADD_METADATA` と、verify の `OPEN_FLAG_WRITE` で確かめました。
+- **euporie を入れるか。** 最新リリース v2.10.4 は、元の .ipynb を `path.open("w")` で直接書きます（バックアップは設定次第）。main には未リリースの「保存を atomic に」と「jupytext 入りで保存が切り詰められる不具合の修正」が入っています。FAIL が出ても上流では直っている扱いになるので、確かめるだけの価値です。
+
+| 名前 | owner/repo | 星 | 最終push | 書き換えるコマンド | 書き換わるファイル | 言語 | 入れ方 | 懸念 |
+|---|---|---|---|---|---|---|---|---|
+| Aseprite | aseprite/aseprite | 39,951 | 10-08 | `aseprite -b s.aseprite --scale 2 --save-as s.aseprite` | s.aseprite | C++ | 配布はソース zip だけ。arm64 は Skia から自前ビルド（重い） | rule 4 注記（GUI の batch CLI）。保存は Job スレッドで走る（書き手は 1 本の見込みで、測っていない） |
+| chdman | mamedev/mame | 10,581 | 10-09 | `chdman addmeta -i d.chd -t NOTE -vt hello`（`delmeta`、`verify -i d.chd -f` も） | d.chd | C++ | apt mame-tools（arm64 あり）。種は `chdman createraw -i raw.bin -o d.chd -hs 512 -us 4096` | 上の要判断。GitHub の issue は少なめで、バグ報告は主に mametesters.org |
+| LibreSprite | LibreSprite/LibreSprite | 8,524 | 10-04 | `libresprite -b s.ase --scale 2 --save-as s.ase` | s.ase | C++ | linux は x86_64 AppImage だけ。CMake でソースビルド | rule 4 注記（GUI）。Aseprite と同じ CLI で、こちらが現実的 |
+| me_cleaner | corna/me_cleaner | 5,049 | 10-02 | `python3 me_cleaner.py -S dump.bin`（`-O` 無し） | dump.bin（`r+b` で部分書き、`-t` で truncate も） | Python | git clone の単体スクリプト | 種に本物の Intel ME 領域が要り、合成はできない（ベンダーの BIOS 更新ファイルから取る）。8 年止まって 10-02 に再開。open issue 251 で直近はほぼ無返信なので、rule 8 は厳しい見込み |
+| stack | commercialhaskell/stack | 4,078 | 10-07 | `stack config set install-ghc false --global` | ~/.stack/config.yaml（`writeFileUtf8` で切り詰めて書く） | Haskell | linux-aarch64 バイナリあり | GHC の threaded RTS（書き手は本体スレッドの見込み）。初回に pantry の SQLite を作るかもしれないので、種で先に作っておく |
+| euporie | joouha/euporie | 2,678 | 10-07 | `euporie-preview --run --save nb.ipynb` | nb.ipynb | Python | PyPI（2.10.4） | 上の要判断。`--run` で ipykernel の子プロセスと pyzmq のスレッドが立つ。ノート本体は親の本体スレッドが書く |
+| hunspell | hunspell/hunspell | 2,599 | 10-04 | `printf '*zzyzx\n#\n' \| hunspell -a -d en_US -p my.dic` | my.dic（`fopen "a"` で追記） | C++ | apt hunspell と hunspell-en-us（Debian は上流 1.7.5 より古い） | 書き換えでなく追記だけなので、`nothing_could_fail` になりうる。直近 5 件の issue はすべて 3〜5 件の返事が付いて閉じている |
+| sad | ms-jpq/sad | 2,045 | 05-11 | `printf 'notes.md\n' \| sad foo bar --commit` | notes.md（一時ファイルと rename） | Rust | aarch64-linux の .deb / zip あり | `tokio::fs` で書くので、スレッドの壁に当たる見込みが高い。既出の sd と同じ種類 |
+| Kvantum | tsujan/Kvantum | 2,036 | 10-06 | `QT_QPA_PLATFORM=offscreen kvantummanager --set KvArc`（`--assign` も） | ~/.config/Kvantum/kvantum.kvconfig | C++/Qt | apt qt6-style-kvantum | rule 4 注記（GUI の CLI モード）。QSettings 経由なので PASS 寄りで、中身も小さい |
+| carapace | carapace-sh/carapace-bin | 1,982 | 10-08 | `carapace --style 'carapace.Value=bold,magenta'` | ~/.config/carapace/styles.json（`os.WriteFile` で切り詰め） | Go | linux_arm64 の .deb / tar.gz | 書く処理は同じ owner のライブラリ carapace-sh/carapace（1,456★）にある |
+| cabal | haskell/cabal | 1,744 | 10-07 | `cabal user-config update -a 'jobs: 4'` | ~/.config/cabal/config | Haskell | aarch64-linux の tarball | `writeFileAtomic` なので PASS 寄り |
+| picotool | raspberrypi/picotool | 1,005 | 10-06 | `picotool config -s <名前> <値> fw.uf2` | fw.uf2（書き込み可で開いて直接書き換え） | C++ | apt picotool | 種に、設定項目を宣言した UF2 が要る（pico-sdk のクロスビルド）。ファームはビルドし直せるので、gguf と同じ弱さがある |
+
+**照合で分かったこと**
+- **fresh.sh は今回の回のファイルを読みません。** 今回の SELECTION.md と scout-*.txt は grep で別に当てました。chdman・RetroArch・steam-rom-manager・dvc がそこにありました。
+- **dvc は本物の既出でした。** 照合の当たりのうち 1 件は「DVCS」への部分一致ですが、09-21 の回の「既に会った名前」と 10-05 の回の確認に載っていました。scout 4 が落としたのは正しいです。
+- **語としては未出のものが 3 件ありました。** stack は「signal stack」と「localstack」、cabal は「cabal-fmt」、crush は「pngcrush」への部分一致でした。
+
+**落とした名前**
+- **既出 112 件:** sd, kakoune, vim, fish, nushell, starship, mise, zoxide, conda, pip, npm, pnpm, composer, bundler, go env, flatpak, arduino-cli, platformio, esptool, upx, patchelf, gguf, gemini-cli, codex, toolhive, nbstripout, jupytext, nbconve
+[cut here; the rest of the report never arrived]

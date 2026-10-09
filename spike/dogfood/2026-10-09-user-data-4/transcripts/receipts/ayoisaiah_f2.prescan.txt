@@ -1,0 +1,99 @@
+== novelty pre-scan: ayoisaiah/f2
+== date: 2026-10-09T00:33:53Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          2 hit(s) (all listed)
+      #106 closed 2025-05-01 Using capture variables with indices can sometimes lead to crashes
+      #101 closed 2025-03-25 Windows 7 build
+  corrupt        0 hit(s)
+  corruption     0 hit(s)
+  truncated      5 hit(s) (all listed)
+      #141 open 2026-06-22 Bump the actions group across 1 directory with 9 updates
+      #140 open 2026-06-08 Bump the go-dependencies group across 1 directory with 13 updates
+      #137 closed 2026-04-06 Bump the actions group across 1 directory with 8 updates
+      #138 closed 2026-04-13 Bump the go-dependencies group across 1 directory with 12 updates
+      #136 closed 2026-04-04 Bump the go-dependencies group across 1 directory with 11 updates
+  truncate       5 hit(s) (all listed)
+      #141 open 2026-06-22 Bump the actions group across 1 directory with 9 updates
+      #140 open 2026-06-08 Bump the go-dependencies group across 1 directory with 13 updates
+      #137 closed 2026-04-06 Bump the actions group across 1 directory with 8 updates
+      #138 closed 2026-04-13 Bump the go-dependencies group across 1 directory with 12 updates
+      #136 closed 2026-04-04 Bump the go-dependencies group across 1 directory with 11 updates
+  empty          7 hit(s) (all listed)
+      #140 open 2026-06-08 Bump the go-dependencies group across 1 directory with 13 updates
+      #138 closed 2026-04-13 Bump the go-dependencies group across 1 directory with 12 updates
+      #136 closed 2026-04-04 Bump the go-dependencies group across 1 directory with 11 updates
+      #120 closed 2025-07-09 Trying to replace matches with spaces removes matches entirely instead
+      #59 closed 2024-01-03 Regex end matcher `$` not working
+      #45 closed 2023-07-18 Data loss due to issue with --fix-conflicts
+      #32 closed 2022-12-19 Using regex capture group appended with underscore leads to erroneously named files
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         0 hit(s)
+  power          1 hit(s) (all listed)
+      #30 closed 2022-10-24 Piping output to f2 doesn't work as expected
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           0 hit(s)
+  partial        1 hit(s) (all listed)
+      #62 closed 2024-03-11 ==> ERROR: A failure occurred in f2_test
+  incomplete     0 hit(s)
+  dataloss       0 hit(s)
+  recover        1 hit(s) (all listed)
+      #45 closed 2023-07-18 Data loss due to issue with --fix-conflicts
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        0 hit(s)
+  destroys       0 hit(s)
+  overwrite      9 hit(s) (all listed)
+      #139 open 2026-06-02 Add a sort order where underscore is preceding alphanumerical character
+      #140 open 2026-06-08 Bump the go-dependencies group across 1 directory with 13 updates
+      #108 closed 2025-05-06 conflict fix pattern bug with filenames starting with numbers
+      #138 closed 2026-04-13 Bump the go-dependencies group across 1 directory with 12 updates
+      #76 closed 2024-07-11 cannot reference parent directories inside of csv files on windows
+      #45 closed 2023-07-18 Data loss due to issue with --fix-conflicts
+      #40 closed 2023-02-23 Bump golang.org/x/text from 0.3.7 to 0.3.8
+      #32 closed 2022-12-19 Using regex capture group appended with underscore leads to erroneously named files
+      #7 closed 2021-05-09 [feature request] perhaps an option of "force overwrite" is needed in some cases
+  clobber        0 hit(s)
+  blank          0 hit(s)
+  unreadable     0 hit(s)
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       0 hit(s)
+  in-place       3 hit(s) (all listed)
+      #121 closed 2025-07-13 Chinese Translation
+      #55 closed 2023-11-04 Moving files to another directory outside starting path
+      #43 closed 2023-06-14 not working for me!
+  unclean        0 hit(s)
+  shutdown       0 hit(s)
+  reboot         0 hit(s)
+  disk+full      0 hit(s)
+  data+loss      1 hit(s) (all listed)
+      #45 closed 2023-07-18 Data loss due to issue with --fix-conflicts
+  partial+write  0 hit(s)
+  crash+safe     0 hit(s)
+  atomic+write   0 hit(s)
+  lock+file      0 hit(s)
+  write+failure  0 hit(s)
+  file+contents  0 hit(s)
+
+== 51 terms run; 10 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

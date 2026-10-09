@@ -1,0 +1,83 @@
+SEEN  pipx  b2-exclusions:253
+SEEN  pipx  cohort4-rejected:34
+SEEN  pipx  spike/dogfood/2026-09-16-userview-3/SELECTION.md:97
+SEEN  pipx  spike/dogfood/2026-09-21-release-path/SELECTION.md:56
+SEEN  pyenv  funnel:79
+SEEN  pyenv  target-classes:224
+SEEN  pyenv  spike/dogfood/2026-09-16-outside-git/SELECTION.md:46
+SEEN  rbenv  spike/dogfood/2026-09-21-release-path/SELECTION.md:87
+SEEN  nodenv  spike/dogfood/2026-09-21-release-path/SELECTION.md:86
+SEEN  goenv  funnel:237
+SEEN  goenv  target-classes:151
+SEEN  jenv  spike/dogfood/2026-09-21-release-path/SELECTION.md:85
+fresh phpenv
+fresh plenv
+fresh tfswitch
+SEEN  k9s  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:73
+fresh colima
+fresh distrobox
+fresh pywal
+SEEN  copier  b2-exclusions:267
+SEEN  copier  spike/dogfood/2026-09-06-userview-2/SELECTION.md:267
+fresh esphome
+SEEN  aria2  b2-exclusions:40
+SEEN  aria2  spike/dogfood/2026-09-16-userview-3/SELECTION.md:80
+fresh timetrap
+SEEN  shiori  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:122
+SEEN  passage  spike/dogfood/2026-10-03-user-data/SELECTION.md:66
+fresh autorestic
+fresh resticprofile
+SEEN  borgmatic  b2-exclusions:61
+SEEN  borgmatic  spike/dogfood/2026-09-06-userview-2/SELECTION.md:52
+SEEN  borgmatic  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+fresh teleport
+fresh tailscale
+SEEN  gopass  funnel:36
+SEEN  gopass  target-classes:202
+SEEN  gopass  spike/dogfood/2026-09-05-userview/SELECTION.md:41
+SEEN  gopass  spike/dogfood/2026-09-06-userview-2/SELECTION.md:25
+SEEN  gopass  spike/dogfood/2026-09-11-past-walls/SELECTION.md:33
+SEEN  gopass  spike/dogfood/2026-09-16-userview-3/SELECTION.md:32
+SEEN  gopass  spike/dogfood/2026-09-27-supervised-static/SELECTION.md:3
+SEEN  gopass  spike/dogfood/2026-10-02-unjudged-on-v170/SELECTION.md:56
+fresh topgrade
+fresh nushell-skip
+SEEN  ranger  b2-exclusions:285
+SEEN  ranger  spike/dogfood/2026-09-05-userview/SELECTION.md:61
+SEEN  ranger  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  ranger  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  lf  funnel:105
+SEEN  lf  target-classes:5
+SEEN  lf  blind-hunt3-taint:30
+SEEN  lf  b2-exclusions:123
+SEEN  lf  b2-candidates:82
+SEEN  lf  cohort4-rejected:7
+SEEN  lf  spike/dogfood/2026-09-06-userview-2/SELECTION.md:39
+SEEN  lf  spike/dogfood/2026-09-11-past-walls/SELECTION.md:26
+SEEN  lf  spike/dogfood/2026-09-16-cargo-v16/SELECTION.md:16
+SEEN  lf  spike/dogfood/2026-09-16-crossed-walls/SELECTION.md:32
+SEEN  lf  spike/dogfood/2026-09-16-outside-git/SELECTION.md:76
+SEEN  lf  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  lf  spike/dogfood/2026-09-21-release-path/SELECTION.md:29
+SEEN  lf  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:6
+SEEN  lf  spike/dogfood/2026-09-22-shipped-v160/SELECTION.md:14
+SEEN  lf  spike/dogfood/2026-09-28-shipped-v170/SELECTION.md:17
+SEEN  lf  spike/dogfood/2026-10-02-gate-cleared-twelve/SELECTION.md:26
+SEEN  lf  spike/dogfood/2026-10-02-unjudged-on-v170/SELECTION.md:62
+SEEN  lf  spike/dogfood/2026-10-03-user-data/SELECTION.md:25
+SEEN  lf  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:28
+SEEN  lf  spike/dogfood/2026-10-07-user-data-3/SELECTION.md:27
+SEEN  lf  spike/authoring-cost/pool-atomic.txt:3
+SEEN  yazi  spike/dogfood/2026-09-05-userview/SELECTION.md:61
+SEEN  yazi  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  yazi  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  nnn  b2-exclusions:217
+SEEN  nnn  spike/dogfood/2026-09-05-userview/SELECTION.md:61
+SEEN  nnn  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  nnn  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+fresh broot-skip
+fresh superfile
+fresh xplr
+fresh joshuto
+fresh vifm
+fresh mc-skip

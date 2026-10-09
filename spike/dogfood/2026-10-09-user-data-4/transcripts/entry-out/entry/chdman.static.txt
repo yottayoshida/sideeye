@@ -1,0 +1,2 @@
+static: /usr/bin/chdman: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, for GNU/Linux 3.7.0, BuildID[sha1]=ffdc99e05cd04e41031dab899b95883c09fbf6ca, stripped
+next: sideeye explore --state /s/chd --cwd "/s/chd" --operation "chdman addmeta -i d.chd -t NOTE -vt hello" \

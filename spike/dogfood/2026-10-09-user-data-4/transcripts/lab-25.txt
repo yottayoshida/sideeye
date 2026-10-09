@@ -1,0 +1,11 @@
+├───────────┼────────────────┤
+│ Pattern   │ subs.srt       │
+│ Format    │ subrip (*.srt) │
+└───────────┴────────────────┘
+
+1: subs.srt -> /s/seconv/subs.srt...Killed
+second paste exit 137
+-rw-r--r-- 1 root root 0 Oct  9 02:45 /s/seconv/subs.srt
+-rw-r--r-- 1 root root 175 Oct  9 02:45 /s/seconv/subs.srt
+first paste exit 137
+-rw-r--r-- 1 root root 0 Oct  9 02:45 /s/seconv/subs.srt

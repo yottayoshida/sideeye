@@ -1,0 +1,9 @@
+113   openat(AT_FDCWD, "/s/cook/config/pantry.conf", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3
+113   close(3)                          = 0
+113   mkdirat(AT_FDCWD, "/s/cook/config", 0777) = -1 EEXIST (File exists)
+113   openat(AT_FDCWD, "/s/cook/config/.pantry.conf.113.tmp", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 3
+113   write(3, ""..., 63)               = 63
+113   fsync(3)                          = 0
+113   close(3)                          = 0
+113   renameat(AT_FDCWD, "/s/cook/config/.pantry.conf.113.tmp", AT_FDCWD, "/s/cook/config/pantry.conf") = 0
+113   write(1, ""..., 37)               = 37

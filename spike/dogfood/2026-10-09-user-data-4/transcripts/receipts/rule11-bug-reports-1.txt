@@ -1,0 +1,55 @@
+== SubtitleEdit/subtitleedit (label bug)
+#3947 2020-01-25 comments=10 first_project_reply=MEMBER 2020-01-26
+#3925 2020-01-18 comments=6 first_project_reply=MEMBER 2020-01-20
+#3639 2019-06-24 comments=0 first_project_reply=none
+#3635 2019-06-22 comments=4 first_project_reply=MEMBER 2019-06-22
+#2384 2017-05-11 comments=0 first_project_reply=none
+#1405 2015-11-02 comments=1 first_project_reply=MEMBER 2016-01-09
+#361 2014-12-12 comments=3 first_project_reply=MEMBER 2015-01-23
+#360 2014-12-12 comments=1 first_project_reply=none
+#347 2014-12-05 comments=0 first_project_reply=none
+#339 2014-11-25 comments=0 first_project_reply=none
+== AcademySoftwareFoundation/OpenImageIO (label bug)
+#5493 2026-09-24 comments=15 first_project_reply=CONTRIBUTOR 2026-09-28
+#5471 2026-09-13 comments=1 first_project_reply=CONTRIBUTOR 2026-09-24
+#5400 2026-08-13 comments=2 first_project_reply=CONTRIBUTOR 2026-10-08
+#5315 2026-07-13 comments=5 first_project_reply=COLLABORATOR 2026-07-13
+#5063 2026-02-27 comments=3 first_project_reply=COLLABORATOR 2026-03-21
+#5021 2026-01-30 comments=0 first_project_reply=none
+#4942 2025-10-29 comments=1 first_project_reply=COLLABORATOR 2026-03-22
+#4858 2025-08-14 comments=6 first_project_reply=CONTRIBUTOR 2025-08-14
+#4799 2025-06-10 comments=1 first_project_reply=CONTRIBUTOR 2025-09-23
+#4718 2025-04-25 comments=1 first_project_reply=CONTRIBUTOR 2025-05-15
+== AcademySoftwareFoundation/OpenTimelineIO (label bug)
+#2000 2026-03-11 comments=0 first_project_reply=none
+#1972 2025-11-07 comments=4 first_project_reply=CONTRIBUTOR 2025-11-07
+#1919 2025-08-14 comments=0 first_project_reply=none
+#1822 2025-01-15 comments=7 first_project_reply=COLLABORATOR 2025-01-16
+#1817 2024-12-06 comments=1 first_project_reply=COLLABORATOR 2025-03-30
+#1750 2024-05-18 comments=1 first_project_reply=none
+#1701 2024-02-15 comments=9 first_project_reply=CONTRIBUTOR 2024-02-15
+#1696 2024-02-14 comments=2 first_project_reply=COLLABORATOR 2024-02-15
+#1694 2024-02-10 comments=2 first_project_reply=MEMBER 2024-02-10
+#1693 2024-02-07 comments=6 first_project_reply=COLLABORATOR 2024-02-08
+== ayoisaiah/f2 (label bug)
+#128 2025-09-13 comments=1 first_project_reply=OWNER 2025-09-14
+#120 2025-07-09 comments=4 first_project_reply=OWNER 2025-07-11
+#114 2025-05-25 comments=3 first_project_reply=OWNER 2025-05-26
+#110 2025-05-16 comments=1 first_project_reply=none
+#107 2025-05-06 comments=1 first_project_reply=OWNER 2025-05-15
+#106 2025-05-01 comments=1 first_project_reply=none
+#103 2025-04-06 comments=3 first_project_reply=OWNER 2025-04-17
+#96 2025-01-30 comments=1 first_project_reply=OWNER 2025-01-30
+#87 2024-11-07 comments=1 first_project_reply=OWNER 2024-11-08
+#76 2024-07-11 comments=2 first_project_reply=OWNER 2024-08-31
+== scaleway/scaleway-cli (label bug)
+#6378 2026-10-07 comments=3 first_project_reply=CONTRIBUTOR 2026-10-07
+#6355 2026-10-06 comments=1 first_project_reply=CONTRIBUTOR 2026-10-06
+#6354 2026-10-06 comments=0 first_project_reply=none
+#6305 2026-09-29 comments=0 first_project_reply=none
+#6299 2026-09-28 comments=3 first_project_reply=CONTRIBUTOR 2026-09-29
+#6182 2026-09-11 comments=0 first_project_reply=none
+#6181 2026-09-11 comments=0 first_project_reply=none
+#6023 2026-08-24 comments=1 first_project_reply=MEMBER 2026-08-31
+#5965 2026-08-07 comments=2 first_project_reply=none
+#5908 2026-07-28 comments=2 first_project_reply=MEMBER 2026-07-28

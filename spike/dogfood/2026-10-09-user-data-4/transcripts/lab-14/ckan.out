@@ -1,0 +1,24 @@
+
+Unhandled Exception:
+System.IO.FileNotFoundException: Could not load file or assembly 'System.ComponentModel.Composition, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' or one of its dependencies.
+File name: 'System.ComponentModel.Composition, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+  at Autofac.Core.Registration.DefaultRegisteredServicesTracker.PopulateServiceInfo (Autofac.Core.Service service, Autofac.Core.Registration.ServiceRegistrationInfo info, System.Boolean isScopeIsolatedService) [0x00040] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+  at Autofac.Core.Registration.DefaultRegisteredServicesTracker.GetInitializedServiceInfo (Autofac.Core.Service service) [0x00058] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+  at Autofac.Core.Registration.DefaultRegisteredServicesTracker.ServiceRegistrationsFor (Autofac.Core.Service service) [0x00014] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+  at Autofac.Core.Registration.ComponentRegistry.ServiceRegistrationsFor (Autofac.Core.Service service) [0x00000] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+  at Autofac.Builder.StartableManager.StartStartableComponents (System.Collections.Generic.IDictionary`2[TKey,TValue] properties, Autofac.IComponentContext componentContext) [0x00028] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+  at Autofac.ContainerBuilder.Build (Autofac.Builder.ContainerBuildOptions options) [0x00054] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+  at CKAN.ServiceLocator.Init () [0x0006c] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+  at CKAN.ServiceLocator.get_Container () [0x00009] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+  at CKAN.CmdLine.MainClass.Main (System.String[] args) [0x000fa] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+[ERROR] FATAL UNHANDLED EXCEPTION: System.IO.FileNotFoundException: Could not load file or assembly 'System.ComponentModel.Composition, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' or one of its dependencies.
+File name: 'System.ComponentModel.Composition, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+  at Autofac.Core.Registration.DefaultRegisteredServicesTracker.PopulateServiceInfo (Autofac.Core.Service service, Autofac.Core.Registration.ServiceRegistrationInfo info, System.Boolean isScopeIsolatedService) [0x00040] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+  at Autofac.Core.Registration.DefaultRegisteredServicesTracker.GetInitializedServiceInfo (Autofac.Core.Service service) [0x00058] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+  at Autofac.Core.Registration.DefaultRegisteredServicesTracker.ServiceRegistrationsFor (Autofac.Core.Service service) [0x00014] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+  at Autofac.Core.Registration.ComponentRegistry.ServiceRegistrationsFor (Autofac.Core.Service service) [0x00000] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+  at Autofac.Builder.StartableManager.StartStartableComponents (System.Collections.Generic.IDictionary`2[TKey,TValue] properties, Autofac.IComponentContext componentContext) [0x00028] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+  at Autofac.ContainerBuilder.Build (Autofac.Builder.ContainerBuildOptions options) [0x00054] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+  at CKAN.ServiceLocator.Init () [0x0006c] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+  at CKAN.ServiceLocator.get_Container () [0x00009] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 
+  at CKAN.CmdLine.MainClass.Main (System.String[] args) [0x000fa] in <e14f446e063b48ea94c0b0ec41a22fd4>:0 

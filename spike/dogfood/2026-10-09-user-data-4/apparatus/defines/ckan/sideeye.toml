@@ -1,0 +1,6 @@
+[world]
+state = "/s/ksp/game/CKAN"
+
+[define]
+operation = "ckan compat add 1.7 --headless"
+cwd       = "/s/ckan-in"

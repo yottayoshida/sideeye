@@ -1,0 +1,47 @@
+81    execve("/opt/bin/buildx", [...], 0xffffc3a4ea50 /* 14 vars */) = 0
+81    openat(AT_FDCWD, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3
+81    close(3)                          = 0
+81    openat(AT_FDCWD, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3
+81    close(3)                          = 0
+81    openat(AT_FDCWD, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3
+81    close(3)                          = 0
+81    openat(AT_FDCWD, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_CLOEXEC) = 3
+81    clone(child_stack=0x14cbb1d8c000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 82
+81    clone(child_stack=0x14cbb1de0000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 83
+81    clone(child_stack=0x14cbb1ddc000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 84
+83    clone(child_stack=0x14cbb1e18000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 85
+81    clone(child_stack=0x14cbb1e14000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 86
+81    openat(AT_FDCWD, "/opt/bin/buildx", O_RDONLY|O_CLOEXEC) = 4
+81    close(4)                          = 0
+81    openat(AT_FDCWD, "/proc/self/auxv", O_RDONLY|O_CLOEXEC) = 4
+81    close(4)                          = 0
+84    clone(child_stack=0x14cbb1f62000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 87
+81    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=81, si_uid=0} ---
+81    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=81, si_uid=0} ---
+81    clone(child_stack=0x14cbb1f5e000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 88
+86    clone(child_stack=0x14cbb23c8000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM <unfinished ...>
+84    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=81, si_uid=0} ---
+86    <... clone resumed>)              = 89
+81    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=81, si_uid=0} ---
+85    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=81, si_uid=0} ---
+81    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=81, si_uid=0} ---
+84    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=81, si_uid=0} ---
+81    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=81, si_uid=0} ---
+81    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=81, si_uid=0} ---
+81    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=81, si_uid=0} ---
+81    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=81, si_uid=0} ---
+81    clone(child_stack=0x14cbb23c4000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 90
+87    openat(AT_FDCWD, "/s/aux/home/.docker/config.json", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+87    openat(AT_FDCWD, "/s/aux/home/.docker/buildx/.lock", O_RDONLY|O_CREAT|O_CLOEXEC, 0600) = 4
+87    openat(AT_FDCWD, "/s/aux/home/.docker/buildx/instances/b1", O_RDONLY|O_CLOEXEC) = 7
+87    close(7)                          = 0
+87    openat(AT_FDCWD, "/s/aux/home/.docker/buildx/activity/b1", O_RDONLY|O_CLOEXEC) = 7
+87    close(7)                          = 0
+87    close(7)                          = 0
+87    close(7)                          = 0
+87    openat(AT_FDCWD, "/s/aux/home/.docker/contexts/meta", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+87    unlinkat(AT_FDCWD, "/s/aux/home/.docker/buildx/activity/b1", 0) = 0
+87    mkdirat(AT_FDCWD, "/s/aux/home/.docker/buildx/refs", 0700) = 0
+87    unlinkat(AT_FDCWD, "/s/aux/home/.docker/buildx/instances/b1", 0) = 0
+87    write(2, ""..., 11)               = 11
+87    close(4)                          = 0

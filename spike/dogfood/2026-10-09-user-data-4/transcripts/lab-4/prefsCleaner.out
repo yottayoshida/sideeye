@@ -1,0 +1,7 @@
+It looks like this script was previously run with elevated privileges,
+you will need to change ownership of the following files to your user:
+.
+./prefsCleaner.sh
+./user.js
+
+

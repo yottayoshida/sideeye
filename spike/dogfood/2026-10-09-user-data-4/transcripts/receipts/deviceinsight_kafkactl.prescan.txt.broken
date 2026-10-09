@@ -1,0 +1,72 @@
+== novelty pre-scan: deviceinsight/kafkactl
+== date: 2026-10-09T02:36:49Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          3 hit(s) (all listed)
+      #282 closed 2025-07-31 Run kafkactl without writing default config
+      #162 merged 2023-09-03 Fix  `describe consumer-group` crash when a group member has no assignments
+      #165 closed 2023-09-22 Can't execute multiple commands in parallel - kubernetes config
+  corrupt        0 hit(s)
+  corruption     0 hit(s)
+  truncated      4 hit(s) (all listed)
+      #321 merged 2026-03-19 chore(deps): bump google.golang.org/grpc from 1.73.0 to 1.79.3
+      #278 closed 2025-07-10 Kubernetes Pod name is invalid
+      #227 closed 2024-12-19 Incorrect handling of Base64-encoded values when producing from JSON
+      #170 closed 2023-10-19 Fails to create cluster admin due to "tls: unexpected message" error despite successful OpenSSL handshake
+  truncate       4 hit(s) (all listed)
+      #321 merged 2026-03-19 chore(deps): bump google.golang.org/grpc from 1.73.0 to 1.79.3
+      #278 closed 2025-07-10 Kubernetes Pod name is invalid
+      #227 closed 2024-12-19 Incorrect handling of Base64-encoded values when producing from JSON
+      #170 closed 2023-10-19 Fails to create cluster admin due to "tls: unexpected message" error despite successful OpenSSL handshake
+  empty          24 hit(s) (all listed)
+      #347 open 2026-10-08 feat: spread replicas across racks when altering replication factor
+      #137 open 2022-10-14 When increasing replication-factor on a topic, does it maintain rack awareness?
+      #277 open 2025-07-08 message separator for consume operation
+      #334 merged 2026-07-30 fix: correct timezone handling in datetime-based integration tests
+      #329 closed 2026-06-21 Fix permissions-missing in release.yml
+      #323 merged 2026-05-08 feat: integrate credential storage with keyring, password prompting, and TLS passphrase support
+      #333 closed 2026-07-25 chore(deps): bump google.golang.org/grpc from 1.81.0 to 1.82.1
+      #319 merged 2026-03-16 fix: use IncrementalAlterConfigs to fix TOCTOU race condition
+      #285 closed 2025-08-13 alter broker support
+      #287 closed 2025-08-14 Feature/alter broker command
+      #286 closed 2025-08-14 Feature/alter broker command
+      #289 merged 2025-08-14 Feature/alter broker command
+      #154 closed 2023-07-03 v3.1.0 - tail not properly calculating offsets
+      #217 closed 2024-09-23 Can't reset consumer group offsets in Azure EventHub
+      #227 closed 2024-12-19 Incorrect handling of Base64-encoded values when producing from JSON
+      #226 merged 2024-12-19 Respect number of bytes returned by value decoders
+      #193 merged 2024-04-11 Show group instance IDs in describe consumer-group output
+      #177 closed 2023-12-01 Support describing all config values in a topic (including defaults)
+      #165 closed 2023-09-22 Can't execute multiple commands in parallel - kubernetes config
+      #129 closed 2022-06-20 Consuming a "tombstones" message from Protobuf topic skips the message with an error
+  atomic         3 hit(s) (all listed)
+      #319 merged 2026-03-16 fix: use IncrementalAlterConfigs to fix TOCTOU race condition
+      #313 closed 2026-01-15 TOCTOU bug: `alter` should use `IncrementalAlterConfigs`
+      #144 closed 2023-01-27 Question on crowdstrike tagging kafkactl as highly vulnerable
+  atomically     2 hit(s) (all listed)
+      #319 merged 2026-03-16 fix: use IncrementalAlterConfigs to fix TOCTOU race condition
+      #313 closed 2026-01-15 TOCTOU bug: `alter` should use `IncrementalAlterConfigs`
+  interrupted    2 hit(s) (all listed)
+      #269 closed 2025-06-19 Kafkactl commands running on kubecontext when interrupted leave pods behind
+      #274 merged 2025-06-28 feat(k8s): gracefully shutdown Kubernetes pod on exit
+  interrupt      4 hit(s) (all listed)
+      #269 closed 2025-06-19 Kafkactl commands running on kubecontext when interrupted leave pods behind
+      #274 merged 2025-06-28 feat(k8s): gracefully shutdown Kubernetes pod on exit
+      #152 closed 2023-06-14 KafkaCtl with AWS MSK and IAM auth
+      #29 merged 2019-10-19 try to change in inner logic (FIX #28)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         4 hit(s) (all listed)
+      #274 merged 2025-06-28 feat(k8s): gracefully shutdown Kubernetes pod on exit
+      #185 merged 2024-01-15 Fix null pointer exception in sigterm
+      #37 merged 2020-02-20 Add replication-factor flag to alter topic
+      #77 closed 2021-04-01 Kafkactl hangs on Deserialize error and never exits.
+  power          1 hit(s) (all listed)
+      #123 closed 2022-03-28 Possibility to produce avro encoded message to schema registry powered topic
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  BROKEN the search errored on term 'disk' - the scan is incomplete

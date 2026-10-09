@@ -1,0 +1,1032 @@
+== novelty pre-scan: redpanda-data/redpanda
+== date: 2026-10-09T02:48:34Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31470 open 2026-08-06 [CORE-14565] `storage`: make offset translator truncation checkpoint crash-safe and ensure offset translator processes visible raft batches
+      #31667 open 2026-09-08 schema_registry: broker aborts on a JSON schema compatibility check when a required property has a boolean subschema
+      #31594 open 2026-08-15 rpc/transport: retain memory semaphore units in queued request entry
+      #31408 open 2026-08-03 test_utils: accept expressions in RPTEST_REQUIRE_EVENTUALLY
+      #29543 open 2026-02-05 `storage`: remove a bunch of unnecessary `is_linked()` checks
+      #31560 open 2026-08-12 bazel: bump the toolchain sysroot to Ubuntu 24.04
+      #8570 open 2023-02-02 Exclude "memory diagnostics" from bad log lines
+      #30432 open 2026-05-10 treewide: remove owner_shard from record batch header context
+      #30066 open 2026-04-03 [CORE-16389] Cloud Topics: Make L0 GC tests deterministic
+      #15130 open 2023-11-24 Test 2MB for topic_memory_per_partition
+      #28953 open 2025-12-12 Add ability to batch failover
+      #13073 open 2023-08-29 Reject join request if >2 hosts with identical hostnames already exist in the cluster
+      #11228 open 2023-06-06 change default cleanup policy for topic in docker compose 
+      #29764 open 2026-03-06 tests/cloud: migrate ducktape cloud tests from cloud-api to public-api v1
+      #30082 open 2026-04-06 tx/tests: add tx verifier to RNOT
+      #31423 closed 2026-08-05 kafka/client: fix node crash on concurrent pandaproxy consumer fetches
+      #29950 open 2026-03-24 Cloud Topics: Epoch barrier
+      #12431 open 2023-07-24 Developer Experience (DX) improvements
+      #31365 merged 2026-07-30 rptest: add OOM crash self-test; allow-list memory diagnostics
+      #31171 merged 2026-07-17 Joe/fix group delete gate crash
+  corrupt        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #27327 open 2025-08-21 datalake: dlq corrupted records
+      #31406 open 2026-08-03 kafka/client: assert produce dispatch is serial per partition
+      #31008 open 2026-07-02 lsm/sst: read bloom filters lazily
+      #31470 open 2026-08-06 [CORE-14565] `storage`: make offset translator truncation checkpoint crash-safe and ensure offset translator processes visible raft batches
+      #12431 open 2023-07-24 Developer Experience (DX) improvements
+      #31543 merged 2026-08-11 [CORE-8759] storage: kill broker process if log_reader detects a corrupt segment
+      #31628 closed 2026-08-19 serde: fix scope-guard underflow and add decode-side fuzzing
+      #16544 open 2024-02-08 use epoll with rpk --mode dev-container
+      #30506 open 2026-05-15 Migration 25 3 poc
+      #31098 open 2026-07-14 Multi term segments
+      #31375 merged 2026-07-31 ct/l0: preserve the produce-time record crc on the read path
+      #31475 closed 2026-08-06 [CORE-16996] - KIP-848: encode ConsumerGroup* record values as serde
+      #31426 closed 2026-08-05 [CORE-16806]: KIP-848: Assignor Interface and Uniform Assignors
+      #31253 merged 2026-07-23 [CORE-9250] `kafka`: add broker side compression
+      #31346 merged 2026-07-29 [CORE-15837] rpk: add --wait and aggregation to decommission
+      #31398 merged 2026-08-01 [CORE-16799] KIP-848: Add ConsumerGroup* record schemas and serde
+      #30733 merged 2026-06-08 rptest: serialize openssl invocations to fix concurrent signing race
+      #30664 merged 2026-06-01 tests/ExampleRunner: kill example process when worker exits
+      #30724 merged 2026-06-05 serde/variant: allow appending alternatives compatibly
+      #30236 merged 2026-04-21 [CORE-16119] `storage`: materialize `segment_index` via `input_stream`
+  corruption     83 hit(s) (all listed)
+      #31008 open 2026-07-02 lsm/sst: read bloom filters lazily
+      #30362 open 2026-05-01 Followup: ensure the LSM iterators are invalidated on exceptions
+      #31401 open 2026-08-03 Upgrade failed
+      #31375 merged 2026-07-31 ct/l0: preserve the produce-time record crc on the read path
+      #31306 merged 2026-07-27 storage: fix segment_appender races with in-flight dma writes
+      #31543 merged 2026-08-11 [CORE-8759] storage: kill broker process if log_reader detects a corrupt segment
+      #31544 closed 2026-08-12 [CORE-12930] - Storage: Some observability improvements for unrecoverable segments
+      #30664 merged 2026-06-01 tests/ExampleRunner: kill example process when worker exits
+      #30730 merged 2026-06-06 lsm/db: close in-flight compaction builder on any error
+      #30516 merged 2026-05-18 iceberg/avro: fix decimal encode/decode for non-16-byte payloads
+      #29955 merged 2026-03-25 bazel: upgrade liburing to 2.14
+      #30497 merged 2026-05-15 `misc`: revamp some exception handling in coroutines
+      #30152 merged 2026-04-14 Revert "c/rm_stm: hold locks when taking snapshots"
+      #27282 closed 2025-08-18 storage: appender corruption testing
+      #29965 merged 2026-03-25 ct: add metastore validation
+      #29494 closed 2026-02-03 ducktape: re-raise ValueError on malformed metrics
+      #29657 merged 2026-02-19 ct/rr [2/3]: add major components for cloud topic read replicas
+      #29985 merged 2026-03-27 Joe/cfr helper script test
+      #29546 merged 2026-02-05 schema_registry/test: lower json recursion depth locally
+      #28249 merged 2025-10-29 [CORE-12458] Prevent segment appender from writing into already dispatched head buffer
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31602 closed 2026-08-17 [CORE-14911] Fix `_schemas` replay for a truncated log
+      #27034 open 2025-07-29 rptest: add recovery test case after full truncation
+      #30134 open 2026-04-10 iceberg: populate column stats
+      #31470 open 2026-08-06 [CORE-14565] `storage`: make offset translator truncation checkpoint crash-safe and ensure offset translator processes visible raft batches
+      #31302 open 2026-07-27 `kgo-verifier`: truncate valid offsets when retries land at lower offsets
+      #29164 open 2026-01-07 Implement bound truncation in parquet writer
+      #30859 open 2026-06-19 [CORE-16648] cloud_topics: abort in-flight multipart uploads on shutdown
+      #15845 closed 2023-12-21 cloud_storage: Add randomized cstore test
+      #31589 merged 2026-08-14 cloud_topics: fast partition movement for tiered-storage v2
+      #30578 merged 2026-05-21 serde/parquet: Improvements preparing for Iceberg column stats
+      #31353 merged 2026-07-29 `ct`: clamp timequeries to the kafka start offset
+      #30876 merged 2026-06-23 bytes: drop read_string_safe
+      #30162 closed 2026-04-14 claude: add slash command skill to lint commits in a PR
+      #30776 closed 2026-06-11 [v25.3.x] iceberg: Push Parquest column stats to Iceberg manifests
+      #31096 closed 2026-07-14 archival: frame-aligned spillover
+      #31211 merged 2026-07-21 serde: Some read perf improvements
+      #30994 merged 2026-07-01 [CORE-16755] Add additional schema registry REST client API endpoints
+      #30048 merged 2026-04-02 rptest: add retries with exponential backoff for tsh commands
+      #30872 merged 2026-06-23 strings/utf8: unify string_view validator on table scanner
+      #30756 merged 2026-06-10 cloud_topics: prep for compaction-driven local retention
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31302 open 2026-07-27 `kgo-verifier`: truncate valid offsets when retries land at lower offsets
+      #29164 open 2026-01-07 Implement bound truncation in parquet writer
+      #27668 open 2025-09-22 Dr/noticket/suffix truncation mount unmount poc
+      #10225 open 2023-04-20 tests: try racing truncation with hard restart
+      #31470 open 2026-08-06 [CORE-14565] `storage`: make offset translator truncation checkpoint crash-safe and ensure offset translator processes visible raft batches
+      #27034 open 2025-07-29 rptest: add recovery test case after full truncation
+      #27036 open 2025-07-29 cloud_storage: reproduce offset rollback on read replica after truncate
+      #30134 open 2026-04-10 iceberg: populate column stats
+      #26859 open 2025-07-16 Kafka client 4.0
+      #30256 open 2026-04-22 iceberg: modes for upserts
+      #31602 closed 2026-08-17 [CORE-14911] Fix `_schemas` replay for a truncated log
+      #12280 open 2023-07-18 archival: fix max collectible offset on read replicas
+      #31642 open 2026-08-19 raft: re-apply leader commit index after a follower flush
+      #30370 open 2026-05-04 model: fix `readahead_reader` UAF on consumer-side teardown
+      #31445 open 2026-08-05 `rptest`: add `TimeQueryParityTest`
+      #4020 open 2022-03-15 Delete records via the Producer API
+      #30925 closed 2026-06-25 [CORE-16434] cluster_link: Fix prefix truncation liveness issue
+      #31576 open 2026-08-13 kafka: create the consumer offsets topic as a local topic
+      #19009 open 2024-06-07 archival: bump offset if seeking undershoots
+      #10787 open 2023-05-15 WIP: escape hatch to reset metadata
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #30466 open 2026-05-13 bazel: add empty noop.bzl to trigger CI
+      #31667 open 2026-09-08 schema_registry: broker aborts on a JSON schema compatibility check when a required property has a boolean subschema
+      #31315 open 2026-07-28 ci: DNM dummy PR to verify DT after v26.3.0-dev tag
+      #31455 open 2026-08-05 DNM: no-op build - remote downloader disabled (A/B control for #31454)
+      #30624 open 2026-05-28 redpanda_kafka_consumer_group_lag_max reports phantom lag when committed offset is below log start offset
+      #31246 open 2026-07-23 kafka/produce: enable produce v9 (flexible versions)
+      #31416 open 2026-08-04 DNM: verify bazel external fetches via the remote downloader (asset API)
+      #31302 open 2026-07-27 `kgo-verifier`: truncate valid offsets when retries land at lower offsets
+      #26859 open 2025-07-16 Kafka client 4.0
+      #31560 open 2026-08-12 bazel: bump the toolchain sysroot to Ubuntu 24.04
+      #31581 open 2026-08-14 Mitigate `offset_not_available` races on follower fetches
+      #30325 open 2026-04-28 rpk: warn when role name is not RFC 1123-compliant
+      #31537 merged 2026-08-11 bazel: define an empty ci-remote-cache config
+      #31538 merged 2026-08-11 [v26.2.x] bazel: define an empty ci-remote-cache config
+      #30626 open 2026-05-28 rpk: registry commands timeout on Admin API port 9644 for cloud profiles
+      #28953 open 2025-12-12 Add ability to batch failover
+      #31540 merged 2026-08-11 [v26.1.x] bazel: define an empty ci-remote-cache config
+      #31256 open 2026-07-23 Health report rework
+      #28035 open 2025-10-14 WIP: safe partition recovery (POC)
+      #31539 merged 2026-08-11 [v25.3.x] bazel: define an empty ci-remote-cache config
+  atomic         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31470 open 2026-08-06 [CORE-14565] `storage`: make offset translator truncation checkpoint crash-safe and ensure offset translator processes visible raft batches
+      #30082 open 2026-04-06 tx/tests: add tx verifier to RNOT
+      #10787 open 2023-05-15 WIP: escape hatch to reset metadata
+      #25061 open 2025-02-07 [draft] Pp access log v24.2.x
+      #31420 merged 2026-08-04 `security`: apply snapshots and replace ACL store contents atomically 
+      #30202 open 2026-04-16 `base`: finer grained log filtering in `vlog`
+      #31435 merged 2026-08-05 [v26.2.x] `security`: apply snapshots and replace ACL store contents atomically 
+      #31437 merged 2026-08-05 [v26.1.x] `security`: apply snapshots and replace ACL store contents atomically 
+      #16534 open 2024-02-08 Implement `ssx::sharded_abort_source` using `std::shared_ptr`
+      #25693 open 2025-04-02 DNM: WIP iceberg compat checks inline in SR
+      #31513 merged 2026-08-10 ct/l0: deflake read_merge_test
+      #27327 open 2025-08-21 datalake: dlq corrupted records
+      #31230 closed 2026-07-22 serde: write fixed envelopes contiguously
+      #31410 merged 2026-08-04 bytes: rewrite iobuf stream helpers as coroutines
+      #30485 closed 2026-05-14 kafka: implement Metadata v13 (KIP-1102); bump kcl to v0.18 in tests
+      #30915 merged 2026-06-24 [CORE-16027] `ct/l0`: fix divide-by-zero in write scheduler
+      #31022 merged 2026-07-06 Audit consensus
+      #30162 closed 2026-04-14 claude: add slash command skill to lint commits in a PR
+      #31336 merged 2026-07-29 bazel: Upgrade to clang 23 (rc2)
+      #30958 merged 2026-06-30 dl/coordinator: bound pending-file memory under commit backlogs
+  atomically     50 hit(s) (all listed)
+      #31420 merged 2026-08-04 `security`: apply snapshots and replace ACL store contents atomically 
+      #31435 merged 2026-08-05 [v26.2.x] `security`: apply snapshots and replace ACL store contents atomically 
+      #31437 merged 2026-08-05 [v26.1.x] `security`: apply snapshots and replace ACL store contents atomically 
+      #31513 merged 2026-08-10 ct/l0: deflake read_merge_test
+      #27327 open 2025-08-21 datalake: dlq corrupted records
+      #30485 closed 2026-05-14 kafka: implement Metadata v13 (KIP-1102); bump kcl to v0.18 in tests
+      #31022 merged 2026-07-06 Audit consensus
+      #30958 merged 2026-06-30 dl/coordinator: bound pending-file memory under commit backlogs
+      #30213 merged 2026-04-17 tools: run clang-format/clang-tidy in a separate bazel output_base
+      #30993 merged 2026-07-01 storage: admit tiered_cloud partitions to space management
+      #29635 merged 2026-02-18 lsm/io: write tmp and rename cloud data files
+      #29727 merged 2026-02-27 ct/l1/domain: batch extent removal
+      #28902 merged 2025-12-08 [CORE-14917] `ct/l1`: add `compaction_epoch` to `partition_state`
+      #30046 merged 2026-04-02 [CORE-16137]: SR on kafka RPCs
+      #28211 merged 2025-10-27 [CORE-14408] k/client: fix order of operation for brokers update
+      #29553 merged 2026-02-05 ct: End to end cluster recovery
+      #26732 merged 2025-07-08 [CORE-12756] `storage`: reset batch cache during adjacent merge compaction
+      #28359 merged 2025-11-05 [CORE-13254] ct: calculate global gc eligible L0 epoch
+      #28897 merged 2025-12-08 [CORE-14941] `ct/l1`: remove `extent`s in `replace_objects()` below start offset
+      #27601 closed 2025-09-16 ct: Add combined L0 and L1 reader
+  interrupted    74 hit(s) (all listed)
+      #28800 open 2025-12-02 [CORE-13742] dt: Add cloud topics to 'partition_move_interruption_test.py'.
+      #14628 open 2023-11-02 reproduce rrr bug
+      #28643 open 2025-11-19 cl/replication/tests: deflake test_with_restart
+      #31598 closed 2026-08-17 kafka/server: fix quota_manager gc use-after-free at shutdown
+      #30894 closed 2026-06-23 RFC ts-ct-migration: cutover [PR 6]
+      #31162 merged 2026-07-17 [v26.1.x] [CORE-9509] `storage`: close live reader if compaction index setup throws
+      #30767 merged 2026-06-11 [v26.1.x] security/oidc: support authenticated (HTTP Basic) forward proxies
+      #28735 merged 2025-11-25 tools/buildifier: patch find behavior
+      #30758 merged 2026-06-10 cloud_topics: pivot tiered_cloud reads on the local log start
+      #28882 closed 2025-12-06 [CORE-14918] Cleanup Redpanda service on all preallocated test nodes
+      #15322 open 2023-12-05 net/probes: move produce_bad_create_time to server/public_metric
+      #30213 merged 2026-04-17 tools: run clang-format/clang-tidy in a separate bazel output_base
+      #23852 closed 2024-10-20 storage: Segment index compression
+      #30924 merged 2026-06-25 `ct/l1`: add streaming reads
+      #30993 merged 2026-07-01 storage: admit tiered_cloud partitions to space management
+      #30097 merged 2026-04-08 `cluster`: catch exceptions in `sync_kafka_start_offset_override()` & fetch path
+      #10593 closed 2023-05-05 Support SQ (single-queue) modes for NIC IRQs
+      #29257 merged 2026-01-14 `ct/l1`: some minor `domain_manager::gc_loop()` tweaks
+      #28810 merged 2025-12-02 [CORE-14438] `ct/l1`: misc utility fixes & updates for CT compaction
+      #28386 merged 2025-11-05 [CORE-13761] rptest: Re-enable RedpandaOIDCTlsTest
+  interrupt      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31670 open 2026-09-17 rpk redpanda tune net: `--output-script` still mutates NIC channel count (SetChannels bypasses the script executor)
+      #31671 open 2026-09-17 rpk net tuner: ENA queue-index parse returns MaxInt (`-Tx-Rx-` not handled by the index regex)
+      #31672 open 2026-09-18 rpk: parse ENA IRQ queue indexes
+      #31598 closed 2026-08-17 kafka/server: fix quota_manager gc use-after-free at shutdown
+      #31252 closed 2026-07-23 [CORE-16884] cloud_topics: fix shadow-link replication stall after transient S3 outage
+      #30894 closed 2026-06-23 RFC ts-ct-migration: cutover [PR 6]
+      #31251 merged 2026-07-23 [CORE-12597] consumer_group_test: fix flaky test_large_group_count
+      #30977 closed 2026-06-30 ts-ct-migration: partition_mode substrate [PR 0]
+      #30279 merged 2026-04-23 rpk debug bundle: double-sample volatile /proc counters
+      #30796 merged 2026-06-12 http: dial all resolved addresses in a single bounded attempt
+      #30758 merged 2026-06-10 cloud_topics: pivot tiered_cloud reads on the local log start
+      #16666 closed 2024-02-21 Improve "SlowDowns response" warning to include which S3 operation is being throttle
+      #30213 merged 2026-04-17 tools: run clang-format/clang-tidy in a separate bazel output_base
+      #10593 closed 2023-05-05 Support SQ (single-queue) modes for NIC IRQs
+      #29676 merged 2026-02-23 self-test: Use multiple shards for the disk self test
+      #30924 merged 2026-06-25 `ct/l1`: add streaming reads
+      #30993 merged 2026-07-01 storage: admit tiered_cloud partitions to space management
+      #29977 merged 2026-03-26 Cloud Topics: Improve backoff algorithm in L0 GC
+      #28231 merged 2025-10-28 dt: Handle out-of-order /proc/interrupts in GCP tests
+      #27834 merged 2025-10-01 tests/pmi: refactored partition move interruption test
+  sigkill        44 hit(s) (all listed)
+      #30859 open 2026-06-19 [CORE-16648] cloud_topics: abort in-flight multipart uploads on shutdown
+      #10225 open 2023-04-20 tests: try racing truncation with hard restart
+      #30818 merged 2026-06-16 [CORE-16628]: Cloud Topics: Additional scale test that stresses the cloud client pool
+      #28169 closed 2025-10-23 dt/redpanda: tolerate nodes not running with FI
+      #25594 merged 2025-03-26 app: Add automatic shutdown logging
+      #28478 merged 2025-11-11 rptest: improve typing in redpanda.py and admin.py
+      #3104 merged 2021-11-29 tests/failure_injector: make kill idempotent
+      #5152 closed 2022-06-16 cannot kill Pod because of PID1 issue with container when redpanda exits unexpectedly
+      #25432 merged 2025-03-19 CORE-9245 dt: deflake crash tracker signal tests
+      #25173 merged 2025-02-25 CORE-8696 Implement crash reporter telemetry
+      #23085 closed 2024-08-27 utils: Added external process
+      #16887 closed 2024-03-05 CI Failure (cli consumer failed to stop) in `ConsumerGroupTest.test_dead_group_recovery`
+      #16743 closed 2024-02-27 CI Failure (cli-consumer failed to stop) in `OffsetDeletionTest.test_offset_deletion`
+      #16201 closed 2024-01-20 CI Failure (failed to stop in 30 seconds) in `BucketScrubSelfTest.test_missing_segment`
+      #16698 closed 2024-02-24 CI Failure (key symptom) in `ConsumerGroupTest.test_consumer_is_removed_when_timedout`
+
+      #14374 closed 2023-10-23 CI Failure (`TimeoutError`: cli-consumer failed to stop) in `FollowerFetchingTest.test_basic_follower_fetching`
+      #13367 closed 2023-09-11 CI Failure (TimeoutError('cli-consumer running on docker-rp-8 failed to stop after SIGKILL')) in `IncrementalFollowerFetchingTest.test_incremental_fetch_from_follower`
+      #12754 closed 2023-08-11 utils: create external process class
+      #10554 closed 2023-05-04 RedPanda doesn't launch with RPC TLS enabled
+      #15131 closed 2023-11-24 Fix MPT flakiness
+  sigint         16 hit(s) (all listed)
+      #30244 merged 2026-04-22 tools: configure default Iceberg catalog for dev_cluster
+      #29772 merged 2026-03-07 cpd: Add Go/rpk based throughput benchmark
+      #28922 merged 2025-12-10 PGO train improvements
+      #28908 merged 2025-12-09 dev-cluster: Forward exit codes
+      #5842 closed 2022-08-04 Can't host redpanda on fly.io - IPV6 only network
+      #7290 closed 2022-11-15 Assertion failures and ASAN violations when SIGINT-ing redpanda during archival
+      #24959 merged 2025-01-28 CORE-8685 crash_tracker: crash signal handlers for crash recording
+      #24787 merged 2025-01-13 CORE-8616 redpanda: configurable sleep on crash loop
+      #24854 merged 2025-01-17 CORE-8618 crash_tracker: record uncaught startup exceptions
+      #4560 closed 2022-05-04 segmentio/kafka-go behavior when a topic doesn't exist on redpanda
+      #7640 closed 2022-12-06 redpanda: attempt leadership drain during shutdown
+      #5707 merged 2022-07-28 cluster: fix shutting down while controller log replay is in progress
+      #5730 merged 2022-07-29 rpc/transport: Release resource units right after dispatching send
+      #5677 merged 2022-07-27 tests: don't ignore shutdown hangs in failure injector
+      #4634 closed 2022-05-10 Ducktape hangs on `NodeResizeTest.test_node_resize`
+      #303 merged 2020-12-17 Save logs on files
+  ctrl-c         42 hit(s) (all listed)
+      #31346 merged 2026-07-29 [CORE-15837] rpk: add --wait and aggregation to decommission
+      #30279 merged 2026-04-23 rpk debug bundle: double-sample volatile /proc counters
+      #30022 merged 2026-03-31 rpk/docs: update topic consume reference
+      #29060 merged 2025-12-18 [UX-755] rpk: add spinner for long-running operations
+      #28798 merged 2025-12-01 tools/dt: Two improvements to the dt utility
+      #28553 merged 2025-11-14 rpk: check operation status before returning in rpk cluster config set
+      #27786 merged 2025-09-29 rptest: adjust type-check.sh for pre-commit hooks
+      #27366 merged 2025-08-25 tools/dev_cluster: stop post_start_configure when killed
+      #2232 closed 2021-09-04 Fast rolling segments prevent a node rejoining the cluser
+      #2780 closed 2021-10-25 Kafka Streams GlobalKTables example hangs on 1st try
+      #2140 closed 2021-08-23 redpanda: Reader cannot read before start of the log
+      #5739 closed 2022-07-29 mTLS Authz test: user migrates one broker to mTLS
+      #23336 merged 2024-09-16 rpk connect download: UAT findings
+      #12628 closed 2023-08-07 kafka.errors.NodeNotReadyError: NodeNotReadyError
+      #23950 merged 2024-10-29 raft: const wait and wait_no_throw
+      #1438 closed 2021-05-20 redpanda: hanging on local shutdown with ctrl-c
+      #18598 merged 2024-05-21 segment_appender: truncate in addition to allocate
+      #17023 merged 2024-03-12 rpk: enable using public API in rpk transform
+      #15142 merged 2023-11-27 cloud_storage_fuzzy_rpfixture.test_scan_while_shutting_down
+      #13175 closed 2023-08-31 add /v1/debug/cpu_profile to rpk debug bundle
+  power          52 hit(s) (all listed)
+      #10225 open 2023-04-20 tests: try racing truncation with hard restart
+      #30140 closed 2026-04-13 [v25.3.3] Possible memory leak in Redpanda operator (TLS/SASL/SCRAM)
+      #23030 closed 2024-08-23 [DRAFT] Add aggregated uploader
+      #30443 merged 2026-05-11 lsm/io: round read buffer by max of memory/disk DMA alignment
+      #29736 merged 2026-02-27 ct: Read merging
+      #29200 merged 2026-01-09 Add comparison operators to iobuf fuzz test (and other enchancements)
+      #29648 merged 2026-02-19 ct/l1: Add an L1 reader cache
+      #29488 merged 2026-02-02 gha: add claude-code-review.yml workflow
+      #27287 merged 2025-08-19 [CORE-13104] storage/parser: log parser_errc at debug level on recovery
+      #26670 merged 2025-07-02 cloud_topics: rename dl_stm to ctp_stm
+      #26796 merged 2025-07-11 rpk: Adds print command for node configuration
+      #27981 merged 2025-10-09 storage/log: calculate cleanly compacted prefix for coordinated compaction
+      #29061 merged 2025-12-18 [CORE-15334] ct: Introduce new scheduling algorithm for lower latency
+      #27180 merged 2025-08-08 Do not remove force reconfigured replica if it a learner
+      #28351 merged 2025-11-04 lsm: introduce a seastar native LSM database based on LevelDB
+      #8513 closed 2023-01-30 kafka protocol decoder should explicitly apply allocation limits
+      #2547 closed 2021-10-06 In-memory-writes
+      #27529 merged 2025-09-11 `kafka`: add `kafka_produce_batch_validation` and rework timestamp validation
+      #26019 merged 2025-05-01 serde/json: experimental asynchronous streaming parser
+      #24475 merged 2024-12-06 iobuf: update the allocator schedule
+  outage         29 hit(s) (all listed)
+      #10225 open 2023-04-20 tests: try racing truncation with hard restart
+      #31252 closed 2026-07-23 [CORE-16884] cloud_topics: fix shadow-link replication stall after transient S3 outage
+      #31493 closed 2026-08-07 ct: track seen-window bumps as pending until observed in the log
+      #31366 closed 2026-07-30 [CORE-16604] cluster_link: incremental Schema Registry sync by tailing _schemas
+      #31216 closed 2026-07-21 kafka: add KIP-848 next generation consumer group protocol (experimental)
+      #30386 merged 2026-05-06 ducktape: retry apt/PPA installs in ocsf-server
+      #30815 closed 2026-06-15 Raft pre-vote livelock: lagging replicas never rejoin ISR, stalling acks=all produce (REQUEST_TIMED_OUT) [v26.1.10]
+      #30408 closed 2026-05-07 bazel: route flaky upstream deps through vectorized-public s3 mirror
+      #17526 closed 2024-04-01 Enhance error reporting for DNS issues
+      #29238 merged 2026-01-13 DEVPROD-3638 fix(tests): add HTTP retry logic for transient connectio…
+      #30268 merged 2026-04-23 security/oidc: route discovery and JWKS through a forward proxy
+      #11286 closed 2023-06-07 Provide output that can be verified for secrets
+      #28106 merged 2025-10-17 rpk shadow: add support for updating
+      #6644 closed 2022-10-05 storage: adjacent segment merging for non-compacted topics
+      #3237 closed 2021-12-12 redpanda: reassign replicas off of nodes which have been unavailable for a specific amount of time
+      #28261 merged 2025-10-29 coordinated tombstone removal end2end test
+      #26490 merged 2025-06-17 `raft`: don't rethrow in `state_machine_manager::background_apply_fiber()`
+      #7401 closed 2022-11-21 Add TLS certificate expiry TTL to public_metrics and metrics
+      #10376 closed 2023-04-26 FindCoordinator group response assigns an offline node
+      #13651 closed 2023-09-25 CI Failure (AWS outage) in `FeaturesMultiNodeTest.test_explicit_activation`
+  ENOSPC         13 hit(s) (all listed)
+      #31180 merged 2026-07-20 storage: mark snapshot writer/reader closed regardless of close outcome
+      #31462 merged 2026-08-06 kvstore: fail fast on flush fiber exceptions
+      #30353 closed 2026-04-30 [v25.2.x] cloud_io/cache: fix shard 0 misuse in put ENOSPC handler
+      #31294 merged 2026-07-24 [v26.2.x] Cherry-pick dev PRs since branch point
+      #30352 merged 2026-04-30 [v25.3.x] cloud_io/cache: fix shard 0 misuse in put ENOSPC handler
+      #30335 merged 2026-04-29 cloud_io/cache: fix shard 0 misuse in put ENOSPC handler
+      #30351 merged 2026-04-30 [v26.1.x] cloud_io/cache: fix shard 0 misuse in put ENOSPC handler
+      #30045 merged 2026-04-02 ct/l1: integrate metastore with cloud cache
+      #16454 merged 2024-02-02 io: add io queue manager
+      #10756 merged 2023-05-15 cloud_storage: further cache improvements
+      #3153 closed 2021-12-03 RFC: Add file-level fault injector, full disk unit test
+      #3129 merged 2021-12-01 rpk: add commands for dealing with centrally stored cluster config
+      #1547 closed 2021-06-07 New segment appender assertion triggered
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31480 open 2026-08-06 storage: remove unneeded vassert in batch_header_from_disk_buf
+      #18622 open 2024-05-22 Implementing Persistent Topic Disk Usage Metric
+      #31642 open 2026-08-19 raft: re-apply leader commit index after a follower flush
+      #13824 open 2023-09-29 Follow-ups for different disk speeds issue
+      #31297 open 2026-07-27 storage: warn when expected and actual data size diverge
+      #31470 open 2026-08-06 [CORE-14565] `storage`: make offset translator truncation checkpoint crash-safe and ensure offset translator processes visible raft batches
+      #13194 open 2023-09-01 Prevent node with assigned `node_id` and wiped disk from joining the cluster automatically 
+      #29379 open 2026-01-23 moon: add moonrepo configuration and GHA workflows running on blacksmith
+      #31401 open 2026-08-03 Upgrade failed
+      #31008 open 2026-07-02 lsm/sst: read bloom filters lazily
+      #30202 open 2026-04-16 `base`: finer grained log filtering in `vlog`
+      #25074 open 2025-02-11 storage_min_free_bytes config option for topic-level
+      #30840 open 2026-06-17 rpk: add --watch flag to 'rpk cluster self-test start'
+      #9948 open 2023-04-11 Offline log viewer (OLV): inspect data directory to keep description of on-disk state in sync with Redpanda
+      #15160 open 2023-11-27 Warn/alert if expected and actual data dir sizes are too far apart
+      #24140 open 2024-11-15 rptest: cache metrics test with custom mountpoint
+      #12331 open 2023-07-20 t/storage_timing_stress_test: base implementation
+      #13883 open 2023-10-03 Enable skipping cloud storage cache for small segments
+      #18279 open 2024-05-07 Add support for DescribeLogDirs v4
+      #31053 open 2026-07-08 config: add O_DIRECT hint to config read failures
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11848 open 2023-07-03 Tests: partial upgrade with rollback 
+      #30252 open 2026-04-22 CORE-14686 - Archival Scrubber - Add a bit of slack to skip condition to deflake post-ducktape scrub
+      #30433 open 2026-05-10 Remove a couple of batch copies on the produce path
+      #31370 open 2026-07-30 storage: keep appender inactive timer armed across flush
+      #30092 open 2026-04-08 Cloud Storage Clients: Fix oauth subrequest headers in batch delete + some other fixes along the way
+      #31256 open 2026-07-23 Health report rework
+      #31376 open 2026-07-31 [CORE-16908] cluster_link: incremental Schema Registry sync over the HTTP API
+      #31098 open 2026-07-14 Multi term segments
+      #3948 open 2022-03-04 Allow for environment variable substitution in redpanda.yaml
+      #27901 open 2025-10-04 QE DR chaos - initial tests and configs
+      #5564 open 2022-07-22 More tests that exercise RPCs running across mixed versions
+      #14267 open 2023-10-18 admin api: add support for batch requests in place of current per-partition requests
+      #31513 merged 2026-08-10 ct/l0: deflake read_merge_test
+      #13820 open 2023-09-29 cluster/config_manager: fix double apply of configs
+      #31623 merged 2026-08-18 bazel: fetch pip wheels via the Bazel downloader
+      #31176 merged 2026-07-19 `ct/l1`: commit compaction and leveling output incrementally
+      #14628 open 2023-11-02 reproduce rrr bug
+      #30326 open 2026-04-28 Expose Kubernetes deployment context via Admin API
+      #31462 merged 2026-08-06 kvstore: fail fast on flush fiber exceptions
+      #30149 open 2026-04-14 AI Jam: Produce path wasm
+  incomplete     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31471 open 2026-08-06 `storage`: mark compaction index as incomplete when a batch's index update fails
+      #23334 open 2024-09-16 Modifying jira_helper to migrate milestones to Fix Versions in jira 
+      #30506 open 2026-05-15 Migration 25 3 poc
+      #30718 open 2026-06-04 cluster_link: ACL deletion in Shadow Linking
+      #31427 merged 2026-08-05 rpk: use pagination when listing secrets from cloud
+      #30092 open 2026-04-08 Cloud Storage Clients: Fix oauth subrequest headers in batch delete + some other fixes along the way
+      #28643 open 2025-11-19 cl/replication/tests: deflake test_with_restart
+      #29950 open 2026-03-24 Cloud Topics: Epoch barrier
+      #31177 open 2026-07-19 POC tiered storage dual write
+      #31332 merged 2026-07-29 iceberg: bring back in-manifest stats
+      #30162 closed 2026-04-14 claude: add slash command skill to lint commits in a PR
+      #30917 merged 2026-06-24 datalake: Support nesting value fields
+      #31049 merged 2026-07-08 [CORE-16776] cluster_link: test SR-sync against a Confluent source
+      #30541 merged 2026-05-19 `ct/l1`: add `leveling_{source/sink}`
+      #30380 merged 2026-05-05 rpk: add root '--print-tree' flag
+      #30763 merged 2026-06-11 `ct/l1`: leveling test follow ups
+      #30347 merged 2026-04-30 kafka: foundation for ListOffsets leader epoch fix (CORE-12505)
+      #29951 merged 2026-03-25 Add ducktape test packaging for Antithesis
+      #28882 closed 2025-12-06 [CORE-14918] Cleanup Redpanda service on all preallocated test nodes
+      #29818 merged 2026-03-13 ct/l1: debugging endpoint for the metastore
+  dataloss       1 hit(s) (all listed)
+      #24692 closed 2025-01-06 rptest: upgrade kgo-verifier with additional dataloss checks
+  recover        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31677 open 2026-10-08 Static consumer leader restart after partition expansion leaves new partitions unassigned
+      #9249 open 2023-03-03 Configurable limit on concurrent metadata requests
+      #31098 open 2026-07-14 Multi term segments
+      #31624 open 2026-08-18 Rust transform SDK discards the input record offset that the ABI provides (Go SDK exposes Record.Offset)
+      #13194 open 2023-09-01 Prevent node with assigned `node_id` and wiped disk from joining the cluster automatically 
+      #30779 open 2026-06-11 Deflake round 2 nodewise recovery
+      #31177 open 2026-07-19 POC tiered storage dual write
+      #31376 open 2026-07-31 [CORE-16908] cluster_link: incremental Schema Registry sync over the HTTP API
+      #30895 closed 2026-06-23 RFC ts-ct-migration: offline consume paths [PR 7]
+      #31208 merged 2026-07-21 [v25.3.x] [CORE-16844] kafka/client: recover from offset_out_of_range in consumer group fetch
+      #31544 closed 2026-08-12 [CORE-12930] - Storage: Some observability improvements for unrecoverable segments
+      #31064 merged 2026-07-10 [CORE-16844] kafka/client: recover from offset_out_of_range in consumer group fetch
+      #31543 merged 2026-08-11 [CORE-8759] storage: kill broker process if log_reader detects a corrupt segment
+      #31207 merged 2026-07-21 [v26.1.x] [CORE-16844] kafka/client: recover from offset_out_of_range in consumer group fetch
+      #31206 merged 2026-07-21 [v25.2.x] [CORE-16844] kafka/client: recover from offset_out_of_range in consumer group fetch
+      #31547 closed 2026-08-12 raft: fix election timer starvation and busy reply term loss
+      #31402 closed 2026-08-03 [CORE-15822] security/audit: apply failure policy when the sink cannot initialize
+      #29493 open 2026-02-02 Add constants module
+      #19009 open 2024-06-07 archival: bump offset if seeking undershoots
+      #31294 merged 2026-07-24 [v26.2.x] Cherry-pick dev PRs since branch point
+  recovery       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #30779 open 2026-06-11 Deflake round 2 nodewise recovery
+      #28035 open 2025-10-14 WIP: safe partition recovery (POC)
+      #13668 open 2023-09-26 cloud_metadata: utilities for offsets recovery
+      #30714 open 2026-06-03 [v26.1.x] [CORE-15886] cfr_tests: deflake controller recovery wait
+      #27034 open 2025-07-29 rptest: add recovery test case after full truncation
+      #31677 open 2026-10-08 Static consumer leader restart after partition expansion leaves new partitions unassigned
+      #30837 open 2026-06-17 rpk: report active mode when 'redpanda mode' runs without an argument
+      #31256 open 2026-07-23 Health report rework
+      #31098 open 2026-07-14 Multi term segments
+      #31533 open 2026-08-11 [CORE-16631] tests/rptest: wait for target HWM to settle after failover
+      #8973 open 2023-02-18 Add `is_leader` RPC to validate metadata cache and increase recovery speed
+      #31177 open 2026-07-19 POC tiered storage dual write
+      #31615 open 2026-08-18 datalake/iceberg: parallelize various operations
+      #31119 open 2026-07-15 tests/rptest: use check_consistently retention test
+      #31642 open 2026-08-19 raft: re-apply leader commit index after a follower flush
+      #31034 open 2026-07-07 `model`: add `for_each_record<Fields...>()` 
+      #31470 open 2026-08-06 [CORE-14565] `storage`: make offset translator truncation checkpoint crash-safe and ensure offset translator processes visible raft batches
+      #31302 open 2026-07-27 `kgo-verifier`: truncate valid offsets when retries land at lower offsets
+      #31445 open 2026-08-05 `rptest`: add `TimeQueryParityTest`
+      #31009 open 2026-07-03 ct/l1/metastore: expose LSM probe metrics
+  rollback       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11848 open 2023-07-03 Tests: partial upgrade with rollback 
+      #27036 open 2025-07-29 cloud_storage: reproduce offset rollback on read replica after truncate
+      #31256 open 2026-07-23 Health report rework
+      #31088 open 2026-07-14 [CORE-16760] tests: guard tiered_cloud_topics unfinalized-downgrade gates
+      #5564 open 2022-07-22 More tests that exercise RPCs running across mixed versions
+      #13820 open 2023-09-29 cluster/config_manager: fix double apply of configs
+      #31086 merged 2026-07-13 [CORE-16760] cluster_link: re-check batch_mirror_topic_status before replicating
+      #31313 merged 2026-07-28 `admin`: use `stream_range_as_array` in usage response
+      #31169 merged 2026-07-17 rptest: drive unfinalized-upgrade tests through rpk cluster upgrade
+      #30467 merged 2026-05-13 model/iceberg_mode: generalize config to key/value/headers sections
+      #15322 open 2023-12-05 net/probes: move produce_bad_create_time to server/public_metric
+      #30814 merged 2026-06-15 [CORE-16324] Auto finalize real upgrade test
+      #31083 merged 2026-07-13 [CORE-16760] Add additional unfinalized upgrade test for role/SR sync feature flags
+      #30930 merged 2026-06-25 rpk cluster upgrade: finalize and status subcommands
+      #29971 closed 2026-03-26 ci/ducktape: point retry compare_with_branch to v26.1.x
+      #31295 merged 2026-07-24 tests: poll membership after role-sync scale create
+      #30004 merged 2026-03-31 [v26.1.x] rpk: update console version to v3.7.0
+      #30019 merged 2026-03-31 [v26.1.x] cluster/rm_stm: preserve open transaction producers in local snapshots
+      #30007 merged 2026-03-31 rpk: Refactor benchmark
+      #30014 merged 2026-03-31 [v26.1.x] cluster/namespaced_cache: stop eviction loop when no entries are evictable
+  resume         >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31675 open 2026-10-07 Metadata names a guessed leader under the last leader's epoch while a partition is leaderless
+      #31218 open 2026-07-21 raft/buffered_protocol: fix shutdown race in append entries queue
+      #31042 open 2026-07-07 dt/ct/l0_gc: Fix flaky node-failure phase of resilience test
+      #31613 closed 2026-08-18 DNM: microbench seastar urgent value/coroutine returns
+      #10787 open 2023-05-15 WIP: escape hatch to reset metadata
+      #31224 merged 2026-07-22 [v25.3.x] [CORE-16860] kafka/client: resume consumer group fetch from committed offset
+      #31366 closed 2026-07-30 [CORE-16604] cluster_link: incremental Schema Registry sync by tailing _schemas
+      #31225 merged 2026-07-22 [v26.1.x] [CORE-16860] kafka/client: resume consumer group fetch from committed offset
+      #31112 merged 2026-07-15 [CORE-16860] kafka/client: resume consumer group fetch from committed offset
+      #31567 merged 2026-08-13 kafka/client/test: deflake data_queue blocking push test
+      #31223 closed 2026-07-22 [v25.2.x] [CORE-16860] kafka/client: resume consumer group fetch from committed offset
+      #25693 open 2025-04-02 DNM: WIP iceberg compat checks inline in SR
+      #31640 closed 2026-08-19 [CORE-16604] cluster_link: make the SR sync inventory counters comparable
+      #31146 merged 2026-07-17 ssx/actor: document blocked tell() ordering as unspecified
+      #29949 open 2026-03-24 Cloud Topics: Foundations for epoch barrier
+      #30785 merged 2026-06-12 cluster_link/replication: don't floor prefix truncation at resume offset
+      #31602 closed 2026-08-17 [CORE-14911] Fix `_schemas` replay for a truncated log
+      #30819 merged 2026-06-16 [v26.1.x] cluster_link/replication: don't floor prefix truncation at resume offset
+      #31252 closed 2026-07-23 [CORE-16884] cloud_topics: fix shadow-link replication stall after transient S3 outage
+      #31249 merged 2026-07-23 [v25.2.x] datalake/coordinator: yield between snapshot copy and serialize
+  half-written   14 hit(s) (all listed)
+      #30225 merged 2026-04-17 debug_bundle: support OAUTHBEARER auth in broker-side admin API
+      #29414 merged 2026-01-27 pgo_train: Wait until iceberg check
+      #30349 closed 2026-04-30 [CORE-16225] Cloud Storage Clients: Introduce tag-based client pool segregation
+      #28249 merged 2025-10-29 [CORE-12458] Prevent segment appender from writing into already dispatched head buffer
+      #27797 merged 2025-09-29 Better RNG in random_generators
+      #29061 merged 2025-12-18 [CORE-15334] ct: Introduce new scheduling algorithm for lower latency
+      #27680 merged 2025-09-23 tuner: Don't enable RPS/RFS in MQ mode
+      #26273 merged 2025-05-28 Various fixes for ManyTopicsTest
+      #26589 merged 2025-06-25 cloud_storage_clients/s3_client: Logging Upgrade
+      #5056 closed 2022-06-07 Redpanda crashes when high number of consumers are killed
+      #19887 merged 2024-06-19 cst/inv: Add tooling for parsing, writing and reading inventory reports
+      #16923 merged 2024-03-06 rpk/transform: introduce logs command
+      #7853 closed 2022-12-20 Stalls and Timeouts in 22.3.4 with lower reactor-detector-timeout setting 
+      #3960 closed 2022-03-08 ducky: port SI e2e tests to ducktape
+  wipe           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31256 open 2026-07-23 Health report rework
+      #13194 open 2023-09-01 Prevent node with assigned `node_id` and wiped disk from joining the cluster automatically 
+      #27327 open 2025-08-21 datalake: dlq corrupted records
+      #5803 open 2022-08-03 Better logging when Rejecting join request from node
+      #31177 open 2026-07-19 POC tiered storage dual write
+      #15322 open 2023-12-05 net/probes: move produce_bad_create_time to server/public_metric
+      #31358 merged 2026-07-29 bazel: raise --remote_timeout to 600s
+      #31509 merged 2026-08-10 [v25.3.x] rptest: install the expired cert after startup
+      #31068 merged 2026-07-10 [CORE-16841] `ct`: drop logs in `level_one_reader` to `WARN`
+      #31421 merged 2026-08-04 [v26.1.x] [CORE-1516] rpk shadow: replace the entire configuration on update
+      #31206 merged 2026-07-21 [v25.2.x] [CORE-16844] kafka/client: recover from offset_out_of_range in consumer group fetch
+      #30926 merged 2026-06-25 members_backend: drop pending raft0 additions on decommission
+      #31159 merged 2026-07-17 cloud_topics: make reconciler's local-read floor an exclusive bound
+      #31098 open 2026-07-14 Multi term segments
+      #30562 closed 2026-05-20 [v25.3.x] schema_registry: enforce strict validation for missing required attri…
+      #31623 merged 2026-08-18 bazel: fetch pip wheels via the Bazel downloader
+      #31065 merged 2026-07-10 tests/rptest: expose L0 GC unreadability after a storage-mode flip
+      #31041 merged 2026-07-07 [v26.1.x] [CORE-16253] dl/translation/tests: de-flake test_happy_path timing
+      #30661 merged 2026-06-01 [v25.3.x] Decom can cancel simple node add raft0 reconfigurations
+      #30663 closed 2026-06-01 [v25.2.x] Decom can cancel simple node add raft0 reconfigurations
+  wipes          10 hit(s) (all listed)
+      #31159 merged 2026-07-17 cloud_topics: make reconciler's local-read floor an exclusive bound
+      #31065 merged 2026-07-10 tests/rptest: expose L0 GC unreadability after a storage-mode flip
+      #28811 merged 2025-12-03 `kafka/server`: alter `tristate` handling
+      #27431 merged 2025-08-29 [CORE-13215] ct/l1: Add a level one reader
+      #16332 closed 2024-01-27 CI Failure (TimeoutError) in `CloudStorageScrubberTest.test_scrubber`
+      #20832 merged 2024-07-03 cloud_storage: use `topic_namespace_override` in `remote_path_provider`
+      #9480 merged 2023-03-15 admin: add a refresh endpoint for the cluster health monitor
+      #10669 closed 2023-05-10 Consistency violation: atomic consume-transform-produce loop isn't atomic (static partitioning)
+      #7372 closed 2022-11-18 tests: ducktape test for refreshing node IDs
+      #2235 merged 2021-09-06 Updates tx layer to support hot log truncations
+  erase          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31470 open 2026-08-06 [CORE-14565] `storage`: make offset translator truncation checkpoint crash-safe and ensure offset translator processes visible raft batches
+      #31098 open 2026-07-14 Multi term segments
+      #31594 open 2026-08-15 rpc/transport: retain memory semaphore units in queued request entry
+      #30618 open 2026-05-27 [CORE-16320] - Cloud Topics: L1 I/O Improvements: Footer cache
+      #31199 merged 2026-07-20 `rptest`: deflake `controller_erase_test` again
+      #31221 merged 2026-07-22 [CORE-16883] `kafka`: erase `group` before awaiting `shutdown()`
+      #31229 merged 2026-07-22 [v25.3.x] [CORE-16883] `kafka`: erase `group` before awaiting `shutdown()`
+      #31228 merged 2026-07-22 [v26.1.x] [CORE-16883] `kafka`: erase `group` before awaiting `shutdown()`
+      #31244 merged 2026-07-23 `storage`: batch cache microbenchmark and reclamiation optimizations
+      #29083 open 2025-12-20 context: debut
+      #31231 merged 2026-07-22 [v25.2.x] [CORE-16883] `kafka`: erase `group` before awaiting `shutdown()`
+      #29949 open 2026-03-24 Cloud Topics: Foundations for epoch barrier
+      #31609 merged 2026-08-18 Fix unbounded s3_fifo growth
+      #31171 merged 2026-07-17 Joe/fix group delete gate crash
+      #31643 merged 2026-08-19 [v26.2.x] Fix unbounded s3_fifo growth
+      #31197 merged 2026-07-20 `ct/l1`: hold back undersized tail ranges from leveling
+      #31441 merged 2026-08-05 kafka/client/test: drop ordering assertion for concurrent dispatch
+      #30149 open 2026-04-14 AI Jam: Produce path wasm
+      #31621 closed 2026-08-18 [CORE-16802] - KIP-848: the consumer group type and heartbeat dispatch
+      #31185 merged 2026-07-20 [CORE-16854] `bazel`: point `seastar` at `cde680a9`
+  erasing        38 hit(s) (all listed)
+      #31594 open 2026-08-15 rpc/transport: retain memory semaphore units in queued request entry
+      #31244 merged 2026-07-23 `storage`: batch cache microbenchmark and reclamiation optimizations
+      #31221 merged 2026-07-22 [CORE-16883] `kafka`: erase `group` before awaiting `shutdown()`
+      #30618 open 2026-05-27 [CORE-16320] - Cloud Topics: L1 I/O Improvements: Footer cache
+      #31107 merged 2026-07-15 [CORE-10453] `rptest`: remove flakey `wait_all_segments()` condition
+      #31024 merged 2026-07-07 Schema Migrations: config/mode/delete syncing and context remapping
+      #31171 merged 2026-07-17 Joe/fix group delete gate crash
+      #31476 merged 2026-08-06 [CORE-16800] - KIP-848: extract offset_store from the classic group
+      #30701 merged 2026-06-03 datalake: fix translation probe leak
+      #30052 closed 2026-04-02 `config`: purge known deprecated cluster properties
+      #29005 merged 2025-12-16 ct/l0: Enable batch cache metrics and fix inverted condition
+      #27707 merged 2025-09-24 kafka/server: fix issue in delete topic
+      #29183 merged 2026-01-08 cloud_storage_clients: infra for dynamic upstreams
+      #28203 merged 2025-10-24 Coordinated compaction fixups
+      #27939 merged 2025-10-07 [CORE-13840] cluster: add cloud topic tombstone to topic_table
+      #26755 merged 2025-07-09 `storage`: do not recover `segment`s with unordered offsets
+      #27391 merged 2025-08-27 kafka/server: find_coordinator v4 support
+      #27151 merged 2025-08-06 rptest/direct_consumer_tests leadership transfer test & fixes
+      #25039 merged 2025-02-05 Throttle requests if the translation backlog hits the limit
+      #21408 merged 2024-07-15 Node-local core assignment: fast leader re-election
+  erased         38 hit(s) (all listed)
+      #29083 open 2025-12-20 context: debut
+      #31433 merged 2026-08-05 cloud_topics: read manifest config from topic table
+      #31244 merged 2026-07-23 `storage`: batch cache microbenchmark and reclamiation optimizations
+      #31054 merged 2026-07-08 security: cache derived SCRAM stored key 
+      #30701 merged 2026-06-03 datalake: fix translation probe leak
+      #31544 closed 2026-08-12 [CORE-12930] - Storage: Some observability improvements for unrecoverable segments
+      #30806 merged 2026-06-15 kafka/server: avoid type erasure in produce validation
+      #29657 merged 2026-02-19 ct/rr [2/3]: add major components for cloud topic read replicas
+      #28339 merged 2025-11-04 [CORE-13480] kafka/client: improve topic caching behavior
+      #27293 merged 2025-08-19 [CORE-9882] k/server: Implement DeleteTopics v6
+      #27525 merged 2025-09-11 Deduplicate batches in direct consumer verifier
+      #27707 merged 2025-09-24 kafka/server: fix issue in delete topic
+      #27932 merged 2025-10-07 Single-fiber executor
+      #25749 merged 2025-04-07 [CORE-9110] cluster: enable shard_placement_table persistence if the feature is active
+      #16760 closed 2024-02-27 [CORE-1768] rpk: Add raid0 command and setup subcommand
+      #26297 closed 2025-05-30 (WIP) ssx: Add mutex with checkpointing mechanism
+      #27025 closed 2025-07-29 `storage`: pass `abort_source` to `maybe_create_contiguous_segment_set()`
+      #24960 merged 2025-01-28 datalake: upload parquet files to table location prefix
+      #25245 merged 2025-03-04 base/vassert: type-erase assert handling
+      #23519 merged 2024-09-26 parquet: metadata encoding
+  destroy        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #30370 open 2026-05-04 model: fix `readahead_reader` UAF on consumer-side teardown
+      #12684 open 2023-08-09 Scan codebase for potential of leaking futures
+      #29949 open 2026-03-24 Cloud Topics: Foundations for epoch barrier
+      #8332 open 2023-01-20 archival: reset probe when leadership change detected
+      #29950 open 2026-03-24 Cloud Topics: Epoch barrier
+      #31598 closed 2026-08-17 kafka/server: fix quota_manager gc use-after-free at shutdown
+      #31559 merged 2026-08-12 sr: fix broker abort when a request fails before its deferred authz check
+      #31175 closed 2026-07-18 [v26.1.x] Broker crashes with gate destroyed with outstanding requests assertion after upgrading to v26.1.12
+      #25684 open 2025-04-01 ssx/watchdog: add a periodic watchdog constructor (alternative design)
+      #30618 open 2026-05-27 [CORE-16320] - Cloud Topics: L1 I/O Improvements: Footer cache
+      #31134 merged 2026-07-16 [CORE-9509] `storage`: close live reader if compaction index setup throws
+      #31180 merged 2026-07-20 storage: mark snapshot writer/reader closed regardless of close outcome
+      #31048 merged 2026-07-08 ct/l1/metastore: harden STM lifetime for consensus and sync()
+      #28037 open 2025-10-14 Wait for memory units on obligatory batch reads in fetch handler
+      #31344 merged 2026-07-29 [CORE-15500] `storage`: respect abort sources in `segment::{read}/{write}_lock()`
+      #30730 merged 2026-06-06 lsm/db: close in-flight compaction builder on any error
+      #30684 merged 2026-06-02 tests: close confluent_kafka consumers deterministically (CORE-16410)
+      #25057 closed 2025-02-07 storage: remove chunk cache
+      #30769 merged 2026-06-11 cluster: expose cluster_health_* "overview" metrics
+      #30042 merged 2026-04-01 kafka/server: remove foreign_ptr from response_ptr
+  destroys       28 hit(s) (all listed)
+      #25684 open 2025-04-01 ssx/watchdog: add a periodic watchdog constructor (alternative design)
+      #31559 merged 2026-08-12 sr: fix broker abort when a request fails before its deferred authz check
+      #30618 open 2026-05-27 [CORE-16320] - Cloud Topics: L1 I/O Improvements: Footer cache
+      #29950 open 2026-03-24 Cloud Topics: Epoch barrier
+      #30338 merged 2026-04-29 rpc/test: cover run_handlers_in_scheduling_group codegen
+      #29774 merged 2026-03-09 [CORE-15645] Cloud Topics: Level Zero GC force reset (escape hatch)
+      #28488 merged 2025-11-12 CORE-14575 redpanda: do not destroy scheduling groups
+      #29707 closed 2026-02-25 CORE-15586 Config: Suppress changes to needs_restart properties until restart.
+      #28212 merged 2025-10-27 Support pausing tasks
+      #27559 closed 2025-09-14 Hold fetch semaphore units until response is sent
+      #25427 closed 2025-03-19 Use gate in `net::batching_output_stream`
+      #24936 merged 2025-01-25 rm_stm: fix a race during partition shutdown
+      #23529 merged 2024-09-26 CORE-7738: pp/httpd: Remove extra decode on path param get
+      #23490 merged 2024-09-26 app: fixes crashes when running fixture tests with port conflicts
+      #1861 closed 2021-07-20 Safe peering_sharded_service shut down procedure
+      #15169 merged 2023-11-28 archival/test: Ensure archiver is stopped
+      #16441 merged 2024-02-02 Improve throughput throttling
+      #16684 merged 2024-02-22 archival: Add archiver_service 
+      #7675 closed 2022-12-09 Failure in `test_cloud_storage_rpunit`.`test_remote_partition_scan_translate_full_4`
+      #5648 closed 2022-07-26 Isolated Redpanda node hangs client trying to allocate producer ID
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #30989 open 2026-07-01 Unauthenticated Admin API Access in Default Configuration
+      #24246 open 2024-11-22 test_utils: add `profile_section` to get profiles in tests
+      #10787 open 2023-05-15 WIP: escape hatch to reset metadata
+      #13820 open 2023-09-29 cluster/config_manager: fix double apply of configs
+      #30618 open 2026-05-27 [CORE-16320] - Cloud Topics: L1 I/O Improvements: Footer cache
+      #31367 merged 2026-07-30 ct/l0: exclude read replicas from the L0 GC epoch snapshot
+      #14165 closed 2023-10-13 cloud_storage: Use zero copy for cache writes
+      #31426 closed 2026-08-05 [CORE-16806]: KIP-848: Assignor Interface and Uniform Assignors
+      #30150 closed 2026-04-14 POC: Shadow Linking: shadow topic storage mode + opt-in failover promotion
+      #30684 merged 2026-06-02 tests: close confluent_kafka consumers deterministically (CORE-16410)
+      #30717 merged 2026-06-04 [CORE-13874] `storage`: add `translation_out_of_range` exception and catch it in `archival`
+      #30984 merged 2026-07-01 cluster_link: add paused control for API-mode Schema Registry shadowing
+      #30656 merged 2026-05-31 [CORE-16225]: Cloud Topics: I/O Scheduler: Configure group through log_reader_config
+      #30646 merged 2026-05-29 `ct/l1`: one last PR of pre-requesite mechanical changes for leveling
+      #30341 merged 2026-04-29 bazel: Update to v9
+      #30764 merged 2026-06-11 CORE-16409 Schema Registry: implement internal client for schema syncing
+      #29975 merged 2026-03-26 rptest: fix cross-region read replica test for AWS/CDT
+      #29563 merged 2026-02-06 CORE-15196 - Add support for `referenceFormat`
+      #30164 merged 2026-04-14 cloud_io/tests: add db_s3_imposter_fixture with LSM-backed storage
+      #29824 merged 2026-03-13 cluster/feature_manager: use insert_or_assign for version updates
+  clobber        22 hit(s) (all listed)
+      #29764 open 2026-03-06 tests/cloud: migrate ducktape cloud tests from cloud-api to public-api v1
+      #29950 open 2026-03-24 Cloud Topics: Epoch barrier
+      #30984 merged 2026-07-01 cluster_link: add paused control for API-mode Schema Registry shadowing
+      #29975 merged 2026-03-26 rptest: fix cross-region read replica test for AWS/CDT
+      #30538 merged 2026-05-19 kafka: make metadata return term 0 when missing info
+      #29072 merged 2025-12-19 CORE-14879: Migrate "Roles" Admin API v1 Security Endpoints to v2 ConnectRPC API
+      #27286 merged 2025-08-19 [CORE-8764] cloud_storage_cache_test: clean node before starting
+      #17157 merged 2024-03-18 CORE-427: Azure AKS OIDC federation / Azure VM user-assigned managed identity  support
+      #16232 merged 2024-01-23 Change cloud test hierarchy, introduce cloud test base
+      #12923 merged 2023-08-22 client/fetch_session: fix formatting string
+      #11294 merged 2023-06-08 cloud_storage: Use columnar projection to store spillover manifests
+      #9036 merged 2023-02-22 tests/AlterPart: use NamedTempFile for the JSON file
+      #8210 merged 2023-01-13 Fix clang-tidy use-after-move warnings
+      #5218 merged 2022-06-24 cmake: adds option to enable distcc
+      #7505 closed 2022-11-25 v22.2.7+ Debian package is missing libpthread.so
+      #7071 merged 2022-11-03 Fixed potentially incorrect coroutine lambdas capturing `this`
+      #7064 merged 2022-11-02 Coroutine fixes
+      #6769 merged 2022-10-14 net: avoid `this` capture in lambda coroutine
+      #8490 closed 2023-01-29 CI Failure (NoSuchBucket) in `TopicRecoveryTest.test_missing_segment`
+      #5860 closed 2022-08-05 Community build issues
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #13073 open 2023-08-29 Reject join request if >2 hosts with identical hostnames already exist in the cluster
+      #31647 open 2026-08-19 lsm/db: test that the table_cache index stays bounded under churn
+      #31593 open 2026-08-14 kafka: create the schema registry topic as a tiered topic
+      #31576 open 2026-08-13 kafka: create the consumer offsets topic as a local topic
+      #30539 open 2026-05-19 `rpk`: add `iceberg test` and `iceberg configure`
+      #31619 open 2026-08-18 iceberg/datalake: collect NaN stats
+      #31533 open 2026-08-11 [CORE-16631] tests/rptest: wait for target HWM to settle after failover
+      #31615 open 2026-08-18 datalake/iceberg: parallelize various operations
+      #31642 open 2026-08-19 raft: re-apply leader commit index after a follower flush
+      #31581 open 2026-08-14 Mitigate `offset_not_available` races on follower fetches
+      #31542 open 2026-08-11 Tq more changes
+      #30362 open 2026-05-01 Followup: ensure the LSM iterators are invalidated on exceptions
+      #31627 closed 2026-08-18 bazel: cap the http downloader retry backoff
+      #31628 closed 2026-08-19 serde: fix scope-guard underflow and add decode-side fuzzing
+      #31603 closed 2026-08-17 rptest/consumer_group_test: widen api-version probe timeout in large group test
+      #31598 closed 2026-08-17 kafka/server: fix quota_manager gc use-after-free at shutdown
+      #31620 merged 2026-08-18 kafka/server: Pass a string view to to consensus::step_down
+      #31645 closed 2026-08-19 heartbeat_manager: harden connection timeout handling
+      #31634 merged 2026-08-19 CORE-17096 Revert "build/deps: upgrade c-ares to 1.34.7 (CVE-2026-33630)"
+      #31525 closed 2026-08-11 rpk: structured command status (experimental/beta) via annotations
+  unreadable     15 hit(s) (all listed)
+      #31376 open 2026-07-31 [CORE-16908] cluster_link: incremental Schema Registry sync over the HTTP API
+      #31053 open 2026-07-08 config: add O_DIRECT hint to config read failures
+      #31065 merged 2026-07-10 tests/rptest: expose L0 GC unreadability after a storage-mode flip
+      #31640 closed 2026-08-19 [CORE-16604] cluster_link: make the SR sync inventory counters comparable
+      #31589 merged 2026-08-14 cloud_topics: fast partition movement for tiered-storage v2
+      #31177 open 2026-07-19 POC tiered storage dual write
+      #30454 merged 2026-05-13 iceberg: set MAP logical type on parquet map columns
+      #28735 merged 2025-11-25 tools/buildifier: patch find behavior
+      #27213 merged 2025-08-12 `tree-wide`: add base `kafka::log_reader_config` 
+      #7716 closed 2022-12-12 No logs pointing to issue when cert files permissions make them unreadable
+      #25763 merged 2025-04-09 benchmarks: run benchmarks in shared memory
+      #21518 closed 2024-07-19 jl scaffolding
+      #2459 closed 2021-09-28 shadow-indexing: Use kvstore to store access time for archival cache files 
+      #2478 closed 2021-09-29 Recent offsets unreadable in recovery after compaction
+      #3978 merged 2022-03-10 Support centralized configuration in operator
+  garbage        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #30092 open 2026-04-08 Cloud Storage Clients: Fix oauth subrequest headers in batch delete + some other fixes along the way
+      #28323 open 2025-11-03 archival: minor tweak to warning log
+      #31557 merged 2026-08-12 rpk: consolidate plugin version validation on pkg
+      #31598 closed 2026-08-17 kafka/server: fix quota_manager gc use-after-free at shutdown
+      #31052 merged 2026-07-08 [v26.1.x] ct/l1/metastore: harden STM lifetime for consensus and sync()
+      #31432 closed 2026-08-05 rpk connect install --connect-version rejects all Connect versions since 4.100.0 (two-digit version regex)
+      #31367 merged 2026-07-30 ct/l0: exclude read replicas from the L0 GC epoch snapshot
+      #31438 merged 2026-08-05 rpk/connect: don't cap version segments at two digits
+      #31159 merged 2026-07-17 cloud_topics: make reconciler's local-read floor an exclusive bound
+      #29950 open 2026-03-24 Cloud Topics: Epoch barrier
+      #31081 merged 2026-07-13 cloud_storage/archival: fix spillover stuck on cstore hint-map bloat
+      #30499 merged 2026-05-15 cloud_topics/l1: fix UB in db_domain_manager error-logging paths
+      #30684 merged 2026-06-02 tests: close confluent_kafka consumers deterministically (CORE-16410)
+      #30516 merged 2026-05-18 iceberg/avro: fix decimal encode/decode for non-16-byte payloads
+      #29667 merged 2026-02-20 Cloud Topics Ducktape: Expand Level Zero Garbage Collection Tests
+      #30847 merged 2026-06-18 [CORE-16356] Base framework for SR HTTP client
+      #30597 merged 2026-05-25 [CORE-16375] `redpanda`: move `cloud_topics_app` shutdown location
+      #29468 merged 2026-01-30 ct/l1/lsm: implement garbage collector for LSM-backed metastore
+      #30200 merged 2026-04-16 ct/l0/gc: collect stranded L0 objects after all cloud topics deleted
+      #29917 merged 2026-03-22 `ct/l1`: add `domain_manager_probe`
+  mangled        14 hit(s) (all listed)
+      #30387 merged 2026-05-06 Revert "bazel/wasm: upgrade wasmtime from 32.0.0 to 42.0.2"
+      #30263 merged 2026-04-23 bazel/wasm: upgrade wasmtime from 32.0.0 to 42.0.2
+      #30390 merged 2026-05-06 bazel: re-land wasmtime 42 upgrade with LTO fix
+      #29854 merged 2026-03-17 Add single-binary test packaging for Antithesis
+      #29633 merged 2026-02-18 ct: Fix L0 race condition
+      #29143 merged 2026-01-05 [CORE-15023]: Cloud Storage Clients: Implement batch delete for ABS
+      #27151 merged 2025-08-06 rptest/direct_consumer_tests leadership transfer test & fixes
+      #17014 closed 2024-03-12 Validate cloud_storage_api_endpoint and reject/remove protocol
+      #21491 merged 2024-07-17 [CORE-5093] Data Transforms SDK: Schema Registry Support for JavaScript
+      #16813 merged 2024-02-29 [v23.2.x] admin: fix path param parsing in admin api
+      #15050 merged 2023-11-20 Turn on TLS in Keycloak
+      #10088 merged 2023-04-14 Added tiered storage to random node operations test
+      #3750 closed 2022-02-08 rpk: fix mangling of 'produce' output
+      #3129 merged 2021-12-01 rpk: add commands for dealing with centrally stored cluster config
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31008 open 2026-07-02 lsm/sst: read bloom filters lazily
+      #31370 open 2026-07-30 storage: keep appender inactive timer armed across flush
+      #31480 open 2026-08-06 storage: remove unneeded vassert in batch_header_from_disk_buf
+      #31348 open 2026-07-29 storage: segment appender fuzzer
+      #31576 open 2026-08-13 kafka: create the consumer offsets topic as a local topic
+      #31647 open 2026-08-19 lsm/db: test that the table_cache index stays bounded under churn
+      #31395 open 2026-07-31 cluster: restore fast path in sync_kafka_start_offset_override 
+      #31138 open 2026-07-16 DNM: debugging CDT slow reads
+      #31119 open 2026-07-15 tests/rptest: use check_consistently retention test
+      #31334 open 2026-07-29 cloud_topics: add audit report and failing reproducers
+      #31593 open 2026-08-14 kafka: create the schema registry topic as a tiered topic
+      #30082 open 2026-04-06 tx/tests: add tx verifier to RNOT
+      #30530 open 2026-05-19 rpk: add self-node identification to debug bundle
+      #31043 open 2026-07-07 DNM: Try letting brokers go down gracefully
+      #31145 open 2026-07-17 admin/v2: refine IcebergService doc comments for API reference
+      #30850 open 2026-06-19 rpk: add metastore debugging command
+      #31009 open 2026-07-03 ct/l1/metastore: expose LSM probe metrics
+      #30802 open 2026-06-13 cdt adhoc run
+      #30900 open 2026-06-24 kafka/server: cap obligatory read to one batch when over-committed
+      #30899 open 2026-06-24 model/tests: add decompression cost microbenchmark
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14267 open 2023-10-18 admin api: add support for batch requests in place of current per-partition requests
+      #31675 open 2026-10-07 Metadata names a guessed leader under the last leader's epoch while a partition is leaderless
+      #31594 open 2026-08-15 rpc/transport: retain memory semaphore units in queued request entry
+      #31667 open 2026-09-08 schema_registry: broker aborts on a JSON schema compatibility check when a required property has a boolean subschema
+      #5280 open 2022-06-30 Release kafka request resources at the right time
+      #31642 open 2026-08-19 raft: re-apply leader commit index after a follower flush
+      #12706 open 2023-08-10 Use plural delete for cloud retention in the STM region
+      #7588 open 2022-12-01 Add transactions to the many_partitions scale test
+      #31214 open 2026-07-21 sr: do not auto-create _schemas from authz pre-flight probe
+      #30975 open 2026-06-30 rptest: add skip_in_cdt opt-out for CDT runs
+      #27789 open 2025-09-29 rpk: [SUP-31] Add basic Client Test cmd
+      #14077 open 2023-10-10 wasm: add tunable configurations for timeouts
+      #15596 open 2023-12-14 Feat/ntp archiver shutdown exception
+      #12684 open 2023-08-09 Scan codebase for potential of leaking futures
+      #31034 open 2026-07-07 `model`: add `for_each_record<Fields...>()` 
+      #26807 open 2025-07-14 How to configure multiple listeners for Kafka
+      #23161 open 2024-08-30 PESDLC-1998 During VPC cleaning remove dependent EKS as well
+      #12318 open 2023-07-19 maintenance mode message needs to warn when other nodes already in maintenance
+      #6370 open 2022-09-13 Pandaproxy: register and validate schema using the schema registry
+      #17190 open 2024-03-19 Avoid disconnecting on storage errors in fetch handler
+  unclean        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #7887 open 2022-12-21 raft: automatically abort reconfiguration if partition is stuck in leaderless state
+      #14628 open 2023-11-02 reproduce rrr bug
+      #28800 open 2025-12-02 [CORE-13742] dt: Add cloud topics to 'partition_move_interruption_test.py'.
+      #15322 open 2023-12-05 net/probes: move produce_bad_create_time to server/public_metric
+      #12431 open 2023-07-24 Developer Experience (DX) improvements
+      #16544 open 2024-02-08 use epoll with rpk --mode dev-container
+      #31181 merged 2026-07-20 [v25.2.x] Joe/fix group delete gate crash
+      #26859 open 2025-07-16 Kafka client 4.0
+      #23852 closed 2024-10-20 storage: Segment index compression
+      #31544 closed 2026-08-12 [CORE-12930] - Storage: Some observability improvements for unrecoverable segments
+      #28882 closed 2025-12-06 [CORE-14918] Cleanup Redpanda service on all preallocated test nodes
+      #29010 closed 2025-12-16 [CORE-15007] test: update allow log list
+      #30117 merged 2026-04-09 Topic table leadership metric
+      #29820 merged 2026-03-13 dt: deflake test_enabling_consumer_offsets_cache_test cache hit ratio
+      #30024 closed 2026-04-01 ct/l1: add shard-local footer cache
+      #29875 merged 2026-03-19 ct/l1: bound extent removal work per RPC
+      #29300 merged 2026-01-16 [v25.2.x] `kafka`: fix `partition_response` for `LogAppendTime` topics
+      #29213 closed 2026-01-09 [v25.2.x] sr/json: Bump resolve reference loop limit
+      #28861 merged 2025-12-05 [v25.1.x] tests: use statistical model for pass criteria
+      #25962 merged 2025-04-29 delete cdt_ducktape_deps.sh
+  shutdown       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #25754 open 2025-04-08 debug STM shutdown
+      #31218 open 2026-07-21 raft/buffered_protocol: fix shutdown race in append entries queue
+      #8439 open 2023-01-26 DNM: Shutdown hang debugging
+      #31125 open 2026-07-16 [DNM] baseline: SR sync shutdown-ordering fixes only (control for #31123)
+      #31108 open 2026-07-15 cluster_link: node shutdown can hang on unabortable SR sync destination writes
+      #15596 open 2023-12-14 Feat/ntp archiver shutdown exception
+      #30859 open 2026-06-19 [CORE-16648] cloud_topics: abort in-flight multipart uploads on shutdown
+      #31123 open 2026-07-16 cluster_link/sr: abort destination schema registry writes on task stop
+      #31470 open 2026-08-06 [CORE-14565] `storage`: make offset translator truncation checkpoint crash-safe and ensure offset translator processes visible raft batches
+      #31135 open 2026-07-16 [DO NOT MERGE] tests: worst-case straddle arm for SR sync deflake A/B
+      #31066 open 2026-07-10 metrics: expose cluster identity via cluster_info gauge
+      #28391 open 2025-11-06 application: stop schema_registry clients before datalake subsystems
+      #29543 open 2026-02-05 `storage`: remove a bunch of unnecessary `is_linked()` checks
+      #31246 open 2026-07-23 kafka/produce: enable produce v9 (flexible versions)
+      #9419 open 2023-03-14 e2e_shadow_indexing_test: limit read buffers
+      #31560 open 2026-08-12 bazel: bump the toolchain sysroot to Ubuntu 24.04
+      #28936 open 2025-12-11 ssx: safer backgrounding
+      #9976 open 2023-04-11 tls: fail fast on expired server certificate
+      #5319 open 2022-07-02 net/server: close connections in parallel.
+      #14908 open 2023-11-10 Feat/partition manifest clone
+  reboot         45 hit(s) (all listed)
+      #13551 open 2023-09-19 does it work?
+      #13820 open 2023-09-29 cluster/config_manager: fix double apply of configs
+      #31054 merged 2026-07-08 security: cache derived SCRAM stored key 
+      #15322 open 2023-12-05 net/probes: move produce_bad_create_time to server/public_metric
+      #29232 merged 2026-01-12 Controller Force Reconfiguration Longest Log Test
+      #30396 merged 2026-05-06 [CORE-13707] `redpanda`: the great config bootstrap fix
+      #27956 merged 2025-10-08 Controller forced reconfiguration
+      #26720 closed 2025-07-07 `storage`: remove `ntp` from `is_compactible_control_batch()` path
+      #27482 merged 2025-09-08 Limit max concurrent reconciliations
+      #27587 merged 2025-09-16 ct: Downgrade the assertion in ct/frontend
+      #27645 merged 2025-09-19 Add Shadow Link cluster config
+      #25958 merged 2025-04-28 tests: added consumer offsets recovery test
+      #25202 merged 2025-02-27 CORE-8694 Implement rate limiting crash report telemetry
+      #24972 merged 2025-01-29 CORE-8686 crash_tracker: remove old crash files
+      #23623 merged 2024-10-03 CORE-7724 Add debug bundle expiration option
+      #22417 closed 2024-07-26 CI Failure (key symptom) in `CompactionE2ERebootTest.test_write_reboot_read`
+
+      #21269 closed 2024-07-05 CI Failure (key symptom) in `CompactionE2ERebootTest.test_write_reboot_read`
+
+      #20702 closed 2024-06-28 CI Failure (key symptom) in `CompactionE2ERebootTest.test_write_reboot_read`
+
+      #19022 closed 2024-06-08 CI Failure (key symptom) in `CompactionE2ERebootTest.test_write_reboot_read`
+
+      #23215 merged 2024-09-06 CORE-7092 initial debug bundle service
+  disk+full      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31642 open 2026-08-19 raft: re-apply leader commit index after a follower flush
+      #25074 open 2025-02-11 storage_min_free_bytes config option for topic-level
+      #24140 open 2024-11-15 rptest: cache metrics test with custom mountpoint
+      #31177 open 2026-07-19 POC tiered storage dual write
+      #13824 open 2023-09-29 Follow-ups for different disk speeds issue
+      #30982 open 2026-07-01 Port redpanda to s390x (big-endian)
+      #31246 open 2026-07-23 kafka/produce: enable produce v9 (flexible versions)
+      #15322 open 2023-12-05 net/probes: move produce_bad_create_time to server/public_metric
+      #26541 open 2025-06-23 archival: additional candidate creation error logging
+      #31098 open 2026-07-14 Multi term segments
+      #28546 closed 2025-11-14 [v25.2.x] [CORE-14558] `storage`: prevent race between `disk_log_appender` and `remove_prefix_full_segments()`
+      #31180 merged 2026-07-20 storage: mark snapshot writer/reader closed regardless of close outcome
+      #19009 open 2024-06-07 archival: bump offset if seeking undershoots
+      #31475 closed 2026-08-06 [CORE-16996] - KIP-848: encode ConsumerGroup* record values as serde
+      #31474 closed 2026-08-06 `storage`: flush pending kvstore ops on stop instead of cancelling them
+      #31543 merged 2026-08-11 [CORE-8759] storage: kill broker process if log_reader detects a corrupt segment
+      #30858 closed 2026-06-19 kafka: add fetch_busy_latency_us metric
+      #29464 closed 2026-01-29 ct: Remove disk cache from L0 data layer
+      #28496 closed 2025-11-12 [v24.3.x] [CORE-14434] rptest: Fix timequery test
+      #17948 closed 2024-04-18 CORE-2423 archival: Disable upload of the internal topics
+  data+loss      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31302 open 2026-07-27 `kgo-verifier`: truncate valid offsets when retries land at lower offsets
+      #31108 open 2026-07-15 cluster_link: node shutdown can hang on unabortable SR sync destination writes
+      #31471 open 2026-08-06 `storage`: mark compaction index as incomplete when a batch's index update fails
+      #31470 open 2026-08-06 [CORE-14565] `storage`: make offset translator truncation checkpoint crash-safe and ensure offset translator processes visible raft batches
+      #7887 open 2022-12-21 raft: automatically abort reconfiguration if partition is stuck in leaderless state
+      #28310 open 2025-11-02 Clang tidy/noticket/check for optional usage
+      #28639 open 2025-11-19 DNM
+      #30937 open 2026-06-26 ct/l0: poison producer queue successors on pre-raft failure
+      #28817 open 2025-12-03 cluster: log at error level if updating config fails
+      #3265 open 2021-12-14 kafka/client: Send leader_epoch with requests.
+      #15084 open 2023-11-21 Support >1 node in maintenance mode in multi-rack/AZ clusters
+      #27790 open 2025-09-29 SlothMail: RPC wrapper to batch non-urgent messages to reduce traffic
+      #27643 open 2025-09-19 [UX-508] added json/yaml formatter to rpk group list
+      #14976 open 2023-11-15 segment_meta_cstore: explicit handling of a edge case
+      #31177 open 2026-07-19 POC tiered storage dual write
+      #27582 open 2025-09-16 added new subcommand to log-level to get log level from broker
+      #12486 open 2023-07-27 Support producing at a specified offset with a given partition leader epoch.
+      #28643 open 2025-11-19 cl/replication/tests: deflake test_with_restart
+      #29950 open 2026-03-24 Cloud Topics: Epoch barrier
+      #31659 closed 2026-08-24 [CORE-16631] cluster_link: gate failover promotion on a producer ID barrier
+  partial+write  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31370 open 2026-07-30 storage: keep appender inactive timer armed across flush
+      #31376 open 2026-07-31 [CORE-16908] cluster_link: incremental Schema Registry sync over the HTTP API
+      #31098 open 2026-07-14 Multi term segments
+      #30149 open 2026-04-14 AI Jam: Produce path wasm
+      #15322 open 2023-12-05 net/probes: move produce_bad_create_time to server/public_metric
+      #31462 merged 2026-08-06 kvstore: fail fast on flush fiber exceptions
+      #30326 open 2026-04-28 Expose Kubernetes deployment context via Admin API
+      #31205 closed 2026-07-21 storage: skip redundant chunk remainder copy for page-aligned appends
+      #31256 open 2026-07-23 Health report rework
+      #31197 merged 2026-07-20 `ct/l1`: hold back undersized tail ranges from leveling
+      #31176 merged 2026-07-19 `ct/l1`: commit compaction and leveling output incrementally
+      #30660 merged 2026-06-01 storage: don't expose a partial batch in reader size on flush
+      #30984 merged 2026-07-01 cluster_link: add paused control for API-mode Schema Registry shadowing
+      #30481 merged 2026-05-14 `storage`: don't override with `shard_local_cfg()` in `ntp_config` helpers
+      #23852 closed 2024-10-20 storage: Segment index compression
+      #30372 merged 2026-05-05 rptest: add Antithesis property-based test infrastructure
+      #30947 closed 2026-06-27 cloud_topics: L1 prefetch service (replace l1_reader_cache)
+      #30279 merged 2026-04-23 rpk debug bundle: double-sample volatile /proc counters
+      #31579 closed 2026-08-14 [CORE-16806] - KIP-848: assignor interface and the homogeneous uniform assignor
+      #30668 closed 2026-06-01 [CORE-16320] Cloud Topics: L1 I/O Improvements: in-flight L1 read merging + per-reader footer cache
+  crash+safe     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31470 open 2026-08-06 [CORE-14565] `storage`: make offset translator truncation checkpoint crash-safe and ensure offset translator processes visible raft batches
+      #31408 open 2026-08-03 test_utils: accept expressions in RPTEST_REQUIRE_EVENTUALLY
+      #29950 open 2026-03-24 Cloud Topics: Epoch barrier
+      #13073 open 2023-08-29 Reject join request if >2 hosts with identical hostnames already exist in the cluster
+      #30370 open 2026-05-04 model: fix `readahead_reader` UAF on consumer-side teardown
+      #30082 open 2026-04-06 tx/tests: add tx verifier to RNOT
+      #14976 open 2023-11-15 segment_meta_cstore: explicit handling of a edge case
+      #31462 merged 2026-08-06 kvstore: fail fast on flush fiber exceptions
+      #30092 open 2026-04-08 Cloud Storage Clients: Fix oauth subrequest headers in batch delete + some other fixes along the way
+      #24469 open 2024-12-06 Added datalake verifier to RandomNodeOperationsTest
+      #31345 closed 2026-07-29 cloud_topics/stm: reject epoch-window-violating batches at raft enqueue
+      #31210 closed 2026-07-21 storage: fix segment_appender crash when flush races with a blocked head swap
+      #31559 merged 2026-08-12 sr: fix broker abort when a request fails before its deferred authz check
+      #31110 merged 2026-07-15 cloud_topics/stm: fix stale epoch admission after failed epoch bump replicate
+      #31589 merged 2026-08-14 cloud_topics: fast partition movement for tiered-storage v2
+      #31221 merged 2026-07-22 [CORE-16883] `kafka`: erase `group` before awaiting `shutdown()`
+      #31579 closed 2026-08-14 [CORE-16806] - KIP-848: assignor interface and the homogeneous uniform assignor
+      #31177 open 2026-07-19 POC tiered storage dual write
+      #30966 merged 2026-06-30 cloud_topics: gate tiered_cloud on full upgrade and add tiered_v1/tiered_v2 storage modes
+      #30894 closed 2026-06-23 RFC ts-ct-migration: cutover [PR 6]
+  atomic+write   91 hit(s) (all listed)
+      #30082 open 2026-04-06 tx/tests: add tx verifier to RNOT
+      #27327 open 2025-08-21 datalake: dlq corrupted records
+      #25693 open 2025-04-02 DNM: WIP iceberg compat checks inline in SR
+      #31410 merged 2026-08-04 bytes: rewrite iobuf stream helpers as coroutines
+      #30149 open 2026-04-14 AI Jam: Produce path wasm
+      #31230 closed 2026-07-22 serde: write fixed envelopes contiguously
+      #30915 merged 2026-06-24 [CORE-16027] `ct/l0`: fix divide-by-zero in write scheduler
+      #30162 closed 2026-04-14 claude: add slash command skill to lint commits in a PR
+      #30547 merged 2026-05-20 ct: Serialize writes in db_s3_imposter handler
+      #30372 merged 2026-05-05 rptest: add Antithesis property-based test infrastructure
+      #31176 merged 2026-07-19 `ct/l1`: commit compaction and leveling output incrementally
+      #23852 closed 2024-10-20 storage: Segment index compression
+      #30006 merged 2026-03-31 net/bytes: bump seastar API level to 9, replace scattered_message
+      #30213 merged 2026-04-17 tools: run clang-format/clang-tidy in a separate bazel output_base
+      #30594 merged 2026-05-24 [CORE-16225] 1/3: Cloud I/O Scheduler: Base
+      #29727 merged 2026-02-27 ct/l1/domain: batch extent removal
+      #29635 merged 2026-02-18 lsm/io: write tmp and rename cloud data files
+      #29061 merged 2025-12-18 [CORE-15334] ct: Introduce new scheduling algorithm for lower latency
+      #29903 merged 2026-03-20 ct: invalidate cached epoch
+      #29251 merged 2026-01-14 Fix case where messages can be written multiple times in Iceberg
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31642 open 2026-08-19 raft: re-apply leader commit index after a follower flush
+      #31470 open 2026-08-06 [CORE-14565] `storage`: make offset translator truncation checkpoint crash-safe and ensure offset translator processes visible raft batches
+      #29471 open 2026-01-30 Redpanda brokers in kubernetes refuse to start when io-config.yaml is used to configure I/O
+      #29919 open 2026-03-23 nix: add Nix Flakes build support
+      #31560 open 2026-08-12 bazel: bump the toolchain sysroot to Ubuntu 24.04
+      #30082 open 2026-04-06 tx/tests: add tx verifier to RNOT
+      #30202 open 2026-04-16 `base`: finer grained log filtering in `vlog`
+      #10243 open 2023-04-20 storage: log when segment lock acquisition is slow
+      #31638 closed 2026-08-19 [v26.2.x] CORE-17096 Revert "build/deps: upgrade c-ares to 1.34.7 (CVE-2026-33630)"
+      #31639 closed 2026-08-19 [v25.3.x] CORE-17096 Revert "build/deps: upgrade c-ares to 1.34.7 (CVE-2026-33630)"
+      #31484 merged 2026-08-07 [v26.2.x] build/deps: upgrade c-ares to 1.34.7 (CVE-2026-33630)
+      #13598 open 2023-09-21 txn coordinator: add drain api
+      #31486 merged 2026-08-07 [v26.1.x] build/deps: upgrade c-ares to 1.34.7 (CVE-2026-33630)
+      #31485 merged 2026-08-07 [v25.3.x] build/deps: upgrade c-ares to 1.34.7 (CVE-2026-33630)
+      #5238 open 2022-06-27 Reduce duration of partition_movement_test from 25min to 8min
+      #31201 merged 2026-07-21 [v25.3.x] [CORE-5740] `misc`: decode `rapidjson` into chunked buffers
+      #31200 merged 2026-07-21 [v26.1.x] [CORE-5740] `misc`: decode `rapidjson` into chunked buffers
+      #31634 merged 2026-08-19 CORE-17096 Revert "build/deps: upgrade c-ares to 1.34.7 (CVE-2026-33630)"
+      #31120 merged 2026-07-15 [v26.1.x] deps: bump go to 1.26.5 in rpk and tools
+      #30716 closed 2026-06-03 [v25.3.x] build/deps: upgrade krb5 to 1.22.2
+  write+failure  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31471 open 2026-08-06 `storage`: mark compaction index as incomplete when a batch's index update fails
+      #31302 open 2026-07-27 `kgo-verifier`: truncate valid offsets when retries land at lower offsets
+      #31376 open 2026-07-31 [CORE-16908] cluster_link: incremental Schema Registry sync over the HTTP API
+      #31177 open 2026-07-19 POC tiered storage dual write
+      #31642 open 2026-08-19 raft: re-apply leader commit index after a follower flush
+      #30982 open 2026-07-01 Port redpanda to s390x (big-endian)
+      #31218 open 2026-07-21 raft/buffered_protocol: fix shutdown race in append entries queue
+      #29117 open 2025-12-24 config: don't apply values that fail validation
+      #29950 open 2026-03-24 Cloud Topics: Epoch barrier
+      #30066 open 2026-04-03 [CORE-16389] Cloud Topics: Make L0 GC tests deterministic
+      #31008 open 2026-07-02 lsm/sst: read bloom filters lazily
+      #31560 open 2026-08-12 bazel: bump the toolchain sysroot to Ubuntu 24.04
+      #30975 open 2026-06-30 rptest: add skip_in_cdt opt-out for CDT runs
+      #17240 open 2024-03-21 updates for offline log viewer, bootstrap_cluster_cmd v3
+      #30530 open 2026-05-19 rpk: add self-node identification to debug bundle
+      #29949 open 2026-03-24 Cloud Topics: Foundations for epoch barrier
+      #19009 open 2024-06-07 archival: bump offset if seeking undershoots
+      #31246 open 2026-07-23 kafka/produce: enable produce v9 (flexible versions)
+      #23343 open 2024-09-17 tests/migrations: add scale test
+      #25808 open 2025-04-15 Ts/core 1620/unify reupload path
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #31647 open 2026-08-19 lsm/db: test that the table_cache index stays bounded under churn
+      #31008 open 2026-07-02 lsm/sst: read bloom filters lazily
+      #31560 open 2026-08-12 bazel: bump the toolchain sysroot to Ubuntu 24.04
+      #28691 open 2025-11-21 Improve tls truststore search
+      #26872 open 2025-07-17 [CORE-12407] krb: test for CVE 2025 3576
+      #27788 open 2025-09-29 rpk: allow directory to be used for bundle -o
+      #29164 open 2026-01-07 Implement bound truncation in parquet writer
+      #24246 open 2024-11-22 test_utils: add `profile_section` to get profiles in tests
+      #30975 open 2026-06-30 rptest: add skip_in_cdt opt-out for CDT runs
+      #20809 open 2024-07-01 DO NOT MERGE
+      #10716 open 2023-05-12 log_manager: check tp directory is cleaned before removing
+      #14216 open 2023-10-17 RFC config: helper for mutating node config globally
+      #22722 open 2024-08-05 Misc changes to fetch path to improve reactor utilization
+      #19009 open 2024-06-07 archival: bump offset if seeking undershoots
+      #31544 closed 2026-08-12 [CORE-12930] - Storage: Some observability improvements for unrecoverable segments
+      #31558 closed 2026-08-12 bazel/packaging: bake rpath at link time instead of patching
+      #31332 merged 2026-07-29 iceberg: bring back in-manifest stats
+      #31058 closed 2026-07-09 dummy commit
+      #31602 closed 2026-08-17 [CORE-14911] Fix `_schemas` replay for a truncated log
+      #31205 closed 2026-07-21 storage: skip redundant chunk remainder copy for page-aligned appends
+
+== 51 terms run; 51 returned hits, 31 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

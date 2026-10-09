@@ -1,0 +1,7 @@
+fresh concourse
+fresh flyrc
+fresh kafkactl
+fresh rpk
+fresh redpanda
+fresh atac
+fresh kew

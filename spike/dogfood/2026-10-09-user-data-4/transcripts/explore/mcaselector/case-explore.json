@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/mc/world",
+    "operation": ["/opt/mcaselector/bin/mcaselector", "--mode", "delete", "--world", "/s/mc/world", "--query", "InhabitedTime < 1000"],
+    "cwd": "/s/mc-in",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "15613bb4db1412d6",
+  "after_class": "unlink",
+  "after_path": "/s/mc/world/region/r.0.0.mca",
+  "before_class": "rename",
+  "before_path": "/tmp/r.0.0.mca17726668882124732747.tmp",
+  "violation": "missing"
+}

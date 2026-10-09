@@ -1,0 +1,461 @@
+== novelty pre-scan: AcademySoftwareFoundation/OpenTimelineIO
+== date: 2026-10-09T00:50:18Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          63 hit(s) (all listed)
+      #2045 open 2026-09-11 Crash in available_image_bounds error code path
+      #2055 open 2026-09-19 Fix null pointer dereference in Composable::available_image_bounds
+      #847 open 2020-12-14 cycles in SerializableObjects cause crashes
+      #2044 closed 2026-09-11 Crashes when Clip parent is null
+      #499 open 2019-04-18 FCP XML: Da Vinci resolve can't load files written by adapter
+      #1797 open 2024-09-26 Unable to use otioviewer in 0.17.0
+      #346 open 2018-10-18 EDL with offset record time breaks trimmed_range_in_parent.
+      #1574 open 2023-04-07 Allow to construct AnyVector and AnyDictionary with values from Python
+      #550 open 2019-07-31 dealing with zero rate clips
+      #1322 open 2022-06-02 FCP7 XML: Clip duration calculated incorrectly, causing out-of-sync timeline construction
+      #1474 open 2022-11-01 Segmentation fault on pytest exit when creating a SerializableObjectWithMetadata
+      #2049 merged 2026-09-14 Fix orphan range queries with null parents
+      #2020 merged 2026-05-01 Fix null pointer dereferences after dynamic_cast (rewritten)
+      #2017 closed 2026-04-27 Fix null pointer dereferences after dynamic_cast
+      #1920 closed 2025-08-14 Export C++ symbols
+      #1626 closed 2023-06-12 Bump pypa/cibuildwheel from 2.11.1 to 2.13.1
+      #1887 merged 2025-05-16 Per-Track and Per-Clip Color
+      #520 closed 2019-05-28 Metadata key coming through empty from AAF - causing parse error
+      #1847 closed 2025-02-24 Bump src/deps/pybind11 from `8a099e4` to `d8565ac`
+      #1845 closed 2025-02-17 Bump src/deps/pybind11 from `8a099e4` to `34a118f`
+  corrupt        5 hit(s) (all listed)
+      #2033 open 2026-07-13 Use url_utils.url_from_filepath() for file:// URLs in docs/examples
+      #1985 open 2025-12-11 Clarity requested on Media Reference's target_url format
+      #1283 closed 2022-04-28 Write color decision list to ale
+      #1160 closed 2021-11-27 fix kdenlive read if global_feed=1 is missing
+      #602 merged 2019-10-08 Initial implementation of ImageSequenceReference
+  corruption     2 hit(s) (all listed)
+      #1322 open 2022-06-02 FCP7 XML: Clip duration calculated incorrectly, causing out-of-sync timeline construction
+      #481 open 2019-04-08 AAF Reader: TimeEffect on clip causing nested scope / potential structure issue?
+  truncated      87 hit(s) (all listed)
+      #924 open 2021-03-25 Add Chunked or Segmented file reference
+      #830 open 2020-11-02 timecode problem with FCP XML converter
+      #1661 open 2023-09-07 FCP XML adapter: AttributeError: 'NoneType' object has no attribute find / split
+      #1385 open 2022-08-19 EDL Adapter: should author and read timeline::global_start_time attribute rather than source_range.start_time of track
+      #2066 open 2026-10-01 Bump msys2/setup-msys2 from 2.30.0 to 2.33.0
+      #2065 open 2026-10-01 Bump actions/upload-artifact from 4.6.2 to 7.0.1
+      #2068 open 2026-10-01 Bump release-drafter/release-drafter from 7.1.1 to 7.7.0
+      #1849 merged 2025-03-03 Bump sphinx from 7.3.7 to 8.1.3
+      #2013 merged 2026-04-01 Bump codecov/codecov-action from 4.6.0 to 6.0.0
+      #1983 closed 2025-11-25 ALE adapter fails to parse files with standard truncated decimal framerates in v0.18.1
+      #2014 merged 2026-04-01 Bump release-drafter/release-drafter from 5.25.0 to 7.1.1
+      #2012 merged 2026-04-01 Bump dawidd6/action-download-artifact from 11 to 19
+      #2011 merged 2026-04-01 Bump actions/setup-python from 5.4.0 to 6.2.0
+      #1839 closed 2025-02-06 Bump release-drafter/release-drafter from 5 to 6
+      #1838 closed 2025-02-06 Bump codecov/codecov-action from 4 to 5
+      #1626 closed 2023-06-12 Bump pypa/cibuildwheel from 2.11.1 to 2.13.1
+      #1927 closed 2025-08-22 `RationalTime` precision error with 23.976 fps causes incorrect frame calculations
+      #1934 closed 2025-09-05 Bump actions/labeler from 4 to 6
+      #1731 merged 2024-04-13 Bump actions/checkout from 3 to 4
+      #1518 closed 2023-01-10 Experimental editing commands
+  truncate       89 hit(s) (all listed)
+      #924 open 2021-03-25 Add Chunked or Segmented file reference
+      #830 open 2020-11-02 timecode problem with FCP XML converter
+      #1661 open 2023-09-07 FCP XML adapter: AttributeError: 'NoneType' object has no attribute find / split
+      #1385 open 2022-08-19 EDL Adapter: should author and read timeline::global_start_time attribute rather than source_range.start_time of track
+      #2066 open 2026-10-01 Bump msys2/setup-msys2 from 2.30.0 to 2.33.0
+      #2065 open 2026-10-01 Bump actions/upload-artifact from 4.6.2 to 7.0.1
+      #2068 open 2026-10-01 Bump release-drafter/release-drafter from 7.1.1 to 7.7.0
+      #1849 merged 2025-03-03 Bump sphinx from 7.3.7 to 8.1.3
+      #2013 merged 2026-04-01 Bump codecov/codecov-action from 4.6.0 to 6.0.0
+      #2014 merged 2026-04-01 Bump release-drafter/release-drafter from 5.25.0 to 7.1.1
+      #1983 closed 2025-11-25 ALE adapter fails to parse files with standard truncated decimal framerates in v0.18.1
+      #2012 merged 2026-04-01 Bump dawidd6/action-download-artifact from 11 to 19
+      #2011 merged 2026-04-01 Bump actions/setup-python from 5.4.0 to 6.2.0
+      #1839 closed 2025-02-06 Bump release-drafter/release-drafter from 5 to 6
+      #1838 closed 2025-02-06 Bump codecov/codecov-action from 4 to 5
+      #1626 closed 2023-06-12 Bump pypa/cibuildwheel from 2.11.1 to 2.13.1
+      #1934 closed 2025-09-05 Bump actions/labeler from 4 to 6
+      #1927 closed 2025-08-22 `RationalTime` precision error with 23.976 fps causes incorrect frame calculations
+      #1731 merged 2024-04-13 Bump actions/checkout from 3 to 4
+      #1518 closed 2023-01-10 Experimental editing commands
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2066 open 2026-10-01 Bump msys2/setup-msys2 from 2.30.0 to 2.33.0
+      #726 open 2020-06-04 `null` semantics in JSON serialization
+      #1165 open 2021-12-01 RationalTime shouldn't allow to set 0 as rate
+      #1474 open 2022-11-01 Segmentation fault on pytest exit when creating a SerializableObjectWithMetadata
+      #1503 open 2022-12-17 Kdenlive 22.12.0 export fails with `Cannot find mob ID for clip`
+      #650 open 2020-02-25 xml to otio flattern bug issue
+      #742 open 2020-06-29 FinalCut Pro X exports missing XML tags? 
+      #2015 open 2026-04-04 Stream and Channel Mapping Support
+      #1379 open 2022-08-09 Changed assertions and fixtures
+      #1247 open 2022-03-22 pyside 6.2.4 not working for otioview
+      #2052 closed 2026-09-16 Add missing docstrings for Item, MediaReference, RationalTime
+      #741 open 2020-06-29 Question: Is there anything I need to know when converting to fcpxml timelines
+      #1490 open 2022-12-04 Improve typing of the `metadata` parameter
+      #711 open 2020-05-19 Common Edit Command Library
+      #2009 merged 2026-03-31 Use installed pybind11 and other CMake fixes
+      #2014 merged 2026-04-01 Bump release-drafter/release-drafter from 5.25.0 to 7.1.1
+      #1896 merged 2025-06-06 fixed image bounds error status null bug + test case
+      #1437 merged 2022-09-30 Remove deprecated each_child and each_clip functions
+      #1898 merged 2025-06-07 Workflow fix, exclude cannot be empty
+      #1615 closed 2023-06-05 Update pyaaf2 requirement from <1.7,>=1.4 to >=1.4,<1.8
+  atomic         3 hit(s) (all listed)
+      #711 open 2020-05-19 Common Edit Command Library
+      #726 open 2020-06-04 `null` semantics in JSON serialization
+      #391 closed 2018-11-28 Proposed C++ API Documentation
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         2 hit(s) (all listed)
+      #1680 closed 2023-11-16 Segmentation fault when appending None to Collection types
+      #678 closed 2020-04-01 EDLParse Error for ASC_Out / ASC_Inp
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #170 open 2017-10-13 Schema support for color transformations
+      #2047 open 2026-09-12 Draft: Add Python 3.15 to build matrix
+      #1877 open 2025-04-24 CDL Color Transform Effect
+      #2055 open 2026-09-19 Fix null pointer dereference in Composable::available_image_bounds
+      #2046 open 2026-09-12 Add AI Policy
+      #2051 open 2026-09-16 Add missing docstrings for Item/MediaReference, fix RationalTime math formatting
+      #2033 open 2026-07-13 Use url_utils.url_from_filepath() for file:// URLs in docs/examples
+      #2030 open 2026-07-02 Add cut_diff example: structural editorial diff between two cuts
+      #1977 open 2025-11-09 Run tests on wheels
+      #1771 open 2024-06-24 ci(Release Process): Improve release process
+      #1878 open 2025-04-26 chore(Build/Package Management): Setup and implement uv for package management
+      #1865 open 2025-04-01 Add CI build against deps located on the system
+      #805 open 2020-09-24 Implement subtitles schema [WIP]
+      #842 open 2020-12-10 #841 Track range_of_all_children applies TimeEffect effect to duratio…
+      #2070 merged 2026-10-03 Color fixes for from_abgr_in and to_abgr_integer (BREAKING)
+      #1822 open 2025-01-15 RationalTime value mismatch when serialize/deserialize to JSON
+      #2059 merged 2026-09-25 Add a weekly CI run
+      #2054 merged 2026-09-18 Fix 0 fps
+      #2057 merged 2026-09-22 Add CI jobs for shared libraries
+      #2038 merged 2026-09-10 Fix for minizip-ng targets
+  outage         2 hit(s) (all listed)
+      #1098 closed 2021-10-11 Bump src/deps/pybind11 from `ad96655` to `750e38d`
+      #1106 merged 2021-10-18 Bump src/deps/pybind11 from `ad96655` to `7c58058`
+  ENOSPC         0 hit(s)
+  disk           29 hit(s) (all listed)
+      #1027 open 2021-07-28 Add Test pass for build artifacts
+      #1636 open 2023-06-27 C++ API should honor OTIO_DEFAULT_TARGET_VERSION_FAMILY_LABEL environment variable
+      #924 open 2021-03-25 Add Chunked or Segmented file reference
+      #1985 open 2025-12-11 Clarity requested on Media Reference's target_url format
+      #145 open 2017-08-09 Media Reference Stream/Channel Specification support
+      #2021 merged 2026-05-08 Add core C++ support for otioz and otiod, take 2
+      #730 merged 2020-06-10 Implementation of post adapter write hook
+      #536 closed 2019-07-11 [WIP] Image reference schema suggestion
+      #1578 merged 2023-04-11 Make serialize_json_to_string output compact when indent is less than 1
+      #1380 closed 2022-08-10 Add ImageSequenceReference support to File bunder adapters (OTIO[d|z]) 
+      #1701 closed 2024-02-15 AAF Export from otioconvert crashes / hangs Media Composer
+      #686 closed 2020-04-19 Implement Clip Inspector
+      #804 merged 2020-09-23 Add ImageSequenceReference support to EDL adapter
+      #1241 merged 2022-03-14 Media Multi-Reference Feature
+      #630 closed 2019-12-13 Support Multiple Media Reference on clip
+      #670 closed 2020-03-25 Cannot deserialize Clip without media_reference
+      #908 closed 2021-03-09 Media references missing in AAF file
+      #561 merged 2019-08-23 Add filebundle (otioz and otiod) adapters
+      #722 merged 2020-05-28 Add ImageSequenceReference schema to OpenTimelineIO
+      #76 closed 2017-03-16 Adapters or place for "in context"use of otio
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2047 open 2026-09-12 Draft: Add Python 3.15 to build matrix
+      #1890 open 2025-05-22 Discrepancy in source_range.start_time for Reversed Clips in Premiere Pro OTIO Export
+      #2055 open 2026-09-19 Fix null pointer dereference in Composable::available_image_bounds
+      #2046 open 2026-09-12 Add AI Policy
+      #2051 open 2026-09-16 Add missing docstrings for Item/MediaReference, fix RationalTime math formatting
+      #2033 open 2026-07-13 Use url_utils.url_from_filepath() for file:// URLs in docs/examples
+      #2030 open 2026-07-02 Add cut_diff example: structural editorial diff between two cuts
+      #1977 open 2025-11-09 Run tests on wheels
+      #1771 open 2024-06-24 ci(Release Process): Improve release process
+      #1878 open 2025-04-26 chore(Build/Package Management): Setup and implement uv for package management
+      #1574 open 2023-04-07 Allow to construct AnyVector and AnyDictionary with values from Python
+      #1865 open 2025-04-01 Add CI build against deps located on the system
+      #2070 merged 2026-10-03 Color fixes for from_abgr_in and to_abgr_integer (BREAKING)
+      #2059 merged 2026-09-25 Add a weekly CI run
+      #2054 merged 2026-09-18 Fix 0 fps
+      #2057 merged 2026-09-22 Add CI jobs for shared libraries
+      #2038 merged 2026-09-10 Fix for minizip-ng targets
+      #2041 merged 2026-09-11 Fix macOS Python 3.14 std::bad_any_cast by setting hidden visibility preset
+      #2053 closed 2026-09-17 Add the markers argument to the Track constructor.
+      #2049 merged 2026-09-14 Fix orphan range queries with null parents
+  incomplete     17 hit(s) (all listed)
+      #2042 open 2026-09-11 Some documentation is missing
+      #1759 open 2024-06-05 Build breaks with Python-3.11: error: member access into incomplete type 'PyFrameObject'
+      #989 open 2021-06-11 Conda publish as a github action
+      #2037 open 2026-09-07 otio_imath.cpp fails to compile with the latest Imath/pybind11
+      #1687 open 2024-01-05 ALE parser causes AttributeError: SerializableCollection / Clip object has no attribute 'tracks'
+      #1247 open 2022-03-22 pyside 6.2.4 not working for otioview
+      #829 open 2020-11-02 MIDI Support (?)
+      #104 closed 2017-05-12 IMF CPL Adapter
+      #756 closed 2020-07-13 Can I copy a pure python code and maintain it in my warehouse?
+      #770 closed 2020-08-16 `pip install opentimelineio` causes CMake Error on Windows 10 x64
+      #695 closed 2020-05-07 Prefer system libraries over intree copies
+      #667 closed 2020-03-22 Can't install with pip (on windows, in blender)
+      #713 closed 2020-05-20 No wheel for Win64 on PyPI for version 0.12.1
+      #754 closed 2020-07-11 Multiple errors when trying to install (I'm probably not doing something right)
+      #1000 merged 2021-06-23 Python build: Use CMake FindPython
+      #767 closed 2020-08-03 Unable to install on windows
+      #957 merged 2021-04-30 Build wheels as a github action
+  dataloss       0 hit(s)
+  recover        2 hit(s) (all listed)
+      #995 merged 2021-06-22 Cxx conform example
+      #642 closed 2020-02-04 EDL cmx 9600 tries to add the same clip to multiple tracks
+  recovery       0 hit(s)
+  rollback       1 hit(s) (all listed)
+      #1012 merged 2021-07-12 Bump src/deps/pybind11 from `8bee61b` to `0f4761b`
+  resume         1 hit(s) (all listed)
+      #723 closed 2020-05-28 Add tests for C-bindings
+  half-written   5 hit(s) (all listed)
+      #1693 open 2024-02-07 Added IMATH_INCLUDES to the cmake module
+      #1477 merged 2022-11-08 Improve handling of rates when converting to timecode strings
+      #1686 closed 2024-01-05 Unable to build Wheel
+      #697 merged 2020-05-09 Add support for predicates from Allen's Interval Algebra for TimeRange
+      #753 closed 2020-07-09 Create Java Bindings
+  wipe           6 hit(s) (all listed)
+      #86 open 2017-04-18 SMPTE_Wipe support
+      #6 closed 2016-09-01 Support for Transitions
+      #1209 merged 2022-02-06 Improve Python reference documentation
+      #1317 merged 2022-05-27 Fix setuptools deprecation warnings
+      #82 merged 2017-04-01 Initial Transition support
+      #763 merged 2020-07-17 Added basic support for CMX EDL wipe transitions
+  wipes          3 hit(s) (all listed)
+      #86 open 2017-04-18 SMPTE_Wipe support
+      #6 closed 2016-09-01 Support for Transitions
+      #1209 merged 2022-02-06 Improve Python reference documentation
+  erase          2 hit(s) (all listed)
+      #926 merged 2021-03-25 Add C++ implementation of each_child()/each_clip()
+      #753 closed 2020-07-09 Create Java Bindings
+  erasing        0 hit(s)
+  erased         1 hit(s) (all listed)
+      #753 closed 2020-07-09 Create Java Bindings
+  destroy        11 hit(s) (all listed)
+      #719 open 2020-05-27 OTIO Editing API Design
+      #1574 open 2023-04-07 Allow to construct AnyVector and AnyDictionary with values from Python
+      #711 open 2020-05-19 Common Edit Command Library
+      #1799 merged 2024-09-27 Bindings: UnknownSchema added data property
+      #585 merged 2019-09-25 Fix tests for Visual Studio 2019
+      #926 merged 2021-03-25 Add C++ implementation of each_child()/each_clip()
+      #781 closed 2020-08-20 [c-otio] Unify string handling
+      #614 closed 2019-11-07 Crash in to_json_string
+      #391 closed 2018-11-28 Proposed C++ API Documentation
+      #723 closed 2020-05-28 Add tests for C-bindings
+      #753 closed 2020-07-09 Create Java Bindings
+  destroys       1 hit(s) (all listed)
+      #753 closed 2020-07-09 Create Java Bindings
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #719 open 2020-05-27 OTIO Editing API Design
+      #711 open 2020-05-19 Common Edit Command Library
+      #2064 open 2026-10-01 Bump codecov/codecov-action from 6.0.0 to 7.1.1
+      #2066 open 2026-10-01 Bump msys2/setup-msys2 from 2.30.0 to 2.33.0
+      #2065 open 2026-10-01 Bump actions/upload-artifact from 4.6.2 to 7.0.1
+      #2061 open 2026-10-01 Bump rtCamp/action-slack-notify from 2.3.3 to 2.4.0
+      #2062 closed 2026-10-01 Bump src/deps/minizip-ng from `d69cb0a` to `7b23871`
+      #2068 open 2026-10-01 Bump release-drafter/release-drafter from 7.1.1 to 7.7.0
+      #2063 closed 2026-10-01 Bump src/deps/pybind11 from `45fab40` to `97bf890`
+      #2067 closed 2026-10-01 Update cmake requirement from >=3.12 to >=4.4.3
+      #2025 merged 2026-06-07 Fix edit algorithms deleting the wrong child via remove_child(<pointer>)
+      #2017 closed 2026-04-27 Fix null pointer dereferences after dynamic_cast
+      #2021 merged 2026-05-08 Add core C++ support for otioz and otiod, take 2
+      #2010 merged 2026-04-01 Bump src/deps/pybind11 from `a2e59f0` to `45fab40`
+      #2013 merged 2026-04-01 Bump codecov/codecov-action from 4.6.0 to 6.0.0
+      #2014 merged 2026-04-01 Bump release-drafter/release-drafter from 5.25.0 to 7.1.1
+      #2012 merged 2026-04-01 Bump dawidd6/action-download-artifact from 11 to 19
+      #1509 merged 2022-12-26 Bump src/deps/Imath from `0436624` to `fcb8a32`
+      #1388 merged 2022-08-29 Bump src/deps/rapidjson from `27c3a8d` to `06d58b9`
+      #1479 closed 2022-11-14 Bump src/deps/pybind11 from `ee2b522` to `296615a`
+  clobber        5 hit(s) (all listed)
+      #1499 closed 2022-12-12 Trouble with internal and external Imath
+      #590 closed 2019-09-26 media_linker.load_manifest clobbers local Adapters of similar suffix
+      #581 closed 2019-09-23 Use `os.pathsep` instead of `:` for parsing `OTIO_PLUGIN_MANIFEST_PATH`
+      #607 merged 2019-10-24 Issue-581 - Clobbered by PR #591
+      #621 merged 2019-11-21 Unifies ALE to the EDL adapter by storing the cdl data in the metadata
+  blank          41 hit(s) (all listed)
+      #2051 open 2026-09-16 Add missing docstrings for Item/MediaReference, fix RationalTime math formatting
+      #387 open 2018-11-21 Should there be some sort of validation of transitions?
+      #650 open 2020-02-25 xml to otio flattern bug issue
+      #1815 closed 2024-11-15 bumps sphinx and myst-parser pinned versions to play nicely with Python 3.13
+      #1982 closed 2025-11-16 OTIO 18 breaks ALE adaptor, tests failing. SMPTE FPS check too strict now
+      #1896 merged 2025-06-06 fixed image bounds error status null bug + test case
+      #1951 closed 2025-10-07 Use doubles for colour management
+      #1957 merged 2025-10-23 add support for python 3.13 (vfx platform 2026)
+      #1143 merged 2021-11-13 Use platform specific command to find path
+      #1854 closed 2025-03-10 High framerate support
+      #1481 closed 2022-11-18 Make opentimelineio headers public
+      #1697 closed 2024-02-14 Add marker to timeline when we can't find valid track
+      #1587 closed 2023-04-20 Bump pypa/cibuildwheel from 2.11.1 to 2.12.3
+      #1549 closed 2023-02-17 Fix unset __doc__ concatenation error
+      #363 merged 2018-11-08 Suggested audio handling in RV session
+      #1314 closed 2022-05-23 Bump src/deps/rapidjson from `8261c1d` to `719304b`
+      #284 closed 2018-07-09 Hiero import/export plugins
+      #1367 closed 2022-08-02 Add cdl adapter
+      #1399 merged 2022-09-20 Bump codecov/codecov-action from 2.1.0 to 3.1.1
+      #1345 closed 2022-07-06 Add cdl adapter
+  unreadable     1 hit(s) (all listed)
+      #649 closed 2020-02-24 Implement OTIO to SVG Adapter
+  garbage        3 hit(s) (all listed)
+      #1405 open 2022-09-21 Static code analysis
+      #1237 merged 2022-03-11 otioview track and window fit improvements
+      #753 closed 2020-07-09 Create Java Bindings
+  mangled        2 hit(s) (all listed)
+      #726 open 2020-06-04 `null` semantics in JSON serialization
+      #873 merged 2021-01-21 add windows and mac builds to ci
+  contents       50 hit(s) (all listed)
+      #826 open 2020-10-29 Found more than one Source Clip (4) for sourceClipComposition case. This is unexpected
+      #650 open 2020-02-25 xml to otio flattern bug issue
+      #1325 open 2022-06-07 AAF Adapter: Found more than one Source Clip (2) for sourceClipComposition case. This is unexpected
+      #1334 open 2022-06-20 IndexError: No SlotID: 0
+      #829 open 2020-11-02 MIDI Support (?)
+      #1799 merged 2024-09-27 Bindings: UnknownSchema added data property
+      #1999 merged 2026-03-08 Removed pr-tools.yml
+      #1719 merged 2024-04-04 Set minimum OS X deployment version to 10.14
+      #1718 closed 2024-04-04 Set minimum OS X deployment version to 10.14
+      #1680 closed 2023-11-16 Segmentation fault when appending None to Collection types
+      #1604 closed 2023-05-19 Documentation formatting issues
+      #1696 closed 2024-02-14 OpenTimelineIO raises exception when trying to load AAF exported from Avid with "Use Selected Tracks" selected
+      #1090 closed 2021-09-30 Add spatial coordinate documentation into the docs folder
+      #759 closed 2020-07-14 CMX 3600 - Framerate mismatch error seems to be giving incorrect "beyond" value
+      #1523 closed 2023-01-16 Bump sphinx from 5.3.0 to 6.1.3
+      #1517 closed 2023-01-09 Bump sphinx from 5.3.0 to 6.1.2
+      #1530 closed 2023-01-20 Support for C++17
+      #1286 closed 2022-05-03 Can't install locally with `pip install -e .`
+      #1331 closed 2022-06-20 Bump sphinx from 4.5.0 to 5.0.2
+      #363 merged 2018-11-08 Suggested audio handling in RV session
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2036 open 2026-08-28 Clang warning suppression flag applied to gcc builds
+      #2007 open 2026-03-29 Installing both C++ API and Python bindings
+      #742 open 2020-06-29 FinalCut Pro X exports missing XML tags? 
+      #1877 open 2025-04-24 CDL Color Transform Effect
+      #1103 open 2021-10-15 Support for Image Sequence Reference in the FCPX adapter
+      #976 open 2021-05-24 AAF of Media Composer transcoded clip returns inaccurate timecode
+      #2058 closed 2026-09-23 Fix Python bindings build against Imath 3.2.3
+      #1710 open 2024-03-09 INFO: usdotio added to the OpenUSD repository.
+      #1311 open 2022-05-21 Remove CannotComputeAvailableRangeError import from opentimelineio.core
+      #711 open 2020-05-19 Common Edit Command Library
+      #1405 open 2022-09-21 Static code analysis
+      #1177 open 2021-12-16 SVG Adapter erroneously assumes `media_reference` always has `target_url`
+      #1985 open 2025-12-11 Clarity requested on Media Reference's target_url format
+      #1193 open 2022-01-14 CMake generated config files should be relocatable
+      #1392 open 2022-09-10 Upgrade/Downgrade breadcrumbs
+      #830 open 2020-11-02 timecode problem with FCP XML converter
+      #1574 open 2023-04-07 Allow to construct AnyVector and AnyDictionary with values from Python
+      #169 open 2017-10-10 Locators/markers timecode in cmx3600 and otio formats
+      #334 open 2018-09-28 odd clip rate from xml adaptor
+      #550 open 2019-07-31 dealing with zero rate clips
+  unclean        0 hit(s)
+  shutdown       1 hit(s) (all listed)
+      #753 closed 2020-07-09 Create Java Bindings
+  reboot         0 hit(s)
+  disk+full      17 hit(s) (all listed)
+      #1027 open 2021-07-28 Add Test pass for build artifacts
+      #924 open 2021-03-25 Add Chunked or Segmented file reference
+      #1985 open 2025-12-11 Clarity requested on Media Reference's target_url format
+      #2021 merged 2026-05-08 Add core C++ support for otioz and otiod, take 2
+      #730 merged 2020-06-10 Implementation of post adapter write hook
+      #536 closed 2019-07-11 [WIP] Image reference schema suggestion
+      #1578 merged 2023-04-11 Make serialize_json_to_string output compact when indent is less than 1
+      #686 closed 2020-04-19 Implement Clip Inspector
+      #804 merged 2020-09-23 Add ImageSequenceReference support to EDL adapter
+      #1241 merged 2022-03-14 Media Multi-Reference Feature
+      #630 closed 2019-12-13 Support Multiple Media Reference on clip
+      #561 merged 2019-08-23 Add filebundle (otioz and otiod) adapters
+      #649 closed 2020-02-24 Implement OTIO to SVG Adapter
+      #268 merged 2018-06-14 Add console entry points for application
+      #158 merged 2017-09-06 ALE adapter
+      #639 closed 2020-01-14 Docstring/error messaging improvements for ImageSequenceReference
+      #602 merged 2019-10-08 Initial implementation of ImageSequenceReference
+  data+loss      7 hit(s) (all listed)
+      #829 open 2020-11-02 MIDI Support (?)
+      #481 open 2019-04-08 AAF Reader: TimeEffect on clip causing nested scope / potential structure issue?
+      #1283 closed 2022-04-28 Write color decision list to ale
+      #1413 closed 2022-09-23 Fix compiler warnings on Windows
+      #112 closed 2017-06-14 Rename Sequence to Track
+      #283 closed 2018-07-04 Experimental ffprobe-based media adapter
+      #589 closed 2019-09-26 Example OTIO Writer RV Plugin
+  partial+write  25 hit(s) (all listed)
+      #2046 open 2026-09-12 Add AI Policy
+      #2021 merged 2026-05-08 Add core C++ support for otioz and otiod, take 2
+      #1801 merged 2024-10-08 Added support for custom adapter hooks
+      #1363 merged 2022-07-26 Close Temporary file handles in tests
+      #1896 merged 2025-06-06 fixed image bounds error status null bug + test case
+      #1477 merged 2022-11-08 Improve handling of rates when converting to timecode strings
+      #1283 closed 2022-04-28 Write color decision list to ale
+      #1887 merged 2025-05-16 Per-Track and Per-Clip Color
+      #1175 merged 2021-12-11 Add enabled flag to Item
+      #1654 merged 2023-08-20 Experimental Editing Commands
+      #1403 merged 2022-09-20 Release v0.15.0 changes
+      #1415 merged 2022-09-23 Added OTIO_CORE 0.14.0 version_manifest.
+      #1242 merged 2022-03-18 clang notices that constexpr can't be used on a mutating function
+      #1354 merged 2022-07-15 Add basic mingw_x86_64 build support
+      #1387 merged 2022-08-25 Schema Downgrading System
+      #1241 merged 2022-03-14 Media Multi-Reference Feature
+      #1061 merged 2021-09-06 add is_error and fix error handling
+      #926 merged 2021-03-25 Add C++ implementation of each_child()/each_clip()
+      #918 merged 2021-03-13 Cxx examples
+      #998 closed 2021-06-22 Spatial Bounds with Imath
+  crash+safe     5 hit(s) (all listed)
+      #550 open 2019-07-31 dealing with zero rate clips
+      #614 closed 2019-11-07 Crash in to_json_string
+      #391 closed 2018-11-28 Proposed C++ API Documentation
+      #486 merged 2019-04-09 C++ implementation of OTIO core
+      #753 closed 2020-07-09 Create Java Bindings
+  atomic+write   2 hit(s) (all listed)
+      #726 open 2020-06-04 `null` semantics in JSON serialization
+      #391 closed 2018-11-28 Proposed C++ API Documentation
+  lock+file      14 hit(s) (all listed)
+      #1350 open 2022-07-11 FCP_XML adapter: for media start time timecode attribute, ignore if timecode rate not in prespecified known timecode list
+      #170 open 2017-10-13 Schema support for color transformations
+      #1269 merged 2022-04-11 Bump actions/upload-artifact from 2 to 3
+      #1295 closed 2022-05-12 Backwards and forwards compatibility
+      #1226 merged 2022-03-01 Bump actions/setup-python from 2.2.2 to 3
+      #1211 closed 2022-02-07 Bump actions/setup-python from 2.2.2 to 2.3.2
+      #1164 closed 2021-11-30 Bump actions/setup-python from 2.2.2 to 2.3.1
+      #1150 closed 2021-11-18 Bump actions/setup-python from 2.2.2 to 2.3.0
+      #821 closed 2020-10-14 Use six for Python 2/3 compatibility
+      #998 closed 2021-06-22 Spatial Bounds with Imath
+      #906 merged 2021-03-05 Specify pyaaf2 requirement as a minimum version
+      #158 merged 2017-09-06 ALE adapter
+      #723 closed 2020-05-28 Add tests for C-bindings
+      #753 closed 2020-07-09 Create Java Bindings
+  write+failure  16 hit(s) (all listed)
+      #2046 open 2026-09-12 Add AI Policy
+      #1027 open 2021-07-28 Add Test pass for build artifacts
+      #2021 merged 2026-05-08 Add core C++ support for otioz and otiod, take 2
+      #1363 merged 2022-07-26 Close Temporary file handles in tests
+      #1801 merged 2024-10-08 Added support for custom adapter hooks
+      #1896 merged 2025-06-06 fixed image bounds error status null bug + test case
+      #1477 merged 2022-11-08 Improve handling of rates when converting to timecode strings
+      #1887 merged 2025-05-16 Per-Track and Per-Clip Color
+      #770 closed 2020-08-16 `pip install opentimelineio` causes CMake Error on Windows 10 x64
+      #1241 merged 2022-03-14 Media Multi-Reference Feature
+      #649 closed 2020-02-24 Implement OTIO to SVG Adapter
+      #846 closed 2020-12-11 Swift package manager
+      #342 merged 2018-10-11 new SchemaDef plugin type to define site-specific schemas
+      #391 closed 2018-11-28 Proposed C++ API Documentation
+      #723 closed 2020-05-28 Add tests for C-bindings
+      #753 closed 2020-07-09 Create Java Bindings
+  file+contents  36 hit(s) (all listed)
+      #826 open 2020-10-29 Found more than one Source Clip (4) for sourceClipComposition case. This is unexpected
+      #650 open 2020-02-25 xml to otio flattern bug issue
+      #1325 open 2022-06-07 AAF Adapter: Found more than one Source Clip (2) for sourceClipComposition case. This is unexpected
+      #1334 open 2022-06-20 IndexError: No SlotID: 0
+      #829 open 2020-11-02 MIDI Support (?)
+      #1799 merged 2024-09-27 Bindings: UnknownSchema added data property
+      #1999 merged 2026-03-08 Removed pr-tools.yml
+      #1680 closed 2023-11-16 Segmentation fault when appending None to Collection types
+      #1604 closed 2023-05-19 Documentation formatting issues
+      #1696 closed 2024-02-14 OpenTimelineIO raises exception when trying to load AAF exported from Avid with "Use Selected Tracks" selected
+      #759 closed 2020-07-14 CMX 3600 - Framerate mismatch error seems to be giving incorrect "beyond" value
+      #1530 closed 2023-01-20 Support for C++17
+      #1286 closed 2022-05-03 Can't install locally with `pip install -e .`
+      #363 merged 2018-11-08 Suggested audio handling in RV session
+      #1331 closed 2022-06-20 Bump sphinx from 4.5.0 to 5.0.2
+      #1295 closed 2022-05-12 Backwards and forwards compatibility
+      #1171 closed 2021-12-08 Forbid nesting a Track into a Track or automatically insert a Stack in between
+      #544 closed 2019-07-22 cxx: Using `setup.py develop` doesn't work
+      #828 closed 2020-10-30 Python 3.9 Support
+      #926 merged 2021-03-25 Add C++ implementation of each_child()/each_clip()
+
+== 51 terms run; 40 returned hits, 5 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

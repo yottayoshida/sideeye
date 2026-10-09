@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.config/scw"
+
+[define]
+operation = "scw config set default-region=fr-par"
+cwd       = "/s/scw-in"

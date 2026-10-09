@@ -1,0 +1,552 @@
+== novelty pre-scan: gravitl/netmaker
+== date: 2026-10-09T01:12:14Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          36 hit(s) (all listed)
+      #3897 open 2026-03-05 [Bug]: egress page crash
+      #4045 open 2026-06-05 [Bug]: Fast Startup on Windows corrupts netclient .json/.bak config files, service fails to start and requires manual cleanup + re-join
+      #432 open 2021-11-03 Feature request: Fallback servers
+      #1858 open 2022-12-22 Use procd daemon management on OpenWRT netclient
+      #1610 open 2022-09-28 [Bug]: egress gateway also acting as a relay does not allow relay clients to access egress addresses
+      #1733 open 2022-11-11 [Bug]: Openwrt - mips arch - /sbin/netclient: line 1: syntax error: unexpected "(" error
+      #4011 open 2026-05-13 [Bug]: `RemoveHost` leaks orphan `nodes` rows when `host.Nodes` cache drifts, breaking peer lists
+      #4120 open 2026-08-21 build(deps): bump github.com/posthog/posthog-go from 1.14.0 to 1.23.1
+      #4102 merged 2026-07-27 NM-356: add User Device Mgmt Apis, Move InetGws to Egress
+      #4070 merged 2026-06-24 Prevent posture checks field update from nmui
+      #4072 merged 2026-06-25 NM-341-v2: Org and Tenant Memberships
+      #4083 merged 2026-07-10 NM-366: handle internet exit nodes via egress
+      #3958 closed 2026-04-04 [Bug]: Netmaker server crash after upgrading from 1.5.0 to 1.5.1
+      #4033 merged 2026-06-01 Revert "build(deps): bump github.com/go-jose/go-jose/v4 from 4.1.3 to 4.1.4"
+      #3982 merged 2026-04-22 NM-293: Nodes Schema Migration
+      #3934 merged 2026-03-23 Build(deps): bump github.com/klauspost/compress from 1.18.3 to 1.18.5
+      #3979 closed 2026-04-19 NM-317: scale fixes
+      #3910 merged 2026-03-13 NM-163: Users, Groups, Roles, Networks and Hosts Table Migration
+      #3369 closed 2025-03-11 [Bug]: Application crashed
+      #3937 merged 2026-03-24 NM-254: add bulk delete apis, rm old acl code
+  corrupt        19 hit(s) (all listed)
+      #1812 open 2022-12-10 [Bug]:if api is behind in cf dns proxy, dynamic endpoint is corrupted
+      #4045 open 2026-06-05 [Bug]: Fast Startup on Windows corrupts netclient .json/.bak config files, service fails to start and requires manual cleanup + re-join
+      #4047 merged 2026-06-05 Fixes/v1.5.2
+      #4024 merged 2026-05-25 NM-299: Cleanup Orphan Network References (Fixes 3944)
+      #4043 merged 2026-06-03 Fixes/v1.5.2
+      #4039 merged 2026-06-01 Pre-release Fixes: v1.5.2
+      #4075 merged 2026-06-29 Master
+      #3974 merged 2026-04-14 Fix(v1.5.1): set host as default using api;
+      #3982 merged 2026-04-22 NM-293: Nodes Schema Migration
+      #4101 merged 2026-07-23 NM-341-v6: AMB Multi-tenancy Management
+      #3971 merged 2026-04-13 Release v1.5.1
+      #3948 merged 2026-03-31 NM-288: fix orphan nodes on bulk host deletion and refactor node cleanup
+      #4064 merged 2026-06-18 NM-304,362: MDM & EDR posture check integration
+      #3907 closed 2026-03-11 NM-271: Scalability Improvements
+      #1527 merged 2022-09-07 restore backup if file corrupted
+      #1401 merged 2022-07-19 Bugfix v0.14.5 etc hosts lockfile
+      #1393 closed 2022-07-17 [Bug]: Node needs to "repull" config after restart
+      #1394 closed 2022-07-17 [Bug]: content of /etc/hosts gets deleted with netclient update (14.4->14.5)
+      #319 closed 2021-10-06 Installation script is broken on Debian Systems
+  corruption     12 hit(s) (all listed)
+      #4045 open 2026-06-05 [Bug]: Fast Startup on Windows corrupts netclient .json/.bak config files, service fails to start and requires manual cleanup + re-join
+      #4019 merged 2026-05-19 build(deps): bump github.com/klauspost/compress from 1.18.5 to 1.18.6
+      #4034 merged 2026-06-01 build(deps): bump github.com/jackc/pgx/v5 from 5.7.2 to 5.9.2
+      #4029 merged 2026-06-01 build(deps): bump github.com/jackc/pgx/v5 from 5.7.2 to 5.9.2
+      #4043 merged 2026-06-03 Fixes/v1.5.2
+      #4069 merged 2026-06-24 NM-341-v1: Add Support for Multi-tenancy
+      #3982 merged 2026-04-22 NM-293: Nodes Schema Migration
+      #4083 merged 2026-07-10 NM-366: handle internet exit nodes via egress
+      #3971 merged 2026-04-13 Release v1.5.1
+      #4064 merged 2026-06-18 NM-304,362: MDM & EDR posture check integration
+      #3907 closed 2026-03-11 NM-271: Scalability Improvements
+      #3910 merged 2026-03-13 NM-163: Users, Groups, Roles, Networks and Hosts Table Migration
+  truncated      78 hit(s) (all listed)
+      #4120 open 2026-08-21 build(deps): bump github.com/posthog/posthog-go from 1.14.0 to 1.23.1
+      #3995 open 2026-04-30 Migration v0.30.0 → v1.5.1 deadlocks in migrateHosts → GetServerSettings (SQLite)
+      #4169 open 2026-10-02 build(deps): bump dawidd6/action-download-artifact from 21 to 27
+      #4121 open 2026-08-21 build(deps): bump github.com/ClickHouse/clickhouse-go/v2 from 2.46.0 to 2.48.0
+      #4122 open 2026-08-21 build(deps): bump github.com/stretchr/testify from 1.11.1 to 1.12.1
+      #4071 merged 2026-06-25 NM-362: EDR integration
+      #4089 merged 2026-07-17 build(deps): bump actions/setup-go from 6 to 7
+      #4049 merged 2026-06-05 build(deps): bump github.com/ClickHouse/clickhouse-go/v2 from 2.43.0 to 2.46.0
+      #4101 merged 2026-07-23 NM-341-v6: AMB Multi-tenancy Management
+      #4105 merged 2026-07-31 build(deps): bump docker/login-action from 4 to 4.5.2
+      #4051 merged 2026-06-05 build(deps): bump google.golang.org/grpc from 1.79.3 to 1.81.1
+      #4052 merged 2026-06-05 build(deps): bump github.com/posthog/posthog-go from 1.11.2 to 1.14.0
+      #4034 merged 2026-06-01 build(deps): bump github.com/jackc/pgx/v5 from 5.7.2 to 5.9.2
+      #4029 merged 2026-06-01 build(deps): bump github.com/jackc/pgx/v5 from 5.7.2 to 5.9.2
+      #3974 merged 2026-04-14 Fix(v1.5.1): set host as default using api;
+      #4068 merged 2026-06-19 build(deps): bump actions/checkout from 6 to 7
+      #4048 merged 2026-06-05 build(deps): bump github.com/go-playground/validator/v10 from 10.30.1 to 10.30.3
+      #3947 merged 2026-03-30 Build(deps): bump github.com/lib/pq from 1.11.2 to 1.12.1
+      #4031 merged 2026-06-01 build(deps): bump go.opentelemetry.io/otel from 1.39.0 to 1.41.0
+      #3932 closed 2026-03-23 Build(deps): bump github.com/lib/pq from 1.11.2 to 1.12.0
+  truncate       82 hit(s) (all listed)
+      #4122 open 2026-08-21 build(deps): bump github.com/stretchr/testify from 1.11.1 to 1.12.1
+      #4120 open 2026-08-21 build(deps): bump github.com/posthog/posthog-go from 1.14.0 to 1.23.1
+      #3995 open 2026-04-30 Migration v0.30.0 → v1.5.1 deadlocks in migrateHosts → GetServerSettings (SQLite)
+      #4169 open 2026-10-02 build(deps): bump dawidd6/action-download-artifact from 21 to 27
+      #4121 open 2026-08-21 build(deps): bump github.com/ClickHouse/clickhouse-go/v2 from 2.46.0 to 2.48.0
+      #3984 merged 2026-04-24 Release v1.5.1
+      #4071 merged 2026-06-25 NM-362: EDR integration
+      #3926 merged 2026-03-19 NM-273: Vnat pool assignments fix
+      #4089 merged 2026-07-17 build(deps): bump actions/setup-go from 6 to 7
+      #4049 merged 2026-06-05 build(deps): bump github.com/ClickHouse/clickhouse-go/v2 from 2.43.0 to 2.46.0
+      #4105 merged 2026-07-31 build(deps): bump docker/login-action from 4 to 4.5.2
+      #4101 merged 2026-07-23 NM-341-v6: AMB Multi-tenancy Management
+      #4051 merged 2026-06-05 build(deps): bump google.golang.org/grpc from 1.79.3 to 1.81.1
+      #4052 merged 2026-06-05 build(deps): bump github.com/posthog/posthog-go from 1.11.2 to 1.14.0
+      #4034 merged 2026-06-01 build(deps): bump github.com/jackc/pgx/v5 from 5.7.2 to 5.9.2
+      #4029 merged 2026-06-01 build(deps): bump github.com/jackc/pgx/v5 from 5.7.2 to 5.9.2
+      #4068 merged 2026-06-19 build(deps): bump actions/checkout from 6 to 7
+      #3974 merged 2026-04-14 Fix(v1.5.1): set host as default using api;
+      #4048 merged 2026-06-05 build(deps): bump github.com/go-playground/validator/v10 from 10.30.1 to 10.30.3
+      #3947 merged 2026-03-30 Build(deps): bump github.com/lib/pq from 1.11.2 to 1.12.1
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4154 open 2026-09-23 Feat: Org IDP Integration
+      #4161 open 2026-09-28 NM-383: Remove Key Scoping
+      #4160 open 2026-09-28 NM-383: Extclient Schema Migration and Network Nodes Listing with Host
+      #4159 open 2026-09-26 NM-360: IP Address Management
+      #3752 open 2025-11-30 [Bug]: Not wotk login in Netmaker Desktop
+      #4162 open 2026-09-28 V1.7.0: bulk creation of ext clients
+      #4175 merged 2026-10-08 NM-356: drop direct peers when a user device is relayed
+      #4170 merged 2026-10-04 NM-356: Network Status API
+      #2499 open 2023-08-07 [Bug]: nm-upgrade-0-17-1-to-0-19-0.sh not working
+      #1720 open 2022-11-09 [Bug]: Core DSN disabled - does it work
+      #4174 merged 2026-10-07 NM-356: add api keys
+      #2160 open 2023-03-31 [Bug]: 
+      #4150 merged 2026-09-17 Master
+      #4149 merged 2026-09-17 Release v1.7.0
+      #1381 open 2022-07-12 [Bug]: Cannot get host network mode to work
+      #4151 closed 2026-09-18 Extclient Schema and UUID Usage Migration
+      #4155 merged 2026-09-23 Release v1.7.0
+      #4140 merged 2026-09-08 Release v1.7.0
+      #4139 merged 2026-09-04 v1.7.0:  speed up /api/nodes on SQLite and harden DB under load
+      #4152 merged 2026-09-21 Patch: License Validation and Management
+  atomic         19 hit(s) (all listed)
+      #4121 open 2026-08-21 build(deps): bump github.com/ClickHouse/clickhouse-go/v2 from 2.46.0 to 2.48.0
+      #4152 merged 2026-09-21 Patch: License Validation and Management
+      #4147 merged 2026-09-10 Security Fixes
+      #4101 merged 2026-07-23 NM-341-v6: AMB Multi-tenancy Management
+      #4054 merged 2026-06-10 NM-347: fix acl cache race issue
+      #4065 merged 2026-06-18 NM-341: Schema Migration for Serverconf, Generated and Enrollment Keys Table
+      #4069 merged 2026-06-24 NM-341-v1: Add Support for Multi-tenancy
+      #4072 merged 2026-06-25 NM-341-v2: Org and Tenant Memberships
+      #4102 merged 2026-07-27 NM-356: add User Device Mgmt Apis, Move InetGws to Egress
+      #4020 merged 2026-05-20 NM-307: fix PU admin user add device permissions, add enrollment key …
+      #4064 merged 2026-06-18 NM-304,362: MDM & EDR posture check integration
+      #3921 merged 2026-03-17 NM-271: Scalability Improvements
+      #3907 closed 2026-03-11 NM-271: Scalability Improvements
+      #3938 merged 2026-03-26 Fixes/v1.5.1
+      #3910 merged 2026-03-13 NM-163: Users, Groups, Roles, Networks and Hosts Table Migration
+      #2461 merged 2023-07-24 [NET-353] Solve race condition with "unique" ips
+      #1703 merged 2022-10-31 Bump github.com/eclipse/paho.mqtt.golang from 1.4.1 to 1.4.2
+      #863 closed 2022-03-06 Version v0.11.0 of `netclient join` fails on the processor on which the Netmaker server is installed.
+      #90 closed 2021-04-14 unable to run netclient-arm in openwrt 
+  atomically     4 hit(s) (all listed)
+      #4065 merged 2026-06-18 NM-341: Schema Migration for Serverconf, Generated and Enrollment Keys Table
+      #4054 merged 2026-06-10 NM-347: fix acl cache race issue
+      #4064 merged 2026-06-18 NM-304,362: MDM & EDR posture check integration
+      #3921 merged 2026-03-17 NM-271: Scalability Improvements
+  interrupted    2 hit(s) (all listed)
+      #2891 closed 2024-04-10 [Bug]: The connection between the servers is interrupted for a second if the connection to the server(netmaker) is lost
+      #2953 closed 2024-05-28 [Bug]: Netclient on k8s does not communicate with server except for joining
+  interrupt      6 hit(s) (all listed)
+      #2565 open 2023-09-10 [Bug]: turn errors when connecting from pre-existing client
+      #3988 merged 2026-04-27 NM-321-v1
+      #2891 closed 2024-04-10 [Bug]: The connection between the servers is interrupted for a second if the connection to the server(netmaker) is lost
+      #2953 closed 2024-05-28 [Bug]: Netclient on k8s does not communicate with server except for joining
+      #1756 merged 2022-11-21 Netclient support for MIPs arch.
+      #1681 merged 2022-10-23 Adding support for OpenWrt-mips arch
+  sigkill        2 hit(s) (all listed)
+      #1599 merged 2022-09-22 shutdown netmaker on receipt of sigterm
+      #959 closed 2022-03-23 [Bug]: Rootless Podman
+  sigint         2 hit(s) (all listed)
+      #2686 open 2023-11-22 Neclient (host machine) losed conectivity in all networks (This has happened multiple times)
+      #2672 merged 2023-11-16 [ACC-339] Add route to restart server
+  ctrl-c         1 hit(s) (all listed)
+      #2069 merged 2023-02-24 GRA-813 Better use of context in main
+  power          2 hit(s) (all listed)
+      #4045 open 2026-06-05 [Bug]: Fast Startup on Windows corrupts netclient .json/.bak config files, service fails to start and requires manual cleanup + re-join
+      #1628 closed 2022-10-03 [Bug]: MacOS netclient cannot ping self
+  outage         9 hit(s) (all listed)
+      #4152 merged 2026-09-21 Patch: License Validation and Management
+      #4115 merged 2026-08-19 v1.6.0: fix geo info apis
+      #4139 merged 2026-09-04 v1.7.0:  speed up /api/nodes on SQLite and harden DB under load
+      #4174 merged 2026-10-07 NM-356: add api keys
+      #4072 merged 2026-06-25 NM-341-v2: Org and Tenant Memberships
+      #4069 merged 2026-06-24 NM-341-v1: Add Support for Multi-tenancy
+      #1020 closed 2022-04-21 Question - Netmaker server dependency to nodes function
+      #533 closed 2021-12-06 Memory leak
+      #435 closed 2021-11-03 Netmaker website is offline
+  ENOSPC         0 hit(s)
+  disk           14 hit(s) (all listed)
+      #2560 open 2023-09-06 [Bug]: Quick Install with nm-quick exits after dependency check
+      #2163 open 2023-03-31 [Bug]: failed to intialize firewall: firewall support not found 
+      #2564 open 2023-09-10 [Bug]: 
+      #3367 closed 2025-03-11 [Bug]: Can't install Remote Client on Ubuntu 24.04
+      #3274 closed 2024-12-24 [Bug]: Installation script exists with no error message
+      #2328 merged 2023-05-22 Bump github.com/go-playground/validator/v10 from 10.13.0 to 10.14.0
+      #2381 closed 2023-06-08 [Bug]: endpoint is always <nil>
+      #1898 closed 2023-01-04 [Bug]: what...the... what is netclient 0.18.0??...
+      #1538 closed 2022-09-09 [Bug]: Netclient not forgetting when removing
+      #915 closed 2022-03-18 Functionality to prioritize specific datastreams
+      #1390 closed 2022-07-14 [Bug]: systemctl daemon-reload missing on apt upgrade for netclient client
+      #959 closed 2022-03-23 [Bug]: Rootless Podman
+      #917 closed 2022-03-18 [Bug]: iptables from docker
+      #396 merged 2021-10-28 Bugfix v0.8.5 oauth params
+  partial        16 hit(s) (all listed)
+      #432 open 2021-11-03 Feature request: Fallback servers
+      #4160 open 2026-09-28 NM-383: Extclient Schema Migration and Network Nodes Listing with Host
+      #4011 open 2026-05-13 [Bug]: `RemoveHost` leaks orphan `nodes` rows when `host.Nodes` cache drifts, breaking peer lists
+      #4167 merged 2026-10-02 NM-356: User Node/Device Cleanup
+      #4102 merged 2026-07-27 NM-356: add User Device Mgmt Apis, Move InetGws to Egress
+      #4016 merged 2026-05-19 build(deps): bump github.com/lib/pq from 1.12.1 to 1.12.3
+      #4065 merged 2026-06-18 NM-341: Schema Migration for Serverconf, Generated and Enrollment Keys Table
+      #4054 merged 2026-06-10 NM-347: fix acl cache race issue
+      #3948 merged 2026-03-31 NM-288: fix orphan nodes on bulk host deletion and refactor node cleanup
+      #4069 merged 2026-06-24 NM-341-v1: Add Support for Multi-tenancy
+      #4031 merged 2026-06-01 build(deps): bump go.opentelemetry.io/otel from 1.39.0 to 1.41.0
+      #3938 merged 2026-03-26 Fixes/v1.5.1
+      #3985 merged 2026-04-24 Master
+      #3974 merged 2026-04-14 Fix(v1.5.1): set host as default using api;
+      #3910 merged 2026-03-13 NM-163: Users, Groups, Roles, Networks and Hosts Table Migration
+      #2346 merged 2023-05-26 NET-152 enrollment keys for non admins
+  incomplete     14 hit(s) (all listed)
+      #4159 open 2026-09-26 NM-360: IP Address Management
+      #4072 merged 2026-06-25 NM-341-v2: Org and Tenant Memberships
+      #4081 merged 2026-07-10 Release v1.6.0
+      #3994 merged 2026-04-30 Master
+      #4041 closed 2026-06-02 Release v1.5.1
+      #4102 merged 2026-07-27 NM-356: add User Device Mgmt Apis, Move InetGws to Egress
+      #4039 merged 2026-06-01 Pre-release Fixes: v1.5.2
+      #4083 merged 2026-07-10 NM-366: handle internet exit nodes via egress
+      #3984 merged 2026-04-24 Release v1.5.1
+      #3926 merged 2026-03-19 NM-273: Vnat pool assignments fix
+      #4064 merged 2026-06-18 NM-304,362: MDM & EDR posture check integration
+      #3981 merged 2026-04-21 v1.5.1: fix concurrent map writes
+      #652 merged 2022-01-29 Feature v0.10.0 traffic encrypt
+      #8 closed 2021-03-26 Rebranding Incomplete
+  dataloss       0 hit(s)
+  recover        10 hit(s) (all listed)
+      #4102 merged 2026-07-27 NM-356: add User Device Mgmt Apis, Move InetGws to Egress
+      #4064 merged 2026-06-18 NM-304,362: MDM & EDR posture check integration
+      #3953 merged 2026-04-01 v1.5.1: cleanup grps from posture checks on grp updates
+      #3948 merged 2026-03-31 NM-288: fix orphan nodes on bulk host deletion and refactor node cleanup
+      #3907 closed 2026-03-11 NM-271: Scalability Improvements
+      #904 closed 2022-03-15 [Bug]: Relayed nodes cannot reach peers behind second relay
+      #1393 closed 2022-07-17 [Bug]: Node needs to "repull" config after restart
+      #1011 closed 2022-04-11 [Bug]: Untrapped error during initialization of Netmaker server results in an unusable system
+      #449 merged 2021-11-08 Bump google.golang.org/grpc from 1.41.0 to 1.42.0
+      #27 closed 2021-03-28 Panic when deleting a non-existance admin (either one that has already been deleted or one that never existed)
+  recovery       19 hit(s) (all listed)
+      #4173 open 2026-10-07 fix: add graceful shutdown handling and panic recovery for database 
+      #2586 open 2023-09-18 [Bug]: Host can't connect to netmaker when connected to a VPN.
+      #2628 open 2023-10-15 [Bug]: Windows client not able to join network
+      #3183 open 2024-11-07 [Bug]: Suddenly unable to work
+      #4044 merged 2026-06-04 NM-344: streamline user group mgmt
+      #4064 merged 2026-06-18 NM-304,362: MDM & EDR posture check integration
+      #4102 merged 2026-07-27 NM-356: add User Device Mgmt Apis, Move InetGws to Egress
+      #4020 merged 2026-05-20 NM-307: fix PU admin user add device permissions, add enrollment key …
+      #4023 merged 2026-05-22 NM-317: Opmitise status calc, add offline status hook
+      #4072 merged 2026-06-25 NM-341-v2: Org and Tenant Memberships
+      #4069 merged 2026-06-24 NM-341-v1: Add Support for Multi-tenancy
+      #3910 merged 2026-03-13 NM-163: Users, Groups, Roles, Networks and Hosts Table Migration
+      #2518 closed 2023-08-16 [BUG]:  TURN server issues with NAT'ed devices.
+      #1751 merged 2022-11-19 Fix #1750 - Lack of fatal error cause output
+      #1750 closed 2022-11-19 [Bug]: fatal database error not displayed
+      #1387 merged 2022-07-13 Feature v0.14.6 netmaker logs
+      #1160 closed 2022-06-01 [Bug]: loss of network connection, stops the service, and never restarts it, windows
+      #1082 closed 2022-05-12 [Bug]: REST API doesn't restart properly
+      #234 closed 2021-08-18 Website Down
+  rollback       11 hit(s) (all listed)
+      #4155 merged 2026-09-23 Release v1.7.0
+      #3995 open 2026-04-30 Migration v0.30.0 → v1.5.1 deadlocks in migrateHosts → GetServerSettings (SQLite)
+      #4102 merged 2026-07-27 NM-356: add User Device Mgmt Apis, Move InetGws to Egress
+      #3982 merged 2026-04-22 NM-293: Nodes Schema Migration
+      #4065 merged 2026-06-18 NM-341: Schema Migration for Serverconf, Generated and Enrollment Keys Table
+      #4101 merged 2026-07-23 NM-341-v6: AMB Multi-tenancy Management
+      #3965 merged 2026-04-07 NM-272: Migrate Pending Users and User Invites
+      #4020 merged 2026-05-20 NM-307: fix PU admin user add device permissions, add enrollment key …
+      #3910 merged 2026-03-13 NM-163: Users, Groups, Roles, Networks and Hosts Table Migration
+      #2991 closed 2024-06-25 Unable to login due to SSO being Premium Only
+      #1702 merged 2022-10-31 Bump github.com/mattn/go-sqlite3 from 1.14.15 to 1.14.16
+  resume         9 hit(s) (all listed)
+      #3999 open 2026-05-01 [Feature]: Trusted network detection — auto-disable tunnel when client is on a recognized internal network
+      #3104 open 2024-09-04 [Bug]: Public Address (IPv4) not present in UI or Wireguard Configs
+      #1882 open 2022-12-28 [Bug]: v0.16.1 -> v.0.17.1 upgrade does not work (database issue?)
+      #2686 open 2023-11-22 Neclient (host machine) losed conectivity in all networks (This has happened multiple times)
+      #2796 closed 2024-01-24 [Bug]: Installation fails
+      #1943 closed 2023-01-17 Testing Caddy Setup Fails
+      #2042 closed 2023-02-16 [Bug]: wait.sh stuck in installation.
+      #1011 closed 2022-04-11 [Bug]: Untrapped error during initialization of Netmaker server results in an unusable system
+      #1190 merged 2022-06-06 Bump github.com/eclipse/paho.mqtt.golang from 1.3.5 to 1.4.1
+  half-written   1 hit(s) (all listed)
+      #4160 open 2026-09-28 NM-383: Extclient Schema Migration and Network Nodes Listing with Host
+  wipe           16 hit(s) (all listed)
+      #4150 merged 2026-09-17 Master
+      #4149 merged 2026-09-17 Release v1.7.0
+      #2594 open 2023-09-19 [Bug]: Brand new installation of v0.21.0 results in a network of hosts that cannot talk to each other, except the Netmaker default host.
+      #4054 merged 2026-06-10 NM-347: fix acl cache race issue
+      #4024 merged 2026-05-25 NM-299: Cleanup Orphan Network References (Fixes 3944)
+      #4064 merged 2026-06-18 NM-304,362: MDM & EDR posture check integration
+      #2018 closed 2023-02-11 [Bug]: docker logs mq -f /mosquitto/config/wait.sh: line 5: curl: not found
+      #2141 merged 2023-03-22 Story/gra 1431
+      #1197 closed 2022-06-09 Can't create an admin password
+      #1196 merged 2022-06-09 updating node can wipe traffic keys
+      #1232 merged 2022-06-20 updated join logic
+      #1011 closed 2022-04-11 [Bug]: Untrapped error during initialization of Netmaker server results in an unusable system
+      #52 closed 2021-03-31 Handle Node Invalidation Better
+      #90 closed 2021-04-14 unable to run netclient-arm in openwrt 
+      #191 closed 2021-07-01 GCP VM Error creating interface while trying to join to network
+      #125 closed 2021-04-22 during agent installation using the "agent install command with access token" I end up w config using my Router's Public IP address
+  wipes          6 hit(s) (all listed)
+      #4150 merged 2026-09-17 Master
+      #4149 merged 2026-09-17 Release v1.7.0
+      #2594 open 2023-09-19 [Bug]: Brand new installation of v0.21.0 results in a network of hosts that cannot talk to each other, except the Netmaker default host.
+      #4054 merged 2026-06-10 NM-347: fix acl cache race issue
+      #4064 merged 2026-06-18 NM-304,362: MDM & EDR posture check integration
+      #2018 closed 2023-02-11 [Bug]: docker logs mq -f /mosquitto/config/wait.sh: line 5: curl: not found
+  erase          5 hit(s) (all listed)
+      #4150 merged 2026-09-17 Master
+      #4149 merged 2026-09-17 Release v1.7.0
+      #4140 merged 2026-09-08 Release v1.7.0
+      #4041 closed 2026-06-02 Release v1.5.1
+      #1684 closed 2022-10-23 [Bug]: SSO github permission reverts
+  erasing        1 hit(s) (all listed)
+      #4150 merged 2026-09-17 Master
+  erased         1 hit(s) (all listed)
+      #1684 closed 2022-10-23 [Bug]: SSO github permission reverts
+  destroy        7 hit(s) (all listed)
+      #4155 merged 2026-09-23 Release v1.7.0
+      #4102 merged 2026-07-27 NM-356: add User Device Mgmt Apis, Move InetGws to Egress
+      #4064 merged 2026-06-18 NM-304,362: MDM & EDR posture check integration
+      #3311 merged 2025-01-29 NET-1933: option to force destroy network
+      #1459 closed 2022-08-16 [Bug]: error installing client on opnsense
+      #1157 closed 2022-05-31 Documentation for gravitl/netclient use with docker-compose?
+      #321 closed 2021-10-06 Documentation - Installing Pre-Reqs
+  destroys       2 hit(s) (all listed)
+      #4155 merged 2026-09-23 Release v1.7.0
+      #4102 merged 2026-07-27 NM-356: add User Device Mgmt Apis, Move InetGws to Egress
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4161 open 2026-09-28 NM-383: Remove Key Scoping
+      #4148 open 2026-09-10 NM-387: Managed SSH
+      #4158 open 2026-09-25 build(deps): bump alpine from 3.24.1 to 3.24.2
+      #4160 open 2026-09-28 NM-383: Extclient Schema Migration and Network Nodes Listing with Host
+      #4163 open 2026-09-28 build(deps): bump golang.org/x/net from 0.54.0 to 0.55.0
+      #4152 merged 2026-09-21 Patch: License Validation and Management
+      #3884 open 2026-02-26 [Feature] Toggles for egress route and firewall management
+      #4155 merged 2026-09-23 Release v1.7.0
+      #4106 merged 2026-08-02 NM-295: publish TCP uplink flags and peer tcp_proxy_endpoint
+      #4124 open 2026-08-21 build(deps): bump docker/login-action from 4.5.2 to 4.6.0
+      #4118 open 2026-08-21 build(deps): bump github.com/coreos/go-oidc/v3 from 3.18.0 to 3.20.0
+      #4169 open 2026-10-02 build(deps): bump dawidd6/action-download-artifact from 21 to 27
+      #4119 open 2026-08-21 build(deps): bump gorm.io/gorm from 1.31.1 to 1.31.2
+      #4065 merged 2026-06-18 NM-341: Schema Migration for Serverconf, Generated and Enrollment Keys Table
+      #4082 merged 2026-07-10 v1.6.0: fix JIT admin bypass and NULL egress domain migration
+      #4120 open 2026-08-21 build(deps): bump github.com/posthog/posthog-go from 1.14.0 to 1.23.1
+      #4069 merged 2026-06-24 NM-341-v1: Add Support for Multi-tenancy
+      #4070 merged 2026-06-24 Prevent posture checks field update from nmui
+      #4067 merged 2026-06-19 build(deps): bump alpine from 3.23.4 to 3.24.1
+      #3991 merged 2026-04-29 Fix: Mask email_sender_password and okta_api_token
+  clobber        4 hit(s) (all listed)
+      #4113 merged 2026-08-18 v1.6.0: static port setting fix
+      #4003 merged 2026-05-05 NM-317: optimise check-in peer updates
+      #2741 merged 2023-12-18 Bump golang.org/x/crypto from 0.16.0 to 0.17.0
+      #1394 closed 2022-07-17 [Bug]: content of /etc/hosts gets deleted with netclient update (14.4->14.5)
+  blank          18 hit(s) (all listed)
+      #3232 open 2024-12-01 [Bug]: installation error
+      #4170 merged 2026-10-04 NM-356: Network Status API
+      #4048 merged 2026-06-05 build(deps): bump github.com/go-playground/validator/v10 from 10.30.1 to 10.30.3
+      #3938 merged 2026-03-26 Fixes/v1.5.1
+      #1695 closed 2022-10-27 Windows Netclient v16.1 not working after upgrade from v16.0 Linuxs clients working fine[Bug]: 
+      #2478 closed 2023-07-30 [Feature]: nm-quick script tackling arm TODO support
+      #2439 closed 2023-07-06 [Bug]: Cannot set custom static endpoint IP on a host.
+      #2194 closed 2023-04-12 [Bug]: Empty ip address in external client 
+      #2279 merged 2023-05-08 Bump github.com/txn2/txeh from 1.3.0 to 1.4.0
+      #1453 closed 2022-08-09 Fix: createExtClient()
+      #1219 closed 2022-06-16 [Bug]: Netclient: could not read client cert/key tls: private key does not match public key
+      #1564 closed 2022-09-17 server/client version mismatch server:  0.15.2  client:  v0.15.2
+      #1872 closed 2022-12-26 Bump fyne.io/fyne/v2 from 2.2.4 to 2.3.0
+      #1622 merged 2022-09-30 MQ Dynamic Security
+      #1186 closed 2022-06-05 [Bug]: Could not connect to broker.netmaker.domain.tld
+      #1066 closed 2022-05-05 New Install - Can't add Linux Nodes
+      #766 merged 2022-02-14 set macaddress and nodeid if not set
+      #760 merged 2022-02-14 removed default master key and added warning log if not set
+  unreadable     1 hit(s) (all listed)
+      #4051 merged 2026-06-05 build(deps): bump google.golang.org/grpc from 1.79.3 to 1.81.1
+  garbage        2 hit(s) (all listed)
+      #3998 merged 2026-05-01 Add rate limiter for user authenticate api
+      #460 closed 2021-11-16 Mystery CPU usage
+  mangled        0 hit(s)
+  contents       7 hit(s) (all listed)
+      #2721 open 2023-12-06 [Feature]: split dns
+      #2847 merged 2024-03-04 Bump github.com/stretchr/testify from 1.8.4 to 1.9.0
+      #1133 closed 2022-05-24 Unable to set it up
+      #2294 closed 2023-05-13 refactor: managing environment with dotenv file
+      #1448 merged 2022-08-08 rm netmaker-server.sh
+      #916 closed 2022-03-18 [Bug]: netclient 0.12
+      #753 closed 2022-02-12 Private DNS
+  in-place       60 hit(s) (all listed)
+      #4099 open 2026-07-20 MSP Portal
+      #1806 open 2022-12-09 [Bug]: netclient uses Go-http-client/2.0 as User-Agent instead of its own value
+      #3020 open 2024-07-27 [Bug]:  Default node-level ACL Rule not working
+      #1694 open 2022-10-27 [Bug]: Mac Installer packaging
+      #1214 open 2022-06-16 [Bug] Unable to set node as DNS server for external clients
+      #1381 open 2022-07-12 [Bug]: Cannot get host network mode to work
+      #2528 open 2023-08-21 [Bug]: nm-quick.sh not working on AWS Lightsail VPS
+      #3884 open 2026-02-26 [Feature] Toggles for egress route and firewall management
+      #3183 open 2024-11-07 [Bug]: Suddenly unable to work
+      #2686 open 2023-11-22 Neclient (host machine) losed conectivity in all networks (This has happened multiple times)
+      #4046 closed 2026-06-05 Add IP Address Management
+      #4128 merged 2026-08-26 build(deps): bump google.golang.org/grpc from 1.81.1 to 1.82.1
+      #4101 merged 2026-07-23 NM-341-v6: AMB Multi-tenancy Management
+      #4024 merged 2026-05-25 NM-299: Cleanup Orphan Network References (Fixes 3944)
+      #3956 merged 2026-04-02 NM-300: Clean up stale metrics on node deletion and disconnect
+      #3977 merged 2026-04-14 fix(go): empty out set dns;
+      #3926 merged 2026-03-19 NM-273: Vnat pool assignments fix
+      #4003 merged 2026-05-05 NM-317: optimise check-in peer updates
+      #3981 merged 2026-04-21 v1.5.1: fix concurrent map writes
+      #3907 closed 2026-03-11 NM-271: Scalability Improvements
+  unclean        0 hit(s)
+  shutdown       16 hit(s) (all listed)
+      #4173 open 2026-10-07 fix: add graceful shutdown handling and panic recovery for database 
+      #2643 open 2023-10-25 [Bug]: Sync button disappears in netmaker.io's interface
+      #2602 open 2023-09-25 [Bug]: High CPU load crashing server with internet gateway on AWS
+      #4147 merged 2026-09-10 Security Fixes
+      #3998 merged 2026-05-01 Add rate limiter for user authenticate api
+      #3887 merged 2026-03-01 NM-258: resolve SQL injection, insufficient host authorization, and only allow superadmin to shutdown/restart the restart via api
+      #3776 merged 2025-12-09 v1.2.0: add auth to server shutdown api
+      #3910 merged 2026-03-13 NM-163: Users, Groups, Roles, Networks and Hosts Table Migration
+      #3907 closed 2026-03-11 NM-271: Scalability Improvements
+      #1599 merged 2022-09-22 shutdown netmaker on receipt of sigterm
+      #1139 merged 2022-05-26 delete wg interfaces on netclient docker shutdown
+      #1160 closed 2022-06-01 [Bug]: loss of network connection, stops the service, and never restarts it, windows
+      #1251 closed 2022-06-27 Best way to route all traffic on a Docker network through NetClient interface
+      #581 merged 2022-01-06 Gracefully shutdown in HTTP and gRPC apps
+      #1100 closed 2022-05-18 [Bug]: netclient unable connect to mq server[Unable to connect (A TLS error occurred.)]
+      #558 merged 2021-12-21 Gracefully shutdown in HTTP and gRPC apps
+  reboot         34 hit(s) (all listed)
+      #1515 open 2022-09-04 [Bug]: Netclient not reconnecting after reboot
+      #2264 open 2023-05-05 [Bug]: with docker-compose-emqx/mqtt.yml setup, after os reboot, netmaker container stopped working properly
+      #3227 open 2024-11-27 [Bug]: start the overlay mesh before the routing is added
+      #2021 open 2023-02-12 [Bug]: Cannot join netmaker network
+      #3879 open 2026-02-23 [Bug]: Gateway Node not working
+      #2594 open 2023-09-19 [Bug]: Brand new installation of v0.21.0 results in a network of hosts that cannot talk to each other, except the Netmaker default host.
+      #3614 closed 2025-08-24 [Bug]: netmaker desktop remember me
+      #3102 merged 2024-09-04 NET-1497:set node lastcheckin after reboot
+      #1760 closed 2022-11-23 [Bug]: Egress Gateway breaks internet access on reboot
+      #2027 closed 2023-02-13 [Bug]: Caddy is having an issue setting up certificates
+      #2347 closed 2023-05-27 [Bug]: Installation Breaks after reboot
+      #2394 merged 2023-06-12 Update docker-compose.yml
+      #2518 closed 2023-08-16 [BUG]:  TURN server issues with NAT'ed devices.
+      #2018 closed 2023-02-11 [Bug]: docker logs mq -f /mosquitto/config/wait.sh: line 5: curl: not found
+      #1646 closed 2022-10-10 Netclient defaults to nfttables for FW, causes iptables machine to break
+      #1393 closed 2022-07-17 [Bug]: Node needs to "repull" config after restart
+      #1498 closed 2022-08-30 [Bug]: 
+      #1390 closed 2022-07-14 [Bug]: systemctl daemon-reload missing on apt upgrade for netclient client
+      #1394 closed 2022-07-17 [Bug]: content of /etc/hosts gets deleted with netclient update (14.4->14.5)
+      #744 closed 2022-02-12 network does not initialize after reboot
+  disk+full      2 hit(s) (all listed)
+      #3367 closed 2025-03-11 [Bug]: Can't install Remote Client on Ubuntu 24.04
+      #2328 merged 2023-05-22 Bump github.com/go-playground/validator/v10 from 10.13.0 to 10.14.0
+  data+loss      27 hit(s) (all listed)
+      #432 open 2021-11-03 Feature request: Fallback servers
+      #4150 merged 2026-09-17 Master
+      #4106 merged 2026-08-02 NM-295: publish TCP uplink flags and peer tcp_proxy_endpoint
+      #2497 open 2023-08-06 [Bug]: Unusable network on Oracle Cloud (pure WG works fine). 
+      #4102 merged 2026-07-27 NM-356: add User Device Mgmt Apis, Move InetGws to Egress
+      #4101 merged 2026-07-23 NM-341-v6: AMB Multi-tenancy Management
+      #4064 merged 2026-06-18 NM-304,362: MDM & EDR posture check integration
+      #4083 merged 2026-07-10 NM-366: handle internet exit nodes via egress
+      #4020 merged 2026-05-20 NM-307: fix PU admin user add device permissions, add enrollment key …
+      #4065 merged 2026-06-18 NM-341: Schema Migration for Serverconf, Generated and Enrollment Keys Table
+      #3965 merged 2026-04-07 NM-272: Migrate Pending Users and User Invites
+      #3984 merged 2026-04-24 Release v1.5.1
+      #3921 merged 2026-03-17 NM-271: Scalability Improvements
+      #3974 merged 2026-04-14 Fix(v1.5.1): set host as default using api;
+      #3907 closed 2026-03-11 NM-271: Scalability Improvements
+      #3014 merged 2024-07-24 NET-1440: scale test changes
+      #1628 closed 2022-10-03 [Bug]: MacOS netclient cannot ping self
+      #2891 closed 2024-04-10 [Bug]: The connection between the servers is interrupted for a second if the connection to the server(netmaker) is lost
+      #2518 closed 2023-08-16 [BUG]:  TURN server issues with NAT'ed devices.
+      #2483 closed 2023-07-31 [Bug]: Cannot connect to egress network.
+  partial+write  9 hit(s) (all listed)
+      #4160 open 2026-09-28 NM-383: Extclient Schema Migration and Network Nodes Listing with Host
+      #4011 open 2026-05-13 [Bug]: `RemoveHost` leaks orphan `nodes` rows when `host.Nodes` cache drifts, breaking peer lists
+      #4102 merged 2026-07-27 NM-356: add User Device Mgmt Apis, Move InetGws to Egress
+      #4054 merged 2026-06-10 NM-347: fix acl cache race issue
+      #4065 merged 2026-06-18 NM-341: Schema Migration for Serverconf, Generated and Enrollment Keys Table
+      #3948 merged 2026-03-31 NM-288: fix orphan nodes on bulk host deletion and refactor node cleanup
+      #3985 merged 2026-04-24 Master
+      #3938 merged 2026-03-26 Fixes/v1.5.1
+      #3910 merged 2026-03-13 NM-163: Users, Groups, Roles, Networks and Hosts Table Migration
+  crash+safe     4 hit(s) (all listed)
+      #4102 merged 2026-07-27 NM-356: add User Device Mgmt Apis, Move InetGws to Egress
+      #3979 closed 2026-04-19 NM-317: scale fixes
+      #3937 merged 2026-03-24 NM-254: add bulk delete apis, rm old acl code
+      #3910 merged 2026-03-13 NM-163: Users, Groups, Roles, Networks and Hosts Table Migration
+  atomic+write   10 hit(s) (all listed)
+      #4147 merged 2026-09-10 Security Fixes
+      #4054 merged 2026-06-10 NM-347: fix acl cache race issue
+      #4065 merged 2026-06-18 NM-341: Schema Migration for Serverconf, Generated and Enrollment Keys Table
+      #4102 merged 2026-07-27 NM-356: add User Device Mgmt Apis, Move InetGws to Egress
+      #4020 merged 2026-05-20 NM-307: fix PU admin user add device permissions, add enrollment key …
+      #3921 merged 2026-03-17 NM-271: Scalability Improvements
+      #3907 closed 2026-03-11 NM-271: Scalability Improvements
+      #3938 merged 2026-03-26 Fixes/v1.5.1
+      #3910 merged 2026-03-13 NM-163: Users, Groups, Roles, Networks and Hosts Table Migration
+      #90 closed 2021-04-14 unable to run netclient-arm in openwrt 
+  lock+file      32 hit(s) (all listed)
+      #4159 open 2026-09-26 NM-360: IP Address Management
+      #4154 open 2026-09-23 Feat: Org IDP Integration
+      #4161 open 2026-09-28 NM-383: Remove Key Scoping
+      #4147 merged 2026-09-10 Security Fixes
+      #4144 merged 2026-09-09 Master
+      #4139 merged 2026-09-04 v1.7.0:  speed up /api/nodes on SQLite and harden DB under load
+      #4082 merged 2026-07-10 v1.6.0: fix JIT admin bypass and NULL egress domain migration
+      #4111 merged 2026-08-18 Fixes: Release v1.7.0
+      #4054 merged 2026-06-10 NM-347: fix acl cache race issue
+      #4044 merged 2026-06-04 NM-344: streamline user group mgmt
+      #4101 merged 2026-07-23 NM-341-v6: AMB Multi-tenancy Management
+      #3982 merged 2026-04-22 NM-293: Nodes Schema Migration
+      #3979 closed 2026-04-19 NM-317: scale fixes
+      #3981 merged 2026-04-21 v1.5.1: fix concurrent map writes
+      #4064 merged 2026-06-18 NM-304,362: MDM & EDR posture check integration
+      #3969 merged 2026-04-08 v1.5.1: add mutex for sqlite write ops
+      #3984 merged 2026-04-24 Release v1.5.1
+      #3985 merged 2026-04-24 Master
+      #3986 merged 2026-04-27 Revert "NM-321: Trigger License Validation API"
+      #3966 merged 2026-04-08 NM-311: enhance nm-quick.sh for reuse, versioning, and safety
+  write+failure  21 hit(s) (all listed)
+      #4159 open 2026-09-26 NM-360: IP Address Management
+      #4160 open 2026-09-28 NM-383: Extclient Schema Migration and Network Nodes Listing with Host
+      #4174 merged 2026-10-07 NM-356: add api keys
+      #4147 merged 2026-09-10 Security Fixes
+      #4011 open 2026-05-13 [Bug]: `RemoveHost` leaks orphan `nodes` rows when `host.Nodes` cache drifts, breaking peer lists
+      #4102 merged 2026-07-27 NM-356: add User Device Mgmt Apis, Move InetGws to Egress
+      #4065 merged 2026-06-18 NM-341: Schema Migration for Serverconf, Generated and Enrollment Keys Table
+      #4044 merged 2026-06-04 NM-344: streamline user group mgmt
+      #4005 merged 2026-05-06 NM-298: JIT group scoped
+      #3985 merged 2026-04-24 Master
+      #4020 merged 2026-05-20 NM-307: fix PU admin user add device permissions, add enrollment key …
+      #3940 closed 2026-03-27 NM-288: populate relevant name for acl types for UI
+      #3971 merged 2026-04-13 Release v1.5.1
+      #3957 merged 2026-04-03 v1.5.1: deduplicate egress routes, set max open conns
+      #3948 merged 2026-03-31 NM-288: fix orphan nodes on bulk host deletion and refactor node cleanup
+      #3907 closed 2026-03-11 NM-271: Scalability Improvements
+      #3938 merged 2026-03-26 Fixes/v1.5.1
+      #3982 merged 2026-04-22 NM-293: Nodes Schema Migration
+      #3910 merged 2026-03-13 NM-163: Users, Groups, Roles, Networks and Hosts Table Migration
+      #3937 merged 2026-03-24 NM-254: add bulk delete apis, rm old acl code
+  file+contents  5 hit(s) (all listed)
+      #2721 open 2023-12-06 [Feature]: split dns
+      #2847 merged 2024-03-04 Bump github.com/stretchr/testify from 1.8.4 to 1.9.0
+      #1133 closed 2022-05-24 Unable to set it up
+      #2294 closed 2023-05-13 refactor: managing environment with dotenv file
+      #753 closed 2022-02-12 Private DNS
+
+== 51 terms run; 47 returned hits, 2 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

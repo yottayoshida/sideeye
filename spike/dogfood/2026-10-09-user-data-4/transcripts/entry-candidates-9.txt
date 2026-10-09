@@ -1,0 +1,12 @@
+ROW stack static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 116 operations
+EXIT stack 0
+ROW cabal static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 3 operations
+EXIT cabal 0
+ROW carapace static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT carapace 0
+ROW chdman static=0 preflight_rc=0 gate=0 detail=accepted, 4 operations
+EXIT chdman 0
+ROW kvantum static=0 preflight_rc=2 gate=1 detail=wall: unresolvable_path
+EXIT kvantum 1
+ROW hunspell static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+EXIT hunspell 0

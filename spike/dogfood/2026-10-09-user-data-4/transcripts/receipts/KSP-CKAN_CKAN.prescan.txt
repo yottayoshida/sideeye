@@ -1,0 +1,698 @@
+== novelty pre-scan: KSP-CKAN/CKAN
+== date: 2026-10-09T02:42:33Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4531 open 2026-03-21 [Feature]: Bisect mod list to identify problems bugs crashes
+      #3456 open 2021-09-29 [Bug] Crash on pressing a modifier key with focus in tri-state toggle in search dropdown
+      #1012 open 2015-05-31 Help provide useful debugging information for forum posts.
+      #3525 open 2022-01-26 Detect manually installed mods via cfg file :FOR[identifier] clauses
+      #4619 closed 2026-05-12 [Bug]: CKAN gui crashes
+      #4602 closed 2026-05-05 Mono crash, "Aborted (core dumped)"
+      #4681 closed 2026-06-24 [Bug]: CKAN on Steamdeck is crashind during start up
+      #1802 open 2016-06-27 Debug Logging Integration with KSP through a Plugin
+      #2111 merged 2017-09-10 Fix crash in "ckan available" with curly braces in mod name
+      #4536 closed 2026-03-28 "NullReferenceException: Object reference not set to an instance of an object" causing continuous crashing of KSP1
+      #4545 closed 2026-04-06 [Bug]: CKAN crashes or freezes when list of files to overwrite is longer than terminal frame size on mac
+      #4618 closed 2026-05-11 [Bug]: Ckan fails to build due to log4net 2.0.15 vulnerability
+      #4490 closed 2026-01-10 [Bug]: CKAN freezes if filters give empty mod list at startup
+      #4559 closed 2026-04-12 Access to the path "Z:\...\Kerbal Space Program\CKAN\registry.locked" is denied
+      #4240 merged 2024-10-24 Cache migration and other fixes
+      #2177 merged 2017-11-07 Create text UI inspired by Turbo Vision
+      #4432 closed 2025-09-10 [Bug]: Crash during RP-1 Express Install (macOS / consoleui)
+      #1040 closed 2015-05-31 Autoupdate fails if ckan.exe is stored in a system folder
+      #4497 closed 2026-01-14 Fonts look bad without anti-aliasing, MSBUILD : error MSB1008: Only one project can be specified.
+      #1262 closed 2015-07-08 Repeatedly hitting 'Cancel' from the 'Choose Recommended Mods' tab crashes GUI in certain instances
+  corrupt        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4577 merged 2026-04-20 Purge ZIPs corrupted after downloading
+      #4695 merged 2026-07-17 Fix freeze on loading installed modules
+      #4693 closed 2026-07-15 [Bug]: registry.locked even when only one instance is running
+      #4656 closed 2026-06-01 JsonReaderException: Unterminated string. Expected delimiter: ". Path 'available_modules.NiceMKseriesBody.module_version['V2.0f1'].download', line 563235, position 22701120.
+      #4641 merged 2026-05-20 Replace NavigationHistory.IsReadOnly with same-value check
+      #4582 closed 2026-04-21 [Bug]: App hangs on search when run though "mono ckan.exe"
+      #4567 closed 2026-04-15 [Bug]: System.IO.IOException: A device which does not exist was specified.
+      #4504 closed 2026-02-01 [Bug]: Empty/glitched out mod info and freezing with search that results in empty mod list
+      #4240 merged 2024-10-24 Cache migration and other fixes
+      #4438 closed 2025-09-16 [Bug]: Clone instance feature will break RO if "Share stock files" is checked, at least on Linux
+      #4402 merged 2025-07-03 Make CachingHttpService more thread-safe
+      #4396 merged 2025-06-17 More tests for Core
+      #4392 merged 2025-06-14 Writethrough when saving files, add Netkan tests
+      #3855 closed 2023-07-04 Extraplanetary Launchpads download corrupted
+      #4307 closed 2025-02-09 Corrupted non-Steam games again
+      #4200 merged 2024-09-27 Skip corrupted .acf files in Steam library
+      #4278 closed 2024-12-19 [Bug]: Crash on startup with 1.35+, cannot deserialize a non-array value to type "System.Collections.Generic.List`1
+      #4226 closed 2024-10-07 ZIP file for Waterfall corrupted after being validated and added to cache
+      #4197 closed 2024-09-27 [Bug]: ValveKeyValue.KeyValueException: Found end of file when another token type was expected
+      #4212 closed 2024-09-30 [Bug]: Updating from 3 year old version causes registry corruption (not related to old version or registry)
+  corruption     27 hit(s) (all listed)
+      #211 open 2014-10-31 New relationship: Warning, aka conflicts lite
+      #4682 closed 2026-06-28 [Bug]: IO.FileNotFoundException
+      #4667 closed 2026-06-10 Data error (CRC check) in System.IO.File.InternalCopy
+      #4288 closed 2025-01-22 [Bug]: Abstracts from GitHub API replace non-ASCII characters with question marks
+      #4212 closed 2024-09-30 [Bug]: Updating from 3 year old version causes registry corruption (not related to old version or registry)
+      #4077 merged 2024-04-12 Tolerate null repo URLs
+      #4061 closed 2024-03-17 Cannot find central directory for ProceduralParts v2.5.8.0
+      #3244 closed 2020-12-21 All text is in Chinese after update
+      #3399 closed 2021-06-21 [Feature] validation of mod files
+      #1078 closed 2015-06-06 Policy on mod de-indexing
+      #3558 closed 2022-04-06 [Feature] Option to delete registry.locked and continue in GUI
+      #1114 closed 2015-06-14 Json database corruption when Update of Repositories is interrupted.
+      #3351 merged 2021-04-17 Better recovery when registry.json is corrupted
+      #3291 closed 2021-02-07 [Bug] Installing mods through audit recommendations causes error
+      #3307 merged 2021-02-27 Fixes for GUI and .ckan-installed modules
+      #3249 merged 2020-12-22 Repo update usability fixes
+      #2857 merged 2019-08-28 Fixes for KSP in Windows drive root
+      #1763 closed 2016-05-30 Unhandled exception, Object reference not set to instance of object
+      #2092 closed 2017-07-22 Exception of type "CKAN.ModuleNotFoundKraken" was thrown.
+      #2068 closed 2017-06-09 CKAN Problem upon Opening: Unhandled Exception
+  truncated      23 hit(s) (all listed)
+      #4638 open 2026-05-19 Truncate date columns
+      #4656 closed 2026-06-01 JsonReaderException: Unterminated string. Expected delimiter: ". Path 'available_modules.NiceMKseriesBody.module_version['V2.0f1'].download', line 563235, position 22701120.
+      #4562 merged 2026-04-14 Bump log4net from 2.0.15 to 3.3.0
+      #4277 merged 2024-12-13 Fix broken version label in About dialog
+      #3877 merged 2023-08-08 Support multiple download URLs per module
+      #3764 closed 2023-01-16 It says Installation error for a mod I don't want to install.
+      #3576 merged 2022-05-02 Auto-size buttons in bottom panels
+      #3530 closed 2022-02-01 Bump SharpZipLib from 1.3.1 to 1.3.3 in /Tests
+      #3529 closed 2022-02-01 Bump SharpZipLib from 1.3.1 to 1.3.3 in /Core
+      #3531 closed 2022-02-01 Bump SharpZipLib from 1.3.1 to 1.3.3 in /Netkan
+      #3351 merged 2021-04-17 Better recovery when registry.json is corrupted
+      #2175 merged 2017-11-05 Clean up registry lock file after parse failure
+      #3250 merged 2020-12-29 Report AutoUpdater errors to user, fix rare failure
+      #3249 merged 2020-12-22 Repo update usability fixes
+      #2755 merged 2019-05-07 Save registry inside of scan transaction
+      #2757 merged 2019-05-09 Generate RPM packages
+      #2665 merged 2019-01-22 Implementation of clone and fake in GUI
+      #2729 merged 2019-04-13 Auto size yes no dialog
+      #1625 closed 2016-03-08 Break up NetKAN and CKAN-meta folders into subfolders
+      #1970 closed 2017-01-02 restarting after CKAN upgrade fails if spaces in path to ckan.exe
+  truncate       32 hit(s) (all listed)
+      #4638 open 2026-05-19 Truncate date columns
+      #4656 closed 2026-06-01 JsonReaderException: Unterminated string. Expected delimiter: ". Path 'available_modules.NiceMKseriesBody.module_version['V2.0f1'].download', line 563235, position 22701120.
+      #4641 merged 2026-05-20 Replace NavigationHistory.IsReadOnly with same-value check
+      #4562 merged 2026-04-14 Bump log4net from 2.0.15 to 3.3.0
+      #4277 merged 2024-12-13 Fix broken version label in About dialog
+      #4246 closed 2024-10-29 [Bug]: gui on macos
+      #3877 merged 2023-08-08 Support multiple download URLs per module
+      #3747 closed 2022-12-20 UI won't start MacOS
+      #3764 closed 2023-01-16 It says Installation error for a mod I don't want to install.
+      #3666 merged 2022-09-12 Resume failed downloads
+      #3576 merged 2022-05-02 Auto-size buttons in bottom panels
+      #3530 closed 2022-02-01 Bump SharpZipLib from 1.3.1 to 1.3.3 in /Tests
+      #3529 closed 2022-02-01 Bump SharpZipLib from 1.3.1 to 1.3.3 in /Core
+      #3531 closed 2022-02-01 Bump SharpZipLib from 1.3.1 to 1.3.3 in /Netkan
+      #3351 merged 2021-04-17 Better recovery when registry.json is corrupted
+      #2175 merged 2017-11-05 Clean up registry lock file after parse failure
+      #3180 merged 2020-10-24 Allow installation into Ships/Script
+      #3250 merged 2020-12-29 Report AutoUpdater errors to user, fix rare failure
+      #3249 merged 2020-12-22 Repo update usability fixes
+      #318 merged 2014-11-11 Provide and use zip validation methods for the cache.
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4504 closed 2026-02-01 [Bug]: Empty/glitched out mod info and freezing with search that results in empty mod list
+      #4503 closed 2026-01-30 [Bug]: Empty mod list with "Update all" button enabled
+      #4490 closed 2026-01-10 [Bug]: CKAN freezes if filters give empty mod list at startup
+      #4675 closed 2026-06-19 New Crowdin updates
+      #4677 merged 2026-06-19 Support Windows text scaling setting on net10
+      #4635 closed 2026-05-17 [Bug]: Clicking the 'tickbox' above the 'installed' column when you have multiple mods selected doesn't select them for installation - on deselects them
+      #4543 merged 2026-04-05 Auto-size new repo popup to fit rows in list
+      #4605 merged 2026-05-06 Non-Latin letter search
+      #4636 merged 2026-05-17 Don't offer to delete paid mod ZIPs after import
+      #4642 merged 2026-05-21 Sync certs from newer location in RPM package
+      #4491 merged 2026-01-11 Fix freezing after startup with empty mod list
+      #3312 closed 2021-03-06 [Bug] NullReferenceException during Invoke in _updateModsList
+      #4528 closed 2026-03-16 [Bug]: Double clicking on a relationship mod results in a quadruple clickthrough to the subsequent relationship-relationship mod.
+      #4523 closed 2026-03-10 TelemachusReborn 1.8.0 and 1.9.0 contain ResizeSensor.js and resizeSensor.js, causing a FileExistsKraken to be thrown on install
+      #4484 closed 2026-01-03 [Bug]: Already contains module: JNSQ with KSP1 1.7 added to compatible versions
+      #4472 merged 2025-12-13 Independent caching for virtual dependency choices
+      #4562 merged 2026-04-14 Bump log4net from 2.0.15 to 3.3.0
+      #2177 merged 2017-11-07 Create text UI inspired by Turbo Vision
+      #653 closed 2014-12-20 Files created after the installation of a mod can cause problems during upgrades
+      #4438 closed 2025-09-16 [Bug]: Clone instance feature will break RO if "Share stock files" is checked, at least on Linux
+  atomic         11 hit(s) (all listed)
+      #4437 closed 2025-09-16 Unable to overwrite or delete files for FarFutureTechnologies
+      #4234 closed 2024-10-17 [Bug]: Install from .ckan - Unable to skip mods that fail to download in the "depends" section
+      #3604 closed 2022-07-17 [Bug] Uninstallation should be reverted if subsequent installation in same changeset fails
+      #3512 merged 2022-01-11 Disable tx timeouts, add tx debug logging, static DLL pattern, fix docs
+      #3423 closed 2021-07-31 [Bug] CKAN process ignores termination signals while downloading/updating
+      #187 merged 2014-10-27 Transactions for EVERYONE!
+      #1265 closed 2015-07-08 Add support for locking the registry.
+      #2492 merged 2018-08-07 Fix missing CdFileMgr folder errors
+      #3134 closed 2020-08-06 [Bug] DependencyNotSatisfiedKraken on recommendation screen
+      #3144 closed 2020-08-24 Ckan Won't install my mods it just keeps saying error during installation without providing any further info
+      #857 closed 2015-05-11 Wrong link for Atomic Age
+  atomically     0 hit(s)
+  interrupted    13 hit(s) (all listed)
+      #3242 open 2020-12-19 [Feature] Use anonymous statistics on KSP version and mod version to allow visibility on "what is working for how many"
+      #4410 merged 2025-07-30 Migrate Mac app bundle from Mono to dotnet
+      #4303 merged 2025-02-07 Guard rail for clicking refresh with refresh already in progress
+      #801 closed 2015-04-06 Crash due to lack of temporary files.
+      #3399 closed 2021-06-21 [Feature] validation of mod files
+      #1114 closed 2015-06-14 Json database corruption when Update of Repositories is interrupted.
+      #3666 merged 2022-09-12 Resume failed downloads
+      #3604 closed 2022-07-17 [Bug] Uninstallation should be reverted if subsequent installation in same changeset fails
+      #3057 merged 2020-05-18 Ignore internal krefs, don't error on unused version file syntax errors
+      #1788 closed 2016-06-21 Allow manual downloads of mod packages
+      #1822 closed 2016-07-12 CKAN Deadly Reentry Continued/USI Tools error
+      #1839 closed 2016-07-25 Interrupted CKAN Update
+      #848 closed 2015-05-08 CKAN GUI crashes on cancelled download
+  interrupt      28 hit(s) (all listed)
+      #3242 open 2020-12-19 [Feature] Use anonymous statistics on KSP version and mod version to allow visibility on "what is working for how many"
+      #4522 closed 2026-03-08 [Bug]: Not Opening on MacOS
+      #4410 merged 2025-07-30 Migrate Mac app bundle from Mono to dotnet
+      #4303 merged 2025-02-07 Guard rail for clicking refresh with refresh already in progress
+      #801 closed 2015-04-06 Crash due to lack of temporary files.
+      #3399 closed 2021-06-21 [Feature] validation of mod files
+      #1114 closed 2015-06-14 Json database corruption when Update of Repositories is interrupted.
+      #3666 merged 2022-09-12 Resume failed downloads
+      #3515 merged 2022-01-16 Tab completion for `ckan prompt`
+      #3604 closed 2022-07-17 [Bug] Uninstallation should be reverted if subsequent installation in same changeset fails
+      #3423 closed 2021-07-31 [Bug] CKAN process ignores termination signals while downloading/updating
+      #3336 closed 2021-03-30 [Bug] Import Downloaded Mods doesn't have an effect
+      #3250 merged 2020-12-29 Report AutoUpdater errors to user, fix rare failure
+      #2163 merged 2017-10-26 Simplify IUser
+      #3057 merged 2020-05-18 Ignore internal krefs, don't error on unused version file syntax errors
+      #1023 closed 2015-05-31 Canceling a mod install leaves the GUI in an inconsistent state
+      #1788 closed 2016-06-21 Allow manual downloads of mod packages
+      #1793 closed 2016-06-24 Opt In / Opt Out | Required changes to CKAN.
+      #1817 closed 2016-07-07 Mods fail to download, fail to error - indefinite wait for interrupt.
+      #1822 closed 2016-07-12 CKAN Deadly Reentry Continued/USI Tools error
+  sigkill        2 hit(s) (all listed)
+      #3686 closed 2022-10-28 [Bug] CKAN already running dialog appears even if PID in registry.locked is stale
+      #2075 closed 2017-06-25 Locking pid validation fails
+  sigint         2 hit(s) (all listed)
+      #3423 closed 2021-07-31 [Bug] CKAN process ignores termination signals while downloading/updating
+      #2075 closed 2017-06-25 Locking pid validation fails
+  ctrl-c         34 hit(s) (all listed)
+      #2177 merged 2017-11-07 Create text UI inspired by Turbo Vision
+      #4085 merged 2024-05-09 Conflicting recommendations check for ConsoleUI
+      #4072 closed 2024-04-03 ConsoleUI should check for conflicts between chosen recommendations and suggestions, plus a crash
+      #3639 merged 2022-08-20 Hide tray icon at exit via ctrl-C
+      #3423 closed 2021-07-31 [Bug] CKAN process ignores termination signals while downloading/updating
+      #2755 merged 2019-05-07 Save registry inside of scan transaction
+      #2291 closed 2018-02-21 Crashes with Mono 5.8 stable on macOS
+      #2394 closed 2018-03-30 CKAN.ModuleNotFoundKraken?
+      #2342 closed 2018-03-04 Could not find a part of the path 'C:\Users\name\Appdata\Local\Temp\CdFileMgr\02a3e06-bc35-40.json'.
+      #2314 closed 2018-02-25 Ckan keeps crashing
+      #2129 closed 2017-10-11 ckan just won't start
+      #2269 closed 2018-01-30 CKAN crashes when I try to launch it.
+      #2075 closed 2017-06-25 Locking pid validation fails
+      #2260 closed 2018-01-19 File Corrupted and Unreadable
+      #2299 closed 2018-02-23 exception error  CKAN.ModuleNotFoundKraken
+      #2207 closed 2017-12-05 NRE on clicking cancel rather than install
+      #2227 closed 2017-12-18 System.IO.IOException: The file exists. while downloading
+      #2222 closed 2017-12-15 CKAN.NotKSPDirKraken: Could not find KSP version in readme.txt at startup
+      #2467 closed 2018-07-04 Unhandled Exception: illegal characters in path
+      #2282 closed 2018-02-13 Crash on choosing - Compatible KSP Version
+  power          35 hit(s) (all listed)
+      #3516 open 2022-01-16 [Feature] Handle window coordinates of launched game
+      #4427 closed 2025-09-02 User frustrated by admin check
+      #883 closed 2015-05-21 Feature Request: Mod Roulette
+      #3458 merged 2021-10-05 Global install filters
+      #3956 closed 2023-12-14 Trying to run CKAN as an administrator
+      #4195 merged 2024-09-26 Usability improvements for missing files
+      #4226 closed 2024-10-07 ZIP file for Waterfall corrupted after being validated and added to cache
+      #1078 closed 2015-06-06 Policy on mod de-indexing
+      #3343 closed 2021-04-10 [Bug][Solved] Mono.Unix.UnixIOException: Resource temporarily unavailable on Arch Linux after Util.Invoke and long chain of runtime calls 
+      #2490 closed 2018-08-07 [Feature] Alternate MiniAVC handling idea
+      #3433 closed 2021-08-10 Can't start game with `__NV_PRIME_RENDER_OFFLOAD=1` in command line
+      #3453 merged 2021-09-26 Suppress incompatibility warning at game launch
+      #2955 closed 2019-12-27 Add an option to disable the list of incompatible mods
+      #3093 merged 2020-06-29 Deploy already built netkan.exe in CI
+      #3265 merged 2021-01-13 Better version overrides in Netkan
+      #498 merged 2014-12-02 Refactor mod list
+      #125 merged 2014-10-21 Multi-instance support
+      #2820 closed 2019-06-29 Use New JSON Config File; Add .NET Standard 2.0 Target to CKAN-core
+      #2732 merged 2019-04-16 Add self to opt-out
+      #1795 merged 2016-06-25 Allow foss delisting
+  outage         6 hit(s) (all listed)
+      #3337 open 2021-03-30 [Suggestion] GitHub life boat
+      #3392 closed 2021-06-08 Well thank you and when will I be able to properly install SKAN?
+      #3391 closed 2021-06-08 CKAN can't access github.com
+      #2256 merged 2018-01-16 Print fewer download updates in headless mode
+      #2293 closed 2018-02-22 Auto-update and other GitHub connections not working
+      #3112 closed 2020-07-13 [Bug] netkan.exe no longer able to successfully use IAM 
+  ENOSPC         0 hit(s)
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1149 open 2015-06-22 Convert code to use interfaces instead of concrete classes. 
+      #4098 open 2024-05-29 [Feature]: Flatpak
+      #1975 open 2017-01-08 Proposal: Introduce CKAN-meta-Legacy
+      #2272 open 2018-02-01 OSX 32-bit support removed from 10.15 (Catalina) upwards
+      #723 open 2015-01-02 Make `ckan://` URLs install the mod and play nice with SpaceDock
+      #4604 merged 2026-05-05 Better free space check for single disk systems
+      #4682 closed 2026-06-28 [Bug]: IO.FileNotFoundException
+      #4688 closed 2026-07-06 [Feature]: Support for Kitten Space Agency
+      #4667 closed 2026-06-10 Data error (CRC check) in System.IO.File.InternalCopy
+      #2969 merged 2020-01-23 Fix CKAN-installed modules shown as AD in some cases
+      #4626 closed 2026-05-14 CKAN still attempts to remove an auto-installed mod after explicitly trying to keep it after uninstall failure
+      #4684 closed 2026-06-30 User deleted CKAN folder
+      #4574 closed 2026-04-19 Change location of CKAN files
+      #4609 merged 2026-05-07 Don't revert removals on providing mod choice
+      #4556 merged 2026-04-12 Try to stop users from cloning instances into themselves
+      #240 closed 2014-11-02 Change our icon
+      #4543 merged 2026-04-05 Auto-size new repo popup to fit rows in list
+      #4567 closed 2026-04-15 [Bug]: System.IO.IOException: A device which does not exist was specified.
+      #4503 closed 2026-01-30 [Bug]: Empty mod list with "Update all" button enabled
+      #4500 closed 2026-01-23 [Bug]: Error loading the moad.
+  partial        44 hit(s) (all listed)
+      #4669 merged 2026-06-16 Better partial upgrade checking
+      #4240 merged 2024-10-24 Cache migration and other fixes
+      #4562 merged 2026-04-14 Bump log4net from 2.0.15 to 3.3.0
+      #4446 merged 2025-10-03 Refactor and enhance tests
+      #4438 closed 2025-09-16 [Bug]: Clone instance feature will break RO if "Share stock files" is checked, at least on Linux
+      #4301 merged 2025-02-07 Treat throttled remote version file as inflation error
+      #4249 merged 2024-11-06 Start installing mods while downloads are still in progress
+      #4187 merged 2024-09-19 Label search fixes
+      #3873 merged 2023-07-28 Add missing resource string for upgrading
+      #3910 closed 2023-09-17 Retroactive mod compatibility
+      #3756 closed 2023-01-03 Builds on .NET 4.7.2
+      #3666 merged 2022-09-12 Resume failed downloads
+      #3482 merged 2021-11-20 Internationalize Core, CmdLine, ConsoleUI, and AutoUpdater
+      #3659 merged 2022-09-07 Report progress in validating downloads
+      #3604 closed 2022-07-17 [Bug] Uninstallation should be reverted if subsequent installation in same changeset fails
+      #3543 merged 2022-03-07 Play Time
+      #3064 merged 2020-05-31 Multi-match 'find', allow 'as' for Ships and GameData
+      #486 merged 2014-11-29 Optimise version comparisons
+      #1004 closed 2015-05-31 Main install
+      #2904 merged 2019-10-25 Restructure Net.Download and Net.DownloadText
+  incomplete     36 hit(s) (all listed)
+      #1832 open 2016-07-21 Implement a ICertificatePolicy class.
+      #2796 open 2019-06-23 [Feature][UI] Description field - support simple markup
+      #1311 open 2015-07-17 modifies Relationship or: How I Learned to Stop Worrying and Love Overwrites
+      #3242 open 2020-12-19 [Feature] Use anonymous statistics on KSP version and mod version to allow visibility on "what is working for how many"
+      #4205 closed 2024-09-28 [Feature] Ability to suppress missing file checks for user-deleted files
+      #3612 closed 2022-07-24 Implement a new tab in mod info to show changelogs where available
+      #3566 closed 2022-04-15 Launch game from ConsoleUI
+      #3944 merged 2023-12-14 Protect upgradeable mods from being displayed as uninstalled
+      #3907 merged 2023-09-15 Fix race condition for multiple very fast downloads
+      #2863 closed 2019-09-06 [Feature] KSP2 support plans
+      #3695 merged 2022-11-04 New Crowdin updates
+      #1636 closed 2016-03-15 Using download button on contents tab causes System.Net.WebException on 404 error
+      #3645 merged 2022-08-24 Improvements for failed repo updates
+      #3419 closed 2021-07-22 Don't refresh search every keypress on Windows
+      #3571 merged 2022-04-23 Sort GitHub releases
+      #3495 closed 2021-12-20 `System.ArgumentException: The path is not of a legal form` at startup on Windows with incomplete legacy data in registry
+      #3361 closed 2021-05-09 Compile errors on Arch
+      #3430 closed 2021-08-05 [Bug] Unhandled exception on startup: Could not load 'System.EnterpriseServices.Wrapper.dll'
+      #2073 merged 2017-06-14 Move downloads outside of gui transaction
+      #3199 merged 2020-11-16 Streamline Mac onboarding
+  dataloss       0 hit(s)
+  recover        29 hit(s) (all listed)
+      #3748 open 2022-12-21 [Bug] CKAN freezes irreparably if computer goes to sleep while it's downloading
+      #4694 open 2026-07-17 New URL protocol and handler improvements
+      #4684 closed 2026-06-30 User deleted CKAN folder
+      #4536 closed 2026-03-28 "NullReferenceException: Object reference not set to an instance of an object" causing continuous crashing of KSP1
+      #4473 merged 2025-12-21 Check free space before cloning
+      #4325 closed 2025-03-03 [Bug]: CKAN will silently install old version of RP-1 if conflicting mods are selected by the user at install time
+      #930 closed 2015-05-21 Inconsistency Kraken when installing OuterPlanets
+      #4078 merged 2024-04-15 Recover from corrupted etags.json
+      #1334 closed 2015-07-23 Super-awesome Mac client implementation
+      #3954 closed 2023-12-14 [Bug]: CKAN doesn't delete mods after i delete them manually
+      #3518 closed 2022-01-20 [Policy] De-indexing policy still contradictory
+      #3950 closed 2023-12-14 HttpClient times out for some users while trying to get etags
+      #3919 closed 2023-10-14 Common Language Runtime detected an invalid program during XML serialization
+      #3645 merged 2022-08-24 Improvements for failed repo updates
+      #3496 merged 2021-12-22 Log error and recover on instance loading exception
+      #3361 closed 2021-05-09 Compile errors on Arch
+      #3351 merged 2021-04-17 Better recovery when registry.json is corrupted
+      #66 merged 2014-10-14 Add uploading of build artifacts to S3.
+      #2725 merged 2019-04-11 Save restore position when minimized
+      #2023 merged 2017-03-17 Switch to all C# native mod downloads
+  recovery       13 hit(s) (all listed)
+      #3399 closed 2021-06-21 [Feature] validation of mod files
+      #3741 closed 2022-12-10 [Feature] Browse `CKAN/history/*.ckan` files in GUI
+      #3804 merged 2023-03-06 Cache path setting fixes
+      #3604 closed 2022-07-17 [Bug] Uninstallation should be reverted if subsequent installation in same changeset fails
+      #1981 closed 2017-01-11 Can't close CKAN if not connected to the internet while refreshing mod list
+      #3483 closed 2021-11-21 Transaction timeout during clone instance and mod install
+      #3351 merged 2021-04-17 Better recovery when registry.json is corrupted
+      #3190 merged 2020-11-10 Allow upgrading manually installed modules
+      #2238 merged 2017-12-31 Don't clear available modules till after the new list is ready
+      #1572 closed 2016-02-04 Need to handle download problems better where CKAN crashes by Timeout / Unhandled Exception 
+      #2914 closed 2019-11-07 [Bug] Null reference in LatestAvailable via _UpdateModsList
+      #478 closed 2014-11-28 CKAN v1.2 and beyond
+      #864 closed 2015-05-18 Unhandled exception when selecting/downloading mod
+  rollback       23 hit(s) (all listed)
+      #3227 closed 2020-12-06 [Bug] When installing RSS-16k Textures, System.IO.IOException: The process cannot access the file 'c:\program files (x86)\steam\SteamApps\common\Kerbal Space Program\GameData\RSS-Textures\EarthColor.dds' because it is being used by another process
+      #1688 closed 2016-04-30 Error upgrading with leftover files files
+      #3645 merged 2022-08-24 Improvements for failed repo updates
+      #3512 merged 2022-01-11 Disable tx timeouts, add tx debug logging, static DLL pattern, fix docs
+      #3483 closed 2021-11-21 Transaction timeout during clone instance and mod install
+      #3539 closed 2022-03-03 [Bug] CKAN.TransactionalKraken: Registry already enlisted
+      #3522 closed 2022-01-23 [Bug] Transaction timeout while installing RP-1 Express Install
+      #3294 closed 2021-02-08 System.Transactions.TransactionException: Failed to roll back. ---> System.IO.IOException: The process cannot access the file '...' because it is being used by another process
+      #83 merged 2014-10-17 A lot of work on GUI
+      #2239 merged 2018-01-03 Save timestamped .ckan files after we save the registry
+      #2382 merged 2018-03-21 More verbose and accurate version displays
+      #1432 closed 2015-08-30 The user is allowed to close ckan while applying a changeset
+      #1933 closed 2016-10-30 New Mod column of CKAN Main page of "Mod install date"
+      #1791 closed 2016-06-22 Linux (mono): v1.18.0 refuses to run.
+      #2044 closed 2017-05-09 Unauthorized Access
+      #2550 closed 2018-10-23 Rollback function?
+      #161 closed 2014-10-25 Transactional file managers?
+      #1504 closed 2015-10-27 "Commit log" with rollback functionality
+      #968 closed 2015-05-27 Unable to update or uninstall module manager
+      #454 closed 2014-11-25 GUI: Hitting cancel doesn't cancel an install
+  resume         9 hit(s) (all listed)
+      #4602 closed 2026-05-05 Mono crash, "Aborted (core dumped)"
+      #801 closed 2015-04-06 Crash due to lack of temporary files.
+      #3666 merged 2022-09-12 Resume failed downloads
+      #2665 merged 2019-01-22 Implementation of clone and fake in GUI
+      #1038 closed 2015-05-31 download resume support
+      #2162 closed 2017-10-24 Unhandled exception when updating mod over a manually-updated mod
+      #2108 closed 2017-09-05 CKAN not friendly with REAL satellites
+      #3015 closed 2020-03-03 Crash on Launch
+      #865 closed 2015-05-18 Netkan: Self-Published Metadata
+  half-written   4 hit(s) (all listed)
+      #1078 closed 2015-06-06 Policy on mod de-indexing
+      #1730 closed 2016-05-15 Relationship changes should prompt reinstall
+      #2754 closed 2019-05-07 Aborting a `ckan scan` halfway through leaves a corrupt registry.json file
+      #949 closed 2015-05-23 Saner handling/overwriting of autodetected mods
+  wipe           25 hit(s) (all listed)
+      #2090 open 2017-07-20 Buttons for automated tidying
+      #4705 closed 2026-08-06 User install modpack with version-specific dependencies
+      #4670 closed 2026-06-16 [Bug]: No matter what I it always says my Handle is invalid only when running on steam
+      #653 closed 2014-12-20 Files created after the installation of a mod can cause problems during upgrades
+      #700 closed 2014-12-27 Define an explicit policy for what ckan mods are allowed to do
+      #3741 closed 2022-12-10 [Feature] Browse `CKAN/history/*.ckan` files in GUI
+      #3775 closed 2023-02-15 [Bug] CKAN won't apply changes?
+      #3705 closed 2022-11-12 SSL raises `NET::ERR_CERT_COMMON_NAME_INVALID` when any program tries to download master.tar.gz
+      #2940 merged 2019-12-07 Retain URL hash cache, cache file hashes
+      #1795 merged 2016-06-25 Allow foss delisting
+      #2277 merged 2018-02-06 Retry of failed downloads
+      #1402 merged 2015-08-22 Refreshing does not wipe the list of selected mods anymore
+      #1870 closed 2016-08-18 Cannot install Scatterer
+      #1681 closed 2016-04-25 CKAN Error
+      #2110 closed 2017-09-10 CKAN cannot forget old deleted versions of KSP
+      #2030 closed 2017-04-08 Mods crash game before the title menu!
+      #2421 closed 2018-04-23 Building CKAN from source: Error: Method 'String.Format' not found
+      #2537 closed 2018-10-13 Setting OneCache to same location as local cache wipes all cached files
+      #2345 closed 2018-03-05 CKAN Crash on startup
+      #979 closed 2015-05-29 NetKarmgeddon - Massive Purge of CKAN metadata and scripts
+  wipes          3 hit(s) (all listed)
+      #2090 open 2017-07-20 Buttons for automated tidying
+      #2537 closed 2018-10-13 Setting OneCache to same location as local cache wipes all cached files
+      #1129 closed 2015-06-20 Refreshing should not wipe list of selected mods
+  erase          4 hit(s) (all listed)
+      #930 closed 2015-05-21 Inconsistency Kraken when installing OuterPlanets
+      #4255 merged 2024-11-10 Make LabeledProgressBar work on Mono
+      #3197 merged 2020-11-15 Generate APT repo for releases and under dev builds
+      #690 closed 2014-12-25 Protect Ships/VAB and Ships/SPH from deletion.
+  erasing        0 hit(s)
+  erased         1 hit(s) (all listed)
+      #690 closed 2014-12-25 Protect Ships/VAB and Ships/SPH from deletion.
+  destroy        11 hit(s) (all listed)
+      #1802 open 2016-06-27 Debug Logging Integration with KSP through a Plugin
+      #1840 open 2016-07-25 Move UI from Winforms to GTK#
+      #4055 merged 2024-03-11 Proportional, granular progress updates for installing
+      #2132 merged 2017-10-13 Quit on ctrl-q and alt-f,x
+      #2175 merged 2017-11-05 Clean up registry lock file after parse failure
+      #1957 merged 2016-12-12 Select compatible KSP versions
+      #1961 merged 2016-12-17 display all mod versions
+      #2337 merged 2018-03-01 Invalidate stale cached files from GitHub in Netkan
+      #1218 merged 2015-06-28 Netkan Refactoring
+      #2001 closed 2017-02-05 Error: CKAN is already running for this instance!
+      #2967 closed 2020-01-19 [Bug] All mods installed via CKAN immediately listed as AD
+  destroys       2 hit(s) (all listed)
+      #1961 merged 2016-12-17 display all mod versions
+      #1218 merged 2015-06-28 Netkan Refactoring
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1311 open 2015-07-17 modifies Relationship or: How I Learned to Stop Worrying and Love Overwrites
+      #15 open 2014-09-24 Preserved files
+      #1991 open 2017-01-16 [Feature] Virtual Filesystem
+      #327 open 2014-11-12 Implement some sort of health check
+      #3337 open 2021-03-30 [Suggestion] GitHub life boat
+      #4667 closed 2026-06-10 Data error (CRC check) in System.IO.File.InternalCopy
+      #4572 closed 2026-04-18 [Bug]: Cannot access a disposed object 'System.Net.HttpWebResponse'
+      #4545 closed 2026-04-06 [Bug]: CKAN crashes or freezes when list of files to overwrite is longer than terminal frame size on mac
+      #4542 closed 2026-04-05 System.IO.FileNotFoundException: Could not load file or assembly 'System.Runtime' on macOS 26.4, arm64 architecture
+      #4576 closed 2026-04-20 Finding a DLL in a location where it doesn't belong
+      #4523 closed 2026-03-10 TelemachusReborn 1.8.0 and 1.9.0 contain ResizeSensor.js and resizeSensor.js, causing a FileExistsKraken to be thrown on install
+      #4525 closed 2026-03-14 [Bug]: Issue with Physics Range Extender
+      #4503 closed 2026-01-30 [Bug]: Empty mod list with "Update all" button enabled
+      #4669 merged 2026-06-16 Better partial upgrade checking
+      #4547 merged 2026-04-06 Only scroll ConsoleUI log messages for small popups
+      #4437 closed 2025-09-16 Unable to overwrite or delete files for FarFutureTechnologies
+      #4451 closed 2025-10-21 Manual overwrites of hard linkable files installed by CKAN can create hard links to the overwritten files
+      #4284 closed 2025-01-09 [Feature] Deduplication of mod files across game instances
+      #4461 closed 2025-11-25 [Bug]: Uninstalling mods on alternate drive fails when they're larger than remaining space on primary drive
+      #4470 closed 2025-12-09 [Bug]: Accented character in name makes mod file show up as missing on Windows after closing CKAN and re-launching
+  clobber        6 hit(s) (all listed)
+      #4361 merged 2025-05-05 Make global install filters and presets game-specific
+      #4153 merged 2024-08-09 Refactor ZIP importing
+      #3309 closed 2021-03-06 [Bug] Update not working with the deb file repo
+      #1893 merged 2016-09-09 Reduce MinimumSize for main window to 1280x700
+      #2916 closed 2019-11-08 [Proposal] Release Date
+      #613 closed 2014-12-17 Error loading UIA bridge
+  blank          78 hit(s) (all listed)
+      #4589 open 2026-04-26 [Feature]: Subnautica support (sort of)
+      #3748 open 2022-12-21 [Bug] CKAN freezes irreparably if computer goes to sleep while it's downloading
+      #4489 open 2026-01-10 Add x_netkan_check_parent_downloads to spec
+      #4653 closed 2026-05-29 [Bug]: Mac bit verifying developer
+      #4669 merged 2026-06-16 Better partial upgrade checking
+      #4539 closed 2026-04-02 Faileded to update repositories
+      #4626 closed 2026-05-14 CKAN still attempts to remove an auto-installed mod after explicitly trying to keep it after uninstall failure
+      #4522 closed 2026-03-08 [Bug]: Not Opening on MacOS
+      #4490 closed 2026-01-10 [Bug]: CKAN freezes if filters give empty mod list at startup
+      #4591 merged 2026-04-27 Layout and scaling related fixes
+      #4491 merged 2026-01-11 Fix freezing after startup with empty mod list
+      #4478 merged 2025-12-24 Remove BOMs from UTF-8 output
+      #4440 merged 2025-09-18 Fix Missions folder cloning and hard link info retrieval
+      #4391 closed 2025-06-10 User's computer trying to access localhost when CKAN requests github.com
+      #4390 merged 2025-06-09 Migrate metadata tester from Mono to dotnet
+      #1262 closed 2015-07-08 Repeatedly hitting 'Cancel' from the 'Choose Recommended Mods' tab crashes GUI in certain instances
+      #4251 closed 2024-11-06 Invalid path: The drive name does not exist for ZFS filesystem
+      #4223 merged 2024-10-05 Label spacing and alignment, show zero download counts as blank in ConsoleUI
+      #4267 closed 2024-11-26 Fault in KERNELBASE.dll
+      #3628 closed 2022-08-15 CKAN launches a blank cmd window
+  unreadable     15 hit(s) (all listed)
+      #4622 closed 2026-05-13 White background for mod list on Linux
+      #4497 closed 2026-01-14 Fonts look bad without anti-aliasing, MSBUILD : error MSB1008: Only one project can be specified.
+      #4255 merged 2024-11-10 Make LabeledProgressBar work on Mono
+      #3590 closed 2022-06-16 Could not load file or assembly System.EnterpriseServices, The file or directory is corrupted and unreadable
+      #3576 merged 2022-05-02 Auto-size buttons in bottom panels
+      #3357 closed 2021-04-28 Yellow Text in Launcher
+      #3147 closed 2020-08-27 [Feature] Font size & UI scaling
+      #2759 merged 2019-05-10 Add scrollbars to metadata tab
+      #2749 merged 2019-04-30 Internationalize the GUI
+      #2530 merged 2018-10-02 Fix YesNoDialog layout
+      #2729 merged 2019-04-13 Auto size yes no dialog
+      #1769 merged 2016-06-02 JSON Schema in README
+      #2248 closed 2018-01-13 Write desktop file only if doesn't exist
+      #2260 closed 2018-01-19 File Corrupted and Unreadable
+      #3240 closed 2020-12-17 [Bug] KSP newest vers. 1.11 - moving mods from 1.10 to 1.11 error requires making history 1.10
+  garbage        15 hit(s) (all listed)
+      #4579 closed 2026-04-21 Duplicated modules with epochs stripped off of versions from alternate metadata repo
+      #4449 closed 2025-10-13 Build on Windows, upload multi-platform coverage
+      #3848 closed 2023-06-10 [Bug] Root folder being checked for free space on Linux when game folder is in special separate partition
+      #3361 closed 2021-05-09 Compile errors on Arch
+      #2175 merged 2017-11-05 Clean up registry lock file after parse failure
+      #2189 merged 2017-11-20 Adapt Curse API to new widget
+      #2203 merged 2017-12-03 Dispose registry managers before exit to prevent exceptions
+      #2665 merged 2019-01-22 Implementation of clone and fake in GUI
+      #1218 merged 2015-06-28 Netkan Refactoring
+      #1357 closed 2015-08-09 LockFiles with adjustments
+      #1608 closed 2016-02-23 Add Curse as a $kref source
+      #1954 closed 2016-12-08 Don't fail all updates if one download fails
+      #1786 closed 2016-06-20 Virus detected in freshly downloaded ckan.exe
+      #1895 closed 2016-09-10 'Add Available Updates' Enables 'Apply changes' button but adds nothing to the Changeset page
+      #885 closed 2015-05-21 CKAN bricks with InconsistentKraken if manually installed MM is removed
+  mangled        1 hit(s) (all listed)
+      #3500 closed 2021-12-28 [Bug] Param 'Seconds' out of range when adding KSP instance
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4718 open 2026-09-27 [Bug]: Imported mod has some wrong fields in CKAN
+      #3533 open 2022-02-02 [Feature] Ability to figure out why modules aren't compatible in ConsoleUI
+      #3525 open 2022-01-26 Detect manually installed mods via cfg file :FOR[identifier] clauses
+      #15 open 2014-09-24 Preserved files
+      #1832 open 2016-07-21 Implement a ICertificatePolicy class.
+      #4684 closed 2026-06-30 User deleted CKAN folder
+      #4529 merged 2026-03-17 Sort Contents tab alphanumerically, folders first
+      #4657 merged 2026-06-02 Avoid null values for auto-sized columns
+      #4669 merged 2026-06-16 Better partial upgrade checking
+      #4543 merged 2026-04-05 Auto-size new repo popup to fit rows in list
+      #4655 closed 2026-05-31 [Bug]: DataGridView System.FormatException: Formatted value of the cell has a wrong type
+      #4677 merged 2026-06-19 Support Windows text scaling setting on net10
+      #4650 closed 2026-05-28 [Bug]: Column widths cannot be changed
+      #4557 merged 2026-04-12 Remove symlink-based DLL deduplication from MacOS build
+      #4542 closed 2026-04-05 System.IO.FileNotFoundException: Could not load file or assembly 'System.Runtime' on macOS 26.4, arm64 architecture
+      #4627 closed 2026-05-14 Auto-sized columns in mod list
+      #4591 merged 2026-04-27 Layout and scaling related fixes
+      #4636 merged 2026-05-17 Don't offer to delete paid mod ZIPs after import
+      #4572 closed 2026-04-18 [Bug]: Cannot access a disposed object 'System.Net.HttpWebResponse'
+      #4519 merged 2026-03-01 Fix symlinks being generated on Linux
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1120 open 2015-06-16 Character classes in the spec
+      #3516 open 2022-01-16 [Feature] Handle window coordinates of launched game
+      #3525 open 2022-01-26 Detect manually installed mods via cfg file :FOR[identifier] clauses
+      #1802 open 2016-06-27 Debug Logging Integration with KSP through a Plugin
+      #3337 open 2021-03-30 [Suggestion] GitHub life boat
+      #3242 open 2020-12-19 [Feature] Use anonymous statistics on KSP version and mod version to allow visibility on "what is working for how many"
+      #1991 open 2017-01-16 [Feature] Virtual Filesystem
+      #1975 open 2017-01-08 Proposal: Introduce CKAN-meta-Legacy
+      #4678 closed 2026-06-23 Steam Deck Installation Guide Update
+      #4684 closed 2026-06-30 User deleted CKAN folder
+      #4676 closed 2026-06-19 [Bug]: CKAN removed the Squad folder in GameData after requesting a spacesuit mod located inside of it be removed
+      #878 closed 2015-05-21 Font Rescaling
+      #4674 closed 2026-06-18 Maleware in Git Repository
+      #4600 closed 2026-05-04 FileNotFoundException: Could not load file or assembly 'System.ComponentModel.Composition on Linux
+      #4634 closed 2026-05-16 Changing installation instructions for the steam deck - lutris
+      #4686 merged 2026-07-02 More upgradability optimizations
+      #4605 merged 2026-05-06 Non-Latin letter search
+      #4677 merged 2026-06-19 Support Windows text scaling setting on net10
+      #4599 merged 2026-05-03 Leave mod files alone for relationship-only metadata changes
+      #4576 closed 2026-04-20 Finding a DLL in a location where it doesn't belong
+  unclean        0 hit(s)
+  shutdown       12 hit(s) (all listed)
+      #4562 merged 2026-04-14 Bump log4net from 2.0.15 to 3.3.0
+      #3244 closed 2020-12-21 All text is in Chinese after update
+      #1981 closed 2017-01-11 Can't close CKAN if not connected to the internet while refreshing mod list
+      #1604 closed 2016-02-21 WIP: Feature/torrent
+      #1586 closed 2016-02-15 Managing the KerbalStuff shutdown?
+      #2075 closed 2017-06-25 Locking pid validation fails
+      #2438 closed 2018-05-04 [Enhancement suggestion] Purge old downloads from cache
+      #2731 closed 2019-04-13 Waffle is shutting down
+      #794 closed 2015-03-18 CKAN shows open in taskbar and taskmanager but no accessible GUI Window (GUI Preview IS there in Taskbar).
+      #221 closed 2014-10-31 Failure on zipfiles created by some unix utilities
+      #224 closed 2014-10-31 ArgumentOutOfRangeException in GUI
+      #345 closed 2014-11-13 GUI allows for installing conflicting mods
+  reboot         24 hit(s) (all listed)
+      #3525 open 2022-01-26 Detect manually installed mods via cfg file :FOR[identifier] clauses
+      #4438 closed 2025-09-16 [Bug]: Clone instance feature will break RO if "Share stock files" is checked, at least on Linux
+      #4440 merged 2025-09-18 Fix Missions folder cloning and hard link info retrieval
+      #4373 closed 2025-05-18 [Bug]: Ckan freezes for a while after ticking checkboxes in mod list
+      #4265 merged 2024-11-25 Create workflow to bounce the Inflators
+      #4129 merged 2024-07-25 Option to clone smaller instances with junction points (Windows) or symbolic links (Unix)
+      #3963 closed 2023-12-18 [Bug]: Access to the path CdFileMgr denied during repo update
+      #4075 closed 2024-04-10 [Bug]: CKAN crashes on start after installing Windows 11's KB5036893 update (due to incompatibility between Windows Terminal and MacType)
+      #3419 closed 2021-07-22 Don't refresh search every keypress on Windows
+      #3528 merged 2022-01-31 Only delete diversely capitalized directories once on Windows
+      #3393 closed 2021-06-10 Can't remove mods because files are locked
+      #3175 closed 2020-10-13 Search dropdown
+      #2971 merged 2020-01-24 Edit modpack before export
+      #2757 merged 2019-05-09 Generate RPM packages
+      #2858 merged 2019-08-28 Add libcurl dependency to RPM
+      #1426 merged 2015-08-28 Added a cached filter
+      #2044 closed 2017-05-09 Unauthorized Access
+      #1915 closed 2016-10-14 Spacedock 404
+      #2265 closed 2018-01-27 Xorg freezes while selecting mods in CKAN
+      #2342 closed 2018-03-04 Could not find a part of the path 'C:\Users\name\Appdata\Local\Temp\CdFileMgr\02a3e06-bc35-40.json'.
+  disk+full      28 hit(s) (all listed)
+      #4688 closed 2026-07-06 [Feature]: Support for Kitten Space Agency
+      #4604 merged 2026-05-05 Better free space check for single disk systems
+      #4574 closed 2026-04-19 Change location of CKAN files
+      #240 closed 2014-11-02 Change our icon
+      #4507 closed 2026-02-06 [Bug]: "Not enough space in game folder to install modules!", reporting 0 B of space running under Wine on immutable Linux distro
+      #4461 closed 2025-11-25 [Bug]: Uninstalling mods on alternate drive fails when they're larger than remaining space on primary drive
+      #4451 closed 2025-10-21 Manual overwrites of hard linkable files installed by CKAN can create hard links to the overwritten files
+      #4358 merged 2025-04-27 Mod file deduplication across game instances
+      #3963 closed 2023-12-18 [Bug]: Access to the path CdFileMgr denied during repo update
+      #3850 merged 2023-06-12 Stop trying to check free space on Mono
+      #3917 merged 2023-09-29 Parallelize for performance, relationship resolver improvements
+      #3804 merged 2023-03-06 Cache path setting fixes
+      #3699 closed 2022-11-10 [Bug] Recent modules missing for some users
+      #3792 closed 2023-02-25 [Bug] Errors when trying to build on macOS Catalina
+      #3581 closed 2022-05-12 Unhandled Exception: Not Enough Space on Disk
+      #3604 closed 2022-07-17 [Bug] Uninstallation should be reverted if subsequent installation in same changeset fails
+      #3245 closed 2020-12-21 [Bug] Auto-updater removes ckan.exe after "updating"
+      #2857 merged 2019-08-28 Fixes for KSP in Windows drive root
+      #2944 closed 2019-12-16 Pause Inflator if its output queue fills up
+      #2185 closed 2017-11-14 Cache downloads globally
+  data+loss      4 hit(s) (all listed)
+      #838 closed 2015-05-02 Add donation URLs to mod metadata
+      #4251 closed 2024-11-06 Invalid path: The drive name does not exist for ZFS filesystem
+      #2336 closed 2018-02-28 CKAN Repositories Unavailable
+      #2841 closed 2019-08-10 Leaving directories for uninstalled mods makes ModuleManager think they're still installed
+  partial+write  5 hit(s) (all listed)
+      #3756 closed 2023-01-03 Builds on .NET 4.7.2
+      #1793 closed 2016-06-24 Opt In / Opt Out | Required changes to CKAN.
+      #2174 closed 2017-11-04 Implement smart CLI autocompletion
+      #2736 closed 2019-04-19 Master Search box
+      #478 closed 2014-11-28 CKAN v1.2 and beyond
+  crash+safe     24 hit(s) (all listed)
+      #1802 open 2016-06-27 Debug Logging Integration with KSP through a Plugin
+      #2177 merged 2017-11-07 Create text UI inspired by Turbo Vision
+      #4251 closed 2024-11-06 Invalid path: The drive name does not exist for ZFS filesystem
+      #3914 merged 2023-09-21 Add test to check GUI thread safety
+      #3885 merged 2023-08-20 Multi-game labels
+      #3500 closed 2021-12-28 [Bug] Param 'Seconds' out of range when adding KSP instance
+      #518 closed 2014-12-04 Deleted instance throws exception
+      #83 merged 2014-10-17 A lot of work on GUI
+      #2749 merged 2019-04-30 Internationalize the GUI
+      #2753 merged 2019-05-06 Auto-uninstall auto-installed modules
+      #2183 closed 2017-11-11 Fix null-reference exception on failed mod upgrade
+      #2665 merged 2019-01-22 Implementation of clone and fake in GUI
+      #1473 merged 2015-09-23 *chucklesnort* adding for posterity
+      #1572 closed 2016-02-04 Need to handle download problems better where CKAN crashes by Timeout / Unhandled Exception 
+      #1763 closed 2016-05-30 Unhandled exception, Object reference not set to instance of object
+      #1982 closed 2017-01-13 Exception of type 'CKAN.ModuleNotFoundKraken' when opening one of my installs
+      #1997 closed 2017-01-28 crash after few minutes of running in gui. "longjmp causes uninitialized stack frame"
+      #2044 closed 2017-05-09 Unauthorized Access
+      #2802 closed 2018-04-07 CKAN stops working immediately after launch with no code or anything
+      #2293 closed 2018-02-22 Auto-update and other GitHub connections not working
+  atomic+write   1 hit(s) (all listed)
+      #1265 closed 2015-07-08 Add support for locking the registry.
+  lock+file      96 hit(s) (all listed)
+      #4694 open 2026-07-17 New URL protocol and handler improvements
+      #723 open 2015-01-02 Make `ckan://` URLs install the mod and play nice with SpaceDock
+      #4693 closed 2026-07-15 [Bug]: registry.locked even when only one instance is running
+      #4686 merged 2026-07-02 More upgradability optimizations
+      #4542 closed 2026-04-05 System.IO.FileNotFoundException: Could not load file or assembly 'System.Runtime' on macOS 26.4, arm64 architecture
+      #4626 closed 2026-05-14 CKAN still attempts to remove an auto-installed mod after explicitly trying to keep it after uninstall failure
+      #4562 merged 2026-04-14 Bump log4net from 2.0.15 to 3.3.0
+      #4602 closed 2026-05-05 Mono crash, "Aborted (core dumped)"
+      #4461 closed 2025-11-25 [Bug]: Uninstalling mods on alternate drive fails when they're larger than remaining space on primary drive
+      #4444 merged 2025-09-24 Add even more tests
+      #1034 closed 2015-05-31 Request for ideas: Catching exceptions
+      #4406 closed 2025-07-09 When deleting mods it says make sure game is closed or give permissions to CKAN
+      #4361 merged 2025-05-05 Make global install filters and presets game-specific
+      #930 closed 2015-05-21 Inconsistency Kraken when installing OuterPlanets
+      #4226 closed 2024-10-07 ZIP file for Waterfall corrupted after being validated and added to cache
+      #4000 closed 2024-01-15 [Bug]: NRE, Repository update failed
+      #4099 closed 2024-05-30 [Bug]: CKAN just loading after trying to use a .ckan file.
+      #4087 closed 2024-05-17 [Feature]: Symlinks for GameData
+      #4097 closed 2024-05-27 Can't access registry.locked
+      #4107 closed 2024-06-14 [Bug]: NullReferenceException in `CKAN.RepositoryDataManager.<>c__DisplayClass7_0.<Update>b__1(Repository r)`
+  write+failure  14 hit(s) (all listed)
+      #1802 open 2016-06-27 Debug Logging Integration with KSP through a Plugin
+      #4598 closed 2026-05-03 [Bug]: Arch install fails
+      #930 closed 2015-05-21 Inconsistency Kraken when installing OuterPlanets
+      #4129 merged 2024-07-25 Option to clone smaller instances with junction points (Windows) or symbolic links (Unix)
+      #4194 merged 2024-09-25 Tests for safety of string format calls
+      #3906 closed 2023-09-15 GitHub test runner doesn't like the new NetAsyncDownloader test
+      #3699 closed 2022-11-10 [Bug] Recent modules missing for some users
+      #2820 closed 2019-06-29 Use New JSON Config File; Add .NET Standard 2.0 Target to CKAN-core
+      #2326 merged 2018-02-27 DLC Detection
+      #1793 closed 2016-06-24 Opt In / Opt Out | Required changes to CKAN.
+      #3209 closed 2020-11-25 [Feature] Display Underlying Errors
+      #3145 closed 2020-08-25 [Feature] Better handling of installation failures
+      #61 closed 2014-10-13 RSSTextures Fail to Download
+      #20 closed 2014-10-02 Coding Standards
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15 open 2014-09-24 Preserved files
+      #3525 open 2022-01-26 Detect manually installed mods via cfg file :FOR[identifier] clauses
+      #4684 closed 2026-06-30 User deleted CKAN folder
+      #4677 merged 2026-06-19 Support Windows text scaling setting on net10
+      #4655 closed 2026-05-31 [Bug]: DataGridView System.FormatException: Formatted value of the cell has a wrong type
+      #4557 merged 2026-04-12 Remove symlink-based DLL deduplication from MacOS build
+      #4542 closed 2026-04-05 System.IO.FileNotFoundException: Could not load file or assembly 'System.Runtime' on macOS 26.4, arm64 architecture
+      #4543 merged 2026-04-05 Auto-size new repo popup to fit rows in list
+      #4627 closed 2026-05-14 Auto-sized columns in mod list
+      #4636 merged 2026-05-17 Don't offer to delete paid mod ZIPs after import
+      #4572 closed 2026-04-18 [Bug]: Cannot access a disposed object 'System.Net.HttpWebResponse'
+      #4529 merged 2026-03-17 Sort Contents tab alphanumerically, folders first
+      #4240 merged 2024-10-24 Cache migration and other fixes
+      #4626 closed 2026-05-14 CKAN still attempts to remove an auto-installed mod after explicitly trying to keep it after uninstall failure
+      #4591 merged 2026-04-27 Layout and scaling related fixes
+      #4519 merged 2026-03-01 Fix symlinks being generated on Linux
+      #4594 merged 2026-04-29 Windows dark mode in .NET 10 build
+      #4503 closed 2026-01-30 [Bug]: Empty mod list with "Update all" button enabled
+      #4603 merged 2026-05-05 Fix ckan://identifier
+      #4502 merged 2026-01-29 Download errors dialog improvements
+
+== 51 terms run; 46 returned hits, 8 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

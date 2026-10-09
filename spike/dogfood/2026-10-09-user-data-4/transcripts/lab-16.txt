@@ -1,0 +1,30 @@
+preload exit 134
+31    getrandom("\x40\x31\x94\x75\x71\xa7\xde\x25", 8, GRND_NONBLOCK) = 8
+ *** Break *** <>: rv violated at line 171 of `/home/conda/feedstock_root/build_artifacts/bld/rattler-build_root_base_1789855047/work/root-source/core/base/src/TUUID.cxx'
+aborting
+Aborted
+plain exit 0
+33    getrandom("\xa2\x99\x99\x43\x7b\x60\x30\x65", 8, GRND_NONBLOCK) = 8
+34    getrandom("\x10\xde\xfc\xe2\x32\x3d\xdd\x55", 8, GRND_NONBLOCK) = 8
+28    openat(AT_FDCWD, "/dev/urandom", O_RDONLY) = 4
+28    openat(AT_FDCWD, "/dev/urandom", O_RDONLY) = 4
+28    openat(AT_FDCWD, "/dev/urandom", O_RDONLY) = 4
+28    openat(AT_FDCWD, "/dev/urandom", O_RDONLY) = 4
+== plain
+open: fd=3 read=16
+fopen: ok read=16
+fopen rb: ok
+ifstream open: ok
+ifstream read good: 1
+ifstream on a regular file: ok
+python open: 16
+strace of x (plain): 1 openat of /dev/urandom
+== shim
+open: fd=3 read=16
+fopen: ok read=16
+fopen rb: ok
+ifstream open: ok
+ifstream read good: 1
+ifstream on a regular file: ok
+python open: 16
+strace of x (shim): 1 openat of /dev/urandom

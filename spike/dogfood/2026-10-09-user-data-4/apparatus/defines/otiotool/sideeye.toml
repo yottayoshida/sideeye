@@ -1,0 +1,6 @@
+[world]
+state = "/s/otio"
+
+[define]
+operation = "otiotool -i cut.otio --redact -o cut.otio"
+cwd       = "/s/otio"

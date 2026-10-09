@@ -1,0 +1,168 @@
+18    execve("/usr/bin/setpriv", [...], 0xffffe17d4eb8 /* 14 vars */) = 0
+18    openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+18    close(3)                          = 0
+18    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libcap-ng.so.0", O_RDONLY|O_CLOEXEC) = 3
+18    close(3)                          = 0
+18    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+18    close(3)                          = 0
+18    openat(AT_FDCWD, "/proc/sys/kernel/cap_last_cap", O_RDONLY) = 3
+18    close(3)                          = 0
+18    close(3)                          = 0
+18    close(3)                          = 0
+18    openat(AT_FDCWD, "/etc/nsswitch.conf", O_RDONLY|O_CLOEXEC) = 3
+18    close(3)                          = 0
+18    openat(AT_FDCWD, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 3
+18    close(3)                          = 0
+18    openat(AT_FDCWD, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 3
+18    close(3)                          = 0
+18    close(3)                          = 0
+18    close(3)                          = 0
+18    openat(AT_FDCWD, "/etc/group", O_RDONLY|O_CLOEXEC) = 3
+18    close(3)                          = 0
+18    openat(AT_FDCWD, "/proc/18/status", O_RDONLY|O_CLOEXEC) = 3
+18    close(3)                          = 0
+18    openat(AT_FDCWD, "/proc/18/status", O_RDONLY|O_CLOEXEC) = 3
+18    close(3)                          = 0
+18    execve(0xffffcb7507a0, 0xffffcb750bd8, 0xffffcb750c00) = -1 ENOENT (No such file or directory)
+18    execve(0xffffcb7507a0, 0xffffcb750bd8, 0xffffcb750c00) = -1 ENOENT (No such file or directory)
+18    execve(0xffffcb7507a0, 0xffffcb750bd8, 0xffffcb750c00) = -1 ENOENT (No such file or directory)
+18    execve(0xffffcb7507a0, 0xffffcb750bd8, 0xffffcb750c00) = -1 ENOENT (No such file or directory)
+18    execve(0xffffcb7507a0, 0xffffcb750bd8, 0xffffcb750c00) = -1 ENOENT (No such file or directory)
+18    execve(0xffffcb7507a0, 0xffffcb750bd8, 0xffffcb750c00) = -1 ENOENT (No such file or directory)
+18    execve(0xffffcb7507a0, 0xffffcb750bd8, 0xffffcb750c00) = 0
+18    openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+18    close(3)                          = 0
+18    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = 3
+18    close(3)                          = 0
+18    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+18    close(3)                          = 0
+18    openat(AT_FDCWD, "/dev/tty", O_RDWR|O_NONBLOCK) = -1 ENXIO (No such device or address)
+18    close(3)                          = 0
+18    close(3)                          = 0
+18    openat(AT_FDCWD, "/etc/nsswitch.conf", O_RDONLY|O_CLOEXEC) = 3
+18    close(3)                          = 0
+18    openat(AT_FDCWD, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 3
+18    close(3)                          = 0
+18    openat(AT_FDCWD, "/opt/arkenfox/prefsCleaner.sh", O_RDONLY) = 3
+18    close(3)                          = 0
+18    close(4)                          = 0
+19    close(255)                        = 0
+19    close(4)                          = 0
+19    close(3)                          = 0
+19    write(1, ""..., 13)               = 13
+18    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=19, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+18    close(3)                          = 0
+20    close(255 <unfinished ...>
+18    close(4 <unfinished ...>
+20    <... close resumed>)              = 0
+18    <... close resumed>)              = 0
+20    close(4)                          = 0
+20    close(3)                          = 0
+21    openat(AT_FDCWD, "/dev/null", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 3
+21    close(3)                          = 0
+21    execve("/usr/bin/readlink", [...], 0xaaaabd103d60 /* 16 vars */) = 0
+21    openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+21    close(3)                          = 0
+21    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+21    close(3)                          = 0
+21    write(1, ""..., 30)               = 30
+21    close(1)                          = 0
+21    close(2)                          = 0
+20    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=21, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+18    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=20, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+18    close(3)                          = 0
+18    openat(AT_FDCWD, "/dev/null", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 3
+18    close(3)                          = 0
+18    write(1, ""..., 14)               = 14
+18    close(10)                         = 0
+22    close(255 <unfinished ...>
+18    close(4 <unfinished ...>
+22    <... close resumed>)              = 0
+18    <... close resumed>)              = 0
+22    close(4)                          = 0
+22    close(3)                          = 0
+22    execve("/usr/bin/dirname", [...], 0xaaaabd105e00 /* 16 vars */) = 0
+22    openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+22    close(3)                          = 0
+22    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+22    close(3)                          = 0
+22    write(1, ""..., 14)               = 14
+22    close(1)                          = 0
+18    close(3 <unfinished ...>
+22    close(2 <unfinished ...>
+18    <... close resumed>)              = 0
+22    <... close resumed>)              = 0
+18    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=22, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+23    close(255 <unfinished ...>
+18    close(4 <unfinished ...>
+23    <... close resumed>)              = 0
+18    <... close resumed>)              = 0
+23    close(4)                          = 0
+23    close(3)                          = 0
+23    execve("/usr/bin/find", [...], 0xaaaabd105ff0 /* 16 vars */) = 0
+23    openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+23    close(3)                          = 0
+23    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libselinux.so.1", O_RDONLY|O_CLOEXEC) = 3
+23    close(3)                          = 0
+23    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3
+23    close(3)                          = 0
+23    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+23    close(3)                          = 0
+23    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3
+23    close(3)                          = 0
+23    openat(AT_FDCWD, "/proc/filesystems", O_RDONLY|O_CLOEXEC) = 3
+23    close(3)                          = 0
+23    openat(AT_FDCWD, ".", O_RDONLY|O_CLOEXEC) = 3
+23    close(4)                          = 0
+23    close(4)                          = 0
+23    openat(AT_FDCWD, "/etc/nsswitch.conf", O_RDONLY|O_CLOEXEC) = 4
+23    close(4)                          = 0
+23    openat(AT_FDCWD, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 4
+23    close(4)                          = 0
+23    openat(AT_FDCWD, "./", O_RDONLY|O_NOCTTY|O_NONBLOCK|O_NOFOLLOW|O_CLOEXEC|O_DIRECTORY) = 4
+23    close(4)                          = 0
+23    close(5)                          = 0
+23    close(4)                          = 0
+23    close(3)                          = 0
+23    write(1, ""..., 31)               = 31
+23    close(1)                          = 0
+18    close(3 <unfinished ...>
+23    close(2 <unfinished ...>
+18    <... close resumed>)              = 0
+23    <... close resumed>)              = 0
+18    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=23, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+18    write(1, ""..., 71)               = 71
+18    write(1, ""..., 71)               = 71
+24    close(255)                        = 0
+24    execve("/usr/bin/find", [...], 0xaaaabd103d60 /* 16 vars */) = 0
+24    openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+24    close(3)                          = 0
+24    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libselinux.so.1", O_RDONLY|O_CLOEXEC) = 3
+24    close(3)                          = 0
+24    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3
+24    close(3)                          = 0
+24    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+24    close(3)                          = 0
+24    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3
+24    close(3)                          = 0
+24    openat(AT_FDCWD, "/proc/filesystems", O_RDONLY|O_CLOEXEC) = 3
+24    close(3)                          = 0
+24    openat(AT_FDCWD, ".", O_RDONLY|O_CLOEXEC) = 3
+24    close(4)                          = 0
+24    close(4)                          = 0
+24    openat(AT_FDCWD, "/etc/nsswitch.conf", O_RDONLY|O_CLOEXEC) = 4
+24    close(4)                          = 0
+24    openat(AT_FDCWD, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 4
+24    close(4)                          = 0
+24    openat(AT_FDCWD, ".", O_RDONLY|O_NOCTTY|O_NONBLOCK|O_NOFOLLOW|O_CLOEXEC|O_DIRECTORY) = 4
+24    close(4)                          = 0
+24    close(5)                          = 0
+24    close(4)                          = 0
+24    close(3)                          = 0
+24    write(1, ""..., 30)               = 30
+24    close(1)                          = 0
+24    close(2)                          = 0
+18    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=24, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+18    write(1, ""..., 1)                = 1
+18    write(1, ""..., 1)                = 1
+18    close(10)                         = 0

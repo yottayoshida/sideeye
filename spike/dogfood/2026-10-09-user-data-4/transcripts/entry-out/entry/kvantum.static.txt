@@ -1,0 +1,2 @@
+static: /usr/bin/kvantummanager: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=fe0336db9518047c889d8a1fade2b10aa18068f5, for GNU/Linux 3.7.0, stripped
+next: This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.

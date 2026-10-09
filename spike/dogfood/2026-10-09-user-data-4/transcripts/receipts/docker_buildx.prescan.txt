@@ -1,0 +1,565 @@
+== novelty pre-scan: docker/buildx
+== date: 2026-10-09T02:06:30Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          40 hit(s) (all listed)
+      #1210 open 2022-07-15 crash installing libglib2.0
+      #3354 open 2025-08-05 store: remove uses of docker namesgenerator
+      #1762 closed 2023-04-27 buildx create crashes from a 401 Unauthorized
+      #2028 open 2023-08-31 segmentation fault cross-building target=amd64 host=arm64
+      #3948 closed 2026-07-10 panic: send on closed channel in Printer.Write via LoadImage (--load) progress after solve completes
+      #3486 open 2025-06-13 [BUG] building w/ compose bake always results in `NotFound desc = no such job xxxxxxxxx` errors
+      #4063 closed 2026-09-07 driver/kubernetes: sibling solves in one bake die mid-build when another solve's session closes
+      #1514 closed 2023-01-13 buildx segfault with empty newline continuation
+      #3668 closed 2026-02-25 dial-stdio hangs until write attempt before returning an error when Docker daemon is restarted
+      #177 open 2019-10-24 Failure to push when using multi-node context
+      #2837 closed 2024-12-03 Segfault when building in docker-container builder, but not docker builder, on aarch64 (native)
+      #3508 closed 2025-11-11 segmentation fault on multi-image build with bake
+      #3100 closed 2025-04-09 Validation block with nothing will crash the HCL parser
+      #3045 closed 2025-03-05 "111.9 cc: internal compiler error: Segmentation fault signal terminated program cc1"
+      #2785 closed 2024-11-11 Crash when compiling for a specific architecture
+      #2789 closed 2024-11-13 Error: buildx failed with: ERROR: failed to receive status: rpc error: code = Unavailable desc = closing transport due to: connection error: desc = "error reading from server: EOF", received prior goaway: code: NO_ERROR, debug data: "graceful_stop"
+      #2193 closed 2024-01-15 Build with multiple platform and stdin crashes
+      #3041 closed 2025-03-04 `panic: runtime error: invalid memory address or nil pointer dereference` when using `docker buildx build`
+      #2231 closed 2024-01-31 fix: crash when creating images having several tags
+      #2177 closed 2024-01-05 Buildx causing DD to crash when trying to set driver opts
+  corrupt        15 hit(s) (all listed)
+      #1422 open 2022-11-23 qemu segmentation fault installing pwsh modules
+      #713 closed 2021-08-04 Exporting build cache within Github Actions sometimes fails with "Canceled desc = context canceled"
+      #355 closed 2020-08-19 Cannot fetch cached layers from latest tags
+      #1922 closed 2023-06-29 [Feature] Ability to inspect specific cache mounts
+      #2904 merged 2025-01-10 Add history trace command
+      #2978 merged 2025-02-10 buildflags: make work on go 1.22 by reverting rangefunc usage
+      #1027 closed 2022-03-26 Multi-stage buildx build corrupts character special files
+      #681 closed 2021-07-20 GitHub Actions cache fails with cache key: blob not found
+      #1595 closed 2023-02-03 runc run failed: unable to start container process: /bin/sh no such file or directory
+      #262 closed 2020-04-24 Unable to install buildx plugin from the binary release
+      #1100 merged 2022-05-07 Build: Support for printing outline/targets of the current build
+      #422 closed 2020-10-21 'ERROR: invalid layer index' when using --cache-from
+      #671 merged 2021-07-13 bake: allow BAKE_CMD_CONTEXT builtin var
+      #520 closed 2021-01-29 race condition using a builder soon after creation (MacOSX)
+      #328 closed 2020-07-22 QEMU: uncaught target signal 11 (Segmentation fault) in an aarch64 image 
+  corruption     5 hit(s) (all listed)
+      #1595 closed 2023-02-03 runc run failed: unable to start container process: /bin/sh no such file or directory
+      #2177 closed 2024-01-05 Buildx causing DD to crash when trying to set driver opts
+      #681 closed 2021-07-20 GitHub Actions cache fails with cache key: blob not found
+      #2101 closed 2023-10-30 build(deps): bump github.com/docker/docker from 24.0.5+incompatible to 24.0.7+incompatible
+      #298 closed 2020-05-20 Build fails with `connection reset by peer` error from GCR from time to time
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2476 open 2024-05-25 error when merging multi-platform manifest(s) to custom tls config registry after successfully pushing for individual platforms
+      #4079 closed 2026-09-15 build: detect zstd-compressed context from stdin
+      #1986 open 2023-08-03 ERROR: failed to solve: process "/bin/sh
+      #3491 open 2025-10-28 `--cache-from` takes longer than actual (cached) build
+      #4115 merged 2026-09-28 build(deps): bump the codeql-actions group across 1 directory with 4 updates
+      #3874 closed 2026-05-28 hack: scope docs validation and show diff on failure
+      #4106 merged 2026-09-21 build(deps): bump the codeql-actions group with 4 updates
+      #4075 merged 2026-09-11 build(deps): bump the codeql-actions group with 4 updates
+      #4042 merged 2026-08-28 build(deps): bump the codeql-actions group across 1 directory with 4 updates
+      #4031 merged 2026-08-24 build(deps): bump the codeql-actions group across 1 directory with 4 updates
+      #4045 merged 2026-08-31 build(deps): bump softprops/action-gh-release from 3.0.2 to 3.0.3
+      #4018 merged 2026-08-18 build(deps): bump the codeql-actions group with 4 updates
+      #4025 closed 2026-08-20 build(deps): bump github.com/moby/go-archive from 0.2.0 to 0.3.0 in the go_modules group across 1 directory
+      #4019 closed 2026-08-19 build(deps): bump github.com/moby/go-archive from 0.2.0 to 0.3.0 in the go_modules group across 1 directory
+      #4002 merged 2026-08-05 build(deps): bump the codeql-actions group across 1 directory with 4 updates
+      #1619 closed 2023-02-10 Output of failed builds can be cumbersome to use for debugging
+      #3990 merged 2026-08-03 build(deps): bump the codeql-actions group across 1 directory with 4 updates
+      #3923 closed 2026-06-23 build(deps): bump github.com/containerd/containerd/v2 from 2.2.4 to 2.2.5 in the go_modules group across 1 directory
+      #3959 merged 2026-07-20 build(deps): bump the codeql-actions group with 4 updates
+      #3970 merged 2026-07-23 build(deps): bump the codeql-actions group across 1 directory with 4 updates
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2476 open 2024-05-25 error when merging multi-platform manifest(s) to custom tls config registry after successfully pushing for individual platforms
+      #3683 open 2026-03-03 history ls: fix '--format' flag to accept go templates
+      #4079 closed 2026-09-15 build: detect zstd-compressed context from stdin
+      #1986 open 2023-08-03 ERROR: failed to solve: process "/bin/sh
+      #3491 open 2025-10-28 `--cache-from` takes longer than actual (cached) build
+      #4115 merged 2026-09-28 build(deps): bump the codeql-actions group across 1 directory with 4 updates
+      #3874 closed 2026-05-28 hack: scope docs validation and show diff on failure
+      #4106 merged 2026-09-21 build(deps): bump the codeql-actions group with 4 updates
+      #4075 merged 2026-09-11 build(deps): bump the codeql-actions group with 4 updates
+      #4042 merged 2026-08-28 build(deps): bump the codeql-actions group across 1 directory with 4 updates
+      #4031 merged 2026-08-24 build(deps): bump the codeql-actions group across 1 directory with 4 updates
+      #4045 merged 2026-08-31 build(deps): bump softprops/action-gh-release from 3.0.2 to 3.0.3
+      #4018 merged 2026-08-18 build(deps): bump the codeql-actions group with 4 updates
+      #4025 closed 2026-08-20 build(deps): bump github.com/moby/go-archive from 0.2.0 to 0.3.0 in the go_modules group across 1 directory
+      #4019 closed 2026-08-19 build(deps): bump github.com/moby/go-archive from 0.2.0 to 0.3.0 in the go_modules group across 1 directory
+      #4002 merged 2026-08-05 build(deps): bump the codeql-actions group across 1 directory with 4 updates
+      #3990 merged 2026-08-03 build(deps): bump the codeql-actions group across 1 directory with 4 updates
+      #1619 closed 2023-02-10 Output of failed builds can be cumbersome to use for debugging
+      #3923 closed 2026-06-23 build(deps): bump github.com/containerd/containerd/v2 from 2.2.4 to 2.2.5 in the go_modules group across 1 directory
+      #3959 merged 2026-07-20 build(deps): bump the codeql-actions group with 4 updates
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2529 open 2024-06-17 Bake: empty block should equal `null`, not empty string
+      #3506 open 2025-11-08 Add way to specify empty context
+      #4107 merged 2026-09-22 bake: allow empty overrides to clear arrays
+      #4093 open 2026-09-17 ioset: Run the EOF handler after forwarding data
+      #4078 open 2026-09-14 kubernetes: replace hashring with compatible local pod selection
+      #4028 merged 2026-08-20 build: avoid empty source policy sessions
+      #572 open 2021-03-25 ENTRYPOINT w/o argument behaves differently with buildkit
+      #510 open 2021-01-17 Default value on `TARGETPLATFORM` always overrides
+      #2530 open 2024-06-17 bake: default variable to null if not defined
+      #4087 open 2026-09-17 history: print build errors at the end of history logs
+      #3306 open 2025-07-09 Ability to retrieve image IDs when using multiple exporters
+      #2053 open 2023-09-15 Add `--twice` (or `--ntimes=N`) flag to test reproducibility
+      #1238 closed 2022-07-18 docker compose fails to build Dockerfile with `COPY empty-dir/* .`
+      #3079 open 2025-03-26 Add upgrade command
+      #3285 open 2025-07-02 Improve error reporting and handling for missing build-secrets
+      #4126 merged 2026-10-05 tests: normalize platform in TestBuildAnnotations descriptor key
+      #4068 merged 2026-09-09 policy: normalize HTTP schemes, host casing, and default ports
+      #3173 open 2025-05-09 Bake: target override using file breaks references to its tags list from other target
+      #1514 closed 2023-01-13 buildx segfault with empty newline continuation
+      #609 open 2021-05-10 inside image: "Address not available" error for ipv6
+  atomic         11 hit(s) (all listed)
+      #3491 open 2025-10-28 `--cache-from` takes longer than actual (cached) build
+      #4052 merged 2026-09-02 vendor: golang.org/x/crypto v0.56.0
+      #2407 closed 2024-04-12 `imagetools create` should return the digest of the new image
+      #2745 merged 2024-10-17 config: fix file/folder ownership
+      #2196 closed 2024-01-16 runControllerBuild: Read from stdin only when needed
+      #2101 closed 2023-10-30 build(deps): bump github.com/docker/docker from 24.0.5+incompatible to 24.0.7+incompatible
+      #1626 merged 2023-02-14 monitor: Enable to exec into the container
+      #755 closed 2021-08-29 arm32/v7 builder crash when run in container 
+      #88 closed 2019-06-02 Building for ARM causes error often
+      #242 closed 2020-03-17 Building Go app on multi-arch (amd64/arm64/ppc64le) fails on ppc64le
+      #319 closed 2020-07-07 docker buildx build failed on webpack
+  atomically     2 hit(s) (all listed)
+      #2407 closed 2024-04-12 `imagetools create` should return the digest of the new image
+      #2101 closed 2023-10-30 build(deps): bump github.com/docker/docker from 24.0.5+incompatible to 24.0.7+incompatible
+  interrupted    4 hit(s) (all listed)
+      #3170 open 2025-05-06 Cross-compiling for linux/arm64 causes segmentation fault on hosts with Linux kernels newer than 6.8.0-49-generic
+      #1481 closed 2022-12-20 "failed to solve with frontend gateway.v0: extract requires an applier" on minimal Dockerfile
+      #3668 closed 2026-02-25 dial-stdio hangs until write attempt before returning an error when Docker daemon is restarted
+      #841 closed 2021-11-14 Using gha cache with `mode=max` fails with 400 error
+  interrupt      11 hit(s) (all listed)
+      #2770 open 2024-10-31 Introduce timeout keepalive timeout for connections with buildkit agents
+      #3170 open 2025-05-06 Cross-compiling for linux/arm64 causes segmentation fault on hosts with Linux kernels newer than 6.8.0-49-generic
+      #556 open 2021-03-04 `docker buildx build` got stuck if buildkit container dies
+      #1481 closed 2022-12-20 "failed to solve with frontend gateway.v0: extract requires an applier" on minimal Dockerfile
+      #3668 closed 2026-02-25 dial-stdio hangs until write attempt before returning an error when Docker daemon is restarted
+      #2657 merged 2024-08-14 metrics: add mutex to the metric writer
+      #2184 merged 2024-01-10 Use Cobra's `command.Context()`, cancel execution when CLI is signalled
+      #2101 closed 2023-10-30 build(deps): bump github.com/docker/docker from 24.0.5+incompatible to 24.0.7+incompatible
+      #1174 closed 2022-06-21 An error occurred during the build, but there was no interruption
+      #841 closed 2021-11-14 Using gha cache with `mode=max` fails with 400 error
+      #545 merged 2021-02-17 update to go1.16
+  sigkill        2 hit(s) (all listed)
+      #1772 merged 2023-05-04 container-driver: avoid hanging on container panic
+      #1620 merged 2023-02-10 Improvements for remote controller code
+  sigint         9 hit(s) (all listed)
+      #4126 merged 2026-10-05 tests: normalize platform in TestBuildAnnotations descriptor key
+      #2010 closed 2023-08-21 controller: finish remote controller when all session finished
+      #3214 merged 2025-05-30 cmd: custom exit codes for internal, resource and canceled errors
+      #2240 closed 2024-02-04 `docker buildx prune` require 3x `CTRL-C` to cancel
+      #2184 merged 2024-01-10 Use Cobra's `command.Context()`, cancel execution when CLI is signalled
+      #2177 closed 2024-01-05 Buildx causing DD to crash when trying to set driver opts
+      #1620 merged 2023-02-10 Improvements for remote controller code
+      #1257 merged 2022-08-08 build: fix issues with leaving invoke containers running
+      #664 closed 2021-07-02 Very long time to export using `DOCKER_BUILDKIT=1 docker build -o type=local,dest=../docker.out .`
+  ctrl-c         30 hit(s) (all listed)
+      #1330 open 2022-09-27 Watch mode / `build --watch`
+      #1807 open 2023-05-17 monitor: Allow launching container from non-exec op with `on-error`
+      #1863 open 2021-12-01 Feature: Allow docker build to stop processes with signal
+      #2903 open 2025-01-09 cgroup-parent puts BuildKit builds in the wrong cgroup
+      #1104 open 2022-05-10 Proposal: build debugging in buildx (interactive sessions)
+      #1917 closed 2023-06-27 monitor: on-error: support long-form for allowing configuring the container
+      #3822 closed 2026-05-01 Panic in containerConfigFromError when running "buildx debug build"
+      #2943 closed 2025-01-22 docker buildx debug --on=error build not invoking debug shell
+      #1656 closed 2023-03-01 monitor: breakpoint debugger on monitor and on IDEs (via DAP) 
+      #2289 merged 2024-02-28 commands: handle ctrl-c on active prompt
+      #2240 closed 2024-02-04 `docker buildx prune` require 3x `CTRL-C` to cancel
+      #2130 merged 2023-11-17 driver: add status reporting and a timeout to the remote driver bootstrap
+      #2026 merged 2023-08-30 debug: fix short-form custom command name on `--invoke` isn't used
+      #2126 closed 2023-11-16 driver: add a bootstrap timeout
+      #2006 merged 2023-08-17 debug: Add `buildx debug` command
+      #2062 closed 2023-09-28 docker buildx create --bootstrap --driver remote can block docker buildx ls when the remote is down/misconfigured
+      #1850 merged 2023-05-29 monitor: add long help for commands
+      #1835 merged 2023-05-24 invoke: Allow JSON array for entrypoint and args flags in long form 
+      #1259 merged 2022-08-08 invoke: add messages
+      #1782 merged 2023-05-09 docs: add initial guide about debugging monitor mode
+  power          12 hit(s) (all listed)
+      #3006 open 2025-02-19 Limit concurrent build requests on a single BuildKit pod
+      #359 closed 2020-08-22 Limit used memory/CPU or parallel jobs
+      #175 open 2019-10-23 network mode "custom_network" not supported by buildkit
+      #1653 closed 2023-02-27 Failed to push image: failed commit on ref
+      #1994 merged 2023-08-08 build: sublogger to show docker load progress output
+      #1813 merged 2023-05-18 `--load` with moby containerd store should use the `oci` exporter
+      #141 closed 2019-08-27 Bake target dependencies
+      #1730 closed 2023-04-11 build(deps): Bump github.com/docker/docker from 23.0.1+incompatible to 23.0.3+incompatible
+      #161 closed 2019-10-10 Any advice to increase speed?
+      #426 closed 2020-10-23 failed to solve with frontend dockerfile.v0: failed to build LLB: executor failed running - runc did not terminate sucessfully
+      #850 closed 2021-11-18 Recent Change to Dockerignore Parsing
+      #749 closed 2021-08-25 invalid mount config for type "volume"
+  outage         2 hit(s) (all listed)
+      #2127 closed 2023-11-16 Unable to access buildx artifact on GitHub
+      #1079 closed 2022-04-27 Error: failed to receive status: rpc error: code = Unavailable desc = closing transport due to: connection error: desc = "error reading from server: io: read/write on closed pipe", received prior goaway: code: NO_ERROR
+  ENOSPC         1 hit(s) (all listed)
+      #4031 merged 2026-08-24 build(deps): bump the codeql-actions group across 1 directory with 4 updates
+  disk           93 hit(s) (all listed)
+      #4053 open 2026-09-03 [containerd-snapshotter] add support to prune build cache type=regular
+      #3156 open 2020-03-05 docker build should warn if near full disk space allocation
+      #1542 open 2023-01-24 Buildx should write a warning when builder disk space is low
+      #1065 open 2022-04-06 Feature request: Pruning of layers of specific image
+      #1074 open 2022-04-18 how to delete specific image
+      #3491 open 2025-10-28 `--cache-from` takes longer than actual (cached) build
+      #3919 open 2026-06-18 feat(driver/kubernetes): support pod affinity/topology spread via driver-opt or pod template ConfigMap
+      #870 open 2021-12-01 Cant remove cache from pods in external kubernetes context
+      #1483 open 2022-12-21 buildx library as a higher-level buildkit client
+      #1378 open 2022-10-28 Multi stage in multiple files
+      #4106 merged 2026-09-21 build(deps): bump the codeql-actions group with 4 updates
+      #4115 merged 2026-09-28 build(deps): bump the codeql-actions group across 1 directory with 4 updates
+      #2664 closed 2024-08-24 Docker Build Hangs and Disk Space Increases When Setting High User ID
+      #1044 open 2022-04-04 Pushing cache to "registry" cache with multi-node builder only uploads cache from one node
+      #997 closed 2022-03-11 enable storing metadata file in OCI registry as an alternative to saving it to disk
+      #4031 merged 2026-08-24 build(deps): bump the codeql-actions group across 1 directory with 4 updates
+      #1857 open 2023-05-31 Improve buildx test coverage
+      #3996 merged 2026-08-05 driver: use stdlib tar for docker-container config files
+      #4075 merged 2026-09-11 build(deps): bump the codeql-actions group with 4 updates
+      #4066 closed 2026-09-09 docker-container driver writes the whole GitHub event payload into --metadata-file, even with --provenance=false
+  partial        24 hit(s) (all listed)
+      #4058 merged 2026-09-04 build: fix partial multi-node image pushes
+      #1159 open 2022-06-10 Bake fails to push if any targets don't have tags
+      #143 open 2019-09-09 generate CNAB-OCI manifest in buildx build flow based on the results of the subcomponent builds
+      #3919 open 2026-06-18 feat(driver/kubernetes): support pod affinity/topology spread via driver-opt or pod template ConfigMap
+      #4044 merged 2026-08-31 bake: add execution modes and concurrency control with --jobs
+      #1044 open 2022-04-04 Pushing cache to "registry" cache with multi-node builder only uploads cache from one node
+      #638 open 2021-03-10 building image with docker compose build: invalid reference format: repository name must be lowercase
+      #609 open 2021-05-10 inside image: "Address not available" error for ipv6
+      #107 open 2019-07-19 "sending tarball" takes a long time even when the image already exists
+      #2195 open 2024-01-15 [BUG] changes to docker system prune with buildkit, now deletes downloaded base images
+      #3657 merged 2026-02-20 policy: add artifact attestation and github attestation builtin support 
+      #1619 closed 2023-02-10 Output of failed builds can be cumbersome to use for debugging
+      #1203 open 2022-07-07 bake-hcl: add mechanism to reference the current target name
+      #3626 merged 2026-01-26 commands/history: rewrite with stdlib multi-errors
+      #484 closed 2020-12-18 [output clipped, log limit 1MiB reached] and then exit code 7
+      #2833 closed 2024-12-02 bake: cache-from/cache-to options no longer print sensitive values
+      #2931 closed 2025-01-20 history(inspect): print build name
+      #2280 merged 2024-02-23 build: set record provenance in response
+      #2525 closed 2024-01-25 build log for failed build says "CACHED" even when what it means is SKIPPED
+      #1595 closed 2023-02-03 runc run failed: unable to start container process: /bin/sh no such file or directory
+  incomplete     12 hit(s) (all listed)
+      #4087 open 2026-09-17 history: print build errors at the end of history logs
+      #414 open 2020-10-15 bake cache misses with multiple targets
+      #3613 closed 2026-01-16 policy eval fails with "object required" when checking attestation fields on v2 manifest images
+      #177 open 2019-10-24 Failure to push when using multi-node context
+      #2876 merged 2024-12-20 progress: fix missing last progress from loading layers
+      #2758 merged 2024-10-28 bake: initial set of composable bake attributes
+      #3045 closed 2025-03-05 "111.9 cc: internal compiler error: Segmentation fault signal terminated program cc1"
+      #2507 merged 2024-06-10 Update the lint metrics to match agains the rule URL
+      #2216 closed 2024-01-26 build(deps): bump docker/docs from 919a9b9104a34a40b30d116529bcce589a544d1c to c70bc63d7f6ffee87d7c9cf0a9f5795db102eda8
+      #2039 merged 2023-09-11 update to go1.20.8
+      #1173 merged 2022-06-19 add support for oci-layout build-context
+      #140 closed 2019-08-27 add app definition format support
+  dataloss       0 hit(s)
+  recover        8 hit(s) (all listed)
+      #4064 merged 2026-09-08 build: wait for docker load progress cleanup
+      #4023 closed 2026-08-20 docker-container: wait for buildkitd before Dial
+      #3729 merged 2026-03-16 build(deps): bump softprops/action-gh-release from 2.5.0 to 2.6.1
+      #3387 merged 2025-08-27 vendor: update buildkit to v0.24.0-rc1
+      #3476 closed 2025-10-07 `ADD {URL} /target/` will only add file if URL contains supported file ending
+      #1552 merged 2023-01-25 driver: resolve BuildKit version for docker driver
+      #1640 merged 2023-02-21 monitor: add `debug-shell` and `on-error`
+      #944 closed 2022-02-08 buildx error with "docker-php-ext-install" on linux
+  recovery       5 hit(s) (all listed)
+      #4064 merged 2026-09-08 build: wait for docker load progress cleanup
+      #3922 merged 2026-06-22 build(deps): bump softprops/action-gh-release from 3.0.0 to 3.0.1
+      #2400 closed 2024-04-11 runc run failed: unable to start container process: exec: "/bin/sh": stat /bin/sh: no such file or directory
+      #3797 merged 2026-04-13 build(deps): bump softprops/action-gh-release from 2.6.1 to 3.0.0
+      #3729 merged 2026-03-16 build(deps): bump softprops/action-gh-release from 2.5.0 to 2.6.1
+  rollback       16 hit(s) (all listed)
+      #1104 open 2022-05-10 Proposal: build debugging in buildx (interactive sessions)
+      #3990 merged 2026-08-03 build(deps): bump the codeql-actions group across 1 directory with 4 updates
+      #2028 open 2023-08-31 segmentation fault cross-building target=amd64 host=arm64
+      #2218 closed 2024-01-28 Docker 4.27 build broken
+      #2006 merged 2023-08-17 debug: Add `buildx debug` command
+      #1259 merged 2022-08-08 invoke: add messages
+      #1760 merged 2023-04-26 monitor: Move commands to a separated package
+      #1640 merged 2023-02-21 monitor: add `debug-shell` and `on-error`
+      #1168 merged 2022-06-15 Add `--invoke` option to launch a container from the build result
+      #1626 merged 2023-02-14 monitor: Enable to exec into the container
+      #1296 merged 2022-08-29 monitor: Enable to run build and invoke in background
+      #1604 closed 2023-02-06 Buildx Git is not working as intended
+      #1206 merged 2022-07-12 buildx: log errors in initializing builders
+      #1258 closed 2022-08-08 Fixes for `--invoke` for v0.9
+      #1257 merged 2022-08-08 build: fix issues with leaving invoke containers running
+      #637 closed 2021-06-20 Images created with buildx sometimes have layers that are incorrect/zero bytes
+  resume         13 hit(s) (all listed)
+      #4007 open 2026-08-10 logutil: fix data race when Pause is called concurrently
+      #1781 open 2020-01-10 Permission denied errors using buildkit when Dockerfile is in directory with restricted files
+      #4003 closed 2026-08-07 Serialize log pauses
+      #1210 open 2022-07-15 crash installing libglib2.0
+      #4057 closed 2026-09-04 Cache export fails with a fatal 400 when parallel blob PUTs stall past a registry/proxy inactivity timeout on slow uplinks
+      #3314 merged 2025-07-14 dap: always return the error from execution if we paused on an error and resume
+      #3307 merged 2025-07-10 dap: implement variable references
+      #1656 closed 2023-03-01 monitor: breakpoint debugger on monitor and on IDEs (via DAP) 
+      #3235 merged 2025-06-11 dap: add debug adapter implementation
+      #3341 merged 2025-07-29 dap: make exec shell persistent across the build
+      #367 closed 2020-08-27 Long running push sometimes fail with "use of closed network connection"
+      #1737 merged 2023-04-14 controller: refactor progress api
+      #697 merged 2021-07-26 build(deps): bump github.com/containerd/containerd from 1.5.2 to 1.5.4
+  half-written   1 hit(s) (all listed)
+      #2091 closed 2023-10-20 panic in buildx imagetools create
+  wipe           3 hit(s) (all listed)
+      #4108 open 2026-09-22 bake: keep unset target attributes across override files
+      #727 closed 2021-08-12 [feature request] Support for --squash
+      #3341 merged 2025-07-29 dap: make exec shell persistent across the build
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        10 hit(s) (all listed)
+      #1323 closed 2022-09-20 Using cache with Kubernetes driver 
+      #3989 closed 2026-08-03 CLI flag to limit the number of concurrently building targets in buildx bake / docker compose build
+      #4067 closed 2026-09-09 `buildx rm` applies the builder-status `--timeout` to the removal itself, aborting an in-flight volume delete at 20s and leaking the state volume
+      #2890 closed 2025-01-07 Local Cache Not Being Reused Across Builds with Local File System Caching in Docker Buildx
+      #175 open 2019-10-23 network mode "custom_network" not supported by buildkit
+      #458 closed 2020-12-01 Find more intuitive name for `prune --keep-storage`
+      #3664 closed 2026-02-24 ENOENT race condition during cache restoration on ephemeral self hosted runners
+      #1723 merged 2023-04-05 build(deps): Bump peter-evans/create-pull-request from 4.2.4 to 5.0.0
+      #855 closed 2021-11-22 when use --driver kubernetes,Whether the k8s pod can be self-destructed?
+      #293 closed 2020-05-14 No option to skip the build cache
+  destroys       1 hit(s) (all listed)
+      #2890 closed 2025-01-07 Local Cache Not Being Reused Across Builds with Local File System Caching in Docker Buildx
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4069 open 2026-09-09 docker: use native gRPC for supported local endpoints
+      #4087 open 2026-09-17 history: print build errors at the end of history logs
+      #510 open 2021-01-17 Default value on `TARGETPLATFORM` always overrides
+      #1492 closed 2023-01-07 bake flag -f additively combines some keys and overwrites others
+      #1044 open 2022-04-04 Pushing cache to "registry" cache with multi-node builder only uploads cache from one node
+      #728 open 2021-08-13 Proposal: Generate metadata from Git ref and CIs events
+      #1323 closed 2022-09-20 Using cache with Kubernetes driver 
+      #3232 closed 2025-06-10 False cache hits in monorepo projects, leading to use file from different docker build
+      #4100 merged 2026-09-18 build(deps): bump codecov/codecov-action from 7.1.0 to 7.1.1
+      #4084 merged 2026-09-16 build(deps): bump codecov/codecov-action from 7.0.0 to 7.1.0
+      #3982 closed 2026-07-30 vendor: github.com/moby/go-archive v0.3.0
+      #2890 closed 2025-01-07 Local Cache Not Being Reused Across Builds with Local File System Caching in Docker Buildx
+      #4095 closed 2026-09-17 build(deps): bump docker/setup-qemu-action from 4.3.0 to 4.4.0
+      #4096 closed 2026-09-17 build(deps): bump docker/setup-buildx-action from 4.3.0 to 4.4.0
+      #4094 closed 2026-09-17 build(deps): bump docker/bake-action from 7.3.0 to 7.4.0
+      #4097 closed 2026-09-17 build(deps): bump docker/bake-action/subaction/matrix from 7.3.0 to 7.4.0
+      #4054 merged 2026-09-03 build(deps): bump docker/setup-qemu-action from 4.2.0 to 4.3.0
+      #4025 closed 2026-08-20 build(deps): bump github.com/moby/go-archive from 0.2.0 to 0.3.0 in the go_modules group across 1 directory
+      #4019 closed 2026-08-19 build(deps): bump github.com/moby/go-archive from 0.2.0 to 0.3.0 in the go_modules group across 1 directory
+      #3981 merged 2026-07-29 build(deps): bump docker/login-action from 4.5.1 to 4.5.2
+  clobber        2 hit(s) (all listed)
+      #1595 closed 2023-02-03 runc run failed: unable to start container process: /bin/sh no such file or directory
+      #2169 closed 2023-12-18 build(deps): bump golang.org/x/crypto from 0.14.0 to 0.17.0
+  blank          20 hit(s) (all listed)
+      #3354 open 2025-08-05 store: remove uses of docker namesgenerator
+      #2008 open 2023-08-18 Self signed certificate cannot be authenticated
+      #3121 closed 2025-04-16 Remote Dockerfiles
+      #3056 closed 2025-03-11 bake secrets are ignored from transitive targets
+      #3901 closed 2026-06-11 Fix typo in bake reference
+      #1514 closed 2023-01-13 buildx segfault with empty newline continuation
+      #3914 merged 2026-06-16 policy: remove uses of deprecated WithBuiltins
+      #3858 merged 2026-05-18 fix rootless buildkit memory volume path
+      #282 closed 2020-05-09 docker buildx bake should apply env variable from .env
+      #3626 merged 2026-01-26 commands/history: rewrite with stdlib multi-errors
+      #2751 closed 2024-10-23 UndefinedVar build check behaviour for PATH-like variables
+      #3566 merged 2025-12-11 tests: add integration tests for `dap build`
+      #2926 closed 2025-01-17 history inspect: empty lines between attributes
+      #830 closed 2021-11-08 ls: add format, quiet and no-trunc opts
+      #2047 closed 2023-09-13 Add https:// schema
+      #2076 merged 2023-10-14 bake: display read definition files in build output
+      #456 closed 2020-11-27  no active session for <id>: context deadline exceeded
+      #1691 closed 2023-03-22 bake does not resolve environment variables in labels section
+      #1091 closed 2022-05-05 Using build arg to determine base image
+      #378 closed 2020-09-01 WORKDIR command fails on Windows images
+  unreadable     4 hit(s) (all listed)
+      #2219 closed 2024-01-29 `-o=.`: `open $HOME/.local/share/docker/overlay2/066f6../work/work: permission denied`
+      #2093 merged 2023-10-20 driver: docker-container driver uses --config correctly in rootless mode
+      #560 closed 2021-03-11 New Output Color is nearly invisible on Powershell
+      #774 merged 2021-09-21 Driver e2e tests
+  garbage        16 hit(s) (all listed)
+      #572 open 2021-03-25 ENTRYPOINT w/o argument behaves differently with buildkit
+      #2956 open 2025-01-29 Add support for pushing separately from building (`docker buildx push`)
+      #1065 open 2022-04-06 Feature request: Pruning of layers of specific image
+      #1912 closed 2023-06-26 Kubernetes driver not caching a layer that is being cached on the docker builder
+      #482 closed 2020-12-17 Output Clipped - Anyway to keep tailing the output?
+      #458 closed 2020-12-01 Find more intuitive name for `prune --keep-storage`
+      #3504 closed 2025-11-06 build(deps): bump github.com/containerd/containerd/v2 from 2.2.0-rc.1 to 2.2.0 in the go_modules group across 1 directory
+      #2199 closed 2024-01-22 tests: kubernetes worker
+      #2864 merged 2024-12-16 builder: validate buildkit configuration
+      #2061 closed 2023-09-27 Reproducable: bake creates un-prunable files in overlay2
+      #2120 closed 2023-11-15 feature request: buildx should timeout if node never becomes healthy
+      #549 closed 2021-02-21 Race condition when using cache-mounts with multi-arch builds.
+      #2093 merged 2023-10-20 driver: docker-container driver uses --config correctly in rootless mode
+      #2092 closed 2023-10-20 Buildkitd config file is missplaced when running in dind rootless with docker-container driver
+      #1444 merged 2022-12-02 imagetools inspect: handle provenance and sboms
+      #173 closed 2019-10-23 build cache format in registry is incorrect
+  mangled        0 hit(s)
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2973 open 2025-02-10 Linting warnings sometimes clash with `--call outline` output
+      #2353 open 2020-11-04 Buildkit ignores .dockerignore in Git repository
+      #1211 open 2022-07-16 --iidfile missing end of record (newline)
+      #3557 open 2025-12-09 Bake: allow inheriting from a map
+      #430 open 2020-10-27 Push image from cache without context
+      #3383 open 2025-08-26 Support extracting remote tarballs when used as named contexts with Bake
+      #1814 open 2023-05-19 Neither modifing /etc/hosts nor adding '--add-host' flag worked for me
+      #4066 closed 2026-09-09 docker-container driver writes the whole GitHub event payload into --metadata-file, even with --provenance=false
+      #443 open 2020-11-17 buildx dns error when push to a local repo
+      #1688 open 2023-03-20 `network=host` is not picking up entries in host's `/etc/hosts` in docker 23
+      #2734 closed 2017-08-07 Incorrect cache for "cat ..tar | docker build" with duplicate files inside
+      #2570 open 2024-06-30 `docker build` timeout issue in google cloud vm C3D
+      #2008 open 2023-08-18 Self signed certificate cannot be authenticated
+      #1422 open 2022-11-23 qemu segmentation fault installing pwsh modules
+      #2367 closed 2024-03-29 ONBUILD instructions in earlier stages of multi-stage build do not run before COPY --from in later stages
+      #1855 open 2023-05-31 docker-container driver: `COPY --link --chown` unexpectedly changes parent dir ownership
+      #838 closed 2021-11-12 build vs. buildx cache evaluation behaves differently on AWS FSx for Lustre mount
+      #1225 closed 2022-07-21 Non-deterministic context "not found"
+      #1459 closed 2022-12-09 DNS Resolution fails to resolve Registry
+      #1203 open 2022-07-07 bake-hcl: add mechanism to reference the current target name
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4113 open 2026-09-26 bake: do not leak target overrides into inherited entries
+      #4114 open 2026-09-28 build: apply global .dockerignore during context sync
+      #3776 open 2026-04-03 proposal: add client-side global dockerignore for local build contexts
+      #591 open 2021-04-08 docker buildkit no longer supports --network as valid parameter
+      #2776 open 2024-11-03 Bake: Add a built-in function for running shell commands and scripts.
+      #3217 open 2025-06-02 Ability to write output to a file and or console without changes to invocation or workrounds
+      #1378 open 2022-10-28 Multi stage in multiple files
+      #572 open 2021-03-25 ENTRYPOINT w/o argument behaves differently with buildkit
+      #1807 open 2023-05-17 monitor: Allow launching container from non-exec op with `on-error`
+      #510 open 2021-01-17 Default value on `TARGETPLATFORM` always overrides
+      #820 open 2021-11-01 docker build tries to use https for insecure-hosts
+      #1291 open 2022-06-01 Document what are valid characters for a variable in a Dockerfile
+      #3173 open 2025-05-09 Bake: target override using file breaks references to its tags list from other target
+      #1483 open 2022-12-21 buildx library as a higher-level buildkit client
+      #1104 open 2022-05-10 Proposal: build debugging in buildx (interactive sessions)
+      #4066 closed 2026-09-09 docker-container driver writes the whole GitHub event payload into --metadata-file, even with --provenance=false
+      #2195 open 2024-01-15 [BUG] changes to docker system prune with buildkit, now deletes downloaded base images
+      #2581 open 2024-07-05 Add Concurrency Control to Matrix Builds
+      #4017 merged 2026-08-18 Docker Build Cloud driver
+      #3396 open 2020-06-12 Feature Request: Allow `docker build` to output additional files from stages
+  unclean        0 hit(s)
+  shutdown       17 hit(s) (all listed)
+      #3154 open 2021-07-20 Warn that shells don't propagate signals in CMD documentation 
+      #4066 closed 2026-09-09 docker-container driver writes the whole GitHub event payload into --metadata-file, even with --provenance=false
+      #3873 closed 2026-05-28 progress: avoid panic when closing printer
+      #3875 closed 2026-05-28 panic: send on closed channel in util/progress Printer during remote integration tests
+      #3872 closed 2026-05-28 build: add --validate=repro reproducibility check
+      #4067 closed 2026-09-09 `buildx rm` applies the builder-status `--timeout` to the removal itself, aborting an in-flight volume delete at 20s and leaking the state volume
+      #4126 merged 2026-10-05 tests: normalize platform in TestBuildAnnotations descriptor key
+      #1718 closed 2023-04-05 failed to walk: failed to xattr
+      #830 closed 2021-11-08 ls: add format, quiet and no-trunc opts
+      #2460 merged 2024-05-16 vendor: update buildx to latest docker/cli
+      #2240 closed 2024-02-04 `docker buildx prune` require 3x `CTRL-C` to cancel
+      #2062 closed 2023-09-28 docker buildx create --bootstrap --driver remote can block docker buildx ls when the remote is down/misconfigured
+      #1850 merged 2023-05-29 monitor: add long help for commands
+      #1257 merged 2022-08-08 build: fix issues with leaving invoke containers running
+      #1270 closed 2022-08-14 Error while loading /usr/local/sbin/bash: No such file or directory
+      #415 closed 2020-10-15 'docker build' error: "failed to solve with frontend dockerfile.v0"
+      #664 closed 2021-07-02 Very long time to export using `DOCKER_BUILDKIT=1 docker build -o type=local,dest=../docker.out .`
+  reboot         6 hit(s) (all listed)
+      #443 open 2020-11-17 buildx dns error when push to a local repo
+      #2183 closed 2024-01-10 build and buildx handling cgroups differently
+      #3165 merged 2025-05-01 attempt openbsd fix
+      #476 closed 2020-12-15 Error load metadata for docker.io/library/alpine:3.12 with v3.0.1
+      #80 closed 2019-05-22 Custom registry, push error on self-signed cert 
+      #208 closed 2019-12-11 docker buildx inspect mybuilder --bootstrap doesn't have other platforms
+  disk+full      21 hit(s) (all listed)
+      #3156 open 2020-03-05 docker build should warn if near full disk space allocation
+      #3919 open 2026-06-18 feat(driver/kubernetes): support pod affinity/topology spread via driver-opt or pod template ConfigMap
+      #4066 closed 2026-09-09 docker-container driver writes the whole GitHub event payload into --metadata-file, even with --provenance=false
+      #3945 merged 2026-07-07 build(deps): bump the codeql-actions group with 4 updates
+      #3940 closed 2026-07-06 build(deps): bump github/codeql-action/init from 4.36.2 to 4.36.3
+      #3939 closed 2026-07-06 build(deps): bump github/codeql-action/upload-sarif from 4.36.2 to 4.36.3
+      #3938 closed 2026-07-06 build(deps): bump github/codeql-action/autobuild from 4.36.2 to 4.36.3
+      #3937 closed 2026-07-06 build(deps): bump github/codeql-action/analyze from 4.36.2 to 4.36.3
+      #3949 merged 2026-07-10 build(deps): bump the codeql-actions group with 4 updates
+      #3884 merged 2026-06-04 build(deps): bump github/codeql-action from 4.36.0 to 4.36.1
+      #3890 merged 2026-06-08 build(deps): bump github/codeql-action from 4.36.1 to 4.36.2
+      #3867 merged 2026-05-26 build(deps): bump github/codeql-action from 4.35.5 to 4.36.0
+      #3859 merged 2026-05-19 build(deps): bump github/codeql-action from 4.35.4 to 4.35.5
+      #2021 closed 2023-08-25 Docker buildkit fails to build .net project in contrary to successful builds on depracted builder
+      #138 closed 2019-08-22 failed to load LLB: runtime execution on platform linux/arm64 not supported
+      #2038 merged 2023-09-11 build: support local state group
+      #593 closed 2021-04-12 --load doesn't always export the Docker image
+      #495 closed 2020-12-29 Error building python 3.6 slim
+      #547 closed 2021-02-18 Docker build fail .token_seed: unexpected end of JSON input
+      #542 closed 2021-02-12 Qemu 5.2 regression causes arm64 detection flakiness (Reverted)
+  data+loss      4 hit(s) (all listed)
+      #1203 open 2022-07-07 bake-hcl: add mechanism to reference the current target name
+      #2121 merged 2023-11-16 Permit '=' separator and '[ipv6]' in --add-host
+      #495 closed 2020-12-29 Error building python 3.6 slim
+      #528 closed 2021-02-05 Impossible to run git clone inside buildx with non x86 architecture
+  partial+write  3 hit(s) (all listed)
+      #3919 open 2026-06-18 feat(driver/kubernetes): support pod affinity/topology spread via driver-opt or pod template ConfigMap
+      #1203 open 2022-07-07 bake-hcl: add mechanism to reference the current target name
+      #2280 merged 2024-02-23 build: set record provenance in response
+  crash+safe     2 hit(s) (all listed)
+      #3948 closed 2026-07-10 panic: send on closed channel in Printer.Write via LoadImage (--load) progress after solve completes
+      #1296 merged 2022-08-29 monitor: Enable to run build and invoke in background
+  atomic+write   4 hit(s) (all listed)
+      #3491 open 2025-10-28 `--cache-from` takes longer than actual (cached) build
+      #2745 merged 2024-10-17 config: fix file/folder ownership
+      #2101 closed 2023-10-30 build(deps): bump github.com/docker/docker from 24.0.5+incompatible to 24.0.7+incompatible
+      #1626 merged 2023-02-14 monitor: Enable to exec into the container
+  lock+file      58 hit(s) (all listed)
+      #1426 open 2022-11-24 buildx permissions on config files should be more permissive
+      #3163 open 2025-04-30 Tags are missing when using buildx with multiarch builds
+      #3374 open 2025-08-18 Failed build with `ERROR: blob sha256:*** not found`
+      #636 open 2021-06-20 [NFS] failed to get xattr for /tmp/containerd-mount757554418/bin: operation not supported
+      #1104 open 2022-05-10 Proposal: build debugging in buildx (interactive sessions)
+      #2152 closed 2023-12-07 Parallel buildx builds stop with build errors - a single build works fine
+      #175 open 2019-10-23 network mode "custom_network" not supported by buildkit
+      #1921 closed 2023-06-29 COPY instruction is not cached on linux/arm64 when cache is generated on linux/amd64 machine
+      #3925 closed 2026-06-24 Support for extracting and seeding cache mounts.
+      #599 closed 2021-04-23 feature request(kubernetes driver): reference kubeconfig file in driver opts
+      #1912 closed 2023-06-26 Kubernetes driver not caching a layer that is being cached on the docker builder
+      #2709 closed 2024-09-24 The `COPY` and `WORKDIR` commands in `docker build` take long randomly
+      #1551 closed 2023-01-24 [BUG] docker-buildx fails to build when selinux is enabled
+      #3051 closed 2025-03-06 Add current target platform as variable
+      #1513 closed 2023-01-12 Default image output in buildx v0.10 cannot be pushed to Yandex Cloud Container Registry
+      #3804 merged 2026-04-17 build(deps): bump github/codeql-action from 4.35.1 to 4.35.2
+      #3759 merged 2026-03-30 build(deps): bump github/codeql-action from 4.34.1 to 4.35.1
+      #3591 merged 2026-01-12 build(deps): bump actions/download-artifact from 6 to 7
+      #3573 merged 2025-12-15 build(deps): bump actions/download-artifact from 6 to 7
+      #3572 merged 2025-12-15 build(deps): bump actions/upload-artifact from 5 to 6
+  write+failure  27 hit(s) (all listed)
+      #4040 closed 2026-08-28 driver/kubernetes: same first-connection race as #4021 — Dial() returns before SPDY stream is ready
+      #2530 open 2024-06-17 bake: default variable to null if not defined
+      #4066 closed 2026-09-09 docker-container driver writes the whole GitHub event payload into --metadata-file, even with --provenance=false
+      #4125 open 2026-10-02 kubernetes: builder pod takes at least 30 seconds to become ready
+      #3803 open 2026-04-17 Proposal: buildx replay
+      #4063 closed 2026-09-07 driver/kubernetes: sibling solves in one bake die mid-build when another solve's session closes
+      #4057 closed 2026-09-04 Cache export fails with a fatal 400 when parallel blob PUTs stall past a registry/proxy inactivity timeout on slow uplinks
+      #713 closed 2021-08-04 Exporting build cache within Github Actions sometimes fails with "Canceled desc = context canceled"
+      #4010 closed 2026-08-12 Dockerfile.rego  - signature validation does not work with standard keyless Cosign signatures.
+      #3875 closed 2026-05-28 panic: send on closed channel in util/progress Printer during remote integration tests
+      #3872 closed 2026-05-28 build: add --validate=repro reproducibility check
+      #2890 closed 2025-01-07 Local Cache Not Being Reused Across Builds with Local File System Caching in Docker Buildx
+      #175 open 2019-10-23 network mode "custom_network" not supported by buildkit
+      #2021 closed 2023-08-25 Docker buildkit fails to build .net project in contrary to successful builds on depracted builder
+      #3476 closed 2025-10-07 `ADD {URL} /target/` will only add file if URL contains supported file ending
+      #1399 closed 2022-11-08 Did resizing the terminal window break the build?
+      #2199 closed 2024-01-22 tests: kubernetes worker
+      #1642 closed 2023-02-21 BUILDKIT ignores "insecure-registries". server gave HTTP response to HTTPS client. x509: certificate error
+      #179 closed 2019-10-26 Add entitlements to bake
+      #2771 merged 2024-10-31 build(deps): bump softprops/action-gh-release from 2.0.8 to 2.0.9
+  file+contents  68 hit(s) (all listed)
+      #2973 open 2025-02-10 Linting warnings sometimes clash with `--call outline` output
+      #2353 open 2020-11-04 Buildkit ignores .dockerignore in Git repository
+      #1211 open 2022-07-16 --iidfile missing end of record (newline)
+      #1814 open 2023-05-19 Neither modifing /etc/hosts nor adding '--add-host' flag worked for me
+      #3383 open 2025-08-26 Support extracting remote tarballs when used as named contexts with Bake
+      #443 open 2020-11-17 buildx dns error when push to a local repo
+      #1688 open 2023-03-20 `network=host` is not picking up entries in host's `/etc/hosts` in docker 23
+      #4066 closed 2026-09-09 docker-container driver writes the whole GitHub event payload into --metadata-file, even with --provenance=false
+      #2008 open 2023-08-18 Self signed certificate cannot be authenticated
+      #2570 open 2024-06-30 `docker build` timeout issue in google cloud vm C3D
+      #2734 closed 2017-08-07 Incorrect cache for "cat ..tar | docker build" with duplicate files inside
+      #1855 open 2023-05-31 docker-container driver: `COPY --link --chown` unexpectedly changes parent dir ownership
+      #2367 closed 2024-03-29 ONBUILD instructions in earlier stages of multi-stage build do not run before COPY --from in later stages
+      #838 closed 2021-11-12 build vs. buildx cache evaluation behaves differently on AWS FSx for Lustre mount
+      #1203 open 2022-07-07 bake-hcl: add mechanism to reference the current target name
+      #1225 closed 2022-07-21 Non-deterministic context "not found"
+      #175 open 2019-10-23 network mode "custom_network" not supported by buildkit
+      #1459 closed 2022-12-09 DNS Resolution fails to resolve Registry
+      #2890 closed 2025-01-07 Local Cache Not Being Reused Across Builds with Local File System Caching in Docker Buildx
+      #1237 closed 2022-07-27 automatically substitute system environment variables in Dockerfile during the build
+
+== 51 terms run; 44 returned hits, 6 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

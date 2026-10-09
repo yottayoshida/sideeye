@@ -1,0 +1,736 @@
+== novelty pre-scan: commercialhaskell/stack
+== date: 2026-10-09T01:37:46Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          83 hit(s) (all listed)
+      #5642 open 2021-11-30 `stack script --compile` crashes
+      #5851 open 2022-09-04 Crash with `GHCRTS=--io-manager=native` (version: git HEAD)
+      #5533 open 2021-05-06 Stack crashes with "SQLite3 returned ErrorReadOnly ..." on every build
+      #5633 open 2021-11-07 Void Linux: `stack build` crashes - GHC's choice of `ld`
+      #4943 open 2019-07-08 Possible stack hang/crash on windows related to GHC unicode warning
+      #4946 open 2019-07-10 Verbose mode for bench
+      #4559 open 2019-02-04 Get rid of persistent build errors due to non-atomic file writes in GHC and stack
+      #1332 open 2015-11-10 Cross-compile for ARM processors support
+      #1476 open 2015-12-07 How to reinstall a package?
+      #5607 open 2021-08-22 Segmentation Fault when running stack in zsh (MacOS)
+      #1586 open 2016-01-02 Improve pkg-config/dependencies installation story on Windows
+      #4857 open 2019-06-09 Is it expected that data files do not get installed to where bin is?
+      #6325 open 2023-10-31 `stack build` segfaults on Void Linux with musl 1.1.24
+      #4855 open 2019-06-07 stack repl fails to pass flags for native libraries
+      #5199 open 2020-02-24 MacOS: some stack-built dynamic hspec-discover broken - @rpath seems the problem
+      #6154 open 2023-06-12 Improve stack support for HLS
+      #6865 merged 2026-03-21 Add Backpack support to Stack
+      #6799 closed 2025-08-26 stack new doesn't work with http or https URLs
+      #5548 closed 2021-05-21 stack upgrade crashes in android/termux/ubuntu-20.04-LTS
+      #6647 closed 2024-08-23 Windows: clang-based GHC versions (GHC 9.4.1 onwards) fail if space in path to `ghc` executable
+  corrupt        71 hit(s) (all listed)
+      #6590 open 2024-05-21 Put hash/checksum in stack.yaml.lock to prevent manual updating
+      #3616 open 2017-11-30 Unicode normalization on OS X can break package name parsing
+      #5172 open 2020-02-11 On `StorageMigrationFailure`, Stack should try its workaround (delete database, try again)
+      #1747 open 2016-02-05 Store build logs for snapshot packages somewhere in the stack root directory
+      #4835 open 2019-05-21 `stack gc` to shrink the space taken by ~/.stack/
+      #2702 open 2016-10-11 Respect executable NoBuffering
+      #4969 open 2019-07-18 Can't load .so/.DLL error when building in stack 2
+      #1476 open 2015-12-07 How to reinstall a package?
+      #6661 open 2024-11-28 GHC's `-package <pkg>` can expose installed package not listed by `ghc-pkg list <pkg>`
+      #6897 closed 2026-05-03 Stack's config set snapshot corrupts when specified snapshot is compiler-only
+      #6704 closed 2025-04-02 stack script can not access vector package
+      #5567 closed 2021-06-21 Windows msys2: pacman reports PGP signature errors.
+      #6497 closed 2024-02-26 Need documents about old LTS, downgrade stack and multiple stack executables
+      #6372 closed 2023-12-10 `stack sdist` fails, given a Unicode package name
+      #5709 closed 2022-04-12 Stack for Linux AArch64 (ARM64)
+      #6267 closed 2023-10-02 Mitigate https://gitlab.haskell.org/ghc/ghc/-/issues/21250
+      #5536 closed 2021-05-10 Git submodules are not cloned
+      #6156 closed 2023-06-16 On Windows, Stack 2.11.1 installer said to corrupt user's PATH
+      #2060 closed 2016-04-24 `stack build --haddock` is a one way ticket
+      #5517 closed 2021-04-07 ghc-8.10.4 incomplete archive for x86_64-linux
+  corruption     29 hit(s) (all listed)
+      #3248 open 2017-07-05 Power failure during `stack build` results in corruption to global Stack directory
+      #6590 open 2024-05-21 Put hash/checksum in stack.yaml.lock to prevent manual updating
+      #2693 open 2016-10-09 Mac OS Travis errors
+      #4835 open 2019-05-21 `stack gc` to shrink the space taken by ~/.stack/
+      #2818 open 2016-11-29 Can't force rebuilds of non-local packages
+      #2426 open 2016-08-02 When updating, "removeDirectoryRecursive: permission denied (Access is denied.)" Windows 7
+      #6814 open 2025-10-07 “Stack 3.7.1: linker (-lgmp) failure & wrong toolchain when building vpf-class project”
+      #4857 open 2019-06-09 Is it expected that data files do not get installed to where bin is?
+      #5405 closed 2020-09-28 nondeterministic build failure on OS X
+      #5381 closed 2020-09-08 Irreproducibility: Code rebuilds only the first time I switch resolvers
+      #4948 closed 2019-07-10 network-info installs only from second try.
+      #6186 closed 2023-07-14 Bad error message when using extra-dep with long file names
+      #4296 closed 2018-09-07 Default configJobs value is unsafe/wrong
+      #906 closed 2015-09-02 Ghc fail with "ghc: internal error: evacuate: strange closure type 30052320" when compiling Data.Containers
+      #1927 closed 2016-03-18 Build plans carry stale flags from previous package versions when package flags change
+      #3098 closed 2017-03-29 free(): invalid pointer: ... when quitting out of yesod
+      #2936 closed 2017-01-18 Build corruption bug when moving a project
+      #2054 closed 2016-04-22 building with docker seems utterly broken
+      #2575 closed 2016-09-10 stack build aeson-1.0.0.0 ExitFailure (-11)
+      #2549 closed 2016-08-31 stack sdist does not handle filenames with non-ASCII characters
+  truncated      18 hit(s) (all listed)
+      #6175 open 2023-06-24 Add unpacking of extra deps
+      #4559 open 2019-02-04 Get rid of persistent build errors due to non-atomic file writes in GHC and stack
+      #4502 open 2019-01-12 module `main:Log' is defined in multiple files (duplicated file)
+      #5607 open 2021-08-22 Segmentation Fault when running stack in zsh (MacOS)
+      #4016 open 2018-05-08 The Progress: bar do not clear
+      #6147 closed 2023-06-07 Test `4095-utf8-pure-nix` fails because `NIX_PATH` no longer set by `nix.sh`
+      #6180 closed 2023-06-30 Building GHC 9.4.5 from source fails because of deprecated Hadrian flag
+      #2808 closed 2016-11-25 Template 'yesod-postgres' broken on Stack/Nix
+      #2819 closed 2016-11-30 Stack Setup fails sanity check
+      #3518 closed 2017-10-26 Stack 1.6 linking issues on Arch Linux
+      #3322 closed 2017-08-07 C compiler cannot create executables
+      #4324 closed 2018-09-28 Stack dot should handle properly GHC boot packages
+      #1540 closed 2015-12-19 stack build failure relating to the network package on Windows 10
+      #413 closed 2015-06-25 stack bench truncates final output on a slow terminal
+      #1584 closed 2016-01-01 [nix] "error: undefined variable `xxx' at (string):1:yyy"
+      #668 closed 2015-07-24 Be more helpful when untarring the index fails
+      #303 closed 2015-06-14 Cancelling fetching index cache causes subsequent stack commands to fail
+      #4500 merged 2019-01-10 List global package deps in stack dot graph
+  truncate       27 hit(s) (all listed)
+      #6175 open 2023-06-24 Add unpacking of extra deps
+      #4559 open 2019-02-04 Get rid of persistent build errors due to non-atomic file writes in GHC and stack
+      #4016 open 2018-05-08 The Progress: bar do not clear
+      #4502 open 2019-01-12 module `main:Log' is defined in multiple files (duplicated file)
+      #5607 open 2021-08-22 Segmentation Fault when running stack in zsh (MacOS)
+      #5566 open 2021-06-21 RFE: dump-logs: error
+      #6380 closed 2023-12-15 Clang.exe failed during stack build
+      #6147 closed 2023-06-07 Test `4095-utf8-pure-nix` fails because `NIX_PATH` no longer set by `nix.sh`
+      #6177 merged 2023-06-28 Ellipsize build progress output line
+      #6180 closed 2023-06-30 Building GHC 9.4.5 from source fails because of deprecated Hadrian flag
+      #2808 closed 2016-11-25 Template 'yesod-postgres' broken on Stack/Nix
+      #2819 closed 2016-11-30 Stack Setup fails sanity check
+      #1810 closed 2016-02-19 Unicode normalized comparison
+      #3518 closed 2017-10-26 Stack 1.6 linking issues on Arch Linux
+      #3322 closed 2017-08-07 C compiler cannot create executables
+      #4324 closed 2018-09-28 Stack dot should handle properly GHC boot packages
+      #1540 closed 2015-12-19 stack build failure relating to the network package on Windows 10
+      #413 closed 2015-06-25 stack bench truncates final output on a slow terminal
+      #1388 closed 2015-11-21 `stack runghc --no-config` and `--standalone` options
+      #1584 closed 2016-01-01 [nix] "error: undefined variable `xxx' at (string):1:yyy"
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6110 open 2023-04-26 Specific error message when extra-deps git commit is empty.
+      #2113 open 2016-05-07 stack new: non-empty DIRS does not provide a way to add '.' to packages
+      #1565 open 2015-12-26 Interactive stack new
+      #3501 open 2017-10-20 Set $ACLOCAL_PATH in `stack exec` appropriately
+      #4468 open 2018-12-27 Make Stack's integration tests not depend on $PATH
+      #2205 open 2016-05-28 Feature discussion - Stack System Root
+      #3467 open 2017-10-03 Feature request: consider how to better support -split-sections
+      #3414 open 2017-09-04 Default html charset for `stack test --coverage` reports on windows should not be cp437 
+      #5258 open 2020-04-14 Building dependency from git only works once per SHA
+      #2767 open 2016-11-08 Depending on a modified Happy or Alex package requires non-trivial patching
+      #2638 open 2016-09-26 Windows installer should follow STACK_ROOT setting
+      #832 open 2015-08-23 can't tab-complete to get filenames running `stack exec` for tools
+      #3083 open 2017-03-21 Stack fails to rebuild output executable if deleted
+      #2078 open 2016-04-29 Consider if other order of combination is more appropriate for the monoids on config types
+      #2583 open 2016-09-12 Stack fails to build "mutually recursive" packages
+      #2885 open 2016-12-30 stack exec is slow
+      #5228 open 2020-03-16 Hoogle Received ExitFailure 1
+      #6248 open 2023-09-20 Recompilation checking issue with multiple packages, --fast and TH
+      #6896 closed 2026-05-03 Project package with only a sublibrary does not work as a dependency
+      #6826 closed 2025-12-16 `stack build --haddock-executables` does not build docs for executable
+  atomic         25 hit(s) (all listed)
+      #4559 open 2019-02-04 Get rid of persistent build errors due to non-atomic file writes in GHC and stack
+      #3248 open 2017-07-05 Power failure during `stack build` results in corruption to global Stack directory
+      #5228 open 2020-03-16 Hoogle Received ExitFailure 1
+      #6865 merged 2026-03-21 Add Backpack support to Stack
+      #6841 closed 2026-01-15 Stack can not install packages. Nothing is happening
+      #5709 closed 2022-04-12 Stack for Linux AArch64 (ARM64)
+      #3487 closed 2017-10-13 Stack build causing linker error on Mac OSX Sierra
+      #6023 merged 2023-01-08 Fix #5968 New approach to overwriting existing Stack executable
+      #1755 closed 2016-02-07 Would you be interested in supporting arm64 (aarch64)?
+      #5562 merged 2021-06-06 `stack setup` installs GHC for aarch64 on M1 Macs
+      #2103 closed 2016-05-05 Feature Request: Official ARM support
+      #4221 closed 2018-08-10 "Inconsistent dependencies" bug with packages in custom Setup.hs and extra-deps
+      #2808 closed 2016-11-25 Template 'yesod-postgres' broken on Stack/Nix
+      #2159 closed 2016-05-18 Hackage credentials file is world-readable when saved
+      #3958 closed 2018-04-08 stack ghci: createProcess: runInteractiveProcess: exec: does not exist (No such file or directory)
+      #950 closed 2015-09-08 Make locking opt-in rather than default
+      #1239 closed 2015-10-26 local packages with c-sources give runtime errors in stack ghci
+      #643 closed 2015-07-21 Support concurrent stack invocations or document current behavior
+      #683 closed 2015-07-27 .copyFile14684.tmp:  copyFile: does not exist
+      #1102 closed 2015-10-05 How can I prevent `stack install` to run if I just run `stack install --enable-library-profiling`?
+  atomically     7 hit(s) (all listed)
+      #4559 open 2019-02-04 Get rid of persistent build errors due to non-atomic file writes in GHC and stack
+      #6865 merged 2026-03-21 Add Backpack support to Stack
+      #6023 merged 2023-01-08 Fix #5968 New approach to overwriting existing Stack executable
+      #4221 closed 2018-08-10 "Inconsistent dependencies" bug with packages in custom Setup.hs and extra-deps
+      #2159 closed 2016-05-18 Hackage credentials file is world-readable when saved
+      #3958 closed 2018-04-08 stack ghci: createProcess: runInteractiveProcess: exec: does not exist (No such file or directory)
+      #4688 merged 2019-04-02 Take a write lock before using Pantry database #4471
+  interrupted    15 hit(s) (all listed)
+      #2899 open 2017-01-05 `stack setup` does not resume failed download.
+      #5378 open 2020-08-28 interrupt at wrong time (updating indices?) causes strange failures
+      #4737 open 2019-04-15 `stack repl` in a half closed state after ctrl-c on Windows
+      #6390 closed 2023-12-21 ARM64 self-hosted GitHub runner fails
+      #5856 merged 2022-09-08 Integration tests in forks
+      #2099 closed 2016-05-05 installation failure of ghc-mod
+      #2422 closed 2016-08-01 Linker error when compiling with --trace/--profile
+      #3599 closed 2017-11-22 (windows) stack build fails due to encoding of setup-shim-******.hs
+      #3391 closed 2017-08-29 user interrupt in copy/register step breaks the package database
+      #3183 closed 2017-05-22 Not enough cleaning
+      #4399 closed 2018-11-15 stack build failing with new project on MacOS
+      #1044 closed 2015-09-24 Stack became unreliable: .: canonicalizePath: interrupted (Interrupted system call)
+      #527 closed 2015-07-06 `stack exec` not propagating signals
+      #1102 closed 2015-10-05 How can I prevent `stack install` to run if I just run `stack install --enable-library-profiling`?
+      #187 closed 2015-06-05 Pass through SIGINT on executing processes
+  interrupt      53 hit(s) (all listed)
+      #5378 open 2020-08-28 interrupt at wrong time (updating indices?) causes strange failures
+      #2899 open 2017-01-05 `stack setup` does not resume failed download.
+      #2064 open 2016-04-25 Build stalls on stalled download instead of scheduling other tasks
+      #5144 open 2020-01-14 Stack test terminates test process on Ctrl+C, preventing resource cleanup
+      #4737 open 2019-04-15 `stack repl` in a half closed state after ctrl-c on Windows
+      #4087 open 2018-06-14 Dynamically linked stack release binaries aren't really compatible with stack --docker
+      #4977 closed 2019-07-24 `stack build; stack test` rebuilds everything twice
+      #6390 closed 2023-12-21 ARM64 self-hosted GitHub runner fails
+      #5856 merged 2022-09-08 Integration tests in forks
+      #497 closed 2015-07-03 Locally installed GHC fails to compile sanity check
+      #2281 closed 2016-06-18 Signing hangs with `stack upload` or `sig-tool`
+      #2283 closed 2016-06-19 stack assumes tar is GNU tar, but that's not always true
+      #2099 closed 2016-05-05 installation failure of ghc-mod
+      #2568 closed 2016-09-06 Docker: Aborting an initial stack exec can turn all futher stack execs into segfaults
+      #1842 closed 2016-02-26 Missing .dyn_o file does not trigger module rebuild
+      #3073 closed 2017-03-19 Bad C-c handling during 'stack init'
+      #2422 closed 2016-08-01 Linker error when compiling with --trace/--profile
+      #2041 closed 2016-04-18 Cabal-install is twice as fast as Stack (on OS X with lots of packages: in stack.yaml)
+      #2353 closed 2016-07-08 stack build (on the stack project itself) cache invalidated after a stack install
+      #2039 closed 2016-04-17 stack shouldn't recommend adding extra-deps to your global stack.yaml, or recommend `stack solver`, when run outside a project
+  sigkill        12 hit(s) (all listed)
+      #3399 open 2017-08-31 Provide option to treat SIGKILL as out of memory
+      #5734 open 2022-05-06 Stack fails to run in AMD64 docker container on M1 Mac
+      #4416 open 2018-11-25 Ctrl+C on stack test orphans child process
+      #6868 merged 2026-04-04 --test-suite-timeout-grace
+      #6867 closed 2026-04-04 Add grace-period timeout handling for stack test suites
+      #2265 closed 2016-06-13 `stack install unix` fails under windows host
+      #2575 closed 2016-09-10 stack build aeson-1.0.0.0 ExitFailure (-11)
+      #3407 closed 2017-09-02 Consider whether there are issues with SIGKILLing stack and lockfiles
+      #3250 closed 2017-07-05 Child processes spawned by benchmark fail to receive POSIX signals
+      #399 closed 2015-06-24 LGPL licensing restrictions on Windows because of integer-gmp
+      #947 closed 2015-09-08 Should this work?
+      #416 closed 2015-06-25 OpenBSD installer / instructions
+  sigint         15 hit(s) (all listed)
+      #6236 open 2023-09-13 stack test fails to run clean up actions on SIGINT
+      #5144 open 2020-01-14 Stack test terminates test process on Ctrl+C, preventing resource cleanup
+      #6480 open 2024-02-11 Add option to disable terminal input
+      #6589 open 2024-05-21 How to remove warning "Instead of 'ghc-options: -XOverloadedStrings ..."
+      #1842 closed 2016-02-26 Missing .dyn_o file does not trigger module rebuild
+      #2041 closed 2016-04-18 Cabal-install is twice as fast as Stack (on OS X with lots of packages: in stack.yaml)
+      #2265 closed 2016-06-13 `stack install unix` fails under windows host
+      #3391 closed 2017-08-29 user interrupt in copy/register step breaks the package database
+      #3250 closed 2017-07-05 Child processes spawned by benchmark fail to receive POSIX signals
+      #399 closed 2015-06-24 LGPL licensing restrictions on Windows because of integer-gmp
+      #879 closed 2015-08-30 File lock completely locks up the process
+      #187 closed 2015-06-05 Pass through SIGINT on executing processes
+      #416 closed 2015-06-25 OpenBSD installer / instructions
+      #547 closed 2015-07-08 `stack exec` not propagating signals when using Docker
+      #2474 merged 2016-08-11 Replace runghc with ghc -e Main.main
+  ctrl-c         50 hit(s) (all listed)
+      #4416 open 2018-11-25 Ctrl+C on stack test orphans child process
+      #5144 open 2020-01-14 Stack test terminates test process on Ctrl+C, preventing resource cleanup
+      #4737 open 2019-04-15 `stack repl` in a half closed state after ctrl-c on Windows
+      #5378 open 2020-08-28 interrupt at wrong time (updating indices?) causes strange failures
+      #1875 open 2016-03-04 Please add a warning and cancel option when options change
+      #6236 open 2023-09-13 stack test fails to run clean up actions on SIGINT
+      #2064 open 2016-04-25 Build stalls on stalled download instead of scheduling other tasks
+      #2746 open 2016-10-27 stack build --file-watch, with nix: should Stack re-launch the nix-shell when we change stack.yaml?
+      #3771 open 2018-01-14  Verification error: Invalid hash for /01-index.tar.gz
+      #4559 open 2019-02-04 Get rid of persistent build errors due to non-atomic file writes in GHC and stack
+      #3870 open 2018-02-16 A set of useful alternative package index mirrors?
+      #5225 open 2020-03-14 Very unstable behavior with Japanese system locale on Windows 10
+      #6329 open 2023-11-05 Project builds using Nix with `add-gc-roots: true` fail due to removal of nix-shell `--add-root` option
+      #3248 open 2017-07-05 Power failure during `stack build` results in corruption to global Stack directory
+      #1731 open 2016-02-03 `stack --work-dir` fails with directories above the current directory
+      #3559 closed 2017-11-07 "can't load .so/.DLL" error with Symbol not found while installing optparse-applicative-0.13.2.0 dependency on mac via Stack for Hakyll `stack install hakyll`
+      #610 closed 2015-07-16 stack ghci in cygwin/msys bash chokes on Ctrl-C
+      #2240 closed 2016-06-04 stack setup download incredibly slow
+      #909 closed 2015-09-03 stack build rebuilds unnecessarily and with errors
+      #2568 closed 2016-09-06 Docker: Aborting an initial stack exec can turn all futher stack execs into segfaults
+  power          28 hit(s) (all listed)
+      #3248 open 2017-07-05 Power failure during `stack build` results in corruption to global Stack directory
+      #6224 open 2023-08-29 Add a new hie-bios cradle component for Setup.hs
+      #2694 open 2016-10-09 Improve documentation for Stack.Runners
+      #4391 open 2018-11-07 Builds are kind of not using Hyper Threading
+      #6252 open 2023-09-22 Migrate repository to haskell org?
+      #4883 open 2019-06-18 stack build does unnecessary rebuild if more than one stack file
+      #3465 closed 2017-10-02 Stack GHCI shows error while running in windows 7 power shell . 
+      #5709 closed 2022-04-12 Stack for Linux AArch64 (ARM64)
+      #4296 closed 2018-09-07 Default configJobs value is unsafe/wrong
+      #4745 closed 2019-04-16 Begin using component-based builds
+      #5457 closed 2020-12-10 Reorganizing the documentation
+      #1920 closed 2016-03-17 Add to FAQ how to trick stack to install a GHC binary archive on Windows
+      #5251 closed 2020-04-03 Documentation out of date (recommends use of "stack solver")
+      #3110 closed 2017-04-06 Global Stack setup not terminating on Windows with Linux subsystem
+      #3810 closed 2018-01-27 Stack compiling GTK project
+      #3797 closed 2018-01-20 Stack prints raw ANSI color codes sometimes
+      #4485 closed 2019-01-04 Why is yaml 0.11.x not supported?
+      #5034 closed 2019-09-18 Compile hscolour 1.24.4 `permission denied` on Windows 10 when install hlint use stack
+      #4470 closed 2018-12-27 problem building --docker double-conversion with lts-13.0
+      #1590 closed 2016-01-02 stack init should use a user configurable snapshot setting as a default
+  outage         9 hit(s) (all listed)
+      #5994 open 2022-12-28 Connection Failure error with hackage.haskell.org
+      #6821 merged 2025-11-15 Fix #6820 Update building GHC from source
+      #5387 closed 2020-09-15 Timeout when accessing `casa.fpcomplete.com`
+      #4928 closed 2019-07-01 DISCUSS: Disable hackage-security expiry checks by default
+      #2170 closed 2016-05-21 ghc-8.0.1 incomplete archive for x86_64-linux
+      #5400 closed 2020-09-21 SSL failures with https://get.haskellstack.org
+      #5163 closed 2020-02-05 Make GHC minor and bug fix releases available as default in Stack
+      #2615 merged 2016-09-20 More hlint suggested clean ups
+      #5393 merged 2020-09-21 Also resolve auto-generated component files.
+  ENOSPC         0 hit(s)
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5172 open 2020-02-11 On `StorageMigrationFailure`, Stack should try its workaround (delete database, try again)
+      #4857 open 2019-06-09 Is it expected that data files do not get installed to where bin is?
+      #4032 open 2018-05-18 Profiling build defaults
+      #4427 open 2018-12-03 Optimize and re-enable 4085-insufficient-error-message integration test
+      #3248 open 2017-07-05 Power failure during `stack build` results in corruption to global Stack directory
+      #4835 open 2019-05-21 `stack gc` to shrink the space taken by ~/.stack/
+      #3927 open 2018-03-16 Discussion: Better support for development plugins
+      #3813 open 2018-01-28 Proposal: Dependency vendoring for Stack
+      #3623 open 2017-12-04 Stack should not store any data in %AppData%
+      #4950 open 2019-07-11 compiler-tools-bin path is changing (if nix is enabled) if you add a shell-file attribute (breaks intero)
+      #5970 open 2022-12-09 Flag to refresh lockfile for specific dependency
+      #3918 open 2018-03-13 nonportable-include-path warning on case-insensitive systems
+      #3083 open 2017-03-21 Stack fails to rebuild output executable if deleted
+      #3442 open 2017-09-19 Windows: Substituted paths are not resolved correctly
+      #6580 open 2024-05-16 Is the current default for `--[no-]system-ghc` the most appropriate?
+      #5442 open 2020-11-28 Supporting using the same .stack-work directory for multiple projects
+      #5217 open 2020-03-07 SQLite3 returned ErrorIO while attempting to perform prepare
+      #4087 open 2018-06-14 Dynamically linked stack release binaries aren't really compatible with stack --docker
+      #6670 open 2024-12-11  hsc2hs-ghc-9.8.4.exe: fd:3: hGetContents: invalid argument (cannot decode byte sequence starting from...
+      #2093 open 2016-05-03 explicit-setup-deps causes strange build failure linking Setup with -ltinfo
+  partial        42 hit(s) (all listed)
+      #2737 open 2016-10-24 Stack bash completion is incomplete
+      #2540 open 2016-08-29 Backpack for Stack
+      #6689 open 2025-02-21 `file-embed`: Additions to `extra-source-files` don't trigger rebuild of module
+      #6042 open 2023-01-22 Allow `stack build` to target sub-libraries
+      #4135 open 2018-07-06 [Windows] extra-libraries and extra-lib-dirs are not passed to the linker / ghc for linking when building a haskell DLL that depends on another foreign DLL
+      #2899 open 2017-01-05 `stack setup` does not resume failed download.
+      #848 open 2015-08-25 Add `stack build --prefix` option
+      #5754 open 2022-05-16 Blessed recipe how to use stack on github actions, in particular caching?
+      #6865 merged 2026-03-21 Add Backpack support to Stack
+      #6669 merged 2024-12-11 Fix #6665 Avoid partial functions
+      #6665 closed 2024-12-09 Avoid use of partial functions that generate GHC warnings
+      #5570 closed 2021-06-28 stack ghci ignores common mixins
+      #6309 merged 2023-10-20 Clear Stan suggestion; eliminate partial `minimum`
+      #6371 closed 2023-12-10 stack run works, everything else does not
+      #4905 closed 2019-06-24 Stack hoogle commands fails due to not finding/installing hoogle
+      #6174 merged 2023-06-24 Partial fix #6170 Move nextPrompt after replCommand
+      #3085 closed 2017-03-23 The download break, need resume download ,do not try to download from zero
+      #5759 closed 2022-05-28 src directory not in scope when creating new stack project
+      #5411 closed 2020-10-07 extra-deps' clones as many times the repository as there are subdirs
+      #5631 merged 2021-11-05 stack upload: Support authentication with Hackage API key
+  incomplete     57 hit(s) (all listed)
+      #2737 open 2016-10-24 Stack bash completion is incomplete
+      #6811 open 2025-09-28 System.Teminal.hsc fails to compile on a Solaris-family OS
+      #3773 open 2018-01-14 Shadowed dependencies with custom Setup.hs
+      #6589 open 2024-05-21 How to remove warning "Instead of 'ghc-options: -XOverloadedStrings ..."
+      #2702 open 2016-10-11 Respect executable NoBuffering
+      #5245 open 2020-03-30 Problems with build-tools support in Stack
+      #6331 open 2023-11-07 Setting LD_LIBRARY_PATH for Nix dev shells might be bad advice
+      #3248 open 2017-07-05 Power failure during `stack build` results in corruption to global Stack directory
+      #2279 open 2016-06-17 How to force stack to show the output from tests?
+      #3623 open 2017-12-04 Stack should not store any data in %AppData%
+      #6950 closed 2026-07-16 (dev) container documentation should prominently include URI for container
+      #6042 open 2023-01-22 Allow `stack build` to target sub-libraries
+      #5010 open 2019-08-19 stack build in WSL - openAnonymousTempFileFromDir: inappropriate type (Is a directory)
+      #6915 closed 2026-05-25 `stack config set` fails if the `global-project` directory is missing/incomplete
+      #6803 closed 2025-09-01 Docs: Update setting up page guide for China-based users
+      #5174 closed 2020-02-13 removing ~/.stack/programs/x86_64-linux/ghc-tinfo6-8.4.4/ causes system ghc to be used
+      #4745 closed 2019-04-16 Begin using component-based builds
+      #6388 closed 2023-12-18 Race condition updating pantry database?
+      #6262 closed 2023-09-29 A chat room for stack users and devs ?
+      #3559 closed 2017-11-07 "can't load .so/.DLL" error with Symbol not found while installing optparse-applicative-0.13.2.0 dependency on mac via Stack for Hakyll `stack install hakyll`
+  dataloss       0 hit(s)
+  recover        28 hit(s) (all listed)
+      #2205 open 2016-05-28 Feature discussion - Stack System Root
+      #1476 open 2015-12-07 How to reinstall a package?
+      #2426 open 2016-08-02 When updating, "removeDirectoryRecursive: permission denied (Access is denied.)" Windows 7
+      #4559 open 2019-02-04 Get rid of persistent build errors due to non-atomic file writes in GHC and stack
+      #848 open 2015-08-25 Add `stack build --prefix` option
+      #5387 closed 2020-09-15 Timeout when accessing `casa.fpcomplete.com`
+      #5517 closed 2021-04-07 ghc-8.10.4 incomplete archive for x86_64-linux
+      #335 closed 2015-06-17 Specifying flags for multiple packages
+      #2170 closed 2016-05-21 ghc-8.0.1 incomplete archive for x86_64-linux
+      #2568 closed 2016-09-06 Docker: Aborting an initial stack exec can turn all futher stack execs into segfaults
+      #1450 closed 2015-11-29 stack 0.1.5 fails to build with GHC 7.8
+      #2430 closed 2016-08-03 If ghc --version fails for an installed GHC, recover more intelligently
+      #2415 closed 2016-07-26 Compiling large projects leads to ghc getting borked
+      #3225 closed 2017-06-20 Add flag to print GHC output to stdout
+      #4523 closed 2019-01-21 Bug: stack build of project using wreq hangs indefinitely on lts-13.3 on Windows 10
+      #4971 closed 2019-07-22 Links with absolute paths in --haddock
+      #854 closed 2015-08-26 Resource vanished while downloading new ghc
+      #64 closed 2015-05-25 stack test and bench
+      #55 closed 2015-05-24 `stack hoogle` command
+      #527 closed 2015-07-06 `stack exec` not propagating signals
+  recovery       4 hit(s) (all listed)
+      #3623 open 2017-12-04 Stack should not store any data in %AppData%
+      #1874 closed 2016-03-04 Stack setup with GHCJS can not restart after failure
+      #3510 closed 2017-10-24 Stack does not retry effectively when S3 is being flaky.
+      #878 closed 2015-08-30 Implement a single shared package database per GHC version
+  rollback       7 hit(s) (all listed)
+      #5289 closed 2020-05-03 stack sdist (2.3.1) generates weird PVP bounds in .cabal file
+      #4928 closed 2019-07-01 DISCUSS: Disable hackage-security expiry checks by default
+      #2130 closed 2016-05-12 Stack + nix error
+      #3345 closed 2017-08-14 AesonException when downloading nightly since 2017-08-13
+      #4362 closed 2018-10-18 1.9.1 fails with "I don't know how to install GHC on your system configuration, please install manually"
+      #1102 closed 2015-10-05 How can I prevent `stack install` to run if I just run `stack install --enable-library-profiling`?
+      #361 closed 2015-06-19 Add `stack uninstall`, the opposite of `stack install`
+  resume         18 hit(s) (all listed)
+      #2899 open 2017-01-05 `stack setup` does not resume failed download.
+      #4559 open 2019-02-04 Get rid of persistent build errors due to non-atomic file writes in GHC and stack
+      #2205 open 2016-05-28 Feature discussion - Stack System Root
+      #3085 closed 2017-03-23 The download break, need resume download ,do not try to download from zero
+      #1874 closed 2016-03-04 Stack setup with GHCJS can not restart after failure
+      #1842 closed 2016-02-26 Missing .dyn_o file does not trigger module rebuild
+      #2781 closed 2016-11-15 Benchmarks fail due to "shadowed dependencies"
+      #2657 closed 2016-10-01 Issue with corruption in downloaded executable
+      #2780 closed 2016-11-15 Switch the backend to something other than Git-based solutions
+      #2973 closed 2017-02-03 get-stack.sh installs broken file
+      #4470 closed 2018-12-27 problem building --docker double-conversion with lts-13.0
+      #1683 closed 2016-01-20 Stack is not using nix cached packages for cabal dependencies
+      #1658 closed 2016-01-15 Weird error when building hslua-0.4.1
+      #754 closed 2015-08-11 Stack build: Windows 7 stdc++.dll missing
+      #898 closed 2015-09-02 Stack master crashes on Windows
+      #1302 closed 2015-11-07 missing newline at the end of "Progress: 1/2"
+      #181 closed 2015-06-04 Stack setup should roll back changes on a build failure
+      #3702 merged 2017-12-23 Avoid MAX_PATH for precompiled cache #3649
+  half-written   9 hit(s) (all listed)
+      #4559 open 2019-02-04 Get rid of persistent build errors due to non-atomic file writes in GHC and stack
+      #5037 open 2019-09-22 Starting `stack ghci` makes no modules available if any are broken -- even though `:reload` is more permissive
+      #3487 closed 2017-10-13 Stack build causing linker error on Mac OSX Sierra
+      #4745 closed 2019-04-16 Begin using component-based builds
+      #644 closed 2015-07-21 Develop/Document multi-level parallelism policy
+      #2808 closed 2016-11-25 Template 'yesod-postgres' broken on Stack/Nix
+      #3797 closed 2018-01-20 Stack prints raw ANSI color codes sometimes
+      #4504 closed 2019-01-14 MacOS: stack fails to build "ghc-paths" when Macports is present
+      #137 closed 2015-05-31 `stack new` for creating new projects with templates
+  wipe           48 hit(s) (all listed)
+      #2113 open 2016-05-07 stack new: non-empty DIRS does not provide a way to add '.' to packages
+      #4559 open 2019-02-04 Get rid of persistent build errors due to non-atomic file writes in GHC and stack
+      #4835 open 2019-05-21 `stack gc` to shrink the space taken by ~/.stack/
+      #6771 open 2025-07-30 Feature request: Ability to purge unused cache when building
+      #910 open 2015-09-03 Docker startup errors on shared NFS filesystem (WAS: Errors running even "hello world" under Docker with stack)
+      #6944 closed 2026-07-07 'Immutable' Haskell library depends on a C library that has changed - How to fix?
+      #5046 closed 2019-10-01 Ignoring Cabal's bounds on containers (>=0.4.2.1 && <0.6); using containers-0.6.0.1.
+      #5381 closed 2020-09-08 Irreproducibility: Code rebuilds only the first time I switch resolvers
+      #1408 closed 2015-11-23 Better error messages for "invariant violated: multiple results when describing installed package"
+      #2577 closed 2016-09-11 GHC panic when building Stack on macOS Sierra
+      #5589 closed 2021-07-19 stack update gives "fdLock: invalid argument (Invalid argument)"
+      #5732 closed 2022-05-04 windows pacman commands failing
+      #2300 closed 2016-06-24 ghc installed by stack setup fails on fedora 24 (libinfo-5 missing)
+      #1793 closed 2016-02-15 ghc-mod doesn't work with Stack
+      #3020 closed 2017-02-22 custom-setup: build path doesn't show Cabal version from extra-deps
+      #2732 closed 2016-10-24 `-DGHCJS_BROWSER` flag for stack build doesn't do anything
+      #2505 closed 2016-08-17 stack ugrade --git failures on Windows
+      #2495 closed 2016-08-15 ghcjs: cannot find package/module
+      #2047 closed 2016-04-19 Unusual strange errors after recent stack updates
+      #2607 closed 2016-09-18 Travis GHCJS build fails when using LTS 6.16
+  wipes          3 hit(s) (all listed)
+      #2113 open 2016-05-07 stack new: non-empty DIRS does not provide a way to add '.' to packages
+      #6944 closed 2026-07-07 'Immutable' Haskell library depends on a C library that has changed - How to fix?
+      #5381 closed 2020-09-08 Irreproducibility: Code rebuilds only the first time I switch resolvers
+  erase          10 hit(s) (all listed)
+      #2767 open 2016-11-08 Depending on a modified Happy or Alex package requires non-trivial patching
+      #6111 closed 2023-04-27 Agda build failure with cpphs and GHC 9.4.5 on Windows
+      #2282 closed 2016-06-18 nix streamingProcess: runInteractiveProcess: exec: does not exist
+      #1805 closed 2016-02-18 stack ghci attempts to load a removed module
+      #3846 closed 2018-02-05 `data-files` sections inconsistent with .stack-work content across builds
+      #3352 closed 2017-08-15 Code cleanup following extensible snapshots
+      #3299 closed 2017-07-28 Extensible snapshots don't pick up git dependencies correctly
+      #4014 closed 2018-05-07 Stack upgrade won't work on a freshly installed ubuntu 16.04
+      #980 closed 2015-09-11 Bug in ```stack build```: Cannot satisfy -package-id text-1.2.1.3-3718968f98d5614ccdc45c27d4e8b0a1 (version 0.1.4.0)
+      #1413 closed 2015-11-24 stack new broken?
+  erasing        2 hit(s) (all listed)
+      #2282 closed 2016-06-18 nix streamingProcess: runInteractiveProcess: exec: does not exist
+      #3299 closed 2017-07-28 Extensible snapshots don't pick up git dependencies correctly
+  erased         2 hit(s) (all listed)
+      #3846 closed 2018-02-05 `data-files` sections inconsistent with .stack-work content across builds
+      #1413 closed 2015-11-24 stack new broken?
+  destroy        9 hit(s) (all listed)
+      #2633 open 2016-09-26 Have setup-info support specification of a ghc build directory
+      #2210 open 2016-05-30 Unhappy about `stack test --test-arguments`
+      #5305 closed 2020-05-28 Extend `stack script --extra-dep` to local file paths
+      #5298 closed 2020-05-15 Fail to build with cabal-install
+      #3095 closed 2017-03-29 stack --docker build fails when there are extra-deps
+      #1035 closed 2015-09-23 git refs besides commit hash? (stack.yaml article clarification) 
+      #554 closed 2015-07-09 stack build with older stack results in chr exception
+      #4545 closed 2019-01-26 Binary module interface
+      #3615 merged 2017-11-29 Don't parse cabal files twice
+  destroys       1 hit(s) (all listed)
+      #3615 merged 2017-11-29 Don't parse cabal files twice
+  overwrite      73 hit(s) (all listed)
+      #5254 open 2020-04-09 stack haddock: Wrong index for package with sublibraries
+      #5754 open 2022-05-16 Blessed recipe how to use stack on github actions, in particular caching?
+      #1781 open 2016-02-11 'stack new' shares all 'stack init' options
+      #6627 open 2024-07-19 Windows: .../ghc-9.4.8/mingw/bin/strip.exe: error: Permission denied
+      #5010 open 2019-08-19 stack build in WSL - openAnonymousTempFileFromDir: inappropriate type (Is a directory)
+      #2548 open 2016-08-30 HP 8.0.1 minimal Windows install installs HP system-wide and stack per-user
+      #6057 closed 2023-02-24 hpack on wrong version yet `stack build` does not fail
+      #6630 closed 2024-07-31 `stack upgrade` overrides Stack executable file not named `stack` when called as `stack`
+      #6521 closed 2024-03-15 Allow Hpack used by Stack to overwrite a Cabal file it considers has been modified manually
+      #5248 closed 2020-04-01 Stack Build-API?
+      #5231 closed 2020-03-20 Custom template gets overwritten
+      #6477 closed 2024-02-05 The impossible happened!  (MacOS only)
+      #5881 closed 2022-09-25 Stack can't install GHC 9.4.x on Debian 11 (Bullseye)
+      #5567 closed 2021-06-21 Windows msys2: pacman reports PGP signature errors.
+      #4795 closed 2019-05-02 DISCUSS: Policy on including lock files in repo
+      #3708 closed 2017-12-25 "stack upgrade" should overwrite current program location if it's writable
+      #6119 merged 2023-05-11 Fix #3708 By default, don't overwrite a Stack executable not named stack
+      #6023 merged 2023-01-08 Fix #5968 New approach to overwriting existing Stack executable
+      #5968 closed 2022-12-09 Permission error during stack upgrade 2.5.1 -> 2.9.1 on Windows 
+      #5685 closed 2022-03-03 Use Hackage only instead of Stackage
+  clobber        7 hit(s) (all listed)
+      #6865 merged 2026-03-21 Add Backpack support to Stack
+      #1198 closed 2015-10-19 Executables with the same names from different project packages are clobbered
+      #3350 closed 2017-08-15 Download script issues
+      #1068 closed 2015-09-28 Stack ghci should start with a project, even if there are two
+      #222 closed 2015-06-09 --coverage flag for `stack test`
+      #821 closed 2015-08-19 stack master fails when c2hs is used
+      #2002 closed 2016-04-06 v1.0.4.2 hotfix for release
+  blank          34 hit(s) (all listed)
+      #5835 open 2022-08-23 Add config get and dump commands.
+      #1731 open 2016-02-03 `stack --work-dir` fails with directories above the current directory
+      #6629 merged 2024-07-30 Fix #6628 Treat consecutive line ends as a single blank line
+      #6615 merged 2024-06-22 feat: provide time indication for integration tests
+      #4726 closed 2019-04-13 Windows: Need local-programs-path with no space in path, if no short (8 dot 3) name exists for default
+      #5862 closed 2022-09-11 Don't add blank lines back into multiline strings.
+      #4564 closed 2019-02-05 Internal library component not available for REPL
+      #5861 closed 2022-09-11 Extra blank lines introduced with `config set`
+      #5813 merged 2022-08-04 Use original YAML to preserve top-level order.
+      #3136 closed 2017-04-24 `stack config set resolver foo` doesn't edit in-line
+      #2395 closed 2016-07-20 Blank error when running haddock for GHCJS-compiled project
+      #2808 closed 2016-11-25 Template 'yesod-postgres' broken on Stack/Nix
+      #3048 closed 2017-03-07 'You are not the owner of .stack-work/. Aborting to protect file permissions.'
+      #2505 closed 2016-08-17 stack ugrade --git failures on Windows
+      #2275 closed 2016-06-16 stack new -- AesonException
+      #2293 closed 2016-06-20 Missing .deb dependency: netbase
+      #2353 closed 2016-07-08 stack build (on the stack project itself) cache invalidated after a stack install
+      #2317 closed 2016-07-01 stack setup on new blank project
+      #3527 closed 2017-10-28 1.6 prerelease doesn't work with offline-stack
+      #3944 closed 2018-03-25 Network as a dependency fails to build with GHC 8.4.1
+  unreadable     9 hit(s) (all listed)
+      #3381 open 2017-08-23 Improve docker image building support
+      #3248 open 2017-07-05 Power failure during `stack build` results in corruption to global Stack directory
+      #1836 open 2016-02-24 Pretty print long commands
+      #6055 closed 2023-02-20 Stack --file-watch prints show'n exception, not understandable error message
+      #4059 closed 2018-06-03 Warning texts are printed as if it was concurrent
+      #4204 closed 2018-08-04 Support the NO_COLOR environment variable
+      #2363 merged 2016-07-10 stack unpack: Ignore pax headers (fix #2361)
+      #4439 merged 2018-12-10 Fix Issue 4377 - Allows remote repo without cabal file and with package.yaml work
+      #3331 merged 2017-08-09 GHC color output
+  garbage        42 hit(s) (all listed)
+      #2687 open 2016-10-07 Disable idle garbage collection?
+      #1131 open 2015-10-09 Garbage collect generated library binaries
+      #4673 open 2019-03-31 nix add-gc-roots does not work under nixos?
+      #5227 open 2020-03-14 Changing cc-options does not recompile files
+      #3479 open 2017-10-09 Nix integration should use GC roots
+      #6084 open 2023-04-03 Enable cleaning up snapshots
+      #4835 open 2019-05-21 `stack gc` to shrink the space taken by ~/.stack/
+      #5035 open 2019-09-18 Compiling setup does not honor the --with-gcc flag
+      #6695 open 2025-03-15 Cabal's `main-is` field (source file) does not alter GHC's `-main-is` option (module and function name)
+      #1620 open 2016-01-07 unnecessary git clone when updating package commit sha
+      #5311 open 2020-06-04 `stack --nix --nix-help` does not work
+      #1634 open 2016-01-10 WISH: sandboxing and/or stashing of compilations when switching git branches
+      #6771 open 2025-07-30 Feature request: Ability to purge unused cache when building
+      #5647 closed 2021-12-08 `stack build myproj:lib` also builds executables
+      #3371 closed 2017-08-22 `stack script --optimize` clutters the current directory with *.hi and *.o files.
+      #824 closed 2015-08-20 Setting codepage UTF-8 (65001) produces garbled double quotes in GHC output
+      #5550 closed 2021-05-25 Can't clone repo with stack on NixOS
+      #3855 closed 2018-02-08 Nix integration fails with latest nixUnstable
+      #133 closed 2015-05-31 stack rm command
+      #39 closed 2015-05-19 Detect unused dependencies
+  mangled        10 hit(s) (all listed)
+      #6590 open 2024-05-21 Put hash/checksum in stack.yaml.lock to prevent manual updating
+      #6704 closed 2025-04-02 stack script can not access vector package
+      #2820 closed 2016-11-30 Unicode characters in templates are mangled when creating new project using `stack new` command on Windows
+      #4113 closed 2018-06-24 Possible console output concurrency problem
+      #4199 closed 2018-08-02 Windows 10: Colors get mangled
+      #4186 closed 2018-07-29 ISO C99 compiler support missing
+      #4504 closed 2019-01-14 MacOS: stack fails to build "ghc-paths" when Macports is present
+      #1301 closed 2015-11-06 Let building unlinked binaries (ghc -c)
+      #1285 merged 2015-11-04 Support reproducible builds via Nix
+      #4299 merged 2018-09-08 Document an overview of builds
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3447 open 2017-09-21 --hoogle can't be added to stack haddock command
+      #2092 open 2016-05-03 "stack ghci" should either use haskell2010, or pay attention to the cabal file language specification
+      #5258 open 2020-04-14 Building dependency from git only works once per SHA
+      #5487 open 2021-02-07 Stack does not rebuild when Template Haskell dependencies change with GHC 8.10
+      #4325 open 2018-09-28 NixOS + freeglut = Strange error
+      #5970 open 2022-12-09 Flag to refresh lockfile for specific dependency
+      #4166 open 2018-07-19 stack ghci reads in ~/.ghci but does not set def: values
+      #5137 open 2019-12-31 Generate documentation in LaTeX format.
+      #2045 open 2016-04-18 Command to access logs systematically without breaking .stack-work's abstraction
+      #5600 open 2021-08-17 Add "stack config get"
+      #5099 open 2019-11-25 stack myfile.hs  throw error: ghc-pkg: cannot find package 
+      #6718 open 2025-04-13 `stack haddock`: How to correctly use `--prologue`?
+      #6327 open 2023-11-04 Unnecessary rebuild in circular dep causes issues
+      #5473 open 2021-01-15 Link-time error after changing a dependency
+      #6270 open 2023-10-04 stack haddock --haddock-for-hackage
+      #6863 open 2026-03-16 `stack haddock` generates incorrect relative links
+      #5069 open 2019-10-29 Build with custom package-indices
+      #4417 open 2018-11-25 Changes in c-sources aren't always reflected in final binaries
+      #5061 open 2019-10-22 stack ghci: enable use of Stack interpreter options comment when loading script file
+      #5375 open 2020-08-26 Flags are not being overridden for local extra-deps
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1748 open 2016-02-05 Typo suggestions in more places in stack
+      #2622 open 2016-09-22 Every network access should be logged and ideally display its progress
+      #3377 open 2017-08-22 Difference in behavior between `stack script` and `stack script --compile`
+      #2794 open 2016-11-20 Allow setting local-doc-root in stack.yaml
+      #3870 open 2018-02-16 A set of useful alternative package index mirrors?
+      #2745 open 2016-10-26 when building haddock under a docker image it suggests the wrong install option for hscolour
+      #3892 open 2018-02-25 Circular dependencies no longer working
+      #4969 open 2019-07-18 Can't load .so/.DLL error when building in stack 2
+      #5019 open 2019-08-27 Support for coverage overlays
+      #2694 open 2016-10-09 Improve documentation for Stack.Runners
+      #2292 open 2016-06-20 Use a timeout when downloading snapshots.json
+      #3113 open 2017-04-06 Dynamic linking with a local extra-dep is broken
+      #1779 open 2016-02-11 Stack fails when running in a clean environment
+      #3307 open 2017-08-02 How to generate executable coverage reports with stack
+      #3129 open 2017-04-18 Document DIY Docker builds
+      #2172 open 2016-05-22 Option to copy source files before build
+      #5233 open 2020-03-22 Stack rebuilds whole application in file-watch mode, when it should be able to incrementally recompile 
+      #2210 open 2016-05-30 Unhappy about `stack test --test-arguments`
+      #2083 open 2016-05-01 Building stack with nix itself
+      #4883 open 2019-06-18 stack build does unnecessary rebuild if more than one stack file
+  unclean        1 hit(s) (all listed)
+      #2730 closed 2016-10-23 Building same project in parallel can result in errors
+  shutdown       6 hit(s) (all listed)
+      #4416 open 2018-11-25 Ctrl+C on stack test orphans child process
+      #3248 open 2017-07-05 Power failure during `stack build` results in corruption to global Stack directory
+      #4087 open 2018-06-14 Dynamically linked stack release binaries aren't really compatible with stack --docker
+      #2282 closed 2016-06-18 nix streamingProcess: runInteractiveProcess: exec: does not exist
+      #4470 closed 2018-12-27 problem building --docker double-conversion with lts-13.0
+      #623 closed 2015-07-17 Filling /tmp results in a crash
+  reboot         10 hit(s) (all listed)
+      #4559 open 2019-02-04 Get rid of persistent build errors due to non-atomic file writes in GHC and stack
+      #6841 closed 2026-01-15 Stack can not install packages. Nothing is happening
+      #2604 closed 2016-09-16 Fix building Stack on ARM
+      #2419 closed 2016-07-28 On OS X stack --nix doesn't need to set --extra-{lib,include}-dirs
+      #2364 closed 2016-07-10 .stack-work/dist/x86-64-linux/Cabal-1.22.8_ghcjs/ does not exist
+      #3868 closed 2018-02-16 Segfault after linking? Stack 1.6.3 (b27e629), GHC 8.0.2
+      #3277 closed 2017-07-17 Unpredictable builds with ghcjs
+      #3765 closed 2018-01-13 Stack build - Access violation error
+      #4470 closed 2018-12-27 problem building --docker double-conversion with lts-13.0
+      #257 closed 2015-06-10 ghc fails to install on Arch Linux because of missing libtinfo.so.5
+  disk+full      16 hit(s) (all listed)
+      #4427 open 2018-12-03 Optimize and re-enable 4085-insufficient-error-message integration test
+      #3927 open 2018-03-16 Discussion: Better support for development plugins
+      #3918 open 2018-03-13 nonportable-include-path warning on case-insensitive systems
+      #4087 open 2018-06-14 Dynamically linked stack release binaries aren't really compatible with stack --docker
+      #2093 open 2016-05-03 explicit-setup-deps causes strange build failure linking Setup with -ltinfo
+      #5709 closed 2022-04-12 Stack for Linux AArch64 (ARM64)
+      #2244 closed 2016-06-05 Reduce disk space
+      #2089 closed 2016-05-02 Stack/Nix integration: does not include "git" in dependencies when going into nix-shell
+      #2159 closed 2016-05-18 Hackage credentials file is world-readable when saved
+      #3860 closed 2018-02-11 New approach to precompiled cache?
+      #3863 closed 2018-02-13 stack clean should be more thorough by default
+      #878 closed 2015-08-30 Implement a single shared package database per GHC version
+      #337 closed 2015-06-17 GHCJS?
+      #120 closed 2015-05-29 Did I do something wrong, or is there a bug?
+      #1076 closed 2015-09-28 Stack MSYS2 tight coupling
+      #5351 merged 2020-07-27 Remove ModTime check during build (#5125)
+  data+loss      10 hit(s) (all listed)
+      #2899 open 2017-01-05 `stack setup` does not resume failed download.
+      #5354 open 2020-07-29 Add command line option to stack script to open it in ghci instead of running it
+      #6184 merged 2023-07-09 Fix digest computation duplication
+      #5634 closed 2021-11-08 Stack is seemingly unable to connect
+      #1810 closed 2016-02-19 Unicode normalized comparison
+      #3989 closed 2018-04-27 Internal libraries break `stack haddock`
+      #4304 closed 2018-09-09 Fresh install of Stack has garbled ouput in Windows 7 console
+      #1274 closed 2015-11-03 A question about LICENSE and a proposition
+      #193 closed 2015-06-05 Docker: Include LTS build plan and package index in image
+      #484 closed 2015-07-02 stack fails to download ghc binaries
+  partial+write  5 hit(s) (all listed)
+      #2540 open 2016-08-29 Backpack for Stack
+      #6689 open 2025-02-21 `file-embed`: Additions to `extra-source-files` don't trigger rebuild of module
+      #848 open 2015-08-25 Add `stack build --prefix` option
+      #6865 merged 2026-03-21 Add Backpack support to Stack
+      #2780 closed 2016-11-15 Switch the backend to something other than Git-based solutions
+  crash+safe     5 hit(s) (all listed)
+      #6865 merged 2026-03-21 Add Backpack support to Stack
+      #4296 closed 2018-09-07 Default configJobs value is unsafe/wrong
+      #5000 closed 2019-08-14 How to set reExecL as True?
+      #4280 closed 2018-09-02 stack.exe crashes / segfaults on windows 7, 32-bit
+      #4655 merged 2019-03-25 Build GHC from source (#4567)
+  atomic+write   12 hit(s) (all listed)
+      #4559 open 2019-02-04 Get rid of persistent build errors due to non-atomic file writes in GHC and stack
+      #3248 open 2017-07-05 Power failure during `stack build` results in corruption to global Stack directory
+      #6865 merged 2026-03-21 Add Backpack support to Stack
+      #5709 closed 2022-04-12 Stack for Linux AArch64 (ARM64)
+      #3487 closed 2017-10-13 Stack build causing linker error on Mac OSX Sierra
+      #2808 closed 2016-11-25 Template 'yesod-postgres' broken on Stack/Nix
+      #2159 closed 2016-05-18 Hackage credentials file is world-readable when saved
+      #643 closed 2015-07-21 Support concurrent stack invocations or document current behavior
+      #115 closed 2015-05-29 Add commands for automating stack.yaml management
+      #4742 merged 2019-04-15 Atomic file writes
+      #4825 merged 2019-05-13 Non atomic write on windows
+      #4688 merged 2019-04-02 Take a write lock before using Pantry database #4471
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6590 open 2024-05-21 Put hash/checksum in stack.yaml.lock to prevent manual updating
+      #4772 open 2019-04-24 Completing repo package locations: ensure we use a SHA1
+      #5754 open 2022-05-16 Blessed recipe how to use stack on github actions, in particular caching?
+      #5970 open 2022-12-09 Flag to refresh lockfile for specific dependency
+      #3918 open 2018-03-13 nonportable-include-path warning on case-insensitive systems
+      #6329 open 2023-11-05 Project builds using Nix with `add-gc-roots: true` fail due to removal of nix-shell `--add-root` option
+      #5975 open 2022-12-18 Odd behaviour on unregister with `stack run` for a multi-executable project
+      #2503 open 2016-08-16 stack build shows "No directory could be located ..." inside docker container
+      #5008 open 2019-08-18 Invalid option `--internal-re-exec-version=2.1.3.1'
+      #3623 open 2017-12-04 Stack should not store any data in %AppData%
+      #5033 open 2019-09-15 Having relative paths on $PATH breaks stack (with system-ghc)
+      #6819 open 2025-11-07 rio-0.1.22.0 to rio-0.1.23.0: problem at runtime for built `stack` executable
+      #3083 open 2017-03-21 Stack fails to rebuild output executable if deleted
+      #5069 open 2019-10-29 Build with custom package-indices
+      #5038 open 2019-09-24 Windows: stty: 'standard input': Inappropriate ioctl for device
+      #5011 open 2019-08-19 stack build - Executable named nix-shell not found on path
+      #5994 open 2022-12-28 Connection Failure error with hackage.haskell.org
+      #5228 open 2020-03-16 Hoogle Received ExitFailure 1
+      #1032 open 2015-09-23 Document static compilation (was: Static compile support for AWS Linux (Redhat/CentOS))
+      #6806 open 2025-09-11 ExitError (-11) when /bin/sh is the dash shell
+  write+failure  36 hit(s) (all listed)
+      #3248 open 2017-07-05 Power failure during `stack build` results in corruption to global Stack directory
+      #4559 open 2019-02-04 Get rid of persistent build errors due to non-atomic file writes in GHC and stack
+      #6661 open 2024-11-28 GHC's `-package <pkg>` can expose installed package not listed by `ghc-pkg list <pkg>`
+      #3723 open 2017-12-29 Don't record VersionRange for dependencies
+      #2540 open 2016-08-29 Backpack for Stack
+      #6865 merged 2026-03-21 Add Backpack support to Stack
+      #4087 open 2018-06-14 Dynamically linked stack release binaries aren't really compatible with stack --docker
+      #5709 closed 2022-04-12 Stack for Linux AArch64 (ARM64)
+      #3487 closed 2017-10-13 Stack build causing linker error on Mac OSX Sierra
+      #5412 closed 2020-10-08 GHC 8.8.4 fails sanity checks during install due to Cabal-3.0.1.0 being hidden
+      #5513 closed 2021-03-31 Support API Keys in stack-upload
+      #2561 closed 2016-09-03 Failed to reset to commit, deleting and re-cloning.
+      #2822 closed 2016-12-02 stack setup of GHC 8.0.1 on OpenBSD 6.0 is broken
+      #1810 closed 2016-02-19 Unicode normalized comparison
+      #3492 closed 2017-10-16 "you don't have permission to modify this file" error on Windows
+      #4085 closed 2018-06-14 Recommend rerunning with --verbose on failed setup
+      #4495 closed 2019-01-08 Stack does not respect lower bound specified in the cabal file.
+      #1640 closed 2016-01-11 Nix integration errors
+      #373 closed 2015-06-22 Doctest integration that doesn't need custom Setup.hs
+      #781 closed 2015-08-13 `stack haddock` should always return location of index.html
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #5487 open 2021-02-07 Stack does not rebuild when Template Haskell dependencies change with GHC 8.10
+      #5970 open 2022-12-09 Flag to refresh lockfile for specific dependency
+      #5600 open 2021-08-17 Add "stack config get"
+      #4166 open 2018-07-19 stack ghci reads in ~/.ghci but does not set def: values
+      #4325 open 2018-09-28 NixOS + freeglut = Strange error
+      #5137 open 2019-12-31 Generate documentation in LaTeX format.
+      #2045 open 2016-04-18 Command to access logs systematically without breaking .stack-work's abstraction
+      #6718 open 2025-04-13 `stack haddock`: How to correctly use `--prologue`?
+      #5069 open 2019-10-29 Build with custom package-indices
+      #4417 open 2018-11-25 Changes in c-sources aren't always reflected in final binaries
+      #5473 open 2021-01-15 Link-time error after changing a dependency
+      #6689 open 2025-02-21 `file-embed`: Additions to `extra-source-files` don't trigger rebuild of module
+      #6270 open 2023-10-04 stack haddock --haddock-for-hackage
+      #6863 open 2026-03-16 `stack haddock` generates incorrect relative links
+      #5375 open 2020-08-26 Flags are not being overridden for local extra-deps
+      #5061 open 2019-10-22 stack ghci: enable use of Stack interpreter options comment when loading script file
+      #3582 open 2017-11-16 After creating second executable, stack ghci no longer able to load library modules
+      #6807 open 2025-09-12 Post-GHC 9.6.7, links between GHC boot packages fail in Haddock documentation
+      #970 open 2015-09-10 "stack ghci" doesn't honor configured cpp flags
+      #1731 open 2016-02-03 `stack --work-dir` fails with directories above the current directory
+
+== 51 terms run; 49 returned hits, 6 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.
