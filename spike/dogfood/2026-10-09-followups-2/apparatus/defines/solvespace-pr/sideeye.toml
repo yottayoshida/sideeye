@@ -1,0 +1,6 @@
+[world]
+state = "/s/ss"
+
+[define]
+operation = "/opt/bin/solvespace-cli-pr regenerate /s/ss/part.slvs"
+cwd       = "/s/ss-in"

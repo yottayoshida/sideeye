@@ -1,0 +1,6 @@
+[world]
+state = "/s/aws"
+
+[define]
+operation = "aws-pr configure set aws_secret_access_key fake-secret-rotated-for-probe-only-0000 --profile work"
+cwd       = "/s/aws"

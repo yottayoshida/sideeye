@@ -1,0 +1,6 @@
+[world]
+state = "/s/helm"
+
+[define]
+operation = "/opt/bin/helm-pr repo remove b --repository-config /s/helm/cfg/repositories.yaml --repository-cache /s/helm/cache"
+cwd       = "/s/helm"
