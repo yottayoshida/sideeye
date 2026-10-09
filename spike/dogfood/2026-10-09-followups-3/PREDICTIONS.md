@@ -49,3 +49,4 @@ Not tried, with the reason: electrum and basic-memory (Python threads, no switch
 | joplin, the checker fixed (`ls` with no argument; `ls TestBook` treated the name as a note pattern) | the same scratch | PASS |
 | zstd, a checker (the data in `f.bin` or `f.bin.zst`) | after `nothing_could_fail` | PASS |
 | beets, `library.db` scratch (2026-10-02's checker kept) | after `preflight --twice` | PASS: SQLite keeps the library whole |
+| joplin, `tmp` scratch too | the same | PASS: it FAILed on the profile's temporary directory alone |
