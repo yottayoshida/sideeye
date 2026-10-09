@@ -46,7 +46,10 @@ UNKNOWN, a verdict, and this command produces none ([docs/contract-freeze.md](co
 
 The machine-readable form is the bundle file itself (`"schema": "sideeye/evidence"`,
 `evidence_version` 1). There is no `--format json`, because that would be a second way to
-ask for bytes already on disk.
+ask for bytes already on disk. The MCP server's `sideeye_evidence` hands over the same bundle
+with two fields replaced — `case` and `replay` become the server's own, since a bundle lives
+where the target can write — and the fields this reader does not know dropped
+([docs/mcp.md](mcp.md)).
 
 ## The impact columns, and why there is no severity
 

@@ -131,7 +131,7 @@ listed, called = (json.loads(l) for l in lines)
 if "error" in listed:
     sys.exit("the README's tools/list was refused: %r" % listed["error"])
 names = sorted(t["name"] for t in listed["result"]["tools"])
-if names != ["sideeye_explore_config", "sideeye_replay_case"]:
+if names != ["sideeye_evidence", "sideeye_explore_config", "sideeye_replay_case"]:
     sys.exit("tools/list returned %r" % names)
 if "error" in called:
     sys.exit("the README's tools/call was refused at the protocol level: %r" % called["error"])
