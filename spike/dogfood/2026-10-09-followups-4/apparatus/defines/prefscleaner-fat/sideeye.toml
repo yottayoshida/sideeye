@@ -1,0 +1,7 @@
+[world]
+state = "/s/ffprofile"
+
+[define]
+# -s: start without the Firefox-running check's prompt; -d: do not fetch an update of the script.
+operation = "setpriv --reuid=1000 --regid=1000 --clear-groups bash ./prefsCleaner.sh -s -d"
+cwd       = "/s/ffprofile"
