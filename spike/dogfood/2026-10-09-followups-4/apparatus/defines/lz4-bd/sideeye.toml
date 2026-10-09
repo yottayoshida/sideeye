@@ -1,0 +1,9 @@
+[world]
+state = "/s/lz4/state"
+
+[define]
+# -T1 in place of 2026-10-02's -T2: one thread (the threads wall)
+# -BD (block dependency): lz4 cannot compress dependent blocks in parallel, so this asks for one thread more
+# firmly than -T1 alone, which still met the threads wall (2026-10-09 follow-ups 3).
+operation = "lz4 -q -T1 -BD --rm /s/lz4/state/f.bin"
+cwd       = "/s/lz4/state"

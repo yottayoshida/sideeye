@@ -1,0 +1,3 @@
+Hook already exists at `.git/hooks/pre-commit`, moved it to `.git/hooks/pre-commit.legacy`
+Migration mode: prek will also run legacy hook `.git/hooks/pre-commit.legacy`. Use `--force` to remove legacy hooks.
+Installed Git hook at `.git/hooks/pre-commit`

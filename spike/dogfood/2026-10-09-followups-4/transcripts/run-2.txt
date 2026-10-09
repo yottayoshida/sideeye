@@ -1,0 +1,12 @@
+=== gemini-project 2026-10-09T08:42:16Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 2: UNKNOWN multiple_threads_detected
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 2: UNKNOWN multiple_threads_detected

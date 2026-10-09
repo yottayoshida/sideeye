@@ -1,0 +1,23 @@
+$ grep -n requireLock / new LowdbStorageService  (Bitwarden CLI 2026.8.0, build/bw.js)
+87283:    constructor(logService, defaults, dir, allowCache = false, requireLock = false) {
+87287:        this.requireLock = requireLock;
+87406:            if (this.requireLock && !Utils.isNullOrWhitespace(this.dataFilePath)) {
+89491:        this.storageService = new LowdbStorageService(this.logService, null, p, false, true);
+
+$ grep electrum/util.py (4.8.2)
+1682:def create_and_start_event_loop() -> Tuple[asyncio.AbstractEventLoop,
+1744:        name='EventLoop',
+2307:def test_read_write_permissions(path) -> None:
+2310:    temp_path = "%s.tmptest.%s" % (path, os.getpid())
+
+$ grep basic_memory/file_utils.py (0.23.2)
+114:    temp_path = path_obj.with_suffix(".tmp")
+124:        async with aiofiles.open(temp_path, mode="w", encoding="utf-8") as f:
+127:        # Atomic rename (this is fast, doesn't need async)
+139:    temp_path = path_obj.with_suffix(".tmp")
+142:        async with aiofiles.open(temp_path, mode="wb") as f:
+
+$ lz4 -H | grep -i -E "thread|-T"  (1.10.0)
+*** lz4 v1.10.0 64-bit multithread, by Yann Collet ***
+ -T#    : use # threads for compression (default:0==auto) 
+ -t     : test compressed file integrity

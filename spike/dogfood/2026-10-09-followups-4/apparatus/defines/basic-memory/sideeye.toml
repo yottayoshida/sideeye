@@ -1,0 +1,6 @@
+[world]
+state = "/s/bm"
+
+[define]
+operation = "basic-memory tool edit-note --project notes plans --operation append --content renew-insurance"
+cwd       = "/s/bm-in"

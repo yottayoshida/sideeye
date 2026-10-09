@@ -1,0 +1,53 @@
+21    clone(child_stack=0xffffd04f40e0, flags=CLONE_VM|CLONE_VFORK|SIGCHLD <unfinished ...>
+21    <... clone resumed>)              = 22
+22    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffff87bad130, parent_tid=0xffff87bad130, exit_signal=0, stack=0xffff8739e000, stack_size=0x80e940, tls=0xffff87bad780} => {parent_tid=[23]}, 88) = 23
+22    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffff8739d130, parent_tid=0xffff8739d130, exit_signal=0, stack=0xffff86b8e000, stack_size=0x80e940, tls=0xffff8739d780} => {parent_tid=[24]}, 88) = 24
+22    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffff86b8d130, parent_tid=0xffff86b8d130, exit_signal=0, stack=0xffff8637e000, stack_size=0x80e940, tls=0xffff86b8d780} => {parent_tid=[25]}, 88) = 25
+22    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffff8637d130, parent_tid=0xffff8637d130, exit_signal=0, stack=0xffff85b6e000, stack_size=0x80e940, tls=0xffff8637d780} => {parent_tid=[26]}, 88) = 26
+22    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffff85b6d130, parent_tid=0xffff85b6d130, exit_signal=0, stack=0xffff8535e000, stack_size=0x80e940, tls=0xffff85b6d780} => {parent_tid=[27]}, 88) = 27
+22    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffff852dd130, parent_tid=0xffff852dd130, exit_signal=0, stack=0xffff852ae000, stack_size=0x2e940, tls=0xffff852dd780} => {parent_tid=[28]}, 88) = 28
+22    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffff84fc6130, parent_tid=0xffff84fc6130, exit_signal=0, stack=0xffff847b7000, stack_size=0x80e940, tls=0xffff84fc6780} => {parent_tid=[29]}, 88) = 29
+22    openat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/settings.json", O_RDONLY|O_CLOEXEC) = 20</s/aux/home/.gemini/settings.json>
+22    clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0xffff8e0d00f0) = 30
+30    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffff9094d130, parent_tid=0xffff9094d130, exit_signal=0, stack=0xffff9013e000, stack_size=0x80e940, tls=0xffff9094d780} => {parent_tid=[31]}, 88) = 31
+30    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffff9013d130, parent_tid=0xffff9013d130, exit_signal=0, stack=0xffff8f92e000, stack_size=0x80e940, tls=0xffff9013d780} => {parent_tid=[32]}, 88) = 32
+30    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffff8f92d130, parent_tid=0xffff8f92d130, exit_signal=0, stack=0xffff8f11e000, stack_size=0x80e940, tls=0xffff8f92d780} => {parent_tid=[33]}, 88) = 33
+30    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffff8f11d130, parent_tid=0xffff8f11d130, exit_signal=0, stack=0xffff8e90e000, stack_size=0x80e940, tls=0xffff8f11d780} => {parent_tid=[34]}, 88) = 34
+30    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffff8e90d130, parent_tid=0xffff8e90d130, exit_signal=0, stack=0xffff8e0fe000, stack_size=0x80e940, tls=0xffff8e90d780} => {parent_tid=[35]}, 88) = 35
+30    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffff8e07d130, parent_tid=0xffff8e07d130, exit_signal=0, stack=0xffff8e04e000, stack_size=0x2e940, tls=0xffff8e07d780} => {parent_tid=[36]}, 88) = 36
+30    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffff8dd66130, parent_tid=0xffff8dd66130, exit_signal=0, stack=0xffff8d557000, stack_size=0x80e940, tls=0xffff8dd66780} => {parent_tid=[37]}, 88) = 37
+30    openat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/settings.json", O_RDONLY|O_CLOEXEC) = 22</s/aux/home/.gemini/settings.json>
+37    mkdirat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini", 0777) = -1 EEXIST (File exists)
+37    mkdirat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini", 0777) = -1 EEXIST (File exists)
+37    openat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/projects.json", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+37    openat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/projects.json", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+37    mkdirat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini", 0777) = -1 EEXIST (File exists)
+37    mkdirat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini", 0777) = -1 EEXIST (File exists)
+37    openat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/projects.json.39c555a6-0bf8-4ee6-9810-1d6ff35467d1.tmp", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 23</s/aux/home/.gemini/projects.json.39c555a6-0bf8-4ee6-9810-1d6ff35467d1.tmp>
+37    openat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/projects.json.73e4302a-a027-45a9-bfd3-4396775dc417.tmp", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 24</s/aux/home/.gemini/projects.json.73e4302a-a027-45a9-bfd3-4396775dc417.tmp>
+37    write(23</s/aux/home/.gemini/projects.json.39c555a6-0bf8-4ee6-9810-1d6ff35467d1.tmp>, "{\n  \"projects\": {}\n}", 20) = 20
+37    write(24</s/aux/home/.gemini/projects.json.73e4302a-a027-45a9-bfd3-4396775dc417.tmp>, "{\n  \"projects\": {}\n}", 20) = 20
+30    clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0xffff96e700f0) = 38
+37    renameat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/projects.json.39c555a6-0bf8-4ee6-9810-1d6ff35467d1.tmp", AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/projects.json") = 0
+37    renameat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/projects.json.73e4302a-a027-45a9-bfd3-4396775dc417.tmp", AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/projects.json") = 0
+37    mkdirat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/projects.json.lock", 0777) = 0
+37    mkdirat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/projects.json.lock", 0777) = -1 EEXIST (File exists)
+37    openat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/projects.json", O_RDONLY|O_CLOEXEC) = 23</s/aux/home/.gemini/projects.json>
+37    mkdirat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/tmp/gemini-in", 0777) = -1 ENOENT (No such file or directory)
+37    mkdirat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/tmp", 0777) = 0
+37    mkdirat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/tmp/gemini-in", 0777) = 0
+37    openat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/tmp/gemini-in/.project_root", O_WRONLY|O_CREAT|O_EXCL|O_TRUNC|O_CLOEXEC, 0666) = 22</s/aux/home/.gemini/tmp/gemini-in/.project_root>
+37    write(22</s/aux/home/.gemini/tmp/gemini-in/.project_root>, "/s/gemini-in", 12) = 12
+37    mkdirat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/history/gemini-in", 0777) = -1 ENOENT (No such file or directory)
+37    mkdirat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/history", 0777) = 0
+37    mkdirat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/history/gemini-in", 0777) = 0
+37    openat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/history/gemini-in/.project_root", O_WRONLY|O_CREAT|O_EXCL|O_TRUNC|O_CLOEXEC, 0666) = 23</s/aux/home/.gemini/history/gemini-in/.project_root>
+37    write(23</s/aux/home/.gemini/history/gemini-in/.project_root>, "/s/gemini-in", 12) = 12
+37    mkdirat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini", 0777) = -1 EEXIST (File exists)
+37    openat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/projects.json.353b0bd6-738f-43a4-9f98-97bfff5c993e.tmp", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 22</s/aux/home/.gemini/projects.json.353b0bd6-738f-43a4-9f98-97bfff5c993e.tmp>
+37    write(22</s/aux/home/.gemini/projects.json.353b0bd6-738f-43a4-9f98-97bfff5c993e.tmp>, "{\n  \"projects\": {\n    \"/s/gemini"..., 55) = 55
+37    renameat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/projects.json.353b0bd6-738f-43a4-9f98-97bfff5c993e.tmp", AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/projects.json") = 0
+37    unlinkat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/projects.json.lock", AT_REMOVEDIR) = 0
+30    openat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/settings.json", O_RDONLY|O_CLOEXEC) = 22</s/aux/home/.gemini/settings.json>
+30    openat(AT_FDCWD</s/gemini-in>, "/s/aux/home/.gemini/settings.json", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 22</s/aux/home/.gemini/settings.json>
+30    write(22</s/aux/home/.gemini/settings.json>, "{\n  \"theme\": \"Default\",\n  \"mcpSe"..., 195) = 195

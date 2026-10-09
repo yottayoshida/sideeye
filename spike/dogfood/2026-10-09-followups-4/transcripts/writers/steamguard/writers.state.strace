@@ -1,0 +1,25 @@
+25    execve("/usr/bin/sh", ["sh", "-c", "steamguard -m /s/sg -p correctho"...], 0xffffc58ad708 /* 16 vars */) = 0
+25    openat(AT_FDCWD</s/sg-in>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+25    openat(AT_FDCWD</s/sg-in>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+25    clone(child_stack=0xffffd0b6d9a0, flags=CLONE_VM|CLONE_VFORK|SIGCHLD <unfinished ...>
+26    execve("/opt/bin/steamguard", ["steamguard", "-m", "/s/sg", "-p", "correcthorse", "decrypt"], 0xaaab10d656d8 /* 16 vars */ <unfinished ...>
+25    <... clone resumed>)              = 26
+26    openat(AT_FDCWD</s/sg-in>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+26    openat(AT_FDCWD</s/sg-in>, "/lib/aarch64-linux-gnu/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libgcc_s.so.1>
+26    openat(AT_FDCWD</s/sg-in>, "/lib/aarch64-linux-gnu/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>
+26    openat(AT_FDCWD</s/sg-in>, "/lib/aarch64-linux-gnu/libdl.so.2", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libdl.so.2>
+26    openat(AT_FDCWD</s/sg-in>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+26    openat(AT_FDCWD</s/sg-in>, "/proc/self/maps", O_RDONLY|O_CLOEXEC) = 3</proc/26/maps>
+26    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups4-1009/spike/dogfood/2026-10-09-followups-4/transcripts/writers/steamguard/op.log>, "reading manifest from /s/sg\n", 28) = 28
+26    openat(AT_FDCWD</s/sg-in>, "/s/sg/manifest.json", O_RDONLY|O_CLOEXEC) = 3</s/sg/manifest.json>
+26    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffff88a4efb0, parent_tid=0xffff88a4efb0, exit_signal=0, stack=0xffff88840000, stack_size=0x20e7c0, tls=0xffff88a4f600} => {parent_tid=[27]}, 88) = 27
+26    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffff8883efb0, parent_tid=0xffff8883efb0, exit_signal=0, stack=0xffff88630000, stack_size=0x20e7c0, tls=0xffff8883f600} => {parent_tid=[28]}, 88) = 28
+26    openat(AT_FDCWD</s/sg-in>, "/s/sg/alice.maFile", O_RDONLY|O_CLOEXEC) = 6</s/sg/alice.maFile>
+28    openat(AT_FDCWD</s/sg-in>, "/s/sg/alice.maFile", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 6</s/sg/alice.maFile>
+28    write(6</s/sg/alice.maFile>, "{\"account_name\":\"alice\",\"steam_i"..., 421) = 421
+28    fdatasync(6</s/sg/alice.maFile>)  = 0
+26    openat(AT_FDCWD</s/sg-in>, "/s/sg/manifest.json", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 6</s/sg/manifest.json>
+26    write(6</s/sg/manifest.json>, "{\"version\":1,\"entries\":[{\"filena"..., 123) = 123
+26    fdatasync(6</s/sg/manifest.json>) = 0
+26    mkdirat(AT_FDCWD</s/sg-in>, "/s/aux/cache/update-informer-rs", 0777) = -1 EEXIST (File exists)
+26    openat(AT_FDCWD</s/sg-in>, "/s/aux/cache/update-informer-rs/github-dyc3-steamguard-cli", O_RDONLY|O_CLOEXEC) = 3</s/aux/cache/update-informer-rs/github-dyc3-steamguard-cli>

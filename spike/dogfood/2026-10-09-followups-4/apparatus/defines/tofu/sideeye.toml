@@ -1,0 +1,6 @@
+[world]
+state = "/s/tofu"
+
+[define]
+operation = "tofu state rm terraform_data.b"
+cwd       = "/s/tofu"

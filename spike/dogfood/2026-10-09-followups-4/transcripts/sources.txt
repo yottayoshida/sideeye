@@ -1,0 +1,72 @@
+# Round 2: the shared-mapping and fallocate walls, read in their sources (fetched 2026-10-09).
+
+## goaccess v1.12: src/persistence.c (gh api repos/allinurl/goaccess/contents/src/persistence.c?ref=v1.12)
+100:close_tpl (tpl_node *tn, const char *fn) {
+101-  char *tmp = NULL;
+102-
+103-  tmp = xmalloc (snprintf (NULL, 0, "%s.tmp", fn) + 1);
+104-  sprintf (tmp, "%s.tmp", fn);
+105-
+106-  if (tpl_dump (tn, TPL_FILE, tmp) != 0 || rename (tmp, fn) != 0) {
+107-    persist_error = 1;
+108-    unlink (tmp);
+
+## goaccess v1.12: src/tpl.c
+    if (mode & TPL_FILE) {
+      filename = va_arg (ap, char *);
+      fd = tpl_mmap_output_file (filename, sz, &buf);
+      if (fd == -1)
+        rc = -1;
+      else {
+        rc = tpl_dump_to_mem (r, buf, sz);
+        if (msync (buf, sz, MS_SYNC) == -1) {
+          tpl_hook.oops ("msync failed on fd %d: %s\n", fd, strerror (errno));
+        }
+        if (munmap (buf, sz) == -1) {
+          tpl_hook.oops ("munmap failed on fd %d: %s\n", fd, strerror (errno));
+        }
+        close (fd);
+1879:  fd = open (filename, O_CREAT | O_TRUNC | O_RDWR, perms);
+1890:  text = mmap (0, sz, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+## rrdtool v1.9.0: src/rrd_open.c (gh api repos/oetiker/rrdtool-1.x/contents/src/rrd_open.c?ref=v1.9.0)
+            dwDesiredAccess = GENERIC_READ | GENERIC_WRITE;
+            dwCreationDisposition = OPEN_EXISTING;
+#endif
+#ifdef HAVE_MMAP
+            rrd_simple_file->mm_flags = MAP_SHARED;
+            rrd_simple_file->mm_prot |= PROT_WRITE;
+#endif
+        }
+getenv in rrd_open.c: 1
+
+## libglnx master: glnx-fdio.c and glnx-fdio.h (gitlab.gnome.org/GNOME/libglnx)
+  if (!glnx_open_tmpfile_linkable_at (dfd, dn, O_WRONLY | O_CLOEXEC,
+                                      &tmpf, error))
+    return FALSE;
+
+  if (len == (gsize) -1)
+    len = strlen ((char*)buf);
+
+  if (!glnx_try_fallocate (tmpf.fd, 0, len, error))
+    return FALSE;
+static inline gboolean
+glnx_try_fallocate (int      fd,
+                    off_t    offset,
+                    off_t    size,
+                    GError **error)
+{
+  /* This is just nicer than throwing an error */
+  if (size == 0)
+    return TRUE;
+
+  if (fallocate (fd, 0, offset, size) < 0)
+    {
+      if (G_IN_SET(errno, ENOSYS, EOPNOTSUPP))
+        ; /* Ignore */
+      else
+        return glnx_throw_errno_prefix (error, "fallocate");
+    }
+
+  return TRUE;
+}

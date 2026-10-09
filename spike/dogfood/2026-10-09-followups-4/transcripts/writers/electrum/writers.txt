@@ -1,0 +1,7 @@
+state /s/electrum: 2 thread(s)/process(es) changed it
+- 35 (the first process): 3 calls open-w=1 unlinkat=1 write=1
+    wallets/default_wallet.tmptest.35: open-w unlinkat write
+- 37 (thread of 35): 8 calls fchmodat=1 fsync=1 open-w=2 renameat=1 unlinkat=1 write=2
+    wallets/default_wallet.tmptest.35: open-w unlinkat write
+    wallets/default_wallet.tmp.35: fchmodat fsync open-w write
+    wallets/default_wallet wallets/default_wallet.tmp.35: renameat

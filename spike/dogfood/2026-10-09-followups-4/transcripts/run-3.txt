@@ -1,0 +1,11 @@
+=== easyrsa 2026-10-09T08:58:08Z
+explore exit 2: UNKNOWN child_touched_state_dir
+explore --observe syscalls exit 2: UNKNOWN recording_run_failed
+explore exit 2: UNKNOWN child_touched_state_dir
+next_step: Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read
+explore --observe syscalls exit 2: UNKNOWN recording_run_failed
+=== easyrsa, --observe supervised named
+probe supervised exit 1
+
+reproduce   sideeye replay /out/easyrsa/work-probe-supervised/cases/000001.json --observe supervised  (the crash point is the engine's, from outside the operation; there is no shim to preload)
+sideeye: json sha256=95efabad04f854ed2f1d26ab71e9735393db1e63a6f91e155933a9e854220514;

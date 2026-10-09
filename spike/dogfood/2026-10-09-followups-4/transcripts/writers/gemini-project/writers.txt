@@ -1,0 +1,3 @@
+state /s/gemini-in/.gemini: 1 thread(s)/process(es) changed it
+- 30 (process of 22): 2 calls open-w=1 write=1
+    settings.json: open-w write

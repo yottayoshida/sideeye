@@ -1,0 +1,5 @@
+state /s/sg: 2 thread(s)/process(es) changed it
+- 26 (the first process): 3 calls fdatasync=1 open-w=1 write=1
+    manifest.json: fdatasync open-w write
+- 28 (thread of 26): 3 calls fdatasync=1 open-w=1 write=1
+    alice.maFile: fdatasync open-w write

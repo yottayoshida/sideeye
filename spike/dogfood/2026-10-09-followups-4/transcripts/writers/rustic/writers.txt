@@ -1,0 +1,9 @@
+state /s/rustic/repo: 2 thread(s)/process(es) changed it
+- 132 (the first process): 6 calls fsync=1 ftruncate=1 mkdirat(failed)=1 open-w=1 renameat=1 write=1
+    index: mkdirat(failed)
+    index/a2cf6d7791674cf6b8582f5d3ac95128c46035108f180841e786c620764a1852-tmp-: fsync ftruncate open-w write
+    index/a2cf6d7791674cf6b8582f5d3ac95128c46035108f180841e786c620764a1852 index/a2cf6d7791674cf6b8582f5d3ac95128c46035108f180841e786c620764a1852-tmp-: renameat
+- 135 (thread of 132): 3 calls unlinkat=3
+    snapshots/b29f8da45ca2d9ebff4bb36365790084c45684a2ad29f89e0c34bb93a7e011a7: unlinkat
+    index/d687a07f3d6976c2071e35d66b1466de5093a59df038ea32839fac162a820be7: unlinkat
+    index/d2613f58c91f0a480fc03294c14d66fbdb3a0dd704d92b2354a24bdbfe605377: unlinkat

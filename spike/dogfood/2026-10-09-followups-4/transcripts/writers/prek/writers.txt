@@ -1,0 +1,6 @@
+state /s/prek/repo/.git/hooks: 2 thread(s)/process(es) changed it
+- 25 (the first process): 4 calls fchmodat=1 mkdirat(failed)=1 open-w=1 write=1
+    .: mkdirat(failed)
+    pre-commit: fchmodat open-w write
+- 30 (thread of 25): 1 calls renameat=1
+    pre-commit pre-commit.legacy: renameat

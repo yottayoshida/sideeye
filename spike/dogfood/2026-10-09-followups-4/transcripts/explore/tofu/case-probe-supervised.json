@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/tofu",
+    "operation": "tofu state rm terraform_data.b",
+    "cwd": "/s/tofu",
+    "expected_status": 0
+  },
+  "k": 7,
+  "ops_total": 9,
+  "prefix_hash": "fcd0dbcb4f79361b",
+  "after_class": "truncate",
+  "after_path": "/s/tofu/terraform.tfstate",
+  "before_class": "write",
+  "before_path": "/s/tofu/terraform.tfstate",
+  "violation": "hybrid"
+}
