@@ -1511,6 +1511,23 @@ jobs:
       - name: The changelog block agrees with itself
         run: python3 spike/check-changelog-block.py CHANGELOG.md
 
+  # #716 (ADR 0103): the agent skills under skills/ are installed as copies outside this
+  # repository, so nothing reads them against the code again once they leave. Each
+  # command, flag, name borrowed from the source and documentation link they hold is
+  # checked against it here.
+  agent-skills:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      # First, for the reason the ADR job gives: each planted defect must redden exactly
+      # the claim it plants.
+      - name: The check proves it can go red
+        run: python3 spike/check-skills.py --selftest
+
+      - name: The skills name only commands, flags, names and pages that exist
+        run: python3 spike/check-skills.py .
+
   # The other half of docs/unknown-rate.md. Check 12 holds everything between the
   # results markers to a fresh recomputation; the counts describing how the cohort
   # defines are sorted sit outside them, in prose, and moved whenever a cohort closed.
