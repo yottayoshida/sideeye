@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/aux/home/.config/cspell",
+    "operation": "cspell link add /s/cspell-in/b.json",
+    "cwd": "/s/cspell-in",
+    "expected_status": 0
+  },
+  "k": 3,
+  "ops_total": 3,
+  "prefix_hash": "a0e3434d4e02de36",
+  "after_class": "open",
+  "after_path": "/s/aux/home/.config/cspell/cspell.json",
+  "before_class": "write",
+  "before_path": "/s/aux/home/.config/cspell/cspell.json",
+  "violation": "hybrid"
+}

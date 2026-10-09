@@ -1,0 +1,9 @@
+=== yarn-pool1 2026-10-09T06:53:23Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== trash-pool1 2026-10-09T06:53:27Z
+explore exit 0: PASS -
+explore exit 0: PASS -

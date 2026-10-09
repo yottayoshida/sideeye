@@ -1,0 +1,25 @@
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 2
+            after  open(/s/yarn/.yarnrc.yml)
+            before write(/s/yarn/.yarnrc.yml)
+path        .yarnrc.yml
+observed    holding neither the old nor the new content
+cwd         /s/yarn
+
+explored    2 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   2 path(s) judged pre-or-post
+oracle      agreed on 2 operations (2455 syscall lines examined, 118 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/yarn-pool1/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   single process in the recording; the subject replaced its own image in an explored world, which runs with no oracle; the shim recorded 7 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 6 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/yarn && unset SIDEEYE_KILL_GROUP && : > /out/yarn-pool1/work-explore-replay2/trace-repro.bin && SIDEEYE_STATE_DIR=/s/yarn SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/yarn-pool1/work-explore-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'yarn' config set npmAuthToken placeholder-npm-auth-token </dev/null)
+sideeye: json sha256=0b86c6b39b2626ac919a7e84a3c62281962fb65514a580f24fd8f447da2a2c72;

@@ -1,0 +1,16 @@
+UNKNOWN  oracle_missed_operation
+         the oracle saw a state-directory operation the shim did not record; divergence at operation 3: the oracle saw: 24    write(4</s/zstd/state/f.bin.zst>, "\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\362\377\377\377\377\377\377\377\377\377\377\377\377"..., 4096) = 4096; the shim recorded: unlink("/s/zstd/state/f.bin")
+next        Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.
+divergence  write
+cwd         /s/zstd/state
+
+expected    exit 0
+atomicity   0 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=a789bc89d2e93d2fe125977a6002ec5e9467053bdabe0d054f6ae74345d3d18a;

@@ -1,0 +1,10 @@
+[world]
+state = "/s/h2/kit"
+
+[define]
+operation = "h2cli -u /s/h2/kit"
+cwd       = "/s/h2-in"
+apparatus = ["env:FAKETIME=2026-10-01 00:00:00", "preload:libfaketime"]
+# drumkit.xml differs between two clean runs in its attributes' order (transcripts/twice-h2cli.txt); the checker reads the kit.
+check     = "/ap/defines/h2cli-fat-check/check.sh"
+scratch   = ["drumkit.xml"]

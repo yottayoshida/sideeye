@@ -1,0 +1,9 @@
+[world]
+state = "/s/plakar/repo"
+
+[define]
+operation = "plakar at /s/plakar/repo rm -apply -tag old"
+cwd       = "/s/plakar-in"
+# the repository's state files are named by content that differs between two runs (transcripts/twice.txt); the checker reads it through plakar
+check     = "/ap/defines/plakar/check.sh"
+scratch   = ["states", "packfiles", "locks"]

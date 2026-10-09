@@ -1,0 +1,10 @@
+[world]
+state = "/s/joplin/jp"
+
+[define]
+operation = "joplin --profile /s/joplin/jp mknote SecondNote"
+# The notebook database and the log differ between two clean runs (transcripts/twice.txt); the checker reads the notebook.
+check     = "/ap/defines/joplin-check3/check.sh"
+# tmp too: the profile's own temporary directory, removed and made again; the form without it FAILed on it alone,
+# the checker passing in all 49 worlds (transcripts/explore/joplin-check2).
+scratch   = ["database.sqlite", "log.txt", "tmp"]

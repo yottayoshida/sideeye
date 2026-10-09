@@ -1,0 +1,6 @@
+[world]
+state = "/s/beets/lib"
+
+[define]
+operation = "beet -c /s/beets/config.yaml import -q /s/beets/in2"
+check     = "/ap/defines/beets/check.sh"

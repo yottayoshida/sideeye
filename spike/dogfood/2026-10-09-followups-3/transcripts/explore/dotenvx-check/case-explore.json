@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 5,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/dotenvx",
+    "operation": "dotenvx encrypt -f /s/dotenvx/.env",
+    "check": "/ap/defines/dotenvx-check/check.sh",
+    "cwd": "/s/dotenvx",
+    "scratch": [".env", ".env.keys"],
+    "expected_status": 0
+  },
+  "k": 4,
+  "ops_total": 4,
+  "prefix_hash": "8a30a6b9c0e2adf3",
+  "after_class": "open",
+  "after_path": "/s/dotenvx/.env",
+  "before_class": "write",
+  "before_path": "/s/dotenvx/.env",
+  "violation": "checker"
+}

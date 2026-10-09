@@ -1,0 +1,23 @@
+⚠ OS secret store unavailable; saving private key to .env.keys
+◈ encrypted (/s/dotenvx/.env)
+⚠ OS secret store unavailable; saving private key to .env.keys
+⚠ OS secret store unavailable; saving private key to .env.keys
+⚠ OS secret store unavailable; saving private key to .env.keys
+⚠ OS secret store unavailable; saving private key to .env.keys
+⚠ OS secret store unavailable; saving private key to .env.keys
+◈ encrypted (/s/dotenvx/.env)
+UNKNOWN  baseline_violates_invariant
+         the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing: the re-run from the restored state left .env holding neither the old nor the new content; the two runs' bytes first differ at byte offset 268, in a stretch 449 byte(s) long in the recording and 449 in the re-run (of 719 and 719 bytes), both printable text; preflight --twice quotes what two runs leave there
+next        The path the detail names did not come back with the bytes the recording left, in a world nothing crashed. If those bytes are not what the verdict should judge (a cache, a log, a timestamp), declare the path scratch in the define (--scratch, or scratch in a sideeye.toml); sideeye preflight --twice names the paths two clean runs leave differently, before an exploration.
+cwd         /s/dotenvx
+
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle; the shim recorded 7 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 6 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=99ec3076213da27063c27b4bdb0eca9e9ec45b06643028899013f4015c2fac7c;

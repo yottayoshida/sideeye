@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 5,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/joplin/jp",
+    "operation": "joplin --profile /s/joplin/jp mknote SecondNote",
+    "check": "/ap/defines/joplin-check2/check.sh",
+    "cwd": null,
+    "scratch": ["database.sqlite", "log.txt"],
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 48,
+  "prefix_hash": "acbd7b23a5fc40dc",
+  "after_class": "rmdir",
+  "after_path": "/s/joplin/jp/tmp",
+  "before_class": "mkdir",
+  "before_path": "/s/joplin/jp",
+  "violation": "missing"
+}

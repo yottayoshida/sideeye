@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/lg/locales",
+    "operation": "node /opt/lingui-proj/node_modules/@lingui/cli/dist/lingui-extract.js --workers 1",
+    "cwd": "/s/lg",
+    "expected_status": 0
+  },
+  "k": 4,
+  "ops_total": 6,
+  "prefix_hash": "998eea491245db0f",
+  "after_class": "open",
+  "after_path": "/s/lg/locales/en/messages.po",
+  "before_class": "open",
+  "before_path": "/s/lg/locales/ja/messages.po",
+  "violation": "hybrid"
+}

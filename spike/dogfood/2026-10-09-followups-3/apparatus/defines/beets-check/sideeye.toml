@@ -1,0 +1,8 @@
+[world]
+state = "/s/beets/lib"
+
+[define]
+operation = "beet -c /s/beets/config.yaml import -q /s/beets/in2"
+check     = "/ap/defines/beets/check.sh"
+# library.db differs between two clean runs (transcripts/twice-beets.txt); 2026-10-02's checker reads it.
+scratch   = ["library.db"]

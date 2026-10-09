@@ -1,0 +1,26 @@
+node v20.19.2
+yarn 4.18.1
+trash `-- trash-cli@7.2.0
+bibtex-tidy --version: v1.15.1
+dotenvx --version: 2.32.4
+gemini --version: 0.62.0
+gltf-transform --version: 4.5.1
+vercel --version: Vercel CLI 62.2.0
+eslint --version: v10.11.0
+prettier --version: 3.9.7
+stylelint --version: 17.15.0
+svgo --version: 4.1.0
+joplin version: Joplin CLI Client
+bw --version: Could not find dir, "/root/.config/Bitwarden CLI"; creating it instead.
+npm --version: 9.2.0
+tofu version: OpenTofu v1.13.1
+doctl version: doctl version 1.177.0-release
+infracost --version: sh: 1: infracost: not found
+plakar version: Welcome to plakar !
+lighthouse --version: Lighthouse v8.2.3-6db6ae9
+git-lfs version: git-lfs/3.8.0 (GitHub; linux arm64; go 1.27.0; git aece9221)
+jump --version: 0.69.0
+/opt/py/bin/keyring --version: usage: keyring [-h] [-p KEYRING_PATH] [-b KEYRING_BACKEND] [--list-backends]
+cspell --version (node22): 10.3.6
+cap --version (node22): 8.5.2
+Infracost v0.10.46

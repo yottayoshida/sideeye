@@ -1,0 +1,65 @@
+falsify: joplin cannot list the notebook: }
+world 1: SeedNote is gone:  
+world 2: SeedNote is gone:  
+world 3: SeedNote is gone:  
+world 4: SeedNote is gone:  
+world 5: SeedNote is gone:  
+world 6: SeedNote is gone:  
+world 7: SeedNote is gone:  
+world 8: SeedNote is gone:  
+world 9: SeedNote is gone:  
+world 10: SeedNote is gone:  
+world 11: SeedNote is gone:  
+world 12: SeedNote is gone:  
+world 13: SeedNote is gone:  
+world 14: SeedNote is gone:  
+world 15: SeedNote is gone:  
+world 16: SeedNote is gone:  
+world 17: SeedNote is gone:  
+world 18: SeedNote is gone:  
+world 19: SeedNote is gone:  
+world 20: SeedNote is gone:  
+world 21: SeedNote is gone:  
+world 22: SeedNote is gone:  
+world 23: SeedNote is gone:  
+world 24: SeedNote is gone:  
+world 25: SeedNote is gone:  
+world 26: SeedNote is gone:  
+world 27: SeedNote is gone:  
+world 28: SeedNote is gone:  
+world 29: SeedNote is gone:  
+world 30: SeedNote is gone:  
+world 31: SeedNote is gone:  
+world 32: SeedNote is gone:  
+world 33: SeedNote is gone:  
+world 34: SeedNote is gone:  
+world 35: SeedNote is gone:  
+world 36: SeedNote is gone:  
+world 37: SeedNote is gone:  
+world 38: SeedNote is gone:  
+world 39: SeedNote is gone:  
+world 40: SeedNote is gone:  
+world 41: SeedNote is gone:  
+world 42: SeedNote is gone:  
+world 43: SeedNote is gone:  
+world 44: SeedNote is gone:  
+world 45: SeedNote is gone:  
+world 46: SeedNote is gone:  
+world 47: SeedNote is gone:  
+world 48: SeedNote is gone:  
+baseline: SeedNote is gone:  
+UNKNOWN  baseline_violates_invariant
+         the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing: the checker rejected the state the operation leaves on its own; check the operation and the checker against each other first
+next        Change the define: the detail above names the declaration this run contradicted, and nothing is judged until it holds.
+cwd         /  (none declared: Sideeye's own)
+
+expected    exit 0
+atomicity   4 path(s) judged pre-or-post; 2 path(s) matched by scratch, not judged (declared: database.sqlite, log.txt)
+l1          no marker configured
+case        (none)
+processes   single process in the recording; the subject replaced its own image in an explored world, which runs with no oracle; the shim recorded 7 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 6 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=08d3929641a46d35f3d20cb883324146db7657deadc2513c89829b145f11142f;
