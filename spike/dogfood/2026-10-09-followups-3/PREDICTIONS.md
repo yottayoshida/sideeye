@@ -68,3 +68,5 @@ On a FAT filesystem vim made no `setxattr` call and Kvantum's `O_TMPFILE` open f
 | lingui, `lingui-extract.js` invoked directly | the writer is the process Sideeye starts | a verdict; FAIL (the catalogs opened `O_TRUNC`, lab 3) |
 | Hydrogen on FAT, `drumkit.xml` scratch, a checker reading the kit | after `preflight --twice` | PASS (Qt's named-temporary fallback) |
 | ccache, `CCACHE_NOSTATS=1`, no checker (ccache rebuilds a damaged entry itself, so a checker on its output cannot fail) | the built-in invariant | a verdict; PASS |
+
+| ROOT 6.40.04 `rootrm data.root:h2` under `--observe supervised` named (the shim breaks it, #753) | `data.root` scratch (a random UUID in every run), `rootls` as checker | a verdict; PASS: ROOT recovers a file whose key list was cut, and rootls reads it (a guess) |
