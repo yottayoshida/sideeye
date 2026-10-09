@@ -1,0 +1,41 @@
+## B1 pre-commit hook, signal=KILL
+   precommit --install: ⚠ [DEPRECATED] dotenvx precommit. fix: run [dotenvx protect] ▣ dotenvx precommit appended [.git/hooks/pre-commit] 
+   before: 438 bytes
+   exit 137; .git/hooks/pre-commit: 0 bytes: 
+   said: Killed
+## B2 global git attributes holding the old filter=dotenvx lines, signal=KILL
+   exit 137; /s/lab5/home-attr-signal=KILL/.config/git/attributes: 0 bytes: 
+   said: Killed
+   git config --global --get filter.dotenvx.required: true
+## B3 .git/info/attributes with the legacy local filter, signal=KILL
+   exit 137; .git/info/attributes: 0 bytes: 
+   said: Killed
+## B5 Envfile, spec --overwrite, signal=KILL
+   exit 137; Envfile: 0 bytes: 
+   said: Killed
+## B1 pre-commit hook, error=ENOSPC
+   precommit --install: ⚠ [DEPRECATED] dotenvx precommit. fix: run [dotenvx protect] ▣ dotenvx precommit appended [.git/hooks/pre-commit] 
+   before: 438 bytes
+   exit 1; .git/hooks/pre-commit: 0 bytes: 
+   said: ☠ ENOSPC: no space left on device, write
+## B2 global git attributes holding the old filter=dotenvx lines, error=ENOSPC
+   exit 1; /s/lab5/home-attr-error=ENOSPC/.config/git/attributes: 0 bytes: 
+   said: ☠ ENOSPC: no space left on device, write
+   git config --global --get filter.dotenvx.required: true
+## B3 .git/info/attributes with the legacy local filter, error=ENOSPC
+   exit 1; .git/info/attributes: 0 bytes: 
+   said: ☠ ENOSPC: no space left on device, write
+## B5 Envfile, spec --overwrite, error=ENOSPC
+   exit 1; Envfile: 0 bytes: 
+   said: ☠ ENOSPC: no space left on device, write
+## C1 encrypt killed at its first rename, .gitignore naming .env.keys
+   exit 137
+   .env
+   .env.keys.319772990
+   .gitignore
+   git status --short:
+     A  .env
+     A  .env.keys.319772990
+     A  .gitignore
+   then encrypt again: ◈ encrypted .env (02A 589) via .env.keys ⛉
+.env .env.keys .env.keys.319772990 .gitignore 

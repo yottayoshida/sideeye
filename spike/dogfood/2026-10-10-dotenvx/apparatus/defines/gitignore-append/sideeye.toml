@@ -1,0 +1,8 @@
+# B6: the deprecated `gitignore --pattern` appends to .gitignore (fs.appendFileSync).
+[world]
+state = "/s/proj"
+
+[define]
+operation = "dotenvx gitignore --pattern .env.keys"
+cwd       = "/s/proj"
+check     = "/ap/defines/gitignore-append/check.sh"

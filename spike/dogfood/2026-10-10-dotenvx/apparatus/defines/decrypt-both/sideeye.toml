@@ -1,0 +1,10 @@
+# A5: decrypt over two encrypted files.
+[world]
+state = "/s/dx"
+
+[define]
+operation = "dotenvx decrypt -f /s/dx/.env -f /s/dx/.env.production"
+cwd       = "/s/dx"
+check     = "/ap/defines/decrypt-both/check.sh"
+# New key pairs and fresh ciphertext in every run; the checker reads the values back.
+scratch   = [".env", ".env.keys", ".env.production"]

@@ -1,0 +1,33 @@
+=== protect-hook 2.34.2 2026-10-09T22:09:20Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== protect-global-attributes 2.34.2 2026-10-09T22:09:28Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== protect-info-attributes 2.34.2 2026-10-09T22:09:40Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== spec-overwrite 2.34.2 2026-10-09T22:09:47Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== gitignore-append 2.34.2 2026-10-09T22:09:53Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== encrypt-leftover 2.34.2 2026-10-09T22:09:55Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0

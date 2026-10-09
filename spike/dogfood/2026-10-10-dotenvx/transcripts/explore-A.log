@@ -1,0 +1,54 @@
+=== encrypt 2.32.4 2026-10-09T22:09:19Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== encrypt 2.34.2 2026-10-09T22:09:34Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== encrypt-second 2.32.4 2026-10-09T22:09:48Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== encrypt-second 2.34.2 2026-10-09T22:10:09Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== encrypt-both 2.32.4 2026-10-09T22:10:27Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== encrypt-both 2.34.2 2026-10-09T22:10:47Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== set-encrypted 2.32.4 2026-10-09T22:11:21Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== set-encrypted 2.34.2 2026-10-09T22:11:31Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== decrypt-both 2.32.4 2026-10-09T22:11:40Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== decrypt-both 2.34.2 2026-10-09T22:11:56Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== del-encrypted 2.32.4 2026-10-09T22:12:12Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== del-encrypted 2.34.2 2026-10-09T22:12:21Z
+explore exit 0: PASS -
+explore exit 0: PASS -

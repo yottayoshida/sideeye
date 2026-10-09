@@ -1,0 +1,61 @@
+encrypt 2.32.4: check before 0, operation exit 0, check after 0, emptied .env -> 1 [.env DB_PASSWORD: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/dotenvx/issu
+.env API_TOKEN_PLACEHOLDER: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (API_TOKEN_PLACEHOLDER). fix: [https://github.com/dotenvx/do]
+encrypt-second 2.32.4: check before 0, operation exit 0, check after 0, emptied .env.keys -> 1 [.env DB_PASSWORD: dotenvx get reads 'encrypted:BBEggoH9LdwQoxwg1hY09Q/HQc8Wfm' (exit 1) ☠ [DECRYPTION_FAILED] could not decrypt DB_PASSWORD, API_TOKEN_PLACEHOLDER. fix: [https:
+.env API_TOKEN_PLACEHOLDER: dotenvx get reads 'encrypted:BLqPo+bK6TThW5hvpVCFQiCrtdJEG1' (exit 1) ☠ [DECRYPTION_FAILED] could not decrypt DB_PASSWORD, API_TOKEN_PLACEHOLDER. fix: [https:
+.env.production PROD_DB_PASSWORD: dotenvx get reads 'encrypted:BCc2AKO1T3ZzdSfW0VfvylJZCvaTx7' (exit 1) ☠ [DECRYPTION_FAILED] could not decrypt PROD_DB_PASSWORD, PROD_FLAG. fix: [https://githu
+.env.production PROD_FLAG: dotenvx get reads 'encrypted:BOwXdl3CnSNQlGlTtTeYO3w4e0GEff' (exit 1) ☠ [DECRYPTION_FAILED] could not decrypt PROD_DB_PASSWORD, PROD_FLAG. fix: [https://githu]
+encrypt-both 2.32.4: check before 0, operation exit 0, check after 0, emptied .env -> 1 [.env DB_PASSWORD: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/dotenvx/issu
+.env API_TOKEN_PLACEHOLDER: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (API_TOKEN_PLACEHOLDER). fix: [https://github.com/dotenvx/do]
+set-encrypted 2.32.4: check before 0, operation exit 0, check after 0, emptied .env -> 1 [.env DB_PASSWORD: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/dotenvx/issu
+.env API_TOKEN_PLACEHOLDER: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (API_TOKEN_PLACEHOLDER). fix: [https://github.com/dotenvx/do]
+decrypt-both 2.32.4: check before 0, operation exit 0, check after 0, emptied .env -> 1 [.env DB_PASSWORD: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/dotenvx/issu
+.env API_TOKEN_PLACEHOLDER: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (API_TOKEN_PLACEHOLDER). fix: [https://github.com/dotenvx/do]
+del-encrypted 2.32.4: check before 0, operation exit 0, check after 0, emptied .env -> 1 [.env DB_PASSWORD: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/dotenvx/issu]
+encrypt-leftover 2.32.4: check before 0, operation exit 0, check after 0, emptied .env -> 1 [.env DB_PASSWORD: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/dotenvx/issu
+.env API_TOKEN_PLACEHOLDER: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (API_TOKEN_PLACEHOLDER). fix: [https://github.com/dotenvx/do]
+encrypt 2.34.2: check before 0, operation exit 0, check after 0, emptied .env -> 1 [.env DB_PASSWORD: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/dotenvx/issu
+.env API_TOKEN_PLACEHOLDER: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (API_TOKEN_PLACEHOLDER). fix: [https://github.com/dotenvx/do]
+encrypt-second 2.34.2: check before 0, operation exit 0, check after 0, emptied .env.keys -> 1 [.env DB_PASSWORD: dotenvx get reads 'encrypted:BEinUaCIqYDtqod0knmcFoOTuFXHoc' (exit 1) ☠ [DECRYPTION_FAILED] could not decrypt DB_PASSWORD, API_TOKEN_PLACEHOLDER. fix: [https:
+.env API_TOKEN_PLACEHOLDER: dotenvx get reads 'encrypted:BAkPHKxXXBIE0ruZEkfzIpAG46ow1p' (exit 1) ☠ [DECRYPTION_FAILED] could not decrypt DB_PASSWORD, API_TOKEN_PLACEHOLDER. fix: [https:
+.env.production PROD_DB_PASSWORD: dotenvx get reads 'encrypted:BIOSgjjWk8YRRTkTCTcS+3F9QDinmy' (exit 1) ☠ [DECRYPTION_FAILED] could not decrypt PROD_DB_PASSWORD, PROD_FLAG. fix: [https://githu
+.env.production PROD_FLAG: dotenvx get reads 'encrypted:BODP/Pq8cDJ4WS7OXLPz/yd0SuzPkT' (exit 1) ☠ [DECRYPTION_FAILED] could not decrypt PROD_DB_PASSWORD, PROD_FLAG. fix: [https://githu]
+encrypt-both 2.34.2: check before 0, operation exit 0, check after 0, emptied .env -> 1 [.env DB_PASSWORD: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/dotenvx/issu
+.env API_TOKEN_PLACEHOLDER: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (API_TOKEN_PLACEHOLDER). fix: [https://github.com/dotenvx/do]
+set-encrypted 2.34.2: check before 0, operation exit 0, check after 0, emptied .env -> 1 [.env DB_PASSWORD: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/dotenvx/issu
+.env API_TOKEN_PLACEHOLDER: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (API_TOKEN_PLACEHOLDER). fix: [https://github.com/dotenvx/do]
+decrypt-both 2.34.2: check before 0, operation exit 0, check after 0, emptied .env -> 1 [.env DB_PASSWORD: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/dotenvx/issu
+.env API_TOKEN_PLACEHOLDER: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (API_TOKEN_PLACEHOLDER). fix: [https://github.com/dotenvx/do]
+del-encrypted 2.34.2: check before 0, operation exit 0, check after 0, emptied .env -> 1 [.env DB_PASSWORD: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/dotenvx/issu]
+encrypt-leftover 2.34.2: check before 0, operation exit 0, check after 0, emptied .env -> 1 [.env DB_PASSWORD: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/dotenvx/issu
+.env API_TOKEN_PLACEHOLDER: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (API_TOKEN_PLACEHOLDER). fix: [https://github.com/dotenvx/do]
+protect-hook 2.34.2: check before 0, operation exit 0, check after 0, emptied pre-commit -> 1 [/s/repo/.git/hooks/pre-commit: no line 'npm run lint --silent || exit 1' (0 bytes)]
+   files after: applypatch-msg.sample:478 commit-msg.sample:896 fsmonitor-watchman.sample:4726 post-update.sample:189 pre-applypatch.sample:424 pre-commit:0 pre-commit.sample:1649 pre-merge-commit.sample:416 pre-push.sample:1374 pre-rebase.sample:4898 pre-receive.sample:544 prepare-commit-msg.sample:1492 push-to-checkout.sample:2783 sendemail-validate.sample:2308 update.sample:3650 
+protect-global-attributes 2.34.2: check before 0, operation exit 0, check after 0, emptied attributes -> 1 [/s/xdg/git/attributes: no line '*.png binary' (0 bytes)
+/s/xdg/git/attributes: no line '*.lockb binary diff=lockb' (0 bytes)]
+   files after: attributes:0 
+protect-info-attributes 2.34.2: check before 0, operation exit 0, check after 0, emptied attributes -> 1 [/s/repo/.git/info/attributes: no line '*.psd binary' (0 bytes)
+/s/repo/.git/info/attributes: no line 'vendor/** linguist-vendored' (0 bytes)]
+   files after: attributes:0 exclude:240 
+spec-overwrite 2.34.2: check before 0, operation exit 0, check after 0, emptied Envfile -> 1 [Envfile: no 'DB_PASSWORD' (0 bytes)]
+gitignore-append 2.34.2: check before 0, operation exit 0, check after 0, emptied .gitignore -> 1 [/s/proj/.gitignore: no line 'node_modules/' (0 bytes)
+/s/proj/.gitignore: no line 'dist/' (0 bytes)]
+protect-remove-ignore 2.34.2: check before 0, operation exit 1, check after 0, emptied .env -> 0 []
+   op: 
+Node.js v20.19.2
+   files after: .env:0 ignore:34 
+protect-remove-filter 2.34.2: check before 0, operation exit 1, check after 0, emptied .env -> 0 []
+   op: 
+Node.js v20.19.2
+   files after: .env:0 attributes:199 
+protect-remove-ignore 2.34.2: check before 0, operation exit 0, check after 0, emptied ignore -> 1 [/s/xdg/git/ignore: no line '*.log' (0 bytes)
+/s/xdg/git/ignore: no line '.DS_Store' (0 bytes)
+/s/xdg/git/ignore: no line '.idea/' (0 bytes)]
+   files after: ignore:0 
+protect-remove-filter 2.34.2: check before 0, operation exit 0, check after 0, emptied attributes -> 1 [/s/xdg/git/attributes: no line '*.png binary' (0 bytes)
+/s/xdg/git/attributes: no line '*.lockb binary diff=lockb' (0 bytes)]
+   files after: attributes:0 
+native-encrypt 2.34.2: check before 0, operation exit 0, check after 0, emptied .env -> 1 [.env DB_PASSWORD: no key anywhere in the state decrypts it; dotenvx get reads '' ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/do]
+native-up 2.34.2: check before 0, operation exit 0, check after 0, emptied .env -> 1 [.env DB_PASSWORD: no key anywhere in the state decrypts it; dotenvx get reads '' ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/do]
+native-down 2.34.2: check before 0, operation exit 0, check after 0, emptied .env -> 1 [.env DB_PASSWORD: no key anywhere in the state decrypts it; dotenvx get reads '' ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/do]
+onepassword-up 2.34.2: check before 0, operation exit 0, check after 0, emptied .env -> 1 [.env DB_PASSWORD: no key anywhere in the state decrypts it; dotenvx get reads '' ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/do]
+onepassword-down 2.34.2: check before 0, operation exit 0, check after 0, emptied .env -> 1 [.env DB_PASSWORD: no key anywhere in the state decrypts it; dotenvx get reads '' ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/do]

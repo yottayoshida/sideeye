@@ -74,3 +74,6 @@ Querz/mcaselector	613	standing	MCA Selector 2.9 `--mode delete --query "Inhabite
 softhsm/SoftHSMv2	908	standing	SoftHSM 2.6.1 `softhsm2-util --import`
 ocrmypdf/OCRmyPDF	1762	standing	OCRmyPDF 16.7.0 `--force-ocr a.pdf a.pdf`
 dotenvx/dotenvx	1012	standing	dotenvx 2.32.4 `encrypt`
+dotenvx/dotenvx	1016	standing	dotenvx 2.34.2 `decrypt`
+dotenvx/dotenvx	1017	standing	dotenvx 2.34.2 `encrypt`, two at once
+dotenvx/dotenvx	1018	standing	dotenvx 2.34.2 `protect`

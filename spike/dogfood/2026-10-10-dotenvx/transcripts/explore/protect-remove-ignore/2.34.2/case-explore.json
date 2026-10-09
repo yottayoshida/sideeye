@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 5,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/xdg/git",
+    "operation": ["node", "-e", "require('/opt/dx-2.34.2/lib/node_modules/@dotenvx/dotenvx/src/lib/helpers/protectSettings.js').removeIgnore()"],
+    "check": "/ap/defines/protect-remove-ignore/check.sh",
+    "cwd": "/s/repo",
+    "scratch": ["config", "config.lock"],
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 5,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/xdg/git/ignore",
+  "before_class": "write",
+  "before_path": "/s/xdg/git/ignore",
+  "violation": "hybrid"
+}

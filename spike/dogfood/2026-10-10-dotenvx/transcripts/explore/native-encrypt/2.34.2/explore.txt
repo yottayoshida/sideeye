@@ -1,0 +1,17 @@
+◈ encrypted /s/kc/.env (037 E80) via Secret Service ⛉
+falsify: .env DB_PASSWORD: no key anywhere in the state decrypts it; dotenvx get reads '' ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/do
+◈ encrypted /s/kc/.env (032 446) via Secret Service ⛉
+PASS  10/10 explored worlds satisfied the built-in atomicity invariant, but it had no path to judge
+cwd         /s/kc
+
+explored    10 worlds (crash points 9 + 1 baseline)
+expected    exit 0
+atomicity   0 path(s) judged pre-or-post; 3 path(s) matched by scratch, not judged (declared: .env, .env.keys, keyring.json (+4 more))
+oracle      agreed on 5 operations (4639 syscall lines examined, 671 in scope of the judged state), witness strace — the SUBJECT's operations only. This run's crash points include operations performed by an awaited child, and those the oracle placed and ordered rather than compared one by one: this is `oracle_verified_subject_only`, and `oracle_verified` stays false. What accounts for a write neither observer placed is the per-path reconciliation, not this comparison
+metadata    2 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchownat x1, fchmodat x1. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 10 world(s)
+l1          no marker configured
+case        (none)
+processes   a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that — it runs without an oracle — so it inherits this finding, and what each world does check is that the operations before its crash point are the ones the recording numbered; a process other than the subject operated on the judged directory in an explored world too — the class the recording admitted, which a world inherits rather than re-deciding because it runs without an oracle; the shim recorded 7 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 6 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+sideeye: json sha256=8c888006e893b8b88a173b460957954cdb78defaa61e3eac831b8e2b6bd98744;

@@ -1,0 +1,60 @@
+########## 2.32.4
+## G1 mode and owner: .env 0640 owned by nobody, .env.keys 0640
+   .env 640 nobody:nogroup
+   .env.keys 640 root:root
+## G1 .env and .env.keys as symlinks into secrets/
+   lrwxrwxrwx secrets/.env lrwxrwxrwx secrets/.env.keys | secrets/: .env .env.keys | DB_PASSWORD=hunter2 API=one
+## G1 a hard link to .env (a second checkout's copy, a backup tool's)
+   links now: 2; the twin: #/-------------------[DOTENV_PUBLIC_KEY]
+## G1 the other commands
+   genexample: exit 0 .env.example: DB_PASSWORD=x|API=''|
+   precommit --install (new): 755 418
+   precommit --install (appended): npm test ... 438 bytes
+   set --plain: PLAIN_ONE="p1" | DB_PASSWORD=hunter2 API=one
+   encrypt -k DB_PASSWORD: API=one | DB_PASSWORD=hunter2 API=one
+   -fk in another directory: DB_PASSWORD=hunter2
+   encrypt with an Envfile: DB_PASSWORD=hunter2 API=one
+########## 2.34.2
+## G1 mode and owner: .env 0640 owned by nobody, .env.keys 0640
+   .env 640 nobody:nogroup
+   .env.keys 600 root:root
+## G1 .env and .env.keys as symlinks into secrets/
+   lrwxrwxrwx secrets/.env -rw------- .env.keys | secrets/: .env | DB_PASSWORD=hunter2 API=one
+## G1 a hard link to .env (a second checkout's copy, a backup tool's)
+   links now: 1; the twin: DB_PASSWORD=hunter2|API=one|
+## G1 the other commands
+   genexample: exit 0 .env.example: DB_PASSWORD=x|API=''|
+   precommit --install (new): 755 418
+   precommit --install (appended): npm test ... 438 bytes
+   set --plain: PLAIN_ONE="p1" | DB_PASSWORD=hunter2 API=one
+   encrypt -k DB_PASSWORD: API=one | DB_PASSWORD=hunter2 API=one
+   -fk in another directory: DB_PASSWORD=hunter2
+   encrypt with an Envfile: DB_PASSWORD=hunter2 API=one
+## H1 2.34.2 with every write, fsync or rename failing (when=1+: a full disk fails them all; the first write is often node's own stderr)
+   encrypt, first write -> ENOSPC: exit 134, held (DB_PASSWORD=hunter2 API=one)
+   encrypt, first write -> EACCES: exit 134, held (DB_PASSWORD=hunter2 API=one)
+   encrypt, first write -> EIO: exit 134, held (DB_PASSWORD=hunter2 API=one)
+   encrypt, first fsync -> ENOSPC: exit 1, held (DB_PASSWORD=hunter2 API=one)
+   encrypt, first fsync -> EACCES: exit 1, held (DB_PASSWORD=hunter2 API=one)
+   encrypt, first fsync -> EIO: exit 1, held (DB_PASSWORD=hunter2 API=one)
+   encrypt, first renameat,renameat2 -> ENOSPC: exit 1, held (DB_PASSWORD=hunter2 API=one)
+   encrypt, first renameat,renameat2 -> EACCES: exit 1, held (DB_PASSWORD=hunter2 API=one)
+   encrypt, first renameat,renameat2 -> EIO: exit 1, held (DB_PASSWORD=hunter2 API=one)
+   set, first write -> ENOSPC: exit 134, held (DB_PASSWORD=hunter2 API=one)
+   set, first write -> EACCES: exit 134, held (DB_PASSWORD=hunter2 API=one)
+   set, first write -> EIO: exit 134, held (DB_PASSWORD=hunter2 API=one)
+   set, first fsync -> ENOSPC: exit 1, held (DB_PASSWORD=hunter2 API=one)
+   set, first fsync -> EACCES: exit 1, held (DB_PASSWORD=hunter2 API=one)
+   set, first fsync -> EIO: exit 1, held (DB_PASSWORD=hunter2 API=one)
+   set, first renameat,renameat2 -> ENOSPC: exit 1, held (DB_PASSWORD=hunter2 API=one)
+   set, first renameat,renameat2 -> EACCES: exit 1, held (DB_PASSWORD=hunter2 API=one)
+   set, first renameat,renameat2 -> EIO: exit 1, held (DB_PASSWORD=hunter2 API=one)
+   decrypt, first write -> ENOSPC: exit 134, held (DB_PASSWORD=hunter2 API=one)
+   decrypt, first write -> EACCES: exit 134, held (DB_PASSWORD=hunter2 API=one)
+   decrypt, first write -> EIO: exit 134, held (DB_PASSWORD=hunter2 API=one)
+   decrypt, first fsync -> ENOSPC: exit 1, held (DB_PASSWORD=hunter2 API=one)
+   decrypt, first fsync -> EACCES: exit 1, held (DB_PASSWORD=hunter2 API=one)
+   decrypt, first fsync -> EIO: exit 1, held (DB_PASSWORD=hunter2 API=one)
+   decrypt, first renameat,renameat2 -> ENOSPC: exit 1, held (DB_PASSWORD=hunter2 API=one)
+   decrypt, first renameat,renameat2 -> EACCES: exit 1, held (DB_PASSWORD=hunter2 API=one)
+   decrypt, first renameat,renameat2 -> EIO: exit 1, held (DB_PASSWORD=hunter2 API=one)

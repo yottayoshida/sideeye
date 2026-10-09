@@ -1,0 +1,30 @@
+⚠ OS secret store unavailable; saving private key to .env.keys
+◈ encrypted /s/dx/.env (03E 559) via .env.keys ⛉
+falsify: .env DB_PASSWORD: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/dotenvx/issu
+falsify: .env API_TOKEN_PLACEHOLDER: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (API_TOKEN_PLACEHOLDER). fix: [https://github.com/dotenvx/do
+⚠ OS secret store unavailable; saving private key to .env.keys
+⚠ OS secret store unavailable; saving private key to .env.keys
+⚠ OS secret store unavailable; saving private key to .env.keys
+⚠ OS secret store unavailable; saving private key to .env.keys
+⚠ OS secret store unavailable; saving private key to .env.keys
+⚠ OS secret store unavailable; saving private key to .env.keys
+⚠ OS secret store unavailable; saving private key to .env.keys
+⚠ OS secret store unavailable; saving private key to .env.keys
+⚠ OS secret store unavailable; saving private key to .env.keys
+⚠ OS secret store unavailable; saving private key to .env.keys
+⚠ OS secret store unavailable; saving private key to .env.keys
+◈ encrypted /s/dx/.env (022 551) via .env.keys ⛉
+PASS  11/11 explored worlds satisfied the built-in atomicity invariant, but it had no path to judge
+cwd         /s/dx
+
+explored    11 worlds (crash points 10 + 1 baseline)
+expected    exit 0
+atomicity   0 path(s) judged pre-or-post; 2 path(s) matched by scratch, not judged (declared: .env, .env.keys)
+oracle      agreed on 10 operations (3526 syscall lines examined, 690 in scope of the judged state), witness strace
+metadata    3 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmodat x2, fchownat x1. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 11 world(s)
+l1          no marker configured
+case        (none)
+processes   1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle; the shim recorded 7 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 6 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+sideeye: json sha256=5c89781c9d1727e5f01d8b48d1516966c734caadd675b2964ca3358f27ef4ed7;

@@ -1,0 +1,10 @@
+# D2 measured: native up moves the key from .env.keys into the OS secret store, then removes it from .env.keys
+[world]
+state = "/s/kc"
+
+[define]
+operation = "dotenvx native up -f /s/kc/.env"
+cwd       = "/s/kc"
+check     = "/ap/defines/native-up/check.sh"
+# New key pairs, ciphertext and stand-in stores in every run; the checker finds the key wherever it is.
+scratch   = [".env", ".env.keys", "keyring.json", "keyring.json.tmp", "op.json", "op.json.tmp", "config"]

@@ -1,0 +1,10 @@
+# A2: .env is already encrypted and .env.keys holds its key; encrypting .env.production rewrites .env.keys.
+[world]
+state = "/s/dx"
+
+[define]
+operation = "dotenvx encrypt -f /s/dx/.env.production"
+cwd       = "/s/dx"
+check     = "/ap/defines/encrypt-second/check.sh"
+# New key pairs and fresh ciphertext in every run; the checker reads the values back.
+scratch   = [".env", ".env.keys", ".env.production"]

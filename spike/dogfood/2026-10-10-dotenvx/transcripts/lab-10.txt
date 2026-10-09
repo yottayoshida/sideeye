@@ -1,0 +1,51 @@
+# dotenvx decrypt: a literal $ kept by a backslash, through encrypt and decrypt (filed as dotenvx/dotenvx#1016)
+## 2.32.4
+   file before:
+     PW_BACKSLASH=pa\$sword
+     PW_DQ_BACKSLASH="pa\$sword"
+     PW_SQ='pa$sword'
+   read before:
+     PW_BACKSLASH     get=pa$sword     run=pa$sword
+     PW_DQ_BACKSLASH  get=pa$sword     run=pa$sword
+     PW_SQ            get=pa$sword     run=pa$sword
+   read after encrypt:
+     PW_BACKSLASH     get=pa$sword     run=pa$sword
+     PW_DQ_BACKSLASH  get=pa$sword     run=pa$sword
+     PW_SQ            get=pa$sword     run=pa$sword
+   file after decrypt:
+     PW_BACKSLASH=pa$sword
+     PW_DQ_BACKSLASH="pa$sword"
+     PW_SQ='pa$sword'
+   read after decrypt:
+     PW_BACKSLASH     get=pa           run=pa
+     PW_DQ_BACKSLASH  get=pa           run=pa
+     PW_SQ            get=pa$sword     run=pa$sword
+   read after encrypting again:
+     PW_BACKSLASH     get=pa           run=pa
+     PW_DQ_BACKSLASH  get=pa           run=pa
+     PW_SQ            get=pa$sword     run=pa$sword
+## 2.34.2
+   file before:
+     PW_BACKSLASH=pa\$sword
+     PW_DQ_BACKSLASH="pa\$sword"
+     PW_SQ='pa$sword'
+   read before:
+     PW_BACKSLASH     get=pa$sword     run=pa$sword
+     PW_DQ_BACKSLASH  get=pa$sword     run=pa$sword
+     PW_SQ            get=pa$sword     run=pa$sword
+   read after encrypt:
+     PW_BACKSLASH     get=pa$sword     run=pa$sword
+     PW_DQ_BACKSLASH  get=pa$sword     run=pa$sword
+     PW_SQ            get=pa$sword     run=pa$sword
+   file after decrypt:
+     PW_BACKSLASH=pa$sword
+     PW_DQ_BACKSLASH="pa$sword"
+     PW_SQ='pa$sword'
+   read after decrypt:
+     PW_BACKSLASH     get=pa           run=pa
+     PW_DQ_BACKSLASH  get=pa           run=pa
+     PW_SQ            get=pa$sword     run=pa$sword
+   read after encrypting again:
+     PW_BACKSLASH     get=pa           run=pa
+     PW_DQ_BACKSLASH  get=pa           run=pa
+     PW_SQ            get=pa$sword     run=pa$sword

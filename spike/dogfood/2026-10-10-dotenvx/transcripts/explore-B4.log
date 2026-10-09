@@ -1,0 +1,10 @@
+=== protect-remove-ignore 2.34.2 2026-10-09T22:12:48Z
+explore exit 2: UNKNOWN kill_did_not_land
+explore exit 2: UNKNOWN kill_did_not_land
+next_step: The world was armed to die in front of the operation the recording numbered, and no kill landed there, so the crash points cannot be trusted to name the same operations in every world. The restore rebuilds the names, kinds and bytes under --state — not their modes, owners or timestamps, and nothing outside it (a cache kept beside the configuration, a lock) — so a tool that reads those can take another path; sideeye preflight --twice compares what two clean runs leave. If neither explains it, file it with the report attached.
+=== protect-remove-filter 2.34.2 2026-10-09T22:12:48Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0

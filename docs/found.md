@@ -8,7 +8,7 @@ This is a list of counterexamples, not a badge: nothing on it says a tool is saf
 
 <!-- found:begin -->
 
-40 reports: 10 fixed upstream and re-measured, 28 filed, 2 withdrawn.
+43 reports: 11 fixed upstream and re-measured, 30 filed, 2 withdrawn.
 
 | Tool | Report | State | As of |
 |---|---|---|---|
@@ -22,6 +22,7 @@ This is a list of counterexamples, not a badge: nothing on it says a tool is saf
 | DwarFS 0.15.8 `mkdwarfs --recompress` | [mhx/dwarfs#388](https://github.com/mhx/dwarfs/issues/388) | fixed upstream, re-measured | 2026-10-09 |
 | PyMOL 3.1.0 (Debian) `save` of a `.pse` | [schrodinger/pymol-open-source#520](https://github.com/schrodinger/pymol-open-source/issues/520) | fixed upstream, re-measured | 2026-10-09 |
 | Subtitle Edit's SeConv 5.2.0 `subs.srt subrip --offset:-2000 --overwrite` | [SubtitleEdit/subtitleedit#15829](https://github.com/SubtitleEdit/subtitleedit/issues/15829) | fixed upstream, re-measured | 2026-10-09 |
+| dotenvx 2.32.4 `encrypt` | [dotenvx/dotenvx#1012](https://github.com/dotenvx/dotenvx/issues/1012) | fixed upstream, re-measured | 2026-10-10 |
 | topydo | [topydo/topydo#341](https://github.com/topydo/topydo/issues/341) | filed (awaiting) | 2026-10-09 |
 | calcurse | [lfos/calcurse#529](https://github.com/lfos/calcurse/issues/529) | filed (awaiting) | 2026-10-09 |
 | GNU Stow | [aspiers/stow#139](https://github.com/aspiers/stow/issues/139) | filed (awaiting) | 2026-10-09 |
@@ -49,7 +50,9 @@ This is a list of counterexamples, not a badge: nothing on it says a tool is saf
 | MCA Selector 2.9 `--mode delete --query "InhabitedTime < 1000"` | [Querz/mcaselector#613](https://github.com/Querz/mcaselector/issues/613) | filed (awaiting) | 2026-10-09 |
 | SoftHSM 2.6.1 `softhsm2-util --import` | [softhsm/SoftHSMv2#908](https://github.com/softhsm/SoftHSMv2/issues/908) | filed (awaiting) | 2026-10-09 |
 | OCRmyPDF 16.7.0 `--force-ocr a.pdf a.pdf` | [ocrmypdf/OCRmyPDF#1762](https://github.com/ocrmypdf/OCRmyPDF/issues/1762) | filed (awaiting) | 2026-10-09 |
-| dotenvx 2.32.4 `encrypt` | [dotenvx/dotenvx#1012](https://github.com/dotenvx/dotenvx/issues/1012) | filed (awaiting) | 2026-10-09 |
+| dotenvx 2.34.2 `decrypt` | [dotenvx/dotenvx#1016](https://github.com/dotenvx/dotenvx/issues/1016) | filed (awaiting) | 2026-10-10 |
+| dotenvx 2.34.2 `encrypt`, two at once | [dotenvx/dotenvx#1017](https://github.com/dotenvx/dotenvx/issues/1017) | filed (awaiting) | 2026-10-10 |
+| dotenvx 2.34.2 `protect` | [dotenvx/dotenvx#1018](https://github.com/dotenvx/dotenvx/issues/1018) | filed (awaiting) | 2026-10-10 |
 | devtodo | [alecthomas/devtodo#9](https://github.com/alecthomas/devtodo/issues/9) | withdrawn | 2026-08-14 |
 | poetry | [python-poetry/poetry#11019](https://github.com/python-poetry/poetry/issues/11019) | withdrawn | 2026-10-09 |
 

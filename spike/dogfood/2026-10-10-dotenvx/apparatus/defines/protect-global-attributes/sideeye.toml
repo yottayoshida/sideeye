@@ -1,0 +1,8 @@
+# B2: the user's global git attributes file holds their own lines and the five lines an earlier `protect` wrote (filter=dotenvx); `protect` migrates them with fs.writeFileSync (installProtectFilter.js:46).
+[world]
+state = "/s/xdg/git"
+
+[define]
+operation = "dotenvx protect"
+cwd       = "/s/repo"
+check     = "/ap/defines/protect-global-attributes/check.sh"
