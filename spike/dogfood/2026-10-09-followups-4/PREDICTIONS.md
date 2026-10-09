@@ -11,3 +11,4 @@ target sees.
 | argocd 3.5.3 `context work` | state on FAT, `fmask=0177` (every file 0600) | past it; FAIL (the config rewritten with `os.WriteFile`) |
 | arkenfox prefsCleaner.sh 2.1, `--observe supervised` named | state on FAT, `uid=1000` (every file the user's) | past the second run's owner difference; FAIL (prefs.js moved to the backup, then written; a crash between leaves no prefs.js, though the backup holds it) |
 | lz4 1.10.0 | its full help read for a switch beside `-T#` | none |
+| lz4 `-T1 -BD` (dependent blocks cannot be compressed in parallel) | the page's path | still `multiple_threads_detected` (a guess: the I/O may have its own thread) |

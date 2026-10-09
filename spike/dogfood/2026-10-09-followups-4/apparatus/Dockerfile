@@ -1,6 +1,14 @@
 # The box for the fourth round of 2026-10-09 follow-ups: the released Sideeye v1.10.0 beside the three targets
 # #678 left (upx, argocd, prefsCleaner), each to run on a FAT filesystem whose mount fixes the modes and owner
 # they need, and lz4. The base is 2026-10-09 follow-ups 3's, copied.
+FROM debian:trixie-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2 \
+      build-essential pkg-config zstd
+
+COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
 
 RUN for p in nodejs npm libfaketime faketime; do \
       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p"; \
