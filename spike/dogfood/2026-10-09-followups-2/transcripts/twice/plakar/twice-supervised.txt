@@ -1,0 +1,27 @@
+PREFLIGHT  not accepted — the two observed runs left different state
+
+difference   states/b7/b7af1707405ea07db043e854e2a2a631715276ccc0763e5bfd8016ea029bafe0 (only after the second run)
+difference   states/d0/d08c08749137a94dfb86b624973d4de63e1069d8fb2d11358e811b9fc3e9e6d8 (only after the first run)
+
+cwd          /s/plakar-in
+atomicity    527 path(s) judged pre-or-post
+oracle       not run (no --oracle given)
+processes    the supervising engine recorded a thread and no second witness ran; the second observed run recorded a thread, and that run's capture is never parsed, so nothing accounts for it; the supervising engine recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2055 ms apart differed under [world] state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside [world] state are
+               not compared, and two runs are not all runs
+
+note         no oracle checked the shim's account against a second witness;
+             explore's PASS will require --oracle <strace> (Linux) or
+             --allow-unverified (macOS)
+
+next         pin or relocate what differs, then re-run this command;
+             explore would reach the same divergence in its baseline
+             world, after a full define had been written

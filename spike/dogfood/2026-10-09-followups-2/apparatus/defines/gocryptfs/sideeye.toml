@@ -1,0 +1,6 @@
+[world]
+state = "/s/gocryptfs"
+
+[define]
+operation = "sh /s/gocryptfs-in/chpw.sh"
+cwd       = "/s/gocryptfs-in"

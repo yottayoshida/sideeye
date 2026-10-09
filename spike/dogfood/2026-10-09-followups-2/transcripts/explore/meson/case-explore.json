@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 5,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/meson/state",
+    "operation": "meson setup --reconfigure /s/meson/state /s/meson/aux/ms/src",
+    "check": "/ap/defines/meson/check.sh",
+    "cwd": null,
+    "scratch": ["meson-logs", "meson-private"],
+    "expected_status": 0
+  },
+  "k": 68,
+  "ops_total": 109,
+  "prefix_hash": "b50c5482d48556f1",
+  "after_class": "open",
+  "after_path": "/s/meson/state/compile_commands.json",
+  "before_class": "write",
+  "before_path": "/s/meson/state/compile_commands.json",
+  "violation": "hybrid"
+}

@@ -1,0 +1,25 @@
+PREFLIGHT  not accepted — the two observed runs left different state
+
+difference   xmake.conf (content differs)
+             bytes first differ at byte offset 6: first run "__version = \"3.1.1\",\x0a    theme = \"plain\",\x0a    ne"…, second run "theme = \"plain\",\x0a    network = \"private\",\x0a    pr"… — 91 and 91 byte(s) of 100 and 100, both printable text
+
+cwd          /s/xm-in
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 3 operations (2790 syscall lines examined, 76 in scope of the judged state), witness strace
+processes    1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the second observed run recorded a process boundary, and that run's capture is never parsed, so nothing accounts for it
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2002 ms apart differed under [world] state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside [world] state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         pin or relocate what differs, then re-run this command;
+             explore would reach the same divergence in its baseline
+             world, after a full define had been written

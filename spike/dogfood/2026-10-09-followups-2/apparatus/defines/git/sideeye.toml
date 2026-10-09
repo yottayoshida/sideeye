@@ -1,0 +1,6 @@
+[world]
+state = "/s/git/state"
+
+[define]
+operation = "git -C /s/git/state commit -q -m second"
+cwd       = "/s/git/state"

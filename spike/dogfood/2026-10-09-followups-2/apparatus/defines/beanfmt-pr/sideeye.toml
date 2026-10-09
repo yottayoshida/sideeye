@@ -1,0 +1,6 @@
+[world]
+state = "/s/bc"
+
+[define]
+operation = "/opt/bin/bean-format-pr -o /s/bc/l.beancount /s/bc/l.beancount"
+cwd       = "/s/bc"

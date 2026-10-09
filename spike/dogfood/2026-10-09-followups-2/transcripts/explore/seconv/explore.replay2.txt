@@ -1,0 +1,25 @@
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 3 of 3
+            after  truncate(/s/seconv/subs.srt)
+            before write(/s/seconv/subs.srt)
+path        subs.srt
+observed    holding neither the old nor the new content
+cwd         /s/seconv
+
+explored    2 worlds (crash points 3 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 3 operations (3500 syscall lines examined, 213 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/seconv/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 7 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/seconv && unset SIDEEYE_KILL_GROUP && : > /out/seconv/work-explore-replay2/trace-repro.bin && SIDEEYE_STATE_DIR=/s/seconv SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/seconv/work-explore-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=3 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'seconv' subs.srt subrip --offset:-2000 --overwrite </dev/null)
+sideeye: json sha256=e99bd6385a1300c1ed9641cdb53f859d4b3d2c041d3fb7b0a350cedd16f23aa3;

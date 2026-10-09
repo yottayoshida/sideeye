@@ -1,0 +1,14 @@
+PASS  11/11 explored worlds satisfied the built-in atomicity invariant
+cwd         /s/firebase-in
+
+explored    11 worlds (crash points 10 + 1 baseline)
+expected    exit 0
+atomicity   2 path(s) judged pre-or-post
+oracle      agreed on 10 operations (14182 syscall lines examined, 64 in scope of the judged state), witness strace
+metadata    4 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchownat x2, fchmodat x2. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        (none)
+processes   single process in the recording; the subject replaced its own image in an explored world, which runs with no oracle; the shim recorded 10 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 9 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes
+sideeye: json sha256=4e8ecd549c868e0f7d2cf2f43c0143f70789485cacfb2894d0cd9ea082c5412b;

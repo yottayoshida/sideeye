@@ -1,0 +1,150 @@
+## SoftHSM
+Slot 0 has a free/uninitialized token.
+The token has been initialized and is reassigned to slot 523771743
+.........+.....+.+..+...+....+...........+.............+++++++++++++++++++++++++++++++++++++++*.+...........+....+++++++++++++++++++++++++++++++++++++++*.+...+.....+.......+..................+..+............+......+......+.+..+.+.....+.+...........+...............+....+......+............+..+......+....+...+........+..........+..+......+.+........+.+.....+..........+......+........+...+...+.+.....+.........+............+....+.....+.............+...+..+.+.....+..........+.....+......+....+..+.......+..+.........+......+.............+..+...+...+....+..........................+.........................+..+.+...........+.+..+...+...+.+.........+..............+...+.......+......+.....+.+...+...+..++++++
+........+......+.+...+.....+....+...+.....+...+.+...+...+.....+............+.+......+..............+.........+.+......+.....+....+......+.........+.....+....+++++++++++++++++++++++++++++++++++++++*.....+...+.......+..+....+.....+.+.....+....+......+......+.....+.............+.....+.......+.........+........+.+.........+...+.........+++++++++++++++++++++++++++++++++++++++*..+.........+.....+....+..+....+.....+...+...+...+.+..................+............+........+.+..+.......++++++
+......+..+...+++++++++++++++++++++++++++++++++++++++*.....+..+...+...+++++++++++++++++++++++++++++++++++++++*...............+.......+..+.......+..................+.....+..........+.....+............+.+.....+....+.....++++++
+...........+...+......+...+...+.........+...+.+..+++++++++++++++++++++++++++++++++++++++*......+..+.......+.....+++++++++++++++++++++++++++++++++++++++*......+.......+......+............+.....+...+...+.+....................+....+.........+......+..+....+...........+.........+.+.........+.....+.+...+...........+...++++++
+Found slot 523771743 with matching token label.
+The key pair has been imported.
+newfstatat(AT_FDCWD, "/r1/tokens/52e895a1-5748-5ead-33ee-d1de1f381f5f/token.object", {st_mode=S_IFREG|0600, st_size=320, ...}, AT_SYMLINK_NOFOLLOW) = 0
+openat(AT_FDCWD, "/r1/tokens/52e895a1-5748-5ead-33ee-d1de1f381f5f/token.object", O_RDONLY) = 3
+fcntl(3, F_GETFL)                       = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+fcntl(3, F_SETLKW, {l_type=F_RDLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
+fstat(3, {st_mode=S_IFREG|0600, st_size=320, ...}) = 0
+fstat(3, {st_mode=S_IFREG|0600, st_size=320, ...}) = 0
+read(3, "\0\0\0\0\0\0\0\n\0\0\0\0\200\0SI\0\0\0\0\0\0\0\3\0\0\0\0\0\0\0 "..., 4096) = 320
+read(3, "", 4096)                       = 0
+fcntl(3, F_SETLK, {l_type=F_UNLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
+close(3)                                = 0
+newfstatat(AT_FDCWD, "/r1/tokens/52e895a1-5748-5ead-33ee-d1de1f381f5f/token.object", {st_mode=S_IFREG|0600, st_size=320, ...}, AT_SYMLINK_NOFOLLOW) = 0
+openat(AT_FDCWD, "/r1/tokens/52e895a1-5748-5ead-33ee-d1de1f381f5f/token.object", O_RDONLY) = 3
+fcntl(3, F_GETFL)                       = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+fcntl(3, F_SETLKW, {l_type=F_RDLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
+fstat(3, {st_mode=S_IFREG|0600, st_size=320, ...}) = 0
+read(3, "\0\0\0\0\0\0\0\n\0\0\0\0\200\0SI\0\0\0\0\0\0\0\3\0\0\0\0\0\0\0 "..., 4096) = 320
+fcntl(3, F_SETLK, {l_type=F_UNLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
+close(3)                                = 0
+openat(AT_FDCWD, "/r1/tokens/52e895a1-5748-5ead-33ee-d1de1f381f5f/token.object", O_RDONLY) = 3
+fcntl(3, F_GETFL)                       = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+fcntl(3, F_SETLKW, {l_type=F_RDLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
+fstat(3, {st_mode=S_IFREG|0600, st_size=320, ...}) = 0
+read(3, "\0\0\0\0\0\0\0\n\0\0\0\0\200\0SI\0\0\0\0\0\0\0\3\0\0\0\0\0\0\0 "..., 4096) = 320
+fcntl(3, F_SETLK, {l_type=F_UNLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
+close(3)                                = 0
+openat(AT_FDCWD, "/r1/tokens/52e895a1-5748-5ead-33ee-d1de1f381f5f/token.object", O_RDONLY) = 3
+fcntl(3, F_GETFL)                       = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+fcntl(3, F_SETLKW, {l_type=F_RDLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
+fstat(3, {st_mode=S_IFREG|0600, st_size=320, ...}) = 0
+read(3, "\0\0\0\0\0\0\0\n\0\0\0\0\200\0SI\0\0\0\0\0\0\0\3\0\0\0\0\0\0\0 "..., 4096) = 320
+fcntl(3, F_SETLK, {l_type=F_UNLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
+close(3)                                = 0
+openat(AT_FDCWD, "/r1/tokens/52e895a1-5748-5ead-33ee-d1de1f381f5f/token.object", O_RDONLY) = 3
+fcntl(3, F_GETFL)                       = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+fcntl(3, F_SETLKW, {l_type=F_RDLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
+fstat(3, {st_mode=S_IFREG|0600, st_size=320, ...}) = 0
+read(3, "\0\0\0\0\0\0\0\n\0\0\0\0\200\0SI\0\0\0\0\0\0\0\3\0\0\0\0\0\0\0 "..., 4096) = 320
+fcntl(3, F_SETLK, {l_type=F_UNLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
+close(3)                                = 0
+openat(AT_FDCWD, "/r1/tokens/52e895a1-5748-5ead-33ee-d1de1f381f5f/token.object", O_RDONLY) = 3
+fcntl(3, F_GETFL)                       = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+fcntl(3, F_SETLKW, {l_type=F_RDLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
+fstat(3, {st_mode=S_IFREG|0600, st_size=320, ...}) = 0
+read(3, "\0\0\0\0\0\0\0\n\0\0\0\0\200\0SI\0\0\0\0\0\0\0\3\0\0\0\0\0\0\0 "..., 4096) = 320
+fcntl(3, F_SETLK, {l_type=F_UNLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
+close(3)                                = 0
+openat(AT_FDCWD, "/r1/tokens/52e895a1-5748-5ead-33ee-d1de1f381f5f/token.object", O_RDONLY) = 3
+fcntl(3, F_GETFL)                       = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+fcntl(3, F_SETLKW, {l_type=F_RDLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
+fstat(3, {st_mode=S_IFREG|0600, st_size=320, ...}) = 0
+read(3, "\0\0\0\0\0\0\0\n\0\0\0\0\200\0SI\0\0\0\0\0\0\0\3\0\0\0\0\0\0\0 "..., 4096) = 320
+fcntl(3, F_SETLK, {l_type=F_UNLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
+close(3)                                = 0
+openat(AT_FDCWD, "/r1/tokens/52e895a1-5748-5ead-33ee-d1de1f381f5f/token.object", O_RDONLY) = 3
+fcntl(3, F_GETFL)                       = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+fcntl(3, F_SETLKW, {l_type=F_RDLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
+fstat(3, {st_mode=S_IFREG|0600, st_size=320, ...}) = 0
+read(3, "\0\0\0\0\0\0\0\n\0\0\0\0\200\0SI\0\0\0\0\0\0\0\3\0\0\0\0\0\0\0 "..., 4096) = 320
+fcntl(3, F_SETLK, {l_type=F_UNLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
+close(3)                                = 0
+openat(AT_FDCWD, "/r1/tokens/52e895a1-5748-5ead-33ee-d1de1f381f5f/token.object", O_RDWR|O_CREAT, 0600) = 3
+fcntl(3, F_GETFL)                       = 0x20002 (flags O_RDWR|O_LARGEFILE)
+fcntl(3, F_SETLKW, {l_type=F_WRLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
+fstat(3, {st_mode=S_IFREG|0600, st_size=320, ...}) = 0
+read(3, "\0\0\0\0\0\0\0\n\0\0\0\0\200\0SI\0\0\0\0\0\0\0\3\0\0\0\0\0\0\0 "..., 4096) = 320
+lseek(3, 0, SEEK_SET)                   = 0
+ftruncate(3, 0)                         = 0
+fcntl(3, F_SETLK, {l_type=F_UNLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
+write(3, "\0\0\0\0\0\0\0\v\0\0\0\0\200\0SI\0\0\0\0\0\0\0\3\0\0\0\0\0\0\0 "..., 320) = ?
++++ killed by SIGKILL +++
+Killed
+total 12
+-rw------- 1 root root    0 Oct  9 06:03 0007cf59-5cfa-ae9e-93af-8d8557a303b9.lock
+-rw------- 1 root root 2209 Oct  9 06:03 0007cf59-5cfa-ae9e-93af-8d8557a303b9.object
+-rw------- 1 root root    0 Oct  9 06:03 e7f120f7-a88c-047c-c353-2ec3e602a709.lock
+-rw------- 1 root root  810 Oct  9 06:03 e7f120f7-a88c-047c-c353-2ec3e602a709.object
+-rw------- 1 root root    8 Oct  9 06:03 generation
+-rw------- 1 root root    0 Oct  9 06:03 token.lock
+-rw------- 1 root root    0 Oct  9 06:03 token.object
+Available slots:
+Slot 0
+    Slot info:
+        Description:      SoftHSM slot ID 0x0                                             
+        Manufacturer ID:  SoftHSM project                 
+        Hardware version: 2.6
+        Firmware version: 2.6
+        Token present:    yes
+    Token info:
+        Manufacturer ID:  SoftHSM project                 
+        Model:            SoftHSM v2      
+        Hardware version: 2.6
+        Firmware version: 2.6
+        Serial number:                    
+        Initialized:      no
+        User PIN init.:   no
+        Label:                                            
+No slot with token named "t" found
+## OCRmyPDF
+-rw-r--r-- 1 root root 537 Oct  9 06:03 myfile.pdf
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=32, si_uid=0, si_status=0, si_utime=0, si_stime=1 /* 0.01 s */} ---
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=33, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=34, si_uid=0, si_status=0, si_utime=0, si_stime=1 /* 0.01 s */} ---
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=35, si_uid=0, si_status=0, si_utime=0, si_stime=3 /* 0.03 s */} ---
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=36, si_uid=0, si_status=0, si_utime=0, si_stime=1 /* 0.01 s */} ---
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=37, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+fstat(3, {st_mode=S_IFREG|0644, st_size=537, ...}) = 0
+ioctl(3, TCGETS, 0xffffd32a2de0)        = -1 ENOTTY (Inappropriate ioctl for device)
+lseek(3, 0, SEEK_CUR)                   = 0
+read(3, "%PDF-1.4\n1 0 obj<</Type/Catalog/"..., 4096) = 537
+read(3, "", 3559)                       = 0
+close(3)                                = 0
+fstat(3, {st_mode=S_IFREG|0644, st_size=537, ...}) = 0
+ioctl(3, TCGETS, 0xffffd32a2de0)        = -1 ENOTTY (Inappropriate ioctl for device)
+lseek(3, 0, SEEK_CUR)                   = 0
+fstat(3, {st_mode=S_IFREG|0644, st_size=537, ...}) = 0
+fcntl(3, F_DUPFD_CLOEXEC, 0)            = 4
+mmap(NULL, 537, PROT_READ, MAP_SHARED, 3, 0) = 0xffffb3052000
+close(4)                                = 0
+close(3)                                = 0
+
+[pid    41] --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=42, si_uid=0, si_status=0, si_utime=14 /* 0.14 s */, si_stime=15 /* 0.15 s */} ---
+[pid    41] --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=43, si_uid=0, si_status=0, si_utime=25 /* 0.25 s */, si_stime=7 /* 0.07 s */} ---
+
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=46, si_uid=0, si_status=0, si_utime=0, si_stime=1 /* 0.01 s */} ---
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=47, si_uid=0, si_status=0, si_utime=3 /* 0.03 s */, si_stime=2 /* 0.02 s */} ---
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=48, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+
+
+
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=51, si_uid=0, si_status=255, si_utime=0, si_stime=0} ---
+
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=53, si_uid=0, si_status=255, si_utime=0, si_stime=0} ---
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=54, si_uid=0, si_status=255, si_utime=0, si_stime=0} ---
+fstat(4, {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+ioctl(4, TCGETS, 0xffffd32a2de0)        = -1 ENOTTY (Inappropriate ioctl for device)
+lseek(4, 0, SEEK_CUR)                   = 0
+lseek(4, 0, SEEK_CUR)                   = 0
+write(4, "%PDF-1.7\n%\277\367\242\376\n1 0 obj\n<< /Type "..., 9767) = ?
++++ killed by SIGKILL +++
+Killed
+-rw-r--r-- 1 root root 0 Oct  9 06:03 myfile.pdf

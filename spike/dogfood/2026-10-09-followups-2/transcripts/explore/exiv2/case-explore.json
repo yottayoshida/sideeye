@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/ex",
+    "operation": "/usr/bin/exiv2 rm /s/ex/pic1.jpg /s/ex/pic2.jpg /s/ex/pic3.jpg",
+    "check": "/s/ex-check.sh",
+    "cwd": "/s/ex",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 6,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/ex/pic1.jpg",
+  "before_class": "write",
+  "before_path": "/s/ex/pic1.jpg",
+  "violation": "hybrid"
+}
