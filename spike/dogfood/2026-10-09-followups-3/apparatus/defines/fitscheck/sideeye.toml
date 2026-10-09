@@ -1,0 +1,7 @@
+[world]
+state = "/s/fits"
+
+[define]
+operation = "fitscheck -k standard -w -i /s/fits/obs.fits"
+cwd       = "/s/fits-in"
+apparatus = ["env:FAKETIME=2026-10-01 00:00:00", "preload:libfaketime"]

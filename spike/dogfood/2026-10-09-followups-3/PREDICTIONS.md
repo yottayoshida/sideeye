@@ -50,3 +50,19 @@ Not tried, with the reason: electrum and basic-memory (Python threads, no switch
 | zstd, a checker (the data in `f.bin` or `f.bin.zst`) | after `nothing_could_fail` | PASS |
 | beets, `library.db` scratch (2026-10-02's checker kept) | after `preflight --twice` | PASS: SQLite keeps the library whole |
 | joplin, `tmp` scratch too | the same | PASS: it FAILed on the profile's temporary directory alone |
+
+## The last walls, each with a switch or a filesystem that moves it (before these run)
+
+On a FAT filesystem vim made no `setxattr` call and Kvantum's `O_TMPFILE` open failed `EOPNOTSUPP`
+(`transcripts/lab-4.txt`), so Qt falls back to a named temporary.
+
+| target | step | prediction |
+|---|---|---|
+| vim 9.1 `%s` and `wq`, state on FAT | no ACL to write back | a verdict; FAIL (`nowritebackup`: the file rewritten in place) |
+| Kvantum `--set`, state on FAT | Qt's named-temporary fallback | a verdict; PASS (a temporary renamed over the config) |
+| Hydrogen `h2cli -u`, state on FAT | the same Qt fallback | a verdict; PASS |
+| flatpak `override --user`, state on FAT | libglnx's named-temporary fallback | a verdict; PASS |
+| ostree `remote add`, repository on FAT | the same | ostree may refuse a repository on FAT; if not, PASS |
+| ccache `gcc -c`, `CCACHE_NOSTATS=1` | no stats file in a random subdirectory | past `kill_did_not_land`; PASS |
+| fitscheck `-w`, astropy's `use_memmap = False` | no shared mapping | past `unsupported_syscall_observed`; FAIL (the HDU rewritten in place) |
+| lingui, `lingui-extract.js` invoked directly | the writer is the process Sideeye starts | a verdict; FAIL (the catalogs opened `O_TRUNC`, lab 3) |

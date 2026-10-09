@@ -77,3 +77,10 @@ RUN set -u; cd /tmp/dl; gh=https://github.com; \
     install -m 755 "$(find y-codex -type f -name 'codex*' | head -1)" /opt/bin/codex; \
     install -m 755 steamguard /opt/bin/steamguard; \
     { for c in "zstd --version" "lz4 --version" "beet version" "rustic --version" "prek --version" "codex --version" "steamguard --version"; do printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; } | tee -a /versions.txt
+
+# ---- the last walls' switches: ccache's stats off, astropy's memmap off, and a FAT filesystem (no
+# O_TMPFILE, no ACL) for vim, Kvantum, Hydrogen, flatpak and ostree ----
+RUN apt-get install -y --no-install-recommends ccache gcc libc6-dev vim-nox qt6-style-kvantum hydrogen flatpak ostree dosfstools \
+      > /tmp/apt-4.log 2>&1 && echo "OK ccache vim kvantum hydrogen flatpak ostree dosfstools" || { echo MISSING; tail -3 /tmp/apt-4.log; }
+RUN /opt/py/bin/pip install --no-cache-dir astropy==8.0.1 > /tmp/pip-astropy.log 2>&1; echo "pip astropy exit: $?"; ln -sf /opt/py/bin/fitscheck /opt/bin/fitscheck
+RUN { for c in "ccache --version" "vim --version" "fitscheck --version" "flatpak --version" "ostree --version" "mkfs.vfat --help"; do printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; } | tee -a /versions.txt
