@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/easyrsa/pki",
+    "operation": "easyrsa revoke c1",
+    "cwd": "/s/easyrsa-in",
+    "expected_status": 0
+  },
+  "k": 18,
+  "ops_total": 39,
+  "prefix_hash": "556abf588b30a9e0",
+  "after_class": "rename",
+  "after_path": "/s/easyrsa/pki/index.txt",
+  "before_class": "rename",
+  "before_path": "/s/easyrsa/pki/index.txt.new",
+  "violation": "missing"
+}

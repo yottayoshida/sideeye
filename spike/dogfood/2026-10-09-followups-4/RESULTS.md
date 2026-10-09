@@ -1,16 +1,17 @@
 # Results — 2026-10-09 follow-ups 4
 
-The fourth "おわり？" of the day, in two rounds. The first takes the three targets left waiting on #678 (the
+The fourth "おわり？" of the day, in three rounds. The first takes the three targets left waiting on #678 (the
 restore does not rebuild modes or owners) onto a FAT filesystem, whose mount gives every file one mode and one
 owner, so the restore cannot change what the target sees; and lz4 once more. The second asks, for every target
 still behind the threads wall, which threads write the state — measured with `strace -f` outside Sideeye
 (`apparatus/writers.sh`, `writers.py`) — and whether a switch the tool honours stops one of them; the
-shared-mapping and `fallocate` walls are read in their sources. Released **v1.10.0** in one box
-(`apparatus/Dockerfile`, built three times). Predictions were committed before each run (`2abe13a`, `60e1298`,
-`2852e4b`, `c6f4547`, `ac34121`, `d7e3b53`).
+shared-mapping and `fallocate` walls are read in their sources. The third, from the recount before the PR, takes
+easy-rsa to `--observe supervised`, the one wall left with a step never tried. Released **v1.10.0** in one box
+(`apparatus/Dockerfile`, built four times). Predictions were committed before each run (`2abe13a`, `60e1298`,
+`2852e4b`, `c6f4547`, `ac34121`, `d7e3b53`, `e5020ba`).
 
-**Seven targets run through Sideeye: 5 FAIL, 2 still behind a wall; none filed.** Seven more measured only with
-strace, and four read in their sources (easy-rsa is unchanged), each with the reason no switch moves them.
+**Eight targets run through Sideeye: 6 FAIL, 2 still behind a wall; none filed.** Seven more measured only with
+strace, and four read in their sources, each with the reason no switch moves them.
 
 ## Round 1: #678's three on FAT, and lz4
 
@@ -50,6 +51,17 @@ folder trust off, or at the user scope it merges). Known: gemini-cli #29465 (202
 fixed on its main by #29583 (2026-10-06), which neither 0.62.0 nor the stable 0.63.0 contains. Hence the
 define trusts the folder, in the home, outside the state.
 
+## Round 3: easy-rsa under supervised
+
+easy-rsa 3.2.7 `revoke c1` (2026-10-07's define, the clock pinned by libfaketime through `/etc/ld.so.preload`)
+on this box's page's path ends as it did then: `child_touched_state_dir` (openssl, sed and mv write the PKI),
+and the next step's `--observe syscalls` `recording_run_failed` — the libfaketime-preloaded children die of
+that mode's `SIGSYS` trap, and neither step names supervised. Named by hand (`transcripts/run-3.txt`):
+
+| target | result |
+|---|---|
+| easy-rsa 3.2.7 `revoke c1`, `--observe supervised` named | **FAIL** 2/40, crash point 18 of 39 — `openssl ca` renames `index.txt` to `index.txt.old`, and the kill comes before `index.txt.new` is renamed in: `index.txt` absent, the old database whole in `index.txt.old` and the new one whole in `index.txt.new`. Replayed twice. The children's writes hold crash-point addresses (no two processes interleaved, every writing child reaped) |
+
 ## Read in the sources, not run
 
 The lines read are in `transcripts/sources.txt`.
@@ -59,7 +71,6 @@ The lines read are in `transcripts/sources.txt`.
 | goaccess 1.12 `--persist` | every database goes through `close_tpl`: tpl's `tpl_dump` maps a `.tmp` file `PROT_READ\|PROT_WRITE, MAP_SHARED`, writes, `msync`s, and goaccess renames it in. The shared mapping is the only path |
 | rrdtool 1.9.0 `update` | `rrd_open` maps the file `MAP_SHARED` with `PROT_WRITE` whenever built with `HAVE_MMAP`, and reads no environment; `--daemon` hands the write to rrdcached, which opens it the same way |
 | flatpak 1.16, ostree (libglnx) | `glnx_file_replace_contents_with_perms_at` calls `glnx_try_fallocate` for every non-empty file on every filesystem, ignoring only `ENOSYS` and `EOPNOTSUPP` — so Sideeye meets the call whatever it returns |
-| easy-rsa 3.2.7 | unchanged: openssl, sed and mv write the PKI as children |
 
 ## The predictions, against what was measured
 
@@ -67,7 +78,7 @@ Missed: upx (PASS predicted; it removes the original before the rename); gemini-
 default scope is one); OpenTofu under strace (writes spread over threads predicted; one thread in four runs) and
 under supervised (refused both times predicted; one run of two reached a FAIL); basic-memory (an SQLite index
 predicted as the second writer; the index lives outside the state, and the second writer is aiofiles').
-Held: argocd and prefsCleaner FAIL; lz4 still threads; vercel, Bitwarden and electrum as predicted; no log
+Held: easy-rsa FAILs under supervised, at the rename predicted; argocd and prefsCleaner FAIL; lz4 still threads; vercel, Bitwarden and electrum as predicted; no log
 writer among the Rust four, and no switch; codex refused with its scratch; gemini-cli FAILs at the project
 scope; goaccess and rrdtool as read.
 
@@ -75,10 +86,14 @@ scope; goaccess and rrdtool as read.
 
 upx: a rename restores the program the run was writing (iconvert's shape). argocd and gemini-cli: settings a
 user re-enters (its tracker's #29307 is the same class for `state.json`). prefsCleaner and OpenTofu: a backup
-written first holds the old bytes.
+written first holds the old bytes. easy-rsa: a rename restores either database, and the renames are OpenSSL's.
 
 ## What the round says about Sideeye v1.10.0
 
+- **A second target that `child_touched_state_dir`'s next step sends to `--observe syscalls`, where it cannot be
+  judged, and that supervised judges**: easy-rsa, whose children carry libfaketime's preload and die of the
+  `SIGSYS` trap; `recording_run_failed`'s next step does not name supervised either. #685 (open) is the same
+  shape for a static parent with a dynamic child.
 - **The threads gate counts a call that failed and changed nothing**: vercel's only second-thread call is a
   `mkdir` of the state root that returns `EEXIST`, and codex's named pair included the same call. A failed
   `mkdir` leaves the state as it was, so its order against another thread's writes cannot change a world.
