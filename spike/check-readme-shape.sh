@@ -61,6 +61,11 @@
 # `sideeye evidence`. The command has rendered a saved FAIL for an upstream report since ADR 0071,
 # and a FAIL's report printed the bundle's path and not the command, so a reader who learned
 # Sideeye from this page had no way to learn it existed; check 10 below holds it.
+# An eleventh (#716, 2026-10-09): the 168-byte sentence under "From an agent" that names the three
+# agent skills and the one command that installs them. The skills ship from this repository and
+# are copied out of it on install, so this page is where a reader learns they exist; check 11 below
+# holds the command. The version is pinned in it on purpose: the installer runs from npm with the
+# reader's permissions, and an unpinned name runs whatever was published last.
 #
 # Sunset: if this has not failed once by 2026-12-04, delete it and its CI step.
 set -u
@@ -79,7 +84,7 @@ has() { grep -qF -e "$1" "$R"; }
 
 bytes=$(wc -c < "$R" | tr -d ' ')
 lines=$(wc -l < "$R" | tr -d ' ')
-if [ "$bytes" -le 10511 ]; then ok "size: $bytes bytes, at most 10511"; else bad "size: $bytes bytes, over 10511"; fi
+if [ "$bytes" -le 10679 ]; then ok "size: $bytes bytes, at most 10679"; else bad "size: $bytes bytes, over 10679"; fi
 if [ "$lines" -le 137 ]; then ok "length: $lines lines, at most 137"; else bad "length: $lines lines, over 137"; fi
 n=$(grep -cE '#[0-9]+' "$R")
 if [ "$n" -eq 0 ]; then ok "no issue numbers"; else bad "$n line(s) carry an issue number; the record belongs in the page the reason lives on"; fi
@@ -149,6 +154,11 @@ fi
 # the step after a first verdict, which the page names in the paragraph after it.
 if has 'sideeye evidence'; then ok "sideeye evidence, the step from a FAIL to an upstream report"
 else bad "sideeye evidence is gone; a reader of this page cannot learn a FAIL renders as a report"; fi
+
+# 11. The command that installs the agent skills (#716). Not one of run 1's seven: what an agent's
+# operator needs from this page, with the installer's version pinned.
+if grep -qE 'npx skills@[0-9]+\.[0-9]+\.[0-9]+ add yottayoshida/sideeye' "$R"; then ok "the agent skills' install command, its installer pinned"
+else bad "the agent skills' install command is gone, or no longer pins the installer's version"; fi
 
 if [ "$fails" -ne 0 ]; then
     echo "$fails check(s) failed on $R"
