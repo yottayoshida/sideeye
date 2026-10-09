@@ -1,0 +1,26 @@
+FAIL  1 of 6 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 3 of 5
+            after  write(/s/fits/obs.fits)
+            before write(/s/fits/obs.fits)
+path        obs.fits
+observed    holding neither the old nor the new content
+cwd         /s/fits-in
+apparatus   env:FAKETIME=2026-10-01 00:00:00, preload:libfaketime
+
+explored    6 worlds (crash points 5 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 5 operations (9344 syscall lines examined, 208 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/fitscheck-nommap/work-explore/cases/000001.json
+replay      sideeye replay /out/fitscheck-nommap/work-explore/cases/000001.json --shim /opt/se/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so
+evidence    sideeye evidence /out/fitscheck-nommap/work-explore/evidence/000001.json
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 9 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/fits-in && unset SIDEEYE_KILL_GROUP && : > /out/fitscheck-nommap/work-explore/trace-repro.bin && SIDEEYE_STATE_DIR=/s/fits SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/fitscheck-nommap/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=3 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'fitscheck' -k standard -w -i /s/fits/obs.fits </dev/null)
+sideeye: json sha256=20b5423b0a282b1df96cfd94252a02e25a7f0996c7ff8d6053ea553fe193c242;

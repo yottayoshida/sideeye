@@ -1,0 +1,6 @@
+[world]
+state = "/s/ost/repo"
+
+[define]
+operation = "ostree --repo=/s/ost/repo remote add --no-gpg-verify origin https://example.invalid/repo"
+cwd       = "/s/ost-in"

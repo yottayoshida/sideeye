@@ -1,0 +1,6 @@
+[world]
+state = "/s/flatpak"
+
+[define]
+operation = "flatpak override --user --env=GTK_THEME=Adwaita:dark --nofilesystem=home org.example.Notes"
+cwd       = "/s/flatpak"

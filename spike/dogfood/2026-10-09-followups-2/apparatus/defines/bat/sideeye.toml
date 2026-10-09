@@ -1,0 +1,9 @@
+[world]
+state = "/s/bat/state"
+
+[define]
+operation = ["batcat", "cache", "--build", "--source", "/s/bat/aux/batsrc", "--target", "/s/bat/state"]
+check     = "/ap/defines/bat/check.sh"
+apparatus = ["env:FAKETIME=@2024-01-01 00:00:00", "preload:libfaketime"]
+# metadata.yaml holds an 8-digit number that differs between runs, the clock pinned (transcripts/twice.txt); the checker was already the cache's reader
+scratch   = ["metadata.yaml"]

@@ -1,0 +1,12 @@
+== dotenvx default rc=1: PREFLIGHT not accepted — the two observed runs left different state
+difference   .env (content differs)
+             bytes first differ at byte offset 270: first run "44eb534f3a59c0bf50adb05a5693ed1adb26f83808c96021"…, second run "506dbc8fe694b3d9b80994f6daa632351462ec5e95d3ebb0"… — 447 and 447 by
+difference   .env.keys (content differs)
+             bytes first differ at byte offset 339: first run "5e0ec37f68307685f06c00bb8a92953d095c8c6a72f130fc"…, second run "3493ca065cb045e98bc8f5967f58bc1e1794f1bfc5b0ca3a"… — 64 and 64 byte
+repeatability  two runs 2005 ms apart differed under [world] state
+== joplin default rc=1: PREFLIGHT not accepted — the two observed runs left different state
+difference   database.sqlite (content differs)
+             bytes first differ at byte offset 24282: first run "1b9be021b3c04b2e90682bdee903da1869eedf3cb5ea40c4"…, second run "2f38ed96f14b4270b0cba17f0b5abef369eedf3cb5ea40c4"… — 4353 and 435
+difference   log.txt (content differs)
+             bytes first differ at byte offset 8430: first run "1: Performance: BaseApplication/start: Start at "…, second run "3: Performance: BaseApplication/start: Start at "… — 682 and 681 b
+repeatability  two runs 2327 ms apart differed under [world] state

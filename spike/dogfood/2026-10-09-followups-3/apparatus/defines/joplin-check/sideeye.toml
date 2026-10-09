@@ -1,0 +1,8 @@
+[world]
+state = "/s/joplin/jp"
+
+[define]
+operation = "joplin --profile /s/joplin/jp mknote SecondNote"
+# The notebook database and the log differ between two clean runs (transcripts/twice.txt); the checker reads the notebook.
+check     = "/ap/defines/joplin-check/check.sh"
+scratch   = ["database.sqlite", "log.txt"]

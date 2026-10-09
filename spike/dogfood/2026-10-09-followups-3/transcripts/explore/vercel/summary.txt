@@ -1,0 +1,2 @@
+explore exit 2: UNKNOWN multiple_threads_detected
+next_step: Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit the README states under 'What the target has to be': threads are judged where a creation or a join the shim saw orders their writes.

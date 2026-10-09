@@ -1,0 +1,31 @@
+⚠ OS secret store unavailable; saving private key to .env.keys
+◈ encrypted (/s/dotenvx/.env)
+⚠ OS secret store unavailable; saving private key to .env.keys
+◈ encrypted (/s/dotenvx/.env)
+PREFLIGHT  not accepted — the two observed runs left different state
+
+difference   .env (content differs)
+             bytes first differ at byte offset 270: first run "44eb534f3a59c0bf50adb05a5693ed1adb26f83808c96021"…, second run "506dbc8fe694b3d9b80994f6daa632351462ec5e95d3ebb0"… — 447 and 447 byte(s) of 719 and 719, both printable text
+difference   .env.keys (content differs)
+             bytes first differ at byte offset 339: first run "5e0ec37f68307685f06c00bb8a92953d095c8c6a72f130fc"…, second run "3493ca065cb045e98bc8f5967f58bc1e1794f1bfc5b0ca3a"… — 64 and 64 byte(s) of 404 and 404, both hex digits
+
+cwd          /s/dotenvx
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 4 operations (3060 syscall lines examined, 554 in scope of the judged state), witness strace
+processes    1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the second observed run recorded a process boundary, and that run's capture is never parsed, so nothing accounts for it; the shim recorded 7 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 6 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2005 ms apart differed under [world] state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside [world] state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         pin or relocate what differs, then re-run this command;
+             explore would reach the same divergence in its baseline
+             world, after a full define had been written

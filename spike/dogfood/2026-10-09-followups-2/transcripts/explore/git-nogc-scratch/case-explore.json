@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 5,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/git/state",
+    "operation": "git -c gc.auto=0 -c maintenance.auto=false -C /s/git/state commit -q -m second",
+    "check": "/ap/defines/git-nogc-scratch/check.sh",
+    "cwd": "/s/git/state",
+    "scratch": [".git/index"],
+    "expected_status": 0
+  },
+  "k": 12,
+  "ops_total": 38,
+  "prefix_hash": "c07c3e4f4a66a5e3",
+  "after_class": "open",
+  "after_path": "/s/git/state/.git/COMMIT_EDITMSG",
+  "before_class": "write",
+  "before_path": "/s/git/state/.git/COMMIT_EDITMSG",
+  "violation": "hybrid"
+}

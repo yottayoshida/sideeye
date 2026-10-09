@@ -1,0 +1,35 @@
+[INFO] using no config file, none of these exist: /s/aux/home/.config/rustic/rustic.toml, /etc/rustic/rustic.toml, ./rustic.toml
+[INFO] repository local:/s/rustic/repo: password is correct.
+[INFO] using no cache
+[INFO] snapshots for (host [9a63d3b0cc3b], label [], paths [/s/rustic-in/data]):
+| ID       | Time                | Host         | Label | Tags | Paths             | Action | Reason |
+|----------|---------------------|--------------|-------|------|-------------------|--------|--------|
+| 1fb39f44 | 2026-10-09 07:05:51 | 9a63d3b0cc3b |       |      | /s/rustic-in/data | keep   | last   |
+| fc77efb6 | 2026-10-09 07:05:51 | 9a63d3b0cc3b |       |      | /s/rustic-in/data | remove |        |
+[INFO] repository local:/s/rustic/repo: password is correct.
+[INFO] using no cache
+[INFO] to repack:          0 packs,          0 blobs,        0 B
+[INFO] this removes:                         0 blobs,        0 B
+[INFO] to delete:          2 packs,          5 blobs,      778 B
+[INFO] total prune:                          5 blobs,      778 B
+[INFO] remaining:                            5 blobs,      781 B
+[INFO] unused size after prune:        0 B (0.00% of remaining size)
+[INFO] packs marked for deletion:          0,        0 B
+[INFO]  - complete deletion:               0,        0 B
+[INFO]  - keep marked:                     0,        0 B
+[INFO]  - recover:                         0,        0 B
+UNKNOWN  multiple_threads_detected
+         two threads of process 131 wrote in the judged directory: tid 134 performed unlink(/s/rustic/repo/snapshots/fc77efb65a213651e27b916a02dbf12a87c734039696611c28fe0dde6fc21b82) and tid 131 performed mkdir(/s/rustic/repo/index). No thread creation or join the shim recorded orders the first of those before the second; tid 134 was detached, so no join could order it, so their order is the scheduler's choice on this run, the sequence they were numbered in is the one it happened to produce, and a crash point would not name the same operation on the next. A process whose threads' writes are all ordered by the creations and joins the shim recorded is judged, however many threads it created (v18)
+next        Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit the README states under 'What the target has to be': threads are judged where a creation or a join the shim saw orders their writes.
+cwd         /s/rustic-in
+
+expected    exit 0
+atomicity   267 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   the shim recorded a thread; the strace account was not read; the shim recorded 7 thread(s) created, and 2 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s) and 7 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=a1542ec6e0db7ea354815d17f9826673b510a90baba24af291c8928733f36319;

@@ -1,0 +1,15 @@
+UNKNOWN  unsupported_syscall_observed
+         fallocate
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+cwd         /s/flatpak
+
+expected    exit 0
+atomicity   4 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   single process in the recording; the shim recorded 2 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=015b0b1c495c4fb9e333f721d9c1445c9c1421ef0201cfdc034bb30496317c96;

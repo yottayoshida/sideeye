@@ -1,0 +1,10 @@
+[world]
+state = "/s/lg/locales"
+
+[define]
+# --workers 1: "Pass `--workers 1` to disable worker threads" (lingui extract --help); without it a child wrote the state.
+# The subcommand's own script, which lingui.js runs as a child node (the writer, transcripts/lab-3.txt):
+# invoked directly, the process that writes is the one Sideeye starts.
+operation = "node /opt/lingui-proj/node_modules/@lingui/cli/dist/lingui-extract.js --workers 1"
+cwd       = "/s/lg"
+apparatus = ["env:FAKETIME=2026-10-01 00:00:00", "preload:libfaketime"]

@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.config/capacitor"
+
+[define]
+operation = "cap telemetry off"
+cwd       = "/s/cap-in"

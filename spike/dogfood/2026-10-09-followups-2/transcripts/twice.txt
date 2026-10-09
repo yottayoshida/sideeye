@@ -1,0 +1,37 @@
+== hexapdf default rc=1: PREFLIGHT not accepted — the two observed runs left different state
+difference   a.pdf (content differs)
+             bytes first differ at byte offset 2654: first run "i:f\xffj4xB\x86\x04\x8b\xe3\x8cE0\xd1", second run "\xa7\xfeR\xa2\x94z\xa9\xd8t\x92P\xd8\x031B\xa7" — 16 and 16 byte(s) of 2715 and 27
+repeatability  two runs 2001 ms apart differed under [world] state
+== mu default rc=1: PREFLIGHT not accepted — the two observed runs left different state
+difference   home/xapian/docdata.glass (content differs)
+             bytes first differ at byte offset 16392: first run "\x06\x00\x13\x1f\xfd\x1e\xe8\x1d\xd3\x1c\xbe\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x0
+difference   home/xapian/postlist.glass (content differs)
+             bytes first differ at byte offset 16390: first run "\xe3\x17]\x00\x97\x1f\xfd\x1e\xc3\x1f\x0b\x1e\xe5\x1f1\x1fu\x1fQ\x16\xd0\x1f\xe7\x1f\x99\x17\x1a\x1f\xc9\x1f\xb3\x1a\x9e\x1a\x8d\x16|\x
+repeatability  two runs 2011 ms apart differed under [world] state
+== monero default rc=1: PREFLIGHT not accepted — the two observed runs left different state
+difference   w (content differs)
+             bytes first differ at byte offset 0: first run "+5\x9d\xab\xe6\xf0=;\xbd\x85\x19\xed\x9c}\x7f$f\xe5\xe9\x1a\xafj\xdf\xef\x08\xb9.\xf1Jl%H\x86\xc5vν\x83:\xbdf\x0d\x99\xf4\x82\x16\x93\xc6"
+repeatability  two runs 3862 ms apart differed under [world] state
+== infracost default rc=2: UNKNOWN no_shim_marker
+         the trace carries no shim marker; read before the run started, on /opt/bin/infracost (found along PATH): it names no interpreter, so it is statically linked and no preloaded library can reach
+== infracost supervised rc=1: PREFLIGHT not accepted — the two observed runs left different state
+difference   .state.json (content differs)
+             bytes first differ at byte offset 14: first run "2ea38dac-0a63-41f9-b332-b5dc7993d4af", second run "5f8cc381-e300-4a3a-a1e3-99ef2147131e" — 36 and 36 byte(s) of 106 and 106, both printa
+repeatability  two runs 2004 ms apart differed under [world] state
+== xmake default rc=2: UNKNOWN boundary_without_oracle
+== espsecure default rc=1: PREFLIGHT not accepted — the two observed runs left different state
+difference   fw.bin (content differs)
+             bytes first differ at byte offset 65638: first run "\xef\xe2\xbb/\xd4\xf2w`H\x0e\xa6\xa5*\xe7L\xd2܌\xa1h\xf1NC\xb3\xfa\x98p\xff#B\xf9\xc0ϱ2\x9c\x0b\xd7\xd8\xf4\x11\x80\xd0Y\xef\xc6+\xc4
+repeatability  two runs 2003 ms apart differed under [world] state
+== plakar default rc=2: UNKNOWN no_shim_marker
+         the trace carries no shim marker; read before the run started, on /opt/bin/plakar (found along PATH): it names no interpreter, so it is statically linked and no preloaded library can reach it
+== plakar supervised rc=1: PREFLIGHT not accepted — the two observed runs left different state
+difference   states/b7/b7af1707405ea07db043e854e2a2a631715276ccc0763e5bfd8016ea029bafe0 (only after the second run)
+difference   states/d0/d08c08749137a94dfb86b624973d4de63e1069d8fb2d11358e811b9fc3e9e6d8 (only after the first run)
+repeatability  two runs 2055 ms apart differed under [world] state
+== bat default rc=1: PREFLIGHT not accepted — the two observed runs left different state
+difference   metadata.yaml (content differs)
+             bytes first differ at byte offset 88: first run "99312083", second run "06539917" — 8 and 8 byte(s) of 97 and 97, both decimal digits
+repeatability  two runs 2002 ms apart differed under [world] state
+== meson default rc=2: UNKNOWN boundary_without_oracle
+== ocrmypdf default rc=2: UNKNOWN boundary_without_oracle

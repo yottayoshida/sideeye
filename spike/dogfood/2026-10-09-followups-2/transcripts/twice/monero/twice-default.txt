@@ -1,0 +1,27 @@
+PREFLIGHT  not accepted — the two observed runs left different state
+
+difference   w (content differs)
+             bytes first differ at byte offset 0: first run "+5\x9d\xab\xe6\xf0=;\xbd\x85\x19\xed\x9c}\x7f$f\xe5\xe9\x1a\xafj\xdf\xef\x08\xb9.\xf1Jl%H\x86\xc5vν\x83:\xbdf\x0d\x99\xf4\x82\x16\x93\xc6"…, second run "\xe5\x04$)`\x82\x19ӽ\x85\x19C\xe2%\x16\x96Y\xb0\xe7&o\xacK=\"\xb7\xba\x80p\x04\x1d\x1e}\x13vz\"\xe8\x08\x83\xb2t\xa7\xba\xe4P_("… — 410312 and 410312 byte(s) of 410312 and 410312, both holding bytes outside printable text (224646 and 224989)
+
+cwd          /s/xmr-in
+atomicity    2 path(s) judged pre-or-post
+oracle       not run (no --oracle given)
+processes    the shim recorded a thread and no second witness ran; the second observed run recorded a thread, and that run's capture is never parsed, so nothing accounts for it; the shim recorded 1 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 1 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 3862 ms apart differed under [world] state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside [world] state are
+               not compared, and two runs are not all runs
+
+note         no oracle checked the shim's account against a second witness;
+             explore's PASS will require --oracle <strace> (Linux) or
+             --allow-unverified (macOS)
+
+next         pin or relocate what differs, then re-run this command;
+             explore would reach the same divergence in its baseline
+             world, after a full define had been written

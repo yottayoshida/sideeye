@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 5,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/h2/kit",
+    "operation": "h2cli -u /s/h2/kit",
+    "check": "/ap/defines/h2cli-fat-check/check.sh",
+    "cwd": "/s/h2-in",
+    "scratch": ["drumkit.xml"],
+    "expected_status": 0
+  },
+  "k": 8,
+  "ops_total": 8,
+  "prefix_hash": "d41c03572dac70f1",
+  "after_class": "open",
+  "after_path": "/s/h2/kit/drumkit.xml",
+  "before_class": "write",
+  "before_path": "/s/h2/kit/drumkit.xml",
+  "violation": "checker"
+}

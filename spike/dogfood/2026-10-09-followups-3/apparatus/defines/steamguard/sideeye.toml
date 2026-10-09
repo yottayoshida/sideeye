@@ -1,0 +1,6 @@
+[world]
+state = "/s/sg"
+
+[define]
+operation = "steamguard -m /s/sg -p correcthorse decrypt"
+cwd       = "/s/sg-in"

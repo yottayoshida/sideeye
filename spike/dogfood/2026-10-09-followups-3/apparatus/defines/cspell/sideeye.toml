@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.config/cspell"
+
+[define]
+operation = "cspell link add /s/cspell-in/b.json"
+cwd       = "/s/cspell-in"

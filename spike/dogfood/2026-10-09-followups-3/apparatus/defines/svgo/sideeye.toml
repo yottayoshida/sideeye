@@ -1,0 +1,6 @@
+[world]
+state = "/s/svgo/state"
+
+[define]
+operation = "svgo -q /s/svgo/state/a.svg"
+cwd       = "/s/svgo/state"

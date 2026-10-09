@@ -71,3 +71,6 @@ smacke/ffsubsync	240	standing	ffsubsync 0.5.1 `--overwrite-input`
 wp-cli/config-command	233	standing	WP-CLI 2.12.0 `config set`
 SubtitleEdit/subtitleedit	15829	standing	Subtitle Edit's SeConv 5.2.0 `subs.srt subrip --offset:-2000 --overwrite`
 Querz/mcaselector	613	standing	MCA Selector 2.9 `--mode delete --query "InhabitedTime < 1000"`
+softhsm/SoftHSMv2	908	standing	SoftHSM 2.6.1 `softhsm2-util --import`
+ocrmypdf/OCRmyPDF	1762	standing	OCRmyPDF 16.7.0 `--force-ocr a.pdf a.pdf`
+dotenvx/dotenvx	1012	standing	dotenvx 2.32.4 `encrypt`

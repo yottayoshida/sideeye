@@ -1,0 +1,63 @@
+/s/beets/in2
+falsify: library.db does not open: Traceback (most recent call last):
+falsify:   File "<string>", line 1, in <module>
+falsify:     import sqlite3,sys;print(sqlite3.connect(sys.argv[1]).execute('select count(*) from items').fetchone()[0])
+falsify:                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+falsify: sqlite3.DatabaseError: file is not a database
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+/s/beets/in2
+UNKNOWN  baseline_violates_invariant
+         the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing: the re-run from the restored state left library.db holding neither the old nor the new content; the two runs' bytes first differ at byte offset 8002, in a stretch 16495 byte(s) long in the recording and 16495 in the re-run (of 36864 and 36864 bytes), both holding bytes outside printable text (16315 and 16320); preflight --twice quotes what two runs leave there
+next        The path the detail names did not come back with the bytes the recording left, in a world nothing crashed. If those bytes are not what the verdict should judge (a cache, a log, a timestamp), declare the path scratch in the define (--scratch, or scratch in a sideeye.toml); sideeye preflight --twice names the paths two clean runs leave differently, before an exploration.
+cwd         /  (none declared: Sideeye's own)
+
+expected    exit 0
+atomicity   4 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=8d8a58eb4f6f517a66a4fb0153d6ac9e4349f7614193cc6d1097fa3a6f35e5bd;

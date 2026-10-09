@@ -1,0 +1,9 @@
+[world]
+state = "/s/td"
+
+[define]
+operation = "trash report.txt"
+# A move leaves no path that exists before and after; the checker reads whether the document
+# is in one place with its .trashinfo.
+check     = "/s/td-check.sh"
+cwd       = "/s/td/docs"

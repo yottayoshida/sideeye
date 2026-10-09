@@ -1,0 +1,6 @@
+[world]
+state = "/s/rustic/repo"
+
+[define]
+operation = "rustic forget --keep-last 1 --prune"
+cwd       = "/s/rustic-in"

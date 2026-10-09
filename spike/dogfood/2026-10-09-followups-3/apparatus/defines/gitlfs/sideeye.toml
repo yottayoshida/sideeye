@@ -1,0 +1,6 @@
+[world]
+state = "/s/glfs"
+
+[define]
+operation = "git-lfs install --skip-repo"
+cwd       = "/s/glfs-in"

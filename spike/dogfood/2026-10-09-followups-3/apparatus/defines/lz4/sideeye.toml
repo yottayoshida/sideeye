@@ -1,0 +1,7 @@
+[world]
+state = "/s/lz4/state"
+
+[define]
+# -T1 in place of 2026-10-02's -T2: one thread (the threads wall)
+operation = "lz4 -q -T1 --rm /s/lz4/state/f.bin"
+cwd       = "/s/lz4/state"

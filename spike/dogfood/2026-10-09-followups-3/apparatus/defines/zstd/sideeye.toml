@@ -1,0 +1,7 @@
+[world]
+state = "/s/zstd/state"
+
+[define]
+# --single-thread: zstd's documented switch for no worker threads (the threads wall, 2026-10-02)
+operation = "zstd -q --single-thread --rm /s/zstd/state/f.bin"
+cwd       = "/s/zstd/state"

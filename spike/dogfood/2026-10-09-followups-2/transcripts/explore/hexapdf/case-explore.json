@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 5,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/hexapdf",
+    "operation": "hexapdf -f modify -i 1-2 a.pdf a.pdf",
+    "check": "/ap/defines/hexapdf/check.sh",
+    "cwd": "/s/hexapdf",
+    "scratch": ["a.pdf"],
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 12,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/hexapdf/a.pdf",
+  "before_class": "write",
+  "before_path": "/s/hexapdf/a.pdf",
+  "violation": "checker"
+}

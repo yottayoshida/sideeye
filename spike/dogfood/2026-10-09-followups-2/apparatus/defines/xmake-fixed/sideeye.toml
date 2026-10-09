@@ -1,0 +1,9 @@
+[world]
+state = "/s/xm/.xmake"
+
+[define]
+operation = "xmake g --theme=plain"
+cwd       = "/s/xm-in"
+# xmake.conf's keys come out in a varying order (transcripts/twice-oracle.txt); the checker judges it
+check     = "/ap/defines/xmake-fixed/check.sh"
+scratch   = ["xmake.conf"]
