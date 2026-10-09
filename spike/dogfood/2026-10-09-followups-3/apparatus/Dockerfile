@@ -84,3 +84,8 @@ RUN apt-get install -y --no-install-recommends ccache gcc libc6-dev vim-nox qt6-
       > /tmp/apt-4.log 2>&1 && echo "OK ccache vim kvantum hydrogen flatpak ostree dosfstools" || { echo MISSING; tail -3 /tmp/apt-4.log; }
 RUN /opt/py/bin/pip install --no-cache-dir astropy==8.0.1 > /tmp/pip-astropy.log 2>&1; echo "pip astropy exit: $?"; ln -sf /opt/py/bin/fitscheck /opt/bin/fitscheck
 RUN { for c in "ccache --version" "vim --version" "fitscheck --version" "flatpak --version" "ostree --version" "mkfs.vfat --help"; do printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; } | tee -a /versions.txt
+
+# ---- ROOT 6.40.04 from conda-forge through micromamba 2.9.0, as 2026-10-09 user-data-4 installed it ----
+RUN set -u; cd /tmp/dl; curl -fsSL -o micromamba https://github.com/mamba-org/micromamba-releases/releases/download/2.9.0-0/micromamba-linux-aarch64 && install -m 755 micromamba /opt/bin/micromamba && \
+    MAMBA_ROOT_PREFIX=/opt/mamba micromamba create -y -p /opt/root -c conda-forge root=6.40.04 > /tmp/mamba-root.log 2>&1 && echo "OK root" || { echo "FAILED root"; tail -5 /tmp/mamba-root.log; }
+RUN echo "root $(/opt/root/bin/root-config --version 2>&1)" | tee -a /versions.txt

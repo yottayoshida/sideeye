@@ -142,17 +142,17 @@ review the way ADR 0039 rules for figures quoted from other records.
 ```
 outcome funnel -- every campaign
 
-383 encounters (one campaign meeting one target) over 34 campaigns, 28 of them
+384 encounters (one campaign meeting one target) over 34 campaigns, 28 of them
 recording every target they met; 251 distinct targets.
-295 rows are held to a report this repository committed; 88 name a written record only.
+296 rows are held to a report this repository committed; 88 name a written record only.
 1275 candidates screened before the slates were fixed, over the 23 campaign(s) that
 recorded one; the rest kept no such count.
 
 reach, over the 28 campaign(s) that recorded every target they met
-  attempted       374
-  explored        249
-  judged          237
-    PASS           79
+  attempted       375
+  explored        250
+  judged          238
+    PASS           80
     FAIL          158
 
 outcome            encounters   in full campaigns   distinct reports

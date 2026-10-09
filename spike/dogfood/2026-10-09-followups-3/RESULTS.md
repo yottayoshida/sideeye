@@ -5,9 +5,9 @@ as "behind walls v1.10.0 does not move", and two kinds of them were measurable a
 wall had never been asked whether the target's own switch for one thread moves it, and five targets that
 cleared a gate in earlier campaigns had been set aside before their explore for reasons about filing, not
 about measuring. Released **v1.10.0** in one box (`apparatus/Dockerfile`, built five times). Predictions
-were committed before each run (`7033f95`, `b4f5f27`, `7a74533`, `56b7e20`, `8d52929`, `3704d22`, `bf9e550`, `67cd268`).
+were committed before each run (`7033f95`, `b4f5f27`, `7a74533`, `56b7e20`, `8d52929`, `3704d22`, `bf9e550`, `67cd268`, `d071e97`).
 
-**40 targets: 18 FAIL, 10 PASS, 12 still behind a wall.** One filed upstream with the owner's approval:
+**41 targets: 18 FAIL, 11 PASS, 12 still behind a wall.** One filed upstream with the owner's approval:
 **dotenvx/dotenvx#1012**. And SubtitleEdit/subtitleedit#15829 was closed by its maintainer's fix (PR #15833,
 merged as a merge commit whose parent is the head this project measured in `2026-10-09-followups-2`; the
 seven commits beside it touch only the GUI), so that PASS is the landed fix's.
@@ -58,6 +58,7 @@ Not tried: electrum and basic-memory (Python threads with no switch for one).
 | flatpak 1.16 `override --user`, ostree (Debian) `remote add` | FAT: libglnx's named-temporary fallback | **UNKNOWN `unsupported_syscall_observed`** on `fallocate`, which the fallback calls |
 | ccache 4.11 `gcc -c` | `CCACHE_NOSTATS=1`: no stats file in a random subdirectory | **UNKNOWN `nothing_could_fail`**: the operation only creates cache files, and the checker on its objects was `checker_not_falsified` — ccache rebuilds a damaged entry itself, so nothing about its output can fail |
 | astropy 8.0.1 `fitscheck -w` | `use_memmap = False` in astropy's configuration | **FAIL** 1/6 — `obs.fits` torn between two writes of its header |
+| ROOT 6.40.04 `rootrm data.root:h2` | `--observe supervised` named (the shim breaks it, #753), `data.root` scratch (a random UUID in every run), `rootls` as checker | **PASS** 11/11 |
 
 ## Five that cleared a gate and were never explored
 
