@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/data/python_keyring"
+
+[define]
+operation = "keyring del svc u1"
+cwd       = "/s/keyring-in"
