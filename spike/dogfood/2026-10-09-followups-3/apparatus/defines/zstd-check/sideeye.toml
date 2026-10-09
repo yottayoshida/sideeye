@@ -1,0 +1,10 @@
+[world]
+state = "/s/zstd/state"
+
+[define]
+# --single-thread: zstd's documented switch for no worker threads (the threads wall, 2026-10-02)
+# --no-asyncio too: zstd writes through a separate I/O thread by default ("Use asynchronous IO. [Default: Enabled]"),
+# which --single-thread alone left (transcripts/explore/zstd: multiple_threads_detected).
+operation = "zstd -q --single-thread --no-asyncio --rm /s/zstd/state/f.bin"
+cwd       = "/s/zstd/state"
+check     = "/ap/defines/zstd-check/check.sh"

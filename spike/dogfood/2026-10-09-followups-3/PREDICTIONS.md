@@ -45,3 +45,7 @@ Not tried, with the reason: electrum and basic-memory (Python threads, no switch
 | dotenvx | `.env` and `.env.keys` scratch, `dotenvx get` as checker | FAIL: `.env.keys` and the encrypted `.env` are two files, and a crash between them leaves ciphertext with no key |
 | joplin | `database.sqlite` and `log.txt` scratch, `joplin ls` as checker | PASS: SQLite's journal keeps the database whole |
 | beets (`threaded: no`) | `preflight --twice` first, as the refusal says | the library database differs; then scratch and a checker |
+
+| joplin, the checker fixed (`ls` with no argument; `ls TestBook` treated the name as a note pattern) | the same scratch | PASS |
+| zstd, a checker (the data in `f.bin` or `f.bin.zst`) | after `nothing_could_fail` | PASS |
+| beets, `library.db` scratch (2026-10-02's checker kept) | after `preflight --twice` | PASS: SQLite keeps the library whole |
