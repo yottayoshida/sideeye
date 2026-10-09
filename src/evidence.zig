@@ -545,6 +545,18 @@ pub fn siblingPath(arena: std.mem.Allocator, case_path: []const u8) error{OutOfM
     return std.fmt.allocPrint(arena, "{s}evidence{s}", .{ parent, case_path[slash..] });
 }
 
+/// The case a bundle sits beside: `siblingPath` read backwards, for a caller handed the
+/// bundle's own path (`sideeye_evidence` takes either, #717). Returns the path unchanged when
+/// it is not under an `evidence` directory, which a caller tells from a moved one by
+/// comparing — the same convention `siblingPath` keeps.
+pub fn casePathOf(arena: std.mem.Allocator, bundle_path: []const u8) error{OutOfMemory}![]const u8 {
+    const slash = std.mem.lastIndexOfScalar(u8, bundle_path, '/') orelse return bundle_path;
+    const dir = bundle_path[0..slash];
+    if (!std.mem.endsWith(u8, dir, "/evidence") and !std.mem.eql(u8, dir, "evidence")) return bundle_path;
+    const parent = dir[0 .. dir.len - "evidence".len];
+    return std.fmt.allocPrint(arena, "{s}cases{s}", .{ parent, bundle_path[slash..] });
+}
+
 /// Write the bundle beside its case and return the path, or null when it could not be
 /// written. Null is not a failure of the run: the FAIL report and the case are the product,
 /// and an attachment must not take them down with it — the same rule `writeCase` keeps.
@@ -735,6 +747,34 @@ pub fn render(arena: std.mem.Allocator, ev: Evidence) error{OutOfMemory}![]const
     return doc.items;
 }
 
+// ---- reading one back ---------------------------------------------------------------
+
+/// What the CLI says when there is no bundle to read beside a case. The MCP server names the
+/// root beside it, since there the same miss can also be a bundle outside the root.
+pub const no_bundle_message = "no evidence file could be read beside that case. A bundle is written when the FAIL is found, by a sideeye new enough to write one; an older case has none, and re-running the define writes it.";
+
+/// A bundle read back from bytes, or the sentence that says why it is not one. The CLI and
+/// the MCP server both read through this (#717), so they cannot disagree about which file is
+/// a bundle or which version is too new.
+pub const Loaded = union(enum) { ok: Evidence, refused: []const u8 };
+
+pub fn parseBundle(arena: std.mem.Allocator, text: []const u8) Loaded {
+    // Unknown fields are ignored here, unlike in a saved case. The two files answer to
+    // different rules: a case is a frozen question, and a field it does not understand means
+    // it is not the question this engine can re-ask, so `ReplayCase` refuses. A bundle is a
+    // record, and the useful direction for a record is the report schema's — a consumer
+    // tolerates fields it does not know (`docs/contract-freeze.md`, surface 2). Without this,
+    // the first field added at version 2 would make every version-1 bundle already on disk
+    // unreadable by a sideeye that could still read it perfectly well.
+    const ev = std.json.parseFromSliceLeaky(Evidence, arena, text, .{ .ignore_unknown_fields = true }) catch
+        return .{ .refused = "the evidence file could not be parsed as a sideeye evidence bundle" };
+    if (!std.mem.eql(u8, ev.schema, "sideeye/evidence")) return .{ .refused = "that file is not a sideeye evidence bundle" };
+    // Refuses upward only: a bundle from a newer sideeye may carry fields whose ABSENCE this
+    // reader would misread, which is a different thing from not knowing extra ones.
+    if (ev.evidence_version > current_version) return .{ .refused = "that evidence bundle was written by a newer sideeye than this one" };
+    return .{ .ok = ev };
+}
+
 // ---- the subcommand ----------------------------------------------------------------
 
 fn fail(msg: []const u8) u8 {
@@ -759,21 +799,11 @@ pub fn runCommand(gpa: std.mem.Allocator, case_arg: []const u8) u8 {
 
     const path = siblingPath(arena, case_arg) catch return fail("out of memory");
     const text = capture.readFileAllocCapped(arena, path, 16 * 1024 * 1024, .{ .require_regular = true }) orelse
-        return fail("no evidence file could be read beside that case. A bundle is written when the FAIL is found, by a sideeye new enough to write one; an older case has none, and re-running the define writes it.");
-    // Unknown fields are ignored here, unlike in a saved case. The two files answer to
-    // different rules: a case is a frozen question, and a field it does not understand means
-    // it is not the question this engine can re-ask, so `ReplayCase` refuses. A bundle is a
-    // record, and the useful direction for a record is the report schema's — a consumer
-    // tolerates fields it does not know (`docs/contract-freeze.md`, surface 2). Without this,
-    // the first field added at version 2 would make every version-1 bundle already on disk
-    // unreadable by a sideeye that could still read it perfectly well.
-    const parsed = std.json.parseFromSlice(Evidence, arena, text, .{ .ignore_unknown_fields = true }) catch
-        return fail("the evidence file could not be parsed as a sideeye evidence bundle");
-    const ev = parsed.value;
-    if (!std.mem.eql(u8, ev.schema, "sideeye/evidence")) return fail("that file is not a sideeye evidence bundle");
-    // Refuses upward only: a bundle from a newer sideeye may carry fields whose ABSENCE this
-    // reader would misread, which is a different thing from not knowing extra ones.
-    if (ev.evidence_version > current_version) return fail("that evidence bundle was written by a newer sideeye than this one");
+        return fail(no_bundle_message);
+    const ev = switch (parseBundle(arena, text)) {
+        .ok => |e| e,
+        .refused => |why| return fail(why),
+    };
 
     const out = render(arena, ev) catch return fail("out of memory");
     var off: usize = 0;
@@ -814,6 +844,21 @@ test "the union stops at the caller's buffer rather than past it" {
     };
     var out: [2][]const u8 = undefined;
     try std.testing.expectEqual(@as(usize, 2), unionRels(&a, &.{}, &out));
+}
+
+test "casePathOf reads siblingPath backwards, and leaves a path it does not move (#717)" {
+    const a = std.testing.allocator;
+    const c = try casePathOf(a, "/w/evidence/000001.json");
+    defer a.free(c);
+    try std.testing.expectEqualStrings("/w/cases/000001.json", c);
+    // The round trip: case -> bundle -> case.
+    const b = try siblingPath(a, c);
+    defer a.free(b);
+    try std.testing.expectEqualStrings("/w/evidence/000001.json", b);
+    // Not under `evidence/`: returned unchanged, which is how a caller tells there is no case
+    // to name. `evidencex` is not `evidence` — the check is on the whole component.
+    try std.testing.expectEqualStrings("/w/cases/000001.json", try casePathOf(a, "/w/cases/000001.json"));
+    try std.testing.expectEqualStrings("/w/evidencex/1.json", try casePathOf(a, "/w/evidencex/1.json"));
 }
 
 test "the evidence path leaves the cases directory and the rule is idempotent" {

@@ -26,13 +26,13 @@ Or build from source with Zig 0.16.0: `zig build` — binaries land in `zig-out/
 
 Three commands, in the order you will meet them.
 
-**1. See it work** — sixty seconds, needs a C compiler, writes nothing permanent:
+**1. See it work** — sixty seconds, nothing to install beyond Sideeye itself:
 
 ```
 $ sideeye demo
 ```
 
-The demo compiles a small planted-bug tool, explores it, and prints a real FAIL report. Exit 1 — the planted bug found — is success, which makes the demo double as a smoke test of the binary + shim pair.
+The demo writes a small planted-bug tool into a new directory under `$TMPDIR` (or `/tmp`), explores it, and prints a real FAIL report. The tool is built into the binary, so no compiler is needed (#715). The directory is named on the demo's first line and left in place, so the case it saves can be replayed; delete it when you are done. Exit 1 — the planted bug found — is success, which makes the demo double as a smoke test of the binary + shim pair.
 
 **2. Ask whether Sideeye can watch your tool** — before writing any config, and again once you have one:
 

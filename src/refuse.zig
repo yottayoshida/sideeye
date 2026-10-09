@@ -740,8 +740,8 @@ pub fn setupError(reason: contract.SetupErrorReason, detail: []const u8) noretur
 /// was starting); the per-file snapshot cap (#330) and the rewrite disposition (#363)
 /// read `run_phase` below.
 const SpawnPhase = enum {
-    /// Before any world runs: `--setup`, the demo's compiler probe, the initial
-    /// snapshot. A failure here really does mean the define never got started.
+    /// Before any world runs: `--setup`, the initial snapshot. A failure here really does
+    /// mean the define never got started.
     before_exploration,
     /// The recording run onward. The define is running; refusing is UNKNOWN.
     exploring,

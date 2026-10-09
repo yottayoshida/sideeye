@@ -10,7 +10,7 @@ The README's first screen carries a trimmed FAIL report between the markers
 holds it to that: every non-empty line of the fenced block there must be a line of a fresh
 `sideeye demo` run, whole, in the same order, each after the one before. The demo writes into
 a scratch directory whose name changes every run, so the OUTPUT is normalised, never the
-README: the directory is read off the demo's own `demo  compiled … into <dir>` line, and its
+README: the directory is read off the demo's own `demo  wrote … into <dir>` line, and its
 spellings (as printed, and resolved — macOS prints `/var/…` and `/private/var/…` in the same
 report) become `…`. A `…` in the README stands for that directory; nothing else in the output
 is rewritten, and blank lines are matched like any other line.
@@ -35,7 +35,7 @@ import tempfile
 BEGIN = "<!-- demo-output:begin -->"
 END = "<!-- demo-output:end -->"
 MIN_LINES = 8
-COMPILED = re.compile(r"^demo  compiled .* into (\S+)\s*$")
+SCRATCH_LINE = re.compile(r"^demo  wrote the planted-bug tool into (\S+)\s*$")
 
 
 class Broken(Exception):
@@ -75,12 +75,12 @@ def normalised(output_text):
     lines = output_text.split("\n")
     scratch = None
     for line in lines:
-        m = COMPILED.match(line)
+        m = SCRATCH_LINE.match(line)
         if m:
             scratch = m.group(1)
             break
     if scratch is None:
-        raise Broken("the demo output has no `demo  compiled ... into <dir>` line, so its "
+        raise Broken("the demo output has no `demo  wrote the planted-bug tool into <dir>` line, so its "
                      "scratch directory cannot be named")
     spellings = {scratch, "/private" + scratch}
     if os.path.isdir(scratch):
@@ -123,7 +123,7 @@ def check(readme_text, output_text):
 
 SCRATCH = "/var/folders/ab/T/sideeye-demo-Q1w2E3"
 OUTPUT = "\n".join([
-    "demo  compiled the planted-bug tool with cc into " + SCRATCH,
+    "demo  wrote the planted-bug tool into " + SCRATCH,
     "demo  the tool deletes its key before renaming the replacement in; a crash",
     "",
     "falsify: doctor says 'healthy' but the key is unloadable",
@@ -194,7 +194,7 @@ LEGS = [
      _readme(BLOCK).replace(END, "```\nPASS  6/6\n```\n" + END), OUTPUT,
      1, "holds 4 fence lines"),
     ("no scratch line to normalise by", _readme(BLOCK), "\n".join(OUTPUT.split("\n")[1:]),
-     2, "has no `demo  compiled"),
+     2, "has no `demo  wrote the planted-bug tool"),
 ]
 
 

@@ -350,3 +350,10 @@ stay the same.
    adds the value to the CLI's `--observe`, which is not a frozen surface. No
    `unknown_reason`, `next_step` or report field was added; `contract_version`
    did not move, since no existing mode's numbering changed.
+   **Used a third time on 2026-10-09** (#717): a new tool, `sideeye_evidence
+   {case_path}`, which reads the evidence bundle a FAIL saved beside its case and
+   runs nothing. Its name and input schema join the two above from the release that
+   carries it. It produces no verdict, so the isError rule is read for what it says
+   rather than for its words: isError is false when the bundle is read — the answer
+   that was asked for, as a FAIL is — and true when it cannot be, which asks the
+   caller to fix the path or rerun the define. No row in `surface-changes.tsv`.
