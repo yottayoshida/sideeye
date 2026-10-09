@@ -190,7 +190,9 @@ records what replaced it.
   without the flag refuses — `case_no_longer_applies`, because the operation count will not
   match — so no wrong verdict is possible, but the remedy the refusal suggests is
   `re-record` where the real remedy is `--observe syscalls`. Not fixed here: the case format
-  is a frozen surface and giving it a new field is its own version bump.
+  is a frozen surface and giving it a new field is its own version bump. **Amended 2026-10-09
+  (ADR 0100): that bump is case_version 6.** A case saved under this mode records it, and a
+  replay given no `--observe` takes it; a case saved before the change still behaves as above.
 - **`PR_SET_NO_NEW_PRIVS` is set on the target**, which is required to install a filter
   unprivileged and which stops setuid from taking effect. Only in this mode.
 - **Cost: 1.6–1.8µs per trap**, including the `/proc/self/fd` resolution the handler does on

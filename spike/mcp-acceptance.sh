@@ -1058,6 +1058,35 @@ else
 fi
 rm -rf "$WDM"
 
+echo "=========== mcp 21: a case saved under --observe syscalls replays under it through sideeye_replay_case (#691) ==========="
+# sideeye_replay_case has no observe, and passes the engine none: until the case recorded its
+# mode (ADR 0100), a case explored under syscalls was replayed the default way, which sees
+# none of toy-raw's calls, and answered case_no_longer_applies. The case is saved inside the
+# root (the replay tool takes only paths there) by pointing the work directory at it.
+cat > "$WS/raw.toml" <<TOML
+[world]
+state = "./rawstate"
+[define]
+setup     = "$OUT/toy-raw init"
+operation = "$OUT/toy-raw rotate"
+TOML
+rm -rf "$WS/rawwork" "$WS/rawstate"; mkdir -p "$WS/rawstate"
+printf '%s' "{\"jsonrpc\":\"2.0\",\"id\":40,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/raw.toml\",\"observe\":\"syscalls\"}}}" \
+  | SIDEEYE_MCP_WORK="$WS/rawwork" "$SIDEEYE" mcp > /tmp/mcp.out 2>/tmp/mcp.err
+raw_case=$(python3 -c 'import json; d=json.load(open("/tmp/mcp.out")); sc=d["result"].get("structuredContent") or {}; print(sc.get("case") or "" if sc.get("verdict")=="FAIL" else "")' 2>/dev/null)
+if [ -z "$raw_case" ]; then
+    fail "the syscalls explore did not FAIL with a saved case — the replay leg would prove nothing"
+else
+    printf '%s' "{\"jsonrpc\":\"2.0\",\"id\":41,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_replay_case\",\"arguments\":{\"case_path\":\"$raw_case\"}}}" \
+      | SIDEEYE_MCP_WORK="$WS/rawwork" "$SIDEEYE" mcp > /tmp/mcp.out 2>/tmp/mcp.err
+    python3 - <<'PY' && pass "the syscalls case replays to its FAIL through sideeye_replay_case, which names no mode" || fail "the syscalls case did not replay to its FAIL through sideeye_replay_case"
+import json, sys
+r = json.load(open("/tmp/mcp.out"))["result"]
+sc = r.get("structuredContent") or {}
+sys.exit(0 if r.get("isError") is False and sc.get("verdict") == "FAIL" else "verdict %r, reason %r" % (sc.get("verdict"), sc.get("unknown_reason")))
+PY
+fi
+
 echo ""
 echo ""
 if [ "$fails" = "0" ]; then echo "ALL MCP ACCEPTANCE CHECKS PASSED"; else echo "$fails MCP check(s) failed"; exit 1; fi
