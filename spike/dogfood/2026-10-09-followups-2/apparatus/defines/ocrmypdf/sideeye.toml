@@ -1,0 +1,8 @@
+[world]
+state = "/s/ocrmypdf/ocr"
+
+[define]
+operation = "ocrmypdf -q --force-ocr /s/ocrmypdf/ocr/a.pdf /s/ocrmypdf/ocr/a.pdf"
+check     = "/ap/defines/ocrmypdf/check.sh"
+# a.pdf differs between two clean runs (transcripts/twice-oracle.txt); the checker was already a PDF reader
+scratch   = ["a.pdf"]

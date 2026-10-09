@@ -1,0 +1,6 @@
+[world]
+state = "/s/jump"
+
+[define]
+operation = "jump clean"
+cwd       = "/s/jump-dirs"

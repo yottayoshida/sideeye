@@ -1,0 +1,15 @@
+falsify: git fsck fails: fatal: not a git repository (or any of the parent directories): .git
+PASS  39/39 explored worlds satisfied the built-in atomicity invariant
+cwd         /s/git/state
+
+explored    39 worlds (crash points 38 + 1 baseline)
+expected    exit 0
+atomicity   65 path(s) judged pre-or-post; 2 file(s) judged by the history form (appended tails not judged): .git/logs/HEAD, .git/logs/refs/heads/master; 2 path(s) matched by scratch, not judged (declared: .git/index, .git/COMMIT_EDITMSG)
+oracle      agreed on 38 operations (725 syscall lines examined, 455 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 39 world(s)
+l1          no marker configured
+case        (none)
+processes   single process
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form), declared scratch paths (neither bytes nor presence judged)
+sideeye: json sha256=882377cf2dcc186701c4589c0580e3d46414e8739acb572faf73c824b2e6a740;

@@ -1001,6 +1001,92 @@ for bad in '"Syscalls"' '"strace"' '42' 'null'; do
     fi
 done
 
+echo "=========== mcp 20: the server refuses a work directory that is a link, before any child runs (#692) ==========="
+# The server opens child-N.out under SIDEEYE_MCP_WORK and reads report-N.json back from it
+# as the call's verdict, both before and after the child's own check could speak — so the
+# refusal has to be the server's. Asserted on the server's sentence, which names the
+# variable; the engine's would name --work instead, and that is the implementation that
+# left the check to the child. Paired with the same call against the directory the link
+# points at, which reaches a real report.
+WDM=/tmp/mcp-workdir
+rm -rf "$WDM"; mkdir -p "$WDM/own"
+ln -s "$WDM/own" "$WDM/link"
+wd_call() {
+    # $1: SIDEEYE_MCP_WORK, or empty to leave it unset (the default /tmp/sideeye-mcp).
+    wreq="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/sideeye.toml\"}}}"
+    rm -rf "$WS/state"; mkdir -p "$WS/state"
+    if [ -n "$1" ]; then
+        printf '%s' "$wreq" | env SIDEEYE_MCP_WORK="$1" "$SIDEEYE" mcp >/tmp/mcp.out 2>/tmp/mcp.err
+    else
+        printf '%s' "$wreq" | env -u SIDEEYE_MCP_WORK "$SIDEEYE" mcp >/tmp/mcp.out 2>/tmp/mcp.err
+    fi
+}
+# $1: isError wanted ("true"/"false"); $2: text the first content block must hold, or "".
+wd_judge() {
+    python3 - "$1" "$2" <<'PY'
+import json, sys
+d = json.load(open("/tmp/mcp.out"))
+r = d.get("result") or {}
+text = (r.get("content") or [{}])[0].get("text", "")
+sys.exit(0 if str(bool(r.get("isError"))).lower() == sys.argv[1] and sys.argv[2] in text else 1)
+PY
+}
+wd_call "$WDM/own"
+wd_judge false "" && pass "control: a work directory of the runner's own serves the call" \
+    || fail "control: the runner's own work directory did not serve the call — the refusals below would prove nothing"
+wd_call "$WDM/link"
+wd_judge true "SIDEEYE_MCP_WORK $WDM/link is a symbolic link" && pass "SIDEEYE_MCP_WORK naming a link is refused by the server, by name" \
+    || fail "SIDEEYE_MCP_WORK naming a link was not refused by the server"
+# The default, with the variable unset: whatever is at /tmp/sideeye-mcp is moved aside and
+# put back, and a link to the runner's own directory is planted there.
+wdm_aside=""
+if [ -e /tmp/sideeye-mcp ] || [ -L /tmp/sideeye-mcp ]; then
+    if mv /tmp/sideeye-mcp "$WDM/aside" 2>/dev/null; then wdm_aside="$WDM/aside"; else wdm_aside="stuck"; fi
+fi
+if [ "$wdm_aside" = "stuck" ]; then
+    # A fact about the host (another user's /tmp/sideeye-mcp), said loudly rather than counted
+    # as a failure of the product — the way spike/acceptance.sh check 2wd reports it.
+    echo "     NOT MEASURED: /tmp/sideeye-mcp is there and could not be moved aside, so the default was not driven"
+else
+    ln -s "$WDM/own" /tmp/sideeye-mcp
+    wd_call ""
+    rm -f /tmp/sideeye-mcp
+    [ -n "$wdm_aside" ] && mv "$wdm_aside" /tmp/sideeye-mcp
+    wd_judge true "the default work directory /tmp/sideeye-mcp (SIDEEYE_MCP_WORK is unset) is a symbolic link" \
+        && pass "the default /tmp/sideeye-mcp, a planted link, is refused with the variable unset" \
+        || fail "a link planted at the default /tmp/sideeye-mcp was followed with SIDEEYE_MCP_WORK unset"
+fi
+rm -rf "$WDM"
+
+echo "=========== mcp 21: a case saved under --observe syscalls replays under it through sideeye_replay_case (#691) ==========="
+# sideeye_replay_case has no observe, and passes the engine none: until the case recorded its
+# mode (ADR 0100), a case explored under syscalls was replayed the default way, which sees
+# none of toy-raw's calls, and answered case_no_longer_applies. The case is saved inside the
+# root (the replay tool takes only paths there) by pointing the work directory at it.
+cat > "$WS/raw.toml" <<TOML
+[world]
+state = "./rawstate"
+[define]
+setup     = "$OUT/toy-raw init"
+operation = "$OUT/toy-raw rotate"
+TOML
+rm -rf "$WS/rawwork" "$WS/rawstate"; mkdir -p "$WS/rawstate"
+printf '%s' "{\"jsonrpc\":\"2.0\",\"id\":40,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/raw.toml\",\"observe\":\"syscalls\"}}}" \
+  | SIDEEYE_MCP_WORK="$WS/rawwork" "$SIDEEYE" mcp > /tmp/mcp.out 2>/tmp/mcp.err
+raw_case=$(python3 -c 'import json; d=json.load(open("/tmp/mcp.out")); sc=d["result"].get("structuredContent") or {}; print(sc.get("case") or "" if sc.get("verdict")=="FAIL" else "")' 2>/dev/null)
+if [ -z "$raw_case" ]; then
+    fail "the syscalls explore did not FAIL with a saved case — the replay leg would prove nothing"
+else
+    printf '%s' "{\"jsonrpc\":\"2.0\",\"id\":41,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_replay_case\",\"arguments\":{\"case_path\":\"$raw_case\"}}}" \
+      | SIDEEYE_MCP_WORK="$WS/rawwork" "$SIDEEYE" mcp > /tmp/mcp.out 2>/tmp/mcp.err
+    python3 - <<'PY' && pass "the syscalls case replays to its FAIL through sideeye_replay_case, which names no mode" || fail "the syscalls case did not replay to its FAIL through sideeye_replay_case"
+import json, sys
+r = json.load(open("/tmp/mcp.out"))["result"]
+sc = r.get("structuredContent") or {}
+sys.exit(0 if r.get("isError") is False and sc.get("verdict") == "FAIL" else "verdict %r, reason %r" % (sc.get("verdict"), sc.get("unknown_reason")))
+PY
+fi
+
 echo "=========== mcp 22: sideeye_evidence returns the bundle a FAIL saved, by either name, and runs nothing (#717) ==========="
 # One session: an explore that FAILs and saves a case inside the root, then the bundle asked
 # for by the case's path and by its own. Between them a marker the define's setup writes is

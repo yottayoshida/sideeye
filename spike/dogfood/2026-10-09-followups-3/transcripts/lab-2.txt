@@ -1,0 +1,22 @@
+-rw-r--r-- 1 root root 20 Oct  9 07:16 .env
+⚠ OS secret store unavailable; saving private key to .env.keys
+Killed
+dotenvx exit 137
+15    +++ killed by SIGKILL +++
+17    +++ killed by SIGKILL +++
+16    +++ killed by SIGKILL +++
+14    +++ killed by SIGKILL +++
+total 12
+drwxr-xr-x 2 root root 4096 Oct  9 07:16 .
+drwxr-xr-x 1 root root 4096 Oct  9 07:16 ..
+-rw-r--r-- 1 root root    0 Oct  9 07:16 .env
+-rw------- 1 root root  404 Oct  9 07:16 .env.keys
+
+## not killed
+exit 0
+total 16
+drwxr-xr-x 2 root root 4096 Oct  9 07:16 .
+drwxr-xr-x 1 root root 4096 Oct  9 07:16 ..
+-rw-r--r-- 1 root root  506 Oct  9 07:16 .env
+-rw------- 1 root root  404 Oct  9 07:16 .env.keys
+hunter2

@@ -108,11 +108,12 @@ exists.
 
 A case is a *question*: the define, the crash point and the landing context a later replay
 re-asks (ADR 0009). [docs/contract-freeze.md](contract-freeze.md) surface 4 ties a case's version to its shape,
-and every rung of that ladder so far — 3 for the argv command form, 4 for `cwd`, 5 for
-`scratch` — is a *define* field. An observation is not part of the question. Folding these
-fields in would move every case this release writes to version 6, so none of them would
-replay on any earlier 1.x, and each later evidence field would move the version again for
-every case, including the ones whose defines never changed. ADR 0071 records the decision.
+and every rung of that ladder — 3 for the argv command form, 4 for `cwd`, 5 for `scratch`,
+6 for the observation mode a case counted under `syscalls` or `supervised` carries (ADR 0100)
+— is part of the question a replay re-asks. An observation is not. Folding these fields in
+would move every case up a rung, so none of them would replay on any earlier 1.x, and each
+later evidence field would move the version again for every case, including the ones whose
+defines never changed. ADR 0071 records the decision.
 
 A bundle is written only once its case was written, and takes its name from that case's id,
 so it claims no id of its own: the ordering the report documents — in a fresh work directory

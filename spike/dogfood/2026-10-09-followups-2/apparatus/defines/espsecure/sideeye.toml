@@ -1,0 +1,9 @@
+[world]
+state = "/s/esp"
+
+[define]
+operation = "espsecure sign-data /s/esp/fw.bin --version 2 --keyfile /s/esp/k.pem"
+cwd       = "/s/esp-in"
+# fw.bin's signature differs in every run, a fresh ECDSA nonce (transcripts/twice.txt); the checker verifies it
+check     = "/ap/defines/espsecure/check.sh"
+scratch   = ["fw.bin"]

@@ -1,0 +1,9 @@
+[world]
+state = "/s/mu"
+
+[define]
+operation = "mu move --muhome /s/mu/home /s/mu/Maildir/inbox/cur/1001.msg:2,S /archive"
+cwd       = "/s/mu-in"
+# mu's Xapian database under home/ differs between two clean runs (transcripts/twice.txt); the checker judges the mail
+check     = "/ap/defines/mu/check.sh"
+scratch   = ["home"]

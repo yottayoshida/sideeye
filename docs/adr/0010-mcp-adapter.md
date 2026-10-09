@@ -66,7 +66,12 @@ language, and made a hand-written Zig server small.
    are what actually bound this.
 
    **Operational precondition:** `SIDEEYE_MCP_ROOT` and the work dir are user-owned and
-   **not attacker-writable** — the operator sets them to their own workspace. Two
+   **not attacker-writable** — the operator sets them to their own workspace. **Amended 2026-10-09
+   (ADR 0099):** the work dir's half of this is checked now rather than assumed — the server
+   refuses a `SIDEEYE_MCP_WORK` (the default included) it did not just create whose last component
+   is a symlink, is not a directory or ends in `..`, or that is owned by anyone but the effective
+   user or cannot be read, before any child runs. What follows
+   about its *contents* is unchanged. Two
    residual issues are out of scope *only under this precondition*, and would need
    revisiting if it did not hold: the check→open TOCTOU (a writable root could swap a
    vetted file for a symlink between the realpath check and the child's open — a

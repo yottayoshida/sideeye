@@ -1,0 +1,7 @@
+[world]
+state = "/s/ccache/state"
+
+[define]
+operation = "ccache gcc -c /s/ccache/aux/src/b.c -o /s/ccache/aux/src/b.o"
+check     = "/ap/defines/ccache-clock/check.sh"
+apparatus = ["env:FAKETIME=2026-10-01 00:00:00", "preload:libfaketime"]

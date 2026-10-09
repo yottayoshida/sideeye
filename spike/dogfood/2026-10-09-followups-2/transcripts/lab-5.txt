@@ -1,0 +1,24 @@
+/t/myfile.pdf: 537 bytes
+-rw-r--r-- 1 root root 537 Oct  9 06:02 /t/myfile.pdf
+%PDF-1.4
+
+
+
+
+
+
+ocrmypdf exit 137
+Killed
+16    write(4, "%PDF-1.7\n%\277\367\242\376\n1 0 obj\n<< /Type "..., 9766) = ?
+16    +++ killed by SIGKILL +++
+-rw-r--r-- 1 root root 0 Oct  9 06:02 /t/myfile.pdf
+## the same command, not killed
+/t/myfile.pdf: 537 bytes
+
+
+
+
+
+
+ocrmypdf exit 0
+-rw-r--r-- 1 root root 9766 Oct  9 06:02 /t/myfile.pdf

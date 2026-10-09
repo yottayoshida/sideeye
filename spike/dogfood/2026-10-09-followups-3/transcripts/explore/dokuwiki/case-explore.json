@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/dw/data",
+    "operation": "php /s/dw/bin/dwpage.php commit -m second /s/dw-in/page.txt wiki:start",
+    "cwd": "/s/dw-in",
+    "expected_status": 0
+  },
+  "k": 7,
+  "ops_total": 30,
+  "prefix_hash": "3111e20448bfeaf0",
+  "after_class": "open",
+  "after_path": "/s/dw/data/pages/wiki/start.txt",
+  "before_class": "write",
+  "before_path": "/s/dw/data/pages/wiki/start.txt",
+  "violation": "hybrid"
+}

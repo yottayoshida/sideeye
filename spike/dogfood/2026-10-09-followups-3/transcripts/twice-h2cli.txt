@@ -1,0 +1,4 @@
+== h2cli-fat default rc=1: PREFLIGHT not accepted — the two observed runs left different state
+difference   drumkit.xml (content differs)
+             bytes first differ at byte offset 58: first run ":xsi=\"http://www.w3.org/2001/XMLSchema-instance\""…, second run "=\"http://www.hydrogen-music.org/drumkit\" xmlns:x"… — 93 and 93 b
+repeatability  two runs 13297 ms apart differed under [world] state

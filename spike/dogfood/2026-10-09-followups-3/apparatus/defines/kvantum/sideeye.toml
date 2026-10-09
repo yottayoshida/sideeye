@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.config/Kvantum"
+
+[define]
+operation = "kvantummanager --set KvFlat"
+cwd       = "/s/kv"

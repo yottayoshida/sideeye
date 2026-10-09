@@ -1,0 +1,2 @@
+40    execve("/opt/node22/bin/node", ["node", "/opt/lingui-proj/node_modules/@lingui/cli/dist/lingui.js", "extract", "--workers", "1"], 0xaaaae2d28450 /* 17 vars */) = 0
+47    execve("/opt/node22/bin/node", ["/opt/node22/bin/node", "/opt/lingui-proj/node_modules/@lingui/cli/dist/lingui-extract.js", "--workers", "1"], 0xc081950 /* 17 vars */) = 0

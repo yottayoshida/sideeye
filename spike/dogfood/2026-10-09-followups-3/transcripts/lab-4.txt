@@ -1,0 +1,7 @@
+/dev/loop0 /s/vim/state vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro 0 0
+vim exit 0; setxattr calls: 0
+kvantum: O_TMPFILE opens 1, renames into the state 1
+56    openat(AT_FDCWD, "/s/aux/home/.config/Kvantum/kvantum.kvconfig", O_RDWR|O_CREAT|O_CLOEXEC, 0666) = 4
+56    openat(AT_FDCWD, "/s/aux/home/.config/Kvantum/kvantum.kvconfig", O_RDWR|O_CREAT|O_CLOEXEC, 0666) = 4
+56    openat(AT_FDCWD, "/s/aux/home/.config/Kvantum/kvantum.kvconfig.lock", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0666) = 4
+56    openat(AT_FDCWD, "/s/aux/home/.config/Kvantum", O_RDWR|O_CLOEXEC|O_TMPFILE, 0600) = -1 EOPNOTSUPP (Operation not supported)

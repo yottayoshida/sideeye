@@ -1,0 +1,26 @@
+## PR #9504 (exiv2 1.00.0.9)
+total 4
+-rw-r--r-- 1 root root 361 Oct  9 05:49 pic1.jpg
+exiv2-pr exit 137
+Killed
+54    openat(AT_FDCWD, "/tmp/ex/pic1.jpg", O_RDONLY) = 3
+54    openat(AT_FDCWD, "/tmp/ex/pic1.jpg", O_RDONLY) = 3
+54    openat(AT_FDCWD, "/tmp/ex/pic1.jpg", O_RDONLY) = 3
+54    openat(AT_FDCWD, "/tmp/ex/pic1.jpg", O_RDONLY) = 3
+54    unlinkat(AT_FDCWD, "/tmp/ex/pic1.jpg", 0) = 0
+54    renameat(AT_FDCWD, "/tmp/ex/pic1.jpg.exv-tmp-54-0", AT_FDCWD, "/tmp/ex/pic1.jpg") = ?
+54    +++ killed by SIGKILL +++
+total 4
+-rw-r--r-- 1 root root 301 Oct  9 05:49 pic1.jpg.exv-tmp-54-0
+/tmp/ex/pic1.jpg.exv-tmp-54-0: /tmp/ex/pic1.jpg.exv-tmp-54-0 JPEG 128x128 128x128+0+0 8-bit sRGB 301B 0.000u 0:
+## Debian's exiv2 0.28.5, the report's window
+total 4
+-rw-r--r-- 1 root root 361 Oct  9 05:49 pic1.jpg
+Killed
+exiv2 exit 137
+103   openat(AT_FDCWD, "/tmp/ex/pic1.jpg", O_RDONLY) = 3
+103   openat(AT_FDCWD, "/tmp/ex/pic1.jpg", O_RDONLY) = 3
+103   openat(AT_FDCWD, "/tmp/ex/pic1.jpg", O_RDONLY) = 3
+103   openat(AT_FDCWD, "/tmp/ex/pic1.jpg", O_RDONLY) = 3
+total 0
+-rw-r--r-- 1 root root 0 Oct  9 05:49 pic1.jpg

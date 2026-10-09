@@ -1,0 +1,25 @@
+run 1: 75 calls on the state directory
+run 2: 74 calls on the state directory
+-- as they are: first difference
+3,4c3,4
+< openat(AT_FDCWD, "/s/ccache/state/tmp/inode-cache-64.v2.tmp.E98pYE.tmp", O_RDWR|O_CREAT|O_EXCL, 0600) = N
+< unlinkat(AT_FDCWD, "/s/ccache/state/tmp/inode-cache-64.v2.tmp.E98pYE.tmp", 0) = N
+---
+> openat(AT_FDCWD, "/s/ccache/state/tmp/inode-cache-64.v2.tmp.bsq49m.tmp", O_RDWR|O_CREAT|O_EXCL, 0600) = N
+> unlinkat(AT_FDCWD, "/s/ccache/state/tmp/inode-cache-64.v2.tmp.bsq49m.tmp", 0) = N
+-- names normalised: 17 differing lines
+43,51c43,50
+< mkdirat(AT_FDCWD, "/s/ccache/state/1", 0777) = N
+< mkdirat(AT_FDCWD, "/s/ccache/state/1/6", 0777) = N
+< unlinkat(AT_FDCWD, "/s/ccache/state/1/6/stats.alive", 0) = -1 ENOENT (No such file or directory)
+< openat(AT_FDCWD, "/s/ccache/state/1/6/stats.alive", O_WRONLY|O_CREAT|O_TRUNC, 0666) = N
+< openat(AT_FDCWD, "/s/ccache/state/1/6/stats", O_RDONLY) = -1 ENOENT (No such file or directory)
+< openat(AT_FDCWD, "/s/ccache/state/1/6/stats.tmp.R", O_RDWR|O_CREAT|O_EXCL, 0600) = N
+< renameat(AT_FDCWD, "/s/ccache/state/1/6/stats.tmp.R", AT_FDCWD, "/s/ccache/state/1/6/stats") = N
+-- the first run's calls naming a temporary
+openat(AT_FDCWD, "/s/ccache/state/tmp/inode-cache-64.v2", O_RDWR) = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/s/ccache/state/tmp/inode-cache-64.v2.tmp.E98pYE.tmp", O_RDWR|O_CREAT|O_EXCL, 0600) = N
+unlinkat(AT_FDCWD, "/s/ccache/state/tmp/inode-cache-64.v2.tmp.E98pYE.tmp", 0) = N
+openat(AT_FDCWD, "/s/ccache/state/tmp/inode-cache-64.v2", O_RDWR) = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/s/ccache/state/tmp/cpp_stdout.tmp.L1atSV.i", O_RDWR|O_CREAT|O_EXCL, 0600) = N
+openat(AT_FDCWD, "/s/ccache/state/tmp/stderr.tmp.jK2Eti.tmp", O_RDWR|O_CREAT|O_EXCL, 0600) = N

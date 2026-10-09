@@ -32,6 +32,14 @@ pub const ReplayCase = struct {
     case_version: u32,
     sideeye_version: []const u8,
     contract_version: u32,
+    /// Present exactly when the case is version 6 (#691, ADR 0100): the observation mode the
+    /// crash point was counted under, `syscalls` or `supervised`. Beside `contract_version`
+    /// and outside `define` because it is the same kind of fact — how the numbering `k` was
+    /// produced — and because a `sideeye.toml` has no key for it (frozen surface 1). Absent,
+    /// the file does not say: a case written since version 6 exists was counted under the
+    /// default, `wrappers`, and one written before may have been counted under any mode — the
+    /// limit #691 was about — so its replay takes the flag, or the default, as it always did.
+    observe: ?[]const u8 = null,
     define: struct {
         state: []const u8,
         setup: ?config.Command = null,
@@ -46,10 +54,11 @@ pub const ReplayCase = struct {
         /// arrived, so a define that declared no cwd still saves as the version its other
         /// fields ask for. Always the resolved spelling.
         cwd: ?[]const u8 = null,
-        /// Present exactly when the case is version 5 (ADR 0043), non-empty there. A
-        /// version-5 file spells `cwd` too, as null when none was declared; that key's
-        /// presence is checked on a second, untyped parse, since this one cannot tell
-        /// an absent optional from a null.
+        /// Present exactly when the case is version 5 (ADR 0043) or 6 (ADR 0100): non-empty in
+        /// version 5, which exists for it, and possibly empty in version 6, which exists for the
+        /// observation mode. Both spell `cwd` too, as null when none was declared; those keys'
+        /// presence is checked on a second, untyped parse, since this one cannot tell an absent
+        /// optional from a null.
         scratch: ?[]const []const u8 = null,
     },
     k: u32,
@@ -150,13 +159,22 @@ pub fn writeCase(
     // A scratch declaration decides verdicts (ADR 0043), so it moves the version to 5, above
     // cwd for the reason cwd sits above argv: an older reader would drop the field and
     // judge a different question. A define that declares nothing keeps the case it always got.
-    const case_version: u32 = if (args.scratch.len > 0) 5 else if (args.cwd != null) 4 else if (carries_argv) 3 else 2;
+    // The observation mode is the top rung (#691, ADR 0100), and only a mode other than the
+    // default climbs it: a crash point is a number in that mode's count, so a replay under
+    // another mode addresses a different operation. A `wrappers` case stays the version its
+    // define asks for, byte for byte, so a reader before version 6 still replays it — the
+    // cost ADR 0071 named for a version 6 falls only on the cases that need the field.
+    const case_version: u32 = if (args.observe != .wrappers) 6 else if (args.scratch.len > 0) 5 else if (args.cwd != null) 4 else if (carries_argv) 3 else 2;
     w.appendSlice(arena, "{\n  \"schema\": \"sideeye/case\",\n  \"case_version\": ") catch return null;
     w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{case_version}) catch return null) catch return null;
     w.appendSlice(arena, ",\n  \"sideeye_version\": ") catch return null;
     report.jsonString(w, arena, cli.version) catch return null;
     w.appendSlice(arena, ",\n  \"contract_version\": ") catch return null;
     w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{contract.contract_version}) catch return null) catch return null;
+    if (case_version >= 6) {
+        w.appendSlice(arena, ",\n  \"observe\": ") catch return null;
+        report.jsonString(w, arena, args.observe.name()) catch return null;
+    }
     w.appendSlice(arena, ",\n  \"define\": {\n    \"state\": ") catch return null;
     report.jsonString(w, arena, args.state.?) catch return null;
     if (args.setup) |s| {

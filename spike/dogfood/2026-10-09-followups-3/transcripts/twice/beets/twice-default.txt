@@ -1,0 +1,28 @@
+/s/beets/in2
+/s/beets/in2
+PREFLIGHT  not accepted — the two observed runs left different state
+
+difference   library.db (content differs)
+             bytes first differ at byte offset 8002: first run "\xb6\xbf\xc4~\x817\x01]\x00^\x09\x19\x1b\x0d\x0d\x0d\x0d\x0d\x0d\x0d\x19\x1b\x0d\x0d\x0d\x0d\x0d\x0d\x0d\x08\x08\x08\x0d\x0d\x0d\x0d\x0d\x0d\x0d\x0d\x08\x08\x08\x08\x08\x08\x08\x0d"…, second run "\xb77\x98\xa5\x817\x01]\x00^\x09\x19\x1b\x0d\x0d\x0d\x0d\x0d\x0d\x0d\x19\x1b\x0d\x0d\x0d\x0d\x0d\x0d\x0d\x08\x08\x08\x0d\x0d\x0d\x0d\x0d\x0d\x0d\x0d\x08\x08\x08\x08\x08\x08\x08\x0d"… — 16495 and 16495 byte(s) of 36864 and 36864, both holding bytes outside printable text (16319 and 16318)
+
+cwd          /  (none declared: Sideeye's own)
+atomicity    4 path(s) judged pre-or-post
+oracle       agreed on 42 operations (5269 syscall lines examined, 345 in scope of the judged state), witness strace
+processes    single process
+checker      declared, not run: not refused as a command that cannot be
+             started, and the state holds something to corrupt
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail — only a real
+             exploration runs these
+
+repeatability  two runs 2004 ms apart differed under [world] state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside [world] state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         pin or relocate what differs, then re-run this command;
+             explore would reach the same divergence in its baseline
+             world, after a full define had been written

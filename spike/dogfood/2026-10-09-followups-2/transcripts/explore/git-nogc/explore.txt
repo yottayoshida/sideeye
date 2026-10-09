@@ -1,0 +1,15 @@
+UNKNOWN  baseline_violates_invariant
+         the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing: the re-run from the restored state left .git/index holding neither the old nor the new content; the two runs' bytes first differ at byte offset 16, in a stretch 265 byte(s) long in the recording and 265 in the re-run (of 281 and 281 bytes), both holding bytes outside printable text (162 and 174); preflight --twice quotes what two runs leave there
+next        The path the detail names did not come back with the bytes the recording left, in a world nothing crashed. If those bytes are not what the verdict should judge (a cache, a log, a timestamp), declare the path scratch in the define (--scratch, or scratch in a sideeye.toml); sideeye preflight --twice names the paths two clean runs leave differently, before an exploration.
+cwd         /s/git/state
+
+expected    exit 0
+atomicity   68 path(s) judged pre-or-post; 2 file(s) judged by the history form (appended tails not judged): .git/logs/HEAD, .git/logs/refs/heads/master
+l1          no marker configured
+case        (none)
+processes   single process
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=a1ca9d92f0339c98dfad810c46eeb3c2d32594806848b44c2a858469c8fe5f83;

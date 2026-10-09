@@ -1,0 +1,6 @@
+[world]
+state = "/s/codex"
+
+[define]
+operation = "codex mcp add notes -- /usr/bin/true --flag"
+cwd       = "/s/codex-in"

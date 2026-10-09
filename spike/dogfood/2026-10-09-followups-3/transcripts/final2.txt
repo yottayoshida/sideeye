@@ -1,0 +1,11 @@
+=== h2cli-fat-check 2026-10-09T07:38:29Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== ccache-nostats-builtin 2026-10-09T07:41:49Z
+explore exit 2: UNKNOWN nothing_could_fail
+explore exit 2: UNKNOWN nothing_could_fail
+next_step: The built-in invariant judges only paths that exist both before and after the operation, and no crash point changed one, so nothing could have failed: declare a check that reads the state the target leaves (docs/checker-cookbook.md), or a marker for the success claim, which judges the files the operation created or removed.
+final2: done

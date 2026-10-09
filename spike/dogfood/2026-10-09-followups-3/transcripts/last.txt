@@ -1,0 +1,41 @@
+== 3. lingui on Node 22, and the threads wall's last tools 2026-10-09T07:05:31Z
+=== lingui 2026-10-09T07:05:31Z
+explore exit 2: UNKNOWN child_touched_state_dir
+explore exit 2: UNKNOWN child_touched_state_dir
+next_step: Check whether the operation is a shell script wrapping another command — if it is, invoke that command as the operation instead; the refusal itself is one the README's 'What the target has to be' names, with DESIGN.md giving the reason.
+=== zstd 2026-10-09T07:05:43Z
+explore exit 2: UNKNOWN oracle_missed_operation
+explore --observe syscalls exit 2: UNKNOWN multiple_threads_detected
+explore exit 2: UNKNOWN oracle_missed_operation
+next_step: Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.
+explore --observe syscalls exit 2: UNKNOWN multiple_threads_detected
+=== lz4 2026-10-09T07:05:43Z
+explore exit 2: UNKNOWN oracle_missed_operation
+explore --observe syscalls exit 2: UNKNOWN multiple_threads_detected
+explore exit 2: UNKNOWN oracle_missed_operation
+next_step: Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.
+explore --observe syscalls exit 2: UNKNOWN multiple_threads_detected
+=== beets 2026-10-09T07:05:44Z
+explore exit 2: UNKNOWN baseline_violates_invariant
+explore exit 2: UNKNOWN baseline_violates_invariant
+next_step: The path the detail names did not come back with the bytes the recording left, in a world nothing crashed. If those bytes are not what the verdict should judge (a cache, a log, a timestamp), declare the path scratch in the define (--scratch, or scratch in a sideeye.toml); sideeye preflight --twice names the paths two clean runs leave differently, before an exploration.
+=== rustic 2026-10-09T07:05:50Z
+explore exit 2: UNKNOWN multiple_threads_detected
+explore exit 2: UNKNOWN multiple_threads_detected
+next_step: Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit the README states under 'What the target has to be': threads are judged where a creation or a join the shim saw orders their writes.
+=== prek 2026-10-09T07:05:52Z
+explore exit 2: UNKNOWN multiple_threads_detected
+explore exit 2: UNKNOWN multiple_threads_detected
+next_step: Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit the README states under 'What the target has to be': threads are judged where a creation or a join the shim saw orders their writes.
+=== codex 2026-10-09T07:05:52Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 2: UNKNOWN multiple_threads_detected
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 2: UNKNOWN multiple_threads_detected
+=== steamguard 2026-10-09T07:05:53Z
+explore exit 2: UNKNOWN multiple_threads_detected
+explore exit 2: UNKNOWN multiple_threads_detected
+next_step: Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit the README states under 'What the target has to be': threads are judged where a creation or a join the shim saw orders their writes.
+last: done 2026-10-09T07:05:53Z

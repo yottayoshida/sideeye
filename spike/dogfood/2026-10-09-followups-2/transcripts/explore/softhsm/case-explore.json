@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 5,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/hsm",
+    "operation": "softhsm2-util --import /s/hsm/k2.pem --token t --pin 1234 --label k2 --id 02",
+    "check": "/s/hsm-check.sh",
+    "cwd": "/s/hsm-in",
+    "scratch": ["tokens"],
+    "expected_status": 0
+  },
+  "k": 6,
+  "ops_total": 282,
+  "prefix_hash": "44e5a9f10f5df69f",
+  "after_class": "truncate",
+  "after_path": "/s/hsm/tokens/7d9c51eb-69dd-d293-8ef2-3e41802069b8/token.object",
+  "before_class": "write",
+  "before_path": "/s/hsm/tokens/7d9c51eb-69dd-d293-8ef2-3e41802069b8/token.object",
+  "violation": "checker"
+}

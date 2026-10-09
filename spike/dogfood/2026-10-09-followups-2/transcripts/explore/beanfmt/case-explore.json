@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/bc",
+    "operation": "bean-format -o /s/bc/l.beancount /s/bc/l.beancount",
+    "cwd": "/s/bc",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/bc/l.beancount",
+  "before_class": "write",
+  "before_path": "/s/bc/l.beancount",
+  "violation": "hybrid"
+}

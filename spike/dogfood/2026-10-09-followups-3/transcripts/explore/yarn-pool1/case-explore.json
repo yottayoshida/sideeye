@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/yarn",
+    "operation": "yarn config set npmAuthToken placeholder-npm-auth-token",
+    "cwd": "/s/yarn",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/yarn/.yarnrc.yml",
+  "before_class": "write",
+  "before_path": "/s/yarn/.yarnrc.yml",
+  "violation": "hybrid"
+}

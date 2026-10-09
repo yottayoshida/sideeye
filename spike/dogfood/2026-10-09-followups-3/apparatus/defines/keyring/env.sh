@@ -1,0 +1,1 @@
+export PYTHON_KEYRING_BACKEND=keyrings.alt.file.PlaintextKeyring

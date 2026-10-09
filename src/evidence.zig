@@ -7,10 +7,10 @@
 //! and the crashed one; whether a changed path existed before; whether its old bytes survive
 //! anywhere else the run judged; what the checker said. The two are separate files for the
 //! reason `docs/contract-freeze.md` surface 4 gives: a case's version and its shape travel
-//! together, and every rung of that ladder so far (3 argv, 4 cwd, 5 scratch) is a *define*
-//! field. Folding an observation in would move every case to version 6, so no case this
-//! release writes would replay on any earlier 1.x — and each later evidence field would move
-//! it again.
+//! together, and every rung of that ladder (3 argv, 4 cwd, 5 scratch, 6 the observation mode
+//! a non-default case was counted under — ADR 0100) is part of the question a replay re-asks.
+//! Folding an observation in would move every case up a rung, so no case that release wrote
+//! would replay on any earlier 1.x — and each later evidence field would move it again.
 //!
 //! **Everything here is measured at judgement time and nothing is recomputed later.** The
 //! crashed snapshot is freed at the end of its world (`defer crashed.deinit()` in

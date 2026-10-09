@@ -1,0 +1,8 @@
+[world]
+state = "/s/git/state"
+
+[define]
+# The original define, with the automatic gc and maintenance off: the detached child they start is
+# what wrote .git/gc.pid.lock (child_touched_state_dir, 2026-10-02). The commit itself is unchanged.
+operation = "git -c gc.auto=0 -c maintenance.auto=false -C /s/git/state commit -q -m second"
+cwd       = "/s/git/state"

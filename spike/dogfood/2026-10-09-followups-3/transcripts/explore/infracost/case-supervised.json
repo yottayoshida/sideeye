@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 5,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/aux/home/.config/infracost",
+    "operation": "infracost configure set api_key ico-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "cwd": "/s/infracost-in",
+    "scratch": [".state.json"],
+    "expected_status": 0
+  },
+  "k": 4,
+  "ops_total": 4,
+  "prefix_hash": "8a30a6b9c0e2adf3",
+  "after_class": "open",
+  "after_path": "/s/aux/home/.config/infracost/credentials.yml",
+  "before_class": "write",
+  "before_path": "/s/aux/home/.config/infracost/credentials.yml",
+  "violation": "hybrid"
+}
