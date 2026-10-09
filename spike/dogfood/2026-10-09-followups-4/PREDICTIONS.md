@@ -57,3 +57,15 @@ one thread, and the other two make and clear `tmp/arg0`, its directory of comman
 | target | step | prediction |
 |---|---|---|
 | codex 0.160.0 `mcp add` | `tmp` declared scratch | still `multiple_threads_detected`: a guess that the gate counts every write in the judged directory, scratch or not |
+
+## Round 3: easy-rsa under supervised
+
+The recount before the PR found one wall with a step never tried. easy-rsa 3.2.7 `revoke` was refused
+`child_touched_state_dir` (openssl, sed and mv write the PKI), and the next step, `--observe syscalls`, ended
+`recording_run_failed` with the clock pinned: libfaketime's preload met that mode's `SIGSYS` trap. Under
+`--observe supervised` no shim is loaded and the filter notifies the engine instead of trapping, and this round's
+prefsCleaner FAILed there with `mv` children writing, so children are counted.
+
+| target | step | prediction |
+|---|---|---|
+| easy-rsa 3.2.7 `revoke c1`, the clock pinned (2026-10-07's define) | `--observe supervised` named | past both walls; FAIL — `openssl ca` renames `index.txt` to `index.txt.old` and then `index.txt.new` in, and a kill between leaves no `index.txt`, its old bytes whole in `index.txt.old` |

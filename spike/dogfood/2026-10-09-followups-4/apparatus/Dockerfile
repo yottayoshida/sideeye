@@ -62,3 +62,9 @@ RUN set -u; cd /tmp/dl; gh=https://github.com; \
     install -m 755 "$(find y-codex -type f -name 'codex*' | head -1)" /opt/bin/codex; \
     install -m 755 steamguard /opt/bin/steamguard; \
     { for c in "rustic --version" "prek --version" "codex --version" "steamguard --version"; do printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; } | tee -a /versions.txt
+# ---- round 3: easy-rsa 3.2.7, 2026-10-07's release ----
+RUN set -eu; cd /tmp/dl; curl -fsSL -o easyrsa.tgz https://github.com/OpenVPN/easy-rsa/releases/download/v3.2.7/EasyRSA-3.2.7.tgz; \
+    mkdir -p x-easyrsa && tar xzf easyrsa.tgz -C x-easyrsa; d=$(dirname "$(find /tmp/dl/x-easyrsa -type f -name easyrsa | head -1)"); \
+    cp -a "$d" /opt/easyrsa && ln -sf /opt/easyrsa/easyrsa /opt/bin/easyrsa; \
+    apt-get install -y --no-install-recommends openssl > /tmp/apt-4.log 2>&1 && echo "OK openssl" || { echo MISSING; tail -3 /tmp/apt-4.log; }; \
+    { for c in "easyrsa --version" "openssl version"; do printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; } | tee -a /versions.txt
