@@ -2016,8 +2016,8 @@ TOY_STATE=/tmp/acc/state "$OUT/toy-raw" init >/dev/null 2>&1
 TOY_STATE=/tmp/acc/state sh -c "$line" >/dev/null 2>&1
 lrc=$?
 lstate=$(ls /tmp/acc/state | tr '\n' ' ')
-# And the replay line names the mode: a case does not record it (ADR 0052), and replayed the
-# default way it answers case_no_longer_applies rather than the FAIL.
+# And the replay line names the mode, which the replay accepts because it matches the one the
+# case records (ADR 0100). The leg after this one replays the same case naming none.
 rp=$(echo "$o" | sed -n 's/^replay      //p')
 PATH="$ROOT/zig-out/bin:$PATH" sh -c "$rp" > /tmp/acc/rp-sys.txt 2>&1; rrc=$?
 if [ "$rc" = 1 ] && [ "$lrc" = 137 ] && [ "$lstate" = "key.json.tmp " ] && [ "$rrc" = 1 ] \
@@ -2026,6 +2026,27 @@ if [ "$rc" = 1 ] && [ "$lrc" = 137 ] && [ "$lstate" = "key.json.tmp " ] && [ "$r
 else
     echo "FAIL syscalls: explore exit $rc, reproduce exit $lrc (state after it: $lstate), replay exit $rrc"
     printf '%s\n' "$line" "$rp" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+# #691 (ADR 0100): the case records the mode, so a replay with no --observe at all reaches the
+# same FAIL. Before, the case carried nothing, the replay counted the default way — which sees
+# none of toy-raw's calls — and answered case_no_longer_applies.
+sys_case=/tmp/acc/work/cases/000001.json
+"$SIDEEYE" replay "$sys_case" --fresh-state --shim "$SHIM" --oracle /usr/bin/strace --work /tmp/acc/work-bare > /tmp/acc/rp-sys-bare.txt 2>&1; brc=$?
+# And another mode named on the line is refused by name before anything runs, naming the case —
+# here as well as in the supervised leg, which runs only where the suite is contained.
+"$SIDEEYE" replay "$sys_case" --fresh-state --observe wrappers --shim "$SHIM" --oracle /usr/bin/strace --work /tmp/acc/work-mis \
+    --json /tmp/acc/rp-sys-mis.json > /tmp/acc/rp-sys-mis.txt 2>&1; mrc=$?
+if python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d["case_version"]==6 and d["observe"]=="syscalls" else 1)' "$sys_case" 2>/dev/null \
+    && [ "$brc" = 1 ] && grep -q "the case reproduced" /tmp/acc/rp-sys-bare.txt \
+    && [ "$mrc" = 3 ] && grep -q "recorded under --observe syscalls" /tmp/acc/rp-sys-mis.txt && grep -qF "$sys_case" /tmp/acc/rp-sys-mis.txt \
+    && python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d.get("case")==sys.argv[2] and d.get("setup_error_reason")=="define_invalid" else 1)' /tmp/acc/rp-sys-mis.json "$sys_case"; then
+    echo "ok   a --observe syscalls case records its mode, replays to the same FAIL with no --observe given, and refuses --observe wrappers by name"
+else
+    echo "FAIL the syscalls case replayed with no --observe: exit $brc; under --observe wrappers: exit $mrc"
+    sed -n '1,2p' /tmp/acc/rp-sys-mis.txt | sed 's/^/     | /'
+    sed -n '1,4p' "$sys_case" | sed 's/^/     | /'
+    sed -n '1,3p' /tmp/acc/rp-sys-bare.txt | sed 's/^/     | /'
     fails=$((fails + 1))
 fi
 
@@ -3824,12 +3845,25 @@ if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
     case_sup=/tmp/acc-sup/work/cases/000001.json
     o=$(TOY=$OUT/toy-static "$SIDEEYE" replay "$case_sup" --observe supervised --oracle /usr/bin/strace --work /tmp/acc-sup/r1 2>&1)
     r1=$?
+    # #691 (ADR 0100): the case records its mode, so a replay that names none — and hands it a
+    # shim, as sideeye_replay_case does on every call — reaches the same FAIL. Until then this
+    # was the case's known limit: the default mode loaded the shim the static toy cannot take,
+    # and the replay answered no_shim_marker.
     o2=$(TOY=$OUT/toy-static "$SIDEEYE" replay "$case_sup" --shim "$SHIM" --oracle /usr/bin/strace --work /tmp/acc-sup/r2 2>&1)
     r2=$?
-    if [ "$r1" = 1 ] && echo "$o" | grep -q "crash point 5 of 5" && [ "$r2" = 2 ] && echo "$o2" | grep -q "^UNKNOWN  no_shim_marker$"; then
-        echo "ok   the supervised case replays under --observe supervised at the same crash point, and refuses no_shim_marker without it"
+    # And a mode the case was not counted under is refused by name, naming the case: its crash
+    # point is a number in the supervised count.
+    o3=$(TOY=$OUT/toy-static "$SIDEEYE" replay "$case_sup" --observe wrappers --shim "$SHIM" --oracle /usr/bin/strace --work /tmp/acc-sup/r3 2>&1)
+    r3=$?
+    if python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d["case_version"]==6 and d["observe"]=="supervised" and d["define"]["scratch"]==[] and d["define"]["cwd"] is None else 1)' "$case_sup" 2>/dev/null \
+        && [ "$r1" = 1 ] && echo "$o" | grep -q "crash point 5 of 5" \
+        && [ "$r2" = 1 ] && echo "$o2" | grep -q "crash point 5 of 5" \
+        && [ "$r3" = 3 ] && echo "$o3" | grep -q "recorded under --observe supervised" && echo "$o3" | grep -qF "$case_sup"; then
+        echo "ok   the supervised case records its mode (version 6) and replays at the same crash point with the flag and without it, and refuses --observe wrappers by name"
     else
-        echo "FAIL replaying the supervised case: with the mode exit $r1, without it exit $r2"
+        echo "FAIL replaying the supervised case: with the mode exit $r1, without it exit $r2, under wrappers exit $r3"
+        sed -n '1,4p' "$case_sup" | sed 's/^/     | /'
+        echo "$o2" | sed 's/^/     | /' | head -3
         fails=$((fails + 1))
     fi
     # No oracle: the filter installer's exec into the operation is the launch, not an image
@@ -6633,6 +6667,46 @@ if [ "$rc" = "3" ] && echo "$o" | grep -q "must spell define.cwd, as null when n
 else
     sc_fail "scratch v5 cwd-key gate" "$rc" "$o"
 fi
+# Version 6 (#691, ADR 0100) carries the observation mode, and only one other than the default.
+# Each hand-edited shape refuses by name before anything runs: a version-6 file whose mode is
+# missing, the default or unknown, an older file carrying one, a version-6 file whose scratch
+# key is gone or null — version 6 may hold an empty scratch, so the non-empty gate version 5
+# uses cannot be what catches those two — and one whose cwd key is gone, which a gate left at
+# version 5 alone would let through.
+python3 - "$sc_case" <<'PYEOF'
+import json, sys
+d = json.load(open(sys.argv[1]))
+def v6(**over):
+    c = json.loads(json.dumps(d)); c["case_version"] = 6; c["observe"] = "syscalls"; c["define"]["scratch"] = []
+    for k, v in over.items():
+        if v is KeyError: c.pop(k, None)
+        else: c[k] = v
+    return c
+shapes = {
+    "v6-noobserve": v6(observe=KeyError),
+    "v6-wrappers": v6(observe="wrappers"),
+    "v6-unknown": v6(observe="strace"),
+    "v5-observe": dict(json.loads(json.dumps(d)), observe="syscalls"),
+}
+nos = v6(); del nos["define"]["scratch"]; shapes["v6-noscratch"] = nos
+nul = v6(); nul["define"]["scratch"] = None; shapes["v6-nullscratch"] = nul
+noc = v6(); del noc["define"]["cwd"]; shapes["v6-nocwd"] = noc
+for name, c in shapes.items():
+    json.dump(c, open("/tmp/acc/%s.json" % name, "w"))
+PYEOF
+for shape in "v6-noobserve:must carry observe" "v6-wrappers:a case counted under the default is written at the version" \
+             "v6-unknown:names no mode this binary knows" \
+             "v5-observe:cannot carry an observation mode; it arrived with version 6" \
+             "v6-noscratch:must spell define.scratch as an array" "v6-nullscratch:must spell define.scratch as an array" \
+             "v6-nocwd:must spell define.cwd, as null when none was declared"; do
+    sname=${shape%%:*}; swant=${shape#*:}
+    o=$("$SIDEEYE" replay "/tmp/acc/$sname.json" --shim "$SHIM" --work /tmp/acc/work-r6 --oracle /usr/bin/strace 2>&1); rc=$?
+    if [ "$rc" = "3" ] && echo "$o" | grep -qF "$swant"; then
+        sc_ok "a hand-edited case ($sname) refuses as malformed, by name"
+    else
+        sc_fail "case version-6 gate ($sname)" "$rc" "$o"
+    fi
+done
 # (d) the grammar and the exclusivities, each by name.
 o=$("$SIDEEYE" explore --state /tmp/acc/state --operation x --scratch /etc/passwd 2>&1); rc=$?
 [ "$rc" = "3" ] && echo "$o" | grep -q "an absolute path cannot be under it" && sc_ok "--scratch refuses an absolute path" || sc_fail "scratch absolute" "$rc" "$o"
@@ -7573,8 +7647,11 @@ o=$(TOY_EXIT_STATUS=3 "$SIDEEYE" explore --state /tmp/acc/state \
     --shim "$SHIM" --work /tmp/acc/work --allow-unverified 2>&1)
 rc=$?
 case_ok=0
+# No `observe` either (#691, ADR 0100): a case counted under the default keeps the version its
+# define asks for, so every earlier 1.x still replays it.
 grep -q '"case_version": 2' /tmp/acc/work/cases/000001.json 2>/dev/null \
-    && grep -q '"expected_status": 3' /tmp/acc/work/cases/000001.json 2>/dev/null && case_ok=1
+    && grep -q '"expected_status": 3' /tmp/acc/work/cases/000001.json 2>/dev/null \
+    && ! grep -q '"observe"' /tmp/acc/work/cases/000001.json && case_ok=1
 o2=$(TOY_EXIT_STATUS=3 "$SIDEEYE" replay /tmp/acc/work/cases/000001.json \
     --shim "$SHIM" --work /tmp/acc/work-r 2>&1)
 rc2=$?

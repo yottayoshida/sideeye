@@ -52,6 +52,9 @@ A call that omits the parameter reaches the same run it reached before.
   `RunKind` carries the mode on its `explore` arm, so a replay under a chosen mode cannot
   be spelled. Sending `observe` to that tool is unspecified — this server ignores unknown
   keys, its schema declares `additionalProperties: false`, and neither is promised.
+  **Decided 2026-10-09 (ADR 0100), without the parameter:** the case records the mode it was
+  counted under, and the engine replays it under that mode when no `--observe` is given — so
+  the tool needs nothing more, and `RunKind`'s replay arm stays without one.
 - **The server following the `next_step` itself.** Rejected: the modes differ in what they
   refuse (`pwritev2` is refused rather than counted under `syscalls`; two calls stay at the
   libc entry points — ADR 0059), so an automatic retry would silently change the terms of
