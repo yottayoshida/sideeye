@@ -6,7 +6,8 @@ had not re-measured, four walls of that run not yet asked under `--observe super
 report closed without a fix whose record still said it was awaiting a reply. Released **v1.10.0**,
 installed by the page's installer, in one box (`apparatus/Dockerfile`, `transcripts/build.txt`; the first
 build linked the bash-completion file named `mkdwarfs` instead of the binary, `build-first.txt`).
-`PREDICTIONS.md` was committed before any run (`63648a7`); **all ten predictions held**.
+`PREDICTIONS.md` was committed before each run (`63648a7`, `d03c9f8`, `b57dc0e`); **13 of its 14 predictions held**,
+the miss is Home Assistant's below.
 
 ## Upstream fixes, each beside the build its report was measured on
 
@@ -42,3 +43,28 @@ an unnamed file and unordered writer threads are refused in both modes.
 been reported in actual use … and the proposed solution (writing to temp files and renaming) has
 downsides"). The 2026-10-03 row moves from `awaiting` to `declined`. Nothing to reply to: the owner closed
 it, and the report had said closing it was fine.
+
+## The recount, and the two it left
+
+After those ran, the 47 targets that no campaign since 2026-10-03 had carried to a verdict
+(`spike/outcome-funnel.tsv`) were read against what v1.9.0 and v1.10.0 changed. No wall they met was
+relaxed: #706 warns about a shell-spelled string and runs nothing differently, #688 says where two clean
+runs differ, #689 refuses a shared mapping on every path, and threads are refused under supervised too
+(above). flatpak and ostree refuse an unlinked-fd write, Kvantum's shape. Two were left:
+
+| target | run | result |
+|---|---|---|
+| Home Assistant 2026.10.0 `hass --script auth change_password` | the page's path | **UNKNOWN `unresolvable_path`** — "trace-closed-by-target", as on 2026-10-05; the next step says refused by design |
+| | `--observe supervised` named | **UNKNOWN `baseline_violates_invariant`**, not the threads wall predicted: one thread wrote. The uncrashed re-run left `.storage/auth_provider.homeassistant` different from 175 for 70 bytes, printable text (#688's words) — the password hash's fresh salt; the next step says to declare the path scratch |
+| | the store scratch, and a checker: alice logs in with her old or new password and bob with his, through `hass --script auth validate` (`apparatus/defines/homeassistant-check/`) | **PASS** 8/8, the checker falsified before the run and run in all 8 worlds; the store is written through a temporary and a rename |
+| dotter 0.13.5 `deploy -f -y`, the build 2026-10-03 measured | the page's path | **UNKNOWN `kill_did_not_land`** under supervised, as on 2026-10-03. Its next step names "a cache kept beside the configuration"; `preflight --twice` found `--state` equal and `.dotter/cache.toml` written beside the configuration, outside it (`transcripts/dotter-twice.txt`) |
+| | the configuration moved inside `--state` (`apparatus/defines/dotter-incfg/`) | **FAIL** 12/19, crash point 2 of 18 — `.bashrc` unlinked and the kill before the new one is made. Replayed twice. Not filed: `-f` discards the hand edit by design, and a second `dotter deploy` writes the file again from its template |
+
+**dotter was already settled.** #690's follow-up (`spike/followup-690/NOTES.md`, 2026-10-08) measured the same
+cause and the same FAIL 12/19, and `docs/target-classes.md` says so; the funnel's row still read
+`explored`, and the recount read the funnel alone. So this is the same result on the released v1.10.0,
+not a finding. A recount should read `docs/target-classes.md` and `spike/followup-*` beside the funnel.
+
+What this says about v1.10.0: the next step on `kill_did_not_land` (ADR 0097) names the cause a user can
+act on, and `baseline_violates_invariant` now says where and what kind (#688), which is what pointed at
+the salt. Both led to a verdict in one step each.

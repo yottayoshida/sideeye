@@ -1,0 +1,15 @@
+UNKNOWN  kill_did_not_land
+         a world was asked to die before a given operation and did not
+next        The world was armed to die in front of the operation the recording numbered, and no kill landed there, so the crash points cannot be trusted to name the same operations in every world. The restore rebuilds the names, kinds and bytes under --state — not their modes, owners or timestamps, and nothing outside it (a cache kept beside the configuration, a lock) — so a tool that reads those can take another path; sideeye preflight --twice compares what two clean runs leave. If neither explains it, file it with the report attached.
+cwd         /s/dotter-in
+
+expected    exit 0
+atomicity   3 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=5507b1416e2e9dd0223be2b8618290b27df56c00a2ebaaa1d55b4c159163ce77;

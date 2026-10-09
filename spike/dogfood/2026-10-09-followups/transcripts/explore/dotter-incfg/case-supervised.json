@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/dotter",
+    "operation": "/opt/bin/dotter deploy -f -y",
+    "cwd": "/s/dotter/cfg",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 18,
+  "prefix_hash": "af449b63405ac573",
+  "after_class": "unlink",
+  "after_path": "/s/dotter/home/.bashrc",
+  "before_class": "mkdir",
+  "before_path": "/s/dotter/home",
+  "violation": "missing"
+}

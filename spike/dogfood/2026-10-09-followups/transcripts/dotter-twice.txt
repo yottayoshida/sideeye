@@ -1,0 +1,36 @@
+total 16
+drwxr-xr-x 2 root root 4096 Oct  9 04:00 .
+drwxr-xr-x 3 root root 4096 Oct  9 04:00 ..
+-rw-r--r-- 1 root root  154 Oct  9 04:00 global.toml
+-rw-r--r-- 1 root root   23 Oct  9 04:00 local.toml
+PREFLIGHT  recording accepted — 10 state-changing operation(s) observed
+cwd          /s/dotter-in  (none declared: Sideeye's own)
+atomicity    3 path(s) judged pre-or-post
+oracle       not run (no --oracle given)
+processes    not established: no boundary was recorded — the supervising engine is notified of clone, clone3, fork, vfork, the exec family, setsid and setpgid at the syscall boundary, from outside the target — but no second witness ran
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+repeatability  two runs 2006 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+note         no oracle checked the shim's account against a second witness;
+             explore's PASS will require --oracle <strace> (Linux) or
+             --allow-unverified (macOS)
+next         sideeye explore --state /s/dotter --operation "/opt/bin/dotter deploy -f -y" \
+               --check <your-invariant.sh> --observe supervised --oracle /usr/bin/strace
+--- after
+total 24
+drwxr-xr-x 3 root root 4096 Oct  9 04:00 .
+drwxr-xr-x 3 root root 4096 Oct  9 04:00 ..
+drwxr-xr-x 2 root root 4096 Oct  9 04:00 cache
+-rw-r--r-- 1 root root   98 Oct  9 04:00 cache.toml
+-rw-r--r-- 1 root root  154 Oct  9 04:00 global.toml
+-rw-r--r-- 1 root root   23 Oct  9 04:00 local.toml
+[symlinks]
+
+[templates]
+bashrc = "/s/dotter/home/.bashrc"
+gitconfig = "/s/dotter/home/.gitconfig"

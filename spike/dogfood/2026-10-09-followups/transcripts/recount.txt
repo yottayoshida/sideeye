@@ -1,0 +1,17 @@
+== 4. the recount's two, the page's path 2026-10-09T03:59:22Z
+=== homeassistant 2026-10-09T03:59:22Z
+explore exit 2: UNKNOWN unresolvable_path
+explore exit 2: UNKNOWN unresolvable_path
+next_step: This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+=== dotter 2026-10-09T03:59:31Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 2: UNKNOWN kill_did_not_land
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 2: UNKNOWN kill_did_not_land
+== 5. homeassistant, --observe supervised named 2026-10-09T03:59:32Z
+probe supervised exit 2
+UNKNOWN  baseline_violates_invariant
+         the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing: the re-run from the restored state left .storage/auth_provider.homeassistant holding neither the old nor the new content;
+recount: done 2026-10-09T03:59:58Z
