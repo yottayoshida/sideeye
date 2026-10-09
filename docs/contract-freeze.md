@@ -357,3 +357,9 @@ stay the same.
    rather than for its words: isError is false when the bundle is read — the answer
    that was asked for, as a FAIL is — and true when it cannot be, which asks the
    caller to fix the path or rerun the define. No row in `surface-changes.tsv`.
+   **Used a fourth time, the same day** (#717, ADR 0102): `sideeye_preflight {config_path,
+   observe?, twice?}`, preflight over a config without exploring. Its name and input schema
+   join the others from the release that carries it. A refusal or a stop answers with a
+   report, under the rule as written; the other two answers — the recording accepted, two
+   runs that differed under `twice` — are answers to the question asked and take isError
+   false, as a FAIL does. No row in `surface-changes.tsv`.

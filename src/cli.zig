@@ -162,8 +162,8 @@ const usage_fmt =
     \\
     \\usage:
     \\  sideeye demo [--shim <lib>]
-    \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice]
-    \\  sideeye preflight --config <sideeye.toml> [--shim <lib>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice]
+    \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice [--state-under <dir>]]
+    \\  sideeye preflight --config <sideeye.toml> [--shim <lib>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice [--state-under <dir>]]
     \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--recovery <cmd> --recovery-check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye replay <case.json> [--shim <lib>] [--recovery <cmd> --recovery-check <cmd>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
@@ -282,13 +282,9 @@ const usage_fmt =
     \\               every replay: it lives for the whole client session, and the
     \\               second replay used to die in the leftovers of the first
     \\  --state-under
-    \\               (replay only) the directory the case's state must resolve
-    \\               strictly inside; anything else is refused before setup runs.
-    \\               The case file names its own state directory, and this flag is
-    \\               how a caller that only vetted the case's PATH bounds where the
-    \\               case may point the deletion. The MCP server passes its
-    \\               SIDEEYE_MCP_STATE_ROOT (default: the server root) on every
-    \\               replay
+    \\               (replay, preflight --twice) refuse before setup a state directory
+    \\               not strictly inside this one: both rebuild the state a case or
+    \\               config names. The MCP server passes SIDEEYE_MCP_STATE_ROOT here
     \\  --observe wrappers|syscalls|supervised
     \\               where operations are counted. Default `wrappers`: the
     \\               interposed libc entry points, with buffered stdio observed at
@@ -1395,11 +1391,11 @@ test "each command's help is its own: every flag it takes has a summary line, no
                 return error.TestUnexpectedResult;
             }
         }
-        // 72, not the 60 first planned: the cautions the first diff review asked to carry
+        // 76, not the 60 first planned: the cautions the first diff review asked to carry
         // (`--twice`, `--observe`) put explore's at 61, #704's `preflight --config` synopsis
-        // line put preflight's at 65, and #717 gave preflight `--json`'s two lines (70), with
-        // `--state-under`'s to follow for the MCP server's `twice`. The full reference is 226.
-        try std.testing.expect(lines <= 72);
+        // line put preflight's at 65, and #717 gave preflight `--json`'s two lines and, for the
+        // MCP server's `twice`, `--state-under`'s three (73). The full reference is 227.
+        try std.testing.expect(lines <= 76);
         // Shorter than the whole reference, which is the point of having one per command.
         try std.testing.expect(help.len * 2 < usage_fmt.len);
         var own_buf: [max_names][]const u8 = undefined;
@@ -1777,11 +1773,13 @@ pub fn parse(argv: []const []const u8) Parsed {
             // flag is harmless. Documented in the flag's help text.
             _ = posix.signal(posix.SIGCHLD, posix.SIG_DFL);
         } else if (std.mem.eql(u8, argv[i], "--state-under")) {
-            // #266. Replay only: an explore's config is the trust boundary and its
-            // state is part of what the operator vets (#96); accepting the flag there
-            // would be a second confinement feature nobody asked for, and preflight
-            // destroys nothing.
-            if (mode != .replay) setupError(.define_invalid, "--state-under applies to replay only: a config's state is part of what the operator vets, and preflight never destroys");
+            // #266. Replay, and since #717 preflight `--twice`: the two commands the MCP server
+            // runs that rebuild a state directory a caller can name. An explore's config is the
+            // trust boundary and its state is part of what the operator vets (#96). Preflight
+            // without `--twice` rebuilds nothing, and is refused it after the loop, once the
+            // whole argv has said whether `--twice` is there — in `phaseDefine`, after the
+            // base command's first refusals, as the recovery pair is (#406).
+            if (mode != .replay and mode != .preflight) setupError(.define_invalid, "--state-under applies to replay and to preflight --twice: an explore's config is the trust boundary, and its state is part of what the operator vets");
             // A confinement flag must not be last-wins: two spellings in one argv is
             // a caller bug, and silently taking the second would let a widened range
             // ride behind a narrow-looking one.

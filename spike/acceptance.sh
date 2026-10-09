@@ -4416,11 +4416,11 @@ else
     echo "$o" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi
-# Leg E: the flag belongs to replay alone; explore refuses it by name (ADR 0007's
-# no-accepted-but-inert rule).
+# Leg E: the flag belongs to replay and preflight --twice (#717); explore refuses it by name
+# (ADR 0007's no-accepted-but-inert rule).
 o=$("$SIDEEYE" explore --state /tmp/acc/state --operation /bin/true --state-under /tmp --shim "$SHIM" --work /tmp/acc/work-sce 2>&1)
 rc=$?
-if [ "$rc" = "3" ] && echo "$o" | grep -q -- "--state-under applies to replay only"; then
+if [ "$rc" = "3" ] && echo "$o" | grep -q -- "--state-under applies to replay and to preflight --twice"; then
     echo "ok   explore refuses --state-under by name"
 else
     echo "FAIL explore accepted --state-under (exit $rc)"
@@ -4580,14 +4580,42 @@ else
     echo "$o" | sed 's/^/     | /' | head -4
     fails=$((fails + 1))
 fi
-# Leg E2: preflight refuses the flag by the same name explore does — measured, not
-# inferred from the shared predicate (security review, Minor-6).
+# Leg E2: preflight without --twice refuses the flag by name — one observed run rebuilds
+# nothing — measured, not inferred from the shared predicate (security review, Minor-6).
 o=$("$SIDEEYE" preflight --state /tmp/acc/state --operation /bin/true --state-under /tmp --shim "$SHIM" --work /tmp/acc/work-sce2 2>&1)
 rc=$?
-if [ "$rc" = "3" ] && echo "$o" | grep -q -- "--state-under applies to replay only"; then
-    echo "ok   preflight refuses --state-under by name"
+if [ "$rc" = "3" ] && echo "$o" | grep -q -- "--state-under applies to preflight only with --twice"; then
+    echo "ok   preflight without --twice refuses --state-under by name"
 else
-    echo "FAIL preflight accepted --state-under (exit $rc)"
+    echo "FAIL preflight without --twice accepted --state-under (exit $rc)"
+    fails=$((fails + 1))
+fi
+# Leg E3 (#717): preflight --twice takes the range, because it empties and rebuilds the state
+# before its second run — the run the MCP server's `twice` asks for. Outside the range it
+# refuses before setup, and a file in that state is still there; inside, it runs to its answer.
+rm -rf /tmp/acc/pf-out /tmp/acc/pf-range /tmp/acc/work-sce3 /tmp/acc/work-sce4
+mkdir -p /tmp/acc/pf-out /tmp/acc/pf-range/state
+echo "survives" > /tmp/acc/pf-out/sentinel.txt
+o=$(TOY_STATE=/tmp/acc/pf-out "$SIDEEYE" preflight --state /tmp/acc/pf-out --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --twice --state-under /tmp/acc/pf-range --shim "$SHIM" --work /tmp/acc/work-sce3 2>&1)
+rc=$?
+# The sentinel alone would survive a run that went ahead — restore writes back the snapshot it
+# was in — so the toy's own key is what says setup never ran there.
+if [ "$rc" = "3" ] && echo "$o" | grep -q "outside the allowed range" && [ -s /tmp/acc/pf-out/sentinel.txt ] && [ ! -e /tmp/acc/pf-out/key.json ]; then
+    echo "ok   preflight --twice refuses a state outside --state-under before setup, and leaves it as it was"
+else
+    echo "FAIL preflight --twice --state-under, outside: exit $rc, sentinel $([ -e /tmp/acc/pf-out/sentinel.txt ] && echo present || echo GONE)"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+o=$(TOY_STATE=/tmp/acc/pf-range/state "$SIDEEYE" preflight --state /tmp/acc/pf-range/state --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --twice --state-under /tmp/acc/pf-range --shim "$SHIM" --work /tmp/acc/work-sce4 2>&1)
+rc=$?
+if [ "$rc" = "0" ] && echo "$o" | grep -q "two runs .* left equal state"; then
+    echo "ok   preflight --twice inside --state-under runs both observations to an answer (positive control)"
+else
+    echo "FAIL preflight --twice --state-under, inside: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
     fails=$((fails + 1))
 fi
 rm -rf "$VICTIM"

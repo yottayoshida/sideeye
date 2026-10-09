@@ -77,3 +77,28 @@ said preflight refuses `--json`.
   reads the four shared writers and the new one as well as `buildJson`.
 - `say`'s buffer is 32 KiB: the whole help is one `say`, and at 16 it had 27 bytes left.
 - The per-command help ceiling is 72 lines; preflight's is 70 with `--json`.
+
+## The MCP tool, built on it (the pull request after)
+
+`sideeye_preflight {config_path, observe?, twice?}` runs `preflight --config <path> --json` the
+way `sideeye_explore_config` runs explore — the root vet, the minimal environment, the
+self-exec, the fresh `report-N.json`, stdin at end-of-file — and answers from the document.
+
+- **`twice` is confined like a replay.** It empties and rebuilds the config's state before the
+  second run, so the server always passes `--state-under SIDEEYE_MCP_STATE_ROOT` with it, and
+  `preflight --twice` takes that flag now (without `--twice` it is refused: one observed run
+  rebuilds nothing). Owner ruling, 2026-10-09: the agent-authored config this tool exists for
+  is not the operator-vetted one ADR 0022 lets an explore through unconfined. An unconfined
+  explore over MCP is the same shape, filed as #765 rather than changed here.
+- **The child's text output is removed when it exits.** It quotes the bytes `--twice` saw
+  differ, and the server reads only the JSON; left in the work directory it would wait for the
+  next call that reuses its number.
+- **isError.** A report keeps the rule as written (refusals true). The preflight document's two
+  outcomes are both answers to the question asked, and take false, as a FAIL does; a document
+  that is neither is a fault and is said as one.
+- **The text block** puts the outcome and counts above one counted region in which every
+  other string the target or the define could shape — account sentences, cwd, `scratch`,
+  judged paths, differing paths and their shapes — is quoted, whatever its source: a path field is
+  JSON-escaped only, so the engine's defang does not stand behind it here as it does behind a
+  report's `message`. The define's apparatus and warnings ride on lines of their own, as the
+  report's summary carries them.
