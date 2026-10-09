@@ -68,7 +68,7 @@ predicted to recur (ccache twice, git, firebase and gocryptfs on the page's path
 - **The next steps carried twelve targets to a verdict.** `baseline_violates_invariant`'s "declare the path
   scratch" with #688's "where and what kind", and `preflight --twice` naming the paths, were enough for
   eleven defines; each needed a checker as well, which the step does not say.
-- **A checker that refuses the untouched state reads as a FAIL.** xmake's first checker rejected the
+- **A checker that refuses the untouched state reads as a FAIL** (#756). xmake's first checker rejected the
   seeded `theme = "default"`; the violation was at crash point 1, "after (start)", before the operation had
   done anything. Sideeye falsifies a checker against a corrupted state before the run, but nothing asks it
   to accept the state the define starts from, and the verdict blames the target.
