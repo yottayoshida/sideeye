@@ -94,3 +94,5 @@ RUN { echo "hexapdf $(hexapdf version 2>&1 | head -1)"; echo "mu $(mu --version 
       echo "plakar $(plakar version 2>&1 | head -1)"; echo "softhsm2 $(softhsm2-util --version 2>&1)"; echo "bat $(batcat --version 2>&1)"; echo "meson $(meson --version 2>&1)"; \
       echo "ocrmypdf $(ocrmypdf --version 2>&1)"; echo "ccache $(ccache --version 2>&1 | head -1)"; echo "git $(git --version)"; echo "firebase $(firebase --version 2>&1 | tail -1)"; \
       echo "gocryptfs $(gocryptfs -version 2>&1 | head -1)"; } | tee -a /versions.txt
+
+RUN install -m 755 /tmp/dl/x-gcf/gocryptfs-xray /opt/bin/gocryptfs-xray && echo "gocryptfs-xray installed"

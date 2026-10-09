@@ -52,3 +52,12 @@ confidence is that each reaches a verdict.
 | git 2.47.3 `commit` | none first, then `-c gc.auto=0 -c maintenance.auto=false` | `child_touched_state_dir` again; with the gc off, a verdict, PASS (git writes through lock files and renames) |
 | firebase-tools 15.32.1 `experiments:disable` | none first, then `NO_UPDATE_NOTIFIER=1` | `child_touched_state_dir` again; with the notifier off, `multiple_threads_detected` (Node) |
 | gocryptfs 2.6.1 `-passwd` (through `sh`, the new password on stdin) | none: the page's path, then `--observe supervised` named | `child_process_detected` again; supervised past it to a verdict, PASS (gocryptfs.conf through a temporary and a rename) |
+
+## Each refusal of the second group followed one step more (before these ran)
+
+| target | the step | prediction |
+|---|---|---|
+| xmake, the checker fixed (the seeded `theme = "default"` accepted; the first form refused the untouched state) | the same scratch | **FAIL**, `xmake.conf` at 0 bytes, as world 2 already showed |
+| ccache, the clock pinned (`kill_did_not_land`'s next step names the clock) | libfaketime through `/etc/ld.so.preload` | `kill_did_not_land` again: what varies is more likely its cleanup and stats files than the time |
+| git commit, gc off, `.git/index` scratch, the dates pinned, a checker (`git fsck`, HEAD, the work tree) | the next step's scratch | **PASS**: git writes through `.lock` files and renames |
+| gocryptfs -passwd, `cipher/gocryptfs.conf` scratch, a checker (`gocryptfs-xray -dumpmasterkey` with the old or new passphrase) | under `--observe supervised` | **PASS**: gocryptfs writes its config through a temporary and a rename |

@@ -1,0 +1,8 @@
+[world]
+state = "/s/gocryptfs"
+
+[define]
+operation = "sh /s/gocryptfs-in/chpw.sh"
+cwd       = "/s/gocryptfs-in"
+check     = "/ap/defines/gocryptfs-check/check.sh"
+scratch   = ["cipher/gocryptfs.conf"]
