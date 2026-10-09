@@ -1,0 +1,10 @@
+# B4b: unticking "Protect plaintext secrets" in the interactive `protect` calls protectSettings.removeFilter(),
+# which rewrites the user's global git attributes file with fs.writeFileSync (protectSettings.js:23). Called
+# directly, as B4a.
+[world]
+state = "/s/xdg/git"
+
+[define]
+operation = ["node", "-e", "require('/opt/dx-2.34.2/lib/node_modules/@dotenvx/dotenvx/src/lib/helpers/protectSettings.js').removeFilter()"]
+cwd       = "/s/repo"
+check     = "/ap/defines/protect-remove-filter/check.sh"

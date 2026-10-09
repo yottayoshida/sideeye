@@ -1,0 +1,14 @@
+## 2.32.4
+  get DB_PASSWORD -f .env -> [hunter2-not-a-real-secret] exit 0 stderr: 
+  get NOPE -f .env -> [] exit 1 stderr: ☠ [MISSING_KEY] missing key (NOPE). fix: [https://github.com/dotenvx/dotenvx/issues/759]
+  get DB_PASSWORD -f .env -> [encrypted:BJYAWN6UZB4tHak2ZIBxVpKKWXx5uFCjDUmG1vxC95l9Me/uaaIAbXuxEfZGIB5CBS+apYhhYMd+3cWAkWZDVNFRwzac1wUY7dGnAtEDSjVdhR3rHBcMJH5+R69Cwx0/F0Xe508MxOCzS17pEIXC3EaRsq9E69/03sY=] exit 1 stderr: ☠ [DECRYPTION_FAILED] could not decrypt DB_PASSWORD, API_TOKEN_PLACEHOLDER. fix: [https://github.com/dotenvx
+  get DB_PASSWORD -f empty.env -> [] exit 1 stderr: ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/dotenvx/issues/759]
+  get DB_PASSWORD -f missing.env -> [] exit 1 stderr: ☠ [MISSING_ENV_FILE] missing file (missing.env). fix: [https://github.com/dotenvx/dotenvx/issues/484]
+  spec: # Envfile (safe to commit)|# ------------------------||
+## 2.34.2
+  get DB_PASSWORD -f .env -> [hunter2-not-a-real-secret] exit 0 stderr: 
+  get NOPE -f .env -> [] exit 1 stderr: ☠ [MISSING_KEY] missing key (NOPE). fix: [https://github.com/dotenvx/dotenvx/issues/759]
+  get DB_PASSWORD -f .env -> [encrypted:BBkrKNk9ZwMxkuYb9Lkq8XetSaa1sCms9B/TISTUkwub+DLHT/nKBdCy8yFbSiaXk3M0+XcyRefjOa5ObHdkAAMweFUGSjCzlx+miVrhdlLsaQ7dkb/VRsywmdGc1EsvVcoyWx3R63OOCUAQJsDbyCzlAOjeiGtilJ8=] exit 1 stderr: ☠ [DECRYPTION_FAILED] could not decrypt DB_PASSWORD, API_TOKEN_PLACEHOLDER. fix: [https://github.com/dotenvx
+  get DB_PASSWORD -f empty.env -> [] exit 1 stderr: ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/dotenvx/issues/759]
+  get DB_PASSWORD -f missing.env -> [] exit 1 stderr: ☠ [MISSING_ENV_FILE] missing file (missing.env). fix: [https://github.com/dotenvx/dotenvx/issues/484]
+  spec: # Envfile (safe to commit)|# ------------------------||

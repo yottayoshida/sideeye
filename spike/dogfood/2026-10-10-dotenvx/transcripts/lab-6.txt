@@ -1,0 +1,4 @@
+clean: 0
+git would stage .env.keys.12345, and it decrypts the committed .env
+planted stageable copy: 1
+same copy, ignored by .env.keys*: 0

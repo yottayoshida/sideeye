@@ -1,0 +1,4 @@
+## dotenvx encrypt -f apps/a/.env: exit 0; .env.keys: none; keyring: 1 entr(ies); ◈ encrypted apps/a/.env (020 8B6) via Secret Service ⛉ 
+## dotenvx encrypt -fk .env.keys -f apps/a/.env: exit 0; .env.keys: none; keyring: 1 entr(ies); ◈ encrypted apps/a/.env (038 892) via Secret Service ⛉ 
+## dotenvx encrypt --no-native -fk .env.keys -f apps/a/.env: exit 0; .env.keys: 1; keyring: 0 entr(ies); ◈ encrypted apps/a/.env (027 06F) via .env.keys ⛉ 
+## dotenvx env DOTENVX_NO_NATIVE=true dotenvx encrypt -fk .env.keys -f apps/a/.env: exit 0; .env.keys: 1; keyring: 0 entr(ies); ◈ encrypted apps/a/.env (02E B0D) via .env.keys ⛉ 

@@ -1,0 +1,8 @@
+# B5: `spec --overwrite` replaces an Envfile with an O_TRUNC open (services/init.js:70).
+[world]
+state = "/s/proj"
+
+[define]
+operation = "dotenvx spec --overwrite"
+cwd       = "/s/proj"
+check     = "/ap/defines/spec-overwrite/check.sh"

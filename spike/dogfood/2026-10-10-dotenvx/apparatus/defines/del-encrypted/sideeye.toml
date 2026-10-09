@@ -1,0 +1,10 @@
+# A6: del removes one key from an encrypted .env.
+[world]
+state = "/s/dx"
+
+[define]
+operation = "dotenvx del API_TOKEN_PLACEHOLDER -f /s/dx/.env"
+cwd       = "/s/dx"
+check     = "/ap/defines/del-encrypted/check.sh"
+# New key pairs and fresh ciphertext in every run; the checker reads the values back.
+scratch   = [".env", ".env.keys"]

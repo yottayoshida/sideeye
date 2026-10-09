@@ -1,0 +1,66 @@
+## 2.34.2 report-concurrent, run 1
+   ☠ [DECRYPTION_FAILED] could not decrypt A_SECRET. fix: [https://github.com/dotenvx/dotenvx/issues/757]
+   encrypted:BEeGOi0jRY2hOfAdEa1BZkPbfMaDI5MeMttd8i3QPixeCFTfyaF/XsCJeacnREsvyLM/JEeabG279OAwovtUrELUfTvtL9TJbu5H
+   b
+   .env.keys private keys: 1
+## 2.34.2 report-concurrent, run 2
+   a
+   ☠ [DECRYPTION_FAILED] could not decrypt B_SECRET. fix: [https://github.com/dotenvx/dotenvx/issues/757]
+   encrypted:BGtih46g8VFNTsD1mmMpAWf3HnqdToZ5FJgOmdGITh2y/qTMW0swG2RkInWEDwDM4JWRC+SBzYjkhqkhRr9WhawomGiNvk2Br7ux
+   .env.keys private keys: 1
+## 2.34.2 report-concurrent, run 3
+   ☠ [DECRYPTION_FAILED] could not decrypt A_SECRET. fix: [https://github.com/dotenvx/dotenvx/issues/757]
+   encrypted:BM56CW9RQqAiVGbdCD8GXxLH+1iDjNF4Lji1ptpN4QO70jwETurP51muMu24g1DwD7PxmcKY/Rm1HUO6b7CjDhMFO2F47tpah3xP
+   b
+   .env.keys private keys: 1
+## 2.34.2 report-concurrent, run 4
+   ☠ [DECRYPTION_FAILED] could not decrypt A_SECRET. fix: [https://github.com/dotenvx/dotenvx/issues/757]
+   encrypted:BGqiA3xo7mAe9ZgWmmMNdR6R8+yfhKyR+BvC46aSGNCHtTqTGZr2METdnZjeJKHYJ9ICFzQmJeihsPa0/X63idKKSWXBqy8Hi9e5
+   b
+   .env.keys private keys: 1
+## 2.34.2 report-concurrent, run 5
+   a
+   ☠ [DECRYPTION_FAILED] could not decrypt B_SECRET. fix: [https://github.com/dotenvx/dotenvx/issues/757]
+   encrypted:BJT5qJqBh43bxWAKSPQrZOVgE0PADBLD/lTTyb/VVakICnEfUH5S840s+BBot3SotXWQAykfPBYS+oj+f5WjT9qBpZ9EBwq52fUx
+   .env.keys private keys: 1
+## 2.34.2 report-escape
+   pa$sword
+   ⚠ OS secret store unavailable; saving private key to .env.keys
+   ◈ encrypted .env (023 80E) via .env.keys ⛉
+   pa$sword
+   ◇ decrypted .env (023 80E) via .env.keys ⛉
+   PW=pa$sword
+   pa
+## 2.32.4 report-concurrent, run 1
+   a
+   ☠ [DECRYPTION_FAILED] could not decrypt B_SECRET. fix: [https://github.com/dotenvx/dotenvx/issues/757]
+   encrypted:BCXJnE2D0rS1gMb+3P9E7RLe+PyaWPyjpg4Zv9fykbMEOf4A7lu7fTQZpG8/Pjakw/7OmOeSba0s43ipAOhDeCwrbT8KPwlu3Az4
+   .env.keys private keys: 1
+## 2.32.4 report-concurrent, run 2
+   a
+   ☠ [DECRYPTION_FAILED] could not decrypt B_SECRET. fix: [https://github.com/dotenvx/dotenvx/issues/757]
+   encrypted:BKrVGFI+9yXsA/rUYv4y+rG4GHvqmw3BaSPeuptiUk8qF0Bmoc22I62M74Nqd9E4/PNRJ7ct8k6IQeOhs+6l5xVljD/Ra9Me9r30
+   .env.keys private keys: 1
+## 2.32.4 report-concurrent, run 3
+   ☠ [DECRYPTION_FAILED] could not decrypt A_SECRET. fix: [https://github.com/dotenvx/dotenvx/issues/757]
+   encrypted:BFr0ODt/QLVS5bukeedM+tXzJI+VA4RKBFR2aLvJdYHO2Z7dag7wLF3hg9M+W273Zb6o1PtajgaY30TiKkmTtshil0+cUkc0Dw9e
+   b
+   .env.keys private keys: 1
+## 2.32.4 report-concurrent, run 4
+   ☠ [DECRYPTION_FAILED] could not decrypt A_SECRET. fix: [https://github.com/dotenvx/dotenvx/issues/757]
+   encrypted:BC795yJB2KR2kK9H38Kk2s6jpWji6ZFPIYByIqpp0WQslM7H9t8X6M1jFdxM5MesByEuhSoklTCJWqOHKx16M/lt7i6VyFidUiR+
+   b
+   .env.keys private keys: 1
+## 2.32.4 report-concurrent, run 5
+   ☠ [DECRYPTION_FAILED] could not decrypt A_SECRET. fix: [https://github.com/dotenvx/dotenvx/issues/757]
+   encrypted:BH4fQq26CkegvPTA+XH3GggnaiFY5d5T+67a33Ehid6GYb+xC2ffxtsMMPidUotXHQ/XFOfzucziwxVPu6zra1jGw4Z+EHuiniKx
+   b
+   .env.keys private keys: 1
+## 2.32.4 report-escape
+   pa$sword
+   ⚠ OS secret store unavailable; saving private key to .env.keys
+   ◈ encrypted (.env)
+   pa$sword
+   ◇ decrypted (.env)
+   PW=pa$sword
+   pa

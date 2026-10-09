@@ -1,0 +1,35 @@
+⚠ OS secret store unavailable; saving private key to .env.keys
+◈ encrypted /s/repo/.env (03E 961) via .env.keys ⛉
+note: the paths at the crash point differ from the recorded case (often pid-embedded temp names); the class structure matches, so the replay proceeds
+falsify: fatal: not a git repository (or any of the parent directories): .git
+falsify: .env DB_PASSWORD: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (DB_PASSWORD). fix: [https://github.com/dotenvx/dotenvx/issu
+falsify: .env API_TOKEN_PLACEHOLDER: dotenvx get reads '' (exit 1) ☠ [MISSING_KEY] missing key (API_TOKEN_PLACEHOLDER). fix: [https://github.com/dotenvx/do
+⚠ OS secret store unavailable; saving private key to .env.keys
+world 3: git would stage .env.keys.1817038555, which holds a private key
+⚠ OS secret store unavailable; saving private key to .env.keys
+◈ encrypted /s/repo/.env (038 A60) via .env.keys ⛉
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   the checker (L2)
+earliest    crash point 3 of 10
+            after  write(/s/repo/.env.keys.3750390389)
+            before fsync(/s/repo/.env.keys.3750390389)
+path        (named by the checker, not by path)
+observed    the checker exited non-zero after restart
+cwd         /s/repo
+
+explored    2 worlds (crash points 10 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post; 30 path(s) matched by scratch, not judged (declared: .env, .env.keys, .git)
+oracle      agreed on 10 operations (3538 syscall lines examined, 690 in scope of the judged state), witness strace
+metadata    3 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmodat x2, fchownat x1. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /out/encrypt-leftover/2.34.2/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle; the shim recorded 7 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 6 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+
+reproduce   (cd /s/repo && unset SIDEEYE_KILL_GROUP && : > /out/encrypt-leftover/2.34.2/work-explore-replay2/trace-repro.bin && SIDEEYE_STATE_DIR=/s/repo SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/encrypt-leftover/2.34.2/work-explore-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=3 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'dotenvx' encrypt -f /s/repo/.env </dev/null)
+sideeye: json sha256=2167871de35a9b53cce5d4d7653f0f4fd9060506eb6b16df9314d406d7f4d0d0;

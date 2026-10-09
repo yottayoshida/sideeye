@@ -1,0 +1,29 @@
+⛉ protection: partial (.env*)
+falsify: /s/repo/.git/hooks/pre-commit: no line 'npm run lint --silent || exit 1' (25 bytes)
+world 2: /s/repo/.git/hooks/pre-commit: no line 'npm run lint --silent || exit 1' (0 bytes)
+⛉ protection: partial (.env*)
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 2
+            after  open(/s/repo/.git/hooks/pre-commit)
+            before write(/s/repo/.git/hooks/pre-commit)
+path        pre-commit
+observed    holding neither the old nor the new content
+cwd         /s/repo
+
+explored    2 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   15 path(s) judged pre-or-post
+oracle      agreed on 2 operations (5405 syscall lines examined, 12 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /out/protect-hook/2.34.2/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   12 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle; the shim recorded 6 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 5 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/repo && unset SIDEEYE_KILL_GROUP && : > /out/protect-hook/2.34.2/work-explore-replay2/trace-repro.bin && SIDEEYE_STATE_DIR=/s/repo/.git/hooks SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/protect-hook/2.34.2/work-explore-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'dotenvx' protect </dev/null)
+sideeye: json sha256=0b854a3128366aa372ce4a5ab269b8da2672cfd652655a5ab494ee33a566dde5;

@@ -1,0 +1,10 @@
+# A1, the dotenvx/dotenvx#1012 shape: the first encrypt of a plaintext .env.
+[world]
+state = "/s/dx"
+
+[define]
+operation = "dotenvx encrypt -f /s/dx/.env"
+cwd       = "/s/dx"
+check     = "/ap/defines/encrypt/check.sh"
+# New key pairs and fresh ciphertext in every run; the checker reads the values back.
+scratch   = [".env", ".env.keys"]

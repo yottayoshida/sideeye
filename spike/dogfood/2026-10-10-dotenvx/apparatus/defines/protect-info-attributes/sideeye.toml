@@ -1,0 +1,8 @@
+# B3: the repository's .git/info/attributes holds the user's lines and the rules of the legacy local filter; `protect` rewrites it with fs.writeFileSync (removeLegacyProtectFilter.js:39).
+[world]
+state = "/s/repo/.git/info"
+
+[define]
+operation = "dotenvx protect"
+cwd       = "/s/repo"
+check     = "/ap/defines/protect-info-attributes/check.sh"

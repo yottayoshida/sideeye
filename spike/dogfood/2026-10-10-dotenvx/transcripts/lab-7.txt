@@ -1,0 +1,29 @@
+## report-protect
+   + git init -q demo
+   + cd demo
+   + printf #!/bin/sh\nnpm test\n
+   + dotenvx precommit --install
+   ⚠ [DEPRECATED] dotenvx precommit. fix: run [dotenvx protect]
+   ▣ dotenvx precommit appended [.git/hooks/pre-commit]
+   + strace -f -qq -o /dev/null -P /s/lab7/report-protect/demo/.git/hooks/pre-commit -e inject=write:error=ENOSPC dotenvx protect
+   ☠ ENOSPC: no space left on device, write
+   + wc -c .git/hooks/pre-commit
+   0 .git/hooks/pre-commit
+## report-leftover
+   + git init -q demo
+   + cd demo
+   + printf DB_PASSWORD=hunter2\n
+   + printf PROD=x\n
+   + printf .env.keys\n.env.production\n
+   + dotenvx encrypt -f .env
+   ⚠ OS secret store unavailable; saving private key to .env.keys
+   ◈ encrypted .env (02D 8B5) via .env.keys ⛉
+   + git add -A
+   + git commit -qm init
+   + strace -f -qq -o /dev/null -e inject=renameat,renameat2:signal=KILL dotenvx encrypt -f .env.production
+   ⚠ OS secret store unavailable; saving private key to .env.keys
+   Killed
+   + git add -A
+   + git status --short
+   A  .env.keys.2471380886
+## then: dotenvx get DB_PASSWORD -f .env -fk .env.keys.2471380886 -> hunter2

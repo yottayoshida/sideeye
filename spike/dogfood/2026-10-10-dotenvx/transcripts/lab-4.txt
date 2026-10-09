@@ -1,0 +1,64 @@
+## 2.34.2, keys-by-name, dotenvx encrypt, SIGKILL at its rename #1: exit 137
+   .env                        80 bytes  0 private-key line(s), 1 plaintext secret(s)
+   .env.keys.317109845        404 bytes  1 private-key line(s), 0 plaintext secret(s)
+   .gitignore                  10 bytes  0 private-key line(s), 0 plaintext secret(s)
+   git add -A: exit 0 
+   staged: .env .env.keys.317109845 .gitignore 
+## 2.34.2, env-star, dotenvx encrypt, SIGKILL at its rename #1: exit 137
+   .env                        80 bytes  0 private-key line(s), 1 plaintext secret(s)
+   .env.keys.3628966521       404 bytes  1 private-key line(s), 0 plaintext secret(s)
+   .gitignore                   6 bytes  0 private-key line(s), 0 plaintext secret(s)
+   git add -A: exit 0 
+   staged: .gitignore 
+## 2.34.2, protect, dotenvx encrypt, SIGKILL at its rename #1: exit 137
+   .env                        80 bytes  0 private-key line(s), 1 plaintext secret(s)
+   .env.keys.1182962100       404 bytes  1 private-key line(s), 0 plaintext secret(s)
+   git add -A: exit 128 ☠ [PLAINTEXT_ENV] ".env" contains plaintext secrets. fix: run [dotenvx encrypt -f .env] fatal: .env: clean filter 'dotenvx.protect' failed 
+   staged: 
+## 2.32.4, keys-by-name, dotenvx encrypt, SIGKILL at its rename #1: exit 0
+   .env                       719 bytes  0 private-key line(s), 0 plaintext secret(s)
+   .env.keys                  404 bytes  1 private-key line(s), 0 plaintext secret(s)
+   .gitignore                  10 bytes  0 private-key line(s), 0 plaintext secret(s)
+   git add -A: exit 0 
+   staged: .env .gitignore 
+## 2.32.4, env-star, dotenvx encrypt, SIGKILL at its rename #1: exit 0
+   .env                       719 bytes  0 private-key line(s), 0 plaintext secret(s)
+   .env.keys                  404 bytes  1 private-key line(s), 0 plaintext secret(s)
+   .gitignore                   6 bytes  0 private-key line(s), 0 plaintext secret(s)
+   git add -A: exit 0 
+   staged: .gitignore 
+## 2.32.4, protect, dotenvx encrypt, SIGKILL at its rename #1: exit 0
+   .env                       719 bytes  0 private-key line(s), 0 plaintext secret(s)
+   .env.keys                  404 bytes  1 private-key line(s), 0 plaintext secret(s)
+   git add -A: exit 128 ☠ [PRIVATE_KEY_FILE] refusing to stage ".env.keys". fix: run [dotenvx gitignore --pattern .env.keys] fatal: .env.keys: clean filter 'dotenvx.protect' failed 
+   staged: 
+## 2.34.2, keys-by-name, dotenvx decrypt, SIGKILL at its rename #1: exit 137
+   .env                       719 bytes  0 private-key line(s), 0 plaintext secret(s)
+   .env.318818861             423 bytes  0 private-key line(s), 1 plaintext secret(s)
+   .env.keys                  404 bytes  1 private-key line(s), 0 plaintext secret(s)
+   .gitignore                  10 bytes  0 private-key line(s), 0 plaintext secret(s)
+   git add -A: exit 0 
+   staged: .env.318818861 
+## 2.34.2, env-star, dotenvx decrypt, SIGKILL at its rename #1: exit 137
+   .env                       719 bytes  0 private-key line(s), 0 plaintext secret(s)
+   .env.3389020567            423 bytes  0 private-key line(s), 1 plaintext secret(s)
+   .env.keys                  404 bytes  1 private-key line(s), 0 plaintext secret(s)
+   .gitignore                   6 bytes  0 private-key line(s), 0 plaintext secret(s)
+   git add -A: exit 0 
+   staged: 
+On branch master
+
+Initial commit
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	.env
+	.env.keys
+
+nothing added to commit but untracked files present (use "git add" to track)
+## 2.34.2, protect, dotenvx decrypt, SIGKILL at its rename #1: exit 137
+   .env                       719 bytes  0 private-key line(s), 0 plaintext secret(s)
+   .env.3588265920            423 bytes  0 private-key line(s), 1 plaintext secret(s)
+   .env.keys                  404 bytes  1 private-key line(s), 0 plaintext secret(s)
+   git add -A: exit 128 ☠ [PLAINTEXT_ENV] ".env.3588265920" contains plaintext secrets. fix: run [dotenvx encrypt -f .env.3588265920] fatal: .env.3588265920: clean filter 'dotenvx.protect' failed 
+   staged: 

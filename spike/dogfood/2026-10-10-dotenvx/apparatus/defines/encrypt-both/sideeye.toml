@@ -1,0 +1,10 @@
+# A3: one encrypt over two plaintext files: .env.keys, then each env file.
+[world]
+state = "/s/dx"
+
+[define]
+operation = "dotenvx encrypt -f /s/dx/.env -f /s/dx/.env.production"
+cwd       = "/s/dx"
+check     = "/ap/defines/encrypt-both/check.sh"
+# New key pairs and fresh ciphertext in every run; the checker reads the values back.
+scratch   = [".env", ".env.keys", ".env.production"]
