@@ -1,0 +1,12 @@
+== 1. as measured: no user settings
+MCP server "notes" added to project settings. (stdio)
+{"mcpServers":{"notes":{"command":"/usr/bin/true","args":["--flag"]}}}
+== 2. the folder trusted in trustedFolders.json
+MCP server "notes" added to project settings. (stdio)
+{"theme":"Default","mcpServers":{"docs":{"command":"docs-server"},"notes":{"command":"/usr/bin/true","args":["--flag"]}}}
+== 3. folder trust off in user settings
+MCP server "notes" added to project settings. (stdio)
+{"theme":"Default","mcpServers":{"docs":{"command":"docs-server"},"notes":{"command":"/usr/bin/true","args":["--flag"]}}}
+== 4. user scope, as follow-ups 3 ran it
+MCP server "notes" added to user settings. (stdio)
+{"theme":"Default","mcpServers":{"docs":{"command":"docs-server"},"notes":{"command":"/usr/bin/true","args":["--flag"]}}}

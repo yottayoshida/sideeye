@@ -1,0 +1,2 @@
+replay 1 exit 2: UNKNOWN multiple_threads_detected
+replay 2 exit 2: UNKNOWN multiple_threads_detected

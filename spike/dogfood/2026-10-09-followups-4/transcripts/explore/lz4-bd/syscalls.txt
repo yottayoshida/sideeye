@@ -1,0 +1,15 @@
+UNKNOWN  multiple_threads_detected
+         two threads of process 42 wrote in the judged directory: tid 44 performed write(/s/lz4/state/f.bin.lz4) and tid 42 performed write(/s/lz4/state/f.bin.lz4). No thread creation or join the shim recorded orders the first of those before the second, so their order is the scheduler's choice on this run, the sequence they were numbered in is the one it happened to produce, and a crash point would not name the same operation on the next. A process whose threads' writes are all ordered by the creations and joins the shim recorded is judged, however many threads it created (v18)
+next        Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit the README states under 'What the target has to be': threads are judged where a creation or a join the shim saw orders their writes.
+cwd         /s/lz4/state
+
+expected    exit 0
+atomicity   0 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   the shim recorded a thread; the strace account was not read; the shim recorded 2 thread(s) created, and 2 thread id(s) of the subject's own process wrote the judged directory; 1 hand-over(s) between threads in causal order, 2 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=4327eb72b1e25f334fb00ff0ef00f10ce176f9c845ed727edb5eea1327cd4220;

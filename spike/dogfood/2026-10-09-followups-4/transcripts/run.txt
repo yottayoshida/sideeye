@@ -1,0 +1,31 @@
+=== upx-fat 2026-10-09T08:27:55Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== argocd-fat 2026-10-09T08:28:13Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== lz4-bd 2026-10-09T08:28:14Z
+explore exit 2: UNKNOWN oracle_missed_operation
+explore --observe syscalls exit 2: UNKNOWN multiple_threads_detected
+explore exit 2: UNKNOWN oracle_missed_operation
+next_step: Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.
+explore --observe syscalls exit 2: UNKNOWN multiple_threads_detected
+=== prefscleaner-fat, --observe supervised named
+probe supervised exit 1
+FAIL  5 of 8 explored worlds violated an invariant
+
+run: done

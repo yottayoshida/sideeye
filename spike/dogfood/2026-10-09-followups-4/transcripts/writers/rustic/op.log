@@ -1,0 +1,20 @@
+[INFO] using no config file, none of these exist: /s/aux/home/.config/rustic/rustic.toml, /etc/rustic/rustic.toml, ./rustic.toml
+[INFO] repository local:/s/rustic/repo: password is correct.
+[INFO] using no cache
+[INFO] snapshots for (host [acabe5bd8e01], label [], paths [/s/rustic-in/data]):
+| ID       | Time                | Host         | Label | Tags | Paths             | Action | Reason |
+|----------|---------------------|--------------|-------|------|-------------------|--------|--------|
+| 89e7aab9 | 2026-10-09 08:47:50 | acabe5bd8e01 |       |      | /s/rustic-in/data | keep   | last   |
+| b29f8da4 | 2026-10-09 08:47:50 | acabe5bd8e01 |       |      | /s/rustic-in/data | remove |        |
+[INFO] repository local:/s/rustic/repo: password is correct.
+[INFO] using no cache
+[INFO] to repack:          0 packs,          0 blobs,        0 B
+[INFO] this removes:                         0 blobs,        0 B
+[INFO] to delete:          2 packs,          5 blobs,      783 B
+[INFO] total prune:                          5 blobs,      783 B
+[INFO] remaining:                            5 blobs,      781 B
+[INFO] unused size after prune:        0 B (0.00% of remaining size)
+[INFO] packs marked for deletion:          0,        0 B
+[INFO]  - complete deletion:               0,        0 B
+[INFO]  - keep marked:                     0,        0 B
+[INFO]  - recover:                         0,        0 B

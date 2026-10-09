@@ -1,0 +1,13 @@
+state /s/vercel: 2 thread(s)/process(es) changed it
+- 22 (the first process): 18 calls fsync=1 mkdirat(failed)=5 open-w=4 pwrite64=1 renameat=4 write=3
+    .: mkdirat(failed)
+    telemetry-device.json.2801654808: fsync open-w pwrite64
+    telemetry-device.json telemetry-device.json.2801654808: renameat
+    telemetry-session.json.22.36b5f3e9-e794-46c1-a52b-09e72ade67e2.tmp: open-w write
+    telemetry-session.json telemetry-session.json.22.36b5f3e9-e794-46c1-a52b-09e72ade67e2.tmp: renameat
+    .config.json.22.1791535452564.tmp: open-w write
+    .config.json.22.1791535452564.tmp config.json: renameat
+    telemetry-session.json.22.cf18d801-b848-4cc1-8b76-b4974f79dd3a.tmp: open-w write
+    telemetry-session.json telemetry-session.json.22.cf18d801-b848-4cc1-8b76-b4974f79dd3a.tmp: renameat
+- 29 (thread of 22): 1 calls mkdirat(failed)=1
+    .: mkdirat(failed)

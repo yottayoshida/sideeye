@@ -1,0 +1,23 @@
+23    execve("/usr/bin/sh", ["sh", "-c", "lz4 -q -T1 -BD --rm /s/lz4/state"...], 0xffffea5d6888 /* 14 vars */) = 0
+23    openat(AT_FDCWD</s/lz4/state>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+23    openat(AT_FDCWD</s/lz4/state>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+23    clone(child_stack=0xfffff3dca020, flags=CLONE_VM|CLONE_VFORK|SIGCHLD <unfinished ...>
+24    execve("/usr/bin/lz4", ["lz4", "-q", "-T1", "-BD", "--rm", "/s/lz4/state/f.bin"], 0xaaab101ed678 /* 14 vars */ <unfinished ...>
+23    <... clone resumed>)              = 24
+24    openat(AT_FDCWD</s/lz4/state>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+24    openat(AT_FDCWD</s/lz4/state>, "/lib/aarch64-linux-gnu/libxxhash.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libxxhash.so.0.8.3>
+24    openat(AT_FDCWD</s/lz4/state>, "/lib/aarch64-linux-gnu/liblz4.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/liblz4.so.1.10.0>
+24    openat(AT_FDCWD</s/lz4/state>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+24    openat(AT_FDCWD</s/lz4/state>, "/sys/devices/system/cpu/online", O_RDONLY|O_CLOEXEC) = 3</sys/devices/system/cpu/online>
+24    openat(AT_FDCWD</s/lz4/state>, "/s/lz4/state/f.bin", O_RDONLY) = 3</s/lz4/state/f.bin>
+24    openat(AT_FDCWD</s/lz4/state>, "/s/lz4/state/f.bin.lz4", O_RDONLY) = -1 ENOENT (No such file or directory)
+24    openat(AT_FDCWD</s/lz4/state>, "/s/lz4/state/f.bin.lz4", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 4</s/lz4/state/f.bin.lz4>
+24    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffff8a12d250, parent_tid=0xffff8a12d250, exit_signal=0, stack=0xffff8991e000, stack_size=0x80ea60, tls=0xffff8a12d8a0} => {parent_tid=[25]}, 88) = 25
+24    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffff8991d250, parent_tid=0xffff8991d250, exit_signal=0, stack=0xffff8910e000, stack_size=0x80ea60, tls=0xffff8991d8a0} => {parent_tid=[26]}, 88) = 26
+26    write(4</s/lz4/state/f.bin.lz4>, "\4\"M\30Dp\35!p\16\0\202MARKER-0\1\0\231-payload\n"..., 4096) = 4096
+26    write(4</s/lz4/state/f.bin.lz4>, "\378\374\10\3\378\374\10\3\378\374\10\3\378\374\10\3\378\374\10\3\378\374\10\3\378"..., 942080 <unfinished ...>
+26    write(4</s/lz4/state/f.bin.lz4>, "2\330Y\3\0372\330Y\3\0372\330Y\3\0372\330Y\3\0372\330Y\3\0372\330Y\3/23"..., 4096) = 4096
+26    write(4</s/lz4/state/f.bin.lz4>, "\10\3\0371\374\10\3\17\260\263\3/31\374\10\3\17\330Y\3\0373\260\263\3/31\374\10\3"..., 344064) = 344064
+24    write(4</s/lz4/state/f.bin.lz4>, "Y\3\379\330Y\3\379\330Y\3\379\330Y\3\379\330Y\3\379\330Y\3\379\330Y\3"..., 2101) = 2101
+24    fchmodat(AT_FDCWD</s/lz4/state>, "/s/lz4/state/f.bin.lz4", 0644) = 0
+24    unlinkat(AT_FDCWD</s/lz4/state>, "/s/lz4/state/f.bin", 0) = 0

@@ -1,0 +1,46 @@
+21    openat(AT_FDCWD</s/codex-in>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+21    openat(AT_FDCWD</s/codex-in>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+21    clone(child_stack=0xffffdcc4cc10, flags=CLONE_VM|CLONE_VFORK|SIGCHLD <unfinished ...>
+21    <... clone resumed>)              = 22
+22    openat(AT_FDCWD</s/codex-in>, "/proc/sys/vm/overcommit_memory", O_RDONLY|O_CLOEXEC) = 3</proc/sys/vm/overcommit_memory>
+22    openat(AT_FDCWD</s/codex-in>, "/sys/kernel/mm/transparent_hugepage/enabled", O_RDONLY) = 3</sys/kernel/mm/transparent_hugepage/enabled>
+22    openat(AT_FDCWD</s/codex-in>, "/s/codex/.env", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+22    mkdirat(AT_FDCWD</s/codex-in>, "/s/codex", 0777) = -1 EEXIST (File exists)
+22    mkdirat(AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0", 0777) = -1 ENOENT (No such file or directory)
+22    mkdirat(AT_FDCWD</s/codex-in>, "/s/codex/tmp", 0777) = 0
+22    mkdirat(AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0", 0777) = 0
+22    fchmodat(AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0", 0700) = 0
+22    openat(AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 3</s/codex/tmp/arg0>
+22    mkdirat(AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0/codex-arg0RcsxRw", 0777) = 0
+22    openat(AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0/codex-arg0RcsxRw/.lock", O_RDWR|O_CREAT|O_LARGEFILE|O_CLOEXEC, 0666) = 3</s/codex/tmp/arg0/codex-arg0RcsxRw/.lock>
+22    symlinkat("/opt/bin/codex", AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0/codex-arg0RcsxRw/apply_patch") = 0
+22    symlinkat("/opt/bin/codex", AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0/codex-arg0RcsxRw/applypatch") = 0
+22    symlinkat("/opt/bin/codex", AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0/codex-arg0RcsxRw/codex-linux-sandbox") = 0
+22    symlinkat("/opt/bin/codex", AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0/codex-arg0RcsxRw/codex-execve-wrapper") = 0
+22    clone(child_stack=0xffff99ffe810, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[23], tls=0xffff99ffe908, child_tidptr=0xf214494) = 23
+23    clone(child_stack=0xffff9877e810, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[24], tls=0xffff9877e908, child_tidptr=0xf214494) = 24
+23    clone(child_stack=0xffff96a7e810, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[25], tls=0xffff96a7e908, child_tidptr=0xf214494) = 25
+25    openat(AT_FDCWD</s/codex-in>, "/etc/codex/requirements.toml", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+25    openat(AT_FDCWD</s/codex-in>, "/etc/codex/managed_config.toml", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+25    openat(AT_FDCWD</s/codex-in>, "/etc/codex/config.toml", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+25    openat(AT_FDCWD</s/codex-in>, "/s/codex/config.toml", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_CLOEXEC) = 10</s/codex/config.toml>
+23    clone(child_stack=0xffff955fe810, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[26], tls=0xffff955fe908, child_tidptr=0xf214494) = 26
+23    clone(child_stack=0xffff941fe810, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[27], tls=0xffff941fe908, child_tidptr=0xf214494) = 27
+26    openat(AT_FDCWD</s/codex-in>, "/etc/codex/agents", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+25    openat(AT_FDCWD</s/codex-in>, "/s/codex/agents", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+27    openat(AT_FDCWD</s/codex-in>, "/etc/codex/requirements.toml", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+26    openat(AT_FDCWD</s/codex-in>, "/etc/codex/managed_config.toml", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+25    openat(AT_FDCWD</s/codex-in>, "/etc/codex/config.toml", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+27    openat(AT_FDCWD</s/codex-in>, "/s/codex/config.toml", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_CLOEXEC) = 10</s/codex/config.toml>
+25    openat(AT_FDCWD</s/codex-in>, "/s/codex/config.toml", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 10</s/codex/config.toml>
+25    mkdirat(AT_FDCWD</s/codex-in>, "/s/codex", 0777) = -1 EEXIST (File exists)
+25    openat(AT_FDCWD</s/codex-in>, "/s/codex/.tmplL57dP", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 10</s/codex/.tmplL57dP>
+25    write(10</s/codex/.tmplL57dP>, "model = \"o3\"\n\n[mcp_servers.docs]"..., 122) = 122
+25    renameat(AT_FDCWD</s/codex-in>, "/s/codex/.tmplL57dP", AT_FDCWD</s/codex-in>, "/s/codex/config.toml") = 0
+23    openat(AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0/codex-arg0RcsxRw", O_RDONLY|O_LARGEFILE|O_NOFOLLOW|O_CLOEXEC|O_DIRECTORY) = 10</s/codex/tmp/arg0/codex-arg0RcsxRw>
+23    unlinkat(10</s/codex/tmp/arg0/codex-arg0RcsxRw>, "apply_patch", 0) = 0
+23    unlinkat(10</s/codex/tmp/arg0/codex-arg0RcsxRw>, ".lock", 0) = 0
+23    unlinkat(10</s/codex/tmp/arg0/codex-arg0RcsxRw>, "codex-linux-sandbox", 0) = 0
+23    unlinkat(10</s/codex/tmp/arg0/codex-arg0RcsxRw>, "codex-execve-wrapper", 0) = 0
+23    unlinkat(10</s/codex/tmp/arg0/codex-arg0RcsxRw>, "applypatch", 0) = 0
+23    unlinkat(AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0/codex-arg0RcsxRw", AT_REMOVEDIR) = 0

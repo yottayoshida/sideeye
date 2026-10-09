@@ -1,0 +1,18 @@
+state /s/aux/home/.gemini: 2 thread(s)/process(es) changed it
+- 30 (process of 22): 2 calls open-w=1 write=1
+    settings.json: open-w write
+- 37 (thread of 30, process of 22): 27 calls mkdirat=5 mkdirat(failed)=8 open-w=5 renameat=3 unlinkat=1 write=5
+    .: mkdirat(failed)
+    projects.json.39c555a6-0bf8-4ee6-9810-1d6ff35467d1.tmp: open-w write
+    projects.json.73e4302a-a027-45a9-bfd3-4396775dc417.tmp: open-w write
+    projects.json projects.json.39c555a6-0bf8-4ee6-9810-1d6ff35467d1.tmp: renameat
+    projects.json projects.json.73e4302a-a027-45a9-bfd3-4396775dc417.tmp: renameat
+    projects.json.lock: mkdirat mkdirat(failed) unlinkat
+    tmp/gemini-in: mkdirat mkdirat(failed)
+    tmp: mkdirat
+    tmp/gemini-in/.project_root: open-w write
+    history/gemini-in: mkdirat mkdirat(failed)
+    history: mkdirat
+    history/gemini-in/.project_root: open-w write
+    projects.json.353b0bd6-738f-43a4-9f98-97bfff5c993e.tmp: open-w write
+    projects.json projects.json.353b0bd6-738f-43a4-9f98-97bfff5c993e.tmp: renameat
