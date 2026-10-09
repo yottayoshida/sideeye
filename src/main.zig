@@ -1292,6 +1292,14 @@ fn phaseDefine(run: *Run) void {
     // realpath'd — state_abs already is, and the flag resolves here — or the /tmp
     // and /private/tmp spellings of the same directory would split on macOS.
     if (args.state_under) |su| {
+        // #717: preflight takes the range only with `--twice`, which empties and rebuilds the
+        // state before its second run; one observed run rebuilds nothing to confine. Here and
+        // not at the flag, so a probe adding the flag to a failing base command meets that
+        // command's own refusal first, as the recovery pair above does.
+        if (mode == .preflight and !args.twice) {
+            undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
+            setupError(.define_invalid, "--state-under applies to preflight only with --twice, which rebuilds the state directory before its second run; one observed run rebuilds nothing");
+        }
         var su_z_buf: [contract.max_path]u8 = undefined;
         const su_z = std.fmt.bufPrintZ(&su_z_buf, "{s}", .{su}) catch {
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
@@ -1322,7 +1330,9 @@ fn phaseDefine(run: *Run) void {
             // `snapshotOrRefuse` above, same batch that introduced it (#266), found by the
             // review that followed the first fix rather than by the scan that accompanied
             // it. `su_abs` is operator-supplied and takes the same treatment for free.
-            setupError(.define_invalid, std.fmt.allocPrint(arena, "the case's state directory resolves outside the allowed range, or is the range itself: state {s}, --state-under {s}. Replay directly from the CLI, or set SIDEEYE_MCP_STATE_ROOT to the directory this case's state may live under", .{ textShown(arena, state_abs), textShown(arena, su_abs) }) catch "the case's state directory resolves outside the allowed range (--state-under)");
+            // #717: preflight `--twice` takes the range too, so the sentence names the state
+            // rather than the case's, and both ways past it.
+            setupError(.define_invalid, std.fmt.allocPrint(arena, "the state directory resolves outside the allowed range, or is the range itself: state {s}, --state-under {s}. Run it directly from the CLI, or set SIDEEYE_MCP_STATE_ROOT to the directory this state may live under", .{ textShown(arena, state_abs), textShown(arena, su_abs) }) catch "the state directory resolves outside the allowed range (--state-under)");
         }
     }
 
