@@ -6109,12 +6109,15 @@ fi
 
 echo ""
 echo "=========== check 5: sideeye demo — a first success that needs nothing written ==========="
-# The demo compiles its embedded planted-bug toy with this machine's C compiler and
-# self-execs an exploration. Expected exit is 1 — the planted bug found — which is what
+# The demo writes the planted-bug toy built into the binary (#715) and self-execs an
+# exploration. Expected exit is 1 — the planted bug found — which is what
 # makes it a smoke test of the binary + shim pair. The window has to be named: a demo
 # that "failed" without the counterexample would be smoke-testing nothing. No --shim:
-# the sibling/../lib discovery is part of what this check pins.
-o=$("$SIDEEYE" demo 2>&1)
+# the sibling/../lib discovery is part of what this check pins. And nothing on PATH at
+# all: the demo used to compile its toy with the first of cc, gcc and clang it found, and
+# refused with exit 3 "needs a C compiler" when none worked — which is what an engine from
+# before #715 answers here, so this run is also the leg that holds the toy built in.
+o=$(PATH=/nonexistent "$SIDEEYE" demo 2>&1)
 rc=$?
 ok=1
 [ "$rc" = "1" ] || ok=0
@@ -6122,7 +6125,7 @@ echo "$o" | grep -q "after  unlink(" || ok=0
 echo "$o" | grep -q "before rename(" || ok=0
 echo "$o" | grep -q "falsified before the run" || ok=0
 if [ "$ok" = "1" ]; then
-    echo "ok   the demo finds the planted bug (exit 1, window named, checker falsified)"
+    echo "ok   with no compiler on PATH the demo finds the planted bug (exit 1, window named, checker falsified)"
 else
     echo "FAIL demo: exit $rc"
     echo "$o" | sed 's/^/     | /' | head -8
@@ -6153,32 +6156,6 @@ if co=$(python3 "$ROOT/spike/check-completions.py" "$SIDEEYE" 2>&1); then
 else
     echo "FAIL completion scripts:"
     printf '%s\n' "$co" | sed 's/^/     | /' | head -10
-    fails=$((fails + 1))
-fi
-
-# The compiler ladder, exercised rather than claimed: a stub `cc` that always fails
-# must make the demo fall back to gcc — and the preamble names the compiler that won.
-STUB=/tmp/acc-ccstub
-rm -rf "$STUB" && mkdir -p "$STUB"
-printf '#!/bin/sh\nexit 1\n' > "$STUB/cc" && chmod +x "$STUB/cc"
-o=$(PATH="$STUB:$PATH" "$SIDEEYE" demo 2>&1)
-rc=$?
-if [ "$rc" = "1" ] && echo "$o" | grep -q "compiled the planted-bug tool with gcc"; then
-    echo "ok   a failing cc falls back to gcc, and the preamble says so"
-else
-    echo "FAIL compiler fallback: exit $rc"
-    echo "$o" | sed 's/^/     | /' | head -6
-    fails=$((fails + 1))
-fi
-
-# No compiler at all: the refusal names what to install, before any exploration starts.
-o=$(PATH=/nonexistent "$SIDEEYE" demo 2>&1)
-rc=$?
-if [ "$rc" = "3" ] && echo "$o" | grep -q "needs a C compiler"; then
-    echo "ok   with no compiler the demo refuses by name (exit 3)"
-else
-    echo "FAIL compiler-absent refusal: exit $rc"
-    echo "$o" | sed 's/^/     | /' | head -4
     fails=$((fails + 1))
 fi
 
@@ -11327,8 +11304,11 @@ cp "$ROOT"/zig-out/lib/libsideeye_shim.* "$SO_DIR/lib/"
 
 # Control: the same command, the same host, before the chown. The pair is what isolates
 # the variable — asserting a verdict instead would tie this leg to whether the host can
-# explore at all (measured: a bare Debian container compiles the demo's toy and then
-# answers UNKNOWN, which says nothing either way about the shim search).
+# explore at all (measured with the engine that still compiled the demo's toy: a bare
+# Debian container compiled it and then answered UNKNOWN, which says nothing either way
+# about the shim search; the engine that carries its toy (#715) reached FAIL in
+# debian:bookworm-slim with no compiler at all, measured 2026-10-09 — a host-dependent
+# verdict either way, which is why this leg compares rather than asserts one).
 env -i PATH="$PATH" "$SO_DIR/bin/sideeye" demo >"$SO_DIR/control.txt" 2>&1 || true
 if grep -qF "was not used" "$SO_DIR/control.txt"; then
     echo "FAIL control: an untouched prefix was already refused — the leg below would prove nothing"

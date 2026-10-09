@@ -501,11 +501,13 @@ jobs:
       # The demo is also the release workflow's smoke test; macOS is where its
       # no-oracle path lives (a FAIL stands on its own evidence, so the demo needs
       # neither strace nor --allow-unverified). The Linux side is covered by
-      # acceptance check 5 in the container.
-      - name: sideeye demo finds the planted bug
+      # acceptance check 5. PATH is emptied for the same reason as there (#715): the
+      # toy is built into the binary, and the runner's compiler must not be what makes
+      # the demo work.
+      - name: sideeye demo finds the planted bug with no compiler on PATH
         run: |
           set +e
-          out=$(./zig-out/bin/sideeye demo 2>&1)
+          out=$(PATH=/nonexistent ./zig-out/bin/sideeye demo 2>&1)
           rc=$?
           set -e
           echo "$out" | tail -25

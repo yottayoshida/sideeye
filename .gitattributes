@@ -23,7 +23,7 @@
 #                  shell that is actually maintained, and hiding them would
 #                  overstate how much of this repository is Zig.
 #   spike/toys/**  code. The only live directory: the planted-bug toys are
-#                  compiled by ci.yml and by `sideeye demo`.
+#                  compiled by ci.yml, and by build.zig for `sideeye demo`.
 #
 # Position carries the meaning, so neither a new record directory nor a new
 # top-level script needs a line here. A new *live directory* still does — that

@@ -169,7 +169,7 @@ const usage_fmt =
     \\  sideeye version
     \\  sideeye completions zsh|bash|fish
     \\
-    \\demo compiles a small planted-bug tool on this machine (it needs a C compiler)
+    \\demo writes a planted-bug tool built into this binary to a scratch directory
     \\and explores it, printing the same FAIL report a real finding produces. The
     \\expected exit code is 1 — the planted bug found — so the demo doubles as a
     \\smoke test of this binary and its shim.
