@@ -1,0 +1,10 @@
+# Round 2: codex writes config.toml from one thread; the two others make and clear tmp/arg0, the
+# directory of command-name links it sets up at every start. tmp is declared scratch, to see whether the
+# threads gate leaves a scratch path's writes out (transcripts/writers/codex/writers.txt).
+[world]
+state = "/s/codex"
+
+[define]
+operation = "codex mcp add notes -- /usr/bin/true --flag"
+cwd       = "/s/codex-in"
+scratch   = ["tmp"]

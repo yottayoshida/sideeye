@@ -48,3 +48,12 @@ who writes. If it is a log writer, a switch that turns logging off would remove 
 | target | prediction |
 |---|---|
 | rustic 0.11.4, prek 0.5.5, codex 0.160.0, steamguard-cli 0.18.4 (`RAYON_NUM_THREADS=1 TOKIO_WORKER_THREADS=1`) | the state written from a tokio blocking-pool thread beside the main thread (or a worker); no log writer among them, and no switch |
+
+After measuring them (`transcripts/writers.txt`): no log writer. rustic deletes on rayon's one worker while
+the main thread writes the new index; prek renames the old hook aside on one thread and writes the new one
+on another; steamguard writes the manifest and the account file from two. codex writes `config.toml` from
+one thread, and the other two make and clear `tmp/arg0`, its directory of command-name links.
+
+| target | step | prediction |
+|---|---|---|
+| codex 0.160.0 `mcp add` | `tmp` declared scratch | still `multiple_threads_detected`: a guess that the gate counts every write in the judged directory, scratch or not |
