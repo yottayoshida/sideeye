@@ -1,0 +1,6 @@
+state /s/lz4/state: 2 thread(s)/process(es) changed it
+- 24 (the first process): 4 calls fchmodat=1 open-w=1 unlinkat=1 write=1
+    f.bin.lz4: fchmodat open-w write
+    f.bin: unlinkat
+- 26 (thread of 24): 3 calls write=3
+    f.bin.lz4: write

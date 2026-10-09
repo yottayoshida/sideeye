@@ -1,0 +1,16 @@
+$ TRACE_MKDIR=/s/vercel NODE_OPTIONS=--require /ap/trace-mkdir.cjs vercel telemetry disable --global-config /s/vercel
+TRACE fs.mkdir /s/vercel
+    at fs.mkdir (/ap/trace-mkdir.cjs:7:53)
+    at file:///usr/local/lib/node_modules/vercel/dist/chunks/chunk-7IRKF3ZG.js:7:1018
+    at new Promise (<anonymous>)
+    at Object.mkdir (file:///usr/local/lib/node_modules/vercel/dist/chunks/chunk-7IRKF3ZG.js:7:925)
+    at module.exports.makeDir (file:///usr/local/lib/node_modules/vercel/dist/chunks/chunk-7IRKF3ZG.js:7:3848)
+    at file:///usr/local/lib/node_modules/vercel/dist/chunks/chunk-7IRKF3ZG.js:7:1205
+    at main (file:///usr/local/lib/node_modules/vercel/dist/index.js:14:327)
+Error: Failed to get package info: Error: Failed to fetch dist-tags from npm
+
+$ sed -n 14p dist/index.js, the call at column 327 and what follows
+try{await(0,import_fs_extra2.mkdirp)(VERCEL_DIR)}catch(err){return output_manager_default.error(`An unexpected error occurred while trying to create the global directory
+
+$ grep SHOULD_CHECK_FOR_UPDATES dist/index.js
+var SHOULD_CHECK_FOR_UPDATES=!process.env.NO_UPDATE_NOTIFIER&&!process.env.VERCEL,

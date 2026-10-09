@@ -1,0 +1,149 @@
+# Round 2: every capture's account from apparatus/writers.py as it stands (the first form read a relative
+# path's AT_FDCWD</cwd> as the state when the cwd was the state, and missed a relative open; both fixed, and
+# each account below re-read from its capture). Captures: writers/<target>/writers.state.strace.
+=== gemini
+state /s/aux/home/.gemini: 2 thread(s)/process(es) changed it
+- 30 (process of 22): 2 calls open-w=1 write=1
+    settings.json: open-w write
+- 37 (thread of 30, process of 22): 27 calls mkdirat=5 mkdirat(failed)=8 open-w=5 renameat=3 unlinkat=1 write=5
+    .: mkdirat(failed)
+    projects.json.39c555a6-0bf8-4ee6-9810-1d6ff35467d1.tmp: open-w write
+    projects.json.73e4302a-a027-45a9-bfd3-4396775dc417.tmp: open-w write
+    projects.json projects.json.39c555a6-0bf8-4ee6-9810-1d6ff35467d1.tmp: renameat
+    projects.json projects.json.73e4302a-a027-45a9-bfd3-4396775dc417.tmp: renameat
+    projects.json.lock: mkdirat mkdirat(failed) unlinkat
+    tmp/gemini-in: mkdirat mkdirat(failed)
+    tmp: mkdirat
+    tmp/gemini-in/.project_root: open-w write
+    history/gemini-in: mkdirat mkdirat(failed)
+    history: mkdirat
+    history/gemini-in/.project_root: open-w write
+    projects.json.353b0bd6-738f-43a4-9f98-97bfff5c993e.tmp: open-w write
+    projects.json projects.json.353b0bd6-738f-43a4-9f98-97bfff5c993e.tmp: renameat
+=== gemini-project
+state /s/gemini-in/.gemini: 1 thread(s)/process(es) changed it
+- 30 (process of 22): 2 calls open-w=1 write=1
+    settings.json: open-w write
+=== vercel
+state /s/vercel: 2 thread(s)/process(es) changed it
+- 22 (the first process): 14 calls mkdirat(failed)=5 open-w=3 renameat=3 write=3
+    .: mkdirat(failed)
+    telemetry-session.json.22.4481a32b-43a5-4d7f-82c7-a55df439656d.tmp: open-w write
+    telemetry-session.json telemetry-session.json.22.4481a32b-43a5-4d7f-82c7-a55df439656d.tmp: renameat
+    .config.json.22.1791534964158.tmp: open-w write
+    .config.json.22.1791534964158.tmp config.json: renameat
+    telemetry-session.json.22.09bbc4cf-2568-41d9-ab52-fec136ce92ac.tmp: open-w write
+    telemetry-session.json telemetry-session.json.22.09bbc4cf-2568-41d9-ab52-fec136ce92ac.tmp: renameat
+- 29 (thread of 22): 1 calls mkdirat(failed)=1
+    .: mkdirat(failed)
+=== vercel-nonotify
+state /s/vercel: 2 thread(s)/process(es) changed it
+- 22 (the first process): 18 calls fsync=1 mkdirat(failed)=5 open-w=4 pwrite64=1 renameat=4 write=3
+    .: mkdirat(failed)
+    telemetry-device.json.2801654808: fsync open-w pwrite64
+    telemetry-device.json telemetry-device.json.2801654808: renameat
+    telemetry-session.json.22.36b5f3e9-e794-46c1-a52b-09e72ade67e2.tmp: open-w write
+    telemetry-session.json telemetry-session.json.22.36b5f3e9-e794-46c1-a52b-09e72ade67e2.tmp: renameat
+    .config.json.22.1791535452564.tmp: open-w write
+    .config.json.22.1791535452564.tmp config.json: renameat
+    telemetry-session.json.22.cf18d801-b848-4cc1-8b76-b4974f79dd3a.tmp: open-w write
+    telemetry-session.json telemetry-session.json.22.cf18d801-b848-4cc1-8b76-b4974f79dd3a.tmp: renameat
+- 29 (thread of 22): 1 calls mkdirat(failed)=1
+    .: mkdirat(failed)
+=== bitwarden
+state /s/bitwarden/state: 2 thread(s)/process(es) changed it
+- 30 (the first process): 2 calls open-w=1 write=1
+    data.json: open-w write
+- 37 (thread of 30): 13 calls mkdirat=6 unlinkat=7
+    data.json.lock: mkdirat unlinkat
+=== tofu
+state /s/tofu: 1 thread(s)/process(es) changed it
+- 34 (thread of 32): 9 calls fsync=1 ftruncate=1 open-w=3 unlinkat=1 write=3
+    terraform.tfstate: fsync ftruncate open-w write
+    .terraform.tfstate.lock.info: open-w write
+    terraform.tfstate.1791534968.backup: open-w write
+    (relative) .terraform.tfstate.lock.info: unlinkat
+=== tofu-run2
+state /s/tofu: 1 thread(s)/process(es) changed it
+- 35 (thread of 33): 9 calls fsync=1 ftruncate=1 open-w=3 unlinkat=1 write=3
+    terraform.tfstate: fsync ftruncate open-w write
+    .terraform.tfstate.lock.info: open-w write
+    terraform.tfstate.1791535193.backup: open-w write
+    (relative) .terraform.tfstate.lock.info: unlinkat
+=== tofu-run3
+state /s/tofu: 1 thread(s)/process(es) changed it
+- 34 (thread of 32): 9 calls fsync=1 ftruncate=1 open-w=3 unlinkat=1 write=3
+    terraform.tfstate: fsync ftruncate open-w write
+    .terraform.tfstate.lock.info: open-w write
+    terraform.tfstate.1791535194.backup: open-w write
+    (relative) .terraform.tfstate.lock.info: unlinkat
+=== tofu-run4
+state /s/tofu: 1 thread(s)/process(es) changed it
+- 34 (thread of 31): 9 calls fsync=1 ftruncate=1 open-w=3 unlinkat=1 write=3
+    terraform.tfstate: fsync ftruncate open-w write
+    .terraform.tfstate.lock.info: open-w write
+    terraform.tfstate.1791535194.backup: open-w write
+    (relative) .terraform.tfstate.lock.info: unlinkat
+=== electrum
+state /s/electrum: 2 thread(s)/process(es) changed it
+- 35 (the first process): 3 calls open-w=1 unlinkat=1 write=1
+    wallets/default_wallet.tmptest.35: open-w unlinkat write
+- 37 (thread of 35): 8 calls fchmodat=1 fsync=1 open-w=2 renameat=1 unlinkat=1 write=2
+    wallets/default_wallet.tmptest.35: open-w unlinkat write
+    wallets/default_wallet.tmp.35: fchmodat fsync open-w write
+    wallets/default_wallet wallets/default_wallet.tmp.35: renameat
+=== basic-memory
+state /s/bm: 2 thread(s)/process(es) changed it
+- 68 (the first process): 1 calls renameat=1
+    notes/Plans.md notes/Plans.tmp: renameat
+- 84 (thread of 68): 3 calls mkdirat(failed)=1 open-w=1 write=1
+    notes: mkdirat(failed)
+    notes/Plans.tmp: open-w write
+=== rustic
+state /s/rustic/repo: 2 thread(s)/process(es) changed it
+- 132 (the first process): 6 calls fsync=1 ftruncate=1 mkdirat(failed)=1 open-w=1 renameat=1 write=1
+    index: mkdirat(failed)
+    index/a2cf6d7791674cf6b8582f5d3ac95128c46035108f180841e786c620764a1852-tmp-: fsync ftruncate open-w write
+    index/a2cf6d7791674cf6b8582f5d3ac95128c46035108f180841e786c620764a1852 index/a2cf6d7791674cf6b8582f5d3ac95128c46035108f180841e786c620764a1852-tmp-: renameat
+- 135 (thread of 132): 3 calls unlinkat=3
+    snapshots/b29f8da45ca2d9ebff4bb36365790084c45684a2ad29f89e0c34bb93a7e011a7: unlinkat
+    index/d687a07f3d6976c2071e35d66b1466de5093a59df038ea32839fac162a820be7: unlinkat
+    index/d2613f58c91f0a480fc03294c14d66fbdb3a0dd704d92b2354a24bdbfe605377: unlinkat
+=== prek
+state /s/prek/repo/.git/hooks: 2 thread(s)/process(es) changed it
+- 25 (the first process): 4 calls fchmodat=1 mkdirat(failed)=1 open-w=1 write=1
+    .: mkdirat(failed)
+    pre-commit: fchmodat open-w write
+- 30 (thread of 25): 1 calls renameat=1
+    pre-commit pre-commit.legacy: renameat
+=== codex
+state /s/codex: 3 thread(s)/process(es) changed it
+- 22 (the first process): 11 calls fchmodat=1 mkdirat=3 mkdirat(failed)=2 open-w=1 symlinkat=4
+    .: mkdirat(failed)
+    tmp/arg0: fchmodat mkdirat mkdirat(failed)
+    tmp: mkdirat
+    tmp/arg0/codex-arg0RcsxRw: mkdirat
+    tmp/arg0/codex-arg0RcsxRw/.lock: open-w
+    tmp/arg0/codex-arg0RcsxRw/apply_patch: symlinkat
+    tmp/arg0/codex-arg0RcsxRw/applypatch: symlinkat
+    tmp/arg0/codex-arg0RcsxRw/codex-linux-sandbox: symlinkat
+    tmp/arg0/codex-arg0RcsxRw/codex-execve-wrapper: symlinkat
+- 23 (thread of 22): 6 calls unlinkat=6
+    tmp/arg0/codex-arg0RcsxRw: unlinkat
+- 25 (thread of 23, thread of 22): 4 calls mkdirat(failed)=1 open-w=1 renameat=1 write=1
+    .: mkdirat(failed)
+    .tmplL57dP: open-w write
+    .tmplL57dP config.toml: renameat
+=== steamguard
+state /s/sg: 2 thread(s)/process(es) changed it
+- 26 (the first process): 3 calls fdatasync=1 open-w=1 write=1
+    manifest.json: fdatasync open-w write
+- 28 (thread of 26): 3 calls fdatasync=1 open-w=1 write=1
+    alice.maFile: fdatasync open-w write
+=== lz4-bd
+state /s/lz4/state: 2 thread(s)/process(es) changed it
+- 24 (the first process): 4 calls fchmodat=1 open-w=1 unlinkat=1 write=1
+    f.bin.lz4: fchmodat open-w write
+    f.bin: unlinkat
+- 26 (thread of 24): 3 calls write=3
+    f.bin.lz4: write

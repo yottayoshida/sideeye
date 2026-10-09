@@ -1,0 +1,6 @@
+state /s/bm: 2 thread(s)/process(es) changed it
+- 68 (the first process): 1 calls renameat=1
+    notes/Plans.md notes/Plans.tmp: renameat
+- 84 (thread of 68): 3 calls mkdirat(failed)=1 open-w=1 write=1
+    notes: mkdirat(failed)
+    notes/Plans.tmp: open-w write

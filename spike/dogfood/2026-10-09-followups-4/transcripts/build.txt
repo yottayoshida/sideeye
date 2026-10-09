@@ -1,0 +1,77 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's (working tree)    sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's at tag v1.10.0     sha256 e3cb964274494696b688f0953fa6b112ef233db9dac6ddca43777cb9b0ddaef3
+build: NOTE the page's installer has moved since v1.10.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 2.73kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 1.4s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/12] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.28kB done
+#5 DONE 0.0s
+
+#6 [ 3/12] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#6 CACHED
+
+#7 [ 5/12] RUN for p in nodejs npm libfaketime faketime; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done | tee /tmp/apt-summary.txt
+#7 CACHED
+
+#8 [ 8/12] RUN sh /opt/install-sideeye.sh v1.10.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#8 CACHED
+
+#9 [ 4/12] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#9 CACHED
+
+#10 [ 7/12] COPY install-sideeye.sh /opt/install-sideeye.sh
+#10 CACHED
+
+#11 [ 2/12] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config zstd
+#11 CACHED
+
+#12 [ 6/12] RUN mkdir -p /opt/bin /tmp/dl /tmp/src && python3 -m venv /opt/py
+#12 CACHED
+
+#13 [ 9/12] RUN "$(cat /install.path)" version
+#13 CACHED
+
+#14 [10/12] RUN apt-get install -y --no-install-recommends dosfstools lz4 > /tmp/apt-1.log 2>&1 && echo "OK dosfstools lz4" || { echo MISSING; tail -3 /tmp/apt-1.log; }
+#14 1.357 OK dosfstools lz4
+#14 DONE 1.4s
+
+#15 [11/12] RUN set -eu; cd /tmp/dl; gh=https://github.com;     curl -fsSL -o upx.txz $gh/upx/upx/releases/download/v5.2.1/upx-5.2.1-arm64_linux.tar.xz; mkdir -p x-upx && tar xJf upx.txz -C x-upx; install -m 755 "$(find x-upx -type f -name upx | head -1)" /opt/bin/upx;     curl -fsSL -o argocd $gh/argoproj/argo-cd/releases/download/v3.5.3/argocd-linux-arm64; install -m 755 argocd /opt/bin/argocd;     curl -fsSL -o prefsCleaner.sh https://raw.githubusercontent.com/arkenfox/user.js/bb45863be796d331717e2b5d6e490f0d3e3cf93f/prefsCleaner.sh;     curl -fsSL -o user.js https://raw.githubusercontent.com/arkenfox/user.js/bb45863be796d331717e2b5d6e490f0d3e3cf93f/user.js;     mkdir -p /opt/arkenfox && install -m 755 prefsCleaner.sh /opt/arkenfox/prefsCleaner.sh && install -m 644 user.js /opt/arkenfox/user.js
+#15 DONE 30.0s
+
+#16 [12/12] RUN { for c in "upx --version" "argocd version --client --short" "lz4 --version"; do printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; echo "prefsCleaner $(grep -m1 -i version /opt/arkenfox/prefsCleaner.sh)"; } | tee /versions.txt
+#16 0.159 upx --version: upx 5.2.1
+#16 0.166 argocd version --client --short: argocd: v3.5.3+c9c369e
+#16 0.205 lz4 --version: *** lz4 v1.10.0 64-bit multithread, by Yann Collet ***
+#16 0.207 prefsCleaner ## version: 2.1
+#16 DONE 0.2s
+
+#17 exporting to image
+#17 exporting layers
+#17 exporting layers 6.4s done
+#17 exporting manifest sha256:2f727be3a4f35b54b322a6563a2f978792d554c7f40dac03a6389e2af20302da
+#17 exporting manifest sha256:2f727be3a4f35b54b322a6563a2f978792d554c7f40dac03a6389e2af20302da done
+#17 exporting config sha256:d9ab1338f143bee371d832335e301dcdb8bc42e0f302fa8bfb380b8719ea33e0 done
+#17 exporting attestation manifest sha256:4ec54990c4aad6b0dfa5abf24675c26f10ff1a1c9d2c2753c5cd8600bfe176fd done
+#17 exporting manifest list sha256:9474a946f530b0392e4cb7c79a62da47c59eedf887b5f440c05adddf2c2716d3 done
+#17 naming to docker.io/library/sideeye-fu4-1009:latest done
+#17 unpacking to docker.io/library/sideeye-fu4-1009:latest
+#17 unpacking to docker.io/library/sideeye-fu4-1009:latest 4.3s done
+#17 DONE 10.8s
+build: sideeye-fu4-1009 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt

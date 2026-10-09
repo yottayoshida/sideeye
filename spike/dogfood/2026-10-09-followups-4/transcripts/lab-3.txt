@@ -1,0 +1,17 @@
+before:
+2008 terraform.tfstate
+rc 137
+after:
+193 .terraform.tfstate.lock.info
+0 terraform.tfstate
+2008 terraform.tfstate.1791535414.backup
+next tofu state list:
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mNo state file was found[0m
+[31m│[0m [0m
+[31m│[0m [0m[0mState management commands require a state file. Run this command in a
+[31m│[0m [0mdirectory where OpenTofu has been run or use the -state flag to point the
+after copying the backup back:
+terraform_data.a
+terraform_data.b
+terraform_data.c

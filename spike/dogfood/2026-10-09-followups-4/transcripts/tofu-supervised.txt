@@ -1,0 +1,4 @@
+probe supervised exit 2
+run1 UNKNOWN multiple_threads_detected | two threads of process 29 wrote in the judged directory: tid 32 performed write(/s/tofu/.terraform.tfstate.lock.info) and tid 34 performed open(/s/tofu/terraform.tfstate.1791535373.backup). Nothing the supervising engine recorded orders the first of those befo
+probe supervised exit 1
+run2 FAIL None | 

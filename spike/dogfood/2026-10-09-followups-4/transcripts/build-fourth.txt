@@ -1,0 +1,94 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's (working tree)    sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's at tag v1.10.0     sha256 e3cb964274494696b688f0953fa6b112ef233db9dac6ddca43777cb9b0ddaef3
+build: NOTE the page's installer has moved since v1.10.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 6.21kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 1.4s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/19] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.28kB done
+#5 DONE 0.0s
+
+#6 [12/19] RUN { for c in "upx --version" "argocd version --client --short" "lz4 --version"; do printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; echo "prefsCleaner $(grep -m1 -i version /opt/arkenfox/prefsCleaner.sh)"; } | tee /versions.txt
+#6 CACHED
+
+#7 [17/19] RUN { for c in "gemini --version" "vercel --version" "bw --version" "tofu version" "electrum version --offline" "basic-memory --version"; do printf '%s: ' "$c"; HOME=/tmp/vh sh -c "$c" < /dev/null 2>&1 | grep -v -i -E 'warn|deprecat' | head -1; done; } | tee -a /versions.txt
+#7 CACHED
+
+#8 [15/19] RUN apt-get install -y --no-install-recommends libsecp256k1-dev > /tmp/apt-3.log 2>&1 && echo "OK libsecp256k1" || { echo MISSING; tail -3 /tmp/apt-3.log; }
+#8 CACHED
+
+#9 [16/19] RUN python3 -m venv /opt/el && ELECTRUM_ECC_DONT_COMPILE=1 /opt/el/bin/pip install --no-cache-dir       "https://download.electrum.org/4.8.2/Electrum-4.8.2.tar.gz" cryptography > /tmp/pip-el.log 2>&1;     echo "pip electrum exit: $?"; ln -s /opt/el/bin/electrum /opt/bin/electrum;     /opt/py/bin/pip install --no-cache-dir basic-memory==0.23.2 > /tmp/pip-bm.log 2>&1; echo "pip basic-memory exit: $?"
+#9 CACHED
+
+#10 [ 2/19] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config zstd
+#10 CACHED
+
+#11 [ 3/19] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#11 CACHED
+
+#12 [ 8/19] RUN sh /opt/install-sideeye.sh v1.10.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#12 CACHED
+
+#13 [ 7/19] COPY install-sideeye.sh /opt/install-sideeye.sh
+#13 CACHED
+
+#14 [ 6/19] RUN mkdir -p /opt/bin /tmp/dl /tmp/src && python3 -m venv /opt/py
+#14 CACHED
+
+#15 [13/19] RUN for p in @google/gemini-cli@0.62.0 vercel@62.2.0 @bitwarden/cli@2026.8.0; do       npm install -g --no-fund --no-audit "$p" > /tmp/npm-$(echo $p | tr /@ __).log 2>&1 && echo "OK $p" || { echo "FAILED $p"; tail -2 /tmp/npm-$(echo $p | tr /@ __).log; };     done
+#15 CACHED
+
+#16 [10/19] RUN apt-get install -y --no-install-recommends dosfstools lz4 > /tmp/apt-1.log 2>&1 && echo "OK dosfstools lz4" || { echo MISSING; tail -3 /tmp/apt-1.log; }
+#16 CACHED
+
+#17 [ 4/19] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#17 CACHED
+
+#18 [ 5/19] RUN for p in nodejs npm libfaketime faketime; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done | tee /tmp/apt-summary.txt
+#18 CACHED
+
+#19 [ 9/19] RUN "$(cat /install.path)" version
+#19 CACHED
+
+#20 [11/19] RUN set -eu; cd /tmp/dl; gh=https://github.com;     curl -fsSL -o upx.txz $gh/upx/upx/releases/download/v5.2.1/upx-5.2.1-arm64_linux.tar.xz; mkdir -p x-upx && tar xJf upx.txz -C x-upx; install -m 755 "$(find x-upx -type f -name upx | head -1)" /opt/bin/upx;     curl -fsSL -o argocd $gh/argoproj/argo-cd/releases/download/v3.5.3/argocd-linux-arm64; install -m 755 argocd /opt/bin/argocd;     curl -fsSL -o prefsCleaner.sh https://raw.githubusercontent.com/arkenfox/user.js/bb45863be796d331717e2b5d6e490f0d3e3cf93f/prefsCleaner.sh;     curl -fsSL -o user.js https://raw.githubusercontent.com/arkenfox/user.js/bb45863be796d331717e2b5d6e490f0d3e3cf93f/user.js;     mkdir -p /opt/arkenfox && install -m 755 prefsCleaner.sh /opt/arkenfox/prefsCleaner.sh && install -m 644 user.js /opt/arkenfox/user.js
+#20 CACHED
+
+#21 [14/19] RUN set -eu; cd /tmp/dl; curl -fsSL -o tofu.tgz https://github.com/opentofu/opentofu/releases/download/v1.13.1/tofu_1.13.1_linux_arm64.tar.gz;     mkdir -p x-tofu && tar xzf tofu.tgz -C x-tofu && install -m 755 "$(find x-tofu -type f -name tofu | head -1)" /opt/bin/tofu
+#21 CACHED
+
+#22 [18/19] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/rustic-rs/rustic/releases/download/v0.11.4/rustic-v0.11.4-aarch64-unknown-linux-gnu.tar.gz rustic.tgz;     get $gh/j178/prek/releases/download/v0.5.5/prek-aarch64-unknown-linux-gnu.tar.gz prek.tgz;     get $gh/openai/codex/releases/download/rust-v0.160.0/codex-aarch64-unknown-linux-musl.tar.gz codex.tgz;     get $gh/dyc3/steamguard-cli/releases/download/v0.18.4/steamguard-linux-aarch64 steamguard;     for t in rustic prek codex; do mkdir -p y-$t && tar xzf $t.tgz -C y-$t; done;     install -m 755 "$(find y-rustic -type f -name rustic | head -1)" /opt/bin/rustic;     install -m 755 "$(find y-prek -type f -name prek | head -1)" /opt/bin/prek;     install -m 755 "$(find y-codex -type f -name 'codex*' | head -1)" /opt/bin/codex;     install -m 755 steamguard /opt/bin/steamguard;     { for c in "rustic --version" "prek --version" "codex --version" "steamguard --version"; do printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; } | tee -a /versions.txt
+#22 CACHED
+
+#23 [19/19] RUN set -eu; cd /tmp/dl; curl -fsSL -o easyrsa.tgz https://github.com/OpenVPN/easy-rsa/releases/download/v3.2.7/EasyRSA-3.2.7.tgz;     mkdir -p x-easyrsa && tar xzf easyrsa.tgz -C x-easyrsa; d=$(dirname "$(find /tmp/dl/x-easyrsa -type f -name easyrsa | head -1)");     cp -a "$d" /opt/easyrsa && ln -sf /opt/easyrsa/easyrsa /opt/bin/easyrsa;     apt-get install -y --no-install-recommends openssl > /tmp/apt-4.log 2>&1 && echo "OK openssl" || { echo MISSING; tail -3 /tmp/apt-4.log; };     { for c in "easyrsa --version" "openssl version"; do printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; } | tee -a /versions.txt
+#23 0.916 tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.metadata:kMDItemTextContentLanguage'
+#23 1.510 OK openssl
+#23 1.512 easyrsa --version: EasyRSA Version Information
+#23 1.518 openssl version: OpenSSL 3.5.7 9 Jun 2026 (Library: OpenSSL 3.5.7 9 Jun 2026)
+#23 DONE 1.5s
+
+#24 exporting to image
+#24 exporting layers 0.0s done
+#24 exporting manifest sha256:51272fc0996ff35fc8d66ed6748ac355ba2b0178dd39fbea877e5d0f17bae9cc done
+#24 exporting config sha256:8339fd2628eac0467a843eb64a7e0ebccb38d6d1ba091a5defd0cb176546e9c9 done
+#24 exporting attestation manifest sha256:7711714f3e54cea2cef386f5ea1801cb0e1517454480e5c066596f84a9ea5ff3 done
+#24 exporting manifest list sha256:bec1729991ef50cabe8a5fd87f991836fcf5d774d0085dd73bf09f36cfdc164d done
+#24 naming to docker.io/library/sideeye-fu4-1009:latest done
+#24 unpacking to docker.io/library/sideeye-fu4-1009:latest 0.0s done
+#24 DONE 0.1s
+build: sideeye-fu4-1009 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt

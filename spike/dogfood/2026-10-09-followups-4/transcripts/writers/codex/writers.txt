@@ -1,0 +1,17 @@
+state /s/codex: 3 thread(s)/process(es) changed it
+- 22 (the first process): 11 calls fchmodat=1 mkdirat=3 mkdirat(failed)=2 open-w=1 symlinkat=4
+    .: mkdirat(failed)
+    tmp/arg0: fchmodat mkdirat mkdirat(failed)
+    tmp: mkdirat
+    tmp/arg0/codex-arg0RcsxRw: mkdirat
+    tmp/arg0/codex-arg0RcsxRw/.lock: open-w
+    tmp/arg0/codex-arg0RcsxRw/apply_patch: symlinkat
+    tmp/arg0/codex-arg0RcsxRw/applypatch: symlinkat
+    tmp/arg0/codex-arg0RcsxRw/codex-linux-sandbox: symlinkat
+    tmp/arg0/codex-arg0RcsxRw/codex-execve-wrapper: symlinkat
+- 23 (thread of 22): 6 calls unlinkat=6
+    tmp/arg0/codex-arg0RcsxRw: unlinkat
+- 25 (thread of 23, thread of 22): 4 calls mkdirat(failed)=1 open-w=1 renameat=1 write=1
+    .: mkdirat(failed)
+    .tmplL57dP: open-w write
+    .tmplL57dP config.toml: renameat

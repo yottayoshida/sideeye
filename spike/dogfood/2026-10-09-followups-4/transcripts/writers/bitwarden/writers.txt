@@ -1,0 +1,5 @@
+state /s/bitwarden/state: 2 thread(s)/process(es) changed it
+- 30 (the first process): 2 calls open-w=1 write=1
+    data.json: open-w write
+- 37 (thread of 30): 13 calls mkdirat=6 unlinkat=7
+    data.json.lock: mkdirat unlinkat

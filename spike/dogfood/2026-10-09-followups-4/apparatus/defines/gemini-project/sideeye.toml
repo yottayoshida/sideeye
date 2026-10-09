@@ -1,0 +1,8 @@
+# Round 2: `gemini mcp add` at its default scope, project, writes the project's .gemini/settings.json;
+# the registry the second thread writes (projects.json, tmp/, history/) stays in the home's .gemini.
+[world]
+state = "/s/gemini-in/.gemini"
+
+[define]
+operation = "gemini mcp add notes /usr/bin/true --flag"
+cwd       = "/s/gemini-in"

@@ -1,0 +1,6 @@
+state /s/tofu: 1 thread(s)/process(es) changed it
+- 35 (thread of 33): 9 calls fsync=1 ftruncate=1 open-w=3 unlinkat=1 write=3
+    terraform.tfstate: fsync ftruncate open-w write
+    .terraform.tfstate.lock.info: open-w write
+    terraform.tfstate.1791535193.backup: open-w write
+    (relative) .terraform.tfstate.lock.info: unlinkat

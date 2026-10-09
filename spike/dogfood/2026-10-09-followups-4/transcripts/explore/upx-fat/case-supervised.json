@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/upx",
+    "operation": "upx -q /s/upx/prog",
+    "cwd": "/s/upx",
+    "expected_status": 0
+  },
+  "k": 34,
+  "ops_total": 34,
+  "prefix_hash": "407e24ecef906881",
+  "after_class": "unlink",
+  "after_path": "/s/upx/prog",
+  "before_class": "rename",
+  "before_path": "/s/upx/prog.upx",
+  "violation": "missing"
+}

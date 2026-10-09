@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/ffprofile",
+    "operation": "setpriv --reuid=1000 --regid=1000 --clear-groups bash ./prefsCleaner.sh -s -d",
+    "cwd": "/s/ffprofile",
+    "expected_status": 0
+  },
+  "k": 3,
+  "ops_total": 7,
+  "prefix_hash": "5f8e03980bf2e121",
+  "after_class": "rename",
+  "after_path": "/s/ffprofile/prefs.js",
+  "before_class": "open",
+  "before_path": "/s/ffprofile/prefs.js",
+  "violation": "missing"
+}
