@@ -11,6 +11,10 @@ mcaselector and ckan matched only the .debs this run installed into the box; roo
 candidate in trixie.
 
 Run once from the repository root; it refuses if the campaign already has rows.
+After this script ran, the owner approved both drafts' full text and they were filed as
+SubtitleEdit/subtitleedit#15829 and Querz/mcaselector#613; the two funnel rows were then moved to
+`filed`/`awaiting` by hand, beside two lines in spike/upstream-reports.tsv, the markers in
+docs/target-classes.md and two aliases. The shim defect is #753.
 """
 import sys
 from pathlib import Path

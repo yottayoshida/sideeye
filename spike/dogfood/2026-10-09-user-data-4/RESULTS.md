@@ -17,18 +17,18 @@ aside first, f2 leaves a half-renamed batch, chdman a CHD with an unreferenced t
 write a temporary file and rename it (cookcli, buildx, ifcpatch, atac, rpk); libdeflate-gzip writes a new
 file and removes its input, and hunspell appends.
 
-**Nothing was filed upstream in this run; two drafts wait for the owner.** The bar is 2026-09-07's, as
+**Two reports filed upstream, with the owner's approval of each full text.** The bar is 2026-09-07's, as
 2026-10-07 applied it: a report goes out only for data the user cannot get back, from the tool's own
 documented command. Two FAILs meet it. Subtitle Edit's `seconv --overwrite` (the documented in-place option,
 the codespell and rubocop axis of 2026-09-16) empties the subtitle it converts. MCA Selector's chunk deletion
 leaves the region file absent and its replacement only in the system temp directory — though its README's
 first warning is to back up the world, the reading that closed `oxipng#873`. Both are reproduced without
-Sideeye by strace's `inject`, against the current upstream source, and drafted (`report-seconv.md`,
-`report-mcaselector.md`). The rest lose settings and keys a user re-issues (2026-10-05's precedent for
+Sideeye by strace's `inject`, against the current upstream source, and filed as SubtitleEdit/subtitleedit#15829
+(`report-seconv.md`) and Querz/mcaselector#613 (`report-mcaselector.md`). The rest lose settings and keys a user re-issues (2026-10-05's precedent for
 `config set`), or nothing a rename, a reader or the tool's own command does not restore.
 
-The run also found a defect in Sideeye itself (below): the shim answers -1 for calls made before its own
-initialisation, which is what aborted iconvert and ROOT.
+The run also found a defect in Sideeye itself (below), filed as #753: the shim answers -1 for calls made before
+its own initialisation, which is what aborted iconvert and ROOT.
 
 ## Wave 1
 
@@ -36,7 +36,7 @@ initialisation, which is what aborted iconvert and ROOT.
 |---|---|---|---|
 | scw 2.65.1 `config set default-region=fr-par` | **FAIL** 1/3, crash point 2 of 2 (supervised) | `config.yaml` opened truncating and the kill before its write: 140 → 0 bytes; the file where scw keeps a profile's access and secret keys | not filed: settings and keys a user re-issues (2026-10-05's precedent for `config set`) |
 | f2 2.2.2 `-f IMG_ -r trip_ -x` | **FAIL** 2/4, crash point 2 of 3 (supervised, checker) | killed between the first and second rename: `trip_1.jpg` beside `IMG_2.jpg` and `IMG_3.jpg`, a half-renamed batch. Its undo record is written after the renames (`lab-1.txt`), so a batch killed part-way leaves none for `f2 -u` | not filed: every photo's bytes are whole under one name or the other |
-| SeConv (Subtitle Edit) 5.2.0 `subs.srt subrip --offset:-2000 --overwrite` | **FAIL** 1/4, crash point 3 of 3 | `subs.srt` opened, `ftruncate` to 0 and the kill before its write: 175 → 0 bytes, the old text nowhere. Reproduced without Sideeye by `strace -P … -e inject=pwrite64:signal=KILL` (`lab-19.txt`, `lab-21.txt`); `main` writes the same way (`File.WriteAllText` in `SaveTextFormat`) | **drafted, not filed** (`report-seconv.md`) — the owner's call |
+| SeConv (Subtitle Edit) 5.2.0 `subs.srt subrip --offset:-2000 --overwrite` | **FAIL** 1/4, crash point 3 of 3 | `subs.srt` opened, `ftruncate` to 0 and the kill before its write: 175 → 0 bytes, the old text nowhere. Reproduced without Sideeye by `strace -P … -e inject=pwrite64:signal=KILL` (`lab-19.txt`, `lab-21.txt`); `main` writes the same way (`File.WriteAllText` in `SaveTextFormat`) | **SubtitleEdit/subtitleedit#15829** (`report-seconv.md`) |
 | OpenTimelineIO 0.18.1 `otiotool -i cut.otio --redact -o cut.otio` | **FAIL** 1/3, crash point 2 of 2 | `cut.otio` opened truncating and the kill before its write: 5,208 → 0 bytes | not filed: in place only when `-o` names the input, which the tutorial does not do (2026-10-07's TiddlyWiki reading) |
 | cookcli 0.38.0 `pantry add dairy eggs --quantity 6` | **PASS** 6/6 (supervised) | `.pantry.conf.<pid>.tmp` written, `fsync`ed and renamed over `pantry.conf` — the shape its tracker's `#431` moved the shopping list to | — |
 
@@ -44,7 +44,7 @@ initialisation, which is what aborted iconvert and ROOT.
 
 | target | verdict | where | report |
 |---|---|---|---|
-| MCA Selector 2.9 `--mode delete --query "InhabitedTime < 1000"` | **FAIL** 1/3, crash point 2 of 2 | the new region written to `/tmp`, then `unlink` of `region/r.0.0.mca`, and the kill before the rename: the region file absent (32,768 bytes before), its replacement only in `/tmp/r.0.0.mca<digits>.tmp`. The JDK's `Files.move(…, REPLACE_EXISTING)` unlinks the target before it renames (OpenJDK's `UnixFileSystem.move`), and copies instead when `/tmp` is another filesystem. Reproduced without Sideeye (`lab-20.txt`, `lab-21.txt`); `master` saves the same way | **drafted, not filed** (`report-mcaselector.md`) — the owner's call; the README's first warning asks for a backup of the world |
+| MCA Selector 2.9 `--mode delete --query "InhabitedTime < 1000"` | **FAIL** 1/3, crash point 2 of 2 | the new region written to `/tmp`, then `unlink` of `region/r.0.0.mca`, and the kill before the rename: the region file absent (32,768 bytes before), its replacement only in `/tmp/r.0.0.mca<digits>.tmp`. The JDK's `Files.move(…, REPLACE_EXISTING)` unlinks the target before it renames (OpenJDK's `UnixFileSystem.move`), and copies instead when `/tmp` is another filesystem. Reproduced without Sideeye (`lab-20.txt`, `lab-21.txt`); `master` saves the same way | **Querz/mcaselector#613** (`report-mcaselector.md`); the README's first warning asks for a backup of the world, and the report says closing it is fine |
 | netmaker's nmctl 1.7.0 `context set c1 …` | **FAIL** 1/3, crash point 2 of 2 (supervised) | `config.yml` opened truncating and the kill before its write: 75 → 0 bytes, every context and its master key | not filed: endpoints and keys a user re-issues |
 | libdeflate 1.26 `libdeflate-gzip notes.txt` | **PASS** 4/4 with a checker (`defines/libdeflate/check.sh`: the text survives in `notes.txt` or inside `notes.txt.gz`) | `notes.txt.gz` created `O_EXCL`, one write, close, then `unlink` of the input; no `fsync`. Without the checker it was `nothing_could_fail` (`explore/libdeflate-nocheck/`): no path exists before and after | — |
 | stack 3.11.1 `config set install-ghc false --global` | **FAIL** 1/117, crash point 116 of 116 (supervised; the SQLite caches scratch) | `config.yaml` opened without `O_TRUNC`, truncated and the kill before its write: 255 → 0 bytes | not filed: settings |
@@ -89,7 +89,7 @@ iconvert met the same refusal as rootrm on the page's path and is in the slate, 
 ## What the run says about Sideeye v1.10.0
 
 - **The shim breaks a target whose libraries call an interposed function from their own constructors.**
-  OpenImageIO's iconvert and conda-forge's ROOT both abort under the shim and exit 0 by hand. Ten lines of
+  Filed as #753. OpenImageIO's iconvert and conda-forge's ROOT both abort under the shim and exit 0 by hand. Ten lines of
   C++ reproduce it (`apparatus/lab-24.sh`, `transcripts/lab-24.txt`): a `std::thread` started from a shared
   library's static constructor ends `std::system_error` "Unknown error -1" with the shim preloaded, and a
   `std::ifstream` of `/dev/urandom` read from one fails; started from `main`, the thread runs. Under the
@@ -97,7 +97,7 @@ iconvert met the same refusal as rootrm on the page's path and is in the slate, 
   real functions in its own `.init_array` (`resolveAll` in `shim/src/common.zig`), and its call-through
   sites answer -1 while a symbol is unresolved — 39 of them `orelse return -1`, `pthread_create` among
   them, whose callers expect an error number, not -1. Another library's constructor can run first. Not in
-  the tracker (searched by `init_array`, `constructor`, `Unknown error -1`). On the page's path the target
+  the tracker before #753 (searched by `init_array`, `constructor`, `Unknown error -1`). On the page's path the target
   reads `recording_run_failed` whose next step is to run the operation by hand — which succeeds, so the
   step cannot lead past it; `--observe supervised`, which loads no shim, judged iconvert.
 - **Qt's save is refused by a class wall.** Kvantum's manager and Hydrogen's h2cli both end

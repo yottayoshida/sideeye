@@ -4,7 +4,12 @@ at the end of the refusals table. Run once from the repository root; refuses if 
 already in the file. 2026-10-07's script, rewritten for this run's twenty-two. Every number is the
 engine's (apparatus/verdicts.py, transcripts/verdicts.txt, the evidence bundles' consequence tables).
 
-No backticked word holds a `/`: acceptance check 11 reads such a word as a path in this repository."""
+No backticked word holds a `/`: acceptance check 11 reads such a word as a path in this repository.
+After this script ran, the owner approved both drafts' full text and they were filed as
+SubtitleEdit/subtitleedit#15829 and Querz/mcaselector#613; the two funnel rows were then moved to
+`filed`/`awaiting` by hand, beside two lines in spike/upstream-reports.tsv, the markers in
+docs/target-classes.md and two aliases. The shim defect is #753.
+"""
 from pathlib import Path
 
 R = "`spike/dogfood/2026-10-09-user-data-4/RESULTS.md`"

@@ -158,3 +158,5 @@ atac	-	outcome-funnel.tsv (Julien-cpsn/ATAC; trixie's atac is a genome-assembly 
 ckan	-	outcome-funnel.tsv (KSP-CKAN; trixie has none, the box's .deb matched by name)
 rpk	-	outcome-funnel.tsv (Redpanda's rpk; trixie has none)
 kafkactl	-	outcome-funnel.tsv (deviceinsight/kafkactl; trixie has none)
+Subtitle Edit's SeConv 5.2.0 `subs.srt subrip --offset:-2000 --overwrite`	-	upstream-reports.tsv (Subtitle Edit; trixie has none)
+MCA Selector 2.9 `--mode delete --query "InhabitedTime < 1000"`	-	upstream-reports.tsv (trixie has none)

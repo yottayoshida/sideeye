@@ -8,7 +8,7 @@ This is a list of counterexamples, not a badge: nothing on it says a tool is saf
 
 <!-- found:begin -->
 
-35 reports: 5 fixed upstream and re-measured, 1 fixed upstream, 28 filed, 1 withdrawn.
+37 reports: 5 fixed upstream and re-measured, 1 fixed upstream, 30 filed, 1 withdrawn.
 
 | Tool | Report | State | As of |
 |---|---|---|---|
@@ -46,6 +46,8 @@ This is a list of counterexamples, not a badge: nothing on it says a tool is saf
 | PyMOL 3.1.0 (Debian) `save` of a `.pse` | [schrodinger/pymol-open-source#520](https://github.com/schrodinger/pymol-open-source/issues/520) | filed (awaiting) | 2026-10-05 |
 | ffsubsync 0.5.1 `--overwrite-input` | [smacke/ffsubsync#240](https://github.com/smacke/ffsubsync/issues/240) | filed (awaiting) | 2026-10-05 |
 | WP-CLI 2.12.0 `config set` | [wp-cli/config-command#233](https://github.com/wp-cli/config-command/issues/233) | filed (awaiting) | 2026-10-05 |
+| Subtitle Edit's SeConv 5.2.0 `subs.srt subrip --offset:-2000 --overwrite` | [SubtitleEdit/subtitleedit#15829](https://github.com/SubtitleEdit/subtitleedit/issues/15829) | filed (awaiting) | 2026-10-09 |
+| MCA Selector 2.9 `--mode delete --query "InhabitedTime < 1000"` | [Querz/mcaselector#613](https://github.com/Querz/mcaselector/issues/613) | filed (awaiting) | 2026-10-09 |
 | devtodo | [alecthomas/devtodo#9](https://github.com/alecthomas/devtodo/issues/9) | withdrawn | 2026-08-14 |
 
 <!-- found:end -->
