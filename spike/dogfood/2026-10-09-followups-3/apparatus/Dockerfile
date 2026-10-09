@@ -60,3 +60,20 @@ RUN set -u; cd /tmp/dl; gh=https://github.com; \
 RUN GOFLAGS=-mod=mod go install github.com/gsamokovarov/jump@v0.69.0 > /tmp/go-jump.log 2>&1; echo "go jump exit: $?"; install -m 755 /root/go/bin/jump /opt/bin/jump
 RUN for p in keyring==25.7.0 keyrings.alt==5.0.2; do /opt/py/bin/pip install --no-cache-dir "$p" > /tmp/pip-k.log 2>&1 && echo "OK $p" || echo "FAILED $p"; done
 RUN { for c in "bibtex-tidy --version" "dotenvx --version" "gemini --version" "gltf-transform --version" "vercel --version" "eslint --version" "prettier --version" "stylelint --version" "svgo --version" "joplin version" "bw --version" "npm --version" "tofu version" "doctl version" "infracost --version" "plakar version" "lighthouse --version" "git-lfs version" "jump --version" "/opt/py/bin/keyring --version"; do printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; for c in "cspell --version" "cap --version"; do printf '%s (node22): ' "$c"; PATH=/opt/node22/bin:$PATH sh -c "$c" < /dev/null 2>&1 | head -1; done; } | tee -a /versions.txt
+
+RUN install -m 755 "$(find /tmp/dl/x-infracost -type f -name 'infracost*' | head -1)" /opt/bin/infracost && infracost --version | tee -a /versions.txt
+
+# ---- the threads wall's last tools, each with its own switch for one thread ----
+RUN apt-get install -y --no-install-recommends zstd lz4 beets lame > /tmp/apt-3.log 2>&1 && echo "OK zstd lz4 beets lame" || { echo MISSING; tail -3 /tmp/apt-3.log; }
+RUN set -u; cd /tmp/dl; gh=https://github.com; \
+    get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; }; \
+    get $gh/rustic-rs/rustic/releases/download/v0.11.4/rustic-v0.11.4-aarch64-unknown-linux-gnu.tar.gz rustic.tgz; \
+    get $gh/j178/prek/releases/download/v0.5.5/prek-aarch64-unknown-linux-gnu.tar.gz prek.tgz; \
+    get $gh/openai/codex/releases/download/rust-v0.160.0/codex-aarch64-unknown-linux-musl.tar.gz codex.tgz; \
+    get $gh/dyc3/steamguard-cli/releases/download/v0.18.4/steamguard-linux-aarch64 steamguard; \
+    for t in rustic prek codex; do mkdir -p y-$t && tar xzf $t.tgz -C y-$t; done; \
+    install -m 755 "$(find y-rustic -type f -name rustic | head -1)" /opt/bin/rustic; \
+    install -m 755 "$(find y-prek -type f -name prek | head -1)" /opt/bin/prek; \
+    install -m 755 "$(find y-codex -type f -name 'codex*' | head -1)" /opt/bin/codex; \
+    install -m 755 steamguard /opt/bin/steamguard; \
+    { for c in "zstd --version" "lz4 --version" "beet version" "rustic --version" "prek --version" "codex --version" "steamguard --version"; do printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; } | tee -a /versions.txt

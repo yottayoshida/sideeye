@@ -35,3 +35,13 @@ column.
 | rustic 0.11.4, prek 0.5.5, codex 0.160.0, steamguard 0.18.4 | `RAYON_NUM_THREADS=1 TOKIO_WORKER_THREADS=1` | **not** past it: their file calls run on a blocking pool beside the worker |
 
 Not tried, with the reason: electrum and basic-memory (Python threads, no switch for one).
+
+## One step more for five of them (before these run)
+
+| target | step | prediction |
+|---|---|---|
+| zstd | `--no-asyncio` beside `--single-thread` (the I/O thread is on by default) | past the threads wall; PASS (a new output, the input removed after) |
+| lingui (Node 22) | `extract --workers 1` (its help: "to disable worker threads") | past `child_touched_state_dir`; FAIL (the catalogs written with `fs.writeFile`) |
+| dotenvx | `.env` and `.env.keys` scratch, `dotenvx get` as checker | FAIL: `.env.keys` and the encrypted `.env` are two files, and a crash between them leaves ciphertext with no key |
+| joplin | `database.sqlite` and `log.txt` scratch, `joplin ls` as checker | PASS: SQLite's journal keeps the database whole |
+| beets (`threaded: no`) | `preflight --twice` first, as the refusal says | the library database differs; then scratch and a checker |
