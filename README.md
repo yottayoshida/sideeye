@@ -80,7 +80,7 @@ A FAIL saves its counterexample under `<work>/cases/` and prints the `sideeye re
 
 **After the first find.** The finding is not the durable artifact — the declaration is. Re-ask after the tool changes with `explore --config`; a saved case answers `case no longer applies` rather than passing silently once the recording moves under it, which is what makes one worth keeping in CI ([docs/ci-quickstart.md](docs/ci-quickstart.md)). To hand a FAIL to the tool's maintainer, `sideeye evidence <case>` renders it as Markdown for their issue tracker ([docs/evidence.md](docs/evidence.md)).
 
-**From an agent.** `sideeye mcp` is a stateless MCP server with two tools, `sideeye_explore_config` and `sideeye_replay_case`. A config and a saved case are both commands it will run, and a replayed case empties the state directory it names — so run it in a container, over a directory made for it: [docs/mcp.md](docs/mcp.md).
+**From an agent.** `sideeye mcp` is a stateless MCP server serving `sideeye_explore_config`, `sideeye_replay_case` and `sideeye_evidence`. A config and a saved case are commands it will run, and a replay empties the state directory it names — so run it in a container, over a directory made for it: [docs/mcp.md](docs/mcp.md).
 
 ## Writing the check
 
