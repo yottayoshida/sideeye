@@ -41,3 +41,10 @@ OpenTofu's writes stayed on one thread in four strace runs, where follow-ups 3's
 |---|---|---|
 | gemini-cli 0.62.0 `mcp add` at the project scope, folder trusted | the page's path | past the threads wall; FAIL (`settings.json` truncated before its write, on the main thread) |
 | OpenTofu 1.13.1 `state rm`, `GOMAXPROCS=1` | `--observe supervised` twice more | `multiple_threads_detected` both times: each call waits on the engine long enough for the runtime to hand its P to another thread |
+
+Follow-ups 3 wrote that the four Rust targets' second writer is tokio's blocking pool, but never measured
+who writes. If it is a log writer, a switch that turns logging off would remove it, so they are measured too.
+
+| target | prediction |
+|---|---|
+| rustic 0.11.4, prek 0.5.5, codex 0.160.0, steamguard-cli 0.18.4 (`RAYON_NUM_THREADS=1 TOKIO_WORKER_THREADS=1`) | the state written from a tokio blocking-pool thread beside the main thread (or a worker); no log writer among them, and no switch |

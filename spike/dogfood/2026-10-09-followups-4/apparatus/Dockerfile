@@ -1,7 +1,8 @@
 # The box for the fourth round of 2026-10-09 follow-ups: the released Sideeye v1.10.0 beside the three targets
 # #678 left (upx, argocd, prefsCleaner), each to run on a FAT filesystem whose mount fixes the modes and owner
 # they need, and lz4. The base is 2026-10-09 follow-ups 3's, copied.
-# Round 2 adds the threads wall's six (gemini-cli, vercel, Bitwarden, OpenTofu, electrum, basic-memory) to find their writers.
+# Round 2 adds the threads wall's ten (gemini-cli, vercel, Bitwarden, OpenTofu, electrum, basic-memory, rustic, prek,
+# codex, steamguard-cli) to find their writers.
 FROM debian:trixie-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -49,3 +50,15 @@ RUN python3 -m venv /opt/el && ELECTRUM_ECC_DONT_COMPILE=1 /opt/el/bin/pip insta
     echo "pip electrum exit: $?"; ln -s /opt/el/bin/electrum /opt/bin/electrum; \
     /opt/py/bin/pip install --no-cache-dir basic-memory==0.23.2 > /tmp/pip-bm.log 2>&1; echo "pip basic-memory exit: $?"
 RUN { for c in "gemini --version" "vercel --version" "bw --version" "tofu version" "electrum version --offline" "basic-memory --version"; do printf '%s: ' "$c"; HOME=/tmp/vh sh -c "$c" < /dev/null 2>&1 | grep -v -i -E 'warn|deprecat' | head -1; done; } | tee -a /versions.txt
+RUN set -u; cd /tmp/dl; gh=https://github.com; \
+    get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; }; \
+    get $gh/rustic-rs/rustic/releases/download/v0.11.4/rustic-v0.11.4-aarch64-unknown-linux-gnu.tar.gz rustic.tgz; \
+    get $gh/j178/prek/releases/download/v0.5.5/prek-aarch64-unknown-linux-gnu.tar.gz prek.tgz; \
+    get $gh/openai/codex/releases/download/rust-v0.160.0/codex-aarch64-unknown-linux-musl.tar.gz codex.tgz; \
+    get $gh/dyc3/steamguard-cli/releases/download/v0.18.4/steamguard-linux-aarch64 steamguard; \
+    for t in rustic prek codex; do mkdir -p y-$t && tar xzf $t.tgz -C y-$t; done; \
+    install -m 755 "$(find y-rustic -type f -name rustic | head -1)" /opt/bin/rustic; \
+    install -m 755 "$(find y-prek -type f -name prek | head -1)" /opt/bin/prek; \
+    install -m 755 "$(find y-codex -type f -name 'codex*' | head -1)" /opt/bin/codex; \
+    install -m 755 steamguard /opt/bin/steamguard; \
+    { for c in "rustic --version" "prek --version" "codex --version" "steamguard --version"; do printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; } | tee -a /versions.txt
