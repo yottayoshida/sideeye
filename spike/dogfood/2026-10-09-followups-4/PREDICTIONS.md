@@ -29,3 +29,15 @@ documents stops one of them. Measured with `strace -f` on the state's paths, out
 | basic-memory 0.23.2 | the note from one thread, the SQLite index from aiosqlite's connection thread. No switch |
 | goaccess 1.12 `--persist` (read, not run) | the shared mapping is the tpl library's, which writes every database file through one: no switch |
 | rrdtool 1.9 `update` (read, not run) | the mapping is compiled in (`HAVE_MMAP`); no switch at run time |
+
+After the first measurement (`transcripts/writers.txt`): gemini-cli's second thread writes only the home's
+registry (`projects.json` with its lock, `tmp/`, `history/`), and `mcp add` at its default scope, project,
+writes the project's `.gemini/settings.json` from the main thread alone. On the way, an untrusted folder
+(the default) had that file wiped down to the new server: gemini-cli #29465, known, fixed on its main by
+#29583 after 0.63.0 (`transcripts/lab-2.txt`). So the define trusts the folder, in the home, outside the state.
+OpenTofu's writes stayed on one thread in four strace runs, where follow-ups 3's supervised run had two.
+
+| target | step | prediction |
+|---|---|---|
+| gemini-cli 0.62.0 `mcp add` at the project scope, folder trusted | the page's path | past the threads wall; FAIL (`settings.json` truncated before its write, on the main thread) |
+| OpenTofu 1.13.1 `state rm`, `GOMAXPROCS=1` | `--observe supervised` twice more | `multiple_threads_detected` both times: each call waits on the engine long enough for the runtime to hand its P to another thread |
