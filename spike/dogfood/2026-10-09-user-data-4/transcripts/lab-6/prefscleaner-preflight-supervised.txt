@@ -1,0 +1,16 @@
+
+
+UNKNOWN  recording_run_failed
+         the second observed run exited 1 where 0 was expected, although the first run of the same command succeeded: the two runs cannot be compared
+next        The second run started from the state the restore rebuilt for it — the names, kinds and bytes under --state, not their modes, owners or timestamps — and ended differently. A tool that checks the mode of a file under --state (an executable bit, a 0600 key) ends this way, and Sideeye cannot judge one yet; otherwise what the operation depends on lies outside --state or does not repeat (a lock, the clock). Run the operation twice by hand after the setup and compare; if what it needs lives in another directory, point --state at one that holds both.
+cwd         /s/ffprofile
+
+expected    exit 0
+atomicity   3 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that — it runs without an oracle — so it inherits this finding, and what each world does check is that the operations before its crash point are the ones the recording numbered; the subject's image replaced 7 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

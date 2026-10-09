@@ -1,0 +1,4 @@
+IfcOpenShell/IfcOpenShell                  4/10  pass       label=(none matched; last issues of any label)
+KSP-CKAN/CKAN                              6/10  pass       label=bug
+hydrogen-music/hydrogen                    8/10  pass       label=bug
+root-project/root                          4/10  pass       label=bug

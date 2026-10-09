@@ -1,0 +1,7 @@
+PLAIN fly exit=0 state=changed  (Updated target: ci)
+PLAIN kafkactl exit=0 state=changed  ()
+PLAIN rpk exit=0 state=changed  (Set current profile to "a".)
+PLAIN atac exit=0 state=changed  ()
+PLAIN ckan exit=0 state=unchanged  (1.8      False )
+PLAIN ckan seed-failed: grep: /s/ksp/game/CKAN/compatible_ksp_versions.json: No such file or directory
+PLAIN ckan exit=0 state=changed  (1.7      False )

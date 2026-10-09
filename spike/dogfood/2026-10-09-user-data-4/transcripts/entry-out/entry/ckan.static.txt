@@ -1,0 +1,2 @@
+static: /usr/bin/ckan: POSIX shell script, ASCII text executable
+next: sideeye explore --state /s/ksp/game/CKAN --cwd "/s/ckan-in" --operation "ckan compat add 1.7 --headless" \

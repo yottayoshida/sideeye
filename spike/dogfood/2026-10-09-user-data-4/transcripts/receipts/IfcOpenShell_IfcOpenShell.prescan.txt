@@ -1,0 +1,822 @@
+== novelty pre-scan: IfcOpenShell/IfcOpenShell
+== date: 2026-10-09T02:19:11Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9847 open 2026-10-07 Fix serializer crashes with mixed curve and solid items
+      #9666 open 2026-09-29 Bonsai: fix Activate Drawing crash for punctuated drawing names
+      #9261 open 2026-08-05 ifctester: fix crash on IFC2X3 material properties
+      #9198 open 2026-07-31 ifcpatch: AssignConstituentFractions crashes on any IFC2X3 file
+      #9186 open 2026-07-31 Bonsai: fix nest label crash off-screen
+      #9175 open 2026-07-31 Bonsai: guard non-IFC active object crash
+      #9187 open 2026-07-31 ifctester: fix crash on unset layer material
+      #9170 open 2026-07-31 sequence: fix cascade_schedule crash on IFC2X3
+      #9176 open 2026-07-31 pset.edit_pset: fix untemplated list-value crash
+      #9185 open 2026-07-31 Bonsai: guard two nameless-entity crashes on import
+      #9173 open 2026-07-31 util: fix 2 crashes on unset optional attrs
+      #9171 open 2026-07-31 Bonsai: guard five crashes on valid IFC files
+      #9154 open 2026-07-30 ifc4d: guard two export crashes on valid IFC
+      #9144 open 2026-07-30 Bonsai: fix Shift+E crash with no representation
+      #9674 open 2026-09-29 Bonsai: fix BCF viewpoint line markup crash on modern Grease Pencil API
+      #8123 open 2026-05-29 Fix remove_drawing crash on corrupted drawing
+      #9428 open 2026-09-02 Bonsai: drawing a slab with an empty polyline crashes (#9426)
+      #9157 open 2026-07-30 ifcfm: fix four COBie export crashes on valid IFC
+      #9148 open 2026-07-30 util/api: fix two crashes reading unset optional attrs
+      #9762 open 2026-10-01 IfcConvert 0.9.0 Manifold: crash during opening subtraction and unsupported swept-disk solid
+  corrupt        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8123 open 2026-05-29 Fix remove_drawing crash on corrupted drawing
+      #8122 open 2026-05-29 Can't `bim.remove_drawing` a corrupt drawing
+      #8734 open 2026-07-18 Bonsai: don't let one bad element abort an entire drawing print
+      #8661 open 2026-07-16 IfcParse: don't abort when a string literal runs off the end of the file
+      #8312 open 2026-07-06 Bonsai: remove_drawing tolerates a drawing with no document (#6518)
+      #9367 open 2026-08-27 Fix data races in schema singleton init and logger causing crashes
+      #9060 open 2026-07-30 ifccsv: stop a blank spreadsheet cell writing "nan" into the model
+      #9045 open 2026-07-29 ifc4d: export and reimport resource-to-task allocation via CSV
+      #8339 open 2026-07-07 Bonsai: don't crash Add Bend on parallel/collinear MEP segments (#3932)
+      #9628 open 2026-09-29 selector: fail loudly instead of resolving dotted pset queries against the wrong pset
+      #8227 open 2026-07-01 Error when printing
+      #8318 open 2026-07-06 Skip quantity takeoff for elements with empty geometry (#7147)
+      #9133 open 2026-07-30 Bonsai: add missing poll() to six operators that throw on first use
+      #9621 open 2026-09-29 Bonsai: editing a window/door no longer overwrites attributes of occurrences owning their own geometry
+      #8708 open 2026-07-17 Bonsai: mark predefined property sets as read only in the pset editor
+      #9126 open 2026-07-30 util.element: fix KeyError in get_quantities(verbose=True), the twin of a fix already applied to get_properties
+      #9039 open 2026-07-29 Bonsai: resolve SVGFill hits against their own file, not the last linked model
+      #9762 open 2026-10-01 IfcConvert 0.9.0 Manifold: crash during opening subtraction and unsupported swept-disk solid
+      #9164 open 2026-07-30 cost: fix CostQuantities left empty on removal
+      #8488 open 2026-07-10 ifcgeom: drop collinear directrix vertices in sweeps (#1541)
+  corruption     44 hit(s) (all listed)
+      #9583 open 2026-09-24 IfcConvert segfaults on `IfcDoorLiningProperties`/`PanelProperties` during JSON export
+      #9162 open 2026-07-30 docs: fix seven broken api docstring examples
+      #8918 open 2026-07-24 selector, Bonsai: include classification system name in search and UI
+      #9164 open 2026-07-30 cost: fix CostQuantities left empty on removal
+      #6400 open 2025-03-20 Serious bug when changing units
+      #9748 closed 2026-09-30 IfcConvert 0.9.0: crash with the Manifold kernel (and silent CGAL-simple failure) on a wall with two openings
+      #4067 open 2023-12-01 Rounded object looks choppy in the svg
+      #4046 open 2023-11-25 Compile Issue In Centos | build-all.py
+      #9262 open 2026-08-05 Bonsai: Make dimensions & lines editable with fewer clicks (or hotkeys) and retain preview
+      #7998 open 2026-04-24 `bim.exclude_from_drawing` add a weird format...
+      #7523 open 2025-12-30 Fix: hybrid kernel sigsegv fallback (0.8.0)
+      #8795 closed 2026-07-20 Bonsai: warn before a unit change that would silently rescale the model
+      #9769 open 2026-10-01 CGAL kernel: vertex/face order of elements with openings or booleans differs between identical conversions (single-threaded too)
+      #8691 merged 2026-07-17 ifcwrap: keep geometry's owning element alive to fix silent data corruption
+      #4130 open 2023-12-19 SvgSerializer error
+      #8341 merged 2026-07-07 ifcopenshell: atomic file writes to prevent corruption on interrupted save (#4797)
+      #8516 closed 2026-07-11 Bonsai: re-orthonormalize item placement in Item Mode (#6996)
+      #8670 merged 2026-07-17 Size entity attribute storage to schema arity, not token count
+      #8370 merged 2026-07-07 ifcgeom: clone mapped items before in place mutation to fix nondeterministic multithreaded geometry (#8050)
+      #9115 closed 2026-07-30 ifc4d: stop zero-duration milestones importing as one-day tasks
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3586 open 2023-08-15 Place the schedule on the sheet, but later change the column widths, the schedule gets truncated. 
+      #9232 open 2026-08-03 Grid axis viewport labels truncate AxisTags that contain a dot (e.g. `a.1` → `a`)
+      #9309 open 2026-08-15 Bonsai: drawing generation crashes on unreadable linework cache instead of regenerating it
+      #9830 open 2026-10-06 0.9.0 SPF files: by_guid misses charset-legal but invalid-base64 GlobalIds that 0.8.5 matched verbatim
+      #3499 open 2023-07-24 Wrong string value parsed from the file
+      #8453 closed 2026-07-10 ifcparse: don't segfault on truncated / fuzzed STEP files (#6750)
+      #7945 open 2026-04-17 Basic (MEP) IFC file cannot be opened
+      #8473 closed 2026-07-10 ifcparse: report INVALID_SYNTAX on a truncated file instead of success (#3460)
+      #6102 open 2025-02-06 IfcConvert breaks positioning with "--site-local-placement"  enabled
+      #9311 open 2026-08-15 fix(drawing): harden linework generation against bad cache and degene…
+      #8227 open 2026-07-01 Error when printing
+      #8337 open 2026-07-07 Bonsai: round length attributes to model precision on write (#3129)
+      #8784 closed 2026-07-19 ifcgeom: fix --site-local-placement breaking relative positions with nested IfcSites
+      #7821 closed 2026-03-20 [IfcConvert] Error converting ifc to xml
+      #9604 closed 2026-09-25 build(deps): bump ty from 0.0.81 to 0.0.84
+      #9538 merged 2026-09-18 build(deps): bump ruff from 0.16.6 to 0.16.7
+      #9539 merged 2026-09-18 build(deps): bump ty from 0.0.79 to 0.0.81
+      #8866 open 2026-07-23 Open PR review index, whole repository
+      #9451 closed 2026-09-04 build(deps): bump ty from 0.0.74 to 0.0.77
+      #8986 closed 2026-07-25 util.date: keep microseconds when parsing and formatting
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9234 open 2026-08-03 Bonsai: grid axis label truncation and duplicate axis objects (#9232)
+      #9082 open 2026-07-30 ifc4d: stop MSP and P6 export truncating sub-day durations
+      #9232 open 2026-08-03 Grid axis viewport labels truncate AxisTags that contain a dot (e.g. `a.1` → `a`)
+      #3586 open 2023-08-15 Place the schedule on the sheet, but later change the column widths, the schedule gets truncated. 
+      #3499 open 2023-07-24 Wrong string value parsed from the file
+      #3129 open 2023-05-09 Floor height precision loss
+      #3683 open 2023-08-31 BlenderBim - custom text size pixel view does not reflect in viewport
+      #9309 open 2026-08-15 Bonsai: drawing generation crashes on unreadable linework cache instead of regenerating it
+      #3353 open 2023-06-27 Similar text size for annotations in different dpi
+      #9830 open 2026-10-06 0.9.0 SPF files: by_guid misses charset-legal but invalid-base64 GlobalIds that 0.8.5 matched verbatim
+      #7945 open 2026-04-17 Basic (MEP) IFC file cannot be opened
+      #8453 closed 2026-07-10 ifcparse: don't segfault on truncated / fuzzed STEP files (#6750)
+      #8338 open 2026-07-07 bonsai(drawing): make viewport annotation text size resolution independent (#3353, #3683)
+      #6102 open 2025-02-06 IfcConvert breaks positioning with "--site-local-placement"  enabled
+      #8473 closed 2026-07-10 ifcparse: report INVALID_SYNTAX on a truncated file instead of success (#3460)
+      #9311 open 2026-08-15 fix(drawing): harden linework generation against bad cache and degene…
+      #8540 closed 2026-07-12 util.doc: stop truncating entity, type, pset and property descriptions at the first paragraph (#4624)
+      #8337 open 2026-07-07 Bonsai: round length attributes to model precision on write (#3129)
+      #6964 open 2025-07-30 Increase accuracy in decimal rounding for Resource Schedule Cost Calculation
+      #8227 open 2026-07-01 Error when printing
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9837 open 2026-10-06 ifctester: reject empty mandatory facet values
+      #9733 open 2026-09-29 Bonsai: guard load decorations on empty members
+      #9831 open 2026-10-06 [Ifctester] PropertyFacet should raise a validation error if baseName is empty
+      #9273 open 2026-08-06 ifctester: prohibited attribute passes when empty
+      #9625 open 2026-09-29 Guard append_asset against an empty aggregate attribute (#7261)
+      #2848 open 2023-03-09 IfcOpenshell.org C++ examples are empty 
+      #9717 open 2026-09-29 Reject an empty cut unless the tools cover the element
+      #9258 open 2026-08-05 api: five removal functions write empty aggregates
+      #9164 open 2026-07-30 cost: fix CostQuantities left empty on removal
+      #9459 open 2026-09-08 docs: write the five empty IFC concept sections (#9456)
+      #9419 open 2026-09-01 ExtractElements / append_asset: IfcPresentationLayerAssignment copied with empty AssignedItems (SET [1:?])
+      #9428 open 2026-09-02 Bonsai: drawing a slab with an empty polyline crashes (#9426)
+      #8318 open 2026-07-06 Skip quantity takeoff for elements with empty geometry (#7147)
+      #9094 open 2026-07-30 Bonsai: stop the classification level browser crashing on empty and IFC2X3 libraries
+      #9165 open 2026-07-30 ifcopenshell.api: five removal functions write empty aggregates that the schema forbids
+      #8452 open 2026-07-10 serializers: fix empty-optional dereference in glTF finalize (separate Z-up node)
+      #9095 open 2026-07-30 Bonsai: return an empty list, not None, from the relating type enum callback
+      #9105 open 2026-07-30 util.cost: stop get_product_quantity_names resurrecting names after an empty intersection
+      #8997 open 2026-07-26 Bonsai: Quick Create authors a real door type on IFC2X3, not an empty one
+      #9218 open 2026-08-01 Bonsai: switching a representation onto an empty object crashes in record_object_materials (NoneType BIMMeshProperties)
+  atomic         39 hit(s) (all listed)
+      #9367 open 2026-08-27 Fix data races in schema singleton init and logger causing crashes
+      #6926 open 2025-07-20 IFCGeom.dll shared libs for windows
+      #6885 open 2025-07-06 Ifcgit: simple conflict resolution
+      #9125 open 2026-07-30 api: fix an orphaned boundary condition and two crashes on default input
+      #9240 open 2026-08-03 dev_environment.py: survive a locked file while symlinking
+      #7523 open 2025-12-30 Fix: hybrid kernel sigsegv fallback (0.8.0)
+      #3072 open 2023-04-29 Drawing generation speed optimisation
+      #8341 merged 2026-07-07 ifcopenshell: atomic file writes to prevent corruption on interrupted save (#4797)
+      #1725 open 2021-09-06 mingw-w64 builds fail due to "export ordinal too large"
+      #4797 closed 2024-06-04 Save to temporary file and rename to prevent file corruption during file write
+      #2173 closed 2022-04-28 where is the latest HDF5 code?
+      #9031 open 2026-07-28 Bonsai: Blender crash when dragging camera size after 1st creation
+      #1185 open 2020-12-18 build-deps.cmd fails on Win10 with Visual Studio 2019 x64
+      #8088 closed 2026-05-21 Gizmo enhancements
+      #1993 closed 2022-01-18 Windows install does not work in Visual Studio 2022
+      #7330 closed 2025-11-09 Latest build is failing to load on Mac arm64
+      #6745 closed 2025-05-23 build-deps.cmd - replace standard python installer to make script more consistent
+      #6276 closed 2025-03-05 run-cmake.bat cmake error - SET_TARGET_PROPERTIES called with incorrect number of arguments. 
+      #4744 closed 2024-05-26 v0.8.0 C++ boost dependency build failing
+      #4411 closed 2024-03-09 Link external IFC file fails if IFC file is on separate disk partition. 
+  atomically     6 hit(s) (all listed)
+      #6885 open 2025-07-06 Ifcgit: simple conflict resolution
+      #9125 open 2026-07-30 api: fix an orphaned boundary condition and two crashes on default input
+      #8341 merged 2026-07-07 ifcopenshell: atomic file writes to prevent corruption on interrupted save (#4797)
+      #4797 closed 2024-06-04 Save to temporary file and rename to prevent file corruption during file write
+      #8088 closed 2026-05-21 Gizmo enhancements
+      #1222 closed 2020-12-31 Refactor the BlenderBIM Add-on to perform incremental editing
+  interrupted    12 hit(s) (all listed)
+      #9311 open 2026-08-15 fix(drawing): harden linework generation against bad cache and degene…
+      #9309 open 2026-08-15 Bonsai: drawing generation crashes on unreadable linework cache instead of regenerating it
+      #8341 merged 2026-07-07 ifcopenshell: atomic file writes to prevent corruption on interrupted save (#4797)
+      #8400 open 2026-07-08 IfcConvert hangs forever (infinite loop in OCCT corner trimming) on IfcSweptDiskSolid with directrix segments much shorter than the disk radius
+      #8244 closed 2026-07-03 Bump ty from 0.0.32 to 0.0.56
+      #4797 closed 2024-06-04 Save to temporary file and rename to prevent file corruption during file write
+      #7165 closed 2025-09-26 Installation Process Speed
+      #3174 closed 2023-05-19 Remove `IFC Mode Set Object` warning?
+      #3461 merged 2023-07-17 fix choco_update action
+      #894 closed 2020-06-10 [SIGSEGV] using geom iterator
+      #2317 closed 2022-07-27 IfcStair From and To Levels
+      #936 closed 2020-07-29 Blender fails to import IFC2X3 "...\import_ifc.py", line 118, ...."
+  interrupt      26 hit(s) (all listed)
+      #9311 open 2026-08-15 fix(drawing): harden linework generation against bad cache and degene…
+      #1016 open 2020-09-24 [IfcConvert] Convert string error
+      #9309 open 2026-08-15 Bonsai: drawing generation crashes on unreadable linework cache instead of regenerating it
+      #1350 open 2021-02-28 Stuck when building deps
+      #7021 open 2025-08-12 Bonsai Feature request - 'Click' to add / remove ifc 'add button'
+      #8341 merged 2026-07-07 ifcopenshell: atomic file writes to prevent corruption on interrupted save (#4797)
+      #8400 open 2026-07-08 IfcConvert hangs forever (infinite loop in OCCT corner trimming) on IfcSweptDiskSolid with directrix segments much shorter than the disk radius
+      #8244 closed 2026-07-03 Bump ty from 0.0.32 to 0.0.56
+      #5753 closed 2024-11-15 Request for an ifc autosave feature
+      #7046 closed 2025-08-21 Bonsai - UI Bug - Snapping point offset from mouse pointer when using Measuring Tool
+      #4797 closed 2024-06-04 Save to temporary file and rename to prevent file corruption during file write
+      #7501 closed 2025-12-17 False-positive IfcPropertyListValue.WR31 error when ListValues is empty
+      #7165 closed 2025-09-26 Installation Process Speed
+      #6752 closed 2025-05-26 Fixes: Bat script failed even when you right-click on it, and run as administrator.
+      #5395 closed 2024-09-15 Bonsai v0.8 - Error when printing SVG - sometimes does not select camera before printing
+      #3174 closed 2023-05-19 Remove `IFC Mode Set Object` warning?
+      #4727 closed 2024-05-24 Decouple piecewise_function evaluation state from function definition to better support multi-threading
+      #3461 merged 2023-07-17 fix choco_update action
+      #3224 closed 2023-06-01 Error on `bim.activate_drawing`
+      #894 closed 2020-06-10 [SIGSEGV] using geom iterator
+  sigkill        0 hit(s)
+  sigint         1 hit(s) (all listed)
+      #228 closed 2017-06-13 IfcFile::init stalls
+  ctrl-c         38 hit(s) (all listed)
+      #9523 open 2026-09-17 fix(bonsai): extend walls to cursor from any base level
+      #7003 open 2025-08-07 Add true object mirroring operator
+      #5736 open 2024-11-11 Bonsai BoQ export file/browser
+      #6726 open 2025-05-21 Trying to join multiple items with ctrl+j
+      #7425 open 2025-11-27 Error when joining two objects
+      #7004 open 2025-08-07 Blender crashed when printing sheet
+      #8081 open 2026-05-19 Bonsai: Error when creating doortype
+      #6927 open 2025-07-20 Curved Stair Arrow (Bug or Feature Request?)
+      #8383 closed 2026-07-08 BonsaiPR latest Version from 0708
+      #1247 closed 2021-01-07 Merging two IFC files with different length units (mm and m)
+      #637 closed 2019-07-02 Segmentation fault 11
+      #7617 closed 2026-01-29 I get the following error when trying to run the dev_environment.py script
+      #7394 closed 2025-11-21 Blender 5.0.0:  CTRL+Z, Fatal error Blender_Bonsai
+      #7319 closed 2025-11-05 Unable to enable latest bleeding edge branch
+      #6603 closed 2025-04-22 Error when moving IfcElementAssembly
+      #6628 closed 2025-04-27 Blender crash stepping through code with a debugger
+      #6754 closed 2025-05-27 dev_environment.py
+      #6326 closed 2025-03-12 Accommodate user default preferences
+      #6648 closed 2025-05-02 Error using `shift + ctrl + d` with linked aggregate.
+      #6470 closed 2025-03-31 Error adding a new element with default container missing
+  power          45 hit(s) (all listed)
+      #8431 open 2026-07-09 Automatic idempotent regeneration of the filling/opening/voided element
+      #9281 merged 2026-08-08 Fix #9278: raise SI prefix to the length exponent in calculate_unit_scale for prefixed SQUARE_METRE/CUBIC_METRE
+      #9278 closed 2026-08-07 calculate_unit_scale applies SI prefix linearly for SQUARE_METRE/CUBIC_METRE (DECI CUBIC_METRE = litre → volumes ×100)
+      #8796 closed 2026-07-20 Bonsai: surface + explicitly fix mesh-converted walls whose length is on local Y (#7453)
+      #2476 open 2022-10-05 Add Thomas icons to BlenderBIM IFC classes
+      #3668 closed 2023-08-30 Drawing generation feature request : Having a crease threshold setting
+      #7453 closed 2025-12-07 When a mesh is converted into a wall orientation of the mesh is not parsed
+      #8945 open 2026-07-25 ExtractElements is taking an extremely long time to complete. It has been running for over 12 hours and is still not finished
+      #7762 closed 2026-03-09 IFC CSV BoQ Export with Element Linking
+      #7754 merged 2026-03-06 Bump black from 26.1.0 to 26.3.0
+      #6849 merged 2025-06-26 Draw attributes with search
+      #6838 merged 2025-06-23 Csv cost doc reference
+      #6653 closed 2025-05-03 `shift + click` on a drawing name that it automatically opens the preview of the drawing.
+      #6296 closed 2025-03-09 Bonsai - Flip walls / Shift-F breaks wall layer visualization
+      #3459 closed 2023-07-17 BlenderBIM : Add a New Selection
+      #5651 closed 2024-10-29 Improvements to the Sheets and Drawings panes [Enhancement]
+      #5761 closed 2024-11-18 Error removing drawing that has no drawing group
+      #4290 closed 2024-02-04 Decimal separator in ifcCsv
+      #3174 closed 2023-05-19 Remove `IFC Mode Set Object` warning?
+      #4622 closed 2024-05-05 IfcDoorStyle to IfcDoorType
+  outage         1 hit(s) (all listed)
+      #1121 closed 2020-11-22 My desktop flooded with .brep files
+  ENOSPC         0 hit(s)
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9825 open 2026-10-06 Bonsai: load settings before swept disk reload
+      #9790 open 2026-10-02 Test swept disk volume with an opening
+      #9762 open 2026-10-01 IfcConvert 0.9.0 Manifold: crash during opening subtraction and unsupported swept-disk solid
+      #9228 open 2026-08-02 dev_environment.py: detect Blender's bundled Python from disk
+      #3496 open 2023-07-23 Support for authoring swept disk solids ?
+      #5474 open 2024-09-24 Segfault when doing swept disk solid
+      #8425 open 2026-07-09 Bonsai: confirm before removing a sheet, which deletes files from disk (#5881)
+      #5473 open 2024-09-24 Regression in swept disk solid in v0.8
+      #8750 open 2026-07-19 Bonsai: add a UI entry point to author IfcSweptDiskSolid elements
+      #8595 open 2026-07-13 Fix IfcSweptDiskSolid directrix round-trip when updating representations
+      #8286 open 2026-07-05 Bonsai: don't assert on non-surface item styles in swept disk loader (#8194)
+      #8355 open 2026-07-07 Bonsai: guard curve edit-mode for non-annotation curves, keep annotation curves editable (#4813, #5025)
+      #9556 open 2026-09-20 Bonsai: renaming a sheet or drawing without saving leaves the model pointing at files that no longer exist
+      #8585 open 2026-07-13 Bonsai: restore sheet SVG on undo/redo of drawing removal (#7275)
+      #9227 open 2026-08-02 dev_environment.py: detect Blender's bundled Python from disk instead of a hardcoded version boundary
+      #9696 open 2026-09-29 ifcgeom: map IfcSphericalSurface so advanced-brep spheres render (#586)
+      #8941 open 2026-07-25 Bonsai: keep loaded classification libraries selectable without reloading
+      #8917 open 2026-07-24 Bonsai: fix Drawing Underlay 'Add Style' wiping previously saved shading styles
+      #9276 open 2026-08-06 Bonsai: warn before saving the .blend drops unsaved IFC edits
+      #8400 open 2026-07-08 IfcConvert hangs forever (infinite loop in OCCT corner trimming) on IfcSweptDiskSolid with directrix segments much shorter than the disk radius
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8692 open 2026-07-17 Bonsai: add tooltips to 67 operators in classification, document, group, layer, library and unit modules
+      #9828 open 2026-10-06 Fix by_guid for GlobalIds written to RocksDB
+      #8334 open 2026-07-07 Bonsai: don't crash the task time editor on malformed IfcDuration (#3091)
+      #8678 open 2026-07-17 Bonsai: allow assigning an IfcZone to another IfcZone via the Zones UI
+      #7523 open 2025-12-30 Fix: hybrid kernel sigsegv fallback (0.8.0)
+      #9847 open 2026-10-07 Fix serializer crashes with mixed curve and solid items
+      #9839 open 2026-10-06 Find GlobalIds shorter than 22 characters with by_guid
+      #8697 open 2026-07-17 Bonsai: add MEP junction fitting operator (tee, wye, cross)
+      #7237 open 2025-10-13 `IfcZone`: Allow to assign other `IfcZone` via UI
+      #8463 open 2026-07-10 ifcgeom: guard IfcGeom::serialise against null OCCT handles (#4926)
+      #8592 open 2026-07-13 Bonsai: don't crash save when an object's IFC entity no longer exists (#2778)
+      #8982 open 2026-07-25 Bonsai: add Create Fill Area From Profile
+      #8808 open 2026-07-20 SvgSerializer: only draw door swing arcs on the storey where the door is cut
+      #9393 open 2026-08-30 ifcgeom: fall back when convert_openings cleanly fails
+      #9848 open 2026-10-07 Stop get_info crashing on a reference cycle
+      #8856 open 2026-07-21 SvgSerializer: emit machine-readable space area attribute; fix double-escaped area label (#1308)
+      #3157 open 2023-05-15 BlenderBIM - Feature Request: update IfcOpeningElements when editing LayerThickness of IfcWallType
+      #9104 open 2026-07-30 Bonsai: stop Link IFC duplicating and reloading when a click is repeated
+      #8810 open 2026-07-20 ifcgeom: keep separate loops of a self-touching profile
+      #8793 closed 2026-07-19 ifcgeom: defer partial CGAL shells to the next hybrid kernel (fixes #8052)
+  incomplete     90 hit(s) (all listed)
+      #4624 open 2024-05-06 The description of most IfcElemenTypes is incomplete
+      #9784 open 2026-10-02 Assume radians when no plane angle unit exists
+      #8308 open 2026-07-06 Bonsai: don't cache a half-built IfcClassData on load failure (#6398)
+      #9283 open 2026-08-09 finish_editing_door/_window: crash when the filling's type has no representation; styles and material association dropped when it succeeds
+      #9086 open 2026-07-30 Bonsai: guard Calculate Object Volumes against non-manifold meshes
+      #9304 open 2026-08-15 Saikei: horizontal alignment authoring foundation for Bonsai (+ alignment API fixes)
+      #7670 open 2026-02-13 Fix #7655: Handle missing spline data in decoration.py
+      #8993 open 2026-07-26 Bonsai: tell the user how to recover missing dependencies (#8031)
+      #9168 open 2026-07-30 core.geometry: guard similar-opening lookups
+      #7244 open 2025-10-14 Web site documentation is missing and confusing
+      #4703 open 2024-05-20 DXF drawing missplaced?
+      #8278 open 2026-07-05 pset.edit_pset: keep booleans for LOGICAL measures (#7475)
+      #4448 open 2024-03-20 Lark UnexpectedCharacters Error
+      #8959 open 2026-07-25 Bonsai: remove deprecated mesh.add_* duplicate operators
+      #9511 open 2026-09-16 Pipe Bend Fittings not fully loading on opening of file
+      #9113 open 2026-07-30 ifc5d: fix four wrong-number defects in cost export, cost import and weight quantities
+      #6623 open 2025-04-25 IfcConvert: STEP model's scale is wrong?
+      #5667 open 2024-10-31 IFCConvert - Complex IFC walls with holes taking infinite time to convert to obj
+      #8952 open 2026-07-25 Proposal: batch relationship handling for ExtractElements / append_asset (measured ~200x on a real model)
+      #9372 open 2026-08-28 Bonsai: masonry above windows missing vs Solibri (uncontained elements hidden in Unsorted)
+  dataloss       0 hit(s)
+  recover        86 hit(s) (all listed)
+      #8993 open 2026-07-26 Bonsai: tell the user how to recover missing dependencies (#8031)
+      #8435 open 2026-07-10 util.representation: recover wall length from a rectangle profile body (#8011)
+      #8336 open 2026-07-07 Bonsai: recover extrusions from OCCT-duplicated verts, tessellate only when truly not an extrusion (#2851)
+      #8725 open 2026-07-18 ifcgeom: detect and recover from OCCT's silent no-op boolean cut
+      #9685 open 2026-09-29 Bonsai: convert a solid IfcWall to a real parametric wall
+      #9555 open 2026-09-20 Bonsai: a web API for tools that display and edit sheets without building them
+      #9716 open 2026-09-29 Retry a cut that reports success but removes nothing
+      #9255 open 2026-08-05 append_asset: IFC2X3 MEP ports are silently dropped (#9247)
+      #9311 open 2026-08-15 fix(drawing): harden linework generation against bad cache and degene…
+      #8699 open 2026-07-17 Bonsai: automate wall coverings (cladding, insulation) from wall side faces
+      #8477 open 2026-07-10 serializers: don't abort the whole SVG drawing when one element's HLR fails (#4130, #3849)
+      #8377 open 2026-07-08 Approximate swept solids in the taxonomy layer so cgal stops dropping IfcSweptDiskSolid (#8106)
+      #9240 open 2026-08-03 dev_environment.py: survive a locked file while symlinking
+      #9556 open 2026-09-20 Bonsai: renaming a sheet or drawing without saving leaves the model pointing at files that no longer exist
+      #7815 open 2026-03-18 Void not voiding at certain positions.
+      #9235 open 2026-08-03 Bug: GrossSideArea == NetSideArea in Bonsai QTO (openings not accounted for)
+      #486 open 2018-10-15 ifcopenshell.geom.tesselate instances not emitted when added as representation
+      #1501 open 2021-05-28 IFCConvert: Symbol error
+      #8491 closed 2026-07-10 ifcgeom: recover 2D-optimized boolean cuts dropped on retry (#5186)
+      #8031 open 2026-05-01 Bonsai Auto-Update on daily build fails
+  recovery       33 hit(s) (all listed)
+      #9239 open 2026-08-03 dev_environment.py: a locked file during symlinking leaves the extension half-linked with no recovery hint
+      #9557 open 2026-09-20 Bonsai: put back sheet files renamed in a session that was not saved
+      #9236 open 2026-08-03 Bonsai: fix side areas of walls running along Y
+      #7523 open 2025-12-30 Fix: hybrid kernel sigsegv fallback (0.8.0)
+      #9811 open 2026-10-04 Bonsai web costing: SUM edit raises unitBasisValue KeyError and stops queued actions
+      #8993 open 2026-07-26 Bonsai: tell the user how to recover missing dependencies (#8031)
+      #8492 open 2026-07-10 ifcgeom: warn when a representation is used both directly by a product and as a mapped item (#2248)
+      #8435 open 2026-07-10 util.representation: recover wall length from a rectangle profile body (#8011)
+      #8612 open 2026-07-16 bonsai: don't rebind Save target during Advanced-mode import preview (#8611)
+      #7873 open 2026-03-29 feat: comprehensive modernization and architectural refactoring
+      #8031 open 2026-05-01 Bonsai Auto-Update on daily build fails
+      #9554 open 2026-09-20 Bonsai: a web API for tools that display and edit sheets without building them
+      #8568 merged 2026-07-12 Fix segfault on autosave recovery dialog Cancel
+      #8521 closed 2026-07-11 ifcgeom: recover BRepCheck-valid non-manifold subtractions instead of dropping them (#620, #616)
+      #6956 open 2025-07-28 A bunch of stuff got consolidated or moved to the origin.
+      #8792 closed 2026-07-19 IfcParse: read back non-finite REALs serialized with a trailing dot
+      #8672 closed 2026-07-17 Bonsai: convert a solid IfcWall to a real parametric wall
+      #8491 closed 2026-07-10 ifcgeom: recover 2D-optimized boolean cuts dropped on retry (#5186)
+      #8793 closed 2026-07-19 ifcgeom: defer partial CGAL shells to the next hybrid kernel (fixes #8052)
+      #8243 merged 2026-07-03 Feature #5753 - Autosave for ifc files
+  rollback       18 hit(s) (all listed)
+      #8585 open 2026-07-13 Bonsai: restore sheet SVG on undo/redo of drawing removal (#7275)
+      #9304 open 2026-08-15 Saikei: horizontal alignment authoring foundation for Bonsai (+ alignment API fixes)
+      #7275 open 2025-10-22 If you `bim.remove_drawing_from_sheet` and then undo, the drawing is still removed from the sheet, when printing the svg.
+      #6422 open 2025-03-24 D&D Phase 1 item 01 - See drawing as they print in the Bonsai viewport
+      #1950 open 2021-12-18 Converting DXF to IFC
+      #7831 merged 2026-03-22 Fix crash after undo of assign_class on macOS (#7419)
+      #8088 closed 2026-05-21 Gizmo enhancements
+      #560 closed 2019-03-11 file SCHEMA of IFC2X2_FINAL is not supported?
+      #7193 merged 2025-10-04 cmake: Simplify hdf5 linkage
+      #6985 closed 2025-08-02 Bug in Blender 4.5.1, IFC Element add error
+      #5888 closed 2024-12-18 Blender crash on door creation
+      #4744 closed 2024-05-26 v0.8.0 C++ boost dependency build failing
+      #2200 closed 2022-05-15 blenderbim: rollback_link_element() check items exist before removing
+      #2839 closed 2023-03-06 Error adding a door after undo
+      #1544 closed 2021-07-01 testing "Create Project" undo operation
+      #1539 merged 2021-06-27 Experimental undo and redo Python prototype
+      #1399 closed 2021-03-22 Decouple data and usecases from BlenderBIM Add-on
+      #1475 closed 2021-05-19 Brainstorming general solutions to the "undo" problem
+  resume         14 hit(s) (all listed)
+      #9813 open 2026-10-04 Bonsai web costing: scrolling stutters when pointer crosses editable cells
+      #4556 open 2024-04-16 Grid and linear placement from Python
+      #7991 open 2026-04-22 Bonsai Mirror Function Just Copies Element
+      #7997 open 2026-04-23 Bonsai: Moving the objects and then saving the model causes the IfcOpenings to disappear.
+      #7996 open 2026-04-23 Bonsai: Duplicating elements causes certain elements to disappear.
+      #6305 closed 2025-03-10 Follow up on Issue #5507 | IfcFooting Quantity calculation issues
+      #7165 closed 2025-09-26 Installation Process Speed
+      #6433 closed 2025-03-24 Blender 4.4.0 hanging indefinitely loading an ifc file
+      #6406 closed 2025-03-21 Blender 4.4 !Bonsai Fatal Error
+      #4465 closed 2024-03-25 Issues running IDS 0.9.7 in IfcTester
+      #4039 closed 2023-11-22 Failling to find a property in a Pset in IfcTester.facet
+      #3579 closed 2023-08-12 import ifcopenshell brings up ModulNotFoundError
+      #999 closed 2020-09-16 IfcOpenShell creates entities with STEP ID 0 after adding to a file from another
+      #1737 closed 2021-09-14 BB: a few errors with voids
+  half-written   40 hit(s) (all listed)
+      #9124 open 2026-07-30 api: fix a 1000x placement error on shared matrices, and 2D profiles written as invalid IFC
+      #9840 open 2026-10-07 Bonsai: report dev environment symlink state in system info
+      #9469 open 2026-09-09 Bonsai: find a sheet's drawing by path when its data-id is stale
+      #8694 open 2026-07-17 Bonsai: opt-in space generation that follows sloping roofs and slabs
+      #9555 open 2026-09-20 Bonsai: a web API for tools that display and edit sheets without building them
+      #8868 open 2026-07-23 ifc5d: compute footing gross area, volume and outer surface on the ifcopenshell engine (#6305)
+      #9459 open 2026-09-08 docs: write the five empty IFC concept sections (#9456)
+      #9431 open 2026-09-02 Latest Daily Build 0.9.0 can't install
+      #9483 open 2026-09-12 Bonsai: add radial and helical arrays to bim.add_array
+      #8675 open 2026-07-17 Bonsai: watch the IFC file for external changes and reload in place
+      #8332 open 2026-07-07 ifc5d: measure segment length from geometry when it is not a supported extrusion
+      #8598 open 2026-07-13 Bonsai/ifcopenshell-python: support editing IfcPropertyBoundedValue properties
+      #9482 open 2026-09-12 Bonsai: radial (polar) arrays in bim.add_array, including multi-turn helices for spiral stairs
+      #9468 open 2026-09-09 Bonsai: removing a drawing from a sheet silently leaves it in the layout when data-id no longer matches the reference's STEP id
+      #790 open 2020-02-16 IfcConvert. The --use-element-hierarchy parameter for conversion .ifc in .glb
+      #9351 open 2026-08-23 Bonsai: scheduler: draw the cell borders a schedule's spreadsheet declares
+      #9340 open 2026-08-20 Bonsai: reduce CPU cost of the proximity snap path
+      #2535 open 2022-10-25 Clip multiple things (ifcwall, for example) with (1) IfcHalfSpaceSolid?
+      #2072 open 2022-02-28 Window opening holes in wall are missing
+      #5760 open 2024-11-17 BONSAI FEATURE: Export resource schedule into a CSV for further editing and re-importing
+  wipe           15 hit(s) (all listed)
+      #8917 open 2026-07-24 Bonsai: fix Drawing Underlay 'Add Style' wiping previously saved shading styles
+      #8720 open 2026-07-18 Bonsai: compose element visibility with the Status filter instead of overwriting it
+      #8585 open 2026-07-13 Bonsai: restore sheet SVG on undo/redo of drawing removal (#7275)
+      #8733 open 2026-07-18 Bonsai: preserve flow direction when splicing a bend into a duct connection
+      #6278 open 2025-03-05 when adding a bend (IfcDuctFitting) between two IfcDuctSegments the flow direction in the IfcDuctFitting looks wrong
+      #9547 merged 2026-09-20 Dev environment scripts: editable installs for Python, fix the binaries copy for Bonsai
+      #8789 closed 2026-07-19 Bonsai: preserve occurrence-local representations; type/occurrence tooling
+      #8114 merged 2026-05-28 Cache opening previews + dissolve fill
+      #8088 closed 2026-05-21 Gizmo enhancements
+      #8608 merged 2026-07-15 Classify projection edges in SVG elevations (#3668)
+      #2480 closed 2022-10-07 IfcTester webapp development
+      #6433 closed 2025-03-24 Blender 4.4.0 hanging indefinitely loading an ifc file
+      #6041 merged 2025-01-26 Linting-Workflow ---> v0.8.0 | Make wf only fail on syntax errors instead of unformatted code
+      #1257 closed 2021-01-13 Development and building under Linux
+      #1386 closed 2021-03-15 Blender 2.91.2 blenderbim plugin fails to load on OSX 10.13.6, with src built ifcwrap _ifcopenshell_wrapper.so.
+  wipes          4 hit(s) (all listed)
+      #8720 open 2026-07-18 Bonsai: compose element visibility with the Status filter instead of overwriting it
+      #8789 closed 2026-07-19 Bonsai: preserve occurrence-local representations; type/occurrence tooling
+      #8088 closed 2026-05-21 Gizmo enhancements
+      #6041 merged 2025-01-26 Linting-Workflow ---> v0.8.0 | Make wf only fail on syntax errors instead of unformatted code
+  erase          33 hit(s) (all listed)
+      #9602 open 2026-09-25 [AI-generated, unverified] ifcparse: erase a deleted instance from the aggregates that name it in place
+      #9717 open 2026-09-29 Reject an empty cut unless the tools cover the element
+      #9378 open 2026-08-29 Release per-storey HLR data after drawing
+      #4739 open 2024-05-26 Missunderstandind in the add button in Drawing Underlay
+      #9429 open 2026-09-02 serializers: give face_info ownership semantics so it cannot be shallow copied (#9380)
+      #9508 merged 2026-09-15 [AI-generated, unverified] ifcparse: make deleting and creating instances work on RocksDB-backed files
+      #6643 open 2025-05-01 Bonsai issues editing walls
+      #6618 open 2025-04-24 A preference to turn on/off the 'zoom extents' when an .ifc is originally opened.
+      #3072 open 2023-04-29 Drawing generation speed optimisation
+      #9502 merged 2026-09-15 [AI-generated, unverified] ifcopenshell-python: decide remove_deep2 containment in C++ without materializing inverses
+      #9460 merged 2026-09-09 [AI-generated, unverified] ifcparse: stop re-sorting the inverse index on every read after a write
+      #9520 merged 2026-09-17 [AI-generated, unverified] ifcparse: stop scanning a type's instance list when deleting an instance
+      #8299 merged 2026-07-06 IfcParse: don't strip delimiters from a single-character token (#5683)
+      #5360 open 2024-09-09 Optimize piecewise_function_evaluator.evaluate by eliminating unnecessary points in straight regions
+      #8400 open 2026-07-08 IfcConvert hangs forever (infinite loop in OCCT corner trimming) on IfcSweptDiskSolid with directrix segments much shorter than the disk radius
+      #9461 merged 2026-09-09 [AI-generated, unverified] ifcparse: stop scanning the whole inverse index when deleting an instance
+      #9467 merged 2026-09-09 [AI-generated, unverified] ifcparse: stop scanning the whole inverse index when deleting an instance (re-land of #9461)
+      #7534 open 2026-01-05 C++ datamodel v1.0
+      #5683 closed 2024-11-02 segfaults from bad IFC syntax
+      #7402 closed 2025-11-22 Can't install Bonsai on B4.55 and 5.00
+  erasing        6 hit(s) (all listed)
+      #4739 open 2024-05-26 Missunderstandind in the add button in Drawing Underlay
+      #9378 open 2026-08-29 Release per-storey HLR data after drawing
+      #6643 open 2025-05-01 Bonsai issues editing walls
+      #9460 merged 2026-09-09 [AI-generated, unverified] ifcparse: stop re-sorting the inverse index on every read after a write
+      #6059 closed 2025-01-29 Erasing things from an IFC file
+      #2171 merged 2022-04-28 Remove some memory leaks and add possibility to clear any resource allocated by registered schemas
+  erased         9 hit(s) (all listed)
+      #9717 open 2026-09-29 Reject an empty cut unless the tools cover the element
+      #9378 open 2026-08-29 Release per-storey HLR data after drawing
+      #9602 open 2026-09-25 [AI-generated, unverified] ifcparse: erase a deleted instance from the aggregates that name it in place
+      #3072 open 2023-04-29 Drawing generation speed optimisation
+      #7402 closed 2025-11-22 Can't install Bonsai on B4.55 and 5.00
+      #7006 closed 2025-08-08 Incorrect PredefinedType logic
+      #2264 closed 2022-07-05 Error when editing object attributes
+      #1905 merged 2021-11-30 Experimental get_inverse_cardinality proposal. See #1904.
+      #632 closed 2019-06-21 0.6.0b0 Arch package : Compile error
+  destroy        40 hit(s) (all listed)
+      #9212 open 2026-08-01 geometry.unassign_representation: stop destroying shared geometry (#9207)
+      #8610 open 2026-07-15 ifcpatch: fix MergeDuplicateTypes destroying distinct/cross-class types
+      #8743 open 2026-07-18 Bonsai: warn instead of silently destroying faces in the 3-point arc CAD tool
+      #9757 open 2026-10-01 Bonsai Viewer: ribbon disappears when a Qt style calls QMainWindow::menuBar() (Breeze/KDE)
+      #9012 open 2026-07-27 geometry.regenerate_wall_representation: create the Body context when missing
+      #8917 open 2026-07-24 Bonsai: fix Drawing Underlay 'Add Style' wiping previously saved shading styles
+      #9756 open 2026-09-30 Dropping an ifcopenshell.file retains about 145 bytes per instance on v0.9.0
+      #7969 open 2026-04-19 Preserve local view when exiting aggregate mode
+      #8609 open 2026-07-15 ifcpatch MergeDuplicateTypes: default merges distinct untagged types (data loss) and can crash on cross-class merges
+      #8749 open 2026-07-19 Bonsai: reconstruct light objects when reloading an IFC file
+      #8432 open 2026-07-10 Bonsai: stop deleting user-created Level (Section) annotations (#7450, #9215)
+      #9013 open 2026-07-27 Bonsai: cut the opening when the host and the void sit on different contexts
+      #9011 open 2026-07-27 Bonsai: recut a voided host from its active representation, not its context
+      #7986 open 2026-04-21 Use get class properties instead of get class
+      #9299 open 2026-08-14 Segfault when batch-deleting an IFC aggregate and its decomposed parts
+      #9378 open 2026-08-29 Release per-storey HLR data after drawing
+      #8070 open 2026-05-17 Leaked memory in `IfcPropertySingleValue.NominalValue` with a newly allocated `IfcValue`
+      #3072 open 2023-04-29 Drawing generation speed optimisation
+      #6684 open 2025-05-09 Type Inference Issue with ifcopenshell.file in mypy
+      #8784 closed 2026-07-19 ifcgeom: fix --site-local-placement breaking relative positions with nested IfcSites
+  destroys       5 hit(s) (all listed)
+      #7986 open 2026-04-21 Use get class properties instead of get class
+      #7969 open 2026-04-19 Preserve local view when exiting aggregate mode
+      #9212 open 2026-08-01 geometry.unassign_representation: stop destroying shared geometry (#9207)
+      #8609 open 2026-07-15 ifcpatch MergeDuplicateTypes: default merges distinct untagged types (data loss) and can crash on cross-class merges
+      #8088 closed 2026-05-21 Gizmo enhancements
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9078 open 2026-07-30 ifcsverchok: stop batched node inputs overwriting each other
+      #9673 open 2026-09-29 Bonsai: don't let a non-Body representation overwrite an imported wall (#8026)
+      #9091 open 2026-07-30 Bonsai: accumulate quantity names across quantity sets instead of overwriting
+      #9641 open 2026-09-29 Bonsai: uniquify drawing name on rename so SVGs don't overwrite each other (#5635)
+      #9621 open 2026-09-29 Bonsai: editing a window/door no longer overwrites attributes of occurrences owning their own geometry
+      #9353 open 2026-08-24 Bonsai: parametric window edit overwrites OverallWidth/OverallHeight on all occurrences of the type
+      #8720 open 2026-07-18 Bonsai: compose element visibility with the Status filter instead of overwriting it
+      #5635 open 2024-10-24 Drawings with the same title overwrite each other when created
+      #4779 open 2024-05-31 Material management: overwrite (2) or more different material/style definitions with another designated material/style. 
+      #8611 open 2026-07-16 File->Import->IFC (Geometry Only) can result in data loss.
+      #6727 open 2025-05-21 Bonsai "IFC Set Origin" for SweptSolid
+      #9406 closed 2026-08-31 Bonsai: editing a window/door no longer overwrites attributes of occurrences owning their own geometry
+      #9128 open 2026-07-30 ifcopenshell.util.sequence applies a single-day IfcWorkTime exception to every earlier date
+      #8625 open 2026-07-16 [Bonsai][5D] Incorrect Total Cost when multiple IfcCostValue entries use different UnitBasis values
+      #8677 open 2026-07-17 Bonsai: realign plate placement when a triangular profile is edited in 3D
+      #8555 closed 2026-07-12 Bonsai: don't let a non-Body representation overwrite an imported wall (#8026)
+      #6623 open 2025-04-25 IfcConvert: STEP model's scale is wrong?
+      #8532 closed 2026-07-12 Bonsai: uniquify drawing name on rename so SVGs don't overwrite each other (#5635)
+      #4782 open 2024-05-31 Distribute project-specific settings e.g. font preference doesn't seem to be remembered. 
+      #3463 open 2023-07-17 Update a type that's already in the project.
+  clobber        17 hit(s) (all listed)
+      #9640 open 2026-09-29 Bonsai: copy-property-to-selection must not edit the inherited type pset (#7412)
+      #9353 open 2026-08-24 Bonsai: parametric window edit overwrites OverallWidth/OverallHeight on all occurrences of the type
+      #8919 open 2026-07-24 Bonsai: add symbol name as CSS class on drawing annotation symbols
+      #8593 open 2026-07-13 Bonsai: set a default Axis on structural curve member/connection creation (#3067)
+      #3783 open 2023-09-21 Assets are not tracked in BBIM IFC Git repositories
+      #6885 open 2025-07-06 Ifcgit: simple conflict resolution
+      #9489 closed 2026-09-12 dev_environment.py: copy the runtime libraries next to the wrapper
+      #8567 merged 2026-07-12 Fix ci-bonsai-daily: get_dictionaries no longer clobbers injected bSDD client
+      #8870 open 2026-07-23 Tracking: get all CI workflows green on v0.9.0 (priority ask)
+      #8531 closed 2026-07-12 Bonsai: copy-property-to-selection must not edit the inherited type pset (#7412)
+      #8639 closed 2026-07-16 Bonsai: fix missing closing edge when importing a closed IfcPolyline profile for editing
+      #7581 closed 2026-01-18 IFC Git update to latest ifcmerge with error reporting
+      #7802 closed 2026-03-16 Fix #6392: when duplicating a window/door/etc, the associated IfcOpenElement duplicates as well.
+      #8608 merged 2026-07-15 Classify projection edges in SVG elevations (#3668)
+      #5564 closed 2024-10-12 cache is located in site_packages
+      #1529 closed 2021-06-17 style.add_style transparency sets opacity, and same-named styles are merged on import
+      #784 closed 2020-02-07 Proposed fix for #768
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9600 open 2026-09-25 `IfcConvert` fails (exit 1, "Type held ... is Blank and not string") when an `IfcElementQuantity` has a blank `GlobalId`
+      #9645 open 2026-09-29 Do not deduplicate appended assets by a blank name (#8045)
+      #9060 open 2026-07-30 ifccsv: stop a blank spreadsheet cell writing "nan" into the model
+      #9369 open 2026-08-28 Bonsai: a reference on a sheet renders blank when its SVG ids collide with the titleblock's
+      #8742 open 2026-07-18 ifcgeom: don't crash the iterator when IfcProject.UnitsInContext is blank on a non-conformant file
+      #9855 open 2026-10-08 Type multiline text annotations in the viewport (fixes #6427)
+      #9084 open 2026-07-30 Bonsai: keep occurrences when deleting a type from the Outliner
+      #9361 open 2026-08-26 Bonsai: style elements with no material, and a question on hatch class names
+      #9800 open 2026-10-02 docs: make 26 api docstring examples self-contained
+      #9555 open 2026-09-20 Bonsai: a web API for tools that display and edit sheets without building them
+      #9352 open 2026-08-24 Query malfunction searching with !=
+      #8680 open 2026-07-17 Bonsai: label the Explore Tool query results in the Links panel
+      #8669 open 2026-07-17 project.append_asset: don't abort batch on GlobalId collision (#8667)
+      #9422 open 2026-09-01 Consolidated ExtractElements fixes based on BIMvoice proposals
+      #6427 open 2025-03-24 D&D Phase 1 Item 06 - Edit text using tab, enter etc
+      #8251 open 2026-07-05 pset.edit_pset: treat an empty string for a numeric property as no value (#4112)
+      #8711 open 2026-07-17 Bonsai: regenerate a wall's join neighbours when unjoining it
+      #8581 open 2026-07-13 Fix Csv2Ifc crash on CSV missing an optional column (#8580)
+      #8322 open 2026-07-06 bonsai(pset): bind schema module directly so pset UI survives add-on reload (#8236)
+      #9757 open 2026-10-01 Bonsai Viewer: ribbon disappears when a Qt style calls QMainWindow::menuBar() (Breeze/KDE)
+  unreadable     11 hit(s) (all listed)
+      #9309 open 2026-08-15 Bonsai: drawing generation crashes on unreadable linework cache instead of regenerating it
+      #9311 open 2026-08-15 fix(drawing): harden linework generation against bad cache and degene…
+      #9425 open 2026-09-02 Bonsai: report a clear error when a schedule import path is not a file (#9409)
+      #7310 open 2025-11-01 Store and reload non-BIM objects (e.g., animated geolocated Sun Position, Cameras) in .IFC file
+      #8782 closed 2026-07-19 win: do not close the calling console when build-deps.cmd finishes
+      #7921 closed 2026-04-08 get_psets crashes on IfcComplexProperty when verbose is True
+      #7660 closed 2026-02-10 IFC CLI interface
+      #699 closed 2019-10-22 UTF-8 issues making a written file unreadable bu IFC software (f.ex Solibri)
+      #1722 closed 2021-09-05 Attempt at implementing root.create_entity
+      #1405 closed 2021-03-27 IfcOpenBot links seem to be named wrongly?
+      #688 closed 2019-10-08 How to resolve global location/rotation of object?
+  garbage        47 hit(s) (all listed)
+      #3932 open 2023-10-24 MEP Authoring : Changing IfcPipeSegment bend settings in operator redo panel leaves stray fitting objects
+      #9762 open 2026-10-01 IfcConvert 0.9.0 Manifold: crash during opening subtraction and unsupported swept-disk solid
+      #9217 open 2026-08-01 Bonsai: remove_representation handles occurrence reps mapped to a floating map (#9216)
+      #8337 open 2026-07-07 Bonsai: round length attributes to model precision on write (#3129)
+      #9379 open 2026-08-29 Fix double free of section HLR state
+      #2471 open 2022-10-04 Unable to reclaim memory when using API
+      #2653 open 2022-12-16 Memory problem whith geom
+      #9216 open 2026-08-01 Bonsai: can't remove an occurrence's mapped representation when its RepresentationMap isn't on the type (Revit floating maps)
+      #8099 open 2026-05-24 Slow Save for files from other software
+      #9072 merged 2026-07-30 core.aggregate: guard the value actually used in unassign_object
+      #8806 closed 2026-07-20 Bonsai: don't blow up a vertical AXIS3 element when its layers change
+      #7534 open 2026-01-05 C++ datamodel v1.0
+      #8691 merged 2026-07-17 ifcwrap: keep geometry's owning element alive to fix silent data corruption
+      #6895 closed 2025-07-10 util.shape.get_shape_bottom_elevation weird values on IFC4X1
+      #1118 closed 2020-11-19 Regression: [Error] TopoDS::Shell does not exit with error code
+      #1124 closed 2020-11-24 Memory management bug in IfcOpenShell Python
+      #8139 closed 2026-06-04 Ifcviewer wgpu
+      #9473 closed 2026-09-11 [AI-generated, unverified] ifcparse: faster, leaner open(): reader inlining, dense tables, in-place references, fewer allocations, lazy loading, parallel parsing
+      #7226 closed 2025-10-11 Segfault in api.project.append_asset() when function returns
+      #8190 closed 2026-06-19 Bump ruff from 0.15.12 to 0.15.18
+  mangled        12 hit(s) (all listed)
+      #8631 open 2026-07-16 2017 Build not working
+      #9411 merged 2026-08-31 Bonsai: fix comma-separated stylesheet paths only applying the last stylesheet
+      #9410 closed 2026-08-31 Bonsai: comma-separated stylesheet paths only apply the last stylesheet
+      #1201 closed 2020-12-22 Selection representation context
+      #3659 closed 2023-08-28 Duplicating and playing with (connected?) walls
+      #4946 closed 2024-06-28 [bug] Object not found when butting/extending the wall and undoing
+      #3761 merged 2023-09-15 clang-format: add styles and reformat ifcparse files
+      #3262 closed 2023-06-06 BlenderBIm - Railing disaapears when adjusting in Z direction
+      #3069 closed 2023-04-27 blenderbim mangles aggregates on save
+      #2240 closed 2022-06-15 Native IFC
+      #1817 merged 2021-10-20 Migrate IFC Patch feature tests
+      #1396 closed 2021-03-19 Edit wall -> Extrude -> Escape mangles object
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9401 open 2026-08-31 Bonsai: keep commented out facets when editing a filter query
+      #9188 open 2026-07-31 ifctester: fix property table dataType silent fail
+      #9589 open 2026-09-24 Collect whole aggregates in bim.add_aggregate
+      #9740 open 2026-09-29 Bonsai Viewer - default Name column width too narrow
+      #7767 open 2026-03-10 When deleting a spatial container, delete all those 'inside' it.
+      #8621 open 2026-07-16 bonsai: strip CSS comments before embedding into generated SVG (#5567)
+      #4766 open 2024-05-30 [BBIM] error on appending element from default IFC4 project library to IFC4X3 project
+      #8331 open 2026-07-07 bonsai(drawing): plan drawings for spatial containers without a building storey
+      #7932 open 2026-04-12 Bug
+      #6436 open 2025-03-25 [IfcPatch]Create proper CLI entrypoint / script
+      #6716 open 2025-05-16 Bonsai Installation – Missing IFC Libraries
+      #9240 open 2026-08-03 dev_environment.py: survive a locked file while symlinking
+      #7056 open 2025-08-24 Resizing section drawing causes error and does not save
+      #8964 open 2026-07-25 Bonsai: add File menu entry to export selected elements as a new IFC
+      #9400 open 2026-08-31 Bonsai: comments in a filter query are lost when the query is edited
+      #7413 open 2025-11-24 Building C++ code for Debug configuration doesn't work correctly.
+      #9483 open 2026-09-12 Bonsai: add radial and helical arrays to bim.add_array
+      #8071 open 2026-05-17 Deleting ifc elements
+      #7350 open 2025-11-12 Error opening IfcProject in Bonsai (`ifc_file.by_type("IfcContext")[0]`)
+      #9442 open 2026-09-03 packaging: fail the build when runtime plugins are missing from the artifact
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #8675 open 2026-07-17 Bonsai: watch the IFC file for external changes and reload in place
+      #9602 open 2026-09-25 [AI-generated, unverified] ifcparse: erase a deleted instance from the aggregates that name it in place
+      #4391 open 2024-03-04 Measuring tooltip with relative measurement in one place
+      #8686 open 2026-07-17 Bonsai: update existing space boundaries in place instead of skipping them on regeneration
+      #7827 open 2026-03-21 Bonsai: One wall joint defroms joint in another place
+      #5297 open 2024-09-04 decimal places in Spreadsheet Import/Export error when N/A
+      #8174 open 2026-06-15 Place IfcSpatialZone in its spatial parent's collection instead of Unsorted
+      #9840 open 2026-10-07 Bonsai: report dev environment symlink state in system info
+      #9632 open 2026-09-29 Bonsai: write opening placements in IFC space
+      #9615 open 2026-09-28 current_product_ in logger isn't thread local anymore
+      #9557 open 2026-09-20 Bonsai: put back sheet files renamed in a session that was not saved
+      #9556 open 2026-09-20 Bonsai: renaming a sheet or drawing without saving leaves the model pointing at files that no longer exist
+      #9429 open 2026-09-02 serializers: give face_info ownership semantics so it cannot be shallow copied (#9380)
+      #9778 open 2026-10-02 Add BindLinkedModels ifcpatch recipe
+      #8549 open 2026-07-12 Bonsai: fix mode set object run without invoke
+      #9593 open 2026-09-24 Fix typed 180 degree polyline angle direction
+      #2992 open 2023-04-14 serializer creates different placements in ifcs for breps with same placement
+      #9469 open 2026-09-09 Bonsai: find a sheet's drawing by path when its data-id is stale
+      #8621 open 2026-07-16 bonsai: strip CSS comments before embedding into generated SVG (#5567)
+      #9011 open 2026-07-27 Bonsai: recut a voided host from its active representation, not its context
+  unclean        5 hit(s) (all listed)
+      #3971 open 2023-11-07 Intelligent roof causing error with svgserializer
+      #8865 closed 2026-07-22 Bonsai BIM won't install
+      #7309 closed 2025-11-01 Deleting from hierarchy not working even if unlocked and viceversa (Win10/Blender4.5.3LTS/Bonsai0.8.4-alpha2510311351)
+      #3060 closed 2023-04-24 Error when installing BlenderBIM in Blender 3.5.0
+      #1943 closed 2021-12-14 Integers in enumerations cause an error
+  shutdown       8 hit(s) (all listed)
+      #2748 open 2023-02-08 [BlenderBIM] Animation IfcTask PredefinedType set to USERDEFINED then ObjectType to COLORRED for example
+      #9159 open 2026-07-30 Bonsai: fix KeyError in 4D animation colors
+      #8364 closed 2026-07-07 Green the ci-lint ty and ruff checks (src/bonsai + ifcopenshell-python)
+      #7754 merged 2026-03-06 Bump black from 26.1.0 to 26.3.0
+      #7603 merged 2026-01-23 Bump black from 25.12 to 26.1.0
+      #5582 closed 2024-10-16 Bonsai not active after new "Update" - No module named 'bonsai' (Microsoft Store Blender)
+      #2854 merged 2023-03-11 add a ci workflow that catches and restarts failed conda builds due to 143…
+      #476 merged 2018-09-25 Optimize/fix geometry filtering/reusability checks
+  reboot         6 hit(s) (all listed)
+      #9423 closed 2026-09-02 Latest dev version (0.9.0) not working
+      #7556 closed 2026-01-13 Bonsai: Crash when opening projects with IfcDoor
+      #6075 closed 2025-01-31 ModuleNotFoundError: No module named 'ifcopenshell' after Bonsai fails to register
+      #3700 closed 2023-09-03 Hiding elements or annotations from drawings
+      #2148 merged 2022-04-18 Insert the link to Reboot Addon
+      #1121 closed 2020-11-22 My desktop flooded with .brep files
+  disk+full      39 hit(s) (all listed)
+      #8286 open 2026-07-05 Bonsai: don't assert on non-surface item styles in swept disk loader (#8194)
+      #8917 open 2026-07-24 Bonsai: fix Drawing Underlay 'Add Style' wiping previously saved shading styles
+      #8941 open 2026-07-25 Bonsai: keep loaded classification libraries selectable without reloading
+      #8377 open 2026-07-08 Approximate swept solids in the taxonomy layer so cgal stops dropping IfcSweptDiskSolid (#8106)
+      #8687 open 2026-07-17 Bonsai: commit referenced drawing assets alongside the IFC in IfcGit
+      #9311 open 2026-08-15 fix(drawing): harden linework generation against bad cache and degene…
+      #8506 open 2026-07-11 Fix IfcSweptDiskSolidPolygonal fillet: crash to correct rounded corners (#4094)
+      #9442 open 2026-09-03 packaging: fail the build when runtime plugins are missing from the artifact
+      #8695 open 2026-07-17 Bonsai: add Round and Arch shapes to the parametric window
+      #4813 open 2024-06-06 Error editing IfcSweptDiskPolygonal Representation
+      #9756 open 2026-09-30 Dropping an ifcopenshell.file retains about 145 bytes per instance on v0.9.0
+      #9256 open 2026-08-05 [geom] `IfcSweptDiskSolid` opening subtraction (`IfcRelVoidsElement`) trims directrix parameter range instead of solid subtraction
+      #8194 open 2026-06-23 Error when loading MEP model
+      #8106 open 2026-05-26 CGAL kernel skips IfcSweptDiskSolid when directrix is IfcIndexedPolyCurve with IfcArcIndex segments
+      #9309 open 2026-08-15 Bonsai: drawing generation crashes on unreadable linework cache instead of regenerating it
+      #8400 open 2026-07-08 IfcConvert hangs forever (infinite loop in OCCT corner trimming) on IfcSweptDiskSolid with directrix segments much shorter than the disk radius
+      #9417 merged 2026-09-01 geom: cache hybrid kernel component resolution to remove per-construction plugin rescans (#9371)
+      #8804 closed 2026-07-20 Bonsai: position drawings on sheets without leaving Blender
+      #8797 closed 2026-07-20 Bonsai: add 1.3 mm and 1.5 mm annotation text sizes
+      #8799 closed 2026-07-20 Bonsai: real multiline entry for text annotations
+  data+loss      55 hit(s) (all listed)
+      #8611 open 2026-07-16 File->Import->IFC (Geometry Only) can result in data loss.
+      #9120 open 2026-07-30 bcf: fix a crash that loses the entire save, plus two silent data losses
+      #8609 open 2026-07-15 ifcpatch MergeDuplicateTypes: default merges distinct untagged types (data loss) and can crash on cross-class merges
+      #9096 open 2026-07-30 ifcpatch: fix SetWorldCoordinateSystem writing 3D data into IfcAxis2Placement2D
+      #8743 open 2026-07-18 Bonsai: warn instead of silently destroying faces in the 3-point arc CAD tool
+      #9629 open 2026-09-29 Bonsai: clear occurrence PredefinedType when a type's PredefinedType is edited to a concrete value
+      #8425 open 2026-07-09 Bonsai: confirm before removing a sheet, which deletes files from disk (#5881)
+      #9200 open 2026-07-31 ifcfm: COBie export drops properties valued zero or False
+      #9008 open 2026-07-27 ExtractElements: Smaller model and several differences between builds: BonsaiPR 0.8.6-alpha260727 and Bonsai 0.8.6-alpha260724
+      #9207 open 2026-07-31 Bonsai: Deleting one IfcWall unexpectedly deletes another IfcWall
+      #8612 open 2026-07-16 bonsai: don't rebind Save target during Advanced-mode import preview (#8611)
+      #9212 open 2026-08-01 geometry.unassign_representation: stop destroying shared geometry (#9207)
+      #8041 open 2026-05-06 Bonsai watch external file
+      #9276 open 2026-08-06 Bonsai: warn before saving the .blend drops unsaved IFC edits
+      #7444 open 2025-12-03 IfcConvert fails to build with `WITH_RELATIONSHIP_VALIDATION`
+      #8985 open 2026-07-25 util.date: preserve microsecond precision when converting IfcDuration for calculation
+      #7997 open 2026-04-23 Bonsai: Moving the objects and then saving the model causes the IfcOpenings to disappear.
+      #9211 open 2026-08-01 Proposal: test fixtures representing imported files, not Bonsai-authored ones
+      #6956 open 2025-07-28 A bunch of stuff got consolidated or moved to the origin.
+      #488 open 2018-10-19 IfcGeomIterator segfault on next() function call in loop
+  partial+write  27 hit(s) (all listed)
+      #9828 open 2026-10-06 Fix by_guid for GlobalIds written to RocksDB
+      #8334 open 2026-07-07 Bonsai: don't crash the task time editor on malformed IfcDuration (#3091)
+      #9847 open 2026-10-07 Fix serializer crashes with mixed curve and solid items
+      #8771 open 2026-07-19 Name glTF group nodes after their own element
+      #6428 open 2025-03-24 D&D Phase 1 Item 07 - placing and editing sheets / layouts easier from bonsai
+      #8844 open 2026-07-21 serializers: independent position/normal index streams for OBJ and Collada (#46)
+      #9483 open 2026-09-12 Bonsai: add radial and helical arrays to bim.add_array
+      #8776 open 2026-07-19 IfcParse: add instances of another file on assignment
+      #4766 open 2024-05-30 [BBIM] error on appending element from default IFC4 project library to IFC4X3 project
+      #8845 open 2026-07-21 Fix permissive-shape-reuse losing products, styles and materials
+      #8792 closed 2026-07-19 IfcParse: read back non-finite REALs serialized with a trailing dot
+      #8487 merged 2026-07-10 IfcConvert: add --fail-on-error to exit non-zero on conversion errors (#1118)
+      #668 open 2019-09-09 Support for referencing other files via STEP anchors and references
+      #8608 merged 2026-07-15 Classify projection edges in SVG elevations (#3668)
+      #8400 open 2026-07-08 IfcConvert hangs forever (infinite loop in OCCT corner trimming) on IfcSweptDiskSolid with directrix segments much shorter than the disk radius
+      #1043 closed 2020-10-20 Improved IFC optimiser recipe
+      #8866 open 2026-07-23 Open PR review index, whole repository
+      #8895 closed 2026-07-23 Coplanar surface boundary lines via a real 2D planar arrangement (alt. to #7908)
+      #2480 closed 2022-10-07 IfcTester webapp development
+      #5809 closed 2024-11-27 ifcopenshell.file.write is unsafe if user don't have writing permission in the directory
+  crash+safe     82 hit(s) (all listed)
+      #9848 open 2026-10-07 Stop get_info crashing on a reference cycle
+      #8315 open 2026-07-06 Bonsai: don't crash editing a non-extrusion slab (#6283)
+      #9311 open 2026-08-15 fix(drawing): harden linework generation against bad cache and degene…
+      #8658 open 2026-07-16 Bonsai: toggle a profile type's length between typed and per-instance
+      #9379 open 2026-08-29 Fix double free of section HLR state
+      #9103 open 2026-07-30 Bonsai: fix three TypeError crashes concatenating an unguarded optional Name
+      #9582 open 2026-09-24 Refresh Linked Aggregate crashes on a nested assembly that isn't a linked aggregate
+      #9031 open 2026-07-28 Bonsai: Blender crash when dragging camera size after 1st creation
+      #1295 open 2021-02-05 Crashes when create shape on polyline with only one point
+      #9299 open 2026-08-14 Segfault when batch-deleting an IFC aggregate and its decomposed parts
+      #8386 open 2026-07-08 Bonsai: fix IFC4X3 IfcAnnotation PredefinedType vs ObjectType handling
+      #8890 open 2026-07-23 Bonsai: setting an active type fails silently on a stale enum (#8850, #9238)
+      #7458 open 2025-12-07 Bonsai crashes with SIGILL on CPUs without AVX2 (Ivy Bridge and older)
+      #7934 open 2026-04-13 Large model
+      #8021 open 2026-04-29 Segfault in IfcFile::addEntity() when creating IfcRelContainedInSpatialStructure with elements having ObjectPlacement.PlacementRelTo
+      #7523 open 2025-12-30 Fix: hybrid kernel sigsegv fallback (0.8.0)
+      #3755 open 2023-09-14 Thin wall not being created
+      #973 open 2020-09-04 IfcOpeningElement without representation casuses import error
+      #2637 open 2022-12-07 Process exits when attempting to generate geometry of IfcPump
+      #9297 open 2026-08-13 Bonsai: Diff panel silently skips attribute and geometry checks
+  atomic+write   8 hit(s) (all listed)
+      #3072 open 2023-04-29 Drawing generation speed optimisation
+      #8341 merged 2026-07-07 ifcopenshell: atomic file writes to prevent corruption on interrupted save (#4797)
+      #4797 closed 2024-06-04 Save to temporary file and rename to prevent file corruption during file write
+      #8088 closed 2026-05-21 Gizmo enhancements
+      #4744 closed 2024-05-26 v0.8.0 C++ boost dependency build failing
+      #4411 closed 2024-03-09 Link external IFC file fails if IFC file is on separate disk partition. 
+      #72 closed 2016-05-19 cmake failure on windows build script
+      #1222 closed 2020-12-31 Refactor the BlenderBIM Add-on to perform incremental editing
+  lock+file      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9240 open 2026-08-03 dev_environment.py: survive a locked file while symlinking
+      #9507 open 2026-09-15 Bonsai: retry the .blend save in save_project when the file is briefly locked (#9506)
+      #9239 open 2026-08-03 dev_environment.py: a locked file during symlinking leaves the extension half-linked with no recovery hint
+      #9506 open 2026-09-15 Bonsai: Save IFC fails with "Cannot change old file (file saved with @)" when the .blend is in a Dropbox/OneDrive folder
+      #8981 open 2026-07-25 Bonsai: use consistent Length/Width stair terminology
+      #9367 open 2026-08-27 Fix data races in schema singleton init and logger causing crashes
+      #2748 open 2023-02-08 [BlenderBIM] Animation IfcTask PredefinedType set to USERDEFINED then ObjectType to COLORRED for example
+      #8242 open 2026-07-03 Linked file features
+      #8393 open 2026-07-08 ifc5d: add base-quantity rule for IfcGeographicElement (#6508)
+      #7484 open 2025-12-12 Separate locks for first & last stair
+      #6568 open 2025-04-17 Compilation Issues with IfcOpenShell in MSys2 Environment
+      #7833 open 2026-03-23 Grid issues
+      #7934 open 2026-04-13 Large model
+      #8731 open 2026-07-18 [Discussion] Direct IFC → DXF export path (ifc_dxf)
+      #5313 open 2024-09-05 ifcopenshell-python tree.select speed issue
+      #8738 closed 2026-07-18 Bonsai: independent locks for the first and last stair tread
+      #3072 open 2023-04-29 Drawing generation speed optimisation
+      #2025 open 2022-02-05 Strategies on dealing with large IFC datasets
+      #5033 open 2024-07-18 Bugs in light simulation
+      #7523 open 2025-12-30 Fix: hybrid kernel sigsegv fallback (0.8.0)
+  write+failure  79 hit(s) (all listed)
+      #9829 open 2026-10-06 Write GlobalId index when serializing to RocksDB
+      #9368 open 2026-08-27 svg_serializer: skip elements that fail geometry conversion
+      #9469 open 2026-09-09 Bonsai: find a sheet's drawing by path when its data-id is stale
+      #8734 open 2026-07-18 Bonsai: don't let one bad element abort an entire drawing print
+      #9297 open 2026-08-13 Bonsai: Diff panel silently skips attribute and geometry checks
+      #9051 open 2026-07-29 Bonsai: add a Status Classes toggle to drawings (#9033)
+      #8334 open 2026-07-07 Bonsai: don't crash the task time editor on malformed IfcDuration (#3091)
+      #9422 open 2026-09-01 Consolidated ExtractElements fixes based on BIMvoice proposals
+      #9506 open 2026-09-15 Bonsai: Save IFC fails with "Cannot change old file (file saved with @)" when the .blend is in a Dropbox/OneDrive folder
+      #8946 open 2026-07-25 validate_stub: resolve property/staticmethod wrappers deterministically
+      #9276 open 2026-08-06 Bonsai: warn before saving the .blend drops unsaved IFC edits
+      #8344 open 2026-07-07 Bonsai: sync storey placement on Load Spatial Structure + stop re-import resetting elevations to 0 (#4048, #8545)
+      #8434 open 2026-07-10 Bonsai: persist a drawing camera size edit, without calling an operator from a property callback (#8034)
+      #8750 open 2026-07-19 Bonsai: add a UI entry point to author IfcSweptDiskSolid elements
+      #9108 open 2026-07-30 ifcopenshell.api: fix three defects that write wrong data into the file
+      #8545 open 2026-07-12 Bonsai: storey elevations intermittently reset to 0 (spatial decomposition re-import triggers update_elevation)
+      #9137 open 2026-07-30 docs: fix 15 :param: names that no longer match the real signature, and freeze it with a test
+      #9483 open 2026-09-12 Bonsai: add radial and helical arrays to bim.add_array
+      #9511 open 2026-09-16 Pipe Bend Fittings not fully loading on opening of file
+      #9142 open 2026-07-30 ifctester: warn instead of silently ignoring unsupported restrictions
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9401 open 2026-08-31 Bonsai: keep commented out facets when editing a filter query
+      #8621 open 2026-07-16 bonsai: strip CSS comments before embedding into generated SVG (#5567)
+      #4766 open 2024-05-30 [BBIM] error on appending element from default IFC4 project library to IFC4X3 project
+      #9589 open 2026-09-24 Collect whole aggregates in bim.add_aggregate
+      #6716 open 2025-05-16 Bonsai Installation – Missing IFC Libraries
+      #7932 open 2026-04-12 Bug
+      #7056 open 2025-08-24 Resizing section drawing causes error and does not save
+      #9240 open 2026-08-03 dev_environment.py: survive a locked file while symlinking
+      #8964 open 2026-07-25 Bonsai: add File menu entry to export selected elements as a new IFC
+      #9442 open 2026-09-03 packaging: fail the build when runtime plugins are missing from the artifact
+      #8071 open 2026-05-17 Deleting ifc elements
+      #7413 open 2025-11-24 Building C++ code for Debug configuration doesn't work correctly.
+      #7350 open 2025-11-12 Error opening IfcProject in Bonsai (`ifc_file.by_type("IfcContext")[0]`)
+      #9483 open 2026-09-12 Bonsai: add radial and helical arrays to bim.add_array
+      #4266 open 2024-01-29 Rust support
+      #8870 open 2026-07-23 Tracking: get all CI workflows green on v0.9.0 (priority ask)
+      #2783 open 2023-02-17 Support hour based tasks, inherited schedule start from parent tasks, and constrained schedule start from early start.
+      #9534 merged 2026-09-18 nix: package every shared library once and only the OCCT toolkits in use
+      #488 open 2018-10-19 IfcGeomIterator segfault on next() function call in loop
+      #9181 closed 2026-07-31 bcf: fix v3 crash on missing extensions.xml
+
+== 51 terms run; 48 returned hits, 13 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

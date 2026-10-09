@@ -1,0 +1,43 @@
+ATAC is Arguably a Terminal API Client.
+It is based on well-known clients such as Postman, Insomnia, or even Bruno, but inside your terminal without any specific graphical environment needed.
+The philosophy of ATAC is to be free, account-less, and offline for now and forever.
+
+Usage: atac [OPTIONS] [COMMAND]
+
+Commands:
+  collection   Collection commands
+  request      Request commands
+  try          One-shot request sender
+  env          Environment commands
+  import       Import a collection, a request or an environment from other file formats (Postman v2.1.0, cURL, OpenAPI)
+  completions  Create a completion file
+  man          Generate ATAC man page
+  help         Print this message or the help of the given subcommand(s)
+
+Options:
+  -d, --directory <DIRECTORY>
+          Main application directory, containing JSON/YAML collections files, the atac.toml config file and the atac.log file
+
+      --filter <FILTER>
+          Will only allow collection files that matches the regex filter
+
+      --tui
+          Run TUI after command
+
+      --no-ansi-log
+          Avoid using ANSI format for log file/output
+
+  -v, --verbose...
+          Increase logging verbosity
+
+  -q, --quiet...
+          Decrease logging verbosity
+
+      --dry-run
+          Avoid saving data to the collection and environment files
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+  -V, --version
+          Print version

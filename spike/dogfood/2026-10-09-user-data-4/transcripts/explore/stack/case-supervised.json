@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 5,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/aux/home/.stack",
+    "operation": "stack config set install-ghc false --global",
+    "cwd": "/s/stk",
+    "scratch": ["pantry", "stack.sqlite3", "stack.sqlite3-journal", "stack.sqlite3.pantry-write-lock"],
+    "expected_status": 0
+  },
+  "k": 116,
+  "ops_total": 116,
+  "prefix_hash": "ecaebe01c7f06c9e",
+  "after_class": "truncate",
+  "after_path": "/s/aux/home/.stack/config.yaml",
+  "before_class": "write",
+  "before_path": "/s/aux/home/.stack/config.yaml",
+  "violation": "hybrid"
+}

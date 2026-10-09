@@ -1,0 +1,878 @@
+== novelty pre-scan: SubtitleEdit/subtitleedit
+== date: 2026-10-09T00:37:15Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15249 open 2026-09-24 [macOS] App keeps crashing on Audio Device Notification - EXC_BAD_ACCESS in CoreAudio (HALC_ProxyNotification)
+      #15274 closed 2026-09-24 Replace function crashes the application
+      #15786 merged 2026-10-07 Linux: fix startup crash when Skia reports no default font family
+      #15541 merged 2026-10-02 Settings: do not crash when the Themes folder is missing
+      #11297 open 2026-05-31 Native Linux Build (v5.0.0-rc1) - Consistent Segmentation Fault when handling Arabic Subtitles and Translation
+      #15656 merged 2026-10-04 Fix freeze/crash selecting colored tags in right-to-left lines (#15531)
+      #15232 merged 2026-09-24 Source view: Ok no longer crashes when the format throws
+      #15616 merged 2026-10-03 Stop crashing child processes from hanging on a Windows error dialog
+      #15252 closed 2026-09-24 libmpv loader: folder order decides precedence, not file name
+      #14163 merged 2026-08-26 Fix mkv drop crash and the double "parsing Matroska file" wait
+      #13795 merged 2026-08-17 TTS: survive a crashed local server mid-generation (#13572)
+      #14861 closed 2026-09-14 SE 5.3.0 beta 1: Auto-save suggestions for Settings.json & other types of files
+      #15706 closed 2026-10-05 [deps] libVLC: 3.0.23 → 3.0.24
+      #11862 closed 2026-06-26 seconv crashes on input paths containing [ or ]
+      #14751 closed 2026-09-10 How do I remove waveform cache?
+      #14840 merged 2026-09-13 FFmpeg player: D3D11VA/DXVA2 hardware decoding on Windows
+      #14130 merged 2026-08-26 Fix EBU STL save crash on unquoted font colors and persist the save options
+      #15493 closed 2026-09-30 Can you add "models--litagin--anime-whisper" that can work with Purfview Faster Whisper XXL
+      #13841 merged 2026-08-18 Fix NRE crash in batch auto-translate when API key is missing
+      #15224 merged 2026-09-23 Batch convert: prevent sleep while converting
+  corrupt        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15213 closed 2026-09-23 Opening an audio file and pressing save corrupts it
+      #14666 closed 2026-09-08 Blu-ray SUP editing corrupts PGS file
+      #14753 merged 2026-09-10 Fix #14751: recover from a corrupt waveform cache instead of hanging on it
+      #13444 merged 2026-08-10 Train nOCR: fix corrupted font list on scroll
+      #14751 closed 2026-09-10 How do I remove waveform cache?
+      #15487 merged 2026-09-30 Open more files found in a scan of real issue files
+      #15439 merged 2026-09-29 Bug hunt: fixes from the last four days of commits
+      #12637 merged 2026-07-19 Fix Multiple Replace corrupting ASSA \N line breaks on Windows
+      #12620 closed 2026-07-18 Multiple Replace corrupts ASS \N line breaks after a text replacement
+      #12599 merged 2026-07-18 SeConv: fail or warn on malformed SCC instead of writing corrupt output
+      #14561 merged 2026-09-05 Add Google Cloud Speech-to-Text v2 as an online speech-to-text engine
+      #14509 merged 2026-09-04 CrispASR: v0.8.31 -> v0.8.32
+      #11636 merged 2026-06-15 Replace/Find: Count no longer corrupts the last-found position
+      #13927 closed 2026-08-20 Improvement: ASS tag stripping for AI assistant/auto translate
+      #13661 merged 2026-08-15 OCR: load all spell-check regex sections; better German I/l rules
+      #11653 merged 2026-06-16 Fix change frame rate/speed corrupting selected line duration (#11650)
+      #10133 closed 2025-12-22 AllTalk TTS: Czech diacritics lost (non-UTF8 form encoding in request)
+      #11513 merged 2026-06-09 Fix corrupted ellipsis character in custom continuation style dropdown
+      #13779 merged 2026-08-17 Fix #13701: Spanish "clón" OCR rule no longer breaks "ciclón"
+      #14041 merged 2026-08-24 OCR fix replace lists: repair broken rules, remove dead entries
+  corruption     29 hit(s) (all listed)
+      #12580 merged 2026-07-17 Fix six silent text-corruption bugs in libse
+      #14840 merged 2026-09-13 FFmpeg player: D3D11VA/DXVA2 hardware decoding on Windows
+      #13927 closed 2026-08-20 Improvement: ASS tag stripping for AI assistant/auto translate
+      #11661 merged 2026-06-16 Fix Adjust duration corruption (use SetTimes) and EncodeNumeric surrogate-pair handling
+      #14027 merged 2026-08-23 Fix ten more bugs from a third random sweep
+      #14111 merged 2026-08-25 Italian OCR fix list: E' with apostrophe to È, gated on the dictionary
+      #12761 closed 2026-07-23 Converting between image formats in batch mode
+      #12582 closed 2026-07-17 SeConv reports success while writing invalid SRT for malformed SCC input
+      #11940 merged 2026-06-28 Fix Change Speed: double-apply (Apply+OK) and 0% crash
+      #12589 merged 2026-07-18 Fix FixInvalidItalicTags eating a character before a dangling begin tag
+      #11875 merged 2026-06-26 Fix Blu-ray sup export crash on Linux (HarfBuzz version mismatch) (#11864)
+      #11864 closed 2026-06-26 Crash when trying to export BluRay (sup) subtitles
+      #11804 merged 2026-06-24 Apply Dutch contraction casing after colon and mid-paragraph period (#11747)
+      #12595 merged 2026-07-18 Disable ligatures in the syntax highlighting text box
+      #12599 merged 2026-07-18 SeConv: fail or warn on malformed SCC instead of writing corrupt output
+      #12099 merged 2026-07-03 TTS: fix eleven bugs from a systematic bug hunt (batch 1)
+      #12476 merged 2026-07-14 Add DVD sup export for MuxMan/Scenarist DVD authoring
+      #13345 merged 2026-08-07 Fix ~25 bugs in the advanced ASSA effects
+      #12390 merged 2026-07-12 Fix nine bugs found in bug hunt
+      #12852 merged 2026-07-26 Fix CosyVoice3 ref-text: reuse the voice pack transcripts, sanitize STT ones
+  truncated      92 hit(s) (all listed)
+      #15352 merged 2026-09-26 TTS add-to-video: warn when the video stream comes out truncated
+      #14481 open 2026-09-03 SE 5.2.0 RC 1: Macros?
+      #12891 merged 2026-07-27 Fix truncated labels and narrow controls in two spell check dialogs (#12886)
+      #14458 closed 2026-09-03 [v5.2.0-beta31] Reduce font size in beautify time codes profile editor
+      #12419 merged 2026-07-13 Fix truncated "Number" and "Show" columns in auto-translate grid
+      #15384 closed 2026-09-28 Compare window issues
+      #11656 merged 2026-06-16 Fix truncated ♫ mojibake in default MusicSymbolReplace
+      #13011 closed 2026-07-30 Text too long in the italian.json
+      #15082 merged 2026-09-20 CrispASR MADLAD: pass an explicit output token cap
+      #12886 closed 2026-07-27 5.1.0 RC17 - Feedback
+      #14880 merged 2026-09-14 Restore auto-backup: validate a settings backup before replacing the live settings
+      #13241 merged 2026-08-05 Fix #10193: SoftNI sub export writes project frame rate instead of hardcoded 25 fps
+      #11182 merged 2026-05-25 Defensive: BluRaySup OdsData + Matroska short-read on truncated files
+      #13261 merged 2026-08-05 Fix #13202: anchor rendered subtitle bitmap to the font line box
+      #13244 merged 2026-08-05 Fix #10193: harden SoftNI regression tests (review follow-up)
+      #15714 merged 2026-10-05 Easy wins: batch convert functions/filters/presets, AI translate fixes, UI polish
+      #12865 closed 2026-07-26 Update Italian.json
+      #14459 merged 2026-09-03 Beautify time codes profile: widen numeric up/down fields
+      #14753 merged 2026-09-10 Fix #14751: recover from a corrupt waveform cache instead of hanging on it
+      #12860 closed 2026-07-26 The OpenAI Compatible Server STT doesn't work. (404 error)
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14481 open 2026-09-03 SE 5.2.0 RC 1: Macros?
+      #15352 merged 2026-09-26 TTS add-to-video: warn when the video stream comes out truncated
+      #14567 merged 2026-09-05 Google Cloud STT: send lossless audio, allow dynamic batching, recover truncation
+      #13184 merged 2026-08-04 Fix MP4 DASH subtitle extraction: namespaced TTML, shifted cues, truncation
+      #15384 closed 2026-09-28 Compare window issues
+      #13468 merged 2026-08-10 Open a non-matching original as a reference instead of truncating it (#13449)
+      #14458 closed 2026-09-03 [v5.2.0-beta31] Reduce font size in beautify time codes profile editor
+      #12891 merged 2026-07-27 Fix truncated labels and narrow controls in two spell check dialogs (#12886)
+      #12419 merged 2026-07-13 Fix truncated "Number" and "Show" columns in auto-translate grid
+      #11656 merged 2026-06-16 Fix truncated ♫ mojibake in default MusicSymbolReplace
+      #15082 merged 2026-09-20 CrispASR MADLAD: pass an explicit output token cap
+      #13011 closed 2026-07-30 Text too long in the italian.json
+      #15469 merged 2026-09-30 MP4: compute subtitle times from integer ticks (fixes 1 ms early cues)
+      #15088 merged 2026-09-20 Prepare v5.3.0-beta7
+      #14880 merged 2026-09-14 Restore auto-backup: validate a settings backup before replacing the live settings
+      #13261 merged 2026-08-05 Fix #13202: anchor rendered subtitle bitmap to the font line box
+      #12886 closed 2026-07-27 5.1.0 RC17 - Feedback
+      #15009 closed 2026-09-18 Auto-translate, llama.cpp advanced engine: "No usable translation" with KoboldCpp server even when replies are valid JSON with matching line breaks
+      #13241 merged 2026-08-05 Fix #10193: SoftNI sub export writes project frame rate instead of hardcoded 25 fps
+      #15714 merged 2026-10-05 Easy wins: batch convert functions/filters/presets, AI translate fixes, UI polish
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15183 closed 2026-09-22 FixContinuationStyle: skip empty-name match in StartsWithName
+      #15674 merged 2026-10-04 Download hash check: fail on an empty download instead of skipping
+      #15795 merged 2026-10-08 Set sync point: treat the empty fallback player as no video (#15787)
+      #15605 merged 2026-10-03 Remove all formatting: drop empty lines left by \N padding (#15531)
+      #15560 merged 2026-10-02 Don't count empty ASSA \N lines in "too many lines"
+      #15442 merged 2026-09-29 Merge: keep line breaks when merging with an empty line (#15441)
+      #15445 merged 2026-09-29 EZTitles .ezt: keep empty subtitles and find records before the first text
+      #15301 merged 2026-09-25 Don't show empty original lines as display-only reference rows
+      #14038 closed 2026-08-23 [bug] crispasr returns empty output
+      #14445 closed 2026-09-02 Bug returned after translation an empty original
+      #15339 merged 2026-09-26 ASSA/SSA styles: block OK/Apply on empty or duplicate file style names
+      #14024 open 2026-08-23 [Feature request] Allow changing the models folder location
+      #14091 closed 2026-08-25 After (DeepL) translation the original is empty
+      #15038 open 2026-09-19 It’s not as good as the old version; the new version is full of issues. Batch subtitle conversion doesn't allow for timeline shifting—the shift function is broken—and it can't convert text formats either.
+      #14994 merged 2026-09-17 Add/remove embedded subtitles: file size, empty hint, video drop, progress layout
+      #11654 open 2026-06-16 feature request: information add
+      #13923 open 2026-08-20 Feature Request: Translation Mode (upgrade?)
+      #15010 merged 2026-09-18 Translate: read llama.cpp advanced replies from reasoning_content when content is empty (#15009)
+      #13886 merged 2026-08-19 Fix Gemma 4 models returning empty translations
+      #15496 closed 2026-09-30 Shortcuts from V4 not working (the same) as in V5 - Move last word from first line down (current subtitle)
+  atomic         24 hit(s) (all listed)
+      #15646 open 2026-10-04 [Feature request] Optional source-aware AI translation review and editable prompt profiles
+      #14398 merged 2026-09-01 mpv: make the scrub follow-up claim atomic against concurrent seeks
+      #15666 merged 2026-10-04 Keep installed yt-dlp when a download/update fails
+      #15406 merged 2026-09-28 Bump CrispASR to v0.8.38
+      #14416 closed 2026-09-02 Video & Shortcut UX fixes: Open recent video menu, zero-time preview fix, and immediate key-up end timing
+      #14753 merged 2026-09-10 Fix #14751: recover from a corrupt waveform cache instead of hanging on it
+      #13284 closed 2026-08-05 Fix #10166: OCR skip-all choices are now remembered
+      #13942 closed 2026-08-21 Burn-in with -movflags +faststart may silently produce a 0-byte file when the output path is a portal-mounted document
+      #14064 merged 2026-08-24 Keep subtitle times on whole milliseconds (#14056)
+      #12799 closed 2026-07-24 [v5.1.0-rc14] Chatterbox TTS synthesis failed (400) Base/Turbo
+      #13572 closed 2026-08-12 Check the model versions for Chatterbox(23 multilingual).
+      #13739 merged 2026-08-16 Chatterbox: versioned V3 models + cross-lingual source_lang
+      #13545 merged 2026-08-12 Fix five bugs found in the beta11 commits
+      #10736 merged 2026-04-28 fix: atomic save and shared lock for NOcrDb
+      #12893 merged 2026-07-27 Waveform: per-track audio picker with estimates, live progress, and cancel
+      #11983 closed 2026-06-29 Adjust all times: add independent extend start/end option (#11602)
+      #12237 closed 2026-07-07 Fix silent crash when disposing mpv with calls in flight (#12093)
+      #14169 merged 2026-08-27 Fix 30 bugs found in a five-area hunt (formats, lifecycle, settings, rendering, image export)
+      #11324 merged 2026-06-01 UndoRedoManager: fix deadlock vector + Dispose race + clone timestamp + log
+      #11664 merged 2026-06-16 Make SubtitleLineViewModel.StartTime a plain setter; add StartTimeKeepDuration
+  atomically     6 hit(s) (all listed)
+      #15646 open 2026-10-04 [Feature request] Optional source-aware AI translation review and editable prompt profiles
+      #14064 merged 2026-08-24 Keep subtitle times on whole milliseconds (#14056)
+      #13284 closed 2026-08-05 Fix #10166: OCR skip-all choices are now remembered
+      #11983 closed 2026-06-29 Adjust all times: add independent extend start/end option (#11602)
+      #14169 merged 2026-08-27 Fix 30 bugs found in a five-area hunt (formats, lifecycle, settings, rendering, image export)
+      #11664 merged 2026-06-16 Make SubtitleLineViewModel.StartTime a plain setter; add StartTimeKeepDuration
+  interrupted    11 hit(s) (all listed)
+      #15172 merged 2026-09-22 WhisperX: model dot reflects the Hugging Face cache instead of always green (#15170)
+      #14029 closed 2026-08-23 Add configurable AI models folder
+      #10230 closed 2026-02-25 The translation results were not saved and were lost
+      #14753 merged 2026-09-10 Fix #14751: recover from a corrupt waveform cache instead of hanging on it
+      #15562 closed 2026-10-02 Shortcut menu doesn't open
+      #11491 merged 2026-06-08 Show progress overlay while adding files in Batch Convert
+      #13234 closed 2026-08-05 Waveform adjustment and text editing feel less responsive than before
+      #9588 closed 2025-04-18 Error with the text-to-speech tool ALL TALK TTS (COQUI BASED) resolved
+      #7188 closed 2023-07-31 Speech-to-text module, the engine CTranslate reports an error when the selected language is not English.
+      #6173 merged 2022-08-23 Don't check Continuation Style when merging dialog
+      #2950 closed 2018-06-16 A quick question about Regex 
+  interrupt      34 hit(s) (all listed)
+      #15172 merged 2026-09-22 WhisperX: model dot reflects the Hugging Face cache instead of always green (#15170)
+      #15203 merged 2026-09-23 Pace the UI tick pump with a high-resolution timer on Windows
+      #15331 closed 2026-09-26 Suggestion: Change the default duration when inserting a new subtitle line
+      #15603 closed 2026-10-03 Feature Request: Inline "in-place" translation for "Selected line -> Auto-translate" context menu
+      #14029 closed 2026-08-23 Add configurable AI models folder
+      #10230 closed 2026-02-25 The translation results were not saved and were lost
+      #14753 merged 2026-09-10 Fix #14751: recover from a corrupt waveform cache instead of hanging on it
+      #12634 closed 2026-07-19 Ctrl-F and Ctrl-H doesn't always have focus
+      #15562 closed 2026-10-02 Shortcut menu doesn't open
+      #12879 closed 2026-07-27 Video pauses when entering and leaving fullscreen
+      #13449 closed 2026-08-10 5.2. beta 9When I open another subtitle from the same chapter along with the one I'm editing, it only allows me to show the subtitles that match the one I had previously opened in the timeline; it omits the rest and deletes them.
+      #11491 merged 2026-06-08 Show progress overlay while adding files in Batch Convert
+      #13234 closed 2026-08-05 Waveform adjustment and text editing feel less responsive than before
+      #11602 closed 2026-06-14 [Feature Request] Suggestions for additional features after testing version 5.0.0 rc4
+      #9287 closed 2025-01-29 Google Gemini auto-translate stuck when overloaded
+      #12087 open 2026-07-02 Accessibility observations in Subtitle Edit v5.1.0-beta5: menu navigation, DataGrid accessibility, remaining unlabeled controls, and playback behavior
+      #10726 merged 2026-04-27 refactor: convert AutoTranslate Translate methods to async/await
+      #10446 closed 2026-03-27 perf: microstutter during video playback — per-tick allocations, O(n) subtitle search, and per-frame GC pressure in waveform
+      #9761 closed 2025-06-30 Feature Request - Please remove unnecessary dialog box "Continue with current spell check?"
+      #9588 closed 2025-04-18 Error with the text-to-speech tool ALL TALK TTS (COQUI BASED) resolved
+  sigkill        1 hit(s) (all listed)
+      #14929 closed 2026-09-16 Application freeze on play button in video preview
+  sigint         0 hit(s)
+  ctrl-c         92 hit(s) (all listed)
+      #15647 open 2026-10-04 SE5: Ctrl+V does not recognize selected lines after returning from another application
+      #15460 open 2026-09-29 Reference: Issue Issue-15436-Waveform-Hover-Focus
+      #15359 merged 2026-09-27 Shot changes list: copy rows to the clipboard again
+      #14076 open 2026-08-24 EBU STL Flow Editing – word-processor-like subtitle editing
+      #15390 merged 2026-09-28 Compare: merge view with editing of the current subtitle
+      #15011 closed 2026-09-18 Feat/tts review audio segments enhancements
+      #12087 open 2026-07-02 Accessibility observations in Subtitle Edit v5.1.0-beta5: menu navigation, DataGrid accessibility, remaining unlabeled controls, and playback behavior
+      #15494 merged 2026-09-30 Linux: copy text via xclip/wl-copy to keep accented characters
+      #14667 closed 2026-09-08 Regression: Pasting a line (Cmd+V / Ctrl+V) overlaps original timestamps instead of appending sequentially (SE 5.2.0 - Windows & macOS)
+      #15436 closed 2026-09-29 Issue: Subtitle lines remain highlighted but lose their selection after switching away from SE5
+      #12903 merged 2026-07-28 Add "Copy subtitle" to waveform (Ctrl+C and context menu)
+      #14495 closed 2026-09-03 SE 5.2.0 RC1: Missing Features and Shortcut Issues
+      #14055 merged 2026-08-24 Add "List errors..." to the Tools menu
+      #15488 closed 2026-09-30 Copy subtitles with accents
+      #13920 merged 2026-08-20 Docs: refresh the engine, format and shortcut lists
+      #13071 merged 2026-08-02 Bring back "move up/down/to top/to bottom" for styles
+      #15120 closed 2026-09-20 PLEEASE
+      #12994 merged 2026-07-30 Copy whole subtitle from waveform and paste at waveform position
+      #12808 merged 2026-07-24 Fix AltGr shortcut races while typing
+      #14134 merged 2026-08-26 Add an editable video position box to the waveform toolbar
+  power          42 hit(s) (all listed)
+      #15319 open 2026-09-26 Audio dropouts
+      #13960 open 2026-08-21 Feature request: Collapsible/folding override tags (ASS/SSA) in the Text box (like code folding in IDEs)
+      #15222 closed 2026-09-23 Prevent SleepMode flag
+      #15409 closed 2026-09-28 Reference: Issue #14909 – Waveform shaking in the new version of Subtitle Edit
+      #15093 closed 2026-09-20 Follow-up to issue #14909 – Waveform shaking in the new version of Subtitle Edit
+      #14009 closed 2026-08-22 Feature Request: Add "Shutdown After Completion" Option for Batch Tasks
+      #14143 merged 2026-08-26 Video OCR: engine list review — best-measured first, drop Paddle Python, curate CrispEmbed backends
+      #14909 closed 2026-09-15 Waveform shaking in the new version of Subtitle Edit
+      #14995 merged 2026-09-17 Background music generation (Video > More and TTS window)
+      #13329 closed 2026-08-07 Video plays for 200ms when starting SubtitleEdit
+      #13003 closed 2026-07-30 [Feature Request] Separate System Prompt and LLM Parameters (Temperature, Reasoning) for AI Translation
+      #11261 merged 2026-05-29 Update Turkish localization
+      #11252 closed 2026-05-29 Update and refine Turkish localization
+      #14070 merged 2026-08-24 WhisperX as a standalone (no Python) speech-to-text engine
+      #11745 closed 2026-06-22 [Accessibility Request] Main menu is still inaccessible to screen readers after #11573 (Alt/F10 navigation and UIA exposure issue)
+      #10949 merged 2026-05-16 Redesign auto-translate window for better usability
+      #10736 merged 2026-04-28 fix: atomic save and shared lock for NOcrDb
+      #10596 closed 2026-04-13 [SubtitleEdit v5.0.0-beta15] Feature Request: Allow custom paths for mpv and ffmpeg in Settings
+      #10852 closed 2026-05-11 [macos,beta24] No indication of the video file opened/selected
+      #6914 closed 2023-05-09 Help for installing phyton component for Ctranslate2 and WhisperX
+  outage         1 hit(s) (all listed)
+      #12345 merged 2026-07-10 Flatpak: fetch mujs from the official release tarball, not Codeberg git
+  ENOSPC         0 hit(s)
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #13961 open 2026-08-21 Feature request: Support using multiple dictionaries simultaneously.
+      #15793 merged 2026-10-08 Plugins: follow the EBU STL frame rate a plugin sets in the header
+      #13970 open 2026-08-21 Runaway SE 5
+      #15624 merged 2026-10-04 Compare: stop the Reference caption drawing under the Read-only pill
+      #15470 merged 2026-09-30 MP4 open: no UI freeze on large files
+      #15253 closed 2026-09-24 SE 5.3.0 beta 11: Remux finalizing takes a long time (continues from #15197)
+      #15596 merged 2026-10-03 Speech to text: VAD choice for Crisp ASR (Silero, FireRedVAD, WebRTC)
+      #15172 merged 2026-09-22 WhisperX: model dot reflects the Hugging Face cache instead of always green (#15170)
+      #14078 merged 2026-08-24 Stop the EBU STL save options from being thrown away
+      #14107 merged 2026-08-25 EBU STL: show frame-based timecodes while the format is active
+      #15169 merged 2026-09-22 Fix ASSA styles dialog losing every style for headers without an exact "ScriptType: v4.00+" and for "*"-prefixed names
+      #13837 merged 2026-08-18 STT: find Purfview XXL output via its "Subtitles are written to" message
+      #15245 merged 2026-09-24 Generate paragraph ids from a counter instead of Guid.NewGuid
+      #15067 merged 2026-09-19 Speech isolation features: fixes from a bug hunt
+      #13820 closed 2026-08-18 SE 5.2.0 beta 17: Speech to Text blocked when you start with nothing loaded into SE
+      #14449 merged 2026-09-02 Plugins: keep the original column when a plugin result is applied (#14445)
+      #14090 merged 2026-08-25 WhisperX: record the install with an .installed.sha256 sidecar
+      #13937 merged 2026-08-20 Teletext/EBU STL easy wins: eight fixes plus dead-code cleanup
+      #14186 merged 2026-08-27 Fix 20 bugs found in a random bug hunt
+      #12971 closed 2026-07-29 Use a bounded channel for auto-backup writes
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15678 merged 2026-10-04 yt-dlp download: remove duplicate partial-download cleanup
+      #15497 closed 2026-09-30 Feature Request: Allow saving partial transcripts or retrying failed segments when transcribing specific timecodes
+      #14942 open 2026-09-16 SE 5.3.0 beta 3: Early experience with the experimental waveform renderer
+      #15694 merged 2026-10-05 Surround with: keep whole text selected after surrounding the whole line (#15693)
+      #13839 closed 2026-08-18 Remove text for HI: Apply checkbox states change after partial Apply
+      #15504 merged 2026-10-01 OCR: access keys for Start/Pause/Edit-export, block OK while OCR runs
+      #13840 merged 2026-08-18 Remove text for HI: keep Apply checkbox states after partial Apply
+      #15447 merged 2026-09-29 EZT: read italic, color and alignment from .ezt and .eztxml
+      #15187 closed 2026-09-22 Enable ReadyToRun for UI release publishes
+      #14676 merged 2026-09-08 Bind negated state instead of mirroring it in IsNotX properties
+      #14881 merged 2026-09-14 Remux video: stop ffmpeg when the window closes and fix metadata escaping
+      #15534 merged 2026-10-02 Add behavior and "works on" options to surround-with slots
+      #15686 merged 2026-10-05 Dictionaries: make the British word list and hrb OCR fixes reachable
+      #15610 merged 2026-10-03 Paddle OCR: don't hang or go silent when the worker stops part-way
+      #15693 closed 2026-10-05 Strange behavior with text selection/highlighting
+      #12873 closed 2026-07-27 Surrounding with Musical notes doesn't work if you need it partial.
+      #14652 merged 2026-09-07 Replace DllImport with source-generated LibraryImport
+      #15090 merged 2026-09-20 Bug hunt: ffmpeg video generation
+      #14936 merged 2026-09-16 Auto-translate selected lines without an original open
+      #15510 closed 2026-10-01 [Feature Request / UI] Add "Whole word" option to Multiple Replace dialog
+  incomplete     41 hit(s) (all listed)
+      #13310 closed 2026-08-06 Auto br settings are still incomplete in 5.2.0
+      #15290 closed 2026-09-25 [Feature Requests] AI Review: Structured context injection, custom categories, and prompt profiles for specialized post-editing (STT/MT cleanup, domain QA, etc.)
+      #14721 closed 2026-09-09 Unify PaddleOCR Standalone/Python JSON readout and use async polling to avoid result-order races
+      #14720 closed 2026-09-09 Unify PaddleOCR Standalone/Python JSON readout and use async polling to avoid result-order races
+      #14041 merged 2026-08-24 OCR fix replace lists: repair broken rules, remove dead entries
+      #11481 merged 2026-06-07 Fix incomplete UI refresh when system theme switches dark → light
+      #14022 merged 2026-08-23 Beautify time codes: snap to the video's real frame times
+      #14205 merged 2026-08-28 Fix 20 bugs found in a random bug hunt
+      #13833 merged 2026-08-18 llama.cpp translate: stall watchdog, token cap, custom server args, cancel frees VRAM
+      #13201 merged 2026-08-04 Pin OmniVoice to omnivoice-2026-08-04 (CUDA build actually works now)
+      #12773 merged 2026-07-23 Update French.json
+      #13689 merged 2026-08-16 Fix whisper.cpp on Linux failing to start with missing libwhisper.so.1
+      #13135 merged 2026-08-03 Localize 'Start server' button labels
+      #11963 merged 2026-06-28 Fix flaky OpenAiSttService SSE test (deterministic progress)
+      #11342 closed 2026-06-02 SE5_SSA Style Editor
+      #10235 closed 2026-02-27 Re-opening the timestamp issue here.
+      #10101 closed 2025-11-28 Feature Request: Add Multi-Language Auto-Detection for Whisper (Audio/Video to Text)
+      #11301 merged 2026-06-01 seconv: wire up WebVTT thumbnail image output
+      #11425 merged 2026-06-05 Tweak shift-click/shift+arrow range selection across all grids and fix various bugs
+      #11591 merged 2026-06-13 Fix scrollbar interactivity and appearance in data grids and list views
+  dataloss       0 hit(s)
+  recover        41 hit(s) (all listed)
+      #14567 merged 2026-09-05 Google Cloud STT: send lossless audio, allow dynamic batching, recover truncation
+      #15514 closed 2026-10-01 Significant performance drop on Intel Mac (x86_64) between v0.8.38 and v0.8.39
+      #14753 merged 2026-09-10 Fix #14751: recover from a corrupt waveform cache instead of hanging on it
+      #13632 merged 2026-08-14 AI review: catch batch-wide line shifts, recover their corrections
+      #12820 merged 2026-07-25 Word spell check: recover a dead Word session instead of passing every word
+      #14641 merged 2026-09-07 Tesseract OCR: add SE4's 10 px margin and resize retry passes
+      #13559 closed 2026-08-12 Regression: crispasr binary is missing x86_64 architecture (Intel support broken since recent updates)
+      #14111 merged 2026-08-25 Italian OCR fix list: E' with apostrophe to È, gated on the dictionary
+      #13548 closed 2026-08-12 Overlapping subtitles when using Crisp ASR with Parakeet
+      #14157 merged 2026-08-26 WSB: make it import-only instead of writing a file nothing can read
+      #14257 merged 2026-08-29 Compare: restore synchronized vertical scrolling (#13504)
+      #12547 merged 2026-07-16 Add IMSC 1.1 image profile image-based export
+      #13955 closed 2026-08-21 SE 5.2.0 beta 20: Grabbing & sliding with the mouse in the waveform is mostly impossible to control
+      #13833 merged 2026-08-18 llama.cpp translate: stall watchdog, token cap, custom server args, cancel frees VRAM
+      #13654 merged 2026-08-15 Bug hunt: six fixes for regressions in the last day's commits
+      #13369 merged 2026-08-08 Fix #13333: compose dead keys via local XIM on Linux non-CJK locales
+      #14225 merged 2026-08-28 Fix #14221: OCR prompt that keeps two-line subtitles apart, seconv --ocr-prompt
+      #12175 merged 2026-07-04 Fix empty language list in TTS Review window
+      #10818 closed 2026-05-08 Waveform cursor becomes increasingly laggy after long editing sessions (recovers after restart)
+      #11761 merged 2026-06-23 Use system PATH ffmpeg (v7+) when download failed (#11760)
+  recovery       23 hit(s) (all listed)
+      #14579 merged 2026-09-05 Google Cloud STT: fix obsolete credential API and nullable warnings
+      #13411 merged 2026-08-09 Correct the CRISPEMBED_CONV2D_MK figures and link the upstream issue
+      #12820 merged 2026-07-25 Word spell check: recover a dead Word session instead of passing every word
+      #13294 merged 2026-08-06 CI: retry the test run once on failure to contain headless UI flakes
+      #13632 merged 2026-08-14 AI review: catch batch-wide line shifts, recover their corrections
+      #14582 merged 2026-09-05 Google Cloud STT: allow gcloud credentials, and object level access to the bucket
+      #13736 merged 2026-08-16 Update CrispASR to v0.8.29
+      #12673 merged 2026-07-20 Stop menus and flyouts from leaving shortcuts dead
+      #12756 merged 2026-07-23 Fix auto-save silently stopping after an import (sticky converted flag)
+      #13410 merged 2026-08-09 Bump CrispEmbed to v0.17.7
+      #13689 merged 2026-08-16 Fix whisper.cpp on Linux failing to start with missing libwhisper.so.1
+      #12808 merged 2026-07-24 Fix AltGr shortcut races while typing
+      #13284 closed 2026-08-05 Fix #10166: OCR skip-all choices are now remembered
+      #13609 closed 2026-08-13 v5.1.0 Parsing Matroska file unusually slow
+      #13548 closed 2026-08-12 Overlapping subtitles when using Crisp ASR with Parakeet
+      #12683 closed 2026-07-20 Opening a raw PGS .sup freezes the UI and causes thread-pool growth
+      #10655 closed 2026-04-19 Refactor expanded OCR match phases
+      #14211 closed 2026-08-28 CrispASR Info for SE
+      #10339 closed 2026-03-18 macOS ARM64 build crashes on startup — missing 2 CoreCLR symbols
+      #9204 closed 2025-01-11 [Feature request] Add PaddleOCR as an availabe OCR engine to SubtitleEdit
+  rollback       13 hit(s) (all listed)
+      #12600 merged 2026-07-18 Update change log + version to 5.1.0-rc8
+      #14346 merged 2026-08-31 Advance repeat selection at cue end and timer overshoot
+      #14384 closed 2026-09-01 Keep displayed playhead monotonic during playback
+      #12704 merged 2026-07-21 Pilot: TableView instead of DataGrid in Show history
+      #14345 closed 2026-08-31 Prevent duplicate macOS launch and Matroska opens
+      #12103 merged 2026-07-03 TTS bug hunt batches 2-4: cancellation/lifecycle, review playback/export, engine hardening
+      #10077 closed 2025-11-13 Add Faster‑Whisper‑XXL Pro r3.256.1 to Beta (includes CPU‑only support, no GPU required
+      #10619 closed 2026-04-15 Subtitle edit beta 16 crisp asr won't run
+      #10015 merged 2025-10-21 Feature/se textboxes
+      #9451 closed 2025-03-10 shortcuts don't work
+      #8209 closed 2024-04-17 Subtitle Edit 4.0.4/4.0.5 and Purfview Faster Whisper Broken Merging Subtitle Lines with Chinese/Korean/etc. Transcription
+      #5988 closed 2022-05-28 [Feature Request] Manual speech recognition
+      #2185 closed 2017-01-19 Format converting during spell-check
+  resume         72 hit(s) (all listed)
+      #14837 merged 2026-09-13 FFmpeg player: fix macOS playback stopping right after Play
+      #13797 merged 2026-08-17 Resync the waveform cursor to mpv when playback resumes
+      #15274 closed 2026-09-24 Replace function crashes the application
+      #14943 closed 2026-09-16 SE 5.3.0 beta 3: Clicking in the experimental waveform sets the subtitle as dirty
+      #14528 merged 2026-09-04 Waveform cursor and time display froze during playback (#14523)
+      #14330 closed 2026-08-31 SE 5.2.0 beta 30: Audio dropouts
+      #15119 merged 2026-09-20 FFmpeg player: sound on Linux through PulseAudio / PipeWire
+      #14838 merged 2026-09-13 FFmpeg player: VideoToolbox hardware decoding on macOS
+      #14465 merged 2026-09-03 JSON syntax highlighting: color string values that follow a property name
+      #15663 merged 2026-10-04 Align download windows: Retry button, error display, SHA-256 for ffmpeg/libmpv/libVLC
+      #14523 closed 2026-09-04 Waveform cursor intermittently stutters during playback
+      #14095 closed 2026-08-25 [Issue] Error during redubbing after export and subsequent workflow import
+      #13925 merged 2026-08-20 Smooth the waveform/video cursor: mpv events, small audio buffer, slider fixes
+      #13072 merged 2026-08-02 Search the original text column in find and replace
+      #10230 closed 2026-02-25 The translation results were not saved and were lost
+      #13490 merged 2026-08-11 Restore trough paging for the TableView scroll bar (#12894)
+      #14335 merged 2026-08-31 mpv: keep the audio device open while paused
+      #12895 merged 2026-07-28 Scroll bar: pause trough hold paging when the thumb reaches the cursor
+      #13151 merged 2026-08-03 Copy-paste translate: overwrite re-translated rows instead of appending
+      #14370 merged 2026-09-01 mpv: replace the dead audio-keep-open option with audio-stream-silence
+  half-written   40 hit(s) (all listed)
+      #15479 merged 2026-09-30 Blu-ray sup: write PTS on the video frame grid
+      #14919 merged 2026-09-15 Port SE4's 3D image export (half side-by-side / top-bottom), also in seconv
+      #15478 closed 2026-09-30 Quantize PTS/DTS to the frame grid when exporting to SUP (PGS)
+      #15099 merged 2026-09-20 Stop dialog position pumps polling a disposed mpv player; throttle repeated error-log entries
+      #14732 merged 2026-09-09 Paddle OCR: read results from json for both engines, keep batch convert cues in order
+      #14933 merged 2026-09-16 Add an NVENC tune list to burn-in
+      #14751 closed 2026-09-10 How do I remove waveform cache?
+      #15185 closed 2026-09-22 EBU STL / Teletext workflow with Flow Editing and optional ARTE validation
+      #14377 merged 2026-09-01 seconv: add the full frame image export option
+      #13642 merged 2026-08-15 Waveform drag: one undo step per drag, not one per pause
+      #14177 merged 2026-08-27 Fix 7 bugs found in a random bug hunt (apply min gap data loss, duration limits, shot changes import, CEA-608 roll-up)
+      #14244 merged 2026-08-29 Don't split a subtitle inside a number when re-splitting a translation
+      #14194 merged 2026-08-27 Fix 20 bugs found in a bug hunt
+      #15753 closed 2026-10-06 When working in 23.976 fps, the conversion between timecode, milliseconds and frame count is incorrect
+      #14541 closed 2026-09-04 Translation Text No Longer Visible While Typing SE5 RC2
+      #14161 merged 2026-08-26 Fix 37 bugs from a fourth bug hunt
+      #14753 merged 2026-09-10 Fix #14751: recover from a corrupt waveform cache instead of hanging on it
+      #14339 merged 2026-08-31 Blu-ray sup preview: place the overlay against the measured video surface
+      #13338 merged 2026-08-07 Docs: state which unknown-word choices are remembered
+      #14861 closed 2026-09-14 SE 5.3.0 beta 1: Auto-save suggestions for Settings.json & other types of files
+  wipe           45 hit(s) (all listed)
+      #15731 merged 2026-10-06 Keep saved font families not in the face list + batch status reset after setup checks
+      #14880 merged 2026-09-14 Restore auto-backup: validate a settings backup before replacing the live settings
+      #12952 closed 2026-07-29 Fix undo wiping all original subtitle text
+      #12951 closed 2026-07-29 Fix undo wiping all original subtitle text
+      #12950 closed 2026-07-29 Fix undo wiping all original subtitle text
+      #12949 closed 2026-07-29 Fix undo wiping all original subtitle text
+      #12948 closed 2026-07-29 Fix undo wiping all original subtitle text
+      #15050 merged 2026-09-19 Remember the second subtitle file (#15044)
+      #12963 merged 2026-07-29 Fix undo wiping the original subtitle text column
+      #12788 merged 2026-07-24 Fix undo wiping all original subtitle text
+      #14588 merged 2026-09-06 Text drag-and-drop: show a drop-target bar while dragging
+      #14800 closed 2026-09-12 ASSA: Losing formatting tags when splitting line + Formatted dialogs with hyphen
+      #15248 merged 2026-09-24 Cut video: optional transitions between segments and fade from/to black
+      #14100 merged 2026-08-25 Translate: keep the original, and never save one without text (#14091)
+      #14187 closed 2026-08-27 Waveform cursor jumps after clicking
+      #13355 merged 2026-08-08 Fix two more ASSA style losses from bare ToParagraph() calls
+      #14091 closed 2026-08-25 After (DeepL) translation the original is empty
+      #14241 merged 2026-08-29 Fix "inverse selection" selecting one row and jumping to the top
+      #13481 merged 2026-08-11 VobSub color isolation fixes
+      #14177 merged 2026-08-27 Fix 7 bugs found in a random bug hunt (apply min gap data loss, duration limits, shot changes import, CEA-608 roll-up)
+  wipes          6 hit(s) (all listed)
+      #14100 merged 2026-08-25 Translate: keep the original, and never save one without text (#14091)
+      #12963 merged 2026-07-29 Fix undo wiping the original subtitle text column
+      #14366 merged 2026-09-01 Fix three defects from the beta30 run
+      #11636 merged 2026-06-15 Replace/Find: Count no longer corrupts the last-found position
+      #12618 merged 2026-07-18 Fix four bugs found in a bug hunt over recent commits
+      #11399 merged 2026-06-04 Fix Replace & find next silently skipping current match
+  erase          35 hit(s) (all listed)
+      #15825 open 2026-10-08 ASSA draw: F9 preview of the rendered drawing
+      #15418 merged 2026-09-28 CEA-708: handle BS, FF and HCR control codes
+      #15824 merged 2026-10-08 ASSA draw OK: don't overwrite selected text lines
+      #15482 merged 2026-09-30 CEA-708: time pop-on captions from when they are displayed
+      #14613 closed 2026-09-06 SE 5.2.0 RC 4: Transcription anomalies
+      #14941 closed 2026-09-16 On macOS, the "Replace" shortcut overrides the system function
+      #14872 closed 2026-09-14 Video menu: add a Letterboxing ribbon (#14845)
+      #14091 closed 2026-08-25 After (DeepL) translation the original is empty
+      #13103 merged 2026-08-03 Fix ASSA/SSA style editor losing data on rename and style switch
+      #14100 merged 2026-08-25 Translate: keep the original, and never save one without text (#14091)
+      #14138 merged 2026-08-26 Video OCR: fix brightness-mask fidelity, adopt VideOCR's confidence/masking techniques (#14131)
+      #14227 merged 2026-08-28 Read and write Manzanita DVB teletext files (.dvbttx)
+      #13485 merged 2026-08-11 Fix six bugs in the original-as-reference feature (#13449 follow-up)
+      #12920 merged 2026-07-28 Reuse StringBuilder instances in loops in UI
+      #14207 merged 2026-08-28 Fix 20 bugs found in a random bug hunt
+      #13460 merged 2026-08-10 Update CrispASR to v0.8.27
+      #12301 merged 2026-07-09 Restore last editing position when reopening a subtitle file
+      #11716 merged 2026-06-20 Reliably remember a subtitle's media across reopen (SE4 parity)
+      #14152 merged 2026-08-26 Fix 26 bugs found in a five-area hunt (formats, seconv, dialogs, UI, core)
+      #11579 merged 2026-06-13 Fix find highlight and Find Next not advancing (plain text box mode)
+  erasing        4 hit(s) (all listed)
+      #11579 merged 2026-06-13 Fix find highlight and Find Next not advancing (plain text box mode)
+      #7169 closed 2023-07-27 Set column order
+      #5960 closed 2022-05-18 opened text file is incomplete (truncated) if paragraph is long
+      #5057 closed 2021-05-22 Unable to let OCR recognize italic c in binary image compare mode; always takes it as o
+  erased         16 hit(s) (all listed)
+      #15418 merged 2026-09-28 CEA-708: handle BS, FF and HCR control codes
+      #15482 merged 2026-09-30 CEA-708: time pop-on captions from when they are displayed
+      #14613 closed 2026-09-06 SE 5.2.0 RC 4: Transcription anomalies
+      #14091 closed 2026-08-25 After (DeepL) translation the original is empty
+      #14100 merged 2026-08-25 Translate: keep the original, and never save one without text (#14091)
+      #14138 merged 2026-08-26 Video OCR: fix brightness-mask fidelity, adopt VideOCR's confidence/masking techniques (#14131)
+      #14941 closed 2026-09-16 On macOS, the "Replace" shortcut overrides the system function
+      #13485 merged 2026-08-11 Fix six bugs in the original-as-reference feature (#13449 follow-up)
+      #13103 merged 2026-08-03 Fix ASSA/SSA style editor losing data on rename and style switch
+      #11716 merged 2026-06-20 Reliably remember a subtitle's media across reopen (SE4 parity)
+      #10754 closed 2026-04-30 (beta) (bug) ASSA styles toolbar buttons not visible when loading ASSA file
+      #6916 closed 2023-05-10 Minor bug (to fix) in FIND/REPLACE when you click YES button when the word was't find
+      #6666 closed 2023-02-11 STL file says it's empty; how ot recover files in translation mode
+      #2382 closed 2017-05-09 When incomplete translation subtitle is open, opening original subtitle erases a line
+      #2201 closed 2017-02-04 Problems caused by clash in timing between original and translation subtitles
+      #4955 closed 2021-04-05 Bug: creating a new event > edit something in source view > go back to waveform > event gets erased
+  destroy        52 hit(s) (all listed)
+      #13378 merged 2026-08-08 Destroy the TTS preview mpv core off the UI thread
+      #13684 merged 2026-08-16 TTS review: destroy mpv cores off the UI thread in Stop and row playback
+      #13050 merged 2026-08-01 Destroy the video player when its control is discarded (#13048)
+      #14937 merged 2026-09-16 Turn off mpv's clipboard backends
+      #14738 merged 2026-09-10 Fix #14736: demote a dialog before it closes so SE stops floating on top
+      #13925 merged 2026-08-20 Smooth the waveform/video cursor: mpv events, small audio buffer, slider fixes
+      #13695 closed 2026-08-16 Problem with subtitles in a minus timecode
+      #14746 merged 2026-09-10 Fix #14741: keep the video position when settings are applied
+      #14929 closed 2026-09-16 Application freeze on play button in video preview
+      #13105 merged 2026-08-03 Fix mpv dispose race and UI-thread core teardown hang
+      #14054 merged 2026-08-24 Keep the original text when a dialog's result is applied (#14053)
+      #11994 merged 2026-06-29 Fix Blu-ray sup export crash on Linux (HarfBuzz symbol clash) (#11864)
+      #12237 closed 2026-07-07 Fix silent crash when disposing mpv with calls in flight (#12093)
+      #14219 merged 2026-08-28 Fix #14218: stop Settings from rewinding the video
+      #14099 merged 2026-08-25 TTS: let an imported session regenerate its cloned lines again (#14095)
+      #13696 merged 2026-08-16 Keep negative time codes instead of zeroing them on selection
+      #13399 merged 2026-08-09 Fix #13398: keep foreground on the dialog that triggered an undock rebuild
+      #12589 merged 2026-07-18 Fix FixInvalidItalicTags eating a character before a dangling begin tag
+      #14368 merged 2026-09-01 Decide undocked tool-window activations from the foreground history
+      #11864 closed 2026-06-26 Crash when trying to export BluRay (sup) subtitles
+  destroys       13 hit(s) (all listed)
+      #14738 merged 2026-09-10 Fix #14736: demote a dialog before it closes so SE stops floating on top
+      #14746 merged 2026-09-10 Fix #14741: keep the video position when settings are applied
+      #14937 merged 2026-09-16 Turn off mpv's clipboard backends
+      #13050 merged 2026-08-01 Destroy the video player when its control is discarded (#13048)
+      #14219 merged 2026-08-28 Fix #14218: stop Settings from rewinding the video
+      #14368 merged 2026-09-01 Decide undocked tool-window activations from the foreground history
+      #14197 merged 2026-08-27 Fix 20 bugs found in a bug hunt
+      #11593 merged 2026-06-13 Fix UI freeze on layout change (#11585)
+      #11585 closed 2026-06-13 SE V5.0.0-rc4 Hangs on Layout change
+      #14541 closed 2026-09-04 Translation Text No Longer Visible While Typing SE5 RC2
+      #10908 merged 2026-05-14 Fix main window freeze after closing Settings with OK (#10815)
+      #2118 closed 2016-11-27 [BUG] Remove unneeded spaces several problems which destroys the subtitle if applied
+      #2777 closed 2018-02-19 "Hey." always seems to OCR as "H9)'-"
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15356 open 2026-09-26 One-click copy/paste of subtitles with exact text and timing
+      #15824 merged 2026-10-08 ASSA draw OK: don't overwrite selected text lines
+      #15313 merged 2026-09-25 ASSA styles: overwrite prompt on copy, reorder storage styles
+      #15676 merged 2026-10-04 SSA styles: view-model tests for replace with, import overwrite, storage copy
+      #15156 closed 2026-09-21 [seconv] Need to force overwrite instead of adding language suffix
+      #15611 merged 2026-10-03 ASSA styles: importing a style with an existing name asks overwrite / keep both
+      #13923 open 2026-08-20 Feature Request: Translation Mode (upgrade?)
+      #14210 closed 2026-08-28 Generate video with burned-in subtitles - no overwrite option
+      #15312 closed 2026-09-25 Copying a style to the saved style files does not overwrite it; it creates a copy and the styles cannot be organized.
+      #15332 closed 2026-09-26 The new style-saving selector does not allow adding all styles to a new category if names already exist in another category.
+      #13982 merged 2026-08-22 Keep source timestamp: capture it before an in-place overwrite
+      #14692 closed 2026-09-08 seconv regression: square brackets in input filename parsed as console markup (5.2.0-rc5)
+      #13151 merged 2026-08-03 Copy-paste translate: overwrite re-translated rows instead of appending
+      #15665 merged 2026-10-04 SSA styles/attachments: port ASSA fixes via shared helpers
+      #13682 closed 2026-08-16 [Bug / Feature] Restore direct Ctrl/Cmd+V overwrite & fix column paste selection bug in v5.2 (Win/Mac)
+      #15015 closed 2026-09-18 The new GUI for version 5
+      #12048 merged 2026-07-01 Prevent UI tests from overwriting user settings
+      #12195 closed 2026-07-04 Questions about 'Split line' behavior and pasting onto the grid in v5
+      #15160 merged 2026-09-22 seconv: add --no-language-suffix to drop the language code from output names
+      #14416 closed 2026-09-02 Video & Shortcut UX fixes: Open recent video menu, zero-time preview fix, and immediate key-up end timing
+  clobber        19 hit(s) (all listed)
+      #14932 merged 2026-09-16 Keep the remembered video offset in the recent-file entry
+      #15156 closed 2026-09-21 [seconv] Need to force overwrite instead of adding language suffix
+      #13712 merged 2026-08-16 Name batch auto-translate output after the target language; stop same-language tracks clobbering each other
+      #14130 merged 2026-08-26 Fix EBU STL save crash on unquoted font colors and persist the save options
+      #13655 merged 2026-08-15 Apply the whole default storage style category when converting to ASSA/SSA
+      #13319 merged 2026-08-07 Fix seven bugs found in a review sweep of the beta-6 PRs
+      #13281 closed 2026-08-05 Fix #13113: add default frame rate setting to options
+      #13792 merged 2026-08-17 Bug hunt fixes: last 20 hours of main (beta16 window)
+      #13167 merged 2026-08-03 Batch convert: "Embed fonts" ASSA function + font collector "Embed fonts in subtitle" button
+      #13486 merged 2026-08-11 Fix ten bugs found in a hunt over recently merged PRs
+      #12390 merged 2026-07-12 Fix nine bugs found in bug hunt
+      #13284 closed 2026-08-05 Fix #10166: OCR skip-all choices are now remembered
+      #14169 merged 2026-08-27 Fix 30 bugs found in a five-area hunt (formats, lifecycle, settings, rendering, image export)
+      #11282 merged 2026-05-30 Fix "Adjust timings" always re-checked in STT post-processing
+      #13725 merged 2026-08-16 Broadcast format sweep: fix round-trips for PAC, Cavena 890, SCC, Cheetah, MacCaption, EBU-TT-D, Ayato, CapMaker Plus
+      #12105 merged 2026-07-03 TTS: fix 17 findings from the third-pass bug hunt (incl. two regressions from the previous round)
+      #11133 merged 2026-05-24 Expose CrispASR wav2vec2 forced-aligner zoo (WhisperX style)
+      #11629 merged 2026-06-15 seconv: VobSub OCR + --time-codes-only for image-based subtitles
+      #11425 merged 2026-06-05 Tweak shift-click/shift+arrow range selection across all grids and fix various bugs
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15356 open 2026-09-26 One-click copy/paste of subtitles with exact text and timing
+      #14629 open 2026-09-07 ARTE EBU STL / Teletext delivery workflow – follow-up prototype
+      #14554 closed 2026-09-05 Settings menu does not open, timeline remains blank
+      #15660 merged 2026-10-04 Make video tool progress texts translatable
+      #13923 open 2026-08-20 Feature Request: Translation Mode (upgrade?)
+      #14584 merged 2026-09-05 Generate blank video: stop the window resizing while generating
+      #14510 open 2026-09-04 Add Issue Templates and Labels in GitHub repository
+      #14583 merged 2026-09-05 Generate blank video: theme-aware time code color, larger font, contrast box
+      #15301 merged 2026-09-25 Don't show empty original lines as display-only reference rows
+      #15350 merged 2026-09-26 YouTube Transcript: read markdown-bold time codes, skip spoken time codes
+      #15713 merged 2026-10-05 Point sync via other: gap badges by silence length + "Gap after" (#15695)
+      #10318 open 2026-03-16 ASSA advanced effects observations
+      #13588 closed 2026-08-13 SE5 missing feature "auto removal of blank lines upon opening"
+      #15648 merged 2026-10-04 Flatpak: install 16-128 px icon sizes
+      #13614 closed 2026-08-14 The blank lines between multi-line texts of the translated subtitles
+      #14873 merged 2026-09-14 Merge roll-up captions: fix zero-length chunks and lost lines
+      #15311 merged 2026-09-25 Batch video tools: show "Done" instead of "_Done" in job rows
+      #13590 merged 2026-08-13 Restore SE4 option to remove blank lines when opening a subtitle
+      #14667 closed 2026-09-08 Regression: Pasting a line (Cmd+V / Ctrl+V) overlaps original timestamps instead of appending sequentially (SE 5.2.0 - Windows & macOS)
+      #13823 merged 2026-08-18 Keep the grid where the user was after replace and blank-line removal
+  unreadable     57 hit(s) (all listed)
+      #15625 merged 2026-10-04 Compare: say when a dropped or picked file can't be read
+      #14908 closed 2026-09-15 Images shown during OCR from images are nearly unreadable – hard to compare with recognized text
+      #13960 open 2026-08-21 Feature request: Collapsible/folding override tags (ASS/SSA) in the Text box (like code folding in IDEs)
+      #13850 merged 2026-08-19 Add "Hide tags" grid mode and guard unreadable authored colors (#13824)
+      #15052 merged 2026-09-19 Settings backup: interval 0 = every start, skip unchanged settings (#14861)
+      #15226 merged 2026-09-23 Speech-to-text: fix anime.ja with Purfview XXL, hide translate for it (#15223)
+      #15363 merged 2026-09-27 PAC: one "secondary code page" line no longer turns a file Latin
+      #12694 closed 2026-07-21 Images generated by InpaintDelogo are unreadable in Subtitle Edit v5.0
+      #14338 merged 2026-08-31 Subtitle image previews: one configurable background, in both windows
+      #14791 merged 2026-09-12 Burn-in: generate a video without subtitles instead of failing in ffmpeg
+      #15143 merged 2026-09-21 Audio clips: never pass ffmpeg a zero or negative -t, skip bad lines, log failures
+      #14148 merged 2026-08-26 Video OCR: retry other frames of a group when OCR reads nothing
+      #14984 merged 2026-09-17 Export 3D subtitles at the depth from a 3D Blu-ray's 3D-Plane (.ofs)
+      #13731 merged 2026-08-16 Read Adobe Premiere Pro Markers panel CSV exports
+      #13544 closed 2026-08-12 Delete a word/Blacklist it while doing a spell check
+      #13422 merged 2026-08-09 Spell check: crop transparent area from source-image preview
+      #14157 merged 2026-08-26 WSB: make it import-only instead of writing a file nothing can read
+      #15097 merged 2026-09-20 Add editor-style layout 14 with a track timeline
+      #13824 closed 2026-08-18 Feature Request: Add option to hide ASS/SSA override tags in the subtitle grid
+      #14107 merged 2026-08-25 EBU STL: show frame-based timecodes while the format is active
+  garbage        79 hit(s) (all listed)
+      #13972 open 2026-08-21 Bad speech to text - no warning.
+      #15420 merged 2026-09-28 MP4: read CEA-608/708 captions from H.265 video
+      #15151 merged 2026-09-21 Remove color tags: handle CSS color functions like rgba()
+      #15153 merged 2026-09-21 Matroska: read fixed-length integers fully on short reads (#14940)
+      #15351 merged 2026-09-26 Load more odd subtitle files; stop two formats throwing on detection
+      #14922 merged 2026-09-15 Video OCR: don't drop lines after the 4th of a frame (#14920)
+      #15363 merged 2026-09-27 PAC: one "secondary code page" line no longer turns a file Latin
+      #14310 closed 2026-08-30 Ollama performance difference between GUI and seconv version
+      #15365 merged 2026-09-27 PAC: secondary code page for lines in another script
+      #15353 merged 2026-09-26 PAC: detect the code page instead of decoding every file as Latin
+      #13583 closed 2026-08-13 Plugin "American to British" missed conversion "fantasize" => "fantasise"
+      #14636 merged 2026-09-07 FireRedTTS3: require the reference transcript instead of generating noise
+      #15487 merged 2026-09-30 Open more files found in a scan of real issue files
+      #13731 merged 2026-08-16 Read Adobe Premiere Pro Markers panel CSV exports
+      #13726 merged 2026-08-16 Open BDN xml and Final Cut Pro image xmeml from the main window via OCR
+      #13760 merged 2026-08-17 Trim embedded fonts to used characters (attachments, font collector, batch convert)
+      #14312 merged 2026-08-30 seconv: give Ollama OCR the same generation limits as the GUI
+      #14753 merged 2026-09-10 Fix #14751: recover from a corrupt waveform cache instead of hanging on it
+      #14133 merged 2026-08-26 seconv: fail on a path-shaped --translate-prompt that does not exist
+      #14052 merged 2026-08-24 Fix Qwen thinking leakage in llama.cpp translate/review
+  mangled        19 hit(s) (all listed)
+      #12291 closed 2026-07-08 seconv Mangled VobSub OCR errors
+      #12772 closed 2026-07-23 seconv Mangled VobSub OCR errors - Part 2
+      #14025 merged 2026-08-23 Fix ten bugs from a random sweep of libse/libuilogic
+      #13669 merged 2026-08-15 Speech to text: fix Qwen3 ASR JSON error on comma-decimal Windows locales
+      #14324 merged 2026-08-31 Settings import: accept an SE 4 Settings.xml
+      #13727 merged 2026-08-16 IMSC 1.1/Rosetta: keep literal angle brackets, make italics spec-visible, fix cross-line italics
+      #13782 merged 2026-08-17 Fix #13113: make the toolbar frame rate usable like SE 4 legacy
+      #13286 merged 2026-08-05 Fix #10627: Auto-translate via copy-paste loses all but the first ASSA tag group
+      #12714 merged 2026-07-21 Add Gemma 4 models to the llama.cpp translate and review lists
+      #12476 merged 2026-07-14 Add DVD sup export for MuxMan/Scenarist DVD authoring
+      #12479 merged 2026-07-14 Micro-optimize three hot paths (verified with BenchmarkDotNet)
+      #12394 merged 2026-07-12 Fix common OCR errors changing Dutch "Al" to "AI"
+      #11656 merged 2026-06-16 Fix truncated ♫ mojibake in default MusicSymbolReplace
+      #11735 merged 2026-06-22 Don't let Netflix check garble ASSA override tags (issue #11720)
+      #14192 merged 2026-08-27 Fix 27 bugs found in a bug hunt
+      #14169 merged 2026-08-27 Fix 30 bugs found in a five-area hunt (formats, lifecycle, settings, rendering, image export)
+      #13725 merged 2026-08-16 Broadcast format sweep: fix round-trips for PAC, Cavena 890, SCC, Cheetah, MacCaption, EBU-TT-D, Ayato, CapMaker Plus
+      #10339 closed 2026-03-18 macOS ARM64 build crashes on startup — missing 2 CoreCLR symbols
+      #2249 closed 2017-02-25 Feature request: Moving words up/down inside subtitles
+  contents       98 hit(s) (all listed)
+      #14776 open 2026-09-11 [Feature Request] seconv - Speech-to-Text support
+      #12087 open 2026-07-02 Accessibility observations in Subtitle Edit v5.1.0-beta5: menu navigation, DataGrid accessibility, remaining unlabeled controls, and playback behavior
+      #15623 closed 2026-10-04 Show error when dragging unsupported file into compare window instead of doing nothing
+      #14785 merged 2026-09-11 Bundle libvoikko for Finnish spell check in Flatpak and macOS builds
+      #15252 closed 2026-09-24 libmpv loader: folder order decides precedence, not file name
+      #13967 merged 2026-08-21 Add option to keep the source file's timestamp on converted files
+      #13559 closed 2026-08-12 Regression: crispasr binary is missing x86_64 architecture (Intel support broken since recent updates)
+      #14692 closed 2026-09-08 seconv regression: square brackets in input filename parsed as console markup (5.2.0-rc5)
+      #12736 merged 2026-07-22 Strip .gitkeep from the macOS bundle before signing
+      #9211 closed 2025-01-12 In translator mode, multiple replace rule which deletes the entirety of a subtitle's text causes a desync
+      #11317 open 2026-06-01 Linux video is not working on any Subtitle Edit Version with Debian
+      #15118 merged 2026-09-20 FFmpeg player: real frame index, seek-free frame stepping, two-tier scrubbing
+      #14344 closed 2026-08-31 [deps] libmpv: 20260814 → 20260831
+      #13308 closed 2026-08-06 temporary filename stuck when using SMB network share or tmpfs
+      #13545 merged 2026-08-12 Fix five bugs found in the beta11 commits
+      #13604 merged 2026-08-13 Speed up OCR/export pixel loops with spans and Vector<T>
+      #12266 closed 2026-07-08 Requesting to bring back some features from SE4 - SE5
+      #13174 merged 2026-08-04 Fix macOS AV1 crash by bumping bundled dav1d via IINA 1.4.4
+      #13601 merged 2026-08-13 Update speech-to-text advanced-parameter help to the pinned engine versions
+      #12971 closed 2026-07-29 Use a bounded channel for auto-backup writes
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #12570 open 2026-07-17 In-Place Updating
+      #15603 closed 2026-10-03 Feature Request: Inline "in-place" translation for "Selected line -> Auto-translate" context menu
+      #15620 open 2026-10-04 Compare window - context lines
+      #15141 merged 2026-09-21 seconv: place DVB-sub images by their ink, in their own frame
+      #14816 merged 2026-09-12 AI review + Auto-translate: edit the suggested text in place in the grid
+      #14956 merged 2026-09-16 Auto-translate follow-ups from #14926: in-place option, model drop-down, Gemini errors, source guess
+      #14481 open 2026-09-03 SE 5.2.0 RC 1: Macros?
+      #13515 open 2026-08-11 SE 5.2.0 beta 10: File selection dialogs opening off screen
+      #12774 open 2026-07-24 Preserve sync points after closing "Point Sync via Another Subtitle" and ""Point Sync..." windows
+      #13982 merged 2026-08-22 Keep source timestamp: capture it before an in-place overwrite
+      #13923 open 2026-08-20 Feature Request: Translation Mode (upgrade?)
+      #15146 open 2026-09-21 Feature: Position-aware Video OCR with local translation and styled on-screen overlays (bounding box → ASS `\pos`)
+      #15723 merged 2026-10-06 Auto-translate: remove unused ButtonModelIsVisible property
+      #13357 merged 2026-08-08 Harden BeautifyTimeCodes OK: adjust times in place, keep row state
+      #13081 open 2026-08-02 Speech to text line duplicates
+      #15670 merged 2026-10-04 yt-dlp download: make binary executable before moving it into place
+      #15160 merged 2026-09-22 seconv: add --no-language-suffix to drop the language code from output names
+      #15606 merged 2026-10-03 Shortcut: auto-translate selected lines without prompt (#15603)
+      #15667 merged 2026-10-04 Selected lines: Remove/replace Unicode characters and Convert actors
+      #15676 merged 2026-10-04 SSA styles: view-model tests for replace with, import overwrite, storage copy
+  unclean        0 hit(s)
+  shutdown       17 hit(s) (all listed)
+      #14009 closed 2026-08-22 Feature Request: Add "Shutdown After Completion" Option for Batch Tasks
+      #13873 merged 2026-08-19 Fix llama-server ownership in batch convert and a temp-file leak
+      #13323 merged 2026-08-07 Update auto-translate model lists for August 2026 provider changes
+      #13039 merged 2026-08-01 Use DispatcherTimer for auto-backup instead of Timers.Timer
+      #13867 merged 2026-08-19 Fix #13865: stop the batch-convert llama-server, and let users own the launch flags
+      #13009 merged 2026-07-30 Fix batch of auto-translate bugs found in bughunt
+      #12198 merged 2026-07-05 Force process exit when the main window closes (#12172)
+      #11716 merged 2026-06-20 Reliably remember a subtitle's media across reopen (SE4 parity)
+      #11229 merged 2026-05-28 Show undocked video/waveform windows as independent top-levels
+      #11184 merged 2026-05-25 Async fixes: flow CancellationToken, drop dup timer sub, guard OnClosing
+      #11209 merged 2026-05-27 Add VibeVoice and IndexTTS text-to-speech engines
+      #13251 merged 2026-08-05 Fix #12705 (point 3): persist original subtitle when closing with Yes
+      #11178 merged 2026-05-25 Fix #11176: dispose mpv off the UI thread to unstick BurnIn dialogs
+      #10998 merged 2026-05-17 Render libVLC into an opaque X11 child window on Linux
+      #4295 closed 2020-08-05 Freeze during OCR
+      #4317 closed 2020-08-22 Add auto shutdown option to Batch convert
+      #3431 closed 2019-02-28 3.5.9 Bug and very slow performance
+  reboot         17 hit(s) (all listed)
+      #13390 closed 2026-08-09 SE5.1's speech-to-text feature is not working
+      #12481 closed 2026-07-15 Startup error messages and did nothing after trying to open mp4 and/or ttml file
+      #12002 closed 2026-06-30 Failed to execute script '__main__' due to unhandled exception
+      #10008 closed 2025-10-18 Enable high DPI awareness
+      #10261 closed 2026-03-07 Registering File Types in Version 5
+      #10339 closed 2026-03-18 macOS ARM64 build crashes on startup — missing 2 CoreCLR symbols
+      #9435 closed 2025-03-06 Elapsed time for AI subtitle generation?
+      #5208 closed 2021-07-19 Duplicated Lines and Blank Lines after reboot
+      #5191 closed 2021-07-10 Volume not saving
+      #7546 closed 2023-10-23 [Solved] Something takes up permanently a lots of storage space when I'm using Subtitle Edit
+      #7556 closed 2023-10-25 SE 4.01 using 100% of a single thread while idle
+      #7785 closed 2023-12-24 Win11 SE403 setup doesn't start
+      #4295 closed 2020-08-05 Freeze during OCR
+      #5053 closed 2021-05-20 ASSA. Style Settings Minor Fixes
+      #4981 closed 2021-04-12 SE 3.6.0 startup error
+      #4526 closed 2020-11-19 Error open all file MKV
+      #3891 closed 2019-12-18 Video is off
+  disk+full      51 hit(s) (all listed)
+      #14107 merged 2026-08-25 EBU STL: show frame-based timecodes while the format is active
+      #14078 merged 2026-08-24 Stop the EBU STL save options from being thrown away
+      #14334 merged 2026-08-31 Mark lines as forced narrative and save them on their own
+      #11297 open 2026-05-31 Native Linux Build (v5.0.0-rc1) - Consistent Segmentation Fault when handling Arabic Subtitles and Translation
+      #14753 merged 2026-09-10 Fix #14751: recover from a corrupt waveform cache instead of hanging on it
+      #13815 merged 2026-08-18 OCR replace lists: keep three-letter names, cover the _User file end to end
+      #15097 merged 2026-09-20 Add editor-style layout 14 with a track timeline
+      #13167 merged 2026-08-03 Batch convert: "Embed fonts" ASSA function + font collector "Embed fonts in subtitle" button
+      #14750 merged 2026-09-10 Settings: Redesign toolbar settings as an icon toggle grid
+      #12987 merged 2026-07-29 Build asset zips from source folders at build time; ship translations compressed
+      #12208 closed 2026-07-05 macOS: Whisper CPP model list shows wrong file size for large-q5_0 (2.88 GB shown, actual file is 1.08 GB)
+      #14087 merged 2026-08-25 Fix five defects found in the pre-beta24 review sweep
+      #13290 merged 2026-08-06 Add CrispEmbed OCR engine to batch convert
+      #14126 merged 2026-08-25 Fix the ten findings from the beta24 code review
+      #13712 merged 2026-08-16 Name batch auto-translate output after the target language; stop same-language tracks clobbering each other
+      #14099 merged 2026-08-25 TTS: let an imported session regenerate its cloned lines again (#14095)
+      #15090 merged 2026-09-20 Bug hunt: ffmpeg video generation
+      #13408 merged 2026-08-09 Sync Paddle OCR language list with PaddleOCR 3.4 and the bundled models
+      #14070 merged 2026-08-24 WhisperX as a standalone (no Python) speech-to-text engine
+      #13758 merged 2026-08-17 Finish the Paddle OCR standalone v1.4.0 bump
+  data+loss      26 hit(s) (all listed)
+      #13960 open 2026-08-21 Feature request: Collapsible/folding override tags (ASS/SSA) in the Text box (like code folding in IDEs)
+      #14177 merged 2026-08-27 Fix 7 bugs found in a random bug hunt (apply min gap data loss, duration limits, shot changes import, CEA-608 roll-up)
+      #14178 merged 2026-08-27 Prepare v5.2.0-beta26
+      #13353 merged 2026-08-08 Fix "Apply custom override tags" preview styles and OK without video
+      #14297 merged 2026-08-30 Read YouTube srv3 subtitles again, name the format, add JSON Type 24
+      #14026 merged 2026-08-23 Fix ten more bugs from a second random sweep
+      #13485 merged 2026-08-11 Fix six bugs in the original-as-reference feature (#13449 follow-up)
+      #14182 merged 2026-08-27 Fix 21 bugs found in a random bug hunt
+      #13103 merged 2026-08-03 Fix ASSA/SSA style editor losing data on rename and style switch
+      #14541 closed 2026-09-04 Translation Text No Longer Visible While Typing SE5 RC2
+      #12728 merged 2026-07-22 Fix five silent-failure and asset-resolution faults
+      #14188 merged 2026-08-27 Fix 27 bugs found in a bug hunt
+      #11669 merged 2026-06-17 Preserve all paragraph fields in SubtitleLineViewModel round-trip
+      #13449 closed 2026-08-10 5.2. beta 9When I open another subtitle from the same chapter along with the one I'm editing, it only allows me to show the subtitles that match the one I had previously opened in the timeline; it omits the rest and deletes them.
+      #12104 merged 2026-07-03 TTS: fix 20 confirmed findings from the second-pass bug hunt
+      #13275 merged 2026-08-05 Fix 12 bugs found reviewing today's commits
+      #11250 closed 2026-05-29 TTS: add Audio export format setting (Wav default, also Mp3/Ogg/Flac/M4a)
+      #12087 open 2026-07-02 Accessibility observations in Subtitle Edit v5.1.0-beta5: menu navigation, DataGrid accessibility, remaining unlabeled controls, and playback behavior
+      #10003 closed 2025-10-15 [11Labs]
+      #9752 closed 2025-06-26 Corrupted video files and vide engines **SOLVED**. Fix can be part of SE tools.
+  partial+write  21 hit(s) (all listed)
+      #15090 merged 2026-09-20 Bug hunt: ffmpeg video generation
+      #15187 closed 2026-09-22 Enable ReadyToRun for UI release publishes
+      #13723 merged 2026-08-16 Keep per-run italic/bold when importing fcpxml titles, write invariant colors
+      #13725 merged 2026-08-16 Broadcast format sweep: fix round-trips for PAC, Cavena 890, SCC, Cheetah, MacCaption, EBU-TT-D, Ayato, CapMaker Plus
+      #14022 merged 2026-08-23 Beautify time codes: snap to the video's real frame times
+      #13719 merged 2026-08-16 Read Final Cut Pro captions and current fcpxml versions, fix Apple format round-trips
+      #13243 merged 2026-08-05 Stop waveform drags and typing paying per-tick undo/preview costs (#13234)
+      #14203 merged 2026-08-27 Fix 20 bugs found in a bug hunt
+      #13284 closed 2026-08-05 Fix #10166: OCR skip-all choices are now remembered
+      #13009 merged 2026-07-30 Fix batch of auto-translate bugs found in bughunt
+      #13510 merged 2026-08-11 Repair Chatterbox reference voices that are not 24 kHz mono
+      #12230 merged 2026-07-06 Online STT: log failures, DashScope region hint, timeout handling, smaller OpenRouter chunks
+      #14161 merged 2026-08-26 Fix 37 bugs from a fourth bug hunt
+      #13270 merged 2026-08-05 Clean up TODOs: 6 obsolete, 3 bugs, 11 small fixes
+      #14160 merged 2026-08-26 Fix 30 bugs from a third five-area hunt
+      #11725 merged 2026-06-21 Fix Paddle OCR Python engine (#11710)
+      #11175 merged 2026-05-25 Show original video audio waveform in TTS review window
+      #10058 closed 2025-11-07 Centisecond rounding for .ass files makes subtitles leak past FFmpeg shot-change cuts
+      #7600 closed 2023-11-07 If Purfview's Faster-Whisper crashes, partial output not handled properly, utf-8?
+      #5975 closed 2022-05-22 Shortcut needed for "Merge with line before"
+  crash+safe     23 hit(s) (all listed)
+      #14861 closed 2026-09-14 SE 5.3.0 beta 1: Auto-save suggestions for Settings.json & other types of files
+      #13279 merged 2026-08-05 Fix #12626: TTS OK button bug
+      #12904 merged 2026-07-28 Fix async/await bugs found in bughunt
+      #13673 merged 2026-08-15 OCR: adaptive line height, nOCR un-italic retry, replace list section fix
+      #13100 closed 2026-08-02 IClosingCleanup.OnClosingCleanup can run twice: window.Closed fires more than once in Avalonia
+      #12246 merged 2026-07-07 Add multi window support on macOS with Window menu and Dock integration
+      #13646 merged 2026-08-15 seconv: fail on unknown options, add --json everywhere and --help-json
+      #12237 closed 2026-07-07 Fix silent crash when disposing mpv with calls in flight (#12093)
+      #13510 merged 2026-08-11 Repair Chatterbox reference voices that are not 24 kHz mono
+      #13264 merged 2026-08-05 Fix #13200: grid paste appends when nothing is selected instead of no-op
+      #12153 merged 2026-07-04 OCR: fix Dictionary combo going empty after downloading a dictionary
+      #12245 merged 2026-07-07 MLX Whisper: chunked decoding with punctuation persistence, beam search, and subtitle standard cues
+      #11441 merged 2026-06-06 FindNext/FindPrevious: fix selection overflow crash, off-by-one, and overlapping regex matches
+      #12772 closed 2026-07-23 seconv Mangled VobSub OCR errors - Part 2
+      #11356 merged 2026-06-03 Fix \n handling and Replace & Find Next correctness in Find/Replace
+      #10456 closed 2026-03-27 Fix crash with Arabic text on Linux due to HarfBuzz ABI conflict
+      #10314 closed 2026-03-15 Burn In dialog crashes on Linux when Type1 (.pfb) fonts are installed — GetTableData throws in ReadWin32FamilyName
+      #10339 closed 2026-03-18 macOS ARM64 build crashes on startup — missing 2 CoreCLR symbols
+      #10388 closed 2026-03-23 Add runtime dependencies to Flatpak and fix mpv video rendering
+      #7191 merged 2023-07-31 New improvements to "Beautify time codes"
+  atomic+write   11 hit(s) (all listed)
+      #15406 merged 2026-09-28 Bump CrispASR to v0.8.38
+      #14753 merged 2026-09-10 Fix #14751: recover from a corrupt waveform cache instead of hanging on it
+      #13942 closed 2026-08-21 Burn-in with -movflags +faststart may silently produce a 0-byte file when the output path is a portal-mounted document
+      #13284 closed 2026-08-05 Fix #10166: OCR skip-all choices are now remembered
+      #14064 merged 2026-08-24 Keep subtitle times on whole milliseconds (#14056)
+      #14169 merged 2026-08-27 Fix 30 bugs found in a five-area hunt (formats, lifecycle, settings, rendering, image export)
+      #13545 merged 2026-08-12 Fix five bugs found in the beta11 commits
+      #12237 closed 2026-07-07 Fix silent crash when disposing mpv with calls in flight (#12093)
+      #11664 merged 2026-06-16 Make SubtitleLineViewModel.StartTime a plain setter; add StartTimeKeepDuration
+      #10736 merged 2026-04-28 fix: atomic save and shared lock for NOcrDb
+      #3394 closed 2019-02-22 Regex limitations?
+  lock+file      78 hit(s) (all listed)
+      #13923 open 2026-08-20 Feature Request: Translation Mode (upgrade?)
+      #15746 merged 2026-10-06 Batch convert: parse added files with a few workers, batch UI updates
+      #14578 open 2026-09-05 Display video frame rate and loaded caption/subtitle frame rate for easy sync validation
+      #14994 merged 2026-09-17 Add/remove embedded subtitles: file size, empty hint, video drop, progress layout
+      #15659 merged 2026-10-04 Fix bugs found in the functionality alignment review
+      #15188 merged 2026-09-22 Run main window tick pumps only while a video is loaded
+      #14911 merged 2026-09-15 Add optional "move lines" button groups to the waveform toolbar (#14789)
+      #15097 merged 2026-09-20 Add editor-style layout 14 with a track timeline
+      #14732 merged 2026-09-09 Paddle OCR: read results from json for both engines, keep batch convert cues in order
+      #13595 merged 2026-08-13 Make the original reference editable in place: sticky links, promote-on-type, no time-code lock (#13594)
+      #13597 merged 2026-08-13 Let a display-only reference row's times be edited - it stays a reference row (#13594)
+      #14582 merged 2026-09-05 Google Cloud STT: allow gcloud credentials, and object level access to the bucket
+      #13594 closed 2026-08-13 I'm reopening this case again  When I open another subtitle from the same chapter alongside the one I'm editing, it only allows me to display subtitles that match the one I previously opened in the timeline.
+      #13485 merged 2026-08-11 Fix six bugs in the original-as-reference feature (#13449 follow-up)
+      #14169 merged 2026-08-27 Fix 30 bugs found in a five-area hunt (formats, lifecycle, settings, rendering, image export)
+      #13157 merged 2026-08-03 fix: stop burn-in progress bar overlapping target file size box
+      #12212 closed 2026-07-05 Change Default Save Location
+      #13587 merged 2026-08-13 Make WebVTT cue settings configurable again
+      #13468 merged 2026-08-10 Open a non-matching original as a reference instead of truncating it (#13449)
+      #13926 merged 2026-08-20 Take mpv core interaction off the UI thread's hot paths
+  write+failure  84 hit(s) (all listed)
+      #15680 merged 2026-10-04 Tests: stop main-view format state leaking between UI tests
+      #15364 merged 2026-09-27 OCR fix: split run-together words like SE4, fill nOCR's unknown glyphs
+      #15491 merged 2026-09-30 Read PSP UMD Video subtitles (.MPS/.PMF and .subs dumps)
+      #15481 merged 2026-09-30 Open transport streams saved with a video extension like .mp4 (GUI, batch convert, seconv)
+      #14753 merged 2026-09-10 Fix #14751: recover from a corrupt waveform cache instead of hanging on it
+      #14213 merged 2026-08-28 Fix burn-in silently skipping generation when the output file exists
+      #15613 merged 2026-10-03 Batch convert: translate one file into several languages in one run
+      #14937 merged 2026-09-16 Turn off mpv's clipboard backends
+      #14880 merged 2026-09-14 Restore auto-backup: validate a settings backup before replacing the live settings
+      #14259 merged 2026-08-29 Fix mpv observed-pause staleness that dropped the clicked seek target
+      #15152 merged 2026-09-21 Bug hunt: ten fixes from the beta4-beta8 window
+      #15143 merged 2026-09-21 Audio clips: never pass ffmpeg a zero or negative -t, skip bad lines, log failures
+      #14282 merged 2026-08-30 Fix the UI test contamination cascade, and make the suite 40% faster
+      #14840 merged 2026-09-13 FFmpeg player: D3D11VA/DXVA2 hardware decoding on Windows
+      #14366 merged 2026-09-01 Fix three defects from the beta30 run
+      #14732 merged 2026-09-09 Paddle OCR: read results from json for both engines, keep batch convert cues in order
+      #15444 merged 2026-09-29 Performance hunt round 27: opening large files that are not subtitles
+      #13942 closed 2026-08-21 Burn-in with -movflags +faststart may silently produce a 0-byte file when the output path is a portal-mounted document
+      #14276 merged 2026-08-30 Fix six bugs found hunting through the last 15 hours of commits
+      #13564 merged 2026-08-12 Keep Google Lens OCR going when a single image fails
+  file+contents  76 hit(s) (all listed)
+      #15623 closed 2026-10-04 Show error when dragging unsupported file into compare window instead of doing nothing
+      #14785 merged 2026-09-11 Bundle libvoikko for Finnish spell check in Flatpak and macOS builds
+      #15252 closed 2026-09-24 libmpv loader: folder order decides precedence, not file name
+      #11317 open 2026-06-01 Linux video is not working on any Subtitle Edit Version with Debian
+      #13967 merged 2026-08-21 Add option to keep the source file's timestamp on converted files
+      #13559 closed 2026-08-12 Regression: crispasr binary is missing x86_64 architecture (Intel support broken since recent updates)
+      #14692 closed 2026-09-08 seconv regression: square brackets in input filename parsed as console markup (5.2.0-rc5)
+      #12087 open 2026-07-02 Accessibility observations in Subtitle Edit v5.1.0-beta5: menu navigation, DataGrid accessibility, remaining unlabeled controls, and playback behavior
+      #14344 closed 2026-08-31 [deps] libmpv: 20260814 → 20260831
+      #9211 closed 2025-01-12 In translator mode, multiple replace rule which deletes the entirety of a subtitle's text causes a desync
+      #13308 closed 2026-08-06 temporary filename stuck when using SMB network share or tmpfs
+      #12736 merged 2026-07-22 Strip .gitkeep from the macOS bundle before signing
+      #13601 merged 2026-08-13 Update speech-to-text advanced-parameter help to the pinned engine versions
+      #13032 merged 2026-07-31 Font collector: SE Fonts folder collection + entry from the Styles window
+      #12971 closed 2026-07-29 Use a bounded channel for auto-backup writes
+      #13762 merged 2026-08-17 Tesseract 5.5.0 → 5.5.3, in a version-less data folder
+      #13545 merged 2026-08-12 Fix five bugs found in the beta11 commits
+      #12987 merged 2026-07-29 Build asset zips from source folders at build time; ship translations compressed
+      #11037 closed 2026-05-18 Findings after testing seconv.exe
+      #10603 closed 2026-04-14 About automatic translate problem
+
+== 51 terms run; 47 returned hits, 9 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

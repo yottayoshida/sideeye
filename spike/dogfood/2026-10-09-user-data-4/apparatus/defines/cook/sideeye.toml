@@ -1,0 +1,6 @@
+[world]
+state = "/s/cook"
+
+[define]
+operation = "cook pantry add dairy eggs --quantity 6"
+cwd       = "/s/cook"

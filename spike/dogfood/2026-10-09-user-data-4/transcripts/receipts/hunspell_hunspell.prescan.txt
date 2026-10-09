@@ -1,0 +1,227 @@
+== novelty pre-scan: hunspell/hunspell
+== date: 2026-10-09T02:01:34Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          46 hit(s) (all listed)
+      #246 open 2015-06-25 Deficiency: no error reporting on dictionary loading faliures
+      #1154 closed 2026-10-08 Update to Hunspell 1.7.5 causes stack smashing error when doing analysis
+      #1088 merged 2026-03-22 HashMgr::remove crash
+      #1094 merged 2026-03-24 ofz#495652194 persdicfuzzer crash
+      #1091 merged 2026-03-22 fix tools/analyze crash #1044
+      #200 closed 2012-02-16 Hyphen 2.8.3v crash with Open Office Hyphenation Dictionary
+      #1032 closed 2025-01-08 HashMgr::remove crashes at double delete[]
+      #2 closed 2006-02-09 Better compound word support by COMPOUNDRULE
+      #1095 closed 2026-03-24 UB when SFX condition string starts with ^ in .aff
+      #1086 closed 2026-03-19 SIGABRT during spellcheck
+      #1116 closed 2026-05-05 Unbounded Heap Allocation (~1.6 GB) in `HashMgr::load_tables` via Unvalidated `tablesize` Field in `.dic` File
+      #627 closed 2019-03-28 Segfault when loading dict, none when debug info is added
+      #1105 closed 2026-04-21 Stack buffer overflow in `Hunzip::getline` with crafted .hz dictionary
+      #996 closed 2024-02-01 Stack-buffer-overflow in AffixMgr::compound_check_morph
+      #774 merged 2022-08-21 fix #492 crash with -l -r
+      #790 merged 2022-08-24 ofz: fix crash with checkcompoundpattern2[aff|dic]
+      #492 closed 2017-04-17 `-l -r` combination always crashes
+      #583 closed 2018-07-20 memory overflow with emoji with JAVA JNA
+      #505 closed 2017-06-17 Segmentation faults 2017-06-16
+      #510 closed 2017-06-27 add missing visibility macros
+  corrupt        5 hit(s) (all listed)
+      #211 closed 2013-04-13 makealias corrupts .aff file
+      #974 merged 2023-08-27 ofz#59510 clear compound table if its corrupted
+      #34 closed 2007-04-04 Please changes all UTF-8 chararacters in CXX to escaped form
+      #89 closed 2008-11-25 hunspell(1) "U)ncap" command assumes 8-bit encoding
+      #101 closed 2009-03-16 continuation flag is aliased?
+  corruption     3 hit(s) (all listed)
+      #1044 closed 2025-03-15 Heap corruption when running tools/analyze
+      #1116 closed 2026-05-05 Unbounded Heap Allocation (~1.6 GB) in `HashMgr::load_tables` via Unvalidated `tablesize` Field in `.dic` File
+      #33 closed 2007-04-03 Heap corruption for UTF8
+  truncated      5 hit(s) (all listed)
+      #220 open 2014-06-27 hunspell truncate a text more than 8190 characters
+      #1111 closed 2026-04-30 Added truncated utf-8 sequence checking to u8_u16
+      #1110 closed 2026-04-30 Continuation utf-8 byte checking problems
+      #703 closed 2020-12-15 hunspell -s  some observations
+      #12 closed 2012-10-04 hyphen: segfault in hnj_hyphen_hyphword
+  truncate       6 hit(s) (all listed)
+      #220 open 2014-06-27 hunspell truncate a text more than 8190 characters
+      #1111 closed 2026-04-30 Added truncated utf-8 sequence checking to u8_u16
+      #1110 closed 2026-04-30 Continuation utf-8 byte checking problems
+      #703 closed 2020-12-15 hunspell -s  some observations
+      #385 closed 2016-05-04 Various Wimplicit-fallthrough and Wabsolute-value warnings
+      #12 closed 2012-10-04 hyphen: segfault in hnj_hyphen_hyphword
+  empty          33 hit(s) (all listed)
+      #1152 closed 2026-09-28 Hunspell 1.7.4. searchs far too many directories
+      #559 open 2018-02-15 Hungarian dictionary contains invalid UTF-8 sequences
+      #404 open 2016-09-13 Improving the tool for generating full list of words (unmunch/wordforms)
+      #687 closed 2020-08-26 "hunspell -D /dev/null" could handle empty $LANG better
+      #1132 merged 2026-06-15 Resolves #910 honour -p personal dictionary when HOME is unset
+      #554 closed 2018-01-22 Hunspell_generate() returns empty slst when compiling msvc Win32 .dll
+      #910 closed 2023-02-01 Personal Dictionary Command Line Argument Not Respected
+      #765 closed 2022-07-23 Hunspell returns true when checking the spelling of an empty string or a string full of ignored characters
+      #1118 merged 2026-05-08 Trie data structure for much faster ICONV handling
+      #233 closed 2015-04-26 Hunspell analyse output fails also in some other cases with compounds
+      #1032 closed 2025-01-08 HashMgr::remove crashes at double delete[]
+      #1116 closed 2026-05-05 Unbounded Heap Allocation (~1.6 GB) in `HashMgr::load_tables` via Unvalidated `tablesize` Field in `.dic` File
+      #474 closed 2017-03-03 How to use unmunch.exe
+      #986 closed 2023-11-05 How exactly do the `/ABC` affix flags work in Hunspell?
+      #448 closed 2016-12-17 Hunspell in CI pipeline
+      #977 closed 2023-09-17 accept flagless dic entry
+      #757 merged 2022-01-11 Allow to call Hunspell constructor with null/empty paths
+      #450 merged 2016-12-19 Hoist UTF conversions out of frequently called functions
+      #408 closed 2016-09-19 filemgr get encapsulated
+      #649 merged 2019-10-26 man: fix empty escaped syntax
+  atomic         2 hit(s) (all listed)
+      #853 merged 2022-09-18 Add lock around static global variable that is not concurrency safe
+      #381 closed 2016-04-29 Use of Unix only functions in tools\hunpell.cxx related to temporary files
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         0 hit(s)
+  power          3 hit(s) (all listed)
+      #726 closed 2021-06-10 Hunspell suggests profanity words
+      #653 closed 2019-11-15 There are encoding problems between Hunspell and Windows 10
+      #269 closed 2009-08-12 Flag for not suggesting compound words
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           2 hit(s) (all listed)
+      #751 closed 2021-11-08 read gzipped dictionaries
+      #1116 closed 2026-05-05 Unbounded Heap Allocation (~1.6 GB) in `HashMgr::load_tables` via Unvalidated `tablesize` Field in `.dic` File
+  partial        5 hit(s) (all listed)
+      #404 open 2016-09-13 Improving the tool for generating full list of words (unmunch/wordforms)
+      #1125 merged 2026-05-21 Gate std::bit_cast on __cpp_lib_bit_cast, matching w_char.hxx
+      #1057 closed 2025-08-04 Wrong list of misspelt words for Bengali in cli
+      #528 closed 2017-09-05 Connect translation to Weblate
+      #136 closed 2010-05-11 Word borders in REP
+  incomplete     9 hit(s) (all listed)
+      #348 open 2015-08-04  multi-dictionary suggestions incomplete
+      #146 open 2010-10-01 incomplete analysis of compound words
+      #1133 closed 2026-06-17 Use other letters such as Turkish as flags — 2026-06-17
+      #502 closed 2017-06-14 How about Chinese/Japanese support?
+      #366 closed 2016-03-22 ICONV issues for ne
+      #756 merged 2022-01-09 Fix various issues parsing incomplete aff files.
+      #443 closed 2016-12-12 Adding Buffer Interface For Projects that are filesystem averse
+      #486 closed 2017-03-24 Add Tajik Language
+      #96 closed 2009-01-05 Bus error on morph analysis at several words
+  dataloss       0 hit(s)
+  recover        0 hit(s)
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         1 hit(s) (all listed)
+      #1118 merged 2026-05-08 Trie data structure for much faster ICONV handling
+  half-written   1 hit(s) (all listed)
+      #288 closed 2007-05-24 altlinuxHyph added code
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          4 hit(s) (all listed)
+      #1095 closed 2026-03-24 UB when SFX condition string starts with ^ in .aff
+      #1116 closed 2026-05-05 Unbounded Heap Allocation (~1.6 GB) in `HashMgr::load_tables` via Unvalidated `tablesize` Field in `.dic` File
+      #370 closed 2016-04-08 ignore.test failure on armel for 1.3.4
+      #188 closed 2011-09-16 Use shared libraries instead of static
+  erasing        0 hit(s)
+  erased         1 hit(s) (all listed)
+      #188 closed 2011-09-16 Use shared libraries instead of static
+  destroy        4 hit(s) (all listed)
+      #554 closed 2018-01-22 Hunspell_generate() returns empty slst when compiling msvc Win32 .dll
+      #1044 closed 2025-03-15 Heap corruption when running tools/analyze
+      #996 closed 2024-02-01 Stack-buffer-overflow in AffixMgr::compound_check_morph
+      #553 closed 2017-12-20 Undecorate exported file names in .dll if compiling for x86 WINAPI with MSYS2/MINGW
+  destroys       0 hit(s)
+  overwrite      2 hit(s) (all listed)
+      #714 closed 2021-02-12 reverse_condition in affixmgr.cxx may overwrite the null terminator of a std::string
+      #775 merged 2022-08-21 Fix #714 OOB string write in hunspell
+  clobber        3 hit(s) (all listed)
+      #1105 closed 2026-04-21 Stack buffer overflow in `Hunzip::getline` with crafted .hz dictionary
+      #238 closed 2015-05-27 Realloc leak in hunspell.cxx:337
+      #239 closed 2015-05-27 Realloc leak in hunspell.cxx:1504
+  blank          4 hit(s) (all listed)
+      #220 open 2014-06-27 hunspell truncate a text more than 8190 characters
+      #519 open 2017-08-01 always output a decision for *any* input line
+      #634 closed 2019-07-11 Special characters treated as blank space
+      #176 closed 2011-04-17 compound and twofold affix stripping uncompatible
+  unreadable     1 hit(s) (all listed)
+      #653 closed 2019-11-15 There are encoding problems between Hunspell and Windows 10
+  garbage        0 hit(s)
+  mangled        4 hit(s) (all listed)
+      #1134 closed 2026-07-01 abi-check assumes libstdc++ name manging
+      #1139 closed 2026-07-28 Please ship the U+1E9E fix in a release, and lock it in with a regression test
+      #850 closed 2022-09-16 Copyright symbol input suggests invalid utf8 sequence
+      #316 closed 2010-04-13 patch for memory bug fix, mingw build fix, gnu output adds
+  contents       14 hit(s) (all listed)
+      #210 closed 2013-03-04 wordforms reports UTF-8 encoding errors for certain words
+      #549 closed 2017-12-13 Introduce macro for compile-time version check of libhunspell
+      #1105 closed 2026-04-21 Stack buffer overflow in `Hunzip::getline` with crafted .hz dictionary
+      #1117 closed 2026-05-05 ABI breakage in 1.7.3 on 32bit archs?
+      #554 closed 2018-01-22 Hunspell_generate() returns empty slst when compiling msvc Win32 .dll
+      #723 closed 2021-05-05 Make Check Failure Windows 10 install using Msys2
+      #1116 closed 2026-05-05 Unbounded Heap Allocation (~1.6 GB) in `HashMgr::load_tables` via Unvalidated `tablesize` Field in `.dic` File
+      #969 closed 2023-08-15 Qt 6.5.2 hunspell license
+      #526 closed 2017-09-04 Gettext binary message catalogs not being installed
+      #413 closed 2016-10-07 Suggest applications support the DICPATH variable
+      #553 closed 2017-12-20 Undecorate exported file names in .dll if compiling for x86 WINAPI with MSYS2/MINGW
+      #370 closed 2016-04-08 ignore.test failure on armel for 1.3.4
+      #81 closed 2008-07-17 hunspell fails to find affix or dictionary by default
+      #86 closed 2008-09-23 Twofold suffix stripping is not working for 1.2.7?
+  in-place       44 hit(s) (all listed)
+      #717 open 2021-02-20 Hyphen BREAK definitions
+      #199 open 2012-02-01 Need a central repository to maintain dictionaries
+      #688 open 2020-08-31 multi-dictionary: mixing UTF-8 and non-UTF dictionries doesn't work
+      #752 open 2021-11-12 Envvar gunzip
+      #1100 open 2026-04-04 Every A̲L̲L̲-̲U̲P̲P̲E̲R̲C̲A̲S̲E̲ Greek word has been flagged as misspelled for decades — root cause: missing accent-stripping in case folding
+      #718 open 2021-02-25 Strange suggestions and performance issues
+      #1152 closed 2026-09-28 Hunspell 1.7.4. searchs far too many directories
+      #559 open 2018-02-15 Hungarian dictionary contains invalid UTF-8 sequences
+      #1138 closed 2026-07-20 Fixed dictionary locations
+      #702 closed 2020-12-11 Perl program for unmunching any language, any word
+      #1045 closed 2025-03-17 Capitalized and/or mixed case words in the dictionary may inhibit spellchecking of each other
+      #226 closed 2014-12-20 Should not accept words with characters not in language chars
+      #366 closed 2016-03-22 ICONV issues for ne
+      #1023 closed 2024-09-14 LibreOffice 24.8
+      #544 closed 2017-10-31 Discuss old downloads
+      #1086 closed 2026-03-19 SIGABRT during spellcheck
+      #1062 closed 2025-10-22 Request guidance/support for Malay (ms) dictionary usage with Hunspell
+      #515 closed 2017-07-24 Have all applications use the same custom dictionary?
+      #754 closed 2021-12-30 hunspell -D shows no available dictionaries on Windows
+      #920 closed 2023-03-13 Include abbreviations in the list of bad words
+  unclean        0 hit(s)
+  shutdown       1 hit(s) (all listed)
+      #546 closed 2017-11-11 Hunspell automatically save with added words?
+  reboot         0 hit(s)
+  disk+full      1 hit(s) (all listed)
+      #1116 closed 2026-05-05 Unbounded Heap Allocation (~1.6 GB) in `HashMgr::load_tables` via Unvalidated `tablesize` Field in `.dic` File
+  data+loss      3 hit(s) (all listed)
+      #535 closed 2017-09-19 compilation warnings "conversion from 'size_t' to 'short"
+      #115 closed 2009-10-15 "DLL" versions do not compile in VisualStudio 2005 SP1
+      #166 closed 2011-01-27 Build warnings in Hunspell 1.3.0
+  partial+write  1 hit(s) (all listed)
+      #404 open 2016-09-13 Improving the tool for generating full list of words (unmunch/wordforms)
+  crash+safe     1 hit(s) (all listed)
+      #446 closed 2016-12-15 Crash on word with 102 consecutive capital X
+  atomic+write   0 hit(s)
+  lock+file      4 hit(s) (all listed)
+      #704 open 2021-01-06 add cmake building support
+      #1142 merged 2026-08-05 tests: add regression test for capital sharp s (U+1E9E)
+      #515 closed 2017-07-24 Have all applications use the same custom dictionary?
+      #1044 closed 2025-03-15 Heap corruption when running tools/analyze
+  write+failure  2 hit(s) (all listed)
+      #404 open 2016-09-13 Improving the tool for generating full list of words (unmunch/wordforms)
+      #1116 closed 2026-05-05 Unbounded Heap Allocation (~1.6 GB) in `HashMgr::load_tables` via Unvalidated `tablesize` Field in `.dic` File
+  file+contents  11 hit(s) (all listed)
+      #210 closed 2013-03-04 wordforms reports UTF-8 encoding errors for certain words
+      #554 closed 2018-01-22 Hunspell_generate() returns empty slst when compiling msvc Win32 .dll
+      #1116 closed 2026-05-05 Unbounded Heap Allocation (~1.6 GB) in `HashMgr::load_tables` via Unvalidated `tablesize` Field in `.dic` File
+      #1105 closed 2026-04-21 Stack buffer overflow in `Hunzip::getline` with crafted .hz dictionary
+      #723 closed 2021-05-05 Make Check Failure Windows 10 install using Msys2
+      #969 closed 2023-08-15 Qt 6.5.2 hunspell license
+      #526 closed 2017-09-04 Gettext binary message catalogs not being installed
+      #413 closed 2016-10-07 Suggest applications support the DICPATH variable
+      #553 closed 2017-12-20 Undecorate exported file names in .dll if compiling for x86 WINAPI with MSYS2/MINGW
+      #81 closed 2008-07-17 hunspell fails to find affix or dictionary by default
+      #86 closed 2008-09-23 Twofold suffix stripping is not working for 1.2.7?
+
+== 51 terms run; 31 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

@@ -1,0 +1,30 @@
+== mamba-org/mamba (label (none matched; last issues of any label))
+#4422 2026-10-06 comments=0 first_project_reply=none
+#4420 2026-10-05 comments=0 first_project_reply=none
+#4419 2026-10-05 comments=0 first_project_reply=none
+#4418 2026-10-04 comments=0 first_project_reply=none
+#4416 2026-09-29 comments=0 first_project_reply=none
+#4414 2026-09-29 comments=0 first_project_reply=none
+#4411 2026-09-23 comments=0 first_project_reply=none
+#4410 2026-09-22 comments=0 first_project_reply=none
+#4407 2026-09-19 comments=0 first_project_reply=none
+#4394 2026-09-01 comments=0 first_project_reply=none
+== tsujan/Kvantum (label bug)
+#831 2022-11-02 comments=5 first_project_reply=OWNER 2022-11-02
+#804 2022-06-19 comments=3 first_project_reply=OWNER 2022-06-19
+#363 2019-03-20 comments=3 first_project_reply=OWNER 2019-03-20
+#263 2018-09-16 comments=9 first_project_reply=OWNER 2018-09-16
+#256 2018-09-12 comments=4 first_project_reply=OWNER 2018-09-12
+#193 2018-04-05 comments=0 first_project_reply=none
+#45 2015-04-17 comments=6 first_project_reply=OWNER 2015-04-17
+== hunspell/hunspell (label bug)
+#480 2017-03-08 comments=3 first_project_reply=CONTRIBUTOR 2017-03-08
+#458 2017-01-23 comments=6 first_project_reply=CONTRIBUTOR 2017-02-15
+#446 2016-12-15 comments=11 first_project_reply=CONTRIBUTOR 2016-12-16
+#432 2016-11-26 comments=8 first_project_reply=CONTRIBUTOR 2016-11-26
+#431 2016-11-26 comments=17 first_project_reply=CONTRIBUTOR 2016-11-26
+#418 2016-10-21 comments=1 first_project_reply=CONTRIBUTOR 2016-11-19
+#417 2016-10-17 comments=10 first_project_reply=CONTRIBUTOR 2016-10-17
+#414 2016-10-17 comments=1 first_project_reply=none
+#411 2016-10-01 comments=1 first_project_reply=CONTRIBUTOR 2016-11-19
+#403 2016-09-09 comments=17 first_project_reply=CONTRIBUTOR 2016-11-19

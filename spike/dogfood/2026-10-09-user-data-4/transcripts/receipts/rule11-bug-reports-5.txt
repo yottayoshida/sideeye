@@ -1,0 +1,54 @@
+== mamedev/mame (label bug)
+#14040 2025-08-11 comments=1 first_project_reply=CONTRIBUTOR 2025-08-12
+#11288 2023-05-30 comments=5 first_project_reply=CONTRIBUTOR 2023-06-01
+#11008 2023-03-20 comments=6 first_project_reply=MEMBER 2023-04-07
+#10815 2023-01-09 comments=10 first_project_reply=MEMBER 2023-02-04
+#10693 2022-12-17 comments=3 first_project_reply=CONTRIBUTOR 2022-12-17
+#10502 2022-11-02 comments=0 first_project_reply=none
+#9789 2022-05-21 comments=7 first_project_reply=MEMBER 2022-05-21
+#9563 2022-04-13 comments=7 first_project_reply=MEMBER 2022-04-13
+#9186 2022-01-20 comments=4 first_project_reply=MEMBER 2022-02-24
+#8996 2021-12-16 comments=1 first_project_reply=none
+== commercialhaskell/stack (label type: bug)
+#6931 2026-06-10 comments=0 first_project_reply=none
+#6927 2026-06-02 comments=1 first_project_reply=MEMBER 2026-06-02
+#6917 2026-05-27 comments=1 first_project_reply=none
+#6915 2026-05-25 comments=0 first_project_reply=none
+#6905 2026-05-04 comments=1 first_project_reply=none
+#6897 2026-05-03 comments=1 first_project_reply=none
+#6872 2026-04-11 comments=0 first_project_reply=none
+#6871 2026-04-11 comments=3 first_project_reply=MEMBER 2026-04-11
+#6866 2026-03-30 comments=9 first_project_reply=CONTRIBUTOR 2026-04-06
+#6858 2026-03-06 comments=0 first_project_reply=none
+== carapace-sh/carapace-bin (label bug)
+#3837 2026-10-08 comments=1 first_project_reply=MEMBER 2026-10-08
+#3818 2026-09-25 comments=2 first_project_reply=MEMBER 2026-09-26
+#3798 2026-09-17 comments=0 first_project_reply=none
+#3771 2026-09-02 comments=0 first_project_reply=none
+#3727 2026-08-22 comments=0 first_project_reply=none
+#3685 2026-08-08 comments=5 first_project_reply=MEMBER 2026-08-08
+#3677 2026-08-06 comments=1 first_project_reply=none
+#3667 2026-08-01 comments=0 first_project_reply=none
+#3606 2026-07-03 comments=4 first_project_reply=MEMBER 2026-07-03
+#3569 2026-06-23 comments=0 first_project_reply=none
+== haskell/cabal (label type: bug)
+#12408 2026-10-04 comments=0 first_project_reply=none
+#12375 2026-09-23 comments=0 first_project_reply=none
+#12371 2026-09-22 comments=0 first_project_reply=none
+#12367 2026-09-20 comments=3 first_project_reply=COLLABORATOR 2026-09-27
+#12364 2026-09-18 comments=4 first_project_reply=MEMBER 2026-09-18
+#12360 2026-09-15 comments=0 first_project_reply=none
+#12357 2026-09-15 comments=2 first_project_reply=MEMBER 2026-09-17
+#12332 2026-09-08 comments=4 first_project_reply=COLLABORATOR 2026-09-15
+#12328 2026-09-07 comments=0 first_project_reply=none
+#12311 2026-09-01 comments=3 first_project_reply=COLLABORATOR 2026-09-08
+== ms-jpq/sad (label (none matched; last issues of any label))
+#390 2025-11-17 comments=0 first_project_reply=none
+#382 2025-03-19 comments=0 first_project_reply=none
+#377 2025-03-02 comments=0 first_project_reply=none
+#359 2024-12-19 comments=2 first_project_reply=OWNER 2024-12-20
+#348 2024-10-22 comments=0 first_project_reply=none
+#324 2024-06-24 comments=1 first_project_reply=none
+#319 2024-05-13 comments=4 first_project_reply=none
+#314 2024-03-25 comments=2 first_project_reply=CONTRIBUTOR 2024-05-13
+#308 2024-03-15 comments=2 first_project_reply=none

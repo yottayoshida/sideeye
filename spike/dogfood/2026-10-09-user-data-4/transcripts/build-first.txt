@@ -1,0 +1,90 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's (working tree)    sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's at tag v1.10.0     sha256 e3cb964274494696b688f0953fa6b112ef233db9dac6ddca43777cb9b0ddaef3
+build: NOTE the page's installer has moved since v1.10.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 4.56kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 1.5s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/13] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.28kB done
+#5 DONE 0.0s
+
+#6 [ 6/13] RUN mkdir -p /opt/bin /tmp/dl && python3 -m venv /opt/py
+#6 CACHED
+
+#7 [ 7/13] COPY install-sideeye.sh /opt/install-sideeye.sh
+#7 CACHED
+
+#8 [ 5/13] RUN for p in nodejs npm ruby ruby-dev php-cli php-xml php-mbstring golang-go libfaketime faketime; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done | tee /tmp/apt-summary.txt
+#8 CACHED
+
+#9 [ 8/13] RUN sh /opt/install-sideeye.sh v1.10.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#9 CACHED
+
+#10 [ 2/13] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config
+#10 CACHED
+
+#11 [ 4/13] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#11 CACHED
+
+#12 [ 3/13] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#12 CACHED
+
+#13 [ 9/13] RUN "$(cat /install.path)" version
+#13 CACHED
+
+#14 [10/13] RUN apt-get install -y --no-install-recommends openimageio-tools libicu76 > /tmp/apt-oiio.log 2>&1 && echo "OK openimageio-tools" || { echo "MISSING openimageio-tools"; tail -3 /tmp/apt-oiio.log; }
+#14 31.89 OK openimageio-tools
+#14 DONE 32.3s
+
+#15 [11/13] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/scaleway/scaleway-cli/releases/download/v2.65.1/scaleway-cli_2.65.1_linux_arm64 scw;     get $gh/ayoisaiah/f2/releases/download/v2.2.2/f2_2.2.2_linux_arm64.tar.gz f2.tgz;     get $gh/SubtitleEdit/subtitleedit/releases/download/v5.2.0/SeConv-Linux-ARM64.tar.gz seconv.tgz;     install -m 755 scw /opt/bin/scw;     mkdir -p x-f2 && tar xzf f2.tgz -C x-f2 && install -m 755 "$(find x-f2 -type f -name f2 | head -1)" /opt/bin/f2;     mkdir -p /opt/seconv && tar xzf seconv.tgz -C /opt/seconv && f=$(find /opt/seconv -type f ( -name SeConv -o -name seconv ) | head -1) && chmod 755 "$f" && ln -sf "$f" /opt/bin/seconv && echo "seconv <- $f";     ls -l /opt/bin
+#15 7.875 OK scw
+#15 9.173 OK f2.tgz
+#15 13.20 OK seconv.tgz
+#15 13.92 seconv <- /opt/seconv/seconv
+#15 13.92 total 60548
+#15 13.92 -rwxr-xr-x 1 root root 10025373 Oct  9 00:29 f2
+#15 13.92 -rwxr-xr-x 1 root root 51970208 Oct  9 00:29 scw
+#15 13.92 lrwxrwxrwx 1 root root       18 Oct  9 00:29 seconv -> /opt/seconv/seconv
+#15 DONE 14.1s
+
+#16 [12/13] RUN /opt/py/bin/pip install --no-cache-dir opentimelineio==0.18.1 > /tmp/pip-otio.log 2>&1 && echo "OK opentimelineio" || { echo "FAILED opentimelineio"; tail -3 /tmp/pip-otio.log; }
+#16 2.766 OK opentimelineio
+#16 DONE 2.8s
+
+#17 [13/13] RUN { echo "scw $(scw version 2>&1 | head -1)"; echo "f2 $(f2 --version 2>&1 | head -1)"; echo "seconv $(seconv 2>&1 | head -1)"; echo "iconvert $(iconvert --help 2>&1 | head -1)"; echo "otiotool $(otiotool --version 2>&1 | head -1)"; } | tee /versions.txt
+#17 0.632 scw Version          2.65.1
+#17 0.647 f2 f2 version v2.2.2
+#17 0.793 seconv ── Subtitle Edit 5.0 - Batch Converter ─────────────────────────────────────────
+#17 1.090 iconvert iconvert -- copy images with format conversions and other alterations
+#17 1.145 otiotool usage: otiotool [-h] [--input PATH(s) [PATH(s) ...]] [--video-only |
+#17 DONE 1.2s
+
+#18 exporting to image
+#18 exporting layers
+#18 exporting layers 10.4s done
+#18 exporting manifest sha256:9a05cafa922ed862e5aeb9dfe2158f9099bf05ffe895b17aa84c2f8cb9b0bc16 0.0s done
+#18 exporting config sha256:7287df7b7cee6d078375253c5016a67262bd950dbfa222d5f1da4788a140f2d6 done
+#18 exporting attestation manifest sha256:74cc39f08c835254d41c9bacc3792af991cfec066cccd636feae767127ce1107 done
+#18 exporting manifest list sha256:01ab6d0513c166ff8b91140854a0c58a71aa870d620f946628fdd225ee4c5e52 done
+#18 naming to docker.io/library/sideeye-ud1009:latest done
+#18 unpacking to docker.io/library/sideeye-ud1009:latest
+#18 unpacking to docker.io/library/sideeye-ud1009:latest 3.4s done
+#18 DONE 13.9s
+build: sideeye-ud1009 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt
+build rc=0

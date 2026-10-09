@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.netmaker"
+
+[define]
+operation = "nmctl context set c1 --endpoint=https://api2.example.org --master_key=k1-not-a-real-key"
+cwd       = "/s/nm-in"

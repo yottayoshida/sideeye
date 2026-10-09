@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/oiio",
+    "operation": "iconvert --threads 1 --inplace --caption hello --keyword k photo.jpg",
+    "cwd": "/s/oiio",
+    "expected_status": 0
+  },
+  "k": 6,
+  "ops_total": 6,
+  "prefix_hash": "56c4170006f24aa0",
+  "after_class": "unlink",
+  "after_path": "/s/oiio/photo.jpg",
+  "before_class": "rename",
+  "before_path": "/s/oiio/photo.jpg.tmp.jpg",
+  "violation": "missing"
+}

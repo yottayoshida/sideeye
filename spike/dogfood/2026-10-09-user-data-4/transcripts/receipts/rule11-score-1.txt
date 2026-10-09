@@ -1,0 +1,5 @@
+SubtitleEdit/subtitleedit                  3/10  pass       label=bug
+AcademySoftwareFoundation/OpenImageIO      3/10  pass       label=bug
+AcademySoftwareFoundation/OpenTimelineIO   6/10  pass       label=bug
+ayoisaiah/f2                               5/10  pass       label=bug
+scaleway/scaleway-cli                      5/10  pass       label=bug

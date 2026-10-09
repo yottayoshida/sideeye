@@ -1,0 +1,54 @@
+== concourse/concourse (label bug)
+#9741 2026-10-02 comments=1 first_project_reply=MEMBER 2026-10-02
+#9722 2026-09-17 comments=3 first_project_reply=none
+#9719 2026-09-15 comments=0 first_project_reply=none
+#9711 2026-09-10 comments=0 first_project_reply=none
+#9706 2026-09-08 comments=3 first_project_reply=MEMBER 2026-09-10
+#9687 2026-08-19 comments=4 first_project_reply=CONTRIBUTOR 2026-09-03
+#9665 2026-07-28 comments=7 first_project_reply=MEMBER 2026-07-29
+#9646 2026-07-18 comments=4 first_project_reply=MEMBER 2026-07-20
+#9641 2026-07-13 comments=0 first_project_reply=none
+#9636 2026-07-09 comments=0 first_project_reply=none
+== deviceinsight/kafkactl (label bug)
+#278 2025-07-10 comments=1 first_project_reply=COLLABORATOR 2025-07-11
+#268 2025-06-17 comments=1 first_project_reply=COLLABORATOR 2025-06-23
+#256 2025-06-03 comments=1 first_project_reply=none
+#254 2025-05-07 comments=5 first_project_reply=COLLABORATOR 2025-05-13
+#237 2025-02-13 comments=1 first_project_reply=none
+#228 2025-01-02 comments=1 first_project_reply=COLLABORATOR 2025-01-07
+#198 2024-05-23 comments=3 first_project_reply=COLLABORATOR 2024-09-17
+#154 2023-07-03 comments=3 first_project_reply=COLLABORATOR 2023-07-14
+#151 2023-05-12 comments=1 first_project_reply=COLLABORATOR 2023-05-16
+#67 2021-01-19 comments=0 first_project_reply=none
+== redpanda-data/redpanda (label kind/bug)
+#31677 2026-10-08 comments=2 first_project_reply=MEMBER 2026-10-08
+#31675 2026-10-07 comments=1 first_project_reply=CONTRIBUTOR 2026-10-08
+#31666 2026-09-03 comments=8 first_project_reply=MEMBER 2026-09-04
+#31401 2026-08-03 comments=4 first_project_reply=CONTRIBUTOR 2026-08-04
+#31213 2026-07-21 comments=0 first_project_reply=none
+#31175 2026-07-18 comments=2 first_project_reply=CONTRIBUTOR 2026-07-18
+#31057 2026-07-09 comments=4 first_project_reply=MEMBER 2026-07-14
+#30989 2026-07-01 comments=3 first_project_reply=MEMBER 2026-07-02
+#30453 2026-05-13 comments=2 first_project_reply=MEMBER 2026-05-13
+#30422 2026-05-08 comments=13 first_project_reply=MEMBER 2026-05-08
+== Julien-cpsn/ATAC (label bug)
+#196 2026-01-28 comments=1 first_project_reply=OWNER 2026-02-01
+#156 2025-06-19 comments=2 first_project_reply=OWNER 2025-06-25
+#143 2025-03-24 comments=8 first_project_reply=OWNER 2025-03-24
+#130 2025-02-13 comments=0 first_project_reply=none
+#60 2024-05-02 comments=2 first_project_reply=OWNER 2024-05-03
+#35 2024-04-19 comments=7 first_project_reply=OWNER 2024-04-19
+#21 2024-04-17 comments=6 first_project_reply=OWNER 2024-04-17
+#16 2024-04-16 comments=16 first_project_reply=OWNER 2024-04-17
+#1 2024-02-27 comments=2 first_project_reply=OWNER 2024-02-27
+== ravachol/kew (label bug)
+#592 2026-09-28 comments=1 first_project_reply=OWNER 2026-10-01
+#577 2026-08-22 comments=5 first_project_reply=OWNER 2026-08-22
+#575 2026-08-21 comments=76 first_project_reply=none
+#464 2025-10-14 comments=1 first_project_reply=none
+#454 2025-10-08 comments=10 first_project_reply=OWNER 2025-10-08
+#430 2025-09-15 comments=0 first_project_reply=none
+#429 2025-09-14 comments=15 first_project_reply=OWNER 2025-09-14
+#393 2025-07-14 comments=3 first_project_reply=OWNER 2025-07-15
+#392 2025-07-13 comments=7 first_project_reply=OWNER 2025-07-13
+#388 2025-07-03 comments=4 first_project_reply=OWNER 2025-07-03

@@ -1,0 +1,6 @@
+ROW buildx static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 13 operations
+EXIT buildx 0
+ROW zvm static=- preflight_rc=- gate=2 detail=seed.sh failed
+EXIT zvm 2
+ROW zvm static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 4 operations
+EXIT zvm 0

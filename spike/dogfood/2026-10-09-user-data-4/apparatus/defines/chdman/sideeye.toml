@@ -1,0 +1,6 @@
+[world]
+state = "/s/chd"
+
+[define]
+operation = "chdman addmeta -i d.chd -t NOTE -vt hello"
+cwd       = "/s/chd"

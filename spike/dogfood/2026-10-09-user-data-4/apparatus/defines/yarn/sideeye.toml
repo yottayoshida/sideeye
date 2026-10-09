@@ -1,0 +1,6 @@
+[world]
+state = "/s/yarn"
+
+[define]
+operation = "yarn config set npmAuthToken placeholder-npm-auth-token"
+cwd       = "/s/yarn"

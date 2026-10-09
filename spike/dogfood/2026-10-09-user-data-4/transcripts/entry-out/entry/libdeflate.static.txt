@@ -1,0 +1,2 @@
+static: /opt/bin/libdeflate-gzip: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=bc736bd7abb4a3ca01516b853774db0d4a28f140, for GNU/Linux 3.7.0, not stripped
+next: sideeye explore --state /s/gz --cwd "/s/gz" --operation "libdeflate-gzip notes.txt" \

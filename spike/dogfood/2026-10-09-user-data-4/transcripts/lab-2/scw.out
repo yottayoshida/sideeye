@@ -1,0 +1,4 @@
+Invalid argument 'default_region': arg name must only contain lowercase letters, numbers or dashes
+
+Hint:
+Valid arguments are: access-key, secret-key, api-url, insecure, default-organization-id, default-project-id, default-region, default-zone, send-telemetry

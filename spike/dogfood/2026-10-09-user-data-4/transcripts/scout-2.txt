@@ -1,0 +1,40 @@
+# Scout 2 (fresh Opus subagent, read-only; 2026-10-09). Field: keys, certificates, secrets and connection settings. Its report, as handed back.
+
+scout 2（鍵・設定）の報告: 141 件を見て、表に 20 件、要判断に 5 件を残し、116 件を落とした。星・push は全件 gh api で測った。書き方（切り詰め・rename）とネットワーク不要は、表の大半をソースで確かめた。
+
+【要判断】
+1. keychain（danielrobbins/keychain、旧 funtoo、★1099、10-04）。fresh.sh の SEEN は user-data-3 SELECTION 230 行の「blank Keychain password」で、macOS の Keychain の語に当たっただけ。Python に書き直した 3 系で、`keychain --eval --quiet --noask id_ed25519` が ~/.keychain/<host>-sh などを一時名＋rename で書く。ssh-agent（デーモン）を起動する。
+2. rage（str4d/rage、★3680、08-20）。SEEN は「storage」への部分一致で、語単位の一致は 0 件。age（既出）の別実装で別 owner。`rage-keygen -o key.txt` で鍵を書く。arm64-linux の資産あり。同じ形式の別実装を既出と見るかの判断。
+3. dotnet nuget（dotnet/sdk ★3218）。`dotnet nuget add source URL -n x -u u -p p --store-password-in-clear-text --configfile NuGet.Config` を実行する。書くコードは NuGet/NuGet.Client（★822・issues off）で、報告先は NuGet/Home（★1553）。keyring の前例（書くコードの星で rule 1 を測る）を当てると落ちる。
+4. qshell（qiniu/qshell ★1021、09-11）。`qshell account AK SK name` は現アカウントのファイルを Truncate(0) してから書く。ただしアカウント一覧は leveldb で、kubo を leveldb で外した前例に当たる。
+5. sing-box（SagerNet/sing-box ★38674、10-07）。`sing-box format -w -c config.json` が元の設定ファイルを os.Create で切り詰めて書き直す。整形なので rule 4 の除外に当たるかの判断。設定は git の外にあることが多く、秘密も入る。
+（kubeseal は下の表に入れたが、rule 4 の境界にある。）
+
+名前 | repo | 星 | push | コマンド | 書き換わるファイル | 言語 | 入れ方 | 懸念
+caddy | caddyserver/caddy | 77549 | 10-08 | `caddy storage import --config Caddyfile --input bk.tar` | データ置き場の証明書・鍵 | Go | arm64資産 | rule3注記（主はサーバー）
+authelia | authelia/authelia | 29210 | 10-08 | `authelia crypto certificate rsa generate --directory d` | d/private.pem・public.crt（O_TRUNC で上書き） | Go | linux-arm64-musl資産 | rule3注記
+nebula-cert | slackhq/nebula | 18421 | 10-08 | `nebula-cert ca -name x -out-crt ca.crt -out-key ca.key`、続けて `sign` | ca.key・host.key ほか | Go | linux-arm64資産 | 新規作成だけ。既存ファイルがあると上書きを拒むので、壊れた鍵が残ると再実行できない
+zerotier-idtool | zerotier/ZeroTierOne | 17167 | 09-03 | `zerotier-idtool generate id.secret id.public` | identity.secret（fopen "wb"） | C++ | 資産なし・ソースビルド | rule3注記（主はデーモン）
+nmctl | gravitl/netmaker | 11823 | 10-08 | `nmctl context set c1 --endpoint=https://x --master_key=k` | context YAML（全件を os.Create で切り詰めて書き直す。パスワード・マスターキー入り） | Go | nmctl-linux-arm64資産 | 主はサーバー、nmctl は独立した CLI
+kubeseal | bitnami/sealed-secrets | 9300 | 10-01 | `kubeseal --cert pub.pem --merge-into s.yaml < secret.yaml` | s.yaml（Truncate(0) してから書き戻す） | Go | linux-arm64資産 | rule4境界（SealedSecret は git に置く設計）
+yarn | yarnpkg/berry | 8104 | 09-28 | `yarn config set -H npmAuthToken xxx` | ~/.yarnrc.yml（changeFilePromise で直接上書き） | TS | npm/corepack | Node が要る
+aptos | aptos-labs/aptos-core | 6438 | 10-09 | `aptos config rename-profile --profile a --new-profile-name b`、`delete-profile`（確認なし） | .aptos/config.yaml（秘密鍵入り、truncate→write） | Rust | aptos-cli Linux-aarch64 zip | rule3注記（主はノード）。init はネットワークが要るので、プロファイルは手で用意する
+ziti pki | openziti/ziti | 4422 | 10-08 | `ziti pki create ca --pki-root d --ca-file ca`、続けて `create server`/`create client` | d/ca/index.txt（追記、更新は O_RDWR で書き直し）・serial・crlnumber・鍵 | Go | linux-arm64資産 | openssl ca と同じ形の台帳を持つ
+uplink | storj/storj | 3282 | 10-08 | `uplink access import n <grant>`、`access remove n`、`access use n` | access.json（全グラントを O_TRUNC で書き直す。ソースに「TODO: write it atomically」）・config.ini | Go | uplink_linux_arm64.zip | grant はオフラインで組み立てる必要がある（create はネットワーク）。rule3注記
+assh | moul/assh | 3228 | 10-02 | `assh wrapper ssh -- h`（設定が古いと再生成する） | ~/.ssh/config（temp+rename）・known_hosts への追記 | Go | linux_arm64資産 | 書いた直後に ssh を exec する。設定は assh.yml から作り直せるので rule4 は弱め
+aws-iam-authenticator | kubernetes-sigs/… | 2336 | 10-05 | `aws-iam-authenticator init -i c1` | cert.pem・key.pem・kubeconfig（O_TRUNC） | Go | linux_arm64資産 | なし
+cryfs | cryfs/cryfs | 2309 | 09-30 | `cryfs base mnt`（パスワードは stdin） | base/cryfs.config・ブロック | Rust/C++ | apt | FUSE が要りデーモン化する。非対話にする指定は README に無く未確認
+imgtool | mcu-tools/mcuboot | 2150 | 10-07 | `imgtool keygen -k k.pem -t ed25519`、`imgtool sign … in.bin out.bin` | k.pem・署名済みイメージ | Python | pip imgtool | rule3注記（主はブートローダ）。戻せないのは鍵だけ
+attic | zhaofengli/attic | 2114 | 10-01 | `attic login s https://x tok` | ~/.config/attic/config.toml（truncate→write、ネットワーク不要を確認） | Rust | リリースなし。nix か cargo（libnixstore が要る） | 入れ方が重い
+tfmigrate | minamijoyo/tfmigrate | 1278 | 09-26 | `tfmigrate apply m.hcl`（history の storage を "local" に） | history.json（os.WriteFile）。state は terraform が書く | Go | linux_arm64資産 | 主な書き手は terraform（既出・子プロセス）
+cachix | cachix/cachix | 1129 | 09-16 | `cachix authtoken TOKEN` | cachix.dhall（writeFile で上書き。同じファイルに秘密署名鍵が入る） | Haskell | nix だけ | ネットワーク不要を確認。入れ方が重い
+softhsm2-util | softhsm/SoftHSMv2 | 1106 | 10-03 | `softhsm2-util --init-token --free --label t --pin 1234 --so-pin 5678`、`--import k.pem …` | tokens/<uuid>/*.object（既定は file 方式） | C++ | apt softhsm2 | なし
+in-toto | in-toto/in-toto | 1051 | 08-27 | `in-toto-sign -f root.layout -k key`（-o を付けないと入力を上書き） | layout・*.link（open "wb"） | Python | pip | in-toto-run は子コマンドを走らせる
+fscrypt | google/fscrypt | 1036 | 09-10 | `fscrypt metadata create protector /mnt --source=raw_key --key=k --name=p` | /mnt/.fscrypt/・/etc/fscrypt.conf | Go | apt | root と、encrypt 機能付き ext4 のループマウントが要る
+
+落としたもの（141 件のうち 116 件。理由ごとに 1 行）
+- SEEN（60 件）: sbctl dotenvx git-crypt git-secret ejson gocryptfs talosctl mosquitto(_passwd) tinc saml2aws granted aws-sso-util serverless ansible-vault minisign cosign crane regctl kubectx kubecm kubie kubeswitch git-credential-manager hcloud aliyun-cli openssl keyring totp-cli steamguard-cli certstrap dotenv-linter syncthing restic esptool juju kubo/ipfs electrum geth clef(親が go-ethereum) sui lighthouse docker-context(親が docker/cli) uv argocd chezmoi gem-cert(rubygems) skopeo oras composer conan pnpm go-env hatch pdm pip rustic monero minikube infracost stripe-cli
+- 星不足（28 件）: dsnet754 aws-sso-cli664 notation499 git-credential-oauth881 oci-cli672 tccli134 natscli831 nsc144(SEEN は「transcripts」への誤ヒット) ssh-vault511 docker-credential-gcr316 rcodesign864 jsign420 securefs834 cryptomator-cli429 ssh-tpm-agent763 OTPClient560 gauth367 awsume30 pwsafe880 envio994 rsign2 152 signify319 rnp248 salesforce-cli182 nmstate396 swtpm826 Azure/kubelogin587 ggh959
+- push が古い（11 件）: 99designs/aws-vault(25-12。fork の ByteNess は★456) teller(26-01) minica lazyssh wg-meshconf horcrux uber-apk-signer Tomb(25-12。SEEN は tombi への誤ヒット) rsc/2fa google-authenticator-libpam(26-02-27) mkp224o
+- archive 済み（3 件）: blackbox storm Picocrypt。issues off（2 件）: git-remote-gcrypt snyk/cli
+- rule 3〜6（12 件）: innernet（サーバーが SQLite、クライアントはネットワークと root） wgcf・cloudflared・int128/kubelogin（ネットワーク操作だけ） sshm（add は TUI だけ） strongswan pki（stdout だけ） Leapp（CLI がデスクトップアプリ経由。未確認） pivpn（root のインストーラ前提。コード未確認） transcrypt・pwd.sh（秘密を書くのは git config／gpg の子。git-secret の前例） osslsigncode・zsign（出力は入力から作り直せる。rule 4）

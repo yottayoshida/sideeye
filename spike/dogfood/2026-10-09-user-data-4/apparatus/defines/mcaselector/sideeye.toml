@@ -1,0 +1,6 @@
+[world]
+state = "/s/mc/world"
+
+[define]
+operation = ["/opt/mcaselector/bin/mcaselector", "--mode", "delete", "--world", "/s/mc/world", "--query", "InhabitedTime < 1000"]
+cwd       = "/s/mc-in"

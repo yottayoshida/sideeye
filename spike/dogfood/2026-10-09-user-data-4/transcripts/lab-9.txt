@@ -1,0 +1,18 @@
+total 396
+-rw-r--r-- 1 root root 405264 Oct  9 00:53 notes.txt
+exit 0
+17    close(3)                          = 0
+17    close(3)                          = 0
+17    close(3)                          = 0
+17    openat(AT_FDCWD, "notes.txt.gz", O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW, 0644) = 4
+17    close(5)                          = 0
+17    close(5)                          = 0
+17    write(4, ""..., 306080)           = 306080
+17    close(4)                          = 0
+17    close(3)                          = 0
+17    unlinkat(AT_FDCWD, "notes.txt", 0) = 0
+total 300
+-rw-r--r-- 1 root root 306080 Oct  9 00:53 notes.txt.gz
+total 396
+-rw-r--r-- 1 root root 405264 Oct  9 00:53 notes.txt
+FuRzOhJ4315fDhP9CFnrwJ1/ys06D+0X+FQk3H2Z

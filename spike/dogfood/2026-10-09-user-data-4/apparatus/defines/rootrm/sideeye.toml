@@ -1,0 +1,6 @@
+[world]
+state = "/s/rootf"
+
+[define]
+operation = "/opt/root/bin/rootrm data.root:h2"
+cwd       = "/s/rootf"

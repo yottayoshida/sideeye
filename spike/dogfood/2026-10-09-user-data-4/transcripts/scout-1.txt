@@ -1,0 +1,38 @@
+# Scout 1 (fresh Opus subagent, read-only; 2026-10-09). Field: in-place media editing. Its report, as handed back.
+
+scout 1（メディア）の報告です。条件を全部満たしたのは 6 件。ほかに要判断が 3 件あります。既出の多い領域で、見た 105 件のうち 96 件を落としました。
+
+【要判断】
+1. f2（ayoisaiah/f2、★2453、push 2026-10-04）は誤って既出扱いになっています。10-07 の回は「b2-targets.txt（測定中の調査）に載っている」として落としました。でも当たっていたのは `otf2bdf` の行だけです。b2 の 3 ファイル・funnel・target-classes を語単位で grep すると、f2 は 0 件でした。条件は全部満たします。コマンドは `f2 -f 'IMG_' -r 'trip_' -x` で、名前を一括で変えます。取り消し用の記録は `os.Create` で切り詰めて書きます（rename/backup.go）。Go 製で、linux_arm64 の tar.gz と deb があります。決めてほしい点は 2 つです。10-07 の記録に名前が残るので既出のままにするか、誤判定として拾うか。拾う場合、ファイル操作の領域（scout-4）と重なる点。
+2. 「同じパスに書き戻す」を規則 4 に数えるか。OpenTimelineIO（表に入れた）がその場で書き換わるのは、`-o` に入力と同じパスを渡したときだけです。tutorial の例は別名に書いています。同じ形で MLT の melt（mltframework/mlt、★1861、`melt p.mlt -consumer xml:p.mlt`、libxml2 の xmlSaveFormatFileEnc で直接書く）も成り立ちます。ただ melt は描画エンジンで重いので落としました。この判断で両方の扱いが変わります。
+3. Av1an（master-of-zen/Av1an、★1998、push 2026-09-28）は表から外しました。出力は新しいファイルです。ただし `--resume` 用の途中経過 `done.json` を `File::create` で切り詰めて書き直します。ここが壊れると再開できず、何時間分の符号化が無駄になります。元データは失わないので外しました。エンコーダを別プロセスで多数起動し、配布物もありません。
+
+名前 | owner/repo | 星 | 最終push | 書き換えるコマンド | 書き換わるファイル | 言語 | 入れ方 | 懸念
+---|---|---|---|---|---|---|---|---
+SubtitleEdit（seconv） | SubtitleEdit/subtitleedit | 14481 | 2026-10-08 | `seconv subs.srt subrip --offset:-2000 --renumber:1 --overwrite` | subs.srt。`File.WriteAllText` で切り詰めて書き、一時ファイルは無い | C# | Releases に SeConv-Linux-ARM64.tar.gz がある | GUI の付属 CLI なので rule 4 注記（ただし SeConv は単独の配布物）。v5 の配布は beta タグだけ。.NET ランタイム。OCR と翻訳は外部プロセスとネットワークを使う（使わなければ不要）
+kcc | ciromattia/kcc | 5790 | 2026-10-05 | `python kcc-c2p.py -i -y 1650 comic_dir/`（縦長の画像を分割して元を消す）。`kcc-c2e -d` は変換後に元を消す | comic_dir/ の画像 | Python | aarch64 の AppImage は GUI 込み。CLI 単体のバイナリは Windows だけ。PyPI に無いので git clone して `pip install -r requirements.txt`（PySide6 を含む） | multiprocessing.Pool で子プロセスを起こす。c2e は 7z と kindlegen を呼ぶ。GUI の付属 CLI なので rule 4 注記
+Audiveris | Audiveris/audiveris | 2861 | 2026-10-08 | `audiveris -batch -transcribe -save book.omr` | book.omr。中身は zip で、Java の ZipFileSystem で開いて段階ごとに書き戻す | Java | linux/arm64 の配布物は無い（x86_64 の deb だけ）。Flathub か、gradle と JDK でビルドする | GUI の付属 CLI なので rule 4 注記。JVM のスレッドがあり重い。画像から始めると OCR（Tesseract）が動く
+OpenImageIO（iconvert） | AcademySoftwareFoundation/OpenImageIO | 2378 | 2026-10-07 | `iconvert --inplace --caption x --keyword k photo.jpg` | photo.jpg。`photo.tmp.jpg` に書き、元を remove してから rename する。この 2 つの間で落ちると元の名前のファイルが消える | C++ | apt の openimageio-tools（Debian/Ubuntu の arm64）。pip の OpenImageIO には aarch64 の wheel があるが、入るのは oiiotool だけで iconvert は無い | `--threads` は既定で全コアを使う。apt 版は古い可能性がある
+OpenTimelineIO（otiotool） | AcademySoftwareFoundation/OpenTimelineIO | 2011 | 2026-10-09 | `otiotool -i cut.otio --redact -o cut.otio` | cut.otio。書き方（一時ファイルを使うか）は未確認 | C++/Python | pip の opentimelineio（aarch64 の wheel あり） | 要判断 2 を参照。`--copy-media-to-folder` はダウンロードもする
+sickbeard_mp4_automator | mdhiggins/sickbeard_mp4_automator | 1586 | 2026-08-15 | `python manual.py -i movie.mkv -a -nt` | movie.mkv を movie.mp4 に変換し、既定（delete-original = True）で元を消す。初回に autoProcess.ini を作る。`-pa` を付けると処理済み一覧も書く | Python | git clone して `pip install -r`。ffmpeg と ffprobe が要る | ffmpeg を別プロセスで起動する。タグ付けは TMDB（ネットワーク）を使うので `-nt` で切る
+
+落とした名前を理由ごとに並べます。
+- 既出（SEEN）: tageditor, mutagen（mid3v2）, beets, rsgain, loudgain, opustags, m4b-tool, comictagger, libvips, ECT, image_optim, caesium, imgp, svgo, rimage, phockup, elodie, czkawka, yt-dlp, subliminal, MuseScore, darktable, jpeg-archive, calibre（ebook-meta）, mkvtoolnix, osxphotos, zopfli, scour, quodlibet（operon）, organize, ocrmypdf, picard, puddletag（33）
+- 星不足: tone 516, pysubs2 442, subaligner 511, kepubify 894, dnglab 689, vcsi 636, mp4ff 659, cbconvert 353, ebook-tools 770, pysrt 491, cyanrip 412, WavPack 461, ccextractor 901, Little-CMS 754, Photini 215, picopt 116, sacad 427, subtitleedit-cli 59, PhotoSort 17, epublift 67, Xentraxx の GooglePhotosTakeoutHelper_Neo 337（21）
+- push が古い: alass 2023-12, tvnamer 2021-05, onetagger 2026-02, audiowaveform 2025-08, editly 2025-05, mozjpeg 2025-06, TheLastGimbus の GooglePhotosTakeoutHelper 2025-01, ai-renamer 2025-02, imagemin-cli 2024-07（issues も off）（9）
+- archive 済み: r128gain, tsMuxer, AAXtoMP3, guetzli（4）
+- 規則 4（新しいファイルを書くだけ、または読むだけ）: untrunc（`_fixed`・`_streamable` を別名で書く。-h で確認）, Bento4, auto-editor, PySceneDetect, ffmpeg-normalize, libheif, libjxl, HandBrake, ab-av1, gifski, fre:ac（freaccmd に元を消すオプションが無い）, OpenEXR（exrstdattr と exrmakepreview は「その場では編集できない」と usage に明記）, chromaprint（読むだけ）, lossless-cut（GUI で、出力も新しいファイル）（14）
+- ネットワーク必須: spotdl, streamrip, gallery-dl, mnamer, ytdl-sub, icloudpd, SongRec（7）
+- GUI だけで CLI が無い: Aegisub, flowblade, shotcut, tuxguitar, MediaElch（CLI は一覧・表示・再読み込みだけ）, dupeguru, OpenShot（7）
+- ライブラリ: taglib（1）
+
+件数は次のとおりです。照合だけして見ていない 2 件（OpenUSD は 3D で領域外、metapunk は TUI で星が少ない見込み）はここに入れていません。
+
+| 区分 | 件数 |
+|---|---|
+| 見た | 105 |
+| 表に載せた | 6 |
+| 要判断で表から外した（f2, melt, Av1an） | 3 |
+| 落とした | 96 |
+
+照合で短い名前が別の語に当たったものが 5 件ありました（ect, f2, melt, mlt, untrunc）。中身を見て判断しています。

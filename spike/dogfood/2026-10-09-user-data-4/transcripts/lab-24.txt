@@ -1,0 +1,19 @@
+== plain
+thread in main: ran
+main exit 0
+thread in a library constructor: ran
+main reached
+uses exit 0
+ifstream in a library constructor: read 16 bytes
+main reached
+usesrnd exit 0
+== shim
+thread in main: ran
+main exit 0
+terminate called after throwing an instance of 'std::system_error'
+  what():  Unknown error -1
+uses exit 134
+Aborted
+ifstream in a library constructor: FAILED
+main reached
+usesrnd exit 0

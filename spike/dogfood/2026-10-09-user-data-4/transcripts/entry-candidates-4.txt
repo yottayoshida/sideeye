@@ -1,0 +1,2 @@
+ROW f2 static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 3 operations
+EXIT f2 0

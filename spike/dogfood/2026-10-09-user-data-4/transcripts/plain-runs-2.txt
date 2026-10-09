@@ -1,0 +1,2 @@
+PLAIN cook exit=0 state=changed  (Added 'eggs' to section 'dairy'.)
+PLAIN prefscleaner exit=0 state=changed  (All done!)

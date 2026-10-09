@@ -1,0 +1,6 @@
+haskell/ghcup-hs stars=353 pushed=2026-09-04 archived=true issues=true full=haskell/ghcup-hs
+leanprover/elan stars=653 pushed=2026-08-26 archived=false issues=true full=leanprover/elan
+mamba-org/mamba stars=8102 pushed=2026-10-08 archived=false issues=true full=mamba-org/mamba
+GreycLab/gmic stars=235 pushed=2026-10-08 archived=false issues=true full=GreycLab/gmic
+exoscale/cli stars=92 pushed=2026-10-08 archived=false issues=true full=exoscale/cli
+TryGhost/Ghost-CLI stars=498 pushed=2026-10-09 archived=false issues=true full=TryGhost/Ghost-CLI

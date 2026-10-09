@@ -1,0 +1,14 @@
+hercules-team/augeas stars=532 pushed=2026-09-29 archived=false issues=true full=hercules-team/augeas
+canonical/netplan stars=850 pushed=2026-09-24 archived=false issues=false full=canonical/netplan
+jorgebucaran/fisher stars=9439 pushed=2026-01-31 archived=false issues=true full=jorgebucaran/fisher
+JanDeDobbeleer/oh-my-posh stars=23565 pushed=2026-10-08 archived=false issues=true full=JanDeDobbeleer/oh-my-posh
+nvm-sh/nvm stars=95282 pushed=2026-10-08 archived=false issues=true full=nvm-sh/nvm
+rvm/rvm stars=5187 pushed=2026-09-28 archived=false issues=true full=rvm/rvm
+podofo/podofo stars=611 pushed=2026-10-07 archived=false issues=true full=podofo/podofo
+wakatime/wakatime-cli stars=461 pushed=2026-10-07 archived=false issues=true full=wakatime/wakatime-cli
+openbabel/openbabel stars=1386 pushed=2026-09-14 archived=false issues=true full=openbabel/openbabel
+HEASARC/cfitsio stars=71 pushed=2026-10-06 archived=false issues=true full=heasarc/cfitsio
+cdown/srt stars=535 pushed=2024-03-19 archived=false issues=true full=cdown/srt
+pimterry/notes stars=1321 pushed=2024-01-05 archived=false issues=true full=pimterry/notes
+tsujan/Kvantum stars=2036 pushed=2026-10-06 archived=false issues=true full=tsujan/Kvantum
+hunspell/hunspell stars=2599 pushed=2026-10-04 archived=false issues=true full=hunspell/hunspell

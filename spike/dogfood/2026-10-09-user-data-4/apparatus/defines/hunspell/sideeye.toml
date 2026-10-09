@@ -1,0 +1,6 @@
+[world]
+state = "/s/hun"
+
+[define]
+operation = ["sh", "-c", "hunspell -a -d en_US -p /s/hun/my.dic < /s/hun-in/words.txt"]
+cwd       = "/s/hun-in"

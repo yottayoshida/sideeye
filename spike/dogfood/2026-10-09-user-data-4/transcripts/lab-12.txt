@@ -1,0 +1,9 @@
+createraw exit 0
+-rw-r--r-- 1 root root 1052672 Oct  9 01:30 d.chd
+addmeta exit 0
+Metadata added
+25    openat(AT_FDCWD, "d.chd", O_RDWR) = 3
+25    pwrite64(3, ""..., 16, 1052672)   = 16
+25    pwrite64(3, ""..., 6, 1052688)    = 6
+25    pwrite64(3, ""..., 8, 48)         = 8
+-rw-r--r-- 1 root root 1052694 Oct  9 01:30 d.chd

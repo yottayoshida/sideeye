@@ -1,0 +1,80 @@
+# Scout 4 (fresh Opus subagent, read-only; 2026-10-09). Field: operations over sets of files. Its report, as handed back — in three messages (the first was cut at the PDAL row by the message limit; the scout re-sent the rest in two).
+
+資料に載っているのは `compact` ではなく `merge` だったので、表をそう直しました。fresh.sh に通した候補は 200 件です。表に 23 件、要判断に 9 件を挙げ、168 件を落としました。
+
+【要判断】
+1. **pm2**（Unitech/pm2 ★43300、push 09-04）は fresh.sh で SEEN と出ました。ただし当たり先は b2-candidates:225 の `rpm2cpio` への部分一致で、別物です。`pm2 save` が ~/.pm2/dump.pm2（JSON）を書き換えます。常駐デーモンです。
+2. **sindresorhus/trash-cli**（★1418、09-18）のコマンド `trash` は、andreafrancia 版と trashy に当たります。こちらは Node の別実装です。`trash f` で XDG ゴミ箱へ移し、.trashinfo を書きます。
+3. **mutagen-io/mutagen**（★4487、04-22）のコマンド `mutagen` は、測定済みの Python 版 mutagen に当たります。こちらは Go 製の同期ツールで別物です。`mutagen sync create a b` で動き、デーモンを起動します。
+4. **systemd-repart**（systemd/systemd ★16796、10-08）はコマンド名では fresh です。systemd は 10-05 の SELECTION.md:61 に、issue ラベルの例として出るだけです。`systemd-repart --empty=create --size=auto --definitions=d img.raw` で動き、mkfs を起動します。
+5. **ログを取り込む常駐エージェント 5 件**は、どれも fresh で規則 1・2 を通ります。vector 22681・logstash 14962・beats（filebeat）12657・fluent-bit 8139・grafana/alloy 3586 です。書くのは読み位置とディスク退避の状態です。「ログの回転」より常駐デーモン寄りです。表の rsyslog と syslog-ng も同じ性質です。
+6. **禁止の `gh api search/code` を 1 回誤って打ちました**（クエリ無し）。直後の rate_limit では、search も code_search も used 0 でした。
+
+| 名前 | owner/repo | 星 | push(2026) | 書き換えるコマンド | 書き換わるファイル | 言語 | 入れ方 | 懸念 |
+|---|---|---|---|---|---|---|---|---|
+| ollama | ollama/ollama | 182412 | 10-08 | `ollama create m -f Modelfile`/`ollama rm m` | models の blobs と manifests（JSON） | Go | linux-arm64 | 書くのは `ollama serve`（別プロセス、HTTP） |
+| Ventoy | ventoy/Ventoy | 79793 | 10-08 | `printf 'y\ny\n' \| sh Ventoy2Disk.sh -i /dev/loop0` | パーティション表・exFAT・ブート領域 | C/sh | linux.tar.gz（aarch64 同梱） | root・ループ |
+| magiskboot | topjohnwu/Magisk | 63157 | 10-08 | `magiskboot cpio r.cpio "add 0644 a b"`（資料に in-place と明記） | cpio・任意のバイナリ | C++/Rust | APK 内の .so のみ | rule 4 注記。Linux 単体は未確認 |
+| binwalk | ReFirmLabs/binwalk | 14398 | 08-11 | `binwalk -e -d out fw.bin` | out/ の展開木 | Rust | cargo | 外部ツール起動・スレッド |
+| npkill | voidcosmos/npkill | 9465 | 09-08 | `npkill -d dir -D -y` | node_modules を削除 | TS | npm | TUI（端末なしは未確認）・再生成できる物 |
+| BleachBit | bleachbit/bleachbit | 7060 | 10-08 | `bleachbit --shred f` / `--wipe-free-space d` | 対象・空き領域・bleachbit.ini | Py | deb（all） | rule 4 注記 |
+| mergerfs | trapexit/mergerfs | 5905 | 10-03 | `mergerfs -o moveonenospc=true /b1:/b2 /mnt` の後に書く | 各ブランチ（容量切れで移す） | C++ | static arm64 | FUSE（特権）・スレッド |
+| rpi-imager | raspberrypi/rpi-imager | 2624 | 10-08 | `rpi-imager --cli --enable-writing-system-drives os.img /dev/loop0` | 書き込み先（表・FAT） | C++ | cli aarch64 AppImage・deb | root・ループ |
+| unblob | onekey-sec/unblob | 2565 | 10-05 | `unblob -e out fw.bin` | out/ の展開木（切り出した塊は既定で消す） | Py/Rust | pip（aarch64 wheel） | 外部ツール・プロセスプール |
+| Bento4 | axiomatic-systems/Bento4 | 2507 | 06-27 | `mp4dash -f -o out frag.mp4` | out/ の DASH 一式（上書き・unlink） | C++/Py | cmake | 各コマンドを起動 |
+| kondo | tbillington/kondo | 2441 | 04-24 | `kondo -a ~/proj` | target/ 等を削除 | Rust | aarch64-linux | 再生成できる物 |
+| syslog-ng | syslog-ng/syslog-ng | 2379 | 10-08 | `syslog-ng -F -f s.conf --persist-file=p` | ログ・persist・disk-buffer | C | apt | 常駐・スレッド |
+| rsyslog | rsyslog/rsyslog | 2338 | 10-08 | `rsyslogd -n -f r.conf -i pid`（imfile＋退避キュー） | ログ・imfile 状態 JSON・キュー | C | apt | 常駐・スレッド |
+| btrbk | digint/btrbk | 2162 | 07-19 | `btrbk -c b.conf run` | btrfs スナップショットの作成と削除 | Perl | apt | root・btrfs ループ・`btrfs` 起動 |
+| Av1an | rust-av/Av1an | 1998 | 09-28 | `av1an -i in.mkv -o out.mkv --temp t --resume` | チャンク・done.json（File::create で書き直す、rename なし） | Rust | cargo | ffmpeg・エンコーダ起動 |
+| nydus-image | dragonflyoss/nydus | 1673 | 10-02 | `nydus-image create -t dir-rafs -D blobs/ src/`（merge も） | チャンク blob と bootstrap | Rust | static arm64 | root 不要 |
+| tippecanoe | felt/tippecanoe | 1616 | 09-26 | `tile-join -f -o m.pmtiles a.pmtiles b.pmtiles` | .pmtiles（.mbtiles は SQLite） | C++ | apt・make | スレッド |
+| ffmpeg-normalize | slhck/ffmpeg-normalize | 1538 | 10-05 | `ffmpeg-normalize in.flac -c:a flac -f -o out.flac` | 出力の音声 | Py | pip | ffmpeg 起動 |
+| PDAL | PDAL/PDAL | 1422 | 10-08 | `pdal translate in.las out.laz` | 出力の点群 | C++ | リリース資産なし（apt・conda） | プラグイン読み込み |
+| libdeflate-gzip | ebiggers/libdeflate | 1296 | 08-22 | `libdeflate-gzip f` | f.gz を書いて f を消す（-k で残す。programs/gzip.c で確認） | C | リリース資産なし（cmake） | なし |
+| dcm2niix | rordenlab/dcm2niix | 1197 | 09-27 | `dcm2niix -w 1 -z y -o out/ dicom/` | out/ の .nii.gz と .json（-w 1 で上書き） | C++ | dcm2niix_lnx.zip（arm64 かは未確認）・pip・apt | pigz があれば別プロセスで起動 |
+| mnamer | jkwill87/mnamer | 1155 | 10-05 | `mnamer --batch --no-cache --movie-directory=lib in/` | 動画ファイルを改名・移動 | Python | pip | TMDb 等へ問い合わせる（落ちても推測で改名）。キャッシュは --no-cache で切る |
+| igzip | intel/isa-l | 1103 | 10-01 | `igzip --rm f` | f.gz を書いて f を消す（--rm の時だけ。既定は残す。igzip_cli.c で確認） | C | リリース資産なし（ソース） | なし |
+
+見た件数（fresh.sh に通した候補 200 件、別名は 1 件に数えた）
+| 区分 | 件数 |
+|---|---|
+| 表に載せた | 23 |
+| 要判断 | 9（pm2・sindresorhus/trash-cli・mutagen-io/mutagen・systemd-repart・ログ取り込みエージェント 5） |
+| SEEN | 87 |
+| 星不足（★1000 未満） | 56 |
+| push が古い（2026-04-09 より前） | 12 |
+| archived | 1 |
+| issues off | 2（GDCM も issues off だが星不足に数えた） |
+| GitHub でない | 0（fresh.sh に通す前に外したので数に入れていない。mtools・xorriso・gptfdisk・parted・GNU gzip・bzip2・ddrescue・mkvtoolnix・mat2 など） |
+| 規則 3〜6・担当外 | 10 |
+| 合計 | 200 |
+
+落とした 168 件を理由ごとに並べます。
+
+SEEN 87（fresh.sh が SEEN。別物への部分一致は要判断に回した 4 件だけ）:
+mmv・detox・brename・rnr・edir・phockup・elodie・organize・czkawka・rdfind・duperemove・ouch・pigz・lz4・brotli・zopfli・Leanify・Efficient-Compression-Tool・image_optim・imgp・svgo・squashfs-tools・util-linux（sfdisk・hardlink）・e2fsprogs・ntfs-3g・logrotate・zpaq・dvc・git-lfs・rsync・osync・rsnapshot・miller・gdal・nco・pmtiles・tageditor・mutagen（Python）・m4b-tool・beets・rsgain・calibre・patchelf・upx・par2・snapraid・lrzip・bzip3・7zip・p7zip・testdisk（photorec）・xdelta・trashy・untrunc・PiShrink・gpsbabel・goaccess・duplicacy・plakar・rustic・restic・visidata・darktable・rawtherapee・caesium・rimage・FreeCAD・glTF-Transform・meshoptimizer（gltfpack）・papis・lftp・archiver・libvips・LAStools・skopeo・oras・crane・regclient・buildah・podman・ostree・kubo・huggingface・bup・lima（limactl）・quickemu・Fiona
+
+星不足 56（★1000 未満）:
+境目は hdf5 994・s6 980・umoci 964・htslib 953・bupstash 924・bcftools 896。
+残りは vidir 227・nomino 711・renamer 560・pipe-rename 437・vimv 690・e2tools 40・dosfstools 311・btrfs-progs 699・exfatprogs 277・zpaqfranz 497・dar 205・tone 516・rcodesign 864・rhash 732・chkbit 182・patool 457・git-restore-mtime 367・desync 431・isomd5sum 16・rip2 678・gtrash 324・fatcat 328・sdm 764・wimlib 219・libdmg-hfsplus 175・libguestfs 748・growpart（cloud-utils）125・snzip 228・kanzi-go 620・GDCM 398・osmium-tool 705・conserve 278・dupe-krill 204・gomi 575・conceal 37・metastore 185・media-sort 132・dtrx 281・netcdf-c 607・parquet-tools 210・rio-cogeo 394・WavPack 461・repren 374・mergerfs-tools 494・librsync 793・datalad 666・ripunzip 295・rapidgzip 469・zsync2 182・composefs 694
+
+push が古い 12（どれも ★1000 以上）:
+Supervisor 9129（2025-12-21）・lsyncd 6066（2024-11-27）・mozjpeg 5729（2025-06-23）・Local-File-Organizer 3342（2024-10-21）・WoeUSB 2641（2025-09-12）・audiowaveform 2168（2025-08-24）・ai-renamer 2128（2025-02-09）・lzfse 1824（2022-09-05）・casync 1614（2025-09-22）・alass 1455（2023-12-28）・massren 1397（2024-12-08）・pm2-logrotate 1331（2026-02-19）
+
+archived 1: r128gain
+
+issues off 2: DCMTK/dcmtk 911・jblindsay/whitebox-tools 1210
+
+GitHub でない 0: fresh.sh に通す前に外したので数に入れていない（mtools・xorriso・gptfdisk・parted・GNU gzip・bzip2・ddrescue・mkvtoolnix・mat2 など）。
+
+規則 3〜6・担当外 10:
+- assimp 13251 は規則 3 で落とした。ライブラリが主で、CLI は付属品。
+- zarr は規則 3 で落とした。CLI が無い。
+- nwipe 1234 は規則 4・6 で落とした。root とブロックデバイスが要り、壊すのが目的なので守る状態が無い。
+- ratarmount 1314 は規則 5 で落とした。索引が SQLite で、FUSE も要る。
+- GRASS 1177 は規則 5 で落とした。ベクタの属性表が既定で SQLite。
+- QGIS 14485 は GUI 付属 CLI で重い。既定の出力 GeoPackage が SQLite。
+- mkosi 2025 は規則 4 で落とした。出力は git の設定から作り直せる生成物で、既定でネットワークからパッケージを取る。
+- HandBrake 24592 と libjxl 3700 は担当外。新しい出力ファイルを書くだけで、ファイル群の書き換えではない。
+- CloudCompare 4787 は GUI 付属 CLI。ヘッドレスで動くか確かめておらず、最新リリースは 2024-07。

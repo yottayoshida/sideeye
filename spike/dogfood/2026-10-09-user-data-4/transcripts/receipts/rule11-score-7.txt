@@ -1,0 +1,2 @@
+docker/buildx                              5/10  pass       label=kind/bug
+tristanisham/zvm                           5/10  pass       label=bug

@@ -1,0 +1,24 @@
+fresh uplink
+fresh storj
+fresh nmctl
+fresh netmaker
+fresh aptos
+SEEN  yarn  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:125
+fresh berry
+fresh ziti
+fresh openziti
+fresh authelia
+fresh softhsm
+fresh in-toto
+fresh sing-box
+fresh sagernet
+SEEN  trash-cli  funnel:110
+SEEN  trash-cli  target-classes:48
+SEEN  trash-cli  b2-exclusions:332
+SEEN  trash-cli  cohort4-rejected:34
+SEEN  trash-cli  spike/dogfood/2026-09-06-userview-2/SELECTION.md:25
+SEEN  trash-cli  spike/dogfood/2026-09-16-userview-3/SELECTION.md:32
+fresh sindresorhus
+fresh libdeflate
+fresh isa-l
+fresh igzip

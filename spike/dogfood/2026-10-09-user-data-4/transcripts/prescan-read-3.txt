@@ -1,0 +1,174 @@
+== commercialhaskell_stack.prescan.txt: 463 distinct issues listed, 33 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #6897 closed 2026-05-03 Stack's config set snapshot corrupts when specified snapshot is compiler-only
+   #6669 merged 2024-12-11 Fix #6665 Avoid partial functions
+   #6665 closed 2024-12-09 Avoid use of partial functions that generate GHC warnings
+   #6629 merged 2024-07-30 Fix #6628 Treat consecutive line ends as a single blank line
+   #6521 closed 2024-03-15 Allow Hpack used by Stack to overwrite a Cabal file it considers has been modified manually
+   #6309 merged 2023-10-20 Clear Stan suggestion; eliminate partial `minimum`
+   #6174 merged 2023-06-24 Partial fix #6170 Move nextPrompt after replCommand
+   #6156 closed 2023-06-16 On Windows, Stack 2.11.1 installer said to corrupt user's PATH
+   #6119 merged 2023-05-11 Fix #3708 By default, don't overwrite a Stack executable not named stack
+   #6110 open 2023-04-26 Specific error message when extra-deps git commit is empty.
+   #6023 merged 2023-01-08 Fix #5968 New approach to overwriting existing Stack executable
+   #5862 closed 2022-09-11 Don't add blank lines back into multiline strings.
+   #5861 closed 2022-09-11 Extra blank lines introduced with `config set`
+   #5378 open 2020-08-28 interrupt at wrong time (updating indices?) causes strange failures
+   #5231 closed 2020-03-20 Custom template gets overwritten
+   #4825 merged 2019-05-13 Non atomic write on windows
+   #4742 merged 2019-04-15 Atomic file writes
+   #4737 open 2019-04-15 `stack repl` in a half closed state after ctrl-c on Windows
+   #4559 open 2019-02-04 Get rid of persistent build errors due to non-atomic file writes in GHC and stack
+   #3708 closed 2017-12-25 "stack upgrade" should overwrite current program location if it's writable
+   #3465 closed 2017-10-02 Stack GHCI shows error while running in windows 7 power shell .
+   #3407 closed 2017-09-02 Consider whether there are issues with SIGKILLing stack and lockfiles
+   #3399 open 2017-08-31 Provide option to treat SIGKILL as out of memory
+   #3391 closed 2017-08-29 user interrupt in copy/register step breaks the package database
+   #3248 open 2017-07-05 Power failure during `stack build` results in corruption to global Stack directory
+   #2936 closed 2017-01-18 Build corruption bug when moving a project
+   #2657 closed 2016-10-01 Issue with corruption in downloaded executable
+   #2395 closed 2016-07-20 Blank error when running haddock for GHCJS-compiled project
+   #2317 closed 2016-07-01 stack setup on new blank project
+   #2113 open 2016-05-07 stack new: non-empty DIRS does not provide a way to add '.' to packages
+   #1198 closed 2015-10-19 Executables with the same names from different project packages are clobbered
+   #1044 closed 2015-09-24 Stack became unreliable: .: canonicalizePath: interrupted (Interrupted system call)
+   #413 closed 2015-06-25 stack bench truncates final output on a slow terminal
+== haskell_cabal.prescan.txt: 570 distinct issues listed, 32 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #11927 open 2026-06-02 cabal-3.17 crashes during configure process with GHC 10
+   #10964 closed 2025-05-17 Wip/write file atomic
+   #10947 open 2025-05-06 `cabal sdist`: Rename Cabal file to match the package name
+   #10938 closed 2025-04-23 writeFileAtomic retry strategy could be improved with threadDelay
+   #10396 open 2024-09-28 `--overwrite-policy` enhancements
+   #10366 merged 2024-09-16 Create temp files in temp directory
+   #9913 open 2024-04-20 Interrupting `cabal test` may leave test executable running
+   #9757 open 2024-02-29 Leading blank spaces are confusing
+   #9329 open 2023-10-13 CPP macros suitable for partial evaluation
+   #9154 open 2023-07-27 (partially) fix issue #6888, source-repository-package branch failure
+   #8787 open 2023-02-20 cabal init will relocate and rename project structure
+   #8450 open 2022-09-03 `addCmd` prints an empty string for unknown commands
+   #8408 open 2022-08-20 `cabal configure` shouldn't overwrite a `cabal.project.local` it hasn't written so
+   #8208 closed 2022-06-11 Interrupting cabal-3.8.0.0.20220526 and master with ctrl+c makes it hang on windows
+   #8207 open 2022-06-10 cabal init --overwrite: openFile: app/Main.hs: does not exist (No such file or directory)
+   #8078 closed 2022-04-02 cabal-install  3.6 on OSX doesn't handle ctrl-c (interrupts) correctly
+   #7914 closed 2022-01-20 Cabal run leaves children running when killed
+   #7240 open 2021-01-10 Windows v2-build Error: unsatisfied constraints (The directory is not empty.)
+   #7221 open 2021-01-01 `cabal v2-install`ed executables should be resilient against (partial) deletion of `.cabal/store`
+   #6202 open 2019-08-21 Remove default `optional-packages`, i.e .make it empty.
+   #6189 open 2019-08-11 Parsing: Negate the condition when `if` branch is empty.
+   #5935 open 2019-03-13 Empty extra fields in config file breaks cabal
+   #5518 open 2018-08-12 "truncated tar archive" on cabal update
+   #5053 merged 2018-01-18 Rename `all-packages` to `package *`
+   #4920 open 2017-11-30 Corrupt file header when dealing with Unicode normalization issues
+   #4119 open 2016-11-18 Be more robust to store corruption
+   #3343 open 2016-04-15 Inplace build profiles, to avoid clobbering old build products when you change some settings
+   #3143 open 2016-02-13 Cabal sometimes doesn't delete empty temporary directories
+   #2813 open 2015-09-08 Print a user-friendly error message when ghc is killed
+   #2533 closed 2015-04-14 cabal install clobbers symlinked world file
+   #971 closed 2012-07-09 After interrupting a build with Ctrl-C (SIGINT), cabal install just goes on to the next package
+   #657 open 2012-05-24 Confusion situation when linking ./dist/setup/setup is interrupted
+== carapace-sh_carapace-bin.prescan.txt: 158 distinct issues listed, 12 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #3660 merged 2026-07-30 ps.ActionKillSignals should default to runtime.GOOS on empty
+   #3613 merged 2026-07-04 fix(nushell): fallback to default completions on empty
+   #3612 closed 2026-07-04 nushell: external completer blocks fallback on empty completions (gives "NO RECORDS FOUND")
+   #3261 merged 2026-02-13 complete all variants for empty name
+   #2880 merged 2025-07-20 kitty: fix partial directory completion
+   #2704 merged 2025-02-15 fish: erase existing for tombstone
+   #2658 closed 2024-12-24 gcloud: Killed by signal in _gcloud_completion after 0s
+   #1487 merged 2023-01-20 ActionArgcomplete: fix partial positional not being completed
+   #1486 closed 2023-01-20 Argcomplete bridge does not autocomplete when positional arguments is partially typed
+   #1270 merged 2022-08-22 nushell: fix script (omit blank line)
+   #711 merged 2021-10-29 added halt, poweroff, reboot
+   #185 closed 2020-10-24 fish: erased functions still get autoloaded
+== mamedev_mame.prescan.txt: 546 distinct issues listed, 53 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #16334 merged 2026-10-04 apple/cuda.cpp: invert ADB power key
+   #16332 merged 2026-10-04 cpu/powerpc: Charge time base and decrementer reads one cycle
+   #16314 merged 2026-10-03 cpu/powerpc: Fix wakeup from power-saving mode
+   #16293 merged 2026-10-01 swp30: meg writes to the delay memory truncate towards zero
+   #16286 merged 2026-09-30 video/voodoo_render.cpp: Fix multibase texture LOD addresses (fixes texture corruption in konami/viper.cpp games) [spita90]
+   #16285 merged 2026-09-30 machine/i8291a: Fix MJMN, APT gating, NRFD release, power-up and reset handling
+   #16279 closed 2026-09-29 m68k: bfins bitfield offset calculated incorrectly (taito_f3/scfinals: replay sprite corruption)
+   #16230 open 2026-09-23 CD-i: Lost Ride - Differences to real hardware
+   #16188 merged 2026-09-19 apple/valkyrie: honor VBL interrupt disable on acknowledge
+   #16183 merged 2026-09-19 Power Macintosh x400 "Alchemy" preliminary driver
+   #16180 merged 2026-09-19 powerpc: honor cpu_device::retry_access() in the DRC; boot pmac6200 from CD
+   #16149 closed 2026-09-15 cpu/powerpc: enforce page protection in the 603 software TLB
+   #16144 closed 2026-09-15 swp30: truncate the voice volume product
+   #16126 merged 2026-09-13 cpu/v25: instruction cycle counts from manual, fix REP resume after interrupt
+   #16091 merged 2026-09-09 tms9901: update synchronous interrupt output on every external clock
+   #16090 merged 2026-09-09 Add Macintosh Cordyceps (Power Mac x200) stub driver
+   #15960 closed 2026-08-22 machine/am9517a: eisa_dma_device m_stop[4] is save-registered but never initialized; readback returns residue and partial writes p
+   #15923 closed 2026-08-18 mc6852: drive the interrupt output
+   #15876 open 2026-08-10 Iskra-226: firmware dumps, disk images with provenance, on-disk format and partial ISA documentation
+   #15807 merged 2026-07-31 cpu/mcs96: MULB indexed byte operand, and HSO CAM entries lost to exact-equality matching
+   #15778 open 2026-07-28 motoxgo hangs at black screen before POST since d7e131c39 (F2MC-16 external interrupt change)
+   #15772 open 2026-07-26 wangpc: floppy boot hangs at "01 Start From Drive A" — level-1 (PIT ch2) interrupt dies, BIOS tick counter never decrements
+   #15730 closed 2026-07-19 MIPS3 - DRC SC instruction register corruption with fix
+   #15653 open 2026-07-06 emu/addrmap.cpp: Allow to map shares with offset. Performed size validation for union of partial ranges.
+   #15649 merged 2026-07-05 sega/model1: repair 2-bit corruption in 315-5711 TGP copro ROM
+   #15560 open 2026-06-19 machine/i8251.cpp - data_w() clears TxRDY but then instantly reasserts TxRDY if transmit buffer is empty
+   #15509 merged 2026-06-13 sinclair/next/specnext_sprites.cpp: Fixed memory corruption
+   #15221 open 2026-04-12 i8008.cpp: Address Stack registers (ADDR1, ..., ADDR8) are wrongly truncated in the debug window
+   #15121 merged 2026-03-20 m6502: route core fetch/data/write paths through interruptible accesses
+   #15082 closed 2026-03-11 cpu/powerpc: implement reservation for lwarx and stwcx instruction pair
+   #15074 merged 2026-03-08 sh/sh7709s.cpp: Fix bug in DRC memory accessor using clobbered IO reg
+   #14961 open 2026-02-14 daytona usa 2 power edition - crash into test / service
+   #14474 open 2025-11-04 apple: diskiing/iwm corruption
+   #13408 merged 2025-02-23 taito/flstory.cpp, taito/nycaptor.cpp: Correct sound CPU interrupt frequency
+   #13190 open 2025-01-06 mmr4000le unable to complete disk formatting, "NcrInterruptServiceRoutine: Unexpected bus disconnect"
+   #13053 closed 2024-12-08 mcs51: Serial output emulation should not clobber P3.1 when IDLE.
+   #12605 closed 2024-07-21 chdman createdvd writes corrupt CHD files on CIFS storage
+   #12418 merged 2024-05-29 nitchibutsu/shettle.cpp - Change shettle palette PROM decode to match wiping
+   #11393 open 2023-07-02 Debugger: Scrolling on macOS creates blank area
+   #11208 open 2023-05-09 sega/powervr2.cpp: move renderer to threaded code
+   #11133 open 2023-04-21 Memory corruption in SC3000, music
+   #10937 open 2023-02-26 Some but not other Power Pad bindings saved
+   #10047 merged 2022-07-07 z80: interruptible execution
+   #9936 closed 2022-06-15 double free or corruption in arsystems.cpp
+   #9719 merged 2022-05-08 megadriv.xml: Trimmed pcottonp dump by half.
+   #8969 closed 2021-12-13 Correct Wiping / Rug Rats Manufacturer [sjy96525]
+   #7680 closed 2021-01-18 Graphical regression in Wiping (related to 'emumem'?)
+   #7403 open 2020-10-27 Mega Drive VDP triggers the vblank interrupt very prematurely, scanline counter doesn't match real screen position
+   #6631 open 2020-05-03 Sound CPU periodic interrupt speed in Namco's "Universal System 16"
+   #4128 open 2018-10-12 Coco3 keyboard interrupt doesn't work
+   #3982 open 2018-09-10 Watara Supervision: DMA sound corruption
+   #1107 closed 2016-07-16 Controller mappings are erased when the controllers don't exist
+   #728 open 2016-03-19 Power-off callback on MAME exit
+== hunspell_hunspell.prescan.txt: 117 distinct issues listed, 14 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #1111 closed 2026-04-30 Added truncated utf-8 sequence checking to u8_u16
+   #1044 closed 2025-03-15 Heap corruption when running tools/analyze
+   #974 merged 2023-08-27 ofz#59510 clear compound table if its corrupted
+   #765 closed 2022-07-23 Hunspell returns true when checking the spelling of an empty string or a string full of ignored characters
+   #757 merged 2022-01-11 Allow to call Hunspell constructor with null/empty paths
+   #714 closed 2021-02-12 reverse_condition in affixmgr.cxx may overwrite the null terminator of a std::string
+   #687 closed 2020-08-26 "hunspell -D /dev/null" could handle empty $LANG better
+   #649 merged 2019-10-26 man: fix empty escaped syntax
+   #634 closed 2019-07-11 Special characters treated as blank space
+   #554 closed 2018-01-22 Hunspell_generate() returns empty slst when compiling msvc Win32 .dll
+   #381 closed 2016-04-29 Use of Unix only functions in tools\hunpell.cxx related to temporary files
+   #220 open 2014-06-27 hunspell truncate a text more than 8190 characters
+   #211 closed 2013-04-13 makealias corrupts .aff file
+   #33 closed 2007-04-03 Heap corruption for UTF8
+== docker_buildx.prescan.txt: 348 distinct issues listed, 13 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #4107 merged 2026-09-22 bake: allow empty overrides to clear arrays
+   #4058 merged 2026-09-04 build: fix partial multi-node image pushes
+   #4028 merged 2026-08-20 build: avoid empty source policy sessions
+   #3506 open 2025-11-08 Add way to specify empty context
+   #2926 closed 2025-01-17 history inspect: empty lines between attributes
+   #2529 open 2024-06-17 Bake: empty block should equal `null`, not empty string
+   #1514 closed 2023-01-13 buildx segfault with empty newline continuation
+   #1492 closed 2023-01-07 bake flag -f additively combines some keys and overwrites others
+   #1238 closed 2022-07-18 docker compose fails to build Dockerfile with `COPY empty-dir/* .`
+   #1174 closed 2022-06-21 An error occurred during the build, but there was no interruption
+   #1027 closed 2022-03-26 Multi-stage buildx build corrupts character special files
+   #637 closed 2021-06-20 Images created with buildx sometimes have layers that are incorrect/zero bytes
+   #560 closed 2021-03-11 New Output Color is nearly invisible on Powershell
+== tristanisham_zvm.prescan.txt: 38 distinct issues listed, 1 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #83 closed 2024-06-08 [BUG] 'no such file or directory' error when attempting to rename zls
+== ebiggers_libdeflate.prescan.txt: 68 distinct issues listed, 8 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #448 merged 2026-03-16 Enable UNALIGNED_ACCESS_IS_FAST for all PowerPC variants
+   #391 closed 2024-10-05 Decompression data interrupt
+   #362 closed 2024-03-25 Unaligned access on PowerPC: forgotten macros in `common_defs.h`
+   #157 closed 2022-01-14 OOM error on decompression with corrupted input file
+   #71 closed 2020-08-13 Rename gzip application to deflate.
+   #44 closed 2019-05-21 Writes corrupt files when compressed data > 4GB
+   #33 closed 2018-06-02 Slow gzip decompression on corrupted data
+   #13 closed 2016-07-11 Rename adler32 to adler32_zlib

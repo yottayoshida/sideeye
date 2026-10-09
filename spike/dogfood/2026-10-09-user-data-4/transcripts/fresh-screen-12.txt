@@ -1,0 +1,7 @@
+fresh ifcpatch
+fresh IfcOpenShell
+fresh rootrm
+fresh root-project
+fresh h2cli
+fresh hydrogen
+fresh CKAN

@@ -1,0 +1,21 @@
+PREFLIGHT  recording accepted — 5 state-changing operation(s) observed
+
+cwd          /s/cook
+atomicity    3 path(s) judged pre-or-post
+oracle       agreed on 5 operations (182 syscall lines examined, 30 in scope of the judged state), witness strace of THIS run — the operations were counted from outside the target by the supervising engine through a seccomp user-notification filter, no shim loaded; in this mode the oracle does not count an entry strace ended `= ? ERESTART...` (a signal took the call back before it completed)
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2006 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/cook --cwd "/s/cook" --operation "cook pantry add dairy eggs --quantity 6" \
+               --check <your-invariant.sh> --observe supervised --oracle /usr/bin/strace

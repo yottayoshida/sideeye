@@ -1,0 +1,443 @@
+== novelty pre-scan: cooklang/cookcli
+== date: 2026-10-09T00:56:33Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          17 hit(s) (all listed)
+      #635 merged 2026-10-07 chore(deps-dev): bump source-map-js from 1.2.1 to 1.2.2
+      #334 open 2026-04-29 feat(server): plan for auth and read-only mode (#312)
+      #444 merged 2026-08-13 fix: clear the help-wanted backlog
+      #353 merged 2026-06-09 fix(server): avoid renameat2 SIGSYS on aarch64 Android (Termux)
+      #396 merged 2026-08-07 chore(deps-dev): bump tailwindcss from 3.4.17 to 4.3.3
+      #515 merged 2026-09-17 fix(shopping-list): follow recipe references all the way down
+      #318 merged 2026-04-10 feat: migrate shopping list to new format with checked state
+      #347 merged 2026-05-16 feat(sync): OAuth 2.0 device-code login for CLI and Docker users
+      #402 merged 2026-08-07 chore(deps): bump the npm-dependencies group across 1 directory with 11 updates
+      #395 closed 2026-08-07 chore(deps): bump the npm-minor-and-patch group with 11 updates
+      #243 merged 2026-01-19 feat: Recipe Editor Phase 1 - Basic editing infrastructure
+      #245 closed 2026-01-20 feat: Recipe Editor Phase 3 - LSP WebSocket Bridge
+      #246 merged 2026-01-20 feat(editor): Phase 4 - LSP client & full features
+      #270 merged 2026-02-27 feat: add CookCloud sync to CLI server
+      #40 closed 2022-02-21 Please provide CookCLI for Linux arm64
+      #35 merged 2022-01-04 Update Embassy to fix server crash
+      #33 closed 2022-01-02 Server segmentation fault when navigating to shopping list
+  corrupt        16 hit(s) (all listed)
+      #501 open 2026-09-13 Recipes with Component Modifiers Used Look like Corrupted UX in Server/Static Mode
+      #502 open 2026-09-13 ✨feat: Enable Support for COMPONENT_MODIFIERS with UX Updates to Support Optional Ingredients
+      #414 closed 2026-08-11 cook recipe -f cooklang corrupts recipes on repeated round-trips
+      #429 closed 2026-08-12 pantry add/remove/update corrupts top-level items and silently drops comments and attributes
+      #529 merged 2026-09-23 chore: pin line endings to LF with .gitattributes
+      #513 merged 2026-09-17 fix(search): decode recipe files lossily instead of failing on invalid UTF-8
+      #456 merged 2026-08-17 feat(ui): token foundation and Cooklang palette, existing layout kept
+      #434 merged 2026-08-13 feat(core): extract command logic into a cookcli-core library crate
+      #444 merged 2026-08-13 fix: clear the help-wanted backlog
+      #296 merged 2026-04-02 fix: quote pantry section names containing spaces in TOML output
+      #476 merged 2026-09-01 chore(deps): bump the cargo-dependencies group with 4 updates
+      #292 closed 2026-04-02 Problem in pantry when section name contains space
+      #402 merged 2026-08-07 chore(deps): bump the npm-dependencies group across 1 directory with 11 updates
+      #395 closed 2026-08-07 chore(deps): bump the npm-minor-and-patch group with 11 updates
+      #270 merged 2026-02-27 feat: add CookCloud sync to CLI server
+      #246 merged 2026-01-20 feat(editor): Phase 4 - LSP client & full features
+  corruption     5 hit(s) (all listed)
+      #444 merged 2026-08-13 fix: clear the help-wanted backlog
+      #296 merged 2026-04-02 fix: quote pantry section names containing spaces in TOML output
+      #347 merged 2026-05-16 feat(sync): OAuth 2.0 device-code login for CLI and Docker users
+      #243 merged 2026-01-19 feat: Recipe Editor Phase 1 - Basic editing infrastructure
+      #246 merged 2026-01-20 feat(editor): Phase 4 - LSP client & full features
+  truncated      29 hit(s) (all listed)
+      #431 closed 2026-08-13 shopping list writes are not atomic: a failed write truncates .shopping-list
+      #304 closed 2026-04-04 the print is truncated
+      #533 merged 2026-09-24 feat(web): upload a recipe's title picture from the editor
+      #366 closed 2026-07-07 Reduce dependency count (581 crates on cargo install)
+      #505 merged 2026-09-15 chore(deps): bump the cargo-dependencies group with 6 updates
+      #504 merged 2026-09-15 chore(deps-dev): bump the npm-dependencies group with 5 updates
+      #367 closed 2026-07-13 fix(build): use thin LTO to cut peak build memory
+      #506 closed 2026-09-15 chore(deps): bump axum-extra from 0.10.3 to 0.12.6
+      #479 closed 2026-09-01 chore(deps): bump fluent-templates from 0.10.1 to 0.15.1
+      #403 merged 2026-08-07 chore(deps): bump the github-actions group across 1 directory with 11 updates
+      #451 merged 2026-08-15 chore(deps): bump tower-http from 0.6.11 to 0.7.0
+      #393 closed 2026-08-07 chore(deps): bump codecov/codecov-action from 4 to 7
+      #477 closed 2026-09-01 chore(deps): bump axum from 0.7.9 to 0.8.9
+      #400 merged 2026-08-07 chore(deps): bump tower-http from 0.5.2 to 0.6.11
+      #448 merged 2026-08-15 chore(deps): bump actions/checkout from 4.4.0 to 7.0.1 in the github-actions group across 1 directory
+      #392 closed 2026-08-07 chore(deps): bump softprops/action-gh-release from 1 to 3
+      #391 closed 2026-08-07 chore(deps): bump actions/setup-node from 4 to 7
+      #402 merged 2026-08-07 chore(deps): bump the npm-dependencies group across 1 directory with 11 updates
+      #395 closed 2026-08-07 chore(deps): bump the npm-minor-and-patch group with 11 updates
+      #396 merged 2026-08-07 chore(deps-dev): bump tailwindcss from 3.4.17 to 4.3.3
+  truncate       37 hit(s) (all listed)
+      #431 closed 2026-08-13 shopping list writes are not atomic: a failed write truncates .shopping-list
+      #600 merged 2026-10-01 chore(deps): bump the cargo-dependencies group across 1 directory with 6 updates
+      #510 merged 2026-09-17 feat(doctor): show which recipes use each reported ingredient
+      #386 merged 2026-08-06 fix(server): wrap long ingredient notes instead of clipping them
+      #304 closed 2026-04-04 the print is truncated
+      #434 merged 2026-08-13 feat(core): extract command logic into a cookcli-core library crate
+      #307 merged 2026-04-05 fix: prevent print layout from truncating recipe content
+      #505 merged 2026-09-15 chore(deps): bump the cargo-dependencies group with 6 updates
+      #533 merged 2026-09-24 feat(web): upload a recipe's title picture from the editor
+      #367 closed 2026-07-13 fix(build): use thin LTO to cut peak build memory
+      #366 closed 2026-07-07 Reduce dependency count (581 crates on cargo install)
+      #504 merged 2026-09-15 chore(deps-dev): bump the npm-dependencies group with 5 updates
+      #506 closed 2026-09-15 chore(deps): bump axum-extra from 0.10.3 to 0.12.6
+      #479 closed 2026-09-01 chore(deps): bump fluent-templates from 0.10.1 to 0.15.1
+      #403 merged 2026-08-07 chore(deps): bump the github-actions group across 1 directory with 11 updates
+      #451 merged 2026-08-15 chore(deps): bump tower-http from 0.6.11 to 0.7.0
+      #393 closed 2026-08-07 chore(deps): bump codecov/codecov-action from 4 to 7
+      #477 closed 2026-09-01 chore(deps): bump axum from 0.7.9 to 0.8.9
+      #515 merged 2026-09-17 fix(shopping-list): follow recipe references all the way down
+      #400 merged 2026-08-07 chore(deps): bump tower-http from 0.5.2 to 0.6.11
+  empty          82 hit(s) (all listed)
+      #628 open 2026-10-05 Pantry Add item dialog can't create a new section once the pantry has items
+      #604 open 2026-10-01 feat(ui): save the shopping list as a menu
+      #469 open 2026-08-30 feat(server): add federation search page to discover and save recipes
+      #615 closed 2026-10-03 Spaces around typed names are kept: new recipe folders/files, pantry items, shopping-list checks
+      #578 closed 2026-09-28 main: every page panics — error-title/error-back-home defined twice in 5 locales
+      #588 merged 2026-09-30 fix(ui): make Done the main action once a title picture is set
+      #590 merged 2026-09-30 feat: recognise optional ingredients and cookware (cooklang 0.19)
+      #629 open 2026-10-05 feat(pantry): new sections from Add item, rename sections, edit pantry.conf as text
+      #611 open 2026-10-01 feat: add some days of a meal plan to the shopping list
+      #558 merged 2026-09-27 feat(ui): create and edit menus with a recipe picker
+      #159 open 2025-09-07 feat: extension support for recipe command
+      #528 merged 2026-09-23 fix(core): honour COOK_CONFIG_DIR so tests cannot reach a real session
+      #610 merged 2026-10-01 feat(ui): change a meal plan from its calendar
+      #538 closed 2026-09-25 feat(ui): create and edit menus with a recipe picker
+      #596 merged 2026-09-30 feat(ui): meal plans laid out as a calendar
+      #633 open 2026-10-07 Optional AI assistant on recipe and menu pages
+      #621 merged 2026-10-03 feat(server): --recipes-only shows guests only the recipes
+      #554 merged 2026-09-26 feat(ui): random recipe button scoped to the current folder
+      #457 merged 2026-08-19 feat(shopping-list): add --extra for items no recipe calls for
+      #533 merged 2026-09-24 feat(web): upload a recipe's title picture from the editor
+  atomic         20 hit(s) (all listed)
+      #629 open 2026-10-05 feat(pantry): new sections from Add item, rename sections, edit pantry.conf as text
+      #611 open 2026-10-01 feat: add some days of a meal plan to the shopping list
+      #431 closed 2026-08-13 shopping list writes are not atomic: a failed write truncates .shopping-list
+      #623 merged 2026-10-03 feat(server): rename a recipe or menu from the editor
+      #534 merged 2026-09-25 feat(server): opt-in sign-in before anything can be changed
+      #522 merged 2026-09-22 fix: stop the shopping list page reloading itself and rebuilding on every tick
+      #429 closed 2026-08-12 pantry add/remove/update corrupts top-level items and silently drops comments and attributes
+      #353 merged 2026-06-09 fix(server): avoid renameat2 SIGSYS on aarch64 Android (Termux)
+      #434 merged 2026-08-13 feat(core): extract command logic into a cookcli-core library crate
+      #405 closed 2026-08-07 chore(deps): bump the cargo-dependencies group with 13 updates
+      #397 closed 2026-08-07 chore(deps): bump the cargo-minor-and-patch group with 13 updates
+      #407 merged 2026-08-07 chore(deps): bump the cargo-dependencies group across 1 directory with 15 updates
+      #347 merged 2026-05-16 feat(sync): OAuth 2.0 device-code login for CLI and Docker users
+      #325 merged 2026-04-13 feat: live updates for shopping list page
+      #318 merged 2026-04-10 feat: migrate shopping list to new format with checked state
+      #243 merged 2026-01-19 feat: Recipe Editor Phase 1 - Basic editing infrastructure
+      #246 merged 2026-01-20 feat(editor): Phase 4 - LSP client & full features
+      #245 closed 2026-01-20 feat: Recipe Editor Phase 3 - LSP WebSocket Bridge
+      #270 merged 2026-02-27 feat: add CookCloud sync to CLI server
+      #263 merged 2026-02-16 Add cooking mode to WebUI
+  atomically     5 hit(s) (all listed)
+      #623 merged 2026-10-03 feat(server): rename a recipe or menu from the editor
+      #534 merged 2026-09-25 feat(server): opt-in sign-in before anything can be changed
+      #431 closed 2026-08-13 shopping list writes are not atomic: a failed write truncates .shopping-list
+      #444 merged 2026-08-13 fix: clear the help-wanted backlog
+      #270 merged 2026-02-27 feat: add CookCloud sync to CLI server
+  interrupted    2 hit(s) (all listed)
+      #404 merged 2026-08-07 fix: fail the build with instructions when compiled front-end assets are missing
+      #263 merged 2026-02-16 Add cooking mode to WebUI
+  interrupt      3 hit(s) (all listed)
+      #404 merged 2026-08-07 fix: fail the build with instructions when compiled front-end assets are missing
+      #347 merged 2026-05-16 feat(sync): OAuth 2.0 device-code login for CLI and Docker users
+      #263 merged 2026-02-16 Add cooking mode to WebUI
+  sigkill        0 hit(s)
+  sigint         2 hit(s) (all listed)
+      #347 merged 2026-05-16 feat(sync): OAuth 2.0 device-code login for CLI and Docker users
+      #241 merged 2026-01-16 Add cook lsp sub command for language server
+  ctrl-c         3 hit(s) (all listed)
+      #347 merged 2026-05-16 feat(sync): OAuth 2.0 device-code login for CLI and Docker users
+      #241 merged 2026-01-16 Add cook lsp sub command for language server
+      #246 merged 2026-01-20 feat(editor): Phase 4 - LSP client & full features
+  power          5 hit(s) (all listed)
+      #353 merged 2026-06-09 fix(server): avoid renameat2 SIGSYS on aarch64 Android (Termux)
+      #271 merged 2026-03-04 Add API endpoints for Home Assistant integration
+      #246 merged 2026-01-20 feat(editor): Phase 4 - LSP client & full features
+      #242 merged 2026-01-19 chore(main): release 0.21.0
+      #252 merged 2026-01-30 Add keyboard shortcuts support for improved navigation
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           26 hit(s) (all listed)
+      #469 open 2026-08-30 feat(server): add federation search page to discover and save recipes
+      #634 merged 2026-10-07 fix(build): leave the output dir out of the listing pages
+      #482 merged 2026-09-02 fix(build): emit search index as a script so file:// search works
+      #471 closed 2026-08-31 fix(build): search returns nothing over file:// (search.js fetches index at runtime)
+      #531 merged 2026-09-23 fix(server): keep request-supplied paths inside the recipe directory
+      #584 merged 2026-09-29 feat(server): upload step pictures from the web editor
+      #563 merged 2026-09-28 feat(server): reader / shopper / editor / admin roles for signed-in users
+      #533 merged 2026-09-24 feat(web): upload a recipe's title picture from the editor
+      #439 merged 2026-08-13 fix(ci): tolerate CRLF checkouts in the api docs freshness test
+      #412 merged 2026-08-09 feat(server): add API documentation page at /api-docs
+      #614 merged 2026-10-02 fix: report non-numeric timer values in doctor
+      #431 closed 2026-08-13 shopping list writes are not atomic: a failed write truncates .shopping-list
+      #530 closed 2026-09-23 Path traversal: shopping list API and /recipe, /directory routes read files outside the recipe directory
+      #434 merged 2026-08-13 feat(core): extract command logic into a cookcli-core library crate
+      #534 merged 2026-09-25 feat(server): opt-in sign-in before anything can be changed
+      #351 merged 2026-06-06 feat(build): generate sitemap.xml with `cook build web --sitemap`
+      #396 merged 2026-08-07 chore(deps-dev): bump tailwindcss from 3.4.17 to 4.3.3
+      #347 merged 2026-05-16 feat(sync): OAuth 2.0 device-code login for CLI and Docker users
+      #515 merged 2026-09-17 fix(shopping-list): follow recipe references all the way down
+      #325 merged 2026-04-13 feat: live updates for shopping list page
+  partial        12 hit(s) (all listed)
+      #594 merged 2026-09-30 feat(pantry): don't count missing optional ingredients
+      #436 open 2026-08-13 Ingredient substitutions: treat interchangeable ingredients as in stock for pantry recipes
+      #569 merged 2026-09-28 fix(ci): stop CI and releases from failing silently
+      #611 open 2026-10-01 feat: add some days of a meal plan to the shopping list
+      #481 merged 2026-09-01 chore(deps): bump axum from 0.7 to 0.8
+      #369 merged 2026-07-13 feat: put server, import and lsp behind cargo features
+      #353 merged 2026-06-09 fix(server): avoid renameat2 SIGSYS on aarch64 Android (Termux)
+      #189 merged 2025-11-17 Add translation support for multiple languages
+      #256 merged 2026-02-06 feat: support backslash line breaks for formatting in steps and notes
+      #245 closed 2026-01-20 feat: Recipe Editor Phase 3 - LSP WebSocket Bridge
+      #263 merged 2026-02-16 Add cooking mode to WebUI
+      #246 merged 2026-01-20 feat(editor): Phase 4 - LSP client & full features
+  incomplete     12 hit(s) (all listed)
+      #334 open 2026-04-29 feat(server): plan for auth and read-only mode (#312)
+      #417 closed 2026-08-11 Two divergent Context implementations: src/lib.rs misses the global aisle/pantry fallback
+      #510 merged 2026-09-17 feat(doctor): show which recipes use each reported ingredient
+      #456 merged 2026-08-17 feat(ui): token foundation and Cooklang palette, existing layout kept
+      #476 merged 2026-09-01 chore(deps): bump the cargo-dependencies group with 4 updates
+      #314 closed 2026-04-07 Write back non-ASCII pantry key when updating
+      #296 merged 2026-04-02 fix: quote pantry section names containing spaces in TOML output
+      #329 merged 2026-04-22 fix: scale menu recipe references by servings/yield
+      #244 closed 2026-01-19 feat: Recipe Editor Phase 2 - CodeMirror integration
+      #225 closed 2025-12-13 Fix Windows tests failing in CI
+      #263 merged 2026-02-16 Add cooking mode to WebUI
+      #246 merged 2026-01-20 feat(editor): Phase 4 - LSP client & full features
+  dataloss       0 hit(s)
+  recover        3 hit(s) (all listed)
+      #441 closed 2026-08-13 Quantity components render in random order when units cannot be combined
+      #505 merged 2026-09-15 chore(deps): bump the cargo-dependencies group with 6 updates
+      #288 merged 2026-03-30 fix: resolve Docker volume permission issues when creating recipes
+  recovery       5 hit(s) (all listed)
+      #614 merged 2026-10-02 fix: report non-numeric timer values in doctor
+      #392 closed 2026-08-07 chore(deps): bump softprops/action-gh-release from 1 to 3
+      #403 merged 2026-08-07 chore(deps): bump the github-actions group across 1 directory with 11 updates
+      #245 closed 2026-01-20 feat: Recipe Editor Phase 3 - LSP WebSocket Bridge
+      #246 merged 2026-01-20 feat(editor): Phase 4 - LSP client & full features
+  rollback       0 hit(s)
+  resume         2 hit(s) (all listed)
+      #262 closed 2026-02-13 Multi-timer manager driven by recipe timers
+      #347 merged 2026-05-16 feat(sync): OAuth 2.0 device-code login for CLI and Docker users
+  half-written   8 hit(s) (all listed)
+      #565 merged 2026-09-28 feat(ui): scale a recipe by servings when it declares them
+      #514 merged 2026-09-17 fix(server): report `tags` as an array whatever the frontmatter spelled
+      #623 merged 2026-10-03 feat(server): rename a recipe or menu from the editor
+      #531 merged 2026-09-23 fix(server): keep request-supplied paths inside the recipe directory
+      #563 merged 2026-09-28 feat(server): reader / shopper / editor / admin roles for signed-in users
+      #530 closed 2026-09-23 Path traversal: shopping list API and /recipe, /directory routes read files outside the recipe directory
+      #444 merged 2026-08-13 fix: clear the help-wanted backlog
+      #515 merged 2026-09-17 fix(shopping-list): follow recipe references all the way down
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          0 hit(s)
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        5 hit(s) (all listed)
+      #429 closed 2026-08-12 pantry add/remove/update corrupts top-level items and silently drops comments and attributes
+      #412 merged 2026-08-09 feat(server): add API documentation page at /api-docs
+      #434 merged 2026-08-13 feat(core): extract command logic into a cookcli-core library crate
+      #444 merged 2026-08-13 fix: clear the help-wanted backlog
+      #244 closed 2026-01-19 feat: Recipe Editor Phase 2 - CodeMirror integration
+  destroys       0 hit(s)
+  overwrite      38 hit(s) (all listed)
+      #545 closed 2026-09-26 Recipe API reads, overwrites and deletes any file under the recipe directory
+      #469 open 2026-08-30 feat(server): add federation search page to discover and save recipes
+      #520 closed 2026-09-21 Feature request: Upload title picture through web UI/editor
+      #622 closed 2026-10-03 Rename a recipe or menu from the web editor
+      #629 open 2026-10-05 feat(pantry): new sections from Add item, rename sections, edit pantry.conf as text
+      #607 merged 2026-10-01 chore(deps): bump the docker-base-images group with 2 updates
+      #550 merged 2026-09-26 fix(server): limit the recipe file endpoints to .cook and .menu files
+      #507 merged 2026-09-15 chore(deps): bump cooklang-find from 0.6.1 to 0.7.0
+      #444 merged 2026-08-13 fix: clear the help-wanted backlog
+      #602 closed 2026-10-01 chore(deps): bump hmac from 0.12.1 to 0.13.0
+      #635 merged 2026-10-07 chore(deps-dev): bump source-map-js from 1.2.1 to 1.2.2
+      #475 merged 2026-09-01 chore(deps-dev): bump the npm-dependencies group with 2 updates
+      #623 merged 2026-10-03 feat(server): rename a recipe or menu from the editor
+      #447 merged 2026-08-15 chore(deps-dev): bump the npm-dependencies group across 1 directory with 2 updates
+      #478 closed 2026-09-01 chore(deps): bump fluent from 0.16.1 to 0.17.0
+      #450 closed 2026-08-15 chore(deps): bump askama_axum from 0.4.0 to 0.5.0+deprecated
+      #506 closed 2026-09-15 chore(deps): bump axum-extra from 0.10.3 to 0.12.6
+      #412 merged 2026-08-09 feat(server): add API documentation page at /api-docs
+      #399 merged 2026-08-07 chore(deps): bump base64 from 0.22.1 to 0.23.0
+      #479 closed 2026-09-01 chore(deps): bump fluent-templates from 0.10.1 to 0.15.1
+  clobber        0 hit(s)
+  blank          20 hit(s) (all listed)
+      #629 open 2026-10-05 feat(pantry): new sections from Add item, rename sections, edit pantry.conf as text
+      #616 merged 2026-10-03 fix: trim spaces around names typed for new files, pantry items and checks
+      #615 closed 2026-10-03 Spaces around typed names are kept: new recipe folders/files, pantry items, shopping-list checks
+      #642 merged 2026-10-07 fix(server): show the server's paths on Preferences to admins only
+      #637 closed 2026-10-07 Preferences page shows the server's absolute paths to any visitor
+      #630 closed 2026-10-05 Manage aisles (aisle.conf) from the web server
+      #512 merged 2026-09-17 fix(format): stop hard wrapping markdown output
+      #558 merged 2026-09-27 feat(ui): create and edit menus with a recipe picker
+      #540 merged 2026-09-25 feat(ui): Cooklang toolbar above the recipe editor
+      #596 merged 2026-09-30 feat(ui): meal plans laid out as a calendar
+      #631 merged 2026-10-05 feat(server): pages to manage aisles
+      #516 merged 2026-09-18 feat(server): render URL metadata values as clickable links
+      #411 merged 2026-08-09 feat(server): add a button to copy the shopping list as plain text
+      #429 closed 2026-08-12 pantry add/remove/update corrupts top-level items and silently drops comments and attributes
+      #311 closed 2026-04-06 Not possible to use characters åäö in pantry
+      #368 merged 2026-07-13 docs: steer low-memory installs to prebuilt binaries
+      #402 merged 2026-08-07 chore(deps): bump the npm-dependencies group across 1 directory with 11 updates
+      #395 closed 2026-08-07 chore(deps): bump the npm-minor-and-patch group with 11 updates
+      #256 merged 2026-02-06 feat: support backslash line breaks for formatting in steps and notes
+      #127 merged 2025-03-29 Put recipe title into human readable
+  unreadable     8 hit(s) (all listed)
+      #629 open 2026-10-05 feat(pantry): new sections from Add item, rename sections, edit pantry.conf as text
+      #513 merged 2026-09-17 fix(search): decode recipe files lossily instead of failing on invalid UTF-8
+      #625 merged 2026-10-04 fix(server): name shopping list entries by their recipe title
+      #527 merged 2026-09-23 fix(web): make the editor diagnostic popup readable in dark mode
+      #623 merged 2026-10-03 feat(server): rename a recipe or menu from the editor
+      #631 merged 2026-10-05 feat(server): pages to manage aisles
+      #323 merged 2026-04-13 fix: plan card unreadable on shopping list in dark mode
+      #321 merged 2026-04-13 chore(main): release 0.29.0
+  garbage        4 hit(s) (all listed)
+      #513 merged 2026-09-17 fix(search): decode recipe files lossily instead of failing on invalid UTF-8
+      #515 merged 2026-09-17 fix(shopping-list): follow recipe references all the way down
+      #82 closed 2023-11-25 Unable to access cook server via LAN
+      #270 merged 2026-02-27 feat: add CookCloud sync to CLI server
+  mangled        1 hit(s) (all listed)
+      #416 closed 2026-08-11 latex and typst output have no structural tests
+  contents       9 hit(s) (all listed)
+      #609 open 2026-10-01 feat: a menu can use another menu as one of its meals
+      #573 merged 2026-09-28 ci: least-privilege tokens, pinned actions and a workflow linter
+      #552 closed 2026-09-26 Docker image builds are slow: fat LTO on every rebuild, no dependency cache in CI
+      #572 closed 2026-09-28 CI: release jobs all hold write tokens, actions unpinned (zizmor: 116 findings)
+      #582 merged 2026-09-29 fix(server): never delete a folder when refusing a new recipe path
+      #454 merged 2026-08-15 feat(release): publish a source tarball with the compiled assets
+      #197 closed 2025-11-24 Export a whole recipe collection as a cookbook (LaTeX, Typst, ...)
+      #412 merged 2026-08-09 feat(server): add API documentation page at /api-docs
+      #167 closed 2025-09-20 Path Handling Issues on Windows
+  in-place       66 hit(s) (all listed)
+      #629 open 2026-10-05 feat(pantry): new sections from Add item, rename sections, edit pantry.conf as text
+      #593 open 2026-09-30 feat(web): choose optional ingredients for the shopping list
+      #612 open 2026-10-01 feat(shopping-list): --from / --to for some days of a menu
+      #359 open 2026-06-13 feat: display nutrition data from metadata
+      #261 open 2026-02-11 Save recipe edits as a variant linked to the original
+      #497 closed 2026-09-07 Markdown output format introduces EOL characters mid text.
+      #334 open 2026-04-29 feat(server): plan for auth and read-only mode (#312)
+      #615 closed 2026-10-03 Spaces around typed names are kept: new recipe folders/files, pantry items, shopping-list checks
+      #540 merged 2026-09-25 feat(ui): Cooklang toolbar above the recipe editor
+      #561 merged 2026-09-27 feat(ui): open a menu's recipes at the scale the menu asks for
+      #525 merged 2026-09-22 fix(server): cap concurrent LSP sessions
+      #550 merged 2026-09-26 fix(server): limit the recipe file endpoints to .cook and .menu files
+      #528 merged 2026-09-23 fix(core): honour COOK_CONFIG_DIR so tests cannot reach a real session
+      #500 merged 2026-09-12 docs: link the CookCLI documentation page from the README
+      #521 merged 2026-09-21 feat: Atom and RSS feeds for cook build web and cook server
+      #516 merged 2026-09-18 feat(server): render URL metadata values as clickable links
+      #534 merged 2026-09-25 feat(server): opt-in sign-in before anything can be changed
+      #431 closed 2026-08-13 shopping list writes are not atomic: a failed write truncates .shopping-list
+      #438 merged 2026-08-13 chore(main): release 0.34.0
+      #511 merged 2026-09-17 fix(server): take the API docs host from Host, not X-Forwarded-Host
+  unclean        0 hit(s)
+  shutdown       7 hit(s) (all listed)
+      #525 merged 2026-09-22 fix(server): cap concurrent LSP sessions
+      #477 closed 2026-09-01 chore(deps): bump axum from 0.7.9 to 0.8.9
+      #266 merged 2026-02-18 chore(main): release 0.24.0
+      #270 merged 2026-02-27 feat: add CookCloud sync to CLI server
+      #245 closed 2026-01-20 feat: Recipe Editor Phase 3 - LSP WebSocket Bridge
+      #241 merged 2026-01-16 Add cook lsp sub command for language server
+      #246 merged 2026-01-20 feat(editor): Phase 4 - LSP client & full features
+  reboot         0 hit(s)
+  disk+full      10 hit(s) (all listed)
+      #584 merged 2026-09-29 feat(server): upload step pictures from the web editor
+      #431 closed 2026-08-13 shopping list writes are not atomic: a failed write truncates .shopping-list
+      #412 merged 2026-08-09 feat(server): add API documentation page at /api-docs
+      #351 merged 2026-06-06 feat(build): generate sitemap.xml with `cook build web --sitemap`
+      #366 closed 2026-07-07 Reduce dependency count (581 crates on cargo install)
+      #396 merged 2026-08-07 chore(deps-dev): bump tailwindcss from 3.4.17 to 4.3.3
+      #325 merged 2026-04-13 feat: live updates for shopping list page
+      #344 merged 2026-05-15 feat: add cook build static-site generator
+      #246 merged 2026-01-20 feat(editor): Phase 4 - LSP client & full features
+      #270 merged 2026-02-27 feat: add CookCloud sync to CLI server
+  data+loss      8 hit(s) (all listed)
+      #549 closed 2026-09-26 `create_recipe` deletes a pre-existing directory when the parent resolves outside the recipe folder through a symlink
+      #431 closed 2026-08-13 shopping list writes are not atomic: a failed write truncates .shopping-list
+      #429 closed 2026-08-12 pantry add/remove/update corrupts top-level items and silently drops comments and attributes
+      #434 merged 2026-08-13 feat(core): extract command logic into a cookcli-core library crate
+      #353 merged 2026-06-09 fix(server): avoid renameat2 SIGSYS on aarch64 Android (Termux)
+      #338 merged 2026-05-14 fix: don't treat Windows drive-letter colons as scaling delimiter
+      #344 merged 2026-05-15 feat: add cook build static-site generator
+      #243 merged 2026-01-19 feat: Recipe Editor Phase 1 - Basic editing infrastructure
+  partial+write  4 hit(s) (all listed)
+      #611 open 2026-10-01 feat: add some days of a meal plan to the shopping list
+      #353 merged 2026-06-09 fix(server): avoid renameat2 SIGSYS on aarch64 Android (Termux)
+      #245 closed 2026-01-20 feat: Recipe Editor Phase 3 - LSP WebSocket Bridge
+      #246 merged 2026-01-20 feat(editor): Phase 4 - LSP client & full features
+  crash+safe     5 hit(s) (all listed)
+      #515 merged 2026-09-17 fix(shopping-list): follow recipe references all the way down
+      #353 merged 2026-06-09 fix(server): avoid renameat2 SIGSYS on aarch64 Android (Termux)
+      #318 merged 2026-04-10 feat: migrate shopping list to new format with checked state
+      #270 merged 2026-02-27 feat: add CookCloud sync to CLI server
+      #246 merged 2026-01-20 feat(editor): Phase 4 - LSP client & full features
+  atomic+write   14 hit(s) (all listed)
+      #629 open 2026-10-05 feat(pantry): new sections from Add item, rename sections, edit pantry.conf as text
+      #611 open 2026-10-01 feat: add some days of a meal plan to the shopping list
+      #431 closed 2026-08-13 shopping list writes are not atomic: a failed write truncates .shopping-list
+      #623 merged 2026-10-03 feat(server): rename a recipe or menu from the editor
+      #534 merged 2026-09-25 feat(server): opt-in sign-in before anything can be changed
+      #522 merged 2026-09-22 fix: stop the shopping list page reloading itself and rebuilding on every tick
+      #429 closed 2026-08-12 pantry add/remove/update corrupts top-level items and silently drops comments and attributes
+      #434 merged 2026-08-13 feat(core): extract command logic into a cookcli-core library crate
+      #353 merged 2026-06-09 fix(server): avoid renameat2 SIGSYS on aarch64 Android (Termux)
+      #325 merged 2026-04-13 feat: live updates for shopping list page
+      #243 merged 2026-01-19 feat: Recipe Editor Phase 1 - Basic editing infrastructure
+      #246 merged 2026-01-20 feat(editor): Phase 4 - LSP client & full features
+      #270 merged 2026-02-27 feat: add CookCloud sync to CLI server
+      #245 closed 2026-01-20 feat: Recipe Editor Phase 3 - LSP WebSocket Bridge
+  lock+file      37 hit(s) (all listed)
+      #629 open 2026-10-05 feat(pantry): new sections from Add item, rename sections, edit pantry.conf as text
+      #334 open 2026-04-29 feat(server): plan for auth and read-only mode (#312)
+      #623 merged 2026-10-03 feat(server): rename a recipe or menu from the editor
+      #504 merged 2026-09-15 chore(deps-dev): bump the npm-dependencies group with 5 updates
+      #631 merged 2026-10-05 feat(server): pages to manage aisles
+      #614 merged 2026-10-02 fix: report non-numeric timer values in doctor
+      #548 closed 2026-09-26 Stored XSS in cooking mode: step-image path is inserted into `innerHTML` with an escaper that keeps double quotes
+      #462 merged 2026-08-28 Sync: clear message + status reason when the server requires a plan (402)
+      #463 merged 2026-08-28 Renew session tokens eagerly (on-start heal + 24h cadence) so server-minted claims propagate
+      #554 merged 2026-09-26 feat(ui): random recipe button scoped to the current folder
+      #513 merged 2026-09-17 fix(search): decode recipe files lossily instead of failing on invalid UTF-8
+      #524 merged 2026-09-22 fix(server): refuse cross-site WebSocket connections to the language server
+      #511 merged 2026-09-17 fix(server): take the API docs host from Host, not X-Forwarded-Host
+      #465 closed 2026-08-29 server: make CORS configuration configurable
+      #510 merged 2026-09-17 feat(doctor): show which recipes use each reported ingredient
+      #454 merged 2026-08-15 feat(release): publish a source tarball with the compiled assets
+      #481 merged 2026-09-01 chore(deps): bump axum from 0.7 to 0.8
+      #372 merged 2026-07-14 chore(deps): dedupe cooklang-find and drop uniffi
+      #361 merged 2026-06-26 chore: bump cooklang-language-server to 0.2.3
+      #515 merged 2026-09-17 fix(shopping-list): follow recipe references all the way down
+  write+failure  23 hit(s) (all listed)
+      #623 merged 2026-10-03 feat(server): rename a recipe or menu from the editor
+      #334 open 2026-04-29 feat(server): plan for auth and read-only mode (#312)
+      #610 merged 2026-10-01 feat(ui): change a meal plan from its calendar
+      #582 merged 2026-09-29 fix(server): never delete a folder when refusing a new recipe path
+      #468 merged 2026-08-30 test: use filesystem-safe temp dir names in sync runner tests
+      #431 closed 2026-08-13 shopping list writes are not atomic: a failed write truncates .shopping-list
+      #463 merged 2026-08-28 Renew session tokens eagerly (on-start heal + 24h cadence) so server-minted claims propagate
+      #534 merged 2026-09-25 feat(server): opt-in sign-in before anything can be changed
+      #631 merged 2026-10-05 feat(server): pages to manage aisles
+      #481 merged 2026-09-01 chore(deps): bump axum from 0.7 to 0.8
+      #530 closed 2026-09-23 Path traversal: shopping list API and /recipe, /directory routes read files outside the recipe directory
+      #454 merged 2026-08-15 feat(release): publish a source tarball with the compiled assets
+      #434 merged 2026-08-13 feat(core): extract command logic into a cookcli-core library crate
+      #439 merged 2026-08-13 fix(ci): tolerate CRLF checkouts in the api docs freshness test
+      #367 closed 2026-07-13 fix(build): use thin LTO to cut peak build memory
+      #505 merged 2026-09-15 chore(deps): bump the cargo-dependencies group with 6 updates
+      #515 merged 2026-09-17 fix(shopping-list): follow recipe references all the way down
+      #456 merged 2026-08-17 feat(ui): token foundation and Cooklang palette, existing layout kept
+      #351 merged 2026-06-06 feat(build): generate sitemap.xml with `cook build web --sitemap`
+      #325 merged 2026-04-13 feat: live updates for shopping list page
+  file+contents  4 hit(s) (all listed)
+      #573 merged 2026-09-28 ci: least-privilege tokens, pinned actions and a workflow linter
+      #582 merged 2026-09-29 fix(server): never delete a folder when refusing a new recipe path
+      #454 merged 2026-08-15 feat(release): publish a source tarball with the compiled assets
+      #197 closed 2025-11-24 Export a whole recipe collection as a cookbook (LaTeX, Typst, ...)
+
+== 51 terms run; 37 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

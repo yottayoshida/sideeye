@@ -1,0 +1,5 @@
+toml2flags: operation is in the argv form, which preflight cannot take
+ROW mcaselector static=- preflight_rc=- gate=2 detail=the define cannot be spelled as flags (argv form)
+EXIT mcaselector 2
+ROW mcaselector static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+EXIT mcaselector 0

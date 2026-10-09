@@ -1,0 +1,4 @@
+static: /opt/bin/rpk: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=qKUfDwJr36O3vjKdnsIp/_idL2XaNYSaZ1dYJbedM/a_hAsZ2_LDj4S2e32Osq/C9Sppem8M-r8_iQNeBsc, BuildID[sha1]=26156fb8f8eebba451f3e70121cd28828de5f15a, with debug_info, not stripped
+default mode: rc 2; no_shim_marker
+default next: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+next: sideeye explore --state /s/aux/home/.config/rpk --cwd "/s/rpk-in" --operation "rpk profile use a" \

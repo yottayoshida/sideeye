@@ -1,0 +1,27 @@
+scan ended for scw (scaleway/scaleway-cli); exploring 2026-10-09T00:35:32Z
+=== scw 2026-10-09T00:35:32Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for f2 (ayoisaiah/f2); exploring 2026-10-09T00:37:34Z
+=== f2 2026-10-09T00:37:34Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 2: UNKNOWN nothing_could_fail
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 2: UNKNOWN nothing_could_fail
+scan ended for otiotool (AcademySoftwareFoundation/OpenTimelineIO); exploring 2026-10-09T00:56:16Z
+=== otiotool 2026-10-09T00:56:16Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+explore-after-scan: done 2026-10-09T00:56:20Z

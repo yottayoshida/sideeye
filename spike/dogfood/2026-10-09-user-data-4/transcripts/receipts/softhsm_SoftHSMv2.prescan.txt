@@ -1,0 +1,466 @@
+== novelty pre-scan: softhsm/SoftHSMv2
+== date: 2026-10-09T01:24:16Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          54 hit(s) (all listed)
+      #907 open 2026-10-03 Add pkcs11-provider process exit regression test
+      #904 open 2026-09-21 memcpy from NULL in C_EncryptInit(GCM) and C_FindObjectsInit
+      #635 open 2021-06-16 SIGSEGV: NSS + SoftHSMv2 == crash during atexit()
+      #605 open 2021-02-06 C_Encrypt crashes with AES-GCM and empty AAD on Fedora 33
+      #722 open 2023-08-30 SIGSEGV using OpenSSL 3 PKCS11 provider with SoftHSM2 + Botan
+      #883 open 2026-06-11 Add AES-CCM
+      #834 open 2025-12-27 deadlock in softhsm2  when testing head of openssl
+      #780 closed 2025-01-19 softhsm2 crashes in context of openssl 3 pkcs11 provider
+      #553 open 2020-05-20 Every operation ends with segfault
+      #742 closed 2024-03-13 Prevent accessing of global c++ objects once they are deleted
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #852 closed 2026-03-22 module crash when pkcs#11 provider uses rsa key
+      #866 closed 2026-04-26 for the list of pkcs#11 function, use version numbers according to the implementation
+      #854 merged 2026-03-23 fix: check key type in C_SignInit/C_VerifyInit to prevent crash
+      #865 merged 2026-04-26 fix misaligned access when reading PKCS#11 attributes
+      #863 merged 2026-04-23 Fix the memory leak in OSSL::byteString2oid
+      #861 merged 2026-04-19 Fix misaligned read of CK_OBJECT_CLASS via PKCS#11 pValue
+      #823 open 2025-11-06 feat(signature): implement SLH-DSA using OpenSSL
+      #874 merged 2026-05-15 Added support for ML-KEM
+      #869 closed 2026-04-28 Add support for missing OAEP algorithms
+  corrupt        11 hit(s) (all listed)
+      #746 open 2024-04-30 softhsm2-util AES key import fails whenever a newline character is present in file
+      #761 open 2024-11-12 Fix 'Assertion failed' in softhsm2-dump-file when encountering a zero-length element
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #738 open 2024-02-02 Coredump / Alma/rhel 9
+      #812 open 2025-08-25 Add support for DES3 wrap/unwrap
+      #852 closed 2026-03-22 module crash when pkcs#11 provider uses rsa key
+      #794 merged 2025-06-16 Implement CKM_RSA_AES_KEY_WRAP mechanism for key wrap/unwrap
+      #837 merged 2026-01-10 Introduce log.file config option to log to file
+      #809 merged 2025-08-18 Added ML-DSA support
+      #309 closed 2017-04-27 Why is my certificate CKA_PRIVATE: True?
+      #413 closed 2018-08-20 2.3.0 Double free segmentation fault when used via openssl-pkcs11 (OpenSSL engine) 
+  corruption     7 hit(s) (all listed)
+      #134 open 2015-09-04 Data integrity protection for objects
+      #746 open 2024-04-30 softhsm2-util AES key import fails whenever a newline character is present in file
+      #900 open 2026-09-14 C_Sign succeeds after C_Logout (cached privateKey / no resetOp)
+      #901 open 2026-09-15 CKM_ECDSA intermittently produces a well-formed but cryptographically invalid signature (~35-65% of calls, same key/digest)
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #833 merged 2025-12-24 Refactor rsa/add modern hashs in OAEP encrypt-decrypt
+      #809 merged 2025-08-18 Added ML-DSA support
+  truncated      11 hit(s) (all listed)
+      #881 open 2026-06-10 Use default OpenSSL provider for internal ML-DSA key reconstruction
+      #812 open 2025-08-25 Add support for DES3 wrap/unwrap
+      #885 closed 2026-06-20 Strange `CKA_VALUE_LEN` handling in key encapsulation (ML-KEM)
+      #884 merged 2026-06-20 Fix size_t-to-int truncation in the OpenSSL RNG backend
+      #894 merged 2026-07-22 Add SHA3 mechanism support
+      #864 closed 2026-04-25 use global flag for initialised state
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #867 merged 2026-04-28 Added PKCS#11 3.2 ML-DSA multiple-part support in lib
+      #809 merged 2025-08-18 Added ML-DSA support
+      #112 merged 2015-03-14 SUPPORT-157: Derived secrets were truncated after encryption and could t...
+      #437 closed 2018-12-27 ECDSA multipart
+  truncate       22 hit(s) (all listed)
+      #599 open 2021-01-27 ANSI X9.63 key derivation functions for CKM_ECDH1_DERIVE
+      #881 open 2026-06-10 Use default OpenSSL provider for internal ML-DSA key reconstruction
+      #812 open 2025-08-25 Add support for DES3 wrap/unwrap
+      #884 merged 2026-06-20 Fix size_t-to-int truncation in the OpenSSL RNG backend
+      #885 closed 2026-06-20 Strange `CKA_VALUE_LEN` handling in key encapsulation (ML-KEM)
+      #665 open 2022-01-11 Support encryption for END_DATE and START_DATE attributes in private keys
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #894 merged 2026-07-22 Add SHA3 mechanism support
+      #864 closed 2026-04-25 use global flag for initialised state
+      #867 merged 2026-04-28 Added PKCS#11 3.2 ML-DSA multiple-part support in lib
+      #874 merged 2026-05-15 Added support for ML-KEM
+      #818 closed 2025-09-12  Support different OAEP modes
+      #809 merged 2025-08-18 Added ML-DSA support
+      #734 closed 2024-01-23 Make check test fails on OS X
+      #112 merged 2015-03-14 SUPPORT-157: Derived secrets were truncated after encryption and could t...
+      #174 closed 2015-12-07 C_DeriveKey() error with leading zero bytes
+      #250 closed 2016-09-30 C++11 not detected
+      #265 closed 2016-11-04 Derive shared secret with ECC
+      #437 closed 2018-12-27 ECDSA multipart
+      #428 closed 2018-11-15 Softhsm2 only supports up to 31chars PIN
+  empty          55 hit(s) (all listed)
+      #605 open 2021-02-06 C_Encrypt crashes with AES-GCM and empty AAD on Fedora 33
+      #906 open 2026-10-01 C_Sign(CKM_RSA_X_509) decrypts and unwraps with a sign-only key
+      #720 open 2023-08-23 C_Decrypt sometimes fails to decrypt properly 
+      #892 open 2026-07-06 Fixed EDDSA context/pre-hash support
+      #825 open 2025-11-19 SoftHSM returns invalid value for `CKA_ALLOWED_MECHANISMS` when there is no limitation
+      #812 open 2025-08-25 Add support for DES3 wrap/unwrap
+      #805 open 2025-08-01 fix: fixes attribute reading on private objects
+      #568 open 2020-08-19 GCM decrypt fails for 0-sized tags
+      #736 open 2024-01-26 Possible problem with v2.6.1 with RHEL8 in FIPS mode and using Java 17
+      #898 open 2026-09-06 Fix CKA_WRAP_TEMPLATE enforcement for byte-string attributes
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #897 merged 2026-08-31 Never destroy module-wide singletons via static teardown
+      #899 open 2026-09-07 Add ChaCha20-Poly1305 support
+      #883 open 2026-06-11 Add AES-CCM
+      #665 open 2022-01-11 Support encryption for END_DATE and START_DATE attributes in private keys
+      #864 closed 2026-04-25 use global flag for initialised state
+      #851 merged 2026-03-21 Optimize handles clearing on session / token closing
+      #823 open 2025-11-06 feat(signature): implement SLH-DSA using OpenSSL
+      #874 merged 2026-05-15 Added support for ML-KEM
+      #821 closed 2025-09-28 rsa-oaep-support
+  atomic         6 hit(s) (all listed)
+      #742 closed 2024-03-13 Prevent accessing of global c++ objects once they are deleted
+      #875 merged 2026-05-17 Fix leak of session objects on session close
+      #832 merged 2025-12-16 fix: object_store: stop throwing errors when checking generation file
+      #837 merged 2026-01-10 Introduce log.file config option to log to file
+      #809 merged 2025-08-18 Added ML-DSA support
+      #509 closed 2019-11-14 Logging in simultaneously in multiple threads
+  atomically     2 hit(s) (all listed)
+      #837 merged 2026-01-10 Introduce log.file config option to log to file
+      #809 merged 2025-08-18 Added ML-DSA support
+  interrupted    3 hit(s) (all listed)
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #168 merged 2015-10-30 Issue #144: The password prompt in softhsm2-util can now be interrupted
+      #144 closed 2015-09-04 softhsm2-util --init-token cannot be interrupted
+  interrupt      3 hit(s) (all listed)
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #168 merged 2015-10-30 Issue #144: The password prompt in softhsm2-util can now be interrupted
+      #144 closed 2015-09-04 softhsm2-util --init-token cannot be interrupted
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         6 hit(s) (all listed)
+      #898 open 2026-09-06 Fix CKA_WRAP_TEMPLATE enforcement for byte-string attributes
+      #899 open 2026-09-07 Add ChaCha20-Poly1305 support
+      #713 open 2023-06-23 [WINDOWS 64] openssl engine dynamic pkcs11 => bind_engine symbole missing issue
+      #820 closed 2025-09-26 implement OAESP params for asymmetric encryption
+      #133 closed 2015-09-04 Chase memory leaks
+      #144 closed 2015-09-04 softhsm2-util --init-token cannot be interrupted
+  power          3 hit(s) (all listed)
+      #860 merged 2026-04-15 Fix misaligned read of CK_ULONG via void pointer.
+      #783 closed 2025-01-28 Update tests to use OpenSSL legacy provider if OpenSSL 3.0 used
+      #781 merged 2025-01-21 Add configure option and code to disable OpenSSL engines
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           16 hit(s) (all listed)
+      #903 open 2026-09-18 C_DestroyObject drops the handle before the token object is deleted
+      #614 open 2021-03-04 Do not refresh object store before fetching object.
+      #898 open 2026-09-06 Fix CKA_WRAP_TEMPLATE enforcement for byte-string attributes
+      #849 merged 2026-03-14 Improve file object store logging
+      #837 merged 2026-01-10 Introduce log.file config option to log to file
+      #681 merged 2022-08-16 Fix severe peformance issue accessing keys
+      #527 merged 2020-02-26 Fixes build warnings and errors with gcc10
+      #636 closed 2021-06-25 Cannot find objects after C_CloseSession / C_OpenSession and log back in
+      #17 merged 2013-10-19 add multi-thread stuff for OpenSSL
+      #139 closed 2015-09-04 Test suite .o files eats a lot of space
+      #221 closed 2016-07-29 Block PIN after failed retries
+      #250 closed 2016-09-30 C++11 not detected
+      #467 closed 2019-04-11 Issues with migration from 2.2.0 to 2.5.0
+      #476 closed 2019-05-09 SoftHSM in a Docker (with secret delegation)
+      #618 closed 2021-03-17 failed when make check for OSSLEDDSATests
+      #573 closed 2020-09-03 Concurrency issue
+  partial        9 hit(s) (all listed)
+      #701 open 2023-04-06 SoftHSMv2 C_Initialize fails with segfault
+      #899 open 2026-09-07 Add ChaCha20-Poly1305 support
+      #865 merged 2026-04-26 fix misaligned access when reading PKCS#11 attributes
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #864 closed 2026-04-25 use global flag for initialised state
+      #809 merged 2025-08-18 Added ML-DSA support
+      #1 merged 2013-06-01 misc changes
+      #6 closed 2013-06-02 Add ECDH support (+HMAC/DSA/ECDSA/DH)
+      #311 closed 2017-05-03 Threading and RSA context
+  incomplete     21 hit(s) (all listed)
+      #892 open 2026-07-06 Fixed EDDSA context/pre-hash support
+      #473 open 2019-04-23 Table 10: C_GenerateKey attributes
+      #147 open 2015-09-04 Support for Apple OSX/iOS Cryptographic Services
+      #722 open 2023-08-30 SIGSEGV using OpenSSL 3 PKCS11 provider with SoftHSM2 + Botan
+      #883 open 2026-06-11 Add AES-CCM
+      #855 closed 2026-03-26 🚀 Feature: Add RSA-AES key wrap support to asymmetric algorithm interface
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #817 merged 2025-09-11 Migrate OSSLDH to OpenSSL 3.0+
+      #874 merged 2026-05-15 Added support for ML-KEM
+      #815 closed 2025-09-11 Update pkcs.h to 3.1.0 version and fix CK_RSA_AES_KEY_WRAP_PARAMS
+      #807 merged 2025-08-12 Use CPPUNIT_ASSERT_EQUAL instead of CPPUNIT_ASSERT
+      #809 merged 2025-08-18 Added ML-DSA support
+      #833 merged 2025-12-24 Refactor rsa/add modern hashs in OAEP encrypt-decrypt
+      #783 closed 2025-01-28 Update tests to use OpenSSL legacy provider if OpenSSL 3.0 used
+      #646 merged 2021-08-25 Fix "Transaction in database is already active." bug
+      #66 merged 2014-03-11 SOFTHSM-88: Accept NULL_PTR for pTemplate in C_GenerateKey
+      #183 closed 2016-01-29 WrapKey support
+      #173 closed 2015-11-27 CKR_TEMPLATE_INCOMPLETE vs. _INCONSISTENT
+      #265 closed 2016-11-04 Derive shared secret with ECC
+      #411 closed 2018-08-08 C_GenerateKey() gives error CKR_TEMPLATE_INCOMPLETE on Windows
+  dataloss       0 hit(s)
+  recover        10 hit(s) (all listed)
+      #847 open 2026-02-28 db backend is missing the public exponent for private keys
+      #906 open 2026-10-01 C_Sign(CKM_RSA_X_509) decrypts and unwraps with a sign-only key
+      #628 open 2021-04-16 Unwrapped AES keys have VALUE_LEN set to 0
+      #880 open 2026-06-09 Add support for wrapping/unwrapping using CKM_AES_GCM mechanism
+      #812 open 2025-08-25 Add support for DES3 wrap/unwrap
+      #864 closed 2026-04-25 use global flag for initialised state
+      #821 closed 2025-09-28 rsa-oaep-support
+      #874 merged 2026-05-15 Added support for ML-KEM
+      #783 closed 2025-01-28 Update tests to use OpenSSL legacy provider if OpenSSL 3.0 used
+      #597 closed 2021-01-11 Obtain .pem file for private key using softhsm2-dump-object
+  recovery       3 hit(s) (all listed)
+      #867 merged 2026-04-28 Added PKCS#11 3.2 ML-DSA multiple-part support in lib
+      #690 merged 2022-12-03 Replace CKR_GENERAL_ERROR with CKR_ENCRYPTED_DATA_INVALID or CKR_ENCRYPTED_DATA_LEN_RANGE upon decryption failure
+      #809 merged 2025-08-18 Added ML-DSA support
+  rollback       2 hit(s) (all listed)
+      #888 merged 2026-06-21 Added possibility to set CKA_VALUE_LEN on C_Encapsulate/C_Decapsulate
+      #809 merged 2025-08-18 Added ML-DSA support
+  resume         28 hit(s) (all listed)
+      #761 open 2024-11-12 Fix 'Assertion failed' in softhsm2-dump-file when encountering a zero-length element
+      #805 open 2025-08-01 fix: fixes attribute reading on private objects
+      #665 open 2022-01-11 Support encryption for END_DATE and START_DATE attributes in private keys
+      #812 open 2025-08-25 Add support for DES3 wrap/unwrap
+      #892 open 2026-07-06 Fixed EDDSA context/pre-hash support
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #614 open 2021-03-04 Do not refresh object store before fetching object.
+      #894 merged 2026-07-22 Add SHA3 mechanism support
+      #864 closed 2026-04-25 use global flag for initialised state
+      #888 merged 2026-06-21 Added possibility to set CKA_VALUE_LEN on C_Encapsulate/C_Decapsulate
+      #875 merged 2026-05-17 Fix leak of session objects on session close
+      #870 merged 2026-04-30 Added support for ML-DSA in softhsm2-util
+      #794 merged 2025-06-16 Implement CKM_RSA_AES_KEY_WRAP mechanism for key wrap/unwrap
+      #867 merged 2026-04-28 Added PKCS#11 3.2 ML-DSA multiple-part support in lib
+      #874 merged 2026-05-15 Added support for ML-KEM
+      #837 merged 2026-01-10 Introduce log.file config option to log to file
+      #833 merged 2025-12-24 Refactor rsa/add modern hashs in OAEP encrypt-decrypt
+      #683 merged 2022-08-21 Support for ECDSA with hashing
+      #643 merged 2021-07-30 No memory allocation for each C_DecryptUpdate.
+      #802 merged 2025-07-27 Replace deprecated Github runner ubuntu-20.04 
+  half-written   2 hit(s) (all listed)
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #809 merged 2025-08-18 Added ML-DSA support
+  wipe           12 hit(s) (all listed)
+      #899 open 2026-09-07 Add ChaCha20-Poly1305 support
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #812 open 2025-08-25 Add support for DES3 wrap/unwrap
+      #884 merged 2026-06-20 Fix size_t-to-int truncation in the OpenSSL RNG backend
+      #794 merged 2025-06-16 Implement CKM_RSA_AES_KEY_WRAP mechanism for key wrap/unwrap
+      #874 merged 2026-05-15 Added support for ML-KEM
+      #817 merged 2025-09-11 Migrate OSSLDH to OpenSSL 3.0+
+      #809 merged 2025-08-18 Added ML-DSA support
+      #833 merged 2025-12-24 Refactor rsa/add modern hashs in OAEP encrypt-decrypt
+      #433 closed 2018-12-09 Portability (macOS / Windows) - locating the provider library
+      #186 closed 2016-02-03 "Funny behaviour" when using C_InitToken() from GnuTLS' p11tool
+      #221 closed 2016-07-29 Block PIN after failed retries
+  wipes          4 hit(s) (all listed)
+      #812 open 2025-08-25 Add support for DES3 wrap/unwrap
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #874 merged 2026-05-15 Added support for ML-KEM
+      #833 merged 2025-12-24 Refactor rsa/add modern hashs in OAEP encrypt-decrypt
+  erase          10 hit(s) (all listed)
+      #575 open 2020-09-06 2.6.1: test suite is failing
+      #875 merged 2026-05-17 Fix leak of session objects on session close
+      #851 merged 2026-03-21 Optimize handles clearing on session / token closing
+      #876 merged 2026-05-17 Add debug logging to handle manager
+      #823 open 2025-11-06 feat(signature): implement SLH-DSA using OpenSSL
+      #809 merged 2025-08-18 Added ML-DSA support
+      #688 closed 2022-11-26 SoftHSMv2 v2.6.1 crashes in a concurrent environment
+      #17 merged 2013-10-19 add multi-thread stuff for OpenSSL
+      #554 closed 2020-05-20 delete stale slot
+      #562 closed 2020-07-22 Memory leak deleting objects
+  erasing        2 hit(s) (all listed)
+      #851 merged 2026-03-21 Optimize handles clearing on session / token closing
+      #823 open 2025-11-06 feat(signature): implement SLH-DSA using OpenSSL
+  erased         3 hit(s) (all listed)
+      #876 merged 2026-05-17 Add debug logging to handle manager
+      #809 merged 2025-08-18 Added ML-DSA support
+      #17 merged 2013-10-19 add multi-thread stuff for OpenSSL
+  destroy        36 hit(s) (all listed)
+      #903 open 2026-09-18 C_DestroyObject drops the handle before the token object is deleted
+      #907 open 2026-10-03 Add pkcs11-provider process exit regression test
+      #897 merged 2026-08-31 Never destroy module-wide singletons via static teardown
+      #900 open 2026-09-14 C_Sign succeeds after C_Logout (cached privateKey / no resetOp)
+      #598 open 2021-01-18 SoftHSM2 error in Windows event log
+      #575 open 2020-09-06 2.6.1: test suite is failing
+      #464 open 2019-04-03 Race condition with multiple threads on the same slot
+      #645 open 2021-08-25 are Appveyor integration builds broken?
+      #635 open 2021-06-16 SIGSEGV: NSS + SoftHSMv2 == crash during atexit()
+      #722 open 2023-08-30 SIGSEGV using OpenSSL 3 PKCS11 provider with SoftHSM2 + Botan
+      #780 closed 2025-01-19 softhsm2 crashes in context of openssl 3 pkcs11 provider
+      #876 merged 2026-05-17 Add debug logging to handle manager
+      #823 open 2025-11-06 feat(signature): implement SLH-DSA using OpenSSL
+      #875 merged 2026-05-17 Fix leak of session objects on session close
+      #728 merged 2023-10-27 Allow OBJECT_OP_UNWRAP to modify attributes
+      #807 merged 2025-08-12 Use CPPUNIT_ASSERT_EQUAL instead of CPPUNIT_ASSERT
+      #783 closed 2025-01-28 Update tests to use OpenSSL legacy provider if OpenSSL 3.0 used
+      #809 merged 2025-08-18 Added ML-DSA support
+      #597 closed 2021-01-11 Obtain .pem file for private key using softhsm2-dump-object
+      #449 closed 2019-03-04 Explicitly set CKA_ID to zero-length byte string on PRIVATE_KEY causes assertion on retrieval
+  destroys       5 hit(s) (all listed)
+      #464 open 2019-04-03 Race condition with multiple threads on the same slot
+      #900 open 2026-09-14 C_Sign succeeds after C_Logout (cached privateKey / no resetOp)
+      #897 merged 2026-08-31 Never destroy module-wide singletons via static teardown
+      #728 merged 2023-10-27 Allow OBJECT_OP_UNWRAP to modify attributes
+      #103 merged 2015-01-07 In Mutex, call MutexFactory wrapper functions instead of directly callin...
+  overwrite      11 hit(s) (all listed)
+      #473 open 2019-04-23 Table 10: C_GenerateKey attributes
+      #823 open 2025-11-06 feat(signature): implement SLH-DSA using OpenSSL
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #833 merged 2025-12-24 Refactor rsa/add modern hashs in OAEP encrypt-decrypt
+      #817 merged 2025-09-11 Migrate OSSLDH to OpenSSL 3.0+
+      #809 merged 2025-08-18 Added ML-DSA support
+      #783 closed 2025-01-28 Update tests to use OpenSSL legacy provider if OpenSSL 3.0 used
+      #781 merged 2025-01-21 Add configure option and code to disable OpenSSL engines
+      #180 merged 2015-12-29 configure script improvements
+      #21 merged 2013-10-25 optimise generation counters
+      #498 closed 2019-08-22 C_CopyObject getting (CKR_ATTRIBUTE_READ_ONLY
+  clobber        1 hit(s) (all listed)
+      #216 closed 2016-07-07 OSSLCryptoFactory should provide option to not override OpenSSL locking callback
+  blank          4 hit(s) (all listed)
+      #670 open 2022-03-07 Curl using ECC key and SoftHSM PKCS11 engine
+      #897 merged 2026-08-31 Never destroy module-wide singletons via static teardown
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #9 closed 2013-06-13 cleanup
+  unreadable     1 hit(s) (all listed)
+      #809 merged 2025-08-18 Added ML-DSA support
+  garbage        9 hit(s) (all listed)
+      #676 open 2022-05-19 Authentication bruteforce 
+      #874 merged 2026-05-15 Added support for ML-KEM
+      #869 closed 2026-04-28 Add support for missing OAEP algorithms
+      #833 merged 2025-12-24 Refactor rsa/add modern hashs in OAEP encrypt-decrypt
+      #783 closed 2025-01-28 Update tests to use OpenSSL legacy provider if OpenSSL 3.0 used
+      #809 merged 2025-08-18 Added ML-DSA support
+      #161 closed 2015-10-12 softhsm2-migrate: add empty attributes for RSA values missing in SoftHSMv1
+      #21 merged 2013-10-25 optimise generation counters
+      #309 closed 2017-04-27 Why is my certificate CKA_PRIVATE: True?
+  mangled        0 hit(s)
+  contents       18 hit(s) (all listed)
+      #881 open 2026-06-10 Use default OpenSSL provider for internal ML-DSA key reconstruction
+      #575 open 2020-09-06 2.6.1: test suite is failing
+      #665 open 2022-01-11 Support encryption for END_DATE and START_DATE attributes in private keys
+      #886 merged 2026-06-21 ci: add OpenSSL 4.0 to source-built matrix
+      #874 merged 2026-05-15 Added support for ML-KEM
+      #867 merged 2026-04-28 Added PKCS#11 3.2 ML-DSA multiple-part support in lib
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #821 closed 2025-09-28 rsa-oaep-support
+      #784 closed 2025-01-29 Key mismatch with OpenSSL and 2 prime256v1 keys in token
+      #809 merged 2025-08-18 Added ML-DSA support
+      #527 merged 2020-02-26 Fixes build warnings and errors with gcc10
+      #186 closed 2016-02-03 "Funny behaviour" when using C_InitToken() from GnuTLS' p11tool
+      #238 closed 2016-09-15 ECDSA C_SignUpdate - CKR_OPERATION_NOT_INITIALIZED
+      #292 closed 2017-02-22 Question about C_GetAttributeValue implementation
+      #313 closed 2017-05-16 SoftHSMv2 fails to locate CPPUNIT library
+      #303 closed 2017-04-04 libsofthsm2.so not usable on Mac?
+      #297 closed 2017-03-21 Errors when building SoftHSMv2 on OSX - TestFactoryRegistry.h missing
+      #543 closed 2020-04-19 compilation errors on macOS 10.15.4
+  in-place       51 hit(s) (all listed)
+      #630 open 2021-05-11 Unexpected return values
+      #557 open 2020-06-01 Can't find OpenSSL library - during ./configure
+      #567 open 2020-08-14 OPENSSL_cleanup() calls ossl_factory_shutdown() after it is unmapped
+      #598 open 2021-01-18 SoftHSM2 error in Windows event log
+      #487 open 2019-06-24 BUG: DSA signature verification fails if the first bit of subprime is set.
+      #568 open 2020-08-19 GCM decrypt fails for 0-sized tags
+      #883 open 2026-06-11 Add AES-CCM
+      #635 open 2021-06-16 SIGSEGV: NSS + SoftHSMv2 == crash during atexit()
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #805 open 2025-08-01 fix: fixes attribute reading on private objects
+      #880 open 2026-06-09 Add support for wrapping/unwrapping using CKM_AES_GCM mechanism
+      #892 open 2026-07-06 Fixed EDDSA context/pre-hash support
+      #812 open 2025-08-25 Add support for DES3 wrap/unwrap
+      #823 open 2025-11-06 feat(signature): implement SLH-DSA using OpenSSL
+      #864 closed 2026-04-25 use global flag for initialised state
+      #886 merged 2026-06-21 ci: add OpenSSL 4.0 to source-built matrix
+      #851 merged 2026-03-21 Optimize handles clearing on session / token closing
+      #875 merged 2026-05-17 Fix leak of session objects on session close
+      #869 closed 2026-04-28 Add support for missing OAEP algorithms
+      #800 closed 2025-07-22 Plans for support of MLDSA
+  unclean        0 hit(s)
+  shutdown       8 hit(s) (all listed)
+      #567 open 2020-08-14 OPENSSL_cleanup() calls ossl_factory_shutdown() after it is unmapped
+      #598 open 2021-01-18 SoftHSM2 error in Windows event log
+      #635 open 2021-06-16 SIGSEGV: NSS + SoftHSMv2 == crash during atexit()
+      #742 closed 2024-03-13 Prevent accessing of global c++ objects once they are deleted
+      #780 closed 2025-01-19 softhsm2 crashes in context of openssl 3 pkcs11 provider
+      #864 closed 2026-04-25 use global flag for initialised state
+      #837 merged 2026-01-10 Introduce log.file config option to log to file
+      #548 closed 2020-05-04 Use after free on ENGINE_finish(rdrand_engine).
+  reboot         1 hit(s) (all listed)
+      #278 closed 2016-12-23 CKR_GENERAL_ERROR When accessing SoftHSM2 from web application
+  disk+full      2 hit(s) (all listed)
+      #614 open 2021-03-04 Do not refresh object store before fetching object.
+      #837 merged 2026-01-10 Introduce log.file config option to log to file
+  data+loss      1 hit(s) (all listed)
+      #867 merged 2026-04-28 Added PKCS#11 3.2 ML-DSA multiple-part support in lib
+  partial+write  4 hit(s) (all listed)
+      #899 open 2026-09-07 Add ChaCha20-Poly1305 support
+      #864 closed 2026-04-25 use global flag for initialised state
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #809 merged 2025-08-18 Added ML-DSA support
+  crash+safe     15 hit(s) (all listed)
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #865 merged 2026-04-26 fix misaligned access when reading PKCS#11 attributes
+      #861 merged 2026-04-19 Fix misaligned read of CK_OBJECT_CLASS via PKCS#11 pValue
+      #869 closed 2026-04-28 Add support for missing OAEP algorithms
+      #823 open 2025-11-06 feat(signature): implement SLH-DSA using OpenSSL
+      #874 merged 2026-05-15 Added support for ML-KEM
+      #837 merged 2026-01-10 Introduce log.file config option to log to file
+      #867 merged 2026-04-28 Added PKCS#11 3.2 ML-DSA multiple-part support in lib
+      #833 merged 2025-12-24 Refactor rsa/add modern hashs in OAEP encrypt-decrypt
+      #870 merged 2026-04-30 Added support for ML-DSA in softhsm2-util
+      #820 closed 2025-09-26 implement OAESP params for asymmetric encryption
+      #809 merged 2025-08-18 Added ML-DSA support
+      #688 closed 2022-11-26 SoftHSMv2 v2.6.1 crashes in a concurrent environment
+      #184 merged 2016-02-01 Stop discarding the global OpenSSL libcrypto state
+      #518 closed 2020-02-09 std::set used in non-thread-safe way
+  atomic+write   4 hit(s) (all listed)
+      #875 merged 2026-05-17 Fix leak of session objects on session close
+      #832 merged 2025-12-16 fix: object_store: stop throwing errors when checking generation file
+      #837 merged 2026-01-10 Introduce log.file config option to log to file
+      #809 merged 2025-08-18 Added ML-DSA support
+  lock+file      28 hit(s) (all listed)
+      #711 open 2023-05-29 Low speed with use the file backend
+      #900 open 2026-09-14 C_Sign succeeds after C_Logout (cached privateKey / no resetOp)
+      #575 open 2020-09-06 2.6.1: test suite is failing
+      #738 open 2024-02-02 Coredump / Alma/rhel 9
+      #812 open 2025-08-25 Add support for DES3 wrap/unwrap
+      #614 open 2021-03-04 Do not refresh object store before fetching object.
+      #665 open 2022-01-11 Support encryption for END_DATE and START_DATE attributes in private keys
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #875 merged 2026-05-17 Fix leak of session objects on session close
+      #891 merged 2026-06-27 fixed wrong usage of VirtualFree (win32)
+      #837 merged 2026-01-10 Introduce log.file config option to log to file
+      #821 closed 2025-09-28 rsa-oaep-support
+      #809 merged 2025-08-18 Added ML-DSA support
+      #815 closed 2025-09-11 Update pkcs.h to 3.1.0 version and fix CK_RSA_AES_KEY_WRAP_PARAMS
+      #734 closed 2024-01-23 Make check test fails on OS X
+      #578 merged 2020-09-11 Flush files before unlocking
+      #618 closed 2021-03-17 failed when make check for OSSLEDDSATests
+      #362 merged 2017-12-17 CMake Build System Support for SoftHSM
+      #17 merged 2013-10-19 add multi-thread stuff for OpenSSL
+      #16 merged 2013-10-17 Transaction
+  write+failure  26 hit(s) (all listed)
+      #905 open 2026-09-28 Fix CKA_NEVER_EXTRACTABLE of keys derived with CKM_CONCATENATE_BASE_AND_KEY
+      #899 open 2026-09-07 Add ChaCha20-Poly1305 support
+      #720 open 2023-08-23 C_Decrypt sometimes fails to decrypt properly 
+      #812 open 2025-08-25 Add support for DES3 wrap/unwrap
+      #805 open 2025-08-01 fix: fixes attribute reading on private objects
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #892 open 2026-07-06 Fixed EDDSA context/pre-hash support
+      #665 open 2022-01-11 Support encryption for END_DATE and START_DATE attributes in private keys
+      #864 closed 2026-04-25 use global flag for initialised state
+      #738 open 2024-02-02 Coredump / Alma/rhel 9
+      #887 merged 2026-06-21 Added SoftHSMv2 contributors copyright headers
+      #823 open 2025-11-06 feat(signature): implement SLH-DSA using OpenSSL
+      #857 merged 2026-04-03 Support multipart operation on hashed ECDSA
+      #874 merged 2026-05-15 Added support for ML-KEM
+      #870 merged 2026-04-30 Added support for ML-DSA in softhsm2-util
+      #849 merged 2026-03-14 Improve file object store logging
+      #837 merged 2026-01-10 Introduce log.file config option to log to file
+      #855 closed 2026-03-26 🚀 Feature: Add RSA-AES key wrap support to asymmetric algorithm interface
+      #869 closed 2026-04-28 Add support for missing OAEP algorithms
+      #833 merged 2025-12-24 Refactor rsa/add modern hashs in OAEP encrypt-decrypt
+  file+contents  13 hit(s) (all listed)
+      #881 open 2026-06-10 Use default OpenSSL provider for internal ML-DSA key reconstruction
+      #665 open 2022-01-11 Support encryption for END_DATE and START_DATE attributes in private keys
+      #575 open 2020-09-06 2.6.1: test suite is failing
+      #862 open 2026-04-22 implement SLH-DSA signing and verification using OpenSSL
+      #886 merged 2026-06-21 ci: add OpenSSL 4.0 to source-built matrix
+      #874 merged 2026-05-15 Added support for ML-KEM
+      #867 merged 2026-04-28 Added PKCS#11 3.2 ML-DSA multiple-part support in lib
+      #821 closed 2025-09-28 rsa-oaep-support
+      #809 merged 2025-08-18 Added ML-DSA support
+      #527 merged 2020-02-26 Fixes build warnings and errors with gcc10
+      #313 closed 2017-05-16 SoftHSMv2 fails to locate CPPUNIT library
+      #297 closed 2017-03-21 Errors when building SoftHSMv2 on OSX - TestFactoryRegistry.h missing
+      #543 closed 2020-04-19 compilation errors on macOS 10.15.4
+
+== 51 terms run; 44 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

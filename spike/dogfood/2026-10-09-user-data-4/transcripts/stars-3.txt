@@ -1,0 +1,4 @@
+flameshot-org/flameshot stars=31134 pushed=2026-10-03 archived=false issues=true full=flameshot-org/flameshot
+qmk/qmk_cli stars=187 pushed=2026-09-28 archived=false issues=true full=qmk/qmk_cli
+PapirusDevelopmentTeam/papirus-folders stars=811 pushed=2025-05-28 archived=false issues=true full=PapirusDevelopmentTeam/papirus-folders
+Alcaro/Flips stars=453 pushed=2025-05-21 archived=true issues=true full=Sir-Walrus/Flips

@@ -1,0 +1,23 @@
+SEEN  augeas  b2-exclusions:45
+SEEN  augeas  spike/dogfood/2026-09-06-userview-2/SELECTION.md:59
+SEEN  augeas  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  augeas  spike/authoring-cost/pool-atomic.txt:9
+SEEN  augtool  spike/authoring-cost/pool-atomic.txt:9
+SEEN  netplan  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:69
+SEEN  fisher  cohort4-rejected:72
+SEEN  oh-my-posh  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:126
+SEEN  nvm  spike/dogfood/2026-10-03-user-data/SELECTION.md:59
+fresh rvm
+fresh podofo
+fresh micromamba
+SEEN  wakatime  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:69
+fresh openbabel
+fresh obabel
+fresh cfitsio
+SEEN  fpack  funnel:231
+SEEN  fpack  target-classes:139
+SEEN  fpack  b2-exclusions:127
+SEEN  fpack  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:88
+fresh srt-fixed
+fresh pimterry
+fresh chef-apply

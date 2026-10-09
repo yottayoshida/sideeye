@@ -1,0 +1,2 @@
+explore exit 2: UNKNOWN nothing_could_fail
+next_step: The built-in invariant judges only paths that exist both before and after the operation, and no crash point changed one, so nothing could have failed: declare a check that reads the state the target leaves (docs/checker-cookbook.md), or a marker for the success claim, which judges the files the operation created or removed.

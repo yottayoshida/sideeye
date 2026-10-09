@@ -1,0 +1,75 @@
+## nmctl
+seed exit 0
+/s/aux/home/.netmaker/config.yml
+c0:
+    endpoint: https://api.example.org
+    masterkey: k0
+== nmctl: exit 0; 12 strace lines; 0 clone
+23    openat(AT_FDCWD, "/s/aux/home/.netmaker/config.yml", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 4
+--- /s/aux/home/.netmaker/config.yml
+c0:
+    endpoint: https://api.example.org
+    masterkey: k0
+c1:
+    endpoint: https://api2.example.org
+    masterkey: k1
+## yarn
+4.18.1
+== yarn: exit 0; 173 strace lines; 0 clone
+63    openat(AT_FDCWD, "/s/aux/home/.yarnrc.yml", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 17
+enableTelemetry: false
+
+nodeLinker: node-modules
+
+npmAuthToken: placeholder-npm-auth-token
+## trash
+== trash: exit 0; 684 strace lines; 0 clone
+85    openat(AT_FDCWD, "/s/aux/data/Trash/info/77d3d294-fef5-4787-846b-ff34a5d9eeab.trashinfo", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 17
+84    renameat(AT_FDCWD, "/s/trash/report.txt", AT_FDCWD, "/s/aux/data/Trash/files/77d3d294-fef5-4787-846b-ff34a5d9eeab") = 0
+total 8
+drwxr-xr-x 2 root root 4096 Oct  9 03:02 .
+drwxr-xr-x 6 root root 4096 Oct  9 03:02 ..
+find: '/s/aux/home/.local/share/Trash': No such file or directory
+## softhsm2
+init exit 0
+Slot 0 has a free/uninitialized token.
+The token has been initialized and is reassigned to slot 1124042363
+key exit 0
+/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/generation
+/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/token.lock
+/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/token.object
+== softhsm-import: exit 0; 494 strace lines; 0 clone
+107   openat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/generation", O_RDWR|O_CREAT, 0600) = 3
+107   openat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/token.object", O_RDWR|O_CREAT, 0600) = 3
+107   openat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/token.lock", O_WRONLY|O_CREAT|O_TRUNC, 0600) = 4
+107   ftruncate(3, 0)                   = 0
+107   openat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/be8ddf50-7820-d171-7beb-4a72f1f812c4.object", O_RDWR|O_CREAT, 0600) = 3
+107   openat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/be8ddf50-7820-d171-7beb-4a72f1f812c4.lock", O_WRONLY|O_CREAT|O_TRUNC, 0600) = 4
+107   ftruncate(3, 0)                   = 0
+107   openat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/generation", O_RDWR|O_CREAT, 0600) = 3
+107   openat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/be8ddf50-7820-d171-7beb-4a72f1f812c4.object", O_RDWR|O_CREAT, 0600) = 3
+107   openat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/be8ddf50-7820-d171-7beb-4a72f1f812c4.lock", O_WRONLY|O_CREAT|O_TRUNC, 0600) = 4
+107   ftruncate(3, 0)                   = 0
+107   openat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/be8ddf50-7820-d171-7beb-4a72f1f812c4.object", O_RDWR|O_CREAT, 0600) = 3
+107   openat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/be8ddf50-7820-d171-7beb-4a72f1f812c4.lock", O_WRONLY|O_CREAT|O_TRUNC, 0600) = 4
+107   ftruncate(3, 0)                   = 0
+107   openat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/be8ddf50-7820-d171-7beb-4a72f1f812c4.object", O_RDWR|O_CREAT, 0600) = 3
+107   openat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/be8ddf50-7820-d171-7beb-4a72f1f812c4.lock", O_WRONLY|O_CREAT|O_TRUNC, 0600) = 4
+/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/4563a576-6bd8-0e96-bc0b-9114b35f9dbc.object
+/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/generation
+/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/4563a576-6bd8-0e96-bc0b-9114b35f9dbc.lock
+/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/token.lock
+/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/token.object
+/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/be8ddf50-7820-d171-7beb-4a72f1f812c4.object
+/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/be8ddf50-7820-d171-7beb-4a72f1f812c4.lock
+== softhsm-delete: exit 0; 53 strace lines; 0 clone
+118   openat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/generation", O_RDWR|O_CREAT, 0600) = 3
+118   unlinkat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/4563a576-6bd8-0e96-bc0b-9114b35f9dbc.object", 0) = 0
+118   unlinkat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/generation", 0) = 0
+118   unlinkat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/4563a576-6bd8-0e96-bc0b-9114b35f9dbc.lock", 0) = 0
+118   unlinkat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/token.lock", 0) = 0
+118   unlinkat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/token.object", 0) = 0
+118   unlinkat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/be8ddf50-7820-d171-7beb-4a72f1f812c4.object", 0) = 0
+118   unlinkat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b/be8ddf50-7820-d171-7beb-4a72f1f812c4.lock", 0) = 0
+118   unlinkat(AT_FDCWD, "/s/hsm/tokens/d156e4d0-c903-6d22-9488-901dc2ff867b", AT_REMOVEDIR) = 0
+/s/hsm/tokens

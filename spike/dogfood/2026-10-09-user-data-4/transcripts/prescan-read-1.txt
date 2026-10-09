@@ -1,0 +1,161 @@
+== scaleway_scaleway-cli.prescan.txt: 268 distinct issues listed, 13 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #6392 merged 2026-10-08 fix(alias): fix panic with empty aliases
+   #6321 closed 2026-10-01 feat(permission): add action interrupt
+   #6182 closed 2026-09-11 nightly(redis): version 8.4.0 not found + empty settings
+   #6180 closed 2026-09-10 fix(docgen): surround generated command doc headings with blank lines
+   #6046 merged 2026-08-27 fix(mcp): fix empty server-type list in mcp and encode return value as json instead of a string
+   #6004 merged 2026-08-14 chore(container): rename test file, export parsePlatforms
+   #5866 merged 2026-07-21 feat(args): add empty struct syntax
+   #5862 merged 2026-07-20 feat(search): add sort/pagination and empty query possible
+   #5842 closed 2026-07-16 feat(permission): allow resource id to be empty
+   #4857 open 2025-06-23 Always ask confirmation before overwriting a configuration
+   #3502 open 2023-11-21 Add a command that destroy a project and all its underlying ressources
+   #2487 merged 2022-09-02 feat(config): add destroy command
+   #2165 closed 2022-03-03 Add a destroy config command
+== ayoisaiah_f2.prescan.txt: 21 distinct issues listed, 2 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #45 closed 2023-07-18 Data loss due to issue with --fix-conflicts
+   #7 closed 2021-05-09 [feature request] perhaps an option of "force overwrite" is needed in some cases
+== SubtitleEdit_subtitleedit.prescan.txt: 616 distinct issues listed, 89 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #15824 merged 2026-10-08 ASSA draw OK: don't overwrite selected text lines
+   #15795 merged 2026-10-08 Set sync point: treat the empty fallback player as no video (#15787)
+   #15678 merged 2026-10-04 yt-dlp download: remove duplicate partial-download cleanup
+   #15676 merged 2026-10-04 SSA styles: view-model tests for replace with, import overwrite, storage copy
+   #15674 merged 2026-10-04 Download hash check: fail on an empty download instead of skipping
+   #15611 merged 2026-10-03 ASSA styles: importing a style with an existing name asks overwrite / keep both
+   #15605 merged 2026-10-03 Remove all formatting: drop empty lines left by \N padding (#15531)
+   #15560 merged 2026-10-02 Don't count empty ASSA \N lines in "too many lines"
+   #15497 closed 2026-09-30 Feature Request: Allow saving partial transcripts or retrying failed segments when transcribing specific timecodes
+   #15445 merged 2026-09-29 EZTitles .ezt: keep empty subtitles and find records before the first text
+   #15442 merged 2026-09-29 Merge: keep line breaks when merging with an empty line (#15441)
+   #15352 merged 2026-09-26 TTS add-to-video: warn when the video stream comes out truncated
+   #15339 merged 2026-09-26 ASSA/SSA styles: block OK/Apply on empty or duplicate file style names
+   #15313 merged 2026-09-25 ASSA styles: overwrite prompt on copy, reorder storage styles
+   #15312 closed 2026-09-25 Copying a style to the saved style files does not overwrite it; it creates a copy and the styles cannot be organized.
+   #15301 merged 2026-09-25 Don't show empty original lines as display-only reference rows
+   #15213 closed 2026-09-23 Opening an audio file and pressing save corrupts it
+   #15183 closed 2026-09-22 FixContinuationStyle: skip empty-name match in StartsWithName
+   #15156 closed 2026-09-21 [seconv] Need to force overwrite instead of adding language suffix
+   #15010 merged 2026-09-18 Translate: read llama.cpp advanced replies from reasoning_content when content is empty (#15009)
+   #14994 merged 2026-09-17 Add/remove embedded subtitles: file size, empty hint, video drop, progress layout
+   #14919 merged 2026-09-15 Port SE4's 3D image export (half side-by-side / top-bottom), also in seconv
+   #14873 merged 2026-09-14 Merge roll-up captions: fix zero-length chunks and lost lines
+   #14753 merged 2026-09-10 Fix #14751: recover from a corrupt waveform cache instead of hanging on it
+   #14666 closed 2026-09-08 Blu-ray SUP editing corrupts PGS file
+   #14584 merged 2026-09-05 Generate blank video: stop the window resizing while generating
+   #14583 merged 2026-09-05 Generate blank video: theme-aware time code color, larger font, contrast box
+   #14567 merged 2026-09-05 Google Cloud STT: send lossless audio, allow dynamic batching, recover truncation
+   #14554 closed 2026-09-05 Settings menu does not open, timeline remains blank
+   #14445 closed 2026-09-02 Bug returned after translation an empty original
+   #14398 merged 2026-09-01 mpv: make the scrub follow-up claim atomic against concurrent seeks
+   #14210 closed 2026-08-28 Generate video with burned-in subtitles - no overwrite option
+   #14177 merged 2026-08-27 Fix 7 bugs found in a random bug hunt (apply min gap data loss, duration limits, shot changes import, CEA-608 roll-up)
+   #14091 closed 2026-08-25 After (DeepL) translation the original is empty
+   #14038 closed 2026-08-23 [bug] crispasr returns empty output
+   #13982 merged 2026-08-22 Keep source timestamp: capture it before an in-place overwrite
+   #13942 closed 2026-08-21 Burn-in with -movflags +faststart may silently produce a 0-byte file when the output path is a portal-mounted document
+   #13886 merged 2026-08-19 Fix Gemma 4 models returning empty translations
+   #13840 merged 2026-08-18 Remove text for HI: keep Apply checkbox states after partial Apply
+   #13839 closed 2026-08-18 Remove text for HI: Apply checkbox states change after partial Apply
+   #13823 merged 2026-08-18 Keep the grid where the user was after replace and blank-line removal
+   #13712 merged 2026-08-16 Name batch auto-translate output after the target language; stop same-language tracks clobbering each other
+   #13684 merged 2026-08-16 TTS review: destroy mpv cores off the UI thread in Stop and row playback
+   #13682 closed 2026-08-16 [Bug / Feature] Restore direct Ctrl/Cmd+V overwrite & fix column paste selection bug in v5.2 (Win/Mac)
+   #13614 closed 2026-08-14 The blank lines between multi-line texts of the translated subtitles
+   #13590 merged 2026-08-13 Restore SE4 option to remove blank lines when opening a subtitle
+   #13588 closed 2026-08-13 SE5 missing feature "auto removal of blank lines upon opening"
+   #13468 merged 2026-08-10 Open a non-matching original as a reference instead of truncating it (#13449)
+   #13444 merged 2026-08-10 Train nOCR: fix corrupted font list on scroll
+   #13378 merged 2026-08-08 Destroy the TTS preview mpv core off the UI thread
+   #13308 closed 2026-08-06 temporary filename stuck when using SMB network share or tmpfs
+   #13184 merged 2026-08-04 Fix MP4 DASH subtitle extraction: namespaced TTML, shifted cues, truncation
+   #13151 merged 2026-08-03 Copy-paste translate: overwrite re-translated rows instead of appending
+   #13103 merged 2026-08-03 Fix ASSA/SSA style editor losing data on rename and style switch
+   #13050 merged 2026-08-01 Destroy the video player when its control is discarded (#13048)
+   #12963 merged 2026-07-29 Fix undo wiping the original subtitle text column
+   #12952 closed 2026-07-29 Fix undo wiping all original subtitle text
+   #12951 closed 2026-07-29 Fix undo wiping all original subtitle text
+   #12950 closed 2026-07-29 Fix undo wiping all original subtitle text
+   #12949 closed 2026-07-29 Fix undo wiping all original subtitle text
+   #12948 closed 2026-07-29 Fix undo wiping all original subtitle text
+   #12891 merged 2026-07-27 Fix truncated labels and narrow controls in two spell check dialogs (#12886)
+   #12873 closed 2026-07-27 Surrounding with Musical notes doesn't work if you need it partial.
+   #12788 merged 2026-07-24 Fix undo wiping all original subtitle text
+   #12637 merged 2026-07-19 Fix Multiple Replace corrupting ASSA \N line breaks on Windows
+   #12620 closed 2026-07-18 Multiple Replace corrupts ASS \N line breaks after a text replacement
+   #12599 merged 2026-07-18 SeConv: fail or warn on malformed SCC instead of writing corrupt output
+   #12580 merged 2026-07-17 Fix six silent text-corruption bugs in libse
+   #12419 merged 2026-07-13 Fix truncated "Number" and "Show" columns in auto-translate grid
+   #12175 merged 2026-07-04 Fix empty language list in TTS Review window
+   #12153 merged 2026-07-04 OCR: fix Dictionary combo going empty after downloading a dictionary
+   #12048 merged 2026-07-01 Prevent UI tests from overwriting user settings
+   #11661 merged 2026-06-16 Fix Adjust duration corruption (use SetTimes) and EncodeNumeric surrogate-pair handling
+   #11656 merged 2026-06-16 Fix truncated ♫ mojibake in default MusicSymbolReplace
+   #11653 merged 2026-06-16 Fix change frame rate/speed corrupting selected line duration (#11650)
+   #11636 merged 2026-06-15 Replace/Find: Count no longer corrupts the last-found position
+   #11513 merged 2026-06-09 Fix corrupted ellipsis character in custom continuation style dropdown
+   #11182 merged 2026-05-25 Defensive: BluRaySup OdsData + Matroska short-read on truncated files
+   #10736 merged 2026-04-28 fix: atomic save and shared lock for NOcrDb
+   #10230 closed 2026-02-25 The translation results were not saved and were lost
+   #10133 closed 2025-12-22 AllTalk TTS: Czech diacritics lost (non-UTF8 form encoding in request)
+   #9752 closed 2025-06-26 Corrupted video files and vide engines **SOLVED**. Fix can be part of SE tools.
+   #7600 closed 2023-11-07 If Purfview's Faster-Whisper crashes, partial output not handled properly, utf-8?
+   #6666 closed 2023-02-11 STL file says it's empty; how ot recover files in translation mode
+   #5960 closed 2022-05-18 opened text file is incomplete (truncated) if paragraph is long
+   #5208 closed 2021-07-19 Duplicated Lines and Blank Lines after reboot
+   #4955 closed 2021-04-05 Bug: creating a new event > edit something in source view > go back to waveform > event gets erased
+   #2382 closed 2017-05-09 When incomplete translation subtitle is open, opening original subtitle erases a line
+   #2118 closed 2016-11-27 [BUG] Remove unneeded spaces several problems which destroys the subtitle if applied
+== AcademySoftwareFoundation_OpenImageIO.prescan.txt: 406 distinct issues listed, 53 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #5537 merged 2026-10-05 fix(oiiotool): don't read past an empty --info result
+   #5480 merged 2026-09-17 feat(iv): image wipe compare
+   #5463 merged 2026-09-10 iv: tolerate partially-written EXR files
+   #5455 merged 2026-09-08 fix(jpeg): Catch corruptions when retrieving thumbnails
+   #5378 merged 2026-08-07 fix(jpegxl): harden against corrupt input
+   #5376 merged 2026-08-06 fix(jpeg): more jpeg detection of corruptions
+   #5372 merged 2026-08-06 fix(zfile): check gzread returns for truncated or corrupt input
+   #5351 closed 2026-07-30 bug: Filesystem::fseek truncates offsets above 2 GiB in MinGW builds
+   #5337 merged 2026-07-25 fix(rla): better detection of corrupted RLE encoding
+   #5325 merged 2026-07-16 fix(imagebuf): fix data race that could corrupt multithreaded reads
+   #5312 merged 2026-07-11 fix(raw): reject decompression-bomb / corrupt headers before unpack
+   #5307 merged 2026-07-08 fix(psd): guard row interleave bounds on corrupt data
+   #5305 merged 2026-07-07 fix(jxl): guard corrupt basic-info dimensions early
+   #5295 merged 2026-07-04 fix(exr): use rectangle row stride for partial edge tile reads
+   #5286 merged 2026-07-02 fix(dds): reject corrupt bytes-per-pixel before it forces a huge allocation
+   #5271 merged 2026-06-28 fix(dpx): detect corrupt userbuf size, overflow guard
+   #5270 merged 2026-06-28 fix(jpeg2000): reject corrupt component geometry and subsampling
+   #5268 merged 2026-06-27 fix(iff): detect corrupt chunk sizes, flags, channel configs
+   #5259 merged 2026-06-26 fix(psd): identify corruptions of layer resolutions, eof in strings
+   #5258 merged 2026-06-26 fix(rla): better detection of corrupted RLE encoding
+   #5165 merged 2026-04-24 fix(targa): Protection against corrupt, mis-sized palette
+   #5142 merged 2026-04-12 fix(softimage): Prevent buffer overruns from corrupt RLE
+   #5141 merged 2026-04-11 fix(sgi): Better detection of corrupt RLE info that could overflow
+   #5140 merged 2026-04-11 fix(jpeg): be a little more flexible with corrupt IPTC blocks
+   #5131 merged 2026-04-06 fix(dds): corruption protection: validate resolution + overflow care
+   #5088 merged 2026-03-13 fix(ico): Various validity checks and error handling for corruptions
+   #4763 merged 2025-05-16 feat(oiiotool): eraseattrib_fromfile
+   #4734 closed 2025-05-01 [FEATURE REQUEST] Ability to read unfinished/corrupted EXRs
+   #4713 closed 2025-04-25 iv: tolerate/display partially-written exr files (originally #1191).
+   #4712 closed 2025-04-25 iv wipe mode
+   #4462 merged 2024-09-29 [image output] Initialize pixels of partial tile conversion buffer.
+   #3954 merged 2023-08-22 fix: various protections against corrupted files
+   #3867 closed 2023-06-07 [BUG] converting to half with oiiotool actually converts to float
+   #3560 merged 2022-09-20 Build: Fix cross-compiling on Android failing due to -latomic check
+   #3371 closed 2022-03-24 Heap corruption reading .mov file
+   #3235 open 2021-12-16 [FEATURE REQUEST] - float_half maketx/make_texture conversion
+   #2927 merged 2021-03-30 Allow reading of JPEG files with mildly corrupted headers
+   #2694 merged 2020-09-03 Python: Direct support for 'half' using numpy.float16 type
+   #2632 merged 2020-07-06 oiiotool: Fix --eraseattrib not applying to all subimages
+   #2623 closed 2020-07-01 [BUG] unordered_map_concurrent does not decrement size in erase
+   #2019 merged 2018-09-28 ImageCache/TextureSystem create/destroy adjustment
+   #2003 merged 2018-09-01 Fix ImageSpec::erase_attribute using backwards logic for casesensitive
+   #1987 closed 2018-07-30 OIIO python api is not properly overwriting an image
+   #1638 merged 2017-03-14 oiiotool --eraseattrib [regex]
+   #1370 merged 2016-02-26 Rename clobber() -> clobber_all_memory().
+   #1072 merged 2015-02-25 maketx improvement: write to temp file, rename upon successful completion
+   #1035 closed 2015-01-21 Fix broken bicubic texture sampling with non-power-of-two sized tiles
+   #1022 closed 2015-01-03 TIFF: allow writing of half (fp16) pixels.
+   #485 closed 2013-01-05 maketx fix -- don't clobber the ImageDescription with the hash
+   #292 closed 2012-04-10 iv - wipe mode
+   #273 merged 2012-04-03 Make atomic_test and spinlock_test run for many more iterations, and time their results.
+   #163 closed 2011-09-05 Bugfix: PNG alpha + gamma lost all precision.  Also tentative fix to gamma in iv
+   #52 closed 2011-03-30 Review: add --no-clobber option to iconvert.

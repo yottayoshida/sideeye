@@ -1,0 +1,126 @@
+== concourse_concourse.prescan.txt: 555 distinct issues listed, 35 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #9722 closed 2026-09-17 baggageclaim: overlay driver Recover() stacks bind-mounts on each in-place restart → ENOSPC crash loop
+   #9636 closed 2026-07-09 RFC 8693 token exchange against embedded Dex always returns an empty 500 — StoreAccessToken middleware assumes every token respons
+   #9630 merged 2026-07-06 Have pipeline collector destroy archived pipelines after some duration (opt-in)
+   #9563 merged 2026-05-01 Emit a more useful error if we get the "rootfs empty" error
+   #9440 merged 2026-01-27 fly: skip destroy confirmation when pipeline does not exist
+   #9379 closed 2025-11-27 fix(atc): prevent partial redaction of overlapping secrets
+   #9293 merged 2025-09-10 Prevent resources from emitting empty versions
+   #9292 merged 2025-09-09 Update MD5 hashing migration to handle empty versions
+   #9160 closed 2025-03-25 refactor: modernize atomic usage in PlanFactory
+   #9158 merged 2025-03-25 refactor: optimize Counter and Gauge with atomic.Int64
+   #9033 closed 2024-11-29 Git version fetch flag fails, clobbered tags
+   #9027 closed 2024-11-12 containerd task execution sometimes fails with EINTR - interrupted system call
+   #8100 merged 2022-02-18 fixed a bug where a worker is pruned, volumes streamed from it should not be immediately destroyed
+   #7718 closed 2021-10-22 [7.4.x] replace atomic with mutex for event id's
+   #7370 merged 2021-07-30 Don't allow empty identifiers when renaming pipelines/teams
+   #7149 closed 2021-06-09 panic: unaligned 64-bit atomic operation when running on raspberry pi 4
+   #7023 merged 2021-05-17 worker/runtime: Don't overwrite $PATH
+   #6752 closed 2021-03-26 If containerd socket is interrupted, worker is stuck in limbo
+   #6057 merged 2020-09-10 Fix empty worker tags
+   #5191 closed 2020-02-17 atc(feat): graceful process termination when interrupted
+   #5181 closed 2020-02-13 WIP: Introduction of Graceful Interrupt Timeout (Abort, Error, Timeout, etc)
+   #5048 closed 2020-01-20 containerd: `Destroy` fails to send SIGKILL when grace period expires
+   #4784 merged 2019-11-18 worker: add Destroy functionality
+   #4656 closed 2019-10-27 Secret redaction incorrectly "redacts" empty string resulting in mangled logs.
+   #4264 closed 2019-08-12 empty volumes when using overlay on Prod
+   #4099 closed 2019-07-04 Flake (?): `guardian.api.garden-server.destroy.failed`
+   #3990 closed 2019-06-07 Use partial version matching for version pinning within pipeline config
+   #3858 closed 2019-05-14 Web crash: 'goroutine stack exceeds 1000000000-byte limit' 'stack overflow'
+   #3558 closed 2019-03-20 Calls to APIs with invalid or expired tokens can return empty 200s rather than 401
+   #3522 closed 2019-03-15 Support atomically switching pins
+   #3017 closed 2019-01-09 better icon for interrupted steps on build page when build is finished
+   #2838 closed 2018-11-21 Add abilitiy to automatically restart interruptible jobs
+   #1737 closed 2017-10-23 worker restart makes atc stall with volume can not destroyed / violates check constraint
+   #813 closed 2016-12-06 When baggageclaim volumes mount is full, baggageclaim should fall back on non-atomic removal
+   #722 closed 2016-10-25 Initial database setup is not atomic and can become wedged if interrupted
+== deviceinsight_kafkactl.prescan.txt: 67 distinct issues listed, 3 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #269 closed 2025-06-19 Kafkactl commands running on kubecontext when interrupted leave pods behind
+   #123 closed 2022-03-28 Possibility to produce avro encoded message to schema registry powered topic
+   #74 closed 2021-03-26 Partial SASL Mechanism support
+== Julien-cpsn_ATAC.prescan.txt: 39 distinct issues listed, 0 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+== KSP-CKAN_CKAN.prescan.txt: 428 distinct issues listed, 33 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #4669 merged 2026-06-16 Better partial upgrade checking
+   #4638 open 2026-05-19 Truncate date columns
+   #4577 merged 2026-04-20 Purge ZIPs corrupted after downloading
+   #4545 closed 2026-04-06 [Bug]: CKAN crashes or freezes when list of files to overwrite is longer than terminal frame size on mac
+   #4504 closed 2026-02-01 [Bug]: Empty/glitched out mod info and freezing with search that results in empty mod list
+   #4503 closed 2026-01-30 [Bug]: Empty mod list with "Update all" button enabled
+   #4491 merged 2026-01-11 Fix freezing after startup with empty mod list
+   #4490 closed 2026-01-10 [Bug]: CKAN freezes if filters give empty mod list at startup
+   #4451 closed 2025-10-21 Manual overwrites of hard linkable files installed by CKAN can create hard links to the overwritten files
+   #4437 closed 2025-09-16 Unable to overwrite or delete files for FarFutureTechnologies
+   #4432 closed 2025-09-10 [Bug]: Crash during RP-1 Express Install (macOS / consoleui)
+   #4307 closed 2025-02-09 Corrupted non-Steam games again
+   #4226 closed 2024-10-07 ZIP file for Waterfall corrupted after being validated and added to cache
+   #4223 merged 2024-10-05 Label spacing and alignment, show zero download counts as blank in ConsoleUI
+   #4212 closed 2024-09-30 [Bug]: Updating from 3 year old version causes registry corruption (not related to old version or registry)
+   #4200 merged 2024-09-27 Skip corrupted .acf files in Steam library
+   #4078 merged 2024-04-15 Recover from corrupted etags.json
+   #3855 closed 2023-07-04 Extraplanetary Launchpads download corrupted
+   #3628 closed 2022-08-15 CKAN launches a blank cmd window
+   #3590 closed 2022-06-16 Could not load file or assembly System.EnterpriseServices, The file or directory is corrupted and unreadable
+   #3351 merged 2021-04-17 Better recovery when registry.json is corrupted
+   #2754 closed 2019-05-07 Aborting a `ckan scan` halfway through leaves a corrupt registry.json file
+   #2537 closed 2018-10-13 Setting OneCache to same location as local cache wipes all cached files
+   #2260 closed 2018-01-19 File Corrupted and Unreadable
+   #1839 closed 2016-07-25 Interrupted CKAN Update
+   #1817 closed 2016-07-07 Mods fail to download, fail to error - indefinite wait for interrupt.
+   #1402 merged 2015-08-22 Refreshing does not wipe the list of selected mods anymore
+   #1311 open 2015-07-17 modifies Relationship or: How I Learned to Stop Worrying and Love Overwrites
+   #1129 closed 2015-06-20 Refreshing should not wipe list of selected mods
+   #1114 closed 2015-06-14 Json database corruption when Update of Repositories is interrupted.
+   #949 closed 2015-05-23 Saner handling/overwriting of autodetected mods
+   #857 closed 2015-05-11 Wrong link for Atomic Age
+   #801 closed 2015-04-06 Crash due to lack of temporary files.
+== redpanda-data_redpanda.prescan.txt: 665 distinct issues listed, 50 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #31602 closed 2026-08-17 [CORE-14911] Fix `_schemas` replay for a truncated log
+   #31547 closed 2026-08-12 raft: fix election timer starvation and busy reply term loss
+   #31543 merged 2026-08-11 [CORE-8759] storage: kill broker process if log_reader detects a corrupt segment
+   #31540 merged 2026-08-11 [v26.1.x] bazel: define an empty ci-remote-cache config
+   #31539 merged 2026-08-11 [v25.3.x] bazel: define an empty ci-remote-cache config
+   #31538 merged 2026-08-11 [v26.2.x] bazel: define an empty ci-remote-cache config
+   #31537 merged 2026-08-11 bazel: define an empty ci-remote-cache config
+   #31470 open 2026-08-06 [CORE-14565] `storage`: make offset translator truncation checkpoint crash-safe and ensure offset translator processes visible raf
+   #31437 merged 2026-08-05 [v26.1.x] `security`: apply snapshots and replace ACL store contents atomically
+   #31435 merged 2026-08-05 [v26.2.x] `security`: apply snapshots and replace ACL store contents atomically
+   #31420 merged 2026-08-04 `security`: apply snapshots and replace ACL store contents atomically
+   #31302 open 2026-07-27 `kgo-verifier`: truncate valid offsets when retries land at lower offsets
+   #31231 merged 2026-07-22 [v25.2.x] [CORE-16883] `kafka`: erase `group` before awaiting `shutdown()`
+   #31229 merged 2026-07-22 [v25.3.x] [CORE-16883] `kafka`: erase `group` before awaiting `shutdown()`
+   #31228 merged 2026-07-22 [v26.1.x] [CORE-16883] `kafka`: erase `group` before awaiting `shutdown()`
+   #31221 merged 2026-07-22 [CORE-16883] `kafka`: erase `group` before awaiting `shutdown()`
+   #31199 merged 2026-07-20 `rptest`: deflake `controller_erase_test` again
+   #31175 closed 2026-07-18 [v26.1.x] Broker crashes with gate destroyed with outstanding requests assertion after upgrading to v26.1.12
+   #30925 closed 2026-06-25 [CORE-16434] cluster_link: Fix prefix truncation liveness issue
+   #30819 merged 2026-06-16 [v26.1.x] cluster_link/replication: don't floor prefix truncation at resume offset
+   #30785 merged 2026-06-12 cluster_link/replication: don't floor prefix truncation at resume offset
+   #30660 merged 2026-06-01 storage: don't expose a partial batch in reader size on flush
+   #30466 open 2026-05-13 bazel: add empty noop.bzl to trigger CI
+   #30353 closed 2026-04-30 [v25.2.x] cloud_io/cache: fix shard 0 misuse in put ENOSPC handler
+   #30352 merged 2026-04-30 [v25.3.x] cloud_io/cache: fix shard 0 misuse in put ENOSPC handler
+   #30351 merged 2026-04-30 [v26.1.x] cloud_io/cache: fix shard 0 misuse in put ENOSPC handler
+   #30335 merged 2026-04-29 cloud_io/cache: fix shard 0 misuse in put ENOSPC handler
+   #29635 merged 2026-02-18 lsm/io: write tmp and rename cloud data files
+   #29164 open 2026-01-07 Implement bound truncation in parquet writer
+   #28800 open 2025-12-02 [CORE-13742] dt: Add cloud topics to 'partition_move_interruption_test.py'.
+   #28488 merged 2025-11-12 CORE-14575 redpanda: do not destroy scheduling groups
+   #28231 merged 2025-10-28 dt: Handle out-of-order /proc/interrupts in GCP tests
+   #27834 merged 2025-10-01 tests/pmi: refactored partition move interruption test
+   #27668 open 2025-09-22 Dr/noticket/suffix truncation mount unmount poc
+   #27366 merged 2025-08-25 tools/dev_cluster: stop post_start_configure when killed
+   #27327 open 2025-08-21 datalake: dlq corrupted records
+   #27282 closed 2025-08-18 storage: appender corruption testing
+   #27036 open 2025-07-29 cloud_storage: reproduce offset rollback on read replica after truncate
+   #27034 open 2025-07-29 rptest: add recovery test case after full truncation
+   #26670 merged 2025-07-02 cloud_topics: rename dl_stm to ctp_stm
+   #25245 merged 2025-03-04 base/vassert: type-erase assert handling
+   #24692 closed 2025-01-06 rptest: upgrade kgo-verifier with additional dataloss checks
+   #18598 merged 2024-05-21 segment_appender: truncate in addition to allocate
+   #13367 closed 2023-09-11 CI Failure (TimeoutError('cli-consumer running on docker-rp-8 failed to stop after SIGKILL')) in `IncrementalFollowerFetchingTest.
+   #13194 open 2023-09-01 Prevent node with assigned `node_id` and wiped disk from joining the cluster automatically
+   #11848 open 2023-07-03 Tests: partial upgrade with rollback
+   #10669 closed 2023-05-10 Consistency violation: atomic consume-transform-produce loop isn't atomic (static partitioning)
+   #10225 open 2023-04-20 tests: try racing truncation with hard restart
+   #5056 closed 2022-06-07 Redpanda crashes when high number of consumers are killed
+   #2235 merged 2021-09-06 Updates tx layer to support hot log truncations

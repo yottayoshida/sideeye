@@ -1,0 +1,6 @@
+scan ended for libdeflate (ebiggers/libdeflate); exploring 2026-10-09T01:37:50Z
+=== libdeflate 2026-10-09T01:37:50Z
+explore exit 2: UNKNOWN nothing_could_fail
+explore exit 2: UNKNOWN nothing_could_fail
+next_step: The built-in invariant judges only paths that exist both before and after the operation, and no crash point changed one, so nothing could have failed: declare a check that reads the state the target leaves (docs/checker-cookbook.md), or a marker for the success claim, which judges the files the operation created or removed.
+explore-after-scan: done 2026-10-09T01:37:50Z

@@ -1,0 +1,19 @@
+Writing the configuration file for the implicit global project to:
+/s/aux/home/.stack/global-project/stack.yaml. Note: You can change the snapshot via the snapshot key
+there.
+HttpExceptionRequest Request {
+  host                 = "stackage-haddock.haskell.org"
+  port                 = 443
+  secure               = True
+  requestHeaders       = [("Accept","application/json"),("User-Agent","The Haskell Stack")]
+  path                 = "/snapshots.json"
+  queryString          = ""
+  method               = "GET"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+  proxySecureMode      = ProxySecureWithConnect
+}
+ (ConnectionFailure Network.Socket.getAddrInfo (called with preferred socket type/protocol: AddrInfo {addrFlags = [AI_ADDRCONFIG], addrFamily = AF_UNSPEC, addrSocketType = Stream, addrProtocol = 0, addrAddress = 0.0.0.0:0, addrCanonName = Nothing}, host name: "stackage-haddock.haskell.org", service name: "443"): does not exist (Try again))

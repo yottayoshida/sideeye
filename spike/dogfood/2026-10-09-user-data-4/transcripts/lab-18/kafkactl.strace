@@ -1,0 +1,38 @@
+35    openat(AT_FDCWD, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3
+35    close(3)                          = 0
+35    openat(AT_FDCWD, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3
+35    close(3)                          = 0
+35    openat(AT_FDCWD, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3
+35    close(3)                          = 0
+35    openat(AT_FDCWD, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_CLOEXEC) = 3
+35    clone(child_stack=0x5588d699c000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 36
+35    clone(child_stack=0x5588d69f0000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 37
+35    clone(child_stack=0x5588d69ec000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 38
+37    clone(child_stack=0x5588d6a18000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 39
+35    openat(AT_FDCWD, "/opt/bin/kafkactl", O_RDONLY|O_CLOEXEC) = 4
+35    close(4)                          = 0
+35    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=35, si_uid=0} ---
+35    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=35, si_uid=0} ---
+35    clone(child_stack=0x5588d6db0000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 40
+38    clone(child_stack=0x5588d6dac000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 41
+39    clone(child_stack=0x5588d6dc0000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 42
+37    openat(AT_FDCWD, "/s/aux/home/.config/kafkactl/config.yml", O_RDONLY|O_CLOEXEC) = 4
+37    close(4)                          = 0
+37    write(2, ""..., 231)              = 231
+37    openat(AT_FDCWD, "/s/aux/home/.config/kafkactl/current-context.yml", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0644) = 4
+37    write(4, ""..., 19)               = 19
+37    fsync(4)                          = 0
+37    close(4)                          = 0
+37    openat(AT_FDCWD, "/s/aux/home/.config/kafkactl/current-context.yml", O_RDONLY|O_CLOEXEC) = 4
+37    close(4)                          = 0
+37    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=35, si_uid=0} ---
+39    clone(child_stack=0x5588d6dbc000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 43
+37    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=35, si_uid=0} ---
+39    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=35, si_uid=0} ---
+37    openat(AT_FDCWD, "/s/aux/home/.config/kafkactl/current-context.yml", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0644) = 4
+37    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=35, si_uid=0} ---
+37    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=35, si_uid=0} ---
+41    write(4, ""..., 19)               = 19
+41    fsync(4)                          = 0
+41    close(4)                          = 0
+37    ???( <detached ...>

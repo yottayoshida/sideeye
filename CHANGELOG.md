@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Twenty-two tools whose state git does not hold, in four waves on the released v1.10.0: 14 FAIL, 7 PASS and 1 UNKNOWN on the page's path, two reports upstream, and a shim defect (#753)** (`spike/dogfood/2026-10-09-user-data-4/`; `docs/target-classes.md`, `spike/dogfood/RUNS.md`, `spike/outcome-funnel.tsv`, the B2 exclusions). Most FAILs are the truncating open and the kill before the write, in user config files; Subtitle Edit's `seconv --overwrite` empties the subtitle it converts, and MCA Selector's chunk deletion unlinks the region file before renaming its replacement in from the system temp directory — both reproduced without Sideeye by strace's `inject` and reported upstream (SubtitleEdit/subtitleedit#15829, Querz/mcaselector#613). The run found a defect in the shim (#753): an interposed call made from another shared library's constructor, before the shim's own `.init_array` has resolved the real functions, answers -1 — a `std::thread` started there aborts "Unknown error -1", and a `std::ifstream` opened there fails; OpenImageIO's iconvert and conda-forge's ROOT abort under the shim for this reason, and `--observe supervised`, which loads no shim, judged iconvert. Qt's save through `O_TMPFILE` (Kvantum, Hydrogen) is refused `unresolvable_path`.
+
 ### Changed
 
 - **The CI quickstart pins v1.10.0** (`docs/ci-quickstart.md`, `docs/ci-quickstart/release/install-sideeye.sh`, `.github/workflows/quickstart-release.yml`). The release lane installs the published v1.10.0 asset instead of v1.9.0's. The pin moves after the release, as on v1.9.0, because the lane downloads the asset and the asset exists only once the release is published. Nothing else in the lane changes.

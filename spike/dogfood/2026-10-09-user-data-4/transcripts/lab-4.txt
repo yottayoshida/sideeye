@@ -1,0 +1,37 @@
+135:# Check if running as root and if any files have the owner as root/wheel.
+136:if [ "${EUID:-"$(id -u)"}" -eq 0 ]; then
+137:	fQuit 1 "You shouldn't run this with elevated privileges (such as with doas/sudo)."
+139:	printf 'It looks like this script was previously run with elevated privileges,
+== prefsCleaner: exit 1; 168 strace lines
+18    execve("/usr/bin/setpriv", [...], 0xffffe17d4eb8 /* 14 vars */) = 0
+18    execve(0xffffcb7507a0, 0xffffcb750bd8, 0xffffcb750c00) = -1 ENOENT (No such file or directory)
+18    execve(0xffffcb7507a0, 0xffffcb750bd8, 0xffffcb750c00) = -1 ENOENT (No such file or directory)
+18    execve(0xffffcb7507a0, 0xffffcb750bd8, 0xffffcb750c00) = -1 ENOENT (No such file or directory)
+18    execve(0xffffcb7507a0, 0xffffcb750bd8, 0xffffcb750c00) = -1 ENOENT (No such file or directory)
+18    execve(0xffffcb7507a0, 0xffffcb750bd8, 0xffffcb750c00) = -1 ENOENT (No such file or directory)
+18    execve(0xffffcb7507a0, 0xffffcb750bd8, 0xffffcb750c00) = -1 ENOENT (No such file or directory)
+18    execve(0xffffcb7507a0, 0xffffcb750bd8, 0xffffcb750c00) = 0
+21    execve("/usr/bin/readlink", [...], 0xaaaabd103d60 /* 16 vars */) = 0
+22    execve("/usr/bin/dirname", [...], 0xaaaabd105e00 /* 16 vars */) = 0
+23    execve("/usr/bin/find", [...], 0xaaaabd105ff0 /* 16 vars */) = 0
+24    execve("/usr/bin/find", [...], 0xaaaabd103d60 /* 16 vars */) = 0
+It looks like this script was previously run with elevated privileges,
+you will need to change ownership of the following files to your user:
+.
+./prefsCleaner.sh
+./user.js
+
+
+total 92
+drwxr-xr-x 2 1000 1000  4096 Oct  9 00:37 .
+drwxr-xr-x 4 root root  4096 Oct  9 00:37 ..
+-rw-r--r-- 1 1000 1000   276 Oct  9 00:37 prefs.js
+-rw-r--r-- 1 1000 1000 79987 Oct  9 00:37 user.js
+--- prefs.js after
+// Mozilla User Preferences
+
+user_pref("app.update.auto", false);
+user_pref("browser.startup.homepage", "https://example.org");
+user_pref("privacy.resistFingerprinting", false);
+user_pref("browser.download.dir", "/s/downloads");
+user_pref("network.cookie.cookieBehavior", 0);

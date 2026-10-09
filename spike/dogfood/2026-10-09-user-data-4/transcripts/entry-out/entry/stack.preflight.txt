@@ -1,0 +1,24 @@
+/s/aux/home/.stack/config.yaml has been updated.
+/s/aux/home/.stack/config.yaml has been updated.
+PREFLIGHT  recording accepted — 116 state-changing operation(s) observed
+
+cwd          /s/stk
+atomicity    3 path(s) judged pre-or-post; 5 path(s) matched by scratch, not judged (declared: pantry, stack.sqlite3, stack.sqlite3-journal (+1 more))
+oracle       agreed on 116 operations (717 syscall lines examined, 347 in scope of the judged state), witness strace of THIS run — the operations were counted from outside the target by the supervising engine through a seccomp user-notification filter, no shim loaded; in this mode the oracle does not count an entry strace ended `= ? ERESTART...` (a signal took the call back before it completed)
+processes    single process in the recording; the second observed run recorded a thread, and that run's capture is never parsed, so nothing accounts for it; the supervising engine recorded 4 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2007 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+scratch        declared scratch, not compared: pantry, stack.sqlite3, stack.sqlite3-journal, stack.sqlite3.pantry-write-lock
+
+next         sideeye explore --state /s/aux/home/.stack --cwd "/s/stk" --operation "stack config set install-ghc false --global" \
+               --check <your-invariant.sh> --observe supervised --oracle /usr/bin/strace

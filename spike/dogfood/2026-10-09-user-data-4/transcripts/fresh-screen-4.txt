@@ -1,0 +1,105 @@
+SEEN  proto  target-classes:30
+SEEN  proto  cohort4-rejected:71
+SEEN  proto  spike/dogfood/2026-09-05-userview/SELECTION.md:58
+SEEN  proto  spike/dogfood/2026-09-27-supervised-static/SELECTION.md:83
+SEEN  proto  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:54
+SEEN  proto  spike/authoring-cost/pool-atomic.txt:2
+SEEN  juliaup  funnel:256
+SEEN  juliaup  target-classes:166
+SEEN  juliaup  b2-exclusions:162
+SEEN  juliaup  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:149
+fresh ghcup
+fresh elan
+SEEN  pixi  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:72
+SEEN  asdf  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:124
+fresh aqua
+fresh micromamba
+SEEN  mamba  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:61
+SEEN  opam  funnel:255
+SEEN  opam  target-classes:165
+SEEN  opam  b2-exclusions:231
+SEEN  opam  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:157
+SEEN  spack  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:72
+SEEN  skaffold  spike/dogfood/2026-10-03-user-data/SELECTION.md:59
+SEEN  skaffold  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:258
+SEEN  k3d  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:76
+fresh devspace
+SEEN  mackup  spike/dogfood/2026-09-05-userview/SELECTION.md:60
+SEEN  mackup  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  mackup  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+SEEN  west  spike/dogfood/2026-09-06-userview-2/SELECTION.md:108
+SEEN  llm  funnel:293
+SEEN  llm  target-classes:179
+SEEN  llm  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:52
+fresh shell_gpt
+fresh aichat
+SEEN  fabric  spike/dogfood/2026-09-16-outside-git/SELECTION.md:29
+SEEN  crush  b2-targets:20
+SEEN  crush  b2-candidates:203
+fresh gmic
+fresh ruplacer
+SEEN  scooter  spike/dogfood/2026-10-03-user-data/SELECTION.md:155
+fresh srgn
+SEEN  astropy  funnel:275
+SEEN  astropy  target-classes:235
+SEEN  astropy  b2-exclusions:43
+SEEN  astropy  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:180
+SEEN  astropy  spike/dogfood/2026-10-07-user-data-3/SELECTION.md:172
+SEEN  fitscheck  funnel:275
+SEEN  fitscheck  target-classes:235
+SEEN  fitscheck  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:180
+SEEN  hstr  spike/dogfood/2026-10-03-user-data/SELECTION.md:58
+fresh protonup
+fresh Ghost-CLI
+fresh drush
+fresh infisical
+SEEN  doppler  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:259
+SEEN  supabase  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:72
+SEEN  firebase-tools  funnel:277
+SEEN  firebase-tools  target-classes:235
+SEEN  firebase-tools  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:100
+SEEN  heroku  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:69
+SEEN  railway  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:69
+fresh exoscale
+SEEN  civo  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:69
+fresh upcloud
+SEEN  volta  spike/dogfood/2026-09-21-release-path/SELECTION.md:83
+fresh sdkman
+fresh papermill
+fresh marimo
+fresh quarto
+fresh po4a
+SEEN  pybabel  target-classes:124
+SEEN  pybabel  spike/dogfood/2026-10-03-user-data/SELECTION.md:118
+fresh epy
+fresh nbted
+fresh ghq
+SEEN  git-town  spike/dogfood/2026-10-07-user-data-3/SELECTION.md:59
+SEEN  mani  target-classes:41
+SEEN  mani  cohort4-rejected:18
+SEEN  mani  spike/dogfood/2026-09-05-userview/SELECTION.md:59
+SEEN  mani  spike/dogfood/2026-09-16-cargo-v16/SELECTION.md:11
+SEEN  gita  funnel:238
+SEEN  gita  target-classes:144
+SEEN  gita  b2-exclusions:124
+SEEN  gita  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:142
+fresh myrepos
+fresh vcsh
+fresh tmuxinator
+fresh tmuxp
+fresh sesh
+SEEN  zellij  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:118
+SEEN  navi  spike/dogfood/2026-09-05-userview/SELECTION.md:94
+SEEN  navi  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  navi  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+fresh tldr
+SEEN  tealdeer  spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:120
+SEEN  cheat  spike/dogfood/2026-10-03-user-data/SELECTION.md:59
+SEEN  pet  target-classes:205
+SEEN  pet  spike/dogfood/2026-10-05-user-data-2/SELECTION.md:72
+SEEN  espanso  spike/dogfood/2026-09-05-userview/SELECTION.md:94
+SEEN  espanso  spike/dogfood/2026-09-06-userview-2/SELECTION.md:27
+SEEN  espanso  spike/dogfood/2026-09-16-userview-3/SELECTION.md:34
+fresh kanata
+fresh keyd
+fresh xremap

@@ -1,0 +1,117 @@
+## buildx
+== buildx-create1: exit 0; 62 strace lines; 9 clone
+22    openat(AT_FDCWD, "/s/aux/home/.docker/buildx/.lock", O_RDONLY|O_CREAT|O_CLOEXEC, 0600) = 4
+22    openat(AT_FDCWD, "/s/aux/home/.docker/buildx/activity/.tmp-b1879376373", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 7
+22    fsync(7)                          = 0
+22    renameat(AT_FDCWD, "/s/aux/home/.docker/buildx/activity/.tmp-b1879376373", AT_FDCWD, "/s/aux/home/.docker/buildx/activity/b1") = 0
+22    unlinkat(AT_FDCWD, "/s/aux/home/.docker/buildx/activity/.tmp-b1879376373", 0) = -1 ENOENT (No such file or directory)
+22    unlinkat(AT_FDCWD, "/s/aux/home/.docker/buildx/activity/.tmp-b1879376373", AT_REMOVEDIR) = -1 ENOENT (No such file or directory)
+22    openat(AT_FDCWD, "/s/aux/home/.docker/buildx/instances/.tmp-b1193557943", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 7
+22    fsync(7)                          = 0
+22    renameat(AT_FDCWD, "/s/aux/home/.docker/buildx/instances/.tmp-b1193557943", AT_FDCWD, "/s/aux/home/.docker/buildx/instances/b1") = 0
+22    unlinkat(AT_FDCWD, "/s/aux/home/.docker/buildx/instances/.tmp-b1193557943", 0) = -1 ENOENT (No such file or directory)
+22    unlinkat(AT_FDCWD, "/s/aux/home/.docker/buildx/instances/.tmp-b1193557943", AT_REMOVEDIR) = -1 ENOENT (No such file or directory)
+b1
+== buildx-create2: exit 0; 61 strace lines; 8 clone
+37    openat(AT_FDCWD, "/s/aux/home/.docker/buildx/.lock", O_RDONLY|O_CREAT|O_CLOEXEC, 0600) = 4
+37    openat(AT_FDCWD, "/s/aux/home/.docker/buildx/activity/.tmp-b23625049727", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 7
+37    fsync(7)                          = 0
+37    renameat(AT_FDCWD, "/s/aux/home/.docker/buildx/activity/.tmp-b23625049727", AT_FDCWD, "/s/aux/home/.docker/buildx/activity/b2") = 0
+37    unlinkat(AT_FDCWD, "/s/aux/home/.docker/buildx/activity/.tmp-b23625049727", 0) = -1 ENOENT (No such file or directory)
+37    unlinkat(AT_FDCWD, "/s/aux/home/.docker/buildx/activity/.tmp-b23625049727", AT_REMOVEDIR) = -1 ENOENT (No such file or directory)
+37    openat(AT_FDCWD, "/s/aux/home/.docker/buildx/instances/.tmp-b21384560584", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 7
+37    fsync(7)                          = 0
+37    renameat(AT_FDCWD, "/s/aux/home/.docker/buildx/instances/.tmp-b21384560584", AT_FDCWD, "/s/aux/home/.docker/buildx/instances/b2") = 0
+37    unlinkat(AT_FDCWD, "/s/aux/home/.docker/buildx/instances/.tmp-b21384560584", 0) = -1 ENOENT (No such file or directory)
+37    unlinkat(AT_FDCWD, "/s/aux/home/.docker/buildx/instances/.tmp-b21384560584", AT_REMOVEDIR) = -1 ENOENT (No such file or directory)
+b2
+/s/aux/home/.docker/buildx/instances/b1
+/s/aux/home/.docker/buildx/instances/b2
+/s/aux/home/.docker/buildx/activity/b1
+/s/aux/home/.docker/buildx/activity/b2
+/s/aux/home/.docker/buildx/.lock
+--- /s/aux/home/.docker/buildx/instances/b1
+{"Name":"b1","Driver":"remote","Nodes":[{"Name":"b10","Endpoint":"tcp://127.0.0.1:1234","Platforms":null,"DriverOpts":null,"Flags":null,"Files":null}],"Dynamic":false}
+--- /s/aux/home/.docker/buildx/instances/b2
+{"Name":"b2","Driver":"remote","Nodes":[{"Name":"b20","Endpoint":"tcp://127.0.0.1:1235","Platforms":null,"DriverOpts":null,"Flags":null,"Files":null}],"Dynamic":false}
+--- /s/aux/home/.docker/buildx/activity/b1
+2026-10-09T01:34:25Z
+--- /s/aux/home/.docker/buildx/activity/b2
+2026-10-09T01:34:25Z
+--- /s/aux/home/.docker/buildx/.lock
+
+== buildx-use: exit 0; 67 strace lines; 9 clone
+69    openat(AT_FDCWD, "/s/aux/home/.docker/buildx/.lock", O_RDONLY|O_CREAT|O_CLOEXEC, 0600) = 4
+69    openat(AT_FDCWD, "/s/aux/home/.docker/buildx/.tmp-current1767511720", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 7
+69    fsync(7)                          = 0
+69    renameat(AT_FDCWD, "/s/aux/home/.docker/buildx/.tmp-current1767511720", AT_FDCWD, "/s/aux/home/.docker/buildx/current") = 0
+69    unlinkat(AT_FDCWD, "/s/aux/home/.docker/buildx/.tmp-current1767511720", 0) = -1 ENOENT (No such file or directory)
+69    unlinkat(AT_FDCWD, "/s/aux/home/.docker/buildx/.tmp-current1767511720", AT_REMOVEDIR) = -1 ENOENT (No such file or directory)
+69    openat(AT_FDCWD, "/s/aux/home/.docker/buildx/defaults/.tmp-13c4025c96f36e94b348650745876", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 7
+69    fsync(7)                          = 0
+69    renameat(AT_FDCWD, "/s/aux/home/.docker/buildx/defaults/.tmp-13c4025c96f36e94b348650745876", AT_FDCWD, "/s/aux/home/.docker/buildx/defaults/13c4025c96f36e94b348") = 0
+69    unlinkat(AT_FDCWD, "/s/aux/home/.docker/buildx/defaults/.tmp-13c4025c96f36e94b348650745876", 0) = -1 ENOENT (No such file or directory)
+69    unlinkat(AT_FDCWD, "/s/aux/home/.docker/buildx/defaults/.tmp-13c4025c96f36e94b348650745876", AT_REMOVEDIR) = -1 ENOENT (No such file or directory)
+== buildx-rm: exit 0; 47 strace lines; 9 clone
+87    openat(AT_FDCWD, "/s/aux/home/.docker/buildx/.lock", O_RDONLY|O_CREAT|O_CLOEXEC, 0600) = 4
+87    unlinkat(AT_FDCWD, "/s/aux/home/.docker/buildx/activity/b1", 0) = 0
+87    unlinkat(AT_FDCWD, "/s/aux/home/.docker/buildx/instances/b1", 0) = 0
+b1 removed
+/s/aux/home/.docker/buildx/instances/b2
+/s/aux/home/.docker/buildx/current
+/s/aux/home/.docker/buildx/activity/b2
+/s/aux/home/.docker/buildx/defaults/13c4025c96f36e94b348
+/s/aux/home/.docker/buildx/.lock
+## zvm
+[34mNAME:[0m
+   zvm - Zig Version Manager
+
+[34mUSAGE:[0m
+   zvm [global options] [command [command options]]
+
+[34mVERSION:[0m
+   v0.9.1 linux/arm64
+
+[34mDESCRIPTION:[0m
+   zvm lets you easily install, upgrade, and switch between different versions of Zig.
+
+[34mCOMMANDS:[0m
+   install, i              Download and install a version of Zig
+   use                     Switch between versions of Zig
+   run                     Run a command with the given Zig version
+   list-remote, ls-remote  List all remote Zig versions
+   list, ls                List installed Zig versions.
+   alias, kv               Give an installed Zig version a name
+   uninstall, rm           Remove an installed version of Zig
+   clean                   Remove build artifacts (good if you're a scrub)
+   upgrade                 Self-upgrade ZVM
+   mirrorlist              Set ZVM's mirror list URL for custom Zig distribution servers, or set to "disabled" to download directly from ziglang.org
+   bug                     Start a bug report
+   version                 Print the current version of ZVM
+   vmu                     Set ZVM's version map URL for custom Zig distribution servers
+   help, h                 Shows a list of commands or help for one command
+   completion              Generate a shell completion script
+
+[34mGLOBAL OPTIONS:[0m
+== zvm-vmu1: exit 0; 36 strace lines; 5 clone
+111   openat(AT_FDCWD, "/s/aux/home/.zvm/settings.json", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0755) = 4
+111   openat(AT_FDCWD, "/s/aux/home/.zvm/settings.json", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0755) = 4
+/s/aux/home/.zvm/settings.json
+{
+    "mirrorListUrl": "https://ziglang.org/download/community-mirrors.txt",
+    "minisignPubKey": "RWSGOq2NVecA2UPNdBUZykf1CCb147pkmdtYxgb3Ti+JO/wCYvhbAb/U",
+    "versionMapUrl": "https://example.org/zig-index.json",
+    "zlsVersionMapUrl": "https://releases.zigtools.org/",
+    "useColor": true,
+    "alwaysForceInstall": false
+}== zvm-vmu2: exit 0; 37 strace lines; 4 clone
+130   openat(AT_FDCWD, "/s/aux/home/.zvm/settings.json", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0755) = 4
+130   openat(AT_FDCWD, "/s/aux/home/.zvm/settings.json", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0755) = 4
+{
+    "mirrorListUrl": "https://ziglang.org/download/community-mirrors.txt",
+    "minisignPubKey": "RWSGOq2NVecA2UPNdBUZykf1CCb147pkmdtYxgb3Ti+JO/wCYvhbAb/U",
+    "versionMapUrl": "https://example.org/zig-index.json",
+    "zlsVersionMapUrl": "https://example.org/zls-index.json",
+    "useColor": true,
+    "alwaysForceInstall": false
+}

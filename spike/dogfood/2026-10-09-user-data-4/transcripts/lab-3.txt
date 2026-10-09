@@ -1,0 +1,91 @@
+## iconvert under the shim, by hand
+preload only, --threads 1: exit 134: terminate called after throwing an instance of 'std::system_error'
+  what():  Unknown error -1
+Aborted
+preload only, default threads: exit 134: terminate called after throwing an instance of 'std::system_error'
+  what():  Unknown error -1
+Aborted
+oiiotool under preload: exit 134: terminate called after throwing an instance of 'std::system_error'
+  what():  Unknown error -1
+Aborted
+preflight --observe syscalls: exit 2
+UNKNOWN  recording_run_failed
+next        Under --observe syscalls a run also ends this way when that mode killed a process or otherwise changed what the target does — the README entry under 'What the target has to be' that begi
+## cook
+Manage pantry inventory with full CRUD support and recipe-based analysis
+
+Usage: cook pantry [OPTIONS] <COMMAND>
+
+Commands:
+  depleted  Show items that are out of stock or have low quantities
+  expiring  Show items that are expiring soon
+  recipes   List recipes that can be made with items currently in pantry
+  plan      Analyze ingredient usage across recipes to help plan pantry items
+  list      List all items in the pantry
+  add       Add an item to the pantry
+  remove    Remove an item from the pantry
+  update    Update an item already in the pantry
+  help      Print this message or the help of the given subcommand(s)
+
+Options:
+  -b, --base-path <PATH>
+          Base path for recipes and configuration files
+
+  -v, --verbose...
+          Increase verbosity (-v for info, -vv for debug, -vvv for trace)
+
+  -f, --format <FORMAT>
+          Output format
+
+          Possible values:
+          - human: Human-readable output (default)
+          - json:  JSON output
+          - yaml:  YAML output
+          
+== cook-pantry-add: exit 0; 9 strace lines
+103   openat(AT_FDCWD, "/s/cook/config/.pantry.conf.103.tmp", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 3
+103   fsync(3)                          = 0
+103   renameat(AT_FDCWD, "/s/cook/config/.pantry.conf.103.tmp", AT_FDCWD, "/s/cook/config/pantry.conf") = 0
+/s/cook:
+total 16
+drwxr-xr-x 3 root root 4096 Oct  9 00:36 .
+drwxr-xr-x 5 root root 4096 Oct  9 00:36 ..
+-rw-r--r-- 1 root root   76 Oct  9 00:36 Pancakes.cook
+drwxr-xr-x 2 root root 4096 Oct  9 00:36 config
+
+/s/cook/config:
+total 12
+drwxr-xr-x 2 root root 4096 Oct  9 00:36 .
+drwxr-xr-x 3 root root 4096 Oct  9 00:36 ..
+-rw-r--r-- 1 root root   74 Oct  9 00:36 pantry.conf
+[dairy]
+milk = "1%l"
+butter = "200%g"
+eggs = "6"
+
+[pantry]
+flour = "1%kg"
+== cook-pantry-remove: exit 0; 9 strace lines
+113   openat(AT_FDCWD, "/s/cook/config/.pantry.conf.113.tmp", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 3
+113   fsync(3)                          = 0
+113   renameat(AT_FDCWD, "/s/cook/config/.pantry.conf.113.tmp", AT_FDCWD, "/s/cook/config/pantry.conf") = 0
+[dairy]
+milk = "1%l"
+butter = "200%g"
+
+[pantry]
+flour = "1%kg"
+## prefsCleaner
+== prefsCleaner: exit 1; 66 strace lines
+total 92
+drwxr-xr-x 2 root root  4096 Oct  9 00:36 .
+drwxr-xr-x 6 root root  4096 Oct  9 00:36 ..
+-rw-r--r-- 1 root root   276 Oct  9 00:36 prefs.js
+-rw-r--r-- 1 root root 79987 Oct  9 00:36 user.js
+// Mozilla User Preferences
+
+user_pref("app.update.auto", false);
+user_pref("browser.startup.homepage", "https://example.org");
+user_pref("privacy.resistFingerprinting", false);
+user_pref("browser.download.dir", "/s/downloads");
+user_pref("network.cookie.cookieBehavior", 0);

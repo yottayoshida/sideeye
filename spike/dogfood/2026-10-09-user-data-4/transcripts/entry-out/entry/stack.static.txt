@@ -1,0 +1,4 @@
+static: /opt/bin/stack: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=130b462582ef9f2d2b04c5f981081f69d583df86, stripped
+default mode: rc 2; no_shim_marker
+default next: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+next: sideeye explore --state /s/aux/home/.stack --cwd "/s/stk" --operation "stack config set install-ghc false --global" \

@@ -1,0 +1,2 @@
+
+You shouldn't run this with elevated privileges (such as with doas/sudo).

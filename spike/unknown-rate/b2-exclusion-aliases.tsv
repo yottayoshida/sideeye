@@ -130,3 +130,33 @@ keyring	python3-keyring	outcome-funnel.tsv
 pi	-	outcome-funnel.tsv (earendil-works/pi; trixie's pi is another program)
 capacitor	-	outcome-funnel.tsv (trixie's cap is capistrano)
 minizip	-	outcome-funnel.tsv (minizip-ng; trixie's minizip is zlib's contrib)
+scw	-	outcome-funnel.tsv (scaleway-cli; trixie has none)
+seconv	-	outcome-funnel.tsv (Subtitle Edit's command-line converter; trixie has none)
+otiotool	-	outcome-funnel.tsv (OpenTimelineIO; trixie has none)
+cook	-	outcome-funnel.tsv (cooklang/cookcli; trixie has none)
+mcaselector	-	outcome-funnel.tsv (trixie has none; the box's .deb matched by name)
+nmctl	-	outcome-funnel.tsv (netmaker's CLI; trixie has none)
+libdeflate	libdeflate-tools	outcome-funnel.tsv
+stack	haskell-stack	outcome-funnel.tsv
+cabal	cabal-install	outcome-funnel.tsv
+carapace	-	outcome-funnel.tsv (carapace-bin; trixie has none)
+chdman	mame-tools	outcome-funnel.tsv
+buildx	docker-buildx	outcome-funnel.tsv
+iconvert	openimageio-tools	outcome-funnel.tsv
+ifcpatch	-	outcome-funnel.tsv (IfcOpenShell; trixie has none)
+prefscleaner	-	outcome-funnel.tsv (arkenfox user.js; trixie has none)
+yarn	yarnpkg	outcome-funnel.tsv (trixie's yarnpkg is Yarn 4)
+trash	-	outcome-funnel.tsv (sindresorhus/trash-cli; trixie's trash-cli is andreafrancia's, another program)
+softhsm	softhsm2	outcome-funnel.tsv
+kvantum	qt6-style-kvantum	outcome-funnel.tsv
+h2cli	hydrogen	outcome-funnel.tsv
+rootrm	-	outcome-funnel.tsv (ROOT; trixie has no root-system)
+f2	-	outcome-funnel.tsv (ayoisaiah/f2; trixie has none)
+zvm	-	outcome-funnel.tsv (tristanisham/zvm; trixie has none)
+fly	-	outcome-funnel.tsv (Concourse's fly; trixie has none)
+atac	-	outcome-funnel.tsv (Julien-cpsn/ATAC; trixie's atac is a genome-assembly tool)
+ckan	-	outcome-funnel.tsv (KSP-CKAN; trixie has none, the box's .deb matched by name)
+rpk	-	outcome-funnel.tsv (Redpanda's rpk; trixie has none)
+kafkactl	-	outcome-funnel.tsv (deviceinsight/kafkactl; trixie has none)
+Subtitle Edit's SeConv 5.2.0 `subs.srt subrip --offset:-2000 --overwrite`	-	upstream-reports.tsv (Subtitle Edit; trixie has none)
+MCA Selector 2.9 `--mode delete --query "InhabitedTime < 1000"`	-	upstream-reports.tsv (trixie has none)

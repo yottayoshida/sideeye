@@ -1,0 +1,6 @@
+ROW rootrm static=0 preflight_rc=2 gate=DEFINE detail=define: recording_run_failed
+EXIT rootrm 3
+ROW ifcpatch static=0 preflight_rc=3 gate=2 detail=setup: --apparatus: preload: names a library by the start of its basename (libfaketime), not by path; got 'preload:/usr/lib/aarch64-linux-gnu/faketime/libfaketime.so.1'
+EXIT ifcpatch 2
+ROW h2cli static=0 preflight_rc=3 gate=2 detail=setup: --apparatus: preload: names a library by the start of its basename (libfaketime), not by path; got 'preload:/usr/lib/aarch64-linux-gnu/faketime/libfaketime.so.1'
+EXIT h2cli 2

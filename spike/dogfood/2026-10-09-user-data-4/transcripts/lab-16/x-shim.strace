@@ -1,0 +1,10 @@
+38    openat(AT_FDCWD, "/opt/se/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so", O_RDONLY|O_CLOEXEC) = 3
+38    openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+38    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libstdc++.so.6", O_RDONLY|O_CLOEXEC) = 3
+38    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = 3
+38    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+38    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3
+38    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libdl.so.2", O_RDONLY|O_CLOEXEC) = 3
+38    openat(AT_FDCWD, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3
+38    openat(AT_FDCWD, "/dev/urandom", O_RDONLY) = 3
+38    openat(AT_FDCWD, "/etc/hostname", O_RDONLY) = 4

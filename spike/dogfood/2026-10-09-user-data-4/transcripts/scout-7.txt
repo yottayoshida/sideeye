@@ -1,0 +1,37 @@
+# Scout 7 (fresh subagent, read-only; 2026-10-09). Field: binary user data rewritten at the same path. Its report, as handed back (part 1 of 2).
+
+scout 7（バイナリのユーザーデータ）報告 1/2: 規則 1〜6 を自分で確かめた 8 件。
+
+【要判断】1 件: RetroArch（libretro/RetroArch、★14,253、規則 5 は全 issue で 8/10）は `retroarch --scan=DIR` が画面を出さずに走査して exit(0) するのは未リリースの master だけ（v1.22.2・v1.20.0 にその分岐が無い）。master を源から建てて対象にするなら表に戻せる。走査には libretro の rdb（Debian に無い）も要る。今は落としてある。
+
+表（規則 5 は rule11.sh で数えた。起票日から最初のプロジェクト側コメントまで 7 日以内の件数）:
+
+1. rootrm（ROOT）| root-project/root | 3,309 | 10-08 | 4/10（bug）| `rootrm data.root:hist`（入力は `root -b -q -e 'TFile f("data.root","RECREATE"); TH1F h("hist","",10,0,1); h.Write();'`）| data.root（UPDATE で開き、キーを消して目次を書き戻す）| C++ | conda-forge `root` 6.40.04（linux-aarch64 あり）| スレッドは未確認（暗黙の並列は既定で無効）
+2. ifcpatch（IfcOpenShell）| IfcOpenShell/IfcOpenShell | 2,843 | 10-08 | 4/10（bug ラベルが無いので全 issue）| `python -m ifcpatch -i model.ifc -r RegenerateGlobalIds`（`-o` を省くと入力へ書き戻す、`__main__.py` 42-44 行）| model.ifc（C++ の file.write。.ifczip だと改名→zip→削除）| Python+C++ | `pip install ifcopenshell ifcpatch` 0.9.0（aarch64 wheel あり）| リポ全体の主用途はライブラリと Blender アドオン。入力は ifcopenshell.api で作る。cwd に ifcpatch.log を作る
+3. h2cli -u（Hydrogen）| hydrogen-music/hydrogen | 1,342 | 10-08 | 8/10（bug。ただし直近 10 件は 2024-01〜2025-05。全 issue でも 8/10）| `h2cli -u /box/kits/Kit.h2drumkit`（`-t` を付けないと「バックアップを作って元をその場で更新」とヘルプにある）| Kit.h2drumkit（圧縮のまま書き戻す）または drumkit.xml | C++ | Debian trixie `hydrogen` 1.2.2（arm64 に /usr/bin/h2cli あり。1.2.2 にも -u がある）| 規則 4 注記（GUI アプリに付いてくる CLI）。更新前に音声エンジンを起こす。Logger が pthread を立てるのでスレッドの壁の見込み。キットは drumkit.xml と WAV を合成して作る
+4. BoilR | PhilipK/BoilR | 1,898 | 10-08 | 10/10 | `BoilR --no-ui`（README「Run as CLI」、main.rs）| Steam/userdata/<id>/config/shortcuts.vdf（`File::create`→`write_all`。fsync も改名も無い）| Rust | 配布は linux x86_64 だけなので `cargo build --features egui-ui` | 規則 4 注記。`tokio::Runtime::new()`（マルチスレッド）なのでスレッドの壁はほぼ確実。入力は Steam の userdata と Heroic の installed.json を合成する。collections（leveldb）は設定で切る
+5. CKAN | KSP-CKAN/CKAN | 2,669 | 10-01 | 6/10 | `ckan instance fake box /box/ksp 1.12.5 --set-default` で作り、`ckan compat add 1.11 --headless` で書き換え | /box/ksp/CKAN/compatible_game_versions.json（`File.Create(…WriteThrough)` で切り詰めてから書く。registry.json は TxFileManager）| C#（Mono）| Releases の ckan_1.36.4_all.deb と trixie の mono-runtime 6.12（arm64 あり）| 規則 4 注記（GUI も同梱）。Mono の実行時スレッドで壁の見込み
+6. usdupdatecrate（OpenUSD）| PixarAnimationStudios/OpenUSD | 7,521 | 10-08 | 9/10（全 issue。返事の多くは COLLABORATOR の「内部 issue に登録した」）| `usdupdatecrate --root /box/a --olderThan 0.10.0 --update --workers 1`（v26.08 から入った）| 古い版の .usdc/.usd（.usdz の中身も）。入力は `USD_WRITE_NEW_USDC_FILES_AS_VERSION=0.8.0 usdcat a.usda -o a.usdc` | Python+C++ | usd-core 26.8 に aarch64 wheel が無いので build_usd.py で源から（重い）| 冒頭に「隣の一時ファイルに書き os.replace で原本は無傷」とあるが fsync が無い。更新は spawn した子プロセスで動く（`--workers 1` で本体内になるかは未確認）ので、子が書く壁と TBB スレッドの見込み
+7. QuPath script -s | qupath/qupath | 1,458 | 09-23 | 3/10 | `QuPath script -p /box/p/project.qpproj -s -c '<groovy>'` | 画像ごとの data.qpdata と project.qpproj | Java | 配布は Linux x64 だけなので gradle で源から（JavaFX aarch64）| 規則 4 注記。JVM なのでスレッドの壁。画像は TIFF を合成、プロジェクトも script で作る
+8. LOOT --auto-sort | loot/loot | 1,789 | 10-05 | 3/10（直近 10 件が 2023-09〜2025-05）| `loot --game=<folder> --auto-sort`（docs に「並べ替え→適用→終了」とある）| 読み込み順のファイル（plugins.txt / loadorder.txt、OpenMW なら openmw.cfg）| C++/Rust | Flathub は x86_64 だけなので源から（Qt6・libloot、重い）| 規則 4 注記（GUI）。偽のゲームフォルダと ESP の見出しを合成できるかは未確認。起動時の masterlist 更新を切る必要あり。Qt のスレッド
+
+（2/2 に、見た件数と落とした名前）
+
+# Part 2 of 2, as handed back.
+
+scout 7 報告 2/2: 見た件数と落とした名前。
+
+件数: fresh.sh に当てた名前は約 150（コマンド名とリポ名の両方。重複を除くと約 130 の道具）。fresh は約 45。gh api でリポを測ったのは 33、規則 5 を数えたのは 11 リポ。表に載せたのは 8。
+部分一致の読み替えは 1 件: `hadd` は target-classes の 208 行目で `fetchaddr` に当たっただけなので、ROOT は `rootrm` と `root-project` で fresh と判断。
+壁の見込み: スレッドや子プロセスの壁の見込みが無いのは ROOT と IfcOpenShell の 2 件だけ。残りの 6 件はどれかに当たりそう（推定、probe はしていない）。
+
+落とした理由（1 理由 1 行）:
+- 既出（fresh.sh で本当に当たった）: gdal（ogr2ogr）、astropy fitscheck、samtools、pdfcpu、gpac/MP4Box、exiftool、hledger、jrnl、todo.txt、rgbds、FreeCAD、MuseScore、ezdxf、pmtiles、libarchive/bsdtar、metaflac、AtomicParsley、comictagger、jpegoptim、gifsicle、pngquant、Leanify、ECT、zstd、pigz、xz、lz4、bzip3、brotli、lrzip、squashfs、upx、7zip/p7zip、rasterio、papis、pubs、JabRef、unison、rsnapshot、rdiff-backup、rsync、bup、borg、fclones、rmlint、czkawka、jdupes、rdfind、fdupes、Watson、klog、doing、dijo、khal、todoman、beets、tageditor、rsgain、vorbiscomment、m4b-tool、cpdf、elodie、image_optim、ocrmypdf、fontforge、miller、csvq、visidata、electrum、basic-memory、LAStools、LibrePCB、meshio、llama.cpp/gguf、nbconvert、ludusavi、testdisk、sfdisk/util-linux
+- 親プロジェクトが既出: MAME imgtool（今日の chdman と同じ MAME）、OpenImageIO の oiiotool（iconvert と同じ OIIO）、htslib（samtools と同じプロジェクト）
+- 規則 1（★1,000 未満）: HDF5 994、kepubify 894、steamgrid 740、osmium-tool 705、Minecraft-Region-Fixer 622、chirp 591、dicom-anonymizer 146、Gemba/skyscraper 135（フォーク）
+- 規則 2（2026-04-09 以降の push 無し）: steamtinkerlaunch 2025-12-27、kepubify 2025-12-06、clipmenu 2026-04-03、steamgrid 2023-06
+- issue が無効: whitebox-tools、chirp
+- 規則 5: QGIS 2/10（直近 10 件のうち 8 件が起票から 2 日以内で、まだ判断できない）、papermill 0/10
+- 規則 3/4: Amulet（GUI だけ）、zk（ノートをその場で書き換えるコマンドが無い）、mu（maildir の改名だけで中身は書き換えない。主な保存先は Xapian）、MaterialX（ライブラリのスクリプト）、LMMS（`upgrade in out` は出力先に同じパスを書いた時だけその場の書き換えになる）、RetroArch（1/2 の要判断を参照）
+
+私は何も編集・作成していない（読み取りの gh api、curl、fresh.sh、rule11.sh だけ）。

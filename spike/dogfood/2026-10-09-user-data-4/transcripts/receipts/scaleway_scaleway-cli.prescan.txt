@@ -1,0 +1,441 @@
+== novelty pre-scan: scaleway/scaleway-cli
+== date: 2026-10-09T00:28:38Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          49 hit(s) (all listed)
+      #4077 open 2024-08-23 autocomplete crash
+      #2667 open 2022-12-05 Fix dev mode to skip sending crash reports to sentry
+      #4661 open 2025-04-10 scw config set crashes if there is no config.yaml present
+      #5910 merged 2026-07-28 fix(shell): fix completion crash
+      #5716 closed 2026-06-17 fix(instance): avoid index out of range in server type deprecation warning
+      #6135 merged 2026-09-07 chore(deps): bump github.com/moby/moby/client from 0.5.1 to 0.6.0
+      #5930 merged 2026-08-01 chore(deps-dev): bump vite from 8.1.2 to 8.1.5 in /wasm
+      #5766 merged 2026-07-01 chore(deps-dev): bump vitest and @vitest/browser in /wasm
+      #5437 merged 2026-03-31 fix(instance): prevent crash when server-type is only in PCU
+      #5844 merged 2026-07-17 chore(deps): bump github.com/moby/buildkit from 0.31.1 to 0.31.2
+      #4967 closed 2025-09-02 Segmentation fault running CLI
+      #5565 merged 2026-05-12 chore: add support for contextcheck
+      #5427 closed 2026-03-25 List server-type crashes with invalid memory address or nil pointer dereference on some AZ
+      #5729 merged 2026-06-19 chore(deps): bump github.com/moby/moby/client from 0.4.1 to 0.5.0
+      #5278 closed 2026-01-14 scw baremetal offer list
+      #4690 merged 2025-04-29 fix(rdb): prevent crash when updating user without password
+      #3600 merged 2024-01-19 fix(vpc):better rendering of subnet in private network
+      #4684 closed 2025-04-22 rdb: crash with update user when providing no password and using generate-password=false
+      #4800 merged 2025-06-11 chore(deps-dev): bump prettier from 3.0.3 to 3.5.3 in /wasm
+      #4801 merged 2025-06-11 chore(deps-dev): bump typescript from 5.0.4 to 5.8.3 in /wasm
+  corrupt        5 hit(s) (all listed)
+      #6393 open 2026-10-08 feat: refactor support for password generation
+      #5531 merged 2026-04-27 feat: add support for running the CLI as a MCP server
+      #4967 closed 2025-09-02 Segmentation fault running CLI
+      #2969 merged 2023-03-29 chore(deps): bump github.com/docker/docker from 23.0.1+incompatible to 23.0.2+incompatible
+      #559 closed 2019-08-02 segfault using binary scw-linux-amd64
+  corruption     8 hit(s) (all listed)
+      #6085 merged 2026-08-31 chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.107.3 to 1.109.1
+      #6082 merged 2026-08-31 chore(deps): bump github.com/aws/aws-sdk-go-v2 from 1.43.7 to 1.45.1
+      #5293 closed 2026-01-22 chore(deps): bump github.com/moby/buildkit from 0.26.3 to 0.27.0
+      #5038 merged 2025-10-08 chore(deps): bump github.com/moby/buildkit from 0.25.0 to 0.25.1
+      #3632 closed 2024-01-31 chore(deps): bump github.com/moby/buildkit from 0.11.6 to 0.12.5
+      #3522 closed 2023-12-01 chore(deps): bump github.com/moby/buildkit from 0.11.6 to 0.12.4
+      #3442 closed 2023-10-20 chore(deps): bump github.com/moby/buildkit from 0.11.6 to 0.12.3
+      #2969 merged 2023-03-29 chore(deps): bump github.com/docker/docker from 23.0.1+incompatible to 23.0.2+incompatible
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6283 merged 2026-09-25 chore(deps): bump github.com/containerd/containerd/v2 from 2.3.5 to 2.3.6
+      #6319 merged 2026-10-01 chore(deps-dev): bump prettier from 3.9.6 to 3.9.9 in /wasm
+      #6284 merged 2026-09-28 chore(deps): bump github.com/aws/smithy-go from 1.28.1 to 1.28.2
+      #6317 merged 2026-10-01 chore(deps-dev): bump vite from 8.2.2 to 8.3.0 in /wasm
+      #6098 merged 2026-09-01 chore(deps): bump rvben/rumdl from 0.2.54 to 0.2.62
+      #6000 merged 2026-08-13 chore(deps): bump github.com/buildpacks/pack from 0.40.8 to 0.40.9
+      #6170 merged 2026-09-09 chore(deps): bump github.com/containerd/containerd/v2 from 2.3.4 to 2.3.5
+      #6027 merged 2026-08-25 chore(deps): bump github.com/aws/smithy-go from 1.27.8 to 1.27.9
+      #6083 merged 2026-08-31 chore(deps): bump github.com/aws/smithy-go from 1.27.9 to 1.28.1
+      #6011 merged 2026-08-18 chore(deps): bump github.com/aws/smithy-go from 1.27.7 to 1.27.8
+      #6135 merged 2026-09-07 chore(deps): bump github.com/moby/moby/client from 0.5.1 to 0.6.0
+      #6134 merged 2026-09-07 chore(deps): bump github.com/moby/buildkit from 0.32.2 to 0.33.0
+      #6214 merged 2026-09-15 chore(deps): bump github.com/modelcontextprotocol/go-sdk from 1.7.0 to 1.8.0
+      #5989 merged 2026-08-11 chore(deps): bump github.com/aws/smithy-go from 1.27.6 to 1.27.7
+      #5929 merged 2026-08-01 chore(deps): bump crate-ci/typos from 1.47.1 to 1.48.0
+      #5948 merged 2026-08-04 chore(deps): bump github.com/aws/smithy-go from 1.27.5 to 1.27.6
+      #6094 merged 2026-09-01 chore(deps): bump codecov/codecov-action from 6.0.1 to 7.0.0
+      #5831 merged 2026-07-14 chore(deps): bump github.com/buildpacks/pack from 0.40.7 to 0.40.8
+      #5906 merged 2026-07-28 chore(deps): bump github.com/aws/smithy-go from 1.27.4 to 1.27.5
+      #6105 merged 2026-09-02 chore(deps): bump google.golang.org/grpc from 1.82.1 to 1.83.1
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6195 merged 2026-09-14 chore(deps): bump golang.org/x/text from 0.41.0 to 0.42.0
+      #6283 merged 2026-09-25 chore(deps): bump github.com/containerd/containerd/v2 from 2.3.5 to 2.3.6
+      #6319 merged 2026-10-01 chore(deps-dev): bump prettier from 3.9.6 to 3.9.9 in /wasm
+      #6284 merged 2026-09-28 chore(deps): bump github.com/aws/smithy-go from 1.28.1 to 1.28.2
+      #6317 merged 2026-10-01 chore(deps-dev): bump vite from 8.2.2 to 8.3.0 in /wasm
+      #6098 merged 2026-09-01 chore(deps): bump rvben/rumdl from 0.2.54 to 0.2.62
+      #6000 merged 2026-08-13 chore(deps): bump github.com/buildpacks/pack from 0.40.8 to 0.40.9
+      #6170 merged 2026-09-09 chore(deps): bump github.com/containerd/containerd/v2 from 2.3.4 to 2.3.5
+      #6027 merged 2026-08-25 chore(deps): bump github.com/aws/smithy-go from 1.27.8 to 1.27.9
+      #6083 merged 2026-08-31 chore(deps): bump github.com/aws/smithy-go from 1.27.9 to 1.28.1
+      #6011 merged 2026-08-18 chore(deps): bump github.com/aws/smithy-go from 1.27.7 to 1.27.8
+      #6135 merged 2026-09-07 chore(deps): bump github.com/moby/moby/client from 0.5.1 to 0.6.0
+      #6134 merged 2026-09-07 chore(deps): bump github.com/moby/buildkit from 0.32.2 to 0.33.0
+      #6009 merged 2026-08-18 chore(deps): bump github.com/stretchr/testify from 1.11.1 to 1.12.0
+      #6214 merged 2026-09-15 chore(deps): bump github.com/modelcontextprotocol/go-sdk from 1.7.0 to 1.8.0
+      #5989 merged 2026-08-11 chore(deps): bump github.com/aws/smithy-go from 1.27.6 to 1.27.7
+      #5929 merged 2026-08-01 chore(deps): bump crate-ci/typos from 1.47.1 to 1.48.0
+      #5948 merged 2026-08-04 chore(deps): bump github.com/aws/smithy-go from 1.27.5 to 1.27.6
+      #6094 merged 2026-09-01 chore(deps): bump codecov/codecov-action from 6.0.1 to 7.0.0
+      #5831 merged 2026-07-14 chore(deps): bump github.com/buildpacks/pack from 0.40.7 to 0.40.8
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #6392 merged 2026-10-08 fix(alias): fix panic with empty aliases
+      #6374 open 2026-10-07 feat: add support for tui
+      #6359 open 2026-10-06 fix(core): escape pipes in generated argument tables
+      #5666 open 2026-06-09 Improve markdown format in the documentation
+      #6182 closed 2026-09-11 nightly(redis): version 8.4.0 not found + empty settings
+      #6393 open 2026-10-08 feat: refactor support for password generation
+      #3997 open 2024-07-23 fix offer list unmarshaling
+      #6193 open 2026-09-12 feat: add support for `scw docs`
+      #6351 merged 2026-10-05 chore(iam): remove unused  column from api-key listing
+      #5866 merged 2026-07-21 feat(args): add empty struct syntax
+      #6046 merged 2026-08-27 fix(mcp): fix empty server-type list in mcp and encode return value as json instead of a string
+      #6298 merged 2026-09-28 feat(mongodb): migrate CLI namespace from v1alpha1 to stable v1 API
+      #6171 closed 2026-09-10 fix(core): validate YAML golden output
+      #5862 merged 2026-07-20 feat(search): add sort/pagination and empty query possible
+      #5842 closed 2026-07-16 feat(permission): allow resource id to be empty
+      #6383 merged 2026-10-07 feat: add support for default version for redis create and autocomplete
+      #6284 merged 2026-09-28 chore(deps): bump github.com/aws/smithy-go from 1.28.1 to 1.28.2
+      #6145 closed 2026-09-08 fix(version): report build date and commit from embedded VCS stamps
+      #6027 merged 2026-08-25 chore(deps): bump github.com/aws/smithy-go from 1.27.8 to 1.27.9
+      #5699 merged 2026-06-15 fix(searchdb): add ignore_empty to node fields to fix backward compatibility
+  atomic         6 hit(s) (all listed)
+      #5767 merged 2026-07-01 chore(deps): bump rvben/rumdl from 0.2.10 to 0.2.27
+      #5833 merged 2026-07-15 chore(deps): bump github.com/getsentry/sentry-go from 0.47.0 to 0.48.0
+      #3463 merged 2023-10-27 chore(deps): bump github.com/docker/docker from 24.0.6+incompatible to 24.0.7+incompatible
+      #3896 merged 2024-06-26 chore(deps): bump github.com/docker/docker from 27.0.0+incompatible to 27.0.1+incompatible
+      #2969 merged 2023-03-29 chore(deps): bump github.com/docker/docker from 23.0.1+incompatible to 23.0.2+incompatible
+      #2807 merged 2023-02-24 chore(deps): bump github.com/chzyer/readline from 0.0.0-20180603132655-2972be24d48e to 1.5.1
+  atomically     3 hit(s) (all listed)
+      #3463 merged 2023-10-27 chore(deps): bump github.com/docker/docker from 24.0.6+incompatible to 24.0.7+incompatible
+      #3896 merged 2024-06-26 chore(deps): bump github.com/docker/docker from 27.0.0+incompatible to 27.0.1+incompatible
+      #2969 merged 2023-03-29 chore(deps): bump github.com/docker/docker from 23.0.1+incompatible to 23.0.2+incompatible
+  interrupted    0 hit(s)
+  interrupt      9 hit(s) (all listed)
+      #6321 closed 2026-10-01 feat(permission): add action interrupt
+      #6393 open 2026-10-08 feat: refactor support for password generation
+      #6319 merged 2026-10-01 chore(deps-dev): bump prettier from 3.9.6 to 3.9.9 in /wasm
+      #6283 merged 2026-09-25 chore(deps): bump github.com/containerd/containerd/v2 from 2.3.5 to 2.3.6
+      #5556 merged 2026-05-07 chore: add support for containedctx
+      #4487 merged 2025-02-05 chore(deps): bump github.com/charmbracelet/bubbletea from 1.2.4 to 1.3.0
+      #4613 closed 2025-03-26 chore(deps): bump github.com/docker/docker from 27.5.1+incompatible to 28.0.4+incompatible
+      #4599 closed 2025-03-20 chore(deps): bump github.com/docker/docker from 27.5.1+incompatible to 28.0.2+incompatible
+      #2807 merged 2023-02-24 chore(deps): bump github.com/chzyer/readline from 0.0.0-20180603132655-2972be24d48e to 1.5.1
+  sigkill        0 hit(s)
+  sigint         3 hit(s) (all listed)
+      #6135 merged 2026-09-07 chore(deps): bump github.com/moby/moby/client from 0.5.1 to 0.6.0
+      #4487 merged 2025-02-05 chore(deps): bump github.com/charmbracelet/bubbletea from 1.2.4 to 1.3.0
+      #4038 merged 2024-08-14 chore(deps): bump github.com/docker/docker from 27.1.1+incompatible to 27.1.2+incompatible
+  ctrl-c         12 hit(s) (all listed)
+      #6193 open 2026-09-12 feat: add support for `scw docs`
+      #5477 closed 2026-04-11 scw login gives Invalid App to redirect
+      #5556 merged 2026-05-07 chore: add support for containedctx
+      #5250 merged 2026-01-01 chore(deps-dev): bump vitest and @vitest/browser in /wasm
+      #4487 merged 2025-02-05 chore(deps): bump github.com/charmbracelet/bubbletea from 1.2.4 to 1.3.0
+      #3896 merged 2024-06-26 chore(deps): bump github.com/docker/docker from 27.0.0+incompatible to 27.0.1+incompatible
+      #3872 merged 2024-06-13 chore(deps): bump github.com/docker/docker from 26.1.4+incompatible to 27.0.0+incompatible
+      #3716 closed 2024-03-19 chore(deps): bump github.com/moby/buildkit from 0.11.6 to 0.13.1
+      #2807 merged 2023-02-24 chore(deps): bump github.com/chzyer/readline from 0.0.0-20180603132655-2972be24d48e to 1.5.1
+      #2433 merged 2022-08-02 feat: add shell mode
+      #642 merged 2020-01-16 fix: better handling of Ctrl-C and Ctrl-D in Readline
+      #498 closed 2018-04-17 Un-killable command Ctrl-C ineffective
+  power          32 hit(s) (all listed)
+      #5933 merged 2026-08-01 chore(deps-dev): bump prettier from 3.9.4 to 3.9.6 in /wasm
+      #4999 merged 2025-09-12 chore: add explicit permission on release workflow
+      #4247 merged 2024-10-31 fix: add a missing regular expression anchor
+      #3745 merged 2024-04-03 chore(deps): bump codecov/codecov-action from 2 to 4
+      #2389 merged 2022-07-01 feat: update generated cli
+      #1905 closed 2021-05-11 Command for restoring an instance using a snapshot
+      #3000 merged 2023-04-05 chore(deps): bump github.com/docker/docker from 23.0.2+incompatible to 23.0.3+incompatible
+      #2538 merged 2022-10-05 log: more accurate status Instance API
+      #2328 merged 2022-05-17 fix(account): remove GetLogin
+      #2335 merged 2022-06-06 feat(function): add support for node18
+      #2244 merged 2022-04-06 feat(redis): add support for v1alpha1
+      #2394 merged 2022-07-04 docs(iam): specify fields limits
+      #2336 merged 2022-06-06 docs: add documentation strings
+      #2323 merged 2022-05-10 feat(instance): add support for GPU-3070-S
+      #2331 merged 2022-06-02 feat(baremetal): add support for install in the create command
+      #2298 merged 2022-05-02 feat(instance): add support for pro2
+      #2417 merged 2022-07-08 chore: bump sdk
+      #2349 merged 2022-06-14 feat(instance): add support for unified in the backup command
+      #2401 merged 2022-07-06 feat: update generated cli
+      #2379 merged 2022-06-29 chore(deps): bump github.com/hashicorp/go-version from 1.5.0 to 1.6.0
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           24 hit(s) (all listed)
+      #4017 open 2024-07-29 Fix unity in list-disks
+      #4015 open 2024-07-29 Improve ux for raid display
+      #950 open 2020-04-24 Add support for local cache in the CLI
+      #5697 open 2026-06-15 partioning unit confusion
+      #923 open 2020-04-24 Reorder usage in help
+      #6095 merged 2026-09-01 chore(deps-dev): bump vitest and @vitest/browser in /wasm
+      #4976 merged 2025-09-04 feat(audit_trail): add instances resources for disk management
+      #5489 merged 2026-04-17 chore(deps): bump github.com/go-git/go-git/v5 from 5.17.1 to 5.18.0
+      #5763 merged 2026-07-01 chore(deps): bump github/codeql-action/analyze from 4.36.1 to 4.36.2
+      #5761 merged 2026-07-01 chore(deps): bump github/codeql-action/init from 4.36.1 to 4.36.2
+      #5479 closed 2026-04-13 fix(marshalling): handle structs human marshalling
+      #1128 closed 2020-06-25 Add a command to fetch log from a database
+      #3992 closed 2024-07-23 Make server-id positional
+      #4246 closed 2024-10-31 chore(deps): bump github.com/moby/buildkit from 0.13.2 to 0.17.0
+      #3793 merged 2024-04-26 chore(deps): bump github.com/moby/buildkit from 0.13.1 to 0.13.2
+      #3717 closed 2024-03-20 chore(deps): bump github.com/docker/docker from 25.0.4+incompatible to 25.0.5+incompatible
+      #3604 merged 2024-01-22 chore(deps): bump github.com/docker/docker from 24.0.7+incompatible to 25.0.0+incompatible
+      #499 closed 2018-04-17 Sentry Error?
+      #757 merged 2020-03-10 feat(k8s): add kubeconfig commands
+      #133 merged 2015-08-25 Syncing cache to disk after server creation when running  in a non-de…
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3798 open 2024-05-02 add mass import in scw dns
+      #5638 open 2026-06-04 feat(cockpit): add alloy config snippet generation for metrics, logs and traces
+      #5476 open 2026-04-10 chore: add support for chocolatey in goreleaser
+      #950 open 2020-04-24 Add support for local cache in the CLI
+      #5296 open 2026-01-28 feat(vpc-gw): add interactive question to delete the IP when deleting gw
+      #6008 merged 2026-08-17 feat(object): add support for bucket CORS rules management
+      #5985 merged 2026-08-10 feat(object): add support for bucket policy management
+      #6010 merged 2026-08-18 chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.107.1 to 1.107.2
+      #6011 merged 2026-08-18 chore(deps): bump github.com/aws/smithy-go from 1.27.7 to 1.27.8
+      #6012 merged 2026-08-18 chore(deps): bump github.com/aws/aws-sdk-go-v2 from 1.43.5 to 1.43.6
+      #6009 merged 2026-08-18 chore(deps): bump github.com/stretchr/testify from 1.11.1 to 1.12.0
+      #6007 merged 2026-08-17 chore(deps): bump golang.org/x/crypto from 0.54.0 to 0.55.0
+      #6006 merged 2026-08-17 chore(deps): bump golang.org/x/text from 0.40.0 to 0.41.0
+      #6013 closed 2026-08-18 feat(object): add support for object operations
+      #5957 merged 2026-08-04 feat(autoscaling): improve ux of autoscaling commands
+      #5772 closed 2026-07-01 fix(registry): use scw.eu endpoint for it-mil region login
+      #6004 merged 2026-08-14 chore(container): rename test file, export parsePlatforms
+      #6002 merged 2026-08-14 chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.107.0 to 1.107.1
+      #6003 closed 2026-08-14 chore(deps): bump github.com/aws/aws-sdk-go-v2 from 1.43.4 to 1.43.5
+      #6001 closed 2026-08-13 feat(audit_trail): add action name field on event, for allow giving more...
+  incomplete     7 hit(s) (all listed)
+      #6193 open 2026-09-12 feat: add support for `scw docs`
+      #4160 closed 2024-10-03 Add support for managing lifecycle of objects from the cli
+      #5660 merged 2026-06-09 chore(deps): bump golang.org/x/crypto from 0.52.0 to 0.53.0
+      #5547 merged 2026-05-01 chore(deps-dev): bump prettier from 3.8.1 to 3.8.3 in /wasm
+      #2875 merged 2023-03-16 fix(secret-manager): incomplete API descriptions
+      #2182 closed 2022-03-11 Add a validation command for configuration file
+      #2902 merged 2023-03-22 chore(deps): bump github.com/scaleway/scaleway-sdk-go from 1.0.0-beta.14.0.20230320173444-ec31c4c2c56f to 1.0.0-beta.15
+  dataloss       0 hit(s)
+  recover        6 hit(s) (all listed)
+      #6084 merged 2026-08-31 chore(deps): bump github.com/getsentry/sentry-go from 0.48.0 to 0.49.0
+      #6145 closed 2026-09-08 fix(version): report build date and commit from embedded VCS stamps
+      #5293 closed 2026-01-22 chore(deps): bump github.com/moby/buildkit from 0.26.3 to 0.27.0
+      #4998 merged 2025-09-12 chore(deps): bump github.com/charmbracelet/bubbletea from 1.3.8 to 1.3.9
+      #4123 merged 2024-09-12 chore(deps): bump github.com/charmbracelet/bubbletea from 1.1.0 to 1.1.1
+      #394 merged 2016-08-23 Makefile fix go vet crash
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         7 hit(s) (all listed)
+      #6193 open 2026-09-12 feat: add support for `scw docs`
+      #923 open 2020-04-24 Reorder usage in help
+      #5917 merged 2026-07-29 chore(deps): bump github.com/modelcontextprotocol/go-sdk from 1.6.1 to 1.7.0
+      #4878 merged 2025-07-08 chore(deps): bump github.com/charmbracelet/bubbletea from 1.3.5 to 1.3.6
+      #4045 merged 2024-08-19 chore(deps): bump github.com/charmbracelet/bubbletea from 0.26.6 to 0.27.0
+      #4114 merged 2024-09-10 chore(deps): bump github.com/docker/docker from 27.2.0+incompatible to 27.2.1+incompatible
+      #484 closed 2017-12-19 Billing API
+  half-written   0 hit(s)
+  wipe           0 hit(s)
+  wipes          0 hit(s)
+  erase          3 hit(s) (all listed)
+      #4269 merged 2024-11-11 chore(deps): bump github.com/charmbracelet/bubbletea from 1.2.0 to 1.2.1
+      #2807 merged 2023-02-24 chore(deps): bump github.com/chzyer/readline from 0.0.0-20180603132655-2972be24d48e to 1.5.1
+      #697 merged 2020-02-13 fix: properly handle maps in unmarshaller
+  erasing        0 hit(s)
+  erased         1 hit(s) (all listed)
+      #697 merged 2020-02-13 fix: properly handle maps in unmarshaller
+  destroy        6 hit(s) (all listed)
+      #3502 open 2023-11-21 Add a command that destroy a project and all its underlying ressources
+      #5197 merged 2025-12-01 chore(deps-dev): bump vitest and @vitest/browser in /wasm
+      #2487 merged 2022-09-02 feat(config): add destroy command
+      #2165 closed 2022-03-03 Add a destroy config command
+      #616 merged 2020-01-07 fix(args): rework slices
+      #474 closed 2017-08-30 IPv4 remove from account?
+  destroys       0 hit(s)
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #4857 open 2025-06-23 Always ask confirmation before overwriting a configuration
+      #3595 open 2024-01-12 Add the possibility to handle all positional arguments together
+      #4673 closed 2025-04-16 scw login does not take default_organization into account
+      #6385 merged 2026-10-08 chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.113.4 to 1.114.0
+      #6318 merged 2026-10-01 chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.113.2 to 1.113.3
+      #6327 merged 2026-10-02 chore(deps): bump github.com/aws/aws-sdk-go-v2 from 1.47.0 to 1.47.1
+      #6301 merged 2026-09-29 chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.113.1 to 1.113.2
+      #6159 merged 2026-09-09 chore(deps): bump golang.org/x/sync from 0.22.0 to 0.23.0
+      #6092 merged 2026-09-01 chore(deps): bump golang from 1.26-alpine3.23 to 1.27-alpine3.23
+      #6277 merged 2026-09-25 chore(deps): bump github.com/dustin/go-humanize from 1.0.1 to 1.1.0
+      #6213 merged 2026-09-15 chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.113.0 to 1.113.1
+      #6195 merged 2026-09-14 chore(deps): bump golang.org/x/text from 0.41.0 to 0.42.0
+      #6198 merged 2026-09-14 chore(deps): bump github.com/aws/aws-sdk-go-v2 from 1.46.0 to 1.47.0
+      #6136 merged 2026-09-07 chore(deps): bump golang.org/x/crypto from 0.55.0 to 0.56.0
+      #6384 merged 2026-10-08 chore(deps): bump github.com/moby/buildkit from 0.33.0 to 0.33.1
+      #6144 merged 2026-09-08 chore(deps): bump github.com/aws/aws-sdk-go-v2 from 1.45.1 to 1.46.0
+      #6006 merged 2026-08-17 chore(deps): bump golang.org/x/text from 0.40.0 to 0.41.0
+      #6127 merged 2026-09-04 chore(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.109.1 to 1.110.0
+      #6099 merged 2026-09-01 chore(deps): bump actions/setup-go from 6.5.0 to 7.0.0
+      #5756 merged 2026-06-29 feat(inference): add support for listing serverless models
+  clobber        4 hit(s) (all listed)
+      #4131 merged 2024-09-18 chore(deps-dev): bump vite from 4.5.3 to 4.5.5 in /wasm
+      #4164 merged 2024-10-04 chore(deps): bump rollup from 3.29.4 to 3.29.5 in /wasm
+      #3544 merged 2023-12-18 chore(deps): bump golang.org/x/crypto from 0.14.0 to 0.17.0
+      #3120 merged 2023-05-11 chore(deps): bump github.com/cloudflare/circl from 1.3.2 to 1.3.3
+  blank          85 hit(s) (all listed)
+      #5666 open 2026-06-09 Improve markdown format in the documentation
+      #6180 closed 2026-09-10 fix(docgen): surround generated command doc headings with blank lines
+      #6316 open 2026-09-30 feat: add support for show secret in scw config info
+      #6193 open 2026-09-12 feat: add support for `scw docs`
+      #6325 merged 2026-10-01 chore(annotations): add SRN support
+      #6313 merged 2026-09-30 fix(instance): handle stopped_in_place
+      #5296 open 2026-01-28 feat(vpc-gw): add interactive question to delete the IP when deleting gw
+      #6330 merged 2026-10-02 feat(k8s): add support for loading cloudinit using a local file
+      #6192 merged 2026-09-12 Fix goreleaser
+      #6045 closed 2026-08-27 ci: add support for a prepare step before using the cache
+      #6038 merged 2026-08-26 chore: remove documentation generation for mkdocs and deployment work…
+      #6046 merged 2026-08-27 fix(mcp): fix empty server-type list in mcp and encode return value as json instead of a string
+      #5940 merged 2026-08-03 chore: add support for .gitattributes
+      #5960 closed 2026-08-06 chore: remove docker headers from cassettes
+      #4483 closed 2025-02-03 ci: add support to test all cassettes
+      #5958 merged 2026-08-05 chore: migrate import path to moby
+      #5910 merged 2026-07-28 fix(shell): fix completion crash
+      #5902 merged 2026-07-27 chore: align table
+      #5753 merged 2026-06-26 chore: add fixes for winget
+      #6107 merged 2026-09-02 chore: migrate to TypeFor
+  unreadable     1 hit(s) (all listed)
+      #4483 closed 2025-02-03 ci: add support to test all cassettes
+  garbage        8 hit(s) (all listed)
+      #4768 closed 2025-05-29 chore(deps): bump github.com/docker/docker from 27.5.1+incompatible to 28.2.1+incompatible
+      #4418 merged 2025-01-14 chore(deps): bump github.com/docker/docker from 27.4.1+incompatible to 27.5.0+incompatible
+      #4307 closed 2024-11-27 chore(deps): bump github.com/moby/buildkit from 0.13.2 to 0.18.0
+      #4246 closed 2024-10-31 chore(deps): bump github.com/moby/buildkit from 0.13.2 to 0.17.0
+      #4346 merged 2024-12-10 chore(deps): bump github.com/docker/docker from 27.3.1+incompatible to 27.4.0+incompatible
+      #3551 merged 2023-12-19 chore(deps): bump github.com/containerd/containerd from 1.7.2 to 1.7.11
+      #3304 merged 2023-07-25 chore(deps): bump github.com/docker/docker from 24.0.4+incompatible to 24.0.5+incompatible
+      #395 closed 2016-08-29 `scw cp` error
+  mangled        1 hit(s) (all listed)
+      #580 closed 2019-10-26 Bug: scw exec wrongly appends a \r char to the output
+  contents       15 hit(s) (all listed)
+      #6384 merged 2026-10-08 chore(deps): bump github.com/moby/buildkit from 0.33.0 to 0.33.1
+      #6045 closed 2026-08-27 ci: add support for a prepare step before using the cache
+      #5693 closed 2026-06-15 docs(docgen): remove ToC from doc and doc template
+      #5692 closed 2026-06-15 docs(docgen): remove ToC from doc template
+      #5576 merged 2026-05-19 chore: add support for oidc in all release workflows
+      #5923 merged 2026-07-30 chore(deps): bump github.com/moby/buildkit from 0.31.2 to 0.32.0
+      #5844 merged 2026-07-17 chore(deps): bump github.com/moby/buildkit from 0.31.1 to 0.31.2
+      #5773 merged 2026-07-01 chore: remove toc from documentation page
+      #5571 merged 2026-05-15 fix: migrate to oidc for wasm release of the CLI
+      #5717 merged 2026-06-18 chore(deps): bump github.com/moby/buildkit from 0.30.0 to 0.31.0
+      #4999 merged 2025-09-12 chore: add explicit permission on release workflow
+      #3694 merged 2024-03-04 chore(deps): bump github.com/stretchr/testify from 1.8.4 to 1.9.0
+      #222 merged 2015-10-18 Add _cs
+      #212 closed 2015-10-16 Reduce resolver matching conflicts on 'create' and 'run'
+      #223 closed 2015-10-19 Improve `_cs` output
+  in-place       28 hit(s) (all listed)
+      #6313 merged 2026-09-30 fix(instance): handle stopped_in_place
+      #6153 open 2026-09-08 instance security-group create -o json wraps the resource in a `security_group` key, unlike `get` and `list`
+      #6158 open 2026-09-08 test(instance): cover security-group create output format
+      #6113 closed 2026-09-02 scw instance server list does not accept states with spaces namely `stopped in place`
+      #5877 merged 2026-07-22 chore(deps): bump google.golang.org/grpc from 1.81.1 to 1.82.1
+      #5893 merged 2026-07-24 chore(deps): bump github.com/moby/go-archive from 0.2.0 to 0.2.1
+      #5694 merged 2026-06-15 chore: fix identifier for OCI in mcp release
+      #5554 merged 2026-05-06 fix(mcp): fix support for streamable http
+      #5294 merged 2026-01-23 feat(datawarehouse): add datawarehouse support
+      #5113 merged 2025-11-01 chore(deps): bump github/codeql-action from 3 to 4
+      #3049 merged 2023-04-20 feat: check for api key expiration date
+      #3222 merged 2023-06-19 chore(deps): bump github.com/getsentry/sentry-go from 0.20.0 to 0.22.0
+      #3304 merged 2023-07-25 chore(deps): bump github.com/docker/docker from 24.0.4+incompatible to 24.0.5+incompatible
+      #3018 merged 2023-04-11 feat(config): add validate command
+      #2931 merged 2023-03-24 feat(billing): add billing command
+      #1229 closed 2020-07-15 Add sections in human marshall for instance server get 
+      #1591 closed 2020-12-07 Arm instances still mentioned in help and documentation
+      #861 merged 2020-04-11 fix(instance): add ID suffix to organization field
+      #2211 closed 2022-03-24 Kubeconfig generated with wrong permissions
+      #775 merged 2020-03-14 feat(k8s): add version commands
+  unclean        1 hit(s) (all listed)
+      #3716 closed 2024-03-19 chore(deps): bump github.com/moby/buildkit from 0.11.6 to 0.13.1
+  shutdown       12 hit(s) (all listed)
+      #5565 merged 2026-05-12 chore: add support for contextcheck
+      #5534 merged 2026-04-29 chore(deps): bump github.com/getsentry/sentry-go from 0.46.0 to 0.46.1
+      #5554 merged 2026-05-06 fix(mcp): fix support for streamable http
+      #3361 closed 2023-09-14 chore(deps): bump github.com/getsentry/sentry-go from 0.20.0 to 0.24.1
+      #4142 merged 2024-09-23 chore(deps): bump github.com/docker/docker from 27.3.0+incompatible to 27.3.1+incompatible
+      #3716 closed 2024-03-19 chore(deps): bump github.com/moby/buildkit from 0.11.6 to 0.13.1
+      #3632 closed 2024-01-31 chore(deps): bump github.com/moby/buildkit from 0.11.6 to 0.12.5
+      #3522 closed 2023-12-01 chore(deps): bump github.com/moby/buildkit from 0.11.6 to 0.12.4
+      #3442 closed 2023-10-20 chore(deps): bump github.com/moby/buildkit from 0.11.6 to 0.12.3
+      #646 merged 2020-01-17 feat(instance): add more tests and fix them
+      #528 closed 2018-11-12 cannot execute 'exec': Failed to run the command: server is not ready, try again later
+      #153 closed 2015-09-02 Test secondary volumes
+  reboot         13 hit(s) (all listed)
+      #5360 merged 2026-03-01 docs(instance): clarify how to update server volumes
+      #4772 closed 2025-06-02 chore(deps): bump github.com/docker/docker from 27.5.1+incompatible to 28.2.2+incompatible
+      #4532 closed 2025-02-20 chore(deps): bump github.com/docker/docker from 27.5.1+incompatible to 28.0.0+incompatible
+      #3992 closed 2024-07-23 Make server-id positional
+      #1229 closed 2020-07-15 Add sections in human marshall for instance server get 
+      #768 merged 2020-03-12 feat(baremetal): add create server with type
+      #609 closed 2019-12-26 [wip] feat: add a command to self report common CLI anomalies
+      #813 merged 2020-03-26 cli: check that all command are localized with QA test
+      #383 closed 2016-07-21 Please allow setting the bootscript after create/run
+      #554 closed 2019-05-28 inspect: Automatically detect region unless explicitly specified
+      #537 closed 2019-01-28 `scw cp` hangs and does nothing
+      #954 closed 2020-04-24 Batch delete in cli
+      #153 closed 2015-09-02 Test secondary volumes
+  disk+full      6 hit(s) (all listed)
+      #6095 merged 2026-09-01 chore(deps-dev): bump vitest and @vitest/browser in /wasm
+      #5489 merged 2026-04-17 chore(deps): bump github.com/go-git/go-git/v5 from 5.17.1 to 5.18.0
+      #5763 merged 2026-07-01 chore(deps): bump github/codeql-action/analyze from 4.36.1 to 4.36.2
+      #5761 merged 2026-07-01 chore(deps): bump github/codeql-action/init from 4.36.1 to 4.36.2
+      #3717 closed 2024-03-20 chore(deps): bump github.com/docker/docker from 25.0.4+incompatible to 25.0.5+incompatible
+      #3604 merged 2024-01-22 chore(deps): bump github.com/docker/docker from 24.0.7+incompatible to 25.0.0+incompatible
+  data+loss      3 hit(s) (all listed)
+      #5570 merged 2026-05-14 chore(deps): bump github.com/moby/buildkit from 0.29.0 to 0.30.0
+      #998 merged 2020-05-04 feat(instance): add terminate command
+      #432 closed 2016-11-28 scw inspect  ERRO[0000] unable to resolve ...   FATA[0000]
+  partial+write  7 hit(s) (all listed)
+      #5769 merged 2026-07-01 chore(Dockerfile): create a default non-root user
+      #5576 merged 2026-05-19 chore: add support for oidc in all release workflows
+      #5571 merged 2026-05-15 fix: migrate to oidc for wasm release of the CLI
+      #5531 merged 2026-04-27 feat: add support for running the CLI as a MCP server
+      #5530 merged 2026-04-27 fix: redirect help content to stdout
+      #5242 closed 2025-12-19 Add flag to preserve Serverless Containers containers and namespaces environment variables during an update
+      #3950 merged 2024-07-03 fix(test): delete suffix golden
+  crash+safe     2 hit(s) (all listed)
+      #5910 merged 2026-07-28 fix(shell): fix completion crash
+      #3896 merged 2024-06-26 chore(deps): bump github.com/docker/docker from 27.0.0+incompatible to 27.0.1+incompatible
+  atomic+write   4 hit(s) (all listed)
+      #5767 merged 2026-07-01 chore(deps): bump rvben/rumdl from 0.2.10 to 0.2.27
+      #3463 merged 2023-10-27 chore(deps): bump github.com/docker/docker from 24.0.6+incompatible to 24.0.7+incompatible
+      #3896 merged 2024-06-26 chore(deps): bump github.com/docker/docker from 27.0.0+incompatible to 27.0.1+incompatible
+      #2969 merged 2023-03-29 chore(deps): bump github.com/docker/docker from 23.0.1+incompatible to 23.0.2+incompatible
+  lock+file      6 hit(s) (all listed)
+      #6313 merged 2026-09-30 fix(instance): handle stopped_in_place
+      #6138 merged 2026-09-07 chore(core): setup mise for tooling and task running
+      #6192 merged 2026-09-12 Fix goreleaser
+      #5923 merged 2026-07-30 chore(deps): bump github.com/moby/buildkit from 0.31.2 to 0.32.0
+      #5542 closed 2026-05-01 chore(deps): bump pnpm/action-setup from 5.0.0 to 6.0.4
+      #4164 merged 2024-10-04 chore(deps): bump rollup from 3.29.4 to 3.29.5 in /wasm
+  write+failure  6 hit(s) (all listed)
+      #6393 open 2026-10-08 feat: refactor support for password generation
+      #6235 merged 2026-09-17 chore(deps-dev): bump vitest and @vitest/browser in /wasm
+      #5531 merged 2026-04-27 feat: add support for running the CLI as a MCP server
+      #5293 closed 2026-01-22 chore(deps): bump github.com/moby/buildkit from 0.26.3 to 0.27.0
+      #3737 merged 2024-04-02 chore(deps): bump github/codeql-action from 2 to 3
+      #2969 merged 2023-03-29 chore(deps): bump github.com/docker/docker from 23.0.1+incompatible to 23.0.2+incompatible
+  file+contents  12 hit(s) (all listed)
+      #6384 merged 2026-10-08 chore(deps): bump github.com/moby/buildkit from 0.33.0 to 0.33.1
+      #6045 closed 2026-08-27 ci: add support for a prepare step before using the cache
+      #5693 closed 2026-06-15 docs(docgen): remove ToC from doc and doc template
+      #5692 closed 2026-06-15 docs(docgen): remove ToC from doc template
+      #5844 merged 2026-07-17 chore(deps): bump github.com/moby/buildkit from 0.31.1 to 0.31.2
+      #5923 merged 2026-07-30 chore(deps): bump github.com/moby/buildkit from 0.31.2 to 0.32.0
+      #5576 merged 2026-05-19 chore: add support for oidc in all release workflows
+      #5773 merged 2026-07-01 chore: remove toc from documentation page
+      #5571 merged 2026-05-15 fix: migrate to oidc for wasm release of the CLI
+      #5717 merged 2026-06-18 chore(deps): bump github.com/moby/buildkit from 0.30.0 to 0.31.0
+      #4999 merged 2025-09-12 chore: add explicit permission on release workflow
+      #3694 merged 2024-03-04 chore(deps): bump github.com/stretchr/testify from 1.8.4 to 1.9.0
+
+== 51 terms run; 39 returned hits, 5 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

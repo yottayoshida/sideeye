@@ -1,0 +1,6 @@
+[world]
+state = "/s/flyhome"
+
+[define]
+operation = "fly -t ci edit-target --team-name t2"
+cwd       = "/s/fly-in"

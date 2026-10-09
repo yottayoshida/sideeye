@@ -1,0 +1,25 @@
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 2
+            after  open(/s/otio/cut.otio)
+            before write(/s/otio/cut.otio)
+path        cut.otio
+observed    holding neither the old nor the new content
+cwd         /s/otio
+
+explored    2 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 2 operations (3040 syscall lines examined, 938 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/otiotool/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/otio && unset SIDEEYE_KILL_GROUP && : > /out/otiotool/work-explore-replay2/trace-repro.bin && SIDEEYE_STATE_DIR=/s/otio SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/otiotool/work-explore-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'otiotool' -i cut.otio --redact -o cut.otio </dev/null)
+sideeye: json sha256=9d43553ed250850ced641b937ccafe6ad6ac7e94430aa3fed11ab0681fc66c32;

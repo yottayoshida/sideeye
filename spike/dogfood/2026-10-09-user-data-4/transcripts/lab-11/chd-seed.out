@@ -1,0 +1,7 @@
+chdman - MAME Compressed Hunks of Data (CHD) manager 0.276 (unknown)
+Output CHD:   d.chd
+Input file:   raw.bin
+Compression:  lzma (LZMA), zlib (Deflate), huff (Huffman), flac (FLAC)
+Hunk size:    4,096
+Logical size: 1,048,576
+Compressing, 0.0% complete... (ratio=100.0%)  Compression complete ... final ratio = 0.0%            

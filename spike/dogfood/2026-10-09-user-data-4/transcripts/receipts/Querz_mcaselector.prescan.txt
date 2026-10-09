@@ -1,0 +1,244 @@
+== novelty pre-scan: Querz/mcaselector
+== date: 2026-10-09T01:01:48Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          28 hit(s) (all listed)
+      #589 open 2026-03-23 Loading world crashes MCAS
+      #355 open 2022-06-21 Crash when attempting to export selection as csv
+      #502 open 2024-10-03 EXCEPTION_ACCESS_VIOLATION (0xc0000005)
+      #377 open 2022-08-08 ForceBlend causes crash "Asking for biomes before we have biomes" (and solution)
+      #299 open 2021-12-10 1.17.1 MCA crashes, Freezes when trying to load a 1.18 world.
+      #527 open 2025-03-25 2.5 breaks worlds on 1.17 with datapacks settings height=384
+      #581 open 2026-02-10 WARN ConfigProvider: failed to load overlay config (java.lang.NullPointerException: null)
+      #357 open 2022-06-22 [feature] Hierarchical loading of chunk NBT
+      #600 closed 2026-07-14 Fix multiple NullPointerExceptions and ArithmeticException (/ by zero) during map rendering and startup
+      #373 closed 2022-07-30 NBT Change crashes/doesn't load
+      #328 closed 2022-01-26 Default process threads count causes out of memory errors with high core CPU
+      #302 closed 2021-12-13 MCA Selector crashes on load (fatal error) - Mac M1 needs updated JavaFX to fix
+      #339 closed 2022-02-28 Attempting to run in archlinux results in the software crashing
+      #283 closed 2021-11-23 program crashes when the jar-path contains an exclamation mark
+      #267 closed 2021-10-22 Crashes when changing the view height of a large world
+      #270 merged 2021-10-27 Config rework
+      #6 closed 2019-04-27 Crash on run with OpenJDK Java 8
+      #82 closed 2020-03-16 Unsupported locale en_GB crash on start
+      #185 closed 2021-04-02 Java 11, on clicking "edit overlays": class impl.org.controlsfx.version.VersionChecker cannot access class com.sun.javafx.runtime.VersionInfo
+      #186 closed 2021-04-07 FTB Chunks compatibility
+  corrupt        16 hit(s) (all listed)
+      #540 open 2025-06-06 Corrupted looking chunks - likely due to weird mod
+      #332 open 2022-02-08 Feature Request: Ability to only remove parts of chunks
+      #532 open 2025-04-04 Copy and Pasting Chunks Doesn't Work
+      #227 open 2021-06-17 Question: Importing InhabitedTime or other NBT fields only
+      #251 open 2021-08-16 Color corruption in map rendering, 1.16.x
+      #600 closed 2026-07-14 Fix multiple NullPointerExceptions and ArithmeticException (/ by zero) during map rendering and startup
+      #533 closed 2025-04-11 Has it works on Paper Worlds???
+      #319 closed 2022-01-11 Can't set biomes to nether wastes
+      #301 closed 2021-12-11 Red ''error'' chunks when opening the nether dimension in 1.18 worlds using MCA Selector 1.17.1
+      #260 closed 2021-10-02 Exporting ungenerated chunks
+      #184 closed 2021-03-31 "The application was configured to use a bundled Java Runtime Environment but the runtime is missing or corrupted."
+      #155 closed 2020-11-27 Defragmenting an MCA file fails when the section sizes are corrupted
+      #173 merged 2021-02-28 1.14.1
+      #87 closed 2020-03-30 Java Error on macOS
+      #148 closed 2020-10-06 It won't load JustenoughIDs worlds correctly
+      #142 closed 2020-09-05 Importing with Offset Not Working
+  corruption     4 hit(s) (all listed)
+      #251 open 2021-08-16 Color corruption in map rendering, 1.16.x
+      #362 open 2022-07-03 Chunk Importing Error
+      #374 open 2022-07-30 Non-NBT/MCA code cleanups
+      #526 merged 2025-03-25 Reverted a corruption in older versions caused by the version handler…
+  truncated      1 hit(s) (all listed)
+      #565 open 2025-10-16 [Request] Mark chunks for "Regenerate Terrain Features"
+  truncate       1 hit(s) (all listed)
+      #565 open 2025-10-16 [Request] Mark chunks for "Regenerate Terrain Features"
+  empty          45 hit(s) (all listed)
+      #479 open 2024-06-02 Chests are emptied upon export
+      #360 open 2022-07-01 Section Import makes all chest/shulkers/barrels empty and shulkers+chests are invisible
+      #612 open 2026-09-30 Add searchable dropdowns to chunk filters
+      #555 open 2025-09-19 copying created filter and later pasting does not accept input string if not quoted
+      #377 open 2022-08-08 ForceBlend causes crash "Asking for biomes before we have biomes" (and solution)
+      #592 open 2026-05-13 Extra windows load blank and hang
+      #579 open 2026-01-24 Add --biomes flag for biome-only chunk import
+      #565 open 2025-10-16 [Request] Mark chunks for "Regenerate Terrain Features"
+      #459 open 2024-01-30 No Worlds
+      #374 open 2022-07-30 Non-NBT/MCA code cleanups
+      #573 open 2025-12-18 Unable to filter chunks
+      #550 open 2025-07-25 Add .desktop file and logo
+      #603 open 2026-07-28 Add a GUI builder for the existing ReplaceBlocks field
+      #460 open 2024-02-04 Incredibly slow on Linux (Mint 21.2)
+      #599 closed 2026-07-13 Can't find my folders and files
+      #600 closed 2026-07-14 Fix multiple NullPointerExceptions and ArithmeticException (/ by zero) during map rendering and startup
+      #568 closed 2025-11-11 ForceBlend not working still
+      #525 merged 2025-03-24 2.5
+      #388 merged 2022-10-03 Save images using AWT instead of PNGJ
+      #413 merged 2023-06-07 release-2.2
+  atomic         0 hit(s)
+  atomically     0 hit(s)
+  interrupted    0 hit(s)
+  interrupt      0 hit(s)
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         10 hit(s) (all listed)
+      #532 open 2025-04-04 Copy and Pasting Chunks Doesn't Work
+      #592 open 2026-05-13 Extra windows load blank and hang
+      #529 open 2025-03-27 Unable to delete individual chunks, only whole regions
+      #447 open 2023-10-21 Deleting entire regions when only chunks were selected
+      #325 open 2022-01-22 Installed but not working.. 
+      #525 merged 2025-03-24 2.5
+      #285 closed 2021-11-27 Cannot open MCA Selector 1.17 on Ubuntu (used to work)
+      #125 merged 2020-07-01 Copy Paste
+      #163 closed 2021-01-10 [Suggestion] An option in settings for default directory 
+      #128 closed 2020-07-08 Copying chunks doesnt copy chest contents
+  power          2 hit(s) (all listed)
+      #589 open 2026-03-23 Loading world crashes MCAS
+      #316 open 2022-01-07 GPU hardware acceleration fails on *buntu 20.04 64 Bit w. AMD GPU, but can be forced by CLI option
+  outage         0 hit(s)
+  ENOSPC         0 hit(s)
+  disk           7 hit(s) (all listed)
+      #489 open 2024-07-01 [Feature] Support Linear world
+      #385 open 2022-09-17 Installing problem
+      #352 open 2022-06-18 Consider bundling javafx libraries for better compatibility
+      #270 merged 2021-10-27 Config rework
+      #1 merged 2018-08-31 File access rework
+      #169 closed 2021-02-23 MCC oversized chunk handling
+      #6 closed 2019-04-27 Crash on run with OpenJDK Java 8
+  partial        2 hit(s) (all listed)
+      #294 open 2021-12-06 Alterations done in MC to world don't show in MCA
+      #571 open 2025-12-04 Chunk deletion fails silently on region files without proper sector padding
+  incomplete     6 hit(s) (all listed)
+      #354 open 2022-06-19 Filter non-natural blocks
+      #459 open 2024-01-30 No Worlds
+      #260 closed 2021-10-02 Exporting ungenerated chunks
+      #28 merged 2019-07-26 1.8 Update: Headless mode
+      #130 closed 2020-07-09 Incomplete Process
+      #128 closed 2020-07-08 Copying chunks doesnt copy chest contents
+  dataloss       0 hit(s)
+  recover        3 hit(s) (all listed)
+      #362 open 2022-07-03 Chunk Importing Error
+      #227 open 2021-06-17 Question: Importing InhabitedTime or other NBT fields only
+      #105 closed 2020-05-17 Request: option to reorder filter conditions by dragging
+  recovery       0 hit(s)
+  rollback       0 hit(s)
+  resume         0 hit(s)
+  half-written   0 hit(s)
+  wipe           1 hit(s) (all listed)
+      #357 open 2022-06-22 [feature] Hierarchical loading of chunk NBT
+  wipes          0 hit(s)
+  erase          2 hit(s) (all listed)
+      #4 closed 2019-04-24 Question on using this to update world for 1.14
+      #104 closed 2020-05-13 [Request] option to generate chunk/regions in a world but filled with air
+  erasing        1 hit(s) (all listed)
+      #104 closed 2020-05-13 [Request] option to generate chunk/regions in a world but filled with air
+  erased         1 hit(s) (all listed)
+      #104 closed 2020-05-13 [Request] option to generate chunk/regions in a world but filled with air
+  destroy        2 hit(s) (all listed)
+      #379 open 2022-08-22 Missing JavaFx
+      #260 closed 2021-10-02 Exporting ungenerated chunks
+  destroys       0 hit(s)
+  overwrite      18 hit(s) (all listed)
+      #529 open 2025-03-27 Unable to delete individual chunks, only whole regions
+      #332 open 2022-02-08 Feature Request: Ability to only remove parts of chunks
+      #559 open 2025-09-23 Lag Issue copying and pasting large numbers of chunks multiple times in a row
+      #545 merged 2025-06-20 Update Chinese Simplified translation (`zh_CN.txt`)
+      #351 closed 2022-06-15 [enhancement] add a feature that allows to reset biomes to default. [1.18-1.19]
+      #350 merged 2022-06-14 2.0
+      #241 closed 2021-07-17 Feature request: section-level operations for 1.18 merges
+      #270 merged 2021-10-27 Config rework
+      #17 closed 2019-06-01 Not clear how can I export certain chunks to another world
+      #20 closed 2019-06-12 Place chunck before import
+      #42 closed 2019-09-22 Import chunks into "selection only"
+      #35 closed 2019-09-08 javafx error on headless import
+      #22 closed 2019-07-02 Map render breaks whenever I scroll in or out/ Importing chunks does not work across worlds
+      #62 closed 2019-12-11 I can't import chunks into a specific world
+      #93 closed 2020-04-16 Cannot change nether biomes
+      #103 closed 2020-05-11 Y Chunk Support?
+      #132 closed 2020-07-15 Option to copy biome data between worlds
+      #183 merged 2021-03-31 1.15
+  clobber        0 hit(s)
+  blank          9 hit(s) (all listed)
+      #592 open 2026-05-13 Extra windows load blank and hang
+      #429 open 2023-07-09 Opening world is just blank 
+      #534 open 2025-04-27 I opened the software and it was blank.
+      #590 open 2026-04-11 Seam The pro
+      #540 open 2025-06-06 Corrupted looking chunks - likely due to weird mod
+      #430 open 2023-07-18 net.querz.nbt.IntArrayTag cannot be cast to class net.querz.nbt.CompoundTag (net.querz.nbt.IntArrayTag and net.querz.nbt.CompoundTag are in unnamed module of loader 'app
+      #559 open 2025-09-23 Lag Issue copying and pasting large numbers of chunks multiple times in a row
+      #299 open 2021-12-10 1.17.1 MCA crashes, Freezes when trying to load a 1.18 world.
+      #81 closed 2020-03-10 Exporting End spawn chunks causes the whole region to go blank if custom terrain was present
+  unreadable     0 hit(s)
+  garbage        0 hit(s)
+  mangled        0 hit(s)
+  contents       16 hit(s) (all listed)
+      #608 open 2026-09-18 exe not doing anything
+      #531 open 2025-04-03 How to package into MacOS app
+      #375 open 2022-07-31 Permission denied on Mac moneterey 12.5
+      #573 open 2025-12-18 Unable to filter chunks
+      #352 open 2022-06-18 Consider bundling javafx libraries for better compatibility
+      #600 closed 2026-07-14 Fix multiple NullPointerExceptions and ArithmeticException (/ by zero) during map rendering and startup
+      #260 closed 2021-10-02 Exporting ungenerated chunks
+      #225 closed 2021-06-14 Having trouble installing on MacOS
+      #28 merged 2019-07-26 1.8 Update: Headless mode
+      #30 closed 2019-08-12 Multiple issues when offsetting imported chunks
+      #31 closed 2019-08-23 Headless requires JavaFX
+      #22 closed 2019-07-02 Map render breaks whenever I scroll in or out/ Importing chunks does not work across worlds
+      #157 closed 2020-12-03 Weird rendering of chunks 1.13.3
+      #128 closed 2020-07-08 Copying chunks doesnt copy chest contents
+      #75 closed 2020-02-03 [INVALID] Importing chunks does not copy chest contents
+      #144 closed 2020-09-08 Method of using Java bundled with Minecraft for Windows doesn't work
+  in-place       27 hit(s) (all listed)
+      #453 open 2023-12-25 Black dots are rendered on the map instead of grass plants
+      #531 open 2025-04-03 How to package into MacOS app
+      #455 open 2024-01-07 Incorrect implementation of XDG Base Directory spec
+      #565 open 2025-10-16 [Request] Mark chunks for "Regenerate Terrain Features"
+      #508 open 2024-12-02 Lodestone compasses in containers cause chunk importing and pasting to fail
+      #573 open 2025-12-18 Unable to filter chunks
+      #447 open 2023-10-21 Deleting entire regions when only chunks were selected
+      #236 open 2021-07-08 Filter unmodified chunks
+      #374 open 2022-07-30 Non-NBT/MCA code cleanups
+      #379 open 2022-08-22 Missing JavaFx
+      #417 closed 2023-06-12 Try with resources clean up
+      #542 closed 2025-06-17 Is there a way to delete blocks below a certain Y level?
+      #388 merged 2022-10-03 Save images using AWT instead of PNGJ
+      #394 closed 2022-11-27 Quotation marks in CLI parameters are incorrectly parsed in Pterodactyl panels
+      #368 merged 2022-07-15 Height slider
+      #181 closed 2021-03-23 Waterlogged top slabs show up as water blocks
+      #168 closed 2021-02-17 Cant run app
+      #15 closed 2019-05-29 Issue finding a file
+      #30 closed 2019-08-12 Multiple issues when offsetting imported chunks
+      #20 closed 2019-06-12 Place chunck before import
+  unclean        0 hit(s)
+  shutdown       1 hit(s) (all listed)
+      #325 open 2022-01-22 Installed but not working.. 
+  reboot         0 hit(s)
+  disk+full      1 hit(s) (all listed)
+      #6 closed 2019-04-27 Crash on run with OpenJDK Java 8
+  data+loss      0 hit(s)
+  partial+write  0 hit(s)
+  crash+safe     2 hit(s) (all listed)
+      #600 closed 2026-07-14 Fix multiple NullPointerExceptions and ArithmeticException (/ by zero) during map rendering and startup
+      #30 closed 2019-08-12 Multiple issues when offsetting imported chunks
+  atomic+write   0 hit(s)
+  lock+file      2 hit(s) (all listed)
+      #529 open 2025-03-27 Unable to delete individual chunks, only whole regions
+      #400 open 2023-01-07 Making the window very big causes an exception and freezes the interface
+  write+failure  1 hit(s) (all listed)
+      #374 open 2022-07-30 Non-NBT/MCA code cleanups
+  file+contents  11 hit(s) (all listed)
+      #608 open 2026-09-18 exe not doing anything
+      #531 open 2025-04-03 How to package into MacOS app
+      #573 open 2025-12-18 Unable to filter chunks
+      #352 open 2022-06-18 Consider bundling javafx libraries for better compatibility
+      #600 closed 2026-07-14 Fix multiple NullPointerExceptions and ArithmeticException (/ by zero) during map rendering and startup
+      #28 merged 2019-07-26 1.8 Update: Headless mode
+      #157 closed 2020-12-03 Weird rendering of chunks 1.13.3
+      #30 closed 2019-08-12 Multiple issues when offsetting imported chunks
+      #31 closed 2019-08-23 Headless requires JavaFX
+      #22 closed 2019-07-02 Map render breaks whenever I scroll in or out/ Importing chunks does not work across worlds
+      #144 closed 2020-09-08 Method of using Java bundled with Minecraft for Windows doesn't work
+
+== 51 terms run; 27 returned hits, 0 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

@@ -1,0 +1,5 @@
+scan ended for ifcpatch (IfcOpenShell/IfcOpenShell); exploring 2026-10-09T02:25:31Z
+=== ifcpatch 2026-10-09T02:25:31Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+explore-after-scan: done 2026-10-09T02:25:40Z

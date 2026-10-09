@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.config/kafkactl"
+
+[define]
+operation = "kafkactl config use-context b"
+cwd       = "/s/kc-in"

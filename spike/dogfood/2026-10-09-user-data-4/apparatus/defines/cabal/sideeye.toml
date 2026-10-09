@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.config/cabal"
+
+[define]
+operation = ["cabal", "user-config", "update", "-a", "jobs: 4"]
+cwd       = "/s/cab"

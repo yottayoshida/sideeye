@@ -1,0 +1,8 @@
+[world]
+state = "/s/oiio"
+
+[define]
+# --threads 1: under the shim the default (every core) ends in std::system_error at thread
+# creation and SIGABRT (transcripts/entry-out/entry/iconvert.preflight-1.txt); by hand it exits 0.
+operation = "iconvert --threads 1 --inplace --caption hello --keyword k photo.jpg"
+cwd       = "/s/oiio"

@@ -1,0 +1,861 @@
+== novelty pre-scan: mamedev/mame
+== date: 2026-10-09T01:55:16Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #16363 open 2026-10-08 emu/debug/debugcpu.cpp: Fixed a crash on exit after a fatal error under the debugger
+      #15452 open 2026-06-06 [Crash] MAME 0.288 crashes at startup with std::bad_alloc on Windows 11
+      #14961 open 2026-02-14 daytona usa 2 power edition - crash into test / service
+      #16195 open 2026-09-20 Crash (SIGSEGV) in sound_coreaudio::build_device_list() on macOS with audio devices reporting >66 unlabeled channels (e.g. RME Fireface UFX III)
+      #15854 open 2026-08-06 neocd: crashes on soft resets if mounting CD after starting emulation
+      #16187 open 2026-09-19 mmmbanc : Implement touchscreen support (promote to working)
+      #16229 open 2026-09-23 frontend/mame/luaengine.cpp: Fixed emu.thread() data races on its Lua state
+      #5349 open 2019-07-16 LUA console crashes on macOS
+      #15691 open 2026-07-13 Plugin has a bug, causing it to not work as expected and crash.
+      #12625 open 2024-07-29 Altos ACS8600 crashes inserting a floppy image
+      #11649 open 2023-10-22 MIPS3 recompiler crashes in 32-bit builds
+      #10489 open 2022-10-31 Fedora 36 crash on exit on FcCacheFini()
+      #4001 open 2018-09-15 MIPS R5000 Watchpoint/Saved State Reload Crash
+      #15535 open 2026-06-15 MAME 0.288: Audit media for all 42880 systems: MAME crashes almost immediately on Windows 11 PC
+      #15113 open 2026-03-17 SDLMAME (SDL3) v0.286 Apple Silicon - macse30 crashes w/ MODE32
+      #14114 open 2025-09-02 Add AM6012/TL084 analog output model
+      #15908 open 2026-08-16 IPF parser doesn't support weak bits
+      #12602 open 2024-07-21 Pecom 32 / 64: PLOAD doesn't work, the system crashes
+      #12397 open 2024-05-23 gba.xml: Added five prototypes
+      #8538 open 2021-09-05 BGFX crashes on linux when bgfx_backend is set to auto.
+  corrupt        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14474 open 2025-11-04 apple: diskiing/iwm corruption
+      #16322 open 2026-10-04 Heap buffer overflow (ASan: WRITE of size 8) in `dsk_dsk_construct()` when imgtool opens a crafted MV-CPC DSK image — unbounded `track_offsets[]` write
+      #14944 open 2026-02-10 cpu/mips3: Fix DRC debugger interaction for register and memory modifications
+      #11208 open 2023-05-09 sega/powervr2.cpp: move renderer to threaded code
+      #15734 open 2026-07-19 cpu/drcfe.ipp: Fix generic DRC frontend losing the end_sequence() terminator off the live instruction list
+      #16279 closed 2026-09-29 m68k: bfins bitfield offset calculated incorrectly (taito_f3/scfinals: replay sprite corruption)
+      #15708 open 2026-07-16 bx256hp_flop: "msdos disk.d80" (MS-DOS 1.25) is a bad dump — sector at 0x3A00 duplicates 0x2400, breaking COMMAND.COM load
+      #16180 merged 2026-09-19 powerpc: honor cpu_device::retry_access() in the DRC; boot pmac6200 from CD
+      #14199 open 2025-09-21 indy_4610/indy_5015: Serial console unusable.
+      #16016 merged 2026-08-30 cpu/sharc: fix circular buffer wrap when the index lands on B+L
+      #6718 open 2020-05-20 Fix for Issue #6712
+      #12852 open 2024-10-04 [CD-i] Sound mixing not faithful to the real machine
+      #14653 open 2025-12-08 Dumped the Dutch version of Kidizoom Twist's user data
+      #15951 closed 2026-08-22 cpu/tlcs900: m_f2 (the F' flag byte) is save-registered but never initialized; EX F,F' loads indeterminate flags
+      #11133 open 2023-04-21 Memory corruption in SC3000, music
+      #15823 closed 2026-07-31 THREE WONDERS - Game select screen & Titles screens - SHOULD BE BLACK, Like developers intendent it to be.
+      #15578 closed 2026-06-22 Add a Baluba-louk no Densetsu bootleg set
+      #15731 closed 2026-07-19 SGI graphics broken colors with fix
+      #15730 closed 2026-07-19 MIPS3 - DRC SC instruction register corruption with fix
+      #8563 open 2021-09-11 BGFX/Vulkan/nvidia: crash when attempting to run lethalj since commit 190f50e0a44d1fecdc7c9e442030cd5fe4ed434f
+  corruption     89 hit(s) (all listed)
+      #14474 open 2025-11-04 apple: diskiing/iwm corruption
+      #11133 open 2023-04-21 Memory corruption in SC3000, music
+      #3982 open 2018-09-10 Watara Supervision: DMA sound corruption
+      #16322 open 2026-10-04 Heap buffer overflow (ASan: WRITE of size 8) in `dsk_dsk_construct()` when imgtool opens a crafted MV-CPC DSK image — unbounded `track_offsets[]` write
+      #16279 closed 2026-09-29 m68k: bfins bitfield offset calculated incorrectly (taito_f3/scfinals: replay sprite corruption)
+      #16286 merged 2026-09-30 video/voodoo_render.cpp: Fix multibase texture LOD addresses (fixes texture corruption in konami/viper.cpp games) [spita90]
+      #11379 open 2023-06-27 i960 movre instruction will result in out of bounds read/write on platforms where double is 8-bytes in size.
+      #14891 open 2026-01-29 SH7604: SIGSEGV on debugger irq traps with DRC
+      #15734 open 2026-07-19 cpu/drcfe.ipp: Fix generic DRC frontend losing the end_sequence() terminator off the live instruction list
+      #3555 open 2018-05-11 Qsound LLE timing issues with zn.cpp
+      #16260 merged 2026-09-25 bally/eurotec: 29 new NOT WORKING machines
+      #16262 merged 2026-09-25 philips/mcd212: Darken Black Level
+      #14122 open 2025-09-05 Shuihu Feng Yun Zhuan (ROM SET shuifeng) Random crash or copy protection?
+      #14199 open 2025-09-21 indy_4610/indy_5015: Serial console unusable.
+      #15730 closed 2026-07-19 MIPS3 - DRC SC instruction register corruption with fix
+      #9892 open 2022-06-05 mitchell.cpp (Poker Ladies)
+      #11568 open 2023-09-22 segmentationi fault on Mac M2
+      #15965 closed 2026-08-22 sound/cdp1864: m_signal is save-registered but never initialized; the first stream update tests an indeterminate value
+      #15649 merged 2026-07-05 sega/model1: repair 2-bit corruption in 315-5711 TGP copro ROM
+      #15509 merged 2026-06-13 sinclair/next/specnext_sprites.cpp: Fixed memory corruption
+  truncated      36 hit(s) (all listed)
+      #15221 open 2026-04-12 i8008.cpp: Address Stack registers (ADDR1, ..., ADDR8) are wrongly truncated in the debug window
+      #16184 open 2026-09-19 video/psx.cpp: implement GPU dithering
+      #15043 open 2026-03-02 Several CPUs use incorrect logic to generate overflow flag when performing add-with-carry or subtract-with-borrow
+      #10759 open 2022-12-30 The rightmost pixel of Apple II double high-res output is missing in monochrome mode
+      #16194 open 2026-09-20 tatsumi/apache3: Implement ground rendering and sprite rotation
+      #10169 open 2022-08-01 evdev input module
+      #16144 closed 2026-09-15 swp30: truncate the voice volume product
+      #16141 merged 2026-09-15 swp30: fix three meg drc mismatches with the interpreter
+      #16151 merged 2026-09-15 swp30: fix meg alu corner cases found on distortion-type effects
+      #15871 closed 2026-08-10 konami/twinkle: Configure XV-D701 for DVD media on IIDX 6th through 8th style
+      #13444 closed 2025-03-05 Debugger: New Feature: source-level debugging
+      #15866 merged 2026-08-09 z8000,z8010,zilog/s8000: correct CPU/MMU behavior and boot ZEUS
+      #14012 closed 2025-08-01 0.279: compilation error in `dirtc.h`
+      #13770 merged 2025-06-02 cpu/sharc: correctly align 32-bit data transfers using PM bus
+      #13838 closed 2025-06-16 Ensure error.log is flushed on Windows OSD
+      #13485 merged 2025-03-16 megadriv.xml: Added 6 working items
+      #13477 closed 2025-03-14 konami/mystwarr.cpp - Add subtitle to mystwarr
+      #13055 merged 2024-12-08 ap2_dsk.cpp: fix loading bardstl3
+      #11274 closed 2023-05-24 spg format + [tsconf_betadisc_flop.xml] updated games/demos [holub, tslabs]
+      #13108 merged 2024-12-22 Fixes to UML and DRC backends
+  truncate       88 hit(s) (all listed)
+      #16144 closed 2026-09-15 swp30: truncate the voice volume product
+      #15221 open 2026-04-12 i8008.cpp: Address Stack registers (ADDR1, ..., ADDR8) are wrongly truncated in the debug window
+      #16293 merged 2026-10-01 swp30: meg writes to the delay memory truncate towards zero
+      #16216 open 2026-09-21 gaelco/futbol3.cpp: Cleanup, logic, and more sets
+      #16184 open 2026-09-19 video/psx.cpp: implement GPU dithering
+      #16298 merged 2026-10-01 CD-i: Various MCD212 Bug Fixes
+      #16325 open 2026-10-04 midzeus_v.cpp: experimental per-vertex lighting for Zeus 1 (tested on mk4)
+      #15043 open 2026-03-02 Several CPUs use incorrect logic to generate overflow flag when performing add-with-carry or subtract-with-borrow
+      #10714 open 2022-12-21 Victor9k sound ii
+      #5741 open 2019-10-15 Build fail on aarch64
+      #16143 merged 2026-09-15 swp30: interpolate backwards samples in playback order
+      #10759 open 2022-12-30 The rightmost pixel of Apple II double high-res output is missing in monochrome mode
+      #16151 merged 2026-09-15 swp30: fix meg alu corner cases found on distortion-type effects
+      #16194 open 2026-09-20 tatsumi/apache3: Implement ground rendering and sprite rotation
+      #15886 merged 2026-08-12 chdman: retain session data
+      #15256 open 2026-04-25 osd: add serial output provider
+      #10169 open 2022-08-01 evdev input module
+      #16141 merged 2026-09-15 swp30: fix three meg drc mismatches with the interpreter
+      #16131 merged 2026-09-14 debugger/gdbstub: Added a register map for the NEC V20/V30/V33 family
+      #16150 merged 2026-09-15 swp30: dpcm keeps the multiplier remainder, and the next delta comes from what was added
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15560 open 2026-06-19 machine/i8251.cpp - data_w() clears TxRDY but then instantly reasserts TxRDY if transmit buffer is empty
+      #16275 open 2026-09-28 misc/compucranes.cpp: Add enough logic to pass the POST and see the display [ClawGrip]
+      #16243 open 2026-09-24 ms32.cpp: Implement the priority ram sprite for all games and adjust some effects
+      #16187 open 2026-09-19 mmmbanc : Implement touchscreen support (promote to working)
+      #15908 open 2026-08-16 IPF parser doesn't support weak bits
+      #16216 open 2026-09-21 gaelco/futbol3.cpp: Cleanup, logic, and more sets
+      #16062 open 2026-09-05 apple2gs / z8530: Regression (IRQs not fired)
+      #15666 open 2026-07-08 sound/js_sound.cpp: Fixed output delay in js_sound
+      #15258 open 2026-04-26 Garbled text appears after using -video bgfx
+      #15777 open 2026-07-28 namco/namcos23: emulate the C139 serial link - two-cabinet link play for Time Crisis II
+      #7716 open 2021-01-28 Various failures in compiling current MAME integrated tests
+      #14858 open 2026-01-24 posixdir.cpp: implement XDG_*_HOME variables
+      #9015 open 2021-12-19 A bug when using "category"
+      #6718 open 2020-05-20 Fix for Issue #6712
+      #16084 open 2026-09-08 arktechnico/wildcats.cpp: Add Wild Cats pachislot machine
+      #7067 open 2020-08-13 Issues recording rendered video
+      #14700 open 2025-12-21 On CoCo3, When I set the INI file to load a slot device, then on the command line I specify cartridge software, it crashes.
+      #12345 open 2024-05-06 taito/taito_f3.cpp: split graphics into TC0630FDP device
+      #15039 open 2026-03-01 Simplify handling of clang targets, fix clang build on aarch64 and riscv64
+      #2354 open 2017-06-01 Clone system isn't listed as available unless there's a dummy directory with its name
+  atomic         31 hit(s) (all listed)
+      #15416 open 2026-05-30 wd_fdc + z80: DRQ→NMI rising-edge timing allows nested NMI inside a BIOS handler that real WD1793+Z80 silicon doesn't permit — guidance on preferred fix architecture
+      #11983 open 2024-01-29 Add update for russian translation
+      #15082 closed 2026-03-11 cpu/powerpc: implement reservation for lwarx and stwcx instruction pair
+      #8563 open 2021-09-11 BGFX/Vulkan/nvidia: crash when attempting to run lethalj since commit 190f50e0a44d1fecdc7c9e442030cd5fe4ed434f
+      #8538 open 2021-09-05 BGFX crashes on linux when bgfx_backend is set to auto.
+      #15730 closed 2026-07-19 MIPS3 - DRC SC instruction register corruption with fix
+      #15225 merged 2026-04-14 bus/centronics/pc6022.cpp: notes about print mechanism
+      #10047 merged 2022-07-07 z80: interruptible execution
+      #13815 merged 2025-06-12 MOS6551: correctly transfer data from RSR to RDR
+      #13630 merged 2025-04-28 cpu/z80: Optimized detection of attention needed in service step
+      #13350 merged 2025-02-10 sony/news_68k_iop.cpp: Implement NWS-831 driver
+      #13041 closed 2024-12-02 Emscripten build fails due to variable name clashing with Emscripten macro
+      #11608 merged 2023-10-11 util/ioprocs.cpp: Add wrappers for common patterns
+      #12034 merged 2024-02-14 sound/discrete.cpp: Use appropriate memory barriers for task synchronisation
+      #11404 merged 2023-07-04 x68k_flop.xml: add 11 dumps from original disks
+      #11505 merged 2023-08-25 apple/apple3_m.cpp: Added cpu clock changing for video raster scanning
+      #11843 merged 2023-12-16 Add new machine Tandberg TDV-2115L with accurate addressing in Display Logic driver
+      #10061 merged 2022-07-11 snes.xml: Added nine dumps.
+      #9801 closed 2022-05-21 netlist compiling issues on manjaro (ptrdiff_t) / uintptr_t and intptr_t optional 
+      #3157 closed 2018-01-31 0.194 does not compile on ppc64/ppc64le linux
+  atomically     3 hit(s) (all listed)
+      #15225 merged 2026-04-14 bus/centronics/pc6022.cpp: notes about print mechanism
+      #13815 merged 2025-06-12 MOS6551: correctly transfer data from RSR to RDR
+      #11608 merged 2023-10-11 util/ioprocs.cpp: Add wrappers for common patterns
+  interrupted    11 hit(s) (all listed)
+      #15121 merged 2026-03-20 m6502: route core fetch/data/write paths through interruptible accesses
+      #12605 closed 2024-07-21 chdman createdvd writes corrupt CHD files on CIFS storage
+      #14288 merged 2025-10-08 ef9345: implement commands CLF and CLG
+      #10047 merged 2022-07-07 z80: interruptible execution
+      #12904 closed 2024-10-24 osd: better socket handling.
+      #11608 merged 2023-10-11 util/ioprocs.cpp: Add wrappers for common patterns
+      #9637 merged 2022-04-27 spectrum48: fix floating int
+      #8965 merged 2021-12-13 gamegear.xml: Added a non-working prototype.
+      #8915 closed 2021-12-01 Saturn VDP1/VDP2 code structure completely broken
+      #2848 closed 2017-11-26 compile error on clear linux
+      #7384 merged 2020-10-22 msm5232: fix: behaviour when the 'arm' flag set while envelope generator is on a decay state
+  interrupt      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #16349 open 2026-10-06 gaelco/goldart.cpp: Remove unexistant sets, improve emulation [ClawGrip]
+      #15778 open 2026-07-28 motoxgo hangs at black screen before POST since d7e131c39 (F2MC-16 external interrupt change)
+      #4128 open 2018-10-12 Coco3 keyboard interrupt doesn't work
+      #16295 open 2026-10-01 h8: add the H-8-17 hard-sectored floppy controller
+      #15560 open 2026-06-19 machine/i8251.cpp - data_w() clears TxRDY but then instantly reasserts TxRDY if transmit buffer is empty
+      #15772 open 2026-07-26 wangpc: floppy boot hangs at "01 Start From Drive A" — level-1 (PIT ch2) interrupt dies, BIOS tick counter never decrements
+      #16220 open 2026-09-21 Technics kn6000 expansion + optional HD-SX6 board
+      #16188 merged 2026-09-19 apple/valkyrie: honor VBL interrupt disable on acknowledge
+      #13598 open 2025-04-16 6805: incorrect cycle emulation (Apple IIe MouseCard/screen emulation is wrong)
+      #6631 open 2020-05-03 Sound CPU periodic interrupt speed in Namco's "Universal System 16"
+      #15317 open 2026-05-08 Implement Alphasmart 3000 more fully
+      #16328 merged 2026-10-04 cpu/avr8: IRQ handling overhaul
+      #15917 open 2026-08-18 wangpc: don't wedge the machine when a floppy is inserted
+      #16206 open 2026-09-20 New device: Realtek RTL8019AS ISA8 ethernet adapter
+      #15923 closed 2026-08-18 mc6852: drive the interrupt output
+      #15903 open 2026-08-15 emax.cpp: Boot past loading software
+      #13188 open 2025-01-06 Intel 8275 unitialized behaviour not emulated
+      #15786 open 2026-07-28 prose2k: emulate uPD7720 DSP audio output
+      #15777 open 2026-07-28 namco/namcos23: emulate the C139 serial link - two-cabinet link play for Time Crisis II
+      #16091 merged 2026-09-09 tms9901: update synchronous interrupt output on every external clock
+  sigkill        1 hit(s) (all listed)
+      #9896 closed 2022-06-06 Atari 2600 (a2600) state load bug (hangs)
+  sigint         3 hit(s) (all listed)
+      #7247 open 2020-09-17 more consistent -confirm_quit support
+      #14069 closed 2025-08-18 Apple IIc emulation missing a spurious serial byte
+      #11587 closed 2023-10-01 Validation gets stuck on Fedora rawhide aarch64
+  ctrl-c         63 hit(s) (all listed)
+      #16056 open 2026-09-04 osd/sdl: quit on SDL_QUIT (Cmd-Q / app Quit) on macOS
+      #16187 open 2026-09-19 mmmbanc : Implement touchscreen support (promote to working)
+      #10297 open 2022-08-30 Dangerous Curves not working (Taito JC type-C - DSP not fully implemented ?)(TMS32051 & Taito E07-11)
+      #16359 open 2026-10-07 bbh: Regression - Controls get stuck in service mode after a while
+      #14474 open 2025-11-04 apple: diskiing/iwm corruption
+      #6641 open 2020-05-05 Multiple displays on MacOS seem to still be broken.
+      #15783 merged 2026-07-28 wangpc: make backslash and tilde typable through the natural keyboard
+      #12775 open 2024-09-16 aviwrite will not write a file with odd-numbered dimensions, always rescales
+      #10376 open 2022-09-28 All cv1k games core dump on Ubuntu Jaunty with Mame 0.248
+      #7532 open 2020-12-07 Cannot make MAME to show on primary display (Linux, Gnome, MAME 0.226)
+      #15725 merged 2026-07-19 xerox/xerox820.cpp: mark bigboard5 as working
+      #14002 open 2025-07-29 Steam input not working.
+      #13072 open 2024-12-11 Ported to Loongson3A6000, start screen is shown but got segment fault when initializing sound
+      #10815 open 2023-01-09 Vuklan/GLES issues for most Konami GX titles
+      #16135 merged 2026-09-14 ms32.cpp: Add the Math device and road code  for F-1 Super Battle
+      #15498 merged 2026-06-12 bus/pc_kbd: correct PC/AT 84-key matrix, add natural-keyboard control chars
+      #15831 merged 2026-08-01 bus/isa/cga.cpp: m24 mode2 bit 0 enables the 400 line mode, it does not select graphics
+      #14656 open 2025-12-08 MU50 Hanging Drum notes, incomplete multisamples, mono playback
+      #13939 open 2025-07-11 Megadrive/Paprium
+      #15464 merged 2026-06-07 apple2: improve Zip Chip emulation
+  power          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14961 open 2026-02-14 daytona usa 2 power edition - crash into test / service
+      #16084 open 2026-09-08 arktechnico/wildcats.cpp: Add Wild Cats pachislot machine
+      #728 open 2016-03-19 Power-off callback on MAME exit
+      #16334 merged 2026-10-04 apple/cuda.cpp: invert ADB power key
+      #10937 open 2023-02-26 Some but not other Power Pad bindings saved
+      #16314 merged 2026-10-03 cpu/powerpc: Fix wakeup from power-saving mode
+      #16183 merged 2026-09-19 Power Macintosh x400 "Alchemy" preliminary driver
+      #16206 open 2026-09-20 New device: Realtek RTL8019AS ISA8 ethernet adapter
+      #13866 open 2025-06-22 ybdcomm: first implementation (ASIO, async, polled)
+      #16285 merged 2026-09-30 machine/i8291a: Fix MJMN, APT gating, NRFD release, power-up and reset handling
+      #16216 open 2026-09-21 gaelco/futbol3.cpp: Cleanup, logic, and more sets
+      #16358 open 2026-10-07 pinball: Quench's playfield layouts for 42 Bally and Stern machines, brought up to the current layout format
+      #16090 merged 2026-09-09 Add Macintosh Cordyceps (Power Mac x200) stub driver
+      #15156 open 2026-03-27 Support for some more old online services
+      #16338 merged 2026-10-05 mcs51/ds5002fp.cpp: Fix some bugs [ClawGrip]
+      #16327 merged 2026-10-04 apple/f108: Correct SCSI and SCC clock frequencies
+      #13421 open 2025-02-26 update to add network for Sega X-Board, Y-Board, Konami K056230, Namco C139
+      #16332 merged 2026-10-04 cpu/powerpc: Charge time base and decrementer reads one cycle
+      #1248 open 2016-08-15 Xinput Afterplugging And Hotplugging
+      #7919 open 2021-04-02 Support for CMOS and derivative MCS-48/UPI-41 devices
+  outage         2 hit(s) (all listed)
+      #14911 closed 2026-02-02 tms320c2x: some optimizations
+      #14377 closed 2025-10-20 Is it considered normal for CI jobs to take 5 hours to finish?
+  ENOSPC         1 hit(s) (all listed)
+      #11608 merged 2023-10-11 util/ioprocs.cpp: Add wrappers for common patterns
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15876 open 2026-08-10 Iskra-226: firmware dumps, disk images with provenance, on-disk format and partial ISA documentation
+      #15917 open 2026-08-18 wangpc: don't wedge the machine when a floppy is inserted
+      #16295 open 2026-10-01 h8: add the H-8-17 hard-sectored floppy controller
+      #13299 open 2025-01-30 SWTPC hard disk issue
+      #11577 open 2023-09-29 Apple IIe floppy disk creation is buggy/broken. Cannot write to floppy disk.
+      #16098 open 2026-09-10 floppy: fix/extend hard-sectored variant handling in the core
+      #2976 open 2017-12-27 ibm5170 driver cannot read hard disk
+      #7293 open 2020-09-26 Auto-configure floppy disk drive types
+      #15729 open 2026-07-19 s3000.cpp - Set floppy state as HD if it is HD
+      #16220 open 2026-09-21 Technics kn6000 expansion + optional HD-SX6 board
+      #15903 open 2026-08-15 emax.cpp: Boot past loading software
+      #7689 open 2021-01-22 Formatting MGT PlusD Disks - ZX Spectrum Emulation
+      #15521 open 2026-06-14 tektronix/tek440x.cpp  adding activity LEDs to display
+      #12386 open 2024-05-19 coco_flop: Add new software from colorcomputerarchive.com disk images
+      #15708 open 2026-07-16 bx256hp_flop: "msdos disk.d80" (MS-DOS 1.25) is a bad dump — sector at 0x3A00 duplicates 0x2400, breaking COMMAND.COM load
+      #12062 open 2024-02-24 msx_dsk.cpp: Attempt to more strongly identify MSX-DOS disk images
+      #14559 open 2025-11-20 mz2000_flop: 11 additions to software list
+      #13190 open 2025-01-06 mmr4000le unable to complete disk formatting, "NcrInterruptServiceRoutine: Unexpected bus disconnect"
+      #2385 open 2017-06-15 20 sectors/track disk images for coco12 & coco3 not working
+      #16322 open 2026-10-04 Heap buffer overflow (ASan: WRITE of size 8) in `dsk_dsk_construct()` when imgtool opens a crafted MV-CPC DSK image — unbounded `track_offsets[]` write
+  partial        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15876 open 2026-08-10 Iskra-226: firmware dumps, disk images with provenance, on-disk format and partial ISA documentation
+      #15653 open 2026-07-06 emu/addrmap.cpp: Allow to map shares with offset. Performed size validation for union of partial ranges.
+      #13939 open 2025-07-11 Megadrive/Paprium
+      #13741 open 2025-05-24 technos/vball.cpp: wrong raster effects
+      #14559 open 2025-11-20 mz2000_flop: 11 additions to software list
+      #14551 open 2025-11-19 mz700_cass, mz800_cass: 43 additions and other updates to software lists
+      #11982 open 2024-01-29 Added Vib-Ribbon (Japan, Asia) to psx.xml
+      #16120 merged 2026-09-13 cdi220_lcd: Make it a device
+      #11644 open 2023-10-20 Incomplete/broken mc6845 interlaced mode
+      #16194 open 2026-09-20 tatsumi/apache3: Implement ground rendering and sprite rotation
+      #12271 open 2024-04-18 amstrad/amstrad: wrong default screen resolution
+      #15960 closed 2026-08-22 machine/am9517a: eisa_dma_device m_stop[4] is save-registered but never initialized; readback returns residue and partial writes preserve it
+      #13421 open 2025-02-26 update to add network for Sega X-Board, Y-Board, Konami K056230, Namco C139
+      #16286 merged 2026-09-30 video/voodoo_render.cpp: Fix multibase texture LOD addresses (fixes texture corruption in konami/viper.cpp games) [spita90]
+      #13138 open 2024-12-29 DIP switch validation updates
+      #16164 closed 2026-09-16 apple2gs: w65816 intermittent timing bugs
+      #728 open 2016-03-19 Power-off callback on MAME exit
+      #16343 merged 2026-10-05 added emulation of the YGV625 video chip [Peter Wilhelmsen]
+      #15076 open 2026-03-09 MAME 0.286 hp9k_370 fails to boot HP-UX with SCSI-related kernel panic
+      #14799 open 2026-01-12 Feature Request: add option to scan ROMs folders directly
+  incomplete     >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #14656 open 2025-12-08 MU50 Hanging Drum notes, incomplete multisamples, mono playback
+      #11644 open 2023-10-20 Incomplete/broken mc6845 interlaced mode
+      #4686 open 2019-02-24 [Enhancement] Incomplete option description text
+      #16072 open 2026-09-06 avr8: Break up the register block
+      #15328 open 2026-05-11 Can't build MAME
+      #13188 open 2025-01-06 Intel 8275 unitialized behaviour not emulated
+      #13138 open 2024-12-29 DIP switch validation updates
+      #391 open 2015-10-15 Convert drivers using PCI to latest MAME PCI interface.
+      #11696 open 2023-11-02 atari/mediagx: Adds Preliminary Input Handling, gets machine working for a51site4
+      #16044 merged 2026-09-02 chdman: Handle CD extraction read failures
+      #9074 open 2021-12-31 nwk-tr.cpp: Handbrake lever shouldn't be set as IPT_AD_STICK_Y
+      #15902 merged 2026-08-15 chd: Handle short writes
+      #12826 open 2024-09-28 Dynax Mahjong games  's TLCS cpu simulation bug 
+      #14799 open 2026-01-12 Feature Request: add option to scan ROMs folders directly
+      #14474 open 2025-11-04 apple: diskiing/iwm corruption
+      #16053 merged 2026-09-04 video/sti3400: Add preliminary MPEG video decoder
+      #15973 merged 2026-08-22 bus/wangpc: implement the Text/Image/Graphics controller
+      #10308 open 2022-09-05 CHD does not store CD track indexes from cuesheet
+      #16196 closed 2026-09-20 seconds_to_run >= 300 bad behaviour
+      #15763 merged 2026-07-25 sega/saturn_scu.cpp: initial implementation of a DMA orchestrator
+  dataloss       0 hit(s)
+  recover        58 hit(s) (all listed)
+      #16212 open 2026-09-20 video/mc6847: Preserve per-pixel CSS when applying NTSC artifacting
+      #4198 open 2018-10-26 ALSA underrun occurred
+      #15423 open 2026-05-31 Model 2 lightgun games reload/miss when using optical lightguns on dark onscreen targets
+      #14332 open 2025-10-14 SHARC: verify timing bottlenecks
+      #16322 open 2026-10-04 Heap buffer overflow (ASan: WRITE of size 8) in `dsk_dsk_construct()` when imgtool opens a crafted MV-CPC DSK image — unbounded `track_offsets[]` write
+      #16304 merged 2026-10-02 roland/sc88_sub.cpp: Don't stall MIDI input when the main CPU drops an exclusive block
+      #8742 open 2021-10-23 The "automatic save/restore" restore the overclock persent number, But the running freq is actually still 100%
+      #15708 open 2026-07-16 bx256hp_flop: "msdos disk.d80" (MS-DOS 1.25) is a bad dump — sector at 0x3A00 duplicates 0x2400, breaking COMMAND.COM load
+      #16180 merged 2026-09-19 powerpc: honor cpu_device::retry_access() in the DRC; boot pmac6200 from CD
+      #2191 open 2017-03-27 mips3 drc  :  missing label for branch destination, destination in unmapped page
+      #16105 merged 2026-09-11 fix(): Primal rage protection emualtion improvements and emulation correctness fix for the blood color.
+      #15876 open 2026-08-10 Iskra-226: firmware dumps, disk images with provenance, on-disk format and partial ISA documentation
+      #15648 merged 2026-07-05 xerox820: complete the low-profile (G25) keyboard; recover the v5.0 u36
+      #15886 merged 2026-08-12 chdman: retain session data
+      #14104 open 2025-08-31 Initialization of the HP 9133 HP-IB hard disk consistently fails on HP 98x6 machines.
+      #15485 merged 2026-06-10 xerox/xerox820.cpp: 820-II disk personalities, SASI rigid disks, and the 16/8 8086 coprocessor
+      #16181 merged 2026-09-19 cdi: add Digital Video Cartridge (VMPEG) emulation and ntsc support
+      #2517 open 2017-07-25 chdman creates different metadata since 0.176, mismatches the XML hashes
+      #15358 merged 2026-05-20 midway/williams.cpp: Added Robotron: 2084 prototype (Release 3)
+      #15770 closed 2026-07-26 Bundles vulnerable version 2.7.1 of libexpat at `/3rdparty/expat`
+  recovery       15 hit(s) (all listed)
+      #12581 open 2024-07-15 microsoft/xbox.cpp: hookup HDD SW list
+      #15423 open 2026-05-31 Model 2 lightgun games reload/miss when using optical lightguns on dark onscreen targets
+      #16219 closed 2026-09-21 Parallelize MAME CI builds with reusable shard caches
+      #12164 closed 2024-03-21 Please add the Game Street Fighter II' - Hyper Fighting Sr. SF Champion Edition, in the official romset of MAME
+      #15035 closed 2026-02-28 atari/atarisy2: add Garfield prototype (1984, unreleased)
+      #10967 merged 2023-03-08 apple3: Add support for control-reset.
+      #10830 merged 2023-01-13 QA cleanups for various PC-based Arcade skeleton drivers
+      #10393 merged 2022-10-04 rbowlorama.cpp: Typo, the recovery image is not v2.1.1, but v2.2.1
+      #9343 merged 2022-02-26 photoply.cpp: Add recovery discs for Photo Play 2001 [jordigahan, ClawGrip]
+      #9487 merged 2022-03-30 New NOT_WORKING machines
+      #9719 merged 2022-05-08 megadriv.xml: Trimmed pcottonp dump by half.
+      #8813 closed 2021-11-11 Mac -cdrom only loading Legacy Recovery iso
+      #8922 closed 2021-12-02 mac128.cpp - unable to format hard disk
+      #7131 closed 2020-08-23 Z8 SIO implementation is completely wrong
+      #7133 closed 2020-08-24 cv1k.cpp: Add notes for pixel clock
+  rollback       3 hit(s) (all listed)
+      #15425 merged 2026-06-01 imagedev/floppy: batch sequential flux writes
+      #8761 closed 2021-10-27 -video bgfx not working
+      #8902 closed 2021-11-28 src/mame/etc/gen_device_defs.py: major overhaul of device file generation:
+  resume         47 hit(s) (all listed)
+      #16084 open 2026-09-08 arktechnico/wildcats.cpp: Add Wild Cats pachislot machine
+      #16126 merged 2026-09-13 cpu/v25: instruction cycle counts from manual, fix REP resume after interrupt
+      #14944 open 2026-02-10 cpu/mips3: Fix DRC debugger interaction for register and memory modifications
+      #6749 open 2020-05-26 Single Density DMK
+      #16157 merged 2026-09-16 cpu/mc68hc11: Wake from STOP on masked XIRQ
+      #14600 open 2025-11-30 emu.register_periodic blocked on Windows when in MAME debugger
+      #15755 open 2026-07-23 williams/seattle.cpp: Advance simulated wheel motor at a fixed time-based rate
+      #16364 merged 2026-10-08 kaypro/kaypro.cpp: Fixed disk access with the 81-478 universal ROM.
+      #9578 open 2022-04-16 Not possible to reconnect to gdbstub
+      #11343 open 2023-06-16 video/voodoo.cpp: VGA passthrough support for Voodoo 1 & 2
+      #16230 open 2026-09-23 CD-i: Lost Ride - Differences to real hardware
+      #16053 merged 2026-09-04 video/sti3400: Add preliminary MPEG video decoder
+      #14474 open 2025-11-04 apple: diskiing/iwm corruption
+      #16181 merged 2026-09-19 cdi: add Digital Video Cartridge (VMPEG) emulation and ntsc support
+      #15483 merged 2026-06-10 machine/nscsi_hle: allow targets to defer phase transitions
+      #11568 open 2023-09-22 segmentationi fault on Mac M2
+      #15416 open 2026-05-30 wd_fdc + z80: DRQ→NMI rising-edge timing allows nested NMI inside a BIOS handler that real WD1793+Z80 silicon doesn't permit — guidance on preferred fix architecture
+      #15175 merged 2026-03-31 m68000: handle each fault within an instruction as it occurs
+      #11288 closed 2023-05-30 abc1600 no longer boots into abcenix after M68008 refactoring
+      #8538 open 2021-09-05 BGFX crashes on linux when bgfx_backend is set to auto.
+  half-written   38 hit(s) (all listed)
+      #16331 merged 2026-10-04 apple/valkyrie: Correct dot clocks and mode timings
+      #16180 merged 2026-09-19 powerpc: honor cpu_device::retry_access() in the DRC; boot pmac6200 from CD
+      #4560 open 2019-01-26 Lua Cheatfinder plugin with UNSP CPU
+      #16038 merged 2026-09-02 segas32_v.cpp per line clipping - titlef, jpark, ga2
+      #16285 merged 2026-09-30 machine/i8291a: Fix MJMN, APT gating, NRFD release, power-up and reset handling
+      #15732 open 2026-07-19 hyprduel: i4220 CRTC vertical register programs the display window (first visible line = 2); the hardcoded visarea shows the game's off-screen work lines
+      #16135 merged 2026-09-14 ms32.cpp: Add the Math device and road code  for F-1 Super Battle
+      #10974 open 2023-03-10 tetrisp2: Implement MPEG video decoding for VJ's King Qtaro PCI video decoder card
+      #13421 open 2025-02-26 update to add network for Sega X-Board, Y-Board, Konami K056230, Namco C139
+      #13598 open 2025-04-16 6805: incorrect cycle emulation (Apple IIe MouseCard/screen emulation is wrong)
+      #14479 closed 2025-11-04 [RFC] TMS32025: Attempt to optimize the CPU execution
+      #8919 closed 2021-12-01 saturn.cpp: device-ify VDP1/2, greatly rewrite QA notes at top, addresses for good #8915
+      #388 open 2015-10-14 3D artwork system
+      #15488 closed 2026-06-11 capcom/vulgus info
+      #15028 closed 2026-02-27 capcom/lastduel.cpp: sprite dma info
+      #14311 merged 2025-10-11 minitel2: Improved ROM list
+      #13815 merged 2025-06-12 MOS6551: correctly transfer data from RSR to RDR
+      #13048 closed 2024-12-05 chdman leaves trailing garbage in the last hunk after the CD data
+      #9946 merged 2022-06-18 Juku E5101/E5104 into working machine status
+      #12904 closed 2024-10-24 osd: better socket handling.
+  wipe           24 hit(s) (all listed)
+      #8542 open 2021-09-06 Graceful handling of multiple controller types and transient status in default.cfg
+      #5992 open 2019-11-30 Do not mark indigo2_4415 as not working
+      #391 open 2015-10-15 Convert drivers using PCI to latest MAME PCI interface.
+      #15672 merged 2026-07-10 Flash Beats driver + layout; promoted to working
+      #16135 merged 2026-09-14 ms32.cpp: Add the Math device and road code  for F-1 Super Battle
+      #15538 closed 2026-06-15 Sega Rally Audio Fix -MSLC field on monitor register (0x408) read
+      #15073 merged 2026-03-08 apple2video: improve video timing
+      #12426 closed 2024-06-01 pc9801: new software list for original disks
+      #13768 merged 2025-06-02 ADP: Servicetastatur
+      #10708 closed 2022-12-19 Apple IIgs (//gs) incorrect behavior on control-reset
+      #983 closed 2016-06-21 Path parameters in mame.ini and ui.ini cleanup (and cleanup defaults)
+      #12418 merged 2024-05-29 nitchibutsu/shettle.cpp - Change shettle palette PROM decode to match wiping
+      #11558 merged 2023-09-17 namco/namcos12: Add CDXA board emulation
+      #11072 merged 2023-04-03 namco/namcos10.cpp: Added US version of Mr. Driller 2
+      #11206 merged 2023-05-09 atari/atarigt.cpp: Added input definitions for newest version of Primal Rage
+      #8969 closed 2021-12-13 Correct Wiping / Rug Rats Manufacturer [sjy96525]
+      #9287 merged 2022-02-09 snes.xml: Added 9 prototypes.
+      #9098 merged 2022-01-06 ymf271.cpp: Fix timer A period, Add notes for timer
+      #9632 merged 2022-04-26 JPM SRU fruit machine improvements
+      #7680 closed 2021-01-18 Graphical regression in Wiping (related to 'emumem'?)
+  wipes          2 hit(s) (all listed)
+      #15672 merged 2026-07-10 Flash Beats driver + layout; promoted to working
+      #11206 merged 2023-05-09 atari/atarigt.cpp: Added input definitions for newest version of Primal Rage
+  erase          51 hit(s) (all listed)
+      #16302 open 2026-10-02 misc/savquest.cpp: support for Voodoo 2 BitBlt
+      #16370 open 2026-10-08 cpu/e132xs: Fixed SETADR carry going into bit 0 instead of bit 9 (fixes mrkickera, yorijori)
+      #6041 open 2019-12-11 Refactor jagobj and jagblit into actual device(s)
+      #5835 open 2019-10-31 Store controller configs according to the UUID / "stable ID" instead of the OS controller order, and ignore configs for devices that aren't connected.
+      #11502 open 2023-08-23 Update Korean translation
+      #9106 open 2022-01-07 sega/dccons.cpp: loopchk unit/integration tests
+      #15709 open 2026-07-16 Compile errors with Emscripten 6.0.3
+      #13598 open 2025-04-16 6805: incorrect cycle emulation (Apple IIe MouseCard/screen emulation is wrong)
+      #15237 merged 2026-04-18 Refactor 28-series EEPROM code
+      #13708 merged 2025-05-17 namcos21: clear screen to palette index 0 instead of 0xff
+      #14779 closed 2026-01-05 apple2 w/ SCSI card: need ability to control device 1
+      #13575 merged 2025-04-10 model2: improve z-sort and clipping
+      #10958 merged 2023-03-05 Restructure H19 to pull out code that should be common with the H89.
+      #3599 closed 2018-05-23 [CD-i] Burn:Cycle - Skipping audio
+      #13408 merged 2025-02-23 taito/flstory.cpp, taito/nycaptor.cpp: Correct sound CPU interrupt frequency
+      #12641 merged 2024-08-05 konami/xmen.cpp: Add service switch inputs
+      #12698 merged 2024-08-28 Plug and Play additions (ekara + more)
+      #12439 merged 2024-06-03 imagedev/floppy: fix a bug with reading the first 1-bit on a track
+      #12291 closed 2024-04-21 EACA/Colour Genie EG2000: Games reported as playable can't go past loading
+      #11504 closed 2023-08-24 heathkit/tlb.cpp: fix gp19 50-line text mode
+  erasing        10 hit(s) (all listed)
+      #16370 open 2026-10-08 cpu/e132xs: Fixed SETADR carry going into bit 0 instead of bit 9 (fixes mrkickera, yorijori)
+      #5835 open 2019-10-31 Store controller configs according to the UUID / "stable ID" instead of the OS controller order, and ignore configs for devices that aren't connected.
+      #10958 merged 2023-03-05 Restructure H19 to pull out code that should be common with the H89.
+      #11504 closed 2023-08-24 heathkit/tlb.cpp: fix gp19 50-line text mode
+      #11368 merged 2023-06-24 sega/segaufo.cpp: Filled in newufo DIP settings from manual
+      #7548 merged 2020-12-12 intelfsh: Force fujitsu_29f016a to return status bits during clearing regardless of sector
+      #5996 closed 2019-12-01 nb1414m4.cpp : Fix "INSERT COIN" blinking start timing.
+      #546 merged 2016-01-03 liberatr: fully disentangle from atarigen, fix typo
+      #1332 merged 2016-08-27 option_guide C++-ification, touched up imgtool
+      #6017 merged 2019-12-05 nb1414m4.cpp, galivan.cpp : Fix displayed different from PCB
+  erased         21 hit(s) (all listed)
+      #11502 open 2023-08-23 Update Korean translation
+      #13575 merged 2025-04-10 model2: improve z-sort and clipping
+      #3599 closed 2018-05-23 [CD-i] Burn:Cycle - Skipping audio
+      #13408 merged 2025-02-23 taito/flstory.cpp, taito/nycaptor.cpp: Correct sound CPU interrupt frequency
+      #12641 merged 2024-08-05 konami/xmen.cpp: Add service switch inputs
+      #12291 closed 2024-04-21 EACA/Colour Genie EG2000: Games reported as playable can't go past loading
+      #11756 merged 2023-11-18 heathkit/tlb.cpp: Fix screensaver for superset slot device
+      #1107 closed 2016-07-16 Controller mappings are erased when the controllers don't exist
+      #10043 merged 2022-07-06 playmark.cpp: Dumped and added sound PIC for "Hard Times" [Caps0ff, Tailsnic Retroworks]
+      #10044 merged 2022-07-06 psikyo.cpp: Dumped and added (not hooked up yet) the security PIC for "Tengai" [Caps0ff, Museo Arcade Vintage, ClawGrip]
+      #10023 closed 2022-07-01 playmark.cpp: Use bin format instead of hex for PIC dumps
+      #7794 closed 2021-02-16 Can't compilate with Emscripten (Ubuntu 20)
+      #7548 merged 2020-12-12 intelfsh: Force fujitsu_29f016a to return status bits during clearing regardless of sector
+      #8874 merged 2021-11-24 nes.xml: Added 4 ROMs Of Unusual Size.
+      #7748 closed 2021-02-06 New working clones
+      #7807 closed 2021-02-19 add TSX support
+      #2295 closed 2017-05-10 Search bar broken after changing ROM list view mode
+      #4673 closed 2019-02-21  3rdparty leftover makes build "dirty"
+      #546 merged 2016-01-03 liberatr: fully disentangle from atarigen, fix typo
+      #345 merged 2015-09-27 new driver: ZAP - Z80 Applications Processor (by Steve Ciarcia - 1981)
+  destroy        43 hit(s) (all listed)
+      #16229 open 2026-09-23 frontend/mame/luaengine.cpp: Fixed emu.thread() data races on its Lua state
+      #586 open 2016-01-25 Game metadata should be in the original language.
+      #16363 open 2026-10-08 emu/debug/debugcpu.cpp: Fixed a crash on exit after a fatal error under the debugger
+      #10853 open 2023-01-25 Reset vector without deleting elements
+      #14142 open 2025-09-08 Multiple invalidations of a layout element don't work on most graphic backends
+      #12271 open 2024-04-18 amstrad/amstrad: wrong default screen resolution
+      #14180 open 2025-09-16 Star Wars vector emulation missing “overdrive → defocus” effect in Death Star explosion
+      #8727 open 2021-10-19 Ubuntu / NVIDIA / 0.236 - black on second screen
+      #5314 open 2019-07-05 Save State Support For DDPDFK and other "cv1k" games
+      #8954 open 2021-12-09 kicker: in-deep hardware differences
+      #10859 open 2023-01-28 Path to making bgfx default
+      #2517 open 2017-07-25 chdman creates different metadata since 0.176, mismatches the XML hashes
+      #15709 open 2026-07-16 Compile errors with Emscripten 6.0.3
+      #15710 merged 2026-07-16 xerox/xerox820.cpp: fix the 820-II standard-keyboard default
+      #15807 merged 2026-07-31 cpu/mcs96: MULB indexed byte operand, and HSO CAM entries lost to exact-equality matching
+      #7890 open 2021-03-25 Interlaced and composite video
+      #15428 closed 2026-06-02 bgfx: render vector games through a post-processing chain
+      #14404 merged 2025-10-23 wozfdc.cpp: improve timing of data register reads
+      #13477 closed 2025-03-14 konami/mystwarr.cpp - Add subtitle to mystwarr
+      #13855 closed 2025-06-20 konami 051733 issues (bladestl nmi timer, rng, collision reg)
+  destroys       4 hit(s) (all listed)
+      #16229 open 2026-09-23 frontend/mame/luaengine.cpp: Fixed emu.thread() data races on its Lua state
+      #13477 closed 2025-03-14 konami/mystwarr.cpp - Add subtitle to mystwarr
+      #11459 closed 2023-08-02 Added Sinistar (Cockpit version)
+      #9897 merged 2022-06-06 netlist: fix bugs and more cpp instead of macros
+  overwrite      66 hit(s) (all listed)
+      #8542 open 2021-09-06 Graceful handling of multiple controller types and transient status in default.cfg
+      #3864 open 2018-08-18 apple nubus ethernet: allow configurable MAC address
+      #6926 open 2020-07-08 Portnames: can't resave .json.
+      #16299 merged 2026-10-02 arcompact CPU fixes + leapster progress checkpoint [Alice Shelton] + Leapster Speech [Peter Wilhelmsen]
+      #15732 open 2026-07-19 hyprduel: i4220 CRTC vertical register programs the display window (first visible line = 2); the hardcoded visarea shows the game's off-screen work lines
+      #16225 merged 2026-09-22 midzeus_v.cpp: fix frozen screen edges and colour key bleed
+      #15844 merged 2026-08-04 namcos22_v.cpp: replace render_triangle_fan usages with render_polygon & render_triangle
+      #13876 open 2025-06-25 Memorex VIS Links - Additional course graphical glitches after first shot
+      #16053 merged 2026-09-04 video/sti3400: Add preliminary MPEG video decoder
+      #324 merged 2015-09-13 fix for FM-Towns clock, minor fixes
+      #15807 merged 2026-07-31 cpu/mcs96: MULB indexed byte operand, and HSO CAM entries lost to exact-equality matching
+      #15582 merged 2026-06-23 sega/model1: fix Virtua Fighter collision via TGP copro-RAM port model
+      #15576 closed 2026-06-22 tandy2k: pragmatic workarounds to boot MS-DOS 2.11 and launch DeskMate II
+      #15464 merged 2026-06-07 apple2: improve Zip Chip emulation
+      #13486 merged 2025-03-17 mb86233: write the results of an ALU operation before writing to register/memory, and only test the d register after ALU operations
+      #15387 merged 2026-05-27 apple2: improve accelerator delay emulation
+      #14311 merged 2025-10-11 minitel2: Improved ROM list
+      #11396 merged 2023-07-02 heathkit/tlb.cpp: Clear screen lines when DE is deasserted
+      #7957 closed 2021-04-15 Leftover sprites after continue countdown in contra
+      #13950 merged 2025-07-13 cpu/mb86233: sort out register update priority
+  clobber        10 hit(s) (all listed)
+      #13075 open 2024-12-12 makefile: add an helper target to genie xcode targets
+      #16262 merged 2026-09-25 philips/mcd212: Darken Black Level
+      #16141 merged 2026-09-15 swp30: fix three meg drc mismatches with the interpreter
+      #4139 open 2018-10-14 SH-4 core has inverted 32-bit words in double-precision FPRs
+      #15780 merged 2026-07-28 wangpc: fix expansion memory window and EMB card banking (128K -> 640K)
+      #15074 merged 2026-03-08 sh/sh7709s.cpp: Fix bug in DRC memory accessor using clobbered IO reg
+      #13053 closed 2024-12-08 mcs51: Serial output emulation should not clobber P3.1 when IDLE.
+      #11399 merged 2023-07-03 bfm/bfm_sc6.cpp: Added skeleton driver to hold Scorpion 6 Flash image files
+      #8887 merged 2021-11-26 Implement download links in docs theme
+      #2178 merged 2017-03-23 i386/pc_vga: save state fixes
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #11393 open 2023-07-02 Debugger: Scrolling on macOS creates blank area
+      #16370 open 2026-10-08 cpu/e132xs: Fixed SETADR carry going into bit 0 instead of bit 9 (fixes mrkickera, yorijori)
+      #7043 open 2020-08-08 SideArms refresh rate
+      #15423 open 2026-05-31 Model 2 lightgun games reload/miss when using optical lightguns on dark onscreen targets
+      #7689 open 2021-01-22 Formatting MGT PlusD Disks - ZX Spectrum Emulation
+      #15039 open 2026-03-01 Simplify handling of clang targets, fix clang build on aarch64 and riscv64
+      #9091 open 2022-01-04 jedutil returns no equations for PAL device (allegedly well dumped)
+      #10775 open 2023-01-01 Apple2e: floppy write drive issue (cassette -> floppy)
+      #15732 open 2026-07-19 hyprduel: i4220 CRTC vertical register programs the display window (first visible line = 2); the hardcoded visarea shows the game's off-screen work lines
+      #6926 open 2020-07-08 Portnames: can't resave .json.
+      #5801 open 2019-10-25 Convert screen device to a device interface
+      #8954 open 2021-12-09 kicker: in-deep hardware differences
+      #16245 merged 2026-09-25 CD-i: Interleave ICA Execution
+      #7639 open 2021-01-03 Unable to disable/redefine MPARAM (`-m64`) for cross-compilation
+      #14552 open 2025-11-19 suprterm needs to take over C800 on access to C0B2/C0B4
+      #16160 open 2026-09-16 namco/namcos2.cpp: Emulate C102 (ROZ) and C146 (sprite line buffer) custom chips based on decapping.
+      #391 open 2015-10-15 Convert drivers using PCI to latest MAME PCI interface.
+      #13873 open 2025-06-24 k051960/devstors sprite zoom info/test
+      #7890 open 2021-03-25 Interlaced and composite video
+      #7403 open 2020-10-27 Mega Drive VDP triggers the vblank interrupt very prematurely, scanline counter doesn't match real screen position
+  unreadable     27 hit(s) (all listed)
+      #16035 open 2026-09-01  synths stand alone librarian plug in
+      #15764 open 2026-07-25 swim1.cpp: Set long cell error only when synched
+      #2976 open 2017-12-27 ibm5170 driver cannot read hard disk
+      #586 open 2016-01-25 Game metadata should be in the original language.
+      #10148 open 2022-07-29 netlist: cspell, clang-format, readability
+      #16136 merged 2026-09-15 namco/namco_c169roz.cpp: Various fix and updates
+      #13349 closed 2025-02-09 Added support for Roland PRO-E Arranger
+      #14733 merged 2025-12-27 hash/casio_rompack.xml: Some info corrections/additions
+      #14524 closed 2025-11-14 UI Font != LAY Font
+      #13529 merged 2025-03-29 adp/stella8085.cpp: add 11 nonworking romsets
+      #13826 closed 2025-06-14 Memorex VIS Links game failing to load additional course CD
+      #11924 merged 2024-01-10 Placeholder driver for Aristocrat MK-7
+      #11404 merged 2023-07-04 x68k_flop.xml: add 11 dumps from original disks
+      #11467 merged 2023-08-05 samcoupe_flop.xml: Added 2 working items
+      #11819 closed 2023-12-05 Add Tandberg TDV-2115L
+      #10417 merged 2022-10-13 Bellfruit Black Box driver
+      #11131 merged 2023-04-20 namcos10: New dumps/redumps, support CD drive and Taiko I/O
+      #10121 closed 2022-07-23 input_rawinput.cpp: Add win32 RawInput joystick provider
+      #8854 merged 2021-11-20 news_r4k.cpp: Implement Sony NEWS NWS-5000X driver
+      #9447 merged 2022-03-21 Apple softlist update for March 2022
+  garbage        98 hit(s) (all listed)
+      #16216 open 2026-09-21 gaelco/futbol3.cpp: Cleanup, logic, and more sets
+      #16193 open 2026-09-20 konami/k005849 info
+      #14170 open 2025-09-13 Allow for multiple USB controllers to be auto-mapped to player 1.
+      #11208 open 2023-05-09 sega/powervr2.cpp: move renderer to threaded code
+      #15708 open 2026-07-16 bx256hp_flop: "msdos disk.d80" (MS-DOS 1.25) is a bad dump — sector at 0x3A00 duplicates 0x2400, breaking COMMAND.COM load
+      #13592 open 2025-04-14 imgtool can't identify d88 img
+      #16262 merged 2026-09-25 philips/mcd212: Darken Black Level
+      #15968 closed 2026-08-22 megadrive/smw64: m_ctrl[2], m_page_67 (and m_latch, m_data) are save-registered but never initialized; m_page_61 is uninitialized and not save-registered
+      #15876 open 2026-08-10 Iskra-226: firmware dumps, disk images with provenance, on-disk format and partial ISA documentation
+      #7547 open 2020-12-11 Allow BGFX manual selection of GPU to use
+      #15970 closed 2026-08-22 ti99/handset: previous_joy[4] and previous_key[4] are save-registered but never initialized; the first poll posts phantom events
+      #15756 merged 2026-07-23 machine/gt64xxx.cpp: Initialize register file and timer state at reset
+      #13988 closed 2025-07-25 CD-i: Smurfs - Graphical Glitches
+      #12916 open 2024-10-26 MCS48 RESET
+      #15604 merged 2026-06-28 gridcomp/gridcomp.cpp: support legacy screen mode for Compass 113x
+      #15715 merged 2026-07-17 sega/model1: Return the latched count when reading a stopped timer (fixes vf hair physics regression from #15642)
+      #15712 merged 2026-07-16 sega/model1: Clip wireframe lines to the viewport (fixes wingwar boot lockup from #15597)
+      #6824 open 2020-06-13 [VGMplay] Weird playback issue with a CPS-2 title
+      #16038 merged 2026-09-02 segas32_v.cpp per line clipping - titlef, jpark, ga2
+      #16135 merged 2026-09-14 ms32.cpp: Add the Math device and road code  for F-1 Super Battle
+  mangled        13 hit(s) (all listed)
+      #9774 open 2022-05-17 slot bios handling improvements
+      #1463 open 2016-09-29 Software Lists - Parent region should match actual machine parent
+      #15225 merged 2026-04-14 bus/centronics/pc6022.cpp: notes about print mechanism
+      #14628 closed 2025-12-02 i updated cops cpp with my files and i used ai becuase im an 14 year …
+      #11728 merged 2023-11-12 Taito F3 cleanup
+      #7290 merged 2020-09-25 Major update for HC55516 CVSD audio device and related filtering, as well as hooking it to drivers.
+      #11177 merged 2023-04-30 nintendo/n64_gateway.cpp: New driver and software list submission [Foxhack, Angelo Salese]
+      #9788 merged 2022-05-20 Removed device_timer, device_timer_id, et al in favor of direct callback members.
+      #8985 merged 2021-12-15 gt913: minor cleanup (re: #8960)
+      #7183 closed 2020-09-04 CDI driver: recent commit breaks previously working game (The Apprentice)
+      #2229 closed 2017-04-15 Softlist names with spaces no longer working
+      #893 merged 2016-05-25 Further improvements to the Patinho Feio driver & CPU
+      #285 merged 2015-08-13 attache: merged revisions and corrected name (nw)
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #16084 open 2026-09-08 arktechnico/wildcats.cpp: Add Wild Cats pachislot machine
+      #15184 open 2026-04-02 Compile error on macOS 15.7.5. with Xcode 26.3 (Clang 17.0.0) for mame0287
+      #15651 open 2026-07-05 frontend/mame/ui/filesel.cpp: Improved navigation in media selector.
+      #6515 open 2020-04-02 Allow embedded filesystems. [O. Galibert]
+      #8534 open 2021-09-04 BGFX backend-dependent hue shift with crt-geom and crt-geom-deluxe
+      #15193 open 2026-04-04 gridcomp/gridcomp.cpp: implement application ROMs
+      #3774 open 2018-07-22 archives changing hash at every commit
+      #14944 open 2026-02-10 cpu/mips3: Fix DRC debugger interaction for register and memory modifications
+      #16342 merged 2026-10-05 zilog/s8000: fix issues found by running SADIE diagnostics
+      #9336 open 2022-02-24 68340/68k moves instruction
+      #7124 open 2020-08-23 imgtool doesn't appear to be working in at least one test case.
+      #7266 open 2020-09-20 SGI Indigo 2 w/IRIX 4.0.5 stuck in a loop during Install
+      #11617 open 2023-10-15 netdev: Add support for the macOS 10.10+ vmnet virtual network interface [Kelvin Sherlock, R. Belmont]
+      #13733 open 2025-05-23 debugger: more granular naming for symbol table types
+      #3990 open 2018-09-12 MAME and chdman fail to recognize valid block-image files
+      #12805 open 2024-09-22 CHD CD images do not retain CD-TEXT data
+      #10113 open 2022-07-21 m4gbust regression logs
+      #12062 open 2024-02-24 msx_dsk.cpp: Attempt to more strongly identify MSX-DOS disk images
+      #12508 open 2024-06-25 XDG Base Directory Spec is not followed
+      #7225 open 2020-09-13 Prepare inclusion of netlist.lua into make generated target.
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15703 closed 2026-07-15 ringkingw: Fixed Wood Place name in title
+      #16054 open 2026-09-04 toshiba/rupo.cpp: Add not working word processor
+      #15778 open 2026-07-28 motoxgo hangs at black screen before POST since d7e131c39 (F2MC-16 external interrupt change)
+      #13023 open 2024-11-28 Holding issue for files with inconsistent formatting
+      #8542 open 2021-09-06 Graceful handling of multiple controller types and transient status in default.cfg
+      #15374 open 2026-05-24 "La Cucaracha" (Gokidetor) has an error in its release year (and more)
+      #7941 open 2021-04-07 Debugger: Memory viewer shows wrong address offset when changing bytes per line
+      #9092 open 2022-01-04 Super Basketball scroll field is offset by 1 pixel
+      #13670 open 2025-05-04 Apple IIgs - Choppy mouse
+      #7145 open 2020-08-27 No way to use BASIC on the Gigatron microcomputer
+      #867 open 2016-05-11 intvkbd: finish driver
+      #15972 open 2026-08-22 wangpc: add the PC-PM007 IBM PC Color Emulation card
+      #15777 open 2026-07-28 namco/namcos23: emulate the C139 serial link - two-cabinet link play for Time Crisis II
+      #13116 open 2024-12-24 vector_device: render dots using a circle texture
+      #15734 open 2026-07-19 cpu/drcfe.ipp: Fix generic DRC frontend losing the end_sequence() terminator off the live instruction list
+      #15193 open 2026-04-04 gridcomp/gridcomp.cpp: implement application ROMs
+      #6519 open 2020-04-04 - Updated infoxml to include attribute tags, masks, and values for mo…
+      #11252 open 2023-05-20 updates for PSX CHD hashes
+      #12289 open 2024-04-21 amstrad/amstrad: MAME fails the majority of the SHAKER tests
+      #6926 open 2020-07-08 Portnames: can't resave .json.
+  unclean        4 hit(s) (all listed)
+      #10859 open 2023-01-28 Path to making bgfx default
+      #11355 closed 2023-06-19 megadriv.xml: Added 3 items (2 working), replaced Bad Dump with verified one, fixed titles, added info
+      #8454 merged 2021-08-17 k054000.cpp: fix OTG hitboxes in Vendetta
+      #2755 closed 2017-10-26  Fixes for Portuguese (PT-PT) translation
+  shutdown       20 hit(s) (all listed)
+      #16084 open 2026-09-08 arktechnico/wildcats.cpp: Add Wild Cats pachislot machine
+      #16334 merged 2026-10-04 apple/cuda.cpp: invert ADB power key
+      #16311 merged 2026-10-02 i386, pc9801: Pass operand size to GetEA for correct segment checks, removing SHUT0/1 hack
+      #9578 open 2022-04-16 Not possible to reconnect to gdbstub
+      #728 open 2016-03-19 Power-off callback on MAME exit
+      #7547 open 2020-12-11 Allow BGFX manual selection of GPU to use
+      #5998 open 2019-12-02 mame -output console or -output network
+      #14656 open 2025-12-08 MU50 Hanging Drum notes, incomplete multisamples, mono playback
+      #15463 closed 2026-06-07 "-output network" issue - wrong output
+      #13421 open 2025-02-26 update to add network for Sega X-Board, Y-Board, Konami K056230, Namco C139
+      #8538 open 2021-09-05 BGFX crashes on linux when bgfx_backend is set to auto.
+      #13602 closed 2025-04-17 Lua string.pack Incorrectly Reports Errors (Bad Argument Index/Type, Overflow) in MAME Environment
+      #12904 closed 2024-10-24 osd: better socket handling.
+      #10090 closed 2022-07-15 ps2.cpp: Turn from skeleton driver into not working driver
+      #8922 closed 2021-12-02 mac128.cpp - unable to format hard disk
+      #8486 closed 2021-08-23 No video output with BGFX after commit 190f50e
+      #5459 closed 2019-08-10 Changes to LUA emu.register_prestart() and emu.register_start()
+      #5620 merged 2019-09-11 deco_mlc.cpp : Update blending behavior and misc updates
+      #5921 closed 2019-11-18 Improvements to shutdown behavior
+      #2470 merged 2017-07-13 Fix save/load states in Emscripten build
+  reboot         26 hit(s) (all listed)
+      #15903 open 2026-08-15 emax.cpp: Boot past loading software
+      #16311 merged 2026-10-02 i386, pc9801: Pass operand size to GetEA for correct segment checks, removing SHUT0/1 hack
+      #16121 merged 2026-09-13 apple/maccordyceps.cpp: add pmac5200 and fix bootloop on system restart
+      #16338 merged 2026-10-05 mcs51/ds5002fp.cpp: Fix some bugs [ClawGrip]
+      #9073 open 2021-12-31 Apple II: Legacy of the Ancients (woz) not working 100%
+      #7661 open 2021-01-12 Cart Fury : changing analog controls values do nothing in game
+      #11156 open 2023-04-26 capcom/cps1.cpp: 3wondersh, sf2hf, sf2hfj, sf2hfu: initial RAM/ROM check boot sequence not displaying correctly except when pressing F3
+      #3810 open 2018-07-31 Nokia 3310/3410/similar emulation
+      #12916 open 2024-10-26 MCS48 RESET
+      #14474 open 2025-11-04 apple: diskiing/iwm corruption
+      #15208 merged 2026-04-08 sinclair/specnext.cpp: Simulated behaviour of Anti-Brick core working.
+      #15072 merged 2026-03-08 Floppy sound
+      #13626 closed 2025-04-27 ns32081.cpp: fix for SFSR and LDSR opcodes that dont compute anything
+      #13891 closed 2025-07-01 [GNU/Linux] SDL2 ALSA sound doesn't work in 0.278 (Worked fine in 0.277)
+      #13420 closed 2025-02-26 Apple IIgs (//gs) incorrect behavior on control-reset
+      #8890 closed 2021-11-27 ksys573.cpp - Fixed save state bug preventing stage input
+      #9762 merged 2022-05-15 Z180 ASCI
+      #8703 closed 2021-10-14 Regression: hp9k370 (hp9k3xx.cpp) has bus errors and memory faults booting HP-UX
+      #7968 merged 2021-04-17 CM-32P: support PCM cards, add U-110 card softlist
+      #2388 closed 2017-06-16 coco12.cpp NitrOS9 L1 crashing on second drive access & coco3.cpp NitrOS-9 L1 crashing on second drive access.
+  disk+full      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #15876 open 2026-08-10 Iskra-226: firmware dumps, disk images with provenance, on-disk format and partial ISA documentation
+      #2667 open 2017-09-22 Potential trojan-infected files in softwarelists
+      #15345 open 2026-05-16 ti57: Add Texas Instruments TI-57 driver and TMC1500 CPU family
+      #16125 open 2026-09-13 Configuration of floppy drive sounds by XML file
+      #15972 open 2026-08-22 wangpc: add the PC-PM007 IBM PC Color Emulation card
+      #16364 merged 2026-10-08 kaypro/kaypro.cpp: Fixed disk access with the 81-478 universal ROM.
+      #14104 open 2025-08-31 Initialization of the HP 9133 HP-IB hard disk consistently fails on HP 98x6 machines.
+      #16359 open 2026-10-07 bbh: Regression - Controls get stuck in service mode after a while
+      #11751 open 2023-11-17 Atari ST cannot run GEM program correctly.
+      #11577 open 2023-09-29 Apple IIe floppy disk creation is buggy/broken. Cannot write to floppy disk.
+      #12308 open 2024-04-25 isa/sblaster.cpp: Prince of Persia freezes between levels when Sound Blaster is configured
+      #14474 open 2025-11-04 apple: diskiing/iwm corruption
+      #755 open 2016-03-28 Resolution aware configuration.
+      #12581 open 2024-07-15 microsoft/xbox.cpp: hookup HDD SW list
+      #14477 open 2025-11-04 maclc/maclc2/macclas2 - Emulator freezes when inserting a floppy image
+      #15416 open 2026-05-30 wd_fdc + z80: DRQ→NMI rising-edge timing allows nested NMI inside a BIOS handler that real WD1793+Z80 silicon doesn't permit — guidance on preferred fix architecture
+      #15076 open 2026-03-09 MAME 0.286 hp9k_370 fails to boot HP-UX with SCSI-related kernel panic
+      #16303 merged 2026-10-02 cpu/h8500: Corrected timing of branch, call, return and trap instructions
+      #12120 open 2024-03-09 Default input providers crashing on Windows 11 23H2
+      #10308 open 2022-09-05 CHD does not store CD track indexes from cuesheet
+  data+loss      48 hit(s) (all listed)
+      #15905 open 2026-08-16 cdrom: preserve additional CD track indexes
+      #11252 open 2023-05-20 updates for PSX CHD hashes
+      #15772 open 2026-07-26 wangpc: floppy boot hangs at "01 Start From Drive A" — level-1 (PIT ch2) interrupt dies, BIOS tick counter never decrements
+      #15423 open 2026-05-31 Model 2 lightgun games reload/miss when using optical lightguns on dark onscreen targets
+      #16339 merged 2026-10-05 hitachi/b16.cpp: Major emulation improvements (FDC/DMA, 1232k floppies, video latch and keyboard)
+      #728 open 2016-03-19 Power-off callback on MAME exit
+      #6641 open 2020-05-05 Multiple displays on MacOS seem to still be broken.
+      #16091 merged 2026-09-09 tms9901: update synchronous interrupt output on every external clock
+      #10376 open 2022-09-28 All cv1k games core dump on Ubuntu Jaunty with Mame 0.248
+      #13072 open 2024-12-11 Ported to Loongson3A6000, start screen is shown but got segment fault when initializing sound
+      #7532 open 2020-12-07 Cannot make MAME to show on primary display (Linux, Gnome, MAME 0.226)
+      #7193 open 2020-09-06 logitech_mouse breaks LMOUSE.DRV in Windows 3.1
+      #13421 open 2025-02-26 update to add network for Sega X-Board, Y-Board, Konami K056230, Namco C139
+      #10815 open 2023-01-09 Vuklan/GLES issues for most Konami GX titles
+      #14656 open 2025-12-08 MU50 Hanging Drum notes, incomplete multisamples, mono playback
+      #15824 closed 2026-08-01 [cps3.cpp] "jojoj" chd sha1 bad dump?
+      #14002 open 2025-07-29 Steam input not working.
+      #13523 open 2025-03-27 change bgfx types from default installed to others at slider's menu crashes mame at my system
+      #8538 open 2021-09-05 BGFX crashes on linux when bgfx_backend is set to auto.
+      #8576 closed 2021-09-15 Enable flexible structure saving
+  partial+write  48 hit(s) (all listed)
+      #16194 open 2026-09-20 tatsumi/apache3: Implement ground rendering and sprite rotation
+      #13421 open 2025-02-26 update to add network for Sega X-Board, Y-Board, Konami K056230, Namco C139
+      #16343 merged 2026-10-05 added emulation of the YGV625 video chip [Peter Wilhelmsen]
+      #15960 closed 2026-08-22 machine/am9517a: eisa_dma_device m_stop[4] is save-registered but never initialized; readback returns residue and partial writes preserve it
+      #10974 open 2023-03-10 tetrisp2: Implement MPEG video decoding for VJ's King Qtaro PCI video decoder card
+      #728 open 2016-03-19 Power-off callback on MAME exit
+      #13939 open 2025-07-11 Megadrive/Paprium
+      #15672 merged 2026-07-10 Flash Beats driver + layout; promoted to working
+      #15730 closed 2026-07-19 MIPS3 - DRC SC instruction register corruption with fix
+      #15430 merged 2026-06-02 kaypro/kaypro.cpp: Emulate the WD1002-HD0 hard disk controller on the Kaypro 10
+      #7890 open 2021-03-25 Interlaced and composite video
+      #15313 merged 2026-05-07 apple2common: debugger improvements
+      #15155 merged 2026-03-27 vfxcart.cpp: add a timer to complete the write cycle.
+      #15121 merged 2026-03-20 m6502: route core fetch/data/write paths through interruptible accesses
+      #15073 merged 2026-03-08 apple2video: improve video timing
+      #12605 closed 2024-07-21 chdman createdvd writes corrupt CHD files on CIFS storage
+      #14053 merged 2025-08-15 Fix regressions in apple2 video
+      #14131 closed 2025-09-06 Improve Ensoniq VFX-family display
+      #13470 merged 2025-03-12 tatsumi rotating sprite device refactor take 2
+      #9936 closed 2022-06-15 double free or corruption in arsystems.cpp
+  crash+safe     24 hit(s) (all listed)
+      #16229 open 2026-09-23 frontend/mame/luaengine.cpp: Fixed emu.thread() data races on its Lua state
+      #10492 open 2022-11-02 `3rdparty/bgfx/src/renderer_vk.cpp: runtime error: index 2 out of bounds for type 'bgfx::vk::Layer[2]'`
+      #15582 merged 2026-06-23 sega/model1: fix Virtua Fighter collision via TGP copro-RAM port model
+      #15073 merged 2026-03-08 apple2video: improve video timing
+      #13992 merged 2025-07-26 sinclair/specnext.cpp: Added video output configuration (VGA/HDMI); refresh rate 50/60Hz; timings for all reference machines
+      #13891 closed 2025-07-01 [GNU/Linux] SDL2 ALSA sound doesn't work in 0.278 (Worked fine in 0.277)
+      #13352 closed 2025-02-10 C++ error when auditing - flatpak
+      #13108 merged 2024-12-22 Fixes to UML and DRC backends
+      #13162 merged 2025-01-02 ARM64 (aarch64) DRC backend
+      #12007 merged 2024-02-04 video/mc6845.cpp: Restore support for zero active width/height configuration
+      #11373 closed 2023-06-24 src/devices/sound/discrete.cpp bad address and threading issues
+      #11776 merged 2023-11-23 HD44780: Implement timing (busy/status and blink interval) based on the input clock. Add notes about device variants. [Lord Nightmare]
+      #11539 merged 2023-09-10 Cherry pick upstream bgfx commits needed to get wayland working
+      #11747 merged 2023-11-15 New not working system & software list: Sega AI
+      #11571 closed 2023-09-26 Segmentation fault on game splash screen in Super Hang-On (shangon)
+      #8202 closed 2021-06-19 New drivers for Brother wordprocessors/typewriters AX-145, LW-30, LW-350, LW-450, LW-840ic
+      #10382 merged 2022-10-02 wd1000: use resolve_safe for m_intrq_cb
+      #10378 merged 2022-09-28 Add HDD support to the QX10
+      #9970 merged 2022-06-22 magicard driver: add required devices. nvram config files, Implement new devices
+      #9632 merged 2022-04-26 JPM SRU fruit machine improvements
+  atomic+write   15 hit(s) (all listed)
+      #15416 open 2026-05-30 wd_fdc + z80: DRQ→NMI rising-edge timing allows nested NMI inside a BIOS handler that real WD1793+Z80 silicon doesn't permit — guidance on preferred fix architecture
+      #15082 closed 2026-03-11 cpu/powerpc: implement reservation for lwarx and stwcx instruction pair
+      #15730 closed 2026-07-19 MIPS3 - DRC SC instruction register corruption with fix
+      #8563 open 2021-09-11 BGFX/Vulkan/nvidia: crash when attempting to run lethalj since commit 190f50e0a44d1fecdc7c9e442030cd5fe4ed434f
+      #8538 open 2021-09-05 BGFX crashes on linux when bgfx_backend is set to auto.
+      #15225 merged 2026-04-14 bus/centronics/pc6022.cpp: notes about print mechanism
+      #10047 merged 2022-07-07 z80: interruptible execution
+      #13630 merged 2025-04-28 cpu/z80: Optimized detection of attention needed in service step
+      #11608 merged 2023-10-11 util/ioprocs.cpp: Add wrappers for common patterns
+      #12034 merged 2024-02-14 sound/discrete.cpp: Use appropriate memory barriers for task synchronisation
+      #11843 merged 2023-12-16 Add new machine Tandberg TDV-2115L with accurate addressing in Display Logic driver
+      #8306 closed 2021-07-16 Missing Member in asio::basic_stream_socket during build for s390x (build failed)
+      #5721 closed 2019-10-06 Build fail with recent boost and asio
+      #8486 closed 2021-08-23 No video output with BGFX after commit 190f50e
+      #1749 merged 2016-11-20 Created DYNAMIC_API macros for dynamic bind helper classes
+  lock+file      68 hit(s) (all listed)
+      #10212 open 2022-08-11 MAME debugger feature requests (don't lock file and reload ROM when changed)
+      #16171 open 2026-09-18 asma2k: Emulate PC Send text output
+      #3817 open 2018-08-02 MAME synths as VST plugins
+      #7500 open 2020-11-20 mame 0.226 fails to verify some files despite checksums being correct (Linux)
+      #12568 open 2024-07-11 `mame.lst` requires either validation or removal
+      #15732 open 2026-07-19 hyprduel: i4220 CRTC vertical register programs the display window (first visible line = 2); the hardcoded visarea shows the game's off-screen work lines
+      #15173 open 2026-03-30 [maclc] Connect second hard drive
+      #12038 open 2024-02-16 'Hide Romless machines from available' setting not respected after internal audit.
+      #6641 open 2020-05-05 Multiple displays on MacOS seem to still be broken.
+      #13598 open 2025-04-16 6805: incorrect cycle emulation (Apple IIe MouseCard/screen emulation is wrong)
+      #13421 open 2025-02-26 update to add network for Sega X-Board, Y-Board, Konami K056230, Namco C139
+      #11983 open 2024-01-29 Add update for russian translation
+      #8538 open 2021-09-05 BGFX crashes on linux when bgfx_backend is set to auto.
+      #14477 open 2025-11-04 maclc/maclc2/macclas2 - Emulator freezes when inserting a floppy image
+      #15485 merged 2026-06-10 xerox/xerox820.cpp: 820-II disk personalities, SASI rigid disks, and the 16/8 8086 coprocessor
+      #15697 merged 2026-07-14 siemens/s97801.cpp: Siemens 97801 terminal with LLE keyboard (new working machine)
+      #15351 closed 2026-05-18 MAME on Windows denies write access to disk images, unlike on Linux and macOS
+      #15639 closed 2026-07-03 emu, frontend/mame: Allow scripts to create outputs during machine start
+      #7890 open 2021-03-25 Interlaced and composite video
+      #15385 merged 2026-05-26 formats/imd_dsk: Add save support (IMD write for flopconvert)
+  write+failure  47 hit(s) (all listed)
+      #15755 open 2026-07-23 williams/seattle.cpp: Advance simulated wheel motor at a fixed time-based rate
+      #16045 merged 2026-09-02 chdman: Handle metadata stdout write errors
+      #16194 open 2026-09-20 tatsumi/apache3: Implement ground rendering and sprite rotation
+      #16149 closed 2026-09-15 cpu/powerpc: enforce page protection in the 603 software TLB
+      #16044 merged 2026-09-02 chdman: Handle CD extraction read failures
+      #7043 open 2020-08-08 SideArms refresh rate
+      #16219 closed 2026-09-21 Parallelize MAME CI builds with reusable shard caches
+      #9106 open 2022-01-07 sega/dccons.cpp: loopchk unit/integration tests
+      #5314 open 2019-07-05 Save State Support For DDPDFK and other "cv1k" games
+      #15898 open 2026-08-15 MAME fails to load state from a state_directory of semicolon-separated paths
+      #15988 closed 2026-08-25 Missing definition for chd_file::create(util::random_read_write &, ...) in src/lib/util/chd.cpp
+      #9336 open 2022-02-24 68340/68k moves instruction
+      #8597 open 2021-09-19 MSVC delegate implementation pitfalls
+      #15416 open 2026-05-30 wd_fdc + z80: DRQ→NMI rising-edge timing allows nested NMI inside a BIOS handler that real WD1793+Z80 silicon doesn't permit — guidance on preferred fix architecture
+      #15874 merged 2026-08-10 osd/netdev/pcap.cpp: Fix inverted success/failure return from send()
+      #15866 merged 2026-08-09 z8000,z8010,zilog/s8000: correct CPU/MMU behavior and boot ZEUS
+      #15803 merged 2026-07-30 apple2gs: memory esoterica
+      #15756 merged 2026-07-23 machine/gt64xxx.cpp: Initialize register file and timer state at reset
+      #15730 closed 2026-07-19 MIPS3 - DRC SC instruction register corruption with fix
+      #15082 closed 2026-03-11 cpu/powerpc: implement reservation for lwarx and stwcx instruction pair
+  file+contents  >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #16084 open 2026-09-08 arktechnico/wildcats.cpp: Add Wild Cats pachislot machine
+      #15184 open 2026-04-02 Compile error on macOS 15.7.5. with Xcode 26.3 (Clang 17.0.0) for mame0287
+      #15651 open 2026-07-05 frontend/mame/ui/filesel.cpp: Improved navigation in media selector.
+      #6515 open 2020-04-02 Allow embedded filesystems. [O. Galibert]
+      #7124 open 2020-08-23 imgtool doesn't appear to be working in at least one test case.
+      #3990 open 2018-09-12 MAME and chdman fail to recognize valid block-image files
+      #7266 open 2020-09-20 SGI Indigo 2 w/IRIX 4.0.5 stuck in a loop during Install
+      #10113 open 2022-07-21 m4gbust regression logs
+      #16342 merged 2026-10-05 zilog/s8000: fix issues found by running SADIE diagnostics
+      #11617 open 2023-10-15 netdev: Add support for the macOS 10.10+ vmnet virtual network interface [Kelvin Sherlock, R. Belmont]
+      #7225 open 2020-09-13 Prepare inclusion of netlist.lua into make generated target.
+      #4722 open 2019-03-05 MAKE CLEAN is not working properly when compiling from R:/ (Ramdisk)
+      #15876 open 2026-08-10 Iskra-226: firmware dumps, disk images with provenance, on-disk format and partial ISA documentation
+      #12508 open 2024-06-25 XDG Base Directory Spec is not followed
+      #12062 open 2024-02-24 msx_dsk.cpp: Attempt to more strongly identify MSX-DOS disk images
+      #15076 open 2026-03-09 MAME 0.286 hp9k_370 fails to boot HP-UX with SCSI-related kernel panic
+      #15328 open 2026-05-11 Can't build MAME
+      #14799 open 2026-01-12 Feature Request: add option to scan ROMs folders directly
+      #14653 open 2025-12-08 Dumped the Dutch version of Kidizoom Twist's user data
+      #16079 merged 2026-09-07 ti/ti80.cpp: Add TI-80 graphing calculator
+
+== 51 terms run; 50 returned hits, 13 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

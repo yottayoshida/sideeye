@@ -1,0 +1,651 @@
+== novelty pre-scan: arkenfox/user.js
+== date: 2026-10-09T01:06:16Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          86 hit(s) (all listed)
+      #2058 open 2026-06-17 ToDo: diffs FF152 [SETTING] updates
+      #123 open 2017-05-21 sticky: deprecated-removed-legacy prefs
+      #2021 closed 2025-12-13 FF146 minidumps / browser profile rollout
+      #1989 closed 2025-08-13 changelog v140
+      #2026 closed 2026-01-08 About Fingerprinting and Threat Models from a Newbie perspective.
+      #2005 closed 2025-10-26 ToDo: diffs FF141-FF142
+      #1980 closed 2025-07-18 How sanitize Session Restore on shutdown
+      #1957 closed 2025-04-21 ToDo: diffs FF136-FF137
+      #1968 closed 2025-06-09 ToDo: diffs FF138-FF139
+      #1964 closed 2025-05-25 ToDo: diffs FF137-FF138
+      #1916 closed 2024-11-28 webgl.disabled breaks github.com homepage
+      #1946 closed 2025-03-13 help with sanitizing overrides
+      #655 closed 2019-02-26 sticky: extensions
+      #1495 closed 2022-07-04 Cookie clearing exceptions don't work after Arkenfox 102
+      #1845 closed 2024-05-26 `incoming.telemetry.mozilla.org` [solved: sanitize profile\datareporting]
+      #1836 closed 2024-05-03 ToDo: diffs FF124-FF125.0.1
+      #1714 closed 2023-09-01 ToDo: diffs FF116-FF117
+      #1626 closed 2023-02-05 re-enabled manual crash reporting
+      #1625 closed 2023-02-05 Enable manual crash reporting
+      #1674 closed 2023-05-14 ToDo: diffs FF112-FF113
+  corrupt        10 hit(s) (all listed)
+      #1808 closed 2024-02-16 Embed videos will not load and play within Canvas LMS: [A: it was uBO]
+      #1689 closed 2023-07-09 ToDo: diffs FF114-FF115
+      #1582 closed 2022-11-10 Overriding network.captive-portal-service.enabled leads to crash [1800603, fixed FF111+]
+      #721 closed 2019-05-04 I can't install addons [1548973]
+      #1347 closed 2022-01-24 Using firefox account feature alongisde user.js
+      #1365 closed 2022-02-08 Unable clean firefox with Ccleaner or Revouninstaller after use Arkenfox.js [solved: do not use 3rd party tools]
+      #1198 closed 2021-06-24 Firefox restore google like default search engine
+      #1090 closed 2021-01-16 Website auto-installing Firefox extension?
+      #994 closed 2020-08-19 ToDo: diffs FF79-FF80
+      #978 closed 2020-07-21 ToDo: diffs FF78-FF79
+  corruption     5 hit(s) (all listed)
+      #1657 closed 2023-04-14 Anti-FP for NON-RFP [solved: use CanvasBlocker]
+      #1365 closed 2022-02-08 Unable clean firefox with Ccleaner or Revouninstaller after use Arkenfox.js [solved: do not use 3rd party tools]
+      #335 closed 2018-01-10 Fix description for javascript.options.asmjs
+      #791 closed 2019-09-08 corroborator.enabled
+      #273 closed 2017-11-18 [RESOLVED] v57: uBo settings affected by clearing Offline Website Data on close.
+  truncated      10 hit(s) (all listed)
+      #1907 closed 2024-10-06 ToDo: diffs FF130-FF131
+      #1709 closed 2023-08-27 ToDo: diffs FF115-FF116
+      #295 closed 2017-11-30 Extension Hoxx VPN Proxy not working [solved: security.OCSP.require]
+      #1034 closed 2020-10-07 Despair. Firefox wont save previous session and keep login cookies. Not possible? [invalid: works for me: and see override recipe]
+      #574 closed 2018-12-05 Interactive real-time user.js: Stage 1 [Data Collection]
+      #569 closed 2018-12-02 development: an online interactive real-time user.js [prototype]
+      #942 closed 2020-05-14 general discussion on FPing: have at it
+      #1077 closed 2020-12-23 reminder: tighten cross origin referers
+      #556 closed 2018-11-26 Update updater.sh
+      #312 closed 2017-12-13 prefs.js cleaner script for Windows 1.0b2
+  truncate       19 hit(s) (all listed)
+      #1986 closed 2025-07-27 ToDo: diffs FF140-FF141
+      #1842 closed 2024-05-20 ToDo: diffs FF125.0.1-FF126
+      #1440 closed 2022-05-03 Add link to relevant changelog from Releases (for atom/RSS readers)
+      #295 closed 2017-11-30 Extension Hoxx VPN Proxy not working [solved: security.OCSP.require]
+      #1034 closed 2020-10-07 Despair. Firefox wont save previous session and keep login cookies. Not possible? [invalid: works for me: and see override recipe]
+      #1248 closed 2021-09-04 FYI: urlbar and search pref ultimate list [as of FF93]
+      #1249 closed 2021-09-07 ToDo: diffs FF91-FF92
+      #296 closed 2017-11-30 ghacks-user.js updater for Windows
+      #501 closed 2018-09-10 ToDo: diffs FF62-FF63
+      #574 closed 2018-12-05 Interactive real-time user.js: Stage 1 [Data Collection]
+      #569 closed 2018-12-02 development: an online interactive real-time user.js [prototype]
+      #949 closed 2020-05-26 ToDo: diffs FF76-FF77
+      #942 closed 2020-05-14 general discussion on FPing: have at it
+      #911 closed 2020-03-25 ToDo: diffs FF74-FF75
+      #959 closed 2020-06-23 ToDo: diffs FF77-FF78
+      #1077 closed 2020-12-23 reminder: tighten cross origin referers
+      #1117 closed 2021-02-16 ToDo: diffs FF85-FF86
+      #556 closed 2018-11-26 Update updater.sh
+      #312 closed 2017-12-13 prefs.js cleaner script for Windows 1.0b2
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2043 closed 2026-04-24 ToDo: diffs FF144-FF145
+      #2025 closed 2026-01-01 fix clearing browsing history on shutdown
+      #1636 closed 2023-02-26 RFP: zoom regressions [1975753]
+      #1810 closed 2024-02-17 updater.sh returns with exit code 0 when failing in update_userjs
+      #1957 closed 2025-04-21 ToDo: diffs FF136-FF137
+      #1818 closed 2024-03-21 GPC
+      #1911 closed 2024-11-03 ToDo: diffs FF131-FF132
+      #970 closed 2020-07-08 font-visibility
+      #655 closed 2019-02-26 sticky: extensions
+      #1907 closed 2024-10-06 ToDo: diffs FF130-FF131
+      #1918 closed 2024-12-01 ToDo: diffs FF132-FF133
+      #1866 closed 2024-06-28 Quarantined domains aren't enforced if a certain add-on is disabled
+      #1832 closed 2024-04-27 add pref to delete using `user-overrides.js`?
+      #1257 closed 2021-09-27 firefox suggest
+      #1845 closed 2024-05-26 `incoming.telemetry.mozilla.org` [solved: sanitize profile\datareporting]
+      #1811 closed 2024-02-18 CRLite seems not to work
+      #1800 closed 2024-01-29 Exceptions get cleared with shutdown?
+      #1842 closed 2024-05-20 ToDo: diffs FF125.0.1-FF126
+      #1802 closed 2024-02-03 ToDo: diffs FF121-FF122
+      #1750 closed 2023-10-26 Allow new version updates  ("browser.startup.homepage_override.mstone")
+  atomic         8 hit(s) (all listed)
+      #2007 closed 2025-10-26 ToDo: diffs FF143-FF144
+      #1964 closed 2025-05-25 ToDo: diffs FF137-FF138
+      #1957 closed 2025-04-21 ToDo: diffs FF136-FF137
+      #1820 closed 2024-03-24 ToDo: diffs FF123-FF124
+      #1735 closed 2023-10-05 error message post  running prefscleaner
+      #1249 closed 2021-09-07 ToDo: diffs FF91-FF92
+      #47 closed 2017-03-10 ToDo: diffs FF52-FF53
+      #959 closed 2020-06-23 ToDo: diffs FF77-FF78
+  atomically     0 hit(s)
+  interrupted    1 hit(s) (all listed)
+      #1656 closed 2023-04-13 How to prevent two-factor authentication for certain sites?
+  interrupt      9 hit(s) (all listed)
+      #1889 closed 2024-09-04 ToDo: diffs FF128-FF129
+      #1721 closed 2023-09-09 Use Firefox's native translate feature with arkenfox?
+      #1656 closed 2023-04-13 How to prevent two-factor authentication for certain sites?
+      #254 closed 2017-10-04 ToDo: diffs FF56-FF57
+      #20 closed 2017-02-21 sticky: items to investigate keep an eye on
+      #743 closed 2019-06-11 ToDo: diffs FF67-FF68
+      #805 closed 2019-09-21 ToDo: diffs FF69-FF70
+      #949 closed 2020-05-26 ToDo: diffs FF76-FF77
+      #1018 closed 2020-09-18 Questions regarding compartmentalization, extensions and uniqueness
+  sigkill        0 hit(s)
+  sigint         0 hit(s)
+  ctrl-c         18 hit(s) (all listed)
+      #123 open 2017-05-21 sticky: deprecated-removed-legacy prefs
+      #2023 closed 2025-12-20 arkenfox-cleanup.js: "Source map error" shown in console
+      #1946 closed 2025-03-13 help with sanitizing overrides
+      #330 closed 2018-01-05 RFP interfers with cmd on OSX [Bug 1405810: fixed FF59]
+      #1628 closed 2023-02-11 ns_error_not_implemented issue
+      #1519 closed 2022-07-31 Temporary Containers redundant with TCP / FPI?
+      #1199 closed 2021-06-27 https://fingerprintjs.com gmp-clearkey
+      #188 closed 2017-08-05 discussion: persistent storage strategies [cookies, indexeddb + local dom]
+      #294 closed 2017-11-30 sticky: extensions
+      #30 closed 2017-02-25 ToDo: format change
+      #32 closed 2017-02-25 discussion: redo 0800s location bar etc
+      #509 closed 2018-09-20 3rd party CSS, Font, XHR, IMG and JS reveals your browsing site by request header 'Origin' attribute
+      #492 closed 2018-08-24 sticky: extensions
+      #438 closed 2018-05-26 request: paste your overrides
+      #534 closed 2018-11-13 changelog: v63-beta
+      #702 closed 2019-04-24 review: 0801: keyword search
+      #874 closed 2020-01-09 FF site exeptions/pinning tabs/Facebook-containers questions.
+      #664 closed 2019-03-13 sticky: unofficial: the extension csp header modification game [1462989 + 1635781 resolved 78 / ESR78.1]
+  power          48 hit(s) (all listed)
+      #2060 closed 2026-07-03 Missing Quickstart guide
+      #2046 closed 2026-05-02 ToDo: diffs FF146-FF147
+      #1957 closed 2025-04-21 ToDo: diffs FF136-FF137
+      #1495 closed 2022-07-04 Cookie clearing exceptions don't work after Arkenfox 102
+      #1756 closed 2023-10-31 network.preconnect [1861889]
+      #84 closed 2017-04-17 Why disable Reader view?
+      #1785 closed 2023-12-23 ToDo: diffs FF120-FF121
+      #1806 closed 2024-02-11 MOZILLA_PKIX_ERROR_KEY_PINNING_FAILURE - [A: read the user.js]
+      #1707 closed 2023-08-26 headsup: I intend to relax some prefs
+      #1732 closed 2023-10-04 check 2603 browser.helperApps.deleteTempFileOnExit
+      #1808 closed 2024-02-16 Embed videos will not load and play within Canvas LMS: [A: it was uBO]
+      #1655 closed 2023-04-13 Firefox increased list of known tracking parameters
+      #1646 closed 2023-03-19 ToDo: diffs FF110-FF111
+      #1640 closed 2023-03-10 ToDo: diffs FF109-FF110
+      #1491 closed 2022-07-02 changelog: v102
+      #1302 closed 2021-12-14 Google's "Manifest V3" (aka "Mv3") and its impact on extensions such as uBO (9-Dec-2021)
+      #1037 closed 2020-10-12 Unable to access hanime.tv [solved: wasm]
+      #1292 closed 2021-12-07 ToDo: diffs FF94-FF95
+      #651 closed 2019-02-15 extension woes, remote profile [solved: network.file.disable_unc_paths]
+      #1092 closed 2021-01-18 updater.bat suddenly stopped working
+  outage         4 hit(s) (all listed)
+      #2018 open 2025-11-18 Tools should check for HTTP failure when downloading
+      #1441 closed 2022-05-03 tracking: migrate cookie lifetime and sanitize cookie/offlineApps
+      #20 closed 2017-02-21 sticky: items to investigate keep an eye on
+      #495 closed 2018-09-06 dom.forms.datetime [until RFP patch 1492587]
+  ENOSPC         0 hit(s)
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2067 open 2026-07-30 ToDo: diffs FF152-FF153
+      #2010 open 2025-10-29 Add `-f' option to updater.sh for local user.js
+      #2055 open 2026-06-01 ToDo: diffs FF150-FF151
+      #123 open 2017-05-21 sticky: deprecated-removed-legacy prefs
+      #2061 closed 2026-07-04 updater.sh + prefsCleaner.sh leak /tmp files from download_file on every run
+      #2052 closed 2026-05-27 Cripple FROST attack by disabling FileSystem API
+      #2041 closed 2026-04-16 Is there any way to fix startup screen size in specific resolution when RFP is set true?
+      #1991 closed 2025-08-18 revist signon.formlessCapture.enabled
+      #1974 closed 2025-07-16 upcoming change: AF won't sanitize history on close [update your overrides]
+      #1986 closed 2025-07-27 ToDo: diffs FF140-FF141
+      #1980 closed 2025-07-18 How sanitize Session Restore on shutdown
+      #1971 closed 2025-07-08 Question about sanitization of History
+      #1957 closed 2025-04-21 ToDo: diffs FF136-FF137
+      #1696 closed 2023-07-29 Linux auto updater (update when Firefox starts)
+      #1946 closed 2025-03-13 help with sanitizing overrides
+      #1872 closed 2024-07-13 ToDo: diffs FF127-FF128
+      #1820 closed 2024-03-24 ToDo: diffs FF123-FF124
+      #1842 closed 2024-05-20 ToDo: diffs FF125.0.1-FF126
+      #1495 closed 2022-07-04 Cookie clearing exceptions don't work after Arkenfox 102
+      #1836 closed 2024-05-03 ToDo: diffs FF124-FF125.0.1
+  partial        29 hit(s) (all listed)
+      #1914 merged 2024-11-09 Fixes version parsing and display in `updater.bat`
+      #2005 closed 2025-10-26 ToDo: diffs FF141-FF142
+      #910 closed 2020-03-23 Allows `updater.sh` to work with Thunderbird profiles as well
+      #164 closed 2017-07-07 Purpose of kinto.sqlite
+      #1572 closed 2022-10-28 ToDo: diffs FF105-FF106
+      #1623 closed 2023-02-05 ToDo: diffs FF108-FF109
+      #1531 closed 2022-08-29 Best practice for updating Firefox when using Arkenfox?
+      #1518 closed 2022-07-30 ToDo: diffs FF102-FF103
+      #1490 closed 2022-07-01 ToDo: diffs FF101-FF102
+      #1390 closed 2022-03-08 ToDo: diffs FF97-FF98
+      #1228 closed 2021-08-06 FYI: Something about Fingerprinting
+      #1145 closed 2021-03-16 ToDo: diffs FF86-FF87
+      #79 closed 2017-04-09 Moz Extensions: Site Deployment Checker + Application Update Service Helper
+      #5 closed 2017-02-18 discussion: redo 1600s referers section (& new prefs in 52+53)
+      #47 closed 2017-03-10 ToDo: diffs FF52-FF53
+      #302 closed 2017-12-03 ToDo: diffs FF57-FF58
+      #436 closed 2018-05-24 cache tracking techniques
+      #615 closed 2019-01-17 [improved descriptions] for extensions.getAddons.cache.enabled
+      #743 closed 2019-06-11 ToDo: diffs FF67-FF68
+      #869 closed 2019-12-19 ToDo: diffs FF71-FF72
+  incomplete     20 hit(s) (all listed)
+      #1960 closed 2025-05-17 Make clearer the latest version of FF this project fully supports
+      #1567 closed 2022-10-19 can't login to Twitch with RFP [1805101]
+      #1647 closed 2023-03-21 Fingerprint.com
+      #1519 closed 2022-07-31 Temporary Containers redundant with TCP / FPI?
+      #1258 merged 2021-09-28 prefsCleaner.sh: Fix invalid regular expression
+      #1145 closed 2021-03-16 ToDo: diffs FF86-FF87
+      #294 closed 2017-11-30 sticky: extensions
+      #185 closed 2017-08-01 A code snippet
+      #24 closed 2017-02-22 ToDo: security.ssl3.*
+      #23 closed 2017-02-22 UA spoofing: general.*.override & navigator objects
+      #436 closed 2018-05-24 cache tracking techniques
+      #710 closed 2019-04-28 SB+TP etc: extreme pruning
+      #620 closed 2019-01-25 fingerprinting
+      #490 closed 2018-08-18 Items to followup on from #442
+      #574 closed 2018-12-05 Interactive real-time user.js: Stage 1 [Data Collection]
+      #790 closed 2019-09-08 clean up / enhance: 0707: DoH
+      #942 closed 2020-05-14 general discussion on FPing: have at it
+      #994 closed 2020-08-19 ToDo: diffs FF79-FF80
+      #1072 closed 2020-12-10 ToDo: diffs FF83-FF84
+      #100 closed 2017-05-01 discussion: e10s
+  dataloss       0 hit(s)
+  recover        14 hit(s) (all listed)
+      #323 closed 2017-12-28 FACT: CHEF-KOCH plagiarizes and passes off other people's work as his own
+      #1676 closed 2023-05-21 Having trouble finding and retrieving my bookmarks. this started after Arken and I cant seem to crack the case
+      #1674 closed 2023-05-14 ToDo: diffs FF112-FF113
+      #1628 closed 2023-02-11 ns_error_not_implemented issue
+      #1518 closed 2022-07-30 ToDo: diffs FF102-FF103
+      #1309 closed 2021-12-21 Remove "-e" (ESR) argument from updater.sh
+      #1270 closed 2021-11-01 ToDo: diffs FF93-FF94
+      #410 closed 2018-04-29 FF60+: TRR mode (DNS over HTTPS)
+      #458 closed 2018-07-03 FYI - Detecting Canvas Defender and recovering the original canvas value
+      #454 closed 2018-06-30 FYI: excellent top-notch tool for comparing user.js files
+      #575 closed 2018-12-06 1020: SR max_undo* & 1022: SR after crash : make inactive or remove
+      #906 closed 2020-03-14 Extension ClearURLs reloads each 15 seconds
+      #685 closed 2019-04-07 How to enable audio CAPTCHA.
+      #562 merged 2018-11-30 review [TAGS], #545
+  recovery       11 hit(s) (all listed)
+      #2059 open 2026-06-21 ToDo: diffs FF151-FF152
+      #1980 closed 2025-07-18 How sanitize Session Restore on shutdown
+      #588 closed 2018-12-11 [article] 'Who Left Open the Cookie Jar?'
+      #1261 closed 2021-10-05 ToDo: diffs FF92-FF93
+      #45 closed 2017-03-09 discussion: redo 2800s shutdown
+      #51 closed 2017-03-11 discussion: redo 1000s cache
+      #528 closed 2018-10-31 ToDo: AS overhaul
+      #575 closed 2018-12-06 1020: SR max_undo* & 1022: SR after crash : make inactive or remove
+      #1038 closed 2020-10-13 ToDo: diffs FF81-FF82
+      #1072 closed 2020-12-10 ToDo: diffs FF83-FF84
+      #664 closed 2019-03-13 sticky: unofficial: the extension csp header modification game [1462989 + 1635781 resolved 78 / ESR78.1]
+  rollback       2 hit(s) (all listed)
+      #1676 closed 2023-05-21 Having trouble finding and retrieving my bookmarks. this started after Arken and I cant seem to crack the case
+      #80 closed 2017-04-13 notes: Private Browsing Mode
+  resume         39 hit(s) (all listed)
+      #1980 closed 2025-07-18 How sanitize Session Restore on shutdown
+      #1946 closed 2025-03-13 help with sanitizing overrides
+      #1881 closed 2024-08-13 [Question] Implications of disabling `network.dns.native_https_query`
+      #1859 closed 2024-06-21 Overrides won't work
+      #1836 closed 2024-05-03 ToDo: diffs FF124-FF125.0.1
+      #323 closed 2017-12-28 FACT: CHEF-KOCH plagiarizes and passes off other people's work as his own
+      #1714 closed 2023-09-01 ToDo: diffs FF116-FF117
+      #1771 closed 2023-11-23 about:networking#http page tracks visited sites
+      #1679 closed 2023-06-05 Question only re settings for startup in Home Page
+      #1583 merged 2022-11-12 Improve Usability by Clarifying Desired Action
+      #1516 closed 2022-07-27 SSL_ERROR_UNSAFE_NEGOTIATION [invalid: duplicate of #895]
+      #1034 closed 2020-10-07 Despair. Firefox wont save previous session and keep login cookies. Not possible? [invalid: works for me: and see override recipe]
+      #1489 closed 2022-06-29 103: UI: Delete cookies and site data when Firefox is closed
+      #1315 closed 2021-12-27 ETP switches and dFPI
+      #1169 closed 2021-04-24 How to save cookies in persistent containers? [solved: configure your extension + dont clear cookies]
+      #60 closed 2017-03-15 question regarding dom.workers.enabled and security
+      #294 closed 2017-11-30 sticky: extensions
+      #183 closed 2017-07-28 ToDo: Private Browsing PAF compare
+      #204 closed 2017-08-11 ToDo: diffs FF55-FF56
+      #87 closed 2017-04-21 ToDo: diffs FF53-FF54
+  half-written   9 hit(s) (all listed)
+      #2011 closed 2025-10-29 some light reading: all about fingerprinting
+      #323 closed 2017-12-28 FACT: CHEF-KOCH plagiarizes and passes off other people's work as his own
+      #728 closed 2019-05-22 border around webpages [invalid: RTFM and duplicate of 679 - letterboxing]
+      #1628 closed 2023-02-11 ns_error_not_implemented issue
+      #339 closed 2018-01-12 troubleshooter.js: clean up prefs list
+      #395 closed 2018-04-01 Temporary Containers vs First-Party Isolation
+      #548 closed 2018-11-22 It's investigation time! HTTP/2, AltSvc and SSL
+      #692 closed 2019-04-15 discussion: make a bunch of items inactive etc
+      #40 merged 2017-03-03 network.http.sendSecureXSiteReferrer
+  wipe           65 hit(s) (all listed)
+      #1941 closed 2025-03-06 changelog v135, v136, v137, v138, v139
+      #1946 closed 2025-03-13 help with sanitizing overrides
+      #1495 closed 2022-07-04 Cookie clearing exceptions don't work after Arkenfox 102
+      #1859 closed 2024-06-21 Overrides won't work
+      #1837 closed 2024-05-07 track sanitizing migration slated for FF127/8
+      #1829 closed 2024-04-27 Easier way to batch import and export site exceptions?
+      #1860 closed 2024-06-22 ToDo: diffs FF126-FF127
+      #1846 closed 2024-06-06 changelog v126 [important: read upcoming changes for FF128]
+      #1800 closed 2024-01-29 Exceptions get cleared with shutdown?
+      #739 closed 2019-06-06 toolkit.telemetry.cachedClientID keeps repopulating since Firefox 67
+      #1628 closed 2023-02-11 ns_error_not_implemented issue
+      #1547 closed 2022-09-17 1Password Autofill Not Working [solved: accessibility.force_disabled]
+      #1223 closed 2021-08-01 Can't set exceptions for cookies [solved: use FPI syntax + don't sanitize cookies on close in 2803]
+      #592 closed 2018-12-13 Addon Save Page WE [solved: layout.css.font-loading-api.enabled=false]
+      #680 closed 2019-03-30 [user_pref("app.normandy.user_id"] <UID> remain set
+      #1502 closed 2022-07-12 Wiki extension recommendations
+      #1465 closed 2022-06-08 user_pref "browser.startup.homepage_override" is required to change homepage
+      #1441 closed 2022-05-03 tracking: migrate cookie lifetime and sanitize cookie/offlineApps
+      #1293 closed 2021-12-07 check some override recipe things
+      #1398 closed 2022-03-19 Question: Overrides for passwords and urlbar shortcuts
+  wipes          11 hit(s) (all listed)
+      #1941 closed 2025-03-06 changelog v135, v136, v137, v138, v139
+      #485 closed 2018-08-14 general.buildID.override + dom.battery.enabled
+      #548 closed 2018-11-22 It's investigation time! HTTP/2, AltSvc and SSL
+      #436 closed 2018-05-24 cache tracking techniques
+      #1124 closed 2021-02-25 work with temporary containers?
+      #107 closed 2017-05-03 HTTP2 -- does disabling do more harm than good?
+      #395 closed 2018-04-01 Temporary Containers vs First-Party Isolation
+      #491 closed 2018-08-22 some TBB stuff
+      #492 closed 2018-08-24 sticky: extensions
+      #575 closed 2018-12-06 1020: SR max_undo* & 1022: SR after crash : make inactive or remove
+      #1018 closed 2020-09-18 Questions regarding compartmentalization, extensions and uniqueness
+  erase          12 hit(s) (all listed)
+      #1567 closed 2022-10-19 can't login to Twitch with RFP [1805101]
+      #1946 closed 2025-03-13 help with sanitizing overrides
+      #1563 closed 2022-10-14 discussion: personal section cleanup
+      #1690 closed 2023-07-14 wiki: installing Arkenfox user.js causes data loss [if you didn't READ THE FUCKING WIKI as instructed]
+      #1459 closed 2022-06-03 can I use session restore but also sanitize history? [solved: no: instead disable history in the first place and don't sanitize it on close]
+      #1441 closed 2022-05-03 tracking: migrate cookie lifetime and sanitize cookie/offlineApps
+      #1034 closed 2020-10-07 Despair. Firefox wont save previous session and keep login cookies. Not possible? [invalid: works for me: and see override recipe]
+      #63 closed 2017-03-17 0850 location bar dropdown
+      #174 closed 2017-07-17 FYI: CanvasBlocker can be detected by sites
+      #492 closed 2018-08-24 sticky: extensions
+      #1169 closed 2021-04-24 How to save cookies in persistent containers? [solved: configure your extension + dont clear cookies]
+      #1045 closed 2020-10-17 tidy readme (in the user.js)
+  erasing        2 hit(s) (all listed)
+      #1690 closed 2023-07-14 wiki: installing Arkenfox user.js causes data loss [if you didn't READ THE FUCKING WIKI as instructed]
+      #63 closed 2017-03-17 0850 location bar dropdown
+  erased         10 hit(s) (all listed)
+      #1567 closed 2022-10-19 can't login to Twitch with RFP [1805101]
+      #1946 closed 2025-03-13 help with sanitizing overrides
+      #1563 closed 2022-10-14 discussion: personal section cleanup
+      #1690 closed 2023-07-14 wiki: installing Arkenfox user.js causes data loss [if you didn't READ THE FUCKING WIKI as instructed]
+      #1459 closed 2022-06-03 can I use session restore but also sanitize history? [solved: no: instead disable history in the first place and don't sanitize it on close]
+      #1441 closed 2022-05-03 tracking: migrate cookie lifetime and sanitize cookie/offlineApps
+      #1034 closed 2020-10-07 Despair. Firefox wont save previous session and keep login cookies. Not possible? [invalid: works for me: and see override recipe]
+      #492 closed 2018-08-24 sticky: extensions
+      #1169 closed 2021-04-24 How to save cookies in persistent containers? [solved: configure your extension + dont clear cookies]
+      #1045 closed 2020-10-17 tidy readme (in the user.js)
+  destroy        26 hit(s) (all listed)
+      #1998 closed 2025-09-13 Consider disabling things related to artifical intelligence and machine learning
+      #1980 closed 2025-07-18 How sanitize Session Restore on shutdown
+      #323 closed 2017-12-28 FACT: CHEF-KOCH plagiarizes and passes off other people's work as his own
+      #1709 closed 2023-08-27 ToDo: diffs FF115-FF116
+      #1716 closed 2023-09-02 FYI: future fingerprinting options
+      #1520 closed 2022-08-01 "Read Aloud" extension [solved: media.autoplay.blocking_policy]
+      #1223 closed 2021-08-01 Can't set exceptions for cookies [solved: use FPI syntax + don't sanitize cookies on close in 2803]
+      #1519 closed 2022-07-31 Temporary Containers redundant with TCP / FPI?
+      #391 closed 2018-03-27 sticky: unofficial: extension breakage due to prefs
+      #1194 closed 2021-06-20 FYI: 2510: webaudio
+      #294 closed 2017-11-30 sticky: extensions
+      #4 closed 2017-02-18 add: browser.privatebrowsing.autostart
+      #18 closed 2017-02-21 ToDo: compare active values ghacks vs pyllyukko user.js
+      #395 closed 2018-04-01 Temporary Containers vs First-Party Isolation
+      #706 closed 2019-04-27 service workers & web notifications & SW cache
+      #610 closed 2019-01-05 ToDo: diffs FF64-FF65
+      #640 closed 2019-02-08 NSFW thumbnails not loading [solved: RFP - use a secondary browser/profile]
+      #349 closed 2018-01-29 ToDo: diffs FF58-FF59
+      #492 closed 2018-08-24 sticky: extensions
+      #548 closed 2018-11-22 It's investigation time! HTTP/2, AltSvc and SSL
+  destroys       4 hit(s) (all listed)
+      #1998 closed 2025-09-13 Consider disabling things related to artifical intelligence and machine learning
+      #1716 closed 2023-09-02 FYI: future fingerprinting options
+      #930 closed 2020-04-22 FYI: don't use dFPI with FPI [1631676: resolved 78]
+      #286 closed 2017-11-26 Updater for Windows v3.0
+  overwrite      31 hit(s) (all listed)
+      #2057 closed 2026-06-08 Arkenfox overwriting site exceptions and start page
+      #1908 closed 2024-10-17 Shell script rewrite to comply with POSIX and best practices
+      #1941 closed 2025-03-06 changelog v135, v136, v137, v138, v139
+      #2011 closed 2025-10-29 some light reading: all about fingerprinting
+      #1933 closed 2025-02-15 ToDo: diffs FF134-FF135
+      #1751 closed 2023-10-26 user.js Directory name is a problem
+      #739 closed 2019-06-06 toolkit.telemetry.cachedClientID keeps repopulating since Firefox 67
+      #265 closed 2017-11-10 uMatrix WE problem in combination with other WEs [Bug 1417249, 1477696, 1421725...]
+      #1340 closed 2022-01-21 [Question] About RFP
+      #1307 closed 2021-12-19 Why does the example user.js in the wiki use modified values?
+      #1115 closed 2021-02-11 user.js causing issues with addons that require loggin
+      #1027 closed 2020-10-02 ToDo: DoH section or entries
+      #497 closed 2018-09-09 task: update wiki [CSP clashes eg 1xCB setting & uM]
+      #171 closed 2017-07-15 discussion: create System Addon section
+      #124 closed 2017-05-22 How do you update your user.js
+      #125 closed 2017-05-22 revisit: browser.urlbar.maxRichResults
+      #158 closed 2017-06-26 proposed change to all user.js documentation regarding editing
+      #258 closed 2017-10-19 chit chat: WebAPI Manager [Extension]
+      #185 closed 2017-08-01 A code snippet
+      #5 closed 2017-02-18 discussion: redo 1600s referers section (& new prefs in 52+53)
+  clobber        0 hit(s)
+  blank          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2054 open 2026-06-01 ToDo: diffs FF149-FF150
+      #2047 open 2026-05-02 ToDo: diffs FF147-FF148
+      #2055 open 2026-06-01 ToDo: diffs FF150-FF151
+      #2057 closed 2026-06-08 Arkenfox overwriting site exceptions and start page
+      #2048 closed 2026-05-02 ToDo: diffs FF148-FF149
+      #2046 closed 2026-05-02 ToDo: diffs FF146-FF147
+      #1448 closed 2022-05-16 sanitizing and dFPI use the same site exception [1767271] - fixed FF154
+      #2014 closed 2025-11-02 Content-Security-Policy cross-site resource blocked
+      #2016 closed 2025-11-04 arkenfox user.js v140-1
+      #1998 closed 2025-09-13 Consider disabling things related to artifical intelligence and machine learning
+      #1810 closed 2024-02-17 updater.sh returns with exit code 0 when failing in update_userjs
+      #1945 merged 2025-03-10 v140
+      #1966 closed 2025-06-03 Plotply (Python library) graph does not work as expected, How can I disable protection when im on localhost? (Jupyter Notebook)
+      #1957 closed 2025-04-21 ToDo: diffs FF136-FF137
+      #1950 closed 2025-03-16 ToDo: diffs FF135-FF136
+      #1385 closed 2022-02-27 Create config.yml
+      #1918 closed 2024-12-01 ToDo: diffs FF132-FF133
+      #1946 closed 2025-03-13 help with sanitizing overrides
+      #970 closed 2020-07-08 font-visibility
+      #1902 closed 2024-09-20 coles.com.au won't let me login [update: not arkenfox, clean FF install solved it]
+  unreadable     3 hit(s) (all listed)
+      #1223 closed 2021-08-01 Can't set exceptions for cookies [solved: use FPI syntax + don't sanitize cookies on close in 2803]
+      #129 closed 2017-05-23 ui.use_standins_for_native_colors
+      #889 closed 2020-02-10 privacy.resistFingerprinting.letterboxing
+  garbage        15 hit(s) (all listed)
+      #1809 closed 2024-02-17 Compared librewolf.cfg with arkenfox user.js
+      #323 closed 2017-12-28 FACT: CHEF-KOCH plagiarizes and passes off other people's work as his own
+      #1216 closed 2021-07-20 Few questions about some prefs [also webaudio FP results]
+      #1047 closed 2020-10-22 tracking: HTTPS-Only mode
+      #1156 closed 2021-03-30 Linux GUI font affected [solved RFP/font vis]
+      #238 closed 2017-09-20 "browser.display.use_document_fonts", default fonts & uBo/uM icons [FFv55, Linux]
+      #20 closed 2017-02-21 sticky: items to investigate keep an eye on
+      #454 closed 2018-06-30 FYI: excellent top-notch tool for comparing user.js files
+      #414 closed 2018-05-04 [ISSUE] Search Engines for localized FF are not acceptable bloatware
+      #805 closed 2019-09-21 ToDo: diffs FF69-FF70
+      #776 closed 2019-08-20 4.1 Extensions suggestions [CookieBro + Chameleon + PrivacyBadger]
+      #860 closed 2019-12-08 update the userscripts
+      #76 closed 2017-04-02 referrer add-ons discussion
+      #590 merged 2018-12-12 taking out the garbage
+      #556 closed 2018-11-26 Update updater.sh
+  mangled        1 hit(s) (all listed)
+      #238 closed 2017-09-20 "browser.display.use_document_fonts", default fonts & uBo/uM icons [FFv55, Linux]
+  contents       68 hit(s) (all listed)
+      #123 open 2017-05-21 sticky: deprecated-removed-legacy prefs
+      #2023 closed 2025-12-20 arkenfox-cleanup.js: "Source map error" shown in console
+      #1636 closed 2023-02-26 RFP: zoom regressions [1975753]
+      #1957 closed 2025-04-21 ToDo: diffs FF136-FF137
+      #1809 closed 2024-02-17 Compared librewolf.cfg with arkenfox user.js
+      #1769 closed 2023-11-21 updater.bat failing on Windows 11 Home Edition
+      #1812 closed 2024-02-19 Is there value in overriding 0403 for Linux? [A: Depends on you: PS: it has nothing to do with the OS]
+      #1659 closed 2023-04-20 How best to start a new life with AF
+      #1689 closed 2023-07-09 ToDo: diffs FF114-FF115
+      #330 closed 2018-01-05 RFP interfers with cmd on OSX [Bug 1405810: fixed FF59]
+      #1587 closed 2022-11-19 Updater.sh is not updating user.js
+      #1561 closed 2022-10-11 imges are stripped [invalid: RTFM - it's RFP canvas]
+      #723 closed 2019-05-06 FF 66.0.4 and security.nocertdb=true [1549344, 1549249: fixed FF68+]
+      #1628 closed 2023-02-11 ns_error_not_implemented issue
+      #1034 closed 2020-10-07 Despair. Firefox wont save previous session and keep login cookies. Not possible? [invalid: works for me: and see override recipe]
+      #1291 closed 2021-12-04 Can't get logins to save between sessions [solved: offlineApps sanitizing]
+      #680 closed 2019-03-30 [user_pref("app.normandy.user_id"] <UID> remain set
+      #1114 closed 2021-02-11 users.js causing image breakage [solved: RFP use a site canvas exception]
+      #1271 closed 2021-11-08 Can't see presentation in Google Meet.
+      #1220 closed 2021-07-29 very small correction to 1021 description
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2080 open 2026-10-06 Windows batch limitation Fixes arkenfox#2001
+      #2073 closed 2026-08-17 check keyword.enabled
+      #2027 closed 2026-01-11 captchadetection.actor.enabled
+      #1986 closed 2025-07-27 ToDo: diffs FF140-FF141
+      #2014 closed 2025-11-02 Content-Security-Policy cross-site resource blocked
+      #1882 closed 2024-08-17 [Question] Can sites outside of my container see the cookies of the website inside the container?
+      #1998 closed 2025-09-13 Consider disabling things related to artifical intelligence and machine learning
+      #149 closed 2017-06-21 Request Control Filters
+      #1961 closed 2025-05-17 Add a wiki page containing abreviations used throughout the project and their definitions
+      #1965 closed 2025-05-31 browser.display.document_color_use
+      #2011 closed 2025-10-29 some light reading: all about fingerprinting
+      #1988 closed 2025-08-05 apt-installed Firefox refusing to read user.js
+      #1974 closed 2025-07-16 upcoming change: AF won't sanitize history on close [update your overrides]
+      #1993 closed 2025-08-19 bug: FF142 can opt you back into telemetry despite having explicitly opted out
+      #1636 closed 2023-02-26 RFP: zoom regressions [1975753]
+      #1941 closed 2025-03-06 changelog v135, v136, v137, v138, v139
+      #1980 closed 2025-07-18 How sanitize Session Restore on shutdown
+      #1790 closed 2024-01-02 Where is prefsCleaner?
+      #1818 closed 2024-03-21 GPC
+      #1937 closed 2025-02-28 [META] Firefox's new terms of use
+  unclean        0 hit(s)
+  shutdown       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #2074 closed 2026-09-04 2815: [SETTING] and [WARNING] are outdated since FF154 (persist-data-on-shutdown)
+      #2054 open 2026-06-01 ToDo: diffs FF149-FF150
+      #2071 closed 2026-08-09 announcement: 154 migration on partitoning vs keep cookies
+      #2059 open 2026-06-21 ToDo: diffs FF151-FF152
+      #123 open 2017-05-21 sticky: deprecated-removed-legacy prefs
+      #2045 closed 2026-05-02 ToDo: diffs FF145-FF146
+      #2025 closed 2026-01-01 fix clearing browsing history on shutdown
+      #1448 closed 2022-05-16 sanitizing and dFPI use the same site exception [1767271] - fixed FF154
+      #1974 closed 2025-07-16 upcoming change: AF won't sanitize history on close [update your overrides]
+      #1980 closed 2025-07-18 How sanitize Session Restore on shutdown
+      #1970 closed 2025-07-01 Question: Should you clear cookies on shutdown if you create exceptions?
+      #1956 closed 2025-04-19 Can we have clearer instructions for dummies like myeslf?
+      #1971 closed 2025-07-08 Question about sanitization of History
+      #1941 closed 2025-03-06 changelog v135, v136, v137, v138, v139
+      #1946 closed 2025-03-13 help with sanitizing overrides
+      #1928 closed 2025-01-12 add new sanitizing prefs in advance of 136
+      #1957 closed 2025-04-21 ToDo: diffs FF136-FF137
+      #1948 closed 2025-03-15 User-overriee not working for new sanitize user pref
+      #1950 closed 2025-03-16 ToDo: diffs FF135-FF136
+      #1933 closed 2025-02-15 ToDo: diffs FF134-FF135
+  reboot         11 hit(s) (all listed)
+      #1941 closed 2025-03-06 changelog v135, v136, v137, v138, v139
+      #1706 closed 2023-08-21 Startup page takes effect into about:config but does not actually load
+      #1672 closed 2023-05-06 The PKCS #12 operation failed for unknown reasons.
+      #1618 closed 2023-01-19 `browser.startup.blankWindow` can block RFP newwin and maximize/restore is confusing
+      #1468 closed 2022-06-10 mac/linux font testers (windows users feel free to join in)
+      #1092 closed 2021-01-18 updater.bat suddenly stopped working
+      #1034 closed 2020-10-07 Despair. Firefox wont save previous session and keep login cookies. Not possible? [invalid: works for me: and see override recipe]
+      #318 closed 2017-12-24 Ideas for Android (how to inject the config files)
+      #463 closed 2018-07-11 ToDo: diffs FF61-FF62
+      #776 closed 2019-08-20 4.1 Extensions suggestions [CookieBro + Chameleon + PrivacyBadger]
+      #1169 closed 2021-04-24 How to save cookies in persistent containers? [solved: configure your extension + dont clear cookies]
+  disk+full      41 hit(s) (all listed)
+      #2055 open 2026-06-01 ToDo: diffs FF150-FF151
+      #123 open 2017-05-21 sticky: deprecated-removed-legacy prefs
+      #1986 closed 2025-07-27 ToDo: diffs FF140-FF141
+      #1980 closed 2025-07-18 How sanitize Session Restore on shutdown
+      #1946 closed 2025-03-13 help with sanitizing overrides
+      #1857 closed 2024-06-20 add FPP granularOverrides for the FYI factor
+      #1776 closed 2023-11-27 Cutting the fat! Old Arkenfox settings now deprecated/removed
+      #1771 closed 2023-11-23 about:networking#http page tracks visited sites
+      #739 closed 2019-06-06 toolkit.telemetry.cachedClientID keeps repopulating since Firefox 67
+      #1621 closed 2023-02-02 Two issues created since using user.js. I'm not very technical, and would appreciate help.
+      #1223 closed 2021-08-01 Can't set exceptions for cookies [solved: use FPI syntax + don't sanitize cookies on close in 2803]
+      #1034 closed 2020-10-07 Despair. Firefox wont save previous session and keep login cookies. Not possible? [invalid: works for me: and see override recipe]
+      #1291 closed 2021-12-04 Can't get logins to save between sessions [solved: offlineApps sanitizing]
+      #747 closed 2019-06-18 Is it possible to change the letterbox background color? [solved: ui.systemUsesDarkTheme = 1]
+      #1169 closed 2021-04-24 How to save cookies in persistent containers? [solved: configure your extension + dont clear cookies]
+      #1051 closed 2020-10-23 move from FPI to dFPI
+      #463 closed 2018-07-11 ToDo: diffs FF61-FF62
+      #454 closed 2018-06-30 FYI: excellent top-notch tool for comparing user.js files
+      #188 closed 2017-08-05 discussion: persistent storage strategies [cookies, indexeddb + local dom]
+      #294 closed 2017-11-30 sticky: extensions
+  data+loss      22 hit(s) (all listed)
+      #123 open 2017-05-21 sticky: deprecated-removed-legacy prefs
+      #1974 closed 2025-07-16 upcoming change: AF won't sanitize history on close [update your overrides]
+      #1950 closed 2025-03-16 ToDo: diffs FF135-FF136
+      #1885 closed 2024-08-20 [Question] More details on `disable partitioning` when adding sites to exception
+      #1837 closed 2024-05-07 track sanitizing migration slated for FF127/8
+      #1495 closed 2022-07-04 Cookie clearing exceptions don't work after Arkenfox 102
+      #1872 closed 2024-07-13 ToDo: diffs FF127-FF128
+      #1811 closed 2024-02-18 CRLite seems not to work
+      #1785 closed 2023-12-23 ToDo: diffs FF120-FF121
+      #1690 closed 2023-07-14 wiki: installing Arkenfox user.js causes data loss [if you didn't READ THE FUCKING WIKI as instructed]
+      #1491 closed 2022-07-02 changelog: v102
+      #1034 closed 2020-10-07 Despair. Firefox wont save previous session and keep login cookies. Not possible? [invalid: works for me: and see override recipe]
+      #1169 closed 2021-04-24 How to save cookies in persistent containers? [solved: configure your extension + dont clear cookies]
+      #542 closed 2018-11-19 Check Librefox-Firefox this or that option could interest you...  
+      #144 closed 2017-06-15 ToDo: diffs FF54-FF55
+      #698 closed 2019-04-22 revisit 4503
+      #687 closed 2019-04-09 ToDo: diffs FF66-FF67
+      #740 closed 2019-06-09 MitM detection in Firefox 67
+      #942 closed 2020-05-14 general discussion on FPing: have at it
+      #179 closed 2017-07-24 Etags: solutions besides clearing/disabling cache [which does clear/block etags, sorry about the confusion]
+  partial+write  4 hit(s) (all listed)
+      #1490 closed 2022-07-01 ToDo: diffs FF101-FF102
+      #302 closed 2017-12-03 ToDo: diffs FF57-FF58
+      #743 closed 2019-06-11 ToDo: diffs FF67-FF68
+      #959 closed 2020-06-23 ToDo: diffs FF77-FF78
+  crash+safe     24 hit(s) (all listed)
+      #123 open 2017-05-21 sticky: deprecated-removed-legacy prefs
+      #1957 closed 2025-04-21 ToDo: diffs FF136-FF137
+      #1964 closed 2025-05-25 ToDo: diffs FF137-FF138
+      #1946 closed 2025-03-13 help with sanitizing overrides
+      #1628 closed 2023-02-11 ns_error_not_implemented issue
+      #1291 closed 2021-12-04 Can't get logins to save between sessions [solved: offlineApps sanitizing]
+      #1034 closed 2020-10-07 Despair. Firefox wont save previous session and keep login cookies. Not possible? [invalid: works for me: and see override recipe]
+      #1169 closed 2021-04-24 How to save cookies in persistent containers? [solved: configure your extension + dont clear cookies]
+      #87 closed 2017-04-21 ToDo: diffs FF53-FF54
+      #47 closed 2017-03-10 ToDo: diffs FF52-FF53
+      #383 closed 2018-03-20 ToDo: diffs FF59-FF60
+      #410 closed 2018-04-29 FF60+: TRR mode (DNS over HTTPS)
+      #302 closed 2017-12-03 ToDo: diffs FF57-FF58
+      #650 closed 2019-02-13 ToDo: diffs FF65-FF66
+      #610 closed 2019-01-05 ToDo: diffs FF64-FF65
+      #454 closed 2018-06-30 FYI: excellent top-notch tool for comparing user.js files
+      #438 closed 2018-05-26 request: paste your overrides
+      #574 closed 2018-12-05 Interactive real-time user.js: Stage 1 [Data Collection]
+      #805 closed 2019-09-21 ToDo: diffs FF69-FF70
+      #766 closed 2019-07-26 ToDo: diffs FF68-FF69
+  atomic+write   1 hit(s) (all listed)
+      #959 closed 2020-06-23 ToDo: diffs FF77-FF78
+  lock+file      70 hit(s) (all listed)
+      #123 open 2017-05-21 sticky: deprecated-removed-legacy prefs
+      #2036 closed 2026-03-08 doh-rollout preferences retain Cloudflare endpoints despite network.trr.mode = 5
+      #1908 closed 2024-10-17 Shell script rewrite to comply with POSIX and best practices
+      #2011 closed 2025-10-29 some light reading: all about fingerprinting
+      #1932 closed 2025-02-02 ToDo: diffs FF133-FF134
+      #1872 closed 2024-07-13 ToDo: diffs FF127-FF128
+      #1820 closed 2024-03-24 ToDo: diffs FF123-FF124
+      #84 closed 2017-04-17 Why disable Reader view?
+      #323 closed 2017-12-28 FACT: CHEF-KOCH plagiarizes and passes off other people's work as his own
+      #1785 closed 2023-12-23 ToDo: diffs FF120-FF121
+      #1716 closed 2023-09-02 FYI: future fingerprinting options
+      #739 closed 2019-06-06 toolkit.telemetry.cachedClientID keeps repopulating since Firefox 67
+      #1587 closed 2022-11-19 Updater.sh is not updating user.js
+      #1622 closed 2023-02-04 There is still a problem with notifications
+      #1646 closed 2023-03-19 ToDo: diffs FF110-FF111
+      #1640 closed 2023-03-10 ToDo: diffs FF109-FF110
+      #1618 closed 2023-01-19 `browser.startup.blankWindow` can block RFP newwin and maximize/restore is confusing
+      #1497 closed 2022-07-07 Incorrect pref number in session restore recipe in #1080
+      #1446 closed 2022-05-14 prefsCleaner: fix profile-in-use check on Linux
+      #1034 closed 2020-10-07 Despair. Firefox wont save previous session and keep login cookies. Not possible? [invalid: works for me: and see override recipe]
+  write+failure  13 hit(s) (all listed)
+      #2029 open 2026-01-22 Support the XDG base directory based default profile path
+      #1986 closed 2025-07-27 ToDo: diffs FF140-FF141
+      #1985 closed 2025-07-27 ToDo: diffs FF139-FF140
+      #1646 closed 2023-03-19 ToDo: diffs FF110-FF111
+      #265 closed 2017-11-10 uMatrix WE problem in combination with other WEs [Bug 1417249, 1477696, 1421725...]
+      #1291 closed 2021-12-04 Can't get logins to save between sessions [solved: offlineApps sanitizing]
+      #1034 closed 2020-10-07 Despair. Firefox wont save previous session and keep login cookies. Not possible? [invalid: works for me: and see override recipe]
+      #391 closed 2018-03-27 sticky: unofficial: extension breakage due to prefs
+      #1270 closed 2021-11-01 ToDo: diffs FF93-FF94
+      #302 closed 2017-12-03 ToDo: diffs FF57-FF58
+      #395 closed 2018-04-01 Temporary Containers vs First-Party Isolation
+      #610 closed 2019-01-05 ToDo: diffs FF64-FF65
+      #1169 closed 2021-04-24 How to save cookies in persistent containers? [solved: configure your extension + dont clear cookies]
+  file+contents  45 hit(s) (all listed)
+      #123 open 2017-05-21 sticky: deprecated-removed-legacy prefs
+      #2023 closed 2025-12-20 arkenfox-cleanup.js: "Source map error" shown in console
+      #1957 closed 2025-04-21 ToDo: diffs FF136-FF137
+      #1812 closed 2024-02-19 Is there value in overriding 0403 for Linux? [A: Depends on you: PS: it has nothing to do with the OS]
+      #1809 closed 2024-02-17 Compared librewolf.cfg with arkenfox user.js
+      #1769 closed 2023-11-21 updater.bat failing on Windows 11 Home Edition
+      #1689 closed 2023-07-09 ToDo: diffs FF114-FF115
+      #1659 closed 2023-04-20 How best to start a new life with AF
+      #1587 closed 2022-11-19 Updater.sh is not updating user.js
+      #330 closed 2018-01-05 RFP interfers with cmd on OSX [Bug 1405810: fixed FF59]
+      #1628 closed 2023-02-11 ns_error_not_implemented issue
+      #1034 closed 2020-10-07 Despair. Firefox wont save previous session and keep login cookies. Not possible? [invalid: works for me: and see override recipe]
+      #1291 closed 2021-12-04 Can't get logins to save between sessions [solved: offlineApps sanitizing]
+      #680 closed 2019-03-30 [user_pref("app.normandy.user_id"] <UID> remain set
+      #1271 closed 2021-11-08 Can't see presentation in Google Meet.
+      #318 closed 2017-12-24 Ideas for Android (how to inject the config files)
+      #1169 closed 2021-04-24 How to save cookies in persistent containers? [solved: configure your extension + dont clear cookies]
+      #187 closed 2017-08-05 ToDo: Telemetry prefs
+      #485 closed 2018-08-14 general.buildID.override + dom.battery.enabled
+      #435 closed 2018-05-23 adding an user-overrides.js template
+
+== 51 terms run; 44 returned hits, 5 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

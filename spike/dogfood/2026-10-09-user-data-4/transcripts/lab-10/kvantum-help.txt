@@ -1,0 +1,24 @@
+Kvantum Manager - A GUI for configuring Kvantum
+Usage:
+
+Start the GUI:
+	kvantummanager
+Show this help:
+	kvantummanager --help
+Show version information:
+	kvantummanager --version
+Activate a theme:
+	kvantummanager --set THEME
+Assign a theme to some application(s):
+	kvantummanager --assign THEME APP1 APP2 ...
+Remove a theme assignment:
+	kvantummanager --noAssign THEME
+Remove all theme assignments:
+	kvantummanager --noAssign-All
+
+NOTE1: With theme assignment, APP1, APP2, etc.
+       should be the names of executables.
+NOTE2: The GUI will be shown in the case of errors.
+NOTE3: Please close the GUI of Kvantum Manager
+       while using command-line options because
+       it will not be updated automatically!

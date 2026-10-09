@@ -1,0 +1,6 @@
+maaslalani/sheets                          0/10  FAIL       label=(none matched; last issues of any label)
+cooklang/cookcli                           3/10  pass       label=bug
+tfeldmann/organize                         1/10  FAIL       label=bug
+arkenfox/user.js                           5/10  pass       label=(none matched; last issues of any label)
+Querz/mcaselector                          4/10  pass       label=bug
+zim-desktop-wiki/zim-desktop-wiki          3/10  pass       label=bug

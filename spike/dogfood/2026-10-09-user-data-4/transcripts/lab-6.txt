@@ -1,0 +1,8 @@
+== preflight --observe syscalls: exit 2
+UNKNOWN  child_process_detected
+next        Check whether the operation is a shell script wrapping another command — if it is, invoke that command as the operation instead; the refusal itself is one the README's 'What the target has to be' names, with DESIGN.md giving the reason.
+processes   the shim recorded an image replacement whose chain of observation broke
+== preflight --observe supervised: exit 2
+UNKNOWN  recording_run_failed
+next        The second run started from the state the restore rebuilt for it — the names, kinds and bytes under --state, not their modes, owners or timestamps — and ended differently. A tool that checks the mode of a file under --state (an executable bit, 
+processes   a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that

@@ -1,0 +1,25 @@
+-rw-r--r-- 1 root root 175 Oct  9 02:33 subs.srt
+Failed to create CoreCLR, HRESULT: 0x8007000C
+exit 137
+-rw-r--r-- 1 root root 175 Oct  9 02:33 subs.srt
+175
+-rw-r--r-- 1 root root 175 Oct  9 02:33 subs.srt
+File size limit exceeded
+-rw-r--r-- 1 root root 175 Oct  9 02:33 subs.srt
+-rw-r--r-- 1 root root 175 Oct  9 02:33 subs.srt
+exit 0
+21    openat(AT_FDCWD, "/s/seconv/subs.srt", O_RDONLY|O_CLOEXEC) = 75
+21    openat(AT_FDCWD, "/s/seconv/subs.srt", O_RDONLY|O_CLOEXEC) = 75
+21    openat(AT_FDCWD, "/s/seconv/subs.srt", O_WRONLY|O_CREAT|O_CLOEXEC, 0666) = 77
+21    ftruncate(77, 0)                  = 0
+-rw-r--r-- 1 root root 170 Oct  9 02:33 subs.srt
+23    pwrite64(77, "\357\273\2771\n00:00:03,000 --> 00:00:05,0"..., 170, 0) = ?
+23    +++ killed by SIGKILL +++
+20    +++ killed by SIGKILL +++
+24    +++ killed by SIGKILL +++
+21    +++ killed by SIGKILL +++
+19    +++ killed by SIGKILL +++
+22    +++ killed by SIGKILL +++
+25    +++ killed by SIGKILL +++
+18    +++ killed by SIGKILL +++
+-rw-r--r-- 1 root root 0 Oct  9 02:34 subs.srt

@@ -1,0 +1,89 @@
+== storj/storj (label bug)
+#7814 2026-08-29 comments=11 first_project_reply=MEMBER 2026-10-02
+#7780 2026-06-12 comments=2 first_project_reply=none
+#7778 2026-06-09 comments=1 first_project_reply=none
+#7771 2026-05-29 comments=1 first_project_reply=none
+#7770 2026-05-29 comments=1 first_project_reply=none
+#7764 2026-05-15 comments=1 first_project_reply=MEMBER 2026-09-22
+#7763 2026-05-15 comments=1 first_project_reply=none
+#7714 2026-01-16 comments=1 first_project_reply=none
+#7706 2025-12-10 comments=12 first_project_reply=CONTRIBUTOR 2025-12-10
+#7700 2025-11-18 comments=6 first_project_reply=CONTRIBUTOR 2025-12-03
+== gravitl/netmaker (label bug)
+#4086 2026-07-13 comments=16 first_project_reply=CONTRIBUTOR 2026-07-13
+#4084 2026-07-11 comments=1 first_project_reply=none
+#4062 2026-06-17 comments=0 first_project_reply=none
+#4045 2026-06-05 comments=2 first_project_reply=COLLABORATOR 2026-06-08
+#4011 2026-05-13 comments=0 first_project_reply=none
+#4010 2026-05-12 comments=0 first_project_reply=none
+#4008 2026-05-11 comments=0 first_project_reply=none
+#3958 2026-04-04 comments=3 first_project_reply=MEMBER 2026-04-04
+#3944 2026-03-30 comments=0 first_project_reply=none
+#3897 2026-03-05 comments=2 first_project_reply=none
+== aptos-labs/aptos-core (label bug)
+#20699 2026-10-07 comments=2 first_project_reply=none
+#20650 2026-09-30 comments=0 first_project_reply=none
+#20647 2026-09-30 comments=1 first_project_reply=none
+#20594 2026-09-22 comments=0 first_project_reply=none
+#20593 2026-09-22 comments=0 first_project_reply=none
+#20592 2026-09-22 comments=0 first_project_reply=none
+#20591 2026-09-22 comments=0 first_project_reply=none
+#20590 2026-09-22 comments=0 first_project_reply=none
+#20457 2026-08-28 comments=0 first_project_reply=none
+#20379 2026-08-13 comments=1 first_project_reply=none
+== yarnpkg/berry (label bug)
+#7289 2026-09-29 comments=0 first_project_reply=none
+#7281 2026-09-25 comments=9 first_project_reply=MEMBER 2026-09-25
+#7275 2026-09-16 comments=2 first_project_reply=MEMBER 2026-09-22
+#7272 2026-09-12 comments=0 first_project_reply=none
+#7270 2026-09-04 comments=1 first_project_reply=none
+#7269 2026-09-02 comments=0 first_project_reply=none
+#7264 2026-08-22 comments=0 first_project_reply=none
+#7260 2026-08-17 comments=1 first_project_reply=MEMBER 2026-08-21
+#7258 2026-08-15 comments=1 first_project_reply=none
+#7245 2026-08-07 comments=11 first_project_reply=CONTRIBUTOR 2026-08-09
+== openziti/ziti (label bug)
+#4574 2026-10-08 comments=0 first_project_reply=none
+#4573 2026-10-08 comments=0 first_project_reply=none
+#4571 2026-10-08 comments=0 first_project_reply=none
+#4556 2026-10-07 comments=0 first_project_reply=none
+#4552 2026-10-07 comments=0 first_project_reply=none
+#4546 2026-10-06 comments=0 first_project_reply=none
+#4545 2026-10-06 comments=0 first_project_reply=none
+#4543 2026-10-06 comments=0 first_project_reply=none
+#4529 2026-10-05 comments=0 first_project_reply=none
+#4523 2026-10-05 comments=0 first_project_reply=none
+== authelia/authelia (label (none matched; last issues of any label))
+#13390 2026-10-07 comments=1 first_project_reply=MEMBER 2026-10-08
+== softhsm/SoftHSMv2 (label bug)
+#689 2022-12-03 comments=0 first_project_reply=none
+#563 2020-07-22 comments=1 first_project_reply=none
+#442 2019-01-25 comments=8 first_project_reply=CONTRIBUTOR 2019-01-25
+#435 2018-12-12 comments=2 first_project_reply=CONTRIBUTOR 2018-12-12
+#429 2018-11-16 comments=1 first_project_reply=none
+#408 2018-07-26 comments=7 first_project_reply=CONTRIBUTOR 2018-07-27
+#401 2018-06-21 comments=2 first_project_reply=CONTRIBUTOR 2018-06-24
+#393 2018-05-01 comments=1 first_project_reply=CONTRIBUTOR 2018-05-30
+#386 2018-04-04 comments=8 first_project_reply=CONTRIBUTOR 2018-04-21
+#377 2018-03-05 comments=3 first_project_reply=CONTRIBUTOR 2018-03-21
+== in-toto/in-toto (label bug)
+#282 2019-04-30 comments=4 first_project_reply=none
+#264 2019-03-21 comments=2 first_project_reply=MEMBER 2019-03-28
+#202 2018-03-30 comments=4 first_project_reply=CONTRIBUTOR 2018-05-21
+#114 2017-09-06 comments=2 first_project_reply=none
+#41 2016-11-14 comments=0 first_project_reply=none
+#8 2016-10-17 comments=1 first_project_reply=none
+#7 2016-10-17 comments=1 first_project_reply=MEMBER 2016-11-01
+== SagerNet/sing-box (label bug)
+#4588 2026-09-27 comments=0 first_project_reply=none
+#4564 2026-09-23 comments=1 first_project_reply=none
+#4540 2026-09-17 comments=0 first_project_reply=none
+#4535 2026-09-15 comments=0 first_project_reply=none
+#4531 2026-09-14 comments=0 first_project_reply=none
+#4511 2026-09-08 comments=1 first_project_reply=none
+#4510 2026-09-08 comments=1 first_project_reply=none
+#4509 2026-09-07 comments=1 first_project_reply=none
+#4505 2026-09-07 comments=1 first_project_reply=none
+#4502 2026-09-05 comments=2 first_project_reply=none
+== sindresorhus/trash-cli (label bug)
+#28 2020-01-13 comments=6 first_project_reply=OWNER 2020-01-13

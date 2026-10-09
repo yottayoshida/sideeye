@@ -1,0 +1,10 @@
+== f2
+spike/cohort4/slot2-funnel.sh:14:    pushed=$(printf '%s' "$meta" | cut -f2)
+spike/cohort4/probes/unison-clock-diagnosis.sh:95:    tag=$(echo "$v" | cut -d: -f1); args=$(echo "$v" | cut -d: -f2); pre=$(echo "$v" | cut -d: -f3)
+spike/cohort4/write-path-evidence.sh:32:LOCKSUM=$(grep -A3 '^name = "io-maildir"' "$WORK/himalaya/Cargo.lock" | grep checksum | cut -d'"' -f2)
+spike/unknown-rate/sweep.sh:76:    pin_tag=$(printf '%s\n' "$pin" | cut -f2)
+spike/unknown-rate/select-b2.sh:105:cut -f2 "$head" > "$here/b2-targets.txt"
+spike/unknown-rate/fetch-engine.sh:32:tag=$(printf '%s\n' "$row" | cut -f2)
+== seconv
+== iconvert
+== otiotool

@@ -1,0 +1,4 @@
+PLAIN nmctl exit=0 state=changed  ()
+PLAIN yarn exit=0 state=changed  (➤ YN0000: Successfully set npmAuthToken to '********')
+PLAIN trash exit=0 state=changed  ()
+PLAIN softhsm exit=0 state=changed  (The key pair has been imported.)

@@ -1,0 +1,5 @@
+mamedev/mame                               5/10  pass       label=bug
+commercialhaskell/stack                    3/10  pass       label=type: bug
+carapace-sh/carapace-bin                   4/10  pass       label=bug
+haskell/cabal                              5/10  pass       label=type: bug
+ms-jpq/sad                                 1/9   FAIL       label=(none matched; last issues of any label)

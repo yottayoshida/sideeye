@@ -1,0 +1,13 @@
+-rw-r--r-- 1 root root 1052672 Oct  9 02:37 d.chd
+No verification to be done; CHD is uncompressed
+Fatal error occurred: 0
+addmeta killed at its second pwrite64: exit 137
+-rw-r--r-- 1 root root 1052688 Oct  9 02:37 d.chd
+-- verify
+chdman - MAME Compressed Hunks of Data (CHD) manager 0.276 (unknown)
+No verification to be done; CHD is uncompressed
+Fatal error occurred: 0
+-- info
+Logical size: 1,048,576 bytes
+-- extract and compare
+raw data identical

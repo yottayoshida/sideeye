@@ -1,0 +1,26 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's (working tree)    sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's at tag v1.10.0     sha256 e3cb964274494696b688f0953fa6b112ef233db9dac6ddca43777cb9b0ddaef3
+build: NOTE the page's installer has moved since v1.10.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 7.85kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 ERROR: failed to do request: Head "https://registry-1.docker.io/v2/library/debian/manifests/trixie-slim": net/http: TLS handshake timeout
+------
+ > [internal] load metadata for docker.io/library/debian:trixie-slim:
+------
+Dockerfile:14
+--------------------
+  12 |     # Built by build.sh. Network at build only; every gate, explore and replay runs `--network none`.
+  13 |     # linux/arm64 (this machine's Docker).
+  14 | >>> FROM debian:trixie-slim
+  15 |     
+  16 |     RUN apt-get update && apt-get install -y --no-install-recommends \
+--------------------
+ERROR: failed to build: failed to solve: debian:trixie-slim: failed to resolve source metadata for docker.io/library/debian:trixie-slim: failed to do request: Head "https://registry-1.docker.io/v2/library/debian/manifests/trixie-slim": net/http: TLS handshake timeout
+build rc=1

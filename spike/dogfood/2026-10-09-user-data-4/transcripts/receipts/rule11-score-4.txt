@@ -1,0 +1,2 @@
+ebiggers/libdeflate                        6/10  pass       label=bug
+intel/isa-l                                1/5   FAIL       label=bug

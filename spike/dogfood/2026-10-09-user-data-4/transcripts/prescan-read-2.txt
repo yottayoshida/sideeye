@@ -1,0 +1,48 @@
+== AcademySoftwareFoundation_OpenTimelineIO.prescan.txt: 240 distinct issues listed, 9 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #1983 closed 2025-11-25 ALE adapter fails to parse files with standard truncated decimal framerates in v0.18.1
+   #1898 merged 2025-06-07 Workflow fix, exclude cannot be empty
+   #1363 merged 2022-07-26 Close Temporary file handles in tests
+   #763 merged 2020-07-17 Added basic support for CMX EDL wipe transitions
+   #607 merged 2019-10-24 Issue-581 - Clobbered by PR #591
+   #590 closed 2019-09-26 media_linker.load_manifest clobbers local Adapters of similar suffix
+   #520 closed 2019-05-28 Metadata key coming through empty from AAF - causing parse error
+   #112 closed 2017-06-14 Rename Sequence to Track
+   #86 open 2017-04-18 SMPTE_Wipe support
+== cooklang_cookcli.prescan.txt: 170 distinct issues listed, 11 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #629 open 2026-10-05 feat(pantry): new sections from Add item, rename sections, edit pantry.conf as text
+   #623 merged 2026-10-03 feat(server): rename a recipe or menu from the editor
+   #622 closed 2026-10-03 Rename a recipe or menu from the web editor
+   #545 closed 2026-09-26 Recipe API reads, overwrites and deletes any file under the recipe directory
+   #501 open 2026-09-13 Recipes with Component Modifiers Used Look like Corrupted UX in Server/Static Mode
+   #431 closed 2026-08-13 shopping list writes are not atomic: a failed write truncates .shopping-list
+   #429 closed 2026-08-12 pantry add/remove/update corrupts top-level items and silently drops comments and attributes
+   #414 closed 2026-08-11 cook recipe -f cooklang corrupts recipes on repeated round-trips
+   #353 merged 2026-06-09 fix(server): avoid renameat2 SIGSYS on aarch64 Android (Termux)
+   #307 merged 2026-04-05 fix: prevent print layout from truncating recipe content
+   #304 closed 2026-04-04 the print is truncated
+== Querz_mcaselector.prescan.txt: 118 distinct issues listed, 11 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #592 open 2026-05-13 Extra windows load blank and hang
+   #540 open 2025-06-06 Corrupted looking chunks - likely due to weird mod
+   #534 open 2025-04-27 I opened the software and it was blank.
+   #526 merged 2025-03-25 Reverted a corruption in older versions caused by the version handler…
+   #479 open 2024-06-02 Chests are emptied upon export
+   #429 open 2023-07-09 Opening world is just blank
+   #360 open 2022-07-01 Section Import makes all chest/shulkers/barrels empty and shulkers+chests are invisible
+   #251 open 2021-08-16 Color corruption in map rendering, 1.16.x
+   #184 closed 2021-03-31 "The application was configured to use a bundled Java Runtime Environment but the runtime is missing or corrupted."
+   #155 closed 2020-11-27 Defragmenting an MCA file fails when the section sizes are corrupted
+   #81 closed 2020-03-10 Exporting End spawn chunks causes the whole region to go blank if custom terrain was present
+== arkenfox_user.js.prescan.txt: 331 distinct issues listed, 3 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #2057 closed 2026-06-08 Arkenfox overwriting site exceptions and start page
+   #1690 closed 2023-07-14 wiki: installing Arkenfox user.js causes data loss [if you didn't READ THE FUCKING WIKI as instructed]
+   #1618 closed 2023-01-19 `browser.startup.blankWindow` can block RFP newwin and maximize/restore is confusing
+== gravitl_netmaker.prescan.txt: 251 distinct issues listed, 9 with a write-shape word; controls: positive  psf/black + disk -> 32 hit(s) | positive  of those, the two known issues present: 2 of 2 | negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+   #4045 open 2026-06-05 [Bug]: Fast Startup on Windows corrupts netclient .json/.bak config files, service fails to start and requires manual cleanup + re
+   #3977 merged 2026-04-14 fix(go): empty out set dns;
+   #3311 merged 2025-01-29 NET-1933: option to force destroy network
+   #2891 closed 2024-04-10 [Bug]: The connection between the servers is interrupted for a second if the connection to the server(netmaker) is lost
+   #2194 closed 2023-04-12 [Bug]: Empty ip address in external client
+   #1812 open 2022-12-10 [Bug]:if api is behind in cf dns proxy, dynamic endpoint is corrupted
+   #1527 merged 2022-09-07 restore backup if file corrupted
+   #1196 merged 2022-06-09 updating node can wipe traffic keys
+   #1160 closed 2022-06-01 [Bug]: loss of network connection, stops the service, and never restarts it, windows

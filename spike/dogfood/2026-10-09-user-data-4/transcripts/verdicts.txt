@@ -1,0 +1,17 @@
+buildx	supervised	PASS 0/14 		replays: 
+cabal	supervised	FAIL 2/4 	cp 2/3: after rename config, before mkdir cabal; config	replays: FAIL FAIL
+carapace	supervised	FAIL 1/3 	cp 2/2: after open styles.json, before write styles.json; styles.json	replays: FAIL FAIL
+chdman	explore	FAIL 2/5 	cp 3/4: after write d.chd, before write d.chd; d.chd	replays: FAIL FAIL
+cook	supervised	PASS 0/6 		replays: 
+f2	supervised	FAIL 2/4 	cp 2/3: after rename IMG_1.jpg, before rename IMG_2.jpg; (named by the checker, not by path)	replays: FAIL FAIL
+hunspell	explore	PASS 0/3 		replays: 
+iconvert	-	no explore
+libdeflate	explore	PASS 0/4 		replays: 
+libdeflate-nocheck	explore	UNKNOWN 0/4 nothing_could_fail		replays: 
+mcaselector	explore	FAIL 1/3 	cp 2/2: after unlink r.0.0.mca, before rename r.0.0.mca17726668882124732747.tmp; region/r.0.0.mca	replays: FAIL FAIL
+nmctl	supervised	FAIL 1/3 	cp 2/2: after open config.yml, before write config.yml; config.yml	replays: FAIL FAIL
+otiotool	explore	FAIL 1/3 	cp 2/2: after open cut.otio, before write cut.otio; cut.otio	replays: FAIL FAIL
+scw	supervised	FAIL 1/3 	cp 2/2: after open config.yaml, before write config.yaml; config.yaml	replays: FAIL FAIL
+seconv	explore	FAIL 1/4 	cp 3/3: after truncate subs.srt, before write subs.srt; subs.srt	replays: FAIL FAIL
+stack	supervised	FAIL 1/117 	cp 116/116: after truncate config.yaml, before write config.yaml; config.yaml	replays: FAIL FAIL
+zvm	supervised	FAIL 2/5 	cp 2/4: after open settings.json, before write settings.json; settings.json	replays: FAIL FAIL

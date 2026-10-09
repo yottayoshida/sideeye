@@ -1,0 +1,6 @@
+weechat/weechat stars=3399 pushed=2026-10-07 archived=false issues=true full=weechat/weechat
+docker/buildx stars=4523 pushed=2026-10-08 archived=false issues=true full=docker/buildx
+marler8997/zigup stars=1126 pushed=2025-06-14 archived=false issues=true full=marler8997/zigup
+tristanisham/zvm stars=1073 pushed=2026-10-07 archived=false issues=true full=tristanisham/zvm
+scummvm/scummvm stars=2832 pushed=2026-10-08 archived=false issues=false full=scummvm/scummvm
+version-fox/vfox stars=3996 pushed=2026-10-05 archived=false issues=true full=version-fox/vfox

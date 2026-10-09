@@ -1,0 +1,123 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's (working tree)    sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's at tag v1.10.0     sha256 e3cb964274494696b688f0953fa6b112ef233db9dac6ddca43777cb9b0ddaef3
+build: NOTE the page's installer has moved since v1.10.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 11.62kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 1.9s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/24] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.28kB 0.0s done
+#5 DONE 0.0s
+
+#6 [18/24] RUN npm install -g --no-fund --no-audit @yarnpkg/cli-dist@4.18.1 trash-cli > /tmp/npm-third.log 2>&1 && echo "OK yarn trash-cli" || { echo "FAILED yarn/trash-cli"; tail -3 /tmp/npm-third.log; }
+#6 CACHED
+
+#7 [13/24] RUN { echo "scw $(scw version 2>&1 | head -1)"; echo "f2 $(f2 --version 2>&1 | head -1)"; echo "seconv $(seconv 2>&1 | head -1)"; echo "iconvert $(iconvert --help 2>&1 | head -1)"; echo "otiotool $(otiotool --version 2>&1 | head -1)"; } | tee /versions.txt
+#7 CACHED
+
+#8 [11/24] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/scaleway/scaleway-cli/releases/download/v2.65.1/scaleway-cli_2.65.1_linux_arm64 scw;     get $gh/ayoisaiah/f2/releases/download/v2.2.2/f2_2.2.2_linux_arm64.tar.gz f2.tgz;     get $gh/SubtitleEdit/subtitleedit/releases/download/v5.2.0/SeConv-Linux-ARM64.tar.gz seconv.tgz;     install -m 755 scw /opt/bin/scw;     mkdir -p x-f2 && tar xzf f2.tgz -C x-f2 && install -m 755 "$(find x-f2 -type f -name f2 | head -1)" /opt/bin/f2;     mkdir -p /opt/seconv && tar xzf seconv.tgz -C /opt/seconv && f=$(find /opt/seconv -type f ( -name SeConv -o -name seconv ) | head -1) && chmod 755 "$f" && ln -sf "$f" /opt/bin/seconv && echo "seconv <- $f";     ls -l /opt/bin
+#8 CACHED
+
+#9 [17/24] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/gravitl/netmaker/releases/download/v1.7.0/nmctl-linux-arm64 nmctl; install -m 755 nmctl /opt/bin/nmctl
+#9 CACHED
+
+#10 [ 6/24] RUN mkdir -p /opt/bin /tmp/dl && python3 -m venv /opt/py
+#10 CACHED
+
+#11 [ 4/24] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#11 CACHED
+
+#12 [ 5/24] RUN for p in nodejs npm ruby ruby-dev php-cli php-xml php-mbstring golang-go libfaketime faketime; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done | tee /tmp/apt-summary.txt
+#12 CACHED
+
+#13 [ 7/24] COPY install-sideeye.sh /opt/install-sideeye.sh
+#13 CACHED
+
+#14 [ 9/24] RUN "$(cat /install.path)" version
+#14 CACHED
+
+#15 [15/24] RUN { echo "cook $(cook --version 2>&1 | head -1)"; echo "prefsCleaner $(sha256sum /opt/arkenfox/prefsCleaner.sh | cut -c1-16) $(grep -m1 -i 'version' /opt/arkenfox/prefsCleaner.sh)"; echo "mcaselector $(ls /opt/mcaselector/bin 2>/dev/null | head -3 | tr '\n' ' ')"; } | tee -a /versions.txt
+#15 CACHED
+
+#16 [16/24] RUN apt-get install -y --no-install-recommends softhsm2 opensc > /tmp/apt-softhsm.log 2>&1 && echo "OK softhsm2" || { echo "MISSING softhsm2"; tail -3 /tmp/apt-softhsm.log; }
+#16 CACHED
+
+#17 [10/24] RUN apt-get install -y --no-install-recommends openimageio-tools libicu76 > /tmp/apt-oiio.log 2>&1 && echo "OK openimageio-tools" || { echo "MISSING openimageio-tools"; tail -3 /tmp/apt-oiio.log; }
+#17 CACHED
+
+#18 [ 2/24] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config
+#18 CACHED
+
+#19 [ 8/24] RUN sh /opt/install-sideeye.sh v1.10.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#19 CACHED
+
+#20 [14/24] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/cooklang/cookcli/releases/download/v0.38.0/cook-aarch64-unknown-linux-musl.tar.gz cook.tgz;     get $gh/Querz/mcaselector/releases/download/2.9/mcaselector-2.9-aarch64.deb mcaselector.deb;     get https://raw.githubusercontent.com/arkenfox/user.js/bb45863be796d331717e2b5d6e490f0d3e3cf93f/prefsCleaner.sh prefsCleaner.sh;     get https://raw.githubusercontent.com/arkenfox/user.js/bb45863be796d331717e2b5d6e490f0d3e3cf93f/user.js user.js;     mkdir -p x-cook && tar xzf cook.tgz -C x-cook && install -m 755 "$(find x-cook -type f -name cook | head -1)" /opt/bin/cook;     mkdir -p /opt/arkenfox && install -m 755 prefsCleaner.sh /opt/arkenfox/prefsCleaner.sh && install -m 644 user.js /opt/arkenfox/user.js;     apt-get install -y --no-install-recommends xdg-utils > /tmp/apt-xdg.log 2>&1;     (dpkg -i mcaselector.deb > /tmp/dpkg-mca.log 2>&1 || apt-get install -y -f > /tmp/apt-mca.log 2>&1) && echo "OK mcaselector" || { echo "FAILED mcaselector"; tail -3 /tmp/dpkg-mca.log; };     ls -l /opt/bin; dpkg -L mcaselector 2>/dev/null | grep -E 'bin/|\.jar$' | head -5
+#20 CACHED
+
+#21 [12/24] RUN /opt/py/bin/pip install --no-cache-dir opentimelineio==0.18.1 > /tmp/pip-otio.log 2>&1 && echo "OK opentimelineio" || { echo "FAILED opentimelineio"; tail -3 /tmp/pip-otio.log; }
+#21 CACHED
+
+#22 [19/24] RUN { echo "nmctl $(nmctl version 2>&1 | head -1)"; echo "yarn $(yarn --version 2>&1 | head -1)"; echo "trash $(npm ls -g trash-cli 2>/dev/null | grep trash-cli)"; echo "softhsm2 $(softhsm2-util --version 2>&1 | head -1)"; } | tee -a /versions.txt
+#22 CACHED
+
+#23 [20/24] RUN apt-get install -y --no-install-recommends cmake > /tmp/apt-cmake.log 2>&1 && echo "OK cmake" || echo "MISSING cmake"
+#23 CACHED
+
+#24 [ 3/24] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#24 CACHED
+
+#25 [21/24] RUN set -u; cd /tmp/dl; curl -fsSL -o libdeflate.tgz https://github.com/ebiggers/libdeflate/archive/refs/tags/v1.26.tar.gz && mkdir -p x-libdeflate && tar xzf libdeflate.tgz -C x-libdeflate --strip-components=1 &&     cmake -S x-libdeflate -B x-libdeflate/build -DCMAKE_BUILD_TYPE=Release -DLIBDEFLATE_BUILD_STATIC_LIB=OFF > /tmp/libdeflate-cmake.log 2>&1 && cmake --build x-libdeflate/build -j"$(nproc)" > /tmp/libdeflate-make.log 2>&1 &&     install -m 755 x-libdeflate/build/programs/libdeflate-gzip /opt/bin/libdeflate-gzip && install -m 755 x-libdeflate/build/libdeflate.so* /usr/local/lib/ 2>/dev/null; ldconfig;     echo "libdeflate-gzip $(libdeflate-gzip --version 2>&1 | head -1)" | tee -a /versions.txt || { echo "FAILED libdeflate"; tail -3 /tmp/libdeflate-make.log; }
+#25 CACHED
+
+#26 [22/24] RUN apt-get install -y --no-install-recommends mame-tools qt6-style-kvantum hunspell-en-us libgmp10 > /tmp/apt-l5.log 2>&1 && echo "OK mame-tools kvantum hunspell-en-us" || { echo "MISSING layer-5 apt"; tail -3 /tmp/apt-l5.log; }
+#26 3.788 MISSING layer-5 apt
+#26 3.789 Errors were encountered while processing:
+#26 3.789  mcaselector
+#26 3.789 E: Sub-process /usr/bin/dpkg returned an error code (1)
+#26 DONE 3.9s
+
+#27 [23/24] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/commercialhaskell/stack/releases/download/v3.11.1/stack-3.11.1-linux-aarch64.tar.gz stack.tgz;     get $gh/carapace-sh/carapace-bin/releases/download/v1.8.0/carapace-bin_1.8.0_linux_arm64.tar.gz carapace.tgz;     get $gh/haskell/cabal/releases/download/cabal-install-v3.18.2.0/cabal-install-3.18.2.0-aarch64-linux-unknown.tar.xz cabal.txz;     get $gh/hunspell/hunspell/releases/download/v1.7.5/hunspell-1.7.5.tar.gz hunspell.tgz;     mkdir -p x-stack x-carapace x-cabal x-hunspell;     tar xzf stack.tgz -C x-stack && install -m 755 "$(find x-stack -type f -name stack | head -1)" /opt/bin/stack;     tar xzf carapace.tgz -C x-carapace && install -m 755 "$(find x-carapace -type f -name carapace | head -1)" /opt/bin/carapace;     tar xJf cabal.txz -C x-cabal && install -m 755 "$(find x-cabal -type f -name cabal | head -1)" /opt/bin/cabal;     tar xzf hunspell.tgz -C x-hunspell --strip-components=1 && cd x-hunspell && ./configure --prefix=/opt/hunspell > /tmp/hunspell-configure.log 2>&1 && make -j"$(nproc)" > /tmp/hunspell-make.log 2>&1 && make install > /tmp/hunspell-install.log 2>&1 && ln -sf /opt/hunspell/bin/hunspell /opt/bin/hunspell && echo "hunspell built" || { echo "FAILED hunspell"; tail -5 /tmp/hunspell-make.log /tmp/hunspell-configure.log; }
+#27 1.763 OK stack.tgz
+#27 4.032 OK carapace.tgz
+#27 5.674 OK cabal.txz
+#27 6.503 OK hunspell.tgz
+#27 16.32 hunspell built
+#27 DONE 16.8s
+
+#28 [24/24] RUN { echo "stack $(stack --version 2>&1 | head -1)"; echo "carapace $(carapace --version 2>&1 | head -1)"; echo "cabal $(cabal --version 2>&1 | head -1)"; echo "hunspell $(hunspell -v 2>&1 | head -1)"; echo "chdman $(chdman 2>&1 | head -1)"; echo "kvantummanager $(ls /usr/bin/kvantummanager 2>&1)"; } | tee -a /versions.txt
+#28 0.111 stack Version 3.11.1, Git revision 979bf6339fd4d5837c4d2fa8166dc715eef30ee2 aarch64 hpack-0.39.6
+#28 0.115 carapace carapace-bin 1.8.0
+#28 0.117 cabal cabal-install version 3.18.2.0
+#28 0.118 hunspell @(#) International Ispell Version 3.2.06 (but really Hunspell 1.7.5)
+#28 0.131 chdman chdman - MAME Compressed Hunks of Data (CHD) manager 0.276 (unknown)
+#28 0.132 kvantummanager /usr/bin/kvantummanager
+#28 DONE 0.1s
+
+#29 exporting to image
+#29 exporting layers
+#29 exporting layers 9.8s done
+#29 exporting manifest sha256:b51e0df79aa4c09ebe050e6c48396fdc8745043925f9be126d14fde77d288c44 0.0s done
+#29 exporting config sha256:29a5ed8617eca0e9c5bd2ef8164d32078cc89ddf927070f7c24f25eb38bc8600 0.0s done
+#29 exporting attestation manifest sha256:4beb59edc9cc49225b5cd295605c17697eddc623d163c857f0c668755c6103d4 done
+#29 exporting manifest list sha256:5802e518417fa2668b746d12f1431c025b5c861a563a5f1af01c9e0851e97ce7 done
+#29 naming to docker.io/library/sideeye-ud1009:latest done
+#29 unpacking to docker.io/library/sideeye-ud1009:latest
+#29 unpacking to docker.io/library/sideeye-ud1009:latest 1.8s done
+#29 DONE 11.7s
+build: sideeye-ud1009 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt
+build rc=0

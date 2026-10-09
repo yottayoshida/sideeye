@@ -1,0 +1,840 @@
+== novelty pre-scan: concourse/concourse
+== date: 2026-10-09T02:30:31Z
+== controls (the search path, before any target term is believed)
+  positive  psf/black + disk -> 32 hit(s)
+  positive  of those, the two known issues present: 2 of 2
+  negative  psf/black + zzqqxxnotaword -> 0 hit(s) (expected 0)
+
+== terms
+  crash          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9746 closed 2026-10-03 Withdrawn: containerd nftables table (image packages are the #9449 fix)
+      #9722 closed 2026-09-17 baggageclaim: overlay driver Recover() stacks bind-mounts on each in-place restart → ENOSPC crash loop
+      #3521 open 2019-03-15 Viewing Large Build Logs Takes A Very Long Time
+      #9723 merged 2026-09-17 fix: baggageclaim: fix overlay driver stacking mounts on worker restart
+      #3265 open 2019-02-11 Aid infrastrucure automation by adding a manual step
+      #9708 closed 2026-09-09 fix(deps): update module google.golang.org/grpc to v1.83.2 [security] - autoclosed
+      #9561 open 2026-05-01 Update javascript
+      #8056 closed 2022-02-10 Change Lidar scanner to not use go-routines.
+      #7251 merged 2021-07-06 build(deps-dev): bump webpack from 5.42.0 to 5.42.1
+      #7439 merged 2021-08-20 build(deps-dev): bump webpack from 5.50.0 to 5.51.1
+      #8433 merged 2022-06-17 Disable connection tracker by default and provide an option to enable.
+      #7638 merged 2021-10-04 build(deps): bump go.opentelemetry.io/otel from 1.0.0 to 1.0.1
+      #7634 merged 2021-10-04 build(deps): bump go.opentelemetry.io/otel/sdk from 1.0.0 to 1.0.1
+      #7635 merged 2021-10-04 build(deps): bump go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc from 1.0.0 to 1.0.1
+      #7637 closed 2021-10-04 build(deps): bump go.opentelemetry.io/otel/exporters/otlp/otlptrace from 1.0.0 to 1.0.1
+      #7636 merged 2021-10-04 build(deps): bump go.opentelemetry.io/otel/exporters/jaeger from 1.0.0 to 1.0.1
+      #6837 merged 2021-04-08 build(deps-dev): bump webpack from 5.30.0 to 5.31.0
+      #6680 merged 2021-03-18 Bump elm-explorations/test from 1.2.1 to 1.2.2 in /web/elm
+      #9288 merged 2025-09-08 driver: use -R flag for recursive btrfs subvolume deletion
+      #8386 merged 2022-05-29 build(deps): bump github.com/klauspost/compress from 1.15.4 to 1.15.5
+  corrupt        37 hit(s) (all listed)
+      #9696 open 2026-09-01 atc: add Google Secret Manager credential manager
+      #9668 merged 2026-07-31 fly: copy stdin buffer before sending hijack input
+      #9379 closed 2025-11-27 fix(atc): prevent partial redaction of overlapping secrets
+      #8928 merged 2024-03-26 Fx elm data-format package hash error
+      #9325 merged 2025-10-09 replace left/right quotes in no builds message with straight quotes
+      #8162 merged 2022-03-13 build(deps): bump github.com/klauspost/compress from 1.15.0 to 1.15.1
+      #9585 closed 2026-05-25 Database Restoration Results In SQLSTATE Error
+      #8261 merged 2022-04-11 build(deps): bump go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc from 1.6.1 to 1.6.3
+      #8260 merged 2022-04-11 build(deps): bump go.opentelemetry.io/otel/exporters/jaeger from 1.6.1 to 1.6.3
+      #8255 merged 2022-04-10 build(deps): bump go.opentelemetry.io/otel/sdk from 1.6.1 to 1.6.3
+      #8257 merged 2022-04-10 build(deps): bump go.opentelemetry.io/otel/trace from 1.6.1 to 1.6.3
+      #8258 merged 2022-04-10 build(deps): bump go.opentelemetry.io/otel/exporters/otlp/otlptrace from 1.6.1 to 1.6.3
+      #6173 closed 2020-10-19 Pipeline stalls with `failed-hydrating-volume` in logs
+      #8932 closed 2024-04-01 Error when building the web UI
+      #2124 closed 2018-04-03 Bug: Grafana dashboard issue - deployment name from concourse is missing
+      #8001 closed 2022-01-26 Containers with created and meta_type check not recycling.
+      #8692 closed 2023-02-28 Database migration error going from 7.8.3 to 7.9.1
+      #6237 merged 2020-10-30 Don't enforce timeouts during image fetching
+      #6648 closed 2021-03-08 All workers busy when using container placement strategy limit-active-tasks in 7.0.0
+      #2759 merged 2018-11-05 Support for cc.xml
+  corruption     9 hit(s) (all listed)
+      #9668 merged 2026-07-31 fly: copy stdin buffer before sending hijack input
+      #9132 merged 2025-03-16 fix: add O_TRUNC flag when writing volume metadata file
+      #9710 merged 2026-09-10 fix(deps): update module github.com/containerd/containerd/v2 to v2.3.5 [security]
+      #8115 merged 2022-02-22 build(deps): bump github.com/klauspost/compress from 1.14.2 to 1.14.4
+      #8001 closed 2022-01-26 Containers with created and meta_type check not recycling.
+      #3579 merged 2019-03-23 display task duration on finished tasks
+      #722 closed 2016-10-25 Initial database setup is not atomic and can become wedged if interrupted
+      #1966 closed 2018-01-17 Docker image jobs take a long time to schedule
+      #1737 closed 2017-10-23 worker restart makes atc stall with volume can not destroyed / violates check constraint
+  truncated      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3521 open 2019-03-15 Viewing Large Build Logs Takes A Very Long Time
+      #9649 open 2026-07-22 Update all dependencies
+      #9561 open 2026-05-01 Update javascript
+      #8939 merged 2024-04-05 Fly excludes Mac metadata when uploading local inputs
+      #1976 closed 2018-01-22 Add check interval to Resource page
+      #7247 merged 2021-07-05 Use browser cache API for dashboard caching
+      #9547 closed 2026-04-23 Update dependency uuid to v14 [SECURITY]
+      #8382 merged 2022-05-29 build(deps): bump github.com/aws/aws-sdk-go from 1.44.19 to 1.44.24
+      #8367 merged 2022-05-22 build(deps): bump github.com/aws/aws-sdk-go from 1.44.14 to 1.44.19
+      #8327 merged 2022-05-08 build(deps): bump github.com/containerd/containerd from 1.6.3 to 1.6.4
+      #8279 merged 2022-04-17 build(deps): bump github.com/aws/aws-sdk-go from 1.43.36 to 1.43.41
+      #7969 merged 2022-01-16 build(deps): bump github.com/aws/aws-sdk-go from 1.42.30 to 1.42.35
+      #7764 closed 2021-11-04 build(deps): bump github.com/aws/aws-sdk-go from 1.41.11 to 1.41.17
+      #7394 merged 2021-08-09 build(deps): bump github.com/aws/aws-sdk-go from 1.40.10 to 1.40.17
+      #7385 closed 2021-08-05 build(deps): bump github.com/aws/aws-sdk-go from 1.40.10 to 1.40.15
+      #7390 closed 2021-08-06 build(deps): bump github.com/aws/aws-sdk-go from 1.40.10 to 1.40.16
+      #8351 merged 2022-05-16 build(deps): bump github.com/aws/aws-sdk-go from 1.44.9 to 1.44.14
+      #8293 merged 2022-04-24 build(deps): bump github.com/aws/aws-sdk-go from 1.43.41 to 1.43.45
+      #8218 merged 2022-03-28 build(deps): bump github.com/aws/aws-sdk-go from 1.43.21 to 1.43.26
+      #8146 merged 2022-03-06 build(deps): bump github.com/aws/aws-sdk-go from 1.43.7 to 1.43.12
+  truncate       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #3521 open 2019-03-15 Viewing Large Build Logs Takes A Very Long Time
+      #9649 open 2026-07-22 Update all dependencies
+      #9561 open 2026-05-01 Update javascript
+      #8939 merged 2024-04-05 Fly excludes Mac metadata when uploading local inputs
+      #1976 closed 2018-01-22 Add check interval to Resource page
+      #6985 merged 2021-05-06 Bump github.com/onsi/gomega from 1.11.0 to 1.12.0
+      #8874 merged 2023-12-28 fix(deps): update module golang.org/x/crypto to v0.17.0 [security]
+      #7247 merged 2021-07-05 Use browser cache API for dashboard caching
+      #9547 closed 2026-04-23 Update dependency uuid to v14 [SECURITY]
+      #7776 merged 2021-11-09 build(deps): bump github.com/lib/pq from 1.10.3 to 1.10.4
+      #8382 merged 2022-05-29 build(deps): bump github.com/aws/aws-sdk-go from 1.44.19 to 1.44.24
+      #8367 merged 2022-05-22 build(deps): bump github.com/aws/aws-sdk-go from 1.44.14 to 1.44.19
+      #8327 merged 2022-05-08 build(deps): bump github.com/containerd/containerd from 1.6.3 to 1.6.4
+      #8279 merged 2022-04-17 build(deps): bump github.com/aws/aws-sdk-go from 1.43.36 to 1.43.41
+      #7969 merged 2022-01-16 build(deps): bump github.com/aws/aws-sdk-go from 1.42.30 to 1.42.35
+      #7764 closed 2021-11-04 build(deps): bump github.com/aws/aws-sdk-go from 1.41.11 to 1.41.17
+      #7394 merged 2021-08-09 build(deps): bump github.com/aws/aws-sdk-go from 1.40.10 to 1.40.17
+      #7385 closed 2021-08-05 build(deps): bump github.com/aws/aws-sdk-go from 1.40.10 to 1.40.15
+      #7390 closed 2021-08-06 build(deps): bump github.com/aws/aws-sdk-go from 1.40.10 to 1.40.16
+      #8351 merged 2022-05-16 build(deps): bump github.com/aws/aws-sdk-go from 1.44.9 to 1.44.14
+  empty          >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9751 open 2026-10-06 fly: add check-pipeline-resources command
+      #9700 open 2026-09-04 Emit audit logs when pipelines are auto-archived internally
+      #9209 open 2025-05-29 LDAP not finding a group list for a user
+      #6057 merged 2020-09-10 Fix empty worker tags
+      #9293 merged 2025-09-10 Prevent resources from emitting empty versions
+      #9292 merged 2025-09-09 Update MD5 hashing migration to handle empty versions
+      #9695 merged 2026-08-30 worker: keep in-flight overlay dirs during orphan sweep
+      #9661 merged 2026-07-23 Add pipeline-level description field
+      #7370 merged 2021-07-30 Don't allow empty identifiers when renaming pipelines/teams
+      #9563 merged 2026-05-01 Emit a more useful error if we get the "rootfs empty" error
+      #9636 closed 2026-07-09 RFC 8693 token exchange against embedded Dex always returns an empty 500 — StoreAccessToken middleware assumes every token response contains id_token
+      #9632 closed 2026-07-07 put step succeeds and swallows the error from faulty resource types
+      #9593 merged 2026-06-08 Chown bind-mount volumes when running as non-root user
+      #9638 merged 2026-07-09 skymarshal: behaviour: handle RFC 8693 token-exchange responses
+      #9708 closed 2026-09-09 fix(deps): update module google.golang.org/grpc to v1.83.2 [security] - autoclosed
+      #9634 merged 2026-07-08 fix: Hermetic doesn't configure hosts on the containers
+      #9658 merged 2026-07-23 Fail put step when saving output fails
+      #9644 merged 2026-07-14 Enhance fly health output and auth handling
+      #9540 merged 2026-04-20 fix fly's [yN] prompt
+      #9635 closed 2026-07-08 go-archive tests failing on go1.26.5
+  atomic         35 hit(s) (all listed)
+      #9160 closed 2025-03-25 refactor: modernize atomic usage in PlanFactory
+      #9158 merged 2025-03-25 refactor: optimize Counter and Gauge with atomic.Int64
+      #7718 closed 2021-10-22 [7.4.x] replace atomic with mutex for event id's
+      #9162 closed 2025-03-25 perf: optimize countingWaitGroup for faster Count() operations
+      #9118 merged 2025-03-14 refactor: More granular locking in WorkerCache
+      #9092 merged 2025-03-02 atc: Various small fixes
+      #9131 merged 2025-03-16 Improve repository lock manager with sync.Map for better concurrency
+      #7758 merged 2021-11-02 Fixes for bugs in 7.4.2
+      #6635 merged 2021-03-04 Wait for worker matching strategy when scheduling build steps
+      #9515 merged 2026-04-08 Update module go.opentelemetry.io/otel/sdk to v1.43.0 [SECURITY]
+      #6761 merged 2021-03-26 build(deps): bump github.com/DataDog/datadog-go from 3.2.0+incompatible to 3.7.2+incompatible
+      #8877 merged 2024-01-01 chore(deps): update javasript
+      #7149 closed 2021-06-09 panic: unaligned 64-bit atomic operation when running on raspberry pi 4
+      #813 closed 2016-12-06 When baggageclaim volumes mount is full, baggageclaim should fall back on non-atomic removal
+      #3573 closed 2019-03-22 Dashboard: change from 'search' to 'filter'
+      #5136 closed 2020-02-07 containerd: investigate use of firewalld rather than iptables
+      #6354 closed 2020-12-10 pq: nextval: reached maximum value of sequence "resource_config_versions_id_seq"
+      #7683 closed 2021-10-15 duplicate key value violates unique constraint "pipeline_build_events_22_build_id_event_id"
+      #3476 merged 2019-03-11 Create .flyrc with 0600 permissions instead of 0777
+      #3743 merged 2019-04-16 web: automatically add comment when pinning resource
+  atomically     11 hit(s) (all listed)
+      #7718 closed 2021-10-22 [7.4.x] replace atomic with mutex for event id's
+      #6635 merged 2021-03-04 Wait for worker matching strategy when scheduling build steps
+      #3573 closed 2019-03-22 Dashboard: change from 'search' to 'filter'
+      #6354 closed 2020-12-10 pq: nextval: reached maximum value of sequence "resource_config_versions_id_seq"
+      #3476 merged 2019-03-11 Create .flyrc with 0600 permissions instead of 0777
+      #3743 merged 2019-04-16 web: automatically add comment when pinning resource
+      #214 closed 2015-11-30 pipeline a job 1 gets same semver version as pipeline b job 2
+      #1200 closed 2017-05-23 How do you use `set-pipeline`?
+      #3522 closed 2019-03-15 Support atomically switching pins
+      #5122 closed 2020-02-06 Refactor scheduler interfaces
+      #3558 closed 2019-03-20 Calls to APIs with invalid or expired tokens can return empty 200s rather than 401
+  interrupted    48 hit(s) (all listed)
+      #9611 merged 2026-06-19 add --force flag to fly's abort-build command
+      #9516 merged 2026-04-09 nit: TSA cleanup
+      #8634 merged 2022-11-29 fix across step states bug
+      #6854 merged 2021-04-09 atc(feat): enhance webhook triggered checks
+      #4106 closed 2019-07-06 Build is not aborted despite success message
+      #9027 closed 2024-11-12 containerd task execution sometimes fails with EINTR - interrupted system call
+      #3283 closed 2019-02-13 atc: add global step timeout
+      #3968 closed 2019-06-03 Maintenance mode during updates 
+      #3347 closed 2019-02-20 `put` step spinner not animating in web-ui
+      #6042 closed 2020-09-03 In the UI, for the pending and cancelled jobs display started, finished and duration like for any other job
+      #3737 closed 2019-04-15 Graceful Timeout Step Modifier
+      #2654 closed 2018-10-04 Cannot have multiple team with gitlab integration on same concourse instance 
+      #755 closed 2016-11-07 Automatically retry build steps if they fail because the worker is unusable
+      #6752 closed 2021-03-26 If containerd socket is interrupted, worker is stuck in limbo
+      #5802 closed 2020-06-23 ListAllJobs endpoint can be watched for changes
+      #6846 closed 2021-04-08 Across step errors don't show an orange outline in the builds page UI
+      #5191 closed 2020-02-17 atc(feat): graceful process termination when interrupted
+      #4243 merged 2019-08-08 pass context to baggageclaimclient.StreamIn/Out calls
+      #2200 closed 2018-05-07 Checks/tasks are failing intermittently for git and docker resources - containers has no internet access
+      #6632 closed 2021-03-03 long periods of no output + worker rebalancing causes containerd containers to exit
+  interrupt      75 hit(s) (all listed)
+      #5098 open 2020-01-30 Allow Concourse Worker to run as Windows Service
+      #9611 merged 2026-06-19 add --force flag to fly's abort-build command
+      #9448 merged 2026-02-02 fix fly/integration/ tests on Windows
+      #9516 merged 2026-04-09 nit: TSA cleanup
+      #8634 merged 2022-11-29 fix across step states bug
+      #6854 merged 2021-04-09 atc(feat): enhance webhook triggered checks
+      #9468 closed 2026-02-24 Implement ATC TLS Hot Reload
+      #4106 closed 2019-07-06 Build is not aborted despite success message
+      #9027 closed 2024-11-12 containerd task execution sometimes fails with EINTR - interrupted system call
+      #3283 closed 2019-02-13 atc: add global step timeout
+      #2838 closed 2018-11-21 Add abilitiy to automatically restart interruptible jobs
+      #3968 closed 2019-06-03 Maintenance mode during updates 
+      #3737 closed 2019-04-15 Graceful Timeout Step Modifier
+      #3347 closed 2019-02-20 `put` step spinner not animating in web-ui
+      #6042 closed 2020-09-03 In the UI, for the pending and cancelled jobs display started, finished and duration like for any other job
+      #5286 closed 2020-03-09 Open questions about migrating a release from helm 2 to helm 3
+      #5714 closed 2020-06-03 Concourse Maintenance / Low utilization View
+      #2654 closed 2018-10-04 Cannot have multiple team with gitlab integration on same concourse instance 
+      #755 closed 2016-11-07 Automatically retry build steps if they fail because the worker is unusable
+      #6820 closed 2021-04-05 Add fly command to pause/unpause components
+  sigkill        19 hit(s) (all listed)
+      #8479 closed 2022-07-14 Unblock process deletion in worker runtime
+      #6727 merged 2021-03-24 move migration table updating SQL into a migration transaction
+      #8638 closed 2022-12-05 Potential memory/goroutines leaks
+      #5251 closed 2020-02-26 Worker ConnectionDrainTimeout isn't guaranteed to drain within the allotted time
+      #3737 closed 2019-04-15 Graceful Timeout Step Modifier
+      #1497 closed 2017-08-17 Old workers stay in `stalled` state indefinitely after restart
+      #3588 closed 2019-03-25 500 error on badly cleaned up containers/workers
+      #5191 closed 2020-02-17 atc(feat): graceful process termination when interrupted
+      #5181 closed 2020-02-13 WIP: Introduction of Graceful Interrupt Timeout (Abort, Error, Timeout, etc)
+      #4784 merged 2019-11-18 worker: add Destroy functionality
+      #4921 closed 2019-12-18 implement `Stop()` in backend/container
+      #207 closed 2015-11-20 fly login should let a user cancel the request
+      #1255 closed 2017-06-06 Lots of `unknown handle` errors
+      #2757 closed 2018-11-05 There is no way to actively determine when a worker has been retired and can be shut down
+      #3111 closed 2019-01-21 topgun/k8s: ensure worker lifecycle works 
+      #5048 closed 2020-01-20 containerd: `Destroy` fails to send SIGKILL when grace period expires
+      #4918 closed 2019-12-18 [Runtime] Implement Garden.Container.Stop() Method with the containerd backend 
+      #4099 closed 2019-07-04 Flake (?): `guardian.api.garden-server.destroy.failed`
+      #5070 closed 2020-01-27 containerd: ensure gracefulperiod is being honored
+  sigint         8 hit(s) (all listed)
+      #8479 closed 2022-07-14 Unblock process deletion in worker runtime
+      #8120 merged 2022-02-22 build(deps): bump github.com/containerd/containerd from 1.5.9 to 1.6.0
+      #2829 closed 2018-11-19 If a worker process running in Docker is being shut down, auto-remove the worker
+      #5251 closed 2020-02-26 Worker ConnectionDrainTimeout isn't guaranteed to drain within the allotted time
+      #5191 closed 2020-02-17 atc(feat): graceful process termination when interrupted
+      #379 closed 2016-04-18 Programmable abort behaviour for tasks and resources
+      #3111 closed 2019-01-21 topgun/k8s: ensure worker lifecycle works 
+      #3858 closed 2019-05-14 Web crash: 'goroutine stack exceeds 1000000000-byte limit' 'stack overflow'
+  ctrl-c         21 hit(s) (all listed)
+      #9649 open 2026-07-22 Update all dependencies
+      #3075 open 2019-01-17  Terminal usability problems with fly intercept on Windows workers
+      #6902 merged 2021-04-19 Fix volume GC query to not include volumes with children
+      #1994 closed 2018-01-30 Splitting pipeline.yml into several files via simple templating
+      #2368 closed 2018-07-10 Windows worker crashes when pipeline task send CTRL_C_EVENT to subprocess
+      #2162 closed 2018-04-17 3.11.0 worker restart regression
+      #3136 merged 2019-01-23 web: added "new version" tooltip for resource first occurrences
+      #5824 merged 2020-06-25 fly: behaviour: fix manual token input on zero-column terminals
+      #4951 merged 2019-12-27 Add the token text to the fly_success page
+      #5837 merged 2020-07-01 fly: fix fly login manual input on windows
+      #247 closed 2015-12-29 Jobs error with ContainerNotFoundError
+      #201 closed 2015-11-12 ctrl+c does not work on input
+      #329 closed 2016-03-27 Is there any way to deploy via docker-compose?
+      #1104 closed 2017-05-09 fly set-pipeline returns 1 upon choosing not to apply the configuration
+      #1933 closed 2018-01-06 proposal:  $FLY_TARGET environment variable
+      #1244 closed 2017-06-03 "fly execute --exclude-ignored" broken for mercurial resource
+      #1255 closed 2017-06-06 Lots of `unknown handle` errors
+      #2819 closed 2018-08-20 fly login asks for choosing auth method
+      #4914 closed 2019-12-17 Allow copying auth token even when browser copy/paste is disabled
+      #3048 closed 2019-01-15 Check-resource-type causes pipeline stuck
+  power          68 hit(s) (all listed)
+      #7619 closed 2021-09-30 build(deps): bump github.com/aws/aws-sdk-go from 1.40.51 to 1.40.52
+      #8279 merged 2022-04-17 build(deps): bump github.com/aws/aws-sdk-go from 1.43.36 to 1.43.41
+      #7554 merged 2021-09-15 build(deps): bump github.com/aws/aws-sdk-go from 1.40.42 to 1.40.43
+      #7876 merged 2021-12-09 Automatically pause pipelines
+      #7363 closed 2021-07-30 build(deps): bump github.com/aws/aws-sdk-go from 1.40.10 to 1.40.11
+      #7628 merged 2021-10-01 build(deps): bump github.com/aws/aws-sdk-go from 1.40.51 to 1.40.53
+      #6706 merged 2021-03-22 Bump github.com/aws/aws-sdk-go from 1.37.33 to 1.38.1
+      #7804 merged 2021-11-16 build(deps): bump github.com/aws/aws-sdk-go from 1.42.3 to 1.42.5
+      #7375 closed 2021-08-03 build(deps): bump github.com/aws/aws-sdk-go from 1.40.10 to 1.40.13
+      #9585 closed 2026-05-25 Database Restoration Results In SQLSTATE Error
+      #7993 merged 2022-01-23 build(deps): bump github.com/aws/aws-sdk-go from 1.42.35 to 1.42.39
+      #7379 closed 2021-08-04 build(deps): bump github.com/aws/aws-sdk-go from 1.40.10 to 1.40.14
+      #8382 merged 2022-05-29 build(deps): bump github.com/aws/aws-sdk-go from 1.44.19 to 1.44.24
+      #7969 merged 2022-01-16 build(deps): bump github.com/aws/aws-sdk-go from 1.42.30 to 1.42.35
+      #7764 closed 2021-11-04 build(deps): bump github.com/aws/aws-sdk-go from 1.41.11 to 1.41.17
+      #7385 closed 2021-08-05 build(deps): bump github.com/aws/aws-sdk-go from 1.40.10 to 1.40.15
+      #8880 merged 2024-01-03 fix(deps): update all dependencies
+      #8789 merged 2023-07-12 chore(deps): update all dependencies
+      #8016 merged 2022-01-30 build(deps): bump github.com/aws/aws-sdk-go from 1.42.39 to 1.42.44
+      #8330 merged 2022-05-08 build(deps): bump github.com/aws/aws-sdk-go from 1.44.4 to 1.44.9
+  outage         20 hit(s) (all listed)
+      #9708 closed 2026-09-09 fix(deps): update module google.golang.org/grpc to v1.83.2 [security] - autoclosed
+      #2240 open 2018-05-26 Feature request: Pass webhook payloads to the subscribed resource
+      #8494 merged 2022-07-25 Add --check-container-placement-strategy.
+      #9585 closed 2026-05-25 Database Restoration Results In SQLSTATE Error
+      #7208 merged 2021-06-24 Avoid peridoic check build to use db
+      #6080 closed 2020-09-18 Log garbage collection for very large builds may hang the DB
+      #3383 closed 2019-02-25 Investigate database deadlock when deleting pipelines on Wings
+      #2350 closed 2018-07-06 Long-running ATC Go-routines
+      #3025 closed 2019-01-10 Add in-depth worker healthchecks / probes [#2753]
+      #6020 closed 2020-08-27 [WIP] Allow pipeline to specify custom header bar color
+      #750 closed 2016-11-04 Workers stop heartbeating
+      #513 closed 2016-07-06 error message for out-of-disk when trying to copy an input?
+      #2093 closed 2018-03-16 Move Wings onto a new subdomain wings.cfapps.io
+      #2010 closed 2018-02-07 Jobs getting stuck at preparing build
+      #1854 closed 2017-11-29 Jobs getting a "File not found" error after restarting workers.
+      #3417 closed 2019-03-04 concourse couldn't correctly handle finishing build/step when build_event_sequence not exist
+      #5723 closed 2020-06-08 Observability Discovery - Research
+      #4264 closed 2019-08-12 empty volumes when using overlay on Prod
+      #6111 closed 2020-10-02 Running a set_pipeline step against a file containing unexpected pipeline YML crashes ATC
+      #2525 closed 2018-08-23 4.0.0 some resources silently fail to produce input artifacts
+  ENOSPC         3 hit(s) (all listed)
+      #9722 closed 2026-09-17 baggageclaim: overlay driver Recover() stacks bind-mounts on each in-place restart → ENOSPC crash loop
+      #9723 merged 2026-09-17 fix: baggageclaim: fix overlay driver stacking mounts on worker restart
+      #813 closed 2016-12-06 When baggageclaim volumes mount is full, baggageclaim should fall back on non-atomic removal
+  disk           >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #1965 open 2018-01-16 Concourse Should Automatically Cordon Bad Workers
+      #9723 merged 2026-09-17 fix: baggageclaim: fix overlay driver stacking mounts on worker restart
+      #9722 closed 2026-09-17 baggageclaim: overlay driver Recover() stacks bind-mounts on each in-place restart → ENOSPC crash loop
+      #7050 closed 2021-05-20 atc: make resource cache streaming opt-in
+      #9662 closed 2026-06-10 Image extraction shifts uid 1001 → 1002 on btrfs workers, breaking non-root user tasks
+      #8756 merged 2023-05-26 Added a maximum volume size that can be streamed
+      #7987 merged 2022-01-20 Run task caches collector when ATC starts
+      #9533 merged 2026-04-15 Add TTL/expiry for task caches and `CONCOURSE_DEFAULT_TASK_CACHE_TTL`
+      #7989 merged 2022-01-20 Garbage collect task caches from paused pipelines
+      #7049 merged 2021-05-20 Make caching streamed volumes opt-in
+      #9188 merged 2025-04-18 atc: Consider image volumes in volume-locality strategy
+      #9451 merged 2026-02-07 Fix some ways that overlay volumes leak and add more logging
+      #6949 merged 2021-04-28 Set Content-Security-Policy and Cache-Control Headers
+      #8791 closed 2023-07-17 worker: drop CAP_SYS_{BOOT,MODULE} from the list of capabilities
+      #7083 merged 2021-05-27 build(deps): bump github.com/onsi/gomega from 1.12.0 to 1.13.0
+      #6812 merged 2021-04-02 build(deps-dev): bump webpack from 5.28.0 to 5.30.0
+      #9603 closed 2026-06-15 Add configurable stall timeout to auto-prune long-stalled workers (ephemeral is too aggressive for cache-heavy spot fleets)
+      #7281 merged 2021-07-14 build(deps): bump github.com/containerd/containerd from 1.5.2 to 1.5.3
+      #9520 closed 2026-04-10 Get Pipeline results in duplicate resource_types if multiple scopes share the same resource_config_id
+      #9274 closed 2025-09-01 Overlay volume layers leaking
+  partial        71 hit(s) (all listed)
+      #9723 merged 2026-09-17 fix: baggageclaim: fix overlay driver stacking mounts on worker restart
+      #9379 closed 2025-11-27 fix(atc): prevent partial redaction of overlapping secrets
+      #3265 open 2019-02-11 Aid infrastrucure automation by adding a manual step
+      #9639 merged 2026-07-09 atc: Have EOF errors from checks treated as no versions found
+      #9547 closed 2026-04-23 Update dependency uuid to v14 [SECURITY]
+      #9062 closed 2025-02-11 Formalize Shared Secrets Support across all supported managers
+      #9451 merged 2026-02-07 Fix some ways that overlay volumes leak and add more logging
+      #8096 closed 2022-02-17 build(deps-dev): bump webpack from 5.68.0 to 5.69.0
+      #8099 merged 2022-02-17 build(deps-dev): bump webpack from 5.68.0 to 5.69.1
+      #9039 merged 2024-12-12 fix(deps): update module golang.org/x/crypto to v0.31.0 [security]
+      #7820 merged 2021-11-19 build(deps): bump github.com/aws/aws-sdk-go from 1.42.5 to 1.42.8
+      #8954 merged 2024-05-01 chore(deps): update javasript
+      #6677 merged 2021-03-18 Bump elm-community/list-extra from 8.1.0 to 8.3.0 in /web/elm
+      #8930 merged 2024-04-01 chore(deps): update javasript
+      #8009 merged 2022-01-27 build(deps-dev): bump webpack from 5.66.0 to 5.67.0
+      #9378 merged 2025-11-26 redact secrets is always enabled
+      #6830 merged 2021-04-06 Re ordering instanced pipelines
+      #8356 merged 2022-05-19 build(deps-dev): bump @babel/preset-env from 7.17.10 to 7.17.12
+      #8355 merged 2022-05-19 build(deps-dev): bump @babel/core from 7.17.10 to 7.17.12
+      #7968 merged 2022-01-16 build(deps): bump github.com/goccy/go-yaml from 1.9.4 to 1.9.5
+  incomplete     26 hit(s) (all listed)
+      #9694 closed 2026-08-29 idtoken var source: exp claim and custom claims are not advertised in the OpenID discovery document
+      #9665 closed 2026-07-28 Resource with check_every: never deadlocks the job(serial: true + a trigger: true) , stuck at pending
+      #9597 closed 2026-06-10 PR #9486 breaks volumes containing symlinks on Windows
+      #8056 closed 2022-02-10 Change Lidar scanner to not use go-routines.
+      #6761 merged 2021-03-26 build(deps): bump github.com/DataDog/datadog-go from 3.2.0+incompatible to 3.7.2+incompatible
+      #7208 merged 2021-06-24 Avoid peridoic check build to use db
+      #3745 closed 2019-04-17 While watching a job, we get a " You are not authorized to view the details of this pipeline" error
+      #7116 closed 2021-06-02 http://127.0.0.1:8080/ returns an incomplete, broken html
+      #5575 merged 2020-05-11 Lidar tracing
+      #2969 closed 2018-12-31 Build(deps): bump k8s.io/client-go from 2.0.0-alpha.0.0.20171101191150-72e1c2a1ef30+incompatible to 2.0.0+incompatible
+      #4784 merged 2019-11-18 worker: add Destroy functionality
+      #4779 merged 2019-11-18 worker: implement containerd's garden backend Containers, Create, and Stop methods
+      #4963 closed 2020-01-03 Add a dumb YAML credential provider
+      #4752 merged 2019-11-12 add (incomplete) containerd garden backend alongside gdn
+      #739 closed 2016-11-01 Enumerated State Resource Type (as opposed to versioned)
+      #545 closed 2016-07-19 Proposal for new params behavior
+      #772 closed 2016-11-14 job/build log does not show, keeps loading
+      #781 closed 2016-11-16 Build UI task output never stops loading
+      #1958 closed 2018-01-15 Feature Request: Cloud Foundry 'run-task' support
+      #3017 closed 2019-01-09 better icon for interrupted steps on build page when build is finished
+  dataloss       0 hit(s)
+  recover        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9723 merged 2026-09-17 fix: baggageclaim: fix overlay driver stacking mounts on worker restart
+      #9722 closed 2026-09-17 baggageclaim: overlay driver Recover() stacks bind-mounts on each in-place restart → ENOSPC crash loop
+      #9543 open 2026-04-22 Live build event streams can stall after DB failover (fly/browser stop updating until manual pg_notify or refresh)
+      #9100 merged 2025-03-06 Gracefully recover from containerd TaskNotFound errors
+      #9708 closed 2026-09-09 fix(deps): update module google.golang.org/grpc to v1.83.2 [security] - autoclosed
+      #7042 closed 2021-05-20 containerd: recover from invalid check sessions more quickly on worker restart
+      #9726 closed 2026-09-18 Update module go.opentelemetry.io/otel/sdk to v1.45.0 [SECURITY] - autoclosed
+      #9725 closed 2026-09-18 Update module go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc to v1.45.0 [SECURITY] - autoclosed
+      #9724 closed 2026-09-18 Update module go.opentelemetry.io/otel/exporters/otlp/otlptrace to v1.45.0 [SECURITY] - autoclosed
+      #9516 merged 2026-04-09 nit: TSA cleanup
+      #2240 open 2018-05-26 Feature request: Pass webhook payloads to the subscribed resource
+      #9604 merged 2026-06-17 Add configurable stall timeout to auto-prune long-stalled workers
+      #9649 open 2026-07-22 Update all dependencies
+      #8056 closed 2022-02-10 Change Lidar scanner to not use go-routines.
+      #9603 closed 2026-06-15 Add configurable stall timeout to auto-prune long-stalled workers (ephemeral is too aggressive for cache-heavy spot fleets)
+      #6923 merged 2021-04-22 Scan unchecked resource-types
+      #8954 merged 2024-05-01 chore(deps): update javasript
+      #1477 closed 2017-08-15 Option to Hide UI Chrome
+      #7765 merged 2021-11-04 build(deps): bump google.golang.org/grpc from 1.41.0 to 1.42.0
+      #9165 merged 2025-03-27 Switch use of md5 hashing to sha256
+  recovery       29 hit(s) (all listed)
+      #9711 closed 2026-09-10 Race condition in HA: concurrent ATC instances attempt to create the same container, causing "already exists" error and silent duplicate task execution
+      #7346 merged 2021-07-28 build(deps): bump github.com/aws/aws-sdk-go from 1.40.8 to 1.40.9
+      #8229 merged 2022-04-03 build(deps): bump github.com/aws/aws-sdk-go from 1.43.26 to 1.43.31
+      #9588 merged 2026-05-27 feat: Add health endpoint basic structures and routes
+      #7880 merged 2021-12-12 build(deps): bump github.com/aws/aws-sdk-go from 1.42.20 to 1.42.22
+      #9509 merged 2026-04-02 worker/runtime: wrap containers from NewContainer and Containers with request timeout
+      #6923 merged 2021-04-22 Scan unchecked resource-types
+      #8672 closed 2023-01-18 fix(deps): update all dependencies
+      #3533 closed 2019-03-18 Bump github.com/hashicorp/vault from 1.0.1 to 1.0.3
+      #6148 closed 2020-10-12 Worker cannot register because: duplicate key value violates unique constraint "workers_addr_key"
+      #6080 closed 2020-09-18 Log garbage collection for very large builds may hang the DB
+      #2209 closed 2018-05-09 Running jobs get stalled after db failover
+      #6246 closed 2020-11-05 Build failures when CI is deployed with containerd
+      #6695 closed 2021-03-19 Database Migration is not rolled back if insert into migration table failed
+      #1229 closed 2017-05-31 containers failing to start after upgrade to 3.1.0
+      #1983 closed 2018-01-24 Ensuring minimal exposure to sensitive data in containers and volumes
+      #2255 closed 2018-06-04 Feature Request: Add MySQL support as backend database
+      #1215 closed 2017-05-26 Don't log "ERROR:  update or delete on table "volumes" violates foreign key constraint" during happy path of GC
+      #1218 closed 2017-05-26 Significant increase in database utilization with Concourse 3.0
+      #1951 closed 2018-01-11 Passing outputs between tasks
+  rollback       31 hit(s) (all listed)
+      #9748 open 2026-10-05 Add worker groups for peer-to-peer volume streaming
+      #9723 merged 2026-09-17 fix: baggageclaim: fix overlay driver stacking mounts on worker restart
+      #8124 closed 2022-02-23 Rollback containerd to 1.5.9
+      #9315 merged 2025-10-05 Fix typo and unify rollback strategy in resource.
+      #6727 merged 2021-03-24 move migration table updating SQL into a migration transaction
+      #6669 merged 2021-03-16 Bump dex to 0.4.0 and remove pkger
+      #9420 merged 2026-01-09 force postgres to update table stats for `builds` after after the rerun_of migration
+      #9328 closed 2025-10-09 Feat: permenantly delete build_inputs for reaped builds
+      #7783 merged 2021-11-09 build(deps): bump github.com/aws/aws-sdk-go from 1.41.19 to 1.42.0
+      #9401 merged 2025-12-17 Replace rerun_of column with new bigint version
+      #9404 merged 2025-12-23 Keep old version md5 digests
+      #8672 closed 2023-01-18 fix(deps): update all dependencies
+      #5163 closed 2020-02-11 Investigate kubernetes-native continuous deployment tooling to use to automate our environment deployments
+      #2278 closed 2018-06-13 Scripts for executing a Concourse Rollback/Downgrade on Wings
+      #8473 closed 2022-07-12 Resource cache broken in 7.8.1?
+      #6725 closed 2021-03-24 Database migration failed - from 6.7.3 to 7.1.0
+      #6511 merged 2021-02-04 Optimize check deletion
+      #7178 closed 2021-06-16 Getting 403 with Vault in concourse 7.3.1
+      #6695 closed 2021-03-19 Database Migration is not rolled back if insert into migration table failed
+      #5420 merged 2020-04-13 Refactor scheduler
+  resume         43 hit(s) (all listed)
+      #1915 open 2017-12-21 Paused jobs should indicate that they are, well, paused on the build page
+      #9399 open 2025-12-16 task timeout resets after web node is restarted
+      #9090 merged 2025-02-28 worker runtime: make container deletion more robust
+      #6794 merged 2021-03-31 build(deps): bump github.com/aws/aws-sdk-go from 1.38.8 to 1.38.9
+      #7562 merged 2021-09-17 build(deps): bump github.com/aws/aws-sdk-go from 1.40.43 to 1.40.44
+      #7399 merged 2021-08-09 build(deps): bump tar from 6.1.0 to 6.1.6
+      #7043 merged 2021-05-20 Bump webpack from 5.37.0 to 5.37.1
+      #9234 merged 2025-07-11 runtime/containerd: ensure logs are not dropped when web node re-attaches to running containers
+      #7281 merged 2021-07-14 build(deps): bump github.com/containerd/containerd from 1.5.2 to 1.5.3
+      #9189 closed 2025-04-24 Missing build logs - containerd
+      #5651 closed 2020-05-24 experiment: atc: support Elasticsearch as a build event store
+      #3533 closed 2019-03-18 Bump github.com/hashicorp/vault from 1.0.1 to 1.0.3
+      #2209 closed 2018-05-09 Running jobs get stalled after db failover
+      #8641 closed 2022-12-07 Pipeline freezes when managing resource trough set_pipeline
+      #6615 closed 2021-03-01 Pipeline stuck in "pending" state
+      #9016 closed 2024-10-24 [FEATURE REQUEST] Make re-trying single tasks possible
+      #3079 closed 2019-01-17 Never re-use check containers
+      #3011 closed 2019-01-08 Builds failed due to worker errors don't abort/restart
+      #2581 closed 2018-09-12 Spike : Can we determine when a build step fails because the worker is unusable
+      #7791 closed 2021-11-11 `limit-active-tasks` causing high database CPU and eventual deadlock
+  half-written   7 hit(s) (all listed)
+      #6660 merged 2021-03-12 RE:feat(atc): cache streamed volumes and try to get by looking for local cache
+      #5717 closed 2020-06-04 fly login does not allow enough characters to paste in bearer token
+      #5034 merged 2020-01-16 Policy enhancement - OPA integration
+      #5896 merged 2020-07-20 Instanced pipelines - Add instance vars as part of the pipeline identifier
+      #449 closed 2016-05-26 Document PostgreSQL setup on multiple platforms
+      #413 closed 2016-05-02 Ability to re-trigger failed build with the same input versions
+      #4091 closed 2019-07-03 Bug Report
+  wipe           18 hit(s) (all listed)
+      #9604 merged 2026-06-17 Add configurable stall timeout to auto-prune long-stalled workers
+      #9603 closed 2026-06-15 Add configurable stall timeout to auto-prune long-stalled workers (ephemeral is too aggressive for cache-heavy spot fleets)
+      #9382 closed 2025-12-01 Job Never Starts After Streaming Volumes (Windows workers only)
+      #8641 closed 2022-12-07 Pipeline freezes when managing resource trough set_pipeline
+      #8848 closed 2023-10-24 Concourse resource versions disappear when resource type's image got updated
+      #5418 closed 2020-04-12 Clear resource versions fly command
+      #230 closed 2015-12-12 Caching directories between runs of a task
+      #7397 closed 2021-08-09 Upgrade/Downgrade integration tests fails when base resource type stays consistent
+      #2989 merged 2019-01-03 Retain job history
+      #5486 merged 2020-04-22 Add worker flag to configure container network pool
+      #268 closed 2016-01-27 Name is not a required parameter on task outputs
+      #565 closed 2016-08-02 baggageclaim disk usage growing without bounds
+      #1457 closed 2017-08-09 Investigation: non-BOSH worker operation lifecycle
+      #2236 closed 2018-05-24 Tab crashes on Chrome beta, unable to access web
+      #1843 closed 2017-11-22 Job scheduling performance regression
+      #3918 closed 2019-05-24 Pausing a pipeline should not result in its versions being garbage-collected
+      #5334 closed 2020-03-20 Launching container on tagged worker takes forever / 30min+
+      #6179 closed 2020-10-20 6.6.0 does not ship /var/gdn/assets while it requires an update
+  wipes          1 hit(s) (all listed)
+      #9603 closed 2026-06-15 Add configurable stall timeout to auto-prune long-stalled workers (ephemeral is too aggressive for cache-heavy spot fleets)
+  erase          3 hit(s) (all listed)
+      #2042 closed 2018-02-15 Certificate Propagation Breaks Alpine OpenJDK Images
+      #3213 merged 2019-02-05 Bump github.com/mattn/go-colorable from 0.0.9 to 0.1.0
+      #4961 closed 2020-01-03 Bad column width
+  erasing        0 hit(s)
+  erased         0 hit(s)
+  destroy        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9696 open 2026-09-01 atc: add Google Secret Manager credential manager
+      #9699 open 2026-09-04 No audit log emitted when pipelines are auto-archived internally
+      #8725 open 2023-04-11 Fly cannot delete Instanced Pipelines with Special Characters
+      #9479 open 2026-03-07 Set Team Step
+      #9738 open 2026-09-30 fly: support `-i/--instance-var` for all commands that accept a pipeline reference
+      #9719 open 2026-09-15 Database storage grows unboundedly due to missing GC coverage in 4 core tables
+      #9567 open 2026-05-07 Add --include-all-instances flag to some fly commands
+      #8059 open 2022-02-11 Resource scope will not be recalculated after enabling global resources
+      #9630 merged 2026-07-06 Have pipeline collector destroy archived pipelines after some duration (opt-in)
+      #9722 closed 2026-09-17 baggageclaim: overlay driver Recover() stacks bind-mounts on each in-place restart → ENOSPC crash loop
+      #9440 merged 2026-01-27 fly: skip destroy confirmation when pipeline does not exist
+      #8100 merged 2022-02-18 fixed a bug where a worker is pruned, volumes streamed from it should not be immediately destroyed
+      #6880 merged 2021-04-13 Add trigger for deleting pipeline
+      #6902 merged 2021-04-19 Fix volume GC query to not include volumes with children
+      #9451 merged 2026-02-07 Fix some ways that overlay volumes leak and add more logging
+      #9458 merged 2026-02-14 Volume sweeper removes orphaned volume artifacts
+      #8493 merged 2022-07-22 check build should not auto retry.
+      #9585 closed 2026-05-25 Database Restoration Results In SQLSTATE Error
+      #7042 closed 2021-05-20 containerd: recover from invalid check sessions more quickly on worker restart
+      #7041 merged 2021-05-19 containerd: properly populate /etc/hosts and /etc/hostname
+  destroys       9 hit(s) (all listed)
+      #1172 closed 2017-05-17 Multi-branch workflows
+      #1045 closed 2017-05-06 Switch from btrfs to some other filesystem to resolve stabiity and portability issues
+      #7445 closed 2021-08-20 Add team-scoped webhooks
+      #293 closed 2016-02-18 Insufficient subnets
+      #362 closed 2016-04-09 Resources should support a 'delete' action
+      #2346 closed 2018-07-04 ATC uses 100% CPU and ~40 DB connections
+      #1959 closed 2018-01-15 Distribute container/volume garbage-collection across workers
+      #2833 closed 2018-11-19 Worker should sweep containers and volumes in parallel
+      #5134 closed 2020-02-07 containerd: ensure we get `container.SetGraceTime` right
+  overwrite      >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #7023 merged 2021-05-17 worker/runtime: Don't overwrite $PATH
+      #9750 open 2026-10-06 worker: add an experimental containerd runtime for Windows
+      #9561 open 2026-05-01 Update javascript
+      #6949 merged 2021-04-28 Set Content-Security-Policy and Cache-Control Headers
+      #8114 merged 2022-02-22 build(deps): bump github.com/aws/aws-sdk-go from 1.42.53 to 1.43.3
+      #6686 merged 2021-03-18 Bump webpack-cli from 3.3.12 to 4.5.0
+      #6687 merged 2021-03-18 Bump @babel/core from 7.11.6 to 7.13.10
+      #7641 merged 2021-10-04 7.4.x: add some DB optimizations
+      #9749 closed 2026-10-06 feat: add an experimental containerd runtime for Windows workers
+      #9419 merged 2026-01-08 Add metadata from get steps to the local build var
+      #7426 merged 2021-08-17 Add default get/put/task timeout
+      #9657 merged 2026-07-23 go-archives: symlink extraction attack tests
+      #8944 closed 2024-04-10 Check log retention max days & max builds is set globally
+      #9668 merged 2026-07-31 fly: copy stdin buffer before sending hijack input
+      #6867 merged 2021-04-12 Allow override of container limits in task config
+      #9486 merged 2026-03-16 return BreakoutError when symlink does not link to a path inside the destination
+      #7298 closed 2021-07-19 Add force_refresh to get step.
+      #9132 merged 2025-03-16 fix: add O_TRUNC flag when writing volume metadata file
+      #9387 merged 2025-12-04 fix(skymarshal): use HMAC-signed stateless OAuth state tokens
+      #8900 merged 2024-02-01 fix(deps): update module github.com/opencontainers/runc to v1.1.12 [security]
+  clobber        23 hit(s) (all listed)
+      #3265 open 2019-02-11 Aid infrastrucure automation by adding a manual step
+      #8995 closed 2024-08-31 chore(deps): update dependency webpack to v5.94.0 [security] - autoclosed
+      #9620 closed 2026-06-24 Job stuck in pending even though all input checks have passed/ran (Global resources enabled)
+      #8048 merged 2022-02-09 Fix bug of resource type checks
+      #7202 merged 2021-06-22 build(deps): bump github.com/opencontainers/runc from 1.0.0-rc95 to 1.0.0
+      #9033 closed 2024-11-29 Git version fetch flag fails, clobbered tags
+      #2042 closed 2018-02-15 Certificate Propagation Breaks Alpine OpenJDK Images
+      #483 closed 2016-06-16 Invalidate task-runs if we detect that overlapping output_mapping's are going to be used
+      #3968 closed 2019-06-03 Maintenance mode during updates 
+      #5190 closed 2020-02-16 Certificate Propagation is broken
+      #5529 merged 2020-04-30 web: improve dashboard UX when ListAllJobs is disabled
+      #5497 merged 2020-04-24 web: behavior: fix non-recursive plan usage, refactor build factory
+      #3955 merged 2019-05-31 build(deps): bump fstream from 1.0.11 to 1.0.12
+      #5090 closed 2020-01-30 atc(feat): expose RESOURCE_NAME to steps get and put.
+      #6082 merged 2020-09-21 Refactor RunState to have ownership over build vars
+      #4494 merged 2019-09-24 api query transaction
+      #646 closed 2016-09-13 Recommendation for combining `fly set-pipeline ... <(fly get-pipeline) ...` leads to misuse of Concourse
+      #1027 closed 2017-04-24 Certificate management should be done generically across all resources
+      #1288 closed 2017-06-15 Add "solo" button to resource versions
+      #1938 closed 2018-01-08 Bind-mount certs to resource containers at `/etc/ssl/certs`
+  blank          82 hit(s) (all listed)
+      #7370 merged 2021-07-30 Don't allow empty identifiers when renaming pipelines/teams
+      #9649 open 2026-07-22 Update all dependencies
+      #9661 merged 2026-07-23 Add pipeline-level description field
+      #9293 merged 2025-09-10 Prevent resources from emitting empty versions
+      #6800 merged 2021-04-01 build(deps): bump github.com/onsi/ginkgo from 1.14.2 to 1.15.2
+      #9579 merged 2026-05-20 Use session signing key to derive state signing key
+      #9532 closed 2026-04-15 filter resource_config_scopes in join
+      #9410 merged 2026-01-02 Have task steps fallback to the container's ENTRYPOINT/CMD if run.path is not specified
+      #6798 merged 2021-03-31 build(deps): bump github.com/imdario/mergo from 0.3.10 to 0.3.12
+      #9409 merged 2026-01-01 Show deprecated warning message for pipelines that use job.build_logs_to_retain
+      #9407 merged 2025-12-28 feat(web): show red/orange background on group tabs when jobs fail or error
+      #9179 closed 2025-04-07 Replace setTimeout with requestAnimationFrame for visual operations
+      #6680 merged 2021-03-18 Bump elm-explorations/test from 1.2.1 to 1.2.2 in /web/elm
+      #9401 merged 2025-12-17 Replace rerun_of column with new bigint version
+      #9492 merged 2026-03-18 Smarter resource checking - Only check triggering resources
+      #9404 merged 2025-12-23 Keep old version md5 digests
+      #9378 merged 2025-11-26 redact secrets is always enabled
+      #8996 merged 2024-09-01 fix(deps): update javasript
+      #6660 merged 2021-03-12 RE:feat(atc): cache streamed volumes and try to get by looking for local cache
+      #9185 closed 2025-04-14 Missing UI updating 7.12.1 to 7.13.1
+  unreadable     8 hit(s) (all listed)
+      #9609 closed 2026-06-19 Windows volume streaming still broken for intra-repo symlinks due to `os.Root.Symlink` path separator bug (Go #80073)
+      #9601 merged 2026-06-15 Use os.Root when extracting files
+      #8527 closed 2022-08-17 worker --help and web --help output unreadable
+      #8444 closed 2022-06-21 Broken help message formatting
+      #6542 closed 2021-02-16 Bump elm-ansi to 9.0.2 to fix blinking caused by bad ANSI escape code parsing
+      #1686 closed 2017-10-02 Add a flag to turn off the new "hidden jobs" check
+      #3882 closed 2019-05-17 Emit UI benchmark results to InfluxDB
+      #4828 closed 2019-11-26 fly execute should only upload the current working directory if its name matches a task input
+  garbage        >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9719 open 2026-09-15 Database storage grows unboundedly due to missing GC coverage in 4 core tables
+      #7989 merged 2022-01-20 Garbage collect task caches from paused pipelines
+      #3265 open 2019-02-11 Aid infrastrucure automation by adding a manual step
+      #9516 merged 2026-04-09 nit: TSA cleanup
+      #9159 closed 2025-03-25 perf: optimize metrics map allocation in emit.go
+      #8584 merged 2022-10-06 atc/db/lock: preallocate memory
+      #7987 merged 2022-01-20 Run task caches collector when ATC starts
+      #9328 closed 2025-10-09 Feat: permenantly delete build_inputs for reaped builds
+      #9544 merged 2026-04-22 Enable operators to pause/unpause web components
+      #8565 closed 2022-09-20 [POC] Expose docker socket (if it exists) for privileged containers
+      #8740 merged 2023-05-08 Increase timeout for bosh topgun
+      #9177 closed 2025-04-06 Warn instead of error on unused resources
+      #6812 merged 2021-04-02 build(deps-dev): bump webpack from 5.28.0 to 5.30.0
+      #8145 merged 2022-03-06 build(deps): bump github.com/klauspost/compress from 1.14.4 to 1.15.0
+      #4578 closed 2019-10-08 Pipeline reaper
+      #324 open 2016-03-25 Docker Compose support in Task definitions
+      #8872 merged 2023-12-28 fix(deps): update module github.com/containerd/containerd to v1.7.11 [security]
+      #9556 closed 2026-04-29 error "failed to stream in volume" caused by files removed before tar could read them
+      #9588 merged 2026-05-27 feat: Add health endpoint basic structures and routes
+      #9274 closed 2025-09-01 Overlay volume layers leaking
+  mangled        8 hit(s) (all listed)
+      #3075 open 2019-01-17  Terminal usability problems with fly intercept on Windows workers
+      #9387 merged 2025-12-04 fix(skymarshal): use HMAC-signed stateless OAuth state tokens
+      #9379 closed 2025-11-27 fix(atc): prevent partial redaction of overlapping secrets
+      #4712 merged 2019-11-05 allow for role-based config in cf-auth
+      #1292 closed 2017-06-15 set-pipeline -v mangles multiline strings
+      #780 closed 2016-11-16 GitHub OAuth fails to authenticate
+      #1802 closed 2017-11-09 Mangled multiline params value
+      #4656 closed 2019-10-27 Secret redaction incorrectly "redacts" empty string resulting in mangled logs.
+  contents       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9672 closed 2026-07-31 Migrate other ID columns from int to bigint
+      #9676 merged 2026-08-05 Verify worker's team when landing/retiring workers
+      #9657 merged 2026-07-23 go-archives: symlink extraction attack tests
+      #9726 closed 2026-09-18 Update module go.opentelemetry.io/otel/sdk to v1.45.0 [SECURITY] - autoclosed
+      #9725 closed 2026-09-18 Update module go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc to v1.45.0 [SECURITY] - autoclosed
+      #9724 closed 2026-09-18 Update module go.opentelemetry.io/otel/exporters/otlp/otlptrace to v1.45.0 [SECURITY] - autoclosed
+      #3521 open 2019-03-15 Viewing Large Build Logs Takes A Very Long Time
+      #8128 merged 2022-02-24 Allow text whitespace to be preserved in step metadata
+      #9472 merged 2026-02-26 Enable hot-reloading of ATC HTTPS listener
+      #8899 merged 2024-01-29 Load vault client token from file
+      #9290 merged 2025-09-08 Add support for setting containerd log-level (default to info)
+      #6597 merged 2021-02-25 Simplify atc/worker package and extract runtime abstractions
+      #9347 merged 2025-11-06 fix(deps): update module github.com/containerd/containerd to v1.7.29 [security]
+      #6813 merged 2021-04-02 build(deps): bump github.com/concourse/dex from 0.5.0 to 0.7.0
+      #6724 merged 2021-03-24 Bump github.com/concourse/dex from 0.4.0 to 0.5.0
+      #9348 merged 2025-11-06 fix(deps): update module github.com/containerd/containerd/v2 to v2.1.5 [security]
+      #8132 merged 2022-02-27 build(deps): bump github.com/aws/aws-sdk-go from 1.43.3 to 1.43.7
+      #8887 merged 2024-01-17 fix(deps): update all dependencies
+      #8819 merged 2023-09-22 fix(deps): update all dependencies
+      #1994 closed 2018-01-30 Splitting pipeline.yml into several files via simple templating
+  in-place       >=100 hit(s) - SATURATED at the page limit; the number is a floor, and only the top 20 by relevance are listed below
+      #9722 closed 2026-09-17 baggageclaim: overlay driver Recover() stacks bind-mounts on each in-place restart → ENOSPC crash loop
+      #5229 open 2020-02-24 Extensible var sources
+      #9719 open 2026-09-15 Database storage grows unboundedly due to missing GC coverage in 4 core tables
+      #9105 open 2025-03-09 Audit logging level pass-through
+      #3985 open 2019-06-05 Restrict allowed character sets for names in API (pipelines, jobs, resources, steps, etc)
+      #9703 merged 2026-09-04 Revert workarounds for Go bugs
+      #3521 open 2019-03-15 Viewing Large Build Logs Takes A Very Long Time
+      #9723 merged 2026-09-17 fix: baggageclaim: fix overlay driver stacking mounts on worker restart
+      #6274 open 2020-11-16 Implement a `get_var` step
+      #9470 open 2026-02-25 `fly sync` as a security hazard (re-submission)
+      #9712 merged 2026-09-10 fix: race condition during web restart + integration test
+      #1965 open 2018-01-16 Concourse Should Automatically Cordon Bad Workers
+      #9701 merged 2026-09-04 Update Go to 1.27.1 and modernize codebase
+      #9742 merged 2026-10-02 atc: behaviour: add context to step image fetch errors
+      #569 open 2016-08-03 Proposal: add description into each jobs
+      #3265 open 2019-02-11 Aid infrastrucure automation by adding a manual step
+      #9677 merged 2026-08-06 improve type casting and checking in vault client
+      #9726 closed 2026-09-18 Update module go.opentelemetry.io/otel/sdk to v1.45.0 [SECURITY] - autoclosed
+      #9725 closed 2026-09-18 Update module go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc to v1.45.0 [SECURITY] - autoclosed
+      #9724 closed 2026-09-18 Update module go.opentelemetry.io/otel/exporters/otlp/otlptrace to v1.45.0 [SECURITY] - autoclosed
+  unclean        6 hit(s) (all listed)
+      #9604 merged 2026-06-17 Add configurable stall timeout to auto-prune long-stalled workers
+      #9588 merged 2026-05-27 feat: Add health endpoint basic structures and routes
+      #9603 closed 2026-06-15 Add configurable stall timeout to auto-prune long-stalled workers (ephemeral is too aggressive for cache-heavy spot fleets)
+      #2060 closed 2018-02-28 More transparency or control over constrained version sets blocking pipelines
+      #6752 closed 2021-03-26 If containerd socket is interrupted, worker is stuck in limbo
+      #2534 closed 2018-08-27 The Great Project Restructuring of 2018
+  shutdown       83 hit(s) (all listed)
+      #1965 open 2018-01-16 Concourse Should Automatically Cordon Bad Workers
+      #5098 open 2020-01-30 Allow Concourse Worker to run as Windows Service
+      #9726 closed 2026-09-18 Update module go.opentelemetry.io/otel/sdk to v1.45.0 [SECURITY] - autoclosed
+      #9725 closed 2026-09-18 Update module go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc to v1.45.0 [SECURITY] - autoclosed
+      #9724 closed 2026-09-18 Update module go.opentelemetry.io/otel/exporters/otlp/otlptrace to v1.45.0 [SECURITY] - autoclosed
+      #9649 open 2026-07-22 Update all dependencies
+      #9561 open 2026-05-01 Update javascript
+      #6727 merged 2021-03-24 move migration table updating SQL into a migration transaction
+      #9135 merged 2025-03-18 fix(deps): update module github.com/containerd/containerd to v1.7.27 [security]
+      #6717 merged 2021-03-23 more lenient context deadline checking for containerd graceful process termination
+      #6788 closed 2021-03-30 build(deps): bump go.opentelemetry.io/otel/exporters/trace/jaeger from 0.11.0 to 0.19.0
+      #6797 closed 2021-03-31 build(deps): bump go.opentelemetry.io/otel/sdk from 0.11.0 to 0.19.0
+      #6723 closed 2021-03-24 Bump go.opentelemetry.io/otel/exporters/otlp from 0.11.0 to 0.19.0
+      #6707 closed 2021-03-22 Bump go.opentelemetry.io/otel from 0.11.0 to 0.19.0
+      #9348 merged 2025-11-06 fix(deps): update module github.com/containerd/containerd/v2 to v2.1.5 [security]
+      #9582 merged 2026-05-22 Update module github.com/containerd/containerd/v2 to v2.3.1 [SECURITY]
+      #6769 merged 2021-03-29 build(deps): bump go.opentelemetry.io/collector from 0.13.0 to 0.23.0
+      #7224 merged 2021-06-29 build(deps-dev): bump webpack from 5.40.0 to 5.41.0
+      #7739 merged 2021-10-28 build(deps): bump go.opentelemetry.io/otel/exporters/jaeger from 1.0.1 to 1.1.0
+      #7740 merged 2021-10-28 build(deps): bump go.opentelemetry.io/otel/exporters/otlp/otlptrace from 1.0.1 to 1.1.0
+  reboot         41 hit(s) (all listed)
+      #7567 merged 2021-09-20 build(deps): bump github.com/aws/aws-sdk-go from 1.40.44 to 1.40.45
+      #7289 merged 2021-07-16 build(deps): bump github.com/aws/aws-sdk-go from 1.40.0 to 1.40.1
+      #8884 merged 2024-01-09 fix(deps): update all dependencies
+      #8791 closed 2023-07-17 worker: drop CAP_SYS_{BOOT,MODULE} from the list of capabilities
+      #8675 closed 2023-01-27 Error running concourse worker with the default concourse runtime on ubuntu 22.04
+      #9088 closed 2025-02-28 `OCI runtime create failed: runc create failed: unable to start container process: can't get final child's PID from pipe: EOF: unknown`
+      #9147 closed 2025-03-20 Release 7.13.0
+      #6589 closed 2021-02-24 Database pinned to 100% CPU after a few hours of running
+      #2209 closed 2018-05-09 Running jobs get stalled after db failover
+      #5625 closed 2020-05-19 Orphaned Containers After Job Removal From Pipeline
+      #8603 closed 2022-10-24 Failed to create btrfs filesystem on Kind cluster v0.16.0 with containerd runtime.
+      #6615 closed 2021-03-01 Pipeline stuck in "pending" state
+      #1989 closed 2018-01-29 Concourse worker paralyzes whole server
+      #8739 closed 2023-05-03 Concourse pipelines are failing with "error loading seccomp filter into kernel"
+      #8612 merged 2022-11-03 add buildvcs=false to go build in integration tests v6.8.x
+      #2162 closed 2018-04-17 3.11.0 worker restart regression
+      #2561 closed 2018-09-06 Fail to install concourse's worker on k8s
+      #7684 closed 2021-10-16 No feedback between all checks complete and job actually starting - waiting for minutes.
+      #7237 closed 2021-06-30 Hello World Pipeline generates resource type not found
+      #6752 closed 2021-03-26 If containerd socket is interrupted, worker is stuck in limbo
+  disk+full      49 hit(s) (all listed)
+      #1965 open 2018-01-16 Concourse Should Automatically Cordon Bad Workers
+      #9723 merged 2026-09-17 fix: baggageclaim: fix overlay driver stacking mounts on worker restart
+      #9722 closed 2026-09-17 baggageclaim: overlay driver Recover() stacks bind-mounts on each in-place restart → ENOSPC crash loop
+      #8756 merged 2023-05-26 Added a maximum volume size that can be streamed
+      #9662 closed 2026-06-10 Image extraction shifts uid 1001 → 1002 on btrfs workers, breaking non-root user tasks
+      #7083 merged 2021-05-27 build(deps): bump github.com/onsi/gomega from 1.12.0 to 1.13.0
+      #8877 merged 2024-01-01 chore(deps): update javasript
+      #9274 closed 2025-09-01 Overlay volume layers leaking
+      #813 closed 2016-12-06 When baggageclaim volumes mount is full, baggageclaim should fall back on non-atomic removal
+      #8159 closed 2022-03-11 Overlay volume layers leaking
+      #6615 closed 2021-03-01 Pipeline stuck in "pending" state
+      #6080 closed 2020-09-18 Log garbage collection for very large builds may hang the DB
+      #8172 closed 2022-03-16 "no running task found" issue after upgrade to 7.7.0
+      #1379 closed 2017-07-14 Add pre-compiled ARM binaries for releases
+      #1045 closed 2017-05-06 Switch from btrfs to some other filesystem to resolve stabiity and portability issues
+      #3695 closed 2019-04-05 Better build scheduling / load distribution
+      #3602 closed 2019-03-27 Implement a new scheduler algorithm for determining job input candidates
+      #8001 closed 2022-01-26 Containers with created and meta_type check not recycling.
+      #7910 closed 2021-12-31 Peer-to-peer streaming large volume across workers reliably fails
+      #5854 merged 2020-07-07 Automatically archive abandoned pipelines
+  data+loss      14 hit(s) (all listed)
+      #9527 merged 2026-04-12 feat(ui): display non-zero tasks exit codes in pipeline UI
+      #1445 closed 2017-08-04 Resources that are inputs to jobs that have no triggers should not check. 
+      #9189 closed 2025-04-24 Missing build logs - containerd
+      #8870 closed 2023-12-15 Containers don't have access to internet at random
+      #6556 closed 2021-02-18 DNS Resolution Issue in Kubernetes
+      #8757 closed 2023-05-26 Workers stuck, pg violates foreign key constraint
+      #6960 closed 2021-04-29 No external internet access when using containerd
+      #2200 closed 2018-05-07 Checks/tasks are failing intermittently for git and docker resources - containers has no internet access
+      #1230 closed 2017-05-31 Resources failing in Kubernetes with Google Container-Optimized OS after upgrade to 3.1.0
+      #3769 closed 2019-04-23 Configurable metric emitting behavior
+      #2723 closed 2018-10-23 Make Concourse compatible with Credhub 2.1
+      #2928 closed 2018-12-10 Add ATC/worker flags to limit max build containers for workers
+      #3251 closed 2019-02-08 Check containers accumulate on a single worker with the 'fewest-build-containers'
+      #5710 closed 2020-06-02 cannot upgrade to 6.2.0 when previous encryption key not 16 or 32 character length  
+  partial+write  13 hit(s) (all listed)
+      #9547 closed 2026-04-23 Update dependency uuid to v14 [SECURITY]
+      #8096 closed 2022-02-17 build(deps-dev): bump webpack from 5.68.0 to 5.69.0
+      #8099 merged 2022-02-17 build(deps-dev): bump webpack from 5.68.0 to 5.69.1
+      #9378 merged 2025-11-26 redact secrets is always enabled
+      #5808 closed 2020-06-24 Pipeline instances
+      #3990 closed 2019-06-07 Use partial version matching for version pinning within pipeline config
+      #3602 closed 2019-03-27 Implement a new scheduler algorithm for determining job input candidates
+      #6177 merged 2020-10-19 Use dot notation in instanced pipelines API
+      #3131 closed 2019-01-23 Issue 2702/pin unpin
+      #4311 merged 2019-08-22 feat: redacting secrets in build logs.
+      #629 closed 2016-09-02 More explicit worker, container, volume lifecycles
+      #1814 closed 2017-11-14 Feature request: Allow multiple secret backend configurations on a single Concourse at a per-team basis
+      #2928 closed 2018-12-10 Add ATC/worker flags to limit max build containers for workers
+  crash+safe     13 hit(s) (all listed)
+      #3521 open 2019-03-15 Viewing Large Build Logs Takes A Very Long Time
+      #9288 merged 2025-09-08 driver: use -R flag for recursive btrfs subvolume deletion
+      #9555 merged 2026-04-29 Update all dependencies
+      #3695 closed 2019-04-05 Better build scheduling / load distribution
+      #5429 merged 2020-04-13 atc/api: limit concurrent requests
+      #4600 merged 2019-10-14 feat(atc): support var_sources in pipeline.
+      #5034 merged 2020-01-16 Policy enhancement - OPA integration
+      #4808 merged 2019-11-21 bug: fixed a lidar bug that caused ATC crash.
+      #6019 merged 2020-08-27 Make claims LRU cache safe for concurrent use
+      #629 closed 2016-09-02 More explicit worker, container, volume lifecycles
+      #2835 closed 2018-11-20 Volumes that exist in baggageclaim but not in the database should be deleted
+      #4141 closed 2019-07-20 fly is segfaulting
+      #4220 closed 2019-08-06 Baggage claim not removing containers/volumes
+  atomic+write   6 hit(s) (all listed)
+      #6761 merged 2021-03-26 build(deps): bump github.com/DataDog/datadog-go from 3.2.0+incompatible to 3.7.2+incompatible
+      #8877 merged 2024-01-01 chore(deps): update javasript
+      #813 closed 2016-12-06 When baggageclaim volumes mount is full, baggageclaim should fall back on non-atomic removal
+      #3476 merged 2019-03-11 Create .flyrc with 0600 permissions instead of 0777
+      #2332 closed 2018-06-28 BBR mitigation and testing
+      #1200 closed 2017-05-23 How do you use `set-pipeline`?
+  lock+file      98 hit(s) (all listed)
+      #9713 merged 2026-09-10 chore: remove unused package-lock.json files
+      #6274 open 2020-11-16 Implement a `get_var` step
+      #9712 merged 2026-09-10 fix: race condition during web restart + integration test
+      #3985 open 2019-06-05 Restrict allowed character sets for names in API (pipelines, jobs, resources, steps, etc)
+      #9247 merged 2025-07-30 update web dependencies
+      #9118 merged 2025-03-14 refactor: More granular locking in WorkerCache
+      #7176 merged 2021-06-15 Removing VersionedResourceTypes from get, check and put plans
+      #7392 merged 2021-08-09 build(deps-dev): bump webpack from 5.47.0 to 5.49.0
+      #9614 merged 2026-06-23 Update module github.com/containerd/containerd/v2 to v2.3.2 [SECURITY]
+      #9661 merged 2026-07-23 Add pipeline-level description field
+      #9618 merged 2026-06-24 Add `CONCOURSE_CUSTOM_HTTP_HEADERS` allowing operators to set multiple headers on all HTTP responses
+      #7299 merged 2021-07-19 build(deps): bump color from 3.1.3 to 4.0.0 in /web/wats
+      #9091 closed 2025-03-01 fix(deps): update javasript - autoclosed
+      #8002 merged 2022-01-26 Reset resource config IDs on save
+      #9259 merged 2025-08-20 Update all dependencies
+      #8999 closed 2024-09-03 Build logs sent by syslog drainer contain unredacted secrets
+      #6597 merged 2021-02-25 Simplify atc/worker package and extract runtime abstractions
+      #9035 merged 2024-12-03 Pipeline identity token var_source
+      #8789 merged 2023-07-12 chore(deps): update all dependencies
+      #9257 closed 2025-08-15 Crashing worker node
+  write+failure  92 hit(s) (all listed)
+      #9700 open 2026-09-04 Emit audit logs when pipelines are auto-archived internally
+      #9561 open 2026-05-01 Update javascript
+      #8939 merged 2024-04-05 Fly excludes Mac metadata when uploading local inputs
+      #9609 closed 2026-06-19 Windows volume streaming still broken for intra-repo symlinks due to `os.Root.Symlink` path separator bug (Go #80073)
+      #8425 closed 2022-06-15 Allow SSM Parameters to specify a format using tags
+      #9565 merged 2026-05-07 fix: DNS resolution for Ubuntu 24 stemcells
+      #9636 closed 2026-07-09 RFC 8693 token exchange against embedded Dex always returns an empty 500 — StoreAccessToken middleware assumes every token response contains id_token
+      #9662 closed 2026-06-10 Image extraction shifts uid 1001 → 1002 on btrfs workers, breaking non-root user tasks
+      #9238 merged 2025-07-23 containerd: add flag to add additional-hosts
+      #9202 closed 2025-05-15 Return Error for invalid identifiers instead of Warning
+      #8419 merged 2022-06-12 build(deps): bump google.golang.org/grpc from 1.46.2 to 1.47.0
+      #7176 merged 2021-06-15 Removing VersionedResourceTypes from get, check and put plans
+      #8877 merged 2024-01-01 chore(deps): update javasript
+      #8789 merged 2023-07-12 chore(deps): update all dependencies
+      #7208 merged 2021-06-24 Avoid peridoic check build to use db
+      #9382 closed 2025-12-01 Job Never Starts After Streaming Volumes (Windows workers only)
+      #7905 closed 2021-12-26 containerd seccomp group should include `faccessat2` call
+      #9186 closed 2025-04-15 JWT Expiration with CredHub Causes Resource Interpolation Failures After Upgrade to 7.13.0
+      #5257 merged 2020-02-27 Optimize user tracking
+      #3737 closed 2019-04-15 Graceful Timeout Step Modifier
+  file+contents  75 hit(s) (all listed)
+      #3521 open 2019-03-15 Viewing Large Build Logs Takes A Very Long Time
+      #9657 merged 2026-07-23 go-archives: symlink extraction attack tests
+      #8899 merged 2024-01-29 Load vault client token from file
+      #9472 merged 2026-02-26 Enable hot-reloading of ATC HTTPS listener
+      #8132 merged 2022-02-27 build(deps): bump github.com/aws/aws-sdk-go from 1.43.3 to 1.43.7
+      #6597 merged 2021-02-25 Simplify atc/worker package and extract runtime abstractions
+      #1994 closed 2018-01-30 Splitting pipeline.yml into several files via simple templating
+      #9348 merged 2025-11-06 fix(deps): update module github.com/containerd/containerd/v2 to v2.1.5 [security]
+      #8887 merged 2024-01-17 fix(deps): update all dependencies
+      #8819 merged 2023-09-22 fix(deps): update all dependencies
+      #9274 closed 2025-09-01 Overlay volume layers leaking
+      #6305 merged 2020-11-22 Apply bigint migrations to build_events partitions and read from old/new columns instead
+      #2942 closed 2018-12-13 load parameter string value from resource
+      #9052 closed 2025-01-10 [CloudFoundry Auth] Issue with providing access to a whole organisation
+      #1691 closed 2017-10-03 "build_plan.task.file" doesn't follow symlinks
+      #6881 closed 2021-04-13 Not enough docs on overlapping input/outputs, expand the documentation with an example.
+      #2684 closed 2018-10-15 self-signed cert is not configured for CF AUTH
+      #3923 closed 2019-05-27 Spike: Using a registry with Concourse to host "base" resource types
+      #5613 closed 2020-05-15 running `concourse web` without all required parameters just crashes it
+      #3797 closed 2019-04-26 What does Tekton offer as a runtime
+
+== 51 terms run; 48 returned hits, 11 of those saturated at the page limit
+== counts are not summed: a saturated term has no count, and one issue answers many terms
+== this script does not decide novelty. The judgement, and the write
+   shape it is about, go in the target's proposal citing this transcript.

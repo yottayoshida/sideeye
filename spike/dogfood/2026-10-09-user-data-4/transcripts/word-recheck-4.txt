@@ -1,0 +1,14 @@
+== uplink
+== nmctl
+== aptos
+== yarn
+spike/cohort2/probes/raw/bun.strace:51:64    openat(AT_FDCWD</tmp/probe-bun/stateS>, "yarn.lock", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or directory)
+spike/dogfood/2026-09-21-verdict-chain/SELECTION.md:125:| `pnpm`, `yarn` | — | Not a target property: **this run's explore stage has no network** (`--network none`), and their operation needs a package registry. Recorded as a limi
+== ziti
+== authelia
+== softhsm
+== in-toto
+== sing-box
+== libdeflate
+== igzip
+== isa-l

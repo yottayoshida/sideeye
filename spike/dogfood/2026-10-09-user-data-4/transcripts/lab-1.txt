@@ -1,0 +1,78 @@
+## scw
+seed exit 1
+ls: cannot access '/s/aux/home/.config/scw/': No such file or directory
+cat: /s/aux/home/.config/scw/config.yaml: No such file or directory
+== scw: exit 1; 33 strace lines
+cat: /s/aux/home/.config/scw/config.yaml: No such file or directory
+## f2
+== f2: exit 0; 24 strace lines
+48    renameat(AT_FDCWD, "IMG_1.jpg", AT_FDCWD, "trip_1.jpg") = 0
+48    renameat(AT_FDCWD, "IMG_2.jpg", AT_FDCWD, "trip_2.jpg") = 0
+48    renameat(AT_FDCWD, "IMG_3.jpg", AT_FDCWD, "trip_3.jpg") = 0
+48    openat(AT_FDCWD, "/s/aux/tmp/f2/backups/9bf4dad4b4e78dbfa0a26ff74c406c50.json", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 4
+total 20
+drwxr-xr-x 2 root root 4096 Oct  9 00:31 .
+drwxr-xr-x 5 root root 4096 Oct  9 00:31 ..
+-rw-r--r-- 1 root root    8 Oct  9 00:31 trip_1.jpg
+-rw-r--r-- 1 root root    8 Oct  9 00:31 trip_2.jpg
+-rw-r--r-- 1 root root    8 Oct  9 00:31 trip_3.jpg
+## seconv
+== seconv: exit 0; 306 strace lines
+66    ftruncate(8, 8321712128)          = 0
+66    unlinkat(AT_FDCWD, "/s/aux/tmp/clr-debug-pipe-66-23552-in", 0) = -1 ENOENT (No such file or directory)
+66    unlinkat(AT_FDCWD, "/s/aux/tmp/clr-debug-pipe-66-23552-out", 0) = -1 ENOENT (No such file or directory)
+74    openat(AT_FDCWD, "/s/seconv/subs.srt", O_WRONLY|O_CREAT|O_CLOEXEC, 0666) = 79
+74    ftruncate(79, 0)                  = 0
+66    unlinkat(AT_FDCWD, "/s/aux/tmp/dotnet-diagnostic-66-23552-socket", 0) = 0
+66    unlinkat(AT_FDCWD, "/s/aux/tmp/clr-debug-pipe-66-23552-in", 0) = 0
+66    unlinkat(AT_FDCWD, "/s/aux/tmp/clr-debug-pipe-66-23552-out", 0) = 0
+total 12
+drwxr-xr-x 2 root root 4096 Oct  9 00:31 .
+drwxr-xr-x 6 root root 4096 Oct  9 00:31 ..
+-rw-r--r-- 1 root root   81 Oct  9 00:31 subs.srt
+﻿1
+00:00:03,000 --> 00:00:05,000
+Hello
+
+2
+00:00:07,000 --> 00:00:09,000
+World
+
+## iconvert
+seed exit 0
+total 4
+-rw-r--r-- 1 root root 1072 Oct  9 00:31 photo.jpg
+== iconvert: exit 0; 646 strace lines
+104   openat(AT_FDCWD, "photo.jpg.tmp.jpg", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 4
+104   openat(AT_FDCWD, "photo.jpg.tmp.jpg", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 4
+104   unlinkat(AT_FDCWD, "photo.jpg", 0) = 0
+104   renameat(AT_FDCWD, "photo.jpg.tmp.jpg", AT_FDCWD, "photo.jpg") = 0
+total 12
+drwxr-xr-x 2 root root 4096 Oct  9 00:31 .
+drwxr-xr-x 7 root root 4096 Oct  9 00:31 ..
+-rw-r--r-- 1 root root 1234 Oct  9 00:31 photo.jpg
+    Keywords: "k"
+    IPTC:Caption: "hello"
+## otiotool
+seed exit 0
+total 8
+-rw-r--r-- 1 root root 5208 Oct  9 00:31 cut.otio
+== otiotool: exit 0; 454 strace lines
+137   openat(AT_FDCWD, "cut.otio", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 3
+total 16
+drwxr-xr-x 2 root root 4096 Oct  9 00:31 .
+drwxr-xr-x 8 root root 4096 Oct  9 00:31 ..
+-rw-r--r-- 1 root root 5260 Oct  9 00:31 cut.otio
+{
+    "OTIO_SCHEMA": "Timeline.1",
+    "metadata": {},
+    "name": "Timeline #1",
+    "global_start_time": null,
+    "tracks": {
+        "OTIO_SCHEMA": "Stack.1",
+        "metadata": {},
+        "name": "Stack #1",
+        "source_range": null,
+        "effects": [],
+        "markers": [],
+        "

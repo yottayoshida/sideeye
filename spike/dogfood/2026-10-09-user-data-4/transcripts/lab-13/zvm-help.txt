@@ -1,0 +1,36 @@
+[34mNAME:[0m
+   zvm - Zig Version Manager
+
+[34mUSAGE:[0m
+   zvm [global options] [command [command options]]
+
+[34mVERSION:[0m
+   v0.9.1 linux/arm64
+
+[34mDESCRIPTION:[0m
+   zvm lets you easily install, upgrade, and switch between different versions of Zig.
+
+[34mCOMMANDS:[0m
+   install, i              Download and install a version of Zig
+   use                     Switch between versions of Zig
+   run                     Run a command with the given Zig version
+   list-remote, ls-remote  List all remote Zig versions
+   list, ls                List installed Zig versions.
+   alias, kv               Give an installed Zig version a name
+   uninstall, rm           Remove an installed version of Zig
+   clean                   Remove build artifacts (good if you're a scrub)
+   upgrade                 Self-upgrade ZVM
+   mirrorlist              Set ZVM's mirror list URL for custom Zig distribution servers, or set to "disabled" to download directly from ziglang.org
+   bug                     Start a bug report
+   version                 Print the current version of ZVM
+   vmu                     Set ZVM's version map URL for custom Zig distribution servers
+   help, h                 Shows a list of commands or help for one command
+   completion              Generate a shell completion script
+
+[34mGLOBAL OPTIONS:[0m
+   --color string  enable (on, yes/y, enabled, true) or disable (off, no/n, disabled, false) colored ZVM output (default: "toggle")
+   --help, -h      show help
+   --version, -v   print the version
+
+[34mCOPYRIGHT:[0m
+   Copyright © 2026 Tristan Isham

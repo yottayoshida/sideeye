@@ -1,0 +1,10 @@
+== chdman
+== stack
+spike/cohort2/probes/raw/hg.strace:1369:37    newfstatat(AT_FDCWD</>, "/usr/local/lib/python3.13/dist-packages/mercurial/stack.py", {st_mode=S_IFREG|0644, st_size=758, ...}, 0) = 0
+spike/cohort4/novelty-prescan-unison.txt:23:      #990 closed 2024-01-19 propagation (of new files in a directory?) uses 6 stack frames per file, rather than iterating (NOT ABOUT ocaml 5.x!!)
+spike/cohort4/novelty-prescan-unison.txt:421:      #990 closed 2024-01-19 propagation (of new files in a directory?) uses 6 stack frames per file, rather than iterating (NOT ABOUT ocaml 5.x!!)
+spike/cohort4/himalaya-r2/Dockerfile.tools:6:# than by manifest. Installing a mail stack on top of it would pull
+== carapace
+== cabal
+spike/dogfood/2026-09-28-shipped-v170/SELECTION.md:32:cabal-fmt (125), dart_style (702), fourmolu (462), hindent (581), leptosfmt (361), ocamlformat
+== sad

@@ -1,0 +1,35 @@
+scan ended for atac (Julien-cpsn/ATAC); exploring 2026-10-09T02:42:34Z
+=== atac 2026-10-09T02:42:34Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 0: PASS -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 0: PASS -
+scan ended for ckan (KSP-CKAN/CKAN); exploring 2026-10-09T02:48:35Z
+=== ckan 2026-10-09T02:48:35Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+scan ended for rpk (redpanda-data/redpanda); exploring 2026-10-09T02:55:42Z
+=== rpk 2026-10-09T02:55:42Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 0: PASS -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 0: PASS -
+scan ended for kafkactl (deviceinsight/kafkactl); exploring 2026-10-09T02:59:45Z
+=== kafkactl 2026-10-09T02:59:45Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+explore-after-scan: done 2026-10-09T02:59:47Z

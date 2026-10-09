@@ -1,0 +1,24 @@
+46    openat(AT_FDCWD, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3
+46    close(3)                          = 0
+46    openat(AT_FDCWD, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3
+46    close(3)                          = 0
+46    openat(AT_FDCWD, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3
+46    close(3)                          = 0
+46    openat(AT_FDCWD, "/sys/fs/cgroup//cpu.max", O_RDONLY|O_CLOEXEC) = 3
+46    openat(AT_FDCWD, "/etc/localtime", O_RDONLY) = 4
+46    close(4)                          = 0
+46    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=46, si_uid=0} ---
+48    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=46, si_uid=0} ---
+48    openat(AT_FDCWD, ".", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = 4
+48    close(4)                          = 0
+48    renameat(AT_FDCWD, "IMG_1.jpg", AT_FDCWD, "trip_1.jpg") = 0
+48    renameat(AT_FDCWD, "IMG_2.jpg", AT_FDCWD, "trip_2.jpg") = 0
+48    renameat(AT_FDCWD, "IMG_3.jpg", AT_FDCWD, "trip_3.jpg") = 0
+48    mkdirat(AT_FDCWD, "/s/aux/tmp/f2", 0755) = 0
+48    mkdirat(AT_FDCWD, "/s/aux/tmp/f2/backups", 0755) = 0
+48    openat(AT_FDCWD, "/s/aux/tmp/f2/backups/9bf4dad4b4e78dbfa0a26ff74c406c50.json", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 4
+48    write(4, ""..., 331)              = 331
+48    write(1, ""..., 11)               = 11
+48    write(1, ""..., 11)               = 11
+48    write(1, ""..., 11)               = 11
+47    ???( <detached ...>

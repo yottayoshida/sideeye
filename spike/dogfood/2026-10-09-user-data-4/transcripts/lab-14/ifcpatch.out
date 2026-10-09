@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/opt/py/lib/python3.13/site-packages/ifcpatch/__main__.py", line 36, in <module>
+    args["file"] = ifcopenshell.open(args["input"])
+                   ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/opt/py/lib/python3.13/site-packages/ifcopenshell/__init__.py", line 232, in open
+    raise FileNotFoundError(f"Path does not exist: '{path}'.")
+FileNotFoundError: Path does not exist: 'model.ifc'.
+# Loading IFC file ...

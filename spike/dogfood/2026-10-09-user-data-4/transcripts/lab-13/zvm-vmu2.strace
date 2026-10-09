@@ -1,0 +1,37 @@
+130   execve("/opt/bin/zvm", [...], 0xffffe2b49b38 /* 14 vars */) = 0
+130   openat(AT_FDCWD, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3
+130   close(3)                          = 0
+130   openat(AT_FDCWD, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3
+130   close(3)                          = 0
+130   openat(AT_FDCWD, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3
+130   close(3)                          = 0
+130   openat(AT_FDCWD, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_CLOEXEC) = 3
+130   clone(child_stack=0x4203814b8000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 131
+130   clone(child_stack=0x420381510000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 132
+132   clone(child_stack=0x42038150c000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 133
+130   clone(child_stack=0x42038159a000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 134
+130   openat(AT_FDCWD, "/s/aux/home/.zvm/settings.json", O_RDONLY|O_CLOEXEC) = 4
+130   close(4)                          = 0
+130   openat(AT_FDCWD, "/s/aux/home/.zvm/settings.json", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0755) = 4
+130   write(4, ""..., 331)              = 331
+130   close(4)                          = 0
+130   openat(AT_FDCWD, "/etc/localtime", O_RDONLY) = 4
+130   close(4)                          = 0
+130   openat(AT_FDCWD, "/s/aux/home/.zvm/settings.json", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0755) = 4
+133   openat(AT_FDCWD, "/etc/resolv.conf", O_RDONLY|O_CLOEXEC) = 7
+130   write(4, ""..., 335)              = 335
+130   close(4)                          = 0
+133   close(7)                          = 0
+133   openat(AT_FDCWD, "/etc/nsswitch.conf", O_RDONLY|O_CLOEXEC) = 4
+133   close(4)                          = 0
+133   openat(AT_FDCWD, "/etc/hosts", O_RDONLY|O_CLOEXEC) = 4
+133   close(4)                          = 0
+133   write(6, ""..., 8)                = 8
+133   close(4 <unfinished ...>
+130   close(7 <unfinished ...>
+133   <... close resumed>)              = 0
+130   <... close resumed>)              = 0
+130   close(7 <unfinished ...>
+133   close(4 <unfinished ...>
+130   <... close resumed>)              = 0
+133   <... close resumed>)              = 0

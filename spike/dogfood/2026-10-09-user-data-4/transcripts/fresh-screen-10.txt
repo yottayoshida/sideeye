@@ -1,0 +1,8 @@
+SEEN  jbang  funnel:78
+SEEN  jbang  target-classes:82
+SEEN  jbang  spike/dogfood/2026-09-16-outside-git/SELECTION.md:44
+fresh dub
+fresh coursier
+fresh fpm
+SEEN  nimble  spike/dogfood/2026-10-03-user-data/SELECTION.md:58
+fresh jbangdev

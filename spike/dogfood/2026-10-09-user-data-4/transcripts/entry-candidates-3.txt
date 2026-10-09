@@ -1,0 +1,4 @@
+ROW cook static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 5 operations
+EXIT cook 0
+ROW prefscleaner static=0 preflight_rc=2 gate=1 detail=wall: child_process_detected
+EXIT prefscleaner 1

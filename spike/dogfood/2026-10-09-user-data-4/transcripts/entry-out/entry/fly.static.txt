@@ -1,0 +1,4 @@
+static: /opt/bin/fly: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=FHmjwaAfgjCDdAAXDkf3/OmeXZSHtFe1019ReYGDV/24ZN1IOZSwbC198nK3yW/SKXauLc0n4zOkWHlNq7g, BuildID[sha1]=3d09ab5328a7d75502af4b2528951bd0f6a29c67, with debug_info, not stripped
+default mode: rc 2; no_shim_marker
+default next: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+next: sideeye explore --state /s/flyhome --cwd "/s/fly-in" --operation "fly -t ci edit-target --team-name t2" \

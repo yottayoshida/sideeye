@@ -1,0 +1,12 @@
+23    openat(AT_FDCWD, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3
+23    close(3)                          = 0
+23    openat(AT_FDCWD, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3
+23    close(3)                          = 0
+23    openat(AT_FDCWD, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3
+23    close(3)                          = 0
+23    openat(AT_FDCWD, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_CLOEXEC) = 3
+23    openat(AT_FDCWD, "/s/aux/home/.netmaker/config.yml", O_RDONLY|O_CLOEXEC) = 4
+23    close(4)                          = 0
+23    openat(AT_FDCWD, "/s/aux/home/.netmaker/config.yml", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 4
+23    write(4, ""..., 121)              = 121
+23    close(4)                          = 0
