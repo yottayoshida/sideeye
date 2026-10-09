@@ -76,3 +76,11 @@ RUN { echo "nvim-nightly $(nvim-nightly --version | head -1)"; echo "nvim-0125 $
       echo "pymol-main $(/opt/pymol-main/bin/python -c 'import pymol.cmd as c; print(c.get_version()[0])' 2>&1)"; \
       echo "mkdwarfs-0158 $(mkdwarfs-0158 --help 2>&1 | head -1)"; echo "mkdwarfs-work $(mkdwarfs-work --help 2>&1 | head -1)"; \
       echo "yarn $(yarn --version)"; echo "trash $(npm ls -g trash-cli 2>/dev/null | grep trash-cli)"; } | tee /versions.txt
+
+# ---- added after the recount (PREDICTIONS.md, second table): Home Assistant 2026.10.0 in a venv of its
+# own on a standalone Python 3.14 fetched by uv (it requires >= 3.14.2, trixie has 3.13), as
+# 2026-10-05 user-data-2 installed 2026.9.4; dotter v0.13.5, the build 2026-10-03 measured ----
+RUN /opt/py/bin/pip install --no-cache-dir uv > /tmp/pip-uv.log 2>&1 && UV_PYTHON_INSTALL_DIR=/opt/uvpy /opt/py/bin/uv venv -q -p 3.14 /opt/ha > /tmp/uv-venv.log 2>&1 \
+      && VIRTUAL_ENV=/opt/ha /opt/py/bin/uv pip install -q homeassistant==2026.10.0 > /tmp/uv-ha.log 2>&1; echo "homeassistant exit: $?"; tail -3 /tmp/uv-ha.log; ln -s /opt/ha/bin/hass /opt/bin/hass; /opt/ha/bin/python --version
+RUN set -eu; cd /tmp/dl; curl -fsSL -o dotter https://github.com/SuperCuber/dotter/releases/download/v0.13.5/dotter-linux-arm64-musl; install -m 755 dotter /opt/bin/dotter; dotter --version
+RUN { echo "hass $(/opt/ha/bin/python -c 'import homeassistant.const as c; print(c.__version__)' 2>&1)"; echo "dotter $(dotter --version 2>&1)"; } | tee -a /versions.txt
