@@ -8720,6 +8720,22 @@ if ! python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT/spike/unkno
     echo "     fixture setup-error-present failed — the SETUP_ERROR exclusion has no other reachable input"
     ur_fails=$((ur_fails + 1))
 fi
+# A third green fixture, and the only tree whose apparatus record carries a machine:
+# line (#696, ADR 0104): g1 swept on x86_64 with an x86_64 asset pinned, a launcher-rc
+# in every trial directory, and the heading naming the platform. Without it the rules
+# that read the line are reached only by the red fixtures below, which a rule that
+# refused every machine line would pass as well.
+if ! python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT/spike/unknown-rate/fixtures/machine-x86-good" >/dev/null 2>&1; then
+    echo "     fixture machine-x86-good failed — a generation measured on x86_64 cannot be published"
+    ur_fails=$((ur_fails + 1))
+fi
+# A fourth: g2 re-measures B2 after g1, and the B2 authoring clock is printed under
+# g1 only (#696 — g4 re-measures g3's B2 and authored nothing). The emit before #696
+# printed it under both, and against this tree reads as drift.
+if ! python3 "$ROOT/spike/unknown-rate/count.py" check --root "$ROOT/spike/unknown-rate/fixtures/b2-remeasured-clock-once" >/dev/null 2>&1; then
+    echo "     fixture b2-remeasured-clock-once failed — the authoring clock is printed under a generation that re-measured B2"
+    ur_fails=$((ur_fails + 1))
+fi
 # Each tampered fixture must die on ITS OWN predicate's message, not merely
 # exit non-zero: a fixture that dies for an unrelated reason (a missing
 # file, a parse error) is a hollow red — it proves nothing about the
@@ -8802,7 +8818,14 @@ for pair in \
     "report-torn:fx-toyA: report.json is not JSON" \
     "clock-time-unparsable:has a time that is not YYYY-MM-DDTHH:MM:SSZ" \
     "clock-event-unknown:carries event 'gave_up', not one of" \
-    "clock-duplicate:stamps 'toyE' final twice"; do
+    "clock-duplicate:stamps 'toyE' final twice" \
+    "machine-heading-missing:the published heading for it does not name the platform" \
+    "machine-pin-mismatch:pins the aarch64 asset" \
+    "machine-missing-x86-pin:has no machine: line, so it reads as aarch64" \
+    "machine-unknown-name:does not name a host and a container machine" \
+    "machine-two-lines:machine: lines, not one" \
+    "machine-launcher-rc-missing:trial directories have no launcher-rc" \
+    "machine-emulated:the trials were emulated"; do
     ur_red=$((ur_red + 1))
     bad=${pair%%:*}; want=${pair#*:}
     ur_seen="$ur_seen $bad"
@@ -8831,12 +8854,13 @@ done
 # new rows landed one line below the `; do` and became a command in the loop body, which
 # `sh -n` accepts and `set -u` does not stop; the check printed `gate red on all 0
 # tampered fixtures` and passed. Reconciling against the directory catches both that and
-# a fixture added without a row. `good` and `setup-error-present` are the two that are
-# meant to pass, so they are the only names exempt.
+# a fixture added without a row. `good`, `setup-error-present`, `machine-x86-good` and
+# `b2-remeasured-clock-once` are the four that are meant to pass, so they are the only
+# names exempt.
 ur_committed=0
 for d in "$ROOT"/spike/unknown-rate/fixtures/*/; do
     name=${d%/}; name=${name##*/}
-    case " good setup-error-present " in *" $name "*) continue ;; esac
+    case " good setup-error-present machine-x86-good b2-remeasured-clock-once " in *" $name "*) continue ;; esac
     ur_committed=$((ur_committed + 1))
     case " $ur_seen " in
         *" $name "*) ;;

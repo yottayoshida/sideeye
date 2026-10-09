@@ -160,10 +160,35 @@ in_work "$id_img" sh -c '
 ' > "$ARTS/apparatus.txt" 2>&1 || { echo "sweep: engine identity capture failed" >&2; exit 2; }
 grep -q "^sideeye " "$ARTS/apparatus.txt" || {
     echo "sweep: the engine did not print its banner — wrong-platform build?" >&2; exit 2; }
+# The machine the trials ran on (#696, ADR 0104): count.py reads a generation's
+# platform from this line, and holds it against the pinned asset's architecture.
+# Both sides are recorded, the host's and a container's, because they differ
+# exactly when the trials were emulated — and that is the case a pinned asset
+# alone cannot show. macOS reports its Arm host as `arm64`; it is spelled the
+# way Linux spells it so that one machine has one name here.
+host_m=$(uname -m)
+[ "$host_m" = arm64 ] && host_m=aarch64
+cont_m=$(in_work "$id_img" uname -m) || { echo "sweep: the container's uname -m failed" >&2; exit 2; }
+[ -n "$host_m" ] && [ -n "$cont_m" ] || { echo "sweep: an empty machine name (host '$host_m', container '$cont_m')" >&2; exit 2; }
 { echo "head: $(cd "$ROOT" && git rev-parse HEAD)"
   echo "$engine_line"
+  echo "machine: $host_m $cont_m"
+  # A sweep run by a workflow names its run, so the record can be traced to the
+  # run that wrote it (the fs_usage survey's precedent, spike/fsusage/RESULTS.md).
+  [ -z "${GITHUB_RUN_ID:-}" ] || echo "ci-run: $GITHUB_RUN_ID"
   docker images --no-trunc --format '{{.Repository}} {{.ID}}' \
       | grep -E '^sideeye-ur-' ; } >> "$ARTS/apparatus.txt"
+
+# SWEEP_SMOKE=1 stops here, before any trial: the images are built, the pinned engine
+# fetched and verified, its banner printed and the machine recorded, so a new host
+# (the x86_64 workflow, #696) can be proven up to the trials without a result to look
+# at. What it leaves is an apparatus record with no manifest — not a generation, and
+# in the way of a real sweep of the same generation until it is removed.
+if [ "${SWEEP_SMOKE:-}" = 1 ]; then
+    cat "$ARTS/apparatus.txt"
+    echo "sweep: smoke — stopped before the trials; remove $ARTS before a real sweep"
+    exit 0
+fi
 
 # $3 is the corpus group: bgroup.sh serves two groups on two distributions,
 # and the group — not the launcher or its argument, which the frozen B rows
@@ -275,12 +300,21 @@ while IFS="$(printf '\t')" read -r id group tool class judge launcher args artdi
         # the checkout. Only the artifacts tree is writable (R1 measured a
         # launcher-arg bug creating a directory in the repo root — the ro
         # mount turns that whole class into a loud failure).
+        # The trial directory is made here, by the host, before the container runs.
+        # Inside, the launcher is root and its `mkdir -p` passes over a directory
+        # that exists; made there instead, it is root's, and on a native Linux host
+        # (no Docker Desktop to show it as the operator's) the `launcher-rc` below
+        # cannot be written into it (#696).
+        mkdir -p "$ARTS/$artdir" || { echo "sweep: cannot make $ARTS/$artdir" >&2; exit 2; }
         in_work -v "$ARTS":/work/spike/unknown-rate/artifacts \
             "$img" \
             /work/spike/unknown-rate/launchers/"$launcher" $args \
             /work/spike/unknown-rate/artifacts/"$artdir"
         lrc=$?
-        echo "$lrc" > "$ARTS/$artdir/launcher-rc"
+        # Stops the sweep when it cannot be written: before #696 a failed write went
+        # on to exit 0, and the record lost its launcher-rc files without a word.
+        echo "$lrc" > "$ARTS/$artdir/launcher-rc" || {
+            echo "sweep: cannot write $ARTS/$artdir/launcher-rc" >&2; exit 2; }
         # The oracle log is strace output, so its paths are what the tool actually saw —
         # which on this apparatus means the sweep machine's layout, operator's home
         # included, committed to a public repository and growing by one sweep each time
@@ -332,6 +366,10 @@ while IFS="$(printf '\t')" read -r id group tool class judge launcher args artdi
         # `oracle.txt.bak` holding the unfolded text beside the folded one — untracked,
         # so check 2al's `git grep` would not see it. Removed first, so a leftover from a
         # previous interrupted sweep cannot survive this one either.
+        #
+        # The fold stops the sweep when it cannot rewrite the file: on a native Linux
+        # host the container's root owns `work/`, `sed -i` cannot make its temporary
+        # there, and an unfolded log would otherwise go on into the record (#696).
         for orc in "$ARTS/$artdir"/run/*/work/oracle.txt; do
             [ -f "$orc" ] || continue
             rm -f "$orc.bak"
@@ -340,7 +378,7 @@ while IFS="$(printf '\t')" read -r id group tool class judge launcher args artdi
                 -e 's#(^|[^A-Za-z0-9_/])/[^ ")>,]*/spike/unknown-rate/artifacts#\1<repo>/spike/unknown-rate/artifacts#g' \
                 -e 's#@@SIDEEYE_WORK_MOUNT@@#/work/spike/unknown-rate/artifacts#g' \
                 -e 's#/run/host_virtiofs/[^ ")>,]*#<repo-truncated>#g' \
-                "$orc"
+                "$orc" || { echo "sweep: cannot fold the layout out of $orc" >&2; exit 2; }
             rm -f "$orc.bak"
         done
     else

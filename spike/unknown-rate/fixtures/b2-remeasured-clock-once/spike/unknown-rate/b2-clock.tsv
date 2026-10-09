@@ -1,0 +1,4 @@
+# fixture authoring clock: target	event	UTC (same shape as the live file)
+toyE	setup_started	2026-08-16T10:00:00Z
+toyE	first_accepted_recording	2026-08-16T10:04:00Z
+toyE	final	2026-08-16T10:06:00Z

@@ -292,7 +292,11 @@ threshold set from it would be satisfied by construction. So:
   fresh reading. No threshold is set from B2, and none is set before its
   number is published. B's g3 figures are evaluated against the threshold below
   as any B sweep's are, and what that comes to is recorded rather than decided
-  here. The protocol is in the corpus section, under B2; all three merges
+  here. Generation g4 sweeps B and B2 again on Linux x86_64 (#696), and its B
+  figures were decided before it ran: recorded beside g3's, they do not move
+  criterion 4, whose basis stays g3, and the kill-criteria review's Row 8 reads
+  them as it reads a sweep on any platform (the owner, 2026-10-10;
+  `spike/unknown-rate/g4-expected-before-reading.md`). The protocol is in the corpus section, under B2; all three merges
   have landed, and g3's tables are in the Results section with the prose
   beside the protocol.
 
@@ -637,7 +641,10 @@ the file is the record.)
 g3's B figures are held to it as any B sweep's are — including the sentence
 that a sweep failing part 1 is DESIGN §18 material. Whether criterion 4's status
 moves on that is the owner's call, made after the number exists and recorded
-in `PRD.md` with the date. B2 gets no threshold on this page, and any threshold
+in `PRD.md` with the date. g4's B, swept on Linux x86_64, was decided before it
+ran: it does not move criterion 4, and a g4 failing part 1 is still DESIGN §18
+material, as the kill-criteria review's Row 8 holds of a sweep on any platform
+(the owner, 2026-10-10; the threshold section says what is written). B2 gets no threshold on this page, and any threshold
 or widening issue the frozen result suggests is filed from that result, not
 before it. Rows that reach an explore here do not join `spike/outcome-funnel.tsv`,
 as the B-group's did not: that record is one row per campaign and target and
@@ -773,7 +780,13 @@ identity with past runs is recorded, never claimed. `count.py check`
 refuses a complete generation whose `apparatus.txt` is absent, or which
 lacks any of: both digest lines, a `head:` resolved to a commit id, and a
 line naming each image the manifest uses. Those are the four things asked
-for, rather than "not truncated" — a record that lost only image lines the
+of every record. Since #696 (ADR 0104) a pinned asset whose name carries an
+architecture must agree with the machine the record names — aarch64 when it
+names none — and a record that carries a `machine:` line is held to three
+more: the line names a host and a container machine that are known and the
+same, every trial directory holds a `launcher-rc`, and the published heading
+names the platform when it is not aarch64. None of it
+is "not truncated" — a record that lost only image lines the
 manifest never used still passes, and the sweep lists every
 `sideeye-ur-*` on the host rather than the ones it ran, so what this
 establishes is that the record is intact, never which images the trials
@@ -1258,6 +1271,10 @@ so every strict PASS becomes `completeness_not_verified`; a FAIL stands on its o
 evidence and is unchanged; a Linux UNKNOWN is not re-derived):
 - B-group derived UNKNOWN rate on macOS: 5/7 (71.4%)
 - B2-group derived UNKNOWN rate on macOS: 18/19 (94.7%)
+
+### Generation g4 — not yet measured (B,B2)
+
+_Not yet measured: the sweep has not run. This line is asserted by count.py check._
 <!-- unknown-rate:results:end -->
 
 **The `ctl-pass-mv` control above predates contract v15, and its reason has moved twice.**
@@ -1385,6 +1402,17 @@ define-budget, part 1 reads **0/7** and g1's note stands. Both readings are
 drawn after the sweep, as g1's was; this page records the number under each
 and draws neither for the criterion. Whether criterion 4's status moves is the
 owner's call; `PRD.md` carries the dated line.
+
+**g4 does not move criterion 4 (decided 2026-10-10, before it ran).** g4 sweeps
+the same B names on Linux x86_64 with g3's release in its x86_64 build (#696).
+Criterion 4's basis stays g3, by the owner's decision taken before the sweep:
+g4's B figures are recorded beside g3's and do not move it. Part 1 is read with
+cookietool filed as g3 files it (define-budget) and lbdb either way, so one
+more target-origin UNKNOWN than g3 fails it; part 2 fails at 4/7. If g4's B
+would fail either part, that is written here and on #696. A g4 failing part 1
+is DESIGN §18 material all the same: the kill-criteria review's Row 8 carries no
+platform qualifier, and a sweep on another platform faces it on its own
+numbers (the owner, the same day).
 
 ## Limitations, out loud
 
