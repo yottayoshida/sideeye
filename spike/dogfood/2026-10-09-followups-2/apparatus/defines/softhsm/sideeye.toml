@@ -1,0 +1,11 @@
+[world]
+# The state is one level up from 2026-10-09 user-data-4's: every object, and the token's own
+# directory, is named by a fresh UUID, so no fixed path under tokens/ can be declared scratch.
+# tokens/ is scratch as a whole and the checker reads the token through PKCS#11.
+state = "/s/hsm"
+
+[define]
+operation = "softhsm2-util --import /s/hsm/k2.pem --token t --pin 1234 --label k2 --id 02"
+check     = "/s/hsm-check.sh"
+cwd       = "/s/hsm-in"
+scratch   = ["tokens"]

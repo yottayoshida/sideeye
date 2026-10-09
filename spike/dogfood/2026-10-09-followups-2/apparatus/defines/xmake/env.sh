@@ -1,0 +1,1 @@
+export XMAKE_ROOT=y XMAKE_GLOBALDIR=/s/xm

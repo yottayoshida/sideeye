@@ -67,3 +67,30 @@ RUN { echo "seconv $(seconv 2>&1 | head -1)"; echo "seconv-pr $(seconv-pr 2>&1 |
       echo "bean-format $(dpkg-query -W beancount 2>&1)"; echo "bean-format-pr $(/opt/bc-pr/bin/python -c 'import beancount; print(beancount.__version__)' 2>&1)"; \
       echo "helm $(helm version --short 2>&1)"; echo "helm-pr $(helm-pr version --short 2>&1)"; \
       echo "solvespace-cli $(ls -l /opt/bin/solvespace-cli 2>&1 | cut -c1-60)"; echo "solvespace-cli-pr $(ls -l /opt/bin/solvespace-cli-pr 2>&1 | cut -c1-60)"; } | tee /versions.txt
+
+# ---- the second group: fifteen targets no campaign carried to a verdict, at the versions their
+# last campaigns measured, each to be taken one next step further on v1.10.0 ----
+RUN apt-get install -y --no-install-recommends ruby ruby-dev maildir-utils softhsm2 opensc bat ocrmypdf tesseract-ocr-eng ghostscript ccache \
+      > /tmp/apt-group2.log 2>&1 && echo "OK group-2 apt" || { echo "MISSING"; tail -3 /tmp/apt-group2.log; }
+RUN gem install --no-document hexapdf -v 1.11.0 > /tmp/gem-hexapdf.log 2>&1; echo "gem hexapdf exit: $?"; \
+    /opt/py/bin/pip install --no-cache-dir esptool==5.4.0 > /tmp/pip-esptool.log 2>&1; echo "pip esptool exit: $?"; \
+    npm install -g --no-fund --no-audit firebase-tools@15.32.1 > /tmp/npm-firebase.log 2>&1; echo "npm firebase-tools exit: $?"
+RUN set -u; cd /tmp/dl; gh=https://github.com; \
+    get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; }; \
+    get https://downloads.getmonero.org/cli/monero-linux-armv8-v0.18.5.1.tar.bz2 monero.tbz; \
+    get $gh/infracost/infracost/releases/download/v0.10.46/infracost-linux-arm64.tar.gz infracost.tgz; \
+    get $gh/PlakarKorp/plakar/releases/download/v1.1.7/plakar_1.1.7_linux_arm64.tar.gz plakar.tgz; \
+    get $gh/rfjakob/gocryptfs/releases/download/v2.6.1/gocryptfs_v2.6.1_linux-static_arm64.tar.gz gcf.tgz; \
+    mkdir -p x-monero x-infracost x-plakar x-gcf; tar xjf monero.tbz -C x-monero; tar xzf infracost.tgz -C x-infracost; tar xzf plakar.tgz -C x-plakar; tar xzf gcf.tgz -C x-gcf; \
+    install -m 755 "$(find x-monero -type f -name monero-wallet-cli | head -1)" /opt/bin/monero-wallet-cli; \
+    install -m 755 "$(find x-infracost -type f -name 'infracost*' | head -1)" /opt/bin/infracost; \
+    install -m 755 "$(find x-plakar -type f -name plakar | head -1)" /opt/bin/plakar; \
+    install -m 755 x-gcf/gocryptfs /opt/bin/gocryptfs; ls -l /opt/bin | wc -l
+RUN cd /tmp/src && curl -fsSL https://github.com/xmake-io/xmake/releases/download/v3.1.1/xmake-v3.1.1.tar.gz | tar xz \
+    && cd xmake-3.1.1 && ./configure > /tmp/build-xmake.log 2>&1 && make -j4 >> /tmp/build-xmake.log 2>&1 && make install PREFIX=/usr/local >> /tmp/build-xmake.log 2>&1; \
+    echo "xmake build exit: $?"; tail -2 /tmp/build-xmake.log
+RUN { echo "hexapdf $(hexapdf version 2>&1 | head -1)"; echo "mu $(mu --version 2>&1 | head -1)"; echo "monero $(monero-wallet-cli --version 2>&1 | head -1)"; \
+      echo "infracost $(infracost --version 2>&1 | head -1)"; echo "xmake $(XMAKE_ROOT=y xmake --version 2>&1 | head -1)"; echo "esptool $(esptool version 2>&1 | tail -1)"; \
+      echo "plakar $(plakar version 2>&1 | head -1)"; echo "softhsm2 $(softhsm2-util --version 2>&1)"; echo "bat $(batcat --version 2>&1)"; echo "meson $(meson --version 2>&1)"; \
+      echo "ocrmypdf $(ocrmypdf --version 2>&1)"; echo "ccache $(ccache --version 2>&1 | head -1)"; echo "git $(git --version)"; echo "firebase $(firebase --version 2>&1 | tail -1)"; \
+      echo "gocryptfs $(gocryptfs -version 2>&1 | head -1)"; } | tee -a /versions.txt
