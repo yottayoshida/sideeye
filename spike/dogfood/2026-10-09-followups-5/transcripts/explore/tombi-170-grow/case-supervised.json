@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/tombi/proj",
+    "operation": "/opt/tombi-1.7.0/tombi format --offline a.toml",
+    "cwd": "/s/tombi/proj",
+    "expected_status": 0
+  },
+  "k": 3,
+  "ops_total": 3,
+  "prefix_hash": "d5256dbb45ab4561",
+  "after_class": "truncate",
+  "after_path": "/s/tombi/proj/a.toml",
+  "before_class": "write",
+  "before_path": "/s/tombi/proj/a.toml",
+  "violation": "hybrid"
+}

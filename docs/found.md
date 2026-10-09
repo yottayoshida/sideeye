@@ -8,7 +8,7 @@ This is a list of counterexamples, not a badge: nothing on it says a tool is saf
 
 <!-- found:begin -->
 
-40 reports: 9 fixed upstream and re-measured, 1 fixed upstream, 29 filed, 1 withdrawn.
+40 reports: 10 fixed upstream and re-measured, 28 filed, 2 withdrawn.
 
 | Tool | Report | State | As of |
 |---|---|---|---|
@@ -18,15 +18,14 @@ This is a list of counterexamples, not a badge: nothing on it says a tool is saf
 | codespell 2.4.1 | [codespell-project/codespell#4025](https://github.com/codespell-project/codespell/issues/4025) | fixed upstream, re-measured | 2026-10-02 |
 | rubocop 1.39.0 | [rubocop/rubocop#15720](https://github.com/rubocop/rubocop/issues/15720) | fixed upstream, re-measured | 2026-10-02 |
 | neovim 0.10.4 and 0.12.5 (`:wshada`) | [neovim/neovim#41940](https://github.com/neovim/neovim/issues/41940) | fixed upstream, re-measured | 2026-10-09 |
+| tombi 1.5.6 and 1.7.0 | [tombi-toml/tombi#2265](https://github.com/tombi-toml/tombi/issues/2265) | fixed upstream, re-measured | 2026-10-09 |
 | DwarFS 0.15.8 `mkdwarfs --recompress` | [mhx/dwarfs#388](https://github.com/mhx/dwarfs/issues/388) | fixed upstream, re-measured | 2026-10-09 |
 | PyMOL 3.1.0 (Debian) `save` of a `.pse` | [schrodinger/pymol-open-source#520](https://github.com/schrodinger/pymol-open-source/issues/520) | fixed upstream, re-measured | 2026-10-09 |
 | Subtitle Edit's SeConv 5.2.0 `subs.srt subrip --offset:-2000 --overwrite` | [SubtitleEdit/subtitleedit#15829](https://github.com/SubtitleEdit/subtitleedit/issues/15829) | fixed upstream, re-measured | 2026-10-09 |
-| tombi 1.5.6 and 1.7.0 | [tombi-toml/tombi#2265](https://github.com/tombi-toml/tombi/issues/2265) | fixed upstream | 2026-10-02 |
 | topydo | [topydo/topydo#341](https://github.com/topydo/topydo/issues/341) | filed (awaiting) | 2026-08-14 |
 | calcurse | [lfos/calcurse#529](https://github.com/lfos/calcurse/issues/529) | filed (awaiting) | 2026-08-14 |
 | GNU Stow | [aspiers/stow#139](https://github.com/aspiers/stow/issues/139) | filed (awaiting) | 2026-08-14 |
-| poetry | [python-poetry/poetry#11019](https://github.com/python-poetry/poetry/issues/11019) | filed (awaiting) | 2026-08-22 |
-| qpdf | [qpdf/qpdf#1773](https://github.com/qpdf/qpdf/issues/1773) | filed (awaiting) | 2026-09-04 |
+| qpdf | [qpdf/qpdf#1773](https://github.com/qpdf/qpdf/issues/1773) | filed (declined) | 2026-10-09 |
 | trash-cli | [andreafrancia/trash-cli#414](https://github.com/andreafrancia/trash-cli/issues/414) | filed (awaiting) | 2026-09-04 |
 | exiv2 | [Exiv2/exiv2#9482](https://github.com/Exiv2/exiv2/issues/9482) | filed (awaiting) | 2026-09-05 |
 | fonttools | [fonttools/fonttools#4170](https://github.com/fonttools/fonttools/issues/4170) | filed (declined) | 2026-09-16 |
@@ -52,5 +51,6 @@ This is a list of counterexamples, not a badge: nothing on it says a tool is saf
 | OCRmyPDF 16.7.0 `--force-ocr a.pdf a.pdf` | [ocrmypdf/OCRmyPDF#1762](https://github.com/ocrmypdf/OCRmyPDF/issues/1762) | filed (awaiting) | 2026-10-09 |
 | dotenvx 2.32.4 `encrypt` | [dotenvx/dotenvx#1012](https://github.com/dotenvx/dotenvx/issues/1012) | filed (awaiting) | 2026-10-09 |
 | devtodo | [alecthomas/devtodo#9](https://github.com/alecthomas/devtodo/issues/9) | withdrawn | 2026-08-14 |
+| poetry | [python-poetry/poetry#11019](https://github.com/python-poetry/poetry/issues/11019) | withdrawn | 2026-10-09 |
 
 <!-- found:end -->

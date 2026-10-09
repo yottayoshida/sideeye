@@ -1,0 +1,22 @@
+Here is the PDF from the report: 537 bytes, one page with the text "probe page", no personal data. Inline as base64 so it can be checked byte for byte:
+
+```sh
+base64 -d > myfile.pdf <<'EOF'
+JVBERi0xLjQKMSAwIG9iajw8L1R5cGUvQ2F0YWxvZy9QYWdlcyAyIDAgUj4+ZW5kb2JqCjIgMCBv
+Ymo8PC9UeXBlL1BhZ2VzL0tpZHNbMyAwIFJdL0NvdW50IDE+PmVuZG9iagozIDAgb2JqPDwvVHlw
+ZS9QYWdlL1BhcmVudCAyIDAgUi9NZWRpYUJveFswIDAgMjAwIDIwMF0vUmVzb3VyY2VzPDwvRm9u
+dDw8L0YxIDUgMCBSPj4+Pi9Db250ZW50cyA0IDAgUj4+ZW5kb2JqCjQgMCBvYmo8PC9MZW5ndGgg
+NDI+PnN0cmVhbQpCVCAvRjEgMjQgVGYgMjAgMTAwIFRkIChwcm9iZSBwYWdlKSBUaiBFVAplbmRz
+dHJlYW1lbmRvYmoKNSAwIG9iajw8L1R5cGUvRm9udC9TdWJ0eXBlL1R5cGUxL0Jhc2VGb250L0hl
+bHZldGljYT4+ZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAw
+MDAwMCBuIAowMDAwMDAwMDUyIDAwMDAwIG4gCjAwMDAwMDAxMDEgMDAwMDAgbiAKMDAwMDAwMDIx
+MSAwMDAwMCBuIAowMDAwMDAwMjk3IDAwMDAwIG4gCnRyYWlsZXI8PC9TaXplIDYvUm9vdCAxIDAg
+Uj4+CnN0YXJ0eHJlZgozNTgKJSVFT0YK
+EOF
+sha256sum myfile.pdf
+# 560658cd0a08ca663449113c5a0abaa67b01970c3acb67eda9c6400111803594
+```
+
+With it, the strace command in the report runs as written on Linux.
+
+Written with AI assistance; the decode and the checksum above were run.

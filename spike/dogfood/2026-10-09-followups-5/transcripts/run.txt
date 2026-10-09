@@ -1,0 +1,29 @@
+=== tombi-170-grow 2026-10-09T12:14:40Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== tombi-170-shrink 2026-10-09T12:14:41Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== tombi-173-grow 2026-10-09T12:14:42Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 0: PASS -
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 0: PASS -
+=== tombi-173-shrink 2026-10-09T12:14:42Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
