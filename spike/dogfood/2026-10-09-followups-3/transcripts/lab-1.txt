@@ -1,0 +1,8 @@
+yarn pool=default: 1 thread(s) wrote /s/yarn; gate: UNKNOWN multiple_threads_detected
+yarn pool=default supervised: UNKNOWN boundary_without_oracle
+yarn pool=1: 1 thread(s) wrote /s/yarn; gate: UNKNOWN boundary_without_oracle
+yarn pool=1 supervised: UNKNOWN boundary_without_oracle
+trash pool=default: 4 thread(s) wrote /s/td; gate: UNKNOWN multiple_threads_detected
+trash pool=default supervised: UNKNOWN boundary_without_oracle
+trash pool=1: 1 thread(s) wrote /s/td; gate: UNKNOWN boundary_without_oracle
+trash pool=1 supervised: UNKNOWN boundary_without_oracle
