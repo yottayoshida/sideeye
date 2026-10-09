@@ -68,3 +68,19 @@ not a finding. A recount should read `docs/target-classes.md` and `spike/followu
 What this says about v1.10.0: the next step on `kill_did_not_land` (ADR 0097) names the cause a user can
 act on, and `baseline_violates_invariant` now says where and what kind (#688), which is what pointed at
 the salt. Both led to a verdict in one step each.
+
+### Where the other 45 stand
+
+Each line is the wall the funnel row names, and why v1.10.0 does not move it.
+
+| wall | targets | why not now |
+|---|---|---|
+| writer threads (`multiple_threads_detected`) | dotenvx, tofu, electrum, doctl, bibtex-tidy, basic-memory, codex, gemini, gltf-transform, lingui, steamguard, vercel, rustic, prek, cspell, capacitor, yarn, trash | refused under supervised too (yarn and trash-cli above) |
+| two clean runs differ (`--twice`) | hexapdf, mu, monero, infracost, xmake, espsecure, plakar, softhsm | the bytes that differ are the data itself (a PDF ID, a wallet, a signature nonce, a repository's encryption, a random UUID, a table order); #688 now says where, and only a checker over a scratch path can judge them, Home Assistant's way |
+| an unlinked-fd write (`unresolvable_path`) | flatpak, ostree, Kvantum, Hydrogen | `O_TMPFILE`, refused under supervised too (Kvantum and Hydrogen above) |
+| a shared mapping written (`unsupported_syscall_observed`) | fitscheck, goaccess | #689 (v1.10.0) refuses it on every path |
+| an extended attribute written | vim | waits on whether `setxattr` is judged or set aside like #121 — a decision, not a measurement |
+| a child writes the state | firebase, easyrsa, gocryptfs, prefsCleaner | the writer is another process; #706 runs a shell-spelled string as before |
+| the restore's modes (#678) | upx, argocd | #678 is open |
+| the shim's initialisation (#753) | rootrm | #753 is open; under supervised two runs differ (a random UUID written into the file) |
+| set aside by the run's own reading | dokuwiki, lighthouse, jump (known in their trackers), git-lfs, keyring (the write is another project's) | the reason is the target's, not the engine's |
