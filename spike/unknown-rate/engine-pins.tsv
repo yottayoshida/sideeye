@@ -20,4 +20,12 @@
 # The point of a release rather than a HEAD build: the selection is committed
 # before any candidate runs, and main moves several times a day, so "the engine
 # chosen before the sweep" has to be a thing that does not move with main.
+#
+# The architecture is not read from here (#696, ADR 0104). A generation's
+# platform is the `machine:` line sweep.sh writes into its apparatus.txt; an
+# asset whose name carries an architecture (`-aarch64-linux`, `-x86_64-linux`)
+# is held to that line by count.py check, and one that carries none is not
+# compared. g4 pins g3's release in its x86_64 build, so the two generations
+# differ in the machine and not in the engine.
 g3	v1.5.0	sideeye-v1.5.0-aarch64-linux.tar.gz	f81c58a3eb632a352bba067457c8a0331ff9df91e914f0a39561da384b024815
+g4	v1.5.0	sideeye-v1.5.0-x86_64-linux.tar.gz	f836b7af586e08188a2882a16423e4a2034f64321eb9f56e03bf44cbd74a0a6d

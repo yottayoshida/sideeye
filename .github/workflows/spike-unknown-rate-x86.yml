@@ -1,0 +1,75 @@
+# The x86_64 leg of the unknown-rate page (#696, ADR 0104): the B and B2 groups swept
+# as generation g4 on GitHub's x86_64 runner, with g3's release in its x86_64 build.
+# This is a measurement apparatus, not standing CI — it runs only by hand, and it
+# must never be made a required check (spike-fsusage.yml is the precedent).
+#
+# Run it at the commit that merged the apparatus, named by `sha`: a dispatch runs
+# the workflow file from main's head, and checking out `sha` keeps the measured tree
+# the merge commit even if main has moved since. `smoke` stops before the trials
+# (images, the pinned engine, its banner and the machine line only), so the host can
+# be proven without a result to look at. The record is the first sweep that
+# completes; the artifact is copied into the tree by hand, in a pull request, and
+# this workflow is given no write access.
+name: spike-unknown-rate-x86
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: "Commit to sweep (the merge commit of the apparatus)"
+        required: true
+        type: string
+      smoke:
+        description: "Stop before the trials"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# One sweep at a time: a second dispatch waits rather than racing the first, so
+# "the first sweep that completes" is not decided by which of two finished first.
+concurrency:
+  group: spike-unknown-rate-x86
+  cancel-in-progress: false
+
+jobs:
+  sweep-g4:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      # Pinned by commit, like every action in this repository (ADR 0061,
+      # spike/check-action-pins.sh). No credentials are left in .git/config: the
+      # checkout is mounted into every trial container, which runs third-party
+      # Debian packages as root, and the sweep needs none (gh reads GH_TOKEN).
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+
+      - name: The runner is x86_64 and the tree is the named commit
+        env:
+          WANT_SHA: ${{ inputs.sha }}
+        run: |
+          m=$(uname -m)
+          echo "uname -m: $m"
+          [ "$m" = x86_64 ] || { echo "not an x86_64 runner: $m"; exit 1; }
+          head=$(git rev-parse HEAD)
+          echo "HEAD: $head"
+          [ "$head" = "$WANT_SHA" ] || { echo "HEAD is not $WANT_SHA"; exit 1; }
+
+      - name: Sweep g4
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SWEEP_SMOKE: ${{ inputs.smoke && '1' || '' }}
+        run: sh spike/unknown-rate/sweep.sh g4
+
+      - name: Keep the record
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          # A smoke run's record is named apart, so it cannot be taken for the sweep's.
+          name: artifacts-g4-${{ inputs.smoke && 'smoke' || 'sweep' }}-run-${{ github.run_id }}
+          path: spike/unknown-rate/artifacts-g4
+          if-no-files-found: warn
+          retention-days: 90

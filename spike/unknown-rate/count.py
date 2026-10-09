@@ -66,6 +66,14 @@ GROUPS = ("A", "B", "B2", "control")
 MECHANICAL_GROUPS = frozenset(("B", "B2"))
 OUTCOME_COLS = ["tool", "disposition", "source"]
 ENGINE_PIN_COLS = ["generation", "tag", "asset", "sha256"]
+# The machines a generation can name (#696, ADR 0104), read from the `machine:` line
+# sweep.sh writes into apparatus.txt since then. A generation without that line was
+# swept before it existed, on Linux aarch64 (the page's Platform section), and is read
+# as that. A pinned asset whose name carries an architecture is held to the same value;
+# one that carries none (the fixtures' `fixture.tar.gz`) is not compared.
+KNOWN_MACHINES = ("aarch64", "x86_64")
+DEFAULT_MACHINE = "aarch64"
+ASSET_MACHINE = re.compile(r"-(aarch64|x86_64)-(?:linux|macos)\.tar\.gz$")
 CLOCK_COLS = ["target", "event", "utc"]
 # The events b2-clock.sh writes, in the order authoring reaches them. Held on the
 # reading side as well: the writer refuses a fourth name, but the file is plain
@@ -562,6 +570,53 @@ def read_apparatus(root, gen_dir):
     return named, n_images, lines
 
 
+def machine_lines(lines):
+    """Every `machine:` line in an apparatus record, as written — the one place the key is read."""
+    return [l for l in lines if l.startswith("machine:")]
+
+
+def machine_line(gid, gen_dir, lines):
+    """The (host, container) pair a generation's `machine:` line records, or None.
+
+    Strict, for `check`: a line that is there must say two known machine names, and
+    the same one twice. The two differ exactly when the trials were emulated, which
+    is the case a pinned asset alone cannot show; an empty or unknown name is a
+    record this page cannot label a platform from.
+    """
+    found = machine_lines(lines)
+    if not found:
+        return None
+    if len(found) > 1:
+        die(f"{gid}: {gen_dir}/apparatus.txt carries {len(found)} machine: lines, not one")
+    parts = found[0].split()[1:]
+    if len(parts) != 2 or any(p not in KNOWN_MACHINES for p in parts):
+        die(f"{gid}: {gen_dir}/apparatus.txt line `{found[0]}` does not name a host and a "
+            f"container machine from {'/'.join(KNOWN_MACHINES)}")
+    if parts[0] != parts[1]:
+        die(f"{gid}: {gen_dir}/apparatus.txt records host {parts[0]} and container {parts[1]} — "
+            f"the trials were emulated, and the platform this page would label them with is "
+            f"neither machine's alone")
+    return parts[0], parts[1]
+
+
+def platform_of(root, gen):
+    """The machine a generation's heading names, read without dying (#696).
+
+    `emit` runs before `check`'s own rules (check calls it first), so a missing or
+    malformed apparatus record must not fail here: the rules that name those defects
+    are `read_apparatus` and `machine_line`, and a failure here would take their
+    fixtures' messages. Anything short of one well-formed line reads as the default.
+    """
+    try:
+        lines = (root / "spike/unknown-rate" / gen["dir"] / "apparatus.txt").read_text().splitlines()
+    except OSError:
+        return DEFAULT_MACHINE
+    found = [l.split()[1:] for l in machine_lines(lines)]
+    if len(found) != 1 or len(found[0]) != 2:
+        return DEFAULT_MACHINE
+    return found[0][1]
+
+
 def excluded_cell(trial_id, exclusions):
     """The cell that reports an excluded row, carrying its reason when one is waived.
 
@@ -849,10 +904,15 @@ def check_attribution(tables, published):
 
 
 def emit_generation(gen, trials, walls, setup_errors, outcome, exclusions,
-                    remeasured=frozenset(), clock=None):
+                    remeasured=frozenset(), clock=None, machine=DEFAULT_MACHINE):
     L = []
     L.append("")
-    L.append(f"### Generation {gen['id']} — measured {gen['date']} ({gen['groups']})")
+    # The platform is named only where it is not the default (#696): the generations
+    # before the machine line, and every fixture, keep the heading they had.
+    # `split_published` takes the generation from the heading's first word, so the
+    # suffix does not move a section.
+    on = "" if machine == DEFAULT_MACHINE else f" on Linux {machine}"
+    L.append(f"### Generation {gen['id']} — measured {gen['date']} ({gen['groups']}){on}")
     # The headings come from GROUP_HEADINGS, not a literal here: `check` locates
     # its sections by these strings, so two copies means a wording edit silently
     # stops the attribution check finding anything to check.
@@ -955,7 +1015,10 @@ def emit_generation(gen, trials, walls, setup_errors, outcome, exclusions,
             l2 = t["legs"][1] if len(t["legs"]) > 1 else None
             L.append(f"| {t['tool']} | {t['group']} | {leg_cell(t['legs'][0])} | {leg_cell(l2)} | "
                      f"{t['legs'][-1]['mode']} |")
-    if clock and any(x["group"] == "B2" for x in trials + walls):
+    # The authoring clock is the generation that first measured B2's (g3): a later
+    # generation re-measuring B2 (g4, #696) authored nothing, and the table under its
+    # heading would read as its own.
+    if clock and "B2" not in remeasured and any(x["group"] == "B2" for x in trials + walls):
         L.append("")
         L.append("#### B2 authoring clock (self-reported; minutes from setup_started)")
         L.append("")
@@ -1023,7 +1086,8 @@ def emit(root):
             continue
         groups = set(gen["groups"].split(","))
         L.extend(emit_generation(gen, trials, walls, setup_errors, outcome, exclusions,
-                                 remeasured=groups & seen & MECHANICAL_GROUPS, clock=clock))
+                                 remeasured=groups & seen & MECHANICAL_GROUPS, clock=clock,
+                                 machine=platform_of(root, gen)))
         seen |= groups
     L.append(MARK_END)
     out = "\n".join(L) + "\n"
@@ -1390,6 +1454,9 @@ def check(root):
     apparatus_images, manifest_images = 0, 0
     pins = read_engine_pins(root)
     pinned = 0
+    # gid -> the machine its record names (#696), for the heading rule below the byte
+    # compare's inputs are in hand. Only generations whose record carries the line.
+    platforms = {}
 
     for gen, exp, manifest, trials, walls, setup_errors in tables:
         gid = gen["id"]
@@ -1410,6 +1477,8 @@ def check(root):
         # A generation engine-pins.tsv names a release for must say so in its own
         # record (#619): the two digest lines describe whatever was mounted, and
         # only this line says it was the pinned asset, checked against the digest.
+        mline = machine_line(gid, gen["dir"], alines)
+        machine = mline[1] if mline else DEFAULT_MACHINE
         if gid in pins:
             tag, asset, psha = pins[gid]
             want = f"engine: release {tag} {asset} {psha}"
@@ -1417,6 +1486,30 @@ def check(root):
                 die(f"{gid}: engine-pins.tsv pins {tag} but {gen['dir']}/apparatus.txt carries no "
                     f"line `{want}` — the record does not say the pinned release ran")
             pinned += 1
+            # The pinned asset's architecture against the machine the record names — the
+            # default when it names none, so a record that lost its machine line cannot
+            # carry an x86_64 asset under an aarch64 heading (#696).
+            am = ASSET_MACHINE.search(asset)
+            if am and am.group(1) != machine:
+                said = "records machine" if mline else "has no machine: line, so it reads as"
+                die(f"{gid}: engine-pins.tsv pins the {am.group(1)} asset {asset} but "
+                    f"{gen['dir']}/apparatus.txt {said} {machine} — the heading would name "
+                    f"a platform the engine was not built for")
+        if mline:
+            platforms[gid] = machine
+            # Every trial directory a sweep ran an engine in holds its launcher's exit
+            # code. Held only where the record carries a machine line — a sweep.sh that
+            # stops when the file cannot be written (#696) — because the fixtures carry
+            # no launcher-rc at all. Every live generation before the line carries one
+            # per directory (g1 34 of 34, g2 34 of 34, g3 26 of 26, measured by this
+            # rule's own computation), so the restriction excuses none of them.
+            artdirs = sorted({by_id_c[row["id"]]["artdir"] for row in manifest
+                              if not row["argv"].startswith("wall:") and row["id"] in by_id_c})
+            no_rc = [a for a in artdirs
+                     if not (root / "spike/unknown-rate" / gen["dir"] / a / "launcher-rc").is_file()]
+            if no_rc:
+                die(f"{gid}: {len(no_rc)} of {len(artdirs)} trial directories have no launcher-rc "
+                    f"({', '.join(no_rc[:3])}) — the sweep's record of how each launch ended is short")
         used = {row["image"] for row in manifest if not row["argv"].startswith("wall:")}
         unlisted = sorted(used - apparatus)
         if unlisted:
@@ -1573,6 +1666,17 @@ def check(root):
         die(f"published tables carry {len(pub_rows)} rows for {measured} measured trials — "
             f"an empty or truncated table cannot stand in for the measurement")
     n_sec, n_detail, n_slice, n_outcome, sum_only = check_attribution(tables, published)
+    # A generation measured on another machine says so in its published heading (#696).
+    # Before the byte compare, and with a sentence of its own: the compare would also
+    # go red on this, but on the one message `tampered-verdict` pins, so a fixture for
+    # this rule could not show which rule it reached.
+    for gid, machine in platforms.items():
+        if machine == DEFAULT_MACHINE:
+            continue
+        heads = [l for l in published.splitlines() if l.startswith(f"### Generation {gid} ")]
+        if not any(l.endswith(f" on Linux {machine}") for l in heads):
+            die(f"{gid}: its record names machine {machine}, but the published heading for it "
+                f"does not name the platform")
     computed = block.split(MARK_BEGIN)[1].split(MARK_END)[0]
     if published != computed:
         die("published results block differs from recomputation (drift)")
