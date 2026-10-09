@@ -1,0 +1,16 @@
++ D=/work/c/d
++ C=/work/c/conf
++ mkdir -p /work/c/d /work/c/conf
++ printf BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nUID:grace-001\nDTSTART:20260902T100000Z\nDTEND:20260902T110000Z\nSUMMARY:GraceStandup\nEND:VEVENT\nBEGIN:VEVENT\nUID:ada-001\nDTSTART:20260901T100000Z\nDTEND:20260901T110000Z\nSUMMARY:AdaMeeting\nEND:VEVENT\nEND:VCALENDAR\n
++ /opt/calcurse/bin/calcurse -D /work/c/d -C /work/c/conf -q -i /work/two.ics
++ cat /work/c/d/apts
+09/01/2026 @ 10:00 -> 09/01/2026 @ 11:00|AdaMeeting
+09/02/2026 @ 10:00 -> 09/02/2026 @ 11:00|GraceStandup
++ strace -f -qq -P /work/c/d/apts -e trace=write -e inject=write:signal=KILL:when=1 /opt/calcurse/bin/calcurse -D /work/c/d -C /work/c/conf -P --filter-pattern AdaMeeting
+write(3, "09/02/2026 @ 10:00 -> 09/02/2026"..., 54) = ?
++++ killed by SIGKILL +++
+exit 137
+Killed
++ echo exit 137
++ wc -c /work/c/d/apts
+0 /work/c/d/apts

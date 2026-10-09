@@ -1,0 +1,34 @@
+before: 108 bytes
+rc 137
+after: 108 bytes
+--- a.toml
+[a]
+b = 1
+c = "x"
+
+[d]
+e = [1, 2, 3]
+  =          "x"
+[d]
+e          =          [1,          2,          3]
+--- tombi format --check a.toml
+[1;31m  Error[0m: [1mexpected key[0m
+    [90mat[0m [36ma.toml:7:3[0m
+[1;31m  Error[0m: [1m"a.toml" failed to parse[0m
+1 file failed to be formatted
+rc 0
+--- tombi format a.toml (again)
+[1;31m  Error[0m: [1mexpected key[0m
+    [90mat[0m [36ma.toml:7:3[0m
+[1;31m  Error[0m: [1m"a.toml" failed to parse[0m
+1 file failed to be formatted
+--- a.toml after
+[a]
+b = 1
+c = "x"
+
+[d]
+e = [1, 2, 3]
+  =          "x"
+[d]
+e          =          [1,          2,          3]

@@ -1,0 +1,71 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's (working tree)    sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's at tag v1.10.0     sha256 e3cb964274494696b688f0953fa6b112ef233db9dac6ddca43777cb9b0ddaef3
+build: NOTE the page's installer has moved since v1.10.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.86kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 1.6s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/9] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.28kB 0.0s done
+#5 DONE 0.0s
+
+#6 [2/9] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config zstd
+#6 CACHED
+
+#7 [3/9] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#7 CACHED
+
+#8 [4/9] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#8 CACHED
+
+#9 [5/9] RUN mkdir -p /opt/bin /tmp/dl /tmp/src && python3 -m venv /opt/py
+#9 DONE 1.1s
+
+#10 [6/9] COPY install-sideeye.sh /opt/install-sideeye.sh
+#10 DONE 0.0s
+
+#11 [7/9] RUN sh /opt/install-sideeye.sh v1.10.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#11 1.411 installer exit: 0
+#11 1.412 stdout: [/opt/se/sideeye-v1.10.0-aarch64-linux/sideeye]
+#11 1.413 install-sideeye: reading yottayoshida/sideeye release v1.10.0 (unauthenticated; shares this runner's rate limit)
+#11 1.413 install-sideeye: sideeye-v1.10.0-aarch64-linux.tar.gz published digest sha256:cb176c41df10611ec6eb2c255bf5d7f557edfb4159752e7f89959519c3c6a99a
+#11 1.413 install-sideeye: downloaded digest matches (cb176c41df10611ec6eb2c255bf5d7f557edfb4159752e7f89959519c3c6a99a)
+#11 1.413 install-sideeye: sideeye 1.10.0 (trace contract v19)
+#11 DONE 1.4s
+
+#12 [8/9] RUN "$(cat /install.path)" version
+#12 0.109 sideeye 1.10.0 (trace contract v19)
+#12 DONE 0.1s
+
+#13 [9/9] RUN set -eu; cd /tmp/dl; gh=https://github.com/tombi-toml/tombi/releases/download;     for v in 1.7.0 1.7.3; do       curl -fsSL -o tombi-$v.tgz $gh/v$v/tombi-cli-$v-aarch64-unknown-linux-musl.tar.gz;       mkdir -p x-$v /opt/tombi-$v && tar xzf tombi-$v.tgz -C x-$v && install -m 755 "$(find x-$v -type f -name tombi | head -1)" /opt/tombi-$v/tombi;       echo "tombi $v: $(/opt/tombi-$v/tombi --version) $(sha256sum tombi-$v.tgz | cut -c1-16)";     done | tee /versions.txt
+#13 1.628 tombi 1.7.0: tombi 1.7.0 (aarch64-unknown-linux-musl) 1367ac39bfaaca36
+#13 3.367 tombi 1.7.3: tombi 1.7.3 (aarch64-unknown-linux-musl) 20bd2470c3de95ef
+#13 DONE 3.4s
+
+#14 exporting to image
+#14 exporting layers
+#14 exporting layers 1.5s done
+#14 exporting manifest sha256:78e899b62824568e61ed157620378ec8a4c90bbea4af60a5e8de3662b1729319 done
+#14 exporting config sha256:30ca0740c2193573cafb59f543b7cf7aa89bca800220f46d080809280546d6ae done
+#14 exporting attestation manifest sha256:a6bcc055e516fc3d226077f3ca51e49addad418039ff0841cfdddd10a176bf80 done
+#14 exporting manifest list sha256:99e14695816378699105e797d0c46712fbfc563e0055f83aaae6314a85cebb11 done
+#14 naming to docker.io/library/sideeye-fu5-1009:latest done
+#14 unpacking to docker.io/library/sideeye-fu5-1009:latest
+#14 unpacking to docker.io/library/sideeye-fu5-1009:latest 1.9s done
+#14 DONE 3.5s
+build: sideeye-fu5-1009 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt

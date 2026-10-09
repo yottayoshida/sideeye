@@ -1,0 +1,41 @@
++ U=/opt/softhsm/bin/softhsm2-util
++ mkdir -p /work/hsm
++ cd /work/hsm
++ export SOFTHSM2_CONF=/work/hsm/softhsm2.conf
++ mkdir tokens
++ printf directories.tokendir = %s/tokens\nobjectstore.backend = file\n /work/hsm
++ /opt/softhsm/bin/softhsm2-util --init-token --free --label t --pin 1234 --so-pin 5678
++ tail -1
+The token has been initialized and is reassigned to slot 1199875249
++ openssl genpkey -algorithm RSA -out k1.pem
++ openssl genpkey -algorithm RSA -out k2.pem
++ /opt/softhsm/bin/softhsm2-util --import k1.pem --token t --pin 1234 --label k1 --id 01
++ tail -1
+The key pair has been imported.
++ ls -d tokens/e634f8c5-3e1a-85dc-cf96-809ec784a4b1/
++ tok=tokens/e634f8c5-3e1a-85dc-cf96-809ec784a4b1/
++ strace -f -qq -P /work/hsm/tokens/e634f8c5-3e1a-85dc-cf96-809ec784a4b1/token.object -e trace=write -e inject=write:signal=KILL /opt/softhsm/bin/softhsm2-util --import k2.pem --token t --pin 1234 --label k2 --id 02
+write(3, "\0\0\0\0\0\0\0\v\0\0\0\0\200\0SI\0\0\0\0\0\0\0\3\0\0\0\0\0\0\0 "..., 320) = ?
++++ killed by SIGKILL +++
+Killed
++ echo exit 137
+exit 137
++ ls -l tokens/e634f8c5-3e1a-85dc-cf96-809ec784a4b1/
++ awk {print $5, $NF}
+ 12
+0 99f7ba05-590f-5bbe-6924-2f104a565dd1.lock
+2225 99f7ba05-590f-5bbe-6924-2f104a565dd1.object
+0 f8ee5ef6-82e4-2b80-b7fe-20e3fe21c148.lock
+810 f8ee5ef6-82e4-2b80-b7fe-20e3fe21c148.object
+8 generation
+0 token.lock
+0 token.object
++ /opt/softhsm/bin/softhsm2-util --show-slots
++ grep -i -E label|initialized|token
++ head -6
+ERROR: Could not get info about the token in slot 0.
+        Token present:    yes
+    Token info:
+        Token present:    yes
+    Token info:
+        Initialized:      no

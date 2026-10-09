@@ -1,0 +1,23 @@
++ mkdir -p /work/ocr
++ cd /work/ocr
++ /opt/py/bin/python /ap/latest/mkpdf.py myfile.pdf
++ sha256sum myfile.pdf
+560658cd0a08ca663449113c5a0abaa67b01970c3acb67eda9c6400111803594  myfile.pdf
++ strace -f -qq -P /work/ocr/myfile.pdf -e trace=write -e inject=write:signal=KILL /opt/py/bin/ocrmypdf -q --force-ocr myfile.pdf myfile.pdf
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=14, si_uid=0, si_status=0, si_utime=0, si_stime=1 /* 0.01 s */} ---
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=15, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=16, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=17, si_uid=0, si_status=0, si_utime=0, si_stime=1 /* 0.01 s */} ---
+[pid    21] --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=22, si_uid=0, si_status=0, si_utime=24 /* 0.24 s */, si_stime=2 /* 0.02 s */} ---
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=25, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=28, si_uid=0, si_status=255, si_utime=0, si_stime=0} ---
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=30, si_uid=0, si_status=255, si_utime=0, si_stime=0} ---
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=31, si_uid=0, si_status=255, si_utime=0, si_stime=0} ---
+write(5, "%PDF-1.5\n%\277\367\242\376\n1 0 obj\n<< /Type "..., 10819) = ?
++++ killed by SIGKILL +++
+Killed
++ echo exit 137
+exit 137
++ ls -l myfile.pdf
++ awk {print $5, $NF}
+0 myfile.pdf

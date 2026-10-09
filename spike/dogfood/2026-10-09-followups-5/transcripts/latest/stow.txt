@@ -1,0 +1,19 @@
++ S=/work/s
++ mkdir -p /work/s/stowdir/A/sub /work/s/stowdir/B/sub /work/s/target
++ echo grace-content
++ echo ada-content
++ stow -d /work/s/stowdir -t /work/s/target -S A
++ ls -l /work/s/target
++ tail -n +2
++ cat /work/s/target/sub/grace.txt
+lrwxrwxrwx 1 root root 16 Oct  9 12:28 sub -> ../stowdir/A/sub
+grace-content
++ strace -f -qq -e trace=mkdirat,mkdir -e inject=mkdirat:signal=KILL:when=1 stow -d /work/s/stowdir -t /work/s/target -S B
+mkdirat(AT_FDCWD, "sub", 0777)          = ?
++++ killed by SIGKILL +++
+Killed
++ echo exit 137
++ ls -A /work/s/target
+exit 137
++ cat /work/s/target/sub/grace.txt
+cat: /work/s/target/sub/grace.txt: No such file or directory

@@ -1,0 +1,87 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's (working tree)    sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's at tag v1.10.0     sha256 e3cb964274494696b688f0953fa6b112ef233db9dac6ddca43777cb9b0ddaef3
+build: NOTE the page's installer has moved since v1.10.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 4.96kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/17] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.28kB done
+#5 DONE 0.0s
+
+#6 [15/17] RUN set -u; cd /tmp/dl && tar xzf softhsm.tgz && cd SoftHSMv2-2.7.0 && sh autogen.sh > /tmp/softhsm.log 2>&1 && ./configure --prefix=/opt/softhsm --disable-gost >> /tmp/softhsm.log 2>&1     && make -j4 >> /tmp/softhsm.log 2>&1 && make install >> /tmp/softhsm.log 2>&1; echo "softhsm build exit $?"; tail -2 /tmp/softhsm.log || true
+#6 CACHED
+
+#7 [12/17] RUN npm install -g --no-fund --no-audit @dotenvx/dotenvx@2.34.1 > /tmp/npm-dotenvx.log 2>&1 && echo "OK dotenvx" || tail -3 /tmp/npm-dotenvx.log
+#7 CACHED
+
+#8 [11/17] RUN for p in trash-cli==0.26.9.29 topydo==0.16 beancount==3.2.3 ocrmypdf==17.13.0 Pillow; do       /opt/py/bin/pip install --no-cache-dir "$p" > /tmp/pip-$p.log 2>&1 && echo "OK $p" || { echo "FAILED $p"; tail -3 /tmp/pip-$p.log; };     done
+#8 CACHED
+
+#9 [10/17] RUN apt-get install -y --no-install-recommends stow nodejs npm tesseract-ocr tesseract-ocr-eng ghostscript       autoconf automake libtool autopoint gettext libncurses-dev libssl-dev libsqlite3-dev openssl unzip       > /tmp/apt-r2.log 2>&1 && echo "OK apt round 2" || { echo MISSING; tail -3 /tmp/apt-r2.log; }
+#9 CACHED
+
+#10 [ 9/17] RUN set -eu; cd /tmp/dl; gh=https://github.com/tombi-toml/tombi/releases/download;     for v in 1.7.0 1.7.3; do       curl -fsSL -o tombi-$v.tgz $gh/v$v/tombi-cli-$v-aarch64-unknown-linux-musl.tar.gz;       mkdir -p x-$v /opt/tombi-$v && tar xzf tombi-$v.tgz -C x-$v && install -m 755 "$(find x-$v -type f -name tombi | head -1)" /opt/tombi-$v/tombi;       echo "tombi $v: $(/opt/tombi-$v/tombi --version) $(sha256sum tombi-$v.tgz | cut -c1-16)";     done | tee /versions.txt
+#10 CACHED
+
+#11 [14/17] RUN set -u; cd /tmp/dl && tar xzf calcurse.tgz && cd calcurse-4.8.2 && ./configure --prefix=/opt/calcurse --disable-docs > /tmp/calcurse.log 2>&1     && make -j4 >> /tmp/calcurse.log 2>&1 && make install >> /tmp/calcurse.log 2>&1; echo "calcurse build exit $?"; tail -2 /tmp/calcurse.log
+#11 CACHED
+
+#12 [ 2/17] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config zstd
+#12 CACHED
+
+#13 [ 3/17] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#13 CACHED
+
+#14 [ 6/17] COPY install-sideeye.sh /opt/install-sideeye.sh
+#14 CACHED
+
+#15 [ 5/17] RUN mkdir -p /opt/bin /tmp/dl /tmp/src && python3 -m venv /opt/py
+#15 CACHED
+
+#16 [13/17] RUN set -u; cd /tmp/dl;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get https://github.com/Exiv2/exiv2/releases/download/v0.28.9/exiv2-0.28.9-Linux-aarch64.tar.gz exiv2.tgz;     get https://releases.hashicorp.com/terraform/1.16.5/terraform_1.16.5_linux_arm64.zip terraform.zip;     get https://awscli.amazonaws.com/awscli-exe-linux-aarch64-2.37.11.zip awscli.zip;     get https://calcurse.org/files/calcurse-4.8.2.tar.gz calcurse.tgz;     get https://github.com/softhsm/SoftHSMv2/archive/refs/tags/2.7.0.tar.gz softhsm.tgz;     mkdir -p /opt/exiv2 && tar xzf exiv2.tgz -C /opt/exiv2 --strip-components=1;     unzip -q -o terraform.zip -d /opt/bin;     unzip -q -o awscli.zip -d /tmp/dl/aws && /tmp/dl/aws/aws/install -i /opt/aws-cli -b /opt/bin > /tmp/aws-install.log 2>&1; echo "aws install exit $?"
+#16 CACHED
+
+#17 [ 4/17] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#17 CACHED
+
+#18 [ 8/17] RUN "$(cat /install.path)" version
+#18 CACHED
+
+#19 [ 7/17] RUN sh /opt/install-sideeye.sh v1.10.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#19 CACHED
+
+#20 [16/17] RUN { for c in "/opt/exiv2/bin/exiv2 --version" "/opt/py/bin/trash-put --version" "stow --version" "/opt/bin/aws --version"         "/opt/py/bin/bean-format --version" "dotenvx --version" "/opt/bin/terraform version" "/opt/calcurse/bin/calcurse --version"         "/opt/py/bin/ocrmypdf --version" "/opt/softhsm/bin/softhsm2-util --version" "/opt/py/bin/topydo version"; do         printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; } | tee -a /versions.txt
+#20 CACHED
+
+#21 [17/17] RUN python3 -m venv /opt/tc0245 && /opt/tc0245/bin/pip install --no-cache-dir trash-cli==0.24.5.26 > /tmp/pip-tc0245.log 2>&1;     echo "trash-cli 0.24.5.26: $(/opt/tc0245/bin/trash-put --version 2>&1)" | tee -a /versions.txt
+#21 2.723 trash-cli 0.24.5.26: 0.24.5.26
+#21 DONE 2.8s
+
+#22 exporting to image
+#22 exporting layers
+#22 exporting layers 0.3s done
+#22 exporting manifest sha256:31af826c3a213731bb5ef4fe6bdaa54ec77d75d85fd0249b258c0b2c1bee2690
+#22 exporting manifest sha256:31af826c3a213731bb5ef4fe6bdaa54ec77d75d85fd0249b258c0b2c1bee2690 0.0s done
+#22 exporting config sha256:afd854da4b8076625310ff7b4b8e73d3bdb55a0a8e86d1986738d8a8c207ec5e done
+#22 exporting attestation manifest sha256:1945143381c172c078728d22a5c3634e7f8aca53e37bc9788929500eadaf5c71 done
+#22 exporting manifest list sha256:e3cb29ccd376ca6e84f3b904c81479572a0104ad3df9bd08f60aa8ddcf8c1315 done
+#22 naming to docker.io/library/sideeye-fu5-1009:latest done
+#22 unpacking to docker.io/library/sideeye-fu5-1009:latest 0.1s done
+#22 DONE 0.4s
+build: sideeye-fu5-1009 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt

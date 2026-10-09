@@ -1,0 +1,18 @@
+=== trashcli-0245 2026-10-09T12:28:17Z
+explore exit 2: UNKNOWN nothing_could_fail
+explore exit 2: UNKNOWN nothing_could_fail
+=== trashcli-latest 2026-10-09T12:28:18Z
+explore exit 2: UNKNOWN nothing_could_fail
+explore exit 2: UNKNOWN nothing_could_fail
+=== trashcli-0245-check 2026-10-09T12:28:50Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== trashcli-latest-check 2026-10-09T12:28:53Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0

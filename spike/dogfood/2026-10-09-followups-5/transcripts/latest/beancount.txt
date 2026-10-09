@@ -1,0 +1,27 @@
++ mkdir -p /work/bc
++ cd /work/bc
++ mk
++ printf 2026-01-01 open Assets:Cash\n2026-01-01 open Expenses:Food\n\n2026-09-01 * "lunch"\n  Expenses:Food  12.50 USD\n  Assets:Cash\n\n2026-09-02 * "coffee"\n  Expenses:Food  3.20 USD\n  Assets:Cash\n
++ wc -c l.beancount
+184 l.beancount
++ ulimit -f 0
++ /opt/py/bin/bean-format --in-place l.beancount
+Exception ignored in: <_io.TextIOWrapper name='l.beancount' mode='w' encoding='utf-8'>
+Traceback (most recent call last):
+  File "/opt/py/lib/python3.13/site-packages/click/core.py", line 910, in invoke
+    return callback(*args, **kwargs)
+OSError: [Errno 27] File too large
+exit 0
++ echo exit 0
++ wc -c l.beancount
+0 l.beancount
++ mk
++ printf 2026-01-01 open Assets:Cash\n2026-01-01 open Expenses:Food\n\n2026-09-01 * "lunch"\n  Expenses:Food  12.50 USD\n  Assets:Cash\n\n2026-09-02 * "coffee"\n  Expenses:Food  3.20 USD\n  Assets:Cash\n
++ strace -f -qq -P /work/bc/l.beancount -e trace=openat,write -e inject=write:signal=KILL /opt/py/bin/bean-format --in-place l.beancount
+write(3, "2026-01-01 open Assets:Cash\n2026"..., 185) = ?
++++ killed by SIGKILL +++
+Killed
++ echo exit 137
++ wc -c l.beancount
+exit 137
+0 l.beancount

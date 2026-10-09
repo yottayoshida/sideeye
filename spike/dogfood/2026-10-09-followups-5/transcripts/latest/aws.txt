@@ -1,0 +1,15 @@
++ mkdir -p /work/aws
++ cd /work/aws
++ export AWS_CONFIG_FILE=/work/aws/config AWS_SHARED_CREDENTIALS_FILE=/work/aws/credentials
++ printf [default]\nregion = us-east-1\n
++ printf [default]\naws_access_key_id = EXAMPLE-ID-1\naws_secret_access_key = example-secret-1\n\n[work]\naws_access_key_id = EXAMPLE-ID-2\naws_secret_access_key = example-secret-2\n
++ wc -c credentials
+166 credentials
++ ulimit -f 0
++ /opt/bin/aws configure set aws_secret_access_key example-secret-3 --profile work
+
+aws: [ERROR]: [Errno 27] File too large
+exit 255
++ echo exit 255
++ wc -c credentials
+0 credentials
