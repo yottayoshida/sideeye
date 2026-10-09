@@ -436,9 +436,9 @@ recorded in `defines-b/hnb/NOTES.md` and `defines-b/lbdb/NOTES.md` carry
 the superseded rule, and are left untouched because the sweep's audit
 trail hashes those directories. The
 `sideeye preflight` answer (#77) is recorded beside each verdict as the
-funnel instrument — in text + exit code, since preflight has no
-machine-readable form (a deliberate constraint: `explore --config` answers
-strictly more, and `--json` lives there).
+funnel instrument — in text + exit code, since preflight had no
+machine-readable form when these were recorded (`preflight --json` arrived
+with #717).
 
 ### B2-group — 30 targets, machine-selected on trixie (#619)
 

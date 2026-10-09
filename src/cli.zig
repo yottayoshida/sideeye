@@ -162,8 +162,8 @@ const usage_fmt =
     \\
     \\usage:
     \\  sideeye demo [--shim <lib>]
-    \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--twice]
-    \\  sideeye preflight --config <sideeye.toml> [--shim <lib>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--twice]
+    \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice]
+    \\  sideeye preflight --config <sideeye.toml> [--shim <lib>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice]
     \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--recovery <cmd> --recovery-check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye replay <case.json> [--shim <lib>] [--recovery <cmd> --recovery-check <cmd>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
@@ -273,7 +273,8 @@ const usage_fmt =
     \\               it has committed. In worlds where it appeared before the kill,
     \\               the post-success invariant is enforced: the new state must
     \\               survive (ADR 0008)
-    \\  --json       write the machine-readable report to this path
+    \\  --json       write the machine-readable report to this path; preflight writes
+    \\               its own document unless it refuses (docs/report-schema.md)
     \\  --fresh-state
     \\               (replay only) empty and recreate the case's state directory
     \\               before setup runs — for callers that cannot hand over a
@@ -1346,7 +1347,7 @@ test "the whole help fits what one say can print (#712)" {
     // buffer. The help is near it; a line added without room would empty `sideeye help`.
     // The number is `report.say_capacity`, which a test in report.zig holds to it; read
     // here as a number so this test root does not pull in report.zig's own tests.
-    const capacity = 16 * 1024;
+    const capacity = 32 * 1024;
     var buf: [capacity]u8 = undefined;
     const text = try std.fmt.bufPrint(&buf, usage_fmt, .{ version, contract.contract_version });
     try std.testing.expect(text.len + 64 < capacity);
@@ -1394,10 +1395,11 @@ test "each command's help is its own: every flag it takes has a summary line, no
                 return error.TestUnexpectedResult;
             }
         }
-        // 68, not the 60 first planned: the cautions the first diff review asked to carry
-        // (`--twice`, `--observe`) put explore's at 61, and #704's `preflight --config` synopsis
-        // line put preflight's at 65. The full reference is 226.
-        try std.testing.expect(lines <= 68);
+        // 72, not the 60 first planned: the cautions the first diff review asked to carry
+        // (`--twice`, `--observe`) put explore's at 61, #704's `preflight --config` synopsis
+        // line put preflight's at 65, and #717 gave preflight `--json`'s two lines (70), with
+        // `--state-under`'s to follow for the MCP server's `twice`. The full reference is 226.
+        try std.testing.expect(lines <= 72);
         // Shorter than the whole reference, which is the point of having one per command.
         try std.testing.expect(help.len * 2 < usage_fmt.len);
         var own_buf: [max_names][]const u8 = undefined;
@@ -1480,10 +1482,12 @@ test "the nearest spelling is the command's own, and two equally near answer not
     try std.testing.expectEqualStrings("--shim", nearestFlagOf("demo", "--sim").?);
     try std.testing.expectEqualStrings("--observe", nearestFlagOf("explore", "--obs").?);
     // Near a flag only another command takes: explore refuses `--twice` and `--state-under`,
-    // preflight refuses `--json`, so none of them is offered.
+    // preflight refuses `--world-timeout`, so none of them is offered. Preflight takes `--json`
+    // since #717, and is offered it.
     try std.testing.expect(nearestFlagOf("explore", "--twic") == null);
     try std.testing.expect(nearestFlagOf("explore", "--state-undr") == null);
-    try std.testing.expect(nearestFlagOf("preflight", "--jsn") == null);
+    try std.testing.expect(nearestFlagOf("preflight", "--world-timeot") == null);
+    try std.testing.expectEqualStrings("--json", nearestFlagOf("preflight", "--jsn").?);
     // A prefix of two flags (`--oracle`, `--oracle-fs-usage`) is no single answer — and not
     // `--work`, two edits away, which a two-edit reach on a short word used to offer.
     try std.testing.expect(nearestFlagOf("explore", "--ora") == null);
@@ -1784,9 +1788,8 @@ pub fn parse(argv: []const []const u8) Parsed {
             if (args.state_under != null) setupError(.define_invalid, "--state-under was given twice; refusing rather than letting the second spelling win");
             args.state_under = v;
         } else if (std.mem.eql(u8, argv[i], "--config")) args.config = v else if (std.mem.eql(u8, argv[i], "--json")) {
-            // Rejected before the removeFile below: a rejection that had already deleted
-            // the caller's previous report would be a refusal with a side effect.
-            if (mode == .preflight) setupError(.define_invalid, "preflight has no machine-readable form; sideeye explore --config answers strictly more, and --json lives there");
+            // Preflight takes it too since #717: a refusal writes the report explore would, an
+            // accepted recording or a split `--twice` writes `sideeye/preflight` (ADR 0102).
             args.json = v;
             refuse.json_path = v;
             // Any document at this path describes some earlier run. Removing it now means
