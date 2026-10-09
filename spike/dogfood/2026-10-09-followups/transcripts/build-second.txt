@@ -1,0 +1,102 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's (working tree)    sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's at tag v1.10.0     sha256 e3cb964274494696b688f0953fa6b112ef233db9dac6ddca43777cb9b0ddaef3
+build: NOTE the page's installer has moved since v1.10.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 7.12kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 1.5s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/20] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.35kB done
+#5 DONE 0.0s
+
+#6 [ 6/20] RUN mkdir -p /opt/bin /tmp/dl && python3 -m venv /opt/py
+#6 CACHED
+
+#7 [ 7/20] COPY install-sideeye.sh /opt/install-sideeye.sh
+#7 CACHED
+
+#8 [ 5/20] RUN for p in nodejs npm libfaketime faketime; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done | tee /tmp/apt-summary.txt
+#8 CACHED
+
+#9 [14/20] RUN set -u; cd /tmp/dl; curl -fsSL -o pymol.tgz https://github.com/schrodinger/pymol-open-source/archive/edcda80f3a.tar.gz &&     mkdir -p x-pymol && tar xzf pymol.tgz -C x-pymol --strip-components=1 &&     python3 -m venv /opt/pymol-main && /opt/pymol-main/bin/pip install --no-cache-dir ./x-pymol > /tmp/pip-pymol.log 2>&1 &&     echo "pymol master: $(/opt/pymol-main/bin/python -c 'import pymol, pymol.cmd as c; print(c.get_version()[0])')" || { echo "FAILED pymol master"; tail -8 /tmp/pip-pymol.log; }
+#9 CACHED
+
+#10 [ 2/20] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config zstd
+#10 CACHED
+
+#11 [15/20] COPY stage/dwarfs-work.tar.zst /tmp/dl/
+#11 CACHED
+
+#12 [16/20] RUN set -eu; cd /tmp/dl;     curl -fsSL -o dwarfs-0158.txz https://github.com/mhx/dwarfs/releases/download/v0.15.8/dwarfs-0.15.8-Linux-aarch64.tar.xz;     echo "ee100574a1340ad054bdf7543bedde3bd040639114ede65f1c20e08567eff2b1  dwarfs-0158.txz" | sha256sum -c;     echo "9838d66086bf5c72f47931ca87854001552b1d2c1a75c40770515e01c48eaa2e  dwarfs-work.tar.zst" | sha256sum -c;     mkdir -p /opt/dwarfs-0158 /opt/dwarfs-work;     tar xJf dwarfs-0158.txz -C /opt/dwarfs-0158 --strip-components=1;     tar --zstd -xf dwarfs-work.tar.zst -C /opt/dwarfs-work --strip-components=1;     ln -s /opt/dwarfs-0158/bin/mkdwarfs /opt/bin/mkdwarfs-0158;     ln -s /opt/dwarfs-work/bin/mkdwarfs /opt/bin/mkdwarfs-work;     ln -s /opt/dwarfs-0158/bin/dwarfsck /opt/bin/dwarfsck-0158;     mkdwarfs-0158 --help 2>&1 | head -1; mkdwarfs-work --help 2>&1 | head -1
+#12 CACHED
+
+#13 [ 4/20] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#13 CACHED
+
+#14 [11/20] RUN npm install -g --no-fund --no-audit @yarnpkg/cli-dist@4.18.1 trash-cli@7.2.0 > /tmp/npm-walls.log 2>&1 && echo "OK yarn trash-cli" || { echo "FAILED"; tail -3 /tmp/npm-walls.log; }
+#14 CACHED
+
+#15 [ 9/20] RUN "$(cat /install.path)" version
+#15 CACHED
+
+#16 [12/20] RUN set -eu; cd /tmp/dl; gh=https://github.com/neovim/neovim/releases/download;     curl -fsSL -o nvim-nightly.tgz $gh/nightly/nvim-linux-arm64.tar.gz;     echo "ee0ad0d35d453a6e56ebb2e622419ee28003ea3ab2fe28c6175e97a022664f93  nvim-nightly.tgz" | sha256sum -c;     curl -fsSL -o nvim-0125.tgz $gh/v0.12.5/nvim-linux-arm64.tar.gz;     echo "1aa5ca085249580ae0f91eb14f27ec0919773ff2d99a163d03f3d6c21ac29725  nvim-0125.tgz" | sha256sum -c;     mkdir -p /opt/nvim-nightly /opt/nvim-0125;     tar xzf nvim-nightly.tgz -C /opt/nvim-nightly --strip-components=1; tar xzf nvim-0125.tgz -C /opt/nvim-0125 --strip-components=1;     ln -s /opt/nvim-nightly/bin/nvim /opt/bin/nvim-nightly; ln -s /opt/nvim-0125/bin/nvim /opt/bin/nvim-0125;     nvim-nightly --version | head -1; nvim-0125 --version | head -1
+#16 CACHED
+
+#17 [10/20] RUN apt-get install -y --no-install-recommends qt6-style-kvantum hydrogen > /tmp/apt-walls.log 2>&1 && echo "OK kvantum hydrogen" || { echo "MISSING"; tail -3 /tmp/apt-walls.log; }
+#17 CACHED
+
+#18 [ 3/20] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#18 CACHED
+
+#19 [13/20] RUN apt-get install -y --no-install-recommends pymol libglew-dev libpng-dev libfreetype-dev libxml2-dev libglm-dev libnetcdf-dev cmake > /tmp/apt-pymol.log 2>&1 && echo "OK pymol and build deps" || { echo "MISSING"; tail -3 /tmp/apt-pymol.log; }
+#19 CACHED
+
+#20 [ 8/20] RUN sh /opt/install-sideeye.sh v1.10.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#20 CACHED
+
+#21 [17/20] RUN { echo "nvim-nightly $(nvim-nightly --version | head -1)"; echo "nvim-0125 $(nvim-0125 --version | head -1)";       echo "pymol-debian $(/usr/bin/python3 -c 'import pymol.cmd as c; print(c.get_version()[0])' 2>&1)";       echo "pymol-main $(/opt/pymol-main/bin/python -c 'import pymol.cmd as c; print(c.get_version()[0])' 2>&1)";       echo "mkdwarfs-0158 $(mkdwarfs-0158 --help 2>&1 | head -1)"; echo "mkdwarfs-work $(mkdwarfs-work --help 2>&1 | head -1)";       echo "yarn $(yarn --version)"; echo "trash $(npm ls -g trash-cli 2>/dev/null | grep trash-cli)"; } | tee /versions.txt
+#21 CACHED
+
+#22 [18/20] RUN /opt/py/bin/pip install --no-cache-dir uv > /tmp/pip-uv.log 2>&1 && UV_PYTHON_INSTALL_DIR=/opt/uvpy /opt/py/bin/uv venv -q -p 3.14 /opt/ha > /tmp/uv-venv.log 2>&1       && VIRTUAL_ENV=/opt/ha /opt/py/bin/uv pip install -q homeassistant==2026.10.0 > /tmp/uv-ha.log 2>&1; echo "homeassistant exit: $?"; tail -3 /tmp/uv-ha.log; ln -s /opt/ha/bin/hass /opt/bin/hass; /opt/ha/bin/python --version
+#22 26.43 homeassistant exit: 0
+#22 26.48 Python 3.14.8
+#22 DONE 27.1s
+
+#23 [19/20] RUN set -eu; cd /tmp/dl; curl -fsSL -o dotter https://github.com/SuperCuber/dotter/releases/download/v0.13.5/dotter-linux-arm64-musl; install -m 755 dotter /opt/bin/dotter; dotter --version
+#23 1.471 dotter 0.13.5
+#23 DONE 1.5s
+
+#24 [20/20] RUN { echo "hass $(/opt/ha/bin/python -c 'import homeassistant.const as c; print(c.__version__)' 2>&1)"; echo "dotter $(dotter --version 2>&1)"; } | tee -a /versions.txt
+#24 0.911 hass 2026.10.0
+#24 0.911 dotter dotter 0.13.5
+#24 DONE 0.9s
+
+#25 exporting to image
+#25 exporting layers
+#25 exporting layers 10.4s done
+#25 exporting manifest sha256:aad0fed0e34004acc8506212a00b78eb064fc91aa2c29729a7c67c69d04b2f8f
+#25 exporting manifest sha256:aad0fed0e34004acc8506212a00b78eb064fc91aa2c29729a7c67c69d04b2f8f done
+#25 exporting config sha256:d7bf0c340b47f7d9ae3a71cf74c41c1577d6374db82b45db19cd5ca2b97dec33 done
+#25 exporting attestation manifest sha256:7d9ce2c9d6ce9d4b36198205a6b0b4ab764b49c81bc44dcab7f24d3b4a4baec9 done
+#25 exporting manifest list sha256:1c6c6383b53d87342fa2513883bc5e110569965d75d6f2c8efecac45a2e8c33f done
+#25 naming to docker.io/library/sideeye-fu1009:latest done
+#25 unpacking to docker.io/library/sideeye-fu1009:latest
+#25 unpacking to docker.io/library/sideeye-fu1009:latest 5.8s done
+#25 DONE 16.3s
+build: sideeye-fu1009 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt
+build rc=0

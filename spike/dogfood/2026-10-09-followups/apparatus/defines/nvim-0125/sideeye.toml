@@ -1,0 +1,8 @@
+[world]
+state = "/s/nv"
+
+[define]
+operation = "nvim-0125 --headless -n -u NONE -i /s/nv/main.shada -S /s/nv-in/op.vim"
+check     = "/s/nv-check.sh"
+cwd       = "/s/nv-in"
+scratch   = ["main.shada"]

@@ -142,28 +142,28 @@ review the way ADR 0039 rules for figures quoted from other records.
 ```
 outcome funnel -- every campaign
 
-313 encounters (one campaign meeting one target) over 31 campaigns, 25 of them
+322 encounters (one campaign meeting one target) over 32 campaigns, 26 of them
 recording every target they met; 251 distinct targets.
-226 rows are held to a report this repository committed; 87 name a written record only.
+234 rows are held to a report this repository committed; 88 name a written record only.
 1275 candidates screened before the slates were fixed, over the 23 campaign(s) that
 recorded one; the rest kept no such count.
 
-reach, over the 25 campaign(s) that recorded every target they met
-  attempted       304
-  explored        195
-  judged          186
-    PASS           55
-    FAIL          131
+reach, over the 26 campaign(s) that recorded every target they met
+  attempted       313
+  explored        200
+  judged          191
+    PASS           59
+    FAIL          132
 
 outcome            encounters   in full campaigns   distinct reports
-  novel                60              51             37
-  report_worthy        44              35             37
-  filed                41              32             37
-  acknowledged          7               5              6
-  fixed                 7               5              6
-  revalidated           6               4              5
+  novel                63              54             37
+  report_worthy        47              38             37
+  filed                44              35             37
+  acknowledged         10               8              9
+  fixed                10               8              9
+  revalidated           9               7              8
 
-why encounters stopped: awaiting 27, declined 4, discussing 2, known 21, no_content_lost 10, not_worth 65, wall 96, withdrawn 1
+why encounters stopped: awaiting 26, declined 5, discussing 2, known 21, no_content_lost 10, not_worth 66, wall 100, withdrawn 1
 upstream states last read between 2026-08-13 and 2026-10-09; spike/upstream-report-status.sh measures them now.
 ```
 

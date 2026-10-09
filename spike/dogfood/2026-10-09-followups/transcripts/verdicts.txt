@@ -1,0 +1,12 @@
+dotter	supervised	UNKNOWN 4/8 kill_did_not_land		replays: 
+dotter-incfg	supervised	FAIL 12/19 	cp 2/18: after unlink .bashrc, before mkdir home; home/.bashrc	replays: FAIL FAIL
+h2cli	-	no explore
+homeassistant	explore	UNKNOWN 0/0 unresolvable_path		replays: 
+homeassistant-check	-	no explore
+kvantum	-	no explore
+nvim-0125	explore	FAIL 2/13 	cp 4/12: after unlink main.shada, before rename main.shada.tmp.a; (named by the checker, not by path)	replays: FAIL FAIL
+nvim-nightly	explore	PASS 0/11 		replays: 
+pymol-debian	explore	FAIL 1/3 	cp 2/2: after open model.pse, before write model.pse; model.pse	replays: FAIL FAIL
+pymol-main	explore	PASS 0/4 		replays: 
+trash	-	no explore
+yarn	-	no explore

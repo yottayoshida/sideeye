@@ -1,0 +1,6 @@
+[world]
+state = "/s/dotter"
+
+[define]
+operation = "/opt/bin/dotter deploy -f -y"
+cwd       = "/s/dotter-in"

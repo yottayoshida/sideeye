@@ -1,0 +1,8 @@
+[world]
+state = "/s/ha"
+
+[define]
+operation = "hass --script auth -c /s/ha change_password alice pw-three"
+check     = "/s/ha-check.sh"
+cwd       = "/s/ha-in"
+scratch   = [".storage/auth_provider.homeassistant"]

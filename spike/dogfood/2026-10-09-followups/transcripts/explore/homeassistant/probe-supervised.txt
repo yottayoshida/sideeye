@@ -1,0 +1,15 @@
+UNKNOWN  baseline_violates_invariant
+         the invariant failed in the world that was never crashed, so nothing found here is a consequence of crashing: the re-run from the restored state left .storage/auth_provider.homeassistant holding neither the old nor the new content; the two runs' bytes first differ at byte offset 175, in a stretch 70 byte(s) long in the recording and 70 in the re-run (of 413 and 413 bytes), both printable text; preflight --twice quotes what two runs leave there
+next        The path the detail names did not come back with the bytes the recording left, in a world nothing crashed. If those bytes are not what the verdict should judge (a cache, a log, a timestamp), declare the path scratch in the define (--scratch, or scratch in a sideeye.toml); sideeye preflight --twice names the paths two clean runs leave differently, before an exploration.
+cwd         /s/ha-in
+
+expected    exit 0
+atomicity   2 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle; the supervising engine recorded 2 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=9505986f6aead137201ad9d1d0111ffe8563ae12329a23c2c84262ca7ba9b9bc;

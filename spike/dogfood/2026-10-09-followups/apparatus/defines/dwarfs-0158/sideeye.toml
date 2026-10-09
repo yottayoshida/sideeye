@@ -1,0 +1,6 @@
+[world]
+state = "/s/dwarfs"
+
+[define]
+operation = "mkdwarfs-0158 -i /s/dwarfs/photos.dwarfs -o /s/dwarfs/photos.dwarfs --recompress -f -N 1 -l 3"
+cwd       = "/s/dwarfs-in"

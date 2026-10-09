@@ -1,0 +1,102 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's (working tree)    sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's at tag v1.10.0     sha256 e3cb964274494696b688f0953fa6b112ef233db9dac6ddca43777cb9b0ddaef3
+build: NOTE the page's installer has moved since v1.10.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 6.07kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 0.8s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/17] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.35kB done
+#5 DONE 0.0s
+
+#6 [ 6/17] RUN mkdir -p /opt/bin /tmp/dl && python3 -m venv /opt/py
+#6 CACHED
+
+#7 [10/17] RUN apt-get install -y --no-install-recommends qt6-style-kvantum hydrogen > /tmp/apt-walls.log 2>&1 && echo "OK kvantum hydrogen" || { echo "MISSING"; tail -3 /tmp/apt-walls.log; }
+#7 CACHED
+
+#8 [11/17] RUN npm install -g --no-fund --no-audit @yarnpkg/cli-dist@4.18.1 trash-cli@7.2.0 > /tmp/npm-walls.log 2>&1 && echo "OK yarn trash-cli" || { echo "FAILED"; tail -3 /tmp/npm-walls.log; }
+#8 CACHED
+
+#9 [ 3/17] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#9 CACHED
+
+#10 [ 8/17] RUN sh /opt/install-sideeye.sh v1.10.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#10 CACHED
+
+#11 [ 7/17] COPY install-sideeye.sh /opt/install-sideeye.sh
+#11 CACHED
+
+#12 [ 4/17] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#12 CACHED
+
+#13 [ 2/17] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config zstd
+#13 CACHED
+
+#14 [ 9/17] RUN "$(cat /install.path)" version
+#14 CACHED
+
+#15 [ 5/17] RUN for p in nodejs npm libfaketime faketime; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done | tee /tmp/apt-summary.txt
+#15 CACHED
+
+#16 [12/17] RUN set -eu; cd /tmp/dl; gh=https://github.com/neovim/neovim/releases/download;     curl -fsSL -o nvim-nightly.tgz $gh/nightly/nvim-linux-arm64.tar.gz;     echo "ee0ad0d35d453a6e56ebb2e622419ee28003ea3ab2fe28c6175e97a022664f93  nvim-nightly.tgz" | sha256sum -c;     curl -fsSL -o nvim-0125.tgz $gh/v0.12.5/nvim-linux-arm64.tar.gz;     echo "1aa5ca085249580ae0f91eb14f27ec0919773ff2d99a163d03f3d6c21ac29725  nvim-0125.tgz" | sha256sum -c;     mkdir -p /opt/nvim-nightly /opt/nvim-0125;     tar xzf nvim-nightly.tgz -C /opt/nvim-nightly --strip-components=1; tar xzf nvim-0125.tgz -C /opt/nvim-0125 --strip-components=1;     ln -s /opt/nvim-nightly/bin/nvim /opt/bin/nvim-nightly; ln -s /opt/nvim-0125/bin/nvim /opt/bin/nvim-0125;     nvim-nightly --version | head -1; nvim-0125 --version | head -1
+#16 CACHED
+
+#17 [13/17] RUN apt-get install -y --no-install-recommends pymol libglew-dev libpng-dev libfreetype-dev libxml2-dev libglm-dev libnetcdf-dev cmake > /tmp/apt-pymol.log 2>&1 && echo "OK pymol and build deps" || { echo "MISSING"; tail -3 /tmp/apt-pymol.log; }
+#17 8.910 OK pymol and build deps
+#17 DONE 9.2s
+
+#18 [14/17] RUN set -u; cd /tmp/dl; curl -fsSL -o pymol.tgz https://github.com/schrodinger/pymol-open-source/archive/edcda80f3a.tar.gz &&     mkdir -p x-pymol && tar xzf pymol.tgz -C x-pymol --strip-components=1 &&     python3 -m venv /opt/pymol-main && /opt/pymol-main/bin/pip install --no-cache-dir ./x-pymol > /tmp/pip-pymol.log 2>&1 &&     echo "pymol master: $(/opt/pymol-main/bin/python -c 'import pymol, pymol.cmd as c; print(c.get_version()[0])')" || { echo "FAILED pymol master"; tail -8 /tmp/pip-pymol.log; }
+#18 44.06 pymol master: 3.2.0a
+#18 DONE 44.3s
+
+#19 [15/17] COPY stage/dwarfs-work.tar.zst /tmp/dl/
+#19 DONE 0.0s
+
+#20 [16/17] RUN set -eu; cd /tmp/dl;     curl -fsSL -o dwarfs-0158.txz https://github.com/mhx/dwarfs/releases/download/v0.15.8/dwarfs-0.15.8-Linux-aarch64.tar.xz;     echo "ee100574a1340ad054bdf7543bedde3bd040639114ede65f1c20e08567eff2b1  dwarfs-0158.txz" | sha256sum -c;     echo "9838d66086bf5c72f47931ca87854001552b1d2c1a75c40770515e01c48eaa2e  dwarfs-work.tar.zst" | sha256sum -c;     mkdir -p /opt/dwarfs-0158 /opt/dwarfs-work;     tar xJf dwarfs-0158.txz -C /opt/dwarfs-0158 --strip-components=1;     tar --zstd -xf dwarfs-work.tar.zst -C /opt/dwarfs-work --strip-components=1;     ln -s /opt/dwarfs-0158/bin/mkdwarfs /opt/bin/mkdwarfs-0158;     ln -s /opt/dwarfs-work/bin/mkdwarfs /opt/bin/mkdwarfs-work;     ln -s /opt/dwarfs-0158/bin/dwarfsck /opt/bin/dwarfsck-0158;     mkdwarfs-0158 --help 2>&1 | head -1; mkdwarfs-work --help 2>&1 | head -1
+#20 1.263 dwarfs-0158.txz: OK
+#20 1.275 dwarfs-work.tar.zst: OK
+#20 1.467      ___                  ___ ___
+#20 1.469      ___                  ___ ___
+#20 DONE 1.5s
+
+#21 [17/17] RUN { echo "nvim-nightly $(nvim-nightly --version | head -1)"; echo "nvim-0125 $(nvim-0125 --version | head -1)";       echo "pymol-debian $(/usr/bin/python3 -c 'import pymol.cmd as c; print(c.get_version()[0])' 2>&1)";       echo "pymol-main $(/opt/pymol-main/bin/python -c 'import pymol.cmd as c; print(c.get_version()[0])' 2>&1)";       echo "mkdwarfs-0158 $(mkdwarfs-0158 --help 2>&1 | head -1)"; echo "mkdwarfs-work $(mkdwarfs-work --help 2>&1 | head -1)";       echo "yarn $(yarn --version)"; echo "trash $(npm ls -g trash-cli 2>/dev/null | grep trash-cli)"; } | tee /versions.txt
+#21 0.130 nvim-nightly NVIM v0.13.0-dev-1824+g27ee55c09d
+#21 0.145 nvim-0125 NVIM v0.12.5
+#21 0.207 pymol-debian 3.1.0
+#21 0.254 pymol-main 3.2.0a
+#21 0.255 mkdwarfs-0158      ___                  ___ ___
+#21 0.256 mkdwarfs-work      ___                  ___ ___
+#21 0.523 yarn 4.18.1
+#21 0.782 trash `-- trash-cli@7.2.0
+#21 DONE 0.8s
+
+#22 exporting to image
+#22 exporting layers
+#22 exporting layers 5.3s done
+#22 exporting manifest sha256:43f2022f69ea2046635e99f21cab30679af89d931b493cf7e44bf59f2ca353d3
+#22 exporting manifest sha256:43f2022f69ea2046635e99f21cab30679af89d931b493cf7e44bf59f2ca353d3 done
+#22 exporting config sha256:b015ef03049af4e9bf0704e99fb5474f496139b8bfbc9581ed36013d1d152fa3 done
+#22 exporting attestation manifest sha256:1358c2d87c5ca907928058cd68ba8f36fa67c821288445ba8e781e1a0fc8c4f5 done
+#22 exporting manifest list sha256:34706aa5f2ee3f7d8664c15c809ef39172a94fa097a6f24e7ba7d26abebf6cc9 done
+#22 naming to docker.io/library/sideeye-fu1009:latest done
+#22 unpacking to docker.io/library/sideeye-fu1009:latest
+#22 unpacking to docker.io/library/sideeye-fu1009:latest 1.9s done
+#22 DONE 7.2s
+build: sideeye-fu1009 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt
+build rc=0

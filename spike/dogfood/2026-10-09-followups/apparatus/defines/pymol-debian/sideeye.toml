@@ -1,0 +1,6 @@
+[world]
+state = "/s/pm"
+
+[define]
+operation = "/usr/bin/python3 -m pymol -cq /s/pm/model.pse /s/pm-in/edit.pml"
+cwd       = "/s/pm-in"

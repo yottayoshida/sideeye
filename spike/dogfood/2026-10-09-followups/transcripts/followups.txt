@@ -1,0 +1,49 @@
+== 1. upstream fixes, the page's path 2026-10-09T03:51:58Z
+=== nvim-0125 2026-10-09T03:51:58Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== nvim-nightly 2026-10-09T03:51:59Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== pymol-debian 2026-10-09T03:51:59Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== pymol-main 2026-10-09T03:52:01Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+== 2. DwarFS, plain runs 2026-10-09T03:52:02Z
+PLAIN dwarfs-0158 exit=1 state=changed  (ERROR: dwarfs::runtime_error: [filesystem_parser.cpp:298] no filesystem found)
+total 0
+-rw-r--r-- 1 root root 0 Oct  9 03:52 photos.dwarfs
+dwarfsck after dwarfs-0158: exit 1 (dwarfs::runtime_error: [filesystem_parser.cpp:298] no filesystem found)
+PLAIN dwarfs-work exit=1 state=unchanged  (E 03:52:02.423974 refusing to overwrite input file system)
+total 4
+-rw-r--r-- 1 root root 2109 Oct  9 03:52 photos.dwarfs
+dwarfsck after dwarfs-work: exit 0 (             1 uids.....................................0 bytes   0.0%   0.0 bytes/item)
+-- what mkdwarfs-work printed:
+E 03:52:02.445942 refusing to overwrite input file system
+exit 0
+== 3. the walls, --observe supervised named 2026-10-09T03:52:02Z
+=== kvantum 2026-10-09T03:52:02Z
+probe supervised exit 2
+UNKNOWN  unresolvable_path
+         an operation was observed whose path could not be determined (unlinked-fd write fd:5, pid 20, last named /s/aux/home/.config/Kvantum/#299746), so it cannot be placed among the crash points
+=== h2cli 2026-10-09T03:52:02Z
+probe supervised exit 2
+UNKNOWN  unresolvable_path
+         an operation was observed whose path could not be determined (unlinked-fd write fd:9, pid 21, last named /s/h2/kit/#156024), so it cannot be placed among the crash points
+=== yarn 2026-10-09T03:52:16Z
+probe supervised exit 2
+UNKNOWN  multiple_threads_detected
+         two threads of process 20 wrote in the judged directory: tid 27 performed open(/s/yarn/.yarnrc.yml) and tid 28 performed write(/s/yarn/.yarnrc.yml). Nothing the supervising engine recorded or
+=== trash 2026-10-09T03:52:17Z
+probe supervised exit 2
+UNKNOWN  multiple_threads_detected
+         two threads of process 20 wrote in the judged directory: tid 27 performed mkdir(/s/td/xdg/Trash/files) and tid 29 performed mkdir(/s/td/xdg/Trash). Nothing the supervising engine recorded ord
+followups: done 2026-10-09T03:52:18Z
