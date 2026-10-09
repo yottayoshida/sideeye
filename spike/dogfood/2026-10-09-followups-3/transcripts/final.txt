@@ -1,0 +1,38 @@
+=== vim-fat 2026-10-09T07:34:59Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== kvantum-fat 2026-10-09T07:35:00Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== h2cli-fat 2026-10-09T07:35:01Z
+explore exit 2: UNKNOWN baseline_violates_invariant
+explore exit 2: UNKNOWN baseline_violates_invariant
+next_step: The path the detail names did not come back with the bytes the recording left, in a world nothing crashed. If those bytes are not what the verdict should judge (a cache, a log, a timestamp), declare the path scratch in the define (--scratch, or scratch in a sideeye.toml); sideeye preflight --twice names the paths two clean runs leave differently, before an exploration.
+=== flatpak-fat 2026-10-09T07:37:07Z
+explore exit 2: UNKNOWN unsupported_syscall_observed
+explore exit 2: UNKNOWN unsupported_syscall_observed
+next_step: This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+=== ostree-fat 2026-10-09T07:37:08Z
+explore exit 2: UNKNOWN unsupported_syscall_observed
+explore exit 2: UNKNOWN unsupported_syscall_observed
+next_step: This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+=== ccache-nostats 2026-10-09T07:37:09Z
+explore exit 2: UNKNOWN checker_not_falsified
+explore exit 2: UNKNOWN checker_not_falsified
+next_step: Change the define: the detail above names the declaration this run contradicted, and nothing is judged until it holds.
+=== fitscheck-nommap 2026-10-09T07:37:10Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== lingui-direct 2026-10-09T07:37:22Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+final: done

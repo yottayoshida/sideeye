@@ -66,3 +66,5 @@ On a FAT filesystem vim made no `setxattr` call and Kvantum's `O_TMPFILE` open f
 | ccache `gcc -c`, `CCACHE_NOSTATS=1` | no stats file in a random subdirectory | past `kill_did_not_land`; PASS |
 | fitscheck `-w`, astropy's `use_memmap = False` | no shared mapping | past `unsupported_syscall_observed`; FAIL (the HDU rewritten in place) |
 | lingui, `lingui-extract.js` invoked directly | the writer is the process Sideeye starts | a verdict; FAIL (the catalogs opened `O_TRUNC`, lab 3) |
+| Hydrogen on FAT, `drumkit.xml` scratch, a checker reading the kit | after `preflight --twice` | PASS (Qt's named-temporary fallback) |
+| ccache, `CCACHE_NOSTATS=1`, no checker (ccache rebuilds a damaged entry itself, so a checker on its output cannot fail) | the built-in invariant | a verdict; PASS |
