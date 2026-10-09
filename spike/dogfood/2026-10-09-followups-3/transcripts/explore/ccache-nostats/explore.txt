@@ -1,0 +1,15 @@
+UNKNOWN  checker_not_falsified
+         the checker accepted a state whose every file had been overwritten with junk and every symlink retargeted at a nonexistent name
+next        Change the define: the detail above names the declaration this run contradicted, and nothing is judged until it holds.
+cwd         /  (none declared: Sideeye's own)
+
+expected    exit 0
+atomicity   9 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that — it runs without an oracle — so it inherits this finding, and what each world does check is that the operations before its crash point are the ones the recording numbered
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=98ebe0dafe3ca5c80519329f7afb0bffe4804f262eccea79c0978d9e93a1966f;

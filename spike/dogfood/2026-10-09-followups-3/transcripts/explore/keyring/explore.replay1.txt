@@ -1,0 +1,25 @@
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 2
+            after  open(/s/aux/data/python_keyring/keyring_pass.cfg)
+            before write(/s/aux/data/python_keyring/keyring_pass.cfg)
+path        keyring_pass.cfg
+observed    holding neither the old nor the new content
+cwd         /s/keyring-in
+
+explored    2 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 2 operations (2872 syscall lines examined, 21 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/keyring/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/keyring-in && unset SIDEEYE_KILL_GROUP && : > /out/keyring/work-explore-replay1/trace-repro.bin && SIDEEYE_STATE_DIR=/s/aux/data/python_keyring SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/keyring/work-explore-replay1/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'keyring' del svc u1 </dev/null)
+sideeye: json sha256=00bd494e7b85e92c73b0723bcc2ef6401d3ada8a4d97dd1669dcdd1afc2ac93e;

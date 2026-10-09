@@ -1,0 +1,27 @@
+PREFLIGHT  not accepted — the two observed runs left different state
+
+difference   database.sqlite (content differs)
+             bytes first differ at byte offset 24282: first run "1b9be021b3c04b2e90682bdee903da1869eedf3cb5ea40c4"…, second run "2f38ed96f14b4270b0cba17f0b5abef369eedf3cb5ea40c4"… — 4353 and 4353 byte(s) of 421888 and 421888, both holding bytes outside printable text (4084 and 4084)
+difference   log.txt (content differs)
+             bytes first differ at byte offset 8430: first run "1: Performance: BaseApplication/start: Start at "…, second run "3: Performance: BaseApplication/start: Start at "… — 682 and 681 byte(s) of 9162 and 9161, both printable text
+
+cwd          /  (none declared: Sideeye's own)
+atomicity    5 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): log.txt
+oracle       agreed on 48 operations (28112 syscall lines examined, 350 in scope of the judged state), witness strace
+processes    single process in the recording; the second observed run recorded the subject replacing its own image, and that run's capture is never parsed, so nothing accounts for it; the shim recorded 7 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 6 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2327 ms apart differed under [world] state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside [world] state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         pin or relocate what differs, then re-run this command;
+             explore would reach the same divergence in its baseline
+             world, after a full define had been written

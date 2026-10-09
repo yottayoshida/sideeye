@@ -2016,8 +2016,8 @@ TOY_STATE=/tmp/acc/state "$OUT/toy-raw" init >/dev/null 2>&1
 TOY_STATE=/tmp/acc/state sh -c "$line" >/dev/null 2>&1
 lrc=$?
 lstate=$(ls /tmp/acc/state | tr '\n' ' ')
-# And the replay line names the mode: a case does not record it (ADR 0052), and replayed the
-# default way it answers case_no_longer_applies rather than the FAIL.
+# And the replay line names the mode, which the replay accepts because it matches the one the
+# case records (ADR 0100). The leg after this one replays the same case naming none.
 rp=$(echo "$o" | sed -n 's/^replay      //p')
 PATH="$ROOT/zig-out/bin:$PATH" sh -c "$rp" > /tmp/acc/rp-sys.txt 2>&1; rrc=$?
 if [ "$rc" = 1 ] && [ "$lrc" = 137 ] && [ "$lstate" = "key.json.tmp " ] && [ "$rrc" = 1 ] \
@@ -2026,6 +2026,27 @@ if [ "$rc" = 1 ] && [ "$lrc" = 137 ] && [ "$lstate" = "key.json.tmp " ] && [ "$r
 else
     echo "FAIL syscalls: explore exit $rc, reproduce exit $lrc (state after it: $lstate), replay exit $rrc"
     printf '%s\n' "$line" "$rp" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+# #691 (ADR 0100): the case records the mode, so a replay with no --observe at all reaches the
+# same FAIL. Before, the case carried nothing, the replay counted the default way — which sees
+# none of toy-raw's calls — and answered case_no_longer_applies.
+sys_case=/tmp/acc/work/cases/000001.json
+"$SIDEEYE" replay "$sys_case" --fresh-state --shim "$SHIM" --oracle /usr/bin/strace --work /tmp/acc/work-bare > /tmp/acc/rp-sys-bare.txt 2>&1; brc=$?
+# And another mode named on the line is refused by name before anything runs, naming the case —
+# here as well as in the supervised leg, which runs only where the suite is contained.
+"$SIDEEYE" replay "$sys_case" --fresh-state --observe wrappers --shim "$SHIM" --oracle /usr/bin/strace --work /tmp/acc/work-mis \
+    --json /tmp/acc/rp-sys-mis.json > /tmp/acc/rp-sys-mis.txt 2>&1; mrc=$?
+if python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d["case_version"]==6 and d["observe"]=="syscalls" else 1)' "$sys_case" 2>/dev/null \
+    && [ "$brc" = 1 ] && grep -q "the case reproduced" /tmp/acc/rp-sys-bare.txt \
+    && [ "$mrc" = 3 ] && grep -q "recorded under --observe syscalls" /tmp/acc/rp-sys-mis.txt && grep -qF "$sys_case" /tmp/acc/rp-sys-mis.txt \
+    && python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d.get("case")==sys.argv[2] and d.get("setup_error_reason")=="define_invalid" else 1)' /tmp/acc/rp-sys-mis.json "$sys_case"; then
+    echo "ok   a --observe syscalls case records its mode, replays to the same FAIL with no --observe given, and refuses --observe wrappers by name"
+else
+    echo "FAIL the syscalls case replayed with no --observe: exit $brc; under --observe wrappers: exit $mrc"
+    sed -n '1,2p' /tmp/acc/rp-sys-mis.txt | sed 's/^/     | /'
+    sed -n '1,4p' "$sys_case" | sed 's/^/     | /'
+    sed -n '1,3p' /tmp/acc/rp-sys-bare.txt | sed 's/^/     | /'
     fails=$((fails + 1))
 fi
 
@@ -3824,12 +3845,25 @@ if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
     case_sup=/tmp/acc-sup/work/cases/000001.json
     o=$(TOY=$OUT/toy-static "$SIDEEYE" replay "$case_sup" --observe supervised --oracle /usr/bin/strace --work /tmp/acc-sup/r1 2>&1)
     r1=$?
+    # #691 (ADR 0100): the case records its mode, so a replay that names none — and hands it a
+    # shim, as sideeye_replay_case does on every call — reaches the same FAIL. Until then this
+    # was the case's known limit: the default mode loaded the shim the static toy cannot take,
+    # and the replay answered no_shim_marker.
     o2=$(TOY=$OUT/toy-static "$SIDEEYE" replay "$case_sup" --shim "$SHIM" --oracle /usr/bin/strace --work /tmp/acc-sup/r2 2>&1)
     r2=$?
-    if [ "$r1" = 1 ] && echo "$o" | grep -q "crash point 5 of 5" && [ "$r2" = 2 ] && echo "$o2" | grep -q "^UNKNOWN  no_shim_marker$"; then
-        echo "ok   the supervised case replays under --observe supervised at the same crash point, and refuses no_shim_marker without it"
+    # And a mode the case was not counted under is refused by name, naming the case: its crash
+    # point is a number in the supervised count.
+    o3=$(TOY=$OUT/toy-static "$SIDEEYE" replay "$case_sup" --observe wrappers --shim "$SHIM" --oracle /usr/bin/strace --work /tmp/acc-sup/r3 2>&1)
+    r3=$?
+    if python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d["case_version"]==6 and d["observe"]=="supervised" and d["define"]["scratch"]==[] and d["define"]["cwd"] is None else 1)' "$case_sup" 2>/dev/null \
+        && [ "$r1" = 1 ] && echo "$o" | grep -q "crash point 5 of 5" \
+        && [ "$r2" = 1 ] && echo "$o2" | grep -q "crash point 5 of 5" \
+        && [ "$r3" = 3 ] && echo "$o3" | grep -q "recorded under --observe supervised" && echo "$o3" | grep -qF "$case_sup"; then
+        echo "ok   the supervised case records its mode (version 6) and replays at the same crash point with the flag and without it, and refuses --observe wrappers by name"
     else
-        echo "FAIL replaying the supervised case: with the mode exit $r1, without it exit $r2"
+        echo "FAIL replaying the supervised case: with the mode exit $r1, without it exit $r2, under wrappers exit $r3"
+        sed -n '1,4p' "$case_sup" | sed 's/^/     | /'
+        echo "$o2" | sed 's/^/     | /' | head -3
         fails=$((fails + 1))
     fi
     # No oracle: the filter installer's exec into the operation is the launch, not an image
@@ -6718,6 +6752,46 @@ if [ "$rc" = "3" ] && echo "$o" | grep -q "must spell define.cwd, as null when n
 else
     sc_fail "scratch v5 cwd-key gate" "$rc" "$o"
 fi
+# Version 6 (#691, ADR 0100) carries the observation mode, and only one other than the default.
+# Each hand-edited shape refuses by name before anything runs: a version-6 file whose mode is
+# missing, the default or unknown, an older file carrying one, a version-6 file whose scratch
+# key is gone or null — version 6 may hold an empty scratch, so the non-empty gate version 5
+# uses cannot be what catches those two — and one whose cwd key is gone, which a gate left at
+# version 5 alone would let through.
+python3 - "$sc_case" <<'PYEOF'
+import json, sys
+d = json.load(open(sys.argv[1]))
+def v6(**over):
+    c = json.loads(json.dumps(d)); c["case_version"] = 6; c["observe"] = "syscalls"; c["define"]["scratch"] = []
+    for k, v in over.items():
+        if v is KeyError: c.pop(k, None)
+        else: c[k] = v
+    return c
+shapes = {
+    "v6-noobserve": v6(observe=KeyError),
+    "v6-wrappers": v6(observe="wrappers"),
+    "v6-unknown": v6(observe="strace"),
+    "v5-observe": dict(json.loads(json.dumps(d)), observe="syscalls"),
+}
+nos = v6(); del nos["define"]["scratch"]; shapes["v6-noscratch"] = nos
+nul = v6(); nul["define"]["scratch"] = None; shapes["v6-nullscratch"] = nul
+noc = v6(); del noc["define"]["cwd"]; shapes["v6-nocwd"] = noc
+for name, c in shapes.items():
+    json.dump(c, open("/tmp/acc/%s.json" % name, "w"))
+PYEOF
+for shape in "v6-noobserve:must carry observe" "v6-wrappers:a case counted under the default is written at the version" \
+             "v6-unknown:names no mode this binary knows" \
+             "v5-observe:cannot carry an observation mode; it arrived with version 6" \
+             "v6-noscratch:must spell define.scratch as an array" "v6-nullscratch:must spell define.scratch as an array" \
+             "v6-nocwd:must spell define.cwd, as null when none was declared"; do
+    sname=${shape%%:*}; swant=${shape#*:}
+    o=$("$SIDEEYE" replay "/tmp/acc/$sname.json" --shim "$SHIM" --work /tmp/acc/work-r6 --oracle /usr/bin/strace 2>&1); rc=$?
+    if [ "$rc" = "3" ] && echo "$o" | grep -qF "$swant"; then
+        sc_ok "a hand-edited case ($sname) refuses as malformed, by name"
+    else
+        sc_fail "case version-6 gate ($sname)" "$rc" "$o"
+    fi
+done
 # (d) the grammar and the exclusivities, each by name.
 o=$("$SIDEEYE" explore --state /tmp/acc/state --operation x --scratch /etc/passwd 2>&1); rc=$?
 [ "$rc" = "3" ] && echo "$o" | grep -q "an absolute path cannot be under it" && sc_ok "--scratch refuses an absolute path" || sc_fail "scratch absolute" "$rc" "$o"
@@ -7658,8 +7732,11 @@ o=$(TOY_EXIT_STATUS=3 "$SIDEEYE" explore --state /tmp/acc/state \
     --shim "$SHIM" --work /tmp/acc/work --allow-unverified 2>&1)
 rc=$?
 case_ok=0
+# No `observe` either (#691, ADR 0100): a case counted under the default keeps the version its
+# define asks for, so every earlier 1.x still replays it.
 grep -q '"case_version": 2' /tmp/acc/work/cases/000001.json 2>/dev/null \
-    && grep -q '"expected_status": 3' /tmp/acc/work/cases/000001.json 2>/dev/null && case_ok=1
+    && grep -q '"expected_status": 3' /tmp/acc/work/cases/000001.json 2>/dev/null \
+    && ! grep -q '"observe"' /tmp/acc/work/cases/000001.json && case_ok=1
 o2=$(TOY_EXIT_STATUS=3 "$SIDEEYE" replay /tmp/acc/work/cases/000001.json \
     --shim "$SHIM" --work /tmp/acc/work-r 2>&1)
 rc2=$?
@@ -11481,6 +11558,117 @@ elif [ "$so_can_chown" = "1" ]; then
     fails=$((fails + 1))
 fi
 rm -rf "$SO_DIR"
+
+echo "=========== check 2wd: a work directory that is not the runner's own is refused before anything runs (#692) ==========="
+# The cases saved under --work are commands a replay runs, and the default is a fixed name
+# in /tmp that the engine used to adopt on EEXIST and resolve through a link. Each refusal
+# here is paired with the same command against a directory of the runner's own, which
+# reaches the toy's FAIL — so the pair isolates the one variable, the way 2so's does.
+#
+# Built to survive this suite's second pass (CI runs it again inside a delegated cgroup,
+# as the same runner user): the chowned directory is left EMPTY — the refusal comes before
+# anything is written under it — and is handed back before it is removed, so nothing here
+# leaves a directory the next pass cannot clear. A previous pass that died half-way is
+# cleared with sudo when the host has it.
+WD=/tmp/acc-workdir
+{ sudo -n rm -rf "$WD" || rm -rf "$WD"; } 2>/dev/null
+mkdir -p "$WD/own"
+wd_run() {
+    # $1: the --work value, or empty for the default. Fills wd_rc and $WD/out.txt.
+    rm -rf "$WD/state" && mkdir -p "$WD/state"
+    if [ -n "$1" ]; then
+        "$SIDEEYE" explore --state "$WD/state" --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+            --shim "$SHIM" --work "$1" --oracle /usr/bin/strace >"$WD/out.txt" 2>&1
+    else
+        "$SIDEEYE" explore --state "$WD/state" --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+            --shim "$SHIM" --oracle /usr/bin/strace >"$WD/out.txt" 2>&1
+    fi
+    wd_rc=$?
+}
+wd_fail() { echo "FAIL $1 (exit $wd_rc)"; sed -n '1,3p' "$WD/out.txt" | sed 's/^/       /'; fails=$((fails + 1)); }
+
+# Control: a directory of the runner's own reaches the verdict. Every refusal below is
+# measured against this; without it a host that cannot explore would read as refusals.
+wd_run "$WD/own"
+if [ "$wd_rc" = "1" ] && grep -q "crash point 5 of 5" "$WD/out.txt"; then
+    echo "ok   control: a work directory of the runner's own reaches the toy's FAIL"
+else
+    wd_fail "control: the runner's own work directory did not reach the toy's FAIL — every refusal below would prove nothing"
+fi
+
+# A link at the name, whoever owns it and wherever it leads — here the runner's own
+# directory, so neither the owner nor the target is what refuses it. The trailing `/` and
+# `/.` spellings make lstat follow the link, and are the shape a trimmed-only-once or a
+# stat-that-follows implementation lets through.
+ln -s "$WD/own" "$WD/link"
+for wd_name in "$WD/link" "$WD/link/" "$WD/link/."; do
+    wd_run "$wd_name"
+    if [ "$wd_rc" = "3" ] && grep -qF -- "--work $wd_name is a symbolic link" "$WD/out.txt" && grep -qF "does not exist yet" "$WD/out.txt"; then
+        echo "ok   --work $wd_name is refused as a link, with a way past it"
+    else
+        wd_fail "--work $wd_name (a link to the runner's own directory) was not refused as a link"
+    fi
+done
+
+# An earlier component as the trouble (#692 review): lstat answers it the way it answers a name
+# it cannot read, and the refusal has to stay the resolution failure that names the errno —
+# this check's sentence would blame a directory that is not there and offer a new name, which
+# is what was passed, as the way past it.
+wd_run /etc/passwd/w
+if [ "$wd_rc" = "3" ] && grep -qF -- "--work /etc/passwd/w: it could not be resolved: NOTDIR" "$WD/out.txt" && ! grep -qF "neither its kind nor its owner" "$WD/out.txt"; then
+    echo "ok   a --work under a regular file is refused by the resolution failure that names ENOTDIR"
+else
+    wd_fail "a --work under a regular file did not keep the resolution failure's ENOTDIR"
+fi
+
+: > "$WD/file"
+wd_run "$WD/file"
+if [ "$wd_rc" = "3" ] && grep -qF -- "--work $WD/file is not a directory" "$WD/out.txt"; then
+    echo "ok   a regular file named as --work is refused as not a directory"
+else
+    wd_fail "a regular file named as --work was not refused as not a directory"
+fi
+
+# The default name itself (#692's title), which every other leg here names explicitly
+# and so never reaches. Whatever is at /tmp/sideeye-work is moved aside and put back:
+# a link is planted at the default, to the runner's own directory, and the run passes no
+# --work at all. An implementation that checked only a NAMED --work passes every leg
+# above and fails this one.
+wd_aside=""
+if [ -e /tmp/sideeye-work ] || [ -L /tmp/sideeye-work ]; then
+    if mv /tmp/sideeye-work "$WD/aside" 2>/dev/null; then wd_aside="$WD/aside"; else wd_aside="stuck"; fi
+fi
+if [ "$wd_aside" = "stuck" ]; then
+    not_measured=$((not_measured + 1))
+    echo "     NOT MEASURED: /tmp/sideeye-work is there and could not be moved aside, so the default name was not driven"
+else
+    ln -s "$WD/own" /tmp/sideeye-work
+    wd_run ""
+    rm -f /tmp/sideeye-work
+    [ -n "$wd_aside" ] && mv "$wd_aside" /tmp/sideeye-work
+    if [ "$wd_rc" = "3" ] && grep -qF -- "--work /tmp/sideeye-work is a symbolic link" "$WD/out.txt"; then
+        echo "ok   the default work directory, a planted link, is refused by name with no --work given"
+    else
+        wd_fail "a link planted at the default /tmp/sideeye-work was followed with no --work given"
+    fi
+fi
+
+# The owner half needs chown, like 2so's. The runner is uid 0 in the root container and
+# has passwordless sudo on CI; anywhere else it is counted as not measured, not skipped.
+mkdir -p "$WD/theirs"
+if { [ "$(id -u)" = "0" ] && chown 65534 "$WD/theirs"; } 2>/dev/null || sudo -n chown 65534 "$WD/theirs" 2>/dev/null; then
+    wd_run "$WD/theirs"
+    if [ "$wd_rc" = "3" ] && grep -qF -- "--work $WD/theirs belongs to uid 65534, not to you" "$WD/out.txt" && [ -z "$(ls -A "$WD/theirs")" ]; then
+        echo "ok   a work directory owned by uid 65534 is refused by uid, and nothing was written under it"
+    else
+        wd_fail "a work directory owned by uid 65534 was not refused before anything was written under it"
+    fi
+    { chown "$(id -u)" "$WD/theirs" || sudo -n chown "$(id -u)" "$WD/theirs"; } 2>/dev/null
+else
+    not_measured=$((not_measured + 1))
+    echo "     NOT MEASURED: the owner half of #692 needs chown (root or passwordless sudo); this host has neither"
+fi
+{ rm -rf "$WD" || sudo -n rm -rf "$WD"; } 2>/dev/null
 
 echo "=========== check 2al: the sweep's committed logs carry no machine layout (#350) ==========="
 # The raw oracle text is strace output, so its paths are what the tool saw — which on

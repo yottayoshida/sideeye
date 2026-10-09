@@ -1,0 +1,8 @@
+[world]
+state = "/s/aux/home/.config/infracost"
+
+[define]
+operation = "infracost configure set api_key ico-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+cwd       = "/s/infracost-in"
+# .state.json holds a fresh installation UUID in every run (transcripts/twice.txt); credentials.yml stays judged
+scratch   = [".state.json"]

@@ -1,0 +1,152 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's (working tree)    sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's at tag v1.10.0     sha256 e3cb964274494696b688f0953fa6b112ef233db9dac6ddca43777cb9b0ddaef3
+build: NOTE the page's installer has moved since v1.10.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 5.84kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 0.9s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/20] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.28kB done
+#5 DONE 0.0s
+
+#6 [ 4/20] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#6 CACHED
+
+#7 [ 9/20] RUN "$(cat /install.path)" version
+#7 CACHED
+
+#8 [ 3/20] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#8 CACHED
+
+#9 [ 2/20] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config zstd
+#9 CACHED
+
+#10 [ 8/20] RUN sh /opt/install-sideeye.sh v1.10.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#10 CACHED
+
+#11 [ 5/20] RUN for p in nodejs npm libfaketime faketime; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done | tee /tmp/apt-summary.txt
+#11 CACHED
+
+#12 [ 7/20] COPY install-sideeye.sh /opt/install-sideeye.sh
+#12 CACHED
+
+#13 [10/20] RUN npm install -g --no-fund --no-audit @yarnpkg/cli-dist@4.18.1 trash-cli@7.2.0 > /tmp/npm-1.log 2>&1 && echo "OK yarn trash-cli" || { echo FAILED; tail -3 /tmp/npm-1.log; }
+#13 CACHED
+
+#14 [ 6/20] RUN mkdir -p /opt/bin /tmp/dl /tmp/src && python3 -m venv /opt/py
+#14 CACHED
+
+#15 [11/20] RUN { echo "node $(node --version)"; echo "yarn $(yarn --version)"; echo "trash $(npm ls -g trash-cli 2>/dev/null | grep trash-cli)"; } | tee /versions.txt
+#15 CACHED
+
+#16 [12/20] RUN apt-get install -y --no-install-recommends php-cli php-xml php-mbstring golang-go > /tmp/apt-2.log 2>&1 && echo "OK php golang" || { echo MISSING; tail -3 /tmp/apt-2.log; }
+#16 12.92 OK php golang
+#16 DONE 13.5s
+
+#17 [13/20] RUN for p in bibtex-tidy@1.15.1 @dotenvx/dotenvx@2.32.4 @google/gemini-cli@0.62.0 @gltf-transform/cli@4.5.1 vercel@62.2.0       eslint@10.11.0 prettier@3.9.7 stylelint@17.15.0 svgo@4.1.0 joplin@3.7.1 @bitwarden/cli@2026.8.0; do       npm install -g --no-fund --no-audit "$p" > /tmp/npm-$(echo $p | tr /@ __).log 2>&1 && echo "OK $p" || { echo "FAILED $p"; tail -2 /tmp/npm-$(echo $p | tr /@ __).log; };     done
+#17 0.984 OK bibtex-tidy@1.15.1
+#17 3.717 OK @dotenvx/dotenvx@2.32.4
+#17 9.748 OK @google/gemini-cli@0.62.0
+#17 19.67 OK @gltf-transform/cli@4.5.1
+#17 37.51 OK vercel@62.2.0
+#17 41.86 OK eslint@10.11.0
+#17 43.98 OK prettier@3.9.7
+#17 48.43 OK stylelint@17.15.0
+#17 50.36 OK svgo@4.1.0
+#17 76.66 OK joplin@3.7.1
+#17 83.98 OK @bitwarden/cli@2026.8.0
+#17 DONE 84.6s
+
+#18 [14/20] RUN mkdir -p /opt/lingui-proj && cd /opt/lingui-proj && printf '{"name":"seed","private":true,"type":"module"}\n' > package.json     && npm install --no-fund --no-audit @lingui/cli@6.9.0 @lingui/core@6.9.0 @lingui/babel-plugin-lingui-macro@6.9.0 > /tmp/npm-lingui.log 2>&1; echo "npm lingui exit: $?"
+#18 7.739 npm lingui exit: 0
+#18 DONE 7.9s
+
+#19 [15/20] RUN set -u; cd /tmp/dl; curl -fsSL -o node22.txz https://nodejs.org/dist/v22.23.3/node-v22.23.3-linux-arm64.tar.xz &&     echo "a44aeb94849a299b22df10b9e622ec2f605c2183501bc40590705131de7c740f  node22.txz" | sha256sum -c &&     mkdir -p /opt/node22 && tar xJf node22.txz -C /opt/node22 --strip-components=1 && /opt/node22/bin/node --version
+#19 3.552 node22.txz: OK
+#19 5.055 v22.23.3
+#19 DONE 5.2s
+
+#20 [16/20] RUN for p in cspell@10.3.6 @capacitor/cli@8.5.2; do       PATH=/opt/node22/bin:/opt/bin:/opt/py/bin:/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin /opt/node22/bin/npm install -g --no-fund --no-audit "$p" > /tmp/npm22-$(echo $p | tr /@ __).log 2>&1 && echo "OK node22 $p" || { echo "FAILED $p"; tail -3 /tmp/npm22-$(echo $p | tr /@ __).log; };     done
+#20 7.951 OK node22 cspell@10.3.6
+#20 16.77 OK node22 @capacitor/cli@8.5.2
+#20 DONE 16.9s
+
+#21 [17/20] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/opentofu/opentofu/releases/download/v1.13.1/tofu_1.13.1_linux_arm64.tar.gz tofu.tgz;     get $gh/digitalocean/doctl/releases/download/v1.177.0/doctl-1.177.0-linux-arm64.tar.gz doctl.tgz;     get $gh/infracost/infracost/releases/download/v0.10.46/infracost-linux-arm64.tar.gz infracost.tgz;     get $gh/PlakarKorp/plakar/releases/download/v1.1.7/plakar_1.1.7_linux_arm64.tar.gz plakar.tgz;     get $gh/sigp/lighthouse/releases/download/v8.2.3/lighthouse-v8.2.3-aarch64-unknown-linux-gnu.tar.gz lighthouse.tgz;     get $gh/git-lfs/git-lfs/releases/download/v3.8.0/git-lfs-linux-arm64-v3.8.0.tar.gz git-lfs.tgz;     get $gh/dokuwiki/dokuwiki/archive/refs/tags/release-2026-07-14c.tar.gz dokuwiki.tgz;     for t in tofu doctl infracost plakar lighthouse git-lfs; do mkdir -p x-$t && tar xzf $t.tgz -C x-$t; done;     for n in tofu doctl infracost plakar lighthouse git-lfs; do f=$(find x-$n -type f -name "$n" | head -1); [ -n "$f" ] && install -m 755 "$f" /opt/bin/$n && echo "bin $n" || echo "NO BINARY $n"; done;     mkdir -p /opt/dokuwiki && tar xzf dokuwiki.tgz -C /opt/dokuwiki --strip-components=1 && echo "dokuwiki: ok"
+#21 4.050 OK tofu.tgz
+#21 7.505 OK doctl.tgz
+#21 11.16 OK infracost.tgz
+#21 12.93 OK plakar.tgz
+#21 16.07 OK lighthouse.tgz
+#21 17.80 OK git-lfs.tgz
+#21 19.89 OK dokuwiki.tgz
+#21 22.67 bin tofu
+#21 22.73 bin doctl
+#21 22.73 NO BINARY infracost
+#21 22.76 bin plakar
+#21 22.83 bin lighthouse
+#21 22.92 bin git-lfs
+#21 23.18 dokuwiki: ok
+#21 DONE 23.7s
+
+#22 [18/20] RUN GOFLAGS=-mod=mod go install github.com/gsamokovarov/jump@v0.69.0 > /tmp/go-jump.log 2>&1; echo "go jump exit: $?"; install -m 755 /root/go/bin/jump /opt/bin/jump
+#22 6.599 go jump exit: 0
+#22 DONE 6.8s
+
+#23 [19/20] RUN for p in keyring==25.7.0 keyrings.alt==5.0.2; do /opt/py/bin/pip install --no-cache-dir "$p" > /tmp/pip-k.log 2>&1 && echo "OK $p" || echo "FAILED $p"; done
+#23 4.893 OK keyring==25.7.0
+#23 5.660 OK keyrings.alt==5.0.2
+#23 DONE 5.7s
+
+#24 [20/20] RUN { for c in "bibtex-tidy --version" "dotenvx --version" "gemini --version" "gltf-transform --version" "vercel --version" "eslint --version" "prettier --version" "stylelint --version" "svgo --version" "joplin version" "bw --version" "npm --version" "tofu version" "doctl version" "infracost --version" "plakar version" "lighthouse --version" "git-lfs version" "jump --version" "/opt/py/bin/keyring --version"; do printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; for c in "cspell --version" "cap --version"; do printf '%s (node22): ' "$c"; PATH=/opt/node22/bin:/opt/bin:/opt/py/bin:/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin sh -c "$c" < /dev/null 2>&1 | head -1; done; } | tee -a /versions.txt
+#24 0.109 bibtex-tidy --version: v1.15.1
+#24 0.207 dotenvx --version: 2.32.4
+#24 0.456 gemini --version: 0.62.0
+#24 3.499 gltf-transform --version: 4.5.1
+#24 4.696 vercel --version: Vercel CLI 62.2.0
+#24 4.836 eslint --version: v10.11.0
+#24 5.022 prettier --version: 3.9.7
+#24 5.194 stylelint --version: 17.15.0
+#24 5.686 svgo --version: 4.1.0
+#24 6.009 joplin version: Joplin CLI Client
+#24 7.758 bw --version: Could not find dir, "/root/.config/Bitwarden CLI"; creating it instead.
+#24 9.697 npm --version: 9.2.0
+#24 10.16 tofu version: OpenTofu v1.13.1
+#24 10.20 doctl version: doctl version 1.177.0-release
+#24 10.60 infracost --version: sh: 1: infracost: not found
+#24 10.60 plakar version: Welcome to plakar !
+#24 10.63 lighthouse --version: Lighthouse v8.2.3-6db6ae9
+#24 10.64 git-lfs version: git-lfs/3.8.0 (GitHub; linux arm64; go 1.27.0; git aece9221)
+#24 10.65 jump --version: 0.69.0
+#24 10.65 /opt/py/bin/keyring --version: usage: keyring [-h] [-p KEYRING_PATH] [-b KEYRING_BACKEND] [--list-backends]
+#24 10.75 cspell --version (node22): 10.3.6
+#24 11.31 cap --version (node22): 8.5.2
+#24 DONE 11.6s
+
+#25 exporting to image
+#25 exporting layers
+#25 exporting layers 32.8s done
+#25 exporting manifest sha256:527489f8f1ca515552ce95db3c709b9696ede3331d9bc69f8e1814f1f17748c6 0.0s done
+#25 exporting config sha256:1d7f84250c4ef579366ed48051e789d68b04e7ebf3b5ddddc1c5844f86857131 0.0s done
+#25 exporting attestation manifest sha256:7c9363557145bbd5c84cca237e0ff7da74bf15eb92b407370df6aa9fa01c9310 0.0s done
+#25 exporting manifest list sha256:6b67a958ada8bc20dcc5597cb7616b3647cc89bab0da2a59c496e41133caf60d done
+#25 naming to docker.io/library/sideeye-fu3-1009:latest 0.0s done
+#25 unpacking to docker.io/library/sideeye-fu3-1009:latest
+#25 unpacking to docker.io/library/sideeye-fu3-1009:latest 30.3s done
+#25 DONE 63.2s
+build: sideeye-fu3-1009 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt
+build rc=0

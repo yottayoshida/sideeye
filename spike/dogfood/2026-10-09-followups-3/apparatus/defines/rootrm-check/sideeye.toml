@@ -1,0 +1,9 @@
+[world]
+state = "/s/rootf"
+
+[define]
+operation = "/opt/root/bin/rootrm data.root:h2"
+cwd       = "/s/rootf"
+# A random UUID is written into data.root in every run (2026-10-09 user-data-4); the checker reads it with rootls.
+check     = "/ap/defines/rootrm-check/check.sh"
+scratch   = ["data.root"]

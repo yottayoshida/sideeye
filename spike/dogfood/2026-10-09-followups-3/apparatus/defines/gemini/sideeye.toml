@@ -1,0 +1,6 @@
+[world]
+state = "/s/aux/home/.gemini"
+
+[define]
+operation = "gemini mcp add -s user notes /usr/bin/true --flag"
+cwd       = "/s/gemini-in"

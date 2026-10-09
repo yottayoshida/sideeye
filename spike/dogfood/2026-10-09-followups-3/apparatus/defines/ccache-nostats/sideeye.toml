@@ -1,0 +1,6 @@
+[world]
+state = "/s/ccache/state"
+
+[define]
+operation = "ccache gcc -c /s/ccache/aux/src/b.c -o /s/ccache/aux/src/b.o"
+check     = "/ap/defines/ccache-nostats/check.sh"

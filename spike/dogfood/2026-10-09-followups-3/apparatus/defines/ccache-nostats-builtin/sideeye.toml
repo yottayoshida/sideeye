@@ -1,0 +1,7 @@
+[world]
+state = "/s/ccache/state"
+
+[define]
+# No checker: ccache rebuilds a damaged cache entry by itself, so a checker on the objects it gives
+# back cannot fail (checker_not_falsified, transcripts/explore/ccache-nostats). The built-in invariant judges.
+operation = "ccache gcc -c /s/ccache/aux/src/b.c -o /s/ccache/aux/src/b.o"

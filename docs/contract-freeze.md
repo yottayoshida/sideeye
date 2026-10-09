@@ -313,11 +313,23 @@ stay the same.
    with saved cases. Version and shape travel together (a v1/v2 case cannot
    carry an argv command). From version 5 (ADR 0043) a case also spells both
    keys the top of the ladder introduced — `cwd` as `null` when none was
-   declared, `scratch` as a non-empty array — because a version holding two
-   independent optional fields cannot be held honest by the one-field gate
-   version 4 used;
+   declared, `scratch` as an array, non-empty in a version-5 file — because a
+   version holding two independent optional fields cannot be held honest by
+   the one-field gate version 4 used;
    a v5 file missing either key, or an older file carrying `scratch`, refuses
-   as malformed. A future trace-contract bump is therefore *not* a
+   as malformed. Version 6 (#691, ADR 0100, 2026-10-09) adds the observation
+   mode, top-level beside `contract_version`, written only for a case counted
+   under `syscalls` or `supervised`: a crash point is a number in one mode's
+   count, so the mode is part of the question the case asks, and a replay
+   given no `--observe` takes it from the file. It keeps version 5's two keys,
+   with `scratch` allowed empty; a v6 file whose mode is missing, the
+   default or unknown, whose `cwd` or `scratch` key is missing or whose
+   `scratch` is not an array, or an older file
+   carrying a mode, refuses as malformed. A case counted under the default is
+   written at the version its define asks for, so it still replays on every
+   earlier 1.x; a version-6 case does not, and an earlier binary refuses it as
+   a file it cannot parse — an honest refusal, not a verdict, and the cost
+   ADR 0100 accepts in place of a mode the caller has to remember. A future trace-contract bump is therefore *not* a
    broken promise: old cases refuse with the mismatch named, and that
    refusal is the promised behavior.
 5. **The MCP surface** (decided 2026-08-13, recorded in #86, codified here).

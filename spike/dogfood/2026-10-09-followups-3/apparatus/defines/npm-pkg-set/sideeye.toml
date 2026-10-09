@@ -1,0 +1,6 @@
+[world]
+state = "/s/npm-pkg-set/state"
+
+[define]
+operation = "npm pkg set description=second --prefix /s/npm-pkg-set/state"
+cwd       = "/s/npm-pkg-set/state"

@@ -100,6 +100,10 @@ pub const Args = struct {
     /// the only one that existed through v13, so an invocation that never names this
     /// flag behaves exactly as it did.
     observe: contract.ObserveMode = .wrappers,
+    /// Whether `--observe` was on the command line, which `observe` alone cannot say: its
+    /// default is a value. A replayed case that records its mode (#691, ADR 0100) takes that
+    /// mode when the flag is absent, and refuses a flag that names another.
+    observe_named: bool = false,
     fresh_state: bool = false,
     /// Preflight only (#199): observe the operation a second time from the restored
     /// pre-state and compare the two post-snapshots. Opt-in, because it doubles the
@@ -327,7 +331,7 @@ const usage_fmt =
     \\               two threads refuses (the thread-order records are the shim's);
     \\               a target that installs its own seccomp filter can hide calls
     \\               from it; setuid children lose their privilege (no_new_privs).
-    \\               Its case replays with --observe supervised, not --shim
+    \\               Its case records the mode; replay takes it with no flag
     \\  --allow-unverified
     \\               accept PASS with no completeness check. On macOS this is the
     \\               answer when no privilege is available: SIP leaves DTrace's
@@ -1722,6 +1726,7 @@ pub fn parse(argv: []const []const u8) Parsed {
         if (i + 1 >= argv.len) refuse.setupErrorFmt(argArena(), .define_invalid, "an option is missing its value: {s} takes one", .{argv[i]});
         const v = argv[i + 1];
         if (std.mem.eql(u8, argv[i], "--observe")) {
+            args.observe_named = true;
             args.observe = contract.ObserveMode.parse(v) orelse {
                 // The modes the near value is chosen from are the enum's own names.
                 var modes: [@typeInfo(contract.ObserveMode).@"enum".fields.len][]const u8 = undefined;

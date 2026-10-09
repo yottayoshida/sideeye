@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 3,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/vim/state",
+    "operation": ["vim", "-es", "-u", "NONE", "-c", "set nobackup noswapfile nowritebackup", "-c", "%s/old/new/g", "-c", "wq", "/s/vim/state/a.txt"],
+    "check": "/ap/defines/vim-fat/check.sh",
+    "expected_status": 0
+  },
+  "k": 10,
+  "ops_total": 11,
+  "prefix_hash": "bacd79f4bd7c1114",
+  "after_class": "truncate",
+  "after_path": "/s/vim/state/a.txt",
+  "before_class": "write",
+  "before_path": "/s/vim/state/a.txt",
+  "violation": "hybrid"
+}

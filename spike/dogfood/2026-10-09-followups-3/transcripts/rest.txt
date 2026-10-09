@@ -1,0 +1,136 @@
+== 2. the rest, the page's path 2026-10-09T06:59:29Z
+=== bibtex-tidy 2026-10-09T06:59:29Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== dotenvx 2026-10-09T06:59:31Z
+explore exit 2: UNKNOWN baseline_violates_invariant
+explore exit 2: UNKNOWN baseline_violates_invariant
+next_step: The path the detail names did not come back with the bytes the recording left, in a world nothing crashed. If those bytes are not what the verdict should judge (a cache, a log, a timestamp), declare the path scratch in the define (--scratch, or scratch in a sideeye.toml); sideeye preflight --twice names the paths two clean runs leave differently, before an exploration.
+=== gemini 2026-10-09T06:59:36Z
+explore exit 2: UNKNOWN multiple_threads_detected
+explore exit 2: UNKNOWN multiple_threads_detected
+next_step: Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit the README states under 'What the target has to be': threads are judged where a creation or a join the shim saw orders their writes.
+=== gltf-transform 2026-10-09T06:59:39Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== lingui 2026-10-09T06:59:45Z
+seed failed
+explore exit : none -
+explore exit : none -
+=== vercel 2026-10-09T06:59:46Z
+explore exit 2: UNKNOWN multiple_threads_detected
+explore exit 2: UNKNOWN multiple_threads_detected
+next_step: Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit the README states under 'What the target has to be': threads are judged where a creation or a join the shim saw orders their writes.
+=== cspell 2026-10-09T06:59:51Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== capacitor 2026-10-09T06:59:57Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== eslint 2026-10-09T07:00:02Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== prettier 2026-10-09T07:00:07Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== stylelint 2026-10-09T07:00:10Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== svgo 2026-10-09T07:00:14Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== npm-pkg-set 2026-10-09T07:00:22Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== joplin 2026-10-09T07:00:27Z
+explore exit 2: UNKNOWN baseline_violates_invariant
+explore exit 2: UNKNOWN baseline_violates_invariant
+next_step: The path the detail names did not come back with the bytes the recording left, in a world nothing crashed. If those bytes are not what the verdict should judge (a cache, a log, a timestamp), declare the path scratch in the define (--scratch, or scratch in a sideeye.toml); sideeye preflight --twice names the paths two clean runs leave differently, before an exploration.
+=== bitwarden 2026-10-09T07:01:16Z
+explore exit 2: UNKNOWN multiple_threads_detected
+explore exit 2: UNKNOWN multiple_threads_detected
+next_step: Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit the README states under 'What the target has to be': threads are judged where a creation or a join the shim saw orders their writes.
+=== tofu 2026-10-09T07:01:22Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 2: UNKNOWN multiple_threads_detected
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 2: UNKNOWN multiple_threads_detected
+=== doctl 2026-10-09T07:01:23Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== infracost 2026-10-09T07:02:10Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 1: FAIL -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== plakar 2026-10-09T07:02:11Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 0: PASS -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 0: PASS -
+=== dokuwiki 2026-10-09T07:02:35Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== lighthouse 2026-10-09T07:03:14Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== jump 2026-10-09T07:03:15Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 0: PASS -
+explore exit 2: UNKNOWN no_shim_marker
+next_step: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+followed: the next step names --observe supervised (v1.8.0)
+explore --observe supervised exit 0: PASS -
+=== keyring 2026-10-09T07:03:16Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== gitlfs 2026-10-09T07:03:18Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+rest: done 2026-10-09T07:03:19Z

@@ -1,0 +1,72 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's (working tree)    sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's at tag v1.10.0     sha256 e3cb964274494696b688f0953fa6b112ef233db9dac6ddca43777cb9b0ddaef3
+build: NOTE the page's installer has moved since v1.10.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.84kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 1.7s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/11] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.28kB done
+#5 DONE 0.0s
+
+#6 [ 5/11] RUN for p in nodejs npm libfaketime faketime; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done | tee /tmp/apt-summary.txt
+#6 CACHED
+
+#7 [ 3/11] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#7 CACHED
+
+#8 [ 6/11] RUN mkdir -p /opt/bin /tmp/dl /tmp/src && python3 -m venv /opt/py
+#8 CACHED
+
+#9 [ 8/11] RUN sh /opt/install-sideeye.sh v1.10.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#9 CACHED
+
+#10 [ 7/11] COPY install-sideeye.sh /opt/install-sideeye.sh
+#10 CACHED
+
+#11 [ 2/11] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config zstd
+#11 CACHED
+
+#12 [ 4/11] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#12 CACHED
+
+#13 [ 9/11] RUN "$(cat /install.path)" version
+#13 CACHED
+
+#14 [10/11] RUN npm install -g --no-fund --no-audit @yarnpkg/cli-dist@4.18.1 trash-cli@7.2.0 > /tmp/npm-1.log 2>&1 && echo "OK yarn trash-cli" || { echo FAILED; tail -3 /tmp/npm-1.log; }
+#14 4.864 OK yarn trash-cli
+#14 DONE 4.9s
+
+#15 [11/11] RUN { echo "node $(node --version)"; echo "yarn $(yarn --version)"; echo "trash $(npm ls -g trash-cli 2>/dev/null | grep trash-cli)"; } | tee /versions.txt
+#15 0.198 node v20.19.2
+#15 0.514 yarn 4.18.1
+#15 0.806 trash `-- trash-cli@7.2.0
+#15 DONE 0.8s
+
+#16 exporting to image
+#16 exporting layers
+#16 exporting layers 0.3s done
+#16 exporting manifest sha256:d0f9683cd5c56d54d21320057ba4c07cffeaa81cde38847351d0ed666c912efb done
+#16 exporting config sha256:2fb68564b97e76333bae47742005089d22047fa63a9723b4e39188bb8f9ce8c6 done
+#16 exporting attestation manifest sha256:1c67f9a98b068707e38204e3535b110082434b69352cd0bb0c945d6594ef9015 done
+#16 exporting manifest list sha256:a0961707e711e5ba3fe9babecff5abe975618fde98a00c78b89bb448279158f5 done
+#16 naming to docker.io/library/sideeye-fu3-1009:latest done
+#16 unpacking to docker.io/library/sideeye-fu3-1009:latest
+#16 unpacking to docker.io/library/sideeye-fu3-1009:latest 5.4s done
+#16 DONE 5.7s
+build: sideeye-fu3-1009 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt

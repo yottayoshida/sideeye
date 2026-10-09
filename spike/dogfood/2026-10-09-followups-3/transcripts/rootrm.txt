@@ -1,0 +1,5 @@
+=== rootrm-check, --observe supervised named 2026-10-09T07:47:40Z
+probe supervised exit 0
+PASS  11/11 explored worlds satisfied the built-in atomicity invariant, but it had no path to judge
+explored    11 worlds (crash points 10 + 1 baseline)
+checker     falsified before the run (corrupted state -> check failed); ran in 11 world(s)

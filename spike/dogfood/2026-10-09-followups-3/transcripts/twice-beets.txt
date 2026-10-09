@@ -1,0 +1,4 @@
+== beets default rc=1: PREFLIGHT not accepted — the two observed runs left different state
+difference   library.db (content differs)
+             bytes first differ at byte offset 8002: first run "\xb6\xbf\xc4~\x817\x01]\x00^\x09\x19\x1b\x0d\x0d\x0d\x0d\x0d\x0d\x0d\x19\x1b\x0d\x0d\x0d\x0d\x0d\x0d\x0d\x08\x08\x08\x0d\x0d\x0d\x0d\x0d
+repeatability  two runs 2004 ms apart differed under [world] state

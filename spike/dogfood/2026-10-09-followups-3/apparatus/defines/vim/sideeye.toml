@@ -1,0 +1,6 @@
+[world]
+state = "/s/vim/state"
+
+[define]
+operation = ["vim", "-es", "-u", "NONE", "-c", "set nobackup noswapfile nowritebackup", "-c", "%s/old/new/g", "-c", "wq", "/s/vim/state/a.txt"]
+check     = "/ap/defines/vim/check.sh"
