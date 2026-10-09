@@ -144,6 +144,55 @@ pub fn build(b: *std.Build) void {
     // one level up. Sharing the object makes them the same THING rather than the same
     // value, the way `contract` above is already shared by the engine, shim and tests.
     const shipped_engine_opts = exe_opts.createModule();
+
+    // `sideeye demo` carries its own target (#715, ADR 0101). The planted-bug toy is compiled
+    // HERE, for the engine's own target, and its bytes are embedded; the demo writes them into
+    // its scratch directory and runs them. It used to embed `toy.c` and compile it on the
+    // visitor's machine with whatever `cc` it found, so the sixty-second proof failed on the
+    // machine a prebuilt binary is most likely to be tried on: one with no compiler.
+    //
+    // Three settings are deliberate. The optimisation is fixed rather than the engine's:
+    // following it would give CI's Debug engine and a release's ReleaseSafe one two different
+    // toys, and the acceptance suite drives one built at `-O0` (spike/build-toys.sh). The link
+    // is dynamic, said rather than defaulted: the shim reaches the toy through the dynamic
+    // loader, and a static toy is refused `no_shim_marker` instead of showing the bug. And the C
+    // sanitizer is off: Zig turns trap-mode UBSan on for C in Debug, which `cc -O0` never did,
+    // and the toy is there to carry one planted bug, not a second detector. The backend is
+    // pinned too: Debug on x86_64 defaults to Zig's self-hosted code generator, which would
+    // make the x86_64-linux toy the one target not compiled the way `zig cc` compiled all
+    // three when this was first measured. Only code generation is pinned; the linker is
+    // Zig's default, and what ships was measured as built here (ADR 0101).
+    const demo_toy = b.addExecutable(.{
+        .name = "demo-toy",
+        .linkage = .dynamic,
+        .use_llvm = true,
+        .root_module = b.createModule(.{
+            .target = target,
+            .optimize = .Debug,
+            .link_libc = true,
+            .strip = true,
+            .sanitize_c = .off,
+        }),
+    });
+    demo_toy.root_module.addCSourceFile(.{ .file = b.path("spike/toys/toy.c"), .flags = &.{ "-O0", "-w", "-DBUGGY=1" } });
+    // What `cc -lpthread` said. Zig counts the name as part of libc on both glibc and macOS
+    // (`isLibCLibName`) and links it however the target needs — a library of its own under
+    // the 2.28 pin, libc itself on later glibc and on macOS.
+    demo_toy.root_module.linkSystemLibrary("pthread", .{});
+    const demo_toy_bin = demo_toy.getEmittedBin();
+
+    // Every build of src/main.zig takes both demo imports from here: main.zig reads them at
+    // module scope, so a variant one import short fails to compile — and only that variant,
+    // the way `engineOptions` above explains. These are the same files the acceptance suite
+    // drives, so the demo cannot drift from what CI proves, and both sources are listed in
+    // build.zig.zon's `.paths`, or a fetched package would fail to build.
+    const embedDemo = struct {
+        fn add(bld: *std.Build, m: *std.Build.Module, toy: std.Build.LazyPath) void {
+            m.addAnonymousImport("demo_toy", .{ .root_source_file = toy });
+            m.addAnonymousImport("check_sh", .{ .root_source_file = bld.path("spike/check.sh") });
+        }
+    }.add;
+
     const exe = b.addExecutable(.{
         .name = "sideeye",
         .root_module = b.createModule(.{
@@ -159,13 +208,7 @@ pub fn build(b: *std.Build) void {
             },
         }),
     });
-    // `sideeye demo` carries its own target: the planted-bug toy and its checker are
-    // embedded at compile time and materialized on the visitor's machine. These are the
-    // same files the acceptance suite drives, so the demo cannot drift from what CI
-    // proves — and both are listed in build.zig.zon's `.paths`, or a fetched package
-    // would fail to build.
-    exe.root_module.addAnonymousImport("toy_c", .{ .root_source_file = b.path("spike/toys/toy.c") });
-    exe.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
+    embedDemo(b, exe.root_module, demo_toy_bin);
     assertBuiltWith(exe.root_module, "engine_build_options", shipped_engine_opts, "the shipped engine");
     b.installArtifact(exe);
 
@@ -184,8 +227,7 @@ pub fn build(b: *std.Build) void {
                 },
             }),
         });
-        exe_probe.root_module.addAnonymousImport("toy_c", .{ .root_source_file = b.path("spike/toys/toy.c") });
-        exe_probe.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
+        embedDemo(b, exe_probe.root_module, demo_toy_bin);
         b.installArtifact(exe_probe);
     }
 
@@ -235,8 +277,7 @@ pub fn build(b: *std.Build) void {
                 },
             }),
         });
-        exe_cap.root_module.addAnonymousImport("toy_c", .{ .root_source_file = b.path("spike/toys/toy.c") });
-        exe_cap.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
+        embedDemo(b, exe_cap.root_module, demo_toy_bin);
         b.installArtifact(exe_cap);
 
         const world_opts = engineOptions(b, 0, 64, 0, false, false, 0);
@@ -253,8 +294,7 @@ pub fn build(b: *std.Build) void {
                 },
             }),
         });
-        exe_cap_world.root_module.addAnonymousImport("toy_c", .{ .root_source_file = b.path("spike/toys/toy.c") });
-        exe_cap_world.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
+        embedDemo(b, exe_cap_world.root_module, demo_toy_bin);
         b.installArtifact(exe_cap_world);
     }
 
@@ -277,8 +317,7 @@ pub fn build(b: *std.Build) void {
                 },
             }),
         });
-        exe_budget.root_module.addAnonymousImport("toy_c", .{ .root_source_file = b.path("spike/toys/toy.c") });
-        exe_budget.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
+        embedDemo(b, exe_budget.root_module, demo_toy_bin);
         b.installArtifact(exe_budget);
     }
 
@@ -297,8 +336,7 @@ pub fn build(b: *std.Build) void {
                 },
             }),
         });
-        exe_delay.root_module.addAnonymousImport("toy_c", .{ .root_source_file = b.path("spike/toys/toy.c") });
-        exe_delay.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
+        embedDemo(b, exe_delay.root_module, demo_toy_bin);
         b.installArtifact(exe_delay);
     }
 
@@ -317,8 +355,7 @@ pub fn build(b: *std.Build) void {
                 },
             }),
         });
-        exe_nocg.root_module.addAnonymousImport("toy_c", .{ .root_source_file = b.path("spike/toys/toy.c") });
-        exe_nocg.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
+        embedDemo(b, exe_nocg.root_module, demo_toy_bin);
         b.installArtifact(exe_nocg);
     }
 
@@ -489,9 +526,13 @@ pub fn build(b: *std.Build) void {
         // The third seam of #572, first half: what a run says and how it stops. Collection
         // through main.zig reaches both today — its tests call `setupOutputDetail` and
         // `snapshotOrRefuse` — and naming them makes their seventeen run whether or not
-        // that stays true. `src/files.zig` holds no tests and is not named.
+        // that stays true.
         "src/report.zig",
         "src/refuse.zig",
+        // The leaf both of those import. It held no tests until #715 gave the demo's
+        // `writeNewExecutable` one; collection through report.zig would probably reach it,
+        // which is the kind of reaching this list exists not to depend on.
+        "src/files.zig",
         // The third seam's second half: the argv surface. Its two tests reach `version` and
         // the help text only, and nothing left in main.zig reaches them, so without this
         // name they would run nowhere. `src/case.zig` holds no tests and is not named.
@@ -561,8 +602,7 @@ pub fn build(b: *std.Build) void {
         t.root_module.addAnonymousImport("build_zon", .{ .root_source_file = b.path("build.zig.zon") });
         // The demo's embedded assets: main.zig references them at module scope, so the
         // test build of main.zig must resolve them too.
-        t.root_module.addAnonymousImport("toy_c", .{ .root_source_file = b.path("spike/toys/toy.c") });
-        t.root_module.addAnonymousImport("check_sh", .{ .root_source_file = b.path("spike/check.sh") });
+        embedDemo(b, t.root_module, demo_toy_bin);
         test_step.dependOn(&b.addRunArtifact(t).step);
     }
 

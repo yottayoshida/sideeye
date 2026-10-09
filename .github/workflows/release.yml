@@ -102,15 +102,17 @@ jobs:
             *) echo "::error::binary says '$got', tag says '$REL_TAG'"; exit 1 ;;
           esac
 
-      # The packaged pair has to work on the OS it ships for. The demo compiles the
-      # embedded toy with the runner's C compiler and explores it through the shim it
-      # just found next to the binary: exit 1 — the planted bug — is the only success.
-      # This is also the one place the ReleaseSafe build is exercised rather than
-      # only compiled; the acceptance suite runs Debug.
-      - name: Smoke test the artifact pair (sideeye demo)
+      # The packaged pair has to work on the OS it ships for. The demo writes the toy
+      # built into the binary (#715) and explores it through the shim it just found next
+      # to the binary: exit 1 — the planted bug — is the only success. PATH is emptied so
+      # the runner's compiler cannot be what makes it work: the demo used to compile its
+      # toy on the visitor's machine, and a prebuilt binary is most often tried on one
+      # with no compiler. This is also the one place the ReleaseSafe build is exercised
+      # rather than only compiled; the acceptance suite runs Debug.
+      - name: Smoke test the artifact pair (sideeye demo, no compiler on PATH)
         run: |
           set +e
-          out=$(./zig-out/bin/sideeye demo 2>&1)
+          out=$(PATH=/nonexistent ./zig-out/bin/sideeye demo 2>&1)
           rc=$?
           set -e
           echo "$out" | tail -30

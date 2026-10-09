@@ -906,7 +906,7 @@ fn captureFlags(exclusive: bool) c_int {
 /// terminal or pipe, a fact no committed define can declare and no replay can reproduce,
 /// and a target that read it either hung the CLI path forever or saw EOF on the MCP path
 /// — two behaviours for one target. There is no spawn site with a reason to inherit
-/// (the sudo probe, the demo compiler, the signal helper and the engine's self-exec read
+/// (the sudo probe, the signal helper and the engine's self-exec read
 /// nothing), so a per-site choice would only be a way for a new site to inherit by
 /// accident. How the descriptor is arranged, and why its failure is a `SpawnError`
 /// rather than an exit code, is written at the fork in `runChildImplWithOps`.

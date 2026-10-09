@@ -43,7 +43,8 @@
 //!     helpers, and the privileged observer's registry that every refusal stops on its way
 //!     out. `startFsUsage` here registers the observer in `refuse.fsu_live`; `run_phase` and
 //!     `trace_budget` are set here once and read there.
-//!   - `files.zig` — `removeFile` and `writeWholeFile`, a leaf the three of us share.
+//!   - `files.zig` — `removeFile`, `writeWholeFile` and the demo's `writeNewExecutable`,
+//!     a leaf the three of us share.
 //!   - `cli.zig` — the argv surface: `Args`, the usage text and `version`, and `parse`, which
 //!     is the mode dispatch, the flag loop and the mode refusals that used to open `main()`.
 //!     `main()` sets `refuse.json_arena`, calls `cli.parse(argv)` and reads the mode, replay's
@@ -644,12 +645,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // `completions --help` and its mistakes are answered above, in `cli.answerEntry`.
     if (argv.len >= 2 and std.mem.eql(u8, argv[1], "completions")) cli.runCompletions(arena_state.allocator(), argv);
 
-    // `demo` compiles the embedded planted-bug toy on this machine and self-execs
-    // `explore` against it — it never returns. Exit codes are explore's own: the
-    // expected outcome is 1 (FAIL, the planted bug found), which makes the demo double
-    // as a smoke test of the installed binary + shim pair.
+    // `demo` writes the planted-bug toy built into this binary (#715) to a scratch
+    // directory and self-execs `explore` against it — it never returns. Exit codes are
+    // explore's own: the expected outcome is 1 (FAIL, the planted bug found), which makes
+    // the demo double as a smoke test of the installed binary + shim pair.
     if (argv.len >= 2 and std.mem.eql(u8, argv[1], "demo")) {
-        runDemo(gpa, arena_state.allocator(), argv[2..]);
+        runDemo(arena_state.allocator(), argv[2..]);
     }
 
     // Before the loop, so that a parse error occurring *after* `--json` was read still
@@ -4391,9 +4392,10 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
 
 // ---- demo --------------------------------------------------------------------------
 
-/// The demo's target and checker, embedded at build time (see build.zig): the same
-/// files the acceptance suite drives, so the demo cannot drift from what CI proves.
-const demo_toy_c = @embedFile("toy_c");
+/// The demo's target and checker, embedded at build time (see build.zig): the toy is
+/// `spike/toys/toy.c` compiled for this binary's own target (#715, ADR 0101), the checker
+/// the script the acceptance suite drives, so the demo cannot drift from what CI proves.
+const demo_toy = @embedFile("demo_toy");
 const demo_check_sh = @embedFile("check_sh");
 
 /// Where the shim is looked for when --shim is not given: next to the binary
@@ -4535,9 +4537,11 @@ test "shellSingleQuote neutralizes metacharacters and embedded quotes" {
     try std.testing.expectEqualStrings("'a'\\''b; $(x) `y`'", shellSingleQuote(arena, "a'b; $(x) `y`"));
 }
 
-/// `sideeye demo`: materialize the embedded planted-bug toy and checker in a scratch
-/// directory, compile the toy with whatever C compiler this machine has, and self-exec
-/// `explore` against it. Never returns; the exit code is explore's own (1 expected —
+/// `sideeye demo`: write the embedded planted-bug toy and checker into a scratch
+/// directory and self-exec `explore` against them. The toy arrives compiled (#715,
+/// ADR 0101): this used to compile it here with whatever C compiler the machine
+/// had, and on a machine with none the prebuilt binary's first proof was a SETUP
+/// ERROR. Never returns; the exit code is explore's own (1 expected —
 /// the planted bug found).
 ///
 /// Self-exec rather than an in-process call for the same reason the MCP adapter
@@ -4545,7 +4549,7 @@ test "shellSingleQuote neutralizes metacharacters and embedded quotes" {
 /// Plain `execvp` with the inherited environment — not the MCP minimal-env path, which
 /// exists to *withhold* credentials from an untrusted operation; the demo's operation
 /// is our own toy, and the report belongs on this same stdout.
-fn runDemo(gpa: std.mem.Allocator, arena: std.mem.Allocator, rest: []const []const u8) noreturn {
+fn runDemo(arena: std.mem.Allocator, rest: []const []const u8) noreturn {
     var shim_flag: ?[]const u8 = null;
     var i: usize = 0;
     while (i < rest.len) {
@@ -4579,11 +4583,12 @@ fn runDemo(gpa: std.mem.Allocator, arena: std.mem.Allocator, rest: []const []con
     const tmp_raw = posix.mkdtemp(templ.ptr) orelse setupError(.environment, "could not create the demo's scratch directory");
     const tmp = arena.dupe(u8, std.mem.span(tmp_raw)) catch setupError(.environment, "out of memory");
 
-    const toy_src = std.fmt.allocPrint(arena, "{s}/toy.c", .{tmp}) catch setupError(.environment, "out of memory");
     const tool = std.fmt.allocPrint(arena, "{s}/demo-tool", .{tmp}) catch setupError(.environment, "out of memory");
     const check_path = std.fmt.allocPrint(arena, "{s}/check.sh", .{tmp}) catch setupError(.environment, "out of memory");
-    if (!writeWholeFile(toy_src, &.{demo_toy_c}))
-        setupError(.environment, "could not write the demo's toy source into the scratch directory");
+    // Created by this call or refused, owner-only from the moment it exists: the next thing
+    // this process does with the path is run it (files.writeNewExecutable says why each flag).
+    if (!files.writeNewExecutable(tool, demo_toy))
+        setupError(.environment, "could not write the demo's planted-bug tool into the scratch directory");
     // TOY is baked into the script rather than passed through the environment: the
     // checker runs in a fresh process several layers down, and a baked value cannot be
     // lost to a change in how those layers pass environments around. Single-quoted —
@@ -4593,50 +4598,13 @@ fn runDemo(gpa: std.mem.Allocator, arena: std.mem.Allocator, rest: []const []con
     if (!writeWholeFile(check_path, &.{ "TOY=", shellSingleQuote(arena, tool), "\nexport TOY\n", demo_check_sh }))
         setupError(.environment, "could not write the demo's checker into the scratch directory");
 
-    // Compile on the spot. cc first — every toolchain installs the alias — then the
-    // real names. Each is tried with -lpthread first (older glibc needs it spelled)
-    // and then without (newer glibc and macOS accept either; macOS clang warns on
-    // unused -l only with -Werror, which this is not).
-    const compilers = [_][]const u8{ "cc", "gcc", "clang" };
-    var chosen: ?[]const u8 = null;
-    outer: for (compilers) |cc| {
-        for ([_]bool{ true, false }) |with_pthread| {
-            var argv_l: std.ArrayList([]const u8) = .empty;
-            // -w: the toy's warnings (vfork deprecation on macOS, say) are addressed
-            // to this repo's developers, not to a demo viewer's terminal. Errors
-            // still print — they are how a broken compile diagnoses itself.
-            for ([_][]const u8{ cc, "-O0", "-w", "-DBUGGY=1", "-o", tool, toy_src }) |a|
-                argv_l.append(arena, a) catch setupError(.environment, "out of memory");
-            if (with_pthread) argv_l.append(arena, "-lpthread") catch setupError(.environment, "out of memory");
-            // No cwd: this child is the demo's own compiler, not a define's command.
-            const term = posix.runChild(gpa, argv_l.items, &.{}, null) catch |e| {
-                // Trying the next candidate is right for a compiler that could not be
-                // started. It is wrong for a wait failure: swallowing that here ends the
-                // loop with "none of cc, gcc, clang worked", which diagnoses the machine's
-                // toolchain for what is actually an environment problem (#264). The same
-                // holds for a stdin source that could not be opened (#263): that is not a
-                // fact about any compiler, and the next candidate would fail identically.
-                if (e == error.WaitFailed or e == error.StdinUnavailable) spawnFailure(e, .before_exploration, "could not start the compiler");
-                continue;
-            };
-            switch (term) {
-                .exited => |code| if (code == 0) {
-                    chosen = cc;
-                    break :outer;
-                },
-                else => {},
-            }
-        }
-    }
-    const cc_used = chosen orelse setupError(.environment, "the demo compiles its planted-bug tool on this machine and needs a C compiler; none of cc, gcc, clang worked (Debian/Ubuntu: apt install gcc; macOS: xcode-select --install)");
-
     say(
-        \\demo  compiled the planted-bug tool with {s} into {s}
+        \\demo  wrote the planted-bug tool into {s}
         \\demo  the tool deletes its key before renaming the replacement in; a crash
         \\demo  between those two operations leaves no key at all. exploring:
         \\
         \\
-    , .{ cc_used, tmp });
+    , .{tmp});
 
     const state_dir = std.fmt.allocPrint(arena, "{s}/state", .{tmp}) catch setupError(.environment, "out of memory");
     const work_dir = std.fmt.allocPrint(arena, "{s}/work", .{tmp}) catch setupError(.environment, "out of memory");

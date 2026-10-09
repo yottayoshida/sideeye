@@ -1282,7 +1282,7 @@ pub const SetupErrorReason = enum {
     /// The engine asked the machine for something and was refused: memory, a path that
     /// would not resolve, a file it could not open, read back or create (captures, the
     /// oracle's account, the demo's scratch), a process it could not fork or wait for, a
-    /// privilege (`sudo` for `fs_usage`), a tool (a C compiler for the demo), the state tree
+    /// privilege (`sudo` for `fs_usage`), the state tree
     /// it could not snapshot or rewrite before exploration, an apparatus entry the
     /// environment does not carry, a setup, operation or checker that cannot be started
     /// (`image.startable`: its file or `#!` interpreter missing, not a regular file, not

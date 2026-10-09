@@ -55,7 +55,7 @@ $ sideeye explore --config sideeye.toml --oracle /usr/bin/strace
 $ sideeye explore --config sideeye.toml --allow-unverified
 ```
 
-- **`demo`** — sixty seconds, needs a C compiler, writes nothing permanent. It explores a planted bug and prints a real FAIL report. Exit 1 — the bug found — is success, so it doubles as a smoke test of binary and shim.
+- **`demo`** — sixty seconds, no compiler needed. It explores a planted bug and prints a real FAIL report. Exit 1 — the bug found — is success, so it doubles as a smoke test of binary and shim.
 - **`preflight`** — can Sideeye watch your tool? One observed run: `recording accepted` (exit 0), or a refusal naming the detector a real run would use (exit 2; 3 if the define cannot be set up). `--twice` also checks that two clean runs leave the same bytes (exit 1 if not).
 - **`explore`** — the real thing (Linux, then macOS), with the whole define in one file:
 
