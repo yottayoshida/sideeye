@@ -29,3 +29,15 @@ where two runs differ, #689 refuses a shared mapping on every path. Two remained
 
 flatpak and ostree are not re-run: both refuse an unlinked-fd write (Qt's and glib's `O_TMPFILE`), the
 shape Kvantum and Hydrogen kept under supervised above.
+
+## Added after those two ran, each following its refusal's next step once (before these ran)
+
+Home Assistant did not meet the threads wall under supervised (one thread wrote); its uncrashed re-run
+left the auth store different (a fresh bcrypt salt), and the next step said to declare the path scratch.
+dotter's next step named "a cache kept beside the configuration": `.dotter/cache.toml` is written
+outside `--state` (`transcripts/dotter-twice.txt`).
+
+| target | run | prediction | why |
+|---|---|---|---|
+| Home Assistant, the auth store scratch and a checker (`hass --script auth validate`) | `--observe supervised` | **PASS** | Home Assistant saves `.storage` through its atomic write helper (a temporary renamed over the file) |
+| dotter, its configuration inside `--state` | the page's path (supervised, as before) | **FAIL**, a target file truncated before its write | 2026-10-03 counted 4 violations among 8 worlds before the kill refusal; with the cache restored the kills should land |
