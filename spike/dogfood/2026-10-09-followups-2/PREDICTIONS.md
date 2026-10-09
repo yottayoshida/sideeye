@@ -61,3 +61,5 @@ confidence is that each reaches a verdict.
 | ccache, the clock pinned (`kill_did_not_land`'s next step names the clock) | libfaketime through `/etc/ld.so.preload` | `kill_did_not_land` again: what varies is more likely its cleanup and stats files than the time |
 | git commit, gc off, `.git/index` scratch, the dates pinned, a checker (`git fsck`, HEAD, the work tree) | the next step's scratch | **PASS**: git writes through `.lock` files and renames |
 | gocryptfs -passwd, `cipher/gocryptfs.conf` scratch, a checker (`gocryptfs-xray -dumpmasterkey` with the old or new passphrase) | under `--observe supervised` | **PASS**: gocryptfs writes its config through a temporary and a rename |
+
+| git commit, the above with `.git/COMMIT_EDITMSG` scratch too | the same | **PASS**: the first form FAILed on that file alone, the checker passing in all 39 worlds |
