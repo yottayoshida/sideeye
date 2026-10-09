@@ -1145,7 +1145,40 @@ fn phaseDefine(run: *Run) void {
         if (state_created) _ = posix.rmdir(state_z.ptr);
         setupError(.define_invalid, "--work is too long");
     };
-    const work_created = posix.mkdir(work_z.ptr, 0o755) == 0;
+    const work_created = mcp.mkdirWorkDir(args.work, 0o755) == 0;
+    // #692 (ADR 0099): the cases saved here are commands a replay runs, and the default is a
+    // fixed name in /tmp that `mkdir` adopts on EEXIST — so whoever made that name first,
+    // or planted a link at it, chose where they go. Asked of the name as given, before
+    // `realpath` below follows it and before anything is written under it — and only of a
+    // directory this invocation did not just create, which is its own whatever owner a
+    // filesystem reports for it (an NFS export squashing root, say).
+    //
+    // Two answers wait for that `realpath`. `missing` is the resolution failure that has
+    // always reported an uncreatable --work. `unclassifiable` is also what `lstat` answers
+    // when an EARLIER component is the trouble — `--work /etc/passwd/w` (ENOTDIR), a parent
+    // the runner cannot search (EACCES) — and there the resolution failure names the errno,
+    // where this check's sentence would blame a directory that is not there and offer a new
+    // name as the way past (#692 review). Only a name that resolves and still cannot be read
+    // is refused as unclassifiable, after the resolution below.
+    const work_refusal: ?mcp.WorkDirRefused = if (work_created) null else switch (mcp.workDirVerdict(args.work)) {
+        .ok, .missing => null,
+        .refused => |r| r,
+    };
+    const work_refusal_msg: []const u8 = if (work_refusal) |r| blk: {
+        const a = arena_state.allocator();
+        break :blk mcp.workDirRefusalMessage(
+            a,
+            std.fmt.allocPrint(a, "--work {s}", .{textShown(a, args.work)}) catch "--work",
+            r,
+            "Pass --work a name that does not exist yet, and Sideeye creates it as yours, or a directory of your own",
+        );
+    } else "";
+    if (work_refusal) |r| {
+        if (r.why != .unclassifiable) {
+            undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
+            setupError(mcp.workDirRefusalReason(r.why), work_refusal_msg);
+        }
+    }
     {
         var work_real_buf: [contract.max_path]u8 = undefined;
         const work_abs = blk: {
@@ -1155,6 +1188,12 @@ fn phaseDefine(run: *Run) void {
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
             setupErrorFmt(arena_state.allocator(), .environment, "--work {s}: {s}", .{ textShown(arena_state.allocator(), args.work), refuse.resolveFailure(arena_state.allocator(), args.work, why) });
         };
+        // Only `unclassifiable` is still pending here: the name resolved, and its kind or owner
+        // still could not be read.
+        if (work_refusal != null) {
+            undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
+            setupError(.environment, work_refusal_msg);
+        }
         if (contract.isInsideDir(work_abs, state_abs)) {
             // Remove only what this invocation just created: refusing while leaving
             // a fresh <state>/work behind would itself be the contamination the

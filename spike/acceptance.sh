@@ -11396,6 +11396,117 @@ elif [ "$so_can_chown" = "1" ]; then
 fi
 rm -rf "$SO_DIR"
 
+echo "=========== check 2wd: a work directory that is not the runner's own is refused before anything runs (#692) ==========="
+# The cases saved under --work are commands a replay runs, and the default is a fixed name
+# in /tmp that the engine used to adopt on EEXIST and resolve through a link. Each refusal
+# here is paired with the same command against a directory of the runner's own, which
+# reaches the toy's FAIL — so the pair isolates the one variable, the way 2so's does.
+#
+# Built to survive this suite's second pass (CI runs it again inside a delegated cgroup,
+# as the same runner user): the chowned directory is left EMPTY — the refusal comes before
+# anything is written under it — and is handed back before it is removed, so nothing here
+# leaves a directory the next pass cannot clear. A previous pass that died half-way is
+# cleared with sudo when the host has it.
+WD=/tmp/acc-workdir
+{ sudo -n rm -rf "$WD" || rm -rf "$WD"; } 2>/dev/null
+mkdir -p "$WD/own"
+wd_run() {
+    # $1: the --work value, or empty for the default. Fills wd_rc and $WD/out.txt.
+    rm -rf "$WD/state" && mkdir -p "$WD/state"
+    if [ -n "$1" ]; then
+        "$SIDEEYE" explore --state "$WD/state" --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+            --shim "$SHIM" --work "$1" --oracle /usr/bin/strace >"$WD/out.txt" 2>&1
+    else
+        "$SIDEEYE" explore --state "$WD/state" --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+            --shim "$SHIM" --oracle /usr/bin/strace >"$WD/out.txt" 2>&1
+    fi
+    wd_rc=$?
+}
+wd_fail() { echo "FAIL $1 (exit $wd_rc)"; sed -n '1,3p' "$WD/out.txt" | sed 's/^/       /'; fails=$((fails + 1)); }
+
+# Control: a directory of the runner's own reaches the verdict. Every refusal below is
+# measured against this; without it a host that cannot explore would read as refusals.
+wd_run "$WD/own"
+if [ "$wd_rc" = "1" ] && grep -q "crash point 5 of 5" "$WD/out.txt"; then
+    echo "ok   control: a work directory of the runner's own reaches the toy's FAIL"
+else
+    wd_fail "control: the runner's own work directory did not reach the toy's FAIL — every refusal below would prove nothing"
+fi
+
+# A link at the name, whoever owns it and wherever it leads — here the runner's own
+# directory, so neither the owner nor the target is what refuses it. The trailing `/` and
+# `/.` spellings make lstat follow the link, and are the shape a trimmed-only-once or a
+# stat-that-follows implementation lets through.
+ln -s "$WD/own" "$WD/link"
+for wd_name in "$WD/link" "$WD/link/" "$WD/link/."; do
+    wd_run "$wd_name"
+    if [ "$wd_rc" = "3" ] && grep -qF -- "--work $wd_name is a symbolic link" "$WD/out.txt" && grep -qF "does not exist yet" "$WD/out.txt"; then
+        echo "ok   --work $wd_name is refused as a link, with a way past it"
+    else
+        wd_fail "--work $wd_name (a link to the runner's own directory) was not refused as a link"
+    fi
+done
+
+# An earlier component as the trouble (#692 review): lstat answers it the way it answers a name
+# it cannot read, and the refusal has to stay the resolution failure that names the errno —
+# this check's sentence would blame a directory that is not there and offer a new name, which
+# is what was passed, as the way past it.
+wd_run /etc/passwd/w
+if [ "$wd_rc" = "3" ] && grep -qF -- "--work /etc/passwd/w: it could not be resolved: NOTDIR" "$WD/out.txt" && ! grep -qF "neither its kind nor its owner" "$WD/out.txt"; then
+    echo "ok   a --work under a regular file is refused by the resolution failure that names ENOTDIR"
+else
+    wd_fail "a --work under a regular file did not keep the resolution failure's ENOTDIR"
+fi
+
+: > "$WD/file"
+wd_run "$WD/file"
+if [ "$wd_rc" = "3" ] && grep -qF -- "--work $WD/file is not a directory" "$WD/out.txt"; then
+    echo "ok   a regular file named as --work is refused as not a directory"
+else
+    wd_fail "a regular file named as --work was not refused as not a directory"
+fi
+
+# The default name itself (#692's title), which every other leg here names explicitly
+# and so never reaches. Whatever is at /tmp/sideeye-work is moved aside and put back:
+# a link is planted at the default, to the runner's own directory, and the run passes no
+# --work at all. An implementation that checked only a NAMED --work passes every leg
+# above and fails this one.
+wd_aside=""
+if [ -e /tmp/sideeye-work ] || [ -L /tmp/sideeye-work ]; then
+    if mv /tmp/sideeye-work "$WD/aside" 2>/dev/null; then wd_aside="$WD/aside"; else wd_aside="stuck"; fi
+fi
+if [ "$wd_aside" = "stuck" ]; then
+    not_measured=$((not_measured + 1))
+    echo "     NOT MEASURED: /tmp/sideeye-work is there and could not be moved aside, so the default name was not driven"
+else
+    ln -s "$WD/own" /tmp/sideeye-work
+    wd_run ""
+    rm -f /tmp/sideeye-work
+    [ -n "$wd_aside" ] && mv "$wd_aside" /tmp/sideeye-work
+    if [ "$wd_rc" = "3" ] && grep -qF -- "--work /tmp/sideeye-work is a symbolic link" "$WD/out.txt"; then
+        echo "ok   the default work directory, a planted link, is refused by name with no --work given"
+    else
+        wd_fail "a link planted at the default /tmp/sideeye-work was followed with no --work given"
+    fi
+fi
+
+# The owner half needs chown, like 2so's. The runner is uid 0 in the root container and
+# has passwordless sudo on CI; anywhere else it is counted as not measured, not skipped.
+mkdir -p "$WD/theirs"
+if { [ "$(id -u)" = "0" ] && chown 65534 "$WD/theirs"; } 2>/dev/null || sudo -n chown 65534 "$WD/theirs" 2>/dev/null; then
+    wd_run "$WD/theirs"
+    if [ "$wd_rc" = "3" ] && grep -qF -- "--work $WD/theirs belongs to uid 65534, not to you" "$WD/out.txt" && [ -z "$(ls -A "$WD/theirs")" ]; then
+        echo "ok   a work directory owned by uid 65534 is refused by uid, and nothing was written under it"
+    else
+        wd_fail "a work directory owned by uid 65534 was not refused before anything was written under it"
+    fi
+    { chown "$(id -u)" "$WD/theirs" || sudo -n chown "$(id -u)" "$WD/theirs"; } 2>/dev/null
+else
+    not_measured=$((not_measured + 1))
+    echo "     NOT MEASURED: the owner half of #692 needs chown (root or passwordless sudo); this host has neither"
+fi
+{ rm -rf "$WD" || sudo -n rm -rf "$WD"; } 2>/dev/null
+
 echo "=========== check 2al: the sweep's committed logs carry no machine layout (#350) ==========="
 # The raw oracle text is strace output, so its paths are what the tool saw — which on
 # this apparatus is the sweep machine's layout, operator's home included, in a public
