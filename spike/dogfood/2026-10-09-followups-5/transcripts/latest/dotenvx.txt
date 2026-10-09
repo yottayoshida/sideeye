@@ -1,0 +1,29 @@
++ mkdir -p /work/dx
++ cd /work/dx
++ printf DB_PASSWORD=hunter2\n
++ strace -f -qq -P /work/dx/.env -e trace=write,pwrite64 -e inject=write,pwrite64:signal=KILL dotenvx encrypt -f .env
+[pid    11] --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=22, si_uid=0, si_status=127, si_utime=0, si_stime=0} ---
+⚠ OS secret store unavailable; saving private key to .env.keys
+[pid    20] write(21, "#/-------------------[DOTENV_PUB"..., 506) = ?
+[pid    17] +++ killed by SIGKILL +++
+[pid    21] +++ killed by SIGKILL +++
+[pid    18] +++ killed by SIGKILL +++
+[pid    16] +++ killed by SIGKILL +++
+[pid    15] +++ killed by SIGKILL +++
+[pid    14] +++ killed by SIGKILL +++
+[pid    12] +++ killed by SIGKILL +++
+[pid    20] +++ killed by SIGKILL +++
+[pid    13] +++ killed by SIGKILL +++
+[pid    19] +++ killed by SIGKILL +++
++++ killed by SIGKILL +++
+Killed
++ echo exit 137
+exit 137
++ ls -la
++ awk {print $5, $NF}
+ 12
+4096 .
+4096 ..
+0 .env
+404 .env.keys
++ cat .env

@@ -1,0 +1,8 @@
+# andreafrancia/trash-cli#414: one trash-put into a trash directory already holding three trashed files, the
+# live file and the trash in one state directory (trash-put renames across them).
+[world]
+state = "/s/tc"
+
+[define]
+operation = "/opt/tc0245/bin/trash-put /s/tc/live/doomed.txt"
+cwd       = "/s/tc"

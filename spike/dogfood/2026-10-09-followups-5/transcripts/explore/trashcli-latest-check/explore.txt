@@ -1,0 +1,27 @@
+falsify: trash-list: Parse Error: /s/tc/data/Trash/info/kept2.txt.trashinfo: Unable to parse Path.
+world 5: trash-list: Parse Error: /s/tc/data/Trash/info/doomed.txt.trashinfo: Unable to parse Path.
+FAIL  1 of 7 explored worlds violated an invariant
+
+invariant   the checker (L2)
+earliest    crash point 5 of 6
+            after  open(/s/tc/data/Trash/info/doomed.txt.trashinfo)
+            before write(/s/tc/data/Trash/info/doomed.txt.trashinfo)
+path        (named by the checker, not by path)
+observed    the checker exited non-zero after restart
+cwd         /s/tc
+
+explored    7 worlds (crash points 6 + 1 baseline)
+expected    exit 0
+atomicity   11 path(s) judged pre-or-post
+oracle      agreed on 6 operations (2278 syscall lines examined, 728 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 7 world(s)
+l1          no marker configured
+case        /out/trashcli-latest-check/work-explore/cases/000001.json
+replay      sideeye replay /out/trashcli-latest-check/work-explore/cases/000001.json --shim /opt/se/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so
+evidence    sideeye evidence /out/trashcli-latest-check/work-explore/evidence/000001.json
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/tc && unset SIDEEYE_KILL_GROUP && : > /out/trashcli-latest-check/work-explore/trace-repro.bin && SIDEEYE_STATE_DIR=/s/tc SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/trashcli-latest-check/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=5 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= /opt/py/bin/trash-put /s/tc/live/doomed.txt </dev/null)
+sideeye: json sha256=facf9b1c98297e570a54c350bb92e77f7ef501c30016bf879698f8c8f990afed;

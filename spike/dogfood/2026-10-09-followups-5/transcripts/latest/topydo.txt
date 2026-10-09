@@ -1,0 +1,21 @@
++ mkdir -p /work/td
++ cd /work/td
++ T=/opt/py/bin/topydo -t todo.txt -d done.txt
++ /opt/py/bin/topydo -t todo.txt -d done.txt add seed-task
+|  1| 2026-10-09 seed-task
++ /opt/py/bin/topydo -t todo.txt -d done.txt add water-plants
+|  2| 2026-10-09 water-plants
++ date +%F
++ printf %s seed-task\n 2026-10-09
++ /opt/py/bin/topydo -t todo.txt -d done.txt ls
+|1| 2026-10-09 seed-task
++ /opt/py/bin/topydo -t todo.txt -d done.txt revert
+Reverted to state before: add seed-task
++ echo --- ls after revert
++ /opt/py/bin/topydo -t todo.txt -d done.txt ls
+--- ls after revert
++ wc -c
++ echo --- todo.txt: 1 bytes
++ cat todo.txt
+--- todo.txt: 1 bytes
+

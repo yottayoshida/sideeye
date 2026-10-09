@@ -1,0 +1,14 @@
++ mkdir -p /work/tf
++ cd /work/tf
++ printf variable "a" {\ndefault="x"\n  type =    string\n}\n\nlocals {\n    b = var.a\nc =   "y"\n}\n
++ wc -c
+84
++ ulimit -f 0
++ TF_LOG=trace /opt/bin/terraform fmt -no-color
++ grep -E Formatting|Failed|Error
+2026-10-09T12:28:05.983Z [TRACE] terraform fmt: Formatting main.tf
+Error: Failed to write main.tf
++ echo exit 0
++ wc -c
+exit 0
+0

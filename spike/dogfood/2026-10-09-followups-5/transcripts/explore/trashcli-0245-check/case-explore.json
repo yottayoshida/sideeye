@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.10.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/tc",
+    "operation": "/opt/tc0245/bin/trash-put /s/tc/live/doomed.txt",
+    "check": "/ap/defines/trashcli-0245-check/check.sh",
+    "cwd": "/s/tc",
+    "expected_status": 0
+  },
+  "k": 5,
+  "ops_total": 6,
+  "prefix_hash": "a5bd9bcb66c37c36",
+  "after_class": "open",
+  "after_path": "/s/tc/data/Trash/info/doomed.txt.trashinfo",
+  "before_class": "write",
+  "before_path": "/s/tc/data/Trash/info/doomed.txt.trashinfo",
+  "violation": "checker"
+}

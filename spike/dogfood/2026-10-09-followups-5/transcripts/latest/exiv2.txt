@@ -1,0 +1,31 @@
++ export LD_LIBRARY_PATH=/opt/exiv2/lib
++ mkdir -p /work/ex
++ cd /work/ex
++ /opt/py/bin/python -c from PIL import Image; Image.new('RGB',(128,128),(0,128,0)).save('pic1.jpg')
++ /opt/py/bin/python -c from PIL import Image; Image.new('RGB',(128,128),(0,128,0)).save('pic2.jpg')
++ /opt/py/bin/python -c from PIL import Image; Image.new('RGB',(128,128),(0,128,0)).save('pic3.jpg')
++ ls -l pic1.jpg pic2.jpg pic3.jpg
++ awk {print $5, $NF}
+885 pic1.jpg
+885 pic2.jpg
+885 pic3.jpg
++ strace -f -qq -P /work/ex/pic1.jpg -e trace=openat,write -e inject=write:signal=KILL /opt/exiv2/bin/exiv2 rm pic1.jpg pic2.jpg pic3.jpg
+write(3, "\377\330\377\340\0\20JFIF\0\1\1\0\0\1\0\1\0\0\377\333\0C\0\10\6\6\7\6\5\10"..., 885) = ?
++++ killed by SIGKILL +++
+exit 137
+Killed
++ echo exit 137
++ ls -l pic1.jpg pic2.jpg pic3.jpg
++ awk {print $5, $NF}
+0 pic1.jpg
+885 pic2.jpg
+885 pic3.jpg
++ /opt/py/bin/python -c from PIL import Image; Image.open('pic1.jpg').load(); print('pic1.jpg reads')
++ tail -1
+PIL.UnidentifiedImageError: cannot identify image file 'pic1.jpg'
++ /opt/py/bin/python -c from PIL import Image; Image.open('pic2.jpg').load(); print('pic2.jpg reads')
++ tail -1
+pic2.jpg reads
++ /opt/py/bin/python -c from PIL import Image; Image.open('pic3.jpg').load(); print('pic3.jpg reads')
++ tail -1
+pic3.jpg reads
