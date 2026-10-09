@@ -24,3 +24,14 @@ column.
 | jump (scores) | — | FAIL (its #9: scores.json malformed on a full disk) |
 | keyring with keyrings.alt's plaintext file | — | FAIL |
 | git-lfs `install` | **no**: every write is a `git config` child (`child_touched_state_dir`) | — |
+
+## The threads wall's last tools, each with its own switch for one thread (before they run)
+
+| target | switch | prediction |
+|---|---|---|
+| zstd (Debian) `--rm` | `--single-thread` | past the wall; a verdict, PASS (the output is new, the input removed after it is written) |
+| lz4 (Debian) `--rm` | `-T1` (2026-10-02 used `-T2`) | past the wall; PASS, the same shape |
+| beets (Debian) `import` | `threaded: no` in its config | past the wall, then another refusal or a verdict on its SQLite library |
+| rustic 0.11.4, prek 0.5.5, codex 0.160.0, steamguard 0.18.4 | `RAYON_NUM_THREADS=1 TOKIO_WORKER_THREADS=1` | **not** past it: their file calls run on a blocking pool beside the worker |
+
+Not tried, with the reason: electrum and basic-memory (Python threads, no switch for one).
