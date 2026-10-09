@@ -92,7 +92,9 @@ catches a signal while its call waits for the supervisor has the call restarted 
    moves, and a bump would turn every saved case into `case_no_longer_applies` for nothing (ADR 0059
    widened the trap set without one). A case still does not record its mode (ADR 0052's known
    limit): replayed without the flag, a static target's case refuses `no_shim_marker`, never a wrong
-   verdict. The report's `replay` and `reproduce` lines name `--observe supervised` instead of a
+   verdict. **Amended 2026-10-09 (ADR 0100):** a case saved under this mode now records it
+   (case_version 6) and replays under it without the flag, so the refusal above is left to cases
+   saved before that change. The report's `replay` and `reproduce` lines name `--observe supervised` instead of a
    shim. The static `no_shim_marker` detail says, beside `class_wall`, that this mode exists.
    **Amended 2026-09-29 (ADR 0090): the "no new `next_step`" of this item, and the detail
    sentence, no longer hold.** `observe_supervised` was added, and the detail line states the
@@ -129,7 +131,8 @@ catches a signal while its call waits for the supervisor has the call restarted 
   between the read and the call — the design assumes a target that is not working against its
   observer, as the shim does.
 - `sideeye_replay_case` over MCP has no `observe`, so a supervised case cannot be replayed through it
-  (ADR 0074 kept replay's surface fixed); `sideeye_explore_config` gained the value (frozen surface
+  (ADR 0074 kept replay's surface fixed) — **amended 2026-10-09 (ADR 0100): it can now, with the
+  surface still fixed, because the case carries the mode and the engine takes it from there;** `sideeye_explore_config` gained the value (frozen surface
   5, additive, `docs/contract-freeze.md`).
 - A test engine, `sideeye-testsupervisedelay` (`-Dtest-supervise-delay`), holds each answer 2 ms so
   the acceptance leg for `WAIT_KILLABLE_RECV` does not depend on a race: with the shipped engine the

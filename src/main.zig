@@ -698,8 +698,8 @@ fn phaseDefine(run: *Run) void {
         const c = parsed.value;
         if (!std.mem.eql(u8, c.schema, "sideeye/case"))
             setupError(.define_invalid, "the file does not declare itself a sideeye case");
-        if (c.case_version != 1 and c.case_version != 2 and c.case_version != 3 and c.case_version != 4 and c.case_version != 5)
-            setupError(.define_invalid, "this binary understands case schema versions 1, 2, 3, 4 and 5 only");
+        if (c.case_version < 1 or c.case_version > 6)
+            setupError(.define_invalid, "this binary understands case schema versions 1, 2, 3, 4, 5 and 6 only");
         // The same travel-together law, extended to the command shape (ADR 0019): the
         // argv form arrived with version 3, so an older file carrying it is not an
         // older file — it is malformed, and reading it under a guessed contract would
@@ -720,7 +720,7 @@ fn phaseDefine(run: *Run) void {
         if (c.case_version == 1 and c.define.expected_status != null)
             setupError(.define_invalid, "a case_version 1 file cannot carry an expected_status declaration; it arrived with version 2");
         if (c.case_version >= 2 and c.define.expected_status == null)
-            setupError(.define_invalid, "a case_version 2, 3, 4 or 5 file must carry define.expected_status; the case freezes the declaration");
+            setupError(.define_invalid, "a case_version 2, 3, 4, 5 or 6 file must carry define.expected_status; the case freezes the declaration");
         // The same law again, for the directory the define declared it runs in. A cwd is
         // part of what the counterexample was found against — replaying the same commands
         // somewhere else is replaying a different define — so the version moves with it.
@@ -743,9 +743,25 @@ fn phaseDefine(run: *Run) void {
         // normalised, in the apply block below, with the same refusals the flag gives.
         if (c.case_version < 5 and c.define.scratch != null)
             setupError(.define_invalid, "a case_version 1, 2, 3 or 4 file cannot carry a scratch declaration; it arrived with version 5");
+        // Version 6 (#691, ADR 0100) carries the observation mode, and only a mode other than the
+        // default. It is a third independent optional fact, so it keeps version 5's law — every
+        // key the ladder's top rungs introduced is spelled — with one change: `scratch` may be
+        // the empty array there, because version 6 exists for the mode, not for scratch. Both
+        // directions again: an older file carrying `observe` is malformed, and a version-6 file
+        // without a mode it could not have been written for — absent, or the default — has
+        // lost the fact the version exists to freeze.
+        if (c.case_version < 6 and c.observe != null)
+            setupError(.define_invalid, "a case_version 1, 2, 3, 4 or 5 file cannot carry an observation mode; it arrived with version 6");
+        if (c.case_version == 6) {
+            const m = c.observe orelse setupError(.define_invalid, "a case_version 6 file must carry observe, `syscalls` or `supervised`; the version exists to freeze it");
+            const obs = contract.ObserveMode.parse(m) orelse setupError(.define_invalid, "a case_version 6 file's observe names no mode this binary knows; it must be `syscalls` or `supervised`");
+            if (obs == .wrappers) setupError(.define_invalid, "a case_version 6 file's observe must be `syscalls` or `supervised`: a case counted under the default is written at the version its define asks for");
+        }
         if (c.case_version == 5) {
             const decl = c.define.scratch orelse setupError(.define_invalid, "a case_version 5 file must carry define.scratch as a non-empty array; the version exists to freeze it");
             if (decl.len == 0) setupError(.define_invalid, "a case_version 5 file must carry define.scratch as a non-empty array; the version exists to freeze it");
+        }
+        if (c.case_version >= 5) {
             const raw = std.json.parseFromSlice(std.json.Value, rarena, ctext, .{}) catch
                 setupError(.define_invalid, "the case file could not be parsed as a sideeye case");
             const def: std.json.Value = switch (raw.value) {
@@ -757,7 +773,16 @@ fn phaseDefine(run: *Run) void {
                 else => false,
             };
             if (!has_cwd)
-                setupError(.define_invalid, "a case_version 5 file must spell define.cwd, as null when none was declared: from version 5 both cwd and scratch are explicit");
+                setupError(.define_invalid, "a case_version 5 or 6 file must spell define.cwd, as null when none was declared: from version 5 both cwd and scratch are explicit");
+            // The typed parse reads an absent `scratch` and a JSON `null` alike, so the key and
+            // its shape are asked of the untyped value. Version 5 already refused both through
+            // the non-empty gate above; version 6, where empty is allowed, needs it here.
+            const scratch_is_array = switch (def) {
+                .object => |o| if (o.get("scratch")) |v| v == .array else false,
+                else => false,
+            };
+            if (!scratch_is_array)
+                setupError(.define_invalid, "a case_version 6 file must spell define.scratch as an array, empty when none was declared: from version 5 both cwd and scratch are explicit");
         }
         // A relative `state` resolves against the CASE FILE, not the cwd of whoever
         // invoked the replay (#325). ADR 0007 Decision 4 states the rule for a
@@ -832,9 +857,27 @@ fn phaseDefine(run: *Run) void {
         replay_case = c;
         only_k = c.k;
         // From here on, every verdict — including a refusal — names the case it is
-        // about, in text and JSON alike. Set before the contract gate so the one
-        // refusal this block raises names it too.
+        // about: in the JSON's `case` always, and in the text where the verdict prints its
+        // account block (a SETUP ERROR's text is its one sentence). Set before the contract
+        // gate so the one refusal this block raises names it too.
         report.case_note = case_arg.?;
+        // The mode the case was counted under (#691, ADR 0100), taken after `case_note` so the
+        // refusal below carries the case in its JSON `case`, like every refusal from here on;
+        // its sentence names the case too, since a SETUP ERROR's text prints no `case` line. Absent — every
+        // case before version 6, and every `wrappers` case — the flag or the default decides,
+        // as it always did. Present, it decides unless the caller named the same mode: a crash
+        // point is a number in one mode's count, and under another it addresses a different
+        // operation, which would be a verdict about a shifted address (surface 4).
+        if (c.observe) |m| {
+            const obs = contract.ObserveMode.parse(m).?; // vetted by the version gate above
+            if (args.observe_named and args.observe != obs)
+                setupErrorFmt(rarena, .define_invalid, "the case {s} was recorded under --observe {s} and its crash point is a number in that mode's count; replay it without --observe, or with --observe {s} (--observe {s} was given)", .{ textShown(rarena, case_arg.?), obs.name(), obs.name(), args.observe.name() });
+            args.observe = obs;
+            // Re-derived here rather than left to the recording phase: a refusal between this
+            // line and that one (`--state-under`, the destruction vet) would otherwise name
+            // the shim as the observer of a supervised case.
+            report.noteObserver(obs == .supervised);
+        }
         if (c.contract_version != contract.contract_version)
             unknown(.case_no_longer_applies, "the case was recorded under a different trace contract; the crash-point numbering does not carry over", .re_record);
         // --fresh-state (#69) is honoured further down, on state_abs — the guard in
@@ -1577,22 +1620,28 @@ fn phaseRecording(run: *Run) void {
     // Interrupted calls are dropped from the oracle's reading under this mode only (#217): its
     // counting observer is the kernel's notification, which a signal withdraws.
     oracle.fold_restarted = args.observe == .supervised;
+    // A replayed case's mode reaches here without the caller having typed it (#691, ADR 0100);
+    // the platform refusals below say where it came from rather than naming a flag nobody gave.
+    const mode_from = if (!args.observe_named and run.define.replay_case != null and run.define.replay_case.?.observe != null)
+        "the case being replayed records the mode it was counted under: "
+    else
+        "";
     if (args.observe == .supervised) {
         if (!supervise.available)
-            setupError(.platform_unsupported, "--observe supervised is Linux only, on aarch64 and x86_64: it counts through a seccomp user-notification filter, which this platform has no equivalent of");
+            setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe supervised is Linux only, on aarch64 and x86_64: it counts through a seccomp user-notification filter, which this platform has no equivalent of", .{mode_from});
         if (!supervise.kernelSupports())
-            setupError(.platform_unsupported, "--observe supervised needs a kernel that accepts a seccomp user-notification listener with SECCOMP_FILTER_FLAG_WAIT_KILLABLE_RECV (Linux 5.19 or later), and this one does not");
+            setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe supervised needs a kernel that accepts a seccomp user-notification listener with SECCOMP_FILTER_FLAG_WAIT_KILLABLE_RECV (Linux 5.19 or later), and this one does not", .{mode_from});
         // Required, not preferred (#217, review): the crash point's kill reaches a process that
         // left the process group only through a cgroup, and without the shim there is nothing
         // inside the process to notice that it left.
         if (containment.spawn(false) == null)
-            setupError(.environment, "--observe supervised needs a cgroup v2 the engine can create cgroups in (delegated to its user, or root): the crash point's kill reaches every process of the run through it, however one left the process group");
+            setupErrorFmt(arena_state.allocator(), .environment, "{s}--observe supervised needs a cgroup v2 the engine can create cgroups in (delegated to its user, or root): the crash point's kill reaches every process of the run through it, however one left the process group", .{mode_from});
     }
     if (args.observe == .syscalls) {
         if (builtin.os.tag != .linux)
-            setupError(.platform_unsupported, "--observe syscalls is Linux only: it installs a seccomp filter, which this platform has no equivalent of. macOS observes at the libc entry points (--observe wrappers, the default)");
+            setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe syscalls is Linux only: it installs a seccomp filter, which this platform has no equivalent of. macOS observes at the libc entry points (--observe wrappers, the default)", .{mode_from});
         if (!posix.seccompTrapAvailable())
-            setupError(.platform_unsupported, "--observe syscalls needs a kernel that accepts SECCOMP_RET_TRAP and this one does not (CONFIG_SECCOMP_FILTER); the default --observe wrappers works everywhere");
+            setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe syscalls needs a kernel that accepts SECCOMP_RET_TRAP and this one does not (CONFIG_SECCOMP_FILTER); the default --observe wrappers works everywhere", .{mode_from});
     }
 
     // Read before the spawn, not after: `--twice` reports the interval between the two
@@ -3428,13 +3477,12 @@ fn phaseReport(run: *Run) void {
             "";
         const replay_cmd = if (saved_case) |sc|
             (if (args.observe == .supervised)
-                // No shim to name, and the mode must be: a case does not record the mode that
-                // produced it (ADR 0052), and replayed without it a static target has no shim
-                // to count through (#217).
+                // No shim to name. The mode is named although the case now records it (#691,
+                // ADR 0100) and a replay without the flag takes it: the flag is accepted when it
+                // matches, and it tells the reader of the line which mode counted.
                 std.fmt.allocPrint(arena, "sideeye replay {s} --observe supervised{s}", .{ report.shellWord(arena, sc) catch sc, recovery_flags })
             else if (args.observe == .syscalls)
-                // The same reason, for the mode that counts at the kernel boundary (#711): without
-                // the flag the replay counts the default way and answers `case_no_longer_applies`.
+                // Named for the same reason, for the mode that counts at the kernel boundary (#711).
                 std.fmt.allocPrint(arena, "sideeye replay {s} --observe syscalls --shim {s}{s}", .{ report.shellWord(arena, sc) catch sc, report.shellWord(arena, shim) catch shim, recovery_flags })
             else
                 std.fmt.allocPrint(arena, "sideeye replay {s} --shim {s}{s}", .{ report.shellWord(arena, sc) catch sc, report.shellWord(arena, shim) catch shim, recovery_flags })) catch "-"

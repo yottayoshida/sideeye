@@ -67,7 +67,10 @@ rather than stylistic. First, no case this release wrote would replay on any ear
 every FAIL, including those whose defines are identical to ones a v5 reader handles today.
 Second, the ladder would begin moving for reasons that have nothing to do with the question:
 each later evidence field would push every case up a rung. The version ladder is a promise
-about *questions*, and an observation is not one.
+about *questions*, and an observation is not one. *(2026-10-09: version 6 was later taken, by
+ADR 0100, for the observation **mode** a non-default case was counted under — part of the
+question, since a crash point is a number in one mode's count. It moves only those cases, and
+both reasons above still hold for the evidence.)*
 
 **Put the fields in the report JSON only.** Rejected. The report is written only when
 `--json` names a path, so the bundle would exist for some FAILs and not others, and #607 asks
