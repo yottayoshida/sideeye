@@ -70,7 +70,7 @@ generation, the date and the groups.
   before the sweep. The B2 authoring clock is printed under the generation that first
   measured B2 only: g4 authored nothing. What else differs from g3 — the Debian packages
   of the day, the kernel, the VM, the runtime's AppArmor profile — is said before the sweep
-  in `spike/unknown-rate/g4-expected-before-reading.md`, and goes into the Platform section,
+  in g4's `expected-before-reading.md` (now `spike/unknown-rate/artifacts-g4/`), and goes into the Platform section,
   outside the generated block, with the results.
 - macOS keeps a derived column and gains no measured one: the B and B2 targets are Debian
   packages and their defines assume Debian's paths and seeds.
