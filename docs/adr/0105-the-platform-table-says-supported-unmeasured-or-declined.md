@@ -109,10 +109,11 @@ rulings, the same day:
   in all three modes); WSL1 (it starts and refuses in every mode — its kernel has no `statx`, and
   the engine reads files on Linux through `statx` only); Linux on a kernel older than 4.18, not
   measured. **declined** therefore also covers a platform the release has an asset for, where the
-  binary does not start or the engine has no code for what it lacks, on the owner's ruling; the
-  cell says which.
+  binary does not start, the engine has no code for what it lacks, or the owner rules it out
+  unmeasured; each by the owner's ruling, and the cell says which.
 - **supported**: NixOS with nix-ld (in the `nixos/nix` forms; NixOS itself is not booted, the
   earlier ruling); macOS 14 and 15, on the demo, as macOS 26 is — `--oracle-fs-usage` judged the
   probe's `dd` on none of the three, for two defects that are the engine's (#795, #796).
 - The Status column holds one of the three words. What qualifies it — a mode that refuses, a
-  layer it needs, a ruling — is in the cell.
+  layer it needs, a ruling and its date — is in the cell. A row over a range of versions rests on
+  the points its cell names.
