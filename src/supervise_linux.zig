@@ -66,8 +66,8 @@ const Watched = struct {
 const watched: []const Watched = switch (builtin.cpu.arch) {
     .aarch64 => &common_watched,
     .x86_64 => &(common_watched ++ [_]Watched{
-        .{ .sys = .open, .flag_arg = 1 }, .{ .sys = .creat },  .{ .sys = .rename },
-        .{ .sys = .unlink },              .{ .sys = .rmdir },  .{ .sys = .mkdir },
+        .{ .sys = .open, .flag_arg = 1 }, .{ .sys = .creat },   .{ .sys = .rename },
+        .{ .sys = .unlink },              .{ .sys = .rmdir },   .{ .sys = .mkdir },
         .{ .sys = .link },                .{ .sys = .symlink }, .{ .sys = .fork },
         .{ .sys = .vfork },
     }),
@@ -75,14 +75,14 @@ const watched: []const Watched = switch (builtin.cpu.arch) {
 };
 
 const common_watched = [_]Watched{
-    .{ .sys = .write },           .{ .sys = .pwrite64 },  .{ .sys = .writev },
-    .{ .sys = .pwritev },         .{ .sys = .pwritev2 },  .{ .sys = .sendfile },
+    .{ .sys = .write },           .{ .sys = .pwrite64 },              .{ .sys = .writev },
+    .{ .sys = .pwritev },         .{ .sys = .pwritev2 },              .{ .sys = .sendfile },
     .{ .sys = .copy_file_range }, .{ .sys = .openat, .flag_arg = 2 }, .{ .sys = .openat2 },
-    .{ .sys = .renameat },        .{ .sys = .renameat2 }, .{ .sys = .unlinkat },
-    .{ .sys = .mkdirat },         .{ .sys = .linkat },    .{ .sys = .symlinkat },
-    .{ .sys = .truncate },        .{ .sys = .ftruncate }, .{ .sys = .fsync },
-    .{ .sys = .fdatasync },       .{ .sys = .close },     .{ .sys = .execve },
-    .{ .sys = .execveat },        .{ .sys = .clone },     .{ .sys = .clone3 },
+    .{ .sys = .renameat },        .{ .sys = .renameat2 },             .{ .sys = .unlinkat },
+    .{ .sys = .mkdirat },         .{ .sys = .linkat },                .{ .sys = .symlinkat },
+    .{ .sys = .truncate },        .{ .sys = .ftruncate },             .{ .sys = .fsync },
+    .{ .sys = .fdatasync },       .{ .sys = .close },                 .{ .sys = .execve },
+    .{ .sys = .execveat },        .{ .sys = .clone },                 .{ .sys = .clone3 },
     .{ .sys = .setsid },          .{ .sys = .setpgid },
 };
 

@@ -441,7 +441,6 @@ fn runOperationObserved(
     }, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation");
 }
 
-
 /// The capture an observed run writes its evidence to, on both of the two branches
 /// above and for both of the two paths this function is called with
 /// (`<work>/stdout-record.txt`, and `preflight --twice`'s `stdout-record-2.txt`).
@@ -2016,8 +2015,7 @@ fn phaseStructural(run: *Run) void {
             const broke = "the target replaced its own image and the chain of observation broke: no continuation record carrying the operation count followed, or the subject announced itself again without an exec record (an execl-family call, a static image, or a stripped environment cannot carry the count). An unbroken self-exec chain is judged; a separate process is not (#123)";
             const sx = boundary.selfExecStep(arena);
             unknown(.child_process_detected, std.fmt.allocPrint(arena, "{s}{s}", .{ broke, sx.detail }) catch broke, sx.next);
-        } else
-            unknown(.child_process_detected, "an image replacement was recorded before the subject announced itself; refusing is the safe misreading", .unwrap_or_class_wall),
+        } else unknown(.child_process_detected, "an image replacement was recorded before the subject announced itself; refusing is the safe misreading", .unwrap_or_class_wall),
         else => {},
     };
     // A process that left the process group (#559's second half): judged where the engine held
