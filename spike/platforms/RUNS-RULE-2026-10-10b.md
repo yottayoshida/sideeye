@@ -77,6 +77,17 @@ new runs and that record stands as it was read.
   tcg`), so its stops can never be a result. `vm.sh` boots that image with `-cpu cortex-a72`
   instead of `max`. If it leaves no result in the next `jobs: vm` dispatch, its cell goes back to
   the owner with both runs' `vm.txt`, rather than taking a reason the list below does not give.
+- **The hardened legs in the page's current form** (added 2026-10-10, after run 38042197677 and
+  before the dispatch it governs): after run 38031881569, `docs/mcp.md`'s container block gained
+  `--user "$(id -u):$(id -g)"` (#789, ADR 0114), and `runner.sh`'s `hardened-cli` and
+  `hardened-mcp` with it. That run's two legs measured the page as it read before, as root; they
+  stay counted for that form. The first `jobs: linux` dispatch at a commit that carries this item
+  counts its `hardened-cli` and `hardened-mcp`, both CPUs, for the current form, with that
+  dispatch's `host` legs as their control. They are added as `linux-x86_64-user/` and
+  `linux-aarch64-user/`, holding those two directories; the rest of that dispatch goes under
+  `spike/platforms/2026-10-10b/runs/<run id>/`. A `jobs: linux` dispatch at an earlier commit,
+  made after #789 (another session's, to see the same legs), is listed and not counted. The cell
+  names both forms.
 - **x86_64 WSL2's base leg was decided on 2026-10-10** and is not measured again. If WSL2 does not
   start in a run of this series, the legs that needed it are recorded as "the runner's WSL2 did
   not start in run N" with the `wsl.txt` lines.
