@@ -1,0 +1,28 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____________________________ test_no_crash_window _____________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_no_crash_window0')
+
+    def test_no_crash_window(tmp_path):
+        sideeye = shutil.which("sideeye")
+        assert sideeye, "sideeye is not on PATH"
+        report = tmp_path / "report.json"
+        run = subprocess.run(
+            [sideeye, "explore", "--config", str(HERE / "sideeye.toml"),
+             "--allow-unverified",
+             "--work", str(tmp_path / "work"), "--json", str(report)],
+            capture_output=True, text=True,
+        )
+        assert run.returncode == 0, run.stdout + run.stderr
+        result = json.loads(report.read_text())
+>       assert result["verdict"] == "PASS" and result["oracle_verified"], result
+E       AssertionError: {'case': '(none)', 'checker': 'none configured', 'checker_declared': False, 'command_cwd': '/tmp/py', ...}
+E       assert ('PASS' == 'PASS'
+E         
+E           PASS and False)
+
+test_crash_consistency.py:21: AssertionError
+=========================== short test summary info ============================
+FAILED test_crash_consistency.py::test_no_crash_window - AssertionError: {'ca...
+1 failed in 0.04s

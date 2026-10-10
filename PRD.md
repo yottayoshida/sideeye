@@ -243,6 +243,6 @@ A null result was budgeted for and, in the first campaign, did not happen; campa
 
 ## Out of scope through 1.0
 
-Everything in DESIGN §15, unchanged: network faults, clock manipulation, thread scheduling, distributed systems, remote consistency, security scanning, static analysis, AI code review, formal verification, GUI, cloud, LLM verdicts, badges.
+Everything in DESIGN §15, unchanged: network faults, clock manipulation, thread scheduling, distributed systems, remote consistency, security scanning, static analysis, AI code review, formal verification, GUI, cloud, LLM verdicts, a "Passed Sideeye" badge.
 
 Power failure / torn writes is first in line for *consideration* after 1.0 (DESIGN §21) — not before.

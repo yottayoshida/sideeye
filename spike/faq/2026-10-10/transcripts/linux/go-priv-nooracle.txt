@@ -1,0 +1,38 @@
+--- FAIL: TestNoCrashWindow (0.11s)
+    keytool_test.go:39: wanted a verified PASS:
+        {
+          "schema": "sideeye/report",
+          "schema_status": "frozen",
+          "contract_version": 19,
+          "verdict": "PASS",
+          "exit_code": 0,
+          "oracle_verified": false,
+          "crash_points": 4,
+          "explored": 5,
+          "violations": 0,
+          "expected_status": 0,
+          "command_cwd": "/tmp/go",
+          "command_cwd_declared": true,
+          "l0": "1 path(s) judged pre-or-post",
+          "l1": "no marker configured",
+          "case": "(none)",
+          "replay": "-",
+          "evidence": "-",
+          "oracle": "NOT VERIFIED (--allow-unverified) — nothing checked what the supervising engine counted from outside the target, with no shim loaded",
+          "metadata_writes": "not observable (no oracle ran; the supervising engine is not notified of ownership/permission/timestamp calls)",
+          "checker": "none configured",
+          "processes": "the supervising engine recorded a thread and no second witness ran; a thread was created in an explored world; the supervising engine recorded 4 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)",
+          "paths_attributed_to_rename": 0,
+          "not_tested": ["power loss", "torn writes", "concurrent processes"],
+          "checker_declared": false,
+          "processes_children_admitted": false,
+          "processes_image_changes": 0,
+          "processes_threads_created": 4,
+          "processes_writer_threads": 1,
+          "l0_judged_paths": ["key.json"],
+          "l0_judged_paths_omitted": 0,
+          "l0_judged_paths_touched": 1
+        }
+FAIL
+FAIL	example.com/keytool	0.110s
+FAIL

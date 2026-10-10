@@ -1,0 +1,30 @@
+--- FAIL: TestNoCrashWindow (0.53s)
+    keytool_test.go:25: sideeye: exit status 1
+        FAIL  1 of 3 explored worlds violated an invariant
+        
+        invariant   built-in atomicity (L0)
+        earliest    crash point 2 of 2
+                    after  open(/private/tmp/keytool-go-state/key.json)
+                    before write(/private/tmp/keytool-go-state/key.json)
+        path        key.json
+        observed    holding neither the old nor the new content
+        cwd         $MACDIR/go
+        
+        explored    3 worlds (crash points 2 + 1 baseline)
+        expected    exit 0
+        atomicity   1 path(s) judged pre-or-post
+        oracle      NOT VERIFIED (--allow-unverified) — nothing checked what the shim reported
+        metadata    not observable (no oracle ran; the shim does not interpose ownership/permission/timestamp calls)
+        checker     none configured
+        l1          no marker configured
+        case        $TMPDIR/TestNoCrashWindow2072935885/001/work/cases/000001.json
+        replay      sideeye replay $TMPDIR/TestNoCrashWindow2072935885/001/work/cases/000001.json --shim /opt/homebrew/Cellar/sideeye/1.10.0/lib/libsideeye_shim.dylib
+        evidence    sideeye evidence $TMPDIR/TestNoCrashWindow2072935885/001/work/evidence/000001.json
+        processes   the shim recorded a thread and no second witness ran; a thread was created in an explored world; the shim recorded 4 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+        not tested  power loss, torn writes, concurrent processes
+        
+        reproduce   (cd $MACDIR/go && unset SIDEEYE_KILL_GROUP && : > $TMPDIR/TestNoCrashWindow2072935885/001/work/trace-repro.bin && SIDEEYE_STATE_DIR=/private/tmp/keytool-go-state SIDEEYE_STATE_DIR_ALT=/tmp/keytool-go-state SIDEEYE_TRACE_PATH=$TMPDIR/TestNoCrashWindow2072935885/001/work/trace-repro.bin DYLD_INSERT_LIBRARIES=/opt/homebrew/Cellar/sideeye/1.10.0/lib/libsideeye_shim.dylib SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= $MACDIR/go/./bin/keytool rotate </dev/null)
+        sideeye: json sha256=451ed636b2f60c00b9b6f1a0f7fa0e0d414dd4e735c558e4fc66a67d751c4cb7;
+FAIL
+FAIL	example.com/keytool	0.724s
+FAIL
