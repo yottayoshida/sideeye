@@ -87,7 +87,11 @@ static parent whose writer is a dynamic child — lefthook under `oracle_missed_
 PASS 5/5 under `--observe supervised` on 2026-10-02, and roswell under `unresolvable_path`
 (2026-10-07) — which #685 is to send to `--observe supervised` from the image the engine already
 read. The diff's first review found the lefthook row, which the first wording of this decision
-had read as the default mode's; the owner kept #685 its own issue (2026-10-08).
+had read as the default mode's; the owner kept #685 its own issue (2026-10-08). **Amended
+2026-10-10 (ADR 0108):** #685 did so, at the sites measured to cross — `oracle_missed_operation`
+where the shim announced itself from another process than the oracle's subject, and the recording
+run's `unresolvable_path` of kind `trace-closed-by-target` — with `observe_supervised_static_parent`;
+the two exceptions stand for every other shape.
 
 ## Alternatives considered
 

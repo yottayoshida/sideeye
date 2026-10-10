@@ -862,6 +862,9 @@ fn phaseDefine(run: *Run) void {
         // account block (a SETUP ERROR's text is its one sentence). Set before the contract
         // gate so the one refusal this block raises names it too.
         report.case_note = case_arg.?;
+        // A replay is never sent to another observation mode by a static parent's refusal
+        // (#685, ADR 0108): its crash point is a number in the mode it was counted under.
+        boundary.replaying = true;
         // The mode the case was counted under (#691, ADR 0100), taken after `case_note` so the
         // refusal below carries the case in its JSON `case`, like every refusal from here on;
         // its sentence names the case too, since a SETUP ERROR's text prints no `case` line. Absent — every
@@ -1969,8 +1972,10 @@ fn phaseStructural(run: *Run) void {
     // ahead of one that is not. The message names the refusing record for the same
     // reason #485 exists: a refusal that names a different operation than the one it is
     // about sends the reader looking in the wrong place.
+    // A statically linked operation whose child closed the shim's trace (roswell, #685) takes
+    // the mode that holds the trace itself; every other kind keeps the wall.
     if (trace.unresolved_refusing != null)
-        unknown(.unresolvable_path, boundary.unresolvedDetail(arena, trace.unresolved_refusing, "", "an operation was observed whose path could not be determined, so it cannot be placed among the crash points"), .class_wall);
+        unknown(.unresolvable_path, boundary.unresolvedDetail(arena, trace.unresolved_refusing, "", "an operation was observed whose path could not be determined, so it cannot be placed among the crash points"), boundary.staticParentNext(.class_wall, boundary.traceClosedByTarget(trace.unresolved_refusing)));
 
     // The shim's own `unsupported` refusal (v12). On Linux this arrives from the
     // oracle instead — same reason, same spelling shape ("renamex_np(RENAME_SWAP)"
@@ -2319,7 +2324,12 @@ fn phaseOracle(run: *Run) void {
                 // operations are counted, and a writer with no shim in its image is what
                 // ADR 0069 declined this step for. The step follows the wall the way
                 // `missedOperationNext` follows the mode (#599, ADR 0069).
-                unknown(reason, boundary.withOracleCapture(arena, why.detail, if (args.oracle != null) oracle_out else null, why.detail), boundary.childTouchedNext(why.wall, args.observe, builtin.os.tag == .linux));
+                // A static parent whose dynamic child carried the shim (#685) is the one more
+                // shape measured to cross, under supervised — and only on the shimmed arm.
+                unknown(reason, boundary.withOracleCapture(arena, why.detail, if (args.oracle != null) oracle_out else null, why.detail), boundary.staticParentNext(
+                    boundary.childTouchedNext(why.wall, args.observe, builtin.os.tag == .linux),
+                    why.wall == .shimmed_writer_unnumbered and boundary.shimAnnouncedElsewhere(trace.primary_pid, parsed.primary_pid),
+                ));
             }
             run.admitted.children_admitted = true;
             boundary.boundary_ev.children_judged = true;
@@ -2368,7 +2378,12 @@ fn phaseOracle(run: *Run) void {
                 shim_ops.items,
                 parsed.lines.items,
                 parsed.names.items,
-            ), boundary.missedOperationNext(args.observe, builtin.os.tag == .linux)),
+            ), boundary.staticParentNext(
+                boundary.missedOperationNext(args.observe, builtin.os.tag == .linux),
+                // aliyun-cli and lefthook (#685): a static parent, its dynamic child's shim the
+                // first to announce itself, and the parent's calls the operations nobody recorded.
+                boundary.shimAnnouncedElsewhere(trace.primary_pid, parsed.primary_pid),
+            )),
             .phantom => |p| unknown(.oracle_saw_phantom, report.divergenceDetail(
                 arena,
                 std.fmt.allocPrint(arena, "the {s} recorded an operation the oracle did not see{s}", .{ supervise.observerName(args.observe), mode_hint }) catch

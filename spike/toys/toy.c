@@ -303,6 +303,8 @@
  *                     it. The child's operation has no crash-point address; must refuse.
  *   TOY_SPAWN         posix_spawn a process that touches nothing and wait for it.
  *                     Tolerable: the subject's account remains complete.
+ *                     With TOY_SPAWN_PATH=<image>, spawn `<image> rotate` instead (#685).
+ *   TOY_EXEC_PATH     exec `<image> rotate` in this same process before writing anything (#685).
  *   TOY_FORK_WORLD    the same quiet fork as TOY_FORK, taken only when SIDEEYE_KILL_AT
  *                     is set — inside crash worlds, never in the recording run. The
  *                     recording-global boundary story then says "no boundary" while
@@ -697,11 +699,24 @@ static void maybe_leave_the_supported_region(void) {
         }
         if (p > 0) { int st; waitpid(p, &st, 0); }
     }
-    /* The tolerable spawn: a new process and a new image, touching nothing. */
+    /* The tolerable spawn: a new process and a new image, touching nothing.
+     * With TOY_SPAWN_PATH (#685) the child is that image run as `<path> rotate` instead,
+     * given this environment without the two TOY_SPAWN variables so it does not spawn in
+     * turn. Built static, this toy is then a static parent whose dynamic child carries the
+     * shim — the shape aliyun-cli 3.5.1 and roswell 26.02.116 have. The path is copied
+     * before the variable is removed, so nothing points into the entry unsetenv drops. */
     if (getenv("TOY_SPAWN")) {
-        static char *const av[] = { (char *)TOY_TRUE, NULL };
+        char spawn_path[4096] = TOY_TRUE;
+        const char *named = getenv("TOY_SPAWN_PATH");
+        if (named) {
+            snprintf(spawn_path, sizeof spawn_path, "%s", named);
+            unsetenv("TOY_SPAWN_PATH");
+            unsetenv("TOY_SPAWN");
+        }
+        char *const av_true[] = { spawn_path, NULL };
+        char *const av_rotate[] = { spawn_path, (char *)"rotate", NULL };
         pid_t sp;
-        if (posix_spawn(&sp, TOY_TRUE, NULL, NULL, av, environ) == 0) {
+        if (posix_spawn(&sp, spawn_path, NULL, NULL, named ? av_rotate : av_true, environ) == 0) {
             int st;
             waitpid(sp, &st, 0);
         }
@@ -1828,6 +1843,18 @@ int main(int argc, char **argv) {
             return 1;
         }
         return cmd_rotate();
+    }
+    /* #685: before writing anything, become another image in this same process — `<path>
+     * rotate` — the way a static launcher (gosu, a Go syscall.Exec) hands itself to a dynamic
+     * tool. Built static, the shim then announces itself from the pid strace started, which is
+     * not the static-parent shape. The variable is dropped so the new image does not exec again;
+     * a failed exec exits loudly rather than rotating in the wrong image. */
+    if (strcmp(argv[1], "rotate") == 0 && getenv("TOY_EXEC_PATH")) {
+        char exec_path[4096];
+        snprintf(exec_path, sizeof exec_path, "%s", getenv("TOY_EXEC_PATH"));
+        unsetenv("TOY_EXEC_PATH");
+        execl(exec_path, exec_path, "rotate", (char *)NULL);
+        _exit(127);
     }
     /* TOY_SELFEXEC: the tail-exec CLI shape #123 judges. Stage 1 writes one state
      * file (so the carried operation count is non-trivial), then replaces this

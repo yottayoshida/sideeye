@@ -41,6 +41,9 @@ what `--observe syscalls` finds behind it, and nothing the wrappers observation 
    would die before the report was written. A Linux kernel without the trap answers the flag with
    `platform_unsupported`, which says what is missing. (The first implementation asked the kernel;
    review found the new syscall.)
+   **Amended 2026-10-10 (ADR 0108):** where the operation's image is a statically linked 64-bit ELF and the
+   first process to announce a shim is not the one the oracle saw start — a static parent whose dynamic child
+   carried the shim — the step under either shim mode is `observe_supervised_static_parent` instead.
 
 2. **The sentence promises neither a verdict nor a cause**, and says nothing about what a refusal
    under that mode would name. Of a run that then fails, it says the mode *may* have killed a process

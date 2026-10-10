@@ -36,6 +36,9 @@ The step names `--observe syscalls` only when the writer is running an image **t
 in**: its last `exec`-or-`shim_ready` record is a `shim_ready`, and it recorded no operation of
 its own. Everything else keeps the step it had — a writer with no records, and one that
 announced itself and then exec'd away.
+**Amended 2026-10-10 (ADR 0108):** on that arm, a statically linked 64-bit operation whose first shim
+announced itself from another process — a static parent whose dynamic child carried the shim — takes
+`observe_supervised_static_parent` under either shim mode.
 
 The discriminator is the trace, read as a question about the **image** rather than the pid.
 Every record the shim writes reaches `engine.TraceInfo.ops`, kill point or not. `exec` is
