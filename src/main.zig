@@ -2150,6 +2150,10 @@ fn phaseStructural(run: *Run) void {
     run.admitted.crossed_boundary = crossed_boundary;
 }
 
+/// One constant for both forms of the `metadata` line: two copies of a sentence drift. `docs/cli.md`
+/// quotes it.
+const restore_carries = "Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore";
+
 /// Phase 5 of the run: The oracle comparison, and the crash points it leaves (`run.n`); may still change `run.admitted` when the oracle sees children.
 fn phaseOracle(run: *Run) void {
     const gpa = run.gpa;
@@ -2261,12 +2265,9 @@ fn phaseOracle(run: *Run) void {
         // block must still carry what the oracle saw being excluded (#121).
         report.metadata_note = blk: {
             const items = parsed.metadata_observed.items;
-            // The restore sentence rides BOTH branches: flattening is a property of
-            // restore, not of the target's syscalls — a setup-created 0600 file runs
-            // its crash worlds at 0644 whether or not the target ever chmods (R2,
-            // the buku shape: sqlite fchowns only as root, so the note would
-            // otherwise vanish exactly where the flattening bites hardest).
-            if (items.len == 0) break :blk "none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore";
+            // On both branches, not only when a metadata write was seen: what restore drops is
+            // restore's, and a target that never chmods still runs its worlds without an owner.
+            if (items.len == 0) break :blk "none observed. " ++ restore_carries;
             var names: std.ArrayList(u8) = .empty;
             var listed: std.ArrayList([]const u8) = .empty;
             for (items) |n| {
@@ -2289,7 +2290,7 @@ fn phaseOracle(run: *Run) void {
             }
             break :blk std.fmt.allocPrint(
                 arena,
-                "{d} ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): {s}. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore",
+                "{d} ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): {s}. " ++ restore_carries,
                 .{ items.len, names.items },
             ) catch "observed (detail unavailable)";
         };

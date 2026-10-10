@@ -300,6 +300,13 @@ const WalkCtx = struct {
     }
 };
 
+/// Not kept once the name stops being a directory: a link swapped in since the dirent would give
+/// its 0777 to the directory every world rebuilds.
+fn dirModeOf(stat: ?posix.KindMode) ?u16 {
+    const km = stat orelse return null;
+    return if (km.kind == .dir) km.mode else null;
+}
+
 fn walk(ctx: *WalkCtx, rel_prefix: []const u8, depth: usize) SnapshotError!void {
     if (depth > max_depth) return error.TooDeep;
 
@@ -343,7 +350,7 @@ fn walk(ctx: *WalkCtx, rel_prefix: []const u8, depth: usize) SnapshotError!void 
         var charged: usize = 0;
         switch (kind) {
             .dir => {
-                try ctx.entries.append(arena, .{ .rel = rel, .kind = .dir, .content = "" });
+                try ctx.entries.append(arena, .{ .rel = rel, .kind = .dir, .content = "", .mode = dirModeOf(posix.kindModeOfPathNoFollow(full.ptr)) });
                 // Charged before descending, so the ceiling is not reached only on the
                 // way back up out of a deep subtree.
                 try ctx.charge(0);
@@ -353,7 +360,8 @@ fn walk(ctx: *WalkCtx, rel_prefix: []const u8, depth: usize) SnapshotError!void 
             .file => {
                 var size: ?u64 = null;
                 var read_errno: ?c_int = null;
-                const content = read.readWholeDiag(arena, full.ptr, ctx.caps.file, &size, .follow, &read_errno) catch |e| {
+                var mode: ?u16 = null;
+                const content = read.readWholeDiag(arena, full.ptr, ctx.caps.file, &size, .follow, &read_errno, &mode) catch |e| {
                     if (ctx.diag) |d| switch (e) {
                         error.FileTooLarge => {
                             d.file.rel.set(rel);
@@ -370,7 +378,7 @@ fn walk(ctx: *WalkCtx, rel_prefix: []const u8, depth: usize) SnapshotError!void 
                     };
                     return e;
                 };
-                try ctx.entries.append(arena, .{ .rel = rel, .kind = .file, .content = content });
+                try ctx.entries.append(arena, .{ .rel = rel, .kind = .file, .content = content, .mode = mode });
                 charged = content.len;
             },
             .symlink => {
@@ -1116,8 +1124,14 @@ fn createRoot(root_z: [*:0]const u8, vet: RootVet) RestoreError!RootVet {
 /// world from a truncated file, and judgeL0 would then report a hybrid — a counterexample
 /// manufactured by the tool rather than found in the target. read.readWhole distinguishes
 /// these cases; the loop this replaced did not.
-fn writeFileEntryAt(dirfd: c_int, rel_z: [*:0]const u8, bytes: []const u8) RestoreError!void {
-    const wfd = posix.openat(dirfd, rel_z, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC | posix.O_NOFOLLOW | posix.O_CLOEXEC, @as(c_uint, 0o644));
+///
+/// `exclusive`, for a name the caller has just removed: without `O_EXCL` a hard link planted
+/// there is written into and chmodded.
+///
+/// `mode` goes on with `fchmod`, never through `openat`'s mode argument — the umask narrows that.
+fn writeFileEntryAt(dirfd: c_int, rel_z: [*:0]const u8, bytes: []const u8, mode: ?u16, exclusive: bool) RestoreError!void {
+    const excl: c_int = if (exclusive) posix.O_EXCL else 0;
+    const wfd = posix.openat(dirfd, rel_z, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC | posix.O_NOFOLLOW | posix.O_CLOEXEC | excl, @as(c_uint, 0o644));
     if (wfd < 0) return error.CreateFailed;
     defer _ = posix.close(wfd);
     var off: usize = 0;
@@ -1126,6 +1140,22 @@ fn writeFileEntryAt(dirfd: c_int, rel_z: [*:0]const u8, bytes: []const u8) Resto
         if (w <= 0) return error.CreateFailed;
         off += @intCast(w);
     }
+    if (mode) |m| try applyMode(wfd, m);
+}
+
+/// A refused `fchmod` passes only when the bits are already there (a mount that fixes every
+/// mode). Never pass it otherwise: a world would start from other bits than its recording.
+fn applyMode(fd: c_int, want: u16) RestoreError!void {
+    if (posix.fchmod(fd, want) == 0) return;
+    const now = posix.kindModeOfFd(fd) catch return error.CreateFailed;
+    if (now.mode == null or now.mode.? != want) return error.CreateFailed;
+}
+
+/// The owner's rwx is always added: without it the next world's `deleteTreeAt` cannot empty the
+/// directory. Do not give `deleteTreeAt` a chmod instead — by name, inside a tree a target can
+/// rearrange, it can be redirected.
+fn dirModeFor(recorded: u16) u16 {
+    return (recorded & posix.perm_bits) | 0o700;
 }
 
 pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
@@ -1166,7 +1196,17 @@ pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
             // (walk records children only), so an existing directory here has no
             // legitimate source — it is a leftover the delete failed to remove,
             // and accepting it would let world k judge world k-1's residue.
-            .dir => if (posix.mkdirat(fd, rel_z.ptr, 0o755) != 0) return error.CreateFailed,
+            .dir => {
+                if (posix.mkdirat(fd, rel_z.ptr, 0o755) != 0) return error.CreateFailed;
+                // Not by name: a link swapped in at it would take the chmod. Interior components
+                // still resolve by name, the same limit as the file write above.
+                if (e.mode) |m| {
+                    const dfd = posix.openat(fd, rel_z.ptr, posix.O_RDONLY | posix.O_DIRECTORY | posix.O_NOFOLLOW | posix.O_CLOEXEC, @as(c_uint, 0));
+                    if (dfd < 0) return error.CreateFailed;
+                    defer _ = posix.close(dfd);
+                    try applyMode(dfd, dirModeFor(m));
+                }
+            },
             .symlink => {
                 // Recreate the link with the recorded target, verbatim. The target is
                 // a string, not a path this function resolves — a dangling link is
@@ -1175,7 +1215,7 @@ pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
                 const tz = std.fmt.bufPrintZ(&tz_buf, "{s}", .{e.content}) catch return error.PathTooLong;
                 if (posix.symlinkat(tz.ptr, fd, rel_z.ptr) != 0) return error.CreateFailed;
             },
-            .file => try writeFileEntryAt(fd, rel_z.ptr, e.content),
+            .file => try writeFileEntryAt(fd, rel_z.ptr, e.content, e.mode, false),
             // Unreachable from any explored path since #5's refusal fires on every
             // snapshot before restore runs — kept loud, not silent: an `.other` that
             // somehow arrives here would otherwise become a tool-manufactured
@@ -1277,7 +1317,12 @@ pub fn corruptState(snap: Snapshot, root: []const u8) RestoreError!void {
         // — "the checker accepted a state whose every file had been overwritten with
         // junk" — about a file this function never touched, blaming the caller's checker
         // for the engine's own failed write.
-        try writeFileEntryAt(fd, rel_z.ptr, corruption_probe);
+        // Remove and create, never write over: a restored 0444 or 0400 file refuses a writer who
+        // is not root. Unlink only a regular file — a link where the snapshot holds a file is
+        // refused, never replaced.
+        if ((posix.kindAtNoFollow(fd, rel_z.ptr) catch return error.CreateFailed) != .file) return error.CreateFailed;
+        if (posix.unlinkat(fd, rel_z.ptr, 0) != 0) return error.CreateFailed;
+        try writeFileEntryAt(fd, rel_z.ptr, corruption_probe, e.mode, true);
     }
 }
 
@@ -2001,7 +2046,7 @@ test "the rebuild refuses to write through a symlink at an entry name (#446)" {
 
     // Control first: a real entry name is written, so the refusal below is about the link
     // and not about this directory, these flags, or these bytes.
-    try writeFileEntryAt(fd, "real", "recorded bytes");
+    try writeFileEntryAt(fd, "real", "recorded bytes", null, false);
     var real_buf: [contract.max_path]u8 = undefined;
     const real_z = try joinZ(&real_buf, root, "real");
     try std.testing.expectEqualStrings("recorded bytes", try read.readWhole(arena, real_z.ptr, 4096, null, .follow));
@@ -2011,7 +2056,7 @@ test "the rebuild refuses to write through a symlink at an entry name (#446)" {
     const link_z = try joinZ(&lbuf, root, "planted");
     try std.testing.expect(posix.symlink(sentinel_z.ptr, link_z.ptr) == 0);
 
-    try std.testing.expectError(error.CreateFailed, writeFileEntryAt(fd, "planted", "recorded bytes"));
+    try std.testing.expectError(error.CreateFailed, writeFileEntryAt(fd, "planted", "recorded bytes", null, false));
 
     // The bytes outside are untouched — the whole point. `expectEqualStrings` rather than
     // a length or an existence check: a followed write truncates first and would leave an
@@ -2716,4 +2761,98 @@ test "an entry the walk cannot read is named in the diag, with the open's errno 
     try std.testing.expectEqual(@as(?c_int, posix.EACCES), diag.entry.errno);
     // The other diags stayed untouched: this was not a cap.
     try std.testing.expectEqual(@as(usize, 0), diag.file.rel.len);
+}
+
+test "restore puts back the permission bits the walk read, whatever the umask (#678)" {
+    const gpa = std.testing.allocator;
+    var fx: TreeFixture = .{};
+    const root = fx.init("modes") orelse return error.SkipZigTest;
+    defer fx.deinit();
+    const chmodAt = struct {
+        fn f(path_z: [*:0]const u8, m: u16) !void {
+            const fd = posix.open(path_z, posix.O_RDONLY | posix.O_CLOEXEC, @as(c_uint, 0));
+            if (fd < 0) return error.SkipZigTest;
+            defer _ = posix.close(fd);
+            try std.testing.expectEqual(@as(c_int, 0), posix.fchmod(fd, m));
+        }
+    }.f;
+    const files = [_]struct { []const u8, u16 }{ .{ "exe", 0o755 }, .{ "key", 0o600 }, .{ "ro", 0o400 }, .{ "plain", 0o644 } };
+    var pbuf: [contract.max_path]u8 = undefined;
+    for (files) |f| {
+        const p = try joinZ(&pbuf, root, f[0]);
+        try TreeFixture.writeAt(p.ptr, "x");
+        try chmodAt(p.ptr, f[1]);
+    }
+    const d5 = try joinZ(&pbuf, root, "d500");
+    try std.testing.expect(posix.mkdir(d5.ptr, 0o755) == 0);
+    const d5c = try joinZ(&pbuf, root, "d500/child");
+    try TreeFixture.writeAt(d5c.ptr, "c");
+    // Its own buffer: `pbuf` is reused for every other path below.
+    var d5buf: [contract.max_path]u8 = undefined;
+    const d5z = try joinZ(&d5buf, root, "d500");
+    try chmodAt(d5z.ptr, 0o500);
+    const d7 = try joinZ(&pbuf, root, "d750");
+    try std.testing.expect(posix.mkdir(d7.ptr, 0o755) == 0);
+    try chmodAt(d7.ptr, 0o750);
+
+    var snap = try takeSnapshot(gpa, root);
+    defer snap.deinit();
+    try std.testing.expectEqual(@as(?u16, 0o755), snap.find("exe").?.mode);
+    try std.testing.expectEqual(@as(?u16, 0o400), snap.find("ro").?.mode);
+    try std.testing.expectEqual(@as(?u16, 0o500), snap.find("d500").?.mode);
+    try snap.entries.append(snap.arena.allocator(), .{ .rel = "unread", .kind = .file, .content = "u" });
+    try finalizeEntries(&snap);
+    // Before the first rebuild: `deleteTreeAt` cannot empty a directory its owner cannot write.
+    try chmodAt(d5z.ptr, 0o755);
+
+    // Without this umask, bits passed through `openat`'s mode argument would pass too.
+    const old_mask = std.c.umask(0o077);
+    defer _ = std.c.umask(old_mask);
+    try restore(snap, root);
+    const want = [_]struct { []const u8, u16 }{
+        .{ "exe", 0o755 },  .{ "key", 0o600 },  .{ "ro", 0o400 },     .{ "plain", 0o644 },
+        .{ "d750", 0o750 }, .{ "d500", 0o700 }, .{ "unread", 0o600 },
+    };
+    for (want) |w| {
+        const p = try joinZ(&pbuf, root, w[0]);
+        try std.testing.expectEqual(@as(?u16, w[1]), (posix.kindModeOfPathNoFollow(p.ptr) orelse posix.KindMode{ .kind = .missing, .mode = null }).mode);
+    }
+    try restore(snap, root);
+    const rz = try joinZ(&pbuf, root, "ro");
+    try std.testing.expectEqual(@as(?u16, 0o400), (posix.kindModeOfPathNoFollow(rz.ptr) orelse posix.KindMode{ .kind = .missing, .mode = null }).mode);
+    try corruptState(snap, root);
+    var arena_state = std.heap.ArenaAllocator.init(gpa);
+    defer arena_state.deinit();
+    try std.testing.expectEqualStrings(corruption_probe, try read.readWhole(arena_state.allocator(), rz.ptr, 4096, null, .follow));
+    try std.testing.expectEqual(@as(?u16, 0o400), (posix.kindModeOfPathNoFollow(rz.ptr) orelse posix.KindMode{ .kind = .missing, .mode = null }).mode);
+}
+
+test "the walk's directory reading names its kind, and an exclusive write refuses a name that is there (#678)" {
+    var fx: TreeFixture = .{};
+    const root = fx.init("kindmode") orelse return error.SkipZigTest;
+    defer fx.deinit();
+    var dbuf: [contract.max_path]u8 = undefined;
+    const d = try joinZ(&dbuf, root, "d");
+    try std.testing.expect(posix.mkdir(d.ptr, 0o755) == 0);
+    var lbuf: [contract.max_path]u8 = undefined;
+    const l = try joinZ(&lbuf, root, "l");
+    try std.testing.expect(posix.symlink(d.ptr, l.ptr) == 0);
+    try std.testing.expectEqual(posix.Kind.dir, posix.kindModeOfPathNoFollow(d.ptr).?.kind);
+    try std.testing.expectEqual(posix.Kind.symlink, posix.kindModeOfPathNoFollow(l.ptr).?.kind);
+
+    var rbuf: [contract.max_path]u8 = undefined;
+    const root_z = try joinZ(&rbuf, root, "");
+    const fd = posix.open(root_z.ptr, posix.O_RDONLY | posix.O_DIRECTORY | posix.O_CLOEXEC, @as(c_uint, 0));
+    if (fd < 0) return error.SkipZigTest;
+    defer _ = posix.close(fd);
+    try writeFileEntryAt(fd, "f", "one", null, false);
+    try std.testing.expectError(error.CreateFailed, writeFileEntryAt(fd, "f", "two", null, true));
+    try writeFileEntryAt(fd, "f", "three", null, false);
+}
+
+test "a directory entry keeps the bits only of a directory (#678)" {
+    try std.testing.expectEqual(@as(?u16, 0o750), dirModeOf(.{ .kind = .dir, .mode = 0o750 }));
+    try std.testing.expectEqual(@as(?u16, null), dirModeOf(.{ .kind = .symlink, .mode = 0o777 }));
+    try std.testing.expectEqual(@as(?u16, null), dirModeOf(.{ .kind = .file, .mode = 0o644 }));
+    try std.testing.expectEqual(@as(?u16, null), dirModeOf(null));
 }

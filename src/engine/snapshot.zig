@@ -41,6 +41,11 @@ pub const Entry = struct {
     /// A symlink's target is its whole judged identity — the link is never followed,
     /// so what it points AT is outside the snapshot and outside the judgement (#122).
     content: []const u8,
+    /// The read, write and execute bits the walk read for a file or a directory, which `restore`
+    /// puts back (ADR 0109); null for a symlink or when nothing was read, and `restore` then
+    /// leaves the mode it created with. Not 0 by default — an entry built by hand would come
+    /// back 0000. Not judged.
+    mode: ?u16 = null,
 };
 
 /// Counts `rel` comparisons, so a test can assert the *cost* of a lookup rather than only
@@ -1500,4 +1505,18 @@ test "the producers refuse a snapshot that violates the order find searches by" 
         error.EntriesNotSortedUnique,
         testSnapshot(gpa, &.{ .{ "dup.txt", "one\n" }, .{ "dup.txt", "two\n" } }),
     );
+}
+
+test "a mode alone is not a difference: the judgement reads kind and content (#678)" {
+    const gpa = std.testing.allocator;
+    var a = try testSnapshot(gpa, &.{.{ "key", "same" }});
+    defer a.deinit();
+    var b = try testSnapshot(gpa, &.{.{ "key", "same" }});
+    defer b.deinit();
+    a.entries.items[0].mode = 0o600;
+    b.entries.items[0].mode = 0o644;
+    var out: [4]Difference = undefined;
+    try std.testing.expectEqual(@as(usize, 0), diffSnapshots(a, b, &out).total);
+    b.entries.items[0].content = "other";
+    try std.testing.expectEqual(@as(usize, 1), diffSnapshots(a, b, &out).total);
 }
