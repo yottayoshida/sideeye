@@ -1,5 +1,3 @@
-//! The single source of truth for everything the shim and the engine must agree on.
-//!
 //! Both sides import this file. There is deliberately no second definition anywhere:
 //! a trace written by the shim and read by the engine passes through the *same*
 //! encode/decode functions below. The worst failure mode of this product is
@@ -24,239 +22,32 @@ const std = @import("std");
 /// The engine refuses a trace whose version differs (`contract_version_mismatch`),
 /// because `contract.zig` is shared at *build* time — a stale shim binary paired
 /// with a fresh engine is a real combination that must not be misread.
-/// v2 added `OpClass.unresolved`: the shim now records that it saw an operation whose
-/// path it could not resolve, instead of dropping it. A v1 shim paired with a v2 engine
-/// would look like a target that never had such an operation, which is the difference
-/// between "nothing to report" and "something was not looked at".
-/// v3 added `Record.pid` on every record, and split `.spawn` out of `.fork`. Several
-/// processes append to one O_APPEND file, so without the pid "belongs to the previous
-/// segment" decides nothing — and the difference between the subject's operation and a
-/// child's is the difference between a crash point and a refusal.
-/// v4 changed no bytes and no classes, but changed what the recorded set *means*: a
-/// write-incapable open (ADR 0003) is no longer observed at all. A v3 trace contains
-/// read-only opens that a v4 engine would number as crash points, so the pairing must
-/// refuse loudly rather than drift — which is this field's documented purpose.
-/// v5 widened the recorded set again (ADR 0005): stdio streams are observed at flush
-/// granularity, so `.open`/`.write`/`.close` records now also come from
-/// `fopen`/`fflush`/`fclose`. On Linux every affected run was UNKNOWN under v4, but a
-/// macOS `--allow-unverified` run of a target that mixes stdio and raw writes could
-/// hold a verdict whose reproduce line counts different operations under v5 — the
-/// same class of meaning change that bumped v4.
-/// v6 added `OpClass.link` (ADR 0006): `link`/`linkat` are now first-class kill points
-/// rather than an unmodelled syscall the oracle refused. A v5 shim paired with a v6
-/// engine would record no link where a link happened, which the version guard turns
-/// into an explicit refusal instead of a positional divergence.
-/// v7 changed no bytes and no classes: the shim now observes `remove(3)`, whose
-/// internal unlink/rmdir never cross the PLT, by reimplementing its two-step through
-/// the recorded wrappers. Removals made through it become `.unlink`/`.rmdir` records
-/// (failed attempts included, recorded pre-call like every kill point), so a target
-/// that removes state via remove gains addresses a v6 trace does not have — the same
-/// class of meaning change that bumped v4 and v5.
-/// v8: no descriptor number is exempt from observation. The shim's fd-addressed
-/// wrappers previously skipped fd 0/1/2 (and the trace fd) unconditionally; a target
-/// that dup2'd a state file onto a standard descriptor wrote invisibly — measured as
-/// a false PASS on the oracle-less path. fd resolution is also three-valued now: a
-/// proven socket/pipe/device is out of scope, but a path query that *fails* on a
-/// regular file records `unresolved` instead of silently passing, and `st_nlink == 0`
-/// marks unlinked files on macOS too. The countable operation set changed for
-/// affected targets, which is what a version bump means here (same class as v5's
-/// stdio and v7's remove).
-/// v9 added `OpClass.symlink` (#122): `symlink`/`symlinkat` are now first-class kill
-/// points rather than an unmodelled syscall the oracle refused — the same class of
-/// change as v6's link, and the same reason to bump: a v8 shim paired with a v9
-/// engine would record no symlink where one happened, which the version guard turns
-/// into an explicit refusal instead of a positional divergence. Measured motivation:
-/// the #118 assisted cohort's stow run refused on `symlinkat` (perl's symlink()
-/// reaches the kernel as symlinkat), blocking symlink-farm targets as a class.
-/// v10 makes a single-pid execve chain judgeable (#123): the shim's exec wrappers
-/// carry the operation count across the image change (`env.seq_base`), the re-run
-/// `init()` continues numbering from it, and `shim_ready`'s seq field — always 0
-/// through v9 — now carries that base as the continuation evidence the engine
-/// requires. No record class or byte shape changed, but the shim↔engine protocol
-/// did: a v9 shim paired with a v10 engine would restart numbering after an exec
-/// and the engine would read colliding sequence numbers as a judged world. The
-/// version guard turns that pairing into an explicit refusal. Measured motivation:
-/// the #118 cohort's pass run — a shell CLI whose first act is replacing itself
-/// with its interpreter — was refused at that first exec.
-/// v11 widens the countable operation set (#244, #256), the same class of change as
-/// v5's stdio, v6's link, v7's remove and v9's symlink. The shim now exports the
-/// vectored positional writes (`pwritev`/`pwritev2` and their LFS aliases), the
-/// flag-checked `renameat2`, and the kernel copy primitives (`copy_file_range`,
-/// `sendfile`); the oracle has classified most of these since v0.1, so what changed
-/// is which side sees them, and therefore how many operations a run has. A v10 shim
-/// under a v11 engine would record no write where a `pwritev` happened, and every
-/// crash-point address after it would name a different operation — the version guard
-/// turns that pairing into an explicit refusal instead of a silent divergence.
-/// macOS widens too, by two: `pwritev` (which exists there) and `fdatasync` (which
-/// the oracle has always classified and the Linux shim has always exported, while the
-/// interpose table on this side did not list it). That platform has no oracle to
-/// refuse what the shim misses, so the same pairing hazard is worse there rather than
-/// milder — a v10 shim under a v11 engine records no write where either happened.
-///
-/// Measured motivation: a target writing through `pwritev` refused with
-/// `oracle_missed_operation`, and one copying through `copy_file_range` with
-/// `unsupported_syscall_observed` — the second being the wall that
-/// `spike/cohort4/himalaya-r2` was built to work around.
-///
-/// v12 closes the clone family on macOS (#333) — `clonefile`/`clonefileat`/
-/// `fclonefileat` record a `.write` on their destination, and `renamex_np`/
-/// `renameatx_np` join `rename` under the same flag discipline `renameat2` has on
-/// Linux — plus the new `.unsupported` marker, which is how the macOS shim refuses
-/// what it can see but not model (`RENAME_SWAP`, `exchangedata`): on Linux that
-/// refusal comes from the oracle, and this platform has no oracle to issue it.
-/// Measured motivation: a clone was invisible to both observers — zero operations
-/// recorded while a real file appeared with real content — and with any other
-/// recorded MUTATION present the run **PASSed** (the zero-ops guard counts
-/// mutations, so a mere open or fsync beside the clone kept the refusal); Rust
-/// std's `fs::copy` reaches `fclonefileat` first on this platform, so the silent
-/// route was the common one, not the exotic one.
-/// v13 closes the temp-name creators on both platforms (#39) — `mkstemp`,
-/// `mkostemp`, `mkstemps`, `mkostemps` and `mkdtemp` now record the create they
-/// perform, because the shim performs it: each replacement reimplements the
-/// documented sequence through the recorded wrappers rather than forwarding, which is
-/// what `remove` has done since v7 and for the same reason (the inner call never
-/// crosses the PLT). No new op class and no new `unknown_reason`: the attempts record
-/// as `.open` and `.mkdir`, which both observers already classify. The version moves
-/// because the account of an unchanged target does — a target using the canonical C
-/// atomic-replace idiom gains crash points it did not have — and crash-point
-/// numbering does not carry across versions.
-/// v14 adds a second observation path (`--observe syscalls`). A seccomp filter answers
-/// `SECCOMP_RET_TRAP` for `write`/`pwrite64`/`writev`/`pwritev` and the shim's SIGSYS
-/// handler counts each one through the same `noteFd` the wrappers use, so a write that
-/// leaves libc's *inside* — `fwrite` past the buffer, a raw `syscall(SYS_write, …)` —
-/// becomes a countable operation. The default mode is unchanged and this bump is not
-/// about it: the version moves because the countable operation set of an unchanged
-/// target moves under the new mode, which is the same reason v5 (stdio at flush
-/// granularity) and v13 (the temp-name creators) moved, and crash-point numbering does
-/// not carry across versions. `shim_ready`'s `aux` — empty through v13 — now carries the
-/// filter's installation result (`observe_aux`), so a run cannot claim syscall-layer
-/// observation that never got installed. Measured motivation: metaflac and fontforge,
-/// both recorded in `docs/target-classes.md` as refusing with `oracle_missed_operation`
-/// because the shim recorded the `open` and no `write`.
-/// v15 makes `seq` an address in the RUN rather than in the process (#123's remaining
-/// half). Through v14 every shim instance counted its own in-scope operations from its
-/// own `seq`, so a parent and a child each held a number 1 and `SIDEEYE_KILL_AT=3` named
-/// no single operation — the measured defect ADR 0002's Context records, and the reason a
-/// child touching the judged directory has been refused since v3. The shim now takes its
-/// number from the trace itself: the highest `seq` any process has written, plus one.
-/// Nothing about a record's byte shape changed and a single-process run numbers exactly
-/// as it did, but the shim↔engine protocol did: a v14 shim under a v15 engine would
-/// number per process where the engine now tolerates a second writer, and two operations
-/// would answer to one address. The version guard turns that pairing into an explicit
-/// refusal. `env.seq_base` moves with it — it carried the process's own count across an
-/// exec and now carries the run's — and `shim_ready` still announces the value it was
-/// given rather than one read from the trace, because that announcement is the evidence
-/// #123's chain check compares against. Measured motivation: `pass mv`, whose dangerous
-/// operations (the rename, the remove) run in awaited children and were therefore never
-/// addressed at all (`spike/assisted/pass/explore-v10-transcript.txt`).
-/// v16 adds the writing THREAD to every record (`tid`, 64 bits). Through v15 a record
-/// named its process and no more, which was enough while a target that created a thread
-/// was refused outright. A run whose threads never write the judged directory is judged
-/// now, and the question the engine has to answer for it — did exactly one thread
-/// write? — has no witness without this field: an explored world runs with no oracle,
-/// and two threads of one process write the same `pid`. The byte shape changes (eight
-/// bytes after `pid`), so a v15 shim's records are unreadable to a v16 engine, and the
-/// version guard turns that pairing into `contract_version_mismatch` rather than a
-/// decode that lands eight bytes into the path. A single-threaded run numbers exactly as
-/// it did and its `tid` equals its `pid` on Linux. The shim's own per-thread state (the
-/// re-entrancy guard, the record buffer, the count scan) moved with it, for the reason
-/// `shim/src/common.zig`'s first paragraph gives. Measured motivation: the five targets
-/// of eight behind the thread wall whose one writing thread is the main one
-/// (`docs/target-classes.md`, and `BUILDLOG.md` 2026-09-08).
-/// v17 adds the `cgroup` marker (#559). Where the engine gives a run a cgroup v2
-/// of its own, each process the shim loads into says, immediately after `shim_ready`,
-/// whether it is inside that cgroup and — in an explored world — whether it holds the
-/// cgroup's `cgroup.kill`; it says so again at a boundary if it finds itself outside, and
-/// at the crash point if its write to `cgroup.kill` came back instead of ending it. No
-/// existing record changes shape and crash-point numbering is unchanged, but the engine
-/// now reads what the shim says about the cgroup — its watch refuses on `outside`,
-/// `unreadable` and `kill-returned` — and a v16 shim under a v17 engine would
-/// say nothing while the engine contained the run, and the version guard turns that
-/// pairing into `contract_version_mismatch` rather than a run read as uncontained.
-/// v19 interposes `mmap` and `mprotect` on macOS (#689, ADR 0098). A store through a
-/// shared mapping of a state file has no call behind it, so no crash point can be placed
-/// before it; Linux's oracle refused a writable shared mapping, and macOS — where neither
-/// the shim nor fs_usage's reader saw one — reached PASS (measured on 2026-10-08: an
-/// `ftruncate`, two stores eight kilobytes apart and a `close` passed 3/3 under
-/// `--allow-unverified`, the stores never separated by a crash point). The shim now
-/// records `.unsupported` for a writable shared mapping of a state file, and for an
-/// `mprotect` that adds `PROT_WRITE` to a read-only one it saw made. No record changes
-/// shape and crash-point numbering is unchanged, but a v18 shim under a v19 engine would
-/// record neither while the engine relied on it, and the version guard turns that pairing
-/// into `contract_version_mismatch` rather than a PASS over stores nobody counted.
 pub const contract_version: u32 = 19;
 
 pub const magic = "SIDEEYE1";
 
-/// Environment variables the engine sets and the shim reads.
 pub const env = struct {
-    /// Absolute path of the directory whose contents define the target's state.
-    /// Operations outside it are not counted. Set for every define command — setup,
-    /// operation, check, recovery — and the name the checker cookbook gives them (#708).
     pub const state_dir = "SIDEEYE_STATE_DIR";
-    /// A second spelling of the same directory, when the caller named it through a
-    /// symlink. Operations under either spelling are counted, and both are recorded
-    /// under the canonical one.
-    ///
     /// macOS resolves `/tmp` to `/private/tmp`. A target told its state is at
     /// `/tmp/x` passes `/tmp/x/key.json` to `unlink`, while `F_GETPATH` answers
     /// `/private/tmp/x/key.json` for the same file: one operation, two spellings, and
     /// a prefix test on either alone counts half of them. The engine hides this during
-    /// exploration by handing the target the resolved path, which is why it surfaced
-    /// only in the `reproduce` line — where the target finds its state its own way.
     pub const state_dir_alt = "SIDEEYE_STATE_DIR_ALT";
-    /// Absolute path the shim appends its trace to.
     pub const trace_path = "SIDEEYE_TRACE_PATH";
-    /// 1-based index of the kill-point op to die immediately before.
-    /// Absent or 0 means the recording run: observe everything, kill nothing.
     pub const kill_at = "SIDEEYE_KILL_AT";
-    /// Whether the shim may take the whole process group down with it (v15).
-    ///
     /// Set by the engine on a world's spawn and nowhere else, because the engine is what
     /// puts the target in its own process group first (`src/posix.zig`). Killing one
     /// process is not a crash: a shell whose child died runs the next command, so a world
     /// armed at an awaited child's operation would carry operations from after the crash
     /// point it claims to have died at. Killing the group is.
-    ///
-    /// **It is a flag rather than the shim's own judgement because the shim cannot make
-    /// one.** `getpgrp() == getpid()` is true for the subject and false for every child,
-    /// and a child that fell back to killing only itself would leave the shell running —
-    /// the exact thing this exists to prevent. What differs is not the process, it is how
-    /// the run was started, and only the starter knows. Measured: without this, the
-    /// `reproduce` line the report prints — which an operator types into a shell that has
-    /// done no `setpgid` — killed the acceptance suite's own shell (SIGKILL, exit 137,
-    /// at the leg that runs that line).
     pub const kill_group = "SIDEEYE_KILL_GROUP";
-    /// Operation count carried across a self-exec (#123): the shim's exec wrappers
-    /// set it for the subject only (never for a forked or vfork'd child), the
-    /// re-run `init()` continues numbering from it, and `shim_ready` re-announces
-    /// it as its seq. Absent means a fresh start — which after an exec record is
-    /// exactly the broken-chain evidence the engine refuses on.
     pub const seq_base = "SIDEEYE_SEQ_BASE";
-    /// Set by a shim whose image made a write-capable call into the state before its own
-    /// constructor had run and then `exec`'d before that constructor could report it (#753):
-    /// the image that follows reports it instead, as one `before-constructor` record, the value
-    /// being the path (empty when it was not read in time). Written only by the shim, read only
-    /// by the shim; the engine never sets it.
     pub const before_constructor = "SIDEEYE_BEFORE_CONSTRUCTOR";
-    /// Which observation path to use — one of `ObserveMode`'s names. Absent means
-    /// `wrappers`, so a shim carried into a process by an engine that never set it
-    /// behaves exactly as v13 did.
     pub const observe = "SIDEEYE_OBSERVE";
-    /// The cgroup the engine gave this spawn (v17, #559), spelled the way `/proc/self/cgroup`
-    /// spells it — the path after `0::`. Empty when the engine could not give it one: every
-    /// run on macOS, and every run whose engine cannot move processes within its own cgroup.
     pub const run_cgroup = "SIDEEYE_RUN_CGROUP";
-    /// Absolute path of the `cgroup.kill` of the cgroup the run's processes are in, `work` one
     /// level below the run's (v17). Set on an explored world's spawn only, beside `kill_group`
     /// and for its reason: a world is the only run that is killed.
     pub const kill_cgroup = "SIDEEYE_KILL_CGROUP";
-    /// Absolute path of the run's own `cgroup.procs`, one level above `work` (v17), set beside
-    /// `kill_cgroup`. The crash point moves its own process there first, so the cgroup kill
-    /// takes every other process of the run, and then signals its process group, which takes
-    /// the rest — the writer, and whatever left the cgroup without leaving the group. It signals
-    /// the group only while the group's leader is inside the run's cgroup: a process that joined
-    /// another group in the session dies alone rather than take that group down (#559).
     pub const kill_aside = "SIDEEYE_KILL_ASIDE";
 };
 
@@ -269,55 +60,15 @@ pub const ExitCode = enum(u8) {
     setup_error = 3,
 };
 
-/// Four categories, and the rule that anything outside them forces UNKNOWN.
-///
-/// The categories exist because "the set of supported operations" alone cannot
-/// describe `close`: it must be recorded (it is real, and the oracle will see it)
-/// yet must never become a crash point, since SIGKILL closes descriptors anyway —
-/// dying just before `close` and just after it leave the same state behind.
 /// Why an `.unresolved` record could not be placed, written by the shim into `aux`
 /// and printed by the engine (#485).
-///
-/// Here rather than as literals on the shim side for ADR 0006's reason: the two
-/// observers must agree on a shared property, and a typo in one of five call sites
-/// would otherwise be silent — the engine passes the bytes through, so nothing
 /// compares them to anything. `aux` normally holds the other endpoint of a two-path
 /// operation; using it for a reason here is the type pun ADR 0003 rejected for open
 /// flags, and it is admissible only because `.unresolved` is a marker: the snapshot
 /// walk drops markers before the name matching that would read `aux` as a path.
-///
-/// Not an enum, and not frozen: `contract_version` is unchanged, so an engine can
-/// meet a record written by an older shim with an empty `aux`, and a closed set
-/// would have to admit that case anyway. These are the values the current shim
-/// writes, named so both sides spell them the same way.
-/// Which observation path counts the operations.
-///
-/// A flag rather than a replacement: `wrappers` is the default, and what it records is
-/// what v13 recorded. It is not byte-for-byte v13 in every other respect since #542: the
-/// shim installs its `SIGSYS` handler in every mode and forwards four signal entry points
-/// in every mode (ADR 0059 decisions 3 and 5). See ADR (0052) for why the syscall path is
-/// not the default, and ADR (0059) for the trap set it carries since #542.
 pub const ObserveMode = enum {
-    /// libc entry points, interposed. Buffered stdio is observed at flush granularity
-    /// (ADR 0005); writes issued inside libc, and raw syscalls, are not observed.
     wrappers,
-    /// The syscall boundary, for every operation that can be a crash point — open,
-    /// write, rename, unlink, fsync, truncate, mkdir, rmdir, link, symlink — in each
-    /// spelling the target's architecture has (ADR 0059, #542). Two calls stay at the
-    /// libc entry points in this mode: `copy_file_range` and `pwritev2` take six
-    /// arguments, which leaves the filter no register for its re-issue marker.
-    /// `pwritev2` is the exception in the other direction as well: it cannot be counted
-    /// correctly on both kernels either, so it is refused
-    /// (`unsupported_syscall_observed`) rather than counted.
     syscalls,
-    /// From outside the process (#217, ADR 0089), Linux only. The engine starts the target
-    /// through `sideeye __filter-exec`, which installs a seccomp user-notification filter and
-    /// execs it; the engine then counts the same kill-point operations at the syscall
-    /// boundary from its own process, writing the trace itself, and no shim is loaded. What it
-    /// reaches that the other two cannot: a statically linked target, which has no loader to
-    /// take a shim. What it cannot judge: a run whose writes come from two threads — the
-    /// thread-order records are the shim's, read from inside `pthread_create` and
-    /// `pthread_join` — which refuses as `multiple_threads_detected`.
     supervised,
 
     pub fn parse(text: []const u8) ?ObserveMode {
@@ -332,55 +83,25 @@ pub const ObserveMode = enum {
     }
 };
 
-/// What `shim_ready`'s `aux` says about the syscall-layer filter (v14).
-///
-/// Empty means `wrappers`: the field carried nothing through v13, so an empty `aux` from
-/// a v14 shim is the default mode and not an absence of information. The engine refuses
-/// a `--observe syscalls` run whose announcement does not say `armed`, which is what
-/// stops a report from claiming an observation path that was never installed.
 pub const observe_aux = struct {
-    /// The filter is in place; the handler counts the trapped operations.
     pub const armed = "observe:syscalls";
-    /// The kernel refused the filter or the handler could not be installed.
     pub const failed = "observe:syscalls-failed";
-    /// This build cannot install one at all — not Linux, or an architecture whose trap
-    /// frame layout the shim does not know.
     pub const unsupported = "observe:syscalls-unsupported";
-    /// Written by the engine itself, not by a shim, under `--observe supervised` (#217): the
-    /// filter was installed and the engine holds its listener.
     pub const supervised = "observe:supervised";
 };
 
-/// What a `cgroup` record's `aux` says (v17, #559). One class with six values rather than
-/// six classes: each is an answer to the same question — where does this process stand
-/// against the run's cgroup, and can it take the cgroup down — and the engine keeps its own
-/// fields for them rather than reading them through `hard_boundary`, which holds only the
-/// first boundary a trace carries.
-/// The `aux` field of the thread-synchronisation records (v18, ADR 0067), spelled once
-/// for both writers. Decimal fields separated by single spaces; the engine parses with
-/// `parseStarted` / `parseJoined`, and anything that does not parse is treated as
-/// `unknown` — no edge is drawn from it.
 pub const thread_aux = struct {
-    /// A join or detach whose target the shim could not name: the thread was created
-    /// before the shim was in the image, through a raw `clone`, or after the pending-start
-    /// table was full. The engine draws no edge from it.
     pub const unknown = "?";
 
     pub const Started = struct { creator: u64, written: u32, ordinal: u32 };
     pub const Joined = struct { creator: u64, ordinal: u32 };
 
-    /// Widest spelling: a u64, two u32s and two spaces.
     pub const max_len = 20 + 1 + 10 + 1 + 10;
 
-    /// `thread_started`: the creating thread's id, how many records it had written
-    /// through its slot when it called `pthread_create`, and which of its creations this
-    /// was (1-based).
     pub fn started(buf: []u8, creator: u64, written: u32, ordinal: u32) EncodeError![]const u8 {
         return std.fmt.bufPrint(buf, "{d} {d} {d}", .{ creator, written, ordinal }) catch return error.BufferTooSmall;
     }
 
-    /// `thread_join` / `thread_detach`: the collected thread, named as its creator's k-th
-    /// creation — the pair its own `thread_started` record carries.
     pub fn joined(buf: []u8, creator: u64, ordinal: u32) EncodeError![]const u8 {
         return std.fmt.bufPrint(buf, "{d} {d}", .{ creator, ordinal }) catch return error.BufferTooSmall;
     }
@@ -424,55 +145,33 @@ test "thread_aux round-trips both spellings, and refuses the unknown mark and ev
     const p2 = thread_aux.parseJoined(s2).?;
     try t.expectEqual(@as(u64, 18446744073709551615), p2.creator);
     try t.expectEqual(@as(u32, 4294967295), p2.ordinal);
-    // The widest spelling fits the declared bound exactly.
     var wide: [thread_aux.max_len]u8 = undefined;
     _ = try thread_aux.started(&wide, 18446744073709551615, 4294967295, 4294967295);
-    // The unknown mark, an empty field, a wrong arity and a non-number all parse to nothing.
     try t.expectEqual(@as(?thread_aux.Started, null), thread_aux.parseStarted(thread_aux.unknown));
     try t.expectEqual(@as(?thread_aux.Joined, null), thread_aux.parseJoined(thread_aux.unknown));
     try t.expectEqual(@as(?thread_aux.Started, null), thread_aux.parseStarted("364 23"));
     try t.expectEqual(@as(?thread_aux.Joined, null), thread_aux.parseJoined("364 23 2"));
     try t.expectEqual(@as(?thread_aux.Started, null), thread_aux.parseStarted("364 x 2"));
     try t.expectEqual(@as(?thread_aux.Joined, null), thread_aux.parseJoined(""));
-    // A started spelling is not a joined one: three fields do not parse as two.
     try t.expectEqual(@as(?thread_aux.Joined, null), thread_aux.parseJoined(s1));
 }
 
 pub const cgroup_aux = struct {
-    /// Inside the run's cgroup: the recording run, the baseline world, a preflight run.
     pub const held = "cgroup:held";
-    /// Inside, and holding the cgroup's `cgroup.kill` for the crash point: a world.
     pub const held_kill = "cgroup:held-kill";
-    /// Outside the run's cgroup: moved out, or born somewhere else.
     pub const outside = "cgroup:outside";
-    /// Where this process stands could not be read: `/proc/self/cgroup` would not open, or held
-    /// no cgroup v2 line. Not an acknowledgement, and not a claim that it moved.
     pub const unreadable = "cgroup:unreadable";
-    /// The crash point's write to `cgroup.kill` returned. A write that lands ends the writer,
-    /// so returning at all is the failure.
     pub const kill_returned = "cgroup:kill-returned";
-    /// The crash point could not step aside out of the cgroup it was about to kill, so its kill
-    /// was that cgroup's alone and reached no process that left it without leaving the process
-    /// group. Written before the kill, which ends the writer.
     pub const kill_alone = "cgroup:kill-alone";
 };
 
-/// Where a process stands against the run's cgroup (v17, #559), read from its `/proc/<pid>/cgroup`
-/// text. Here rather than in the shim since the supervised observer (#217, ADR 0089) answers the
-/// same question from outside the process, and one reading of that file is the only way the two
-/// observers cannot disagree about it.
 pub const CgroupStanding = enum { held, outside, unknown };
 
 pub const CgroupLine = struct {
     run: []const u8,
-    /// Bytes of the current line seen so far.
     col: usize = 0,
-    /// The current line still opens `0::`.
     v2: bool = true,
-    /// Bytes of the path after `0::`.
     path_len: usize = 0,
-    /// The path still agrees with `run`: equal to it so far, and past its end only across a
-    /// `/`, so a sibling whose name the run's is a prefix of is beside it and not inside it.
     within: bool = true,
 
     pub fn feed(self: *CgroupLine, b: u8) ?CgroupStanding {
@@ -502,7 +201,6 @@ pub const CgroupLine = struct {
         return answer;
     }
 
-    /// The file ended; a last line with no newline still counts.
     pub fn finish(self: *CgroupLine) CgroupStanding {
         return self.endLine() orelse .unknown;
     }
@@ -519,79 +217,35 @@ pub fn standingOf(text: []const u8, run: []const u8) CgroupStanding {
 test "a process is within the run's cgroup at it or below it, never beside it, wherever its line sits (v17, #559)" {
     try std.testing.expectEqual(CgroupStanding.held, standingOf("0::/sideeye-1-ab\n", "/sideeye-1-ab"));
     try std.testing.expectEqual(CgroupStanding.held, standingOf("0::/sideeye-1-ab/inner\n", "/sideeye-1-ab"));
-    // A sibling whose name the run's is a prefix of is beside it, not inside it.
     try std.testing.expectEqual(CgroupStanding.outside, standingOf("0::/sideeye-1-abc\n", "/sideeye-1-ab"));
     try std.testing.expectEqual(CgroupStanding.outside, standingOf("0::/\n", "/sideeye-1-ab"));
     try std.testing.expectEqual(CgroupStanding.held, standingOf("0::/any/thing\n", "/"));
-    // No run cgroup is nothing to be within.
     try std.testing.expectEqual(CgroupStanding.outside, standingOf("0::/sideeye-1-ab\n", ""));
-    // A hybrid host lists its v1 hierarchies first; the answer is the `0::` line's, and a
-    // v1 line that mentions the run's path is not it.
     const hybrid = "12:memory:/sideeye-1-ab\n11:pids:/user.slice\n10:devices:/user.slice\n9:blkio:/user.slice\n" ++
         "8:cpu,cpuacct:/user.slice\n1:name=systemd:/user.slice/user-1000.slice/session-2.scope\n0::/sideeye-1-ab/w\n";
     try std.testing.expectEqual(CgroupStanding.held, standingOf(hybrid, "/sideeye-1-ab"));
     try std.testing.expectEqual(CgroupStanding.outside, standingOf("12:memory:/sideeye-1-ab\n0::/user.slice\n", "/sideeye-1-ab"));
-    // The last line needs no newline; a file with no `0::` line at all has no answer.
     try std.testing.expectEqual(CgroupStanding.held, standingOf("0::/sideeye-1-ab", "/sideeye-1-ab"));
     try std.testing.expectEqual(CgroupStanding.unknown, standingOf("12:memory:/x\n", "/sideeye-1-ab"));
     try std.testing.expectEqual(CgroupStanding.unknown, standingOf("10::/sideeye-1-ab\n", "/sideeye-1-ab"));
 }
 
-/// How a run that can store through a shared mapping of a state file is refused (#689, ADR
-/// 0098), spelled once for both observers: Linux's oracle issues the first two, the macOS shim
-/// all three, and a reader of either platform's report meets one wording for one fact.
 pub const shared_map_refusal = struct {
-    /// The mapping was made writable.
     pub const writable = "mmap(PROT_WRITE|MAP_SHARED)";
-    /// A read-only shared mapping of a state file was given `PROT_WRITE` afterwards.
     pub const made_writable = "mprotect(PROT_WRITE) on a shared mapping of a state file";
-    /// macOS only: past the shim's table, which range was touched cannot be told.
     pub const past_table = "mprotect(PROT_WRITE) after more shared mappings of state files than the shim tracks";
 };
 
 pub const unresolved_kind = struct {
-    /// The path could not be resolved at all (`resolveAt` failed).
     pub const unresolvable_path = "unresolvable-path";
-    /// A descriptor whose file could not be read back to a path.
     pub const fd_without_path = "fd-without-path";
-    /// An operation through a descriptor whose file was unlinked while it was open —
-    /// the `perl -i` shape.
-    ///
-    /// **Any operation, not only a write.** The branch that records it is keyed on the
-    /// descriptor's link count, and `close`, `fsync` and `truncate` reach it as readily as
-    /// `write` does — `perl -i` performs the close itself. This constant was
-    /// `write-after-unlink` for one commit (#485), which made the report say "write" about
-    /// a close; `withOp` is how the operation is named instead of assumed.
     pub const unlinked_fd = "unlinked-fd";
-    /// A link whose source is a descriptor: its old path is empty (ADR 0006).
     pub const link_by_descriptor = "link-by-descriptor";
-    /// The target closed the trace channel; nothing was named.
     pub const trace_closed = "trace-closed-by-target";
-    /// The shim could not read the trace back to find the run's highest sequence number,
-    /// so it could not tell which position in the run this operation holds (v15).
-    ///
-    /// Recorded rather than guessed for the reason every kind here exists: numbering from
-    /// a stale local count would give the operation an address that belongs to another one.
-    /// A torn record at the end of the trace is NOT this — that is an operation still being
-    /// written, and the read stops there and tries again on the next one.
     pub const count_read_failed = "count-read-failed";
-    /// The shim's per-thread slot table filled up (v16): the 65th thread of one process
-    /// records through a shared reserve buffer, and this notice is written once, in front
-    /// of that thread's first record, so the engine refuses the run before it reads a
-    /// record whose buffer may have been shared. Slots are never freed — the shim sees no
-    /// thread end — so a target that creates and retires threads past the table is
-    /// refused rather than judged.
     pub const thread_slots_exhausted = "thread-slots-exhausted";
-    /// A write-capable call reached the state directory before the shim's constructor had
-    /// finished (#753) — from another shared library's constructor, which the loader may run
-    /// first, or from a thread one started. The call reached the real function and nothing
-    /// numbered it, so it has no place among the crash points. Written once, by `init`, after
-    /// the announcement; the record's path is the first such call's, or empty when it could
-    /// not be read in time. Not frozen, like every kind here.
     pub const before_constructor = "before-constructor";
 
-    /// The longest a kind can be once `withFd` or `withOp` has appended to it.
-    ///
     /// Derived, not counted by hand: a member added later can be longer than every member
     /// today, and a hand-written bound would then make `bufPrint` fall back and drop the
     /// descriptor silently — the exact loss the suffix exists to prevent. The operation
@@ -605,13 +259,9 @@ pub const unresolved_kind = struct {
         for (@typeInfo(OpClass).@"enum".fields) |f| {
             if (f.name.len > longest_op) longest_op = f.name.len;
         }
-        // kind + " " + op + " fd:" + the widest c_int ("-2147483648").
         break :blk longest_kind + 1 + longest_op + 4 + 11;
     };
 
-    /// Every member, so the bound above is derived from the set rather than from whichever
-    /// member the author of a size happened to look at. A kind added without a line here
-    /// keeps working — it just stops contributing to the bound, which a test catches.
     pub const all = [_][]const u8{
         unresolvable_path,
         fd_without_path,
@@ -622,34 +272,18 @@ pub const unresolved_kind = struct {
         before_constructor,
     };
 
-    /// A kind with the descriptor the operation went through appended (#485).
-    ///
-    /// The grammar lives here rather than at the shim's call sites for the reason the
-    /// vocabulary does (ADR 0003's narrowing): a suffix spelled three times in shim
     /// literals is a format the engine reads and nothing defines. Callers pass a buffer —
     /// returning a slice of a local would hand back memory that dies before the record is
     /// written — and a buffer too small keeps the kind and drops the descriptor, so a
     /// record says less rather than arriving half-written.
-    ///
-    /// **Not always a file descriptor.** `AT_FDCWD` (-100 on Linux, -2 on macOS) reaches
-    /// `linkat`'s empty-path branch like any other value and is recorded as passed:
-    /// the number in the report is the caller's own argument, which is what an operator
-    /// matches against their code.
     pub fn withFd(buf: []u8, kind: []const u8, fd: c_int) []const u8 {
         return std.fmt.bufPrint(buf, "{s} fd:{d}", .{ kind, fd }) catch kind;
     }
 
-    /// `withFd` for the kinds that also know which operation was attempted (#485 asks for
-    /// the operation class, the descriptor and the last resolved name; this is what makes
-    /// the first of the three true rather than assumed by the kind's name).
     pub fn withOp(buf: []u8, kind: []const u8, op: OpClass, fd: c_int) []const u8 {
         return std.fmt.bufPrint(buf, "{s} {s} fd:{d}", .{ kind, @tagName(op), fd }) catch kind;
     }
 
-    /// The reader for what `withOp` wrote, answering the one question the engine asks of
-    /// an unplaceable record: which operation was it, if this is the kind whose
-    /// descriptor is known to have pointed at a real file in the judged directory?
-    ///
     /// Returns the class only for `unlinked_fd`. `fd_without_path` is deliberately not
     /// read: there the path query itself failed, so where the descriptor pointed is
     /// unknown and a close on it cannot be said to be out of harm's way — ADR 0013's
@@ -662,10 +296,6 @@ pub const unresolved_kind = struct {
     /// **Parsed, not prefix-matched.** `trace_closed` is the string
     /// "trace-closed-by-target", which CONTAINS "close": a `startsWith` or a substring
     /// test reads it as a close and would exempt a record that names no operation at all.
-    /// So: exactly three space-separated tokens, the first equal to `unlinked_fd`, the
-    /// second a tag name of this enum, the third a well-formed `fd:<int>`. Anything else
-    /// returns null, which the caller treats as "refuses".
-    ///
     /// `class` is required because `aux` is not one field with one meaning: on a rename or
     /// a link it carries the operation's second path (`Op.aux`), and a target chooses
     /// those. Requiring `.unresolved` keeps a path named "unlinked-fd close fd:3" from
@@ -689,8 +319,6 @@ pub const unresolved_kind = struct {
 
 test "unplaceableRefuses is exactly `not close` today, and says so out loud" {
     const t = std.testing;
-    // Every member of the enum, so a new class cannot be added without this failing or
-    // being thought about. The claim in the doc comment is the assertion.
     inline for (@typeInfo(OpClass).@"enum".fields) |f| {
         const c: OpClass = @enumFromInt(f.value);
         try t.expectEqual(c != .close, c.unplaceableRefuses());
@@ -701,40 +329,26 @@ test "opOfUnlinkedFd reads the operation, and every other shape refuses (#485's 
     const t = std.testing;
     const U = unresolved_kind;
 
-    // The positive cases: what the shim actually writes.
     try t.expectEqual(OpClass.close, U.opOfUnlinkedFd(.unresolved, "unlinked-fd close fd:3").?);
     try t.expectEqual(OpClass.write, U.opOfUnlinkedFd(.unresolved, "unlinked-fd write fd:3").?);
     try t.expectEqual(OpClass.fsync, U.opOfUnlinkedFd(.unresolved, "unlinked-fd fsync fd:9").?);
     try t.expectEqual(OpClass.truncate, U.opOfUnlinkedFd(.unresolved, "unlinked-fd truncate fd:0").?);
-    // AT_FDCWD reaches withOp's `{d}` like any other value.
     try t.expectEqual(OpClass.close, U.opOfUnlinkedFd(.unresolved, "unlinked-fd close fd:-100").?);
 
-    // The negative cases, written before the reader had a caller. Each one is a shape the
-    // shim or an older shim really produces, and each must come back null so the caller
-    // refuses.
-    //
-    // `trace_closed` contains the substring "close" — the whole reason this is a parse.
     try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, U.trace_closed));
     try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, "trace-closed-by-target fd:900"));
     try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, U.unresolvable_path));
     try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, "link-by-descriptor fd:-100"));
-    // A v13-or-older shim records no reason at all; `docs/report-schema.md` promises the
-    // engine says so rather than guessing.
     try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, ""));
-    // The kind without an operation: `withFd`'s spelling, which the unlinked-fd branch no
-    // longer writes but an older shim did.
     try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, "unlinked-fd fd:3"));
-    // The other kind that an unlinked descriptor reaches. Refuses by kind, not by class.
     try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, "fd-without-path close fd:3"));
 
-    // Malformed tails and extra tokens.
     try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, "unlinked-fd close fd:"));
     try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, "unlinked-fd close 3"));
     try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, "unlinked-fd close fd:3 extra"));
     try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, "unlinked-fd nosuchop fd:3"));
     try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.unresolved, "unlinked-fdclose fd:3"));
 
-    // The class gate: the same string on a record whose `aux` means a second path.
     try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.rename, "unlinked-fd close fd:3"));
     try t.expectEqual(@as(?OpClass, null), U.opOfUnlinkedFd(.close, "unlinked-fd close fd:3"));
 }
@@ -744,32 +358,22 @@ test "unresolved_kind.withFd appends the descriptor, and its buffer fits every m
     var b: [unresolved_kind.with_fd_max]u8 = undefined;
 
     try t.expectEqualStrings("unlinked-fd fd:3", unresolved_kind.withFd(&b, unresolved_kind.unlinked_fd, 3));
-    // The operation-bearing form, which is what the unlinked-fd branch actually writes.
     try t.expectEqualStrings("unlinked-fd close fd:3", unresolved_kind.withOp(&b, unresolved_kind.unlinked_fd, .close, 3));
     try t.expectEqualStrings("unlinked-fd write fd:3", unresolved_kind.withOp(&b, unresolved_kind.unlinked_fd, .write, 3));
     try t.expectEqualStrings("fd-without-path fd:0", unresolved_kind.withFd(&b, unresolved_kind.fd_without_path, 0));
     try t.expectEqualStrings("link-by-descriptor fd:7", unresolved_kind.withFd(&b, unresolved_kind.link_by_descriptor, 7));
-    // `AT_FDCWD`, which `linkat` does reach.
     try t.expectEqualStrings("link-by-descriptor fd:-100", unresolved_kind.withFd(&b, unresolved_kind.link_by_descriptor, -100));
 
-    // The declared bound holds for the longest member with the widest `c_int`. Asserted
-    // by rendering it: a size computed from the wrong member would leave this one
-    // truncated back to the bare kind, which is exactly the silent loss `with_fd_max`
-    // exists to make unreachable.
     try t.expectEqualStrings(
         "trace-closed-by-target fd:-2147483648",
         unresolved_kind.withFd(&b, unresolved_kind.trace_closed, -2147483648),
     );
 
-    // Every member, against the widest operation and the widest `c_int`: the bound is
-    // derived, and this is what makes the derivation observable rather than argued. A
-    // member added without a line in `all` shows up here as a truncated rendering.
     for (unresolved_kind.all) |k| {
         const rendered = unresolved_kind.withOp(&b, k, .write, -2147483648);
         try t.expect(std.mem.endsWith(u8, rendered, " write fd:-2147483648"));
     }
 
-    // Too small a buffer keeps the kind rather than emitting a half-written one.
     var tiny: [4]u8 = undefined;
     try t.expectEqualStrings(
         unresolved_kind.unlinked_fd,
@@ -778,7 +382,6 @@ test "unresolved_kind.withFd appends the descriptor, and its buffer fits every m
 }
 
 pub const OpClass = enum(u16) {
-    // --- kill-point ops: recorded, eligible as crash points ---
     open = 1,
     write = 2,
     rename = 3,
@@ -787,12 +390,7 @@ pub const OpClass = enum(u16) {
     truncate = 6,
     mkdir = 7,
     rmdir = 8,
-    /// A second name for an existing inode (`link`/`linkat`). Creating it changes the
-    /// tree, so it is a kill point and a mutation; the crashed world can lack the new
-    /// name. Restore reproduces the two names as independent files of equal content —
-    /// inode identity and `nlink` are outside the model (ADR 0006).
     link = 9,
-    /// A symbolic link (`symlink`/`symlinkat`). Creating one writes a directory entry,
     /// so it is a kill point and a mutation — the same nature as `link` (#122). Only
     /// the LINK PATH is the operation's address; the target string is content the
     /// subject chose, not a path this run touches, and it is deliberately not carried
@@ -804,71 +402,20 @@ pub const OpClass = enum(u16) {
     // --- lifecycle ops: recorded, never a crash point ---
     close = 100,
 
-    // --- boundary detectors ---
-    //
-    // Since v3 these no longer force UNKNOWN by themselves. A fork- or spawn-boundary is
-    // tolerable when an oracle can account for every other process (none of them touched
-    // the state directory); an exec whose chain broke stays a refusal (v10), a thread is judged by what
-    // it wrote (v16), and a detach is judged where the engine held the run in a cgroup (v17). The *classification*
-    // still matters even where the verdict is the same: `posix_spawn` was recorded as
-    // `.fork` through v2, which was harmless while both were refused and becomes a hole
-    // the moment one of them is not.
     fork = 200,
     exec = 201,
     thread = 202,
-    /// A new process *and* a new image (`posix_spawn`/`posix_spawnp`).
     spawn = 203,
-    /// The target (or one of its children) left the process group (`setsid`/`setpgid`).
-    /// The group kill no longer reaches such a process; a cgroup does. Recorded so the escape
-    /// is never silently outrun: the engine judges it where it held the run in a cgroup of its
-    /// own (#559) and refuses it everywhere else.
     detached = 204,
 
-    // --- thread synchronisation (v18, ADR 0067) ---
-    //
-    // Recorded so the engine can order the writes of two threads of one process by what
-    // the target's thread API did. A thread's first record names the thread that created
-    // it, how many records that creator had written through its own slot when it called
-    // `pthread_create`, and which of that creator's creations this was
-    // (`thread_started`; `aux` is `thread_aux.started`). A join names the thread it
-    // collected by that same (creator, ordinal) pair (`thread_join`), and a detach is
-    // recorded because it is the call that says a join will never come (`thread_detach`).
-    // None of the three is a boundary — no new process, no new image — nor a kill point,
-    // nor a marker the shim writes about itself: they are the target's own calls, seen.
-    // `thread_started` is written by the new thread before its start routine runs, from a
-    // stack buffer and without claiming a per-thread slot, so a thread that never touches
-    // the state costs the slot table nothing (ADR 0067).
     thread_started = 205,
     thread_join = 206,
     thread_detach = 207,
 
-    // --- markers written by the shim itself, never by the target ---
-    /// Written once when the shim finishes initialising. Its *absence* is how the
-    /// engine learns the shim never loaded at all (static linking, hardened runtime,
-    /// injection disabled) instead of concluding "the target performed no operations".
     shim_ready = 900,
-    /// Written immediately before `raise(SIGKILL)`. This is the landing evidence:
-    /// proof that the process died where the engine asked it to, rather than the
-    /// engine assuming so because it set the variable.
     kill_landed = 901,
-    /// The shim saw an operation but could not work out which path it referred to —
-    /// an unlinked descriptor, an `O_TMPFILE` handle, a `/proc/self/fd` link that no
-    /// longer resolves. Recorded rather than dropped: an operation nobody could place
-    /// is not the same as an operation that did not happen, and only the first of those
-    /// is compatible with reporting PASS.
     unresolved = 902,
-    /// The shim saw an operation it can name and place but not model (v12): a
-    /// `RENAME_SWAP`, an `exchangedata` — mutations the restore model cannot
-    /// reproduce. On Linux the oracle issues this refusal
-    /// (`unsupported_syscall_observed`, by flag name); macOS has no oracle, so the
-    /// refusal has to originate in the only observer the platform has. The record's
-    /// path field carries the syscall-and-flag spelling, not a path — the same string
-    /// the Linux refusal shows — and the shim writes it only when the operation's
-    /// paths resolve inside the state directory, because the oracle's refusal is
-    /// scope-gated too and an out-of-scope swap is none of this tool's business.
     unsupported = 903,
-    /// Where this process stands against the run's cgroup (v17, #559). Written only when the
-    /// engine gave the spawn a cgroup; `aux` is one of `cgroup_aux`.
     cgroup = 904,
 
     pub fn isKillPoint(self: OpClass) bool {
@@ -885,9 +432,6 @@ pub const OpClass = enum(u16) {
         };
     }
 
-    /// The thread-synchronisation records (v18): a thread's start naming its creator, a
-    /// join, a detach. Not boundaries — `isBoundary` is what `needsOracle`, the quiescence
-    /// sampling and the account key on, and a join creates nothing — and not markers.
     pub fn isThreadSync(self: OpClass) bool {
         return switch (self) {
             .thread_started, .thread_join, .thread_detach => true,
@@ -902,43 +446,10 @@ pub const OpClass = enum(u16) {
         };
     }
 
-    /// Whether an operation of this class, recorded as unplaceable, refuses the run.
-    ///
-    /// The refusal exists because an operation that cannot be placed cannot be given a
-    /// crash point — `main.zig`'s own message says "so it cannot be placed among the
-    /// crash points". `close` is the one class for which that reasoning does not apply:
-    /// ADR 0003 §2 excludes it from both class sequences ("`close` is neither a kill
-    /// point nor a mutation"), so no crash point was ever going to be computed from it,
-    /// and the bytes on disk are the same either side of it. The macOS oracle's reader
-    /// has skipped close lines outright since #406, the change that created that reader
-    /// (`fsusage.zig`, the `.close` arm of
-    /// the descriptor bookkeeping, which `continue`s before the unresolvable checks).
-    ///
-    /// Written as three predicates rather than `!= .close` on purpose. The property is
-    /// the class's, not the name's: anything that changes state is a kill point by
-    /// construction (a mutation is a kill point — the `isMutation` ⊆ `isKillPoint`
-    /// invariant below pins that), so a future state-changing class refuses here without
-    /// anyone remembering to add it. Boundary and marker classes stay refusing because
-    /// nothing measured says they can arrive on this path at all; letting them through
-    /// would be exempting a shape no measurement covers. Today the four together are
-    /// equal to `!= .close` — every other class is a kill point, a boundary, a
-    /// marker or a thread-synchronisation record — and that equality is asserted in the test below so a drift is loud.
-    /// The thread-synchronisation records (v18) join the refusing side for the boundary
-    /// classes' reason: they carry no path, so nothing measured says one can arrive here.
     pub fn unplaceableRefuses(self: OpClass) bool {
         return self.isKillPoint() or self.isBoundary() or self.isMarker() or self.isThreadSync();
     }
 
-    /// Operations that can change what is left on disk.
-    ///
-    /// `open` is deliberately excluded even though `O_CREAT` creates a file. The
-    /// engine uses this predicate for the `state_changed_without_ops` detector —
-    /// "the state directory changed but we counted no mutation" means we missed
-    /// something. Excluding `open` makes that test *stricter*, not looser: a target
-    /// that only ever opened files, yet changed the state, is exactly the kind of
-    /// blind spot worth catching. `fsync` is excluded for the same reason it is not
-    /// a verdict input — under a process crash the OS survives, so a completed write
-    /// is already visible whether or not it was synced.
     pub fn isMutation(self: OpClass) bool {
         return switch (self) {
             .write, .rename, .unlink, .truncate, .mkdir, .rmdir, .link, .symlink => true,
@@ -946,23 +457,10 @@ pub const OpClass = enum(u16) {
         };
     }
 
-    /// Operations that name two paths (`rename`, `link`). They touch the state directory
-    /// when *either* endpoint is inside it, and both observers must agree on that — so
-    /// the property lives here, in the shared contract, rather than as a hardcoded list
-    /// on each side (ADR 0006).
     pub fn isTwoPath(self: OpClass) bool {
         return self == .rename or self == .link;
     }
 
-    /// The class's own tag, the way `UnknownReason.name` in this file already does it
-    /// (#280). This was a hand-written switch of twenty arms, every one of them spelling
-    /// its own tag -- measured: twenty members, twenty arms, zero differences -- while
-    /// `src/main.zig` printed `@tagName(op.class)` directly in divergence detail. Two
-    /// spellings of one thing in one output, kept in step by nothing. The wire format is
-    /// `@intFromEnum`, so nothing frozen reads this; what it does reach, besides the
-    /// report, is the landing context written into a saved case, which is why the arms
-    /// were compared to their tags one by one before the switch was removed rather than
-    /// after.
     pub fn name(self: OpClass) []const u8 {
         return @tagName(self);
     }
@@ -975,51 +473,18 @@ pub const OpClass = enum(u16) {
     }
 };
 
-/// Why a run could not be judged. Each value corresponds one-to-one with a distinct
-/// branch in the code, so a report naming two different reasons is evidence that two
-/// different detectors actually fired — not that someone wrote two different strings.
 pub const UnknownReason = enum {
     no_shim_marker,
     state_changed_without_ops,
     contract_version_mismatch,
     unsupported_syscall_observed,
-    /// The oracle saw a state-directory operation the shim did not record. Distinct
-    /// from `state_changed_without_ops`: that one notices the state moved while nothing
-    /// was counted, this one names the specific operation that went unseen.
     oracle_missed_operation,
-    /// The shim recorded an operation the oracle never saw — over-counting, which
-    /// shifts every later crash point by one.
     oracle_saw_phantom,
     child_process_detected,
     multiple_threads_detected,
     unresolvable_path,
     kill_did_not_land,
-    /// A child ran but its exit status could never be read: the wait was interrupted
-    /// repeatedly, or failed permanently (#264). Distinct from `kill_did_not_land`,
-    /// which is what this used to be reported as — `waitpid` writes `status` only on
-    /// success, so a discarded failure left the zero it was initialised with and a
-    /// killed world decoded as `exited 0`. That is the wrong reason twice over: it
-    /// names the kill when the kill was never observed either way.
-    ///
-    /// UNKNOWN rather than SETUP_ERROR wherever exploration has begun. Exit 3 means the
-    /// define did not run (DESIGN §"exit codes"), and by the recording run onward that
-    /// is no longer true — the same distinction `recording_run_failed` already draws.
     child_wait_failed,
-    /// A world's operation was still running when its `--world-timeout` budget expired,
-    /// as measured by a final successful observation after the deadline, and was sent
-    /// SIGKILL (#263).
-    /// The message names the budget, because the operator can move it — the rule
-    /// `state_file_too_large`, `state_tree_too_large` and `state_rewrite_failed` all
-    /// ship under. Off by default: no budget, no member, not one bit of changed
-    /// behaviour.
-    ///
-    /// The name is deliberately wider than today's mechanism. Only the world
-    /// operation's spawn carries a budget — a recording run, a setup command or a
-    /// checker that hangs still hangs, and the flag's help text says so — but this set
-    /// freezes at 1.0 while the mechanism does not, so a member named for worlds would
-    /// become a lie the day a 1.x release budgets the recording run, and a new name
-    /// then would be a breaking change. `child_*` is the family it joins.
-    ///
     /// What the refusal does NOT claim: that the child is gone. SIGKILL was sent, not
     /// observed delivered: the reap runs under a bounded grace, and a child in
     /// uninterruptible sleep — or one whose credentials the group signal cannot
@@ -1028,244 +493,43 @@ pub const UnknownReason = enum {
     /// SIGCHLD to its default disposition once for the whole run (the kill-safety
     /// basis: unreaped children stay zombies, pinning their pids), so every child of
     /// the run sees the same signal environment.
-    /// The timed-out world is not counted in `explored`, like every refusal raised
-    /// inside the world loop — which inherits, rather than resolves, the standing gap
-    /// between that counter's name ("worlds actually run") and a world that ran only
-    /// to be refused. MCP callers cannot set the budget today; the wiring is 1.x work
-    /// and touches no frozen surface.
     child_timed_out,
-    /// The subject's kill-point records and its highest sequence number disagree —
-    /// the numbering has gaps or duplicates. A restarted counter after an
-    /// unobserved image change is exactly a duplicate (#123), and every address
-    /// computed from such a trace may name a different operation than the one that
-    /// ran. prefixHash catches gaps but not duplicates; this catches both.
     sequence_numbering_broken,
-    /// No oracle was available, so the shim's account of what happened could not be
-    /// checked against anything. Without it, a target that bypasses libc looks exactly
-    /// like one that touched no files — and the structural detectors only catch that
-    /// when the *whole* operation bypassed libc, not when part of it did.
     completeness_not_verified,
-    /// The trace was larger than the engine will read (#324). The reader's side of the
-    /// pair `trace_truncated` names the writer's: there the shim stopped mid-record,
-    /// here the shim's account is complete and the engine declined to hold it. Kept
-    /// apart because collapsing them loses which side stopped — and because the cap's
-    /// natural collapse, an empty TraceInfo, reads as `no_shim_marker`, which is a
-    /// third thing again (the shim never started). UNKNOWN rather than SETUP_ERROR:
-    /// every read site is at or past the recording run, where exit 3's "the define
-    /// did not run" is no longer true — the line `child_wait_failed` draws above.
-    /// (This said "both" while there were three of them; #377 counted.)
     trace_too_large,
-    /// The trace reads outstanding at once reached the engine's whole-trace ceiling
-    /// (#377, ADR 0033). **Not a synonym for `trace_too_large`**, and kept apart for the
-    /// reason `state_tree_too_large` is kept apart from `state_file_too_large`: there the
-    /// refusal names one oversized file and an operator can go find it, here every trace
-    /// involved may be comfortably small and what ran out is the sum. Collapsing the two
-    /// would send that operator looking for a large file that does not exist.
-    ///
-    /// UNKNOWN rather than SETUP_ERROR for the same reason `trace_too_large` is: every
-    /// trace read is at or past the recording run, where exit 3's "the define did not
-    /// run" is no longer true.
-    ///
-    /// **Added after the v1.0 tag**, the second member to be. `docs/contract-freeze.md`
-    /// carries the amendment; the previous one is not a precedent this leans on, because
-    /// that amendment says so in as many words — this is its own owner ruling.
     trace_budget_exhausted,
-    /// A state file was larger than the snapshot will read (#265), at a snapshot taken
-    /// at or past the recording run (#330). The initial snapshot hits the same cap and
-    /// stays SETUP_ERROR: it runs before anything of the define does, so exit 3's "the
-    /// define did not run" is true there and false here. A target that writes a big
-    /// file during its own operation reaches this without doing anything wrong, which
     /// is why the late sites cannot borrow the early site's verdict. Whichever of the
     /// refusal's message forms applies, it applies on both sides of that split — so what
     /// differs between the two exits is the verdict alone, never the wording.
     state_file_too_large,
-    /// Holding the state tree in memory reached the snapshot's ceiling (#323), at a
-    /// snapshot taken at or past the recording run. The initial snapshot hits the same
-    /// ceiling and stays SETUP_ERROR, the split `state_file_too_large` above describes.
-    ///
-    /// **Its own member rather than a share of `state_file_too_large`**, because a caller
-    /// reading that one goes looking for a single oversized file and there is none: every
-    /// file here can be comfortably under the per-file cap. And **not a share of
-    /// `state_unsnapshotable`** either — that member is the residue for failures with no
-    /// limit behind them, and this one has a limit the operator can act on, which is the
-    /// line `snapshotDetail` already draws when it decides which refusals report a number.
-    ///
-    /// What the message counts is what the walk had read when the ceiling broke, not what
-    /// the tree holds; `engine.TreeTooLargeDiag` records why continuing the walk to learn
-    /// the real figures was rejected.
     state_tree_too_large,
-    /// The state tree could not be snapshotted at all, at a snapshot taken at or past the
-    /// recording run (#351). The sibling of `state_file_too_large`: that one names a file,
-    /// its size and a limit the operator can act on, this one covers the walk's other
-    /// reported failures — every one except `OutOfMemory`, which stays SETUP_ERROR (see
-    /// below), and `TreeTooLarge`, which has a limit of its own and so took a member of
-    /// its own (#323; this sentence said "every one except `OutOfMemory`" until then, and
-    /// the member above is what made it false). Kept apart from the cap for the reason
-    /// `trace_too_large` and
-    /// `trace_truncated` are — collapsing them would lose which happened.
-    ///
-    /// **One member, five kinds of cause**, which the message separates because the closed
-    /// set does not: a tree deeper than the walk descends, or a path whose whole spelling
-    /// reaches the limit the snapshot can hold (the operator's tree); a file or link that
-    /// could not be read, or an entry that could not be classified as file, directory or
-    /// symlink (the environment); and an entry list that came out unsorted or duplicated —
-    /// that last one is a defect in sideeye, not in the state tree, and its message says
-    /// so rather than sending the operator to inspect their files.
-    ///
-    /// **`OutOfMemory` is deliberately NOT here**: `spawnFailure` states the rule that
-    /// allocation failures are environment problems in either phase, and a snapshot that
-    /// exits 2 for OOM while the `classify` on that same snapshot exits 3 would put the
-    /// seam one statement wide. It stays SETUP_ERROR.
-    ///
     /// **Not every unreadable tree reaches this.** The walk skips a directory it cannot
     /// open (`engine/state_fs.zig`'s `opendir … orelse return`), so a tree that is unreadable that
     /// way snapshots as if the directory were empty. This member covers the failures the
     /// walk reports, not every failure it could in principle notice.
     state_unsnapshotable,
-    /// The engine could not rewrite the state tree it recorded: the restore that opens
-    /// every world (delete the tree, rebuild it from the snapshot), the falsification
-    /// probe's restore, or that probe's deliberate corruption. Either way the run can
-    /// no longer judge anything, for two different reasons the message separates: a
-    /// failed RESTORE means no world can be given its starting tree, and a failed
-    /// CORRUPTION means the checker was never shown failing over a broken store, so
-    /// nothing it later accepts can be trusted (worlds never start from the corrupted
-    /// tree — it exists only to test the checker).
-    ///
-    /// The write-side sibling of `state_unsnapshotable`: that one is the walk failing
-    /// to READ the tree, this one is the engine failing to put it back. Named
-    /// "rewrite", not "restore", deliberately — the probe corrupts immediately after a
-    /// restore that SUCCEEDED, so a member named for restore would claim the opposite
-    /// of what the engine had just demonstrated. One member, three sites; the message
-    /// names which rewrite failed, the shape #351 established (the closed set stays
-    /// coarse, the message separates).
-    ///
-    /// **Not every failed rewrite reaches this.** Replay's `--fresh-state` emptying
-    /// runs before the define, where SETUP_ERROR is the honest answer, and it stays
-    /// there: the phase decides, not the operation (#330's discipline, third
-    /// application after `spawnFailure` and the snapshot refusals).
     state_rewrite_failed,
-    /// The trace ended mid-record. Everything after that point is unknown, including
-    /// how many operations there were.
     trace_truncated,
-    /// A deliberately corrupted state did not make the checker fail, so the checker is
-    /// not testing what it claims to test. Every PASS it would go on to produce would
-    /// be a statement about nothing (DESIGN §14-13).
     checker_not_falsified,
-    /// A success marker was declared but never appeared in the recording run's own
-    /// stdout — the run that completes normally. A marker the clean run cannot produce
-    /// is a misconfiguration or an unobservable claim, and letting it stand would turn
-    /// every L1 obligation vacuous while the report still said PASS (ADR 0008). A
-    /// crash world killed before the marker is not this: there the conditional simply
-    /// does not apply, which is the normal shape of a post-success invariant.
     marker_never_observed,
-    /// A saved case was replayed against code whose recording no longer matches the
-    /// case's landing context — the operation count, the class sequence up to the
-    /// crash point, or the classes around it changed. Killing at the recorded index
-    /// would verify a different point than the counterexample named, so the replay
-    /// refuses rather than answer about the wrong world (ADR 0009, DESIGN §13).
     case_no_longer_applies,
-    /// The recording run did not complete normally. Its trace describes a partial
-    /// execution, so the crash points derived from it address an operation sequence the
-    /// target does not actually perform.
     recording_run_failed,
-    /// The oracle produced no output at all. Reporting agreement between two empty
-    /// views is agreement about nothing.
     oracle_saw_nothing,
-    /// The invariant failed in the world that was never crashed. Whatever is wrong is
-    /// wrong without any help from sideeye: either the checker rejects a state the
-    /// operation produces normally, or the operation is broken on its own. Neither is a
-    /// crash-consistency counterexample, and reporting one as "N of N explored worlds
-    /// violated" would attribute to crashing something that happens without it.
     baseline_violates_invariant,
-    /// The baseline world — the one run to completion without a kill — did not end the
-    /// way the recording run did. It is the same command over the same restored state,
-    /// so a different outcome means the restored state is not the state that was
-    /// recorded, and every verdict drawn from the other worlds rests on that state.
     baseline_run_failed,
-    /// A process other than the subject performed an operation on the state directory.
-    /// Crash points are numbered per process, so such an operation has no unique
-    /// address — and a verdict that silently attributed it to the subject would be a
-    /// statement about a program that does not exist.
     child_touched_state_dir,
-    /// The target crossed a process boundary and no oracle was available to account for
-    /// what the other processes did. The shim can only see processes that load it;
-    /// tolerating a boundary on that evidence alone would treat "was not seen" as
-    /// "did nothing", which is the confusion this tool exists to refuse.
     boundary_without_oracle,
-    /// Two snapshots of the state directory, taken back to back after the run was
-    /// contained, disagreed: something was still writing. Whatever the verdict would
-    /// have been, it would have described a moment nobody chose.
     state_not_quiescent,
-    /// The judged state changed at a path that no recorded operation names. The
-    /// general form of `state_changed_without_ops`, which asks the same question of the
-    /// whole run and therefore goes silent as soon as one operation is recorded: a
-    /// target whose libc write is seen and whose raw write is not looks exactly like one
-    /// that was fully observed (#405, measured on the shipped 1.0.0 — a raw-forked
-    /// child's file sat in the judged directory under a PASS).
-    ///
-    /// Distinct from `state_changed_without_ops` by more than resolution: that name
-    /// says operations were counted and there were none, which is false here. Distinct
-    /// from `oracle_missed_operation`, which names the syscall a second witness saw the
-    /// shim miss; this one has no second witness and names the path instead.
-    ///
-    /// **Added after the v1.0 tag** — the first member to be, and a break of the freeze
-    /// declaration rather than an exception inside it. `docs/contract-freeze.md` carries
-    /// the amendment and the reason.
     state_changed_unaccounted,
-    /// A state-directory entry is neither a regular file, a directory nor a symlink —
-    /// a FIFO, a socket, a device. `restore` cannot recreate such an entry, so every
-    /// explored world would run against a tree the recording run never had, and the
-    /// crash points were derived from the recording run (#5). Refusing is the honest
-    /// answer; recreating the common cases later would be an additive relaxation.
     unsupported_state_entry,
-    /// The process that launched this exploration is gone (#269). Opt-in through
-    /// `--stop-when-orphaned`: the engine records `getppid()` once at process start and
-    /// refuses to begin another world once it changes — parentage only changes when the
-    /// parent dies. The MCP adapter passes the flag on every self-exec'd explore and
-    /// replay, because an agent host restarts MCP servers as ordinary lifecycle, and an
-    /// orphaned explore otherwise keeps killing processes and rewriting its state
-    /// directory with nobody left to report to.
-    ///
-    /// A flag rather than a channel that carries the parent's pid. Argv is per-invocation
-    /// and is not inherited, where an environment variable is both: the engine hands the
-    /// target its own environment on the non-minimal path, so a pid passed that way
-    /// reaches processes nobody set it for, and a stale copy refuses runs it was never
-    /// about (measured, both).
-    ///
-    /// UNKNOWN, not SETUP_ERROR: exploration had begun, and exit 3 means the define did
     /// not run. The claim it supports is narrow — **the next world boundary that is
     /// reached**. A setup, recording or checker run that hangs never reaches one, and a
     /// launcher that dies between fork and the engine's first instruction is not seen
     /// (the baseline is then already the reaper's pid).
     parent_exited,
-    /// An exploration in which no world could have failed (#682, #683, ADR 0091): no crash
-    /// point at all; or no checker, no crash world that printed the marker over a path only
-    /// one snapshot holds, and no crash point — other than an `fsync` or a `mkdir` — that
-    /// named a path both snapshots hold or renamed a directory above one, while every such
-    /// path ended as it began. The README already refuses to trust a checker it has not
-    /// seen fail; this is the same rule for the built-in layers. A PASS here would have been
-    /// true of any target, and read by a caller that looks only at the exit code as a check
-    /// that ran.
-    ///
-    /// The commonest way here is a define whose store resolved outside `--state` — the
-    /// zero-operation PASS `docs/scouting.md` used to call the tell — and the second is an
-    /// operation that only creates files, which the pre-or-post rule does not judge.
-    ///
-    /// **Added after the v1.0 tag**, the third member to be; `docs/contract-freeze.md`
     /// records the ruling. A floor, not a guarantee: a crash point that names a judged path
     /// without changing it — a lock file opened for writing, a failed call — still counts.
     nothing_could_fail,
-    /// The checker rejected the state the define starts from, before the operation ran (#756,
-    /// ADR 0107). The falsification shows a checker can say no; this is the other side of the
-    /// same gate — it must say yes to the state every world starts from, as the engine restores
-    /// it, before any operation. Until this member, such
-    /// a checker failed in the world killed before the first operation and the report read as
-    /// the target's FAIL at crash point 1, `after (start)()`, although no operation of the
-    /// target's is in that world. Raised by `explore` and `replay`, before any world, after the
-    /// falsification; never by `preflight`, which does not run the checker.
-    ///
-    /// **Added after the v1.0 tag**, the fourth member to be; `docs/contract-freeze.md` records
-    /// the ruling.
     checker_rejects_initial_state,
 
     pub fn name(self: UnknownReason) []const u8 {
@@ -1273,54 +537,14 @@ pub const UnknownReason = enum {
     }
 };
 
-/// Why the engine could not get what it needed (#518, ADR 0057) — the machine-readable half
-/// of a `SETUP_ERROR`, beside the `message` a reader gets. **Classes, not branches**: unlike
-/// `UnknownReason`, whose members are one-to-one with the sites that raise them, these five
-/// are what a caller can branch on — was it my define, my setup, this machine, or Sideeye —
-/// and a site is assigned by the rule written on each member, not by its wording. `main.zig`'s
-/// `setupError` takes one as a required argument, so a site that names none does not compile;
-/// a site that funnels several failures chooses by an exhaustive `switch` on what it holds.
-///
 /// The set is closed by name from the release that carries it (`docs/contract-freeze.md`
 /// surface 2): a member added later is the same break the page records for `unknown_reason`.
 /// A site the rule cannot place is a reason to doubt the rule before adding a member.
 pub const SetupErrorReason = enum {
-    /// The refusal is about what the define *says* and could have been raised from its text
-    /// and its declared values alone: a flag the mode refuses, an option missing its value,
-    /// an empty command, a marker too long, a toml or case file that does not parse or
-    /// declares the wrong version, a path spelled longer than the engine can hold, two
-    /// declared paths that overlap (`--work` inside `--state`). Resolving a path the define
-    /// names is the machine's answer, not the define's — that is `environment`.
     define_invalid,
-    /// `--setup` was handed to `exec` and ended badly: exited non-zero, was killed by a
-    /// signal, or ended in a status `waitpid` did not decode. A setup whose file, or the `#!`
-    /// interpreter it names, is missing or may not be executed does not: it is refused
-    /// before it runs, as `environment` (#701, ADR 0092 — it used to arrive here as
-    /// `--setup exited 127`). What that check does not judge still arrives here with
-    /// whatever status the failed exec leaves — the child's `_exit(127)` when `exec`
-    /// fails, or the shell's status when the libc hands a file it does not recognise to
-    /// `/bin/sh` — and a child
-    /// the fork stub could not arrange before `exec` as its `_exit(126)`, with a stderr line
-    /// naming the call and errno. `posix.SpawnError` has no exec member. The
-    /// report carries the status as `setup_exit_code` or `setup_signal`; neither for the
-    /// undecoded shape, where `message` quotes the raw number.
     setup_failed,
-    /// The engine asked the machine for something and was refused: memory, a path that
-    /// would not resolve, a file it could not open, read back or create (captures, the
-    /// oracle's account, the demo's scratch), a process it could not fork or wait for, a
-    /// privilege (`sudo` for `fs_usage`), the state tree
-    /// it could not snapshot or rewrite before exploration, an apparatus entry the
-    /// environment does not carry, a setup, operation or checker that cannot be started
-    /// (`image.startable`: its file or `#!` interpreter missing, not a regular file, not
-    /// executable or not reachable, or a bare name with nothing on `PATH` — #701, ADR 0092).
     environment,
-    /// What the define asks for does not exist on this platform or kernel: `--oracle-fs-usage`
-    /// off macOS, `--oracle` (strace) on macOS (#702), `--observe syscalls` off Linux or on a kernel that refuses
-    /// `SECCOMP_RET_TRAP`, a shim built without the filter, `apparatus preload:` on macOS,
-    /// which has no global preload file.
     platform_unsupported,
-    /// The engine contradicted itself — an invariant of its own that did not hold. Not the
-    /// define's, not the machine's; file it.
     internal,
 
     pub fn name(self: SetupErrorReason) []const u8 {
@@ -1328,23 +552,8 @@ pub const SetupErrorReason = enum {
     }
 };
 
-/// What a declared recovery did to one saved exhibit's crash state (#606, ADR 0072): the
-/// value of `earliest.recovery.result` and `checker_earliest.recovery.result`, and of the
-/// evidence bundle's `recovery.result`.
-///
 /// **Closed by name from the release that carries it**, the rule `setup_error_reason`
 /// follows (`docs/contract-freeze.md`, surface 2). A third closed set rather than a new
-/// `unknown_reason` member on purpose: nothing about a recovery can make the run itself
-/// unknown — the verdict was decided before any recovery ran — so none of these is a
-/// refusal of the run.
-///
-/// `fail` is spent on one observation only: the recovery command ran and ended, and the
-/// declared recovery checker, run afterwards, rejected the state. Everything the engine
-/// could not establish — the crash state not rebuilt, a command that never started or did
-/// not end inside `--world-timeout`, a state still changing after the command ended, a
-/// recovery checker that accepted a corrupted state — is `unknown`, because reporting
-/// `fail` for a recovery that never ran would be a claim about the tool this run did not
-/// measure.
 pub const RecoveryResult = enum {
     pass,
     fail,
@@ -1355,22 +564,6 @@ pub const RecoveryResult = enum {
     }
 };
 
-/// What the operator does next about a refusal (#274). Every UNKNOWN carries one — the
-/// report's `next_step` field and the text report's `next` line are the same sentence,
-/// rendered once — and `main.zig`'s `unknown()` takes it as a required argument, so a
-/// refusal without a next step does not compile.
-///
-/// **A member is an action, not a reason.** The first design was one sentence per
-/// `unknown_reason`, and review counted why that cannot be right: the reasons are 34 and
-/// the sites that raise them are 85, and one reason routinely bundles causes with
-/// different remedies — `state_unsnapshotable` covers a tree that is too deep, a file that
-/// cannot be read and an entry list this engine mis-sorted, and the operator does three
-/// different things about those. So the choice is made where the cause is known, at the
-/// site (or in the disposition helper the site reads from), and this enum only names the
-/// actions the sites can choose between. When two sites raising the same reason need
-/// different actions, they pick different members; when no member fits, the site adds
-/// one and `render` refuses to compile until it has a sentence.
-///
 /// **Closed and payload-free**, so the sentence is a comptime string. `unknown()` is
 /// `noreturn` and the promise is "every UNKNOWN carries it": a sentence assembled at run
 /// time from an arena could fail to allocate exactly when the report is being written,
@@ -1378,284 +571,48 @@ pub const RecoveryResult = enum {
 /// bytes into text the MCP surface prints outside its marked region. Members that name
 /// a flag name it in the tag and in the sentence, and a unit test holds every `--flag`
 /// in every sentence to the help text.
-///
-/// The sentences follow ADR 0030's line for refusals: what to do, never why it happened
-/// — the `message` beside it reports the observation, and "this class is refused by
-/// design" is a fact about Sideeye, not a diagnosis of the target.
 pub const NextStep = enum {
-    /// The define declares something this run contradicted — a checker that accepted a
-    /// corrupted store, a marker that never appeared, a baseline whose checker or success
-    /// marker failed there. The recording run's exit status and signal, `preflight --twice`'s
-    /// second run and `kill_did_not_land` said this until #710 gave each a member of its own
-    /// (ADR 0097); a baseline whose bytes did not repeat takes `scratch_or_twice`.
     fix_define,
-    /// A would-be PASS with no completeness witness: the weaker claim is available too.
     pass_oracle,
-    /// A process boundary nothing could account for. Not `pass_oracle`: `--allow-unverified`
-    /// does not lift this refusal, and on macOS the boundary is refused under the fs_usage
-    /// oracle as well — so the sentence names only the one thing that works (review).
     account_boundary,
-    /// A world outlived its `--world-timeout` budget.
     raise_world_timeout,
-    /// The target does something Sideeye refuses by design: static linking, other processes
-    /// on the state, a syscall the restore model cannot reproduce, an entry kind the snapshot
-    /// does not hold. Threads (outside `--observe supervised`), a baseline whose bytes did not
-    /// repeat, and a Mach-O naming a platform name their own way past since #710 (ADR 0097).
     class_wall,
-    /// A boundary refusal in the recording run, where the operation may be a `#!` wrapper
-    /// rather than a target of the refused class (#506).
-    ///
-    /// **The sentence does not branch, and that is the whole of it.** The first version read
-    /// "if the operation is a shell script … if it is not …", which cuts off exactly the
-    /// population the second half exists for: the published wall for *"Shell CLIs over helper
-    /// processes"* (pass) is raised here, and those targets **are** shell scripts, so the
-    /// exclusive branch handed them advice that does not apply and took away the entrance to
-    /// the README. Nothing here is detected, so the wrapped case, the genuine class and a
-    /// target that reached the site through threads all read the same words: a question to
-    /// check, then a clause that is true regardless of the answer.
-    ///
-    /// It says "invoke that command as the operation" rather than naming a flag. `--operation`
-    /// is one string and `splitArgs` tokenises it on spaces with no quoting — which is why a
-    /// wrapper gets written — and the argv form lives in a `sideeye.toml`, which `preflight`
-    /// does not take. Naming either would point at a shape one of the two commands cannot
-    /// carry.
-    ///
-    /// **Five sites carry it, and they are two reasons seen by two observers.** The shim
-    /// notices a foreign kill point only in a child that loaded it; a static child, or one
-    /// that drops the preload, is seen by the oracle instead — so `child_touched_state_dir`
-    /// is raised from two places and both need this step. The same split runs through
-    /// `child_process_detected`.
-    ///
-    /// The detached case (setsid/setpgid) does **not** carry it, **and the honest reason is
-    /// the scope ruling, not a property.** The first draft said recommending an argv there
-    /// would be false for that population — true of the sentence as it then read, and not of
-    /// this one, which only asks. But the same is then true of the oracle-block site, whose
-    /// population is threads, `CLONE_FS`, `unshare` and a non-primary setsid: a wrapper
-    /// produces none of those either, so the question is answered "no" at both. One is in and
-    /// one is out because the owner fixed the scope at five, and #506 records that rather than
-    /// dressing it as a distinction.
-    ///
-    /// On macOS one of the five gives way to `name_framework_interpreter` (#703): the
-    /// recording run's broken self-exec chain, when the operation's image is a framework
-    /// Python's launcher. Everywhere else, and at that site for any other image, it is this.
     unwrap_or_class_wall,
-    /// The recording run's self-exec chain broke on macOS and the operation's image — named
-    /// directly, or as a script's `#!` interpreter — sits where a framework Python's
-    /// launcher sits, with the framework's interpreter beside it (#703, `image.frameworkPython`).
-    /// Homebrew's `bin/python3` hands itself to that interpreter through `posix_spawn` with
-    /// `POSIX_SPAWN_SETEXEC`, which the shim cannot follow; the interpreter named directly is
-    /// observed and judged, measured. Not `unwrap_or_class_wall`: the operation is no shell
-    /// wrapper, and the way out is one word of the define, which the detail names exactly.
-    ///
-    /// The sentence names `__PYVENV_LAUNCHER__` conditionally, because the detail names a
-    /// value only for a virtual environment, and it says where the variable has to live: in
-    /// the environment Sideeye runs in, since an `env:` apparatus entry is checked, never
-    /// applied (ADR 0041) — and that it reaches setup and the checker too.
     name_framework_interpreter,
-    /// `boundary_without_oracle` in the recording run, where the boundary may be the
-    /// operation's own wrapper (#506, owner's scope ruling extending the five).
-    ///
-    /// Two actions, because two things are true at once: an oracle would let this run be
-    /// judged, and a wrapper is a boundary that did not have to exist. Neither is detected,
-    /// and the oracle half stays first because it is the one that works whatever the cause.
     account_boundary_or_unwrap,
-    /// The image is dynamically linked and the marker still never appeared: the shim is
-    /// the thing to look at.
     check_shim,
-    /// The file `operation` names was read and could not be recognised as an executable
-    /// image, so the insertion the run relies on had nothing to go into. Not `class_wall`:
-    /// the limit is on how the define spells this one command, not on what the target
-    /// under test is, and the README section that sentence names enumerates the latter.
-    /// Not `fix_define`: nothing the define declared was contradicted (#481, #482).
     operation_not_an_image,
-    /// Shim and engine speak different trace contracts.
     rebuild_pair,
-    /// A saved case that this recording no longer matches.
     re_record,
-    /// Something outside both the define and Sideeye that the detail names: permissions,
-    /// disk, the oracle binary, a directory that moved.
     environment,
-    /// A failure the detail cannot attribute — a trace cut short mid-record, a wait that
-    /// kept being interrupted. Once may be the machine; twice is worth reporting.
     retry_then_report,
-    /// A ceiling the operator can move by giving Sideeye less to hold.
     narrow_state,
-    /// A snapshot past the recording run met an entry this user cannot read (#535, ADR
-    /// 0056). The initial snapshot read the tree, so the entry appeared during the run —
-    /// a lock the target created mode 0000 is the common case — and it is not the
-    /// operator's environment to fix. Chosen only on a measured `EACCES`/`EPERM`
-    /// (`readFailedStep`); a read that failed some other way keeps `environment`.
     unreadable_entry_appeared,
-    /// The state directory was still changing after the run was contained.
     quiesce,
-    /// The process that launched the exploration went away.
     relaunch,
-    /// `oracle_missed_operation` under `--observe wrappers` on Linux (#599, ADR 0069). The oracle
-    /// saw an operation that did not pass through the interposed libc entry points — a write libc
-    /// issues from inside itself above all (ADR 0005's far side) — and `--observe syscalls` counts
-    /// most operations at the kernel boundary, those included; not all (a raw `copy_file_range` or
-    /// `pwritev2`, a syscall ABI the filter cannot read, an image the shim is not in). What that mode then shows is
-    /// the target's business, and the sentence promises neither a verdict nor a cause: the same
-    /// wrappers refusal, with the same thread account, was measured PASS under that mode for one
-    /// zstd input and `multiple_threads_detected` for another.
-    ///
-    /// **The caution rides in the same sentence, unconditionally.** That mode changes what some
-    /// targets do — a child that execs an image the shim is not loaded into, a `posix_spawn`
-    /// child whose file action opens for writing, a target that takes `SIGSYS` away — and no
-    /// field of the account says which of those a run has: a `posix_spawn` child dies before it
-    /// execs, so nothing about images catches it. A step that added the caution only when it
-    /// could tell would drop it exactly where it matters (review). The sentence names where the
-    /// list lives rather than paraphrasing it, because every paraphrase tried was narrower than
-    /// the list and read as "the shim is loaded into mine, so this is not about me".
-    ///
-    /// "explore or preflight" because the oracle comparison runs in both. The sentence does not say
-    /// what a failure under that mode means beyond "may": a process killed, or a helper that lost
-    /// privileges to the `PR_SET_NO_NEW_PRIVS` the mode sets, or a target that does not repeat,
-    /// all end the same way (review).
     observe_syscalls,
-    /// `no_shim_marker` on a statically linked 64-bit ELF, in a build that can supervise (Linux, on
-    /// aarch64 or x86_64), under `--observe wrappers` or
-    /// `syscalls` (ADR 0090). No preloaded library reaches such an image, and `--observe
-    /// supervised` (ADR 0089) counts its calls from outside the process instead: the step the
-    /// `docs/cli.md` entry for that mode names for exactly this refusal. Chosen from the image
-    /// the engine read before the run — named by path, or found along `PATH` for a bare name —
-    /// and never under `supervised` itself, where the same reason means the engine could not
-    /// write its own trace. A 32-bit static image keeps `class_wall`: that mode does not see
-    /// i386-compat or x32 calls. The sentence names the mode's own conditions rather than asking
-    /// the kernel on a refusal path (ADR 0069's reason); below 5.19 the flag answers
-    /// `platform_unsupported`, which says so. It promises no verdict: under that mode a run whose
-    /// writes come from two threads still refuses. "The same command" rather than "explore or
-    /// preflight": a replay of a case recorded under that mode reaches this refusal too when the
-    /// flag is left off, and what it needs is the flag on the replay (review).
-    ///
-    /// ADR 0089 declined this member because "the step set is closed (frozen surface 2)". It is
-    /// not: `docs/contract-freeze.md` closes `unknown_reason` and `setup_error_reason`, and
-    /// `next_step` is neither (ADR 0069 recorded the same when it added `observe_syscalls`).
     observe_supervised,
-    /// The same way past as `observe_supervised`, for a statically linked operation the default
-    /// gate let through because something else carried the shim (#685, ADR 0108): a static parent
-    /// starts a dynamic child, the child's shim announces itself, and the parent's own calls are
-    /// recorded by nobody. Three refusals were measured to come out of that shape and to be crossed
-    /// by `--observe supervised` — `oracle_missed_operation` where the shim announced itself from
-    /// a process other than the one the oracle saw start (aliyun-cli 3.5.1, lefthook 1.13.6), the
-    /// recording run's `unresolvable_path` where a process closed the shim's trace (roswell
-    /// 26.02.116), and `child_touched_state_dir` on its shimmed-writer arm with the same pair of
-    /// pids (a toy: the static parent fork-execs a shell that writes the state; no real target
-    /// measured yet). `boundary.staticParentNext` is the only producer, and each site passes the
-    /// shape it measured; everywhere else the site's own step stands, because a step that cannot
-    /// work is worse than one that only points at the class (`childTouchedNext`).
-    ///
-    /// A member of its own rather than `observe_supervised` so the sentence can say why: the
-    /// refusal beside it talks about an operation the shim missed or a trace that was closed, and
     /// a reader sent to another mode needs to know the image it named is one no shim can enter. It opens
     /// on that reason, not on "Run the same command again", which the acceptance suite anchors to
     /// `observe_supervised` — and it says the file was read before the run, since a reading is
-    /// not a claim about what ran (`image.zig`). It names explore and preflight only: a replay is not sent here (its
-    /// crash point is a number in the mode it was counted under, ADR 0100).
     observe_supervised_static_parent,
-    /// A run's failures under `--observe syscalls` that a process the mode killed produces, where
-    /// the site would otherwise say `fix_define` (#599, ADR 0069) — the recording run's missing
-    /// success marker and the baseline world's checker rejecting the state — or, since #710 (ADR
-    /// 0097), the recording run's own `run_then_expect_status` and `run_by_hand_signalled`. A child that exec'd an image the shim is not loaded into dies at its
-    /// first state-changing call; each site's own sentence then points at the define — declare a
-    /// different success convention, check the marker string, check the operation and the checker
-    /// against each other — and a reader sent here by `observe_syscalls` who followed it would have
-    /// a broken run judged. Not `preflight --twice`'s second run, the baseline's exit, or the
-    /// baseline's marker layer: each compares against a recording the same mode already completed,
-    /// so a kill that happened in both runs does not reach them, and what does is repeatability.
-    /// The comparison it asks for is by hand where the default mode stops early: an explore under
-    /// that mode refuses `oracle_missed_operation` before the checker runs, so the checker is run on
-    /// the state it leaves. It does not branch on whether the subject died of `SIGSYS`: that one is
-    /// detectable, a child's death is not, and one sentence covers both.
     syscalls_may_have_killed,
-    /// Where a site would say `fix_define` — or, at the recording run, `run_then_expect_status` or
-    /// `run_by_hand_signalled` (#710) — for a define read from a toml that declares no `cwd`,
-    /// whose commands therefore ran in Sideeye's own directory rather than the toml's — and only
-    /// when the command that failed carries an argument — or a directory above one — the engine
-    /// found under the toml's directory and not under the one it ran in (#700, ADR 0093). The
-    /// detail names that path and both directories; this names the line to add. An observation, not a guess
-    /// about the cause: ADR 0086 declined the guess and ADR 0093 records why this is not one.
-    /// Never over `syscalls_may_have_killed`, whose sentence says to check before changing the
-    /// define at all.
     declare_cwd,
-    /// Nothing the operator changes fixes this; it is Sideeye's.
     sideeye_defect,
-    /// `nothing_could_fail` with no crash point (#682, ADR 0091): the operation changed nothing
-    /// the verdict judges. Most often the store resolved outside `--state`; an operation whose
-    /// only changes are ownership or permissions lands here too, and the sentence says so
-    /// rather than calling it "nothing". It names where an undeclared define's commands run
-    /// because that is the mistake #682 measured — `docs/cli.md`'s `cwd` entry is the
-    /// reference. A define that changes nothing on purpose has no crash point to test, and
-    /// the sentence says that too rather than implying every such run is a mistake.
     nothing_in_state,
-    /// `nothing_could_fail` with crash points and no marker declared (#683, ADR 0091): the
-    /// built-in invariant judges paths both snapshots hold, and no crash point named one that
-    /// could change. A checker judges the rest; so does a marker, over what the operation
-    /// created or removed.
     declare_check_or_marker,
-    /// The same refusal where a marker cannot help: one was declared and printed in no crash
-    /// world — it is printed after the last state operation — or applied with nothing only one
-    /// snapshot held; or none was declared and there is nothing of that kind for one to judge
-    /// (every created or removed path declared scratch). Asking for a marker here would ask for
-    /// what the define already has, or for what cannot judge anything (R1 of the plan, M6, and
-    /// of the diff).
     declare_check,
-    // ---- #710, ADR 0097: the refusals the dogfood records and a first-time operator met most,
-    // each given the step its site's own observation names, where `fix_define` or `class_wall`
-    // used to stand. Neither of those says what to do: the one points at a declaration the
-    // detail often does not name, the other at the whole list of limits. ----
-    /// `recording_run_failed` on an exit status other than the declared one (not 126): the
-    /// detail names the status. Running the operation by hand comes first, then the flag:
-    /// declaring the status a failed run ended with would have the failure judged as a success,
-    /// the reasoning that keeps 126 off the flag (R1 of the plan, m9).
     run_then_expect_status,
-    /// `recording_run_failed` on a run that ended without an exit status — a signal, which the
-    /// detail names, or a status the engine does not decode. Nothing a define declares accounts
-    /// for that, so the step is to see what stopped it. On macOS a SIGKILL at start is the shape
-    /// of an image whose signature the system will not run (measured: an ad-hoc re-signed copy of
-    /// `/bin/cp`, 2026-10-08).
     run_by_hand_signalled,
-    /// `preflight --twice`'s second observed run ended differently from the first, which started
-    /// from a state the restore rebuilt — the names, kinds and bytes under `--state`, not their
-    /// modes, owners or timestamps — so what differed is a mode the tool checks, something outside
-    /// `--state`, or something that does not repeat. upx and argocd, the two the records hold,
-    /// were the first: each checks the mode of a file under `--state` — upx the executable bit,
-    /// argocd `0600`, both set by the define's setup (`docs/target-classes.md`) — which the
-    /// restore does not put back (R1 of the diff caught the first wording, which said
-    /// "outside --state").
     second_run_diverged,
-    /// `baseline_violates_invariant` at the byte layer: a path the world nothing crashed left with
-    /// bytes the recording did not. What `#688` adds to the detail says how they differ; this says
-    /// what the define can do about a path whose bytes are not the verdict's business.
     scratch_or_twice,
-    /// `kill_did_not_land` where no landing at the asked position was recorded. Only that is
-    /// observed — not that the world did fewer operations — so the step names the measurement
-    /// and keeps Sideeye's own side open (R2 of the plan, m1).
     kill_not_landed,
-    /// `kill_did_not_land` where the world reached the number through other operations than the
-    /// recording's: observed, so the step can say the operation does not repeat itself.
     not_repeating,
-    /// `multiple_threads_detected` raised from the run's own record of its threads, outside
-    /// `--observe supervised` (the macOS fs_usage refusal for a writer the shim never recorded keeps
-    /// `unwrap_or_class_wall`): names the README's own limit rather than the list it is in, and the
-    /// way past the records found (#686, ADR 0113): a
-    /// tool's own switch for running its file calls on one thread, declared in `apparatus`.
-    /// `UV_THREADPOOL_SIZE=1` moved ten of the thirteen Node targets that met this wall on v1.10.0,
-    /// `GOMAXPROCS=1` three Go ones; ADR 0097 had offered no flag, on the belief that none existed.
     /// The opening words are kept: the dogfood entry gate sorts refusals by them.
     threads_limit,
-    /// `multiple_threads_detected` under `--observe supervised` (#686, ADR 0113): the same way
-    /// past, said without the shim — that mode loads none, records no join and not which thread
-    /// a creation made, and its refusal names no shim in text or JSON (#217). Was `class_wall`.
     threads_supervised,
-    /// `no_shim_marker` on a Mach-O whose code directory names a platform — the marker Apple's
-    /// own binaries carry, from which macOS strips an inserted library. Measured 2026-10-08:
-    /// `/bin/cp` refused, an ad-hoc re-signed copy of it killed at start, Homebrew's `xz` accepted.
-    /// Not for library validation or the hardened runtime on a third-party image, which were not
-    /// measured and keep `class_wall`.
     non_system_build,
 
-    /// The way past both threads steps name (#686, ADR 0113), written once so the two cannot drift.
     const one_thread_switch = "A tool's own switch for running its file calls on one thread can move it past this — UV_THREADPOOL_SIZE=1 for Node, GOMAXPROCS=1 for Go: set it in the environment Sideeye runs in and declare it in the define's apparatus (env:UV_THREADPOOL_SIZE=1, for example); docs/apparatus.md lists the switches measured and the targets each did not move.";
 
     pub fn render(self: NextStep) []const u8 {
@@ -1704,33 +661,21 @@ pub const max_path = 4096;
 
 pub const Record = struct {
     op: OpClass,
-    /// 1-based position among kill-point ops inside the state directory — **in the run,
-    /// not in the writing process** (v15). Through v14 each shim instance counted from
-    /// its own copy, so a parent and a child both held a 1 and no crash point had a
-    /// unique address; the number now comes from the trace's own highest value plus one,
-    /// which makes it a position in one sequence however many processes wrote it.
-    /// Zero for lifecycle ops, boundary detectors and markers.
-    ///
     /// The exception is `shim_ready`, which carries the continuation base it was GIVEN
     /// (#123) rather than one it read: that announcement is the evidence a chain of
     /// observation survived an image change, and a value read from the trace would agree
     /// with the trace by construction and check nothing.
     seq: u32,
-    /// The process that performed the operation. Several processes append to one
-    /// O_APPEND trace, and which one an operation belongs to is the difference between
     /// a crash point and a refusal. The value is read live per record — a cached pid
     /// would be the parent's inside a forked child, which is precisely the case the
     /// field exists to distinguish.
     pid: u32,
-    /// The thread that performed the operation (v16): `gettid` on Linux, the Mach
-    /// thread id on Darwin, which is why the field is 64 bits wide — the same reason the
     /// oracle's `Event.id` is. Read live per record, like `pid`. For a single-threaded
     /// process on Linux it equals `pid`; the engine never assumes that, because the
     /// question this field answers — did exactly one thread write the judged directory —
     /// is asked precisely of the runs where it does not hold.
     tid: u64,
     path: []const u8,
-    /// Second path for two-path operations (`rename`), empty otherwise.
     aux: []const u8,
 };
 
@@ -1828,8 +773,6 @@ pub fn decodeRecord(bytes: []const u8) DecodeError!Decoded {
     };
 }
 
-/// True when `path` is inside `dir`, comparing whole path components.
-///
 /// A plain prefix test would put `/tmp/state2` inside `/tmp/state`, which would make
 /// the engine count operations belonging to an unrelated directory — and, worse,
 /// miscount the ones belonging to the real one. Both paths are expected to be
@@ -1861,23 +804,15 @@ pub fn isStrictlyInsideDir(path: []const u8, dir: []const u8) bool {
 
 test "isStrictlyInsideDir excludes equality and component-prefix lookalikes" {
     const t = std.testing;
-    // The ordinary case, and the two accidents #266 refuses: state equal to the
-    // range, and a sibling whose name merely extends the range's last component.
     try t.expect(isStrictlyInsideDir("/ws/state", "/ws"));
     try t.expect(isStrictlyInsideDir("/ws/a/b", "/ws"));
     try t.expect(!isStrictlyInsideDir("/ws", "/ws"));
     try t.expect(!isStrictlyInsideDir("/wsother", "/ws"));
     try t.expect(!isStrictlyInsideDir("/elsewhere", "/ws"));
-    // Trailing-slash spelling of the same range changes nothing — on either side:
-    // a slash on `path` must not smuggle the range itself past the equality
-    // exclusion (security review, Minor-2).
     try t.expect(isStrictlyInsideDir("/ws/state", "/ws/"));
     try t.expect(!isStrictlyInsideDir("/ws", "/ws/"));
     try t.expect(!isStrictlyInsideDir("/ws/", "/ws"));
     try t.expect(!isStrictlyInsideDir("/ws/", "/ws/"));
-    // "/" as a range answers true for everything else — the caller must refuse it
-    // before asking (documented above); this pins that the predicate alone is not
-    // the refusal.
     try t.expect(isStrictlyInsideDir("/anything", "/"));
 }
 
@@ -1885,9 +820,6 @@ pub const max_components = 256;
 
 pub const NormalizeError = error{ BufferTooSmall, NotAbsolute, TooDeep };
 
-/// Resolve `path` against `base` and remove `.` and `..` lexically, writing the result
-/// into `out`.
-///
 /// This never touches the filesystem, for two reasons. The shim calls it from inside an
 /// interposed function on paths that do not exist yet — a rename target, a file about to
 /// be created — where `realpath(3)` returns nothing useful. And performing I/O from
@@ -1901,11 +833,6 @@ pub fn normalizePath(out: []u8, base: []const u8, path: []const u8) NormalizeErr
     const is_abs = path.len > 0 and path[0] == '/';
     if (!is_abs and (base.len == 0 or base[0] != '/')) return error.NotAbsolute;
 
-    // How many components survive, for the `max_components` limit. Where each one starts
-    // is not stored: a component never contains '/', so the last one begins just after
-    // the last separator in `out`, and `..` finds it by scanning back. The array of
-    // starts this replaced was 2 KB on the stack of every thread the shim interposes on,
-    // the largest frame left once the shim's own buffers moved into its slots (#555).
     var depth: usize = 0;
 
     if (out.len < 1) return error.BufferTooSmall;
@@ -1924,12 +851,9 @@ pub fn normalizePath(out: []u8, base: []const u8, path: []const u8) NormalizeErr
             if (std.mem.eql(u8, comp, "..")) {
                 if (depth > 0) {
                     depth -= 1;
-                    // Drop the last component and the separator written before it. At the
-                    // first level that separator is the root's own, which stays.
                     const sep = std.mem.lastIndexOfScalar(u8, out[0..len], '/').?;
                     len = if (sep == 0) 1 else sep;
                 }
-                // At the root, `..` is the root. Matches how the kernel resolves it.
                 continue;
             }
             if (depth >= max_components) return error.TooDeep;
@@ -1983,8 +907,6 @@ test "normalizePath collapses repeated separators" {
 }
 
 test "normalizePath escaping the state dir is visible to the containment test" {
-    // The pair matters: a target that opens "state/../elsewhere/f" must not be counted
-    // as touching the state directory just because the literal path starts with it.
     var buf: [max_path]u8 = undefined;
     const escaped = try normalizePath(&buf, "/work", "state/../elsewhere/f");
     try std.testing.expectEqualStrings("/work/elsewhere/f", escaped);
@@ -1995,8 +917,6 @@ test "normalizePath escaping the state dir is visible to the containment test" {
     try std.testing.expect(isInsideDir(inside, "/work/state"));
 }
 
-/// The array-of-starts version `normalizePath` replaced (#555), kept for the test below
-/// and nothing else: the rewrite must answer exactly as this did, errors included.
 fn normalizePathWithStarts(out: []u8, base: []const u8, path: []const u8) NormalizeError![]const u8 {
     const is_abs = path.len > 0 and path[0] == '/';
     if (!is_abs and (base.len == 0 or base[0] != '/')) return error.NotAbsolute;
@@ -2035,10 +955,6 @@ fn normalizePathWithStarts(out: []u8, base: []const u8, path: []const u8) Normal
 }
 
 test "normalizePath answers exactly as the array-of-starts version did (#555)" {
-    // Every path of up to six components drawn from a small alphabet that has all the
-    // cases — empty, `.`, `..`, one and two letters — against three bases and as an
-    // absolute path, into a roomy buffer and into one too small to hold some of them.
-    // 7^6 paths × 4 spellings × 2 buffers; a difference in value or in error fails.
     const alphabet = [_][]const u8{ "", ".", "..", "a", "bb", "c", ".." };
     const bases = [_][]const u8{ "/", "/w", "/w/state/sub" };
     var pbuf: [64]u8 = undefined;
@@ -2152,9 +1068,6 @@ test "record round-trips including the two-path form" {
 }
 
 test "a thread id wider than a pid survives the round trip (v16)" {
-    // A Mach thread id does not fit in 32 bits; the field is 64 wide so it is not
-    // truncated on the way in, and this pins that the shim's write and the engine's read
-    // agree on the width.
     var buf: [512]u8 = undefined;
     const written = try encodeRecord(&buf, .{
         .op = .write,
@@ -2208,15 +1121,12 @@ test "an unknown op class is rejected rather than guessed" {
 test "the encoding is little-endian regardless of host" {
     var buf: [64]u8 = undefined;
     _ = try encodeRecord(&buf, .{ .op = .write, .seq = 0x01020304, .pid = 0x0a0b0c0d, .tid = 0x0a0b0c0d, .path = "", .aux = "" });
-    // op class 2 = write, as two little-endian bytes
     try std.testing.expectEqual(@as(u8, 2), buf[0]);
     try std.testing.expectEqual(@as(u8, 0), buf[1]);
-    // seq, least significant byte first
     try std.testing.expectEqual(@as(u8, 0x04), buf[2]);
     try std.testing.expectEqual(@as(u8, 0x03), buf[3]);
     try std.testing.expectEqual(@as(u8, 0x02), buf[4]);
     try std.testing.expectEqual(@as(u8, 0x01), buf[5]);
-    // pid, immediately after seq
     try std.testing.expectEqual(@as(u8, 0x0d), buf[6]);
     try std.testing.expectEqual(@as(u8, 0x0c), buf[7]);
     try std.testing.expectEqual(@as(u8, 0x0b), buf[8]);
@@ -2241,8 +1151,6 @@ test "mutations are a strict subset of kill-point ops" {
         const op: OpClass = @enumFromInt(f.value);
         if (op.isMutation()) try std.testing.expect(op.isKillPoint());
     }
-    // open is observable but not treated as a mutation: excluding it makes
-    // state_changed_without_ops stricter, so assert it stays excluded.
     try std.testing.expect(!OpClass.open.isMutation());
     try std.testing.expect(OpClass.open.isKillPoint());
 }
@@ -2256,15 +1164,10 @@ test "directory containment compares whole components" {
     try std.testing.expect(isInsideDir("/tmp/state/key.json", "/tmp/state"));
     try std.testing.expect(isInsideDir("/tmp/state", "/tmp/state"));
     try std.testing.expect(isInsideDir("/tmp/state/", "/tmp/state"));
-    // the case a plain prefix test gets wrong
     try std.testing.expect(!isInsideDir("/tmp/state2/key.json", "/tmp/state"));
     try std.testing.expect(!isInsideDir("/tmp/other", "/tmp/state"));
-    // a trailing slash on the directory must not change the answer
     try std.testing.expect(isInsideDir("/tmp/state/key.json", "/tmp/state/"));
     try std.testing.expect(!isInsideDir("/tmp/state2/key.json", "/tmp/state/"));
-    // a root directory contains every absolute path — the case a hand-rolled
-    // `path[dir.len] == '/'` test gets wrong, because the character after "/" in
-    // "/tmp" is 't' (review finding against the --work containment vet)
     try std.testing.expect(isInsideDir("/tmp/anything", "/"));
     try std.testing.expect(isInsideDir("/", "/"));
 }

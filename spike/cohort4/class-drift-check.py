@@ -13,18 +13,22 @@ a pass).
 Usage: class-drift-check.py <src/contract.zig> <preflight-analyse.py>
 """
 
+import importlib.util
 import re
 import sys
+from pathlib import Path
 
 
 def engine_classes(path):
-    text = open(path).read()
-    start = text.index("pub const OpClass")
-    # The kill-point block ends where the lifecycle comment begins; classes
-    # after it (close, fork, exec, markers) are not crash points and are not
-    # the analyser's business.
-    end = text.index("lifecycle ops", start)
-    return set(re.findall(r"^\s+([a-z_]+) = \d+,", text[start:end], re.M))
+    # Not a position inside the enum and not a comment used as a marker: a class
+    # added below the marker would drop out of this set with the check still
+    # green. spike/check-shim-coverage.py already reads the `=> true` arm of
+    # `isKillPoint`, which is the definition itself.
+    spec = importlib.util.spec_from_file_location(
+        "check_shim_coverage", Path(__file__).resolve().parent.parent / "check-shim-coverage.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod.kill_point_classes(path)
 
 
 def analyser_classes(path):
