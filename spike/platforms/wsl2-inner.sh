@@ -7,7 +7,8 @@
 #   SIDEEYE_VERSION=v1.10.0 LEGS=base|extra|systemd [LABEL=<name>] sh spike/platforms/wsl2-inner.sh <out dir>
 #
 #   base     root, the state in /s on the distribution's filesystem; labelled LABEL (default wsl2,
-#            the 2026-10-10 record's leg)
+#            the 2026-10-10 record's leg). On WSL1, when the engine refuses the shim it found as
+#            unclassifiable, LABEL-shim follows that refusal's next step once and names it with --shim
 #   extra    (RUNS-RULE-2026-10-10b.md: x86_64 WSL2's base leg is not measured again)
 #            wsl2-mnt   root, the state under /mnt/c — the Windows drive, through WSL's 9P mount
 #            wsl2-user  an ordinary user `probe`, its own install of the engine, the state in its home
@@ -60,7 +61,15 @@ case $LEGS in
 base)
     mkdir -p /s
     sh "$here/measure.sh" "$bin" "$out" "${LABEL:-wsl2}"
-    complete "${LABEL:-wsl2}" ;;
+    complete "${LABEL:-wsl2}"; rc=$?
+    # The refusal's own next step, followed once, on WSL1 only: an engine that cannot classify the
+    # shim it found (WSL1, run 38031881569) says to name it with --shim (RUNS-RULE-2026-10-10b.md, a
+    # leg added after the first dispatch).
+    if [ "${LABEL:-}" = wsl1 ] && grep -q 'the shim the search found could not be classified' "$out/wsl1/summary.txt"; then
+        SHIM=$(dirname "$bin")/libsideeye_shim.so sh "$here/measure.sh" "$bin" "$out" wsl1-shim
+        complete wsl1-shim || rc=1
+    fi
+    exit $rc ;;
 extra)
     mkdir -p /mnt/c/probe-s
     S=/mnt/c/probe-s sh "$here/measure.sh" "$bin" "$out" wsl2-mnt
