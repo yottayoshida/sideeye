@@ -4,7 +4,7 @@
 # Windows runner. The checkout is reached through /mnt (the Windows drive); the engine goes on the
 # distribution's own filesystem. SIDEEYE_VERSION, LEGS, LABEL and GH_TOKEN arrive through WSLENV.
 #
-#   SIDEEYE_VERSION=v1.10.0 LEGS=base|extra|systemd [LABEL=<name>] sh spike/platforms/wsl2-inner.sh <out dir>
+#   SIDEEYE_VERSION=v1.10.0 LEGS=base|extra|systemd|nosystemd [LABEL=<name>] sh spike/platforms/wsl2-inner.sh <out dir>
 #
 #   base     root, the state in /s on the distribution's filesystem; labelled LABEL (default wsl2,
 #            the 2026-10-10 record's leg). On WSL1, when the engine refuses the shim it found as
@@ -17,9 +17,13 @@
 #   systemd  after the workflow has turned systemd on and restarted the distribution:
 #            wsl2-systemd-root   root, /s
 #            wsl2-systemd-user   `probe`, inside a cgroup delegated to it (spike/in-delegated-cgroup.sh)
+#   nosystemd  after the workflow has turned systemd off and restarted the distribution (Ubuntu's
+#            WSL image turns it on; the workflow records the image's own setting at import):
+#            wsl2-nosystemd-root   root, /s
+#            wsl2-nosystemd-user   `probe`, its own install, the state in its home
 set -u
 
-out=${1:?usage: SIDEEYE_VERSION=<tag> LEGS=base|extra|systemd wsl2-inner.sh <out dir>}
+out=${1:?usage: SIDEEYE_VERSION=<tag> LEGS=base|extra|systemd|nosystemd wsl2-inner.sh <out dir>}
 V=${SIDEEYE_VERSION:?set SIDEEYE_VERSION to the release tag to measure}
 LEGS=${LEGS:-base}
 here=$(cd "$(dirname "$0")" && pwd)
@@ -30,7 +34,7 @@ installer=$root/docs/ci-quickstart/release/install-sideeye.sh
 
 { uname -r; cat /proc/version; } > "$out/wsl-kernel-$LEGS.txt"
 export DEBIAN_FRONTEND=noninteractive
-# The systemd legs run in a second session of the same distribution: install once.
+# The systemd legs run in later sessions of the same distribution: install once.
 if [ ! -s /opt/sideeye-bin ]; then
     { apt-get update -qq && apt-get install -y -qq strace python3 curl ca-certificates sudo util-linux; } > "$out/wsl-apt.txt" 2>&1 || {
         echo "wsl: packages could not be installed"; tail -5 "$out/wsl-apt.txt"; exit 1
@@ -90,5 +94,14 @@ systemd)
     echo "probe ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/probe && chmod 440 /etc/sudoers.d/probe
     user_leg wsl2-systemd-user "sh '$root/spike/in-delegated-cgroup.sh'"
     complete wsl2-systemd-root wsl2-systemd-user ;;
+nosystemd)
+    # The systemd user leg's sudo rule is taken away, so this user is as wsl2-user was.
+    rm -f /etc/sudoers.d/probe
+    { echo "PID 1: $(ps -p 1 -o comm=)"; echo "cgroup: $(cat /proc/self/cgroup)"
+      echo "sudoers.d/probe: $([ -e /etc/sudoers.d/probe ] && echo present || echo absent)"; } > "$out/wsl-nosystemd.txt"
+    mkdir -p /s
+    sh "$here/measure.sh" "$bin" "$out" wsl2-nosystemd-root
+    user_leg wsl2-nosystemd-user
+    complete wsl2-nosystemd-root wsl2-nosystemd-user ;;
 *) echo "wsl: unknown LEGS $LEGS"; exit 2 ;;
 esac
