@@ -1,0 +1,6 @@
+[world]
+state = "/s/notes"
+
+[define]
+operation = "/opt/bin/notesmd-cli move projects/alpha projects/alpha-2026 --vault vault"
+cwd       = "/s/notes-in"
