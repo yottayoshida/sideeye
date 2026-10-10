@@ -2,12 +2,15 @@
 # spike/check-comment-only.sh — a pull request that removed comment lines changed nothing else.
 #
 #   sh spike/check-comment-only.sh <base-ref>    every src/*.zig that differs from <base-ref>
-#   sh spike/check-comment-only.sh --selftest    the shapes this check must see red, and the one green
+#   sh spike/check-comment-only.sh --selftest    the shapes this check must see red, and the ones green
 #
 # Zig has line comments only, and every line of a multi-line string begins with `\\`, so a
-# line whose first non-blank characters are `//` is a comment and nothing else can be — a
-# plain diff does the whole job. Zero changed files is red, not green: a check that ran on
-# nothing must not be told apart from one that passed.
+# line whose first non-blank characters are `//` is a comment and nothing else can be. A plain
+# diff is not quite enough, though: `zig fmt` re-flows a list whose items a deleted comment
+# line used to separate, so lines move while the code does not. When the diff shows more than
+# deleted comment lines, the base minus exactly the comment lines the new copy lacks is
+# formatted and must match the new copy byte for byte. Zero changed files is red, not green:
+# a check that ran on nothing must not be told apart from one that passed.
 set -u
 
 here=$(cd "$(dirname "$0")" && pwd)
@@ -22,17 +25,35 @@ trap 'case "${tmp:-}" in */comment-only-*) rm -rf "$tmp" 2>/dev/null ;; esac' EX
 compare_pair() {
     diff "$1" "$2" >"$tmp/d"
     [ $? -le 1 ] || { echo "FAIL $3: diff could not compare the two copies"; return 2; }
-    if grep '^>' "$tmp/d" | grep -vE '^>[[:space:]]*$' | grep -q .; then
-        echo "FAIL $3: a line was added, rewritten or moved (the new copy has a line the base has not):"
-        grep '^>' "$tmp/d" | grep -vE '^>[[:space:]]*$' | head -3 | sed 's/^/      /'
-        return 1
+    deleted=$(grep -c '^<[[:space:]]*//' "$tmp/d")
+    added=$(grep '^>' "$tmp/d" | grep -cvE '^>[[:space:]]*$')
+    gone=$(grep '^<' "$tmp/d" | grep -cvE '^<[[:space:]]*(//.*)?$')
+    if [ "$added" -eq 0 ] && [ "$gone" -eq 0 ]; then
+        echo "ok   $3: $deleted comment lines deleted, nothing else changed"
+        return 0
     fi
-    if grep '^<' "$tmp/d" | grep -vE '^<[[:space:]]*(//.*)?$' | grep -q .; then
+    # Keep a comment line of the base only while the new copy still has one with the same text —
+    # a reworded, added or moved comment therefore still differs after formatting, and so does
+    # any change to code.
+    awk 'NR == FNR { if ($0 ~ /^[[:space:]]*\/\//) have[$0]++; next }
+         /^[[:space:]]*\/\// { if (have[$0] > 0) { have[$0]--; print }; next }
+         { print }' "$2" "$1" >"$tmp/rebuilt.zig"
+    zig fmt --stdin <"$tmp/rebuilt.zig" >"$tmp/rebuilt.fmt" 2>/dev/null \
+        || { echo "FAIL $3: zig fmt rejected the base minus the deleted comment lines"; return 1; }
+    zig fmt --stdin <"$2" >"$tmp/new.fmt" 2>/dev/null \
+        || { echo "FAIL $3: zig fmt rejected the new copy"; return 1; }
+    if cmp -s "$tmp/rebuilt.fmt" "$tmp/new.fmt"; then
+        echo "ok   $3: $deleted comment lines deleted, nothing else changed (zig fmt re-flowed the lines around them)"
+        return 0
+    fi
+    if [ "$added" -eq 0 ]; then
         echo "FAIL $3: a line that is not a comment was deleted:"
         grep '^<' "$tmp/d" | grep -vE '^<[[:space:]]*(//.*)?$' | head -3 | sed 's/^/      /'
         return 2
     fi
-    echo "ok   $3: $(grep -c '^<[[:space:]]*//' "$tmp/d") comment lines deleted, nothing else changed"
+    echo "FAIL $3: a line was added, rewritten or moved (the new copy has a line the base has not):"
+    grep '^>' "$tmp/d" | grep -vE '^>[[:space:]]*$' | head -3 | sed 's/^/      /'
+    return 1
 }
 
 # require_files <newline-separated list>
@@ -64,6 +85,12 @@ pub const text =
     \\line one
     \\line two
 ;
+
+pub const list = [_][]const u8{
+    "a", "b",
+    // a comment between the items, which zig fmt re-flows around once it is gone
+    "c", "d",
+};
 EOF
     cat >"$d/green.zig" <<'EOF'
 const std = @import("std");
@@ -81,7 +108,14 @@ pub const text =
     \\line one
     \\line two
 ;
+
+pub const list = [_][]const u8{
+    "a", "b",
+    // a comment between the items, which zig fmt re-flows around once it is gone
+    "c", "d",
+};
 EOF
+    sed '/a comment between the items/d' "$d/green.zig" | zig fmt --stdin >"$d/green-reflowed.zig"
     sed 's/return 1;/return 1 + 1;/' "$d/green.zig" >"$d/red-code.zig"
     sed 's#http://x//y#http://x/y#' "$d/green.zig" >"$d/red-string.zig"
     sed 's#/// Doc for a\.#/// Doc for a!#' "$d/green.zig" >"$d/red-reworded.zig"
@@ -103,6 +137,7 @@ EOF
         fi
     }
     expect green green.zig "comment lines removed"
+    expect green green-reflowed.zig "comment lines removed and zig fmt re-flowed a list around one"
     expect added red-code.zig "a code token changed"
     expect added red-string.zig "a string literal changed"
     expect added red-reworded.zig "a kept doc comment reworded"
@@ -117,7 +152,7 @@ EOF
         echo "ok   selftest: zero changed files reads red"
     fi
     [ "$failures" -eq 0 ] || { echo "FAIL selftest: $failures of $total shapes did not read as expected"; exit 1; }
-    echo "ok   selftest: $total shapes read as expected (1 green, the rest red)"
+    echo "ok   selftest: $total shapes read as expected (2 green, the rest red)"
 }
 
 case "${1:-}" in
