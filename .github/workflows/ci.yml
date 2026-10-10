@@ -1858,3 +1858,108 @@ jobs:
 
       - name: The box name has one spelling
         run: sh spike/authoring-cost/check-box-name.sh
+
+  # #694: the acceptance suite against the build the release ships for aarch64-linux — ReleaseSafe,
+  # the release's own build line, on the release's own runner — on every pull request and every push
+  # to main, so it has run before a tag exists. The linux job above runs the suites Debug on x86_64,
+  # and until this job the shipped optimisation was exercised only by release.yml's demo, which runs
+  # when a release is published or release.yml itself changes. Between them the two jobs take each axis
+  # once: Debug on x86_64, ReleaseSafe on aarch64. What this job cannot see is a build that runs only
+  # on the CPU it was built on (v0.9.0 and v0.10.0's Illegal instruction): it runs on the release's own
+  # runner class, as the demo does; the explicit `-Dtarget` in the release's build line is what pins the
+  # baseline CPU, and a build line that loses it stops this job, which then cannot read its flags.
+  #
+  # The build arguments are read from release.yml (spike/release-build-flags.sh) — everything after
+  # `zig build` on its build line, the matrix target put in — not spelled here, so a release that
+  # changes that line moves this job with it. The runner and the Zig version a job fixes before any
+  # step runs, so they are spelled here — the runner once, as a one-entry matrix — and compared with
+  # release.yml's on every run. Everything is
+  # built by ONE `zig build`: build.zig installs the shipped engine and shim on every build, so
+  # per-flag builds (as the linux job does, to compare shas) would let one that dropped the flags
+  # rebuild a test engine Debug while the next build put the shipped pair back; and the shipped pair
+  # of that one build is compared with a plain release build of the same line, so a test option that
+  # reached it is red. The `-Dtest-*` list is read from build.zig for the same reason: an apparatus
+  # added to the linux job alone would fail its legs here — or, for the supervise-delay engine, leave
+  # its leg NOT MEASURED, which is green.
+  #
+  # The shim's per-function stack ceiling (spike/check-shim-footprint.sh) holds for this build too.
+  # Measured before this job existed (2026-10-10, Docker on Apple silicon): the ReleaseSafe shim's
+  # largest frame is exactly 1024 bytes, the ceiling, where the Debug build's is 928 — no margin, by
+  # design: a change that grows a shipped function past it is red here.
+  linux-aarch64-releasesafe:
+    # One entry, so the runner is spelled once and the step below compares release.yml's with it.
+    name: linux-aarch64-releasesafe
+    strategy:
+      matrix:
+        runner: [ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+        with:
+          version: 0.16.0
+
+      - name: The build is release.yml's own, read rather than copied, on its runner and its Zig (#694)
+        id: flags
+        env:
+          JOB_RUNNER: ${{ matrix.runner }}
+        run: |
+          set -eu
+          sh spike/release-build-flags.sh --selftest
+          flags=$(sh spike/release-build-flags.sh .github/workflows/release.yml aarch64-linux)
+          echo "release.yml builds aarch64-linux with: $flags"
+          runner=$(sh spike/release-build-flags.sh --runner .github/workflows/release.yml aarch64-linux)
+          [ "$runner" = "$JOB_RUNNER" ] || { echo "::error::release.yml builds aarch64-linux on $runner, and this job runs on $JOB_RUNNER"; exit 1; }
+          zigv=$(sh spike/release-build-flags.sh --zig .github/workflows/release.yml)
+          [ "$zigv" = "$(zig version)" ] || { echo "::error::release.yml sets up Zig $zigv, and this job has $(zig version)"; exit 1; }
+          echo "flags=$flags" >> "$GITHUB_OUTPUT"
+
+      - name: Build the shipped pair and every test apparatus in one build, as the release builds it
+        env:
+          RELEASE_FLAGS: ${{ steps.flags.outputs.flags }}
+        run: |
+          set -eu
+          apparatus=$(sed -n 's/.*b\.option(bool, "\(test-[a-z-]*\)".*/-D\1/p' build.zig)
+          [ -n "$apparatus" ] || { echo "::error::no -Dtest-* option was read from build.zig"; exit 1; }
+          echo "apparatus: $apparatus"
+          # shellcheck disable=SC2086 # both are flag lists, split on purpose
+          zig build $RELEASE_FLAGS $apparatus
+          # The shipped pair of that build is the release build's, byte for byte: no test option reached it.
+          plain=$(mktemp -d)
+          # shellcheck disable=SC2086
+          zig build $RELEASE_FLAGS --prefix "$plain"
+          cmp zig-out/bin/sideeye "$plain/bin/sideeye"
+          cmp zig-out/lib/libsideeye_shim.so "$plain/lib/libsideeye_shim.so"
+          file zig-out/bin/sideeye zig-out/lib/libsideeye_shim.so || true
+
+      - name: Install the completeness oracle, the shells, and a Rust compiler where the image has none
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y strace zsh fish
+          command -v rustc > /dev/null || sudo apt-get install -y rustc
+          rustc --version
+
+      - name: Build the toy targets
+        run: sh spike/build-toys.sh
+        env:
+          SIDEEYE_ROOT: ${{ github.workspace }}
+
+      - name: Acceptance suite, against the ReleaseSafe aarch64-linux build
+        run: sh spike/acceptance.sh
+        env:
+          SIDEEYE_ROOT: ${{ github.workspace }}
+          SIDEEYE_EXPECT_CONTAINED: "0"
+          SIDEEYE_EXPECT_SHELLS: "1"
+
+      - name: Acceptance suite, contained in a delegated cgroup, against the same build
+        run: sh spike/in-delegated-cgroup.sh sh spike/acceptance.sh
+        env:
+          SIDEEYE_ROOT: ${{ github.workspace }}
+          SIDEEYE_EXPECT_CONTAINED: "1"
+
+      - name: MCP acceptance suite, against the same build
+        run: sh spike/mcp-acceptance.sh
+        env:
+          SIDEEYE_ROOT: ${{ github.workspace }}

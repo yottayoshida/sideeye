@@ -1,0 +1,5 @@
+[world]
+state = "/s/ctl-condvar"
+
+[define]
+operation = "/opt/bin/ctl-condvar /s/ctl-condvar"

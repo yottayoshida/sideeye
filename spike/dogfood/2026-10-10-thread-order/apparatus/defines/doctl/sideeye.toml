@@ -1,0 +1,6 @@
+[world]
+state = "/s/doctl"
+
+[define]
+operation = "doctl auth switch --context work --config /s/doctl/config.yaml"
+cwd       = "/s/doctl"
