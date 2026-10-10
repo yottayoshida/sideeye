@@ -1,0 +1,16 @@
+UNKNOWN  oracle_missed_operation
+         the oracle saw a state-directory operation the shim did not record; divergence at operation 1: the oracle saw: 24    openat(AT_FDCWD</s/lefthook/lh-repo>, "/s/lefthook/lh-repo/.git/hooks/pre-commit", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0755) = 3</s/lefthook/lh-repo/.git/hooks/pre-commit>; the shim's account ends after 0 operation(s)
+next        The file the operation names was read before the run as a statically linked image, which no shim can be loaded into: the shim records this run read came from a process the operation started, or from an image it replaced itself with, and what the operation did in its own image went unrecorded. Run the same command with --observe supervised (explore and preflight take it), which counts those calls from outside the process, where no preloaded library has to reach them — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+divergence  openat
+cwd         /s/lefthook/lh-repo
+
+expected    exit 0
+atomicity   14 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   3 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=4328de9d6f6da68c44e4d07b840d5609583cc00f9170773fd2b91c2762e5a782;

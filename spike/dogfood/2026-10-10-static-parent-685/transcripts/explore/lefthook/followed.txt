@@ -1,0 +1,15 @@
+UNKNOWN  nothing_could_fail
+         no world could have failed: no checker was declared, no marker was declared, and none of the 14 path(s) the built-in atomicity invariant judges was changed or named by a crash point
+next        The built-in invariant judges only paths that exist both before and after the operation, and no crash point changed one, so nothing could have failed: declare a check that reads the state the target leaves (docs/checker-cookbook.md), or a marker for the success claim, which judges the files the operation created or removed.
+cwd         /s/lefthook/lh-repo
+
+expected    exit 0
+atomicity   14 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   3 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle; the supervising engine recorded 4 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=8fd1621ae0a182416e7e04e445be0d37fc1c6572f5ecefde1d9c10b7a5b9dce5;

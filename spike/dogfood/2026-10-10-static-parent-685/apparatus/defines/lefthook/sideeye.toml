@@ -1,0 +1,8 @@
+[world]
+state = "/s/lefthook/lh-repo/.git/hooks"
+
+[define]
+operation = "/usr/local/bin/lefthook install"
+cwd       = "/s/lefthook/lh-repo"
+# No checker: the form the 2026-09-27 run used last (lefthook-nocheck). The 2026-09-21 checker is
+# beside this file as check.sh for the other form — see ORIGIN.md.
