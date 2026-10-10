@@ -805,10 +805,6 @@ pub fn runServer(gpa: std.mem.Allocator) void {
     }
 }
 
-/// The transport's framing: one message per line, and a line longer than the buffer
-/// discarded whole. Moved out of `runServer`'s loop unchanged (#695, ADR 0112), so the fuzz
-/// entry point in src/fuzz.zig drives the same code — with a small buffer, where the
-/// discarding is reached in a few hundred bytes rather than 256 KiB.
 pub const Lines = struct {
     buf: []u8,
     filled: usize = 0,
@@ -816,12 +812,9 @@ pub const Lines = struct {
     /// including the next newline is discarded, so the tail of an oversized line is never
     /// mis-parsed as a fresh message.
     draining: bool = false,
-    /// The bytes the line `next` returned last still occupies, shifted out by the next call:
-    /// the slice it returned points into `buf` and has to stay whole until then.
+    /// Shift lazily, at the next call: the slice `next` returned points into `buf`.
     taken: usize = 0,
 
-    /// The next whole line in the buffer, without its newline, or null when more input is
-    /// needed. A line that is being drained is consumed and never returned.
     pub fn next(self: *Lines) ?[]const u8 {
         self.release();
         // A message is one line. Scan what we have for a newline before reading more.
@@ -843,7 +836,6 @@ pub const Lines = struct {
         return null;
     }
 
-    /// Where the next read goes. Never empty after `next` has returned null.
     pub fn space(self: *Lines) []u8 {
         self.release();
         return self.buf[self.filled..];
@@ -877,9 +869,7 @@ pub const Lines = struct {
     }
 };
 
-/// One line of the transport: decide what it asks for, then write the reply or run the tool.
-/// The deciding is `route`, which reads nothing but the line; this is the part that writes to
-/// fd 1 and spawns, so the fuzz entry point (src/fuzz.zig, #695) stops before it.
+/// The only part that writes to fd 1 and spawns: `route` stays pure so the fuzz entry point can call it.
 fn handle(gpa: std.mem.Allocator, self: []const u8, line: []const u8) void {
     var arena_state = std.heap.ArenaAllocator.init(gpa);
     defer arena_state.deinit();
@@ -894,13 +884,9 @@ fn handle(gpa: std.mem.Allocator, self: []const u8, line: []const u8) void {
     }
 }
 
-/// What one line asks of the server, decided from the line's bytes alone (#695, ADR 0112).
 pub const Route = union(enum) {
-    /// Nothing is written: a blank line, a notification, or a reply that could not be built.
     none,
-    /// One JSON-RPC message, written as it is.
     reply: []const u8,
-    /// A tool to run, its arguments already checked against the closed sets they take.
     call: Call,
 };
 
@@ -916,10 +902,6 @@ fn reply(line: ?[]const u8) Route {
     return if (line) |l| .{ .reply = l } else .none;
 }
 
-/// The JSON-RPC envelope and the tool arguments, checked in the order `handle` always
-/// checked them; every reply is the one it wrote. Moved out of `handle` so that bytes a
-/// caller chose can be driven through it without a spawn (#695): it allocates into `arena`
-/// and touches nothing else.
 pub fn route(arena: std.mem.Allocator, line: []const u8) Route {
     const trimmed = std.mem.trim(u8, line, " \t\r");
     if (trimmed.len == 0) return .none;
@@ -1748,8 +1730,6 @@ fn strArg(args: std.json.ObjectMap, key: []const u8) ?[]const u8 {
     };
 }
 
-/// A JSON-RPC result message, or null when it could not be built — in which case `handle`
-/// writes nothing, as `emitResult` did before `route` was split out of it (#695).
 fn resultLine(arena: std.mem.Allocator, id: std.json.Value, body: []const u8) ?[]const u8 {
     var out: std.ArrayList(u8) = .empty;
     out.appendSlice(arena, "{\"jsonrpc\":\"2.0\",\"id\":") catch return null;
@@ -1760,8 +1740,6 @@ fn resultLine(arena: std.mem.Allocator, id: std.json.Value, body: []const u8) ?[
     return out.items;
 }
 
-/// A JSON-RPC error message, or null when it could not be built (#695: `emitError` before the
-/// split; `route` builds it and `handle` writes it).
 fn errorLine(arena: std.mem.Allocator, id: std.json.Value, code: i64, message: []const u8) ?[]const u8 {
     var out: std.ArrayList(u8) = .empty;
     out.appendSlice(arena, "{\"jsonrpc\":\"2.0\",\"id\":") catch return null;
@@ -2222,8 +2200,6 @@ fn strField(o: std.json.ObjectMap, key: []const u8) ?[]const u8 {
     };
 }
 
-/// The unsupported-version error a request with another `protocolVersion` is answered with,
-/// or null when it could not be built (#695: built here, written by `handle`).
 fn unsupportedVersionLine(arena: std.mem.Allocator, id: std.json.Value, requested: []const u8) ?[]const u8 {
     var out: std.ArrayList(u8) = .empty;
     out.appendSlice(arena, "{\"jsonrpc\":\"2.0\",\"id\":") catch return null;
@@ -2351,29 +2327,23 @@ test "Lines: whole lines across reads, an oversized line dropped whole, the last
             l.commit(bytes.len);
         }
     };
-    // Two lines in one read, and the start of a third.
     Feed.put(&lines, "ab\ncd\nef");
     try std.testing.expectEqualStrings("ab", lines.next().?);
     try std.testing.expectEqualStrings("cd", lines.next().?);
     try std.testing.expect(lines.next() == null);
-    // The third finishes in the next read.
     Feed.put(&lines, "g\n");
     try std.testing.expectEqualStrings("efg", lines.next().?);
     try std.testing.expect(lines.next() == null);
-    // Nine bytes with no newline overflow eight: the line is dropped, its tail too, and the
-    // line after it is read whole.
     Feed.put(&lines, "12345678");
     try std.testing.expect(lines.next() == null);
     Feed.put(&lines, "9\nok\n");
     try std.testing.expectEqualStrings("ok", lines.next().?);
     try std.testing.expect(lines.next() == null);
-    // A last line with no newline is still a message at EOF.
     Feed.put(&lines, "end");
     try std.testing.expect(lines.next() == null);
     try std.testing.expectEqualStrings("end", lines.finish().?);
     try std.testing.expect(lines.finish() == null);
 
-    // EOF in the middle of a dropped line is no message at all.
     var buf2: [4]u8 = undefined;
     var dropping: Lines = .{ .buf = &buf2 };
     Feed.put(&dropping, "abcd");
@@ -2391,7 +2361,6 @@ test "route: replies are built, not written, and a tool call is returned rather 
 
     try std.testing.expect(route(a, "  \r") == .none);
     try std.testing.expectEqualStrings("{\"jsonrpc\":\"2.0\",\"id\":null,\"error\":{\"code\":-32700,\"message\":\"Parse error\"}}", route(a, "{").reply);
-    // A notification is answered with nothing, whatever it says.
     try std.testing.expect(route(a, "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/cancelled\"}") == .none);
     try std.testing.expectEqualStrings("{\"jsonrpc\":\"2.0\",\"id\":3,\"error\":{\"code\":-32600,\"message\":\"Invalid Request: missing method\"}}", route(a, "{\"jsonrpc\":\"2.0\",\"id\":3}").reply);
 

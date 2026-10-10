@@ -2022,10 +2022,7 @@ test "a free-threaded PythonT.framework names its PythonT interpreter (#703)" {
     removeForTest(&.{ launcher, interp, lib }, &dirs, root);
 }
 
-/// Seeds for the fuzz entry point in src/fuzz.zig (#695, ADR 0112): one executable header of
-/// each shape `classify` reads, built by this file's own test builders so the fuzzer starts
-/// past every format's first check. Test support only — nothing a shipped build compiles
-/// references it, and Zig does not analyse what nothing references.
+/// Test support for src/fuzz.zig: nothing a shipped build compiles references it.
 pub fn fuzzSeeds(a: std.mem.Allocator) ![]const []const u8 {
     var seeds: std.ArrayList([]const u8) = .empty;
     try seeds.append(a, try buildElf(a, .{}));

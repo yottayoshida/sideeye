@@ -6,18 +6,13 @@
 //! same operation, and `jsonCommand`, the JSON form of a define command that mirrors
 //! `config.Command.jsonParse` — and `ReplayCase` is what `replay` parses it back into,
 //! strictly: an unknown field is a case from a future schema, not something to skip. The
-//! `case_version` rules (ADR 0009, ADR 0019 and the versions since) are this file's to keep,
-//! and since #695 they are kept here in code too: `read` parses a case file's bytes and
-//! applies every one of them, returning the case or the sentence replay refuses it with.
-//! `main.zig` decides when a case is written, reads the file and refuses with what `read`
-//! says. Nothing here prints a report line or exits.
+//! `case_version` rules (ADR 0009, ADR 0019 and the versions since) are this file's to keep;
+//! `main.zig` decides when a case is written and refuses with what `read` returns. Nothing
+//! here prints a report line or exits.
 //!
 //! Third seam of #572 (ADR 0062), second half. Bodies moved from `main.zig` byte for byte on
 //! 2026-09-13 with `pub` where `main.zig` reads them; `writeCase` spells `cli.Args` and
 //! `cli.version` where `main.zig` had them bare — the qualifier class seam 3a declared.
-//! `read` followed on 2026-10-10 (#695, ADR 0112), its refusals word for word. This file is a
-//! test root since then: `read`'s unit tests are here, and its fuzz entry point is in
-//! `src/fuzz.zig`. The acceptance suite still pins the case format end to end.
 const std = @import("std");
 const contract = @import("contract");
 const config = @import("config.zig");
@@ -267,17 +262,9 @@ pub fn writeCase(
     return null;
 }
 
-/// What `read` makes of a case file's bytes: the case, or the sentence replay refuses it with.
-/// Every refusal is `define_invalid`; the caller adds the reason.
 pub const Read = union(enum) { ok: ReplayCase, invalid: []const u8 };
 
-/// Parse and validate a saved case the way `replay` does, from the bytes alone (#695, ADR
-/// 0112). Moved from `main.zig`'s replay branch, where each refusal was a `setupError` that
-/// ended the process; each is now returned, word for word, and the caller ends the process
-/// with it. The order of the checks is the order they had there, so the first broken law in a
-/// file is still the one named. Reads nothing but `text`: the caller reads the file (and owns
-/// the 1 MiB cap and the regular-file rule), and resolves paths against its directory after.
-/// Allocates into `arena` and frees nothing — the caller's arena owns the case it returns.
+/// Returns the refusal, never exits: the fuzz entry point calls it in-process.
 pub fn read(arena: std.mem.Allocator, text: []const u8) Read {
     const parsed = std.json.parseFromSlice(ReplayCase, arena, text, .{}) catch
         return .{ .invalid = "the case file could not be parsed as a sideeye case" };
@@ -373,12 +360,6 @@ pub fn read(arena: std.mem.Allocator, text: []const u8) Read {
     return .{ .ok = c };
 }
 
-// ---------------------------------------------------------------------------
-// `read`'s unit tests (#695). The acceptance suite drives the same sentences through the
-// binary; these hold the order and the wording without a container.
-
-/// The shape of a case a FAIL writes today (spike/dogfood/2026-10-09-followups-2, bat), with
-/// its paths shortened. Every key from version 5's law is spelled.
 const test_case_v5 =
     \\{"schema":"sideeye/case","case_version":5,"sideeye_version":"1.10.0","contract_version":19,
     \\"define":{"state":"/s/state","operation":["tool","build"],"check":"/c/check.sh","cwd":null,"scratch":["m.yaml"],"expected_status":0},
@@ -402,7 +383,6 @@ test "read returns a valid case whole (#695)" {
     try std.testing.expectEqualStrings("m.yaml", c.define.scratch.?[0]);
     try std.testing.expect(c.define.cwd == null);
 
-    // Version 6 carries a mode other than the default, and may spell scratch empty.
     const v6 = try testCaseWith(a, "\"case_version\":5,", "\"case_version\":6,\"observe\":\"syscalls\",");
     const v6_empty = try std.mem.replaceOwned(u8, a, v6, "[\"m.yaml\"]", "[]");
     try std.testing.expectEqualStrings("syscalls", read(a, v6_empty).ok.observe.?);
@@ -425,8 +405,6 @@ test "read refuses with replay's sentences, in replay's order (#695)" {
     };
     for (cases) |cs| try std.testing.expectEqualStrings(cs.says, read(a, cs.text).invalid);
 
-    // Order: a file broken twice is refused for the check replay ran first. Wrong schema AND
-    // an unknown version names the schema, as the inline checks in main.zig did.
     const twice = try std.mem.replaceOwned(u8, a, try testCaseWith(a, "sideeye/case", "other/case"), "\"case_version\":5,", "\"case_version\":7,");
     try std.testing.expectEqualStrings("the file does not declare itself a sideeye case", read(a, twice).invalid);
 }

@@ -57,9 +57,7 @@
 //!     digit grammar `expected_status` and `--expect-status` share is `config.parseExpectStatus`
 //!     for the same reason.
 //!   - `case.zig` — the saved case on both sides: `writeCase`, `prefixHash`, `jsonCommand`,
-//!     `ReplayCase`, and `read`, which parses and validates a case file's bytes (#695). This file
-//!     decides when a case is written, reads the case file, and refuses with what `read` says;
-//!     which define-surface flags a replay may still take is decided here too.
+//!     `ReplayCase` and `read`. This file decides when a case is written.
 //!   - `containment.zig` — the watch on a run contained in a cgroup of its own (contract v17,
 //!     #559): the spawn's cgroup, the names its shim is told, and the checks a contained run
 //!     meets after every refusal it already had. This file makes the cgroup, hands it to the
