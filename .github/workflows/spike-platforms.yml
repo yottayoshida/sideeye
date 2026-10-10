@@ -1,13 +1,15 @@
 # The platform probe behind docs/cli.md's platform table (#697, ADR 0105): the released engine
-# run on the define in spike/platforms/define/ on Linux runners (the runner itself, Rocky 8,
-# Alpine) and inside WSL2 on a Windows runner. This is a measurement apparatus, not standing CI
-# — it runs only by hand, and it must never be made a required check (spike-fsusage.yml and
-# spike-unknown-rate-x86.yml are the precedent).
+# run on the define in spike/platforms/define/ wherever GitHub's hosted runners can take it —
+# Linux runners and containers on them, older kernels booted as virtual machines, macOS, WSL on
+# Windows — and the source built where no release asset exists. This is a measurement apparatus,
+# not standing CI — it runs only by hand, and it must never be made a required check
+# (spike-fsusage.yml and spike-unknown-rate-x86.yml are the precedent).
 #
 # Run it at the commit that merged the apparatus, named by `sha`. The rules for reading and
-# re-running it are in spike/platforms/RUNS-RULE.md, written before the first dispatch: `jobs`
-# re-runs one side after an apparatus fault without running the other again. The record is
-# copied into the tree by hand, in a pull request; this workflow has no write access.
+# re-running it are spike/platforms/RUNS-RULE.md (the 2026-10-10 run) and
+# RUNS-RULE-2026-10-10b.md (the runs after it), each written before the dispatches it governs;
+# `jobs` re-runs one side after an apparatus fault without running the others again. The record
+# is copied into the tree by hand, in a pull request; this workflow has no write access.
 name: spike-platforms
 on:
   workflow_dispatch:
@@ -20,7 +22,7 @@ on:
         description: "Which side to run"
         required: false
         type: choice
-        options: [all, linux, wsl2]
+        options: [all, linux, container, vm, macos, wsl, build]
         default: all
 
 permissions:
@@ -37,19 +39,21 @@ env:
 
 jobs:
   linux:
-    if: inputs.jobs != 'wsl2'
+    if: inputs.jobs == 'all' || inputs.jobs == 'linux'
     strategy:
       fail-fast: false
       matrix:
         include:
-          # Pinned to Ubuntu 24.04, the release the WSL2 leg imports; `ubuntu-latest` would
-          # move under the record.
-          - runner: ubuntu-24.04
-            arch: x86_64
-          - runner: ubuntu-24.04-arm
-            arch: aarch64
+          # 24.04 is the release target and the control (every leg); 22.04 and 26.04 are their
+          # releases' kernel and glibc, measured on the runner itself (LEGS=host).
+          - { runner: ubuntu-24.04, arch: x86_64, legs: all }
+          - { runner: ubuntu-24.04-arm, arch: aarch64, legs: all }
+          - { runner: ubuntu-22.04, arch: x86_64, legs: host }
+          - { runner: ubuntu-22.04-arm, arch: aarch64, legs: host }
+          - { runner: ubuntu-26.04, arch: x86_64, legs: host }
+          - { runner: ubuntu-26.04-arm, arch: aarch64, legs: host }
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       # Pinned by commit, like every action in this repository (ADR 0061,
       # spike/check-action-pins.sh). No credentials are left in .git/config: the checkout is
@@ -75,6 +79,7 @@ jobs:
       - name: Measure
         env:
           GH_TOKEN: ${{ github.token }}
+          LEGS: ${{ matrix.legs }}
         run: |
           set -o pipefail
           mkdir -p spike/platforms/out
@@ -84,15 +89,184 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: platforms-linux-${{ matrix.arch }}-run-${{ github.run_id }}
+          # The 2026-10-10 record's names for the 24.04 runners, the runner's name for the others.
+          name: platforms-linux-${{ matrix.legs == 'all' && matrix.arch || matrix.runner }}-run-${{ github.run_id }}
           path: spike/platforms/out
           if-no-files-found: warn
           retention-days: 90
 
-  wsl2:
-    if: inputs.jobs != 'linux'
-    runs-on: windows-2025
-    timeout-minutes: 60
+  # GitHub Actions' own `container:`: the job's steps run inside the image, as Actions starts it.
+  container:
+    if: inputs.jobs == 'all' || inputs.jobs == 'container'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    container:
+      image: rockylinux/rockylinux:8.10@sha256:e8a49c5403b687db05d4d67333fa45808fbe74f36e683cec7abb1f7d0f2338c6
+    steps:
+      # Before the checkout: without git, actions/checkout downloads a tarball and there is no
+      # HEAD to compare with `sha`.
+      - name: What the measurement needs
+        run: dnf -q -y install git python3 strace tar xz file findutils procps-ng
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+
+      - name: The tree is the named commit
+        shell: bash
+        env:
+          WANT_SHA: ${{ inputs.sha }}
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          head=$(git rev-parse HEAD); echo "HEAD: $head"
+          [ "$head" = "$WANT_SHA" ] || { echo "HEAD is not $WANT_SHA"; exit 1; }
+
+      - name: Measure
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -o pipefail
+          o=spike/platforms/out; mkdir -p "$o/actions-container"
+          { grep -E '^(Cap|NoNewPrivs|Seccomp)' /proc/self/status; cat /proc/self/cgroup; } > "$o/actions-container-process.txt"
+          bin=$(sh docs/ci-quickstart/release/install-sideeye.sh "$SIDEEYE_VERSION" "$RUNNER_TEMP/sideeye" 2> "$o/install.txt")
+          mkdir -p /s
+          sh spike/platforms/measure.sh "$bin" "$o" actions-container 2>&1 | tee "$o/runner.txt"
+          [ "$(grep -cE "$(printf '\t')(PASS|FAIL|UNKNOWN|SETUP ERROR)" "$o/actions-container/summary.txt")" = 3 ]
+
+      - name: Keep the record
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: platforms-container-run-${{ github.run_id }}
+          path: spike/platforms/out
+          if-no-files-found: warn
+          retention-days: 90
+
+  # Older kernels: each distribution booted under QEMU on its own kernel, beside its userland as
+  # a container on the runner's kernel (spike/platforms/vm.sh).
+  vm:
+    if: inputs.jobs == 'all' || inputs.jobs == 'vm'
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+        image: [debian13, rocky10, debian12, ubuntu2204, ubuntu2004, rocky9, rocky8]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+
+      - name: The tree is the named commit
+        env:
+          WANT_SHA: ${{ inputs.sha }}
+        run: |
+          head=$(git rev-parse HEAD); echo "HEAD: $head"
+          [ "$head" = "$WANT_SHA" ] || { echo "HEAD is not $WANT_SHA"; exit 1; }
+
+      - name: Measure
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IMAGE: ${{ matrix.image }}
+        run: |
+          set -o pipefail
+          mkdir -p spike/platforms/out
+          sh spike/platforms/vm.sh "$IMAGE" spike/platforms/out 2>&1 | tee spike/platforms/out/runner.txt
+
+      - name: Keep the record
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: platforms-vm-${{ matrix.runner }}-${{ matrix.image }}-run-${{ github.run_id }}
+          path: spike/platforms/out
+          if-no-files-found: warn
+          retention-days: 90
+
+  # macOS 14 and 15 against macOS 26, the release's own (spike/platforms/measure-macos.sh).
+  # macos-14 is retired on 2026-11-02 and browned out before that (RUNS-RULE-2026-10-10b.md).
+  macos:
+    if: inputs.jobs == 'all' || inputs.jobs == 'macos'
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-14, macos-15, macos-26]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+
+      - name: The tree is the named commit
+        env:
+          WANT_SHA: ${{ inputs.sha }}
+        run: |
+          head=$(git rev-parse HEAD); echo "HEAD: $head"
+          [ "$head" = "$WANT_SHA" ] || { echo "HEAD is not $WANT_SHA"; exit 1; }
+
+      - name: GNU dd, which the shim can enter (/bin/dd is protected by SIP)
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+          HOMEBREW_NO_INSTALL_CLEANUP: "1"
+        run: brew install coreutils
+
+      - name: Measure
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LABEL: ${{ matrix.runner }}
+        run: |
+          set -o pipefail
+          o=spike/platforms/out; mkdir -p "$o"
+          bin=$(sh docs/ci-quickstart/release/install-sideeye.sh "$SIDEEYE_VERSION" "$RUNNER_TEMP/sideeye" 2> "$o/install.txt")
+          sh spike/platforms/measure-macos.sh "$bin" "$o" "$LABEL" 2>&1 | tee "$o/runner.txt"
+          [ "$(grep -cE "$(printf '\t')(PASS|FAIL|UNKNOWN|SETUP ERROR)" "$o/$LABEL/summary.txt")" = 2 ]
+
+      - name: Keep the record
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: platforms-${{ matrix.runner }}-run-${{ github.run_id }}
+          path: spike/platforms/out
+          if-no-files-found: warn
+          retention-days: 90
+
+  # WSL on Windows runners. x86_64 WSL2's base leg was measured on 2026-10-10 and is not measured
+  # again; this run takes its other forms (the Windows drive, an ordinary user, systemd), WSL1, and
+  # WSL2 on Windows on ARM.
+  wsl:
+    if: inputs.jobs == 'all' || inputs.jobs == 'wsl'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: wsl2-x86_64-extra
+            runner: windows-2025
+            version: 2
+            legs: extra
+            label: wsl2
+            rootfs: https://cloud-images.ubuntu.com/wsl/releases/24.04/20240423/ubuntu-noble-wsl-amd64-wsl.rootfs.tar.gz
+            rootfs_sha256: 8251e27ffff381a4af5f41dcb94d867de3e0d9774a9241908ab34555d99315ea
+          - name: wsl1-x86_64
+            runner: windows-2025
+            version: 1
+            legs: base
+            label: wsl1
+            rootfs: https://cloud-images.ubuntu.com/wsl/releases/24.04/20240423/ubuntu-noble-wsl-amd64-wsl.rootfs.tar.gz
+            rootfs_sha256: 8251e27ffff381a4af5f41dcb94d867de3e0d9774a9241908ab34555d99315ea
+          - name: wsl2-arm64
+            runner: windows-11-arm
+            version: 2
+            legs: base
+            label: wsl2-arm64
+            rootfs: https://cloud-images.ubuntu.com/wsl/releases/24.04/20240423/ubuntu-noble-wsl-arm64-wsl.rootfs.tar.gz
+            rootfs_sha256: fecec1d9b7b750c12c109edb49c13c1006f4a2efabb9b8bf341f11c4c9f2ef11
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 75
     env:
       # wsl.exe writes UTF-16 unless told otherwise, which turns its output into NUL-separated
       # text in a log.
@@ -102,7 +276,7 @@ jobs:
         shell: pwsh
     steps:
       # Before the checkout: Git for Windows converts line endings by default, and a script
-      # checked out with CRLF fails inside WSL as a tool fault that would read as a WSL2 result.
+      # checked out with CRLF fails inside WSL as a tool fault that would read as a WSL result.
       - name: Check out with the repository's own line endings
         run: git config --global core.autocrlf false
 
@@ -144,13 +318,13 @@ jobs:
           Get-Content $log
           exit 0
 
-      # Ubuntu 24.04's WSL image, from the dated directory so the bytes cannot move under the
-      # record, checked against the digest its SHA256SUMS published on 2024-04-23. A failure
-      # here is the apparatus's (RUNS-RULE.md), so it stops the job.
+      # Ubuntu 24.04's WSL image for the runner's CPU, from the dated directory so the bytes
+      # cannot move under the record, checked against the digest its SHA256SUMS published on
+      # 2024-04-23. A failure here is the apparatus's, so it stops the job.
       - name: Fetch Ubuntu 24.04's WSL image
         env:
-          ROOTFS_URL: https://cloud-images.ubuntu.com/wsl/releases/24.04/20240423/ubuntu-noble-wsl-amd64-wsl.rootfs.tar.gz
-          ROOTFS_SHA256: 8251e27ffff381a4af5f41dcb94d867de3e0d9774a9241908ab34555d99315ea
+          ROOTFS_URL: ${{ matrix.rootfs }}
+          ROOTFS_SHA256: ${{ matrix.rootfs_sha256 }}
         run: |
           $tar = Join-Path $env:RUNNER_TEMP "ubuntu-24.04-wsl.rootfs.tar.gz"
           Invoke-WebRequest -Uri $env:ROOTFS_URL -OutFile $tar
@@ -158,13 +332,14 @@ jobs:
           "== rootfs sha256 $got" | Out-File -Encoding utf8 -Append spike/platforms/out/wsl.txt
           if ($got -ne $env:ROOTFS_SHA256) { throw "rootfs digest mismatch: $got" }
 
-      # Whether WSL2 started, decided by the rule in RUNS-RULE.md and written into the record
-      # as one line: `uname -r` names a WSL2 kernel (a WSL1 distribution's has none). `wsl -l -v`
-      # is recorded and not matched, since its text depends on wsl.exe's output encoding. A
-      # WSL2 that does not start is a result, not a failure: the step succeeds, the measurement
-      # is skipped, and the row says why.
-      - name: Import it as WSL2 and see whether it starts
+      # Whether the distribution started as the WSL version asked for, decided by the rule in
+      # RUNS-RULE-2026-10-10b.md and written into the record as one line: for WSL2 `uname -r`
+      # names a WSL2 kernel; for WSL1 it names Microsoft's and not WSL2's. One that does not
+      # start is a result, not a failure: the step succeeds and the measurement is skipped.
+      - name: Import it and see whether it starts
         id: start
+        env:
+          WSL_VERSION: ${{ matrix.version }}
         run: |
           $log = "spike/platforms/out/wsl.txt"
           $tar = Join-Path $env:RUNNER_TEMP "ubuntu-24.04-wsl.rootfs.tar.gz"
@@ -177,28 +352,160 @@ jobs:
             "exit $rc" | Out-File -Encoding utf8 -Append $log
             return @{ out = $o; rc = $rc }
           }
-          $null = Rec "wsl --import probe --version 2" { wsl --import probe (Join-Path $env:RUNNER_TEMP "probe") $tar --version 2 }
+          $null = Rec "wsl --import probe --version $env:WSL_VERSION" { wsl --import probe (Join-Path $env:RUNNER_TEMP "probe") $tar --version $env:WSL_VERSION }
           $null = Rec "wsl -l -v" { wsl -l -v }
           $uname = Rec "wsl -d probe -u root -- uname -r" { wsl -d probe -u root -- uname -r }
-          $started = ($uname.rc -eq 0) -and ($uname.out -match 'WSL2')
+          if ($env:WSL_VERSION -eq "2") {
+            $started = ($uname.rc -eq 0) -and ($uname.out -match 'WSL2')
+          } else {
+            $started = ($uname.rc -eq 0) -and ($uname.out -match 'Microsoft') -and -not ($uname.out -match 'WSL2')
+          }
           $word = if ($started) { "yes" } else { "no" }
           "started: $word" | Out-File -Encoding utf8 -Append $log
           "started=$word" | Out-File -Encoding utf8 -Append $env:GITHUB_OUTPUT
           Get-Content $log
           exit 0
 
-      - name: Measure inside WSL2
+      - name: Measure inside WSL
         if: steps.start.outputs.started == 'yes'
         env:
           GH_TOKEN: ${{ github.token }}
-          WSLENV: SIDEEYE_VERSION/u:GH_TOKEN/u
+          LEGS: ${{ matrix.legs }}
+          LABEL: ${{ matrix.label }}
+          WSLENV: SIDEEYE_VERSION/u:GH_TOKEN/u:LEGS/u:LABEL/u
+        run: wsl -d probe -u root --cd "$env:GITHUB_WORKSPACE" -- sh spike/platforms/wsl2-inner.sh spike/platforms/out
+
+      # systemd: turned on in /etc/wsl.conf, the distribution stopped and started again, and PID 1
+      # read. If it is not systemd the systemd legs are skipped and wsl.txt says why.
+      - name: Turn systemd on and start again
+        id: systemd
+        # Not tied to the extra legs' outcome: those are recorded in their own right.
+        if: ${{ !cancelled() && steps.start.outputs.started == 'yes' && matrix.legs == 'extra' }}
+        run: |
+          $log = "spike/platforms/out/wsl.txt"
+          $w = wsl -d probe -u root -- sh -c 'printf "[boot]\nsystemd=true\n" > /etc/wsl.conf && cat /etc/wsl.conf' 2>&1 | Out-String
+          "== /etc/wsl.conf written (exit $LASTEXITCODE):`n$w" | Out-File -Encoding utf8 -Append $log
+          wsl --terminate probe 2>&1 | Out-File -Encoding utf8 -Append $log
+          Start-Sleep -Seconds 10
+          # stdout only, line by line: a warning wsl.exe prints on stderr must not decide this.
+          $err = Join-Path $env:RUNNER_TEMP "pid1.err"
+          $pid1 = wsl -d probe -u root -- ps -p 1 -o comm= 2> $err
+          "== PID 1 after systemd=true: $($pid1 -join ' | ') (stderr: $(Get-Content $err -Raw))" | Out-File -Encoding utf8 -Append $log
+          $word = if (@($pid1) -match '^\s*systemd\s*$') { "yes" } else { "no" }
+          "systemd: $word" | Out-File -Encoding utf8 -Append $log
+          "systemd=$word" | Out-File -Encoding utf8 -Append $env:GITHUB_OUTPUT
+          exit 0
+
+      - name: Measure inside WSL with systemd
+        if: ${{ !cancelled() && steps.systemd.outputs.systemd == 'yes' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LEGS: systemd
+          WSLENV: SIDEEYE_VERSION/u:GH_TOKEN/u:LEGS/u
         run: wsl -d probe -u root --cd "$env:GITHUB_WORKSPACE" -- sh spike/platforms/wsl2-inner.sh spike/platforms/out
 
       - name: Keep the record
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: platforms-wsl2-run-${{ github.run_id }}
+          name: platforms-${{ matrix.name }}-run-${{ github.run_id }}
+          path: spike/platforms/out
+          if-no-files-found: warn
+          retention-days: 90
+
+  # The source built where no release asset exists (spike/platforms/build.sh).
+  build:
+    if: inputs.jobs == 'all' || inputs.jobs == 'build'
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    steps:
+      # fetch-depth 0: the build needs SIDEEYE_VERSION's tag.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ inputs.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: The tree is the named commit
+        env:
+          WANT_SHA: ${{ inputs.sha }}
+        run: |
+          head=$(git rev-parse HEAD); echo "HEAD: $head"
+          [ "$head" = "$WANT_SHA" ] || { echo "HEAD is not $WANT_SHA"; exit 1; }
+
+      - name: Build and measure
+        run: |
+          set -o pipefail
+          mkdir -p spike/platforms/out
+          sh spike/platforms/build.sh spike/platforms/out 2>&1 | tee spike/platforms/out/runner.txt
+
+      - name: Keep the record
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: platforms-build-${{ matrix.runner }}-run-${{ github.run_id }}
+          path: spike/platforms/out
+          if-no-files-found: warn
+          retention-days: 90
+
+  # Windows: whether SIDEEYE_VERSION's source builds for Windows with Zig 0.16.0.
+  build-windows:
+    if: inputs.jobs == 'all' || inputs.jobs == 'build'
+    runs-on: windows-2025
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Check out with the repository's own line endings
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ inputs.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: The tree is the named commit
+        env:
+          WANT_SHA: ${{ inputs.sha }}
+        run: |
+          $head = git rev-parse HEAD
+          "HEAD: $head"
+          if ($head -ne $env:WANT_SHA) { throw "HEAD is not $env:WANT_SHA" }
+
+      - name: Build for Windows
+        env:
+          ZIG_URL: https://ziglang.org/download/0.16.0/zig-x86_64-windows-0.16.0.zip
+          ZIG_SHA256: 68659eb5f1e4eb1437a722f1dd889c5a322c9954607f5edcf337bc3684a75a7e
+        run: |
+          $o = "spike/platforms/out/build-windows"; New-Item -ItemType Directory -Force $o | Out-Null
+          $zip = Join-Path $env:RUNNER_TEMP "zig.zip"
+          Invoke-WebRequest -Uri $env:ZIG_URL -OutFile $zip
+          $got = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
+          if ($got -ne $env:ZIG_SHA256) { throw "Zig digest mismatch: $got" }
+          Expand-Archive $zip -DestinationPath $env:RUNNER_TEMP
+          $zig = Join-Path $env:RUNNER_TEMP "zig-x86_64-windows-0.16.0\zig.exe"
+          $src = Join-Path $env:RUNNER_TEMP "src"; New-Item -ItemType Directory -Force $src | Out-Null
+          git archive --format=zip -o (Join-Path $env:RUNNER_TEMP "src.zip") $env:SIDEEYE_VERSION
+          Expand-Archive (Join-Path $env:RUNNER_TEMP "src.zip") -DestinationPath $src
+          Push-Location $src
+          & $zig build -Doptimize=ReleaseSafe 2>&1 | Out-File -Encoding utf8 (Join-Path $env:GITHUB_WORKSPACE "$o/build.txt")
+          $rc = $LASTEXITCODE
+          Pop-Location
+          "exit $rc" | Out-File -Encoding utf8 -Append "$o/build.txt"
+          Get-Content "$o/build.txt" -Tail 30
+          exit 0
+
+      - name: Keep the record
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: platforms-build-windows-run-${{ github.run_id }}
           path: spike/platforms/out
           if-no-files-found: warn
           retention-days: 90

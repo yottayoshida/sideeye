@@ -75,3 +75,25 @@ unmeasured and its cell quotes that record.
   `/proc/self/exe`, which names musl's loader there, and the refusal reports the operation's exit
   status) is recorded, not fixed: it is a refusal on a declined platform, not a wrong verdict.
 - The table names the release it measured. A release that changes what runs where re-reads it.
+
+## Amended 2026-10-10: unmeasured means a hosted runner cannot take it
+
+The first table left four rows unmeasured and several cells "not run" that GitHub's hosted runners
+could take: older kernels (as virtual machines, with KVM), macOS 14 and 15, WSL1, WSL2 on Windows
+on ARM, NixOS's loader forms, a container as GitHub Actions starts one and as `docs/mcp.md`
+hardens one, WSL2 off its own filesystem, as an ordinary user and under systemd, and building
+from source where no asset exists. The definition is narrowed, from the table rewritten on the
+probe's record (until then the first table stands as it was written):
+
+- **unmeasured** — an asset exists for the CPU and the kernel, and the platform cannot be run on
+  the hosted runners this project measures on, the owner has ruled it out, or the engine has no
+  code for it. The row names which,
+  from the fixed list in `spike/platforms/RUNS-RULE-2026-10-10b.md`; an apparatus fault is not one.
+- **The owner's rulings of 2026-10-10**: Intel macOS is declined and not measured (hosted runners
+  `macos-15-intel` and `macos-26-intel` exist); NixOS is measured in the `nixos/nix` container's
+  forms — no loader, nix-ld, glibc's loader named on the command line — and not booted as a
+  virtual machine; the CPUs the release does not build are built from source and not run.
+
+The probe grows by the jobs that take those rows (`.github/workflows/spike-platforms.yml`), and
+the table is rewritten from their record. The 2026-10-10 record and `RUNS-RULE.md` stand as they
+were read.
