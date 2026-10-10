@@ -23,7 +23,7 @@ not tested  power loss, torn writes, concurrent processes
 ```
 <!-- demo-output:end -->
 
-Counterexamples found: RuboCop, ImageMagick, the AWS CLI, [more](docs/found.md). A target Sideeye cannot fully observe is UNKNOWN, never a silent PASS — except unrecorded writes under a directory a recorded `rename` moved in from outside, counted as `paths_attributed_to_rename` in every JSON report ([why](DESIGN.md#the-one-named-exception-a-directory-renamed-in-from-outside)).
+Counterexamples found: RuboCop, ImageMagick, the AWS CLI, [more](docs/found.md) — [four fixes](docs/case-studies.md). A target Sideeye cannot fully observe is UNKNOWN, never a silent PASS — except unrecorded writes under a directory a recorded `rename` moved in from outside, counted as `paths_attributed_to_rename` in every JSON report ([why](DESIGN.md#the-one-named-exception-a-directory-renamed-in-from-outside)).
 
 ## Installation
 

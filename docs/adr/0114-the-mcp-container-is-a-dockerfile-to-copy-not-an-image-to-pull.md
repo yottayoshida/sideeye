@@ -110,8 +110,12 @@ to, and builds.** The owner's ruling, 2026-10-10. Nothing is published.
 - On Docker Desktop (macOS, arm64), the platform probe's hardened CLI leg under `--user` stopped
   at `UNKNOWN unresolvable_path` — "unlinked-fd write fd:1 … last named /work/s/st/a.txt" — where
   the same leg as root reached FAIL; the MCP leg reached FAIL with `oracle_verified` either way.
-  Desktop's bind mount is not the hosted runners' file system, and this was not measured on
-  Linux; the probe's next run says what the hardened row is under the page's new line.
+  Desktop's bind mount is not the hosted runners' file system. On Linux the same legs under
+  `--user` (uid 1001) gave what they gave as root: the CLI leg FAIL in the default and syscalls
+  modes and a SETUP ERROR naming the cgroup under supervised, the MCP leg FAIL with
+  `oracle_verified`, on x86_64 and aarch64 (`spike-platforms` run 38043239184, 2026-10-10, on
+  this ADR's merge commit). That run is a look, not a count: the platform table's hardened row
+  is counted by the probe's own rule for the `--user` leg, which was written before its run.
 - The Dockerfile's first line, `# syntax=docker/dockerfile:1`, has BuildKit fetch its Dockerfile
   frontend from Docker Hub rather than use the engine's own, because `ADD --checksum` on an
   https source is newer than some engines' frontend. It is a moving reference, like the strace
