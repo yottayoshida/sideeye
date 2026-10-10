@@ -1,0 +1,9 @@
+# dotenvx protect, interactive: unticking a protection rewrites the global ignore file
+## control: before, 34 bytes: *.log|.DS_Store|.idea/|.env.keys*|
+   exit 0
+   the prompt said: Set protections[22m [2m…[22m    ◉ Protect plaintext secrets from code commits (.env*)   [2m○[22m Protect private keys from code commits (.env.keys*)    [36m❯[39m  [36m[4mApply changes[24m[39m[
+   after, 23 bytes: *.log|.DS_Store|.idea/|
+## ENOSPC: before, 34 bytes: *.log|.DS_Store|.idea/|.env.keys*|
+   exit 1
+   the prompt said: ENOSPC: no space left on device;Set protections[22m [2m…[22m    ◉ Protect plaintext secrets from code commits (.env*)   [2m○[22m Protect private keys from code commits (.env.keys*)    [36m❯[39
+   after, 0 bytes: 

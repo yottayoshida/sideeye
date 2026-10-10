@@ -1,0 +1,36 @@
+#!/usr/bin/python3 -I
+# A stand-in for the Bitwarden CLI, for the calls dotenvx makes: --version, status (always unlocked,
+# so no prompt), create item (base64 JSON on stdin), get password <id>, delete item <id>. Items live
+# in the JSON file $FAKE_BW_STORE, saved through a temporary file and a rename (see ../native/secret-tool).
+import base64, json, os, sys, uuid
+path = os.environ["FAKE_BW_STORE"]
+USER = "0b5e0b5e-0000-4000-8000-000000000001"
+def load():
+    try:
+        return json.load(open(path))
+    except FileNotFoundError:
+        return {}
+def save(d):
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(d, f); f.flush(); os.fsync(f.fileno())
+    os.rename(tmp, path)
+a = [x for x in sys.argv[1:] if x != "--nointeraction" and not x.startswith("--session")]
+if a[:1] == ["--version"]:
+    print("2026.1.0")
+elif a[:1] == ["status"]:
+    print(json.dumps({"status": "unlocked", "userId": USER, "serverUrl": ""}))
+elif a[:2] == ["create", "item"]:
+    body = json.loads(base64.b64decode(sys.stdin.read()))
+    d = load(); item = str(uuid.uuid5(uuid.NAMESPACE_OID, json.dumps(body, sort_keys=True)))
+    d[item] = body["login"]["password"]; save(d)
+    print(json.dumps({"id": item, "organizationId": None}))
+elif a[:2] == ["get", "password"]:
+    d = load()
+    if a[2] not in d:
+        sys.exit(1)
+    sys.stdout.write(d[a[2]])
+elif a[:2] == ["delete", "item"]:
+    d = load(); d.pop(a[2], None); save(d)
+else:
+    sys.stderr.write("fake bw: unhandled " + " ".join(a) + "\n"); sys.exit(2)

@@ -5,7 +5,8 @@
 #   E2  first `encrypt` of apps/a/.env and apps/b/.env at once, one shared .env.keys (-fk, the
 #       monorepo layout): both files must decrypt
 #   E3  `encrypt` of apps/b/.env while apps/a/.env is already encrypted with its key in the shared
-#       .env.keys: apps/a/.env must still decrypt
+#       .env.keys: apps/a/.env must still decrypt. (Named E3 here by mistake: SELECTION.md's E3 is a
+#       reader during a write, measured by lab-16.sh; RESULTS.md calls this one E2b.)
 #   docker run --rm --network none -v <apparatus>:/ap:ro sideeye-dx1010 sh /ap/lab-8.sh
 export HOME=/s/lab8/home UV_THREADPOOL_SIZE=1 npm_config_update_notifier=false; mkdir -p $HOME
 ROUNDS=${ROUNDS:-20}

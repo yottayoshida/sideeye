@@ -1,0 +1,2 @@
+bitwarden-up: after the operation the key is 0 in .env.keys, 0 in keyring, 0 in op, 1 in bw; check 0; every key store emptied -> 1 [.env DB_PASSWORD: no key anywhere in the state decrypts it; dotenvx ge]
+bitwarden-down: after the operation the key is 1 in .env.keys, 0 in keyring, 0 in op, 0 in bw; check 0; every key store emptied -> 1 [.env DB_PASSWORD: no key anywhere in the state decrypts it; dotenvx ge]
