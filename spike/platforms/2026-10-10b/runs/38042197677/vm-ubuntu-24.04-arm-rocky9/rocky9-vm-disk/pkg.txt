@@ -1,0 +1,11 @@
+Importing GPG key 0x350D275D:
+ Userid     : "Rocky Enterprise Software Foundation - Release key 2022 <releng@rockylinux.org>"
+ Fingerprint: 21CB 256A E16F C54C 6E65 2949 702D 426D 350D 275D
+ From       : /etc/pki/rpm-gpg/RPM-GPG-KEY-Rocky-9
+
+Installed:
+  strace-6.12-1.el9.aarch64                                                     
+
+glibc-2.34-266.el9_8.aarch64
+strace-6.12-1.el9.aarch64
+coreutils-8.32-40.el9.aarch64

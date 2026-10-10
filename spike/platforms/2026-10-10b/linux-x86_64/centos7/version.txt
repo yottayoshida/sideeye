@@ -1,0 +1,5 @@
+ldd (GNU libc) 2.17
+/se/sideeye: /lib64/libc.so.6: version `GLIBC_2.25' not found (required by /se/sideeye)
+/se/sideeye: /lib64/libc.so.6: version `GLIBC_2.27' not found (required by /se/sideeye)
+/se/sideeye: /lib64/libc.so.6: version `GLIBC_2.28' not found (required by /se/sideeye)
+exit 1

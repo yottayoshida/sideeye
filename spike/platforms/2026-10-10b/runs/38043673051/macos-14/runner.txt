@@ -1,0 +1,5 @@
+default	exit 2	UNKNOWN  oracle_saw_nothing
+demo	exit 1	FAIL  1 of 6 explored worlds violated an invariant
+default	exit 2	UNKNOWN  oracle_saw_nothing
+default	exit 2	UNKNOWN  oracle_saw_nothing
+default	exit 2	UNKNOWN  oracle_saw_nothing

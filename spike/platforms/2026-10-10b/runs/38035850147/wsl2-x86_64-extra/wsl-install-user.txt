@@ -1,0 +1,8 @@
+install-sideeye: reading yottayoshida/sideeye release v1.10.0 (authenticated)
+install-sideeye: sideeye-v1.10.0-x86_64-linux.tar.gz published digest sha256:1edc377b5bf3f64429523dd6cdf0ef248bad9c3704c62d6766879b589b7c2496
+install-sideeye: downloaded digest matches (1edc377b5bf3f64429523dd6cdf0ef248bad9c3704c62d6766879b589b7c2496)
+install-sideeye: sideeye 1.10.0 (trace contract v19)
+install-sideeye: reading yottayoshida/sideeye release v1.10.0 (authenticated)
+install-sideeye: sideeye-v1.10.0-x86_64-linux.tar.gz published digest sha256:1edc377b5bf3f64429523dd6cdf0ef248bad9c3704c62d6766879b589b7c2496
+install-sideeye: downloaded digest matches (1edc377b5bf3f64429523dd6cdf0ef248bad9c3704c62d6766879b589b7c2496)
+install-sideeye: sideeye 1.10.0 (trace contract v19)

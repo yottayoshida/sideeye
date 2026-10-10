@@ -1,0 +1,9 @@
+arch: aarch64
+image: https://cloud.debian.org/images/cloud/trixie/20261001-2618/debian-13-genericcloud-arm64-20261001-2618.qcow2
+digest: sha512:d8470b8c6c38fead046c794b5800a5a7b96672d5bcf543cc230ceb0c4b8ace05ed341a0c8928045422243fde26b2f1f2f58e99244c65709ffda2e3d4b674dd5a
+packages: exit 0
+accel: tcg (/dev/kvm: ls: cannot access '/dev/kvm': No such file or directory)
+qemu: exit 0 after 290 s (limit 5400 s)
+console: kernel 1, cloud-init 123, vm-inner start 1, done 1
+console last mark: vm-inner: done
+console last line: [  278.256805] reboot: Power down

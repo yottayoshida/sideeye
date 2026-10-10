@@ -1,0 +1,2 @@
+SETUP ERROR  the shim is half the product, and none was found at either place this looks — /nix/store/fsd4vbp9zjd9iaicq2fb9lpc1h5j973y-glibc-2.42-100/lib/libsideeye_shim.so and /nix/store/fsd4vbp9zjd9iaicq2fb9lpc1h5j973y-glibc-2.42-100/lib/../lib/libsideeye_shim.so. Pass --shim <path to libsideeye_shim.so>
+sideeye: json sha256=2e4547c4558c18b537e7e9cba4736bdb5faee15e322faeba003fd5a64b3bfc57;

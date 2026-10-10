@@ -1,0 +1,13 @@
+== ubuntu2004-container
+Unable to find image 'ubuntu:20.04@sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2fafe15388214' locally
+docker.io/library/ubuntu@sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2fafe15388214: Pulling from library/ubuntu
+ecd83b6c3544: Pulling fs layer
+ecd83b6c3544: Download complete
+ecd83b6c3544: Pull complete
+Digest: sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2fafe15388214
+Status: Downloaded newer image for ubuntu@sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2fafe15388214
+default	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+syscalls	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+supervised	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+== ubuntu2004-vm
+vm: no done mark on the data disk (RUNS-RULE-2026-10-10b.md) — an apparatus fault

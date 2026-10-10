@@ -1,0 +1,31 @@
+0+1 records in
+0+1 records out
+13 bytes copied, 0.00093519 s, 13.9 kB/s
+0+1 records in
+0+1 records out
+13 bytes copied, 6.3335e-05 s, 205 kB/s
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 2
+            after  open(/s/st/a.txt)
+            before write(/s/st/a.txt)
+path        a.txt
+observed    holding neither the old nor the new content
+cwd         /  (none declared: Sideeye's own)
+
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 2 operations (103 syscall lines examined, 11 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /tmp/platform-measure-4xJWJ3/default/cases/000001.json
+replay      sideeye replay /tmp/platform-measure-4xJWJ3/default/cases/000001.json --shim /se/libsideeye_shim.so
+evidence    sideeye evidence /tmp/platform-measure-4xJWJ3/default/evidence/000001.json
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd / && unset SIDEEYE_KILL_GROUP && : > /tmp/platform-measure-4xJWJ3/default/trace-repro.bin && SIDEEYE_STATE_DIR=/s/st SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/tmp/platform-measure-4xJWJ3/default/trace-repro.bin LD_PRELOAD=/se/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'dd' 'if=/s/new' 'of=/s/st/a.txt' </dev/null)
+sideeye: json sha256=0f013a4d592391497afc9cf950e2428c5cd6c7ef1f70a09fd51bb9d9bbd4eb0d;

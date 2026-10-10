@@ -27,7 +27,7 @@ Counterexamples found: RuboCop, ImageMagick, the AWS CLI, [more](docs/found.md) 
 
 ## Installation
 
-Runs on macOS 26 (Apple silicon) and Linux glibc (x86_64, aarch64): Homebrew, or a [release](https://github.com/yottayoshida/sideeye/releases) tarball run where you unpack it. Other platforms, building from source: [docs/cli.md](docs/cli.md#platforms).
+Runs on macOS 14+ (Apple silicon) and Linux glibc (x86_64, aarch64): Homebrew, or a [release](https://github.com/yottayoshida/sideeye/releases) tarball run where you unpack it. Other platforms, building from source: [docs/cli.md](docs/cli.md#platforms).
 
 ```
 $ brew install yottayoshida/tap/sideeye

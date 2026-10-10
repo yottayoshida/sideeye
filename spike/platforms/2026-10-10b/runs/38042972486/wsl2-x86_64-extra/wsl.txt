@@ -1,0 +1,56 @@
+== wsl --version
+WSL version: 2.7.14.0
+Kernel version: 6.18.33.2-2
+WSLg version: 1.0.73.2
+MSRDC version: 1.2.7214
+Direct3D version: 1.611.1-81528511
+DXCore version: 10.0.26100.1-240331-1435.ge-release
+Windows version: 10.0.26100.33438
+exit 0
+== wsl --status
+Default Version: 2
+exit 0
+== optional feature VirtualMachinePlatform
+Enabled
+exit 0
+== optional feature Microsoft-Windows-Subsystem-Linux
+Enabled
+exit 0
+== optional feature Microsoft-Hyper-V
+Enabled
+exit 0
+== systeminfo (Hyper-V)
+
+BIOS Version:                  Microsoft Corporation Hyper-V UEFI Release v4.1, 4/22/2026
+                               [02]: Microsoft Hyper-V Network Adapter
+Virtualization-based security: Status: Running
+                                     Base Virtualization Support
+Hyper-V Requirements:          A hypervisor has been detected. Features required for Hyper-V will not be displayed.
+
+exit 0
+== wsl --update
+Checking for updates.
+Updating Windows Subsystem for Linux to version: 3.0.1.
+exit 0
+== rootfs sha256 8251e27ffff381a4af5f41dcb94d867de3e0d9774a9241908ab34555d99315ea
+== wsl --import probe --version 2
+The operation completed successfully. 
+
+exit 0
+== wsl -l -v
+  NAME     STATE           VERSION
+* probe    Stopped         2
+
+exit 0
+== wsl -d probe -u root -- uname -r
+6.18.40.1-microsoft-standard-WSL2
+
+exit 0
+started: yes
+== /etc/wsl.conf written (exit 0):
+[boot]
+systemd=true
+
+The operation completed successfully. 
+== PID 1 after systemd=true: systemd (stderr: )
+systemd: yes

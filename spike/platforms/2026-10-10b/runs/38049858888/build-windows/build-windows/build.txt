@@ -1,0 +1,57 @@
+install
++- install sideeye
+   +- compile exe sideeye ReleaseSafe native 10 errors
+src\posix.zig:214:17: error: unsupported OS
+        else => @compileError("unsupported OS"),
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+referenced by:
+    runChildImplWithOps__anon_41191: src\posix.zig:2426:22
+    runChildCaptureWorld: src\posix.zig:987:31
+    6 reference(s) hidden; use '-freference-trace=8' to see all references
+src\posix.zig:290:27: error: type 'void' does not support array initialization syntax
+    var f: std.posix.O = .{};
+                         ~^~
+src\posix.zig:299:27: error: type 'void' does not support array initialization syntax
+    var f: std.posix.O = .{};
+                         ~^~
+src\posix.zig:312:27: error: type 'void' does not support array initialization syntax
+    var f: std.posix.O = .{};
+                         ~^~
+src\posix.zig:327:41: error: struct 'c.AT__struct_35814' has no member named 'FDCWD'
+pub const AT_FDCWD: c_int = std.posix.AT.FDCWD;
+                            ~~~~~~~~~~~~^~~~~~
+D:\a\_temp\zig-x86_64-windows-0.16.0\lib\std\c.zig:8266:17: note: struct declared here
+    .windows => struct {
+                ^~~~~~
+src\posix.zig:377:21: error: type '*void' does not support field access
+    return switch (e.type) {
+                   ~^~~~~
+src\posix.zig:741:41: error: type '*void' does not support field access
+    const p: [*:0]const u8 = @ptrCast(&e.name);
+                                       ~^~~~~
+src\posix.zig:2148:32: error: expected integer or vector, found 'void'
+    return @as(u64, @intCast(ts.sec)) * 1000 + @as(u64, @intCast(ts.nsec)) / 1_000_000;
+                             ~~^~~~
+src\posix.zig:2156:40: error: expected integer or vector, found 'void'
+    var ts: std.c.timespec = .{ .sec = @intCast(ms / 1000), .nsec = @intCast((ms % 1000) * 1_000_000) };
+                                       ^~~~~~~~~~~~~~~~~~~
+src\posix.zig:2426:30: error: incompatible types: '*anyopaque' and 'c_int'
+            if (siPid(&info) == pid) break :poll .exited;
+                ~~~~~~~~~~~~~^~~~~~
+src\posix.zig:2426:22: note: type '*anyopaque' here
+            if (siPid(&info) == pid) break :poll .exited;
+                ~~~~~^~~~~~~
+src\posix.zig:2426:33: note: type 'c_int' here
+            if (siPid(&info) == pid) break :poll .exited;
+                                ^~~
+error: 10 compilation errors
+failed command: "D:\\a\\_temp\\zig-x86_64-windows-0.16.0\\zig.exe" build-exe -OReleaseSafe --dep contract --dep engine_build_options --dep toy_c --dep check_sh "-Mroot=D:\\a\\_temp\\src\\src\\main.zig" -OReleaseSafe "-Mcontract=D:\\a\\_temp\\src\\src\\contract.zig" "-Mengine_build_options=.zig-cache\\c\\26022677d508a6e99d060ed58d1f071b\\options.zig" "-Mtoy_c=D:\\a\\_temp\\src\\spike\\toys\\toy.c" "-Mcheck_sh=D:\\a\\_temp\\src\\spike\\check.sh" -lc --cache-dir .zig-cache --global-cache-dir "C:\\Users\\runneradmin\\AppData\\Local\\zig" --name sideeye --zig-lib-dir "D:\\a\\_temp\\zig-x86_64-windows-0.16.0\\lib\\" --listen=-
+
+Build Summary: 1/4 steps succeeded (1 failed)
+install transitive failure
++- install sideeye transitive failure
+   +- compile exe sideeye ReleaseSafe native 10 errors
+
+error: the following build command failed with exit code 1:
+.zig-cache\o\36775bffa8f68544d8ade39384ea6fa8\build.exe D:\a\_temp\zig-x86_64-windows-0.16.0\zig.exe D:\a\_temp\zig-x86_64-windows-0.16.0\lib D:\a\_temp\src .zig-cache C:\Users\runneradmin\AppData\Local\zig --seed 0xd7069b08 -Z56939030e07255db -Doptimize=ReleaseSafe
+exit 1

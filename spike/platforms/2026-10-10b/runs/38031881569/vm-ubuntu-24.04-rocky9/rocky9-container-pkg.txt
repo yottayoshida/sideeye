@@ -1,0 +1,7 @@
+
+Installed:
+  strace-6.12-1.el9.x86_64                                                      
+
+glibc-2.34-266.el9_8.x86_64
+strace-6.12-1.el9.x86_64
+coreutils-single-8.32-40.el9.x86_64

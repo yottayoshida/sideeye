@@ -1,0 +1,18 @@
+0+1 records in
+0+1 records out
+13 bytes copied, 0.000211 s, 61.6 kB/s
+UNKNOWN  oracle_saw_nothing
+         no thread in the fs_usage capture wrote to the shim's trace file, so the capture cannot say which lines are the subject's
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+cwd         /Users/runner/work/sideeye/sideeye  (none declared: Sideeye's own)
+
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   not established: no boundary was recorded by the shim, and the fs_usage account was not read
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=abd06039f6701acc1651d755afb67ebf5e2d1a307a1b755493fdb0c110dae070;

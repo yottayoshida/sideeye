@@ -1,0 +1,30 @@
+install
++- install sideeye_shim
+   +- compile lib sideeye_shim ReleaseSafe arm-linux-gnueabi.2.28 2 errors
+shim/src/common.zig:687:35: error: expected 32-bit integer type or smaller; found 64-bit integer type
+        const owner = @atomicLoad(u64, &slots[i].tid, .acquire);
+                                  ^~~
+referenced by:
+    init: shim/src/common.zig:1197:20
+    ctor: shim/src/shim.zig:25:16
+    5 reference(s) hidden; use '-freference-trace=7' to see all references
+shim/src/syscalls.zig:441:48: error: expected type 'u32', found 'u64'
+    const r = linux.syscall6(@enumFromInt(nr), a0, a1, a2, a3, a4, reissue_sentinel);
+                                               ^~
+shim/src/syscalls.zig:441:48: note: unsigned 32-bit int cannot represent all possible unsigned 64-bit values
+/home/runner/work/_temp/platform-build/zig/lib/std/os/linux/arm.zig:64:11: note: parameter type declared here
+    arg1: u32,
+          ^~~
+error: 2 compilation errors
+failed command: /home/runner/work/_temp/platform-build/zig/zig build-lib -fllvm -OReleaseSafe -target arm-linux-gnueabi.2.28 -mcpu baseline --dep contract --dep shim_build_options -Mroot=/home/runner/work/_temp/platform-build/b-cross/shim/src/shim.zig -OReleaseSafe -target arm-linux-gnueabi.2.28 -mcpu baseline -Mcontract=/home/runner/work/_temp/platform-build/b-cross/src/contract.zig -Mshim_build_options=.zig-cache/c/fc0be73d99acaaa5d5a2b4d14bf0ea43/options.zig -lc --cache-dir .zig-cache --global-cache-dir /home/runner/.cache/zig --name sideeye_shim -dynamic --zig-lib-dir /home/runner/work/_temp/platform-build/zig/lib/ --listen=-
+
+Build Summary: 4/7 steps succeeded (1 failed)
+install transitive failure
++- install sideeye_shim transitive failure
+   +- compile lib sideeye_shim ReleaseSafe arm-linux-gnueabi.2.28 2 errors
+
+error: the following build command failed with exit code 1:
+.zig-cache/o/51f27d8134343e66997fa7293b7ee7e1/build /home/runner/work/_temp/platform-build/zig/zig /home/runner/work/_temp/platform-build/zig/lib /home/runner/work/_temp/platform-build/b-cross .zig-cache /home/runner/.cache/zig --seed 0x3f8252ee -Zb2571ea3aafdd065 -Doptimize=ReleaseSafe -Dtarget=arm-linux-gnueabi.2.28 --prefix /home/runner/work/_temp/platform-build/cross-arm-linux-gnueabi.2.28
+exit 1
+/home/runner/work/_temp/platform-build/cross-arm-linux-gnueabi.2.28/bin/sideeye: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.3, for GNU/Linux 2.0.0, with debug_info, not stripped
+/home/runner/work/_temp/platform-build/cross-arm-linux-gnueabi.2.28/lib/*:       cannot open `/home/runner/work/_temp/platform-build/cross-arm-linux-gnueabi.2.28/lib/*' (No such file or directory)

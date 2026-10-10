@@ -1,0 +1,5 @@
+ldd (Debian GLIBC 2.24-11+deb9u4) 2.24
+/se/sideeye: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.25' not found (required by /se/sideeye)
+/se/sideeye: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.27' not found (required by /se/sideeye)
+/se/sideeye: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by /se/sideeye)
+exit 1

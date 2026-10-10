@@ -1,0 +1,13 @@
+== rocky9-container
+Unable to find image 'rockylinux/rockylinux:9.8@sha256:8101994123cf3d0a8fee517bee7f39e555c7d92bd2d9eb3303cc988a0eeed00f' locally
+docker.io/rockylinux/rockylinux@sha256:8101994123cf3d0a8fee517bee7f39e555c7d92bd2d9eb3303cc988a0eeed00f: Pulling from rockylinux/rockylinux
+99c753a880cc: Pulling fs layer
+99c753a880cc: Verifying Checksum
+99c753a880cc: Download complete
+99c753a880cc: Pull complete
+Digest: sha256:8101994123cf3d0a8fee517bee7f39e555c7d92bd2d9eb3303cc988a0eeed00f
+Status: Downloaded newer image for rockylinux/rockylinux@sha256:8101994123cf3d0a8fee517bee7f39e555c7d92bd2d9eb3303cc988a0eeed00f
+default	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+syscalls	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+supervised	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+== rocky9-vm

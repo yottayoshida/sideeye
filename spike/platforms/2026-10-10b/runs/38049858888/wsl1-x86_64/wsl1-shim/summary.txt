@@ -1,0 +1,3 @@
+default	exit 3	SETUP ERROR  operation: no executable file named dd is on PATH
+syscalls	exit 3	SETUP ERROR  operation: no executable file named dd is on PATH
+supervised	exit 3	SETUP ERROR  operation: no executable file named dd is on PATH

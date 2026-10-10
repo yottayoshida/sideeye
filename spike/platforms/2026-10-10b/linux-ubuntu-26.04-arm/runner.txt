@@ -1,0 +1,6 @@
+== host
+sudo: preserving the entire environment is not supported, '-E' is ignored
+in-delegated-cgroup: running as 1001:1001 in /sys/fs/cgroup/system.slice/run-p2473-i8902.scope, delegated
+default	exit 1	FAIL  1 of 5 explored worlds violated an invariant
+syscalls	exit 1	FAIL  1 of 5 explored worlds violated an invariant
+supervised	exit 1	FAIL  1 of 5 explored worlds violated an invariant

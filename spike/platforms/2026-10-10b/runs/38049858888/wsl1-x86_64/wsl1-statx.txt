@@ -1,0 +1,12 @@
+uname: 4.4.0-26100-Microsoft x86_64
+statx(/usr/bin/dd, AT_SYMLINK_NOFOLLOW, TYPE|UID) = -1 ENOSYS
+access(/usr/bin/dd, X_OK) = 0
+faccessat(/usr/bin/dd, X_OK) = 0
+statx(/usr/bin/dd, 0, TYPE) = -1 ENOSYS
+newfstatat(/usr/bin/dd, AT_SYMLINK_NOFOLLOW) = 0
+statx(/opt/sideeye/sideeye-v1.10.0-x86_64-linux/libsideeye_shim.so, AT_SYMLINK_NOFOLLOW, TYPE|UID) = -1 ENOSYS
+access(/opt/sideeye/sideeye-v1.10.0-x86_64-linux/libsideeye_shim.so, X_OK) = 0
+faccessat(/opt/sideeye/sideeye-v1.10.0-x86_64-linux/libsideeye_shim.so, X_OK) = 0
+statx(/opt/sideeye/sideeye-v1.10.0-x86_64-linux/libsideeye_shim.so, 0, TYPE) = -1 ENOSYS
+newfstatat(/opt/sideeye/sideeye-v1.10.0-x86_64-linux/libsideeye_shim.so, AT_SYMLINK_NOFOLLOW) = 0
+control: newfstatat answered every path

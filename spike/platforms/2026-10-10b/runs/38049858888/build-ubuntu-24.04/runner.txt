@@ -1,0 +1,33 @@
+== alpine-src
+Unable to find image 'alpine:3.22@sha256:5291449c3df73caf6ed85e649dec1b9e818b39a5d8c871e97afc13e9cd5e8fa8' locally
+docker.io/library/alpine@sha256:5291449c3df73caf6ed85e649dec1b9e818b39a5d8c871e97afc13e9cd5e8fa8: Pulling from library/alpine
+53f8f5e03afd: Pulling fs layer
+53f8f5e03afd: Verifying Checksum
+53f8f5e03afd: Download complete
+53f8f5e03afd: Pull complete
+Digest: sha256:5291449c3df73caf6ed85e649dec1b9e818b39a5d8c871e97afc13e9cd5e8fa8
+Status: Downloaded newer image for alpine@sha256:5291449c3df73caf6ed85e649dec1b9e818b39a5d8c871e97afc13e9cd5e8fa8
+== cross-riscv64-linux-gnu.2.28
+exit 0
+/home/runner/work/_temp/platform-build/cross-riscv64-linux-gnu.2.28/bin/sideeye:            ELF 64-bit LSB executable, UCB RISC-V, RVC, double-float ABI, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-riscv64-lp64d.so.1, for GNU/Linux 2.0.0, with debug_info, not stripped
+/home/runner/work/_temp/platform-build/cross-riscv64-linux-gnu.2.28/lib/libsideeye_shim.so: ELF 64-bit LSB shared object, UCB RISC-V, RVC, double-float ABI, version 1 (SYSV), dynamically linked, with debug_info, not stripped
+== cross-arm-linux-gnueabihf.2.28
+exit 1
+/home/runner/work/_temp/platform-build/cross-arm-linux-gnueabihf.2.28/bin/sideeye: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-armhf.so.3, for GNU/Linux 2.0.0, with debug_info, not stripped
+/home/runner/work/_temp/platform-build/cross-arm-linux-gnueabihf.2.28/lib/*:       cannot open `/home/runner/work/_temp/platform-build/cross-arm-linux-gnueabihf.2.28/lib/*' (No such file or directory)
+== cross-x86-linux-gnu.2.28
+exit 1
+/home/runner/work/_temp/platform-build/cross-x86-linux-gnu.2.28/bin/sideeye: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.0.0, with debug_info, not stripped
+/home/runner/work/_temp/platform-build/cross-x86-linux-gnu.2.28/lib/*:       cannot open `/home/runner/work/_temp/platform-build/cross-x86-linux-gnu.2.28/lib/*' (No such file or directory)
+== cross-arm-linux-gnueabi.2.28
+exit 1
+/home/runner/work/_temp/platform-build/cross-arm-linux-gnueabi.2.28/bin/sideeye: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.3, for GNU/Linux 2.0.0, with debug_info, not stripped
+/home/runner/work/_temp/platform-build/cross-arm-linux-gnueabi.2.28/lib/*:       cannot open `/home/runner/work/_temp/platform-build/cross-arm-linux-gnueabi.2.28/lib/*' (No such file or directory)
+== cross-powerpc64le-linux-gnu.2.28
+exit 1
+/home/runner/work/_temp/platform-build/cross-powerpc64le-linux-gnu.2.28/bin/sideeye: ELF 64-bit LSB executable, 64-bit PowerPC or cisco 7500, OpenPOWER ELF V2 ABI, version 1 (SYSV), dynamically linked, interpreter /lib64/ld64.so.2, for GNU/Linux 2.0.0, with debug_info, not stripped
+/home/runner/work/_temp/platform-build/cross-powerpc64le-linux-gnu.2.28/lib/*:       cannot open `/home/runner/work/_temp/platform-build/cross-powerpc64le-linux-gnu.2.28/lib/*' (No such file or directory)
+== cross-s390x-linux-gnu.2.28
+exit 0
+/home/runner/work/_temp/platform-build/cross-s390x-linux-gnu.2.28/bin/sideeye:            ELF 64-bit MSB executable, IBM S/390, version 1 (SYSV), dynamically linked, interpreter /lib/ld64.so.1, for GNU/Linux 2.0.0, with debug_info, not stripped
+/home/runner/work/_temp/platform-build/cross-s390x-linux-gnu.2.28/lib/libsideeye_shim.so: ELF 64-bit MSB shared object, IBM S/390, version 1 (SYSV), dynamically linked, with debug_info, not stripped

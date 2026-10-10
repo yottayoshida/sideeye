@@ -1,0 +1,1 @@
+BOOT_IMAGE=/boot/vmlinuz-5.4.0-216-generic root=LABEL=cloudimg-rootfs ro quiet splash vt.handoff=7

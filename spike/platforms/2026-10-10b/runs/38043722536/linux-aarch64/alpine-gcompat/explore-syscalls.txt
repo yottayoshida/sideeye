@@ -1,0 +1,31 @@
+0+1 records in
+0+1 records out
+13 bytes (13B) copied, 0.001911 seconds, 6.6KB/s
+0+1 records in
+0+1 records out
+13 bytes (13B) copied, 0.000124 seconds, 102.4KB/s
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 2
+            after  open(/s/st/a.txt)
+            before write(/s/st/a.txt)
+path        a.txt
+observed    holding neither the old nor the new content
+cwd         /  (none declared: Sideeye's own)
+
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 2 operations (80 syscall lines examined, 11 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /tmp/platform-measure-FLHOkn/syscalls/cases/000001.json
+replay      sideeye replay /tmp/platform-measure-FLHOkn/syscalls/cases/000001.json --observe syscalls --shim /se/libsideeye_shim.so
+evidence    sideeye evidence /tmp/platform-measure-FLHOkn/syscalls/evidence/000001.json
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd / && unset SIDEEYE_KILL_GROUP && : > /tmp/platform-measure-FLHOkn/syscalls/trace-repro.bin && SIDEEYE_STATE_DIR=/s/st SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/tmp/platform-measure-FLHOkn/syscalls/trace-repro.bin LD_PRELOAD=/se/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=syscalls SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'dd' 'if=/s/new' 'of=/s/st/a.txt' </dev/null)
+sideeye: json sha256=c01483d54e0a43d01ff4ed01f8bc4640aee2543e197e610e982c7c53a91f5ef6;
