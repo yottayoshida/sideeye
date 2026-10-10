@@ -1,0 +1,5 @@
+[world]
+state = "/s/ctl-ordered"
+
+[define]
+operation = "/opt/bin/ctl-ordered /s/ctl-ordered"

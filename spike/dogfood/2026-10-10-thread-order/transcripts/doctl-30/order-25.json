@@ -1,0 +1,1 @@
+{"verdict": "unordered", "writes": 2, "handovers": 1, "ordered_by_creation": 0, "ordered_by_exit": 0, "unordered": 1, "first_unordered": [{"from": 602, "to": 606, "lines": [220, 8577]}], "writers_by_process": {"602": [602, 606]}}

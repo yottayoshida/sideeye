@@ -1,0 +1,17 @@
+sideeye 1.10.0 (trace contract v19)
+engine path: /opt/se/sideeye-v1.10.0-aarch64-linux/sideeye
+install-sideeye: reading yottayoshida/sideeye release v1.10.0 (unauthenticated; shares this runner's rate limit)
+install-sideeye: downloaded digest matches (cb176c41df10611ec6eb2c255bf5d7f557edfb4159752e7f89959519c3c6a99a)
+install-sideeye: sideeye 1.10.0 (trace contract v19)
+jj: jj 0.46.0-7d382314f9420b4b8d932245b49c99492c812b9f
+tofu: OpenTofu v1.13.1
+doctl: doctl version 1.177.0-release
+codex: codex-cli 0.160.0
+notesmd-cli: notesmd-cli version v0.3.7
+jj: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=bcfe8ae94abbcb1db01655dcfcb043dd613e6f00, not stripped
+tofu: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=dkv8DPXOESr0DPBvx1Yc/d-E0__FimB4ACGVUrlqt/EdgKzq-YuhoCqjp0WdHC/EdOr9LKOqlMFtO6Bxu46, BuildID[sha1]=d5906e22b8254cb1dd03c1b5a5ff3622fd9b0939, stripped
+doctl: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=US6NfkJXnUGVW42tMddL/S3vaK2f5Ah4ZYON98Xyi/glebI2JeA-Q3EKBpZFhF/qxO0E_YnFP-9s9pGsoNn, BuildID[sha1]=5b249a98806556ce94a82ec8841e98d41d41cd3c, with debug_info, not stripped
+codex: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, stripped
+notesmd-cli: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=abf05eb55ddf54cbdd028fd6b3b5d9f3ef5cad92, stripped
+controls: /opt/bin/ctl-condvar
+/opt/bin/ctl-ordered
