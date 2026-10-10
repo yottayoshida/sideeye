@@ -1,0 +1,6 @@
+[world]
+state = "/s/glt"
+
+[define]
+operation = "gltf-transform weld /s/glt/terrain.glb /s/glt/terrain.glb"
+cwd       = "/s/glt-in"

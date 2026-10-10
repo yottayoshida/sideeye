@@ -1289,7 +1289,9 @@ fn phaseDefine(run: *Run) void {
     // deletes-and-rebuilds once per world (`restore`). Nothing about the case path
     // says where that define points, so the server hands its destruction range down
     // as a flag and the check runs here — on the same bytes the destruction will use,
-    // with no second parse and no check-to-use window.
+    // with no second parse and no check-to-use window. A config's path says no more
+    // about its state than a case's does, so `preflight --twice` (#717) and `explore`
+    // (#765, ADR 0106) take the same flag from the server and meet the same check.
     //
     // Strict inside, not equal: a case naming the range itself would make the
     // operator's whole workspace the sacrificial directory. Both sides are compared
@@ -1323,7 +1325,7 @@ fn phaseDefine(run: *Run) void {
         // nothing is a misconfiguration, not a wide range.
         if (su_abs.len <= 1) {
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
-            setupError(.define_invalid, "--state-under / would confine nothing; name the directory the case's state may live under");
+            setupError(.define_invalid, "--state-under / would confine nothing; name the directory the state may live under");
         }
         if (!contract.isStrictlyInsideDir(state_abs, su_abs)) {
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
@@ -1336,7 +1338,17 @@ fn phaseDefine(run: *Run) void {
             // it. `su_abs` is operator-supplied and takes the same treatment for free.
             // #717: preflight `--twice` takes the range too, so the sentence names the state
             // rather than the case's, and both ways past it.
-            setupError(.define_invalid, std.fmt.allocPrint(arena, "the state directory resolves outside the allowed range, or is the range itself: state {s}, --state-under {s}. Run it directly from the CLI, or set SIDEEYE_MCP_STATE_ROOT to the directory this state may live under", .{ textShown(arena, state_abs), textShown(arena, su_abs) }) catch "the state directory resolves outside the allowed range (--state-under)");
+            // #765: and explore. For a config the first way out is to move its state inside the
+            // range — the refusal exists for an agent that wrote the state wrong, and telling it
+            // to run the same config at the command line, where nothing confines it, would route
+            // the mistake around the check. A replayed case's state is where the command that
+            // saved it put it, so replaying it there stays the first way for a case. Both name the
+            // range's two spellings: the server's variable, and the flag a command line passes.
+            const way = if (mode == .replay)
+                "replay it from the command line, where its state was made, or widen the range"
+            else
+                "move the state inside the range, or widen the range";
+            setupError(.define_invalid, std.fmt.allocPrint(arena, "the state directory resolves outside the allowed range, or is the range itself: state {s}, --state-under {s}. To go on, {s} to a directory holding this state (SIDEEYE_MCP_STATE_ROOT on the MCP server, --state-under on the command line)", .{ textShown(arena, state_abs), textShown(arena, su_abs), way }) catch "the state directory resolves outside the allowed range (--state-under)");
         }
     }
 

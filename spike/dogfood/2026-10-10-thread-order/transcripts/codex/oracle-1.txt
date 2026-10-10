@@ -1,0 +1,409 @@
+22    execve("/opt/se/sideeye-v1.10.0-aarch64-linux/sideeye", ["/opt/se/sideeye-v1.10.0-aarch64-"..., "__filter-exec", "4", "--", "codex", "mcp", "add", "notes", "--", "/usr/bin/true", "--flag"], 0xaaab296b88a0 /* 22 vars */) = 0
+22    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8fd8d000
+22    faccessat(AT_FDCWD</s/codex-in>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
+22    openat(AT_FDCWD</s/codex-in>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+22    fstat(3</etc/ld.so.cache>, {st_mode=S_IFREG|0644, st_size=8463, ...}) = 0
+22    mmap(NULL, 8463, PROT_READ, MAP_PRIVATE, 3</etc/ld.so.cache>, 0) = 0xffff8fd8a000
+22    close(3</etc/ld.so.cache>)        = 0
+22    openat(AT_FDCWD</s/codex-in>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+22    read(3</usr/lib/aarch64-linux-gnu/libc.so.6>, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\200$\2\0\0\0\0\0"..., 832) = 832
+22    fstat(3</usr/lib/aarch64-linux-gnu/libc.so.6>, {st_mode=S_IFREG|0755, st_size=1716616, ...}) = 0
+22    mmap(NULL, 1892368, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_DENYWRITE, -1, 0) = 0xffff8fb86000
+22    mmap(0xffff8fb90000, 1826832, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libc.so.6>, 0) = 0xffff8fb90000
+22    mprotect(0xffff8fd2c000, 69632, PROT_NONE) = 0
+22    mmap(0xffff8fd3d000, 20480, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libc.so.6>, 0x19d000) = 0xffff8fd3d000
+22    mmap(0xffff8fd42000, 49168, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff8fd42000
+22    close(3</usr/lib/aarch64-linux-gnu/libc.so.6>) = 0
+22    openat(AT_FDCWD</s/codex-in>, "/lib/aarch64-linux-gnu/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>
+22    read(3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+22    fstat(3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, {st_mode=S_IFREG|0644, st_size=67592, ...}) = 0
+22    mmap(NULL, 196624, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_DENYWRITE, -1, 0) = 0xffff8fb5f000
+22    mmap(0xffff8fb60000, 131088, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, 0) = 0xffff8fb60000
+22    mprotect(0xffff8fb61000, 122880, PROT_NONE) = 0
+22    mmap(0xffff8fb7f000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, 0xf000) = 0xffff8fb7f000
+22    close(3</usr/lib/aarch64-linux-gnu/libpthread.so.0>) = 0
+22    mmap(NULL, 270336, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8fb1e000
+22    mprotect(0xffff8fd3d000, 12288, PROT_READ) = 0
+22    mprotect(0xffff8fb7f000, 4096, PROT_READ) = 0
+22    mprotect(0x1177000, 20480, PROT_READ) = 0
+22    mprotect(0xffff8fd93000, 8192, PROT_READ) = 0
+22    mmap(NULL, 258048, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8fadf000
+22    faccessat(AT_FDCWD</s/codex-in>, "/opt/bin/codex", X_OK) = 0
+22    statx(AT_FDCWD</s/codex-in>, "/opt/bin/codex", AT_STATX_SYNC_AS_STAT, STATX_TYPE, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0755, stx_size=248966648, ...}) = 0
+22    mmap(0xffff8fadf000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8fadf000
+22    close(3<anon_inode:seccomp notify>) = 0
+22    close(4<socket:[23015]>)          = 0
+22    execve("/opt/bin/codex", ["codex", "mcp", "add", "notes", "--", "/usr/bin/true", "--flag"], 0xffffe4cc0438 /* 22 vars */) = 0
+22    mmap(NULL, 5056, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffbdb45000
+22    readlinkat(AT_FDCWD</s/codex-in>, "/etc/_rjem_malloc.conf", 0xfffffd98059c, 4096) = -1 ENOENT (No such file or directory)
+22    mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffbdb35000
+22    openat(AT_FDCWD</s/codex-in>, "/proc/sys/vm/overcommit_memory", O_RDONLY|O_CLOEXEC) = 3</proc/sys/vm/overcommit_memory>
+22    read(3</proc/sys/vm/overcommit_memory>, "1", 1) = 1
+22    close(3</proc/sys/vm/overcommit_memory>) = 0
+22    openat(AT_FDCWD</s/codex-in>, "/sys/kernel/mm/transparent_hugepage/enabled", O_RDONLY) = 3</sys/kernel/mm/transparent_hugepage/enabled>
+22    read(3</sys/kernel/mm/transparent_hugepage/enabled>, "[always] madvise never\n", 24) = 23
+22    read(3</sys/kernel/mm/transparent_hugepage/enabled>, "", 1) = 0
+22    close(3</sys/kernel/mm/transparent_hugepage/enabled>) = 0
+22    mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffbdb35000
+22    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffbd800000
+22    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffbd600000
+22    mmap(0x2768a000, 4096, PROT_NONE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x2768a000
+22    mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffbdb44000
+22    --- SIGILL {si_signo=SIGILL, si_code=ILL_ILLOPC, si_addr=0xb928980} ---
+22    --- SIGILL {si_signo=SIGILL, si_code=ILL_ILLOPC, si_addr=0xb928950} ---
+22    --- SIGILL {si_signo=SIGILL, si_code=ILL_ILLOPC, si_addr=0xb928968} ---
+22    --- SIGILL {si_signo=SIGILL, si_code=ILL_ILLOPC, si_addr=0xb928970} ---
+22    --- SIGILL {si_signo=SIGILL, si_code=ILL_ILLOPC, si_addr=0xb928a64} ---
+22    ppoll([{fd=0</dev/null>, events=0}, {fd=1</out/codex/work-1/stdout-record.txt>, events=0}, {fd=2</out/codex/preflight-1.txt>, events=0}], 3, {tv_sec=0, tv_nsec=0}, NULL, 8) = 0 (Timeout)
+22    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffffbdb40000
+22    mprotect(0xffffbdb40000, 4096, PROT_NONE) = 0
+22    readlinkat(AT_FDCWD</s/codex-in>, "/proc/self/exe", "/opt/bin/codex", 256) = 14
+22    newfstatat(AT_FDCWD</s/codex-in>, "/s/codex", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+22    readlinkat(AT_FDCWD</s/codex-in>, "/s", 0xfffffd981238, 4090) = -1 EINVAL (Invalid argument)
+22    readlinkat(AT_FDCWD</s/codex-in>, "/s/codex", 0xfffffd981238, 4096) = -1 EINVAL (Invalid argument)
+22    readlinkat(AT_FDCWD</s/codex-in>, "/opt", 0xfffffd981558, 4086) = -1 EINVAL (Invalid argument)
+22    readlinkat(AT_FDCWD</s/codex-in>, "/opt/bin", 0xfffffd981558, 4090) = -1 EINVAL (Invalid argument)
+22    readlinkat(AT_FDCWD</s/codex-in>, "/opt/bin/codex", 0xfffffd981558, 4096) = -1 EINVAL (Invalid argument)
+22    newfstatat(AT_FDCWD</s/codex-in>, "/opt/bin", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+22    newfstatat(AT_FDCWD</s/codex-in>, "/opt/codex-package.json", 0xfffffd982130, 0) = -1 ENOENT (No such file or directory)
+22    readlinkat(AT_FDCWD</s/codex-in>, "/s", 0xfffffd981558, 4090) = -1 EINVAL (Invalid argument)
+22    readlinkat(AT_FDCWD</s/codex-in>, "/s/codex", 0xfffffd981558, 4096) = -1 EINVAL (Invalid argument)
+22    readlinkat(AT_FDCWD</s/codex-in>, "/opt", 0xfffffd981358, 4086) = -1 EINVAL (Invalid argument)
+22    readlinkat(AT_FDCWD</s/codex-in>, "/opt/bin", 0xfffffd981358, 4090) = -1 EINVAL (Invalid argument)
+22    readlinkat(AT_FDCWD</s/codex-in>, "/opt/bin/codex", 0xfffffd981358, 4096) = -1 EINVAL (Invalid argument)
+22    newfstatat(AT_FDCWD</s/codex-in>, "/proc/self/exe", {st_mode=S_IFREG|0755, st_size=248966648, ...}, 0) = 0
+22    newfstatat(AT_FDCWD</s/codex-in>, "/s/codex", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+22    readlinkat(AT_FDCWD</s/codex-in>, "/s", 0xfffffd981278, 4090) = -1 EINVAL (Invalid argument)
+22    readlinkat(AT_FDCWD</s/codex-in>, "/s/codex", 0xfffffd981278, 4096) = -1 EINVAL (Invalid argument)
+22    openat(AT_FDCWD</s/codex-in>, "/s/codex/.env", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+22    newfstatat(AT_FDCWD</s/codex-in>, "/s/codex", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+22    readlinkat(AT_FDCWD</s/codex-in>, "/s", 0xfffffd981278, 4090) = -1 EINVAL (Invalid argument)
+22    readlinkat(AT_FDCWD</s/codex-in>, "/s/codex", 0xfffffd981278, 4096) = -1 EINVAL (Invalid argument)
+22    mkdirat(AT_FDCWD</s/codex-in>, "/s/codex", 0777) = -1 EEXIST (File exists)
+22    newfstatat(AT_FDCWD</s/codex-in>, "/s/codex", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+22    mkdirat(AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0", 0777) = -1 ENOENT (No such file or directory)
+22    mkdirat(AT_FDCWD</s/codex-in>, "/s/codex/tmp", 0777) = 0
+22    mkdirat(AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0", 0777) = 0
+22    fchmodat(AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0", 0700) = 0
+22    openat(AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 3</s/codex/tmp/arg0>
+22    fcntl(3</s/codex/tmp/arg0>, F_SETFD, FD_CLOEXEC) = 0
+22    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffbdb3e000
+22    getdents64(3</s/codex/tmp/arg0>, 0xffffbdb3e048 /* 2 entries */, 2048) = 48
+22    getdents64(3</s/codex/tmp/arg0>, 0xffffbdb3e048 /* 0 entries */, 2048) = 0
+22    close(3</s/codex/tmp/arg0>)       = 0
+22    mkdirat(AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0/codex-arg0aEciiz", 0777) = 0
+22    openat(AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0/codex-arg0aEciiz/.lock", O_RDWR|O_CREAT|O_LARGEFILE|O_CLOEXEC, 0666) = 3</s/codex/tmp/arg0/codex-arg0aEciiz/.lock>
+22    fcntl(3</s/codex/tmp/arg0/codex-arg0aEciiz/.lock>, F_SETFD, FD_CLOEXEC) = 0
+22    flock(3</s/codex/tmp/arg0/codex-arg0aEciiz/.lock>, LOCK_EX|LOCK_NB) = 0
+22    readlinkat(AT_FDCWD</s/codex-in>, "/proc/self/exe", "/opt/bin/codex", 256) = 14
+22    symlinkat("/opt/bin/codex", AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0/codex-arg0aEciiz/apply_patch") = 0
+22    readlinkat(AT_FDCWD</s/codex-in>, "/proc/self/exe", "/opt/bin/codex", 256) = 14
+22    symlinkat("/opt/bin/codex", AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0/codex-arg0aEciiz/applypatch") = 0
+22    readlinkat(AT_FDCWD</s/codex-in>, "/proc/self/exe", "/opt/bin/codex", 256) = 14
+22    symlinkat("/opt/bin/codex", AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0/codex-arg0aEciiz/codex-linux-sandbox") = 0
+22    readlinkat(AT_FDCWD</s/codex-in>, "/proc/self/exe", "/opt/bin/codex", 256) = 14
+22    symlinkat("/opt/bin/codex", AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0/codex-arg0aEciiz/codex-execve-wrapper") = 0
+22    readlinkat(AT_FDCWD</s/codex-in>, "/proc/self/exe", "/opt/bin/codex", 256) = 14
+22    readlinkat(AT_FDCWD</s/codex-in>, "/proc/self/exe", "/opt/bin/codex", 256) = 14
+22    mmap(NULL, 16793600, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffbc5fc000
+22    mprotect(0xffffbc5fe000, 16785408, PROT_READ|PROT_WRITE) = 0
+22    clone(child_stack=0xffffbd5fe810, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[23], tls=0xffffbd5fe908, child_tidptr=0xf214494) = 23
+23    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffbc200000
+23    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffbc000000
+23    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffffbdb3c000
+23    mprotect(0xffffbdb3c000, 4096, PROT_NONE) = 0
+23    openat(AT_FDCWD</s/codex-in>, "/proc/self/cgroup", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</proc/22/cgroup>
+23    fcntl(4</proc/22/cgroup>, F_SETFD, FD_CLOEXEC) = 0
+23    fstat(4</proc/22/cgroup>, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+23    lseek(4</proc/22/cgroup>, 0, SEEK_CUR) = 0
+23    read(4</proc/22/cgroup>, "0::/sideeye-16-6e89884b6ee96035/"..., 128) = 37
+23    read(4</proc/22/cgroup>, "", 91)  = 0
+23    close(4</proc/22/cgroup>)         = 0
+23    newfstatat(AT_FDCWD</s/codex-in>, "/sys/fs/cgroup/sideeye-16-6e89884b6ee96035/work/cgroup.controllers", {st_mode=S_IFREG|0444, st_size=0, ...}, 0) = 0
+23    openat(AT_FDCWD</s/codex-in>, "/sys/fs/cgroup/sideeye-16-6e89884b6ee96035/work/cpu.max", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+23    openat(AT_FDCWD</s/codex-in>, "/sys/fs/cgroup/sideeye-16-6e89884b6ee96035/cpu.max", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+23    openat(AT_FDCWD</s/codex-in>, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</sys/fs/cgroup/cpu.max>
+23    fcntl(4</sys/fs/cgroup/cpu.max>, F_SETFD, FD_CLOEXEC) = 0
+23    fstat(4</sys/fs/cgroup/cpu.max>, {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+23    lseek(4</sys/fs/cgroup/cpu.max>, 0, SEEK_CUR) = 0
+23    read(4</sys/fs/cgroup/cpu.max>, "max 100000\n", 32) = 11
+23    read(4</sys/fs/cgroup/cpu.max>, "", 9) = 0
+23    close(4</sys/fs/cgroup/cpu.max>)  = 0
+23    epoll_create1(EPOLL_CLOEXEC)      = 4<anon_inode:[eventpoll]>
+23    eventfd2(0, EFD_CLOEXEC|EFD_NONBLOCK) = 5<anon_inode:[eventfd]>
+23    epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 5<anon_inode:[eventfd]>, {events=EPOLLIN|EPOLLRDHUP|EPOLLET, data=0}) = 0
+23    fcntl(4<anon_inode:[eventpoll]>, F_DUPFD_CLOEXEC, 3) = 6<anon_inode:[eventpoll]>
+23    fcntl(6<anon_inode:[eventpoll]>, F_SETFD, FD_CLOEXEC) = 0
+23    fcntl(7<socket:[15676]>, F_DUPFD_CLOEXEC, 3) = 9<socket:[15676]>
+23    fcntl(9<socket:[15676]>, F_SETFD, FD_CLOEXEC) = 0
+23    epoll_ctl(6<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 9<socket:[15676]>, {events=EPOLLIN|EPOLLRDHUP|EPOLLET, data=0x1}) = 0
+23    mmap(NULL, 2621440, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffbbd80000
+23    mmap(NULL, 16793600, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffbad7c000
+23    mprotect(0xffffbad7e000, 16785408, PROT_READ|PROT_WRITE) = 0
+23    clone(child_stack=0xffffbbd7e810, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[24], tls=0xffffbbd7e908, child_tidptr=0xf214494) = 24
+23    mmap(NULL, 16793600, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb9d78000
+24    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0 <unfinished ...>
+23    mprotect(0xffffb9d7a000, 16785408, PROT_READ|PROT_WRITE <unfinished ...>
+24    <... mmap resumed>)               = 0xffffb9a00000
+23    <... mprotect resumed>)           = 0
+24    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffb9800000
+23    clone(child_stack=0xffffbad7a810, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000 <unfinished ...>
+24    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffffbdb38000
+24    mprotect(0xffffbdb38000, 4096, PROT_NONE <unfinished ...>
+23    <... clone resumed>, parent_tid=[25], tls=0xffffbad7a908, child_tidptr=0xf214494) = 25
+24    <... mprotect resumed>)           = 0
+23    mmap(NULL, 16793600, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+25    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0 <unfinished ...>
+23    <... mmap resumed>)               = 0xffffb87fc000
+25    <... mmap resumed>)               = 0xffffb8400000
+23    mprotect(0xffffb87fe000, 16785408, PROT_READ|PROT_WRITE <unfinished ...>
+25    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0 <unfinished ...>
+23    <... mprotect resumed>)           = 0
+25    <... mmap resumed>)               = 0xffffb8200000
+23    clone(child_stack=0xffffb97fe810, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000 <unfinished ...>
+25    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffffbdb34000
+25    mprotect(0xffffbdb34000, 4096, PROT_NONE <unfinished ...>
+23    <... clone resumed>, parent_tid=[26], tls=0xffffb97fe908, child_tidptr=0xf214494) = 26
+25    <... mprotect resumed>)           = 0
+23    mmap(NULL, 16793600, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+26    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0 <unfinished ...>
+23    <... mmap resumed>)               = 0xffffb71fc000
+26    <... mmap resumed>)               = 0xffffb6e00000
+23    mprotect(0xffffb71fe000, 16785408, PROT_READ|PROT_WRITE) = 0
+26    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffb6c00000
+23    clone(child_stack=0xffffb81fe810, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[27], tls=0xffffb81fe908, child_tidptr=0xf214494) = 27
+26    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffffbdb30000
+26    mprotect(0xffffbdb30000, 4096, PROT_NONE <unfinished ...>
+27    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0 <unfinished ...>
+26    <... mprotect resumed>)           = 0
+27    <... mmap resumed>)               = 0xffffb6a00000
+24    epoll_pwait(4<anon_inode:[eventpoll]>,  <unfinished ...>
+23    mmap(NULL, 16793600, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+27    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffb5600000
+23    <... mmap resumed>)               = 0xffffb59fc000
+23    mprotect(0xffffb59fe000, 16785408, PROT_READ|PROT_WRITE) = 0
+27    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffffbdb2c000
+27    mprotect(0xffffbdb2c000, 4096, PROT_NONE) = 0
+23    clone(child_stack=0xffffb69fe810, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[28], tls=0xffffb69fe908, child_tidptr=0xf214494) = 28
+28    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffb5400000
+28    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffb5200000
+23    mmap(NULL, 16793600, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb41fc000
+28    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0 <unfinished ...>
+23    mprotect(0xffffb41fe000, 16785408, PROT_READ|PROT_WRITE <unfinished ...>
+28    <... mmap resumed>)               = 0xffffbdb28000
+28    mprotect(0xffffbdb28000, 4096, PROT_NONE <unfinished ...>
+23    <... mprotect resumed>)           = 0
+28    <... mprotect resumed>)           = 0
+23    clone(child_stack=0xffffb51fe810, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[29], tls=0xffffb51fe908, child_tidptr=0xf214494) = 29
+23    mmap(NULL, 16793600, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb31f8000
+29    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0 <unfinished ...>
+23    mprotect(0xffffb31fa000, 16785408, PROT_READ|PROT_WRITE <unfinished ...>
+29    <... mmap resumed>)               = 0xffffb2e00000
+23    <... mprotect resumed>)           = 0
+29    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffb2c00000
+23    clone(child_stack=0xffffb41fa810, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000 <unfinished ...>
+29    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffffbdb24000
+29    mprotect(0xffffbdb24000, 4096, PROT_NONE) = 0
+23    <... clone resumed>, parent_tid=[30], tls=0xffffb41fa908, child_tidptr=0xf214494) = 30
+30    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffb2a00000
+23    mmap(NULL, 16793600, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffb19fc000
+30    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0 <unfinished ...>
+23    mprotect(0xffffb19fe000, 16785408, PROT_READ|PROT_WRITE <unfinished ...>
+30    <... mmap resumed>)               = 0xffffb1600000
+23    <... mprotect resumed>)           = 0
+30    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffffbdb20000
+30    mprotect(0xffffbdb20000, 4096, PROT_NONE <unfinished ...>
+23    clone(child_stack=0xffffb29fe810, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000 <unfinished ...>
+30    <... mprotect resumed>)           = 0
+23    <... clone resumed>, parent_tid=[31], tls=0xffffb29fe908, child_tidptr=0xf214494) = 31
+23    mmap(NULL, 16793600, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+31    mmap(NULL, 2621440, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0 <unfinished ...>
+23    <... mmap resumed>)               = 0xffffb05fc000
+31    <... mmap resumed>)               = 0xffffb037c000
+23    mprotect(0xffffb05fe000, 16785408, PROT_READ|PROT_WRITE) = 0
+31    mmap(NULL, 2682880, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffb036d000
+31    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffb0000000
+23    clone(child_stack=0xffffb15fe810, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[32], tls=0xffffb15fe908, child_tidptr=0xf214494) = 32
+31    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffafe00000
+32    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0 <unfinished ...>
+23    mmap(NULL, 16793600, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+32    <... mmap resumed>)               = 0xffffafc00000
+23    <... mmap resumed>)               = 0xffffaebfc000
+31    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0 <unfinished ...>
+32    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0 <unfinished ...>
+23    mprotect(0xffffaebfe000, 16785408, PROT_READ|PROT_WRITE <unfinished ...>
+32    <... mmap resumed>)               = 0xffffae800000
+31    <... mmap resumed>)               = 0xffffbdb1c000
+23    <... mprotect resumed>)           = 0
+31    mprotect(0xffffbdb1c000, 4096, PROT_NONE) = 0
+32    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffffbdb18000
+23    clone(child_stack=0xffffafbfe810, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000 <unfinished ...>
+32    mprotect(0xffffbdb18000, 4096, PROT_NONE) = 0
+32    mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+23    <... clone resumed>, parent_tid=[33], tls=0xffffafbfe908, child_tidptr=0xf214494) = 33
+32    <... mmap resumed>)               = 0xffffbdb17000
+33    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffae600000
+23    mmap(NULL, 3145728, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0 <unfinished ...>
+33    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0 <unfinished ...>
+23    <... mmap resumed>)               = 0xffffae300000
+33    <... mmap resumed>)               = 0xffffae000000
+33    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffffbdb13000
+33    mprotect(0xffffbdb13000, 4096, PROT_NONE) = 0
+23    mmap(NULL, 3670016, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffadc80000
+23    readlinkat(AT_FDCWD</s/codex-in>, "/opt", 0xffffbd59ab28, 4086) = -1 EINVAL (Invalid argument)
+23    readlinkat(AT_FDCWD</s/codex-in>, "/opt/bin", 0xffffbd59ab28, 4090) = -1 EINVAL (Invalid argument)
+23    readlinkat(AT_FDCWD</s/codex-in>, "/opt/bin/codex", 0xffffbd59ab28, 4096) = -1 EINVAL (Invalid argument)
+23    newfstatat(AT_FDCWD</s/codex-in>, "/s/codex", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+23    readlinkat(AT_FDCWD</s/codex-in>, "/s", 0xffffbd566f28, 4090) = -1 EINVAL (Invalid argument)
+23    readlinkat(AT_FDCWD</s/codex-in>, "/s/codex", 0xffffbd566f28, 4096) = -1 EINVAL (Invalid argument)
+23    getcwd("/s/codex-in", 512)        = 12
+23    readlinkat(AT_FDCWD</s/codex-in>, "/proc/self/exe", "/opt/bin/codex", 256) = 14
+23    mmap(NULL, 16793600, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffacc7c000
+23    mprotect(0xffffacc7e000, 16785408, PROT_READ|PROT_WRITE) = 0
+23    clone(child_stack=0xffffadc7e810, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[34], tls=0xffffadc7e908, child_tidptr=0xf214494) = 34
+34    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffaca00000
+34    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffac800000
+34    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffffbdb0f000
+34    mprotect(0xffffbdb0f000, 4096, PROT_NONE) = 0
+34    openat(AT_FDCWD</s/codex-in>, "/etc/codex/requirements.toml", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+34    openat(AT_FDCWD</s/codex-in>, "/etc/codex/managed_config.toml", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+34    openat(AT_FDCWD</s/codex-in>, "/etc/codex/config.toml", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+34    openat(AT_FDCWD</s/codex-in>, "/s/codex/config.toml", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_CLOEXEC) = 10</s/codex/config.toml>
+34    fcntl(10</s/codex/config.toml>, F_SETFD, FD_CLOEXEC) = 0
+23    mmap(NULL, 16793600, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffab7fc000
+23    mprotect(0xffffab7fe000, 16785408, PROT_READ|PROT_WRITE) = 0
+23    clone(child_stack=0xffffac7fe810, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[35], tls=0xffffac7fe908, child_tidptr=0xf214494) = 35
+35    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffab400000
+34    fstat(10</s/codex/config.toml>,  <unfinished ...>
+35    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0 <unfinished ...>
+34    <... fstat resumed>{st_mode=S_IFREG|0644, st_size=57, ...}) = 0
+35    <... mmap resumed>)               = 0xffffab200000
+34    fstat(10</s/codex/config.toml>, {st_mode=S_IFREG|0644, st_size=57, ...}) = 0
+35    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffffbdb0b000
+35    mprotect(0xffffbdb0b000, 4096, PROT_NONE) = 0
+34    read(10</s/codex/config.toml>, "model = \"o3\"\n\n[mcp_servers.docs]"..., 57) = 57
+35    read(10</s/codex/config.toml>, "", 32) = 0
+23    close(10</s/codex/config.toml>)   = 0
+34    newfstatat(AT_FDCWD</s/codex-in>, "/s/codex-in/.git", 0xffffadc7df10, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+35    newfstatat(AT_FDCWD</s/codex-in>, "/s/.git", 0xffffac7fdf10, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+34    newfstatat(AT_FDCWD</s/codex-in>, "/.git", 0xffffadc7df10, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+23    readlinkat(AT_FDCWD</s/codex-in>, "/s", 0xffffbd55e858, 4087) = -1 EINVAL (Invalid argument)
+23    readlinkat(AT_FDCWD</s/codex-in>, "/s/codex-in", 0xffffbd55e858, 4096) = -1 EINVAL (Invalid argument)
+35    newfstatat(AT_FDCWD</s/codex-in>, "/s/codex-in", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+34    newfstatat(AT_FDCWD</s/codex-in>, "/s/codex-in/.git", 0xffffadc7df10, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+35    newfstatat(AT_FDCWD</s/codex-in>, "/s/.git", 0xffffac7fdf10, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+34    newfstatat(AT_FDCWD</s/codex-in>, "/.git", 0xffffadc7df10, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+35    newfstatat(AT_FDCWD</s/codex-in>, "/s/codex-in", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+34    newfstatat(AT_FDCWD</s/codex-in>, "/s/codex-in/.git", 0xffffadc7df10, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+23    mmap(NULL, 16793600, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffaa1fc000
+23    mprotect(0xffffaa1fe000, 16785408, PROT_READ|PROT_WRITE) = 0
+23    clone(child_stack=0xffffab1fe810, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[36], tls=0xffffab1fe908, child_tidptr=0xf214494) = 36
+36    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffa9e00000
+36    mmap(NULL, 2097152, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffa9c00000
+35    newfstatat(AT_FDCWD</s/codex-in>, "/.git",  <unfinished ...>
+34    newfstatat(AT_FDCWD</s/codex-in>, "/s/.git",  <unfinished ...>
+35    <... newfstatat resumed>0xffffac7fdf10, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+36    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0 <unfinished ...>
+34    <... newfstatat resumed>0xffffadc7df10, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+36    <... mmap resumed>)               = 0xffffbdb07000
+36    mprotect(0xffffbdb07000, 4096, PROT_NONE) = 0
+23    readlinkat(AT_FDCWD</s/codex-in>, "/s", 0xffffbd55e7f8, 4090) = -1 EINVAL (Invalid argument)
+23    readlinkat(AT_FDCWD</s/codex-in>, "/s/codex", 0xffffbd55e7f8, 4096) = -1 EINVAL (Invalid argument)
+34    newfstatat(AT_FDCWD</s/codex-in>, "/s/codex-in/.codex", 0xffffadc7df10, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+35    newfstatat(AT_FDCWD</s/codex-in>, "/s/codex-in", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+34    newfstatat(AT_FDCWD</s/codex-in>, "/s/codex-in/.git",  <unfinished ...>
+36    newfstatat(AT_FDCWD</s/codex-in>, "/s/.git",  <unfinished ...>
+34    <... newfstatat resumed>0xffffadc7df10, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+36    <... newfstatat resumed>0xffffab1fdf10, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+34    newfstatat(AT_FDCWD</s/codex-in>, "/.git", 0xffffadc7df10, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+36    openat(AT_FDCWD</s/codex-in>, "/etc/codex/agents", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+35    openat(AT_FDCWD</s/codex-in>, "/s/codex/agents", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+23    newfstatat(AT_FDCWD</s/codex-in>, "/s/codex", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+23    readlinkat(AT_FDCWD</s/codex-in>, "/s", 0xffffbd57bee8, 4090) = -1 EINVAL (Invalid argument)
+23    readlinkat(AT_FDCWD</s/codex-in>, "/s/codex", 0xffffbd57bee8, 4096) = -1 EINVAL (Invalid argument)
+23    readlinkat(AT_FDCWD</s/codex-in>, "/proc/self/exe", "/opt/bin/codex", 256) = 14
+34    openat(AT_FDCWD</s/codex-in>, "/etc/codex/requirements.toml", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+36    openat(AT_FDCWD</s/codex-in>, "/etc/codex/managed_config.toml", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+35    openat(AT_FDCWD</s/codex-in>, "/etc/codex/config.toml", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+34    openat(AT_FDCWD</s/codex-in>, "/s/codex/config.toml", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_CLOEXEC) = 10</s/codex/config.toml>
+34    fcntl(10</s/codex/config.toml>, F_SETFD, FD_CLOEXEC) = 0
+36    fstat(10</s/codex/config.toml>, {st_mode=S_IFREG|0644, st_size=57, ...}) = 0
+35    fstat(10</s/codex/config.toml>, {st_mode=S_IFREG|0644, st_size=57, ...}) = 0
+34    read(10</s/codex/config.toml>, "model = \"o3\"\n\n[mcp_servers.docs]"..., 57) = 57
+36    read(10</s/codex/config.toml>, "", 32) = 0
+23    close(10</s/codex/config.toml>)   = 0
+35    newfstatat(AT_FDCWD</s/codex-in>, "/s/codex/config.toml", {st_mode=S_IFREG|0644, st_size=57, ...}, AT_SYMLINK_NOFOLLOW) = 0
+35    openat(AT_FDCWD</s/codex-in>, "/s/codex/config.toml", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 10</s/codex/config.toml>
+35    fcntl(10</s/codex/config.toml>, F_SETFD, FD_CLOEXEC) = 0
+35    fstat(10</s/codex/config.toml>, {st_mode=S_IFREG|0644, st_size=57, ...}) = 0
+35    read(10</s/codex/config.toml>, "model = \"o3\"\n\n[mcp_servers.docs]"..., 57) = 57
+35    read(10</s/codex/config.toml>, "", 32) = 0
+35    close(10</s/codex/config.toml>)   = 0
+35    mmap(NULL, 2621440, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffffa9980000
+35    mkdirat(AT_FDCWD</s/codex-in>, "/s/codex", 0777) = -1 EEXIST (File exists)
+35    newfstatat(AT_FDCWD</s/codex-in>, "/s/codex", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+35    openat(AT_FDCWD</s/codex-in>, "/s/codex/.tmpQEQLUZ", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 10</s/codex/.tmpQEQLUZ>
+35    fcntl(10</s/codex/.tmpQEQLUZ>, F_SETFD, FD_CLOEXEC) = 0
+35    write(10</s/codex/.tmpQEQLUZ>, "model = \"o3\"\n\n[mcp_servers.docs]"..., 122) = 122
+35    renameat(AT_FDCWD</s/codex-in>, "/s/codex/.tmpQEQLUZ", AT_FDCWD</s/codex-in>, "/s/codex/config.toml") = 0
+35    close(10</s/codex/config.toml>)   = 0
+23    write(1</out/codex/work-1/stdout-record.txt>, "Added global MCP server 'notes'."..., 33) = 33
+23    newfstatat(AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0/codex-arg0aEciiz", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+23    openat(AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0/codex-arg0aEciiz", O_RDONLY|O_LARGEFILE|O_NOFOLLOW|O_CLOEXEC|O_DIRECTORY) = 10</s/codex/tmp/arg0/codex-arg0aEciiz>
+23    fstat(10</s/codex/tmp/arg0/codex-arg0aEciiz>, {st_mode=S_IFDIR|0755, st_size=4096, ...}) = 0
+23    fcntl(10</s/codex/tmp/arg0/codex-arg0aEciiz>, F_GETFL) = 0x2c000 (flags O_RDONLY|O_LARGEFILE|O_NOFOLLOW|O_DIRECTORY)
+23    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffbdb05000
+23    fcntl(10</s/codex/tmp/arg0/codex-arg0aEciiz>, F_SETFD, FD_CLOEXEC) = 0
+23    getdents64(10</s/codex/tmp/arg0/codex-arg0aEciiz>, 0xffffbdb05068 /* 7 entries */, 2048) = 224
+23    unlinkat(10</s/codex/tmp/arg0/codex-arg0aEciiz>, "apply_patch", 0) = 0
+23    unlinkat(10</s/codex/tmp/arg0/codex-arg0aEciiz>, ".lock", 0) = 0
+23    unlinkat(10</s/codex/tmp/arg0/codex-arg0aEciiz>, "codex-linux-sandbox", 0) = 0
+23    unlinkat(10</s/codex/tmp/arg0/codex-arg0aEciiz>, "codex-execve-wrapper", 0) = 0
+23    unlinkat(10</s/codex/tmp/arg0/codex-arg0aEciiz>, "applypatch", 0) = 0
+23    getdents64(10</s/codex/tmp/arg0/codex-arg0aEciiz>, 0xffffbdb05068 /* 0 entries */, 2048) = 0
+23    close(10</s/codex/tmp/arg0/codex-arg0aEciiz>) = 0
+23    unlinkat(AT_FDCWD</s/codex-in>, "/s/codex/tmp/arg0/codex-arg0aEciiz", AT_REMOVEDIR) = 0
+23    close(3</s/codex/tmp/arg0/codex-arg0aEciiz/.lock>(deleted)) = 0
+23    write(5<anon_inode:[eventfd]>, "\1\0\0\0\0\0\0\0", 8 <unfinished ...>
+24    <... epoll_pwait resumed>[{events=EPOLLIN, data=0}], 1024, -1, NULL, 8) = 1
+23    <... write resumed>)              = 8
+36    exit(0)                           = ?
+36    +++ exited with 0 +++
+34    exit(0)                           = ?
+34    +++ exited with 0 +++
+35    exit(0)                           = ?
+35    +++ exited with 0 +++
+26    exit(0)                           = ?
+26    +++ exited with 0 +++
+25    exit(0)                           = ?
+33    close(4<anon_inode:[eventpoll]> <unfinished ...>
+25    +++ exited with 0 +++
+33    <... close resumed>)              = 0
+33    close(9<socket:[15676]> <unfinished ...>
+24    exit(0 <unfinished ...>
+33    <... close resumed>)              = 0
+24    <... exit resumed>)               = ?
+33    close(6<anon_inode:[eventpoll]> <unfinished ...>
+24    +++ exited with 0 +++
+33    <... close resumed>)              = 0
+33    close(5<anon_inode:[eventfd]> <unfinished ...>
+27    exit(0 <unfinished ...>
+33    <... close resumed>)              = 0
+27    <... exit resumed>)               = ?
+27    +++ exited with 0 +++
+29    exit(0)                           = ?
+29    +++ exited with 0 +++
+30    exit(0)                           = ?
+30    +++ exited with 0 +++
+28    exit(0)                           = ?
+28    +++ exited with 0 +++
+31    exit(0)                           = ?
+31    +++ exited with 0 +++
+32    exit(0)                           = ?
+32    +++ exited with 0 +++
+33    exit(0)                           = ?
+33    +++ exited with 0 +++
+23    exit(0)                           = ?
+23    +++ exited with 0 +++
+22    exit_group(0)                     = ?
+22    +++ exited with 0 +++

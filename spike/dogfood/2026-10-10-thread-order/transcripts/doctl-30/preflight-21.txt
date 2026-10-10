@@ -1,0 +1,13 @@
+PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+
+cwd          /s/doctl
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 2 operations (8944 syscall lines examined, 50 in scope of the judged state), witness strace of THIS run — the operations were counted from outside the target by the supervising engine through a seccomp user-notification filter, no shim loaded; in this mode the oracle does not count an entry strace ended `= ? ERESTART...` (a signal took the call back before it completed)
+processes    single process in the recording; the supervising engine recorded 10 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+next         sideeye explore --config '/ap/defines/doctl/sideeye.toml' --observe supervised --oracle /usr/bin/strace

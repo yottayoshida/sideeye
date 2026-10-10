@@ -1166,11 +1166,12 @@ pub fn recordingEndedStep(observe: contract.ObserveMode, exited: bool) contract.
     return if (exited) .run_then_expect_status else .run_by_hand_signalled;
 }
 
-/// The step for `multiple_threads_detected` (#710, ADR 0097): the README's own limit, except
-/// under `--observe supervised`, which records no join — the sentence there would send the
-/// reader to look for a join that mode cannot see, so it keeps the wall.
+/// The step for `multiple_threads_detected` (#710, ADR 0097; #686, ADR 0113): the README's own
+/// limit and a tool's switch for one thread, except under `--observe supervised`, which records
+/// no join — the shim's sentence there would send the reader to look for a join that mode cannot
+/// see, so that mode has its own sentence naming the same switch.
 pub fn threadsStep(observe: contract.ObserveMode) contract.NextStep {
-    return if (observe == .supervised) .class_wall else .threads_limit;
+    return if (observe == .supervised) .threads_supervised else .threads_limit;
 }
 
 test "the recording run's end and the threads refusal choose their steps by mode (#710)" {
@@ -1181,7 +1182,7 @@ test "the recording run's end and the threads refusal choose their steps by mode
     try std.testing.expectEqual(contract.NextStep.syscalls_may_have_killed, recordingEndedStep(.syscalls, false));
     try std.testing.expectEqual(contract.NextStep.threads_limit, threadsStep(.wrappers));
     try std.testing.expectEqual(contract.NextStep.threads_limit, threadsStep(.syscalls));
-    try std.testing.expectEqual(contract.NextStep.class_wall, threadsStep(.supervised));
+    try std.testing.expectEqual(contract.NextStep.threads_supervised, threadsStep(.supervised));
 }
 
 /// The observation-to-step table above, taking its observation as an argument rather than

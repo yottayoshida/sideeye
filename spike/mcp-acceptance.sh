@@ -1286,6 +1286,8 @@ if sc.get("schema") != "sideeye/preflight" or sc.get("outcome") != "recording_ac
 txt = a["content"][0]["text"]
 if not txt.startswith("PREFLIGHT recording_accepted, "): sys.exit("accepted headline: %r" % txt[:80])
 if "\nnext: sideeye_explore_config with the same config_path" not in txt: sys.exit("accepted: no next line naming the tool")
+# #765: one observed run does not check the range the exploration will; the next line says so.
+if "SIDEEYE_MCP_STATE_ROOT" not in txt.split("\nnext: sideeye_explore_config", 1)[1].split("\n", 1)[0]: sys.exit("accepted: the next line does not say the exploration confines the state")
 if r.get("isError") is not True: sys.exit("refused: isError %r" % r.get("isError"))
 rs = r["structuredContent"]
 if rs.get("schema") != "sideeye/report" or rs.get("unknown_reason") != "no_shim_marker": sys.exit("refused: %r" % {k: rs.get(k) for k in ("schema", "verdict", "unknown_reason")})
@@ -1378,6 +1380,61 @@ closings = [l for l in txt.split("\n") if l.startswith("--- end target-influence
 notes = [l for l in txt.split("\n") if l.startswith("note: ")]
 if len(closings) != 1 or len(notes) != 1: sys.exit("%d closing lines, %d note lines" % (len(closings), len(notes)))
 PY
+
+echo "=========== mcp 29: sideeye_explore_config is confined to SIDEEYE_MCP_STATE_ROOT (#765) ==========="
+# An exploration empties and rebuilds the config's state before every world; the config path
+# being inside the root says nothing about where that state is. A config inside the root whose
+# state is outside the range: refused before setup, naming the variable that widens it. The
+# sentinel alone would survive a run that went ahead (restore writes back the snapshot holding
+# it), so the toy's key, which its setup writes, is what says setup never ran there. Then the
+# same config with the range widened to hold that state: past the confinement, and setup ran.
+rm -rf /tmp/mcp-ex-outside; mkdir -p /tmp/mcp-ex-outside/state
+echo keep > /tmp/mcp-ex-outside/state/sentinel
+cat > "$WSP/ex-outside.toml" <<TOML
+[world]
+state = "/tmp/mcp-ex-outside/state"
+[define]
+setup     = "$OUT/toy-bug init"
+operation = "$OUT/toy-bug rotate"
+TOML
+pf_session "{\"jsonrpc\":\"2.0\",\"id\":8,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WSP/ex-outside.toml\"}}}"
+python3 - <<'PY2' && pass "an explored config whose state is outside the range is refused before setup, naming SIDEEYE_MCP_STATE_ROOT" || fail "sideeye_explore_config rebuilt a state outside SIDEEYE_MCP_STATE_ROOT"
+import json, os, sys
+res = json.loads(open("/tmp/mcp.out").read())["result"]
+body = json.dumps(res.get("structuredContent", {}))
+if res.get("isError") is not True or "outside the allowed range" not in body or "SIDEEYE_MCP_STATE_ROOT" not in body:
+    sys.exit("outside: %r" % res["content"][0]["text"][:300])
+if "move the state inside the range" not in body: sys.exit("the refusal does not say to move the state inside the range first: %r" % body[:400])
+if not os.path.exists("/tmp/mcp-ex-outside/state/sentinel"): sys.exit("the outside state was touched")
+if os.path.exists("/tmp/mcp-ex-outside/state/key.json"): sys.exit("setup ran in the outside state before the refusal")
+PY2
+REQ="{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WSP/ex-outside.toml\"}}}" \
+  SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$WSP SIDEEYE_MCP_WORK=$WSP/work SIDEEYE_MCP_STATE_ROOT=/tmp/mcp-ex-outside \
+  sh -c "printf '%s' \"\$REQ\" | \"$SIDEEYE\" mcp >/tmp/mcp.out 2>/tmp/mcp.err"
+python3 - <<'PY2' && pass "the same config with the range widened to hold its state gets past the confinement, and its setup runs (positive control)" || fail "a state inside a widened SIDEEYE_MCP_STATE_ROOT was still refused"
+import json, os, sys
+res = json.loads(open("/tmp/mcp.out").read())["result"]
+if "outside the allowed range" in json.dumps(res.get("structuredContent", {})): sys.exit("still refused: %r" % res["content"][0]["text"][:300])
+if not os.path.exists("/tmp/mcp-ex-outside/state/key.json"): sys.exit("setup did not run: %r" % res["content"][0]["text"][:300])
+PY2
+rm -rf /tmp/mcp-ex-outside
+
+echo "=========== mcp 30: a twice call that got past the range says so on its next line (#765) ==========="
+# One observed run does not check the range the exploration confines the state to, and its next
+# line says the exploration will. A twice call takes that range and was let through — its next
+# line must not say it did not check. pf.toml's state is inside the root, the range when
+# SIDEEYE_MCP_STATE_ROOT is unset, and its toy writes the same bytes twice.
+rm -rf "$WSP/state" "$WSP/work"; mkdir -p "$WSP/state" "$WSP/work"
+pf_session "{\"jsonrpc\":\"2.0\",\"id\":10,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_preflight\",\"arguments\":{\"config_path\":\"$WSP/pf.toml\",\"twice\":true}}}"
+python3 - <<'PY2' && pass "a twice preflight inside the range: recording_accepted, and the next line says the range was checked" || fail "a twice preflight's next line is wrong about the range"
+import json, sys
+res = json.loads(open("/tmp/mcp.out").read())["result"]
+sc, txt = res.get("structuredContent", {}), res["content"][0]["text"]
+if res.get("isError") is not False or sc.get("outcome") != "recording_accepted" or "differences_total" not in sc:
+    sys.exit("not an accepted twice: %r" % {k: sc.get(k) for k in ("outcome", "differences_total", "unknown_reason")})
+nxt = txt.split("\nnext: sideeye_explore_config", 1)[1].split("\n", 1)[0] if "\nnext: sideeye_explore_config" in txt else ""
+if "did not check" in nxt or "found its state strictly inside SIDEEYE_MCP_STATE_ROOT" not in nxt: sys.exit("next line: %r" % nxt)
+PY2
 
 echo ""
 echo ""

@@ -1,0 +1,12 @@
+attempt	exit	verdict
+1	0	-
+2	0	-
+3	0	-
+4	2	UNKNOWN  multiple_threads_detected
+5	0	-
+6	0	-
+7	2	UNKNOWN  multiple_threads_detected
+8	2	UNKNOWN  multiple_threads_detected
+9	0	-
+10	2	UNKNOWN  multiple_threads_detected
+11	2	UNKNOWN  multiple_threads_detected

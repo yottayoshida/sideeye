@@ -1,0 +1,7 @@
+[world]
+state = "/s/stylelint/proj"
+
+[define]
+operation = "stylelint --fix a.css"
+cwd       = "/s/stylelint/proj"
+apparatus = ["env:UV_THREADPOOL_SIZE=1"]

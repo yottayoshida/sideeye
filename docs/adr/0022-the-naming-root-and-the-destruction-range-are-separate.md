@@ -87,7 +87,9 @@ it concludes; the honest claim is the one above.
   A config is what the operator vets (`#96`); in the domain where this
   control is effective at all (agent cannot write the root), the config
   was placed by the operator, and applying the range to explore refuses
-  every documented config for no gain in that domain.
+  every documented config for no gain in that domain. **Reversed by
+  owner ruling of 2026-10-09, implemented 2026-10-10 (#765, ADR 0106)**:
+  an agent that writes a config and explores it is not that operator.
 - **Parse the case in mcp.zig and check `define.state` there** —
   rejected: a second reader of the case schema drifts green, and the
   server's bytes and the engine's bytes are different reads (a
@@ -172,3 +174,12 @@ The relation between the two vets is now pinned rather than left to the shared h
 shape: `assertSafeNamingRoot` refuses a subset of what `assertSafeRoot` refuses, differing
 only by the depth rule, held over a corpus in `src/engine.zig` (since #491: now `src/engine/state_fs.zig`). ADR 0046 records why the
 lists stay in `engine.zig` rather than moving to `contract.zig` or to a file of their own. (Since #491 the lists are in `src/engine/state_fs.zig`.)
+
+## Amendment, 2026-10-10 (#765, ADR 0106): explore is confined too
+
+`sideeye_explore_config` now passes `--state-under SIDEEYE_MCP_STATE_ROOT`, as replay and, since
+#717, `sideeye_preflight {twice}` do, and the engine's `explore` takes the flag. The alternative
+above that this ADR rejected by owner ruling was reversed by the owner on 2026-10-09: the domain
+it was decided for — an operator who placed every config the server runs — is not the one
+#716 and #717 build toward, where an agent writes the config. The range itself, the strict
+inside rule and the check's place in the engine are unchanged.

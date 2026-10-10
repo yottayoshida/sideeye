@@ -1602,18 +1602,28 @@ pub const NextStep = enum {
     /// `kill_did_not_land` where the world reached the number through other operations than the
     /// recording's: observed, so the step can say the operation does not repeat itself.
     not_repeating,
-    /// `multiple_threads_detected` outside `--observe supervised`: names the README's own limit
-    /// rather than the list it is in. No flag is offered — most of the targets the records met
-    /// (node, Go, Python) have none that runs them on one thread (R1 of the plan, M5). Under
-    /// supervised the step stays `class_wall`: that mode records no join, and this sentence
-    /// would send a reader to look for one it cannot see (R2 of the plan, M-c).
+    /// `multiple_threads_detected` raised from the run's own record of its threads, outside
+    /// `--observe supervised` (the macOS fs_usage refusal for a writer the shim never recorded keeps
+    /// `unwrap_or_class_wall`): names the README's own limit rather than the list it is in, and the
+    /// way past the records found (#686, ADR 0113): a
+    /// tool's own switch for running its file calls on one thread, declared in `apparatus`.
+    /// `UV_THREADPOOL_SIZE=1` moved ten of the thirteen Node targets that met this wall on v1.10.0,
+    /// `GOMAXPROCS=1` three Go ones; ADR 0097 had offered no flag, on the belief that none existed.
+    /// The opening words are kept: the dogfood entry gate sorts refusals by them.
     threads_limit,
+    /// `multiple_threads_detected` under `--observe supervised` (#686, ADR 0113): the same way
+    /// past, said without the shim — that mode loads none, records no join and not which thread
+    /// a creation made, and its refusal names no shim in text or JSON (#217). Was `class_wall`.
+    threads_supervised,
     /// `no_shim_marker` on a Mach-O whose code directory names a platform — the marker Apple's
     /// own binaries carry, from which macOS strips an inserted library. Measured 2026-10-08:
     /// `/bin/cp` refused, an ad-hoc re-signed copy of it killed at start, Homebrew's `xz` accepted.
     /// Not for library validation or the hardened runtime on a third-party image, which were not
     /// measured and keep `class_wall`.
     non_system_build,
+
+    /// The way past both threads steps name (#686, ADR 0113), written once so the two cannot drift.
+    const one_thread_switch = "A tool's own switch for running its file calls on one thread can move it past this — UV_THREADPOOL_SIZE=1 for Node, GOMAXPROCS=1 for Go: set it in the environment Sideeye runs in and declare it in the define's apparatus (env:UV_THREADPOOL_SIZE=1, for example); docs/apparatus.md lists the switches measured and the targets each did not move.";
 
     pub fn render(self: NextStep) []const u8 {
         return switch (self) {
@@ -1649,7 +1659,8 @@ pub const NextStep = enum {
             .scratch_or_twice => "The path the detail names did not come back with the bytes the recording left, in a world nothing crashed. If those bytes are not what the verdict should judge (a cache, a log, a timestamp), declare the path scratch in the define (--scratch, or scratch in a sideeye.toml); sideeye preflight --twice names the paths two clean runs leave differently, before an exploration.",
             .kill_not_landed => "The world was armed to die in front of the operation the recording numbered, and no kill landed there, so the crash points cannot be trusted to name the same operations in every world. The restore rebuilds the names, kinds and bytes under --state — not their modes, owners or timestamps, and nothing outside it (a cache kept beside the configuration, a lock) — so a tool that reads those can take another path; sideeye preflight --twice compares what two clean runs leave. If neither explains it, file it with the report attached.",
             .not_repeating => "The world reached the operation number it was given through other operations than the recording's, so the operation did not repeat itself from the state the restore rebuilt — the names, kinds and bytes under --state, not their modes, owners or timestamps, and nothing outside --state (a cache, a lock, the clock). sideeye preflight --twice compares what two clean runs leave, not the operations they perform.",
-            .threads_limit => "Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit the README states under 'What the target has to be': threads are judged where a creation or a join the shim saw orders their writes.",
+            .threads_limit => "Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit the README states under 'What the target has to be': threads are judged where a creation or a join the shim saw orders their writes. " ++ one_thread_switch,
+            .threads_supervised => "Two threads of one process wrote the judged directory, and under --observe supervised no join is recorded, nor which thread a creation made, so nothing orders their writes. " ++ one_thread_switch,
             .non_system_build => "The operation's image names a platform in its code directory, the marker Apple's own binaries carry, and macOS strips an inserted library from those; an ad-hoc re-signed copy did not start when that was measured. Make a build of the tool that is not part of macOS (Homebrew's, for example) the operation's first word.",
         };
     }
