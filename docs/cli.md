@@ -43,7 +43,7 @@ $ shasum -a 256 sideeye-v1.10.0-aarch64-macos.tar.gz
 
 The digest reads `sha256:<hex>`; compare the hex. What this establishes is that the bytes are the ones GitHub holds — not who produced them: the digest and the release are the same account's word, and a checksum file published in the same release would be too.
 
-Or build from source with Zig 0.16.0: `zig build` — binaries land in `zig-out/bin` and `zig-out/lib`, which is the same shape.
+Or build from source with Zig 0.16.0: `zig build` — binaries land in `zig-out/bin` and `zig-out/lib`, which is the same shape. Whether a newer Zig builds it is checked weekly by [`zig-ahead.yml`](../.github/workflows/zig-ahead.yml), and the breakages already known are listed in [`spike/zig-ahead-known.tsv`](../spike/zig-ahead-known.tsv).
 
 ## Usage
 

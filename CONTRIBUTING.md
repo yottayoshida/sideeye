@@ -30,6 +30,7 @@ Welcome, on three conditions: say that a language model wrote it (both forms ask
 ## Pull requests
 
 - On every pull request CI builds and tests on Linux and macOS, and runs the acceptance suite on Linux. Locally, `zig build test` with the Zig release `build.zig.zon` names as `minimum_zig_version`; a newer release is not promised to build it.
+- Run `zig fmt $(git ls-files '*.zig')` before you push: CI fails a pull request whose tracked Zig files `zig fmt` would change.
 - Anything a user would notice gets an entry in `CHANGELOG.md` under `[Unreleased]`.
 - A decision that outlives the pull request is a new file in `docs/adr/`, written `Accepted`. [CLAUDE.md](CLAUDE.md) holds the rest of the conventions CI checks, including how ADRs are numbered.
 - Everything committed is in English.

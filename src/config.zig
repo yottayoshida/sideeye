@@ -778,8 +778,7 @@ pub fn shellWarning(arena: std.mem.Allocator, from: From, key: []const u8, raw: 
     } else if (sw.unterminated) switch (from) {
         .toml => "one of its quotes is never closed, so what it meant is not one argv; write the argv form, or put it in a script",
         .flags => "one of its quotes is never closed, so what it meant is not one argv; write the argv form in a sideeye.toml, or put it in a script",
-    } else
-        "the argv form cannot spell one of its words (an empty word, a `\"` or `\\`, or a control byte), so put it in a script";
+    } else "the argv form cannot spell one of its words (an empty word, a `\"` or `\\`, or a control byte), so put it in a script";
     return try std.fmt.allocPrint(arena, "{s}: `{s}` is split on spaces and its quotes reach the program as written, grouping nothing; {s}", .{ key, shown, remedy });
 }
 

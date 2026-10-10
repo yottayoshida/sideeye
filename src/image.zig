@@ -601,7 +601,6 @@ fn shebangOf(arena: std.mem.Allocator, path: []const u8) ?Shebang {
     return .{ .interpreter = word, .options = std.mem.trim(u8, words.rest(), " \t\r"), .path = path };
 }
 
-
 // ---------------------------------------------------------------------------
 // Parsing. Every read goes through `at`, which is the only place a file offset turns
 // into bytes, so "did this offset run past the end" is answered once.
@@ -1188,7 +1187,6 @@ test "a field that runs past the end of the file is out of range, not a default"
     try testing.expect(whole.macho.signing.?.libraryValidation());
     try testing.expect(whole.macho.signing.?.platformNamed());
 }
-
 
 test "a universal binary is read through the slice matching this CPU" {
     const lv = try buildMachO(testing.allocator, .{ .flags = cs_require_lv });
@@ -1783,11 +1781,11 @@ pub fn fakeFrameworkForTest(a: std.mem.Allocator, tag: []const u8) !FakeFramewor
     var dbuf: [256]u8 = undefined;
     const root = try a.dupeZ(u8, fixtureDir(&dbuf, tag));
     const rel = [_][]const u8{
-        "Versions",                    "Versions/3.99",
-        "Versions/3.99/bin",           "Versions/3.99/Resources",
-        "Versions/3.99/Resources/Python.app", "Versions/3.99/Resources/Python.app/Contents",
+        "Versions",                                          "Versions/3.99",
+        "Versions/3.99/bin",                                 "Versions/3.99/Resources",
+        "Versions/3.99/Resources/Python.app",                "Versions/3.99/Resources/Python.app/Contents",
         "Versions/3.99/Resources/Python.app/Contents/MacOS", "venv",
-        "venv/bin",                    "elsewhere",
+        "venv/bin",                                          "elsewhere",
     };
     var ff: FakeFramework = undefined;
     ff.root = root;
@@ -2022,4 +2020,21 @@ test "a free-threaded PythonT.framework names its PythonT interpreter (#703)" {
     const fw = frameworkPython(a, observePath(a, launcher)) orelse return error.TestUnexpectedResult;
     try testing.expectEqualStrings(try realpathOf(a, interp), try realpathOf(a, fw.interpreter));
     removeForTest(&.{ launcher, interp, lib }, &dirs, root);
+}
+
+/// Test support for src/fuzz.zig: nothing a shipped build compiles references it.
+pub fn fuzzSeeds(a: std.mem.Allocator) ![]const []const u8 {
+    var seeds: std.ArrayList([]const u8) = .empty;
+    try seeds.append(a, try buildElf(a, .{}));
+    try seeds.append(a, try buildElf(a, .{ .class64 = false, .endian = .big }));
+    try seeds.append(a, try buildElf(a, .{ .interp = false }));
+    const lv = try buildMachO(a, .{ .flags = cs_require_lv });
+    const plain = try buildMachO(a, .{ .flags = 0, .platform = 16, .second_cd = .{ .flags = cs_require_lv, .platform = 0 } });
+    try seeds.append(a, lv);
+    try seeds.append(a, plain);
+    const other: i32 = if (hostCpuType() == cpu_type_arm64) cpu_type_x86_64 else cpu_type_arm64;
+    try seeds.append(a, try buildFat(a, &.{ plain, lv }, &.{ other, hostCpuType() }, false));
+    try seeds.append(a, try buildFat(a, &.{ plain, lv }, &.{ other, hostCpuType() }, true));
+    try seeds.append(a, "#!/bin/sh\necho hi\n");
+    return seeds.items;
 }

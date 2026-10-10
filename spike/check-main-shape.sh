@@ -39,10 +39,9 @@
 # struct, a struct inside a function) — those belong to the declaration that holds them.
 # The one-level rule is a parsing choice, not a claim that deeper nesting cannot hold state.
 # "Directly inside a container" is read as exactly four spaces of indentation, which is
-# what `zig fmt` produces and what every file here has; a `fn` or `var` in a hand-formatted
-# one-line container, or tab-indented, would not be counted, and nothing in CI runs
-# `zig fmt --check` today — the selftest's at-ceiling file holds both forms so that "not
-# counted" is pinned rather than assumed.
+# what `zig fmt` produces; a `fn` or `var` in a hand-formatted one-line container, or
+# tab-indented, would not be counted. The fmt job rejects both shapes but is not a required
+# check, so the selftest's at-ceiling file keeps holding both forms.
 #
 # What this check does not decide is WHERE a declaration belongs: a function moved out of
 # main.zig into the wrong module satisfies it. The module maps say where, in prose, and a

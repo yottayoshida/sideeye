@@ -101,7 +101,9 @@ Accepted costs:
   0.16.0 means the breakage arrives all at once at the upgrade rather than continuously.
 - No JSON Schema generation and no snapshot-testing library; both are hand-written when
   needed. Property testing has an in-tree fuzzer, unused in v0.1 — the determinism claim
-  is a byte comparison of two traces, which needs no generator.
+  is a byte comparison of two traces, which needs no generator. (Since #695, the parsers of
+  untrusted bytes have fuzz entry points in that fuzzer's form; the fuzzer itself does not
+  build on the pinned 0.16.0, so a mutation driver of Sideeye's own runs them — ADR 0112.)
 - Code generation for Zig is weaker than for Rust because training data predates these
   APIs. Mitigated by a project skill covering the 0.16/0.17 changes; that skill is
   itself unverified, so the first discrepancy found in practice is recorded in

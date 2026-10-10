@@ -1564,6 +1564,22 @@ jobs:
       - name: main.zig declares no more than the last seam left it
         run: sh spike/check-main-shape.sh
 
+  # Not folded into another job: a failure here has to name the instrument.
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+        with:
+          version: 0.16.0
+
+      - name: The check proves it can go red
+        run: sh spike/check-zig-fmt.sh --selftest
+
+      - name: Every tracked Zig file is what zig fmt leaves it
+        run: sh spike/check-zig-fmt.sh
+
   adr-numbering:
     runs-on: ubuntu-latest
     steps:
@@ -1629,6 +1645,18 @@ jobs:
 
       - name: Every action a workflow runs is pinned to a commit
         run: sh spike/check-action-pins.sh
+
+  # Here, not only in the weekly run: a broken judge or list would otherwise surface a week late.
+  zig-ahead-judge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: The judge proves it can go red, and stays green where it must
+        run: sh spike/zig-ahead.sh --selftest
+
+      - name: Every row of the known-breakage list parses
+        run: sh spike/zig-ahead.sh lint spike/zig-ahead-known.tsv
 
   # Criterion 3's status lives in three documents (#356): PRD.md carries the one current
   # status, docs/kill-criteria-review.md the dated state markers it cites, DESIGN.md §18

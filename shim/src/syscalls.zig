@@ -594,18 +594,22 @@ pub fn install() Install {
 
     if (linux.prctl(@intFromEnum(linux.PR.SET_NO_NEW_PRIVS), 1, 0, 0, 0) != 0) return .failed;
 
-    // No `SECCOMP_FILTER_FLAG_TSYNC`, and it is not a gap: this runs from the library
-    // constructor, before the target has created any thread, and a filter is inherited by
-    // every thread `clone` makes afterwards. Named here so a later reader does not read
-    // its absence as an oversight (review, P2).
+    // `SECCOMP_FILTER_FLAG_TSYNC` since #753. This runs from the library constructor, and a
+    // filter is inherited by every thread `clone` makes afterwards — but a thread can exist
+    // before it: another library's constructor, run first, starts a pool, and since #753 its
+    // `pthread_create` succeeds. Without the flag such a thread had no filter, while
+    // `syscalls.armed` (process-wide) kept the wrappers silent for it, so its writes reached the
+    // state through neither door. With it the kernel puts every thread under this filter, and
+    // their no_new_privs with it, or answers with the id of one it cannot — which is a failure
+    // here, not a success: only 0 means every thread took the filter.
     const prog: SockFprog = .{ .len = @intCast(program.len), .filter = &program };
     const rc = linux.syscall3(
         .seccomp,
         linux.SECCOMP.SET_MODE_FILTER,
-        0,
+        linux.SECCOMP.FILTER_FLAG.TSYNC,
         @intFromPtr(&prog),
     );
-    if (linux.errno(rc) != .SUCCESS) return .failed;
+    if (rc != 0) return .failed;
 
     armed = true;
     return .armed;

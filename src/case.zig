@@ -7,14 +7,12 @@
 //! `config.Command.jsonParse` — and `ReplayCase` is what `replay` parses it back into,
 //! strictly: an unknown field is a case from a future schema, not something to skip. The
 //! `case_version` rules (ADR 0009, ADR 0019 and the versions since) are this file's to keep;
-//! `main.zig` decides when a case is written and what a replayed one may declare. Nothing
+//! `main.zig` decides when a case is written and refuses with what `read` returns. Nothing
 //! here prints a report line or exits.
 //!
 //! Third seam of #572 (ADR 0062), second half. Bodies moved from `main.zig` byte for byte on
 //! 2026-09-13 with `pub` where `main.zig` reads them; `writeCase` spells `cli.Args` and
-//! `cli.version` where `main.zig` had them bare — the qualifier class seam 3a declared. No
-//! unit test holds these bodies directly (the acceptance suite pins the case format), so this
-//! file is not a test root.
+//! `cli.version` where `main.zig` had them bare — the qualifier class seam 3a declared.
 const std = @import("std");
 const contract = @import("contract");
 const config = @import("config.zig");
@@ -262,4 +260,151 @@ pub fn writeCase(
         return arena.dupe(u8, std.mem.span(pz.ptr)) catch null;
     }
     return null;
+}
+
+pub const Read = union(enum) { ok: ReplayCase, invalid: []const u8 };
+
+/// Returns the refusal, never exits: the fuzz entry point calls it in-process.
+pub fn read(arena: std.mem.Allocator, text: []const u8) Read {
+    const parsed = std.json.parseFromSlice(ReplayCase, arena, text, .{}) catch
+        return .{ .invalid = "the case file could not be parsed as a sideeye case" };
+    const c = parsed.value;
+    if (!std.mem.eql(u8, c.schema, "sideeye/case"))
+        return .{ .invalid = "the file does not declare itself a sideeye case" };
+    if (c.case_version < 1 or c.case_version > 6)
+        return .{ .invalid = "this binary understands case schema versions 1, 2, 3, 4, 5 and 6 only" };
+    // The same travel-together law, extended to the command shape (ADR 0019): the
+    // argv form arrived with version 3, so an older file carrying it is not an
+    // older file — it is malformed, and reading it under a guessed contract would
+    // replay a define no version-2-era binary ever produced.
+    const carries_argv = (c.define.operation == .argv) or
+        (c.define.setup != null and c.define.setup.? == .argv) or
+        (c.define.check != null and c.define.check.? == .argv);
+    if (c.case_version < 3 and carries_argv)
+        return .{ .invalid = "a case_version 1 or 2 file cannot carry an argv-form command; the array form arrived with version 3" };
+    // The version and the declaration travel together (ADR 0014): a v1 file
+    // carrying a declaration is not a v1 file, and a v2 file without one has
+    // lost the very fact the version exists to freeze. Both are refused as
+    // malformed rather than read under a guessed contract (R1 finding). One
+    // deliberate softness: a JSON `null` is indistinguishable from an absent
+    // field after parsing, so a v1 file spelling `"expected_status": null`
+    // passes — null is not a declaration, and the meaning ("0 was the
+    // contract") is the same either way. A v2 `null` refuses like an absence.
+    if (c.case_version == 1 and c.define.expected_status != null)
+        return .{ .invalid = "a case_version 1 file cannot carry an expected_status declaration; it arrived with version 2" };
+    if (c.case_version >= 2 and c.define.expected_status == null)
+        return .{ .invalid = "a case_version 2, 3, 4, 5 or 6 file must carry define.expected_status; the case freezes the declaration" };
+    // The same law again, for the directory the define declared it runs in. A cwd is
+    // part of what the counterexample was found against — replaying the same commands
+    // somewhere else is replaying a different define — so the version moves with it.
+    // Both directions, for the reason the two above give: a v3 file carrying a cwd is
+    // malformed rather than old, and a v4 file without one has lost the fact the
+    // version exists to freeze.
+    if (c.case_version < 4 and c.define.cwd != null)
+        return .{ .invalid = "a case_version 1, 2 or 3 file cannot carry a cwd declaration; it arrived with version 4" };
+    if (c.case_version == 4 and c.define.cwd == null)
+        return .{ .invalid = "a case_version 4 file must carry define.cwd; the version exists to freeze it" };
+    // Version 5 (ADR 0043) carries the scratch declaration, which decides verdicts, and
+    // it holds two independent optional fields where version 4 held one — so the gate
+    // above cannot be copied: a v5 file without a cwd is not malformed. From version 5
+    // a case spells both keys the ladder's top rungs introduced, `cwd` as null when
+    // none was declared and `scratch` as a non-empty array, and the reader asks for
+    // the KEY, which the typed parse above cannot see (an absent optional and a null
+    // land in the same place), through a second, untyped parse of the same bytes. A
+    // hand-edited v5 file that lost `cwd` refuses rather than replaying a define that
+    // ran somewhere else. The entries themselves are validated where they are
+    // normalised, in the apply block below, with the same refusals the flag gives.
+    if (c.case_version < 5 and c.define.scratch != null)
+        return .{ .invalid = "a case_version 1, 2, 3 or 4 file cannot carry a scratch declaration; it arrived with version 5" };
+    // Version 6 (#691, ADR 0100) carries the observation mode, and only a mode other than the
+    // default. It is a third independent optional fact, so it keeps version 5's law — every
+    // key the ladder's top rungs introduced is spelled — with one change: `scratch` may be
+    // the empty array there, because version 6 exists for the mode, not for scratch. Both
+    // directions again: an older file carrying `observe` is malformed, and a version-6 file
+    // without a mode it could not have been written for — absent, or the default — has
+    // lost the fact the version exists to freeze.
+    if (c.case_version < 6 and c.observe != null)
+        return .{ .invalid = "a case_version 1, 2, 3, 4 or 5 file cannot carry an observation mode; it arrived with version 6" };
+    if (c.case_version == 6) {
+        const m = c.observe orelse return .{ .invalid = "a case_version 6 file must carry observe, `syscalls` or `supervised`; the version exists to freeze it" };
+        const obs = contract.ObserveMode.parse(m) orelse return .{ .invalid = "a case_version 6 file's observe names no mode this binary knows; it must be `syscalls` or `supervised`" };
+        if (obs == .wrappers) return .{ .invalid = "a case_version 6 file's observe must be `syscalls` or `supervised`: a case counted under the default is written at the version its define asks for" };
+    }
+    if (c.case_version == 5) {
+        const decl = c.define.scratch orelse return .{ .invalid = "a case_version 5 file must carry define.scratch as a non-empty array; the version exists to freeze it" };
+        if (decl.len == 0) return .{ .invalid = "a case_version 5 file must carry define.scratch as a non-empty array; the version exists to freeze it" };
+    }
+    if (c.case_version >= 5) {
+        const raw = std.json.parseFromSlice(std.json.Value, arena, text, .{}) catch
+            return .{ .invalid = "the case file could not be parsed as a sideeye case" };
+        const def: std.json.Value = switch (raw.value) {
+            .object => |o| o.get("define") orelse return .{ .invalid = "the case file has no define object" },
+            else => return .{ .invalid = "the case file is not a JSON object" },
+        };
+        const has_cwd = switch (def) {
+            .object => |o| o.contains("cwd"),
+            else => false,
+        };
+        if (!has_cwd)
+            return .{ .invalid = "a case_version 5 or 6 file must spell define.cwd, as null when none was declared: from version 5 both cwd and scratch are explicit" };
+        // The typed parse reads an absent `scratch` and a JSON `null` alike, so the key and
+        // its shape are asked of the untyped value. Version 5 already refused both through
+        // the non-empty gate above; version 6, where empty is allowed, needs it here.
+        const scratch_is_array = switch (def) {
+            .object => |o| if (o.get("scratch")) |v| v == .array else false,
+            else => false,
+        };
+        if (!scratch_is_array)
+            return .{ .invalid = "a case_version 6 file must spell define.scratch as an array, empty when none was declared: from version 5 both cwd and scratch are explicit" };
+    }
+    return .{ .ok = c };
+}
+
+const test_case_v5 =
+    \\{"schema":"sideeye/case","case_version":5,"sideeye_version":"1.10.0","contract_version":19,
+    \\"define":{"state":"/s/state","operation":["tool","build"],"check":"/c/check.sh","cwd":null,"scratch":["m.yaml"],"expected_status":0},
+    \\"k":7,"ops_total":7,"prefix_hash":"718642bf3a3cb330","after_class":"open","after_path":"/s/state/m.yaml",
+    \\"before_class":"write","before_path":"/s/state/m.yaml","violation":"checker"}
+;
+
+fn testCaseWith(a: std.mem.Allocator, from: []const u8, to: []const u8) ![]const u8 {
+    std.debug.assert(std.mem.indexOf(u8, test_case_v5, from) != null);
+    return std.mem.replaceOwned(u8, a, test_case_v5, from, to);
+}
+
+test "read returns a valid case whole" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const c = read(a, test_case_v5).ok;
+    try std.testing.expectEqual(@as(u32, 5), c.case_version);
+    try std.testing.expectEqual(@as(u32, 7), c.k);
+    try std.testing.expectEqualStrings("build", c.define.operation.argv[1]);
+    try std.testing.expectEqualStrings("m.yaml", c.define.scratch.?[0]);
+    try std.testing.expect(c.define.cwd == null);
+
+    const v6 = try testCaseWith(a, "\"case_version\":5,", "\"case_version\":6,\"observe\":\"syscalls\",");
+    const v6_empty = try std.mem.replaceOwned(u8, a, v6, "[\"m.yaml\"]", "[]");
+    try std.testing.expectEqualStrings("syscalls", read(a, v6_empty).ok.observe.?);
+}
+
+test "read refuses with replay's sentences, in replay's order" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const T = struct { text: []const u8, says: []const u8 };
+    const cases = [_]T{
+        .{ .text = "{", .says = "the case file could not be parsed as a sideeye case" },
+        .{ .text = try testCaseWith(a, "\"k\":7,", "\"k\":7,\"extra\":1,"), .says = "the case file could not be parsed as a sideeye case" },
+        .{ .text = try testCaseWith(a, "sideeye/case", "other/case"), .says = "the file does not declare itself a sideeye case" },
+        .{ .text = try testCaseWith(a, "\"case_version\":5,", "\"case_version\":7,"), .says = "this binary understands case schema versions 1, 2, 3, 4, 5 and 6 only" },
+        .{ .text = try testCaseWith(a, "\"case_version\":5,", "\"case_version\":6,"), .says = "a case_version 6 file must carry observe, `syscalls` or `supervised`; the version exists to freeze it" },
+        .{ .text = try testCaseWith(a, "\"case_version\":5,", "\"case_version\":6,\"observe\":\"wrappers\","), .says = "a case_version 6 file's observe must be `syscalls` or `supervised`: a case counted under the default is written at the version its define asks for" },
+        .{ .text = try testCaseWith(a, "\"cwd\":null,", ""), .says = "a case_version 5 or 6 file must spell define.cwd, as null when none was declared: from version 5 both cwd and scratch are explicit" },
+        .{ .text = try testCaseWith(a, "\"scratch\":[\"m.yaml\"],", ""), .says = "a case_version 5 file must carry define.scratch as a non-empty array; the version exists to freeze it" },
+    };
+    for (cases) |cs| try std.testing.expectEqualStrings(cs.says, read(a, cs.text).invalid);
+
+    const twice = try std.mem.replaceOwned(u8, a, try testCaseWith(a, "sideeye/case", "other/case"), "\"case_version\":5,", "\"case_version\":7,");
+    try std.testing.expectEqualStrings("the file does not declare itself a sideeye case", read(a, twice).invalid);
 }
