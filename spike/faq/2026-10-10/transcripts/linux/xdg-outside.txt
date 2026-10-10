@@ -1,0 +1,15 @@
+UNKNOWN  nothing_could_fail
+         the operation performed no state-changing operation inside the state directory, so there was no crash point and no world in which anything could fail
+next        The operation changed nothing in the state directory that the verdict judges (a change of ownership or permissions alone lands here too). If it should have, find where its store resolved: a define that declares no cwd runs its commands in Sideeye's own directory, and a relative argument resolves there — declare cwd, or point state at the store (docs/cli.md). An operation that is meant to change nothing has no crash point to test.
+cwd         /tmp/xdg
+
+expected    exit 0
+atomicity   6 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=d08095ab2a2516bfe9d40e3a44171ed554a24bf9d3ba76e5dd39f43ee004ee77;

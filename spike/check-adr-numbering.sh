@@ -37,14 +37,15 @@
 #     gap in the tracked sequence until the other side landed — during exactly
 #     the window a check matters. Uniqueness only. A contiguity check would go
 #     red on the correct resolution of the very problem this exists for.
-#   * the merge that CREATES a collision. No status check is required on this
-#     repository, so two pull requests can each carry a unique 0032 against the
-#     same base, both go green, and both merge. This runs on pull requests too —
-#     a branch cut from a main that already holds the number is caught there —
-#     but the two-branches-same-base race is caught only on the post-merge run of
-#     main. It reports a collision; it does not prevent one. Closing that needs a
-#     required up-to-date check or a merge queue, which is a repository setting
-#     and a separate decision.
+#   * every merge that CREATES a collision. This is a required check on main, and
+#     it runs on pull requests too — a branch whose run already sees the number on
+#     main is red there and cannot merge. But main's protection does not require a
+#     branch to be up to date, so two pull requests can each carry a unique 0032
+#     against the same base, both go green, and both merge; the second one's green
+#     run predates the first one's merge. That race is caught only on the
+#     post-merge run of main. It reports that collision; it does not prevent it.
+#     Closing that needs the up-to-date requirement or a merge queue, which is a
+#     repository setting and a separate decision.
 #   * whether a renumber is safe to perform. It is the prescribed remedy and it
 #     is not free: paths of the form docs/adr/NNNN-slug.md are hardcoded in
 #     several tracked documents, and only spike/acceptance.sh sweeps any of them

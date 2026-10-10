@@ -1,0 +1,65 @@
+name: mcp-container
+
+# docs/mcp.md's "Running it in a container" is a block an operator runs as written, against a
+# Dockerfile they copy (#721, ADR 0114). This runs that block as written, on both Linux CPUs
+# the release builds for, so the page cannot quietly stop being one that works:
+# spike/check-mcp-container.py builds the image with a toy added at the Dockerfile's end,
+# sends the MCP section's first call through the page's `docker run`, looks at the flags
+# from inside the container, and holds the Dockerfile's version and digests to the release
+# and to the quickstart's pinned version.
+#
+# What it runs is a published release, not this branch's build — the page points operators at
+# a release. A change that moves the quickstart's pin without the Dockerfile (or the reverse)
+# goes red here; the pin moves in its own pull request after a release, which waits for this.
+#
+# Not a required check: the paths below filter it, and a filtered workflow that is required
+# blocks every pull request it does not run on.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/mcp.md
+      - docs/mcp-container/**
+      - spike/check-mcp-container.py
+      - spike/toys/toy.c
+      - .github/workflows/mcp-container.yml
+      - .github/workflows/quickstart-release.yml
+  pull_request:
+    paths:
+      - docs/mcp.md
+      - docs/mcp-container/**
+      - spike/check-mcp-container.py
+      - spike/toys/toy.c
+      - .github/workflows/mcp-container.yml
+      - .github/workflows/quickstart-release.yml
+
+permissions:
+  contents: read
+
+jobs:
+  container:
+    name: container (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            arch: x86_64
+          - runner: ubuntu-24.04-arm
+            arch: aarch64
+    runs-on: ${{ matrix.runner }}
+    # Two image builds and four short containers; the default of six hours would hide a hang.
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      # Every predicate the check holds goes red on a copy with one thing changed, before the
+      # real run is trusted to say green. No Docker, no network.
+      - name: The check proves it can go red
+        run: python3 spike/check-mcp-container.py --selftest
+
+      - name: The page's container block runs as written
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 spike/check-mcp-container.py . "$RUNNER_TEMP/mcp-container"

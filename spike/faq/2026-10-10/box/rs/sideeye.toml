@@ -1,0 +1,7 @@
+[world]
+state = "/tmp/keytool-rs-state"
+
+[define]
+cwd       = "."
+setup     = "./target/debug/keytool init"
+operation = "./target/debug/keytool rotate"

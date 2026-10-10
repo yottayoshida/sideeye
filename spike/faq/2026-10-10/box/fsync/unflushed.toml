@@ -1,0 +1,7 @@
+[world]
+state = "/tmp/unflushed-state"
+
+[define]
+cwd       = "."
+setup     = "python3 unflushed.py init"
+operation = "python3 unflushed.py rotate"

@@ -1,0 +1,16 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____________________________ test_no_crash_window _____________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-3/test_no_crash_window0')
+
+    def test_no_crash_window(tmp_path):
+        sideeye = shutil.which("sideeye")
+>       assert sideeye, "sideeye is not on PATH"
+E       AssertionError: sideeye is not on PATH
+E       assert None
+
+test_crash_consistency.py:11: AssertionError
+=========================== short test summary info ============================
+FAILED test_crash_consistency.py::test_no_crash_window - AssertionError: side...
+1 failed in 0.00s

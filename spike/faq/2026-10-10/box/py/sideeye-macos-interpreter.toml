@@ -1,0 +1,7 @@
+[world]
+state = "/tmp/keytool-py-state"
+
+[define]
+cwd       = "."
+setup     = "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python keytool.py init"
+operation = "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python keytool.py rotate"

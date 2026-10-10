@@ -1,0 +1,25 @@
+FAIL  1 of 4 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 3 of 3
+            after  rename(/tmp/unflushed-state/key.json.tmp)
+            before write(/tmp/unflushed-state/key.json)
+path        key.json
+observed    holding neither the old nor the new content
+cwd         /tmp/fsync
+
+explored    4 worlds (crash points 3 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 3 operations (334 syscall lines examined, 12 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /tmp/w6/cases/000001.json
+replay      sideeye replay /tmp/w6/cases/000001.json --shim /opt/sideeye/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so
+evidence    sideeye evidence /tmp/w6/evidence/000001.json
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /tmp/fsync && unset SIDEEYE_KILL_GROUP && : > /tmp/w6/trace-repro.bin && SIDEEYE_STATE_DIR=/tmp/unflushed-state SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/tmp/w6/trace-repro.bin LD_PRELOAD=/opt/sideeye/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=3 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'python3' unflushed.py rotate </dev/null)
+sideeye: json sha256=c1808b14b3ce5e0a9ef226642b8171541dfb3e6210f1436db76a493471dfc227;
