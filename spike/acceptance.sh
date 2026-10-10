@@ -2675,7 +2675,11 @@ o=$(TOY_TWICE_COUNTER=/tmp/acc-710/w/count "$SIDEEYE" preflight --twice --state 
 want710 "preflight --twice's second run ending differently names what the restore does not put back" "$o" $? 2 recording_run_failed "not their modes, owners or timestamps"
 o=$(TOY_THREAD_RACE=1 "$SIDEEYE" explore --state /tmp/acc-710/t/state --setup "$OUT/toy-bug init" \
     --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-710/t/work --oracle /usr/bin/strace 2>&1)
-want710 "two threads writing unordered names the README's threads limit" "$o" $? 2 multiple_threads_detected "threads are judged where a creation or a join the shim saw orders their writes"
+rc=$?
+want710 "two threads writing unordered names the README's threads limit" "$o" $rc 2 multiple_threads_detected "threads are judged where a creation or a join the shim saw orders their writes"
+# #686, ADR 0113: and the way past the records found, a tool's own switch for one thread, declared
+# in apparatus. Before it the step named the limit and nothing else (ADR 0097 believed there was none).
+want710 "...and a tool's own switch for one thread, declared in apparatus (#686)" "$o" $rc 2 multiple_threads_detected "UV_THREADPOOL_SIZE=1 for Node, GOMAXPROCS=1 for Go: set it in the environment Sideeye runs in and declare it in the define's apparatus"
 
 # #711, ADR 0096: the figures the `oracle`, `checker` and `processes` sentences state, as optional
 # JSON fields. Each has to equal the number its sentence prints — read back out of the sentence
@@ -3940,14 +3944,29 @@ if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
     TOY_STATE=/tmp/acc-th/s "$SIDEEYE" explore --state /tmp/acc-th/s --setup "$OUT/toy-supthreads init" \
         --operation "$OUT/toy-supthreads rotate" --observe supervised --oracle /usr/bin/strace \
         --work /tmp/acc-th/w --json /tmp/acc-th-sup.json > /dev/null 2>&1
+    # On the detail's own line: the next step (since #686) and the processes line repeat "no join is
+    # recorded …", so a grep over the whole output would pass with the detail's sentence gone.
     if grep -q "Nothing the supervising engine recorded orders" /tmp/acc-th-sup.txt \
-        && grep -q "no join is recorded, nor which thread a creation made" /tmp/acc-th-sup.txt \
+        && grep "Nothing the supervising engine recorded orders" /tmp/acc-th-sup.txt | grep -q "no join is recorded, nor which thread a creation made" \
         && grep -q "supervising engine is not notified of ownership" /tmp/acc-th-sup.json \
         && ! grep -q -i "the shim" /tmp/acc-th-sup.txt && ! grep -q -i "the shim" /tmp/acc-th-sup.json; then
         echo "ok   the supervised thread refusal states that mode's rule, and neither its text nor its JSON says the shim did anything"
     else
         echo "FAIL the supervised thread refusal does not state the mode's rule, or names the shim"
         grep -h -o -i '.\{0,60\}the shim.\{0,40\}' /tmp/acc-th-sup.txt /tmp/acc-th-sup.json 2>/dev/null | head -4 | sed 's/^/     | /'
+        fails=$((fails + 1))
+    fi
+    # #686, ADR 0113: the same refusal's next step names a tool's own switch for one thread — the
+    # way past this mode leaves, since it records no join and not which thread a creation made — in
+    # the text and in the JSON, under the opening words the dogfood entry gate sorts refusals by. It
+    # was the class wall. The leg above still holds that neither names a shim.
+    if grep '^next  ' /tmp/acc-th-sup.txt | grep -qF "Two threads of one process wrote the judged directory, and under --observe supervised no join is recorded, nor which thread a creation made" \
+        && grep '^next  ' /tmp/acc-th-sup.txt | grep -qF "UV_THREADPOOL_SIZE=1 for Node, GOMAXPROCS=1 for Go" \
+        && python3 -c 'import json,sys; s = json.load(open(sys.argv[1])).get("next_step") or ""; sys.exit(0 if s.startswith("Two threads of one process wrote the judged directory") and "GOMAXPROCS=1" in s else 1)' /tmp/acc-th-sup.json; then
+        echo "ok   the supervised thread refusal names a tool's own switch for one thread, in its text and its JSON (#686)"
+    else
+        echo "FAIL the supervised thread refusal does not name a tool's switch for one thread (#686)"
+        grep -h '^next  ' /tmp/acc-th-sup.txt | sed 's/^/     | /'
         fails=$((fails + 1))
     fi
     if [ -x "$ROOT/zig-out/bin/sideeye-testsupervisedelay" ]; then

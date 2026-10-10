@@ -87,6 +87,34 @@ A byte-layer `baseline_violates_invariant` says where the two runs' bytes first 
 
 A stretch the table does not cover is still an observation about the target: the run is refused because a second clean run does not leave what the first one did, which is the README's byte-repeatable-writes limit, and no declaration makes two different results the same one.
 
+## A tool's own switch for one thread
+
+A run whose judged directory is written by two threads of one process, with nothing recorded
+ordering their writes, is refused `multiple_threads_detected` (the README's threads limit), and the
+refusal's next step sends the reader here. Many runtimes put file calls on a pool of threads, and
+many have a switch that makes the pool one thread. Set the switch in the environment Sideeye runs
+in — Sideeye applies none of it — and declare it, so the report says what the run ran under and a
+run without it stops as a SETUP ERROR rather than being judged as something else. Over MCP the
+server passes its children `PATH` and only the names `SIDEEYE_MCP_CHILD_ENV` lists (`docs/mcp.md`):
+list the switch there too, or the declared run stops as that SETUP ERROR.
+
+A verdict under the switch is a verdict about the tool run that way. A race two threads produce is
+not in it; what the switch takes away is that the trace's numbering would name a different operation
+on the next run.
+
+| switch | how the define says it | moved past the wall | not moved, and why | record |
+|---|---|---|---|---|
+| Node: `UV_THREADPOOL_SIZE=1` | `env:UV_THREADPOOL_SIZE=1` | ten of the thirteen Node targets that met the wall on v1.10.0 — joplin and stylelint to PASS; prettier, svgo, `npm pkg set`, eslint, dotenvx, bibtex-tidy and glTF-Transform to FAIL; lingui to its next wall — and yarn, trash-cli, cspell and capacitor (the last two on Node 22). Without it, all thirteen refuse | Bitwarden CLI (its lock directory is taken on the pool thread), vercel (`mkdirp` of its state directory on the pool thread at every start), gemini-cli (the pool thread writes its home registry) | `spike/dogfood/2026-10-09-followups-3/`, `spike/dogfood/2026-10-09-followups-4/`, `spike/dogfood/2026-10-10-uv-threadpool/` |
+| Go: `GOMAXPROCS=1` | `env:GOMAXPROCS=1` | doctl, infracost and plakar, under `--observe supervised` | OpenTofu: with one P the writing thread is still the scheduler's choice per run | `spike/dogfood/2026-10-09-followups-3/`, `spike/dogfood/2026-10-09-followups-4/` |
+| zstd: `--single-thread --no-asyncio` | on the operation's command line, and a `note:` | zstd 1.5.7 `--rm` (`--single-thread` alone still writes through an I/O thread) | — | `spike/dogfood/2026-10-09-followups-3/` |
+| beets: `threaded: no` | a line in its configuration, and a `note:` | beets 2.1.0 `import` | — | `spike/dogfood/2026-10-09-followups-3/` |
+| Rust: `RAYON_NUM_THREADS=1 TOKIO_WORKER_THREADS=1` | — | none: measured, and none of four moved | a second writer neither variable removes — rustic's one rayon worker deletes the old snapshot while the main thread writes the index; prek and steamguard-cli write from two threads of their own; codex's start-up threads make and clear `tmp/arg0` beside the thread writing `config.toml` | `spike/dogfood/2026-10-09-followups-3/`, `spike/dogfood/2026-10-09-followups-4/` |
+| lz4: `-T1` | — | none: measured, and it did not move | lz4 1.10.0: an I/O thread writes the blocks, and `-T#` is its only thread switch | `spike/dogfood/2026-10-09-followups-3/`, `spike/dogfood/2026-10-09-followups-4/` |
+
+Under `--observe supervised` no join is recorded, nor which thread a creation made, so a switch is the
+only way past there: recording creations and exits from outside was measured and not built (#687,
+`spike/dogfood/2026-10-10-thread-order/`).
+
 ## Where the recipes came from
 
 The nine devices cohorts 2-4 used, and how each is declared:
