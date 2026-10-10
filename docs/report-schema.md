@@ -300,11 +300,18 @@ names, kinds and bytes under `--state` and not their modes, owners or timestamps
 checks the mode of a file under `--state` — an executable bit, a `0600` key, as in both
 records — ends this way too; `kill_did_not_land` takes `kill_not_landed` where no landing was
 recorded at the asked position and `not_repeating` where the world reached it through other
-operations; `multiple_threads_detected` takes `threads_limit`, which names the README's threads
-limit, except under `--observe supervised`, which records no join and keeps the class wall.
-Four refusals the records met keep the class wall because this build's step names no way past
+operations; `multiple_threads_detected` raised from the run's own record of its threads takes
+`threads_limit`, which names the README's threads limit and the way past the records found — a tool's own switch for running its file calls on one
+thread (`UV_THREADPOOL_SIZE=1` for Node, `GOMAXPROCS=1` for Go), declared in `apparatus`, with
+`docs/apparatus.md` listing the switches measured and the targets each did not move (#686, ADR
+0113) — and under `--observe supervised`, which records no join and not which thread a creation
+made, `threads_supervised`, which says that and names the same switch without naming a shim. The
+same reason raised under `--oracle-fs-usage` on macOS for a writer the shim never recorded — the
+fs_usage capture saw a thread write that no record names (ADR 0060) — keeps the step it had,
+`unwrap_or_class_wall`: that writer went around the shim, which is not what a pool's size changes.
+Three refusals the records met keep the class wall because this build's step names no way past
 them and no README line names their limit: `unresolvable_path`, `unsupported_syscall_observed`,
-the supervised threads refusal, and `oracle_missed_operation` under `--observe syscalls`. For a
+and `oracle_missed_operation` under `--observe syscalls`. For a
 static parent whose writer is a dynamic child, which reaches the last and `unresolvable_path`,
 `--observe supervised` is the way past; #685 is to name it.
 

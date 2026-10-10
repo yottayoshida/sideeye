@@ -1,0 +1,21 @@
+sideeye 1.10.0 (trace contract v19)
+engine path: /opt/se/sideeye-v1.10.0-aarch64-linux/sideeye
+install-sideeye: reading yottayoshida/sideeye release v1.10.0 (unauthenticated; shares this runner's rate limit)
+install-sideeye: downloaded digest matches (cb176c41df10611ec6eb2c255bf5d7f557edfb4159752e7f89959519c3c6a99a)
+install-sideeye: sideeye 1.10.0 (trace contract v19)
+node v20.19.2
+bibtex-tidy --version: v1.15.1
+dotenvx --version: 2.32.4
+gemini --version: 0.62.0
+gltf-transform --version: 4.5.1
+vercel --version: Vercel CLI 62.2.0
+eslint --version: v10.11.0
+prettier --version: 3.9.7
+stylelint --version: 17.15.0
+svgo --version: 4.1.0
+joplin version: Joplin CLI Client
+bw --version: Could not find dir, "/root/.config/Bitwarden CLI"; creating it instead.
+npm --version: 9.2.0
+node22 v22.23.3
+lingui `-- @lingui/cli@6.9.0
+UV_THREADPOOL_SIZE=1

@@ -1,0 +1,6 @@
+[world]
+state = "/s/eslint/proj"
+
+[define]
+operation = "eslint --fix a.js"
+cwd       = "/s/eslint/proj"
