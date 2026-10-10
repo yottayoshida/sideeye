@@ -120,6 +120,10 @@ capture the code before piping the output anywhere.
   often because the tool finds its store through an environment variable the engine was not
   started with. Without a second witness the exploration says `completeness_not_verified`
   here too; `sideeye preflight` names it `nothing_could_fail`.
+- **`checker_rejects_initial_state`**: the checker failed on the state the define starts from —
+  as Sideeye restores it before every world, not as your setup left it (`docs/cli.md` says what a
+  restore does not carry) — before the operation ran. It has to hold before the operation as well as after it — accept the old
+  value and the new one, not only the one the operation writes.
 - **A PASS over one or two crash points**: check the count against what the operation was
   supposed to touch.
 - **A null result is a result.** Record it with the step-2 notes; do not go looking for a

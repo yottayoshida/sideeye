@@ -157,7 +157,7 @@ the case file — nothing else in the report was load-bearing for them.
 | `next_step` | string | UNKNOWN | One sentence saying what to do about the refusal — change the define, pass a flag, narrow the state directory, fix the environment, re-run as a user that can read what the run left, or file it as Sideeye's defect. Chosen at the site that raised the refusal, where the cause is known, so two refusals sharing an `unknown_reason` may carry different steps; `message` keeps the observation and this keeps the action (ADR 0030's line). A field added after the v1.0 tag, under the additive allowance surface 2 of `docs/contract-freeze.md` keeps open. |
 
 `unknown_reason` values (closed set, contract v19 — v19 moved the recorded account, not the
-vocabulary, ADR 0098; the set gained `nothing_could_fail` after v18 without moving the version, ADR 0091; before that it was unchanged from v12, the version having
+vocabulary, ADR 0098; the set gained `nothing_could_fail` after v18 without moving the version, ADR 0091, and `checker_rejects_initial_state` after v19 without moving it, ADR 0107; before that it was unchanged from v12, the version having
 moved because the recorded account did, not the vocabulary):
 `no_shim_marker`,
 `state_changed_without_ops`, `contract_version_mismatch`,
@@ -173,7 +173,7 @@ moved because the recorded account did, not the vocabulary):
 `parent_exited`,
 `baseline_violates_invariant`, `boundary_without_oracle`,
 `state_not_quiescent`, `unsupported_state_entry`, `state_changed_unaccounted`,
-`trace_budget_exhausted`, `nothing_could_fail`.
+`trace_budget_exhausted`, `nothing_could_fail`, `checker_rejects_initial_state`.
 
 **`nothing_could_fail` is an exploration in which no world could have failed** (#682, #683,
 ADR 0091): no crash point; or no checker, no crash world that printed the marker over a path only
@@ -189,6 +189,21 @@ asks its completeness gate first, so without an oracle or `--allow-unverified` t
 meets `completeness_not_verified` there. It is a floor: a
 crash point that names a judged path without changing it — a lock file opened for writing, a call
 that failed — still counts as touching it.
+
+**`checker_rejects_initial_state` is a checker that fails on the state the define starts from**
+(#756, ADR 0107). The falsification shows the checker a corrupted state and requires it to fail;
+since #756 the same gate then restores the state the define starts from and requires the checker to
+pass on it — the restored copy every world starts from, not what setup left, so whatever a
+restore does not carry (docs/cli.md) is not there either — before any world runs. A checker that fails there would fail in the world
+killed before the first operation, which holds exactly that state — and until #756 that world was
+reported as the target's FAIL at crash point 1, `after (start)()`, although nothing the target did is
+in it. It is raised by `explore` and by `replay`, both of which falsify the checker, after the
+falsification has passed; never by `preflight`, which does not run the checker. The checker's output
+on that state is re-emitted with each line marked `start: `, as the falsification's are marked
+`falsify: `, and only when it refuses. `next_step` is `fix_define` under every observation mode — no
+run of the operation has touched the state it judged — or, for a toml that declares no `cwd`, the
+step below; an exit of 126 takes `environment`, as the falsification's does, because the engine's
+fork stub exits 126 too.
 
 A member added after the v1.0 tag is a break of surface 2: each needs its own owner ruling, none licenses the next, and `docs/contract-freeze.md` records every one; whichever change adds one, the acceptance check above holds this page to the enum.
 
@@ -372,10 +387,11 @@ second run (`second_run_diverged`), the baseline's exit and the baseline's marke
 layer (`fix_define`) keep their own steps: each compares against a recording the same mode already completed,
 so a kill that happened in both runs does not reach it. The checker is the
 exception because it judges the state from outside rather than against the
-recording, and the baseline is the first clean state it sees.
+recording, and the baseline is the first clean state left by the operation that it sees.
 
 A define read from a toml that declares no `cwd` takes `declare_cwd` where `recording_run_failed` would say `run_then_expect_status` or
-`run_by_hand_signalled`, where `marker_never_observed`, `checker_not_falsified` (the corrupted state accepted) and
+`run_by_hand_signalled`, where `marker_never_observed`, `checker_not_falsified` (the corrupted state accepted),
+`checker_rejects_initial_state` (the starting state rejected) and
 `baseline_violates_invariant`'s checker layer would say `fix_define` — and where `nothing_could_fail` with no crash point would say `nothing_in_state` — when the command that failed
 carries an argument the engine found under the toml's directory and not under the one it ran in (or a
 directory above an argument that is under neither); `message` gains that observation as its last
