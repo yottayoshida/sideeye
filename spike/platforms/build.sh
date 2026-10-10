@@ -11,11 +11,14 @@
 #                      (measure.sh), and what does `sideeye demo` do — on SIDEEYE_VERSION it compiles
 #                      its toy with the container's cc, on main the toy is carried in the engine
 #                      (ADR 0101), which on a musl host was expected to be static
-#   cross-<target>     on x86_64: SIDEEYE_VERSION built for riscv64, 32-bit ARM and i386 (glibc 2.28,
-#                      as the release targets are spelled). Built, not run — the owner's ruling of
-#                      2026-10-10
+#   cross-<target>     on x86_64: SIDEEYE_VERSION built for the release architectures of Debian 13 the
+#                      release has no asset for — riscv64, 32-bit ARM (hard and soft float), i386,
+#                      ppc64le and s390x (glibc 2.28, as the release targets are spelled). Built, not
+#                      run — the owner's ruling of 2026-10-10
 # The checkout must carry SIDEEYE_VERSION's tag (fetch-depth: 0).
 set -u
+CROSS="riscv64-linux-gnu.2.28 arm-linux-gnueabihf.2.28 x86-linux-gnu.2.28 arm-linux-gnueabi.2.28
+       powerpc64le-linux-gnu.2.28 s390x-linux-gnu.2.28"
 
 out=${1:?usage: SIDEEYE_VERSION=<tag> build.sh <out dir>}
 V=${SIDEEYE_VERSION:?set SIDEEYE_VERSION to the release tag to measure}
@@ -68,7 +71,7 @@ cross() { # <target>: build SIDEEYE_VERSION for it, into $t/cross-<target>
     tail -3 "$o/build.txt"
 }
 if [ "$(uname -m)" = x86_64 ]; then
-    for target in riscv64-linux-gnu.2.28 arm-linux-gnueabihf.2.28 x86-linux-gnu.2.28; do
+    for target in $CROSS; do
         echo "== cross-$target"
         cross "$target"
     done
@@ -84,7 +87,7 @@ for ref in "$V" main; do
     [ "$(grep -cE "$(printf '\t')(PASS|FAIL|UNKNOWN|SETUP ERROR)" "$b/summary.txt" 2>/dev/null)" = 3 ] && grep -q '^exit ' "$b/demo.txt" 2>/dev/null || missing="$missing alpine-src-$ref"
 done
 if [ "$(uname -m)" = x86_64 ]; then
-    for target in riscv64-linux-gnu.2.28 arm-linux-gnueabihf.2.28 x86-linux-gnu.2.28; do
+    for target in $CROSS; do
         grep -q '^exit ' "$out/cross-$target/build.txt" 2>/dev/null || missing="$missing cross-$target"
     done
 fi

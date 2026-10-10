@@ -8,7 +8,7 @@
 # Run it at the commit that merged the apparatus, named by `sha`. The rules for reading and
 # re-running it are spike/platforms/RUNS-RULE.md (the 2026-10-10 run) and
 # RUNS-RULE-2026-10-10b.md (the runs after it), each written before the dispatches it governs;
-# `jobs` re-runs one side after an apparatus fault without running the others again. The record
+# `jobs` re-runs one side (or `wsl+container+build`, three) without running the others again. The record
 # is copied into the tree by hand, in a pull request; this workflow has no write access.
 name: spike-platforms
 on:
@@ -22,7 +22,7 @@ on:
         description: "Which side to run"
         required: false
         type: choice
-        options: [all, linux, container, vm, macos, wsl, build]
+        options: [all, linux, container, vm, macos, wsl, build, wsl+container+build]
         default: all
 
 permissions:
@@ -97,8 +97,12 @@ jobs:
 
   # GitHub Actions' own `container:`: the job's steps run inside the image, as Actions starts it.
   container:
-    if: inputs.jobs == 'all' || inputs.jobs == 'container'
-    runs-on: ubuntu-24.04
+    if: inputs.jobs == 'all' || inputs.jobs == 'container' || inputs.jobs == 'wsl+container+build'
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     container:
       image: rockylinux/rockylinux:8.10@sha256:e8a49c5403b687db05d4d67333fa45808fbe74f36e683cec7abb1f7d0f2338c6
@@ -139,7 +143,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: platforms-container-run-${{ github.run_id }}
+          name: platforms-container-${{ matrix.runner }}-run-${{ github.run_id }}
           path: spike/platforms/out
           if-no-files-found: warn
           retention-days: 90
@@ -246,10 +250,11 @@ jobs:
           retention-days: 90
 
   # WSL on Windows runners. x86_64 WSL2's base leg was measured on 2026-10-10 and is not measured
-  # again; this run takes its other forms (the Windows drive, an ordinary user, systemd), WSL1 (and,
-  # when WSL1 refuses the shim it found, wsl1-shim with --shim), and WSL2 on Windows on ARM.
+  # again; this run takes its other forms (the Windows drive, an ordinary user, systemd on and off),
+  # WSL1 (and, when WSL1 refuses the shim it found, wsl1-shim with --shim), and WSL2 on Windows on
+  # ARM, with WSL installed where the runner has none.
   wsl:
-    if: inputs.jobs == 'all' || inputs.jobs == 'wsl'
+    if: inputs.jobs == 'all' || inputs.jobs == 'wsl' || inputs.jobs == 'wsl+container+build'
     strategy:
       fail-fast: false
       matrix:
@@ -275,6 +280,10 @@ jobs:
             label: wsl2-arm64
             rootfs: https://cloud-images.ubuntu.com/wsl/releases/24.04/20240423/ubuntu-noble-wsl-arm64-wsl.rootfs.tar.gz
             rootfs_sha256: fecec1d9b7b750c12c109edb49c13c1006f4a2efabb9b8bf341f11c4c9f2ef11
+            # The runner has the Windows features WSL needs and not WSL itself (run 38031881569):
+            # the version x86_64's `wsl --update` installs, from Microsoft's release.
+            wsl_msi: https://github.com/microsoft/WSL/releases/download/3.0.1/wsl.3.0.1.0.arm64.msi
+            wsl_msi_sha256: 857ddbb335ec7d05ffa71d0fd2203750c0e8fc29bb164f8a95db92bd7bba4263
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 75
     env:
@@ -328,6 +337,33 @@ jobs:
           Get-Content $log
           exit 0
 
+      # Where the runner has no WSL and the matrix names a package, install it (RUNS-RULE-2026-10-10b.md,
+      # an item added after run 38043722536): the digest checked, msiexec's exit, its log and
+      # `wsl --version` recorded. A failed download or digest stops the job (an apparatus fault);
+      # msiexec's exit is recorded and the import below says whether WSL then starts.
+      - name: Install WSL where the runner has none
+        if: matrix.wsl_msi != ''
+        env:
+          WSL_MSI: ${{ matrix.wsl_msi }}
+          WSL_MSI_SHA256: ${{ matrix.wsl_msi_sha256 }}
+        run: |
+          $log = "spike/platforms/out/wsl.txt"
+          $global:LASTEXITCODE = 0
+          wsl --status 2>&1 | Out-Null
+          if ($LASTEXITCODE -eq 0) { "== WSL present; the package is not installed" | Out-File -Encoding utf8 -Append $log; exit 0 }
+          $msi = Join-Path $env:RUNNER_TEMP "wsl.msi"
+          Invoke-WebRequest -Uri $env:WSL_MSI -OutFile $msi
+          $got = (Get-FileHash $msi -Algorithm SHA256).Hash.ToLower()
+          "== WSL package $env:WSL_MSI sha256 $got" | Out-File -Encoding utf8 -Append $log
+          if ($got -ne $env:WSL_MSI_SHA256) { throw "WSL package digest mismatch: $got" }
+          $p = Start-Process msiexec.exe -ArgumentList '/i', $msi, '/qn', '/norestart', '/l*v', (Join-Path $PWD "spike/platforms/out/wsl-msiexec.log") -Wait -PassThru
+          "== msiexec exit $($p.ExitCode)" | Out-File -Encoding utf8 -Append $log
+          $global:LASTEXITCODE = 0
+          $v = wsl --version 2>&1 | Out-String
+          "== wsl --version after install (exit $LASTEXITCODE)`n$v" | Out-File -Encoding utf8 -Append $log
+          Get-Content $log
+          exit 0
+
       # Ubuntu 24.04's WSL image for the runner's CPU, from the dated directory so the bytes
       # cannot move under the record, checked against the digest its SHA256SUMS published on
       # 2024-04-23. A failure here is the apparatus's, so it stops the job.
@@ -365,6 +401,9 @@ jobs:
           $null = Rec "wsl --import probe --version $env:WSL_VERSION" { wsl --import probe (Join-Path $env:RUNNER_TEMP "probe") $tar --version $env:WSL_VERSION }
           $null = Rec "wsl -l -v" { wsl -l -v }
           $uname = Rec "wsl -d probe -u root -- uname -r" { wsl -d probe -u root -- uname -r }
+          # The image's own boot setting, before anything here changes it (RUNS-RULE-2026-10-10b.md).
+          $null = Rec "as imported: /etc/wsl.conf" { wsl -d probe -u root -- cat /etc/wsl.conf }
+          $null = Rec "as imported: PID 1" { wsl -d probe -u root -- ps -p 1 -o comm= }
           if ($env:WSL_VERSION -eq "2") {
             $started = ($uname.rc -eq 0) -and ($uname.out -match 'WSL2')
           } else {
@@ -414,6 +453,34 @@ jobs:
           WSLENV: SIDEEYE_VERSION/u:GH_TOKEN/u:LEGS/u
         run: wsl -d probe -u root --cd "$env:GITHUB_WORKSPACE" -- sh spike/platforms/wsl2-inner.sh spike/platforms/out
 
+      # systemd off: the image turns it on, so the form without it has to be made (RUNS-RULE-2026-10-10b.md,
+      # an item added after run 38043722536). PID 1 read after the restart, as above.
+      - name: Turn systemd off and start again
+        id: nosystemd
+        if: ${{ !cancelled() && steps.start.outputs.started == 'yes' && matrix.legs == 'extra' }}
+        run: |
+          $log = "spike/platforms/out/wsl.txt"
+          $w = wsl -d probe -u root -- sh -c 'printf "[boot]\nsystemd=false\n" > /etc/wsl.conf && cat /etc/wsl.conf' 2>&1 | Out-String
+          "== /etc/wsl.conf written (exit $LASTEXITCODE):`n$w" | Out-File -Encoding utf8 -Append $log
+          wsl --terminate probe 2>&1 | Out-File -Encoding utf8 -Append $log
+          Start-Sleep -Seconds 10
+          $err = Join-Path $env:RUNNER_TEMP "pid1-off.err"
+          $pid1 = wsl -d probe -u root -- ps -p 1 -o comm= 2> $err
+          "== PID 1 after systemd=false: $($pid1 -join ' | ') (stderr: $(Get-Content $err -Raw))" | Out-File -Encoding utf8 -Append $log
+          $off = [bool](@($pid1) -match '^\s*init\s*$')
+          $word = if ($off) { "yes" } else { "no" }
+          "systemd off: $word" | Out-File -Encoding utf8 -Append $log
+          "off=$word" | Out-File -Encoding utf8 -Append $env:GITHUB_OUTPUT
+          exit 0
+
+      - name: Measure inside WSL without systemd
+        if: ${{ !cancelled() && steps.nosystemd.outputs.off == 'yes' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LEGS: nosystemd
+          WSLENV: SIDEEYE_VERSION/u:GH_TOKEN/u:LEGS/u
+        run: wsl -d probe -u root --cd "$env:GITHUB_WORKSPACE" -- sh spike/platforms/wsl2-inner.sh spike/platforms/out
+
       - name: Keep the record
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -425,7 +492,7 @@ jobs:
 
   # The source built where no release asset exists (spike/platforms/build.sh).
   build:
-    if: inputs.jobs == 'all' || inputs.jobs == 'build'
+    if: inputs.jobs == 'all' || inputs.jobs == 'build' || inputs.jobs == 'wsl+container+build'
     strategy:
       fail-fast: false
       matrix:
@@ -464,7 +531,7 @@ jobs:
 
   # Windows: whether SIDEEYE_VERSION's source builds for Windows with Zig 0.16.0.
   build-windows:
-    if: inputs.jobs == 'all' || inputs.jobs == 'build'
+    if: inputs.jobs == 'all' || inputs.jobs == 'build' || inputs.jobs == 'wsl+container+build'
     runs-on: windows-2025
     timeout-minutes: 45
     defaults:
