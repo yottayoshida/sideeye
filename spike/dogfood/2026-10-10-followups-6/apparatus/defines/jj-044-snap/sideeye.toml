@@ -1,0 +1,7 @@
+[world]
+state = "/s/jj/repo"
+
+[define]
+operation = "jj -R /s/jj/repo commit -m probe"
+cwd       = "/s/jj-in"
+check     = "/ap/defines/jj-044-snap/check.sh"

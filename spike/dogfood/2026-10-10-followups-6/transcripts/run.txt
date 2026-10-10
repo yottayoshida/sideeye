@@ -1,0 +1,20 @@
+=== jj-044-plain 2026-10-10T00:50:16Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 2: UNKNOWN multiple_threads_detected
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 2: UNKNOWN multiple_threads_detected
+=== jj-044-snap 2026-10-10T00:50:17Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 2: UNKNOWN baseline_run_failed
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 2: UNKNOWN baseline_run_failed
+=== jj-046-plain 2026-10-10T00:50:23Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 2: UNKNOWN multiple_threads_detected
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 2: UNKNOWN multiple_threads_detected
+=== jj-046-snap 2026-10-10T00:50:23Z
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 2: UNKNOWN baseline_run_failed
+explore exit 2: UNKNOWN no_shim_marker
+explore --observe supervised exit 2: UNKNOWN baseline_run_failed

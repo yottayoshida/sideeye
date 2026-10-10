@@ -1,0 +1,48 @@
+state /s/jj/repo: 1 thread(s)/process(es) changed it
+- 55 (the first process): 83 calls fchmod=2 fdatasync=7 mkdirat=1 mkdirat(failed)=7 open-w=25 renameat=13 unlinkat=10 write=18
+    .jj/repo/git_import_export.lock: open-w unlinkat
+    .jj/working_copy/working_copy.lock: open-w unlinkat
+    .jj/working_copy .jj/working_copy/#465410: open-w
+    .jj/working_copy/#465410: fchmod
+    .jj/repo/store/extra/lock: open-w unlinkat
+    .git/objects/.tmpj6PKNr: open-w write
+    .git/objects/6b: mkdirat
+    .git/objects/.tmpj6PKNr .git/objects/6b/fad012fa89194903e5c1212c7c1e6d47fc78c4: renameat
+    .git/refs/jj/keep: mkdirat(failed)
+    .git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4.lock: open-w write
+    .git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4 .git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4.lock: renameat
+    .jj/repo/store/extra/.tmpRI3Unx: fdatasync open-w write
+    .jj/repo/store/extra/.tmpRI3Unx .jj/repo/store/extra/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2: renameat
+    .jj/repo/store/extra/heads/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2: open-w unlinkat
+    .jj/repo/store/extra/heads/2774b145b2380aff1c9c33ae22b88b73b7e2982b86af28f9f92ead63e6a45aa86d97281ba56f5fd466c23a7ac48dca996e0dbcc03b25dfdc78cae44dec0e51fe: unlinkat
+    .git/objects/.tmpsjwxAv: open-w write
+    .git/objects/4a: mkdirat(failed)
+    .git/objects/.tmpsjwxAv .git/objects/4a/f6d7a1ad855039c5a1ae47fbff5a2fd6209428: renameat
+    .git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428.lock: open-w write
+    .git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428 .git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428.lock: renameat
+    .jj/repo/store/extra/.tmpsGvveh: fdatasync open-w write
+    .jj/repo/store/extra/.tmpsGvveh .jj/repo/store/extra/5dc96ad8519e3cfabcda007fab7aaa103357ad98f1f8d2a28527f6c71c7dd5cf37ab69914c1d1f9b6d0e9507bcf40f73867677e0f72691a1be67b6054c222815: renameat
+    .jj/repo/store/extra/heads/5dc96ad8519e3cfabcda007fab7aaa103357ad98f1f8d2a28527f6c71c7dd5cf37ab69914c1d1f9b6d0e9507bcf40f73867677e0f72691a1be67b6054c222815: open-w
+    .git: mkdirat(failed)
+    .git/HEAD.lock: open-w write
+    .git/HEAD .git/HEAD.lock: renameat
+    .git/index.lock: open-w write
+    .git/index .git/index.lock: renameat
+    .jj/repo/op_store/views/.tmpmuvahA: fdatasync open-w write
+    .jj/repo/op_store/views/.tmpmuvahA .jj/repo/op_store/views/15a8da25ec7ab8ecf3de8b1100280824e68fac566caa8231442974299084c97e67d41afde229923c283795ffa514f36e87f5228893c42c722d09dc91c7e46dce: renameat
+    .jj/repo/op_store/operations/.tmpKA96Ng: fdatasync open-w write
+    .jj/repo/op_store/operations/.tmpKA96Ng .jj/repo/op_store/operations/28b2680ec1cc63df42b609625db4ab526de9dd5c139ca41c4f29c77c44b457a6cfff05a9f520b928abeac11391d2fd8b9113af92f1da3b8b9f43329863cd51b9: renameat
+    .jj/repo/index/op_links: mkdirat(failed)
+    .jj/repo/index/segments: mkdirat(failed)
+    .jj/repo/index/changed_paths: mkdirat(failed)
+    .jj/repo/index/segments/.tmpG68SFZ: fdatasync open-w write
+    .jj/repo/index/segments/.tmpG68SFZ .jj/repo/index/segments/76269392bb4630047c5d0e9ec33084cf8618c849e892a38c19bc9b328fef494ceaa2b0bc21c9e958e1ac04bb8cc5a06cd39274e85cd474ccbcc236f2ff807319: renameat
+    .jj/repo/index/op_links/.tmpvOu9OV: fdatasync open-w write
+    .jj/repo/index/op_links/.tmpvOu9OV .jj/repo/index/op_links/28b2680ec1cc63df42b609625db4ab526de9dd5c139ca41c4f29c77c44b457a6cfff05a9f520b928abeac11391d2fd8b9113af92f1da3b8b9f43329863cd51b9: renameat
+    .jj/repo/op_heads/heads/lock: open-w unlinkat
+    .jj/repo/op_heads/heads/28b2680ec1cc63df42b609625db4ab526de9dd5c139ca41c4f29c77c44b457a6cfff05a9f520b928abeac11391d2fd8b9113af92f1da3b8b9f43329863cd51b9: open-w
+    .jj/repo/op_heads/heads/f93c4b9b59bccdbb70cf1cf6a0846f94008584f175eee908e1e6eaa66510f1337fc173e923569aa9e219567461f627d28c00c20b5f12c95042e15d57f8d6a04f: unlinkat
+    .jj/working_copy .jj/working_copy/#465432: open-w
+    .jj/working_copy/#465432: fchmod
+    .jj/working_copy/.tmpwtSD31: fdatasync open-w write
+    .jj/working_copy/.tmpwtSD31 .jj/working_copy/checkout: renameat

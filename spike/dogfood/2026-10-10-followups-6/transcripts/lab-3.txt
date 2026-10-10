@@ -1,0 +1,10 @@
+empty dirs in the repo:
+./.git/objects/info
+./.git/objects/pack
+./.git/refs/heads
+./.git/refs/tags
+./.jj/repo/index/changed_paths
+== files only (no empty dirs, default modes, new times)
+Working copy  (@) now at: sryyqqkq/0 4af6d7a1 (divergent) (empty) (no description set)
+Parent commit (@-)      : sryyqqkq/1 6bfad012 (divergent) probe
+exit 0

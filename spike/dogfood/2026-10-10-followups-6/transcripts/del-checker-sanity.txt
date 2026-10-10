@@ -1,0 +1,16 @@
+pre: check rc=0
+Working copy  (@) now at: sryyqqkq/0 059241f4 (divergent) (empty) (no description set)
+Parent commit (@-)      : sryyqqkq/1 fed0deb9 (divergent) probe
+op rc=0
+post: check rc=0
+|probe|initial||
+checker(jj-commit): leg T: description list '|probe2|probe|initial||' is neither the old state nor the completed commit
+third-state: check rc=1
+pre: check rc=0
+Working copy  (@) now at: sryyqqkq/0 059241f4 (divergent) (empty) (no description set)
+Parent commit (@-)      : sryyqqkq/1 fed0deb9 (divergent) probe
+op rc=0
+post: check rc=0
+|probe|initial||
+checker(jj-commit): leg T: description list '|probe2|probe|initial||' is neither the old state nor the completed commit
+third-state: check rc=1

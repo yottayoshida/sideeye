@@ -1,0 +1,18 @@
+Initialized repo in "."
+Working copy  (@) now at: sryyqqkq/0 2a7e63ac (divergent) (empty) (no description set)
+Parent commit (@-)      : sryyqqkq/1 c66ab3a2 (divergent) initial
+== original
+Working copy  (@) now at: sryyqqkq/0 4af6d7a1 (divergent) (empty) (no description set)
+Parent commit (@-)      : sryyqqkq/1 6bfad012 (divergent) probe
+exit 0
+== copy, timestamps not kept
+Working copy  (@) now at: sryyqqkq/0 4af6d7a1 (divergent) (empty) (no description set)
+Parent commit (@-)      : sryyqqkq/1 6bfad012 (divergent) probe
+exit 0
+== copy, timestamps kept
+Initialized repo in "."
+Working copy  (@) now at: sryyqqkq/0 2a7e63ac (divergent) (empty) (no description set)
+Parent commit (@-)      : sryyqqkq/1 c66ab3a2 (divergent) initial
+Working copy  (@) now at: sryyqqkq/0 4af6d7a1 (divergent) (empty) (no description set)
+Parent commit (@-)      : sryyqqkq/1 6bfad012 (divergent) probe
+exit 0

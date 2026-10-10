@@ -1,0 +1,20 @@
+Working copy  (@) now at: sryyqqkq/0 4af6d7a1 (divergent) (empty) (no description set)
+Parent commit (@-)      : sryyqqkq/1 6bfad012 (divergent) probe
+falsify: checker(jj-commit): leg V log: 'jj ...' exited 255 (124 = timeout): Internal error: This version of the jj binary doesn't support this type of repo
+falsify: Caused by: Unsupported commit backend type 'sideeye-corruption-probe
+falsify: '
+UNKNOWN  baseline_run_failed
+         the un-killed baseline world did not exit normally
+next        Change the define: the detail above names the declaration this run contradicted, and nothing is judged until it holds.
+cwd         /s/jj-in
+
+expected    exit 0
+atomicity   106 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   single process in the recording; a thread was created in an explored world; the supervising engine recorded 11 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=0cb3db6e522c105ada757f22995aec8b225a5f48eb9e48459d6eb32029583feb;

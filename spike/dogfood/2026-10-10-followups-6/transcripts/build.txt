@@ -1,0 +1,70 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's (working tree)    sha256 dd1e463c33d5a819c406dd05c8cf76d83a4f0ccf4202989a838385380dccc4f6
+build: the page's at tag v1.10.0     sha256 e3cb964274494696b688f0953fa6b112ef233db9dac6ddca43777cb9b0ddaef3
+build: NOTE the page's installer has moved since v1.10.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 2.06kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/10] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.28kB done
+#5 DONE 0.0s
+
+#6 [ 4/10] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#6 CACHED
+
+#7 [ 5/10] RUN mkdir -p /opt/bin /tmp/dl /tmp/src && python3 -m venv /opt/py
+#7 CACHED
+
+#8 [ 6/10] COPY install-sideeye.sh /opt/install-sideeye.sh
+#8 CACHED
+
+#9 [ 2/10] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config zstd
+#9 CACHED
+
+#10 [ 7/10] RUN sh /opt/install-sideeye.sh v1.10.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#10 CACHED
+
+#11 [ 3/10] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#11 CACHED
+
+#12 [ 8/10] RUN "$(cat /install.path)" version
+#12 CACHED
+
+#13 [ 9/10] RUN apt-get install -y --no-install-recommends git > /tmp/apt-git.log 2>&1 && echo "OK git" || { echo MISSING; tail -3 /tmp/apt-git.log; }
+#13 0.610 OK git
+#13 DONE 0.6s
+
+#14 [10/10] RUN set -eu; cd /tmp/dl; gh=https://github.com/jj-vcs/jj/releases/download;     for pair in 0.44.0:60d42fa2a9abaa445eff10cd2087458562aaad5a54b90309e5a3787ecc985ff2 0.46.0:80e28f7501c11e50e0ca06cd6a1fa1d982cff9cc59bfe4411a9d36aa501d867e; do       v=${pair%%:*}; d=${pair#*:};       curl -fsSL -o jj-$v.tgz $gh/v$v/jj-v$v-aarch64-unknown-linux-musl.tar.gz;       echo "$d  jj-$v.tgz" | sha256sum -c;       mkdir -p x-$v /opt/jj-$v && tar xzf jj-$v.tgz -C x-$v && install -m 755 "$(find x-$v -type f -name jj | head -1)" /opt/jj-$v/jj;       echo "jj $v: $(/opt/jj-$v/jj --version)";     done | tee /versions.txt
+#14 1.504 jj-0.44.0.tgz: OK
+#14 1.656 jj 0.44.0: jj 0.44.0-af45d57de7163cc5f17f3df178a31577e4951ea3
+#14 3.063 jj-0.46.0.tgz: OK
+#14 3.216 jj 0.46.0: jj 0.46.0-7d382314f9420b4b8d932245b49c99492c812b9f
+#14 DONE 3.3s
+
+#15 exporting to image
+#15 exporting layers
+#15 exporting layers 1.9s done
+#15 exporting manifest sha256:58c3c2b99a102b777dbcf8ca22393836f7e75f1e208040d24b28a93dc40fe293 done
+#15 exporting config sha256:11afc9196c2c1269f0f5dda21e7eb42037b1944e4a3164b39297e22bb78b9a8b done
+#15 exporting attestation manifest sha256:94bf2d9d0967281d85f1f7f19cb837cefb3c4587d539f8c3d277c0269cfee07d done
+#15 exporting manifest list sha256:d5e0fcf3680912208eb90bc7ba19248da007d6e9fede13a62149b60ed9e79110 done
+#15 naming to docker.io/library/sideeye-fu6-1010:latest done
+#15 unpacking to docker.io/library/sideeye-fu6-1010:latest
+#15 unpacking to docker.io/library/sideeye-fu6-1010:latest 2.0s done
+#15 DONE 4.0s
+build: sideeye-fu6-1010 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt
