@@ -61,3 +61,10 @@ The first pass covered every write in `src/` with one process, killed before eac
 | G1 | `genexample`, `precommit --install` (new hook and appended), `set --plain`, `encrypt -k`/`--exclude-key`, `encrypt` with an Envfile, `-fk` in another directory, `.env` / `.env.keys` as symlinks | Sideeye where it writes; modes and owners after |
 | H1 | 2.34.2's `encrypt`, `set`, `decrypt` with the write, fsync or rename failing (ENOSPC, EACCES, EIO) | strace inject; every value read back |
 | I1 | `1password` / `bitwarden` up/down/push/pull against a stand-in `op` / `bw` on PATH | Sideeye on the `.env.keys` side, the stand-in's store judged with it |
+
+Added by the second recount, the library (the same-class scan had listed it as atomic without running it):
+
+| # | what | how |
+|---|---|---|
+| A7 | `require('@dotenvx/dotenvx').set(...)` on an encrypted `.env` | Sideeye, both versions |
+| A8 | the same into `.env.production` while `.env.keys` holds `.env`'s key | Sideeye, both versions |

@@ -1,0 +1,11 @@
+# A2 through the library: .env is encrypted and .env.keys holds its key; the library's set puts a new
+# encrypted value in .env.production, which makes a key for it and rewrites .env.keys (main.js:298).
+[world]
+state = "/s/dx"
+
+[define]
+operation = ["node", "-e", "require('@dotenvx/dotenvx').set('PROD_DB_PASSWORD', 'prod-value-two-not-real', { path: '/s/dx/.env.production', envKeysFile: '/s/dx/.env.keys' })"]
+cwd       = "/s/dx"
+check     = "/ap/defines/lib-set-second/check.sh"
+# New key pairs and fresh ciphertext in every run; the checker reads the values back.
+scratch   = [".env", ".env.keys", ".env.production"]

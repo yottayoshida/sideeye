@@ -112,9 +112,10 @@ is. `decrypt` killed at its rename leaves `.env.<number>` in plaintext, staged t
 | I1 | `native up` / `down`, `encrypt` with a secret store, `1password up` / `down`, `bitwarden up` / `down`, against stand-ins (`fake/`) that save through a rename | **PASS** 7/7 with Sideeye, 6 to 21 explored worlds; the checker finds the key in `.env.keys`, the stand-in keyring, 1Password or Bitwarden, and refuses a state with all of them emptied (`lab-13.txt`, `lab-13-bitwarden.txt`) |
 
 Not measured, with the reason: **armor** — the service is dotenvx's. **Power loss** — Sideeye does not
-model it. **macOS** — `encrypt` there keeps keys in the real Keychain, which this project does not
-touch, and the measurement would install dotenvx on the owner's machine; the paths it would run are the
-same JavaScript, and the two findings that depend on where keys go are scoped by `lab-15.sh` instead.
+model it. **macOS** — `encrypt` there keeps keys in the real Keychain, called as `/usr/bin/security` by
+absolute path, so no stand-in can sit in front of it and the real one is not touched; with file custody
+the paths it would run are the same JavaScript as here, and the two findings that depend on where keys
+go are scoped by `lab-15.sh` instead.
 (Bitwarden was first dropped here as too costly to stand in for; the recount below measured it.)
 
 E1 to E3 and F1 are not Sideeye verdicts: Sideeye's reports list concurrent processes under `not tested`,
@@ -146,3 +147,11 @@ Counted again against SELECTION.md, four rows were short; each is measured now.
 | I1 | Bitwarden dropped as too costly | a stand-in `bw` (`fake/bitwarden/bw`, always unlocked, so no prompt): **PASS** 14/14 (`up`) and 21/21 (`down`) |
 | B4 | the interactive path measured by calling its function | through the prompt itself (`lab-17.sh`: `script` for a terminal, `stty` for a size, keystrokes down, space, down, enter): unticking "Protect private keys" takes `.env.keys*` out of the global ignore file and keeps the user's lines; with that file's writes failing ENOSPC, `protect` exits 1 and the file is **0 bytes**. The first try left the pty at 0 rows and drew no choices; recorded in the script |
 | — | the three reports' trackers | no reply, label or referencing commit on dotenvx/dotenvx#1016, #1017, #1018 as of 2026-10-10T00:05Z |
+
+A second "done?" found one more: the library. The same-class scan listed `src/lib/main.js` (the README's
+programmatic `set`, synchronous writes of its own) as atomic since the patch without running it.
+
+| row | what was short | result |
+|---|---|---|
+| A7 | `require('@dotenvx/dotenvx').set(...)` on an encrypted `.env` (`defines/lib-set-encrypted`) | 2.32.4 **FAIL** (the key file or `.env` emptied), 2.34.2 **PASS** 9/9 |
+| A8 | the same into `.env.production` while `.env.keys` holds `.env`'s key, which rewrites the key file (`defines/lib-set-second`; `lab-19.txt` shows the write happens) | 2.32.4 **FAIL**, 2.34.2 **PASS** 9/9 |
