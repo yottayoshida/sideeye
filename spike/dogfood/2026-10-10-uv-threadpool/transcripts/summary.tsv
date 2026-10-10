@@ -1,0 +1,17 @@
+side	target	result
+none	bibtex-tidy	preflight exit 2: UNKNOWN  multiple_threads_detected;
+none	bitwarden	preflight exit 2: UNKNOWN  multiple_threads_detected;
+none	dotenvx-check	preflight exit 2: UNKNOWN  multiple_threads_detected;
+none	eslint	preflight exit 2: UNKNOWN  multiple_threads_detected;
+none	gemini	preflight exit 2: UNKNOWN  multiple_threads_detected;
+none	gltf-transform	preflight exit 2: UNKNOWN  multiple_threads_detected;
+none	joplin-check3	preflight exit 2: UNKNOWN  multiple_threads_detected;
+none	lingui	preflight exit 2: UNKNOWN  multiple_threads_detected;
+none	npm-pkg-set	preflight exit 2: UNKNOWN  multiple_threads_detected;
+none	prettier	preflight exit 2: UNKNOWN  multiple_threads_detected;
+none	stylelint	preflight exit 2: UNKNOWN  multiple_threads_detected;
+none	svgo	preflight exit 2: UNKNOWN  multiple_threads_detected;
+none	vercel	preflight exit 2: UNKNOWN  multiple_threads_detected;
+with	prettier	explore exit 1: FAIL -;
+with	stylelint	explore exit 0: PASS -;
+with	vercel	explore exit 2: UNKNOWN multiple_threads_detected;
