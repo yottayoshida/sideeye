@@ -1,6 +1,6 @@
 # 0050 — The walk and the restore are the last seam, and `engine.zig` is the facade
 
-Status: Accepted (2026-09-05)
+Status: Accepted (2026-09-05; amended 2026-10-10 for #807)
 
 ## Context
 
@@ -114,3 +114,9 @@ the issue owner's call, asked separately from this change.
   larger than the coupling it removed. None arose in any of the four seams.
 - **#491 stays open after this change**, and the question of closing it is asked of the
   owner with the measurement above in hand.
+- **Amended 2026-10-10 (#807):** `engine.zig`'s five-entry module map and the three-set test's
+  comment are removed with every other comment in `src/*.zig` that is not a warning to the next
+  editor; "its own comment says so" above is history, and the reason is the bullet above. The
+  `max_depth` doc comment ("and how deep `deleteTreeAt` descends") lives in `engine/state_fs.zig`,
+  which the series reaches later, and is judged there by the same rule. The couplings this ADR
+  describes are unchanged.

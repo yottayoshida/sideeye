@@ -1,6 +1,6 @@
 # ADR 0032 — A changed path names the operation that changed it, and the freeze is broken once to say so
 
-- **Status:** Accepted (2026-08-30)
+- **Status:** Accepted (2026-08-30; amended 2026-10-10 for #807)
 - **Supersedes:** nothing. Generalises the detector ADR 0003 describes in passing and
   `src/contract.zig`'s `isMutation` doc comment defines.
 - **Scope:** the reconciliation of the judged state's differences against the recorded
@@ -214,3 +214,8 @@ strictly more than "this path is unexplained".
   A row added in the same PR carries `PENDING` where a commit sha belongs and makes the
   gate's cumulative pin-versus-ledger count disagree — the audit's own convention is that
   the pin and the ledger move together, after the change lands.
+- **Amended 2026-10-10 (#807):** the `isMutation` doc comment this ADR cites as the detector's
+  definition, and as the place that "says why" `open` is excluded, is removed with every other
+  comment in `src/*.zig` that is not a warning to the next editor. The definition is the function
+  body; the why is this ADR, §2. (`engine.reconcile`'s doc comment, which §1 cites, lives in
+  `engine/snapshot.zig` and is judged there by the same rule.)

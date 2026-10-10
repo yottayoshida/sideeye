@@ -1,6 +1,6 @@
 # 0062 — main.zig is cut along measured seams, the process boundary first, and a ratchet keeps it from growing back
 
-Status: Accepted (seam 1 merged as `dbcfe7a`, 2026-09-12; amended for seams 2, 3 and 4, 2026-09-12..13 — see Amendments)
+Status: Accepted (seam 1 merged as `dbcfe7a`, 2026-09-12; amended for seams 2, 3 and 4, 2026-09-12..13, and for #807, 2026-10-10 — see Amendments)
 
 This ADR records the series #572 asked for — one plan, several pull requests — and the
 first seam in full. Later seams amend this file when they land rather than opening one
@@ -545,3 +545,17 @@ the orchestration as ten functions over a named state, and a ratchet that says w
 next declaration goes. The measurement the issue names as the proof — a later product change
 being more local than it would have been — is taken from here on, at the first change that
 adds a report field or a refusal.
+
+### Amendment — the module headers and the doc comments go (2026-10-10, #807)
+
+The "done" condition above says every boundary has "a module whose header states its
+contract", and the seam records point at module maps in `//!` headers. #807 removes those
+headers, and every other comment in `src/*.zig` that is not a warning to the next editor — an
+edit that would break something, a limit this code cannot enforce, an operation that must not
+happen here; the reason a design was chosen is not one, even phrased as "X rather than Y" — in seven pull
+requests, the first of them `contract.zig`, `refuse.zig`, `capture.zig`, `engine.zig` and
+`engine/read.zig`. What a header stated about a boundary is in this file's seam records; the finer
+rules a header carried — what a module does not hold, which exits are not in it — go with the
+header. The ratchet `spike/check-main-shape.sh` counts declarations and never read one. ADR 0047, 0048
+and 0050 describe the module maps and doc comments as they stood when those seams landed;
+that is history and stays as written. The boundaries this series drew are unchanged.
