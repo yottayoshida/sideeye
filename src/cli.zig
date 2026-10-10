@@ -111,11 +111,12 @@ pub const Args = struct {
     /// observation keeps the single-run answer this command has always given.
     ///
     /// What it can conclude is bounded by the Snapshot model, not by the word
-    /// "deterministic": `Entry` carries `rel`, `kind` and `content`, so modes,
-    /// ownership, timestamps, inode identity, a symlink's target and everything
-    /// outside the declared root are all outside the comparison. `engine.restore`
-    /// rebuilds the pre-state at fixed modes, so run B does not even start from a
-    /// byte-identical directory — it starts from the same *snapshot*. The help text
+    /// "deterministic": the comparison reads an `Entry`'s `rel`, `kind` and `content`,
+    /// so modes, ownership, timestamps, inode identity, a symlink's target and
+    /// everything outside the declared root are all outside it. `engine.restore`
+    /// rebuilds the pre-state with the recorded permission bits but not its owners or
+    /// timestamps, so run B does not start from a byte-identical directory —
+    /// it starts from the same *snapshot*. The help text
     /// states both limits rather than leaving them to be discovered.
     twice: bool = false,
     /// The per-world wall-clock budget in seconds (#263). Null — the default — means
@@ -261,10 +262,11 @@ const usage_fmt =
     \\  --check      command run after each crash, in a fresh process; exit 0 = invariant holds
     \\  --recovery   the target's own recovery (with --recovery-check; the two come together).
     \\               After the exploration has decided its verdict, each saved FAIL world's
-    \\               crash state — names, kinds and contents, not timestamps or permissions —
-    \\               is rebuilt in --state, this runs, and the recovery checker judges what it
-    \\               left. The result is reported beside the verdict and never changes it
-    \\               or the exit code. An explore's replay line carries both flags, and
+    \\               crash state — names, kinds, contents and permission bits, not
+    \\               timestamps or owners — is rebuilt in --state, this runs, and the
+    \\               recovery checker judges what it left. The result is reported beside
+    \\               the verdict and never changes it or the exit code. An explore's
+    \\               replay line carries both flags, and
     \\               replay accepts them; with --config they come from [recovery] instead
     \\  --recovery-check
     \\               exit 0 = the recovery left a correct state. Trusted only after it
@@ -376,8 +378,10 @@ const usage_fmt =
     \\               sufficiency threshold for nondeterminism in general.
     \\               Caution: it also REWRITES the state directory: it is
     \\               restored from the pre-run snapshot before the second run,
-    \\               so the first run's output is gone and file modes come back
-    \\               as 0644/0755. A preflight without this flag leaves the
+    \\               so the first run's output is gone; permission bits come back
+    \\               as the snapshot read them (a directory with its owner's bits
+    \\               added), owners and timestamps do not.
+    \\               A preflight without this flag leaves the
     \\               directory as the run left it.
     \\
     \\exit codes: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR

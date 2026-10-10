@@ -53,7 +53,7 @@ fn captureErrno(eo: ?*?c_int) void {
 /// refusal that names the file wants to name its size, and the read loop stopped
 /// before it could know. `links` is documented on `LinkPolicy` above.
 pub fn readWhole(arena: Allocator, path: [*:0]const u8, max: usize, size_out: ?*?u64, links: LinkPolicy) ReadWholeError![]const u8 {
-    return readWholeDiag(arena, path, max, size_out, links, null);
+    return readWholeDiag(arena, path, max, size_out, links, null, null);
 }
 
 /// `readWhole` with one more answer for a caller that has to say *why* a read failed
@@ -64,8 +64,9 @@ pub fn readWhole(arena: Allocator, path: [*:0]const u8, max: usize, size_out: ?*
 /// turned out not to be a regular file, or `kindOfFd` refusing (a raw `statx` on Linux,
 /// which never touches libc's errno; `fstat` on Darwin does, and nothing reads it there).
 /// A number nobody measured must not reach a message.
-pub fn readWholeDiag(arena: Allocator, path: [*:0]const u8, max: usize, size_out: ?*?u64, links: LinkPolicy, errno_out: ?*?c_int) ReadWholeError![]const u8 {
+pub fn readWholeDiag(arena: Allocator, path: [*:0]const u8, max: usize, size_out: ?*?u64, links: LinkPolicy, errno_out: ?*?c_int, mode_out: ?*?u16) ReadWholeError![]const u8 {
     if (errno_out) |eo| eo.* = null;
+    if (mode_out) |mo| mo.* = null;
     const flags: c_int = posix.O_RDONLY | posix.O_NONBLOCK |
         @as(c_int, switch (links) {
             .follow => 0,
@@ -87,7 +88,10 @@ pub fn readWholeDiag(arena: Allocator, path: [*:0]const u8, max: usize, size_out
     // guard here, because this function deliberately ignores one (see the reservation
     // below); the walk's kind check is not it either, since `readTraceCapped` does not
     // go through the walk.
-    if ((posix.kindOfFd(fd) catch return error.ReadFailed) != .file) return error.ReadFailed;
+    // From this descriptor, not a second stat of the name: the name can point elsewhere by then.
+    const km = posix.kindModeOfFd(fd) catch return error.ReadFailed;
+    if (km.kind != .file) return error.ReadFailed;
+    if (mode_out) |mo| mo.* = km.mode;
 
     var list: std.ArrayList(u8) = .empty;
     var chunk: [64 * 1024]u8 = undefined;
@@ -209,11 +213,11 @@ test "readWholeDiag: a file this user cannot open reports the open's errno; a di
     }
     // The failed call is `open`, and its errno is what the caller gets.
     var err: ?c_int = 99;
-    try std.testing.expectError(error.ReadFailed, readWholeDiag(arena, lock.ptr, 4096, null, .follow, &err));
+    try std.testing.expectError(error.ReadFailed, readWholeDiag(arena, lock.ptr, 4096, null, .follow, &err, null));
     try std.testing.expectEqual(@as(?c_int, posix.EACCES), err);
     // A directory opens, then fails the regular-file check: no call failed, no errno.
     err = 99;
-    try std.testing.expectError(error.ReadFailed, readWholeDiag(arena, dir.ptr, 4096, null, .follow, &err));
+    try std.testing.expectError(error.ReadFailed, readWholeDiag(arena, dir.ptr, 4096, null, .follow, &err, null));
     try std.testing.expectEqual(@as(?c_int, null), err);
     // The plain form still reads what it always read.
     try std.testing.expectError(error.ReadFailed, readWhole(arena, lock.ptr, 4096, null, .follow));

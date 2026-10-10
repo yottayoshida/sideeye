@@ -1,0 +1,6 @@
+[world]
+state = "/s/modebit"
+
+[define]
+operation = "/s/modebit/prog"
+cwd       = "/s/modebit"

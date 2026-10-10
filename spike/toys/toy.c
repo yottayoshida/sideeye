@@ -305,6 +305,8 @@
  *                     Tolerable: the subject's account remains complete.
  *                     With TOY_SPAWN_PATH=<image>, spawn `<image> rotate` instead (#685).
  *   TOY_EXEC_PATH     exec `<image> rotate` in this same process before writing anything (#685).
+ *   TOY_REQUIRE_MODE  rotate exits 1 unless key.json carries this mode, octal (#678).
+ *   TOY_KEY_MODE      the new key takes this mode, octal, before the rename (#678).
  *   TOY_FORK_WORLD    the same quiet fork as TOY_FORK, taken only when SIDEEYE_KILL_AT
  *                     is set — inside crash worlds, never in the recording run. The
  *                     recording-global boundary story then says "no boundary" while
@@ -1070,6 +1072,18 @@ static int cmd_rotate_body(void) {
     join_path(key, sizeof key, KEY_NAME);
     join_path(tmp, sizeof tmp, TMP_NAME);
 
+    /* #678: refuse to rotate unless the key carries the mode named here (octal), the way argocd
+     * refuses a config that is not 0600. The recording starts from the file the setup left and
+     * every world from the one the restore rebuilt, so a restore that drops modes fails here. */
+    const char *want_mode = getenv("TOY_REQUIRE_MODE");
+    if (want_mode) {
+        struct stat st;
+        if (stat(key, &st) != 0 || (st.st_mode & 0777) != (mode_t)strtol(want_mode, NULL, 8)) {
+            fprintf(stderr, "key.json is not mode %s\n", want_mode);
+            return 1;
+        }
+    }
+
     /* Exactly one kill point (#487). Not the only shape that could reach one — `isKillPoint`
      * and `isMutation` (src/contract.zig) agree on write, rename, unlink, truncate, mkdir,
      * rmdir, link and symlink, so a lone one of any of those would do — `docs/target-classes.md`
@@ -1681,6 +1695,10 @@ static int cmd_rotate_body(void) {
     maybe_leave_the_supported_region();
 
     if (write_file(tmp, "key=2\n") != 0) return 1;
+    /* #678: the new key takes this mode (octal) before it replaces the old one, so the state the
+     * rotate completes holds a key that is not 0644 — a credential's 0600. */
+    const char *key_mode = getenv("TOY_KEY_MODE");
+    if (key_mode && chmod(tmp, (mode_t)strtol(key_mode, NULL, 8)) != 0) return 1;
 
 #ifdef BUGGY
     /* The window: between these two calls there is no key on disk at all. */

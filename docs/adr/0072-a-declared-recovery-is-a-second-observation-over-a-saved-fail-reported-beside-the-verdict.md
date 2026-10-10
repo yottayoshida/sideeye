@@ -26,7 +26,7 @@ before the exhibit is latched and may rewrite it (`spike/dogfood-timew.sh`'s che
 outside the state directory, survives into every later world and into the baseline.
 
 **A snapshot holds names, kinds and contents.** `engine.restore` rebuilds exactly those; files
-come back with restore-time timestamps and the engine's fixed modes.
+come back with restore-time timestamps and the engine's fixed modes. *(Permission bits are restored since ADR 0109, 2026-10-10.)*
 
 **Replay refuses the define-surface flags (ADR 0009), and `--config` is exclusive with them
 (ADR 0007)**, because a case and a config each carry the whole question.
@@ -36,7 +36,7 @@ come back with restore-time timestamps and the engine's fixed modes.
 A define may declare a recovery: `[recovery] command` and `check` in `sideeye.toml`, or
 `--recovery` with `--recovery-check`. Declaring one changes no verdict and no exit code; for
 each saved FAIL world it adds what the tool's own recovery did when handed that world's crash
-state — its names, kinds and contents, not its timestamps or permissions.
+state — its names, kinds and contents, not its timestamps or permissions. *(Its permission bits too since ADR 0109, 2026-10-10.)*
 
 1. **When: after the exploration loop, once the verdict is decided, and only when there is a
    FAIL.** Nothing a recovery does can reach a world or the verdict, because none is left.
@@ -47,7 +47,9 @@ state — its names, kinds and contents, not its timestamps or permissions.
 3. **Which state: the crash state, rebuilt.** Before each leg, `engine.restore(crashed,
    state_abs)`. Timestamps and permissions are not restored to crash-time values (owner's
    ruling); the limit is written where the result is read — the account, the evidence bundle's
-   caveats, `docs/cli.md`.
+   caveats, `docs/cli.md`. **Amended 2026-10-10 (ADR 0109, owner's ruling): permission bits are
+   restored** — every restore carries them since #678, so the crash state a recovery runs against
+   has the crash's bits; timestamps are still not restored.
 4. **What one leg starts is stopped before the next, where the engine can stop it.** Where the
    engine can make cgroups (Linux), the command and the checker each run in a cgroup of their
    own, as a world does (ADR 0065), and everything they started is stopped when they exit; the
@@ -107,7 +109,10 @@ world checker refuses goes from FAIL exit 1 to UNKNOWN exit 2.
 **Restore crash-time timestamps and permissions.** Rejected by the owner. It widens what every
 snapshot carries and what every restore does, for every world of every run, to serve the subset
 of recoveries that decide by time or mode. The limit is stated instead, including that a `pass`
-from such a tool (make, ninja) can be manufactured by it.
+from such a tool (make, ninja) can be manufactured by it. **Amended 2026-10-10 (ADR 0109) for
+permissions:** #678's targets, which check a mode under the state, could not be judged at all,
+in any world, and the per-world cost was measured as no measurable difference (2,000 files, five
+worlds); the owner ruled to restore permission bits. Timestamps stay rejected.
 
 **Falsify with the engine's `corruptState`.** Rejected: it writes one string to every file, so two
 files that were equal stay equal and a checker of the `cmp out in` shape — the shape a recovery

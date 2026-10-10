@@ -78,6 +78,8 @@ pub extern "c" fn openat(dirfd: c_int, path: [*:0]const u8, flags: c_int, ...) c
 /// expressed as an argument.
 pub extern "c" fn unlinkat(dirfd: c_int, path: [*:0]const u8, flags: c_int) c_int;
 pub extern "c" fn mkdirat(dirfd: c_int, path: [*:0]const u8, mode: c_uint) c_int;
+/// On a held descriptor only: chmod by name follows a link swapped in at that name.
+pub extern "c" fn fchmod(fd: c_int, mode: c_uint) c_int;
 pub extern "c" fn symlinkat(target: [*:0]const u8, newdirfd: c_int, linkpath: [*:0]const u8) c_int;
 /// **Takes ownership of `fd`**: `closedir` closes it, so a descriptor the caller still
 /// needs afterwards cannot be handed over.
@@ -576,11 +578,23 @@ pub fn kindAtNoFollow(dirfd_: c_int, path: [*:0]const u8) ClassifyError!Kind {
 /// `.symlink` never comes back from here: `open` follows the link, so the descriptor is
 /// the target. `.missing` likewise cannot occur — the descriptor exists.
 pub fn kindOfFd(fd: c_int) ClassifyError!Kind {
+    return (try kindModeOfFd(fd)).kind;
+}
+
+/// The read, write and execute bits: what `restore` carries (ADR 0109). Not set-id or sticky —
+/// a set-group-ID bit for a group the user is not in is dropped or refused, by platform.
+pub const perm_bits: u16 = 0o777;
+
+/// A kind and, where the kernel filled them in, permission bits, from one call. `mode` is null,
+/// never 0, when `statx` did not grant `MODE` — `restore` would apply a 0.
+pub const KindMode = struct { kind: Kind, mode: ?u16 };
+
+pub fn kindModeOfFd(fd: c_int) ClassifyError!KindMode {
     if (builtin.os.tag == .linux) {
         const lnx = std.os.linux;
         var stx: lnx.Statx = undefined;
         // The empty path with AT_EMPTY_PATH is how statx addresses a descriptor itself.
-        const rc = lnx.statx(fd, "", lnx.AT.EMPTY_PATH, .{ .TYPE = true }, &stx);
+        const rc = lnx.statx(fd, "", lnx.AT.EMPTY_PATH, .{ .TYPE = true, .MODE = true }, &stx);
         switch (lnx.errno(rc)) {
             .SUCCESS => {},
             else => return error.Unclassifiable,
@@ -588,16 +602,39 @@ pub fn kindOfFd(fd: c_int) ClassifyError!Kind {
         // Same contract as above: a type the kernel did not fill in is not an answer.
         if (!stx.mask.TYPE) return error.Unclassifiable;
         const m: u32 = stx.mode;
-        if (lnx.S.ISDIR(m)) return .dir;
-        if (lnx.S.ISREG(m)) return .file;
-        return .other;
+        const mode: ?u16 = if (stx.mask.MODE) @intCast(m & perm_bits) else null;
+        if (lnx.S.ISDIR(m)) return .{ .kind = .dir, .mode = mode };
+        if (lnx.S.ISREG(m)) return .{ .kind = .file, .mode = mode };
+        return .{ .kind = .other, .mode = mode };
     } else {
         var st: std.c.Stat = undefined;
         if (std.c.fstat(fd, &st) != 0) return error.Unclassifiable;
         const m = st.mode;
-        if (std.c.S.ISDIR(m)) return .dir;
-        if (std.c.S.ISREG(m)) return .file;
-        return .other;
+        const mode: ?u16 = @intCast(m & perm_bits);
+        if (std.c.S.ISDIR(m)) return .{ .kind = .dir, .mode = mode };
+        if (std.c.S.ISREG(m)) return .{ .kind = .file, .mode = mode };
+        return .{ .kind = .other, .mode = mode };
+    }
+}
+
+/// The kind and permission bits of `path` without following its last component; null when they
+/// could not be read. Check the kind before using the bits: a name swapped for a link reads as
+/// the link, whose bits are 0777.
+pub fn kindModeOfPathNoFollow(path: [*:0]const u8) ?KindMode {
+    if (builtin.os.tag == .linux) {
+        const lnx = std.os.linux;
+        var stx: lnx.Statx = undefined;
+        const rc = lnx.statx(AT_FDCWD, path, lnx.AT.SYMLINK_NOFOLLOW, .{ .TYPE = true, .MODE = true }, &stx);
+        if (lnx.errno(rc) != .SUCCESS or !stx.mask.TYPE) return null;
+        const m: u32 = stx.mode;
+        const k: Kind = if (lnx.S.ISLNK(m)) .symlink else if (lnx.S.ISDIR(m)) .dir else if (lnx.S.ISREG(m)) .file else .other;
+        return .{ .kind = k, .mode = if (stx.mask.MODE) @intCast(m & perm_bits) else null };
+    } else {
+        var st: std.c.Stat = undefined;
+        if (std.c.fstatat(AT_FDCWD, path, &st, std.c.AT.SYMLINK_NOFOLLOW) != 0) return null;
+        const m = st.mode;
+        const k: Kind = if (std.c.S.ISLNK(m)) .symlink else if (std.c.S.ISDIR(m)) .dir else if (std.c.S.ISREG(m)) .file else .other;
+        return .{ .kind = k, .mode = @intCast(m & perm_bits) };
     }
 }
 
