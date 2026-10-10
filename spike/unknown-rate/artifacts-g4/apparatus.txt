@@ -1,0 +1,9 @@
+sideeye 1.5.0 (trace contract v18)
+a43be40935afa205f4c76295b9183d49125a07ecde06c602d30afade2323d440  /work/zig-out/bin/sideeye
+3cf4d36f4cb1c5ddabc2b22eefc6482b04c11069c21a80cc32eeb792c8593866  /work/zig-out/lib/libsideeye_shim.so
+head: 8b9e79e07c5f35e55ec49a43bd443030e62fbf53
+engine: release v1.5.0 sideeye-v1.5.0-x86_64-linux.tar.gz f836b7af586e08188a2882a16423e4a2034f64321eb9f56e03bf44cbd74a0a6d verified-against github-release-digest
+machine: x86_64 x86_64
+ci-run: 38006296132
+sideeye-ur-b2 sha256:e2eaa826adf954f31f66172003792445fcb63f44abde5dfe64adaa3910920e4b
+sideeye-ur-extra sha256:7eea88beed6ba0c2a9462de9a69efbccb5f6bfa2645e48bc95a532c36eb0f7a5

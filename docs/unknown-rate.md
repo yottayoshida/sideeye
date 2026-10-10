@@ -292,11 +292,11 @@ threshold set from it would be satisfied by construction. So:
   fresh reading. No threshold is set from B2, and none is set before its
   number is published. B's g3 figures are evaluated against the threshold below
   as any B sweep's are, and what that comes to is recorded rather than decided
-  here. Generation g4 sweeps B and B2 again on Linux x86_64 (#696), and its B
-  figures were decided before it ran: recorded beside g3's, they do not move
+  here. Generation g4 sweeps B and B2 again on Linux x86_64 (#696), and how its B
+  figures are read was decided before it ran: recorded beside g3's, they do not move
   criterion 4, whose basis stays g3, and the kill-criteria review's Row 8 reads
   them as it reads a sweep on any platform (the owner, 2026-10-10;
-  `spike/unknown-rate/g4-expected-before-reading.md`). The protocol is in the corpus section, under B2; all three merges
+  `spike/unknown-rate/artifacts-g4/expected-before-reading.md`). The protocol is in the corpus section, under B2; all three merges
   have landed, and g3's tables are in the Results section with the prose
   beside the protocol.
 
@@ -472,7 +472,9 @@ emacspeak). Two defines carry the shell's redirects as their documented
 invocation (roffit, zh-autoconvert — their `NOTES.md` say what a verdict is
 then about); one declares a measured exit convention (otf2bdf, `8`); one is
 committed knowing its recording fails (unmass — the binary dies with SIGSEGV
-on every archive built to the formats it documents, on this platform); five
+on every archive built to the formats it documents, on Linux aarch64; on
+x86_64, g4, the recording refuses the same way, and the cause there was not
+measured outside the engine); five
 name in `packages.txt` a package their environment needs and their Depends
 do not pull in (a font, the `paper` command, an encoder, a preprocessor, a
 Perl module), which the sweep image installs. Each define's `preflight
@@ -641,8 +643,8 @@ the file is the record.)
 g3's B figures are held to it as any B sweep's are — including the sentence
 that a sweep failing part 1 is DESIGN §18 material. Whether criterion 4's status
 moves on that is the owner's call, made after the number exists and recorded
-in `PRD.md` with the date. g4's B, swept on Linux x86_64, was decided before it
-ran: it does not move criterion 4, and a g4 failing part 1 is still DESIGN §18
+in `PRD.md` with the date. How g4's B, swept on Linux x86_64, is read was decided
+before it ran: it does not move criterion 4, and a g4 failing part 1 is still DESIGN §18
 material, as the kill-criteria review's Row 8 holds of a sweep on any platform
 (the owner, 2026-10-10; the threshold section says what is written). B2 gets no threshold on this page, and any threshold
 or widening issue the frozen result suggests is filed from that result, not
@@ -666,9 +668,9 @@ engine's step did, so neither trial met it. `recording_run_failed` once —
 unmass: outside the engine every archive built from its documented formats
 ends in a segmentation fault (exit 139); inside the recording the engine
 decoded the status as 1, and the uniform `0` refused it. Its notes record both
-numbers and file the refusal as the target's own failure on this platform, not
+numbers and file the refusal as the target's own failure on Linux aarch64, not
 a define miss. `unsupported_syscall_observed` once — bs1770gain calls
-`mkdirat`, a README class wall. `kill_did_not_land` once — apt-utils:
+`mkdirat` (on aarch64; on x86_64, g4, the same refusal names `mkdir`), a README class wall. `kill_did_not_land` once — apt-utils:
 `apt-ftparchive generate` orders its state-directory calls differently between
 runs, so a crash point at a fixed index does not name the same operation twice;
 the target's own nondeterminism, and the message names the declaration it
@@ -761,7 +763,8 @@ from the result, if at all, by the owner, and not here.
 
 The protocol: one sweep per generation, one engine — a build (`zig build
 -Dtarget=aarch64-linux-gnu` at that sweep's HEAD) for g1 and g2, the released
-asset `engine-pins.tsv` names for g3 (fetched, verified against the published
+asset `engine-pins.tsv` names for g3 and g4 (g3's v1.5.0, in its aarch64 and its
+x86_64 build; fetched, verified against the published
 digest, mounted read-only; the pin line in `apparatus.txt` records it) — fresh containers
 per trial, driven by `spike/unknown-rate/sweep.sh <generation>` — the repo
 mounted read-only, with only that generation's artifacts tree writable.
@@ -811,10 +814,25 @@ table:
 
 ## Platform
 
-- **The measured platform** is Linux aarch64, in containers — this page's
-  sweep runs there, and it is the only platform with real-target
-  measurements in this repository (CI's x86_64 job runs the acceptance
-  toys, not real targets).
+- **Linux aarch64**, in containers under Docker Desktop: g1, g2 and g3. A
+  generation whose heading names no platform was swept here (ADR 0104: the
+  heading names the machine `apparatus.txt` records, when it is not aarch64).
+- **Linux x86_64**, on GitHub's `ubuntu-latest` runner: g4, the B and B2
+  groups on g3's release in its x86_64 build, swept once by
+  `.github/workflows/spike-unknown-rate-x86.yml` at the merge commit of its
+  apparatus (run 38006296132; #696), dated in JST (the run's own timestamps
+  read 2026-10-09T23:49–23:52Z). Every verdict matched g3's, and every refusal
+  reason. What moved sits below that, where the architecture's system calls
+  show through: bs1770gain's refusal names `mkdir` where g3's named `mkdirat`,
+  apt-utils and pacpl record `chmod` where g3 recorded `fchmodat`, and
+  apt-utils explored 4 worlds where g3 explored 5. It is not a comparison of
+  architecture alone: the Debian
+  packages are the day's (neither Dockerfile pins a snapshot), and the
+  kernel, the VM (Azure's Ubuntu against Docker Desktop's LinuxKit) and the
+  runtime's AppArmor profile differ as well. Under g4's heading the walls are
+  define-level facts, the same by construction; the macOS column is derived
+  from g4's Linux results by the formula below; the B2 authoring clock is
+  g3's and printed under g3 only.
 - **macOS**: derived, not measured. The mechanism is structural — no oracle
   is usable by default on macOS (SIP leaves DTrace's syscall provider with
   no probes even as root; the candidate measured oracle-shaped, `fs_usage`,
@@ -823,8 +841,9 @@ table:
   strict protocol every Linux PASS derives to UNKNOWN
   (`completeness_not_verified`) while a FAIL stands on its own evidence.
   The derived rate is printed from that formula by `count.py`, never
-  hand-written, and is labeled derived wherever it appears.
-- **Linux x86_64**: no real-target measurement exists; named absent.
+  hand-written, and is labeled derived wherever it appears. No measured
+  macOS row exists or is planned: the B and B2 targets are Debian packages,
+  and their defines assume Debian's paths and seeds (#696).
 
 ## Results
 
@@ -1272,9 +1291,166 @@ evidence and is unchanged; a Linux UNKNOWN is not re-derived):
 - B-group derived UNKNOWN rate on macOS: 5/7 (71.4%)
 - B2-group derived UNKNOWN rate on macOS: 18/19 (94.7%)
 
-### Generation g4 — not yet measured (B,B2)
+### Generation g4 — measured 2026-10-10 (B,B2) on Linux x86_64
 
-_Not yet measured: the sweep has not run. This line is asserted by count.py check._
+#### B-group (mechanically selected; the threshold basis)
+
+_Re-measured in g4 on this generation's engine — a historical comparison against the names an earlier generation measured, not fresh evidence; the threshold basis is unchanged._
+
+| target | class | funnel stage | verdict | unknown_reason |
+|---|---|---|---|---|
+| audiolink | perl-cli | wall W2 | - | - |
+| bucardo | perl-cli | wall W2 | - | - |
+| check-postgres | perl-cli | wall W2 | - | - |
+| cricket | perl-cli | wall W2 | - | - |
+| flamerobin | cxx-cli | wall W3 | - | - |
+| gammu | c-cli | wall W2 | - | - |
+| gnupg-agent | c-cli | wall W3 | - | - |
+| goobook | python-cli | wall W2 | - | - |
+| hobbit-plugins | perl-cli | wall W2 | - | - |
+| icinga2-ido-mysql | cxx-cli | wall W1 | - | - |
+| icinga2-ido-pgsql | cxx-cli | wall W1 | - | - |
+| ldap-git-backup | perl-cli | wall W2 | - | - |
+| ldap-utils | c-cli | wall W2 | - | - |
+| 2vcard | perl-cli | explored | PASS | - |
+| bogofilter-bdb | c-cli | explored | PASS | - |
+| bogofilter-sqlite | c-cli | explored | FAIL | - |
+| cookietool | c-cli | explored | UNKNOWN | recording_run_failed |
+| emboss | c-cli | explored | PASS | - |
+| hnb | c-cli | explored | FAIL | - |
+| lbdb | perl-cli | explored | UNKNOWN | child_touched_state_dir |
+
+UNKNOWN rate, per-trial: **2/7 (28.6%)**
+
+| slice | UNKNOWN |
+|---|---|
+| tool: 2vcard | 0/1 (counts only, n<5) |
+| tool: bogofilter-bdb | 0/1 (counts only, n<5) |
+| tool: bogofilter-sqlite | 0/1 (counts only, n<5) |
+| tool: cookietool | 1/1 (counts only, n<5) |
+| tool: emboss | 0/1 (counts only, n<5) |
+| tool: hnb | 0/1 (counts only, n<5) |
+| tool: lbdb | 1/1 (counts only, n<5) |
+| class: c-cli | 1/5 (20.0%) |
+| class: perl-cli | 1/2 (counts only, n<5) |
+| judge: l0 | 2/7 (28.6%) |
+
+| unknown_reason | count |
+|---|---|
+| child_touched_state_dir | 1 |
+| recording_run_failed | 1 |
+
+#### B2-group (mechanically selected on trixie after v1.5; measured, no threshold)
+
+_Re-measured in g4 on this generation's engine — a historical comparison against the names an earlier generation measured, not fresh evidence; the threshold basis is unchanged._
+
+| target | class | funnel stage | verdict | unknown_reason |
+|---|---|---|---|---|
+| dvdbackup | c-cli | wall W2 | - | - |
+| httrack | c-cli | wall W2 | - | - |
+| zbar-tools | c-cli | wall W3 | - | - |
+| debmirror | perl-cli | wall W2 | - | - |
+| debian-cd | perl-cli | wall W3 | - | - |
+| aggregate | c-cli | wall W3 | - | - |
+| mp3roaster | perl-cli | wall W2 | - | - |
+| crip | perl-cli | wall W2 | - | - |
+| emacspeak | perl-cli | wall W3 | - | - |
+| migrationtools | perl-cli | wall W3 | - | - |
+| pgdbf | c-cli | wall W3 | - | - |
+| roffit | perl-cli | explored | PASS | - |
+| bs1770gain | c-cli | explored | UNKNOWN | unsupported_syscall_observed |
+| txt2html | perl-cli | explored | PASS | - |
+| otf2bdf | c-cli | explored | PASS | - |
+| psutils | c-cli | explored | PASS | - |
+| unmass | cxx-cli | explored | UNKNOWN | recording_run_failed |
+| tcpslice | c-cli | explored | PASS | - |
+| enscribe | c-cli | explored | PASS | - |
+| clzip | c-cli | explored | PASS | - |
+| giflib-tools | c-cli | explored | PASS | - |
+| pngcrush | c-cli | explored | PASS | - |
+| pacpl | perl-cli | explored | UNKNOWN | child_touched_state_dir |
+| c2hs | haskell-cli | explored | PASS | - |
+| apt-utils | cxx-cli | explored | UNKNOWN | kill_did_not_land |
+| mail-expire | perl-cli | explored | UNKNOWN | child_touched_state_dir |
+| conv-tools | c-cli | explored | PASS | - |
+| sgml-base | perl-cli | explored | FAIL | - |
+| zh-autoconvert | c-cli | explored | PASS | - |
+| icnsutils | c-cli | explored | PASS | - |
+
+UNKNOWN rate, per-trial: **5/19 (26.3%)**
+
+| slice | UNKNOWN |
+|---|---|
+| tool: apt-utils | 1/1 (counts only, n<5) |
+| tool: bs1770gain | 1/1 (counts only, n<5) |
+| tool: c2hs | 0/1 (counts only, n<5) |
+| tool: clzip | 0/1 (counts only, n<5) |
+| tool: conv-tools | 0/1 (counts only, n<5) |
+| tool: enscribe | 0/1 (counts only, n<5) |
+| tool: giflib-tools | 0/1 (counts only, n<5) |
+| tool: icnsutils | 0/1 (counts only, n<5) |
+| tool: mail-expire | 1/1 (counts only, n<5) |
+| tool: otf2bdf | 0/1 (counts only, n<5) |
+| tool: pacpl | 1/1 (counts only, n<5) |
+| tool: pngcrush | 0/1 (counts only, n<5) |
+| tool: psutils | 0/1 (counts only, n<5) |
+| tool: roffit | 0/1 (counts only, n<5) |
+| tool: sgml-base | 0/1 (counts only, n<5) |
+| tool: tcpslice | 0/1 (counts only, n<5) |
+| tool: txt2html | 0/1 (counts only, n<5) |
+| tool: unmass | 1/1 (counts only, n<5) |
+| tool: zh-autoconvert | 0/1 (counts only, n<5) |
+| class: c-cli | 1/11 (9.1%) |
+| class: cxx-cli | 2/2 (counts only, n<5) |
+| class: haskell-cli | 0/1 (counts only, n<5) |
+| class: perl-cli | 2/5 (40.0%) |
+| judge: l0 | 5/19 (26.3%) |
+
+| unknown_reason | count |
+|---|---|
+| child_touched_state_dir | 2 |
+| kill_did_not_land | 1 |
+| recording_run_failed | 1 |
+| unsupported_syscall_observed | 1 |
+
+#### Observation legs (trials whose launcher recorded them; the verdict above is the last leg's)
+
+| target | group | first leg | second leg | final mode |
+|---|---|---|---|---|
+| 2vcard | B | wrappers: PASS | - | wrappers |
+| bogofilter-bdb | B | wrappers: PASS | - | wrappers |
+| bogofilter-sqlite | B | wrappers: FAIL | - | wrappers |
+| cookietool | B | wrappers: UNKNOWN (recording_run_failed) | - | wrappers |
+| emboss | B | wrappers: PASS | - | wrappers |
+| hnb | B | wrappers: FAIL | - | wrappers |
+| lbdb | B | wrappers: UNKNOWN (child_touched_state_dir) | - | wrappers |
+| roffit | B2 | wrappers: PASS | - | wrappers |
+| bs1770gain | B2 | wrappers: UNKNOWN (unsupported_syscall_observed) | - | wrappers |
+| txt2html | B2 | wrappers: PASS | - | wrappers |
+| otf2bdf | B2 | wrappers: UNKNOWN (oracle_missed_operation) | syscalls: PASS | syscalls |
+| psutils | B2 | wrappers: PASS | - | wrappers |
+| unmass | B2 | wrappers: UNKNOWN (recording_run_failed) | - | wrappers |
+| tcpslice | B2 | wrappers: PASS | - | wrappers |
+| enscribe | B2 | wrappers: PASS | - | wrappers |
+| clzip | B2 | wrappers: PASS | - | wrappers |
+| giflib-tools | B2 | wrappers: PASS | - | wrappers |
+| pngcrush | B2 | wrappers: PASS | - | wrappers |
+| pacpl | B2 | wrappers: UNKNOWN (child_touched_state_dir) | - | wrappers |
+| c2hs | B2 | wrappers: PASS | - | wrappers |
+| apt-utils | B2 | wrappers: UNKNOWN (kill_did_not_land) | - | wrappers |
+| mail-expire | B2 | wrappers: UNKNOWN (child_touched_state_dir) | - | wrappers |
+| conv-tools | B2 | wrappers: PASS | - | wrappers |
+| sgml-base | B2 | wrappers: FAIL | - | wrappers |
+| zh-autoconvert | B2 | wrappers: PASS | - | wrappers |
+| icnsutils | B2 | wrappers: PASS | - | wrappers |
+
+#### macOS column (derived, not measured)
+
+Formula (mechanism: `requireCompleteness`, src/refuse.zig — no oracle exists on macOS,
+so every strict PASS becomes `completeness_not_verified`; a FAIL stands on its own
+evidence and is unchanged; a Linux UNKNOWN is not re-derived):
+- B-group derived UNKNOWN rate on macOS: 5/7 (71.4%)
+- B2-group derived UNKNOWN rate on macOS: 18/19 (94.7%)
 <!-- unknown-rate:results:end -->
 
 **The `ctl-pass-mv` control above predates contract v15, and its reason has moved twice.**
@@ -1414,6 +1590,12 @@ is DESIGN §18 material all the same: the kill-criteria review's Row 8 carries n
 platform qualifier, and a sweep on another platform faces it on its own
 numbers (the owner, the same day).
 
+**Measured on g4 (2026-10-10).** g4's B reads **2/7 (28.6%)**, verdict for
+verdict and reason for reason as g3's: cookietool `recording_run_failed`, lbdb
+`child_touched_state_dir`. Part 1 therefore reads as g3's — 1/7 with lbdb filed
+as target-origin, 0/7 without — and part 2 at 28.6%: neither part fails, and
+Row 8 is not triggered on Linux x86_64 either.
+
 ## Limitations, out loud
 
 - The A-group rate measures the engine against its own development inputs;
@@ -1425,6 +1607,7 @@ numbers (the owner, the same day).
   bad setup is a SETUP_ERROR, excluded loudly) but an unrepresentative one
   narrows what the trial can see. The uniform one-op protocol trades
   coverage for comparability, deliberately.
-- One sweep, one platform, one engine build. The numbers date; the page
+- One sweep per generation, each on one platform and one engine build (g1 to g3
+  on Linux aarch64, g4 on Linux x86_64). The numbers date; the page
   records when they were produced, and the corpus can be re-swept against
   a later engine by re-running the committed apparatus.

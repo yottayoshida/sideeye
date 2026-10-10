@@ -281,9 +281,12 @@ in containers) UNKNOWN does not dominate; the macOS column is *derived* —
 scored against; see the generation note above), 85.7% B-group, because no
 oracle exists there and every strict PASS derives to UNKNOWN. No macOS run exists, so the derivation is
 not a trigger; it is this row's open flank, and a macOS-measured sweep would
-have to face this row again on its own numbers.
+have to face this row again on its own numbers. (2026-10-10: Linux x86_64 has
+real-target runs too — g4, the B and B2 groups on GitHub's x86_64 runner (#696) —
+and faced this row on its own numbers: B 2/7, verdict for verdict as g3's 2/7
+(the g3 re-measurement of this B-group), not a trigger. `docs/unknown-rate.md`, the Platform and Threshold sections.)
 
-**Verdict: not triggered** on the measured platform, with the one-trial
+**Verdict: not triggered** on the measured platform (and on Linux x86_64, 2026-10-10), with the one-trial
 margin and the macOS flank both named.
 
 ## Calibration
