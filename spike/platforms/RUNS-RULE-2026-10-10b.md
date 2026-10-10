@@ -1,8 +1,9 @@
-# The platform probe, second series — how it is run and read, decided before its first dispatch
+# The platform probe, second series — how it is run and read, decided before the dispatches it governs
 
 The runs of `.github/workflows/spike-platforms.yml` after 2026-10-10's single dispatch, which
 measure the rows `docs/cli.md`'s table left unmeasured or "not run" (ADR 0105, amended). These
-rules were committed with the apparatus, before any of those runs. `RUNS-RULE.md` governs the
+rules were committed with the apparatus, before any of those runs, except the one item dated
+below, which was added after the first of them and before the dispatch it governs. `RUNS-RULE.md` governs the
 2026-10-10 record and is not edited; where the two speak to the same thing, this file governs the
 new runs and that record stands as it was read.
 
@@ -29,6 +30,19 @@ new runs and that record stands as it was read.
   cloud-init and no `vm-inner: start` twice, at the same last console line; or a build that
   failed twice with the same compiler error, not a network or package error; or an explore that
   timed out twice in the same mode. A stop under TCG is never a result.
+- **A leg added after the first dispatch** (added 2026-10-10, after run 38031881569 and before the
+  dispatch it governs): `wsl1-shim`, which follows WSL1's refusal "pass --shim" once, is measured
+  in a later `jobs: wsl` dispatch — the one exception to re-dispatching only an apparatus fault's
+  side. In the record, only `wsl1-x86_64/wsl1-shim/` is added beside what run 38031881569 counted;
+  everything else that dispatch writes goes under `spike/platforms/2026-10-10b/runs/<run id>/` and
+  is listed and read for what it says about the dispatch (whether WSL1 started, whether it refused
+  again, a fault), not counted — the legs it re-runs keep the result they first counted. "Once"
+  means one `--shim` leg for the one refusal; a `wsl1-shim` that leaves no result follows the rules
+  above (an apparatus fault re-dispatched, the same stop twice a result). Its control is the x86_64 `host` leg of run
+  38031881569 (`measure.sh` and `define/` are the same at both commits). If WSL1 does not start in
+  that dispatch, or does not refuse the shim again, `wsl1-shim` is recorded as not reached, with the
+  run id, and WSL1's cell rests on its base leg alone. WSL1's cell names both: the base leg's
+  refusal and `wsl1-shim`'s modes.
 - **x86_64 WSL2's base leg was decided on 2026-10-10** and is not measured again. If WSL2 does not
   start in a run of this series, the legs that needed it are recorded as "the runner's WSL2 did
   not start in run N" with the `wsl.txt` lines.
@@ -42,7 +56,8 @@ new runs and that record stands as it was read.
 ## How a cell is read
 
 - **The control** for every leg is the `host` leg of the Ubuntu 24.04 runner of the same CPU, from
-  the counted `linux` run at the same commit — whichever dispatch that was. x86_64: the x86_64
+  the counted `linux` run at the same commit — whichever dispatch that was; `wsl1-shim`'s is named
+  in its item above. x86_64: the x86_64
   containers, VMs, WSL legs, the Actions container, the Alpine source build on x86_64. aarch64:
   their aarch64 counterparts and WSL2 on Windows on ARM. macOS 14 and 15 are read against
   `macos-26`.

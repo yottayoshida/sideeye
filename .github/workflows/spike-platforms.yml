@@ -236,8 +236,8 @@ jobs:
           retention-days: 90
 
   # WSL on Windows runners. x86_64 WSL2's base leg was measured on 2026-10-10 and is not measured
-  # again; this run takes its other forms (the Windows drive, an ordinary user, systemd), WSL1, and
-  # WSL2 on Windows on ARM.
+  # again; this run takes its other forms (the Windows drive, an ordinary user, systemd), WSL1 (and,
+  # when WSL1 refuses the shim it found, wsl1-shim with --shim), and WSL2 on Windows on ARM.
   wsl:
     if: inputs.jobs == 'all' || inputs.jobs == 'wsl'
     strategy:
