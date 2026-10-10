@@ -1,0 +1,15 @@
+UNKNOWN  nothing_could_fail
+         no world could have failed: no checker was declared, no marker was declared, and none of the 1 path(s) the built-in atomicity invariant judges was changed or named by a crash point
+next        The built-in invariant judges only paths that exist both before and after the operation, and no crash point changed one, so nothing could have failed: declare a check that reads the state the target leaves (docs/checker-cookbook.md), or a marker for the success claim, which judges the files the operation created or removed.
+cwd         /s/modebit
+
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=ab6729e6f1e2e2f7fa10a1c7eb1d35d9dbc2b6054a6168a7a11a95926cdceaa7;

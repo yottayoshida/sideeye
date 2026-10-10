@@ -1,0 +1,6 @@
+sideeye 1.10.0 (trace contract v19)
+engine sha256: 4d217ddddc748ebf3588420e3894a775ab744bfd72884c5479f992e25fe94185
+upx 5.2.1
+argocd: v3.5.3+c9c369e
+/usr/local/bin/upx:    ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, no section header
+/usr/local/bin/argocd: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=X7pDynDz72SgWwsftGoB/tgvJ4mn1

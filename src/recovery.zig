@@ -17,10 +17,10 @@
 //! **Which state.** Each saved exhibit's `crashed` snapshot, kept past its world by the loop,
 //! rebuilt in the state directory with `engine.restore` — the directory after the loop holds the
 //! baseline's result with the world checker's work on top, not the crash state. A snapshot
-//! holds names, kinds and contents and nothing else, so the rebuilt state carries restore-time
-//! timestamps and the engine's fixed modes: a recovery that decides by modification time or by
-//! permission sees every file as new and every mode as 0644/0755. The report says so rather than
-//! the result pretending otherwise.
+//! holds names, kinds, contents and permission bits (ADR 0109) and nothing else, so
+//! the rebuilt state carries the crash's permission bits but restore-time timestamps and the
+//! engine's ownership: a recovery that decides by modification time sees every file as new. The
+//! report says so rather than the result pretending otherwise.
 //!
 //! **What counts.** `pass` and `fail` are spent on one observation: the command ran and ended,
 //! the state stopped changing, and the recovery checker accepted or rejected it. Everything else
@@ -142,7 +142,9 @@ pub fn probeSnapshot(gpa: std.mem.Allocator, from: engine.Snapshot) !engine.Snap
             .symlink => probe_link_target,
             else => try a.dupe(u8, e.content),
         };
-        try snap.entries.append(a, .{ .rel = try a.dupe(u8, e.rel), .kind = e.kind, .content = content });
+        // Never drop the mode: the baseline is rebuilt with it, and a checker that reads only a
+        // mode would reject a probe without it and accept the baseline unread.
+        try snap.entries.append(a, .{ .rel = try a.dupe(u8, e.rel), .kind = e.kind, .content = content, .mode = e.mode });
     }
     try engine.finalizeEntries(&snap);
     return snap;
@@ -394,7 +396,7 @@ pub fn note(arena: std.mem.Allocator, o: Outcome, failing_worlds: u32) []const u
     const second: []const u8 = if (legs == 2) (std.fmt.allocPrint(arena, "; crash point {s}", .{legLine(arena, o.checker.?)}) catch "") else "";
     return std.fmt.allocPrint(
         arena,
-        "configured; the recovery checker was trusted after two controls (corrupted state -> recovery check failed; completed state, recovery run on it -> recovery check passed); crash point {s}{s}; ran against {d} of {d} failing world(s), the saved ones, in {d}.{d:0>3}s; the crash states were rebuilt from snapshots, so contents are as the crash left them and timestamps and permissions are not",
+        "configured; the recovery checker was trusted after two controls (corrupted state -> recovery check failed; completed state, recovery run on it -> recovery check passed); crash point {s}{s}; ran against {d} of {d} failing world(s), the saved ones, in {d}.{d:0>3}s; the crash states were rebuilt from snapshots, so contents and permission bits are as the crash left them (a directory with its owner's bits added) and timestamps and owners are not",
         .{ first, second, legs, failing_worlds, o.total_ms / 1000, o.total_ms % 1000 },
     ) catch "configured; ran (the account could not be formatted)";
 }
@@ -423,6 +425,15 @@ test "the probe gives every file distinct contents, so an equality checker canno
     try t.expect(std.mem.startsWith(u8, in.content, probe_prefix));
     try t.expect(!std.mem.eql(u8, in.content, "same"));
     try t.expectEqual(from.entries.items.len, probe.entries.items.len);
+}
+
+test "the probe carries each entry's recorded mode, as the rebuilt baseline does (#678)" {
+    var from = try engine.testSnapshot(t.allocator, &.{.{ "key", "k" }});
+    defer from.deinit();
+    from.entries.items[0].mode = 0o600;
+    var probe = try probeSnapshot(t.allocator, from);
+    defer probe.deinit();
+    try t.expectEqual(@as(?u16, 0o600), probe.find("key").?.mode);
 }
 
 test "claimAfter: a survivor of the earliest leg makes the claim leg unknown, and nothing else does" {

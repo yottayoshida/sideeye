@@ -2731,7 +2731,7 @@ else
 fi
 o=$(TOY_TWICE_COUNTER=/tmp/acc-710/w/count "$SIDEEYE" preflight --twice --state /tmp/acc-710/w/state \
     --setup "$OUT/toy-twice init" --operation "$OUT/toy-twice" --shim "$SHIM" --work /tmp/acc-710/w/work 2>&1)
-want710 "preflight --twice's second run ending differently names what the restore does not put back" "$o" $? 2 recording_run_failed "not their modes, owners or timestamps"
+want710 "preflight --twice's second run ending differently names what the restore does not put back" "$o" $? 2 recording_run_failed "not their owners, set-id or sticky bits, or timestamps"
 o=$(TOY_THREAD_RACE=1 "$SIDEEYE" explore --state /tmp/acc-710/t/state --setup "$OUT/toy-bug init" \
     --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-710/t/work --oracle /usr/bin/strace 2>&1)
 rc=$?
@@ -4367,6 +4367,59 @@ else
     fails=$((fails + 1))
 fi
 
+echo ""
+echo "=========== check 2w-d: restore carries permission bits (#678, ADR 0109) ==========="
+# Restore used to rebuild every file 0644 and every directory 0755, through the umask. A tool
+# that checks a mode under --state — an executable bit, a 0600 key — then ran its second run and
+# its worlds from other bits than its recording. Each leg runs as this suite's user: CI's is not
+# root, so the 0444 leg is where an unwritable restored file meets the checker's falsification.
+m678=/tmp/acc-678
+rm -rf "$m678" && mkdir -p "$m678/p/state" "$m678/r/state" "$m678/k/state"
+# (a) The 2026-10-03 probe: a 0755 script inside the state is the operation, and preflight
+# --twice runs it again from the restored state. Before #678 the second run could not exec it
+# and refused recording_run_failed.
+printf '#!/bin/sh\necho x >> %s/p/state/log\necho y >> %s/p/state/log\n' "$m678" "$m678" > "$m678/p/state/prog"
+chmod 755 "$m678/p/state/prog"
+o=$("$SIDEEYE" preflight --state "$m678/p/state" --operation "$m678/p/state/prog" --twice \
+    --shim "$SHIM" --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = 0 ] && printf '%s\n' "$o" | grep -q '^PREFLIGHT  recording accepted' && [ -x "$m678/p/state/prog" ]; then
+    echo "ok   #678 a 0755 script inside the state runs a second time from the restored state, still executable"
+else
+    echo "FAIL #678 preflight --twice of a 0755 script in the state: exit $rc, mode now $(stat -c %a "$m678/p/state/prog" 2>/dev/null)"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+# (b) A 0444 file beside the key (a git object's mode) and a checker: the falsification probe is
+# written after a restore that put 0444 back, which a user who is not root cannot open for
+# writing. Seen red with the probe written over the file instead of removed and created.
+printf '#!/bin/sh\n"%s" init && printf object > "$SIDEEYE_STATE_DIR/obj" && chmod 444 "$SIDEEYE_STATE_DIR/obj"\n' "$OUT/toy-fixed" > "$m678/r/setup.sh"
+chmod 755 "$m678/r/setup.sh"
+o=$(TOY="$OUT/toy-fixed" "$SIDEEYE" explore --state "$m678/r/state" --setup "$m678/r/setup.sh" \
+    --operation "$OUT/toy-fixed rotate" --check "$ROOT/spike/check.sh" --shim "$SHIM" \
+    --oracle /usr/bin/strace --work "$m678/r/work" 2>&1)
+rc=$?
+if [ "$rc" = 0 ] && printf '%s\n' "$o" | grep -q '^checker     falsified before the run'; then
+    echo "ok   #678 a 0444 file in the state: the checker is falsified and the run PASSes ($(id -u) is the suite's uid)"
+else
+    echo "FAIL #678 a 0444 file in the state with a checker: exit $rc"
+    printf '%s\n' "$o" | grep -E '^(UNKNOWN|SETUP|checker|next) ' | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+# (c) A target that rotates only when its key is 0600, like argocd: the setup leaves it 0600, and
+# every world must start from that. Before #678 each world started from 0644 and the run refused.
+printf '#!/bin/sh\n"%s" init && chmod 600 "$SIDEEYE_STATE_DIR/key.json"\n' "$OUT/toy-fixed" > "$m678/k/setup.sh"
+chmod 755 "$m678/k/setup.sh"
+o=$(TOY_REQUIRE_MODE=600 "$SIDEEYE" explore --state "$m678/k/state" --setup "$m678/k/setup.sh" \
+    --operation "$OUT/toy-fixed rotate" --shim "$SHIM" --oracle /usr/bin/strace --work "$m678/k/work" 2>&1)
+rc=$?
+if [ "$rc" = 0 ] && printf '%s\n' "$o" | grep -q '^PASS '; then
+    echo "ok   #678 a target that requires its key to be 0600 is judged: PASS"
+else
+    echo "FAIL #678 a target that requires its key to be 0600: exit $rc (wanted PASS)"
+    printf '%s\n' "$o" | grep -E '^(UNKNOWN|PASS|FAIL|next) ' | sed 's/^/     | /' | head -3
+    fails=$((fails + 1))
+fi
 echo ""
 echo "=========== check 2x: sideeye.toml is the define surface, and it fails closed ==========="
 # ADR 0007: the file owns state/setup/operation/check; what the parser accepts is the
@@ -6423,8 +6476,34 @@ grep -q '^recovery falsify: ' "$RD/a-fix/out.txt" ||
     { echo "     a-fix: the falsification probe's output is not labeled"; r_fails=$((r_fails + 1)); }
 r_ev=$(field "$RD/a-fix/r.json" evidence)
 r_want a-fix bundle.recovery.result "$(field "$r_ev" recovery.result)" pass
-grep -q 'The recovery ran against a crash state rebuilt' "$r_ev" ||
+# The sentence's second half too (#678): what the rebuilt state carries changed, and a grep on
+# the opening alone stayed green while the rest said the permissions were fixed.
+grep -q 'The recovery ran against a crash state rebuilt from its snapshot: the names, kinds, contents and permission bits the crash left (a directory with its owner' "$r_ev" ||
     { echo "     a-fix: the bundle of a judged recovery lacks the restore-time caveat"; r_fails=$((r_fails + 1)); }
+# The account and --help say the same of the rebuilt state (#678): each said permissions were not
+# restored, and nothing read either sentence.
+case "$(field "$RD/a-fix/r.json" recovery)" in
+    *"so contents and permission bits are as the crash left them"*) ;;
+    *) echo "     a-fix: the recovery account does not say the permission bits are the crash's"; r_fails=$((r_fails + 1)) ;;
+esac
+"$SIDEEYE" --help 2>&1 | tr -s ' \n' ' ' | grep -q 'crash state — names, kinds, contents and permission bits, not timestamps or owners —' ||
+    { echo "     a-fix: --help on --recovery does not say the permission bits are rebuilt"; r_fails=$((r_fails + 1)); }
+
+# (1a') A recovery checker that reads only the key's mode (#678). The rotate leaves a 0600 key, the
+# rebuilt baseline carries it, and so must the probe: one built without the recorded mode would be
+# rejected for its 0644 and the checker trusted without a byte read. With the mode it accepts the
+# probe and is not trusted. Seen red with the probe built without the mode.
+printf '#!/bin/sh\n[ "$(stat -c %%a "$TOY_STATE/key.json")" = 600 ]\n' > "$RD/mode-only-check.sh"
+chmod 755 "$RD/mode-only-check.sh"
+TOY_KEY_MODE=600 export TOY_KEY_MODE
+r_explore a-modeonly toy-bug --recovery /bin/true --recovery-check "$RD/mode-only-check.sh"
+unset TOY_KEY_MODE
+r_want a-modeonly verdict "$(field "$RD/a-modeonly/r.json" verdict)" FAIL
+r_want a-modeonly earliest.recovery.result "$(field "$RD/a-modeonly/r.json" earliest.recovery.result)" unknown
+case "$(field "$RD/a-modeonly/r.json" recovery)" in
+    *"accepted a state whose every file had been overwritten with distinct junk"*) ;;
+    *) echo "     a-modeonly: a checker that reads only a mode was not refused at the probe: $(field "$RD/a-modeonly/r.json" recovery)"; r_fails=$((r_fails + 1)) ;;
+esac
 
 # (1b) A recovery that deletes the new key: ran, ended, rejected — `fail`, verdict unchanged.
 cat > "$RD/recover-break.sh" <<'EOF'

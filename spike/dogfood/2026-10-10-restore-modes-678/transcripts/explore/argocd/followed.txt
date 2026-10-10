@@ -1,0 +1,25 @@
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 2
+            after  open(/s/argocd/config)
+            before write(/s/argocd/config)
+path        config
+observed    holding neither the old nor the new content
+cwd         /s/argocd
+
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 2 operations (307 syscall lines examined, 37 in scope of the judged state), witness strace of THIS run — the operations were counted from outside the target by the supervising engine through a seccomp user-notification filter, no shim loaded; in this mode the oracle does not count an entry strace ended `= ? ERESTART...` (a signal took the call back before it completed)
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /tmp/work-followed/cases/000001.json
+replay      sideeye replay /tmp/work-followed/cases/000001.json --observe supervised
+evidence    sideeye evidence /tmp/work-followed/evidence/000001.json
+processes   single process in the recording; a thread was created in an explored world; the supervising engine recorded 10 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   sideeye replay /tmp/work-followed/cases/000001.json --observe supervised  (the crash point is the engine's, from outside the operation; there is no shim to preload)
+sideeye: json sha256=07dcbdbd5b0d7523b8969a0260ab5c94f285c2e55581467fd3f47df737d9a8e7;

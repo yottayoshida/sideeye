@@ -51,7 +51,7 @@ the run failing without it.
 
 **`state` is sacrificial.** Exploration empties and rebuilds that directory once per
 world — hundreds of times in one run — and what comes back is a restore from the
-snapshot, with modes flattened and ownership dropped (#121). It is a scratch copy your
+snapshot, with permission bits carried (a directory with its owner's bits added; #678) and ownership and timestamps dropped (#121). It is a scratch copy your
 `setup` produces, never a directory anything else depends on. This page used to name
 `/var/lib/myapp` here; sideeye now refuses a root inside a system tree rather than
 emptying it (#267).

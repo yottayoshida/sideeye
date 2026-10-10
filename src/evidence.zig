@@ -353,7 +353,7 @@ pub fn caveats(arena: std.mem.Allocator, truncated: bool, recovery_judged: bool)
     // limit can manufacture. Not said on `unknown`, which may be a recovery that never ran.
     if (recovery_judged) try buf.append(
         arena,
-        "The recovery ran against a crash state rebuilt from its snapshot: the names, kinds and contents the crash left, but restore-time timestamps and fixed permissions, so a recovery that decides by modification time or by permission saw every file as newly written.",
+        "The recovery ran against a crash state rebuilt from its snapshot: the names, kinds, contents and permission bits the crash left (a directory with its owner's bits added; not set-id or sticky bits), but restore-time timestamps and the engine's own ownership, so a recovery that decides by modification time saw every file as newly written.",
     );
     return buf.items;
 }

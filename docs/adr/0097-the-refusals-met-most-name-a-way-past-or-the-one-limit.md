@@ -47,7 +47,7 @@ above names the declaration this run contradicted" beside a detail that named no
 key or a command where this build has one, and otherwise the one README limit the run stands at.**
 Eight members, each chosen from an observation the site already holds and from one fact about
 the restore (it rebuilds the names, kinds and bytes under `--state`, not their modes, owners or
-timestamps, and nothing outside it):
+timestamps, and nothing outside it): *(Since ADR 0109, 2026-10-10, the restore rebuilds the permission bits too; the sentence and the step now say so.)*
 
 - `run_then_expect_status` — the recording run's exit status nobody declared (126 aside): run it
   by hand first, then `--expect-status` if that status is the tool's success. The order is the
