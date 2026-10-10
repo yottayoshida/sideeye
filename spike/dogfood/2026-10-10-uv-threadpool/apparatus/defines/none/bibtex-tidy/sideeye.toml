@@ -1,0 +1,6 @@
+[world]
+state = "/s/bibtex"
+
+[define]
+operation = "bibtex-tidy refs.bib --modify --sort"
+cwd       = "/s/bibtex"
