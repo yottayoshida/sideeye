@@ -1,0 +1,100 @@
+name: A verdict — a bug Sideeye found, or a PASS or FAIL you believe is wrong
+description: Tell us Sideeye found a real bug in your tool and where you reported it, or that a verdict is wrong.
+title: "Verdict: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A FAIL that is right is a bug in the tool you tested, not in Sideeye: report it to that project — `sideeye evidence <case>` renders the saved case as Markdown for its tracker — and then tell us here, with a link. We would rather know than not; it is how we learn Sideeye is used.
+
+        A PASS you believe is wrong is the worst failure this project can have. Please report one even if you are unsure.
+
+        The report carries your paths, the directory you ran in, your define's commands and `apparatus` values, and strings your tool wrote. Read it before you paste it. [CONTRIBUTING.md](https://github.com/yottayoshida/sideeye/blob/main/CONTRIBUTING.md) says what makes a report useful.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What happened
+      options:
+        - Sideeye found a real bug, and I reported it
+        - A FAIL I believe is wrong
+        - A PASS I believe is wrong
+    validations:
+      required: true
+  - type: input
+    id: upstream
+    attributes:
+      label: Where you reported the bug
+      description: For a real bug, a link to the report you filed with that project.
+  - type: textarea
+    id: why
+    attributes:
+      label: Why the verdict is wrong
+      description: For a wrong PASS or FAIL, what the tool actually does at that point, and how you know.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The output of `sideeye version`.
+      placeholder: "sideeye 1.x.y (trace contract vN)"
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      description: OS and its version, CPU, and on Linux the libc. Say whether it ran in WSL or in a container.
+      placeholder: macOS 26.0, arm64
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How Sideeye was installed
+      options:
+        - Homebrew
+        - Release tarball
+        - Built from source
+        - Other (say under Command)
+    validations:
+      required: true
+  - type: input
+    id: target
+    attributes:
+      label: The tool you were testing, and its version
+      placeholder: mytool 2.3.1
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command
+      description: The command you ran, with every flag.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: report
+    attributes:
+      label: The `--json` report
+      description: The file `--json <path>` wrote (`explore`, `preflight` and `replay` take it). If no file was written, write "none" and paste the text output instead.
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: define
+    attributes:
+      label: The define and the check
+      description: Your `sideeye.toml` and the check, so the run can be repeated.
+      render: toml
+    validations:
+      required: true
+  - type: dropdown
+    id: llm
+    attributes:
+      label: Did a language model write any of this report?
+      description: Welcome either way; CONTRIBUTING.md says why we ask.
+      options:
+        - "No"
+        - Yes, and I have read all of it
+    validations:
+      required: true
