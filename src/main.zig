@@ -4443,7 +4443,7 @@ const demo_check_sh = @embedFile("check_sh");
 ///
 /// The list itself moved to `mcp.zig`, beside `canonicalSelf`, when `sideeye mcp`
 /// became its fifth caller (#389): the server used to demand `SIDEEYE_MCP_SHIM` and
-/// refuse without it, which made it the one command that did not do what `README.md`
+/// refuse without it, which made it the one command that did not do what `docs/cli.md`
 /// says the product does. Two copies of a search order is how the two ends of that
 /// sentence drift apart again.
 const shim_basename = mcp.shim_basename;

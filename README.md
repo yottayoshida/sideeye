@@ -1,14 +1,10 @@
 # sideeye
 
-<p align="center">
-  <img src="docs/sideeye.jpg" alt="Sideeye — doesn't believe it" width="360">
-</p>
+<p align="center"><img src="docs/sideeye.jpg" alt="Sideeye" width="360"></p>
 
-> *Sideeye doesn't believe it.*
+Sideeye finds out what your program leaves on disk when it dies at the worst possible moment. Declare an invariant — *"if this operation said it succeeded, this must still hold after a restart"* — and Sideeye kills your process before each state-changing operation, one crash world each, and brings back the earliest failing one as a replayable case.
 
-Sideeye finds out what your program leaves on disk when it dies at the worst possible moment. You declare an invariant — *"if this operation said it succeeded, this must still be true after a restart"* — and Sideeye kills your process before each state-changing operation, one crash world each, then brings back the earliest failing one as a replayable case. It breaks worlds, not inputs: same input, hostile universe.
-
-Trimmed real output of `sideeye demo` — every line below is a line it prints, in its order, with the scratch directory shown as `…`; CI runs the demo and checks.
+`sideeye demo`, trimmed, checked line by line in CI:
 
 <!-- demo-output:begin -->
 ```
@@ -27,26 +23,20 @@ not tested  power loss, torn writes, concurrent processes
 ```
 <!-- demo-output:end -->
 
-It has found counterexamples in real tools — RuboCop, Himalaya, ImageMagick, AWS CLI, codespell, and more — [those reported on GitHub are listed](docs/found.md). Verdicts are deterministic, and a target Sideeye cannot fully observe is UNKNOWN, never a silent PASS — except unrecorded writes inside a directory a recorded `rename` moved in from outside the judged tree; every JSON report counts the paths so covered as `paths_attributed_to_rename`, zero meaning none ([why](DESIGN.md#the-one-named-exception-a-directory-renamed-in-from-outside)).
+Counterexamples found: RuboCop, ImageMagick, the AWS CLI, [more](docs/found.md). A target Sideeye cannot fully observe is UNKNOWN, never a silent PASS — except unrecorded writes under a directory a recorded `rename` moved in from outside, counted as `paths_attributed_to_rename` in every JSON report ([why](DESIGN.md#the-one-named-exception-a-directory-renamed-in-from-outside)).
 
 ## Installation
 
+Runs on macOS 26 (Apple silicon) and Linux glibc (x86_64, aarch64): Homebrew, or a [release](https://github.com/yottayoshida/sideeye/releases) tarball run where you unpack it. Other platforms, building from source: [docs/cli.md](docs/cli.md#platforms).
+
 ```
 $ brew install yottayoshida/tap/sideeye
-```
 
-macOS 26 on Apple silicon, Linux (glibc) on x86_64 and aarch64. Sideeye is a binary and a shim library, and it looks for the shim beside itself, then in `../lib`. Or take the tarball for your platform from [Releases](https://github.com/yottayoshida/sideeye/releases) and run it where you unpacked it:
-
-```
 $ tar xzf sideeye-v1.10.0-aarch64-macos.tar.gz && cd sideeye-v1.10.0-aarch64-macos
 $ ./sideeye version
 ```
 
-Other platforms, building from source, and what the shim search refuses: [docs/cli.md](docs/cli.md#platforms).
-
 ## Usage
-
-Three commands, in the order you will meet them.
 
 ```
 $ sideeye demo
@@ -55,36 +45,26 @@ $ sideeye explore --config sideeye.toml --oracle /usr/bin/strace
 $ sideeye explore --config sideeye.toml --allow-unverified
 ```
 
-- **`demo`** — sixty seconds, no compiler needed. It explores a planted bug and prints a real FAIL report. Exit 1 — the bug found — is success, so it doubles as a smoke test of binary and shim.
-- **`preflight`** — can Sideeye watch your tool? One observed run: `recording accepted` (exit 0), or a refusal naming the detector a real run would use (exit 2; 3 if the define cannot be set up). `--twice` also checks that two clean runs leave the same bytes (exit 1 if not).
-- **`explore`** — the real thing (Linux, then macOS), with the whole define in one file:
+- **`demo`** — sixty seconds, no compiler; one directory left under `$TMPDIR` (or `/tmp`) with the saved case. Exit 1, the bug found, is success.
+- **`preflight`** — can Sideeye watch your tool? One observed run: `recording accepted`, or a refusal naming the detector.
+- **`explore`** — the real thing; the define in one file:
 
 ```toml
 [world]
-state = "./state"               # the one directory your tool's state lives in
+state = "./state"               # your tool's state
 
 [define]
-cwd       = "."                 # relative arguments resolve here, from anywhere
+cwd       = "."                 # relative arguments resolve here
 setup     = "mytool init"
 operation = "mytool rotate-key" # the shim is inserted into this one, not into setup or check
-check     = "./check.sh"        # exit 0 = invariant holds; runs after crash + restart
+check     = "./check.sh"        # exit 0 = invariant holds
 ```
 
-- `operation` is the one command the shim is inserted into; `setup` and `check` are ordinary commands. Naming an executable image rather than a `#!` script keeps the insertion independent of the interpreter.
-- Command strings split on spaces, no quoting. An argument with a space takes the argv form: `operation = ["mytool", "commit", "-m", "a message"]`.
-- `--oracle` is a second witness, checking the shim's account against the kernel's (on macOS, `--oracle-fs-usage` after `sudo -v`). Without one, a single-process target reaches PASS only under `--allow-unverified`, and the report says so.
-- `--shim` names the shim when it is not beside the binary; `--work` moves the scratch for traces and cases (default `/tmp/sideeye-work`); `--json <path>` writes the report as JSON too.
-- Exit codes: **0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR** — and UNKNOWN is never 0.
-
-A FAIL saves its counterexample under `<work>/cases/` and prints the `sideeye replay` line that re-runs it. Every flag, the optional define keys, replay: [docs/cli.md](docs/cli.md).
-
-**After the first find.** The finding is not the durable artifact — the declaration is. Re-ask after the tool changes with `explore --config`; a saved case answers `case no longer applies` rather than passing silently once the recording moves under it, which is what makes one worth keeping in CI ([docs/ci-quickstart.md](docs/ci-quickstart.md)). To hand a FAIL to the tool's maintainer, `sideeye evidence <case>` renders it as Markdown for their issue tracker ([docs/evidence.md](docs/evidence.md)).
-
-**From an agent.** `sideeye mcp` is a stateless MCP server: `sideeye_preflight`, `sideeye_explore_config`, `sideeye_replay_case`, `sideeye_evidence`. Configs and cases are commands it runs, and a replay empties the state directory it names — so run it in a container, over a directory made for it: [docs/mcp.md](docs/mcp.md). Three agent skills — set Sideeye up on a tool, take a FAIL to a fix, draft a report for another project — install with `npx skills@1.7.1 add yottayoshida/sideeye`.
+`operation` is the one command the shim is inserted into; command strings split on spaces, no quoting. `--oracle` is a second witness, the kernel's account (Linux; on macOS, `--oracle-fs-usage`); without one, PASS needs `--allow-unverified`, and the report says so. `--shim` names the shim when it is not beside the binary; `--work` moves the scratch directory. Exit codes: **0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR**. A FAIL saves a replayable case, and `sideeye evidence <case>` renders it for an issue tracker. Run `explore --config` in CI ([docs/ci-quickstart.md](docs/ci-quickstart.md)). For agents there is `sideeye mcp`, and three skills (`npx skills@1.7.1 add yottayoshida/sideeye`): [docs/mcp.md](docs/mcp.md).
 
 ## Writing the check
 
-The check is where your invariants live; it is handed the state directory in `$SIDEEYE_STATE_DIR`, as the setup is. This one cross-examines the tool's own diagnostic — a tool may be broken as long as it says so; the violation is the claim and the observable truth disagreeing:
+The check, like the setup, receives the state directory in `$SIDEEYE_STATE_DIR`. This one cross-examines the tool's own diagnostic; the violation is the claim and the observable truth disagreeing:
 
 ```sh
 claim=$("$TOY" doctor 2>/dev/null) || claim="unhealthy"
@@ -95,40 +75,23 @@ case "$claim:$reality" in
 esac
 ```
 
-Sideeye refuses to trust a checker it has not seen fail: before exploring, it corrupts the state and requires the check to reject it. A checker that cannot fail makes the run UNKNOWN, not PASS. So does an exploration in which no world could have failed: no crash point; or no checker, no crash world that printed the marker over a created or removed path, and no crash point other than an fsync or a mkdir that named a path the built-in invariant judges, or renamed a directory above one, while every such path ended as it began. The report this one produced: [docs/cli.md](docs/cli.md#example). More checkers: [docs/checker-cookbook.md](docs/checker-cookbook.md).
+Sideeye refuses to trust a checker it has not seen fail: it corrupts the state first. A checker that cannot fail makes the run UNKNOWN, not PASS; so does an exploration in which no world could have failed ([conditions](docs/report-schema.md)).
 
 ## What the target has to be
 
-Sideeye refuses to guess. Anything outside these limits is UNKNOWN (exit 2), with the refusing detector named and a `next_step` saying what to do. Each limit's reason: [DESIGN.md](DESIGN.md#known-constraints-declared-not-hidden).
+Sideeye refuses to guess: outside these limits the verdict is UNKNOWN, naming the detector. Reasons: [DESIGN.md](DESIGN.md#known-constraints-declared-not-hidden).
 
-- **Dynamically linked**, reaching files through libc, or static under `--observe supervised` (Linux). Hardened runtimes are refused. Threads are judged where a creation or a join the shim saw orders their writes. `--observe syscalls` (Linux) also counts what bypasses libc — a Go runtime's, above all.
-- **Under `--observe syscalls`, a process whose `SIGSYS` is blocked or reset dies at its first state-changing call** — an `exec`'d image the shim cannot be loaded into, a `posix_spawn` child, a target that takes `SIGSYS` away. A target that dies is refused; a child that dies changes what the target does — check it before reaching for the flag.
-- **The shim's footprint on a target thread is bounded**: under 1 KiB of thread-local storage, at most 5 KiB of stack per interposed call (measured on Linux).
-- **State in one directory**, declared with `--state` or the toml.
-- **A clean run exits its declared success status** (default 0).
-- **Byte-repeatable writes.** A second clean run must leave the same bytes under `--state`; `preflight --twice` measures this.
-- **Other processes take turns with the state.** Forked helpers are judged under an oracle, provided no two processes' writes interleave and every writing child is reaped. One leaving its process group is judged only on Linux, where the engine can make cgroups. A process boundary or a self-`exec` needs Linux's `--oracle`, or is UNKNOWN.
-- **On macOS, a framework Python's `bin/python3` — Homebrew's and the Command Line Tools' among them — is a launcher that replaces itself with the framework's interpreter**, so a target started through it, directly or from a script's `#!` line, is refused; the refusal names that interpreter, which can lead the operation instead (in a virtual environment, with the `__PYVENV_LAUNCHER__` value it also names).
+- **Dynamically linked**, reaching files through libc; static only under `--observe supervised` (Linux). Hardened runtimes are refused. Threads are judged where a creation or a join the shim saw orders their writes.
+- **Under `--observe syscalls`, a process whose `SIGSYS` is blocked or reset dies at its first state-changing call** — an `exec`'d image the shim cannot reach, a `posix_spawn` child.
+- **Byte-repeatable writes** (`preflight --twice` checks), **state in one directory**, **a clean run exits its declared success status**.
+- **Other processes take turns with the state**, and every writing child is reaped; a process boundary needs Linux's `--oracle`, and one that leaves its process group is judged only where the engine can hold the run in a cgroup (Linux) — otherwise UNKNOWN.
+- **On macOS, a framework Python's `bin/python3` is a launcher**; Sideeye refuses it and names the interpreter to run instead.
 
-## What Sideeye is not
-
-- **Not property-based testing** — it varies the world the program runs in, not the input.
-- **Not an AI code reviewer** — verdicts are deterministic; a language model never decides PASS or FAIL.
-- **Not a chaos platform** — one binary, ordinary software, local state.
-- **Not a certification** — a PASS is a search record, not a safety claim, and every report names what was *not* tested. Scope is process crash × file-backed state.
+No language model decides a verdict; a PASS is a search record naming what was *not* tested.
 
 ## Documentation
 
-| Document | What it is |
-|----------|------------|
-| [docs/cli.md](docs/cli.md) | Every flag, cases and replay, a full report |
-| [docs/mcp.md](docs/mcp.md) | The MCP server: setup, confinement, first call |
-| [DESIGN.md](DESIGN.md) | What Sideeye is, what it refuses to be, and why |
-| [docs/report-schema.md](docs/report-schema.md) | Every field of the JSON report |
-| [docs/target-classes.md](docs/target-classes.md) | Real tool classes against the limits |
-| [docs/unknown-rate.md](docs/unknown-rate.md) | How often Sideeye refuses instead of judging |
-
-Also: [docs/checker-cookbook.md](docs/checker-cookbook.md), [docs/ci-quickstart.md](docs/ci-quickstart.md), [docs/apparatus.md](docs/apparatus.md), [docs/contract-freeze.md](docs/contract-freeze.md), [CHANGELOG.md](CHANGELOG.md), [PRD.md](PRD.md), [BUILDLOG.md](BUILDLOG.md), [docs/adr/](docs/adr/) — and the rest of [docs/](docs/).
+[docs/cli.md](docs/cli.md) · [docs/mcp.md](docs/mcp.md) · [DESIGN.md](DESIGN.md) · [docs/report-schema.md](docs/report-schema.md) · [docs/target-classes.md](docs/target-classes.md) · [CHANGELOG.md](CHANGELOG.md) · [docs/](docs/)
 
 ## License
 
