@@ -3,15 +3,17 @@
 # GitHub's macOS runners by .github/workflows/spike-platforms.yml; macos-26 is the control the
 # older releases are read against.
 #
-#   sh measure-macos.sh <sideeye binary> <out dir> <label>
+#   [WORK_ROOT=<dir>] [DEMO=0] sh measure-macos.sh <sideeye binary> <out dir> <label>
 #
 # The define is define/'s, with its paths moved under $HOME/s (macOS's root volume is
 # read-only) and its dd replaced by Homebrew's GNU dd (`gdd`): /bin/dd is a system binary, and
 # System Integrity Protection strips DYLD_INSERT_LIBRARIES from it, so the shim could not enter
 # it — the signature of both is recorded. The oracle is fs_usage (`--oracle-fs-usage`), which
 # needs root; the runners' sudo asks for no password. --observe syscalls and supervised are Linux
-# only, so the default mode is the one explored. `sideeye demo` runs too: on v1.10.0 it compiles
-# its toy with the runner's compiler.
+# only, so the default mode is the one explored. `sideeye demo` runs too (DEMO=0 skips it): on
+# v1.10.0 it compiles its toy with the runner's compiler. The scratch directory (--work) is made
+# under WORK_ROOT, by default $TMPDIR (/var/folders/…/T/ on the runners, reached through the
+# /var symlink); env.txt records it as given and resolved, and any fs_usage already running.
 set -u
 
 usage="usage: measure-macos.sh <sideeye binary> <out dir> <label>"
@@ -31,13 +33,18 @@ dd=$(command -v gdd) || dd=
     echo "codesign of $dd:"; [ -n "$dd" ] && codesign -dv "$dd" 2>&1 | sed 's/^/    /'
     echo "codesign of /bin/dd:"; codesign -dv /bin/dd 2>&1 | sed 's/^/    /'
     echo "user:      $(id -un) (uid $(id -u))"
+    echo "work root: ${WORK_ROOT:-${TMPDIR:-/tmp}}"
     banner=$("$se" version 2>&1)
     echo "sideeye:   $banner (exit $?)"
 } > "$out/env.txt"
 [ -n "$dd" ] || { echo "measure-macos: gdd is not installed (brew install coreutils)" | tee "$out/summary.txt" >&2; exit 2; }
 sudo -n true 2> "$out/sudo.txt" || { echo "measure-macos: sudo asks for a password; fs_usage needs root" | tee "$out/summary.txt" >&2; exit 2; }
 
-work=$(mktemp -d "${TMPDIR:-/tmp}/platform-measure-XXXXXX")
+work=$(mktemp -d "${WORK_ROOT:-${TMPDIR:-/tmp}}/platform-measure-XXXXXX") && [ -d "$work" ] ||
+    { echo "measure-macos: could not make a work directory under ${WORK_ROOT:-${TMPDIR:-/tmp}}" | tee "$out/summary.txt" >&2; exit 2; }
+{ echo "work:      $work"
+  echo "resolved:  $(cd "$work" && pwd -P)"
+  echo "fs_usage:  $(pgrep -lx fs_usage | tr '\n' ' ')"; } >> "$out/env.txt"
 sed -e "s#/s/#$S/#g" -e "s#^operation = \"dd #operation = \"$dd #" "$here/define/sideeye.toml" > "$work/sideeye.toml"
 printf 'new contents\n' > "$S/new"
 rm -rf "$S/st" && mkdir -p "$S/st" && printf 'old contents\n' > "$S/st/a.txt"
@@ -47,9 +54,11 @@ rc=$?
 verdict=$(grep -m1 -E '^(PASS|FAIL|UNKNOWN|SETUP ERROR)' "$out/explore-default.txt")
 printf 'default\texit %s\t%s\n' "$rc" "${verdict:-(no verdict line)}" >> "$out/summary.txt"
 
-( cd "$work" && "$se" demo ) > "$out/demo.txt" 2>&1
-rc=$?
-verdict=$(grep -m1 -E '^(PASS|FAIL|UNKNOWN|SETUP ERROR)' "$out/demo.txt")
-printf 'demo\texit %s\t%s\n' "$rc" "${verdict:-(no verdict line)}" >> "$out/summary.txt"
+if [ "${DEMO:-1}" != 0 ]; then
+    ( cd "$work" && "$se" demo ) > "$out/demo.txt" 2>&1
+    rc=$?
+    verdict=$(grep -m1 -E '^(PASS|FAIL|UNKNOWN|SETUP ERROR)' "$out/demo.txt")
+    printf 'demo\texit %s\t%s\n' "$rc" "${verdict:-(no verdict line)}" >> "$out/summary.txt"
+fi
 
 cat "$out/summary.txt"

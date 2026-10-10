@@ -1,0 +1,15 @@
+$ sideeye explore --config s2.toml --allow-unverified   # operation's first word: the framework interpreter
+PASS  5/5 explored worlds satisfied the built-in atomicity invariant
+cwd         $MACDIR/py
+
+explored    5 worlds (crash points 4 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      NOT VERIFIED (--allow-unverified) — nothing checked what the shim reported
+metadata    not observable (no oracle ran; the shim does not interpose ownership/permission/timestamp calls)
+checker     none configured
+l1          no marker configured
+case        (none)
+processes   not established: no boundary was recorded, but the shim sees only libc's own entry points (fork, vfork, posix_spawn, the exec family, pthread_create, setsid, setpgid) — a child created through a raw syscall would not appear here — and no second witness ran
+not tested  power loss, torn writes, concurrent processes
+rc=0

@@ -159,12 +159,12 @@ outcome            encounters   in full campaigns   distinct reports
   novel                70              61             43
   report_worthy        54              45             43
   filed                51              42             43
-  acknowledged         14              12             12
-  fixed                13              11             11
-  revalidated          12              10             11
+  acknowledged         13              12             11
+  fixed                12              11             10
+  revalidated          11              10             10
 
-why encounters stopped: awaiting 28, declined 6, discussing 2, known 25, no_content_lost 14, not_worth 91, wall 117, withdrawn 2
-upstream states last read between 2026-08-13 and 2026-10-10; spike/upstream-report-status.sh measures them now.
+why encounters stopped: awaiting 29, declined 6, discussing 2, known 25, no_content_lost 14, not_worth 91, wall 117, withdrawn 2
+upstream states last read between 2026-08-14 and 2026-10-10; spike/upstream-report-status.sh measures them now.
 ```
 
 <!-- outcome-funnel:summary:end -->
