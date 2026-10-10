@@ -389,6 +389,22 @@ fn darwinPending(stream: *FILE) usize {
     return @intFromPtr(p) - @intFromPtr(base);
 }
 
+/// `noteStdioFlush`'s and `noteStdioClose`'s door before `init`: the stream's descriptor, when
+/// it was opened for writing. Conservative where `init`'s side is exact — without `fpending` a
+/// flush with nothing pending is marked too.
+fn preInitStream(stream: *FILE) bool {
+    if (preInitDecided()) |decided| return decided;
+    return preInitFd(c.fileno(stream));
+}
+
+/// Whether a write-capable stream open reaches the recording door: once armed, when stdio is
+/// observed at all; before, always (#753) — `fpending`, which `stdioActive` asks about, is
+/// looked up by the constructor, and a stream a library constructor opened on a state file
+/// would otherwise carry no mark.
+pub fn stdioOpenRecorded(mode: [*:0]const u8) bool {
+    return (stdioActive() or !active) and modeIsWriteCapable(mode);
+}
+
 /// stdio recording is armed only when the pending-bytes question can be answered.
 /// Without `__fpending` (Linux) the shim records nothing stdio-shaped and behaves
 /// exactly as v4 did — the oracle still refuses stdio targets rather than misjudging
@@ -413,7 +429,12 @@ fn pendingBytes(stream: *FILE) usize {
 /// `noteFd` would refuse the record anyway, but an inactive or re-entered shim must
 /// not so much as read `__sFILE` fields of a stream it was never armed to observe.
 pub fn noteStdioFlush(stream: *FILE) void {
-    if (!active or mine().busy) return;
+    // Before `init` (#753), a flush through a stream on a state file is a write nothing records
+    // — stdout redirected into the state by an earlier image, say. The pending count needs
+    // `fpending`, which `init` looks up, so the stream's descriptor is asked instead, when it
+    // can be written at all.
+    if (!active and !preInitStream(stream)) return;
+    if (mine().busy) return;
     if (!stdioActive()) return;
     // The flush's own `write(2)` is trapped and counted by the handler in syscalls mode,
     // so recording it here as well would count one operation twice.
@@ -434,7 +455,8 @@ pub fn noteStdioFlush(stream: *FILE) void {
 }
 
 pub fn noteStdioClose(stream: *FILE) void {
-    if (!active or mine().busy) return;
+    if (!active and !preInitStream(stream)) return;
+    if (mine().busy) return;
     if (!stdioActive()) return;
     noteFd(.close, c.fileno(stream));
 }
@@ -702,7 +724,12 @@ fn mine() *ThreadState {
     // writes it, and every later overflow finds it written. It is written before the
     // re-entrancy check, so a shim re-entered mid-call announces too — a change from
     // "busy writes nothing", and the safe direction.
-    if (@cmpxchgStrong(bool, &exhaustion_announced, false, true, .acq_rel, .acquire) == null) {
+    // Only once this image is armed (#753): before `init` the notice would go nowhere and the
+    // flag would stay set, so the thread that needs it after `init` would share the reserve
+    // unannounced; and while `init` is still writing the header and moving the trace's
+    // descriptor, it would land in front of the header or on the descriptor's old number. A
+    // thread on the reserve meets this again at its next call, and announces then.
+    if (active and @cmpxchgStrong(bool, &exhaustion_announced, false, true, .acq_rel, .acquire) == null) {
         var notice: [64]u8 = undefined;
         const n = contract.encodeRecord(&notice, .{
             .op = .unresolved,
@@ -978,66 +1005,73 @@ fn lookup(comptime T: type, name: [*:0]const u8) ?T {
     return @ptrCast(@alignCast(p));
 }
 
+/// The type of the function behind `real`'s field `name`.
+fn RealFn(comptime name: [:0]const u8) type {
+    return @typeInfo(@TypeOf(@field(real, name))).optional.child;
+}
+
+/// The real function `name`: the entry `resolveAll` filled in, or — when the table has not
+/// been filled yet — looked up now (#753).
+///
+/// The table is filled from this library's own `.init_array`, and another shared library's
+/// constructor can run first: the loader orders constructors by dependency, and nothing a
+/// library can declare puts its own ahead of an unrelated one's. A call interposed from such a
+/// constructor used to reach a null entry and answer `-1` — and `pthread_create`'s callers
+/// expect an error number, so a C++ `std::thread` started there threw "Unknown error -1" and
+/// the process aborted (OpenImageIO's `iconvert`, ROOT's `rootrm`), where by hand it ran.
+///
+/// **Nothing is written back.** The lookup is the same `dlsym(RTLD_NEXT)` `resolveAll` makes,
+/// and its answer would be the same, but storing it would add a writer to the table beside
+/// `resolveAll` — a thread such a constructor started can still be calling while `init` fills
+/// it — and none of the readers is atomic. Once `init` has run the entry is there and this is
+/// one load, as it was. Before it, every call pays a `dlsym`, and a call made from a signal
+/// handler in that window would meet the loader's lock where it used to meet `-1`: a window
+/// that opens only before this library's constructor, and only for a handler that calls one
+/// of these.
+///
+/// What such a call does is not recorded — `active` is false — and what keeps that from
+/// becoming a verdict is the mark below (`preInitMark`), not this function.
+///
+/// One more window this opens, unmeasured: a constructor that `dlopen`s a library whose own
+/// constructor starts a thread and waits for it, while that thread makes an interposed call —
+/// the thread's `dlsym` waits for the loader's lock the `dlopen` holds. ADR 0115 names it.
+///
+/// Not `inline`, unlike the wrappers that call it: each of those is expanded at its every call
+/// site, and `callExecveSeqCarry` expands `callExecve` six times — inlining this as well put
+/// that function's frame at 1,168 bytes, over the shim's 1 KiB bound
+/// (`spike/check-shim-footprint.sh`, check C).
+fn reach(comptime name: [:0]const u8) ?RealFn(name) {
+    // Looked up only while the table is still unfilled. After `resolveAll` a null entry is a
+    // symbol this C library does not have — an optional one, `pwritev2` before glibc 2.26 —
+    // and asking `dlsym` again on every call would only repeat the answer, from a signal
+    // handler too.
+    //
+    // The flag is read first, and with acquire: it is released by `resolveAll` after the last
+    // entry, so once it reads true every entry it covers is visible. Read the other way round,
+    // a thread a constructor started could see an entry not yet written and then the flag
+    // already set, and answer "missing" for a function that exists — #753 again, in a window.
+    if (@atomicLoad(bool, &table_filled, .acquire)) return @field(real, name);
+    return @field(real, name) orelse lookup(RealFn(name), name);
+}
+
+/// Set once `resolveAll` has filled `real`: from then on a null entry means "not in this C
+/// library", and `reach` stops asking.
+var table_filled: bool = false;
+
+/// Fills `real`, one `dlsym(RTLD_NEXT)` per field, the field's name being the symbol's — one
+/// rule in one place, which `reach` relies on for the same names.
+///
+/// Optional symbols (#244, #256): some of these can genuinely be absent — pwritev2 needs
+/// glibc 2.26, copy_file_range 2.27, renameat2 2.28, and musl spells some of them
+/// differently. Their helpers answer a missing symbol with ENOSYS (`optionalMissing`), because
+/// a target that reads errno to decide whether to fall back (Rust std's kernel_copy does
+/// exactly this) must see the reason. Of those only `pwritev` exists on macOS, and only its
+/// helper has a darwin branch; the rest are Linux-only calls whose lookup is the only path.
 fn resolveAll() void {
-    real.open = lookup(OpenFn, "open");
-    real.openat = lookup(OpenatFn, "openat");
-    real.creat = lookup(CreatFn, "creat");
-    real.write = lookup(WriteFn, "write");
-    real.pwrite = lookup(PwriteFn, "pwrite");
-    real.writev = lookup(WritevFn, "writev");
-    // Optional symbols (#244, #256): unlike the wrappers above, these can genuinely
-    // be absent — pwritev2 needs glibc 2.26, copy_file_range 2.27, renameat2 2.28,
-    // and musl spells some of them differently. `optionalMissing` below turns a null
-    // into ENOSYS rather than a bare -1, because a target that reads errno to decide
-    // whether to fall back (Rust std's kernel_copy does exactly this) must see the
-    // reason. Of these five only `pwritev` exists on macOS, and only its helper has
-    // a darwin branch; the rest are Linux-only calls whose lookup is the only path.
-    real.pwritev = lookup(PwritevFn, "pwritev");
-    real.pwritev2 = lookup(Pwritev2Fn, "pwritev2");
-    real.copy_file_range = lookup(CopyFileRangeFn, "copy_file_range");
-    real.sendfile = lookup(SendfileFn, "sendfile");
-    real.rename = lookup(RenameFn, "rename");
-    real.renameat = lookup(RenameatFn, "renameat");
-    real.renameat2 = lookup(Renameat2Fn, "renameat2");
-    real.unlink = lookup(UnlinkFn, "unlink");
-    real.unlinkat = lookup(UnlinkatFn, "unlinkat");
-    real.link = lookup(LinkFn, "link");
-    real.linkat = lookup(LinkatFn, "linkat");
-    real.symlink = lookup(SymlinkFn, "symlink");
-    real.symlinkat = lookup(SymlinkatFn, "symlinkat");
-    real.fsync = lookup(FdFn, "fsync");
-    real.fdatasync = lookup(FdFn, "fdatasync");
-    real.close = lookup(FdFn, "close");
-    real.ftruncate = lookup(FtruncateFn, "ftruncate");
-    real.truncate = lookup(TruncateFn, "truncate");
-    real.mkdir = lookup(MkdirFn, "mkdir");
-    real.mkdirat = lookup(MkdiratFn, "mkdirat");
-    real.rmdir = lookup(RmdirFn, "rmdir");
-    real.fork = lookup(ForkFn, "fork");
-    real.vfork = lookup(ForkFn, "vfork");
-    real.execve = lookup(ExecveFn, "execve");
-    real.execv = lookup(ExecvpFn, "execv");
-    real.execvp = lookup(ExecvpFn, "execvp");
-    real.posix_spawn = lookup(PosixSpawnFn, "posix_spawn");
-    real.posix_spawnp = lookup(PosixSpawnFn, "posix_spawnp");
-    real.pthread_create = lookup(PthreadCreateFn, "pthread_create");
-    real.pthread_join = lookup(PthreadJoinFn, "pthread_join");
-    real.pthread_detach = lookup(PthreadDetachFn, "pthread_detach");
-    real.setsid = lookup(SetsidFn, "setsid");
-    real.setpgid = lookup(SetpgidFn, "setpgid");
-    real.fopen = lookup(FopenFn, "fopen");
-    real.fopen64 = lookup(FopenFn, "fopen64");
-    real.freopen = lookup(FreopenFn, "freopen");
-    real.freopen64 = lookup(FreopenFn, "freopen64");
-    real.fflush = lookup(FflushFn, "fflush");
-    real.fflush_unlocked = lookup(FflushFn, "fflush_unlocked");
-    real.fclose = lookup(FcloseFn, "fclose");
-    real.fseek = lookup(FseekFn, "fseek");
-    real.fseeko = lookup(FseekoFn, "fseeko");
-    real.fseeko64 = lookup(FseekoFn, "fseeko64");
-    real.rewind = lookup(RewindFn, "rewind");
-    real.fsetpos = lookup(FsetposFn, "fsetpos");
-    real.fsetpos64 = lookup(FsetposFn, "fsetpos64");
+    inline for (@typeInfo(@TypeOf(real)).@"struct".fields) |field| {
+        @field(real, field.name) = lookup(RealFn(field.name), field.name);
+    }
+    @atomicStore(bool, &table_filled, true, .release);
 }
 
 fn parseU32(s: []const u8) u32 {
@@ -1065,6 +1099,10 @@ pub fn init() void {
     // order, the `cat` an `sh -c` exec'd died of `SIGSYS`, exit 159; in this order both
     // survived. Costless where no filter exists: it only changes a disposition.
     syscalls.installHandler();
+
+    // Every way out of this function that does not arm the shim says so (#753): a mark left by
+    // a call before it then stays unread, and every later call is dropped as it was.
+    defer if (!active) @atomicStore(u32, &pre_init.word, pre_init.unused, .release);
 
     // macOS fills `real` from extern declarations before this runs (see shim.zig);
     // dlsym is a Linux-only step.
@@ -1265,6 +1303,9 @@ pub fn init() void {
     // And where this image stands against the run's cgroup, immediately after the
     // announcement (v17).
     announceCgroup(ts);
+    // Last: a call made before this function ran, or while it ran, that reached the state
+    // (#753). After the cgroup record, which the engine pairs with the announcement.
+    reportPreInit(ts);
 }
 
 /// The run's cgroup, copied out of the environment while it is still the engine's (v17,
@@ -1663,6 +1704,247 @@ fn noteUnresolved(ts: *ThreadState, path: []const u8, kind: []const u8) void {
     writeRecord(ts, .unresolved, 0, path, kind);
 }
 
+// --- calls made before this library's constructor (#753) ---------------------------------
+//
+// `reach` lets a call made before `init` — from another shared library's constructor, which
+// the loader may run first — reach the real function. Nothing records it: `active` is false
+// until `init` has opened the trace. Most such calls are none of the run's business (a log
+// line, a thread pool, a read of /dev/urandom). One that changes the judged state is: it lands
+// before crash point 1 in every world, so the windows around it are never explored, and a later
+// recorded operation on the same path makes the per-path reconciliation
+// (`state_changed_unaccounted`) read the path as accounted for. Until #753 such a target never
+// got that far — the call answered -1 and the process usually died, an honest UNKNOWN — so
+// letting the call through without this would have turned that UNKNOWN into a verdict.
+//
+// So a write-capable call that reaches the state before `init` has finished leaves a mark, and
+// `init`, once the trace is open, writes one `unresolved` record for it
+// (`before_constructor`); the engine refuses on it as on any other operation it cannot place.
+//
+// **One atomic word holds where this image stands and the mark**, because both change under
+// threads: a constructor that ran first can have started threads that are still calling while
+// `init` runs, and `init` itself reads the mark. A call that loads `before` and finds no mark
+// sets it with a compare-and-swap; `init`, as its last act, swaps in `recording` and reads the
+// mark it displaced. A call that loses that race sees `recording` — and so a set `active`, which
+// `init` set before the swap and never clears — and is recorded the ordinary way. The path is
+// written only by the call that set the mark, and published afterwards: `init` names it when it
+// was published in time, and records the mark without it otherwise.
+const pre_init = struct {
+    const before: u32 = 0;
+    const recording: u32 = 1;
+    /// `init` returned without arming: no run, no trace, or `--observe supervised`.
+    const unused: u32 = 2;
+    const stage_mask: u32 = 3;
+    const marked: u32 = 1 << 8;
+    const published: u32 = 1 << 9;
+    var word: u32 = before;
+    /// The process that set the mark. Only it hands the mark on across an `exec`: a `vfork`
+    /// child shares this memory and must not run `setenv` in it, and a forked child's copy of
+    /// the mark belongs to the parent, which reports it at its own `init`.
+    var pid: c_int = 0;
+    /// NUL-terminated, so an `exec` before `init` can hand it on (`preInitCarrySet`).
+    var path_buf: [contract.max_path + 1]u8 = undefined;
+    var path_len: usize = 0;
+    /// `NAME=path` for an `execve` before `init` whose environment is rebuilt to carry it.
+    var carry_entry: [contract.env.before_constructor.len + 1 + contract.max_path + 1]u8 = undefined;
+};
+
+/// Where a call that found `active` false stands: record it after all, consider it for the
+/// mark, or drop it.
+fn preInitStage() enum { record, consider, drop } {
+    // macOS calls the originals directly from the first instant, so #753 never happened there,
+    // and its system libraries make interposed calls in great number while libSystem is still
+    // starting: nothing new runs on that platform (ADR 0115's scope).
+    if (is_darwin) return .drop;
+    const w = @atomicLoad(u32, &pre_init.word, .acquire);
+    return switch (w & pre_init.stage_mask) {
+        pre_init.recording => .record,
+        pre_init.before => if (w & pre_init.marked != 0) .drop else .consider,
+        else => .drop,
+    };
+}
+
+/// The doors' common first question: decided (record it after all, or drop it) or still to be
+/// considered against the state — `null`.
+fn preInitDecided() ?bool {
+    return switch (preInitStage()) {
+        .record => true,
+        .drop => false,
+        .consider => null,
+    };
+}
+
+/// A descriptor opened read-only: nothing that goes through it changes a file.
+fn fdReadOnly(fd: c_int) bool {
+    const fl = c.fcntl(fd, F_GETFL);
+    return fl != -1 and (fl & O_ACCMODE) == O_RDONLY;
+}
+
+/// Sets the mark for `path` (empty when the path could not be read). True when the call should
+/// be recorded the ordinary way after all: `init` finished while this one was deciding.
+fn preInitMark(path: []const u8) bool {
+    while (true) {
+        const w = @atomicLoad(u32, &pre_init.word, .acquire);
+        if (w & pre_init.stage_mask == pre_init.recording) return true;
+        if (w & pre_init.stage_mask != pre_init.before or w & pre_init.marked != 0) return false;
+        if (@cmpxchgWeak(u32, &pre_init.word, w, w | pre_init.marked, .acq_rel, .acquire) == null) {
+            @atomicStore(c_int, &pre_init.pid, c.getpid(), .release);
+            const n = @min(path.len, pre_init.path_buf.len - 1);
+            @memcpy(pre_init.path_buf[0..n], path[0..n]);
+            pre_init.path_buf[n] = 0;
+            pre_init.path_len = n;
+            _ = @atomicRmw(u32, &pre_init.word, .Or, pre_init.published, .release);
+            return false;
+        }
+    }
+}
+
+/// Inside the state directory, as the engine named it. Read from the environment each time:
+/// `init` has not normalised it into `state_dir_buf` yet, and the engine passes both spellings
+/// already resolved (`SIDEEYE_STATE_DIR_ALT` is the caller's own).
+fn preInitInState(path: []const u8) bool {
+    if (c.getenv(contract.env.state_dir)) |sd| {
+        const d = std.mem.span(sd);
+        if (d.len != 0 and contract.isInsideDir(path, d)) return true;
+    }
+    if (c.getenv(contract.env.state_dir_alt)) |alt| {
+        const d = std.mem.span(alt);
+        if (d.len != 0 and contract.isInsideDir(path, d)) return true;
+    }
+    return false;
+}
+
+/// One path of a call that found `active` false. A path that cannot be resolved is marked,
+/// as `note1FromTrap` records it once armed.
+fn preInitPath(ts: *ThreadState, dirfd: c_int, path: [*:0]const u8) bool {
+    var unresolvable = false;
+    const resolved = resolveAt(ts, &ts.note1_path, dirfd, path, &unresolvable) orelse
+        return if (unresolvable) preInitMark("") else false;
+    if (!preInitInState(resolved)) return false;
+    return preInitMark(resolved);
+}
+
+/// The path-shaped calls' door before `init`: true when the call should go on to be recorded.
+fn preInit1(dirfd: c_int, path: [*:0]const u8) bool {
+    if (preInitDecided()) |decided| return decided;
+    const ts = mine();
+    if (ts.busy) return false;
+    ts.busy = true;
+    defer ts.busy = false;
+    return preInitPath(ts, dirfd, path);
+}
+
+/// Both endpoints, as the armed side counts them (ADR 0006).
+fn preInit2(dirfd: c_int, path: [*:0]const u8, adirfd: c_int, apath: ?[*:0]const u8) bool {
+    if (preInitDecided()) |decided| return decided;
+    const ts = mine();
+    if (ts.busy) return false;
+    ts.busy = true;
+    defer ts.busy = false;
+    if (preInitPath(ts, dirfd, path)) return true;
+    // The first endpoint may have set the mark (nothing more to do) or lost the race to
+    // `init` (record), and the second is asked only while neither happened.
+    if (preInitDecided()) |decided| return decided;
+    const a = apath orelse return false;
+    return preInitPath(ts, adirfd, a);
+}
+
+/// A descriptor's call before `init`. The descriptor may have been opened by an earlier image
+/// and inherited — `exec ./prog 2>>"$STATE/log"` — so the open's own mark is not enough: where
+/// the descriptor points is asked here, as `noteFdFromTrap` asks once armed (contract v8: no
+/// descriptor number is exempt). `statx` and `readlink` only — nothing in `real` is needed.
+/// Sockets, pipes and terminals are not the state; a regular file outside it is not either.
+fn preInitFd(fd: c_int) bool {
+    if (preInitDecided()) |decided| return decided;
+    if (fd < 0) return false;
+    // A descriptor opened read-only changes nothing whatever goes through it — the `close` of a
+    // file a constructor only read included, which the armed side does not refuse either.
+    if (fdReadOnly(fd)) return false;
+    const ts = mine();
+    if (ts.busy) return false;
+    ts.busy = true;
+    defer ts.busy = false;
+    var deleted = false;
+    switch (fdKind(fd, &deleted)) {
+        .non_path => return false,
+        .unresolvable => return preInitMark(""),
+        .path_backed => {},
+    }
+    var link_deleted = false;
+    const resolved = fdPath(&ts.fd_path, fd, &link_deleted) orelse return preInitMark("");
+    if (!preInitInState(resolved)) return false;
+    return preInitMark(resolved);
+}
+
+/// A call before `init` that is recorded once armed whatever it names (`linkat` through a
+/// descriptor): marked the same way.
+fn preInitAlways() bool {
+    return preInitDecided() orelse preInitMark("");
+}
+
+/// `init`'s last act: from here every call records itself. A mark left before it becomes one
+/// `unresolved` record, after the announcement and the cgroup record — in front of
+/// `shim_ready` the engine would read it as another process's (`trace.zig`'s subject rule) and
+/// a one-process target's account would speak of a process boundary.
+fn reportPreInit(ts: *ThreadState) void {
+    const old = @atomicRmw(u32, &pre_init.word, .Xchg, pre_init.recording, .acq_rel);
+    if (old & pre_init.marked != 0) {
+        const path = if (old & pre_init.published != 0) pre_init.path_buf[0..pre_init.path_len] else "";
+        noteUnresolved(ts, path, contract.unresolved_kind.before_constructor);
+        return;
+    }
+    // An image before this one made such a call and `exec`'d before its own constructor could
+    // say so; it handed the mark on in the environment (`preInitCarrySet`). Empty is the engine's
+    // pin, not a mark.
+    if (is_darwin) return;
+    const carried = std.mem.span(c.getenv(contract.env.before_constructor) orelse return);
+    if (carried.len == 0) return;
+    noteUnresolved(ts, if (std.mem.eql(u8, carried, std.mem.span(pre_init_unread))) "" else carried, contract.unresolved_kind.before_constructor);
+}
+
+/// The mark, when there is one to hand on: this image has not armed, and a call before its
+/// constructor marked. The path, NUL-terminated, or "" when it was not published in time.
+fn preInitCarried() ?[*:0]const u8 {
+    if (is_darwin) return null;
+    const w = @atomicLoad(u32, &pre_init.word, .acquire);
+    if (w & pre_init.stage_mask != pre_init.before or w & pre_init.marked == 0) return null;
+    if (@atomicLoad(c_int, &pre_init.pid, .acquire) != c.getpid()) return null;
+    // Never empty: the engine pins the variable empty for every child it starts, so that a
+    // value in the operator's shell cannot refuse a run, and empty therefore means "no mark".
+    if (w & pre_init.published == 0 or pre_init.path_len == 0) return pre_init_unread;
+    return @ptrCast(&pre_init.path_buf);
+}
+
+/// The carried value when the path was not read in time: never a path, never empty.
+const pre_init_unread: [*:0]const u8 = "?";
+
+/// For `execv` and `execvp`, which take the process's environment: an `exec` before `init`
+/// would otherwise carry the mark out of existence with the image (#753). Undone by the caller
+/// when the exec fails, as `execSeqCarrySet` is.
+pub fn preInitCarrySet() bool {
+    const v = preInitCarried() orelse return false;
+    return c.setenv(contract.env.before_constructor, v, 1) == 0;
+}
+
+/// Undoes `preInitCarrySet` after an `exec` that returned, keeping the exec's errno: POSIX
+/// lets `unsetenv` touch it, as `execv`'s own carry already allows for.
+pub fn preInitCarryUndo() void {
+    const saved = std.c._errno().*;
+    _ = c.unsetenv(contract.env.before_constructor);
+    std.c._errno().* = saved;
+}
+
+/// `execve` before `init`: its environment is the caller's array, so it is rebuilt with the mark
+/// appended — the same rebuild the operation count's carry makes once armed.
+fn callExecvePreInit(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]const ?[*:0]const u8) c_int {
+    const v = preInitCarried() orelse return callExecve(p, a, e);
+    const ts = mine();
+    if (ts == &reserve or ts.exec_carrying) return callExecve(p, a, e);
+    ts.exec_carrying = true;
+    defer ts.exec_carrying = false;
+    const entry = std.fmt.bufPrintZ(&pre_init.carry_entry, "{s}={s}", .{ contract.env.before_constructor, std.mem.span(v) }) catch return callExecve(p, a, e);
+    return execveAppending(ts, p, a, e, entry.ptr, contract.env.before_constructor ++ "=");
+}
+
 /// Bring `seq` up to the highest operation number the trace holds (v15).
 ///
 /// The trace is the source of the count because nothing else can be. A parent cannot be
@@ -1938,7 +2220,7 @@ pub fn noteLinkByDescriptor(fd: c_int) void {
 }
 
 pub fn note1FromTrap(op: contract.OpClass, dirfd: c_int, path: [*:0]const u8) void {
-    if (!active) return;
+    if (!active and !preInit1(dirfd, path)) return;
     const ts = mine();
     if (ts.busy) return;
     ts.busy = true;
@@ -1975,7 +2257,7 @@ pub fn noteUnsupportedInScope2(
     adirfd: c_int,
     apath: ?[*:0]const u8,
 ) void {
-    if (!active) return;
+    if (!active and !preInit2(dirfd, path, adirfd, apath)) return;
     const ts = mine();
     if (ts.busy) return;
     ts.busy = true;
@@ -2012,7 +2294,7 @@ pub fn note2FromTrap(
     adirfd: c_int,
     apath: [*:0]const u8,
 ) void {
-    if (!active) return;
+    if (!active and !preInit2(dirfd, path, adirfd, apath)) return;
     const ts = mine();
     if (ts.busy) return;
     ts.busy = true;
@@ -2199,7 +2481,7 @@ fn noteUnresolvedFd(ts: *ThreadState, fd: c_int) void {
 /// by descriptor. Resolution mirrors `noteFd` below — the same three-way answer, the
 /// same refusal on a measurement that failed — and the scope gate is the same one.
 pub fn noteUnsupportedInScopeFd(label: [*:0]const u8, fd: c_int) void {
-    if (!active) return;
+    if (!active and !preInitFd(fd)) return;
     if (fd < 0) return;
     const ts = mine();
     if (ts.busy) return;
@@ -2265,8 +2547,7 @@ fn pageUp(len: usize) usize {
 pub fn noteSharedMapping(fd: c_int, start: usize, len: usize) void {
     if (!active) return;
     if (fd < 0) return;
-    const fl = c.fcntl(fd, F_GETFL);
-    if (fl != -1 and (fl & O_ACCMODE) == 0) return; // read-only: can never become writable
+    if (fdReadOnly(fd)) return; // read-only: can never become writable
     const ts = mine();
     if (ts.busy) return;
     ts.busy = true;
@@ -2317,7 +2598,7 @@ pub fn noteMprotectWrite(start: usize, len: usize) void {
 }
 
 pub fn noteFdFromTrap(op: contract.OpClass, fd: c_int) void {
-    if (!active) return;
+    if (!active and !preInitFd(fd)) return;
     // The ONLY early return keyed on the descriptor itself. Contract v8: no descriptor
     // number is exempt from observation — not 0/1/2 (a target can dup2 a state file
     // onto any of them; measured as a false PASS before this change), and not the
@@ -2383,43 +2664,55 @@ const darwin = if (is_darwin) @import("darwin_libc.zig") else struct {};
 
 pub inline fn callOpen(path: [*:0]const u8, flags: c_int, mode: c_uint) c_int {
     if (is_darwin) return darwin.open(path, flags, mode);
-    const f = real.open orelse return -1;
+    const f = reach("open") orelse return optionalMissingInt();
     return f(path, flags, mode);
 }
 pub inline fn callOpenat(dirfd: c_int, path: [*:0]const u8, flags: c_int, mode: c_uint) c_int {
     if (is_darwin) return darwin.openat(dirfd, path, flags, mode);
-    const f = real.openat orelse return -1;
+    const f = reach("openat") orelse return optionalMissingInt();
     return f(dirfd, path, flags, mode);
 }
 pub inline fn callCreat(path: [*:0]const u8, mode: c_uint) c_int {
     if (is_darwin) return darwin.creat(path, mode);
-    const f = real.creat orelse return -1;
+    const f = reach("creat") orelse return optionalMissingInt();
     return f(path, mode);
 }
 pub inline fn callWrite(fd: c_int, buf: [*]const u8, n: usize) isize {
     if (is_darwin) return darwin.write(fd, buf, n);
-    const f = real.write orelse return -1;
+    const f = reach("write") orelse return optionalMissing();
     return f(fd, buf, n);
 }
 pub inline fn callPwrite(fd: c_int, buf: [*]const u8, n: usize, off: i64) isize {
     if (is_darwin) return darwin.pwrite(fd, buf, n, off);
-    const f = real.pwrite orelse return -1;
+    const f = reach("pwrite") orelse return optionalMissing();
     return f(fd, buf, n, off);
 }
 pub inline fn callWritev(fd: c_int, iov: *const anyopaque, cnt: c_int) isize {
     if (is_darwin) return darwin.writev(fd, iov, cnt);
-    const f = real.writev orelse return -1;
+    const f = reach("writev") orelse return optionalMissing();
     return f(fd, iov, cnt);
 }
 
-/// `ENOSYS`, for the optional symbols below. The wrappers above may return a bare -1
-/// when their lookup failed because their symbols cannot actually be missing — every
-/// one of them predates the C standard library's oldest supported version here. The
-/// symbols added by #244 and #256 can be missing, and a -1 with a stale errno is
-/// worse than the absence itself: Rust std's kernel_copy reads errno to decide
-/// whether to fall back to a read/write loop, so an unset errno turns "this shim
-/// cannot see the call" into "the target's copy failed".
+/// `ENOSYS`, for a symbol `reach` could not find at all. The symbols added by #244 and #256
+/// can genuinely be missing, and a -1 with a stale errno is worse than the absence itself:
+/// Rust std's kernel_copy reads errno to decide whether to fall back to a read/write loop, so
+/// an unset errno turns "this shim cannot see the call" into "the target's copy failed". The
+/// rest predate the oldest C library supported here and cannot be missing; they answer the
+/// same way rather than a bare -1, which until #753 was also the answer to a table not yet
+/// filled — the same -1 for two different things, neither with an errno.
 const ENOSYS: c_int = if (is_darwin) 78 else 38;
+
+/// `pthread_create`'s answer for a function `reach` could not find: an error number, as its
+/// callers expect, and the one it returns for "insufficient resources". `-1` was what #753
+/// met: C++'s `std::thread` threw it as "Unknown error -1" and aborted.
+const EAGAIN_value: c_int = @intFromEnum(std.posix.E.AGAIN);
+
+/// The `FILE *` wrappers' form of the same: null with errno set, not null with whatever errno
+/// held.
+fn missingFile() ?*FILE {
+    std.c._errno().* = ENOSYS;
+    return null;
+}
 
 fn optionalMissing() isize {
     std.c._errno().* = ENOSYS;
@@ -2429,30 +2722,30 @@ fn optionalMissing() isize {
 /// The same, for the wrappers that return `c_int`. Two shapes rather than one so
 /// neither call site open-codes the errno store — the version that did was the one
 /// that could be fixed on its own and drift.
-fn optionalMissingInt() c_int {
+pub fn optionalMissingInt() c_int {
     std.c._errno().* = ENOSYS;
     return -1;
 }
 
 pub inline fn callPwritev(fd: c_int, iov: *const anyopaque, cnt: c_int, off: i64) isize {
     if (is_darwin) return darwin.pwritev(fd, iov, cnt, off);
-    const f = real.pwritev orelse return optionalMissing();
+    const f = reach("pwritev") orelse return optionalMissing();
     return f(fd, iov, cnt, off);
 }
 pub inline fn callPwritev2(fd: c_int, iov: *const anyopaque, cnt: c_int, off: i64, flags: c_int) isize {
-    const f = real.pwritev2 orelse return optionalMissing();
+    const f = reach("pwritev2") orelse return optionalMissing();
     return f(fd, iov, cnt, off, flags);
 }
 pub inline fn callCopyFileRange(fd_in: c_int, off_in: ?*i64, fd_out: c_int, off_out: ?*i64, len: usize, flags: c_uint) isize {
-    const f = real.copy_file_range orelse return optionalMissing();
+    const f = reach("copy_file_range") orelse return optionalMissing();
     return f(fd_in, off_in, fd_out, off_out, len, flags);
 }
 pub inline fn callSendfile(out_fd: c_int, in_fd: c_int, off: ?*i64, count: usize) isize {
-    const f = real.sendfile orelse return optionalMissing();
+    const f = reach("sendfile") orelse return optionalMissing();
     return f(out_fd, in_fd, off, count);
 }
 pub inline fn callRenameat2(olddirfd: c_int, old: [*:0]const u8, newdirfd: c_int, new: [*:0]const u8, flags: c_uint) c_int {
-    const f = real.renameat2 orelse return optionalMissingInt();
+    const f = reach("renameat2") orelse return optionalMissingInt();
     return f(olddirfd, old, newdirfd, new, flags);
 }
 
@@ -2538,47 +2831,47 @@ pub inline fn callGuardedWritevNp(fd: c_int, guard: *const u64, iov: *const anyo
 }
 pub inline fn callRename(old: [*:0]const u8, new: [*:0]const u8) c_int {
     if (is_darwin) return darwin.rename(old, new);
-    const f = real.rename orelse return -1;
+    const f = reach("rename") orelse return optionalMissingInt();
     return f(old, new);
 }
 pub inline fn callRenameat(od: c_int, old: [*:0]const u8, nd: c_int, new: [*:0]const u8) c_int {
     if (is_darwin) return darwin.renameat(od, old, nd, new);
-    const f = real.renameat orelse return -1;
+    const f = reach("renameat") orelse return optionalMissingInt();
     return f(od, old, nd, new);
 }
 pub inline fn callUnlink(path: [*:0]const u8) c_int {
     if (is_darwin) return darwin.unlink(path);
-    const f = real.unlink orelse return -1;
+    const f = reach("unlink") orelse return optionalMissingInt();
     return f(path);
 }
 pub inline fn callUnlinkat(dirfd: c_int, path: [*:0]const u8, flags: c_int) c_int {
     if (is_darwin) return darwin.unlinkat(dirfd, path, flags);
-    const f = real.unlinkat orelse return -1;
+    const f = reach("unlinkat") orelse return optionalMissingInt();
     return f(dirfd, path, flags);
 }
 pub inline fn callLink(old: [*:0]const u8, new: [*:0]const u8) c_int {
     if (is_darwin) return darwin.link(old, new);
-    const f = real.link orelse return -1;
+    const f = reach("link") orelse return optionalMissingInt();
     return f(old, new);
 }
 pub inline fn callLinkat(od: c_int, old: [*:0]const u8, nd: c_int, new: [*:0]const u8, flags: c_int) c_int {
     if (is_darwin) return darwin.linkat(od, old, nd, new, flags);
-    const f = real.linkat orelse return -1;
+    const f = reach("linkat") orelse return optionalMissingInt();
     return f(od, old, nd, new, flags);
 }
 pub inline fn callSymlink(target: [*:0]const u8, linkpath: [*:0]const u8) c_int {
     if (is_darwin) return darwin.symlink(target, linkpath);
-    const f = real.symlink orelse return -1;
+    const f = reach("symlink") orelse return optionalMissingInt();
     return f(target, linkpath);
 }
 pub inline fn callSymlinkat(target: [*:0]const u8, newdirfd: c_int, linkpath: [*:0]const u8) c_int {
     if (is_darwin) return darwin.symlinkat(target, newdirfd, linkpath);
-    const f = real.symlinkat orelse return -1;
+    const f = reach("symlinkat") orelse return optionalMissingInt();
     return f(target, newdirfd, linkpath);
 }
 pub inline fn callFsync(fd: c_int) c_int {
     if (is_darwin) return darwin.fsync(fd);
-    const f = real.fsync orelse return -1;
+    const f = reach("fsync") orelse return optionalMissingInt();
     return f(fd);
 }
 pub inline fn callFdatasync(fd: c_int) c_int {
@@ -2590,42 +2883,42 @@ pub inline fn callFdatasync(fd: c_int) c_int {
     // that substitutes one for the other changes what the target does rather than
     // observing it.
     if (is_darwin) return darwin.fdatasync(fd);
-    const f = real.fdatasync orelse return -1;
+    const f = reach("fdatasync") orelse return optionalMissingInt();
     return f(fd);
 }
 pub inline fn callClose(fd: c_int) c_int {
     if (is_darwin) return darwin.close(fd);
-    const f = real.close orelse return -1;
+    const f = reach("close") orelse return optionalMissingInt();
     return f(fd);
 }
 pub inline fn callFtruncate(fd: c_int, len: i64) c_int {
     if (is_darwin) return darwin.ftruncate(fd, len);
-    const f = real.ftruncate orelse return -1;
+    const f = reach("ftruncate") orelse return optionalMissingInt();
     return f(fd, len);
 }
 pub inline fn callTruncate(path: [*:0]const u8, len: i64) c_int {
     if (is_darwin) return darwin.truncate(path, len);
-    const f = real.truncate orelse return -1;
+    const f = reach("truncate") orelse return optionalMissingInt();
     return f(path, len);
 }
 pub inline fn callMkdir(path: [*:0]const u8, mode: c_uint) c_int {
     if (is_darwin) return darwin.mkdir(path, mode);
-    const f = real.mkdir orelse return -1;
+    const f = reach("mkdir") orelse return optionalMissingInt();
     return f(path, mode);
 }
 pub inline fn callMkdirat(dirfd: c_int, path: [*:0]const u8, mode: c_uint) c_int {
     if (is_darwin) return darwin.mkdirat(dirfd, path, mode);
-    const f = real.mkdirat orelse return -1;
+    const f = reach("mkdirat") orelse return optionalMissingInt();
     return f(dirfd, path, mode);
 }
 pub inline fn callRmdir(path: [*:0]const u8) c_int {
     if (is_darwin) return darwin.rmdir(path);
-    const f = real.rmdir orelse return -1;
+    const f = reach("rmdir") orelse return optionalMissingInt();
     return f(path);
 }
 pub inline fn callFork() c_int {
     if (is_darwin) return darwin.fork();
-    const f = real.fork orelse return -1;
+    const f = reach("fork") orelse return optionalMissingInt();
     return f();
 }
 /// The real `vfork`, returned rather than called.
@@ -2636,11 +2929,11 @@ pub inline fn callFork() c_int {
 /// this function inlined into it. See `ops.vfork` for the measurements.
 pub inline fn realVfork() ?ForkFn {
     if (is_darwin) return darwin.vfork;
-    return real.vfork;
+    return reach("vfork");
 }
 pub inline fn callExecve(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]const ?[*:0]const u8) c_int {
     if (is_darwin) return darwin.execve(p, a, e);
-    const f = real.execve orelse return -1;
+    const f = reach("execve") orelse return optionalMissingInt();
     return f(p, a, e);
 }
 
@@ -2670,6 +2963,7 @@ const max_env_entries = 1024;
 /// `getpid()` differently and returns before `mine()` is called. The entry's own bytes,
 /// 64 of them, stay on the stack.
 pub fn callExecveSeqCarry(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]const ?[*:0]const u8) c_int {
+    if (!active) return callExecvePreInit(p, a, e);
     if (!execCarryAllowed()) return callExecve(p, a, e);
     // The count carried across the image change is the RUN's, not this process's (v15).
     // Without this the base would be whatever this process last handed out, so a subject
@@ -2694,7 +2988,13 @@ pub fn callExecveSeqCarry(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]co
     _ = refreshCount(ts);
     var entry_buf: [64]u8 = undefined;
     const entry = std.fmt.bufPrintZ(&entry_buf, "{s}={d}", .{ contract.env.seq_base, ts.seq }) catch return callExecve(p, a, e);
-    const prefix = contract.env.seq_base ++ "=";
+    return execveAppending(ts, p, a, e, entry.ptr, contract.env.seq_base ++ "=");
+}
+
+/// `execve` with `e` rebuilt in the thread's own slot: every entry but the ones starting with
+/// `prefix`, then `entry`. An environment too long for the slot is passed on unchanged and the
+/// carry dropped — never truncated (`max_env_entries`).
+fn execveAppending(ts: *ThreadState, p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]const ?[*:0]const u8, entry: [*:0]const u8, comptime prefix: []const u8) c_int {
     const new_env = &ts.exec_env;
     var n: usize = 0;
     var i: usize = 0;
@@ -2705,7 +3005,7 @@ pub fn callExecveSeqCarry(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]co
         n += 1;
     }
     if (n >= max_env_entries) return callExecve(p, a, e);
-    new_env[n] = entry.ptr;
+    new_env[n] = entry;
     new_env[n + 1] = null;
     return callExecve(p, a, @ptrCast(new_env));
 }
@@ -2728,119 +3028,119 @@ pub fn execSeqCarryUnset() void {
 }
 pub inline fn callExecv(p: [*:0]const u8, a: [*]const ?[*:0]const u8) c_int {
     if (is_darwin) return darwin.execv(p, a);
-    const f = real.execv orelse return -1;
+    const f = reach("execv") orelse return optionalMissingInt();
     return f(p, a);
 }
 pub inline fn callExecvp(p: [*:0]const u8, a: [*]const ?[*:0]const u8) c_int {
     if (is_darwin) return darwin.execvp(p, a);
-    const f = real.execvp orelse return -1;
+    const f = reach("execvp") orelse return optionalMissingInt();
     return f(p, a);
 }
 pub inline fn callPosixSpawn(pid: ?*anyopaque, p: [*:0]const u8, fa: ?*const anyopaque, at: ?*const anyopaque, a: [*]const ?[*:0]const u8, e: [*]const ?[*:0]const u8) c_int {
     if (is_darwin) return darwin.posix_spawn(pid, p, fa, at, a, e);
-    const f = real.posix_spawn orelse return -1;
+    const f = reach("posix_spawn") orelse return ENOSYS;
     return f(pid, p, fa, at, a, e);
 }
 pub inline fn callPosixSpawnp(pid: ?*anyopaque, p: [*:0]const u8, fa: ?*const anyopaque, at: ?*const anyopaque, a: [*]const ?[*:0]const u8, e: [*]const ?[*:0]const u8) c_int {
     if (is_darwin) return darwin.posix_spawnp(pid, p, fa, at, a, e);
-    const f = real.posix_spawnp orelse return -1;
+    const f = reach("posix_spawnp") orelse return ENOSYS;
     return f(pid, p, fa, at, a, e);
 }
 pub inline fn callPthreadCreate(t: *anyopaque, at: ?*const anyopaque, s: *const anyopaque, arg: ?*anyopaque) c_int {
     if (is_darwin) return darwin.pthread_create(t, at, s, arg);
-    const f = real.pthread_create orelse return -1;
+    const f = reach("pthread_create") orelse return EAGAIN_value;
     return f(t, at, s, arg);
 }
 // `pthread_join` and `pthread_detach` return an errno value, not -1 with errno set, so a
-// symbol the table could not resolve is looked up once more and, failing that, answered
-// `EINVAL` — a value the target's own error handling knows. Interposing these two adds a
+// symbol `reach` could not find at all is answered `EINVAL` — a value the target's own error
+// handling knows. (They were looked up once more before #753 made every wrapper do so.) Interposing these two adds a
 // way for a target's joins to fail that v17 did not have; this is what bounds it (review).
 const EINVAL_value: c_int = 22;
 pub inline fn callPthreadJoin(t: usize, r: ?*?*anyopaque) c_int {
     if (is_darwin) return darwin.pthread_join(t, r);
-    const f = real.pthread_join orelse lookup(PthreadJoinFn, "pthread_join") orelse return EINVAL_value;
+    const f = reach("pthread_join") orelse return EINVAL_value;
     return f(t, r);
 }
 pub inline fn callPthreadDetach(t: usize) c_int {
     if (is_darwin) return darwin.pthread_detach(t);
-    const f = real.pthread_detach orelse lookup(PthreadDetachFn, "pthread_detach") orelse return EINVAL_value;
+    const f = reach("pthread_detach") orelse return EINVAL_value;
     return f(t);
 }
 pub inline fn callSetsid() c_int {
     if (is_darwin) return darwin.setsid();
-    const f = real.setsid orelse return -1;
+    const f = reach("setsid") orelse return optionalMissingInt();
     return f();
 }
 pub inline fn callSetpgid(pid: c_int, pgid: c_int) c_int {
     if (is_darwin) return darwin.setpgid(pid, pgid);
-    const f = real.setpgid orelse return -1;
+    const f = reach("setpgid") orelse return optionalMissingInt();
     return f(pid, pgid);
 }
 pub inline fn callFopen(path: [*:0]const u8, mode: [*:0]const u8) ?*FILE {
     if (is_darwin) return @ptrCast(darwin.fopen(path, mode));
-    const f = real.fopen orelse return null;
+    const f = reach("fopen") orelse return missingFile();
     return f(path, mode);
 }
 pub inline fn callFopen64(path: [*:0]const u8, mode: [*:0]const u8) ?*FILE {
     // Never installed on macOS (no such symbol there); routed to fopen for the sake of
     // compiling one ops.zig for both platforms.
     if (is_darwin) return @ptrCast(darwin.fopen(path, mode));
-    const f = real.fopen64 orelse return null;
+    const f = reach("fopen64") orelse return missingFile();
     return f(path, mode);
 }
 pub inline fn callFreopen(path: ?[*:0]const u8, mode: [*:0]const u8, stream: *FILE) ?*FILE {
     if (is_darwin) return @ptrCast(darwin.freopen(path, mode, @ptrCast(stream)));
-    const f = real.freopen orelse return null;
+    const f = reach("freopen") orelse return missingFile();
     return f(path, mode, stream);
 }
 pub inline fn callFreopen64(path: ?[*:0]const u8, mode: [*:0]const u8, stream: *FILE) ?*FILE {
     if (is_darwin) return @ptrCast(darwin.freopen(path, mode, @ptrCast(stream)));
-    const f = real.freopen64 orelse return null;
+    const f = reach("freopen64") orelse return missingFile();
     return f(path, mode, stream);
 }
 pub inline fn callFflush(stream: ?*FILE) c_int {
     if (is_darwin) return darwin.fflush(@ptrCast(stream));
-    const f = real.fflush orelse return -1;
+    const f = reach("fflush") orelse return optionalMissingInt();
     return f(stream);
 }
 pub inline fn callFflushUnlocked(stream: ?*FILE) c_int {
     if (is_darwin) return darwin.fflush(@ptrCast(stream));
-    const f = real.fflush_unlocked orelse return -1;
+    const f = reach("fflush_unlocked") orelse return optionalMissingInt();
     return f(stream);
 }
 pub inline fn callFclose(stream: *FILE) c_int {
     if (is_darwin) return darwin.fclose(@ptrCast(stream));
-    const f = real.fclose orelse return -1;
+    const f = reach("fclose") orelse return optionalMissingInt();
     return f(stream);
 }
 pub inline fn callFseek(stream: *FILE, off: c_long, whence: c_int) c_int {
     if (is_darwin) return darwin.fseek(@ptrCast(stream), off, whence);
-    const f = real.fseek orelse return -1;
+    const f = reach("fseek") orelse return optionalMissingInt();
     return f(stream, off, whence);
 }
 pub inline fn callFseeko(stream: *FILE, off: i64, whence: c_int) c_int {
     if (is_darwin) return darwin.fseeko(@ptrCast(stream), off, whence);
-    const f = real.fseeko orelse return -1;
+    const f = reach("fseeko") orelse return optionalMissingInt();
     return f(stream, off, whence);
 }
 pub inline fn callFseeko64(stream: *FILE, off: i64, whence: c_int) c_int {
     if (is_darwin) return darwin.fseeko(@ptrCast(stream), off, whence);
-    const f = real.fseeko64 orelse return -1;
+    const f = reach("fseeko64") orelse return optionalMissingInt();
     return f(stream, off, whence);
 }
 pub inline fn callRewind(stream: *FILE) void {
     if (is_darwin) return darwin.rewind(@ptrCast(stream));
-    const f = real.rewind orelse return;
+    const f = reach("rewind") orelse return;
     return f(stream);
 }
 pub inline fn callFsetpos(stream: *FILE, pos: *const anyopaque) c_int {
     if (is_darwin) return darwin.fsetpos(@ptrCast(stream), pos);
-    const f = real.fsetpos orelse return -1;
+    const f = reach("fsetpos") orelse return optionalMissingInt();
     return f(stream, pos);
 }
 pub inline fn callFsetpos64(stream: *FILE, pos: *const anyopaque) c_int {
     if (is_darwin) return darwin.fsetpos(@ptrCast(stream), pos);
-    const f = real.fsetpos64 orelse return -1;
+    const f = reach("fsetpos64") orelse return optionalMissingInt();
     return f(stream, pos);
 }
 
@@ -2849,7 +3149,7 @@ pub inline fn callFsetpos64(stream: *FILE, pos: *const anyopaque) c_int {
 /// engine must refuse rather than judge a link it cannot address (ADR 0006). Recorded
 /// even where an oracle would also catch it, so the platform with no oracle refuses too.
 pub fn noteLinkByDescriptorFromTrap(fd: c_int) void {
-    if (!active) return;
+    if (!active and !preInitAlways()) return;
     const ts = mine();
     if (ts.busy) return;
     ts.busy = true;
@@ -2961,6 +3261,51 @@ test "no second shim build option arrives unchecked (#365)" {
     // would leave the promise false while CI stayed green.
     const decls = @typeInfo(shim_build_options).@"struct".decls;
     try std.testing.expectEqual(@as(usize, 2), decls.len);
+}
+
+test "a call made before init filled the table reaches the real function, and fills nothing (#753)" {
+    // macOS never reads the table: the original is called directly from the first instant.
+    if (is_darwin) return error.SkipZigTest;
+    // Emptied here rather than assumed empty: other tests in this file call `resolveAll`, and
+    // the order tests run in is not this test's to choose. Put back after, for the same reason.
+    const saved = real;
+    defer real = saved;
+    real = .{};
+    const saved_filled = table_filled;
+    defer table_filled = saved_filled;
+    table_filled = false;
+
+    // `pthread_create` answers an error number, never -1: C++'s std::thread threw that -1 as
+    // "Unknown error -1" and aborted (#753). Here it has to start a thread that runs.
+    const Routine = struct {
+        var ran: bool = false;
+        fn run(_: ?*anyopaque) callconv(.c) ?*anyopaque {
+            ran = true;
+            return null;
+        }
+    };
+    Routine.ran = false;
+    var thread: usize = 0;
+    try std.testing.expectEqual(@as(c_int, 0), callPthreadCreate(@ptrCast(&thread), null, @ptrCast(&Routine.run), null));
+    try std.testing.expectEqual(@as(c_int, 0), callPthreadJoin(thread, null));
+    try std.testing.expect(Routine.ran);
+
+    // `open` and `fopen`: ROOT's std::ifstream of /dev/urandom failed on the second.
+    const fd = callOpen("/dev/null", O_RDONLY, 0);
+    try std.testing.expect(fd >= 0);
+    try std.testing.expectEqual(@as(c_int, 0), callClose(fd));
+    const f = callFopen("/dev/urandom", "r") orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqual(@as(c_int, 0), callFclose(f));
+
+    // Nothing was written back: `resolveAll` stays the table's only writer.
+    try std.testing.expect(real.pthread_create == null and real.open == null and real.fopen == null);
+
+    // Once the table is filled a null entry is a symbol this C library lacks: nothing is looked
+    // up, and the answer is -1 with ENOSYS, not a stale errno.
+    table_filled = true;
+    std.c._errno().* = 0;
+    try std.testing.expectEqual(@as(c_int, -1), callOpen("/dev/null", O_RDONLY, 0));
+    try std.testing.expectEqual(ENOSYS, std.c._errno().*);
 }
 
 test "the shim's O_NOFOLLOW actually refuses a symlink (#488)" {
@@ -3277,6 +3622,10 @@ test "mine: the 65th thread takes the reserve, and the notice is in the trace at
     const saved_fd = trace_fd;
     defer trace_fd = saved_fd;
     trace_fd = fd;
+    // Armed, as the notice requires since #753: before `init` it would go nowhere.
+    const saved_active = active;
+    defer active = saved_active;
+    active = true;
     // Leaves the live table the way the other tests in this binary expect to find it.
     defer resetSlotsInChild();
     // The number itself, because nothing else pins it (#543). The loop below fills the
