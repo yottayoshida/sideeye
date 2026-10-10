@@ -1,0 +1,18 @@
+=== lib-set-encrypted 2.32.4 2026-10-10T00:31:14Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== lib-set-encrypted 2.34.2 2026-10-10T00:31:23Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== lib-set-second 2.32.4 2026-10-10T00:31:30Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== lib-set-second 2.34.2 2026-10-10T00:31:43Z
+explore exit 0: PASS -
+explore exit 0: PASS -

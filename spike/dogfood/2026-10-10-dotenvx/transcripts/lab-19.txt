@@ -1,0 +1,4 @@
+2.32.4: exit 0; .env.production has PROD_DB_PASSWORD: 0; .env.keys private keys: 2; NODE_PATH=/opt/dx-2.32.4/lib/node_modules; ⚠ OS secret store unavailable; saving private key to /s/dx/.env.keys ◈ encrypted PROD_DB_PASSWOR
+2.34.2: exit 0; .env.production has PROD_DB_PASSWORD: 0; .env.keys private keys: 2; NODE_PATH=/opt/dx-2.34.2/lib/node_modules; ⚠ OS secret store unavailable; saving private key to /s/dx/.env.keys ◈ encrypted PROD_DB_PASSWOR
+2.32.4: PROD_DB_PASSWORD="encrypted:BO9njX1NrajR; get: prod-value-two-not-real
+2.34.2: PROD_DB_PASSWORD="encrypted:BLC0Wd9JRJVJ; get: prod-value-two-not-real

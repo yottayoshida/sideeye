@@ -1,0 +1,11 @@
+# A4 through the library: `require('@dotenvx/dotenvx').set(...)` (the README's programmatic `set`), the
+# synchronous writes in src/lib/main.js rather than the CLI's, on an encrypted .env.
+[world]
+state = "/s/dx"
+
+[define]
+operation = ["node", "-e", "require('@dotenvx/dotenvx').set('DB_PASSWORD', 'changed-value-not-real', { path: '/s/dx/.env' })"]
+cwd       = "/s/dx"
+check     = "/ap/defines/lib-set-encrypted/check.sh"
+# New key pairs and fresh ciphertext in every run; the checker reads the values back.
+scratch   = [".env", ".env.keys"]
