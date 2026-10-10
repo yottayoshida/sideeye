@@ -1,0 +1,10 @@
+arch: x86_64
+image: https://cloud.debian.org/images/cloud/trixie/20261001-2618/debian-13-genericcloud-amd64-20261001-2618.qcow2
+digest: sha512:f46f0671a6e5bdec5291ab8972bae2f10e5408c2f64a74078f11efc2f06a436a9d0313ed50e0472542eeabf780e9f7c792ac0a314c6c20507fcd9fd81b468c3d
+packages: exit 0
+accel: kvm (/dev/kvm: crw-rw-rw- 1 root kvm 10, 232 Oct 10 09:35 /dev/kvm)
+cpu: host
+qemu: exit 0 after 16 s (limit 1800 s)
+console: kernel 1, cloud-init 118, vm-inner start 1, done 1
+console last mark: vm-inner: done
+console last line: [   14.830507] reboot: Power down

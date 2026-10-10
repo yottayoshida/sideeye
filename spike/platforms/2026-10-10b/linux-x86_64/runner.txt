@@ -1,0 +1,415 @@
+== host
+in-delegated-cgroup: running as 1001:1001 in /sys/fs/cgroup/system.slice/run-rabcaae2a030d400aafe7599ff5ebc09d.scope, delegated
+default	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+syscalls	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+supervised	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+== rocky8-privileged
+Unable to find image 'rockylinux:8@sha256:9794037624aaa6212aeada1d28861ef5e0a935adaf93e4ef79837119f2a2d04c' locally
+docker.io/library/rockylinux@sha256:9794037624aaa6212aeada1d28861ef5e0a935adaf93e4ef79837119f2a2d04c: Pulling from library/rockylinux
+9088cdb84e39: Pulling fs layer
+9088cdb84e39: Verifying Checksum
+9088cdb84e39: Download complete
+9088cdb84e39: Pull complete
+Digest: sha256:9794037624aaa6212aeada1d28861ef5e0a935adaf93e4ef79837119f2a2d04c
+Status: Downloaded newer image for rockylinux@sha256:9794037624aaa6212aeada1d28861ef5e0a935adaf93e4ef79837119f2a2d04c
+default	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+syscalls	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+supervised	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+== rocky8-defaults
+default	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+syscalls	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+supervised	exit 3	SETUP ERROR  --observe supervised needs a cgroup v2 the engine can create cgroups in (delegated to its user, or root): the crash point's kill reaches every process of the run through it, however one left the process group
+== alpine
+Unable to find image 'alpine:3.22@sha256:5291449c3df73caf6ed85e649dec1b9e818b39a5d8c871e97afc13e9cd5e8fa8' locally
+docker.io/library/alpine@sha256:5291449c3df73caf6ed85e649dec1b9e818b39a5d8c871e97afc13e9cd5e8fa8: Pulling from library/alpine
+53f8f5e03afd: Pulling fs layer
+53f8f5e03afd: Verifying Checksum
+53f8f5e03afd: Download complete
+53f8f5e03afd: Pull complete
+Digest: sha256:5291449c3df73caf6ed85e649dec1b9e818b39a5d8c871e97afc13e9cd5e8fa8
+Status: Downloaded newer image for alpine@sha256:5291449c3df73caf6ed85e649dec1b9e818b39a5d8c871e97afc13e9cd5e8fa8
+sh: /se/sideeye: not found
+exit 127
+default	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+syscalls	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+supervised	exit 2	UNKNOWN  recording_run_failed
+== centos7
+Unable to find image 'centos:7@sha256:be65f488b7764ad3638f236b7b515b3678369a5124c47b8d32916d6487418ea4' locally
+docker.io/library/centos@sha256:be65f488b7764ad3638f236b7b515b3678369a5124c47b8d32916d6487418ea4: Pulling from library/centos
+2d473b07cdd5: Pulling fs layer
+2d473b07cdd5: Verifying Checksum
+2d473b07cdd5: Download complete
+2d473b07cdd5: Pull complete
+Digest: sha256:be65f488b7764ad3638f236b7b515b3678369a5124c47b8d32916d6487418ea4
+Status: Downloaded newer image for centos@sha256:be65f488b7764ad3638f236b7b515b3678369a5124c47b8d32916d6487418ea4
+ldd (GNU libc) 2.17
+/se/sideeye: /lib64/libc.so.6: version `GLIBC_2.25' not found (required by /se/sideeye)
+/se/sideeye: /lib64/libc.so.6: version `GLIBC_2.27' not found (required by /se/sideeye)
+/se/sideeye: /lib64/libc.so.6: version `GLIBC_2.28' not found (required by /se/sideeye)
+exit 1
+== debian9
+Unable to find image 'debian:9@sha256:c5c5200ff1e9c73ffbf188b4a67eb1c91531b644856b4aefe86a58d2f0cb05be' locally
+docker.io/library/debian@sha256:c5c5200ff1e9c73ffbf188b4a67eb1c91531b644856b4aefe86a58d2f0cb05be: Pulling from library/debian
+8372a04f222b: Pulling fs layer
+8372a04f222b: Verifying Checksum
+8372a04f222b: Download complete
+8372a04f222b: Pull complete
+Digest: sha256:c5c5200ff1e9c73ffbf188b4a67eb1c91531b644856b4aefe86a58d2f0cb05be
+Status: Downloaded newer image for debian@sha256:c5c5200ff1e9c73ffbf188b4a67eb1c91531b644856b4aefe86a58d2f0cb05be
+ldd (Debian GLIBC 2.24-11+deb9u4) 2.24
+/se/sideeye: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.25' not found (required by /se/sideeye)
+/se/sideeye: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.27' not found (required by /se/sideeye)
+/se/sideeye: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by /se/sideeye)
+exit 1
+== nixos
+Unable to find image 'nixos/nix@sha256:7a007c766426c1877758ddc5cb87a965ac131fc78c582ce0083d922d51ae945c' locally
+docker.io/nixos/nix@sha256:7a007c766426c1877758ddc5cb87a965ac131fc78c582ce0083d922d51ae945c: Pulling from nixos/nix
+fcbdb9a1235c: Pulling fs layer
+8c439df9b30d: Pulling fs layer
+df46668aac03: Pulling fs layer
+a73f74f657e8: Pulling fs layer
+d1544a7f4969: Pulling fs layer
+0dd4d40dac56: Pulling fs layer
+12e27434d81f: Pulling fs layer
+c4cad49100cb: Pulling fs layer
+4614463a6759: Pulling fs layer
+de98d18d9404: Pulling fs layer
+df93d7b893ef: Pulling fs layer
+ca9906430cbf: Pulling fs layer
+90d58ab27179: Pulling fs layer
+c5b06bdc9442: Pulling fs layer
+803717e0bdbe: Pulling fs layer
+1391a42a7d4f: Pulling fs layer
+49d8c548e753: Pulling fs layer
+60e24da2e82c: Pulling fs layer
+cecc6f2dd909: Pulling fs layer
+ce4f9d5ac9dd: Pulling fs layer
+8e4b6dfa6e74: Pulling fs layer
+d914e1069166: Pulling fs layer
+5bc3565afc1e: Pulling fs layer
+7973ce6f4096: Pulling fs layer
+7dda5e9cf49a: Pulling fs layer
+f8636065ef23: Pulling fs layer
+a83d86eee742: Pulling fs layer
+f8d2d3417a08: Pulling fs layer
+53c8bca101d6: Pulling fs layer
+f0b6b057fde7: Pulling fs layer
+43c65ca7c55d: Pulling fs layer
+37b67f6e7070: Pulling fs layer
+2d06e7068852: Pulling fs layer
+47096b4a41f2: Pulling fs layer
+afb62bb10e11: Pulling fs layer
+fb154c30f01d: Pulling fs layer
+9af268ad45df: Pulling fs layer
+6f92b3f82d76: Pulling fs layer
+9e12979398cd: Pulling fs layer
+14b338d785e5: Pulling fs layer
+4f3f654ea1b7: Pulling fs layer
+f7bc1fe11449: Pulling fs layer
+e5f91e20fd83: Pulling fs layer
+1bdf1887891c: Pulling fs layer
+f7e9b8cee226: Pulling fs layer
+d41705eba125: Pulling fs layer
+20a845de7af2: Pulling fs layer
+971d76ab5fcf: Pulling fs layer
+b25bd4a36b50: Pulling fs layer
+d752c5b2c4af: Pulling fs layer
+38fa065681ed: Pulling fs layer
+086f9eba900c: Pulling fs layer
+2a2ab1dc050d: Pulling fs layer
+712563bf7b38: Pulling fs layer
+3c2d6c0fda08: Pulling fs layer
+12e27434d81f: Waiting
+f7df9a7ac406: Pulling fs layer
+d37f1bfc52b2: Pulling fs layer
+fa77348d693e: Pulling fs layer
+c4cad49100cb: Waiting
+7e843bf6f79c: Pulling fs layer
+4614463a6759: Waiting
+254119d9600d: Pulling fs layer
+de98d18d9404: Waiting
+154d502686e7: Pulling fs layer
+df93d7b893ef: Waiting
+2d1ebf139c2f: Pulling fs layer
+89f1a3b304c2: Pulling fs layer
+923c40f65a19: Pulling fs layer
+ca9906430cbf: Waiting
+692112116c51: Pulling fs layer
+ba31dae40b68: Pulling fs layer
+683ddd906443: Pulling fs layer
+0bf832333a62: Pulling fs layer
+90d58ab27179: Waiting
+b53a6d9b8e45: Pulling fs layer
+c5b06bdc9442: Waiting
+9e12979398cd: Waiting
+803717e0bdbe: Waiting
+14b338d785e5: Waiting
+4f3f654ea1b7: Waiting
+1391a42a7d4f: Waiting
+f7bc1fe11449: Waiting
+e5f91e20fd83: Waiting
+49d8c548e753: Waiting
+1bdf1887891c: Waiting
+f7e9b8cee226: Waiting
+d41705eba125: Waiting
+60e24da2e82c: Waiting
+20a845de7af2: Waiting
+cecc6f2dd909: Waiting
+971d76ab5fcf: Waiting
+ce4f9d5ac9dd: Waiting
+b25bd4a36b50: Waiting
+8e4b6dfa6e74: Waiting
+d752c5b2c4af: Waiting
+d914e1069166: Waiting
+a73f74f657e8: Waiting
+38fa065681ed: Waiting
+5bc3565afc1e: Waiting
+d1544a7f4969: Waiting
+086f9eba900c: Waiting
+7973ce6f4096: Waiting
+0dd4d40dac56: Waiting
+2a2ab1dc050d: Waiting
+7dda5e9cf49a: Waiting
+712563bf7b38: Waiting
+f8636065ef23: Waiting
+3c2d6c0fda08: Waiting
+a83d86eee742: Waiting
+f7df9a7ac406: Waiting
+d37f1bfc52b2: Waiting
+f8d2d3417a08: Waiting
+fa77348d693e: Waiting
+53c8bca101d6: Waiting
+7e843bf6f79c: Waiting
+f0b6b057fde7: Waiting
+254119d9600d: Waiting
+43c65ca7c55d: Waiting
+154d502686e7: Waiting
+37b67f6e7070: Waiting
+2d1ebf139c2f: Waiting
+b53a6d9b8e45: Waiting
+89f1a3b304c2: Waiting
+923c40f65a19: Waiting
+2d06e7068852: Waiting
+692112116c51: Waiting
+47096b4a41f2: Waiting
+ba31dae40b68: Waiting
+afb62bb10e11: Waiting
+683ddd906443: Waiting
+fb154c30f01d: Waiting
+0bf832333a62: Waiting
+9af268ad45df: Waiting
+fcbdb9a1235c: Download complete
+df46668aac03: Verifying Checksum
+df46668aac03: Download complete
+fcbdb9a1235c: Pull complete
+8c439df9b30d: Verifying Checksum
+8c439df9b30d: Download complete
+8c439df9b30d: Pull complete
+df46668aac03: Pull complete
+d1544a7f4969: Verifying Checksum
+d1544a7f4969: Download complete
+0dd4d40dac56: Download complete
+a73f74f657e8: Verifying Checksum
+a73f74f657e8: Download complete
+12e27434d81f: Verifying Checksum
+12e27434d81f: Download complete
+c4cad49100cb: Verifying Checksum
+c4cad49100cb: Download complete
+4614463a6759: Verifying Checksum
+4614463a6759: Download complete
+de98d18d9404: Download complete
+a73f74f657e8: Pull complete
+d1544a7f4969: Pull complete
+ca9906430cbf: Verifying Checksum
+ca9906430cbf: Download complete
+df93d7b893ef: Verifying Checksum
+df93d7b893ef: Download complete
+0dd4d40dac56: Pull complete
+12e27434d81f: Pull complete
+c4cad49100cb: Pull complete
+4614463a6759: Pull complete
+de98d18d9404: Pull complete
+df93d7b893ef: Pull complete
+ca9906430cbf: Pull complete
+90d58ab27179: Download complete
+90d58ab27179: Pull complete
+c5b06bdc9442: Verifying Checksum
+c5b06bdc9442: Download complete
+803717e0bdbe: Verifying Checksum
+803717e0bdbe: Download complete
+c5b06bdc9442: Pull complete
+803717e0bdbe: Pull complete
+1391a42a7d4f: Verifying Checksum
+1391a42a7d4f: Download complete
+1391a42a7d4f: Pull complete
+49d8c548e753: Download complete
+60e24da2e82c: Verifying Checksum
+60e24da2e82c: Download complete
+49d8c548e753: Pull complete
+60e24da2e82c: Pull complete
+cecc6f2dd909: Verifying Checksum
+cecc6f2dd909: Download complete
+cecc6f2dd909: Pull complete
+ce4f9d5ac9dd: Verifying Checksum
+ce4f9d5ac9dd: Download complete
+8e4b6dfa6e74: Verifying Checksum
+8e4b6dfa6e74: Download complete
+ce4f9d5ac9dd: Pull complete
+8e4b6dfa6e74: Pull complete
+d914e1069166: Verifying Checksum
+d914e1069166: Download complete
+5bc3565afc1e: Download complete
+7973ce6f4096: Verifying Checksum
+7973ce6f4096: Download complete
+7dda5e9cf49a: Verifying Checksum
+f8636065ef23: Verifying Checksum
+f8636065ef23: Download complete
+a83d86eee742: Verifying Checksum
+a83d86eee742: Download complete
+f8d2d3417a08: Verifying Checksum
+f8d2d3417a08: Download complete
+53c8bca101d6: Verifying Checksum
+53c8bca101d6: Download complete
+f0b6b057fde7: Verifying Checksum
+f0b6b057fde7: Download complete
+d914e1069166: Pull complete
+5bc3565afc1e: Pull complete
+7973ce6f4096: Pull complete
+43c65ca7c55d: Verifying Checksum
+43c65ca7c55d: Download complete
+7dda5e9cf49a: Pull complete
+2d06e7068852: Download complete
+37b67f6e7070: Verifying Checksum
+37b67f6e7070: Download complete
+f8636065ef23: Pull complete
+a83d86eee742: Pull complete
+f8d2d3417a08: Pull complete
+53c8bca101d6: Pull complete
+47096b4a41f2: Verifying Checksum
+47096b4a41f2: Download complete
+f0b6b057fde7: Pull complete
+43c65ca7c55d: Pull complete
+37b67f6e7070: Pull complete
+afb62bb10e11: Verifying Checksum
+afb62bb10e11: Download complete
+2d06e7068852: Pull complete
+47096b4a41f2: Pull complete
+fb154c30f01d: Verifying Checksum
+fb154c30f01d: Download complete
+afb62bb10e11: Pull complete
+fb154c30f01d: Pull complete
+9af268ad45df: Verifying Checksum
+9af268ad45df: Download complete
+6f92b3f82d76: Verifying Checksum
+6f92b3f82d76: Download complete
+9e12979398cd: Verifying Checksum
+9e12979398cd: Download complete
+9af268ad45df: Pull complete
+6f92b3f82d76: Pull complete
+9e12979398cd: Pull complete
+14b338d785e5: Download complete
+4f3f654ea1b7: Verifying Checksum
+4f3f654ea1b7: Download complete
+14b338d785e5: Pull complete
+4f3f654ea1b7: Pull complete
+f7bc1fe11449: Verifying Checksum
+f7bc1fe11449: Download complete
+f7bc1fe11449: Pull complete
+e5f91e20fd83: Verifying Checksum
+e5f91e20fd83: Pull complete
+1bdf1887891c: Verifying Checksum
+1bdf1887891c: Download complete
+f7e9b8cee226: Verifying Checksum
+f7e9b8cee226: Download complete
+1bdf1887891c: Pull complete
+f7e9b8cee226: Pull complete
+d41705eba125: Verifying Checksum
+d41705eba125: Download complete
+d41705eba125: Pull complete
+20a845de7af2: Verifying Checksum
+20a845de7af2: Download complete
+971d76ab5fcf: Verifying Checksum
+971d76ab5fcf: Download complete
+20a845de7af2: Pull complete
+971d76ab5fcf: Pull complete
+b25bd4a36b50: Verifying Checksum
+b25bd4a36b50: Download complete
+d752c5b2c4af: Verifying Checksum
+d752c5b2c4af: Download complete
+38fa065681ed: Verifying Checksum
+38fa065681ed: Download complete
+b25bd4a36b50: Pull complete
+086f9eba900c: Verifying Checksum
+086f9eba900c: Download complete
+d752c5b2c4af: Pull complete
+38fa065681ed: Pull complete
+2a2ab1dc050d: Verifying Checksum
+2a2ab1dc050d: Download complete
+712563bf7b38: Verifying Checksum
+712563bf7b38: Download complete
+086f9eba900c: Pull complete
+2a2ab1dc050d: Pull complete
+712563bf7b38: Pull complete
+3c2d6c0fda08: Verifying Checksum
+3c2d6c0fda08: Download complete
+3c2d6c0fda08: Pull complete
+f7df9a7ac406: Verifying Checksum
+f7df9a7ac406: Download complete
+d37f1bfc52b2: Verifying Checksum
+d37f1bfc52b2: Download complete
+fa77348d693e: Verifying Checksum
+fa77348d693e: Download complete
+f7df9a7ac406: Pull complete
+7e843bf6f79c: Verifying Checksum
+7e843bf6f79c: Download complete
+254119d9600d: Verifying Checksum
+254119d9600d: Download complete
+d37f1bfc52b2: Pull complete
+154d502686e7: Download complete
+fa77348d693e: Pull complete
+2d1ebf139c2f: Verifying Checksum
+2d1ebf139c2f: Download complete
+7e843bf6f79c: Pull complete
+89f1a3b304c2: Verifying Checksum
+89f1a3b304c2: Download complete
+254119d9600d: Pull complete
+154d502686e7: Pull complete
+923c40f65a19: Download complete
+2d1ebf139c2f: Pull complete
+89f1a3b304c2: Pull complete
+923c40f65a19: Pull complete
+692112116c51: Verifying Checksum
+692112116c51: Download complete
+692112116c51: Pull complete
+ba31dae40b68: Verifying Checksum
+ba31dae40b68: Download complete
+0bf832333a62: Download complete
+683ddd906443: Verifying Checksum
+683ddd906443: Download complete
+b53a6d9b8e45: Verifying Checksum
+b53a6d9b8e45: Download complete
+ba31dae40b68: Pull complete
+683ddd906443: Pull complete
+0bf832333a62: Pull complete
+b53a6d9b8e45: Pull complete
+Digest: sha256:7a007c766426c1877758ddc5cb87a965ac131fc78c582ce0083d922d51ae945c
+Status: Downloaded newer image for nixos/nix@sha256:7a007c766426c1877758ddc5cb87a965ac131fc78c582ce0083d922d51ae945c
+nix (Nix) 2.35.2
+sh: line 4: /se/sideeye: cannot execute: required file not found
+exit 127
+glibc /nix/store/fsd4vbp9zjd9iaicq2fb9lpc1h5j973y-glibc-2.42-100
+nix-ld /nix/store/hdbkdfbfblpp8xsgmy05mzfmanvry8cw-nix-ld-2.0.6
+strace /nix/store/3ckzaiiy8xnzv2f5cqs82gywsylhc0mf-strace-7.2
+default	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+syscalls	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+supervised	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+default	exit 3	SETUP ERROR  the shim is half the product, and none was found at either place this looks — /nix/store/fsd4vbp9zjd9iaicq2fb9lpc1h5j973y-glibc-2.42-100/lib/libsideeye_shim.so and /nix/store/fsd4vbp9zjd9iaicq2fb9lpc1h5j973y-glibc-2.42-100/lib/../lib/libsideeye_shim.so. Pass --shim <path to libsideeye_shim.so>
+syscalls	exit 3	SETUP ERROR  the shim is half the product, and none was found at either place this looks — /nix/store/fsd4vbp9zjd9iaicq2fb9lpc1h5j973y-glibc-2.42-100/lib/libsideeye_shim.so and /nix/store/fsd4vbp9zjd9iaicq2fb9lpc1h5j973y-glibc-2.42-100/lib/../lib/libsideeye_shim.so. Pass --shim <path to libsideeye_shim.so>
+supervised	exit 3	SETUP ERROR  the shim is half the product, and none was found at either place this looks — /nix/store/fsd4vbp9zjd9iaicq2fb9lpc1h5j973y-glibc-2.42-100/lib/libsideeye_shim.so and /nix/store/fsd4vbp9zjd9iaicq2fb9lpc1h5j973y-glibc-2.42-100/lib/../lib/libsideeye_shim.so. Pass --shim <path to libsideeye_shim.so>
+default	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+syscalls	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+supervised	exit 2	UNKNOWN  recording_run_failed
+== hardened
+default	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+syscalls	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+supervised	exit 3	SETUP ERROR  --observe supervised needs a cgroup v2 the engine can create cgroups in (delegated to its user, or root): the crash point's kill reaches every process of the run through it, however one left the process group

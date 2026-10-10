@@ -1,0 +1,13 @@
+== debian12-container
+Unable to find image 'debian:12@sha256:2c037a04925515fdd6ea85ea14a682d0e79931f5e9f5d07b6dbfc6ba12f9e858' locally
+docker.io/library/debian@sha256:2c037a04925515fdd6ea85ea14a682d0e79931f5e9f5d07b6dbfc6ba12f9e858: Pulling from library/debian
+2a02c40189e3: Pulling fs layer
+2a02c40189e3: Verifying Checksum
+2a02c40189e3: Download complete
+2a02c40189e3: Pull complete
+Digest: sha256:2c037a04925515fdd6ea85ea14a682d0e79931f5e9f5d07b6dbfc6ba12f9e858
+Status: Downloaded newer image for debian@sha256:2c037a04925515fdd6ea85ea14a682d0e79931f5e9f5d07b6dbfc6ba12f9e858
+default	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+syscalls	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+supervised	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+== debian12-vm

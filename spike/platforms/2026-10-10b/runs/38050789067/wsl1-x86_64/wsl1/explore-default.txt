@@ -1,0 +1,2 @@
+SETUP ERROR  the shim the search found could not be classified — neither its kind nor its owner could be read — and was not used: /opt/sideeye/sideeye-v1.10.0-x86_64-linux/libsideeye_shim.so. Pass --shim (or set SIDEEYE_MCP_SHIM) to name the file yourself
+sideeye: json sha256=5159cad1c1a5d1dbec5ab8e3bb6a0cd0a6a2ca818b711f20c09c82c2614501b7;

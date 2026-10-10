@@ -1,0 +1,10 @@
+arch: x86_64
+image: https://cloud-images.ubuntu.com/releases/focal/release-20250624/ubuntu-20.04-server-cloudimg-amd64.img
+digest: sha256:18f2977d77dfea1b74aee14533bd21c34f789139e949c57023b7364894b7e5e9
+packages: exit 0
+accel: kvm (/dev/kvm: crw-rw-rw- 1 root kvm 10, 232 Oct 10 09:38 /dev/kvm)
+cpu: host
+qemu: exit 0 after 35 s (limit 1800 s)
+console: kernel 1, cloud-init 101, vm-inner start 1, done 1
+console last mark: vm-inner: done
+console last line: [   33.072824] reboot: Power down

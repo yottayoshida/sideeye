@@ -1,0 +1,1 @@
+BOOT_IMAGE=/boot/vmlinuz-6.12.111+deb13-cloud-amd64 root=PARTUUID=fd202e72-0241-4c3b-953d-ffe506ae6cfc ro console=tty0 console=ttyS0,115200 earlyprintk=ttyS0,115200 consoleblank=0

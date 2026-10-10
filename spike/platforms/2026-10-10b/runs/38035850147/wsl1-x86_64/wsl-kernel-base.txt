@@ -1,0 +1,2 @@
+4.4.0-26100-Microsoft
+Linux version 4.4.0-26100-Microsoft (Microsoft@Microsoft.com) (gcc version 5.4.0 (GCC) ) #33438-Microsoft Fri Jan 01 08:00:00 PST 2016

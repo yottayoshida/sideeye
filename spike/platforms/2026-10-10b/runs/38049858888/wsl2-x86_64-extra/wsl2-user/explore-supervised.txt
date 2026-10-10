@@ -1,0 +1,2 @@
+SETUP ERROR  --observe supervised needs a cgroup v2 the engine can create cgroups in (delegated to its user, or root): the crash point's kill reaches every process of the run through it, however one left the process group
+sideeye: json sha256=ce4e824419adaeb7c2886ebc3cf4ba62706bfc0e56bbb7446593476e50e841a1;

@@ -1,0 +1,11 @@
+Importing GPG key 0x6FEDFC85:
+ Userid     : "Release Engineering (Rocky Linux 10) <releng@rockylinux.org>"
+ Fingerprint: FC22 6859 C086 0BF0 DDB9 5B08 5B10 6C73 6FED FC85
+ From       : /etc/pki/rpm-gpg/RPM-GPG-KEY-Rocky-10
+
+Installed:
+  strace-6.12-3.el10.aarch64                                                    
+
+glibc-2.39-121.el10_2.aarch64
+strace-6.12-3.el10.aarch64
+coreutils-9.5-7.el10.aarch64

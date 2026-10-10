@@ -1,0 +1,31 @@
+demo  wrote the planted-bug tool into /tmp/sideeye-demo-ImMDKM
+demo  the tool deletes its key before renaming the replacement in; a crash
+demo  between those two operations leaves no key at all. exploring:
+
+falsify: doctor says 'healthy' but the key is unloadable
+world 5: doctor says 'healthy' but the key is unloadable
+FAIL  1 of 6 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 5 of 5
+            after  unlink(/tmp/sideeye-demo-ImMDKM/state/key.json)
+            before rename(/tmp/sideeye-demo-ImMDKM/state/key.json.tmp)
+path        key.json
+observed    present before and after the operation, but gone from the crashed state
+cwd         /tmp/demo-main  (none declared: Sideeye's own)
+
+explored    6 worlds (crash points 5 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      not run (no --oracle given)
+metadata    not observable (no oracle ran; the shim does not interpose ownership/permission/timestamp calls)
+checker     falsified before the run (corrupted state -> check failed); ran in 6 world(s)
+l1          no marker configured
+case        /tmp/sideeye-demo-ImMDKM/work/cases/000001.json
+replay      sideeye replay /tmp/sideeye-demo-ImMDKM/work/cases/000001.json --shim /b-main/inst/lib/libsideeye_shim.so
+evidence    sideeye evidence /tmp/sideeye-demo-ImMDKM/work/evidence/000001.json
+processes   not established: no boundary was recorded, but the shim sees only libc's own entry points (fork, vfork, posix_spawn, the exec family, pthread_create, setsid, setpgid) — a child created through a raw syscall would not appear here — and no second witness ran
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /tmp/demo-main && unset SIDEEYE_KILL_GROUP && : > /tmp/sideeye-demo-ImMDKM/work/trace-repro.bin && SIDEEYE_STATE_DIR=/tmp/sideeye-demo-ImMDKM/state SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/tmp/sideeye-demo-ImMDKM/work/trace-repro.bin LD_PRELOAD=/b-main/inst/lib/libsideeye_shim.so SIDEEYE_KILL_AT=5 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= /tmp/sideeye-demo-ImMDKM/demo-tool rotate </dev/null)
+exit 1

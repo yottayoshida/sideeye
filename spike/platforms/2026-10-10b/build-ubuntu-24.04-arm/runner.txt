@@ -1,0 +1,9 @@
+== alpine-src
+Unable to find image 'alpine:3.22@sha256:5291449c3df73caf6ed85e649dec1b9e818b39a5d8c871e97afc13e9cd5e8fa8' locally
+docker.io/library/alpine@sha256:5291449c3df73caf6ed85e649dec1b9e818b39a5d8c871e97afc13e9cd5e8fa8: Pulling from library/alpine
+16fc4f52163f: Pulling fs layer
+16fc4f52163f: Verifying Checksum
+16fc4f52163f: Download complete
+16fc4f52163f: Pull complete
+Digest: sha256:5291449c3df73caf6ed85e649dec1b9e818b39a5d8c871e97afc13e9cd5e8fa8
+Status: Downloaded newer image for alpine@sha256:5291449c3df73caf6ed85e649dec1b9e818b39a5d8c871e97afc13e9cd5e8fa8

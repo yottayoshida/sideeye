@@ -1,0 +1,10 @@
+arch: aarch64
+image: https://cloud-images.ubuntu.com/releases/focal/release-20250624/ubuntu-20.04-server-cloudimg-arm64.img
+digest: sha256:d4603cd783e2578f838c63f7c3a8dae6b554bd6358870f2c8eb182aa51ade465
+packages: exit 0
+accel: tcg (/dev/kvm: ls: cannot access '/dev/kvm': No such file or directory)
+cpu: cortex-a72
+qemu: exit 0 after 471 s (limit 5400 s)
+console: kernel 0, cloud-init 101, vm-inner start 1, done 1
+console last mark: vm-inner: done
+console last line: [  456.965537] reboot: Power down

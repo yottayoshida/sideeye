@@ -1,0 +1,31 @@
+0+1 records in
+0+1 records out
+13 bytes copied, 0.00170339 s, 7.6 kB/s
+0+1 records in
+0+1 records out
+13 bytes copied, 0.000154052 s, 84.4 kB/s
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 2
+            after  open(/s/st/a.txt)
+            before write(/s/st/a.txt)
+path        a.txt
+observed    holding neither the old nor the new content
+cwd         /  (none declared: Sideeye's own)
+
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 2 operations (181 syscall lines examined, 11 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /tmp/platform-measure-K6LreM/default/cases/000001.json
+replay      sideeye replay /tmp/platform-measure-K6LreM/default/cases/000001.json --shim /opt/se/libsideeye_shim.so
+evidence    sideeye evidence /tmp/platform-measure-K6LreM/default/evidence/000001.json
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd / && unset SIDEEYE_KILL_GROUP && : > /tmp/platform-measure-K6LreM/default/trace-repro.bin && SIDEEYE_STATE_DIR=/s/st SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/tmp/platform-measure-K6LreM/default/trace-repro.bin LD_PRELOAD=/opt/se/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'dd' 'if=/s/new' 'of=/s/st/a.txt' </dev/null)
+sideeye: json sha256=3d7cb632f855e6c187aa7869b4f8c678752a47397920e9f63a6431f27cc9a757;

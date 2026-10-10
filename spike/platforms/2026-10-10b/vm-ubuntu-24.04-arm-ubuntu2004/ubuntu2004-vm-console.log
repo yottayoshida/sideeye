@@ -1,0 +1,362 @@
+UEFI firmware (version 2024.02-2ubuntu0.10 built at 15:40:28 on Sep 23 2026)
+[2J[01;01H[=3h[2J[01;01H[2J[01;01H[=3h[2J[01;01HBdsDxe: loading Boot0001 "UEFI Misc Device" from PciRoot(0x0)/Pci(0x2,0x0)
+BdsDxe: starting Boot0001 "UEFI Misc Device" from PciRoot(0x0)/Pci(0x2,0x0)
+error: no suitable video mode found.
+-.mount
+etc-machine\x2did.mount
+dev-hugepages.mount
+dev-mqueue.mount
+sys-kernel-debug.mount
+sys-kernel-tracing.mount
+kmod-static-nodes.service
+lvm2-monitor.service
+systemd-journald.service
+systemd-fsck-root.service
+systemd-modules-load.service
+ufw.service
+systemd-fsckd.service
+keyboard-setup.service
+sys-fs-fuse-connections.mount
+sys-kernel-config.mount
+systemd-remount-fs.service
+systemd-sysctl.service
+systemd-journal-flush.service
+systemd-sysusers.service
+systemd-tmpfiles-setup-dev.service
+systemd-random-seed.service
+systemd-udevd.service
+systemd-udev-trigger.service
+proc-sys-fs-binfmt_misc.mount
+systemd-udev-settle.service
+multipathd.service
+snap-core20-2603.mount
+snap-lxd-32669.mount
+snap-snapd-24672.mount
+systemd-fsckd.service
+systemd-fsck@dev-disk-by\x2dlabel-UEFI.service
+boot-efi.mount
+console-setup.service
+finalrd.service
+systemd-machine-id-commit.service
+[[0;32m  OK  [0m] Finished [0;1;39mCreate Volatile Files and Directories[0m.
+systemd-tmpfiles-setup.service
+         Starting [0;1;39mNetwork Time Synchronization[0m...
+         Starting [0;1;39mUpdate UTMP about System Boot/Shutdown[0m...
+[[0;32m  OK  [0m] Finished [0;1;39mUpdate UTMP about System Boot/Shutdown[0m.
+systemd-update-utmp.service
+[[0;32m  OK  [0m] Started [0;1;39mNetwork Time Synchronization[0m.
+systemd-timesyncd.service
+[[0;32m  OK  [0m] Reached target [0;1;39mSystem Time Set[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mSystem Time Synchronized[0m.
+run-cloud\x2dinit-tmp-tmpwcxb0el1.mount
+[[0;32m  OK  [0m] Finished [0;1;39mLoad AppArmor profiles[0m.
+apparmor.service
+         Starting [0;1;39mLoad AppArmor pro…managed internally by snapd[0m...
+[[0;32m  OK  [0m] Finished [0;1;39mLoad AppArmor pro…s managed internally by snapd[0m.
+snapd.apparmor.service
+[   97.868772] cloud-init[537]: Cloud-init v. 24.4.1-0ubuntu0~20.04.3 running 'init-local' at Sat, 10 Oct 2026 09:42:58 +0000. Up 86.01 seconds.
+[[0;32m  OK  [0m] Finished [0;1;39mCloud-init: Local Stage (pre-network)[0m.
+cloud-init-local.service
+[[0;32m  OK  [0m] Reached target [0;1;39mNetwork (Pre)[0m.
+         Starting [0;1;39mNetwork Service[0m...
+[[0;32m  OK  [0m] Started [0;1;39mNetwork Service[0m.
+systemd-networkd.service
+         Starting [0;1;39mWait for Network to be Configured[0m...
+         Starting [0;1;39mNetwork Name Resolution[0m...
+[[0;32m  OK  [0m] Finished [0;1;39mWait for Network to be Configured[0m.
+systemd-networkd-wait-online.service
+         Starting [0;1;39mCloud-init: Network Stage[0m...
+[[0;32m  OK  [0m] Started [0;1;39mNetwork Name Resolution[0m.
+systemd-resolved.service
+[[0;32m  OK  [0m] Reached target [0;1;39mNetwork[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mHost and Network Name Lookups[0m.
+[  113.695637] cloud-init[614]: Cloud-init v. 24.4.1-0ubuntu0~20.04.3 running 'init' at Sat, 10 Oct 2026 09:43:22 +0000. Up 110.72 seconds.
+[  113.705015] cloud-init[614]: ci-info: ++++++++++++++++++++++++++++++++++++++Net device info++++++++++++++++++++++++++++++++++++++
+[  113.712344] cloud-init[614]: ci-info: +--------+------+----------------------------+---------------+--------+-------------------+
+[  113.719395] cloud-init[614]: ci-info: | Device |  Up  |          Address           |      Mask     | Scope  |     Hw-Address    |
+[  113.727173] cloud-init[614]: ci-info: +--------+------+----------------------------+---------------+--------+-------------------+
+[  113.734229] cloud-init[614]: ci-info: | enp0s1 | True |         10.0.2.15          | 255.255.255.0 | global | 52:54:00:12:34:56 |
+[  113.740877] cloud-init[614]: ci-info: | enp0s1 | True | fec0::5054:ff:fe12:3456/64 |       .       |  site  | 52:54:00:12:34:56 |
+[  113.747260] cloud-init[614]: ci-info: | enp0s1 | True | fe80::5054:ff:fe12:3456/64 |       .       |  link  | 52:54:00:12:34:56 |
+[  113.753234] cloud-init[614]: ci-info: |   lo   | True |         127.0.0.1          |   255.0.0.0   |  host  |         .         |
+[  113.759342] cloud-init[614]: ci-info: |   lo   | True |          ::1/128           |       .       |  host  |         .         |
+[  113.764933] cloud-init[614]: ci-info: +--------+------+----------------------------+---------------+--------+-------------------+
+[  113.770503] cloud-init[614]: ci-info: ++++++++++++++++++++++++++++Route IPv4 info+++++++++++++++++++++++++++++
+[  113.775867] cloud-init[614]: ci-info: +-------+-------------+----------+-----------------+-----------+-------+
+[  113.780367] cloud-init[614]: ci-info: | Route | Destination | Gateway  |     Genmask     | Interface | Flags |
+[  113.782821] cloud-init[614]: ci-info: +-------+-------------+----------+-----------------+-----------+-------+
+[  113.785407] cloud-init[614]: ci-info: |   0   |   0.0.0.0   | 10.0.2.2 |     0.0.0.0     |   enp0s1  |   UG  |
+[  113.790001] cloud-init[614]: ci-info: |   1   |   10.0.2.0  | 0.0.0.0  |  255.255.255.0  |   enp0s1  |   U   |
+[  113.794371] cloud-init[614]: ci-info: |   2   |   10.0.2.2  | 0.0.0.0  | 255.255.255.255 |   enp0s1  |   UH  |
+[  113.796734] cloud-init[614]: ci-info: +-------+-------------+----------+-----------------+-----------+-------+
+[  113.799185] cloud-init[614]: ci-info: +++++++++++++++++++Route IPv6 info+++++++++++++++++++
+[  113.801993] cloud-init[614]: ci-info: +-------+-------------+---------+-----------+-------+
+[  113.805231] cloud-init[614]: ci-info: | Route | Destination | Gateway | Interface | Flags |
+[  113.807710] cloud-init[614]: ci-info: +-------+-------------+---------+-----------+-------+
+[  113.811264] cloud-init[614]: ci-info: |   1   |  fe80::/64  |    ::   |   enp0s1  |   U   |
+[  113.814291] cloud-init[614]: ci-info: |   2   |  fec0::/64  |    ::   |   enp0s1  |   Ue  |
+[  113.817326] cloud-init[614]: ci-info: |   3   |     ::/0    | fe80::2 |   enp0s1  |  UGe  |
+[  113.819836] cloud-init[614]: ci-info: |   5   |    local    |    ::   |   enp0s1  |   U   |
+[  113.822595] cloud-init[614]: ci-info: |   6   |    local    |    ::   |   enp0s1  |   U   |
+[  113.825659] cloud-init[614]: ci-info: |   7   |  multicast  |    ::   |   enp0s1  |   U   |
+[  113.828940] cloud-init[614]: ci-info: +-------+-------------+---------+-----------+-------+
+[  121.115660] cloud-init[614]: Generating public/private rsa key pair.
+[  121.124656] cloud-init[614]: Your identification has been saved in /etc/ssh/ssh_host_rsa_key
+[  121.132500] cloud-init[614]: Your public key has been saved in /etc/ssh/ssh_host_rsa_key.pub
+[  121.140740] cloud-init[614]: The key fingerprint is:
+[  121.148683] cloud-init[614]: SHA256:OuOK5a3CgliuvwOR3MFG2QxvDc7wA5FamqtPCjCR3as root@probe
+[  121.156599] cloud-init[614]: The key's randomart image is:
+[  121.163314] cloud-init[614]: +---[RSA 3072]----+
+[  121.168618] cloud-init[614]: |  o*B.           |
+[  121.171873] cloud-init[614]: | o OBoo          |
+[  121.174730] cloud-init[614]: |+.O oB .         |
+[  121.179965] cloud-init[614]: |o* ....          |
+[  121.186928] cloud-init[614]: |o.. .   S        |
+[  121.192383] cloud-init[614]: |oo..   .         |
+[  121.198613] cloud-init[614]: |==E . +          |
+[  121.205400] cloud-init[614]: |*o=+ o o         |
+[  121.212901] cloud-init[614]: |o==++oo          |
+[  121.219594] cloud-init[614]: +----[SHA256]-----+
+[  121.226213] cloud-init[614]: Generating public/private ecdsa key pair.
+[  121.229898] cloud-init[614]: Your identification has been saved in /etc/ssh/ssh_host_ecdsa_key
+[  121.233517] cloud-init[614]: Your public key has been saved in /etc/ssh/ssh_host_ecdsa_key.pub
+[  121.237045] cloud-init[614]: The key fingerprint is:
+[  121.239687] cloud-init[614]: SHA256:sGiHgY8KSFlRf9oJt84aRPMTYSRDrnay4KQ5E22VsYk root@probe
+[  121.243173] cloud-init[614]: The key's randomart image is:
+[  121.246599] cloud-init[614]: +---[ECDSA 256]---+
+[  121.249937] cloud-init[614]: |   ooo.+.+       |
+[  121.253317] cloud-init[614]: |  o.. B + .      |
+[  121.256932] cloud-init[614]: | o.E.=.* +       |
+[  121.259796] cloud-init[614]: |o .o.+ooO +      |
+[  121.263103] cloud-init[614]: |o..==+o+S*       |
+[  121.266532] cloud-init[614]: |..B.o.= o .      |
+[  121.270069] cloud-init[614]: |.= . . . o       |
+[  121.273367] cloud-init[614]: |  o     o        |
+[  121.276635] cloud-init[614]: |       .         |
+[  121.279876] cloud-init[614]: +----[SHA256]-----+
+[  121.283343] cloud-init[614]: Generating public/private ed25519 key pair.
+[  121.286717] cloud-init[614]: Your identification has been saved in /etc/ssh/ssh_host_ed25519_key
+[  121.290401] cloud-init[614]: Your public key has been saved in /etc/ssh/ssh_host_ed25519_key.pub
+[  121.296471] cloud-init[614]: The key fingerprint is:
+[  121.301211] cloud-init[614]: SHA256:IV8TJOThoyF/qk+zamrzojfzRymIfuII9b/4akyOQ9s root@probe
+[  121.309180] cloud-init[614]: The key's randomart image is:
+[  121.316582] cloud-init[614]: +--[ED25519 256]--+
+[  121.325306] cloud-init[614]: |       .+.o      |
+[  121.332541] cloud-init[614]: |       o o .     |
+[  121.338909] cloud-init[614]: |    . o = o      |
+[  121.344769] cloud-init[614]: |     o = + .     |
+[  121.350396] cloud-init[614]: | ...  o.S        |
+[  121.355091] cloud-init[614]: |..o.o oo         |
+[  121.358191] cloud-init[614]: |o. B.o+          |
+[  121.360373] cloud-init[614]: |oo@.E=.o         |
+[  121.362160] cloud-init[614]: |+=+%B**.         |
+[  121.364494] cloud-init[614]: +----[SHA256]-----+
+[[0;32m  OK  [0m] Finished [0;1;39mCloud-init: Network Stage[0m.
+cloud-init.service
+[[0;32m  OK  [0m] Reached target [0;1;39mCloud-config availability[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mNetwork is Online[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mSystem Initialization[0m.
+[[0;32m  OK  [0m] Started [0;1;39mDaily apt download activities[0m.
+[[0;32m  OK  [0m] Started [0;1;39mDaily apt upgrade and clean activities[0m.
+[[0;32m  OK  [0m] Started [0;1;39mPeriodic ext4 Onli…ata Check for All Filesystems[0m.
+[[0;32m  OK  [0m] Started [0;1;39mDiscard unused blocks once a week[0m.
+[[0;32m  OK  [0m] Started [0;1;39mRefresh fwupd metadata regularly[0m.
+[[0;32m  OK  [0m] Started [0;1;39mDaily rotation of log files[0m.
+[[0;32m  OK  [0m] Started [0;1;39mDaily man-db regeneration[0m.
+[[0;32m  OK  [0m] Started [0;1;39mMessage of the Day[0m.
+[[0;32m  OK  [0m] Started [0;1;39mDaily Cleanup of Temporary Directories[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mPaths[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mTimers[0m.
+[[0;32m  OK  [0m] Listening on [0;1;39mcloud-init hotplug hook socket[0m.
+[[0;32m  OK  [0m] Listening on [0;1;39mD-Bus System Message Bus Socket[0m.
+[[0;32m  OK  [0m] Listening on [0;1;39mOpen-iSCSI iscsid Socket[0m.
+         Starting [0;1;39mSocket activation for snappy daemon[0m.
+[[0;32m  OK  [0m] Listening on [0;1;39mUUID daemon activation socket[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mRemote File Systems (Pre)[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mRemote File Systems[0m.
+         Starting [0;1;39mAvailability of block devices[0m...
+[[0;32m  OK  [0m] Listening on [0;1;39mSocket activation for snappy daemon[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mSockets[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mBasic System[0m.
+         Starting [0;1;39mAccounts Service[0m...
+         Starting [0;1;39mLSB: automatic crash report generation[0m...
+         Starting [0;1;39mDeferred execution scheduler[0m...
+[[0;32m  OK  [0m] Started [0;1;39mRegular background program processing daemon[0m.
+cron.service
+[[0;32m  OK  [0m] Started [0;1;39mD-Bus System Message Bus[0m.
+dbus.service
+[[0;32m  OK  [0m] Started [0;1;39mSave initial kernel messages after boot[0m.
+dmesg.service
+         Starting [0;1;39mRemove Stale Onli…t4 Metadata Check Snapshots[0m...
+         Starting [0;1;39mRecord successful boot for GRUB[0m...
+[[0;32m  OK  [0m] Started [0;1;39mirqbalance daemon[0m.
+irqbalance.service
+         Starting [0;1;39mDispatcher daemon for systemd-networkd[0m...
+         Starting [0;1;39mAuthorization Manager[0m...
+         Starting [0;1;39mPollinate to seed…udo random number generator[0m...
+         Starting [0;1;39mSystem Logging Service[0m...
+[[0;32m  OK  [0m] Reached target [0;1;39mLogin Prompts (Pre)[0m.
+         Starting [0;1;39mWait until snapd is fully seeded[0m...
+         Starting [0;1;39mSnap Daemon[0m...
+         Starting [0;1;39mLogin Service[0m...
+         Starting [0;1;39mPermit User Sessions[0m...
+         Starting [0;1;39mDisk Manager[0m...
+[[0;32m  OK  [0m] Finished [0;1;39mAvailability of block devices[0m.
+blk-availability.service
+[[0;32m  OK  [0m] Started [0;1;39mDeferred execution scheduler[0m.
+atd.service
+[[0;32m  OK  [0m] Finished [0;1;39mRemove Stale Onli…ext4 Metadata Check Snapshots[0m.
+[[0;32m  OK  [0m] Finished [0;1;39mPermit User Sessions[0m.
+systemd-user-sessions.service
+[[0;32m  OK  [0m] Started [0;1;39mSystem Logging Service[0m.
+rsyslog.service
+[[0;32m  OK  [0m] Started [0;1;39mAuthorization Manager[0m.
+polkit.service
+[[0;32m  OK  [0m] Started [0;1;39mAccounts Service[0m.
+accounts-daemon.service
+         Starting [0;1;39mModem Manager[0m...
+         Starting [0;1;39mHold until boot process finishes up[0m...
+         Starting [0;1;39mTerminate Plymouth Boot Screen[0m...
+[[0;32m  OK  [0m] Finished [0;1;39mRecord successful boot for GRUB[0m.
+[[0;32m  OK  [0m] Finished [0;1;39mHold until boot process finishes up[0m.
+[[0;32m  OK  [0m] Started [0;1;39mLSB: automatic crash report generation[0m.
+[[0;32m  OK  [0m] Finished [0;1;39mTerminate Plymouth Boot Screen[0m.
+
+Ubuntu 20.04.6 LTS probe ttyAMA0
+
+probe login: [  220.098006] cloud-init[1468]: Cloud-init v. 24.4.1-0ubuntu0~20.04.3 running 'modules:config' at Sat, 10 Oct 2026 09:45:06 +0000. Up 213.81 seconds.
+vm-inner: start
+vm-inner: packages exit 0
+vm-inner: measure exit 0
+vm-inner: done
+  Filename: /usr/lib/python3.8/subprocess.py
+  Function: _try_wait
+  Line number: 1764
+    Filename: /usr/lib/python3.8/subprocess.py
+    Function: _wait
+    Line number: 1806
+      Filename: /usr/lib/python3.8/subprocess.py
+      Function: wait
+      Line number: 1083
+[  428.736783] cloud-init[1495]: Cloud-init v. 24.4.1-0ubuntu0~20.04.3 running 'modules:final' at Sat, 10 Oct 2026 09:45:22 +0000. Up 230.04 seconds.
+[  428.741342] cloud-init[1495]:   Filename: /usr/lib/python3.8/subprocess.py
+[  428.752500] cloud-init[1495]:   Function: _try_wait
+[  428.754784] cloud-init[1495]:   Line number: 1764
+[  428.757356] cloud-init[1495]:     Filename: /usr/lib/python3.8/subprocess.py
+[  428.759883] cloud-init[1495]:     Function: _wait
+[  428.771326] cloud-init[1495]:     Line number: 1806
+[  428.773705] cloud-init[1495]:       Filename: /usr/lib/python3.8/subprocess.py
+[  428.776011] cloud-init[1495]:       Function: wait
+[  428.791210] cloud-init[1495]:       Line number: 1083
+[[0;32m  OK  [0m] Stopped [0;1;39mPermit User Sessions[0m.
+[[0;32m  OK  [0m] Started [0;1;39mShow Plymouth Power Off Screen[0m.
+plymouth-poweroff.service
+[[0;32m  OK  [0m] Stopped target [0;1;39mNetwork[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mUser and Group Name Lookups[0m.
+         Stopping [0;1;39mNetwork Name Resolution[0m...
+[[0;32m  OK  [0m] Stopped [0;1;39mNetwork Name Resolution[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mLSB: automatic crash report generation[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mRemote File Systems[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mRemote File Systems (Pre)[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mSnap Daemon[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mBasic System[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mForward Password R…s to Plymouth Directory Watch[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mPaths[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mSlices[0m.
+[[0;32m  OK  [0m] Removed slice [0;1;39mUser and Session Slice[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mSockets[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mSystem Time Set[0m.
+[[0;32m  OK  [0m] Closed [0;1;39mD-Bus System Message Bus Socket[0m.
+[[0;32m  OK  [0m] Closed [0;1;39mOpen-iSCSI iscsid Socket[0m.
+[[0;32m  OK  [0m] Closed [0;1;39mSocket unix for snap application lxd.daemon[0m.
+[[0;32m  OK  [0m] Closed [0;1;39mSocket activation for snappy daemon[0m.
+[[0;32m  OK  [0m] Closed [0;1;39mSyslog Socket[0m.
+[[0;32m  OK  [0m] Closed [0;1;39mUUID daemon activation socket[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mSystem Initialization[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mLocal Encrypted Volumes[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mForward Password R…uests to Wall Directory Watch[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mCloud-init: Network Stage[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mCommit a transient machine-id on disk[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mWait for Network to be Configured[0m.
+         Stopping [0;1;39mNetwork Service[0m...
+         Stopping [0;1;39mNetwork Time Synchronization[0m...
+         Stopping [0;1;39mUpdate UTMP about System Boot/Shutdown[0m...
+[[0;32m  OK  [0m] Stopped [0;1;39mNetwork Time Synchronization[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mNetwork Service[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mNetwork (Pre)[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mCloud-init: Local Stage (pre-network)[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mApply Kernel Variables[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mLoad Kernel Modules[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mUpdate UTMP about System Boot/Shutdown[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mCreate Volatile Files and Directories[0m.
+[ [0;31m*[0;1;31m*[0m[0;31m*  [0m] A stop job is running for Create fi…utdown pivot root (13s / 1min 30s)
+M[K[  [0;31m*[0;1;31m*[0m[0;31m* [0m] A stop job is running for Create fi…utdown pivot root (14s / 1min 30s)
+M[K[   [0;31m*[0;1;31m*[0m[0;31m*[0m] A stop job is running for Create fi…utdown pivot root (14s / 1min 30s)
+M[K[    [0;31m*[0;1;31m*[0m] A stop job is running for Create fi…utdown pivot root (15s / 1min 30s)
+M[K[     [0;31m*[0m] A stop job is running for Create fi…utdown pivot root (15s / 1min 30s)
+M[K[    [0;31m*[0;1;31m*[0m] A stop job is running for Create fi…utdown pivot root (16s / 1min 30s)
+M[K[   [0;31m*[0;1;31m*[0m[0;31m*[0m] A stop job is running for Create fi…utdown pivot root (16s / 1min 30s)
+M[K[  [0;31m*[0;1;31m*[0m[0;31m* [0m] A stop job is running for Create fi…utdown pivot root (17s / 1min 30s)
+M[K[ [0;31m*[0;1;31m*[0m[0;31m*  [0m] A stop job is running for Create fi…utdown pivot root (17s / 1min 30s)
+M[K[[0;31m*[0;1;31m*[0m[0;31m*   [0m] A stop job is running for Create fi…utdown pivot root (18s / 1min 30s)
+M[K[[0;1;31m*[0m[0;31m*    [0m] A stop job is running for Create fi…utdown pivot root (18s / 1min 30s)
+M[K[[0m[0;31m*     [0m] A stop job is running for Create fi…utdown pivot root (19s / 1min 30s)
+M[K[[0;1;31m*[0m[0;31m*    [0m] A stop job is running for Create fi…utdown pivot root (19s / 1min 30s)
+M[K[[0;31m*[0;1;31m*[0m[0;31m*   [0m] A stop job is running for Create fi…utdown pivot root (20s / 1min 30s)
+M[K[ [0;31m*[0;1;31m*[0m[0;31m*  [0m] A stop job is running for Create fi…utdown pivot root (20s / 1min 30s)
+M[K[  [0;31m*[0;1;31m*[0m[0;31m* [0m] A stop job is running for Create fi…utdown pivot root (21s / 1min 30s)
+M[K[   [0;31m*[0;1;31m*[0m[0;31m*[0m] A stop job is running for Create fi…utdown pivot root (21s / 1min 30s)
+M[K[    [0;31m*[0;1;31m*[0m] A stop job is running for Create fi…utdown pivot root (22s / 1min 30s)
+M[K[     [0;31m*[0m] A stop job is running for Create fi…utdown pivot root (22s / 1min 30s)
+M[K[    [0;31m*[0;1;31m*[0m] A stop job is running for Create fi…utdown pivot root (23s / 1min 30s)
+M[K[   [0;31m*[0;1;31m*[0m[0;31m*[0m] A stop job is running for Create fi…utdown pivot root (23s / 1min 30s)
+M[K[  [0;31m*[0;1;31m*[0m[0;31m* [0m] A stop job is running for Create fi…utdown pivot root (24s / 1min 30s)
+M[K[ [0;31m*[0;1;31m*[0m[0;31m*  [0m] A stop job is running for Create fi…utdown pivot root (24s / 1min 30s)
+M[K[[0;31m*[0;1;31m*[0m[0;31m*   [0m] A stop job is running for Create fi…utdown pivot root (25s / 1min 30s)
+M[K[[0;1;31m*[0m[0;31m*    [0m] A stop job is running for Create fi…utdown pivot root (25s / 1min 30s)
+M[K[[0m[0;31m*     [0m] A stop job is running for Create fi…utdown pivot root (26s / 1min 30s)
+M[K[[0;1;31m*[0m[0;31m*    [0m] A stop job is running for Create fi…utdown pivot root (26s / 1min 30s)
+M[K[[0;31m*[0;1;31m*[0m[0;31m*   [0m] A stop job is running for Create fi…utdown pivot root (27s / 1min 30s)
+M[K[ [0;31m*[0;1;31m*[0m[0;31m*  [0m] A stop job is running for Create fi…utdown pivot root (27s / 1min 30s)
+M[K[  [0;31m*[0;1;31m*[0m[0;31m* [0m] A stop job is running for Create fi…utdown pivot root (28s / 1min 30s)
+M[K[[0;32m  OK  [0m] Stopped [0;1;39mCreate final runtime dir for shutdown pivot root[0m.
+[K[[0;32m  OK  [0m] Stopped target [0;1;39mLocal File Systems[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mMounted snaps[0m.
+         Unmounting [0;1;39m/boot/efi[0m...
+         Unmounting [0;1;39m/run/snapd/ns/lxd.mnt[0m...
+         Unmounting [0;1;39mMount unit for core20, revision 2603[0m...
+         Unmounting [0;1;39mMount unit for lxd, revision 32669[0m...
+         Unmounting [0;1;39mMount unit for snapd, revision 24672[0m...
+[[0;32m  OK  [0m] Unmounted [0;1;39mMount unit for lxd, revision 32669[0m.
+[[0;32m  OK  [0m] Unmounted [0;1;39m/boot/efi[0m.
+[[0;32m  OK  [0m] Unmounted [0;1;39mMount unit for core20, revision 2603[0m.
+[[0;32m  OK  [0m] Unmounted [0;1;39mMount unit for snapd, revision 24672[0m.
+[[0;32m  OK  [0m] Unmounted [0;1;39m/run/snapd/ns/lxd.mnt[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mMounting snaps[0m.
+         Unmounting [0;1;39m/run/snapd/ns[0m...
+[[0;32m  OK  [0m] Stopped [0;1;39mFile System Check on /dev/disk/by-label/UEFI[0m.
+[[0;32m  OK  [0m] Removed slice [0;1;39msystem-systemd\x2dfsck.slice[0m.
+[[0;32m  OK  [0m] Unmounted [0;1;39m/run/snapd/ns[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mLocal File Systems (Pre)[0m.
+[[0;32m  OK  [0m] Stopped target [0;1;39mSwap[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mUnmount All Filesystems[0m.
+         Stopping [0;1;39mMonitoring of LVM…meventd or progress polling[0m...
+         Stopping [0;1;39mDevice-Mapper Multipath Device Controller[0m...
+[[0;32m  OK  [0m] Stopped [0;1;39mCreate Static Device Nodes in /dev[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mCreate System Users[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mRemount Root and Kernel File Systems[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mFile System Check on Root Device[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mDevice-Mapper Multipath Device Controller[0m.
+[[0;32m  OK  [0m] Stopped [0;1;39mMonitoring of LVM2… dmeventd or progress polling[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mShutdown[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mFinal Step[0m.
+[[0;32m  OK  [0m] Finished [0;1;39mPower-Off[0m.
+[[0;32m  OK  [0m] Reached target [0;1;39mPower-Off[0m.
+[  455.049241] systemd-udevd[2597]: loop1: Process 'probe-bcache -o udev /dev/loop1' terminated by signal TERM.
+[  455.056584] systemd-udevd[2597]: loop1: Failed to wait for spawned command 'probe-bcache -o udev /dev/loop1': Input/output error
+[  455.078445] systemd-udevd[2597]: loop1: /usr/lib/udev/rules.d/69-bcache.rules:16 Failed to execute 'probe-bcache -o udev /dev/loop1', ignoring: Input/output error
+[  456.722176] sd-umoun[2645]: Failed to unmount /oldroot: Device or resource busy
+[  456.737010] sd-umoun[2646]: Failed to unmount /oldroot/dev/pts: Device or resource busy
+[  456.751904] sd-umoun[2647]: Failed to unmount /oldroot/dev: Device or resource busy
+[  456.947671] shutdown[1]: Failed to finalize  file systems, ignoring
+[  456.965537] reboot: Power down

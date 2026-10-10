@@ -1,0 +1,30 @@
+demo  compiled the planted-bug tool with cc into /var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/sideeye-demo-Z2mzkf
+demo  the tool deletes its key before renaming the replacement in; a crash
+demo  between those two operations leaves no key at all. exploring:
+
+falsify: doctor says 'healthy' but the key is unloadable
+world 5: doctor says 'healthy' but the key is unloadable
+FAIL  1 of 6 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 5 of 5
+            after  unlink(/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/sideeye-demo-Z2mzkf/state/key.json)
+            before rename(/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/sideeye-demo-Z2mzkf/state/key.json.tmp)
+path        key.json
+observed    present before and after the operation, but gone from the crashed state
+cwd         /private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/platform-measure-vnfJLa  (none declared: Sideeye's own)
+
+explored    6 worlds (crash points 5 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      not run (no --oracle given)
+metadata    not observable (no oracle ran; the shim does not interpose ownership/permission/timestamp calls)
+checker     falsified before the run (corrupted state -> check failed); ran in 6 world(s)
+l1          no marker configured
+case        /var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/sideeye-demo-Z2mzkf/work/cases/000001.json
+replay      sideeye replay /var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/sideeye-demo-Z2mzkf/work/cases/000001.json --shim /Users/runner/work/_temp/sideeye/sideeye-v1.10.0-aarch64-macos/libsideeye_shim.dylib
+evidence    sideeye evidence /var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/sideeye-demo-Z2mzkf/work/evidence/000001.json
+processes   not established: no boundary was recorded, but the shim sees only libc's own entry points (fork, vfork, posix_spawn, the exec family, pthread_create, setsid, setpgid) — a child created through a raw syscall would not appear here — and no second witness ran
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/platform-measure-vnfJLa && unset SIDEEYE_KILL_GROUP && : > /var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/sideeye-demo-Z2mzkf/work/trace-repro.bin && SIDEEYE_STATE_DIR=/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/sideeye-demo-Z2mzkf/state SIDEEYE_STATE_DIR_ALT=/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/sideeye-demo-Z2mzkf/state SIDEEYE_TRACE_PATH=/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/sideeye-demo-Z2mzkf/work/trace-repro.bin DYLD_INSERT_LIBRARIES=/Users/runner/work/_temp/sideeye/sideeye-v1.10.0-aarch64-macos/libsideeye_shim.dylib SIDEEYE_KILL_AT=5 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= /var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/sideeye-demo-Z2mzkf/demo-tool rotate </dev/null)

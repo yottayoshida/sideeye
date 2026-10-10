@@ -1,0 +1,10 @@
+arch: aarch64
+image: https://cloud-images.ubuntu.com/releases/jammy/release-20261004/ubuntu-22.04-server-cloudimg-arm64.img
+digest: sha256:86e13258765945ad792dac75fac7f02f4db9fa73a4a535ffa472266e7041fa19
+packages: exit 0
+accel: tcg (/dev/kvm: ls: cannot access '/dev/kvm': No such file or directory)
+cpu: max
+qemu: exit 0 after 715 s (limit 5400 s)
+console: kernel 1, cloud-init 108, vm-inner start 1, done 1
+console last mark: vm-inner: done
+console last line: [  704.643212] reboot: Power down

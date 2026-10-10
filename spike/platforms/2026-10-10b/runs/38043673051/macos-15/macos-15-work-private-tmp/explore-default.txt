@@ -1,0 +1,18 @@
+0+1 records in
+0+1 records out
+13 bytes copied, 0.000724 s, 18.0 kB/s
+UNKNOWN  oracle_saw_nothing
+         the capture carries an operation on a descriptor it never saw opened, so where it points is unknown: 10:06:06.566569  write             F=1    B=0xd                                                                                                                                                                               0.000032   gdd.69053
+next        Nothing in the define fixes this: it is a defect in Sideeye. File it with the report attached.
+cwd         /Users/runner/work/sideeye/sideeye  (none declared: Sideeye's own)
+
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   not established: no boundary was recorded by the shim, and the fs_usage account was not read
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=5b8bc375e30bf34fac6d6bc082669399e2c24cd2d6ebadc8333d22e751743660;

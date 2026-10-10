@@ -1,0 +1,3 @@
+nix (Nix) 2.35.2
+sh: line 4: /se/sideeye: cannot execute: required file not found
+exit 127

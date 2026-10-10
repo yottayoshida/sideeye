@@ -1,0 +1,16 @@
+__filter-exec: error while loading shared libraries: __filter-exec: cannot open shared object file: No such file or directory
+UNKNOWN  recording_run_failed
+         the operation exited 127 during the recording run where 0 was expected, so the crash points derived from it describe an execution that did not happen (a different success convention is declared with --expect-status or the toml's expected_status)
+next        Run the operation once by hand, after the setup and in the directory the report names on its cwd line (command_cwd in the JSON), and read what it prints: if the exit status the detail names is how the tool reports success, declare it in the define with --expect-status (expected_status in a sideeye.toml); if it is a failure, fix what it printed — declaring a failure as success would have the failure judged.
+cwd         /  (none declared: Sideeye's own)
+
+expected    exit 0
+atomicity   not classified (the run was refused before L0 classification)
+l1          no marker configured
+case        (none)
+processes   not established: this run was refused before the supervising engine's account of it was read
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=cf47fe8928d19efc50aa477e4cb0fd18739a9d2462cef45d8f10459773ddb16b;

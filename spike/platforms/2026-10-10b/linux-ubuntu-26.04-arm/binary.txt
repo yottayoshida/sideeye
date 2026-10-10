@@ -1,0 +1,12 @@
+== /home/runner/work/_temp/sideeye-v1.10.0/sideeye-v1.10.0-aarch64-linux/sideeye
+/home/runner/work/_temp/sideeye-v1.10.0/sideeye-v1.10.0-aarch64-linux/sideeye: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, for GNU/Linux 2.0.0, with debug_info, not stripped
+newest glibc symbol versions it asks for:
+GLIBC_2.25
+GLIBC_2.27
+GLIBC_2.28
+== /home/runner/work/_temp/sideeye-v1.10.0/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so
+/home/runner/work/_temp/sideeye-v1.10.0/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so: ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV), dynamically linked, with debug_info, not stripped
+newest glibc symbol versions it asks for:
+GLIBC_2.17
+GLIBC_2.25
+GLIBC_2.28

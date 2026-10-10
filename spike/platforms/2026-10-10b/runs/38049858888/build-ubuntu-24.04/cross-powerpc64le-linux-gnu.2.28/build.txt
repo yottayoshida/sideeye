@@ -1,0 +1,23 @@
+install
++- install sideeye_shim
+   +- compile lib sideeye_shim ReleaseSafe powerpc64le-linux-gnu.2.28 1 errors
+shim/src/ops.zig:909:12: error: unable to perform tail call: compiler backend 'stage2_llvm' does not support tail calls on target architecture 'powerpc64le' with the selected CPU feature flags
+    return @call(.always_tail, real_vfork, .{});
+           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+referenced by:
+    comptime: shim/src/linux.zig:115:17
+    comptime: shim/src/shim.zig:45:21
+    4 reference(s) hidden; use '-freference-trace=6' to see all references
+error: 1 compilation errors
+failed command: /home/runner/work/_temp/platform-build/zig/zig build-lib -fllvm -OReleaseSafe -target powerpc64le-linux-gnu.2.28 -mcpu baseline --dep contract --dep shim_build_options -Mroot=/home/runner/work/_temp/platform-build/b-cross/shim/src/shim.zig -OReleaseSafe -target powerpc64le-linux-gnu.2.28 -mcpu baseline -Mcontract=/home/runner/work/_temp/platform-build/b-cross/src/contract.zig -Mshim_build_options=.zig-cache/c/fc0be73d99acaaa5d5a2b4d14bf0ea43/options.zig -lc --cache-dir .zig-cache --global-cache-dir /home/runner/.cache/zig --name sideeye_shim -dynamic --zig-lib-dir /home/runner/work/_temp/platform-build/zig/lib/ --listen=-
+
+Build Summary: 4/7 steps succeeded (1 failed)
+install transitive failure
++- install sideeye_shim transitive failure
+   +- compile lib sideeye_shim ReleaseSafe powerpc64le-linux-gnu.2.28 1 errors
+
+error: the following build command failed with exit code 1:
+.zig-cache/o/51f27d8134343e66997fa7293b7ee7e1/build /home/runner/work/_temp/platform-build/zig/zig /home/runner/work/_temp/platform-build/zig/lib /home/runner/work/_temp/platform-build/b-cross .zig-cache /home/runner/.cache/zig --seed 0xf61aa64f -Z1ec0050ea9f27e03 -Doptimize=ReleaseSafe -Dtarget=powerpc64le-linux-gnu.2.28 --prefix /home/runner/work/_temp/platform-build/cross-powerpc64le-linux-gnu.2.28
+exit 1
+/home/runner/work/_temp/platform-build/cross-powerpc64le-linux-gnu.2.28/bin/sideeye: ELF 64-bit LSB executable, 64-bit PowerPC or cisco 7500, OpenPOWER ELF V2 ABI, version 1 (SYSV), dynamically linked, interpreter /lib64/ld64.so.2, for GNU/Linux 2.0.0, with debug_info, not stripped
+/home/runner/work/_temp/platform-build/cross-powerpc64le-linux-gnu.2.28/lib/*:       cannot open `/home/runner/work/_temp/platform-build/cross-powerpc64le-linux-gnu.2.28/lib/*' (No such file or directory)

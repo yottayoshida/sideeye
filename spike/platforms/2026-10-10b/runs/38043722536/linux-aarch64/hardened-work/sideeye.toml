@@ -1,0 +1,15 @@
+# The platform probe's define (#697): a file rewritten in place by dd. dd opens a.txt with
+# O_TRUNC and then writes, through libc's write(), so a kill between the two leaves it at
+# 0 bytes — neither the old contents nor the new. The right answer on every platform is FAIL;
+# a platform where Sideeye answers PASS here miscounted.
+#
+# dd and not a shell redirect: a shell's own output (bash's, busybox's) is written from inside
+# libc, past the entry points the default mode interposes, so a redirect measures which shell
+# /bin/sh is (dash, bash, busybox) rather than the platform — the todo.txt-cli row of
+# docs/target-classes.md. measure.sh makes /work/s/new and reseeds /work/s/st before each run, so the
+# paths below hold in a container, on a runner and inside WSL alike.
+[world]
+state = "/work/s/st"
+
+[define]
+operation = "dd if=/work/s/new of=/work/s/st/a.txt"

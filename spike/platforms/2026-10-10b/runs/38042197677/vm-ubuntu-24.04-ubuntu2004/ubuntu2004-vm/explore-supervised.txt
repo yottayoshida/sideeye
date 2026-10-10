@@ -1,0 +1,2 @@
+SETUP ERROR  --observe supervised needs a kernel that accepts a seccomp user-notification listener with SECCOMP_FILTER_FLAG_WAIT_KILLABLE_RECV (Linux 5.19 or later), and this one does not
+sideeye: json sha256=5638f950512279226d8d1ddae94118266fabb9ecd02075448e9146a57e04da29;

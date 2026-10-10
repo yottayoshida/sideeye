@@ -1,0 +1,10 @@
+arch: aarch64
+image: https://dl.rockylinux.org/pub/rocky/8.10/images/aarch64/Rocky-8-GenericCloud-Base-8.10-20240528.0.aarch64.qcow2
+digest: sha256:946b5b9845aa5e3ed98f1bc6ee9873201712a2aef01b87731aed16857e0ca13f
+packages: exit 0
+accel: tcg (/dev/kvm: ls: cannot access '/dev/kvm': No such file or directory)
+cpu: max
+qemu: exit 0 after 313 s (limit 5400 s)
+console: kernel 1, cloud-init 0, vm-inner start 0, done 0
+console last mark: 
+console last line: [  300.784196] reboot: Power down

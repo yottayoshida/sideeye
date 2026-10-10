@@ -97,3 +97,23 @@ probe's record (until then the first table stands as it was written):
 The probe grows by the jobs that take those rows (`.github/workflows/spike-platforms.yml`), and
 the table is rewritten from their record. The 2026-10-10 record and `RUNS-RULE.md` stand as they
 were read.
+
+## Amended 2026-10-10, after the second series: the owner's words for the rows the rules sent back
+
+The second series (`spike/platforms/2026-10-10b/`) sent the rows where the binary does not start,
+or where no mode agreed with the control, back to the owner, as the rules say. The owner's
+rulings, the same day:
+
+- **declined**: Linux with glibc older than 2.28 (CentOS 7 and Debian 9 do not start the
+  binary); musl (the release binary does not start; built from source it gives the right answer
+  in all three modes); WSL1 (it starts and refuses in every mode — its kernel has no `statx`, and
+  the engine reads files on Linux through `statx` only); Linux on a kernel older than 4.18, not
+  measured. **declined** therefore also covers a platform the release has an asset for, where the
+  binary does not start, the engine has no code for what it lacks, or the owner rules it out
+  unmeasured; each by the owner's ruling, and the cell says which.
+- **supported**: NixOS with nix-ld (in the `nixos/nix` forms; NixOS itself is not booted, the
+  earlier ruling); macOS 14 and 15, on the demo, as macOS 26 is — `--oracle-fs-usage` judged the
+  probe's `dd` on none of the three, for two defects that are the engine's (#795, #796).
+- The Status column holds one of the three words. What qualifies it — a mode that refuses, a
+  layer it needs, a ruling and its date — is in the cell. A row over a range of versions rests on
+  the points its cell names.

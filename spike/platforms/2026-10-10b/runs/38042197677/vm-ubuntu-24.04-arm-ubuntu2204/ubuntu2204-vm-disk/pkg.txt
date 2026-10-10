@@ -1,0 +1,4 @@
+coreutils	8.32-4.1ubuntu1.4
+libc6:arm64	2.35-0ubuntu3.15
+strace	5.16-0ubuntu3
+dpkg-query: no path found matching pattern /usr/bin/dd

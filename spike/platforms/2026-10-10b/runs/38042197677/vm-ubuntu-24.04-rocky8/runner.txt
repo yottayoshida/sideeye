@@ -1,0 +1,13 @@
+== rocky8-container
+Unable to find image 'rockylinux/rockylinux:8.10@sha256:e8a49c5403b687db05d4d67333fa45808fbe74f36e683cec7abb1f7d0f2338c6' locally
+docker.io/rockylinux/rockylinux@sha256:e8a49c5403b687db05d4d67333fa45808fbe74f36e683cec7abb1f7d0f2338c6: Pulling from rockylinux/rockylinux
+940c44c16cdf: Pulling fs layer
+940c44c16cdf: Verifying Checksum
+940c44c16cdf: Download complete
+940c44c16cdf: Pull complete
+Digest: sha256:e8a49c5403b687db05d4d67333fa45808fbe74f36e683cec7abb1f7d0f2338c6
+Status: Downloaded newer image for rockylinux/rockylinux@sha256:e8a49c5403b687db05d4d67333fa45808fbe74f36e683cec7abb1f7d0f2338c6
+default	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+syscalls	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+supervised	exit 1	FAIL  1 of 3 explored worlds violated an invariant
+== rocky8-vm

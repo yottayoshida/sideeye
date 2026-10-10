@@ -1,0 +1,10 @@
+arch: x86_64
+image: https://dl.rockylinux.org/pub/rocky/8.10/images/x86_64/Rocky-8-GenericCloud-Base-8.10-20240528.0.x86_64.qcow2
+digest: sha256:e56066c58606191e96184de9a9183a3af33c59bcbd8740d8b10ca054a7a89c14
+packages: exit 0
+accel: kvm (/dev/kvm: crw-rw-rw- 1 root kvm 10, 232 Oct 10 09:39 /dev/kvm)
+cpu: host
+qemu: exit 0 after 49 s (limit 1800 s)
+console: kernel 1, cloud-init 82, vm-inner start 1, done 1
+console last mark: vm-inner: done
+console last line: [   44.274653] reboot: Power down

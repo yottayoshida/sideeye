@@ -1,0 +1,9 @@
+arch: aarch64
+image: https://cloud.debian.org/images/cloud/bookworm/20261006-2623/debian-12-genericcloud-arm64-20261006-2623.qcow2
+digest: sha512:835b929522716de9798d1c0fbe61caae8313ab78858b278f3389a2db922ae42e4619b4a776ecad39583c149fb85334a2f8cdae685bc56987160e5c86a2354375
+packages: exit 0
+accel: tcg (/dev/kvm: ls: cannot access '/dev/kvm': No such file or directory)
+qemu: exit 0 after 234 s (limit 5400 s)
+console: kernel 1, cloud-init 111, vm-inner start 1, done 1
+console last mark: vm-inner: done
+console last line: [  226.903573] reboot: Power down
