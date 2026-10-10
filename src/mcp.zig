@@ -2317,7 +2317,7 @@ fn readFile(arena: std.mem.Allocator, path: []const u8, cap: usize) ?[]const u8 
     return list.items;
 }
 
-test "Lines: whole lines across reads, an oversized line dropped whole, the last line at EOF (#695)" {
+test "Lines: whole lines across reads, an oversized line dropped whole, the last line at EOF" {
     var buf: [8]u8 = undefined;
     var lines: Lines = .{ .buf = &buf };
     const Feed = struct {
@@ -2353,7 +2353,7 @@ test "Lines: whole lines across reads, an oversized line dropped whole, the last
     try std.testing.expect(dropping.finish() == null);
 }
 
-test "route: replies are built, not written, and a tool call is returned rather than run (#695)" {
+test "route: replies are built, not written, and a tool call is returned rather than run" {
     var as = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer as.deinit();
     const a = as.allocator();

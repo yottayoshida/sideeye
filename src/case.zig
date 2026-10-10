@@ -372,7 +372,7 @@ fn testCaseWith(a: std.mem.Allocator, from: []const u8, to: []const u8) ![]const
     return std.mem.replaceOwned(u8, a, test_case_v5, from, to);
 }
 
-test "read returns a valid case whole (#695)" {
+test "read returns a valid case whole" {
     var as = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer as.deinit();
     const a = as.allocator();
@@ -388,7 +388,7 @@ test "read returns a valid case whole (#695)" {
     try std.testing.expectEqualStrings("syscalls", read(a, v6_empty).ok.observe.?);
 }
 
-test "read refuses with replay's sentences, in replay's order (#695)" {
+test "read refuses with replay's sentences, in replay's order" {
     var as = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer as.deinit();
     const a = as.allocator();

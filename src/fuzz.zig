@@ -296,7 +296,7 @@ fn traceBytes(a: std.mem.Allocator, records: []const contract.Record) ![]const u
     return out.items;
 }
 
-test "fuzz: the trace (#695)" {
+test "fuzz: the trace" {
     var as = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer as.deinit();
     const a = as.allocator();
@@ -355,7 +355,7 @@ fn fuzzConfig(_: void, smith: *std.testing.Smith) anyerror!void {
     }
 }
 
-test "fuzz: sideeye.toml (#695)" {
+test "fuzz: sideeye.toml" {
     try run({}, fuzzConfig, .{ .name = "config", .max_len = fuzz_config_max }, &.{
         \\# sideeye.toml
         \\[world]
@@ -400,7 +400,7 @@ fn fuzzImage(input: *const DiskInput, smith: *std.testing.Smith) anyerror!void {
     _ = image.startable(as.allocator(), input.path, null, null);
 }
 
-test "fuzz: an executable's header (#695)" {
+test "fuzz: the executable a define names" {
     var as = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer as.deinit();
     var input: DiskInput = .{ .mode = 0o700 };
@@ -433,7 +433,7 @@ fn fuzzCase(_: void, smith: *std.testing.Smith) anyerror!void {
     }
 }
 
-test "fuzz: a saved case (#695)" {
+test "fuzz: a saved case" {
     const tail = "\"k\":7,\"ops_total\":7,\"prefix_hash\":\"718642bf3a3cb330\",\"after_class\":\"open\",\"after_path\":\"/s/state/m\",\"before_class\":\"write\",\"before_path\":\"/s/state/m\",\"violation\":\"checker\"}";
     try run({}, fuzzCase, .{ .name = "case", .max_len = fuzz_case_max }, &.{
         "{\"schema\":\"sideeye/case\",\"case_version\":1,\"sideeye_version\":\"0.3.0\",\"contract_version\":3,\"define\":{\"state\":\"/s/state\",\"operation\":\"tool run\",\"check\":\"./check.sh\"}," ++ tail,
@@ -482,7 +482,7 @@ fn fuzzMcpLine(a: std.mem.Allocator, line: []const u8) !void {
     }
 }
 
-test "fuzz: the MCP transport (#695)" {
+test "fuzz: the MCP transport" {
     const meta = "\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{}}";
     try run({}, fuzzMcp, .{ .name = "mcp", .max_len = fuzz_mcp_max }, &.{
         "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"server/discover\",\"params\":{" ++ meta ++ "}}\n" ++
