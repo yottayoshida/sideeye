@@ -1,5 +1,6 @@
-# The box for 2026-10-10 thread-order (#687): the released Sideeye v1.10.0 beside the five static
-# targets #687 names as stopping at --observe supervised's threads wall, each pinned by the digest
+# The box for 2026-10-10 thread-order (#687): the released Sideeye v1.10.0 beside five of the six static
+# targets #687 names as stopping at --observe supervised's threads wall (tombi, refused in 1 of 36 explores and
+# 3 of 20 replays with its preflight accepted 26 of 26, is not here), each pinned by the digest
 # GitHub publishes for its release asset, and the two C controls the reader is checked against.
 # The base is follow-ups 6's, with gcc for the controls.
 FROM debian:trixie-slim

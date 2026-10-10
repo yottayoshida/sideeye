@@ -11,25 +11,27 @@
 # (`strace -f -y -e trace=%file,%desc,%process,...` — the engine's own arguments), so a refused
 # attempt leaves, in its work directory, a capture of the very run the engine refused, with every
 # thread's creation and exit. The capture is copied out per attempt: the engine removes it at the
-# start of its next recording. Attempts stop at five refusals, or after fifteen.
+# start of its next recording. Attempts stop at N refusals (the second argument, five by default),
+# or after 3N attempts.
 set -u
-t=${1:?usage: run.sh <target>}
+t=${1:?usage: run.sh <target> [refusals]}
+want=${2:-5}
 d=/ap/defines/$t
 SE=$(cat /install.path)
 . /ap/env.sh
 [ -f "$d/env.sh" ] && . "$d/env.sh"
-o=/out/$t; mkdir -p "$o"
+o=/out/${OUT_NAME:-$t}; mkdir -p "$o"
 { "$SE" version; echo "engine path: $SE"; grep -E 'digest matches|sideeye ' /install.log; cat /versions.txt; } > "$o/engine.txt"
 
 refused=0; i=0
 printf 'attempt\texit\tverdict\n' > "$o/attempts.tsv"
-while [ "$i" -lt 15 ] && [ "$refused" -lt 5 ]; do
+while [ "$i" -lt $((3 * want)) ] && [ "$refused" -lt "$want" ]; do
     i=$((i + 1))
     sh "$d/seed.sh" > "$o/seed-$i.log" 2>&1 || { echo "seed failed on attempt $i" >&2; exit 2; }
     "$SE" preflight --config "$d/sideeye.toml" --observe supervised --oracle /usr/bin/strace \
         --work "$o/work-$i" > "$o/preflight-$i.txt" 2>&1
     rc=$?
-    verdict=$(grep -m1 -E '^(PASS|FAIL|UNKNOWN|SETUP ERROR|OK|READY)' "$o/preflight-$i.txt" || echo '-')
+    verdict=$(grep -m1 -E '^(PASS|FAIL|UNKNOWN|SETUP ERROR|PREFLIGHT)' "$o/preflight-$i.txt" || echo '-')
     printf '%s\t%s\t%s\n' "$i" "$rc" "$verdict" >> "$o/attempts.tsv"
     if grep -q '^UNKNOWN  multiple_threads_detected$' "$o/preflight-$i.txt"; then
         refused=$((refused + 1))

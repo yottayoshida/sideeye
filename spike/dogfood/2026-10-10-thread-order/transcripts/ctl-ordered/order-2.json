@@ -1,0 +1,1 @@
+{"verdict": "all-ordered", "writes": 6, "handovers": 2, "ordered_by_creation": 1, "ordered_by_exit": 1, "unordered": 0, "first_unordered": [], "writers_by_process": {"37": [37, 38]}}

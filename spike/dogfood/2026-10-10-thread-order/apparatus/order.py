@@ -4,17 +4,19 @@ Reads an `strace -f -y` capture — the oracle capture Sideeye leaves in its wor
 capture taken with `-f -y` (with or without `-tt`) — and a state directory. A *write* is a call of
 one of the engine's ten kill-point classes (open for writing, write, rename, unlink, fsync,
 truncate, mkdir, rmdir, link, symlink) on a path under the state, failed calls included: the
-engine counts a failed mkdir as the writer it names. A *hand-over* is two consecutive writes of
-one process made by two different threads, A then B. It is ordered when, between A's write and
-B's, either A (or a thread A created in that window) created B, or A exited — the two events a
-supervisor can see from outside; a join is seen from outside only as the exit, so (b) is the
-generous side.
+engine counts a failed mkdir as the writer it names; a call strace shows `= ? ERESTART…` was taken back
+by a signal and is not counted (the engine's oracle does not count it either). A *hand-over* is two
+consecutive writes of one process made by two different threads, A then B. It is ordered when,
+between A's write and B's, either A (or a thread A created in that window) created B, or A — or a
+thread A created in that window — exited: the events a supervisor can see from outside. A join is
+seen from outside only as the exit, so the second test is the generous side: it takes any exit in
+that chain as the join that would order the hand-over (ADR 0067's chain of creations and joins).
 
 Per capture: `no-handover`, `all-ordered`, or `unordered` (at least one hand-over neither event
 orders) — the last is the one recording creations and exits from outside would not admit.
 
     python3 order.py <capture> <state>       one line of JSON
-    python3 order.py --selftest              the synthetic cases, red and green
+    python3 order.py --selftest              the synthetic cases, and broken readers they catch
 """
 import json
 import re
@@ -115,7 +117,8 @@ def written_paths(name, args, ann):
     return None
 
 
-def analyse(lines, state):
+def analyse(lines, state, _window=True, _exits=True, _exit_window=True):
+    """`_window`, `_exits` and `_exit_window` exist for the selftest's broken readers only."""
     state = state.rstrip("/")
     made = {}        # child -> (parent, index of the parent's clone entry)
     tgid = {}        # thread -> its process
@@ -135,6 +138,8 @@ def analyse(lines, state):
             made[child] = (tid, idx)
             tgid[child] = tgid[tid] if "CLONE_THREAD" in args else child
             continue
+        if ret == "?" and "ERESTART" in args:
+            continue   # taken back by a signal: if it is restarted, the restarted call is the write
         paths = written_paths(name, args, ann)
         if paths and any(under(p, state) for p in paths):
             writes.append((idx, tid))
@@ -144,9 +149,14 @@ def analyse(lines, state):
         while x in made:
             p, c = made[x]
             if p == a:
-                return c > i
+                return c > i or not _window
             x = p
         return False
+
+    def exited_in(a, i, j):
+        # A itself, or a thread A created after i (through any chain), exited between i and j. A
+        # thread A created before i orders nothing by exiting: A's write at i came after it began.
+        return any(i < e < j and (t == a or created_by_after(a, t, i if _exit_window else -1)) for t, e in exits.items())
 
     handovers = ordered_create = ordered_exit = 0
     unordered = []
@@ -162,7 +172,7 @@ def analyse(lines, state):
             handovers += 1
             if created_by_after(a, b, i):
                 ordered_create += 1
-            elif a in exits and i < exits[a] < j:
+            elif _exits and exited_in(a, i, j):
                 ordered_exit += 1
             else:
                 unordered.append({"from": a, "to": b, "lines": [i + 1, j + 1]})
@@ -216,6 +226,31 @@ SELFTEST = {
 10 write(3</s/a>, "more", 4) = 4
 11 fsync(3</s/a>) = 0
 """),
+    # B exists before A writes; after its write A creates C, C exits, B writes: B could have joined C,
+    # so the chain creation-then-exit is taken as ordering the hand-over (the generous side).
+    "child-exit-orders": ("all-ordered", """\
+10 clone3({flags=CLONE_VM|CLONE_THREAD, exit_signal=0}, 88) = 11
+10 openat(AT_FDCWD</s>, "a", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 3</s/a>
+10 clone3({flags=CLONE_VM|CLONE_THREAD, exit_signal=0}, 88) = 12
+12 exit(0) = ?
+11 rename("/s/t", "/s/b") = 0
+"""),
+    # A write a signal took back is not counted (the engine's oracle does not count it): one writer here.
+    "restarted-write": ("no-handover", """\
+10 clone3({flags=CLONE_VM|CLONE_THREAD, exit_signal=0}, 88) = 11
+10 write(3</s/a>, "a", 1) = 1
+11 write(3</s/a>, "b", 1) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+10 write(3</s/a>, "c", 1) = 1
+"""),
+    # A creates C before its write, C exits after it, B writes: C's exit came after A's write, but C
+    # began before it, so joining C tells B nothing about A's write — not ordered.
+    "earlier-child-exits": ("unordered", """\
+10 clone3({flags=CLONE_VM|CLONE_THREAD, exit_signal=0}, 88) = 11
+10 clone3({flags=CLONE_VM|CLONE_THREAD, exit_signal=0}, 88) = 12
+10 openat(AT_FDCWD</s>, "a", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 3</s/a>
+12 exit(0) = ?
+11 unlink("/s/a") = 0
+"""),
 }
 
 
@@ -225,11 +260,16 @@ def selftest():
         got = analyse(text.splitlines(True), "/s")["verdict"]
         print(f"{'ok  ' if got == want else 'FAIL'} {name}: {got} (wanted {want})")
         bad += got != want
-    # The reader's own red: a version that ignores the window must fail the last case.
-    global_created = analyse(SELFTEST["created-then-kept-writing"][1].splitlines(True), "/s")
-    if global_created["ordered_by_creation"] != 0:
-        print("FAIL the creation window is not read: a creation before A's last write ordered a hand-over")
-        bad += 1
+    # The cases' own red: a reader that ignores the creation's window, and one that ignores exits,
+    # must each fail a case above — otherwise the cases cannot tell a broken reader from this one.
+    for label, case, kw, broken_reads in (
+            ("a reader that ignores the creation's window", "created-then-kept-writing", {"_window": False}, "all-ordered"),
+            ("a reader that ignores exits", "all-ordered", {"_exits": False}, "unordered"),
+            ("a reader that ignores exits", "child-exit-orders", {"_exits": False}, "unordered"),
+            ("a reader that ignores when an exiting thread was created", "earlier-child-exits", {"_exit_window": False}, "all-ordered")):
+        got = analyse(SELFTEST[case][1].splitlines(True), "/s", **kw)["verdict"]
+        print(f"{'ok  ' if got == broken_reads else 'FAIL'} {label} reads {case} as {got} (the case catches it)")
+        bad += got != broken_reads
     return bad
 
 
