@@ -476,6 +476,12 @@ pub fn build(b: *std.Build) void {
 
     const test_step = b.step("test", "Run tests");
 
+    // Test-only: no executable imports fuzz_options, so nothing set here reaches a release.
+    const fuzz_opts = b.addOptions();
+    fuzz_opts.addOption(u32, "runs", b.option(u32, "fuzz-runs", "mutated inputs per fuzz entry point in `zig build test`; 0 runs the seeds only") orelse 1000);
+    fuzz_opts.addOption(u64, "seed", b.option(u64, "fuzz-seed", "the fuzz driver's seed; fixed by default, the weekly workflow passes its own") orelse 0x695_f022_5eed);
+    const fuzz_options_mod = fuzz_opts.createModule();
+
     // Each file that carries tests is named explicitly, and the reason is narrower than
     // this comment used to say.
     //
@@ -535,8 +541,10 @@ pub fn build(b: *std.Build) void {
         "src/files.zig",
         // The third seam's second half: the argv surface. Its two tests reach `version` and
         // the help text only, and nothing left in main.zig reaches them, so without this
-        // name they would run nowhere. `src/case.zig` holds no tests and is not named.
+        // name they would run nowhere.
         "src/cli.zig",
+        // Named: its tests would otherwise run only while a test elsewhere happens to reach it.
+        "src/case.zig",
         // The evidence bundle (#607, ADR 0071). Named for the reason the shim's Linux root
         // below was: main.zig imports it, and collection through an import is what stopped
         // silently once before. Its tests reach no declaration of main.zig's.
@@ -605,6 +613,34 @@ pub fn build(b: *std.Build) void {
         embedDemo(b, t.root_module, demo_toy_bin);
         test_step.dependOn(&b.addRunArtifact(t).step);
     }
+
+    // The parsers as a module, not files of the root: as files their tests would run here a second time.
+    const fuzz_parsers = b.createModule(.{
+        .root_source_file = b.path("src/fuzz_parsers.zig"),
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .imports = &.{
+            .{ .name = "contract", .module = contract },
+            .{ .name = "engine_build_options", .module = shipped_engine_opts },
+        },
+    });
+    const fuzz_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/fuzz.zig"),
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .imports = &.{
+                .{ .name = "contract", .module = contract },
+                .{ .name = "parsers", .module = fuzz_parsers },
+                .{ .name = "fuzz_options", .module = fuzz_options_mod },
+            },
+        }),
+    });
+    const fuzz_run = b.addRunArtifact(fuzz_tests);
+    test_step.dependOn(&fuzz_run.step);
+    b.step("fuzz", "Run only the fuzz entry points").dependOn(&fuzz_run.step);
 
     const run_step = b.step("run", "Run sideeye");
     const run_cmd = b.addRunArtifact(exe);

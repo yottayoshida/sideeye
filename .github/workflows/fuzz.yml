@@ -1,0 +1,35 @@
+name: fuzz
+
+# ADR 0112. Never on pull_request: a new seed's finding must not turn an unrelated change red.
+
+on:
+  schedule:
+    - cron: '41 4 * * 3'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+        with:
+          version: 0.16.0
+
+      - name: Fuzz every entry point from this run's seed
+        run: |
+          echo "seed ${{ github.run_id }}, 200000 runs per entry point; reproduce with: zig build fuzz -Dfuzz-seed=${{ github.run_id }} -Dfuzz-runs=200000"
+          zig build fuzz --summary all -Dfuzz-seed=${{ github.run_id }} -Dfuzz-runs=200000
+
+      - name: Keep the input a failed or hung run left behind
+        if: failure() || cancelled()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: fuzz-failure-${{ github.run_id }}
+          path: /tmp/sideeye-fuzz-*/input.bin
+          if-no-files-found: warn
