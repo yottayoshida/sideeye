@@ -1564,14 +1564,7 @@ jobs:
       - name: main.zig declares no more than the last seam left it
         run: sh spike/check-main-shape.sh
 
-  # #695: every tracked .zig file is what `zig fmt` leaves it. Nothing ran
-  # `zig fmt --check` before this job, eight files had drifted, and the job above
-  # had been leaning on "four spaces is what zig fmt produces" with nothing behind
-  # it. Its own job so a failure names the instrument. The files come from
-  # `git ls-files`, not a directory list — a list would have missed
-  # spike/fsusage/scan.zig, one of the eight — and the selftest goes red on that
-  # shape too: its unformatted fixture sits two directories down in a scratch
-  # repository, so a check narrowed to top-level paths fails it (measured).
+  # Not folded into another job: a failure here has to name the instrument.
   fmt:
     runs-on: ubuntu-latest
     steps:
