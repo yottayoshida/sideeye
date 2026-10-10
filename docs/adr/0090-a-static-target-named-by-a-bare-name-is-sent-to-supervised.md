@@ -60,6 +60,10 @@ Two decisions produced this, and each had a reason.
    `docs/cli.md`), a static ELF in a build without the mode, and the Mach-O walls take
    `class_wall`. The kernel is not asked for its version, for ADR 0069's reason; below 5.19 the
    flag answers `platform_unsupported`.
+   **Amended 2026-10-10 (ADR 0108):** `no_shim_marker` is not the only refusal sent to that mode for such an
+   image. When a dynamic child carried the shim past the gate, `oracle_missed_operation`, the recording run's
+   `unresolvable_path` and `child_touched_state_dir` take `observe_supervised_static_parent` in the shapes
+   ADR 0108 measured, through the same image predicate.
 4. **The detail line states the linkage and no longer names the mode.** The clause was there
    because the step could not say it.
 

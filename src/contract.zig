@@ -1518,6 +1518,27 @@ pub const NextStep = enum {
     /// not: `docs/contract-freeze.md` closes `unknown_reason` and `setup_error_reason`, and
     /// `next_step` is neither (ADR 0069 recorded the same when it added `observe_syscalls`).
     observe_supervised,
+    /// The same way past as `observe_supervised`, for a statically linked operation the default
+    /// gate let through because something else carried the shim (#685, ADR 0108): a static parent
+    /// starts a dynamic child, the child's shim announces itself, and the parent's own calls are
+    /// recorded by nobody. Three refusals were measured to come out of that shape and to be crossed
+    /// by `--observe supervised` — `oracle_missed_operation` where the shim announced itself from
+    /// a process other than the one the oracle saw start (aliyun-cli 3.5.1, lefthook 1.13.6), the
+    /// recording run's `unresolvable_path` where a process closed the shim's trace (roswell
+    /// 26.02.116), and `child_touched_state_dir` on its shimmed-writer arm with the same pair of
+    /// pids (a toy: the static parent fork-execs a shell that writes the state; no real target
+    /// measured yet). `boundary.staticParentNext` is the only producer, and each site passes the
+    /// shape it measured; everywhere else the site's own step stands, because a step that cannot
+    /// work is worse than one that only points at the class (`childTouchedNext`).
+    ///
+    /// A member of its own rather than `observe_supervised` so the sentence can say why: the
+    /// refusal beside it talks about an operation the shim missed or a trace that was closed, and
+    /// a reader sent to another mode needs to know the image it named is one no shim can enter. It opens
+    /// on that reason, not on "Run the same command again", which the acceptance suite anchors to
+    /// `observe_supervised` — and it says the file was read before the run, since a reading is
+    /// not a claim about what ran (`image.zig`). It names explore and preflight only: a replay is not sent here (its
+    /// crash point is a number in the mode it was counted under, ADR 0100).
+    observe_supervised_static_parent,
     /// A run's failures under `--observe syscalls` that a process the mode killed produces, where
     /// the site would otherwise say `fix_define` (#599, ADR 0069) — the recording run's missing
     /// success marker and the baseline world's checker rejecting the state — or, since #710 (ADR
@@ -1645,6 +1666,7 @@ pub const NextStep = enum {
             .relaunch => "Start the exploration from a process that stays alive for its whole duration; the one that launched this run has exited.",
             .observe_syscalls => "Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.",
             .observe_supervised => "Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.",
+            .observe_supervised_static_parent => "The file the operation names was read before the run as a statically linked image, which no shim can be loaded into: the shim records this run read came from a process the operation started, or from an image it replaced itself with, and what the operation did in its own image went unrecorded. Run the same command with --observe supervised (explore and preflight take it), which counts those calls from outside the process, where no preloaded library has to reach them — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.",
             .syscalls_may_have_killed => "Under --observe syscalls a run also ends this way when that mode killed a process or otherwise changed what the target does — the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset' names the processes it kills — so run the operation once under the default mode and compare its exit status, its output and the state it leaves (running the checker on that state by hand) before changing the define, its checker, --expect-status or --marker.",
             .declare_cwd => "Add cwd = \".\" under [define]: the define declares none, so its commands ran in Sideeye's own directory rather than the toml's, and the detail names an argument, or a directory above one, that exists only under the toml's directory.",
             .sideeye_defect => "Nothing in the define fixes this: it is a defect in Sideeye. File it with the report attached.",

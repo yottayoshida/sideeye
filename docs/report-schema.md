@@ -311,9 +311,31 @@ fs_usage capture saw a thread write that no record names (ADR 0060) — keeps th
 `unwrap_or_class_wall`: that writer went around the shim, which is not what a pool's size changes.
 Three refusals the records met keep the class wall because this build's step names no way past
 them and no README line names their limit: `unresolvable_path`, `unsupported_syscall_observed`,
-and `oracle_missed_operation` under `--observe syscalls`. For a
-static parent whose writer is a dynamic child, which reaches the last and `unresolvable_path`,
-`--observe supervised` is the way past; #685 is to name it.
+and `oracle_missed_operation` under `--observe syscalls` — except
+for a statically linked operation in a shape measured to be crossed, the next paragraph.
+
+**A static parent whose dynamic child carried the shim** (#685, ADR 0108). The default gate lets
+this shape through, because the child's shim announces itself, and the parent's own calls are
+recorded by nobody. Under `--observe wrappers` or `--observe syscalls`, in a build that can
+supervise (Linux on aarch64 or x86_64) and outside a replay, when the operation's image is a
+statically linked 64-bit ELF, three refusals take `observe_supervised_static_parent`, which names
+`--observe supervised` and says that the image read before the run is one no shim can be loaded
+into:
+`oracle_missed_operation` where the shim announced itself from a process other than the one the
+oracle saw start; the recording run's `unresolvable_path` where a process closed the shim's trace
+(`trace-closed-by-target`); and `child_touched_state_dir` on its shimmed-writer arm, with the same
+pair of processes. The `unresolvable_path` site reads the record's kind alone, so a static image
+that exec'd a dynamic one which then closed the trace takes the step too — under that mode the
+trace is the engine's. Each was measured to be crossed by that mode — aliyun-cli 3.5.1 and lefthook
+1.13.6, roswell 26.02.116, and for the third a toy, no real target yet. Everywhere else the site's
+own step stands, because one reason is raised from sites that mode crosses and from sites where
+it refuses the same way, and a step that cannot work is worse than one that points at the class.
+That includes shapes whose way past was not measured either way: the other kinds
+`unresolvable_path` refuses (an unlinked descriptor, a descriptor without a path and a link by
+descriptor are refused under that mode too, as `supervise_linux.zig` reads; not run); at
+`oracle_missed_operation` and `child_touched_state_dir`, a static image that execs a dynamic one in
+its own process, whose shim announces itself from the oracle's subject; `child_touched_state_dir`'s
+other arm. A replay keeps the mode its crash point was counted in and is not sent on.
 
 `child_process_detected` from the recording run's broken self-exec chain chooses
 its `next_step` from an observation on macOS (#703). When the operation's first
@@ -379,7 +401,10 @@ reached for it names the README entry under 'What the target has to be' that
 begins 'Under `--observe syscalls`, a process whose `SIGSYS` is blocked or reset',
 and this page's 'What `--observe syscalls` does not see': that mode changes what
 some targets do. Under `--observe syscalls`, or off Linux, the step is the class
-wall; a Linux kernel without the trap answers the flag with
+wall — except, on Linux in a build that can supervise and outside a replay, for an
+operation whose image was read as a statically linked 64-bit ELF while the shim
+announced itself from another process, which takes `observe_supervised_static_parent` under either
+shim mode (#685, ADR 0108); a Linux kernel without the trap answers the flag with
 `platform_unsupported`. The failures a process that mode killed produces follow
 the mode as well: where the default mode sends the reader to the define or to
 run the operation by hand — the recording run's exit status nobody declared and
@@ -432,7 +457,11 @@ trace holds an `exec` or a `shim_ready` from it and no operation of its own, so
 its writes went around the interposed entry points — is counted at the kernel
 boundary, and a run in the default mode on Linux is sent to `--observe
 syscalls`, the step `oracle_missed_operation` already uses; a run already in
-that mode, or off Linux, is not. Every other shape keeps the step it had,
+that mode, or off Linux, is not. A static parent whose child carried the shim
+can reach this arm — when the child that announced first is the one that wrote, its
+operations were counted as the first announcer's, so "no operation of its own" does
+not describe it — and there takes `observe_supervised_static_parent` on the
+conditions the `next_step` section gives (#685, ADR 0108). Every other shape keeps the step it had,
 including the one the mode would **kill**: a writer whose image holds no shim —
 an `exec` recorded after its last `shim_ready`, or no record of its own at all,
 which is a child that never loaded the shim or loaded it without Sideeye's

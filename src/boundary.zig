@@ -1165,7 +1165,7 @@ fn noShimNextFor(observed: ?image.Observation, mode: contract.ObserveMode, can_s
     return switch (obs.facts) {
         .elf => |e| if (e.has_interp)
             .check_shim
-        else if (e.class64 and can_supervise)
+        else if (staticElf64(e) and can_supervise)
             .observe_supervised
         else
             .class_wall,
@@ -1192,6 +1192,129 @@ fn noShimNextFor(observed: ?image.Observation, mode: contract.ObserveMode, can_s
         .unrecognised => .operation_not_an_image,
         .not_resolved, .unreadable, .undecidable => .check_shim,
     };
+}
+
+/// A statically linked 64-bit ELF: the image `--observe supervised` counts from outside and the
+/// two shim modes cannot enter (ADR 0090). One predicate for `noShimNextFor` and
+/// `staticParentNextFor`, so the two cannot come to disagree about which images that mode is for.
+fn staticElf64(e: image.Elf) bool {
+    return !e.has_interp and e.class64;
+}
+
+/// Set by `main.zig` once a replay has read its case, before any refusal can be raised. A replay
+/// is never sent to `--observe supervised` by `staticParentNext`: a case recorded under another
+/// mode is refused by name under that flag, and one counted under the default runs on with a
+/// crash point numbered in the default's count (ADR 0100). A flag of its own rather than a
+/// reading of `report.case_note`, which is a display string set for the report's sake.
+pub var replaying: bool = false;
+
+/// The step at a site where a statically linked operation's unrecorded calls were measured to
+/// produce the refusal, and `--observe supervised` to get past it (#685, ADR 0108):
+/// `observe_supervised_static_parent` when every condition holds, the site's own step otherwise.
+///
+/// The site keeps choosing (#274): it passes the step it would have named and `shape_measured`,
+/// its own reading of the shape the measurement covered — `shimAnnouncedElsewhere` at
+/// `oracle_missed_operation`, `traceClosedByTarget` at the recording run's `unresolvable_path`,
+/// and the shimmed-writer arm with `shimAnnouncedElsewhere` at `child_touched_state_dir`.
+/// A reason is not narrow enough to decide this: the same reason is raised from sites that mode
+/// crosses and from sites where it refuses the same way, and a step that cannot work is worse
+/// than one that only points at the class (`childTouchedNext`; the first draft keyed on reasons
+/// at the exit and review found five such sites). Under `--observe supervised` there is nothing
+/// to send the reader to, a build without the mode cannot take it, and a replay keeps the mode
+/// it was counted under (`replaying`).
+pub fn staticParentNext(site_step: contract.NextStep, shape_measured: bool) contract.NextStep {
+    return staticParentNextFor(site_step, shape_measured, observe_mode, rec_image, supervise.available, replaying);
+}
+
+/// `staticParentNext` with every input an argument, so each condition can be pinned on any host.
+fn staticParentNextFor(
+    site_step: contract.NextStep,
+    shape_measured: bool,
+    mode: contract.ObserveMode,
+    observed: ?image.Observation,
+    can_supervise: bool,
+    replay: bool,
+) contract.NextStep {
+    if (!shape_measured or mode == .supervised or !can_supervise or replay) return site_step;
+    const obs = observed orelse return site_step;
+    return switch (obs.facts) {
+        .elf => |e| if (staticElf64(e)) .observe_supervised_static_parent else site_step,
+        else => site_step,
+    };
+}
+
+/// `oracle_missed_operation`'s measured shape (aliyun-cli 3.5.1, lefthook 1.13.6): the first
+/// process to announce a shim (`trace.primary_pid`) is not the one strace saw start
+/// (`parsed.primary_pid`, the first `execve`). A static image that execs a dynamic one keeps its
+/// pid, so its shim announces from the oracle's subject: that is not the shape measured, and the
+/// site keeps what `missedOperationNext` chose, as it did before #685 — whether either mode gets
+/// past it was not measured. An unknown pid on either side is not the shape.
+pub fn shimAnnouncedElsewhere(trace_primary: ?u32, oracle_primary: ?u32) bool {
+    const t = trace_primary orelse return false;
+    const o = oracle_primary orelse return false;
+    return t != o;
+}
+
+/// The recording run's `unresolvable_path` shape (roswell 26.02.116): a process closed the shim's
+/// trace channel. Under `--observe supervised` the engine holds the trace and no target can close
+/// it. The other kinds that site refuses are not this shape: an fd without a path, an unlinked
+/// fd and a link by descriptor are refused under that mode too, for the same reason
+/// (`supervise_linux.zig`). The kind is the record's `aux` up to its first space —
+/// `unresolved_kind.withFd` and `withOp` append after one.
+pub fn traceClosedByTarget(op: ?engine.Op) bool {
+    const o = op orelse return false;
+    // The kind is read only off an unplaceable record: on a rename or a link `aux` holds a
+    // string the target chose (`unresolved_kind.opOfUnlinkedFd` says the same).
+    if (o.class != .unresolved) return false;
+    const kind = if (std.mem.indexOfScalar(u8, o.aux, ' ')) |i| o.aux[0..i] else o.aux;
+    return std.mem.eql(u8, kind, contract.unresolved_kind.trace_closed);
+}
+
+test "staticParentNextFor: each condition, pinned by a neighbour that differs in it alone (#685)" {
+    const obs = struct {
+        fn of(f: image.Facts) image.Observation {
+            return .{ .path = "/x", .size = 0, .facts = f };
+        }
+    }.of;
+    const static64: image.Facts = .{ .elf = .{ .has_interp = false, .class64 = true } };
+    const S = contract.NextStep;
+    // The measured shape, under both shim modes, at both sites' own steps.
+    try std.testing.expectEqual(S.observe_supervised_static_parent, staticParentNextFor(.observe_syscalls, true, .wrappers, obs(static64), true, false));
+    try std.testing.expectEqual(S.observe_supervised_static_parent, staticParentNextFor(.class_wall, true, .syscalls, obs(static64), true, false));
+    //   ... not where the site did not see the shape it measured,
+    try std.testing.expectEqual(S.observe_syscalls, staticParentNextFor(.observe_syscalls, false, .wrappers, obs(static64), true, false));
+    //   ... not under supervised itself, where there is nowhere further to send the reader,
+    try std.testing.expectEqual(S.class_wall, staticParentNextFor(.class_wall, true, .supervised, obs(static64), true, false));
+    //   ... not in a build without that mode,
+    try std.testing.expectEqual(S.observe_syscalls, staticParentNextFor(.observe_syscalls, true, .wrappers, obs(static64), false, false));
+    //   ... not in a replay, which keeps the mode its crash point was counted in,
+    try std.testing.expectEqual(S.observe_syscalls, staticParentNextFor(.observe_syscalls, true, .wrappers, obs(static64), true, true));
+    //   ... not for a dynamic image, a 32-bit static one, a Mach-O, or no reading at all.
+    try std.testing.expectEqual(S.observe_syscalls, staticParentNextFor(.observe_syscalls, true, .wrappers, obs(.{ .elf = .{ .has_interp = true, .class64 = true } }), true, false));
+    try std.testing.expectEqual(S.class_wall, staticParentNextFor(.class_wall, true, .wrappers, obs(.{ .elf = .{ .has_interp = false, .class64 = false } }), true, false));
+    try std.testing.expectEqual(S.class_wall, staticParentNextFor(.class_wall, true, .wrappers, obs(.{ .macho = .{ .dyldlink = false, .signing = null } }), true, false));
+    try std.testing.expectEqual(S.class_wall, staticParentNextFor(.class_wall, true, .wrappers, null, true, false));
+}
+
+test "the two measured shapes read only what they were measured on (#685)" {
+    try std.testing.expect(shimAnnouncedElsewhere(57, 41));
+    try std.testing.expect(!shimAnnouncedElsewhere(41, 41)); // a static image that exec'd a dynamic one
+    try std.testing.expect(!shimAnnouncedElsewhere(null, 41));
+    try std.testing.expect(!shimAnnouncedElsewhere(57, null));
+    const U = contract.unresolved_kind;
+    const op = struct {
+        fn of(aux: []const u8) engine.Op {
+            return .{ .class = .unresolved, .seq = 0, .pid = 57, .tid = 57, .path = "", .aux = aux };
+        }
+    }.of;
+    try std.testing.expect(traceClosedByTarget(op(U.trace_closed)));
+    try std.testing.expect(traceClosedByTarget(op("trace-closed-by-target fd:900")));
+    try std.testing.expect(!traceClosedByTarget(op("unlinked-fd write fd:3")));
+    try std.testing.expect(!traceClosedByTarget(op(U.link_by_descriptor)));
+    try std.testing.expect(!traceClosedByTarget(op("trace-closed-by-targetX")));
+    try std.testing.expect(!traceClosedByTarget(null));
+    // A rename whose target the target named after the kind is not the kind.
+    try std.testing.expect(!traceClosedByTarget(.{ .class = .rename, .seq = 1, .pid = 57, .tid = 57, .path = "/s/a", .aux = U.trace_closed }));
 }
 
 /// The `no_shim_marker` detail line, built from what was observed rather than from a

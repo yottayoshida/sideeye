@@ -1,0 +1,15 @@
+UNKNOWN  unresolvable_path
+         an operation was observed whose path could not be determined (trace-closed-by-target, pid 55, no name recorded for it), so it cannot be placed among the crash points
+next        The file the operation names was read before the run as a statically linked image, which no shim can be loaded into: the shim records this run read came from a process the operation started, or from an image it replaced itself with, and what the operation did in its own image went unrecorded. Run the same command with --observe supervised (explore and preflight take it), which counts those calls from outside the process, where no preloaded library has to reach them — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+cwd         /s/ros-in
+
+expected    exit 0
+atomicity   8 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   a process other than the subject operated on the judged directory; its operations have no crash-point address; the shim recorded 1 thread(s) created, and 0 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 1 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=e769501ac294e32b2a533a5cb9442117e674d8442eb18220320156b7843c58cc;

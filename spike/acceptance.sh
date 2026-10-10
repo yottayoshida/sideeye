@@ -4072,6 +4072,108 @@ else
     fi
 fi
 
+# ---- a static parent whose dynamic child carried the shim (#685, ADR 0108) ----
+# The default gate lets this shape through: the child's shim announces itself, and the static
+# parent's own calls are recorded by nobody. Three refusals were measured to come out of it, and
+# each now names the mode that counts the parent from outside, in a sentence that opens on the
+# reason — a phrase only that step carries ($sp685), so a run handing back plain
+# `observe_supervised` or `observe_syscalls` is red. Two kinds of neighbour keep the step they
+# had. A dynamic twin reaches the same refusal at the same site with the same step and has no
+# static image (toy-fixed differs in the image alone; toy-raw, which starts no child, in the pid
+# pair too): an engine that rewrote every step at these sites passes the static legs and fails
+# the twins. A static neighbour differs only in the shape each site reads — the same pid
+# announcing the shim, another kind of unplaceable record, the other arm — so a site that stopped
+# reading its shape (a reason-and-image rule at the exit would) is red there too.
+sp685="which no shim can be loaded into: the shim records this run read came from a process the operation started"
+st685() {   # st685 <label> <reason> <new|keep> <text the kept step carries> <toy> <flags...>
+    s685_label=$1; s685_reason=$2; s685_want=$3; s685_keep=$4; s685_toy=$5; shift 5
+    rm -rf /tmp/acc-685 && mkdir -p /tmp/acc-685/state
+    o=$("$SIDEEYE" explore --state /tmp/acc-685/state --setup "$s685_toy init" --operation "$s685_toy rotate" \
+        --shim "$SHIM" --work /tmp/acc-685/work "$@" --json /tmp/acc-685/r.json 2>&1)
+    rc=$?
+    s685_step=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("next_step") or "")' /tmp/acc-685/r.json 2>/dev/null)
+    if ! refused "$s685_reason" "$rc" "$o"; then
+        echo "FAIL #685 $s685_label: exit $rc, wanted $s685_reason"
+        echo "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    elif [ "$s685_want" = new ] && ! printf '%s\n' "$s685_step" | grep -qF "$sp685"; then
+        echo "FAIL #685 $s685_label: the step does not say the shim was not in the operation: $(printf '%s' "$s685_step" | cut -c1-100)"
+        fails=$((fails + 1))
+    elif [ "$s685_want" = keep ] && { printf '%s\n' "$s685_step" | grep -qF "$sp685" || ! printf '%s\n' "$s685_step" | grep -qF "$s685_keep"; }; then
+        echo "FAIL #685 $s685_label: the twin's step moved: $(printf '%s' "$s685_step" | cut -c1-100)"
+        fails=$((fails + 1))
+    else
+        echo "ok   #685 $s685_label"
+    fi
+}
+# oracle_missed_operation (aliyun-cli, lefthook): the parent posix_spawns a dynamic true, whose
+# shim is the first to announce itself; the parent's writes are what the oracle saw unrecorded.
+TOY_SPAWN=1 export TOY_SPAWN
+st685 "oracle_missed_operation under a static parent names --observe supervised" oracle_missed_operation new "" "$OUT/toy-static" --oracle /usr/bin/strace
+st685 "oracle_missed_operation under --observe syscalls, the same static parent, is sent on too" oracle_missed_operation new "" "$OUT/toy-static" --observe syscalls --oracle /usr/bin/strace
+unset TOY_SPAWN
+st685 "oracle_missed_operation's dynamic twin (toy-raw) keeps --observe syscalls" oracle_missed_operation keep "again with --observe syscalls" "$OUT/toy-raw" --oracle /usr/bin/strace
+# A static image that execs toy-raw in its own process (a gosu-like launcher): the shim announces
+# from the pid strace started, which is not the shape, so the step stays.
+TOY_EXEC_PATH=$OUT/toy-raw export TOY_EXEC_PATH
+st685 "oracle_missed_operation from a static image that exec'd a dynamic one in its own process keeps --observe syscalls" oracle_missed_operation keep "again with --observe syscalls" "$OUT/toy-static" --oracle /usr/bin/strace
+unset TOY_EXEC_PATH
+# The recording run's unresolvable_path (roswell): the dynamic child closes every descriptor,
+# the shim's trace among them, under a static parent. The twin is the same child run alone.
+TOY_SPAWN=1 TOY_SPAWN_PATH=$OUT/toy-fixed TOY_CLOSE_SWEEP=1023 export TOY_SPAWN TOY_SPAWN_PATH TOY_CLOSE_SWEEP
+st685 "unresolvable_path from a child that closed the shim's trace under a static parent names --observe supervised" unresolvable_path new "" "$OUT/toy-static" --allow-unverified
+unset TOY_SPAWN TOY_SPAWN_PATH
+st685 "unresolvable_path's dynamic twin, closing its own trace, keeps the class wall" unresolvable_path keep "refuses by design" "$OUT/toy-fixed" --allow-unverified
+unset TOY_CLOSE_SWEEP
+# The same static parent and child, the child writing through a descriptor whose file it
+# unlinked: an unplaceable record of another kind, which supervised refuses too.
+TOY_SPAWN=1 TOY_SPAWN_PATH=$OUT/toy-fixed TOY_WRITE_AFTER_UNLINK=1 export TOY_SPAWN TOY_SPAWN_PATH TOY_WRITE_AFTER_UNLINK
+st685 "unresolvable_path of another kind (unlinked-fd) under a static parent keeps the class wall" unresolvable_path keep "refuses by design" "$OUT/toy-static" --allow-unverified
+unset TOY_SPAWN TOY_SPAWN_PATH TOY_WRITE_AFTER_UNLINK
+# The site reads the kind alone: a static image that exec'd toy-fixed in its own process, which
+# then closed the trace, takes the step too (ADR 0108 — under supervised the trace is the engine's).
+TOY_EXEC_PATH=$OUT/toy-fixed TOY_CLOSE_SWEEP=1023 export TOY_EXEC_PATH TOY_CLOSE_SWEEP
+st685 "unresolvable_path from an image a static one exec'd into, which closed the trace, names --observe supervised" unresolvable_path new "" "$OUT/toy-static" --allow-unverified
+unset TOY_EXEC_PATH TOY_CLOSE_SWEEP
+# child_touched_state_dir on its shimmed-writer arm: the parent fork-execs a shell, which inherits
+# the preload and writes the state; the parent writes it too. Measured on this toy only.
+TOY_FORKEXEC=1 export TOY_FORKEXEC
+st685 "child_touched_state_dir from a static parent's shimmed shell names --observe supervised" child_touched_state_dir new "" "$OUT/toy-static" --oracle /usr/bin/strace
+unset TOY_FORKEXEC
+# The other arm under a static parent: a quiet shimmed child announces, and a shell spawned with
+# no environment writes the state with no shim in its image.
+TOY_SPAWN=1 TOY_SPAWN_WRITES=1 export TOY_SPAWN TOY_SPAWN_WRITES
+st685 "child_touched_state_dir's other arm under a static parent keeps its step" child_touched_state_dir keep "a shell script wrapping another command" "$OUT/toy-static" --oracle /usr/bin/strace
+unset TOY_SPAWN TOY_SPAWN_WRITES
+# The shimmed arm with the same pid announcing: the static image execs toy-fixed in its own
+# process, which spawns toy-raw — a child whose shim announces itself and whose writes go around
+# it. The pair of pids is the oracle's subject both times, so the step stays.
+TOY_EXEC_PATH=$OUT/toy-fixed TOY_SPAWN=1 TOY_SPAWN_PATH=$OUT/toy-raw export TOY_EXEC_PATH TOY_SPAWN TOY_SPAWN_PATH
+st685 "child_touched_state_dir's shimmed arm with the oracle's subject announcing keeps --observe syscalls" child_touched_state_dir keep "again with --observe syscalls" "$OUT/toy-static" --oracle /usr/bin/strace
+unset TOY_EXEC_PATH TOY_SPAWN TOY_SPAWN_PATH
+# Where the step points, the run goes: the three static parents under --observe supervised reach
+# the FAIL the planted bug makes. A precondition of the step rather than a measurement of this
+# change — the mode judged the plain static toy before it did (the leg above).
+if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
+    TOY_SPAWN=1 export TOY_SPAWN
+    sup_explore /tmp/acc-685s "$OUT/toy-static" --observe supervised; s685_r1=$?
+    TOY_SPAWN_PATH=$OUT/toy-fixed TOY_CLOSE_SWEEP=1023 export TOY_SPAWN_PATH TOY_CLOSE_SWEEP
+    sup_explore /tmp/acc-685s "$OUT/toy-static" --observe supervised; s685_r2=$?
+    unset TOY_SPAWN TOY_SPAWN_PATH TOY_CLOSE_SWEEP
+    TOY_FORKEXEC=1 export TOY_FORKEXEC
+    sup_explore /tmp/acc-685s "$OUT/toy-static" --observe supervised; s685_r3=$?
+    unset TOY_FORKEXEC
+    if [ "$s685_r1$s685_r2$s685_r3" = 111 ]; then
+        echo "ok   #685 the three static parents reach a FAIL under --observe supervised, where the step sends them"
+    else
+        echo "FAIL #685 the static parents under --observe supervised: exits $s685_r1 $s685_r2 $s685_r3 (wanted 1 1 1)"
+        sed 's/^/     | /' /tmp/acc-685s/out.txt | head -6
+        fails=$((fails + 1))
+    fi
+else
+    echo "     NOT MEASURED: #685's static parents under --observe supervised — SIDEEYE_EXPECT_CONTAINED is not 1"
+fi
+
 # ---- contract v14: the inherited filter's cost, pinned so it cannot drift silently ----
 # The mode's sharpest limit, and the only one here that changes what the TARGET does rather
 # than what Sideeye can see: a seccomp filter is inherited across exec and cannot be
