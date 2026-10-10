@@ -99,10 +99,23 @@ docker run --rm --privileged --cgroupns=private -v "$root":/ap:ro -v "$se_dir":/
 echo "== $name-vm"
 {
     echo "arch: $arch"; echo "image: $url"; echo "digest: $sum"
-    { sudo apt-get update -qq
+    # The runner's own packages. Run 38031881569's x86_64 rocky9 job stopped in this step for two
+    # hours with nothing in vm-apt.txt (-qq): the output is kept, every command has a limit, and
+    # one that fails or times out is tried once more, after dpkg finishes what a kill interrupted.
+    apt_runner() {
+        for try in 1 2; do
+            echo "== apt-get $1, try $try, $(date -u +%H:%M:%S)"
+            sudo env DEBIAN_FRONTEND=noninteractive timeout -k 30 900 apt-get -o DPkg::Lock::Timeout=600 \
+                -o Acquire::Retries=3 -o Acquire::http::Timeout=60 -o Acquire::https::Timeout=60 "$@" && return 0
+            echo "== apt-get $1 exit $?"
+            sudo env DEBIAN_FRONTEND=noninteractive timeout -k 30 600 dpkg --configure -a
+        done
+        return 1
+    }
+    { apt_runner update &&
       case $arch in
-      x86_64) sudo apt-get install -y -qq qemu-system-x86 qemu-utils cloud-image-utils mtools dosfstools ;;
-      aarch64) sudo apt-get install -y -qq qemu-system-arm qemu-efi-aarch64 qemu-utils cloud-image-utils mtools dosfstools ;;
+      x86_64) apt_runner install -y qemu-system-x86 qemu-utils cloud-image-utils mtools dosfstools ;;
+      aarch64) apt_runner install -y qemu-system-arm qemu-efi-aarch64 qemu-utils cloud-image-utils mtools dosfstools ;;
       esac; } > "$out/vm-apt.txt" 2>&1
     echo "packages: exit $?"
     if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
@@ -111,7 +124,15 @@ echo "== $name-vm"
 } > "$out/vm.txt"
 accel=$(sed -n 's/^accel: \([a-z]*\).*/\1/p' "$out/vm.txt")
 cpu=host; limit=1800; explore=600; [ "$accel" = tcg ] && { cpu=max; limit=5400; explore=1800; }
+# Ubuntu 20.04's arm64 image does not boot under TCG with -cpu max: run 38031881569 stopped after
+# GRUB's "no suitable video mode found." for the whole limit. The same QEMU (8.2.2) and firmware
+# (edk2 2024.02) in Docker's ubuntu:24.04 stop there with max, and with cortex-a72 reach
+# cloud-init and a login prompt in the same ten minutes (2026-10-10, the maintainer's machine).
+# The other images keep max, as they were run.
+[ "$accel:$arch:$name" = tcg:aarch64:ubuntu2004 ] && cpu=cortex-a72
+echo "cpu: $cpu" >> "$out/vm.txt"
 fail() { echo "vm: $* — an apparatus fault" | tee -a "$out/vm.txt"; exit 1; }
+grep -q '^packages: exit 0$' "$out/vm.txt" || fail "the runner's packages did not install (vm-apt.txt)"
 
 curl -fsSL -o "$t/base" "$url" || { echo "vm: could not fetch $url" | tee -a "$out/vm.txt"; exit 1; }
 algo=${sum%%:*}; want=${sum#*:}

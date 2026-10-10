@@ -37,12 +37,14 @@ change.
   ADR 0030 records it). **Nothing checks contiguity**, deliberately: renumbering 0028 to
   0029 leaves 0028 a gap until the other side lands, and that gap is the correct state
   during exactly the window the check matters.
-  What the check does **not** do is stop the merge that creates a collision. No status
-  check is required on this repository, so a branch cut from a `main` that already holds
-  your number goes red on your PR, but two branches taken from the same base can each
-  carry a unique number, both go green, and both merge — that case surfaces only on the
-  post-merge run. Closing it needs a required up-to-date check or a merge queue, which is
-  a repository setting and a separate call.
+  What the check does **not** do is stop every merge that creates a collision. It is a
+  required check on `main`, so a pull request whose run already sees your number on `main`
+  goes red and cannot merge; but `main`'s protection does not require a branch to be up to
+  date before it merges, so two branches taken from the same base can each carry a unique
+  number, both go green, and both merge — the second one's green run predates the first
+  one's merge — and that case surfaces only on the post-merge run. Closing it needs the
+  up-to-date requirement or a merge queue, which is a repository setting and a separate
+  call.
   If your number collides, renumber yours — **and do it before anything cites the path**.
   Several tracked documents hardcode `docs/adr/NNNN-slug.md`, and only `spike/acceptance.sh`
   sweeps any of them (four pages, for slashed backtick references). Bare `ADR NNNN` prose

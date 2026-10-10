@@ -1,0 +1,1 @@
+SETUP ERROR  apparatus env:XDG_DATA_HOME=/tmp/xdgtool-state/data: the environment the operation inherits has no XDG_DATA_HOME

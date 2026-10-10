@@ -1,0 +1,51 @@
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+no_crash_window --- FAILED
+
+failures:
+
+---- no_crash_window stdout ----
+
+thread 'no_crash_window' (110211706) panicked at tests/crash_consistency.rs:16:5:
+assertion `left == right` failed: FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 2
+            after  open(/private/tmp/keytool-rs-state/key.json)
+            before write(/private/tmp/keytool-rs-state/key.json)
+path        key.json
+observed    holding neither the old nor the new content
+cwd         $MACDIR/rs
+
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      NOT VERIFIED (--allow-unverified) — nothing checked what the shim reported
+metadata    not observable (no oracle ran; the shim does not interpose ownership/permission/timestamp calls)
+checker     none configured
+l1          no marker configured
+case        $TMPDIR/sideeye-36666-no_crash_window/work/cases/000001.json
+replay      sideeye replay $TMPDIR/sideeye-36666-no_crash_window/work/cases/000001.json --shim /opt/homebrew/Cellar/sideeye/1.10.0/lib/libsideeye_shim.dylib
+evidence    sideeye evidence $TMPDIR/sideeye-36666-no_crash_window/work/evidence/000001.json
+processes   not established: no boundary was recorded, but the shim sees only libc's own entry points (fork, vfork, posix_spawn, the exec family, pthread_create, setsid, setpgid) — a child created through a raw syscall would not appear here — and no second witness ran
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd $MACDIR/rs && unset SIDEEYE_KILL_GROUP && : > $TMPDIR/sideeye-36666-no_crash_window/work/trace-repro.bin && SIDEEYE_STATE_DIR=/private/tmp/keytool-rs-state SIDEEYE_STATE_DIR_ALT=/tmp/keytool-rs-state SIDEEYE_TRACE_PATH=$TMPDIR/sideeye-36666-no_crash_window/work/trace-repro.bin DYLD_INSERT_LIBRARIES=/opt/homebrew/Cellar/sideeye/1.10.0/lib/libsideeye_shim.dylib SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= $MACDIR/rs/./target/debug/keytool rotate </dev/null)
+sideeye: json sha256=9e3638441c6e470889c9ea8b608793663653469cd2390463a2157aad10022b3b;
+
+  left: Some(1)
+ right: Some(0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    no_crash_window
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+error: test failed, to rerun pass `--test crash_consistency`

@@ -1,0 +1,2 @@
+$ file bin/keytool
+bin/keytool: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=b13d159a19ff79e34dcab68095766e402b9088e0, with debug_info, not stripped

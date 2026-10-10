@@ -1,0 +1,40 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____________________________ test_no_crash_window _____________________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-579/test_no_crash_window0')
+
+    def test_no_crash_window(tmp_path):
+        sideeye = shutil.which("sideeye")
+        assert sideeye, "sideeye is not on PATH"
+        report = tmp_path / "report.json"
+        run = subprocess.run(
+            [sideeye, "explore", "--config", str(HERE / "sideeye.toml"),
+             "--allow-unverified",
+             "--work", str(tmp_path / "work"), "--json", str(report)],
+            capture_output=True, text=True,
+        )
+>       assert run.returncode == 0, run.stdout + run.stderr
+E       AssertionError: UNKNOWN  child_process_detected
+E                  the target replaced its own image and the chain of observation broke: no continuation record carrying the operation count followed, or the subject announced itself again without an exec record (an execl-family call, a static image, or a stripped environment cannot carry the count). An unbroken self-exec chain is judged; a separate process is not (#123). The operation's image was read before the run as a Mach-O; at this refusal, /opt/homebrew/bin/python3 resolves into the bin directory of a framework Python, whose interpreter is /opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python
+E         next        Make the interpreter the detail above names the operation's first word — followed by the #! line's options and the script, when the detail names them — and, when the detail names a __PYVENV_LAUNCHER__ value, set that variable to it in the environment Sideeye runs in (an apparatus entry env:__PYVENV_LAUNCHER__=<value> then stops a run without it as a SETUP ERROR; the variable reaches setup and the checker too): a framework Python's bin/python3 is a launcher that replaces itself with that interpreter where the shim cannot follow.
+E         cwd         $MACDIR/py
+E         
+E         expected    exit 0
+E         atomicity   1 path(s) judged pre-or-post
+E         l1          no marker configured
+E         case        (none)
+E         processes   the shim recorded an image replacement whose chain of observation broke; a thread the shim never recorded creating wrote the judged directory, so its count of threads is a floor and no witness is held against it (v16, #543)
+E         not tested  power loss, torn writes, concurrent processes
+E         
+E         Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+E         caller has to decide deliberately what to do with it.
+E         sideeye: json sha256=f78b3bbfa654558e320514418b19f055b9726943e7128a664f4281baa802c66d;
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/opt/homebrew/bin/sideeye', 'explore', '--config', '$MACDIR/py/s...t to do with it.\n", stderr='sideeye: json sha256=f78b3bbfa654558e320514418b19f055b9726943e7128a664f4281baa802c66d;\n').returncode
+
+test_crash_consistency.py:19: AssertionError
+=========================== short test summary info ============================
+FAILED test_crash_consistency.py::test_no_crash_window - AssertionError: UNKN...
+1 failed in 0.19s
