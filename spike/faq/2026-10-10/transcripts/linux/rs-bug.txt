@@ -1,0 +1,51 @@
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+no_crash_window --- FAILED
+
+failures:
+
+---- no_crash_window stdout ----
+
+thread 'no_crash_window' panicked at tests/crash_consistency.rs:16:5:
+assertion `left == right` failed: FAIL  1 of 4 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 3
+            after  open(/tmp/keytool-rs-state/key.json)
+            before write(/tmp/keytool-rs-state/key.json)
+path        key.json
+observed    holding neither the old nor the new content
+cwd         /tmp/rs
+
+explored    4 worlds (crash points 3 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 3 operations (116 syscall lines examined, 11 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /tmp/sideeye-336-no_crash_window/work/cases/000001.json
+replay      sideeye replay /tmp/sideeye-336-no_crash_window/work/cases/000001.json --shim /opt/sideeye/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so
+evidence    sideeye evidence /tmp/sideeye-336-no_crash_window/work/evidence/000001.json
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /tmp/rs && unset SIDEEYE_KILL_GROUP && : > /tmp/sideeye-336-no_crash_window/work/trace-repro.bin && SIDEEYE_STATE_DIR=/tmp/keytool-rs-state SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/tmp/sideeye-336-no_crash_window/work/trace-repro.bin LD_PRELOAD=/opt/sideeye/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= /tmp/rs/./target/debug/keytool rotate </dev/null)
+sideeye: json sha256=ba95b5e231118efc8748339af7274c9a1c4364000660daf2985a449f99422b3c;
+
+  left: Some(1)
+ right: Some(0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    no_crash_window
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+error: test failed, to rerun pass `--test crash_consistency`

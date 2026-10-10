@@ -1,0 +1,9 @@
+[world]
+state = "/tmp/xdgtool-state"
+
+[define]
+cwd       = "."
+setup     = "python3 xdgtool.py init"
+operation = "python3 xdgtool.py bump"
+check     = "./check.sh"
+apparatus = ["env:XDG_CONFIG_HOME=/tmp/xdgtool-state/config", "env:XDG_DATA_HOME=/tmp/xdgtool-state/data"]

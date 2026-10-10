@@ -1,0 +1,5 @@
+HOME after the run that forgot XDG_DATA_HOME:
+/tmp/home2/.local
+/tmp/home2/.local/share
+/tmp/home2/.local/share/xdgtool
+/tmp/home2/.local/share/xdgtool/db.json

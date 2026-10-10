@@ -1,0 +1,5 @@
+--- FAIL: TestNoCrashWindow (0.00s)
+    keytool_test.go:14: sideeye is not on PATH
+FAIL
+FAIL	example.com/keytool	0.001s
+FAIL
