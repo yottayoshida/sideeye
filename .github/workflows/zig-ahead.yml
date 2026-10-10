@@ -1,0 +1,80 @@
+name: zig-ahead
+
+# #698, ADR 0111: notice a Zig release that will not build Sideeye before someone meets it.
+#
+# Zig 0.17.0 shipped on 2026-10-01 and nothing here noticed; Homebrew's `zig` moved to it, and
+# a source build with it stops in build.zig (#782). This workflow builds Sideeye weekly with
+# three Zigs on both release OSes — the one build.zig.zon pins (the comparison: if it is red,
+# the workflow or the runner broke, not Zig), the latest release, and master — and judges each
+# lane with spike/zig-ahead.sh against spike/zig-ahead-known.tsv. A lane is red only on what
+# the list does not already say: a new release that does not build, a diagnostic no row
+# explains, or a row that has gone stale.
+#
+# Never on pull requests and never required: it cannot stop a merge. Its red is the notice —
+# GitHub mails a failed scheduled run to whoever last edited the cron line (GitHub's documented
+# behaviour, not measured here) — and GitHub disables a public repository's schedule after 60
+# days without activity. The judge's own selftest runs on every pull request in ci.yml.
+
+on:
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        lane: [pinned, latest, master]
+        include:
+          # An empty version makes setup-zig read `minimum_zig_version` from build.zig.zon.
+          - lane: pinned
+            zig: ''
+          - lane: latest
+            zig: latest
+          - lane: master
+            zig: master
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      # No cache: a source builder starts from an empty one, and a cache filled by another
+      # Zig version is no use to this one.
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+        with:
+          version: ${{ matrix.zig }}
+          use-cache: false
+
+      # `zig build` alone analyses neither the test blocks nor, on Linux, the macOS branches;
+      # hence the test step and the macOS lanes. The tests run only once the build has passed,
+      # and the judge reads one log holding both.
+      - name: Build and test with this lane's Zig, and judge the result against the known breakages
+        shell: bash
+        run: |
+          set +e
+          zv=$(zig version)
+          zig build > build.log 2>&1
+          status=$?
+          if [ "$status" -eq 0 ]; then
+            zig build test --summary all >> build.log 2>&1
+            status=$?
+          fi
+          case "$RUNNER_OS" in
+            macOS) os=macos ;;
+            Linux) os=linux ;;
+            *) os=unknown ;;
+          esac
+          sh spike/zig-ahead.sh judge spike/zig-ahead-known.tsv "$os" "${{ matrix.lane }}" "$zv" "$status" build.log > verdict.txt 2>&1
+          verdict=$?
+          cat verdict.txt
+          {
+            echo '```'
+            cat verdict.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$verdict"
