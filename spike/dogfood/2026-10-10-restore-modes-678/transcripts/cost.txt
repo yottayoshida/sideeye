@@ -1,0 +1,8 @@
+before engine sha256: c02a691f93893ffdaab7530583ff6bafd7ead27a8f3e3f8ac5994d3cafb6a8a3
+after engine sha256: 4d217ddddc748ebf3588420e3894a775ab744bfd72884c5479f992e25fe94185
+before rc=0 PASS  5/5 explored worlds satisfied the built-in seconds=0.49
+after rc=0 PASS  5/5 explored worlds satisfied the built-in seconds=0.46
+before rc=0 PASS  5/5 explored worlds satisfied the built-in seconds=0.46
+after rc=0 PASS  5/5 explored worlds satisfied the built-in seconds=0.54
+before rc=0 PASS  5/5 explored worlds satisfied the built-in seconds=0.45
+after rc=0 PASS  5/5 explored worlds satisfied the built-in seconds=0.46
