@@ -1,0 +1,7 @@
+[world]
+state = "/tmp/keytool-py-state"
+
+[define]
+cwd       = "."
+setup     = "python3 keytool.py init"
+operation = "python3 keytool.py rotate"

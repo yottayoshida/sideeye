@@ -1,0 +1,25 @@
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 2
+            after  open(/tmp/xdgtool-state/home/.local/share/xdgtool/db.json)
+            before write(/tmp/xdgtool-state/home/.local/share/xdgtool/db.json)
+path        home/.local/share/xdgtool/db.json
+observed    holding neither the old nor the new content
+cwd         /tmp/xdg
+apparatus   env:HOME=/tmp/xdgtool-state/home
+
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   8 path(s) judged pre-or-post
+oracle      agreed on 2 operations (624 syscall lines examined, 23 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /tmp/w5/cases/000001.json
+replay      sideeye replay /tmp/w5/cases/000001.json --shim /opt/sideeye/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so
+evidence    sideeye evidence /tmp/w5/evidence/000001.json
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /tmp/xdg && unset SIDEEYE_KILL_GROUP && : > /tmp/w5/trace-repro.bin && SIDEEYE_STATE_DIR=/tmp/xdgtool-state SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/tmp/w5/trace-repro.bin LD_PRELOAD=/opt/sideeye/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'python3' xdgtool.py bump </dev/null)

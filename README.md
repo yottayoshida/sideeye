@@ -91,7 +91,7 @@ No language model decides a verdict; a PASS is a search record naming what was *
 
 ## Documentation
 
-[docs/cli.md](docs/cli.md) · [docs/mcp.md](docs/mcp.md) · [DESIGN.md](DESIGN.md) · [docs/report-schema.md](docs/report-schema.md) · [docs/target-classes.md](docs/target-classes.md) · [CHANGELOG.md](CHANGELOG.md) · [docs/](docs/)
+[docs/faq.md](docs/faq.md) · [docs/cli.md](docs/cli.md) · [docs/mcp.md](docs/mcp.md) · [DESIGN.md](DESIGN.md) · [docs/report-schema.md](docs/report-schema.md) · [docs/target-classes.md](docs/target-classes.md) · [CHANGELOG.md](CHANGELOG.md) · [docs/](docs/)
 
 ## License
 

@@ -1,0 +1,14 @@
+UNKNOWN  child_process_detected
+         the target replaced its own image and the chain of observation broke: no continuation record carrying the operation count followed, or the subject announced itself again without an exec record (an execl-family call, a static image, or a stripped environment cannot carry the count). An unbroken self-exec chain is judged; a separate process is not (#123). The operation's image was read before the run as a Mach-O; at this refusal, /opt/homebrew/bin/python3 resolves into the bin directory of a framework Python, whose interpreter is /opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python
+next        Make the interpreter the detail above names the operation's first word — followed by the #! line's options and the script, when the detail names them — and, when the detail names a __PYVENV_LAUNCHER__ value, set that variable to it in the environment Sideeye runs in (an apparatus entry env:__PYVENV_LAUNCHER__=<value> then stops a run without it as a SETUP ERROR; the variable reaches setup and the checker too): a framework Python's bin/python3 is a launcher that replaces itself with that interpreter where the shim cannot follow.
+cwd         $MACDIR/py
+
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   the shim recorded an image replacement whose chain of observation broke; a thread the shim never recorded creating wrote the judged directory, so its count of threads is a floor and no witness is held against it (v16, #543)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

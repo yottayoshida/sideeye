@@ -1,0 +1,4 @@
+$ sideeye explore --config sideeye.toml --oracle-fs-usage   # no cached sudo credentials
+sudo: a password is required
+SETUP ERROR  fs_usage needs root and sudo has no cached credentials; run `sudo -v` in this terminal first, then re-run. The credential cache is per-terminal, so a `sudo -v` elsewhere does not reach this process
+rc=3
