@@ -32,7 +32,7 @@ new runs and that record stands as it was read.
   timed out twice in the same mode. A stop under TCG is never a result.
 - **A leg added after the first dispatch** (added 2026-10-10, after run 38031881569 and before the
   dispatch it governs): `wsl1-shim`, which follows WSL1's refusal "pass --shim" once, is measured
-  in a later `jobs: wsl` dispatch — the one exception to re-dispatching only an apparatus fault's
+  in a later `jobs: wsl` dispatch — the first exception to re-dispatching only an apparatus fault's
   side. In the record, only `wsl1-x86_64/wsl1-shim/` is added beside what run 38031881569 counted;
   everything else that dispatch writes goes under `spike/platforms/2026-10-10b/runs/<run id>/` and
   is listed and read for what it says about the dispatch (whether WSL1 started, whether it refused
@@ -88,6 +88,39 @@ new runs and that record stands as it was read.
   `spike/platforms/2026-10-10b/runs/<run id>/`. A `jobs: linux` dispatch at an earlier commit,
   made after #789 (another session's, to see the same legs), is listed and not counted. The cell
   names both forms.
+- **Four more, after the review of the table's draft** (added 2026-10-10, after run 38043722536
+  and before the dispatch it governs — one `jobs: wsl+container+build` at a commit carrying this
+  item, the three sides at once; everything else that dispatch writes goes under
+  `spike/platforms/2026-10-10b/runs/<run id>/`, listed, not counted). That dispatch has no `linux`
+  job, so the legs it counts are read against run 38031881569's `host` leg of the same CPU, as
+  `wsl1-shim` was (`measure.sh`, `define/` and `install-sideeye.sh` are the same at both commits):
+  - **WSL as imported, and WSL2 without systemd.** Ubuntu's WSL image starts systemd itself: run
+    38031881569's `wsl2-user` leg, measured before the workflow turned systemd on, is in a logind
+    session scope, and the `cgroup: /non-systemd` line that 2026-10-10's record read as "without
+    systemd" is the same in the legs where PID 1 is systemd. The import now records
+    `/etc/wsl.conf` and PID 1 as imported. After the systemd legs, `systemd=false` is written,
+    the distribution restarted and PID 1 read; if it is WSL's own `init`, `wsl2-nosystemd-root`
+    and `wsl2-nosystemd-user` (with the systemd leg's sudo rule removed) are measured and
+    counted, and otherwise they are recorded as not reached. The legs measured before keep their
+    results, read as run with the image's own boot setting, which this dispatch's import names —
+    provided its rootfs digest is the same and its `wsl --update` installs 3.0.1, as before;
+    otherwise their boot setting is recorded as not known.
+  - **WSL2 on Windows on ARM, with WSL installed.** `windows-11-arm` has WSL's Windows features
+    and not WSL (run 38031881569's `wsl.txt`: all three features `Enabled`). When `wsl --status`
+    fails, the WSL 3.0.1 package — the version x86_64's `wsl --update` installs, its digest
+    pinned — is installed with `msiexec`, and the leg proceeds as before. It counts if WSL2 starts
+    by `RUNS-RULE.md`'s rule. A failed download or digest is an apparatus fault, and so is
+    `msiexec` exiting other than 0 or 3010 (installed, a restart wanted). If it exits 0 or 3010
+    and WSL2 does not start, the row is unmeasured for the runner, citing this run and
+    `wsl-msiexec.log`.
+  - **GitHub Actions' `container:` on aarch64.** The `container` job runs on both CPUs; the
+    aarch64 leg counts, and the x86_64 leg keeps run 38031881569's result.
+  - **Debian 13's release architectures.** `build.sh` adds armel (`arm-linux-gnueabi`), ppc64le
+    and s390x to the cross builds, which count; the three built before keep their first results.
+    With riscv64 and armhf, these are Debian 13's release architectures the release has no asset
+    for (i386, built before, is not one). Each is built for Zig's default CPU for its target —
+    v7a for both 32-bit ARM targets, pentium4 for i386 — not Debian's baseline; a cell that says
+    one builds says that too.
 - **x86_64 WSL2's base leg was decided on 2026-10-10** and is not measured again. If WSL2 does not
   start in a run of this series, the legs that needed it are recorded as "the runner's WSL2 did
   not start in run N" with the `wsl.txt` lines.
