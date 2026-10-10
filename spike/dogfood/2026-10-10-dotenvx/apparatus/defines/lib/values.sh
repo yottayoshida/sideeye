@@ -25,9 +25,9 @@ no_private_key_staged() { # nothing `git add -A` would take holds a DOTENV_PRIVA
   return 0
 }
 recoverable() { # <file> <KEY> <value>: the value reads back through dotenvx as it stands, or some private
-  # key held anywhere in the state (.env.keys, the stand-in keyring, the stand-in 1Password) decrypts it
+  # key held anywhere in the state (.env.keys, the stand-in keyring, the stand-in 1Password or Bitwarden) decrypts it
   got=$(dotenvx get "$2" -f "$1" 2>/tmp/dx.err) && [ "$got" = "$3" ] && return 0
-  for k in $(cat "$SIDEEYE_STATE_DIR"/.env.keys "$SIDEEYE_STATE_DIR"/keyring.json "$SIDEEYE_STATE_DIR"/op.json 2>/dev/null | grep -o '[0-9a-f]\{64\}'); do
+  for k in $(cat "$SIDEEYE_STATE_DIR"/.env.keys "$SIDEEYE_STATE_DIR"/keyring.json "$SIDEEYE_STATE_DIR"/op.json "$SIDEEYE_STATE_DIR"/bw.json 2>/dev/null | grep -o '[0-9a-f]\{64\}'); do
     [ "$(DOTENV_PRIVATE_KEY=$k dotenvx get "$2" -f "$1" 2>/dev/null)" = "$3" ] && return 0
   done
   echo "$1 $2: no key anywhere in the state decrypts it; dotenvx get reads '$(printf %s "$got" | cut -c1-30)' $(head -1 /tmp/dx.err | cut -c1-80)"; bad=1

@@ -1,0 +1,12 @@
+# dotenvx readers: the order get and run open .env and .env.keys (2.34.2)
+## dotenvx get DB_PASSWORD -f .env:
+statx(AT_FDCWD, ".env", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID
+openat(AT_FDCWD, "/s/o/.env", O_RDONLY|O_CLOEXEC) = 17
+openat(AT_FDCWD, "/s/o/.env", O_RDONLY|O_CLOEXEC) = 17
+openat(AT_FDCWD, "/s/o/.env.keys", O_RDONLY|O_CLOEXEC) = 17
+## dotenvx run -q -f .env -- true:
+statx(AT_FDCWD, ".env", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID
+statx(AT_FDCWD, ".env", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID
+openat(AT_FDCWD, "/s/o/.env", O_RDONLY|O_CLOEXEC) = 17
+openat(AT_FDCWD, "/s/o/.env", O_RDONLY|O_CLOEXEC) = 17
+openat(AT_FDCWD, "/s/o/.env.keys", O_RDONLY|O_CLOEXEC) = 17

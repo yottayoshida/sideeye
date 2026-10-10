@@ -1,0 +1,10 @@
+# D3 measured, Bitwarden: bitwarden up stores the key in Bitwarden (a stand-in bw), reads it back, records where, then removes it from .env.keys
+[world]
+state = "/s/kc"
+
+[define]
+operation = "dotenvx bitwarden up -f /s/kc/.env"
+cwd       = "/s/kc"
+check     = "/ap/defines/bitwarden-up/check.sh"
+# New key pairs, ciphertext and stand-in stores in every run; the checker finds the key wherever it is.
+scratch   = [".env", ".env.keys", "keyring.json", "keyring.json.tmp", "op.json", "op.json.tmp", "bw.json", "bw.json.tmp", "config"]
