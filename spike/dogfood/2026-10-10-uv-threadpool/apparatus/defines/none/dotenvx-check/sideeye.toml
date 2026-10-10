@@ -1,0 +1,9 @@
+[world]
+state = "/s/dotenvx"
+
+[define]
+operation = "dotenvx encrypt -f /s/dotenvx/.env"
+cwd       = "/s/dotenvx"
+# A new key pair and fresh ciphertext in every run (transcripts/twice.txt); the checker reads the values back.
+check     = "/ap/defines/none/dotenvx-check/check.sh"
+scratch   = [".env", ".env.keys"]

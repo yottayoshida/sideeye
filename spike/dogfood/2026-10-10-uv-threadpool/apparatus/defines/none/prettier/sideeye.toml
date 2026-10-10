@@ -1,0 +1,6 @@
+[world]
+state = "/s/prettier/state"
+
+[define]
+operation = "prettier --write /s/prettier/state/a.js"
+cwd       = "/s/prettier/state"

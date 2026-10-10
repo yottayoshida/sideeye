@@ -22,7 +22,7 @@ today's build, since the records hold the sentence of the build that ran them:
 
 | Reason (count) | Site, today | Step before | Step after |
 |---|---|---|---|
-| `multiple_threads_detected` (37) | recording, world, second run | `class_wall` | `threads_limit`; under `--observe supervised`, `class_wall` |
+| `multiple_threads_detected` (37) | recording, world, second run | `class_wall` | `threads_limit`; under `--observe supervised`, `class_wall` (*`threads_supervised` since ADR 0113*) |
 | `unsupported_syscall_observed` (10) | xattr reads and `inotify_add_watch` (read as reads since #684), a shared mapping (#689), `setxattr` (refused on purpose, unruled) | `class_wall` | unchanged — exception |
 | `baseline_violates_invariant` (6, all the byte layer) | baseline world | `class_wall` | `scratch_or_twice` |
 | `oracle_missed_operation` (5) | recording: 4 in the default mode on Linux; 1 under `--observe syscalls` (lefthook, a static parent whose dynamic child announced the shim) | `observe_syscalls`; `class_wall` | the first unchanged — already names a flag; the second an exception, #685's |
@@ -70,6 +70,8 @@ timestamps, and nothing outside it):
   the operation does not repeat itself.
 - `threads_limit` — names the README's threads limit. No flag: the targets the records met here
   (node, Go, Python) have none that runs them on one thread.
+  **Amended 2026-10-10 by ADR 0113:** the premise was wrong — `UV_THREADPOOL_SIZE=1` and
+  `GOMAXPROCS=1` move most Node and several Go targets past this wall — so the step names them.
 - `non_system_build` — a Mach-O whose code directory names a platform: a build of the tool that is
   not part of macOS. Library validation and the hardened runtime on a third-party image were not
   measured and keep `class_wall`.
@@ -79,7 +81,8 @@ Precedence is unchanged: under `--observe syscalls` the recording run keeps
 toml's directory takes `declare_cwd` over the recording run's two new steps, as it did over
 `fix_define` (`refuse.cwdStep`).
 
-**Four exceptions, named rather than left to look covered**, where this build's step names no way
+**Four exceptions, named rather than left to look covered** (*three since ADR 0113, 2026-10-10: the
+supervised threads refusal now names a tool's switch for one thread*), where this build's step names no way
 past and no README line names the limit: `unresolvable_path`, `unsupported_syscall_observed`,
 `multiple_threads_detected` under `--observe supervised`, and `oracle_missed_operation` under
 `--observe syscalls`. Two of them hold a shape with a way past this build does not yet choose: a

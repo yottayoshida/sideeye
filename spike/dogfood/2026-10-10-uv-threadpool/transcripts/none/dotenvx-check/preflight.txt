@@ -1,0 +1,16 @@
+⚠ OS secret store unavailable; saving private key to .env.keys
+◈ encrypted (/s/dotenvx/.env)
+UNKNOWN  multiple_threads_detected
+         two threads of process 20 wrote in the judged directory: tid 29 performed open(/s/dotenvx/.env.keys) and tid 27 performed write(/s/dotenvx/.env.keys). No thread creation or join the shim recorded orders the first of those before the second, so their order is the scheduler's choice on this run, the sequence they were numbered in is the one it happened to produce, and a crash point would not name the same operation on the next. A process whose threads' writes are all ordered by the creations and joins the shim recorded is judged, however many threads it created (v18)
+next        Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit the README states under 'What the target has to be': threads are judged where a creation or a join the shim saw orders their writes.
+cwd         /s/dotenvx
+
+expected    exit 0
+atomicity   0 path(s) judged pre-or-post; 2 path(s) matched by scratch, not judged (declared: .env, .env.keys)
+l1          no marker configured
+case        (none)
+processes   the shim recorded a process boundary; the strace account was not read, so nothing accounts for what the other process did; the shim recorded 10 thread(s) created, and 3 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 9 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse); the subject's image replaced 1 time(s), chain unbroken (#123)
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
