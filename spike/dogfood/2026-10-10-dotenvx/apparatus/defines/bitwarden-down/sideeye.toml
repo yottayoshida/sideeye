@@ -1,0 +1,10 @@
+# D3 measured, Bitwarden: bitwarden down writes the key to .env.keys, reads it back, then deletes the Bitwarden item and its record
+[world]
+state = "/s/kc"
+
+[define]
+operation = "dotenvx bitwarden down -f /s/kc/.env"
+cwd       = "/s/kc"
+check     = "/ap/defines/bitwarden-down/check.sh"
+# New key pairs, ciphertext and stand-in stores in every run; the checker finds the key wherever it is.
+scratch   = [".env", ".env.keys", "keyring.json", "keyring.json.tmp", "op.json", "op.json.tmp", "bw.json", "bw.json.tmp", "config"]

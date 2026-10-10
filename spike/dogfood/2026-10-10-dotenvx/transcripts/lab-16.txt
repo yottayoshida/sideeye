@@ -1,0 +1,7 @@
+# dotenvx readers: get and run while encrypt, set or decrypt writes (SELECTION.md E3)
+## 2.32.4 encrypt: 1 torn of 686 reads over 15 rounds — first: round 4:       1 get 1 ;
+## 2.32.4 set: 0 torn of 696 reads over 15 rounds
+## 2.32.4 decrypt: 0 torn of 674 reads over 15 rounds
+## 2.34.2 encrypt: 0 torn of 750 reads over 15 rounds
+## 2.34.2 set: 0 torn of 608 reads over 15 rounds
+## 2.34.2 decrypt: 0 torn of 628 reads over 15 rounds

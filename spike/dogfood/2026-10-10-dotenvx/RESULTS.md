@@ -103,17 +103,19 @@ is. `decrypt` killed at its rename leaves `.env.<number>` in plaintext, staged t
 |---|---|---|
 | E1 | two `set` at once on one `.env` (`apparatus/lab-8.sh`) | one value lost, 20/20 rounds, both versions; one after the other, both kept |
 | E2 | two first `encrypt`s of `apps/a/.env` and `apps/b/.env` at once, one `-fk .env.keys` | **one file undecryptable**, 20/20, both versions: its plaintext replaced by ciphertext under a key the other run's write dropped |
-| E3 | the same with a third file already encrypted under the shared file | one of the two new files undecryptable, 20/20 |
+| E2b | the same with a third file already encrypted under the shared file (`lab-8.sh` printed this as E3; SELECTION.md's E3 is the reader row below) | one of the two new files undecryptable, 20/20 |
+| E3 | readers during a write: four loops of `get` and `run -- printenv` while one `encrypt`, `set` or `decrypt` runs, 15 rounds each (`lab-16.sh`) | 2.34.2: **0 torn of 1,986 reads**. 2.32.4: 1 of 2,056 (`encrypt`: a reader met the emptied `.env`). And the order leaves no window: readers open `.env` and then `.env.keys` (`lab-18.txt`), `encrypt` writes `.env.keys` first |
 | — | where the key goes when an OS secret store is present (`lab-15.sh`, the stand-in `secret-tool`) | into the store, even with `-fk`; `.env.keys` only with `--no-native` or `DOTENVX_NO_NATIVE`. E2 and E3 need keys kept in the file |
 | F1 | 27 value shapes through `encrypt`, `decrypt` and `set` (`lab-9.py`), then a `$` in a password (`lab-10.sh`) | **`decrypt` drops the backslash of `\$`**: `PW=pa\$sword` reads `pa$sword` before and after `encrypt`, and `pa` after `decrypt`, encrypting again keeping `pa`; double quotes the same, single quotes not. Both versions. `set KEY '$HOME'` expanding on read is the documented behaviour (dotenvx/dotenvx#562) and not counted |
 | G1 | modes, owners, symlinks, hard links, and the commands the first pass did not run (`lab-11.sh`, `lab-12.sh`) | `genexample`, `precommit --install`, `set --plain`, `encrypt -k`, an Envfile and `-fk` elsewhere behave the same on both versions. 2.34.2 keeps `.env`'s mode and owner and sets `.env.keys` to 0600 (2.32.4 left a chmod in place). Two changes from the fix: a hard link to `.env` is broken (the twin keeps the plaintext), and a `.env.keys` symlink whose target does not exist yet is replaced by a regular file in the project (an existing target is written through, as before) |
 | H1 | 2.34.2's `encrypt`, `set` and `decrypt` with every write, fsync or rename failing ENOSPC, EACCES or EIO (`lab-11.sh`) | 27/27 hold the old values and leave no temporary file |
-| I1 | `native up` / `down`, `encrypt` with a secret store, `1password up` / `down`, against stand-ins (`fake/`) that save through a rename | **PASS** 5/5 with Sideeye, 6 to 21 explored worlds; the checker finds the key in `.env.keys`, the stand-in keyring or the stand-in 1Password, and refuses a state with all three emptied (`lab-13.sh`) |
+| I1 | `native up` / `down`, `encrypt` with a secret store, `1password up` / `down`, `bitwarden up` / `down`, against stand-ins (`fake/`) that save through a rename | **PASS** 7/7 with Sideeye, 6 to 21 explored worlds; the checker finds the key in `.env.keys`, the stand-in keyring, 1Password or Bitwarden, and refuses a state with all of them emptied (`lab-13.txt`, `lab-13-bitwarden.txt`) |
 
-Dropped, with the reason: **Bitwarden** — the order on dotenvx's side is the same `custodyTransfer` as
-1Password's, its provider creates, reads back and records in the same order, and a stand-in would
-have to play `bw`'s unlock and session exchange. **armor** — the service is dotenvx's. Power loss and
-macOS are outside this box.
+Not measured, with the reason: **armor** — the service is dotenvx's. **Power loss** — Sideeye does not
+model it. **macOS** — `encrypt` there keeps keys in the real Keychain, which this project does not
+touch, and the measurement would install dotenvx on the owner's machine; the paths it would run are the
+same JavaScript, and the two findings that depend on where keys go are scoped by `lab-15.sh` instead.
+(Bitwarden was first dropped here as too costly to stand in for; the recount below measured it.)
 
 E1 to E3 and F1 are not Sideeye verdicts: Sideeye's reports list concurrent processes under `not tested`,
 and F1 involves no crash. Their records are plain scripts, and the reports say so.
@@ -133,3 +135,14 @@ ruling: issues may be grouped, but by the fix).
 Not filed: C1b (a SIGKILL in the fsync window, a name-only ignore and an unread `git add -A`, all three
 needed), the two G1 changes, and a comment on #1012, which is closed (its one line of news is the last
 paragraph of #1018).
+
+## The recount (the owner asked whether it was done)
+
+Counted again against SELECTION.md, four rows were short; each is measured now.
+
+| row | what was short | result |
+|---|---|---|
+| E3 | `lab-8.sh` measured a different case under E3's name (now E2b) | readers during a write: 0 torn of 1,986 reads on 2.34.2, and no window by order (the E3 row above) |
+| I1 | Bitwarden dropped as too costly | a stand-in `bw` (`fake/bitwarden/bw`, always unlocked, so no prompt): **PASS** 14/14 (`up`) and 21/21 (`down`) |
+| B4 | the interactive path measured by calling its function | through the prompt itself (`lab-17.sh`: `script` for a terminal, `stty` for a size, keystrokes down, space, down, enter): unticking "Protect private keys" takes `.env.keys*` out of the global ignore file and keeps the user's lines; with that file's writes failing ENOSPC, `protect` exits 1 and the file is **0 bytes**. The first try left the pty at 0 rows and drew no choices; recorded in the script |
+| — | the three reports' trackers | no reply, label or referencing commit on dotenvx/dotenvx#1016, #1017, #1018 as of 2026-10-10T00:05Z |
