@@ -122,9 +122,11 @@ pub const Args = struct {
     /// no budget anywhere: the flag is opt-in, and turning it on is the operator's
     /// explicit choice, never a shipped default that could move a verdict.
     world_timeout_s: ?u32 = null,
-    /// Replay only (#266): the directory the case's state must resolve strictly
-    /// inside. The MCP server passes its destruction range here; the case path being
-    /// vetted says nothing about where the case's OWN define points the deletion.
+    /// The directory the state must resolve strictly inside: replay (#266), preflight
+    /// `--twice` (#717) and explore (#765) — the three commands that empty and rebuild a
+    /// state directory a case or config names. The MCP server passes its destruction range
+    /// here; the case or config path being vetted says nothing about where its OWN define
+    /// points the deletion.
     state_under: ?[]const u8 = null,
     json: ?[]const u8 = null,
     config: ?[]const u8 = null,
@@ -164,8 +166,8 @@ const usage_fmt =
     \\  sideeye demo [--shim <lib>]
     \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice [--state-under <dir>]]
     \\  sideeye preflight --config <sideeye.toml> [--shim <lib>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice [--state-under <dir>]]
-    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--recovery <cmd> --recovery-check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
-    \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--recovery <cmd> --recovery-check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--state-under <dir>]
+    \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--state-under <dir>]
     \\  sideeye replay <case.json> [--shim <lib>] [--recovery <cmd> --recovery-check <cmd>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye evidence <case.json>
     \\  sideeye mcp
@@ -282,9 +284,10 @@ const usage_fmt =
     \\               every replay: it lives for the whole client session, and the
     \\               second replay used to die in the leftovers of the first
     \\  --state-under
-    \\               (replay, preflight --twice) refuse before setup a state directory
-    \\               not strictly inside this one: both rebuild the state a case or
-    \\               config names. The MCP server passes SIDEEYE_MCP_STATE_ROOT here
+    \\               (explore, replay, preflight --twice) refuse before setup a state
+    \\               directory not strictly inside this one: each rebuilds the state a
+    \\               case or config names. The MCP server passes
+    \\               SIDEEYE_MCP_STATE_ROOT here
     \\  --observe wrappers|syscalls|supervised
     \\               where operations are counted. Default `wrappers`: the
     \\               interposed libc entry points, with buffered stdio observed at
@@ -484,7 +487,7 @@ const max_names = 64;
 /// asked before its arity guard so that an unknown one is named rather than taken for a
 /// known one missing its value. Every command's, not the running one's — `spike/
 /// acceptance.sh` measures arity by putting each parser flag last under `explore`, and a
-/// flag explore refuses by name (`--state-under`, `--twice`) has to reach that refusal.
+/// flag explore refuses by name (`--twice`) has to reach that refusal.
 pub fn isKnownFlag(flag: []const u8) bool {
     var buf: [max_names][]const u8 = undefined;
     for (synopsisFlags(null, &buf)) |f| if (std.mem.eql(u8, f, flag)) return true;
@@ -1458,7 +1461,7 @@ test "a flag's summary is a whole sentence, or the whole description when it has
 test "a flag is known by its whole word, whichever command takes it (#705)" {
     try std.testing.expect(isKnownFlag("--oracle"));
     try std.testing.expect(isKnownFlag("--oracle-fs-usage"));
-    try std.testing.expect(isKnownFlag("--state-under")); // replay's; explore refuses it by name
+    try std.testing.expect(isKnownFlag("--state-under")); // replay's, explore's and preflight's
     try std.testing.expect(isKnownFlag("--twice")); // preflight's
     try std.testing.expect(!isKnownFlag("--orac"));
     try std.testing.expect(!isKnownFlag("--help"));
@@ -1477,11 +1480,11 @@ test "the nearest spelling is the command's own, and two equally near answer not
     try std.testing.expectEqualStrings("--state", nearestFlagOf("explore", "--stat").?);
     try std.testing.expectEqualStrings("--shim", nearestFlagOf("demo", "--sim").?);
     try std.testing.expectEqualStrings("--observe", nearestFlagOf("explore", "--obs").?);
-    // Near a flag only another command takes: explore refuses `--twice` and `--state-under`,
-    // preflight refuses `--world-timeout`, so none of them is offered. Preflight takes `--json`
-    // since #717, and is offered it.
+    // Near a flag only another command takes: explore refuses `--twice`, preflight refuses
+    // `--world-timeout`, so neither is offered. Preflight takes `--json` since #717, and explore
+    // `--state-under` since #765, and each is offered its own.
     try std.testing.expect(nearestFlagOf("explore", "--twic") == null);
-    try std.testing.expect(nearestFlagOf("explore", "--state-undr") == null);
+    try std.testing.expectEqualStrings("--state-under", nearestFlagOf("explore", "--state-undr").?);
     try std.testing.expect(nearestFlagOf("preflight", "--world-timeot") == null);
     try std.testing.expectEqualStrings("--json", nearestFlagOf("preflight", "--jsn").?);
     // A prefix of two flags (`--oracle`, `--oracle-fs-usage`) is no single answer — and not
@@ -1773,13 +1776,17 @@ pub fn parse(argv: []const []const u8) Parsed {
             // flag is harmless. Documented in the flag's help text.
             _ = posix.signal(posix.SIGCHLD, posix.SIG_DFL);
         } else if (std.mem.eql(u8, argv[i], "--state-under")) {
-            // #266. Replay, and since #717 preflight `--twice`: the two commands the MCP server
-            // runs that rebuild a state directory a caller can name. An explore's config is the
-            // trust boundary and its state is part of what the operator vets (#96). Preflight
+            // #266. Replay, since #717 preflight `--twice`, and since #765 explore: the three
+            // commands the MCP server runs that rebuild a state directory a caller can name.
+            // Explore was left out until #765 on the reading that a config's state is part of
+            // what the operator vets (#96, ADR 0022); an agent that writes a config, checks it
+            // with `sideeye_preflight` and explores it is not that operator (ADR 0106). Preflight
             // without `--twice` rebuilds nothing, and is refused it after the loop, once the
             // whole argv has said whether `--twice` is there — in `phaseDefine`, after the
             // base command's first refusals, as the recovery pair is (#406).
-            if (mode != .replay and mode != .preflight) setupError(.define_invalid, "--state-under applies to replay and to preflight --twice: an explore's config is the trust boundary, and its state is part of what the operator vets");
+            // Every mode this parser serves takes the flag now; the refusal stays for a mode added
+            // later, so that a new command does not accept a confinement flag it ignores.
+            if (mode != .replay and mode != .preflight and mode != .explore) setupError(.define_invalid, "--state-under applies to explore, replay and preflight --twice: the three commands that empty and rebuild a state directory");
             // A confinement flag must not be last-wins: two spellings in one argv is
             // a caller bug, and silently taking the second would let a widened range
             // ride behind a narrow-looking one.

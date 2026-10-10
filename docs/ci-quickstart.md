@@ -56,10 +56,11 @@ snapshot, with modes flattened and ownership dropped (#121). It is a scratch cop
 `/var/lib/myapp` here; sideeye now refuses a root inside a system tree rather than
 emptying it (#267).
 
-If you replay saved cases through the MCP server, know that replay confines the
-case's state to `SIDEEYE_MCP_STATE_ROOT` (default: the server root) — a case whose
-state lives under `/tmp`, as above, needs `SIDEEYE_MCP_STATE_ROOT=/tmp` on the
-server. Widen that variable, never `SIDEEYE_MCP_ROOT`; and with it unset, the
+If you explore this config or replay its saved cases through the MCP server, know
+that both confine the state to `SIDEEYE_MCP_STATE_ROOT` (default: the server root) —
+a state that lives under `/tmp`, as above, needs `SIDEEYE_MCP_STATE_ROOT=/tmp` on the
+server — and the range is one directory, so a config whose state is under the server root
+and not under `/tmp` is then outside it. Widen that variable, never `SIDEEYE_MCP_ROOT`; and with it unset, the
 workspace root itself is the declared destruction range (#266, ADR 0022) — so with
 it unset, choose a root whose contents you can afford to lose. Since #329 the root
 may be a single-component mount (`/work`), but what the vet refuses is a system

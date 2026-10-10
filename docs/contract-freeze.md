@@ -363,3 +363,15 @@ stay the same.
    report, under the rule as written; the other two answers — the recording accepted, two
    runs that differed under `twice` — are answers to the question asked and take isError
    false, as a FAIL does. No row in `surface-changes.tsv`.
+   **Read, not used, on 2026-10-10** (#765, ADR 0106): `sideeye_explore_config` refuses a
+   config whose state directory does not resolve strictly inside `SIDEEYE_MCP_STATE_ROOT`,
+   as replay and `sideeye_preflight {twice}` already did. The tool's name, its input schema
+   and the isError rule are unchanged — the refusal is a report like any, isError true — and
+   which inputs a tool refuses is not something this surface freezes, so this is neither the
+   allowance nor a break. The 2026-09-27 entry's test — every input the schema accepted is
+   accepted with the same meaning — is the test for reading a change as the *allowance*; this
+   change does not claim the allowance, and by that test it is a narrowing: an operator who
+   explored a config with its state outside `SIDEEYE_MCP_STATE_ROOT` (the root when unset)
+   through the server meets a refusal where the call used to run, which is why it is written
+   here at all.
+   No row in `surface-changes.tsv`.
