@@ -1,0 +1,50 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____________________________ test_no_crash_window _____________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-1/test_no_crash_window0')
+
+    def test_no_crash_window(tmp_path):
+        sideeye = shutil.which("sideeye")
+        assert sideeye, "sideeye is not on PATH"
+        report = tmp_path / "report.json"
+        run = subprocess.run(
+            [sideeye, "explore", "--config", str(HERE / "sideeye.toml"),
+             "--oracle", "/usr/bin/strace",
+             "--work", str(tmp_path / "work"), "--json", str(report)],
+            capture_output=True, text=True,
+        )
+>       assert run.returncode == 0, run.stdout + run.stderr
+E       AssertionError: FAIL  1 of 4 explored worlds violated an invariant
+E         
+E         invariant   built-in atomicity (L0)
+E         earliest    crash point 2 of 3
+E                     after  open(/tmp/keytool-py-state/key.json)
+E                     before write(/tmp/keytool-py-state/key.json)
+E         path        key.json
+E         observed    holding neither the old nor the new content
+E         cwd         /tmp/py
+E         
+E         explored    4 worlds (crash points 3 + 1 baseline)
+E         expected    exit 0
+E         atomicity   1 path(s) judged pre-or-post
+E         oracle      agreed on 3 operations (335 syscall lines examined, 14 in scope of the judged state), witness strace
+E         metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+E         checker     none configured
+E         l1          no marker configured
+E         case        /tmp/pytest-of-root/pytest-1/test_no_crash_window0/work/cases/000001.json
+E         replay      sideeye replay /tmp/pytest-of-root/pytest-1/test_no_crash_window0/work/cases/000001.json --shim /opt/sideeye/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so
+E         evidence    sideeye evidence /tmp/pytest-of-root/pytest-1/test_no_crash_window0/work/evidence/000001.json
+E         processes   single process
+E         not tested  power loss, torn writes, concurrent processes
+E         
+E         reproduce   (cd /tmp/py && unset SIDEEYE_KILL_GROUP && : > /tmp/pytest-of-root/pytest-1/test_no_crash_window0/work/trace-repro.bin && SIDEEYE_STATE_DIR=/tmp/keytool-py-state SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/tmp/pytest-of-root/pytest-1/test_no_crash_window0/work/trace-repro.bin LD_PRELOAD=/opt/sideeye/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'python3' keytool.py rotate </dev/null)
+E         sideeye: json sha256=4a42494c1ec04fd0952f0baaeaf3867f541c2e044ff7e3dd43c05bdac67abca1;
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/usr/local/bin/sideeye', 'explore', '--config', '/tmp/py/sideeye.toml', '--oracle', '/usr/bin/...tate </dev/null)\n", stderr='sideeye: json sha256=4a42494c1ec04fd0952f0baaeaf3867f541c2e044ff7e3dd43c05bdac67abca1;\n').returncode
+
+test_crash_consistency.py:19: AssertionError
+=========================== short test summary info ============================
+FAILED test_crash_consistency.py::test_no_crash_window - AssertionError: FAIL...
+1 failed in 0.06s

@@ -1,0 +1,7 @@
+[world]
+state = "/tmp/keytool-go-state"
+
+[define]
+cwd       = "."
+setup     = "./bin/keytool init"
+operation = "./bin/keytool rotate"

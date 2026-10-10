@@ -154,7 +154,7 @@ jobs:
         runner: [ubuntu-24.04, ubuntu-24.04-arm]
         image: [debian13, rocky10, debian12, ubuntu2204, ubuntu2004, rocky9, rocky8]
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -195,7 +195,7 @@ jobs:
       matrix:
         runner: [macos-14, macos-15, macos-26]
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 45
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -224,7 +224,17 @@ jobs:
           o=spike/platforms/out; mkdir -p "$o"
           bin=$(sh docs/ci-quickstart/release/install-sideeye.sh "$SIDEEYE_VERSION" "$RUNNER_TEMP/sideeye" 2> "$o/install.txt")
           sh spike/platforms/measure-macos.sh "$bin" "$o" "$LABEL" 2>&1 | tee "$o/runner.txt"
+          # The default mode three more times, --work moved to tell the path's length from its
+          # spelling (RUNS-RULE-2026-10-10b.md, legs added after the second dispatch): short through
+          # the /tmp symlink, short and physical, and $TMPDIR's own length but physical.
+          WORK_ROOT=/tmp DEMO=0 sh spike/platforms/measure-macos.sh "$bin" "$o" "$LABEL-work-tmp" 2>&1 | tee -a "$o/runner.txt"
+          WORK_ROOT=/private/tmp DEMO=0 sh spike/platforms/measure-macos.sh "$bin" "$o" "$LABEL-work-private-tmp" 2>&1 | tee -a "$o/runner.txt"
+          resolved=$(cd "$TMPDIR" && pwd -P) && [ -n "$resolved" ] || { echo "TMPDIR could not be resolved"; exit 1; }
+          WORK_ROOT=$resolved DEMO=0 sh spike/platforms/measure-macos.sh "$bin" "$o" "$LABEL-work-tmpdir-resolved" 2>&1 | tee -a "$o/runner.txt"
           [ "$(grep -cE "$(printf '\t')(PASS|FAIL|UNKNOWN|SETUP ERROR)" "$o/$LABEL/summary.txt")" = 2 ]
+          for l in work-tmp work-private-tmp work-tmpdir-resolved; do
+            [ "$(grep -cE "$(printf '\t')(PASS|FAIL|UNKNOWN|SETUP ERROR)" "$o/$LABEL-$l/summary.txt")" = 1 ] || exit 1
+          done
 
       - name: Keep the record
         if: always()
