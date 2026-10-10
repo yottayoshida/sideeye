@@ -35,14 +35,14 @@ It has found counterexamples in real tools — RuboCop, Himalaya, ImageMagick, A
 $ brew install yottayoshida/tap/sideeye
 ```
 
-macOS on Apple silicon, Linux on x86_64 and aarch64. Sideeye is a binary and a shim library, and it looks for the shim beside itself, then in `../lib`. Or take the tarball for your platform from [Releases](https://github.com/yottayoshida/sideeye/releases) and run it where you unpacked it:
+macOS 26 on Apple silicon, Linux (glibc) on x86_64 and aarch64. Sideeye is a binary and a shim library, and it looks for the shim beside itself, then in `../lib`. Or take the tarball for your platform from [Releases](https://github.com/yottayoshida/sideeye/releases) and run it where you unpacked it:
 
 ```
 $ tar xzf sideeye-v1.10.0-aarch64-macos.tar.gz && cd sideeye-v1.10.0-aarch64-macos
 $ ./sideeye version
 ```
 
-Building from source, and what the shim search refuses: [docs/cli.md](docs/cli.md#installing-without-homebrew).
+Other platforms, building from source, and what the shim search refuses: [docs/cli.md](docs/cli.md#platforms).
 
 ## Usage
 
