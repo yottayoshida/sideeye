@@ -1,0 +1,64 @@
+name: zig-ahead
+
+# ADR 0111. Never on pull_request: it must not stop a merge, and its red must not become the
+# normal state of every pull request page.
+
+on:
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        lane: [pinned, latest, master]
+        include:
+          - lane: pinned
+            zig: ''
+          - lane: latest
+            zig: latest
+          - lane: master
+            zig: master
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      # No cache: one filled by another Zig version would make the build unlike a source builder's.
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+        with:
+          version: ${{ matrix.zig }}
+          use-cache: false
+
+      # Not `zig build` alone: it analyses no test block, and on Linux no macOS branch.
+      - name: Build and test with this lane's Zig, and judge the result against the known breakages
+        shell: bash
+        run: |
+          set +e
+          zv=$(zig version)
+          zig build > build.log 2>&1
+          status=$?
+          if [ "$status" -eq 0 ]; then
+            zig build test --summary all >> build.log 2>&1
+            status=$?
+          fi
+          case "$RUNNER_OS" in
+            macOS) os=macos ;;
+            Linux) os=linux ;;
+            *) os=unknown ;;
+          esac
+          sh spike/zig-ahead.sh judge spike/zig-ahead-known.tsv "$os" "${{ matrix.lane }}" "$zv" "$status" build.log > verdict.txt 2>&1
+          verdict=$?
+          cat verdict.txt
+          {
+            echo '```'
+            cat verdict.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$verdict"

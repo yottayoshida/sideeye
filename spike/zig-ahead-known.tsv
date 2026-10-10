@@ -1,0 +1,5 @@
+# <os> TAB <MAJOR.MINOR or master> TAB <text, 10+ characters> TAB <#issue> — read by spike/zig-ahead.sh (ADR 0111).
+# Name only a breakage the lane prints today; one hidden behind build.zig reads as gone.
+# Remove a row with the change that fixes it: a row left behind turns the lane red.
+*	0.17	no field named 'args' in struct 'Build'	#782
+*	master	no field named 'args' in struct 'Build'	#782
