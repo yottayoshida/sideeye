@@ -4435,14 +4435,36 @@ else
     echo "$o" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi
-# Leg E: the flag belongs to replay and preflight --twice (#717); explore refuses it by name
-# (ADR 0007's no-accepted-but-inert rule).
-o=$("$SIDEEYE" explore --state /tmp/acc/state --operation /bin/true --state-under /tmp --shim "$SHIM" --work /tmp/acc/work-sce 2>&1)
+# Leg E (#765, ADR 0106): explore takes the range too — it empties and rebuilds the state before
+# every world, and the MCP server's `sideeye_explore_config` passes SIDEEYE_MCP_STATE_ROOT here.
+# Until #765 explore refused the flag by name. Outside the range it refuses before setup: the
+# sentinel alone would survive a run that went ahead (restore writes back the snapshot it was
+# in), so the toy's own key is what says setup never ran there. Inside, it runs to a verdict.
+rm -rf /tmp/acc/ex-out /tmp/acc/ex-range /tmp/acc/work-sce /tmp/acc/work-sce1
+mkdir -p /tmp/acc/ex-out /tmp/acc/ex-range/state
+echo "survives" > /tmp/acc/ex-out/sentinel.txt
+o=$(TOY_STATE=/tmp/acc/ex-out "$SIDEEYE" explore --state /tmp/acc/ex-out --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --state-under /tmp/acc/ex-range --shim "$SHIM" --work /tmp/acc/work-sce --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "3" ] && echo "$o" | grep -q -- "--state-under applies to replay and to preflight --twice"; then
-    echo "ok   explore refuses --state-under by name"
+# The way out it names comes first for a config (review of #765): move the state inside the
+# range — not "run it from the command line", which is unconfined.
+if [ "$rc" = "3" ] && echo "$o" | grep -q "outside the allowed range" && echo "$o" | grep -q "SIDEEYE_MCP_STATE_ROOT" \
+    && echo "$o" | grep -q "move the state inside the range" && ! echo "$o" | grep -q "from the command line, where" \
+    && [ -s /tmp/acc/ex-out/sentinel.txt ] && [ ! -e /tmp/acc/ex-out/key.json ]; then
+    echo "ok   explore refuses a state outside --state-under before setup, and leaves it as it was"
 else
-    echo "FAIL explore accepted --state-under (exit $rc)"
+    echo "FAIL explore --state-under, outside: exit $rc, key.json $([ -e /tmp/acc/ex-out/key.json ] && echo present || echo absent)"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+o=$(TOY_STATE=/tmp/acc/ex-range/state "$SIDEEYE" explore --state /tmp/acc/ex-range/state --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --state-under /tmp/acc/ex-range --shim "$SHIM" --work /tmp/acc/work-sce1 --oracle /usr/bin/strace 2>&1)
+rc=$?
+if { [ "$rc" = "0" ] || [ "$rc" = "1" ]; } && ! echo "$o" | grep -q "outside the allowed range"; then
+    echo "ok   explore inside --state-under runs to a verdict (positive control, exit $rc)"
+else
+    echo "FAIL explore --state-under, inside: exit $rc (wanted a verdict)"
+    echo "$o" | sed 's/^/     | /' | head -4
     fails=$((fails + 1))
 fi
 # Leg F: a confinement flag is not last-wins; a second spelling refuses.
@@ -9598,7 +9620,7 @@ explore --frobnicate|unknown option '--frobnicate'^sideeye help explore
 explore --frobnicate x|unknown option '--frobnicate'
 explore --stat x|unknown option '--stat'^did you mean '--state'
 explore --twic x|unknown option '--twic'^!did you mean
-explore --state-undr x|unknown option '--state-undr'^!did you mean
+explore --state-undr x|unknown option '--state-undr'^did you mean '--state-under'
 preflight --world-timeot x|unknown option '--world-timeot'^!did you mean
 preflight --jsn x|unknown option '--jsn'^did you mean '--json'
 explore foo|takes no positional argument here: 'foo'
