@@ -601,7 +601,6 @@ fn shebangOf(arena: std.mem.Allocator, path: []const u8) ?Shebang {
     return .{ .interpreter = word, .options = std.mem.trim(u8, words.rest(), " \t\r"), .path = path };
 }
 
-
 // ---------------------------------------------------------------------------
 // Parsing. Every read goes through `at`, which is the only place a file offset turns
 // into bytes, so "did this offset run past the end" is answered once.
@@ -1188,7 +1187,6 @@ test "a field that runs past the end of the file is out of range, not a default"
     try testing.expect(whole.macho.signing.?.libraryValidation());
     try testing.expect(whole.macho.signing.?.platformNamed());
 }
-
 
 test "a universal binary is read through the slice matching this CPU" {
     const lv = try buildMachO(testing.allocator, .{ .flags = cs_require_lv });
@@ -1783,11 +1781,11 @@ pub fn fakeFrameworkForTest(a: std.mem.Allocator, tag: []const u8) !FakeFramewor
     var dbuf: [256]u8 = undefined;
     const root = try a.dupeZ(u8, fixtureDir(&dbuf, tag));
     const rel = [_][]const u8{
-        "Versions",                    "Versions/3.99",
-        "Versions/3.99/bin",           "Versions/3.99/Resources",
-        "Versions/3.99/Resources/Python.app", "Versions/3.99/Resources/Python.app/Contents",
+        "Versions",                                          "Versions/3.99",
+        "Versions/3.99/bin",                                 "Versions/3.99/Resources",
+        "Versions/3.99/Resources/Python.app",                "Versions/3.99/Resources/Python.app/Contents",
         "Versions/3.99/Resources/Python.app/Contents/MacOS", "venv",
-        "venv/bin",                    "elsewhere",
+        "venv/bin",                                          "elsewhere",
     };
     var ff: FakeFramework = undefined;
     ff.root = root;
