@@ -30,7 +30,7 @@ the repository; the probe's first dispatch is the record. None of that is writte
   not build (armv7, i386, riscv64, …). Linux with glibc older than 2.28 is declined because the
   builds target 2.28. A declined row says what was and was not tried — for musl, what `gcompat`
   does; for musl and Intel macOS, that building from source was not tried (and, from ADR 0101,
-  that on a musl host the demo's toy builds static and the shim cannot enter it).
+  that on a musl host the demo's toy would build static, where the shim could not enter it).
 - **unmeasured** — an asset exists for the CPU and the kernel, and it has not been run there:
   WSL1, WSL2 on Windows on ARM, and NixOS — where the binaries name the FHS loader path, which
   NixOS provides only through a compatibility layer (nix-ld or an FHS environment); how they

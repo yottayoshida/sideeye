@@ -75,6 +75,9 @@ bits; this is the same shape for timestamps.
   fixing. Stage `acknowledged` (as of 2026-10-10). Nothing was asked, so nothing is answered (the 2026-09-14 rule).
 - **mhx/dwarfs#388**: the fix branch's new commit is a rebase with the same change; nothing new to measure.
 - **#697** (Intel macOS, musl, WSL2) stays unmeasured: each needs a machine this run does not have.
+  *Corrected 2026-10-10:* that was false for musl, which an Alpine container on this machine
+  measured the same day, and WSL2 ran on GitHub's Windows runner; Intel macOS was declined.
+  The record is `spike/platforms/2026-10-10/RESULTS.md`, the table `docs/cli.md#platforms`.
 
 ## What the round says
 

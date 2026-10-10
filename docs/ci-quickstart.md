@@ -97,7 +97,8 @@ sha256 tool, all of which GitHub-hosted runners have; it does not need Zig, a co
 The version is an argument with no default: following the latest release would let a build
 you did not choose turn your gate red, or green. The installer selects the asset for the
 runner's platform, **refuses outright when the release has none** rather than reaching for a
-neighbouring one, and checks the download against the sha256 GitHub publishes for that asset
+neighbouring one — though in a musl container such as Alpine it picks the glibc asset, which does
+not start there ([platforms](cli.md#platforms)) — and checks the download against the sha256 GitHub publishes for that asset
 before anything runs. What that check establishes — the bytes are the ones GitHub holds, not
 who produced them — is stated in [cli.md](cli.md#installing-without-homebrew), which is also
 where the by-hand form of the same two commands lives. `sh install-sideeye.sh --selftest`
