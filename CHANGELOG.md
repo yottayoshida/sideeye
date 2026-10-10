@@ -51,6 +51,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 - **The issue forms' dropdowns start at "Not answered"** (#719; `.github/ISSUE_TEMPLATE/unknown.yml`, `.github/ISSUE_TEMPLATE/verdict.yml`). Opened on `main` after #783 merged, every dropdown showed its first option already chosen — "No" to "Did a language model write any of this report?", "Homebrew" for the install, and on the verdict form "Sideeye found a real bug" — so a reporter who skipped one would have filed an answer they never gave. Each now offers "Not answered" first, which reads as what it is when left alone. The report field's label drops its backticks, which a label shows as written.
+- **`docs/found.md` no longer counts timewarrior as fixed upstream** (#720; `spike/outcome-funnel.tsv`, `docs/found.md`, `docs/outcome-funnel.md`). Its funnel row read `revalidated`, with the note "Fixed upstream". `GothenburgBitFactory/timewarrior#778` has had no reply, and timewarrior no commit for it, since it was filed on 2026-08-12; the build that passes 25/25 carries this project's own patch, `spike/timew-undo-ordering.patch`, which the journal and `docs/kill-criteria-review.md` already called that. The row is `filed`, awaiting, read 2026-10-10, and the page counts 10 reports fixed upstream rather than 11. The other ten were read against their trackers the same day; each has a fix its project merged or committed, DwarFS's on a branch that has reached neither its `main` nor a release.
 
 ## [1.10.0] - 2026-10-08
 
