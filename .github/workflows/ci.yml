@@ -1564,6 +1564,22 @@ jobs:
       - name: main.zig declares no more than the last seam left it
         run: sh spike/check-main-shape.sh
 
+  # Not folded into another job: a failure here has to name the instrument.
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+        with:
+          version: 0.16.0
+
+      - name: The check proves it can go red
+        run: sh spike/check-zig-fmt.sh --selftest
+
+      - name: Every tracked Zig file is what zig fmt leaves it
+        run: sh spike/check-zig-fmt.sh
+
   adr-numbering:
     runs-on: ubuntu-latest
     steps:

@@ -740,20 +740,23 @@ pub fn childrenMayBeJudged(
                     "id {d} mutated the judged directory in the oracle's account and recorded nothing of its own. This witness names a thread and knows no process for it, so this is either a process that never loaded the shim or a thread whose operations went around the shim's wrappers; calling it a process would assert the half this run cannot see. Either way its operations hold no crash-point number and the sequence the crash points were read from is incomplete",
                     .{w.id},
                 ) catch "an id mutated the judged directory and the witness cannot say whether it is a process" };
-            return .{ .wall = if (shim_in_writer_image) .shimmed_writer_unnumbered else .not_the_modes_wall, .detail = std.fmt.allocPrint(
-                arena,
-                "process {d} mutated the judged directory in the oracle's account and recorded nothing of its own, so its operations hold no crash-point number and the sequence the crash points were read from is incomplete. {s}",
-                // Checked first (#217, review): the supervising engine writes a start record
-                // at every exec, so `shim_in_writer_image` holds there too, and the filter is
-                // inherited by every process the target starts — which is all strace follows.
-                // Such a writer is inside the engine's sight, and wrote some way it does not watch.
-                .{ w.id, if (observe_mode == .supervised)
-                    "Under --observe supervised every process the target starts inherits the engine's filter, so this one wrote the judged directory some way the filter does not watch — through a mapped file, say — or its calls were not counted"
-                else if (shim_in_writer_image)
-                    "Its shim announced itself and recorded no operation, so its writes went around the interposed entry points — a buffered stream flushed inside libc does that"
-                else
-                    "A child that never loaded the shim — an emptied environment, a static image — is seen only by the oracle" },
-            ) catch "a process mutated the judged directory without recording anything of its own" };
+            return .{
+                .wall = if (shim_in_writer_image) .shimmed_writer_unnumbered else .not_the_modes_wall,
+                .detail = std.fmt.allocPrint(
+                    arena,
+                    "process {d} mutated the judged directory in the oracle's account and recorded nothing of its own, so its operations hold no crash-point number and the sequence the crash points were read from is incomplete. {s}",
+                    // Checked first (#217, review): the supervising engine writes a start record
+                    // at every exec, so `shim_in_writer_image` holds there too, and the filter is
+                    // inherited by every process the target starts — which is all strace follows.
+                    // Such a writer is inside the engine's sight, and wrote some way it does not watch.
+                    .{ w.id, if (observe_mode == .supervised)
+                        "Under --observe supervised every process the target starts inherits the engine's filter, so this one wrote the judged directory some way the filter does not watch — through a mapped file, say — or its calls were not counted"
+                    else if (shim_in_writer_image)
+                        "Its shim announced itself and recorded no operation, so its writes went around the interposed entry points — a buffered stream flushed inside libc does that"
+                    else
+                        "A child that never loaded the shim — an emptied environment, a static image — is seen only by the oracle" },
+                ) catch "a process mutated the judged directory without recording anything of its own",
+            };
         }
 
         // Where this child was created. Without it the window would start at the child's

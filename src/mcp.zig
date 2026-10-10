@@ -1623,9 +1623,9 @@ fn summarizePreflightOrErr(arena: std.mem.Allocator, doc_min: []const u8) ![]con
     // Advice for this server, not the document's own `next`, which is a command line.
     if (runs_differ)
         try out.appendSlice(arena, "\nnext: declare what differs as scratch in the config, or pin it, then call sideeye_preflight again with twice")
-    // #765: the exploration confines the state. A twice call took the same range and got past it,
-    // which `differences_total` — present only on a second run — says; one observed run does not
-    // look (ADR 0102), so its next step says what the exploration will ask.
+        // #765: the exploration confines the state. A twice call took the same range and got past it,
+        // which `differences_total` — present only on a second run — says; one observed run does not
+        // look (ADR 0102), so its next step says what the exploration will ask.
     else if (o.get("differences_total") != null)
         try out.appendSlice(arena, "\nnext: sideeye_explore_config with the same config_path — this call found its state strictly inside SIDEEYE_MCP_STATE_ROOT, the range the exploration confines it to")
     else

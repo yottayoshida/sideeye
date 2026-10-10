@@ -28,7 +28,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
     var zb: [4096]u8 = undefined;
     const z = try std.fmt.bufPrintZ(&zb, "{s}", .{args[1]});
     const fd = posix.open(z.ptr, posix.O_RDONLY, @as(c_uint, 0));
-    if (fd < 0) { std.debug.print("cannot open {s}\n", .{args[1]}); std.process.exit(2); }
+    if (fd < 0) {
+        std.debug.print("cannot open {s}\n", .{args[1]});
+        std.process.exit(2);
+    }
     defer _ = posix.close(fd);
     var list: std.ArrayList(u8) = .empty;
     var chunk: [64 * 1024]u8 = undefined;

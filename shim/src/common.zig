@@ -1460,7 +1460,6 @@ fn cgroupStandingAt(proc_path: [*:0]const u8) CgroupStanding {
 const CgroupLine = contract.CgroupLine;
 const standingOf = contract.standingOf;
 
-
 pub fn stateDir() []const u8 {
     return state_dir_buf[0..state_dir_len];
 }
