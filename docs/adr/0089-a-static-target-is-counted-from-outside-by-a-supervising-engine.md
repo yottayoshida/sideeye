@@ -130,6 +130,15 @@ catches a signal while its call waits for the supervisor has the call restarted 
   calls pass unseen; macOS has no equivalent. A target's other threads can rewrite a path argument
   between the read and the call — the design assumes a target that is not working against its
   observer, as the shim does.
+  **Measured 2026-10-10 (#687): recording creations and exits from outside is not built.** In the
+  static targets that met the threads wall at the recording — jj, OpenTofu, codex, doctl — 48 of 50 recording runs
+  this mode refused hold a hand-over between writing threads that neither a thread's creation nor
+  its exit orders (jj's is a futex hand-over in a pool); doctl's other two were ordered by a creation
+  the Go scheduler happened to make, 2 in 35, and a run is judged only when the recording and every
+  explored world are ordered. notesmd-cli was not refused in 15; tombi, refused in 1 of 36 explores and 3 of
+  20 replays with its preflight accepted 26 times of 26, was not read. doctl reached a verdict once with `GOMAXPROCS=1`
+  (FAIL 1/3, 2026-10-09 follow-ups 3); OpenTofu did not.
+  Owner's decision; record in `spike/dogfood/2026-10-10-thread-order/`.
 - `sideeye_replay_case` over MCP has no `observe`, so a supervised case cannot be replayed through it
   (ADR 0074 kept replay's surface fixed) — **amended 2026-10-09 (ADR 0100): it can now, with the
   surface still fixed, because the case carries the mode and the engine takes it from there;** `sideeye_explore_config` gained the value (frozen surface

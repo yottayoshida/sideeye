@@ -1,0 +1,1101 @@
+41    execve("/opt/se/sideeye-v1.10.0-aarch64-linux/sideeye", ["/opt/se/sideeye-v1.10.0-aarch64-"..., "__filter-exec", "4", "--", "jj", "-R", "/s/jj/repo", "commit", "-m", "probe"], 0xaaab1d78c8a0 /* 29 vars */) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff96a30000
+41    faccessat(AT_FDCWD</s/jj-in>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+41    fstat(3</etc/ld.so.cache>, {st_mode=S_IFREG|0644, st_size=8463, ...}) = 0
+41    mmap(NULL, 8463, PROT_READ, MAP_PRIVATE, 3</etc/ld.so.cache>, 0) = 0xffff96a2d000
+41    close(3</etc/ld.so.cache>)        = 0
+41    openat(AT_FDCWD</s/jj-in>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+41    read(3</usr/lib/aarch64-linux-gnu/libc.so.6>, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\200$\2\0\0\0\0\0"..., 832) = 832
+41    fstat(3</usr/lib/aarch64-linux-gnu/libc.so.6>, {st_mode=S_IFREG|0755, st_size=1716616, ...}) = 0
+41    mmap(NULL, 1892368, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_DENYWRITE, -1, 0) = 0xffff96829000
+41    mmap(0xffff96830000, 1826832, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libc.so.6>, 0) = 0xffff96830000
+41    mprotect(0xffff969cc000, 69632, PROT_NONE) = 0
+41    mmap(0xffff969dd000, 20480, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libc.so.6>, 0x19d000) = 0xffff969dd000
+41    mmap(0xffff969e2000, 49168, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff969e2000
+41    close(3</usr/lib/aarch64-linux-gnu/libc.so.6>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/lib/aarch64-linux-gnu/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>
+41    read(3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+41    fstat(3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, {st_mode=S_IFREG|0644, st_size=67592, ...}) = 0
+41    mmap(NULL, 196624, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_DENYWRITE, -1, 0) = 0xffff967ff000
+41    mmap(0xffff96800000, 131088, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, 0) = 0xffff96800000
+41    mprotect(0xffff96801000, 122880, PROT_NONE) = 0
+41    mmap(0xffff9681f000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, 0xf000) = 0xffff9681f000
+41    close(3</usr/lib/aarch64-linux-gnu/libpthread.so.0>) = 0
+41    mmap(NULL, 270336, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff967be000
+41    mprotect(0xffff969dd000, 12288, PROT_READ) = 0
+41    mprotect(0xffff9681f000, 4096, PROT_READ) = 0
+41    mprotect(0x1177000, 20480, PROT_READ) = 0
+41    mprotect(0xffff96a36000, 8192, PROT_READ) = 0
+41    mmap(NULL, 258048, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff9677f000
+41    faccessat(AT_FDCWD</s/jj-in>, "/opt/bin/jj", X_OK) = 0
+41    statx(AT_FDCWD</s/jj-in>, "/opt/bin/jj", AT_STATX_SYNC_AS_STAT, STATX_TYPE, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0755, stx_size=28684032, ...}) = 0
+41    mmap(0xffff9677f000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff9677f000
+41    close(3<anon_inode:seccomp notify>) = 0
+41    close(4<socket:[14817]>)          = 0
+41    execve("/opt/bin/jj", ["jj", "-R", "/s/jj/repo", "commit", "-m", "probe"], 0xffffcad5fb90 /* 29 vars */) = 0
+41    mmap(NULL, 1240, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8b38c000
+41    openat(AT_FDCWD</s/jj-in>, "/proc/sys/vm/overcommit_memory", O_RDONLY|O_LARGEFILE) = 3</proc/sys/vm/overcommit_memory>
+41    read(3</proc/sys/vm/overcommit_memory>, "1\n", 32) = 2
+41    close(3</proc/sys/vm/overcommit_memory>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/sys/kernel/mm/transparent_hugepage/enabled", O_RDONLY|O_LARGEFILE) = 3</sys/kernel/mm/transparent_hugepage/enabled>
+41    read(3</sys/kernel/mm/transparent_hugepage/enabled>, "[always] madvise never\n", 32) = 23
+41    close(3</sys/kernel/mm/transparent_hugepage/enabled>) = 0
+41    mmap(NULL, 4456448, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffff8af4c000
+41    ppoll([{fd=0</dev/null>, events=0}, {fd=1</out/jj/work-1/stdout-record.txt>, events=0}, {fd=2</out/jj/preflight-1.txt>, events=0}], 3, {tv_sec=0, tv_nsec=0}, NULL, 8) = 0 (Timeout)
+41    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffff8af48000
+41    mprotect(0xffff8af48000, 4096, PROT_NONE) = 0
+41    mmap(0x43937c00000, 1073741824, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0x43937c00000
+41    mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffff8af38000
+41    mmap(0x18e40000, 4096, PROT_NONE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x18e40000
+41    mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8af37000
+41    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8ad34000
+41    mprotect(0xffff8ad36000, 2101248, PROT_READ|PROT_WRITE) = 0
+41    clone(child_stack=0xffff8af366f0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[42], tls=0xffff8af367f0, child_tidptr=0x17ee750) = 42
+42    faccessat(AT_FDCWD</s/jj-in>, "/sys/devices/system/node/node1", R_OK) = -1 ENOENT (No such file or directory)
+42    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffff8ad30000
+42    mprotect(0xffff8ad30000, 4096, PROT_NONE) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/etc/passwd", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</etc/passwd>
+41    fcntl(3</etc/passwd>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8ad2f000
+41    fcntl(3</etc/passwd>, F_SETFD, FD_CLOEXEC) = 0
+41    read(3</etc/passwd>, "root:x:0:0:root:/root:/bin/bash\n"..., 1024) = 839
+41    lseek(3</etc/passwd>, -807, SEEK_CUR) = 32
+41    close(3</etc/passwd>)             = 0
+41    ioctl(1</out/jj/work-1/stdout-record.txt>, TIOCGWINSZ, 0xffffe45ddac8) = -1 ENOTTY (Inappropriate ioctl for device)
+41    getcwd("/s/jj-in", 512)           = 9
+41    readlinkat(AT_FDCWD</s/jj-in>, "/s", 0xffffe45dbe28, 4090) = -1 EINVAL (Invalid argument)
+41    readlinkat(AT_FDCWD</s/jj-in>, "/s/jj-in", 0xffffe45dbe28, 4096) = -1 EINVAL (Invalid argument)
+41    readlinkat(AT_FDCWD</s/jj-in>, "/s", 0xffffe45db8f8, 4088) = -1 EINVAL (Invalid argument)
+41    readlinkat(AT_FDCWD</s/jj-in>, "/s/jj-home", 0xffffe45db8f8, 4096) = -1 EINVAL (Invalid argument)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/etc/jj/config.toml", 0xffffe45dc830, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/etc/jj/conf.d", 0xffffe45dc830, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj-home/.jjconfig.toml", 0xffffe45dc830, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj-home/.config/jj/config.toml", 0xffffe45dc830, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj-home/.config/jj/conf.d", 0xffffe45dc830, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj-in/.jj", 0xffffe45dcc40, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/.jj", 0xffffe45dcc40, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/.jj", 0xffffe45dcc40, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj-in/.jj", 0xffffe45dcb70, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj-in/.git", 0xffffe45dcc00, 0) = -1 ENOENT (No such file or directory)
+41    ioctl(1</out/jj/work-1/stdout-record.txt>, TIOCGWINSZ, 0xffffe45dca18) = -1 ENOTTY (Inappropriate ioctl for device)
+41    readlinkat(AT_FDCWD</s/jj-in>, "/s", 0xffffe45dbe28, 4088) = -1 EINVAL (Invalid argument)
+41    readlinkat(AT_FDCWD</s/jj-in>, "/s/jj", 0xffffe45dbe28, 4091) = -1 EINVAL (Invalid argument)
+41    readlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo", 0xffffe45dbe28, 4096) = -1 EINVAL (Invalid argument)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/config-id", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/config.toml", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/workspace-config-id", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/workspace-config.toml", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    ioctl(1</out/jj/work-1/stdout-record.txt>, TIOCGWINSZ, 0xffffe45dca18) = -1 ENOTTY (Inappropriate ioctl for device)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/type", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.jj/repo/store/type>
+41    fcntl(3</s/jj/repo/.jj/repo/store/type>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(3</s/jj/repo/.jj/repo/store/type>, {st_mode=S_IFREG|0644, st_size=3, ...}) = 0
+41    read(3</s/jj/repo/.jj/repo/store/type>, "git", 32) = 3
+41    read(3</s/jj/repo/.jj/repo/store/type>, "", 32) = 0
+41    close(3</s/jj/repo/.jj/repo/store/type>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/git_target", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.jj/repo/store/git_target>
+41    fcntl(3</s/jj/repo/.jj/repo/store/git_target>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(3</s/jj/repo/.jj/repo/store/git_target>, {st_mode=S_IFREG|0644, st_size=13, ...}) = 0
+41    read(3</s/jj/repo/.jj/repo/store/git_target>, "../../../.git", 32) = 13
+41    read(3</s/jj/repo/.jj/repo/store/git_target>, "", 32) = 0
+41    close(3</s/jj/repo/.jj/repo/store/git_target>) = 0
+41    readlinkat(AT_FDCWD</s/jj-in>, "/s", 0xffffe45b1178, 4064) = -1 EINVAL (Invalid argument)
+41    readlinkat(AT_FDCWD</s/jj-in>, "/s/jj", 0xffffe45b1178, 4067) = -1 EINVAL (Invalid argument)
+41    readlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo", 0xffffe45b1178, 4072) = -1 EINVAL (Invalid argument)
+41    readlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj", 0xffffe45b1178, 4076) = -1 EINVAL (Invalid argument)
+41    readlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo", 0xffffe45b1178, 4081) = -1 EINVAL (Invalid argument)
+41    readlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store", 0xffffe45b1178, 4087) = -1 EINVAL (Invalid argument)
+41    readlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/..", 0xffffe45b1178, 4090) = -1 EINVAL (Invalid argument)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+41    getcwd("/s/jj-in", 512)           = 9
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/HEAD", {st_mode=S_IFREG|0644, st_size=41, ...}, 0) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/HEAD", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.git/HEAD>
+41    fcntl(3</s/jj/repo/.git/HEAD>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(3</s/jj/repo/.git/HEAD>, {st_mode=S_IFREG|0644, st_size=41, ...}) = 0
+41    lseek(3</s/jj/repo/.git/HEAD>, 0, SEEK_CUR) = 0
+41    read(3</s/jj/repo/.git/HEAD>, "c66ab3a2533aa0ed6b1ede456b884d59"..., 128) = 41
+41    read(3</s/jj/repo/.git/HEAD>, "", 87) = 0
+41    close(3</s/jj/repo/.git/HEAD>)    = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/commondir", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/index", {st_mode=S_IFREG|0644, st_size=104, ...}, 0) = 0
+41    getcwd("/s/jj-in", 512)           = 9
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/commondir", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/config", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.git/config>
+41    fcntl(3</s/jj/repo/.git/config>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(3</s/jj/repo/.git/config>, {st_mode=S_IFREG|0644, st_size=140, ...}) = 0
+41    lseek(3</s/jj/repo/.git/config>, 0, SEEK_CUR) = 0
+41    read(3</s/jj/repo/.git/config>, "[core]\n\tfilemode = true\n\tbare = "..., 512) = 140
+41    read(3</s/jj/repo/.git/config>, "", 372) = 0
+41    close(3</s/jj/repo/.git/config>)  = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/packed-refs", 0xffffe45b0a80, 0) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/HEAD", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.git/HEAD>
+41    fcntl(3</s/jj/repo/.git/HEAD>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(3</s/jj/repo/.git/HEAD>, {st_mode=S_IFREG|0644, st_size=41, ...}) = 0
+41    lseek(3</s/jj/repo/.git/HEAD>, 0, SEEK_CUR) = 0
+41    read(3</s/jj/repo/.git/HEAD>, "c66ab3a2533aa0ed6b1ede456b884d59"..., 128) = 41
+41    read(3</s/jj/repo/.git/HEAD>, "", 87) = 0
+41    close(3</s/jj/repo/.git/HEAD>)    = 0
+41    readlinkat(AT_FDCWD</s/jj-in>, "/proc/self/exe", "/opt/bin/jj", 256) = 11
+41    openat(AT_FDCWD</s/jj-in>, "/etc/gitconfig", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj-home/.config/git/config", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj-home/.gitconfig", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/info/alternates", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/pack", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 3</s/jj/repo/.git/objects/pack>
+41    fcntl(3</s/jj/repo/.git/objects/pack>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8ad2e000
+41    getdents64(3</s/jj/repo/.git/objects/pack>, 0xffff8ad2e058 /* 2 entries */, 2048) = 48
+41    getdents64(3</s/jj/repo/.git/objects/pack>, 0xffff8ad2e058 /* 0 entries */, 2048) = 0
+41    close(3</s/jj/repo/.git/objects/pack>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/workspace_store/type", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.jj/repo/workspace_store/type>
+41    fcntl(3</s/jj/repo/.jj/repo/workspace_store/type>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(3</s/jj/repo/.jj/repo/workspace_store/type>, {st_mode=S_IFREG|0644, st_size=22, ...}) = 0
+41    read(3</s/jj/repo/.jj/repo/workspace_store/type>, "simple_workspace_store", 32) = 22
+41    read(3</s/jj/repo/.jj/repo/workspace_store/type>, "", 32) = 0
+41    close(3</s/jj/repo/.jj/repo/workspace_store/type>) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/workspace_store/index", {st_mode=S_IFREG|0600, st_size=18, ...}, 0) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/type", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.jj/repo/op_store/type>
+41    fcntl(3</s/jj/repo/.jj/repo/op_store/type>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(3</s/jj/repo/.jj/repo/op_store/type>, {st_mode=S_IFREG|0644, st_size=15, ...}) = 0
+41    read(3</s/jj/repo/.jj/repo/op_store/type>, "simple_op_store", 32) = 15
+41    read(3</s/jj/repo/.jj/repo/op_store/type>, "", 32) = 0
+41    close(3</s/jj/repo/.jj/repo/op_store/type>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_heads/type", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.jj/repo/op_heads/type>
+41    fcntl(3</s/jj/repo/.jj/repo/op_heads/type>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(3</s/jj/repo/.jj/repo/op_heads/type>, {st_mode=S_IFREG|0644, st_size=21, ...}) = 0
+41    read(3</s/jj/repo/.jj/repo/op_heads/type>, "simple_op_heads_store", 32) = 21
+41    read(3</s/jj/repo/.jj/repo/op_heads/type>, "", 32) = 0
+41    close(3</s/jj/repo/.jj/repo/op_heads/type>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/type", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.jj/repo/index/type>
+41    fcntl(3</s/jj/repo/.jj/repo/index/type>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(3</s/jj/repo/.jj/repo/index/type>, {st_mode=S_IFREG|0644, st_size=7, ...}) = 0
+41    read(3</s/jj/repo/.jj/repo/index/type>, "default", 32) = 7
+41    read(3</s/jj/repo/.jj/repo/index/type>, "", 32) = 0
+41    close(3</s/jj/repo/.jj/repo/index/type>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/submodule_store/type", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.jj/repo/submodule_store/type>
+41    fcntl(3</s/jj/repo/.jj/repo/submodule_store/type>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(3</s/jj/repo/.jj/repo/submodule_store/type>, {st_mode=S_IFREG|0644, st_size=7, ...}) = 0
+41    read(3</s/jj/repo/.jj/repo/submodule_store/type>, "default", 32) = 7
+41    read(3</s/jj/repo/.jj/repo/submodule_store/type>, "", 32) = 0
+41    close(3</s/jj/repo/.jj/repo/submodule_store/type>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/type", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.jj/working_copy/type>
+41    fcntl(3</s/jj/repo/.jj/working_copy/type>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(3</s/jj/repo/.jj/working_copy/type>, {st_mode=S_IFREG|0644, st_size=5, ...}) = 0
+41    read(3</s/jj/repo/.jj/working_copy/type>, "local", 32) = 5
+41    read(3</s/jj/repo/.jj/working_copy/type>, "", 32) = 0
+41    close(3</s/jj/repo/.jj/working_copy/type>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/checkout", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.jj/working_copy/checkout>
+41    fcntl(3</s/jj/repo/.jj/working_copy/checkout>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(3</s/jj/repo/.jj/working_copy/checkout>, {st_mode=S_IFREG|0600, st_size=75, ...}) = 0
+41    read(3</s/jj/repo/.jj/working_copy/checkout>, "\22@\244\215#\215Z\377\245\36!\340\216:\\\222\315h\307ik<\32\350k\367\307U\266\31\366\10"..., 75) = 75
+41    read(3</s/jj/repo/.jj/working_copy/checkout>, "", 32) = 0
+41    close(3</s/jj/repo/.jj/working_copy/checkout>) = 0
+41    readlinkat(AT_FDCWD</s/jj-in>, "/s", 0xffffe45b3598, 4088) = -1 EINVAL (Invalid argument)
+41    readlinkat(AT_FDCWD</s/jj-in>, "/s/jj", 0xffffe45b3598, 4091) = -1 EINVAL (Invalid argument)
+41    readlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo", 0xffffe45b3598, 4096) = -1 EINVAL (Invalid argument)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/etc/localtime", {st_mode=S_IFLNK|0777, st_size=27, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/etc/localtime", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</usr/share/zoneinfo/Etc/UTC>
+41    fcntl(3</usr/share/zoneinfo/Etc/UTC>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(3</usr/share/zoneinfo/Etc/UTC>, {st_mode=S_IFREG|0644, st_size=114, ...}) = 0
+41    read(3</usr/share/zoneinfo/Etc/UTC>, "TZif2\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 114) = 114
+41    read(3</usr/share/zoneinfo/Etc/UTC>, "", 32) = 0
+41    close(3</usr/share/zoneinfo/Etc/UTC>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/git_import_export.lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 3</s/jj/repo/.jj/repo/git_import_export.lock>
+41    fcntl(3</s/jj/repo/.jj/repo/git_import_export.lock>, F_SETFD, FD_CLOEXEC) = 0
+41    flock(3</s/jj/repo/.jj/repo/git_import_export.lock>, LOCK_EX) = 0
+41    fstat(3</s/jj/repo/.jj/repo/git_import_export.lock>, {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_heads/heads", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</s/jj/repo/.jj/repo/op_heads/heads>
+41    fcntl(4</s/jj/repo/.jj/repo/op_heads/heads>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8ad2e000
+41    getdents64(4</s/jj/repo/.jj/repo/op_heads/heads>, 0xffff8ad2e068 /* 3 entries */, 2048) = 200
+41    getdents64(4</s/jj/repo/.jj/repo/op_heads/heads>, 0xffff8ad2e068 /* 0 entries */, 2048) = 0
+41    close(4</s/jj/repo/.jj/repo/op_heads/heads>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/operations/a48d238d5affa51e21e08e3a5c92cd68c7696b3c1ae86bf7c755b619f608f15c0e0156dd5c032c9531b9e6f7c3a50944bd67fd3192ab98adb1f49552430a0214", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.jj/repo/op_store/operations/a48d238d5affa51e21e08e3a5c92cd68c7696b3c1ae86bf7c755b619f608f15c0e0156dd5c032c9531b9e6f7c3a50944bd67fd3192ab98adb1f49552430a0214>
+41    fcntl(4</s/jj/repo/.jj/repo/op_store/operations/a48d238d5affa51e21e08e3a5c92cd68c7696b3c1ae86bf7c755b619f608f15c0e0156dd5c032c9531b9e6f7c3a50944bd67fd3192ab98adb1f49552430a0214>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(4</s/jj/repo/.jj/repo/op_store/operations/a48d238d5affa51e21e08e3a5c92cd68c7696b3c1ae86bf7c755b619f608f15c0e0156dd5c032c9531b9e6f7c3a50944bd67fd3192ab98adb1f49552430a0214>, {st_mode=S_IFREG|0600, st_size=337, ...}) = 0
+41    read(4</s/jj/repo/.jj/repo/op_store/operations/a48d238d5affa51e21e08e3a5c92cd68c7696b3c1ae86bf7c755b619f608f15c0e0156dd5c032c9531b9e6f7c3a50944bd67fd3192ab98adb1f49552430a0214>, "\n@\234Y/o\3\r`wE\255\7\257\336\237\343D\217\234\270ug\300\321\314\271\0361w\v\353"..., 337) = 337
+41    read(4</s/jj/repo/.jj/repo/op_store/operations/a48d238d5affa51e21e08e3a5c92cd68c7696b3c1ae86bf7c755b619f608f15c0e0156dd5c032c9531b9e6f7c3a50944bd67fd3192ab98adb1f49552430a0214>, "", 32) = 0
+41    close(4</s/jj/repo/.jj/repo/op_store/operations/a48d238d5affa51e21e08e3a5c92cd68c7696b3c1ae86bf7c755b619f608f15c0e0156dd5c032c9531b9e6f7c3a50944bd67fd3192ab98adb1f49552430a0214>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/views/9c592f6f030d607745ad07afde9fe3448f9cb87567c0d1ccb91e31770beb1c57fc54606dd1283bb9964fe2b4d970cdd548f42a69dcc2096264d7689f51755198", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.jj/repo/op_store/views/9c592f6f030d607745ad07afde9fe3448f9cb87567c0d1ccb91e31770beb1c57fc54606dd1283bb9964fe2b4d970cdd548f42a69dcc2096264d7689f51755198>
+41    fcntl(4</s/jj/repo/.jj/repo/op_store/views/9c592f6f030d607745ad07afde9fe3448f9cb87567c0d1ccb91e31770beb1c57fc54606dd1283bb9964fe2b4d970cdd548f42a69dcc2096264d7689f51755198>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(4</s/jj/repo/.jj/repo/op_store/views/9c592f6f030d607745ad07afde9fe3448f9cb87567c0d1ccb91e31770beb1c57fc54606dd1283bb9964fe2b4d970cdd548f42a69dcc2096264d7689f51755198>, {st_mode=S_IFREG|0600, st_size=124, ...}) = 0
+41    read(4</s/jj/repo/.jj/repo/op_store/views/9c592f6f030d607745ad07afde9fe3448f9cb87567c0d1ccb91e31770beb1c57fc54606dd1283bb9964fe2b4d970cdd548f42a69dcc2096264d7689f51755198>, "\n\24*~c\254\231\337\203s\2\364\262a#\254E\305\313v\303\356B\37\n\7defaul"..., 124) = 124
+41    read(4</s/jj/repo/.jj/repo/op_store/views/9c592f6f030d607745ad07afde9fe3448f9cb87567c0d1ccb91e31770beb1c57fc54606dd1283bb9964fe2b4d970cdd548f42a69dcc2096264d7689f51755198>, "", 32) = 0
+41    close(4</s/jj/repo/.jj/repo/op_store/views/9c592f6f030d607745ad07afde9fe3448f9cb87567c0d1ccb91e31770beb1c57fc54606dd1283bb9964fe2b4d970cdd548f42a69dcc2096264d7689f51755198>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/op_links/a48d238d5affa51e21e08e3a5c92cd68c7696b3c1ae86bf7c755b619f608f15c0e0156dd5c032c9531b9e6f7c3a50944bd67fd3192ab98adb1f49552430a0214", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.jj/repo/index/op_links/a48d238d5affa51e21e08e3a5c92cd68c7696b3c1ae86bf7c755b619f608f15c0e0156dd5c032c9531b9e6f7c3a50944bd67fd3192ab98adb1f49552430a0214>
+41    fcntl(4</s/jj/repo/.jj/repo/index/op_links/a48d238d5affa51e21e08e3a5c92cd68c7696b3c1ae86bf7c755b619f608f15c0e0156dd5c032c9531b9e6f7c3a50944bd67fd3192ab98adb1f49552430a0214>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(4</s/jj/repo/.jj/repo/index/op_links/a48d238d5affa51e21e08e3a5c92cd68c7696b3c1ae86bf7c755b619f608f15c0e0156dd5c032c9531b9e6f7c3a50944bd67fd3192ab98adb1f49552430a0214>, {st_mode=S_IFREG|0600, st_size=66, ...}) = 0
+41    read(4</s/jj/repo/.jj/repo/index/op_links/a48d238d5affa51e21e08e3a5c92cd68c7696b3c1ae86bf7c755b619f608f15c0e0156dd5c032c9531b9e6f7c3a50944bd67fd3192ab98adb1f49552430a0214>, "\n@\257\6\207\327\0235\213\312\277_\355\216\241b\226\33(\\0F\242\215\344\3K\274\26\363\231Q"..., 66) = 66
+41    read(4</s/jj/repo/.jj/repo/index/op_links/a48d238d5affa51e21e08e3a5c92cd68c7696b3c1ae86bf7c755b619f608f15c0e0156dd5c032c9531b9e6f7c3a50944bd67fd3192ab98adb1f49552430a0214>, "", 32) = 0
+41    close(4</s/jj/repo/.jj/repo/index/op_links/a48d238d5affa51e21e08e3a5c92cd68c7696b3c1ae86bf7c755b619f608f15c0e0156dd5c032c9531b9e6f7c3a50944bd67fd3192ab98adb1f49552430a0214>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/segments/af0687d713358bcabf5fed8ea162961b285c3046a28de4034bbc16f399512fdd10c11ec877ae97b0e59c64cb1de9609a7562df7a5e7c08a861122e1e07ec302b", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.jj/repo/index/segments/af0687d713358bcabf5fed8ea162961b285c3046a28de4034bbc16f399512fdd10c11ec877ae97b0e59c64cb1de9609a7562df7a5e7c08a861122e1e07ec302b>
+41    fcntl(4</s/jj/repo/.jj/repo/index/segments/af0687d713358bcabf5fed8ea162961b285c3046a28de4034bbc16f399512fdd10c11ec877ae97b0e59c64cb1de9609a7562df7a5e7c08a861122e1e07ec302b>, F_SETFD, FD_CLOEXEC) = 0
+41    read(4</s/jj/repo/.jj/repo/index/segments/af0687d713358bcabf5fed8ea162961b285c3046a28de4034bbc16f399512fdd10c11ec877ae97b0e59c64cb1de9609a7562df7a5e7c08a861122e1e07ec302b>, "\6\0\0\0", 4) = 4
+41    read(4</s/jj/repo/.jj/repo/index/segments/af0687d713358bcabf5fed8ea162961b285c3046a28de4034bbc16f399512fdd10c11ec877ae97b0e59c64cb1de9609a7562df7a5e7c08a861122e1e07ec302b>, "\0\0\0\0", 4) = 4
+41    read(4</s/jj/repo/.jj/repo/index/segments/af0687d713358bcabf5fed8ea162961b285c3046a28de4034bbc16f399512fdd10c11ec877ae97b0e59c64cb1de9609a7562df7a5e7c08a861122e1e07ec302b>, "\5\0\0\0", 4) = 4
+41    read(4</s/jj/repo/.jj/repo/index/segments/af0687d713358bcabf5fed8ea162961b285c3046a28de4034bbc16f399512fdd10c11ec877ae97b0e59c64cb1de9609a7562df7a5e7c08a861122e1e07ec302b>, "\2\0\0\0", 4) = 4
+41    read(4</s/jj/repo/.jj/repo/index/segments/af0687d713358bcabf5fed8ea162961b285c3046a28de4034bbc16f399512fdd10c11ec877ae97b0e59c64cb1de9609a7562df7a5e7c08a861122e1e07ec302b>, "\0\0\0\0", 4) = 4
+41    read(4</s/jj/repo/.jj/repo/index/segments/af0687d713358bcabf5fed8ea162961b285c3046a28de4034bbc16f399512fdd10c11ec877ae97b0e59c64cb1de9609a7562df7a5e7c08a861122e1e07ec302b>, "\4\0\0\0", 4) = 4
+41    fstat(4</s/jj/repo/.jj/repo/index/segments/af0687d713358bcabf5fed8ea162961b285c3046a28de4034bbc16f399512fdd10c11ec877ae97b0e59c64cb1de9609a7562df7a5e7c08a861122e1e07ec302b>, {st_mode=S_IFREG|0600, st_size=280, ...}) = 0
+41    lseek(4</s/jj/repo/.jj/repo/index/segments/af0687d713358bcabf5fed8ea162961b285c3046a28de4034bbc16f399512fdd10c11ec877ae97b0e59c64cb1de9609a7562df7a5e7c08a861122e1e07ec302b>, 0, SEEK_CUR) = 24
+41    read(4</s/jj/repo/.jj/repo/index/segments/af0687d713358bcabf5fed8ea162961b285c3046a28de4034bbc16f399512fdd10c11ec877ae97b0e59c64cb1de9609a7562df7a5e7c08a861122e1e07ec302b>, "\0\0\0\0\377\377\377\377\377\377\377\377\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 256) = 256
+41    read(4</s/jj/repo/.jj/repo/index/segments/af0687d713358bcabf5fed8ea162961b285c3046a28de4034bbc16f399512fdd10c11ec877ae97b0e59c64cb1de9609a7562df7a5e7c08a861122e1e07ec302b>, "", 32) = 0
+41    close(4</s/jj/repo/.jj/repo/index/segments/af0687d713358bcabf5fed8ea162961b285c3046a28de4034bbc16f399512fdd10c11ec877ae97b0e59c64cb1de9609a7562df7a5e7c08a861122e1e07ec302b>) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/packed-refs", 0xffffe45aa8f0, 0) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/HEAD", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.git/HEAD>
+41    fcntl(4</s/jj/repo/.git/HEAD>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(4</s/jj/repo/.git/HEAD>, {st_mode=S_IFREG|0644, st_size=41, ...}) = 0
+41    lseek(4</s/jj/repo/.git/HEAD>, 0, SEEK_CUR) = 0
+41    read(4</s/jj/repo/.git/HEAD>, "c66ab3a2533aa0ed6b1ede456b884d59"..., 128) = 41
+41    read(4</s/jj/repo/.git/HEAD>, "", 87) = 0
+41    close(4</s/jj/repo/.git/HEAD>)    = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/info/alternates", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/pack", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</s/jj/repo/.git/objects/pack>
+41    fcntl(4</s/jj/repo/.git/objects/pack>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8ad2e000
+41    getdents64(4</s/jj/repo/.git/objects/pack>, 0xffff8ad2e078 /* 2 entries */, 2048) = 48
+41    getdents64(4</s/jj/repo/.git/objects/pack>, 0xffff8ad2e078 /* 0 entries */, 2048) = 0
+41    close(4</s/jj/repo/.git/objects/pack>) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1", {st_mode=S_IFREG|0444, st_size=174, ...}, 0) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1>
+41    fcntl(4</s/jj/repo/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(4</s/jj/repo/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1>, {st_mode=S_IFREG|0444, st_size=174, ...}) = 0
+41    mmap(NULL, 174, PROT_READ, MAP_PRIVATE, 4</s/jj/repo/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1>, 0) = 0xffff8ad2f000
+41    close(4</s/jj/repo/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1>) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj-home/.config/git/ignore", 0xffffe45a64d0, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/info/exclude", {st_mode=S_IFREG|0644, st_size=269, ...}, 0) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/info/exclude", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.git/info/exclude>
+41    fcntl(4</s/jj/repo/.git/info/exclude>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(4</s/jj/repo/.git/info/exclude>, {st_mode=S_IFREG|0644, st_size=269, ...}) = 0
+41    read(4</s/jj/repo/.git/info/exclude>, "# This file contains repository-"..., 269) = 269
+41    read(4</s/jj/repo/.git/info/exclude>, "", 32) = 0
+41    close(4</s/jj/repo/.git/info/exclude>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/working_copy.lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 4</s/jj/repo/.jj/working_copy/working_copy.lock>
+41    fcntl(4</s/jj/repo/.jj/working_copy/working_copy.lock>, F_SETFD, FD_CLOEXEC) = 0
+41    flock(4</s/jj/repo/.jj/working_copy/working_copy.lock>, LOCK_EX) = 0
+41    fstat(4</s/jj/repo/.jj/working_copy/working_copy.lock>, {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/checkout", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</s/jj/repo/.jj/working_copy/checkout>
+41    fcntl(5</s/jj/repo/.jj/working_copy/checkout>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(5</s/jj/repo/.jj/working_copy/checkout>, {st_mode=S_IFREG|0600, st_size=75, ...}) = 0
+41    read(5</s/jj/repo/.jj/working_copy/checkout>, "\22@\244\215#\215Z\377\245\36!\340\216:\\\222\315h\307ik<\32\350k\367\307U\266\31\366\10"..., 75) = 75
+41    read(5</s/jj/repo/.jj/working_copy/checkout>, "", 32) = 0
+41    close(5</s/jj/repo/.jj/working_copy/checkout>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/tree_state", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</s/jj/repo/.jj/working_copy/tree_state>
+41    fcntl(5</s/jj/repo/.jj/working_copy/tree_state>, F_SETFD, FD_CLOEXEC) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy", O_RDWR|O_LARGEFILE|O_CLOEXEC|O_TMPFILE, 0666) = 6</s/jj/repo/.jj/working_copy/#713354>(deleted)
+41    fcntl(6</s/jj/repo/.jj/working_copy/#713354>(deleted), F_SETFD, FD_CLOEXEC) = 0
+41    fstat(6</s/jj/repo/.jj/working_copy/#713354>(deleted), {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+41    fchmod(6</s/jj/repo/.jj/working_copy/#713354>(deleted), 0100744) = 0
+41    fstat(6</s/jj/repo/.jj/working_copy/#713354>(deleted), {st_mode=S_IFREG|0744, st_size=0, ...}) = 0
+41    close(6</s/jj/repo/.jj/working_copy/#713354>(deleted)) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/tree_state", {st_mode=S_IFREG|0600, st_size=48, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    fstat(5</s/jj/repo/.jj/working_copy/tree_state>, {st_mode=S_IFREG|0600, st_size=48, ...}) = 0
+41    lseek(5</s/jj/repo/.jj/working_copy/tree_state>, 0, SEEK_CUR) = 0
+41    read(5</s/jj/repo/.jj/working_copy/tree_state>, "\22\22\n\5alpha\22\t\10\200\320\352\266\2673\20\23\32\2\n\0*\24\\!E\373\332\35"..., 48) = 48
+41    read(5</s/jj/repo/.jj/working_copy/tree_state>, "", 32) = 0
+41    close(5</s/jj/repo/.jj/working_copy/tree_state>) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/2a/7e63ac99df837302f4b26123ac45c5cb76c3ee", {st_mode=S_IFREG|0444, st_size=214, ...}, 0) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/2a/7e63ac99df837302f4b26123ac45c5cb76c3ee", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</s/jj/repo/.git/objects/2a/7e63ac99df837302f4b26123ac45c5cb76c3ee>
+41    fcntl(5</s/jj/repo/.git/objects/2a/7e63ac99df837302f4b26123ac45c5cb76c3ee>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(5</s/jj/repo/.git/objects/2a/7e63ac99df837302f4b26123ac45c5cb76c3ee>, {st_mode=S_IFREG|0444, st_size=214, ...}) = 0
+41    mmap(NULL, 214, PROT_READ, MAP_PRIVATE, 5</s/jj/repo/.git/objects/2a/7e63ac99df837302f4b26123ac45c5cb76c3ee>, 0) = 0xffff8ad2f000
+41    close(5</s/jj/repo/.git/objects/2a/7e63ac99df837302f4b26123ac45c5cb76c3ee>) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/shallow", 0xffffe45a5f80, 0) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/heads", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 5</s/jj/repo/.jj/repo/store/extra/heads>
+41    fcntl(5</s/jj/repo/.jj/repo/store/extra/heads>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8ad2e000
+41    getdents64(5</s/jj/repo/.jj/repo/store/extra/heads>, 0xffff8ad2e088 /* 3 entries */, 2048) = 200
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/e20464a3cbc14ed9fe8fc316661f610572349f5dff1fc7e7541ef1e208d44946e863046c051cd62ed46e7da6f9ec435137049e20f0fabe236a3785e642504398", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 6</s/jj/repo/.jj/repo/store/extra/e20464a3cbc14ed9fe8fc316661f610572349f5dff1fc7e7541ef1e208d44946e863046c051cd62ed46e7da6f9ec435137049e20f0fabe236a3785e642504398>
+41    fcntl(6</s/jj/repo/.jj/repo/store/extra/e20464a3cbc14ed9fe8fc316661f610572349f5dff1fc7e7541ef1e208d44946e863046c051cd62ed46e7da6f9ec435137049e20f0fabe236a3785e642504398>, F_SETFD, FD_CLOEXEC) = 0
+41    read(6</s/jj/repo/.jj/repo/store/extra/e20464a3cbc14ed9fe8fc316661f610572349f5dff1fc7e7541ef1e208d44946e863046c051cd62ed46e7da6f9ec435137049e20f0fabe236a3785e642504398>, "\200\0\0\0", 4) = 4
+41    read(6</s/jj/repo/.jj/repo/store/extra/e20464a3cbc14ed9fe8fc316661f610572349f5dff1fc7e7541ef1e208d44946e863046c051cd62ed46e7da6f9ec435137049e20f0fabe236a3785e642504398>, "a572533689af880842896aba4ee0aa65"..., 128) = 128
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/a572533689af880842896aba4ee0aa650630c644761345690f4a8a733a41706f7f655464ddeb39dc5a05ab3782d48069e5af32bae7828f032f0f80921fb6f3bf", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 7</s/jj/repo/.jj/repo/store/extra/a572533689af880842896aba4ee0aa650630c644761345690f4a8a733a41706f7f655464ddeb39dc5a05ab3782d48069e5af32bae7828f032f0f80921fb6f3bf>
+41    fcntl(7</s/jj/repo/.jj/repo/store/extra/a572533689af880842896aba4ee0aa650630c644761345690f4a8a733a41706f7f655464ddeb39dc5a05ab3782d48069e5af32bae7828f032f0f80921fb6f3bf>, F_SETFD, FD_CLOEXEC) = 0
+41    read(7</s/jj/repo/.jj/repo/store/extra/a572533689af880842896aba4ee0aa650630c644761345690f4a8a733a41706f7f655464ddeb39dc5a05ab3782d48069e5af32bae7828f032f0f80921fb6f3bf>, "\0\0\0\0", 4) = 4
+41    read(7</s/jj/repo/.jj/repo/store/extra/a572533689af880842896aba4ee0aa650630c644761345690f4a8a733a41706f7f655464ddeb39dc5a05ab3782d48069e5af32bae7828f032f0f80921fb6f3bf>, "\3\0\0\0", 4) = 4
+41    fstat(7</s/jj/repo/.jj/repo/store/extra/a572533689af880842896aba4ee0aa650630c644761345690f4a8a733a41706f7f655464ddeb39dc5a05ab3782d48069e5af32bae7828f032f0f80921fb6f3bf>, {st_mode=S_IFREG|0600, st_size=184, ...}) = 0
+41    lseek(7</s/jj/repo/.jj/repo/store/extra/a572533689af880842896aba4ee0aa650630c644761345690f4a8a733a41706f7f655464ddeb39dc5a05ab3782d48069e5af32bae7828f032f0f80921fb6f3bf>, 0, SEEK_CUR) = 8
+41    read(7</s/jj/repo/.jj/repo/store/extra/a572533689af880842896aba4ee0aa650630c644761345690f4a8a733a41706f7f655464ddeb39dc5a05ab3782d48069e5af32bae7828f032f0f80921fb6f3bf>, "V7Z5\274~\243k\\p@\322C\227l\361\221#{)\0\0\0\0\230\245\366PoU>^"..., 176) = 176
+41    read(7</s/jj/repo/.jj/repo/store/extra/a572533689af880842896aba4ee0aa650630c644761345690f4a8a733a41706f7f655464ddeb39dc5a05ab3782d48069e5af32bae7828f032f0f80921fb6f3bf>, "", 32) = 0
+41    close(7</s/jj/repo/.jj/repo/store/extra/a572533689af880842896aba4ee0aa650630c644761345690f4a8a733a41706f7f655464ddeb39dc5a05ab3782d48069e5af32bae7828f032f0f80921fb6f3bf>) = 0
+41    read(6</s/jj/repo/.jj/repo/store/extra/e20464a3cbc14ed9fe8fc316661f610572349f5dff1fc7e7541ef1e208d44946e863046c051cd62ed46e7da6f9ec435137049e20f0fabe236a3785e642504398>, "\1\0\0\0", 4) = 4
+41    fstat(6</s/jj/repo/.jj/repo/store/extra/e20464a3cbc14ed9fe8fc316661f610572349f5dff1fc7e7541ef1e208d44946e863046c051cd62ed46e7da6f9ec435137049e20f0fabe236a3785e642504398>, {st_mode=S_IFREG|0600, st_size=180, ...}) = 0
+41    lseek(6</s/jj/repo/.jj/repo/store/extra/e20464a3cbc14ed9fe8fc316661f610572349f5dff1fc7e7541ef1e208d44946e863046c051cd62ed46e7da6f9ec435137049e20f0fabe236a3785e642504398>, 0, SEEK_CUR) = 136
+41    read(6</s/jj/repo/.jj/repo/store/extra/e20464a3cbc14ed9fe8fc316661f610572349f5dff1fc7e7541ef1e208d44946e863046c051cd62ed46e7da6f9ec435137049e20f0fabe236a3785e642504398>, "*~c\254\231\337\203s\2\364\262a#\254E\305\313v\303\356\0\0\0\0\"\20x\21\231\371\325]"..., 44) = 44
+41    read(6</s/jj/repo/.jj/repo/store/extra/e20464a3cbc14ed9fe8fc316661f610572349f5dff1fc7e7541ef1e208d44946e863046c051cd62ed46e7da6f9ec435137049e20f0fabe236a3785e642504398>, "", 32) = 0
+41    close(6</s/jj/repo/.jj/repo/store/extra/e20464a3cbc14ed9fe8fc316661f610572349f5dff1fc7e7541ef1e208d44946e863046c051cd62ed46e7da6f9ec435137049e20f0fabe236a3785e642504398>) = 0
+41    getdents64(5</s/jj/repo/.jj/repo/store/extra/heads>, 0xffff8ad2e088 /* 0 entries */, 2048) = 0
+41    close(5</s/jj/repo/.jj/repo/store/extra/heads>) = 0
+41    ioctl(2</out/jj/preflight-1.txt>, TIOCGWINSZ, 0xffffe45a74b8) = -1 ENOTTY (Inappropriate ioctl for device)
+41    openat(AT_FDCWD</s/jj-in>, "/proc/self/cgroup", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</proc/41/cgroup>
+41    fcntl(5</proc/41/cgroup>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(5</proc/41/cgroup>, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+41    lseek(5</proc/41/cgroup>, 0, SEEK_CUR) = 0
+41    read(5</proc/41/cgroup>, "0::/sideeye-35-a81de09fb6f7b665/"..., 128) = 37
+41    read(5</proc/41/cgroup>, "", 91)  = 0
+41    close(5</proc/41/cgroup>)         = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/sys/fs/cgroup/sideeye-35-a81de09fb6f7b665/work/cgroup.controllers", {st_mode=S_IFREG|0444, st_size=0, ...}, 0) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/sys/fs/cgroup/sideeye-35-a81de09fb6f7b665/work/cpu.max", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/sys/fs/cgroup/sideeye-35-a81de09fb6f7b665/cpu.max", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</sys/fs/cgroup/cpu.max>
+41    fcntl(5</sys/fs/cgroup/cpu.max>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(5</sys/fs/cgroup/cpu.max>, {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+41    lseek(5</sys/fs/cgroup/cpu.max>, 0, SEEK_CUR) = 0
+41    read(5</sys/fs/cgroup/cpu.max>, "max 100000\n", 32) = 11
+41    read(5</sys/fs/cgroup/cpu.max>, "", 32) = 0
+41    close(5</sys/fs/cgroup/cpu.max>)  = 0
+41    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8ab2d000
+41    mprotect(0xffff8ab2f000, 2101248, PROT_READ|PROT_WRITE) = 0
+41    clone(child_stack=0xffff8ad2f6f0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[43], tls=0xffff8ad2f7f0, child_tidptr=0x17ee750) = 43
+41    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8a92a000
+41    mprotect(0xffff8a92c000, 2101248, PROT_READ|PROT_WRITE) = 0
+43    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffff8a926000
+41    clone(child_stack=0xffff8ab2c6f0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000 <unfinished ...>
+43    mprotect(0xffff8a926000, 4096, PROT_NONE) = 0
+41    <... clone resumed>, parent_tid=[44], tls=0xffff8ab2c7f0, child_tidptr=0x17ee750) = 44
+41    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8a723000
+41    mprotect(0xffff8a725000, 2101248, PROT_READ|PROT_WRITE) = 0
+44    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffff8a71f000
+41    clone(child_stack=0xffff8a9256f0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000 <unfinished ...>
+44    mprotect(0xffff8a71f000, 4096, PROT_NONE) = 0
+41    <... clone resumed>, parent_tid=[45], tls=0xffff8a9257f0, child_tidptr=0x17ee750) = 45
+41    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8a51c000
+41    mprotect(0xffff8a51e000, 2101248, PROT_READ|PROT_WRITE) = 0
+45    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffff8a518000
+41    clone(child_stack=0xffff8a71e6f0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000 <unfinished ...>
+45    mprotect(0xffff8a518000, 4096, PROT_NONE) = 0
+41    <... clone resumed>, parent_tid=[46], tls=0xffff8a71e7f0, child_tidptr=0x17ee750) = 46
+41    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8a315000
+41    mprotect(0xffff8a317000, 2101248, PROT_READ|PROT_WRITE) = 0
+46    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffff8a311000
+41    clone(child_stack=0xffff8a5176f0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000 <unfinished ...>
+46    mprotect(0xffff8a311000, 4096, PROT_NONE) = 0
+41    <... clone resumed>, parent_tid=[47], tls=0xffff8a5177f0, child_tidptr=0x17ee750) = 47
+41    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8a10e000
+41    mprotect(0xffff8a110000, 2101248, PROT_READ|PROT_WRITE) = 0
+47    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffff8a10a000
+41    clone(child_stack=0xffff8a3106f0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000 <unfinished ...>
+47    mprotect(0xffff8a10a000, 4096, PROT_NONE) = 0
+41    <... clone resumed>, parent_tid=[48], tls=0xffff8a3107f0, child_tidptr=0x17ee750) = 48
+41    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff89f07000
+41    mprotect(0xffff89f09000, 2101248, PROT_READ|PROT_WRITE) = 0
+48    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0 <unfinished ...>
+41    clone(child_stack=0xffff8a1096f0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000 <unfinished ...>
+48    <... mmap resumed>)               = 0xffff89f03000
+48    mprotect(0xffff89f03000, 4096, PROT_NONE) = 0
+41    <... clone resumed>, parent_tid=[49], tls=0xffff8a1097f0, child_tidptr=0x17ee750) = 49
+41    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff89d00000
+41    mprotect(0xffff89d02000, 2101248, PROT_READ|PROT_WRITE) = 0
+49    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffff89cfc000
+49    mprotect(0xffff89cfc000, 4096, PROT_NONE <unfinished ...>
+41    clone(child_stack=0xffff89f026f0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000 <unfinished ...>
+49    <... mprotect resumed>)           = 0
+41    <... clone resumed>, parent_tid=[50], tls=0xffff89f027f0, child_tidptr=0x17ee750) = 50
+41    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff89af9000
+41    mprotect(0xffff89afb000, 2101248, PROT_READ|PROT_WRITE) = 0
+50    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0 <unfinished ...>
+41    clone(child_stack=0xffff89cfb6f0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000 <unfinished ...>
+50    <... mmap resumed>)               = 0xffff89af5000
+50    mprotect(0xffff89af5000, 4096, PROT_NONE) = 0
+41    <... clone resumed>, parent_tid=[51], tls=0xffff89cfb7f0, child_tidptr=0x17ee750) = 51
+41    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898f2000
+41    mprotect(0xffff898f4000, 2101248, PROT_READ|PROT_WRITE <unfinished ...>
+51    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0 <unfinished ...>
+41    <... mprotect resumed>)           = 0
+51    <... mmap resumed>)               = 0xffff898ee000
+51    mprotect(0xffff898ee000, 4096, PROT_NONE) = 0
+41    clone(child_stack=0xffff89af46f0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[52], tls=0xffff89af47f0, child_tidptr=0x17ee750) = 52
+52    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0 <unfinished ...>
+49    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.gitignore",  <unfinished ...>
+52    <... mmap resumed>)               = 0xffff898ea000
+52    mprotect(0xffff898ea000, 4096, PROT_NONE <unfinished ...>
+49    <... newfstatat resumed>0xffff8a1083d0, AT_SYMLINK_NOFOLLOW) = -1 ENOENT (No such file or directory)
+52    <... mprotect resumed>)           = 0
+49    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 5</s/jj/repo>
+49    fcntl(5</s/jj/repo>, F_SETFD, FD_CLOEXEC) = 0
+49    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+49    getdents64(5</s/jj/repo>, 0xffff898e8098 /* 5 entries */, 2048) = 128
+49    getdents64(5</s/jj/repo>, 0xffff898e8098 /* 0 entries */, 2048) = 0
+49    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/alpha", {st_mode=S_IFREG|0644, st_size=28, ...}, AT_SYMLINK_NOFOLLOW) = 0
+49    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/5c/2145fbda1dd2974bd1933b87ac4cb1833bf9f7", {st_mode=S_IFREG|0444, st_size=51, ...}, 0) = 0
+49    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/5c/2145fbda1dd2974bd1933b87ac4cb1833bf9f7", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 6</s/jj/repo/.git/objects/5c/2145fbda1dd2974bd1933b87ac4cb1833bf9f7>
+49    fcntl(6</s/jj/repo/.git/objects/5c/2145fbda1dd2974bd1933b87ac4cb1833bf9f7>, F_SETFD, FD_CLOEXEC) = 0
+49    fstat(6</s/jj/repo/.git/objects/5c/2145fbda1dd2974bd1933b87ac4cb1833bf9f7>, {st_mode=S_IFREG|0444, st_size=51, ...}) = 0
+49    mmap(NULL, 51, PROT_READ, MAP_PRIVATE, 6</s/jj/repo/.git/objects/5c/2145fbda1dd2974bd1933b87ac4cb1833bf9f7>, 0) = 0xffff898e7000
+49    close(6</s/jj/repo/.git/objects/5c/2145fbda1dd2974bd1933b87ac4cb1833bf9f7>) = 0
+49    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/alpha", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 6</s/jj/repo/alpha>
+49    fcntl(6</s/jj/repo/alpha>, F_SETFD, FD_CLOEXEC) = 0
+49    read(6</s/jj/repo/alpha>, "alpha, modified fixed bytes\n", 32) = 28
+49    read(6</s/jj/repo/alpha>, "", 4)  = 0
+49    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/46/d35347fc0dca453c1626596ad1751bc1d86828", 0xffff8a1069e0, 0) = -1 ENOENT (No such file or directory)
+49    newfstatat(AT_FDCWD</s/jj-in>, "/s", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+49    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+49    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+49    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+49    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+49    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/info/alternates", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+49    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/pack", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 7</s/jj/repo/.git/objects/pack>
+49    fcntl(7</s/jj/repo/.git/objects/pack>, F_SETFD, FD_CLOEXEC) = 0
+49    getdents64(7</s/jj/repo/.git/objects/pack>, 0xffff898e8b38 /* 2 entries */, 2048) = 48
+49    getdents64(7</s/jj/repo/.git/objects/pack>, 0xffff898e8b38 /* 0 entries */, 2048) = 0
+49    close(7</s/jj/repo/.git/objects/pack>) = 0
+49    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/.tmpYpeyxE", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0444) = 7</s/jj/repo/.git/objects/.tmpYpeyxE>
+49    fcntl(7</s/jj/repo/.git/objects/.tmpYpeyxE>, F_SETFD, FD_CLOEXEC) = 0
+49    write(7</s/jj/repo/.git/objects/.tmpYpeyxE>, "x\1", 2) = 2
+49    write(7</s/jj/repo/.git/objects/.tmpYpeyxE>, "\2,)'?I\301\310\202!1\247 #QG!7?%3-35E!-\263\"5E!"..., 43) = 43
+49    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/46", 0777) = 0
+49    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/.tmpYpeyxE", AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/46/d35347fc0dca453c1626596ad1751bc1d86828") = 0
+49    close(7</s/jj/repo/.git/objects/46/d35347fc0dca453c1626596ad1751bc1d86828>) = 0
+49    close(6</s/jj/repo/alpha>)        = 0
+49    close(5</s/jj/repo>)              = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/2a/6e878f275cc3a0ed08f2d7d2e17d16651b5621", 0xffffe45a1f60, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/info/alternates", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/pack", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 5</s/jj/repo/.git/objects/pack>
+41    fcntl(5</s/jj/repo/.git/objects/pack>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(5</s/jj/repo/.git/objects/pack>, 0xffff898e80a8 /* 2 entries */, 2048) = 48
+41    getdents64(5</s/jj/repo/.git/objects/pack>, 0xffff898e80a8 /* 0 entries */, 2048) = 0
+41    close(5</s/jj/repo/.git/objects/pack>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/.tmp11sWAa", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0444) = 5</s/jj/repo/.git/objects/.tmp11sWAa>
+41    fcntl(5</s/jj/repo/.git/objects/.tmp11sWAa>, F_SETFD, FD_CLOEXEC) = 0
+41    write(5</s/jj/repo/.git/objects/.tmp11sWAa>, "x\1", 2) = 2
+41    write(5</s/jj/repo/.git/objects/.tmp11sWAa>, "\2\254\244(5U\301\330\230\301\320\300\300\314\304D!1\247 #\221\301\355r\260\373\37\336S\2566"..., 49) = 49
+41    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/2a", 0777) = -1 EEXIST (File exists)
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/.tmp11sWAa", AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/2a/6e878f275cc3a0ed08f2d7d2e17d16651b5621") = 0
+41    close(5</s/jj/repo/.git/objects/2a/6e878f275cc3a0ed08f2d7d2e17d16651b5621>) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1", {st_mode=S_IFREG|0444, st_size=174, ...}, 0) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</s/jj/repo/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1>
+41    fcntl(5</s/jj/repo/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(5</s/jj/repo/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1>, {st_mode=S_IFREG|0444, st_size=174, ...}) = 0
+41    mmap(NULL, 174, PROT_READ, MAP_PRIVATE, 5</s/jj/repo/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1>, 0) = 0xffff898e9000
+41    close(5</s/jj/repo/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 5</s/jj/repo/.jj/repo/store/extra/lock>
+41    fcntl(5</s/jj/repo/.jj/repo/store/extra/lock>, F_SETFD, FD_CLOEXEC) = 0
+41    flock(5</s/jj/repo/.jj/repo/store/extra/lock>, LOCK_EX) = 0
+41    fstat(5</s/jj/repo/.jj/repo/store/extra/lock>, {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/heads", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 6</s/jj/repo/.jj/repo/store/extra/heads>
+41    fcntl(6</s/jj/repo/.jj/repo/store/extra/heads>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(6</s/jj/repo/.jj/repo/store/extra/heads>, 0xffff898e80b8 /* 3 entries */, 2048) = 200
+41    getdents64(6</s/jj/repo/.jj/repo/store/extra/heads>, 0xffff898e80b8 /* 0 entries */, 2048) = 0
+41    close(6</s/jj/repo/.jj/repo/store/extra/heads>) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/57/79465a5b10f58944ef75ac1514081c2b733961", 0xffffe45a6280, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/info/alternates", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/pack", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 6</s/jj/repo/.git/objects/pack>
+41    fcntl(6</s/jj/repo/.git/objects/pack>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(6</s/jj/repo/.git/objects/pack>, 0xffff898e80c8 /* 2 entries */, 2048) = 48
+41    getdents64(6</s/jj/repo/.git/objects/pack>, 0xffff898e80c8 /* 0 entries */, 2048) = 0
+41    close(6</s/jj/repo/.git/objects/pack>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/.tmphWVuRW", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0444) = 6</s/jj/repo/.git/objects/.tmphWVuRW>
+41    fcntl(6</s/jj/repo/.git/objects/.tmphWVuRW>, F_SETFD, FD_CLOEXEC) = 0
+41    write(6</s/jj/repo/.git/objects/.tmphWVuRW>, "x\1", 2) = 2
+41    write(6</s/jj/repo/.git/objects/.tmphWVuRW>, "\2,9?77\263D\301\310\304\222\241\244(5U\301(\321,\325\302\334\"\315\310\33449\3318"..., 210) = 210
+41    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/57", 0777) = 0
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/.tmphWVuRW", AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/57/79465a5b10f58944ef75ac1514081c2b733961") = 0
+41    close(6</s/jj/repo/.git/objects/57/79465a5b10f58944ef75ac1514081c2b733961>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 6</usr/share/zoneinfo>
+41    fcntl(6</usr/share/zoneinfo>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(6</usr/share/zoneinfo>, 0xffff898e80d8 /* 25 entries */, 2048) = 760
+41    getdents64(6</usr/share/zoneinfo>, 0xffff898e80d8 /* 0 entries */, 2048) = 0
+41    close(6</usr/share/zoneinfo>)     = 0
+41    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Etc", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 6</usr/share/zoneinfo/Etc>
+41    fcntl(6</usr/share/zoneinfo/Etc>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(6</usr/share/zoneinfo/Etc>, 0xffff898e80e8 /* 37 entries */, 2048) = 1128
+41    getdents64(6</usr/share/zoneinfo/Etc>, 0xffff898e80e8 /* 0 entries */, 2048) = 0
+41    close(6</usr/share/zoneinfo/Etc>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Antarctica", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 6</usr/share/zoneinfo/Antarctica>
+41    fcntl(6</usr/share/zoneinfo/Antarctica>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(6</usr/share/zoneinfo/Antarctica>, 0xffff898e80f8 /* 13 entries */, 2048) = 408
+41    getdents64(6</usr/share/zoneinfo/Antarctica>, 0xffff898e80f8 /* 0 entries */, 2048) = 0
+41    close(6</usr/share/zoneinfo/Antarctica>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Africa", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 6</usr/share/zoneinfo/Africa>
+41    fcntl(6</usr/share/zoneinfo/Africa>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(6</usr/share/zoneinfo/Africa>, 0xffff898e8108 /* 55 entries */, 2048) = 1736
+41    getdents64(6</usr/share/zoneinfo/Africa>, 0xffff898e8108 /* 0 entries */, 2048) = 0
+41    close(6</usr/share/zoneinfo/Africa>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Indian", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 6</usr/share/zoneinfo/Indian>
+41    fcntl(6</usr/share/zoneinfo/Indian>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(6</usr/share/zoneinfo/Indian>, 0xffff898e8118 /* 13 entries */, 2048) = 392
+41    getdents64(6</usr/share/zoneinfo/Indian>, 0xffff898e8118 /* 0 entries */, 2048) = 0
+41    close(6</usr/share/zoneinfo/Indian>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Pacific", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 6</usr/share/zoneinfo/Pacific>
+41    fcntl(6</usr/share/zoneinfo/Pacific>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(6</usr/share/zoneinfo/Pacific>, 0xffff898e8128 /* 43 entries */, 2048) = 1312
+41    getdents64(6</usr/share/zoneinfo/Pacific>, 0xffff898e8128 /* 0 entries */, 2048) = 0
+41    close(6</usr/share/zoneinfo/Pacific>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Arctic", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 6</usr/share/zoneinfo/Arctic>
+41    fcntl(6</usr/share/zoneinfo/Arctic>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(6</usr/share/zoneinfo/Arctic>, 0xffff898e8138 /* 3 entries */, 2048) = 80
+41    getdents64(6</usr/share/zoneinfo/Arctic>, 0xffff898e8138 /* 0 entries */, 2048) = 0
+41    close(6</usr/share/zoneinfo/Arctic>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Europe", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 6</usr/share/zoneinfo/Europe>
+41    fcntl(6</usr/share/zoneinfo/Europe>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(6</usr/share/zoneinfo/Europe>, 0xffff898e8148 /* 63 entries */, 2048) = 1968
+41    getdents64(6</usr/share/zoneinfo/Europe>, 0xffff898e8148 /* 0 entries */, 2048) = 0
+41    close(6</usr/share/zoneinfo/Europe>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/America", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 6</usr/share/zoneinfo/America>
+41    fcntl(6</usr/share/zoneinfo/America>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(6</usr/share/zoneinfo/America>, 0xffff898e8158 /* 63 entries */, 2048) = 2048
+41    getdents64(6</usr/share/zoneinfo/America>, 0xffff898e8158 /* 64 entries */, 2048) = 2048
+41    getdents64(6</usr/share/zoneinfo/America>, 0xffff898e8158 /* 11 entries */, 2048) = 344
+41    getdents64(6</usr/share/zoneinfo/America>, 0xffff898e8158 /* 0 entries */, 2048) = 0
+41    close(6</usr/share/zoneinfo/America>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/America/Argentina", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 6</usr/share/zoneinfo/America/Argentina>
+41    fcntl(6</usr/share/zoneinfo/America/Argentina>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(6</usr/share/zoneinfo/America/Argentina>, 0xffff898e8168 /* 14 entries */, 2048) = 432
+41    getdents64(6</usr/share/zoneinfo/America/Argentina>, 0xffff898e8168 /* 0 entries */, 2048) = 0
+41    close(6</usr/share/zoneinfo/America/Argentina>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/America/Indiana", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 6</usr/share/zoneinfo/America/Indiana>
+41    fcntl(6</usr/share/zoneinfo/America/Indiana>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(6</usr/share/zoneinfo/America/Indiana>, 0xffff898e8178 /* 10 entries */, 2048) = 296
+41    getdents64(6</usr/share/zoneinfo/America/Indiana>, 0xffff898e8178 /* 0 entries */, 2048) = 0
+41    close(6</usr/share/zoneinfo/America/Indiana>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/America/North_Dakota", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 6</usr/share/zoneinfo/America/North_Dakota>
+41    fcntl(6</usr/share/zoneinfo/America/North_Dakota>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(6</usr/share/zoneinfo/America/North_Dakota>, 0xffff898e8188 /* 5 entries */, 2048) = 144
+41    getdents64(6</usr/share/zoneinfo/America/North_Dakota>, 0xffff898e8188 /* 0 entries */, 2048) = 0
+41    close(6</usr/share/zoneinfo/America/North_Dakota>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/America/Kentucky", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 6</usr/share/zoneinfo/America/Kentucky>
+41    fcntl(6</usr/share/zoneinfo/America/Kentucky>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(6</usr/share/zoneinfo/America/Kentucky>, 0xffff898e8198 /* 4 entries */, 2048) = 112
+41    getdents64(6</usr/share/zoneinfo/America/Kentucky>, 0xffff898e8198 /* 0 entries */, 2048) = 0
+41    close(6</usr/share/zoneinfo/America/Kentucky>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Atlantic", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 6</usr/share/zoneinfo/Atlantic>
+41    fcntl(6</usr/share/zoneinfo/Atlantic>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(6</usr/share/zoneinfo/Atlantic>, 0xffff898e81a8 /* 13 entries */, 2048) = 408
+41    getdents64(6</usr/share/zoneinfo/Atlantic>, 0xffff898e81a8 /* 0 entries */, 2048) = 0
+41    close(6</usr/share/zoneinfo/Atlantic>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Australia", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 6</usr/share/zoneinfo/Australia>
+41    fcntl(6</usr/share/zoneinfo/Australia>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(6</usr/share/zoneinfo/Australia>, 0xffff898e81b8 /* 16 entries */, 2048) = 496
+41    getdents64(6</usr/share/zoneinfo/Australia>, 0xffff898e81b8 /* 0 entries */, 2048) = 0
+41    close(6</usr/share/zoneinfo/Australia>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Asia", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 6</usr/share/zoneinfo/Asia>
+41    fcntl(6</usr/share/zoneinfo/Asia>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(6</usr/share/zoneinfo/Asia>, 0xffff898e81c8 /* 65 entries */, 2048) = 2024
+41    getdents64(6</usr/share/zoneinfo/Asia>, 0xffff898e81c8 /* 24 entries */, 2048) = 768
+41    getdents64(6</usr/share/zoneinfo/Asia>, 0xffff898e81c8 /* 0 entries */, 2048) = 0
+41    close(6</usr/share/zoneinfo/Asia>) = 0
+41    readlinkat(AT_FDCWD</s/jj-in>, "/etc/localtime", "/usr/share/zoneinfo/Etc/UTC", 256) = 27
+41    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Etc/UTC", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 6</usr/share/zoneinfo/Etc/UTC>
+41    fcntl(6</usr/share/zoneinfo/Etc/UTC>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(6</usr/share/zoneinfo/Etc/UTC>, {st_mode=S_IFREG|0644, st_size=114, ...}) = 0
+41    lseek(6</usr/share/zoneinfo/Etc/UTC>, 0, SEEK_CUR) = 0
+41    read(6</usr/share/zoneinfo/Etc/UTC>, "TZif2\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 114) = 114
+41    read(6</usr/share/zoneinfo/Etc/UTC>, "", 32) = 0
+41    fstat(6</usr/share/zoneinfo/Etc/UTC>, {st_mode=S_IFREG|0644, st_size=114, ...}) = 0
+41    close(6</usr/share/zoneinfo/Etc/UTC>) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/packed-refs", 0xffffe45a5850, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/packed-refs.lock", 0xffffe45a5850, 0) = -1 ENOENT (No such file or directory)
+41    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep", 0777) = -1 EEXIST (File exists)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep/5779465a5b10f58944ef75ac1514081c2b733961.lock", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0666) = 6</s/jj/repo/.git/refs/jj/keep/5779465a5b10f58944ef75ac1514081c2b733961.lock>
+41    fcntl(6</s/jj/repo/.git/refs/jj/keep/5779465a5b10f58944ef75ac1514081c2b733961.lock>, F_SETFD, FD_CLOEXEC) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/proc/self/cgroup", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 7</proc/41/cgroup>
+41    fcntl(7</proc/41/cgroup>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(7</proc/41/cgroup>, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+41    lseek(7</proc/41/cgroup>, 0, SEEK_CUR) = 0
+41    read(7</proc/41/cgroup>, "0::/sideeye-35-a81de09fb6f7b665/"..., 128) = 37
+41    read(7</proc/41/cgroup>, "", 91)  = 0
+41    close(7</proc/41/cgroup>)         = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/sys/fs/cgroup/sideeye-35-a81de09fb6f7b665/work/cgroup.controllers", {st_mode=S_IFREG|0444, st_size=0, ...}, 0) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/sys/fs/cgroup/sideeye-35-a81de09fb6f7b665/work/cpu.max", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/sys/fs/cgroup/sideeye-35-a81de09fb6f7b665/cpu.max", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 7</sys/fs/cgroup/cpu.max>
+41    fcntl(7</sys/fs/cgroup/cpu.max>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(7</sys/fs/cgroup/cpu.max>, {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+41    lseek(7</sys/fs/cgroup/cpu.max>, 0, SEEK_CUR) = 0
+41    read(7</sys/fs/cgroup/cpu.max>, "max 100000\n", 32) = 11
+41    read(7</sys/fs/cgroup/cpu.max>, "", 32) = 0
+41    close(7</sys/fs/cgroup/cpu.max>)  = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep/5779465a5b10f58944ef75ac1514081c2b733961", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    write(6</s/jj/repo/.git/refs/jj/keep/5779465a5b10f58944ef75ac1514081c2b733961.lock>, "5779465a5b10f58944ef75ac1514081c"..., 40) = 40
+41    write(6</s/jj/repo/.git/refs/jj/keep/5779465a5b10f58944ef75ac1514081c2b733961.lock>, "\n", 1) = 1
+41    close(6</s/jj/repo/.git/refs/jj/keep/5779465a5b10f58944ef75ac1514081c2b733961.lock>) = 0
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep/5779465a5b10f58944ef75ac1514081c2b733961.lock", AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep/5779465a5b10f58944ef75ac1514081c2b733961") = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/.tmpwwKGEA", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 6</s/jj/repo/.jj/repo/store/extra/.tmpwwKGEA>
+41    fcntl(6</s/jj/repo/.jj/repo/store/extra/.tmpwwKGEA>, F_SETFD, FD_CLOEXEC) = 0
+41    write(6</s/jj/repo/.jj/repo/store/extra/.tmpwwKGEA>, "\0\0\0\0\5\0\0\0*~c\254\231\337\203s\2\364\262a#\254E\305\313v\303\356\0\0\0\0"..., 294) = 294
+41    fdatasync(6</s/jj/repo/.jj/repo/store/extra/.tmpwwKGEA>) = 0
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/.tmpwwKGEA", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/2774b145b2380aff1c9c33ae22b88b73b7e2982b86af28f9f92ead63e6a45aa86d97281ba56f5fd466c23a7ac48dca996e0dbcc03b25dfdc78cae44dec0e51fe") = 0
+41    close(6</s/jj/repo/.jj/repo/store/extra/2774b145b2380aff1c9c33ae22b88b73b7e2982b86af28f9f92ead63e6a45aa86d97281ba56f5fd466c23a7ac48dca996e0dbcc03b25dfdc78cae44dec0e51fe>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/heads/2774b145b2380aff1c9c33ae22b88b73b7e2982b86af28f9f92ead63e6a45aa86d97281ba56f5fd466c23a7ac48dca996e0dbcc03b25dfdc78cae44dec0e51fe", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 6</s/jj/repo/.jj/repo/store/extra/heads/2774b145b2380aff1c9c33ae22b88b73b7e2982b86af28f9f92ead63e6a45aa86d97281ba56f5fd466c23a7ac48dca996e0dbcc03b25dfdc78cae44dec0e51fe>
+41    fcntl(6</s/jj/repo/.jj/repo/store/extra/heads/2774b145b2380aff1c9c33ae22b88b73b7e2982b86af28f9f92ead63e6a45aa86d97281ba56f5fd466c23a7ac48dca996e0dbcc03b25dfdc78cae44dec0e51fe>, F_SETFD, FD_CLOEXEC) = 0
+41    close(6</s/jj/repo/.jj/repo/store/extra/heads/2774b145b2380aff1c9c33ae22b88b73b7e2982b86af28f9f92ead63e6a45aa86d97281ba56f5fd466c23a7ac48dca996e0dbcc03b25dfdc78cae44dec0e51fe>) = 0
+41    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/heads/e20464a3cbc14ed9fe8fc316661f610572349f5dff1fc7e7541ef1e208d44946e863046c051cd62ed46e7da6f9ec435137049e20f0fabe236a3785e642504398", 0) = 0
+41    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/lock", 0) = 0
+41    flock(5</s/jj/repo/.jj/repo/store/extra/lock>(deleted), LOCK_UN) = 0
+41    close(5</s/jj/repo/.jj/repo/store/extra/lock>(deleted)) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/index", {st_mode=S_IFREG|0644, st_size=104, ...}, 0) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/index", {st_mode=S_IFREG|0644, st_size=104, ...}, 0) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/index", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</s/jj/repo/.git/index>
+41    fcntl(5</s/jj/repo/.git/index>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(5</s/jj/repo/.git/index>, {st_mode=S_IFREG|0644, st_size=104, ...}) = 0
+41    mmap(NULL, 104, PROT_READ, MAP_PRIVATE, 5</s/jj/repo/.git/index>, 0) = 0xffff898e9000
+41    fstat(5</s/jj/repo/.git/index>, {st_mode=S_IFREG|0644, st_size=104, ...}) = 0
+41    read(5</s/jj/repo/.git/index>, "DIRC\0\0\0\2\0\0\0\1\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 84) = 84
+41    fstat(5</s/jj/repo/.git/index>, {st_mode=S_IFREG|0644, st_size=104, ...}) = 0
+41    close(5</s/jj/repo/.git/index>)   = 0
+41    openat(AT_FDCWD</s/jj-in>, "/proc/self/cgroup", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</proc/41/cgroup>
+41    fcntl(5</proc/41/cgroup>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(5</proc/41/cgroup>, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+41    lseek(5</proc/41/cgroup>, 0, SEEK_CUR) = 0
+41    read(5</proc/41/cgroup>, "0::/sideeye-35-a81de09fb6f7b665/"..., 128) = 37
+41    read(5</proc/41/cgroup>, "", 91)  = 0
+41    close(5</proc/41/cgroup>)         = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/sys/fs/cgroup/sideeye-35-a81de09fb6f7b665/work/cgroup.controllers", {st_mode=S_IFREG|0444, st_size=0, ...}, 0) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/sys/fs/cgroup/sideeye-35-a81de09fb6f7b665/work/cpu.max", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/sys/fs/cgroup/sideeye-35-a81de09fb6f7b665/cpu.max", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</sys/fs/cgroup/cpu.max>
+41    fcntl(5</sys/fs/cgroup/cpu.max>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(5</sys/fs/cgroup/cpu.max>, {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+41    lseek(5</sys/fs/cgroup/cpu.max>, 0, SEEK_CUR) = 0
+41    read(5</sys/fs/cgroup/cpu.max>, "max 100000\n", 32) = 11
+41    read(5</sys/fs/cgroup/cpu.max>, "", 32) = 0
+41    close(5</sys/fs/cgroup/cpu.max>)  = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/index.lock", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0666) = 5</s/jj/repo/.git/index.lock>
+41    fcntl(5</s/jj/repo/.git/index.lock>, F_SETFD, FD_CLOEXEC) = 0
+41    write(5</s/jj/repo/.git/index.lock>, "DIRC\0\0\0\2\0\0\0\1\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 104) = 104
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/index.lock", AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/index") = 0
+41    close(5</s/jj/repo/.git/index>)   = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/packed-refs", 0xffffe45a4850, 0) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/HEAD", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</s/jj/repo/.git/HEAD>
+41    fcntl(5</s/jj/repo/.git/HEAD>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(5</s/jj/repo/.git/HEAD>, {st_mode=S_IFREG|0644, st_size=41, ...}) = 0
+41    lseek(5</s/jj/repo/.git/HEAD>, 0, SEEK_CUR) = 0
+41    read(5</s/jj/repo/.git/HEAD>, "c66ab3a2533aa0ed6b1ede456b884d59"..., 128) = 41
+41    read(5</s/jj/repo/.git/HEAD>, "", 87) = 0
+41    close(5</s/jj/repo/.git/HEAD>)    = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/worktrees", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/views/.tmpeRKnm3", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 5</s/jj/repo/.jj/repo/op_store/views/.tmpeRKnm3>
+41    fcntl(5</s/jj/repo/.jj/repo/op_store/views/.tmpeRKnm3>, F_SETFD, FD_CLOEXEC) = 0
+41    write(5</s/jj/repo/.jj/repo/op_store/views/.tmpeRKnm3>, "\n\24WyFZ[\20\365\211D\357u\254\25\24\10\34+s9aB\37\n\7defaul"..., 124) = 124
+41    fdatasync(5</s/jj/repo/.jj/repo/op_store/views/.tmpeRKnm3>) = 0
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/views/.tmpeRKnm3", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/views/cc9fb9be7bab4b173e4b91649278a25483c37c5af5305dca44f4bb99fa14dc5708be91cc65589d83aeba48812fff05190a74947dff0510f5f477f2655c773a1a") = 0
+41    close(5</s/jj/repo/.jj/repo/op_store/views/cc9fb9be7bab4b173e4b91649278a25483c37c5af5305dca44f4bb99fa14dc5708be91cc65589d83aeba48812fff05190a74947dff0510f5f477f2655c773a1a>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/operations/.tmpv41fVw", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 5</s/jj/repo/.jj/repo/op_store/operations/.tmpv41fVw>
+41    fcntl(5</s/jj/repo/.jj/repo/op_store/operations/.tmpv41fVw>, F_SETFD, FD_CLOEXEC) = 0
+41    write(5</s/jj/repo/.jj/repo/op_store/operations/.tmpv41fVw>, "\n@\314\237\271\276{\253K\27>K\221d\222x\242T\203\303|Z\3650]\312D\364\273\231\372\24"..., 300) = 300
+41    fdatasync(5</s/jj/repo/.jj/repo/op_store/operations/.tmpv41fVw>) = 0
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/operations/.tmpv41fVw", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/operations/c191fa32f5b2f6c6c734beaf7b8506f2f86c790922a5737de1cddcd8383a931baadbe7b693fc24e11e0cca1b13bd59fb7652495c6d3e7df7553b112c552b4563") = 0
+41    close(5</s/jj/repo/.jj/repo/op_store/operations/c191fa32f5b2f6c6c734beaf7b8506f2f86c790922a5737de1cddcd8383a931baadbe7b693fc24e11e0cca1b13bd59fb7652495c6d3e7df7553b112c552b4563>) = 0
+41    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/op_links", 0777) = -1 EEXIST (File exists)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/op_links", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+41    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/segments", 0777) = -1 EEXIST (File exists)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/segments", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+41    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/changed_paths", 0777) = -1 EEXIST (File exists)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/changed_paths", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/segments/.tmpQ43TMu", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 5</s/jj/repo/.jj/repo/index/segments/.tmpQ43TMu>
+41    fcntl(5</s/jj/repo/.jj/repo/index/segments/.tmpQ43TMu>, F_SETFD, FD_CLOEXEC) = 0
+41    write(5</s/jj/repo/.jj/repo/index/segments/.tmpQ43TMu>, "\6\0\0\0\200\0\0\0af0687d713358bcabf5fed8e"..., 212) = 212
+41    fdatasync(5</s/jj/repo/.jj/repo/index/segments/.tmpQ43TMu>) = 0
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/segments/.tmpQ43TMu", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/segments/654347258892c9d6ccca33f636d500156642477ba1da936781a0924967e9b8e3fd6a310396c0c41c40f3fa783984901a9372fca867f714eee346db208ed2a16f") = 0
+41    close(5</s/jj/repo/.jj/repo/index/segments/654347258892c9d6ccca33f636d500156642477ba1da936781a0924967e9b8e3fd6a310396c0c41c40f3fa783984901a9372fca867f714eee346db208ed2a16f>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/op_links/.tmputRGsJ", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 5</s/jj/repo/.jj/repo/index/op_links/.tmputRGsJ>
+41    fcntl(5</s/jj/repo/.jj/repo/index/op_links/.tmputRGsJ>, F_SETFD, FD_CLOEXEC) = 0
+41    write(5</s/jj/repo/.jj/repo/index/op_links/.tmputRGsJ>, "\n@eCG%\210\222\311\326\314\3123\3666\325\0\25fBG{\241\332\223g\201\240\222Ig\351"..., 66) = 66
+41    fdatasync(5</s/jj/repo/.jj/repo/index/op_links/.tmputRGsJ>) = 0
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/op_links/.tmputRGsJ", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/op_links/c191fa32f5b2f6c6c734beaf7b8506f2f86c790922a5737de1cddcd8383a931baadbe7b693fc24e11e0cca1b13bd59fb7652495c6d3e7df7553b112c552b4563") = 0
+41    close(5</s/jj/repo/.jj/repo/index/op_links/c191fa32f5b2f6c6c734beaf7b8506f2f86c790922a5737de1cddcd8383a931baadbe7b693fc24e11e0cca1b13bd59fb7652495c6d3e7df7553b112c552b4563>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_heads/heads/lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 5</s/jj/repo/.jj/repo/op_heads/heads/lock>
+41    fcntl(5</s/jj/repo/.jj/repo/op_heads/heads/lock>, F_SETFD, FD_CLOEXEC) = 0
+41    flock(5</s/jj/repo/.jj/repo/op_heads/heads/lock>, LOCK_EX) = 0
+41    fstat(5</s/jj/repo/.jj/repo/op_heads/heads/lock>, {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_heads/heads/c191fa32f5b2f6c6c734beaf7b8506f2f86c790922a5737de1cddcd8383a931baadbe7b693fc24e11e0cca1b13bd59fb7652495c6d3e7df7553b112c552b4563", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 6</s/jj/repo/.jj/repo/op_heads/heads/c191fa32f5b2f6c6c734beaf7b8506f2f86c790922a5737de1cddcd8383a931baadbe7b693fc24e11e0cca1b13bd59fb7652495c6d3e7df7553b112c552b4563>
+41    fcntl(6</s/jj/repo/.jj/repo/op_heads/heads/c191fa32f5b2f6c6c734beaf7b8506f2f86c790922a5737de1cddcd8383a931baadbe7b693fc24e11e0cca1b13bd59fb7652495c6d3e7df7553b112c552b4563>, F_SETFD, FD_CLOEXEC) = 0
+41    close(6</s/jj/repo/.jj/repo/op_heads/heads/c191fa32f5b2f6c6c734beaf7b8506f2f86c790922a5737de1cddcd8383a931baadbe7b693fc24e11e0cca1b13bd59fb7652495c6d3e7df7553b112c552b4563>) = 0
+41    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_heads/heads/a48d238d5affa51e21e08e3a5c92cd68c7696b3c1ae86bf7c755b619f608f15c0e0156dd5c032c9531b9e6f7c3a50944bd67fd3192ab98adb1f49552430a0214", 0) = 0
+41    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_heads/heads/lock", 0) = 0
+41    flock(5</s/jj/repo/.jj/repo/op_heads/heads/lock>(deleted), LOCK_UN) = 0
+41    close(5</s/jj/repo/.jj/repo/op_heads/heads/lock>(deleted)) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/.tmpDcQLNP", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 5</s/jj/repo/.jj/working_copy/.tmpDcQLNP>
+41    fcntl(5</s/jj/repo/.jj/working_copy/.tmpDcQLNP>, F_SETFD, FD_CLOEXEC) = 0
+41    write(5</s/jj/repo/.jj/working_copy/.tmpDcQLNP>, "\22\22\n\5alpha\22\t\10\200\210\204\340\2673\20\34\32\2\n\0*\24*n\207\217'\\"..., 48) = 48
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/tree_state", {st_mode=S_IFREG|0600, st_size=48, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    fdatasync(5</s/jj/repo/.jj/working_copy/.tmpDcQLNP>) = 0
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/.tmpDcQLNP", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/tree_state") = 0
+41    close(5</s/jj/repo/.jj/working_copy/tree_state>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/.tmpb5nUCD", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 5</s/jj/repo/.jj/working_copy/.tmpb5nUCD>
+41    fcntl(5</s/jj/repo/.jj/working_copy/.tmpb5nUCD>, F_SETFD, FD_CLOEXEC) = 0
+41    write(5</s/jj/repo/.jj/working_copy/.tmpb5nUCD>, "\22@\301\221\3722\365\262\366\306\3074\276\257{\205\6\362\370ly\t\"\245s}\341\315\334\3308:"..., 75) = 75
+41    fdatasync(5</s/jj/repo/.jj/working_copy/.tmpb5nUCD>) = 0
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/.tmpb5nUCD", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/checkout") = 0
+41    close(5</s/jj/repo/.jj/working_copy/checkout>) = 0
+41    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/working_copy.lock", 0) = 0
+41    flock(4</s/jj/repo/.jj/working_copy/working_copy.lock>(deleted), LOCK_UN) = 0
+41    close(4</s/jj/repo/.jj/working_copy/working_copy.lock>(deleted)) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/packed-refs", 0xffffe45aa040, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/heads/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/heads/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/heads/", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</s/jj/repo/.git/refs/heads>
+41    fcntl(4</s/jj/repo/.git/refs/heads>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(4</s/jj/repo/.git/refs/heads>, 0xffff898e81d8 /* 2 entries */, 2048) = 48
+41    getdents64(4</s/jj/repo/.git/refs/heads>, 0xffff898e81d8 /* 0 entries */, 2048) = 0
+41    close(4</s/jj/repo/.git/refs/heads>) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/remotes/", 0xffffe45a9190, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/tags/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/tags/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/tags/", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</s/jj/repo/.git/refs/tags>
+41    fcntl(4</s/jj/repo/.git/refs/tags>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(4</s/jj/repo/.git/refs/tags>, 0xffff898e81e8 /* 2 entries */, 2048) = 48
+41    getdents64(4</s/jj/repo/.git/refs/tags>, 0xffff898e81e8 /* 0 entries */, 2048) = 0
+41    close(4</s/jj/repo/.git/refs/tags>) = 0
+41    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/git_import_export.lock", 0) = 0
+41    flock(3</s/jj/repo/.jj/repo/git_import_export.lock>(deleted), LOCK_UN) = 0
+41    close(3</s/jj/repo/.jj/repo/git_import_export.lock>(deleted)) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 3</s/jj/repo/.jj/repo/store/extra/lock>
+41    fcntl(3</s/jj/repo/.jj/repo/store/extra/lock>, F_SETFD, FD_CLOEXEC) = 0
+41    flock(3</s/jj/repo/.jj/repo/store/extra/lock>, LOCK_EX) = 0
+41    fstat(3</s/jj/repo/.jj/repo/store/extra/lock>, {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/heads", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</s/jj/repo/.jj/repo/store/extra/heads>
+41    fcntl(4</s/jj/repo/.jj/repo/store/extra/heads>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(4</s/jj/repo/.jj/repo/store/extra/heads>, 0xffff898e81f8 /* 3 entries */, 2048) = 200
+41    getdents64(4</s/jj/repo/.jj/repo/store/extra/heads>, 0xffff898e81f8 /* 0 entries */, 2048) = 0
+41    close(4</s/jj/repo/.jj/repo/store/extra/heads>) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/6b/fad012fa89194903e5c1212c7c1e6d47fc78c4", 0xffffe45c0170, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/info/alternates", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/pack", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</s/jj/repo/.git/objects/pack>
+41    fcntl(4</s/jj/repo/.git/objects/pack>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(4</s/jj/repo/.git/objects/pack>, 0xffff898e8208 /* 2 entries */, 2048) = 48
+41    getdents64(4</s/jj/repo/.git/objects/pack>, 0xffff898e8208 /* 0 entries */, 2048) = 0
+41    close(4</s/jj/repo/.git/objects/pack>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/.tmpgN3R8l", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0444) = 4</s/jj/repo/.git/objects/.tmpgN3R8l>
+41    fcntl(4</s/jj/repo/.git/objects/.tmpgN3R8l>, F_SETFD, FD_CLOEXEC) = 0
+41    write(4</s/jj/repo/.git/objects/.tmpgN3R8l>, "x\1", 2) = 2
+41    write(4</s/jj/repo/.git/objects/.tmpgN3R8l>, "J\316\317\315\315\4\254D\301\310\324\224\241\244(5U\301(\321,\325\302\334\"\315\310\33449\3318"..., 213) = 213
+41    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/6b", 0777) = 0
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/.tmpgN3R8l", AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/6b/fad012fa89194903e5c1212c7c1e6d47fc78c4") = 0
+41    close(4</s/jj/repo/.git/objects/6b/fad012fa89194903e5c1212c7c1e6d47fc78c4>) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/packed-refs", 0xffffe45bf740, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/packed-refs.lock", 0xffffe45bf740, 0) = -1 ENOENT (No such file or directory)
+41    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep", 0777) = -1 EEXIST (File exists)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4.lock", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0666) = 4</s/jj/repo/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4.lock>
+41    fcntl(4</s/jj/repo/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4.lock>, F_SETFD, FD_CLOEXEC) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    write(4</s/jj/repo/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4.lock>, "6bfad012fa89194903e5c1212c7c1e6d"..., 40) = 40
+41    write(4</s/jj/repo/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4.lock>, "\n", 1) = 1
+41    close(4</s/jj/repo/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4.lock>) = 0
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4.lock", AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep/6bfad012fa89194903e5c1212c7c1e6d47fc78c4") = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/.tmpPz4U6J", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</s/jj/repo/.jj/repo/store/extra/.tmpPz4U6J>
+41    fcntl(4</s/jj/repo/.jj/repo/store/extra/.tmpPz4U6J>, F_SETFD, FD_CLOEXEC) = 0
+41    write(4</s/jj/repo/.jj/repo/store/extra/.tmpPz4U6J>, "\200\0\0\0002774b145b2380aff1c9c33ae22b8"..., 202) = 202
+41    fdatasync(4</s/jj/repo/.jj/repo/store/extra/.tmpPz4U6J>) = 0
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/.tmpPz4U6J", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2") = 0
+41    close(4</s/jj/repo/.jj/repo/store/extra/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/heads/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 4</s/jj/repo/.jj/repo/store/extra/heads/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2>
+41    fcntl(4</s/jj/repo/.jj/repo/store/extra/heads/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2>, F_SETFD, FD_CLOEXEC) = 0
+41    close(4</s/jj/repo/.jj/repo/store/extra/heads/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2>) = 0
+41    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/heads/2774b145b2380aff1c9c33ae22b88b73b7e2982b86af28f9f92ead63e6a45aa86d97281ba56f5fd466c23a7ac48dca996e0dbcc03b25dfdc78cae44dec0e51fe", 0) = 0
+41    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/lock", 0) = 0
+41    flock(3</s/jj/repo/.jj/repo/store/extra/lock>(deleted), LOCK_UN) = 0
+41    close(3</s/jj/repo/.jj/repo/store/extra/lock>(deleted)) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 3</s/jj/repo/.jj/repo/store/extra/lock>
+41    fcntl(3</s/jj/repo/.jj/repo/store/extra/lock>, F_SETFD, FD_CLOEXEC) = 0
+41    flock(3</s/jj/repo/.jj/repo/store/extra/lock>, LOCK_EX) = 0
+41    fstat(3</s/jj/repo/.jj/repo/store/extra/lock>, {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/heads", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</s/jj/repo/.jj/repo/store/extra/heads>
+41    fcntl(4</s/jj/repo/.jj/repo/store/extra/heads>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(4</s/jj/repo/.jj/repo/store/extra/heads>, 0xffff898e8218 /* 3 entries */, 2048) = 200
+41    getdents64(4</s/jj/repo/.jj/repo/store/extra/heads>, 0xffff898e8218 /* 0 entries */, 2048) = 0
+41    close(4</s/jj/repo/.jj/repo/store/extra/heads>) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/4a/f6d7a1ad855039c5a1ae47fbff5a2fd6209428", 0xffffe45c0170, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects", {st_mode=S_IFDIR|0755, st_size=4096, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/info/alternates", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/pack", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</s/jj/repo/.git/objects/pack>
+41    fcntl(4</s/jj/repo/.git/objects/pack>, F_SETFD, FD_CLOEXEC) = 0
+41    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff898e8000
+41    getdents64(4</s/jj/repo/.git/objects/pack>, 0xffff898e8228 /* 2 entries */, 2048) = 48
+41    getdents64(4</s/jj/repo/.git/objects/pack>, 0xffff898e8228 /* 0 entries */, 2048) = 0
+41    close(4</s/jj/repo/.git/objects/pack>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/.tmpUi2RqU", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0444) = 4</s/jj/repo/.git/objects/.tmpUi2RqU>
+41    fcntl(4</s/jj/repo/.git/objects/.tmpUi2RqU>, F_SETFD, FD_CLOEXEC) = 0
+41    write(4</s/jj/repo/.git/objects/.tmpUi2RqU>, "x\1", 2) = 2
+41    write(4</s/jj/repo/.git/objects/.tmpUi2RqU>, "\2,9?77\263D\301\310\304\222\241\244(5U\301(\321,\325\302\334\"\315\310\33449\3318"..., 212) = 212
+41    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/4a", 0777) = -1 EEXIST (File exists)
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/.tmpUi2RqU", AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/4a/f6d7a1ad855039c5a1ae47fbff5a2fd6209428") = 0
+41    close(4</s/jj/repo/.git/objects/4a/f6d7a1ad855039c5a1ae47fbff5a2fd6209428>) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/packed-refs", 0xffffe45bf740, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/packed-refs.lock", 0xffffe45bf740, 0) = -1 ENOENT (No such file or directory)
+41    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep", 0777) = -1 EEXIST (File exists)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428.lock", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0666) = 4</s/jj/repo/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428.lock>
+41    fcntl(4</s/jj/repo/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428.lock>, F_SETFD, FD_CLOEXEC) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    write(4</s/jj/repo/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428.lock>, "4af6d7a1ad855039c5a1ae47fbff5a2f"..., 40) = 40
+41    write(4</s/jj/repo/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428.lock>, "\n", 1) = 1
+41    close(4</s/jj/repo/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428.lock>) = 0
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428.lock", AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep/4af6d7a1ad855039c5a1ae47fbff5a2fd6209428") = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/.tmptA1qTN", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</s/jj/repo/.jj/repo/store/extra/.tmptA1qTN>
+41    fcntl(4</s/jj/repo/.jj/repo/store/extra/.tmptA1qTN>, F_SETFD, FD_CLOEXEC) = 0
+41    write(4</s/jj/repo/.jj/repo/store/extra/.tmptA1qTN>, "\200\0\0\0002774b145b2380aff1c9c33ae22b8"..., 246) = 246
+41    fdatasync(4</s/jj/repo/.jj/repo/store/extra/.tmptA1qTN>) = 0
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/.tmptA1qTN", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/5dc96ad8519e3cfabcda007fab7aaa103357ad98f1f8d2a28527f6c71c7dd5cf37ab69914c1d1f9b6d0e9507bcf40f73867677e0f72691a1be67b6054c222815") = 0
+41    close(4</s/jj/repo/.jj/repo/store/extra/5dc96ad8519e3cfabcda007fab7aaa103357ad98f1f8d2a28527f6c71c7dd5cf37ab69914c1d1f9b6d0e9507bcf40f73867677e0f72691a1be67b6054c222815>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/heads/5dc96ad8519e3cfabcda007fab7aaa103357ad98f1f8d2a28527f6c71c7dd5cf37ab69914c1d1f9b6d0e9507bcf40f73867677e0f72691a1be67b6054c222815", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 4</s/jj/repo/.jj/repo/store/extra/heads/5dc96ad8519e3cfabcda007fab7aaa103357ad98f1f8d2a28527f6c71c7dd5cf37ab69914c1d1f9b6d0e9507bcf40f73867677e0f72691a1be67b6054c222815>
+41    fcntl(4</s/jj/repo/.jj/repo/store/extra/heads/5dc96ad8519e3cfabcda007fab7aaa103357ad98f1f8d2a28527f6c71c7dd5cf37ab69914c1d1f9b6d0e9507bcf40f73867677e0f72691a1be67b6054c222815>, F_SETFD, FD_CLOEXEC) = 0
+41    close(4</s/jj/repo/.jj/repo/store/extra/heads/5dc96ad8519e3cfabcda007fab7aaa103357ad98f1f8d2a28527f6c71c7dd5cf37ab69914c1d1f9b6d0e9507bcf40f73867677e0f72691a1be67b6054c222815>) = 0
+41    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/heads/a61b857774eb8d177917c8e1b288e5376ccd2efdee60789e4bdcc2a42f7e04429cd54b110e7c15e7827ada051681560ac979c37fbf0376a16d292b93c54120a2", 0) = 0
+41    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/lock", 0) = 0
+41    flock(3</s/jj/repo/.jj/repo/store/extra/lock>(deleted), LOCK_UN) = 0
+41    close(3</s/jj/repo/.jj/repo/store/extra/lock>(deleted)) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/git_import_export.lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 3</s/jj/repo/.jj/repo/git_import_export.lock>
+41    fcntl(3</s/jj/repo/.jj/repo/git_import_export.lock>, F_SETFD, FD_CLOEXEC) = 0
+41    flock(3</s/jj/repo/.jj/repo/git_import_export.lock>, LOCK_EX) = 0
+41    fstat(3</s/jj/repo/.jj/repo/git_import_export.lock>, {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/packed-refs", 0xffffe45be860, 0) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/HEAD", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.git/HEAD>
+41    fcntl(4</s/jj/repo/.git/HEAD>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(4</s/jj/repo/.git/HEAD>, {st_mode=S_IFREG|0644, st_size=41, ...}) = 0
+41    lseek(4</s/jj/repo/.git/HEAD>, 0, SEEK_CUR) = 0
+41    read(4</s/jj/repo/.git/HEAD>, "c66ab3a2533aa0ed6b1ede456b884d59"..., 128) = 41
+41    read(4</s/jj/repo/.git/HEAD>, "", 87) = 0
+41    close(4</s/jj/repo/.git/HEAD>)    = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/packed-refs", 0xffffe45bdf80, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/packed-refs.lock", 0xffffe45bdf80, 0) = -1 ENOENT (No such file or directory)
+41    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git", 0777) = -1 EEXIST (File exists)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/HEAD.lock", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0666) = 4</s/jj/repo/.git/HEAD.lock>
+41    fcntl(4</s/jj/repo/.git/HEAD.lock>, F_SETFD, FD_CLOEXEC) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/HEAD", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</s/jj/repo/.git/HEAD>
+41    fcntl(5</s/jj/repo/.git/HEAD>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(5</s/jj/repo/.git/HEAD>, {st_mode=S_IFREG|0644, st_size=41, ...}) = 0
+41    lseek(5</s/jj/repo/.git/HEAD>, 0, SEEK_CUR) = 0
+41    read(5</s/jj/repo/.git/HEAD>, "c66ab3a2533aa0ed6b1ede456b884d59"..., 128) = 41
+41    read(5</s/jj/repo/.git/HEAD>, "", 87) = 0
+41    close(5</s/jj/repo/.git/HEAD>)    = 0
+41    write(4</s/jj/repo/.git/HEAD.lock>, "6bfad012fa89194903e5c1212c7c1e6d"..., 40) = 40
+41    write(4</s/jj/repo/.git/HEAD.lock>, "\n", 1) = 1
+41    close(4</s/jj/repo/.git/HEAD.lock>) = 0
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/HEAD.lock", AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/HEAD") = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/rebase-apply/applying", 0xffffe45becd0, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/rebase-apply/rebasing", 0xffffe45becd0, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/rebase-apply", 0xffffe45becd0, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/rebase-merge/interactive", 0xffffe45becd0, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/rebase-merge", 0xffffe45becd0, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/CHERRY_PICK_HEAD", 0xffffe45becd0, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/MERGE_HEAD", 0xffffe45becd0, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/BISECT_LOG", 0xffffe45becd0, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/REVERT_HEAD", 0xffffe45becd0, 0) = -1 ENOENT (No such file or directory)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/2a/6e878f275cc3a0ed08f2d7d2e17d16651b5621", {st_mode=S_IFREG|0444, st_size=51, ...}, 0) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/2a/6e878f275cc3a0ed08f2d7d2e17d16651b5621", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.git/objects/2a/6e878f275cc3a0ed08f2d7d2e17d16651b5621>
+41    fcntl(4</s/jj/repo/.git/objects/2a/6e878f275cc3a0ed08f2d7d2e17d16651b5621>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(4</s/jj/repo/.git/objects/2a/6e878f275cc3a0ed08f2d7d2e17d16651b5621>, {st_mode=S_IFREG|0444, st_size=51, ...}) = 0
+41    mmap(NULL, 51, PROT_READ, MAP_PRIVATE, 4</s/jj/repo/.git/objects/2a/6e878f275cc3a0ed08f2d7d2e17d16651b5621>, 0) = 0xffff898e9000
+41    close(4</s/jj/repo/.git/objects/2a/6e878f275cc3a0ed08f2d7d2e17d16651b5621>) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/index", {st_mode=S_IFREG|0644, st_size=104, ...}, 0) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/index", {st_mode=S_IFREG|0644, st_size=104, ...}, 0) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/index", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.git/index>
+41    fcntl(4</s/jj/repo/.git/index>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(4</s/jj/repo/.git/index>, {st_mode=S_IFREG|0644, st_size=104, ...}) = 0
+41    mmap(NULL, 104, PROT_READ, MAP_PRIVATE, 4</s/jj/repo/.git/index>, 0) = 0xffff898e9000
+41    fstat(4</s/jj/repo/.git/index>, {st_mode=S_IFREG|0644, st_size=104, ...}) = 0
+41    read(4</s/jj/repo/.git/index>, "DIRC\0\0\0\2\0\0\0\1\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 84) = 84
+41    fstat(4</s/jj/repo/.git/index>, {st_mode=S_IFREG|0644, st_size=104, ...}) = 0
+41    close(4</s/jj/repo/.git/index>)   = 0
+41    openat(AT_FDCWD</s/jj-in>, "/proc/self/cgroup", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</proc/41/cgroup>
+41    fcntl(4</proc/41/cgroup>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(4</proc/41/cgroup>, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+41    lseek(4</proc/41/cgroup>, 0, SEEK_CUR) = 0
+41    read(4</proc/41/cgroup>, "0::/sideeye-35-a81de09fb6f7b665/"..., 128) = 37
+41    read(4</proc/41/cgroup>, "", 91)  = 0
+41    close(4</proc/41/cgroup>)         = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/sys/fs/cgroup/sideeye-35-a81de09fb6f7b665/work/cgroup.controllers", {st_mode=S_IFREG|0444, st_size=0, ...}, 0) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/sys/fs/cgroup/sideeye-35-a81de09fb6f7b665/work/cpu.max", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/sys/fs/cgroup/sideeye-35-a81de09fb6f7b665/cpu.max", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</sys/fs/cgroup/cpu.max>
+41    fcntl(4</sys/fs/cgroup/cpu.max>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(4</sys/fs/cgroup/cpu.max>, {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+41    lseek(4</sys/fs/cgroup/cpu.max>, 0, SEEK_CUR) = 0
+41    read(4</sys/fs/cgroup/cpu.max>, "max 100000\n", 32) = 11
+41    read(4</sys/fs/cgroup/cpu.max>, "", 32) = 0
+41    close(4</sys/fs/cgroup/cpu.max>)  = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/index.lock", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0666) = 4</s/jj/repo/.git/index.lock>
+41    fcntl(4</s/jj/repo/.git/index.lock>, F_SETFD, FD_CLOEXEC) = 0
+41    write(4</s/jj/repo/.git/index.lock>, "DIRC\0\0\0\2\0\0\0\1\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 104) = 104
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/index.lock", AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/index") = 0
+41    close(4</s/jj/repo/.git/index>)   = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/packed-refs", 0xffffe45be350, 0) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/HEAD", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.git/HEAD>
+41    fcntl(4</s/jj/repo/.git/HEAD>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(4</s/jj/repo/.git/HEAD>, {st_mode=S_IFREG|0644, st_size=41, ...}) = 0
+41    lseek(4</s/jj/repo/.git/HEAD>, 0, SEEK_CUR) = 0
+41    read(4</s/jj/repo/.git/HEAD>, "6bfad012fa89194903e5c1212c7c1e6d"..., 128) = 41
+41    read(4</s/jj/repo/.git/HEAD>, "", 87) = 0
+41    close(4</s/jj/repo/.git/HEAD>)    = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/worktrees", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/views/.tmpGKzxKj", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</s/jj/repo/.jj/repo/op_store/views/.tmpGKzxKj>
+41    fcntl(4</s/jj/repo/.jj/repo/op_store/views/.tmpGKzxKj>, F_SETFD, FD_CLOEXEC) = 0
+41    write(4</s/jj/repo/.jj/repo/op_store/views/.tmpGKzxKj>, "\n\24J\366\327\241\255\205P9\305\241\256G\373\377Z/\326 \224(B\37\n\7defaul"..., 124) = 124
+41    fdatasync(4</s/jj/repo/.jj/repo/op_store/views/.tmpGKzxKj>) = 0
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/views/.tmpGKzxKj", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/views/f4236f4480a225a782b48fbec883c3f5bb96f5ac0287c1d527d61181ada24e8cf6cebb673e9b39d97f2ef7ab287c4cf73dcc5182b09c3ffa7020d64d96bc8e31") = 0
+41    close(4</s/jj/repo/.jj/repo/op_store/views/f4236f4480a225a782b48fbec883c3f5bb96f5ac0287c1d527d61181ada24e8cf6cebb673e9b39d97f2ef7ab287c4cf73dcc5182b09c3ffa7020d64d96bc8e31>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/operations/.tmpvCfSXV", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</s/jj/repo/.jj/repo/op_store/operations/.tmpvCfSXV>
+41    fcntl(4</s/jj/repo/.jj/repo/op_store/operations/.tmpvCfSXV>, F_SETFD, FD_CLOEXEC) = 0
+41    write(4</s/jj/repo/.jj/repo/op_store/operations/.tmpvCfSXV>, "\n@\364#oD\200\242%\247\202\264\217\276\310\203\303\365\273\226\365\254\2\207\301\325'\326\21\201\255\242"..., 349) = 349
+41    fdatasync(4</s/jj/repo/.jj/repo/op_store/operations/.tmpvCfSXV>) = 0
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/operations/.tmpvCfSXV", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/operations/2335fde4141c5dcb9134fcd63b15a9ba69b8aade0fd8c88c1d226e9178100991666987851d3405ea6932925b0373893bbcd8a6826af046cc0f9efc2259b03926") = 0
+41    close(4</s/jj/repo/.jj/repo/op_store/operations/2335fde4141c5dcb9134fcd63b15a9ba69b8aade0fd8c88c1d226e9178100991666987851d3405ea6932925b0373893bbcd8a6826af046cc0f9efc2259b03926>) = 0
+41    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/op_links", 0777) = -1 EEXIST (File exists)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/op_links", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+41    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/segments", 0777) = -1 EEXIST (File exists)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/segments", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+41    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/changed_paths", 0777) = -1 EEXIST (File exists)
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/changed_paths", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/segments/.tmpectgG5", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</s/jj/repo/.jj/repo/index/segments/.tmpectgG5>
+41    fcntl(4</s/jj/repo/.jj/repo/index/segments/.tmpectgG5>, F_SETFD, FD_CLOEXEC) = 0
+41    write(4</s/jj/repo/.jj/repo/index/segments/.tmpectgG5>, "\6\0\0\0\0\0\0\0\10\0\0\0\2\0\0\0\0\0\0\0\7\0\0\0\0\0\0\0\377\377\377\377"..., 412) = 412
+41    fdatasync(4</s/jj/repo/.jj/repo/index/segments/.tmpectgG5>) = 0
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/segments/.tmpectgG5", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/segments/76269392bb4630047c5d0e9ec33084cf8618c849e892a38c19bc9b328fef494ceaa2b0bc21c9e958e1ac04bb8cc5a06cd39274e85cd474ccbcc236f2ff807319") = 0
+41    close(4</s/jj/repo/.jj/repo/index/segments/76269392bb4630047c5d0e9ec33084cf8618c849e892a38c19bc9b328fef494ceaa2b0bc21c9e958e1ac04bb8cc5a06cd39274e85cd474ccbcc236f2ff807319>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/op_links/.tmpInlMz1", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</s/jj/repo/.jj/repo/index/op_links/.tmpInlMz1>
+41    fcntl(4</s/jj/repo/.jj/repo/index/op_links/.tmpInlMz1>, F_SETFD, FD_CLOEXEC) = 0
+41    write(4</s/jj/repo/.jj/repo/index/op_links/.tmpInlMz1>, "\n@v&\223\222\273F0\4|]\16\236\3030\204\317\206\30\310I\350\222\243\214\31\274\2332\217\357"..., 66) = 66
+41    fdatasync(4</s/jj/repo/.jj/repo/index/op_links/.tmpInlMz1>) = 0
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/op_links/.tmpInlMz1", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/op_links/2335fde4141c5dcb9134fcd63b15a9ba69b8aade0fd8c88c1d226e9178100991666987851d3405ea6932925b0373893bbcd8a6826af046cc0f9efc2259b03926") = 0
+41    close(4</s/jj/repo/.jj/repo/index/op_links/2335fde4141c5dcb9134fcd63b15a9ba69b8aade0fd8c88c1d226e9178100991666987851d3405ea6932925b0373893bbcd8a6826af046cc0f9efc2259b03926>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_heads/heads/lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 4</s/jj/repo/.jj/repo/op_heads/heads/lock>
+41    fcntl(4</s/jj/repo/.jj/repo/op_heads/heads/lock>, F_SETFD, FD_CLOEXEC) = 0
+41    flock(4</s/jj/repo/.jj/repo/op_heads/heads/lock>, LOCK_EX) = 0
+41    fstat(4</s/jj/repo/.jj/repo/op_heads/heads/lock>, {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_heads/heads/2335fde4141c5dcb9134fcd63b15a9ba69b8aade0fd8c88c1d226e9178100991666987851d3405ea6932925b0373893bbcd8a6826af046cc0f9efc2259b03926", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 5</s/jj/repo/.jj/repo/op_heads/heads/2335fde4141c5dcb9134fcd63b15a9ba69b8aade0fd8c88c1d226e9178100991666987851d3405ea6932925b0373893bbcd8a6826af046cc0f9efc2259b03926>
+41    fcntl(5</s/jj/repo/.jj/repo/op_heads/heads/2335fde4141c5dcb9134fcd63b15a9ba69b8aade0fd8c88c1d226e9178100991666987851d3405ea6932925b0373893bbcd8a6826af046cc0f9efc2259b03926>, F_SETFD, FD_CLOEXEC) = 0
+41    close(5</s/jj/repo/.jj/repo/op_heads/heads/2335fde4141c5dcb9134fcd63b15a9ba69b8aade0fd8c88c1d226e9178100991666987851d3405ea6932925b0373893bbcd8a6826af046cc0f9efc2259b03926>) = 0
+41    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_heads/heads/c191fa32f5b2f6c6c734beaf7b8506f2f86c790922a5737de1cddcd8383a931baadbe7b693fc24e11e0cca1b13bd59fb7652495c6d3e7df7553b112c552b4563", 0) = 0
+41    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_heads/heads/lock", 0) = 0
+41    flock(4</s/jj/repo/.jj/repo/op_heads/heads/lock>(deleted), LOCK_UN) = 0
+41    close(4</s/jj/repo/.jj/repo/op_heads/heads/lock>(deleted)) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/working_copy.lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 4</s/jj/repo/.jj/working_copy/working_copy.lock>
+41    fcntl(4</s/jj/repo/.jj/working_copy/working_copy.lock>, F_SETFD, FD_CLOEXEC) = 0
+41    flock(4</s/jj/repo/.jj/working_copy/working_copy.lock>, LOCK_EX) = 0
+41    fstat(4</s/jj/repo/.jj/working_copy/working_copy.lock>, {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/checkout", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</s/jj/repo/.jj/working_copy/checkout>
+41    fcntl(5</s/jj/repo/.jj/working_copy/checkout>, F_SETFD, FD_CLOEXEC) = 0
+41    fstat(5</s/jj/repo/.jj/working_copy/checkout>, {st_mode=S_IFREG|0600, st_size=75, ...}) = 0
+41    read(5</s/jj/repo/.jj/working_copy/checkout>, "\22@\301\221\3722\365\262\366\306\3074\276\257{\205\6\362\370ly\t\"\245s}\341\315\334\3308:"..., 75) = 75
+41    read(5</s/jj/repo/.jj/working_copy/checkout>, "", 32) = 0
+41    close(5</s/jj/repo/.jj/working_copy/checkout>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/tree_state", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</s/jj/repo/.jj/working_copy/tree_state>
+41    fcntl(5</s/jj/repo/.jj/working_copy/tree_state>, F_SETFD, FD_CLOEXEC) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy", O_RDWR|O_LARGEFILE|O_CLOEXEC|O_TMPFILE, 0666) = 6</s/jj/repo/.jj/working_copy/#713386>(deleted)
+41    fcntl(6</s/jj/repo/.jj/working_copy/#713386>(deleted), F_SETFD, FD_CLOEXEC) = 0
+41    fstat(6</s/jj/repo/.jj/working_copy/#713386>(deleted), {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+41    fchmod(6</s/jj/repo/.jj/working_copy/#713386>(deleted), 0100744) = 0
+41    fstat(6</s/jj/repo/.jj/working_copy/#713386>(deleted), {st_mode=S_IFREG|0744, st_size=0, ...}) = 0
+41    close(6</s/jj/repo/.jj/working_copy/#713386>(deleted)) = 0
+41    newfstatat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/tree_state", {st_mode=S_IFREG|0600, st_size=48, ...}, AT_SYMLINK_NOFOLLOW) = 0
+41    fstat(5</s/jj/repo/.jj/working_copy/tree_state>, {st_mode=S_IFREG|0600, st_size=48, ...}) = 0
+41    lseek(5</s/jj/repo/.jj/working_copy/tree_state>, 0, SEEK_CUR) = 0
+41    read(5</s/jj/repo/.jj/working_copy/tree_state>, "\22\22\n\5alpha\22\t\10\200\210\204\340\2673\20\34\32\2\n\0*\24*n\207\217'\\"..., 48) = 48
+41    read(5</s/jj/repo/.jj/working_copy/tree_state>, "", 32) = 0
+41    close(5</s/jj/repo/.jj/working_copy/tree_state>) = 0
+41    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/.tmp8Zzh4v", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 5</s/jj/repo/.jj/working_copy/.tmp8Zzh4v>
+41    fcntl(5</s/jj/repo/.jj/working_copy/.tmp8Zzh4v>, F_SETFD, FD_CLOEXEC) = 0
+41    write(5</s/jj/repo/.jj/working_copy/.tmp8Zzh4v>, "\22@#5\375\344\24\34]\313\2214\374\326;\25\251\272i\270\252\336\17\330\310\214\35\"n\221x\20"..., 75) = 75
+41    fdatasync(5</s/jj/repo/.jj/working_copy/.tmp8Zzh4v>) = 0
+41    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/.tmp8Zzh4v", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/checkout") = 0
+41    close(5</s/jj/repo/.jj/working_copy/checkout>) = 0
+41    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/working_copy.lock", 0) = 0
+41    flock(4</s/jj/repo/.jj/working_copy/working_copy.lock>(deleted), LOCK_UN) = 0
+41    close(4</s/jj/repo/.jj/working_copy/working_copy.lock>(deleted)) = 0
+41    write(2</out/jj/preflight-1.txt>, "Working copy  (@) now at: ", 26) = 26
+41    write(2</out/jj/preflight-1.txt>, "s", 1) = 1
+41    write(2</out/jj/preflight-1.txt>, "ryyqqkq", 7) = 7
+41    write(2</out/jj/preflight-1.txt>, "/", 1) = 1
+41    write(2</out/jj/preflight-1.txt>, "0", 1) = 1
+41    write(2</out/jj/preflight-1.txt>, " ", 1) = 1
+41    write(2</out/jj/preflight-1.txt>, "4", 1) = 1
+41    write(2</out/jj/preflight-1.txt>, "af6d7a1", 7) = 7
+41    write(2</out/jj/preflight-1.txt>, " ", 1) = 1
+41    write(2</out/jj/preflight-1.txt>, "(divergent)", 11) = 11
+41    write(2</out/jj/preflight-1.txt>, " ", 1) = 1
+41    write(2</out/jj/preflight-1.txt>, "(empty)", 7) = 7
+41    write(2</out/jj/preflight-1.txt>, " ", 1) = 1
+41    write(2</out/jj/preflight-1.txt>, "(no description set)", 20) = 20
+41    write(2</out/jj/preflight-1.txt>, "\n", 1) = 1
+41    write(2</out/jj/preflight-1.txt>, "Parent commit (@-)      : ", 26) = 26
+41    write(2</out/jj/preflight-1.txt>, "s", 1) = 1
+41    write(2</out/jj/preflight-1.txt>, "ryyqqkq", 7) = 7
+41    write(2</out/jj/preflight-1.txt>, "/", 1) = 1
+41    write(2</out/jj/preflight-1.txt>, "1", 1) = 1
+41    write(2</out/jj/preflight-1.txt>, " ", 1) = 1
+41    write(2</out/jj/preflight-1.txt>, "6", 1) = 1
+41    write(2</out/jj/preflight-1.txt>, "bfad012", 7) = 7
+41    write(2</out/jj/preflight-1.txt>, " ", 1) = 1
+41    write(2</out/jj/preflight-1.txt>, "(divergent)", 11) = 11
+41    write(2</out/jj/preflight-1.txt>, " ", 1) = 1
+41    write(2</out/jj/preflight-1.txt>, "probe", 5) = 5
+41    write(2</out/jj/preflight-1.txt>, "\n", 1) = 1
+41    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/git_import_export.lock", 0) = 0
+41    flock(3</s/jj/repo/.jj/repo/git_import_export.lock>(deleted), LOCK_UN) = 0
+41    close(3</s/jj/repo/.jj/repo/git_import_export.lock>(deleted)) = 0
+41    exit_group(0)                     = ?
+52    +++ exited with 0 +++
+51    +++ exited with 0 +++
+50    +++ exited with 0 +++
+48    +++ exited with 0 +++
+49    +++ exited with 0 +++
+47    +++ exited with 0 +++
+46    +++ exited with 0 +++
+45    +++ exited with 0 +++
+43    +++ exited with 0 +++
+44    +++ exited with 0 +++
+42    +++ exited with 0 +++
+41    +++ exited with 0 +++

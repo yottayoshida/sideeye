@@ -1,0 +1,507 @@
+172   execve("/opt/se/sideeye-v1.10.0-aarch64-linux/sideeye", ["/opt/se/sideeye-v1.10.0-aarch64-"..., "__filter-exec", "4", "--", "tofu", "state", "rm", "terraform_data.b"], 0xaaaafedab8a0 /* 21 vars */) = 0
+172   mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffa7b0d000
+172   faccessat(AT_FDCWD</s/tofu>, "/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
+172   openat(AT_FDCWD</s/tofu>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+172   fstat(3</etc/ld.so.cache>, {st_mode=S_IFREG|0644, st_size=8463, ...}) = 0
+172   mmap(NULL, 8463, PROT_READ, MAP_PRIVATE, 3</etc/ld.so.cache>, 0) = 0xffffa7b0a000
+172   close(3</etc/ld.so.cache>)        = 0
+172   openat(AT_FDCWD</s/tofu>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+172   read(3</usr/lib/aarch64-linux-gnu/libc.so.6>, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\200$\2\0\0\0\0\0"..., 832) = 832
+172   fstat(3</usr/lib/aarch64-linux-gnu/libc.so.6>, {st_mode=S_IFREG|0755, st_size=1716616, ...}) = 0
+172   mmap(NULL, 1892368, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_DENYWRITE, -1, 0) = 0xffffa7906000
+172   mmap(0xffffa7910000, 1826832, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libc.so.6>, 0) = 0xffffa7910000
+172   mprotect(0xffffa7aac000, 69632, PROT_NONE) = 0
+172   mmap(0xffffa7abd000, 20480, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libc.so.6>, 0x19d000) = 0xffffa7abd000
+172   mmap(0xffffa7ac2000, 49168, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffffa7ac2000
+172   close(3</usr/lib/aarch64-linux-gnu/libc.so.6>) = 0
+172   openat(AT_FDCWD</s/tofu>, "/lib/aarch64-linux-gnu/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>
+172   read(3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0\267\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+172   fstat(3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, {st_mode=S_IFREG|0644, st_size=67592, ...}) = 0
+172   mmap(NULL, 196624, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_DENYWRITE, -1, 0) = 0xffffa78df000
+172   mmap(0xffffa78e0000, 131088, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, 0) = 0xffffa78e0000
+172   mprotect(0xffffa78e1000, 122880, PROT_NONE) = 0
+172   mmap(0xffffa78ff000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>, 0xf000) = 0xffffa78ff000
+172   close(3</usr/lib/aarch64-linux-gnu/libpthread.so.0>) = 0
+172   mmap(NULL, 270336, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffa789e000
+172   mprotect(0xffffa7abd000, 12288, PROT_READ) = 0
+172   mprotect(0xffffa78ff000, 4096, PROT_READ) = 0
+172   mprotect(0x1177000, 20480, PROT_READ) = 0
+172   mprotect(0xffffa7b13000, 8192, PROT_READ) = 0
+172   mmap(NULL, 258048, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffa785f000
+172   faccessat(AT_FDCWD</s/tofu>, "/opt/bin/tofu", X_OK) = 0
+172   statx(AT_FDCWD</s/tofu>, "/opt/bin/tofu", AT_STATX_SYNC_AS_STAT, STATX_TYPE, {stx_mask=STATX_BASIC_STATS|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0755, stx_size=104464544, ...}) = 0
+172   mmap(0xffffa785f000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffffa785f000
+172   close(3<anon_inode:seccomp notify>) = 0
+172   close(4<socket:[15120]>)          = 0
+172   execve("/opt/bin/tofu", ["tofu", "state", "rm", "terraform_data.b"], 0xffffca9324b0 /* 21 vars */) = 0
+172   openat(AT_FDCWD</s/tofu>, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>
+172   read(3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>, "2097152\n", 20) = 8
+172   close(3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>) = 0
+172   mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff95967000
+172   mmap(NULL, 131072, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff95947000
+172   mmap(NULL, 1048576, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff95847000
+172   mmap(NULL, 8388608, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff95000000
+172   mmap(NULL, 67108864, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff91000000
+172   mmap(NULL, 536870912, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff71000000
+172   mmap(NULL, 536870912, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff51000000
+172   mmap(0x389e54000000, 67108864, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x389e54000000
+172   mmap(NULL, 33554432, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff4f000000
+172   mmap(NULL, 69648, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff95835000
+172   mmap(0x389e56400000, 4194304, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x389e56400000
+172   mmap(0xffff95947000, 131072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff95947000
+172   mmap(0xffff9587f000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff9587f000
+172   mmap(0xffff951c4000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff951c4000
+172   mmap(0xffff91e27000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff91e27000
+172   mmap(0xffff7813c000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff7813c000
+172   mmap(0xffff5813c000, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff5813c000
+172   mmap(NULL, 1048576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff4ef00000
+172   mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff95825000
+172   mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff95815000
+172   fcntl(0</dev/null>, F_GETFD)      = 0
+172   fcntl(1</out/tofu/work-4/stdout-record.txt>, F_GETFD) = 0
+172   fcntl(2</out/tofu/preflight-4.txt>, F_GETFD) = 0
+172   mmap(NULL, 1439992, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff4eda0000
+172   openat(AT_FDCWD</s/tofu>, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3</proc/172/cgroup>
+172   read(3</proc/172/cgroup>, "0::/sideeye-166-acd4898bf0f45c14"..., 65536) = 38
+172   read(3</proc/172/cgroup>, "", 65536) = 0
+172   close(3</proc/172/cgroup>)        = 0
+172   openat(AT_FDCWD</s/tofu>, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3</proc/172/mountinfo>
+172   read(3</proc/172/mountinfo>, "142 91 0:62 / / rw,relatime - ov"..., 65536) = 2824
+172   close(3</proc/172/mountinfo>)     = 0
+172   openat(AT_FDCWD</s/tofu>, "/sys/fs/cgroup/sideeye-166-acd4898bf0f45c14/work/cpu.max", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+172   clone(child_stack=0x389e564ea000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 173
+172   mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff4ed60000
+172   clone(child_stack=0x389e5653e000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 174
+172   clone(child_stack=0x389e5653a000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 175
+174   mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff4ed20000
+174   clone(child_stack=0x389e56598000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 176
+172   fcntl(0</dev/null>, F_GETFL)      = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+172   fcntl(1</out/tofu/work-4/stdout-record.txt>, F_GETFL) = 0x28001 (flags O_WRONLY|O_LARGEFILE|O_NOFOLLOW)
+172   fcntl(2</out/tofu/preflight-4.txt>, F_GETFL) = 0x20001 (flags O_WRONLY|O_LARGEFILE)
+172   readlinkat(AT_FDCWD</s/tofu>, "/proc/self/exe", "/opt/bin/tofu", 128) = 13
+172   openat(AT_FDCWD</s/tofu>, "/opt/bin/tofu", O_RDONLY|O_CLOEXEC) = 3</opt/bin/tofu>
+172   fcntl(3</opt/bin/tofu>, F_GETFL)  = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+172   fcntl(3</opt/bin/tofu>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+172   epoll_create1(EPOLL_CLOEXEC)      = 4<anon_inode:[eventpoll]>
+172   eventfd2(0, EFD_CLOEXEC|EFD_NONBLOCK) = 5<anon_inode:[eventfd]>
+172   epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 5<anon_inode:[eventfd]>, {events=EPOLLIN, data=0x63df150}) = 0
+172   epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</opt/bin/tofu>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data=0x7fffa76b36000001}) = -1 EPERM (Operation not permitted)
+172   fcntl(3</opt/bin/tofu>, F_GETFL)  = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+172   fcntl(3</opt/bin/tofu>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+172   fstat(3</opt/bin/tofu>, {st_mode=S_IFREG|0755, st_size=104464544, ...}) = 0
+172   pread64(3</opt/bin/tofu>, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\2\0\267\0\1\0\0\0\0\5\n\0\0\0\0\0"..., 64, 0) = 64
+172   pread64(3</opt/bin/tofu>, "#\23\0\251\3\220\0\251\340'\0\371\343w@\371c\30@\371\343G\0\371\340\7}\262A\214\2\220"..., 64, 13058068) = 64
+172   pread64(3</opt/bin/tofu>, "\340\207\10\251`.\2\260\0\240#\221\341W@\371\342#\2\221U\207\234\227\3\20@\251\1\6\0006"..., 64, 26116136) = 64
+172   pread64(3</opt/bin/tofu>, "B\324:\221\243\1\200\322\344\3\2\252\345\3\3\252\346\3@\262\240.o\227bH\0\320B@\10\221"..., 64, 39174204) = 64
+172   pread64(3</opt/bin/tofu>, "l-plane/envoy/config/listener/v3"..., 64, 52232272) = 64
+172   pread64(3</opt/bin/tofu>, "\353\4\1\340\4\22\0\0\1\1\3\2\2\1\1\2\7\3\2\4\24\5\2\2\2\1\2\2\2\4\1\5"..., 64, 65290340) = 64
+172   pread64(3</opt/bin/tofu>, "J\3\2\0\24\201\6\0\24\201\6\0\0\0\0\0`]\250\1v\341d\0\0\0\0\0\0\0\0\0"..., 64, 78348408) = 64
+172   pread64(3</opt/bin/tofu>, "\0\0\0\0\240\213\333\5\0\0\0\0\10\0\0\0\0\0\0\0\10\0\0\0\0\0\0\0\205\234$\256"..., 64, 91406476) = 64
+172   close(3</opt/bin/tofu>)           = 0
+173   epoll_pwait(4<anon_inode:[eventpoll]>,  <unfinished ...>
+172   openat(AT_FDCWD</s/tofu>, "/proc/self/auxv", O_RDONLY|O_CLOEXEC <unfinished ...>
+173   <... epoll_pwait resumed>[], 128, 0, NULL, 0) = 0
+172   <... openat resumed>)             = 3</proc/172/auxv>
+172   fcntl(3</proc/172/auxv>, F_GETFL) = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+172   fcntl(3</proc/172/auxv>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+172   epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</proc/172/auxv>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data=0x7fffa76b36000002}) = -1 EPERM (Operation not permitted)
+172   fcntl(3</proc/172/auxv>, F_GETFL) = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+172   fcntl(3</proc/172/auxv>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+172   fstat(3</proc/172/auxv>, {st_mode=S_IFREG|0400, st_size=0, ...}) = 0
+172   read(3</proc/172/auxv>, "!\0\0\0\0\0\0\0\0\220\232\225\377\377\0\0003\0\0\0\0\0\0\0p\22\0\0\0\0\0\0"..., 512) = 336
+172   read(3</proc/172/auxv>, "", 944)  = 0
+172   close(3</proc/172/auxv>)          = 0
+172   ioctl(1</out/tofu/work-4/stdout-record.txt>, TIOCGWINSZ, 0x389e56639d30) = -1 ENOTTY (Inappropriate ioctl for device)
+172   readlinkat(AT_FDCWD</s/tofu>, "/proc/self/exe", "/opt/bin/tofu", 128) = 13
+172   mmap(0x389e56800000, 4194304, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x389e56800000
+172   mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff4ece0000
+172   epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+175   mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff4eca0000
+175   mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+176   mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+175   <... mmap resumed>)               = 0xffff95805000
+176   <... mmap resumed>)               = 0xffff4ec60000
+175   clone(child_stack=0x389e56998000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM <unfinished ...>
+174   mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+172   clone(child_stack=0x389e56594000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM <unfinished ...>
+176   tgkill(172, 172, SIGURG <unfinished ...>
+174   <... mmap resumed>)               = 0xffff4ec20000
+176   <... tgkill resumed>)             = 0
+175   <... clone resumed>)              = 177
+172   <... clone resumed>)              = 178
+176   mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff95803000
+172   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+176   tgkill(172, 177, SIGURG <unfinished ...>
+177   tgkill(172, 176, SIGURG <unfinished ...>
+176   <... tgkill resumed>)             = 0
+177   <... tgkill resumed>)             = 0
+176   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+177   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+178   tgkill(172, 172, SIGURG)          = 0
+172   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+178   tgkill(172, 172, SIGURG <unfinished ...>
+172   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+178   <... tgkill resumed>)             = 0
+178   epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+178   mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff4ebe0000
+178   mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff4eba0000
+178   mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff4eb60000
+172   mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff4eb20000
+172   newfstatat(AT_FDCWD</s/tofu>, "/proc", {st_mode=S_IFDIR|0555, st_size=0, ...}, 0) = 0
+172   statfs("/proc", {f_type=PROC_SUPER_MAGIC, f_bsize=4096, f_blocks=0, f_bfree=0, f_bavail=0, f_files=0, f_ffree=0, f_fsid={val=[0x47, 0]}, f_namelen=255, f_frsize=4096, f_flags=ST_VALID|ST_NOSUID|ST_NODEV|ST_NOEXEC|ST_RELATIME}) = 0
+173   epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+172   epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+176   mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff95801000
+178   tgkill(172, 172, SIGURG)          = 0
+172   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+178   tgkill(172, 176, SIGURG)          = 0
+176   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+172   mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff4eb10000
+176   tgkill(172, 172, SIGURG <unfinished ...>
+172   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+176   <... tgkill resumed>)             = 0
+176   tgkill(172, 172, SIGURG <unfinished ...>
+178   tgkill(172, 176, SIGURG <unfinished ...>
+176   <... tgkill resumed>)             = 0
+172   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+178   <... tgkill resumed>)             = 0
+176   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+178   tgkill(172, 176, SIGURG)          = 0
+176   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+178   tgkill(172, 176, SIGURG <unfinished ...>
+177   tgkill(172, 178, SIGURG <unfinished ...>
+178   <... tgkill resumed>)             = 0
+176   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+178   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+177   <... tgkill resumed>)             = 0
+175   clone(child_stack=0x389e56994000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM <unfinished ...>
+172   mmap(0x389e56c00000, 4194304, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x389e56c00000
+176   tgkill(172, 172, SIGURG <unfinished ...>
+172   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+176   <... tgkill resumed>)             = 0
+175   <... clone resumed>)              = 179
+176   tgkill(172, 172, SIGURG)          = 0
+172   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+176   tgkill(172, 172, SIGURG)          = 0
+172   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+176   tgkill(172, 172, SIGURG)          = 0
+172   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+176   epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+179   mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff4ead0000
+176   mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff4ea90000
+172   epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+179   tgkill(172, 172, SIGURG)          = 0
+178   tgkill(172, 179, SIGURG <unfinished ...>
+172   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+175   tgkill(172, 178, SIGURG <unfinished ...>
+178   <... tgkill resumed>)             = 0
+179   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+175   <... tgkill resumed>)             = 0
+178   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+175   tgkill(172, 172, SIGURG <unfinished ...>
+176   tgkill(172, 175, SIGURG <unfinished ...>
+175   <... tgkill resumed>)             = 0
+172   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+176   <... tgkill resumed>)             = 0
+175   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+176   tgkill(172, 175, SIGURG)          = 0
+175   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+175   tgkill(172, 172, SIGURG <unfinished ...>
+172   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+175   <... tgkill resumed>)             = 0
+175   tgkill(172, 172, SIGURG <unfinished ...>
+177   mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+175   <... tgkill resumed>)             = 0
+172   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+177   <... mmap resumed>)               = 0xffff4ea8e000
+175   tgkill(172, 172, SIGURG)          = 0
+172   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+173   epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+178   tgkill(172, 175, SIGURG)          = 0
+175   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+172   ioctl(1</out/tofu/work-4/stdout-record.txt>, TCGETS <unfinished ...>
+175   tgkill(172, 178, SIGURG <unfinished ...>
+172   <... ioctl resumed>, 0x389e56c17a7c) = -1 ENOTTY (Inappropriate ioctl for device)
+175   <... tgkill resumed>)             = 0
+172   ioctl(2</out/tofu/preflight-4.txt>, TCGETS <unfinished ...>
+178   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+172   <... ioctl resumed>, 0x389e56c17a7c) = -1 ENOTTY (Inappropriate ioctl for device)
+172   ioctl(0</dev/null>, TCGETS, 0x389e56c17a7c) = -1 ENOTTY (Inappropriate ioctl for device)
+172   newfstatat(AT_FDCWD</s/tofu>, "/s/aux/home/.terraformrc", 0x389e5661a9f8, 0) = -1 ENOENT (No such file or directory)
+172   openat(AT_FDCWD</s/tofu>, "/s/aux/home/.tofurc", O_RDONLY|O_CLOEXEC <unfinished ...>
+174   tgkill(172, 175, SIGURG <unfinished ...>
+172   <... openat resumed>)             = -1 ENOENT (No such file or directory)
+174   <... tgkill resumed>)             = 0
+172   newfstatat(AT_FDCWD</s/tofu>, "", 0x389e5661aab8, 0) = -1 ENOENT (No such file or directory)
+176   tgkill(172, 174, SIGURG <unfinished ...>
+175   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+172   newfstatat(AT_FDCWD</s/tofu>, "/s/aux/home/.terraform.d",  <unfinished ...>
+176   <... tgkill resumed>)             = 0
+172   <... newfstatat resumed>{st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+174   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+172   newfstatat(AT_FDCWD</s/tofu>, "/s/aux/home/.terraform.d", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+172   openat(AT_FDCWD</s/tofu>, "/s/aux/home/.terraform.d", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = 3</s/aux/home/.terraform.d>
+172   getdents64(3</s/aux/home/.terraform.d>, 0x389e56e6c000 /* 2 entries */, 8192) = 48
+172   getdents64(3</s/aux/home/.terraform.d>, 0x389e56e6c000 /* 0 entries */, 8192) = 0
+172   close(3</s/aux/home/.terraform.d>) = 0
+174   epoll_pwait(4<anon_inode:[eventpoll]>, [], 128, 0, NULL, 0) = 0
+172   mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff4ea4e000
+172   openat(AT_FDCWD</s/tofu>, "/s/aux/home/.terraform.d/plugins", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+172   openat(AT_FDCWD</s/tofu>, "/s/aux/home/.terraform.d/plugins/linux_arm64", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+172   openat(AT_FDCWD</s/tofu>, "/s/aux/data/opentofu/plugins", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+172   openat(AT_FDCWD</s/tofu>, "/s/aux/data/opentofu/plugins/linux_arm64", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+172   newfstatat(AT_FDCWD</s/tofu>, "/s/aux/home/.terraform.d", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+172   openat(AT_FDCWD</s/tofu>, "/s/aux/home/.terraform.d/credentials.tfrc.json", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+172   newfstatat(AT_FDCWD</s/tofu>, ".", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+172   newfstatat(AT_FDCWD</s/tofu>, "/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+172   getcwd("/s/tofu", 4096)           = 8
+172   newfstatat(AT_FDCWD</s/tofu>, "terraform.d/plugins", 0x389e5661be38, 0) = -1 ENOENT (No such file or directory)
+172   newfstatat(AT_FDCWD</s/tofu>, "/s/aux/home/.terraform.d/plugins", 0x389e569bc1b8, 0) = -1 ENOENT (No such file or directory)
+172   newfstatat(AT_FDCWD</s/tofu>, "/s/aux/data/opentofu/plugins", 0x389e569bc578, 0) = -1 ENOENT (No such file or directory)
+172   newfstatat(AT_FDCWD</s/tofu>, "/s/aux/data/terraform/plugins", 0x389e569bc638, 0) = -1 ENOENT (No such file or directory)
+172   newfstatat(AT_FDCWD</s/tofu>, "/usr/local/share/terraform/plugins", 0x389e569bc6f8, 0) = -1 ENOENT (No such file or directory)
+172   newfstatat(AT_FDCWD</s/tofu>, "/usr/share/terraform/plugins", 0x389e569bc7b8, 0) = -1 ENOENT (No such file or directory)
+172   newfstatat(AT_FDCWD</s/tofu>, "/s/aux/home/.terraform.d", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+172   mkdirat(AT_FDCWD</s/tofu>, "/s/aux/home/.terraform.d", 0777) = -1 EEXIST (File exists)
+172   newfstatat(AT_FDCWD</s/tofu>, "/s/aux/home/.terraform.d", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+172   clone(child_stack=0x389e56df4000, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM) = 180
+174   newfstatat(AT_FDCWD</s/tofu>, ".", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+174   newfstatat(AT_FDCWD</s/tofu>, "/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+174   getcwd("/s/tofu", 4096)           = 8
+174   newfstatat(AT_FDCWD</s/tofu>, "terraform.tfvars", 0x389e569bcdb8, 0) = -1 ENOENT (No such file or directory)
+174   newfstatat(AT_FDCWD</s/tofu>, "terraform.tfvars.json", 0x389e569bce78, 0) = -1 ENOENT (No such file or directory)
+174   openat(AT_FDCWD</s/tofu>, ".", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = 3</s/tofu>
+174   getdents64(3</s/tofu>, 0x389e56e6c000 /* 4 entries */, 8192) = 120
+174   getdents64(3</s/tofu>, 0x389e56e6c000 /* 0 entries */, 8192) = 0
+174   close(3</s/tofu>)                 = 0
+174   openat(AT_FDCWD</s/tofu>, ".terraform/environment", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+174   openat(AT_FDCWD</s/tofu>, ".terraform/modules/modules.json", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+174   openat(AT_FDCWD</s/tofu>, "/s/tofu", O_RDONLY|O_CLOEXEC) = 3</s/tofu>
+174   fcntl(3</s/tofu>, F_GETFL)        = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+174   fcntl(3</s/tofu>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+174   epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</s/tofu>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data=0x7fffa76b36000003}) = -1 EPERM (Operation not permitted)
+174   fcntl(3</s/tofu>, F_GETFL)        = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+174   fcntl(3</s/tofu>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+174   getdents64(3</s/tofu>, 0x389e56e6c000 /* 4 entries */, 8192) = 120
+174   newfstatat(3</s/tofu>, "main.tf", {st_mode=S_IFREG|0644, st_size=149, ...}, AT_SYMLINK_NOFOLLOW) = 0
+174   newfstatat(3</s/tofu>, "terraform.tfstate", {st_mode=S_IFREG|0644, st_size=2008, ...}, AT_SYMLINK_NOFOLLOW) = 0
+174   getdents64(3</s/tofu>, 0x389e56e6c000 /* 0 entries */, 8192) = 0
+174   close(3</s/tofu>)                 = 0
+174   openat(AT_FDCWD</s/tofu>, "/s/tofu/main.tf", O_RDONLY|O_CLOEXEC) = 3</s/tofu/main.tf>
+174   fcntl(3</s/tofu/main.tf>, F_GETFL) = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+174   fcntl(3</s/tofu/main.tf>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+174   epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</s/tofu/main.tf>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data=0x7fffa76b36000004}) = -1 EPERM (Operation not permitted)
+174   fcntl(3</s/tofu/main.tf>, F_GETFL) = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+174   fcntl(3</s/tofu/main.tf>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+174   fstat(3</s/tofu/main.tf>, {st_mode=S_IFREG|0644, st_size=149, ...}) = 0
+174   read(3</s/tofu/main.tf>, "resource \"terraform_data\" \"a\" { "..., 661) = 149
+174   read(3</s/tofu/main.tf>, "", 512) = 0
+174   close(3</s/tofu/main.tf>)         = 0
+174   newfstatat(AT_FDCWD</s/tofu>, ".", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+174   newfstatat(AT_FDCWD</s/tofu>, "/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+174   getcwd("/s/tofu", 4096)           = 8
+174   newfstatat(AT_FDCWD</s/tofu>, ".", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+174   newfstatat(AT_FDCWD</s/tofu>, "/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+174   getcwd("/s/tofu", 4096)           = 8
+174   openat(AT_FDCWD</s/tofu>, ".", O_RDONLY|O_CLOEXEC) = 3</s/tofu>
+174   fcntl(3</s/tofu>, F_GETFL)        = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+174   fcntl(3</s/tofu>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+174   epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</s/tofu>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data=0x7fffa76b36000005}) = -1 EPERM (Operation not permitted)
+174   fcntl(3</s/tofu>, F_GETFL)        = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+174   fcntl(3</s/tofu>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+174   getdents64(3</s/tofu>, 0x389e56e6c000 /* 4 entries */, 8192) = 120
+174   newfstatat(3</s/tofu>, "main.tf", {st_mode=S_IFREG|0644, st_size=149, ...}, AT_SYMLINK_NOFOLLOW) = 0
+174   newfstatat(3</s/tofu>, "terraform.tfstate", {st_mode=S_IFREG|0644, st_size=2008, ...}, AT_SYMLINK_NOFOLLOW) = 0
+174   getdents64(3</s/tofu>, 0x389e56e6c000 /* 0 entries */, 8192) = 0
+174   close(3</s/tofu>)                 = 0
+174   openat(AT_FDCWD</s/tofu>, "main.tf", O_RDONLY|O_CLOEXEC) = 3</s/tofu/main.tf>
+174   fcntl(3</s/tofu/main.tf>, F_GETFL) = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+174   fcntl(3</s/tofu/main.tf>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+174   epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</s/tofu/main.tf>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data=0x7fffa76b36000006}) = -1 EPERM (Operation not permitted)
+173   epoll_pwait(4<anon_inode:[eventpoll]>,  <unfinished ...>
+174   fcntl(3</s/tofu/main.tf>, F_GETFL <unfinished ...>
+173   <... epoll_pwait resumed>[], 128, 0, NULL, 0) = 0
+174   <... fcntl resumed>)              = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+174   fcntl(3</s/tofu/main.tf>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+174   fstat(3</s/tofu/main.tf>, {st_mode=S_IFREG|0644, st_size=149, ...}) = 0
+174   read(3</s/tofu/main.tf>, "resource \"terraform_data\" \"a\" { "..., 661) = 149
+174   read(3</s/tofu/main.tf>, "", 512) = 0
+174   close(3</s/tofu/main.tf>)         = 0
+174   newfstatat(AT_FDCWD</s/tofu>, ".", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+174   newfstatat(AT_FDCWD</s/tofu>, "/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+174   getcwd("/s/tofu", 4096)           = 8
+174   openat(AT_FDCWD</s/tofu>, ".", O_RDONLY|O_CLOEXEC) = 3</s/tofu>
+174   fcntl(3</s/tofu>, F_GETFL)        = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+174   fcntl(3</s/tofu>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+174   epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</s/tofu>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data=0x7fffa76b36000007}) = -1 EPERM (Operation not permitted)
+174   fcntl(3</s/tofu>, F_GETFL)        = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+174   fcntl(3</s/tofu>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+174   getdents64(3</s/tofu>, 0x389e56e6c000 /* 4 entries */, 8192) = 120
+174   newfstatat(3</s/tofu>, "main.tf", {st_mode=S_IFREG|0644, st_size=149, ...}, AT_SYMLINK_NOFOLLOW) = 0
+174   newfstatat(3</s/tofu>, "terraform.tfstate", {st_mode=S_IFREG|0644, st_size=2008, ...}, AT_SYMLINK_NOFOLLOW) = 0
+174   getdents64(3</s/tofu>, 0x389e56e6c000 /* 0 entries */, 8192) = 0
+174   close(3</s/tofu>)                 = 0
+174   openat(AT_FDCWD</s/tofu>, "main.tf", O_RDONLY|O_CLOEXEC) = 3</s/tofu/main.tf>
+174   fcntl(3</s/tofu/main.tf>, F_GETFL) = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+174   fcntl(3</s/tofu/main.tf>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+174   epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</s/tofu/main.tf>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data=0x7fffa76b36000008}) = -1 EPERM (Operation not permitted)
+174   fcntl(3</s/tofu/main.tf>, F_GETFL) = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+174   fcntl(3</s/tofu/main.tf>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+174   fstat(3</s/tofu/main.tf>, {st_mode=S_IFREG|0644, st_size=149, ...}) = 0
+174   read(3</s/tofu/main.tf>, "resource \"terraform_data\" \"a\" { "..., 661) = 149
+174   read(3</s/tofu/main.tf>, "", 512) = 0
+174   close(3</s/tofu/main.tf>)         = 0
+174   openat(AT_FDCWD</s/tofu>, ".terraform/terraform.tfstate", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+174   openat(AT_FDCWD</s/tofu>, ".terraform/environment", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+174   newfstatat(AT_FDCWD</s/tofu>, ".terraform.lock.hcl", 0x389e56ed6878, 0) = -1 ENOENT (No such file or directory)
+174   openat(AT_FDCWD</s/tofu>, ".", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = 3</s/tofu>
+174   getdents64(3</s/tofu>, 0x389e56e6c000 /* 4 entries */, 8192) = 120
+174   getdents64(3</s/tofu>, 0x389e56e6c000 /* 0 entries */, 8192) = 0
+174   close(3</s/tofu>)                 = 0
+174   openat(AT_FDCWD</s/tofu>, "/opt/bin", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = 3</opt/bin>
+174   getdents64(3</opt/bin>, 0x389e56e6c000 /* 9 entries */, 8192) = 256
+174   getdents64(3</opt/bin>, 0x389e56e6c000 /* 0 entries */, 8192) = 0
+174   close(3</opt/bin>)                = 0
+174   openat(AT_FDCWD</s/tofu>, "terraform.d/plugins/linux_arm64", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+174   openat(AT_FDCWD</s/tofu>, ".terraform/plugins/linux_arm64", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+174   openat(AT_FDCWD</s/tofu>, "/s/aux/home/.terraform.d/plugins", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+174   openat(AT_FDCWD</s/tofu>, "/s/aux/home/.terraform.d/plugins/linux_arm64", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+174   openat(AT_FDCWD</s/tofu>, "/s/aux/data/opentofu/plugins", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+174   openat(AT_FDCWD</s/tofu>, "/s/aux/data/opentofu/plugins/linux_arm64", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+173   tgkill(172, 174, SIGURG <unfinished ...>
+176   openat(AT_FDCWD</s/tofu>, ".terraform/environment", O_RDONLY|O_CLOEXEC <unfinished ...>
+173   <... tgkill resumed>)             = 0
+176   <... openat resumed>)             = -1 ENOENT (No such file or directory)
+174   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+176   openat(AT_FDCWD</s/tofu>, ".terraform/environment", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+176   newfstatat(AT_FDCWD</s/tofu>, ".terraform.lock.hcl", 0x389e56f10038, 0) = -1 ENOENT (No such file or directory)
+176   openat(AT_FDCWD</s/tofu>, ".", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = 3</s/tofu>
+176   getdents64(3</s/tofu>, 0x389e56f16000 /* 4 entries */, 8192) = 120
+176   getdents64(3</s/tofu>, 0x389e56f16000 /* 0 entries */, 8192) = 0
+176   close(3</s/tofu>)                 = 0
+176   openat(AT_FDCWD</s/tofu>, "/opt/bin", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = 3</opt/bin>
+176   getdents64(3</opt/bin>, 0x389e56f16000 /* 9 entries */, 8192) = 256
+176   getdents64(3</opt/bin>, 0x389e56f16000 /* 0 entries */, 8192) = 0
+176   close(3</opt/bin>)                = 0
+176   openat(AT_FDCWD</s/tofu>, "terraform.d/plugins/linux_arm64", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+176   openat(AT_FDCWD</s/tofu>, ".terraform/plugins/linux_arm64", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+176   openat(AT_FDCWD</s/tofu>, "/s/aux/home/.terraform.d/plugins", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+176   openat(AT_FDCWD</s/tofu>, "/s/aux/home/.terraform.d/plugins/linux_arm64", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+176   openat(AT_FDCWD</s/tofu>, "/s/aux/data/opentofu/plugins", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+176   openat(AT_FDCWD</s/tofu>, "/s/aux/data/opentofu/plugins/linux_arm64", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+176   openat(AT_FDCWD</s/tofu>, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 3</etc/passwd>
+176   fcntl(3</etc/passwd>, F_GETFL)    = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+176   fcntl(3</etc/passwd>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+176   epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</etc/passwd>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data=0x7fffa76b36000009}) = -1 EPERM (Operation not permitted)
+176   fcntl(3</etc/passwd>, F_GETFL)    = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+176   fcntl(3</etc/passwd>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+176   read(3</etc/passwd>, "root:x:0:0:root:/root:/bin/bash\n"..., 4096) = 839
+176   close(3</etc/passwd>)             = 0
+176   newfstatat(AT_FDCWD</s/tofu>, "terraform.tfstate", {st_mode=S_IFREG|0644, st_size=2008, ...}, 0) = 0
+176   newfstatat(AT_FDCWD</s/tofu>, ".", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+176   openat(AT_FDCWD</s/tofu>, "terraform.tfstate", O_RDWR|O_CREAT|O_CLOEXEC, 0666) = 3</s/tofu/terraform.tfstate>
+176   fcntl(3</s/tofu/terraform.tfstate>, F_GETFL) = 0x20002 (flags O_RDWR|O_LARGEFILE)
+176   fcntl(3</s/tofu/terraform.tfstate>, F_SETFL, O_RDWR|O_NONBLOCK|O_LARGEFILE) = 0
+176   epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</s/tofu/terraform.tfstate>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data=0x7fffa76b3600000a}) = -1 EPERM (Operation not permitted)
+176   fcntl(3</s/tofu/terraform.tfstate>, F_GETFL) = 0x20802 (flags O_RDWR|O_NONBLOCK|O_LARGEFILE)
+176   fcntl(3</s/tofu/terraform.tfstate>, F_SETFL, O_RDWR|O_LARGEFILE) = 0
+176   fcntl(3</s/tofu/terraform.tfstate>, F_SETLK, {l_type=F_WRLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
+176   read(3</s/tofu/terraform.tfstate>, "{\n  \"version\": 4,\n  \"terraform_v"..., 512) = 512
+176   read(3</s/tofu/terraform.tfstate>, "    \"type\": \"string\"\n           "..., 256) = 256
+176   read(3</s/tofu/terraform.tfstate>, "      \"mode\": \"managed\",\n      \""..., 384) = 384
+176   read(3</s/tofu/terraform.tfstate>,  <unfinished ...>
+175   epoll_pwait(4<anon_inode:[eventpoll]>,  <unfinished ...>
+176   <... read resumed>" },\n            \"output\": {\n    "..., 576) = 576
+176   read(3</s/tofu/terraform.tfstate>, "    \"type\": \"string\"\n           "..., 896) = 280
+176   read(3</s/tofu/terraform.tfstate>, "", 616) = 0
+176   openat(AT_FDCWD</s/tofu>, ".terraform.tfstate.lock.info", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0600) = 6</s/tofu/.terraform.tfstate.lock.info>
+176   fcntl(6</s/tofu/.terraform.tfstate.lock.info>, F_GETFL) = 0x20001 (flags O_WRONLY|O_LARGEFILE)
+176   fcntl(6</s/tofu/.terraform.tfstate.lock.info>, F_SETFL, O_WRONLY|O_NONBLOCK|O_LARGEFILE) = 0
+176   epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 6</s/tofu/.terraform.tfstate.lock.info>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data=0x7fffa76b3600000b}) = -1 EPERM (Operation not permitted)
+176   fcntl(6</s/tofu/.terraform.tfstate.lock.info>, F_GETFL) = 0x20801 (flags O_WRONLY|O_NONBLOCK|O_LARGEFILE)
+176   fcntl(6</s/tofu/.terraform.tfstate.lock.info>, F_SETFL, O_WRONLY|O_LARGEFILE) = 0
+176   write(6</s/tofu/.terraform.tfstate.lock.info>, "{\"ID\":\"914786c1-5fe5-69da-4832-a"..., 193) = 193
+176   close(6</s/tofu/.terraform.tfstate.lock.info>) = 0
+176   lseek(3</s/tofu/terraform.tfstate>, 0, SEEK_SET) = 0
+176   read(3</s/tofu/terraform.tfstate>, "{\n  \"version\": 4,\n  \"terraform_v"..., 512) = 512
+176   read(3</s/tofu/terraform.tfstate>, "    \"type\": \"string\"\n           "..., 256) = 256
+176   read(3</s/tofu/terraform.tfstate>, "      \"mode\": \"managed\",\n      \""..., 384) = 384
+176   read(3</s/tofu/terraform.tfstate>, " },\n            \"output\": {\n    "..., 576) = 576
+176   read(3</s/tofu/terraform.tfstate>, "    \"type\": \"string\"\n           "..., 896) = 280
+176   read(3</s/tofu/terraform.tfstate>, "", 616) = 0
+176   write(1</out/tofu/work-4/stdout-record.txt>, "Removed terraform_data.b\n", 25) = 25
+176   newfstatat(AT_FDCWD</s/tofu>, ".", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+176   newfstatat(AT_FDCWD</s/tofu>, "/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+176   getcwd("/s/tofu", 4096)           = 8
+176   openat(AT_FDCWD</s/tofu>, ".", O_RDONLY|O_CLOEXEC) = 6</s/tofu>
+176   fcntl(6</s/tofu>, F_GETFL)        = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+176   fcntl(6</s/tofu>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+176   epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 6</s/tofu>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data=0x7fffa76b3600000c}) = -1 EPERM (Operation not permitted)
+176   fcntl(6</s/tofu>, F_GETFL)        = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+176   fcntl(6</s/tofu>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+176   getdents64(6</s/tofu>, 0x389e56f16000 /* 5 entries */, 8192) = 168
+176   newfstatat(6</s/tofu>, "main.tf", {st_mode=S_IFREG|0644, st_size=149, ...}, AT_SYMLINK_NOFOLLOW) = 0
+176   newfstatat(6</s/tofu>, ".terraform.tfstate.lock.info", {st_mode=S_IFREG|0600, st_size=193, ...}, AT_SYMLINK_NOFOLLOW) = 0
+176   newfstatat(6</s/tofu>, "terraform.tfstate", {st_mode=S_IFREG|0644, st_size=2008, ...}, AT_SYMLINK_NOFOLLOW) = 0
+176   getdents64(6</s/tofu>, 0x389e56f16000 /* 0 entries */, 8192) = 0
+176   close(6</s/tofu>)                 = 0
+176   openat(AT_FDCWD</s/tofu>, "main.tf", O_RDONLY|O_CLOEXEC) = 6</s/tofu/main.tf>
+176   fcntl(6</s/tofu/main.tf>, F_GETFL) = 0x20000 (flags O_RDONLY|O_LARGEFILE)
+176   fcntl(6</s/tofu/main.tf>, F_SETFL, O_RDONLY|O_NONBLOCK|O_LARGEFILE) = 0
+176   epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 6</s/tofu/main.tf>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data=0x7fffa76b3600000d}) = -1 EPERM (Operation not permitted)
+176   fcntl(6</s/tofu/main.tf>, F_GETFL) = 0x20800 (flags O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+176   fcntl(6</s/tofu/main.tf>, F_SETFL, O_RDONLY|O_LARGEFILE) = 0
+176   fstat(6</s/tofu/main.tf>, {st_mode=S_IFREG|0644, st_size=149, ...}) = 0
+176   read(6</s/tofu/main.tf>, "resource \"terraform_data\" \"a\" { "..., 661) = 149
+176   read(6</s/tofu/main.tf>, "", 512) = 0
+176   close(6</s/tofu/main.tf>)         = 0
+176   openat(AT_FDCWD</s/tofu>, ".terraform/terraform.tfstate", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+176   openat(AT_FDCWD</s/tofu>, ".terraform/environment", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+176   newfstatat(AT_FDCWD</s/tofu>, ".terraform.lock.hcl", 0x389e56f11238, 0) = -1 ENOENT (No such file or directory)
+176   openat(AT_FDCWD</s/tofu>, ".", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = 6</s/tofu>
+176   getdents64(6</s/tofu>, 0x389e56f16000 /* 5 entries */, 8192) = 168
+176   getdents64(6</s/tofu>, 0x389e56f16000 /* 0 entries */, 8192) = 0
+176   close(6</s/tofu>)                 = 0
+176   openat(AT_FDCWD</s/tofu>, "/opt/bin", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = 6</opt/bin>
+176   getdents64(6</opt/bin>, 0x389e56f16000 /* 9 entries */, 8192) = 256
+176   getdents64(6</opt/bin>, 0x389e56f16000 /* 0 entries */, 8192) = 0
+176   close(6</opt/bin>)                = 0
+176   openat(AT_FDCWD</s/tofu>, "terraform.d/plugins/linux_arm64", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+176   openat(AT_FDCWD</s/tofu>, ".terraform/plugins/linux_arm64", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+176   openat(AT_FDCWD</s/tofu>, "/s/aux/home/.terraform.d/plugins", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+176   openat(AT_FDCWD</s/tofu>, "/s/aux/home/.terraform.d/plugins/linux_arm64", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+176   openat(AT_FDCWD</s/tofu>, "/s/aux/data/opentofu/plugins", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+176   openat(AT_FDCWD</s/tofu>, "/s/aux/data/opentofu/plugins/linux_arm64", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+176   mmap(NULL, 262144, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff4ea0e000
+176   openat(AT_FDCWD</s/tofu>, "terraform.tfstate.1791621006.backup", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 6</s/tofu/terraform.tfstate.1791621006.backup>
+176   fcntl(6</s/tofu/terraform.tfstate.1791621006.backup>, F_GETFL) = 0x20002 (flags O_RDWR|O_LARGEFILE)
+176   fcntl(6</s/tofu/terraform.tfstate.1791621006.backup>, F_SETFL, O_RDWR|O_NONBLOCK|O_LARGEFILE) = 0
+176   epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 6</s/tofu/terraform.tfstate.1791621006.backup>, {events=EPOLLIN|EPOLLOUT|EPOLLRDHUP|EPOLLET, data=0x7fffa76b3600000e}) = -1 EPERM (Operation not permitted)
+173   tgkill(172, 176, SIGURG <unfinished ...>
+176   --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=172, si_uid=0} ---
+173   <... tgkill resumed>)             = 0
+174   fcntl(6</s/tofu/terraform.tfstate.1791621006.backup>, F_GETFL) = 0x20802 (flags O_RDWR|O_NONBLOCK|O_LARGEFILE)
+174   fcntl(6</s/tofu/terraform.tfstate.1791621006.backup>, F_SETFL, O_RDWR|O_LARGEFILE) = 0
+174   write(6</s/tofu/terraform.tfstate.1791621006.backup>, "{\n  \"version\": 4,\n  \"terraform_v"..., 2008) = 2008
+174   lseek(3</s/tofu/terraform.tfstate>, 0, SEEK_SET) = 0
+174   ftruncate(3</s/tofu/terraform.tfstate>, 0) = 0
+174   write(3</s/tofu/terraform.tfstate>, "{\n  \"version\": 4,\n  \"terraform_v"..., 1401) = 1401
+174   close(6</s/tofu/terraform.tfstate.1791621006.backup>) = 0
+174   fsync(3</s/tofu/terraform.tfstate>) = 0
+174   write(1</out/tofu/work-4/stdout-record.txt>, "Successfully removed 1 resource "..., 45) = 45
+174   unlinkat(AT_FDCWD</s/tofu>, ".terraform.tfstate.lock.info", 0) = 0
+174   fcntl(3</s/tofu/terraform.tfstate>, F_SETLK, {l_type=F_UNLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = 0
+174   close(3</s/tofu/terraform.tfstate>) = 0
+174   newfstatat(AT_FDCWD</s/tofu>, "terraform.tfstate", {st_mode=S_IFREG|0644, st_size=1401, ...}, 0) = 0
+174   exit_group(0 <unfinished ...>
+175   <... epoll_pwait resumed> <unfinished ...>) = ?
+174   <... exit_group resumed>)         = ?
+180   +++ exited with 0 +++
+179   +++ exited with 0 +++
+177   +++ exited with 0 +++
+176   +++ exited with 0 +++
+175   +++ exited with 0 +++
+174   +++ exited with 0 +++
+173   +++ exited with 0 +++
+178   +++ exited with 0 +++
+172   +++ exited with 0 +++

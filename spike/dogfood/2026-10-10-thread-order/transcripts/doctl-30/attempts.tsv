@@ -1,0 +1,36 @@
+attempt	exit	verdict
+1	2	UNKNOWN  multiple_threads_detected
+2	2	UNKNOWN  multiple_threads_detected
+3	2	UNKNOWN  multiple_threads_detected
+4	2	UNKNOWN  multiple_threads_detected
+5	2	UNKNOWN  multiple_threads_detected
+6	2	UNKNOWN  multiple_threads_detected
+7	2	UNKNOWN  multiple_threads_detected
+8	2	UNKNOWN  multiple_threads_detected
+9	2	UNKNOWN  multiple_threads_detected
+10	0	PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+11	2	UNKNOWN  multiple_threads_detected
+12	2	UNKNOWN  multiple_threads_detected
+13	0	PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+14	2	UNKNOWN  multiple_threads_detected
+15	2	UNKNOWN  multiple_threads_detected
+16	0	PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+17	2	UNKNOWN  multiple_threads_detected
+18	0	PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+19	2	UNKNOWN  multiple_threads_detected
+20	2	UNKNOWN  multiple_threads_detected
+21	0	PREFLIGHT  recording accepted — 2 state-changing operation(s) observed
+22	2	UNKNOWN  multiple_threads_detected
+23	2	UNKNOWN  multiple_threads_detected
+24	2	UNKNOWN  multiple_threads_detected
+25	2	UNKNOWN  multiple_threads_detected
+26	2	UNKNOWN  multiple_threads_detected
+27	2	UNKNOWN  multiple_threads_detected
+28	2	UNKNOWN  multiple_threads_detected
+29	2	UNKNOWN  multiple_threads_detected
+30	2	UNKNOWN  multiple_threads_detected
+31	2	UNKNOWN  multiple_threads_detected
+32	2	UNKNOWN  multiple_threads_detected
+33	2	UNKNOWN  multiple_threads_detected
+34	2	UNKNOWN  multiple_threads_detected
+35	2	UNKNOWN  multiple_threads_detected
