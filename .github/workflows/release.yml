@@ -107,8 +107,13 @@ jobs:
       # to the binary: exit 1 — the planted bug — is the only success. PATH is emptied so
       # the runner's compiler cannot be what makes it work: the demo used to compile its
       # toy on the visitor's machine, and a prebuilt binary is most often tried on one
-      # with no compiler. This is also the one place the ReleaseSafe build is exercised
-      # rather than only compiled; the acceptance suite runs Debug.
+      # with no compiler. For the x86_64-linux and aarch64-macos artefacts this is still the
+      # one place the ReleaseSafe build runs (ci.yml compiles the x86_64 one and does not build
+      # the macOS one); the aarch64-linux one also goes through the whole acceptance suite on
+      # every pull request and every push to main (ci.yml, linux-aarch64-releasesafe, #694),
+      # which builds it from this file's build line for that matrix entry and checks that its
+      # runner and Zig version are this file's — change the line and that job follows; change
+      # the runner or the Zig version and it is red until ci.yml follows.
       - name: Smoke test the artifact pair (sideeye demo, no compiler on PATH)
         run: |
           set +e

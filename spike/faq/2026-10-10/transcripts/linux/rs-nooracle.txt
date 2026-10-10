@@ -1,0 +1,57 @@
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+no_crash_window --- FAILED
+
+failures:
+
+---- no_crash_window stdout ----
+
+thread 'no_crash_window' panicked at tests/crash_consistency.rs:19:5:
+{
+  "schema": "sideeye/report",
+  "schema_status": "frozen",
+  "contract_version": 19,
+  "verdict": "PASS",
+  "exit_code": 0,
+  "oracle_verified": false,
+  "crash_points": 4,
+  "explored": 5,
+  "violations": 0,
+  "expected_status": 0,
+  "command_cwd": "/tmp/rs",
+  "command_cwd_declared": true,
+  "l0": "1 path(s) judged pre-or-post",
+  "l1": "no marker configured",
+  "case": "(none)",
+  "replay": "-",
+  "evidence": "-",
+  "oracle": "NOT VERIFIED (--allow-unverified) — nothing checked what the shim reported",
+  "metadata_writes": "not observable (no oracle ran; the shim does not interpose ownership/permission/timestamp calls)",
+  "checker": "none configured",
+  "processes": "not established: no boundary was recorded, but the shim sees only libc's own entry points (fork, vfork, posix_spawn, the exec family, pthread_create, setsid, setpgid) — a child created through a raw syscall would not appear here — and no second witness ran",
+  "paths_attributed_to_rename": 0,
+  "not_tested": ["power loss", "torn writes", "concurrent processes"],
+  "checker_declared": false,
+  "processes_children_admitted": false,
+  "processes_image_changes": 0,
+  "processes_threads_created": 0,
+  "processes_writer_threads": 1,
+  "l0_judged_paths": ["key.json"],
+  "l0_judged_paths_omitted": 0,
+  "l0_judged_paths_touched": 1
+}
+
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    no_crash_window
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `--test crash_consistency`

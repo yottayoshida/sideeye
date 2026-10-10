@@ -1,0 +1,7 @@
+--- FAIL: TestNoCrashWindow (0.09s)
+    keytool_test.go:25: sideeye: exit status 3
+        SETUP ERROR  --observe supervised needs a cgroup v2 the engine can create cgroups in (delegated to its user, or root): the crash point's kill reaches every process of the run through it, however one left the process group
+        sideeye: json sha256=40f7d57ab2985ecf2fd77c6f95b6383962ad0c90427f8b89b008caf7a6e5a485;
+FAIL
+FAIL	example.com/keytool	0.094s
+FAIL

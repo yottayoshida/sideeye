@@ -42,6 +42,7 @@ body:
     attributes:
       label: How Sideeye was installed
       options:
+        - Not answered
         - Homebrew
         - Release tarball
         - Built from source
@@ -64,7 +65,7 @@ body:
   - type: textarea
     id: report
     attributes:
-      label: The `--json` report
+      label: The --json report
       description: The file `--json <path>` wrote (`explore`, `preflight` and `replay` take it). If no file was written, write "none" and paste the text output instead.
       render: json
     validations:
@@ -81,6 +82,7 @@ body:
       label: Did a language model write any of this report?
       description: Welcome either way; CONTRIBUTING.md says why we ask.
       options:
+        - Not answered
         - "No"
         - Yes, and I have read all of it
     validations:

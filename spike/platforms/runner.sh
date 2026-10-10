@@ -22,8 +22,8 @@
 #   nixos-nix-ld        the same with nix-ld at that path and NIX_LD naming glibc's loader
 #   nixos-loader        the binary started through glibc's loader named on the command line
 #   nixos-loader-shim   the same with --shim naming the shim, which that start cannot find itself
-#   hardened-cli        docs/mcp.md's container flags (no network, read-only root, /tmp a tmpfs,
-#   hardened-mcp        no capabilities, no new privileges), the state on the /work mount; explored
+#   hardened-cli        docs/mcp.md's container flags (this runner's user, no network, read-only root,
+#   hardened-mcp        /tmp a tmpfs, no capabilities, no new privileges), the state on the /work mount; explored
 #                       through the CLI, then through `sideeye mcp` with the page's first call
 # Images are pinned by their multi-architecture index digest; nixpkgs by its commit and the hash
 # of its unpacked tree. Every leg
@@ -126,14 +126,15 @@ if [ "$LEGS" = all ]; then
         SHIM=/se/libsideeye_shim.so sh /ap/spike/platforms/measure.sh /tmp/sideeye-via-loader /out nixos-loader-shim'
 
     echo "== hardened"
-    # The /work mount is root's, as a directory made for the server would be: with every
-    # capability dropped, the container's root cannot write into a directory this runner's user
-    # owns. It is handed back afterwards so the record can be collected.
+    # The page's flags include --user (ADR 0114): the server runs as this runner's user, so it
+    # writes the /work mount that user made, and nothing it leaves there is root's. Until
+    # 2026-10-10 the page had no --user and this leg handed /work to root instead; a root with no
+    # capability cannot write a directory another user owns, and a root that can write the mount
+    # can leave a setuid-root file on the host.
     docker build -q -t sideeye-platforms-hardened -f "$here/hardened.Dockerfile" "$here" > "$out/hardened-build.txt" 2>&1
     hw=$out/hardened-work; mkdir -p "$hw/s/st"
     sed "s#/s/#/work/s/#g" "$here/define/sideeye.toml" > "$hw/sideeye.toml"
-    sudo chown -R 0:0 "$hw"
-    set -- --rm --network=none --read-only --tmpfs /tmp:exec --cap-drop=ALL --security-opt no-new-privileges \
+    set -- --rm --user "$(id -u):$(id -g)" --network=none --read-only --tmpfs /tmp:exec --cap-drop=ALL --security-opt no-new-privileges \
         -v "$root":/ap:ro -v "$se_dir":/se:ro -v "$hw":/work
     docker run "$@" sideeye-platforms-hardened sh -c 'S=/work/s sh /ap/spike/platforms/measure.sh /se/sideeye /work hardened-cli'
     meta='"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}'
@@ -146,7 +147,6 @@ if [ "$LEGS" = all ]; then
                 rm -rf /work/s/st && mkdir -p /work/s/st && printf "old contents\n" > /work/s/st/a.txt
                 /se/sideeye mcp > /work/mcp-response.jsonl 2> /work/mcp-stderr.txt
                 echo "mcp exit $?" >> /work/mcp-stderr.txt'
-    sudo chown -R "$(id -u):$(id -g)" "$hw"
     mkdir -p "$out/hardened-mcp"
     mv "$hw/mcp-response.jsonl" "$hw/mcp-stderr.txt" "$out/hardened-mcp/" 2>/dev/null
     [ -d "$hw/hardened-cli" ] && mv "$hw/hardened-cli" "$out/hardened-cli"
