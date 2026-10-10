@@ -1,0 +1,26 @@
+$ sideeye explore --config s2.toml --allow-unverified   # planted bug
+FAIL  1 of 4 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 3
+            after  open(/private/tmp/keytool-py-state/key.json)
+            before write(/private/tmp/keytool-py-state/key.json)
+path        key.json
+observed    holding neither the old nor the new content
+cwd         $MACDIR/py
+
+explored    4 worlds (crash points 3 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      NOT VERIFIED (--allow-unverified) — nothing checked what the shim reported
+metadata    not observable (no oracle ran; the shim does not interpose ownership/permission/timestamp calls)
+checker     none configured
+l1          no marker configured
+case        $MACDIR/x2/cases/000001.json
+replay      sideeye replay $MACDIR/x2/cases/000001.json --shim /opt/homebrew/Cellar/sideeye/1.10.0/lib/libsideeye_shim.dylib
+evidence    sideeye evidence $MACDIR/x2/evidence/000001.json
+processes   not established: no boundary was recorded, but the shim sees only libc's own entry points (fork, vfork, posix_spawn, the exec family, pthread_create, setsid, setpgid) — a child created through a raw syscall would not appear here — and no second witness ran
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd $MACDIR/py && unset SIDEEYE_KILL_GROUP && : > $MACDIR/x2/trace-repro.bin && SIDEEYE_STATE_DIR=/private/tmp/keytool-py-state SIDEEYE_STATE_DIR_ALT=/tmp/keytool-py-state SIDEEYE_TRACE_PATH=$MACDIR/x2/trace-repro.bin DYLD_INSERT_LIBRARIES=/opt/homebrew/Cellar/sideeye/1.10.0/lib/libsideeye_shim.dylib SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= /opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python keytool.py rotate </dev/null)
+rc=1

@@ -1471,9 +1471,11 @@ jobs:
   # the slugs differed, so git merged both without a conflict and only the two
   # sessions telling each other noticed (#373). Its own job for the same reason
   # as the one above: no toolchain, so a failure here names the allocation and
-  # nothing else. What it can and cannot do is written on the script — it reports
-  # a collision that reached main, and cannot stop the merge that creates one,
-  # because no status check is required on this repository.
+  # nothing else. What it can and cannot do is written on the script — it is a
+  # required check, so a pull request whose run sees a collision cannot merge, but
+  # it cannot stop two branches from the same base that each went green before the
+  # other merged, because main's protection does not require a branch to be up to
+  # date; that collision reaches main and is reported on the post-merge run.
 
   # The funnel from a define to an upstream fix (#605, ADR 0070). Its own job, and its
   # self-test first, for the reason the checkers beside it give: no toolchain, and a

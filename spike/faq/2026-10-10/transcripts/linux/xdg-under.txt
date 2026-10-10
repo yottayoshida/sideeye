@@ -1,0 +1,62 @@
+falsify: Traceback (most recent call last):
+falsify:   File "<string>", line 3, in <module>
+falsify:     json.load(open(os.path.join(os.environ["XDG_CONFIG_HOME"], "xdgtool", "config.json")))
+falsify:     ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+falsify:   File "/usr/lib/python3.13/json/__init__.py", line 293, in load
+falsify:     return loads(fp.read(),
+falsify:         cls=cls, object_hook=object_hook,
+falsify:         parse_float=parse_float, parse_int=parse_int,
+falsify:         parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+falsify:   File "/usr/lib/python3.13/json/__init__.py", line 346, in loads
+falsify:     return _default_decoder.decode(s)
+falsify:            ~~~~~~~~~~~~~~~~~~~~~~~^^^
+falsify:   File "/usr/lib/python3.13/json/decoder.py", line 345, in decode
+falsify:     obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+falsify:                ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+falsify:   File "/usr/lib/python3.13/json/decoder.py", line 363, in raw_decode
+falsify:     raise JSONDecodeError("Expecting value", s, err.value) from None
+falsify: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+world 2: Traceback (most recent call last):
+world 2:   File "<string>", line 4, in <module>
+world 2:     json.load(open(os.path.join(os.environ["XDG_DATA_HOME"], "xdgtool", "db.json")))
+world 2:     ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+world 2:   File "/usr/lib/python3.13/json/__init__.py", line 293, in load
+world 2:     return loads(fp.read(),
+world 2:         cls=cls, object_hook=object_hook,
+world 2:         parse_float=parse_float, parse_int=parse_int,
+world 2:         parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+world 2:   File "/usr/lib/python3.13/json/__init__.py", line 346, in loads
+world 2:     return _default_decoder.decode(s)
+world 2:            ~~~~~~~~~~~~~~~~~~~~~~~^^^
+world 2:   File "/usr/lib/python3.13/json/decoder.py", line 345, in decode
+world 2:     obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+world 2:                ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+world 2:   File "/usr/lib/python3.13/json/decoder.py", line 363, in raw_decode
+world 2:     raise JSONDecodeError("Expecting value", s, err.value) from None
+world 2: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 2
+            after  open(/tmp/xdgtool-state/data/xdgtool/db.json)
+            before write(/tmp/xdgtool-state/data/xdgtool/db.json)
+path        data/xdgtool/db.json
+observed    holding neither the old nor the new content
+cwd         /tmp/xdg
+apparatus   env:XDG_CONFIG_HOME=/tmp/xdgtool-state/config, env:XDG_DATA_HOME=/tmp/xdgtool-state/data
+
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   6 path(s) judged pre-or-post
+oracle      agreed on 2 operations (624 syscall lines examined, 22 in scope of the judged state), witness strace
+metadata    none observed. Restore does not reproduce ownership/permission/timestamp state: crash worlds run at the engine's default modes, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+l1          no marker configured
+case        /tmp/w1/cases/000001.json
+replay      sideeye replay /tmp/w1/cases/000001.json --shim /opt/sideeye/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so
+evidence    sideeye evidence /tmp/w1/evidence/000001.json
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /tmp/xdg && unset SIDEEYE_KILL_GROUP && : > /tmp/w1/trace-repro.bin && SIDEEYE_STATE_DIR=/tmp/xdgtool-state SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/tmp/w1/trace-repro.bin LD_PRELOAD=/opt/sideeye/sideeye-v1.10.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'python3' xdgtool.py bump </dev/null)
+sideeye: json sha256=6ec24f7e4b9ea25da58bd00aa4758b15960f1942c33997d94635e52855c0889b;

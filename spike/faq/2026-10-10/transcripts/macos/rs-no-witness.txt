@@ -1,0 +1,16 @@
+$ sideeye explore --config sideeye.toml   # no witness, no flag
+UNKNOWN  completeness_not_verified
+         no oracle was given, so the shim's account of what happened was not checked against anything; pass --oracle-fs-usage (run sudo -v first, in the same terminal), or --allow-unverified to accept the weaker claim
+next        Re-run with --oracle <strace> on Linux or --oracle-fs-usage on macOS, or accept the weaker claim with --allow-unverified.
+cwd         $MACDIR/rs
+
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   not established: no boundary was recorded, but the shim sees only libc's own entry points (fork, vfork, posix_spawn, the exec family, pthread_create, setsid, setpgid) — a child created through a raw syscall would not appear here — and no second witness ran
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+rc=2

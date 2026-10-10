@@ -2,8 +2,8 @@
 
 The runs of `.github/workflows/spike-platforms.yml` after 2026-10-10's single dispatch, which
 measure the rows `docs/cli.md`'s table left unmeasured or "not run" (ADR 0105, amended). These
-rules were committed with the apparatus, before any of those runs, except the one item dated
-below, which was added after the first of them and before the dispatch it governs. `RUNS-RULE.md` governs the
+rules were committed with the apparatus, before any of those runs, except the items dated
+below, each added after a run and before the dispatch it governs. `RUNS-RULE.md` governs the
 2026-10-10 record and is not edited; where the two speak to the same thing, this file governs the
 new runs and that record stands as it was read.
 
@@ -43,6 +43,40 @@ new runs and that record stands as it was read.
   that dispatch, or does not refuse the shim again, `wsl1-shim` is recorded as not reached, with the
   run id, and WSL1's cell rests on its base leg alone. WSL1's cell names both: the base leg's
   refusal and `wsl1-shim`'s modes.
+- **A probe added after the second dispatch** (added 2026-10-10, after run 38035850147 and before
+  the dispatch it governs): `wsl1-statx.txt`, written by `statx-probe.py` after WSL1's base leg. It
+  asks WSL1's kernel, by raw syscall, the calls the two refusals rest on (`src/posix.zig`: the shim
+  search's `statx`, `AT_SYMLINK_NOFOLLOW` with `TYPE|UID`; the `PATH` search's `access(X_OK)` —
+  glibc's, the `access` syscall on x86_64, asked with `faccessat` beside it — and `statx`
+  following links with `TYPE`), and `newfstatat` beside them as its control, on
+  `/usr/bin/dd` and the shim. It is not a leg and carries no verdict: it is read for why `wsl1` and `wsl1-shim`
+  refused, and a cell that cites it cites it as that cause. It is measured in a later `jobs: wsl`
+  dispatch whose other output goes under `spike/platforms/2026-10-10b/runs/<run id>/` as above;
+  only `wsl1-x86_64/wsl1-statx.txt` is added beside the counted record. A control that does not
+  answer 0 is an apparatus fault, and so is a run where WSL1 does not start.
+- **Legs added after the second dispatch** (added 2026-10-10, after run 38035850147 and before
+  the dispatch it governs): on each macOS runner, the default mode three more times with `--work`
+  moved — `macos-NN-work-tmp` under `/tmp` (short, through the symlink), `macos-NN-work-private-tmp`
+  under `/private/tmp` (short, physical), `macos-NN-work-tmpdir-resolved` under `$TMPDIR` resolved
+  (its own length, physical). All three default legs of run 38031881569, the control's included,
+  were UNKNOWN `oracle_saw_nothing` with `--work` under `$TMPDIR` as given (`/var/folders/…/T//…`:
+  through the `/var` symlink, and with a doubled slash from `$TMPDIR`'s trailing one). Two causes
+  fit and the legs tell them apart: the path's length (`docs/cli.md`: fs_usage cuts long pathnames
+  from the left) and its spelling (the engine names the trace file `<--work>/trace-record.bin` as
+  given, `src/main.zig`, and matches fs_usage's physical paths to it after removing only the data
+  volume's firmlink prefix, `src/fsusage.zig`). `-work-tmp` differs from fs_usage's spelling by
+  the symlink alone; `-work-tmpdir-resolved` by neither.
+  Neither is a finding until the legs answer. They are measured in a later `jobs: macos` dispatch;
+  only the nine `macos-NN/macos-NN-work-*/` directories are added beside the counted record, and
+  the rest of that dispatch goes under `spike/platforms/2026-10-10b/runs/<run id>/`. The default
+  legs of run 38031881569 keep their UNKNOWN; their control was not FAIL, so the mode is the
+  owner's (above), and these legs are read for the owner beside them, each `macos-26-work-*` the
+  control of the same leg on 14 and 15.
+- **Ubuntu 20.04 on aarch64** (added 2026-10-10, after run 38031881569 and before the dispatch it
+  governs): the aarch64 runners have no `/dev/kvm` (every aarch64 VM of that run says `accel:
+  tcg`), so its stops can never be a result. `vm.sh` boots that image with `-cpu cortex-a72`
+  instead of `max`. If it leaves no result in the next `jobs: vm` dispatch, its cell goes back to
+  the owner with both runs' `vm.txt`, rather than taking a reason the list below does not give.
 - **x86_64 WSL2's base leg was decided on 2026-10-10** and is not measured again. If WSL2 does not
   start in a run of this series, the legs that needed it are recorded as "the runner's WSL2 did
   not start in run N" with the `wsl.txt` lines.

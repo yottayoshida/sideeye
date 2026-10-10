@@ -8,7 +8,9 @@
 #
 #   base     root, the state in /s on the distribution's filesystem; labelled LABEL (default wsl2,
 #            the 2026-10-10 record's leg). On WSL1, when the engine refuses the shim it found as
-#            unclassifiable, LABEL-shim follows that refusal's next step once and names it with --shim
+#            unclassifiable, LABEL-shim follows that refusal's next step once and names it with --shim;
+#            on WSL1, wsl1-statx.txt records what the kernel answers to the shim and PATH searches'
+#            calls
 #   extra    (RUNS-RULE-2026-10-10b.md: x86_64 WSL2's base leg is not measured again)
 #            wsl2-mnt   root, the state under /mnt/c — the Windows drive, through WSL's 9P mount
 #            wsl2-user  an ordinary user `probe`, its own install of the engine, the state in its home
@@ -68,6 +70,12 @@ base)
     if [ "${LABEL:-}" = wsl1 ] && grep -q 'the shim the search found could not be classified' "$out/wsl1/summary.txt"; then
         SHIM=$(dirname "$bin")/libsideeye_shim.so sh "$here/measure.sh" "$bin" "$out" wsl1-shim
         complete wsl1-shim || rc=1
+    fi
+    # Why WSL1 refuses: on Linux the shim search and the PATH search read a file's kind through
+    # raw statx, so ask WSL1's kernel those calls directly (RUNS-RULE-2026-10-10b.md, a probe added
+    # after the second dispatch). Not a leg; a failed control is an apparatus fault.
+    if [ "${LABEL:-}" = wsl1 ]; then
+        python3 -I "$here/statx-probe.py" /usr/bin/dd "$(dirname "$bin")/libsideeye_shim.so" > "$out/wsl1-statx.txt" 2>&1 || rc=1
     fi
     exit $rc ;;
 extra)

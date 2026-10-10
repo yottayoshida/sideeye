@@ -1,0 +1,7 @@
+[world]
+state = "/tmp/nosync-state"
+
+[define]
+cwd       = "."
+setup     = "python3 nosync.py init"
+operation = "python3 nosync.py rotate"

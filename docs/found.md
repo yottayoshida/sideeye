@@ -8,11 +8,10 @@ This is a list of counterexamples, not a badge: nothing on it says a tool is saf
 
 <!-- found:begin -->
 
-43 reports: 11 fixed upstream and re-measured, 1 acknowledged, 29 filed, 2 withdrawn.
+43 reports: 10 fixed upstream and re-measured, 1 acknowledged, 30 filed, 2 withdrawn.
 
 | Tool | Report | State | As of |
 |---|---|---|---|
-| timewarrior | [GothenburgBitFactory/timewarrior#778](https://github.com/GothenburgBitFactory/timewarrior/issues/778) | fixed upstream, re-measured | 2026-08-13 |
 | himalaya | [pimalaya/himalaya#738](https://github.com/pimalaya/himalaya/issues/738) | fixed upstream, re-measured | 2026-08-22 |
 | mogrify | [ImageMagick/ImageMagick#8939](https://github.com/ImageMagick/ImageMagick/issues/8939) | fixed upstream, re-measured | 2026-09-06 |
 | codespell 2.4.1 | [codespell-project/codespell#4025](https://github.com/codespell-project/codespell/issues/4025) | fixed upstream, re-measured | 2026-10-02 |
@@ -24,6 +23,7 @@ This is a list of counterexamples, not a badge: nothing on it says a tool is saf
 | Subtitle Edit's SeConv 5.2.0 `subs.srt subrip --offset:-2000 --overwrite` | [SubtitleEdit/subtitleedit#15829](https://github.com/SubtitleEdit/subtitleedit/issues/15829) | fixed upstream, re-measured | 2026-10-09 |
 | dotenvx 2.32.4 `encrypt` | [dotenvx/dotenvx#1012](https://github.com/dotenvx/dotenvx/issues/1012) | fixed upstream, re-measured | 2026-10-10 |
 | ktlint 1.8.0 | [ktlint/ktlint#3409](https://github.com/ktlint/ktlint/issues/3409) | acknowledged (awaiting) | 2026-10-10 |
+| timewarrior | [GothenburgBitFactory/timewarrior#778](https://github.com/GothenburgBitFactory/timewarrior/issues/778) | filed (awaiting) | 2026-10-10 |
 | topydo | [topydo/topydo#341](https://github.com/topydo/topydo/issues/341) | filed (awaiting) | 2026-10-09 |
 | calcurse | [lfos/calcurse#529](https://github.com/lfos/calcurse/issues/529) | filed (awaiting) | 2026-10-09 |
 | GNU Stow | [aspiers/stow#139](https://github.com/aspiers/stow/issues/139) | filed (awaiting) | 2026-10-09 |
