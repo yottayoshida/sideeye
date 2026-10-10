@@ -2741,19 +2741,8 @@ fn phaseChecker(run: *Run) void {
         }, .{ .path = fal_out, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check");
 
         // Re-emitted before the verdict on the probe: unknown() exits the process,
-        // and the gate's output is evidence in the refusal case too. Blank lines are
-        // dropped — an empty line carries nothing harvestable and a bare marker is
-        // noise. A capture that cannot be read back is said out loud rather than
-        // silently swallowed.
-        if (capture.readFileAllocCapped(arena, fal_out, 1024 * 1024, .{ .no_follow = true })) |fal_text| {
-            var lines = std.mem.splitScalar(u8, fal_text, '\n');
-            while (lines.next()) |line| {
-                if (line.len == 0) continue;
-                say("falsify: {s}\n", .{line});
-            }
-        } else {
-            say("falsify: (the gate's child output could not be read back from {s} — missing, unreadable, or over the 1 MiB re-emission cap; the capture file, if present, still holds it)\n", .{fal_out});
-        }
+        // and the gate's output is evidence in the refusal case too.
+        report.sayCaptureMarked(arena, fal_out, "falsify");
 
         switch (probe) {
             .exited => |code| {
@@ -2779,6 +2768,59 @@ fn phaseChecker(run: *Run) void {
             else => unknown(.checker_not_falsified, "the checker did not exit normally when given a corrupted state", .fix_define),
         }
         report.checker_note = "falsified before the run (corrupted state -> check failed)";
+
+        // ---- the starting state (#756, ADR 0107) ------------------------------------------
+        //
+        // The other side of the gate. The falsification shows the checker can say no; nothing
+        // showed it says yes to the state the define starts from. A checker that refuses that
+        // state fails in the world killed before the first operation, and the report read as the
+        // target's FAIL at crash point 1 — `after (start)()` — when nothing the target did is in
+        // that world: xmake's first checker accepted only the value the operation writes, and
+        // the seed held another. No world can be judged by an instrument that rejects the state
+        // every world starts from, before any operation, so the run is refused before any is
+        // explored.
+        //
+        // After the falsification and after `checker_note`, on purpose: every refusal the gate
+        // had keeps its place and its output, and a refusal here leaves the note true — the
+        // falsification did complete. The note itself is unchanged: README's demo block and
+        // docs/cli.md's real output carry it, and `spike/check-readme-demo.py` compares them with
+        // the demo line by line. A checker that passes prints nothing here, so a transcript of a
+        // define that was already fine does not change.
+        engine.restore(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not restore before showing the checker the starting state");
+        var start_buf: [contract.max_path]u8 = undefined;
+        const start_out = std.fmt.bufPrint(&start_buf, "{s}/start-check.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
+        removeFile(start_out);
+        const start = posix.runChildCapture(gpa, cargv, &.{
+            .{ "TOY_STATE", state_abs },
+            .{ contract.env.state_dir, state_abs },
+        }, .{ .path = start_out, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check on the starting state");
+        switch (start) {
+            .exited => |code| if (code != 0) {
+                // Marked `start: ` for the reason the falsification's lines are marked: this is
+                // exactly the output a real finding would produce.
+                report.sayCaptureMarked(arena, start_out, "start");
+                // 126 as the falsification reads it: the fork stub's own exit code or the
+                // checker's, and nothing here tells them apart.
+                if (code == 126)
+                    unknown(.checker_rejects_initial_state, "the checker probe on the starting state exited 126: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the checker itself exited 126 — indistinguishable from here, so the run is refused rather than judged by it", .environment);
+                // #700 (ADR 0093): a checker with a relative argument read under the wrong
+                // directory rejects every state, this one first. Then the step is the cwd line,
+                // and the detail carries no instruction of its own to contradict it.
+                const obs = refuse.cwdObservation(arena, cargv);
+                const step = refuse.cwdStep(obs, .fix_define);
+                // "As Sideeye restores it": the probe sees the state every world starts from, which
+                // is the restore's copy, not what setup left — what a restore does not carry is
+                // docs/cli.md's to say (#678 is changing it), so the sentence points there rather
+                // than naming what is lost.
+                const seen = std.fmt.allocPrint(arena, "the checker exited {d} on the state the define starts from, as Sideeye restores it before every world, before the operation ran: nothing the target did is in it", .{code}) catch "the checker rejected the state the define starts from, before the operation ran";
+                const what = if (obs != null) seen else std.fmt.allocPrint(arena, "{s}, so a world the checker fails there says nothing about the target — make the checker accept that state (docs/cli.md says what a restore does not carry)", .{seen}) catch seen;
+                unknown(.checker_rejects_initial_state, refuse.withObservation(arena, what, obs, step), step);
+            },
+            else => {
+                report.sayCaptureMarked(arena, start_out, "start");
+                unknown(.checker_rejects_initial_state, "the checker did not exit normally on the state the define starts from, as Sideeye restores it before every world, before the operation ran; make the checker accept that state", .fix_define);
+            },
+        }
     }
 
     run.check_argv = check_argv;
@@ -3282,8 +3324,9 @@ fn phaseExploration(run: *Run) void {
             // layer does not. L1 compares this world with the recording's own final state, so a
             // process the syscall mode killed in both runs leaves the same gap in both and L1 is
             // green; it is red only when two runs of one mode disagree. The checker judges the
-            // state from outside, so the same gap in both runs is red at the first clean state it
-            // ever sees — this one: the falsification probe only ever shows it a corrupted state.
+            // state from outside, so the same gap in both runs is red at the first clean state left
+            // by the operation that it ever sees — this one: the falsification probe shows it a
+            // corrupted state, and the starting-state probe (#756) one no run has touched.
             const step: contract.NextStep = if (l0 != null) .scratch_or_twice else if (l1 != null) .fix_define else boundary.fixDefineUnder(args.observe);
             // #700 (ADR 0093): the checker layer alone, where a checker with a relative argument
             // read under the wrong directory rejects every state. The line above is pinned by

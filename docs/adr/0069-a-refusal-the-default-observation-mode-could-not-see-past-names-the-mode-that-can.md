@@ -85,7 +85,9 @@ what `--observe syscalls` finds behind it, and nothing the wrappers observation 
    repeatability — the marker layer judges the baseline against the recording's own final state. The
    checker is the exception because it judges from outside: the falsification probe shows it only a
    corrupted state, so the baseline is the first clean state it sees, and a gap present in both runs
-   is red there. A first implementation took the second run too, and a second left the baseline's
+   is red there. *(Amended by ADR 0107, 2026-10-10: since #756 the checker is also shown the
+   starting state, before any run of the operation; the baseline is still the first clean state
+   left by the operation that it sees, which is what the gap concerns.)* A first implementation took the second run too, and a second left the baseline's
    checker out with a reason that did not hold for it; review found both. The sentence does not
    branch on the subject's own `SIGSYS`: that one is detectable, a child's is not.
 

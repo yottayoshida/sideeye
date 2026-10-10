@@ -44,7 +44,11 @@ silently.
    `nothing_in_state` (ADR 0091 — an operation that found nothing to do where it ran records
    nothing); `checker_not_falsified` when the checker accepted the corrupted state;
    and `baseline_violates_invariant`'s checker layer. Each looks only at its own command's
-   arguments. A config named through a link or read from a pipe (`/dev/stdin` resolves to a
+   arguments. *(Amended by ADR 0107, 2026-10-10: `checker_rejects_initial_state`, when the checker
+   rejected the state the define starts from, is asked too. A checker whose relative argument
+   names nothing where it ran rejects every state, that one first, so the common shape of this
+   mistake meets that refusal before any world; the baseline's checker layer keeps the question
+   for a checker that accepts the starting state and rejects the one the operation leaves.)* A config named through a link or read from a pipe (`/dev/stdin` resolves to a
    regular file through its link, and its directory is still `/dev`) is never asked.
 3. **What it says.** The detail gains the observation —
    `./seed is under the toml's directory /proj and not under /home/u, where the commands ran` —

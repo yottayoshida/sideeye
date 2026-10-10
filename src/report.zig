@@ -103,6 +103,24 @@ test "the verdict is coloured only on a terminal, without NO_COLOR, and not for 
     }
 }
 
+/// Re-emits a gate child's captured output, every non-empty line behind `marker` (#134). A
+/// gate's child produces exactly the output a real finding would — a checker failing over a
+/// broken store, or refusing a state — and a single line harvested from an unlabeled transcript
+/// once became "world evidence" (the buku correction, PR #133). A fence would not travel with
+/// an excerpt; a per-line prefix does. Blank lines are dropped: a bare marker is noise. A
+/// capture that cannot be read back is said out loud rather than silently swallowed.
+pub fn sayCaptureMarked(arena: std.mem.Allocator, path: []const u8, comptime marker: []const u8) void {
+    if (capture.readFileAllocCapped(arena, path, 1024 * 1024, .{ .no_follow = true })) |text| {
+        var lines = std.mem.splitScalar(u8, text, '\n');
+        while (lines.next()) |line| {
+            if (line.len == 0) continue;
+            say(marker ++ ": {s}\n", .{line});
+        }
+    } else {
+        say(marker ++ ": (the gate's child output could not be read back from {s} — missing, unreadable, or over the 1 MiB re-emission cap; the capture file, if present, still holds it)\n", .{path});
+    }
+}
+
 /// The report is the product. Losing it silently is not an option.
 ///
 /// This used to `catch return` on overflow, so a FAIL whose paths pushed the text past
