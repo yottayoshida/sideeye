@@ -162,7 +162,7 @@ const preload_var = if (builtin.os.tag == .macos) "DYLD_INSERT_LIBRARIES" else "
 /// as apparatus, and a test below holds the two lists together: a pair added to the
 /// children without being refused here would be a device the parent has and the child
 /// does not — the silent-different-run the refusal exists to stop.
-const child_env_names = [_][]const u8{ "TOY_STATE", contract.env.state_dir, contract.env.state_dir_alt, contract.env.trace_path, contract.env.seq_base, contract.env.observe, contract.env.kill_group, contract.env.run_cgroup, contract.env.kill_cgroup, contract.env.kill_aside, preload_var };
+const child_env_names = [_][]const u8{ "TOY_STATE", contract.env.state_dir, contract.env.state_dir_alt, contract.env.trace_path, contract.env.seq_base, contract.env.before_constructor, contract.env.observe, contract.env.kill_group, contract.env.run_cgroup, contract.env.kill_cgroup, contract.env.kill_aside, preload_var };
 
 test "every variable the engine sets for a child is refused as apparatus" {
     for (child_env_names) |n| try std.testing.expect(config.engineOwnedEnv(n));
@@ -405,6 +405,9 @@ fn runOperationObserved(
             // Pinned empty so an ambient value in the operator's shell cannot
             // become the first image's numbering base (R1; parseU32("") is 0).
             .{ contract.env.seq_base, "" },
+            // Pinned empty for the same reason (#753): a carried mark in the operator's shell
+            // would refuse every run. Empty is how the shim reads "no mark".
+            .{ contract.env.before_constructor, "" },
             .{ contract.env.observe, observe.name() },
             // Pinned empty when there is no cgroup, for the reason `seq_base` is above (v17).
             // The kill path is a world's alone, and pinned empty here for the same reason.
@@ -428,6 +431,7 @@ fn runOperationObserved(
         .{ contract.env.trace_path, env_trace },
         // Pinned empty: see the oracle-path pairs above.
         .{ contract.env.seq_base, "" },
+        .{ contract.env.before_constructor, "" },
         .{ contract.env.observe, observe.name() },
         // Pinned empty where there is nothing to name: see the oracle-path pairs above.
         .{ contract.env.run_cgroup, containment.runName(cg) },
@@ -2949,6 +2953,7 @@ fn phaseExploration(run: *Run) void {
             .{ contract.env.kill_group, "1" },
             // Pinned empty: see the recording pairs.
             .{ contract.env.seq_base, "" },
+            .{ contract.env.before_constructor, "" },
             // The same observation path the recording used, necessarily: `kill_at` is an
             // index into the sequence the recording produced, and a world counting
             // through the other path would number differently and stop somewhere else.

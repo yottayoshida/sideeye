@@ -4557,6 +4557,241 @@ else
     fails=$((fails + 1))
 fi
 
+echo "=========== check 2pc: a call made before the shim's constructor (#753) ==========="
+# Another shared library's constructor can run before the shim's own: the loader orders them by
+# dependency (LD_DEBUG=files measured libpool's before the shim's). Until #753 a call interposed
+# from one answered -1 — pthread_create's included, whose callers expect an error number — and
+# OpenImageIO's iconvert and ROOT's rootrm died of it (SIGABRT) where by hand they ran. Three
+# legs: (a) the calls reach the real functions; (b) a write such a constructor makes into the
+# state, to a path the operation's own recorded write also names, is refused rather than read as
+# accounted for; (c) the same through a descriptor an earlier image opened into the state.
+rm -rf /tmp/acc-753 && mkdir -p /tmp/acc-753
+cat > /tmp/acc-753/pool.c <<'C'
+#include <pthread.h>
+#include <stdio.h>
+#include <string.h>
+static void *run(void *a) { (void)a; puts("thread in a library constructor: ran"); return NULL; }
+__attribute__((constructor)) static void pool(void) {
+    pthread_t t; int rc = pthread_create(&t, NULL, run, NULL);
+    if (rc != 0) { printf("pthread_create in a library constructor: %d (%s)\n", rc, strerror(rc)); return; }
+    pthread_join(t, NULL);
+    FILE *u = fopen("/dev/urandom", "r"); char b[16];
+    printf("fopen in a library constructor: %s\n", u && fread(b, 1, 16, u) == 16 ? "read 16 bytes" : "FAILED");
+    if (u) fclose(u);
+}
+C
+cat > /tmp/acc-753/statew.c <<'C'
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+__attribute__((constructor)) static void seed(void) {
+    const char *sd = getenv("SIDEEYE_STATE_DIR"); if (!sd) return;
+    char p[4096]; snprintf(p, sizeof p, "%s/db", sd);
+    int fd = open(p, O_WRONLY | O_CREAT | O_APPEND, 0644); if (fd < 0) return;
+    (void)!write(fd, "ctor\n", 5); close(fd);
+}
+C
+cat > /tmp/acc-753/fd2w.c <<'C'
+#include <unistd.h>
+__attribute__((constructor)) static void note(void) { (void)!write(2, "ctor\n", 5); }
+C
+cat > /tmp/acc-753/mainw.c <<'C'
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+int main(int argc, char **argv) {
+    if (argc > 1 && strcmp(argv[1], "fd2") == 0) { (void)!write(2, "main\n", 5); return 0; }
+    if (argc > 1 && strcmp(argv[1], "db") == 0) {
+        char p[4096]; snprintf(p, sizeof p, "%s/db", getenv("SIDEEYE_STATE_DIR"));
+        int fd = open(p, O_WRONLY | O_CREAT | O_APPEND, 0644); if (fd < 0) return 1;
+        (void)!write(fd, "main\n", 5); close(fd); return 0;
+    }
+    puts("main reached"); return 0;
+}
+C
+if ( cd /tmp/acc-753 && cc -O0 -shared -fPIC -o libpool.so pool.c -pthread && cc -O0 -shared -fPIC -o libstatew.so statew.c \
+     && cc -O0 -shared -fPIC -o libfd2w.so fd2w.c \
+     && cc -O0 -o uses mainw.c -L. -Wl,-rpath,/tmp/acc-753 -Wl,--no-as-needed -lpool -pthread \
+     && cc -O0 -o w-state mainw.c -L. -Wl,-rpath,/tmp/acc-753 -Wl,--no-as-needed -lstatew \
+     && cc -O0 -o w-fd2 mainw.c -L. -Wl,-rpath,/tmp/acc-753 -Wl,--no-as-needed -lfd2w ) >/tmp/acc-753/build.log 2>&1; then
+    # (a) The shim alone, no run: what the constructor's calls return is the only question.
+    hand=$(/tmp/acc-753/uses 2>&1)
+    o=$(LD_PRELOAD="$SHIM" /tmp/acc-753/uses 2>&1); rc=$?
+    if [ "$rc" = "0" ] && [ "$o" = "$hand" ] && printf '%s\n' "$o" | grep -qx "thread in a library constructor: ran" \
+        && printf '%s\n' "$o" | grep -qx "fopen in a library constructor: read 16 bytes"; then
+        echo "ok   a library constructor's pthread_create and fopen, before the shim's constructor, answer as they do by hand"
+    else
+        echo "FAIL #753 (a): with the shim loaded the library constructor's calls answered differently (exit $rc)"
+        printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+        fails=$((fails + 1))
+    fi
+    # (b) No oracle: the second witness would see the constructor's write and refuse on its own,
+    # and this leg measures the shim's net, which has to hold where no oracle runs. The
+    # operation's own write names the same path, so the per-path reconciliation reads it as
+    # accounted for — a verdict, unless the constructor's write was marked.
+    mkdir -p /tmp/acc-753/sb/state && printf 'seed\n' > /tmp/acc-753/sb/state/db
+    o=$("$SIDEEYE" explore --state /tmp/acc-753/sb/state --operation "/tmp/acc-753/w-state db" --shim "$SHIM" \
+        --work /tmp/acc-753/sb/w --allow-unverified 2>&1); rc=$?
+    if refused unresolvable_path "$rc" "$o" \
+        && printf '%s\n' "$o" | grep -qF "a write-capable call on /tmp/acc-753/sb/state/db was made before the shim's constructor had run" \
+        && ! printf '%s\n' "$o" | grep -q "process boundary"; then
+        echo "ok   a library constructor's write into the state, before the shim's constructor, refuses the run and names the path"
+    else
+        echo "FAIL #753 (b): exit $rc (wanted 2 unresolvable_path naming the constructor's path, and no process boundary)"
+        printf '%s\n' "$o" | sed 's/^/     | /' | head -8
+        fails=$((fails + 1))
+    fi
+    # (c) The descriptor came from the image before: sh opened the log and exec'd. The exec needs
+    # the oracle; the shim's refusal comes before the oracle is read, so the reason says which
+    # net held — oracle_missed_operation here would mean only the oracle did.
+    printf '#!/bin/sh\nexec /tmp/acc-753/w-fd2 fd2 2>>"$SIDEEYE_STATE_DIR/log"\n' > /tmp/acc-753/run-fd2.sh
+    chmod 755 /tmp/acc-753/run-fd2.sh
+    mkdir -p /tmp/acc-753/sc/state && printf 'seed\n' > /tmp/acc-753/sc/state/log
+    o=$("$SIDEEYE" explore --state /tmp/acc-753/sc/state --operation /tmp/acc-753/run-fd2.sh --shim "$SHIM" \
+        --work /tmp/acc-753/sc/w --oracle /usr/bin/strace 2>&1); rc=$?
+    if [ "$rc" = "2" ] && printf '%s\n' "$o" | grep -qxF "UNKNOWN  unresolvable_path" \
+        && printf '%s\n' "$o" | grep -qF "a write-capable call on /tmp/acc-753/sc/state/log was made before the shim's constructor had run"; then
+        echo "ok   a constructor's write through a descriptor an earlier image opened into the state is refused by the shim's net"
+    else
+        echo "FAIL #753 (c): exit $rc (wanted 2 unresolvable_path naming the log)"
+        printf '%s\n' "$o" | sed 's/^/     | /' | head -8
+        fails=$((fails + 1))
+    fi
+else
+    echo "FAIL #753: the fixtures did not compile"
+    sed 's/^/     | /' /tmp/acc-753/build.log | head -6
+    fails=$((fails + 1))
+fi
+# Three more shapes, from the review of the change: (d) a stream a constructor opens with
+# fopen("w") — truncating — and main writes through; the stdio wrappers asked `fpending`, which
+# only the shim's constructor looks up, so the open reached no door. (e) Under --observe syscalls,
+# a thread a constructor started before the filter existed: the filter is installed with TSYNC,
+# so the thread's write traps and is recorded — without it (measured) the run was PASS 3/3 with
+# that write in no account. (f) A constructor that writes and then replaces the image before the
+# shim's constructor: the mark goes with the exec, in the environment.
+cat > /tmp/acc-753/fopenw.c <<'C'
+#include <stdio.h>
+#include <stdlib.h>
+FILE *ctor_log;
+__attribute__((constructor)) static void openlog_(void) {
+    const char *sd = getenv("SIDEEYE_STATE_DIR"); if (!sd) return;
+    char p[4096]; snprintf(p, sizeof p, "%s/db", sd); ctor_log = fopen(p, "w");
+}
+C
+cat > /tmp/acc-753/mainlog.c <<'C'
+#include <stdio.h>
+extern FILE *ctor_log;
+int main(void) { if (!ctor_log) return 1; fputs("main\n", ctor_log); return fclose(ctor_log) == 0 ? 0 : 1; }
+C
+cat > /tmp/acc-753/poolw.c <<'C'
+#include <fcntl.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+int go[2], done[2], started;
+static void *worker(void *a) {
+    (void)a; char c; if (read(go[0], &c, 1) != 1) return NULL;
+    char p[4096]; snprintf(p, sizeof p, "%s/db", getenv("SIDEEYE_STATE_DIR"));
+    int fd = open(p, O_WRONLY | O_CREAT | O_APPEND, 0644);
+    if (fd >= 0) { (void)!write(fd, "thread\n", 7); close(fd); }
+    (void)!write(done[1], "x", 1); return NULL;
+}
+__attribute__((constructor)) static void pool(void) {
+    if (!getenv("SIDEEYE_STATE_DIR") || pipe(go) || pipe(done)) return;
+    pthread_t t; if (pthread_create(&t, NULL, worker, NULL) == 0) { started = 1; pthread_detach(t); }
+}
+C
+cat > /tmp/acc-753/mainpool.c <<'C'
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+extern int go[2], done[2], started;
+int main(void) {
+    if (!started) return 1;
+    char c; if (write(go[1], "x", 1) != 1 || read(done[0], &c, 1) != 1) return 1;
+    char p[4096]; snprintf(p, sizeof p, "%s/db", getenv("SIDEEYE_STATE_DIR"));
+    int fd = open(p, O_WRONLY | O_CREAT | O_APPEND, 0644); if (fd < 0) return 1;
+    (void)!write(fd, "main\n", 5); return close(fd);
+}
+C
+cat > /tmp/acc-753/execw.c <<'C'
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+__attribute__((constructor)) static void again(void) {
+    const char *sd = getenv("SIDEEYE_STATE_DIR"); if (!sd || getenv("W_STAGE2")) return;
+    char p[4096]; snprintf(p, sizeof p, "%s/db", sd);
+    int fd = open(p, O_WRONLY | O_CREAT | O_APPEND, 0644); if (fd < 0) return;
+    (void)!write(fd, "ctor\n", 5); close(fd);
+    setenv("W_STAGE2", "1", 1);
+    char *argv[] = { "w-exec", "db", NULL }; execv("/tmp/acc-753/w-exec", argv);
+}
+C
+if ( cd /tmp/acc-753 && cc -O0 -shared -fPIC -o libfopenw.so fopenw.c && cc -O0 -o w-log mainlog.c -L. -Wl,-rpath,/tmp/acc-753 -Wl,--no-as-needed -lfopenw \
+     && cc -O0 -shared -fPIC -o libpoolw.so poolw.c -pthread && cc -O0 -o w-pool mainpool.c -L. -Wl,-rpath,/tmp/acc-753 -Wl,--no-as-needed -lpoolw -pthread \
+     && cc -O0 -shared -fPIC -o libexecw.so execw.c && cc -O0 -o w-exec mainw.c -L. -Wl,-rpath,/tmp/acc-753 -Wl,--no-as-needed -lexecw ) >/tmp/acc-753/build2.log 2>&1; then
+    for leg in d e f; do
+        mkdir -p /tmp/acc-753/s$leg/state && printf 'seed\n' > /tmp/acc-753/s$leg/state/db
+    done
+    o=$("$SIDEEYE" explore --state /tmp/acc-753/sd/state --operation /tmp/acc-753/w-log --shim "$SHIM" --work /tmp/acc-753/sd/w --allow-unverified 2>&1); rc=$?
+    if [ "$rc" = "2" ] && printf '%s\n' "$o" | grep -qxF "UNKNOWN  unresolvable_path" \
+        && printf '%s\n' "$o" | grep -qF "a write-capable call on /tmp/acc-753/sd/state/db was made before the shim's constructor had run"; then
+        echo "ok   a stream a library constructor opens on a state file with fopen(\"w\") refuses the run, naming it"
+    else
+        echo "FAIL #753 (d): exit $rc (wanted 2 unresolvable_path naming the fopen'd path)"
+        printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+        fails=$((fails + 1))
+    fi
+    o=$("$SIDEEYE" explore --state /tmp/acc-753/se/state --operation /tmp/acc-753/w-pool --shim "$SHIM" --work /tmp/acc-753/se/w --allow-unverified --observe syscalls 2>&1); rc=$?
+    if [ "$rc" = "2" ] && printf '%s\n' "$o" | grep -qxF "UNKNOWN  multiple_threads_detected" \
+        && printf '%s\n' "$o" | grep -qF "performed write(/tmp/acc-753/se/state/db)"; then
+        echo "ok   under --observe syscalls a thread started before the shim's constructor is filtered too: its write is recorded and judged"
+    else
+        echo "FAIL #753 (e): exit $rc (wanted 2 multiple_threads_detected naming the thread's write — a PASS here is that write in no account)"
+        printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+        fails=$((fails + 1))
+    fi
+    o=$("$SIDEEYE" explore --state /tmp/acc-753/sf/state --operation "/tmp/acc-753/w-exec db" --shim "$SHIM" --work /tmp/acc-753/sf/w --allow-unverified 2>&1); rc=$?
+    if [ "$rc" = "2" ] && printf '%s\n' "$o" | grep -qxF "UNKNOWN  unresolvable_path" \
+        && printf '%s\n' "$o" | grep -qF "a write-capable call on /tmp/acc-753/sf/state/db was made before the shim's constructor had run"; then
+        echo "ok   a constructor that writes the state and exec's before the shim's constructor hands the mark to the next image"
+    else
+        echo "FAIL #753 (f): exit $rc (wanted 2 unresolvable_path naming the path written before the exec)"
+        printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+        fails=$((fails + 1))
+    fi
+    # (g) The carry is the shim's alone: a value left in the operator's shell must not refuse a
+    # run that made no such call. The engine pins it empty, as it pins SIDEEYE_SEQ_BASE.
+    mkdir -p /tmp/acc-753/sg/state && printf 'seed\n' > /tmp/acc-753/sg/state/db
+    o=$(SIDEEYE_BEFORE_CONSTRUCTOR=/tmp/acc-753/sg/state/db "$SIDEEYE" explore --state /tmp/acc-753/sg/state \
+        --operation "/tmp/acc-753/w-state db" --shim "$SHIM" --work /tmp/acc-753/sg/w --allow-unverified 2>&1); rc=$?
+    if [ "$rc" = "2" ] && printf '%s\n' "$o" | grep -qF "a write-capable call on /tmp/acc-753/sg/state/db was made before"; then
+        mkdir -p /tmp/acc-753/sg2
+        o2=$(SIDEEYE_BEFORE_CONSTRUCTOR=/tmp/x "$SIDEEYE" explore --state /tmp/acc-753/sg2/state --setup "$OUT/toy-fixed init" \
+            --operation "$OUT/toy-fixed rotate" --shim "$SHIM" --work /tmp/acc-753/sg2/w --allow-unverified 2>&1); rc2=$?
+        if [ "$rc2" = "0" ]; then
+            echo "ok   a SIDEEYE_BEFORE_CONSTRUCTOR in the operator's environment refuses nothing: the engine pins it empty"
+        else
+            echo "FAIL #753 (g): a carried-mark variable in the operator's environment changed a clean run (exit $rc2)"
+            printf '%s\n' "$o2" | sed 's/^/     | /' | head -4
+            fails=$((fails + 1))
+        fi
+    else
+        echo "FAIL #753 (g): the control did not refuse (exit $rc) — the leg would prove nothing"
+        fails=$((fails + 1))
+    fi
+else
+    echo "FAIL #753: the second fixtures did not compile"
+    sed 's/^/     | /' /tmp/acc-753/build2.log | head -6
+    fails=$((fails + 1))
+fi
+
 echo "=========== check 2sc: a replayed case cannot point destruction outside --state-under (#266) ==========="
 # The case file names its own state directory, and replay empties (--fresh-state)
 # and rebuilds (restore, once per world) whatever it names. Leg A measures that

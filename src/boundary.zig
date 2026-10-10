@@ -928,6 +928,22 @@ pub fn threadDetail(arena: std.mem.Allocator, first: ?engine.Op, second: engine.
 /// the recording run's, which is what caught it.
 pub fn unresolvedDetail(arena: std.mem.Allocator, first: ?engine.Op, where: []const u8, fallback: []const u8) []const u8 {
     const op = first orelse return fallback;
+    // #753: the path was known, the call's place in the run was not — it came before the shim
+    // could number anything. The general sentence's "could not be determined" would be false.
+    if (std.mem.eql(u8, op.aux, contract.unresolved_kind.before_constructor)) {
+        // No path when the shim could not read one in time, or could not resolve one at all —
+        // which is marked too, as the armed side records an unresolvable path.
+        const on = if (op.path.len > 0)
+            std.fmt.allocPrint(arena, "on {s}", .{op.path}) catch return fallback
+        else
+            "whose path could not be read";
+        const composed = std.fmt.allocPrint(
+            arena,
+            "a write-capable call {s} was made{s} before the shim's constructor had run (pid {d}) — from another shared library's constructor, say, which the loader can run first — so it was not numbered and cannot be placed among the crash points",
+            .{ on, where, op.pid },
+        ) catch return fallback;
+        return sanitizeForReport(arena, composed) catch fallback;
+    }
     const why = if (op.aux.len > 0) op.aux else "reason not recorded";
     const named = if (op.path.len > 0)
         std.fmt.allocPrint(arena, "last named {s}", .{op.path}) catch return fallback
@@ -963,6 +979,22 @@ test "unresolvedDetail puts the run it happened in into the sentence, not into t
 
     // With no record there is nothing to compose, and only then is the fallback the answer.
     try std.testing.expectEqualStrings("FALLBACK", unresolvedDetail(arena, null, " in an explored world", "FALLBACK"));
+}
+
+test "unresolvedDetail says a call before the constructor was unnumbered, not unresolved (#753)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    const op: engine.Op = .{ .class = .unresolved, .seq = 0, .pid = 9, .tid = 9, .path = "/s/lib.db", .aux = contract.unresolved_kind.before_constructor };
+    const d = unresolvedDetail(arena, op, "", "FALLBACK");
+    try std.testing.expect(std.mem.indexOf(u8, d, "on /s/lib.db") != null);
+    try std.testing.expect(std.mem.indexOf(u8, d, "before the shim's constructor had run") != null);
+    try std.testing.expect(std.mem.indexOf(u8, d, "could not be determined") == null);
+    // No path published in time: still the same sentence, naming the directory instead.
+    var bare = op;
+    bare.path = "";
+    const b = unresolvedDetail(arena, bare, " in an explored world", "FALLBACK");
+    try std.testing.expect(std.mem.indexOf(u8, b, "whose path could not be read was made in an explored world") != null);
 }
 
 test "unresolvedDetail names the kind and pid, and only claims a name when there is one (#485)" {

@@ -733,13 +733,13 @@ pub fn close(fd: c_int) callconv(.c) c_int {
 // default mode was already refusing (review, P2).
 
 pub fn fopen(path: [*:0]const u8, mode: [*:0]const u8) callconv(.c) ?*common.FILE {
-    if (common.stdioActive() and common.modeIsWriteCapable(mode))
+    if (common.stdioOpenRecorded(mode))
         common.note1(.open, AT_FDCWD, path);
     return common.callFopen(path, mode);
 }
 
 pub fn fopen64(path: [*:0]const u8, mode: [*:0]const u8) callconv(.c) ?*common.FILE {
-    if (common.stdioActive() and common.modeIsWriteCapable(mode))
+    if (common.stdioOpenRecorded(mode))
         common.note1(.open, AT_FDCWD, path);
     return common.callFopen64(path, mode);
 }
@@ -795,7 +795,7 @@ fn freopenCommon(comptime call64: bool, path: ?[*:0]const u8, mode: [*:0]const u
     common.noteStdioClose(stream);
     common.noteTraceClose(common.c.fileno(stream));
     if (path) |p| {
-        if (common.stdioActive() and common.modeIsWriteCapable(mode))
+        if (common.stdioOpenRecorded(mode))
             common.note1(.open, AT_FDCWD, p);
     }
     return if (call64) common.callFreopen64(path, mode, stream) else common.callFreopen(path, mode, stream);
@@ -905,7 +905,7 @@ pub fn vfork() callconv(.c) c_int {
     // record from. The cost is that a failed vfork leaves a fork record with no child —
     // the engine reads that as a boundary and refuses, which errs toward UNKNOWN.
     common.noteBoundary(.fork);
-    const real_vfork = common.realVfork() orelse return -1;
+    const real_vfork = common.realVfork() orelse return common.optionalMissingInt();
     return @call(.always_tail, real_vfork, .{});
 }
 
@@ -921,7 +921,11 @@ pub fn execve(path: [*:0]const u8, argv: [*]const ?[*:0]const u8, envp: [*]const
 pub fn execv(path: [*:0]const u8, argv: [*]const ?[*:0]const u8) callconv(.c) c_int {
     common.noteBoundary(.exec);
     const carried = common.execSeqCarrySet();
+    // Before `init`, the mark of a call into the state, which this image can no longer report
+    // (#753); `carried` is false then, since nothing is carried before `init`.
+    const marked = common.preInitCarrySet();
     const rc = common.callExecv(path, argv);
+    if (marked) common.preInitCarryUndo();
     if (carried) {
         // Faithful errno, same discipline as `remove`: the unset between the failed
         // exec and the return must not overwrite what exec set (POSIX allows
@@ -937,7 +941,11 @@ pub fn execv(path: [*:0]const u8, argv: [*]const ?[*:0]const u8) callconv(.c) c_
 pub fn execvp(file: [*:0]const u8, argv: [*]const ?[*:0]const u8) callconv(.c) c_int {
     common.noteBoundary(.exec);
     const carried = common.execSeqCarrySet();
+    // Before `init`, the mark of a call into the state, which this image can no longer report
+    // (#753); `carried` is false then, since nothing is carried before `init`.
+    const marked = common.preInitCarrySet();
     const rc = common.callExecvp(file, argv);
+    if (marked) common.preInitCarryUndo();
     if (carried) {
         const saved = std.c._errno().*;
         common.execSeqCarryUnset();

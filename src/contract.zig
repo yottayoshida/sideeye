@@ -233,6 +233,12 @@ pub const env = struct {
     /// it as its seq. Absent means a fresh start — which after an exec record is
     /// exactly the broken-chain evidence the engine refuses on.
     pub const seq_base = "SIDEEYE_SEQ_BASE";
+    /// Set by a shim whose image made a write-capable call into the state before its own
+    /// constructor had run and then `exec`'d before that constructor could report it (#753):
+    /// the image that follows reports it instead, as one `before-constructor` record, the value
+    /// being the path (empty when it was not read in time). Written only by the shim, read only
+    /// by the shim; the engine never sets it.
+    pub const before_constructor = "SIDEEYE_BEFORE_CONSTRUCTOR";
     /// Which observation path to use — one of `ObserveMode`'s names. Absent means
     /// `wrappers`, so a shim carried into a process by an engine that never set it
     /// behaves exactly as v13 did.
@@ -576,6 +582,13 @@ pub const unresolved_kind = struct {
     /// thread end — so a target that creates and retires threads past the table is
     /// refused rather than judged.
     pub const thread_slots_exhausted = "thread-slots-exhausted";
+    /// A write-capable call reached the state directory before the shim's constructor had
+    /// finished (#753) — from another shared library's constructor, which the loader may run
+    /// first, or from a thread one started. The call reached the real function and nothing
+    /// numbered it, so it has no place among the crash points. Written once, by `init`, after
+    /// the announcement; the record's path is the first such call's, or empty when it could
+    /// not be read in time. Not frozen, like every kind here.
+    pub const before_constructor = "before-constructor";
 
     /// The longest a kind can be once `withFd` or `withOp` has appended to it.
     ///
@@ -606,6 +619,7 @@ pub const unresolved_kind = struct {
         link_by_descriptor,
         trace_closed,
         count_read_failed,
+        before_constructor,
     };
 
     /// A kind with the descriptor the operation went through appended (#485).
