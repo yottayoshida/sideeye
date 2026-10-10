@@ -99,6 +99,9 @@ change.
 - A test that has flaked CI twice gets fixed before anything else merges. Flaky tests
   are self-detecting — the gap #28 exposed was response, not detection: filed within a
   day, then left rolling a die on every push for three days.
+- Every tracked `.zig` file is what `zig fmt` leaves it, and CI fails a pull request, or a
+  push to `main`, where one is not (`spike/check-zig-fmt.sh`, the `fmt` job; #695). Run
+  `zig fmt $(git ls-files '*.zig')` before pushing.
 - English for everything committed.
 
 ## Blind-hunt campaigns: the apparatus rules
