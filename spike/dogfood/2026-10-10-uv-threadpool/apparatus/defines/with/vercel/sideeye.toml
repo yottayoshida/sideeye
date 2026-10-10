@@ -1,0 +1,7 @@
+[world]
+state = "/s/vercel"
+
+[define]
+operation = "vercel telemetry disable --global-config /s/vercel"
+cwd       = "/s/vercel-in"
+apparatus = ["env:UV_THREADPOOL_SIZE=1"]

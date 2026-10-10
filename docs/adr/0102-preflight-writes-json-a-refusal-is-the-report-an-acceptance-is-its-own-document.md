@@ -88,7 +88,8 @@ self-exec, the fresh `report-N.json`, stdin at end-of-file — and answers from 
   second run, so the server always passes `--state-under SIDEEYE_MCP_STATE_ROOT` with it, and
   `preflight --twice` takes that flag now (without `--twice` it is refused: one observed run
   rebuilds nothing). Owner ruling, 2026-10-09: the agent-authored config this tool exists for
-  is not the operator-vetted one ADR 0022 lets an explore through unconfined. An unconfined
+  is not the operator-vetted one ADR 0022 lets an explore through unconfined. *(Since #765, ADR
+  0106, the exploration is confined the same way.)* An unconfined
   explore over MCP is the same shape, filed as #765 rather than changed here.
 - **The child's text output is removed when it exits.** It quotes the bytes `--twice` saw
   differ, and the server reads only the JSON; left in the work directory it would wait for the

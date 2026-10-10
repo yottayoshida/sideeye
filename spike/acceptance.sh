@@ -2675,7 +2675,11 @@ o=$(TOY_TWICE_COUNTER=/tmp/acc-710/w/count "$SIDEEYE" preflight --twice --state 
 want710 "preflight --twice's second run ending differently names what the restore does not put back" "$o" $? 2 recording_run_failed "not their modes, owners or timestamps"
 o=$(TOY_THREAD_RACE=1 "$SIDEEYE" explore --state /tmp/acc-710/t/state --setup "$OUT/toy-bug init" \
     --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-710/t/work --oracle /usr/bin/strace 2>&1)
-want710 "two threads writing unordered names the README's threads limit" "$o" $? 2 multiple_threads_detected "threads are judged where a creation or a join the shim saw orders their writes"
+rc=$?
+want710 "two threads writing unordered names the README's threads limit" "$o" $rc 2 multiple_threads_detected "threads are judged where a creation or a join the shim saw orders their writes"
+# #686, ADR 0113: and the way past the records found, a tool's own switch for one thread, declared
+# in apparatus. Before it the step named the limit and nothing else (ADR 0097 believed there was none).
+want710 "...and a tool's own switch for one thread, declared in apparatus (#686)" "$o" $rc 2 multiple_threads_detected "UV_THREADPOOL_SIZE=1 for Node, GOMAXPROCS=1 for Go: set it in the environment Sideeye runs in and declare it in the define's apparatus"
 
 # #711, ADR 0096: the figures the `oracle`, `checker` and `processes` sentences state, as optional
 # JSON fields. Each has to equal the number its sentence prints — read back out of the sentence
@@ -3940,14 +3944,29 @@ if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
     TOY_STATE=/tmp/acc-th/s "$SIDEEYE" explore --state /tmp/acc-th/s --setup "$OUT/toy-supthreads init" \
         --operation "$OUT/toy-supthreads rotate" --observe supervised --oracle /usr/bin/strace \
         --work /tmp/acc-th/w --json /tmp/acc-th-sup.json > /dev/null 2>&1
+    # On the detail's own line: the next step (since #686) and the processes line repeat "no join is
+    # recorded …", so a grep over the whole output would pass with the detail's sentence gone.
     if grep -q "Nothing the supervising engine recorded orders" /tmp/acc-th-sup.txt \
-        && grep -q "no join is recorded, nor which thread a creation made" /tmp/acc-th-sup.txt \
+        && grep "Nothing the supervising engine recorded orders" /tmp/acc-th-sup.txt | grep -q "no join is recorded, nor which thread a creation made" \
         && grep -q "supervising engine is not notified of ownership" /tmp/acc-th-sup.json \
         && ! grep -q -i "the shim" /tmp/acc-th-sup.txt && ! grep -q -i "the shim" /tmp/acc-th-sup.json; then
         echo "ok   the supervised thread refusal states that mode's rule, and neither its text nor its JSON says the shim did anything"
     else
         echo "FAIL the supervised thread refusal does not state the mode's rule, or names the shim"
         grep -h -o -i '.\{0,60\}the shim.\{0,40\}' /tmp/acc-th-sup.txt /tmp/acc-th-sup.json 2>/dev/null | head -4 | sed 's/^/     | /'
+        fails=$((fails + 1))
+    fi
+    # #686, ADR 0113: the same refusal's next step names a tool's own switch for one thread — the
+    # way past this mode leaves, since it records no join and not which thread a creation made — in
+    # the text and in the JSON, under the opening words the dogfood entry gate sorts refusals by. It
+    # was the class wall. The leg above still holds that neither names a shim.
+    if grep '^next  ' /tmp/acc-th-sup.txt | grep -qF "Two threads of one process wrote the judged directory, and under --observe supervised no join is recorded, nor which thread a creation made" \
+        && grep '^next  ' /tmp/acc-th-sup.txt | grep -qF "UV_THREADPOOL_SIZE=1 for Node, GOMAXPROCS=1 for Go" \
+        && python3 -c 'import json,sys; s = json.load(open(sys.argv[1])).get("next_step") or ""; sys.exit(0 if s.startswith("Two threads of one process wrote the judged directory") and "GOMAXPROCS=1" in s else 1)' /tmp/acc-th-sup.json; then
+        echo "ok   the supervised thread refusal names a tool's own switch for one thread, in its text and its JSON (#686)"
+    else
+        echo "FAIL the supervised thread refusal does not name a tool's switch for one thread (#686)"
+        grep -h '^next  ' /tmp/acc-th-sup.txt | sed 's/^/     | /'
         fails=$((fails + 1))
     fi
     if [ -x "$ROOT/zig-out/bin/sideeye-testsupervisedelay" ]; then
@@ -4518,14 +4537,36 @@ else
     echo "$o" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi
-# Leg E: the flag belongs to replay and preflight --twice (#717); explore refuses it by name
-# (ADR 0007's no-accepted-but-inert rule).
-o=$("$SIDEEYE" explore --state /tmp/acc/state --operation /bin/true --state-under /tmp --shim "$SHIM" --work /tmp/acc/work-sce 2>&1)
+# Leg E (#765, ADR 0106): explore takes the range too — it empties and rebuilds the state before
+# every world, and the MCP server's `sideeye_explore_config` passes SIDEEYE_MCP_STATE_ROOT here.
+# Until #765 explore refused the flag by name. Outside the range it refuses before setup: the
+# sentinel alone would survive a run that went ahead (restore writes back the snapshot it was
+# in), so the toy's own key is what says setup never ran there. Inside, it runs to a verdict.
+rm -rf /tmp/acc/ex-out /tmp/acc/ex-range /tmp/acc/work-sce /tmp/acc/work-sce1
+mkdir -p /tmp/acc/ex-out /tmp/acc/ex-range/state
+echo "survives" > /tmp/acc/ex-out/sentinel.txt
+o=$(TOY_STATE=/tmp/acc/ex-out "$SIDEEYE" explore --state /tmp/acc/ex-out --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --state-under /tmp/acc/ex-range --shim "$SHIM" --work /tmp/acc/work-sce --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "3" ] && echo "$o" | grep -q -- "--state-under applies to replay and to preflight --twice"; then
-    echo "ok   explore refuses --state-under by name"
+# The way out it names comes first for a config (review of #765): move the state inside the
+# range — not "run it from the command line", which is unconfined.
+if [ "$rc" = "3" ] && echo "$o" | grep -q "outside the allowed range" && echo "$o" | grep -q "SIDEEYE_MCP_STATE_ROOT" \
+    && echo "$o" | grep -q "move the state inside the range" && ! echo "$o" | grep -q "from the command line, where" \
+    && [ -s /tmp/acc/ex-out/sentinel.txt ] && [ ! -e /tmp/acc/ex-out/key.json ]; then
+    echo "ok   explore refuses a state outside --state-under before setup, and leaves it as it was"
 else
-    echo "FAIL explore accepted --state-under (exit $rc)"
+    echo "FAIL explore --state-under, outside: exit $rc, key.json $([ -e /tmp/acc/ex-out/key.json ] && echo present || echo absent)"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+o=$(TOY_STATE=/tmp/acc/ex-range/state "$SIDEEYE" explore --state /tmp/acc/ex-range/state --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --state-under /tmp/acc/ex-range --shim "$SHIM" --work /tmp/acc/work-sce1 --oracle /usr/bin/strace 2>&1)
+rc=$?
+if { [ "$rc" = "0" ] || [ "$rc" = "1" ]; } && ! echo "$o" | grep -q "outside the allowed range"; then
+    echo "ok   explore inside --state-under runs to a verdict (positive control, exit $rc)"
+else
+    echo "FAIL explore --state-under, inside: exit $rc (wanted a verdict)"
+    echo "$o" | sed 's/^/     | /' | head -4
     fails=$((fails + 1))
 fi
 # Leg F: a confinement flag is not last-wins; a second spelling refuses.
@@ -9681,7 +9722,7 @@ explore --frobnicate|unknown option '--frobnicate'^sideeye help explore
 explore --frobnicate x|unknown option '--frobnicate'
 explore --stat x|unknown option '--stat'^did you mean '--state'
 explore --twic x|unknown option '--twic'^!did you mean
-explore --state-undr x|unknown option '--state-undr'^!did you mean
+explore --state-undr x|unknown option '--state-undr'^did you mean '--state-under'
 preflight --world-timeot x|unknown option '--world-timeot'^!did you mean
 preflight --jsn x|unknown option '--jsn'^did you mean '--json'
 explore foo|takes no positional argument here: 'foo'

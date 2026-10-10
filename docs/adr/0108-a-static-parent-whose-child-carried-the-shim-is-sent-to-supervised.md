@@ -81,8 +81,8 @@ keyed on `oracle_missed_operation` alone would still send roswell away.
 
 - One `NextStep` member; no `unknown_reason`, no report field, no `contract_version` change. `next_step` is not a
   closed set (ADR 0069, ADR 0090).
-- `docs/report-schema.md` states the three sites and what keeps its step. Its "Four refusals … keep the class
-  wall" paragraph gains the exception; `docs/cli.md`'s `--observe` entry, `docs/mcp.md` and the server's
+- `docs/report-schema.md` states the three sites and what keeps its step. Its "Three refusals … keep the class
+  wall" paragraph (three since ADR 0113) gains the exception; `docs/cli.md`'s `--observe` entry, `docs/mcp.md` and the server's
   `observe` description say a static target can be sent to `--observe supervised` by a refusal other than
   `no_shim_marker`.
 - The detail beside the `child_touched_state_dir` shape still says the shimmed writer "recorded nothing of its
