@@ -52,7 +52,7 @@ pub const shim_basename = if (builtin.os.tag == .macos) "libsideeye_shim.dylib" 
 /// This lives here, next to `canonicalSelf`, because it is now shared by five callers
 /// rather than the CLI's four (#78): `sideeye mcp` used to demand `SIDEEYE_MCP_SHIM` and
 /// refuse without it, which made the server the one command that did not do what
-/// `README.md` says the product does — "it looks for the shim beside itself before
+/// `docs/cli.md` says the product does — "it looks for the shim beside itself before
 /// `../lib`". A caller who installed from Homebrew and drove the server from that page
 /// was refused on every tool call, and nothing in the refusal said the search it was
 /// describing had never been attempted (#389).
@@ -463,7 +463,7 @@ test "findShimBeside takes the sibling before ../lib, and answers absent for nei
     };
     try std.testing.expect(std.mem.endsWith(u8, via_lib, "/lib/" ++ shim_basename));
 
-    // Both present: the sibling wins, which is the tarball layout and the order README.md
+    // Both present: the sibling wins, which is the tarball layout and the order docs/cli.md
     // states. Asserting only the `../lib` case would pass for an implementation that never
     // looks beside the binary at all.
     var bb: [contract.max_path]u8 = undefined;
@@ -1051,7 +1051,7 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
         return emitToolError(arena, id, "the path is outside the server root (SIDEEYE_MCP_ROOT), or does not exist");
 
     // The variable is an override, not a requirement. Without it the server looks where
-    // README.md says the product looks — beside the binary, then `../lib` — which is what
+    // docs/cli.md says the product looks — beside the binary, then `../lib` — which is what
     // the CLI has always done and what this command refused to do (#389 item 4, the one
     // the report calls unconditional). A Homebrew install resolves on the second
     // candidate, measured.

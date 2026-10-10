@@ -11,61 +11,28 @@
 # line 147; run 2's sections carry the number, the audit and the permission layer, and no
 # lessons about the page). Run 1 read the page as it stood at its clock_start — 160 lines and
 # 9,963 bytes, against the v0.10.0 tarball — so this list is what a driver needed from a page
-# 1.19 times the size of this one, which is a reason the re-run criterion 6 owes matters, not a
+# about 1.7 times the size of this one, which is a reason the re-run criterion 6 owes matters, not a
 # substitute for it. Each check below is one of those seven, pinned by a
 # sentence that carries its meaning rather than by a flag name a table could list without
 # explaining — `--allow-unverified` alone in a flag list would pass a name check and tell
 # the reader nothing about when it is needed.
 #
-# The size bound is the other half. The page had grown to 33 KB by writing each
-# decision's record into it — issue numbers, ADR numbers, the reason behind each refusal —
-# and those have homes of their own (DESIGN.md, docs/, docs/adr/). The bound is a sum of what
-# the page must carry plus a fixed slack, not a target picked first: 9767 + 590 = 10357.
-# The sum was corrected twice, upward, during the change that introduced this check, and both
-# corrections were elements it had never counted rather than drafts that would not fit. First
-# the clause naming the one exception to "never a silent PASS"
-# (284 bytes since #714 cut it from two sentences), which an owner ruling
-# (ADR 0032) requires in the sentence that makes the promise. Then the 284 bytes that let a
-# reader start from the release artifact: the onboarding box holds README.md and a tarball and
-# nothing else, network-off, so a page that sends the untar line to another file leaves the
-# only artifact in the box unusable — which is what check 8 below now holds. A third, after the
-# check shipped and for the same reason as the first: the 336-byte sentence that extends "a checker
-# that cannot fail makes the run UNKNOWN" to an exploration in which no world could have failed,
-# which an owner ruling (ADR 0091) puts beside the promise it extends rather than in another file.
-# A fourth, the same kind (#702, 2026-10-06): the brew formula serves macOS, and the page's only
-# explore line named strace, which macOS refuses — the first command a macOS reader copied could
-# not run. The macOS line and the words that say which line is which are 63 bytes net, after
-# the `--oracle` bullet gave up the clause naming strace; the two bytes of slack the page had are
-# left as they were. Not as a `# macOS` at the end of the line: zsh, macOS's shell, does not read
-# `#` as a comment when typed, so a pasted line would hand `#` to sideeye as an argument.
-# A fifth (#700, 2026-10-06): the toml example's `cwd` line, 81 bytes. Without it the example
-# ran its commands in Sideeye's own directory, so a define copied from it and given a relative
-# argument meant one file from the toml's directory and another from anywhere else.
-# A sixth (#703, 2026-10-06): the 414-byte line under "What the target has to be" naming a
-# framework Python's launcher on macOS, the first target most macOS readers try, which the
-# refusal now names a way past; a limit the page lists is the page's to state, and a way past
-# it is part of the limit.
-# A seventh (#708, 2026-10-06): the 75 bytes that say the check, like the setup, is handed the
-# state directory in a named variable. A checker written from this page alone had to guess, and
-# located the state relative to its own path; the variable was named nowhere a README reader looks.
-# An eighth (#713, 2026-10-06): 24 bytes, the count of upstream reports turned into a link to
-# docs/found.md, which the ledgers generate and CI compares. A number typed into this page went
-# stale with the next filing — it said 27 when the ledger held 35.
-# A ninth (#714, 2026-10-06): 798 bytes and 19 lines of real `sideeye demo` output under the
-# first paragraph, with the sentence that says what it is; the owner asked for a real report on
-# the first screen, and spike/check-readme-demo.py holds every line of it to a fresh demo. The
-# exception's two sentences became one clause in the same edit, which paid back 100 bytes, so
-# the page grew by 698. The line bound moves for the same reason and the same way: the page's
-# count plus two.
-# A tenth (#709, 2026-10-08): the 154-byte sentence under "After the first find" that names
-# `sideeye evidence`. The command has rendered a saved FAIL for an upstream report since ADR 0071,
-# and a FAIL's report printed the bundle's path and not the command, so a reader who learned
-# Sideeye from this page had no way to learn it existed; check 10 below holds it.
-# An eleventh (#716, 2026-10-09): the 168-byte sentence under "From an agent" that names the three
-# agent skills and the one command that installs them. The skills ship from this repository and
-# are copied out of it on install, so this page is where a reader learns they exist; check 11 below
-# holds the command. The version is pinned in it on purpose: the installer runs from npm with the
-# reader's permissions, and an unpinned name runs whatever was published last.
+# The size bound is the other half. The page had grown to 33 KB by writing each decision's
+# record into it — issue numbers, ADR numbers, the reason behind each refusal — and those have
+# homes of their own (DESIGN.md, docs/, docs/adr/). The first bound was the page's own size
+# plus a fixed slack, and it moved with the page: each sentence an issue added raised it (the
+# record of those additions is in this file's history), so it recorded the growth and stopped
+# none of it — 113 lines and 1,296 words on 2026-10-03, 135 lines and 1,569 words six days
+# later. Since 2026-10-10 the bound is fixed where the owner put it: 100 lines and 800 words,
+# as `wc -l` and `wc -w` count them. That is omamori's README (80 lines, 746 words) plus the
+# demo block this page carries and omamori's does not, and 40 words above the bound
+# lossless-compaction's tests hold (760): the first cut to 760 had to drop the limits the
+# engine's next_step strings send a reader to (class_wall, syscalls_may_have_killed,
+# threads_limit name 'What the target has to be'), and putting them back costs the 40. A
+# sentence that does not fit moves another out, to the page its reason lives on, or goes
+# there itself and leaves a link. Words rather than bytes or lines alone, because a line
+# bound is escaped by writing longer lines, which is what this page did. The demo block, the
+# toml and the checker are inside the count: they are the page's, not slack.
 #
 # Sunset: if this has not failed once by 2026-12-04, delete it and its CI step.
 set -u
@@ -82,10 +49,10 @@ ok()  { echo "ok   $1"; }
 bad() { echo "FAIL $1"; fails=$((fails + 1)); }
 has() { grep -qF -e "$1" "$R"; }
 
-bytes=$(wc -c < "$R" | tr -d ' ')
 lines=$(wc -l < "$R" | tr -d ' ')
-if [ "$bytes" -le 10679 ]; then ok "size: $bytes bytes, at most 10679"; else bad "size: $bytes bytes, over 10679"; fi
-if [ "$lines" -le 137 ]; then ok "length: $lines lines, at most 137"; else bad "length: $lines lines, over 137"; fi
+words=$(wc -w < "$R" | tr -d ' ')
+if [ "$lines" -le 100 ]; then ok "length: $lines lines, at most 100"; else bad "length: $lines lines, over 100 — move a sentence to the page its reason lives on"; fi
+if [ "$words" -le 800 ]; then ok "size: $words words, at most 800"; else bad "size: $words words, over 800 — move a sentence to the page its reason lives on"; fi
 n=$(grep -cE '#[0-9]+' "$R")
 if [ "$n" -eq 0 ]; then ok "no issue numbers"; else bad "$n line(s) carry an issue number; the record belongs in the page the reason lives on"; fi
 n=$(grep -cE 'ADR[ -][0-9]{4}' "$R")
@@ -164,4 +131,4 @@ if [ "$fails" -ne 0 ]; then
     echo "$fails check(s) failed on $R"
     exit 1
 fi
-echo "the README keeps the path to a first verdict, at $bytes bytes"
+echo "the README keeps the path to a first verdict, at $lines lines and $words words"

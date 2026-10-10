@@ -368,7 +368,7 @@ fi
 
 echo ""
 echo "=========== check 2st: what the shim takes from a target thread's memory (#555) ==========="
-# README, "What the target has to be": less than 1 KiB of thread-local storage and at most
+# DESIGN.md, "Known constraints": less than 1 KiB of thread-local storage and at most
 # 5 KiB of stack per interposed call, plus the kernel's signal frame under --observe
 # syscalls. The checks live in their own script so the same call with an older shim can
 # show each of them red; here they run against the shipped one.

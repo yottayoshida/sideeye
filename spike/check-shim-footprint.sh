@@ -1,5 +1,5 @@
 #!/bin/sh
-# What the shim takes from a target thread's memory, measured against the bound the README
+# What the shim takes from a target thread's memory, measured against the bound DESIGN.md
 # states (#555): less than 1 KiB of thread-local storage, and at most 5 KiB of stack for an
 # interposed call — plus, under --observe syscalls, the kernel's own signal frame. Linux
 # only: toy-stack reads /proc and the auxiliary vector, and the macOS dylib is not measured.
@@ -29,12 +29,12 @@
 set -u
 SHIM=$1
 TOY=$2
-# README: "at most 5 KiB of its stack for an interposed call". The plan's rule: the largest
+# DESIGN.md: "at most 5 KiB of its stack for an interposed call". The plan's rule: the largest
 # share measured over both CPUs and both modes, rounded up to a KiB, plus one — 3,968 bytes
 # (aarch64 Debug, syscalls, over the kernel's frame) on 2026-09-11. A Debug build is the
 # deep one; the release build measured under 1 KiB.
 stack_limit=5120
-tls_limit=1024     # README: "less than 1 KiB of thread-local storage"
+tls_limit=1024     # DESIGN.md, Known constraints: "less than 1 KiB of a thread's thread-local storage"
 # Per function. Nothing of the shim's own needs a buffer on the stack any more, and 1 KiB
 # is well under the bound a whole interposed call is held to. At the time of writing the
 # largest measured frame was 896 bytes (Debug, both architectures); the ones this
@@ -155,7 +155,7 @@ else
     align=$(printf '%s\n' "$ph" | awk '$1 == "TLS" { print $NF; exit }')
     tls=$((${tls_hex:-0}))
     if [ "$tls" -ge "$tls_limit" ]; then
-        fail "the shim carries $tls bytes of thread-local storage (align $align), not less than the $tls_limit the README states"
+        fail "the shim carries $tls bytes of thread-local storage (align $align), not less than the $tls_limit DESIGN.md states"
     else
         ok "the shim carries ${tls} bytes of thread-local storage${align:+ (align $align)}, under $tls_limit"
     fi
