@@ -1,0 +1,2 @@
+sh: /se/sideeye: not found
+exit 127

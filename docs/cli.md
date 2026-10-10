@@ -1,6 +1,29 @@
 # The CLI in full
 
-The README carries the shortest path to a first verdict. This page carries the rest: installing without Homebrew, every flag and what it refuses, what a saved case is and how replay reads it, a full report with the checker that produced it, and what the declaration is for once the first finding is in.
+The README carries the shortest path to a first verdict. This page carries the rest: the platforms it runs on, installing without Homebrew, every flag and what it refuses, what a saved case is and how replay reads it, a full report with the checker that produced it, and what the declaration is for once the first finding is in.
+
+## Platforms
+
+One row for every platform an adopter is likely to bring, each **supported**, **unmeasured** or **declined** ([ADR 0105](adr/0105-the-platform-table-says-supported-unmeasured-or-declined.md)). The measured cells are one run of the v1.10.0 release on 2026-10-10 ([the record](../spike/platforms/2026-10-10/RESULTS.md)): a file rewritten in place by `dd`, whose right answer is FAIL, explored in each observation mode beside the release's own Ubuntu leg on the same CPU. "All three modes" means the default, `--observe syscalls` and `--observe supervised` each gave that FAIL, the oracle agreeing.
+
+| Platform | Status | What was run |
+|---|---|---|
+| Linux x86_64, glibc 2.28 or later, kernel 6.17 or later | supported | The `x86_64-linux` asset. All three modes on Ubuntu 24.04 (glibc 2.39, kernel 6.17, its user in a delegated cgroup) and in a privileged Rocky 8 container (glibc 2.28). Other glibc versions are read from glibc's backward compatibility, not run |
+| Linux aarch64, glibc 2.28 or later, kernel 6.17 or later | supported | The `aarch64-linux` asset. The same, on an arm64 runner |
+| Linux on a kernel older than 6.17 (Debian 12's 6.1, RHEL 9's 5.14, RHEL 8's 4.18) | unmeasured | Not run. Supervised needs 5.19 or later |
+| Linux container with `docker run`'s defaults (no `--privileged`) | supported | The `x86_64-linux` and `aarch64-linux` assets, in Rocky 8, as root. Default and syscalls; supervised is a setup error naming the cgroup it needs. GitHub Actions' `container:` and the hardening in [mcp.md](mcp.md) not run |
+| Linux, glibc older than 2.28 | declined | Both files ask for `GLIBC_2.28`. Not run |
+| Linux with musl (Alpine) | declined | Alpine 3.22, both CPUs: the binary does not start — it names glibc's loader. With `gcompat`: default and syscalls give the right FAIL; supervised refuses `recording_run_failed` and blames the operation, which never ran. Building from source not tried |
+| NixOS, and other glibc Linux without its loader at the path the binaries name | unmeasured | Not run |
+| Other CPUs (armv7, i386, riscv64, …) | declined | No release asset. Not run or built from source |
+| macOS 26 on Apple silicon | supported | The `aarch64-macos` asset, whose demo the release ran on macOS 26; CI tests the engine there from source on every push. Not run by this probe |
+| macOS 13 to 15 on Apple silicon | unmeasured | The asset's minimum is 13.0. Not run |
+| macOS on Intel | declined | No release asset; the Homebrew formula requires arm64. Not run or built from source |
+| Windows | declined | No release asset. Not run or built from source |
+| WSL2 on x86_64 | supported | The `x86_64-linux` asset. All three modes, in Ubuntu 24.04 under WSL updated to 3.0.1 (kernel 6.18) on GitHub's Windows Server 2025 runner, as root and without systemd, the state on the distribution's own filesystem. `/mnt/*`, other users and systemd not run |
+| WSL1; WSL2 on Windows on ARM | unmeasured | Not run |
+
+The modes have floors of their own: `--observe syscalls` and `--observe supervised` are Linux only, and supervised needs Linux 5.19 or later and a cgroup v2 it can create cgroups in (see [`--observe`](#usage)). The Rocky 8 container ran on the runner's 6.17 kernel, so it speaks for glibc 2.28's userland, not for its own distribution's kernel. On a musl host, ADR 0101 expects the demo's toy to build static, where the shim could not enter it.
 
 ## Installing without Homebrew
 

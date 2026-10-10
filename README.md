@@ -27,7 +27,7 @@ Counterexamples found: RuboCop, ImageMagick, the AWS CLI, [more](docs/found.md).
 
 ## Installation
 
-Runs on macOS (Apple silicon) and Linux (x86_64, aarch64): Homebrew, or a [release](https://github.com/yottayoshida/sideeye/releases) tarball run where you unpack it. Source: [docs/cli.md](docs/cli.md#installing-without-homebrew).
+Runs on macOS 26 (Apple silicon) and Linux glibc (x86_64, aarch64): Homebrew, or a [release](https://github.com/yottayoshida/sideeye/releases) tarball run where you unpack it. Other platforms, building from source: [docs/cli.md](docs/cli.md#platforms).
 
 ```
 $ brew install yottayoshida/tap/sideeye
@@ -87,7 +87,7 @@ Sideeye refuses to guess: outside these limits the verdict is UNKNOWN, naming th
 - **Other processes take turns with the state**, and every writing child is reaped; a process boundary needs Linux's `--oracle`, and one that leaves its process group is judged only where the engine can hold the run in a cgroup (Linux) — otherwise UNKNOWN.
 - **On macOS, a framework Python's `bin/python3` is a launcher**; Sideeye refuses it and names the interpreter to run instead.
 
-No language model decides a verdict, and a PASS is a search record naming what was *not* tested.
+No language model decides a verdict; a PASS is a search record naming what was *not* tested.
 
 ## Documentation
 
