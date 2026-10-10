@@ -1,0 +1,32 @@
+Working copy  (@) now at: sryyqqkq/0 4af6d7a1 (divergent) (empty) (no description set)
+Parent commit (@-)      : sryyqqkq/1 6bfad012 (divergent) probe
+Working copy  (@) now at: sryyqqkq/0 4af6d7a1 (divergent) (empty) (no description set)
+Parent commit (@-)      : sryyqqkq/1 6bfad012 (divergent) probe
+PREFLIGHT  not accepted — the two observed runs left different state
+
+difference   .jj/working_copy/tree_state (content differs)
+             bytes first differ at byte offset 12: first run "\x80\x88\x84\xe0\xb73", second run "\xb2\xb0\xb3\x9a\x924" — 6 and 6 byte(s) of 48 and 48, both holding bytes outside printable text (5 and 5)
+
+cwd          /s/jj-in
+atomicity    107 path(s) judged pre-or-post
+oracle       not run (no --oracle given)
+processes    the supervising engine recorded a thread and no second witness ran; the second observed run recorded a thread, and that run's capture is never parsed, so nothing accounts for it; the supervising engine recorded 11 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+checker      declared, not run: not refused as a command that cannot be
+             started, and the state holds something to corrupt
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail — only a real
+             exploration runs these
+
+repeatability  two runs 2010 ms apart differed under [world] state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside [world] state are
+               not compared, and two runs are not all runs
+
+note         no oracle checked the shim's account against a second witness;
+             explore's PASS will require --oracle <strace> (Linux) or
+             --allow-unverified (macOS)
+
+next         pin or relocate what differs, then re-run this command;
+             explore would reach the same divergence in its baseline
+             world, after a full define had been written
