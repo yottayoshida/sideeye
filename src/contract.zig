@@ -1255,6 +1255,18 @@ pub const UnknownReason = enum {
     /// records the ruling. A floor, not a guarantee: a crash point that names a judged path
     /// without changing it — a lock file opened for writing, a failed call — still counts.
     nothing_could_fail,
+    /// The checker rejected the state the define starts from, before the operation ran (#756,
+    /// ADR 0107). The falsification shows a checker can say no; this is the other side of the
+    /// same gate — it must say yes to the state every world starts from, as the engine restores
+    /// it, before any operation. Until this member, such
+    /// a checker failed in the world killed before the first operation and the report read as
+    /// the target's FAIL at crash point 1, `after (start)()`, although no operation of the
+    /// target's is in that world. Raised by `explore` and `replay`, before any world, after the
+    /// falsification; never by `preflight`, which does not run the checker.
+    ///
+    /// **Added after the v1.0 tag**, the fourth member to be; `docs/contract-freeze.md` records
+    /// the ruling.
+    checker_rejects_initial_state,
 
     pub fn name(self: UnknownReason) []const u8 {
         return @tagName(self);

@@ -269,6 +269,18 @@ stay the same.
    removed or redefined — and says so in its own `schema_status`, `"frozen"`, since an MCP
    tool hands it to agents from the same release.
 
+   **Amended 2026-10-10: broken a sixth time, by owner ruling — the fourth addition to
+   `unknown_reason`.** `checker_rejects_initial_state` takes the set from 35 members to 36 (#756,
+   ADR 0107). A checker that rejects the state the define starts from used to fail in the world
+   killed before the first operation, and the report read as the target's FAIL at crash point 1,
+   `after (start)()`, although nothing the target did is in that world — measured on xmake
+   (`spike/dogfood/2026-10-09-followups-2/`). No existing member could carry it without saying
+   something false: `checker_not_falsified` says the checker accepted a corrupted state, and its
+   remedy — make the checker stricter — is the opposite of this one's, which is the owner's reason
+   for a member of its own; `baseline_violates_invariant` names the world that was never killed,
+   and this is the state before any. Ruled on its own merits, as the paragraphs above require.
+   Its ledger row is a sweep's job, as the notes above give; `contract_version` does not move.
+
 3. **Exit codes.** When a run produces a verdict, that verdict's exit code is
    fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is never 0.
    The promise runs in that direction. **Exit 0 is not reserved to PASS**: it
@@ -302,6 +314,12 @@ stay the same.
    completeness gate, which is what `README.md` says preflight does (without an oracle, `explore`
    asks for one first and preflight, which has no such gate, does not). The verdict-to-code mapping is untouched; what changed is
    which verdict those runs reach, recorded with the reason in surface 2's dated note.
+   **Which runs exit 1 moved on 2026-10-10** (ADR 0107): a run whose checker rejects the state the
+   define starts from, and accepts the one the operation leaves, was a FAIL at crash point 1 and
+   exited 1; it is refused `checker_rejects_initial_state` and exits 2, as an UNKNOWN must. (One
+   whose checker rejected the final state too was already refused at the baseline, exit 2; it
+   keeps exit 2 under the new reason.) The verdict-to-code mapping is
+   untouched; what changed is which verdict those runs reach, recorded in surface 2's dated note.
 4. **Replay compatibility.** A saved case replays across 1.x or refuses
    honestly — `case_no_longer_applies`, whether the code changed underneath
    it or the trace contract did (the refusal message names which) — never a
@@ -332,6 +350,14 @@ stay the same.
    ADR 0100 accepts in place of a mode the caller has to remember. A future trace-contract bump is therefore *not* a
    broken promise: old cases refuse with the mismatch named, and that
    refusal is the promised behavior.
+   **Read on 2026-10-10** (#756, ADR 0107): a case saved from a define whose checker rejects the
+   state that define starts from — at crash point 1, the shape #756 met, or at any other — no
+   longer reproduces. Replay falsifies the checker as explore does, and since #756 shows it the
+   starting state too, so such a case is refused `checker_rejects_initial_state` — neither
+   reproduced nor refused `case_no_longer_applies`. Read
+   as an honest refusal and not a verdict about a shifted address: the reason says why the case's
+   world could never have been the target's, and what the case said about the target was not true.
+   The one such FAIL in this repository's records is xmake's, above.
 5. **The MCP surface** (decided 2026-08-13, recorded in #86, codified here).
    The two tool names — `sideeye_explore_config`, `sideeye_replay_case` —
    their input schemas, and the isError derivation rule (isError follows the

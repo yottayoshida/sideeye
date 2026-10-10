@@ -19,7 +19,7 @@
 //! in `main.zig`, so none of those changes name. Two things are asked later still. For the
 //! recording run, `phaseChecker`'s falsification of the declared checker, before any world: a
 //! contained run whose watch finds something reports that finding instead of
-//! `checker_not_falsified`, and one whose checker probe could not be started is refused with the
+//! `checker_not_falsified` or, since #756, `checker_rejects_initial_state`, and one whose checker probe could not be started is refused with the
 //! finding (exit 2) before that setup error (exit 3) is reached. And `requireCompleteness`,
 //! which answers a would-be PASS without an oracle in `phasePreflight` and `phaseReport`: a
 //! contained run with neither `--oracle` nor `--allow-unverified` reports the finding instead of

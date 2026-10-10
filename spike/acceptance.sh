@@ -2379,9 +2379,30 @@ c700 op "$OUT/toy-fixed init" "/bin/cat ./seed"
 r700 op
 want700 "an operation whose ./seed is only under the toml's directory: recording_run_failed names cwd" 2 "UNKNOWN  recording_run_failed" yes
 step700 "recording_run_failed"
+# A checker that looks for ./seed where it ran rejects every state, the one the define starts
+# from first: since #756 (ADR 0107) that is refused before any world, and carries the same
+# observation and step. Until then the same define ran every world and was refused at the
+# baseline.
 c700 base "$OUT/toy-fixed init" "$OUT/toy-fixed rotate" "/usr/bin/test -e ./seed"
 r700 base
-want700 "a checker whose ./seed is only under the toml's directory: baseline_violates_invariant names cwd" 2 "UNKNOWN  baseline_violates_invariant" yes
+want700 "a checker whose ./seed is only under the toml's directory: checker_rejects_initial_state names cwd" 2 "UNKNOWN  checker_rejects_initial_state" yes
+step700 "checker_rejects_initial_state"
+# Review of #756: with the cwd line as the step, the detail must not also tell the reader to fix
+# the checker — the step and the detail would point opposite ways.
+if printf '%s\n' "$o700" | grep -qF "make the checker accept"; then
+    echo "FAIL #700: checker_rejects_initial_state's detail tells the reader to fix the checker while the step says add cwd"
+    fails=$((fails + 1))
+else
+    echo "ok   #700: checker_rejects_initial_state's detail carries the observation and no instruction of its own"
+fi
+# baseline_violates_invariant's checker layer still carries the observation, for a checker that
+# accepts the state the define starts from and rejects the one the operation leaves. Without
+# ./seed where it ran, this one accepts key=1 only: init's value, not rotate's, and not junk.
+printf '#!/bin/sh\ntest -e "$1" || grep -qx key=1 "$SIDEEYE_STATE_DIR/key.json"\n' > /tmp/acc-700/T/initonly.sh
+chmod 755 /tmp/acc-700/T/initonly.sh
+c700 baseline "$OUT/toy-fixed init" "$OUT/toy-fixed rotate" "/tmp/acc-700/T/initonly.sh ./seed"
+r700 baseline
+want700 "a checker that rejects only the operation's state, ./seed only under the toml's directory: baseline_violates_invariant names cwd" 2 "UNKNOWN  baseline_violates_invariant" yes
 step700 "baseline_violates_invariant"
 c700 fals "$OUT/toy-fixed init" "$OUT/toy-fixed rotate" "/usr/bin/test ! -e ./seed"
 r700 fals
@@ -2440,6 +2461,44 @@ if [ "$rc700" = "0" ]; then
 else
     echo "FAIL #700: the setup with cwd = \".\": exit $rc700, wanted 0"
     printf '%s\n' "$o700" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+
+echo "=========== check 2ri: a checker that rejects the state the define starts from is the define's (#756) ==========="
+# xmake's shape (spike/dogfood/2026-10-09-followups-2): the checker accepted only the value the
+# operation writes, and the seed held another. The world killed before the first operation holds
+# exactly the seeded state, so its violation was the checker's, and the report read as the
+# target's FAIL at crash point 1, `after (start)()`. Since #756 (ADR 0107) the checker is shown
+# that state, as every world starts from it, after the falsification and before any world, and a refusal is the
+# define's. The toy is the atomic one: whatever a run says, it does not say it about the target.
+rm -rf /tmp/acc-756 && mkdir -p /tmp/acc-756
+printf '#!/bin/sh\ngrep -qx key=2 "$SIDEEYE_STATE_DIR/key.json" || { echo "key.json does not hold key=2"; exit 1; }\n' > /tmp/acc-756/strict.sh
+printf '#!/bin/sh\ngrep -qx "key=[12]" "$SIDEEYE_STATE_DIR/key.json" || { echo "key.json holds neither key"; exit 1; }\n' > /tmp/acc-756/fair.sh
+chmod 755 /tmp/acc-756/strict.sh /tmp/acc-756/fair.sh
+o=$(TOY_STATE=/tmp/acc-756/s-strict "$SIDEEYE" explore --state /tmp/acc-756/s-strict --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --check /tmp/acc-756/strict.sh --shim "$SHIM" --work /tmp/acc-756/w-strict --oracle /usr/bin/strace --json /tmp/acc-756/strict.json 2>&1)
+rc=$?
+if refused checker_rejects_initial_state "$rc" "$o" \
+    && ! printf '%s\n' "$o" | grep -q "^earliest" \
+    && printf '%s\n' "$o" | grep -qxF "start: key.json does not hold key=2" \
+    && printf '%s\n' "$o" | grep -qF "as Sideeye restores it before every world" \
+    && python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d["unknown_reason"] == "checker_rejects_initial_state" and d.get("next_step", "").startswith("Change the define") and d.get("explored", 0) == 0 else 1)' /tmp/acc-756/strict.json; then
+    echo "ok   a checker that rejects the starting state is refused before any world, its output marked start:, next step fix_define"
+else
+    echo "FAIL #756: a checker that rejects the starting state: exit $rc (wanted 2 checker_rejects_initial_state, no world, no earliest crash point)"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+# Control: the same define with a checker that accepts both keys reaches the toy's verdict, and
+# the passing probe prints nothing of its own.
+o=$(TOY_STATE=/tmp/acc-756/s-fair "$SIDEEYE" explore --state /tmp/acc-756/s-fair --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --check /tmp/acc-756/fair.sh --shim "$SHIM" --work /tmp/acc-756/w-fair --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "0" ] && printf '%s\n' "$o" | grep -q "^PASS" && ! printf '%s\n' "$o" | grep -q "^start: "; then
+    echo "ok   the same define with a checker that accepts the starting state reaches PASS, and the probe that passed printed nothing"
+else
+    echo "FAIL #756 control: exit $rc (wanted 0 PASS with no start: line)"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -8
     fails=$((fails + 1))
 fi
 
@@ -2895,9 +2954,27 @@ rm -f /tmp/acclink
 echo ""
 echo "=========== check 2n: a failure that needs no crash is not a counterexample ==========="
 # check.sh refuses to run without TOY, so it fails in every world — including the baseline,
-# which was never killed. Before this gate the report read "FAIL 6 of 6 crash worlds
+# which was never killed. Before the baseline gate the report read "FAIL 6 of 6 crash worlds
 # violated an invariant", blaming crashing for something that happens without it. Found
-# while generating an example for the README, not by review.
+# while generating an example for the README, not by review. Since #756 (ADR 0107) such a
+# checker fails on the state the define starts from first, and is refused there, before any
+# world — the first leg. The baseline gate is held by the second, with a checker that accepts
+# the starting state and rejects the one the operation leaves on its own.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+unset TOY 2>/dev/null || true
+o=$("$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --check "$ROOT/spike/check.sh" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if refused checker_rejects_initial_state "$rc" "$o" && ! echo "$o" | grep -q "^earliest" \
+   && echo "$o" | grep -q "Change the define"; then
+    echo "ok   a checker that fails without the target doing anything is refused before any world (exit 2), not judged at the baseline"
+else
+    echo "FAIL a checker that fails everywhere: exit $rc (wanted 2 checker_rejects_initial_state, no earliest crash point)"
+    echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
 #
 # Reached here through the checker. The byte layer reaches the same refusal when the
 # re-run does not repeat the recorded bytes (the honesty pair and the `missing` leg
@@ -2906,10 +2983,11 @@ echo "=========== check 2n: a failure that needs no crash is not a counterexampl
 # the step that names `scratch` and `preflight --twice`. (An earlier comment here claimed only the checker can reach this refusal; the
 # first real target arrived through the bytes.)
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
-unset TOY 2>/dev/null || true
+printf '#!/bin/sh\ngrep -qx key=1 "$SIDEEYE_STATE_DIR/key.json" || { echo "key.json is not the key init wrote"; exit 1; }\n' > /tmp/acc-2n-initonly.sh
+chmod 755 /tmp/acc-2n-initonly.sh
 o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
-    --check "$ROOT/spike/check.sh" \
+    --check /tmp/acc-2n-initonly.sh \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
 rc=$?
 if refused baseline_violates_invariant "$rc" "$o" \
@@ -2923,7 +3001,7 @@ else
     fails=$((fails + 1))
 fi
 
-# The control: the same checker, correctly configured, must still find the planted bug at
+# The control: check.sh, the first leg's checker, correctly configured, must still find the planted bug at
 # the crash point — otherwise the gate above would be indistinguishable from one that
 # swallows every L2 finding.
 TOY=$OUT/toy-bug
@@ -2936,7 +3014,7 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state \
 rc=$?
 unset TOY
 if [ "$rc" = "1" ] && echo "$o" | grep -q "crash point 5 of 5"; then
-    echo "ok   the same checker still reports the real counterexample (exit 1)"
+    echo "ok   check.sh, configured, still reports the real counterexample (exit 1)"
 else
     echo "FAIL configured checker control: exit $rc"
     echo "$o" | sed 's/^/     | /'
