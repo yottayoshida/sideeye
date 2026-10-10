@@ -8,7 +8,7 @@ This is a list of counterexamples, not a badge: nothing on it says a tool is saf
 
 <!-- found:begin -->
 
-43 reports: 11 fixed upstream and re-measured, 30 filed, 2 withdrawn.
+43 reports: 11 fixed upstream and re-measured, 1 acknowledged, 29 filed, 2 withdrawn.
 
 | Tool | Report | State | As of |
 |---|---|---|---|
@@ -23,6 +23,7 @@ This is a list of counterexamples, not a badge: nothing on it says a tool is saf
 | PyMOL 3.1.0 (Debian) `save` of a `.pse` | [schrodinger/pymol-open-source#520](https://github.com/schrodinger/pymol-open-source/issues/520) | fixed upstream, re-measured | 2026-10-09 |
 | Subtitle Edit's SeConv 5.2.0 `subs.srt subrip --offset:-2000 --overwrite` | [SubtitleEdit/subtitleedit#15829](https://github.com/SubtitleEdit/subtitleedit/issues/15829) | fixed upstream, re-measured | 2026-10-09 |
 | dotenvx 2.32.4 `encrypt` | [dotenvx/dotenvx#1012](https://github.com/dotenvx/dotenvx/issues/1012) | fixed upstream, re-measured | 2026-10-10 |
+| ktlint 1.8.0 | [ktlint/ktlint#3409](https://github.com/ktlint/ktlint/issues/3409) | acknowledged (awaiting) | 2026-10-10 |
 | topydo | [topydo/topydo#341](https://github.com/topydo/topydo/issues/341) | filed (awaiting) | 2026-10-09 |
 | calcurse | [lfos/calcurse#529](https://github.com/lfos/calcurse/issues/529) | filed (awaiting) | 2026-10-09 |
 | GNU Stow | [aspiers/stow#139](https://github.com/aspiers/stow/issues/139) | filed (awaiting) | 2026-10-09 |
@@ -40,7 +41,6 @@ This is a list of counterexamples, not a badge: nothing on it says a tool is saf
 | nbqa 1.9.1 (`nbqa black`, black 26.5.1) | [nbQA-dev/nbQA#908](https://github.com/nbQA-dev/nbQA/issues/908) | filed (awaiting) | 2026-09-28 |
 | terraform 1.16.4 `fmt` | [hashicorp/terraform#39299](https://github.com/hashicorp/terraform/issues/39299) | filed (awaiting) | 2026-10-09 |
 | helm 4.3.0 `repo remove` | [helm/helm#32709](https://github.com/helm/helm/issues/32709) | filed (awaiting) | 2026-10-02 |
-| ktlint 1.8.0 | [ktlint/ktlint#3409](https://github.com/ktlint/ktlint/issues/3409) | filed (awaiting) | 2026-10-02 |
 | git-cliff 2.14.2 `--prepend` | [orhun/git-cliff#1650](https://github.com/orhun/git-cliff/issues/1650) | filed (awaiting) | 2026-10-02 |
 | notesmd-cli 0.3.7 `move` | [Yakitrak/notesmd-cli#137](https://github.com/Yakitrak/notesmd-cli/issues/137) | filed (awaiting) | 2026-10-03 |
 | mapshaper 0.7.72 `-o force` | [mbloch/mapshaper#706](https://github.com/mbloch/mapshaper/issues/706) | filed (declined) | 2026-10-09 |

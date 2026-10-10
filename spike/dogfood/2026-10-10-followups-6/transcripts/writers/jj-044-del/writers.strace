@@ -1,0 +1,296 @@
+54    execve("/usr/bin/sh", ["sh", "-c", "jj -R /s/jj/repo commit -m probe"], 0xffffdc2133d8 /* 22 vars */) = 0
+54    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff987e4000
+54    openat(AT_FDCWD</s/jj-in>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+54    mmap(NULL, 8835, PROT_READ, MAP_PRIVATE, 3</etc/ld.so.cache>, 0) = 0xffff987e1000
+54    openat(AT_FDCWD</s/jj-in>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+54    mmap(NULL, 1892368, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_DENYWRITE, -1, 0) = 0xffff985dd000
+54    mmap(0xffff985e0000, 1826832, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libc.so.6>, 0) = 0xffff985e0000
+54    mmap(0xffff9878d000, 20480, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3</usr/lib/aarch64-linux-gnu/libc.so.6>, 0x19d000) = 0xffff9878d000
+54    mmap(0xffff98792000, 49168, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0xffff98792000
+54    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff987df000
+54    clone(child_stack=0xfffff893aa80, flags=CLONE_VM|CLONE_VFORK|SIGCHLD <unfinished ...>
+55    execve("/opt/jj-0.44.0/jj", ["jj", "-R", "/s/jj/repo", "commit", "-m", "probe"], 0xaaaafeba77f8 /* 22 vars */ <unfinished ...>
+54    <... clone resumed>)              = 55
+55    <... execve resumed>)             = 0
+55    mmap(NULL, 1216, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8e89d000
+55    openat(AT_FDCWD</s/jj-in>, "/proc/sys/vm/overcommit_memory", O_RDONLY|O_LARGEFILE) = 3</proc/sys/vm/overcommit_memory>
+55    openat(AT_FDCWD</s/jj-in>, "/sys/kernel/mm/transparent_hugepage/enabled", O_RDONLY|O_LARGEFILE) = 3</sys/kernel/mm/transparent_hugepage/enabled>
+55    mmap(NULL, 4456448, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffff8e45d000
+55    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffff8e459000
+55    mmap(0x354ef400000, 1073741824, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0x354ef400000
+55    mmap(NULL, 65536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0xffff8e449000
+55    mmap(0x26979000, 4096, PROT_NONE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x26979000
+55    mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8e448000
+55    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8e245000
+55    clone(child_stack=0xffff8e447710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[56], tls=0xffff8e447808, child_tidptr=0x172e340) = 56
+56    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffff8e241000
+55    openat(AT_FDCWD</s/jj-in>, "/etc/passwd", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</etc/passwd>
+55    mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8e240000
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/config-id", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/config.toml", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/workspace-config-id", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/workspace-config.toml", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/type", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.jj/repo/store/type>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/git_target", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.jj/repo/store/git_target>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/HEAD", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.git/HEAD>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/commondir", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/commondir", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/config", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.git/config>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/HEAD", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.git/HEAD>
+55    openat(AT_FDCWD</s/jj-in>, "/etc/gitconfig", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj-home/.config/git/config", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj-home/.gitconfig", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/info/alternates", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/pack", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 3</s/jj/repo/.git/objects/pack>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8e23f000
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/type", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.jj/repo/op_store/type>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_heads/type", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.jj/repo/op_heads/type>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/type", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.jj/repo/index/type>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/submodule_store/type", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.jj/repo/submodule_store/type>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/type", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.jj/working_copy/type>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/checkout", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.jj/working_copy/checkout>
+55    openat(AT_FDCWD</s/jj-in>, "/etc/localtime", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</usr/share/zoneinfo/Etc/UTC>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/git_import_export.lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 3</s/jj/repo/.jj/repo/git_import_export.lock>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_heads/heads", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</s/jj/repo/.jj/repo/op_heads/heads>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8e23f000
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/operations/abf76d01ac0132742b821653023ad06aa67b18f8bb3ca271c20cf5c1e2533e0adef5f3267526d62fd52be7863ef39b75b2924403e7b9a287994c110b12428d88", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.jj/repo/op_store/operations/abf76d01ac0132742b821653023ad06aa67b18f8bb3ca271c20cf5c1e2533e0adef5f3267526d62fd52be7863ef39b75b2924403e7b9a287994c110b12428d88>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/views/cb680ee660ffb44fe565a98741ffdb712813c6aeccdbff820fbf95688047a70044c998812211bae6755e34a314b238228d82bb5190dc78deb14a7423c5332db4", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.jj/repo/op_store/views/cb680ee660ffb44fe565a98741ffdb712813c6aeccdbff820fbf95688047a70044c998812211bae6755e34a314b238228d82bb5190dc78deb14a7423c5332db4>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/op_links/abf76d01ac0132742b821653023ad06aa67b18f8bb3ca271c20cf5c1e2533e0adef5f3267526d62fd52be7863ef39b75b2924403e7b9a287994c110b12428d88", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.jj/repo/index/op_links/abf76d01ac0132742b821653023ad06aa67b18f8bb3ca271c20cf5c1e2533e0adef5f3267526d62fd52be7863ef39b75b2924403e7b9a287994c110b12428d88>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/segments/5f82d394ba1f9867c580721410aeda9dc30ee48d034e21116c50ed2993a80d7d65fa4f53dfc8bd21b992837d894281c4bc3090422149bbe92250f43a42f0913b", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.jj/repo/index/segments/5f82d394ba1f9867c580721410aeda9dc30ee48d034e21116c50ed2993a80d7d65fa4f53dfc8bd21b992837d894281c4bc3090422149bbe92250f43a42f0913b>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/segments/af0687d713358bcabf5fed8ea162961b285c3046a28de4034bbc16f399512fdd10c11ec877ae97b0e59c64cb1de9609a7562df7a5e7c08a861122e1e07ec302b", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</s/jj/repo/.jj/repo/index/segments/af0687d713358bcabf5fed8ea162961b285c3046a28de4034bbc16f399512fdd10c11ec877ae97b0e59c64cb1de9609a7562df7a5e7c08a861122e1e07ec302b>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/HEAD", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.git/HEAD>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/info/alternates", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/pack", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</s/jj/repo/.git/objects/pack>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8e23f000
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1>
+55    mmap(NULL, 174, PROT_READ, MAP_PRIVATE, 4</s/jj/repo/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1>, 0) = 0xffff8e240000
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/info/exclude", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.git/info/exclude>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/working_copy.lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 4</s/jj/repo/.jj/working_copy/working_copy.lock>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/checkout", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</s/jj/repo/.jj/working_copy/checkout>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/tree_state", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</s/jj/repo/.jj/working_copy/tree_state>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy", O_RDWR|O_LARGEFILE|O_CLOEXEC|O_TMPFILE, 0666) = 6</s/jj/repo/.jj/working_copy/#365602>(deleted)
+55    fchmod(6</s/jj/repo/.jj/working_copy/#365602>(deleted), 0100744) = 0
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/05/e4b67c2da5973ae632c06ec5829e29fa158468", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</s/jj/repo/.git/objects/05/e4b67c2da5973ae632c06ec5829e29fa158468>
+55    mmap(NULL, 214, PROT_READ, MAP_PRIVATE, 5</s/jj/repo/.git/objects/05/e4b67c2da5973ae632c06ec5829e29fa158468>, 0) = 0xffff8e240000
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/heads", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 5</s/jj/repo/.jj/repo/store/extra/heads>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8e23f000
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/1ee6044bc425cf6d66c73add0cd2a6a98c029ed757701a6d0e125614720928965f54b89ee0eef355f81a2034d9a0dc536ce2c18f44b91a5d8ae5772b6340f249", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 6</s/jj/repo/.jj/repo/store/extra/1ee6044bc425cf6d66c73add0cd2a6a98c029ed757701a6d0e125614720928965f54b89ee0eef355f81a2034d9a0dc536ce2c18f44b91a5d8ae5772b6340f249>
+55    openat(AT_FDCWD</s/jj-in>, "/proc/self/cgroup", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</proc/55/cgroup>
+55    openat(AT_FDCWD</s/jj-in>, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</sys/fs/cgroup/cpu.max>
+55    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8e03e000
+55    clone(child_stack=0xffff8e240710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[57], tls=0xffff8e240808, child_tidptr=0x172e340) = 57
+55    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+57    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0 <unfinished ...>
+55    <... mmap resumed>)               = 0xffff8de3b000
+57    <... mmap resumed>)               = 0xffff8de37000
+55    clone(child_stack=0xffff8e03d710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[58], tls=0xffff8e03d808, child_tidptr=0x172e340) = 58
+55    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+58    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0 <unfinished ...>
+55    <... mmap resumed>)               = 0xffff8dc34000
+58    <... mmap resumed>)               = 0xffff8dc30000
+55    clone(child_stack=0xffff8de36710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[59], tls=0xffff8de36808, child_tidptr=0x172e340) = 59
+55    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+59    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0 <unfinished ...>
+55    <... mmap resumed>)               = 0xffff8da2d000
+59    <... mmap resumed>)               = 0xffff8da29000
+55    clone(child_stack=0xffff8dc2f710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[60], tls=0xffff8dc2f808, child_tidptr=0x172e340) = 60
+60    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0 <unfinished ...>
+55    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+60    <... mmap resumed>)               = 0xffff8da25000
+55    <... mmap resumed>)               = 0xffff8d822000
+55    clone(child_stack=0xffff8da24710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[61], tls=0xffff8da24808, child_tidptr=0x172e340) = 61
+55    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8d61f000
+61    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffff8d61b000
+55    clone(child_stack=0xffff8d821710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[62], tls=0xffff8d821808, child_tidptr=0x172e340) = 62
+55    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+62    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0 <unfinished ...>
+55    <... mmap resumed>)               = 0xffff8d418000
+62    <... mmap resumed>)               = 0xffff8d414000
+55    clone(child_stack=0xffff8d61a710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[63], tls=0xffff8d61a808, child_tidptr=0x172e340) = 63
+55    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+63    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0 <unfinished ...>
+55    <... mmap resumed>)               = 0xffff8d211000
+63    <... mmap resumed>)               = 0xffff8d20d000
+55    clone(child_stack=0xffff8d413710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[64], tls=0xffff8d413808, child_tidptr=0x172e340) = 64
+55    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0 <unfinished ...>
+64    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0 <unfinished ...>
+55    <... mmap resumed>)               = 0xffff8d00a000
+64    <... mmap resumed>)               = 0xffff8d006000
+55    clone(child_stack=0xffff8d20c710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[65], tls=0xffff8d20c808, child_tidptr=0x172e340) = 65
+55    mmap(NULL, 2109440, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8ce03000
+65    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffff8cdff000
+55    clone(child_stack=0xffff8d005710, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID|0x400000, parent_tid=[66], tls=0xffff8d005808, child_tidptr=0x172e340) = 66
+66    mmap(NULL, 16384, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0xffff8cdfb000
+61    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 5</s/jj/repo>
+61    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/working_copy.lock", 0) = 0
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/heads/", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</s/jj/repo/.git/refs/heads>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/tags/", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</s/jj/repo/.git/refs/tags>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/git_import_export.lock", 0) = 0
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 3</s/jj/repo/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1>
+55    mmap(NULL, 174, PROT_READ, MAP_PRIVATE, 3</s/jj/repo/.git/objects/c6/6ab3a2533aa0ed6b1ede456b884d59cffc58a1>, 0) = 0xffff8cdfa000
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 3</s/jj/repo/.jj/repo/store/extra/lock>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/heads", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</s/jj/repo/.jj/repo/store/extra/heads>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/info/alternates", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/pack", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</s/jj/repo/.git/objects/pack>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/.tmp7JaVE9", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0444) = 4</s/jj/repo/.git/objects/.tmp7JaVE9>
+55    write(4</s/jj/repo/.git/objects/.tmp7JaVE9>, "x\1", 2) = 2
+55    write(4</s/jj/repo/.git/objects/.tmp7JaVE9>, "J\316\317\315\315\4\254D\301\310\324\224\241\244(5U\301$\311\302\3104%\331\314\304(9\311,5"..., 215) = 215
+55    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/fe", 0777) = 0
+55    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/.tmp7JaVE9", AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/fe/d0deb9133351788241764c5966668f30a7b5fa") = 0
+55    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</usr/share/zoneinfo>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Etc", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</usr/share/zoneinfo/Etc>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Antarctica", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</usr/share/zoneinfo/Antarctica>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Africa", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</usr/share/zoneinfo/Africa>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Indian", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</usr/share/zoneinfo/Indian>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Pacific", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</usr/share/zoneinfo/Pacific>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Arctic", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</usr/share/zoneinfo/Arctic>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Europe", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</usr/share/zoneinfo/Europe>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/America", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</usr/share/zoneinfo/America>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/America/Argentina", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</usr/share/zoneinfo/America/Argentina>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/America/Indiana", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</usr/share/zoneinfo/America/Indiana>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/America/North_Dakota", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</usr/share/zoneinfo/America/North_Dakota>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/America/Kentucky", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</usr/share/zoneinfo/America/Kentucky>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Atlantic", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</usr/share/zoneinfo/Atlantic>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Australia", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</usr/share/zoneinfo/Australia>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Asia", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</usr/share/zoneinfo/Asia>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/usr/share/zoneinfo/Etc/UTC", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</usr/share/zoneinfo/Etc/UTC>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep/fed0deb9133351788241764c5966668f30a7b5fa", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+55    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep", 0777) = -1 EEXIST (File exists)
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep/fed0deb9133351788241764c5966668f30a7b5fa.lock", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0666) = 4</s/jj/repo/.git/refs/jj/keep/fed0deb9133351788241764c5966668f30a7b5fa.lock>
+55    openat(AT_FDCWD</s/jj-in>, "/proc/self/cgroup", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</proc/55/cgroup>
+55    openat(AT_FDCWD</s/jj-in>, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</sys/fs/cgroup/cpu.max>
+55    write(4</s/jj/repo/.git/refs/jj/keep/fed0deb9133351788241764c5966668f30a7b5fa.lock>, "fed0deb9133351788241764c5966668f"..., 40) = 40
+55    write(4</s/jj/repo/.git/refs/jj/keep/fed0deb9133351788241764c5966668f30a7b5fa.lock>, "\n", 1) = 1
+55    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep/fed0deb9133351788241764c5966668f30a7b5fa.lock", AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep/fed0deb9133351788241764c5966668f30a7b5fa") = 0
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/.tmpQxKkAt", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</s/jj/repo/.jj/repo/store/extra/.tmpQxKkAt>
+55    write(4</s/jj/repo/.jj/repo/store/extra/.tmpQxKkAt>, "\200\0\0\0001ee6044bc425cf6d66c73add0cd2"..., 202) = 202
+55    fdatasync(4</s/jj/repo/.jj/repo/store/extra/.tmpQxKkAt>) = 0
+55    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/.tmpQxKkAt", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/0546fb56c6a760ec785e431b047604b0cca146f6c0757da0da8bc2f486332823c764ff1ef065379994e3e285f58a3a29425551a07b0dd56837ab417c5105113e") = 0
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/heads/0546fb56c6a760ec785e431b047604b0cca146f6c0757da0da8bc2f486332823c764ff1ef065379994e3e285f58a3a29425551a07b0dd56837ab417c5105113e", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 4</s/jj/repo/.jj/repo/store/extra/heads/0546fb56c6a760ec785e431b047604b0cca146f6c0757da0da8bc2f486332823c764ff1ef065379994e3e285f58a3a29425551a07b0dd56837ab417c5105113e>
+55    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/heads/1ee6044bc425cf6d66c73add0cd2a6a98c029ed757701a6d0e125614720928965f54b89ee0eef355f81a2034d9a0dc536ce2c18f44b91a5d8ae5772b6340f249", 0) = 0
+55    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/lock", 0) = 0
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 3</s/jj/repo/.jj/repo/store/extra/lock>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/heads", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</s/jj/repo/.jj/repo/store/extra/heads>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/info/alternates", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/pack", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = 4</s/jj/repo/.git/objects/pack>
+55    mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xffff8cdf9000
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/.tmpjY61Gd", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0444) = 4</s/jj/repo/.git/objects/.tmpjY61Gd>
+55    write(4</s/jj/repo/.git/objects/.tmpjY61Gd>, "x\1", 2) = 2
+55    write(4</s/jj/repo/.git/objects/.tmpjY61Gd>, "\2,9?77\263D\301\310\304\222\241\244(5U\301$\311\302\3104%\331\314\304(9\311,5"..., 212) = 212
+55    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/05", 0777) = -1 EEXIST (File exists)
+55    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/.tmpjY61Gd", AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/objects/05/9241f44f0aa4a4f97e710e20c270ef6302c4e6") = 0
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep/059241f44f0aa4a4f97e710e20c270ef6302c4e6", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+55    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep", 0777) = -1 EEXIST (File exists)
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep/059241f44f0aa4a4f97e710e20c270ef6302c4e6.lock", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0666) = 4</s/jj/repo/.git/refs/jj/keep/059241f44f0aa4a4f97e710e20c270ef6302c4e6.lock>
+55    write(4</s/jj/repo/.git/refs/jj/keep/059241f44f0aa4a4f97e710e20c270ef6302c4e6.lock>, "059241f44f0aa4a4f97e710e20c270ef"..., 40) = 40
+55    write(4</s/jj/repo/.git/refs/jj/keep/059241f44f0aa4a4f97e710e20c270ef6302c4e6.lock>, "\n", 1) = 1
+55    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep/059241f44f0aa4a4f97e710e20c270ef6302c4e6.lock", AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/refs/jj/keep/059241f44f0aa4a4f97e710e20c270ef6302c4e6") = 0
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/.tmp0jIdkq", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</s/jj/repo/.jj/repo/store/extra/.tmp0jIdkq>
+55    write(4</s/jj/repo/.jj/repo/store/extra/.tmp0jIdkq>, "\200\0\0\0001ee6044bc425cf6d66c73add0cd2"..., 246) = 246
+55    fdatasync(4</s/jj/repo/.jj/repo/store/extra/.tmp0jIdkq>) = 0
+55    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/.tmp0jIdkq", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/3a37f98d572a3d37229f92a8f2d4646e91fb33eeba5e9ce249b31a2c4f0310d7892832075fefceb1d9873e0f20456ab6e6b95c18bd09f04462a03499c8ea5221") = 0
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/heads/3a37f98d572a3d37229f92a8f2d4646e91fb33eeba5e9ce249b31a2c4f0310d7892832075fefceb1d9873e0f20456ab6e6b95c18bd09f04462a03499c8ea5221", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 4</s/jj/repo/.jj/repo/store/extra/heads/3a37f98d572a3d37229f92a8f2d4646e91fb33eeba5e9ce249b31a2c4f0310d7892832075fefceb1d9873e0f20456ab6e6b95c18bd09f04462a03499c8ea5221>
+55    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/heads/0546fb56c6a760ec785e431b047604b0cca146f6c0757da0da8bc2f486332823c764ff1ef065379994e3e285f58a3a29425551a07b0dd56837ab417c5105113e", 0) = 0
+55    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/store/extra/lock", 0) = 0
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/git_import_export.lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 3</s/jj/repo/.jj/repo/git_import_export.lock>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/HEAD", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.git/HEAD>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/HEAD", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.git/HEAD>
+55    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git", 0777) = -1 EEXIST (File exists)
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/HEAD.lock", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0666) = 4</s/jj/repo/.git/HEAD.lock>
+55    write(4</s/jj/repo/.git/HEAD.lock>, "fed0deb9133351788241764c5966668f"..., 40) = 40
+55    write(4</s/jj/repo/.git/HEAD.lock>, "\n", 1) = 1
+55    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/HEAD.lock", AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/HEAD") = 0
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/index", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.git/index>
+55    mmap(NULL, 104, PROT_READ, MAP_PRIVATE, 4</s/jj/repo/.git/index>, 0) = 0xffff8cdfa000
+55    openat(AT_FDCWD</s/jj-in>, "/proc/self/cgroup", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</proc/55/cgroup>
+55    openat(AT_FDCWD</s/jj-in>, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</sys/fs/cgroup/cpu.max>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/index.lock", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0666) = 4</s/jj/repo/.git/index.lock>
+55    write(4</s/jj/repo/.git/index.lock>, "DIRC\0\0\0\2\0\0\0\09\330\220\23\236\3455l~\365r!l\353\315'\252A\371\337", 32) = 32
+55    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/index.lock", AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/index") = 0
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/HEAD", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 4</s/jj/repo/.git/HEAD>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.git/worktrees", O_RDONLY|O_LARGEFILE|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/views/.tmpBkcNmY", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</s/jj/repo/.jj/repo/op_store/views/.tmpBkcNmY>
+55    write(4</s/jj/repo/.jj/repo/op_store/views/.tmpBkcNmY>, "\n\24\5\222A\364O\n\244\244\371~q\16 \302p\357c\2\304\346B\37\n\7defaul"..., 85) = 85
+55    fdatasync(4</s/jj/repo/.jj/repo/op_store/views/.tmpBkcNmY>) = 0
+55    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/views/.tmpBkcNmY", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/views/65e41b161bc78f25a7c32a7def732fe7424e63190eb3624d689121f37ff56c449aeff5160acd4607818cd789d3d394026daa232aab8ba5e2dea9377c01825564") = 0
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/operations/.tmp58pPWF", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</s/jj/repo/.jj/repo/op_store/operations/.tmp58pPWF>
+55    write(4</s/jj/repo/.jj/repo/op_store/operations/.tmp58pPWF>, "\n@e\344\33\26\33\307\217%\247\303*}\357s/\347BNc\31\16\263bMh\221!\363\177\365"..., 349) = 349
+55    fdatasync(4</s/jj/repo/.jj/repo/op_store/operations/.tmp58pPWF>) = 0
+55    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/operations/.tmp58pPWF", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_store/operations/b879799a9b8bf2f67c2440566482879b19b159a84a27473f84ffaadd9cce884ef7463bf8ce6f8733b824a62100474639c8de4027f2996365f94e2a2627ad3c24") = 0
+55    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/op_links", 0777) = -1 EEXIST (File exists)
+55    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/segments", 0777) = -1 EEXIST (File exists)
+55    mkdirat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/changed_paths", 0777) = -1 EEXIST (File exists)
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/segments/.tmpVWJd7J", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</s/jj/repo/.jj/repo/index/segments/.tmpVWJd7J>
+55    write(4</s/jj/repo/.jj/repo/index/segments/.tmpVWJd7J>, "\6\0\0\0\0\0\0\0\10\0\0\0\2\0\0\0\0\0\0\0\7\0\0\0\0\0\0\0\377\377\377\377"..., 412) = 412
+55    fdatasync(4</s/jj/repo/.jj/repo/index/segments/.tmpVWJd7J>) = 0
+55    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/segments/.tmpVWJd7J", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/segments/240a359eb827f534edef8ba584182600b204a58421686b67512b8d7a5d249c72040b9c2f4c35ad8b0007408cc6849f7d7f6760ca8e0ea2023418fbc02959c6e1") = 0
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/op_links/.tmpd5UrVz", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 4</s/jj/repo/.jj/repo/index/op_links/.tmpd5UrVz>
+55    write(4</s/jj/repo/.jj/repo/index/op_links/.tmpd5UrVz>, "\n@$\n5\236\270'\3654\355\357\213\245\204\30&\0\262\4\245\204!hkgQ+\215z]$"..., 66) = 66
+55    fdatasync(4</s/jj/repo/.jj/repo/index/op_links/.tmpd5UrVz>) = 0
+55    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/op_links/.tmpd5UrVz", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/index/op_links/b879799a9b8bf2f67c2440566482879b19b159a84a27473f84ffaadd9cce884ef7463bf8ce6f8733b824a62100474639c8de4027f2996365f94e2a2627ad3c24") = 0
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_heads/heads/lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 4</s/jj/repo/.jj/repo/op_heads/heads/lock>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_heads/heads/b879799a9b8bf2f67c2440566482879b19b159a84a27473f84ffaadd9cce884ef7463bf8ce6f8733b824a62100474639c8de4027f2996365f94e2a2627ad3c24", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 5</s/jj/repo/.jj/repo/op_heads/heads/b879799a9b8bf2f67c2440566482879b19b159a84a27473f84ffaadd9cce884ef7463bf8ce6f8733b824a62100474639c8de4027f2996365f94e2a2627ad3c24>
+55    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_heads/heads/abf76d01ac0132742b821653023ad06aa67b18f8bb3ca271c20cf5c1e2533e0adef5f3267526d62fd52be7863ef39b75b2924403e7b9a287994c110b12428d88", 0) = 0
+55    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/op_heads/heads/lock", 0) = 0
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/working_copy.lock", O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE|O_CLOEXEC, 0666) = 4</s/jj/repo/.jj/working_copy/working_copy.lock>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/checkout", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</s/jj/repo/.jj/working_copy/checkout>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/tree_state", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 5</s/jj/repo/.jj/working_copy/tree_state>
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy", O_RDWR|O_LARGEFILE|O_CLOEXEC|O_TMPFILE, 0666) = 6</s/jj/repo/.jj/working_copy/#365620>(deleted)
+55    fchmod(6</s/jj/repo/.jj/working_copy/#365620>(deleted), 0100744) = 0
+55    openat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/.tmpReNZL0", O_RDWR|O_CREAT|O_EXCL|O_LARGEFILE|O_CLOEXEC, 0600) = 5</s/jj/repo/.jj/working_copy/.tmpReNZL0>
+55    write(5</s/jj/repo/.jj/working_copy/.tmpReNZL0>, "\22@\270yy\232\233\213\362\366|$@Vd\202\207\233\31\261Y\250J'G?\204\377\252\335\234\316"..., 75) = 75
+55    fdatasync(5</s/jj/repo/.jj/working_copy/.tmpReNZL0>) = 0
+55    renameat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/.tmpReNZL0", AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/checkout") = 0
+55    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/working_copy/working_copy.lock", 0) = 0
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "Working copy  (@) now at: ", 26) = 26
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "s", 1) = 1
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "ryyqqkq", 7) = 7
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "/", 1) = 1
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "0", 1) = 1
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, " ", 1) = 1
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "05", 2) = 2
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "9241f4", 6) = 6
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, " ", 1) = 1
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "(divergent)", 11) = 11
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, " ", 1) = 1
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "(empty)", 7) = 7
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, " ", 1) = 1
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "(no description set)", 20) = 20
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "\n", 1) = 1
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "Parent commit (@-)      : ", 26) = 26
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "s", 1) = 1
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "ryyqqkq", 7) = 7
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "/", 1) = 1
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "1", 1) = 1
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, " ", 1) = 1
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "f", 1) = 1
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "ed0deb9", 7) = 7
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, " ", 1) = 1
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "(divergent)", 11) = 11
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, " ", 1) = 1
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "probe", 5) = 5
+55    write(2</run/host_virtiofs/Users/i.yoshida/claude_workspace/.claude/worktrees/sideeye-followups6-1010/spike/dogfood/2026-10-10-followups-6/transcripts/writers/jj-044-del/op.log>, "\n", 1) = 1
+55    unlinkat(AT_FDCWD</s/jj-in>, "/s/jj/repo/.jj/repo/git_import_export.lock", 0) = 0
+54    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=55, si_uid=0, si_status=0, si_utime=0, si_stime=1 /* 0.01 s */} ---
