@@ -792,55 +792,142 @@ pub fn runServer(gpa: std.mem.Allocator) void {
         break :blk resolved;
     } else server_root;
     var buf: [256 * 1024]u8 = undefined;
-    var filled: usize = 0;
-    // While draining, the current line overflowed the buffer; everything up to and
-    // including the next newline is discarded, so the tail of an oversized line is never
-    // mis-parsed as a fresh message.
-    var draining = false;
+    var lines: Lines = .{ .buf = &buf };
     while (true) {
-        // A message is one line. Scan what we have for a newline before reading more.
-        if (std.mem.indexOfScalar(u8, buf[0..filled], '\n')) |nl| {
-            if (!draining) handle(gpa, self, buf[0..nl]);
-            draining = false;
-            const rest = filled - (nl + 1);
-            std.mem.copyForwards(u8, buf[0..rest], buf[nl + 1 .. filled]);
-            filled = rest;
-            continue;
-        }
-        if (filled == buf.len) {
-            // A line longer than the buffer: discard it, and keep discarding until the
-            // next newline (draining) so its tail is not read as a new message.
-            draining = true;
-            filled = 0;
-            continue;
-        }
-        const n = posix.read(0, buf[filled..].ptr, buf.len - filled);
+        while (lines.next()) |line| handle(gpa, self, line);
+        const space = lines.space();
+        const n = posix.read(0, space.ptr, space.len);
         if (n <= 0) {
-            // EOF. A final message not terminated by a newline (common — many writers
-            // don't add a trailing \n) still has to be processed — unless we were
-            // draining an oversized line, in which case there is no whole message.
-            if (filled > 0 and !draining) handle(gpa, self, buf[0..filled]);
+            if (lines.finish()) |line| handle(gpa, self, line);
             return;
         }
-        filled += @intCast(n);
+        lines.commit(@intCast(n));
     }
 }
 
+/// The transport's framing: one message per line, and a line longer than the buffer
+/// discarded whole. Moved out of `runServer`'s loop unchanged (#695, ADR 0112), so the fuzz
+/// entry point in src/fuzz.zig drives the same code — with a small buffer, where the
+/// discarding is reached in a few hundred bytes rather than 256 KiB.
+pub const Lines = struct {
+    buf: []u8,
+    filled: usize = 0,
+    /// While draining, the current line overflowed the buffer; everything up to and
+    /// including the next newline is discarded, so the tail of an oversized line is never
+    /// mis-parsed as a fresh message.
+    draining: bool = false,
+    /// The bytes the line `next` returned last still occupies, shifted out by the next call:
+    /// the slice it returned points into `buf` and has to stay whole until then.
+    taken: usize = 0,
+
+    /// The next whole line in the buffer, without its newline, or null when more input is
+    /// needed. A line that is being drained is consumed and never returned.
+    pub fn next(self: *Lines) ?[]const u8 {
+        self.release();
+        // A message is one line. Scan what we have for a newline before reading more.
+        while (std.mem.indexOfScalar(u8, self.buf[0..self.filled], '\n')) |nl| {
+            const drained = self.draining;
+            self.draining = false;
+            if (!drained) {
+                self.taken = nl + 1;
+                return self.buf[0..nl];
+            }
+            self.shift(nl + 1);
+        }
+        if (self.filled == self.buf.len) {
+            // A line longer than the buffer: discard it, and keep discarding until the
+            // next newline (draining) so its tail is not read as a new message.
+            self.draining = true;
+            self.filled = 0;
+        }
+        return null;
+    }
+
+    /// Where the next read goes. Never empty after `next` has returned null.
+    pub fn space(self: *Lines) []u8 {
+        self.release();
+        return self.buf[self.filled..];
+    }
+
+    pub fn commit(self: *Lines, n: usize) void {
+        self.filled += n;
+    }
+
+    /// At EOF. A final message not terminated by a newline (common — many writers don't
+    /// add a trailing \n) still has to be processed — unless an oversized line was being
+    /// drained, in which case there is no whole message.
+    pub fn finish(self: *Lines) ?[]const u8 {
+        self.release();
+        if (self.filled == 0 or self.draining) return null;
+        const last = self.buf[0..self.filled];
+        self.filled = 0;
+        return last;
+    }
+
+    fn release(self: *Lines) void {
+        if (self.taken == 0) return;
+        self.shift(self.taken);
+        self.taken = 0;
+    }
+
+    fn shift(self: *Lines, n: usize) void {
+        const rest = self.filled - n;
+        std.mem.copyForwards(u8, self.buf[0..rest], self.buf[n..self.filled]);
+        self.filled = rest;
+    }
+};
+
+/// One line of the transport: decide what it asks for, then write the reply or run the tool.
+/// The deciding is `route`, which reads nothing but the line; this is the part that writes to
+/// fd 1 and spawns, so the fuzz entry point (src/fuzz.zig, #695) stops before it.
 fn handle(gpa: std.mem.Allocator, self: []const u8, line: []const u8) void {
-    const trimmed = std.mem.trim(u8, line, " \t\r");
-    if (trimmed.len == 0) return;
     var arena_state = std.heap.ArenaAllocator.init(gpa);
     defer arena_state.deinit();
     const arena = arena_state.allocator();
-
-    const parsed = std.json.parseFromSliceLeaky(std.json.Value, arena, trimmed, .{}) catch {
-        emit("{\"jsonrpc\":\"2.0\",\"id\":null,\"error\":{\"code\":-32700,\"message\":\"Parse error\"}}");
-        return;
-    };
-    if (parsed != .object) {
-        emit("{\"jsonrpc\":\"2.0\",\"id\":null,\"error\":{\"code\":-32600,\"message\":\"Invalid Request\"}}");
-        return;
+    switch (route(arena, line)) {
+        .none => {},
+        .reply => |r| emit(r),
+        .call => |c| switch (c.tool) {
+            .run => |run| runExplore(gpa, arena, self, c.id, run.kind, run.path),
+            .evidence => |path| runEvidence(arena, c.id, path),
+        },
     }
+}
+
+/// What one line asks of the server, decided from the line's bytes alone (#695, ADR 0112).
+pub const Route = union(enum) {
+    /// Nothing is written: a blank line, a notification, or a reply that could not be built.
+    none,
+    /// One JSON-RPC message, written as it is.
+    reply: []const u8,
+    /// A tool to run, its arguments already checked against the closed sets they take.
+    call: Call,
+};
+
+pub const Call = struct {
+    id: std.json.Value,
+    tool: union(enum) {
+        run: struct { kind: RunKind, path: []const u8 },
+        evidence: []const u8,
+    },
+};
+
+fn reply(line: ?[]const u8) Route {
+    return if (line) |l| .{ .reply = l } else .none;
+}
+
+/// The JSON-RPC envelope and the tool arguments, checked in the order `handle` always
+/// checked them; every reply is the one it wrote. Moved out of `handle` so that bytes a
+/// caller chose can be driven through it without a spawn (#695): it allocates into `arena`
+/// and touches nothing else.
+pub fn route(arena: std.mem.Allocator, line: []const u8) Route {
+    const trimmed = std.mem.trim(u8, line, " \t\r");
+    if (trimmed.len == 0) return .none;
+
+    const parsed = std.json.parseFromSliceLeaky(std.json.Value, arena, trimmed, .{}) catch
+        return .{ .reply = "{\"jsonrpc\":\"2.0\",\"id\":null,\"error\":{\"code\":-32700,\"message\":\"Parse error\"}}" };
+    if (parsed != .object)
+        return .{ .reply = "{\"jsonrpc\":\"2.0\",\"id\":null,\"error\":{\"code\":-32600,\"message\":\"Invalid Request\"}}" };
     const obj = parsed.object;
     const id = obj.get("id"); // ?Value; absent => notification
     // JSON-RPC 2.0 requires the version tag on every message; a missing or wrong tag
@@ -849,19 +936,14 @@ fn handle(gpa: std.mem.Allocator, self: []const u8, line: []const u8) void {
         .string => |v| std.mem.eql(u8, v, "2.0"),
         else => false,
     };
-    if (!jsonrpc_ok) {
-        if (id != null) emitError(arena, id.?, -32600, "Invalid Request: not JSON-RPC 2.0");
-        return;
-    }
+    if (!jsonrpc_ok)
+        return if (id) |i| reply(errorLine(arena, i, -32600, "Invalid Request: not JSON-RPC 2.0")) else .none;
     const method = switch (obj.get("method") orelse std.json.Value{ .null = {} }) {
         .string => |m| m,
-        else => {
-            if (id != null) emitError(arena, id.?, -32600, "Invalid Request: missing method");
-            return;
-        },
+        else => return if (id) |i| reply(errorLine(arena, i, -32600, "Invalid Request: missing method")) else .none,
     };
 
-    if (id == null) return; // notification: no response (e.g. notifications/cancelled)
+    if (id == null) return .none; // notification: no response (e.g. notifications/cancelled)
 
     // Every request carries its protocol version and capabilities in `params._meta`
     // (the stateless model — no handshake establishes them once). Checked on ALL
@@ -873,8 +955,8 @@ fn handle(gpa: std.mem.Allocator, self: []const u8, line: []const u8) void {
     };
     switch (checkMeta(params)) {
         .ok => {},
-        .missing => |what| return emitError(arena, id.?, -32602, what),
-        .unsupported => |v| return emitUnsupportedVersion(arena, id.?, v),
+        .missing => |what| return reply(errorLine(arena, id.?, -32602, what)),
+        .unsupported => |v| return reply(unsupportedVersionLine(arena, id.?, v)),
     }
 
     if (std.mem.eql(u8, method, "server/discover")) {
@@ -884,14 +966,14 @@ fn handle(gpa: std.mem.Allocator, self: []const u8, line: []const u8) void {
         // omitted all three; a schema-validating client would have rejected discover
         // before anything else could work. The catalogue is static for the server's
         // lifetime: a 1h TTL, private (stdio is a single-user pipe).
-        emitResult(arena, id.?, "\"resultType\":\"complete\",\"ttlMs\":3600000,\"cacheScope\":\"private\"," ++
-            "\"supportedVersions\":[\"2026-07-28\"],\"capabilities\":{\"tools\":{\"listChanged\":false}}");
+        return reply(resultLine(arena, id.?, "\"resultType\":\"complete\",\"ttlMs\":3600000,\"cacheScope\":\"private\"," ++
+            "\"supportedVersions\":[\"2026-07-28\"],\"capabilities\":{\"tools\":{\"listChanged\":false}}"));
     } else if (std.mem.eql(u8, method, "tools/list")) {
-        emitResult(arena, id.?, toolsListBody());
+        return reply(resultLine(arena, id.?, toolsListBody()));
     } else if (std.mem.eql(u8, method, "tools/call")) {
-        callTool(gpa, arena, self, id.?, obj);
+        return routeCall(arena, id.?, obj);
     } else {
-        emitError(arena, id.?, -32601, "Method not found");
+        return reply(errorLine(arena, id.?, -32601, "Method not found"));
     }
 }
 
@@ -962,47 +1044,47 @@ fn toolsListBody() []const u8 {
         "]";
 }
 
-fn callTool(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8, id: std.json.Value, obj: std.json.ObjectMap) void {
+fn routeCall(arena: std.mem.Allocator, id: std.json.Value, obj: std.json.ObjectMap) Route {
     const params = switch (obj.get("params") orelse std.json.Value{ .null = {} }) {
         .object => |p| p,
-        else => return emitError(arena, id, -32602, "Invalid params"),
+        else => return reply(errorLine(arena, id, -32602, "Invalid params")),
     };
     const name = switch (params.get("name") orelse std.json.Value{ .null = {} }) {
         .string => |n| n,
-        else => return emitError(arena, id, -32602, "Invalid params: name"),
+        else => return reply(errorLine(arena, id, -32602, "Invalid params: name")),
     };
     const args = switch (params.get("arguments") orelse std.json.Value{ .null = {} }) {
         .object => |a| a,
-        else => return emitError(arena, id, -32602, "Invalid params: arguments"),
+        else => return reply(errorLine(arena, id, -32602, "Invalid params: arguments")),
     };
 
     if (std.mem.eql(u8, name, "sideeye_explore_config")) {
-        const p = strArg(args, "config_path") orelse return emitError(arena, id, -32602, "Invalid params: config_path");
+        const p = strArg(args, "config_path") orelse return reply(errorLine(arena, id, -32602, "Invalid params: config_path"));
         // The closed set is answered here, before anything is spawned: a value the CLI
         // would refuse must not become a child that refuses it (#617). Absent is the
         // default, which is what every caller written before this parameter sends.
         const observe = observeArg(args) catch
-            return emitError(arena, id, -32602, "Invalid params: observe takes \"wrappers\", \"syscalls\" or \"supervised\"");
-        runExplore(gpa, arena, self, id, .{ .explore = observe }, p);
+            return reply(errorLine(arena, id, -32602, "Invalid params: observe takes \"wrappers\", \"syscalls\" or \"supervised\""));
+        return .{ .call = .{ .id = id, .tool = .{ .run = .{ .kind = .{ .explore = observe }, .path = p } } } };
     } else if (std.mem.eql(u8, name, "sideeye_preflight")) {
-        const p = strArg(args, "config_path") orelse return emitError(arena, id, -32602, "Invalid params: config_path");
+        const p = strArg(args, "config_path") orelse return reply(errorLine(arena, id, -32602, "Invalid params: config_path"));
         const observe = observeArg(args) catch
-            return emitError(arena, id, -32602, "Invalid params: observe takes \"wrappers\", \"syscalls\" or \"supervised\"");
-        const twice = twiceArg(args) catch return emitError(arena, id, -32602, "Invalid params: twice takes true or false");
-        runExplore(gpa, arena, self, id, .{ .preflight = .{ .observe = observe, .twice = twice } }, p);
+            return reply(errorLine(arena, id, -32602, "Invalid params: observe takes \"wrappers\", \"syscalls\" or \"supervised\""));
+        const twice = twiceArg(args) catch return reply(errorLine(arena, id, -32602, "Invalid params: twice takes true or false"));
+        return .{ .call = .{ .id = id, .tool = .{ .run = .{ .kind = .{ .preflight = .{ .observe = observe, .twice = twice } }, .path = p } } } };
     } else if (std.mem.eql(u8, name, "sideeye_evidence")) {
-        const p = strArg(args, "case_path") orelse return emitError(arena, id, -32602, "Invalid params: case_path");
-        runEvidence(arena, id, p);
+        const p = strArg(args, "case_path") orelse return reply(errorLine(arena, id, -32602, "Invalid params: case_path"));
+        return .{ .call = .{ .id = id, .tool = .{ .evidence = p } } };
     } else if (std.mem.eql(u8, name, "sideeye_replay_case")) {
-        const p = strArg(args, "case_path") orelse return emitError(arena, id, -32602, "Invalid params: case_path");
+        const p = strArg(args, "case_path") orelse return reply(errorLine(arena, id, -32602, "Invalid params: case_path"));
         // No `observe` here, deliberately (#617, ADR 0074), and none needed since #691
         // (ADR 0100): a case saved under a mode other than the default records it, and the
         // engine replays it under that mode when no flag is passed — which is what this call
         // passes. `RunKind` carries the mode on the explore arm only, so a replay under a
         // mode the caller chose is still unrepresentable rather than forbidden by a comment.
-        runExplore(gpa, arena, self, id, .replay, p);
+        return .{ .call = .{ .id = id, .tool = .{ .run = .{ .kind = .replay, .path = p } } } };
     } else {
-        emitError(arena, id, -32602, "Unknown tool");
+        return reply(errorLine(arena, id, -32602, "Unknown tool"));
     }
 }
 
@@ -1666,27 +1748,31 @@ fn strArg(args: std.json.ObjectMap, key: []const u8) ?[]const u8 {
     };
 }
 
-fn emitResult(arena: std.mem.Allocator, id: std.json.Value, body: []const u8) void {
+/// A JSON-RPC result message, or null when it could not be built — in which case `handle`
+/// writes nothing, as `emitResult` did before `route` was split out of it (#695).
+fn resultLine(arena: std.mem.Allocator, id: std.json.Value, body: []const u8) ?[]const u8 {
     var out: std.ArrayList(u8) = .empty;
-    out.appendSlice(arena, "{\"jsonrpc\":\"2.0\",\"id\":") catch return;
+    out.appendSlice(arena, "{\"jsonrpc\":\"2.0\",\"id\":") catch return null;
     appendId(arena, &out, id);
-    out.appendSlice(arena, ",\"result\":{") catch return;
-    out.appendSlice(arena, body) catch return;
-    out.appendSlice(arena, "}}") catch return;
-    emit(out.items);
+    out.appendSlice(arena, ",\"result\":{") catch return null;
+    out.appendSlice(arena, body) catch return null;
+    out.appendSlice(arena, "}}") catch return null;
+    return out.items;
 }
 
-fn emitError(arena: std.mem.Allocator, id: std.json.Value, code: i64, message: []const u8) void {
+/// A JSON-RPC error message, or null when it could not be built (#695: `emitError` before the
+/// split; `route` builds it and `handle` writes it).
+fn errorLine(arena: std.mem.Allocator, id: std.json.Value, code: i64, message: []const u8) ?[]const u8 {
     var out: std.ArrayList(u8) = .empty;
-    out.appendSlice(arena, "{\"jsonrpc\":\"2.0\",\"id\":") catch return;
+    out.appendSlice(arena, "{\"jsonrpc\":\"2.0\",\"id\":") catch return null;
     appendId(arena, &out, id);
     var nb: [24]u8 = undefined;
-    out.appendSlice(arena, ",\"error\":{\"code\":") catch return;
-    out.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{code}) catch return) catch return;
-    out.appendSlice(arena, ",\"message\":") catch return;
-    appendJsonString(arena, &out, message) catch return;
-    out.appendSlice(arena, "}}") catch return;
-    emit(out.items);
+    out.appendSlice(arena, ",\"error\":{\"code\":") catch return null;
+    out.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{code}) catch return null) catch return null;
+    out.appendSlice(arena, ",\"message\":") catch return null;
+    appendJsonString(arena, &out, message) catch return null;
+    out.appendSlice(arena, "}}") catch return null;
+    return out.items;
 }
 
 /// A tool execution error (isError:true) — actionable feedback the model can retry on,
@@ -2136,14 +2222,16 @@ fn strField(o: std.json.ObjectMap, key: []const u8) ?[]const u8 {
     };
 }
 
-fn emitUnsupportedVersion(arena: std.mem.Allocator, id: std.json.Value, requested: []const u8) void {
+/// The unsupported-version error a request with another `protocolVersion` is answered with,
+/// or null when it could not be built (#695: built here, written by `handle`).
+fn unsupportedVersionLine(arena: std.mem.Allocator, id: std.json.Value, requested: []const u8) ?[]const u8 {
     var out: std.ArrayList(u8) = .empty;
-    out.appendSlice(arena, "{\"jsonrpc\":\"2.0\",\"id\":") catch return;
+    out.appendSlice(arena, "{\"jsonrpc\":\"2.0\",\"id\":") catch return null;
     appendId(arena, &out, id);
-    out.appendSlice(arena, ",\"error\":{\"code\":-32022,\"message\":\"Unsupported protocol version\",\"data\":{\"supported\":[\"2026-07-28\"],\"requested\":") catch return;
-    appendJsonString(arena, &out, requested) catch return;
-    out.appendSlice(arena, "}}}") catch return;
-    emit(out.items);
+    out.appendSlice(arena, ",\"error\":{\"code\":-32022,\"message\":\"Unsupported protocol version\",\"data\":{\"supported\":[\"2026-07-28\"],\"requested\":") catch return null;
+    appendJsonString(arena, &out, requested) catch return null;
+    out.appendSlice(arena, "}}}") catch return null;
+    return out.items;
 }
 
 /// A JSON document with the whitespace between its tokens removed, so it fits on one
@@ -2251,4 +2339,71 @@ fn readFile(arena: std.mem.Allocator, path: []const u8, cap: usize) ?[]const u8 
         if (list.items.len > cap) return null;
     }
     return list.items;
+}
+
+test "Lines: whole lines across reads, an oversized line dropped whole, the last line at EOF (#695)" {
+    var buf: [8]u8 = undefined;
+    var lines: Lines = .{ .buf = &buf };
+    const Feed = struct {
+        fn put(l: *Lines, bytes: []const u8) void {
+            const sp = l.space();
+            @memcpy(sp[0..bytes.len], bytes);
+            l.commit(bytes.len);
+        }
+    };
+    // Two lines in one read, and the start of a third.
+    Feed.put(&lines, "ab\ncd\nef");
+    try std.testing.expectEqualStrings("ab", lines.next().?);
+    try std.testing.expectEqualStrings("cd", lines.next().?);
+    try std.testing.expect(lines.next() == null);
+    // The third finishes in the next read.
+    Feed.put(&lines, "g\n");
+    try std.testing.expectEqualStrings("efg", lines.next().?);
+    try std.testing.expect(lines.next() == null);
+    // Nine bytes with no newline overflow eight: the line is dropped, its tail too, and the
+    // line after it is read whole.
+    Feed.put(&lines, "12345678");
+    try std.testing.expect(lines.next() == null);
+    Feed.put(&lines, "9\nok\n");
+    try std.testing.expectEqualStrings("ok", lines.next().?);
+    try std.testing.expect(lines.next() == null);
+    // A last line with no newline is still a message at EOF.
+    Feed.put(&lines, "end");
+    try std.testing.expect(lines.next() == null);
+    try std.testing.expectEqualStrings("end", lines.finish().?);
+    try std.testing.expect(lines.finish() == null);
+
+    // EOF in the middle of a dropped line is no message at all.
+    var buf2: [4]u8 = undefined;
+    var dropping: Lines = .{ .buf = &buf2 };
+    Feed.put(&dropping, "abcd");
+    try std.testing.expect(dropping.next() == null);
+    Feed.put(&dropping, "ef");
+    try std.testing.expect(dropping.next() == null);
+    try std.testing.expect(dropping.finish() == null);
+}
+
+test "route: replies are built, not written, and a tool call is returned rather than run (#695)" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const meta = "\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"" ++ protocol_version ++ "\",\"io.modelcontextprotocol/clientCapabilities\":{}}";
+
+    try std.testing.expect(route(a, "  \r") == .none);
+    try std.testing.expectEqualStrings("{\"jsonrpc\":\"2.0\",\"id\":null,\"error\":{\"code\":-32700,\"message\":\"Parse error\"}}", route(a, "{").reply);
+    // A notification is answered with nothing, whatever it says.
+    try std.testing.expect(route(a, "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/cancelled\"}") == .none);
+    try std.testing.expectEqualStrings("{\"jsonrpc\":\"2.0\",\"id\":3,\"error\":{\"code\":-32600,\"message\":\"Invalid Request: missing method\"}}", route(a, "{\"jsonrpc\":\"2.0\",\"id\":3}").reply);
+
+    const discover = route(a, "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"server/discover\",\"params\":{" ++ meta ++ "}}").reply;
+    try std.testing.expect(std.mem.startsWith(u8, discover, "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"resultType\":\"complete\""));
+
+    const call = route(a, "{\"jsonrpc\":\"2.0\",\"id\":\"x\",\"method\":\"tools/call\",\"params\":{" ++ meta ++
+        ",\"name\":\"sideeye_preflight\",\"arguments\":{\"config_path\":\"d/sideeye.toml\",\"twice\":true}}}").call;
+    try std.testing.expectEqualStrings("x", call.id.string);
+    try std.testing.expectEqualStrings("d/sideeye.toml", call.tool.run.path);
+    try std.testing.expect(call.tool.run.kind.preflight.twice);
+
+    const unknown = route(a, "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{" ++ meta ++ ",\"name\":\"rm\",\"arguments\":{}}}").reply;
+    try std.testing.expectEqualStrings("{\"jsonrpc\":\"2.0\",\"id\":2,\"error\":{\"code\":-32602,\"message\":\"Unknown tool\"}}", unknown);
 }

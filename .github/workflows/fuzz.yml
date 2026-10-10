@@ -1,0 +1,53 @@
+name: fuzz
+
+# #695, ADR 0112: the long run of the five fuzz entry points in src/fuzz.zig — the trace, a
+# sideeye.toml, an executable's header, a saved case and the MCP transport. Every pull request
+# already runs each of them through `zig build test`, from a fixed seed so an unrelated change
+# never turns red over an input nobody asked for. This run takes a new seed each time — the
+# run id — and far more runs, and it is the same binary and the same driver: `zig build fuzz`
+# is the fuzz test binary alone, so its red is shown able to happen by the planted-failure
+# check recorded in ADR 0112.
+#
+# A failure leaves its input at /tmp/sideeye-fuzz-<entry point>-XXXXXX/input.bin (Smith's
+# framing: a four-byte little-endian length, then the bytes), uploaded below; the same seed
+# and run count reproduce it. A run that hangs instead is stopped by the job's timeout, and the
+# upload is asked to run then too — the input is the one it hung on (that a job-level timeout
+# leaves `cancelled()` steps running is GitHub's documented behaviour, not measured here):
+#
+#   zig build fuzz -Dfuzz-seed=<seed> -Dfuzz-runs=<runs>
+#
+# Never on pull requests and never required, so it cannot stop a merge. A failed scheduled run
+# is mailed to whoever last edited the cron line (GitHub's documented behaviour, not measured
+# here), and GitHub disables a public repository's schedule after 60 days without activity.
+
+on:
+  schedule:
+    - cron: '41 4 * * 3'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+        with:
+          version: 0.16.0
+
+      - name: Fuzz every entry point from this run's seed
+        run: |
+          echo "seed ${{ github.run_id }}, 200000 runs per entry point; reproduce with: zig build fuzz -Dfuzz-seed=${{ github.run_id }} -Dfuzz-runs=200000"
+          zig build fuzz --summary all -Dfuzz-seed=${{ github.run_id }} -Dfuzz-runs=200000
+
+      - name: Keep the input a failed or hung run left behind
+        if: failure() || cancelled()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: fuzz-failure-${{ github.run_id }}
+          path: /tmp/sideeye-fuzz-*/input.bin
+          if-no-files-found: warn

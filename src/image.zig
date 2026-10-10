@@ -2021,3 +2021,23 @@ test "a free-threaded PythonT.framework names its PythonT interpreter (#703)" {
     try testing.expectEqualStrings(try realpathOf(a, interp), try realpathOf(a, fw.interpreter));
     removeForTest(&.{ launcher, interp, lib }, &dirs, root);
 }
+
+/// Seeds for the fuzz entry point in src/fuzz.zig (#695, ADR 0112): one executable header of
+/// each shape `classify` reads, built by this file's own test builders so the fuzzer starts
+/// past every format's first check. Test support only — nothing a shipped build compiles
+/// references it, and Zig does not analyse what nothing references.
+pub fn fuzzSeeds(a: std.mem.Allocator) ![]const []const u8 {
+    var seeds: std.ArrayList([]const u8) = .empty;
+    try seeds.append(a, try buildElf(a, .{}));
+    try seeds.append(a, try buildElf(a, .{ .class64 = false, .endian = .big }));
+    try seeds.append(a, try buildElf(a, .{ .interp = false }));
+    const lv = try buildMachO(a, .{ .flags = cs_require_lv });
+    const plain = try buildMachO(a, .{ .flags = 0, .platform = 16, .second_cd = .{ .flags = cs_require_lv, .platform = 0 } });
+    try seeds.append(a, lv);
+    try seeds.append(a, plain);
+    const other: i32 = if (hostCpuType() == cpu_type_arm64) cpu_type_x86_64 else cpu_type_arm64;
+    try seeds.append(a, try buildFat(a, &.{ plain, lv }, &.{ other, hostCpuType() }, false));
+    try seeds.append(a, try buildFat(a, &.{ plain, lv }, &.{ other, hostCpuType() }, true));
+    try seeds.append(a, "#!/bin/sh\necho hi\n");
+    return seeds.items;
+}

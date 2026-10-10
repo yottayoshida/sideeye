@@ -476,6 +476,17 @@ pub fn build(b: *std.Build) void {
 
     const test_step = b.step("test", "Run tests");
 
+    // The fuzz driver's two numbers (#695, ADR 0112, src/fuzz.zig). They reach the fuzz test
+    // binary below and nothing else: no executable imports `fuzz_options`, so a value set here
+    // cannot reach a released binary, and `engine_build_options` — whose declarations a test
+    // in main.zig counts — is not touched. The seed is fixed by default so a pull request's
+    // runs are the same inputs every time; the weekly fuzz workflow passes its own. The run
+    // count is what the CI smoke can afford, measured when it was set.
+    const fuzz_opts = b.addOptions();
+    fuzz_opts.addOption(u32, "runs", b.option(u32, "fuzz-runs", "mutated inputs per fuzz entry point in `zig build test` (#695); 0 runs the seeds only") orelse 1000);
+    fuzz_opts.addOption(u64, "seed", b.option(u64, "fuzz-seed", "the fuzz driver's seed (#695); fixed by default, the weekly workflow passes its own") orelse 0x695_f022_5eed);
+    const fuzz_options_mod = fuzz_opts.createModule();
+
     // Each file that carries tests is named explicitly, and the reason is narrower than
     // this comment used to say.
     //
@@ -535,8 +546,13 @@ pub fn build(b: *std.Build) void {
         "src/files.zig",
         // The third seam's second half: the argv surface. Its two tests reach `version` and
         // the help text only, and nothing left in main.zig reaches them, so without this
-        // name they would run nowhere. `src/case.zig` holds no tests and is not named.
+        // name they would run nowhere.
         "src/cli.zig",
+        // The case file's reader (#695, ADR 0112). It held no tests and was not named until
+        // replay's validation moved into it as `case.read`; its unit tests would otherwise run
+        // only as long as a test elsewhere happened to reach it. (Its fuzz entry point is in
+        // src/fuzz.zig and runs in the fuzz binary below either way.)
+        "src/case.zig",
         // The evidence bundle (#607, ADR 0071). Named for the reason the shim's Linux root
         // below was: main.zig imports it, and collection through an import is what stopped
         // silently once before. Its tests reach no declaration of main.zig's.
@@ -605,6 +621,41 @@ pub fn build(b: *std.Build) void {
         embedDemo(b, t.root_module, demo_toy_bin);
         test_step.dependOn(&b.addRunArtifact(t).step);
     }
+
+    // The fuzz harness (#695, ADR 0112) is a test binary of its own, and the only one that
+    // gets `fuzz_options`, so changing `-Dfuzz-runs` rebuilds this binary and no other. The
+    // parsers reach it as a separate module (src/fuzz_parsers.zig), not as files of its root:
+    // Zig collects a test block from every root-module file a test reaches, and imported as
+    // files the parsers' own tests ran a second time here (36 s of a 36 s step, measured).
+    // `contract` is the same module object the parsers import, as everywhere above.
+    const fuzz_parsers = b.createModule(.{
+        .root_source_file = b.path("src/fuzz_parsers.zig"),
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .imports = &.{
+            .{ .name = "contract", .module = contract },
+            .{ .name = "engine_build_options", .module = shipped_engine_opts },
+        },
+    });
+    const fuzz_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/fuzz.zig"),
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .imports = &.{
+                .{ .name = "contract", .module = contract },
+                .{ .name = "parsers", .module = fuzz_parsers },
+                .{ .name = "fuzz_options", .module = fuzz_options_mod },
+            },
+        }),
+    });
+    const fuzz_run = b.addRunArtifact(fuzz_tests);
+    test_step.dependOn(&fuzz_run.step);
+    // The same binary alone, for the weekly long run (.github/workflows/fuzz.yml) and for
+    // reproducing a failure: `zig build fuzz -Dfuzz-seed=<seed> -Dfuzz-runs=<runs>`.
+    b.step("fuzz", "Run only the fuzz entry points (#695)").dependOn(&fuzz_run.step);
 
     const run_step = b.step("run", "Run sideeye");
     const run_cmd = b.addRunArtifact(exe);

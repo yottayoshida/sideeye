@@ -27,6 +27,10 @@ Sideeye runs the commands you declare and empties the state directory you name, 
 - **What a target does inside the directories it is given** — the state directory, and the work directory it can write, where a target that hands Sideeye a trace it wrote itself is not stopped by any flag ([docs/cli.md](docs/cli.md)). Sideeye's checks on pathnames are mitigations, not a sandbox. Run a target you do not trust in a container, network-off where it allows.
 - **A window a document above already names as open.** A report that one is easier to reach than the document says is still welcome.
 
+## How the readers of untrusted bytes are exercised
+
+Five of the readers that take bytes a target or a caller chose are fuzzed: the trace the shim writes inside the target, a `sideeye.toml`, the executable a define names, a saved case, and the lines an MCP client sends. Others are not yet — among them the strace output the oracle reads and the evidence bundle beside a saved case; ADR 0112 lists them. Each of the five has a fuzz entry point in [`src/fuzz.zig`](src/fuzz.zig) that reaches the reader the way production does. CI drives every one of them with mutated inputs from a fixed seed whenever the code changes, and [`fuzz.yml`](.github/workflows/fuzz.yml) drives them longer, from a new seed, every week. The mutation starts from valid inputs and is not coverage-guided: Zig's coverage-guided fuzzer does not build with the pinned Zig 0.16.0, and the entry points are written in the form it takes for when the pin moves ([#782](https://github.com/yottayoshida/sideeye/issues/782)). [ADR 0112](docs/adr/0112-the-readers-of-untrusted-bytes-are-fuzzed-by-mutation-until-the-pin-moves.md) says how, and what it does not reach.
+
 ## Where the threat model is written down
 
 - [ADR 0010](docs/adr/0010-mcp-adapter.md) — the MCP server: confinement, the minimal environment, attribution, and the residual issues it accepts.

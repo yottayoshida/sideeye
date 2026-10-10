@@ -56,9 +56,10 @@
 //!     (`spike/freeze-audit/surface-drift.sh`) and nothing in `cli.zig` calls them; the
 //!     digit grammar `expected_status` and `--expect-status` share is `config.parseExpectStatus`
 //!     for the same reason.
-//!   - `case.zig` — the saved case on both sides: `writeCase`, `prefixHash`, `jsonCommand`, and
-//!     `ReplayCase`. This file decides when a case is written and what a replayed one may
-//!     declare.
+//!   - `case.zig` — the saved case on both sides: `writeCase`, `prefixHash`, `jsonCommand`,
+//!     `ReplayCase`, and `read`, which parses and validates a case file's bytes (#695). This file
+//!     decides when a case is written, reads the case file, and refuses with what `read` says;
+//!     which define-surface flags a replay may still take is decided here too.
 //!   - `containment.zig` — the watch on a run contained in a cgroup of its own (contract v17,
 //!     #559): the spawn's cgroup, the names its shim is told, and the checks a contained run
 //!     meets after every refusal it already had. This file makes the cgroup, hands it to the
@@ -697,97 +698,10 @@ fn phaseDefine(run: *Run) void {
             .environment,
             std.fmt.allocPrint(rarena, "the case file could not be read (missing, not a regular file, unreadable, or over 1 MiB): {s}", .{case_arg.?}) catch "the case file could not be read",
         );
-        const parsed = std.json.parseFromSlice(case.ReplayCase, rarena, ctext, .{}) catch
-            setupError(.define_invalid, "the case file could not be parsed as a sideeye case");
-        const c = parsed.value;
-        if (!std.mem.eql(u8, c.schema, "sideeye/case"))
-            setupError(.define_invalid, "the file does not declare itself a sideeye case");
-        if (c.case_version < 1 or c.case_version > 6)
-            setupError(.define_invalid, "this binary understands case schema versions 1, 2, 3, 4, 5 and 6 only");
-        // The same travel-together law, extended to the command shape (ADR 0019): the
-        // argv form arrived with version 3, so an older file carrying it is not an
-        // older file — it is malformed, and reading it under a guessed contract would
-        // replay a define no version-2-era binary ever produced.
-        const carries_argv = (c.define.operation == .argv) or
-            (c.define.setup != null and c.define.setup.? == .argv) or
-            (c.define.check != null and c.define.check.? == .argv);
-        if (c.case_version < 3 and carries_argv)
-            setupError(.define_invalid, "a case_version 1 or 2 file cannot carry an argv-form command; the array form arrived with version 3");
-        // The version and the declaration travel together (ADR 0014): a v1 file
-        // carrying a declaration is not a v1 file, and a v2 file without one has
-        // lost the very fact the version exists to freeze. Both are refused as
-        // malformed rather than read under a guessed contract (R1 finding). One
-        // deliberate softness: a JSON `null` is indistinguishable from an absent
-        // field after parsing, so a v1 file spelling `"expected_status": null`
-        // passes — null is not a declaration, and the meaning ("0 was the
-        // contract") is the same either way. A v2 `null` refuses like an absence.
-        if (c.case_version == 1 and c.define.expected_status != null)
-            setupError(.define_invalid, "a case_version 1 file cannot carry an expected_status declaration; it arrived with version 2");
-        if (c.case_version >= 2 and c.define.expected_status == null)
-            setupError(.define_invalid, "a case_version 2, 3, 4, 5 or 6 file must carry define.expected_status; the case freezes the declaration");
-        // The same law again, for the directory the define declared it runs in. A cwd is
-        // part of what the counterexample was found against — replaying the same commands
-        // somewhere else is replaying a different define — so the version moves with it.
-        // Both directions, for the reason the two above give: a v3 file carrying a cwd is
-        // malformed rather than old, and a v4 file without one has lost the fact the
-        // version exists to freeze.
-        if (c.case_version < 4 and c.define.cwd != null)
-            setupError(.define_invalid, "a case_version 1, 2 or 3 file cannot carry a cwd declaration; it arrived with version 4");
-        if (c.case_version == 4 and c.define.cwd == null)
-            setupError(.define_invalid, "a case_version 4 file must carry define.cwd; the version exists to freeze it");
-        // Version 5 (ADR 0043) carries the scratch declaration, which decides verdicts, and
-        // it holds two independent optional fields where version 4 held one — so the gate
-        // above cannot be copied: a v5 file without a cwd is not malformed. From version 5
-        // a case spells both keys the ladder's top rungs introduced, `cwd` as null when
-        // none was declared and `scratch` as a non-empty array, and the reader asks for
-        // the KEY, which the typed parse above cannot see (an absent optional and a null
-        // land in the same place), through a second, untyped parse of the same bytes. A
-        // hand-edited v5 file that lost `cwd` refuses rather than replaying a define that
-        // ran somewhere else. The entries themselves are validated where they are
-        // normalised, in the apply block below, with the same refusals the flag gives.
-        if (c.case_version < 5 and c.define.scratch != null)
-            setupError(.define_invalid, "a case_version 1, 2, 3 or 4 file cannot carry a scratch declaration; it arrived with version 5");
-        // Version 6 (#691, ADR 0100) carries the observation mode, and only a mode other than the
-        // default. It is a third independent optional fact, so it keeps version 5's law — every
-        // key the ladder's top rungs introduced is spelled — with one change: `scratch` may be
-        // the empty array there, because version 6 exists for the mode, not for scratch. Both
-        // directions again: an older file carrying `observe` is malformed, and a version-6 file
-        // without a mode it could not have been written for — absent, or the default — has
-        // lost the fact the version exists to freeze.
-        if (c.case_version < 6 and c.observe != null)
-            setupError(.define_invalid, "a case_version 1, 2, 3, 4 or 5 file cannot carry an observation mode; it arrived with version 6");
-        if (c.case_version == 6) {
-            const m = c.observe orelse setupError(.define_invalid, "a case_version 6 file must carry observe, `syscalls` or `supervised`; the version exists to freeze it");
-            const obs = contract.ObserveMode.parse(m) orelse setupError(.define_invalid, "a case_version 6 file's observe names no mode this binary knows; it must be `syscalls` or `supervised`");
-            if (obs == .wrappers) setupError(.define_invalid, "a case_version 6 file's observe must be `syscalls` or `supervised`: a case counted under the default is written at the version its define asks for");
-        }
-        if (c.case_version == 5) {
-            const decl = c.define.scratch orelse setupError(.define_invalid, "a case_version 5 file must carry define.scratch as a non-empty array; the version exists to freeze it");
-            if (decl.len == 0) setupError(.define_invalid, "a case_version 5 file must carry define.scratch as a non-empty array; the version exists to freeze it");
-        }
-        if (c.case_version >= 5) {
-            const raw = std.json.parseFromSlice(std.json.Value, rarena, ctext, .{}) catch
-                setupError(.define_invalid, "the case file could not be parsed as a sideeye case");
-            const def: std.json.Value = switch (raw.value) {
-                .object => |o| o.get("define") orelse setupError(.define_invalid, "the case file has no define object"),
-                else => setupError(.define_invalid, "the case file is not a JSON object"),
-            };
-            const has_cwd = switch (def) {
-                .object => |o| o.contains("cwd"),
-                else => false,
-            };
-            if (!has_cwd)
-                setupError(.define_invalid, "a case_version 5 or 6 file must spell define.cwd, as null when none was declared: from version 5 both cwd and scratch are explicit");
-            // The typed parse reads an absent `scratch` and a JSON `null` alike, so the key and
-            // its shape are asked of the untyped value. Version 5 already refused both through
-            // the non-empty gate above; version 6, where empty is allowed, needs it here.
-            const scratch_is_array = switch (def) {
-                .object => |o| if (o.get("scratch")) |v| v == .array else false,
-                else => false,
-            };
-            if (!scratch_is_array)
-                setupError(.define_invalid, "a case_version 6 file must spell define.scratch as an array, empty when none was declared: from version 5 both cwd and scratch are explicit");
-        }
+        const c = switch (case.read(rarena, ctext)) {
+            .ok => |read_case| read_case,
+            .invalid => |why| setupError(.define_invalid, why),
+        };
         // A relative `state` resolves against the CASE FILE, not the cwd of whoever
         // invoked the replay (#325). ADR 0007 Decision 4 states the rule for a
         // sideeye.toml — "Paths resolve against the toml's directory, not the process
