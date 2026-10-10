@@ -1,49 +1,13 @@
 #!/bin/sh
-# Judges one lane of .github/workflows/zig-ahead.yml against the breakages already known
-# (#698, ADR 0111).
-#
 #   zig-ahead.sh judge <known.tsv> <os> <lane> <zig version> <exit status> <log>
 #   zig-ahead.sh lint <known.tsv>
 #   zig-ahead.sh --selftest
 #
-# Why a judge and not the build's exit status: Zig 0.17.0 shipped on 2026-10-01 and does not
-# build Sideeye (#782), so a lane that simply went red on a failed build would be red from its
-# first run until #782 lands — and a second, different breakage arriving in the meantime would
-# change nothing anyone sees. Red has to mean "something not already written down".
-#
-# Contract (one lane, one verdict; exit 0 is green):
-#
-#   * lane `pinned` — the Zig `build.zig.zon` names — must build and pass its tests. It never
-#     consults the list. It is the run's comparison: if every lane is red, this one says whether
-#     Zig broke Sideeye or the workflow broke itself.
-#   * lanes `latest` and `master` look up the rows for their OS (`linux`, `macos`, or `*` for
-#     both — a release can break one OS's code only, and Linux does not even analyse the macOS
-#     branches) and their key: the latest release's MAJOR.MINOR, so a point release meets the
-#     same row; `master` for master.
-#     - built and tested, no row: green.
-#     - built and tested, a row: RED — the row is stale; the change that fixed the breakage
-#       removes it.
-#     - failed, every compiler diagnostic (`path:line:col: error: …`) contains the text of one
-#       of the rows, and every row's text appears in some diagnostic: green, naming the issues.
-#       Order is not read: once a breakage moves past build.zig, the executable, the shim and
-#       the test roots fail in parallel, and which diagnostic prints first changes from run to
-#       run. Summary lines (`error: 2 compilation errors`) are not diagnostics and are not read.
-#     - failed with a diagnostic no row explains: RED.
-#     - failed, and a row's text appears in no diagnostic: RED — that breakage is gone and its
-#       row is stale, even though the lane still fails on another. Which is why a row may name
-#       only a breakage the lane prints today: one hidden behind an earlier breakage (Zig stops
-#       at build.zig before compiling anything else) reads as gone, and is written when it shows.
-#     - failed with no diagnostic at all (a download that failed, a test that failed, a link
-#       error, a crash): RED. A test failure cannot ride beside a known diagnostic in one lane:
-#       the workflow runs the tests only once the build has passed. A link error can, once a
-#       breakage is past build.zig and one artifact links while another fails to compile — then
-#       a known diagnostic beside it hides it. While the build stops at build.zig, as it does for
-#       every row written so far, nothing links at all.
-#   * on the `latest` lane, any row keyed to a release that is not the latest is RED: once the
-#     latest moves on, such a row is never looked up again, so the stale rule above could never
-#     fire for it.
-#
-# What it does not do: decide anything about the build itself. It reads a status and a log.
+# Red on what the list does not explain, not on any failed build: a lane red from its first run
+# would hide the next breakage behind the known one.
+# Diagnostics are read as a set, never as "the first error": past build.zig, steps fail in
+# parallel and print in any order.
+# A row may name only a breakage the lane prints today: one hidden behind build.zig reads as gone.
 
 set -u
 
@@ -51,11 +15,7 @@ minor_of() {
     printf '%s\n' "$1" | sed -n 's/^\([0-9][0-9]*\.[0-9][0-9]*\)\..*$/\1/p'
 }
 
-# lint <known>: every row that is not a comment or blank has four tab-separated columns — an
-# OS (`linux`, `macos`, `*`), a key (`master` or MAJOR.MINOR), a text of at least ten
-# characters that neither starts nor ends with a space, an issue (`#N`). A row that does not
-# parse would otherwise match nothing and turn a known breakage red a week after the edit that
-# broke it; a text of a space or two would match every diagnostic and explain away anything.
+# Refuse a short or space-edged text: it would match, and explain away, every diagnostic.
 lint() {
     awk -F'\t' '
         /^#/ || $0 == "" { next }
@@ -71,12 +31,9 @@ lint() {
         }' "$1"
 }
 
-# explained <line> <texts>: 0 when the line contains one of the newline-separated texts, as a
-# fixed string. Kept out of the command substitution in `judge`: the shell macOS ships as
-# /bin/sh (bash 3.2) reads a `case` pattern's `)` inside `$( … )` as the substitution's end.
-# The loop runs in an explicit subshell: ksh and zsh run a pipeline's last element in the
-# current shell, where its `exit` would end the caller's `$( … )` at the first match and drop
-# every line after it — unexplained ones included, so the verdict would fall to green.
+# Not inside judge's `$( )`: bash 3.2 reads a case pattern's `)` there as the substitution's end.
+# The explicit subshell is load-bearing: in ksh and zsh a pipeline's last element runs in the
+# current shell, and its `exit` would end the caller's `$( )` and drop unexplained lines.
 explained() {
     printf '%s\n' "$2" | (
         while IFS= read -r t; do
@@ -120,7 +77,6 @@ judge() {
         *) echo "FAIL unknown lane '$lane' (pinned, latest or master)"; return 1 ;;
     esac
 
-    # This lane's rows, once: `<text> TAB <issue>` per line.
     rows=$(awk -F'\t' -v os="$os" -v key="$key" '/^#/ || $0 == "" { next } ($1 == os || $1 == "*") && $2 == key { print $3 "\t" $4 }' "$known")
     texts=$(printf '%s\n' "$rows" | cut -f1 | sed '/^$/d')
     issues=$(printf '%s\n' "$rows" | cut -f2 | sed '/^$/d' | sort -u | tr '\n' ' ' | sed 's/ $//')
@@ -148,8 +104,7 @@ judge() {
         printf '%s\n' "$unexplained"
         return 1
     fi
-    # The other direction: a row no diagnostic shows is a breakage that is gone. The lane still
-    # fails on the rest, so the "builds while a row remains" rule above cannot catch it.
+    # The lane still fails on the rest, so the builds-while-listed rule cannot catch a row that is gone.
     gone=$(printf '%s\n' "$rows" | while IFS="$(printf '\t')" read -r t issue; do
         [ -n "$t" ] || continue
         printf '%s\n' "$diags" | grep -qF -- "$t" || printf '  %s (%s)\n' "$t" "$issue"
@@ -164,9 +119,7 @@ judge() {
     return 0
 }
 
-# --selftest: every rule above, each driven red or green from a log and a list written here.
-# The positive controls are first-class cases, not an afterthought: a judge that always says
-# FAIL passes every red case.
+# Keep the green cases: a judge that always says FAIL passes every red one.
 selftest() {
     tmp=$(mktemp -d "${TMPDIR:-/tmp}/zig-ahead-selftest-XXXXXX") || {
         echo "FAIL selftest: could not create a scratch directory" >&2
@@ -183,13 +136,9 @@ selftest() {
     printf '*%s0.16%s%s%s#782\n' "$T" "$T" "$args" "$T" > "$tmp/stale.tsv"
     cat "$tmp/known.tsv" "$tmp/stale.tsv" > "$tmp/known-plus-stale.tsv"
     printf '*%s0.17%s%s\n' "$T" "$T" "$args" > "$tmp/malformed.tsv"
-    # Two breakages listed for one lane; the logs below show one, or both.
     printf '*%s0.17%s%s%s#782\n*%s0.17%s%s%s#799\n' "$T" "$T" "$args" "$T" "$T" "$T" "$star" "$T" > "$tmp/two-rows.tsv"
-    # A text of one space matches every diagnostic, and so would explain anything; lint refuses it.
     printf '*%s0.17%s %s#782\n' "$T" "$T" "$T" > "$tmp/blank-text.tsv"
-    # No space, but short enough to be in every diagnostic — `error` is: refused by the length.
     printf '*%s0.17%serror%s#782\n' "$T" "$T" "$T" > "$tmp/short-text.tsv"
-    # Long enough, but with a space at its end: refused too, by the other half of the rule.
     printf '*%s0.17%s%s %s#782\n' "$T" "$T" "$args" "$T" > "$tmp/trailing-space.tsv"
     : > "$tmp/empty.tsv"
 
@@ -238,8 +187,7 @@ selftest() {
 1|trailing-space.tsv|linux|latest|0.17.0|1|args.log
 EOF
 
-    # Lint itself, not only through a verdict: a text with a space at an end matches nothing, so
-    # the verdict above stays red without the rule and cannot show it working.
+    # Lint directly: a space-edged text matches nothing, so no verdict can show the rule working.
     for bad in blank-text short-text trailing-space malformed; do
         if lint "$tmp/$bad.tsv" >/dev/null 2>&1; then
             echo "FAIL selftest: lint passed $bad.tsv" >&2
@@ -251,8 +199,6 @@ EOF
         fails=$((fails + 1))
     fi
 
-    # The case the list exists for on two OSes at once: Linux builds while macOS fails on a
-    # breakage only macOS's rows know. With no Linux row, both are green.
     printf 'macos%s0.18%sno member named mac_only%s#790\n' "$T" "$T" "$T" > "$tmp/mac-row.tsv"
     if ! judge "$tmp/mac-row.tsv" linux latest 0.18.0 0 "$tmp/clean.log" >/dev/null 2>&1 ||
         ! judge "$tmp/mac-row.tsv" macos latest 0.18.0 1 "$tmp/mac-only.log" >/dev/null 2>&1; then

@@ -1630,10 +1630,7 @@ jobs:
       - name: Every action a workflow runs is pinned to a commit
         run: sh spike/check-action-pins.sh
 
-  # #698, ADR 0111: zig-ahead.yml runs weekly and never on a pull request, so a judge that had
-  # stopped going red, or a row of spike/zig-ahead-known.tsv that no longer parses, would
-  # otherwise surface a week after the change that caused it — as a known breakage turning
-  # red, or as nothing at all. No toolchain: the selftest drives the judge from logs it writes.
+  # Here, not only in the weekly run: a broken judge or list would otherwise surface a week late.
   zig-ahead-judge:
     runs-on: ubuntu-latest
     steps:

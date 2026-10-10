@@ -1,11 +1,5 @@
-# Breakages Sideeye already knows about on Zig releases newer than the one build.zig.zon pins.
-# Read by spike/zig-ahead.sh for .github/workflows/zig-ahead.yml (#698, ADR 0111): <os> TAB <key> TAB <text> TAB <issue>.
-# <os> is linux, macos or * (both). <key> is a release's MAJOR.MINOR or master. <text> is a fixed
-# string of 10+ characters. A failing lane is green only when every compiler diagnostic it prints
-# contains the text of one of its rows AND every one of its rows' texts appears in some diagnostic.
-# So a row may name only a breakage the lane prints TODAY: Zig stops at build.zig before compiling
-# anything else, and a breakage hidden behind an earlier one gets its row when it shows. The change
-# that fixes a breakage removes its row — a lane goes red while a row is left for what it no longer
-# prints, whether it now builds or still fails on something else.
+# <os> TAB <MAJOR.MINOR or master> TAB <text, 10+ characters> TAB <#issue> — read by spike/zig-ahead.sh (ADR 0111).
+# Name only a breakage the lane prints today; one hidden behind build.zig reads as gone.
+# Remove a row with the change that fixes it: a row left behind turns the lane red.
 *	0.17	no field named 'args' in struct 'Build'	#782
 *	master	no field named 'args' in struct 'Build'	#782
