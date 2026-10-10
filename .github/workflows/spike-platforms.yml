@@ -467,7 +467,8 @@ jobs:
           $err = Join-Path $env:RUNNER_TEMP "pid1-off.err"
           $pid1 = wsl -d probe -u root -- ps -p 1 -o comm= 2> $err
           "== PID 1 after systemd=false: $($pid1 -join ' | ') (stderr: $(Get-Content $err -Raw))" | Out-File -Encoding utf8 -Append $log
-          $off = [bool](@($pid1) -match '^\s*init\s*$')
+          # WSL names its own init `init(<distribution>)` (run 38049858888 read `init(probe)`).
+          $off = [bool](@($pid1) -match '^\s*init(\(.*\))?\s*$')
           $word = if ($off) { "yes" } else { "no" }
           "systemd off: $word" | Out-File -Encoding utf8 -Append $log
           "off=$word" | Out-File -Encoding utf8 -Append $env:GITHUB_OUTPUT

@@ -458,7 +458,7 @@ Ponytail is a sibling project by the same author; the pairing is a brand contras
 
 Only after process crash × persistent state proves real value does Sideeye consider its next malice. Candidates, in no committed order:
 
-- **Power failure and torn writes** — losing unsynced data, reordered writes; the natural deepening of the crash model.
+- **Power failure and torn writes** — losing unsynced data, reordered writes; the natural deepening of the crash model. Considered after 1.0 and declined for now: ADR 0110 gives the reasons and what would reopen it.
 - Concurrent processes.
 - Network ambiguity.
 - Clock anomalies.
