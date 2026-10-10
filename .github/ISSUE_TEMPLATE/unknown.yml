@@ -1,0 +1,87 @@
+name: UNKNOWN or SETUP ERROR
+description: Sideeye would not judge your tool (exit 2), or could not run your define (exit 3).
+title: "Refused: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        An UNKNOWN is Sideeye saying what it could not see, and naming why. Each one you report tells us where a wall stands in a tool we have never run, which is what decides the next one to take down. [CONTRIBUTING.md](https://github.com/yottayoshida/sideeye/blob/main/CONTRIBUTING.md) says what makes a report useful.
+
+        The report carries your paths, the directory you ran in, your define's commands and `apparatus` values, and strings your tool wrote. Read it before you paste it.
+  - type: input
+    id: reason
+    attributes:
+      label: Reason
+      description: The `--json` report's `unknown_reason` (exit 2) or `setup_error_reason` (exit 3). An UNKNOWN also prints it on its first line; a SETUP ERROR prints only a sentence, so without `--json`, paste that sentence.
+      placeholder: multiple_threads_detected
+    validations:
+      required: true
+  - type: textarea
+    id: next-step
+    attributes:
+      label: Next step
+      description: An UNKNOWN's `next_step`, as Sideeye wrote it, and what happened if you tried it. A SETUP ERROR has none; leave this empty.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The output of `sideeye version`.
+      placeholder: "sideeye 1.x.y (trace contract vN)"
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      description: OS and its version, CPU, and on Linux the libc. Say whether it ran in WSL or in a container.
+      placeholder: Ubuntu 24.04, x86_64, glibc 2.39, in Docker as root
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How Sideeye was installed
+      options:
+        - Homebrew
+        - Release tarball
+        - Built from source
+        - Other (say under Command)
+    validations:
+      required: true
+  - type: input
+    id: target
+    attributes:
+      label: The tool you were testing, and its version
+      placeholder: mytool 2.3.1
+  - type: textarea
+    id: command
+    attributes:
+      label: Command
+      description: The command you ran, with every flag.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: report
+    attributes:
+      label: The `--json` report
+      description: The file `--json <path>` wrote (`explore`, `preflight` and `replay` take it). If no file was written, write "none" and paste the text output instead.
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: define
+    attributes:
+      label: The define and the check
+      description: Your `sideeye.toml`, and the check if it is short. Optional, but it is usually what lets us run it again.
+      render: toml
+  - type: dropdown
+    id: llm
+    attributes:
+      label: Did a language model write any of this report?
+      description: Welcome either way; CONTRIBUTING.md says why we ask.
+      options:
+        - "No"
+        - Yes, and I have read all of it
+    validations:
+      required: true
