@@ -317,3 +317,35 @@ because the interposer runs either way. The toy's last line says which half it
 exercised (`dprotected: yes` / `dprotected: no`) and the leg takes its expected
 count from that line. `ENOTSUP` is the only errno the toy excuses: a wrong
 transcription produces `EINVAL`, measured, and that still fails the unshimmed run.
+
+## #796: standard descriptors, dup2, and the class filter (2026-10-11)
+
+Measured with `spike/fsusage/measure-796.sh` on GitHub's `macos-26-arm64` image, before the change
+(run 38115178676) and after it (run 38116040180); the summaries are below, the captures were the
+runs' artifacts.
+
+Before, with the shipped `-f filesys` launch, all four were `UNKNOWN oracle_saw_nothing` on their
+first `write F=1`: a toy that rewrites `keep` and prints `done` (`B=0x5`), a toy that moves `keep`
+onto 1 with `dup2` and writes through it (`B=0x3`), its control moving an outside log there
+(`B=0x4`), and `gdd if=new of=state/a.txt` (`B=0x4`). With the filter dropped and nothing else
+changed, the two `dup2` shapes moved on to `unsupported_syscall_observed` on the line
+`dup2  F=3  F=1`; the printing toy and the outside control stayed refused on `F=1`.
+
+The unfiltered capture prints `dup` and `dup2` with both numbers. A child that moves a descriptor
+and then `exec`s prints the `dup2` as `launcher.19581` and its lines after the `exec` as
+`dup2_toy.19582`: the thread id changes across `exec`, so the engine's own pre-exec `dup2` of its
+capture cannot reach the subject's table from the capture. The two captures are two separate
+six-second windows on a shared runner, so their sizes say more about the windows than about the
+filter: 161,992 lines unfiltered against 144,852 filtered in the first run, 98,093 against 118,602 in
+the second. Neither stderr had a `buffer overrun`. What only the unfiltered capture prints, by
+`fs_usage.c` and in both runs, is `dup` and `dup2` with both numbers and the network family
+(`socket`, `connect`, `sendto`, `recvfrom`, and `write` on a socket); attribute writes, `chdir` and
+disk-I/O lines appear under `-f filesys` too (the second run's filtered capture held `setxattr`,
+`fsetxattr` and `WrData` lines), so a first reading of the counts that listed them as new was the
+windows' difference.
+
+After (ADR 0122), the same four: the printing toy, the `dup2` toy and the outside control PASS with
+`oracle_verified: true`, and `gdd` FAILs with `oracle_verified: true`. Acceptance checks 1 to 8 held
+on the same run; check 9's outside leg first named its log `state/../outside-N.log` and was refused
+`oracle_missed_operation`, because the reader places an absolute operand by its text and does not
+resolve `..` — the leg now names the log directly.

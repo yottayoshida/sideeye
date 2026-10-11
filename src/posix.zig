@@ -1080,6 +1080,7 @@ pub fn spawnSidecar(
     gpa: std.mem.Allocator,
     argv: []const []const u8,
     stdout_path: []const u8,
+    stderr_path: ?[]const u8,
 ) SpawnError!c_int {
     var arena_state = std.heap.ArenaAllocator.init(gpa);
     defer arena_state.deinit();
@@ -1103,11 +1104,18 @@ pub fn spawnSidecar(
         _ = close(nfd);
         return error.CaptureUnavailable;
     }
+    const efd: c_int = if (stderr_path) |ep| RealOps.openCapture((try arena.dupeZ(u8, ep)).ptr, captureFlags(true)) else -1;
+    if (stderr_path != null and efd < 0) {
+        _ = close(nfd);
+        _ = close(cfd);
+        return error.CaptureUnavailable;
+    }
 
     const pid = fork();
     if (pid < 0) {
         _ = close(nfd);
         _ = close(cfd);
+        if (efd >= 0) _ = close(efd);
         return error.ForkFailed;
     }
     if (pid == 0) {
@@ -1122,12 +1130,25 @@ pub fn spawnSidecar(
             if (!dup2Bounded(dup2, cfd, 1)) childArrangeFailed("dup2(capture, 1)");
             _ = close(cfd);
         }
+        if (efd >= 0 and efd != 2) {
+            if (!dup2Bounded(dup2, efd, 2)) childArrangeFailed("dup2(stderr capture, 2)");
+            _ = close(efd);
+        }
         _ = execvp(cargv[0].?, cargv.ptr);
         _exit(127);
     }
     _ = close(nfd);
     _ = close(cfd);
+    if (efd >= 0) _ = close(efd);
     return pid;
+}
+
+/// The path a descriptor's file has now, through `F_GETPATH`; macOS only, null elsewhere and when
+/// the call fails.
+pub fn pathOfFd(fd: c_int, buf: *[1024]u8) ?[]const u8 {
+    if (comptime builtin.os.tag != .macos) return null;
+    if (std.c.fcntl(fd, std.c.F.GETPATH, buf) == -1) return null;
+    return std.mem.sliceTo(buf, 0);
 }
 
 pub const SidecarEnd = enum { was_running, had_exited, would_not_die };
