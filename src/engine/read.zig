@@ -1,33 +1,11 @@
-//! One whole file into an arena, with the flags and the classification a file the
-//! engine did not name has to carry (#400, #489).
-//!
-//! Shared by the snapshot walk, which reads the target's tree and follows a link at the
-//! name because the walk classified it first, and by the trace read, which reads the
-//! engine's own artefact and refuses one. Neither owns it, so it lives beside both rather
-//! than inside either — putting it in `engine.zig` and importing it from `trace.zig` would
-//! have been a cycle, which #491 names as the point to stop (ADR 0047).
-
 const std = @import("std");
 const contract = @import("contract");
 const posix = @import("../posix.zig");
 
 const Allocator = std.mem.Allocator;
 
-/// What reading one whole file can answer, which is a subset of what walking a tree can
-/// (#376). `readWhole` is the leaf both readers share; it opens, checks the kind, and
-/// reads to EOF, so depth, classification, path length and the tree ceiling are not its
-/// to raise. Widening this into `SnapshotError` at the walk's call site costs nothing —
-/// Zig accepts the narrower set where the wider one is declared.
 pub const ReadWholeError = error{ OutOfMemory, ReadFailed, FileTooLarge };
 
-/// Whether `readWhole` may follow a symlink at the final component (#489).
-///
-/// The caller's to choose, because `readWhole`'s two callers read files with different
-/// owners. The trace is the engine's own: the shim writes it refusing a link since #488, so
-/// meeting one on the way back in can only be somebody else's substitution, and the bytes
-/// decide a verdict — that read passes `.refuse`. The snapshot walk's `.file` arm reads the
-/// *target's* tree, where a link at a name is ordinary and first-class (#122); the walk
-/// classifies with `kindFromDirent` before it gets here, so that read meets a link only
 /// through the window between the classification and the open. **Closing that window changes
 /// what a snapshot refuses**, with its own promise and its own leg (`src/posix.zig` says so),
 /// and is not something to acquire as a side effect of the trace's flag — so the walk passes
@@ -45,24 +23,10 @@ fn captureErrno(eo: ?*?c_int) void {
     if (eo) |p| p.* = std.c._errno().*;
 }
 
-/// The cap is a parameter for the same reason readLinkTarget's buffer is one: against
-/// the production constant a test would need a 64 MiB fixture to see the refusal fire,
-/// so the boundary would be a claim nobody falsifies — against a small cap the tests
-/// below fire it for real. `size_out`, when given, receives the file's size from
-/// lseek(SEEK_END) at the moment the cap breaks (null if even that fails): the
-/// refusal that names the file wants to name its size, and the read loop stopped
-/// before it could know. `links` is documented on `LinkPolicy` above.
 pub fn readWhole(arena: Allocator, path: [*:0]const u8, max: usize, size_out: ?*?u64, links: LinkPolicy) ReadWholeError![]const u8 {
     return readWholeDiag(arena, path, max, size_out, links, null, null);
 }
 
-/// `readWhole` with one more answer for a caller that has to say *why* a read failed
-/// (#535): `errno_out`, when given, receives the errno of the libc call that failed —
-/// `open`, `lseek` or `read` — read immediately after that call and before anything
-/// else runs, so the `defer close` on the way out cannot overwrite it. It stays null
-/// when nothing failed and when the refusal was not a failed call: a descriptor that
-/// turned out not to be a regular file, or `kindOfFd` refusing (a raw `statx` on Linux,
-/// which never touches libc's errno; `fstat` on Darwin does, and nothing reads it there).
 /// A number nobody measured must not reach a message.
 pub fn readWholeDiag(arena: Allocator, path: [*:0]const u8, max: usize, size_out: ?*?u64, links: LinkPolicy, errno_out: ?*?c_int, mode_out: ?*?u16) ReadWholeError![]const u8 {
     if (errno_out) |eo| eo.* = null;
@@ -100,18 +64,6 @@ pub fn readWholeDiag(arena: Allocator, path: [*:0]const u8, max: usize, size_out
     // there (#323). The size is a HINT and nothing below trusts it: the loop still reads
     // to EOF, so a file that grows keeps growing the list and one that shrinks just
     // over-reserved. What it changes is the arena.
-    //
-    // `ArenaAllocator` never frees, and its resize fast path only extends the allocation
-    // sitting at the end of the current node — so a doubling list that outgrows its node
-    // is copied into a new one (sized 1.5x its predecessor) and the old copy is stranded
-    // there for the life of the snapshot. Measured before this: one 64 MiB file left the
-    // arena holding 113,780,014 bytes, and — because where the growth falls relative to a
-    // node boundary decides how much is stranded — the cost was not even monotonic in the
-    // tree, with two 32 MiB files costing more than two 64 MiB ones. A ceiling read off
-    // the arena inherits both, and "a tree that fits and a bigger tree that does not"
-    // stops being a property an operator can predict. After: 100,663,448 for the same
-    // file, a flat 1.50x that is the arena's node growth factor and nothing else.
-    //
     // Reserved exactly, never `max + chunk` on a small file: over-reserving 64 KiB per
     // entry is the shape a state tree of many small files is made of.
     const reserve_from = posix.lseek(fd, 0, posix.SEEK_END);
@@ -121,8 +73,6 @@ pub fn readWholeDiag(arena: Allocator, path: [*:0]const u8, max: usize, size_out
             return error.ReadFailed;
         }
         const len: usize = @intCast(reserve_from);
-        // Past the cap the read stops one chunk over it, so that is all it can need.
-        //
         // **A failed reservation is not an error.** The other caller of this function is
         // `readTraceCapped`, whose catch collapses everything except `FileTooLarge` into
         // an empty `TraceInfo` — which the engine reads as `no_shim_marker`. Returning
@@ -153,22 +103,9 @@ pub fn readWholeDiag(arena: Allocator, path: [*:0]const u8, max: usize, size_out
 }
 
 test "readWhole classifies the descriptor before the loop, and /dev/zero is what separates that from a failed seek (#400)" {
-    // Aimed at the guard's own predicate rather than at the accident that motivated it.
-    // A FIFO would prove nothing here: this function ignores a failed `lseek` by design
-    // (the reservation below is optional), so a FIFO reaches the read loop and stops at
-    // its immediate EOF whether or not the classification runs — which is the same empty
-    // success the guard exists to prevent, arriving by a different door.
-    //
-    // `/dev/zero` is the separating input. Measured: S_IFCHR, both `lseek`s succeed
-    // returning 0, and `read` yields bytes without end. With the classification deleted
-    // this call therefore runs the loop to `max` and answers `FileTooLarge` — a refusal
-    // that names a size problem for a character device.
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
 
-    // That the device exists and answers what this test assumes, before relying on it:
-    // `error.ReadFailed` is also what a failed open returns from this function, so on a
-    // host without `/dev/zero` the assertion below would pass while measuring nothing.
     const dzfd = posix.open("/dev/zero", posix.O_RDONLY, @as(c_uint, 0));
     try std.testing.expect(dzfd >= 0);
     try std.testing.expectEqual(posix.Kind.other, try posix.kindOfFd(dzfd));
@@ -211,14 +148,11 @@ test "readWholeDiag: a file this user cannot open reports the open's errno; a di
         _ = posix.unlink(lock.ptr);
         _ = posix.rmdir(dir.ptr);
     }
-    // The failed call is `open`, and its errno is what the caller gets.
     var err: ?c_int = 99;
     try std.testing.expectError(error.ReadFailed, readWholeDiag(arena, lock.ptr, 4096, null, .follow, &err, null));
     try std.testing.expectEqual(@as(?c_int, posix.EACCES), err);
-    // A directory opens, then fails the regular-file check: no call failed, no errno.
     err = 99;
     try std.testing.expectError(error.ReadFailed, readWholeDiag(arena, dir.ptr, 4096, null, .follow, &err, null));
     try std.testing.expectEqual(@as(?c_int, null), err);
-    // The plain form still reads what it always read.
     try std.testing.expectError(error.ReadFailed, readWhole(arena, lock.ptr, 4096, null, .follow));
 }
