@@ -1,0 +1,30 @@
+# Temporary: runs spike/fsusage/measure-796.sh on a hosted macOS runner, where sudo needs no
+# password, when this branch is pushed. Removed before the branch becomes a pull request.
+name: spike-fsusage-796
+on:
+  push:
+    branches: [auto/b_e5e342f899d3-c]
+
+permissions:
+  contents: read
+
+jobs:
+  measure:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+        with:
+          version: 0.16.0
+      - name: GNU dd (coreutils)
+        run: HOMEBREW_NO_AUTO_UPDATE=1 brew install coreutils
+      - name: "#796 measurements"
+        run: OUT=/tmp/m796-out sh spike/fsusage/measure-796.sh
+      - name: Upload
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: m796
+          path: /tmp/m796-out/
+          if-no-files-found: warn
