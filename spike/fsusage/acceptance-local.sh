@@ -558,5 +558,61 @@ done
 echo "  PASS"
 
 echo "=================================================================="
-echo "all eight checks passed"
+echo "Check 9 — a write through a standard descriptor is judged (#796)"
+echo "  predicate: each toy reaches a verdict (exit 0 or 1) with oracle_verified true"
+echo "  shapes:    print (stdout and stderr the engine handed over), dup2 (the state file"
+echo "             moved onto 1 the way GNU dd moves of=, a summary on 2), outside (a file"
+echo "             outside the state moved onto 1 — the control that dup2 is followed, not"
+echo "             every unknown descriptor taken as the state's)"
+cat > "$WORK/stdio_toy.c" <<'EOF'
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+int main(int argc, char **argv) {
+    const char *d = getenv("PROBE_STATE"); if (!d) d = "./state";
+    const char *mode = getenv("STDIO_MODE"); if (!mode) mode = "print";
+    char p[1024]; snprintf(p, sizeof(p), "%s/keep", d);
+    if (strcmp(mode, "outside") == 0) {
+        const char *o = getenv("OUTSIDE_LOG"); if (!o) return 1;
+        int lf = open(o, O_WRONLY | O_CREAT | O_APPEND, 0600); if (lf < 0) return 1;
+        if (dup2(lf, 1) != 1) return 1;
+        close(lf);
+        if (write(1, "log\n", 4) != 4) return 1;
+    }
+    int fd = open(p, O_WRONLY); /* in place, as check 1's toy */
+    if (fd < 0) { perror("open"); return 1; }
+    if (strcmp(mode, "dup2") == 0) {
+        if (dup2(fd, 1) != 1) return 1;
+        close(fd);
+        fd = 1;
+    }
+    if (write(fd, "ok\n", 3) != 3) return 1;
+    if (fd != 1) close(fd);
+    if (strcmp(mode, "print") == 0) { printf("done\n"); fflush(stdout); }
+    fprintf(stderr, "3 bytes copied\n");
+    return 0;
+}
+EOF
+cc -O0 -o "$WORK/stdio_toy" "$WORK/stdio_toy.c" || fail "check 9: the toy did not build"
+for shape in print dup2 outside; do
+    seed_keep "c9$shape"
+    # The outside file is named without passing through the state directory: the reader
+    # places an absolute operand by its text and does not resolve `..` in it.
+    rc9=$(STDIO_MODE=$shape OUTSIDE_LOG="$WORK/outside-c9.log" run "c9$shape" stdio_toy --oracle-fs-usage)
+    echo "  $shape: exit=$rc9 verdict=$(field "c9$shape" verdict) oracle_verified=$(field "c9$shape" oracle_verified) reason=$(field "c9$shape" unknown_reason)"
+    { [ "$rc9" = "0" ] || [ "$rc9" = "1" ]; } || { sed -n '1,12p' "$WORK/c9$shape.txt"; fail "check 9 $shape: expected a verdict, got exit $rc9"; }
+    [ "$(field "c9$shape" oracle_verified)" = "True" ] || fail "check 9 $shape: the verdict is not oracle_verified"
+done
+# The same work directory a second time: fs_usage's stderr file is opened exclusively, so one the
+# first run left behind must not stop the second.
+seed_keep c9print
+rc9=$(STDIO_MODE=print OUTSIDE_LOG="$WORK/outside-c9.log" run c9print stdio_toy --oracle-fs-usage)
+echo "  print, same --work again: exit=$rc9 verdict=$(field c9print verdict) oracle_verified=$(field c9print oracle_verified)"
+{ [ "$rc9" = "0" ] || [ "$rc9" = "1" ]; } || { sed -n '1,12p' "$WORK/c9print.txt"; fail "check 9: a second run in the same --work got exit $rc9"; }
+echo "  PASS"
+
+echo "=================================================================="
+echo "all nine checks passed"
 echo "artifacts: $WORK"

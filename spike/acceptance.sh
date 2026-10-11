@@ -1883,6 +1883,86 @@ else
     fails=$((fails + 1))
 fi
 
+# `--json <path>` removes only a report Sideeye wrote or an empty file; anything else at the path
+# when the flag is read is refused, by name, and left exactly as it was (#818).
+J=/tmp/acc-json
+rm -rf "$J" && mkdir -p "$J"
+printf 'keep\n' >"$J/victim"
+ln -s "$J/victim" "$J/link"
+mkdir "$J/dir"
+mkfifo "$J/fifo"
+printf '{\n  "schema": "sideeye/case",\n  "case_version": 5\n}\n' >"$J/case.json"
+printf '[world]\nstate = "./state"\n' >"$J/sideeye.toml"
+printf 'notes\n' >"$J/notes.txt"
+json_dev=
+if [ "$(id -u)" = "0" ]; then
+    mknod "$J/null" c 1 3 && json_dev=$J/null
+elif sudo -n true 2>/dev/null; then
+    sudo -n mknod "$J/null" c 1 3 && json_dev=$J/null
+fi
+json_snap() { # the kind, the link target and the bytes of whatever is at $1
+    printf '%s|%s|' "$(stat -c %F "$1" 2>/dev/null || echo absent)" "$(readlink "$1" 2>/dev/null)"
+    if [ -f "$1" ] && [ ! -L "$1" ]; then sha256sum <"$1" | cut -d' ' -f1; else echo; fi
+}
+json_refused() { # json_refused <what> <path> <command...>
+    jr_what=$1 jr_path=$2
+    shift 2
+    jr_before=$(json_snap "$jr_path") jr_vbefore=$(json_snap "$J/victim")
+    "$@" >"$J/out" 2>"$J/err" </dev/null
+    jr_rc=$?
+    jr_after=$(json_snap "$jr_path") jr_vafter=$(json_snap "$J/victim")
+    if [ "$jr_rc" = 3 ] && [ "$jr_before" = "$jr_after" ] && [ "$jr_vbefore" = "$jr_vafter" ] &&
+        cat "$J/out" "$J/err" | grep -qF -- "--json would replace '$jr_path'"; then
+        echo "ok   --json refuses $jr_what and leaves it as it was (#818)"
+    else
+        echo "FAIL --json and $jr_what: rc=$jr_rc, before [$jr_before] after [$jr_after], victim [$jr_vbefore] -> [$jr_vafter]"
+        fails=$((fails + 1))
+    fi
+}
+json_refused "a FIFO" "$J/fifo" "$SIDEEYE" explore --json "$J/fifo" --no-such-flag x
+json_refused "a symbolic link" "$J/link" "$SIDEEYE" explore --json "$J/link" --no-such-flag x
+json_refused "a directory" "$J/dir" "$SIDEEYE" explore --json "$J/dir" --no-such-flag x
+json_refused "a file that is not a report" "$J/notes.txt" "$SIDEEYE" explore --json "$J/notes.txt" --no-such-flag x
+json_refused "the case replay reads" "$J/case.json" "$SIDEEYE" replay "$J/case.json" --json "$J/case.json"
+json_refused "the config explore reads" "$J/sideeye.toml" "$SIDEEYE" explore --config "$J/sideeye.toml" --json "$J/sideeye.toml"
+printf '{"schema":"sideeye/report","verdict":"PASS"}\n{"schema":"sideeye/report","verdict":"FAIL"}\n' >"$J/reports.jsonl"
+json_refused "a log of reports, one per line" "$J/reports.jsonl" "$SIDEEYE" explore --json "$J/reports.jsonl" --no-such-flag x
+if [ -n "$json_dev" ]; then
+    json_refused "a character device" "$json_dev" "$SIDEEYE" explore --json "$json_dev" --no-such-flag x
+elif [ -n "${CI:-}" ]; then
+    echo "FAIL --json and a device: no root and no sudo -n here to make one, and CI always has one of the two"
+    fails=$((fails + 1))
+else
+    echo "NOT MEASURED --json and a device: neither root nor sudo -n"
+fi
+json_written() { # json_written <what> <path>: a refusal's report lands there, and its seal names its bytes
+    "$SIDEEYE" explore --json "$2" --no-such-flag x >"$J/out" 2>"$J/err" </dev/null
+    jw_rc=$?
+    jw_sum=$(sha256sum <"$2" 2>/dev/null | cut -d' ' -f1)
+    if [ "$jw_rc" = 3 ] && [ -n "$jw_sum" ] && grep -qF "sideeye: json sha256=$jw_sum;" "$J/err" &&
+        [ "$(field "$2" verdict)" = "SETUP_ERROR" ]; then
+        echo "ok   --json writes over $1 (#818)"
+    else
+        echo "FAIL --json and $1: rc=$jw_rc, sha [$jw_sum], verdict [$(field "$2" verdict)]"
+        fails=$((fails + 1))
+    fi
+}
+json_written "nothing" "$J/new.json"
+json_written "the report an earlier run wrote" "$J/new.json"
+: >"$J/empty.json"
+json_written "an empty file" "$J/empty.json"
+python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); open(sys.argv[2],"w").write(json.dumps(d,separators=(",",":")))' "$J/new.json" "$J/compact.json"
+json_written "a report another tool compacted" "$J/compact.json"
+"$SIDEEYE" explore --json "$J/first.json" --json "$J/notes.txt" --no-such-flag x >"$J/out" 2>"$J/err" </dev/null
+jd_rc=$?
+if [ "$jd_rc" = 3 ] && [ ! -e "$J/first.json" ] && ! grep -q "json sha256=" "$J/err" && [ "$(cat "$J/notes.txt")" = "notes" ]; then
+    echo "ok   a refused second --json leaves no report at the first path and no json line (#818)"
+else
+    echo "FAIL a refused second --json: rc=$jd_rc, first path $(ls "$J/first.json" 2>/dev/null || echo absent), json line [$(grep "json sha256=" "$J/err")]"
+    fails=$((fails + 1))
+fi
+if [ -n "$json_dev" ]; then rm -f "$json_dev" 2>/dev/null || sudo -n rm -f "$json_dev"; fi
+
 # Whether the engine contained these runs in a cgroup of their own (contract v17, #559),
 # asserted rather than assumed, because the engine decides it without a word: where its probe
 # fails every run is uncontained, and every leg above and below is just as green. What the

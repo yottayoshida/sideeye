@@ -1732,11 +1732,10 @@ fn writeJsonDoc(path: []const u8, doc: []const u8) void {
     const pz = std.fmt.bufPrintZ(&pbuf, "{s}", .{path}) catch
         return jsonFailed("--json path is too long");
     var tbuf: [contract.max_path]u8 = undefined;
-    const tz = std.fmt.bufPrintZ(&tbuf, "{s}.tmp", .{path}) catch
-        return jsonFailed("--json path is too long");
-
-    const fd = posix.open(tz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
-    if (fd < 0) return jsonFailed("the file could not be opened for writing");
+    const temp = openFreshTemp(&tbuf, std.fs.path.dirname(path) orelse ".", null) orelse
+        return jsonFailed("the file could not be opened for writing");
+    const tz = temp.path;
+    const fd = temp.fd;
     var off: usize = 0;
     while (off < doc.len) {
         const written = posix.write(fd, doc[off..].ptr, doc.len - off);
@@ -1759,6 +1758,172 @@ fn writeJsonDoc(path: []const u8, doc: []const u8) void {
     var digest: [32]u8 = undefined;
     std.crypto.hash.sha2.Sha256.hash(doc, &digest, .{});
     recordSeal(digest);
+}
+
+const FreshTemp = struct { path: [:0]const u8, fd: c_int };
+
+/// A name beside the report that no file had before this call; `first_name` replaces the
+/// first random one so a test can occupy it.
+fn openFreshTemp(buf: []u8, dir: []const u8, first_name: ?[]const u8) ?FreshTemp {
+    const sep: []const u8 = if (std.mem.endsWith(u8, dir, "/")) "" else "/";
+    var attempt: usize = 0;
+    while (attempt < 8) : (attempt += 1) {
+        var hex: [16]u8 = undefined;
+        var name_buf: [64]u8 = undefined;
+        const name = if (attempt == 0 and first_name != null) first_name.? else std.fmt.bufPrint(&name_buf, ".sideeye-json-{s}.tmp", .{posix.randomHex(&hex) orelse return null}) catch return null;
+        const tz = std.fmt.bufPrintZ(buf, "{s}{s}{s}", .{ dir, sep, name }) catch return null;
+        // Never O_TRUNC an existing name: whatever sits there, a link included, is not ours to write through.
+        const fd = posix.open(tz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_EXCL | posix.O_NOFOLLOW | posix.O_CLOEXEC, @as(c_uint, 0o644));
+        if (fd >= 0) return .{ .path = tz, .fd = fd };
+        const err = std.c._errno().*;
+        if (err != posix.EEXIST and err != posix.ELOOP) return null;
+    }
+    return null;
+}
+
+/// What `--json <path>` may do with what is at the path when the flag is read.
+pub const ReportSlot = union(enum) {
+    /// Nothing there to remove.
+    leave,
+    /// A document this program writes, or an empty file.
+    remove,
+    /// Anything else, named for the refusal.
+    refuse: []const u8,
+};
+
+pub fn reportSlot(path: []const u8) ReportSlot {
+    var zb: [contract.max_path]u8 = undefined;
+    const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch return .leave;
+    const kind = posix.kindOfPathNoFollow(z.ptr) catch return .{ .refuse = "a path whose kind could not be read" };
+    switch (kind) {
+        .missing => return .leave,
+        .symlink => return .{ .refuse = "a symbolic link" },
+        .dir => return .{ .refuse = "a directory" },
+        .other => return .{ .refuse = "a device, a FIFO or a socket" },
+        .file => {},
+    }
+    var arena_state = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    const bytes = capture.readFileAllocCapped(arena, path, report_slot_cap, .{ .require_regular = true, .no_follow = true }) orelse
+        return .{ .refuse = "a file that could not be read, or one larger than any report" };
+    if (bytes.len == 0 or isOneOwnDocument(arena, bytes)) return .remove;
+    return .{ .refuse = "a file that is not a report Sideeye wrote" };
+}
+
+/// Larger than any report this program writes; past it the file is not one.
+const report_slot_cap = 4 * 1024 * 1024;
+
+/// One JSON document, and nothing after it, whose `schema` is one this program writes: a log of
+/// reports appended one per line is not one, and losing it to a mistyped `--json` loses them all.
+fn isOneOwnDocument(arena: std.mem.Allocator, bytes: []const u8) bool {
+    const parsed = std.json.parseFromSliceLeaky(std.json.Value, arena, bytes, .{}) catch return false;
+    if (parsed != .object) return false;
+    const schema = switch (parsed.object.get("schema") orelse return false) {
+        .string => |t| t,
+        else => return false,
+    };
+    return std.mem.eql(u8, schema, "sideeye/report") or std.mem.eql(u8, schema, "sideeye/preflight");
+}
+
+const SlotTestDir = struct {
+    dir_buf: [128]u8 = undefined,
+    dir: []const u8 = "",
+    path_buf: [192]u8 = undefined,
+    names: [20][]const u8 = undefined,
+    n: usize = 0,
+
+    fn init(self: *SlotTestDir, tag: []const u8) !void {
+        self.dir = try std.fmt.bufPrint(&self.dir_buf, "/tmp/sideeye-{s}-{d}", .{ tag, posix.getpid() });
+        var zb: [128]u8 = undefined;
+        _ = posix.mkdir(try std.fmt.bufPrintZ(&zb, "{s}", .{self.dir}), 0o700);
+    }
+    fn at(self: *SlotTestDir, name: []const u8) [:0]const u8 {
+        return std.fmt.bufPrintZ(&self.path_buf, "{s}/{s}", .{ self.dir, name }) catch unreachable;
+    }
+    fn track(self: *SlotTestDir, name: []const u8) void {
+        self.names[self.n] = name;
+        self.n += 1;
+    }
+    fn file(self: *SlotTestDir, name: []const u8, bytes: []const u8) !void {
+        self.track(name);
+        if (!files.writeWholeFile(self.at(name), &.{bytes})) return error.Setup;
+    }
+    fn link(self: *SlotTestDir, target: []const u8, name: []const u8) !void {
+        self.track(name);
+        var tb: [192]u8 = undefined;
+        const tz = try std.fmt.bufPrintZ(&tb, "{s}/{s}", .{ self.dir, target });
+        if (posix.symlink(tz.ptr, self.at(name).ptr) != 0) return error.Setup;
+    }
+    fn read(self: *SlotTestDir, name: []const u8, out: []u8) []const u8 {
+        const fd = posix.open(self.at(name).ptr, posix.O_RDONLY, @as(c_uint, 0));
+        if (fd < 0) return "";
+        defer _ = posix.close(fd);
+        const r = posix.read(fd, out.ptr, out.len);
+        return if (r > 0) out[0..@intCast(r)] else "";
+    }
+    fn deinit(self: *SlotTestDir) void {
+        for (self.names[0..self.n]) |name| {
+            _ = posix.unlink(self.at(name).ptr);
+            _ = posix.rmdir(self.at(name).ptr);
+        }
+        var zb: [128]u8 = undefined;
+        _ = posix.rmdir((std.fmt.bufPrintZ(&zb, "{s}", .{self.dir}) catch return).ptr);
+    }
+};
+
+test "--json removes only a report or an empty file, and refuses anything else by kind (#818)" {
+    var t: SlotTestDir = .{};
+    try t.init("slot");
+    defer t.deinit();
+    try t.file("empty", "");
+    try t.file("report", "{\n  \"schema\": \"sideeye/report\",\n  \"schema_status\": \"frozen\"\n}\n");
+    try t.file("preflight", "{\n  \"schema\": \"sideeye/preflight\",\n  \"outcome\": \"runs_differ\"\n}\n");
+    try t.file("case", "{\n  \"schema\": \"sideeye/case\",\n  \"case_version\": 5\n}\n");
+    try t.file("toml", "[world]\nstate = \"./state\"\n");
+    try t.file("compact", "{\"schema\":\"sideeye/report\",\"verdict\":\"PASS\"}");
+    try t.file("spaced", "\n{ \"schema\" :\t\"sideeye/preflight\" }");
+    try t.file("sorted", "{\"contract_version\":19,\"schema\":\"sideeye/report\"}");
+    try t.file("history", "{\"schema\":\"sideeye/report\",\"verdict\":\"PASS\"}\n{\"schema\":\"sideeye/report\",\"verdict\":\"FAIL\"}\n");
+    try t.file("cut", "{\n  \"schema\": \"sideeye/report\",\n  \"schema_status\": \"fro");
+    t.track("dir");
+    if (posix.mkdir(t.at("dir").ptr, 0o700) != 0) return error.Setup;
+    try t.link("report", "link");
+
+    try std.testing.expect(reportSlot(t.at("absent")) == .leave);
+    try std.testing.expect(reportSlot(t.at("absent/below")) == .leave);
+    try std.testing.expect(reportSlot(t.at("empty")) == .remove);
+    try std.testing.expect(reportSlot(t.at("report")) == .remove);
+    try std.testing.expect(reportSlot(t.at("preflight")) == .remove);
+    try std.testing.expect(reportSlot(t.at("compact")) == .remove);
+    try std.testing.expect(reportSlot(t.at("spaced")) == .remove);
+    try std.testing.expect(reportSlot(t.at("sorted")) == .remove);
+    t.track("fifo");
+    if (posix.mkfifo(t.at("fifo").ptr, @as(c_uint, 0o600)) != 0) return error.Setup;
+    for ([_][]const u8{ "case", "toml", "history", "cut", "dir", "link", "fifo", "toml/below" }) |name|
+        try std.testing.expect(reportSlot(t.at(name)) == .refuse);
+    try std.testing.expect(reportSlot("/dev/null") == .refuse);
+}
+
+test "the report's temporary file is always one this call created (#818)" {
+    var t: SlotTestDir = .{};
+    try t.init("fresh-temp");
+    defer t.deinit();
+    try t.file("victim", "keep");
+    try t.link("victim", "taken-link");
+    try t.file("taken-file", "keep too");
+
+    for ([_][]const u8{ "taken-link", "taken-file" }) |occupied| {
+        var tb: [contract.max_path]u8 = undefined;
+        const made = openFreshTemp(&tb, t.dir, occupied) orelse return error.NoTemp;
+        defer _ = posix.close(made.fd);
+        defer _ = posix.unlink(made.path.ptr);
+        try std.testing.expect(!std.mem.endsWith(u8, made.path, occupied));
+        try std.testing.expect(posix.write(made.fd, "x", 1) == 1);
+    }
+    var rb: [16]u8 = undefined;
+    try std.testing.expectEqualStrings("keep", t.read("victim", &rb));
+    try std.testing.expectEqualStrings("keep too", t.read("taken-file", &rb));
 }
 
 pub const PreflightDoc = struct {
