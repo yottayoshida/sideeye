@@ -1,37 +1,3 @@
-//! The watch on a run the engine contained in a cgroup of its own (contract v17, #559).
-//!
-//! Where the engine can move processes within its own cgroup on Linux — a cgroup v2 delegated
-//! to it, or root — each observed run — the recording run, every explored world and the
-//! baseline, preflight's second run — gets a cgroup made for it (`posix.CgroupSpawn`). The
-//! engine's cleanup writes that cgroup's `cgroup.kill` (`posix.runChildImplWithOps`); a world's
-//! crash point steps aside out of the cgroup below it that the run's processes are in, writes
-//! that one's `cgroup.kill`, and then signals its process group (`shim/src/common.zig`). A cgroup reaches a process however it left the process group,
-//! which is what it is for. It also has exits a process group did not have: a process can
-//! write its pid into another cgroup's `cgroup.procs`, be moved there by someone else, or be
-//! created in one through `clone3(CLONE_INTO_CGROUP)`, and none of that is a `setsid` the
-//! shim sees.
-//!
-//! This file is the engine's half of watching those exits. The shim's half is the `cgroup`
-//! record (`contract.cgroup_aux`); the oracle's is `oracle.Parsed.cgroup_move`. Every check
-//! here refuses but one: `holds`, which says whether a detach may be judged (#559's second half).
-//!
-//! **The checks run after the refusals of the phase their run is judged in**, at the call sites
-//! in `main.zig`, so none of those changes name. Two things are asked later still. For the
-//! recording run, `phaseChecker`'s falsification of the declared checker, before any world: a
-//! contained run whose watch finds something reports that finding instead of
-//! `checker_not_falsified` or, since #756, `checker_rejects_initial_state`, and one whose checker probe could not be started is refused with the
-//! finding (exit 2) before that setup error (exit 3) is reached. And `requireCompleteness`,
-//! which answers a would-be PASS without an oracle in `phasePreflight` and `phaseReport`: a
-//! contained run with neither `--oracle` nor `--allow-unverified` reports the finding instead of
-//! `completeness_not_verified`. One check answers ahead of a refusal on purpose, named at
-//! `killCameBack`. A run the engine did
-//! not contain meets none of this. What containment changes besides is which runs get this far
-//! — a detach the shim did not record, missed by the process group, is stopped by the cgroup
-//! instead of being caught still writing — and BUILDLOG's #559 entry names that case.
-//!
-//! Each check is a function returning what it found, beside a thin one that refuses on it:
-//! `refuse.unknown` ends the process, so the finding is what a test can reach.
-
 const std = @import("std");
 const builtin = @import("builtin");
 const contract = @import("contract");
@@ -40,39 +6,28 @@ const posix = @import("posix.zig");
 const engine = @import("engine.zig");
 const refuse = @import("refuse.zig");
 
-/// A cgroup for one observed run, or null where the run is not contained: anywhere but
-/// Linux, where the engine cannot move processes within its own cgroup, in the `-Dtest-no-cgroup` engine, and when the kernel
-/// refused the entropy its name is drawn from. `world` says whether the shim is also handed
-/// the cgroup's `cgroup.kill`.
 pub fn spawn(world: bool) ?posix.CgroupSpawn {
     if (engine_build_options.no_cgroup) return null;
     const home = posix.cgroupHome() orelse return null;
     return posix.CgroupSpawn.init(home, world);
 }
 
-/// `contract.env.run_cgroup` for a spawn: the cgroup as the shim will find itself in it, or
 /// empty. Empty rather than unset for the reason `seq_base` is pinned: a value left in the
 /// operator's shell must not tell a shim it was contained.
 pub fn runName(cg: ?*const posix.CgroupSpawn) []const u8 {
     return if (cg) |c| c.relPath() else "";
 }
 
-/// `contract.env.kill_cgroup`: a contained world's `cgroup.kill`, or empty — the recording run
-/// and preflight's second run are not killed at a crash point.
 pub fn killName(cg: ?*const posix.CgroupSpawn) []const u8 {
     const c = cg orelse return "";
     return if (c.world) c.killPath() else "";
 }
 
-/// `contract.env.kill_aside`: where a contained world's crash point steps aside to, or empty.
 pub fn asideName(cg: ?*const posix.CgroupSpawn) []const u8 {
     const c = cg orelse return "";
     return if (c.world) c.asidePath() else "";
 }
 
-/// Whether the engine held this run for judging a process that left the process group (#559's
-/// second half): the spawn joined its cgroup, and every image that announced itself said it was
-/// inside it before doing anything else (`TraceInfo.cgroupAnswered`, with `cut_by_kill` for a
 /// world armed to die at its crash point). A world's `cgroup.kill` is not asked for: an image
 /// that reaches the crash point without it cannot kill, records that, and `killCameBack` refuses
 /// the world — asking here too added only the race `cut_by_kill` is about (review). A run the
@@ -82,19 +37,12 @@ pub fn holds(cg: ?*const posix.CgroupSpawn, trace: *const engine.TraceInfo, cut_
     return c.joined and trace.cgroupAnswered(cut_by_kill);
 }
 
-/// Refuse a process that left the process group in a run the engine did not hold, saying why
-/// it did not. `where` ends the detail.
 pub fn refuseDetach(arena: std.mem.Allocator, cg: ?*const posix.CgroupSpawn, where: []const u8) noreturn {
     const can_contain = !engine_build_options.no_cgroup and posix.cgroupHome() != null;
     const f = detachFinding(arena, cg, where, builtin.os.tag == .linux, can_contain);
     refuse.unknown(f.reason, f.detail, f.next);
 }
 
-/// `refuseDetach`'s decision, the platform and the probe passed in so a test can ask each. On
-/// Linux, where the engine cannot make cgroups, the environment is what to fix, and the detail
-/// says what would let it: a writable cgroup v2 — a default container mounts it read-only, so
-/// root alone is not enough. Where it can and this run did not get one, the run is retried. A
-/// cgroup some image did not answer to, and every macOS run, keep the class wall.
 pub fn detachFinding(arena: std.mem.Allocator, cg: ?*const posix.CgroupSpawn, where: []const u8, linux: bool, can_contain: bool) Finding {
     const lead = "a process left the containment group (setsid/setpgid)";
     if (!linux) return .{
@@ -120,7 +68,6 @@ pub fn detachFinding(arena: std.mem.Allocator, cg: ?*const posix.CgroupSpawn, wh
     };
 }
 
-/// What a check found, in the shape `refuse.unknown` takes.
 pub const Finding = struct {
     reason: contract.UnknownReason,
     detail: []const u8,
@@ -129,18 +76,11 @@ pub const Finding = struct {
 
 /// Refuse a contained run whose cgroup did not hold it. Called once the run's trace has been
 /// read and every refusal the run already had has been asked.
-///
-/// `where` ends each detail (`""` for the recording run, `" in an explored world"`, …).
-/// `lingering_counts` says whether a process still in the cgroup when the direct child exited
-/// is evidence. It is not in a world killed at its crash point: the shim's write to
-/// `cgroup.kill` is what ended that run, and the processes it was still taking down when the
-/// direct child's exit reached the engine are that kill at work.
 pub fn afterRun(arena: std.mem.Allocator, cg: *const posix.CgroupSpawn, trace: *const engine.TraceInfo, where: []const u8, lingering_counts: bool) void {
     if (runFinding(arena, cg, trace, where, lingering_counts, posix.processState)) |f|
         refuse.unknown(f.reason, f.detail, f.next);
 }
 
-/// `afterRun`'s decision. `stateOf` is `posix.processState` outside tests.
 pub fn runFinding(
     arena: std.mem.Allocator,
     cg: *const posix.CgroupSpawn,
@@ -151,16 +91,12 @@ pub fn runFinding(
 ) ?Finding {
     if (!cg.joined) return null;
 
-    // The cgroup did not empty after `cgroup.kill`: something the kill could not take is still
-    // running, and what touches the state from here is unaccounted for.
     if (!cg.stopped) return .{
         .reason = .child_process_detected,
         .detail = std.fmt.allocPrint(arena, "the run's cgroup could not be stopped{s}: {d} ms after its cgroup.kill was written it still held a live process, so what touches the state from here is unaccounted for", .{ where, posix.world_kill_grace_ms }) catch "the run's cgroup could not be stopped",
         .next = .environment,
     };
 
-    // A shim that found its own process outside the run's cgroup, or could not tell — at its
-    // announcement, at a process boundary, or at a crash point whose kill came back.
     if (trace.cgroup_outside) |op| return outsideFinding(arena, op, where);
 
     // Every process the trace names, and whether it wrote a kill point. Derived from the
@@ -174,12 +110,6 @@ pub fn runFinding(
     }
 
     if (lingering_counts) {
-        // A writer still in the run's cgroup when the direct child exited — in `work` or the
-        // run's own, not in a cgroup the target made below them (`posix.cgroupStopReal`) — was
-        // stopped by the cleanup's `cgroup.kill`, part way through whatever it was writing. An uncontained engine's
-        // group kill ends such a writer the same way and says nothing (plan review, M-c); a
-        // contained run refuses it, and only it: a process the trace never names writing
-        // anything is killed as the group kill has always killed a lingering helper.
         for (cg.lingering[0..cg.lingering_len]) |pid| {
             if (named.get(pid) orelse false) return .{
                 .reason = .child_process_detected,
@@ -194,11 +124,6 @@ pub fn runFinding(
         };
     }
 
-    // Nothing the trace names, and nothing that was still in the cgroup, outlived the stop. A
-    // process inside the cgroup cannot have — `stopped` says it emptied — so one that is alive
-    // left it. A zombie (`Z`) and a process being torn down (`X`) are dead. A state that could
-    // not be read counts as alive, and so does a pid the kernel handed to someone else in the
-    // meantime: both are the side to be wrong on.
     var pids = named.keyIterator();
     while (pids.next()) |pid| {
         if (survivor(arena, pid.*, where, stateOf)) |f| return f;
@@ -209,9 +134,6 @@ pub fn runFinding(
     return null;
 }
 
-/// A `cgroup:outside` or `cgroup:unreadable` record, worded for which it is: a process the
-/// shim saw outside the cgroup is the target's doing, one whose standing could not be read is
-/// the environment's, and neither is said to be the other.
 fn outsideFinding(arena: std.mem.Allocator, op: engine.Op, where: []const u8) Finding {
     if (std.mem.eql(u8, op.aux, contract.cgroup_aux.unreadable)) return .{
         .reason = .child_process_detected,
@@ -239,9 +161,6 @@ fn outOfMemory() Finding {
     return .{ .reason = .child_process_detected, .detail = "out of memory while checking the run's cgroup; the run is refused rather than left unchecked", .next = .retry_then_report };
 }
 
-/// Refuse a contained world killed at crash point `k` that exited instead of dying, when its
-/// shim said why.
-///
 /// **The exception to "after every refusal"**, and it has to be: the shim that writes
 /// `cgroup:kill-returned` or `cgroup:outside` at the crash point then exits rather than fall
 /// back to a group kill, so the world ends with an exit status and the loop's next refusal is
@@ -254,8 +173,6 @@ pub fn killCameBack(arena: std.mem.Allocator, trace: *const engine.TraceInfo, k:
 }
 
 pub fn killFinding(arena: std.mem.Allocator, trace: *const engine.TraceInfo, k: u32) ?Finding {
-    // The write came back while the process was inside the cgroup: the kill itself failed. A
-    // cgroup made threaded refuses `cgroup.kill`, and so does one the engine cannot write.
     if (trace.cgroup_kill_returned) |op| return .{
         .reason = .kill_did_not_land,
         .detail = std.fmt.allocPrint(arena, "the crash point's write to the run's cgroup.kill came back (pid {d}, before operation {d}): the kill did not take the run, so the world did not die where it was asked to", .{ op.pid, k }) catch "the crash point's write to the run's cgroup.kill came back",
@@ -266,23 +183,11 @@ pub fn killFinding(arena: std.mem.Allocator, trace: *const engine.TraceInfo, k: 
     return null;
 }
 
-/// Refuse a contained world at crash point `k` whose trace holds an operation at or past it.
-///
-/// The shim writes an operation's record only after the crash-point test lets the operation
-/// through, so in a world that died before operation `k` the highest kill point is `k - 1`
-/// however many processes it had. A record numbered `k` or more is an operation performed
-/// after the kill was issued, by a process it had not reached — whichever exit that process
-/// took, and whether or not it is still alive. Sound for any world; asked of contained ones,
-/// where the kill is meant to reach every process, and not added to every target.
 pub fn pastCrashPoint(arena: std.mem.Allocator, trace: *const engine.TraceInfo, k: u32) void {
     if (pastFinding(arena, trace, k)) |f| refuse.unknown(f.reason, f.detail, f.next);
 }
 
 pub fn pastFinding(arena: std.mem.Allocator, trace: *const engine.TraceInfo, k: u32) ?Finding {
-    // A crash point that could not step aside out of the cgroup it was killing (second review,
-    // #559 PR A): its kill was the cgroup's alone, and a process that had left the cgroup without
-    // leaving the process group was not stopped there, as an uncontained world's group kill would
-    // have stopped it. Whatever the numbers below say, the kill was short.
     if (trace.cgroup_kill_alone) |op| return .{
         .reason = .kill_did_not_land,
         .detail = std.fmt.allocPrint(arena, "the crash point before operation {d} could not step aside out of the cgroup it was killing (pid {d}), so the kill was the cgroup's alone: a process that had left the run's cgroup without leaving its process group was not stopped there", .{ k, op.pid }) catch "a crash point killed with the run's cgroup alone",
@@ -295,8 +200,6 @@ pub fn pastFinding(arena: std.mem.Allocator, trace: *const engine.TraceInfo, k: 
         .next = .class_wall,
     };
 }
-
-// ---- tests -------------------------------------------------------------------------------
 
 const t = std.testing;
 
@@ -332,27 +235,21 @@ test "a contained run that emptied, where nothing it named survived, is let thro
     var trace = try testTrace(a, &.{ record(.shim_ready, 0, 40), record(.write, 1, 41), record(.rename, 2, 40) });
     defer trace.deinit();
 
-    // Control: everything the trace names is gone, nothing lingered.
     var cg = joinedCgroup();
     try t.expect(runFinding(a, &cg, &trace, "", true, fakeState(null)) == null);
-    // Zombies and processes being torn down are dead.
     try t.expect(runFinding(a, &cg, &trace, "", true, fakeState('Z')) == null);
     try t.expect(runFinding(a, &cg, &trace, "", true, fakeState('X')) == null);
 
-    // A named process still running after the stop.
     const alive = runFinding(a, &cg, &trace, " in an explored world", true, fakeState('S')) orelse return error.TestUnexpectedResult;
     try t.expectEqual(contract.UnknownReason.child_process_detected, alive.reason);
     try t.expect(std.mem.indexOf(u8, alive.detail, "still alive after the run's cgroup was stopped in an explored world") != null);
-    // A state that could not be read is not taken for dead.
     try t.expect(runFinding(a, &cg, &trace, "", true, fakeState('?')) != null);
 
-    // The cgroup did not empty.
     cg.stopped = false;
     const stuck = runFinding(a, &cg, &trace, "", true, fakeState(null)) orelse return error.TestUnexpectedResult;
     try t.expectEqual(contract.NextStep.environment, stuck.next);
     cg.stopped = true;
 
-    // A spawn that never joined is not watched at all.
     cg.joined = false;
     try t.expect(runFinding(a, &cg, &trace, "", true, fakeState('S')) == null);
 }
@@ -361,7 +258,6 @@ test "a writer still in the cgroup when the direct child exited refuses, a silen
     var as = std.heap.ArenaAllocator.init(t.allocator);
     defer as.deinit();
     const a = as.allocator();
-    // pid 41 wrote a kill point; pid 42 only announced itself.
     var trace = try testTrace(a, &.{ record(.shim_ready, 0, 40), record(.shim_ready, 0, 41), record(.write, 1, 41), record(.shim_ready, 0, 42) });
     defer trace.deinit();
     var cg = joinedCgroup();
@@ -371,14 +267,11 @@ test "a writer still in the cgroup when the direct child exited refuses, a silen
     const cut = runFinding(a, &cg, &trace, "", true, fakeState(null)) orelse return error.TestUnexpectedResult;
     try t.expect(std.mem.indexOf(u8, cut.detail, "pid 41") != null);
     try t.expect(std.mem.indexOf(u8, cut.detail, "cut it short") != null);
-    // The same lingering writer, in a world its crash point killed: not evidence.
     try t.expect(runFinding(a, &cg, &trace, "", false, fakeState(null)) == null);
 
-    // A lingering process that wrote nothing is killed, not refused.
     cg.lingering[0] = 42;
     try t.expect(runFinding(a, &cg, &trace, "", true, fakeState(null)) == null);
 
-    // More than the engine read cannot be vouched for.
     cg.lingering_more = true;
     try t.expect(runFinding(a, &cg, &trace, "", true, fakeState(null)) != null);
 }
@@ -399,7 +292,6 @@ test "a shim outside the run's cgroup refuses the run, and at the crash point it
     try t.expectEqual(contract.UnknownReason.child_process_detected, at_kill.reason);
     try t.expectEqual(contract.NextStep.class_wall, at_kill.next);
 
-    // A standing that could not be read is the environment's, and is not called a move.
     var unreadable = record(.cgroup, 0, 44);
     unreadable.aux = contract.cgroup_aux.unreadable;
     trace.cgroup_outside = unreadable;
@@ -409,7 +301,6 @@ test "a shim outside the run's cgroup refuses the run, and at the crash point it
     try t.expect(std.mem.indexOf(u8, unread.detail, "moved out") == null);
     try t.expectEqual(contract.NextStep.environment, (killFinding(a, &trace, 3) orelse return error.TestUnexpectedResult).next);
 
-    // The write came back from inside: the kill failed, and it is named before `outside` is.
     trace.cgroup_kill_returned = record(.cgroup, 3, 40);
     const returned = killFinding(a, &trace, 3) orelse return error.TestUnexpectedResult;
     try t.expectEqual(contract.UnknownReason.kill_did_not_land, returned.reason);
@@ -422,17 +313,14 @@ test "a record at or past the crash point refuses the world, and the operations 
     var trace = try testTrace(a, &.{});
     defer trace.deinit();
 
-    // Died before operation 3: the highest kill point is 2.
     trace.kill_point_count = 2;
     try t.expect(pastFinding(a, &trace, 3) == null);
-    // Operation 3 itself was recorded: something performed it after the kill was issued.
     trace.kill_point_count = 3;
     const at = pastFinding(a, &trace, 3) orelse return error.TestUnexpectedResult;
     try t.expectEqual(contract.UnknownReason.kill_did_not_land, at.reason);
     trace.kill_point_count = 9;
     try t.expect(pastFinding(a, &trace, 3) != null);
 
-    // A crash point that killed with the cgroup alone is refused whatever the numbers say.
     trace.kill_point_count = 2;
     trace.cgroup_kill_alone = record(.cgroup, 3, 40);
     const alone = pastFinding(a, &trace, 3) orelse return error.TestUnexpectedResult;
@@ -448,7 +336,6 @@ test "an uncontained spawn tells its shim nothing, pinned empty; a contained wor
     try t.expect(std.mem.startsWith(u8, runName(&world), "/e/sideeye-"));
     try t.expect(std.mem.endsWith(u8, killName(&world), "/work/cgroup.kill"));
     try t.expect(std.mem.endsWith(u8, asideName(&world), "/cgroup.procs"));
-    // The recording run is contained and never killed at a crash point.
     const recording = posix.CgroupSpawn.init(.{ .dir = "/sys/fs/cgroup/e", .rel = "/e" }, false) orelse return error.TestUnexpectedResult;
     try t.expect(runName(&recording).len > 0);
     try t.expectEqualStrings("", killName(&recording));
@@ -466,17 +353,13 @@ test "a run is held for a detach only when every image answered, and a killed wo
     var cg = joinedCgroup();
     try t.expect(holds(&cg, &trace, false));
     try t.expect(!holds(null, &trace, false));
-    // One image cut off between its announcement and its answer: short where nothing was
-    // killed, forgiven in a world killed at its crash point.
     trace.cgroup_held_records = 1;
     trace.cgroup_unanswered_tail = 1;
     try t.expect(!holds(&cg, &trace, false));
     try t.expect(holds(&cg, &trace, true));
-    // One that went on without answering is not forgiven, killed or not.
     trace.cgroup_unanswered_live = 1;
     try t.expect(!holds(&cg, &trace, true));
     trace.cgroup_unanswered_live = 0;
-    // A world's missing cgroup.kill is killCameBack's to refuse, not this.
     trace.cgroup_held_records = 2;
     trace.cgroup_unanswered_tail = 0;
     trace.cgroup_kill_records = 0;
@@ -496,7 +379,6 @@ test "a detach the engine did not hold is refused with the reason, and the step 
     try t.expect(std.mem.indexOf(u8, no_cgroup.detail, " in an explored world") != null);
     const mac = detachFinding(a, null, "", false, false);
     try t.expectEqual(contract.NextStep.class_wall, mac.next);
-    // The engine can make cgroups and this run did not get one: not the environment's.
     const missed = detachFinding(a, null, "", true, true);
     try t.expectEqual(contract.NextStep.retry_then_report, missed.next);
     try t.expect(std.mem.indexOf(u8, missed.detail, "can make them here") != null);

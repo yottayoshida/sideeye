@@ -1,4 +1,3 @@
-//! The Linux half of `--observe supervised` (#217, ADR 0089). `supervise.zig` says what the mode
 //! is; this file is how. Every rule about WHICH call counts, how its path is placed, and what is
 //! written when it cannot be placed mirrors `shim/src/common.zig` and `shim/src/syscalls.zig`
 //! — the shim's handler door — because the three observation modes are doors into one account
@@ -20,8 +19,6 @@ const E = linux.E;
 const Config = supervise.Config;
 const Error = supervise.Error;
 
-// --- constants the kernel ABI fixes (identical on aarch64 and x86_64) -------------------
-
 const AT_FDCWD: i32 = -100;
 const AT_REMOVEDIR: u32 = 0x200;
 const O_ACCMODE: u32 = 0o3;
@@ -34,22 +31,16 @@ const CLONE_VFORK: u64 = 0x4000;
 const CLONE_THREAD: u64 = 0x10000;
 const PR_SET_NO_NEW_PRIVS: i32 = 38;
 
-/// `AUDIT_ARCH_*` from <linux/audit.h>, written out: this toolchain's `linux.AUDIT.ARCH` does
-/// not compile (it names an `elf.EM` member the same std does not have).
 const audit_arch: u32 = switch (builtin.cpu.arch) {
     .aarch64 => 0xC00000B7,
     .x86_64 => 0xC000003E,
     else => @compileError("supervised observation is built for aarch64 and x86_64 only"),
 };
 
-/// The shim's predicate, spelled once more because the shim's copy lives in the preloaded
-/// library: an open counts when it can write or can create/truncate.
 fn openIsWriteCapable(flags: u32) bool {
     if ((flags & O_ACCMODE) != 0) return true;
     return (flags & (O_CREAT | O_TRUNC)) != 0;
 }
-
-// --- the filter --------------------------------------------------------------------------
 
 const Watched = struct {
     sys: SYS,
@@ -58,11 +49,6 @@ const Watched = struct {
     flag_arg: ?u3 = null,
 };
 
-/// Every kill-point spelling the shim's handler traps (`shim/src/syscalls.zig`), plus the two
-/// six-argument calls that set could not hold — `copy_file_range` and `pwritev2`: nothing is
-/// re-issued here, so nothing needs a free register — plus the calls that are not operations
-/// but boundaries the account records (`close`, the exec and clone families, `setsid`,
-/// `setpgid`).
 const watched: []const Watched = switch (builtin.cpu.arch) {
     .aarch64 => &common_watched,
     .x86_64 => &(common_watched ++ [_]Watched{
@@ -93,7 +79,6 @@ fn offArg(i: u3) u32 {
 }
 
 const BPF = linux.BPF;
-// Spelled here as the shim spells them (`shim/src/syscalls.zig`): this std has no `sock_filter`.
 const SockFilter = extern struct { code: u16, jt: u8, jf: u8, k: u32 };
 const SockFprog = extern struct { len: u16, filter: [*]const SockFilter };
 fn stmt(code: u16, k: u32) SockFilter {
@@ -119,7 +104,6 @@ fn buildFilter(out: *[max_filter]SockFilter) []SockFilter {
         out[n] = stmt(BPF.LD | BPF.W | BPF.ABS, off_nr);
         n += 1;
         if (w.flag_arg) |arg| {
-            // nr == w? then load the flags; any write-capable bit notifies, none allows.
             out[n] = jump(BPF.JMP | BPF.JEQ | BPF.K, nr, 0, 4);
             n += 1;
             out[n] = stmt(BPF.LD | BPF.W | BPF.ABS, offArg(arg));
@@ -193,8 +177,6 @@ pub fn kernelSupports() bool {
     return answered and got == 'y';
 }
 
-// --- the installer: `sideeye __filter-exec <fd> -- <operation…>` --------------------------
-
 fn die(code: u8, comptime fmt: []const u8, args: anytype) noreturn {
     var buf: [512]u8 = undefined;
     const msg = std.fmt.bufPrint(&buf, "sideeye: " ++ fmt ++ "\n", args) catch "sideeye: __filter-exec failed\n";
@@ -211,7 +193,6 @@ fn die(code: u8, comptime fmt: []const u8, args: anytype) noreturn {
 /// with before the run (ADR 0090), so the file a refusal describes and the file this launches
 /// come from one rule. No directory is passed: this process runs after the child's `chdir`, so a
 /// relative component already resolves where the operation will run. The default list for an
-/// unset `PATH` stays here: this is the caller that execs, so it is the one that has to choose.
 fn resolveExecutable(name: [:0]const u8, out: *[image.search_path_max]u8) ?[*:0]const u8 {
     if (std.mem.indexOfScalar(u8, name, '/') != null) return name.ptr;
     const path_env = std.c.getenv("PATH") orelse "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
@@ -220,7 +201,6 @@ fn resolveExecutable(name: [:0]const u8, out: *[image.search_path_max]u8) ?[*:0]
 }
 
 pub fn filterExec(argv: []const [:0]const u8) noreturn {
-    // argv: <self> __filter-exec <fd> -- <operation…>
     if (argv.len < 5 or !std.mem.eql(u8, argv[3], "--"))
         die(126, "__filter-exec: usage: __filter-exec <fd> -- <operation...>", .{});
     const fd = std.fmt.parseInt(i32, argv[2], 10) catch die(126, "__filter-exec: not a descriptor: {s}", .{argv[2]});
@@ -244,8 +224,6 @@ pub fn filterExec(argv: []const [:0]const u8) noreturn {
         die(126, "__filter-exec: seccomp(SECCOMP_FILTER_FLAG_NEW_LISTENER|WAIT_KILLABLE_RECV) was refused, errno {d}", .{@intFromEnum(linux.errno(lrc))});
     const listener: i32 = @intCast(lrc);
 
-    // The listener travels with this process's pid, which is the subject's: the engine's
-    // records carry it, and a group kill is addressed to it.
     const pid: i32 = linux.getpid();
     var payload: [4]u8 = undefined;
     std.mem.writeInt(i32, &payload, pid, .little);
@@ -255,7 +233,6 @@ pub fn filterExec(argv: []const [:0]const u8) noreturn {
     _ = linux.close(fd);
 
     const rc = linux.execve(exe, @ptrCast(argv_z.ptr), @ptrCast(std.c.environ));
-    // execvp's own fallback: a file without an interpreter line runs under /bin/sh (review).
     if (linux.errno(rc) == .NOEXEC) {
         const sh_argv = std.heap.page_allocator.alloc(?[*:0]const u8, op.len + 2) catch die(126, "__filter-exec: out of memory", .{});
         sh_argv[0] = "/bin/sh";
@@ -298,8 +275,6 @@ fn sendFd(sock: i32, fd: i32, payload: []const u8) bool {
     }
 }
 
-/// The listener and the subject's pid, or null when the socket closed with nothing sent (the
-/// installer failed, or never ran).
 fn recvFd(sock: i32, pid: *i32) ?i32 {
     var payload: [4]u8 = undefined;
     var cm: Cmsg = .{ .len = 0, .level = 0, .type = 0, .fd = -1 };
@@ -328,12 +303,9 @@ fn recvFd(sock: i32, pid: *i32) ?i32 {
     }
 }
 
-// --- the engine's side --------------------------------------------------------------------
-
 pub const Session = struct {
     gpa: std.mem.Allocator,
     cfg: Config,
-    /// [0] is the engine's end (close-on-exec); [1] is the child's, inherited by the spawn.
     sock: [2]i32,
     thread: std.Thread,
     stop: std.atomic.Value(bool) = .init(false),
@@ -353,7 +325,6 @@ pub const Session = struct {
         var fds: [2]i32 = undefined;
         if (linux.errno(linux.socketpair(linux.AF.UNIX, linux.SOCK.STREAM | linux.SOCK.CLOEXEC, 0, &fds)) != .SUCCESS)
             return error.SpawnSetup;
-        // The child's end must survive the exec into strace or the installer.
         if (linux.errno(linux.fcntl(fds[1], linux.F.SETFD, 0)) != .SUCCESS) {
             _ = linux.close(fds[0]);
             _ = linux.close(fds[1]);
@@ -372,9 +343,6 @@ pub const Session = struct {
         return self.sock[1];
     }
 
-    /// After the spawn returned, when every process of the run is gone: closing the child's
-    /// end lets a session that never received a listener see end-of-file, and the stop flag
-    /// ends a loop whose listener has not yet hung up.
     pub fn finish(self: *Session) void {
         _ = linux.close(self.sock[1]);
         self.stop.store(true, .release);
@@ -394,7 +362,6 @@ pub const Session = struct {
     }
 };
 
-/// Wait on one descriptor. Returns its revents, 0 on timeout.
 fn pollOne(fd: i32, timeout_ms: i32) u16 {
     var p = [_]linux.pollfd{.{ .fd = fd, .events = linux.POLL.IN, .revents = 0 }};
     const rc = linux.poll(&p, 1, timeout_ms);
@@ -449,8 +416,6 @@ fn run(self: *Session) void {
             else => continue,
         }
         const answer: Answer = if (tracer) |*t| t.handle(listener, &req) else .@"continue";
-        // Only in `sideeye-testsupervisedelay` (#217): hold the received call before answering,
-        // so a signal the target receives meanwhile lands in the window WAIT_KILLABLE_RECV is for.
         if (engine_build_options.supervise_reply_delay_ms != 0) {
             const ts: linux.timespec = .{ .sec = 0, .nsec = @as(isize, engine_build_options.supervise_reply_delay_ms) * std.time.ns_per_ms };
             _ = linux.nanosleep(&ts, null);
@@ -469,13 +434,11 @@ fn run(self: *Session) void {
 
 const Answer = enum { @"continue", withheld };
 
-/// The run's account, as the shim would have written it.
 const Tracer = struct {
     cfg: Config,
     fd: i32,
     primary: i32,
     seq: u32,
-    /// The installer's own `execve` into the operation is the launch, not an image change.
     launched: bool = false,
     /// Once the crash point's kill is sent nothing is answered or recorded again: the tasks
     /// still in flight are dying, and a call of theirs let through now would land after the
@@ -569,7 +532,6 @@ const Tracer = struct {
         return contract.standingOf(t, self.cfg.run_cgroup);
     }
 
-    /// A boundary, and — as the shim does at one — the cgroup asked again, said when not held.
     fn boundary(self: *Tracer, op: contract.OpClass, pid: i32, tid: i32) void {
         self.record(op, 0, pid, tid, "", "");
         if (self.cfg.run_cgroup.len == 0) return;
@@ -616,7 +578,6 @@ const Tracer = struct {
         return self.cfg.state_alt.len != 0 and contract.isInsideDir(path, self.cfg.state_alt);
     }
 
-    /// The shim's `observe`: scope, numbering, the crash point, and the record.
     fn observe(self: *Tracer, op: contract.OpClass, pid: i32, tid: i32, raw_path: []const u8, raw_aux: []const u8) Answer {
         const path = self.canonical(&self.canon_a, raw_path);
         const aux = self.canonical(&self.canon_b, raw_aux);
@@ -664,8 +625,6 @@ const Tracer = struct {
     }
 };
 
-/// One notification being handled: where to read its arguments, and the id that says whether
-/// what was read still belongs to it.
 const Call = struct {
     t: *Tracer,
     listener: i32,
@@ -721,8 +680,6 @@ const Call = struct {
             },
             .renameat => self.note2(.rename, fdOf(a[0]), a[1], fdOf(a[2]), a[3]),
             .renameat2 => blk: {
-                // The wrapper's reading: a plain rename records as one, the two flags that make
-                // it something else record nothing (the oracle refuses them by name).
                 const flags: u32 = @truncate(a[4]);
                 if (flags & (RENAME_EXCHANGE | RENAME_WHITEOUT) != 0) break :blk .@"continue";
                 break :blk self.note2(.rename, fdOf(a[0]), a[1], fdOf(a[2]), a[3]);
@@ -761,12 +718,6 @@ const Call = struct {
         return .@"continue";
     }
 
-    /// The first `execve` of the subject is the installer becoming the operation: the image the
-    /// engine announced when it took the listener. Every later one is an image change, recorded
-    /// as the shim records it — `.exec` in the old image, then the new image's `shim_ready`
-    /// carrying the count — written before the call runs, since nothing is told of its success.
-    /// An exec that then fails leaves one announcement too many, which the account counts and
-    /// no verdict reads (review).
     fn exec(self: *Call) Answer {
         if (self.pid == self.t.primary and !self.t.launched) {
             self.t.launched = true;
@@ -839,11 +790,6 @@ const Call = struct {
         return self.t.observe(op, self.pid, self.tid, resolved, aresolved);
     }
 
-    /// The shim's `resolveAt`, reading the base from `/proc/<tid>` instead of from its own
-    /// process: absolute paths normalised against `/`, `AT_FDCWD` against the task's working
-    /// directory, a descriptor against what it names — a proven non-directory is not ours, a
-    /// directory whose path cannot be read, or that has been unlinked inside the state
-    /// directory, cannot be placed.
     fn resolveAt(self: *Call, out: []u8, dirfd: i32, p: []const u8, unresolvable: *bool) ?[]const u8 {
         unresolvable.* = false;
         if (p.len == 0) return null;
@@ -901,12 +847,9 @@ fn cloneClass(flags: u64) contract.OpClass {
     return .fork;
 }
 
-/// A descriptor or `AT_FDCWD` argument, which the kernel passes sign-extended.
 fn fdOf(v: u64) i32 {
     return @truncate(@as(i64, @bitCast(v)));
 }
-
-// --- reading the target ---------------------------------------------------------------------
 
 fn tgidOf(tid: i32) ?i32 {
     var pbuf: [64]u8 = undefined;
@@ -940,7 +883,6 @@ fn readSmall(path: [*:0]const u8, out: []u8) ?[]const u8 {
     return out[0..n];
 }
 
-/// Bytes of the target's memory at `addr`. False when any of them could not be read.
 fn readMem(tid: i32, addr: u64, out: []u8) bool {
     var local = [_]std.posix.iovec{.{ .base = out.ptr, .len = out.len }};
     var remote = [_]std.posix.iovec_const{.{ .base = @ptrFromInt(addr), .len = out.len }};
@@ -972,9 +914,6 @@ fn readCString(tid: i32, addr: u64, out: []u8) ?[]const u8 {
 
 const FdKind = enum { path_backed, non_path, unresolvable };
 
-/// `fdKind` from the shim, asked of `/proc/<tid>/fd/<fd>` — which `statx` follows to the open
-/// file, so a socket answers as a socket and an unlinked file with a link count of 0. A number
-/// the task has no descriptor at is the shim's EBADF: nothing to place.
 fn fdKind(tid: i32, fd: i32, deleted: *bool) FdKind {
     var pbuf: [64]u8 = undefined;
     const p = std.fmt.bufPrintZ(&pbuf, "/proc/{d}/fd/{d}", .{ tid, fd }) catch return .unresolvable;
@@ -1016,14 +955,11 @@ fn readLinkAt(link: [*:0]const u8, out: []u8, deleted: *bool) ?[]const u8 {
     return raw;
 }
 
-// --- tests ------------------------------------------------------------------------------------
-
 test "the filter notifies every watched call and allows the rest, on this architecture only" {
     var buf: [max_filter]SockFilter = undefined;
     const f = buildFilter(&buf);
     try std.testing.expect(f.len <= max_filter);
     try std.testing.expectEqual(SECCOMP.RET.ALLOW, f[f.len - 1].k);
-    // The arch check comes first and a foreign arch jumps to ALLOW.
     try std.testing.expectEqual(off_arch, f[0].k);
     try std.testing.expectEqual(audit_arch, f[1].k);
 }
