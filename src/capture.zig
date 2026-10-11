@@ -383,7 +383,7 @@ pub fn readFileAllocCapped(
     // keep the blocking open they had — the flag is not free, and a non-blocking read of
     // a pipe whose writer has not written yet fails where waiting would have succeeded.
     const base: c_int = if (mode.require_regular or mode.bounded)
-        posix.O_RDONLY | posix.O_NONBLOCK
+        posix.O_RDONLY | posix.O_NONBLOCK | posix.O_NOCTTY
     else
         posix.O_RDONLY;
     const flags: c_int = if (mode.no_follow) base | posix.O_NOFOLLOW else base;
