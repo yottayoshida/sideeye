@@ -5089,19 +5089,23 @@ else
     echo "$o" | sed 's/^/     | /' | head -4
     fails=$((fails + 1))
 fi
-# Leg E2: preflight without --twice refuses the flag by name — one observed run rebuilds
-# nothing — measured, not inferred from the shared predicate (security review, Minor-6).
-o=$("$SIDEEYE" preflight --state /tmp/acc/state --operation /bin/true --state-under /tmp --shim "$SHIM" --work /tmp/acc/work-sce2 2>&1)
+rm -rf /tmp/acc/pf2-out /tmp/acc/pf2-range /tmp/acc/work-sce2 /tmp/acc/work-sce2b
+mkdir -p /tmp/acc/pf2-out /tmp/acc/pf2-range/state
+echo "survives" > /tmp/acc/pf2-out/sentinel.txt
+o=$(TOY_STATE=/tmp/acc/pf2-out "$SIDEEYE" preflight --state /tmp/acc/pf2-out --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --state-under /tmp/acc/pf2-range --shim "$SHIM" --work /tmp/acc/work-sce2 2>&1)
 rc=$?
-if [ "$rc" = "3" ] && echo "$o" | grep -q -- "--state-under applies to preflight only with --twice"; then
-    echo "ok   preflight without --twice refuses --state-under by name"
+o2=$(TOY_STATE=/tmp/acc/pf2-range/state "$SIDEEYE" preflight --state /tmp/acc/pf2-range/state --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --state-under /tmp/acc/pf2-range --shim "$SHIM" --work /tmp/acc/work-sce2b 2>&1)
+rc2=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "outside the allowed range" && [ -s /tmp/acc/pf2-out/sentinel.txt ] && [ ! -e /tmp/acc/pf2-out/key.json ] \
+    && [ "$rc2" = "0" ] && echo "$o2" | grep -q "recording accepted"; then
+    echo "ok   preflight without --twice refuses a state outside --state-under before setup, and accepts one inside"
 else
-    echo "FAIL preflight without --twice accepted --state-under (exit $rc)"
+    echo "FAIL preflight --state-under without --twice: outside exit $rc, inside exit $rc2"
+    printf '%s\n' "$o" "$o2" | sed 's/^/     | /' | head -6
     fails=$((fails + 1))
 fi
-# Leg E3 (#717): preflight --twice takes the range, because it empties and rebuilds the state
-# before its second run — the run the MCP server's `twice` asks for. Outside the range it
-# refuses before setup, and a file in that state is still there; inside, it runs to its answer.
 rm -rf /tmp/acc/pf-out /tmp/acc/pf-range /tmp/acc/work-sce3 /tmp/acc/work-sce4
 mkdir -p /tmp/acc/pf-out /tmp/acc/pf-range/state
 echo "survives" > /tmp/acc/pf-out/sentinel.txt
@@ -10225,33 +10229,16 @@ o=$("$SIDEEYE" explore --state "$vet_denied" --operation /bin/true \
 [ "$vrc_a2" = "3" ] || { echo "     denied root (absent): exit $vrc_a2, wanted 3"; vet_fails=$((vet_fails + 1)); }
 [ -d "$vet_denied" ] && { echo "     denied root (absent): the refusal created the directory it refused"; vet_fails=$((vet_fails + 1)); }
 
-# (b) A root replaced between the resolution and the exploration does not produce a
-#     verdict. Measured: what answers here is not the re-vet in front of the delete but
-#     the structural detector that runs before any world — the swap makes the state
-#     change with no recorded operation, and the run refuses at that point, so nothing is
-#     deleted either way. That is a pre-existing protection and this leg pins it as one.
-#
-#     The re-vet covers a different timing: the recorded operation, which runs hundreds
-#     of times, replacing the root between one world's resolution and the next world's
-#     delete. No define can stage that here, because the structural detectors see the
-#     first swap first. It is pinned instead at the call sites in src/engine/state_fs.zig,
-#     where removing `assertRootResolvesToItself` from either `restore` or `freshDir` turns
-#     a test red.
-#
-#     Two earlier versions of this leg claimed to test the re-vet and did not. The first
-#     used a sentinel inside the link's target, which the snapshot copies and `restore`
-#     writes back — structurally unable to fail. The second used `/bin/true` as the
-#     operation, which records nothing, so no world ran at all.
+# (b) Not a sentinel inside the link's target: the snapshot copies it and `restore` writes it
+#     back, so it cannot fail.
 cat > "$vet_dir/swap.sh" <<SWAP
 #!/bin/sh
 rm -rf "$vet_dir/state"
 ln -s "$vet_dir/outside" "$vet_dir/state"
 SWAP
 chmod 755 "$vet_dir/swap.sh"
-# The operation has to write into the state directory. A define whose operation records
-# nothing (/bin/true) never produces a world, so `restore` is never reached and the
-# re-vet never runs — measured: this leg passed on one platform and reported
-# `completeness_not_verified` on the other, neither for the reason it claims to test.
+# Not /bin/true as the operation: a run that went ahead through the link would leave nothing
+# behind to say so.
 cat > "$vet_dir/op.sh" <<OP
 #!/bin/sh
 echo x > "$vet_dir/state/written"
@@ -10260,10 +10247,14 @@ chmod 755 "$vet_dir/op.sh"
 o=$("$SIDEEYE" explore --state "$vet_dir/state" --setup "$vet_dir/swap.sh" \
     --operation "$vet_dir/op.sh" --shim "$SHIM" --work "$vet_dir/work-b" 2>&1) && vrc2=0 || vrc2=$?
 case "$o" in
-    *state_changed_without_ops*) : ;;
-    *) echo "     root swap: wanted the structural refusal (state_changed_without_ops), got: $(printf '%s' "$o" | head -1)"
+    *"could not be confirmed as the one this run resolved"*) : ;;
+    *) echo "     root swap: wanted the re-vet's refusal before the recording run, got: $(printf '%s' "$o" | head -1)"
        vet_fails=$((vet_fails + 1)) ;;
 esac
+[ "$vrc2" = "3" ] || { echo "     root swap: exit $vrc2, wanted 3"; vet_fails=$((vet_fails + 1)); }
+[ -e "$vet_dir/outside/written" ] && {
+    echo "     root swap: the operation wrote through the link before the refusal"
+    vet_fails=$((vet_fails + 1)); }
 case "$o" in
     *PASS*) echo "     root swap: a state directory replaced by a link produced a PASS"
             vet_fails=$((vet_fails + 1)) ;;
@@ -10511,22 +10502,53 @@ else
 fi
 
 echo "=========== check: a rewrite the engine cannot perform refuses in its own phase (#363 Group B) ==========="
-# state_rewrite_failed: after the define has run, the engine failing to rewrite the
-# state tree it recorded is UNKNOWN with that name, never a SETUP ERROR; before the
-# define, the same failure honestly stays exit 3. The plant is a subdirectory the
-# snapshot can read (r-x) but whose entries cannot be unlinked (no write bit on the
-# directory), so it survives the initial snapshot and kills the first rewrite that
-# tries to delete through it. Planted from the shell for 2fc's reason. Non-root only:
-# root ignores permission bits, so the plant does not fire there (this suite's CI
-# runner is non-root; spike/Dockerfile run bare is root, and there these legs FAIL
-# loudly rather than skip).
-#
-# Leg A: the world loop's restore, the first rewrite a checkerless run reaches.
+# Not as root: root ignores permission bits, so the plant does not fire, and these legs FAIL
+# there rather than skip.
 rm -rf /tmp/acc-rw && mkdir -p /tmp/acc-rw/state/pin
 echo x > /tmp/acc-rw/state/pin/f
 chmod 555 /tmp/acc-rw/state/pin
 o=$(TOY_STATE=/tmp/acc-rw/state "$SIDEEYE" explore --state /tmp/acc-rw/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc-rw/work-a0 --allow-unverified \
+    --json /tmp/acc-rw/r.json 2>&1)
+rc=$?
+if [ "$rc" = "3" ] \
+    && echo "$o" | grep -q "could not restore the state directory before the recording run" \
+    && grep -q '"setup_error_reason": "environment"' /tmp/acc-rw/r.json \
+    && ! grep -q '"unknown_reason"' /tmp/acc-rw/r.json; then
+    echo "ok   a state the engine cannot rebuild before the recording run is a SETUP ERROR, the operation not yet run"
+else
+    echo "FAIL rewrite failure before the recording run: exit $rc (wanted 3 + the recording run's wording + environment, no unknown_reason)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+chmod 755 /tmp/acc-rw/state/pin
+rm -rf /tmp/acc-rw && mkdir -p /tmp/acc-rw/state
+
+# Not planted by the setup for legs A and B: the rebuild before the recording run would meet
+# it first. Not a shell script: its mkdir and chmod would be child processes, refused before
+# any rewrite is reached.
+cat > /tmp/acc-rw/pinner.c <<'EOF'
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <unistd.h>
+int main(void) {
+    const char *dir = getenv("TOY_STATE");
+    if (!dir) return 1;
+    char pin[512], f[512];
+    snprintf(pin, sizeof pin, "%s/pin", dir);
+    snprintf(f, sizeof f, "%s/pin/f", dir);
+    if (mkdir(pin, 0755) != 0) return 1;
+    int fd = open(f, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd < 0 || write(fd, "x\n", 2) != 2 || close(fd) != 0) return 1;
+    return chmod(pin, 0555) == 0 ? 0 : 1;
+}
+EOF
+cc -O0 -o /tmp/acc-rw/pinner /tmp/acc-rw/pinner.c || { echo "FAIL rewrite failure: the pinner did not compile"; fails=$((fails + 1)); }
+o=$(TOY_STATE=/tmp/acc-rw/state "$SIDEEYE" explore --state /tmp/acc-rw/state \
+    --operation /tmp/acc-rw/pinner \
     --shim "$SHIM" --work /tmp/acc-rw/work --allow-unverified \
     --json /tmp/acc-rw/r.json 2>&1)
 rc=$?
@@ -10544,11 +10566,15 @@ else
 fi
 # Leg B: the falsification probe's restore — the earlier rewrite a checkered run
 # reaches first. Distinguishes an implementation that rerouted only the world loop.
+# Not without a setup: with nothing to corrupt, the probe refuses checker_not_falsified
+# before its restore.
 # /bin/true stands in for the checker: the probe's restore fails before any checker
 # would run, so its content is irrelevant by construction.
 rm -f /tmp/acc-rw/r.json
+chmod 755 /tmp/acc-rw/state/pin 2>/dev/null
+rm -rf /tmp/acc-rw/state && mkdir -p /tmp/acc-rw/state
 o=$(TOY_STATE=/tmp/acc-rw/state "$SIDEEYE" explore --state /tmp/acc-rw/state \
-    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --setup "$OUT/toy-fixed init" --operation /tmp/acc-rw/pinner \
     --check /bin/true \
     --shim "$SHIM" --work /tmp/acc-rw/work-b --allow-unverified \
     --json /tmp/acc-rw/r.json 2>&1)
@@ -12450,6 +12476,82 @@ else
     echo "     FileNotFoundError (returncode -31 is the child dying of the trap)"
     echo "$o" | grep -- " -> " | sed 's/^/     | /'
     fails=$((fails + 1))
+fi
+
+
+echo "=========== check 27: the recording run starts from the rebuilt state every world starts from (#815) ==========="
+# Not on /tmp: overlay and ext4 list a rebuilt directory in the order the setup wrote it, and
+# the legs would measure nothing.
+if [ "$(id -u)" = "0" ]; then
+    mnt() { mount "$@"; }
+    umnt() { umount "$@"; }
+    can_mount=1
+elif sudo -n true 2>/dev/null; then
+    mnt() { sudo -n mount "$@"; }
+    umnt() { sudo -n umount "$@"; }
+    can_mount=1
+else
+    can_mount=0
+fi
+T=/tmp/acc-listing
+[ "$can_mount" = "1" ] && umnt "$T" 2>/dev/null
+rm -rf "$T"
+mkdir -p "$T"
+mounted27=0
+if [ "$can_mount" = "1" ] && mnt -t tmpfs -o "mode=0755,uid=$(id -u),gid=$(id -g)" tmpfs "$T"; then
+    mounted27=1
+fi
+if [ "$mounted27" = "0" ]; then
+    if [ "${SIDEEYE_EXPECT_MOUNT:-0}" = "1" ]; then
+        echo "FAIL check 27 needs a tmpfs mount (root or passwordless sudo) and SIDEEYE_EXPECT_MOUNT=1 says this host has one"
+        fails=$((fails + 1))
+    else
+        echo "     NOT MEASURED: check 27 needs a tmpfs mount (root or passwordless sudo)"
+        not_measured=$((not_measured + 1))
+    fi
+else
+    mkdir -p "$T/probe-rev" "$T/probe-fwd"
+    for n in e d c b a; do : > "$T/probe-rev/$n"; done
+    for n in a b c d e; do : > "$T/probe-fwd/$n"; done
+    rev27=$(ls -f "$T/probe-rev" | grep -v '^\.' | tr '\n' ' ')
+    fwd27=$(ls -f "$T/probe-fwd" | grep -v '^\.' | tr '\n' ' ')
+    if [ "$rev27" = "$fwd27" ]; then
+        echo "FAIL check 27's tmpfs lists entries made in opposite orders alike ($rev27): its legs would measure nothing"
+        fails=$((fails + 1))
+    else
+        o=$(TOY_STATE="$T/s1" "$SIDEEYE" explore --state "$T/s1" --setup "$OUT/toy-listing init" \
+            --operation "$OUT/toy-listing index" --shim "$SHIM" --work "$T/w1" --allow-unverified 2>&1)
+        rc=$?
+        if [ "$rc" = "0" ] && printf '%s\n' "$o" | grep -q "^PASS "; then
+            echo "ok   a target listing its state reads the same order in the recording run and in every world"
+        else
+            echo "FAIL a target listing its state on tmpfs: exit $rc (wanted 0 and PASS)"
+            printf '%s\n' "$o" | sed -n '1,4p' | sed 's/^/     | /'
+            fails=$((fails + 1))
+        fi
+        o=$(TOY_STATE="$T/s2" "$SIDEEYE" preflight --state "$T/s2" --setup "$OUT/toy-listing init" \
+            --operation "$OUT/toy-listing index" --twice --shim "$SHIM" --work "$T/w2" 2>&1)
+        rc=$?
+        if [ "$rc" = "0" ]; then
+            echo "ok   preflight --twice starts both of its runs from the rebuilt state"
+        else
+            echo "FAIL preflight --twice on a target listing its state: exit $rc (wanted 0, the two runs equal)"
+            printf '%s\n' "$o" | sed -n '1,6p' | sed 's/^/     | /'
+            fails=$((fails + 1))
+        fi
+        o=$(TOY_STATE="$T/s3" "$SIDEEYE" preflight --state "$T/s3" --setup "$OUT/toy-listing init" \
+            --operation "$OUT/toy-listing index" --shim "$SHIM" --work "$T/w3" 2>&1)
+        rc=$?
+        got27=$(tr '\n' ' ' < "$T/s3/index" 2>/dev/null)
+        if [ "$rc" = "0" ] && [ "$got27" = "$fwd27" ]; then
+            echo "ok   a plain preflight lists the rebuilt state, as explore's recording does"
+        else
+            echo "FAIL a plain preflight on a target listing its state: exit $rc, index '$got27', the rebuilt order '$fwd27'"
+            printf '%s\n' "$o" | sed -n '1,4p' | sed 's/^/     | /'
+            fails=$((fails + 1))
+        fi
+    fi
+    umnt "$T"
 fi
 
 reached_end=1

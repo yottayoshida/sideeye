@@ -88,8 +88,8 @@ define cannot be set up). Follow the `next` line. `--twice` runs it again from t
 state and names the paths two clean runs leave differently (exit 1): declare those as
 `scratch` in the toml if nobody depends on their bytes, or pin what varies and list it as
 `apparatus`. Over MCP, where the server lists it, the same question is `sideeye_preflight`
-with `config_path` and `twice`; `twice` is refused unless the config's state directory is
-inside the server's `SIDEEYE_MCP_STATE_ROOT`, and so is `sideeye_explore_config`. A server
+with `config_path` and `twice`; it is refused unless the config's state directory is inside
+the server's `SIDEEYE_MCP_STATE_ROOT`, with `twice` or without, and so is `sideeye_explore_config`. A server
 without the tool predates it: use the command line.
 
 ## 5. Explore

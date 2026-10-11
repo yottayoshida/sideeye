@@ -234,6 +234,7 @@ jobs:
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
           SIDEEYE_EXPECT_CONTAINED: "0"
+          SIDEEYE_EXPECT_MOUNT: "1"
           SIDEEYE_EXPECT_SHELLS: "1"
 
       # Then in a cgroup delegated to the runner (`spike/in-delegated-cgroup.sh`), where the
@@ -246,6 +247,7 @@ jobs:
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
           SIDEEYE_EXPECT_CONTAINED: "1"
+          SIDEEYE_EXPECT_MOUNT: "1"
 
       # The libc-internal-call class (#39), one member per run. Its own invocation
       # rather than a check inside the acceptance suite: it drives the shipped engine
@@ -1979,6 +1981,7 @@ jobs:
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
           SIDEEYE_EXPECT_CONTAINED: "0"
+          SIDEEYE_EXPECT_MOUNT: "1"
           SIDEEYE_EXPECT_SHELLS: "1"
 
       - name: Acceptance suite, contained in a delegated cgroup, against the same build
@@ -1986,6 +1989,7 @@ jobs:
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
           SIDEEYE_EXPECT_CONTAINED: "1"
+          SIDEEYE_EXPECT_MOUNT: "1"
 
       - name: MCP acceptance suite, against the same build
         run: sh spike/mcp-acceptance.sh

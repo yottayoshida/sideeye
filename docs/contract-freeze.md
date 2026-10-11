@@ -320,6 +320,16 @@ stay the same.
    whose checker rejected the final state too was already refused at the baseline, exit 2; it
    keeps exit 2 under the new reason.) The verdict-to-code mapping is
    untouched; what changed is which verdict those runs reach, recorded in surface 2's dated note.
+   **Which runs exit 3 moved on 2026-10-11** (ADR 0118): the recording run starts from the
+   state rebuilt from its snapshot, as every world does, so two shapes that ran the operation and
+   then refused with exit 2 now refuse before it runs, with exit 3 and the class `environment` — a
+   setup that replaced the state directory with a symlink (refused `state_changed_without_ops`
+   once the recording had written through the link, outside the state) and a state holding an
+   entry the engine cannot remove (refused `state_rewrite_failed` at the first world). And a target
+   that lists its state on tmpfs, btrfs or XFS, refused `baseline_violates_invariant` (exit 2)
+   when the baseline listed the rebuilt directory in another order than the recording listed the
+   setup's, can now reach a verdict. The verdict-to-code mapping is untouched and no reason is
+   added.
 4. **Replay compatibility.** A saved case replays across 1.x or refuses
    honestly — `case_no_longer_applies`, whether the code changed underneath
    it or the trace contract did (the refusal message names which) — never a
@@ -358,6 +368,13 @@ stay the same.
    as an honest refusal and not a verdict about a shifted address: the reason says why the case's
    world could never have been the target's, and what the case said about the target was not true.
    The one such FAIL in this repository's records is xmake's, above.
+   **Read on 2026-10-11** (#815, ADR 0118): a replay's recording now starts from the rebuilt
+   state. A case saved before, from a target whose operations depend on what the rebuild changes —
+   the order a directory lists in on tmpfs, btrfs or XFS above all — can meet a recording whose
+   operations up to the crash point name other paths in the same classes. The replay says the
+   paths at the crash point differ and goes on, as it does for a path carrying a pid, because the
+   case's prefix compares classes (ADR 0009); the operation it kills before is the one of that
+   class at that index in a run that starts as its worlds do.
 5. **The MCP surface** (decided 2026-08-13, recorded in #86, codified here).
    The two tool names — `sideeye_explore_config`, `sideeye_replay_case` —
    their input schemas, and the isError derivation rule (isError follows the
@@ -401,3 +418,8 @@ stay the same.
    through the server meets a refusal where the call used to run, which is why it is written
    here at all.
    No row in `surface-changes.tsv`.
+   **Read, not used, on 2026-10-11** (#815, ADR 0118): `sideeye_preflight` without `twice`
+   refuses a config whose state directory does not resolve strictly inside
+   `SIDEEYE_MCP_STATE_ROOT`, as it already did with `twice`: every preflight now rebuilds the
+   state before its run. Name, input schema and isError rule unchanged; a narrowing of which
+   inputs run, read the way the 2026-10-10 entry reads #765's. No row in `surface-changes.tsv`.

@@ -513,20 +513,13 @@ pub fn spawnFailure(e: posix.ContainedSpawnError, phase: SpawnPhase, doing: []co
     setupError(reason, doing);
 }
 
-/// #5's demotion, shared by the three snapshot sites: a state tree holding an entry
-/// `restore` cannot recreate must not be explored — every world would run against a
-/// tree the recording run never had, and the crash points were derived from the
-/// recording run. Ordering is deliberate at every call site: snapshot-trust
-/// detectors (the oracle's defined-list scrutiny, quiescence) come first, this
-/// demotion second, judgement last — so an existing refusal's reason is never
-/// overtaken. The entry name reaches the text through the same non-bloating
-/// defang as every other target-chosen string (#26/#167); `phase` says which
-/// snapshot saw it. Returns only when the snapshot is clean.
+/// Do not move a call site ahead of the snapshot-trust detectors (the oracle's defined-list
+/// scrutiny, quiescence) or behind judgement: an existing refusal's reason would be overtaken.
 pub fn refuseUnsupportedEntry(arena: std.mem.Allocator, snap: engine.Snapshot, phase: []const u8) void {
     if (engine.firstUnsupportedEntry(snap)) |rel| {
         const detail = std.fmt.allocPrint(
             arena,
-            "the state directory holds an entry that is neither a regular file, a directory nor a symlink ({s}: {s}) — restore cannot recreate it, so every explored world would run against a tree the recording run never had",
+            "the state directory holds an entry that is neither a regular file, a directory nor a symlink ({s}: {s}) — restore cannot recreate it, so the state the runs start from would not be the tree this snapshot read",
             .{ phase, textShown(arena, rel) },
         ) catch "the state directory holds an entry that restore cannot recreate (a FIFO, socket or device)";
         unknown(.unsupported_state_entry, detail, .class_wall);

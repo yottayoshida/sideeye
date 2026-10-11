@@ -72,8 +72,8 @@ const usage_fmt =
     \\
     \\usage:
     \\  sideeye demo [--shim <lib>]
-    \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice [--state-under <dir>]]
-    \\  sideeye preflight --config <sideeye.toml> [--shim <lib>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice [--state-under <dir>]]
+    \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice] [--state-under <dir>]
+    \\  sideeye preflight --config <sideeye.toml> [--shim <lib>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice] [--state-under <dir>]
     \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--recovery <cmd> --recovery-check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--state-under <dir>]
     \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--state-under <dir>]
     \\  sideeye replay <case.json> [--shim <lib>] [--recovery <cmd> --recovery-check <cmd>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
@@ -90,12 +90,13 @@ const usage_fmt =
     \\
     \\preflight answers "does the recording phase accept this target?" without
     \\exploring — from the define flags before a sideeye.toml exists, or from the
-    \\toml itself with --config, read as explore reads it. It runs the operation
-    \\under observation and either accepts the recording (exit 0) or refuses with
-    \\the same named detector a real run would use (exit 2). A toml's marker must
-    \\appear in the recording's output, and a check is refused if it cannot be
-    \\started or the state holds nothing to corrupt; neither the check nor a
-    \\recovery is run.
+    \\toml itself with --config, read as explore reads it. Like explore, it first
+    \\REWRITES the state directory, rebuilding it from its snapshot (owners and
+    \\timestamps do not come back), then runs the operation under observation and
+    \\either accepts the recording (exit 0) or refuses with the same named detector
+    \\a real run would use (exit 2). A toml's marker must appear in the recording's
+    \\output, and a check is refused if it cannot be started or the state holds
+    \\nothing to corrupt; neither the check nor a recovery is run.
     \\With --twice it observes a second run and compares the two, adding one
     \\outcome: the runs left different state (exit 1, and no verdict — see
     \\--twice below). What only a real exploration can check — kill landing,
@@ -193,7 +194,7 @@ const usage_fmt =
     \\               every replay: it lives for the whole client session, and the
     \\               second replay used to die in the leftovers of the first
     \\  --state-under
-    \\               (explore, replay, preflight --twice) refuse before setup a state
+    \\               (explore, replay, preflight) refuse before setup a state
     \\               directory not strictly inside this one: each rebuilds the state a
     \\               case or config names. The MCP server passes
     \\               SIDEEYE_MCP_STATE_ROOT here
@@ -264,9 +265,9 @@ const usage_fmt =
     \\               resets SIGCHLD to its default disposition for the whole run.
     \\               Not settable over MCP today.
     \\  --twice
-    \\               (preflight only) observe the operation a SECOND time from the
-    \\               restored pre-state, at least two seconds after the first start,
-    \\               and compare the two post-states. Byte repeatability is a
+    \\               (preflight only) observe the operation TWICE, each run from the
+    \\               restored pre-state, the second at least two seconds after the
+    \\               first, and compare the post-states. Byte repeatability is a
     \\               property of two runs, so one observation structurally cannot
     \\               see it. Equal: exit 0. Different: the differing paths are named
     \\               and the command exits 1 — not a FAIL verdict, which preflight
@@ -279,17 +280,14 @@ const usage_fmt =
     \\               toml's [world] state); modes, ownership, timestamps, inode
     \\               identity, a symlink's destination and everything outside
     \\               the state directory are not compared, the pre-state
-    \\               run B starts from is rebuilt rather than byte-identical, and
+    \\               both runs start from is rebuilt, not the setup's own, and
     \\               two runs are not all runs. The two-second gap is what
     \\               epoch-second stamping needs to move — not a measured
     \\               sufficiency threshold for nondeterminism in general.
-    \\               Caution: it also REWRITES the state directory: it is
-    \\               restored from the pre-run snapshot before the second run,
-    \\               so the first run's output is gone; permission bits come back
-    \\               as the snapshot read them (a directory with its owner's bits
-    \\               added), owners and timestamps do not.
-    \\               A preflight without this flag leaves the
-    \\               directory as the run left it.
+    \\               Caution: it REWRITES the state directory before each run, so the
+    \\               first run's output is gone too; permission bits come back as the
+    \\               snapshot read them (a directory with its owner's bits added),
+    \\               owners and timestamps do not.
     \\
     \\exit codes: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR
     \\            (preflight produces no verdict: it exits 0 when it accepts, 1 when
@@ -1224,7 +1222,7 @@ test "a flag's summary is a whole sentence, or the whole description when it has
     try std.testing.expect(std.mem.startsWith(u8, (try flagSummary(arena, "--observe")).?, "where operations are counted. "));
     try std.testing.expect(std.mem.startsWith(u8, (try flagSummary(arena, "--world-timeout")).?, "wall-clock budget"));
     try std.testing.expectEqualStrings("directory whose contents define the target's state", (try flagSummary(arena, "--state")).?);
-    try std.testing.expect(std.mem.indexOf(u8, (try flagSummary(arena, "--twice")).?, "Caution: it also REWRITES the state directory") != null);
+    try std.testing.expect(std.mem.indexOf(u8, (try flagSummary(arena, "--twice")).?, "Caution: it REWRITES the state directory") != null);
     try std.testing.expect(std.mem.indexOf(u8, (try flagSummary(arena, "--observe")).?, "**Caution: do not use `syscalls`") != null);
     try std.testing.expect(std.mem.startsWith(u8, (try flagSummary(arena, "--oracle-fs-usage")).?, "macOS, as root:"));
     var in_list: usize = 0;
@@ -1485,13 +1483,11 @@ pub fn parse(argv: []const []const u8) Parsed {
             // its fork and the reset. Every child of the run — recording, worlds,
             _ = posix.signal(posix.SIGCHLD, posix.SIG_DFL);
         } else if (std.mem.eql(u8, argv[i], "--state-under")) {
-            // with `sideeye_preflight` and explores it is not that operator (ADR 0106). Preflight
-            // without `--twice` rebuilds nothing, and is refused it after the loop, once the
-            // whole argv has said whether `--twice` is there — in `phaseDefine`, after the
-            // base command's first refusals, as the recovery pair is (#406).
-            // Every mode this parser serves takes the flag now; the refusal stays for a mode added
-            // later, so that a new command does not accept a confinement flag it ignores.
-            if (mode != .replay and mode != .preflight and mode != .explore) setupError(.define_invalid, "--state-under applies to explore, replay and preflight --twice: the three commands that empty and rebuild a state directory");
+            // Not an `else`: a mode added later must decide here whether it rebuilds a state,
+            // or it would accept a confinement flag it ignores.
+            switch (mode) {
+                .explore, .replay, .preflight => {},
+            }
             // A confinement flag must not be last-wins: two spellings in one argv is
             // a caller bug, and silently taking the second would let a widened range
             // ride behind a narrow-looking one.

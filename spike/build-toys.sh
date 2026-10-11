@@ -105,6 +105,9 @@ echo "building toy-twice"
 # --twice` applies its gates to the SECOND observation as well as the first (#199).
 gcc $cc_flags -o "$out/toy-twice" "$root/spike/toys/toy_twice.c"
 
+echo "building toy-listing"
+gcc $cc_flags -o "$out/toy-listing" "$root/spike/toys/toy_listing.c"
+
 echo "building toy-copy"
 # Calls copy_file_range directly, in both directions (destination inside the state
 # directory, and source inside with the destination outside). The C toy is the
