@@ -174,6 +174,9 @@ pub fn diffSnapshotsExcept(first: Snapshot, second: Snapshot, out: []Difference,
 pub const Unaccounted = struct {
     rel: []const u8,
     how: Difference.How,
+    /// A record named the path, but none of the naming records can have put the bytes the
+    /// path is left holding (an `open`, an `fsync`, the source of a rename).
+    named_without_bytes: bool = false,
 };
 
 pub const Reconciled = struct {
@@ -326,27 +329,38 @@ fn resolveForRecord(
 ///
 /// `ops` should be every recorded operation, not only the subject's mutating ones: a
 /// child that left a record has explained its change, and *who* performed it is a
-/// different detector's question (`child_touched_state_dir`). `open` counts as naming
-/// a path for the same reason — excluding it makes the zero-ops form stricter and this
-/// form wrong, since a create-then-write pair would otherwise refuse on its own file.
+/// different detector's question (`child_touched_state_dir`).
+///
+/// A difference that leaves a regular file holding bytes is accounted for only by a record
+/// that can have put those bytes there: a write, the destination of a rename or a link, the
+/// source of a link whose other name a recorded write names, or a truncate whose result is a
+/// prefix of the old bytes followed by zeros. Every other difference — a file left empty, a
+/// path removed, a directory, a path `scratch_paths` declares — is accounted for by any record
+/// that names it, `open` included, so a created-and-never-written file still explains itself
+/// (ADR 0032 §2).
 pub fn reconcile(
     diffs: []const Difference,
     ops: []const Op,
     links: []const Link,
     root: []const u8,
     alt: []const u8,
+    initial: Snapshot,
+    final: Snapshot,
+    scratch_paths: []const []const u8,
     scratch: []u8,
     out: []Unaccounted,
 ) Reconciled {
     var res: Reconciled = .{ .stored = 0, .total = 0, .by_rename_prefix = 0 };
     var joined: [contract.max_path]u8 = undefined;
     for (diffs) |d| {
+        const left = if (scratchMatches(scratch_paths, d.rel)) null else bytesLeft(d, initial, final);
         var named = false;
+        var named_without_bytes = false;
         var by_prefix = false;
         for (ops) |op| {
             if (op.class.isMarker() or op.class.isThreadSync()) continue;
             const ends = [2][]const u8{ op.path, op.aux };
-            for (ends) |p| {
+            for (ends, 0..) |p, end| {
                 if (p.len == 0) continue;
                 const lexical = relUnderRoot(p, root, alt) orelse continue;
                 const rel = resolveForRecord(lexical, op.class, links, root, alt, scratch, &joined);
@@ -359,6 +373,10 @@ pub fn reconcile(
                 // naming `cur`. That is the same regression the substitution was written
                 // to fix, one level up, and the second revision of this code introduced it.
                 if (std.mem.eql(u8, lexical, d.rel) or std.mem.eql(u8, rel, d.rel)) {
+                    if (left) |b| if (!canPutBytes(op, end, b, ops, root, alt)) {
+                        named_without_bytes = true;
+                        continue;
+                    };
                     named = true;
                     break;
                 }
@@ -379,11 +397,50 @@ pub fn reconcile(
         }
         res.total += 1;
         if (res.stored < out.len) {
-            out[res.stored] = .{ .rel = d.rel, .how = d.how };
+            out[res.stored] = .{ .rel = d.rel, .how = d.how, .named_without_bytes = named_without_bytes };
             res.stored += 1;
         }
     }
     return res;
+}
+
+const BytesLeft = struct { old: []const u8, new: []const u8 };
+
+fn bytesLeft(d: Difference, initial: Snapshot, final: Snapshot) ?BytesLeft {
+    if (d.how == .only_in_first) return null;
+    const after = final.find(d.rel) orelse return null;
+    if (after.kind != .file or after.content.len == 0) return null;
+    const before: []const u8 = if (initial.find(d.rel)) |b| (if (b.kind == .file) b.content else "") else "";
+    return .{ .old = before, .new = after.content };
+}
+
+/// The source of a rename is not counted, nor the source of a link unless its other name was
+/// written: a target that moves or links `cfg` aside and puts new bytes at `cfg` through a call
+/// nothing records would otherwise be accounted for by the move.
+fn canPutBytes(op: Op, end: usize, b: BytesLeft, ops: []const Op, root: []const u8, alt: []const u8) bool {
+    return switch (op.class) {
+        .write => true,
+        .rename => end == 1,
+        .link => end == 1 or writtenAfter(ops, op, root, alt),
+        .truncate => isPrefixThenZeros(b.old, b.new),
+        else => false,
+    };
+}
+
+fn writtenAfter(ops: []const Op, link: Op, root: []const u8, alt: []const u8) bool {
+    const want = relUnderRoot(link.aux, root, alt) orelse return false;
+    for (ops) |o| {
+        if (o.class != .write or o.seq <= link.seq) continue;
+        const got = relUnderRoot(o.path, root, alt) orelse continue;
+        if (std.mem.eql(u8, got, want)) return true;
+    }
+    return false;
+}
+
+fn isPrefixThenZeros(old: []const u8, new: []const u8) bool {
+    const k = std.mem.indexOfDiff(u8, old, new) orelse return true;
+    for (new[@min(k, new.len)..]) |c| if (c != 0) return false;
+    return true;
 }
 
 pub fn collectLinks(a: Allocator, first: Snapshot, second: Snapshot, out: *std.ArrayList(Link)) !void {
@@ -531,7 +588,138 @@ fn reconcileIn(
     out: []Unaccounted,
 ) Reconciled {
     var scratch: [2048]u8 = undefined;
-    return reconcile(diffs, ops, links, root, alt, &scratch, out);
+    const empty: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .entries = .empty };
+    return reconcile(diffs, ops, links, root, alt, empty, empty, &.{}, &scratch, out);
+}
+
+fn reconcileWithContents(
+    diffs: []const Difference,
+    ops: []const Op,
+    before: []const Entry,
+    after: []const Entry,
+    out: []Unaccounted,
+) Reconciled {
+    return reconcileWithContentsExcept(diffs, ops, before, after, &.{}, out);
+}
+
+fn reconcileWithContentsExcept(
+    diffs: []const Difference,
+    ops: []const Op,
+    before: []const Entry,
+    after: []const Entry,
+    scratch_paths: []const []const u8,
+    out: []Unaccounted,
+) Reconciled {
+    var scratch: [2048]u8 = undefined;
+    const initial: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .entries = .{ .items = @constCast(before), .capacity = before.len } };
+    const final: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .entries = .{ .items = @constCast(after), .capacity = after.len } };
+    return reconcile(diffs, ops, &.{}, "/tmp/s", "", initial, final, scratch_paths, &scratch, out);
+}
+
+test "reconcile: a file left holding bytes is accounted for only by a record that can have put them there (#814)" {
+    const changed = [_]Difference{.{ .rel = "key.txt", .how = .content_differs }};
+    const old = [_]Entry{.{ .rel = "key.txt", .kind = .file, .content = "OLD\n" }};
+    const new = [_]Entry{.{ .rel = "key.txt", .kind = .file, .content = "NEW-CONTENT\n" }};
+    var buf: [2]Unaccounted = undefined;
+
+    // The reflink `cp` and the io_uring write: an `open(O_TRUNC)` is all either witness records.
+    const opened = [_]Op{.{ .class = .open, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/key.txt", .aux = "" }};
+    const r_open = reconcileWithContents(&changed, &opened, &old, &new, &buf);
+    try std.testing.expectEqual(@as(usize, 1), r_open.total);
+    try std.testing.expect(buf[0].named_without_bytes);
+
+    const fsynced = [_]Op{.{ .class = .fsync, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/key.txt", .aux = "" }};
+    try std.testing.expectEqual(@as(usize, 1), reconcileWithContents(&changed, &fsynced, &old, &new, &buf).total);
+
+    // Control: the same open beside a recorded write is accounted for.
+    const written = [_]Op{
+        .{ .class = .open, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/key.txt", .aux = "" },
+        .{ .class = .write, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/key.txt", .aux = "" },
+    };
+    try std.testing.expect(reconcileWithContents(&changed, &written, &old, &new, &buf).clean());
+
+    // A new file filled by a clone, never written: the open that created it is not enough.
+    const made = [_]Difference{.{ .rel = "key.txt", .how = .only_in_second }};
+    try std.testing.expectEqual(@as(usize, 1), reconcileWithContents(&made, &opened, &.{}, &new, &buf).total);
+}
+
+test "reconcile: an open still accounts for a file it left empty, created or truncated" {
+    var buf: [2]Unaccounted = undefined;
+    const opened = [_]Op{.{ .class = .open, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/key.txt", .aux = "" }};
+    const empty = [_]Entry{.{ .rel = "key.txt", .kind = .file, .content = "" }};
+    const created = [_]Difference{.{ .rel = "key.txt", .how = .only_in_second }};
+    try std.testing.expect(reconcileWithContents(&created, &opened, &.{}, &empty, &buf).clean());
+    const truncated = [_]Difference{.{ .rel = "key.txt", .how = .content_differs }};
+    const old = [_]Entry{.{ .rel = "key.txt", .kind = .file, .content = "OLD\n" }};
+    try std.testing.expect(reconcileWithContents(&truncated, &opened, &old, &empty, &buf).clean());
+}
+
+test "reconcile: a truncate accounts only for the old bytes cut short or padded with zeros" {
+    var buf: [2]Unaccounted = undefined;
+    const changed = [_]Difference{.{ .rel = "key.txt", .how = .content_differs }};
+    const truncate = [_]Op{.{ .class = .truncate, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/key.txt", .aux = "" }};
+    const old = [_]Entry{.{ .rel = "key.txt", .kind = .file, .content = "OLD-CONTENT-LONG\n" }};
+
+    const cut = [_]Entry{.{ .rel = "key.txt", .kind = .file, .content = "OLD" }};
+    try std.testing.expect(reconcileWithContents(&changed, &truncate, &old, &cut, &buf).clean());
+    const padded = [_]Entry{.{ .rel = "key.txt", .kind = .file, .content = "OLD-CONTENT-LONG\n\x00\x00\x00" }};
+    try std.testing.expect(reconcileWithContents(&changed, &truncate, &old, &padded, &buf).clean());
+    const zeros = [_]Entry{.{ .rel = "key.txt", .kind = .file, .content = "\x00\x00\x00\x00" }};
+    try std.testing.expect(reconcileWithContents(&changed, &truncate, &old, &zeros, &buf).clean());
+
+    // `ftruncate(fd, 0)` and then bytes through io_uring: a shorter different content, and the
+    // old bytes with a non-zero tail. Neither is what a truncate can leave.
+    const shorter = [_]Entry{.{ .rel = "key.txt", .kind = .file, .content = "NEW\n" }};
+    try std.testing.expectEqual(@as(usize, 1), reconcileWithContents(&changed, &truncate, &old, &shorter, &buf).total);
+    const tail = [_]Entry{.{ .rel = "key.txt", .kind = .file, .content = "OLD-CONTENT-LONG\nTAIL\n" }};
+    try std.testing.expectEqual(@as(usize, 1), reconcileWithContents(&changed, &truncate, &old, &tail, &buf).total);
+}
+
+test "reconcile: only the destination of a rename accounts for the bytes a file is left holding" {
+    var buf: [2]Unaccounted = undefined;
+    const changed = [_]Difference{.{ .rel = "cfg", .how = .content_differs }};
+    const old = [_]Entry{.{ .rel = "cfg", .kind = .file, .content = "OLD\n" }};
+    const new = [_]Entry{.{ .rel = "cfg", .kind = .file, .content = "NEW\n" }};
+    const moved_aside = [_]Op{.{ .class = .rename, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cfg", .aux = "/tmp/s/cfg.bak" }};
+    try std.testing.expectEqual(@as(usize, 1), reconcileWithContents(&changed, &moved_aside, &old, &new, &buf).total);
+    const swapped_in = [_]Op{.{ .class = .rename, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cfg.tmp", .aux = "/tmp/s/cfg" }};
+    try std.testing.expect(reconcileWithContents(&changed, &swapped_in, &old, &new, &buf).clean());
+}
+
+test "reconcile: the source of a link accounts for a file's bytes only when its other name was written" {
+    var buf: [2]Unaccounted = undefined;
+    const changed = [_]Difference{.{ .rel = "cfg", .how = .content_differs }};
+    const old = [_]Entry{.{ .rel = "cfg", .kind = .file, .content = "OLD\n" }};
+    const new = [_]Entry{.{ .rel = "cfg", .kind = .file, .content = "NEW\n" }};
+    // `ln cfg cfg.orig` and new bytes at `cfg` from a reflink: only the link and the
+    // truncating open are recorded.
+    const linked_aside = [_]Op{
+        .{ .class = .link, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cfg", .aux = "/tmp/s/cfg.orig" },
+        .{ .class = .open, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/cfg", .aux = "" },
+    };
+    try std.testing.expectEqual(@as(usize, 1), reconcileWithContents(&changed, &linked_aside, &old, &new, &buf).total);
+    // A write through the other name changes this name's bytes, and accounts for them.
+    const written_through = [_]Op{
+        .{ .class = .link, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cfg", .aux = "/tmp/s/alias" },
+        .{ .class = .write, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/alias", .aux = "" },
+    };
+    try std.testing.expect(reconcileWithContents(&changed, &written_through, &old, &new, &buf).clean());
+    // A write to that name before the link reached a different file.
+    const written_before = [_]Op{
+        .{ .class = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/alias", .aux = "" },
+        .{ .class = .link, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/cfg", .aux = "/tmp/s/alias" },
+    };
+    try std.testing.expectEqual(@as(usize, 1), reconcileWithContents(&changed, &written_before, &old, &new, &buf).total);
+}
+
+test "reconcile: a path declared scratch is accounted for by any record that names it" {
+    var buf: [2]Unaccounted = undefined;
+    const changed = [_]Difference{.{ .rel = "cache/index", .how = .content_differs }};
+    const old = [_]Entry{.{ .rel = "cache/index", .kind = .file, .content = "v1" }};
+    const new = [_]Entry{.{ .rel = "cache/index", .kind = .file, .content = "v2" }};
+    const opened = [_]Op{.{ .class = .open, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cache/index", .aux = "" }};
+    try std.testing.expect(reconcileWithContentsExcept(&changed, &opened, &old, &new, &.{"cache"}, &buf).clean());
+    try std.testing.expectEqual(@as(usize, 1), reconcileWithContentsExcept(&changed, &opened, &old, &new, &.{"elsewhere"}, &buf).total);
 }
 
 test "reconcile: a change no operation names is unaccounted (#405)" {
@@ -553,7 +741,7 @@ test "reconcile: a change no operation names is unaccounted (#405)" {
     try std.testing.expect(!r.clean());
 }
 
-test "reconcile: an open with no write still names the path it created" {
+test "reconcile: an open names the path it created when nothing says what the file holds" {
     const diffs = [_]Difference{.{ .rel = "made", .how = .only_in_second }};
     const ops = [_]Op{.{ .class = .open, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/made", .aux = "" }};
     var buf: [2]Unaccounted = undefined;
