@@ -133,7 +133,9 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
         if (w == pid or w < 0) {
             refuse.fsu_live = null;
             removeFile(sentinel);
-            setupError(.environment, "fs_usage exited before the handshake completed; if it printed `ktrace_start: Resource busy` above, another fs_usage still holds the kernel trace facility — wait for it, or stop it, and re-run");
+            const said = capture.readFileAllocCapped(arena, fsusage.errPath(arena, capture_path) catch "", 4096, .{ .no_follow = true }) orelse "";
+            const trimmed = std.mem.trim(u8, said, " \t\r\n");
+            setupError(.environment, std.fmt.allocPrint(arena, "fs_usage exited before the handshake completed{s}{s}; if it says `ktrace_start: Resource busy`, another fs_usage still holds the kernel trace facility — wait for it, or stop it, and re-run", .{ if (trimmed.len > 0) ", saying: " else "", textShown(arena, trimmed) }) catch "fs_usage exited before the handshake completed");
         }
 
         // Flush pressure. fs_usage writes its capture through stdio, and a file is
@@ -1101,6 +1103,8 @@ fn phaseRecording(run: *Run) void {
 
     const oracle_out = std.fmt.bufPrint(&run.rec.oracle_out_buf, "{s}/oracle.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
     removeFile(oracle_out);
+    // Not left for the next run in this work directory: the sidecar opens it exclusively.
+    removeFile(fsusage.errPath(arena_state.allocator(), oracle_out) catch setupError(.environment, "out of memory"));
 
     // directory. Every run gets the same shape whether or not a marker is configured:
     // an isatty branch in the target must not differ between the recording run and
@@ -1534,7 +1538,8 @@ fn phaseOracle(run: *Run) void {
         // drawn from that is wrong in a way neither observer can see.
         const oracle_cwd = run.define.effective_cwd orelse "/";
         const parsed = if (args.oracle_fs_usage) blk: {
-            const err_text = capture.readFileAllocCapped(arena, fsusage.errPath(arena, oracle_out) catch setupError(.environment, "out of memory"), 64 * 1024, .{ .no_follow = true }) orelse "";
+            const err_text = capture.readFileAllocCapped(arena, fsusage.errPath(arena, oracle_out) catch setupError(.environment, "out of memory"), 64 * 1024, .{ .no_follow = true }) orelse
+                unknown(.oracle_saw_nothing, "fs_usage's stderr could not be read back, or grew past what this engine reads, so whether it dropped events is unknown", .environment);
             if (std.mem.indexOf(u8, err_text, "buffer overrun") != null)
                 unknown(.oracle_saw_nothing, "fs_usage reported a buffer overrun: the machine produced events faster than it read them and it dropped some, so the capture can be missing an operation", .environment);
             const std_scope = fsusage.standardFdScope(state_abs, if (alt_differs) state_alt else "", rec_stdout);

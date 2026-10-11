@@ -24,8 +24,8 @@ Two causes, both read from the capture and from `fs_usage.c` (apple-oss-distribu
 - `-f filesys` prints no `dup` or `dup2` — `check_filter_mode` tracks them for its own descriptor
   state and returns false — so a moved descriptor is, to the reader, a number nothing opened.
   Without a class filter fs_usage prints them as `dup2  F=<old>  F=<new>`, measured.
-- The engine hands the subject its stdout capture and stderr with `dup2` in the child before the
-  `exec`. Even unfiltered, those lines carry the pre-exec thread's id, and the subject's lines after
+- The engine hands the subject its stdout capture with `dup2` in the child before the `exec`, and
+  its stderr is the engine's own, inherited. Even unfiltered, those lines carry the pre-exec thread's id, and the subject's lines after
   the `exec` carry another (`launcher.19581` then `dup2_toy.19582`, measured): the reader keys a
   process's descriptors by the subject's thread, so nothing in the capture can tell it where 0, 1
   and 2 point.
@@ -38,22 +38,30 @@ Two causes, both read from the capture and from `fs_usage.c` (apple-oss-distribu
    as inside or outside the state, or left unknown when its path could not be read.
 2. **fs_usage runs without a class filter**, and the reader follows `dup` and `dup2`: the new number
    takes the old one's scope, and becomes unknown when the old one is unknown, rather than keeping
-   what it named before. `socket` and `accept` print the new descriptor, which is outside the state;
-   without a filter a socket's `write` is printed too, and would otherwise be a write on an unknown
-   number.
+   what it named before. A `dup` line without both numbers and without an errno, on a thread that
+   matters, is unreadable and refuses. A standard descriptor moved by a thread the shim never saw,
+   in a process named as the subject is, becomes unknown in the subject's table too: that thread
+   keeps its own table, and the subject would otherwise go on reading 1 as the engine's. Without a
+   filter a socket's `write` is printed as well, so the descriptor `socket` and `accept` print, and
+   the one a successful `connect`, `bind`, `listen`, `send*` or `recv*` names — calls that succeed
+   only on a socket — is outside the state.
 3. **fs_usage's stderr is kept**, beside the capture, and a run whose stderr reports a
-   `buffer overrun` is refused `oracle_saw_nothing`: an event fs_usage dropped is an operation
-   neither account holds.
+   `buffer overrun`, or cannot be read back, is refused `oracle_saw_nothing`: an event fs_usage
+   dropped is an operation neither account holds. The file is removed with the capture before each
+   run, since it is opened exclusively, and a handshake that fails quotes it, since fs_usage's own
+   `ktrace_start: Resource busy` now lands there instead of the terminal. Where the notice is
+   printed is read from `fs_usage.c`; an overrun itself has not been observed in any run here.
 
 1 and 2 ship together. With the standard descriptors known and `dup2` still invisible, a state file
 moved onto descriptor 1 would be taken as the capture, and a write through it that the shim did not
 record — macOS's stdio flushed at exit is one — would fall out of both accounts, where today it
 refuses.
 
-What the unfiltered capture costs was measured over the same window on the same runner: 161,992
-lines against 144,852 with the filter (+12%), no overrun notice either way. The calls it adds are
-`dup` and `dup2`, the network family, disk-I/O lines, and attribute writes; in the four explorations
-run with it, no line failed the reader's grammar.
+What the unfiltered capture costs could not be told apart from the window it was taken in: two
+six-second captures each way on the same runner gave 161,992 and 98,093 lines unfiltered against
+144,852 and 118,602 filtered, with no overrun notice in any. What it adds, by `fs_usage.c` and in
+both runs, is `dup`, `dup2` and the network family; in the four explorations run with it, no line
+failed the reader's grammar.
 
 ## Alternatives considered
 
@@ -69,12 +77,10 @@ run with it, no line failed the reader's grammar.
 
 - The four shapes above are judged on GitHub's macOS 26 runner: the printing toy, the `dup2` toy and
   the outside control PASS with `oracle_verified: true`, and the probe's `gdd` rewrite FAILs with a
-  verified oracle (run 38116040180). The fs_usage acceptance suite holds the three toys (check 9).
-- A descriptor the reader cannot place still refuses: a pipe or `socketpair` the target makes
-  itself (fs_usage prints no number for either), a `dup2` from a number the capture never saw
-  opened, and an absolute path the reader places by its text — it does not resolve `..` in one,
-  so `state/../outside` reads as the state's and refuses.
-- Calls the filter used to hide on a state file now reach the reader. Read from the reader, not
-  measured on a target: an attribute write on one (`setxattr`, `removexattr`) refuses as an
-  unmodelled call, as it does under strace (#684), where before fs_usage did not print it; the
-  ownership, mode and timestamp calls are counted as metadata, as they were whenever printed.
+  verified oracle (run 38116040180). The fs_usage acceptance suite carries the three toys and a second
+  run in the same work directory as check 9; on that run its print and `dup2` legs passed, and its
+  outside leg, spelled through `state/../` at the time, did not — the reader's own limit below.
+- A descriptor the reader cannot place still refuses: a pipe the target makes itself, a `socketpair`
+  written before any socket call names it (fs_usage prints no number for either), a `dup2` from a
+  number the capture never saw opened, and an absolute path the reader places by its text — it does
+  not resolve `..` in one, so `state/../outside` reads as the state's and refuses.

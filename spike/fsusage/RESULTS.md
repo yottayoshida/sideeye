@@ -334,11 +334,15 @@ changed, the two `dup2` shapes moved on to `unsupported_syscall_observed` on the
 The unfiltered capture prints `dup` and `dup2` with both numbers. A child that moves a descriptor
 and then `exec`s prints the `dup2` as `launcher.19581` and its lines after the `exec` as
 `dup2_toy.19582`: the thread id changes across `exec`, so the engine's own pre-exec `dup2` of its
-capture cannot reach the subject's table from the capture. Over about six seconds the unfiltered
-capture held 161,992 lines and the filtered one 144,852; neither stderr had a `buffer overrun`. The
-calls only the unfiltered capture held, by count: `dup` 1403, `recvfrom` 1329, `sendto` 1237, `dup2`
-40, disk-I/O lines, `setxattr` 23, `select` 23, `utimes` 20, `futimes` 13, `setattrlist` 11, `chdir`
-10, `socket` 8, `removexattr` 4, `chown` 4.
+capture cannot reach the subject's table from the capture. The two captures are two separate
+six-second windows on a shared runner, so their sizes say more about the windows than about the
+filter: 161,992 lines unfiltered against 144,852 filtered in the first run, 98,093 against 118,602 in
+the second. Neither stderr had a `buffer overrun`. What only the unfiltered capture prints, by
+`fs_usage.c` and in both runs, is `dup` and `dup2` with both numbers and the network family
+(`socket`, `connect`, `sendto`, `recvfrom`, and `write` on a socket); attribute writes, `chdir` and
+disk-I/O lines appear under `-f filesys` too (the second run's filtered capture held `setxattr`,
+`fsetxattr` and `WrData` lines), so a first reading of the counts that listed them as new was the
+windows' difference.
 
 After (ADR 0122), the same four: the printing toy, the `dup2` toy and the outside control PASS with
 `oracle_verified: true`, and `gdd` FAILs with `oracle_verified: true`. Acceptance checks 1 to 8 held

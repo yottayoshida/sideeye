@@ -605,6 +605,12 @@ for shape in print dup2 outside; do
     { [ "$rc9" = "0" ] || [ "$rc9" = "1" ]; } || { sed -n '1,12p' "$WORK/c9$shape.txt"; fail "check 9 $shape: expected a verdict, got exit $rc9"; }
     [ "$(field "c9$shape" oracle_verified)" = "True" ] || fail "check 9 $shape: the verdict is not oracle_verified"
 done
+# The same work directory a second time: fs_usage's stderr file is opened exclusively, so one the
+# first run left behind must not stop the second.
+seed_keep c9print
+rc9=$(STDIO_MODE=print OUTSIDE_LOG="$WORK/outside-c9.log" run c9print stdio_toy --oracle-fs-usage)
+echo "  print, same --work again: exit=$rc9 verdict=$(field c9print verdict) oracle_verified=$(field c9print oracle_verified)"
+{ [ "$rc9" = "0" ] || [ "$rc9" = "1" ]; } || { sed -n '1,12p' "$WORK/c9print.txt"; fail "check 9: a second run in the same --work got exit $rc9"; }
 echo "  PASS"
 
 echo "=================================================================="
