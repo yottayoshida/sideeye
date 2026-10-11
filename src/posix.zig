@@ -1,21 +1,3 @@
-//! Direct libc bindings for the engine.
-//!
-//! The engine deliberately does not use `std.Io`. That layer was reworked wholesale in
-//! Zig 0.16 — `std.fs` no longer holds `File` or `Dir`, spawning a child goes through a
-//! vtable, and more movement is already scheduled for 0.17. Everything sideeye needs
-//! from the operating system is plain POSIX: walk a directory, read and write a file,
-//! fork, exec, wait. That surface has been stable for decades.
-//!
-//! The shim reached the same conclusion first, for a harsher reason: inside somebody
-//! else's process there is no heap, no standard-library I/O, and nothing the target
-//! has not already initialised (shim/src/common.zig states the rules). It still uses
-//! `std` — the allocation-free slices: `std.mem` and `std.fmt` into fixed buffers, and
-//! `std.c`/`std.os.linux` as ABI tables. Both halves ending up on the same small set
-//! of calls is a convenience, not a coincidence.
-//!
-//! Types come from `std.c`, which is a description of the platform ABI rather than an
-//! abstraction over it, so it does not carry the same churn.
-
 const std = @import("std");
 const builtin = @import("builtin");
 
@@ -24,45 +6,30 @@ pub const Dirent = std.c.dirent;
 pub extern "c" fn opendir(name: [*:0]const u8) ?*anyopaque;
 pub extern "c" fn readdir(dirp: *anyopaque) ?*Dirent;
 pub extern "c" fn closedir(dirp: *anyopaque) c_int;
-/// Declared variadic, as C declares it.
 ///
 /// This was a fixed three-argument declaration, and on arm64 macOS that silently loses
 /// `mode`: variadic arguments travel on the stack, fixed ones in registers, so the
 /// callee read a register the caller never wrote. Every file `restore()` wrote came out
 /// with permissions nobody asked for — and since the engine then failed to read its own
 /// output, the symptom looked like a shim defect for several rounds. The shim was fine.
-/// Calling a variadic function correctly needs no `@cVaStart`; only receiving does.
 pub extern "c" fn open(path: [*:0]const u8, flags: c_int, ...) c_int;
 pub extern "c" fn read(fd: c_int, buf: [*]u8, n: usize) isize;
-/// Positional read. `image.zig` walks a handful of fixed-width header fields scattered
-/// across an executable and never wants the whole file, so it reads by offset rather
-/// than seeking: no cursor to leave in the wrong place between two field reads.
 pub extern "c" fn pread(fd: c_int, buf: [*]u8, n: usize, off: i64) isize;
 pub extern "c" fn write(fd: c_int, buf: [*]const u8, n: usize) isize;
 pub extern "c" fn close(fd: c_int) c_int;
 pub extern "c" fn dup2(old_fd: c_int, new_fd: c_int) c_int;
-/// `off_t` is 64-bit on every target this builds for (aarch64/x86-64 glibc, Darwin), so
-/// the plain symbol is the 64-bit one and no lseek64 spelling is needed.
 pub extern "c" fn lseek(fd: c_int, offset: i64, whence: c_int) i64;
-/// Same values on Linux and Darwin.
 pub const SEEK_SET: c_int = 0;
 pub const SEEK_END: c_int = 2;
 
-/// Same value on Linux and Darwin.
 pub const EINTR: c_int = 4;
-/// Same value on Linux and Darwin.
 pub const ENOENT: c_int = 2;
 pub extern "c" fn mkdir(path: [*:0]const u8, mode: c_uint) c_int;
-/// Mutates `template` in place (the trailing XXXXXX) and returns it, or null on failure.
 pub extern "c" fn mkdtemp(template: [*:0]u8) ?[*:0]u8;
 pub extern "c" fn rmdir(path: [*:0]const u8) c_int;
 pub extern "c" fn unlink(path: [*:0]const u8) c_int;
 pub extern "c" fn readlink(path: [*:0]const u8, buf: [*]u8, bufsiz: usize) isize;
 pub extern "c" fn symlink(target: [*:0]const u8, linkpath: [*:0]const u8) c_int;
-/// Test-only, and there is no production caller on purpose: this exists so the capture
-/// tests can plant the one thing `O_NOFOLLOW` does not see (#469). A hard link is the
-/// same inode under a second name, so a guard written only against symlinks answers it
-/// "yes" — which is what `O_EXCL` is on those captures for.
 pub extern "c" fn link(oldpath: [*:0]const u8, newpath: [*:0]const u8) c_int;
 
 // The descriptor-relative half of the calls above (#327). The destructive walk opens its
@@ -74,8 +41,6 @@ pub extern "c" fn link(oldpath: [*:0]const u8, newpath: [*:0]const u8) c_int;
 /// ones in registers. The walk only ever passes three, but a declaration that is wrong
 /// for the four-argument call is wrong the day somebody makes one.
 pub extern "c" fn openat(dirfd: c_int, path: [*:0]const u8, flags: c_int, ...) c_int;
-/// `flags` is 0 for a file, `AT_REMOVEDIR` for a directory — the `unlink`/`rmdir` split
-/// expressed as an argument.
 pub extern "c" fn unlinkat(dirfd: c_int, path: [*:0]const u8, flags: c_int) c_int;
 pub extern "c" fn mkdirat(dirfd: c_int, path: [*:0]const u8, mode: c_uint) c_int;
 /// On a held descriptor only: chmod by name follows a link swapped in at that name.
@@ -98,56 +63,21 @@ pub extern "c" fn fdopendir(fd: c_int) ?*anyopaque;
 
 pub extern "c" fn getpid() c_int;
 pub extern "c" fn getpgid(pid: c_int) c_int;
-/// Four references (#632, #651): `childEnterOwnGroup`'s fallback, for a child the kernel will
-/// not move out of the engine's group; the test that injects the real one into that fallback;
-/// the test that reaches the real `setpgid` refusal — leading a session is the one state the
-/// manual says a self-call is refused for, so a test gets there this way rather than by
-/// asking a fake to answer -1; and the test that has the kernel refuse *this* call (#651),
-/// by making the child a group leader first — the one state `setsid_internal` refuses.
 extern "c" fn setsid() c_int;
-/// Read for one purpose only: the notes a child writes when `setpgid(0, 0)` refuses it
-/// (#629, #651). The documented refusal is "the caller is a session leader", so the session id
-/// is what says whether the kernel's answer and the child's state agree — `sid == pid` is that
-/// process leading its own session, anything else is a refusal the manual does not explain.
 extern "c" fn getsid(pid: c_int) c_int;
-/// `getentropy(2)`: macOS 10.12+, glibc 2.25+ (the Linux artefacts' floor is 2.28,
-/// `release.yml`). Zig 0.16's std declares it for android and emscripten only, so the
-/// engine declares it itself, the way the shim declares its libc. Declared and linked on
-/// both platforms — `fs_usage` is macOS-only, but its call sites sit under a runtime
-/// flag and compile everywhere.
 pub extern "c" fn getentropy(buf: [*]u8, len: usize) c_int;
-/// The parent's pid — or, once the parent has died and this process has been reparented,
-/// the reaper's: pid 1 or the nearest subreaper on Linux, launchd on macOS. Parentage
-/// changes only when the parent dies, so "getppid() no longer answers what it answered at
-/// startup" is exactly "the process that launched this run is gone" (#269) — no
-/// descriptor to inherit, no signal to arrive at the wrong moment, the same meaning on
-/// both platforms.
 pub extern "c" fn getppid() c_int;
 pub extern "c" fn fork() c_int;
 pub extern "c" fn execvp(file: [*:0]const u8, argv: [*]const ?[*:0]const u8) c_int;
-/// Called in the child between fork and exec, so it moves the command being spawned and
-/// nothing else. The engine's own cwd stays put, and `--work`, `--json` and `--state` are
-/// still read against it — they are the engine's arguments, not the define's.
-///
 /// The oracle is the one reader that has to be told separately: it resolves the subject's
 /// relative paths from a trace, after the fact, so the engine hands it the same directory
 /// it handed this call (`src/main.zig`, the recording run's parse site). The shim needs no
 /// telling — it reads the cwd inside the child.
 pub extern "c" fn chdir(path: [*:0]const u8) c_int;
-/// Exec with an explicit environment, so a child can be given a *minimal* env rather
-/// than inheriting the parent's (the MCP server must not hand its credentials to a
-/// config's operation). Requires an absolute path — no PATH search — which pairs with
-/// the canonical self-path the MCP adapter resolves.
 pub extern "c" fn execve(path: [*:0]const u8, argv: [*]const ?[*:0]const u8, envp: [*]const ?[*:0]const u8) c_int;
 pub extern "c" fn waitpid(pid: c_int, status: ?*c_int, options: c_int) c_int;
 pub extern "c" fn setpgid(pid: c_int, pgid: c_int) c_int;
 pub extern "c" fn kill(pid: c_int, sig: c_int) c_int;
-/// Waits without reaping, which `waitpid` cannot do. See `runChild` for why that matters.
-///
-/// The out-parameter is typed `std.c.siginfo_t` at the call sites (the type, per this
-/// file's policy, comes from std.c) but crosses the ABI as an opaque pointer here: the
-/// blocking path never reads it, and the budget path reads exactly one field of it,
-/// through `siPid` below.
 pub extern "c" fn waitid(idtype: c_int, id: c_int, infop: *anyopaque, options: c_int) c_int;
 pub extern "c" fn clock_gettime(clockid: c_int, tp: *std.c.timespec) c_int;
 pub extern "c" fn nanosleep(req: *const std.c.timespec, rem: ?*std.c.timespec) c_int;
@@ -156,56 +86,29 @@ pub extern "c" fn setenv(name: [*:0]const u8, value: [*:0]const u8, overwrite: c
 pub extern "c" fn getenv(name: [*:0]const u8) ?[*:0]u8;
 pub extern "c" fn isatty(fd: c_int) c_int;
 pub extern "c" fn _exit(status: c_int) noreturn;
-/// For the one child-side failure that must not become an exit code (#263): a signal
-/// death is outside the target's 0..255 and cannot be mistaken for its own status.
 pub extern "c" fn abort() noreturn;
 pub extern "c" fn realpath(path: [*:0]const u8, resolved: [*]u8) ?[*:0]u8;
-/// macOS: fills `buf` with the executable's path (may be non-canonical; realpath it).
-/// Returns 0 on success; on too-small buffer returns -1 and writes the needed size.
 pub extern "c" fn _NSGetExecutablePath(buf: [*]u8, bufsize: *u32) c_int;
 pub extern "c" fn getcwd(buf: [*]u8, size: usize) ?[*:0]u8;
 pub extern "c" fn rename(old: [*:0]const u8, new: [*:0]const u8) c_int;
 pub extern "c" fn access(path: [*:0]const u8, mode: c_int) c_int;
 
-/// `access` mode: executable. Same value on Linux and the BSDs.
 pub const X_OK: c_int = 1;
 pub const F_OK: c_int = 0;
 
 /// The only signal in play. Cannot be caught, which is the point: a target that could
 /// decline to die would make the crash point a request rather than a fact.
-///
-/// Typed `u8` so the same constant serves both users — `kill` widens it to `c_int`, and
-/// `Term.isSignal` compares it directly. `main.zig` was spelling it as a bare `9`.
 pub const SIGKILL: u8 = 9;
-/// 2 on both platforms. Sent before SIGKILL to a sidecar because it is the disposition
-/// `fs_usage` is built to handle — it is meant to be stopped from a terminal, and it
-/// flushes and releases kdebug on the way out. SIGTERM does neither: measured, a
-/// capture ended at a stdio flush boundary sixty-four milliseconds in and read like a
-/// complete capture of a short window.
 pub const SIGINT: u8 = 2;
 
-/// `waitid` selectors and flags, taken from the platform headers rather than from memory.
-///
-/// `P_PID` and `WEXITED` agree across Linux and Darwin; **`WNOWAIT` does not** —
-/// `0x01000000` in glibc's `bits/waitflags.h`, `0x00000020` in the macOS SDK's
-/// `sys/wait.h`. Three defects in this project so far were a platform constant that was
-/// right on one side and quietly plausible on the other, so the differing one is branched
-/// and the agreeing ones say so.
 pub const P_PID: c_int = 1;
 pub const WEXITED: c_int = 4;
 pub const WNOWAIT: c_int = if (builtin.os.tag == .linux) 0x01000000 else 0x00000020;
-/// Same value on both sides (glibc `bits/waitflags.h`, macOS `sys/wait.h`) — said
-/// explicitly, per the rule the comment above states for the agreeing constants.
 pub const WNOHANG: c_int = 1;
-/// The clock the world budget reads. The number differs per platform — glibc
-/// `bits/time.h` says 1, the macOS SDK's `time.h` says 6 — the same shape as WNOWAIT.
 pub const CLOCK_MONOTONIC: c_int = if (builtin.os.tag == .linux) 1 else 6;
-/// SIGCHLD differs too: 17 on Linux, 20 on Darwin.
 pub const SIGCHLD: c_int = if (builtin.os.tag == .linux) 17 else 20;
 pub const SIG_DFL: usize = 0;
 
-/// The one siginfo field the budget path reads, behind the one comptime switch that
-/// knows the two platforms spell it differently: a flat `pid` on Darwin, nested under
 /// `fields.common.first.piduid` in glibc's layout. POSIX pins the semantic this relies
 /// on: with WNOHANG and no child ready, a successful `waitid` leaves `si_pid` zero —
 /// which is why the struct is zeroed before every call rather than trusted.
@@ -222,11 +125,6 @@ pub const O_WRONLY: c_int = 1;
 pub const O_CREAT: c_int = if (builtin.os.tag == .linux) 0o100 else 0x200;
 pub const O_TRUNC: c_int = if (builtin.os.tag == .linux) 0o1000 else 0x400;
 pub const O_EXCL: c_int = if (builtin.os.tag == .linux) 0o200 else 0x800;
-/// Opening a FIFO with no writer blocks forever, which #5 recorded when an open-probe
-/// was used to classify paths and was retired from this file for it (see
-/// `kindAtNoFollow`). Regular files are unaffected: open, lseek and read on one answer
-/// the same with the flag and without it (measured, `spike/fifo-classification-400.txt`).
-///
 /// **The flag alone is not the fix, and this is where #400 came from.** It stops the
 /// open from waiting; it does not make the read say anything. On a FIFO with no writer
 /// the read returns 0 — end of file — so a caller that reads to EOF gets an empty buffer
@@ -237,57 +135,12 @@ pub const O_EXCL: c_int = if (builtin.os.tag == .linux) 0o200 else 0x800;
 /// return as unreadable then refuses input that would have arrived. So the flag belongs
 /// only where the reader is prepared for that — by classifying the descriptor and
 /// refusing, or by recognising EAGAIN and waiting. Who carries it, and which of the two
-/// they do:
-///
-/// - `image.zig` (#398): flag, then `lseek` — ESPIPE ends it there.
-/// - `engine/read.zig`'s `readWhole`, `capture.zig`'s `readFileFrom` and `observeCapture`,
-///   `mcp.zig`'s `readFile`: flag, then `kindOfFd`.
-///
-///   This list used to add "all four read paths the engine itself produced, so nothing
-///   legitimate is refused", and that sentence was **wrong about `readWhole`** (#469):
-///   its trace read is engine-produced, and its other caller is the snapshot walk, which
-///   reads files inside the *target's* state directory. `readWhole` takes a `LinkPolicy`
-///   for that reason now (#489) — **the split is the fix, not a gap in it**. The trace
-///   read passes `.refuse` on the argument #469 gave the other three: the file was
-///   written by the engine refusing links, so reading it back through one can only be
-///   somebody else's substitution, and since #488 that is true of the shim's write as
-///   well. The snapshot read keeps `.follow`, and **not because the flag would break
-///   anything**: the walk classifies with `kindFromDirent` (and `kindOfPathNoFollow` when
-///   the dirent has no type) before it reads, so a symlink goes to the `.symlink` arm and
-///   `readWhole` meets one there only through the window between that classification and
-///   the open. Closing *that* window changes what a snapshot refuses — it needs an entry
-///   to be reported rather than silently dropped (#5) — so it stays a promise of its own,
-///   with its own leg, rather than something acquired as a side effect here.
-/// - `capture.zig`'s `readFileAllocCapped`: the flag comes with **either** half of its
-///   `ReadMode`, and the two halves answer the same question differently. The case read
-///   *classifies*: it needs the open to return so it can ask what the descriptor is, and
-///   refuses anything but a regular file. The `--config` read is *bounded*: it may not
-///   refuse a pipe — an operator can legitimately name one — so it needs `EAGAIN` where
-///   a blocking read would sit somewhere no deadline can see it, and it retries while a
-///   peer might still arrive. A reader that asks for neither keeps the blocking open it
-///   had; the flag is not free, and a non-blocking read of a pipe whose writer has not
-///   written yet fails where waiting would have succeeded (measured — that is exactly
-///   how an earlier draft broke `--config`; BUILDLOG 2026-08-30).
-///
-/// Listing the callers here is deliberate, and so is listing what each does *after* the
-/// open: the previous version of this comment named one file and said nothing about the
-/// second half, and the sweep that followed #398 looked for refusal *messages* rather
-/// than for opens — which is why #400 sat unfound in a function three lines from a
-/// comment describing its defect.
 pub const O_NONBLOCK: c_int = if (builtin.os.tag == .linux) 0o4000 else 0x0004;
-/// Derived from `std.posix.O` rather than written out, and it is the only flag in this
-/// block that needs to be.
-///
 /// The value differs *within* Linux by architecture — 0o400000 on x86_64, 0o100000 on
 /// aarch64 — so the `os.tag == .linux` shape every neighbour above uses cannot express
 /// it. This declaration carried the x86_64 number for all of Linux, which left the one
 /// guard that used it inert on arm64: measured in an arm64 container, a symlink planted
 /// at a capture path was opened straight through. The comment at the top of this block
-/// already recorded three platform constants that were right on one side and quietly
-/// plausible on the other; the shape of the declaration is what allowed a fourth.
-///
-/// The test at the bottom of this file asks the kernel instead of asserting the number,
-/// because a test that spells the value out is satisfied by whatever the constant says.
 pub const O_NOFOLLOW: c_int = blk: {
     var f: std.posix.O = .{};
     f.NOFOLLOW = true;
@@ -303,8 +156,6 @@ pub const O_DIRECTORY: c_int = blk: {
     break :blk @bitCast(f);
 };
 
-/// Set on the root descriptor the destructive walk holds.
-///
 /// **Not load-bearing today**, and the honest reason to add it anyway: `runChild*` is only
 /// reached after `restore`/`freshDir` have returned, so no fork happens while a root
 /// descriptor is open. That ordering is what makes the absence safe, and it is written
@@ -316,23 +167,11 @@ pub const O_CLOEXEC: c_int = blk: {
     break :blk @bitCast(f);
 };
 
-/// `AT_*` and `AT_FDCWD` differ **by operating system** rather than by architecture —
-/// `REMOVEDIR` is 0x0080 on Darwin against 0x200 on Linux, and `AT_FDCWD` is -2 against
-/// -100 — so unlike `O_DIRECTORY` the `os.tag` shape every neighbour uses could express
-/// them. Taken from std regardless: the block at the top of this file records three
-/// defects that were a platform constant right on one side and quietly plausible on the
-/// other, and a hand-written table is how a fourth would arrive.
-///
-/// A wrong `AT_REMOVEDIR` fails loudly — `deleteTree`'s `removed < count` catches it — so
-/// it is not in the same danger class as `O_DIRECTORY` above. The derivation is the same;
-/// the reason is not.
 pub const AT_FDCWD: c_int = std.posix.AT.FDCWD;
 pub const AT_REMOVEDIR: c_int = std.posix.AT.REMOVEDIR;
 
-/// The two errno values the destructive walk maps to a refusal of their own; everything
 /// else it can see falls to one loud default. `ELOOP` is 40 on Linux and 62 on Darwin, so
 /// it cannot be written out the way `EINTR` and `ENOENT` above are; `ENOTDIR` agrees
-/// across both but comes from the same place so the pair cannot drift apart.
 pub const ELOOP: c_int = @intFromEnum(std.posix.E.LOOP);
 pub const EACCES: c_int = @intFromEnum(std.posix.E.ACCES);
 pub const EPERM: c_int = @intFromEnum(std.posix.E.PERM);
@@ -347,14 +186,11 @@ pub const ENOTDIR: c_int = @intFromEnum(std.posix.E.NOTDIR);
 /// green while it does that.
 pub const EAGAIN: c_int = @intFromEnum(std.posix.E.AGAIN);
 
-// Values of `dirent.type`, identical on Linux and the BSDs.
 pub const DT_UNKNOWN: u8 = 0;
 pub const DT_DIR: u8 = 4;
 pub const DT_REG: u8 = 8;
 pub const DT_LNK: u8 = 10;
 
-/// True when the path itself is a symbolic link, without following it.
-///
 /// `readlink` on a non-link fails with EINVAL, which is the cheapest way to ask this
 /// question without a `stat` struct. It matters for deletion: `opendir` follows links,
 /// so treating "can be opened as a directory" as "is a directory" would let a link
@@ -366,15 +202,6 @@ pub fn isSymlink(path: [*:0]const u8) bool {
 
 pub const Kind = enum { file, dir, symlink, other, missing };
 
-/// Entry kind taken from the directory entry itself.
-///
-/// `stat` was the obvious choice, but `std.c.Stat` does not describe Linux's `struct
-/// stat` in a usable form here, and hand-rolling the layout per architecture is exactly
-/// the kind of ABI guesswork that goes wrong quietly. `dirent.type` carries the same
-/// information for free, is defined identically on both target platforms, and needs no
-/// extra syscall. Some filesystems report DT_UNKNOWN, so the caller falls back to
-/// `kindOfPathNoFollow` (whose doc carries the dated correction to this paragraph's
-/// `stat` claim).
 pub fn kindFromDirent(e: *Dirent) Kind {
     return switch (e.type) {
         DT_DIR => .dir,
@@ -385,30 +212,12 @@ pub fn kindFromDirent(e: *Dirent) Kind {
     };
 }
 
-/// Fallback for filesystems that do not fill in `dirent.type`: a path that can be
-/// opened as a directory is one.
 pub fn isDirPath(path: [*:0]const u8) bool {
     const d = opendir(path) orelse return false;
     _ = closedir(d);
     return true;
 }
 
-/// Entry kind without opening and without following: the snapshot's DT_UNKNOWN
-/// fallback. Its predecessor probed by `open(O_RDONLY)`, which is three different
-/// wrong answers on the entries this classification exists to notice (#5 R1): a FIFO
-/// with no writer blocks that open forever, a socket's failed open read back as
-/// `.missing` — silently absent from the snapshot — and a readable device passed as
-/// `.file` and got its bytes slurped. `fstatat(AT_SYMLINK_NOFOLLOW)` answers for the
-/// entry itself, never for what it points at, and cannot hang.
-///
-/// This file once refused `stat` outright ("hand-rolling the layout per architecture
-/// is exactly the kind of ABI guesswork that goes wrong quietly" — kindFromDirent's
-/// doc). Corrected 2026-08-17: that was true of hand-rolling and is not true of what
-/// std ships — but the two platforms get there differently, and the difference is
-/// itself the old fear vindicated upstream: on Darwin `std.c.fstatat` resolves the
-/// per-arch symbol (`fstatat$INODE64` on x86-64); on Linux std deliberately binds no
-/// libc stat symbol at all (glibc's are versioned aliases) and speaks the `statx`
-/// syscall directly, with the layout maintained in `std.os.linux`.
 /// Only a path that is genuinely GONE answers `.missing` (the entry raced away
 /// between readdir and here — the same benign race every walk lives with). Every
 /// other failure is `Unclassifiable`, loudly: ENOSYS under an old kernel, EPERM under
@@ -421,8 +230,6 @@ pub fn kindOfPathNoFollow(path: [*:0]const u8) ClassifyError!Kind {
     return kindAtNoFollow(AT_FDCWD, path);
 }
 
-/// What a name is and who owns it, without following the last component (#423).
-///
 /// One `lstat` rather than two calls, because the two answers are asked together: the shim
 /// search refuses a candidate that is a link **or** that someone else owns, and taking the
 /// kind from one syscall and the owner from another would let the file change identity
@@ -474,37 +281,22 @@ fn statNoFollow(dirfd_: c_int, path: [*:0]const u8, want_uid: bool) ClassifyErro
             if (std.c._errno().* == ENOENT) return .{ .kind = .missing, .uid = null };
             return error.Unclassifiable;
         }
-        // No mask gate on this side, and its absence is the point rather than an omission:
-        // `fstatat` either fills the whole `struct stat` or fails. There is no partial
-        // answer to guard against, which is what `statx` introduced on the other side.
         const m = st.mode;
         const k: Kind = if (std.c.S.ISLNK(m)) .symlink else if (std.c.S.ISDIR(m)) .dir else if (std.c.S.ISREG(m)) .file else .other;
         return .{ .kind = k, .uid = if (want_uid) st.uid else null };
     }
 }
 
-/// Whether `path`, followed through links, is a regular file this process may execute: the
-/// test a `PATH` candidate has to pass (`image.searchPath`, ADR 0090). Execute permission
-/// through `access`, and the type through a stat that follows — a name on `PATH` is often a
-/// link, and what `execve` runs is its target. No read permission is asked for: an
-/// execute-only file is still a program. A directory passes `X_OK`, and `execvp` moves past
-/// one; so does this. Any failure is "not this candidate" rather than an error, because the
-/// search moves on either way.
 pub fn isExecutableRegular(path: [*:0]const u8) bool {
     if (access(path, X_OK) != 0) return false;
     return isRegularFollowing(path);
 }
 
-/// Whether `path`, followed through links, is a regular file — the type half of
-/// `isExecutableRegular`, on its own for the caller that has to say which half failed
-/// (`image.startable`, #701: "is not a regular file" and "this user may not execute it" are
-/// different sentences). Any failure to stat is `false`.
 pub fn isRegularFollowing(path: [*:0]const u8) bool {
     if (builtin.os.tag == .linux) {
         const lnx = std.os.linux;
         var stx: lnx.Statx = undefined;
         if (lnx.errno(lnx.statx(AT_FDCWD, path, 0, .{ .TYPE = true }, &stx)) != .SUCCESS) return false;
-        // The same gate `statNoFollow` keeps: a mode the kernel did not fill in is not an answer.
         if (!stx.mask.TYPE) return false;
         return lnx.S.ISREG(stx.mode);
     } else {
@@ -514,14 +306,6 @@ pub fn isRegularFollowing(path: [*:0]const u8) bool {
     }
 }
 
-/// Whether this kernel will accept a seccomp filter that answers `SECCOMP_RET_TRAP`.
-///
-/// Asked with `SECCOMP_GET_ACTION_AVAIL`, which exists for exactly this question and
-/// answers it without installing anything, in this process, with no child spawned and
-/// nothing written. The alternative considered was a probe run of the target under the
-/// shim, which measures the same thing later, costs a spawn, and leaves the target's
-/// side effects in the state directory before the engine has decided it can proceed.
-///
 /// A `false` here is not the only way the mode can be unavailable — a process the target
 /// spawns under different privileges can still fail to install one — so the shim
 /// announces its own result too and the engine checks both. This is the cheap half that
@@ -539,14 +323,10 @@ pub fn seccompTrapAvailable() bool {
     return lnx.errno(rc) == .SUCCESS;
 }
 
-/// The effective user this process runs as — the identity the kernel checks writes
-/// against, which is the one that matters for "could someone else have put this here".
 pub fn geteuid() u32 {
     return @intCast(std.c.geteuid());
 }
 
-/// The same classification, relative to an open directory (#327).
-///
 /// **`path` must be a bare entry name.** An absolute path makes `dirfd` irrelevant on both
 /// platforms — silently, with no error — which would leave the walk resolving names the
 /// descriptor was opened to pin. The one caller passes a name straight out of `readdir`.
@@ -559,14 +339,6 @@ pub fn kindAtNoFollow(dirfd_: c_int, path: [*:0]const u8) ClassifyError!Kind {
     return (try statNoFollow(dirfd_, path, false)).kind;
 }
 
-/// The same classification for a descriptor that is **already open** (#400).
-///
-/// Deliberately not a second spelling of `kindAtNoFollow`: that one asks what a name
-/// refers to *before* anything opens it, and is the form the snapshot walk needs. This
-/// one asks what the descriptor turned out to be *after* the open, which is the only
-/// form that can answer without a window between the answer and its use — a name can
-/// change kind between the two calls, a descriptor cannot.
-///
 /// A reader that opened with `O_NONBLOCK` needs this: the flag stops the open from
 /// waiting on a FIFO's peer, but the read that follows then returns 0, which is
 /// indistinguishable from an empty regular file. Measured on macOS with a real FIFO and
@@ -574,9 +346,6 @@ pub fn kindAtNoFollow(dirfd_: c_int, path: [*:0]const u8) ClassifyError!Kind {
 /// `read` returns 0 with errno untouched. `lseek` failing is **not** the test to write
 /// instead — seekability and regular-file-ness are different properties, and a device
 /// that seeks would pass a test built on it.
-///
-/// `.symlink` never comes back from here: `open` follows the link, so the descriptor is
-/// the target. `.missing` likewise cannot occur — the descriptor exists.
 pub fn kindOfFd(fd: c_int) ClassifyError!Kind {
     return (try kindModeOfFd(fd)).kind;
 }
@@ -593,13 +362,11 @@ pub fn kindModeOfFd(fd: c_int) ClassifyError!KindMode {
     if (builtin.os.tag == .linux) {
         const lnx = std.os.linux;
         var stx: lnx.Statx = undefined;
-        // The empty path with AT_EMPTY_PATH is how statx addresses a descriptor itself.
         const rc = lnx.statx(fd, "", lnx.AT.EMPTY_PATH, .{ .TYPE = true, .MODE = true }, &stx);
         switch (lnx.errno(rc)) {
             .SUCCESS => {},
             else => return error.Unclassifiable,
         }
-        // Same contract as above: a type the kernel did not fill in is not an answer.
         if (!stx.mask.TYPE) return error.Unclassifiable;
         const m: u32 = stx.mode;
         const mode: ?u16 = if (stx.mask.MODE) @intCast(m & perm_bits) else null;
@@ -638,17 +405,6 @@ pub fn kindModeOfPathNoFollow(path: [*:0]const u8) ?KindMode {
     }
 }
 
-/// What a swap changes and a rename does not: the pair that says a descriptor and a name
-/// reach the same object (#338).
-///
-/// **The two platforms encode `dev` differently and that is deliberate.** Linux composes
-/// it from `statx`'s major and minor; Darwin hands back its own `dev_t`, which is signed
-/// there and is widened through its bit pattern rather than its value. Nothing serialises
-/// an `Identity`, nothing stores one, and nothing compares one taken on one platform with
-/// one taken on another — the only comparison is between two taken moments apart in the
-/// same process. So the encoding only has to be injective within a run, and the cheapest
-/// injective encoding on each platform is the one the platform already gives.
-///
 /// **What it cannot distinguish is an inode that was freed and handed out again**, and on
 /// Linux that is not exotic. Measured 2026-09-01: on overlayfs, removing a directory and
 /// creating another at the same path hands back the same number on the very next `mkdir`,
@@ -690,13 +446,10 @@ pub const Identity = struct {
 /// the one thing that must not happen here is a missing answer read as agreement.
 pub const IdentityError = error{Unidentifiable};
 
-/// The identity of what a descriptor holds. Cannot race: the descriptor pins the inode.
 pub fn identityOfFd(fd: c_int) IdentityError!Identity {
     if (builtin.os.tag == .linux) {
         const lnx = std.os.linux;
         var stx: lnx.Statx = undefined;
-        // AT_EMPTY_PATH with the empty name is how statx addresses a descriptor itself,
-        // the same spelling `kindOfFd` uses above.
         const rc = lnx.statx(fd, "", lnx.AT.EMPTY_PATH, .{ .INO = true }, &stx);
         if (lnx.errno(rc) != .SUCCESS) return error.Unidentifiable;
         // The inode is mask-gated and has to be checked; the device is not — `statx(2)`
@@ -710,15 +463,6 @@ pub fn identityOfFd(fd: c_int) IdentityError!Identity {
     }
 }
 
-/// The identity of whatever a pathname resolves to **right now**.
-///
-/// Follows links on purpose: the question is what the name means at this instant, not what
-/// the last component is. A caller comparing this against a descriptor it already holds is
-/// asking whether the name still leads back to the thing it opened, and a link that leads
-/// there is not a swap.
-///
-/// ENOENT is `Unidentifiable` like every other failure. A name that resolves to nothing
-/// while a descriptor holds something is precisely a disagreement, not an absence.
 pub fn identityOfPath(path: [*:0]const u8) IdentityError!Identity {
     if (builtin.os.tag == .linux) {
         const lnx = std.os.linux;
@@ -734,11 +478,6 @@ pub fn identityOfPath(path: [*:0]const u8) IdentityError!Identity {
     }
 }
 
-/// Whether the descriptor is a FIFO. Asked separately from `kindOfFd`, deliberately.
-///
-/// `Kind` has no FIFO member: a FIFO and a character device both answer `.other`. Giving
-/// it one would touch a classifier that the snapshot walk, `kindFromDirent` and the
-/// case-path read all share, and every `else => .other` arm would have to be re-read.
 /// The one caller that needs the distinction is the bounded read, where the two mean
 /// opposite things: a FIFO's zero-length read is "no peer has written **yet**, ask
 /// again", while `/dev/null`'s is "empty, and it will stay empty". Retrying the second
@@ -763,17 +502,10 @@ pub fn isFifoFd(fd: c_int) bool {
     }
 }
 
-/// Test apparatus only: the classification above owes its falsification to a real
-/// FIFO (#5), and std.c carries no mkfifo. The engine itself never creates one.
 pub extern "c" fn mkfifo(path: [*:0]const u8, mode: c_uint) c_int;
 
-/// Test apparatus only: `kindOfFd` owes its falsification to a descriptor that is not a
-/// regular file, and a pipe is the one the tests can make without touching the
-/// filesystem — which is the point, since opening a FIFO by name is the thing the
-/// caller of `kindOfFd` is trying to survive.
 pub extern "c" fn pipe(fds: *[2]c_int) c_int;
 
-/// `d_name` is a fixed-size array in the struct; the name is the NUL-terminated prefix.
 pub fn direntName(e: *Dirent) []const u8 {
     const p: [*:0]const u8 = @ptrCast(&e.name);
     return std.mem.span(p);
@@ -794,8 +526,6 @@ pub const Term = union(enum) {
 
 pub fn decodeStatus(status: c_int) Term {
     const s: u32 = @bitCast(status);
-    // WIFEXITED / WEXITSTATUS / WTERMSIG, spelled out rather than imported: the macros
-    // are identical across Linux and the BSDs for these three cases.
     if (s & 0x7f == 0) return .{ .exited = @intCast((s >> 8) & 0xff) };
     if ((s & 0x7f) + 1 >= 2) {
         const sig: u8 = @intCast(s & 0x7f);
@@ -804,43 +534,10 @@ pub fn decodeStatus(status: c_int) Term {
     return .{ .unknown = status };
 }
 
-/// `WaitFailed` means the direct child's exit status could never be read — not that the
-/// child misbehaved. It exists because the alternative is worse: `waitpid` only writes
-/// `status` when it succeeds, so a discarded failure leaves the zero it was initialised
-/// with, `decodeStatus` reads that as a clean exit, and a world that was killed is
-/// reported `kill_did_not_land`. A refusal naming the wait is the honest answer; a
-/// confident wrong reason is not (#264).
-/// `StdinUnavailable` (#263): `/dev/null` could not be opened, so the child could not be
-/// started with its stdin at end-of-file. Raised by the PARENT before any fork, on purpose:
-/// the child's exit status is the target's namespace (`expected_status` accepts 0..255, so
-/// no code is free for the engine to mean something by), and a failure to arrange the
-/// child's descriptors has to reach the caller on a channel the target cannot also use.
-///
-/// `CaptureUnavailable` (#469) is the same sentence applied to the other descriptor the
-/// parent arranges. The capture used to be opened in the child, so a blocked capture path
-/// left `_exit(126)` — a value in the target's namespace — and `main`'s recording-run
-/// check, which reads the exit status *before* it reads the trace, reported
-/// `recording_run_failed` and told the operator to declare a different success convention
-/// with `--expect-status`. Taking that advice would have made a refused capture
-/// indistinguishable from a run that succeeded. The open moved to the parent so the
-/// failure never enters that namespace at all.
 pub const SpawnError = error{ ForkFailed, OutOfMemory, WaitFailed, StdinUnavailable, CaptureUnavailable };
 
-/// `SpawnError` for the two entry points that take a cgroup (contract v17, #559), plus the
-/// one failure only a cgroup can have: the engine made the run's cgroup and could not move
-/// the child into it. A separate set rather than a sixth member of `SpawnError`, for the
-/// reason `runChildCaptureWorld` gives about `TimedOut`: a caller that never passes a cgroup
-/// cannot receive the error by type, and its exhaustive switch does not grow an arm it could
-/// never reach.
 pub const ContainedSpawnError = SpawnError || error{CgroupJoinFailed};
 
-/// A child's stdout capture: where it goes, and what the open that creates it refuses.
-///
-/// One argument rather than three positional parameters, because #469 was exactly a
-/// positional flag deciding something unrelated: the symlink guard on this open was
-/// spelled `if (minimal_env)`, an environment-scrubbing switch that only the MCP adapter
-/// passes, so every CLI run opened its capture following links. Each decision is named
-/// here and chosen at the call site that makes it.
 pub const Capture = struct {
     /// Resolved against the ENGINE's working directory, not the child's: this open now
     /// happens in the parent, and it happened before `chdir` even when it lived in the
@@ -854,21 +551,12 @@ pub const Capture = struct {
     /// harvested as world evidence.
     stderr_too: bool = false,
 
-    /// Refuse a path that already holds anything, rather than truncating it.
-    ///
     /// `O_NOFOLLOW` is unconditional below and covers a *symlink* at the name. It does
     /// nothing about a **hard link**, which is the same file rather than a pointer to
     /// one — so a work directory an attacker reached can still turn a capture into an
     /// arbitrary-file truncation with `O_NOFOLLOW` set. `O_EXCL` covers that, and it is
     /// free wherever the caller unlinks the path first, which every work-directory
     /// capture does.
-    ///
-    /// What it buys is narrow, and saying so is the point: the same unlink that makes
-    /// `O_EXCL` free also removes a link planted before the run. Both flags therefore
-    /// act only inside the window between that unlink and this open, or when the unlink
-    /// silently failed (`removeFile` discards its result, and an attacker-owned sticky
-    /// work directory can answer `EPERM`).
-    ///
     /// Not set for a capture to `/dev/null` — the device already exists, so
     /// `O_CREAT|O_EXCL` there refuses every time.
     ///
@@ -881,36 +569,14 @@ pub const Capture = struct {
     exclusive: bool = false,
 };
 
-/// The flags a capture is opened with. `O_NOFOLLOW` is not conditional on anything:
-/// #469 is the whole reason this is a function rather than an expression at each site.
-/// `spawnSidecar` shares it, so the two forks in this file cannot drift apart.
-/// Takes the one field it reads rather than a `Capture`, so no caller has to build a
-/// throwaway struct with a path in it — the flags do not depend on the path, and a
-/// signature that looked as though they might is the kind of thing this issue is about.
 fn captureFlags(exclusive: bool) c_int {
     const base: c_int = O_WRONLY | O_CREAT | O_TRUNC | O_NOFOLLOW;
     return if (exclusive) base | O_EXCL else base;
 }
 
-/// Run a command to completion with extra environment variables set, and leave nothing of
-/// it running.
-///
 /// The variables are applied in the child after `fork`, so the engine's own environment
 /// stays clean across worlds — otherwise `SIDEEYE_KILL_AT` from world k would leak into
 /// world k+1 and every subsequent run would die at the wrong place.
-///
-/// ## Why the process group
-///
-/// This used to `waitpid` the direct child and return. Everything the target spawned
-/// outlived it: after the subject is killed at crash point k, a grandchild keeps running
-/// while the engine snapshots the state directory, restores it for the next world, and
-/// runs the checker. The verdict then describes a moment nobody chose. v0.1 only got away
-/// with it because a target that creates processes is refused before any world is
-/// explored — the recording run still had the hazard.
-///
-/// The child puts itself in a new process group before `exec`, and the whole group is
-/// signalled once the direct child is gone.
-///
 /// **The signal has to be sent before the child is reaped**, which is why `waitid` appears
 /// here at all. `kill(-N, …)` addresses the process group whose id is N, and N is the
 /// child's pid. That id is safe to signal only while it is still spoken for: POSIX keeps a
@@ -919,34 +585,11 @@ fn captureFlags(exclusive: bool) c_int {
 /// still holding the group id. Reap first and both become reusable — an unrelated process
 /// could be allocated that pid, become a group leader, and receive a `SIGKILL` meant for
 /// something that no longer exists.
-///
-/// The first version of this function did exactly that: `waitpid`, then `kill(-pid)`. The
-/// argument written here for why it was safe ("a freshly allocated pid cannot equal a live
-/// group id") is true at the moment of `fork` and false after the reap, which is the only
-/// moment that mattered. `waitid(… WNOWAIT)` waits for the child to exit while leaving it
-/// reapable, so the id stays pinned across the signal.
-///
 /// What this does **not** establish is that no descendant remains. A grandchild is
 /// reparented away when its parent dies, so it is not this process's child to wait for —
 /// `waitpid` returning `ECHILD` says nothing about it. The group signal is the strongest
 /// thing available here; confirming the state directory has actually stopped moving is a
 /// separate step, and it is an observation rather than a proof.
-/// `cwd` — where the child starts, `null` for the engine's own. It is a parameter on
-/// every wrapper a define's commands reach rather than a field somewhere, so a new spawn
-/// site has to say which it wants: a site that silently inherited the engine's cwd would
-/// be a define running somewhere its author did not declare, and nothing downstream can
-/// see that. `runChildCaptureMinimalEnv` is the one wrapper without it, on purpose — its
-/// child is the engine, not a define's command.
-///
-/// `stdin` — not a parameter, on purpose (#263). Every child these wrappers start, on
-/// every path, begins with fd 0 at end-of-file: the engine's own stdin is the caller's
-/// terminal or pipe, a fact no committed define can declare and no replay can reproduce,
-/// and a target that read it either hung the CLI path forever or saw EOF on the MCP path
-/// — two behaviours for one target. There is no spawn site with a reason to inherit
-/// (the sudo probe, the signal helper and the engine's self-exec read
-/// nothing), so a per-site choice would only be a way for a new site to inherit by
-/// accident. How the descriptor is arranged, and why its failure is a `SpawnError`
-/// rather than an exit code, is written at the fork in `runChildImplWithOps`.
 pub fn runChild(
     gpa: std.mem.Allocator,
     argv: []const []const u8,
@@ -956,12 +599,6 @@ pub fn runChild(
     return runChildImpl(gpa, argv, env_pairs, null, false, cwd);
 }
 
-/// `runChild`, with the child's stdout sent to a file. What a target says on stdout
-/// is evidence — the L1 success marker is read from it (ADR 0008) — and evidence
-/// belongs in the work directory, not interleaved with the engine's own report.
-///
-/// `cap.stderr_too` folds in what `runChildCaptureAll` used to be a separate wrapper
-/// for: a wrapper whose only job is to set one boolean is the shape #469 is about.
 pub fn runChildCapture(
     gpa: std.mem.Allocator,
     argv: []const []const u8,
@@ -972,9 +609,6 @@ pub fn runChildCapture(
     return runChildImpl(gpa, argv, env_pairs, cap, false, cwd);
 }
 
-/// `runChildCapture` for a run the engine kills as one, contained in `cg` when one is given
-/// (contract v17, #559): the recording run and preflight's second run. A world has
-/// `runChildCaptureWorld`.
 pub fn runChildCaptureContained(
     gpa: std.mem.Allocator,
     argv: []const []const u8,
@@ -984,18 +618,11 @@ pub fn runChildCaptureContained(
     cg: ?*CgroupSpawn,
 ) ContainedSpawnError!Term {
     return runChildImplWithOps(gpa, argv, env_pairs, cap, false, null, cwd, cg, RealOps) catch |e| switch (e) {
-        // A null budget never takes the timeout branch, as `runChildImpl` says.
         error.TimedOut => unreachable,
         error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable, error.CgroupJoinFailed => |narrow| narrow,
     };
 }
 
-/// `runChildCapture` with a wall-clock budget: the one entry point that can answer
-/// `error.TimedOut`, used by the world loop alone (#263). Everything else keeps the
-/// plain `SpawnError`, so a caller that never passes a budget cannot receive a timeout
-/// by type — the containment that an `unreachable` arm in the caller's error switch
-/// would only have checked at run time.
-///
 /// The budget is a measurement rule, not a physical claim: a child a successful
 /// post-deadline observation still sees running is sent SIGKILL and reported TimedOut;
 /// one an observation sees exited is accepted as in-budget. What TimedOut promises
@@ -1009,9 +636,6 @@ pub fn runChildCaptureContained(
 /// safety and the boundedness of the exited-side reap stand on unreaped children
 /// staying zombies, and an inherited SIG_IGN — which survives exec — would let the
 /// kernel auto-reap them instead.
-///
-/// `cg` is the world's cgroup where the engine contains it (contract v17, #559), null
-/// otherwise; only a contained world can also answer `error.CgroupJoinFailed`.
 pub fn runChildCaptureWorld(
     gpa: std.mem.Allocator,
     argv: []const []const u8,
@@ -1024,10 +648,6 @@ pub fn runChildCaptureWorld(
     return runChildImplWithOps(gpa, argv, env_pairs, cap, false, budget_ms, cwd, cg, RealOps);
 }
 
-/// Like `runChildCapture`, but the child receives *only* `env_pairs` as its whole
-/// environment (via `execve`, argv[0] an absolute path — no inheritance, no PATH
-/// search). The MCP adapter uses this so a config's operation cannot read the server's
-/// credentials, and so a canonical self-path is what actually runs (ADR 0010).
 pub fn runChildCaptureMinimalEnv(
     gpa: std.mem.Allocator,
     argv: []const []const u8,
@@ -1041,7 +661,6 @@ pub fn runChildCaptureMinimalEnv(
     return runChildImpl(gpa, argv, env_pairs, cap, true, null);
 }
 
-/// Sixteen lowercase hex digits from eight bytes of kernel entropy, or null when the
 /// kernel refused (`getentropy` fails only on EFAULT, EIO or a kernel without it). Used
 /// for the fs_usage sentinels' names (#549): a name a target can derive from its parent's
 /// pid is a name it can forge a capture line for, and eight bytes it never sees is not.
@@ -1063,7 +682,6 @@ test "randomHex: sixteen lowercase hex digits, and two draws differ" {
     const hb = randomHex(&b) orelse return error.TestUnexpectedResult;
     try std.testing.expectEqual(@as(usize, 16), ha.len);
     for (ha) |c| try std.testing.expect((c >= '0' and c <= '9') or (c >= 'a' and c <= 'f'));
-    // Sixty-four bits twice: equal only if the source is not entropy.
     try std.testing.expect(!std.mem.eql(u8, ha, hb));
 }
 
@@ -1090,9 +708,6 @@ fn adoptStdin(nfd: c_int) void {
 /// for every `dup2` the child issues before `exec`. macOS documents `EINTR` for
 /// `dup2(2)`; the stdin call retried it and the capture call three lines later did not,
 /// so a signal landing between the two was an exit 126 with nothing to say which call.
-/// Any failure that is not `EINTR`, or the tenth `EINTR`, is returned to the caller,
-/// which decides between `abort` (stdin) and 126 (the capture). `dup2_fn` is a
-/// parameter so the bound can be measured without a signal: the test hands in a fake.
 fn dup2Bounded(dup2_fn: anytype, old_fd: c_int, new_fd: c_int) bool {
     var tries: u32 = 0;
     while (dup2_fn(old_fd, new_fd) < 0) {
@@ -1107,64 +722,20 @@ fn dup2Bounded(dup2_fn: anytype, old_fd: c_int, new_fd: c_int) bool {
 /// stderr at this point, because nothing has been redirected yet — and exit 126, the
 /// code this path keeps for "the child could not be arranged". One stack buffer and one
 /// `write`, no allocation, no lock: this runs where `adoptStdin` runs. Written on
-/// 2026-09-08 after the macOS CI job produced two exit-126 children in one day (a
-/// baseline world, then a `--setup`) and the code alone could not say whether it was
-/// `setpgid`, the capture `dup2` or the stderr `dup2`, or with what errno.
 fn childArrangeFailed(what: []const u8) noreturn {
     childArrangeNote(what);
     _exit(126);
 }
 
-/// Put this child in a process group of its own, or exit 126 saying where it actually is.
-///
 /// **The invariant is the group, not the call** (#629). The child must not `exec` while it
 /// still shares the engine's group — the shim's crash point kills `kill(0, SIGKILL)`, the
 /// caller's whole group, so a target left in the engine's group could take the exploration
 /// down with it. `setpgid(0, 0)` is how the child gets there; it is not the only way it can
 /// arrive, and this side used to read any non-zero return as "it did not".
-///
-/// Five macOS CI failures died here with `errno 1` and were read as `kill_did_not_land`
-/// (#625): the world never ran, so the crash point's kill had nothing to kill. The manual
-/// allows a self-call exactly one EPERM — "the process indicated by the pid argument is a
-/// session leader" (`man 2 setpgid`; `setpgid(2)` on Linux says the same) — and a session
-/// leader already leads a process group of its own, so that case needs no move: measured
-/// here, `setsid` then `setpgid(0, 0)` answers -1 with errno 1 while `getpgid(0) ==
-/// getpid()`. Hence the first branch below, and hence asking the kernel where this process
-/// is rather than trusting one return value.
-///
-/// **The CI refusals were not that clause** (#632). The note this function writes said so on
-/// its first firing — `pid 5173, group 971, session 1`, a session id that is not the child's
-/// pid — and the kernel explains the rest: `SESS_LEADER` compares proc *pointers* against an
-/// `s_leader` nothing clears when the leader exits, so a `proc` reused at a dead leader's
-/// address is refused a leadership it does not have. The second branch is what that child
-/// does instead; the exit that remains when neither call will move it comes after them.
-/// Every surviving branch writes a line, which is how the first one was diagnosed at all
-/// (#626's lesson, applied to the fix rather than to the symptom).
-///
-/// **`setsid` can be refused too, and that refusal is the engine's own doing** (#651, ADR
-/// 0087). Of the six refusals the macOS job logged in the three days after #632, five ended
-/// with the child already leading a group of its own — the parent's `setpgid(pid, pid)` had
-/// landed, which the pointer reading above says cannot happen (the check is on the target), so
-/// that reading explains less than it claimed and the first refusal is unexplained again. The
-/// sixth read its group (still the engine's), asked for a session, and was refused: by then
-/// the parent's call had landed, and a pid that already names a group is the one thing
-/// `setsid_internal` refuses a forked child for — the only way a group comes to be named by
-/// this pid is `enterpgrp` putting this child inside it. So a refused `setsid` says the child
-/// is where it needs to be, and the branch after `setsid` asks the kernel once more after that
-/// refusal rather than reading it as "it did not": the same rule as the first branch, the
-/// group and not the call. The exit that remains names what both calls answered.
 fn childEnterOwnGroup() void {
     childEnterOwnGroupWith(setpgid, setsid);
 }
 
-/// Both calls are on seams, the way `dup2Bounded` takes its `dup2`. `setpgid`'s refusal no
-/// host available here can be made to produce: a self-call is refused only for a session
-/// leader, who already leads their own group (first branch), and the refusal the hosted
-/// runner produces is something else (#632, #651), which no test here can arrange. `setsid`'s
-/// refusal the kernel *can* be made to produce — by a child that already leads a group of its
-/// own, which is the state #651 is about — so the branch after `setsid` is exercised against
-/// the real call. The second branch is exercised with a fake `setpgid` and the real `setsid`,
-/// and the exit at the bottom needs both faked.
 fn childEnterOwnGroupWith(setpgid_fn: anytype, setsid_fn: anytype) void {
     if (setpgid_fn(0, 0) == 0) return;
     const err = std.c._errno().*; // read before `getpgid`: a successful call may write errno
@@ -1175,26 +746,8 @@ fn childEnterOwnGroupWith(setpgid_fn: anytype, setsid_fn: anytype) void {
         writeNoteLine(fmtChildGroupKeptNote(&kept, err, pid, getsid(0)));
         return;
     }
-    // Still in the engine's group, and the call that leaves it has been refused. Why the
-    // kernel refuses it is not known. #632 read XNU's `SESS_LEADER` — a **proc pointer**
-    // compare against an `s_leader` nothing clears when the leader exits, so a `proc` reused
-    // at a dead leader's address would be refused a leadership its session id says it does
-    // not have — but that check is on the target, so it would refuse the parent's
-    // `setpgid(pid, pid)` too, and five of the six occurrences after #632 ended in the
-    // first branch above with the parent's call landed (#651). What is known is what
-    // `setsid` does with this child: `setsid_internal` refuses a process whose pid already
     // names a group, and grants a session — and with it a group of its own — otherwise. What
     // the `exec` depends on is the group `getpgid` reports, and every branch below asks for it.
-    //
-    // Two costs, recorded rather than hidden (ADR 0075; owner's ruling 2026-09-19, against
-    // losing the run entirely). That world runs with a session of its own, so a target
-    // arranging its own group — a shell does — has its `setpgid(0, 0)` refused where it
-    // normally succeeds, and no report field says which kind of world this was (#630). And
-    // a session of one's own has no controlling terminal: on macOS `sudo -n`'s ticket is
-    // cached per terminal (`src/main.zig`'s own note), so a child that arrives here on the
-    // sudo probe or the `fs_usage` sidecar can be told to run `sudo -v` in the terminal
-    // where it just did. Neither is measured — the kernel state cannot be made here — and
-    // both are reasoned from this repository's own text.
     const setsid_rc = setsid_fn();
     const setsid_err = std.c._errno().*; // read at once: the `getpgid` and `getsid` below may write it
     const now_group = getpgid(0);
@@ -1204,40 +757,21 @@ fn childEnterOwnGroupWith(setpgid_fn: anytype, setsid_fn: anytype) void {
             writeNoteLine(fmtChildLeftBySetsidNote(&left, err, pid, group));
             return;
         }
-        // `setsid` refused, and the group is this child's by now (#651). The one refusal
-        // `setsid_internal` has for a forked child is "a group named by this pid exists", and
-        // the only way one comes to exist is `enterpgrp` putting this child inside it — the
-        // parent's `setpgid(pid, pid)`, issued right after `fork` returned there, landing
-        // between the `getpgid` above and the call. The sixth CI occurrence died here with
-        // `group 953` in its note, a number read before the parent had moved it; asking again
-        // is what this branch adds, and the note names both refusals so a next occurrence can
-        // be told from this one.
         var kept: [192]u8 = undefined;
         writeNoteLine(fmtChildKeptAfterSetsidRefusedNote(&kept, err, setsid_err, pid, getsid(0)));
         return;
     }
     var buf: [128]u8 = undefined; // the bound both exits below are sized to
     if (setsid_rc >= 0) {
-        // `setsid` answered 0 and the group did not follow: not a refusal, and not a state the
-        // source allows (a new session is a new group with its caller inside). The exit it
-        // always was, with the one errno that is real — and a `what` that says what `setsid`
-        // answered, because the session read here is the child's own pid by now, which read
-        // the way the #629 note is read would look like the refusal the manual documents.
         const what = fmtChildSetsidWithoutGroupWhat(&buf, pid, now_group, getsid(0));
         std.c._errno().* = err; // the note's errno is the refused call's, not `getpgid`'s
         childArrangeFailed(what);
     }
-    // Refused by both calls, and still in a group that is not its own. The `what` carries
-    // `setpgid`'s errno and the state as read after the second refusal; the tail carries
-    // `setsid`'s, restored past the two reads above so the line names the calls' answers and
-    // not whatever a successful `getpgid` or `getsid` may have left.
     const what = fmtChildBothRefusedWhat(&buf, pid, now_group, getsid(0), err);
     std.c._errno().* = setsid_err;
     childArrangeFailed(what);
 }
 
-/// The note alone, for the one failure that aborts rather than exits (stdin): format
-/// from the errno the failed call left, one `write` to fd 2 under the same `EINTR`
 /// bound as the `dup2`s. Anything else the `write` answers — a reader that is gone
 /// (`EPIPE`; with `SIGPIPE` at its default the child dies of that instead), a short
 /// write — ends the attempt: the line is worth less than the exit it precedes, so it
@@ -1250,10 +784,6 @@ fn childArrangeNote(what: []const u8) void {
     writeNoteLine(fmtChildArrangeNote(&buf, what, std.c._errno().*));
 }
 
-/// The one `write` both child-side notes make, with the `EINTR` bound described above.
-/// Shared so the surviving note (`childEnterOwnGroup`) cannot drift from the dying one:
-/// the errno it reads to decide whether to retry is the `write`'s, not the caller's.
-///
 /// **One sentence above does not carry over to the surviving note.** "The line is worth less
 /// than the exit it precedes" holds for a child that is about to die; the #629 note precedes
 /// an `exec`. What the two share is the bound; what the surviving caller inherits is a
@@ -1273,46 +803,26 @@ fn fmtChildArrangeNote(buf: []u8, what: []const u8, err: c_int) []const u8 {
     return std.fmt.bufPrint(buf, "sideeye: the child could not be arranged before exec: {s} failed, errno {d}\n", .{ what, err }) catch "sideeye: the child could not be arranged before exec\n";
 }
 
-/// The exit that remains when both calls were refused (#629, #651), as the `what` the note
-/// names it by: the state the child read after the second refusal, so a next occurrence says
-/// whether the group and session it was in are ones the manual's single EPERM clause can
-/// explain, with `setpgid`'s own errno inside it so that the tail the arrangement note appends
-/// can carry `setsid`'s. Separate from the write so the order and spelling of the four numbers
-/// are testable with four distinct values — a forked child cannot offer them: it inherits both
-/// ids, and on the hosts this runs on the two coincide (measured here, `pgid == sid`), so a
 /// swapped pair would read as correct. Its buffer is 128: the fixed text is 66 bytes and four
 /// `c_int`s at their widest 44, which is 110.
 fn fmtChildBothRefusedWhat(buf: []u8, pid: c_int, group: c_int, sid: c_int, setpgid_err: c_int) []const u8 {
     return std.fmt.bufPrint(buf, "setpgid(0, 0) (pid {d}, group {d}, session {d}) failed, errno {d}, then setsid", .{ pid, group, sid, setpgid_err }) catch "setpgid(0, 0) then setsid";
 }
 
-/// The exit no source allows (#651): `setsid` answered 0 and `getpgid` still reports a group
-/// that is not the child's. Says so inside the `what`, because the session it reads is the
-/// child's own pid by then — which, read the way the #629 note is read, would look like the
-/// refusal the manual documents. The tail the arrangement note appends carries `setpgid`'s
 /// errno, the one refusal that happened. Its buffer is 128: the fixed text is 86 bytes and
 /// three `c_int`s at their widest 33, which is 119.
 fn fmtChildSetsidWithoutGroupWhat(buf: []u8, pid: c_int, group: c_int, sid: c_int) []const u8 {
     return std.fmt.bufPrint(buf, "setpgid(0, 0) (pid {d}, group {d}, session {d}; setsid answered 0 and the group did not follow)", .{ pid, group, sid }) catch "setpgid(0, 0) (setsid answered 0 and the group did not follow)";
 }
 
-/// The third outcome (#632): the call was refused, the child was still in the engine's group,
-/// and `setsid` took it out. Names the group it left, because that number is the engine's and
-/// says what the child escaped; the session it now leads is its own pid.
 fn fmtChildLeftBySetsidNote(buf: []u8, err: c_int, pid: c_int, was_group: c_int) []const u8 {
     return std.fmt.bufPrint(buf, "sideeye: setpgid(0, 0) failed, errno {d}, so the child left group {d} with setsid and now leads its own (pid {d}); continuing\n", .{ err, was_group, pid }) catch "sideeye: setpgid(0, 0) failed and the child left the engine's group with setsid\n";
 }
 
-/// The other outcome (#629): the call was refused and the child is where it needed to be
-/// anyway. Says so on the same fd, in one line, and names the state it read — `session`
-/// equal to `pid` is the refusal the manual documents, anything else is one it does not.
 fn fmtChildGroupKeptNote(buf: []u8, err: c_int, pid: c_int, sid: c_int) []const u8 {
     return std.fmt.bufPrint(buf, "sideeye: setpgid(0, 0) failed, errno {d}, but the child already leads its own group (pid {d}, session {d}); continuing\n", .{ err, pid, sid }) catch "sideeye: setpgid(0, 0) failed and the child already leads its own group\n";
 }
 
-/// The fourth outcome (#651): both calls refused, and the group the child's own by the time it
-/// asked again — the parent's `setpgid(pid, pid)` landed in between. Names both errnos, in the
-/// order the calls were made, and the session, which is still the engine's: `setsid` did not
 /// go through, so this world keeps its controlling terminal, unlike the #632 branch. Opens the
 /// way the other two surviving notes do, which is what `spike/thread-kill-lands.sh` counts by.
 /// Its buffer is 192: the fixed text is 138 bytes and four `c_int`s at their widest 44, which
@@ -1340,18 +850,15 @@ test "dup2Bounded retries EINTR up to nine times and returns any other failure a
             return 0;
         }
     };
-    // Three interruptions, then success: four calls, true.
     Fake.calls = 0;
     Fake.fail_eintr = 3;
     Fake.fail_other = false;
     try std.testing.expect(dup2Bounded(Fake.dup2, 5, 1));
     try std.testing.expectEqual(@as(u32, 4), Fake.calls);
-    // An interruption that never stops is bounded: nine calls, false.
     Fake.calls = 0;
     Fake.fail_eintr = 1000;
     try std.testing.expect(!dup2Bounded(Fake.dup2, 5, 1));
     try std.testing.expectEqual(@as(u32, 9), Fake.calls);
-    // Any other errno is not retried: one call, false.
     Fake.calls = 0;
     Fake.fail_eintr = 0;
     Fake.fail_other = true;
@@ -1363,11 +870,9 @@ test "the child's arrangement note names the call and the errno, on one line" {
     var buf: [160]u8 = undefined;
     const line = fmtChildArrangeNote(&buf, "dup2(capture, 1)", 4);
     try std.testing.expectEqualStrings("sideeye: the child could not be arranged before exec: dup2(capture, 1) failed, errno 4\n", line);
-    // A buffer too small for the line falls back to a sentence that still ends the line.
     var tiny: [8]u8 = undefined;
     const fallback = fmtChildArrangeNote(&tiny, "setpgid(0, 0)", 1);
     try std.testing.expect(std.mem.endsWith(u8, fallback, "\n"));
-    // The surviving note (#629) carries the state that decided it, and falls back the same way.
     const kept = fmtChildGroupKeptNote(&buf, 1, 4242, 4242);
     try std.testing.expectEqualStrings("sideeye: setpgid(0, 0) failed, errno 1, but the child already leads its own group (pid 4242, session 4242); continuing\n", kept);
     try std.testing.expect(std.mem.endsWith(u8, fmtChildGroupKeptNote(&tiny, 1, 4242, 4242), "\n"));
@@ -1386,18 +891,11 @@ test "the child's arrangement note names the call and the errno, on one line" {
     // themselves rather than nothing.
     try std.testing.expectEqualStrings("setpgid(0, 0) (pid 11, group 22, session 33) failed, errno 44, then setsid", fmtChildBothRefusedWhat(&buf, 11, 22, 33, 44));
     try std.testing.expectEqualStrings("setpgid(0, 0) then setsid", fmtChildBothRefusedWhat(&tiny, 11, 22, 33, 44));
-    // The `what` of the exit no source allows (#651): `setsid` answered 0 and the group did
-    // not follow. Says so, since the session it reads would otherwise read as the manual's case.
     try std.testing.expectEqualStrings("setpgid(0, 0) (pid 11, group 22, session 33; setsid answered 0 and the group did not follow)", fmtChildSetsidWithoutGroupWhat(&buf, 11, 22, 33));
     try std.testing.expectEqualStrings("setpgid(0, 0) (setsid answered 0 and the group did not follow)", fmtChildSetsidWithoutGroupWhat(&tiny, 11, 22, 33));
 }
 
 test "a child refused setsid because it already leads a group of its own runs (#651)" {
-    // The one refusal `setsid_internal` has for a forked child is a group already named by its
-    // pid, and nothing but `enterpgrp` creates one — putting its subject inside it. So the
-    // state is made here the way the engine makes it: a real `setpgid(0, 0)` stands in for the
-    // parent's `setpgid(pid, pid)` landing after the child read its group and before it asked
-    // for a session, and the `setsid` refusal is then the kernel's own, not a fake's.
     const Fake = struct {
         var setsid_accepted = false;
         fn setpgidRefused(_: c_int, _: c_int) c_int {
@@ -1433,8 +931,6 @@ test "a child refused setsid because it already leads a group of its own runs (#
     _ = close(fds[0]);
     var status: c_int = 0;
     _ = waitpid(pid, &status, 0);
-    // 126 is what this branch used to be: the refusal read as "it did not", one syscall after
-    // the group had become the child's own.
     try std.testing.expectEqual(Term{ .exited = 7 }, decodeStatus(status));
     try std.testing.expect(n > 0);
     var expect: [224]u8 = undefined;
@@ -1443,10 +939,6 @@ test "a child refused setsid because it already leads a group of its own runs (#
 }
 
 test "a child the kernel will not move out of the engine's group leaves it with setsid (#632)" {
-    // The refusal is faked, because the kernel supplies it only in a state a laptop cannot
-    // reach (#632: a `proc` reused at a dead session leader's address); `setsid` below is
-    // the real one, in the real state the fallback is for — an ordinary forked child, whose
-    // group is the test binary's, being refused the call that would leave it.
     const Fake = struct {
         fn setpgid(_: c_int, _: c_int) c_int {
             std.c._errno().* = 1; // EPERM, the errno all five CI occurrences carried
@@ -1465,8 +957,6 @@ test "a child the kernel will not move out of the engine's group leaves it with 
         // pid matching an active group id (POSIX), so it cannot be leading one. The check
         // this test rests on is the `_exit(12)` below, which asks the kernel afterwards.
         childEnterOwnGroupWith(Fake.setpgid, setsid);
-        // The invariant, asked of the kernel rather than of the call that was refused: this
-        // child must not `exec` while it still shares the engine's group.
         if (getpgid(0) != getpid()) _exit(12);
         _exit(7);
     }
@@ -1476,7 +966,6 @@ test "a child the kernel will not move out of the engine's group leaves it with 
     _ = close(fds[0]);
     var status: c_int = 0;
     _ = waitpid(pid, &status, 0);
-    // 12 would mean it continued without the group; 126 that it refused where `setsid` works.
     try std.testing.expectEqual(Term{ .exited = 7 }, decodeStatus(status));
     try std.testing.expect(n > 0);
     const note = buf[0..@intCast(n)];
@@ -1486,10 +975,6 @@ test "a child the kernel will not move out of the engine's group leaves it with 
 }
 
 test "a child that can leave the engine's group by neither call exits 126, naming both refusals (#629, #632, #651)" {
-    // Both calls faked: the exit this function keeps is reachable only when the kernel
-    // refuses the group AND refuses the new session AND the group is still not the child's
-    // afterwards, which no host here can be made to do (#651: a refused `setsid` on a real
-    // kernel means the group is already the child's, and that case runs).
     const Fake = struct {
         fn setpgid(_: c_int, _: c_int) c_int {
             std.c._errno().* = 1; // EPERM
@@ -1537,7 +1022,6 @@ test "a child that already leads its own group runs, and says so, when setpgid(0
     // EPERM — "the process indicated by the pid argument is a session leader" — so a child
     // that has called `setsid` reaches the real refusal, with no fake in the path to make
     // the test true by construction. Such a child also leads a group of its own, which is
-    // the state the exec needs: before #629 it exited 126 here and the world never ran.
     var fds: [2]c_int = undefined;
     try std.testing.expect(pipe(&fds) == 0);
     const pid = fork();
@@ -1558,8 +1042,6 @@ test "a child that already leads its own group runs, and says so, when setpgid(0
     _ = close(fds[0]);
     var status: c_int = 0;
     _ = waitpid(pid, &status, 0);
-    // 7: the helper returned. 12 would mean the call was not refused (nothing was tested);
-    // 126 is the exit this fix removed.
     try std.testing.expectEqual(Term{ .exited = 7 }, decodeStatus(status));
     try std.testing.expect(n > 0);
     const note = buf[0..@intCast(n)];
@@ -1580,13 +1062,6 @@ test "the group the fallback asks for is not one every child already has (#629)"
     try std.testing.expectEqual(Term{ .exited = 0 }, decodeStatus(status));
 }
 
-/// A child the caller does not wait for: started, left running, stopped later.
-///
-/// Every other spawn here runs a child to completion, because everything else the
-/// engine starts is something it is measuring. The macOS oracle is not — `fs_usage`
-/// runs *beside* the subject rather than wrapping it (`src/fsusage.zig`), so its
-/// lifetime is the caller's to bound, and the caller has to hold the pid to bound it.
-///
 /// stdout goes to `stdout_path`, opened `O_NOFOLLOW|O_EXCL` regardless of caller:
 /// this one runs under `sudo`, so the file it truncates is chosen with root's
 /// authority and a pre-planted symlink there is an arbitrary-file overwrite rather
@@ -1617,8 +1092,6 @@ pub fn spawnSidecar(
 
     // Same stdin discipline as every other spawn (#263), same reasons, same shape:
     // opened by the parent, handed to the child, never an exit code. `sudo -n` never
-    // prompts, so nothing observable changes here — what changes is that "every child
-    // Sideeye forks starts at end-of-file" is one sentence with no exception in it.
     const nfd = RealOps.openDevNull();
     if (nfd < 0) return error.StdinUnavailable;
 
@@ -1643,16 +1116,6 @@ pub fn spawnSidecar(
         // because killing one process leaves the shell that spawned it to run the next
         // command — a target that never got its own group is a target in the ENGINE's
         // group, and that signal would take the exploration with it. The result used to
-        // be discarded, which was safe while the kill was a `raise`: it could reach
-        // nobody but the caller however the group turned out.
-        //
-        // ADR 0002 decision 1 removed a `getpgid` confirmation on the grounds that
-        // `kill(-N, …)` is safe by construction — N being a freshly allocated pid that
-        // cannot equal a live group id, so a child that never got its group is signalled
-        // by nothing. That argument is about a signal sent from OUTSIDE and it still
-        // holds for the engine's own group kill. It says nothing about one sent from
-        // inside, which is what this exit covers. 126 is the code this path already
-        // keeps for "the child could not be arranged", distinct from exec's 127.
         childEnterOwnGroup();
         adoptStdin(nfd);
         if (cfd != 1) {
@@ -1662,9 +1125,6 @@ pub fn spawnSidecar(
         _ = execvp(cargv[0].?, cargv.ptr);
         _exit(127);
     }
-    // Both copies released, with the same low-descriptor note as `runChildImplWithOps`:
-    // an engine started with fd 1 closed gets `cfd == 1` and ends this call with fd 1
-    // closed again, which is the state it started in.
     _ = close(nfd);
     _ = close(cfd);
     return pid;
@@ -1672,12 +1132,6 @@ pub fn spawnSidecar(
 
 pub const SidecarEnd = enum { was_running, had_exited, would_not_die };
 
-/// Stop a sidecar and reap it, reporting whether it was still running when asked.
-///
-/// The answer matters: an observer that had already exited when the recording finished
-/// ran out of its own bound, and its capture describes a window that closed early. The
-/// caller turns that into a refusal rather than comparing against a truncated account.
-///
 /// **The signal goes to the process group, and it is SIGINT.** Both were paid for by a
 /// measured failure. `spawnSidecar` starts `sudo`, which forks the real observer, so
 /// signalling the returned pid reaches the privilege helper and not the process holding
@@ -1686,10 +1140,6 @@ pub const SidecarEnd = enum { was_running, had_exited, would_not_die };
 /// cleanly at a flush boundary tens of milliseconds in — which reads exactly like a
 /// complete capture of a short window. SIGINT is the disposition that tool is built to
 /// handle, since it is meant to be stopped from a terminal.
-///
-/// A caller signalling a privileged sidecar needs `signal_helper` — the group is root's
-/// and an unprivileged parent cannot reach it. It is invoked as
-/// `<helper...> kill -<sig> -<pgid>`.
 pub fn stopSidecar(gpa: std.mem.Allocator, pid: c_int, signal_helper: []const []const u8, grace_ms: u64) SidecarEnd {
     // WNOHANG first: this is the observation that separates "we stopped it" from
     // "it was already gone", and it has to happen before any signal is sent.
@@ -1727,8 +1177,6 @@ pub fn stopSidecar(gpa: std.mem.Allocator, pid: c_int, signal_helper: []const []
 }
 
 fn signalGroup(gpa: std.mem.Allocator, pgid: c_int, sig: []const u8, helper: []const []const u8) void {
-    // The unprivileged attempt first: it is free, and it is the whole story when the
-    // sidecar is not privileged.
     const raw: u8 = if (std.mem.eql(u8, sig, "-KILL")) SIGKILL else SIGINT;
     _ = kill(-pgid, @as(c_int, raw));
     if (helper.len == 0) return;
@@ -1741,9 +1189,6 @@ fn signalGroup(gpa: std.mem.Allocator, pgid: c_int, sig: []const u8, helper: []c
     list.append(arena, sig) catch return;
     const target = std.fmt.allocPrint(arena, "-{d}", .{pgid}) catch return;
     list.append(arena, target) catch return;
-    // `/dev/null` is a device that already exists, so this capture is not `exclusive`:
-    // `O_CREAT|O_EXCL` there refuses every time. `O_NOFOLLOW` still applies and costs
-    // nothing — the device is not a symlink on either platform.
     _ = runChildCapture(gpa, list.items, &.{}, .{ .path = "/dev/null" }, null) catch return;
 }
 
@@ -1756,38 +1201,23 @@ fn runChildImpl(
     cwd: ?[]const u8,
 ) SpawnError!Term {
     return runChildImplWithOps(gpa, argv, env_pairs, capture, minimal_env, null, cwd, null, RealOps) catch |e| switch (e) {
-        // A null budget never takes the timeout branch — see the budget block below,
-        // which is the only producer of this error and is gated on `budget_ms != null`.
         error.TimedOut => unreachable,
-        // Nor does a null cgroup take the join: the only producer of this error is gated on
-        // `cg != null` (contract v17, #559).
         error.CgroupJoinFailed => unreachable,
         error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable => |narrow| narrow,
     };
 }
 
-/// How long the timeout path waits for its own SIGKILL to produce a reapable child
-/// before it stops waiting and leaves a stray (#263). Not a second budget on the
-/// target — SIGKILL delivery is the kernel's promise and normally lands in
-/// microseconds — but the bound that keeps "the budget path never waits without
-/// bound" true when the promise fails: a child pinned in uninterruptible sleep, or
-/// one whose credentials the group signal could not reach.
 pub const world_kill_grace_ms: u64 = 5000;
 
-/// The longest cgroup path the engine builds (contract v17, #559).
 const max_cgroup_path = 1024;
 
-/// The engine's own cgroup, where a run's cgroups are made (contract v17, #559).
-///
 /// cgroup v2 lets a delegated process move others only within its own subtree (the kernel
 /// documentation's "Delegation Containment"), so a run's cgroup has to be a child of the one
 /// the engine is in. It is offered only when writing the engine's own pid to its own
 /// `cgroup.procs` succeeds — the permission check a real move passes, which `access(W_OK)`
 /// does not see — and a trial child cgroup carries a `cgroup.kill`.
 pub const CgroupHome = struct {
-    /// Filesystem path of the engine's cgroup.
     dir: [:0]const u8,
-    /// The same cgroup as `/proc/self/cgroup` spells it: the path after `0::`.
     rel: []const u8,
 };
 
@@ -1796,9 +1226,6 @@ var cgroup_home_dir_buf: [max_cgroup_path]u8 = undefined;
 var cgroup_home_rel_buf: [max_cgroup_path]u8 = undefined;
 var cgroup_home: CgroupHome = undefined;
 
-/// Probed once per engine. Null on macOS, outside a cgroup v2, and wherever the engine cannot
-/// move a process within its own cgroup — every one of which is a run the engine does not
-/// contain, and so exactly the engine it was before contract v17.
 pub fn cgroupHome() ?CgroupHome {
     switch (cgroup_home_state) {
         .present => return cgroup_home,
@@ -1835,10 +1262,6 @@ pub fn cgroupHome() ?CgroupHome {
     return cgroup_home;
 }
 
-/// The cgroup2 mount point in `/proc/self/mountinfo`. A mount whose root is not `/` — a bind
-/// of a subtree — would put the engine's own path somewhere else under it, and a mount point
-/// carrying an escape (`\040`) is not unescaped here; both are not offered, the side that
-/// leaves a run uncontained rather than contained in the wrong place.
 fn cgroup2Mount(mountinfo: []const u8) ?[]const u8 {
     var lines = std.mem.splitScalar(u8, mountinfo, '\n');
     while (lines.next()) |line| {
@@ -1863,7 +1286,6 @@ fn cgroup2Mount(mountinfo: []const u8) ?[]const u8 {
     return null;
 }
 
-/// The path after `0::` in `/proc/self/cgroup`: this process's cgroup v2.
 fn cgroup2Path(self_cgroup: []const u8) ?[]const u8 {
     var lines = std.mem.splitScalar(u8, self_cgroup, '\n');
     while (lines.next()) |line| {
@@ -1896,49 +1318,26 @@ fn writeSmallFile(path: [*:0]const u8, bytes: []const u8) bool {
     return write(fd, bytes.ptr, bytes.len) == @as(isize, @intCast(bytes.len));
 }
 
-/// A contained spawn's cgroup (contract v17, #559). The caller makes one with `init`, puts its
-/// names in the child's environment, passes it to the spawn, and reads what the spawn found.
 pub const CgroupSpawn = struct {
-    /// A world, whose shim is also told where the cgroup's `cgroup.kill` is.
     world: bool,
-    /// The run's cgroup, R. The run's processes are not put in R itself but in `R/work`, so a
-    /// world's crash point has somewhere inside the run to step aside to: the process that
-    /// kills the world moves itself from `work` up into R, writes `work`'s `cgroup.kill` —
-    /// which then takes every other process of the run and not the writer — and signals its
-    /// own process group, which takes the writer and any process that left the cgroup without
-    /// leaving the group. Together the two reach everything the process group reached before
-    /// contract v17 and everything in the cgroup besides. The engine's own kill is R's, which
-    /// holds both.
     dir_buf: [max_cgroup_path + 64]u8 = undefined,
     dir_len: usize = 0,
     rel_buf: [max_cgroup_path + 64]u8 = undefined,
     rel_len: usize = 0,
-    /// `R/work`, where the direct child is moved and everything it starts is born.
     work_buf: [max_cgroup_path + 72]u8 = undefined,
     work_len: usize = 0,
-    /// `R/work/cgroup.kill`, for a world's crash point.
     kill_buf: [max_cgroup_path + 96]u8 = undefined,
     kill_len: usize = 0,
-    /// `R/cgroup.procs`, where a world's crash point steps aside to before it kills.
     aside_buf: [max_cgroup_path + 80]u8 = undefined,
     aside_len: usize = 0,
-    /// `work`'s `cgroup.procs`, opened before the fork by `cgroupMake`; -1 otherwise.
     procs_fd: c_int = -1,
 
-    /// The child was moved into the cgroup before it ran.
     joined: bool = false,
-    /// The cgroup held no live process after the kill, within `world_kill_grace_ms`.
     stopped: bool = false,
-    /// Processes still in the cgroup when the direct child had exited on its own, read before
-    /// anything was killed, so a world can ask whether one of them wrote. `lingering_more`
-    /// says there were more than the array holds.
     lingering: [128]u32 = undefined,
     lingering_len: usize = 0,
     lingering_more: bool = false,
 
-    /// Null when the names do not fit or the kernel refused the entropy, which leaves the spawn
-    /// uncontained.
-    ///
     /// The name carries sixteen hex digits of kernel entropy beside the engine's pid, not a
     /// counter. A cgroup outlives an engine killed before its cleanup, and an engine in a
     /// container starts at the same small pid time after time, so a pid-and-counter name is
@@ -1964,33 +1363,26 @@ pub const CgroupSpawn = struct {
     pub fn dir(self: *const CgroupSpawn) [:0]const u8 {
         return self.dir_buf[0..self.dir_len :0];
     }
-    /// For `contract.env.run_cgroup`.
     pub fn relPath(self: *const CgroupSpawn) []const u8 {
         return self.rel_buf[0..self.rel_len];
     }
-    /// For `contract.env.kill_cgroup`: `work`'s `cgroup.kill`.
     pub fn killPath(self: *const CgroupSpawn) [:0]const u8 {
         return self.kill_buf[0..self.kill_len :0];
     }
     pub fn workDir(self: *const CgroupSpawn) [:0]const u8 {
         return self.work_buf[0..self.work_len :0];
     }
-    /// For `contract.env.kill_aside`: R's `cgroup.procs`.
     pub fn asidePath(self: *const CgroupSpawn) [:0]const u8 {
         return self.aside_buf[0..self.aside_len :0];
     }
-    /// Remove `work` and R, innermost first. A cgroup the target made below either is not
-    /// walked: it keeps them in place, empty once the run is stopped.
     pub fn removeDirs(self: *const CgroupSpawn) void {
         _ = rmdir(self.workDir().ptr);
         _ = rmdir(self.dir().ptr);
     }
 };
 
-/// `ESRCH`, which a read of `/proc/<pid>/stat` answers once the process is gone.
 const ESRCH: c_int = @intFromEnum(std.posix.E.SRCH);
 
-/// A process's state letter from `/proc/<pid>/stat` (Linux): `R`, `S`, `D`, `Z`, `X` and the
 /// rest. Null only when there is no such process. A file that exists and cannot be read or
 /// parsed answers `?`, which a caller asking "is it dead?" must read as no — the survivor
 /// check (contract v17, #559) refuses on it rather than trusting a read it could not make.
@@ -2006,12 +1398,10 @@ pub fn processState(pid: u32) ?u8 {
         if (r < 0 and std.c._errno().* == EINTR) continue;
         break r;
     };
-    // A process that exits between the open and the read answers ESRCH here.
     if (got < 0) return if (std.c._errno().* == ESRCH) null else '?';
     return statState(buf[0..@intCast(got)]) orelse '?';
 }
 
-/// The state field of a `/proc/<pid>/stat` line: the byte after the `) ` that closes the
 /// command name. The LAST `)`, because the name is the process's own choice and may hold
 /// spaces and parentheses of its own.
 fn statState(stat: []const u8) ?u8 {
@@ -2020,8 +1410,6 @@ fn statState(stat: []const u8) ?u8 {
     return stat[paren + 2];
 }
 
-/// Make the spawn's cgroup and its `work` below it, and open `work`'s `cgroup.procs`, before
-/// the fork (v17, #559).
 fn cgroupMakeReal(cg: *CgroupSpawn) bool {
     if (mkdir(cg.dir().ptr, 0o755) != 0) return false;
     if (mkdir(cg.workDir().ptr, 0o755) != 0) {
@@ -2041,7 +1429,6 @@ fn cgroupMakeReal(cg: *CgroupSpawn) bool {
     return true;
 }
 
-/// Move the forked child, which has not run yet, into the spawn's `work` cgroup (v17, #559).
 fn cgroupJoinReal(cg: *CgroupSpawn, pid: c_int) bool {
     defer {
         _ = close(cg.procs_fd);
@@ -2052,11 +1439,6 @@ fn cgroupJoinReal(cg: *CgroupSpawn, pid: c_int) bool {
     return write(cg.procs_fd, pid_s.ptr, pid_s.len) == @as(isize, @intCast(pid_s.len));
 }
 
-/// Stop the spawn's cgroup, wait until it holds no live process, and remove it (v17, #559).
-/// `read_lingering` on the exit where the direct child ended on its own: what is still in the
-/// cgroup then is read before anything is killed. Zombies are not counted as populated
-/// (measured), so an unreaped direct child does not hold this up.
-///
 /// What is read is `work`'s and R's own `cgroup.procs`, not those of cgroups a target made
 /// below them: a writer that moved into one of those is killed with the rest and not named,
 /// which is what an uncontained engine's group kill does with every lingering writer.
@@ -2106,18 +1488,9 @@ fn noteLingering(cg: *CgroupSpawn, dir: []const u8) void {
     }
 }
 
-/// The operations the wait-and-teardown section performs, as a comptime seam (#264
-/// added the wait; #263 widened it to the whole budget vocabulary). Production always
-/// passes `RealOps`; a test passes a type that fakes the parts being driven and
 /// delegates the rest. A fake `wait` is expected to delegate group waits (`pid < 0`)
 /// to the real `waitpid`, so the test's own children are still reaped while the
 /// direct wait is the part being driven.
-///
-/// The seam exists because the retry and deadline logic is the part that has been
-/// wrong — a test that only exercised a pure "did it succeed?" helper would pass
-/// against an implementation that ignored the real wait result entirely — and because
-/// nine consecutive failures, an interruption storm, or a clock crossing a deadline
-/// are not things a test can arrange for real.
 const RealOps = struct {
     fn wait(pid: c_int, status: ?*c_int, options: c_int) c_int {
         return waitpid(pid, status, options);
@@ -2140,8 +1513,6 @@ const RealOps = struct {
     fn forkChild() c_int {
         return fork();
     }
-    /// The child's stdin source, opened in the parent. On the seam for the same reason:
-    /// the failure is arranged by a fake, never for real.
     fn openDevNull() c_int {
         return open("/dev/null", O_RDONLY, @as(c_uint, 0));
     }
@@ -2153,8 +1524,6 @@ const RealOps = struct {
     fn openCapture(path: [*:0]const u8, flags: c_int) c_int {
         return open(path, flags, @as(c_uint, 0o600));
     }
-    /// The run's cgroup (v17, #559), on the seam so a test can drive every exit of a
-    /// contained spawn on a host with no cgroup v2 to make one in.
     fn cgroupMake(cg: *CgroupSpawn) bool {
         return cgroupMakeReal(cg);
     }
@@ -2166,21 +1535,8 @@ const RealOps = struct {
     }
 };
 
-/// Monotonic milliseconds, on the clock a deadline can trust.
-///
-/// Public because its callers want it for unrelated reasons and none should own a second
-/// copy: the wait loop's deadline reaches it through `RealOps` (a seam a test
-/// substitutes), preflight's `--twice` reads it directly to report the interval it
-/// actually observed between the two runs (#199) — a reported gap derived from the
-/// sleep it asked for rather than the clock would be the measurement describing its
-/// own intent — and the bounded config read uses it to stop waiting for a peer that is
-/// not coming (#400 follow-up).
 pub fn monotonicMs() u64 {
     var ts: std.c.timespec = undefined;
-    // A compile-time-constant, valid clockid cannot produce EINVAL, and a stack
-    // pointer cannot produce EFAULT (POSIX clock_gettime). The same shape as the
-    // world loop's `bufPrint … catch unreachable`: a cannot-happen made loud
-    // rather than a garbage value read silently.
     if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) unreachable;
     return @as(u64, @intCast(ts.sec)) * 1000 + @as(u64, @intCast(ts.nsec)) / 1_000_000;
 }
@@ -2202,7 +1558,6 @@ fn runChildImplWithOps(
     minimal_env: bool,
     budget_ms: ?u64,
     cwd: ?[]const u8,
-    /// The run's cgroup (contract v17, #559); null for every spawn that is not a contained run.
     cg: ?*CgroupSpawn,
     comptime Ops: type,
 ) (ContainedSpawnError || error{TimedOut})!Term {
@@ -2225,7 +1580,6 @@ fn runChildImplWithOps(
         env_z[i][0] = (try arena.dupeZ(u8, kv[0])).ptr;
         env_z[i][1] = (try arena.dupeZ(u8, kv[1])).ptr;
     }
-    // For minimal-env exec: a NULL-terminated `NAME=VALUE` array to hand execve.
     const envp: ?[*]const ?[*:0]const u8 = if (minimal_env) blk: {
         const list = try arena.alloc(?[*:0]const u8, env_pairs.len + 1);
         for (env_pairs, 0..) |kv, i|
@@ -2253,15 +1607,6 @@ fn runChildImplWithOps(
     const nfd = Ops.openDevNull();
     if (nfd < 0) return error.StdinUnavailable;
 
-    // The capture, arranged by the parent for the same reason and in the same place
-    // (#469). It used to be opened in the child, which put its failure at `_exit(126)`
-    // — inside the target's exit-status namespace, where `main`'s recording-run check
-    // reads it *before* the trace and answers `recording_run_failed`, telling the
-    // operator to declare `--expect-status`. The flags moved with it: `O_NOFOLLOW`
-    // unconditionally, where it used to be spelled `if (minimal_env)` and so applied
-    // only to the MCP path. What the parent holding this descriptor also buys is a
-    // shorter window — the caller's unlink and this open are no longer separated by a
-    // fork.
     const cfd: c_int = if (capture_z) |cz| blk: {
         const fd = Ops.openCapture(cz, captureFlags(capture.?.exclusive));
         if (fd < 0) {
@@ -2331,9 +1676,6 @@ fn runChildImplWithOps(
         // in `adoptStdin`, shared with the sidecar's fork.
         adoptStdin(nfd);
         if (cfd >= 0) {
-            // The descriptor was opened by the parent (#469); all that is left here is
-            // putting it on fd 1. A `dup2` that fails is still 126 — the one meaning
-            // that code keeps for this path, and distinct from exec's 127 on purpose.
             // A capture that cannot be arranged must not fall back to the engine's own
             // stdout: a world whose evidence went to the wrong stream would read as
             // "marker never appeared".
@@ -2358,11 +1700,6 @@ fn runChildImplWithOps(
                 while (fd < 256) : (fd += 1) _ = close(fd);
             }
         }
-        // After the descriptor work above and before exec. The ordering it used to
-        // enforce — a capture failure winning over a cwd failure — is now structural
-        // rather than positional: a capture that could not be opened refuses in the
-        // parent (#469) and no child exists to reach this line.
-        //
         // 125 is its own code: 126 still carries two meanings the engine cannot tell
         // apart (a `dup2` failure here, and a target that genuinely exits 126), and
         // adding a third would make the ambiguity structural rather than local. The
@@ -2372,28 +1709,16 @@ fn runChildImplWithOps(
             if (chdir(cz) != 0) _exit(125);
         }
         if (envp) |ep| {
-            // execve replaces the whole environment: no inheritance. argv[0] must be an
-            // absolute path (the adapter passes the canonical self-path).
             _ = execve(argv_z[0].?, argv_z.ptr, ep);
         } else {
             for (env_z) |kv| _ = setenv(kv[0], kv[1], 1);
             _ = execvp(argv_z[0].?, argv_z.ptr);
         }
-        // Only reached when exec failed; 127 is the shell's convention for that.
         _exit(127);
     }
-    // The parent's copies of the descriptors it arranged: the child has its own by now.
     // The capture's copy matters more than stdin's — held open, the engine would keep a
     // descriptor on a work-directory file for the whole run, and every later world's
     // open would add another.
-    //
-    // Both closes release whatever number the open landed on, including a low one. An
-    // engine started with fd 1 already closed gets `cfd == 1` here and ends this call
-    // with fd 1 closed again — the state it started in, and the same thing the `nfd`
-    // close beside it has always done for fd 0. What is not claimed is that `say()` is
-    // safe in that engine: it writes to fd 1 whatever is there, which was true before
-    // this line existed. Sideeye is a CLI and its stdout is its report; being started
-    // without one is out of scope rather than handled.
     _ = close(nfd);
     if (cfd >= 0) _ = close(cfd);
     // Repeated in the parent to close the window where the child has not been scheduled
@@ -2406,9 +1731,6 @@ fn runChildImplWithOps(
 
     if (cg) |spawn_cg| {
         if (!Ops.cgroupJoin(spawn_cg, pid)) {
-            // The child has not run: it is waiting on the pipe. Killed while its pid is pinned
-            // (not yet reaped), reaped, and the cgroup removed, so a failed move leaves nothing
-            // behind and nothing ran outside the cgroup.
             _ = kill(pid, SIGKILL);
             _ = close(join_pipe[1]);
             _ = close(join_pipe[0]);
@@ -2463,10 +1785,6 @@ fn runChildImplWithOps(
             if (siPid(&info) == pid) break :poll .exited;
             const now = Ops.nowMs();
             if (now >= deadline) {
-                // The deadline has passed and this successful poll saw the child
-                // running. One more successful observation is taken — immediately,
-                // no sleep — before the verdict, so a child that exited between the
-                // last sleep and the deadline check is accepted: the boundary race
                 // classifies toward the child. This is the measurement rule the
                 // member's doc promises, not a proof the child finished its work
                 // inside the budget. Only a *successful* post-deadline observation
@@ -2476,16 +1794,11 @@ fn runChildImplWithOps(
                 past_deadline = true;
                 continue :poll;
             }
-            // Adaptive: a fast world pays ~1ms, a hung one converges to 10ms polls.
             Ops.sleepMs(@min(interval, deadline - now));
             interval = @min(interval * 2, 10);
         };
         switch (outcome) {
             .exited => {
-                // The successful observation pinned the id (WNOWAIT consumed
-                // nothing, and with SIGCHLD at default an exited child is a zombie,
-                // not a recycled pid), so the group signal is safe — the blocking
-                // branch's own argument.
                 // What is still in the run's cgroup is read before anything is killed (v17).
                 if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, true);
                 Ops.killGroup(pid);
@@ -2530,9 +1843,6 @@ fn runChildImplWithOps(
                     Ops.sleepMs(@min(ginterval, grace_deadline - gnow));
                     ginterval = @min(ginterval * 2, 10);
                 }
-                // The drain still runs before the error is returned — the discipline
-                // the blocking branch states — but non-blocking here, for the same
-                // reason as the grace above.
                 while (Ops.wait(-pid, null, WNOHANG) > 0) {}
                 return error.TimedOut;
             },
@@ -2542,7 +1852,6 @@ fn runChildImplWithOps(
                 // attempt, a non-blocking drain, and the same refusal the blocking
                 // branch gives a broken wait. A live child this leaves behind is a
                 // stray; the stray is what the quiescence check is for.
-                // A cgroup names no pid, so it can be killed where the id was never pinned (v17).
                 if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, false);
                 _ = Ops.wait(pid, null, WNOHANG);
                 while (Ops.wait(-pid, null, WNOHANG) > 0) {}
@@ -2553,8 +1862,6 @@ fn runChildImplWithOps(
         var info: [256]u8 align(16) = undefined;
         if (waitid(P_PID, pid, &info, WEXITED | WNOWAIT) == 0) {
             if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, true);
-            // Everything the target left behind, in one signal, while the id is still pinned —
-            // through the seam, so a test can see it come after the stop (second review, #559).
             Ops.killGroup(pid);
         } else if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, false);
         // If `waitid` failed the id is not pinned, so nothing is signalled: sending SIGKILL to
@@ -2567,27 +1874,12 @@ fn runChildImplWithOps(
     // exit, and the world is reported as `kill_did_not_land` — the wrong reason. Same class
     // as the ordering defect above: a wait call's side effect trusted without checking that
     // the call happened.
-    //
-    // The retry is EINTR-only. This comment used to say there was "no errno binding here to
-    // tell a retryable interruption from a permanent failure", and spent the same eight
-    // attempts on both. That was wrong: `EINTR` is declared at the top of this file and
-    // `std.c._errno()` is already used in it. A permanent failure now refuses at once
-    // instead of being retried into the same wrong answer, and the bound stays for the
-    // interruption case so an unbounded loop cannot hang.
-    // Nine attempts: the call, plus eight retries for interruption. Counted by the loop
-    // rather than by hand — a hand-incremented version of this spent one attempt fewer,
-    // depending on whether the bound was tested before or after the increment, and a test
-    // is what noticed. `else` runs only when the range is exhausted without a `break`.
     var status: c_int = 0;
     const wait_failed = for (0..9) |_| {
         if (Ops.wait(pid, &status, 0) >= 0) break false;
         if (std.c._errno().* != EINTR) break true;
     } else true;
 
-    // Reap what is still ours. Usually nothing: grandchildren belong to init the moment
-    // the direct child dies. The loop exists so the engine does not accumulate zombies
-    // from a target that put several processes in the group directly.
-    //
     // This runs *before* the wait failure is returned. Returning early would skip the drain
     // and leave behind the direct child itself — never reaped, since reaping it is exactly
     // what just failed. A fix for a wrong verdict must not introduce a process leak.
@@ -2598,26 +1890,14 @@ fn runChildImplWithOps(
 }
 
 test "exit status decoding distinguishes exit from signal" {
-    // exit(0) and exit(1)
     try std.testing.expectEqual(Term{ .exited = 0 }, decodeStatus(0x0000));
     try std.testing.expectEqual(Term{ .exited = 1 }, decodeStatus(0x0100));
-    // killed by SIGKILL (9) — the case that matters most here, since every explored
-    // world is expected to end this way
     try std.testing.expectEqual(Term{ .signaled = 9 }, decodeStatus(9));
     try std.testing.expect(decodeStatus(9).isSignal(9));
     try std.testing.expect(!decodeStatus(0x0000).isSignal(9));
 }
 
-/// An Ops whose direct wait the tests can drive, everything else real (see `RealOps`).
-/// Nine consecutive `waitpid` failures are not something a test can arrange for real.
-///
-/// Group waits (`pid < 0`) are delegated to the real `waitpid`, so the drain actually reaps
-/// this test's children; only the direct child's wait is faked. State is file-scope because
-/// the seam takes plain functions: `zig build test` runs this file in several concurrent
-/// *binaries*, but the tests inside one binary run in sequence, so resetting at the top of
-/// each test is enough (a shared *path* would not be — see #28 below).
 const FakeWait = struct {
-    /// Same value on Linux and Darwin, like `EINTR` at the top of this file.
     const ECHILD: c_int = 10;
 
     var direct_calls: u32 = 0;
@@ -2680,8 +1960,6 @@ const FakeWait = struct {
         return 0;
     }
 
-    // The rest of the Ops surface, real: these three tests drive the retry decision
-    // only, and a null budget never touches the clock or sleep (a fourth test pins that).
     const waitidPoll = RealOps.waitidPoll;
     fn killGroup(pid: c_int) void {
         event('K');
@@ -2690,15 +1968,9 @@ const FakeWait = struct {
     const nowMs = RealOps.nowMs;
     const sleepMs = RealOps.sleepMs;
 
-    // Contained spawns (v17, #559): counted, never real — this host has no cgroup v2 to make
-    // one in. `FakeBudget` shares these, so one reset clears both.
     var cgroup_make_calls: u32 = 0;
     var cgroup_join_fails: bool = false;
-    /// The child is killed, and waited for without being reaped, before the move is reported
-    /// done: a child that died before it read its go-ahead.
     var cgroup_join_kills_child: bool = false;
-    /// The order of the cgroup stops and group kills a spawn made: `L` a stop that read what
-    /// lingered, `S` one that did not, `K` a group kill through the seam.
     var events: [8]u8 = undefined;
     var events_len: usize = 0;
     fn event(e: u8) void {
@@ -2734,14 +2006,8 @@ test "a wait that fails permanently refuses instead of reporting a clean exit" {
     FakeWait.permanent = true;
     const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, FakeWait);
 
-    // Before #264 this returned `.exited = 0`: `status` keeps the zero it was initialised
-    // with, and every explored world is expected to die by signal, so the engine reported
-    // `kill_did_not_land` — a confident wrong reason rather than a refusal.
     try std.testing.expectError(error.WaitFailed, r);
-    // A permanent failure is not an interruption, so it is not retried into the same answer.
     try std.testing.expectEqual(@as(u32, 1), FakeWait.direct_calls);
-    // The drain still ran: returning the error early would skip it and leave behind the
-    // child whose reaping is exactly what just failed.
     try std.testing.expect(FakeWait.drain_calls >= 1);
 }
 
@@ -2751,9 +2017,7 @@ test "an interrupted wait is retried and the status that finally arrives is the 
     FakeWait.deliver_status = 0x0100; // exit(1)
     const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, FakeWait);
 
-    // The status written by the call that succeeded — not the zero the loop started with.
     try std.testing.expectEqual(Term{ .exited = 1 }, term);
-    // Three interruptions, then the call that worked.
     try std.testing.expectEqual(@as(u32, 4), FakeWait.direct_calls);
 }
 
@@ -2763,7 +2027,6 @@ test "an interruption that never stops is bounded rather than looping forever" {
     const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, FakeWait);
 
     try std.testing.expectError(error.WaitFailed, r);
-    // The first call plus the eight retries the bound allows.
     try std.testing.expectEqual(@as(u32, 9), FakeWait.direct_calls);
     try std.testing.expect(FakeWait.drain_calls >= 1);
 }
@@ -2774,9 +2037,6 @@ test "a child whose stdin cannot be pointed at /dev/null is refused by name and 
     const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, FakeWait);
 
     try std.testing.expectError(error.StdinUnavailable, r);
-    // Refused BEFORE the fork: the parent opens the descriptor, so a child that could
-    // not have its stdin arranged does not exist to have an exit status at all. `fork`
-    // is on the seam precisely so this zero is a measurement and not a tautology.
     try std.testing.expectEqual(@as(u32, 0), FakeWait.fork_calls);
     try std.testing.expectEqual(@as(u32, 0), FakeWait.direct_calls);
 }
@@ -2852,17 +2112,6 @@ const CaptureFixture = struct {
 };
 
 test "a symlink at the capture path is refused before the fork, and what it points at is untouched (#469)" {
-    // The asymmetry this closes: the capture's `O_NOFOLLOW` was spelled
-    // `if (minimal_env)` — an environment-scrubbing switch only the MCP adapter passes —
-    // so every CLI run opened its capture following links.
-    //
-    // `FakeWait` is used for one number: `fork_calls`. The open itself is real (the fake
-    // delegates `openCapture`), so what is measured is the kernel's answer to the real
-    // flags, and the count says the refusal happened in the parent — which is the other
-    // half of the change. Driven through `runChildImplWithOps` so `FakeWait` can supply
-    // that count; the arguments are `runChildCapture`'s, the plain wrapper — that is the
-    // path `minimal_env` never covered.
-    //
     // **`exclusive` is false here, and that is what makes this test about `O_NOFOLLOW`.**
     // Written first with it true, and the mutation that removes `O_NOFOLLOW` survived:
     // POSIX has `O_CREAT|O_EXCL` fail on a symlink too (EEXIST), so `O_EXCL` was
@@ -2903,17 +2152,12 @@ test "a symlink at the capture path is refused before the fork, and what it poin
     var rb: [64]u8 = undefined;
     try std.testing.expectEqualStrings("hello", try CaptureFixture.slurp(cap_z.ptr, &rb));
 
-    // Now the link, where the control's own capture file was — what a racer could leave
-    // between the caller's unlink and this open.
     _ = unlink(cap_z.ptr);
     try std.testing.expect(symlink(sentinel_z.ptr, cap_z.ptr) == 0);
 
     FakeWait.reset();
     const refused = runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z }, false, null, null, null, FakeWait);
     try std.testing.expectError(error.CaptureUnavailable, refused);
-    // The half that says the open moved to the parent. Before #469 this path answered
-    // `.exited = 126` — a value inside the target's own status namespace — and the fork
-    // had already happened.
     try std.testing.expectEqual(@as(u32, 0), FakeWait.fork_calls);
 
     // The bytes outside are untouched, which is the whole point. `expectEqualStrings`
@@ -2922,7 +2166,6 @@ test "a symlink at the capture path is refused before the fork, and what it poin
     var rb2: [64]u8 = undefined;
     try std.testing.expectEqualStrings(keep, try CaptureFixture.slurp(sentinel_z.ptr, &rb2));
 
-    // And the link is still a link: the refusal did not replace it with a regular file.
     try std.testing.expectEqual(Kind.symlink, try kindOfPathNoFollow(cap_z.ptr));
 }
 
@@ -2977,12 +2220,6 @@ test "a hard link at an exclusive capture path is refused too, and /dev/null sti
     try std.testing.expectEqualStrings("hello", try CaptureFixture.slurp(cap_z.ptr, &rb2));
 }
 
-/// An Ops whose whole budget vocabulary the tests script (#263): the waitid poll
-/// answers from a play-list, the clock advances a fixed step per read, sleeps and
-/// kills are counted rather than performed — except that the group kill and group
-/// waits delegate to the real calls so the test's own forked child is still cleaned
-/// up. What this buys over `FakeWait`: a deadline crossing, an interruption storm at
-/// the poll, and a SIGKILL that never lands are all drivable in zero real time.
 const FakeBudget = struct {
     const Poll = union(enum) { running, exited, err: c_int };
 
@@ -3043,8 +2280,6 @@ const FakeBudget = struct {
     fn killGroup(pid: c_int) void {
         kill_calls += 1;
         FakeWait.event('K');
-        // Delegated, so the real forked child's group is genuinely signalled and the
-        // real drain below finds only corpses.
         _ = kill(-pid, SIGKILL);
     }
     fn nowMs() u64 {
@@ -3059,7 +2294,6 @@ const FakeBudget = struct {
     const cgroupMake = FakeWait.cgroupMake;
     const cgroupJoin = FakeWait.cgroupJoin;
     const cgroupStop = FakeWait.cgroupStop;
-    // The budget tests drive the deadline logic only; the spawn itself is real.
     const forkChild = RealOps.forkChild;
     const openDevNull = RealOps.openDevNull;
     const openCapture = RealOps.openCapture;
@@ -3087,8 +2321,6 @@ const FakeBudget = struct {
 
 test "a world over budget is sent SIGKILL after a final observation, reaped under the grace, and refused TimedOut (#263)" {
     FakeBudget.reset();
-    // First poll: alive, past the deadline. Second (final) observation: still alive
-    // → timeout. The clock's first read is the pre-fork budget_t0.
     FakeBudget.script = &.{ .running, .running };
     FakeBudget.direct_waits = &.{1}; // the grace reap succeeds at once
     FakeBudget.now_step = 100;
@@ -3096,7 +2328,6 @@ test "a world over budget is sent SIGKILL after a final observation, reaped unde
 
     try std.testing.expectError(error.TimedOut, r);
     try std.testing.expectEqual(@as(u32, 1), FakeBudget.kill_calls);
-    // The drain ran before the error was returned, and nothing in the path blocked.
     try std.testing.expect(FakeBudget.drain_calls >= 1);
     try std.testing.expectEqual(@as(u32, 0), FakeBudget.blocking_direct_waits);
     try std.testing.expectEqual(@as(u32, 0), FakeBudget.blocking_group_waits);
@@ -3104,21 +2335,15 @@ test "a world over budget is sent SIGKILL after a final observation, reaped unde
 
 test "si_pid zero is 'still running', not 'exited': the poll keeps polling until the field names the child (#263)" {
     FakeBudget.reset();
-    // Two honest not-yet answers, then the child. rc==0 alone must not be read as exit.
     FakeBudget.script = &.{ .running, .running, .exited };
     FakeBudget.deliver_status = 0; // exit(0) once the shared reap runs
     FakeBudget.now_step = 1; // deadline 1000 is never approached
     const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, null, FakeBudget);
 
     try std.testing.expectEqual(Term{ .exited = 0 }, term);
-    // All three polls were consumed: an implementation that treated the first rc==0
-    // as an exit would have stopped at one.
     try std.testing.expectEqual(@as(usize, 3), FakeBudget.script_i);
     try std.testing.expectEqual(@as(u32, 1), FakeBudget.kill_calls);
     try std.testing.expectEqual(@as(u32, 2), FakeBudget.sleep_calls);
-    // The exited side of the budget path drains without blocking too: the target can
-    // have put other processes in the group directly, and one of them surviving the
-    // SIGKILL must not hang the path that promises not to wait without bound.
     try std.testing.expectEqual(@as(u32, 0), FakeBudget.blocking_group_waits);
 }
 
@@ -3135,7 +2360,6 @@ test "a null budget never touches the budget vocabulary: no clock, no sleep, no 
 
 test "a child the final observation sees exited is accepted, not timed out — the boundary race classifies toward the child (#263)" {
     FakeBudget.reset();
-    // Alive at the poll, deadline crossed, exited by the final observation.
     FakeBudget.script = &.{ .running, .exited };
     FakeBudget.deliver_status = 0;
     FakeBudget.now_step = 100;
@@ -3155,11 +2379,7 @@ test "a poll interruption retries under the same deadline; a permanent poll fail
     const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, null, FakeBudget);
 
     try std.testing.expectError(error.WaitFailed, r);
-    // ECHILD can mean an inherited SIGCHLD disposition auto-reaped the child, and a
-    // reaped child's pid may already name a stranger: nothing may be signalled on an
-    // unpinned id.
     try std.testing.expectEqual(@as(u32, 0), FakeBudget.kill_calls);
-    // Interruptions retried without sleeping, and nothing in the path blocked.
     try std.testing.expectEqual(@as(usize, 3), FakeBudget.script_i);
     try std.testing.expectEqual(@as(u32, 0), FakeBudget.sleep_calls);
     try std.testing.expectEqual(@as(u32, 0), FakeBudget.blocking_direct_waits);
@@ -3168,16 +2388,12 @@ test "a poll interruption retries under the same deadline; a permanent poll fail
 
 test "an interruption storm cannot poll forever: the ninth consecutive interruption refuses WaitFailed and kills nothing (#263)" {
     FakeBudget.reset();
-    // One step that repeats: a poll interrupted every single time. Without the bound
-    // this loop never reaches the clock, and the budget silently stops existing.
     FakeBudget.script = &.{.{ .err = EINTR }};
     FakeBudget.direct_waits = &.{0}; // the one non-blocking reap attempt: nothing there
     FakeBudget.now_step = 1;
     const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, null, FakeBudget);
 
     try std.testing.expectError(error.WaitFailed, r);
-    // Nine attempts — the blocking reap's own discipline — then refusal, no kill:
-    // an interrupted call is not an observation, so it must never become .timed_out.
     try std.testing.expectEqual(@as(usize, 9), FakeBudget.script_i);
     try std.testing.expectEqual(@as(u32, 0), FakeBudget.kill_calls);
     try std.testing.expectEqual(@as(u32, 0), FakeBudget.blocking_direct_waits);
@@ -3187,15 +2403,12 @@ test "an interruption storm cannot poll forever: the ninth consecutive interrupt
 test "a SIGKILL that never lands exhausts the grace, drains without blocking, and still answers TimedOut (#263)" {
     FakeBudget.reset();
     FakeBudget.script = &.{ .running, .running };
-    // The direct child never becomes reapable — uninterruptible sleep, or credentials
-    // the group signal could not reach.
     FakeBudget.direct_waits = &.{ 0, 0, 0, 0, 0, 0, 0, 0 };
     FakeBudget.now_step = 3000;
     const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 10, null, null, FakeBudget);
 
     try std.testing.expectError(error.TimedOut, r);
     try std.testing.expectEqual(@as(u32, 1), FakeBudget.kill_calls);
-    // The stray is left behind; nothing blocked waiting for it.
     try std.testing.expectEqual(@as(u32, 0), FakeBudget.blocking_direct_waits);
     try std.testing.expect(FakeBudget.drain_calls >= 1);
     try std.testing.expect(FakeBudget.sleep_calls >= 1);
@@ -3222,8 +2435,6 @@ test "kindOfPathNoFollow classifies every kind without opening anything" {
     try std.testing.expect(mkdir(dir_z.ptr, @as(c_uint, 0o755)) == 0);
     try std.testing.expectEqual(Kind.dir, try kindOfPathNoFollow(dir_z.ptr));
 
-    // Dangling on purpose: the answer must be about the link, never its target —
-    // and a link TO a real file must still answer .symlink, not .file.
     var lb: [160]u8 = undefined;
     const dangling_z = std.fmt.bufPrintZ(&lb, "{s}/l", .{base}) catch unreachable;
     try std.testing.expect(symlink("no-such-target", dangling_z.ptr) == 0);
@@ -3272,9 +2483,6 @@ test "EAGAIN is what the kernel returns for a non-blocking read with a peer and 
     try std.testing.expect(rfd >= 0);
     defer _ = close(rfd);
 
-    // Before the writer exists the same read answers 0 — end of file — which is the
-    // *other* branch of the retry rule. Pinning both here keeps the two apart: they look
-    // identical to a caller that only checks "did I get bytes".
     var buf: [16]u8 = undefined;
     try std.testing.expectEqual(@as(isize, 0), read(rfd, &buf, buf.len));
 
@@ -3385,8 +2593,6 @@ test "kindOfFd answers about the descriptor, and a pipe is not a regular file (#
     try std.testing.expectEqual(Kind.file, try kindOfFd(rfd));
     _ = close(rfd);
 
-    // A directory is its own answer, not `.file`: the caller tests `!= .file`, so this
-    // pins that a directory is refused too rather than read.
     const dfd = open(base.ptr, O_RDONLY | O_DIRECTORY, @as(c_uint, 0));
     try std.testing.expect(dfd >= 0);
     try std.testing.expectEqual(Kind.dir, try kindOfFd(dfd));
@@ -3440,19 +2646,15 @@ test "kindAtNoFollow reads the descriptor it is given, not the name alone" {
 test "a contained spawn's cgroup is stopped on every exit, and read for what lingered only where the child ended on its own (v17, #559)" {
     const home: CgroupHome = .{ .dir = "/nonexistent-cgroup-home", .rel = "/" };
     {
-        // The blocking branch: no budget.
         FakeWait.reset();
         var cg = CgroupSpawn.init(home, true) orelse return error.TestUnexpectedResult;
         const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, &cg, FakeWait);
         try std.testing.expectEqual(Term{ .exited = 0 }, term);
         try std.testing.expect(cg.joined);
         try std.testing.expectEqual(@as(u32, 1), FakeWait.cgroup_make_calls);
-        // The same order as the budget branch below, in the branch the recording run, preflight's
-        // second run and every world without `--world-timeout` take.
         try std.testing.expectEqualStrings("LK", FakeWait.events[0..FakeWait.events_len]);
     }
     {
-        // The budget branch, the child exiting inside it.
         FakeWait.reset();
         FakeBudget.reset();
         FakeBudget.script = &.{.exited};
@@ -3464,7 +2666,6 @@ test "a contained spawn's cgroup is stopped on every exit, and read for what lin
         try std.testing.expectEqualStrings("LK", FakeWait.events[0..FakeWait.events_len]);
     }
     {
-        // Over budget.
         FakeWait.reset();
         FakeBudget.reset();
         FakeBudget.script = &.{ .running, .running };
@@ -3475,7 +2676,6 @@ test "a contained spawn's cgroup is stopped on every exit, and read for what lin
         try std.testing.expectEqualStrings("KS", FakeWait.events[0..FakeWait.events_len]);
     }
     {
-        // A wait that broke: nothing pinned, and the cgroup is still stopped.
         FakeWait.reset();
         FakeBudget.reset();
         FakeBudget.script = &.{.{ .err = FakeWait.ECHILD }};
@@ -3484,11 +2684,9 @@ test "a contained spawn's cgroup is stopped on every exit, and read for what lin
         try std.testing.expectEqualStrings("S", FakeWait.events[0..FakeWait.events_len]);
     }
     {
-        // Control: an uncontained spawn touches no cgroup at all.
         FakeWait.reset();
         _ = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, FakeWait);
         try std.testing.expectEqual(@as(u32, 0), FakeWait.cgroup_make_calls);
-        // No stop of either kind: the group kill is all the events hold.
         try std.testing.expect(std.mem.indexOfAny(u8, FakeWait.events[0..FakeWait.events_len], "LS") == null);
     }
 }
@@ -3524,7 +2722,6 @@ test "the cgroup2 mount and a process's cgroup are read from what the kernel pri
         "30 25 0:26 / /sys/fs/cgroup rw,nosuid,nodev,noexec,relatime shared:9 - cgroup2 cgroup2 rw,nsdelegate\n";
     try std.testing.expectEqualStrings("/sys/fs/cgroup", cgroup2Mount(mountinfo).?);
     try std.testing.expect(cgroup2Mount("22 28 0:21 / /proc rw,nosuid shared:12 - proc proc rw\n") == null);
-    // A bind of a subtree is not offered: the engine's own path would land elsewhere under it.
     try std.testing.expect(cgroup2Mount("30 25 0:26 /user.slice /sys/fs/cgroup rw shared:9 - cgroup2 cgroup2 rw\n") == null);
     try std.testing.expectEqualStrings("/user.slice/session-2.scope", cgroup2Path("0::/user.slice/session-2.scope\n").?);
     try std.testing.expect(cgroup2Path("12:memory:/x\n") == null);
@@ -3534,13 +2731,10 @@ test "a spawn's cgroup is named under the engine's, in both spellings (v17, #559
     const cg = CgroupSpawn.init(.{ .dir = "/sys/fs/cgroup/a", .rel = "/a" }, true) orelse return error.TestUnexpectedResult;
     try std.testing.expect(std.mem.startsWith(u8, cg.dir(), "/sys/fs/cgroup/a/sideeye-"));
     try std.testing.expect(std.mem.startsWith(u8, cg.relPath(), "/a/sideeye-"));
-    // The run's processes live one level down, and the crash point steps aside to the level
-    // above them before it kills.
     var buf: [256]u8 = undefined;
     try std.testing.expectEqualStrings(try std.fmt.bufPrint(&buf, "{s}/work", .{cg.dir()}), cg.workDir());
     try std.testing.expectEqualStrings(try std.fmt.bufPrint(&buf, "{s}/cgroup.kill", .{cg.workDir()}), cg.killPath());
     try std.testing.expectEqualStrings(try std.fmt.bufPrint(&buf, "{s}/cgroup.procs", .{cg.dir()}), cg.asidePath());
-    // At the root of a cgroup namespace the spelling has one slash, not two.
     const at_root = CgroupSpawn.init(.{ .dir = "/sys/fs/cgroup", .rel = "/" }, false) orelse return error.TestUnexpectedResult;
     try std.testing.expect(std.mem.startsWith(u8, at_root.relPath(), "/sideeye-"));
 }
@@ -3550,7 +2744,6 @@ test "a process's state is read after the last parenthesis, whatever its name ho
     try std.testing.expectEqual(@as(?u8, 'Z'), statState("7 (a) b) (c) Z 1 7 7"));
     try std.testing.expectEqual(@as(?u8, null), statState("7 (truncated"));
     try std.testing.expectEqual(@as(?u8, null), statState("7 (x)"));
-    // Where there is a /proc: this test binary is alive, and a pid that cannot exist is not.
     if (builtin.os.tag == .linux) {
         const own = processState(@intCast(getpid())) orelse return error.TestUnexpectedResult;
         try std.testing.expect(own != 'Z' and own != 'X' and own != '?');
@@ -3559,8 +2752,6 @@ test "a process's state is read after the last parenthesis, whatever its name ho
 }
 
 test "a child that dies before its go-ahead does not take the engine down with a write to a pipe nobody reads (v17, #559)" {
-    // The parent used to close its read end before writing the byte; with the child already
-    // dead the write had no reader, and SIGPIPE ended this test binary instead of an assertion.
     FakeWait.reset();
     FakeWait.cgroup_join_kills_child = true;
     // At its default, as the engine meets it started from a shell: a disposition inherited from

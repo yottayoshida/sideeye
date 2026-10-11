@@ -1,13 +1,3 @@
-//! The recovery phase: what a target's own recovery does to a saved FAIL world's crash state
-//! (#606, ADR 0072).
-//!
-//! A FAIL says the state a crash left violates an invariant. Some tools repair that state on
-//! their next start — ninja rebuilds an output its log says is stale — and some make it worse,
-//! deleting the last good copy on the way. Neither is visible in the crash-state verdict, and
-//! it must not become visible *there*: the verdict is about the state the crash left, and a
-//! recovery that succeeds does not make that state correct. So a declared recovery is a second
-//! observation, reported beside the verdict and never folded into it.
-//!
 //! **When.** After the exploration loop, once the verdict is decided, and only when the run has
 //! a FAIL. Run inside the loop, a recovery's writes outside the state directory and any process
 //! it leaves behind would reach every later world and the baseline — which the next world's
@@ -47,43 +37,26 @@ const files = @import("files.zig");
 const report = @import("report.zig");
 const containment = @import("containment.zig");
 
-/// One saved exhibit's world: its crash point and the crash state the loop kept for it.
 pub const Exhibit = struct {
     k: u32,
     crashed: engine.Snapshot,
 };
 
-/// What one recovery leg established about one exhibit.
 pub const Leg = struct {
     k: u32,
     result: contract.RecoveryResult,
-    /// Wall clock for this leg: rebuilding the crash state, the command, the settle check and
-    /// the checker. The two controls are counted once, in `Outcome.total_ms`.
     ms: u64,
-    /// The recovery command's exit status when it exited; null when it was killed by a signal,
-    /// timed out, or never started.
     command_exit: ?u8,
-    /// Why the result is what it is, in one clause, for the account line.
     why: []const u8,
-    /// Processes the recovery command left running when it exited, which its cgroup stopped.
     stopped: Stopped = .{},
-    /// A process the command or the checker started outlived the kill of its cgroup: it is still
-    /// running, and `claimAfter` keeps the next leg from running beside it.
     survivor: bool = false,
 };
 
-/// Processes a contained command left when it exited, stopped by its cgroup — a repair it had
-/// handed to one of them was cut short, and the account says so. Zero where the leg was not
-/// contained, where nothing was left, or where no command ran.
 pub const Stopped = struct {
     count: u32 = 0,
-    /// More were left than the engine counts one by one.
     more: bool = false,
 };
 
-/// Whether the claim exhibit's leg may run after the earliest's. Null when it may; otherwise why
-/// it is `unknown` without running: a process the earliest's leg could not stop is still there,
-/// and the claim leg would be judged with it (diff review, second round).
 pub fn claimAfter(earliest: Leg) ?[]const u8 {
     if (earliest.survivor)
         return "the earliest exhibit's leg left a process its cgroup could not stop, and this leg would have run beside it";
@@ -101,8 +74,6 @@ pub const Context = struct {
     state_abs: []const u8,
     work: []const u8,
     cwd: ?[]const u8,
-    /// `--world-timeout` in milliseconds, applied to the command, the checker and the probe
-    /// alike. Null means no budget: a recovery that never ends holds the run, as a checker does.
     budget_ms: ?u64,
     stop_when_orphaned: bool,
     startup_ppid: c_int,
@@ -110,24 +81,14 @@ pub const Context = struct {
 
 pub const Outcome = struct {
     earliest: ?Leg,
-    /// The claim exhibit's leg. When both exhibits are one world it is the same leg, run once.
     checker: ?Leg,
-    /// Both controls plus every leg, in milliseconds.
     total_ms: u64,
-    /// Whether the recovery checker rejected the corrupted state and accepted what the recovery
-    /// left on the completed one. When false, every leg is `unknown` with the reason.
     trusted: bool,
 };
 
-/// The file contents the probe writes: distinct per file, so a checker that compares two files
-/// with each other (`cmp out.txt in.txt`, the shape a recovery check most often takes) is not
-/// handed two equal files and passed. The engine's own `corruptState` writes one string to
-/// every file, which is enough for the define's checker and not for this one.
 pub const probe_prefix = "sideeye-recovery-probe:";
-/// Where every symlink points during the probe: a name that exists nowhere.
 pub const probe_link_target = "sideeye-recovery-probe-target";
 
-/// A copy of `from` with every file's contents replaced by `probe_prefix` and its own relative
 /// path, and every symlink retargeted at `probe_link_target`. Directories are kept. Built as a
 /// snapshot, and written through the public `engine.restore`, so the probe keeps every guard a
 /// restore has — the vetted root, the held descriptor, no symlink followed on the way in —
@@ -150,8 +111,6 @@ pub fn probeSnapshot(gpa: std.mem.Allocator, from: engine.Snapshot) !engine.Snap
     return snap;
 }
 
-/// How a recovery command's end reads, before the checker runs: `null` means the command ran
-/// and ended and the checker should decide; otherwise the leg is `unknown` for the reason given.
 pub fn commandEnd(term: posix.Term) ?[]const u8 {
     return switch (term) {
         // 125 is the child's when it could not enter the declared cwd, 126 the fork stub's own
@@ -175,7 +134,6 @@ pub fn commandEnd(term: posix.Term) ?[]const u8 {
     };
 }
 
-/// How a recovery checker's end reads: the result, and why when it is `unknown`.
 pub fn checkerEnd(term: posix.Term) struct { result: contract.RecoveryResult, why: []const u8 } {
     return switch (term) {
         .exited => |c| switch (c) {
@@ -185,7 +143,6 @@ pub fn checkerEnd(term: posix.Term) struct { result: contract.RecoveryResult, wh
             127 => .{ .result = .unknown, .why = "the recovery checker could not be executed (exit 127)" },
             else => .{ .result = .fail, .why = "the recovery checker rejected the recovered state" },
         },
-        // As the world checker is read: a checker that did not exit normally did not accept.
         .signaled => .{ .result = .fail, .why = "the recovery checker was killed by a signal" },
         .unknown => .{ .result = .unknown, .why = "the recovery checker ended in a status the engine does not decode" },
     };
@@ -195,16 +152,6 @@ fn orphaned(ctx: Context) bool {
     return ctx.stop_when_orphaned and posix.getppid() != ctx.startup_ppid;
 }
 
-/// Run a child the way a recovery leg does: captured (both streams, re-emitted with `label` on
-/// every line), under the run's world budget, with the state directory in its environment.
-/// `error.TimedOut`, `error.LeftRunning` and every spawn error come back to the caller to become
-/// `unknown`.
-///
-/// Contained where the engine can make cgroups, as each world is (#559, ADR 0065): everything the
-/// child started — a daemon that left its process group included — is stopped when the child
-/// exits, so what one leg starts cannot answer for the next (review: a `pg_ctl start` left by
-/// the baseline control would make the next leg's start fail, and read `fail`). Elsewhere only
-/// the child's process group is stopped, and `docs/cli.md` names that limit.
 fn runCaptured(ctx: Context, argv: []const []const u8, capture_name: []const u8, label: []const u8, stopped: ?*Stopped) !posix.Term {
     const path = try std.fmt.allocPrint(ctx.arena, "{s}/{s}", .{ ctx.work, capture_name });
     // `exclusive` needs the removal first, and a FIFO planted at the name would otherwise block
@@ -225,8 +172,6 @@ fn runCaptured(ctx: Context, argv: []const []const u8, capture_name: []const u8,
             report.say("{s}{s}\n", .{ label, line });
         }
     }
-    // Held and not emptied by its kill: something the child started is still running, and what it
-    // does from here is not this leg's to report.
     if (cg) |c| {
         if (c.joined and !c.stopped) return error.LeftRunning;
         if (stopped) |st| st.* = .{ .count = @intCast(c.lingering_len), .more = c.lingering_more };
@@ -257,22 +202,14 @@ fn settled(ctx: Context) ?[]const u8 {
     return null;
 }
 
-/// One exhibit's leg: its crash state rebuilt, then `on`.
 fn leg(ctx: Context, d: Declared, ex: Exhibit) Leg {
     const tag = std.fmt.allocPrint(ctx.arena, "{d}", .{ex.k}) catch
         return unknownLeg(ex.k, posix.monotonicMs(), null, "out of memory");
-    // #707: the world's number in the label, the one the world's own checker lines carry
-    // (`world 3: `) and the report's `crash point 3 of n` — two exhibits' legs, earliest and
-    // checker, were otherwise both `recovery: ` and could not be told apart.
     const label = std.fmt.allocPrint(ctx.arena, " world {d}", .{ex.k}) catch
         return unknownLeg(ex.k, posix.monotonicMs(), null, "out of memory");
     return on(ctx, d, ex.k, ex.crashed, tag, label);
 }
 
-/// Rebuild `state`, run the recovery command, see the state stop changing, run the checker.
-/// `tag` names the capture files (`recovery-<tag>.txt`) and `label` goes between `recovery` and
-/// the colon on every re-emitted line, so the baseline control's output is never read as a
-/// crash leg's.
 fn on(ctx: Context, d: Declared, k: u32, state: engine.Snapshot, tag: []const u8, label: []const u8) Leg {
     const started = posix.monotonicMs();
     if (orphaned(ctx)) return unknownLeg(k, started, null, "the process that launched this run is gone");
@@ -321,9 +258,6 @@ fn survivorLeg(k: u32, started: u64, command_exit: ?u8, why: []const u8) Leg {
     return out;
 }
 
-/// The accept-side control, the world loop's baseline carried over: the completed, uncrashed
-/// state, the recovery run on it, and the checker must accept what it left. Null when it did;
-/// otherwise why no exhibit's result can be trusted.
 fn baseline(ctx: Context, d: Declared, final: engine.Snapshot) ?[]const u8 {
     const b = on(ctx, d, 0, final, "baseline", " baseline");
     return switch (b.result) {
@@ -357,15 +291,11 @@ fn falsify(ctx: Context, d: Declared, final: engine.Snapshot) ?[]const u8 {
     };
 }
 
-/// Every recovery leg this run owes: the two controls once, then the earliest exhibit, then the
-/// claim exhibit unless it is the same world. `earliest` is null when the run has no FAIL, and
-/// then nothing runs.
 pub fn run(ctx: Context, d: Declared, final: engine.Snapshot, earliest: ?Exhibit, claim: ?Exhibit) Outcome {
     const started = posix.monotonicMs();
     const first = earliest orelse return .{ .earliest = null, .checker = null, .total_ms = 0, .trusted = false };
 
     if (falsify(ctx, d, final) orelse baseline(ctx, d, final)) |why| {
-        // No leg ran, so no exhibit carries time: the controls' time is the account's.
         const e: Leg = .{ .k = first.k, .result = .unknown, .ms = 0, .command_exit = null, .why = why };
         const c: ?Leg = if (claim) |cl| .{ .k = cl.k, .result = .unknown, .ms = 0, .command_exit = null, .why = why } else null;
         return .{ .earliest = e, .checker = c, .total_ms = posix.monotonicMs() -| started, .trusted = false };
@@ -379,11 +309,6 @@ pub fn run(ctx: Context, d: Declared, final: engine.Snapshot, earliest: ?Exhibit
     return .{ .earliest = e, .checker = c, .total_ms = posix.monotonicMs() -| started, .trusted = true };
 }
 
-/// The report's `recovery` account: what ran, against which saved worlds, how long it took, and
-/// what the result rests on. One sentence built once, read by the text line and the JSON field
-/// alike. `failing_worlds` is the run's violation count, so the account says how many failing
-/// worlds were not saved and so were not recovered — a saved world does not stand for the
-/// others (the exploration-cost record measured failing worlds as distinct from each other).
 pub fn note(arena: std.mem.Allocator, o: Outcome, failing_worlds: u32) []const u8 {
     const e = o.earliest orelse return "configured; not run (no world was saved as a FAIL)";
     if (!o.trusted) return std.fmt.allocPrint(
@@ -419,8 +344,6 @@ test "the probe gives every file distinct contents, so an equality checker canno
     defer probe.deinit();
     const in = probe.find("in.txt").?;
     const out = probe.find("out.txt").?;
-    // The defect this exists for: `corruptState` writes one string to every file, so two files
-    // that were equal before stay equal after, and `cmp in out` exits 0 on the corrupted state.
     try t.expect(!std.mem.eql(u8, in.content, out.content));
     try t.expect(std.mem.startsWith(u8, in.content, probe_prefix));
     try t.expect(!std.mem.eql(u8, in.content, "same"));
@@ -458,7 +381,6 @@ test "legLine names the processes a contained command left, and only when there 
 
 test "commandEnd: only a command that ran and ended goes on to the checker" {
     try t.expect(commandEnd(.{ .exited = 0 }) == null);
-    // A non-zero exit is still a recovery that ran: the checker decides what it left.
     try t.expect(commandEnd(.{ .exited = 1 }) == null);
     try t.expect(commandEnd(.{ .signaled = 9 }) == null);
     try t.expect(commandEnd(.{ .exited = 125 }) != null);

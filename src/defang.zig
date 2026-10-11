@@ -1,26 +1,5 @@
-//! The choke point every target-influenced string passes before it reaches a report line
-//! (#26, #167): raw C1 controls, encoded C1 and invalid bytes are neutralised, so that a
-//! file name a target chose cannot forge a line of the report that judges it.
-//!
-//! A leaf beside `main.zig` and `boundary.zig` rather than inside either (#572, ADR 0062):
-//! the boundary's refusal sentences (six call sites in `boundary.zig`) and the report side
-//! (thirty-four call sites across fourteen functions of `main.zig`, at the time of the move)
-//! both pass through it, and inside either file it would be an import from the other — the shape
-//! ADR 0047 gave `engine/read.zig`. Imports `std` and nothing else. The bodies moved from
-//! `main.zig` byte for byte on 2026-09-12.
-
 const std = @import("std");
 
-/// One scan unit of a target-chosen byte string, shared by the two text-side
-/// defang predicates (#167): `len` bytes starting at `i` are either kept
-/// verbatim or defanged as a unit. C0 controls and DEL keep their original
-/// treatment. The C1 range (U+0080–U+009F) is defanged in *both* encodings —
-/// as a raw byte (invalid UTF-8) and as its valid two-byte form — because an
-/// 8-bit-CSI terminal interprets either arrival as an escape introducer. Any
-/// other invalid UTF-8 defangs one byte at a time (resync). A valid multi-byte
-/// sequence outside the C1 codepoints passes through whole, which is what
-/// keeps a continuation byte that merely *falls* in 0x80–0x9F (À is C3 80)
-/// from being mangled — the classification is by codepoint, never by byte.
 const DefangUnit = struct { len: usize, defang: bool };
 
 fn defangUnit(s: []const u8, i: usize) DefangUnit {
@@ -35,10 +14,6 @@ fn defangUnit(s: []const u8, i: usize) DefangUnit {
     return .{ .len = len, .defang = false };
 }
 
-/// Target-chosen file names go into the text report verbatim, and a Unix file name may
-/// contain newlines and control bytes — enough to forge whole report lines. The JSON
-/// side is escaped in `jsonString`; this is the text side's equivalent, first built
-/// for the l0 note and since #26's fix also the FAIL block's route (via `textShown`
 /// below — the v0.1-era exposure there is closed by the same predicate). One `?` per
 /// defanged unit — never more bytes out than in, so a hostile name cannot bloat the
 /// report past its output buffer (a two-byte encoded C1 shrinks to one `?`).
@@ -57,10 +32,6 @@ pub fn textShown(arena: std.mem.Allocator, s: []const u8) []const u8 {
     return out.items;
 }
 
-/// Replace each defanged unit (see `defangUnit`: C0/DEL, C1 in either encoding,
-/// invalid UTF-8) with a visible `\xNN` spelling per byte. The JSON side escapes
-/// controls already; the text side printed them raw, which let target-chosen
-/// names inject report lines. Everything else passes through untouched.
 pub fn sanitizeForReport(arena: std.mem.Allocator, s: []const u8) ![]const u8 {
     var clean = true;
     var i: usize = 0;
@@ -90,17 +61,12 @@ pub fn sanitizeForReport(arena: std.mem.Allocator, s: []const u8) ![]const u8 {
     return out.items;
 }
 
-/// The Unicode format characters that reorder or hide text on a terminal: the bidi
-/// embeddings, overrides and isolates, the zero-width marks and the byte-order mark.
 fn isDisplayControl(cp: u21) bool {
     return cp == 0x061c or (cp >= 0x200b and cp <= 0x200f) or (cp >= 0x202a and cp <= 0x202e) or
         (cp >= 0x2060 and cp <= 0x2064) or (cp >= 0x2066 and cp <= 0x2069) or cp == 0xfeff or
         (cp >= 0xe0000 and cp <= 0xe007f);
 }
 
-/// `defangUnit` for file *contents* (#688): a file's bytes are freer than a file name's, so
-/// a display control that a name keeps under #167's rule is spelled out here — a quoted
-/// stretch holding U+202E could otherwise reverse the line it is printed on.
 fn contentUnit(s: []const u8, i: usize) DefangUnit {
     const u = defangUnit(s, i);
     if (u.defang or u.len == 1) return u;
@@ -108,11 +74,6 @@ fn contentUnit(s: []const u8, i: usize) DefangUnit {
     return .{ .len = u.len, .defang = isDisplayControl(cp) };
 }
 
-/// A target-chosen byte string shown as a quoted literal (#688): `\xNN` for every byte of a
-/// unit `contentUnit` defangs, plus `\"` and `\\`, so a stretch that ends in a space, holds
-/// a quote, or is empty still has visible edges and reads back as one thing. Used for file
-/// *contents*, which `textShown` would turn into a row of `?` the moment they are not UTF-8
-/// (a PNG, an sqlite page) — the bytes are the observation there.
 pub fn quotedForReport(arena: std.mem.Allocator, s: []const u8) error{OutOfMemory}![]const u8 {
     var out: std.ArrayList(u8) = .empty;
     try out.append(arena, '"');
@@ -136,13 +97,6 @@ pub fn quotedForReport(arena: std.mem.Allocator, s: []const u8) error{OutOfMemor
     return out.items;
 }
 
-/// How many bytes of `s` are not text, for a report that says what kind of bytes a stretch
-/// holds (#688): the bytes the report's own defang rule (#167) rejects, except a tab, a
-/// newline and a carriage return. Those are defanged for the terminal's sake, but a stretch
-/// that crosses a line of a text file is still text — counting them made a two-line log
-/// read as binary. Display controls are text here too (a ZWJ in an emoji, a ZWNJ in Persian)
-/// though `quotedForReport` spells them out: one rule protects the terminal, the other
-/// describes the file.
 pub fn nonTextBytes(s: []const u8) usize {
     var n: usize = 0;
     var i: usize = 0;
@@ -163,17 +117,14 @@ test "quotedForReport gives a stretch visible edges and the same classification 
     try std.testing.expectEqualStrings("\"q\\\"\\\\\"", try quotedForReport(arena, "q\"\\"));
     try std.testing.expectEqualStrings("\"\\x89PNG\\x0d\\x0a\"", try quotedForReport(arena, "\x89PNG\r\n"));
     try std.testing.expectEqualStrings("\"A\\xc2\\x9bB€\"", try quotedForReport(arena, "A\xc2\x9bB€"));
-    // A display control a file name keeps (#167) is spelled out in contents.
     try std.testing.expectEqualStrings("\"a\\xe2\\x80\\xaeb\"", try quotedForReport(arena, "a\u{202e}b"));
     try std.testing.expectEqualStrings("\"x\\xe2\\x80\\x8by\"", try quotedForReport(arena, "x\u{200b}y"));
     try std.testing.expectEqualStrings("\"é\"", try quotedForReport(arena, "é"));
-    // Tab, newline and carriage return are quoted as bytes but counted as text.
     try std.testing.expectEqual(@as(usize, 1), nonTextBytes("\x89PNG\r\n"));
     try std.testing.expectEqual(@as(usize, 0), nonTextBytes("t=1\nu=2\r\n\tv"));
     try std.testing.expectEqual(@as(usize, 2), nonTextBytes("A\xc2\x9bB€"));
     try std.testing.expectEqual(@as(usize, 0), nonTextBytes("a\u{202e}b\u{200d}c"));
     try std.testing.expectEqual(@as(usize, 0), nonTextBytes("plain"));
-    // The rest of the display controls (review): ALM, the invisible operators, a tag.
     try std.testing.expectEqualStrings("\"\\xd8\\x9c\"", try quotedForReport(arena, "\u{061c}"));
     try std.testing.expectEqualStrings("\"\\xe2\\x81\\xa0\"", try quotedForReport(arena, "\u{2060}"));
     try std.testing.expectEqualStrings("\"\\xf3\\xa0\\x80\\x81\"", try quotedForReport(arena, "\u{e0001}"));
@@ -188,12 +139,10 @@ test "the defang classifier covers raw C1, encoded C1 and invalid bytes, and spa
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
     const arena = arena_state.allocator();
-    // The l0-note/FAIL route: one '?' per defanged unit.
     try std.testing.expectEqualStrings("A?B", textShown(arena, "A\x9bB")); // raw C1
     try std.testing.expectEqualStrings("A?B", textShown(arena, "A\xc2\x9bB")); // encoded C1 (U+009B, CSI)
     try std.testing.expectEqualStrings("A?B", textShown(arena, "A\xffB")); // invalid, not C1
     try std.testing.expectEqualStrings("ÀB€", textShown(arena, "ÀB€")); // real UTF-8 spared
-    // The divergence route: same classification, visible \xNN spelling.
     try std.testing.expectEqualStrings("A\\x9bB", try sanitizeForReport(arena, "A\x9bB"));
     try std.testing.expectEqualStrings("A\\xc2\\x9bB", try sanitizeForReport(arena, "A\xc2\x9bB"));
     try std.testing.expectEqualStrings("A\\xffB", try sanitizeForReport(arena, "A\xffB"));
