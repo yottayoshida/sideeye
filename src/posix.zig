@@ -26,6 +26,8 @@ pub const EINTR: c_int = 4;
 pub const ENOENT: c_int = 2;
 pub extern "c" fn mkdir(path: [*:0]const u8, mode: c_uint) c_int;
 pub extern "c" fn mkdtemp(template: [*:0]u8) ?[*:0]u8;
+pub extern "c" fn flock(fd: c_int, operation: c_int) c_int;
+pub extern "c" fn ftruncate(fd: c_int, length: i64) c_int;
 pub extern "c" fn rmdir(path: [*:0]const u8) c_int;
 pub extern "c" fn unlink(path: [*:0]const u8) c_int;
 pub extern "c" fn readlink(path: [*:0]const u8, buf: [*]u8, bufsiz: usize) isize;
@@ -122,6 +124,7 @@ pub fn siPid(info: *const std.c.siginfo_t) std.c.pid_t {
 
 pub const O_RDONLY: c_int = 0;
 pub const O_WRONLY: c_int = 1;
+pub const O_RDWR: c_int = 2;
 pub const O_CREAT: c_int = if (builtin.os.tag == .linux) 0o100 else 0x200;
 pub const O_TRUNC: c_int = if (builtin.os.tag == .linux) 0o1000 else 0x400;
 pub const O_EXCL: c_int = if (builtin.os.tag == .linux) 0o200 else 0x800;
@@ -191,6 +194,12 @@ pub const ENOTDIR: c_int = @intFromEnum(std.posix.E.NOTDIR);
 /// unreadable and refuses a config that was about to arrive. Every other test stays
 /// green while it does that.
 pub const EAGAIN: c_int = @intFromEnum(std.posix.E.AGAIN);
+pub const ENOLCK: c_int = @intFromEnum(std.posix.E.NOLCK);
+pub const EOPNOTSUPP: c_int = @intFromEnum(std.posix.E.OPNOTSUPP);
+pub const EBADF: c_int = @intFromEnum(std.posix.E.BADF);
+
+pub const LOCK_EX: c_int = 2;
+pub const LOCK_NB: c_int = 4;
 
 pub const DT_UNKNOWN: u8 = 0;
 pub const DT_DIR: u8 = 4;
@@ -452,6 +461,23 @@ pub const Identity = struct {
 /// the one thing that must not happen here is a missing answer read as agreement.
 pub const IdentityError = error{Unidentifiable};
 
+/// Asked of the descriptor, not the name: `O_NOFOLLOW` stops a symlink and nothing else, and a
+/// hard link or a FIFO planted at the name would have its target truncated or block the reader.
+pub fn isSoleRegularFile(fd: c_int, owned_by_caller: bool) bool {
+    if (builtin.os.tag == .linux) {
+        const lnx = std.os.linux;
+        var stx: lnx.Statx = undefined;
+        const rc = lnx.statx(fd, "", lnx.AT.EMPTY_PATH, .{ .TYPE = true, .UID = true, .NLINK = true }, &stx);
+        if (lnx.errno(rc) != .SUCCESS) return false;
+        if (!stx.mask.TYPE or !stx.mask.UID or !stx.mask.NLINK) return false;
+        return lnx.S.ISREG(stx.mode) and stx.nlink == 1 and (!owned_by_caller or stx.uid == geteuid());
+    } else {
+        var st: std.c.Stat = undefined;
+        if (std.c.fstat(fd, &st) != 0) return false;
+        return std.c.S.ISREG(st.mode) and st.nlink == 1 and (!owned_by_caller or st.uid == geteuid());
+    }
+}
+
 pub fn identityOfFd(fd: c_int) IdentityError!Identity {
     if (builtin.os.tag == .linux) {
         const lnx = std.os.linux;
@@ -602,7 +628,7 @@ pub fn runChild(
     env_pairs: []const [2][]const u8,
     cwd: ?[]const u8,
 ) SpawnError!Term {
-    return runChildImpl(gpa, argv, env_pairs, null, false, cwd);
+    return runChildImpl(gpa, argv, env_pairs, null, false, cwd, .kill);
 }
 
 pub fn runChildCapture(
@@ -612,7 +638,7 @@ pub fn runChildCapture(
     cap: Capture,
     cwd: ?[]const u8,
 ) SpawnError!Term {
-    return runChildImpl(gpa, argv, env_pairs, cap, false, cwd);
+    return runChildImpl(gpa, argv, env_pairs, cap, false, cwd, .kill);
 }
 
 pub fn runChildCaptureContained(
@@ -623,7 +649,7 @@ pub fn runChildCaptureContained(
     cwd: ?[]const u8,
     cg: ?*CgroupSpawn,
 ) ContainedSpawnError!Term {
-    return runChildImplWithOps(gpa, argv, env_pairs, cap, false, null, cwd, cg, RealOps) catch |e| switch (e) {
+    return runChildImplWithOps(gpa, argv, env_pairs, cap, false, null, cwd, cg, .kill, RealOps) catch |e| switch (e) {
         error.TimedOut => unreachable,
         error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable, error.CgroupJoinFailed => |narrow| narrow,
     };
@@ -651,7 +677,7 @@ pub fn runChildCaptureWorld(
     cwd: ?[]const u8,
     cg: ?*CgroupSpawn,
 ) (ContainedSpawnError || error{TimedOut})!Term {
-    return runChildImplWithOps(gpa, argv, env_pairs, cap, false, budget_ms, cwd, cg, RealOps);
+    return runChildImplWithOps(gpa, argv, env_pairs, cap, false, budget_ms, cwd, cg, .kill, RealOps);
 }
 
 pub fn runChildCaptureMinimalEnv(
@@ -664,7 +690,7 @@ pub fn runChildCaptureMinimalEnv(
     // engine re-executing itself, and the engine's own cwd is what `--work`, `--json` and
     // the oracle's path resolution are all read against. A define's `cwd` is applied one
     // level down, by that engine, to the commands it runs.
-    return runChildImpl(gpa, argv, env_pairs, cap, true, null);
+    return runChildImpl(gpa, argv, env_pairs, cap, true, null, .forward);
 }
 
 /// kernel refused (`getentropy` fails only on EFAULT, EIO or a kernel without it). Used
@@ -1117,14 +1143,18 @@ pub fn spawnSidecar(
         return error.CaptureUnavailable;
     }
 
+    var old_mask: std.c.sigset_t = undefined;
+    blockInterrupts(&old_mask);
     const pid = fork();
     if (pid < 0) {
+        restoreMask(&old_mask);
         _ = close(nfd);
         _ = close(cfd);
         if (efd >= 0) _ = close(efd);
         return error.ForkFailed;
     }
     if (pid == 0) {
+        childRestoreSignals(&old_mask);
         // **A failure here must not be exec'd through** (v15). Since the shim kills the
         // run's crash point with `kill(0, SIGKILL)` — the caller's whole process group,
         // because killing one process leaves the shell that spawned it to run the next
@@ -1143,6 +1173,8 @@ pub fn spawnSidecar(
         _ = execvp(cargv[0].?, cargv.ptr);
         _exit(127);
     }
+    noteSidecar(pid);
+    restoreMask(&old_mask);
     _ = close(nfd);
     _ = close(cfd);
     if (efd >= 0) _ = close(efd);
@@ -1226,8 +1258,9 @@ fn runChildImpl(
     capture: ?Capture,
     minimal_env: bool,
     cwd: ?[]const u8,
+    stop: ChildStop,
 ) SpawnError!Term {
-    return runChildImplWithOps(gpa, argv, env_pairs, capture, minimal_env, null, cwd, null, RealOps) catch |e| switch (e) {
+    return runChildImplWithOps(gpa, argv, env_pairs, capture, minimal_env, null, cwd, null, stop, RealOps) catch |e| switch (e) {
         error.TimedOut => unreachable,
         error.CgroupJoinFailed => unreachable,
         error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable => |narrow| narrow,
@@ -1568,13 +1601,229 @@ pub fn monotonicMs() u64 {
     return @as(u64, @intCast(ts.sec)) * 1000 + @as(u64, @intCast(ts.nsec)) / 1_000_000;
 }
 
-/// Sleep, best effort: a signal that interrupts the wait leaves it short, and no
-/// caller here re-arms it. Every caller tolerates that — the wait loop re-reads the
-/// clock, preflight measures the interval rather than assuming it, and the bounded
-/// config read (#400 follow-up) re-reads the clock on each pass as well.
+/// Not one `nanosleep`: `stopSidecar` counts its grace in calls, and a signal would shorten it.
 pub fn sleepForMs(ms: u64) void {
     var ts: std.c.timespec = .{ .sec = @intCast(ms / 1000), .nsec = @intCast((ms % 1000) * 1_000_000) };
-    _ = nanosleep(&ts, null);
+    var rem: std.c.timespec = undefined;
+    while (nanosleep(&ts, &rem) != 0 and std.c._errno().* == EINTR) ts = rem;
+}
+
+/// `forward`, not `kill`, for an engine the MCP server started: killed, it could not stop its own children.
+pub const ChildStop = enum(u1) { kill, forward };
+
+const interrupt_signals = [_]std.c.SIG{ .INT, .TERM, .HUP, .PIPE };
+
+var interrupt_hook: ?*const fn (c_int) noreturn = null;
+var interrupt_sig = std.atomic.Value(c_int).init(0);
+/// Cleared before every reaping wait: a reaped id may already name a stranger.
+var live_child = std.atomic.Value(u64).init(0);
+var sidecar_pgid = std.atomic.Value(c_int).init(0);
+var stopping_depth = std.atomic.Value(u32).init(0);
+var saved_sigchld: std.c.Sigaction = undefined;
+var sigchld_changed = false;
+var saved_sigalrm: std.c.Sigaction = undefined;
+
+/// Not a direct `kill`: a test stands in for a child the signal cannot reach.
+pub var interrupt_kill: *const fn (c_int, c_int) callconv(.c) c_int = kill;
+
+/// Kept equal to `world_kill_grace_ms`, in the seconds `alarm` takes.
+const interrupt_grace_s: c_uint = 5;
+/// An engine handed the signal stops its own child (`interrupt_grace_s`) and `fs_usage` (twice
+/// `stopSidecar`'s 5 s) before it ends; a shorter wait would name it while it does.
+const forward_grace_s: c_uint = 20;
+
+fn interruptMask() std.c.sigset_t {
+    var set: std.c.sigset_t = undefined;
+    _ = std.c.sigemptyset(&set);
+    for (interrupt_signals) |sig| _ = std.c.sigaddset(&set, sig);
+    _ = std.c.sigaddset(&set, .ALRM);
+    return set;
+}
+
+/// ADR 0124.
+pub fn installInterruptHandlers(hook: *const fn (c_int) noreturn) void {
+    interrupt_hook = hook;
+    var cur: std.c.Sigaction = undefined;
+    // Not left at an inherited SIG_IGN: children would be auto-reaped, and the handler must never
+    // signal an id nobody holds.
+    if (std.c.sigaction(.CHLD, null, &cur) == 0 and cur.handler.handler == std.c.SIG.IGN) {
+        saved_sigchld = cur;
+        sigchld_changed = true;
+        var dfl = cur;
+        dfl.handler = .{ .handler = std.c.SIG.DFL };
+        _ = std.c.sigaction(.CHLD, &dfl, null);
+    }
+    var act: std.c.Sigaction = .{ .handler = .{ .handler = onInterrupt }, .mask = interruptMask(), .flags = std.c.SA.RESTART };
+    for (interrupt_signals) |sig| {
+        if (std.c.sigaction(sig, null, &cur) != 0) continue;
+        // No handler for a signal ignored at startup: `nohup` and a script's `&` job rely on the ignore.
+        if (cur.handler.handler == std.c.SIG.IGN) continue;
+        _ = std.c.sigaction(sig, &act, null);
+    }
+    _ = std.c.sigaction(.ALRM, null, &saved_sigalrm);
+    act.handler = .{ .handler = onGraceOver };
+    _ = std.c.sigaction(.ALRM, &act, null);
+}
+
+pub fn noteSidecar(pgid: c_int) void {
+    sidecar_pgid.store(pgid, .seq_cst);
+    if (pgid == 0) stopIfInterrupted();
+}
+
+/// Without it, a recorded signal would stop the `sudo -n /bin/kill` that stopping fs_usage runs.
+pub fn beginStopping() void {
+    _ = stopping_depth.fetchAdd(1, .seq_cst);
+}
+
+pub fn endStopping() void {
+    if (stopping_depth.fetchSub(1, .seq_cst) == 1) stopIfInterrupted();
+}
+
+pub fn stopIfInterrupted() void {
+    const sig = interrupt_sig.load(.seq_cst);
+    if (sig == 0 or stopping_depth.load(.seq_cst) != 0) return;
+    // Not left armed: the alarm would cut the stop of fs_usage short.
+    _ = std.c.alarm(0);
+    if (interrupt_hook) |hook| hook(sig);
+}
+
+/// The `_exit` is not dead code: the kernel does not end PID 1 by a signal left at its default.
+fn defaultAction() std.c.Sigaction {
+    var dfl: std.c.Sigaction = .{ .handler = .{ .handler = std.c.SIG.DFL }, .mask = undefined, .flags = 0 };
+    _ = std.c.sigemptyset(&dfl.mask);
+    return dfl;
+}
+
+pub fn dieBySignal(sig: c_int) noreturn {
+    const dfl = defaultAction();
+    const s: std.c.SIG = @enumFromInt(sig);
+    _ = std.c.sigaction(s, &dfl, null);
+    var set: std.c.sigset_t = undefined;
+    _ = std.c.sigemptyset(&set);
+    _ = std.c.sigaddset(&set, s);
+    _ = std.c.sigprocmask(std.c.SIG.UNBLOCK, &set, null);
+    _ = kill(getpid(), sig);
+    _exit(128 + sig);
+}
+
+fn liveChildWord(pgid: c_int, stop: ChildStop) u64 {
+    return (@as(u64, @intCast(pgid)) << 1) | @intFromEnum(stop);
+}
+
+fn onInterrupt(s: std.c.SIG) callconv(.c) void {
+    const saved_errno = std.c._errno().*;
+    defer std.c._errno().* = saved_errno;
+    const sig: c_int = @intCast(@intFromEnum(s));
+    const first = interrupt_sig.cmpxchgStrong(0, sig, .seq_cst, .seq_cst) == null;
+    const word = live_child.load(.seq_cst);
+    // No waiting on a second signal, even mid-stop: whoever sent it will not wait.
+    if (!first) graceOver(interrupt_sig.load(.seq_cst), 0);
+    if (stopping_depth.load(.seq_cst) != 0) return;
+    if (word != 0) {
+        const pgid: c_int = @intCast(word >> 1);
+        const to: c_int = if (word & 1 == @intFromEnum(ChildStop.forward)) sig else SIGKILL;
+        if (interrupt_kill(-pgid, to) != 0 and std.c._errno().* == ESRCH) _ = interrupt_kill(pgid, to);
+        _ = std.c.alarm(if (word & 1 == @intFromEnum(ChildStop.forward)) forward_grace_s else interrupt_grace_s);
+        return;
+    }
+    if (sidecar_pgid.load(.seq_cst) != 0) return;
+    writeStopLine(sig, 0);
+    dieBySignal(sig);
+}
+
+fn onGraceOver(_: std.c.SIG) callconv(.c) void {
+    const saved_errno = std.c._errno().*;
+    defer std.c._errno().* = saved_errno;
+    const sig = interrupt_sig.load(.seq_cst);
+    if (sig == 0 or stopping_depth.load(.seq_cst) != 0) return;
+    graceOver(sig, live_child.load(.seq_cst));
+}
+
+fn graceOver(sig: c_int, word: u64) noreturn {
+    // SIGINT, not SIGKILL: fs_usage flushes its capture on it, and sudo passes it on.
+    const observer = sidecar_pgid.load(.seq_cst);
+    if (observer != 0) _ = kill(-observer, SIGINT);
+    writeStopLine(sig, if (word != 0) @intCast(word >> 1) else 0);
+    dieBySignal(sig);
+}
+
+/// No allocation and one `write`: this runs in a signal handler.
+pub fn writeStopLine(sig: c_int, left_pgid: c_int) void {
+    var buf: [160]u8 = undefined;
+    const line = fmtStopLine(&buf, sig, left_pgid);
+    _ = write(2, line.ptr, line.len);
+}
+
+/// Hand-built rather than through `std.fmt`, which is not on POSIX's list for a handler.
+fn fmtStopLine(buf: *[160]u8, sig: c_int, left_pgid: c_int) []const u8 {
+    var n: usize = 0;
+    const put = struct {
+        fn text(b: *[160]u8, at: *usize, t: []const u8) void {
+            @memcpy(b[at.*..][0..t.len], t);
+            at.* += t.len;
+        }
+        fn num(b: *[160]u8, at: *usize, v: c_int) void {
+            var digits: [12]u8 = undefined;
+            var x: u32 = @intCast(@max(v, 0));
+            var i: usize = digits.len;
+            while (true) {
+                i -= 1;
+                digits[i] = @intCast('0' + x % 10);
+                x /= 10;
+                if (x == 0) break;
+            }
+            text(b, at, digits[i..]);
+        }
+    };
+    put.text(buf, &n, "sideeye: stopped by signal ");
+    put.num(buf, &n, sig);
+    if (left_pgid != 0) {
+        put.text(buf, &n, "; process group ");
+        put.num(buf, &n, left_pgid);
+        put.text(buf, &n, " did not end and is left running");
+    }
+    put.text(buf, &n, "\n");
+    return buf[0..n];
+}
+
+test "the stop line names the signal, and the group left running when there is one" {
+    var buf: [160]u8 = undefined;
+    try std.testing.expectEqualStrings("sideeye: stopped by signal 15\n", fmtStopLine(&buf, 15, 0));
+    try std.testing.expectEqualStrings("sideeye: stopped by signal 2; process group 2147483647 did not end and is left running\n", fmtStopLine(&buf, 2, 2147483647));
+}
+
+/// Without it, a handler could run between a fork and the child's registration and miss the child.
+pub fn blockInterrupts(old: *std.c.sigset_t) void {
+    const set = interruptMask();
+    _ = std.c.sigprocmask(std.c.SIG.BLOCK, &set, old);
+}
+
+pub fn restoreMask(old: *const std.c.sigset_t) void {
+    _ = std.c.sigprocmask(std.c.SIG.SETMASK, old, null);
+}
+
+fn childRestoreSignals(old: *const std.c.sigset_t) void {
+    if (sigchld_changed) _ = std.c.sigaction(.CHLD, &saved_sigchld, null);
+    // Not after the mask comes back: until it leaves the engine's group, a terminal's SIGINT reaches
+    // this child too, and the engine's handler must not run in it.
+    if (interrupt_hook != null) {
+        var cur: std.c.Sigaction = undefined;
+        const dfl = defaultAction();
+        for (interrupt_signals) |sig| {
+            if (std.c.sigaction(sig, null, &cur) == 0 and cur.handler.handler != std.c.SIG.IGN)
+                _ = std.c.sigaction(sig, &dfl, null);
+        }
+        _ = std.c.sigaction(.ALRM, &saved_sigalrm, null);
+    }
+    restoreMask(old);
+}
+
+fn registerLiveChild(pid: c_int, stop: ChildStop) void {
+    live_child.store(liveChildWord(pid, stop), .seq_cst);
+}
+
+fn clearLiveChild() void {
+    live_child.store(0, .seq_cst);
 }
 
 fn runChildImplWithOps(
@@ -1586,6 +1835,28 @@ fn runChildImplWithOps(
     budget_ms: ?u64,
     cwd: ?[]const u8,
     cg: ?*CgroupSpawn,
+    stop: ChildStop,
+    comptime Ops: type,
+) (ContainedSpawnError || error{TimedOut})!Term {
+    stopIfInterrupted();
+    const r = runChildSpawnAndWait(gpa, argv, env_pairs, capture, minimal_env, budget_ms, cwd, cg, stop, Ops);
+    clearLiveChild();
+    // Before the caller sees the child's end: a child this process killed must not be read as a
+    // setup that died of a signal or a world that reached its crash point.
+    stopIfInterrupted();
+    return r;
+}
+
+fn runChildSpawnAndWait(
+    gpa: std.mem.Allocator,
+    argv: []const []const u8,
+    env_pairs: []const [2][]const u8,
+    capture: ?Capture,
+    minimal_env: bool,
+    budget_ms: ?u64,
+    cwd: ?[]const u8,
+    cg: ?*CgroupSpawn,
+    stop: ChildStop,
     comptime Ops: type,
 ) (ContainedSpawnError || error{TimedOut})!Term {
     var arena_state = std.heap.ArenaAllocator.init(gpa);
@@ -1649,8 +1920,13 @@ fn runChildImplWithOps(
     // its own group, before it execs — until the parent has moved it: a child that execs first
     // runs, however briefly, outside the cgroup that is meant to stop it.
     var join_pipe: [2]c_int = .{ -1, -1 };
+    // Not blocked after the mkdir: a handler running before the child's registration would find nothing
+    // to stop and end the process, leaving the directory behind.
+    var old_mask: std.c.sigset_t = undefined;
+    blockInterrupts(&old_mask);
     if (cg) |spawn_cg| {
         if (!Ops.cgroupMake(spawn_cg)) {
+            restoreMask(&old_mask);
             _ = close(nfd);
             if (cfd >= 0) _ = close(cfd);
             return error.CgroupJoinFailed;
@@ -1659,6 +1935,7 @@ fn runChildImplWithOps(
             if (spawn_cg.procs_fd >= 0) _ = close(spawn_cg.procs_fd);
             spawn_cg.procs_fd = -1;
             spawn_cg.removeDirs();
+            restoreMask(&old_mask);
             _ = close(nfd);
             if (cfd >= 0) _ = close(cfd);
             return error.CgroupJoinFailed;
@@ -1667,6 +1944,7 @@ fn runChildImplWithOps(
 
     const pid = Ops.forkChild();
     if (pid < 0) {
+        restoreMask(&old_mask);
         _ = close(nfd);
         if (cfd >= 0) _ = close(cfd);
         if (cg) |spawn_cg| {
@@ -1679,6 +1957,7 @@ fn runChildImplWithOps(
         return error.ForkFailed;
     }
     if (pid == 0) {
+        childRestoreSignals(&old_mask);
         // Before exec, so the target never runs in the engine's group — and 126 rather
         // than a discarded result, for the reason `runChildImpl`'s copy of this line
         // carries: the shim's crash-point kill now addresses the caller's whole group,
@@ -1755,10 +2034,13 @@ fn runChildImplWithOps(
     // discarded for all of them: the child checks its own group, and that check is the one
     // the `exec` depends on.
     _ = setpgid(pid, pid);
+    registerLiveChild(pid, stop);
+    restoreMask(&old_mask);
 
     if (cg) |spawn_cg| {
         if (!Ops.cgroupJoin(spawn_cg, pid)) {
             _ = kill(pid, SIGKILL);
+            clearLiveChild();
             _ = close(join_pipe[1]);
             _ = close(join_pipe[0]);
             var reaped: c_int = 0;
@@ -1837,6 +2119,7 @@ fn runChildImplWithOps(
                 // credentials) a blocking drain would hang the very path that
                 // promises not to. Survivors are strays for the quiescence check.
                 var status: c_int = 0;
+                clearLiveChild();
                 const wait_failed = for (0..9) |_| {
                     if (Ops.wait(pid, &status, 0) >= 0) break false;
                     if (std.c._errno().* != EINTR) break true;
@@ -1861,6 +2144,7 @@ fn runChildImplWithOps(
                 // anyway.
                 const grace_deadline = Ops.nowMs() + world_kill_grace_ms;
                 var ginterval: u64 = 1;
+                clearLiveChild();
                 reap: while (true) {
                     const wrc = Ops.wait(pid, null, WNOHANG);
                     if (wrc == pid) break :reap;
@@ -1880,6 +2164,7 @@ fn runChildImplWithOps(
                 // branch gives a broken wait. A live child this leaves behind is a
                 // stray; the stray is what the quiescence check is for.
                 if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, false);
+                clearLiveChild();
                 _ = Ops.wait(pid, null, WNOHANG);
                 while (Ops.wait(-pid, null, WNOHANG) > 0) {}
                 return error.WaitFailed;
@@ -1887,7 +2172,11 @@ fn runChildImplWithOps(
         }
     } else {
         var info: [256]u8 align(16) = undefined;
-        if (waitid(P_PID, pid, &info, WEXITED | WNOWAIT) == 0) {
+        const observed = while (true) {
+            if (waitid(P_PID, pid, &info, WEXITED | WNOWAIT) == 0) break true;
+            if (std.c._errno().* != EINTR) break false;
+        };
+        if (observed) {
             if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, true);
             Ops.killGroup(pid);
         } else if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, false);
@@ -1902,6 +2191,7 @@ fn runChildImplWithOps(
     // as the ordering defect above: a wait call's side effect trusted without checking that
     // the call happened.
     var status: c_int = 0;
+    clearLiveChild();
     const wait_failed = for (0..9) |_| {
         if (Ops.wait(pid, &status, 0) >= 0) break false;
         if (std.c._errno().* != EINTR) break true;
@@ -1914,6 +2204,369 @@ fn runChildImplWithOps(
 
     if (wait_failed) return error.WaitFailed;
     return decodeStatus(status);
+}
+
+const InterruptTest = struct {
+    const SIGTERM_: c_int = 15;
+    const SIGHUP_: c_int = 1;
+    const SIGPIPE_: c_int = 13;
+    const SIG_IGN_: usize = 1;
+
+    fn die(sig: c_int) noreturn {
+        dieBySignal(sig);
+    }
+
+    fn killRefused(_: c_int, _: c_int) callconv(.c) c_int {
+        std.c._errno().* = EPERM;
+        return -1;
+    }
+
+    fn eofWithin(fd: c_int, ms: u64) bool {
+        const deadline = monotonicMs() + ms;
+        var pfd = [1]std.c.pollfd{.{ .fd = fd, .events = std.c.POLL.IN, .revents = 0 }};
+        while (true) {
+            if (std.c.poll(&pfd, 1, 50) > 0) {
+                var b: [64]u8 = undefined;
+                const n = read(fd, &b, b.len);
+                if (n == 0) return true;
+                if (n < 0) return false;
+            }
+            if (monotonicMs() >= deadline) return false;
+        }
+    }
+
+    fn byteWithin(fd: c_int, ms: c_int) ?u8 {
+        var pfd = [1]std.c.pollfd{.{ .fd = fd, .events = std.c.POLL.IN, .revents = 0 }};
+        if (std.c.poll(&pfd, 1, ms) <= 0) return null;
+        var b: [1]u8 = undefined;
+        return if (read(fd, &b, 1) == 1) b[0] else null;
+    }
+
+    fn pidWithin(fd: c_int) !c_int {
+        var b: [16]u8 = undefined;
+        var n: usize = 0;
+        while (n < b.len) : (n += 1) {
+            b[n] = byteWithin(fd, 10_000) orelse return error.NeverRan;
+            if (b[n] == ' ') break;
+        }
+        return std.fmt.parseInt(c_int, b[0..n], 10) catch error.NeverRan;
+    }
+
+    /// Killed only while unreaped: after the reap the id may name a stranger.
+    fn waitWithin(pid: c_int, ms: u64) ?Term {
+        const deadline = monotonicMs() + ms;
+        while (monotonicMs() < deadline) {
+            var status: c_int = 0;
+            if (waitpid(pid, &status, WNOHANG) == pid) return decodeStatus(status);
+            sleepForMs(20);
+        }
+        _ = kill(pid, SIGKILL);
+        _ = waitpid(pid, null, 0);
+        return null;
+    }
+
+    /// Not after the holder's pipe end is closed: the group's id may have been reused by then.
+    fn endGroupIfHeld(group: c_int, holder: c_int) void {
+        if (!eofWithin(holder, 0)) _ = kill(-group, SIGKILL);
+    }
+
+    const Run = struct {
+        engine: c_int,
+        child_group: c_int,
+        held: c_int,
+        err: c_int,
+
+        fn end(r: Run) void {
+            endGroupIfHeld(r.child_group, r.held);
+            if (waitpid(r.engine, null, WNOHANG) == 0) {
+                _ = kill(r.engine, SIGKILL);
+                _ = waitpid(r.engine, null, 0);
+            }
+            _ = close(r.held);
+            _ = close(r.err);
+        }
+    };
+
+    fn start(setup: *const fn () void) !Run {
+        var ready: [2]c_int = undefined;
+        var held: [2]c_int = undefined;
+        var err: [2]c_int = undefined;
+        if (pipe(&ready) != 0 or pipe(&held) != 0 or pipe(&err) != 0) return error.Setup;
+        const pid = fork();
+        if (pid < 0) return error.Setup;
+        if (pid == 0) {
+            _ = close(ready[0]);
+            _ = close(held[0]);
+            _ = close(err[0]);
+            if (dup2(err[1], 2) < 0) _exit(10);
+            setup();
+            installInterruptHandlers(die);
+            var buf: [96]u8 = undefined;
+            const line = std.fmt.bufPrint(&buf, "printf '%d ' $$ >&{d}; exec sleep 300", .{ready[1]}) catch _exit(11);
+            const term = runChild(std.heap.page_allocator, &.{ "/bin/sh", "-c", line }, &.{}, null) catch _exit(12);
+            _exit(switch (term) {
+                .exited => |c| c,
+                else => 13,
+            });
+        }
+        _ = close(ready[1]);
+        _ = close(held[1]);
+        _ = close(err[1]);
+        defer _ = close(ready[0]);
+        const child = pidWithin(ready[0]) catch {
+            _ = kill(pid, SIGKILL);
+            _ = waitpid(pid, null, 0);
+            return error.ChildNeverRan;
+        };
+        return .{ .engine = pid, .child_group = child, .held = held[0], .err = err[0] };
+    }
+
+    fn nothing() void {}
+    fn ignoreHup() void {
+        _ = signal(SIGHUP_, SIG_IGN_);
+    }
+    fn refuseKill() void {
+        interrupt_kill = killRefused;
+    }
+};
+
+test "a run told to stop ends the child it waits on, then ends by the same signal (#819)" {
+    for ([_]c_int{ InterruptTest.SIGTERM_, InterruptTest.SIGPIPE_ }) |sig| {
+        const r = try InterruptTest.start(InterruptTest.nothing);
+        defer r.end();
+        try std.testing.expectEqual(@as(c_int, 0), kill(r.engine, sig));
+        try std.testing.expectEqual(@as(?Term, .{ .signaled = @intCast(sig) }), InterruptTest.waitWithin(r.engine, 10_000));
+        try std.testing.expect(InterruptTest.eofWithin(r.held, 10_000));
+    }
+}
+
+test "a signal ignored when the run starts stays ignored, by the run and by what it starts (#819)" {
+    var ready: [2]c_int = undefined;
+    var go: [2]c_int = undefined;
+    if (pipe(&ready) != 0 or pipe(&go) != 0) return error.Setup;
+    const engine = fork();
+    if (engine < 0) return error.Setup;
+    if (engine == 0) {
+        _ = close(ready[0]);
+        _ = close(go[1]);
+        InterruptTest.ignoreHup();
+        installInterruptHandlers(InterruptTest.die);
+        var buf: [128]u8 = undefined;
+        const line = std.fmt.bufPrint(&buf, "kill -HUP $$; printf r >&{d}; read x <&{d}", .{ ready[1], go[0] }) catch _exit(11);
+        const term = runChild(std.heap.page_allocator, &.{ "/bin/sh", "-c", line }, &.{}, null) catch _exit(12);
+        _exit(switch (term) {
+            .exited => |c| c,
+            else => 13,
+        });
+    }
+    _ = close(ready[1]);
+    _ = close(go[0]);
+    defer _ = close(ready[0]);
+    const lived = InterruptTest.byteWithin(ready[0], 10_000);
+    if (lived == null) _ = close(go[1]);
+    try std.testing.expectEqual(@as(?u8, 'r'), lived);
+    try std.testing.expectEqual(@as(c_int, 0), kill(engine, InterruptTest.SIGHUP_));
+    sleepForMs(300);
+    try std.testing.expectEqual(@as(isize, 2), write(go[1], "x\n", 2));
+    _ = close(go[1]);
+    try std.testing.expectEqual(@as(?Term, .{ .exited = 0 }), InterruptTest.waitWithin(engine, 10_000));
+}
+
+test "a child the signal cannot reach is named and left once the grace has run (#819)" {
+    const t0 = monotonicMs();
+    const r = try InterruptTest.start(InterruptTest.refuseKill);
+    defer r.end();
+    try std.testing.expectEqual(@as(c_int, 0), kill(r.engine, InterruptTest.SIGTERM_));
+    try std.testing.expectEqual(@as(?Term, .{ .signaled = 15 }), InterruptTest.waitWithin(r.engine, 12_000));
+    const took = monotonicMs() - t0;
+    try std.testing.expect(took >= 4_000 and took < 9_000);
+    var line_buf: [256]u8 = undefined;
+    const n = read(r.err, &line_buf, line_buf.len);
+    try std.testing.expect(n > 0);
+    var want: [96]u8 = undefined;
+    const named = try std.fmt.bufPrint(&want, "process group {d} did not end and is left running", .{r.child_group});
+    try std.testing.expect(std.mem.indexOf(u8, line_buf[0..@intCast(n)], named) != null);
+    try std.testing.expect(!InterruptTest.eofWithin(r.held, 200));
+}
+
+test "a second signal ends the run at once, without waiting out the grace (#819)" {
+    const t0 = monotonicMs();
+    const r = try InterruptTest.start(InterruptTest.refuseKill);
+    defer r.end();
+    try std.testing.expectEqual(@as(c_int, 0), kill(r.engine, InterruptTest.SIGTERM_));
+    sleepForMs(300);
+    try std.testing.expectEqual(@as(c_int, 0), kill(r.engine, InterruptTest.SIGHUP_));
+    try std.testing.expectEqual(@as(?Term, .{ .signaled = 15 }), InterruptTest.waitWithin(r.engine, 12_000));
+    try std.testing.expect(monotonicMs() - t0 < 3_000);
+    var line_buf: [256]u8 = undefined;
+    const n = read(r.err, &line_buf, line_buf.len);
+    try std.testing.expect(n > 0);
+    try std.testing.expect(std.mem.indexOf(u8, line_buf[0..@intCast(n)], "left running") == null);
+}
+
+const ObserverTest = struct {
+    var cap_buf: [96]u8 = undefined;
+
+    fn spawn(talk: c_int) !c_int {
+        _ = signal(SIGINT, SIG_DFL);
+        const cap_path = try std.fmt.bufPrint(&cap_buf, "/tmp/sideeye-observer-{d}-{d}", .{ getpid(), talk });
+        var line_buf: [160]u8 = undefined;
+        const line = try std.fmt.bufPrint(&line_buf, "printf '%d ' $$ >&{d}; trap 'printf i >&{d}; exit 0' INT; while :; do sleep 0.1; done", .{ talk, talk });
+        const pid = spawnSidecar(std.heap.page_allocator, &.{ "/bin/sh", "-c", line }, cap_path, null) catch return error.Setup;
+        var zb: [96]u8 = undefined;
+        _ = unlink((std.fmt.bufPrintZ(&zb, "{s}", .{cap_path}) catch return pid).ptr);
+        return pid;
+    }
+
+    fn slowStop(sig: c_int) noreturn {
+        beginStopping();
+        sleepForMs(7_000);
+        dieBySignal(sig);
+    }
+
+    fn standIn(talk: *[2]c_int, told: *[2]c_int, then: *const fn (observer: c_int, told_w: c_int) void) !c_int {
+        if (pipe(talk) != 0 or pipe(told) != 0) return error.Setup;
+        const engine = fork();
+        if (engine < 0) return error.Setup;
+        if (engine == 0) {
+            _ = close(talk[0]);
+            _ = close(told[0]);
+            installInterruptHandlers(InterruptTest.die);
+            const observer = spawn(talk[1]) catch _exit(10);
+            _ = kill(getpid(), InterruptTest.SIGTERM_);
+            _ = write(told[1], "k", 1);
+            then(observer, told[1]);
+            _exit(0);
+        }
+        _ = close(talk[1]);
+        _ = close(told[1]);
+        return engine;
+    }
+
+    fn startAChild(_: c_int, told_w: c_int) void {
+        var buf: [64]u8 = undefined;
+        const line = std.fmt.bufPrint(&buf, "printf c >&{d}", .{told_w}) catch return;
+        _ = runChild(std.heap.page_allocator, &.{ "/bin/sh", "-c", line }, &.{}, null) catch {};
+    }
+
+    fn observerGone(_: c_int, _: c_int) void {
+        noteSidecar(0);
+    }
+
+    fn stopEnds(_: c_int, _: c_int) void {
+        beginStopping();
+        endStopping();
+    }
+
+    fn expectEndsAt(then: *const fn (observer: c_int, told_w: c_int) void) !void {
+        var talk: [2]c_int = undefined;
+        var told: [2]c_int = undefined;
+        const engine = try standIn(&talk, &told, then);
+        defer _ = close(talk[0]);
+        defer _ = close(told[0]);
+        const observer = InterruptTest.pidWithin(talk[0]) catch 0;
+        defer if (observer != 0) InterruptTest.endGroupIfHeld(observer, talk[0]);
+        try std.testing.expectEqual(@as(?u8, 'k'), InterruptTest.byteWithin(told[0], 10_000));
+        try std.testing.expectEqual(@as(?Term, .{ .signaled = 15 }), InterruptTest.waitWithin(engine, 10_000));
+        try std.testing.expectEqual(@as(?u8, null), InterruptTest.byteWithin(told[0], 0));
+    }
+};
+
+test "a signal taken while only an observer runs waits for it, and takes effect before the next child starts (#819)" {
+    try ObserverTest.expectEndsAt(ObserverTest.startAChild);
+}
+
+test "a signal that waited for an observer takes effect when the observer is gone (#819)" {
+    try ObserverTest.expectEndsAt(ObserverTest.observerGone);
+}
+
+test "a signal taken during a stop takes effect when the stop ends (#819)" {
+    try ObserverTest.expectEndsAt(ObserverTest.stopEnds);
+}
+
+test "a second signal ends the run even while it is stopping (#819)" {
+    const t0 = monotonicMs();
+    var ready: [2]c_int = undefined;
+    if (pipe(&ready) != 0) return error.Setup;
+    const engine = fork();
+    if (engine < 0) return error.Setup;
+    if (engine == 0) {
+        _ = close(ready[0]);
+        installInterruptHandlers(ObserverTest.slowStop);
+        var buf: [96]u8 = undefined;
+        const line = std.fmt.bufPrint(&buf, "printf r >&{d}; exec sleep 300", .{ready[1]}) catch _exit(11);
+        _ = runChild(std.heap.page_allocator, &.{ "/bin/sh", "-c", line }, &.{}, null) catch _exit(12);
+        _exit(13);
+    }
+    _ = close(ready[1]);
+    defer _ = close(ready[0]);
+    try std.testing.expectEqual(@as(?u8, 'r'), InterruptTest.byteWithin(ready[0], 10_000));
+    try std.testing.expectEqual(@as(c_int, 0), kill(engine, InterruptTest.SIGTERM_));
+    sleepForMs(1_000);
+    try std.testing.expectEqual(@as(c_int, 0), kill(engine, InterruptTest.SIGHUP_));
+    try std.testing.expectEqual(@as(?Term, .{ .signaled = 15 }), InterruptTest.waitWithin(engine, 15_000));
+    try std.testing.expect(monotonicMs() - t0 < 4_500);
+}
+
+test "stopping after a signal is not cut short by the grace that was for the child (#819)" {
+    const t0 = monotonicMs();
+    var err: [2]c_int = undefined;
+    var ready: [2]c_int = undefined;
+    if (pipe(&err) != 0 or pipe(&ready) != 0) return error.Setup;
+    const engine = fork();
+    if (engine < 0) return error.Setup;
+    if (engine == 0) {
+        _ = close(err[0]);
+        _ = close(ready[0]);
+        if (dup2(err[1], 2) < 0) _exit(10);
+        installInterruptHandlers(ObserverTest.slowStop);
+        var buf: [96]u8 = undefined;
+        const line = std.fmt.bufPrint(&buf, "printf r >&{d}; exec sleep 300", .{ready[1]}) catch _exit(11);
+        _ = runChild(std.heap.page_allocator, &.{ "/bin/sh", "-c", line }, &.{}, null) catch _exit(12);
+        _exit(13);
+    }
+    _ = close(err[1]);
+    _ = close(ready[1]);
+    defer _ = close(err[0]);
+    defer _ = close(ready[0]);
+    try std.testing.expectEqual(@as(?u8, 'r'), InterruptTest.byteWithin(ready[0], 10_000));
+    try std.testing.expectEqual(@as(c_int, 0), kill(engine, InterruptTest.SIGTERM_));
+    try std.testing.expectEqual(@as(?Term, .{ .signaled = 15 }), InterruptTest.waitWithin(engine, 15_000));
+    try std.testing.expect(monotonicMs() - t0 >= 6_500);
+    var line_buf: [256]u8 = undefined;
+    const n = read(err[0], &line_buf, line_buf.len);
+    try std.testing.expect(n >= 0);
+    try std.testing.expect(std.mem.indexOf(u8, line_buf[0..@intCast(n)], "left running") == null);
+}
+
+test "a run that ends on its grace stops the observer too (#819)" {
+    var talk: [2]c_int = undefined;
+    var ready: [2]c_int = undefined;
+    if (pipe(&talk) != 0 or pipe(&ready) != 0) return error.Setup;
+    const engine = fork();
+    if (engine < 0) return error.Setup;
+    if (engine == 0) {
+        _ = close(talk[0]);
+        _ = close(ready[0]);
+        InterruptTest.refuseKill();
+        installInterruptHandlers(InterruptTest.die);
+        _ = ObserverTest.spawn(talk[1]) catch _exit(10);
+        var buf: [96]u8 = undefined;
+        const line = std.fmt.bufPrint(&buf, "printf '%d ' $$ >&{d}; exec sleep 300", .{ready[1]}) catch _exit(11);
+        _ = runChild(std.heap.page_allocator, &.{ "/bin/sh", "-c", line }, &.{}, null) catch _exit(12);
+        _exit(13);
+    }
+    _ = close(talk[1]);
+    _ = close(ready[1]);
+    defer _ = close(talk[0]);
+    defer _ = close(ready[0]);
+    const observer = try InterruptTest.pidWithin(talk[0]);
+    defer InterruptTest.endGroupIfHeld(observer, talk[0]);
+    const child = try InterruptTest.pidWithin(ready[0]);
+    defer InterruptTest.endGroupIfHeld(child, ready[0]);
+    try std.testing.expectEqual(@as(c_int, 0), kill(engine, InterruptTest.SIGTERM_));
+    try std.testing.expectEqual(@as(?Term, .{ .signaled = 15 }), InterruptTest.waitWithin(engine, 12_000));
+    try std.testing.expectEqual(@as(?u8, 'i'), InterruptTest.byteWithin(talk[0], 3_000));
 }
 
 test "exit status decoding distinguishes exit from signal" {
@@ -2031,7 +2684,7 @@ const FakeWait = struct {
 test "a wait that fails permanently refuses instead of reporting a clean exit" {
     FakeWait.reset();
     FakeWait.permanent = true;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, FakeWait);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, .kill, FakeWait);
 
     try std.testing.expectError(error.WaitFailed, r);
     try std.testing.expectEqual(@as(u32, 1), FakeWait.direct_calls);
@@ -2042,7 +2695,7 @@ test "an interrupted wait is retried and the status that finally arrives is the 
     FakeWait.reset();
     FakeWait.eintr_budget = 3;
     FakeWait.deliver_status = 0x0100; // exit(1)
-    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, FakeWait);
+    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, .kill, FakeWait);
 
     try std.testing.expectEqual(Term{ .exited = 1 }, term);
     try std.testing.expectEqual(@as(u32, 4), FakeWait.direct_calls);
@@ -2051,7 +2704,7 @@ test "an interrupted wait is retried and the status that finally arrives is the 
 test "an interruption that never stops is bounded rather than looping forever" {
     FakeWait.reset();
     FakeWait.eintr_budget = std.math.maxInt(u32);
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, FakeWait);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, .kill, FakeWait);
 
     try std.testing.expectError(error.WaitFailed, r);
     try std.testing.expectEqual(@as(u32, 9), FakeWait.direct_calls);
@@ -2061,7 +2714,7 @@ test "an interruption that never stops is bounded rather than looping forever" {
 test "a child whose stdin cannot be pointed at /dev/null is refused by name and never forked (#263)" {
     FakeWait.reset();
     FakeWait.devnull_fails = true;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, FakeWait);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, .kill, FakeWait);
 
     try std.testing.expectError(error.StdinUnavailable, r);
     try std.testing.expectEqual(@as(u32, 0), FakeWait.fork_calls);
@@ -2078,7 +2731,7 @@ test "every child starts with its stdin at /dev/null, on the plain path with no 
     // plain path (no capture, not minimal_env) is chosen because that is the one the
     // MCP-only redirect never covered: setup and the checker run through it.
     const is_null = [_][]const u8{ "/bin/sh", "-c", "[ /dev/stdin -ef /dev/null ]" };
-    const term = try runChildImplWithOps(std.testing.allocator, &is_null, &.{}, null, false, null, null, null, FakeWait);
+    const term = try runChildImplWithOps(std.testing.allocator, &is_null, &.{}, null, false, null, null, null, .kill, FakeWait);
     try std.testing.expectEqual(Term{ .exited = 0 }, term);
     try std.testing.expectEqual(@as(u32, 1), FakeWait.fork_calls);
 }
@@ -2173,7 +2826,7 @@ test "a symlink at the capture path is refused before the fork, and what it poin
     // than an error — and named here so it is not mistaken for a measurement.
     const say = [_][]const u8{ "/bin/sh", "-c", "printf hello" };
     FakeWait.reset();
-    const ok = try runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z }, false, null, null, null, FakeWait);
+    const ok = try runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z }, false, null, null, null, .kill, FakeWait);
     try std.testing.expectEqual(Term{ .exited = 0 }, ok);
     try std.testing.expectEqual(@as(u32, 1), FakeWait.fork_calls);
     var rb: [64]u8 = undefined;
@@ -2183,7 +2836,7 @@ test "a symlink at the capture path is refused before the fork, and what it poin
     try std.testing.expect(symlink(sentinel_z.ptr, cap_z.ptr) == 0);
 
     FakeWait.reset();
-    const refused = runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z }, false, null, null, null, FakeWait);
+    const refused = runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z }, false, null, null, null, .kill, FakeWait);
     try std.testing.expectError(error.CaptureUnavailable, refused);
     try std.testing.expectEqual(@as(u32, 0), FakeWait.fork_calls);
 
@@ -2219,7 +2872,7 @@ test "a hard link at an exclusive capture path is refused too, and /dev/null sti
 
     const say = [_][]const u8{ "/bin/sh", "-c", "printf hello" };
     FakeWait.reset();
-    const refused = runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z, .exclusive = true }, false, null, null, null, FakeWait);
+    const refused = runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z, .exclusive = true }, false, null, null, null, .kill, FakeWait);
     try std.testing.expectError(error.CaptureUnavailable, refused);
     try std.testing.expectEqual(@as(u32, 0), FakeWait.fork_calls);
     var rb: [64]u8 = undefined;
@@ -2233,7 +2886,7 @@ test "a hard link at an exclusive capture path is refused too, and /dev/null sti
     // and the `Term` comes from the fake's `deliver_status`; the count of 1 is the
     // measurement that the parent did not refuse before forking.
     FakeWait.reset();
-    const to_null = try runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = "/dev/null" }, false, null, null, null, FakeWait);
+    const to_null = try runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = "/dev/null" }, false, null, null, null, .kill, FakeWait);
     try std.testing.expectEqual(Term{ .exited = 0 }, to_null);
     try std.testing.expectEqual(@as(u32, 1), FakeWait.fork_calls);
 
@@ -2241,7 +2894,7 @@ test "a hard link at an exclusive capture path is refused too, and /dev/null sti
     // refusal above is about what was at the path and not about `exclusive` itself.
     _ = unlink(cap_z.ptr);
     FakeWait.reset();
-    const ok = try runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z, .exclusive = true }, false, null, null, null, FakeWait);
+    const ok = try runChildImplWithOps(std.testing.allocator, &say, &.{}, .{ .path = cap_z, .exclusive = true }, false, null, null, null, .kill, FakeWait);
     try std.testing.expectEqual(Term{ .exited = 0 }, ok);
     var rb2: [64]u8 = undefined;
     try std.testing.expectEqualStrings("hello", try CaptureFixture.slurp(cap_z.ptr, &rb2));
@@ -2351,7 +3004,7 @@ test "a world over budget is sent SIGKILL after a final observation, reaped unde
     FakeBudget.script = &.{ .running, .running };
     FakeBudget.direct_waits = &.{1}; // the grace reap succeeds at once
     FakeBudget.now_step = 100;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 10, null, null, FakeBudget);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 10, null, null, .kill, FakeBudget);
 
     try std.testing.expectError(error.TimedOut, r);
     try std.testing.expectEqual(@as(u32, 1), FakeBudget.kill_calls);
@@ -2365,7 +3018,7 @@ test "si_pid zero is 'still running', not 'exited': the poll keeps polling until
     FakeBudget.script = &.{ .running, .running, .exited };
     FakeBudget.deliver_status = 0; // exit(0) once the shared reap runs
     FakeBudget.now_step = 1; // deadline 1000 is never approached
-    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, null, FakeBudget);
+    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, null, .kill, FakeBudget);
 
     try std.testing.expectEqual(Term{ .exited = 0 }, term);
     try std.testing.expectEqual(@as(usize, 3), FakeBudget.script_i);
@@ -2377,7 +3030,7 @@ test "si_pid zero is 'still running', not 'exited': the poll keeps polling until
 test "a null budget never touches the budget vocabulary: no clock, no sleep, no poll (#263)" {
     FakeBudget.reset();
     FakeBudget.deliver_status = 0;
-    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, FakeBudget);
+    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, .kill, FakeBudget);
 
     try std.testing.expectEqual(Term{ .exited = 0 }, term);
     try std.testing.expectEqual(@as(u32, 0), FakeBudget.clock_calls);
@@ -2390,7 +3043,7 @@ test "a child the final observation sees exited is accepted, not timed out — t
     FakeBudget.script = &.{ .running, .exited };
     FakeBudget.deliver_status = 0;
     FakeBudget.now_step = 100;
-    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 10, null, null, FakeBudget);
+    const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 10, null, null, .kill, FakeBudget);
 
     try std.testing.expectEqual(Term{ .exited = 0 }, term);
     try std.testing.expectEqual(@as(u32, 1), FakeBudget.kill_calls);
@@ -2403,7 +3056,7 @@ test "a poll interruption retries under the same deadline; a permanent poll fail
     FakeBudget.script = &.{ .{ .err = EINTR }, .{ .err = EINTR }, .{ .err = FakeWait.ECHILD } };
     FakeBudget.direct_waits = &.{0}; // the one non-blocking reap attempt: nothing there
     FakeBudget.now_step = 1;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, null, FakeBudget);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, null, .kill, FakeBudget);
 
     try std.testing.expectError(error.WaitFailed, r);
     try std.testing.expectEqual(@as(u32, 0), FakeBudget.kill_calls);
@@ -2418,7 +3071,7 @@ test "an interruption storm cannot poll forever: the ninth consecutive interrupt
     FakeBudget.script = &.{.{ .err = EINTR }};
     FakeBudget.direct_waits = &.{0}; // the one non-blocking reap attempt: nothing there
     FakeBudget.now_step = 1;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, null, FakeBudget);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, null, .kill, FakeBudget);
 
     try std.testing.expectError(error.WaitFailed, r);
     try std.testing.expectEqual(@as(usize, 9), FakeBudget.script_i);
@@ -2432,7 +3085,7 @@ test "a SIGKILL that never lands exhausts the grace, drains without blocking, an
     FakeBudget.script = &.{ .running, .running };
     FakeBudget.direct_waits = &.{ 0, 0, 0, 0, 0, 0, 0, 0 };
     FakeBudget.now_step = 3000;
-    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 10, null, null, FakeBudget);
+    const r = runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 10, null, null, .kill, FakeBudget);
 
     try std.testing.expectError(error.TimedOut, r);
     try std.testing.expectEqual(@as(u32, 1), FakeBudget.kill_calls);
@@ -2675,7 +3328,7 @@ test "a contained spawn's cgroup is stopped on every exit, and read for what lin
     {
         FakeWait.reset();
         var cg = CgroupSpawn.init(home, true) orelse return error.TestUnexpectedResult;
-        const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, &cg, FakeWait);
+        const term = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, &cg, .kill, FakeWait);
         try std.testing.expectEqual(Term{ .exited = 0 }, term);
         try std.testing.expect(cg.joined);
         try std.testing.expectEqual(@as(u32, 1), FakeWait.cgroup_make_calls);
@@ -2687,7 +3340,7 @@ test "a contained spawn's cgroup is stopped on every exit, and read for what lin
         FakeBudget.script = &.{.exited};
         FakeBudget.now_step = 1;
         var cg = CgroupSpawn.init(home, true) orelse return error.TestUnexpectedResult;
-        _ = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, &cg, FakeBudget);
+        _ = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, &cg, .kill, FakeBudget);
         // Read before the kill: the other way round the stop reads an emptied cgroup and
         // names nothing, and the counts above would not notice.
         try std.testing.expectEqualStrings("LK", FakeWait.events[0..FakeWait.events_len]);
@@ -2699,7 +3352,7 @@ test "a contained spawn's cgroup is stopped on every exit, and read for what lin
         FakeBudget.direct_waits = &.{1};
         FakeBudget.now_step = 100;
         var cg = CgroupSpawn.init(home, true) orelse return error.TestUnexpectedResult;
-        try std.testing.expectError(error.TimedOut, runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 10, null, &cg, FakeBudget));
+        try std.testing.expectError(error.TimedOut, runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 10, null, &cg, .kill, FakeBudget));
         try std.testing.expectEqualStrings("KS", FakeWait.events[0..FakeWait.events_len]);
     }
     {
@@ -2707,12 +3360,12 @@ test "a contained spawn's cgroup is stopped on every exit, and read for what lin
         FakeBudget.reset();
         FakeBudget.script = &.{.{ .err = FakeWait.ECHILD }};
         var cg = CgroupSpawn.init(home, true) orelse return error.TestUnexpectedResult;
-        try std.testing.expectError(error.WaitFailed, runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, &cg, FakeBudget));
+        try std.testing.expectError(error.WaitFailed, runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, 1000, null, &cg, .kill, FakeBudget));
         try std.testing.expectEqualStrings("S", FakeWait.events[0..FakeWait.events_len]);
     }
     {
         FakeWait.reset();
-        _ = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, FakeWait);
+        _ = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, null, .kill, FakeWait);
         try std.testing.expectEqual(@as(u32, 0), FakeWait.cgroup_make_calls);
         try std.testing.expect(std.mem.indexOfAny(u8, FakeWait.events[0..FakeWait.events_len], "LS") == null);
     }
@@ -2729,7 +3382,7 @@ test "a child whose move into the run's cgroup fails never runs, and the spawn s
     FakeWait.reset();
     FakeWait.cgroup_join_fails = true;
     var refused = CgroupSpawn.init(home, false) orelse return error.TestUnexpectedResult;
-    try std.testing.expectError(error.CgroupJoinFailed, runChildImplWithOps(std.testing.allocator, &.{ "/bin/sh", "-c", cmd }, &.{}, null, false, null, null, &refused, FakeWait));
+    try std.testing.expectError(error.CgroupJoinFailed, runChildImplWithOps(std.testing.allocator, &.{ "/bin/sh", "-c", cmd }, &.{}, null, false, null, null, &refused, .kill, FakeWait));
     try std.testing.expect(!refused.joined);
     try std.testing.expectEqual(@as(u32, 1), FakeWait.fork_calls);
     try std.testing.expect(access(mark.ptr, F_OK) != 0);
@@ -2738,7 +3391,7 @@ test "a child whose move into the run's cgroup fails never runs, and the spawn s
     // is the refusal's and not a command that could never have left a mark.
     FakeWait.reset();
     var joined = CgroupSpawn.init(home, false) orelse return error.TestUnexpectedResult;
-    _ = try runChildImplWithOps(std.testing.allocator, &.{ "/bin/sh", "-c", cmd }, &.{}, null, false, null, null, &joined, FakeWait);
+    _ = try runChildImplWithOps(std.testing.allocator, &.{ "/bin/sh", "-c", cmd }, &.{}, null, false, null, null, &joined, .kill, FakeWait);
     try std.testing.expect(access(mark.ptr, F_OK) == 0);
     _ = unlink(mark.ptr);
 }
@@ -2788,7 +3441,7 @@ test "a child that dies before its go-ahead does not take the engine down with a
     defer _ = signal(sigpipe, previous);
     const home: CgroupHome = .{ .dir = "/nonexistent-cgroup-home", .rel = "/" };
     var cg = CgroupSpawn.init(home, false) orelse return error.TestUnexpectedResult;
-    _ = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, &cg, FakeWait);
+    _ = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, &cg, .kill, FakeWait);
     try std.testing.expect(cg.joined);
     try std.testing.expectEqual(@as(u32, 1), FakeWait.fork_calls);
 }

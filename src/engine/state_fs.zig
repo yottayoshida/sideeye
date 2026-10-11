@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const contract = @import("contract");
 const posix = @import("../posix.zig");
 const build_options = @import("engine_build_options");
@@ -12,7 +13,7 @@ const Snapshot = snapshot.Snapshot;
 const Entry = snapshot.Entry;
 const finalizeEntries = snapshot.finalizeEntries;
 
-pub const SnapshotError = error{ OutOfMemory, ReadFailed, TooDeep, PathTooLong, ClassifyFailed, EntriesNotSortedUnique, FileTooLarge, TreeTooLarge };
+pub const SnapshotError = error{ OutOfMemory, ReadFailed, TooDeep, PathTooLong, ClassifyFailed, EntriesNotSortedUnique, FileTooLarge, TreeTooLarge, MountInside };
 
 /// How deep the snapshot walk descends before refusing — **and how deep `deleteTreeAt`
 /// descends before refusing to delete**, which is the reason to think twice before tuning
@@ -94,7 +95,208 @@ pub const SnapshotDiag = struct {
     file: FileTooLargeDiag = .{},
     tree: TreeTooLargeDiag = .{},
     entry: EntryDiag = .{},
+    mount: EntryRel = .{},
 };
+
+pub const MountScan = enum { none, found, unlisted };
+
+pub fn firstMountInside(root: []const u8, out: *EntryRel) MountScan {
+    out.len = 0;
+    if (builtin.os.tag == .linux) {
+        const table = mountTableScan(root, out);
+        if (table != .none) return table;
+    }
+    return deviceScan(root, out);
+}
+
+var cleared_root_buf: [contract.max_path]u8 = undefined;
+var cleared_root_len: usize = 0;
+var table_watch: c_int = -1;
+
+/// Do not read the table at every snapshot and restore: on a host with thousands of mounts the
+/// reading outweighs the world. Do not keep an answer without the watch either: a bind mount
+/// made during the run, or by the setup after a replay's `--fresh-state`, keeps its device
+/// number and is seen by nothing else. Not cached on macOS: it has no such notice, and its walk
+/// is bounded by the state.
+fn mountInsideWatched(root: []const u8, out: *EntryRel) MountScan {
+    out.len = 0;
+    if (builtin.os.tag != .linux) return firstMountInside(root, out);
+    if (cleared_root_len == root.len and std.mem.eql(u8, cleared_root_buf[0..cleared_root_len], root) and !mountTableChanged())
+        return .none;
+    cleared_root_len = 0;
+    if (table_watch < 0) table_watch = posix.open("/proc/self/mountinfo", posix.O_RDONLY | posix.O_CLOEXEC, @as(c_uint, 0));
+    const scan = firstMountInside(root, out);
+    if (scan == .none and table_watch >= 0 and root.len <= cleared_root_buf.len) {
+        @memcpy(cleared_root_buf[0..root.len], root);
+        cleared_root_len = root.len;
+    }
+    return scan;
+}
+
+fn mountTableChanged() bool {
+    if (table_watch < 0) return true;
+    const linux = std.os.linux;
+    var p = [_]linux.pollfd{.{ .fd = table_watch, .events = linux.POLL.PRI, .revents = 0 }};
+    const rc = linux.poll(&p, 1, 0);
+    if (linux.errno(rc) != .SUCCESS) return true;
+    return rc != 0;
+}
+
+/// Not `statx`'s mount-root attribute: kernels before 5.8 have none, and a bind mount of the
+/// same filesystem keeps `st_dev`, so on those kernels only the mount table names it.
+fn mountTableScan(root: []const u8, out: *EntryRel) MountScan {
+    const fd = posix.open("/proc/self/mountinfo", posix.O_RDONLY | posix.O_CLOEXEC, @as(c_uint, 0));
+    if (fd < 0) return .unlisted;
+    defer _ = posix.close(fd);
+    var lines: MountinfoLines = .{ .fd = fd };
+    while (lines.next()) |line| {
+        var mp_buf: [contract.max_path]u8 = undefined;
+        const mp = mountPointOfLine(line, &mp_buf) orelse return .unlisted;
+        if (relInsideRoot(mp, root)) |rel| {
+            out.set(rel);
+            return .found;
+        }
+    }
+    return if (lines.failed) .unlisted else .none;
+}
+
+/// Not `getmntinfo` on macOS: its mount-on names can come back in the firmlinked spelling
+/// (`/System/Volumes/Data/…`), which a realpath'd root does not share. Not skipped on Linux: it
+/// names a btrfs subvolume, which the mount table does not list.
+fn deviceScan(root: []const u8, out: *EntryRel) MountScan {
+    var root_buf: [contract.max_path]u8 = undefined;
+    const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return .unlisted;
+    const id = posix.identityOfPath(root_z.ptr) catch return .none;
+    var rel_buf: [contract.max_path]u8 = undefined;
+    return deviceScanAt(root, id.dev, &rel_buf, 0, 0, out);
+}
+
+/// Do not refuse a directory that cannot be opened or identified: nothing can be removed
+/// through it either, and `walk` records it the same way.
+fn deviceScanAt(root: []const u8, dev: u64, rel_buf: *[contract.max_path]u8, rel_len: usize, depth: usize, out: *EntryRel) MountScan {
+    if (depth > max_depth) return .none;
+    var dir_buf: [contract.max_path]u8 = undefined;
+    const dir_z = (if (rel_len == 0)
+        std.fmt.bufPrintZ(&dir_buf, "{s}", .{root})
+    else
+        joinZ(&dir_buf, root, rel_buf[0..rel_len])) catch return .unlisted;
+    const dirp = posix.opendir(dir_z.ptr) orelse return .none;
+    defer _ = posix.closedir(dirp);
+    while (posix.readdir(dirp)) |ent| {
+        const name = posix.direntName(ent);
+        if (std.mem.eql(u8, name, ".") or std.mem.eql(u8, name, "..")) continue;
+        const sep: usize = if (rel_len == 0) 0 else 1;
+        const child_len = rel_len + sep + name.len;
+        if (child_len > rel_buf.len) return .unlisted;
+        if (sep == 1) rel_buf[rel_len] = '/';
+        @memcpy(rel_buf[rel_len + sep ..][0..name.len], name);
+        var full_buf: [contract.max_path]u8 = undefined;
+        const full = joinZ(&full_buf, root, rel_buf[0..child_len]) catch return .unlisted;
+        var kind = posix.kindFromDirent(ent);
+        if (kind == .missing) kind = posix.kindOfPathNoFollow(full.ptr) catch continue;
+        if (kind != .dir) continue;
+        const here = posix.identityOfPath(full.ptr) catch continue;
+        if (here.dev != dev) {
+            out.set(rel_buf[0..child_len]);
+            return .found;
+        }
+        const below = deviceScanAt(root, dev, rel_buf, child_len, depth + 1, out);
+        if (below != .none) return below;
+    }
+    return .none;
+}
+
+fn relInsideRoot(path: []const u8, root: []const u8) ?[]const u8 {
+    if (!contract.isStrictlyInsideDir(path, root)) return null;
+    return path[std.mem.trimEnd(u8, root, "/").len + 1 ..];
+}
+
+/// Not skipped when a line does not parse or a path does not fit: null, since an unread mount
+/// point could be the one inside the state.
+fn mountPointOfLine(line: []const u8, out: []u8) ?[]const u8 {
+    var fields = std.mem.splitScalar(u8, line, ' ');
+    var i: usize = 0;
+    while (i < 4) : (i += 1) _ = fields.next() orelse return null;
+    const raw = fields.next() orelse return null;
+    var n: usize = 0;
+    var j: usize = 0;
+    while (j < raw.len) {
+        if (n >= out.len) return null;
+        if (octalEscape(raw[j..])) |byte| {
+            out[n] = byte;
+            j += 4;
+        } else {
+            out[n] = raw[j];
+            j += 1;
+        }
+        n += 1;
+    }
+    return out[0..n];
+}
+
+fn octalEscape(s: []const u8) ?u8 {
+    if (s.len < 4 or s[0] != '\\') return null;
+    var v: u16 = 0;
+    for (s[1..4]) |c| {
+        if (c < '0' or c > '7') return null;
+        v = v * 8 + (c - '0');
+    }
+    return if (v > 255) null else @intCast(v);
+}
+
+/// Do not fail on a line longer than the buffer: one such line would refuse every run on that
+/// host, and its head still holds the mount point, ahead of the options an overlay makes long.
+const MountinfoLines = struct {
+    fd: c_int,
+    buf: [16 * 1024]u8 = undefined,
+    start: usize = 0,
+    end: usize = 0,
+    eof: bool = false,
+    skipping: bool = false,
+    failed: bool = false,
+
+    fn next(self: *MountinfoLines) ?[]const u8 {
+        while (true) {
+            if (std.mem.indexOfScalarPos(u8, self.buf[0..self.end], self.start, '\n')) |nl| {
+                const line = self.buf[self.start..nl];
+                self.start = nl + 1;
+                if (self.skipping) {
+                    self.skipping = false;
+                    continue;
+                }
+                return line;
+            }
+            if (self.skipping) self.start = self.end;
+            if (self.eof) {
+                if (self.start == self.end) return null;
+                const tail = self.buf[self.start..self.end];
+                self.start = self.end;
+                return tail;
+            }
+            const held = self.end - self.start;
+            std.mem.copyForwards(u8, self.buf[0..held], self.buf[self.start..self.end]);
+            self.start = 0;
+            self.end = held;
+            if (self.end == self.buf.len) {
+                self.start = self.end;
+                self.skipping = true;
+                return self.buf[0..self.end];
+            }
+            const got = posix.read(self.fd, self.buf[self.end..].ptr, self.buf.len - self.end);
+            if (got < 0) {
+                if (std.c._errno().* == posix.EINTR) continue;
+                self.failed = true;
+                return null;
+            }
+            if (got == 0) self.eof = true else self.end += @intCast(got);
+        }
+    }
+};
+
+fn refuseMountInside(root: []const u8) RestoreError!void {
+    var rel: EntryRel = .{};
+    if (mountInsideWatched(root, &rel) != .none) return error.MountInside;
+}
 
 fn joinZ(buf: []u8, a: []const u8, b: []const u8) error{PathTooLong}![:0]const u8 {
     const s = std.fmt.bufPrintZ(buf, "{s}/{s}", .{ a, b }) catch return error.PathTooLong;
@@ -105,6 +307,9 @@ const WalkCtx = struct {
     arena_state: *std.heap.ArenaAllocator,
     entries: *std.ArrayList(Entry),
     root: []const u8,
+    /// Do not refuse a root that cannot be identified: a crashed state whose root the target
+    /// removed is an ordinary, empty snapshot.
+    root_dev: ?u64,
     caps: SnapshotCaps,
     diag: ?*SnapshotDiag,
     content: u64 = 0,
@@ -171,6 +376,17 @@ fn walk(ctx: *WalkCtx, rel_prefix: []const u8, depth: usize) SnapshotError!void 
         var charged: usize = 0;
         switch (kind) {
             .dir => {
+                // Do not refuse a directory that cannot be identified: one that vanished under a
+                // still-running writer is `state_not_quiescent`'s to name, and one under a parent
+                // without search permission was always recorded as an empty directory.
+                if (ctx.root_dev) |root_dev| {
+                    if (posix.identityOfPath(full.ptr)) |here| {
+                        if (here.dev != root_dev) {
+                            if (ctx.diag) |d| d.mount.set(rel);
+                            return error.MountInside;
+                        }
+                    } else |_| {}
+                }
                 try ctx.entries.append(arena, .{ .rel = rel, .kind = .dir, .content = "", .mode = dirModeOf(posix.kindModeOfPathNoFollow(full.ptr)) });
                 // Charged before descending, so the ceiling is not reached only on the
                 // way back up out of a deep subtree.
@@ -252,10 +468,27 @@ pub fn takeSnapshotCapped(gpa: Allocator, root: []const u8, caps: SnapshotCaps, 
     };
     errdefer snap.arena.deinit();
 
+    // Not on macOS: there every mount is another device, and the walk below stops at one before
+    // reading inside it; walking the tree for it first would only do that twice.
+    if (builtin.os.tag == .linux) {
+        var mount_rel: EntryRel = .{};
+        switch (mountInsideWatched(root, &mount_rel)) {
+            .none => {},
+            .found, .unlisted => {
+                if (diag) |d| d.mount = mount_rel;
+                return error.MountInside;
+            },
+        }
+    }
+    var root_z_buf: [contract.max_path]u8 = undefined;
+    const root_z = std.fmt.bufPrintZ(&root_z_buf, "{s}", .{root}) catch return error.PathTooLong;
+    const root_dev: ?u64 = if (posix.identityOfPath(root_z.ptr)) |id| id.dev else |_| null;
+
     var ctx: WalkCtx = .{
         .arena_state = &snap.arena,
         .entries = &snap.entries,
         .root = root,
+        .root_dev = root_dev,
         .caps = caps,
         .diag = diag,
     };
@@ -264,7 +497,7 @@ pub fn takeSnapshotCapped(gpa: Allocator, root: []const u8, caps: SnapshotCaps, 
     return snap;
 }
 
-pub const RestoreError = error{ PathTooLong, DeleteFailed, CreateFailed, UnsafeRoot };
+pub const RestoreError = error{ PathTooLong, DeleteFailed, CreateFailed, UnsafeRoot, MountInside };
 
 /// A denylist, not a safety boundary: it stops the mistake that has a name — a system
 /// path where a scratch path was meant — and claims nothing about the ones that do not.
@@ -496,6 +729,7 @@ fn deleteTree(root: []const u8) RestoreError!void {
 
 fn deleteTreeAt(dirfd: c_int, depth: usize) RestoreError!void {
     if (depth > max_depth) return error.DeleteFailed;
+    const here = posix.identityOfFd(dirfd) catch return error.DeleteFailed;
 
     // Names must be collected before anything is deleted — removing entries while
     // iterating a DIR* is not portable — so a fixed buffer bounds how many can be held
@@ -590,6 +824,15 @@ fn deleteTreeAt(dirfd: c_int, depth: usize) RestoreError!void {
                     @as(c_uint, 0),
                 );
                 if (child >= 0) {
+                    // Do not descend onto another device: what is mounted there is not the state's.
+                    const there = posix.identityOfFd(child) catch {
+                        _ = posix.close(child);
+                        return error.DeleteFailed;
+                    };
+                    if (there.dev != here.dev) {
+                        _ = posix.close(child);
+                        return error.MountInside;
+                    }
                     const r = deleteTreeAt(child, depth + 1);
                     _ = posix.close(child);
                     try r;
@@ -616,6 +859,7 @@ pub fn freshDir(root: []const u8) RestoreError!void {
     const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return error.PathTooLong;
     if (posix.mkdir(root_z.ptr, 0o755) == 0) return; // did not exist: created empty
     const vet = try assertRootResolvesToItself(root);
+    try refuseMountInside(root);
     switch (try openRootDir(root, vet)) {
         // `mkdir` failed AND nothing is there: a missing parent. Loud, and this is the one
         // place the two meanings of an absent root diverge — `deleteTree` treats it as
@@ -708,6 +952,7 @@ fn dirModeFor(recorded: u16) u16 {
 pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
     try assertSafeRoot(root);
     const vet = try assertRootResolvesToItself(root);
+    try refuseMountInside(root);
 
     // Created *before* the descriptor is taken, not after the delete where it used to sit.
     // Once the root is held open, a `mkdir` on the pathname makes a different directory
@@ -797,6 +1042,7 @@ pub fn corruptState(snap: Snapshot, root: []const u8) RestoreError!void {
     // after `restore`, which refuses the same way — but relying on the neighbour is how a
     // guard ends up covering one entry point and not the next.
     const vet = try assertRootResolvesToItself(root);
+    try refuseMountInside(root);
     // Through the same held descriptor as `restore`, for the same reason: writing by
     // pathname after the root has been vetted leaves the vet's window open, and this
     // function's own comment above says relying on the neighbour is how a guard ends up
@@ -1949,17 +2195,16 @@ test "the tree ceiling counts what the snapshot holds, not the bytes it read (#3
     try std.testing.expect(diag.tree.reached > 32 * 1024);
 }
 
-test "this file's public surface is the twenty-one the facade re-exports (#491)" {
+test "this file's public surface is the twenty-three the facade re-exports (#491)" {
     // The three aliases above (`Snapshot`, `Entry`, `finalizeEntries`) are private on
     // purpose, and `engine.zig`'s facade walk cannot see it if one becomes `pub`: it would
     // find that name already re-exported from `snapshot.zig`, and the identity check would
     // compare the same declaration to itself. So the count is checked here instead, the way
     // `judge.zig` checks its eight. `std.meta.declarations` lists public declarations only.
     //
-    // Another public declaration is not a mistake by itself — it is a new name for the
-    // facade to re-export, and this number moves with it: nineteen until #535 added
-    // `EntryRel` and `EntryDiag`, twenty-one since.
-    try std.testing.expectEqual(@as(usize, 21), std.meta.declarations(@This()).len);
+    // Do not read a higher count as a mistake by itself: a new public declaration is a new
+    // name for the facade to re-export.
+    try std.testing.expectEqual(@as(usize, 23), std.meta.declarations(@This()).len);
 }
 
 test "an entry the walk cannot read is named in the diag, with the open's errno (#535)" {
@@ -2082,4 +2327,128 @@ test "a directory entry keeps the bits only of a directory (#678)" {
     try std.testing.expectEqual(@as(?u16, null), dirModeOf(.{ .kind = .symlink, .mode = 0o777 }));
     try std.testing.expectEqual(@as(?u16, null), dirModeOf(.{ .kind = .file, .mode = 0o644 }));
     try std.testing.expectEqual(@as(?u16, null), dirModeOf(null));
+}
+
+test "a mount table line yields its mount point with the kernel's escapes undone" {
+    var b: [contract.max_path]u8 = undefined;
+    try std.testing.expectEqualStrings("/s/state/sub", mountPointOfLine("36 35 98:0 /outside /s/state/sub rw,relatime shared:1 - ext4 /dev/vda1 rw", &b).?);
+    try std.testing.expectEqualStrings("/s/my state/a\\b", mountPointOfLine("36 35 98:0 / /s/my\\040state/a\\134b rw - ext4 /dev/vda1 rw", &b).?);
+    try std.testing.expectEqualStrings("/s/\\9xx", mountPointOfLine("1 2 3:4 / /s/\\9xx rw - x y rw", &b).?);
+    try std.testing.expect(mountPointOfLine("36 35 98:0 /outside", &b) == null);
+    var small: [4]u8 = undefined;
+    try std.testing.expect(mountPointOfLine("36 35 98:0 / /s/state/sub rw - ext4 x rw", &small) == null);
+}
+
+test "a mount point is inside the state only strictly below its root" {
+    try std.testing.expectEqualStrings("sub", relInsideRoot("/s/state/sub", "/s/state").?);
+    try std.testing.expectEqualStrings("a/b", relInsideRoot("/s/state/a/b", "/s/state").?);
+    try std.testing.expect(relInsideRoot("/s/state", "/s/state") == null);
+    try std.testing.expect(relInsideRoot("/s/state2", "/s/state") == null);
+    try std.testing.expect(relInsideRoot("/s/state2/sub", "/s/state") == null);
+    try std.testing.expect(relInsideRoot("/s", "/s/state") == null);
+}
+
+test "the mount table is read whole across reads, and a line longer than the reader's buffer yields its head and the next line" {
+    var pb: [contract.max_path]u8 = undefined;
+    const path_z = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-mountinfo-{d}", .{posix.getpid()}) catch unreachable;
+    defer _ = posix.unlink(path_z.ptr);
+
+    const filler = "21 1 0:20 / /proc rw,nosuid - proc proc rw\n";
+    {
+        const fd = posix.open(path_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o600));
+        try std.testing.expect(fd >= 0);
+        defer _ = posix.close(fd);
+        var i: usize = 0;
+        while (i < 1000) : (i += 1) try std.testing.expect(posix.write(fd, filler, filler.len) == filler.len);
+        const last = "99 1 0:21 / /s/state/sub rw - tmpfs t rw";
+        try std.testing.expect(posix.write(fd, last, last.len) == last.len);
+    }
+    {
+        const fd = posix.open(path_z.ptr, posix.O_RDONLY, @as(c_uint, 0));
+        try std.testing.expect(fd >= 0);
+        defer _ = posix.close(fd);
+        var lines: MountinfoLines = .{ .fd = fd };
+        var count: usize = 0;
+        var last_mp: [contract.max_path]u8 = undefined;
+        var last_len: usize = 0;
+        while (lines.next()) |line| {
+            count += 1;
+            const mp = mountPointOfLine(line, &last_mp).?;
+            last_len = mp.len;
+        }
+        try std.testing.expect(!lines.failed);
+        try std.testing.expectEqual(@as(usize, 1001), count);
+        try std.testing.expectEqualStrings("/s/state/sub", last_mp[0..last_len]);
+    }
+    {
+        const fd = posix.open(path_z.ptr, posix.O_WRONLY | posix.O_TRUNC, @as(c_uint, 0));
+        try std.testing.expect(fd >= 0);
+        defer _ = posix.close(fd);
+        const head = "99 1 0:21 / /s/state/sub rw - overlay overlay rw,lowerdir=";
+        try std.testing.expect(posix.write(fd, head, head.len) == head.len);
+        var layers: [40 * 1024]u8 = undefined;
+        @memset(&layers, 'l');
+        try std.testing.expect(posix.write(fd, &layers, layers.len) == layers.len);
+        const next_line = "\n42 1 0:22 / /other rw - tmpfs t rw\n";
+        try std.testing.expect(posix.write(fd, next_line, next_line.len) == next_line.len);
+    }
+    {
+        const fd = posix.open(path_z.ptr, posix.O_RDONLY, @as(c_uint, 0));
+        try std.testing.expect(fd >= 0);
+        defer _ = posix.close(fd);
+        var lines: MountinfoLines = .{ .fd = fd };
+        var mp_buf: [contract.max_path]u8 = undefined;
+        try std.testing.expectEqualStrings("/s/state/sub", mountPointOfLine(lines.next().?, &mp_buf).?);
+        try std.testing.expectEqualStrings("/other", mountPointOfLine(lines.next().?, &mp_buf).?);
+        try std.testing.expect(lines.next() == null);
+        try std.testing.expect(!lines.failed);
+    }
+}
+
+test "a directory under a parent without search permission is snapshotted as before, not refused" {
+    if (posix.geteuid() == 0) return error.SkipZigTest; // root searches mode 0444
+    var pb: [contract.max_path]u8 = undefined;
+    const base_z = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-nosearch-{d}", .{posix.getpid()}) catch unreachable;
+    _ = posix.mkdir(base_z.ptr, 0o755);
+    var base_buf: [contract.max_path]u8 = undefined;
+    const base = std.mem.span(posix.realpath(base_z.ptr, &base_buf) orelse return error.SkipZigTest);
+    var db: [contract.max_path]u8 = undefined;
+    const d_z = try joinZ(&db, base, "d");
+    var sb: [contract.max_path]u8 = undefined;
+    const sub_z = try joinZ(&sb, base, "d/sub");
+    try std.testing.expect(posix.mkdir(d_z.ptr, 0o755) == 0);
+    try std.testing.expect(posix.mkdir(sub_z.ptr, 0o755) == 0);
+    try std.testing.expectEqual(@as(c_int, 0), std.c.chmod(d_z.ptr, 0o444));
+    defer {
+        _ = std.c.chmod(d_z.ptr, 0o755);
+        _ = posix.rmdir(sub_z.ptr);
+        _ = posix.rmdir(d_z.ptr);
+        _ = posix.rmdir(base_z.ptr);
+    }
+    var snap = try takeSnapshot(std.testing.allocator, base);
+    defer snap.deinit();
+    try std.testing.expectEqual(@as(usize, 2), snap.entries.items.len);
+    try std.testing.expectEqualStrings("d/sub", snap.entries.items[1].rel);
+}
+
+test "an ordinary tree has nothing on another device below its root" {
+    var pb: [contract.max_path]u8 = undefined;
+    const base_z = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-devscan-{d}", .{posix.getpid()}) catch unreachable;
+    _ = posix.mkdir(base_z.ptr, 0o755);
+    var base_buf: [contract.max_path]u8 = undefined;
+    const base = std.mem.span(posix.realpath(base_z.ptr, &base_buf) orelse return error.SkipZigTest);
+    var ab: [contract.max_path]u8 = undefined;
+    const a_z = try joinZ(&ab, base, "a");
+    var bb: [contract.max_path]u8 = undefined;
+    const b_z = try joinZ(&bb, base, "a/b");
+    try std.testing.expect(posix.mkdir(a_z.ptr, 0o755) == 0);
+    try std.testing.expect(posix.mkdir(b_z.ptr, 0o755) == 0);
+    defer {
+        _ = posix.rmdir(b_z.ptr);
+        _ = posix.rmdir(a_z.ptr);
+        _ = posix.rmdir(base_z.ptr);
+    }
+    var rel: EntryRel = .{};
+    try std.testing.expectEqual(MountScan.none, deviceScan(base, &rel));
+    try std.testing.expectEqual(@as(usize, 0), rel.get().len);
 }

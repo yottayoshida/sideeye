@@ -1494,16 +1494,13 @@ pub fn parse(argv: []const []const u8) Parsed {
             if (args.state_under != null) setupError(.define_invalid, "--state-under was given twice; refusing rather than letting the second spelling win");
             args.state_under = v;
         } else if (std.mem.eql(u8, argv[i], "--json")) {
-            // Refused before `json_path` is set: set first, this refusal's own report would replace the thing it protects.
             switch (report.reportSlot(v)) {
                 .refuse => |what| {
-                    // An earlier `--json` in the same argv must not receive this refusal's report either.
+                    // Not left set, by this flag or an earlier one: the refusal's report would replace what is at that path.
                     refuse.json_path = null;
                     refuse.setupErrorFmt(argArena(), .define_invalid, "--json would replace '{s}', which is {s}; it removes only a report Sideeye wrote, or an empty file. Name a path that does not exist yet, or move that one away yourself", .{ defang.textShown(argArena(), v), what });
                 },
-                // Any document at this path describes some earlier run. Removing it now means
-                // an exit that never reaches a writer leaves *no* report rather than a stale
-                // one: absence is unambiguous, a previous verdict is not.
+                // Removed here, not at the first write: a run that never writes would leave the earlier verdict standing.
                 .remove => removeFile(v),
                 .leave => {},
             }
