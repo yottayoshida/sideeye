@@ -12452,6 +12452,161 @@ else
     fails=$((fails + 1))
 fi
 
+echo ""
+echo "=========== check 25: a mount inside the state directory is refused before anything is removed (#817) ==========="
+# SECURITY.md: Sideeye empties the state directory you name and removes nothing mounted
+# inside it. Mounting needs root; SIDEEYE_EXPECT_MOUNT=1 (CI, passwordless sudo) makes a host
+# that cannot mount red instead of NOT MEASURED.
+if [ "$(id -u)" = "0" ]; then
+    mnt() { mount "$@"; }
+    umnt() { umount "$@"; }
+    can_mount=1
+elif sudo -n true 2>/dev/null; then
+    mnt() { sudo -n mount "$@"; }
+    umnt() { sudo -n umount "$@"; }
+    can_mount=1
+else
+    can_mount=0
+fi
+if [ "$can_mount" = "0" ]; then
+    if [ "${SIDEEYE_EXPECT_MOUNT:-0}" = "1" ]; then
+        echo "FAIL check 25 needs a bind mount (root or passwordless sudo) and SIDEEYE_EXPECT_MOUNT=1 says this host has one"
+        fails=$((fails + 1))
+    else
+        echo "     NOT MEASURED: check 25 needs a bind mount (root or passwordless sudo)"
+        not_measured=$((not_measured + 1))
+    fi
+else
+    M=/tmp/acc-mount
+    for d in "$M/stateA/sub" "$M/stateB/bound" "$M/stateC/sub" "$M/stateE" "$M/stateF/sub"; do umnt "$d" 2>/dev/null; done
+    rm -rf "$M"
+    mkdir -p "$M/outside/deeper" "$M/stateA/sub" "$M/stateB" "$M/stateC" "$M/stateD"
+    printf 'precious\n' > "$M/outside/precious.txt"
+    printf 'also\n' > "$M/outside/deeper/also.txt"
+    printf 'keepme\n' > "$M/outfile"
+    cat > "$M/setup.sh" <<'EOF'
+#!/bin/sh
+printf 'ok\n' > "$1/marker"
+printf 'sibling\n' > "$1/sibling.txt"
+EOF
+    cat > "$M/op.sh" <<'EOF'
+#!/bin/sh
+printf 'flag\n' > "$1/flag"
+EOF
+    cat > "$M/opfail.sh" <<'EOF'
+#!/bin/sh
+: > "$1/marker"
+printf 'ok\n' > "$1/marker"
+EOF
+    cat > "$M/check.sh" <<'EOF'
+#!/bin/sh
+[ "$(cat "$1/marker" 2>/dev/null)" = ok ]
+EOF
+    chmod 755 "$M/setup.sh" "$M/op.sh" "$M/opfail.sh" "$M/check.sh"
+    m_sum() { find "$M/outside" "$M/outfile" -type f -exec cksum {} + | sort; }
+    m_explore() {   # m_explore <state> <op> <work>
+        "$SIDEEYE" explore --state "$1" --setup "$M/setup.sh $1" --operation "$M/$2 $1" \
+            --check "$M/check.sh $1" --shim "$SHIM" --work "$3" --allow-unverified 2>&1
+    }
+    before=$(m_sum)
+
+    mnt --bind "$M/outside" "$M/stateA/sub"
+    o=$(m_explore "$M/stateA" op.sh "$M/workA"); rc=$?
+    umnt "$M/stateA/sub"
+    if [ "$rc" = "3" ] && printf '%s\n' "$o" | grep -qF "sub is a mount point or another device inside the state directory" \
+        && [ "$before" = "$(m_sum)" ] && [ "$(cat "$M/stateA/sibling.txt" 2>/dev/null)" = sibling ]; then
+        echo "ok   a directory bind-mounted inside the state is refused by name, and neither it nor the state's own files are touched"
+    else
+        echo "FAIL a directory bind-mounted inside the state: exit $rc, outside $( [ "$before" = "$(m_sum)" ] && echo intact || echo CHANGED)"
+        printf '%s\n' "$o" | sed -n '1,4p' | sed 's/^/     | /'
+        fails=$((fails + 1))
+    fi
+
+    : > "$M/stateB/bound"
+    mnt --bind "$M/outfile" "$M/stateB/bound"
+    o=$(m_explore "$M/stateB" op.sh "$M/workB"); rc=$?
+    umnt "$M/stateB/bound"
+    if [ "$rc" = "3" ] && printf '%s\n' "$o" | grep -qF "bound is a mount point or another device inside the state directory" \
+        && [ "$before" = "$(m_sum)" ]; then
+        echo "ok   a file bind-mounted inside the state is refused by name, and the file is untouched"
+    else
+        echo "FAIL a file bind-mounted inside the state: exit $rc, outside $( [ "$before" = "$(m_sum)" ] && echo intact || echo CHANGED)"
+        printf '%s\n' "$o" | sed -n '1,4p' | sed 's/^/     | /'
+        fails=$((fails + 1))
+    fi
+
+    o=$(m_explore "$M/stateC" opfail.sh "$M/workC"); rc=$?
+    case_c=$(ls "$M/workC/cases/"*.json 2>/dev/null | head -1)
+    if [ "$rc" != "1" ] || [ -z "$case_c" ]; then
+        echo "FAIL check 25's replay leg could not make its case: exit $rc"
+        printf '%s\n' "$o" | sed -n '1,4p' | sed 's/^/     | /'
+        fails=$((fails + 1))
+    else
+        mkdir -p "$M/stateC/sub"
+        mnt --bind "$M/outside" "$M/stateC/sub"
+        o=$("$SIDEEYE" replay "$case_c" --fresh-state --shim "$SHIM" --work "$M/workC2" --allow-unverified 2>&1); rc=$?
+        umnt "$M/stateC/sub"
+        if [ "$rc" = "3" ] && printf '%s\n' "$o" | grep -qF "sub is a mount point or another device inside the state directory" \
+            && [ "$before" = "$(m_sum)" ]; then
+            echo "ok   replay --fresh-state refuses a mount inside the case's state before emptying it"
+        else
+            echo "FAIL replay --fresh-state over a mount: exit $rc, outside $( [ "$before" = "$(m_sum)" ] && echo intact || echo CHANGED)"
+            printf '%s\n' "$o" | sed -n '1,4p' | sed 's/^/     | /'
+            fails=$((fails + 1))
+        fi
+    fi
+
+    o=$(m_explore "$M/stateD" op.sh "$M/workD"); rc=$?
+    if [ "$rc" = "0" ]; then
+        echo "ok   the same define with nothing mounted inside the state is explored (the control)"
+    else
+        echo "FAIL check 25's control, nothing mounted: exit $rc"
+        printf '%s\n' "$o" | sed -n '1,4p' | sed 's/^/     | /'
+        fails=$((fails + 1))
+    fi
+
+    # A bind mount made during the run, by the checker while it is being falsified: nothing about
+    # it is in the state's first scan, and the next restore has to see it anyway.
+    mkdir -p "$M/stateF/sub"
+    cat > "$M/check-mounts.sh" <<EOF
+#!/bin/sh
+if ! mountpoint -q "\$1/sub"; then
+    mount --bind "$M/outside" "\$1/sub" 2>/dev/null || sudo -n mount --bind "$M/outside" "\$1/sub"
+fi
+[ "\$(cat "\$1/marker" 2>/dev/null)" = ok ]
+EOF
+    chmod 755 "$M/check-mounts.sh"
+    cat > "$M/setup-sub.sh" <<'EOF'
+#!/bin/sh
+printf 'ok\n' > "$1/marker"
+mkdir -p "$1/sub"
+EOF
+    chmod 755 "$M/setup-sub.sh"
+    o=$("$SIDEEYE" explore --state "$M/stateF" --setup "$M/setup-sub.sh $M/stateF" --operation "$M/op.sh $M/stateF" \
+        --check "$M/check-mounts.sh $M/stateF" --shim "$SHIM" --work "$M/workF" --allow-unverified 2>&1); rc=$?
+    umnt "$M/stateF/sub" 2>/dev/null
+    if { [ "$rc" = "2" ] || [ "$rc" = "3" ]; } && printf '%s\n' "$o" | grep -qF "sub is a mount point or another device inside the state directory" \
+        && [ "$before" = "$(m_sum)" ]; then
+        echo "ok   a bind mount made during the run is seen at the next restore, named, and left untouched"
+    else
+        echo "FAIL a bind mount made during the run: exit $rc, outside $( [ "$before" = "$(m_sum)" ] && echo intact || echo CHANGED)"
+        printf '%s\n' "$o" | sed -n '1,4p' | sed 's/^/     | /'
+        fails=$((fails + 1))
+    fi
+
+    mkdir -p "$M/stateE"
+    mnt --bind "$M/stateE" "$M/stateE"
+    o=$(m_explore "$M/stateE" op.sh "$M/workE"); rc=$?
+    umnt "$M/stateE"
+    if [ "$rc" = "0" ]; then
+        echo "ok   a state directory that is itself a mount point is explored"
+    else
+        echo "FAIL a state directory that is itself a mount point: exit $rc"
+        printf '%s\n' "$o" | sed -n '1,4p' | sed 's/^/     | /'
+        fails=$((fails + 1))
+    fi
+fi
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then
