@@ -1,33 +1,14 @@
-//! Completeness oracle: read strace's view of the recording run and hold the shim's
-//! trace against it.
-//!
-//! The shim replaces libc symbols; strace watches syscalls. A program that issues
-//! syscalls directly — or through a libc entry point nobody thought to interpose —
-//! is invisible to the first and plain to the second. Without this comparison, such a
-//! target produces an empty trace that is indistinguishable from "performed no file
-//! operations", and the honest-looking answer to that is PASS.
-//!
-//! The two views have different granularity, so they are compared after normalising
-//! syscalls to the same `OpClass` the shim records. What is compared is the class
-//! sequence, not the raw text.
-
 const std = @import("std");
 const contract = @import("contract");
 
 pub const Finding = union(enum) {
-    /// The oracle saw an operation on the state directory that the shim did not.
     missed: struct { index: usize, class: contract.OpClass },
-    /// A syscall touching the state directory that v0.1 does not model at all.
     unsupported: []const u8,
-    /// The shim recorded something the oracle did not: the shim is over-counting.
     phantom: struct { index: usize, class: contract.OpClass },
 };
 
 const Mapping = struct { name: []const u8, class: contract.OpClass };
 
-/// syscall -> op class. The list is deliberately explicit: anything touching the state
-/// directory that is not here becomes `unsupported`, which is UNKNOWN rather than a
-/// silent omission.
 const known = [_]Mapping{
     .{ .name = "openat", .class = .open },
     .{ .name = "openat2", .class = .open },
@@ -39,12 +20,6 @@ const known = [_]Mapping{
     .{ .name = "writev", .class = .write },
     .{ .name = "pwritev", .class = .write },
     .{ .name = "pwritev2", .class = .write },
-    // The kernel's copy primitives (#244). Their EFFECT on the destination is a
-    // write — the bytes change, nothing else does — so they take `.write` rather
-    // than a class of their own; `link` and `symlink` earned new classes because
-    // they create directory entries, which is a different effect. Both are fd
-    // syscalls, and `copy_file_range` is the one whose destination is not argument
-    // 0 (see `fd_write_args`).
     .{ .name = "copy_file_range", .class = .write },
     .{ .name = "sendfile", .class = .write },
     .{ .name = "sendfile64", .class = .write },
@@ -68,32 +43,21 @@ const known = [_]Mapping{
     .{ .name = "close", .class = .close },
 };
 
-/// One path argument of a syscall: the index of its path string, and the index of the
-/// directory descriptor it is resolved against (null for a legacy form, which resolves
-/// against the tracked cwd).
 const PathArg = struct { dirfd: ?usize, path: usize };
 
-/// Which arguments of a path syscall name a filesystem path, so scope is decided from
-/// resolved paths and never from a whole-line scan (ADR 0006). A syscall absent from
-/// this table and from `fd_syscalls` falls to the conservative whole-line net, which
-/// only ever routes to `unsupported`.
-///
 /// The link *content* of `symlink`/`symlinkat` is deliberately not listed: it is a
 /// string the target chose, not a path this run touches, and resolving it would let a
 /// link whose content spells the state directory be mis-scoped.
 const PathSpec = struct { name: []const u8, args: []const PathArg };
 const path_syscalls = [_]PathSpec{
-    // *at single-path
     .{ .name = "openat", .args = &.{.{ .dirfd = 0, .path = 1 }} },
     .{ .name = "openat2", .args = &.{.{ .dirfd = 0, .path = 1 }} },
     .{ .name = "mkdirat", .args = &.{.{ .dirfd = 0, .path = 1 }} },
     .{ .name = "unlinkat", .args = &.{.{ .dirfd = 0, .path = 1 }} },
     .{ .name = "symlinkat", .args = &.{.{ .dirfd = 1, .path = 2 }} },
-    // *at two-path
     .{ .name = "renameat", .args = &.{ .{ .dirfd = 0, .path = 1 }, .{ .dirfd = 2, .path = 3 } } },
     .{ .name = "renameat2", .args = &.{ .{ .dirfd = 0, .path = 1 }, .{ .dirfd = 2, .path = 3 } } },
     .{ .name = "linkat", .args = &.{ .{ .dirfd = 0, .path = 1 }, .{ .dirfd = 2, .path = 3 } } },
-    // legacy single-path
     .{ .name = "open", .args = &.{.{ .dirfd = null, .path = 0 }} },
     .{ .name = "creat", .args = &.{.{ .dirfd = null, .path = 0 }} },
     .{ .name = "mkdir", .args = &.{.{ .dirfd = null, .path = 0 }} },
@@ -101,7 +65,6 @@ const path_syscalls = [_]PathSpec{
     .{ .name = "unlink", .args = &.{.{ .dirfd = null, .path = 0 }} },
     .{ .name = "truncate", .args = &.{.{ .dirfd = null, .path = 0 }} },
     .{ .name = "symlink", .args = &.{.{ .dirfd = null, .path = 1 }} },
-    // legacy two-path
     .{ .name = "rename", .args = &.{ .{ .dirfd = null, .path = 0 }, .{ .dirfd = null, .path = 1 } } },
     .{ .name = "link", .args = &.{ .{ .dirfd = null, .path = 0 }, .{ .dirfd = null, .path = 1 } } },
 };
@@ -113,43 +76,21 @@ fn pathSpec(name: []const u8) ?PathSpec {
     return null;
 }
 
-/// Ownership and permission writes (#121, option b): METADATA the contract
-/// deliberately does not judge. The judged state is names, bytes and link targets;
-/// these syscalls change none of them, so they are observed and EXCLUDED — from the
-/// class comparison (the shim does not interpose them), from kill points, from
-/// `unsupported`, and from the child-touch condition. The exclusion is declared per
-/// run in the report rather than silently: sqlite fchowns its rollback journal on
-/// every write when running as root, and devtodo fchmodats every database rewrite —
-/// both measured as whole-target refusals in the #118 cohort before this landed.
 const metadata_path_syscalls = [_]PathSpec{
     .{ .name = "chown", .args = &.{.{ .dirfd = null, .path = 0 }} },
     .{ .name = "lchown", .args = &.{.{ .dirfd = null, .path = 0 }} },
     .{ .name = "chmod", .args = &.{.{ .dirfd = null, .path = 0 }} },
     .{ .name = "fchownat", .args = &.{.{ .dirfd = 0, .path = 1 }} },
     .{ .name = "fchmodat", .args = &.{.{ .dirfd = 0, .path = 1 }} },
-    // Linux 6.6+: glibc 2.39 issues fchmodat2 for fchmodat(3) with flags != 0.
     // Same signature shape (dirfd, path, mode, flags). Listed from the syscall
     // family, not from what a cohort happened to hit — leaving it out would
     // re-block the exact class #121 unblocks on any newer runner (R1).
     .{ .name = "fchmodat2", .args = &.{.{ .dirfd = 0, .path = 1 }} },
-    // The timestamp family (#190, owner-ruled 2026-08-21). This list once said
-    // "deliberately absent: widening is its own decision, not a side effect" —
-    // the decision came due when the cohort-2 Mercurial explore refused on the
-    // single utimensat CPython's shutil issues per transaction-backup copy.
-    // Timestamps change none of the judged state (names, bytes, link targets),
-    // exactly like ownership and permission; the whole family is listed, not
-    // just the spelling one cohort hit. glibc emits futimens as utimensat with
-    // a NULL path — that resolves to `.unresolvable`, which counts as observed
-    // EVEN when the descriptor points outside the state directory: the note
-    // over-reports rather than scoping through the fd, the same honest
-    // direction #121 chose for every unresolvable metadata write.
     .{ .name = "utimensat", .args = &.{.{ .dirfd = 0, .path = 1 }} },
     .{ .name = "futimesat", .args = &.{.{ .dirfd = 0, .path = 1 }} },
     .{ .name = "utimes", .args = &.{.{ .dirfd = null, .path = 0 }} },
     .{ .name = "utime", .args = &.{.{ .dirfd = null, .path = 0 }} },
 };
-/// The fd-addressed forms, scoped from the descriptor annotation like every fd
-/// syscall (a state path inside some other argument must not scope them in).
 const metadata_fd_syscalls = [_][]const u8{ "fchown", "fchmod" };
 
 fn metadataPathSpec(name: []const u8) ?PathSpec {
@@ -166,26 +107,10 @@ fn isMetadataFd(name: []const u8) bool {
     return false;
 }
 
-/// A syscall whose only filesystem target is a descriptor: scope is read from the `<fd>`
-/// annotation and never from the quoted arguments — a state-directory string inside a
-/// write buffer must not count as touching the state directory (ADR 0006).
-///
-/// Derived rather than listed: a classified syscall with no path argument (write, fsync,
-/// close, ftruncate) is exactly an fd syscall. This makes the "only unknown syscalls
-/// reach the whole-line net" invariant structural — every classified syscall is either a
-/// path syscall or an fd syscall, so nothing the net scopes in can ever be counted.
 fn isFdSyscall(name: []const u8) bool {
     return classify(name) != null and pathSpec(name) == null;
 }
 
-/// Syscalls that read but never change anything on disk. They are not operations
-/// sideeye can crash between in any meaningful sense, and counting them would make the
-/// two views disagree for no reason.
-///
-/// `flock` belongs here even though it is not a read: advisory locks live in the kernel
-/// and die with the process, so no crash world can be told apart by one. Found by
-/// measurement — the first real target to clear the boundary gate (omamori) stopped
-/// here instead, on the lock it takes around its audit log.
 const read_only = [_][]const u8{
     "stat",       "lstat",      "fstat",             "newfstatat", "statx",
     "access",     "faccessat",  "readlink",          "readlinkat", "read",
@@ -204,70 +129,21 @@ const read_only = [_][]const u8{
     // judged: the conservative net — "everything that is not a read is a child touching
     // what only the subject may" — counted a child's `chdir` into the judged directory as
     // a touch. Measured on `pass mv`, whose `git -C <store> rev-parse
-    // --is-inside-work-tree` reads and writes nothing: the run refused for that `chdir`,
-    // naming a process that "mutated the judged directory". It did not.
-    //
-    // The subject's own `chdir` never reaches this list — it is handled above, where a
-    // successful one moves the cwd this reader resolves relative paths against.
-        "chdir",             "fchdir",
-    // `faccessat2` is `faccessat` with a flags argument: the `access` family, a permission
-    // query that changes nothing, and with it that family is complete here. glibc 2.33 and
-    // later issues it for any `faccessat` that passes flags, `AT_EACCESS` among them.
-    // Found by measurement: ocrmypdf asks whether it may write its input before it
-    // rewrites it, and was refused for asking (#542).
-        "faccessat2",
-    // `epoll_ctl` changes an in-kernel interest list that dies with the process — the
-    // reason `flock` is here — and a regular file cannot even be added (`EPERM`). It is the
-    // one member of the epoll family that takes a descriptor this reader can scope in:
-    // `epoll_create1` makes a descriptor and `epoll_pwait` takes only the epoll one, so
-    // neither line can carry a state-directory annotation. Found by measurement: Go's
-    // runtime registers every file it opens with its netpoller, and mlr's in-place rewrite
-    // was refused for registering its temporary file (#542).
+        "chdir",             "fchdir",     "faccessat2",
     "epoll_ctl",
-    // The extended-attribute reads, in all three spellings (by path, not following a final
-    // link, and by descriptor): they read an inode's attributes and change nothing (#684).
     // The writes — `setxattr`, `removexattr` and their `l`/`f` forms — are not here and keep
     // refusing: what an attribute write does to the state has not been ruled on. The restore
     // does not put attributes back, and nothing yet says whether such a write is judged or,
     // like the ownership and permission calls #121 observes, set aside. Found by measurement: vim
-    // asks for a file's ACL before saving it (getxattr), dotdrop and firewall-offline-cmd
-    // list a file's attributes before copying it (listxattr) — each refused for asking.
      "getxattr",   "lgetxattr",         "fgetxattr",  "listxattr",
-    "llistxattr", "flistxattr",
-    // `inotify_add_watch` adds a path to an in-kernel watch list that dies with the process —
-    // the reason `epoll_ctl` and `flock` are here. Found by measurement: fish watches its
-    // universal-variables directory and was refused for watching it (#684).
-    "inotify_add_watch",
-    // More of the read family: `read`, `pread64` and `readv` are above, and the two vector
-    // forms with an offset were missing. `preadv2`'s flags (RWF_NOWAIT, RWF_HIPRI) change how
-    // it waits, not what it does to the file (#684). `readahead`, which only fills the page
-    // cache, is not named either; no recorded target has issued it.
-    "preadv",     "preadv2",
-    // Waiting on descriptors changes nothing they refer to. strace's `-y` annotates the
-    // descriptors inside the sets — 2026-09-27's jj capture shows the form on ppoll, over its
-    // standard descriptors — so a state file's descriptor in a set would scope the line in. No
-    // recorded target has been refused on one; these four, like `preadv` above, are named
-    // because the list in docs/report-schema.md put them beside the calls that had been —
-    // the xattr reads and `inotify_add_watch` (#684). glibc may issue
-    // `poll` as `ppoll` and `select` as `pselect6` (always on aarch64), so both are named.
+    "llistxattr", "flistxattr", "inotify_add_watch", "preadv",     "preadv2",
     "poll",       "ppoll",      "select",            "pselect6",
 };
 
-/// Syscalls that cross a process boundary.
-///
-/// The shim interposes the libc wrappers for these, but `clone`, `clone3` and a raw
-/// `syscall(SYS_clone, …)` go straight past it. The oracle sees them regardless — and
-/// since v3 a boundary is no longer an automatic refusal: what decides is whether any
-/// process other than the subject touched the state directory. The exceptions that stay
-/// hard refusals are the subject replacing its own image (a second `execve` on the
-/// primary pid: the crash-point address space does not survive an image change) and
-/// `unshare` (namespace surgery this tool does not model).
 const process_syscalls = [_][]const u8{
     "clone", "clone3", "fork", "vfork", "execve", "execveat", "unshare",
 };
 
-/// Strip the process identifier strace prefixes each line with under `-f`.
-///
 /// There are two spellings and they are not interchangeable. Writing to a file
 /// (`-f -o out`) produces `1234  openat(…)`; interleaved output on a terminal produces
 /// `[pid  1234] openat(…)`. Handling only the bracketed form — which is the one that
@@ -280,18 +156,12 @@ fn stripPidPrefix(line: []const u8) []const u8 {
     }
     var i: usize = 0;
     while (i < line.len and std.ascii.isDigit(line[i])) i += 1;
-    // A bare number followed by whitespace: no syscall is spelled that way.
     if (i > 0 and i < line.len and (line[i] == ' ' or line[i] == '\t')) {
         return std.mem.trimStart(u8, line[i..], " \t");
     }
     return line;
 }
 
-/// The pid the same prefix carries, or null when the line has none.
-///
-/// v0.1 threw this away, which was fine while any second process was an automatic
-/// refusal. Deciding whether a boundary is *tolerable* is a question about who did
-/// what, and the pid is the only "who" the oracle has.
 fn pidOf(line: []const u8) ?u32 {
     var s = line;
     if (std.mem.startsWith(u8, s, "[pid")) {
@@ -317,15 +187,10 @@ fn syscallName(raw: []const u8) ?[]const u8 {
     return name;
 }
 
-/// Which child a process-creating line reports having created, or null (v15).
-///
 /// The window a writing child is judged in starts here rather than at its first write.
 /// Between the two, the parent is running with the child already alive: a mutation of its
 /// own in that gap is ordered against the child's by nothing, and would be admitted if the
 /// window began at the child's first operation. `spike/followup-item3/NOTES.md` recorded
-/// that counterexample the day before this was written and the first implementation
-/// shipped past it — review caught it.
-///
 /// `fork` and `posix_spawn` both reach the kernel as `clone` on Linux, and the resumed
 /// spelling appears whenever the child's own lines interleave with the call (measured: the
 /// committed `inv-todoman` capture, where the child's first line precedes the resumption
@@ -354,20 +219,12 @@ fn spawnedPid(raw: []const u8) ?u64 {
     return returnedPid(line);
 }
 
-/// Which child a wait-family line reports having been reaped, or null (v15).
-///
 /// Its own parser rather than `syscallName` plus a suffix, for two reasons the real
 /// captures show. A wait that another child's exit interrupted comes back as
 /// `<... wait4 resumed>…) = 29`, and `syscallName` answers null for that line — the first
 /// `(` it finds is inside `WIFEXITED(s)`, whose prefix is not a name. And `waitid` reports
 /// the reaped child in its siginfo (`si_pid=`) while returning 0, so the return value is
 /// the wrong field to read for that one member of the family.
-///
-/// A pid here means "somebody waited for this process and collected it". It is not a
-/// claim that the waiter was blocked while the child ran: the real captures show a shell
-/// blocking in `wait4` for a foreground command and reaping a pipeline stage with
-/// `WNOHANG` afterwards, and the second shape is common enough that treating it as a
-/// refusal would refuse `pass`. `spike/followup-item3/NOTES.md` measured both.
 fn reapedPid(raw: []const u8) ?u64 {
     const line = stripPidPrefix(raw);
     const family = [_][]const u8{ "wait4", "waitid", "wait3", "waitpid" };
@@ -417,8 +274,6 @@ fn reapedPid(raw: []const u8) ?u64 {
         if (end > 0) return std.fmt.parseInt(u64, tail[0..end], 10) catch null;
     }
 
-    // The return value, for the rest of the family. `= -1 ECHILD` and
-    // `= ? ERESTARTSYS` both fail to parse, which is the answer: nothing was reaped.
     const at = std.mem.lastIndexOf(u8, line, " = ") orelse return null;
     const tail = std.mem.trim(u8, line[at + 3 ..], " \t");
     var end: usize = 0;
@@ -434,7 +289,6 @@ pub fn noteEvent(arena: std.mem.Allocator, list: *std.ArrayList(Event), id: u64,
     try list.append(arena, .{ .id = id, .at = at });
 }
 
-/// Whether any event in the list carries this id.
 pub fn holdsId(list: []const Event, id: u64) bool {
     for (list) |e| {
         if (e.id == id) return true;
@@ -442,38 +296,12 @@ pub fn holdsId(list: []const Event, id: u64) bool {
     return false;
 }
 
-/// Is this the kernel refusing a syscall under a seccomp filter?
-///
-/// `--observe syscalls` traps every kill point with `SECCOMP_RET_TRAP`, so an operation
-/// the target issued reaches this reader twice: the refused entry, and the handler's
-/// re-issue carrying the sentinel. Only the second one ran. strace prints the signal without being
-/// asked — `-e trace=` filters syscalls, not signals — so the flags the engine already
-/// passes carry it, measured in `spike/followup-trapwitness/`:
-///
-///   `14    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0x…, si_syscall=__NR_write, si_arch=…} ---`
-///
-/// `syscallName` answers null for this shape, so the read has to happen before the name
-/// test, beside the reap and spawn readers.
-///
-/// `si_code` is the discriminator rather than `si_syscall`: a SIGSYS from anywhere else
-/// says nothing about a call this reader appended, while the syscall name could only ever
-/// repeat what the append side already established — the entry a refusal retracts was
-/// restricted to the trapped family when it was recorded, and no filter in this tool traps
-/// anything else. An older strace that spells `si_syscall` as a bare number is read the
-/// same way here, because the name was never what the decision rested on.
 fn isSeccompRefusal(raw: []const u8) bool {
     const line = stripPidPrefix(raw);
     if (!std.mem.startsWith(u8, line, "--- SIGSYS ")) return false;
     return std.mem.indexOf(u8, line, "si_code=SYS_SECCOMP") != null;
 }
 
-/// The syscalls `--observe syscalls` traps, spelled as strace prints them.
-///
-/// The union of both architectures' sets. The eight legacy spellings at the end exist as
-/// syscalls on x86-64 only; on aarch64 glibc issues the `*at` form instead, so a name
-/// that cannot appear in a capture from that machine costs nothing to carry here — and
-/// carrying both means this list does not have to know which machine it is reading.
-///
 /// The open family is admitted by the filter only when its flags say the call can change
 /// something, so it is conditional here too: `isReadOnlyOpen` is the text form of the mask
 /// the filter applies, and answers false for every name that is not an open.
@@ -487,8 +315,6 @@ fn isSeccompRefusal(raw: []const u8) bool {
 /// place that names neither list — while a member here that the filter does not trap is
 /// silent, because nothing ever raises the signal that would use it.
 fn isTrapped(name: []const u8, line: []const u8) bool {
-    // The first seventeen exist on both architectures. The last eight are x86-64's legacy
-    // spellings, for which aarch64 has no syscall at all.
     const set = [_][]const u8{
         "write",   "pwrite64",  "writev",    "pwritev",   "sendfile",
         "openat",  "openat2",   "renameat",  "renameat2", "unlinkat",
@@ -515,8 +341,6 @@ fn isTrapped(name: []const u8, line: []const u8) bool {
 // filter trap this", and answering yes for a call the filter admits would be a trap laid
 // for the next caller. The test asserts it directly for the same reason; no capture can.
 
-/// A write this reader appended that the kernel may not have executed.
-///
 /// One per process, because the refused call and its signal are not adjacent in the file:
 /// another process's lines fall between them freely (measured — see
 /// `spike/followup-trapwitness/artifacts/trapped-children.txt`). What cannot fall between
@@ -532,33 +356,21 @@ fn isTrapped(name: []const u8, line: []const u8) bool {
 /// operation ahead and the comparison refuses `oracle_missed_operation`.
 const PendingWrite = struct {
     pid: ?u32,
-    /// Index into `classes`/`names`/`lines`, or null for a child's write, which only ever
-    /// reached `mutations`.
     op: ?usize,
-    /// Index into `mutations`, or null where the line carried no pid to attribute it to.
     mutation: ?usize,
 };
 
-/// Take this process's pending write out of the list, if it has one.
 fn takePending(list: *std.ArrayList(PendingWrite), pid: ?u32) ?PendingWrite {
     for (list.items, 0..) |it, i| {
-        // `==` on two optionals is the comparison this needs, `null` to `null` included.
         if (it.pid == pid) return list.swapRemove(i);
     }
     return null;
 }
 
-/// Record a write this process may not have executed.
-///
-/// A plain append, and it stays one: the window-closing `takePending` runs on every line
-/// that reaches an append site, so this process has no entry by the time it gets here. An
-/// earlier version took first, which was dead code that read as though two entries for one
-/// process were reachable.
 fn setPending(arena: std.mem.Allocator, list: *std.ArrayList(PendingWrite), w: PendingWrite) !void {
     try list.append(arena, w);
 }
 
-/// Mark a pending entry's operation and mutation dead, for the compaction at the end.
 fn retract(
     arena: std.mem.Allocator,
     q: PendingWrite,
@@ -602,8 +414,6 @@ fn isRestartedCall(line: []const u8) bool {
     return false;
 }
 
-/// Rebuild the lists without the retracted entries, once, at the end of the parse.
-///
 /// Removing an entry the moment its refusal was read would have been wrong: every index
 /// another process's pending write holds shifts under it, and the interleaving that makes
 /// that possible is in the measured capture. Indices stay stable for the whole parse and
@@ -657,8 +467,6 @@ fn isProcessSyscall(name: []const u8) bool {
     return false;
 }
 
-/// True when any path mentioned on the line lies inside the state directory.
-///
 /// Paths appear two ways in `strace -y` output: quoted arguments, and descriptor
 /// annotations like `3</tmp/state/key.json>`. Both are checked with the same
 /// component-boundary containment test the shim uses, so `/tmp/state2` is not mistaken
@@ -678,10 +486,6 @@ fn touchesStateDir(line: []const u8, state_dir: []const u8, alt: []const u8) boo
     return false;
 }
 
-/// The `index`th top-level argument of a syscall line, or null.
-///
-/// Arguments are separated by commas at depth zero. Quoted strings are skipped whole and
-/// bracketed groups are counted, so neither a comma inside a filename nor a struct
 /// argument splits the list. Reading a field this way rather than searching the whole
 /// line is what keeps a *filename* from being read as a *flag*.
 fn syscallArg(raw: []const u8, index: usize) ?[]const u8 {
@@ -723,10 +527,6 @@ fn syscallArg(raw: []const u8, index: usize) ?[]const u8 {
     // where the rest of the line would have gone, because another task's line landed
     // inside the call. The argument being read when the line ran out is whole — strace
     // prints arguments entire — so it is returned the way a `)` would have returned it.
-    // Measured (BUILDLOG 2026-09-08): `fsync(4</tmp/s/k> <unfinished ...>` is the shape,
-    // and under a second thread it is the shape of every call with one argument; before
-    // this arm the oracle's list had no `fsync` and the run refused
-    // `oracle_missed_operation` with all seven of the shim's records present.
     if (arg == index) {
         if (std.mem.lastIndexOf(u8, line, "<unfinished ...>")) |uf| {
             if (uf >= start) return std.mem.trim(u8, line[start..uf], " \t");
@@ -735,10 +535,6 @@ fn syscallArg(raw: []const u8, index: usize) ?[]const u8 {
     return null;
 }
 
-/// The value after the last ` = ` on a line, or null where there is none or it is not a
-/// non-negative number — the shape a successful `clone` returns its child (or thread) in.
-/// Shared by `spawnedPid` and the thread-clone reader so the two cannot disagree about
-/// where the number is.
 fn returnedPid(line: []const u8) ?u64 {
     const at = std.mem.lastIndexOf(u8, line, " = ") orelse return null;
     const tail = std.mem.trim(u8, line[at + 3 ..], " \t");
@@ -749,7 +545,6 @@ fn returnedPid(line: []const u8) ?u64 {
     return if (v == 0) null else v;
 }
 
-/// A number as strace prints an argument: `NULL`, `0x…` or decimal (#689).
 fn traceNumber(text: ?[]const u8) ?u64 {
     const t = std.mem.trim(u8, text orelse return null, " \t");
     if (std.mem.eql(u8, t, "NULL")) return 0;
@@ -757,8 +552,6 @@ fn traceNumber(text: ?[]const u8) ?u64 {
     return std.fmt.parseInt(u64, t, 10) catch null;
 }
 
-/// The address a mapping call returned — the `0x…` after the last ` = ` — or null for a
-/// failure (`= -1 ENOMEM …`) and for a line with no return yet (#689).
 fn returnedAddress(line: []const u8) ?u64 {
     const at = std.mem.lastIndexOf(u8, line, " = ") orelse return null;
     const tail = std.mem.trim(u8, line[at + 3 ..], " \t");
@@ -767,7 +560,6 @@ fn returnedAddress(line: []const u8) ?u64 {
     return traceNumber(tail[0..end]);
 }
 
-/// The call named in a `<... NAME resumed>` half, or null for any other line.
 fn resumedCall(raw: []const u8) ?[]const u8 {
     const line = stripPidPrefix(raw);
     if (!std.mem.startsWith(u8, line, "<... ")) return null;
@@ -776,13 +568,8 @@ fn resumedCall(raw: []const u8) ?[]const u8 {
     return rest[0..end];
 }
 
-/// A range of the subject's address space mapped `MAP_SHARED` from a file in the judged
-/// state without `PROT_WRITE` (#689, ADR 0098): a store through it changes the file with
-/// no call for either observer to count, so an `mprotect` that adds `PROT_WRITE` to it is
-/// refused the way a writable mapping is. `end` is rounded up to the page.
 const SharedMap = struct { start: u64, end: u64 };
 
-/// A split `mmap`/`mremap` whose address is still to come on its resumed half.
 const PendingMap = struct { pid: u32, len: u64 };
 
 fn pageUp(len: u64) u64 {
@@ -802,12 +589,6 @@ fn takePendingMap(list: *std.ArrayList(PendingMap), pid: ?u32) ?u64 {
     return null;
 }
 
-/// The state file a mapping call maps (argument 4's annotation), when it is one this run
-/// opened for writing — the only kind the kernel lets `PROT_WRITE` be added to later on a
-/// shared mapping (`EACCES` otherwise). A read-only file mapped and unmapped (memmap2's
-/// shape) is not remembered, so an address the allocator or a JIT reuses afterwards does not
-/// refuse the run (review).
-///
 /// The two sides are matched by name, and a name strace prints is the one the file had at
 /// that call: opened as `db.tmp` and renamed to `db` before it is mapped, or linked and the
 /// first name removed, it no longer matches (second review). So `narrowing` is given up the
@@ -821,7 +602,6 @@ fn mapsWritableStateFile(line: []const u8, state: []const u8, alt: []const u8, r
     return false;
 }
 
-/// The calls that give a file a name it was not opened under (second review of #689).
 fn renamesOrLinks(name: []const u8) bool {
     for ([_][]const u8{ "rename", "renameat", "renameat2", "link", "linkat" }) |n| {
         if (std.mem.eql(u8, name, n)) return true;
@@ -834,14 +614,11 @@ fn isOpenCall(name: []const u8) bool {
         std.mem.eql(u8, name, "openat2") or std.mem.eql(u8, name, "creat");
 }
 
-/// The path strace annotates the returned descriptor with (`= 3</tmp/s/db>`), or null.
 fn returnedPath(line: []const u8) ?[]const u8 {
     const at = std.mem.lastIndexOf(u8, line, " = ") orelse return null;
     return argAnnotation(std.mem.trim(u8, line[at + 3 ..], " \t"));
 }
 
-/// Whether the line shows the call failed. A line with no result yet — an unfinished half —
-/// did not visibly fail, and is counted, as the cgroup reader counts it.
 fn visiblyFailed(line: []const u8) bool {
     // An unfinished half has no result at all; a ` = -` on it is inside an argument — a file
     // name the target chose (second review).
@@ -851,8 +628,6 @@ fn visiblyFailed(line: []const u8) bool {
     return rhs.len > 0 and rhs[0] == '-';
 }
 
-/// Whether this is the `<... clone resumed>` half of a split clone line. The flags live
-/// on the other half, so which kind of clone it was has to have been remembered.
 fn isResumedClone(raw: []const u8) bool {
     const line = stripPidPrefix(raw);
     if (!std.mem.startsWith(u8, line, "<... ")) return false;
@@ -861,16 +636,8 @@ fn isResumedClone(raw: []const u8) bool {
     return std.mem.eql(u8, rest[0..end], "clone") or std.mem.eql(u8, rest[0..end], "clone3");
 }
 
-/// `AT_REMOVEDIR` as Linux spells it.
-///
-/// A hardcoded platform constant is what made the shim disagree with itself across
-/// operating systems, so it is worth saying why one is right here: this file parses
-/// `strace` output, `strace` exists only on Linux, and the number therefore cannot be
-/// read on a platform where it means something else.
 const at_removedir_linux: u64 = 0x200;
 
-/// True when an `unlinkat` line asks for a directory removal.
-///
 /// `unlinkat` is two operations wearing one name, and which one it is decides whether the
 /// two views agree: aarch64 Linux has no `rmdir` syscall, so glibc implements `rmdir(3)`
 /// as `unlinkat(AT_REMOVEDIR)`. The shim interposes the libc entry point and records
@@ -884,19 +651,15 @@ fn unlinkatRemovesDir(line: []const u8) bool {
     return (v & at_removedir_linux) != 0;
 }
 
-/// `renameat2` flag bits (Linux). Named here because the check below has to read the
-/// number as well as the symbol.
 const rename_exchange: u64 = 2;
 const rename_whiteout: u64 = 4;
 
-/// Whether `renameat2`'s flags argument carries one of the two that make it something
 /// other than a rename. Reads argument 4 rather than the line, so a FILENAME spelling
 /// a flag cannot refuse a plain rename — and falls back to the number, because
 /// `strace -X raw` and undecorated builds print `0x2` where a decoding strace prints
 /// `RENAME_EXCHANGE`. Reading only the symbol would fail OPEN there: the shim does not
 /// record these, so the run would end at `oracle_missed_operation` with a reason that
 /// names the wrong problem. `unlinkatRemovesDir` above has carried the same pair of
-/// readings since AT_REMOVEDIR.
 fn renameat2Flag(line: []const u8, symbol: []const u8, bit: u64) bool {
     const flags = syscallArg(line, 4) orelse return false;
     if (std.mem.indexOf(u8, flags, symbol) != null) return true;
@@ -918,8 +681,6 @@ fn isReadOnly(name: []const u8) bool {
     return false;
 }
 
-/// True when the `index`th argument exists and contains `needle`.
-///
 /// The needle is always searched inside one argument, never across the line: a
 /// *filename* is attacker-controlled in the only sense that matters here (the target
 /// chooses it), and a file called `O_CREAT.bak` or `PROT_WRITE.log` must not change how
@@ -941,8 +702,6 @@ fn argContains(line: []const u8, index: usize, needle: []const u8) bool {
 /// deliberately not in the write set: append without write access cannot write, and
 /// append with it is caught by the access-mode tokens.
 fn isReadOnlyOpen(name: []const u8, line: []const u8) bool {
-    // `creat` is deliberately absent: it implies O_CREAT|O_WRONLY|O_TRUNC without
-    // spelling any of them, so there is no flags argument to consult.
     const flags_arg: usize = if (std.mem.eql(u8, name, "open"))
         1
     else if (std.mem.eql(u8, name, "openat") or std.mem.eql(u8, name, "openat2"))
@@ -960,23 +719,8 @@ fn isReadOnlyOpen(name: []const u8, line: []const u8) bool {
     return true;
 }
 
-/// The cgroup interface files a write moves a process through (`cgroup.procs`,
-/// `cgroup.threads`) or changes a cgroup's kind with (`cgroup.type`: a threaded cgroup refuses
-/// `cgroup.kill`, which takes the kill away without moving anyone).
 const cgroup_move_files = [_][]const u8{ "cgroup.procs", "cgroup.threads", "cgroup.type" };
 
-/// A description of this line when it moves a process between cgroups, or null (contract v17,
-/// #559). An open is one when it names one of `cgroup_move_files` — by its path argument, or
-/// by the path strace annotates the returned descriptor with — and `isReadOnlyOpen`'s
-/// fail-closed reading does not call it read-only. A clone3 is one when it carries
-/// `CLONE_INTO_CGROUP`. Only a call that visibly failed is left out: an unfinished half carries
-/// no result, and a call whose outcome the line does not show is counted.
-///
-/// **It refuses too much in two places, on purpose.** A regular file that happens to be named
-/// `cgroup.procs` and opened for writing reads as a move, since strace does not say which
-/// filesystem a path is on; and the `CLONE_INTO_CGROUP` search runs over the whole first
-/// argument, where the cgroup descriptor's annotation carries a path. Both need a name the
-/// target chose, and both cost a contained run a refusal, never a verdict.
 fn cgroupMove(arena: std.mem.Allocator, name: []const u8, line: []const u8) !?[]const u8 {
     const result = resultText(line);
     if (result) |r| {
@@ -989,8 +733,6 @@ fn cgroupMove(arena: std.mem.Allocator, name: []const u8, line: []const u8) !?[]
         if (std.mem.indexOf(u8, flags, "CLONE_INTO_CGROUP") == null) return null;
         return "a process was created straight into another cgroup (clone3 with CLONE_INTO_CGROUP), where neither the crash-point kill nor the engine's cleanup reaches it";
     }
-    // `open_by_handle_at` names no path — a handle, relative to a mount's descriptor — so only
-    // the descriptor it returns says what was opened (review, #559 PR A).
     const by_handle = std.mem.eql(u8, name, "open_by_handle_at");
     const path_index: ?usize = if (std.mem.eql(u8, name, "open") or std.mem.eql(u8, name, "creat"))
         0
@@ -1001,8 +743,6 @@ fn cgroupMove(arena: std.mem.Allocator, name: []const u8, line: []const u8) !?[]
     else
         return null;
     if (by_handle) {
-        // Its flags are the third argument, read the way `isReadOnlyOpen` reads the others':
-        // read-only only when symbolic and free of every write-capable access mode.
         if (syscallArg(line, 2)) |flags| {
             if (std.mem.indexOf(u8, flags, "O_") != null and std.mem.indexOf(u8, flags, "O_WRONLY") == null and
                 std.mem.indexOf(u8, flags, "O_RDWR") == null and std.mem.indexOf(u8, flags, "O_ACCMODE") == null) return null;
@@ -1023,8 +763,6 @@ fn cgroupMove(arena: std.mem.Allocator, name: []const u8, line: []const u8) !?[]
     return null;
 }
 
-/// What strace printed after the call's closing parenthesis — ` = 3</path>`, ` = -1 EACCES (…)`
-/// — or null for a line with no closing parenthesis at depth zero, which is an unfinished half.
 /// Found with `syscallArg`'s walk over quotes and brackets, so a path that spells ` = -1`
 /// inside the arguments is not taken for the result.
 fn resultText(raw: []const u8) ?[]const u8 {
@@ -1055,8 +793,6 @@ fn resultText(raw: []const u8) ?[]const u8 {
     return null;
 }
 
-/// The quoted-string content of an argument, with strace's C escapes undone into `out`.
-/// Returns null when the argument is not a quoted string (a descriptor, `NULL`, a flag).
 fn argPath(arg: []const u8, out: []u8) ?[]const u8 {
     const q = std.mem.indexOfScalar(u8, arg, '"') orelse return null;
     var i = q + 1;
@@ -1073,7 +809,6 @@ fn argPath(arg: []const u8, out: []u8) ?[]const u8 {
                 't' => out[n] = '\t',
                 'r' => out[n] = '\r',
                 '0'...'7' => {
-                    // Up to three octal digits, as strace escapes non-printables.
                     var v: u16 = e - '0';
                     var k: usize = 0;
                     while (k < 2 and i + 1 < arg.len and arg[i + 1] >= '0' and arg[i + 1] <= '7') : (k += 1) {
@@ -1092,8 +827,6 @@ fn argPath(arg: []const u8, out: []u8) ?[]const u8 {
     return null; // unterminated
 }
 
-/// The path a `<…>` descriptor annotation carries (`AT_FDCWD</work>` → `/work`,
-/// `4</tmp/state>` → `/tmp/state`), or null when the argument has none.
 fn argAnnotation(arg: []const u8) ?[]const u8 {
     const lt = std.mem.indexOfScalar(u8, arg, '<') orelse return null;
     const gt = std.mem.indexOfScalarPos(u8, arg, lt + 1, '>') orelse return null;
@@ -1109,12 +842,6 @@ fn insideEither(path: []const u8, state: []const u8, alt: []const u8) bool {
     return alt.len != 0 and contract.isInsideDir(path, alt);
 }
 
-/// Resolve one path argument to an absolute, lexically-normalised path in `out`, or null
-/// when it cannot be placed — an empty path (a `linkat` `AT_EMPTY_PATH` source), a
-/// relative path with no annotation and no known cwd, a path that will not normalise.
-/// Absolute paths normalise directly; a relative path resolves against its `dirfd`
-/// annotation when the syscall has one, otherwise against the tracked cwd. Both the
-/// scope decision (`resolveArg`) and the cwd tracker (`chdir`) resolve paths this way.
 fn resolvePath(line: []const u8, arg: PathArg, cwd: ?[]const u8, out: []u8) ?[]const u8 {
     const path_arg = syscallArg(line, arg.path) orelse return null;
     var pbuf: [contract.max_path]u8 = undefined;
@@ -1122,7 +849,6 @@ fn resolvePath(line: []const u8, arg: PathArg, cwd: ?[]const u8, out: []u8) ?[]c
     if (p.len == 0) return null;
     if (p[0] == '/') return contract.normalizePath(out, "/", p) catch null;
 
-    // Relative: prefer the dirfd annotation, fall back to the tracked cwd.
     var base: ?[]const u8 = null;
     if (arg.dirfd) |di| {
         if (syscallArg(line, di)) |da| base = argAnnotation(da);
@@ -1132,17 +858,12 @@ fn resolvePath(line: []const u8, arg: PathArg, cwd: ?[]const u8, out: []u8) ?[]c
     return contract.normalizePath(out, b, p) catch null;
 }
 
-/// The scope of one path argument. An argument that cannot be placed is `unresolvable`,
-/// which the caller turns into a refusal rather than a silent drop.
 fn resolveArg(line: []const u8, arg: PathArg, cwd: ?[]const u8, state: []const u8, alt: []const u8) Scope {
     var obuf: [contract.max_path]u8 = undefined;
     const r = resolvePath(line, arg, cwd, &obuf) orelse return .unresolvable;
     return if (insideEither(r, state, alt)) .inside else .outside;
 }
 
-/// Scope of a path syscall: inside if any of its path arguments is inside (a two-path
-/// op touches the state directory when the old or the new path is, ADR 0006);
-/// otherwise unresolvable if any argument could not be placed; otherwise outside.
 fn pathSyscallScope(spec: PathSpec, line: []const u8, cwd: ?[]const u8, state: []const u8, alt: []const u8) Scope {
     var any_unresolvable = false;
     for (spec.args) |a| {
@@ -1155,18 +876,12 @@ fn pathSyscallScope(spec: PathSpec, line: []const u8, cwd: ?[]const u8, state: [
     return if (any_unresolvable) .unresolvable else .outside;
 }
 
-/// True when the syscall's return value marks success. strace prints `= 0`, `= 3`, etc.
-/// on success and `= -1 ENOENT (...)` on failure; an unfinished call ends in `<... >` or
-/// `?`. Only a successful chdir/fchdir may move the tracked cwd.
 fn syscallSucceeded(line: []const u8) bool {
     const eq = std.mem.lastIndexOfScalar(u8, line, '=') orelse return false;
     const rhs = std.mem.trim(u8, line[eq + 1 ..], " \t");
     return rhs.len > 0 and rhs[0] != '-' and rhs[0] != '?';
 }
 
-/// Does this syscall change persistent state? Used to decide what an *unresolvable*
-/// in-scope operation means: a write we could not place must refuse, a read we could not
-/// place changes nothing and is tolerated. Mirrors the read-only handling below.
 fn changesPersistentState(name: []const u8, line: []const u8) bool {
     if (isReadOnly(name)) return false;
     if (std.mem.eql(u8, name, "close")) return false;
@@ -1175,8 +890,6 @@ fn changesPersistentState(name: []const u8, line: []const u8) bool {
     return true;
 }
 
-/// Which argument of an fd syscall names the descriptor being WRITTEN.
-///
 /// Argument 0 for every syscall that reached this file before #244: `write`, `fsync`,
 /// `close`, `ftruncate`, `pwritev` and the metadata pair all put their descriptor
 /// first, which is why the rule used to be stated as a fact about fd syscalls in
@@ -1184,30 +897,11 @@ fn changesPersistentState(name: []const u8, line: []const u8) bool {
 /// SOURCE. Reading it as the destination gets the answer wrong in both directions: a
 /// copy out of the state directory would count as a mutation (there is none), and a
 /// copy into it from elsewhere would be missed entirely.
-///
-/// `sendfile(out_fd, in_fd, …)` needs no entry: its destination is already first.
-/// Anything absent from this table keeps the argument-0 default, so adding it changes
-/// no existing verdict.
 const FdWriteArg = struct { name: []const u8, arg: usize };
 const fd_write_args = [_]FdWriteArg{
     .{ .name = "copy_file_range", .arg = 2 },
 };
 
-/// The fd syscalls whose descriptor really is argument 0. Written out rather than left
-/// to the default (#280).
-///
-/// `#244` added the table above when `copy_file_range` broke the old blanket rule, and
-/// left "anything absent keeps the argument-0 default" — which fixed the datum and not
-/// the mechanism. The issue's sentence stayed literally true: *"true for every entry
-/// today, enforced by nothing, and a future `known` entry that violates it would
-/// silently scope real operations out."* Nothing cross-referenced the classifier against
-/// either table, so a new entry inherited argument 0 in silence.
-///
-/// It cannot now: the test below requires every fd syscall the classifier knows to
-/// appear in exactly one of these two lists. Adding a `known` entry that carries its
-/// descriptor elsewhere fails until someone says which argument that is, and adding one
-/// that really does use argument 0 costs a line here — which is the point, because the
-/// line is where the reader learns it was decided rather than defaulted.
 const fd_arg0 = [_][]const u8{
     "close",       "fdatasync", "fsync",      "ftruncate",
     "ftruncate64", "pwrite",    "pwrite64",   "pwritev",
@@ -1232,61 +926,24 @@ fn fdSyscallInScope(line: []const u8, name: []const u8, state: []const u8, alt: 
     return insideEither(p, state, alt);
 }
 
-/// Something a witness saw, and where in its capture it saw it. The position is an
-/// ordinal over the lines this reader examined, which is all any comparison here needs:
-/// nothing outside this file reads it as anything but "before" and "after".
 pub const Event = struct { id: u64, at: usize };
 
 pub const Parsed = struct {
-    /// The subject's state-directory operation classes, in order.
     classes: std.ArrayList(contract.OpClass),
-    /// The observer's own name for each entry of `classes`, index-aligned with it and
-    /// with `lines` (#337). `openat`, `renameat2` from strace; `open`, `rename` from
-    /// fs_usage — each observer's spelling, not a normalised one, because a reader who
-    /// goes back to the capture has to find the line again.
-    ///
-    /// Appended beside `classes` by both producers, which is what makes the alignment
-    /// hold: the field exists so a divergence refusal can say WHICH operation it refused
-    /// on without the reader parsing the quoted line, and the fs_usage side had this
-    /// name in hand (`ln.call`) and was dropping it. Empty entries are possible in
-    /// principle (an observer whose line the reader cannot name); the refusal then omits
-    /// the field rather than guessing.
     names: std.ArrayList([]const u8),
-    /// The raw strace line behind each entry of `classes`, index-aligned. Kept so a
-    /// refusal can name the operation it refused on instead of handing the reader a
     /// binary trace to decode by hand (#41). These borrow from the `text` given to
     /// `parse` — no copy, no new allocation-failure path — so the caller keeps that
     /// buffer alive for as long as it reads them (main does: same arena, same scope).
     lines: std.ArrayList([]const u8),
-    /// A state-directory syscall by the subject that v0.1 does not model.
     unsupported: ?[]const u8 = null,
-    /// A syscall that stays a hard refusal whoever tolerates what: the subject
-    /// replacing its own image, or namespace surgery.
     boundary: ?[]const u8 = null,
-    /// A process other than the subject leaving the process group (`setsid`, `setpgid`), by
-    /// the syscall's name, the first one. Kept apart from `boundary` since #559's second half:
-    /// `boundary` stays a refusal whoever tolerates what, and this is judged where the engine
-    /// held the run in a cgroup of its own.
     detached: ?[]const u8 = null,
-    /// The first move between cgroups this capture shows, from any process, described
-    /// (contract v17, #559): an open for writing of a `cgroup.procs`, `cgroup.threads` or
-    /// `cgroup.type`, or a `clone3` carrying `CLONE_INTO_CGROUP` (`cgroupMove`). Read from every
-    /// capture and decided on by nobody here: only a run the engine contained in a cgroup
-    /// refuses on it, because only there is a process that left its cgroup one the kills no
-    /// longer reach.
     cgroup_move: ?[]const u8 = null,
-    /// Every non-read-only state-directory operation this witness placed, with **where in
-    /// the capture** it was seen, in the order the lines came (v15).
-    ///
     /// Under `strace` that is every process, the subject included, which is what the
     /// ordering rule needs — the writer it most often has to order a child against is the
     /// parent. The `fs_usage` reader fills in the non-subject ids only: it has no oracle
     /// role beyond detection on that platform, where a run with another process in it is
     /// refused for want of an oracle that can account for one. That refusal is
-    /// `boundary_without_oracle` and it keys on the SHIM having seen a boundary, so a
-    /// child the shim never loaded reaches the admission — and is refused there too,
-    /// because a tid is not the pid the shim recorded and no writer will match it.
-    ///
     /// The position is the point. Whether a run's operations interleave cannot be decided
     /// from the shim's trace: an awaited child's records sit BETWEEN its parent's, and so
     /// do a racing sibling's, so the record order shows the same picture for the hand-off
@@ -1318,11 +975,7 @@ pub const Parsed = struct {
     /// wrote — that is the shim's trace to answer, record by record, since every record
     /// names its thread.
     subject_tids: std.ArrayList(u64),
-    /// The processes some other process waited for and collected, and where. See
-    /// `reapedPid` for what this does and does not claim.
     reaps: std.ArrayList(Event),
-    /// Where each child process was created. The other end of the window a writing child
-    /// is judged in; `spawnedPid` says why it is the creation and not the first write.
     spawns: std.ArrayList(Event),
     /// Distinct ids other than the subject's — and **the two readers count different
     /// things**, which went unwritten until #544 while an argument about what is reachable
@@ -1339,24 +992,11 @@ pub const Parsed = struct {
     /// "process" about thread ids, which is the claim #544 spent its length removing.
     children: usize = 0,
 
-    /// The subject's pid: whoever performed the launch execve. Null when the trace
-    /// carries no pid prefixes, in which case every line is attributed to the subject —
-    /// the v0.1 reading, still right for a trace of one process.
     primary_pid: ?u32 = null,
-    /// How many lines were examined. Reported so that "no mismatches" can be told
-    /// apart from "the oracle file was empty and nothing was compared".
     lines_seen: usize = 0,
     lines_in_scope: usize = 0,
-    /// Ownership/permission writes on the state directory, one entry per occurrence
-    /// (the syscall name). Observed by this oracle only — the shim does not interpose
-    /// them — and excluded from every verdict input (#121, option b); the report
-    /// carries them so the exclusion is visible per run.
     metadata_observed: std.ArrayList([]const u8),
 
-    /// Is this id the subject — its main thread, or any thread it created (v16)? The
-    /// one place the question is answered, so the child branch of `parse`, the touch
-    /// predicate below and the engine's admission (`childrenMayBeJudged`) cannot drift
-    /// on what "the subject" means.
     pub fn isSubject(self: Parsed, id: u64) bool {
         if (self.primary_pid) |p| {
             if (id == p) return true;
@@ -1382,35 +1022,19 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
     var out: Parsed = .{ .classes = .empty, .names = .empty, .lines = .empty, .metadata_observed = .empty, .mutations = .empty, .reaps = .empty, .spawns = .empty, .subject_tids = .empty };
     var child_pids: std.ArrayList(u32) = .empty;
     var launched = false;
-    // Callers whose `clone` carried `CLONE_THREAD` and has not resumed yet (v16). strace
-    // splits a call whenever another task's line lands inside it, and for a clone that
-    // puts the flags on one half and the new task's id on the other; the pid column is
-    // what joins them. A thread created by a thread is the same case — the caller is a
-    // subject id either way, which is what `isSubject` is asked before the entry is made.
     var pending_thread_clone: std.ArrayList(u32) = .empty;
-    // The state files mapped shared and read-only, and the split mappings whose address is
     // still to come (#689). Not keyed by process: a forked child shares the parent's
     // mappings, and a range left after an `munmap` (not traced) can only add a refusal.
     var shared_maps: std.ArrayList(SharedMap) = .empty;
     var pending_maps: std.ArrayList(PendingMap) = .empty;
-    // The state files this run opened for writing, by the path strace annotates the returned
-    // descriptor with; and the callers of a write-capable open whose result is on its
-    // resumed half (#689 review).
     var rw_paths: std.ArrayList([]const u8) = .empty;
     var pending_rw_open: std.ArrayList(u32) = .empty;
-    // False from the first rename or link that did not visibly fail: names no longer tie an
-    // open to a mapping (`mapsWritableStateFile`).
     var rw_narrowing = true;
 
-    // Writes appended but not yet known to have run, and the entries a refusal retracts.
-    // See `PendingWrite` and `dropRetracted` for why the removal is deferred to the end.
     var pending: std.ArrayList(PendingWrite) = .empty;
     var dead_ops: std.ArrayList(usize) = .empty;
     var dead_muts: std.ArrayList(usize) = .empty;
 
-    // The subject's working directory, tracked so a relative path with no dirfd
-    // annotation (every path syscall on x86-64, where glibc issues the legacy forms)
-    // can still be resolved (ADR 0006). Starts at the engine's cwd; the subject's own
     // successful chdir/fchdir move it. Held in `cwd_buf` (not sliced from the strace
     // text, which is normalised away) so it survives past the line that set it.
     var cwd_buf: [contract.max_path]u8 = undefined;
@@ -1433,14 +1057,12 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         // process it started the target from — are not the target's.
         if (launched) {
             if (reapedPid(line)) |r| try noteEvent(arena, &out.reaps, r, out.lines_seen);
-            // The resumed half of a split shared mapping carries its address (#689).
             if (resumedCall(line)) |rc| {
                 if (std.mem.eql(u8, rc, "mmap") or std.mem.eql(u8, rc, "mremap")) {
                     if (takePendingMap(&pending_maps, pid)) |len| {
                         if (returnedAddress(line)) |addr| try shared_maps.append(arena, .{ .start = addr, .end = addr +| pageUp(len) });
                     }
                 } else if (isOpenCall(rc) and takeThreadClone(&pending_rw_open, pid)) {
-                    // The same pid-keyed pairing a split clone uses.
                     if (returnedPath(line)) |p| {
                         if (insideEither(p, state_dir, state_alt)) try rw_paths.append(arena, try arena.dupe(u8, p));
                     }
@@ -1468,15 +1090,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // then `= ? ERESTARTSYS` (or another `ERESTART*`), and the call is restarted by the
             // kernel under SA_RESTART or answers EINTR without one — either way this entry
             // did not change the state, and the restarted call, if any, is its own line.
-            // Counting both made the oracle one operation ahead of every observer that counts
-            // a call once (the shim at libc's entry; the supervising engine, whose
-            // notification a signal withdraws before it is received). The split shape
-            // retracts the entry its unfinished half appended; the whole-line shape is never
-            // appended.
             if (fold_restarted and isRestartedCall(line)) {
-                // Either shape ends the window a refusal could retract in: the split one by
-                // retracting the entry its unfinished half appended, the whole-line one by
-                // closing it before the line is dropped (review).
                 if (takePending(&pending, pid)) |q| {
                     if (std.mem.indexOf(u8, line, " resumed>") != null) try retract(arena, q, &dead_ops, &dead_muts, &out);
                 }
@@ -1491,8 +1105,6 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         // that retracted an unrelated earlier operation of the same process.
         _ = takePending(&pending, pid);
 
-        // The first execve is strace starting the target: it names the subject.
-        // Everything before knowing the subject is the measuring apparatus itself.
         if (!launched) {
             if (std.mem.eql(u8, name, "execve") or std.mem.eql(u8, name, "execveat")) {
                 launched = true;
@@ -1501,12 +1113,6 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             continue;
         }
 
-        // "The subject" is the process AND its threads (v16). A thread's line can precede
-        // the resumption of the clone that names it, the ordering `spawnedPid`'s doc
-        // records for a child; such a line is read as a child's here and the process is
-        // struck from `child_pids` once the clone resumes, below. If it wrote in the
-        // judged directory in that gap it stays a touch — the run refuses rather than
-        // admits, which is the direction to be wrong in.
         const is_primary = pid == null or out.primary_pid == null or out.isSubject(pid.?);
         if (!is_primary) {
             var seen = false;
@@ -1523,9 +1129,6 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         // because the process-syscall branch `continue`s a clone3 away.
         if (out.cgroup_move == null) out.cgroup_move = try cgroupMove(arena, name, line);
 
-        // A store through a shared mapping of a state file has no call behind it (#689, ADR
-        // 0098). A writable one is refused below; a read-only one is remembered here, from
-        // any process, so that an `mprotect` adding `PROT_WRITE` to it later is refused too.
         // Here, ahead of the scope rules, because `mprotect` and `mremap` name no path and
         // would be dropped as outside the state.
         if (renamesOrLinks(name) and !visiblyFailed(line)) rw_narrowing = false;
@@ -1548,9 +1151,6 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             }
         }
         if (std.mem.eql(u8, name, "mremap")) {
-            // A remembered range moved or grown: its new place is remembered too.
-            // `old_len` 0 duplicates the pages at `old` (review): the old range is asked about
-            // as at least one page, so an `old` inside a remembered range always counts.
             if (traceNumber(syscallArg(line, 0))) |old| if (traceNumber(syscallArg(line, 1))) |old_len| if (traceNumber(syscallArg(line, 2))) |new_len| {
                 if (overlapsShared(shared_maps.items, old, @max(old_len, 1))) {
                     if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) {
@@ -1573,20 +1173,6 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         }
 
         if (isProcessSyscall(name)) {
-            // A second execve by the *subject* is no longer a refusal here (#123,
-            // contract v10): whether the chain of observation survived the image
-            // change is the SHIM's evidence to give (the carried count in the next
-            // shim_ready), and a chain that broke leaves the shim's records short of
-            // these syscalls — the completeness comparison below refuses on that
-            // divergence. A child's execve is just a child becoming what it spawns.
-            // unshare is refused from anyone — this tool does not model namespaces.
-            // A clone that carries CLONE_THREAD is not a child at all: it is a thread,
-            // and since v16 a thread of the subject IS the subject — its id joins
-            // `subject_tids`, from this line when the number is on it and from the
-            // resumed half otherwise. Through v15 this line refused the run; what it
-            // refused for (one order for the kill to address) is decided by the shim's
-            // trace now, thread by thread. A thread a CHILD created is not entered: the
-            // caller is not a subject id, so the thread's lines stay a child's, and a
             // write from it is a touch. Whole-line search is fine *here*, unlike the
             // flag checks below: clone's arguments carry no target-chosen strings for a
             // false CLONE_THREAD to hide in, and clone3 prints its flags inside a struct
@@ -1609,8 +1195,6 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
                     } else if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) {
                         try pending_thread_clone.append(arena, pid orelse 0);
                     }
-                    // A failed clone (`= -1 ENOSYS`, the clone3 a kernel declines before
-                    // libc falls back to clone) made no thread and enters nothing.
                 }
             } else if (is_shared_fs or std.mem.eql(u8, name, "unshare")) {
                 if (out.boundary == null) out.boundary = try arena.dupe(u8, name);
@@ -1618,9 +1202,6 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             continue;
         }
 
-        // A process that leaves the containment group is one the group kill no longer
-        // reaches. The shim records its own view of this, but only for processes that
-        // loaded it; the oracle is the only observer of an unshimmed child detaching.
         // The subject's own calls are left to the shim, whose wrapper knows whether the
         // call actually moved anything — the direct child re-electing itself leader is
         // a no-op that must not be refused.
@@ -1629,8 +1210,6 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             continue;
         }
 
-        // The subject's own successful chdir/fchdir moves the cwd used to resolve
-        // relative paths. A child's does not (a fs-sharing child was refused above).
         if (is_primary and std.mem.eql(u8, name, "chdir")) {
             if (syscallSucceeded(line)) {
                 // `out` (obuf) is separate from cwd_buf, so resolving a relative chdir
@@ -1674,10 +1253,6 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             continue;
         }
 
-        // Scope, decided by type (ADR 0006). A path syscall resolves its real path
-        // arguments; an fd syscall reads only its descriptor annotation; anything else
-        // falls to the conservative whole-line net, which only ever routes to
-        // `unsupported`. `unresolvable` is a refusal, never a silent drop.
         // **The tracked cwd is the SUBJECT's, so no other process's relative path may be
         // resolved against it** (v15). `resolvePath` falls back to it whenever a line
         // carries no dirfd annotation, which is every legacy-form path syscall — and on
@@ -1686,15 +1261,6 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         // wrote through a relative path would then be placed at a path it never touched:
         // outside the judged state, silently, and a run with an unaccounted writer in it
         // would be judged.
-        //
-        // Passing null instead makes that line `.unresolvable`, which the child branch
-        // below already treats the way it treats an in-scope one — "nobody can say which
-        // kind it was". The hole was opened by this version, not found in it: `chdir`
-        // joined the read-only list here (a child changing its own directory changes no
-        // byte), and until then the `chdir` itself was the touch that refused the run.
-        // The measurement that said the annotation always carries the child's cwd was
-        // taken on aarch64 only, where glibc issues the *at forms; review caught the
-        // generalisation.
         const scope: Scope = if (pathSpec(name)) |spec|
             pathSyscallScope(spec, line, if (is_primary) cwd else null, state_dir, state_alt)
         else if (isFdSyscall(name))
@@ -1708,19 +1274,11 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         // for either observer to see. From the subject that is an unmodelled mutation;
         // from a child it is the touch condition. Read from mmap's prot and flags
         // arguments, not from the line — a filename could spell either token.
-        // A mapping that visibly failed (EACCES on a descriptor opened read-only) carries no
-        // store and is not one (#689 review).
         const is_shared_write_map = std.mem.eql(u8, name, "mmap") and
             argContains(line, 2, "PROT_WRITE") and
             argContains(line, 3, "MAP_SHARED") and !visiblyFailed(line);
 
         if (!is_primary) {
-            // The tolerance condition itself. Reads are allowed — they consume no
-            // sequence number and change no state — everything else, including a
-            // syscall nobody recognises or one whose path could not be placed, is a
-            // child touching what only the subject may. `changesPersistentState` is the
-            // single predicate for "not a read, not a close, not a write-incapable open"
-            // (ADR 0003), so an in-scope and an unresolvable operation are judged alike.
             // A child's writable shared mapping is refused as the subject's is (#689 review):
             // as a touch alone, a child whose other writes the shim recorded is admitted by
             // the v15 rule, and the stores through the mapping ride a PASS.
@@ -1734,8 +1292,6 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             continue;
         }
 
-        // The subject touched the state directory but the operation could not be placed
-        // among the crash points: refuse if it changes state, tolerate if it cannot.
         if (scope == .unresolvable) {
             if (changesPersistentState(name, line) and out.unsupported == null)
                 out.unsupported = try arena.dupe(u8, name);
@@ -1776,9 +1332,6 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             }
         }
         if (classify(name)) |cls| {
-            // Neither of these enters the comparison (ADR 0003). A write-incapable open
-            // is not an observed operation on either side; close stays recorded by the
-            // shim but cannot be paired across views the shim never saw born.
             if (cls == .close) continue;
             if (cls == .open and isReadOnlyOpen(name, line)) continue;
             const actual: contract.OpClass = if (cls == .unlink and
@@ -1788,13 +1341,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // lists cannot drift apart (#337).
             try out.names.append(arena, name);
             try out.lines.append(arena, line);
-            // And into the positioned list, where the SUBJECT's operations matter as much
-            // as a child's (v15): the ordering rule asks whether anyone else wrote while
-            // a child had not been collected yet, and the parent is the anyone else that
-            // most often has.
             if (pid) |me| try noteEvent(arena, &out.mutations, me, out.lines_seen);
-            // Under `--observe supervised` every appended entry can be retracted, not only the
-            // trapped family: `pwritev2` and `copy_file_range` are counted there too (review).
             if (isTrapped(name, line) or fold_restarted) try setPending(arena, &pending, .{
                 .pid = pid,
                 .op = out.classes.items.len - 1,
@@ -1820,7 +1367,6 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
     return out;
 }
 
-/// Take `pid`'s remembered thread clone out of the list, answering whether there was one.
 fn takeThreadClone(list: *std.ArrayList(u32), pid: ?u32) bool {
     const want = pid orelse 0;
     for (list.items, 0..) |p, i| {
@@ -1832,11 +1378,6 @@ fn takeThreadClone(list: *std.ArrayList(u32), pid: ?u32) bool {
     return false;
 }
 
-/// Compare the two class sequences position by position.
-///
-/// The first divergence is reported rather than a count: a single missed operation
-/// already means every crash point after it is numbered wrongly, so there is nothing
-/// useful to say about the rest.
 pub fn compare(shim: []const contract.OpClass, oracle: []const contract.OpClass) ?Finding {
     var i: usize = 0;
     while (i < shim.len and i < oracle.len) : (i += 1) {
@@ -1852,7 +1393,6 @@ pub fn compare(shim: []const contract.OpClass, oracle: []const contract.OpClass)
 test "containment uses component boundaries, not string prefixes" {
     try std.testing.expect(touchesStateDir("write(3</tmp/state/key.json>, ...) = 6", "/tmp/state", ""));
     try std.testing.expect(touchesStateDir("openat(AT_FDCWD</work>, \"/tmp/state/k\", 0) = 3", "/tmp/state", ""));
-    // the case a naive substring search gets wrong
     try std.testing.expect(!touchesStateDir("write(3</tmp/state2/key.json>, ...) = 6", "/tmp/state", ""));
     try std.testing.expect(!touchesStateDir("openat(AT_FDCWD</work>, \"/etc/passwd\", 0) = 3", "/tmp/state", ""));
 }
@@ -1866,12 +1406,8 @@ test "syscall names are read from the start of the line" {
 
 test "a seccomp refusal is told apart from every other signal line" {
     try std.testing.expect(isSeccompRefusal("14    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0xffffb8fddc58, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---"));
-    // An older strace spelling the syscall as a number decides the same way: the name
-    // was never what the retraction rested on.
     try std.testing.expect(isSeccompRefusal("--- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=64, si_arch=AUDIT_ARCH_X86_64} ---"));
-    // A SIGSYS from anywhere else says nothing about a call this reader appended.
     try std.testing.expect(!isSeccompRefusal("14    --- SIGSYS {si_signo=SIGSYS, si_code=SI_USER, si_pid=1, si_uid=0} ---"));
-    // Signals this reader has no business retracting on, and an ordinary syscall line.
     try std.testing.expect(!isSeccompRefusal("14    --- SIGKILL ---"));
     try std.testing.expect(!isSeccompRefusal("+++ killed by SIGKILL +++"));
     try std.testing.expect(!isSeccompRefusal("write(3</tmp/o/state/k>, \"x\", 1) = 1"));
@@ -1881,8 +1417,6 @@ test "a refused write and its re-issue are one operation (--observe syscalls)" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
 
-    // The single-process shape, measured in spike/followup-trapwitness/artifacts/
-    // trapped-engine-flags.txt: the refused call, the signal, the re-issue.
     const text =
         \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
         \\10    write(3</tmp/o/state/key.json>, "key=2\n", 6) = 3
@@ -1893,13 +1427,10 @@ test "a refused write and its re-issue are one operation (--observe syscalls)" {
     const p = try parse(arena_state.allocator(), text, "/tmp/o/state", "", "/work");
     const want = [_]contract.OpClass{.write};
     try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
-    // The three aligned lists shrink together, and the line kept is the one that ran.
     try std.testing.expectEqual(@as(usize, 1), p.names.items.len);
     try std.testing.expectEqual(@as(usize, 1), p.lines.items.len);
     try std.testing.expect(std.mem.endsWith(u8, p.lines.items[0], "= 6"));
-    // Both lines were in scope of the judged state; only one of them happened.
     try std.testing.expectEqual(@as(usize, 1), p.lines_in_scope);
-    // And the positioned list the child admission reads (v15) holds one, not two.
     try std.testing.expectEqual(@as(usize, 1), p.mutations.items.len);
 }
 
@@ -1907,21 +1438,12 @@ test "every member of the trapped family is retracted, not just write" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
 
-    // `write` is the member every other test here uses, and it is the one member whose
-    // retraction working proves least about the rest: they reach `isTrapped` through the
-    // same list but the oracle spells and places them differently.
-    // `spike/check-shim-coverage.py` holds the list against the filter's; this holds the
-    // list against the reader that consumes it.
     try std.testing.expect(isTrapped("write", ""));
     try std.testing.expect(isTrapped("pwrite64", ""));
     try std.testing.expect(isTrapped("writev", ""));
     try std.testing.expect(isTrapped("pwritev", ""));
-    // Not trapped: six arguments leave the filter no register for the re-issue marker,
-    // so nothing raises a signal for either and an entry here could never fire (ADR 0052).
     try std.testing.expect(!isTrapped("pwritev2", ""));
     try std.testing.expect(!isTrapped("copy_file_range", ""));
-    // Not trapped for a different reason: the comparison excludes it, so trapping it
-    // would buy an interception with nothing to count (ADR 0003).
     try std.testing.expect(!isTrapped("close", ""));
 
     const text =
@@ -1938,12 +1460,10 @@ test "every member of the trapped family is retracted, not just write" {
         \\
     ;
     const p = try parse(arena_state.allocator(), text, "/tmp/o/state", "", "/work");
-    // Three operations, not six.
     const want = [_]contract.OpClass{ .write, .write, .write };
     try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
     try std.testing.expectEqual(@as(usize, 3), p.lines_in_scope);
     try std.testing.expectEqual(@as(usize, 3), p.mutations.items.len);
-    // And the line kept for each is the one that ran.
     for (p.lines.items) |l| try std.testing.expect(std.mem.endsWith(u8, l, "= 1"));
 }
 
@@ -1951,11 +1471,6 @@ test "a refused open, rename or unlink is retracted the way a refused write is (
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
 
-    // The set stopped at the write family until #542, so every retraction test above is
-    // about a `.write`. These three are the ones the widening is FOR — mlr's account is
-    // an openat, a write and a renameat, and none of the three reaches a libc wrapper —
-    // and each is placed differently by the reader: an open carries a flags test, a
-    // rename carries two paths, an unlink carries one.
     const text =
         \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
         \\10    openat(AT_FDCWD, "/tmp/o/state/a.tmp", O_WRONLY|O_CREAT|O_EXCL, 0600) = -1 ENOSYS (Function not implemented)
@@ -1970,35 +1485,21 @@ test "a refused open, rename or unlink is retracted the way a refused write is (
         \\
     ;
     const p = try parse(arena_state.allocator(), text, "/tmp/o/state", "", "/work");
-    // Three operations, not six, and in the order they ran.
     const want = [_]contract.OpClass{ .open, .rename, .unlink };
     try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
     try std.testing.expectEqual(@as(usize, 3), p.mutations.items.len);
-    // The line kept for each is the one that ran, not the one the kernel refused.
     for (p.lines.items) |l| try std.testing.expect(std.mem.indexOf(u8, l, "ENOSYS") == null);
-    // And nothing here reads as a call this mode cannot account for.
     try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
 }
 
 test "a read-only open is not in the trap set, whatever spelling it arrives in (#542)" {
-    // The filter admits an open only when its flags say the call can change something —
-    // that test is what lets an exec'd image's loader survive, and `isTrapped` has to
-    // describe the same set or a caller reading it would expect a signal that never
-    // comes. Asserted directly because neither call site can drive it: both drop a
-    // read-only open before they ask (ADR 0003).
     const ro_at = "10    openat(AT_FDCWD, \"/tmp/o/state/a\", O_RDONLY|O_CLOEXEC) = 3";
     const rw_at = "10    openat(AT_FDCWD, \"/tmp/o/state/a\", O_RDWR) = 3";
     try std.testing.expect(!isTrapped("openat", ro_at));
     try std.testing.expect(isTrapped("openat", rw_at));
 
-    // The legacy spelling, whose flags are one argument earlier, and the one whose flags
-    // live inside a struct. A single shared argument index would get one of them wrong.
     try std.testing.expect(!isTrapped("open", "10    open(\"/tmp/o/state/a\", O_RDONLY) = 3"));
     try std.testing.expect(isTrapped("open", "10    open(\"/tmp/o/state/a\", O_WRONLY|O_CREAT, 0644) = 3"));
-    // `openat2` is the exception in the other direction, and the reason is the filter's
-    // and not this reader's: its flags are inside a struct, which a BPF program cannot
-    // follow, so EVERY `openat2` traps and the handler re-reads the struct. A read-only
-    // one is trapped and then not recorded — which is why this answers true for both.
     try std.testing.expect(isTrapped(
         "openat2",
         "10    openat2(AT_FDCWD, \"/tmp/o/state/a\", {flags=O_RDONLY|O_CLOEXEC, mode=0, resolve=0}, 24) = 3",
@@ -2008,8 +1509,6 @@ test "a read-only open is not in the trap set, whatever spelling it arrives in (
         "10    openat2(AT_FDCWD, \"/tmp/o/state/a\", {flags=O_RDWR|O_CREAT, mode=0600, resolve=0}, 24) = 3",
     ));
 
-    // `creat` spells none of the three flags and is trapped unconditionally, on the one
-    // architecture that still has the syscall.
     try std.testing.expect(isTrapped("creat", "10    creat(\"/tmp/o/state/a\", 0644) = 3"));
 }
 
@@ -2017,9 +1516,6 @@ test "a refused write is retracted whatever the register held (x86-64)" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
 
-    // On aarch64 the refused call's return reads as the fd; on x86-64 glibc renders it
-    // `-1 ENOSYS`. Neither is promised, so the retraction keys on the signal — this is
-    // the shape that would break a rule keyed on the return value instead.
     const text =
         \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
         \\10    write(3</tmp/o/state/key.json>, "key=2\n", 6) = -1 ENOSYS (Function not implemented)
@@ -2036,9 +1532,6 @@ test "a refusal retracts only its own process's write, whoever wrote in between"
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
 
-    // The interleaving is the reason the retraction cannot pop the last entry: pid 11
-    // appends between pid 10's write and pid 10's signal, and pid 10's is retracted
-    // first. Both writes are one operation each once their refusals are read.
     const text =
         \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
         \\10    write(3</tmp/o/state/a>, "x", 1) = 3
@@ -2050,10 +1543,8 @@ test "a refusal retracts only its own process's write, whoever wrote in between"
         \\
     ;
     const p = try parse(arena_state.allocator(), text, "/tmp/o/state", "", "/work");
-    // The subject's list: its own write, once.
     const want = [_]contract.OpClass{.write};
     try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
-    // The positioned list carries both processes, one entry each.
     try std.testing.expectEqual(@as(usize, 2), p.mutations.items.len);
     try std.testing.expect(holdsId(p.mutations.items, 10));
     try std.testing.expect(holdsId(p.mutations.items, 11));
@@ -2064,10 +1555,6 @@ test "the subject's own refused write survives the unfinished shape too" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
 
-    // The split entry/resumption shape is not a child's: it appears whenever another
-    // process's lines interleave with the call, and the subject is as exposed to that as a
-    // child is. The child test above covers `mutations`; this one covers the three aligned
-    // lists and the in-scope count, which the child path never touches.
     const text =
         \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
         \\10    write(3</tmp/o/state/key.json>, "k", 1 <unfinished ...>
@@ -2117,11 +1604,6 @@ test "a refusal with no re-issue leaves nothing behind at end of input" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
 
-    // The shape README warns about: a process the shim could not be loaded into inherits
-    // the filter, has no handler to re-issue with, and dies on its first write. The refused
-    // entry is the only one, and the capture ends with the retraction already recorded — so
-    // the write must not survive as an operation, and nothing may be left pending for a
-    // later line to consume.
     const text =
         \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
         \\10    write(3</tmp/o/state/key.json>, "k", 1) = 3
@@ -2141,16 +1623,9 @@ test "a trapped write OUTSIDE the judged state retracts nothing" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
 
-    // The filter keys on the syscall number, not on the path, so a write to stdout is
-    // refused and re-issued exactly like an in-scope one — and nothing was appended for
-    // it to retract. What must survive is the in-scope write that ALREADY RAN: the
-    // re-issue leaves an entry standing, and the next signal belongs to a different call.
-    //
     // The control for the line that closes the window. Delete the `takePending` after the
     // name test and stdout's signal retracts the write to the judged state, leaving the
     // sequence empty. An earlier draft of this test put a `renameat` where the first write
-    // is, which set no pending entry at all — it passed with the window-closing line
-    // deleted, and the mutation run is what said so.
     const text =
         \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
         \\10    write(3</tmp/o/state/key.json>, "x", 1) = 3
@@ -2172,10 +1647,6 @@ test "a child's refused write is one mutation, across the unfinished shape" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
 
-    // The shape measured with children running: the refused call is split across an
-    // unfinished entry and a resumption, the signal arrives after BOTH, and the handler's
-    // own record write sits between the signal and the re-issue. `syscallName` answers
-    // null for the resumption, which is why it does not close the window.
     const text =
         \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
         \\11    write(3</tmp/o/state/from-child-b.txt>, "b\n", 2 <unfinished ...>
@@ -2186,7 +1657,6 @@ test "a child's refused write is one mutation, across the unfinished shape" {
         \\
     ;
     const p = try parse(arena_state.allocator(), text, "/tmp/o/state", "", "/work");
-    // One write by one child, not two. This is the count the child admission reads.
     try std.testing.expectEqual(@as(usize, 1), p.mutations.items.len);
     try std.testing.expectEqual(@as(u64, 11), p.mutations.items[0].id);
     try std.testing.expect(p.childTouched());
@@ -2208,11 +1678,8 @@ test "parse extracts the class sequence the shim should have recorded" {
         \\
     ;
     const p = try parse(arena_state.allocator(), text, "/tmp/o/state", "", "/work");
-    // close is recorded by the shim but excluded from the comparison (ADR 0003).
     const expected = [_]contract.OpClass{ .open, .write, .fsync, .unlink, .rename };
     try std.testing.expectEqualSlices(contract.OpClass, &expected, p.classes.items);
-    // Each class keeps the raw line it came from, index-aligned, so a refusal can
-    // name the operation it refused on (#41).
     try std.testing.expectEqual(p.classes.items.len, p.lines.items.len);
     try std.testing.expect(std.mem.indexOf(u8, p.lines.items[3], "unlinkat") != null);
     try std.testing.expect(std.mem.indexOf(u8, p.lines.items[4], "renameat") != null);
@@ -2223,8 +1690,6 @@ test "parse extracts the class sequence the shim should have recorded" {
     try std.testing.expectEqual(p.classes.items.len, p.names.items.len);
     try std.testing.expectEqualStrings("unlinkat", p.names.items[3]);
     try std.testing.expectEqualStrings("renameat", p.names.items[4]);
-    // The loader's own openat is outside the state directory and must not be counted;
-    // the close is still *examined* (in scope), just not compared.
     try std.testing.expectEqual(@as(usize, 6), p.lines_in_scope);
     try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
     try std.testing.expect(!p.childTouched());
@@ -2235,9 +1700,6 @@ test "relative paths resolve by annotation and by tracked cwd (ADR 0006)" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
 
-    // aarch64: every relative call is an *at with an AT_FDCWD annotation, tracked across
-    // a relative chdir. x86-64: the legacy forms carry no annotation and resolve against
-    // the tracked cwd. Both spellings of the same operations must reach the same classes.
     const annotated =
         \\9  execve("/work/git", ["git"], 0x0) = 0
         \\9  mkdirat(AT_FDCWD</repo>, "state/sub", 0755) = 0
@@ -2265,8 +1727,6 @@ test "relative paths resolve by annotation and by tracked cwd (ADR 0006)" {
 test "a failed chdir does not move the tracked cwd" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // The relative mkdir must still resolve against /repo, not the directory the failed
-    // chdir named — otherwise a failed chdir could push operations out of scope.
     const text =
         \\9  execve("/work/git", ["git"], 0x0) = 0
         \\9  chdir("elsewhere") = -1 ENOENT (No such file or directory)
@@ -2281,8 +1741,6 @@ test "a failed chdir does not move the tracked cwd" {
 test "a state-directory string inside a write buffer is not scope" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // The false-positive the whole-line scan had: the write is to fd 1 (a pipe), and the
-    // buffer merely contains the state path. It must not be counted as a state write.
     const text =
         \\9  execve("/work/t", ["t"], 0x0) = 0
         \\9  write(1</dev/pts/0>, "/tmp/s/key.json\n", 16) = 16
@@ -2297,9 +1755,6 @@ test "a state-directory string inside a write buffer is not scope" {
 test "a symlink whose content spells the state directory is judged by its link path" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // symlinkat(target, dirfd, linkpath): the first argument is the link *content*, not
-    // a path this run touches. A target of "/tmp/s/x" with a linkpath outside the state
-    // directory must not be scoped in.
     const outside =
         \\9  execve("/work/t", ["t"], 0x0) = 0
         \\9  symlinkat("/tmp/s/secret", AT_FDCWD</work>, "/other/link") = 0
@@ -2309,9 +1764,6 @@ test "a symlink whose content spells the state directory is judged by its link p
     try std.testing.expectEqual(@as(?[]const u8, null), o.unsupported);
     try std.testing.expectEqual(@as(usize, 0), o.lines_in_scope);
 
-    // A symlink whose *link path* is inside the state directory is in scope and, since
-    // contract v9 (#122), a first-class operation — both spellings reach the same class
-    // the shim records.
     const inside =
         \\9  execve("/work/t", ["t"], 0x0) = 0
         \\9  symlink("../secret", "/tmp/s/link") = 0
@@ -2327,10 +1779,6 @@ test "a symlink whose content spells the state directory is judged by its link p
 test "ownership and permission writes are recorded-only, from anyone (#121)" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // The two measured shapes from the #118 cohort — sqlite's journal fchown (fd
-    // form) and devtodo's fchmodat (path form) — plus a legacy chmod, all on the
-    // state directory, interleaved with a real write. The write must still be the
-    // only counted class; the metadata must be observed, not `unsupported`.
     const subject =
         \\9  execve("/work/t", ["t"], 0x0) = 0
         \\9  openat(AT_FDCWD</work>, "/tmp/s/db", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/db>
@@ -2351,8 +1799,6 @@ test "ownership and permission writes are recorded-only, from anyone (#121)" {
     try std.testing.expectEqualStrings("fchmodat2", p.metadata_observed.items[2]);
     try std.testing.expectEqualStrings("chmod", p.metadata_observed.items[3]);
 
-    // A CHILD's metadata write bypasses the touch condition for the same reason it
-    // bypasses `unsupported`: it changes nothing the verdict judges.
     const child =
         \\9  execve("/work/t", ["t"], 0x0) = 0
         \\12  fchmodat(AT_FDCWD</work>, "/tmp/s/db", 0600, 0) = 0
@@ -2362,7 +1808,6 @@ test "ownership and permission writes are recorded-only, from anyone (#121)" {
     try std.testing.expect(!c.childTouched());
     try std.testing.expectEqual(@as(usize, 1), c.metadata_observed.items.len);
 
-    // Outside the state directory: none of our business, not even as a note.
     const outside =
         \\9  execve("/work/t", ["t"], 0x0) = 0
         \\9  chmod("/etc/passwd", 0644) = -1 EPERM (Operation not permitted)
@@ -2371,8 +1816,6 @@ test "ownership and permission writes are recorded-only, from anyone (#121)" {
     const o = try parse(arena_state.allocator(), outside, "/tmp/s", "", "/work");
     try std.testing.expectEqual(@as(usize, 0), o.metadata_observed.items.len);
 
-    // Unresolvable (a relative chmod with no cwd): counted as observed —
-    // over-reporting an exclusion is the honest direction — and never `unsupported`.
     const unresolvable =
         \\9  execve("/work/t", ["t"], 0x0) = 0
         \\9  chmod("state/db", 0644) = 0
@@ -2386,13 +1829,6 @@ test "ownership and permission writes are recorded-only, from anyone (#121)" {
 test "timestamp writes are recorded-only, like ownership and permission (#190)" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // The measured shape from the cohort-2 Mercurial explore: CPython's shutil
-    // touches timestamps once per transaction-backup copy. All five spellings —
-    // the *at path form, the NULL-path form glibc emits for futimens (resolves
-    // `.unresolvable`, counted as observed — the honest over-reporting
-    // direction), and the three legacy forms — interleaved with a real write.
-    // The write must still be the only counted class beside the open; the
-    // timestamps must be observed, never `unsupported`.
     const subject =
         \\9  execve("/work/t", ["t"], 0x0) = 0
         \\9  openat(AT_FDCWD</work>, "/tmp/s/db", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/db>
@@ -2415,7 +1851,6 @@ test "timestamp writes are recorded-only, like ownership and permission (#190)" 
     try std.testing.expectEqualStrings("futimesat", p.metadata_observed.items[3]);
     try std.testing.expectEqualStrings("utime", p.metadata_observed.items[4]);
 
-    // Outside the state directory: none of our business, not even as a note.
     const outside =
         \\9  execve("/work/t", ["t"], 0x0) = 0
         \\9  utimensat(AT_FDCWD</work>, "/etc/passwd", [{tv_sec=1, tv_nsec=0}, {tv_sec=1, tv_nsec=0}], 0) = 0
@@ -2425,9 +1860,6 @@ test "timestamp writes are recorded-only, like ownership and permission (#190)" 
     try std.testing.expectEqual(@as(usize, 0), o.metadata_observed.items.len);
     try std.testing.expectEqual(@as(?[]const u8, null), o.unsupported);
 
-    // The NULL-path form on an OUTSIDE descriptor is still counted: the path is
-    // unresolvable, and the exclusion over-reports rather than scoping through
-    // the fd. This pins the over-report as intent, not accident.
     const outside_fd =
         \\9  execve("/work/t", ["t"], 0x0) = 0
         \\9  utimensat(3</etc/passwd>, NULL, [UTIME_NOW, UTIME_NOW], 0) = 0
@@ -2441,10 +1873,6 @@ test "timestamp writes are recorded-only, like ownership and permission (#190)" 
 test "the conservative net is still alive after the symlink class landed" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // The falsification #122 demands for its own change: adding symlink to the class
-    // table must not have widened what silently passes. mknod is the next-nearest
-    // state-touching syscall with no class — it must still route to `unsupported`
-    // through the whole-line net, exactly as symlink itself did before v9.
     const text =
         \\9  execve("/work/t", ["t"], 0x0) = 0
         \\9  mknod("/tmp/s/fifo", S_IFIFO|0644, 0) = 0
@@ -2457,7 +1885,6 @@ test "the conservative net is still alive after the symlink class landed" {
 test "link is first-class and counts when either endpoint is inside" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // The git loose-object idiom: link a tmp object into place.
     const in_in =
         \\9  execve("/work/git", ["git"], 0x0) = 0
         \\9  linkat(AT_FDCWD</repo>, "state/tmp_obj", AT_FDCWD</repo>, "state/ab/final", 0) = 0
@@ -2467,8 +1894,6 @@ test "link is first-class and counts when either endpoint is inside" {
     const want = [_]contract.OpClass{.link};
     try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
 
-    // outside -> state: the source is outside, the new name is inside. Still a state
-    // mutation, still counted (the either-endpoint rule).
     const out_in =
         \\9  execve("/work/git", ["git"], 0x0) = 0
         \\9  link("/tmp/scratch/obj", "/repo/state/name") = 0
@@ -2477,7 +1902,6 @@ test "link is first-class and counts when either endpoint is inside" {
     const q = try parse(arena_state.allocator(), out_in, "/repo/state", "", "/repo");
     try std.testing.expectEqualSlices(contract.OpClass, &want, q.classes.items);
 
-    // AT_EMPTY_PATH links a descriptor: unplaceable source, refused.
     const empty =
         \\9  execve("/work/git", ["git"], 0x0) = 0
         \\9  linkat(3</tmp/x>, "", AT_FDCWD</repo>, "state/name", AT_EMPTY_PATH) = 0
@@ -2490,8 +1914,6 @@ test "link is first-class and counts when either endpoint is inside" {
 test "an unresolvable relative path refuses instead of dropping" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // A legacy mkdir with no annotation and no known cwd (the engine passed none) cannot
-    // be placed. It must not be silently dropped — a state mutation the tool cannot see.
     const text =
         \\9  execve("/work/t", ["t"], 0x0) = 0
         \\9  mkdir("state/sub", 0755) = 0
@@ -2504,8 +1926,6 @@ test "an unresolvable relative path refuses instead of dropping" {
 test "the state alt spelling is inside the state directory" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // macOS hands the subject /tmp/x while the engine resolved /private/tmp/x; a path
-    // under either spelling must be in scope.
     const text =
         \\9  execve("/work/t", ["t"], 0x0) = 0
         \\9  openat(AT_FDCWD</work>, "/tmp/x/key", O_WRONLY|O_CREAT, 0644) = 3</tmp/x/key>
@@ -2532,8 +1952,6 @@ test "a write-incapable open by the subject leaves the comparison, fail-closed" 
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
 
-    // The rustix shape from the first real target: a read-only directory open the shim
-    // cannot see. Excluded here so the two accounts can agree about what matters.
     const symbolic =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\42    openat(AT_FDCWD, "/tmp/s", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 4</tmp/s>
@@ -2544,8 +1962,6 @@ test "a write-incapable open by the subject leaves the comparison, fail-closed" 
     const expected = [_]contract.OpClass{.open};
     try std.testing.expectEqualSlices(contract.OpClass, &expected, p.classes.items);
 
-    // Fail-closed: numeric flags are not read-only, they are unparsed. Counted as
-    // before — if that miscounts, the run ends UNKNOWN, never PASS.
     const numeric =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\42    openat(AT_FDCWD, "/tmp/s/key.json", 0x241) = 3</tmp/s/key.json>
@@ -2554,7 +1970,6 @@ test "a write-incapable open by the subject leaves the comparison, fail-closed" 
     const q = try parse(arena_state.allocator(), numeric, "/tmp/s", "", "/work");
     try std.testing.expectEqual(@as(usize, 1), q.classes.items.len);
 
-    // O_RDONLY|O_CREAT creates but cannot write: a mutation, addressable, counted.
     const creating =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\42    openat(AT_FDCWD, "/tmp/s/marker", O_RDONLY|O_CREAT, 0644) = 3</tmp/s/marker>
@@ -2563,7 +1978,6 @@ test "a write-incapable open by the subject leaves the comparison, fail-closed" 
     const r = try parse(arena_state.allocator(), creating, "/tmp/s", "", "/work");
     try std.testing.expectEqual(@as(usize, 1), r.classes.items.len);
 
-    // creat spells no flags and always creates: counted.
     const via_creat =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\42    creat("/tmp/s/new.json", 0644) = 3</tmp/s/new.json>
@@ -2572,7 +1986,6 @@ test "a write-incapable open by the subject leaves the comparison, fail-closed" 
     const s = try parse(arena_state.allocator(), via_creat, "/tmp/s", "", "/work");
     try std.testing.expectEqual(@as(usize, 1), s.classes.items.len);
 
-    // openat2 carries its flags inside the how struct; the symbolic token is still there.
     const via_openat2 =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\42    openat2(AT_FDCWD, "/tmp/s/key.json", {flags=O_RDONLY|O_CLOEXEC, mode=0, resolve=0}, 24) = 3</tmp/s/key.json>
@@ -2581,9 +1994,6 @@ test "a write-incapable open by the subject leaves the comparison, fail-closed" 
     const t = try parse(arena_state.allocator(), via_openat2, "/tmp/s", "", "/work");
     try std.testing.expectEqual(@as(usize, 0), t.classes.items.len);
 
-    // An invalid access mode (both low bits set) is spelled `O_ACCMODE` by strace, and
-    // the shim counts it (`!= O_RDONLY`). This side must agree — the invalid case must
-    // not be the one place the two predicates split.
     const invalid_accmode =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\42    openat(AT_FDCWD, "/tmp/s/key.json", O_ACCMODE|O_CLOEXEC) = -1 EINVAL (Invalid argument)
@@ -2596,9 +2006,6 @@ test "a write-incapable open by the subject leaves the comparison, fail-closed" 
 test "unlinkat with AT_REMOVEDIR is a directory removal, matching the shim" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // aarch64 Linux has no rmdir syscall; glibc's rmdir(3) becomes this. The shim
-    // records .rmdir because it interposes the libc entry point, so a name-only mapping
-    // here would disagree and blame a correct target.
     const text =
         \\execve("/work/toy", ["toy"], 0x7ff) = 0
         \\unlinkat(AT_FDCWD, "/tmp/s/sub", AT_REMOVEDIR) = 0
@@ -2611,17 +2018,11 @@ test "unlinkat with AT_REMOVEDIR is a directory removal, matching the shim" {
 }
 
 test "the AT_REMOVEDIR flag is read from the flags argument, not from the line" {
-    // A filename is attacker-controlled in the only sense that matters here: the target
-    // chooses it. Searching the whole line for the flag name lets a *file* called
-    // AT_REMOVEDIR be classified as a *directory removal*, which diverges from the shim
-    // and reports UNKNOWN for a target that did nothing wrong.
     try std.testing.expect(!unlinkatRemovesDir("unlinkat(AT_FDCWD, \"/tmp/s/AT_REMOVEDIR.bak\", 0) = 0"));
     try std.testing.expect(unlinkatRemovesDir("unlinkat(AT_FDCWD, \"/tmp/s/sub\", AT_REMOVEDIR) = 0"));
-    // Numeric spelling: `strace -X raw`, and some builds by default.
     try std.testing.expect(unlinkatRemovesDir("unlinkat(AT_FDCWD, \"/tmp/s/sub\", 0x200) = 0"));
     try std.testing.expect(unlinkatRemovesDir("unlinkat(AT_FDCWD, \"/tmp/s/sub\", 512) = 0"));
     try std.testing.expect(!unlinkatRemovesDir("unlinkat(AT_FDCWD, \"/tmp/s/f\", 0) = 0"));
-    // A pid prefix must not shift the argument positions.
     try std.testing.expect(unlinkatRemovesDir("13    unlinkat(AT_FDCWD, \"/tmp/s/sub\", AT_REMOVEDIR) = 0"));
 }
 
@@ -2630,7 +2031,6 @@ test "arguments are split on top-level commas only" {
     try std.testing.expectEqualStrings("\"/tmp/s/a,b\"", syscallArg(line, 1).?);
     try std.testing.expectEqualStrings("\"/tmp/s/c\"", syscallArg(line, 3).?);
     try std.testing.expectEqual(@as(?[]const u8, null), syscallArg(line, 4));
-    // A struct argument is one argument, however many commas it contains.
     const st = "newfstatat(AT_FDCWD, \"/tmp/s/k\", {st_mode=S_IFREG|0644, st_size=6}, 0) = 0";
     try std.testing.expectEqualStrings("0", syscallArg(st, 3).?);
 }
@@ -2638,11 +2038,6 @@ test "arguments are split on top-level commas only" {
 test "a syscall v0.1 does not model is reported rather than skipped" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // `mknod` stands where `copy_file_range` used to: a state-directory syscall that
-    // changes persistent state and has no class. The example had to move when #244
-    // classified copy_file_range — and the case it demonstrates has not, so the
-    // demonstration keeps a live subject rather than retiring with its old one.
-    // (`spike/acceptance.sh` drives the same syscall end to end for the same reason.)
     const text =
         \\execve("/work/toy", ["toy"], 0x7ff) = 0
         \\mknod("/tmp/s/fifo", S_IFIFO|0644) = 0
@@ -2657,8 +2052,6 @@ test "renameat2's flags decide whether it is a rename at all (#256)" {
     defer arena_state.deinit();
     const a = arena_state.allocator();
 
-    // RENAME_NOREPLACE is a plain rename that declines to clobber — the shape a real
-    // target produced (`spike/cohort2/probes/raw/bun.strace`, bun's cache write).
     const noreplace =
         \\execve("/work/toy", ["toy"], 0x7ff) = 0
         \\renameat2(AT_FDCWD, "/tmp/s/key.json.tmp", AT_FDCWD, "/tmp/s/key.json", RENAME_NOREPLACE) = 0
@@ -2669,9 +2062,6 @@ test "renameat2's flags decide whether it is a rename at all (#256)" {
     try std.testing.expectEqual(contract.OpClass.rename, p_nr.classes.items[0]);
     try std.testing.expectEqual(@as(?[]const u8, null), p_nr.unsupported);
 
-    // EXCHANGE swaps two files: both names survive and both contents move, which the
-    // snapshot/restore model does not reproduce. Refused by flag name rather than
-    // counted, so the report says which flag it refused on.
     const exchange =
         \\execve("/work/toy", ["toy"], 0x7ff) = 0
         \\renameat2(AT_FDCWD, "/tmp/s/a", AT_FDCWD, "/tmp/s/b", RENAME_EXCHANGE) = 0
@@ -2689,8 +2079,6 @@ test "renameat2's flags decide whether it is a rename at all (#256)" {
     const p_wo = try parse(a, whiteout, "/tmp/s", "", "/work");
     try std.testing.expectEqualStrings("renameat2(RENAME_WHITEOUT)", p_wo.unsupported.?);
 
-    // The flag test reads argument 4, not the line: a FILENAME spelling a flag must
-    // not refuse a plain rename. Same trap the AT_REMOVEDIR test guards above.
     const lookalike =
         \\execve("/work/toy", ["toy"], 0x7ff) = 0
         \\renameat2(AT_FDCWD, "/tmp/s/RENAME_EXCHANGE.bak", AT_FDCWD, "/tmp/s/key.json", 0) = 0
@@ -2700,9 +2088,6 @@ test "renameat2's flags decide whether it is a rename at all (#256)" {
     try std.testing.expectEqual(@as(?[]const u8, null), p_lk.unsupported);
     try std.testing.expectEqual(contract.OpClass.rename, p_lk.classes.items[0]);
 
-    // `strace -X raw` (and any build without the flag decoder) prints the number.
-    // Reading only the symbolic spelling would let EXCHANGE through as a plain
-    // rename — the same fail-open `unlinkatRemovesDir` already guards against.
     const numeric =
         \\execve("/work/toy", ["toy"], 0x7ff) = 0
         \\renameat2(AT_FDCWD, "/tmp/s/a", AT_FDCWD, "/tmp/s/b", 0x2) = 0
@@ -2717,8 +2102,6 @@ test "a copy's scope is decided by its destination, not its argument 0 (#244)" {
     defer arena_state.deinit();
     const a = arena_state.allocator();
 
-    // Into the state directory: a write that counts. Argument 0 is the SOURCE and
-    // sits outside, so an argument-0 reading calls this out of scope and loses it.
     const into =
         \\execve("/work/toy", ["toy"], 0x7ff) = 0
         \\copy_file_range(3</other/a>, NULL, 4</tmp/s/key.json>, NULL, 6, 0) = 6
@@ -2729,8 +2112,6 @@ test "a copy's scope is decided by its destination, not its argument 0 (#244)" {
     try std.testing.expectEqual(contract.OpClass.write, p_in.classes.items[0]);
     try std.testing.expectEqual(@as(?[]const u8, null), p_in.unsupported);
 
-    // Out of the state directory: the state is only read, so nothing is counted. An
-    // argument-0 reading calls this a write — the false FAIL side of the same bug.
     const out_of =
         \\execve("/work/toy", ["toy"], 0x7ff) = 0
         \\copy_file_range(3</tmp/s/key.json>, NULL, 4</other/b>, NULL, 6, 0) = 6
@@ -2740,8 +2121,6 @@ test "a copy's scope is decided by its destination, not its argument 0 (#244)" {
     try std.testing.expectEqual(@as(usize, 0), p_out.classes.items.len);
     try std.testing.expectEqual(@as(?[]const u8, null), p_out.unsupported);
 
-    // sendfile needs no table entry: its destination is already argument 0. Pinned
-    // here so a later "simplification" that drops the default cannot pass quietly.
     const sf =
         \\execve("/work/toy", ["toy"], 0x7ff) = 0
         \\sendfile(4</tmp/s/key.json>, 3</other/a>, NULL, 6) = 6
@@ -2751,7 +2130,6 @@ test "a copy's scope is decided by its destination, not its argument 0 (#244)" {
     try std.testing.expectEqual(@as(usize, 1), p_sf.classes.items.len);
     try std.testing.expectEqual(contract.OpClass.write, p_sf.classes.items[0]);
 
-    // The default itself: an ordinary fd write is still read from argument 0.
     const w =
         \\execve("/work/toy", ["toy"], 0x7ff) = 0
         \\pwritev(3</tmp/s/key.json>, [{iov_base="key=", iov_len=4}], 1, 0) = 4
@@ -2781,12 +2159,6 @@ test "faccessat2 and epoll_ctl on the state directory are reads, for the subject
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    // One line per case, the shapes measured on real targets: ocrmypdf's write-permission
-    // query, Go's netpoller registering mlr's temporary file (EPERM: a regular file), the
-    // same call split by another thread, and cargo's query of a path outside the state
-    // directory whose AT_FDCWD annotation is inside it (cohort 3's cargo strace) — scoped
-    // in by the annotation alone. Each is its own parse, so a name dropped from the list
-    // fails at its own case rather than at the first line of a shared capture.
     const Case = struct { what: []const u8, line: []const u8 };
     const cases = [_]Case{
         .{ .what = "faccessat2 on a state file", .line = "faccessat2(AT_FDCWD</work>, \"/tmp/s/a.pdf\", W_OK, AT_EACCESS) = 0" },
@@ -2795,8 +2167,6 @@ test "faccessat2 and epoll_ctl on the state directory are reads, for the subject
         .{ .what = "epoll_ctl split across two lines", .line = "epoll_ctl(4<anon_inode:[eventpoll]>, EPOLL_CTL_ADD, 3</tmp/s/key.json>, {events=EPOLLIN, data=0x0} <unfinished ...>\n42    <... epoll_ctl resumed>) = -1 EPERM (Operation not permitted)" },
     };
     for (cases) |c| {
-        // The subject. In scope — the line names the state directory — and neither
-        // refused nor compared.
         const subject = try std.fmt.allocPrint(a, "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    {s}\n", .{c.line});
         const p = try parse(a, subject, "/tmp/s", "", "/work");
         if (p.unsupported) |u| {
@@ -2805,7 +2175,6 @@ test "faccessat2 and epoll_ctl on the state directory are reads, for the subject
         }
         try std.testing.expect(p.lines_in_scope >= 1);
         try std.testing.expectEqual(@as(usize, 0), p.classes.items.len);
-        // A child. The same line is a read, not a touch of what only the subject may.
         const child = try std.fmt.allocPrint(a, "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242\n4242  {s}\n", .{try std.mem.replaceOwned(u8, a, c.line, "\n42    ", "\n4242  ")});
         const q = try parse(a, child, "/tmp/s", "", "/work");
         if (q.childTouched()) {
@@ -2825,10 +2194,6 @@ test "extended-attribute reads, inotify_add_watch, preadv and the polls are read
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    // `real` lines are strace's own, from the survey in spike/dogfood/2026-10-06-read-only-684/
-    // (vim, fish, dotdrop, firewalld; its `transcripts/survey/*.unnamed.txt` keep them) and the
-    // 2026-09-27 jj capture (ppoll), with the state directory rewritten to /tmp/s; the rest are built in the same shape for names no recorded target
-    // has issued yet. Each is its own parse, so a dropped name fails at its own case.
     const Case = struct { what: []const u8, line: []const u8 };
     const reads = [_]Case{
         .{ .what = "getxattr (real: vim)", .line = "getxattr(\"/tmp/s/a.txt\", \"system.posix_acl_access\", 0xffffcd859420, 132) = -1 ENODATA (No data available)" },
@@ -2864,9 +2229,7 @@ test "extended-attribute reads, inotify_add_watch, preadv and the polls are read
     }
     // The writing side of the same family stays refused, for the subject and for a child —
     // what the list added is reads, not a rule that waves through every `*xattr`. The first
-    // line is real: vim writing its ACL back, the call it meets after `getxattr`.
     const writes = [_]Case{
-        // vim's line, with its 28-byte value shortened to four.
         .{ .what = "setxattr (real: vim)", .line = "setxattr(\"/tmp/s/a.txt\", \"system.posix_acl_access\", \"\\2\\0\\0\\0\", 28, 0) = 0" },
         .{ .what = "lsetxattr", .line = "lsetxattr(\"/tmp/s/a.txt\", \"user.x\", \"1\", 1, 0) = 0" },
         .{ .what = "fsetxattr", .line = "fsetxattr(3</tmp/s/a.txt>, \"user.x\", \"1\", 1, 0) = 0" },
@@ -2884,8 +2247,6 @@ test "extended-attribute reads, inotify_add_watch, preadv and the polls are read
         }
         const child = try std.fmt.allocPrint(a, "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242\n4242  {s}\n", .{c.line});
         const q = try parse(a, child, "/tmp/s", "", "/work");
-        // Read as the child's line — one child, counted as touching, and not the subject's
-        // refusal, which is what the line would produce if the pid were misread.
         try std.testing.expectEqual(@as(usize, 1), q.children);
         try std.testing.expectEqual(@as(?[]const u8, null), q.unsupported);
         if (!q.childTouched()) {
@@ -2896,14 +2257,10 @@ test "extended-attribute reads, inotify_add_watch, preadv and the polls are read
 }
 
 test "both of strace's -f pid prefixes are stripped" {
-    // Bracketed form: interleaved output.
     try std.testing.expectEqualStrings("openat", syscallName("[pid  1234] openat(AT_FDCWD, \"x\") = 3").?);
     try std.testing.expectEqualStrings("clone", syscallName("[pid 99] clone(child_stack=NULL) = 100").?);
-    // Bare-number form: what `-f -o file` actually writes. Missing this one made every
-    // line unparseable while the parser still looked like it worked.
     try std.testing.expectEqualStrings("openat", syscallName("13    openat(AT_FDCWD, \"x\") = 3").?);
     try std.testing.expectEqualStrings("write", syscallName("7\twrite(3, \"x\", 1) = 1").?);
-    // No prefix at all, unchanged.
     try std.testing.expectEqualStrings("write", syscallName("write(3, \"x\", 1) = 1").?);
 }
 
@@ -2911,9 +2268,6 @@ test "a child that stays out of the state directory is not a refusal" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
 
-    // v0.1 refused on the bare clone. The rule now is about what the child *did*: this
-    // one wrote somewhere else entirely, so the subject's account remains complete and
-    // the crash-point numbering remains unique.
     const text =
         \\42    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
         \\42    openat(AT_FDCWD, "/tmp/s/key.json", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/key.json>
@@ -2931,9 +2285,6 @@ test "a child that stays out of the state directory is not a refusal" {
 test "a child that writes into the state directory is the refusal condition" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // Same shape, one difference: where the child's write landed. This is the raw-clone
-    // case the shim cannot see at all — the child never loaded it — and the reason
-    // boundary tolerance exists only where an oracle does.
     const text =
         \\42    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
         \\42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242
@@ -2948,9 +2299,6 @@ test "a child that writes into the state directory is the refusal condition" {
 test "a child reading the state directory is tolerated" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // Reads consume no sequence number and change no state; refusing them would fail
-    // every helper that inspects a config file. The line between read and write is the
-    // read_only list, and an unknown syscall from a child falls on the refusing side.
     const text =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\4242  read(3</tmp/s/key.json>, "key=1\n", 4096) = 6
@@ -2971,7 +2319,6 @@ test "a child reading the state directory is tolerated" {
 test "the launch execve is not mistaken for the target creating a child" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // strace's own act of starting the target appears as the first execve.
     const text =
         \\execve("/work/spike/out/toy-bug", ["toy-bug", "rotate"], 0x7ff) = 0
         \\openat(AT_FDCWD, "/tmp/s/key.json", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/key.json>
@@ -2983,11 +2330,6 @@ test "the launch execve is not mistaken for the target creating a child" {
 }
 
 test "a second execve by the subject is no longer the oracle's refusal (#123)" {
-    // Whether the chain of observation survived the image change is the shim's
-    // evidence to give; a chain that broke leaves the shim's records short of the
-    // oracle's syscalls, and the completeness comparison refuses on that. The
-    // oracle itself stays quiet here — asserted so a reintroduced exec refusal
-    // cannot come back silently.
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
     const text =
@@ -3002,9 +2344,6 @@ test "a second execve by the subject is no longer the oracle's refusal (#123)" {
 test "a child's execve is the child becoming something, not a refusal" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // posix_spawn appears as exactly this: a clone, then the child's execve. Refusing
-    // the child's exec would refuse every spawn, which is the shape this change exists
-    // to admit.
     const text =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\42    clone(child_stack=0x7f, flags=CLONE_VM|CLONE_VFORK|SIGCHLD) = 4242
@@ -3019,9 +2358,6 @@ test "a child's execve is the child becoming something, not a refusal" {
 test "a raw clone carrying CLONE_THREAD is a thread of the subject, not a child and not a boundary (v16)" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // Through v15 this line refused the run (`p.boundary != null` was the assertion
-    // here). The thread's id is the subject's now, and CLONE_FS — which every pthread
-    // carries — does not refuse on its own when CLONE_THREAD is beside it.
     const text =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\42    clone(child_stack=0x7f, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_THREAD|CLONE_SIGHAND) = 43
@@ -3033,8 +2369,6 @@ test "a raw clone carrying CLONE_THREAD is a thread of the subject, not a child 
     try std.testing.expect(p.isSubject(43));
     try std.testing.expect(!p.childTouched());
     try std.testing.expectEqual(@as(usize, 0), p.children);
-    // The thread's write is the subject's write: it is in the class list the shim's
-    // account is compared against, not in a child's touch.
     const want = [_]contract.OpClass{.write};
     try std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items);
     try std.testing.expectEqual(@as(usize, 0), p.spawns.items.len);
@@ -3043,9 +2377,6 @@ test "a raw clone carrying CLONE_THREAD is a thread of the subject, not a child 
 test "CLONE_FS without CLONE_THREAD still refuses (v16)" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // The control for the test above: the reason a thread is admitted (its chdir is the
-    // subject's) does not hold for a separate process sharing the fs context, so the
-    // ADR 0006 refusal stands for it.
     const text =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\42    clone(child_stack=0x7f, flags=CLONE_FS|SIGCHLD) = 43
@@ -3059,11 +2390,6 @@ test "CLONE_FS without CLONE_THREAD still refuses (v16)" {
 test "a thread clone split across an unfinished and a resumed line is still the subject's (v16)" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // The shape a second thread produces for the third: strace prints the flags on the
-    // unfinished half and the new id on the resumed half. The measured capture that
-    // motivated `pending_thread_clone` is the busy-thread toy's; a `clone3` refused
-    // `ENOSYS` in front of it is the shape a kernel without clone3 produces, and it
-    // enters nothing.
     const text =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\42    clone3({flags=CLONE_VM|CLONE_FS|CLONE_THREAD, exit_signal=0}, 88) = -1 ENOSYS (Function not implemented)
@@ -3086,9 +2412,6 @@ test "a thread clone split across an unfinished and a resumed line is still the 
 test "a thread whose first line precedes its clone's resumption is not a child (v16)" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // The ordering `spawnedPid`'s doc records for a child, on a thread: the new task is
-    // scheduled before the parent's clone returns. Its out-of-scope line is read as a
-    // child's at the time and struck from the count once the clone resumes.
     const text =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\42    clone(child_stack=0x7f, flags=CLONE_VM|CLONE_FS|CLONE_THREAD|CLONE_SIGHAND <unfinished ...>
@@ -3104,8 +2427,6 @@ test "a thread whose first line precedes its clone's resumption is not a child (
 test "a thread a child created stays the child's (v16)" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // The caller of the thread clone is a child, not a subject id, so the thread is not
-    // entered — and its write is a touch, the way any of the child's writes would be.
     const text =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242
@@ -3120,22 +2441,15 @@ test "a thread a child created stays the child's (v16)" {
 }
 
 test "syscallArg reads the argument an unfinished call ran out on (v16)" {
-    // The measured shape: an fd-only call, split by another thread's line. Before this
-    // the reader found no `)` and answered null, so `fsync` never reached the class list.
     try std.testing.expectEqualStrings("4</tmp/s/k>", syscallArg("50    fsync(4</tmp/s/k> <unfinished ...>", 0).?);
-    // A later argument of a wider call, same ending.
     try std.testing.expectEqualStrings("6", syscallArg("50    write(4</tmp/s/k>, \"key=2\\n\", 6 <unfinished ...>", 2).?);
-    // And an index past the arguments that were printed is still nothing.
     try std.testing.expectEqual(@as(?[]const u8, null), syscallArg("50    fsync(4</tmp/s/k> <unfinished ...>", 1));
-    // The finished shapes read as they did.
     try std.testing.expectEqualStrings("4</tmp/s/k>", syscallArg("50    fsync(4</tmp/s/k>) = 0", 0).?);
 }
 
 test "an unshimmed child detaching is caught by the oracle" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // The group kill no longer reaches a process that setsids away, and a child that
-    // never loaded the shim records nothing. The oracle is the only witness.
     const text =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\4242  setsid()                          = 4242
@@ -3143,11 +2457,8 @@ test "an unshimmed child detaching is caught by the oracle" {
     ;
     const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
     try std.testing.expect(p.detached != null);
-    // Its own field (#559): namespace surgery and a subject exec stay in `boundary`.
     try std.testing.expect(p.boundary == null);
 
-    // The subject's own setsid/setpgid lines are the shim's to judge — its wrapper
-    // knows whether the call moved anything, and this parser does not.
     const own =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\42    setpgid(0, 0)                     = 0
@@ -3161,8 +2472,6 @@ test "an unshimmed child detaching is caught by the oracle" {
 test "a shared writable mapping of a state file is a mutation nobody models" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // Dirtying MAP_SHARED pages changes the file with no later write syscall for
-    // either observer to see. From the subject: unsupported. From a child: the touch.
     const subject =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\42    mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, 3</tmp/s/key.json>, 0) = 0x7f
@@ -3179,7 +2488,6 @@ test "a shared writable mapping of a state file is a mutation nobody models" {
     const q = try parse(arena_state.allocator(), child, "/tmp/s", "", "/work");
     try std.testing.expect(q.childTouched());
 
-    // A private or read-only mapping changes nothing on disk and stays tolerated.
     const private =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\4242  mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE, 3</tmp/s/key.json>, 0) = 0x7f
@@ -3196,7 +2504,6 @@ test "a shared mapping of a state file made writable later is refused, and nothi
     const want = "mprotect(PROT_WRITE) on a shared mapping of a state file";
     const Case = struct { what: []const u8, text: []const u8, refused: ?[]const u8 };
     const cases = [_]Case{
-        // Refused: the store path the writable-mapping rule cannot see.
         .{ .what = "read-only shared map, then PROT_WRITE", .refused = want, .text =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDWR) = 3</tmp/s/db>
@@ -3289,7 +2596,6 @@ test "a shared mapping of a state file made writable later is refused, and nothi
         \\42    <... mmap resumed>) = 0x7f0000000000
         \\
         },
-        // Not refused: what the rule must leave alone.
         .{ .what = "a read-only open mapped, unmapped, and the address made writable by something else (memmap2)", .refused = null, .text =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDONLY|O_CLOEXEC) = 3</tmp/s/db>
@@ -3376,7 +2682,6 @@ test "a child's read-only open is a read, and its writing open is the touch" {
     const q = try parse(arena_state.allocator(), writing, "/tmp/s", "", "/work");
     try std.testing.expect(q.childTouched());
 
-    // creat never spells its flags, and it always creates.
     const creating =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\4242  creat("/tmp/s/new.json", 0644) = 3</tmp/s/new.json>
@@ -3389,8 +2694,6 @@ test "a child's read-only open is a read, and its writing open is the touch" {
 test "a filename spelling a flag does not change how the call is classified" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // The target chooses its filenames; the classifier must read flags from the flags
-    // argument only. Both cases below are harmless operations wearing dangerous names.
     const read_with_scary_name =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\4242  openat(AT_FDCWD, "/tmp/s/O_CREAT.bak", O_RDONLY|O_CLOEXEC) = 3</tmp/s/O_CREAT.bak>
@@ -3419,13 +2722,11 @@ test "compare finds the first divergence and the direction of it" {
     const a = [_]contract.OpClass{ .open, .write, .rename };
     try std.testing.expectEqual(@as(?Finding, null), compare(&a, &a));
 
-    // The raw-syscall case: the oracle saw everything, the shim saw nothing.
     const nothing = [_]contract.OpClass{};
     const missed = compare(&nothing, &a).?;
     try std.testing.expectEqual(@as(usize, 0), missed.missed.index);
     try std.testing.expectEqual(contract.OpClass.open, missed.missed.class);
 
-    // A shorter oracle means the shim invented an operation.
     const short = [_]contract.OpClass{ .open, .write };
     const phantom = compare(&a, &short).?;
     try std.testing.expectEqual(contract.OpClass.rename, phantom.phantom.class);
@@ -3437,18 +2738,12 @@ test "compare finds the first divergence and the direction of it" {
     // rather than naming the wrong operation.
     try std.testing.expectEqual(short.len, phantom.phantom.index);
 
-    // Divergence in the middle is reported at the position it happens.
     const swapped = [_]contract.OpClass{ .open, .unlink, .rename };
     const mid = compare(&a, &swapped).?;
     try std.testing.expectEqual(@as(usize, 1), mid.missed.index);
 }
 
 test "every fd syscall the classifier knows declares which argument holds its descriptor (#280)" {
-    // `fdSyscallInScope` reads one argument and decides scope from it. Which argument
-    // comes from `fd_write_args`, defaulting to 0 -- a default that used to apply to
-    // anything nobody had thought about. This makes the classifier and the two tables
-    // agree: exactly one of them names each fd syscall, so a new `known` entry is a
-    // decision rather than an inheritance.
     for (known) |m| {
         if (pathSpec(m.name) != null) continue; // a path syscall, not scoped by fd
         var declared: usize = 0;
@@ -3491,14 +2786,10 @@ test "a wait's reaped child is read from both spellings, and from waitid's sigin
     try std.testing.expectEqual(@as(?u64, 53), reapedPid("47    wait4(-1, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], WNOHANG, NULL) = 53"));
     try std.testing.expectEqual(@as(?u64, 40), reapedPid("38    wait4(40, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0, NULL) = 40"));
 
-    // The call going in carries no answer yet — the child is still running.
     try std.testing.expectEqual(@as(?u64, null), reapedPid("28    wait4(29,  <unfinished ...>"));
-    // Nothing to reap, and a wait the arrival of another child's SIGCHLD restarted.
     try std.testing.expectEqual(@as(?u64, null), reapedPid("47    wait4(-1, 0xffffd4dafb20, WNOHANG, NULL) = -1 ECHILD (No child processes)"));
     try std.testing.expectEqual(@as(?u64, null), reapedPid("38    <... wait4 resumed>0xffffd8be1d4c, 0, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)"));
 
-    // `waitid` returns 0 and names the child in its siginfo, so the return value is the
-    // wrong field for this one member of the family.
     try std.testing.expectEqual(@as(?u64, 4242), reapedPid("42    waitid(P_PID, 4242, {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=4242, si_uid=0, si_status=0}, WEXITED, NULL) = 0"));
 
     // Not waits. The second is the control that matters: a line ending in a number is
@@ -3507,15 +2798,12 @@ test "a wait's reaped child is read from both spellings, and from waitid's sigin
     try std.testing.expectEqual(@as(?u64, null), reapedPid("28    exit_group(0)                     = ?"));
     try std.testing.expectEqual(@as(?u64, null), reapedPid("28    openat(AT_FDCWD</w>, \"/tmp/s/a\", O_WRONLY|O_CREAT, 0644) = 29"));
     try std.testing.expectEqual(@as(?u64, null), reapedPid("28    <... openat resumed>) = 29"));
-    // A name that merely starts with one of the family's.
     try std.testing.expectEqual(@as(?u64, null), reapedPid("28    wait4ever(1) = 7"));
 }
 
 test "the parse collects who wrote and who was reaped (v15)" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // The slice's shape: the subject writes, an awaited child writes, the subject writes
-    // again. Both sets are what the admission compares against the shim's own account.
     const text =
         \\42    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
         \\42    openat(AT_FDCWD, "/tmp/s/a", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/a>
@@ -3528,9 +2816,6 @@ test "the parse collects who wrote and who was reaped (v15)" {
         \\
     ;
     const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
-    // Three mutations in line order: the subject's, the child's, the subject's again —
-    // and the reap between the child's and the subject's second, which is what makes the
-    // shape a hand-off rather than a race.
     try std.testing.expectEqual(@as(usize, 3), p.mutations.items.len);
     try std.testing.expectEqual(@as(u64, 42), p.mutations.items[0].id);
     try std.testing.expectEqual(@as(u64, 4242), p.mutations.items[1].id);
@@ -3539,16 +2824,12 @@ test "the parse collects who wrote and who was reaped (v15)" {
     try std.testing.expectEqual(@as(u64, 4242), p.reaps.items[0].id);
     try std.testing.expect(p.reaps.items[0].at > p.mutations.items[1].at);
     try std.testing.expect(p.reaps.items[0].at < p.mutations.items[2].at);
-    // The subject's own two operations are still the ones compared against the shim's
-    // account, unchanged by any of this.
     try std.testing.expectEqual(@as(usize, 2), p.classes.items.len);
 }
 
 test "a child nobody waited for leaves the reaped set empty (v15)" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // The control for the test above, and the one condition of the three that this
-    // parser alone decides: the same capture with the wait removed.
     const text =
         \\42    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
         \\42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242
@@ -3562,9 +2843,6 @@ test "a child nobody waited for leaves the reaped set empty (v15)" {
 }
 
 test "a pid coming back from a wait is not always a collection (v15)" {
-    // The two shapes that report a child without collecting it. Both would close the
-    // window a writing child is judged in, which admits a run that should refuse — the
-    // direction a guard must not fail in.
     try std.testing.expectEqual(@as(?u64, null), reapedPid("47    wait4(-1, [{WIFSTOPPED(s) && WSTOPSIG(s) == SIGTSTP}], WUNTRACED, NULL) = 53"));
     try std.testing.expectEqual(@as(?u64, null), reapedPid("47    wait4(-1, [{WIFCONTINUED(s)}], WCONTINUED, NULL) = 53"));
     try std.testing.expectEqual(@as(?u64, null), reapedPid("42    waitid(P_PID, 4242, {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=4242, si_status=0}, WEXITED|WNOWAIT, NULL) = 0"));
@@ -3574,27 +2852,18 @@ test "a pid coming back from a wait is not always a collection (v15)" {
     // above would be satisfied by a function that answered null to everything.
     try std.testing.expectEqual(@as(?u64, 53), reapedPid("47    wait4(-1, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], WUNTRACED, NULL) = 53"));
     try std.testing.expectEqual(@as(?u64, 53), reapedPid("47    wait4(-1, [{WIFSIGNALED(s) && WTERMSIG(s) == SIGKILL}], 0, NULL) = 53"));
-    // A wait with no status buffer says nothing about stopping, and a caller that passed
-    // none could not have seen a stop either.
     try std.testing.expectEqual(@as(?u64, 53), reapedPid("47    wait4(53, NULL, 0, NULL) = 53"));
 }
 
 test "where a child was created, read from both spellings (v15)" {
-    // `fork` and `posix_spawn` both reach the kernel as `clone` here; the resumed form
-    // appears whenever the child's own lines interleave with the call, which the
-    // committed `inv-todoman` capture shows happening for an ordinary fork+exec.
     try std.testing.expectEqual(@as(?u64, 29), spawnedPid("28    clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|SIGCHLD, child_tidptr=0xff) = 29"));
     try std.testing.expectEqual(@as(?u64, 26), spawnedPid("25    <... clone resumed>)              = 26"));
     try std.testing.expectEqual(@as(?u64, 50), spawnedPid("49    clone(child_stack=0xffff97ff0000, flags=CLONE_VM|CLONE_VFORK|SIGCHLD) = 50"));
     try std.testing.expectEqual(@as(?u64, 4242), spawnedPid("42    clone3({flags=0, exit_signal=SIGCHLD}, 88) = 4242"));
 
-    // A thread is not a child something waits for; it is refused by name elsewhere, and
-    // reading its creation as a window would be reading the wrong event.
     try std.testing.expectEqual(@as(?u64, null), spawnedPid("42    clone(child_stack=0x7f, flags=CLONE_VM|CLONE_FS|CLONE_THREAD|CLONE_SIGHAND) = 43"));
-    // The call going in, and the failure.
     try std.testing.expectEqual(@as(?u64, null), spawnedPid("28    clone(child_stack=NULL, flags=SIGCHLD <unfinished ...>"));
     try std.testing.expectEqual(@as(?u64, null), spawnedPid("28    clone(child_stack=NULL, flags=SIGCHLD) = -1 EAGAIN (Resource temporarily unavailable)"));
-    // In the child, where clone returns 0. The child does not learn its own pid here.
     try std.testing.expectEqual(@as(?u64, null), spawnedPid("29    <... clone resumed>)              = 0"));
     // Not spawns. The second is the control: a line ending in a number is not a creation.
     try std.testing.expectEqual(@as(?u64, null), spawnedPid("28    wait4(29, NULL, 0, NULL) = 29"));
@@ -3605,11 +2874,6 @@ test "a child's relative path is not resolved against the subject's directory (v
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
 
-    // The x86-64 shape: glibc issues the legacy `rename`, so the line carries no dirfd
-    // annotation and nothing in it says where the child's working directory was. The
-    // subject's is `/work`, and resolving against it would place this write outside the
-    // judged state — silently, in a run that has no other witness for it, because this
-    // child never loaded the shim.
     const text =
         \\42    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
         \\42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242
@@ -3619,8 +2883,6 @@ test "a child's relative path is not resolved against the subject's directory (v
         \\
     ;
     const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
-    // Unplaceable, and unplaceable is judged the way in-scope is: the run has a writer
-    // whose operations nobody can locate.
     try std.testing.expect(p.childTouched());
 
     // The control, and the reason this test is not satisfied by a parser that gave up on
@@ -3636,9 +2898,6 @@ test "a child's relative path is not resolved against the subject's directory (v
     const q = try parse(arena_state.allocator(), outside, "/tmp/s", "", "/work");
     try std.testing.expect(!q.childTouched());
 
-    // And the subject's own relative path still resolves against its cwd, which is what
-    // the tracked directory is for. `/work/key` is outside `/tmp/s`; the point is that it
-    // was placed at all rather than falling to unresolvable.
     const subject_relative =
         \\42    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
         \\42    rename("key", "key.bak") = 0
@@ -3656,14 +2915,10 @@ test "a move between cgroups is seen from any process, and a read, a failure or 
     const launch = "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n";
     const moves = [_][]const u8{
         "4242  openat(AT_FDCWD, \"/sys/fs/cgroup/elsewhere/cgroup.procs\", O_WRONLY|O_TRUNC) = 3</sys/fs/cgroup/elsewhere/cgroup.procs>\n",
-        // Named relative to a descriptor: the annotations say where.
         "42    openat(5</sys/fs/cgroup/elsewhere>, \"cgroup.threads\", O_WRONLY) = 3</sys/fs/cgroup/elsewhere/cgroup.threads>\n",
-        // An unfinished half shows no result, and is counted.
         "42    openat(AT_FDCWD, \"/sys/fs/cgroup/sideeye-1-ab/cgroup.type\", O_WRONLY <unfinished ...>\n",
         "4242  clone3({flags=CLONE_INTO_CGROUP, exit_signal=SIGCHLD, stack=NULL, stack_size=0, cgroup=5</sys/fs/cgroup/elsewhere>}, 88) = 4243\n",
-        // A handle names no path; the descriptor it returns does.
         "42    open_by_handle_at(3</sys/fs/cgroup>, {handle_bytes=8, handle_type=254, f_handle=0x0100000000000000}, O_WRONLY|O_CLOEXEC) = 4</sys/fs/cgroup/elsewhere/cgroup.procs>\n",
-        // A directory named to look like a failure is still a success.
         "42    openat(AT_FDCWD, \"/sys/fs/cgroup/a = -1 E/cgroup.procs\", O_WRONLY) = 3</sys/fs/cgroup/a = -1 E/cgroup.procs>\n",
     };
     for (moves) |m| {
@@ -3675,7 +2930,6 @@ test "a move between cgroups is seen from any process, and a read, a failure or 
         }
     }
     const not_moves = [_][]const u8{
-        // The shim's own standing check.
         "42    openat(AT_FDCWD, \"/proc/self/cgroup\", O_RDONLY|O_CLOEXEC) = 3</proc/42/cgroup>\n",
         "42    openat(AT_FDCWD, \"/sys/fs/cgroup/x/cgroup.procs\", O_RDONLY) = 3</sys/fs/cgroup/x/cgroup.procs>\n",
         "42    openat(AT_FDCWD, \"/sys/fs/cgroup/x/cgroup.procs\", O_WRONLY) = -1 EACCES (Permission denied)\n",
@@ -3692,7 +2946,6 @@ test "a move between cgroups is seen from any process, and a read, a failure or 
             return error.TestUnexpectedResult;
         }
     }
-    // Before the launch the lines are the apparatus's, as for every other reading here.
     const early = try parse(a, "4242  openat(AT_FDCWD, \"/sys/fs/cgroup/x/cgroup.procs\", O_WRONLY) = 3\n", "/tmp/s", "", "/work");
     try std.testing.expect(early.cgroup_move == null);
 }
@@ -3700,9 +2953,6 @@ test "a move between cgroups is seen from any process, and a read, a failure or 
 test "a call a signal interrupted before it ran is not counted, in either shape strace prints it (#217)" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // The two shapes measured under `--observe supervised` (2026-09-27): the split one, where
-    // the resumed half carries `= ? ERESTARTSYS`, and the one-line one. Each is followed by
-    // the restarted call, which is the one that ran.
     const text =
         \\45    execve("/tmp/toy-sig", ["toy-sig", "rotate"], 0x7ff) = 0
         \\45    write(3</tmp/sg/f.tmp>, "x\n", 2 <unfinished ...>
@@ -3745,9 +2995,6 @@ test "the control: the same calls without the interruption are counted once each
 test "outside --observe supervised an interrupted call still counts, as the shim at libc's entry counts it (#217 review)" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
-    // The wrappers-mode EINTR shape: no SA_RESTART, so the kernel does not restart; libc returns
-    // -1/EINTR and the program retries. The shim counted twice (once per libc call), and the
-    // oracle must too.
     const text =
         \\45    execve("/tmp/toy", ["toy", "rotate"], 0x7ff) = 0
         \\45    write(3</tmp/sg/f.tmp>, "x\\n", 2) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
@@ -3760,7 +3007,6 @@ test "outside --observe supervised an interrupted call still counts, as the shim
 }
 
 test "a target-chosen string cannot pass for strace's interrupted-call return (#217 review)" {
-    // The data is inside the arguments; the return follows them. Only the tail is strace's.
     try std.testing.expect(!isRestartedCall("45    write(3</s/f>, \" = ? ERESTARTSYS (To be restarted if SA_RESTART is set)\", 57) = 57"));
     try std.testing.expect(isRestartedCall("45    <... write resumed>)              = ? ERESTARTSYS (To be restarted if SA_RESTART is set)"));
     try std.testing.expect(isRestartedCall("45    openat(AT_FDCWD</w>, \"/s/f\", O_WRONLY) = ? ERESTARTNOINTR (To be restarted)"));

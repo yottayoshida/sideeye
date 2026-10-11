@@ -1,29 +1,3 @@
-//! The evidence bundle: what a FAIL measured, written for a maintainer who has never used
-//! Sideeye (#607, ADR 0071).
-//!
-//! A saved case is a *question* — the define, the crash point and the landing context a
-//! later replay re-asks (`src/case.zig`, ADR 0009). This file holds the *observation* that
-//! stood beside it: which paths differ between the pre-operation state, the completed state
-//! and the crashed one; whether a changed path existed before; whether its old bytes survive
-//! anywhere else the run judged; what the checker said. The two are separate files for the
-//! reason `docs/contract-freeze.md` surface 4 gives: a case's version and its shape travel
-//! together, and every rung of that ladder (3 argv, 4 cwd, 5 scratch, 6 the observation mode
-//! a non-default case was counted under — ADR 0100) is part of the question a replay re-asks.
-//! Folding an observation in would move every case up a rung, so no case that release wrote
-//! would replay on any earlier 1.x — and each later evidence field would move it again.
-//!
-//! **Everything here is measured at judgement time and nothing is recomputed later.** The
-//! crashed snapshot is freed at the end of its world (`defer crashed.deinit()` in
-//! `phaseExploration`) and the state directory is restored for the next one, so `measure`
-//! runs where the three snapshots are all alive and `Draft` carries its answers out. Bytes
-//! borrowed from a snapshot are duplicated into the run arena on the way out, for the reason
-//! the `repeat_diff_slots` comment in `main.zig` records: `Difference.rel` borrows from
-//! whichever snapshot holds the entry, and a value that escapes its snapshots has to own its
-//! bytes.
-//!
-//! What this file will not do: rank severity, guess, or read anything back out of Sideeye's
-//! own prose. A field it cannot establish is `unknown` and says so in the rendered bundle.
-
 const std = @import("std");
 const contract = @import("contract");
 const engine = @import("engine.zig");
@@ -33,82 +7,47 @@ const defang = @import("defang.zig");
 const capture = @import("capture.zig");
 const cli = @import("cli.zig");
 
-/// The evidence file's own schema version, independent of `case_version` on purpose.
 pub const current_version: u32 = 1;
 
-/// How many changed paths the bundle names individually. Past this the rendered bundle says
-/// how many more there were rather than trimming silently — the same rule `DiffCount.total`
-/// exists for on the snapshot side.
 pub const path_slots: usize = 256;
 
-/// The cap on the checker's captured output, matching the falsification probe's.
 const checker_read_cap: usize = 1024 * 1024;
 
-/// What the bundle can say about a question whose answer is not a plain yes or no.
-///
-/// `unknown` is a measurement outcome, not a default — every site that produces it names its
-/// condition in `docs/evidence.md`. `not_applicable` is separate from it on purpose: a path
-/// that did not exist before the operation has no old bytes, and answering "unknown" about
-/// bytes that provably never existed spends the word this bundle needs for the cases where
-/// the run genuinely could not tell. Measured 2026-09-17: the first real run of the
-/// surviving-copy fixture put `unknown` on a file the operation had created, which reads as
-/// a gap in the measurement and is not one.
 pub const Answer = enum { yes, no, unknown, not_applicable };
 
-/// One path's state in one snapshot. Absent is `null` at the field, so "the file was not
-/// there" and "the file was there and empty" are different shapes rather than both being 0.
 pub const Snap = struct {
     kind: []const u8,
     size: usize,
 };
 
-/// One changed path, as the three snapshots saw it.
 pub const PathRow = struct {
     path: []const u8,
-    /// The state directory before the operation ran.
     before: ?Snap,
-    /// The state directory after the operation ran to completion (the recording's own final).
     completed: ?Snap,
-    /// The state directory after the run that was killed at this crash point.
     crashed: ?Snap,
     pre_existing: bool,
     declared_scratch: bool,
-    /// Whether the pre-operation bytes of this path are still present, byte for byte, at
-    /// some *other* path inside the judged state.
     old_bytes_elsewhere: Answer,
-    /// The path they were found at; empty unless `old_bytes_elsewhere == .yes`.
     old_bytes_at: []const u8,
 };
 
 pub const Boundary = struct {
-    /// The last state-changing operation that completed in this world.
     after_op: []const u8,
     after_path: []const u8,
-    /// The operation the kill landed in front of, which never ran.
     before_op: []const u8,
     before_path: []const u8,
 };
 
 pub const Checker = struct {
     configured: bool,
-    /// `null` when no checker was configured.
     failed: ?bool,
-    /// The checker's own last non-empty output line in the exhibit's world, defanged and
-    /// clipped. `null` when no checker ran, or when its output could not be read back —
-    /// which is why this is an optional rather than an empty string.
     diagnostic: ?[]const u8,
 };
 
-/// A string rather than an enum so #606 can add a member without moving `evidence_version`.
 pub const Recovery = struct {
     result: []const u8,
 };
 
-/// Which of a run's two saved exhibits this bundle describes (#231, ADR 0020). A run can
-/// save both: the overall earliest failing world, and the earliest world the declared checker
-/// rejected — the second is structurally later whenever they differ. The field exists from
-/// version 1 because a bundle that cannot say which one it is has to guess, and the first
-/// renderer guessed "the earliest" unconditionally for both.
 pub const Exhibit = enum { earliest, checker };
 
 pub const Target = struct {
@@ -116,11 +55,6 @@ pub const Target = struct {
     state_root: []const u8,
 };
 
-/// The whole bundle, as it is written to disk and as `sideeye evidence` reads it back.
-/// Read leniently: an unknown field is ignored, and only an `evidence_version` above this
-/// binary's is refused (ADR 0071) — the opposite of a case file, whose reader treats an unknown
-/// field as a future schema. The comment that stood here said "parsed strictly", which the
-/// reader stopped doing before #607 merged.
 pub const Evidence = struct {
     schema: []const u8,
     evidence_version: u32,
@@ -135,8 +69,6 @@ pub const Evidence = struct {
     subject: []const u8,
     observed: []const u8,
     consequence: []const PathRow,
-    /// True when more paths differed than `path_slots` could hold. The rendered bundle says
-    /// so; it never presents a trimmed list as the whole list.
     consequence_truncated: bool,
     checker: Checker,
     replay: []const u8,
@@ -145,19 +77,15 @@ pub const Evidence = struct {
     caveats: []const []const u8,
 };
 
-/// What `measure` establishes inside the world loop, where the snapshots are alive. The rest
-/// of `Evidence` is assembled in `phaseReport` from values that are only final after the loop.
 pub const Draft = struct {
     consequence: []const PathRow,
     consequence_truncated: bool,
     checker: Checker,
 };
 
-/// What the world loop knows about the checker in the world being measured.
 pub const CheckerObservation = struct {
     configured: bool,
     failed: bool,
-    /// The capture file the checker's output went to, or null when there was no checker or
     /// the capture could not be opened. Read here rather than by the caller so the read
     /// happens in the same world — the next world overwrites the file.
     output_path: ?[]const u8,
@@ -178,8 +106,6 @@ fn snapOf(s: engine.Snapshot, rel: []const u8) ?Snap {
     return .{ .kind = kindName(e.kind), .size = e.content.len };
 }
 
-/// Merge two sorted difference lists into the sorted union of their `rel`s, into `out`.
-/// Both producers walk sorted, unique entry lists, so each list is itself sorted and unique.
 fn unionRels(a: []const engine.Difference, b: []const engine.Difference, out: [][]const u8) usize {
     var i: usize = 0;
     var j: usize = 0;
@@ -205,8 +131,6 @@ fn unionRels(a: []const engine.Difference, b: []const engine.Difference, out: []
     return n;
 }
 
-/// Does any path other than `rel` hold `want`, byte for byte, in the crashed state?
-///
 /// Regular files only. A symlink's recorded content is its target string, and a directory's
 /// is empty, so neither can be a byte-identical copy of a file's contents; counting them
 /// would be a hit that is not a copy. The search does not leave the judged state — what a
@@ -221,10 +145,6 @@ fn findCopy(crashed: engine.Snapshot, rel: []const u8, want: []const u8) ?[]cons
     return null;
 }
 
-/// Measure the crashed world against the two states it is judged against. Called once, from
-/// the world loop, for each exhibit — the overall earliest failure and, when it is a
-/// different world, the earliest the checker rejected.
-///
 /// `initial` and `final` outlive the loop; `crashed` does not, which is why every byte this
 /// returns is duplicated into `arena`.
 pub fn measure(
@@ -254,14 +174,8 @@ pub fn measure(
         // What this run did not see, as distinct from what it saw was absent: a recorded
         // rename moved a subtree in from outside the judged root (#405, ADR 0032), which was
         // never snapshotted, so "no copy here" would be a claim about a tree nothing read.
-        // One search, not one per answer. `findCopy` walks every entry of the crashed
-        // snapshot comparing contents, which is the only part of `measure` that is not
-        // linear in the number of rows; asking it again for the path it just found would
-        // double the one cost here that a large state tree actually feels.
         var found_at: ?[]const u8 = null;
         const survives: Answer = blk: {
-            // Asked first: a path the operation created has no pre-operation bytes, so the
-            // question does not arise. This is not the same as not knowing.
             const pe = pre_entry orelse break :blk .not_applicable;
             if (report.attributed_to_rename > 0) break :blk .unknown;
             // A directory's recorded content is empty and a symlink's is its target string,
@@ -295,9 +209,6 @@ pub fn measure(
     };
 }
 
-/// The checker's last non-empty output line, defanged and clipped — the one line most worth
-/// pasting into an upstream report.
-///
 /// `require_regular`, like the setup capture's read and unlike the falsification and world
 /// captures': the path is under `--work`, and between the engine's own `O_EXCL` create and
 /// this read sits a window a live child of the target can reach. A FIFO planted there is the
@@ -324,7 +235,6 @@ fn lastLine(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
     return clipped;
 }
 
-/// The sentences the report already carries about what this run could and could not see.
 /// Copied from the same variables the report reads, never re-derived: two derivations of one
 /// fact drift, and this one would drift towards the flattering side.
 pub fn caveats(arena: std.mem.Allocator, truncated: bool, recovery_judged: bool) error{OutOfMemory}![]const []const u8 {
@@ -348,9 +258,6 @@ pub fn caveats(arena: std.mem.Allocator, truncated: bool, recovery_judged: bool)
         arena,
         "More paths differed than this bundle lists individually; the table is the first 256 in path order.",
     );
-    // #606, ADR 0072. Said wherever a recovery ran against this exhibit and was judged, pass or
-    // fail: a pass from a tool that decides by modification time is exactly the result this
-    // limit can manufacture. Not said on `unknown`, which may be a recovery that never ran.
     if (recovery_judged) try buf.append(
         arena,
         "The recovery ran against a crash state rebuilt from its snapshot: the names, kinds, contents and permission bits the crash left (a directory with its owner's bits added; not set-id or sticky bits), but restore-time timestamps and the engine's own ownership, so a recovery that decides by modification time saw every file as newly written.",
@@ -358,9 +265,6 @@ pub fn caveats(arena: std.mem.Allocator, truncated: bool, recovery_judged: bool)
     return buf.items;
 }
 
-/// What differs between a run's two exhibits. Everything else a bundle carries is the same for
-/// both — the schema, the versions, the target, the caveats, `recovery` — and `save` fills
-/// those once.
 pub const Exhibited = struct {
     exhibit: Exhibit,
     crash_point: u32,
@@ -371,19 +275,9 @@ pub const Exhibited = struct {
     replay: []const u8,
     case_path: []const u8,
     draft: Draft,
-    /// What the declared recovery did to this exhibit's crash state (#606); null when no
-    /// recovery was declared, which is what `not_configured` in the file says.
     recovery: ?contract.RecoveryResult = null,
 };
 
-/// Build a bundle for one exhibit and write it beside `case_file`, returning its path or null.
-///
-/// One constructor for both exhibits, rather than the two near-identical struct literals the
-/// first version had at the two call sites: eight fields that do not vary between them were
-/// spelled twice, and a ninth added to one of the two would have shipped a bundle that carries
-/// a field on the earliest exhibit and not on the claim exhibit. It lives here rather than in
-/// `main.zig` for the reason the rest of this file does — and because `main.zig` is at the
-/// declaration ceiling `spike/check-main-shape.sh` holds it to.
 pub fn save(
     arena: std.mem.Allocator,
     case_file: []const u8,
@@ -411,16 +305,11 @@ pub fn save(
         .checker = e.draft.checker,
         .replay = e.replay,
         .case = e.case_path,
-        // The slot #607 held open from the first version, filled by #606 as a value change and
-        // not a schema change: `evidence_version` stays 1. A string in the file, not an enum,
-        // for the same reason — a reader built before #606 reads the new values as text.
         .recovery = .{ .result = if (e.recovery) |r| r.name() else "not_configured" },
         .caveats = cav,
     });
 }
 
-/// A command as one line, for the bundle's "what happened" sentence. The engine holds the
-/// operation as argv; a maintainer reads a command line.
 pub fn joinArgv(arena: std.mem.Allocator, argv: []const []const u8) error{OutOfMemory}![]const u8 {
     var out: std.ArrayList(u8) = .empty;
     for (argv, 0..) |a, i| {
@@ -431,8 +320,6 @@ pub fn joinArgv(arena: std.mem.Allocator, argv: []const []const u8) error{OutOfM
     }
     return out.items;
 }
-
-// ---- writing -----------------------------------------------------------------------
 
 fn jsonSnap(w: *std.ArrayList(u8), arena: std.mem.Allocator, s: ?Snap) !void {
     const v = s orelse {
@@ -448,7 +335,6 @@ fn jsonBool(w: *std.ArrayList(u8), arena: std.mem.Allocator, b: bool) !void {
     try w.appendSlice(arena, if (b) "true" else "false");
 }
 
-/// Render the bundle as the JSON document `sideeye evidence` reads back.
 pub fn buildJson(arena: std.mem.Allocator, ev: Evidence) ![]const u8 {
     var doc: std.ArrayList(u8) = .empty;
     const w = &doc;
@@ -527,9 +413,6 @@ pub fn buildJson(arena: std.mem.Allocator, ev: Evidence) ![]const u8 {
     return doc.items;
 }
 
-/// `<work>/cases/NNNNNN.json` -> `<work>/evidence/NNNNNN.json`. Any other path is returned as
-/// itself, so `sideeye evidence` takes the case's name or the bundle's.
-///
 /// **A directory of its own, and not `cases/NNNNNN.evidence.json`.** The first version put the
 /// bundle beside its case under the same extension, and CI found what that costs: three places
 /// take `cases/*.json` and one of them is `ls … | head -1`, which sorts `000001.evidence.json`
@@ -545,10 +428,6 @@ pub fn siblingPath(arena: std.mem.Allocator, case_path: []const u8) error{OutOfM
     return std.fmt.allocPrint(arena, "{s}evidence{s}", .{ parent, case_path[slash..] });
 }
 
-/// The case a bundle sits beside: `siblingPath` read backwards, for a caller handed the
-/// bundle's own path (`sideeye_evidence` takes either, #717). Returns the path unchanged when
-/// it is not under an `evidence` directory, which a caller tells from a moved one by
-/// comparing — the same convention `siblingPath` keeps.
 pub fn casePathOf(arena: std.mem.Allocator, bundle_path: []const u8) error{OutOfMemory}![]const u8 {
     const slash = std.mem.lastIndexOfScalar(u8, bundle_path, '/') orelse return bundle_path;
     const dir = bundle_path[0..slash];
@@ -560,15 +439,8 @@ pub fn casePathOf(arena: std.mem.Allocator, bundle_path: []const u8) error{OutOf
 /// Write the bundle beside its case and return the path, or null when it could not be
 /// written. Null is not a failure of the run: the FAIL report and the case are the product,
 /// and an attachment must not take them down with it — the same rule `writeCase` keeps.
-///
-/// Called only once its case was written. The case ids are claimed `O_EXCL` and this name is
-/// derived from one, so the evidence file claims no id of its own and the ordering invariant
-/// the report documents — in a fresh work directory `000001` belongs to the overall earliest
-/// — is untouched by whether this succeeds.
 pub fn write(arena: std.mem.Allocator, case_path: []const u8, ev: Evidence) ?[]const u8 {
     const path = siblingPath(arena, case_path) catch return null;
-    // Same directory as the case means the caller handed us a path this rule does not move,
-    // which is a hand-written case rather than one this engine wrote. Nothing to attach to.
     if (std.mem.eql(u8, path, case_path)) return null;
     const doc = buildJson(arena, ev) catch return null;
     var dbuf: [contract.max_path]u8 = undefined;
@@ -596,15 +468,11 @@ pub fn write(arena: std.mem.Allocator, case_path: []const u8, ev: Evidence) ?[]c
     return path;
 }
 
-// ---- rendering ---------------------------------------------------------------------
-
 fn answerWord(a: Answer) []const u8 {
     return switch (a) {
         .yes => "yes",
         .no => "no",
         .unknown => "unknown",
-        // Rendered as a dash rather than the tag: a table column reading `not_applicable`
-        // invites the reader to wonder what was not applied.
         .not_applicable => "—",
     };
 }
@@ -634,30 +502,16 @@ fn cell(w: *std.ArrayList(u8), arena: std.mem.Allocator, s: ?Snap) error{OutOfMe
 /// program can write — `docs/cli.md` says a target handing Sideeye an artefact it wrote
 /// itself is not something any flag stops — so on this path every field is target-influenced,
 /// whoever produced the one in hand. The JSON side is escaped by `report.jsonString`; this is
-/// the text side's equivalent, the same choke point `main.zig` puts every report line through.
-///
-/// Measured before this existed (2026-09-17): a bundle whose `consequence[].path` held
-/// newlines rendered a `## Severity` heading and the word `critical` into the document, which
-/// is precisely what the page's promise says a bundle never carries.
 fn asText(arena: std.mem.Allocator, s: []const u8) []const u8 {
     return defang.textShown(arena, s);
 }
 
-/// The bundle as Markdown, for pasting into an upstream issue.
-///
-/// Every line here is a field of `ev`. Nothing is inferred from another field, and no
-/// sentence ranks what it describes: a maintainer decides what the measurement is worth,
-/// which is the whole reason the impact columns are here instead of a label.
 pub fn render(arena: std.mem.Allocator, ev: Evidence) error{OutOfMemory}![]const u8 {
     var doc: std.ArrayList(u8) = .empty;
     const w = &doc;
 
     try w.appendSlice(arena, "## What happened\n\n");
     try w.print(arena, "`{s}` was interrupted between two of its own file operations. ", .{asText(arena, ev.target.operation)});
-    // Which exhibit this is, said rather than assumed. A run can save two (#231, ADR 0020):
-    // the overall earliest, and the earliest world the declared checker rejected — which is
-    // structurally later whenever the two differ. An unconditional "this is the earliest"
-    // was false on the second bundle, and no field distinguished them until this one.
     if (ev.exhibit == .earliest)
         try w.print(arena, "This is crash point {d} of {d} that Sideeye explored; it is the earliest one whose result differed.\n\n", .{ ev.crash_point, ev.crash_points_total })
     else
@@ -747,15 +601,8 @@ pub fn render(arena: std.mem.Allocator, ev: Evidence) error{OutOfMemory}![]const
     return doc.items;
 }
 
-// ---- reading one back ---------------------------------------------------------------
-
-/// What the CLI says when there is no bundle to read beside a case. The MCP server names the
-/// root beside it, since there the same miss can also be a bundle outside the root.
 pub const no_bundle_message = "no evidence file could be read beside that case. A bundle is written when the FAIL is found, by a sideeye new enough to write one; an older case has none, and re-running the define writes it.";
 
-/// A bundle read back from bytes, or the sentence that says why it is not one. The CLI and
-/// the MCP server both read through this (#717), so they cannot disagree about which file is
-/// a bundle or which version is too new.
 pub const Loaded = union(enum) { ok: Evidence, refused: []const u8 };
 
 pub fn parseBundle(arena: std.mem.Allocator, text: []const u8) Loaded {
@@ -775,8 +622,6 @@ pub fn parseBundle(arena: std.mem.Allocator, text: []const u8) Loaded {
     return .{ .ok = ev };
 }
 
-// ---- the subcommand ----------------------------------------------------------------
-
 fn fail(msg: []const u8) u8 {
     const lead = "sideeye: ";
     _ = posix.write(2, lead.ptr, lead.len);
@@ -787,11 +632,6 @@ fn fail(msg: []const u8) u8 {
     return 3;
 }
 
-/// `sideeye evidence <case.json>` — render the bundle saved beside a case.
-///
-/// No flags, deliberately. The machine-readable form is the evidence file itself, whose path
-/// the report names beside the case's; a `--format json` would be a second way to ask for
-/// bytes that are already on disk.
 pub fn runCommand(gpa: std.mem.Allocator, case_arg: []const u8) u8 {
     var arena_state = std.heap.ArenaAllocator.init(gpa);
     defer arena_state.deinit();
@@ -814,8 +654,6 @@ pub fn runCommand(gpa: std.mem.Allocator, case_arg: []const u8) u8 {
     }
     return 0;
 }
-
-// ---- tests --------------------------------------------------------------------------
 
 test "the union of two difference lists names each path once, in order" {
     const a = [_]engine.Difference{
@@ -851,12 +689,9 @@ test "casePathOf reads siblingPath backwards, and leaves a path it does not move
     const c = try casePathOf(a, "/w/evidence/000001.json");
     defer a.free(c);
     try std.testing.expectEqualStrings("/w/cases/000001.json", c);
-    // The round trip: case -> bundle -> case.
     const b = try siblingPath(a, c);
     defer a.free(b);
     try std.testing.expectEqualStrings("/w/evidence/000001.json", b);
-    // Not under `evidence/`: returned unchanged, which is how a caller tells there is no case
-    // to name. `evidencex` is not `evidence` — the check is on the whole component.
     try std.testing.expectEqualStrings("/w/cases/000001.json", try casePathOf(a, "/w/cases/000001.json"));
     try std.testing.expectEqualStrings("/w/evidencex/1.json", try casePathOf(a, "/w/evidencex/1.json"));
 }
@@ -866,10 +701,7 @@ test "the evidence path leaves the cases directory and the rule is idempotent" {
     const a = try siblingPath(arena, "/w/cases/000001.json");
     defer arena.free(a);
     try std.testing.expectEqualStrings("/w/evidence/000001.json", a);
-    // The property CI bought: a bundle never matches `cases/*.json`, so the three readers of
-    // that directory — and the fourth nobody has written yet — cannot be handed one.
     try std.testing.expect(std.mem.indexOf(u8, a, "/cases/") == null);
-    // Idempotent, so `sideeye evidence` takes either name.
     const b = try siblingPath(arena, a);
     try std.testing.expectEqualStrings(a, b);
     // A path this rule does not move is returned unchanged, and `write` treats that as
@@ -914,14 +746,12 @@ test "a bundle round-trips through its own JSON" {
         .caveats = &.{"No oracle confirmed it."},
     };
     const text = try buildJson(arena, ev);
-    // Strict: an unknown field is a file from a future schema, the rule `ReplayCase` keeps.
     const back = try std.json.parseFromSlice(Evidence, arena, text, .{});
     try std.testing.expectEqual(@as(u32, 2), back.value.crash_point);
     try std.testing.expectEqual(@as(usize, 1), back.value.consequence.len);
     try std.testing.expectEqual(Answer.no, back.value.consequence[0].old_bytes_elsewhere);
     try std.testing.expectEqual(@as(usize, 0), back.value.consequence[0].crashed.?.size);
     try std.testing.expectEqualStrings("not_configured", back.value.recovery.result);
-    // The diagnostic carries a quote; the JSON escape and the parse have to agree about it.
     try std.testing.expectEqualStrings("FAIL: README.md lost \"Title\"", back.value.checker.diagnostic.?);
 }
 
@@ -962,9 +792,6 @@ test "the checker exhibit's bundle does not call itself the earliest" {
     };
     const claim = "it is the earliest one whose result differed";
     const md = try render(arena, ev);
-    // The claim exhibit is structurally later than the overall earliest whenever the two
-    // differ (#231, ADR 0020), so this sentence is false on its bundle. The first renderer
-    // printed it unconditionally, which is what the `exhibit` field exists to stop.
     try std.testing.expect(std.mem.indexOf(u8, md, claim) == null);
     try std.testing.expect(std.mem.indexOf(u8, md, "the earliest one the declared checker rejected") != null);
     // The control: the same bundle as the other exhibit DOES carry the sentence, so this
@@ -978,14 +805,9 @@ test "a crafted bundle cannot forge a section through any rendered string" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
     const arena = arena_state.allocator();
-    // Every string a bundle carries that reaches the document, each holding a forged
-    // heading. The bundle is a file in the work directory, which the judged program can
-    // write, so "who would put that there" is answered: the target can.
     const forged = "x\n## Forged\ny";
     const rows = [_]PathRow{.{
         .path = forged,
-        // The one that was missed on the first pass: a kind reads like the engine's own
-        // word, and is a string parsed out of the file like every other.
         .before = .{ .kind = forged, .size = 1 },
         .completed = null,
         .crashed = .{ .kind = forged, .size = 2 },
@@ -1056,8 +878,6 @@ test "the rendered bundle carries the measured fields and no severity word" {
             .crashed = null,
             .pre_existing = false,
             .declared_scratch = true,
-            // What `measure` produces for a path the operation created: the question does
-            // not arise, which is not the same as not knowing the answer.
             .old_bytes_elsewhere = .not_applicable,
             .old_bytes_at = "",
         },
@@ -1100,8 +920,6 @@ test "the rendered bundle carries the measured fields and no severity word" {
     try std.testing.expect(std.mem.indexOf(u8, md, "FAIL: README.md lost Title") != null);
     try std.testing.expect(std.mem.indexOf(u8, md, "sideeye replay /w/cases/000001.json") != null);
     try std.testing.expect(std.mem.indexOf(u8, md, "Not configured") != null);
-    // The absent-before row must read `absent`, not `file, 0 bytes`: those are different
-    // observations and the table is the only place a reader can tell them apart.
     try std.testing.expect(std.mem.indexOf(u8, md, "absent") != null);
     // Asserted on the rendered CELLS, not on the word appearing anywhere in the document:
     // the table's own legend contains "unknown", so `indexOf(md, "unknown")` passes on a

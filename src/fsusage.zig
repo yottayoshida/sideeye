@@ -1,74 +1,14 @@
-//! The macOS completeness oracle: read `fs_usage`'s view of the recording run and hold
-//! the shim's trace against it.
-//!
-//! Same job as `oracle.zig` does with strace, same output type, compared by the same
-//! `oracle.compare`. What differs is everything about the witness.
-//!
-//! **It is not a wrapper.** strace execs the target; `fs_usage` runs beside it, reading
-//! the kernel's trace buffer. So the capture is not bounded by the target's lifetime,
-//! and nothing about it proves the observer was alive for the whole run — the caller
-//! bounds the window with sentinels and this module refuses a capture whose sentinels
-//! are missing.
-//!
-//! **It cannot follow children by pid.** `fs_usage`'s pid filter does not follow a fork
-//! (measured, `spike/fsusage/RESULTS.md`), so filtering by the subject's pid leaves a
-//! raw-forked child invisible to this witness exactly where it is already invisible to
-//! the shim — which is #405, reachable on the shipped build. The capture is therefore
-//! taken unfiltered and scoped by the state root: a write into that root appears here
-//! whoever performed it.
-//!
-//! **It prints thread ids, not pids.** With the filter gone, something has to say which
-//! lines are the subject's. The shim writes its trace to `SIDEEYE_TRACE_PATH` and only
-//! the subject carries the shim, so the tid that writes to the trace path is the
-//! subject. No trace-contract field is added for this — a contract bump orphans every
-//! saved case (#279) — and the identification is self-checking: no such tid, no verdict.
-//!
-//! **Everything it cannot resolve is a refusal.** A write whose descriptor was never
-//! opened in the window, a path truncated by the display cap, a CALL this module does
-//! not know, a line the grammar does not match: each of those is a hole in the account,
-//! and an account with a hole must not be reported as agreement. One exception, from
-//! 2026-09-08: a line the grammar cannot read whole — a head whose physical line ended
-//! inside the name, before its tail, is the measured shape — whose CALL is one this
-//! module knows to read only, or a disk-io line (not an operation), is skipped, for the reason a parsed line of the same
-//! kind is: it could not have changed state whoever issued it — and so are the physical
-//! lines that follow it without a timestamp of their own, up to the one carrying the
-//! duration and `proc.tid` the head lost: fragments of that same event, not events
-//! (measured on the CI runner as two lines; why the event spans lines is not measured —
-//! the fragment's bytes read like a pax record, so a newline inside the name is the
-//! likely mechanism, and `fs_usage` prints names raw). The grammar itself is
-//! ported from `spike/fsusage/classify.py`, which was written against real captures on
-//! two machines rather than from the man page.
-
 const std = @import("std");
 const contract = @import("contract");
 const oracle = @import("oracle.zig");
 
-/// Why a capture cannot be read as a complete account. Every one of these is a refusal
-/// at the call site; none of them is a divergence, because a divergence is a statement
-/// about what the two witnesses saw and these say the witness itself is unreadable.
 pub const Defect = union(enum) {
-    /// The grammar did not match a line. Skipped in two cases only (2026-09-08/09): the
-    /// line has a timestamp and a CALL and that CALL is one this module knows to read
-    /// only or a disk-io line — a head whose physical line ended before its tail — or the
-    /// line has no timestamp and follows such a head with no whole line between, before
-    /// its tail has arrived, which makes it a fragment of that same event and not an
-    /// event. Every other unparsed line is an operation this module cannot rule out.
     unparsed: []const u8,
-    /// A pathname cut by the display cap. The state root's own prefix may be gone, so
-    /// the line cannot be scoped either way.
     truncated: []const u8,
-    /// A `write`/`fsync`/`ftruncate` on a descriptor with no `open` in the window.
-    /// Inherited descriptors land here; so does a capture that started too late.
     unresolved_fd: []const u8,
-    /// A CALL touching the state root that this module does not map to an OpClass.
     unknown_call: []const u8,
-    /// A directory-relative operand this reader could not place: `[N]/rel` on a
-    /// descriptor never seen opened, `[-2]/rel` with no cwd to resolve against, or a
-    /// `..` in the operand, on a call that could change state.
     unresolvable_path: []const u8,
-    /// No tid wrote to the trace path, so the subject could not be identified.
     no_subject,
-    /// A sentinel the caller placed was not in the capture.
     missing_sentinel: []const u8,
 };
 
@@ -77,12 +17,9 @@ pub const Reading = struct {
     /// Non-null when the capture cannot be read as a complete account. The caller
     /// refuses; it never compares a defective reading.
     defect: ?Defect = null,
-    /// The tid identified as the subject, for the account line.
     subject_tid: ?[]const u8 = null,
 };
 
-/// One parsed line. `middle` holds the fields between the CALL and the duration —
-/// descriptors, errno brackets, byte counts and the pathname, in `fs_usage`'s order.
 const Line = struct {
     call: []const u8,
     middle: []const u8,
@@ -90,27 +27,19 @@ const Line = struct {
     raw: []const u8,
 };
 
-/// The left edge of the grammar — the timestamp and the CALL — on its own, because a
-/// line can lose its right edge and keep this one (a daemon's file named in combining
-/// characters, 2026-09-08 on the CI runner: the physical line ended inside the name,
-/// and the duration and the process arrived on the next one). Returns the CALL and the
-/// index where the middle begins.
 fn callOf(line: []const u8) ?struct { call: []const u8, call_start: usize, middle_start: usize } {
     if (line.len < 20) return null;
-    // Timestamp: HH:MM:SS.uuuuuu — wide mode always carries the fractional part.
     if (line[2] != ':' or line[5] != ':' or line[8] != '.') return null;
     var i: usize = 9;
     while (i < line.len and std.ascii.isDigit(line[i])) i += 1;
     if (i == 9) return null;
     while (i < line.len and line[i] == ' ') i += 1;
-    // CALL
     const call_start = i;
     while (i < line.len and line[i] != ' ') i += 1;
     if (i == call_start) return null;
     return .{ .call = line[call_start..i], .call_start = call_start, .middle_start = i };
 }
 
-/// One whole line: `callOf`'s left edge, `tailOf`'s right edge, the middle between.
 fn parseLine(raw: []const u8) ?Line {
     const line = std.mem.trimEnd(u8, raw, " \t\r");
     const left = callOf(line) orelse return null;
@@ -124,23 +53,7 @@ fn parseLine(raw: []const u8) ?Line {
     return .{ .call = call, .middle = middle, .tid = right.tid, .raw = raw };
 }
 
-/// The right edge of the grammar — the duration and `proc.tid` — on its own, for the
-/// same reason `callOf` is: when a physical line ends inside a name, the tail arrives on
-/// a later physical line with no timestamp and no CALL in front of it (measured
-/// 2026-09-08 on the CI runner, the line after a daemon's cut `getattrlist`:
-/// `133 LIBARCHIVE.xattr.com.apple.macl=B    0.000039   promotedcontentd.13451`).
-/// Returns the tid and the index where the duration starts.
-///
-/// `HH:MM:SS.uuuuuu  CALL  <middle>  D.DDDDDD [W ]proc.tid`
-///
-/// Process names contain spaces (`Google Chrome He.64625821`, measured on the owner's
-/// laptop and absent from the CI runner, which is why a `\S+` grammar passed there and
-/// refused here), so the process field is taken as everything before the LAST dot on
-/// the line's tail. The duration is the anchor: it is the only field whose shape is
-/// fixed, and everything left of it is the CALL plus its arguments.
 fn tailOf(line: []const u8) ?struct { tid: []const u8, dur_start: usize } {
-    // The tail: `proc.tid`, tid being the digits after the LAST dot of the LAST field.
-    //
     // Process names carry dots of their own — `com.apple.Virtualization.Virtua.80341932`
     // and `com.netskope.client.Netskope-Cl.80202530` are both real lines from one
     // capture — so the split is the last dot, not the first, and it is taken inside the
@@ -157,7 +70,6 @@ fn tailOf(line: []const u8) ?struct { tid: []const u8, dur_start: usize } {
     if (tid.len == 0) return null;
     for (tid) |c| if (!std.ascii.isDigit(c)) return null;
 
-    // Left of the process name sits the duration, and before that the middle.
     // The process name may hold spaces (`Google Chrome He.64625821`), so back up over
     // words until one parses as a duration (`D.DDDDDD`). A `W` flag sits between them
     // on disk-io lines (`0.000221 W libc_toy.80342207`, measured).
@@ -174,7 +86,6 @@ fn tailOf(line: []const u8) ?struct { tid: []const u8, dur_start: usize } {
             dur_end = w_start;
             break;
         }
-        // Not a duration: part of the process name, or the `W` flag. Keep walking left.
         scan = w_start;
     }
     const dur_start = dur_end orelse return null;
@@ -182,7 +93,6 @@ fn tailOf(line: []const u8) ?struct { tid: []const u8, dur_start: usize } {
 }
 
 fn isDuration(w: []const u8) bool {
-    // D.DDDDDD — at least one digit, a dot, exactly six digits.
     const dot = std.mem.indexOfScalar(u8, w, '.') orelse return false;
     if (dot == 0 or w.len - dot - 1 != 6) return false;
     for (w[0..dot]) |c| if (!std.ascii.isDigit(c)) return false;
@@ -190,9 +100,6 @@ fn isDuration(w: []const u8) bool {
     return true;
 }
 
-/// Was this line's pathname cut by the display width?
-///
-/// Two shapes, and the first version of this module implemented only one of them.
 /// macOS 15.x pads a cut name with `>`, which is easy to spot. But the cut itself
 /// happens on the LEFT, and the committed capture of the deep-path leg shows what that
 /// leaves when there is no padding: `ted-component/nested-component/.../state/sentinel`
@@ -205,10 +112,6 @@ fn isDuration(w: []const u8) bool {
 fn isTruncated(middle: []const u8) bool {
     const t = std.mem.trimEnd(u8, middle, " ");
     if (t.len >= 2 and t[t.len - 1] == '>' and t[t.len - 2] == '>') return true;
-    // A stump: the tail looks like a path (it holds a separator) but has no root. The
-    // annotation fields fs_usage puts before the operand — `F=3`, `B=0x5`, `[  2]`,
-    // `(_WC_T__)`, `D=0x...` — never contain a slash, so a slash outside them means the
-    // operand is present, and an operand with no leading `/` means it was cut.
     var it = std.mem.tokenizeAny(u8, t, " ");
     while (it.next()) |tok| {
         if (std.mem.indexOfScalar(u8, tok, '/') == null) continue;
@@ -244,20 +147,12 @@ fn fdOf(middle: []const u8) ?[]const u8 {
     return null;
 }
 
-/// `AT_FDCWD` as fs_usage prints it in a directory-descriptor annotation.
 const at_fdcwd: i64 = -2;
 
-/// The operand of a line: a pathname, possibly relative to a directory descriptor.
-///
-/// Two spellings, both measured. Plain: the last whitespace-separated field starting
 /// with `/`. Directory-relative: `[N]` immediately followed by `/` and then the operand
 /// — `[69]/libsideeye_shim.so` is relative to descriptor 69, and `[-2]//Users/x/f` is
 /// `openat(AT_FDCWD, "/Users/x/f")`, the separator fs_usage inserts sitting in front of
 /// an operand that is itself absolute. `mkstemp` on macOS opens through exactly that
-/// second form, which is how the reader met it: the one line it exists to catch was the
-/// one it could not read.
-///
-/// Errno brackets (`[  2]`) are followed by spaces, never by `/`, so they do not match.
 const Operand = struct { dirfd: ?i64, text: []const u8 };
 
 fn operandOf(middle: []const u8) ?Operand {
@@ -291,11 +186,6 @@ fn joinPath(arena: std.mem.Allocator, dir: []const u8, rel: []const u8) ![]const
     return std.fmt.allocPrint(arena, "{s}/{s}", .{ d, rel });
 }
 
-/// An absolute pathname for the line, when one can be had without the descriptor table:
-/// the plain form, a directory-relative form whose operand is itself absolute, or an
-/// `AT_FDCWD`-relative operand joined to `cwd`. Null for anything that needs a
-/// descriptor to resolve. Used where the table does not exist yet (the first pass) and
-/// by the handshake.
 fn pathOf(arena: std.mem.Allocator, middle: []const u8, cwd: []const u8) ?[]const u8 {
     const op = operandOf(middle) orelse return null;
     if (op.text.len != 0 and op.text[0] == '/') return op.text;
@@ -305,15 +195,6 @@ fn pathOf(arena: std.mem.Allocator, middle: []const u8, cwd: []const u8) ?[]cons
     return null;
 }
 
-/// CALL name to the class the shim would have recorded. Only calls that can change
-/// state are mapped; read-only calls return null and are ignored, matching ADR 0003's
-/// predicate on the shim side. `close` is recorded but never a crash point.
-/// `fs_usage` prints the `_nocancel` spelling of a call when the target used the
-/// variant that is not a cancellation point — `open_nocancel`, `write_nocancel` and
-/// eight more that `spike/fsusage/classify.py` enumerates one by one. They are the same
-/// call. Stripped in one place rather than listed in three tables, so a spelling this
-/// version has not seen still lands on its own class instead of on the unknown-call
-/// refusal: the enumeration is what a port drops, and this one dropped nine of ten.
 fn canonicalCall(call: []const u8) []const u8 {
     const suffix = "_nocancel";
     if (std.mem.endsWith(u8, call, suffix)) return call[0 .. call.len - suffix.len];
@@ -325,9 +206,6 @@ fn classOf(call_in: []const u8) ?contract.OpClass {
     const table = [_]struct { name: []const u8, class: contract.OpClass }{
         .{ .name = "open", .class = .open },
         .{ .name = "guarded_open_np", .class = .open },
-        // The rest of the guarded family (#299). SQLite writes through these, and the
-        // shim interposes all six as of that change; classifying them here is what
-        // makes the oracle able to contradict the shim's account of them.
         .{ .name = "guarded_open_dprotected_np", .class = .open },
         .{ .name = "guarded_write_np", .class = .write },
         .{ .name = "guarded_pwrite_np", .class = .write },
@@ -362,8 +240,6 @@ fn classOf(call_in: []const u8) ?contract.OpClass {
     return null;
 }
 
-/// Is this `open` write-capable, in ADR 0003's sense?
-///
 /// The predicate has to mean the same thing on both sides of the comparison, and ADR
 /// 0003 fixed it for the shim and for strace: write-capable iff the access mode is not
 /// `O_RDONLY`, or `O_CREAT` or `O_TRUNC` is set. `fs_usage` spells the same flags as a
@@ -379,15 +255,12 @@ fn openIsWriteCapable(middle: []const u8) bool {
     const rp = std.mem.indexOfScalarPos(u8, middle, lp, ')') orelse return true;
     const flags = middle[lp + 1 .. rp];
     if (flags.len < 5) return true;
-    // Anything but a bare read is write-capable; so is create or truncate.
     if (flags[1] == 'W') return true;
     if (flags[2] == 'C') return true;
     if (flags[4] == 'T') return true;
     return flags[0] != 'R';
 }
 
-/// Ownership/permission/timestamp writes: observed and excluded from judgement (#121),
-/// reported so the exclusion is visible per run.
 fn isMetadataCall(call_in: []const u8) bool {
     const call = canonicalCall(call_in);
     const names = [_][]const u8{
@@ -399,10 +272,6 @@ fn isMetadataCall(call_in: []const u8) bool {
     return false;
 }
 
-/// Calls that read and change nothing. Named exhaustively rather than inferred, because
-/// the rule below refuses anything it does not recognise: a state-directory call this
-/// module cannot classify is a hole, and "probably harmless" is not a classification.
-///
 /// The core of the list is what real captures produced, measured against the state root
 /// of an end-to-end run: `lstat64` and `getattrlist` dominate (Spotlight and fseventsd
 /// walking a directory that just changed), with `listxattr`, `getxattr` and `access`
@@ -433,25 +302,15 @@ fn isReadOnlyCall(call_in: []const u8) bool {
     return false;
 }
 
-/// `fcntl` carries its command in an annotation, so it is classified by command rather
-/// than waved through as a class.
-///
-/// The shim's own descriptor resolution is `<GETPATH>`, and a real capture of one run
-/// holds 32 of those beside `<SETFD>`, `<GETFL>`, `<SETFL>`, `<SETLKW>`, `<DUPFD>`,
 /// `<SETLK>` and `<GETFD>`. Excluding the whole class would let `F_FULLFSYNC` — which
 /// the shim does not record and which is a durability operation on the state — through
 /// the unknown-call gate that exists to catch exactly that.
-///
-/// Returns true when this `fcntl` neither changes state nor moves a descriptor.
 fn fcntlIsInert(middle: []const u8) bool {
     const inert = [_][]const u8{ "<GETPATH>", "<GETFL>", "<SETFL>", "<GETFD>", "<SETFD>", "<GETLK>" };
     for (inert) |n| if (std.mem.indexOf(u8, middle, n) != null) return true;
     return false;
 }
 
-/// A `fcntl` that duplicates a descriptor, so the fd table has to follow it. Without
-/// this a write on the duplicate resolves against nothing and refuses — measured as
-/// two `<DUPFD>` lines in one ordinary run.
 fn fcntlDuplicates(middle: []const u8) bool {
     return std.mem.indexOf(u8, middle, "<DUPFD>") != null;
 }
@@ -515,10 +374,6 @@ const FdTable = struct {
 /// spelled `/Users/x/s` arrives as `/System/Volumes/Data/Users/x/s`. Measured on
 /// macOS 15.3.1 — every line of a real capture under `$HOME` carries the prefix, which
 /// is why the first version of this module scoped nothing at all.
-///
-/// Stripped rather than added to the root: the prefix belongs to the witness's
-/// spelling, and a root that already carries it (a caller who passed the physical
-/// path) still matches, since stripping is idempotent here.
 const firmlink_prefix = "/System/Volumes/Data";
 
 fn physical(path: []const u8) []const u8 {
@@ -529,8 +384,6 @@ fn physical(path: []const u8) []const u8 {
     return path;
 }
 
-/// Could this line have changed the directory it names? Write-capable opens, mutating
-/// classes and metadata writes; not reads, not `close`.
 fn mutatingTouch(ln: Line) bool {
     if (isMetadataCall(ln.call)) return true;
     const cls = classOf(ln.call) orelse return false;
@@ -539,11 +392,6 @@ fn mutatingTouch(ln: Line) bool {
     return true;
 }
 
-/// Append unless it is already there. Two copies of this loop had drifted apart inside
-/// one function — one with a `break`, one without — which is what a third copy would
-/// have cost.
-/// Under either spelling of the judged root. `underRoot` already answers false for an
-/// empty root, so the `alt.len != 0` guard three call sites carried was always true.
 fn inState(path: []const u8, root: []const u8, alt: []const u8) bool {
     return underRoot(path, root) or underRoot(path, alt);
 }
@@ -568,7 +416,6 @@ fn samePath(a: []const u8, b: []const u8) bool {
     return std.mem.eql(u8, physical(a), physical(b));
 }
 
-/// Does a line in this capture name `path`, under the same grammar and the same path
 /// spelling the reader uses? The handshake asks this rather than searching the text:
 /// a raw substring match found an `fseventsd` line about the sentinel and let a run
 /// proceed whose capture the reader could not scope at all (measured, first end-to-end
@@ -578,7 +425,6 @@ pub fn capturesPath(text: []const u8, path: []const u8) bool {
     while (it.next()) |raw| {
         if (raw.len == 0) continue;
         const ln = parseLine(raw) orelse continue;
-        // Sentinels are absolute, so no cwd and no table are needed here.
         const op = operandOf(ln.middle) orelse continue;
         const p = if (op.text.len != 0 and op.text[0] == '/') op.text else continue;
         if (samePath(p, path)) return true;
@@ -586,10 +432,6 @@ pub fn capturesPath(text: []const u8, path: []const u8) bool {
     return false;
 }
 
-/// Read one capture. `state_root` and `state_alt` are the judged directory's two
-/// spellings (`/tmp` and `/private/tmp` resolve to one place on macOS); `trace_path`
-/// is where the shim writes, and identifies the subject; the sentinels are paths the
-/// caller created before and after the recording, both of which must appear.
 pub fn read(
     arena: std.mem.Allocator,
     text: []const u8,
@@ -598,25 +440,8 @@ pub fn read(
     trace_path: []const u8,
     sentinel_start: []const u8,
     sentinel_end: []const u8,
-    /// Where the subject started, for `openat(AT_FDCWD, relative)`. The strace reader
-    /// takes the same thing as `initial_cwd`. Empty means a relative operand cannot be
-    /// placed and refuses if it could have changed state.
     cwd: []const u8,
-    /// Thread ids the shim recorded writing under the subject's pid (#544). This reader
-    /// identifies ONE subject thread on its own — whoever opened the trace for writing,
-    /// which is the process's main thread — and a worker's lines would otherwise read as
-    /// another process's. `fs_usage` prints a thread id and knows no process; the trace
-    /// does, because every record names its thread, so the map comes from there.
-    ///
-    /// Empty is the single-threaded case and leaves every decision below where it was.
     subject_thread_ids: []const u64,
-    /// Thread ids whose start the shim recorded under the subject's pid (v18, ADR 0067):
-    /// threads the subject created, whether or not they wrote anything the shim saw. Used
-    /// for ONE thing — the descriptor namespace. A started thread's first act is its own
-    /// `thread_started` record, a `write` on the shim's trace descriptor, which `fs_usage`
-    /// prints without a path and which resolves against nothing on a thread the table does
-    /// not place in the subject's process; before v18 such a thread wrote nothing to the
-    /// trace and the question never arose (the macOS acceptance's check 7 measured it).
     /// It does NOT make the thread the subject: a started thread that writes through raw
     /// syscalls stays another party's to this witness and refuses as it did.
     started_thread_ids: []const u64,
@@ -624,9 +449,6 @@ pub fn read(
     var out: Reading = .{ .parsed = .{ .classes = .empty, .names = .empty, .lines = .empty, .metadata_observed = .empty, .mutations = .empty, .reaps = .empty, .spawns = .empty, .subject_tids = .empty } };
     var fds: FdTable = .{};
     var dup_pending: std.ArrayList(FdKey) = .empty;
-    // A head this reader skipped (read-only or disk-io) whose physical line ended before
-    // its tail: the lines that follow without a timestamp are fragments of that event,
-    // up to the one carrying the tail (see the second pass).
     var in_cut_event: bool = false;
     // Set once a relevant thread issues `chdir`/`fchdir`. This reader does not follow
     // the cwd — the strace reader does, through `initial_cwd` plus every successful
@@ -637,27 +459,14 @@ pub fn read(
     // in the judged directory — joined to `/w` and dropped as out of scope.
     var cwd_moved = false;
     var subject_tid: ?[]const u8 = null;
-    // Two threads opened the trace for writing: a shimmed child beside the subject.
-    // This backend follows no children (ADR 0031 §2), so it cannot say whose account
-    // is whose and refuses rather than picking one.
     var subject_ambiguous = false;
     var saw_start = false;
     var saw_end = false;
     var other_tids: std.ArrayList([]const u8) = .empty;
-    // Threads that name a path under the judged root anywhere in the capture.
-    //
-    // The capture is unfiltered, so it holds every process on the machine, and most of
-    // them hold descriptors opened long before it started. Their unresolvable writes
-    // and their truncated paths are not holes in the account of *this* directory —
-    // they are not about this directory at all. Measured the hard way: the first
-    // end-to-end run with a complete capture refused on `com.docker.backend`'s
-    // `write F=96`.
-    //
     // Collected over the whole capture before any of it is judged, because a thread's
     // first named touch can come after the line being decided.
     var state_tids: std.ArrayList([]const u8) = .empty;
 
-    // First pass: identify the subject by who writes the trace, and find the sentinels.
     // Two passes rather than one because the subject's identity decides how later lines
     // are attributed, and the trace's first write is not necessarily the first line.
     var it0 = std.mem.splitScalar(u8, text, '\n');
@@ -671,17 +480,6 @@ pub fn read(
         // `open`s before it — so the daemon became the subject and every one of the
         // toy's writes was "a thread other than the subject". Only the shim opens the
         // trace to write; `O_WRONLY|O_CREAT|O_APPEND` printed `(_WCA_______X)` when this
-        // was measured, and #492 added `O_NONBLOCK` to that open, so the bracket a real
-        // capture prints now is whatever fs_usage gives that combination. **Not
-        // re-measured, and it does not have to be**: `openIsWriteCapable` reads index 1, 2
-        // and 4 for `W`, `C` and `T` and counts an unrecognised bracket as write-capable,
-        // so a flag added to this open cannot drop the subject. Widening is not free in
-        // general — two threads matching would set `subject_ambiguous` and refuse the run —
-        // but that needs some other process's bracket to change, which adding a flag here
-        // does not do.
-        // The fixtures below keep the pre-#492 spelling for the same reason — they pin the
-        // predicate, not the kernel's printing, and rewriting them to a spelling nobody
-        // measured would be the worse of the two.
         if (samePath(path, trace_path) and classOf(ln.call) == .open and openIsWriteCapable(ln.middle)) {
             if (subject_tid) |prev| {
                 if (!std.mem.eql(u8, prev, ln.tid)) subject_ambiguous = true;
@@ -695,7 +493,6 @@ pub fn read(
         // real run refused on. Microsoft Defender (`wdavdaemon_enterprise`) had opened
         // the toy's file read-only to scan it, which made every later write it issued on
         // its own log descriptors "a hole in the account of the judged directory".
-        // A reader that only read the root cannot have altered it through what it read.
         if (inState(path, state_root, state_alt) and mutatingTouch(ln)) {
             try appendUnique(arena, &state_tids, ln.tid);
         }
@@ -719,10 +516,6 @@ pub fn read(
     }
     out.subject_tid = subject;
 
-    // The shim's writers, in both shapes this file needs them: as numbers for
-    // `Parsed.isSubject` (which `childrenMayBeJudged` asks, id by id), and as the decimal
-    // text `fs_usage` prints, built ONCE here rather than parsed per line — a capture
-    // measured at 5,558,556 lines pays for every extra ask in the loop below.
     var subject_tid_text: std.ArrayList([]const u8) = .empty;
     for (subject_thread_ids) |t| {
         try out.parsed.subject_tids.append(arena, t);
@@ -735,9 +528,6 @@ pub fn read(
         if (!std.mem.eql(u8, txt, subject)) try started_tid_text.append(arena, txt);
     }
 
-    // Whether a hole in this line would be a hole in the account of the judged
-    // directory. The subject always counts; so does any thread that named a path under
-    // the root. Everything else is a neighbour going about its business.
     const relevant = struct {
         fn f(tid: []const u8, subj: []const u8, tids: []const []const u8) bool {
             if (std.mem.eql(u8, tid, subj)) return true;
@@ -746,7 +536,6 @@ pub fn read(
         }
     }.f;
 
-    // Second pass: the account.
     var it = std.mem.splitScalar(u8, text, '\n');
     while (it.next()) |raw| {
         if (raw.len == 0) continue;
@@ -772,14 +561,6 @@ pub fn read(
                 out.defect = .{ .unparsed = raw };
                 return out;
             }
-            // A timestamped line that did not parse: a new event, whatever came before —
-            // and the state below is set or the run refused, so nothing reads the old one.
-            // A line the grammar cannot read whole cannot be attributed to a thread.
-            // The measured shape is a head whose physical line ended inside the name
-            // (2026-09-08 on the CI runner: a daemon's `getattrlist` on a name made of
-            // combining characters — the left cut is the display cap's, and why the
-            // duration and the process landed on the next line is not measured; a
-            // newline inside the name is the likely mechanism); any other way the
             // grammar fails lands here too. If the CALL — the field a cut cannot reach
             // — is one this module knows to read only, or a disk-io line, the line could
             // not have changed state whoever issued it and wherever, which is the reason
@@ -787,7 +568,6 @@ pub fn read(
             // Anything else still is: a mutating call nobody can be named for is exactly
             // what the account must not omit. A pending dup is untouched by the skip —
             // it is consumed only by a line of its own thread, and this line has none.
-            // The fragments that may follow this head are taken above.
             if (callOf(line)) |left| {
                 if (isReadOnlyCall(left.call) or isDiskIo(left.call)) {
                     in_cut_event = true;
@@ -797,11 +577,8 @@ pub fn read(
             out.defect = .{ .unparsed = raw };
             return out;
         };
-        // A whole line ends any cut event: whatever fragments were due did not come, and
-        // a fragment after this line is nobody's.
         in_cut_event = false;
 
-        // Widened for #544: the thread that opened the trace, or any thread the shim
         // recorded writing under the subject's pid. **The predicate, not just the account
         // branch** — it also decides whether a read-only directory open is remembered in
         // the fd table and whether a descriptor this thread opens is kept (`keep` below),
@@ -814,22 +591,12 @@ pub fn read(
             }
             break :blk false;
         };
-        // The subject's threads share ONE descriptor namespace, because they share a
-        // process. The table below is keyed by thread only because `fs_usage` prints no
-        // pid and nothing else could tell two threads of one process from two processes;
-        // the trace can, for the threads it names, which is what this change hands over.
-        //
         // Without this the shim's own trace descriptor — opened by the thread that
         // initialises, written by whichever thread recorded an operation — resolves
         // against nothing on a worker's line, and `fs_usage` prints no path on a write, so
         // the run refuses as a hole (#544). That line is not an incidental shape: a worker
         // reaches `subject_thread_ids` at all by having written a record, and writing a
         // record IS a write on that descriptor. The first version of this change widened
-        // the subject predicate and left the table keyed by thread, which made the list
-        // impossible to exercise: every run it applied to refused before the widening
-        // could matter. Review found it and a synthetic capture carrying the worker's
-        // `write` on the trace descriptor pins it.
-        //
         // Within a process an fd number names one open file, so merging the namespace is
         // exact rather than approximate. A tid the trace does not name keeps its own —
         // nothing places it in the subject's process, and a system-wide capture holds
@@ -844,9 +611,6 @@ pub fn read(
             break :blk false;
         };
         const fd_tid = if (is_started) subject else ln.tid;
-        // Asked once per line, not once per test. `classOf` is a linear walk of the
-        // call table and `relevant` a linear walk of the touching-thread list; a
-        // capture measured at 5,558,556 lines pays for every extra ask.
         const cls_opt = classOf(ln.call);
         // Widened with `is_subject` for the same reason that predicate was (#544), and it
         // is a different set: `state_tids` is built in the pass above from lines that NAME
@@ -861,18 +625,6 @@ pub fn read(
         // lands inside the judged directory. The verdict does not become a PASS — the
         // snapshot layer still refuses `state_changed_unaccounted` — but the guard ADR
         // 0031 §2b exists to be is off, and the refusal names another wall.
-        //
-        // Widening turns silent drops into refusals at every gate but one, so it cannot
-        // make a PASS. The exception: a `chdir` INTO the judged directory is in scope and
-        // used to refuse as an unknown call, and now sets `cwd_moved` and continues — that
-        // line refuses LESS. Correct, since a `chdir` changes no state and everything
-        // relative after it is unplaceable from that point, so the run still closes.
-        // The price is also real: `cwd_moved` is one flag for the whole run and the gate
-        // below admits `__pthread_chdir`/`__pthread_fchdir`, which move only the calling
-        // thread's directory on macOS — so a listed worker calling one disarms relative
-        // operands for the main thread too, and a run that could have been judged refuses.
-        // Per-thread working directories in this reader are a separate change.
-        //
         // It is safe in this order and not the other: before the descriptor namespace was
         // merged above, a
         // worker's write to the shim's own trace descriptor was unresolvable, and this
@@ -903,10 +655,6 @@ pub fn read(
                 // the window main opened and either completes the dup against the wrong
                 // descriptor or consumes it and drops the shim's trace fd from the table,
                 // which makes the run's outcome depend on the scheduler. #544's first
-                // version keyed both on `fd_tid` because one `sed` ran over nine sites;
-                // review separated them. The trace's dup happens during init, before any
-                // worker exists, so no run is known to have hit it — which is a reason it
-                // stayed invisible, not a reason it was safe.
                 if (!std.mem.eql(u8, d.tid, ln.tid)) {
                     i += 1;
                     continue;
@@ -918,20 +666,12 @@ pub fn read(
                             try fds.set(arena, .{ .tid = fd_tid, .fd = f }, src_in_state);
                     }
                 }
-                // Consumed either way: the window was this one line.
                 _ = dup_pending.swapRemove(i);
             }
         }
 
         if (std.mem.eql(u8, canonicalCall(ln.call), "fcntl")) {
             if (fcntlDuplicates(ln.middle)) {
-                // fs_usage prints the SOURCE descriptor and not the result, so the
-                // mapping is completed on the next line this thread issues on a
-                // descriptor the table does not know — which on a real capture is the
-                // shim's own trace: `open F=3`, `fcntl F=3 [22] <DUPFD>` (the 900 floor
-                // fails), `fcntl F=3 <DUPFD>`, then `fcntl F=200 <SETFD>`, `close F=3`,
-                // `write F=200`. The first version of this file did not follow the dup
-                // and refused every run on the shim's first trace write.
                 if (!hasErrno(ln.middle)) {
                     // `ln.tid`, for the reason the loop above carries: the window is one
                     // thread's next line, not a process-wide fact about a descriptor.
@@ -983,10 +723,6 @@ pub fn read(
         }
         if (isReadOnlyCall(ln.call) or isDiskIo(ln.call)) continue;
         if (cls_opt == .open and !openIsWriteCapable(ln.middle)) {
-            // Not an operation (ADR 0003), but a directory opened read-only is what
-            // later `openat([N], ...)` lines resolve through, so it is remembered when
-            // it can be placed. Unplaceable read-only opens are simply not remembered;
-            // whatever resolves through them later refuses on its own.
             if (fd) |f| {
                 if (scope_known) |in| {
                     if (is_subject or in) try fds.set(arena, .{ .tid = fd_tid, .fd = f }, in);
@@ -1005,20 +741,12 @@ pub fn read(
         // written must resolve to "not in scope", not to "unknown".
         if (cls_opt) |cls| {
             if (cls == .open) {
-                // Only descriptors whose later use could matter are remembered. The
-                // capture is system-wide: one measured run held 5,558,556 lines,
-                // 26,228 distinct (tid, fd) pairs — and 22 lines touching the judged
-                // directory. Anything the subject opens is kept (its own descriptors
-                // decide its account), and anything under the root whoever opened it
-                // (that is what the touch set is read from).
                 const keep = is_subject or (scope_known orelse false);
                 if (keep) {
                     if (fd) |f| {
                         if (scope_known) |in| {
                             try fds.set(arena, .{ .tid = fd_tid, .fd = f }, in);
                         } else if (is_relevant) {
-                            // A write-capable open this reader cannot place, by a thread
-                            // whose account matters: a descriptor into who-knows-where.
                             out.defect = .{ .unresolvable_path = raw };
                             return out;
                         }
@@ -1033,23 +761,17 @@ pub fn read(
         // The shim's own trace writes and the sentinels are the observer's shadow, not
         // the target's work — skipped here, AFTER the descriptor bookkeeping above, so
         // the shim's `open F=3 trace.bin` is in the table for the dup to inherit from.
-        // The line still counts toward `lines_seen`.
         if (path) |p| {
             if (samePath(p, trace_path)) continue;
             if (sentinel_start.len != 0 and samePath(p, sentinel_start)) continue;
             if (sentinel_end.len != 0 and samePath(p, sentinel_end)) continue;
         }
 
-        // Is this line about the judged directory?
         var in_scope = false;
         if (scope_known) |in| {
             in_scope = in;
         } else if (path_unresolvable) {
             // The `c != .close` test that used to sit inside this unwrap is gone: a close
-            // line left this loop at the descriptor bookkeeping above, which clears the
-            // descriptor and `continue`s, so the test was unreachable for `.close` while
-            // `docs/target-classes.md` published it as the mechanism of that exemption.
-            //
             // **The unwrap itself stays**, and a first draft of this change dropped it
             // together with the test — which was not behaviour-preserving and was caught
             // in review. A line `classOf` does not map returns null here and must go on
@@ -1067,10 +789,7 @@ pub fn read(
             }
             continue;
         } else if (fd) |f| {
-            // Pathless: `write F=3 B=0x7`. Resolve through the open, or refuse.
             const known = fds.get(.{ .tid = fd_tid, .fd = f }) orelse {
-                // Only calls that could change state make an unresolved descriptor a
-                // hole; a read on an inherited descriptor is not this module's problem.
                 // Same reachability as above: a close never gets here. The unwrap is kept
                 // for the same reason it is kept there — an unmapped call must fall
                 // through, not refuse.
@@ -1112,20 +831,6 @@ pub fn read(
         };
 
         if (!is_subject) {
-            // The condition #405 is about, and the reason the capture is unfiltered:
-            // a process other than the subject mutated the judged directory, and this
-            // witness is the only one that sees it whether or not the shim was loaded.
-            // The id, not just the fact (v15). What this witness has is a **tid**, which
-            // is what `fs_usage` attributes lines to. `Parsed.mutations` says why that is
-            // the honest thing to put there: a run this platform reaches with another
-            // process in it is refused for want of an oracle that can account for one —
-            // but that refusal keys on the shim having seen the boundary, so a child the
-            // shim never loaded reaches the admission instead. It is refused there, since
-            // no recorded writer can match a tid; what it costs is a sentence that calls a
-            // thread id a process, on a platform where the run was never going to be
-            // judged.
-            // Digits by construction (`parseLine` refuses a tid that is not all digits),
-            // so this cannot silently record a zero for something unparseable.
             if (std.fmt.parseInt(u64, ln.tid, 10)) |n| {
                 try oracle.noteEvent(arena, &out.parsed.mutations, n, out.parsed.lines_seen);
             } else |_| {}
@@ -1135,8 +840,6 @@ pub fn read(
         }
 
         try out.parsed.classes.append(arena, cls);
-        // fs_usage's own spelling of the call, which this reader already has and used to
-        // drop — a divergence refusal names it the same way the strace side does (#337).
         try out.parsed.names.append(arena, ln.call);
         try out.parsed.lines.append(arena, ln.raw);
     }
@@ -1144,7 +847,6 @@ pub fn read(
     return out;
 }
 
-// ---------------------------------------------------------------------------------
 // Tests. The fixtures are lines copied from real captures taken on macOS 15.3.1 and
 // on the CI runner (26.5.2) — the two shapes that differ — rather than composed from
 // the man page, which is wrong about both the truncation marker and the tail format.
@@ -1169,16 +871,10 @@ test "a process name with spaces still parses" {
 }
 
 test "both measured truncation shapes are stumps, and a whole path is not" {
-    // Padded, macOS 15.x.
     try testing.expect(isTruncated("  .../missing-d>>>>>>>>>>>>>>>>"));
-    // Unpadded and cut from the left — the shape the first version of this module
-    // missed entirely. Copied byte for byte from the committed capture of the
-    // deep-path leg, spike/fsusage/captures/P3-deep.cap.txt.
     const real_stump = "F=3        (_WC_T__________)  ted-component/nested-component/nested-component/state/sentinel-start";
     try testing.expect(isTruncated(real_stump));
-    // A whole path is not a stump, however long.
     try testing.expect(!isTruncated("F=3        (_WC_T_______)  /Users/i.yoshida/w/state/keep"));
-    // Neither is a line with no operand at all.
     try testing.expect(!isTruncated("F=3    B=0x5"));
 }
 
@@ -1188,15 +884,12 @@ test "fd and operand come out of the middle, in both spellings" {
     const plain = operandOf(ln.middle).?;
     try testing.expect(plain.dirfd == null);
     try testing.expectEqualStrings("/tmp/st/load", plain.text);
-    // The directory-relative spelling, verbatim: AT_FDCWD and an absolute operand.
     const rel = operandOf("F=3        (RWC__E______)  [-2]//tmp/st/tmp-oepJXu").?;
     try testing.expectEqual(@as(i64, -2), rel.dirfd.?);
     try testing.expectEqualStrings("/tmp/st/tmp-oepJXu", rel.text);
-    // A descriptor-relative operand keeps its relative text.
     const viafd = operandOf("F=6        (_WC_T_______)  [5]/inside").?;
     try testing.expectEqual(@as(i64, 5), viafd.dirfd.?);
     try testing.expectEqualStrings("inside", viafd.text);
-    // An errno bracket is not a directory descriptor.
     const err = operandOf("[  2]           /tmp/st/missing").?;
     try testing.expect(err.dirfd == null);
     try testing.expectEqualStrings("/tmp/st/missing", err.text);
@@ -1209,26 +902,17 @@ test "underRoot does not accept a sibling whose name shares the prefix" {
 }
 
 test "a firmlinked capture path scopes to the root the caller spelled" {
-    // Measured on macOS 15.3.1: every line of a real capture under $HOME arrives as
-    // /System/Volumes/Data/Users/..., and the first version of this module — which
-    // compared the spellings directly — scoped zero lines and refused every run.
     try testing.expect(underRoot("/System/Volumes/Data/Users/x/s/f", "/Users/x/s"));
     try testing.expect(underRoot("/Users/x/s/f", "/Users/x/s"));
     try testing.expect(underRoot("/System/Volumes/Data/Users/x/s/f", "/System/Volumes/Data/Users/x/s"));
-    // The prefix is not a wildcard: a different root still does not match.
     try testing.expect(!underRoot("/System/Volumes/Data/Users/x/other/f", "/Users/x/s"));
-    // And a directory that merely begins with the prefix's letters is not stripped.
     try testing.expectEqualStrings("/System/Volumes/DataX/y", physical("/System/Volumes/DataX/y"));
 }
 
 test "the handshake predicate is the reader's, not a substring search" {
-    // The line that broke the first end-to-end run: a system daemon touching the
-    // sentinel, in the firmlinked spelling. It must count as "the capture names this
-    // path" only through the same grammar the reader uses.
     const text = "20:55:29.949643  lstat64                                /System/Volumes/Data/Users/i.yoshida/w/state/.sideeye-fsusage-open                          0.000007   fseventsd.80246391\n";
     try testing.expect(capturesPath(text, "/Users/i.yoshida/w/state/.sideeye-fsusage-open"));
     try testing.expect(!capturesPath(text, "/Users/i.yoshida/w/state/.sideeye-fsusage-close"));
-    // A line the grammar cannot read does not count, even if the bytes are present.
     try testing.expect(!capturesPath("garbage /Users/i.yoshida/w/state/.sideeye-fsusage-open\n", "/Users/i.yoshida/w/state/.sideeye-fsusage-open"));
 }
 
@@ -1236,12 +920,6 @@ test "a listed worker's chdir still arms the relative-operand guard" {
     var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    // Review's construction (#544). The worker is on the list — the shim recorded its
-    // `write` and `fsync` — so it is the subject. It is NOT in `state_tids`: that set is
-    // built in the pass above from lines that NAME a path under the root, and neither of
-    // those two lines names one. So a `relevant()` keyed on `state_tids` alone leaves this
-    // thread outside every refusal gate, and its `chdir` does not arm `cwd_moved`.
-    //
     // The `chdir` goes to the root's PARENT, which is where ADR 0031 §2b's own example
     // goes: a `chdir` INTO the judged directory is in scope and refuses as an unknown call
     // instead, so it would fail this test for a different reason. Outside the root it is
@@ -1262,11 +940,6 @@ test "a listed worker's chdir still arms the relative-operand guard" {
         "10:00:00.000007  openat            F=6   (_WC_T_______)  [-2]/st/sneak         0.000100   work.222\n" ++
         "10:00:00.000008  open              F=2   /tmp/st/sentinel-b                    0.000100   main.111\n";
     const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "/work", &.{222}, &.{});
-    // Without the widening the relative operand joins to `/work`, lands outside the root
-    // and is dropped — while the file it creates is `/tmp/st/sneak`, inside the judged
-    // directory, and raw enough that the shim says nothing either. The verdict would not
-    // become a PASS (the snapshot layer refuses `state_changed_unaccounted`), but this
-    // guard would be off and the refusal would name another wall.
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
         .unresolvable_path => {},
@@ -1287,17 +960,6 @@ test "a worker thread's write to the shim's own trace descriptor is not a hole" 
     var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    // The shape a real capture ALWAYS has when the list below is non-empty, and the one
-    // the first two tests of this change left out. The shim keeps one trace descriptor per
-    // process (`shim/src/common.zig`), opened by the thread that initialises — the main
-    // one — and the thread that performs an operation is the thread that writes its
-    // record. This reader's fd table is keyed by `(tid, fd)` and `fs_usage` prints no path
-    // on a write, so a worker's write to that descriptor has no open of its own to resolve
-    // against.
-    //
-    // Not an incidental shape: a worker reaches `subject_writer_tid_list` only by having
-    // written a kill-point record, which IS this line. If it refuses, the list is never
-    // non-empty on a real run and the widening below can never be exercised.
     const text =
         "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
@@ -1319,10 +981,6 @@ test "a worker thread the shim recorded is the subject, and only when it is name
     var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    // The subject is whoever opened the trace write-capably, which is the main thread —
-    // `fs_usage` knows no process for a line, only the thread that issued it, so a
-    // worker's write reads as another party's until the trace says otherwise. The same
-    // capture is read twice here; the ONLY difference is the list.
     const text =
         "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
@@ -1332,8 +990,6 @@ test "a worker thread the shim recorded is the subject, and only when it is name
 
     const named = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{222}, &.{});
     try testing.expect(named.defect == null);
-    // Not another party's: nothing for `childrenMayBeJudged` to refuse, and no second
-    // writer to count.
     try testing.expectEqual(@as(usize, 0), named.parsed.mutations.items.len);
     try testing.expectEqual(@as(usize, 0), named.parsed.children);
     try testing.expect(named.parsed.isSubject(222));
@@ -1361,14 +1017,9 @@ test "a thread the shim never recorded stays another party's, list or no list" {
     const a = arena_state.allocator();
     // A writer whose operations the shim never recorded — one going straight to syscalls.
     // No kill-point record of its own, so it is not in the list handed here. The list
-    // widens the predicate for the threads the trace names and for nothing else, and the
-    // refusal for this one lives in `childrenMayBeJudged`, which is told an id rather than
-    // a pid.
-    //
     // NOT a raw `clone`, which is what this comment said until #543. That thread's writes
     // through libc are recorded under the subject's pid, so its tid would be in the list
     // and this fixture would be measuring the opposite case. The test was green for a
-    // reason it did not have.
     const text =
         "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
@@ -1387,10 +1038,6 @@ test "a started thread that wrote nothing through the shim shares the descriptor
     var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    // The macOS acceptance's check 7 (a `pthread_create`d worker writing through raw
-    // syscalls) under v18: the worker's first act is its `thread_started` record, a `write`
-    // on the trace descriptor the main thread opened. It is on the started list and on no
-    // writer list — the shim recorded nothing it wrote.
     const text =
         "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
@@ -1400,15 +1047,11 @@ test "a started thread that wrote nothing through the shim shares the descriptor
         "10:00:00.000006  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n";
     const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{}, &.{333});
     try testing.expect(r.defect == null);
-    // Another party's, as before v18: `childrenMayBeJudged` gets an id it cannot attribute
-    // and the run refuses `multiple_threads_detected`, the reason check 7 pins.
     try testing.expect(r.parsed.mutations.items.len > 0);
     try testing.expectEqual(@as(u64, 333), r.parsed.mutations.items[0].id);
     try testing.expectEqual(@as(usize, 1), r.parsed.children);
     try testing.expect(!r.parsed.isSubject(333));
     // The control: with no started list the same capture is a hole, which is what CI
-    // measured on the first push of v18 (`oracle_saw_nothing` where check 7 wanted the
-    // thread refusal).
     const before = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{}, &.{});
     try testing.expect(before.defect != null);
     switch (before.defect.?) {
@@ -1439,10 +1082,6 @@ test "an open whose path cannot be read is a hole, not a descriptor to trust lat
     var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    // The second `unresolved_fd` site: the line carries a descriptor but nothing this
-    // module can scope. Refusing here is what keeps a later write on that descriptor
-    // from resolving against a path nobody established. Found by a mutation run — the
-    // first version of this file had the branch and no test, and killing it SURVIVED.
     const text =
         "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
@@ -1451,7 +1090,6 @@ test "an open whose path cannot be read is a hole, not a descriptor to trust lat
     const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{}, &.{});
     try testing.expect(r.defect != null);
     switch (r.defect.?) {
-        // A write-capable open with no operand at all: nothing to place it by.
         .unresolvable_path => {},
         else => return error.WrongDefect,
     }
@@ -1461,8 +1099,6 @@ test "a truncated read-only line from the subject is not a hole" {
     var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    // Verbatim from the run that refused: dyld probing a framework path longer than the
-    // display width, from the subject's own thread. 353 of these in one capture.
     const text =
         "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
@@ -1477,8 +1113,6 @@ test "a truncated mutating line from the subject still refuses" {
     var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    // The control for the test above: the same cut on a call that CAN change state is
-    // the hole the rule exists for.
     const text =
         "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
@@ -1496,10 +1130,6 @@ test "a tail-less read-only line from nobody is not a hole; a tail-less mutating
     var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    // Verbatim bytes from the CI runner (2026-09-08): a daemon's `getattrlist` on a name
-    // made of combining characters. The physical line ends inside the name, so there is
-    // no duration and no `proc.tid` — nothing to attribute it to (the rest of the event
-    // arrived on the next line; see the fragment test below).
     const daemon = "13:47:23.434908  getattrlist            [  2]           ontentd/APCS-TEMP/U\xcc\x82.@?e\xcc\x81\xc3\x9f\xc2\xb6?w?\xc2\xa5@P?&?^w\xc2\xaf>I\xcc\x80R\xc2\xa6\xc3\xb7a\xcc\x88??\xc2\xa5\xc3\x86I\xcc\x80o\xcc\x81i\xcc\x81\xc2\xaf\xc2\xb6?T?\\A\xcc\x80\xc2\xb9C\xcc\xa7 i\xcc\x802?}?9? i\xcc\x82??\xc2\xa1\xc2\xb1A\xcc\x8a?P-?V?";
     const head =
         "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
@@ -1510,8 +1140,6 @@ test "a tail-less read-only line from nobody is not a hole; a tail-less mutating
     try testing.expect(r.defect == null);
     try testing.expectEqual(@as(usize, 0), r.parsed.classes.items.len);
     try testing.expectEqual(@as(usize, 0), r.parsed.mutations.items.len);
-    // The same bytes with a mutating CALL are a hole: a write nobody can be named for is
-    // what the account must not omit.
     const mutating = "13:47:23.434908  write                  [  2]           ontentd/APCS-TEMP/U\xcc\x82.@?e\xcc\x81\xc3\x9f\xc2\xb6?w?\xc2\xa5@P?&?^w\xc2\xaf>I\xcc\x80R\xc2\xa6\xc3\xb7a\xcc\x88??\xc2\xa5\xc3\x86I\xcc\x80o\xcc\x81i\xcc\x81\xc2\xaf\xc2\xb6?T?\\A\xcc\x80\xc2\xb9C\xcc\xa7 i\xcc\x802?}?9? i\xcc\x82??\xc2\xa1\xc2\xb1A\xcc\x8a?P-?V?";
     const text2 = head ++ mutating ++ tail;
     const r2 = try read(a, text2, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{}, &.{});
@@ -1523,9 +1151,6 @@ test "the lines after a skipped cut head, up to its tail, are fragments of that 
     var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    // Verbatim from the CI runner (2026-09-08, two runs): the cut head, then the line
-    // carrying the rest of the name with the duration and the process — no timestamp,
-    // no CALL.
     const head_line = "13:47:23.434908  getattrlist            [  2]           ontentd/APCS-TEMP/U\xcc\x82.@?e\xcc\x81\xc3\x9f\xc2\xb6?w?\xc2\xa5@P?&?^w\xc2\xaf>I\xcc\x80R\xc2\xa6\xc3\xb7a\xcc\x88??\xc2\xa5\xc3\x86I\xcc\x80o\xcc\x81i\xcc\x81\xc2\xaf\xc2\xb6?T?\\A\xcc\x80\xc2\xb9C\xcc\xa7 i\xcc\x802?}?9? i\xcc\x82??\xc2\xa1\xc2\xb1A\xcc\x8a?P-?V?";
     const tail_line = "133 LIBARCHIVE.xattr.com.apple.macl=B    0.000039   promotedcontentd.13451";
     const middle_line = "just bytes with no timestamp and no tail";
@@ -1566,10 +1191,6 @@ test "the shim's dup of its own trace descriptor is followed, and a daemon readi
     var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    // The shape of a real capture, line for line: fseventsd stats the trace file, a
-    // security agent opens it read-only, then the subject opens it for writing, fails
-    // to dup to the 900 floor, dups to 200, closes 3 and writes through 200 — and then
-    // does its one real operation on the judged directory.
     const text =
         "21:03:21.587700  lstat64                                /work/trace.bin                        0.000005   fseventsd.999\n" ++
         "21:03:21.587701  open              F=27       (R___________)  /work/trace.bin                   0.000010   wdavdaemon.888\n" ++
@@ -1592,7 +1213,6 @@ test "the shim's dup of its own trace descriptor is followed, and a daemon readi
     // Two, not three: `close` is a lifecycle op the shim records and the strace oracle
     // drops from the compared sequence (`oracle.zig`, `if (cls == .close) continue`),
     // and the two accounts have to be shaped alike. This test first asserted three and
-    // was wrong; the real capture said two and the strace reader said why.
     try testing.expectEqual(@as(usize, 2), r.parsed.classes.items.len);
     try testing.expectEqual(contract.OpClass.open, r.parsed.classes.items[0]);
     try testing.expectEqual(contract.OpClass.write, r.parsed.classes.items[1]);
@@ -1602,8 +1222,6 @@ test "the shim's dup of its own trace descriptor is followed, and a daemon readi
     // strace reader pins the same property for its own two lists.
     try testing.expectEqual(r.parsed.classes.items.len, r.parsed.names.items.len);
     try testing.expectEqual(r.parsed.classes.items.len, r.parsed.lines.items.len);
-    // fs_usage's own spelling, not a normalised one: a reader who goes back to the
-    // capture has to be able to find the line again.
     try testing.expectEqualStrings("open", r.parsed.names.items[0]);
     try testing.expectEqualStrings("write", r.parsed.names.items[1]);
 }
@@ -1612,8 +1230,6 @@ test "a neighbour that only read the judged directory is not made relevant by it
     var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    // Verbatim shape of the refusal: a security agent opens a state file read-only to
-    // scan it, then writes to a log descriptor it held before the capture began.
     const text =
         "10:36:22.000001  open              F=9        (_WCA_______X)  /work/trace.bin                   0.000010   subj.111\n" ++
         "10:36:22.000002  open              F=1   /tmp/st/sentinel-a                                     0.000100   subj.111\n" ++
@@ -1629,9 +1245,6 @@ test "a neighbour that opened the judged directory for writing is relevant, and 
     var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    // The control: the same neighbour, but the open under the root was write-capable.
-    // That descriptor is tracked; a second, unknown one it then writes on is exactly the
-    // descriptor-into-the-root-we-never-saw-opened that the rule exists for.
     const text =
         "10:36:22.000001  open              F=9        (_WCA_______X)  /work/trace.bin                   0.000010   subj.111\n" ++
         "10:36:22.000002  open              F=1   /tmp/st/sentinel-a                                     0.000100   subj.111\n" ++
@@ -1650,8 +1263,6 @@ test "openat through AT_FDCWD with an absolute operand is the mkstemp line, and 
     var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    // Verbatim from the run that refused: the creation mkstemp issues past the shim.
-    // `[-2]` is AT_FDCWD and the `//` is fs_usage's separator before an absolute operand.
     const text =
         "10:39:10.000001  open              F=9        (_WCA_______X)  /work/trace.bin                   0.000010   subj.111\n" ++
         "10:39:10.000002  open              F=1   /tmp/st/sentinel-a                                     0.000100   subj.111\n" ++
@@ -1697,7 +1308,6 @@ test "a relative operand with no cwd, on a call that could change state, refuses
         .unresolvable_path => {},
         else => return error.WrongDefect,
     }
-    // With a cwd it resolves, and lands outside the root.
     const r2 = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "/elsewhere", &.{}, &.{});
     try testing.expect(r2.defect == null);
     try testing.expectEqual(@as(usize, 0), r2.parsed.classes.items.len);
@@ -1724,10 +1334,6 @@ test "after the subject chdirs, a relative operand that could change state refus
     var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    // Review's construction: started in /tmp/work, moved to /tmp, then a raw
-    // openat(AT_FDCWD, "st/missed") — really /tmp/st/missed, inside the judged
-    // directory — which a join to the starting cwd would have placed at
-    // /tmp/work/st/missed and dropped.
     const text =
         "10:00:00.000001  open              F=9        (_WCA_______X)  /work/trace.bin                   0.000010   subj.111\n" ++
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                                     0.000100   subj.111\n" ++
@@ -1746,10 +1352,6 @@ test "a dup completes only on the next line, and only onto an inert fcntl of an 
     var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    // Review's construction: the subject dups a descriptor that points outside the
-    // root, then its next line is a write on an inherited descriptor nobody opened. The
-    // first rule mapped that descriptor to the out-of-scope source and dropped the
-    // write; the write must instead be the unresolved hole it is.
     const text =
         "10:00:00.000001  open              F=9        (_WCA_______X)  /work/trace.bin                   0.000010   subj.111\n" ++
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                                     0.000100   subj.111\n" ++
@@ -1799,8 +1401,6 @@ test "a second tid mutating the judged directory is recorded in the touch set" {
     var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    // The #405 shape: the subject writes through libc, a second thread of execution
-    // writes into the same root, and only this witness sees the second one.
     const text =
         "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
         "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
@@ -1813,7 +1413,6 @@ test "a second tid mutating the judged directory is recorded in the touch set" {
     try testing.expect(r.defect == null);
     try testing.expect(r.parsed.childTouched());
     try testing.expectEqual(@as(usize, 1), r.parsed.children);
-    // The subject's own account is unaffected by the intruder's lines.
     try testing.expectEqual(@as(usize, 2), r.parsed.classes.items.len);
     try testing.expectEqual(contract.OpClass.open, r.parsed.classes.items[0]);
     try testing.expectEqual(contract.OpClass.write, r.parsed.classes.items[1]);
