@@ -1479,6 +1479,51 @@ nxt = txt.split("\nnext: sideeye_explore_config", 1)[1].split("\n", 1)[0] if "\n
 if "did not check" in nxt or "found its state strictly inside SIDEEYE_MCP_STATE_ROOT" not in nxt: sys.exit("next line: %r" % nxt)
 PY2
 
+echo "=========== mcp 31: a request line over the server's limit is answered under its own id (#820) ==========="
+# 300 KiB lines: the id first, the id last (the order the TypeScript SDK writes), a notification,
+# and one that is not JSON; then an ordinary request. Each over-long request is answered where it
+# ends, under its id, before the next line is read; the notification gets nothing.
+python3 - "$SIDEEYE" "$META" >/tmp/mcp.out 2>&1 <<'PY' && pass "over-long lines: id 41 and 42 answered -32600 naming 262143, the notification not at all, the broken line -32700, then 43 in order; and 42 answered while stdin stays open" || fail "an over-long line went unanswered, or was answered wrongly"
+import json, subprocess, sys
+sideeye, meta = sys.argv[1], sys.argv[2]
+pad = "x" * (300 * 1024)
+lines = [
+    '{"jsonrpc":"2.0","id":41,"method":"tools/call","params":{%s,"name":"sideeye_preflight","arguments":{"config_path":"%s"}}}' % (meta, pad),
+    '{"method":"tools/call","params":{%s,"name":"sideeye_preflight","arguments":{"config_path":"%s"}},"jsonrpc":"2.0","id":42}' % (meta, pad),
+    '{"jsonrpc":"2.0","method":"notifications/cancelled","params":{"reason":"%s"}}' % pad,
+    '{"jsonrpc":"2.0","id":44,"method":"%s' % pad,
+    '{"jsonrpc":"2.0","id":43,"method":"server/discover","params":{%s}}' % meta,
+]
+p = subprocess.run([sideeye, "mcp"], input=("\n".join(lines) + "\n").encode(), capture_output=True, timeout=60)
+got = [json.loads(l) for l in p.stdout.decode().splitlines() if l.strip()]
+print("replies:", [(r.get("id"), (r.get("error") or {}).get("code"), (r.get("error") or {}).get("message", "")[:80]) for r in got])
+if len(got) != 4:
+    sys.exit("wanted 4 replies, got %d" % len(got))
+for r, want_id, want_code in zip(got[:3], [41, 42, None], [-32600, -32600, -32700]):
+    err = r.get("error") or {}
+    if r.get("id") != want_id or err.get("code") != want_code:
+        sys.exit("wanted id %r code %r, got %r" % (want_id, want_code, r))
+for r in got[:2]:
+    if "262143" not in r["error"]["message"]:
+        sys.exit("the limit is not named: %r" % r["error"]["message"])
+if got[3].get("id") != 43 or "result" not in got[3]:
+    sys.exit("the ordinary request after them was not answered: %r" % got[3])
+# The client of #820 keeps stdin open and waits on the id: the answer has to come without EOF.
+import select
+q = subprocess.Popen([sideeye, "mcp"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+q.stdin.write((lines[1] + "\n").encode())
+q.stdin.flush()
+ready, _, _ = select.select([q.stdout], [], [], 10)
+if not ready:
+    q.kill()
+    sys.exit("no answer to an over-long line within 10 s while stdin stayed open")
+open_reply = json.loads(q.stdout.readline())
+q.stdin.close()
+q.wait(timeout=10)
+if open_reply.get("id") != 42 or (open_reply.get("error") or {}).get("code") != -32600:
+    sys.exit("with stdin open, the over-long line was answered %r" % open_reply)
+PY
+
 echo ""
 echo ""
 if [ "$fails" = "0" ]; then echo "ALL MCP ACCEPTANCE CHECKS PASSED"; else echo "$fails MCP check(s) failed"; exit 1; fi

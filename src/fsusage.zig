@@ -1,6 +1,7 @@
 const std = @import("std");
 const contract = @import("contract");
 const oracle = @import("oracle.zig");
+const posix = @import("posix.zig");
 
 pub const Defect = union(enum) {
     unparsed: []const u8,
@@ -143,6 +144,70 @@ fn fdOf(middle: []const u8) ?[]const u8 {
             for (v) |c| if (!std.ascii.isDigit(c)) return null;
             return v;
         }
+    }
+    return null;
+}
+
+/// Where fs_usage's stderr goes: its `buffer overrun` notice is printed there and nowhere else.
+pub fn errPath(arena: std.mem.Allocator, capture_path: []const u8) ![]const u8 {
+    return std.fmt.allocPrint(arena, "{s}.err", .{capture_path});
+}
+
+/// Descriptor 0 is `/dev/null`, 1 the recording's stdout capture, and 2 is inherited from the
+/// engine, so its file is whatever the engine's own stderr names.
+pub fn standardFdScope(state_root: []const u8, state_alt: []const u8, rec_stdout: []const u8) [3]?bool {
+    const inside = struct {
+        fn f(path: []const u8, root: []const u8, alt: []const u8) bool {
+            return contract.isInsideDir(path, root) or (alt.len != 0 and contract.isInsideDir(path, alt));
+        }
+    }.f;
+    var buf: [1024]u8 = undefined;
+    const fd2: ?bool = blk: {
+        const km = posix.kindModeOfFd(2) catch break :blk null;
+        if (km.kind != .file) break :blk false;
+        const p = posix.pathOfFd(2, &buf) orelse break :blk null;
+        break :blk inside(p, state_root, state_alt);
+    };
+    return .{ false, inside(rec_stdout, state_root, state_alt), fd2 };
+}
+
+fn isStandardFd(fd: []const u8) bool {
+    return std.mem.eql(u8, fd, "0") or std.mem.eql(u8, fd, "1") or std.mem.eql(u8, fd, "2");
+}
+
+/// These succeed only on a socket, so the descriptor of one that did is never a state file.
+fn isSocketCall(call: []const u8) bool {
+    for ([_][]const u8{ "connect", "bind", "listen", "sendto", "recvfrom", "sendmsg", "recvmsg" }) |n| {
+        if (std.mem.eql(u8, call, n)) return true;
+    }
+    return false;
+}
+
+/// The process name, as the last field spells it before the thread id; a name with spaces
+/// compares by its last word.
+fn commandOf(raw: []const u8) []const u8 {
+    const line = std.mem.trimEnd(u8, raw, " \r");
+    const start = if (std.mem.lastIndexOfScalar(u8, line, ' ')) |sp| sp + 1 else 0;
+    const field = line[start..];
+    const dot = std.mem.lastIndexOfScalar(u8, field, '.') orelse return field;
+    return field[0..dot];
+}
+
+const FdPair = struct { old: []const u8, new: []const u8 };
+
+/// Null for a failed call, which prints one number and the errno in brackets.
+fn fdPairOf(middle: []const u8) ?FdPair {
+    var found: [2][]const u8 = undefined;
+    var n: usize = 0;
+    var it = std.mem.tokenizeAny(u8, middle, " \t");
+    while (it.next()) |tok| {
+        if (!std.mem.startsWith(u8, tok, "F=")) continue;
+        const v = tok[2..];
+        if (v.len == 0) return null;
+        for (v) |c| if (!std.ascii.isDigit(c)) return null;
+        found[n] = v;
+        n += 1;
+        if (n == 2) return .{ .old = found[0], .new = found[1] };
     }
     return null;
 }
@@ -442,9 +507,29 @@ pub fn read(
     sentinel_end: []const u8,
     cwd: []const u8,
     subject_thread_ids: []const u64,
+    started_thread_ids: []const u64,
+) !Reading {
+    return readWithStd(arena, text, state_root, state_alt, trace_path, sentinel_start, sentinel_end, cwd, subject_thread_ids, started_thread_ids, .{ null, null, null });
+}
+
+/// `std_scope` says, for descriptors 0, 1 and 2, whether the file the engine handed the subject
+/// there is inside the judged state (true), outside it (false) or unknown (null). The capture
+/// cannot say: the engine arranges them with `dup2` before the `exec`, on a thread the subject's
+/// lines do not carry.
+pub fn readWithStd(
+    arena: std.mem.Allocator,
+    text: []const u8,
+    state_root: []const u8,
+    state_alt: []const u8,
+    trace_path: []const u8,
+    sentinel_start: []const u8,
+    sentinel_end: []const u8,
+    cwd: []const u8,
+    subject_thread_ids: []const u64,
     /// It does NOT make the thread the subject: a started thread that writes through raw
     /// syscalls stays another party's to this witness and refuses as it did.
     started_thread_ids: []const u64,
+    std_scope: [3]?bool,
 ) !Reading {
     var out: Reading = .{ .parsed = .{ .classes = .empty, .names = .empty, .lines = .empty, .metadata_observed = .empty, .mutations = .empty, .reaps = .empty, .spawns = .empty, .subject_tids = .empty } };
     var fds: FdTable = .{};
@@ -515,6 +600,27 @@ pub fn read(
         return out;
     }
     out.subject_tid = subject;
+    for (std_scope, [_][]const u8{ "0", "1", "2" }) |scope, n| {
+        if (scope) |in| try fds.set(arena, .{ .tid = subject, .fd = n }, in);
+    }
+    // Bounded by the subject's own first and last lines: a process of the same name outside
+    // them — a `git` an editor runs beside the `git` under test — is not this one.
+    var subject_cmd: ?[]const u8 = null;
+    var subject_first: usize = 0;
+    var subject_last: usize = 0;
+    {
+        var it = std.mem.splitScalar(u8, text, '\n');
+        while (it.next()) |raw| {
+            const ln = parseLine(raw) orelse continue;
+            if (!std.mem.eql(u8, ln.tid, subject)) continue;
+            const at = @intFromPtr(raw.ptr) - @intFromPtr(text.ptr);
+            if (subject_cmd == null) {
+                subject_cmd = commandOf(raw);
+                subject_first = at;
+            }
+            subject_last = at;
+        }
+    }
 
     var subject_tid_text: std.ArrayList([]const u8) = .empty;
     for (subject_thread_ids) |t| {
@@ -611,6 +717,12 @@ pub fn read(
             break :blk false;
         };
         const fd_tid = if (is_started) subject else ln.tid;
+        // A thread the shim never saw keeps its own table, yet the standard descriptors it moves
+        // or closes are the subject's too when it runs in the subject's image.
+        const raw_at = @intFromPtr(raw.ptr) - @intFromPtr(text.ptr);
+        const in_subject_image = !std.mem.eql(u8, fd_tid, subject) and
+            raw_at >= subject_first and raw_at <= subject_last and
+            if (subject_cmd) |sc| std.mem.eql(u8, commandOf(raw), sc) else false;
         const cls_opt = classOf(ln.call);
         // Widened with `is_subject` for the same reason that predicate was (#544), and it
         // is a different set: `state_tids` is built in the pass above from lines that NAME
@@ -668,6 +780,36 @@ pub fn read(
                 }
                 _ = dup_pending.swapRemove(i);
             }
+        }
+
+        // `dup` and `dup2` print the new number after the old one; `accept` prints the new
+        // socket there, and `socket` prints its own. A dup from a number the table does not know
+        // makes the new number unknown rather than leaving what it named before.
+        const call = canonicalCall(ln.call);
+        if (std.mem.eql(u8, call, "dup") or std.mem.eql(u8, call, "dup2") or std.mem.eql(u8, call, "accept")) {
+            const pair = fdPairOf(ln.middle) orelse {
+                if (!hasErrno(ln.middle) and is_relevant) {
+                    out.defect = .{ .unparsed = raw };
+                    return out;
+                }
+                continue;
+            };
+            if (std.mem.eql(u8, call, "accept")) {
+                try fds.set(arena, .{ .tid = fd_tid, .fd = pair.new }, false);
+            } else if (fds.get(.{ .tid = fd_tid, .fd = pair.old })) |in| {
+                try fds.set(arena, .{ .tid = fd_tid, .fd = pair.new }, in);
+            } else fds.clear(.{ .tid = fd_tid, .fd = pair.new });
+            if (in_subject_image and isStandardFd(pair.new)) fds.clear(.{ .tid = subject, .fd = pair.new });
+            continue;
+        }
+        if (std.mem.eql(u8, call, "socket") or isSocketCall(call)) {
+            if (!hasErrno(ln.middle)) {
+                if (fd) |f| {
+                    if (std.mem.eql(u8, call, "socket") or fds.get(.{ .tid = fd_tid, .fd = f }) == null)
+                        try fds.set(arena, .{ .tid = fd_tid, .fd = f }, false);
+                }
+            }
+            continue;
         }
 
         if (std.mem.eql(u8, canonicalCall(ln.call), "fcntl")) {
@@ -753,7 +895,10 @@ pub fn read(
                     }
                 }
             } else if (cls == .close) {
-                if (fd) |f| fds.clear(.{ .tid = fd_tid, .fd = f });
+                if (fd) |f| {
+                    fds.clear(.{ .tid = fd_tid, .fd = f });
+                    if (in_subject_image and isStandardFd(f)) fds.clear(.{ .tid = subject, .fd = f });
+                }
                 continue;
             }
         }
@@ -1467,4 +1612,126 @@ test "work outside the judged directory is not the subject's account" {
     const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{}, &.{});
     try testing.expect(r.defect == null);
     try testing.expectEqual(@as(usize, 0), r.parsed.classes.items.len);
+}
+
+fn readStd(a: std.mem.Allocator, body: []const u8, std_scope: [3]?bool) !Reading {
+    const text = try std.fmt.allocPrint(a, "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
+        "10:00:00.000002  open              F=6   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
+        "{s}" ++
+        "10:00:00.000099  open              F=7   /tmp/st/sentinel-b                    0.000100   subj.111\n", .{body});
+    return readWithStd(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{}, &.{}, std_scope);
+}
+
+const outside_std: [3]?bool = .{ false, false, false };
+
+test "a write to the standard output the engine handed over is outside the state (#796)" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const body = "10:00:00.000010  write             F=1   B=0x5                                 0.000100   subj.111\n" ++
+        "10:00:00.000011  write             F=2   B=0x5                                 0.000100   subj.111\n";
+    const r = try readStd(a, body, outside_std);
+    try testing.expect(r.defect == null);
+    try testing.expectEqual(@as(usize, 0), r.parsed.classes.items.len);
+    const unknown = try readStd(a, body, .{ null, null, null });
+    try testing.expect(unknown.defect != null and unknown.defect.? == .unresolved_fd);
+}
+
+test "a state file moved onto descriptor 1 with dup2 is written through it, and counted (#796)" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const r = try readStd(a, "10:00:00.000010  open              F=3        (_W__________)  /tmp/st/keep     0.000100   subj.111\n" ++
+        "10:00:00.000011  dup2              F=3    F=1                                    0.000001   subj.111\n" ++
+        "10:00:00.000012  close             F=3                                           0.000001   subj.111\n" ++
+        "10:00:00.000013  write             F=1   B=0x3                                   0.000100   subj.111\n" ++
+        "10:00:00.000014  write             F=2   B=0xf                                   0.000100   subj.111\n", outside_std);
+    try testing.expect(r.defect == null);
+    try testing.expectEqualSlices(contract.OpClass, &.{ .open, .write }, r.parsed.classes.items);
+}
+
+test "a dup2 from a descriptor nobody opened leaves the new number unknown, not what it named before" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const r = try readStd(a, "10:00:00.000011  dup2              F=12   F=1                                    0.000001   subj.111\n" ++
+        "10:00:00.000013  write             F=1   B=0x3                                   0.000100   subj.111\n", outside_std);
+    try testing.expect(r.defect != null and r.defect.? == .unresolved_fd);
+    // A dup2 that failed prints one number and the errno, and moves nothing.
+    const failed = try readStd(a, "10:00:00.000011  dup2              F=12  [  9]                                   0.000001   subj.111\n" ++
+        "10:00:00.000013  write             F=1   B=0x3                                   0.000100   subj.111\n", outside_std);
+    try testing.expect(failed.defect == null);
+}
+
+test "a file outside the state moved onto descriptor 1, a socket and an accepted connection are outside the state" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const r = try readStd(a, "10:00:00.000010  open              F=4        (_W__________)  /var/log/mine    0.000100   subj.111\n" ++
+        "10:00:00.000011  dup2              F=4    F=1                                    0.000001   subj.111\n" ++
+        "10:00:00.000012  write             F=1   B=0x4                                   0.000100   subj.111\n" ++
+        "10:00:00.000013  socket            F=8        <AF_INET, SOCK_STREAM, 0x0>        0.000020   subj.111\n" ++
+        "10:00:00.000014  write             F=8   B=0x10                                  0.000100   subj.111\n" ++
+        "10:00:00.000015  accept            F=8    F=10                                   0.000001   subj.111\n" ++
+        "10:00:00.000016  write             F=10  B=0x10                                  0.000100   subj.111\n", .{ null, null, null });
+    try testing.expect(r.defect == null);
+    try testing.expectEqual(@as(usize, 0), r.parsed.classes.items.len);
+}
+
+test "a standard descriptor another thread of the subject's image moves is no longer taken as the engine's" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const moved = try readStd(a, "10:00:00.000010  dup2              F=9    F=1                                    0.000001   subj.222\n" ++
+        "10:00:00.000013  write             F=1   B=0x3                                   0.000100   subj.111\n", outside_std);
+    try testing.expect(moved.defect != null and moved.defect.? == .unresolved_fd);
+    // Another program moving its own descriptor 1 is not the subject's business.
+    const elsewhere = try readStd(a, "10:00:00.000010  dup2              F=9    F=1                                    0.000001   other.333\n" ++
+        "10:00:00.000013  write             F=1   B=0x3                                   0.000100   subj.111\n", outside_std);
+    try testing.expect(elsewhere.defect == null);
+}
+
+test "a dup2 line that prints one number and no errno is unreadable, not skipped" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const r = try readStd(a, "10:00:00.000011  dup2              F=3                                            0.000001   subj.111\n", outside_std);
+    try testing.expect(r.defect != null and r.defect.? == .unparsed);
+}
+
+test "a socket that only connect or sendto names is outside the state, and a failed one names nothing" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const r = try readStd(a, "10:00:00.000010  connect           F=12                                           0.000020   subj.111\n" ++
+        "10:00:00.000011  write             F=12  B=0x10                                  0.000100   subj.111\n" ++
+        "10:00:00.000012  sendto            F=13  B=0x10                                  0.000020   subj.111\n" ++
+        "10:00:00.000013  write             F=13  B=0x10                                  0.000100   subj.111\n", outside_std);
+    try testing.expect(r.defect == null);
+    const failed = try readStd(a, "10:00:00.000010  connect           F=12[ 38]                                      0.000020   subj.111\n" ++
+        "10:00:00.000011  write             F=12  B=0x10                                  0.000100   subj.111\n", outside_std);
+    try testing.expect(failed.defect != null and failed.defect.? == .unresolved_fd);
+}
+
+test "a process of the subject's name outside the subject's own lines does not touch its standard descriptors" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const text =
+        "10:00:00.000000  dup2              F=9    F=1                                    0.000001   subj.222\n" ++
+        "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
+        "10:00:00.000002  open              F=6   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
+        "10:00:00.000013  write             F=1   B=0x3                                   0.000100   subj.111\n" ++
+        "10:00:00.000099  open              F=7   /tmp/st/sentinel-b                    0.000100   subj.111\n";
+    const r = try readWithStd(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{}, &.{}, outside_std);
+    try testing.expect(r.defect == null);
+}
+
+test "a standard descriptor another thread of the subject's image closes is no longer taken as the engine's" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const r = try readStd(a, "10:00:00.000010  close             F=1                                            0.000001   subj.222\n" ++
+        "10:00:00.000013  write             F=1   B=0x3                                   0.000100   subj.111\n", outside_std);
+    try testing.expect(r.defect != null and r.defect.? == .unresolved_fd);
 }
