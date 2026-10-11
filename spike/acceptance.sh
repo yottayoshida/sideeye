@@ -10626,6 +10626,42 @@ else
     fi
 fi
 
+echo "=========== check 17b: a run stopped by SIGINT, SIGTERM or SIGHUP stops what it started, then ends by that signal (#819) ==========="
+# Each leg goes through spike/interrupt-run.py, which says why the suite's own shell cannot send
+# these signals.
+ir=/tmp/acc-interrupt
+irn=$$
+rm -rf "$ir" && mkdir -p "$ir/state" "$ir/work"
+cat >"$ir/world-op.sh" <<IROP
+#!/bin/sh
+echo a >"$ir/state/f"
+[ -n "\${SIDEEYE_KILL_AT:-}" ] && exec /bin/sleep 3003.$irn
+echo b >"$ir/state/g"
+IROP
+chmod 755 "$ir/world-op.sh"
+ir_leg() { # ir_leg <what> <signal> <marker> <ignore-hup> <command...>
+    ir_what=$1
+    shift
+    if python3 "$ROOT/spike/interrupt-run.py" "$@" >"$ir/out" 2>&1; then
+        echo "ok   $ir_what (#819)"
+    else
+        echo "FAIL $ir_what: $(tail -1 "$ir/out")"
+        fails=$((fails + 1))
+    fi
+}
+ir_leg "SIGTERM during the setup stops the setup and ends the run by SIGTERM" SIGTERM 3001.$irn 0 \
+    "$SIDEEYE" explore --state "$ir/state" --setup "/bin/sleep 3001.$irn" --operation /bin/true --shim "$SHIM" --work "$ir/work" --allow-unverified
+ir_leg "SIGINT during a recording under strace stops strace and the operation, and ends the run by SIGINT" SIGINT 3002.$irn 0 \
+    "$SIDEEYE" explore --state "$ir/state" --operation "/bin/sleep 3002.$irn" --shim "$SHIM" --work "$ir/work" --oracle /usr/bin/strace
+ir_leg "SIGHUP during a world under --world-timeout stops the world and ends the run by SIGHUP" SIGHUP 3003.$irn 0 \
+    "$SIDEEYE" explore --state "$ir/state" --operation "$ir/world-op.sh" --shim "$SHIM" --work "$ir/work" --allow-unverified --world-timeout 600
+ir_leg "a SIGHUP ignored when the run starts stays ignored, and the run reaches its end" SIGHUP 2.$irn 1 \
+    "$SIDEEYE" explore --state "$ir/state" --setup "/bin/sleep 2.$irn" --operation /bin/true --shim "$SHIM" --work "$ir/work" --allow-unverified
+if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
+    ir_leg "SIGTERM during a supervised recording stops the operation, and ends the run by SIGTERM" SIGTERM 3006.$irn 0 \
+        "$SIDEEYE" explore --state "$ir/state" --operation "/bin/sleep 3006.$irn" --shim "$SHIM" --work "$ir/work" --observe supervised --allow-unverified
+fi
+
 echo "=========== check: a rewrite the engine cannot perform refuses in its own phase (#363 Group B) ==========="
 # state_rewrite_failed: after the define has run, the engine failing to rewrite the
 # state tree it recorded is UNKNOWN with that name, never a SETUP ERROR; before the

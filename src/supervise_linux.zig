@@ -9,6 +9,7 @@ const builtin = @import("builtin");
 const contract = @import("contract");
 const supervise = @import("supervise.zig");
 const image = @import("image.zig");
+const posix = @import("posix.zig");
 const engine_build_options = @import("engine_build_options");
 
 const linux = std.os.linux;
@@ -331,6 +332,11 @@ pub const Session = struct {
             return error.SpawnSetup;
         }
         self.sock = fds;
+        // Not created unblocked: the thread inherits this mask, and one that took a signal between a fork
+        // and the child's registration would find no child to stop.
+        var old_mask: std.c.sigset_t = undefined;
+        posix.blockInterrupts(&old_mask);
+        defer posix.restoreMask(&old_mask);
         self.thread = std.Thread.spawn(.{}, run, .{self}) catch {
             _ = linux.close(fds[0]);
             _ = linux.close(fds[1]);
