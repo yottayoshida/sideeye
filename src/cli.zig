@@ -17,7 +17,7 @@ const setupError = refuse.setupError;
 const say = report.say;
 const removeFile = files.removeFile;
 
-pub const version = "1.11.0";
+pub const version = "1.12.0";
 
 const max_apparatus = 32;
 var apparatus_flag_buf: [max_apparatus][]const u8 = undefined;
