@@ -1327,6 +1327,15 @@ jobs:
         # the source under test.
         run: bash spike/fsusage/acceptance-local.sh
 
+      - name: A run stopped by a signal stops what it started first, fs_usage included (#819)
+        # Paths resolved through `pwd -P`: under `--oracle-fs-usage` a state or work directory reached
+        # through /var's symlink is not one the observer reports (#795), and the recording would not start.
+        run: |
+          ir="$(cd "$(mktemp -d)" && pwd -P)/ir"
+          mkdir -p "$ir/state" "$ir/work"
+          python3 spike/interrupt-run.py SIGINT "3001.$$" 0 zig-out/bin/sideeye explore --state "$ir/state" --setup "/bin/sleep 3001.$$" --operation /bin/true --work "$ir/work" --allow-unverified
+          IR_ALSO=/usr/bin/fs_usage python3 spike/interrupt-run.py SIGTERM "3007.$$" 0 zig-out/bin/sideeye explore --state "$ir/state" --operation "/bin/sleep 3007.$$" --work "$ir/work" --oracle-fs-usage
+
       - name: A crash point reached on a worker thread kills the world — pthread, GCD, and the no-thread control (#569)
         id: thread-kill-lands
         # Twelve explorations of each toy at nine crash points, every one required to PASS.

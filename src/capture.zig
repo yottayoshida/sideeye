@@ -420,10 +420,9 @@ pub fn readFileAllocCapped(
         } else {
             const e = std.c._errno().*;
             if (e == posix.EINTR) {
-                // a first-interruption `null` into eight retries. Unreachable in
-                // practice on all of them today (no handler is installed anywhere), and
-                // folding an interruption into "unreadable" would be a wrong answer
-                // rather than a slow one.
+                // a first-interruption `null` into eight retries. Reachable since the
+                // engine handles SIGINT and friends (ADR 0124), and folding an interruption
+                // into "unreadable" would be a wrong answer rather than a slow one.
                 if (eintr_left == 0) return null;
                 eintr_left -= 1;
                 continue;

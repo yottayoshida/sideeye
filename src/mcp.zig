@@ -595,6 +595,7 @@ pub fn runServer(gpa: std.mem.Allocator) void {
         }
         break :blk resolved;
     } else server_root;
+    posix.installInterruptHandlers(stopServerForSignal);
     var buf: [256 * 1024]u8 = undefined;
     var lines: Lines = .{ .buf = &buf };
     while (true) {
@@ -607,6 +608,11 @@ pub fn runServer(gpa: std.mem.Allocator) void {
         }
         lines.commit(@intCast(n));
     }
+}
+
+fn stopServerForSignal(sig: c_int) noreturn {
+    posix.writeStopLine(sig, 0);
+    posix.dieBySignal(sig);
 }
 
 pub const Lines = struct {

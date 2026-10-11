@@ -133,6 +133,7 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
         if (w == pid or w < 0) {
             refuse.fsu_live = null;
             removeFile(sentinel);
+            posix.noteSidecar(0);
             const said = capture.readFileAllocCapped(arena, fsusage.errPath(arena, capture_path) catch "", 4096, .{ .no_follow = true }) orelse "";
             const trimmed = std.mem.trim(u8, said, " \t\r\n");
             setupError(.environment, std.fmt.allocPrint(arena, "fs_usage exited before the handshake completed{s}{s}; its stderr is {s}, and if it says `ktrace_start: Resource busy`, another fs_usage still holds the kernel trace facility — wait for it, or stop it, and re-run", .{ if (trimmed.len > 0) ", saying: " else "", textShown(arena, trimmed), textShown(arena, fsusage.errPath(arena, capture_path) catch "") }) catch "fs_usage exited before the handshake completed");
@@ -412,6 +413,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // reaches the report rather than leaving whatever was there before.
     refuse.json_arena = arena_state.allocator();
     var run: Run = .{ .gpa = gpa, .arena_state = &arena_state, .arena = arena_state.allocator(), .parsed = cli.parse(argv) };
+    // After the parse: `--world-timeout` resets SIGCHLD there, and that is the disposition children get.
+    posix.installInterruptHandlers(refuse.stopForSignal);
     phaseDefine(&run);
     phaseSetup(&run);
     phaseApparatus(&run);
@@ -2908,8 +2911,7 @@ fn observeAgain(
     /// flag deliberately does not make on its own.
     children_admitted: bool,
 ) Repeat {
-    // The floor is enforced, not assumed. `sleepForMs` is best effort by its own
-    // documentation — a signal cuts it short and nothing re-arms it — while `--help`,
+    // The floor is enforced against the clock, not assumed from one sleep, while `--help`,
     // docs/cli.md and the CHANGELOG all promise "at least two seconds". Without this
     // loop the command could print `two runs 47 ms apart left equal state` and
     // contradict its own help (review, P2). The clock is monotonic, so each pass

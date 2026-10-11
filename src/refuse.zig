@@ -217,8 +217,23 @@ pub fn dropCapture() void {
 
 pub fn stopLiveSidecar() posix.SidecarEnd {
     const live = fsu_live orelse return .had_exited;
+    // Cleared only once it has stopped: a stop for a signal that began while this one was
+    // running would otherwise find nothing to stop and end with fs_usage still holding kdebug.
+    posix.beginStopping();
+    defer posix.endStopping();
+    const end = posix.stopSidecar(live.gpa, live.pid, &.{ "/usr/bin/sudo", "-n" }, 5000);
     fsu_live = null;
-    return posix.stopSidecar(live.gpa, live.pid, &.{ "/usr/bin/sudo", "-n" }, 5000);
+    posix.noteSidecar(0);
+    return end;
+}
+
+/// The hook `posix.installInterruptHandlers` calls once the child being waited on has ended.
+pub fn stopForSignal(sig: c_int) noreturn {
+    posix.beginStopping();
+    _ = stopLiveSidecar();
+    dropCapture();
+    posix.writeStopLine(sig, 0);
+    posix.dieBySignal(sig);
 }
 
 pub fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contract.NextStep) noreturn {
