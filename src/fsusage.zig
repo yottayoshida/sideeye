@@ -371,7 +371,7 @@ fn isReadOnlyCall(call_in: []const u8) bool {
 /// the shim does not record and which is a durability operation on the state — through
 /// the unknown-call gate that exists to catch exactly that.
 fn fcntlIsInert(middle: []const u8) bool {
-    const inert = [_][]const u8{ "<GETPATH>", "<GETFL>", "<SETFL>", "<GETFD>", "<SETFD>", "<GETLK>" };
+    const inert = [_][]const u8{ "<GETPATH>", "<GETFL>", "<SETFL>", "<GETFD>", "<SETFD>", "<GETLK>", "<CHECK_OPENEVT>" };
     for (inert) |n| if (std.mem.indexOf(u8, middle, n) != null) return true;
     return false;
 }
@@ -1561,6 +1561,29 @@ test "a second tid mutating the judged directory is recorded in the touch set" {
     try testing.expectEqual(@as(usize, 2), r.parsed.classes.items.len);
     try testing.expectEqual(contract.OpClass.open, r.parsed.classes.items[0]);
     try testing.expectEqual(contract.OpClass.write, r.parsed.classes.items[1]);
+}
+
+test "Spotlight checking how a state file was opened is not an operation, and a full sync on it still refuses" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    for ([_][]const u8{ "<CHECK_OPENEVT>", "<FULLFSYNC>" }) |cmd| {
+        const text = try std.fmt.allocPrint(a, "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
+            "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
+            "10:00:00.000003  open              F=4        (R___________)  /tmp/st/keep      0.000072   mdworker_shared.41490\n" ++
+            "10:00:00.000004  fcntl             F=4   {s}                                   0.000001   mdworker_shared.41490\n" ++
+            "10:00:00.000005  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n", .{cmd});
+        const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{}, &.{});
+        if (std.mem.eql(u8, cmd, "<CHECK_OPENEVT>")) {
+            try testing.expect(r.defect == null);
+        } else {
+            try testing.expect(r.defect != null);
+            switch (r.defect.?) {
+                .unknown_call => {},
+                else => return error.WrongDefect,
+            }
+        }
+    }
 }
 
 test "an unknown CALL inside the judged directory refuses rather than being ignored" {
