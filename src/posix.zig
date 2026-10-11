@@ -167,6 +167,12 @@ pub const O_CLOEXEC: c_int = blk: {
     break :blk @bitCast(f);
 };
 
+pub const O_NOCTTY: c_int = blk: {
+    var f: std.posix.O = .{};
+    f.NOCTTY = true;
+    break :blk @bitCast(f);
+};
+
 pub const AT_FDCWD: c_int = std.posix.AT.FDCWD;
 pub const AT_REMOVEDIR: c_int = std.posix.AT.REMOVEDIR;
 

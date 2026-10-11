@@ -65,7 +65,8 @@ FAIL), so the token is the last thing sideeye writes on every path and a reader 
 sees what it always saw. So a run that reached the report stage
 produces exactly one token whether or not the file landed (`preflight` refuses `--json` before the
 path is recorded, so that refusal carries none): "no token" cannot be arranged by making
-the write fail (a directory planted at `<path>.tmp` does that on demand), and "one token" is never a
+the write fail (a directory planted at `<path>.tmp` did that on demand until ADR 0123 made the
+temporary name one each run creates new; a directory the writer cannot write still does), and "one token" is never a
 forgery standing alone. One write because a write of at most PIPE_BUF bytes is not interleaved with
 another writer's on a pipe; the token is 87 bytes, pinned by the test, which also holds it under 512 -- the
 smaller of Linux's and macOS's PIPE_BUF. The line is not part of the report schema, and stderr's prose is not a

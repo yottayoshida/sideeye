@@ -1497,14 +1497,23 @@ pub fn parse(argv: []const []const u8) Parsed {
             // ride behind a narrow-looking one.
             if (args.state_under != null) setupError(.define_invalid, "--state-under was given twice; refusing rather than letting the second spelling win");
             args.state_under = v;
-        } else if (std.mem.eql(u8, argv[i], "--config")) args.config = v else if (std.mem.eql(u8, argv[i], "--json")) {
+        } else if (std.mem.eql(u8, argv[i], "--json")) {
+            // Refused before `json_path` is set: set first, this refusal's own report would replace the thing it protects.
+            switch (report.reportSlot(v)) {
+                .refuse => |what| {
+                    // An earlier `--json` in the same argv must not receive this refusal's report either.
+                    refuse.json_path = null;
+                    refuse.setupErrorFmt(argArena(), .define_invalid, "--json would replace '{s}', which is {s}; it removes only a report Sideeye wrote, or an empty file. Name a path that does not exist yet, or move that one away yourself", .{ defang.textShown(argArena(), v), what });
+                },
+                // Any document at this path describes some earlier run. Removing it now means
+                // an exit that never reaches a writer leaves *no* report rather than a stale
+                // one: absence is unambiguous, a previous verdict is not.
+                .remove => removeFile(v),
+                .leave => {},
+            }
             args.json = v;
             refuse.json_path = v;
-            // Any document at this path describes some earlier run. Removing it now means
-            // an exit that never reaches a writer leaves *no* report rather than a stale
-            // one: absence is unambiguous, a previous verdict is not.
-            removeFile(v);
-        } else refuseFlagPosition(mode, argv[i]); // a synopsis flag no branch above reads: #273 is red for it first
+        } else if (std.mem.eql(u8, argv[i], "--config")) args.config = v else refuseFlagPosition(mode, argv[i]); // a synopsis flag no branch above reads: #273 is red for it first
         i += 2;
     }
 
