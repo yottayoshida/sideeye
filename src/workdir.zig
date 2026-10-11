@@ -17,7 +17,7 @@ pub fn lock(arena: std.mem.Allocator, work: []const u8) ?Refusal {
         return .{ .reason = .define_invalid, .text = "--work is too long" };
     const flags = posix.O_RDWR | posix.O_NOFOLLOW | posix.O_CLOEXEC | posix.O_NONBLOCK;
     // Not asked who owns a file this run just made: a filesystem that squashes the owner would
-    // refuse every run, the way #692 exempts a work directory the run just made.
+    // refuse every run.
     var made = true;
     var fd = posix.open(path.ptr, flags | posix.O_CREAT | posix.O_EXCL, @as(c_uint, 0o600));
     if (fd < 0 and std.c._errno().* == posix.EEXIST) {

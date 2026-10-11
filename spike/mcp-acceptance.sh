@@ -252,10 +252,6 @@ python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));sc=d["result"].get
   && pass "self-exec ran the real binary (a real sideeye report), not the PATH fake" || fail "self-exec used argv[0]/PATH, not the canonical path"
 
 echo "=========== mcp 6: a reused work dir must not serve a stale verdict ==========="
-# Two SEPARATE server processes, one after the other, share SIDEEYE_MCP_WORK. Server A
-# explores toy-bug (a real FAIL); server B then explores toy-FIXED and has to answer PASS,
-# not A's leftover FAIL — the stale verdict measured live on 2026-08-12. Each server now
-# works in a directory of its own under SIDEEYE_MCP_WORK (#816); mcp 6b runs the two at once.
 drive "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/sideeye.toml\"}}}"
 python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));d["result"]["structuredContent"]["verdict"]=="FAIL" or sys.exit(d)' \
   || fail "precondition: server A did not reach toy-bug's FAIL"
@@ -265,9 +261,6 @@ python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));v=d["result"]["str
   || fail "a reused work dir served a stale verdict (or toy-fixed did not PASS)"
 
 echo "=========== mcp 6b: two servers at once on one work directory answer each about its own config (#816) ==========="
-# Server A's setup holds its exploration open for three seconds; server B is asked once that
-# setup has begun. Each server hands its children a directory of its own under
-# SIDEEYE_MCP_WORK, so B's run neither reads A's files nor is refused A's lock.
 rm -rf "$WS/conc-a" "$WS/conc-b" /tmp/mcp-conc-holding; mkdir -p "$WS/conc-a" "$WS/conc-b"
 cat > "$WS/conc-slow-init.sh" <<SH
 #!/bin/sh
@@ -409,8 +402,8 @@ state = "./state"
 setup     = "$WS2/init-once.sh"
 operation = "$OUT/toy-bug rotate"
 TOML
-# The case is saved under the server's own directory (#816), whose name the server makes,
-# so the explore runs in one session and the two replays in the next one.
+# Not one session for the explore and the replays: the case lands under a directory the server
+# names, unknown until the explore has run.
 REQ="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS2/once.toml\"}}}" \
   SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$WS2 SIDEEYE_MCP_WORK=$WS2/work \
   sh -c "printf '%s' \"\$REQ\" | \"$SIDEEYE\" mcp >/tmp/mcp-explore.out 2>/tmp/mcp.err"
@@ -1164,7 +1157,6 @@ ev_session() {
       sh -c "printf '%s' \"\$REQ\" | \"$SIDEEYE\" mcp >/tmp/mcp.out 2>/tmp/mcp.err"
 }
 ev_session "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS3/ev.toml\"}}}"
-# The bundle and the case are saved under the server's own directory (#816).
 EVW=$(ls -d "$WS3"/work/server-* 2>/dev/null | head -1)
 if [ ! -f /tmp/mcp-ev-ran ] || [ ! -f "$EVW/evidence/000001.json" ]; then
     fail "the explore that should leave a bundle did not (marker or bundle missing): the legs below would prove nothing"

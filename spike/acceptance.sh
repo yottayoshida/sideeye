@@ -12490,9 +12490,6 @@ fi
 
 echo ""
 echo "=========== check 26: two runs never use one work directory at the same time (#816) ==========="
-# docs/cli.md: a run that names a work directory another run holds is refused before it
-# writes there, naming the holder. The first run's setup holds the lock for three seconds;
-# the second starts once that setup has begun, and its own setup must never have run.
 L=/tmp/acc-lock
 rm -rf "$L"; mkdir -p "$L/s1" "$L/s2" "$L/s3"
 cat > "$L/slow-init.sh" <<EOF
@@ -12531,8 +12528,6 @@ else
     fails=$((fails + 1))
 fi
 
-# The lock is held past the setup and the recording: a checker that marks its first run (the
-# falsification probe) and lingers lets a second run start once the recording is done.
 rm -f "$L/checking"
 cat > "$L/slow-check.sh" <<EOF
 #!/bin/sh
@@ -12560,8 +12555,6 @@ else
     fails=$((fails + 1))
 fi
 
-# Two replays of one case with --fresh-state on one work directory: the second is refused
-# before it empties the state the first is exploring, and the first still reproduces.
 case26=$(ls "$L/w/cases/"*.json 2>/dev/null | head -1)
 if [ -z "$case26" ]; then
     echo "FAIL check 26's replay leg found no case from the first run"
@@ -12572,8 +12565,8 @@ else
     replay1=$!
     i=0
     while [ ! -e "$L/holding" ] && [ "$i" -lt 100 ]; do sleep 0.1; i=$((i + 1)); done
-    # Left in the state while the first replay's setup runs: a second replay's --fresh-state
-    # that got past the lock would remove it.
+    # Not judged by the second replay's exit alone: a --fresh-state that got past the lock
+    # would remove this.
     : > "$L/s1/sentinel"
     o6=$("$SIDEEYE" replay "$case26" --fresh-state --shim "$SHIM" --work "$L/w" --allow-unverified 2>&1)
     rc6=$?
@@ -12589,8 +12582,6 @@ else
     fi
 fi
 
-# A hard link or a FIFO planted at run.lock is refused, and what the link points at is not
-# truncated: the lock file gets the run's pid written into it.
 mkdir -p "$L/wh" "$L/wf" "$L/s7"
 printf 'keep me\n' > "$L/victim"
 ln "$L/victim" "$L/wh/run.lock"

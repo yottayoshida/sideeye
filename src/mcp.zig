@@ -844,8 +844,8 @@ var server_work_buf: [contract.max_path]u8 = undefined;
 var server_work_len: usize = 0;
 
 /// Not named by the pid: every server started as the container in docs/mcp.md is pid 1, and two
-/// such containers sharing a mount would share the name. `mkdtemp` never adopts a directory it
-/// did not make, so #692's owner check has nothing to ask of it.
+/// such containers sharing a mount would share the name. Not put through the work directory's
+/// owner check when made: `mkdtemp` never adopts a directory it did not make.
 fn serverWork(work: []const u8) ?[]const u8 {
     if (server_work_len > 0) {
         if (workDirVerdict(server_work_buf[0..server_work_len]) == .ok) return server_work_buf[0..server_work_len];
@@ -930,7 +930,7 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
 
     // Do not drop the unlinks because the directory is this server's own: the capture opens
     // O_EXCL, and a name left behind would refuse the spawn and leave the old report to be
-    // read back as this call's verdict (2026-08-12).
+    // read back as this call's verdict.
     unlinkPath(temp_json);
     unlinkPath(child_out);
     // Preflight's text output quotes the bytes `--twice` saw differ, and this server reads only
@@ -1818,8 +1818,8 @@ fn readFile(arena: std.mem.Allocator, path: []const u8, cap: usize) ?[]const u8 
     const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch return null;
     // Do not drop `O_NONBLOCK` or `O_NOFOLLOW` because the server made this directory: the
     // report is written by the child into a directory the target can write, so a FIFO planted
-    // at the path would hold the server with no timeout (#400), and a symlink would hand the
-    // caller a verdict about a file somebody else chose (#469).
+    // at the path would hold the server with no timeout, and a symlink would hand the caller a
+    // verdict about a file somebody else chose.
     const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK | posix.O_NOFOLLOW, @as(c_uint, 0));
     if (fd < 0) return null;
     defer _ = posix.close(fd);
