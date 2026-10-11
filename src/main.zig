@@ -170,6 +170,7 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
         if (w == pid or w < 0) {
             refuse.fsu_live = null;
             removeFile(sentinel);
+            posix.noteSidecar(0);
             const said = capture.readFileAllocCapped(arena, fsusage.errPath(arena, capture_path) catch "", 4096, .{ .no_follow = true }) orelse "";
             const trimmed = std.mem.trim(u8, said, " \t\r\n");
             setupError(.environment, std.fmt.allocPrint(arena, "fs_usage exited before the handshake completed{s}{s}; its stderr is {s}, and if it says `ktrace_start: Resource busy`, another fs_usage still holds the kernel trace facility — wait for it, or stop it, and re-run", .{ if (trimmed.len > 0) ", saying: " else "", textShown(arena, trimmed), textShown(arena, fsusage.errPath(arena, capture_path) catch "") }) catch "fs_usage exited before the handshake completed");
@@ -449,6 +450,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // reaches the report rather than leaving whatever was there before.
     refuse.json_arena = arena_state.allocator();
     var run: Run = .{ .gpa = gpa, .arena_state = &arena_state, .arena = arena_state.allocator(), .parsed = cli.parse(argv) };
+    // Not before the parse: `--world-timeout` resets SIGCHLD there, and children must get that disposition.
+    posix.installInterruptHandlers(refuse.stopForSignal);
     phaseDefine(&run);
     phaseSetup(&run);
     phaseApparatus(&run);
@@ -973,7 +976,7 @@ fn phaseDefine(run: *Run) void {
     }
 
     if (args.fresh_state) {
-        engine.freshDir(state_abs) catch |e| refuse.restoreFailure(e, "--fresh-state could not empty the case's state directory");
+        engine.freshDir(state_abs) catch |e| refuse.restoreFailure(e, "--fresh-state could not empty the case's state directory", state_abs);
         // Asked again after the emptying (#701 review): a setup that lived inside the state
         // directory passed the question above and is gone now, and would otherwise reach
         // `--setup exited 127` naming no file. Only here, where the directory is
@@ -1989,14 +1992,14 @@ fn phaseChecker(run: *Run) void {
 
         refuse.refuseNothingToCorrupt(initial);
 
-        engine.restore(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not restore before falsifying the checker");
+        engine.restore(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not restore before falsifying the checker", state_abs);
         // Through the same disposition as the restore one line up, not setupError:
         // corruption is the other rewrite of the recorded tree, its errors are the
         // same RestoreError set (UnsafeRoot included — engine/state_fs.zig's own comment on
         // corruptState says why it re-checks the root rather than trusting its
         // neighbour), and by this line the define has run, so exit 3 would claim
         // it never did (#363).
-        engine.corruptState(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not corrupt the state for the falsification probe");
+        engine.corruptState(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not corrupt the state for the falsification probe", state_abs);
 
         // The gate's child output is captured and re-emitted with a per-line
         // `falsify: ` marker (#134). By design this step produces exactly the output
@@ -2043,7 +2046,7 @@ fn phaseChecker(run: *Run) void {
         // docs/cli.md's real output carry it, and `spike/check-readme-demo.py` compares them with
         // the demo line by line. A checker that passes prints nothing here, so a transcript of a
         // define that was already fine does not change.
-        engine.restore(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not restore before showing the checker the starting state");
+        engine.restore(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not restore before showing the checker the starting state", state_abs);
         var start_buf: [contract.max_path]u8 = undefined;
         const start_out = std.fmt.bufPrint(&start_buf, "{s}/start-check.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
         removeFile(start_out);
@@ -2151,7 +2154,7 @@ fn phaseExploration(run: *Run) void {
         // the end of a world, not the start.
         if (args.stop_when_orphaned and posix.getppid() != startup_ppid)
             unknown(.parent_exited, "the process that launched this exploration is gone; stopping at a world boundary rather than continuing to kill processes and rewrite the state directory with nobody to report to", .relaunch);
-        engine.restore(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not restore the state directory");
+        engine.restore(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not restore the state directory", state_abs);
 
         var kbuf: [16]u8 = undefined;
         const kstr = std.fmt.bufPrint(&kbuf, "{d}", .{k}) catch unreachable;
@@ -2944,8 +2947,7 @@ fn observeAgain(
     /// flag deliberately does not make on its own.
     children_admitted: bool,
 ) Repeat {
-    // The floor is enforced, not assumed. `sleepForMs` is best effort by its own
-    // documentation — a signal cuts it short and nothing re-arms it — while `--help`,
+    // The floor is enforced against the clock, not assumed from one sleep, while `--help`,
     // docs/cli.md and the CHANGELOG all promise "at least two seconds". Without this
     // loop the command could print `two runs 47 ms apart left equal state` and
     // contradict its own help (review, P2). The clock is monotonic, so each pass
@@ -2972,7 +2974,7 @@ fn observeAgain(
     // collapsed back into one variable, because the refusals below still ask the other
     // question and that is what made them lie the first time.
     const attached: ?[]const u8 = oracle_path;
-    engine.restore(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not restore the state directory before the second observed run");
+    engine.restore(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not restore the state directory before the second observed run", state_abs);
 
     var trace_buf: [contract.max_path]u8 = undefined;
     const trace_b = std.fmt.bufPrint(&trace_buf, "{s}/trace-record-2.bin", .{work}) catch setupError(.define_invalid, "path too long");

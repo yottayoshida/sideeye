@@ -595,6 +595,7 @@ pub fn runServer(gpa: std.mem.Allocator) void {
         }
         break :blk resolved;
     } else server_root;
+    posix.installInterruptHandlers(stopServerForSignal);
     var buf: [256 * 1024]u8 = undefined;
     var lines: Lines = .{ .buf = &buf };
     while (true) {
@@ -607,6 +608,11 @@ pub fn runServer(gpa: std.mem.Allocator) void {
         }
         lines.commit(@intCast(n));
     }
+}
+
+fn stopServerForSignal(sig: c_int) noreturn {
+    posix.writeStopLine(sig, 0);
+    posix.dieBySignal(sig);
 }
 
 fn handleItem(gpa: std.mem.Allocator, self: []const u8, item: Lines.Item) void {
@@ -623,25 +629,18 @@ fn handleItem(gpa: std.mem.Allocator, self: []const u8, item: Lines.Item) void {
     }
 }
 
-/// What the streaming read of a line too long for the buffer could establish.
 pub const Oversized = struct {
-    /// Bytes a line may hold, its newline not counted.
+    /// Not the buffer's length: the newline takes one byte of it.
     limit: usize,
     verdict: enum { blank, unparsed, not_object, notification, request },
-    /// The top-level `id` when it is an integer that fits in 64 bits or a string of at most
-    /// `IdFinder.max_id` bytes. A string points into the `Lines` that read it, until its next line.
+    /// A string points into the `Lines` that read it: copy it before that reads its next line.
     id: std.json.Value = .null,
-    /// Read as `unparsed` only because the nesting outgrew `IdFinder.max_depth`.
     too_deep: bool = false,
 };
 
 const parse_error_reply = "{\"jsonrpc\":\"2.0\",\"id\":null,\"error\":{\"code\":-32700,\"message\":\"Parse error\"}}";
 const invalid_request_reply = "{\"jsonrpc\":\"2.0\",\"id\":null,\"error\":{\"code\":-32600,\"message\":\"Invalid Request\"}}";
 
-/// The answer `route` would give the same line were it short enough to hold, as far as a
-/// constant-memory read can tell: a duplicate key below the top level or one other than `id` at
-/// it, an `id` over
-/// `IdFinder.max_id` bytes, and nesting deeper than `IdFinder.max_depth` are where it differs.
 pub fn routeOversized(arena: std.mem.Allocator, o: Oversized) Route {
     return switch (o.verdict) {
         .blank => .none,
@@ -652,7 +651,6 @@ pub fn routeOversized(arena: std.mem.Allocator, o: Oversized) Route {
     };
 }
 
-/// Follows a JSON text fed in pieces and keeps only its top-level `id`.
 pub const IdFinder = struct {
     pub const max_id = 128;
     pub const max_depth = 4096;
@@ -803,7 +801,6 @@ pub const IdFinder = struct {
         self.expect_key = true;
     }
 };
-
 pub const Lines = struct {
     buf: []u8,
     filled: usize = 0,
@@ -1526,9 +1523,7 @@ fn reportOfThisCall(arena: std.mem.Allocator, report: []const u8, exit_code: i64
     return .{ .doc = report_min };
 }
 
-/// A document's verdict or outcome, its `exit_code`, and the status the process ended with are
-/// one value three times (docs/report-schema.md); a document placed by anyone else has to match
-/// all three, so at most it repeats the verdict the exit status already gave.
+/// Not the exit_code alone: a document placed in the work directory can match that one value.
 fn documentAgrees(arena: std.mem.Allocator, doc_min: []const u8, exit_code: i64) bool {
     const parsed = std.json.parseFromSliceLeaky(std.json.Value, arena, doc_min, .{}) catch return false;
     if (parsed != .object) return false;
@@ -1557,9 +1552,7 @@ test "a document whose verdict, exit_code and the child's exit status disagree i
     try std.testing.expectEqualStrings("{\"schema\":\"sideeye/report\",\"verdict\":\"PASS\",\"exit_code\":0}", reportOfThisCall(a, pass, 0).doc);
     try std.testing.expect(reportOfThisCall(a, pass, 3) == .refused);
     try std.testing.expect(reportOfThisCall(a, pass, -1) == .refused);
-    // A child ended by a signal has no verdict, so no document can agree with it.
     try std.testing.expect(reportOfThisCall(a, "{\"exit_code\":-1,\"schema\":\"sideeye/report\",\"verdict\":\"PASS\"}", -1) == .refused);
-    // Its exit_code matched to a refusal's: the verdict still gives it away.
     try std.testing.expect(reportOfThisCall(a, "{\"verdict\":\"PASS\",\"exit_code\":3,\"schema\":\"sideeye/report\"}", 3) == .refused);
     try std.testing.expect(reportOfThisCall(a, "{\"schema\":\"sideeye/report\",\"verdict\":\"SETUP_ERROR\",\"exit_code\":3}", 3) == .doc);
     try std.testing.expect(reportOfThisCall(a, "{\"schema\":\"sideeye/preflight\",\"outcome\":\"runs_differ\",\"exit_code\":1}", 1) == .doc);
@@ -2152,8 +2145,6 @@ test "Lines: whole lines across reads, an over-long line read through to its end
     try std.testing.expect(dropping.finish() == null);
 }
 
-/// Feeds `text` and a newline through a 32-byte `Lines`, `step` bytes per read, and returns the
-/// one item the over-long line produced.
 fn oversizedThrough(text: []const u8, step: usize, id_copy: *[IdFinder.max_id]u8) !Oversized {
     var buf: [32]u8 = undefined;
     var lines: Lines = .{ .buf = &buf };
