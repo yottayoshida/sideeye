@@ -1,6 +1,6 @@
 # 0037 — The root the walk deletes is the root that was vetted
 
-Status: Accepted (2026-09-01)
+Status: Accepted (2026-09-01; amended 2026-10-11 for #807)
 
 Promotes the alternative ADR 0024 filed as "not done" and closes #338. Sibling of ADR
 0024, which holds the root open, and of ADR 0010, which fixes the destructive entry
@@ -132,3 +132,10 @@ unconditionally, so `restore` — the main caller — still accepted a swap: the
 A, A is replaced by B, `mkdir` answers `EEXIST` as it always would, the `.absent` rule does
 not apply, and the fresh reading hands B to a comparison against B. The swap test passed
 throughout because it drives `openRootDir` directly and never comes through `createRoot`.
+
+**Amended 2026-10-11 (#807).** The sentence "What this does not cover" says is "now in
+`assertRootResolvesToItself`'s doc" sits in `openRootDir`'s body ("no comparison anchored to the
+vet can question the vet. `#338` says so in the same words"), and that is where it stays — it is a
+warning about what the vet cannot see. Every other comment in `src/*.zig` that is not a warning
+to the next editor is removed by #807's series; the measurement above (overlayfs, APFS) is
+recorded here and beside the test that asserts the refusal only where it is deliverable.

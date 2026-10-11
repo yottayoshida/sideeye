@@ -1,32 +1,6 @@
-//! The state tree on disk: the walk that takes a snapshot of it, with the caps that stop
-//! the walk from reading without end; and the destructive side — `restore`, `freshDir`,
-//! `corruptState` — with the root vets every one of them runs before it deletes anything.
-//!
-//! The last seam out of `engine.zig` (#491, ADR 0050). The walk and the destructive side
-//! share one file rather than two because they share one constant with two meanings —
-//! `max_depth` bounds the walk's descent and `deleteTreeAt`'s alike, and its doc comment
-//! says so — and because the test that carries a symlink through all three of
-//! `takeSnapshot`, `restore` and `corruptState` (#122) is one body that no split could
-//! keep whole. What this file needs from elsewhere is the snapshot types
-//! (`snapshot.zig`), the one-file read (`read.zig`), `posix`, `contract`, and the
-//! ancestor-probe entry from the build options. It names nothing in the judges and
-//! nothing in the trace reader.
-//!
-//! The three names taken from `snapshot.zig` below are **private aliases**, so the call
-//! sites keep the spelling they had inside `engine.zig`; the last test in this file counts
-//! this file's public declarations, which is what holds them private (`engine.zig`'s
-//! facade walk cannot: those names are already re-exported from `snapshot.zig`).
-//!
-//! Comments below name declarations that live elsewhere and are not imported: in
-//! `main.zig`, the refusal reasons `checker_not_falsified` and `unsupported_state_entry`
-//! and the world loop's snapshots `initial`, `final`, `crashed` and `crashed_again`; in
-//! `trace.zig`, `max_trace_bytes_total`. They are prose references, kept so the reasons
-//! written next to this code stay next to it.
-
 const std = @import("std");
 const contract = @import("contract");
 const posix = @import("../posix.zig");
-/// Read for the ancestor-probe entry below (#358); zero effect on a shipped build.
 const build_options = @import("engine_build_options");
 
 const Allocator = std.mem.Allocator;
@@ -38,44 +12,14 @@ const Snapshot = snapshot.Snapshot;
 const Entry = snapshot.Entry;
 const finalizeEntries = snapshot.finalizeEntries;
 
-/// `EntriesNotSortedUnique` means the snapshot came out of `walk` in a shape `find` cannot
-/// search: out of order, or holding the same `rel` twice. Neither should be reachable — the
-/// sort in `finalizeEntries` (`engine/snapshot.zig`) guarantees the first and a directory
-/// traversal cannot produce the second — so
-/// this is the check refusing rather than letting a binary search answer from a list that
-/// does not satisfy its precondition (#262).
 pub const SnapshotError = error{ OutOfMemory, ReadFailed, TooDeep, PathTooLong, ClassifyFailed, EntriesNotSortedUnique, FileTooLarge, TreeTooLarge };
 
 /// How deep the snapshot walk descends before refusing — **and how deep `deleteTreeAt`
 /// descends before refusing to delete**, which is the reason to think twice before tuning
 /// it: raising this widens what `restore` will empty, not only what the snapshot will
 /// read. ADR 0024 cites it as the descriptor bound for the same reason.
-///
-/// `pub` because the refusal names it (#351): an operator told only "could not snapshot"
-/// has no way to learn what to change. Compared with a strict `>`, so a tree of exactly
-/// this many levels is fine and one level more is not — measured at 32 passing and 33
-/// refusing, and refusal text must say "deeper than N", never "cap N".
 pub const max_depth = 32;
 
-/// The per-FILE byte cap on snapshot reads (#265). Every other read in the pipeline
-/// is capped (the case file at 1 MiB, the MCP report at 4 MiB); the snapshot path
-/// runs hundreds of times per explore over target-sized data and was the unbounded
-/// one — a single multi-gigabyte state file turned the judgment into an OOM kill
-/// with no report. L0 judgment is byte-level comparison, so the tree is held in memory
-/// whole: pre and post coexist, and **four snapshots are live at once** where the crashed
-/// sequence re-samples (`main.zig`'s `initial`, `final`, `crashed`, `crashed_again`).
-/// One file at exactly this cap leaves the arena holding **100,663,448 bytes** (96.0 MiB),
-/// so the largest resident pair is near 192 MiB.
-///
-/// **Both of those numbers replace wrong ones, measured by #323.** The count said three;
-/// `crashed_again` predates this comment by a fortnight, so it was wrong when written
-/// rather than gone stale. And the pair was given as "near 128 MiB", which reasoned from
-/// file size straight to memory — the arena costs 1.50x what it holds, which is
-/// `ArenaAllocator`'s own node growth factor and not a property of the tree.
-///
-/// Per file. The tree's total is bounded separately, by `max_state_tree_bytes` — this
-/// constant is not that ceiling and never was, which is what the sentence here used to
-/// say when there was no other ceiling to point at.
 pub const max_state_file_bytes: usize = 64 * 1024 * 1024;
 
 /// The whole-snapshot ceiling (#323). `max_state_file_bytes` bounds one read; nothing
@@ -86,81 +30,11 @@ pub const max_state_file_bytes: usize = 64 * 1024 * 1024;
 /// the kernel kills the process. This ceiling is what makes running out of memory
 /// reportable at all on that platform. (macOS is unmeasured here; `mmap` may fail first
 /// and reach `error.OutOfMemory`.)
-///
-/// **What is measured is the arena, not the tree.** The count is
-/// `ArenaAllocator.queryCapacity()` — the backing memory the snapshot has actually taken —
-/// rather than a sum of file sizes. A sum has no term for what an entry costs beside its
-/// content, and the shape that exposes that is not exotic: **50,000 empty files hold
-/// 12,959,676 bytes against a content sum of zero**. Asking the allocator also covers,
-/// without naming any of them, the symlink target dupe, the `rel` that `.missing`
-/// allocates and drops, and the entry list's own growth.
-///
-/// The check runs once per directory entry. It is not throttled: `ArenaAllocator` sizes
-/// each node at least 1.5x its predecessor, so the node count is logarithmic in the total
-/// and `queryCapacity` is a walk of tens of pointers, not thousands.
-///
-/// **What the arena costs above the content, measured.** With `read.readWhole` reserving from
-/// the file's own length, one file costs a flat **1.50x** — 100,663,448 bytes for 64 MiB,
-/// 50,331,800 for 32 MiB, 1,573,016 for 1 MiB — which is the node growth factor and
-/// nothing else. Several large files cost more, because a request that does not fit the
-/// current node takes a new one sized 1.5x *(node + request)*: two 64 MiB files reach
-/// 336 MiB. So the ceiling is not a statement about how many bytes of files a tree may
-/// hold, and the refusal says which of the two it is reporting.
-///
-/// **That term still orders trees by something other than their size, and the reservation
-/// did not remove it.** It removed the stranding term, which had two 32 MiB files costing
-/// more than two 64 MiB ones. What is left inverts a different pair: at this ceiling,
-/// **two 50 MiB files (100 MiB of content) are refused at 262 MiB while four 32 MiB files
-/// (128 MiB) are accepted at 168 MiB** — a strictly smaller tree, in files and in bytes,
-/// refused where a larger one passes. Fewer, larger reads cost more than more, smaller
-/// ones, and the ceiling counts the cost.
-///
-/// **The value, and what it accepts, measured rather than derived.** At 256 MiB every
-/// 128 MiB-of-content shape tried is accepted — 4x32, 8x16, 16x8, 64x2 MiB — while in the
-/// two-file family the boundary is far lower: **2x48 MiB (96 MiB) is accepted and 2x49 MiB
-/// (98 MiB) is refused**, so "128 MiB of content fits" is not a rule that can be read off
-/// the shapes above. 256 MiB of content is refused in every shape tried.
-///
-/// **What selected this value is that table, not a contradiction argument.** A ceiling
-/// must clear one file at the per-file cap, or it would refuse a tree holding exactly what
-/// the other ceiling permits — 256 MiB clears that at 96 MiB with room, and so would 128.
-/// **It does not clear two such files** (336 MiB), and no value below that could; the
-/// criterion is about n=1 and says nothing about n=2. 128 MiB was rejected on the table
-/// instead: there two 32 MiB files (64 MiB of content, 168 MiB of arena) are refused, and
-/// refusing a 64 MiB tree is further from what an operator expects than refusing a 98 MiB
-/// one.
-///
-/// It is not derived from the corpus, which would put it five orders of magnitude lower;
-/// the corpus is the check that it refuses nothing real. Four defines can be built on the
-/// machine this was measured on, and their snapshots cost **888, 846, 846 and 544 bytes**
-/// (`cargo` and `cargo-r2` build the same tree, which is why three numbers cover four
-/// defines). That is **4 of the 45** files matching `grep -rl '^state = ' --include='*.toml'`
-/// — the count includes the quickstart and dogfood defines, not only `spike/**/ops/`, and
-/// counts define files rather than distinct state trees. The rest need tools this machine
-/// does not have (borg, hg, jj, poetry, black, papis, himalaya, topydo, abook, khal, stow,
-/// pass, buku, calcurse, devtodo, watson), and what was measured is the pre-state each
-/// `setup.sh` builds, not the tree after the operation has run.
-///
-/// Four snapshots are live at once at the widest point (`main.zig`'s `initial`, `final`,
-/// `crashed`, `crashed_again`), so a completed run's resident judgement data is bounded
-/// by four times this, plus `max_trace_bytes_total`. That last term said "the two trace
-/// arenas" until #377 found three read sites and gave them a ceiling of their own — the
-/// point of which is that this sentence no longer has to count them. The run that
-/// refuses may hold more, for
 /// the node-growth reason above, and then exits. Raising this value is not the safe
 /// direction: here a refusal is the good outcome, and the alternative to refusing is the
 /// unreported death above.
 pub const max_state_tree_bytes: usize = 256 * 1024 * 1024;
 
-/// Both ceilings, together, so a call site cannot supply one without the other.
-///
-/// **A tree can break both, and which one is reported depends on `readdir` order.** The
-/// per-file cap wins for whatever entry the walk reaches first, because `read.readWhole` returns
-/// before the entry is appended and the tree accounting never sees it. Both refusals are
-/// honest and both produce the same verdict, so this is a property rather than a defect —
-/// recorded because it is the same order-dependence `TreeTooLargeDiag` cites when it
-/// declines to name a largest contributor, and leaving it unsaid in one place while relying
-/// on it in the other is how a codebase ends up arguing with itself.
 pub const SnapshotCaps = struct {
     file: usize,
     tree: usize,
@@ -170,9 +44,6 @@ pub const SnapshotCaps = struct {
     pub const shipped: SnapshotCaps = .{ .file = max_state_file_bytes, .tree = max_state_tree_bytes };
 };
 
-/// An entry's path relative to the state root, held by value so a refusal can name it
-/// after the walk's arena is gone. One shape for every diag that names an entry, so the
-/// buffer-and-length pair is written once (#535).
 pub const EntryRel = struct {
     buf: [contract.max_path]u8 = undefined,
     len: usize = 0,
@@ -181,11 +52,6 @@ pub const EntryRel = struct {
         return self.buf[0..self.len];
     }
 
-    /// A path that does not fit is not cut: `len` stays 0 and the refusal falls back to
-    /// naming nothing, because a cut path names a file that does not exist. Unreachable
-    /// from the walk — every `rel` handed here has already passed through `joinZ`'s
-    /// `[max_path]u8` with the root in front of it — and kept honest for the caller
-    /// that has not.
     pub fn set(self: *EntryRel, rel_path: []const u8) void {
         if (rel_path.len > self.buf.len) {
             self.len = 0;
@@ -205,57 +71,25 @@ test "EntryRel names nothing rather than a cut path when the path does not fit (
     try std.testing.expectEqual(@as(usize, 0), rel.get().len);
 }
 
-/// Which file broke the cap, for the refusal that names it (#265). Zig errors carry
-/// no payload, and the snapshot's own arena dies with the error — so the caller
-/// hands this fixed-size, caller-owned box in and reads it back on error.FileTooLarge.
 pub const FileTooLargeDiag = struct {
     rel: EntryRel = .{},
-    /// From lseek(SEEK_END) at the moment the cap broke; null when even that failed
-    /// (the refusal then says "over the cap" and no more — a size nobody measured
-    /// must not appear in the message).
     size: ?u64 = null,
 };
 
-/// What a refusal for an entry the walk could not read or classify can say (#535),
-/// filled at the moment the walk gave up on it.
 pub const EntryDiag = struct {
     rel: EntryRel = .{},
-    /// The errno of the libc call that failed, read before anything else ran. Null when
-    /// no call failed — a descriptor that turned out not to be a regular file, a
-    /// `readlink` that filled its buffer — and for `unclassified`, whose `statNoFollow`
-    /// hands none out (it reads errno for its own `ENOENT` test on Darwin and returns a
-    /// kind, not a number). A number nobody measured must not appear in the message.
     errno: ?c_int = null,
     kind: Kind = .file,
 
     pub const Kind = enum { file, symlink, unclassified };
 };
 
-/// What the whole-tree refusal can say (#323), filled at the moment the ceiling broke.
-///
-/// **Every field describes what the walk had read, not the tree.** The walk stops at the
-/// break, so `content` and `entries` are a prefix in directory-iteration order and the
-/// tree is larger than both by an unmeasured amount. Continuing in an accounting-only
-/// mode would make them the tree's real figures, and was rejected: the continuation still
-/// runs `TooDeep`, `PathTooLong`, `ClassifyFailed` and `readLinkTarget`'s `ReadFailed`,
-/// and `walk`'s `opendir(...) orelse return` treats an unopenable directory as empty — so
-/// either a later failure replaces this refusal or the "real" total silently omits a
-/// subtree. `FileTooLargeDiag.size` above settles the same question the other way: a size
-/// nobody measured must not appear in the message. The message says which of the two
-/// these are, and points at `du`/`find` for the rest.
 pub const TreeTooLargeDiag = struct {
-    /// `ArenaAllocator.queryCapacity()` when the ceiling broke — the quantity capped.
     reached: usize = 0,
-    /// File and symlink content bytes appended before the break. Reproducible with `du`
-    /// only for the prefix that was read, which is why the message says so.
     content: u64 = 0,
-    /// Entries appended before the break, `.dir` and `.other` included.
     entries: u64 = 0,
 };
 
-/// The caller-owned box both snapshot refusals report through. One struct rather than two
-/// optional pointers so a call site that wants either gets both: the walk decides which
-/// ceiling broke, and a caller cannot be in a position to have passed only the other one.
 pub const SnapshotDiag = struct {
     file: FileTooLargeDiag = .{},
     tree: TreeTooLargeDiag = .{},
@@ -267,11 +101,7 @@ fn joinZ(buf: []u8, a: []const u8, b: []const u8) error{PathTooLong}![:0]const u
     return s;
 }
 
-/// What the walk carries down the recursion unchanged. It was seven parameters before the
-/// tree ceiling needed an arena handle and a second diag, which would have made ten; the
-/// reason for the struct is that plain, not a claim that it makes a mistake unbuildable.
 const WalkCtx = struct {
-    /// The arena *state*, not just its allocator: the ceiling is read off it.
     arena_state: *std.heap.ArenaAllocator,
     entries: *std.ArrayList(Entry),
     root: []const u8,
@@ -284,12 +114,6 @@ const WalkCtx = struct {
         return self.arena_state.allocator();
     }
 
-    /// Charge one entry and refuse if the snapshot's arena has passed its ceiling.
-    ///
-    /// Called once per directory entry, after everything that entry allocates — so the
-    /// overshoot is one entry's allocations rather than a batch's, and `.missing`, which
-    /// allocates `rel` and appends nothing, is charged like the rest because the arena
-    /// still holds it.
     fn charge(self: *WalkCtx, content_len: usize) SnapshotError!void {
         self.content += content_len;
         self.seen += 1;
@@ -337,8 +161,6 @@ fn walk(ctx: *WalkCtx, rel_prefix: []const u8, depth: usize) SnapshotError!void 
         if (kind == .missing) kind = posix.kindOfPathNoFollow(full.ptr) catch {
             // Fail-closed: an entry that cannot be classified must not silently
             // vanish from the snapshot — that would route it around #5's refusal.
-            // Named, so the refusal can say which entry (#535); no errno, because
-            // `statNoFollow` carries none.
             if (ctx.diag) |d| {
                 d.entry.rel.set(rel);
                 d.entry.kind = .unclassified;
@@ -346,7 +168,6 @@ fn walk(ctx: *WalkCtx, rel_prefix: []const u8, depth: usize) SnapshotError!void 
             return error.ClassifyFailed;
         };
 
-        // Bytes this entry added to the arena's content, for the refusal's account.
         var charged: usize = 0;
         switch (kind) {
             .dir => {
@@ -367,8 +188,6 @@ fn walk(ctx: *WalkCtx, rel_prefix: []const u8, depth: usize) SnapshotError!void 
                             d.file.rel.set(rel);
                             d.file.size = size;
                         },
-                        // The entry the refusal will name (#535), with the errno of the
-                        // call that failed — or none, when none did.
                         error.ReadFailed => {
                             d.entry.rel.set(rel);
                             d.entry.errno = read_errno;
@@ -397,15 +216,7 @@ fn walk(ctx: *WalkCtx, rel_prefix: []const u8, depth: usize) SnapshotError!void 
                 try ctx.entries.append(arena, .{ .rel = rel, .kind = .symlink, .content = held });
                 charged = held.len;
             },
-            // Sockets, FIFOs and devices are recorded as present but opaque — so the
-            // engine can refuse honestly: restore cannot recreate them, and since #5
-            // any snapshot carrying one stops the run (`unsupported_state_entry`)
-            // instead of exploring a tree the recording never had. (Symlinks left
-            // this bucket in #122: they are first-class above.)
             .other => try ctx.entries.append(arena, .{ .rel = rel, .kind = .other, .content = "" }),
-            // Nothing is appended — but `rel` was allocated above and the arena keeps it,
-            // so this is charged too. A tree that churns temporary files (which is most
-            // of what this engine watches) reaches here often.
             .missing => {},
         }
         try ctx.charge(charged);
@@ -416,9 +227,6 @@ fn walk(ctx: *WalkCtx, rel_prefix: []const u8, depth: usize) SnapshotError!void 
 /// that fills the buffer, because readlink reports no truncation — an exact fit and
 /// a cut-off target return the same length, and a truncated target restored later
 /// would be a different link. The buffer is a parameter so the boundary is testable:
-/// against `max_path` (== PATH_MAX) no real platform can make readlink fill it, so a
-/// guard buried in `walk` would be a claim nobody can falsify (R1); against a small
-/// buffer the test below fires it for real.
 fn readLinkTarget(path_z: [*:0]const u8, buf: []u8, errno_out: ?*?c_int) ?[]const u8 {
     if (errno_out) |eo| eo.* = null;
     const n = posix.readlink(path_z, buf.ptr, buf.len);
@@ -437,9 +245,6 @@ pub fn takeSnapshot(gpa: Allocator, root: []const u8) SnapshotError!Snapshot {
     return takeSnapshotCapped(gpa, root, SnapshotCaps.shipped, null);
 }
 
-/// The capped form (#265, widened to the tree total by #323): production call sites pass
-/// `SnapshotCaps.shipped` and a diag so the refusal can name what broke; tests pass small
-/// caps so both boundaries are falsifiable without 64 MiB fixtures.
 pub fn takeSnapshotCapped(gpa: Allocator, root: []const u8, caps: SnapshotCaps, diag: ?*SnapshotDiag) SnapshotError!Snapshot {
     var snap: Snapshot = .{
         .arena = std.heap.ArenaAllocator.init(gpa),
@@ -461,16 +266,8 @@ pub fn takeSnapshotCapped(gpa: Allocator, root: []const u8, caps: SnapshotCaps, 
 
 pub const RestoreError = error{ PathTooLong, DeleteFailed, CreateFailed, UnsafeRoot };
 
-/// Locations a destructive root must not name, nor sit inside.
-///
 /// A denylist, not a safety boundary: it stops the mistake that has a name — a system
 /// path where a scratch path was meant — and claims nothing about the ones that do not.
-/// The depth test below cannot carry this. Measured on this repository's own corpus of
-/// committed state paths, depth ranks danger backwards: `/tmp/quickstart-state` (the
-/// shipped quickstart define) is shallower than `/var/lib/myapp` (what the quickstart
-/// used to suggest), so any "at least N components" rule refuses the former while
-/// accepting the latter.
-///
 /// Entries are spelled the way a root arrives here. Both call sites hand over the
 /// realpath'd spelling, and on macOS `/etc` and `/var/lib` resolve through `/private`,
 /// so a list written in the pre-resolution spelling is silently inert on that platform.
@@ -537,26 +334,12 @@ const shipped_denied_trees = [_][]const u8{
     "/private/etc", "/private/var/lib", "/private/var/db", "/private/var/spool", "/private/var/run",
 };
 
-/// Empty in every shipped build; one synthetic entry under `-Dtest-ancestor-probe` (#358).
-///
-/// The outward read refuses a root that is an ancestor of a denied entry. The only such
-/// root the destructive predicate did not already refuse by depth is `/private/var` —
-/// root-owned and macOS-only, so acceptance cannot plant a sentinel in it and watch the
-/// sentinel die. This entry manufactures the same shape somewhere acceptance can write:
-/// its parent `/tmp/se-anc-probe` is an ancestor with two components.
-///
-/// **Both spellings, because the root arrives resolved.** On macOS `/tmp/se-anc-probe`
-/// resolves to `/private/tmp/se-anc-probe`, and a list written only in the pre-resolution
-/// spelling is silently inert there — the failure the `/private/*` entries above exist
-/// for. The leg itself runs on Linux only; the list does not depend on that.
 const probe_denied_trees: [if (build_options.ancestor_probe) 2 else 0][]const u8 =
     if (build_options.ancestor_probe)
         .{ "/tmp/se-anc-probe/x", "/private/tmp/se-anc-probe/x" }
     else
         .{};
 
-/// Scratch roots that are legitimate parents but never legitimate targets.
-///
 /// These are matched exactly, not as trees: `/tmp/x/state` is the ordinary case and must
 /// pass. The depth test rejects `/tmp` and `/home` as typed **on the destructive side**
 /// (the naming side has no depth test since #329), but every call site hands over the
@@ -569,13 +352,6 @@ const denied_exact = [_][]const u8{
     "/Volumes",     "/mnt",                 "/media",   "/root",
 };
 
-/// Refuses to operate on a root that is suspiciously shallow, or that names a location
-/// nothing sacrificial belongs in.
-///
-/// restore() deletes the directory tree before rebuilding it. That is the one
-/// genuinely destructive thing the engine does, and it runs once per explored world,
-/// so a mistaken root would be applied hundreds of times before anyone noticed.
-///
 /// Lexical only, and the caller must hand over the resolved spelling: "/tmp/../etc"
 /// spells safe and resolves unsafe. `assertRootResolvesToItself` covers the other direction —
 /// a root that resolved safely and was then swapped.
@@ -584,91 +360,33 @@ pub fn assertSafeRoot(root: []const u8) RestoreError!void {
     for (root) |ch| {
         if (ch == '/') slashes += 1;
     }
-    // "/", "/tmp", "/home" and friends are rejected; "/tmp/x/state" is accepted.
     if (slashes < 2) return error.UnsafeRoot;
     try assertRootNotDeniedOrAncestor(root);
 }
 
-/// The checks both roots share: shape, and the two denylists read **in both directions**.
-///
-/// Split out for `assertSafeNamingRoot`, which needs all of these and not the depth
 /// rule above. **Both clauses of the first test stay here**: the naming side happens to
 /// guarantee a non-empty root before calling, the destructive side does not, and
 /// dropping `root.len == 0` on the strength of the caller that does not need it turns
 /// `assertSafeRoot("")` from a refusal into an out-of-bounds index.
-///
-/// **The outward read lives here rather than in one predicate (#358).** #329 added it to
-/// the naming side alone, because removing the depth rule there left ancestors uncovered.
-/// The destructive side kept its depth rule — which catches `/private` and `/var` but not
-/// `/private/var`, the one ancestor deep enough to pass it. So the predicate that only
-/// names files refused a location the predicate that empties directories accepted. Put in
-/// the shared helper, the asymmetry is not a thing anyone has to remember: neither
-/// predicate can be given the read without the other getting it.
 fn assertRootNotDeniedOrAncestor(root: []const u8) RestoreError!void {
     if (root.len == 0 or root[0] != '/') return error.UnsafeRoot;
     if (std.mem.endsWith(u8, root, "/")) return error.UnsafeRoot;
     for (denied_exact) |d| {
         if (std.mem.eql(u8, root, d)) return error.UnsafeRoot;
     }
-    // `isInsideDir` rather than `startsWith`: the latter refuses "/var/library" for
-    // naming "/var/lib", and a component-boundary test is already written here.
     for (denied_trees) |d| {
         if (contract.isInsideDir(root, d)) return error.UnsafeRoot;
     }
-    // Outward: is the root a parent of somewhere denied? One loop over both lists, not
-    // one per list — written as two, each half's marginal covered set is empty **for the
-    // shipped lists**, because there every entry has a sibling in the other list under the
-    // same parent, so deleting either loop alone left every test green (measured during
-    // #329). That symmetry is a property of those lists and not of the code: the
-    // ancestor-probe build adds an entry with no `denied_exact` sibling. A single loop
-    // cannot be half deleted either way.
     for (denied_exact ++ denied_trees) |d| {
         if (contract.isInsideDir(d, root)) return error.UnsafeRoot;
     }
 }
 
-/// Refuses a root that must not name files: the same locations `assertSafeRoot` denies,
-/// **plus their ancestors**, and without the depth rule (#329).
-///
-/// The two differences are one decision. The depth rule is a proxy for danger, and the
-/// proxy was already broken: `/var` resolves to `/private/var` on macOS, two components,
-/// and started the server. What the lists actually encode is a set of places, and both
-/// are read inwards only — `isInsideDir(root, d)` asks whether the root is *inside* a
-/// denied tree, so an ancestor like `/private` or `/var` passes every one of them and
-/// was refused only by the depth rule that could not see it on one of the two platforms.
-/// Reading them outwards as well — `isInsideDir(d, root)`, the same predicate with the
-/// arguments swapped — states the property directly, and a root that is a proper
-/// ancestor of a denied entry is refused whatever its depth.
-///
-/// **This is a trade, not a tightening.** Measured over both lists, the outward read
-/// closes exactly `/var`, `/private` and `/private/var`; dropping the depth rule opens
-/// every depth-1 path in neither list (`/opt`, `/cores`, `/nix`, and whatever a host has
-/// at `/`). That is accepted on ADR 0010's operational precondition — the root is the
-/// operator's own workspace, not attacker-writable — and not on any claim that the
-/// boundary got narrower.
-///
-/// The destructive predicate keeps the depth rule and, **since #358, has the outward read
-/// too** — it lives in the shared helper now, so neither predicate can be given it alone.
-/// This paragraph used to say `--state /var` still passed `assertSafeRoot`, which was the
-/// gap #358 closed.
-///
-/// **What this admits is not confined to naming.** With `SIDEEYE_MCP_STATE_ROOT` unset the
-/// server hands the root to the engine as the destruction range, so every depth-1 path
-/// this now accepts is a directory whose *children* a replayed case may name and empty.
-/// `/work` and `/repo` are the intended shape; `/opt` also passes and is where installed
-/// software lives. The relaxation is defensible on ADR 0010's precondition — the root is
-/// the operator's own workspace — and docs/mcp.md says which directories that excludes,
-/// because the lists cannot.
-///
 /// Lexical only, like `assertSafeRoot`, and the caller must hand over the resolved
 /// spelling: `/opt/../var` and `//var` and `/.` all pass here. `mcp.zig` realpaths before
 /// calling, which is what makes that safe and is the reason the caveat is written down
 /// rather than left to the one caller that currently honours it.
 pub fn assertSafeNamingRoot(root: []const u8) RestoreError!void {
-    // "/" — and "" only incidentally, which is worth stating precisely because the first
-    // draft of this comment got it wrong. `""` never reaches the outward read at all:
-    // `assertRootNotDeniedOrAncestor` returns at its `root.len == 0` clause, and `endsWith("", "/")`
-    // is false. `""` is carried by that clause, as the note on the helper says. What this
     // line covers on top of the checks below is therefore **"/" alone, and even that is
     // already covered twice** — the trailing-slash test catches it, and so does the
     // outward read, since `isInsideDir(x, "/")` is true for every absolute x. So this
@@ -681,124 +399,30 @@ pub fn assertSafeNamingRoot(root: []const u8) RestoreError!void {
     // weaken the naming boundary, it removes it (`contract.isInsideDir(x, "/")` is true
     // for every absolute path — the input `mcp.zig`'s startup vet exists to eliminate).
     if (root.len <= 1) return error.UnsafeRoot;
-    // The outward read moved into the shared helper in #358, so it is no longer written
-    // here. Both predicates now get it from one place.
     try assertRootNotDeniedOrAncestor(root);
 }
 
-/// Confirms the root still resolves to itself, immediately before it is emptied.
-///
-/// `assertSafeRoot` is lexical and the resolution behind it happens once, before
-/// `--setup` runs. Between those two moments the root can be replaced: a setup command
-/// (or the recorded operation, which runs hundreds of times) that leaves a symlink where
-/// the state directory was sends the delete somewhere else entirely. `deleteTree` refuses
-/// to recurse into a symlinked *entry*, but it reaches the root through `opendir`, which
-/// follows one.
-///
-/// One `realpath` covers the swaps that change the pathname's resolution: the root
-/// itself replaced by a link, any parent component replaced by one, or the root moved. A
-/// root that is simply gone is not a swap — `deleteTree` already returns silently for it
-/// — so ENOENT passes.
-///
-/// **This is resolution, not identity, and the name says so on purpose.** A replacement
-/// that leaves the canonical pathname alone is invisible here: a bind mount over the same
-/// path resolves to itself while naming a different tree, and in a privileged container
-/// that is a real move rather than a theoretical one. Comparing the device and inode
-/// captured at resolution time covers a replacement that happens **after** this look and
-/// leaves a different pair behind, and since #338 that pair is threaded from here to the
-/// open. Two things it still does not see: a mount that was already in place when this
-/// function ran, because that is what this function approved; and a replacement that
-/// inherits the vetted inode number after the original's last link is gone
-/// (`posix.Identity`'s doc carries that one).
-///
-/// **The check-to-open window is closed now (#338, ADR 0037), and this function is half
-/// of how.** It still resolves a name and compares strings, which is two syscalls away
-/// from the open that follows. What it adds is the identity of the object it approved, and
-/// `openRootDir` refuses any descriptor that is not that object. Not a second reading of
-/// the name at open time — that was tried, and measured accepting the swap, because after
-/// a rename-and-replace the descriptor and the name reach the same new directory.
-///
-/// **That sentence used to continue "Both gaps have the same fix, the root held open by
-/// descriptor for the whole delete", and it was wrong** — the twin of the denylist's
-/// sunset note, sitting in the function that note stands beside, and missed by the batch
-/// that corrected the other one (#327, ADR 0024). The descriptor fixes **neither** gap. It
-/// pins whatever tree is there at open time, so a bind mount established *before* the open
-/// is pinned wrong; and the check-to-open race is untouched, because the check and the open
-/// are still two syscalls. What the descriptor closes is a different window — open to
-/// end-of-walk — which is where every entry used to be re-resolved by name, once per entry
-/// and once per pass, giving a resident racer as many attempts as there are entries.
-///
-/// The fix for both gaps is the one named two paragraphs up, comparing device and inode,
-/// and the descriptor makes it cheap rather than redundant: one side of that comparison is
-/// now an open descriptor. **Done for the check-to-open half in #338 (ADR 0037),
-/// in `openRootDir`.** The bind-mount half stays open and is not closable this way: a
-/// mount established before the open is pinned wrong by a descriptor and agrees with
-/// itself by device and inode, so both comparisons pass on it.
-///
-/// What the vet saw, and — when it saw something — which object that was.
-///
-/// The identity is the whole point (#338). "Vetted" can only mean "the object this
-/// function looked at", so the object has to be named in a way that survives the pathname
-/// being repointed afterwards. A device and inode pair does; a pathname does not.
-///
-/// `absent` is not a failure. A root that is simply gone is a state two callers below
-/// recover from by creating it, and one of them then has to know that nothing was there.
 const RootVet = union(enum) { identified: posix.Identity, absent };
 
 fn assertRootResolvesToItself(root: []const u8) RestoreError!RootVet {
     var root_buf: [contract.max_path]u8 = undefined;
     const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return error.PathTooLong;
-    // No separate symlink test. An earlier version asked `isSymlink` first, justified as
-    // keeping two failures distinguishable — measured, deleting it left every test green,
-    // because the comparison below already refuses a linked root by the only thing that
-    // matters: it resolves somewhere else. The one case it could have added, a dangling
-    // link, never reaches here — `main.zig` cannot resolve such a `--state` at all.
     var real_buf: [contract.max_path]u8 = undefined;
     const resolved = posix.realpath(root_z.ptr, &real_buf) orelse {
         if (std.c._errno().* == posix.ENOENT) return .absent; // nothing there to delete
         return error.UnsafeRoot; // cannot look: refuse rather than delete blind
     };
     if (!std.mem.eql(u8, std.mem.span(resolved), root)) return error.UnsafeRoot;
-    // Which object was approved, not merely that the name approves of itself. `openRootDir`
-    // compares the descriptor it ends up holding against this, and that comparison is what
-    // closes the window between here and there.
     return .{ .identified = posix.identityOfPath(root_z.ptr) catch return error.UnsafeRoot };
 }
 
-/// What opening the destructive root found.
-///
-/// `absent` is a variant rather than an error because the two callers disagree about it:
-/// `deleteTree` has nothing to delete and is done, while `freshDir` has already failed its
-/// `mkdir`, so an absent root there means a missing parent — the silent no-op that flag
-/// exists to remove. One `open`, two meanings, and neither may be assumed by the other.
 const RootOpen = union(enum) { fd: c_int, absent };
 
-/// Open a directory for the destructive walk, pinned by descriptor (#327), and refuse it
-/// unless the descriptor and the pathname still reach the same object (#338).
-///
-/// Holding the descriptor is what closes the swap window: every delete below is relative
-/// to the inode opened here, so replacing the *pathname* afterwards redirects nothing.
-/// `O_NOFOLLOW` additionally refuses a root that is itself a link. `vet` closes the other
-/// end — the window between the caller's vet and this open — by carrying the identity that
-/// vet approved, so the descriptor has to be that object and not merely something wearing
-/// that name.
-///
-/// The parameter is not optional on purpose. Every caller has to produce a `RootVet`, and
-/// the only things that produce one are `assertRootResolvesToItself` and a `stat` taken
-/// by a caller that has just created the root itself. Nobody can quietly opt out of the
-/// comparison by passing nothing, which is the shape a fourth destructive entry point
-/// would otherwise take — and the reason this function exists at all is that `opendir`
-/// used to be called from several places with several different amounts of care.
-///
 /// **This does not replace `assertRootResolvesToItself`, and the callers still run it.**
 /// `O_NOFOLLOW` is about the final component only: with root `/a/b/state`, replacing
 /// `/a/b` with a link to somewhere else opens *that* tree, and this function would then
 /// delete it race-free and thoroughly. Pinning identity is not the same property as
 /// picking the right target — the same distinction the denylist's note gets wrong above.
-///
-/// The errno map is caller-visible. `ENOTDIR` becoming `UnsafeRoot` is a deliberate
-/// reclassification: a regular file where the state directory should be used to arrive as
-/// `DeleteFailed` through the `opendir` probe this replaces.
 fn openRootDir(root: []const u8, vet: RootVet) RestoreError!RootOpen {
     var root_buf: [contract.max_path]u8 = undefined;
     const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return error.PathTooLong;
@@ -808,11 +432,6 @@ fn openRootDir(root: []const u8, vet: RootVet) RestoreError!RootOpen {
         @as(c_uint, 0),
     );
     if (fd >= 0) {
-        // **The vet-to-open window (#338, ADR 0037).** The descriptor pins an inode for
-        // its whole life; the pathname between the vet and here does not. So the caller
-        // hands over the identity its vet approved, and the descriptor has to be that same
-        // object or nothing happens.
-        //
         // **Comparing the descriptor against what the name resolves to *now* does not
         // work, and was measured not working before this shape was written.** Move the
         // vetted directory aside inside the window and put another in its place: the open
@@ -826,11 +445,6 @@ fn openRootDir(root: []const u8, vet: RootVet) RestoreError!RootOpen {
         // no comparison anchored to the vet can question the vet. `#338` says so in the
         // same words; ADR 0024's Alternatives claimed the device/inode pair would cover
         // it, and ADR 0037 records that correction.
-        //
-        // Both arms live here rather than at the three call sites. They were written there
-        // first, one conditional each, which is the shape where the fourth caller forgets
-        // one: the whole reason this function exists is that `opendir` used to be called
-        // from several places with several different amounts of care.
         switch (vet) {
             .identified => |want| {
                 const held = posix.identityOfFd(fd) catch {
@@ -842,11 +456,6 @@ fn openRootDir(root: []const u8, vet: RootVet) RestoreError!RootOpen {
                     return error.UnsafeRoot;
                 }
             },
-            // The vet found nothing and yet something is here, so it arrived after the vet
-            // looked and nobody approved it. `freshDir` reaches this when its `mkdir` has
-            // already failed; `corruptState` when the tree `restore` just built has gone.
-            // `restore` is the one caller that legitimately creates the root, and it takes
-            // a fresh identity after its `mkdir` rather than passing this stale `.absent`.
             .absent => {
                 _ = posix.close(fd);
                 return error.UnsafeRoot;
@@ -864,9 +473,6 @@ fn openRootDir(root: []const u8, vet: RootVet) RestoreError!RootOpen {
     };
 }
 
-/// The path-taking entry to the walk: opens the root once, then everything is relative to
-/// that descriptor. An absent root is nothing to delete, which is what `opendir` returning
-/// null used to mean here.
 fn deleteTree(root: []const u8) RestoreError!void {
     // Reached only from tests — every production path goes through `restore`, `freshDir`
     // or `corruptState`, each of which runs the full vet. This one takes an identity of
@@ -891,8 +497,6 @@ fn deleteTree(root: []const u8) RestoreError!void {
 fn deleteTreeAt(dirfd: c_int, depth: usize) RestoreError!void {
     if (depth > max_depth) return error.DeleteFailed;
 
-    // Removed in passes, reopening the directory each time.
-    //
     // Names must be collected before anything is deleted — removing entries while
     // iterating a DIR* is not portable — so a fixed buffer bounds how many can be held
     // at once. The first version stopped quietly at that bound, which left the previous
@@ -900,8 +504,6 @@ fn deleteTreeAt(dirfd: c_int, depth: usize) RestoreError!void {
     // that was really residue from k-1. Turning it into a hard error fixed the silence
     // and introduced a worse limit: a state directory with more than 256 entries in one
     // directory became unexplorable, reported as SETUP ERROR with no mention of a buffer.
-    // Neither is a limit worth having. A pass that takes as many as fit and then reopens
-    // drains a directory of any size, and the buffer stops being part of the contract.
     while (true) {
         var names_buf: [4096]u8 = undefined;
         var names_len: usize = 0;
@@ -922,10 +524,6 @@ fn deleteTreeAt(dirfd: c_int, depth: usize) RestoreError!void {
             // directory it had not drained. Measured on macOS: 144 of 400 entries left
             // behind, no error. `removed < count` cannot catch it because every entry that
             // was *collected* was removed; the loss is in the collection.
-            //
-            // `openat(dirfd, ".")` is a fresh description at offset zero, which is the
-            // property the pre-descriptor `opendir(path)` supplied and the only part of it
-            // this rewrite had to keep. No `O_NOFOLLOW`: "." is the directory itself.
             const stream_fd = posix.openat(dirfd, ".", posix.O_RDONLY | posix.O_DIRECTORY | posix.O_CLOEXEC, @as(c_uint, 0));
             if (stream_fd < 0) return error.DeleteFailed;
             const dirp = posix.fdopendir(stream_fd) orelse {
@@ -933,8 +531,6 @@ fn deleteTreeAt(dirfd: c_int, depth: usize) RestoreError!void {
                 return error.DeleteFailed;
             };
             defer _ = posix.closedir(dirp);
-            // The entry type is collected with the name, because it is the only
-            // description of the entry that has not followed a symlink yet.
             while (posix.readdir(dirp)) |ent| {
                 const name = posix.direntName(ent);
                 if (std.mem.eql(u8, name, ".") or std.mem.eql(u8, name, "..")) continue;
@@ -972,8 +568,6 @@ fn deleteTreeAt(dirfd: c_int, depth: usize) RestoreError!void {
             // follows links: a link inside the state directory pointing outside it would
             // have redirected this recursive delete out of the tree, once per explored
             // world. `assertSafeRoot` cannot see that — it only inspects the root string.
-            // Unlinking a symlink removes the link itself, which is what is wanted here.
-            //
             // The DT_UNKNOWN fallback asks `fstatat` and deliberately not an `openat`
             // probe. `opendir` passes `O_NONBLOCK`; a hand-rolled open does not, and
             // posix.zig records what that costs — "a FIFO with no writer blocks that open
@@ -989,9 +583,6 @@ fn deleteTreeAt(dirfd: c_int, depth: usize) RestoreError!void {
                 else => false, // DT_REG, DT_LNK and everything else: remove the entry itself
             };
             if (recurse) {
-                // An entry that stopped being a directory between `readdir` and here fails
-                // this open and is left uncounted — `removed < count` below turns that
-                // into a loud refusal, the same outcome the old failed `rmdir` produced.
                 const child = posix.openat(
                     dirfd,
                     name_z.ptr,
@@ -1014,28 +605,16 @@ fn deleteTreeAt(dirfd: c_int, depth: usize) RestoreError!void {
         // gone, one held by permissions — return as success and leave residue for the
         // next world to be judged against: the exact "violation at crash point k that
         // was really residue from k-1" this function's own history records. The path
-        // became reachable when #121 stopped refusing chmod-capable targets (R1); an
-        // unreadable 0000-mode directory, for instance, is skipped silently by
-        // opendir above and its rmdir then fails here. Failing loudly turns that
-        // into SETUP ERROR instead of a fabricated counterexample.
         if (removed < count) return error.DeleteFailed;
         if (!buffer_full) return;
     }
 }
 
-/// Empty a state directory, creating it if missing (`replay --fresh-state`, #69).
-/// The call site passes the realpath'd spelling: `assertSafeRoot` is lexical, and
-/// "/tmp/../etc" spells safe while resolving unsafe — resolution is the guard's
-/// other half. Failing loudly is the point: a fresh-state that could not do its
-/// job and said nothing would be the exact silent no-op the flag exists to remove.
 pub fn freshDir(root: []const u8) RestoreError!void {
     try assertSafeRoot(root);
     var root_buf: [contract.max_path]u8 = undefined;
     const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return error.PathTooLong;
     if (posix.mkdir(root_z.ptr, 0o755) == 0) return; // did not exist: created empty
-    // The `mkdir` above is this function's only legitimate creator, and it has already
-    // failed. So if the vet finds nothing here, nothing that appears afterwards can be
-    // legitimate -- see the `.fd` arm below (#338).
     const vet = try assertRootResolvesToItself(root);
     switch (try openRootDir(root, vet)) {
         // `mkdir` failed AND nothing is there: a missing parent. Loud, and this is the one
@@ -1045,7 +624,6 @@ pub fn freshDir(root: []const u8) RestoreError!void {
         // open cannot be allowed to carry `deleteTree`'s reading here. A regular file or a
         // permission wall stay loud too, through `openRootDir`'s map.
         .absent => return error.DeleteFailed,
-        // Empties the children; the root directory itself stays in place.
         .fd => |fd| {
             const r = deleteTreeAt(fd, 0);
             _ = posix.close(fd);
@@ -1054,25 +632,6 @@ pub fn freshDir(root: []const u8) RestoreError!void {
     }
 }
 
-/// `restore`'s root creation, and the identity the descriptor will be held to (#338).
-///
-/// Separated from `restore` so the state it refuses can be reached by a test. That state
-/// lives between two calls `restore` makes back to back — the vet, then this `mkdir` — and
-/// no input to `restore` can place anything in between. Handed the vet's verdict directly,
-/// it is three ordinary cases.
-///
-/// Unlike `freshDir`, `restore` *is* the legitimate creator when the root is gone: the
-/// first run of every world arrives with nothing there, so a vet that saw nothing is
-/// ordinary and the `mkdir` that follows must succeed. `EEXIST` on that path says a
-/// directory arrived between the two calls. It is someone else's, and `O_NOFOLLOW` will
-/// not refuse it, because it is a perfectly real directory.
-///
-/// Every other `mkdir` failure is left alone and falls through to `openRootDir`'s `.absent`
-/// arm, which still answers `CreateFailed`. A missing parent keeps the diagnosis it has
-/// always had rather than being reported as a swap.
-///
-/// The identity comes *after* the `mkdir` for the same reason: on a first run the `mkdir`
-/// is what put the directory there, and the vet above has nothing to name. One `stat`
 /// rather than a second full vet — the name's resolution was judged above, and a swap to a
 /// symlink since then is refused by `O_NOFOLLOW` in the open, not here.
 fn createRoot(root_z: [*:0]const u8, vet: RootVet) RestoreError!RootVet {
@@ -1088,16 +647,11 @@ fn createRoot(root_z: [*:0]const u8, vet: RootVet) RestoreError!RootVet {
             _ = posix.mkdir(root_z, 0o755); // EEXIST is the expected answer and says nothing
             return vet;
         },
-        // Nothing was there, so this call is the legitimate creator and the identity can
-        // only be read afterwards.
         .absent => {
             if (posix.mkdir(root_z, 0o755) != 0) {
                 // Something is there that was not there a moment ago. It is not ours, and
                 // `O_NOFOLLOW` will not refuse it for being real.
                 if (std.c._errno().* == posix.EEXIST) return error.UnsafeRoot;
-                // Any other failure keeps the diagnosis it has always had: `openRootDir`
-                // finds nothing and the caller answers `CreateFailed`, which is what a
-                // missing parent has always produced.
                 return .absent;
             }
             return if (posix.identityOfPath(root_z)) |id| .{ .identified = id } else |_| .absent;
@@ -1105,17 +659,10 @@ fn createRoot(root_z: [*:0]const u8, vet: RootVet) RestoreError!RootVet {
     }
 }
 
-/// Write one recorded file into the tree, relative to the held root descriptor. The
-/// single write path `restore` and `corruptState` share.
-///
 /// `O_NOFOLLOW` because the two halves of this file used to answer a planted symlink
 /// differently (#446): `deleteTreeAt` descends with the flag and refuses a link where a
 /// directory was, while the write opened without it and agreed to write *through* one —
 /// sending the recorded bytes to whatever it pointed at, outside the state directory.
-/// Measured on a directory descriptor with a link at the entry name: without the flag the
-/// write succeeds through the link, with it the open is refused and the file outside is
-/// unchanged byte for byte.
-///
 /// **Final component only.** The interior of a multi-component `e.rel` is still resolved
 /// by name and is left open rather than argued safe — the reasoning, and why closing it
 /// needs resolution the kernel enforces, is in CHANGELOG and BUILDLOG under #446.
@@ -1171,10 +718,6 @@ pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
     const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return error.PathTooLong;
     const after = try createRoot(root_z.ptr, vet);
 
-    // One descriptor for the whole call: the delete and the rebuild are pinned to the same
-    // inode, so a swap between them redirects neither. What it does not pin is the interior
-    // — `e.rel` is a multi-component path, and its intermediate components are still
-    // resolved by name below. Those directories were made by this loop moments earlier.
     const fd = switch (try openRootDir(root, after)) {
         .absent => return error.CreateFailed, // the mkdir above failed and nothing is there
         .fd => |f| f,
@@ -1187,8 +730,6 @@ pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
         var rel_buf: [contract.max_path]u8 = undefined;
         const rel_z = std.fmt.bufPrintZ(&rel_buf, "{s}", .{e.rel}) catch return error.PathTooLong;
         switch (e.kind) {
-            // The only creation whose failure used to be silent — harmless exactly
-            // while dir-to-dir pairs were unjudged, and a tool-manufactured
             // `missing` the moment they are judged (#164): a world starting without
             // an empty directory the recording had would read as the target's
             // violation. Strict on purpose, no EEXIST tolerance: the tree was
@@ -1208,9 +749,6 @@ pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
                 }
             },
             .symlink => {
-                // Recreate the link with the recorded target, verbatim. The target is
-                // a string, not a path this function resolves — a dangling link is
-                // restored dangling, which is what the snapshot recorded.
                 var tz_buf: [contract.max_path]u8 = undefined;
                 const tz = std.fmt.bufPrintZ(&tz_buf, "{s}", .{e.content}) catch return error.PathTooLong;
                 if (posix.symlinkat(tz.ptr, fd, rel_z.ptr) != 0) return error.CreateFailed;
@@ -1226,15 +764,10 @@ pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
 }
 
 test "#164 pin: restore goes loud when a directory cannot be created" {
-    // The guard's own falsification: a parentless dir entry makes mkdir fail
-    // with ENOENT, and restore must refuse — a silently absent directory
-    // would let judgeL0 report a `missing` the tool itself manufactured.
     const gpa = std.testing.allocator;
     var pbuf: [contract.max_path]u8 = undefined;
     const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-loud-dir-test-{d}", .{posix.getpid()}) catch unreachable;
     _ = posix.mkdir(parent_z.ptr, 0o755);
-    // The resolved parent: `restore` requires a root that resolves to itself, which is
-    // the spelling its call sites hand over. See the symlink test below for the same note.
     var dbuf: [contract.max_path]u8 = undefined;
     const parent = std.mem.span(posix.realpath(parent_z.ptr, &dbuf) orelse return error.SkipZigTest);
     var rbuf: [contract.max_path]u8 = undefined;
@@ -1253,30 +786,10 @@ test "#164 pin: restore goes loud when a directory cannot be created" {
     try std.testing.expectError(error.CreateFailed, restore(snap, root));
 }
 
-/// Content written over every file when probing whether a checker actually looks at
-/// the state. Distinctive enough to recognise in a report, and not valid content for
-/// anything a target is likely to store.
 pub const corruption_probe = "sideeye-corruption-probe\n";
 
-/// Where every symlink is pointed during the falsification probe: a name that exists
-/// nowhere, distinctive enough to recognise in a checker's error output. A symlink's
-/// judged identity is its target string, so retargeting is the corruption that
-/// preserves the structure — the link stays a link, the farm shape stays intact, and
-/// only the thing a link-aware checker must verify has changed (#122).
 pub const corruption_probe_target = "sideeye-corruption-probe-target";
 
-/// Overwrite every file in the state directory — and retarget every symlink —
-/// leaving the structure intact.
-///
-/// This exists for DESIGN §14-13: before exploring, a deliberately corrupted state must
-/// make the checker fail, otherwise the checker is not testing what it claims and every
-/// PASS it produces afterwards is meaningless.
-///
-/// Emptying the directory would be the obvious way to corrupt it and is the wrong one.
-/// A checker that compares a diagnostic command against reality — the shape sideeye
-/// exists to encourage — finds an empty state perfectly *consistent*: the diagnostic
-/// says unhealthy, nothing loads, the two agree. Replacing contents while keeping the
-/// files in place breaks the agreement instead of removing the subject.
 pub fn corruptState(snap: Snapshot, root: []const u8) RestoreError!void {
     try assertSafeRoot(root);
     // Overwriting is destructive too: a root swapped since it was resolved sends every
@@ -1339,10 +852,6 @@ pub fn countCorruptible(snap: Snapshot) usize {
 }
 
 test "freshDir refuses a root a mistake would produce, before any I/O" {
-    // The behavioral half — an existing root comes back empty, a missing one is
-    // created — is pinned at the call site by mcp-acceptance check 8 (explore, then
-    // replay twice in one server session), which was seen red before the feature.
-    // What must hold here is that the guard is wired in FRONT of the deletion.
     try std.testing.expectError(error.UnsafeRoot, freshDir("/tmp"));
     try std.testing.expectError(error.UnsafeRoot, freshDir("/"));
     try std.testing.expectError(error.UnsafeRoot, freshDir("relative/state"));
@@ -1365,56 +874,35 @@ test "assertSafeRoot rejects roots a mistake would produce" {
 }
 
 test "assertSafeRoot rejects the spellings production actually receives" {
-    // Both call sites hand over the realpath'd root, and on macOS every path in the
-    // three lines above arrives through /private. The cases above assert the depth rule
-    // on inputs production never evaluates: `--state /tmp` reaches the guard as
-    // "/private/tmp", which has two components and passed. This test is the reason the
-    // exact-match list exists.
     try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/private/tmp"));
     try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/private/var/tmp"));
     try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/Users"));
     try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/home"));
 
-    // Scratch under those roots is the ordinary case and must still pass — the entries
-    // above are exact, not trees.
     try assertSafeRoot("/private/tmp/x/state");
     try assertSafeRoot("/Users/someone/scratch/state");
 
-    // $TMPDIR on macOS. /var is absent from the tree list precisely so this passes; a
-    // list that denied /var wholesale would refuse the platform's own scratch space.
     try assertSafeRoot("/private/var/folders/lm/abcdef/T/state");
 }
 
 test "assertSafeRoot rejects system trees, on component boundaries" {
-    // The paths this guard exists for. /var/lib/myapp is what docs/ci-quickstart.md
-    // suggested; it has three components, so a depth rule accepts it.
     try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/var/lib/myapp"));
     try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/private/var/lib/myapp"));
     try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/usr/local/share/x"));
     try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/etc/myapp"));
     try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/private/etc/myapp"));
     try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/Library/Application Support/x"));
-    // The tree itself, not only what is under it.
     try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/var/lib"));
 
-    // Component boundary: naming a denied prefix is not sitting inside it. A
-    // `startsWith` test would refuse both of these.
     try assertSafeRoot("/var/library/state");
     try assertSafeRoot("/optimism/state");
 }
 
 test "assertSafeRoot covers what each platform resolves the shorthand to" {
-    // Linux resolves /var/run to /run and /var/lock to /run/lock, so a list holding only
-    // the /var spellings is inert there in exactly the way the pre-/private list was
-    // inert on macOS. Measured in the CI container: /var/run -> /run.
     try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/run/myapp"));
     try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/run/lock/x"));
     try std.testing.expectError(error.UnsafeRoot, assertSafeRoot("/var/run/myapp"));
 
-    // Site-local trees an operator populates are NOT denied, and that is a judgement
-    // rather than a measurement — there is no override flag, so a wrong entry is a wall.
-    // These two lines are the record of the decision, and they fail if someone adds
-    // either tree back without revisiting it.
     try assertSafeRoot("/opt/myapp/state");
     try assertSafeRoot("/srv/myapp/state");
 }
@@ -1422,26 +910,17 @@ test "assertSafeRoot covers what each platform resolves the shorthand to" {
 test "assertSafeNamingRoot drops the depth rule and refuses ancestors instead (#329)" {
     const t = std.testing;
 
-    // The point of the change: a single-component mount, which the depth rule refused
-    // and which the container this project recommends is shaped like.
     try assertSafeNamingRoot("/work");
     try assertSafeNamingRoot("/opt");
     try assertSafeNamingRoot("/repo");
-    // Depth is not consulted at all, so the deep roots keep passing for the same reasons
-    // they always did.
     try assertSafeNamingRoot("/opt/myapp/state");
     try assertSafeNamingRoot("/Users/someone/scratch");
     try assertSafeNamingRoot("/var/library/state");
 
-    // The ancestor read, and this is the whole of its covered set — measured by
-    // enumerating both lists, not chosen by example. `/private` and `/private/var` are
-    // reachable only on macOS and `spike/mcp-acceptance.sh` runs only on Linux, so these
-    // three lines are the only place the set is pinned on both platforms.
     try t.expectError(error.UnsafeRoot, assertSafeNamingRoot("/var"));
     try t.expectError(error.UnsafeRoot, assertSafeNamingRoot("/private"));
     try t.expectError(error.UnsafeRoot, assertSafeNamingRoot("/private/var"));
 
-    // Everything the shared checks refuse still refuses.
     try t.expectError(error.UnsafeRoot, assertSafeNamingRoot("/"));
     try t.expectError(error.UnsafeRoot, assertSafeNamingRoot(""));
     try t.expectError(error.UnsafeRoot, assertSafeNamingRoot("relative/path"));
@@ -1451,46 +930,17 @@ test "assertSafeNamingRoot drops the depth rule and refuses ancestors instead (#
     try t.expectError(error.UnsafeRoot, assertSafeNamingRoot("/Users"));
     try t.expectError(error.UnsafeRoot, assertSafeNamingRoot("/var/lib/myapp"));
 
-    // The predicates still differ in one direction, which is the point of the split: the
-    // destructive side refuses a depth-1 root that the naming side accepts. They no
-    // longer differ in the other — #358 gave the destructive side the outward read, so
-    // the line below used to read `try assertSafeRoot("/private/var")` and was the hole
-    // being tracked.
     try t.expectError(error.UnsafeRoot, assertSafeRoot("/work"));
     try t.expectError(error.UnsafeRoot, assertSafeRoot("/private/var"));
 }
 
-/// The roots the relation below is held over (#359).
-///
-/// Written as a corpus rather than as a list of asserts because the relation is what is
-/// being pinned, not the individual answers: a root added here is checked in both
-/// directions and against both predicates without anyone remembering to write four lines.
-/// Twenty-two of the thirty-nine also appear in the hand-written vet tests above, three
-/// more only in the denylist definitions themselves — being on a list is not being
-/// tested — and the remaining fourteen appear nowhere in this file. The two mutations that motivate
-/// this test — the outward read on one side only, the depth rule on one side only — are
-/// both already killed by those hand-written asserts, so a corpus built only from their
-/// roots would have added nothing. What it adds is the fourteen nobody thought to list,
-/// one of which (a `~` in a component) is what the attribution mutation uses.
 const root_relation_corpus = [_][]const u8{
-    // Depth-1 paths in neither list: the cell where the two predicates legitimately differ.
     "/work",                        "/opt",               "/repo",                                  "/srv",             "/nix",               "/cores",
-    "/data",                        "/scratch",
-    // Denied outright, by tree or exactly.
-              "/usr",                                   "/etc/myapp",       "/tmp",               "/private/tmp",
+    "/data",                        "/scratch",           "/usr",                                   "/etc/myapp",       "/tmp",               "/private/tmp",
     "/Users",                       "/home",              "/var/lib/x",                             "/run/lock/x",      "/root",              "/Volumes",
-    // Ancestors of denied entries — the outward read's own cell.
-    "/var",                         "/private",           "/private/var",
-    // Accepted by both: the ordinary case, in several shapes.
-                              "/opt/myapp/state", "/srv/myapp/state",   "/work/state",
-    "/Users/someone/scratch/state", "/var/library/state", "/private/var/folders/lm/abcdef/T/state", "/optimism/state",
-    // Unusual bytes in a component, and depth beyond anything else here.
-     "/work/~cache/state", "/opt/a.b/c-d/state",
-    "/srv/x y/state",               "/a/b/c/d/e/f/g/h",
-    // Refused by the shape checks rather than by either list.
-      "/work/state/",                           "relative/path",    "",                   "/",
-    // Accepted by both, and the reason both vets say the caller hands over the resolved
-    // spelling: the checks are lexical, so these pass here and mean something else on disk.
+    "/var",                         "/private",           "/private/var",                           "/opt/myapp/state", "/srv/myapp/state",   "/work/state",
+    "/Users/someone/scratch/state", "/var/library/state", "/private/var/folders/lm/abcdef/T/state", "/optimism/state",  "/work/~cache/state", "/opt/a.b/c-d/state",
+    "/srv/x y/state",               "/a/b/c/d/e/f/g/h",   "/work/state/",                           "relative/path",    "",                   "/",
     "//var",                        "/opt/../var",        "/work/.",
 };
 
@@ -1504,19 +954,6 @@ fn destructiveAccepts(root: []const u8) bool {
     return true;
 }
 
-// The relation between the two vets, held over the corpus (#359, ADR 0046).
-//
-// The denylists live in this file, next to the destructive path, and #359 asked whether
-// they should move somewhere neither consumer owns. ADR 0046 declines the move: the drift
-// the address argument protects against did happen once (#329 gave the outward read to
-// the naming side alone) and what closed it was extraction into a shared helper, not
-// relocation — and a new file would let the same asymmetry be written inside it. So what
-// is pinned here is the relation, which nothing pinned before.
-//
-// Three assertions, and the third is what keeps the first two from being vacuous. A
-// mutation that adds a check to the naming side alone would satisfy the implication by
-// emptying its antecedent; requiring every cell of the corpus to be populated means the
-// corpus has to keep separating the predicates for the test to pass at all.
 test "the naming vet refuses a subset of what the destructive vet refuses (#359)" {
     const t = std.testing;
 
@@ -1547,16 +984,11 @@ test "the naming vet refuses a subset of what the destructive vet refuses (#359)
             return error.VetsDifferBySomethingOtherThanDepth;
         }
 
-        // 1. Containment: everything the naming vet refuses, the destructive vet refuses.
-        //    A check added to the naming side that the destructive side does not get
-        //    lands here.
         if (!naming and destructive) {
             std.debug.print("#359: naming refuses {s} but the destructive vet accepts it\n", .{root});
             return error.NamingRefusalNotCoveredByDestructive;
         }
 
-        // 2. The one direction they may differ in is the depth rule, and nothing else.
-        //    A check added to the destructive side alone lands here.
         if (naming and !destructive) {
             if (slashes >= 2) {
                 std.debug.print("#359: the destructive vet refuses {s} for a reason that is not depth\n", .{root});
@@ -1581,14 +1013,6 @@ test "the naming vet refuses a subset of what the destructive vet refuses (#359)
 test "assertSafeRoot refuses the ancestor a typed /var resolves to (#358)" {
     const t = std.testing;
 
-    // The composition, not the spelling. Every call site hands over the realpath'd root,
-    // so on macOS a typed `/var` arrives here as `/private/var` — deep enough for the
-    // depth rule, and an ancestor of `/private/var/lib`. A lexical assertion cannot carry
-    // this claim: it is about what the resolver produces. #329's note in mcp-acceptance
-    // describes the same shape one surface over — the naming vet's composition through the
-    // MCP startup path — and that gap is still open; this test borrows its form, not its
-    // coverage.
-    //
     // On Linux `realpath("/var")` is `/var`, one component, refused by the depth rule
     // before and after this change — so a green here proves nothing on that platform and
     // is not counted. The assertion below is the macOS job's.
@@ -1612,17 +1036,11 @@ test "assertSafeRoot refuses the ancestor a typed /var resolves to (#358)" {
         if (ch == '/') slashes += 1;
     }
     if (slashes >= 2) {
-        // The composition macOS produces: /var -> /private/var, deep enough to pass the
-        // depth rule and an ancestor of /private/var/lib. Before #358 this was accepted.
         try t.expect(std.mem.eql(u8, resolved, "/private/var"));
     }
 }
 
 test "assertRootResolvesToItself refuses a root swapped for a symlink after resolution" {
-    // The window this closes: assertSafeRoot and the resolution behind it run before
-    // --setup, and setup (or the recorded operation) can leave a link where the state
-    // directory was. deleteTree refuses symlinked ENTRIES but reaches the root through
-    // opendir, which follows one.
     // Pid-unique parent (#28: zig build test runs test binaries concurrently), and the
     // base is taken back through realpath: on macOS /tmp is itself a link, so a literal
     // "/tmp/..." root never resolves to itself and every assertion below would be about
@@ -1649,14 +1067,8 @@ test "assertRootResolvesToItself refuses a root swapped for a symlink after reso
     }
 
     try std.testing.expect(posix.mkdir(good_zs.ptr, 0o755) == 0);
-    // Resolves to itself: accepted, and it names what it approved. The verdict is not
-    // discarded here because every destructive caller now branches on it (#338): a vet
-    // that answered `.absent` for a root plainly present would let `restore` read its own
-    // legitimate `mkdir` as a swap and refuse every first run.
     try std.testing.expect((try assertRootResolvesToItself(good)) == .identified);
 
-    // Now the swap. The link points at a sibling, which is enough — what is refused is
-    // "this root no longer resolves to itself", not "the target is dangerous".
     try std.testing.expect(posix.mkdir(other_zs.ptr, 0o755) == 0);
     try std.testing.expect(posix.rmdir(good_zs.ptr) == 0);
     try std.testing.expect(posix.symlink(other_zs.ptr, good_zs.ptr) == 0);
@@ -1666,24 +1078,16 @@ test "assertRootResolvesToItself refuses a root swapped for a symlink after reso
     // about the swap and not about anything in this directory.
     try std.testing.expect((try assertRootResolvesToItself(other)) == .identified);
 
-    // A root that is simply absent is not a swap: deleteTree already returns silently
-    // for it, and refusing here would turn a tolerated state into a SETUP ERROR.
     try std.testing.expect(posix.unlink(good_zs.ptr) == 0);
     try std.testing.expect((try assertRootResolvesToItself(good)) == .absent);
 }
 
 test "openRootDir refuses a root swapped between the vet and the open (#338)" {
-    // The window #338 named: `assertRootResolvesToItself` looks at a name, `openRootDir`
-    // opens that name, and the two are separate syscalls. Deterministic, no threads — the
-    // swap is performed between two calls this test makes itself, which is the whole
-    // reason the comparison is anchored to the vet rather than to a second look at the name.
     var pbuf: [contract.max_path]u8 = undefined;
     const parent = std.fmt.bufPrint(&pbuf, "/tmp/sideeye-vetwin-{d}", .{std.c.getpid()}) catch unreachable;
     var pz: [contract.max_path]u8 = undefined;
     const parent_z = std.fmt.bufPrintZ(&pz, "{s}", .{parent}) catch unreachable;
     _ = posix.mkdir(parent_z.ptr, 0o755);
-    // The base goes back through realpath: on macOS /tmp is itself a link, and the vet
-    // compares spellings.
     var dbuf: [contract.max_path]u8 = undefined;
     const rparent = std.mem.span(posix.realpath(parent_z.ptr, &dbuf) orelse return error.SkipZigTest);
     var ab: [contract.max_path]u8 = undefined;
@@ -1709,18 +1113,11 @@ test "openRootDir refuses a root swapped between the vet and the open (#338)" {
         .absent => return error.TestUnexpectedResult,
     }
 
-    // Now the swap, inside the window: the vetted directory is moved aside and another put
-    // at the same name.
     try std.testing.expect(posix.rename(root_z.ptr, moved_z.ptr) == 0);
     try std.testing.expect(posix.mkdir(root_z.ptr, 0o755) == 0);
 
     try std.testing.expectError(error.UnsafeRoot, openRootDir(root, vet));
 
-    // And why the baseline has to come from the vet. The design this replaced compared the
-    // descriptor against whatever the *name* resolved to at open time; after the swap those
-    // two are the same new directory, so that comparison agrees and the walk would empty a
-    // tree nobody vetted. Asserted rather than argued, because it is the only thing that
-    // distinguishes the shipped shape from the one that was measured accepting this.
     const fd2 = posix.open(root_z.ptr, posix.O_RDONLY | posix.O_DIRECTORY | posix.O_NOFOLLOW | posix.O_CLOEXEC, @as(c_uint, 0));
     try std.testing.expect(fd2 >= 0);
     defer _ = posix.close(fd2);
@@ -1731,10 +1128,6 @@ test "openRootDir refuses a root swapped between the vet and the open (#338)" {
 }
 
 test "openRootDir refuses a root that appeared after the vet found nothing (#338)" {
-    // `freshDir` reaches this with its `mkdir` already failed, and `corruptState` when the
-    // tree `restore` built has gone: in both, nothing between the vet and the open is
-    // entitled to create the root, so something being there means someone else made it.
-    // `restore` is the exception and takes a fresh identity after its own `mkdir`.
     var pbuf: [contract.max_path]u8 = undefined;
     const parent = std.fmt.bufPrint(&pbuf, "/tmp/sideeye-vetabs-{d}", .{std.c.getpid()}) catch unreachable;
     var pz: [contract.max_path]u8 = undefined;
@@ -1751,9 +1144,7 @@ test "openRootDir refuses a root that appeared after the vet found nothing (#338
         _ = posix.rmdir(parent_z.ptr);
     }
 
-    // The vet looks at a root that is not there.
     try std.testing.expect((try assertRootResolvesToItself(root)) == .absent);
-    // Inside the window, one appears.
     try std.testing.expect(posix.mkdir(root_z.ptr, 0o755) == 0);
 
     try std.testing.expectError(error.UnsafeRoot, openRootDir(root, .absent));
@@ -1768,11 +1159,6 @@ test "openRootDir refuses a root that appeared after the vet found nothing (#338
 }
 
 test "createRoot keeps the vetted identity across a swap, rather than re-reading the name (#338)" {
-    // The hole review found, and the reason it survived: the swap test above drives
-    // `openRootDir` directly, so it never came through here. Inside `restore` the order is
-    // vet, `createRoot`, open — and if `createRoot` re-reads the name, a swap landing
-    // before it makes `mkdir` answer the `EEXIST` it would have answered anyway, the fresh
-    // reading returns the intruder, and the open then agrees with the intruder.
     var pbuf: [contract.max_path]u8 = undefined;
     const parent = std.fmt.bufPrint(&pbuf, "/tmp/sideeye-keepid-{d}", .{std.c.getpid()}) catch unreachable;
     var pz: [contract.max_path]u8 = undefined;
@@ -1795,26 +1181,17 @@ test "createRoot keeps the vetted identity across a swap, rather than re-reading
     const quiet = try createRoot(root_z.ptr, approved);
     try std.testing.expect(quiet.identified.eql(approved.identified));
 
-    // The swap, before `createRoot` runs.
     try std.testing.expect(posix.rename(root_z.ptr, moved_z.ptr) == 0);
     try std.testing.expect(posix.mkdir(root_z.ptr, 0o755) == 0);
 
     const kept = try createRoot(root_z.ptr, approved);
-    // It must still name what the vet approved, not what the name reaches now.
     try std.testing.expect(kept.identified.eql(approved.identified));
     const intruder = try posix.identityOfPath(root_z.ptr);
     try std.testing.expect(!intruder.eql(approved.identified)); // the swap really happened
-    // ...and the open then refuses, which is the outcome `restore` depends on.
     try std.testing.expectError(error.UnsafeRoot, openRootDir(std.mem.span(root_z.ptr), kept));
 }
 
 test "a vetted root that vanishes leaves createRoot's own directory unvetted (#338)" {
-    // The third state, which neither swap test reaches: the vet identified a directory and
-    // then it was removed rather than replaced, so `createRoot`'s `mkdir` succeeds and makes
-    // one of its own. What holds everywhere is that the vetted identity is kept rather than
-    // refreshed. Whether the open then refuses does not, and finding that out is what this
-    // test is really for -- an earlier version asserted the refusal unconditionally, passed
-    // here, and went red on Linux in CI.
     var pbuf: [contract.max_path]u8 = undefined;
     const parent = std.fmt.bufPrint(&pbuf, "/tmp/sideeye-vanish-{d}", .{std.c.getpid()}) catch unreachable;
     var pz: [contract.max_path]u8 = undefined;
@@ -1833,7 +1210,6 @@ test "a vetted root that vanishes leaves createRoot's own directory unvetted (#3
     try std.testing.expect(posix.mkdir(root_z.ptr, 0o755) == 0);
     const approved = RootVet{ .identified = try posix.identityOfPath(root_z.ptr) };
 
-    // It goes away, and `createRoot` makes a new one.
     try std.testing.expect(posix.rmdir(root_z.ptr) == 0);
     const kept = try createRoot(root_z.ptr, approved);
     try std.testing.expect(kept.identified.eql(approved.identified)); // still the vetted one
@@ -1860,10 +1236,6 @@ test "a vetted root that vanishes leaves createRoot's own directory unvetted (#3
 }
 
 test "createRoot refuses a root that arrived after the vet found nothing (#338)" {
-    // The one rule in this change that no input to `restore` can exercise: it sits between
-    // the vet and the `mkdir`, two calls `restore` makes back to back. Driving `createRoot`
-    // directly is what makes the three states reachable, and the mutation survey said so —
-    // with the rule inline, deleting it left every test green.
     var pbuf: [contract.max_path]u8 = undefined;
     const parent = std.fmt.bufPrint(&pbuf, "/tmp/sideeye-mkwin-{d}", .{std.c.getpid()}) catch unreachable;
     var pz: [contract.max_path]u8 = undefined;
@@ -1883,14 +1255,8 @@ test "createRoot refuses a root that arrived after the vet found nothing (#338)"
     try std.testing.expect(first == .identified);
     try std.testing.expect((try posix.kindOfPathNoFollow(root_z.ptr)) == .dir);
 
-    // The hostile case: the vet still says it saw nothing, but a directory is there now, so
-    // it arrived in between and nobody approved it. `O_NOFOLLOW` would not refuse it —
-    // it is a real directory — and without this rule the identity taken afterwards would
-    // be the intruder's, agreeing with itself all the way down.
     try std.testing.expectError(error.UnsafeRoot, createRoot(root_z.ptr, .absent));
 
-    // Ordinary second run: the vet identified the root, so `EEXIST` is expected and the
-    // identity comes back unchanged.
     const seen = RootVet{ .identified = try posix.identityOfPath(root_z.ptr) };
     const again = try createRoot(root_z.ptr, seen);
     try std.testing.expect(again == .identified);
@@ -1926,18 +1292,14 @@ test "restore still creates a root that is not there yet (#338)" {
     defer snap.deinit();
     try snap.entries.append(snap.arena.allocator(), .{ .rel = "a", .kind = .file, .content = "x" });
 
-    // Nothing there at all: the state the vet reports as `.absent`.
     try std.testing.expect((try assertRootResolvesToItself(root)) == .absent);
     try restore(snap, root);
 
-    // And it did the work rather than merely not refusing.
     var eb: [contract.max_path]u8 = undefined;
     const entry_z = try joinZ(&eb, root, "a");
     try std.testing.expect((try posix.kindOfPathNoFollow(entry_z.ptr)) == .file);
     _ = posix.unlink(entry_z.ptr);
 
-    // The second run is the other half: the root now exists, the vet identifies it, and
-    // the `mkdir` fails with EEXIST as it always has.
     try std.testing.expect((try assertRootResolvesToItself(root)) == .identified);
     try restore(snap, root);
     try std.testing.expect((try posix.kindOfPathNoFollow(entry_z.ptr)) == .file);
@@ -1983,52 +1345,30 @@ test "restore and freshDir refuse a swapped root — the guard is wired in front
     // about anything in this directory rather than about the swap.
     try restore(snap, root);
 
-    // A sentinel outside the state directory. If the guard is not wired in, the delete
-    // follows the link and this file goes with it.
     var sbuf: [contract.max_path]u8 = undefined;
     const sentinel_z = try joinZ(&sbuf, outside, "keep-me");
     const fd = posix.open(sentinel_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
     try std.testing.expect(fd >= 0);
     _ = posix.close(fd);
 
-    // The swap: what --setup or the recorded operation could leave behind.
     deleteTree(root) catch {};
     try std.testing.expect(posix.rmdir(root_z.ptr) == 0);
     try std.testing.expect(posix.symlink(outside_z.ptr, root_z.ptr) == 0);
 
     try std.testing.expectError(error.UnsafeRoot, restore(snap, root));
     try std.testing.expectError(error.UnsafeRoot, freshDir(root));
-    // corruptState writes rather than deletes, and its one call site sits directly after
-    // `restore`. Covering it here rather than leaning on that neighbour: the ordering at
-    // the call site is not a property of this function.
     try std.testing.expectError(error.UnsafeRoot, corruptState(snap, root));
 
-    // The sentinel survived: the refusal happened before anything was removed.
     try std.testing.expectEqual(posix.Kind.file, try posix.kindOfPathNoFollow(sentinel_z.ptr));
 }
 
 test "the rebuild refuses to write through a symlink at an entry name (#446)" {
-    // The asymmetry this closes: `deleteTreeAt` descends with `O_NOFOLLOW` and refuses a
-    // symlink where a directory was; the write side opened without it and agreed to write
-    // through one. Same file, same threat model, opposite answers.
-    //
-    // Aimed at `writeFileEntryAt` rather than at `restore`, because `restore` empties the
-    // tree immediately above its rebuild: a link planted before the call is deleted by the
-    // walk, and one planted *between* the delete and the write is a race this test cannot
-    // stage. What is measured here is the flag's effect on the write, which is what the
-    // change is. The `corruptState` leg below sits one level higher — that is a `pub fn`
-    // and the production entry point `main.zig` calls — but it is still called directly
-    // rather than reached through its own call site, which runs it after `restore` and so
-    // cannot be driven into a planted link either.
     const gpa = std.testing.allocator;
     var fx: TreeFixture = .{};
     const root = fx.init("writeentry") orelse return error.SkipZigTest;
     defer fx.deinit();
     const outside = try fx.sibling("outside");
 
-    // A sentinel outside the state directory, with content — not just existence. A test
-    // that only asked whether the file was still there would pass against a write that
-    // followed the link and truncated it.
     const keep = "keep-me-intact\n";
     var sbuf: [contract.max_path]u8 = undefined;
     const sentinel_z = try joinZ(&sbuf, outside, "keep-me");
@@ -2051,7 +1391,6 @@ test "the rebuild refuses to write through a symlink at an entry name (#446)" {
     const real_z = try joinZ(&real_buf, root, "real");
     try std.testing.expectEqualStrings("recorded bytes", try read.readWhole(arena, real_z.ptr, 4096, null, .follow));
 
-    // The link: what a resident racer could leave at an entry name.
     var lbuf: [contract.max_path]u8 = undefined;
     const link_z = try joinZ(&lbuf, root, "planted");
     try std.testing.expect(posix.symlink(sentinel_z.ptr, link_z.ptr) == 0);
@@ -2062,15 +1401,10 @@ test "the rebuild refuses to write through a symlink at an entry name (#446)" {
     // a length or an existence check: a followed write truncates first and would leave an
     // empty file that still exists.
     try std.testing.expectEqualStrings(keep, try read.readWhole(arena, sentinel_z.ptr, 4096, null, .follow));
-    // And the link is still a link: the refusal did not replace it with a regular file.
     try std.testing.expectEqual(posix.Kind.symlink, try posix.kindOfPathNoFollow(link_z.ptr));
 }
 
 test "corruptState refuses a planted symlink rather than corrupting what it points at (#446)" {
-    // The same write path, reached through the other of its two callers. Called directly
-    // for the reason the test above records: `corruptState`'s one call site runs it
-    // immediately after `restore`, which empties the tree, so no link planted from outside
-    // survives to be met there.
     const gpa = std.testing.allocator;
     var fx: TreeFixture = .{};
     const root = fx.init("corrupt-nofollow") orelse return error.SkipZigTest;
@@ -2090,14 +1424,10 @@ test "corruptState refuses a planted symlink rather than corrupting what it poin
     // file is what says the write path was entered.
     try snap.entries.append(snap.arena.allocator(), .{ .rel = "real", .kind = .file, .content = "recorded" });
     try snap.entries.append(snap.arena.allocator(), .{ .rel = "planted", .kind = .file, .content = "recorded" });
-    // Created rather than left to `O_CREAT`, so the control overwrites a file the way the
-    // production path does: `restore` has always put the recorded tree back by this point.
     var real_buf: [contract.max_path]u8 = undefined;
     const real_z = try joinZ(&real_buf, root, "real");
     try TreeFixture.writeAt(real_z.ptr, "recorded");
 
-    // The snapshot says `planted` is a file; the tree holds a link pointing outside. That
-    // is exactly the disagreement a racer creates between the recording and the rewrite.
     var lbuf: [contract.max_path]u8 = undefined;
     const link_z = try joinZ(&lbuf, root, "planted");
     try std.testing.expect(posix.symlink(sentinel_z.ptr, link_z.ptr) == 0);
@@ -2114,20 +1444,6 @@ test "corruptState refuses a planted symlink rather than corrupting what it poin
 }
 
 test "the walk drains a directory past its collection bound, in one call (#327)" {
-    // The reopen loop exists because names must be collected before anything is deleted,
-    // and the collection buffers are finite: 256 entries or 4096 bytes of names, whichever
-    // runs out first. Each pass must therefore start reading the directory from the
-    // beginning — the pre-descriptor code got that from calling `opendir` fresh, a new
-    // open file description with its own offset at zero.
-    //
-    // `dup` does NOT give that: a duplicate shares the file description, offset included,
-    // and neither libc rewinds it in `fdopendir`. A walk built on `dup` resumes pass two
-    // where pass one stopped, finds nothing after the tail, and reads that as "empty" —
-    // returning success over a directory it did not drain. `removed < count` cannot see it:
-    // every entry that was collected was removed, and the loss is in the collection.
-    //
-    // Residue is the failure this whole function is written against: world k judged
-    // against world k-1's leftovers. 400 entries clears the 256 bound with room to spare.
     var pb: [contract.max_path]u8 = undefined;
     const base_z = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-drain-{d}", .{posix.getpid()}) catch unreachable;
     _ = posix.mkdir(base_z.ptr, 0o755);
@@ -2162,11 +1478,6 @@ test "the walk drains a directory past its collection bound, in one call (#327)"
 }
 
 test "freshDir on a missing parent stays loud; the shared open has two meanings (#327)" {
-    // One `open`, two readings of ENOENT. `deleteTree` reads it as "nothing to delete" and
-    // returns; `freshDir` has already failed its `mkdir` by the time it looks, so the same
-    // errno means a missing parent — and a --fresh-state that could not do its job and said
-    // nothing is the silent no-op the flag exists to remove. An implementation that let the
-    // walk's reading carry here is green everywhere else and wrong exactly here.
     var pb: [contract.max_path]u8 = undefined;
     const base_z = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-noparent-{d}", .{posix.getpid()}) catch unreachable;
     _ = posix.rmdir(base_z.ptr); // must not exist; a leftover from a crashed run would hide the case
@@ -2192,14 +1503,6 @@ test "freshDir on a missing parent stays loud; the shared open has two meanings 
 }
 
 test "the walk on its own follows a swapped root; the descriptor is what stops it (#327)" {
-    // The neighbour above proves the shipped entry points refuse a symlinked root, so it
-    // says nothing about the walk itself. This one removes the guard from the picture and
-    // asks what the walk supplies on its own — which is the only thing that answers a swap
-    // landing AFTER the guard has already run. Red before #327: `opendir` follows the link
-    // and the sentinel outside the tree is removed.
-    //
-    // Not a claim that the shipped entry points are vulnerable. They are guarded, and the
-    // neighbour above measures that.
     var pbuf: [contract.max_path]u8 = undefined;
     const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-isolated-{d}", .{posix.getpid()}) catch unreachable;
     _ = posix.mkdir(parent_z.ptr, 0o755);
@@ -2240,9 +1543,6 @@ test "the walk on its own follows a swapped root; the descriptor is what stops i
 }
 
 test "readLinkTarget is fail-closed at its own boundary (#122)" {
-    // A real link with a 10-byte target; the guard's own predicate is "a result that
-    // fills the buffer is refused", so an 8-byte and an exactly-10-byte buffer must
-    // both answer null, and only a roomier buffer answers the target.
     var dbuf: [contract.max_path]u8 = undefined;
     const dir_z = std.fmt.bufPrintZ(&dbuf, "/tmp/sideeye-readlink-test-{d}", .{posix.getpid()}) catch unreachable;
     _ = posix.mkdir(dir_z.ptr, 0o755);
@@ -2258,19 +1558,16 @@ test "readLinkTarget is fail-closed at its own boundary (#122)" {
     var small: [8]u8 = undefined;
     var trunc_errno: ?c_int = 99;
     try std.testing.expectEqual(@as(?[]const u8, null), readLinkTarget(link_z.ptr, &small, &trunc_errno));
-    // A filled buffer is a successful readlink: no failed call, no errno (#535).
     try std.testing.expectEqual(@as(?c_int, null), trunc_errno);
     var exact: [10]u8 = undefined;
     try std.testing.expectEqual(@as(?[]const u8, null), readLinkTarget(link_z.ptr, &exact, null));
     var roomy: [11]u8 = undefined;
     try std.testing.expectEqualStrings("0123456789", readLinkTarget(link_z.ptr, &roomy, null).?);
-    // n < 0: not a link at all.
     var missing_buf: [contract.max_path]u8 = undefined;
     const missing_z = std.fmt.bufPrintZ(&missing_buf, "{s}/absent", .{dir_z}) catch unreachable;
     var big: [64]u8 = undefined;
     var missing_errno: ?c_int = null;
     try std.testing.expectEqual(@as(?[]const u8, null), readLinkTarget(missing_z.ptr, &big, &missing_errno));
-    // A readlink that failed names why (#535).
     try std.testing.expectEqual(@as(?c_int, posix.ENOENT), missing_errno);
 }
 
@@ -2308,7 +1605,6 @@ test "snapshot, restore and corruptState carry symlinks as links (#122)" {
     try std.testing.expectEqual(@as(c_int, 0), posix.symlink("key.json", rel_link_z.ptr));
     var gbuf: [contract.max_path]u8 = undefined;
     const dangling_z = try joinZ(&gbuf, root, "dangling");
-    // A dangling link is a legitimate snapshot citizen: readlink works, follow fails.
     try std.testing.expectEqual(@as(c_int, 0), posix.symlink("/nowhere/dangling", dangling_z.ptr));
 
     var snap = try takeSnapshot(gpa, root);
@@ -2322,8 +1618,6 @@ test "snapshot, restore and corruptState carry symlinks as links (#122)" {
     try std.testing.expectEqualStrings("/nowhere/dangling", dg.content);
     try std.testing.expectEqual(@as(usize, 3), countCorruptible(snap));
 
-    // Retarget one link and delete the other, then restore: both come back verbatim,
-    // the dangling one restored dangling.
     try std.testing.expectEqual(@as(c_int, 0), posix.unlink(rel_link_z.ptr));
     try std.testing.expectEqual(@as(c_int, 0), posix.symlink("elsewhere", rel_link_z.ptr));
     try std.testing.expectEqual(@as(c_int, 0), posix.unlink(dangling_z.ptr));
@@ -2336,8 +1630,6 @@ test "snapshot, restore and corruptState carry symlinks as links (#122)" {
     try std.testing.expect(n > 0);
     try std.testing.expectEqualStrings("/nowhere/dangling", tbuf[0..@intCast(n)]);
 
-    // corruptState retargets every link at the probe name — a checker that resolves
-    // or compares link targets has something it must fail on.
     try corruptState(snap, root);
     n = posix.readlink(rel_link_z.ptr, &tbuf, tbuf.len);
     try std.testing.expect(n > 0);
@@ -2348,8 +1640,6 @@ test "snapshot, restore and corruptState carry symlinks as links (#122)" {
 }
 
 test "a links-only state is corruptible, so the falsification gate keeps meaning (#122)" {
-    // The stow shape: a state directory of directories and symlinks, zero regular
-    // files. countCorruptible must not send it into "nothing to corrupt".
     const gpa = std.testing.allocator;
     var snap: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
     defer snap.deinit();
@@ -2359,10 +1649,6 @@ test "a links-only state is corruptible, so the falsification gate keeps meaning
 }
 
 test "ownership/permission writes change nothing a snapshot judges (#121's own predicate)" {
-    // The exclusion's predicate, pinned directly instead of resting on inference
-    // (R1): chmod on a state file must leave the snapshot byte-identical, because
-    // the judged state is names, bytes and link targets. If Entry ever grows a mode
-    // field, this test goes red and #121's report wording has to change with it.
     var dbuf: [contract.max_path]u8 = undefined;
     const dir = std.fmt.bufPrint(&dbuf, "/tmp/sideeye-chmod-inv-{d}", .{posix.getpid()}) catch unreachable;
     var dz_buf: [contract.max_path]u8 = undefined;
@@ -2395,9 +1681,6 @@ test "ownership/permission writes change nothing a snapshot judges (#121's own p
 }
 
 test "deleteTree refuses a PARTIAL failure instead of leaving residue (#121, R1)" {
-    // An unreadable directory is skipped silently by opendir, its rmdir then fails —
-    // and a sibling that deletes fine used to make the pass count as success. The
-    // residue would be judged as the next world's state.
     if (std.c.geteuid() == 0) return error.SkipZigTest; // root ignores modes
     var dbuf: [contract.max_path]u8 = undefined;
     const dir = std.fmt.bufPrint(&dbuf, "/tmp/sideeye-deltree-{d}/state", .{posix.getpid()}) catch unreachable;
@@ -2430,15 +1713,12 @@ test "deleteTree refuses a PARTIAL failure instead of leaving residue (#121, R1)
         _ = posix.rmdir(parent_z.ptr);
     }
 
-    // The sibling deletes, the locked directory cannot — the pass must refuse.
     try std.testing.expectError(error.DeleteFailed, deleteTree(dir));
 }
 
 test "the per-file cap refuses, names the file, and carries its size (#265)" {
     const gpa = std.testing.allocator;
 
-    // Pid-unique root from the RESOLVED parent, the same way the symlink test above
-    // builds one and for the same reason (#28; macOS /tmp is itself a link).
     var pbuf: [contract.max_path]u8 = undefined;
     const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-filecap-test-{d}", .{posix.getpid()}) catch unreachable;
     _ = posix.mkdir(parent_z.ptr, 0o755);
@@ -2462,8 +1742,6 @@ test "the per-file cap refuses, names the file, and carries its size (#265)" {
     try std.testing.expectEqual(@as(isize, 9), posix.write(fd, "123456789", 9));
     _ = posix.close(fd);
 
-    // Against a cap the file exceeds: the refusal fires and the diag names the file
-    // and its true size (from lseek, not from the truncated read).
     var diag: SnapshotDiag = .{};
     try std.testing.expectError(
         error.FileTooLarge,
@@ -2472,17 +1750,12 @@ test "the per-file cap refuses, names the file, and carries its size (#265)" {
     try std.testing.expectEqualStrings("grown.log", diag.file.rel.get());
     try std.testing.expectEqual(@as(?u64, 9), diag.file.size);
 
-    // Positive control, same tree: at the cap exactly, the read is not a breach —
-    // the boundary is "over", not "at" — and the snapshot succeeds.
     var ok = try takeSnapshotCapped(gpa, root, onlyFileCap(9), null);
     defer ok.deinit();
     try std.testing.expectEqual(@as(usize, 1), ok.entries.items.len);
     try std.testing.expectEqualStrings("123456789", ok.entries.items[0].content);
 }
 
-/// Caps for a test that is about ONE ceiling. The other is put out of reach, so a
-/// refusal cannot be attributed to the ceiling the test is not about — and so the
-/// per-file tests above keep meaning what they meant before there were two (#323).
 fn onlyFileCap(n: usize) SnapshotCaps {
     return .{ .file = n, .tree = std.math.maxInt(usize) };
 }
@@ -2491,9 +1764,6 @@ fn onlyTreeCap(n: usize) SnapshotCaps {
     return .{ .file = std.math.maxInt(usize), .tree = n };
 }
 
-/// A pid-unique `<parent>/state` built from the RESOLVED parent, plus the paths needed
-/// to tear it down. Three tests below built this by hand; macOS `/tmp` is itself a link,
-/// so the realpath step is load-bearing rather than tidiness (#28).
 const TreeFixture = struct {
     parent_z: [contract.max_path]u8 = undefined,
     root_buf: [contract.max_path]u8 = undefined,
@@ -2519,10 +1789,6 @@ const TreeFixture = struct {
         return self.root;
     }
 
-    /// A directory beside `root`, under the same parent — where a test puts something the
-    /// tree under test must not be able to reach. Torn down with the rest, and before the
-    /// parent, which would otherwise refuse to go and leave the whole fixture behind.
-    ///
     /// **One per fixture.** There is a single slot, so a second call would overwrite the
     /// first and leave that directory behind for the rest of the machine's life; the
     /// assert makes that a test failure rather than a slow leak.
@@ -2552,11 +1818,6 @@ const TreeFixture = struct {
         _ = posix.rmdir(parent_z.ptr);
     }
 
-    /// Put `bytes` at `path_z`. Extracted at the third copy inside the two `#446` tests,
-    /// not across the file — a dozen or so hand-rolled open/write/close sequences remain
-    /// in older tests here and were left alone. `fill` cannot serve either way, because
-    /// its names and contents are fixed for the size tests it exists for.
-    ///
     /// A short write fails the test rather than skipping it. `fill` and `fillDirs` skip on
     /// everything, which is right for bulk setup, and wrong here: callers use this to
     /// place the bytes an assertion is about — a positive control that quietly turned into
@@ -2570,8 +1831,6 @@ const TreeFixture = struct {
         try std.testing.expectEqual(@as(isize, @intCast(bytes.len)), posix.write(fd, bytes.ptr, bytes.len));
     }
 
-    /// `n` empty directories. The shape that has no content and no file entries at all,
-    /// which is the only way to reach the `.dir` branch's own charge.
     fn fillDirs(self: *TreeFixture, n: usize) !void {
         var i: usize = 0;
         while (i < n) : (i += 1) {
@@ -2583,8 +1842,6 @@ const TreeFixture = struct {
         }
     }
 
-    /// `n` files of `bytes` bytes each, named `f0000`, `f0001`, … — equal sizes on
-    /// purpose where a test wants the break to be independent of `readdir` order.
     fn fill(self: *TreeFixture, n: usize, bytes: usize) !void {
         var chunk: [4096]u8 = @splat('x');
         var i: usize = 0;
@@ -2612,17 +1869,11 @@ test "the tree ceiling stops the walk where it breaks, rather than after reading
     _ = fx.init("treecap-stop") orelse return error.SkipZigTest;
     defer fx.deinit();
 
-    // 40 x 64 KiB = 2.5 MiB of content against a 256 KiB ceiling: ten times over, so a
-    // walk that stops when it breaks and one that reads the tree and compares afterwards
-    // are far apart in what they hold.
     const files = 40;
     const each = 64 * 1024;
     const cap = 256 * 1024;
     try fx.fill(files, each);
 
-    // What reading the whole tree costs, measured on the same tree through the same
-    // production function — this is the number the refusal must NOT reach. Taken first,
-    // so it is an observation rather than a bound reasoned from the arena's growth rule.
     var full = try takeSnapshotCapped(gpa, fx.root, onlyTreeCap(std.math.maxInt(usize)), null);
     const full_capacity = full.arena.queryCapacity();
     try std.testing.expectEqual(@as(usize, files), full.entries.items.len);
@@ -2637,15 +1888,8 @@ test "the tree ceiling stops the walk where it breaks, rather than after reading
     // The ceiling was passed — otherwise the refusal is reporting something else.
     try std.testing.expect(diag.tree.reached > cap);
 
-    // **This is the assertion the whole check exists for.** An implementation that sums
-    // during the walk and compares once after it returns still refuses, still names the
-    // reason, still emits the JSON — every acceptance leg stays green. What it cannot do
-    // is hold less than the whole tree: `reached` equals `full_capacity` exactly. (It
-    // reddens two more lines below as well, since its account is the whole tree rather
-    // than a prefix; only this test fails, not three, and this is the line Zig stops at.)
     try std.testing.expect(diag.tree.reached < full_capacity);
 
-    // The operator-visible half of the same fact: the account is a prefix.
     try std.testing.expect(diag.tree.entries < files);
     try std.testing.expect(diag.tree.entries > 0);
 
@@ -2675,12 +1919,6 @@ test "the tree ceiling charges directories too, which is the only entry kind wit
     _ = fx.init("treecap-dirs") orelse return error.SkipZigTest;
     defer fx.deinit();
 
-    // Directories are charged inside the `.dir` branch, before it descends, rather than
-    // by the shared charge at the end of the loop — the branch `continue`s past that one
-    // so `seen` is not counted twice. **That makes the `.dir` charge the only one nothing
-    // else can cover**, and first-look review measured that deleting it leaves every other
-    // test in this file green while a tree of directories walks to completion holding
-    // 174x the ceiling. A tree with no files at all is the shape that reaches it.
     try fx.fillDirs(500);
 
     var diag: SnapshotDiag = .{};
@@ -2688,11 +1926,7 @@ test "the tree ceiling charges directories too, which is the only entry kind wit
         error.TreeTooLarge,
         takeSnapshotCapped(gpa, fx.root, onlyTreeCap(32 * 1024), &diag),
     );
-    // No content anywhere, and it still refuses — as in the empty-files test below, but
-    // through a different branch of `walk`.
     try std.testing.expectEqual(@as(u64, 0), diag.tree.content);
-    // And it refused early rather than after walking the lot, which is what deleting the
-    // charge would turn into.
     try std.testing.expect(diag.tree.entries < 500);
 }
 
@@ -2702,8 +1936,6 @@ test "the tree ceiling counts what the snapshot holds, not the bytes it read (#3
     _ = fx.init("treecap-metric") orelse return error.SkipZigTest;
     defer fx.deinit();
 
-    // Two thousand empty files: zero content bytes, and an arena carrying two thousand
-    // `rel` strings, two thousand `Entry` values and the entry list's own growth.
     try fx.fill(2000, 0);
 
     var diag: SnapshotDiag = .{};
@@ -2712,10 +1944,6 @@ test "the tree ceiling counts what the snapshot holds, not the bytes it read (#3
         takeSnapshotCapped(gpa, fx.root, onlyTreeCap(32 * 1024), &diag),
     );
 
-    // **A ceiling that sums file content cannot produce this line.** Zero content read,
-    // and the refusal fired anyway — which is the difference between capping the tree and
-    // capping what holding the tree costs. Measured at scale on this shape: 50,000 empty
-    // files hold 12,959,676 bytes against a content sum of zero.
     try std.testing.expectEqual(@as(u64, 0), diag.tree.content);
     try std.testing.expect(diag.tree.entries > 0);
     try std.testing.expect(diag.tree.reached > 32 * 1024);
@@ -2759,7 +1987,6 @@ test "an entry the walk cannot read is named in the diag, with the open's errno 
     try std.testing.expectEqualStrings("m_inmail.lock", diag.entry.rel.get());
     try std.testing.expectEqual(EntryDiag.Kind.file, diag.entry.kind);
     try std.testing.expectEqual(@as(?c_int, posix.EACCES), diag.entry.errno);
-    // The other diags stayed untouched: this was not a cap.
     try std.testing.expectEqual(@as(usize, 0), diag.file.rel.len);
 }
 
