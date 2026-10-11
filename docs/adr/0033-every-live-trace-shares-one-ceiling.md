@@ -1,6 +1,6 @@
 # 0033 — Every live trace shares one ceiling
 
-Status: Accepted (2026-08-30)
+Status: Accepted (2026-08-30; amended 2026-10-11 for #807)
 
 Supersedes nothing. Sibling of ADR 0029, which did this for the snapshot.
 
@@ -143,3 +143,10 @@ goes to look for one oversized file, and under a shared ceiling there may be non
   and turns either into `TraceInfo.budget_exhausted`, which the caller answers for after
   it has classified. Answering at the read instead cost the recording site its L0
   account, measured as `atomicity: not classified`.
+- **Amended 2026-10-11 (#807):** `max_trace_bytes`'s own comment, which the sizing above
+  takes its 976,990-byte bound from, is removed with every other comment in `src/*.zig` that
+  is not a warning to the next editor; the bound and its caveat are recorded here and in
+  `CHANGELOG.md`'s entry for #377. What stays beside the two constants is what the next editor
+  would otherwise break: that `max_trace_bytes_total` does not clear one read at the per-read
+  cap, deliberately, and that `max_trace_bytes` shares its value with `max_state_file_bytes`
+  and nothing else.

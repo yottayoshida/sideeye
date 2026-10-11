@@ -1,20 +1,3 @@
-//! The shim's trace, read back: decoding, the whole-trace budget, and the process and
-//! exec accounting that turns records into a `TraceInfo`.
-//!
-//! Extracted from `engine.zig` (#491, ADR 0047), where it sat between the only two
-//! separator rules in that file and referenced nothing else in it but `readWhole` — which
-//! is `read.zig` now. `engine.zig` re-exports every public declaration here, so `main.zig`
-//! reaches them as `engine.*` and does not know this file exists; a test there walks this
-//! file's declarations and fails if one is missing from the facade. Nothing here imports
-//! `engine.zig`.
-//!
-//! Comments below name declarations that live elsewhere: in `engine/state_fs.zig`
-//! (`max_state_file_bytes`, `max_state_tree_bytes`, `SnapshotError`, `takeSnapshotCapped`),
-//! in `main.zig` (`snapshotDetail`, `readTraceOrRefuse`), in `read.zig` (`ReadWholeError`,
-//! mentioned once inside `readTraceCappedInner`), and in `contract.zig` (`max_path`, written
-//! unqualified where `contract.max_record_len` beside it is not). They are references, not
-//! imports; the argument each one carries was written when all of this was one file.
-
 const std = @import("std");
 const contract = @import("contract");
 const posix = @import("../posix.zig");
@@ -22,29 +5,6 @@ const read = @import("read.zig");
 
 const Allocator = std.mem.Allocator;
 
-/// What reading a trace can answer (#376).
-///
-/// Every failure of the underlying read is caught inside `readTraceCappedInner` — the cap
-/// breach becomes `too_large` on the returned `TraceInfo` and everything else becomes an
-/// empty one, which the caller reads as `no_shim_marker`. What escapes is only what this
-/// function does itself: formatting the path (`PathTooLong`) and allocating into the
-/// arena (`OutOfMemory`).
-///
-/// The point of naming it is the two switches over `SnapshotError` — `report.zig`'s
-/// `snapshotDetail` and `refuse.zig`'s `snapshotRefusal`, both in `main.zig` until #572 — which are
-/// exhaustive on purpose so that an error member added later cannot silently take a
-/// neighbour's reason. While the trace reader declared `SnapshotError`, a member added
-/// for the trace forced an arm in `snapshotDetail`, whose every sentence describes the
-/// state tree — measured before this change: the compiler demanded an arm at
-/// `main.zig:716`, and at `:791` once that one was filled. `docs/report-schema.md` says
-/// `message` carries "what was observed"; an arm written there for a trace failure
-/// carries what was not.
-///
-/// **What this does not buy:** nothing switches exhaustively over this set, so
-/// `readTraceOrRefuse` stays a single `catch` and both members reach the operator as one
-/// sentence. The guarantee is one-directional — a trace-only member cannot reach the
-/// snapshot's switches, and nothing forces the trace side to say anything about it.
-///
 /// `PathTooLong` is nearly unreachable rather than unreachable, and the difference was
 /// found in review after the first draft claimed the stronger thing. The read's
 /// `bufPrintZ` needs one byte more than the `bufPrint` that built the same path at the
@@ -53,31 +13,17 @@ const Allocator = std.mem.Allocator;
 /// equally sized buffer first and closes it. **The world loop is not closed**: its trace
 /// name is `/trace-{d}.bin`, which passes `/stdout-world.txt` in length at seven digits,
 /// so a work directory of 4,078 bytes and a crash point past one million reaches it.
-/// Reported, not fixed: the refusal is correct either way, and the message is the same
-/// sentence a `#377` ceiling breach or an allocation failure would print there.
 pub const TraceReadError = error{ OutOfMemory, PathTooLong };
 
 pub const Op = struct {
     class: contract.OpClass,
     seq: u32,
     pid: u32,
-    /// The thread that performed it (v16). See `contract.Record.tid` for the width.
     tid: u64,
     path: []const u8,
     aux: []const u8,
 };
 
-/// Whether an unplaceable record refuses the run, decided from the record alone.
-///
-/// The vocabulary and the class predicate both live in `contract` beside the writer
-/// (`unresolved_kind.withOp`), so this is the `Op`-shaped call site and nothing more.
-/// A record this reader cannot read — an older shim's empty reason, a kind whose
-/// operation is not named, anything malformed — refuses: not knowing which operation it
-/// was is not a reason to let it past.
-///
-/// Not `pub`: the answer leaves this file as `TraceInfo.unresolved_refusing`, and
-/// `engine.zig`'s facade check (#491) requires every public declaration here to be
-/// re-exported — a helper with one call site in this file is not facade material.
 fn unplacedRefuses(op: Op) bool {
     const what = contract.unresolved_kind.opOfUnlinkedFd(op.class, op.aux) orelse return true;
     return what.unplaceableRefuses();
@@ -89,17 +35,11 @@ pub const TraceInfo = struct {
     saw_header: bool = false,
     version_mismatch: bool = false,
     saw_shim_ready: bool = false,
-    /// The `aux` of the FIRST `shim_ready` — the subject's own announcement of which
-    /// observation path it installed (contract v14, `contract.observe_aux`).
-    ///
     /// The first, not the last: a self-exec chain announces once per image and every
     /// image installs its own filter, so a later image's answer would let a failed
     /// install in the first one pass unseen. Empty from a shim asked for the default
     /// mode, which is also what the field carried through v13.
     observe_aux: []const u8 = "",
-    /// The first unplaceable record whose operation REFUSES the run — the one every
-    /// refusal is keyed on and the one its message names.
-    ///
     /// First-wins over the *refusing* records, not over every unplaceable one. An exempt
     /// record arriving first must not hide a refusing one behind it: `close` on a low
     /// descriptor before `write` on an unlinked one is an ordinary order
@@ -109,27 +49,13 @@ pub const TraceInfo = struct {
     /// target can append to its own trace,
     /// so a single `unlinked-fd close fd:3` written early would otherwise switch the wall
     /// off for everything after it.
-    ///
-    /// There is deliberately no second field holding the first unplaceable record
-    /// whatever it was: one existed while this change was being written, nothing read it,
-    /// and its comment claimed the report's forensics named it — which was false. The
-    /// trace file holds every record; a field nobody reads is a claim nobody checks.
     unresolved_refusing: ?Op = null,
-    /// The syscall-and-flag spelling of the first in-scope operation the shim could
-    /// place but not model (v12, macOS: `RENAME_SWAP`, `exchangedata`). Borrows from
-    /// the trace buffer. On Linux this refusal comes from the oracle instead, and
-    /// this field stays null.
     first_unsupported: ?[]const u8 = null,
     kill_landed_seq: ?u32 = null,
 
     kill_point_count: u32 = 0,
     mutation_count: u32 = 0,
     boundary: ?contract.OpClass = null,
-    /// The boundaries that stay refusals regardless of tolerance, which are not the
-    /// same set for every process: the *subject* replacing its image or creating a
-    /// thread breaks addressing and determinism, while a **child** exec'ing is just a
-    /// spawn doing what spawns do. A process leaving the process group is not among them
-    /// since #559's second half: it has `detached` of its own, below.
     /// Kept separately from `boundary` because "first boundary" can be a tolerable
     /// fork that arrives before the record that must refuse the run.
     hard_boundary: ?contract.OpClass = null,
@@ -140,61 +66,23 @@ pub const TraceInfo = struct {
     /// recorded first would otherwise hide an image change that must refuse, in the very run
     /// that lets the detach through.
     detached: ?Op = null,
-    /// `shim_ready` records the run holds — one per image a shim initialised in (v17). The
-    /// denominator for the acknowledgement below: when the engine gave the spawn a cgroup,
-    /// every announcement is followed by a `cgroup` record from the same image.
     shim_ready_records: u32 = 0,
-    /// `cgroup` records saying the writer is inside the run's cgroup — `cgroup:held` or
-    /// `cgroup:held-kill` (v17, #559). `cgroupAnswered` compares this with
-    /// `shim_ready_records`: a v16 shim, or a shim that found no `SIDEEYE_RUN_CGROUP` in its
-    /// environment, leaves it short, and a short count is a run that was not contained.
     cgroup_held_records: u32 = 0,
-    /// Of those, the ones that also opened the cgroup's `cgroup.kill` — a world's shims (v17).
     cgroup_kill_records: u32 = 0,
-    /// Announcements whose process wrote something else before any `cgroup` record answered
-    /// them (#559's second half): an image that went on without saying where it stood.
     cgroup_unanswered_live: u32 = 0,
-    /// Announcements still unanswered where the trace ends, with nothing from their process
-    /// after them. The shim writes `shim_ready` and its answer back to back, so in a world killed
-    /// at its crash point this is the kill landing between the two.
     cgroup_unanswered_tail: u32 = 0,
-    /// The subject's own `.detached` record: it left its process group itself, which it can
-    /// under `--oracle`, where strace leads the group (#559's second half). Not a second process.
     subject_detached: bool = false,
-    /// The first `cgroup:outside` or `cgroup:unreadable` record (v17): a process that found itself outside the run's
     /// cgroup, kept whole for the refusal's detail. A field of its own rather than a boundary
     /// class read through `hard_boundary`, which keeps only the first boundary a trace holds —
     /// a `setsid` recorded before the escape would hide it. A `cgroup` record whose aux this
     /// engine does not name is read here too: an answer nobody can read is not an
     /// acknowledgement, and the conservative reading of it is the one that refuses.
     cgroup_outside: ?Op = null,
-    /// The first `cgroup:kill-returned` record (v17): a crash point's write to `cgroup.kill`
-    /// came back. A write that lands ends the writer, so a record written after it is the
-    /// kill failing.
     cgroup_kill_returned: ?Op = null,
-    /// The first `cgroup:kill-alone` record (v17): a crash point that could not step aside out of
-    /// the cgroup it was about to kill, so its kill was that cgroup's alone.
     cgroup_kill_alone: ?Op = null,
-    /// `.thread` records the shim wrote — one per successful `pthread_create` in a
-    /// shimmed process (v16). For the account only: a thread is not a refusal since
-    /// v16, and a raw `clone` leaves no such record, so this is a floor on the number of
-    /// threads and never the number.
     thread_records: u32 = 0,
-    /// `thread_started` records (v18): one per thread that ran the shim's trampoline. A
-    /// creation the shim recorded either way — the creator's `.thread` is dropped when the
-    /// shim is re-entered, the child's start is not — so "the shim never recorded this
-    /// thread's creation" is asked of both counts, and the account's thread count is the
-    /// larger of the two (review: with every `.thread` dropped, the account called a thread
-    /// whose start it had read one the shim never saw).
     thread_start_records: u32 = 0,
-    /// Distinct thread ids that wrote a kill-point record under the subject's pid (v16).
-    /// One is the judged case; the account prints the number either way.
     subject_writer_tids: u32 = 0,
-    /// The same ids as a list (#544). The count above is what the account prints; the list
-    /// is what the macOS oracle needs. `fs_usage` attributes a line to a thread id and
-    /// knows no process for it, so the map from thread to subject cannot come from that
-    /// reader — it comes from here, where every record names both. Arena-backed like `ops`.
-    ///
     /// **One entry on an ordinary single-threaded run, not zero.** The first writer of the
     /// subject's pid is appended unconditionally below, so this list is empty only for a
     /// run in which the *subject itself* wrote nothing — only kill points of the subject's
@@ -204,153 +92,29 @@ pub const TraceInfo = struct {
     /// Compare against `initial_writer_tid` instead, the way `unrecorded_writer_thread`
     /// does.
     subject_writer_tid_list: std.ArrayList(u64) = .empty,
-    /// Thread ids whose `thread_started` record carries the subject's pid (v18): the threads
-    /// the subject created and that ran the shim's trampoline, writers or not. Handed to the
-    /// macOS oracle's reader for its descriptor namespace and nothing else (`fsusage.read`).
     subject_started_tid_list: std.ArrayList(u64) = .empty,
-    /// The thread that wrote the first `shim_ready` — the subject's initial thread, since
-    /// the shim initialises on whichever thread reaches it first and that is the one the
-    /// process started with. Null only when no announcement was read, which refuses the
-    /// run earlier for want of a subject.
     initial_writer_tid: ?u64 = null,
-    /// A thread the shim never recorded being created wrote the judged directory (#543).
-    ///
-    /// Set when the trace holds **no `.thread` record at all** and a writer tid other than
-    /// `initial_writer_tid` appears under the subject's pid. That is what a raw `clone`, or
-    /// a thread started before the shim was in the image, leaves behind: the creation is
-    /// invisible to the shim and the writes are not.
-    ///
-    /// The account has to say so. `docs/report-schema.md` promises that a judged run whose
-    /// threads the shim saw says so in a clause of its own, so that "single process" is
-    /// never read as single-threaded — and without this the reader takes it for
-    /// single-threaded on exactly the runs the shim could not count. What no field here can
-    /// carry is a thread that was created and never wrote: it leaves the same pid, no
-    /// `.thread` record and no kill point, so the trace holds nothing to key on at all.
-    /// That limit is stated in `docs/report-schema.md` rather than papered over.
     unrecorded_writer_thread: bool = false,
-    /// The first kill-point record of one process that no creation or join the shim
-    /// recorded orders after the last kill-point record of that process's current writer
-    /// (v16, reshaped by v18): `pid` says which process, `tid` which thread, `class` and
-    /// `path` what it did — the refusal names all four, and the writer's record is named
-    /// beside them. Null while every process's state-directory writes fall in one causal
-    /// order — one thread's, or several threads' handed over by a join or a creation
-    /// (ADR 0067). Asked of every process, not only the subject: a child whose two threads
-    /// write unordered is as unordered as a subject whose two do. This is the whole of the
-    /// thread rule and it is answered from the trace alone, so a world and preflight's
-    /// second run decide it for themselves rather than inherit the recording's answer.
     second_writer_thread: ?Op = null,
-    /// The last kill-point record of the thread that held the write before
-    /// `second_writer_thread` came, in the same process (v18: the current writer's last
-    /// write — the record the offending one is not ordered after — where v16 named the
-    /// process's first writer's first). Set exactly when that is; the refusal names both,
-    /// because which of the two the trace saw first is the scheduler's choice on that run
-    /// and the operator's own code has both of them.
     first_writer_thread: ?Op = null,
-    /// The thread `first_writer_thread` names was detached (v18), so no join could have
-    /// ordered its writes before anyone's. Said in the refusal.
     first_writer_thread_detached: bool = false,
-    /// How many times the write passed from one thread of a process to another in causal
-    /// order (v18): a kill point by a thread other than the current writer that a recorded
-    /// creation or join orders after the writer's last. Summed over processes; the account
-    /// prints it.
     thread_turns: u32 = 0,
-    /// `thread_join` records that named a thread this reader knew (v18), and those that did
-    /// not — a `?`, or a pair no `thread_started` carried. Summed over processes.
     thread_joins: u32 = 0,
     thread_joins_unresolved: u32 = 0,
-    /// `thread_detach` records (v18).
     thread_detaches: u32 = 0,
-    /// `thread_started` records whose creator this reader could not place (v18): an id it
-    /// never saw, or a record count the creator had not reached. No edge is drawn to such a
-    /// thread; its writes are ordered with nobody's.
     thread_unpaired_starts: u32 = 0,
     truncated: bool = false,
-    /// The subject: whoever wrote the first `shim_ready`. The trace file is created by
-    /// the first process to initialise, which is the process the engine launched —
-    /// children come later, whether forked (init already done) or spawned (their init
-    /// appends behind the subject's).
     primary_pid: ?u32 = null,
-    /// A kill-point (or kill_landed) record from a process other than the subject.
-    /// Crash points are numbered per process, so such an operation has no unique
-    /// address; any run containing one is refused rather than mis-attributed.
     foreign_kill_point: bool = false,
-    /// The first such record, kept whole so the refusal can say which process did
-    /// what where (#484): the pid is the shim's own record of who wrote it, the class
-    /// and the path are the record's. `path` and `aux` are owned by this reader's arena
-    /// — the decode loop dupes every record's strings — so they live as long as the
-    /// `TraceInfo` does, the lifetime `Op.path` and `first_unsupported` already live with.
-    /// Set exactly when `foreign_kill_point` is; null otherwise.
     first_foreign: ?Op = null,
-    /// Any record at all from another process — a spawned child announcing itself
-    /// counts. Evidence that the run crossed a process boundary even if no boundary
-    /// record was written (a raw clone, say).
     foreign_pid_seen: bool = false,
-    /// Image changes by the subject whose chain was proven unbroken (#123): a run of
-    /// exec records closed by a `shim_ready` from the same pid carrying exactly the
-    /// operation count the chain left off at. Such a change is a continuation, not a
-    /// boundary.
-    ///
-    /// **Records and changes are not the same count.** Several exec records can precede
-    /// one announcement — an interpreter resolving a name through `PATH` execs once per
-    /// entry — and they are one image change with failed attempts in front of it, so
-    /// this counts the announcements rather than the records (the `.exec` arm of the
-    /// boundary switch says why). The doc said "subject execs" until 2026-09-07, which
-    /// read as the records.
     exec_continuations: u32 = 0,
-    /// A subject exec whose continuation evidence never arrived or arrived with the
-    /// wrong count. `hard_boundary` is set to `.exec` alongside this; the flag exists
-    /// so the refusal can say WHICH way the image change escaped observation.
-    ///
-    /// "or was pre-empted by another exec" stood here until 2026-09-07. It described a
-    /// reading of repeated exec records that is false — they are one image change and
-    /// the attempts that failed before it (the `.exec` arm of the boundary switch says
-    /// why).
     exec_chain_broken: bool = false,
-    /// A recorded boundary that is **not** the subject replacing its own image. Read by
-    /// the report's account, never by a refusal: the oracle requirement keys on
-    /// `boundary` (any boundary at all, image changes included), while the sentence "the
-    /// two witnesses disagree" is only true when the shim claimed another PROCESS and
-    /// the oracle saw none. A same-pid image change claims no such thing, so a witness
-    /// that saw one process agrees with it.
-    ///
-    /// **Stated as a negative on purpose, because the positive would be false.** One of
-    /// the classes it admits implies no second process either: an exec record written before
-    /// the subject is known, which fails the primary test and so is not excluded; it sets
-    /// `hard_boundary`, which the recording clause returns on before reaching this field. The
-    /// subject's own `setsid` or `setpgid` was the other, and is excluded since #559's second
-    /// half, when a run the engine held stopped refusing it: under `--oracle` strace leads the
-    /// group, the subject's call succeeds, and the account would have read it as another
-    /// process the oracle did not see. A `.thread` is
-    /// excluded here since v16: it is not a process, it is judged rather than refused,
-    /// and a run whose only boundary is a thread must read as one process to the account
-    /// and to the oracle requirement — `needsOracle` — while still arming the quiescence
-    /// sampling through `crossedBoundary`, which keeps every boundary class.
-    ///
     /// Not derivable from `boundary`, which keeps the FIRST class only: a target that
     /// execs and then forks would report the exec and hide the fork.
     process_boundary: bool = false,
-    /// How many kill-point records the RUN holds. `kill_point_count` is the MAXIMUM
-    /// seq; if the two disagree the numbering has gaps or duplicates — a restarted
-    /// counter after an unobserved exec is exactly a duplicate — and any address
-    /// computed from the trace may name a different operation than the one that ran
-    /// (#123, R1 C7: prefixHash misses duplicates, logicalAddress takes the last
-    /// match; a verdict over renumbered ops is a verdict about nothing).
-    ///
-    /// Counted over every process, not only the subject (v15). Through v14 a number was
-    /// a position in the writing process, so counting anyone else's records against the
-    /// subject's maximum compared two different sequences; a number is now a position in
-    /// the run, and the same comparison is what detects two processes taking one number.
-    /// The name said `primary_` while that was true and would lie now.
     kill_records: u32 = 0,
-    /// The trace read broke its cap (#324). Distinct from `truncated`, which is the
-    /// writer's side: a record that ends mid-way says the shim stopped writing, while
-    /// this says the reader refused to hold what the shim did write. Without the
-    /// distinction both arrive as an empty TraceInfo, and the caller reads an empty
-    /// TraceInfo as "the shim never initialised".
     too_large: bool = false,
-    /// The trace's size from `lseek(SEEK_END)` at the moment the cap broke; null when
-    /// even that failed, in which case the refusal names the cap and no more (#265's
-    /// rule: a size nobody measured must not appear in the message).
     too_large_size: ?u64 = null,
     /// The whole-trace ceiling refused an allocation during this read (#377). Carried on
     /// the TraceInfo rather than raised as an error for the reason `too_large` is: the
@@ -358,55 +122,26 @@ pub const TraceInfo = struct {
     /// the L0 classification that exists. Raising it instead cost exactly that — review
     /// measured `atomicity: not classified` on a recording-site refusal, because the
     /// refusal ran before the final snapshot.
-    /// One field rather than a flag beside a size: unlike `too_large_size`, which is null
-    /// when even `lseek` failed, this size always exists when the ceiling refused —
-    /// it comes off the budget's own record of the request. A separate bool would be
-    /// derivable from it, and derivable state is state that can disagree.
     budget_refused: ?usize = null,
 
     pub fn deinit(self: *TraceInfo) void {
         self.arena.deinit();
     }
 
-    /// Every image that announced itself said it was inside the run's cgroup before it did
-    /// anything else (v17, #559). `cut_by_kill` is for a world killed at its crash point: the
-    /// kill can land on an image between its `shim_ready` and its `cgroup` record, and an
-    /// announcement left unanswered with nothing after it is that kill at work, not a process
-    /// that escaped. The first reader of this for a detach did not forgive it, so a world with a
-    /// detach was refused or not by when its kill landed (review, #559's second half). An image
-    /// that went on without answering is never forgiven, and anywhere else a count short is short.
     pub fn cgroupAnswered(self: *const TraceInfo, cut_by_kill: bool) bool {
         if (self.shim_ready_records == 0 or self.cgroup_unanswered_live > 0) return false;
         const cut = if (cut_by_kill) self.cgroup_unanswered_tail else 0;
         return self.cgroup_held_records + cut == self.shim_ready_records;
     }
 
-    /// Did this run cross a boundary at all — the question the oracle requirement, the
-    /// quiescence sampling and the world arming all ask. A record from another pid counts
-    /// even with no boundary record: a raw `clone` leaves the second, never the first.
-    ///
-    /// A method rather than the expression at each site, because there are nine of them
-    /// across two predicates and the sites drift. `src/main.zig` carries the receipt: the
-    /// world-only site was generalised once and four siblings were not, "same class, same
-    /// file", and adding the second predicate put two more sites in the same shape.
     pub fn crossedBoundary(self: TraceInfo) bool {
         return self.boundary != null or self.foreign_pid_seen;
     }
 
-    /// Did something other than the subject's own image change cross one. The narrower
-    /// question, and the only one that makes "the two witnesses disagree" a true sentence
-    /// when an oracle reports a single process (`process_boundary`'s own doc says which
-    /// classes it admits, and why it is stated as a negative).
     pub fn crossedProcessBoundary(self: TraceInfo) bool {
         return self.process_boundary or self.foreign_pid_seen;
     }
 
-    /// Did this run cross a boundary an oracle has to account for (v16)? Every class
-    /// `crossedBoundary` counts except a thread on its own: a thread's writes reach the
-    /// shim — it shares the process, the PLT and the trace descriptor — so there is no
-    /// writer the shim could have missed for want of a second witness, which is what the
-    /// oracle requirement exists for (ADR 0002 decision 3). A thread beside a fork, a
-    /// spawn or a foreign record still needs one, for those.
     pub fn needsOracle(self: TraceInfo) bool {
         if (self.boundary) |b| {
             if (b != .thread) return true;
@@ -414,10 +149,6 @@ pub const TraceInfo = struct {
         return self.process_boundary or self.foreign_pid_seen;
     }
 
-    /// The logical address of crash point k: the operation it happens before, and the
-    /// one it happens after. Reported instead of a bare counter so a saved case can be
-    /// recognised as no longer applying when the code changes.
-    ///
     /// Every process's operations are addresses (v15). The filter that stood here —
     /// "only the subject's operations are addresses; a child's seq counts different
     /// things" — was true while a number was a position in the writing process. It is a
@@ -436,34 +167,10 @@ pub const TraceInfo = struct {
     }
 };
 
-/// The trace read's ceiling (#324). Sized against the largest exploration this
-/// repository has measured — 119 worlds (Borg, `spike/cohort2/borg-r3/RUNLOG.md`) — at
-/// the contract's worst-case record, `contract.max_record_len` = 8210 bytes (two
-/// `max_path` components plus headers): 976,990 bytes, which this cap clears 68 times
-/// over. Two things that comparison does NOT say: worlds are not records (a trace also
-/// carries seq-0 lifecycle, boundary and marker records, which nothing here counts), and
-/// at worst-case records the cap admits 8,174 of them — not the "million operations" an
-/// earlier draft claimed by silently switching to typical path lengths mid-argument.
 /// It shares its value with `max_state_file_bytes` and nothing else: the two bound
 /// different things and may move apart.
 pub const max_trace_bytes: usize = 64 * 1024 * 1024;
 
-/// What every live trace read may hold TOGETHER (#377).
-///
-/// `max_trace_bytes` bounds one read. Nothing bounded the sum: the total was held by
-/// there being two read sites in one function, so the bound moved whenever someone
-/// added a site — and by the time this was written there were **three**, in two
-/// functions, with six comments and documents still saying two. A bound that a call
-/// site can move is not a rule, it is an argument, and arguments go stale in silence.
-/// This is the shape `max_state_tree_bytes` removed from the snapshot path (#323,
-/// ADR 0029) one level up: there a sum of per-file caps, here a sum of per-read ones.
-///
-/// **The value is measured, not derived.** What a trace costs is not its file size:
-/// `readWhole` reserves from the file's own length (a flat 1.50x, the arena's node
-/// growth factor), and the decode then duplicates every record's `path` and `aux` and
-/// grows an `ArrayList(Op)` in the same arena. A ceiling read off file sizes would bound
-/// none of that. Measured here, one live read at a time (ADR 0033 carries the table):
-///
 /// | shape | file bytes | budget bytes | ratio |
 /// |---|---|---|---|
 /// | header only | 36 | 542 | 15.1x |
@@ -473,11 +180,6 @@ pub const max_trace_bytes: usize = 64 * 1024 * 1024;
 /// | 2,000 records, 3000-byte path and aux | 12,036,036 | 45,139,816 | 3.75x |
 /// | 1,973,000 records, 16-byte paths | 67,082,036 | 521,200,426 | 7.77x |
 /// | **3,532,000 records, 1-byte paths** | **67,108,036** | **1,523,533,632** | **22.7x** |
-///
-/// **Shorter records cost more**, not less: the per-record overhead is what dominates, so
-/// the same file size decoded from more records holds more — by a factor of six between
-/// the last two rows, at the same file size.
-///
 /// **This ceiling therefore does NOT clear one read at the per-read cap, and that is
 /// deliberate.** Clearing the last row would need 1.5 GiB, and two of them 3 GiB, which
 /// is the resident set the ceiling exists to prevent — an OOM kill with no report is
@@ -485,50 +187,17 @@ pub const max_trace_bytes: usize = 64 * 1024 * 1024;
 /// traces**: `max_trace_bytes` admits a file this one will not hold. ADR 0029 records the
 /// same shape for the snapshot, where a tree can break the per-file cap and the tree
 /// ceiling and which fires depends on `readdir` order.
-///
-/// What 512 MiB is sized against is the corpus rather than the cap, **and that half is an
-/// estimate, not a measurement.** The largest exploration recorded here is 119 worlds
-/// (Borg, cohort 2), which at `contract.max_record_len` comes to 976,990 bytes — a
-/// calculated bound inherited from `max_trace_bytes` above, and it inherits that comment's
-/// caveat with it: worlds are not records, and a trace also carries lifecycle, boundary
-/// and marker records that the figure does not count. Taken at the worst ratio in the
-/// table it suggests some 22 MB per trace and 45 MB for two, which this ceiling clears by
-/// a wide margin. **No trace from that exploration was weighed**; what is measured here is
-/// the shape table, and the margin is a reading off it.
-///
-/// An earlier draft of this comment claimed the value cleared one read at the per-read
-/// cap; it was written from the 16-byte row alone, and the 1-byte row is what review
-/// asked for and measurement then contradicted it with.
 pub const max_trace_bytes_total: usize = 512 * 1024 * 1024;
 
-/// The ceiling above, as an allocator rather than a counter call sites remember to update.
-///
-/// Every `TraceInfo.arena` is built on one of these, so the raw read, the decode's
-/// `path`/`aux` duplicates and the `ArrayList(Op)` all charge the same limit — and
-/// `TraceInfo.deinit` returns them through the arena's own `rawFree`, with no site
-/// having to remember. **A fourth read site inherits the bound by construction**, which
-/// is the whole point: the previous arrangement was correct and would have stayed
-/// correct only for as long as nobody added a caller.
-///
 /// **Refusal happens BEFORE the allocation.** An accounting pass that reads
 /// `queryCapacity()` after the bytes are held refuses a run that has already taken the
 /// memory — ADR 0029 says exactly that about its own ceiling ("the run that refuses may
 /// hold more"). Here the vtable answers `null` first, so the promise is that an
 /// over-budget allocation does not SUCCEED, which is a thing the code can keep.
-///
-/// The judging granularity is the arena node, not the individual allocation: small
-/// allocations are served from a node already charged. What the limit bounds is the
-/// backing memory taken, which is what an operator runs out of.
 pub const TraceBudget = struct {
     child: Allocator,
     limit: usize,
     used: usize = 0,
-    /// The size of the allocation this budget refused MOST RECENTLY, cleared by the next
-    /// success. The **caller** reads it after an `OutOfMemory` to tell "the budget said
-    /// no" from "the machine said no" — the vtable cannot say which, because `alloc`
-    /// returns `?[*]u8` and carries no error, and every failure therefore reaches the
-    /// caller as the same `error.OutOfMemory`.
-    ///
     /// Read by `readTraceCapped`, which turns it into `TraceInfo.budget_refused` — the
     /// verdict travels on the TraceInfo and **never joins `SnapshotError`**. A budget
     /// member added to that set would land in the snapshot walk's exhaustive switches,
@@ -555,13 +224,6 @@ pub const TraceBudget = struct {
         return len > self.limit - self.used;
     }
 
-    /// Record a successful movement of the charge, and clear the refusal flag.
-    ///
-    /// **The clearing lives here, in one place, on purpose.** It was written inline in
-    /// all three of `alloc`, `resize` and `remap` first, and a mutation deleting any one
-    /// of them stayed green — the other two cleared the flag on the same read, so the
-    /// tests could not see the sticky behaviour they were written to catch. Three copies
-    /// of a rule are three places for it to be half-removed.
     fn charge(self: *TraceBudget, add: usize, sub: usize) void {
         self.used = self.used - sub + add;
         self.refused = null;
@@ -624,29 +286,10 @@ pub const TraceBudget = struct {
     }
 };
 
-/// A budget with no practical limit, for reads that are not about the ceiling — tests,
-/// mostly. **It is a `TraceBudget` rather than a plain allocator on purpose**: the type
-/// is what keeps the ceiling from being something a call site can decline to use. A
-/// caller that genuinely wants no ceiling says so here, in one named place, instead of
-/// passing a general allocator and looking identical to a caller that forgot.
 pub fn unboundedBudget(child: Allocator) TraceBudget {
     return .{ .child = child, .limit = std.math.maxInt(usize) };
 }
 
-/// The causal order of one run's threads, per process, from what the shim recorded (v18,
-/// ADR 0067). Vector clocks: each thread of a process holds a vector over that process's
-/// threads, indexed by the order this reader first saw them. Every record a thread writes
-/// advances its own component; a `thread_started` record sets the new thread's vector to
-/// its creator's as it stood when `pthread_create` was called; a `thread_join` record
-/// merges the collected thread's final vector into the joiner's. A kill point by a thread
-/// other than the process's current writer is in order when its vector's component for the
-/// writer has reached the writer's own count at its last kill point — that write
-/// happened-before this one — and the write passes to it; otherwise the two are ordered by
-/// nothing the shim saw, and the run is refused.
-///
-/// **Where the creator stood is rebuilt from a count, not read from a record.** The shim's
-/// `.thread` record is dropped when the shim is re-entered, and the new thread's start can
-/// reach the trace before or after it; so the child carries how many records its creator
 /// had written through its slot at the call, and this reader keeps, per thread, the vector
 /// as it stood after each record that gave it another thread's component (its own start,
 /// each join) together with the count after that record. The creator's vector at count `n`
@@ -681,11 +324,6 @@ const ThreadOrder = struct {
         pid: u32,
         threads: std.ArrayList(Thread) = .empty,
         writer: ?u32 = null,
-        /// Detaches recorded before the detached thread's own start reached the trace: the
-        /// creator detaches right after `pthread_create` returns, and the new thread writes
-        /// its start when it first runs, so the two records can arrive in either order
-        /// (measured on the detach toy on macOS: the detach came first and the refusal did
-        /// not say "detached"). Matched when the start arrives.
         detached_pairs: std.ArrayList(contract.thread_aux.Joined) = .empty,
     };
     const KillPointVerdict = union(enum) {
@@ -705,9 +343,6 @@ const ThreadOrder = struct {
         return &self.procs.items[self.procs.items.len - 1];
     }
 
-    /// The live entry for this id, if any: a dead entry (an incarnation the kernel's id
-    /// recycling ended, `newIncarnation`) is kept for joins that still name it and never
-    /// matched by id.
     fn live(p: *Proc, tid: u64) ?*Thread {
         for (p.threads.items) |*t| {
             if (t.tid == tid and t.alive) return t;
@@ -720,7 +355,6 @@ const ThreadOrder = struct {
         return &p.threads.items[p.threads.items.len - 1];
     }
 
-    /// The live entry for this id, made if none.
     fn thread(arena: Allocator, p: *Proc, tid: u64) !*Thread {
         return live(p, tid) orelse appendThread(arena, p, tid, 0);
     }
@@ -745,10 +379,7 @@ const ThreadOrder = struct {
         try t.snaps.append(arena, .{ .count = t.count, .clock = try arena.dupe(u32, t.clock.items) });
     }
 
-    /// The creator's vector as it stood when it had written `n` records, or null when
-    /// this reader cannot place it.
     fn creatorAt(arena: Allocator, p: *Proc, creator: u64, n: u32) !?std.ArrayList(u32) {
-        // The live entry for the creator's id: a creation is an act of a running thread.
         const ct = live(p, creator) orelse return null;
         if (ct.count < n) return null;
         var base: []const u32 = &.{};
@@ -761,7 +392,6 @@ const ThreadOrder = struct {
         return clock;
     }
 
-    /// A `thread_started` record. Returns false when the creator could not be placed.
     fn started(self: *ThreadOrder, arena: Allocator, pid: u32, tid: u64, st: contract.thread_aux.Started) !bool {
         const p = try self.proc(arena, pid);
         const t = try newIncarnation(arena, p, tid);
@@ -784,10 +414,6 @@ const ThreadOrder = struct {
         _ = try newIncarnation(arena, p, tid);
     }
 
-    /// The entry a start belongs to: a fresh one when the id is already held by a thread
-    /// this reader has seen (an id recycled by the kernel), otherwise the id's entry. The
-    /// old entry is kept, dead, for the join that may still name it; the new one's count
-    /// continues from the old one's.
     fn newIncarnation(arena: Allocator, p: *Proc, tid: u64) !*Thread {
         const old = live(p, tid) orelse return appendThread(arena, p, tid, 0);
         if (old.count == 0 and old.start == null) return old;
@@ -807,8 +433,6 @@ const ThreadOrder = struct {
         return found;
     }
 
-    /// A `thread_join` record by `tid`. Returns false when the collected thread is not one
-    /// this reader knows by its start.
     fn joined(self: *ThreadOrder, arena: Allocator, pid: u32, tid: u64, j: contract.thread_aux.Joined) !bool {
         const p = try self.proc(arena, pid);
         const target = byStart(p, j) orelse return false;
@@ -857,7 +481,6 @@ const ThreadOrder = struct {
         return false;
     }
 
-    /// A new image announced itself: the process's threads, counts and writer start over.
     fn reset(self: *ThreadOrder, pid: u32) void {
         for (self.procs.items, 0..) |*p, i| {
             if (p.pid == pid) {
@@ -872,9 +495,6 @@ pub fn readTrace(budget: *TraceBudget, path: []const u8) TraceReadError!TraceInf
     return readTraceCapped(budget, path, max_trace_bytes);
 }
 
-/// The capped form, parameterized for the reason `takeSnapshotCapped` is (#265): no
-/// committed fixture reaches the shipped cap. This said "cannot be reached by a fixture",
-/// on the grounds that the engine unlinks the trace before every run — the recording path
 /// and the world path both — and the only writer is the shim. Both halves are still true
 /// and they stop being an argument at the second shim'd process, which opens that same
 /// name with no unlink in front of it (#488). A link planted there used to be read through
@@ -936,9 +556,6 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
     var path_buf: [contract.max_path]u8 = undefined;
     const path_z = std.fmt.bufPrintZ(&path_buf, "{s}", .{path}) catch return error.PathTooLong;
 
-    // A missing trace file is not an error here: it is the observation that the shim
-    // never ran, which the caller turns into `no_shim_marker`.
-    //
     // Capped since #324, and the cap breaking is the one failure this read does NOT
     // collapse. #265 left the read uncapped precisely because collapsing it would
     // relabel an oversized trace as "the shim never initialised" — a refusal with the
@@ -987,22 +604,11 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
     };
     info.saw_header = true;
 
-    // The continuation window (#123): a subject exec is judged, not refused, when
-    // the very next same-pid shim_ready carries exactly the operation count the
-    // chain left off at. The window is open between those two records.
     var pending_exec = false;
     var pending_base: u32 = 0;
-    // Processes whose announcement no `cgroup` record has answered yet (v17).
     var awaiting_answer: std.ArrayList(u32) = .empty;
 
-    // The causal order of each process's threads (v18, ADR 0067), from the creations and
-    // joins the shim recorded. Replaces v16's "first writer per process": the question is
-    // no longer whether a second thread wrote but whether its write is ordered after the
-    // current writer's last. Arena-backed like everything else this reader keeps.
     var order: ThreadOrder = .{};
-    // Every distinct thread id that wrote under the subject's pid: the account's count, and
-    // the list handed over as `subject_writer_tid_list` (#544), which is where the macOS
-    // oracle's reader gets its map — the oracle's own `subject_tids` is built elsewhere.
     var subject_tids: std.ArrayList(u64) = .empty;
 
     while (off < bytes.len) {
@@ -1048,11 +654,6 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
             .shim_ready => {
                 info.saw_shim_ready = true;
                 info.shim_ready_records += 1;
-                // An announcement is an image's first record — the constructor runs once per
-                // image — so for a process this reader already holds it is a new image (the
-                // subject's continuation or broken chain, decided below, or a forked child that
-                // exec'd into a shimmed image): the shim's slot table and its counts started
-                // over, so the order this reader keeps for that process starts over too (v18).
                 // The announcement itself is counted by the shim — `init` writes it through
                 // the slot — so it is counted again here, after the reset took the tick above
                 // with everything else. Left uncounted, the surviving thread's count trailed
@@ -1079,9 +680,6 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
                     // question this answers is about the run's own initial thread.
                     info.initial_writer_tid = op.tid;
                 } else if (pending_exec and op.pid == info.primary_pid.?) {
-                    // The new image announcing itself. Its seq is the carried base
-                    // (v10); anything else — a fresh 0 from a stripped environment
-                    // or a non-interposed exec path — is a chain that broke.
                     if (op.seq == pending_base) {
                         info.exec_continuations += 1;
                     } else {
@@ -1090,9 +688,6 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
                     }
                     pending_exec = false;
                 } else if (op.pid == info.primary_pid.?) {
-                    // No window is open, and the subject announced itself AGAIN. The
-                    // constructor runs once per image, so a second announcement IS an
-                    // image change — one that escaped interposition entirely (execl
                     // family, fexecve: no exec record, no carried count). Structural,
                     // and it needs no prior operations to fire: R1 measured an execl
                     // with zero in-scope ops before it slipping to a verdict because
@@ -1101,11 +696,6 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
                     if (info.hard_boundary == null) info.hard_boundary = .exec;
                 }
             },
-            // Only the number. Who wrote it was kept beside it until v15, because a
-            // child inheriting `SIDEEYE_KILL_AT` counted its own operations and its k-th
-            // was not the subject's. The number is the run's now, so the writer is
-            // whichever process reached it — and the field went with its reason rather
-            // than staying on as a value nothing reads.
             .kill_landed => {
                 info.kill_landed_seq = op.seq;
             },
@@ -1113,18 +703,9 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
                 if (info.unresolved_refusing == null and unplacedRefuses(op))
                     info.unresolved_refusing = op;
             },
-            // The record's path field carries the syscall-and-flag spelling, not a
-            // path (v12). First one wins: the refusal names one operation, the way
-            // the oracle's `unsupported` does on Linux. The slice is `Op.path`, duped
-            // into this reader's arena by the decode loop above, so it lives as long
-            // as the `TraceInfo` does (#484's review corrected this comment: it used to
-            // say the slice borrowed from the trace buffer).
             .unsupported => {
                 if (info.first_unsupported == null) info.first_unsupported = op.path;
             },
-            // Where this process stands against the run's cgroup (v17, #559). Counts and the
-            // first record of each failure only: what a contained run is, the engine decides,
-            // and the aux values are named once, in `contract.cgroup_aux`.
             .cgroup => {
                 if (std.mem.indexOfScalar(u32, awaiting_answer.items, op.pid)) |i| _ = awaiting_answer.swapRemove(i);
                 if (std.mem.eql(u8, op.aux, contract.cgroup_aux.held)) {
@@ -1137,14 +718,11 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
                 } else if (std.mem.eql(u8, op.aux, contract.cgroup_aux.kill_alone)) {
                     if (info.cgroup_kill_alone == null) info.cgroup_kill_alone = op;
                 } else if (info.cgroup_outside == null) {
-                    // `cgroup:outside`, or a value this engine does not name (see the field).
                     info.cgroup_outside = op;
                 }
             },
             else => {},
         }
-        // A process that wrote anything but its answer while its announcement waited went on
-        // without saying where it stood (#559's second half).
         if (op.class != .shim_ready and op.class != .cgroup) {
             if (std.mem.indexOfScalar(u32, awaiting_answer.items, op.pid)) |i| {
                 info.cgroup_unanswered_live += 1;
@@ -1160,19 +738,10 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
                 if (info.first_foreign == null) info.first_foreign = op;
             }
         }
-        // Every process's records, not only the subject's (v15). A number is a position
-        // in the run now, so the run is what the count and the maximum are over — and a
-        // mutation performed by an awaited child is a mutation this run made, which is
-        // the question the zero-operations detector asks of `mutation_count`.
         if (op.class.isKillPoint()) {
             info.kill_point_count = @max(info.kill_point_count, op.seq);
             info.kill_records += 1;
             if (op.class.isMutation()) info.mutation_count += 1;
-            // Which thread of which process, and whether this write is in order (v16, v18).
-            // The process's current writer keeps the write until another thread's kill point
-            // is ordered after its last one by a creation or a join the shim recorded; a kill
-            // point that is not is the refusal, and the first such record is what it names,
-            // beside the writer's last.
             switch (try order.killPoint(arena, op.pid, op.tid, op)) {
                 .first, .same => {},
                 .turned => info.thread_turns += 1,
@@ -1184,9 +753,6 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
                     }
                 },
             }
-            // Distinct, not "two or more": the account prints this number, and a subject
-            // writing from three threads is three. The first version saturated at 2 —
-            // review read the field's doc against it.
             if (is_primary) {
                 var seen = false;
                 for (subject_tids.items) |t| {
@@ -1201,48 +767,17 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
         if (op.class.isBoundary()) {
             if (info.boundary == null) info.boundary = op.class;
             if (op.class == .thread) info.thread_records += 1;
-            // Everything except the subject's own image change means a second process
-            // exists — a child's exec included, which is a spawn doing what spawns do.
-            // A thread is not one (v16), and is left out here so a run whose only
-            // boundary is a thread reads as one process to the account and to
-            // `needsOracle`.
-            // Nor is the subject leaving its own process group, which under `--oracle` it can:
-            // strace leads the group, so the subject's `setsid` succeeds (#559's second half).
             if (op.class == .detached and is_primary) info.subject_detached = true;
             if (!((op.class == .exec and is_primary) or op.class == .thread or (op.class == .detached and is_primary))) info.process_boundary = true;
             const hard = switch (op.class) {
-                // Not hard since #559's second half: kept in `detached`, which the engine
-                // refuses unless the run was held in a cgroup of its own.
                 .detached => blk: {
                     if (info.detached == null) info.detached = op;
                     break :blk false;
                 },
-                // Not hard since v16: a thread is judged by what it wrote, above, and
-                // the record stays for the account's count only.
                 .thread => false,
                 .exec => blk: {
-                    // A subject exec opens the continuation window instead of
-                    // refusing outright (#123). Before the subject is known, v9's
-                    // safe misreading stands.
                     if (info.primary_pid == null) break :blk true;
                     if (!is_primary) break :blk false;
-                    // A SECOND exec record from the subject with no `shim_ready`
-                    // between them was written by the SAME image, so the earlier
-                    // attempt failed and returned — an interpreter resolving a name
-                    // through PATH execs once per entry, and the shim records before
-                    // each call. ADR 0018 read such a record as "the intermediate image
-                    // was never observed" and refused; its amendment carries the
-                    // measurement, what the removed net covered, and the three layers
-                    // that stand in its place.
-                    //
-                    // The invariant this rests on is the one the double-announcement
-                    // rule below already uses: an image that can write a record has
-                    // announced itself first, because the shim sets `active` immediately
-                    // before writing `shim_ready` with no statement between them
-                    // (`shim/src/common.zig`, `init` — which carries the reverse
-                    // reference). A forked or vfork'd child answers `getpid()`
-                    // differently and left by `is_primary` above.
-                    //
                     // The base is REFRESHED rather than left standing, and that is part
                     // of the fix rather than a courtesy: the shim carries the count as it
                     // stands when `exec` is CALLED, and the call that succeeds is the
@@ -1259,14 +794,10 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
         }
         try info.ops.append(arena, op);
     }
-    // A window still open at the end of the trace is a chain that broke: the image
-    // changed and nothing observed the far side.
     if (pending_exec) {
         info.exec_chain_broken = true;
         if (info.hard_boundary == null) info.hard_boundary = .exec;
     }
-    // Handed over whole rather than copied: both this list and `info` live in the same
-    // arena, and the count beside it was already being kept from the same variable (#544).
     info.subject_writer_tid_list = subject_tids;
     // A writer the shim never saw created (#543). Asked only when it recorded no thread
     // creation at all — and NOT because two clauses would be redundant, which is what an
@@ -1292,8 +823,6 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
     // above before this matters, and that refusal is itself wrong on Darwin for the same
     // reason — but that is a v16 defect this flag did not introduce and cannot fix here,
     // because `writer_tids` keys on the pid alone and has no notion of an image change.
-    // On Linux the guard costs nothing: the thread that survives an exec becomes the
-    // thread-group leader, `gettid()` returns the pid, and both sides carry the same id.
     if (info.thread_records == 0 and info.thread_start_records == 0 and info.exec_continuations == 0) {
         if (info.initial_writer_tid) |main_tid| {
             for (subject_tids.items) |t| {
@@ -1307,19 +836,12 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
     return info;
 }
 
-/// Copied rather than imported (#491; the original is in `engine/state_fs.zig` now): three
-/// lines around `bufPrintZ`
-/// with no contract of their own, used here only by the test fixtures below.
 fn joinZ(buf: []u8, a: []const u8, b: []const u8) error{PathTooLong}![:0]const u8 {
     const s = std.fmt.bufPrintZ(buf, "{s}/{s}", .{ a, b }) catch return error.PathTooLong;
     return s;
 }
 
 test "a trace written against another contract version is a mismatch, not a short trace" {
-    // The third structural detector, and the only one that had never been seen firing.
-    // It is what stops a stale shim paired with a fresh engine from being read as a
-    // target that performed fewer operations than it did — sharing contract.zig at build
-    // time says nothing about which binaries end up in the same run.
     var buf: [contract.header_len]u8 = undefined;
     _ = try contract.encodeHeader(&buf);
     std.mem.writeInt(u32, buf[contract.magic.len..][0..4], contract.contract_version + 1, .little);
@@ -1344,11 +866,9 @@ test "a trace written against another contract version is a mismatch, not a shor
     var info = try readTrace(&tb_, std.mem.span(fz.ptr));
     defer info.deinit();
     try std.testing.expect(info.version_mismatch);
-    // Distinct from truncation: the two lead to different verdicts and different advice.
     try std.testing.expect(!info.truncated);
     try std.testing.expect(info.saw_header);
 
-    // Control: the same header at the right version is not a mismatch.
     var ok_buf: [contract.header_len]u8 = undefined;
     _ = try contract.encodeHeader(&ok_buf);
     const fd2 = posix.open(fz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
@@ -1385,11 +905,6 @@ fn writeTraceForTest(dir_tag: []const u8, records: []const contract.Record, fbuf
 }
 
 test "the trace read refuses a symlink, and reads the same bytes named directly (#489)" {
-    // The call site, not the constant. `readTrace` is what `main.zig` reaches through at
-    // all three read sites, so passing it a link is the same question the acceptance leg
-    // asks of the real binary — and it asks it on **this** host, where the container that
-    // runs acceptance is not available. A mutation that flips `readTraceCappedInner`'s
-    // `.refuse` back to `.follow` reddens this and nothing else in `zig build test`.
     var fbuf: [contract.max_path]u8 = undefined;
     const real = try writeTraceForTest("trace-link", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -1415,11 +930,6 @@ test "the trace read refuses a symlink, and reads the same bytes named directly 
     try std.testing.expect(direct.saw_header);
     try std.testing.expect(direct.saw_shim_ready);
 
-    // Through the link: the open is refused, `readWhole` answers `ReadFailed`, and
-    // `readTraceCappedInner` collapses it to the empty `TraceInfo` the caller reads as
-    // `no_shim_marker`. `saw_header` is the observation point because it is set only after
-    // bytes were decoded (`decodeHeader` succeeded), so it separates "read nothing" from
-    // "read something".
     var through = try readTrace(&tb_, std.mem.span(link.ptr));
     defer through.deinit();
     try std.testing.expect(!through.saw_header);
@@ -1427,9 +937,6 @@ test "the trace read refuses a symlink, and reads the same bytes named directly 
 }
 
 test "cgroup records count against announcements, and an escape or a returned kill is kept whole (v17, #559)" {
-    // A subject and a child, each announcing and acknowledging — the subject from a world,
-    // so holding `cgroup.kill` — then the child saying at a boundary that it is outside, and
-    // the subject's crash-point write to `cgroup.kill` coming back.
     var fbuf: [contract.max_path]u8 = undefined;
     const path = try writeTraceForTest("trace-cgroup-ack", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -1452,9 +959,7 @@ test "cgroup records count against announcements, and an escape or a returned ki
     try std.testing.expect(info.cgroupAnswered(false));
     try std.testing.expectEqual(@as(u32, 8), info.cgroup_outside.?.pid);
     try std.testing.expectEqual(@as(u32, 7), info.cgroup_kill_returned.?.pid);
-    // Its own field, not taken for an escape: the escape above is still pid 8's.
     try std.testing.expectEqual(@as(u32, 9), info.cgroup_kill_alone.?.pid);
-    // A marker, never an operation: one write in the run, and the numbers say one.
     try std.testing.expectEqual(@as(u32, 1), info.kill_point_count);
     try std.testing.expectEqual(@as(u32, 1), info.kill_records);
 }
@@ -1464,8 +969,6 @@ test "an announcement without an acknowledgement is an uncontained run, and an a
     const path = try writeTraceForTest("trace-cgroup-short", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
         .{ .op = .cgroup, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = contract.cgroup_aux.held },
-        // A child that announced and never acknowledged: a v16 shim, or one whose
-        // environment had lost `SIDEEYE_RUN_CGROUP`.
         .{ .op = .shim_ready, .seq = 0, .pid = 8, .tid = 8, .path = "/tmp/s", .aux = "" },
         .{ .op = .cgroup, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "cgroup:a-later-value" },
     }, &fbuf);
@@ -1516,9 +1019,6 @@ test "a subject exec followed by a shim_ready carrying the count is a continuati
 }
 
 test "an awaited child's operations are numbered in the run, and hold crash-point addresses (v15)" {
-    // The shape `pass mv` has: the subject writes, an awaited child writes, the subject
-    // writes again — one sequence across two processes. Through v14 the count and the
-    // addresses were the subject's alone, so the child's operation had neither.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("run-numbering", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -1532,20 +1032,12 @@ test "an awaited child's operations are numbered in the run, and hold crash-poin
     var info = try readTrace(&tb_, std.mem.span(fz));
     defer info.deinit();
 
-    // Three records, highest number three: the numbering integrity check the caller runs
-    // is satisfied by a run whose operations came from two processes.
     try std.testing.expectEqual(@as(u32, 3), info.kill_records);
     try std.testing.expectEqual(@as(u32, 3), info.kill_point_count);
-    // Two of the three are mutations (the rename and the two writes are all mutations —
-    // so three), which is what the zero-operations detector reads.
     try std.testing.expectEqual(@as(u32, 3), info.mutation_count);
-    // The child is still reported as a foreign writer: this version does not stop
-    // noticing, it stops refusing on the notice alone.
     try std.testing.expect(info.foreign_kill_point);
     try std.testing.expectEqual(@as(u32, 8), info.first_foreign.?.pid);
 
-    // The address of crash point 2 is the CHILD's rename, and crash point 3's "after" is
-    // that same operation. A pid filter here reports both as absent.
     const addr2 = info.logicalAddress(2);
     try std.testing.expectEqual(contract.OpClass.rename, addr2.before.?.class);
     try std.testing.expectEqual(@as(u32, 8), addr2.before.?.pid);
@@ -1556,9 +1048,6 @@ test "an awaited child's operations are numbered in the run, and hold crash-poin
 }
 
 test "two processes taking one number disagree with the record count (v15)" {
-    // The negative control for the test above, and the shape a run whose operations
-    // interleave produces: both processes read the same maximum and both took 2. The
-    // fields the caller refuses on must show it — three records, highest number two.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("run-numbering-dup", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -1576,9 +1065,6 @@ test "two processes taking one number disagree with the record count (v15)" {
 }
 
 test "a subject exec whose shim_ready restarts at zero is a broken chain, and the renumbering is caught (#123)" {
-    // The stale-shim shape contract v10 exists for: numbering restarted after the
-    // image change. Two independent detectors must both see it — the continuation
-    // predicate (wrong base) and the records-vs-max disagreement.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("exec-restart", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -1593,15 +1079,12 @@ test "a subject exec whose shim_ready restarts at zero is a broken chain, and th
     defer info.deinit();
     try std.testing.expect(info.exec_chain_broken);
     try std.testing.expectEqual(contract.OpClass.exec, info.hard_boundary.?);
-    // records = 3, max = 2: the duplicate seq 1 collapses under @max.
     try std.testing.expectEqual(@as(u32, 3), info.kill_records);
     try std.testing.expectEqual(@as(u32, 2), info.kill_point_count);
     _ = posix.unlink(fz);
 }
 
 test "a subject exec with no shim_ready after it is a broken chain (#123)" {
-    // The static-image / stripped-environment / execl-family shape: the far side of
-    // the image change was never observed at all.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("exec-dark", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -1617,11 +1100,6 @@ test "a subject exec with no shim_ready after it is a broken chain (#123)" {
 }
 
 test "a second announcement with no exec record is itself an image change (#123)" {
-    // The execl-family shape with nothing recorded before it: no exec record, so
-    // no window — but the constructor runs once per image, and a second same-pid
-    // shim_ready is self-contained evidence the image changed. R1 measured this
-    // slipping to a verdict when only the numbering check stood behind it (zero
-    // prior ops make records == max trivially).
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("dup-announce", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -1637,10 +1115,6 @@ test "a second announcement with no exec record is itself an image change (#123)
 }
 
 test "the first unplaceable record is kept whole, with its kind and the name it had (#485)" {
-    // What the refusal needs is not that something was unplaceable but which record it
-    // was. `class` and `seq` identify nothing here — the shim writes `.unresolved` and
-    // `0` for every one — so the material is `aux` (why) and `path` (the name, where
-    // there was one), and first-wins the way `first_foreign` does.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("unresolved-first", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -1660,10 +1134,6 @@ test "the first unplaceable record is kept whole, with its kind and the name it 
 }
 
 test "an exempt record does not hide the refusing one behind it" {
-    // The order `TOY_CLOSE_THEN_UNLINKED_WRITE` produces and a target can forge: an exempt close first,
-    // a refusing write second. Deciding per run instead of per record would stop at the
-    // close and let the write reach a verdict — the acceptance suite pins that end to end,
-    // this pins the reader that decides it.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("unresolved-order", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -1696,9 +1166,6 @@ test "a trace whose only unplaceable record is an exempt close leaves nothing to
 }
 
 test "an unplaceable record with no name is still kept, so the refusal can say there was none (#485)" {
-    // The trace-close marker and link-by-descriptor record no path. The old code only
-    // needed to know that one existed; the sentence now has to distinguish "last named
-    // X" from "no name recorded", so the empty path has to survive the read.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("unresolved-noname", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -1715,10 +1182,6 @@ test "an unplaceable record with no name is still kept, so the refusal can say t
 }
 
 test "failed exec attempts before the one that lands are not image changes" {
-    // dash's `exec <name>` issues one execve per PATH entry, and the shim records
-    // before the call, so the attempts that returned ENOENT are in the trace too. One
-    // image change, three records. Read as three image changes this refused
-    // `child_process_detected` while the next shim_ready carried the right count.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("exec-retry", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -1734,23 +1197,13 @@ test "failed exec attempts before the one that lands are not image changes" {
     defer info.deinit();
     try std.testing.expect(info.hard_boundary == null);
     try std.testing.expect(!info.exec_chain_broken);
-    // One image change, not three: the count is of chains that closed.
     try std.testing.expectEqual(@as(u32, 1), info.exec_continuations);
-    // Records and highest-seq agree, so the numbering detector is not weakened by the
-    // attempts: `.exec` is not a kill point, so three of them consume no sequence number.
-    // The sibling test at the top of this family asserts the same pair for the shape
-    // where numbering DID break, which is what makes this one worth stating.
     try std.testing.expectEqual(@as(u32, 2), info.kill_point_count);
     try std.testing.expectEqual(@as(u32, 2), info.kill_records);
     _ = posix.unlink(fz);
 }
 
 test "the continuation base follows the attempts, so a write between them still lands" {
-    // The shim carries the count as it stands when exec is CALLED, and the call that
-    // succeeds is the last attempt. A wrapper that writes state between two attempts
-    // therefore announces the LATER count. Holding the first attempt's base refuses a
-    // chain that held — which is why refreshing it is part of the rule and not a
-    // courtesy. Delete the refresh and this is the test that goes red.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("exec-retry-write", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -1770,9 +1223,6 @@ test "the continuation base follows the attempts, so a write between them still 
 }
 
 test "retried attempts do not excuse a wrong base: the chain still breaks (#123)" {
-    // Negative control 1 of 3. The attempts are tolerated; the comparison that decides
-    // whether the count survived is not weakened. Here the new image restarts at zero
-    // with two operations behind it.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("exec-retry-wrongbase", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -1792,8 +1242,6 @@ test "retried attempts do not excuse a wrong base: the chain still breaks (#123)
 }
 
 test "retried attempts with nobody announcing at the end still break the chain (#123)" {
-    // Negative control 2 of 3. The window is open at end of trace: the last attempt
-    // reached an image that loads no shim, or reached none at all.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("exec-retry-dark", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -1833,9 +1281,6 @@ test "an exec recorded before the subject announced itself is still hard (#123)"
 }
 
 test "a child's exec never opens a continuation window and stays tolerable (#123)" {
-    // The pass shape: children exec and the subject keeps going. The exec itself is
-    // not hard; the child's state-directory write is what refuses the run, through
-    // foreign_kill_point — the boundary stays a spawn doing what spawns do.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("exec-child", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -1851,9 +1296,6 @@ test "a child's exec never opens a continuation window and stays tolerable (#123
     try std.testing.expect(info.hard_boundary == null);
     try std.testing.expect(!info.exec_chain_broken);
     try std.testing.expect(info.foreign_kill_point);
-    // The refusal's material (#484): the first foreign kill-point record, whole. Not
-    // the child's exec (not a kill point), not the subject's own write, and not the
-    // child's second write — first wins, the way `first_unsupported` does.
     const ff = info.first_foreign orelse return error.TestUnexpectedResult;
     try std.testing.expectEqual(contract.OpClass.write, ff.class);
     try std.testing.expectEqual(@as(u32, 9), ff.pid);
@@ -1861,9 +1303,6 @@ test "a child's exec never opens a continuation window and stays tolerable (#123
     _ = posix.unlink(fz);
 }
 
-/// A trace file of `n` bytes in a pid-unique directory, plus its cleanup. Built the
-/// way the per-file cap's test builds its root (#28: the resolved parent, because
-/// macOS `/tmp` is itself a link).
 fn traceFixture(tag: []const u8, bytes: []const u8, path_out: []u8) ?[]const u8 {
     var pbuf: [contract.max_path]u8 = undefined;
     const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-{s}-{d}", .{ tag, posix.getpid() }) catch unreachable;
@@ -1880,8 +1319,6 @@ fn traceFixture(tag: []const u8, bytes: []const u8, path_out: []u8) ?[]const u8 
     return path;
 }
 
-/// A trace of `n` write records with 16-byte paths, for the budget tests. Measured at
-/// n=100: 3,436 bytes of file and 22,580 bytes of budget.
 fn budgetFixture(tag: []const u8, n: usize, gpa: Allocator, fbuf: *[contract.max_path]u8) ![*:0]const u8 {
     const recs = try gpa.alloc(contract.Record, n + 1);
     defer gpa.free(recs);
@@ -1892,14 +1329,6 @@ fn budgetFixture(tag: []const u8, n: usize, gpa: Allocator, fbuf: *[contract.max
 }
 
 test "MEASURE what a trace costs the budget, by shape (#377, ADR 0033)" {
-    // **The table in `max_trace_bytes_total`'s doc, in ADR 0033 and in BUILDLOG is this
-    // test's output.** Kept rather than deleted so the numbers a value was chosen from
-    // are reproducible by whoever questions the value — review's first pass could not
-    // check them against anything, which is a fair complaint about a claim that says
-    // "measured". Gated because the last two shapes cost about a minute and 1.5 GB of
-    // resident memory between them, which CI should not pay on every push:
-    //
-    //   SIDEEYE_MEASURE=1 zig build test 2>&1 | grep '#377'
     if (posix.getenv("SIDEEYE_MEASURE") == null) return error.SkipZigTest;
 
     const gpa = std.testing.allocator;
@@ -1913,9 +1342,6 @@ test "MEASURE what a trace costs the budget, by shape (#377, ADR 0033)" {
         // bytes — over the cap, refused before the decode, and the measurement would be of
         // the raw read alone (`ops=0`, which is how the first attempt reported it).
         .{ .tag = "cap16", .n = 1973000, .plen = 16, .alen = 0 },
-        // The same file size at 19 bytes a record. The shim can write a one-character
-        // unresolved operand, so this shape is reachable, and it is six times the cost of
-        // the row above — which is why the ceiling is not sized against the per-read cap.
         .{ .tag = "cap1", .n = 3532000, .plen = 1, .alen = 0 },
     };
     inline for (shapes) |s| {
@@ -1961,10 +1387,6 @@ test "the ceiling covers resize and remap, which no trace read reaches (#377)" {
     const m = try a.alloc(u8, 2048);
     try std.testing.expectEqual(@as(usize, 2048), budget.used);
 
-    // Growing by more than the 2048 that remain: both arms must refuse, and must say the
-    // budget was the one refusing. `resize` reports `false` and `remap` reports `null`,
-    // which the child also does when it simply cannot move the allocation — `refused` is
-    // how the two are told apart.
     budget.refused = null;
     try std.testing.expect(!a.resize(m, 5000));
     try std.testing.expect(budget.refused != null);
@@ -1988,10 +1410,6 @@ test "the ceiling covers resize and remap, which no trace read reaches (#377)" {
 test "a child refusal is not a ceiling refusal, on all three arms (#377)" {
     const gpa = std.testing.allocator;
 
-    // A budget with room to spare over a child that refuses anything large: the shape
-    // where the ceiling says yes and the machine says no. Both answer the caller with
-    // the same `null`/`false`, so the only thing that separates them is `refused` —
-    // which means a stale value here reports a real out-of-memory as a ceiling refusal.
     var refuser: RefuseLargeAllocator = .{ .backing = gpa, .ceiling = 4096 };
     var budget: TraceBudget = .{ .child = refuser.allocator(), .limit = 64 * 1024 };
     const a = budget.allocator();
@@ -1999,8 +1417,6 @@ test "a child refusal is not a ceiling refusal, on all three arms (#377)" {
     const m = try a.alloc(u8, 2048);
     defer a.free(m);
 
-    // The real order, not a flag set by hand: a genuine ceiling refusal first, then a
-    // request the ceiling admits and the child declines. Each arm has to clear.
     try std.testing.expectError(error.OutOfMemory, a.alloc(u8, 128 * 1024));
     try std.testing.expect(budget.refused != null);
     try std.testing.expectError(error.OutOfMemory, a.alloc(u8, 5000));
@@ -2031,8 +1447,6 @@ test "the whole-trace ceiling charges the decode, not only the raw read (#377)" 
     var budget: TraceBudget = .{ .child = gpa, .limit = 12 * 1024 };
     var info = try readTraceCapped(&budget, std.mem.span(fz), max_trace_bytes);
     defer info.deinit();
-    // Not an error: a ceiling refusal is an observation the caller answers for after it
-    // has classified, like `too_large`. The read reports it on the TraceInfo.
     try std.testing.expect(info.budget_refused != null);
 }
 
@@ -2043,18 +1457,6 @@ test "the whole-trace ceiling is shared: a second live trace is refused on the s
     const a = try budgetFixture("budget-sum-a", 100, gpa, &fbuf_a);
     const b = try budgetFixture("budget-sum-b", 100, gpa, &fbuf_b);
 
-    // 64 KiB admits one of these traces and not two (48 KiB did until v18). **Neither trace is too large by
-    // itself** — that is the whole distinction between this and `trace_too_large`, and
-    // the reason the two carry different `unknown_reason` values. The limit was 32 KiB
-    // through v15, when one trace cost the budget 22,580 bytes; v16's eight-byte `tid`
-    // grew `Op`, the ops list crossed an arena chunk boundary, and the first read was
-    // refused before the second could be — measured as `first.refused=26398, ops=0`,
-    // with the test still red for the right reason. The cost is printed by the MEASURE
-    // test below; the arithmetic here is "one fits, two do not", not a fixed number
-    // (one of these costs 44,688 bytes under v16, measured the day the limit moved, and
-    // 51,318 under v18, when the thread order's per-process lists joined the arena and
-    // pushed the same trace over 48 KiB — so the limit moved again, to 64 KiB, which
-    // admits one and not two by the same arithmetic).
     var budget: TraceBudget = .{ .child = gpa, .limit = 64 * 1024 };
     var first = try readTraceCapped(&budget, std.mem.span(a), max_trace_bytes);
     var refused = try readTraceCapped(&budget, std.mem.span(b), max_trace_bytes);
@@ -2080,13 +1482,6 @@ test "a read that allocates nothing does not inherit the previous refusal (#377)
     const a = try budgetFixture("budget-inherit-a", 100, gpa, &fbuf_a);
     const b = try budgetFixture("budget-inherit-b", 100, gpa, &fbuf_b);
 
-    // **The case the entry reset exists for, and the only one that reaches it.** A read
-    // that succeeds clears the side-channel on its own first allocation, so the reset is
-    // invisible there — the mutation deleting it survived every other test in this file,
-    // measured. A read that allocates NOTHING has no such moment: a missing file fails at
-    // `open`, before the arena takes a byte, and returns the empty TraceInfo that means
-    // "the shim never ran". Without the reset it would carry the previous read's refusal
-    // and be reported as a ceiling that never stopped it.
     // Same limit as the test above, for the same reason: one of these fits, two do not
     // (64 KiB since v18, when one came to cost 51,318 bytes; at 48 KiB the first read was
     // refused too and the assertions below held for the wrong reason — review).
@@ -2109,10 +1504,6 @@ test "the whole-trace ceiling is returned by deinit, so a loop does not drift (#
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try budgetFixture("budget-loop", 100, gpa, &fbuf);
 
-    // The world loop reads a trace per world. A budget that charged without returning
-    // would refuse a long exploration for no reason the operator could act on — and it
-    // would do so at a world number that depends on the ceiling, which is the kind of
-    // failure nobody reproduces. Ten passes at a ceiling that fits exactly one.
     var budget: TraceBudget = .{ .child = gpa, .limit = 32 * 1024 };
     var i: usize = 0;
     while (i < 10) : (i += 1) {
@@ -2127,17 +1518,6 @@ test "a budget refusal during the RAW read returns an empty trace, not an error 
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try budgetFixture("budget-rawread", 100, gpa, &fbuf);
 
-    // **The shape that made the first implementation ship the wrong refusal.** This
-    // function collapses every `readWhole` failure except the per-read cap into an empty
-    // `TraceInfo` and returns it NORMALLY — so a budget refusal during the raw read is
-    // not an error the caller can catch. It arrives as a trace with no shim marker,
-    // which `main.zig` reports as `no_shim_marker`: the shim never initialised.
-    //
-    // Measured on a real run before this was pinned: `preflight --twice` under a lowered
-    // ceiling refused the second observation with `no_shim_marker`. The unit tests at the
-    // time all passed, because every one of them drove the path where the error DOES
-    // propagate (the decode's `try`), and this path is the other one.
-    //
     // What this pins is therefore an obligation on the caller, not a behaviour of this
     // function: after any read, a budget with `refused` set means the read was refused,
     // whether or not it returned an error.
@@ -2157,10 +1537,6 @@ test "a success clears the budget's refusal flag, so it always names the last fa
     // need, so no ceiling refuses the reservation and admits the loop. An earlier version
     // of this test tried it through a read, asserted a flag that was never set, and
     // survived the sticky mutation — measured, which is how this version exists.
-    //
-    // Why it matters: `readWhole`'s reservation failure is swallowed on purpose, so a
-    // flag that remembered every refusal would let a swallowed one mark a read that then
-    // succeeded. The read's own verdict would say the ceiling stopped it when nothing did.
     var budget: TraceBudget = .{ .child = gpa, .limit = 4096 };
     const alloc = budget.allocator();
 
@@ -2207,13 +1583,6 @@ const RefuseLargeAllocator = struct {
 };
 
 test "a reservation that cannot be met does not relabel an oversized trace (#323)" {
-    // #323 gave `readWhole` a reservation taken from the file's own length. This test is
-    // about what happens when that reservation FAILS, and it is aimed at the call site
-    // rather than the function: `readTraceCapped`'s catch collapses every error except
-    // `FileTooLarge` into an empty `TraceInfo`, which the engine reads as
-    // `no_shim_marker`. A reservation that returned `OutOfMemory` would therefore turn
-    // "the trace is larger than this engine will read" into "the shim never initialised"
-    // — the relabelling `max_trace_bytes`' own comment calls worse than having no cap.
     var pbuf: [contract.max_path]u8 = undefined;
     const path = traceFixture("tracecap-reserve", "0123456789", &pbuf) orelse return error.SkipZigTest;
     defer {
@@ -2234,7 +1603,6 @@ test "a reservation that cannot be met does not relabel an oversized trace (#323
     var info = try readTraceCapped(&rb_, path, 4);
     defer info.deinit();
 
-    // The answer is the cap's, not the empty read's — which is the whole point.
     try std.testing.expect(info.too_large);
     try std.testing.expect(!info.saw_shim_ready);
 
@@ -2261,16 +1629,11 @@ test "an oversized trace says so, instead of collapsing into the empty read (#32
         _ = posix.rmdir(dir_z.ptr);
     }
 
-    // Over the cap: the flag is set and the size is the file's true length, read by
-    // lseek rather than counted from the truncated read.
     var gb_ = unboundedBudget(gpa);
     var big = try readTraceCapped(&gb_, path, 4);
     defer big.deinit();
     try std.testing.expect(big.too_large);
     try std.testing.expectEqual(@as(?u64, 10), big.too_large_size);
-    // What makes this a distinct answer rather than a relabelled one: the flag the
-    // caller checks for "the shim never ran" is NOT set by a capped read. Were it the
-    // only signal, this trace would refuse as `no_shim_marker`.
     try std.testing.expect(!big.saw_shim_ready);
     try std.testing.expect(!big.truncated);
 
@@ -2284,8 +1647,6 @@ test "an oversized trace says so, instead of collapsing into the empty read (#32
 test "a cap breach and an unreadable trace are different observations (#324)" {
     const gpa = std.testing.allocator;
 
-    // A trace that is not there at all: the empty TraceInfo, exactly as before this
-    // change — the honest observation that the shim never wrote anything.
     var gb_ = unboundedBudget(gpa);
     var absent = try readTraceCapped(&gb_, "/tmp/sideeye-no-such-trace-file-does-not-exist", 4);
     defer absent.deinit();
@@ -2313,11 +1674,6 @@ test "a cap breach and an unreadable trace are different observations (#324)" {
 }
 
 test "two threads of one process writing the judged directory are the refusal, and both are named (v16)" {
-    // The main thread writes first, a worker second: `second_writer_thread` is the
-    // worker's first record and `first_writer_thread` the main thread's, so the refusal
-    // can name both — which of the two the trace saw first is the scheduler's choice on
-    // that run (the toy has its worker write first). A thread record is not hard and not
-    // a process boundary, and a lone thread needs no oracle.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("two-writing-threads", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -2343,7 +1699,6 @@ test "two threads of one process writing the judged directory are the refusal, a
     try std.testing.expectEqual(@as(?contract.OpClass, null), info.hard_boundary);
     try std.testing.expect(!info.process_boundary);
     try std.testing.expect(!info.needsOracle());
-    // Still a boundary for the quiescence sampling and the world arming.
     try std.testing.expect(info.crossedBoundary());
     _ = posix.unlink(fz);
 }
@@ -2354,8 +1709,6 @@ test "one writing thread among several is judged: no second writer, one id count
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
         .{ .op = .thread, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
         .{ .op = .thread, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
-        // The worker writes and the main thread never does: the one writer need not be
-        // the main thread, and the count is of writers, not of threads.
         .{ .op = .open, .seq = 1, .pid = 7, .tid = 9, .path = "/tmp/s/a", .aux = "" },
         .{ .op = .write, .seq = 2, .pid = 7, .tid = 9, .path = "/tmp/s/a", .aux = "" },
         .{ .op = .close, .seq = 0, .pid = 7, .tid = 9, .path = "/tmp/s/a", .aux = "" },
@@ -2373,9 +1726,6 @@ test "one writing thread among several is judged: no second writer, one id count
 }
 
 test "a child's two writing threads refuse the same way, and are not the subject's count (v16)" {
-    // The rule is asked of every process. The committed git-annex report is this shape:
-    // the refusal names two threads of a child, and the account's count of the SUBJECT's
-    // writing threads reads 0 — which is why the clause says whose it counts.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("child-two-threads", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -2391,16 +1741,11 @@ test "a child's two writing threads refuse the same way, and are not the subject
     try std.testing.expectEqual(@as(u32, 8), second.pid);
     try std.testing.expectEqual(@as(u64, 11), second.tid);
     try std.testing.expectEqual(@as(u32, 0), info.subject_writer_tids);
-    // A forked child is a process boundary whatever its threads did.
     try std.testing.expect(info.needsOracle());
     _ = posix.unlink(fz);
 }
 
 test "a writer the shim never recorded creating is named, and an ordinary run is not (v16, #543)" {
-    // The shape #543 is about: no `.thread` record anywhere, and a kill point from a tid
-    // that is not the one that wrote `shim_ready`. A raw `clone`, or a thread started
-    // before the shim was in the image, produces exactly this — the creation is invisible
-    // to the shim and the writes are not.
     var fbuf: [contract.max_path]u8 = undefined;
     const unrecorded = try writeTraceForTest("unrecorded-writer", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -2413,8 +1758,6 @@ test "a writer the shim never recorded creating is named, and an ordinary run is
     try std.testing.expectEqual(@as(u32, 0), a.thread_records);
     try std.testing.expectEqual(@as(?u64, 7), a.initial_writer_tid);
     try std.testing.expect(a.unrecorded_writer_thread);
-    // One writing thread, so the thread rule still judges the run. The flag is about what
-    // the account says, not about refusing.
     try std.testing.expectEqual(@as(u32, 1), a.subject_writer_tids);
     try std.testing.expect(a.second_writer_thread == null);
     _ = posix.unlink(unrecorded);
@@ -2437,8 +1780,6 @@ test "a writer the shim never recorded creating is named, and an ordinary run is
     try std.testing.expect(!b.unrecorded_writer_thread);
     _ = posix.unlink(plain);
 
-    // The other control: a thread the shim DID record. The account already carries a
-    // clause for that one, so the two must never both fire.
     var fbuf3: [contract.max_path]u8 = undefined;
     const recorded = try writeTraceForTest("recorded-worker", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -2453,14 +1794,6 @@ test "a writer the shim never recorded creating is named, and an ordinary run is
     try std.testing.expect(!c.unrecorded_writer_thread);
     _ = posix.unlink(recorded);
 
-    // The control the flag's inference needs, because an `exec` renames a thread on
-    // Darwin. `pthread_threadid_np` — where the shim's tid comes from there — hands the
-    // same surviving thread a different id after an image change (measured: five self-exec
-    // runs, same pid, a new id every time). This is that run: nothing written before the
-    // exec, everything after it, from what the trace sees as another tid. One writer, so
-    // the thread rule judges it — and without the `exec_continuations` guard the account
-    // would tell the reader that a thread the shim never recorded creating wrote, about a
-    // single-threaded target that only ever had one.
     var fbuf4: [contract.max_path]u8 = undefined;
     const after_exec = try writeTraceForTest("renamed-by-exec", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -2475,8 +1808,6 @@ test "a writer the shim never recorded creating is named, and an ordinary run is
     try std.testing.expectEqual(@as(u32, 1), d.exec_continuations);
     try std.testing.expect(!d.exec_chain_broken);
     try std.testing.expectEqual(@as(?u64, 7), d.initial_writer_tid);
-    // One writer and no second-thread refusal: this run reaches a verdict, which is why
-    // the false clause would have been on a judged report rather than a refused one.
     try std.testing.expectEqual(@as(u32, 1), d.subject_writer_tids);
     try std.testing.expect(d.second_writer_thread == null);
     try std.testing.expect(!d.unrecorded_writer_thread);
@@ -2484,11 +1815,6 @@ test "a writer the shim never recorded creating is named, and an ordinary run is
 }
 
 test "the shim's slot-exhaustion notice is an unplaceable record the run refuses on (v16)" {
-    // The 65th thread of a process writes this through the shared reserve slot, at the
-    // moment of overflow. It is a `.unresolved` record like any other the shim cannot
-    // place, so the reader keeps it as the refusing one and the engine refuses
-    // `unresolvable_path` naming the kind — seen red here before the shim side was
-    // trusted: with the notice missing, this trace reads as a clean two-operation run.
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("slots-exhausted", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -2507,9 +1833,6 @@ test "the shim's slot-exhaustion notice is an unplaceable record the run refuses
 }
 
 test "the subject's writer count is distinct thread ids, not a flag that stops at two (v16)" {
-    // Three threads write under the subject's pid. The refusal names the first two; the
-    // account's count reads three — the first version saturated at 2, and the field's doc
-    // promised distinct ids (review read one against the other).
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try writeTraceForTest("three-writing-threads", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
@@ -2533,7 +1856,6 @@ test "a detach is kept apart from the hard boundary, so an image change after it
     const path = try writeTraceForTest("trace-detach-then-exec", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
         .{ .op = .detached, .seq = 0, .pid = 8, .tid = 8, .path = "/tmp/s", .aux = "" },
-        // The subject announcing itself again with no exec record in front: a chain that broke.
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
     }, &fbuf);
     defer _ = posix.unlink(path);
@@ -2542,10 +1864,8 @@ test "a detach is kept apart from the hard boundary, so an image change after it
     defer info.deinit();
     try std.testing.expectEqual(@as(u32, 8), info.detached.?.pid);
     try std.testing.expectEqual(contract.OpClass.exec, info.hard_boundary.?);
-    // Still a second process for the oracle requirement and the account.
     try std.testing.expect(info.crossedProcessBoundary());
 
-    // Control: the detach alone leaves no hard boundary behind it.
     const alone = try writeTraceForTest("trace-detach-alone", &.{
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
         .{ .op = .detached, .seq = 0, .pid = 8, .tid = 8, .path = "/tmp/s", .aux = "" },
@@ -2564,7 +1884,6 @@ test "an announcement the crash point's kill cut off is not a process that escap
         .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
         .{ .op = .cgroup, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = contract.cgroup_aux.held_kill },
         .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
-        // A child's image announcing itself as the kill before operation 2 lands on it.
         .{ .op = .shim_ready, .seq = 0, .pid = 8, .tid = 8, .path = "/tmp/s", .aux = "" },
         .{ .op = .kill_landed, .seq = 2, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
     }, &fbuf);
@@ -2575,7 +1894,6 @@ test "an announcement the crash point's kill cut off is not a process that escap
     try std.testing.expectEqual(@as(u32, 1), info.cgroup_unanswered_tail);
     try std.testing.expectEqual(@as(u32, 0), info.cgroup_unanswered_live);
     try std.testing.expect(info.cgroupAnswered(true));
-    // Where nothing was killed, the same trace is short.
     try std.testing.expect(!info.cgroupAnswered(false));
 
     const went_on = try writeTraceForTest("trace-cgroup-went-on", &.{
@@ -2622,15 +1940,6 @@ test "the subject leaving its own process group is not a second process, and a c
     try std.testing.expect(other.process_boundary);
 }
 
-// --- the thread order (v18, ADR 0067) -----------------------------------------------------
-//
-// Every shape below is one process (pid 7) whose main thread is tid 7. The `aux` of a
-// `thread_started` record is "<creator> <records the creator had written> <ordinal>", and a
-// join names its target by "<creator> <ordinal>". The creator's record count is what the
-// shim's slot would hold at the `pthread_create` call: `shim_ready` is the first record it
-// writes, so a create right after it carries 1, and the `.thread` record the creator writes
-// afterwards is not in that count.
-
 const R = contract.Record;
 fn rd(tid: u64, op: contract.OpClass, seq: u32, path: []const u8, aux: []const u8) R {
     return .{ .op = op, .seq = seq, .pid = 7, .tid = tid, .path = path, .aux = aux };
@@ -2667,8 +1976,6 @@ test "a worker that writes and is joined before the main thread writes is one or
 
 test "the main thread writes, creates a worker that writes, joins it and writes again: judged, two hand-overs (v18)" {
     var tb = unboundedBudget(std.testing.allocator);
-    // virtualenv's shape. The creation orders the main thread's first writes before the
-    // worker's, the join orders the worker's before the main thread's last.
     var info = try readShape("v18-turns", &.{
         rd(7, .shim_ready, 0, "/tmp/s", ""),
         rd(7, .open, 1, "/tmp/s/a", ""),
@@ -2687,7 +1994,6 @@ test "the main thread writes, creates a worker that writes, joins it and writes 
 
 test "two workers created by the same thread that both write are siblings: refused, and the refusal names both (v18)" {
     var tb = unboundedBudget(std.testing.allocator);
-    // beets' shape. Neither worker created or joined the other.
     var info = try readShape("v18-siblings", &.{
         rd(7, .shim_ready, 0, "/tmp/s", ""),
         rd(7, .thread, 0, "", ""),
@@ -2780,10 +2086,6 @@ test "a grandchild that writes, joined by the worker, joined by the main thread:
 
 test "the child's clock is the creator's at the creation, not at the child's start: a write after the creation is not inherited (v18, R2 M7)" {
     var tb = unboundedBudget(std.testing.allocator);
-    // The main thread writes, creates, writes again, and only then does the worker's start
-    // record reach the trace. The worker's clock must hold the first write and not the
-    // second; a reader that took the creator's clock "now" would order the second before
-    // the worker's write and judge a run whose two writes are concurrent.
     var racy = try readShape("v18-late-start", &.{
         rd(7, .shim_ready, 0, "/tmp/s", ""),
         rd(7, .open, 1, "/tmp/s/a", ""),
@@ -2796,8 +2098,6 @@ test "the child's clock is the creator's at the creation, not at the child's sta
     const second = racy.second_writer_thread orelse return error.TestUnexpectedResult;
     try std.testing.expectEqual(@as(u64, 9), second.tid);
     try std.testing.expectEqualStrings("/tmp/s/b", (racy.first_writer_thread orelse return error.TestUnexpectedResult).path);
-    // The control: no write between the creation and the worker's, and the same late
-    // start record is in order.
     var ordered = try readShape("v18-late-start-ok", &.{
         rd(7, .shim_ready, 0, "/tmp/s", ""),
         rd(7, .open, 1, "/tmp/s/a", ""),
@@ -2812,11 +2112,6 @@ test "the child's clock is the creator's at the creation, not at the child's sta
 
 test "a snapshot is filed under the count after its record: a creation before a join does not inherit the join (v18, R2 C3)" {
     var tb = unboundedBudget(std.testing.allocator);
-    // tid 9 writes. The main thread creates tid 10 (its third record was the `.thread`; the
-    // call carried 3), then joins tid 9. tid 10's start arrives after the join. Its clock is
-    // the main thread's at count 3 — before the join — so tid 10 and tid 9 are concurrent
-    // and tid 10's write refuses. Filed under the count before the record, the join's
-    // snapshot would carry count 3 and tid 10 would inherit tid 9's write.
     var before = try readShape("v18-snap-before-join", &.{
         rd(7, .shim_ready, 0, "/tmp/s", ""),
         rd(7, .thread, 0, "", ""),
@@ -2829,7 +2124,6 @@ test "a snapshot is filed under the count after its record: a creation before a 
     }, &tb);
     defer before.deinit();
     try std.testing.expectEqual(@as(u64, 10), (before.second_writer_thread orelse return error.TestUnexpectedResult).tid);
-    // The control: created after the join (the call carried 4), tid 10 inherits it.
     var after = try readShape("v18-snap-after-join", &.{
         rd(7, .shim_ready, 0, "/tmp/s", ""),
         rd(7, .thread, 0, "", ""),
@@ -2856,8 +2150,6 @@ test "a start whose creator is unknown, or whose count the creator never reached
     }, &tb);
     defer unknown_creator.deinit();
     try std.testing.expectEqual(@as(u32, 1), unknown_creator.thread_unpaired_starts);
-    // The join names the pair the start carried, so it resolves — and tid 9's clock, having
-    // no creator, still orders tid 9's own write before the joiner's.
     try std.testing.expectEqual(@as(u32, 1), unknown_creator.thread_joins);
     try std.testing.expectEqual(@as(?Op, null), unknown_creator.second_writer_thread);
     var ahead = try readShape("v18-count-ahead", &.{
@@ -2897,9 +2189,6 @@ test "a join the shim could not name draws no edge (v18)" {
 
 test "a thread id the kernel recycled is a new thread: a join of the earlier one carries nothing the later one wrote (v18, R2 M5)" {
     var tb = unboundedBudget(std.testing.allocator);
-    // tid 9 is created, writes nothing, exits unjoined; the kernel hands 9 to the next
-    // creation, which writes. The main thread joins the FIRST 9 by its pair and writes: that
-    // join must not order the second 9's write before the main thread's.
     var reused = try readShape("v18-tid-reuse", &.{
         rd(7, .shim_ready, 0, "/tmp/s", ""),
         rd(7, .thread, 0, "", ""),
@@ -2913,7 +2202,6 @@ test "a thread id the kernel recycled is a new thread: a join of the earlier one
     defer reused.deinit();
     try std.testing.expectEqual(@as(u64, 7), (reused.second_writer_thread orelse return error.TestUnexpectedResult).tid);
     try std.testing.expectEqual(@as(u32, 1), reused.thread_joins);
-    // The control: joining the second 9 orders its write.
     var joined_second = try readShape("v18-tid-reuse-ok", &.{
         rd(7, .shim_ready, 0, "/tmp/s", ""),
         rd(7, .thread, 0, "", ""),
@@ -2945,10 +2233,6 @@ test "an image change starts the order over: the thread that survives it writes 
 }
 
 test "after an image change the surviving thread's count matches the shim's, so a child created after its write does not inherit the write (v18, review P0)" {
-    // The new image's `shim_ready` is the shim's first record through the surviving thread's
-    // slot (written = 1). The reader resets the process's order on it, and must count it —
-    // uncounted, the reader's count trailed by one, a creation reported at 2 was rebuilt at
-    // the reader's second record, which was the write made AFTER the creation, and the
     // child's write was judged in order with a write it raced. The `.thread` record is left
     // out here on purpose — the shim drops it when re-entered (ADR 0067 decision 3), and with
     // it in, the one-record slip lands on a record that is not a kill point and the verdict
@@ -2967,8 +2251,6 @@ test "after an image change the surviving thread's count matches the shim's, so 
     defer racy.deinit();
     try std.testing.expectEqual(@as(u32, 1), racy.exec_continuations);
     try std.testing.expectEqual(@as(u64, 9), (racy.second_writer_thread orelse return error.TestUnexpectedResult).tid);
-    // The control: created after the write (the call carried 3: announcement, open, write).
-    // This arm is what catches counting the announcement twice.
     var ordered = try readShape("v18-exec-count-ok", &.{
         rd(7, .shim_ready, 0, "/tmp/s", ""),
         rd(7, .exec, 0, "", ""),
@@ -2984,10 +2266,6 @@ test "after an image change the surviving thread's count matches the shim's, so 
 }
 
 test "a start record is a recorded creation: with every `.thread` dropped, the account does not call the thread unrecorded (v18, review)" {
-    // The creator's `.thread` is dropped when the shim is re-entered; the child's start is
-    // written from its own stack and is not. A run whose only creation records are starts
-    // is not one whose threads the shim never saw — and its writer, ordered by the
-    // creation, is judged, not counted as a floor.
     var tb = unboundedBudget(std.testing.allocator);
     var info = try readShape("v18-start-only", &.{
         rd(7, .shim_ready, 0, "/tmp/s", ""),
@@ -3012,15 +2290,12 @@ test "more threads than the shim has slots for do not break the reader (v18, R2 
     var i: usize = 0;
     var auxes: [70][24]u8 = undefined;
     while (i < 70) : (i += 1) {
-        // Created after the main thread's three records (its announcement, one `.thread`
-        // for the first creation, its write), so each child's clock holds that write.
         const aux = std.fmt.bufPrint(&auxes[i], "7 3 {d}", .{i + 1}) catch unreachable;
         records[3 + i] = rd(100 + @as(u64, i), .thread_started, 0, "", aux);
     }
     records[73] = rd(169, .open, 2, "/tmp/s/z", "");
     var info = try readShape("v18-many", &records, &tb);
     defer info.deinit();
-    // The last thread's write is ordered after the main thread's by its creation.
     try std.testing.expectEqual(@as(?Op, null), info.second_writer_thread);
     try std.testing.expectEqual(@as(u32, 1), info.thread_turns);
     try std.testing.expectEqual(@as(u32, 0), info.thread_unpaired_starts);
