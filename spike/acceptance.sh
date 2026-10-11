@@ -12490,9 +12490,6 @@ fi
 
 echo ""
 echo "=========== check 25: a mount inside the state directory is refused before anything is removed (#817) ==========="
-# SECURITY.md: Sideeye empties the state directory you name and removes nothing mounted
-# inside it. Mounting needs root; SIDEEYE_EXPECT_MOUNT=1 (CI, passwordless sudo) makes a host
-# that cannot mount red instead of NOT MEASURED.
 if [ "$(id -u)" = "0" ]; then
     mnt() { mount "$@"; }
     umnt() { umount "$@"; }
@@ -12601,8 +12598,8 @@ EOF
         fails=$((fails + 1))
     fi
 
-    # A bind mount made during the run, by the checker while it is being falsified: nothing about
-    # it is in the state's first scan, and the next restore has to see it anyway.
+    # Not a mount made before the run: the first scan would name it, and the watch on the mount
+    # table would go untested.
     mkdir -p "$M/stateF/sub"
     cat > "$M/check-mounts.sh" <<EOF
 #!/bin/sh

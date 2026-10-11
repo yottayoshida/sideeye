@@ -677,8 +677,6 @@ jobs:
           echo "$out" | grep -q "before rename" || { echo "next operation not named"; exit 1; }
           echo "$out" | grep -q "NOT VERIFIED" || { echo "weaker claim not labelled"; exit 1; }
 
-      # #817 (ADR 0116): macOS has no mount table check, so a disk image attached inside the state
-      # is refused by its device number, named, before the walk reads or removes anything there.
       - name: A disk image attached inside the state is refused by name, its contents untouched (#817)
         run: |
           set -eu
@@ -705,8 +703,6 @@ jobs:
           echo "$out" | grep -qF "sub is a mount point or another device inside the state directory" || { echo "the mount point was not named"; exit 1; }
           [ "$kept" = "precious" ] || { echo "the attached image lost its file: $kept"; exit 1; }
 
-          # replay --fresh-state empties the case's state before setup and before any snapshot:
-          # the scan by device has to name the image there too, before anything is removed.
           rm -rf /tmp/ci-mnt/state /tmp/ci-mnt/work
           mkdir -p /tmp/ci-mnt/state
           zig cc -o /tmp/ci-mnt/toy-bug -DBUGGY=1 spike/toys/toy.c

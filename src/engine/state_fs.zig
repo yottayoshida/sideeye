@@ -214,8 +214,7 @@ fn relInsideRoot(path: []const u8, root: []const u8) ?[]const u8 {
     return path[std.mem.trimEnd(u8, root, "/").len + 1 ..];
 }
 
-/// The fifth field, with the kernel's `\ooo` escapes for space, tab, newline and backslash
-/// undone. Null for a line that does not parse or a path that does not fit: an unread mount
+/// Not skipped when a line does not parse or a path does not fit: null, since an unread mount
 /// point could be the one inside the state.
 fn mountPointOfLine(line: []const u8, out: []u8) ?[]const u8 {
     var fields = std.mem.splitScalar(u8, line, ' ');
@@ -248,9 +247,8 @@ fn octalEscape(s: []const u8) ?u8 {
     return if (v > 255) null else @intCast(v);
 }
 
-/// A line longer than the buffer comes back as its head, and the rest of it is read past: the
-/// mount point is the fifth field, ahead of the options an overlay's layer list makes long. Do
-/// not fail the scan on a long line — one such line on a host would refuse every run there.
+/// Do not fail on a line longer than the buffer: one such line would refuse every run on that
+/// host, and its head still holds the mount point, ahead of the options an overlay makes long.
 const MountinfoLines = struct {
     fd: c_int,
     buf: [16 * 1024]u8 = undefined,
@@ -2207,10 +2205,8 @@ test "this file's public surface is the twenty-three the facade re-exports (#491
     // compare the same declaration to itself. So the count is checked here instead, the way
     // `judge.zig` checks its eight. `std.meta.declarations` lists public declarations only.
     //
-    // Another public declaration is not a mistake by itself — it is a new name for the
-    // facade to re-export, and this number moves with it: nineteen until #535 added
-    // `EntryRel` and `EntryDiag`, twenty-one until #817 added `MountScan` and
-    // `firstMountInside`, twenty-three since.
+    // Do not read a higher count as a mistake by itself: a new public declaration is a new
+    // name for the facade to re-export.
     try std.testing.expectEqual(@as(usize, 23), std.meta.declarations(@This()).len);
 }
 
