@@ -599,11 +599,11 @@ pub fn runServer(gpa: std.mem.Allocator) void {
     var buf: [256 * 1024]u8 = undefined;
     var lines: Lines = .{ .buf = &buf };
     while (true) {
-        while (lines.next()) |line| handle(gpa, self, line);
+        while (lines.next()) |item| handleItem(gpa, self, item);
         const space = lines.space();
         const n = posix.read(0, space.ptr, space.len);
         if (n <= 0) {
-            if (lines.finish()) |line| handle(gpa, self, line);
+            if (lines.finish()) |item| handleItem(gpa, self, item);
             return;
         }
         lines.commit(@intCast(n));
@@ -615,26 +615,234 @@ fn stopServerForSignal(sig: c_int) noreturn {
     posix.dieBySignal(sig);
 }
 
+fn handleItem(gpa: std.mem.Allocator, self: []const u8, item: Lines.Item) void {
+    switch (item) {
+        .line => |line| handle(gpa, self, line),
+        .oversized => |o| {
+            var arena_state = std.heap.ArenaAllocator.init(gpa);
+            defer arena_state.deinit();
+            switch (routeOversized(arena_state.allocator(), o)) {
+                .reply => |r| emit(r),
+                .none, .call => {},
+            }
+        },
+    }
+}
+
+/// What the streaming read of a line too long for the buffer could establish.
+pub const Oversized = struct {
+    /// Bytes a line may hold, its newline not counted.
+    limit: usize,
+    verdict: enum { blank, unparsed, not_object, notification, request },
+    /// The top-level `id` when it is an integer that fits in 64 bits or a string of at most
+    /// `IdFinder.max_id` bytes. A string points into the `Lines` that read it, until its next line.
+    id: std.json.Value = .null,
+    /// Read as `unparsed` only because the nesting outgrew `IdFinder.max_depth`.
+    too_deep: bool = false,
+};
+
+const parse_error_reply = "{\"jsonrpc\":\"2.0\",\"id\":null,\"error\":{\"code\":-32700,\"message\":\"Parse error\"}}";
+const invalid_request_reply = "{\"jsonrpc\":\"2.0\",\"id\":null,\"error\":{\"code\":-32600,\"message\":\"Invalid Request\"}}";
+
+/// The answer `route` would give the same line were it short enough to hold, as far as a
+/// constant-memory read can tell: a duplicate key below the top level or one other than `id` at
+/// it, an `id` over
+/// `IdFinder.max_id` bytes, and nesting deeper than `IdFinder.max_depth` are where it differs.
+pub fn routeOversized(arena: std.mem.Allocator, o: Oversized) Route {
+    return switch (o.verdict) {
+        .blank => .none,
+        .unparsed => .{ .reply = parse_error_reply },
+        .not_object => .{ .reply = invalid_request_reply },
+        .notification => .none,
+        .request => reply(errorLine(arena, o.id, -32600, std.fmt.allocPrint(arena, "Invalid Request: the line is longer than {d} bytes, this server's limit", .{o.limit}) catch "Invalid Request: the line is longer than this server's limit")),
+    };
+}
+
+/// Follows a JSON text fed in pieces and keeps only its top-level `id`.
+pub const IdFinder = struct {
+    pub const max_id = 128;
+    pub const max_depth = 4096;
+
+    scanner: std.json.Scanner,
+    fba: std.heap.FixedBufferAllocator,
+    depth_buf: [max_depth / 4]u8 = undefined,
+    failed: bool = false,
+    too_deep: bool = false,
+    nonblank: bool = false,
+    done: bool = false,
+    object: ?bool = null,
+    expect_key: bool = false,
+    key: [3]u8 = undefined,
+    key_len: usize = 0,
+    in_id: bool = false,
+    ids: usize = 0,
+    id_kind: enum { other, number, string } = .other,
+    id_buf: [max_id]u8 = undefined,
+    id_len: usize = 0,
+    id_over: bool = false,
+
+    pub fn start(self: *IdFinder) void {
+        self.* = .{ .scanner = undefined, .fba = undefined };
+        self.fba = std.heap.FixedBufferAllocator.init(&self.depth_buf);
+        self.scanner = std.json.Scanner.initStreaming(self.fba.allocator());
+        self.scanner.ensureTotalStackCapacity(max_depth) catch {
+            self.failed = true;
+        };
+    }
+
+    pub fn feed(self: *IdFinder, bytes: []const u8) void {
+        if (!self.nonblank) self.nonblank = std.mem.indexOfNone(u8, bytes, " \t\r") != null;
+        if (self.failed or self.done or bytes.len == 0) return;
+        self.scanner.feedInput(bytes);
+        self.pull();
+    }
+
+    pub fn end(self: *IdFinder, limit: usize) Oversized {
+        if (!self.failed and !self.done) {
+            self.scanner.endInput();
+            self.pull();
+        }
+        if (!self.nonblank) return .{ .limit = limit, .verdict = .blank };
+        if (self.failed or !self.done or self.ids > 1) return .{ .limit = limit, .verdict = .unparsed, .too_deep = self.too_deep };
+        if (self.object != true) return .{ .limit = limit, .verdict = .not_object };
+        if (self.ids == 0) return .{ .limit = limit, .verdict = .notification };
+        return .{ .limit = limit, .verdict = .request, .id = self.idValue() };
+    }
+
+    fn idValue(self: *const IdFinder) std.json.Value {
+        if (self.id_over) return .null;
+        const raw = self.id_buf[0..self.id_len];
+        return switch (self.id_kind) {
+            .string => .{ .string = raw },
+            .number => if (std.json.Scanner.isNumberFormattedLikeAnInteger(raw))
+                (if (std.fmt.parseInt(i64, raw, 10)) |i| .{ .integer = i } else |_| .null)
+            else
+                .null,
+            .other => .null,
+        };
+    }
+
+    fn pull(self: *IdFinder) void {
+        while (!self.failed and !self.done) {
+            const tok = self.scanner.next() catch |e| switch (e) {
+                error.BufferUnderrun => return,
+                error.OutOfMemory => {
+                    self.failed = true;
+                    self.too_deep = true;
+                    return;
+                },
+                else => {
+                    self.failed = true;
+                    return;
+                },
+            };
+            self.take(tok);
+        }
+    }
+
+    fn take(self: *IdFinder, tok: std.json.Token) void {
+        if (tok == .end_of_document) {
+            self.done = true;
+            return;
+        }
+        if (self.object == null) {
+            self.object = tok == .object_begin;
+            self.expect_key = true;
+            return;
+        }
+        if (self.object != true) return;
+        if (self.scanner.stackHeight() != 1) return;
+        switch (tok) {
+            .partial_string => |s| self.text(s),
+            .partial_string_escaped_1 => |s| self.text(&s),
+            .partial_string_escaped_2 => |s| self.text(&s),
+            .partial_string_escaped_3 => |s| self.text(&s),
+            .partial_string_escaped_4 => |s| self.text(&s),
+            .string => |s| {
+                self.text(s);
+                if (self.expect_key) self.keyDone() else self.valueDone(.string);
+            },
+            .partial_number => |s| self.text(s),
+            .number => |s| {
+                self.text(s);
+                self.valueDone(.number);
+            },
+            .true, .false, .null => self.valueDone(.other),
+            .object_end, .array_end => self.valueDone(.other),
+            else => {},
+        }
+    }
+
+    fn text(self: *IdFinder, s: []const u8) void {
+        if (self.expect_key) {
+            if (self.key_len + s.len > self.key.len) {
+                self.key_len = self.key.len + 1;
+                return;
+            }
+            @memcpy(self.key[self.key_len..][0..s.len], s);
+            self.key_len += s.len;
+        } else if (self.in_id) {
+            if (self.id_len + s.len > self.id_buf.len) {
+                self.id_over = true;
+                return;
+            }
+            @memcpy(self.id_buf[self.id_len..][0..s.len], s);
+            self.id_len += s.len;
+        }
+    }
+
+    fn keyDone(self: *IdFinder) void {
+        self.in_id = self.key_len == 2 and std.mem.eql(u8, self.key[0..2], "id");
+        if (self.in_id) {
+            self.ids += 1;
+            self.id_len = 0;
+            self.id_over = false;
+            self.id_kind = .other;
+        }
+        self.key_len = 0;
+        self.expect_key = false;
+    }
+
+    fn valueDone(self: *IdFinder, kind: @TypeOf(self.id_kind)) void {
+        if (self.in_id) self.id_kind = kind;
+        self.in_id = false;
+        self.expect_key = true;
+    }
+};
 pub const Lines = struct {
     buf: []u8,
     filled: usize = 0,
     draining: bool = false,
+    finder: IdFinder = undefined,
     /// Shift lazily, at the next call: the slice `next` returned points into `buf`.
     taken: usize = 0,
 
-    pub fn next(self: *Lines) ?[]const u8 {
+    pub const Item = union(enum) {
+        line: []const u8,
+        oversized: Oversized,
+    };
+
+    pub fn next(self: *Lines) ?Item {
         self.release();
-        while (std.mem.indexOfScalar(u8, self.buf[0..self.filled], '\n')) |nl| {
-            const drained = self.draining;
+        if (self.draining) {
+            const nl = std.mem.indexOfScalar(u8, self.buf[0..self.filled], '\n');
+            self.finder.feed(self.buf[0 .. nl orelse self.filled]);
+            const n = nl orelse {
+                self.filled = 0;
+                return null;
+            };
             self.draining = false;
-            if (!drained) {
-                self.taken = nl + 1;
-                return self.buf[0..nl];
-            }
-            self.shift(nl + 1);
+            self.taken = n + 1;
+            return .{ .oversized = self.finder.end(self.buf.len - 1) };
+        }
+        if (std.mem.indexOfScalar(u8, self.buf[0..self.filled], '\n')) |nl| {
+            self.taken = nl + 1;
+            return .{ .line = self.buf[0..nl] };
         }
         if (self.filled == self.buf.len) {
             self.draining = true;
+            self.finder.start();
+            self.finder.feed(self.buf[0..self.filled]);
             self.filled = 0;
         }
         return null;
@@ -649,12 +857,18 @@ pub const Lines = struct {
         self.filled += n;
     }
 
-    pub fn finish(self: *Lines) ?[]const u8 {
+    pub fn finish(self: *Lines) ?Item {
         self.release();
-        if (self.filled == 0 or self.draining) return null;
+        if (self.draining) {
+            self.finder.feed(self.buf[0..self.filled]);
+            self.filled = 0;
+            self.draining = false;
+            return .{ .oversized = self.finder.end(self.buf.len - 1) };
+        }
+        if (self.filled == 0) return null;
         const last = self.buf[0..self.filled];
         self.filled = 0;
-        return last;
+        return .{ .line = last };
     }
 
     fn release(self: *Lines) void {
@@ -708,9 +922,9 @@ pub fn route(arena: std.mem.Allocator, line: []const u8) Route {
     if (trimmed.len == 0) return .none;
 
     const parsed = std.json.parseFromSliceLeaky(std.json.Value, arena, trimmed, .{}) catch
-        return .{ .reply = "{\"jsonrpc\":\"2.0\",\"id\":null,\"error\":{\"code\":-32700,\"message\":\"Parse error\"}}" };
+        return .{ .reply = parse_error_reply };
     if (parsed != .object)
-        return .{ .reply = "{\"jsonrpc\":\"2.0\",\"id\":null,\"error\":{\"code\":-32600,\"message\":\"Invalid Request\"}}" };
+        return .{ .reply = invalid_request_reply };
     const obj = parsed.object;
     const id = obj.get("id"); // ?Value; absent => notification
     const jsonrpc_ok = switch (obj.get("jsonrpc") orelse std.json.Value{ .null = {} }) {
@@ -1871,40 +2085,142 @@ fn readFile(arena: std.mem.Allocator, path: []const u8, cap: usize) ?[]const u8 
     return list.items;
 }
 
-test "Lines: whole lines across reads, an oversized line dropped whole, the last line at EOF" {
+const LinesFeed = struct {
+    fn put(l: *Lines, bytes: []const u8) void {
+        const sp = l.space();
+        @memcpy(sp[0..bytes.len], bytes);
+        l.commit(bytes.len);
+    }
+    fn line(item: ?Lines.Item) []const u8 {
+        return switch (item orelse return "<none>") {
+            .line => |t| t,
+            .oversized => "<oversized>",
+        };
+    }
+};
+
+test "Lines: whole lines across reads, an over-long line read through to its end, the last line at EOF" {
     var buf: [8]u8 = undefined;
     var lines: Lines = .{ .buf = &buf };
-    const Feed = struct {
-        fn put(l: *Lines, bytes: []const u8) void {
-            const sp = l.space();
-            @memcpy(sp[0..bytes.len], bytes);
-            l.commit(bytes.len);
-        }
-    };
-    Feed.put(&lines, "ab\ncd\nef");
-    try std.testing.expectEqualStrings("ab", lines.next().?);
-    try std.testing.expectEqualStrings("cd", lines.next().?);
+    LinesFeed.put(&lines, "ab\ncd\nef");
+    try std.testing.expectEqualStrings("ab", LinesFeed.line(lines.next()));
+    try std.testing.expectEqualStrings("cd", LinesFeed.line(lines.next()));
     try std.testing.expect(lines.next() == null);
-    Feed.put(&lines, "g\n");
-    try std.testing.expectEqualStrings("efg", lines.next().?);
+    LinesFeed.put(&lines, "g\n");
+    try std.testing.expectEqualStrings("efg", LinesFeed.line(lines.next()));
     try std.testing.expect(lines.next() == null);
-    Feed.put(&lines, "12345678");
+    LinesFeed.put(&lines, "12345678");
     try std.testing.expect(lines.next() == null);
-    Feed.put(&lines, "9\nok\n");
-    try std.testing.expectEqualStrings("ok", lines.next().?);
+    LinesFeed.put(&lines, "9\nok\n");
+    try std.testing.expectEqualStrings("<oversized>", LinesFeed.line(lines.next()));
+    try std.testing.expectEqualStrings("ok", LinesFeed.line(lines.next()));
     try std.testing.expect(lines.next() == null);
-    Feed.put(&lines, "end");
+    LinesFeed.put(&lines, "end");
     try std.testing.expect(lines.next() == null);
-    try std.testing.expectEqualStrings("end", lines.finish().?);
+    try std.testing.expectEqualStrings("end", LinesFeed.line(lines.finish()));
     try std.testing.expect(lines.finish() == null);
 
     var buf2: [4]u8 = undefined;
     var dropping: Lines = .{ .buf = &buf2 };
-    Feed.put(&dropping, "abcd");
+    LinesFeed.put(&dropping, "abcd");
     try std.testing.expect(dropping.next() == null);
-    Feed.put(&dropping, "ef");
+    LinesFeed.put(&dropping, "ef");
     try std.testing.expect(dropping.next() == null);
+    try std.testing.expectEqualStrings("<oversized>", LinesFeed.line(dropping.finish()));
     try std.testing.expect(dropping.finish() == null);
+}
+
+/// Feeds `text` and a newline through a 32-byte `Lines`, `step` bytes per read, and returns the
+/// one item the over-long line produced.
+fn oversizedThrough(text: []const u8, step: usize, id_copy: *[IdFinder.max_id]u8) !Oversized {
+    var buf: [32]u8 = undefined;
+    var lines: Lines = .{ .buf = &buf };
+    var off: usize = 0;
+    var got: ?Oversized = null;
+    const all = try std.testing.allocator.alloc(u8, text.len + 1);
+    defer std.testing.allocator.free(all);
+    @memcpy(all[0..text.len], text);
+    all[text.len] = '\n';
+    while (true) {
+        while (lines.next()) |item| switch (item) {
+            .oversized => |o| {
+                if (got != null) return error.TwoItems;
+                got = o;
+            },
+            .line => return error.ShortLine,
+        };
+        if (off == all.len) break;
+        const sp = lines.space();
+        const n = @min(sp.len, step, all.len - off);
+        @memcpy(sp[0..n], all[off..][0..n]);
+        lines.commit(n);
+        off += n;
+    }
+    if (lines.finish() != null) return error.TwoItems;
+    var o = got orelse return error.NoItem;
+    if (o.id == .string) {
+        @memcpy(id_copy[0..o.id.string.len], o.id.string);
+        o.id = .{ .string = id_copy[0..o.id.string.len] };
+    }
+    return o;
+}
+
+test "an over-long request is answered under its own top-level id, wherever in the line the id sits (#820)" {
+    const pad = "\"params\":{\"name\":\"sideeye_preflight\",\"arguments\":{\"config_path\":\"a/very/long/path/sideeye.toml\",\"id\":99}}";
+    const Case = struct { text: []const u8, want: Oversized };
+    const cases = [_]Case{
+        .{ .text = "{\"jsonrpc\":\"2.0\",\"id\":41,\"method\":\"tools/call\"," ++ pad ++ "}", .want = .{ .limit = 31, .verdict = .request, .id = .{ .integer = 41 } } },
+        .{ .text = "{\"method\":\"tools/call\"," ++ pad ++ ",\"jsonrpc\":\"2.0\",\"id\":42}", .want = .{ .limit = 31, .verdict = .request, .id = .{ .integer = 42 } } },
+        .{ .text = "{\"jsonrpc\":\"2.0\",\"method\":\"x\"," ++ pad ++ ",\"id\":\"a\\n\\u0062\"}", .want = .{ .limit = 31, .verdict = .request, .id = .{ .string = "a\nb" } } },
+        .{ .text = "{\"jsonrpc\":\"2.0\",\"method\":\"x\"," ++ pad ++ ",\"\\u0069d\":7}", .want = .{ .limit = 31, .verdict = .request, .id = .{ .integer = 7 } } },
+        .{ .text = "{\"jsonrpc\":\"2.0\",\"method\":\"x\"," ++ pad ++ ",\"id\":null}", .want = .{ .limit = 31, .verdict = .request } },
+        .{ .text = "{\"jsonrpc\":\"2.0\",\"method\":\"x\"," ++ pad ++ ",\"id\":1.5}", .want = .{ .limit = 31, .verdict = .request } },
+        .{ .text = "{\"jsonrpc\":\"2.0\",\"method\":\"x\"," ++ pad ++ ",\"id\":[1]}", .want = .{ .limit = 31, .verdict = .request } },
+        .{ .text = "{\"jsonrpc\":\"2.0\",\"id\":\"" ++ "x" ** 129 ++ "\"," ++ pad ++ "}", .want = .{ .limit = 31, .verdict = .request } },
+        .{ .text = "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/x\"," ++ pad ++ "}", .want = .{ .limit = 31, .verdict = .notification } },
+        .{ .text = "{\"jsonrpc\":\"2.0\",\"id\":1," ++ pad ++ ",\"id\":2}", .want = .{ .limit = 31, .verdict = .unparsed } },
+        .{ .text = "{\"jsonrpc\":\"2.0\",\"id\":1," ++ pad, .want = .{ .limit = 31, .verdict = .unparsed } },
+        .{ .text = "{\"jsonrpc\":\"2.0\",\"id\":1," ++ pad ++ "} trailing", .want = .{ .limit = 31, .verdict = .unparsed } },
+        .{ .text = "[{\"jsonrpc\":\"2.0\",\"id\":1," ++ pad ++ "}]", .want = .{ .limit = 31, .verdict = .not_object } },
+        .{ .text = " \t\r" ** 30, .want = .{ .limit = 31, .verdict = .blank } },
+    };
+    for (cases) |c| {
+        var step: usize = 1;
+        while (step <= 40) : (step += 1) {
+            var id_copy: [IdFinder.max_id]u8 = undefined;
+            const got = try oversizedThrough(c.text, step, &id_copy);
+            errdefer std.debug.print("text {s} step {d}\n", .{ c.text, step });
+            try std.testing.expectEqual(c.want.limit, got.limit);
+            try std.testing.expectEqual(c.want.verdict, got.verdict);
+            switch (c.want.id) {
+                .integer => |i| {
+                    try std.testing.expect(got.id == .integer);
+                    try std.testing.expectEqual(i, got.id.integer);
+                },
+                .string => |t| {
+                    try std.testing.expect(got.id == .string);
+                    try std.testing.expectEqualStrings(t, got.id.string);
+                },
+                else => try std.testing.expect(got.id == .null),
+            }
+        }
+    }
+}
+
+test "the reply to an over-long line names the limit under the request's id, and a notification gets none (#820)" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const req = routeOversized(a, .{ .limit = 262143, .verdict = .request, .id = .{ .integer = 42 } }).reply;
+    try std.testing.expectEqualStrings("{\"jsonrpc\":\"2.0\",\"id\":42,\"error\":{\"code\":-32600,\"message\":\"Invalid Request: the line is longer than 262143 bytes, this server's limit\"}}", req);
+    const str = routeOversized(a, .{ .limit = 9, .verdict = .request, .id = .{ .string = "a\nb\"" } }).reply;
+    try std.testing.expect(std.mem.indexOfScalar(u8, str, '\n') == null);
+    try std.testing.expectEqualStrings("a\nb\"", (try std.json.parseFromSliceLeaky(std.json.Value, a, str, .{})).object.get("id").?.string);
+    try std.testing.expect(routeOversized(a, .{ .limit = 9, .verdict = .notification }) == .none);
+    try std.testing.expect(routeOversized(a, .{ .limit = 9, .verdict = .blank }) == .none);
+    try std.testing.expect(route(a, " \t\r") == .none);
+    try std.testing.expectEqualStrings(route(a, "{").reply, routeOversized(a, .{ .limit = 9, .verdict = .unparsed }).reply);
+    try std.testing.expectEqualStrings(route(a, "[1]").reply, routeOversized(a, .{ .limit = 9, .verdict = .not_object }).reply);
 }
 
 test "route: replies are built, not written, and a tool call is returned rather than run" {
