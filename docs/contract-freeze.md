@@ -368,6 +368,15 @@ stay the same.
    as an honest refusal and not a verdict about a shifted address: the reason says why the case's
    world could never have been the target's, and what the case said about the target was not true.
    The one such FAIL in this repository's records is xmake's, above.
+   **Read on 2026-10-11** (#814, ADR 0121): a case saved from a run in which a file's new bytes were
+   accounted for only by a record that cannot have put them there — the truncating `open` beside a
+   reflink clone or an io_uring write, a stream left for `exit` to flush — no longer reproduces.
+   Replay records again and reconciles before it compares the case, so such a case is refused
+   `state_changed_unaccounted` — or, replayed under `--oracle` with a reflink clone in it,
+   `unsupported_syscall_observed`, which the oracle raises first. Read as an honest refusal and not a verdict: the recording the case
+   came from was judged on an account that missed the write, and the FAIL it found is still a world
+   the target reached, but the case's numbering no longer has a recording this binary accepts.
+
    **Read on 2026-10-11** (#815, ADR 0118): a replay's recording now starts from the rebuilt
    state. A case saved before, from a target whose operations depend on what the rebuild changes —
    the order a directory lists in on tmpfs, btrfs or XFS above all — can meet a recording whose

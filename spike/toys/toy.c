@@ -70,6 +70,10 @@
  *                  if the exemption ever gives that close an address. The file is created
  *                  by the SETUP, not here: a libc open in this run would name the path
  *                  and alibi the diff by itself
+ *   TOY_TRUNC_THEN_WRITE=raw|libc  (Linux) truncate victim.txt with a libc open and put
+ *                  new bytes in through a raw write (or, the control, libc's). The open
+ *                  names the file but cannot account for bytes, so the raw form must
+ *                  refuse state_changed_unaccounted (#814) and the libc form must not
  *   TOY_READ_FIRST if set, read the current key (a read-only open) before rotating.
  *                  A write-incapable open is not an address (ADR 0003): this toy must
  *                  reach the same crash point count as a plain rotate, and the old
@@ -1269,6 +1273,22 @@ static int cmd_rotate_body(void) {
         if (fd < 0) return 1;
         if (syscall(SYS_unlinkat, AT_FDCWD, p, 0) != 0) { close((int)fd); return 1; }
         close((int)fd);
+    }
+
+    /* #814's shape without a reflink-capable filesystem or liburing: the libc open with
+     * O_TRUNC is recorded and names the file, and the new bytes arrive through a raw write
+     * the shim does not see. `=libc` is the control, the same bytes through libc's write. */
+    if (getenv("TOY_TRUNC_THEN_WRITE")) {
+        char p[512];
+        join_path(p, sizeof p, "victim.txt");
+        int fd = open(p, O_WRONLY | O_TRUNC);
+        if (fd < 0) return 1;
+        const char *bytes = "new-bytes\n";
+        long n = strcmp(getenv("TOY_TRUNC_THEN_WRITE"), "libc") == 0
+            ? (long)write(fd, bytes, strlen(bytes))
+            : syscall(SYS_write, fd, bytes, strlen(bytes));
+        close(fd);
+        if (n != (long)strlen(bytes)) return 1;
     }
 #endif
 
