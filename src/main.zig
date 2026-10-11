@@ -879,14 +879,6 @@ fn phaseDefine(run: *Run) void {
     // realpath'd — state_abs already is, and the flag resolves here — or the /tmp
     // and /private/tmp spellings of the same directory would split on macOS.
     if (args.state_under) |su| {
-        // #717: preflight takes the range only with `--twice`, which empties and rebuilds the
-        // state before its second run; one observed run rebuilds nothing to confine. Here and
-        // not at the flag, so a probe adding the flag to a failing base command meets that
-        // command's own refusal first, as the recovery pair above does.
-        if (mode == .preflight and !args.twice) {
-            undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
-            setupError(.define_invalid, "--state-under applies to preflight only with --twice, which rebuilds the state directory before its second run; one observed run rebuilds nothing");
-        }
         var su_z_buf: [contract.max_path]u8 = undefined;
         const su_z = std.fmt.bufPrintZ(&su_z_buf, "{s}", .{su}) catch {
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
@@ -917,8 +909,6 @@ fn phaseDefine(run: *Run) void {
             // `snapshotOrRefuse` above, same batch that introduced it (#266), found by the
             // review that followed the first fix rather than by the scan that accompanied
             // it. `su_abs` is operator-supplied and takes the same treatment for free.
-            // #717: preflight `--twice` takes the range too, so the sentence names the state
-            // rather than the case's, and both ways past it.
             // #765: and explore. For a config the first way out is to move its state inside the
             // range — the refusal exists for an agent that wrote the state wrong, and telling it
             // to run the same config at the command line, where nothing confines it, would route
@@ -931,11 +921,9 @@ fn phaseDefine(run: *Run) void {
         }
     }
 
-    // `engine.restore` calls `assertSafeRoot` too, but the first world is far downstream:
-    // `--setup` has already run by then, and a define whose operation records nothing
-    // never reaches a world at all. Refusing a system path only after running the
-    // target's setup command against it is not a refusal, so the same predicate runs
-    // here, on the resolved spelling, before anything else touches the state.
+    // Not left to `engine.restore`'s own `assertSafeRoot`: that runs once `--setup` has run
+    // against the state, and refusing a system path after running the target's setup
+    // against it is not a refusal.
     //
     // It sits *after* the --work containment vet on purpose. Both are ahead of every
     // destructive step, so the order does not change what is protected — but `--state /`
@@ -1123,17 +1111,6 @@ fn phaseRecording(run: *Run) void {
     const state_alt = run.define.state_alt;
     const initial = run.initial;
 
-    // The last snapshot that can honestly say "the define did not run" is above this
-    // line; every one below it is at or past the recording run (#330).
-    //
-    // The define itself does not begin here — what follows, up to the recording run
-    // below, is still engine setup (path buffers, argv splitting, the oracle's
-    // executability check). Every refusal in that stretch exits 3, correctly: a
-    // missing `--operation` really is a configuration problem. They can, because they
-    // reach `setupError` directly and never consult this variable. The line is placed
-    // by what reads it: the snapshot cap (#330) and the rewrite disposition (#363).
-    refuse.run_phase = .exploring;
-
     const rec_trace = std.fmt.bufPrint(&run.rec.rec_trace_buf, "{s}/trace-record.bin", .{args.work}) catch setupError(.define_invalid, "path too long");
     removeFile(rec_trace);
 
@@ -1196,38 +1173,16 @@ fn phaseRecording(run: *Run) void {
             setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe syscalls needs a kernel that accepts SECCOMP_RET_TRAP and this one does not (CONFIG_SECCOMP_FILTER); the default --observe wrappers works everywhere", .{mode_from});
     }
 
-    // Read before the spawn, not after: `--twice` reports the interval between the two
-    // runs' STARTS (the cohort protocol's definition, PROTOCOL.md "two or more seconds
-    // apart"), and a mark taken after this run returned would measure the gap between
-    // its end and the next one's beginning instead.
-    // Before the mark, not between it and the spawn. After the run returns, the name in
-    // `op_argv[0]` may resolve to a different file than the one the kernel executed, so
-    // the reading has to happen on this side of the spawn — but it walks a file the
-    // target named and its cost is not bounded by anything this engine controls, and
-    // `--twice` promises the two runs *start* at least two seconds apart (docs/cli.md,
-    // `--help`, CHANGELOG). Sitting between the mark and the spawn, a slow reading is
-    // spent out of that gap, and two starts closer than two seconds would satisfy a wait
-    // computed from a mark taken before it. Taken once per run rather than per world:
-    // this is a cold-path detail, not an observer, and must not join the exploration's
-    // loop.
-    boundary.rec_image = image.observe(arena, op_argv[0], args.cwd, if (std.c.getenv("PATH")) |p| std.mem.span(p) else null);
-
     // The macOS observer runs beside the recording rather than wrapping it, so it is
     // started here and stopped after — and both sentinels live inside the state root,
     // where `fsusage.read` can scope them, and are removed before the snapshot that
     // judges anything sees them.
     var fsu_pid: ?c_int = null;
-    // Each name carries sixteen hex digits of its own entropy (#549), and both are
-    // created O_EXCL. A fixed name would truncate a state file that happened to carry it
-    // — and a failed handshake exits before the initial snapshot is restored, so the
-    // loss would be permanent. O_EXCL makes the overwrite unmakeable rather than
-    // detected; the entropy keeps two concurrent explores over one state directory from
-    // colliding, which the engine's pid used to do, and keeps the closing name out of a
-    // target's reach, which the pid could not (a child derives it with `getppid`).
-    // Built inside the flag's own branch. Constructed unconditionally, the suffix would
-    // push a state root near `contract.max_path` over the limit on runs that never
-    // asked for this observer — a behaviour change in the path this work promises to
-    // leave byte-identical.
+    // Not a fixed name, and not without O_EXCL: it would truncate a state file that carried
+    // it, and a failed handshake exits with no restore after it. Not the engine's pid: two
+    // explores over one state would collide, and a child derives it with `getppid`. Not
+    // built outside the flag's branch: the suffix would push a state root near
+    // `contract.max_path` over the limit on runs that never asked for this observer.
     var fsu_sentinel_a: []const u8 = "";
     var fsu_sentinel_b: []const u8 = "";
     if (args.oracle_fs_usage) {
@@ -1243,8 +1198,22 @@ fn phaseRecording(run: *Run) void {
             setupError(.environment, "could not name the fs_usage sentinels: either getentropy refused to supply the eight bytes each name is drawn from, or the state path plus 40 bytes did not fit the path buffer; refusing to start an observer whose sentinel a target could name");
         fsu_sentinel_a = pair.a;
         fsu_sentinel_b = pair.b;
-        fsu_pid = startFsUsage(gpa, arena, oracle_out, fsu_sentinel_a, 90);
     }
+
+    // Not before the checks above: a mistake they refuse must leave the state as the setup left it.
+    engine.restore(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not restore the state directory before the recording run", state_abs);
+
+    // Not above the rebuild: a rebuild that fails before the operation has run is a SETUP
+    // ERROR, and the rewrite disposition and the snapshot cap read this line to tell it from
+    // one past the recording.
+    refuse.run_phase = .exploring;
+
+    // Not after the spawn: the name may then resolve to another file than the one executed.
+    // Not between the mark and the spawn: an unbounded reading there eats the two seconds
+    // `--twice` promises between its runs' starts. Not per world: it is not an observer.
+    boundary.rec_image = image.observe(arena, op_argv[0], args.cwd, if (std.c.getenv("PATH")) |p| std.mem.span(p) else null);
+
+    if (args.oracle_fs_usage) fsu_pid = startFsUsage(gpa, arena, oracle_out, fsu_sentinel_a, 90);
 
     // The recording run's cgroup (contract v17, #559), made before the mark for the reason the
     // image reading above gives: nothing whose cost this engine does not bound sits between the

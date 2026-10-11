@@ -87,7 +87,8 @@ self-exec, the fresh `report-N.json`, stdin at end-of-file — and answers from 
 - **`twice` is confined like a replay.** It empties and rebuilds the config's state before the
   second run, so the server always passes `--state-under SIDEEYE_MCP_STATE_ROOT` with it, and
   `preflight --twice` takes that flag now (without `--twice` it is refused: one observed run
-  rebuilds nothing). Owner ruling, 2026-10-09: the agent-authored config this tool exists for
+  rebuilds nothing — **amended 2026-10-11, ADR 0118: every preflight rebuilds now, so every one
+  takes the flag and the server passes it on every call**). Owner ruling, 2026-10-09: the agent-authored config this tool exists for
   is not the operator-vetted one ADR 0022 lets an explore through unconfined. *(Since #765, ADR
   0106, the exploration is confined the same way.)* An unconfined
   explore over MCP is the same shape, filed as #765 rather than changed here.

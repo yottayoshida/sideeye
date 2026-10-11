@@ -56,8 +56,8 @@ snapshot, with permission bits carried (a directory with its owner's bits added;
 `/var/lib/myapp` here; sideeye now refuses a root inside a system tree rather than
 emptying it (#267).
 
-If you explore this config or replay its saved cases through the MCP server, know
-that both confine the state to `SIDEEYE_MCP_STATE_ROOT` (default: the server root) —
+If you preflight or explore this config or replay its saved cases through the MCP server,
+know that all three confine the state to `SIDEEYE_MCP_STATE_ROOT` (default: the server root) —
 a state that lives under `/tmp`, as above, needs `SIDEEYE_MCP_STATE_ROOT=/tmp` on the
 server — and the range is one directory, so a config whose state is under the server root
 and not under `/tmp` is then outside it. Widen that variable, never `SIDEEYE_MCP_ROOT`; and with it unset, the
