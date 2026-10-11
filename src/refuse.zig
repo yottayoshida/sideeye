@@ -90,6 +90,12 @@ pub fn snapshotOrRefuse(gpa: std.mem.Allocator, root: []const u8, what: []const 
                 .next = .sideeye_defect,
                 .setup = .internal,
             },
+            error.MountInside => .{
+                .reason = .unsupported_state_entry,
+                .bare = "something is mounted inside the state directory",
+                .next = .environment,
+                .setup = .environment,
+            },
             error.OutOfMemory => unreachable, // refused above
         };
         const reason = answer.reason;
@@ -839,11 +845,11 @@ fn rewriteFailureDisposition(
 ) RewriteDisposition {
     const ends: struct { next: contract.NextStep, setup: contract.SetupErrorReason } = switch (e) {
         error.PathTooLong => .{ .next = .narrow_state, .setup = .define_invalid },
-        error.UnsafeRoot, error.DeleteFailed, error.CreateFailed => .{ .next = .environment, .setup = .environment },
+        error.UnsafeRoot, error.DeleteFailed, error.CreateFailed, error.MountInside => .{ .next = .environment, .setup = .environment },
     };
     const detail: []const u8 = switch (e) {
         error.UnsafeRoot => "the state directory could not be confirmed as the one this run resolved: it now resolves elsewhere (a symlink or a moved parent), it is not a directory, it could not be read at all, or the path names a directory this run neither vetted nor created (one appeared, or replaced another, between the check and the open). Refusing destructive access to it",
-        error.DeleteFailed, error.CreateFailed, error.PathTooLong => doing,
+        error.DeleteFailed, error.CreateFailed, error.PathTooLong, error.MountInside => doing,
     };
     return .{
         .exit = switch (phase) {
@@ -856,8 +862,13 @@ fn rewriteFailureDisposition(
     };
 }
 
-pub fn restoreFailure(e: engine.RestoreError, doing: []const u8) noreturn {
-    const d = rewriteFailureDisposition(run_phase, e, doing);
+pub fn restoreFailure(e: engine.RestoreError, doing: []const u8, root: []const u8) noreturn {
+    var d = rewriteFailureDisposition(run_phase, e, doing);
+    if (e == error.MountInside) if (json_arena) |ja| {
+        var rel: engine.EntryRel = .{};
+        const scan = engine.firstMountInside(root, &rel);
+        d.detail = report.mountInsideDetail(ja, doing, rel.get(), scan == .unlisted);
+    };
     switch (d.exit) {
         .setup => setupError(d.setup_reason, d.detail),
         .unknown => unknown(.state_rewrite_failed, d.detail, d.next),
@@ -867,9 +878,9 @@ pub fn restoreFailure(e: engine.RestoreError, doing: []const u8) noreturn {
 test "a failed rewrite is SETUP_ERROR before exploration and UNKNOWN after, UnsafeRoot keeping its safety wording in both (#363)" {
     const doing = "could not restore the state directory";
     const errs = [_]engine.RestoreError{
-        error.UnsafeRoot, error.DeleteFailed, error.CreateFailed, error.PathTooLong,
+        error.UnsafeRoot, error.DeleteFailed, error.CreateFailed, error.PathTooLong, error.MountInside,
     };
-    try std.testing.expectEqual(@as(usize, 4), @typeInfo(engine.RestoreError).error_set.?.len);
+    try std.testing.expectEqual(@as(usize, 5), @typeInfo(engine.RestoreError).error_set.?.len);
     for (errs) |e| {
         for ([_]SpawnPhase{ .before_exploration, .exploring }) |phase| {
             const d = rewriteFailureDisposition(phase, e, doing);

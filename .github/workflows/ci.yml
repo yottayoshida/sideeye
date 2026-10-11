@@ -234,6 +234,7 @@ jobs:
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
           SIDEEYE_EXPECT_CONTAINED: "0"
+          SIDEEYE_EXPECT_MOUNT: "1"
           SIDEEYE_EXPECT_SHELLS: "1"
 
       # Then in a cgroup delegated to the runner (`spike/in-delegated-cgroup.sh`), where the
@@ -246,6 +247,7 @@ jobs:
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
           SIDEEYE_EXPECT_CONTAINED: "1"
+          SIDEEYE_EXPECT_MOUNT: "1"
 
       # The libc-internal-call class (#39), one member per run. Its own invocation
       # rather than a check inside the acceptance suite: it drives the shipped engine
@@ -674,6 +676,62 @@ jobs:
           echo "$out" | grep -q "after  unlink" || { echo "crash point not named"; exit 1; }
           echo "$out" | grep -q "before rename" || { echo "next operation not named"; exit 1; }
           echo "$out" | grep -q "NOT VERIFIED" || { echo "weaker claim not labelled"; exit 1; }
+
+      - name: A disk image attached inside the state is refused by name, its contents untouched (#817)
+        run: |
+          set -eu
+          rm -rf /tmp/ci-mnt
+          mkdir -p /tmp/ci-mnt/state/sub
+          hdiutil create -size 2m -fs HFS+ -volname mnt817 -quiet /tmp/ci-mnt/img.dmg
+          hdiutil attach -nobrowse -mountpoint /tmp/ci-mnt/state/sub /tmp/ci-mnt/img.dmg >/dev/null
+          printf 'precious\n' > /tmp/ci-mnt/state/sub/precious.txt
+          printf '#!/bin/sh\nprintf flag > "$1/flag"\n' > /tmp/ci-mnt/op.sh
+          chmod 755 /tmp/ci-mnt/op.sh
+          set +e
+          out=$(./zig-out/bin/sideeye explore \
+            --state /tmp/ci-mnt/state \
+            --operation "/tmp/ci-mnt/op.sh /tmp/ci-mnt/state" \
+            --shim "$PWD/zig-out/lib/libsideeye_shim.dylib" \
+            --work /tmp/ci-mnt/work \
+            --allow-unverified 2>&1)
+          rc=$?
+          set -e
+          kept=$(cat /tmp/ci-mnt/state/sub/precious.txt 2>/dev/null || echo GONE)
+          hdiutil detach -quiet /tmp/ci-mnt/state/sub
+          echo "$out"
+          [ "$rc" = "3" ] || { echo "expected SETUP ERROR (exit 3), got $rc"; exit 1; }
+          echo "$out" | grep -qF "sub is a mount point or another device inside the state directory" || { echo "the mount point was not named"; exit 1; }
+          [ "$kept" = "precious" ] || { echo "the attached image lost its file: $kept"; exit 1; }
+
+          rm -rf /tmp/ci-mnt/state /tmp/ci-mnt/work
+          mkdir -p /tmp/ci-mnt/state
+          zig cc -o /tmp/ci-mnt/toy-bug -DBUGGY=1 spike/toys/toy.c
+          set +e
+          ./zig-out/bin/sideeye explore --state /tmp/ci-mnt/state \
+            --setup "/tmp/ci-mnt/toy-bug init" --operation "/tmp/ci-mnt/toy-bug rotate" \
+            --shim "$PWD/zig-out/lib/libsideeye_shim.dylib" \
+            --work /tmp/ci-mnt/work --allow-unverified > /dev/null 2>&1
+          rc=$?
+          set -e
+          [ "$rc" = "1" ] || { echo "the replay leg's explore did not FAIL (exit $rc)"; exit 1; }
+          case_file=$(ls /tmp/ci-mnt/work/cases/*.json | head -1)
+          before_key=$(cat /tmp/ci-mnt/state/key.json)
+          mkdir -p /tmp/ci-mnt/state/deep/sub
+          hdiutil attach -nobrowse -mountpoint /tmp/ci-mnt/state/deep/sub /tmp/ci-mnt/img.dmg >/dev/null
+          set +e
+          out=$(./zig-out/bin/sideeye replay "$case_file" --fresh-state \
+            --shim "$PWD/zig-out/lib/libsideeye_shim.dylib" \
+            --work /tmp/ci-mnt/work2 --allow-unverified 2>&1)
+          rc=$?
+          set -e
+          kept=$(cat /tmp/ci-mnt/state/deep/sub/precious.txt 2>/dev/null || echo GONE)
+          after_key=$(cat /tmp/ci-mnt/state/key.json 2>/dev/null || echo GONE)
+          hdiutil detach -quiet /tmp/ci-mnt/state/deep/sub
+          echo "$out"
+          [ "$rc" = "3" ] || { echo "expected replay --fresh-state to refuse (exit 3), got $rc"; exit 1; }
+          echo "$out" | grep -qF "deep/sub is a mount point or another device inside the state directory" || { echo "the replay did not name the mount point"; exit 1; }
+          [ "$kept" = "precious" ] || { echo "replay --fresh-state reached into the image: $kept"; exit 1; }
+          [ "$after_key" = "$before_key" ] || { echo "replay --fresh-state removed the state's own file before refusing"; exit 1; }
 
       # #702: every next step printed on macOS runs on macOS. `--oracle` runs strace, which
       # macOS lacks, so it is refused by platform even when the path names a real executable —
@@ -1989,6 +2047,7 @@ jobs:
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
           SIDEEYE_EXPECT_CONTAINED: "0"
+          SIDEEYE_EXPECT_MOUNT: "1"
           SIDEEYE_EXPECT_SHELLS: "1"
 
       - name: Acceptance suite, contained in a delegated cgroup, against the same build
@@ -1996,6 +2055,7 @@ jobs:
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
           SIDEEYE_EXPECT_CONTAINED: "1"
+          SIDEEYE_EXPECT_MOUNT: "1"
 
       - name: MCP acceptance suite, against the same build
         run: sh spike/mcp-acceptance.sh
