@@ -1013,8 +1013,10 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
 
     const report = readFile(arena, temp_json, 4 * 1024 * 1024) orelse
         return emitToolError(arena, id, "sideeye produced no report (or a report over 4 MiB)");
-    const report_min = minifyJson(arena, report) orelse
-        return emitToolError(arena, id, "sideeye produced an unparseable report");
+    const report_min = switch (reportOfThisCall(arena, report, exit_code)) {
+        .doc => |d| d,
+        .refused => |why| return emitToolError(arena, id, why),
+    };
 
     if (kind == .preflight) switch (documentSchema(arena, report_min)) {
         .report => {},
@@ -1262,6 +1264,57 @@ test "an evidence summary keeps every bundle string inside one counted line, and
 }
 
 const DocumentSchema = enum { report, preflight, other };
+
+const ReportOfCall = union(enum) { doc: []const u8, refused: []const u8 };
+
+fn reportOfThisCall(arena: std.mem.Allocator, report: []const u8, exit_code: i64) ReportOfCall {
+    const report_min = minifyJson(arena, report) orelse return .{ .refused = "sideeye produced an unparseable report" };
+    if (!documentAgrees(arena, report_min, exit_code))
+        return .{ .refused = "the document at the report path does not agree with the exit status sideeye ended with, so it is not read as this call's result" };
+    return .{ .doc = report_min };
+}
+
+/// A document's verdict or outcome, its `exit_code`, and the status the process ended with are
+/// one value three times (docs/report-schema.md); a document placed by anyone else has to match
+/// all three, so at most it repeats the verdict the exit status already gave.
+fn documentAgrees(arena: std.mem.Allocator, doc_min: []const u8, exit_code: i64) bool {
+    const parsed = std.json.parseFromSliceLeaky(std.json.Value, arena, doc_min, .{}) catch return false;
+    if (parsed != .object) return false;
+    const o = parsed.object;
+    const own: i64 = switch (o.get("exit_code") orelse return false) {
+        .integer => |i| i,
+        else => return false,
+    };
+    const schema = strField(o, "schema") orelse return false;
+    const word = (if (std.mem.eql(u8, schema, "sideeye/report")) strField(o, "verdict") else if (std.mem.eql(u8, schema, "sideeye/preflight")) strField(o, "outcome") else null) orelse return false;
+    const pairs = [_]struct { []const u8, i64 }{
+        .{ "PASS", 0 },               .{ "FAIL", 1 },        .{ "UNKNOWN", 2 }, .{ "SETUP_ERROR", 3 },
+        .{ "recording_accepted", 0 }, .{ "runs_differ", 1 },
+    };
+    const meant: i64 = for (pairs) |pair| {
+        if (std.mem.eql(u8, word, pair[0])) break pair[1];
+    } else return false;
+    return own == meant and own == exit_code;
+}
+
+test "a document whose verdict, exit_code and the child's exit status disagree is not read as this call's (#818)" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const pass = "{\n  \"schema\": \"sideeye/report\",\n  \"verdict\": \"PASS\",\n  \"exit_code\": 0\n}\n";
+    try std.testing.expectEqualStrings("{\"schema\":\"sideeye/report\",\"verdict\":\"PASS\",\"exit_code\":0}", reportOfThisCall(a, pass, 0).doc);
+    try std.testing.expect(reportOfThisCall(a, pass, 3) == .refused);
+    try std.testing.expect(reportOfThisCall(a, pass, -1) == .refused);
+    // A child ended by a signal has no verdict, so no document can agree with it.
+    try std.testing.expect(reportOfThisCall(a, "{\"exit_code\":-1,\"schema\":\"sideeye/report\",\"verdict\":\"PASS\"}", -1) == .refused);
+    // Its exit_code matched to a refusal's: the verdict still gives it away.
+    try std.testing.expect(reportOfThisCall(a, "{\"verdict\":\"PASS\",\"exit_code\":3,\"schema\":\"sideeye/report\"}", 3) == .refused);
+    try std.testing.expect(reportOfThisCall(a, "{\"schema\":\"sideeye/report\",\"verdict\":\"SETUP_ERROR\",\"exit_code\":3}", 3) == .doc);
+    try std.testing.expect(reportOfThisCall(a, "{\"schema\":\"sideeye/preflight\",\"outcome\":\"runs_differ\",\"exit_code\":1}", 1) == .doc);
+    try std.testing.expect(reportOfThisCall(a, "{\"schema\":\"sideeye/preflight\",\"outcome\":\"recording_accepted\",\"exit_code\":0}", 1) == .refused);
+    try std.testing.expect(reportOfThisCall(a, "{\"schema\":\"sideeye/report\"}", 0) == .refused);
+    try std.testing.expect(reportOfThisCall(a, "[0]", 0) == .refused);
+}
 
 fn documentSchema(arena: std.mem.Allocator, doc_min: []const u8) DocumentSchema {
     const parsed = std.json.parseFromSliceLeaky(std.json.Value, arena, doc_min, .{}) catch return .other;
