@@ -68,8 +68,101 @@ var startup_ppid: c_int = 0;
 /// first destructive step shares this one helper: a refusal branch that forgets
 /// half of it would leave a 0755 directory at a path the run just refused to use.
 fn undoSetupMkdirs(work_created: bool, work_z: [*:0]const u8, state_created: bool, state_z: [*:0]const u8) void {
-    if (work_created) _ = posix.rmdir(work_z);
+    if (work_created) {
+        // Do not remove a run.lock this run does not hold: another run that found the directory
+        // this one made may be holding it, and a third would then lock a new file beside it.
+        if (work_lock_fd >= 0) {
+            var lock_buf: [contract.max_path]u8 = undefined;
+            if (std.fmt.bufPrintZ(&lock_buf, "{s}/run.lock", .{std.mem.span(work_z)})) |lock_z| _ = posix.unlink(lock_z.ptr) else |_| {}
+        }
+        _ = posix.rmdir(work_z);
+    }
     if (state_created) _ = posix.rmdir(state_z);
+}
+
+/// Held until the process exits; children do not inherit it.
+var work_lock_fd: c_int = -1;
+
+test "undoing a work directory this run made removes run.lock only while this run holds the lock (#816)" {
+    var db: [contract.max_path]u8 = undefined;
+    const dir_z = std.fmt.bufPrintZ(&db, "/tmp/sideeye-undo-lock-{d}", .{posix.getpid()}) catch unreachable;
+    var lb: [contract.max_path]u8 = undefined;
+    const lock_z = std.fmt.bufPrintZ(&lb, "{s}/run.lock", .{dir_z}) catch unreachable;
+    var nb: [contract.max_path]u8 = undefined;
+    const none_z = std.fmt.bufPrintZ(&nb, "/tmp/sideeye-undo-none-{d}", .{posix.getpid()}) catch unreachable;
+    defer {
+        _ = posix.unlink(lock_z.ptr);
+        _ = posix.rmdir(dir_z.ptr);
+    }
+    const saved = work_lock_fd;
+    defer work_lock_fd = saved;
+
+    _ = posix.mkdir(dir_z.ptr, 0o755);
+    const fd = posix.open(lock_z.ptr, posix.O_WRONLY | posix.O_CREAT, @as(c_uint, 0o600));
+    try std.testing.expect(fd >= 0);
+    _ = posix.close(fd);
+    work_lock_fd = -1;
+    undoSetupMkdirs(true, dir_z.ptr, false, none_z.ptr);
+    try std.testing.expect(posix.access(lock_z.ptr, 0) == 0);
+
+    work_lock_fd = 99;
+    undoSetupMkdirs(true, dir_z.ptr, false, none_z.ptr);
+    try std.testing.expect(posix.access(lock_z.ptr, 0) != 0);
+    try std.testing.expect(posix.access(dir_z.ptr, 0) != 0);
+}
+
+/// Refused, not waited for: a run stuck in its setup would otherwise stop the next one
+/// without a word. Taken before `--fresh-state` empties anything, so a second replay of one
+/// case cannot empty the state the first is exploring. A filesystem without locks goes on as
+/// before. Every refusal here undoes the directories this run made, run.lock included.
+fn lockWorkDir(arena: std.mem.Allocator, work: []const u8, work_created: bool, work_z: [*:0]const u8, state_created: bool, state_z: [*:0]const u8) void {
+    var path_buf: [contract.max_path]u8 = undefined;
+    const path = std.fmt.bufPrintZ(&path_buf, "{s}/run.lock", .{work}) catch {
+        undoSetupMkdirs(work_created, work_z, state_created, state_z);
+        setupError(.define_invalid, "--work is too long");
+    };
+    const flags = posix.O_RDWR | posix.O_NOFOLLOW | posix.O_CLOEXEC | posix.O_NONBLOCK;
+    // Not asked who owns a file this run just made: a filesystem that squashes the owner would
+    // refuse every run, the way #692 exempts a work directory the run just made.
+    var made = true;
+    var fd = posix.open(path.ptr, flags | posix.O_CREAT | posix.O_EXCL, @as(c_uint, 0o600));
+    if (fd < 0 and std.c._errno().* == posix.EEXIST) {
+        made = false;
+        fd = posix.open(path.ptr, flags, @as(c_uint, 0));
+    }
+    if (fd < 0) {
+        const e = std.c._errno().*;
+        undoSetupMkdirs(work_created, work_z, state_created, state_z);
+        setupErrorFmt(arena, .environment, "--work {s}: its lock file run.lock could not be opened (errno {d})", .{ textShown(arena, work), e });
+    }
+    if (!posix.isSoleRegularFile(fd, !made)) {
+        _ = posix.close(fd);
+        undoSetupMkdirs(work_created, work_z, state_created, state_z);
+        setupErrorFmt(arena, .environment, "--work {s}: run.lock is not a regular file of yours with one link, and Sideeye writes its pid into it. Remove it", .{textShown(arena, work)});
+    }
+    if (posix.flock(fd, posix.LOCK_EX | posix.LOCK_NB) != 0) {
+        const e = std.c._errno().*;
+        if (e == posix.ENOLCK or e == posix.EOPNOTSUPP or e == posix.EBADF) {
+            _ = posix.close(fd);
+            return;
+        }
+        undoSetupMkdirs(work_created, work_z, state_created, state_z);
+        if (e == posix.EAGAIN) {
+            var pid_buf: [32]u8 = undefined;
+            const n = posix.read(fd, &pid_buf, pid_buf.len);
+            const written = if (n > 0) std.mem.trim(u8, pid_buf[0..@intCast(n)], " \n") else "";
+            // Do not name a pid that has exited: the holder may not have written its own yet.
+            const alive = if (std.fmt.parseInt(i32, written, 10)) |pid| pid > 0 and (posix.kill(pid, 0) == 0 or std.c._errno().* == posix.EPERM) else |_| false;
+            const holder = if (alive) written else "unknown";
+            setupErrorFmt(arena, .environment, "--work {s} is in use by another sideeye run (pid {s}): two runs in one work directory read each other's traces and reports. Give each run its own --work", .{ textShown(arena, work), holder });
+        }
+        setupErrorFmt(arena, .environment, "--work {s}: its lock file run.lock could not be locked (errno {d})", .{ textShown(arena, work), e });
+    }
+    _ = posix.ftruncate(fd, 0);
+    var pid_txt: [32]u8 = undefined;
+    const t = std.fmt.bufPrint(&pid_txt, "{d}\n", .{posix.getpid()}) catch unreachable;
+    _ = posix.write(fd, t.ptr, t.len);
+    work_lock_fd = fd;
 }
 
 /// A run that exceeds this refuses rather than growing the arena until the engine dies.
@@ -924,6 +1017,8 @@ fn phaseDefine(run: *Run) void {
     // every earlier setup validation — the --work containment vet included — ahead of
     // the one destructive step, and the mkdir-then-resolve above already covers a
     // state dir that does not exist yet.
+    lockWorkDir(arena_state.allocator(), args.work, work_created, work_z.ptr, state_created, state_z.ptr);
+
     if (args.fresh_state) {
         engine.freshDir(state_abs) catch |e| refuse.restoreFailure(e, "--fresh-state could not empty the case's state directory");
         // Asked again after the emptying (#701 review): a setup that lived inside the state
@@ -974,16 +1069,8 @@ fn phaseSetup(run: *Run) void {
         const a = arena_state.allocator();
         const setup_argv = commandArgv(a, cmd) catch setupError(.define_invalid, "--setup is empty");
         if (setup_argv.len == 0) setupError(.define_invalid, "--setup is empty");
-        // The pid is in the name and every other work-directory artifact's is not, and
-        // that asymmetry is deliberate: this is the first capture whose *contents* reach
-        // `message`. Two runs sharing a work directory already collide on
-        // `stdout-record.txt`, but there the loser reads its own trace and gets a wrong
-        // count; here the `removeFile` below would delete the other run's file, both
-        // `O_EXCL` opens would succeed, and the refusal would quote bytes a different
-        // subject wrote — the shape `src/mcp.zig`'s work-directory comment records from
-        // 2026-08-12, where one server returned another's report as its own verdict. The
-        // MCP adapter hands every call the same `--work`, so two servers are the concrete
-        // case rather than a hypothetical one.
+        // Do not drop the pid from the name: on a filesystem without locks `lockWorkDir` lets a
+        // second run in, and this capture's contents reach `message`.
         var setup_out_buf: [contract.max_path]u8 = undefined;
         const setup_out = std.fmt.bufPrint(
             &setup_out_buf,

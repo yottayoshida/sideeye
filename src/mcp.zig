@@ -840,6 +840,48 @@ fn observeArg(args: std.json.ObjectMap) error{InvalidObserve}!?contract.ObserveM
     return contract.ObserveMode.parse(s) orelse error.InvalidObserve;
 }
 
+var server_work_buf: [contract.max_path]u8 = undefined;
+var server_work_len: usize = 0;
+
+/// Not named by the pid: every server started as the container in docs/mcp.md is pid 1, and two
+/// such containers sharing a mount would share the name. `mkdtemp` never adopts a directory it
+/// did not make, so #692's owner check has nothing to ask of it.
+fn serverWork(work: []const u8) ?[]const u8 {
+    if (server_work_len > 0) {
+        if (workDirVerdict(server_work_buf[0..server_work_len]) == .ok) return server_work_buf[0..server_work_len];
+        server_work_len = 0;
+    }
+    const templ = std.fmt.bufPrintZ(&server_work_buf, "{s}/server-XXXXXX", .{work}) catch return null;
+    const made = posix.mkdtemp(templ.ptr) orelse return null;
+    server_work_len = std.mem.len(made);
+    return server_work_buf[0..server_work_len];
+}
+
+test "a server's directory is its own, kept across calls, and made again when it is gone (#816)" {
+    var bb: [contract.max_path]u8 = undefined;
+    const base_z = std.fmt.bufPrintZ(&bb, "/tmp/sideeye-serverwork-{d}", .{posix.getpid()}) catch unreachable;
+    _ = posix.mkdir(base_z.ptr, 0o700);
+    defer _ = posix.rmdir(base_z.ptr);
+    server_work_len = 0;
+    defer server_work_len = 0;
+    const base = std.mem.span(base_z.ptr);
+
+    var first_buf: [contract.max_path]u8 = undefined;
+    const first = serverWork(base) orelse return error.TestUnexpectedResult;
+    @memcpy(first_buf[0..first.len], first);
+    const first_copy = first_buf[0..first.len];
+    try std.testing.expect(std.mem.startsWith(u8, first_copy, base));
+    try std.testing.expectEqualStrings(first_copy, serverWork(base).?);
+
+    var fz: [contract.max_path]u8 = undefined;
+    _ = posix.rmdir((std.fmt.bufPrintZ(&fz, "{s}", .{first_copy}) catch unreachable).ptr);
+    const second = serverWork(base) orelse return error.TestUnexpectedResult;
+    var sz: [contract.max_path]u8 = undefined;
+    const second_z = std.fmt.bufPrintZ(&sz, "{s}", .{second}) catch unreachable;
+    defer _ = posix.rmdir(second_z.ptr);
+    try std.testing.expect(workDirVerdict(second) == .ok);
+}
+
 fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8, id: std.json.Value, kind: RunKind, path_in: []const u8) void {
     const path = resolveInsideRoot(arena, path_in) orelse
         return emitToolError(arena, id, "the path is outside the server root (SIDEEYE_MCP_ROOT), or does not exist");
@@ -879,21 +921,16 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
         )),
     };
 
-    counter += 1;
-    const temp_json = std.fmt.allocPrint(arena, "{s}/report-{d}.json", .{ work, counter }) catch return emitToolError(arena, id, "oom");
-    const child_out = std.fmt.allocPrint(arena, "{s}/child-{d}.out", .{ work, counter }) catch return emitToolError(arena, id, "oom");
+    const own = serverWork(work) orelse
+        return emitToolError(arena, id, "the server's own directory under the work directory could not be created");
 
-    // A previous server process may have left report-N / child-N behind — the counter
-    // is per-process, so two servers sharing a work dir collide on the same names. The
-    // capture opens O_EXCL, the collision refuses the spawn, and the parent then reads
-    // the PREVIOUS run's report-N.json back as THIS call's verdict (measured 2026-08-12:
-    // a second server answered with the first server's report, about a different
-    // target). The refusal used to be the child's `_exit(126)`; since #469 the capture
-    // is opened in the parent and it is `error.CaptureUnavailable`, answered above. The
-    // incident is unchanged — what fixed it is the two unlinks below, not the shape of
-    // the refusal. Unlink both names first: whatever exists at them afterwards
-    // was written by this call's child or by nobody. The work dir is user-owned by
-    // contract (ADR 0010), so these are our own leftovers, not someone else's files.
+    counter += 1;
+    const temp_json = std.fmt.allocPrint(arena, "{s}/report-{d}.json", .{ own, counter }) catch return emitToolError(arena, id, "oom");
+    const child_out = std.fmt.allocPrint(arena, "{s}/child-{d}.out", .{ own, counter }) catch return emitToolError(arena, id, "oom");
+
+    // Do not drop the unlinks because the directory is this server's own: the capture opens
+    // O_EXCL, and a name left behind would refuse the spawn and leave the old report to be
+    // read back as this call's verdict (2026-08-12).
     unlinkPath(temp_json);
     unlinkPath(child_out);
     // Preflight's text output quotes the bytes `--twice` saw differ, and this server reads only
@@ -963,7 +1000,7 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
             &.{ self, "preflight", "--config", path },
     };
     for (base) |a| push(&argv_buf, &argc, a);
-    for ([_][]const u8{ "--json", temp_json, "--shim", shim, "--work", work }) |a| push(&argv_buf, &argc, a);
+    for ([_][]const u8{ "--json", temp_json, "--shim", shim, "--work", own }) |a| push(&argv_buf, &argc, a);
     if (oracle) |o| {
         push(&argv_buf, &argc, "--oracle");
         push(&argv_buf, &argc, o);
@@ -1779,20 +1816,10 @@ test "minifyJson takes nesting std's writer cannot, keeps strings whole, and sti
 fn readFile(arena: std.mem.Allocator, path: []const u8, cap: usize) ?[]const u8 {
     var zb: [contract.max_path]u8 = undefined;
     const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch return null;
-    // #400's shape, and this call site was nearly excluded from that sweep on the
-    // grounds that the server reads only a file it just wrote itself. Three things in
-    // this file say otherwise: the report is written by the *child* (`--json temp_json`
-    // on the self-exec below), the directory is `SIDEEYE_MCP_WORK` — `/tmp/sideeye-mcp`
-    // by default, and its creation tolerates EEXIST, so a pre-existing directory is
-    // adopted — and `unlinkPath` discards its result, which is how a previous run's
-    // report was once read back as this call's verdict (the incident recorded above).
-    // A FIFO planted at that path would hold the server with the client's request
-    // outstanding, and there is no timeout anywhere around this read.
-    //
-    // `O_NOFOLLOW` closes the other half of that same paragraph (#469). Every reason
-    // above for why a planted FIFO is reachable here is a reason a planted *symlink*
-    // is, and this read's bytes become the tool's return value — so following one hands
-    // the caller a verdict about a file somebody else chose. The write side of this
+    // Do not drop `O_NONBLOCK` or `O_NOFOLLOW` because the server made this directory: the
+    // report is written by the child into a directory the target can write, so a FIFO planted
+    // at the path would hold the server with no timeout (#400), and a symlink would hand the
+    // caller a verdict about a file somebody else chose (#469).
     const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK | posix.O_NOFOLLOW, @as(c_uint, 0));
     if (fd < 0) return null;
     defer _ = posix.close(fd);
