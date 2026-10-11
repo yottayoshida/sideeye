@@ -5,7 +5,7 @@
   reports, and two `sideeye mcp` servers can answer a call with the other's verdict); ADR 0099 (the
   work directory has to be the runner's own); the 2026-08-12 incident in which one server returned
   another's report.
-- **Scope:** `src/main.zig` (`lockWorkDir`, called at the end of `phaseDefine`), `src/posix.zig`,
+- **Scope:** `src/workdir.zig` (`lock`, called at the end of `phaseDefine`, where `src/main.zig` refuses on its answer), `src/posix.zig`,
   `src/mcp.zig` (`serverWork`), `spike/acceptance.sh` check 26, `spike/mcp-acceptance.sh` mcp 6b,
   `docs/cli.md`, `docs/faq.md`, `docs/mcp.md`.
 
