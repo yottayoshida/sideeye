@@ -362,7 +362,8 @@ stay the same.
    accounted for only by a record that cannot have put them there — the truncating `open` beside a
    reflink clone or an io_uring write, a stream left for `exit` to flush — no longer reproduces.
    Replay records again and reconciles before it compares the case, so such a case is refused
-   `state_changed_unaccounted`. Read as an honest refusal and not a verdict: the recording the case
+   `state_changed_unaccounted` — or, replayed under `--oracle` with a reflink clone in it,
+   `unsupported_syscall_observed`, which the oracle raises first. Read as an honest refusal and not a verdict: the recording the case
    came from was judged on an account that missed the write, and the FAIL it found is still a world
    the target reached, but the case's numbering no longer has a recording this binary accepts.
 5. **The MCP surface** (decided 2026-08-13, recorded in #86, codified here).
