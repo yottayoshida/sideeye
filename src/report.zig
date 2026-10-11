@@ -1738,8 +1738,6 @@ fn writeJsonDoc(path: []const u8, doc: []const u8) void {
 
 const FreshTemp = struct { path: [:0]const u8, fd: c_int };
 
-/// A name beside the report that no file had before this call; `first_name` replaces the
-/// first random one so a test can occupy it.
 fn openFreshTemp(buf: []u8, dir: []const u8, first_name: ?[]const u8) ?FreshTemp {
     const sep: []const u8 = if (std.mem.endsWith(u8, dir, "/")) "" else "/";
     var attempt: usize = 0;
@@ -1748,7 +1746,7 @@ fn openFreshTemp(buf: []u8, dir: []const u8, first_name: ?[]const u8) ?FreshTemp
         var name_buf: [64]u8 = undefined;
         const name = if (attempt == 0 and first_name != null) first_name.? else std.fmt.bufPrint(&name_buf, ".sideeye-json-{s}.tmp", .{posix.randomHex(&hex) orelse return null}) catch return null;
         const tz = std.fmt.bufPrintZ(buf, "{s}{s}{s}", .{ dir, sep, name }) catch return null;
-        // Never O_TRUNC an existing name: whatever sits there, a link included, is not ours to write through.
+        // Never O_TRUNC an existing name: whatever sits there, a link included, would be written through.
         const fd = posix.open(tz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_EXCL | posix.O_NOFOLLOW | posix.O_CLOEXEC, @as(c_uint, 0o644));
         if (fd >= 0) return .{ .path = tz, .fd = fd };
         const err = std.c._errno().*;
@@ -1757,13 +1755,9 @@ fn openFreshTemp(buf: []u8, dir: []const u8, first_name: ?[]const u8) ?FreshTemp
     return null;
 }
 
-/// What `--json <path>` may do with what is at the path when the flag is read.
 pub const ReportSlot = union(enum) {
-    /// Nothing there to remove.
     leave,
-    /// A document this program writes, or an empty file.
     remove,
-    /// Anything else, named for the refusal.
     refuse: []const u8,
 };
 
@@ -1787,11 +1781,11 @@ pub fn reportSlot(path: []const u8) ReportSlot {
     return .{ .refuse = "a file that is not a report Sideeye wrote" };
 }
 
-/// Larger than any report this program writes; past it the file is not one.
+/// Not unbounded: a mistyped `--json` can name a file of any size.
 const report_slot_cap = 4 * 1024 * 1024;
 
-/// One JSON document, and nothing after it, whose `schema` is one this program writes: a log of
-/// reports appended one per line is not one, and losing it to a mistyped `--json` loses them all.
+/// Not judged by the first member alone: a log of reports appended one per line starts like one, and
+/// a mistyped `--json` would lose every report in it.
 fn isOneOwnDocument(arena: std.mem.Allocator, bytes: []const u8) bool {
     const parsed = std.json.parseFromSliceLeaky(std.json.Value, arena, bytes, .{}) catch return false;
     if (parsed != .object) return false;

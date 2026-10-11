@@ -1575,38 +1575,32 @@ pub fn monotonicMs() u64 {
     return @as(u64, @intCast(ts.sec)) * 1000 + @as(u64, @intCast(ts.nsec)) / 1_000_000;
 }
 
-/// Sleeps the whole interval: `stopSidecar` counts its grace in calls, so a signal that cut a
-/// sleep short would shorten the grace.
+/// Not one `nanosleep`: `stopSidecar` counts its grace in calls, and a signal would shorten it.
 pub fn sleepForMs(ms: u64) void {
     var ts: std.c.timespec = .{ .sec = @intCast(ms / 1000), .nsec = @intCast((ms % 1000) * 1_000_000) };
     var rem: std.c.timespec = undefined;
     while (nanosleep(&ts, &rem) != 0 and std.c._errno().* == EINTR) ts = rem;
 }
 
-/// How a run that is told to stop reaches the child it is waiting on: a target is killed, as a
-/// crash point kills it; an engine the MCP server started is handed the same signal, so that it
-/// can stop its own children first.
+/// `forward`, not `kill`, for an engine the MCP server started: killed, it could not stop its own children.
 pub const ChildStop = enum(u1) { kill, forward };
 
 const interrupt_signals = [_]std.c.SIG{ .INT, .TERM, .HUP, .PIPE };
 
 var interrupt_hook: ?*const fn (c_int) noreturn = null;
 var interrupt_sig = std.atomic.Value(c_int).init(0);
-/// `(pgid << 1) | ChildStop`, 0 when no child is waited on. Cleared before every reaping wait:
-/// a reaped id may already name a stranger.
+/// Cleared before every reaping wait: a reaped id may already name a stranger.
 var live_child = std.atomic.Value(u64).init(0);
-/// The observer's process group, 0 when none runs.
 var sidecar_pgid = std.atomic.Value(c_int).init(0);
 var stopping_depth = std.atomic.Value(u32).init(0);
 var saved_sigchld: std.c.Sigaction = undefined;
 var sigchld_changed = false;
 var saved_sigalrm: std.c.Sigaction = undefined;
 
-/// The one call the handler makes on another process; a test replaces it to stand for a child
-/// the signal cannot reach.
+/// Not a direct `kill`: a test stands in for a child the signal cannot reach.
 pub var interrupt_kill: *const fn (c_int, c_int) callconv(.c) c_int = kill;
 
-/// `world_kill_grace_ms`, in the seconds `alarm` takes.
+/// Kept equal to `world_kill_grace_ms`, in the seconds `alarm` takes.
 const interrupt_grace_s: c_uint = 5;
 /// An engine handed the signal stops its own child (`interrupt_grace_s`) and `fs_usage` (twice
 /// `stopSidecar`'s 5 s) before it ends; a shorter wait would name it while it does.
@@ -1620,13 +1614,12 @@ fn interruptMask() std.c.sigset_t {
     return set;
 }
 
-/// For a run that will start children: SIGINT, SIGTERM, SIGHUP and SIGPIPE stop the child being
-/// waited on and then end the process by the same signal, through `hook` (ADR 0124).
+/// ADR 0124.
 pub fn installInterruptHandlers(hook: *const fn (c_int) noreturn) void {
     interrupt_hook = hook;
     var cur: std.c.Sigaction = undefined;
-    // An inherited SIG_IGN auto-reaps, and the handler must never signal an id nobody holds.
-    // Children get the inherited disposition back before they exec.
+    // Not left at an inherited SIG_IGN: children would be auto-reaped, and the handler must never
+    // signal an id nobody holds.
     if (std.c.sigaction(.CHLD, null, &cur) == 0 and cur.handler.handler == std.c.SIG.IGN) {
         saved_sigchld = cur;
         sigchld_changed = true;
@@ -1637,7 +1630,7 @@ pub fn installInterruptHandlers(hook: *const fn (c_int) noreturn) void {
     var act: std.c.Sigaction = .{ .handler = .{ .handler = onInterrupt }, .mask = interruptMask(), .flags = std.c.SA.RESTART };
     for (interrupt_signals) |sig| {
         if (std.c.sigaction(sig, null, &cur) != 0) continue;
-        // Ignored at startup (`nohup`, a background job of a script) stays ignored.
+        // No handler for a signal ignored at startup: `nohup` and a script's `&` job rely on the ignore.
         if (cur.handler.handler == std.c.SIG.IGN) continue;
         _ = std.c.sigaction(sig, &act, null);
     }
@@ -1646,14 +1639,12 @@ pub fn installInterruptHandlers(hook: *const fn (c_int) noreturn) void {
     _ = std.c.sigaction(.ALRM, &act, null);
 }
 
-/// With 0, the observer is gone, and a signal that waited for it takes effect.
 pub fn noteSidecar(pgid: c_int) void {
     sidecar_pgid.store(pgid, .seq_cst);
     if (pgid == 0) stopIfInterrupted();
 }
 
-/// Between this and `endStopping` a recorded signal stops nothing new: stopping fs_usage itself
-/// runs `sudo -n /bin/kill` through the spawn path.
+/// Without it, a recorded signal would stop the `sudo -n /bin/kill` that stopping fs_usage runs.
 pub fn beginStopping() void {
     _ = stopping_depth.fetchAdd(1, .seq_cst);
 }
@@ -1662,18 +1653,15 @@ pub fn endStopping() void {
     if (stopping_depth.fetchSub(1, .seq_cst) == 1) stopIfInterrupted();
 }
 
-/// A recorded signal takes effect where nothing it waited for remains: a child has returned, the
-/// observer is gone, a stop has finished, or a new child is about to start.
 pub fn stopIfInterrupted() void {
     const sig = interrupt_sig.load(.seq_cst);
     if (sig == 0 or stopping_depth.load(.seq_cst) != 0) return;
-    // The child the grace was for has ended; left armed, it would cut the stop of fs_usage short.
+    // Not left armed: the alarm would cut the stop of fs_usage short.
     _ = std.c.alarm(0);
     if (interrupt_hook) |hook| hook(sig);
 }
 
-/// Ends the process by `sig` after its handler has been put back; `_exit` covers PID 1, which
-/// the kernel does not end by a signal left at its default.
+/// The `_exit` is not dead code: the kernel does not end PID 1 by a signal left at its default.
 fn defaultAction() std.c.Sigaction {
     var dfl: std.c.Sigaction = .{ .handler = .{ .handler = std.c.SIG.DFL }, .mask = undefined, .flags = 0 };
     _ = std.c.sigemptyset(&dfl.mask);
@@ -1702,7 +1690,7 @@ fn onInterrupt(s: std.c.SIG) callconv(.c) void {
     const sig: c_int = @intCast(@intFromEnum(s));
     const first = interrupt_sig.cmpxchgStrong(0, sig, .seq_cst, .seq_cst) == null;
     const word = live_child.load(.seq_cst);
-    // A second signal is someone who will not wait: end now, whatever is still being stopped.
+    // No waiting on a second signal, even mid-stop: whoever sent it will not wait.
     if (!first) graceOver(interrupt_sig.load(.seq_cst), 0);
     if (stopping_depth.load(.seq_cst) != 0) return;
     if (word != 0) {
@@ -1725,9 +1713,8 @@ fn onGraceOver(_: std.c.SIG) callconv(.c) void {
     graceOver(sig, live_child.load(.seq_cst));
 }
 
-/// `word` names the child left running; 0 names none.
 fn graceOver(sig: c_int, word: u64) noreturn {
-    // The way `stopSidecar` starts: sudo passes SIGINT on to fs_usage, which flushes and ends.
+    // SIGINT, not SIGKILL: fs_usage flushes its capture on it, and sudo passes it on.
     const observer = sidecar_pgid.load(.seq_cst);
     if (observer != 0) _ = kill(-observer, SIGINT);
     writeStopLine(sig, if (word != 0) @intCast(word >> 1) else 0);
@@ -1779,8 +1766,7 @@ test "the stop line names the signal, and the group left running when there is o
     try std.testing.expectEqualStrings("sideeye: stopped by signal 2; process group 2147483647 did not end and is left running\n", fmtStopLine(&buf, 2, 2147483647));
 }
 
-/// Blocks the four around a fork, so that no handler can run between the fork and the
-/// registration of the child it would have to stop.
+/// Without it, a handler could run between a fork and the child's registration and miss the child.
 pub fn blockInterrupts(old: *std.c.sigset_t) void {
     const set = interruptMask();
     _ = std.c.sigprocmask(std.c.SIG.BLOCK, &set, old);
@@ -1790,11 +1776,9 @@ pub fn restoreMask(old: *const std.c.sigset_t) void {
     _ = std.c.sigprocmask(std.c.SIG.SETMASK, old, null);
 }
 
-/// In the child, before anything else: a caught signal goes back to its default at exec by
-/// itself; the mask and an inherited SIGCHLD this process changed do not.
 fn childRestoreSignals(old: *const std.c.sigset_t) void {
     if (sigchld_changed) _ = std.c.sigaction(.CHLD, &saved_sigchld, null);
-    // Before the mask comes back: until it leaves the engine's group, a terminal's SIGINT reaches
+    // Not after the mask comes back: until it leaves the engine's group, a terminal's SIGINT reaches
     // this child too, and the engine's handler must not run in it.
     if (interrupt_hook != null) {
         var cur: std.c.Sigaction = undefined;
@@ -1910,8 +1894,8 @@ fn runChildSpawnAndWait(
     // its own group, before it execs — until the parent has moved it: a child that execs first
     // runs, however briefly, outside the cgroup that is meant to stop it.
     var join_pipe: [2]c_int = .{ -1, -1 };
-    // Blocked from before the cgroup exists: a handler that ran between its mkdir and the child's
-    // registration would find nothing to stop and end the process, leaving the directory behind.
+    // Not blocked after the mkdir: a handler running before the child's registration would find nothing
+    // to stop and end the process, leaving the directory behind.
     var old_mask: std.c.sigset_t = undefined;
     blockInterrupts(&old_mask);
     if (cg) |spawn_cg| {
@@ -2211,7 +2195,6 @@ const InterruptTest = struct {
         return -1;
     }
 
-    /// True once every holder of the pipe's write end has closed it.
     fn eofWithin(fd: c_int, ms: u64) bool {
         const deadline = monotonicMs() + ms;
         var pfd = [1]std.c.pollfd{.{ .fd = fd, .events = std.c.POLL.IN, .revents = 0 }};
@@ -2226,7 +2209,6 @@ const InterruptTest = struct {
         }
     }
 
-    /// One byte from `fd`, or null when none comes within `ms`.
     fn byteWithin(fd: c_int, ms: c_int) ?u8 {
         var pfd = [1]std.c.pollfd{.{ .fd = fd, .events = std.c.POLL.IN, .revents = 0 }};
         if (std.c.poll(&pfd, 1, ms) <= 0) return null;
@@ -2234,7 +2216,6 @@ const InterruptTest = struct {
         return if (read(fd, &b, 1) == 1) b[0] else null;
     }
 
-    /// "<pid> " from the start of `fd`, within ten seconds.
     fn pidWithin(fd: c_int) !c_int {
         var b: [16]u8 = undefined;
         var n: usize = 0;
@@ -2245,8 +2226,7 @@ const InterruptTest = struct {
         return std.fmt.parseInt(c_int, b[0..n], 10) catch error.NeverRan;
     }
 
-    /// Reaps `pid` if it ends within `ms`; otherwise kills it — still unreaped, so the id is
-    /// still ours — and reaps it.
+    /// Killed only while unreaped: after the reap the id may name a stranger.
     fn waitWithin(pid: c_int, ms: u64) ?Term {
         const deadline = monotonicMs() + ms;
         while (monotonicMs() < deadline) {
@@ -2259,8 +2239,7 @@ const InterruptTest = struct {
         return null;
     }
 
-    /// Ends a process group only while `holder` shows one of its members is alive: the pipe end
-    /// it holds is still open, so its id cannot have been reused.
+    /// Not after the holder's pipe end is closed: the group's id may have been reused by then.
     fn endGroupIfHeld(group: c_int, holder: c_int) void {
         if (!eofWithin(holder, 0)) _ = kill(-group, SIGKILL);
     }
@@ -2282,8 +2261,6 @@ const InterruptTest = struct {
         }
     };
 
-    /// Forks a stand-in for the engine that installs the handlers and waits on a child that
-    /// names its own pid and sleeps; returns once the child runs.
     fn start(setup: *const fn () void) !Run {
         var ready: [2]c_int = undefined;
         var held: [2]c_int = undefined;
@@ -2359,7 +2336,6 @@ test "a signal ignored when the run starts stays ignored, by the run and by what
     _ = close(ready[1]);
     _ = close(go[0]);
     defer _ = close(ready[0]);
-    // The child hung up on itself and lived: it inherited the ignore.
     const lived = InterruptTest.byteWithin(ready[0], 10_000);
     if (lived == null) _ = close(go[1]);
     try std.testing.expectEqual(@as(?u8, 'r'), lived);
@@ -2405,8 +2381,6 @@ test "a second signal ends the run at once, without waiting out the grace (#819)
 const ObserverTest = struct {
     var cap_buf: [96]u8 = undefined;
 
-    /// An observer that, like fs_usage under sudo, ends on SIGINT. It names its pid on `talk`
-    /// first ("<pid> "), and writes "i" there when SIGINT stops it.
     fn spawn(talk: c_int) !c_int {
         _ = signal(SIGINT, SIG_DFL);
         const cap_path = try std.fmt.bufPrint(&cap_buf, "/tmp/sideeye-observer-{d}-{d}", .{ getpid(), talk });
@@ -2424,8 +2398,6 @@ const ObserverTest = struct {
         dieBySignal(sig);
     }
 
-    /// Forks a stand-in that installs the handlers, starts an observer on `talk`, takes SIGTERM
-    /// from itself, writes "k" on `told`, and then calls `then`.
     fn standIn(talk: *[2]c_int, told: *[2]c_int, then: *const fn (observer: c_int, told_w: c_int) void) !c_int {
         if (pipe(talk) != 0 or pipe(told) != 0) return error.Setup;
         const engine = fork();
@@ -2460,8 +2432,6 @@ const ObserverTest = struct {
         endStopping();
     }
 
-    /// Runs `then` in a stand-in and expects: the SIGTERM it took waited (the "k" came), and the
-    /// stand-in ended by it where `then` stopped it, before writing anything more.
     fn expectEndsAt(then: *const fn (observer: c_int, told_w: c_int) void) !void {
         var talk: [2]c_int = undefined;
         var told: [2]c_int = undefined;

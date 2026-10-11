@@ -332,8 +332,8 @@ pub const Session = struct {
             return error.SpawnSetup;
         }
         self.sock = fds;
-        // Created with the interrupt signals blocked, as the thread inherits its creator's mask: a
-        // thread that took one between a fork and the child's registration would find no child.
+        // Not created unblocked: the thread inherits this mask, and one that took a signal between a fork
+        // and the child's registration would find no child to stop.
         var old_mask: std.c.sigset_t = undefined;
         posix.blockInterrupts(&old_mask);
         defer posix.restoreMask(&old_mask);

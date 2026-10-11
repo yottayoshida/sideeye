@@ -413,7 +413,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // reaches the report rather than leaving whatever was there before.
     refuse.json_arena = arena_state.allocator();
     var run: Run = .{ .gpa = gpa, .arena_state = &arena_state, .arena = arena_state.allocator(), .parsed = cli.parse(argv) };
-    // After the parse: `--world-timeout` resets SIGCHLD there, and that is the disposition children get.
+    // Not before the parse: `--world-timeout` resets SIGCHLD there, and children must get that disposition.
     posix.installInterruptHandlers(refuse.stopForSignal);
     phaseDefine(&run);
     phaseSetup(&run);
