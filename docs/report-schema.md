@@ -27,8 +27,15 @@ the table's row, and to `"frozen"`.
 ## The envelope
 
 One JSON object, written atomically (temp file + rename — a crash of sideeye
-itself never leaves a half-written report). Absence is unambiguous: the file
-is removed at startup, so a report at the path always describes *this* run.
+itself never leaves a half-written report). The report an earlier run left at
+the path is removed when `--json` is read, so a run that ends before writing
+leaves no report rather than a stale one — except a run refused before `--json`
+was read, one that refused the path itself because what was there is not a
+report it may remove (#818), and one that could not remove it (a directory it
+cannot write): the first two exit 3 and print no `sideeye: json sha256=` line,
+the last prints `sideeye: json sha256=none;`, and in each whatever was at the
+path stays. That line, and the digest it carries, is how a reader tells a report
+this run wrote from anything else at the path.
 
 | Field | Type | Always | Meaning |
 |---|---|---|---|
