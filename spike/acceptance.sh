@@ -10617,6 +10617,42 @@ else
     fi
 fi
 
+echo "=========== check 17b: a run stopped by SIGINT, SIGTERM or SIGHUP stops what it started, then ends by that signal (#819) ==========="
+# Each leg goes through spike/interrupt-run.py, which says why the suite's own shell cannot send
+# these signals.
+ir=/tmp/acc-interrupt
+irn=$$
+rm -rf "$ir" && mkdir -p "$ir/state" "$ir/work"
+cat >"$ir/world-op.sh" <<IROP
+#!/bin/sh
+echo a >"$ir/state/f"
+[ -n "\${SIDEEYE_KILL_AT:-}" ] && exec /bin/sleep 3003.$irn
+echo b >"$ir/state/g"
+IROP
+chmod 755 "$ir/world-op.sh"
+ir_leg() { # ir_leg <what> <signal> <marker> <ignore-hup> <command...>
+    ir_what=$1
+    shift
+    if python3 "$ROOT/spike/interrupt-run.py" "$@" >"$ir/out" 2>&1; then
+        echo "ok   $ir_what (#819)"
+    else
+        echo "FAIL $ir_what: $(tail -1 "$ir/out")"
+        fails=$((fails + 1))
+    fi
+}
+ir_leg "SIGTERM during the setup stops the setup and ends the run by SIGTERM" SIGTERM 3001.$irn 0 \
+    "$SIDEEYE" explore --state "$ir/state" --setup "/bin/sleep 3001.$irn" --operation /bin/true --shim "$SHIM" --work "$ir/work" --allow-unverified
+ir_leg "SIGINT during a recording under strace stops strace and the operation, and ends the run by SIGINT" SIGINT 3002.$irn 0 \
+    "$SIDEEYE" explore --state "$ir/state" --operation "/bin/sleep 3002.$irn" --shim "$SHIM" --work "$ir/work" --oracle /usr/bin/strace
+ir_leg "SIGHUP during a world under --world-timeout stops the world and ends the run by SIGHUP" SIGHUP 3003.$irn 0 \
+    "$SIDEEYE" explore --state "$ir/state" --operation "$ir/world-op.sh" --shim "$SHIM" --work "$ir/work" --allow-unverified --world-timeout 600
+ir_leg "a SIGHUP ignored when the run starts stays ignored, and the run reaches its end" SIGHUP 2.$irn 1 \
+    "$SIDEEYE" explore --state "$ir/state" --setup "/bin/sleep 2.$irn" --operation /bin/true --shim "$SHIM" --work "$ir/work" --allow-unverified
+if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
+    ir_leg "SIGTERM during a supervised recording stops the operation, and ends the run by SIGTERM" SIGTERM 3006.$irn 0 \
+        "$SIDEEYE" explore --state "$ir/state" --operation "/bin/sleep 3006.$irn" --shim "$SHIM" --work "$ir/work" --observe supervised --allow-unverified
+fi
+
 echo "=========== check: a rewrite the engine cannot perform refuses in its own phase (#363 Group B) ==========="
 # Not as root: root ignores permission bits, so the plant does not fire, and these legs FAIL
 # there rather than skip.
@@ -12594,6 +12630,269 @@ else
     fails=$((fails + 1))
 fi
 
+echo ""
+echo "=========== check 25: a mount inside the state directory is refused before anything is removed (#817) ==========="
+if [ "$(id -u)" = "0" ]; then
+    mnt() { mount "$@"; }
+    umnt() { umount "$@"; }
+    can_mount=1
+elif sudo -n true 2>/dev/null; then
+    mnt() { sudo -n mount "$@"; }
+    umnt() { sudo -n umount "$@"; }
+    can_mount=1
+else
+    can_mount=0
+fi
+if [ "$can_mount" = "0" ]; then
+    if [ "${SIDEEYE_EXPECT_MOUNT:-0}" = "1" ]; then
+        echo "FAIL check 25 needs a bind mount (root or passwordless sudo) and SIDEEYE_EXPECT_MOUNT=1 says this host has one"
+        fails=$((fails + 1))
+    else
+        echo "     NOT MEASURED: check 25 needs a bind mount (root or passwordless sudo)"
+        not_measured=$((not_measured + 1))
+    fi
+else
+    M=/tmp/acc-mount
+    for d in "$M/stateA/sub" "$M/stateB/bound" "$M/stateC/sub" "$M/stateE" "$M/stateF/sub"; do umnt "$d" 2>/dev/null; done
+    rm -rf "$M"
+    mkdir -p "$M/outside/deeper" "$M/stateA/sub" "$M/stateB" "$M/stateC" "$M/stateD"
+    printf 'precious\n' > "$M/outside/precious.txt"
+    printf 'also\n' > "$M/outside/deeper/also.txt"
+    printf 'keepme\n' > "$M/outfile"
+    cat > "$M/setup.sh" <<'EOF'
+#!/bin/sh
+printf 'ok\n' > "$1/marker"
+printf 'sibling\n' > "$1/sibling.txt"
+EOF
+    cat > "$M/op.sh" <<'EOF'
+#!/bin/sh
+printf 'flag\n' > "$1/flag"
+EOF
+    cat > "$M/opfail.sh" <<'EOF'
+#!/bin/sh
+: > "$1/marker"
+printf 'ok\n' > "$1/marker"
+EOF
+    cat > "$M/check.sh" <<'EOF'
+#!/bin/sh
+[ "$(cat "$1/marker" 2>/dev/null)" = ok ]
+EOF
+    chmod 755 "$M/setup.sh" "$M/op.sh" "$M/opfail.sh" "$M/check.sh"
+    m_sum() { find "$M/outside" "$M/outfile" -type f -exec cksum {} + | sort; }
+    m_explore() {   # m_explore <state> <op> <work>
+        "$SIDEEYE" explore --state "$1" --setup "$M/setup.sh $1" --operation "$M/$2 $1" \
+            --check "$M/check.sh $1" --shim "$SHIM" --work "$3" --allow-unverified 2>&1
+    }
+    before=$(m_sum)
+
+    mnt --bind "$M/outside" "$M/stateA/sub"
+    o=$(m_explore "$M/stateA" op.sh "$M/workA"); rc=$?
+    umnt "$M/stateA/sub"
+    if [ "$rc" = "3" ] && printf '%s\n' "$o" | grep -qF "sub is a mount point or another device inside the state directory" \
+        && [ "$before" = "$(m_sum)" ] && [ "$(cat "$M/stateA/sibling.txt" 2>/dev/null)" = sibling ]; then
+        echo "ok   a directory bind-mounted inside the state is refused by name, and neither it nor the state's own files are touched"
+    else
+        echo "FAIL a directory bind-mounted inside the state: exit $rc, outside $( [ "$before" = "$(m_sum)" ] && echo intact || echo CHANGED)"
+        printf '%s\n' "$o" | sed -n '1,4p' | sed 's/^/     | /'
+        fails=$((fails + 1))
+    fi
+
+    : > "$M/stateB/bound"
+    mnt --bind "$M/outfile" "$M/stateB/bound"
+    o=$(m_explore "$M/stateB" op.sh "$M/workB"); rc=$?
+    umnt "$M/stateB/bound"
+    if [ "$rc" = "3" ] && printf '%s\n' "$o" | grep -qF "bound is a mount point or another device inside the state directory" \
+        && [ "$before" = "$(m_sum)" ]; then
+        echo "ok   a file bind-mounted inside the state is refused by name, and the file is untouched"
+    else
+        echo "FAIL a file bind-mounted inside the state: exit $rc, outside $( [ "$before" = "$(m_sum)" ] && echo intact || echo CHANGED)"
+        printf '%s\n' "$o" | sed -n '1,4p' | sed 's/^/     | /'
+        fails=$((fails + 1))
+    fi
+
+    o=$(m_explore "$M/stateC" opfail.sh "$M/workC"); rc=$?
+    case_c=$(ls "$M/workC/cases/"*.json 2>/dev/null | head -1)
+    if [ "$rc" != "1" ] || [ -z "$case_c" ]; then
+        echo "FAIL check 25's replay leg could not make its case: exit $rc"
+        printf '%s\n' "$o" | sed -n '1,4p' | sed 's/^/     | /'
+        fails=$((fails + 1))
+    else
+        mkdir -p "$M/stateC/sub"
+        mnt --bind "$M/outside" "$M/stateC/sub"
+        o=$("$SIDEEYE" replay "$case_c" --fresh-state --shim "$SHIM" --work "$M/workC2" --allow-unverified 2>&1); rc=$?
+        umnt "$M/stateC/sub"
+        if [ "$rc" = "3" ] && printf '%s\n' "$o" | grep -qF "sub is a mount point or another device inside the state directory" \
+            && [ "$before" = "$(m_sum)" ]; then
+            echo "ok   replay --fresh-state refuses a mount inside the case's state before emptying it"
+        else
+            echo "FAIL replay --fresh-state over a mount: exit $rc, outside $( [ "$before" = "$(m_sum)" ] && echo intact || echo CHANGED)"
+            printf '%s\n' "$o" | sed -n '1,4p' | sed 's/^/     | /'
+            fails=$((fails + 1))
+        fi
+    fi
+
+    o=$(m_explore "$M/stateD" op.sh "$M/workD"); rc=$?
+    if [ "$rc" = "0" ]; then
+        echo "ok   the same define with nothing mounted inside the state is explored (the control)"
+    else
+        echo "FAIL check 25's control, nothing mounted: exit $rc"
+        printf '%s\n' "$o" | sed -n '1,4p' | sed 's/^/     | /'
+        fails=$((fails + 1))
+    fi
+
+    # Not a mount made before the run: the first scan would name it, and the watch on the mount
+    # table would go untested.
+    mkdir -p "$M/stateF/sub"
+    cat > "$M/check-mounts.sh" <<EOF
+#!/bin/sh
+if ! mountpoint -q "\$1/sub"; then
+    mount --bind "$M/outside" "\$1/sub" 2>/dev/null || sudo -n mount --bind "$M/outside" "\$1/sub"
+fi
+[ "\$(cat "\$1/marker" 2>/dev/null)" = ok ]
+EOF
+    chmod 755 "$M/check-mounts.sh"
+    cat > "$M/setup-sub.sh" <<'EOF'
+#!/bin/sh
+printf 'ok\n' > "$1/marker"
+mkdir -p "$1/sub"
+EOF
+    chmod 755 "$M/setup-sub.sh"
+    o=$("$SIDEEYE" explore --state "$M/stateF" --setup "$M/setup-sub.sh $M/stateF" --operation "$M/op.sh $M/stateF" \
+        --check "$M/check-mounts.sh $M/stateF" --shim "$SHIM" --work "$M/workF" --allow-unverified 2>&1); rc=$?
+    umnt "$M/stateF/sub" 2>/dev/null
+    if { [ "$rc" = "2" ] || [ "$rc" = "3" ]; } && printf '%s\n' "$o" | grep -qF "sub is a mount point or another device inside the state directory" \
+        && [ "$before" = "$(m_sum)" ]; then
+        echo "ok   a bind mount made during the run is seen at the next restore, named, and left untouched"
+    else
+        echo "FAIL a bind mount made during the run: exit $rc, outside $( [ "$before" = "$(m_sum)" ] && echo intact || echo CHANGED)"
+        printf '%s\n' "$o" | sed -n '1,4p' | sed 's/^/     | /'
+        fails=$((fails + 1))
+    fi
+
+    mkdir -p "$M/stateE"
+    mnt --bind "$M/stateE" "$M/stateE"
+    o=$(m_explore "$M/stateE" op.sh "$M/workE"); rc=$?
+    umnt "$M/stateE"
+    if [ "$rc" = "0" ]; then
+        echo "ok   a state directory that is itself a mount point is explored"
+    else
+        echo "FAIL a state directory that is itself a mount point: exit $rc"
+        printf '%s\n' "$o" | sed -n '1,4p' | sed 's/^/     | /'
+        fails=$((fails + 1))
+    fi
+fi
+
+echo "=========== check 26: two runs never use one work directory at the same time (#816) ==========="
+L=/tmp/acc-lock
+rm -rf "$L"; mkdir -p "$L/s1" "$L/s2" "$L/s3"
+cat > "$L/slow-init.sh" <<EOF
+#!/bin/sh
+: > "$L/holding"
+sleep 3
+exec "$OUT/toy-bug" init
+EOF
+chmod 755 "$L/slow-init.sh"
+TOY_STATE=$L/s1 "$SIDEEYE" explore --state "$L/s1" --setup "$L/slow-init.sh" \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work "$L/w" --allow-unverified > "$L/first.txt" 2>&1 &
+first=$!
+i=0
+while [ ! -e "$L/holding" ] && [ "$i" -lt 100 ]; do sleep 0.1; i=$((i + 1)); done
+o=$(TOY_STATE=$L/s2 "$SIDEEYE" explore --state "$L/s2" --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work "$L/w" --allow-unverified 2>&1)
+rc=$?
+o3=$(TOY_STATE=$L/s3 "$SIDEEYE" explore --state "$L/s3" --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work "$L/w3" --allow-unverified 2>&1)
+rc3=$?
+wait "$first"
+rc1=$?
+if [ "$rc" = "3" ] && printf '%s\n' "$o" | grep -qF "is in use by another sideeye run (pid $first)" \
+    && [ ! -e "$L/s2/key.json" ] && [ "$rc1" = "1" ] && grep -q "^FAIL" "$L/first.txt"; then
+    echo "ok   a second run on a work directory in use is refused naming the first, before its setup, and the first is undisturbed"
+else
+    echo "FAIL a second run on a work directory in use: exit $rc (first exit $rc1), second setup ran: $( [ -e "$L/s2/key.json" ] && echo yes || echo no)"
+    printf '%s\n' "$o" | sed -n '1,3p' | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+if [ "$rc3" = "1" ]; then
+    echo "ok   a run on a work directory of its own goes ahead beside it (the control)"
+else
+    echo "FAIL check 26's control, its own work directory: exit $rc3"
+    printf '%s\n' "$o3" | sed -n '1,3p' | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+rm -f "$L/checking"
+cat > "$L/slow-check.sh" <<EOF
+#!/bin/sh
+: > "$L/checking"
+sleep 1
+"$OUT/toy-bug" doctor >/dev/null 2>&1 || true
+"$OUT/toy-bug" load-key >/dev/null 2>&1
+EOF
+chmod 755 "$L/slow-check.sh"
+mkdir -p "$L/s4" "$L/s5"
+TOY_STATE=$L/s4 "$SIDEEYE" explore --state "$L/s4" --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --check "$L/slow-check.sh" --shim "$SHIM" --work "$L/w4" --allow-unverified > "$L/fourth.txt" 2>&1 &
+fourth=$!
+i=0
+while [ ! -e "$L/checking" ] && [ "$i" -lt 200 ]; do sleep 0.1; i=$((i + 1)); done
+o5=$(TOY_STATE=$L/s5 "$SIDEEYE" explore --state "$L/s5" --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work "$L/w4" --allow-unverified 2>&1)
+rc5=$?
+wait "$fourth"
+if [ "$rc5" = "3" ] && printf '%s\n' "$o5" | grep -qF "is in use by another sideeye run (pid $fourth)" && [ ! -e "$L/s5/key.json" ]; then
+    echo "ok   the lock is held past the setup and the recording, while the checker runs"
+else
+    echo "FAIL a second run while the first explores: exit $rc5"
+    printf '%s\n' "$o5" | sed -n '1,3p' | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+case26=$(ls "$L/w/cases/"*.json 2>/dev/null | head -1)
+if [ -z "$case26" ]; then
+    echo "FAIL check 26's replay leg found no case from the first run"
+    fails=$((fails + 1))
+else
+    rm -f "$L/holding"
+    "$SIDEEYE" replay "$case26" --fresh-state --shim "$SHIM" --work "$L/w" --allow-unverified > "$L/replay1.txt" 2>&1 &
+    replay1=$!
+    i=0
+    while [ ! -e "$L/holding" ] && [ "$i" -lt 100 ]; do sleep 0.1; i=$((i + 1)); done
+    # Not judged by the second replay's exit alone: a --fresh-state that got past the lock
+    # would remove this.
+    : > "$L/s1/sentinel"
+    o6=$("$SIDEEYE" replay "$case26" --fresh-state --shim "$SHIM" --work "$L/w" --allow-unverified 2>&1)
+    rc6=$?
+    sentinel_kept=$( [ -e "$L/s1/sentinel" ] && echo yes || echo no)
+    wait "$replay1"
+    rcr1=$?
+    if [ "$rc6" = "3" ] && printf '%s\n' "$o6" | grep -qF "is in use by another sideeye run" && [ "$sentinel_kept" = "yes" ] && [ "$rcr1" = "1" ]; then
+        echo "ok   a second replay --fresh-state is refused before it empties the state the first replay is setting up"
+    else
+        echo "FAIL two replays --fresh-state on one work directory: second exit $rc6, first exit $rcr1, state left alone: $sentinel_kept"
+        printf '%s\n' "$o6" | sed -n '1,3p' | sed 's/^/     | /'
+        fails=$((fails + 1))
+    fi
+fi
+
+mkdir -p "$L/wh" "$L/wf" "$L/s7"
+printf 'keep me\n' > "$L/victim"
+ln "$L/victim" "$L/wh/run.lock"
+o7=$(TOY_STATE=$L/s7 "$SIDEEYE" explore --state "$L/s7" --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work "$L/wh" --allow-unverified 2>&1)
+rc7=$?
+mkfifo "$L/wf/run.lock"
+o8=$(TOY_STATE=$L/s7 "$SIDEEYE" explore --state "$L/s7" --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work "$L/wf" --allow-unverified 2>&1)
+rc8=$?
+if [ "$rc7" = "3" ] && printf '%s\n' "$o7" | grep -qF "run.lock is not a regular file of yours with one link" \
+    && [ "$(cat "$L/victim")" = "keep me" ] && [ "$rc8" = "3" ] && printf '%s\n' "$o8" | grep -qF "run.lock is not a regular file"; then
+    echo "ok   a hard link or a FIFO at run.lock is refused, and the linked file is left as it was"
+else
+    echo "FAIL a planted run.lock: hard link exit $rc7, FIFO exit $rc8, victim now '$(cat "$L/victim")'"
+    printf '%s\n' "$o7" "$o8" | sed -n '1,4p' | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
 
 echo "=========== check 27: the recording run starts from the rebuilt state every world starts from (#815) ==========="
 # Not on /tmp: overlay and ext4 list a rebuilt directory in the order the setup wrote it, and

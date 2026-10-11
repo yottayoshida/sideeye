@@ -595,6 +595,7 @@ pub fn runServer(gpa: std.mem.Allocator) void {
         }
         break :blk resolved;
     } else server_root;
+    posix.installInterruptHandlers(stopServerForSignal);
     var buf: [256 * 1024]u8 = undefined;
     var lines: Lines = .{ .buf = &buf };
     while (true) {
@@ -607,6 +608,11 @@ pub fn runServer(gpa: std.mem.Allocator) void {
         }
         lines.commit(@intCast(n));
     }
+}
+
+fn stopServerForSignal(sig: c_int) noreturn {
+    posix.writeStopLine(sig, 0);
+    posix.dieBySignal(sig);
 }
 
 fn handleItem(gpa: std.mem.Allocator, self: []const u8, item: Lines.Item) void {
@@ -623,25 +629,18 @@ fn handleItem(gpa: std.mem.Allocator, self: []const u8, item: Lines.Item) void {
     }
 }
 
-/// What the streaming read of a line too long for the buffer could establish.
 pub const Oversized = struct {
-    /// Bytes a line may hold, its newline not counted.
+    /// Not the buffer's length: the newline takes one byte of it.
     limit: usize,
     verdict: enum { blank, unparsed, not_object, notification, request },
-    /// The top-level `id` when it is an integer that fits in 64 bits or a string of at most
-    /// `IdFinder.max_id` bytes. A string points into the `Lines` that read it, until its next line.
+    /// A string points into the `Lines` that read it: copy it before that reads its next line.
     id: std.json.Value = .null,
-    /// Read as `unparsed` only because the nesting outgrew `IdFinder.max_depth`.
     too_deep: bool = false,
 };
 
 const parse_error_reply = "{\"jsonrpc\":\"2.0\",\"id\":null,\"error\":{\"code\":-32700,\"message\":\"Parse error\"}}";
 const invalid_request_reply = "{\"jsonrpc\":\"2.0\",\"id\":null,\"error\":{\"code\":-32600,\"message\":\"Invalid Request\"}}";
 
-/// The answer `route` would give the same line were it short enough to hold, as far as a
-/// constant-memory read can tell: a duplicate key below the top level or one other than `id` at
-/// it, an `id` over
-/// `IdFinder.max_id` bytes, and nesting deeper than `IdFinder.max_depth` are where it differs.
 pub fn routeOversized(arena: std.mem.Allocator, o: Oversized) Route {
     return switch (o.verdict) {
         .blank => .none,
@@ -652,7 +651,6 @@ pub fn routeOversized(arena: std.mem.Allocator, o: Oversized) Route {
     };
 }
 
-/// Follows a JSON text fed in pieces and keeps only its top-level `id`.
 pub const IdFinder = struct {
     pub const max_id = 128;
     pub const max_depth = 4096;
@@ -803,7 +801,6 @@ pub const IdFinder = struct {
         self.expect_key = true;
     }
 };
-
 pub const Lines = struct {
     buf: []u8,
     filled: usize = 0,
@@ -1055,6 +1052,48 @@ fn observeArg(args: std.json.ObjectMap) error{InvalidObserve}!?contract.ObserveM
     return contract.ObserveMode.parse(s) orelse error.InvalidObserve;
 }
 
+var server_work_buf: [contract.max_path]u8 = undefined;
+var server_work_len: usize = 0;
+
+/// Not named by the pid: every server started as the container in docs/mcp.md is pid 1, and two
+/// such containers sharing a mount would share the name. Not put through the work directory's
+/// owner check when made: `mkdtemp` never adopts a directory it did not make.
+fn serverWork(work: []const u8) ?[]const u8 {
+    if (server_work_len > 0) {
+        if (workDirVerdict(server_work_buf[0..server_work_len]) == .ok) return server_work_buf[0..server_work_len];
+        server_work_len = 0;
+    }
+    const templ = std.fmt.bufPrintZ(&server_work_buf, "{s}/server-XXXXXX", .{work}) catch return null;
+    const made = posix.mkdtemp(templ.ptr) orelse return null;
+    server_work_len = std.mem.len(made);
+    return server_work_buf[0..server_work_len];
+}
+
+test "a server's directory is its own, kept across calls, and made again when it is gone (#816)" {
+    var bb: [contract.max_path]u8 = undefined;
+    const base_z = std.fmt.bufPrintZ(&bb, "/tmp/sideeye-serverwork-{d}", .{posix.getpid()}) catch unreachable;
+    _ = posix.mkdir(base_z.ptr, 0o700);
+    defer _ = posix.rmdir(base_z.ptr);
+    server_work_len = 0;
+    defer server_work_len = 0;
+    const base = std.mem.span(base_z.ptr);
+
+    var first_buf: [contract.max_path]u8 = undefined;
+    const first = serverWork(base) orelse return error.TestUnexpectedResult;
+    @memcpy(first_buf[0..first.len], first);
+    const first_copy = first_buf[0..first.len];
+    try std.testing.expect(std.mem.startsWith(u8, first_copy, base));
+    try std.testing.expectEqualStrings(first_copy, serverWork(base).?);
+
+    var fz: [contract.max_path]u8 = undefined;
+    _ = posix.rmdir((std.fmt.bufPrintZ(&fz, "{s}", .{first_copy}) catch unreachable).ptr);
+    const second = serverWork(base) orelse return error.TestUnexpectedResult;
+    var sz: [contract.max_path]u8 = undefined;
+    const second_z = std.fmt.bufPrintZ(&sz, "{s}", .{second}) catch unreachable;
+    defer _ = posix.rmdir(second_z.ptr);
+    try std.testing.expect(workDirVerdict(second) == .ok);
+}
+
 fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8, id: std.json.Value, kind: RunKind, path_in: []const u8) void {
     const path = resolveInsideRoot(arena, path_in) orelse
         return emitToolError(arena, id, "the path is outside the server root (SIDEEYE_MCP_ROOT), or does not exist");
@@ -1094,21 +1133,16 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
         )),
     };
 
-    counter += 1;
-    const temp_json = std.fmt.allocPrint(arena, "{s}/report-{d}.json", .{ work, counter }) catch return emitToolError(arena, id, "oom");
-    const child_out = std.fmt.allocPrint(arena, "{s}/child-{d}.out", .{ work, counter }) catch return emitToolError(arena, id, "oom");
+    const own = serverWork(work) orelse
+        return emitToolError(arena, id, "the server's own directory under the work directory could not be created");
 
-    // A previous server process may have left report-N / child-N behind — the counter
-    // is per-process, so two servers sharing a work dir collide on the same names. The
-    // capture opens O_EXCL, the collision refuses the spawn, and the parent then reads
-    // the PREVIOUS run's report-N.json back as THIS call's verdict (measured 2026-08-12:
-    // a second server answered with the first server's report, about a different
-    // target). The refusal used to be the child's `_exit(126)`; since #469 the capture
-    // is opened in the parent and it is `error.CaptureUnavailable`, answered above. The
-    // incident is unchanged — what fixed it is the two unlinks below, not the shape of
-    // the refusal. Unlink both names first: whatever exists at them afterwards
-    // was written by this call's child or by nobody. The work dir is user-owned by
-    // contract (ADR 0010), so these are our own leftovers, not someone else's files.
+    counter += 1;
+    const temp_json = std.fmt.allocPrint(arena, "{s}/report-{d}.json", .{ own, counter }) catch return emitToolError(arena, id, "oom");
+    const child_out = std.fmt.allocPrint(arena, "{s}/child-{d}.out", .{ own, counter }) catch return emitToolError(arena, id, "oom");
+
+    // Do not drop the unlinks because the directory is this server's own: the capture opens
+    // O_EXCL, and a name left behind would refuse the spawn and leave the old report to be
+    // read back as this call's verdict.
     unlinkPath(temp_json);
     unlinkPath(child_out);
     // Preflight's text output quotes the bytes `--twice` saw differ, and this server reads only
@@ -1175,7 +1209,7 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
         .preflight => &.{ self, "preflight", "--config", path },
     };
     for (base) |a| push(&argv_buf, &argc, a);
-    for ([_][]const u8{ "--state-under", state_root, "--json", temp_json, "--shim", shim, "--work", work }) |a| push(&argv_buf, &argc, a);
+    for ([_][]const u8{ "--state-under", state_root, "--json", temp_json, "--shim", shim, "--work", own }) |a| push(&argv_buf, &argc, a);
     if (kind == .preflight and kind.preflight.twice) push(&argv_buf, &argc, "--twice");
     if (oracle) |o| {
         push(&argv_buf, &argc, "--oracle");
@@ -1487,9 +1521,7 @@ fn reportOfThisCall(arena: std.mem.Allocator, report: []const u8, exit_code: i64
     return .{ .doc = report_min };
 }
 
-/// A document's verdict or outcome, its `exit_code`, and the status the process ended with are
-/// one value three times (docs/report-schema.md); a document placed by anyone else has to match
-/// all three, so at most it repeats the verdict the exit status already gave.
+/// Not the exit_code alone: a document placed in the work directory can match that one value.
 fn documentAgrees(arena: std.mem.Allocator, doc_min: []const u8, exit_code: i64) bool {
     const parsed = std.json.parseFromSliceLeaky(std.json.Value, arena, doc_min, .{}) catch return false;
     if (parsed != .object) return false;
@@ -1518,9 +1550,7 @@ test "a document whose verdict, exit_code and the child's exit status disagree i
     try std.testing.expectEqualStrings("{\"schema\":\"sideeye/report\",\"verdict\":\"PASS\",\"exit_code\":0}", reportOfThisCall(a, pass, 0).doc);
     try std.testing.expect(reportOfThisCall(a, pass, 3) == .refused);
     try std.testing.expect(reportOfThisCall(a, pass, -1) == .refused);
-    // A child ended by a signal has no verdict, so no document can agree with it.
     try std.testing.expect(reportOfThisCall(a, "{\"exit_code\":-1,\"schema\":\"sideeye/report\",\"verdict\":\"PASS\"}", -1) == .refused);
-    // Its exit_code matched to a refusal's: the verdict still gives it away.
     try std.testing.expect(reportOfThisCall(a, "{\"verdict\":\"PASS\",\"exit_code\":3,\"schema\":\"sideeye/report\"}", 3) == .refused);
     try std.testing.expect(reportOfThisCall(a, "{\"schema\":\"sideeye/report\",\"verdict\":\"SETUP_ERROR\",\"exit_code\":3}", 3) == .doc);
     try std.testing.expect(reportOfThisCall(a, "{\"schema\":\"sideeye/preflight\",\"outcome\":\"runs_differ\",\"exit_code\":1}", 1) == .doc);
@@ -2043,20 +2073,10 @@ test "minifyJson takes nesting std's writer cannot, keeps strings whole, and sti
 fn readFile(arena: std.mem.Allocator, path: []const u8, cap: usize) ?[]const u8 {
     var zb: [contract.max_path]u8 = undefined;
     const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch return null;
-    // #400's shape, and this call site was nearly excluded from that sweep on the
-    // grounds that the server reads only a file it just wrote itself. Three things in
-    // this file say otherwise: the report is written by the *child* (`--json temp_json`
-    // on the self-exec below), the directory is `SIDEEYE_MCP_WORK` — `/tmp/sideeye-mcp`
-    // by default, and its creation tolerates EEXIST, so a pre-existing directory is
-    // adopted — and `unlinkPath` discards its result, which is how a previous run's
-    // report was once read back as this call's verdict (the incident recorded above).
-    // A FIFO planted at that path would hold the server with the client's request
-    // outstanding, and there is no timeout anywhere around this read.
-    //
-    // `O_NOFOLLOW` closes the other half of that same paragraph (#469). Every reason
-    // above for why a planted FIFO is reachable here is a reason a planted *symlink*
-    // is, and this read's bytes become the tool's return value — so following one hands
-    // the caller a verdict about a file somebody else chose. The write side of this
+    // Do not drop `O_NONBLOCK` or `O_NOFOLLOW` because the server made this directory: the
+    // report is written by the child into a directory the target can write, so a FIFO planted
+    // at the path would hold the server with no timeout, and a symlink would hand the caller a
+    // verdict about a file somebody else chose.
     const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK | posix.O_NOFOLLOW, @as(c_uint, 0));
     if (fd < 0) return null;
     defer _ = posix.close(fd);
@@ -2121,8 +2141,6 @@ test "Lines: whole lines across reads, an over-long line read through to its end
     try std.testing.expect(dropping.finish() == null);
 }
 
-/// Feeds `text` and a newline through a 32-byte `Lines`, `step` bytes per read, and returns the
-/// one item the over-long line produced.
 fn oversizedThrough(text: []const u8, step: usize, id_copy: *[IdFinder.max_id]u8) !Oversized {
     var buf: [32]u8 = undefined;
     var lines: Lines = .{ .buf = &buf };

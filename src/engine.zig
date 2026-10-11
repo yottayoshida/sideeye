@@ -40,6 +40,8 @@ pub const SnapshotDiag = state_fs.SnapshotDiag;
 pub const takeSnapshot = state_fs.takeSnapshot;
 pub const takeSnapshotCapped = state_fs.takeSnapshotCapped;
 pub const RestoreError = state_fs.RestoreError;
+pub const MountScan = state_fs.MountScan;
+pub const firstMountInside = state_fs.firstMountInside;
 pub const assertSafeRoot = state_fs.assertSafeRoot;
 pub const assertSafeNamingRoot = state_fs.assertSafeNamingRoot;
 pub const freshDir = state_fs.freshDir;
@@ -79,7 +81,7 @@ pub const WorldResult = struct {
 
 test "the three read error sets hold what their readers can raise (#376)" {
     const t = std.testing;
-    try t.expectEqual(@as(usize, 8), @typeInfo(SnapshotError).error_set.?.len);
+    try t.expectEqual(@as(usize, 9), @typeInfo(SnapshotError).error_set.?.len);
     try t.expectEqual(@as(usize, 3), @typeInfo(ReadWholeError).error_set.?.len);
     try t.expectEqual(@as(usize, 2), @typeInfo(TraceReadError).error_set.?.len);
 }
