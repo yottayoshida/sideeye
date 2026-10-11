@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **The CI quickstart and the MCP container pin v1.11.0** (`docs/ci-quickstart.md`, `docs/ci-quickstart/release/install-sideeye.sh`, `.github/workflows/quickstart-release.yml`, `docs/mcp-container/Dockerfile`). The release lane installs the published v1.11.0 asset, and the container fetches it, with the two Linux digests GitHub recorded for it. The pins move after the release, as on v1.10.0, because both download the asset and it exists only once the release is published; `spike/check-mcp-container.py` holds the Dockerfile's version to the quickstart's, so the two move together. With the container on v1.11.0, `sideeye_preflight` and `sideeye_evidence` reach an operator who builds it, as `docs/mcp.md` describes.
+
 ## [1.11.0] - 2026-10-11
 
 ### Added
