@@ -42,7 +42,12 @@ compare_pair() {
         || { echo "FAIL $3: zig fmt rejected the base minus the deleted comment lines"; return 1; }
     zig fmt --stdin <"$2" >"$tmp/new.fmt" 2>/dev/null \
         || { echo "FAIL $3: zig fmt rejected the new copy"; return 1; }
-    if cmp -s "$tmp/rebuilt.fmt" "$tmp/new.fmt"; then
+    # A blank comment line (`//`, `///` or `//!` alone) is a paragraph break, and the rebuild cannot
+    # tell which of several identical ones the new copy kept — so they are compared by neither text
+    # nor position.
+    grep -vE '^[[:space:]]*//[!/]?[[:space:]]*$' "$tmp/rebuilt.fmt" >"$tmp/rebuilt.cmp"
+    grep -vE '^[[:space:]]*//[!/]?[[:space:]]*$' "$tmp/new.fmt" >"$tmp/new.cmp"
+    if cmp -s "$tmp/rebuilt.cmp" "$tmp/new.cmp"; then
         echo "ok   $3: $deleted comment lines deleted, nothing else changed (zig fmt re-flowed the lines around them)"
         return 0
     fi
