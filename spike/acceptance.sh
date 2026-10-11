@@ -8828,6 +8828,42 @@ else
     echo "NOT MEASURED  #405 control needs the raw-syscall branch, which is Linux-only"
 fi
 
+# #814: a recorded open names a file, but only a record that can put bytes there accounts
+# for the bytes it is left holding. The setup's victim.txt is truncated by a libc open and
+# refilled by a raw write; the open alone used to account for the change, and the world
+# holding the truncated file was never explored. The libc form is the control: the same
+# bytes through a recorded write are accounted for, so the leg measures the open's reach
+# and not a refusal of every rewritten file.
+if [ "$(uname -s)" = "Linux" ]; then
+    for form in raw libc; do
+        mkdir -p "$CLS/tw-$form-state" "$CLS/tw-$form-work"
+        o=$(TOY_TRUNC_THEN_WRITE=$form TOY_STATE="$CLS/tw-$form-state" \
+            "$SIDEEYE" preflight --state "$CLS/tw-$form-state" \
+            --setup ""$CLS/r-setup.sh" $OUT/toy-bug" --operation "$OUT/toy-bug rotate" \
+            --shim "$SHIM" --work "$CLS/tw-$form-work" 2>&1)
+        rc=$?
+        case $form in
+            raw)
+                if [ "$rc" -eq 2 ] && echo "$o" | grep -q "state_changed_unaccounted" \
+                   && echo "$o" | grep -q "victim.txt" && echo "$o" | grep -q "can have put there"; then
+                    echo "ok   #814 a file truncated by a recorded open and refilled by an unrecorded write refuses, naming it"
+                else
+                    echo "     #814 raw: wanted rc=2 state_changed_unaccounted naming victim.txt, got rc=$rc: $o"
+                    fails=$((fails + 1))
+                fi ;;
+            libc)
+                if [ "$rc" -eq 0 ] && echo "$o" | grep -q "recording accepted"; then
+                    echo "ok   #814 control: the same bytes through a recorded write are accounted for"
+                else
+                    echo "     #814 control: wanted rc=0 recording accepted, got rc=$rc: $o"
+                    fails=$((fails + 1))
+                fi ;;
+        esac
+    done
+else
+    echo "NOT MEASURED  #814 needs the raw-syscall branch, which is Linux-only"
+fi
+
 # --- #485: the kind whose path is empty by construction ---
 # `linkat` with an empty source names a descriptor and nothing else, so the descriptor is
 # the whole of the operation's identity -- the sharpest case for #485 and, until this leg,

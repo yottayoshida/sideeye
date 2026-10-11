@@ -1831,7 +1831,7 @@ fn phaseOracle(run: *Run) void {
     // names the specific syscall that went unseen, which is strictly more than "this
     // path is unexplained". This is the detector for the runs that have no second
     // witness at all, which is every macOS run that does not pay root.
-    refuse.reconcileOrRefuse(gpa, arena, initial, final, trace.ops.items, state_abs, if (alt_differs) state_alt else "");
+    refuse.reconcileOrRefuse(gpa, arena, initial, final, trace.ops.items, state_abs, if (alt_differs) state_alt else "", report.scratch_declared);
     const n = trace.kill_point_count;
     report.crash_points = n;
 
