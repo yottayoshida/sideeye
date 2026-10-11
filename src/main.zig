@@ -135,7 +135,7 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
             removeFile(sentinel);
             const said = capture.readFileAllocCapped(arena, fsusage.errPath(arena, capture_path) catch "", 4096, .{ .no_follow = true }) orelse "";
             const trimmed = std.mem.trim(u8, said, " \t\r\n");
-            setupError(.environment, std.fmt.allocPrint(arena, "fs_usage exited before the handshake completed{s}{s}; if it says `ktrace_start: Resource busy`, another fs_usage still holds the kernel trace facility — wait for it, or stop it, and re-run", .{ if (trimmed.len > 0) ", saying: " else "", textShown(arena, trimmed) }) catch "fs_usage exited before the handshake completed");
+            setupError(.environment, std.fmt.allocPrint(arena, "fs_usage exited before the handshake completed{s}{s}; its stderr is {s}, and if it says `ktrace_start: Resource busy`, another fs_usage still holds the kernel trace facility — wait for it, or stop it, and re-run", .{ if (trimmed.len > 0) ", saying: " else "", textShown(arena, trimmed), textShown(arena, fsusage.errPath(arena, capture_path) catch "") }) catch "fs_usage exited before the handshake completed");
         }
 
         // Flush pressure. fs_usage writes its capture through stdio, and a file is

@@ -603,14 +603,24 @@ pub fn readWithStd(
     for (std_scope, [_][]const u8{ "0", "1", "2" }) |scope, n| {
         if (scope) |in| try fds.set(arena, .{ .tid = subject, .fd = n }, in);
     }
-    const subject_cmd: ?[]const u8 = blk: {
+    // Bounded by the subject's own first and last lines: a process of the same name outside
+    // them — a `git` an editor runs beside the `git` under test — is not this one.
+    var subject_cmd: ?[]const u8 = null;
+    var subject_first: usize = 0;
+    var subject_last: usize = 0;
+    {
         var it = std.mem.splitScalar(u8, text, '\n');
         while (it.next()) |raw| {
             const ln = parseLine(raw) orelse continue;
-            if (std.mem.eql(u8, ln.tid, subject)) break :blk commandOf(raw);
+            if (!std.mem.eql(u8, ln.tid, subject)) continue;
+            const at = @intFromPtr(raw.ptr) - @intFromPtr(text.ptr);
+            if (subject_cmd == null) {
+                subject_cmd = commandOf(raw);
+                subject_first = at;
+            }
+            subject_last = at;
         }
-        break :blk null;
-    };
+    }
 
     var subject_tid_text: std.ArrayList([]const u8) = .empty;
     for (subject_thread_ids) |t| {
@@ -707,6 +717,12 @@ pub fn readWithStd(
             break :blk false;
         };
         const fd_tid = if (is_started) subject else ln.tid;
+        // A thread the shim never saw keeps its own table, yet the standard descriptors it moves
+        // or closes are the subject's too when it runs in the subject's image.
+        const raw_at = @intFromPtr(raw.ptr) - @intFromPtr(text.ptr);
+        const in_subject_image = !std.mem.eql(u8, fd_tid, subject) and
+            raw_at >= subject_first and raw_at <= subject_last and
+            if (subject_cmd) |sc| std.mem.eql(u8, commandOf(raw), sc) else false;
         const cls_opt = classOf(ln.call);
         // Widened with `is_subject` for the same reason that predicate was (#544), and it
         // is a different set: `state_tids` is built in the pass above from lines that NAME
@@ -783,13 +799,7 @@ pub fn readWithStd(
             } else if (fds.get(.{ .tid = fd_tid, .fd = pair.old })) |in| {
                 try fds.set(arena, .{ .tid = fd_tid, .fd = pair.new }, in);
             } else fds.clear(.{ .tid = fd_tid, .fd = pair.new });
-            // A thread the shim never saw keeps its own table, yet a standard descriptor it moves
-            // is the subject's too when it runs in the subject's image.
-            if (!std.mem.eql(u8, fd_tid, subject) and isStandardFd(pair.new)) {
-                if (subject_cmd) |sc| {
-                    if (std.mem.eql(u8, commandOf(raw), sc)) fds.clear(.{ .tid = subject, .fd = pair.new });
-                }
-            }
+            if (in_subject_image and isStandardFd(pair.new)) fds.clear(.{ .tid = subject, .fd = pair.new });
             continue;
         }
         if (std.mem.eql(u8, call, "socket") or isSocketCall(call)) {
@@ -885,7 +895,10 @@ pub fn readWithStd(
                     }
                 }
             } else if (cls == .close) {
-                if (fd) |f| fds.clear(.{ .tid = fd_tid, .fd = f });
+                if (fd) |f| {
+                    fds.clear(.{ .tid = fd_tid, .fd = f });
+                    if (in_subject_image and isStandardFd(f)) fds.clear(.{ .tid = subject, .fd = f });
+                }
                 continue;
             }
         }
@@ -1698,4 +1711,27 @@ test "a socket that only connect or sendto names is outside the state, and a fai
     const failed = try readStd(a, "10:00:00.000010  connect           F=12[ 38]                                      0.000020   subj.111\n" ++
         "10:00:00.000011  write             F=12  B=0x10                                  0.000100   subj.111\n", outside_std);
     try testing.expect(failed.defect != null and failed.defect.? == .unresolved_fd);
+}
+
+test "a process of the subject's name outside the subject's own lines does not touch its standard descriptors" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const text =
+        "10:00:00.000000  dup2              F=9    F=1                                    0.000001   subj.222\n" ++
+        "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
+        "10:00:00.000002  open              F=6   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
+        "10:00:00.000013  write             F=1   B=0x3                                   0.000100   subj.111\n" ++
+        "10:00:00.000099  open              F=7   /tmp/st/sentinel-b                    0.000100   subj.111\n";
+    const r = try readWithStd(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{}, &.{}, outside_std);
+    try testing.expect(r.defect == null);
+}
+
+test "a standard descriptor another thread of the subject's image closes is no longer taken as the engine's" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const r = try readStd(a, "10:00:00.000010  close             F=1                                            0.000001   subj.222\n" ++
+        "10:00:00.000013  write             F=1   B=0x3                                   0.000100   subj.111\n", outside_std);
+    try testing.expect(r.defect != null and r.defect.? == .unresolved_fd);
 }

@@ -39,12 +39,15 @@ Two causes, both read from the capture and from `fs_usage.c` (apple-oss-distribu
 2. **fs_usage runs without a class filter**, and the reader follows `dup` and `dup2`: the new number
    takes the old one's scope, and becomes unknown when the old one is unknown, rather than keeping
    what it named before. A `dup` line without both numbers and without an errno, on a thread that
-   matters, is unreadable and refuses. A standard descriptor moved by a thread the shim never saw,
-   in a process named as the subject is, becomes unknown in the subject's table too: that thread
-   keeps its own table, and the subject would otherwise go on reading 1 as the engine's. Without a
-   filter a socket's `write` is printed as well, so the descriptor `socket` and `accept` print, and
-   the one a successful `connect`, `bind`, `listen`, `send*` or `recv*` names — calls that succeed
-   only on a socket — is outside the state.
+   matters, is unreadable and refuses. A standard descriptor moved or closed by a thread the shim
+   never saw, named as the subject's process is and printed between the subject's own first and last
+   lines, becomes unknown in the subject's table too: that thread keeps its own table, and the
+   subject would otherwise go on reading 1 as the engine's. fs_usage prints no pid, so the name and
+   the span are the whole test — a same-named process inside the span refuses the run, the safe
+   side. Without a filter a socket's `write` is printed as well, so the descriptor `socket` and
+   `accept` print, and the one a successful `connect`, `bind`, `listen`, `sendto`, `recvfrom`,
+   `sendmsg` or `recvmsg` names, is outside the state: each of those fails on anything but a
+   socket. `sendfile`, which succeeds on a file, is deliberately not among them.
 3. **fs_usage's stderr is kept**, beside the capture, and a run whose stderr reports a
    `buffer overrun`, or cannot be read back, is refused `oracle_saw_nothing`: an event fs_usage
    dropped is an operation neither account holds. The file is removed with the capture before each
@@ -77,9 +80,11 @@ failed the reader's grammar.
 
 - The four shapes above are judged on GitHub's macOS 26 runner: the printing toy, the `dup2` toy and
   the outside control PASS with `oracle_verified: true`, and the probe's `gdd` rewrite FAILs with a
-  verified oracle (run 38116040180). The fs_usage acceptance suite carries the three toys and a second
-  run in the same work directory as check 9; on that run its print and `dup2` legs passed, and its
-  outside leg, spelled through `state/../` at the time, did not — the reader's own limit below.
+  verified oracle (run 38116040180). The fs_usage acceptance suite carries the three toys as check 9;
+  on that run its print and `dup2` legs passed, and its outside leg, spelled through `state/../` at
+  the time, did not — the reader's own limit below. The respelled outside leg, the second run in the
+  same work directory, and the name-and-span rule above were added after that run and are first
+  measured by the pull request's own macOS job.
 - A descriptor the reader cannot place still refuses: a pipe the target makes itself, a `socketpair`
   written before any socket call names it (fs_usage prints no number for either), a `dup2` from a
   number the capture never saw opened, and an absolute path the reader places by its text — it does
