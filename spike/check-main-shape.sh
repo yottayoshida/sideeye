@@ -8,7 +8,7 @@
 # there they only come down: the pull request that moves the next declaration out lowers
 # them in the same change. This is not a line-count target — #572 names that as a non-goal —
 # it counts declarations, in one direction, and says where new behaviour goes: into the
-# module that owns it, which main.zig's module map names.
+# module that owns it, which ADR 0062's seam records name.
 #
 # What counts as a function: a top-level `fn` with any of the modifiers Zig allows in front
 # of it — `pub`, `export`, `inline`, `noinline`, and `extern` with or without a library name
@@ -44,8 +44,8 @@
 # check, so the selftest's at-ceiling file keeps holding both forms.
 #
 # What this check does not decide is WHERE a declaration belongs: a function moved out of
-# main.zig into the wrong module satisfies it. The module maps say where, in prose, and a
-# review reads them. This removes the default of leaving things in main.zig; it is not a
+# main.zig into the wrong module satisfies it. ADR 0062 says where, in prose, and a
+# review reads it. This removes the default of leaving things in main.zig; it is not a
 # placement oracle.
 #
 # Exit 0: within both ceilings, counts printed. Exit 1: a ceiling exceeded, or the file
@@ -94,13 +94,13 @@ judge() {
     rc=0
     if [ "$fn" -gt "$FN_MAX" ]; then
         echo "FAIL $label declares $fn top-level fn, ceiling $FN_MAX (#572, ADR 0062): a new function"
-        echo "     goes into the module that owns the behaviour — see the module map at the top of"
-        echo "     src/main.zig. Lower the ceiling only in the pull request that moves code out."
+        echo "     goes into the module that owns the behaviour — see the seam records in"
+        echo "     ADR 0062. Lower the ceiling only in the pull request that moves code out."
         rc=1
     fi
     if [ "$var" -gt "$VAR_MAX" ]; then
         echo "FAIL $label declares $var module-level var, ceiling $VAR_MAX (#572, ADR 0062): new run or"
-        echo "     report state gets an owner outside src/main.zig; the module map says which."
+        echo "     report state gets an owner outside src/main.zig; ADR 0062 says which."
         rc=1
     fi
     [ "$rc" = 0 ] && echo "ok   $label: $fn top-level fn (ceiling $FN_MAX), $var module-level var (ceiling $VAR_MAX)"

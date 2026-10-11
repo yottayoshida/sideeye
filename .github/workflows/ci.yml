@@ -1556,7 +1556,7 @@ jobs:
       # #572 (ADR 0062): src/main.zig only loses top-level declarations. The ceilings
       # are the counts the last seam left and come down with the next one; a change
       # that needs a new function or module-level variable puts it in the module that
-      # owns the behaviour, which main.zig's module map names. Not a line count —
+      # owns the behaviour, which ADR 0062's seam records name. Not a line count —
       # #572 forbids one — and tests are not counted, so moving them buys nothing.
       - name: The check proves it can go red
         run: sh spike/check-main-shape.sh --selftest

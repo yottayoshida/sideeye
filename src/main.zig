@@ -1,54 +1,3 @@
-//! The orchestrator: `main()` records a run — the define, then setup, apparatus, the
-//! recording run, the structural detectors, the oracle comparison, the preflight cut, the
-//! checker, the exploration, the report — each a function over the one `Run` the ten
-//! phases share.
-//!
-//! `src/main.zig` is the orchestrator: every product boundary #572 names, other than the
-//! orchestration of a run, lives in a module whose header states its contract, and this file
-//! holds none of their bodies. That sentence is the promise #572's series made true, seam by
-//! seam (ADR 0062), and it holds as of the fourth. What is here besides `main()`, `Run` and
-//! the ten phases — twenty-two functions, the orchestrator's own helpers and the ones kept by
-//! decision — is named at the end of this header, every one; the module map below lists
-//! what moved and where, so a reader knows which.
-//!
-//! Moved, with the module that owns it (ADR 0062):
-//!
-//!   - `boundary.zig` — the process-and-thread boundary: `BoundaryEvidence` (what each
-//!     witness saw, filled in from here by four of the ten phases — the structural
-//!     detectors, the oracle comparison, the exploration, and the preflight cut through
-//!     `observeAgain`), `childrenMayBeJudged`
-//!     and `unattributedWriterReason` (whether a run with another writer is judged), the
-//!     `processes` account both reports print (`boundaryAccount`), and the sentences of the
-//!     refusals that name another writer or an image change. The `child_process_detected`
-//!     sentences are still inline here; `requireCompleteness` went with the refusal seam
-//!     (`refuse.zig`, seam 3a) and the `crossed_boundary` decision is the orchestrator's
-//!     (`run.admitted`, seam 4).
-//!   - `defang.zig` — the choke point every target-influenced string passes before it
-//!     reaches a report line (`sanitizeForReport`, `textShown`, `appendSanitized`).
-//!   - `capture.zig` — the readers of bytes this program did not write, or wrote but must
-//!     not trust by name: a target's stdout (`observeCapture`), a caller-named case or
-//!     config (`readFileAllocCapped`), the tail a live observer appended (`readFileFrom`),
-//!     the oracle's capture (`readFileAlloc`), a failing setup's last line
-//!     (`readSetupCapture`). Every one keeps "could not be read" apart from "was empty";
-//!     the other guards — descriptor classification, a byte ceiling, and link refusal,
-//!     which alone follows from who named the path — are chosen here at each call through
-//!     `ReadMode`, and this file turns the answers into refusals and report lines. The
-//!     reading itself is not here.
-//!   - `report.zig` — what a run says: the facts the phases here establish (`report.explored`,
-//!     `report.l0_note`, `report.setup_status`, …), the text rendering through `say` and the
-//!     JSON document through `writeJsonReport`. This file writes the facts and chooses when
-//!     each rendering runs; it renders nothing itself.
-//!   - `refuse.zig` — how a run stops: `unknown` and `setupError` (aliased here, so a refusal
-//!     reads as it always did), the classifiers that choose between them, the `*OrRefuse`
-//!     helpers, and the privileged observer's registry that every refusal stops on its way
-//!     out. `startFsUsage` here registers the observer in `refuse.fsu_live`; `run_phase` and
-//!     `trace_budget` are set here once and read there.
-//!   - `files.zig` — `removeFile`, `writeWholeFile` and the demo's `writeNewExecutable`,
-//!     a leaf the three of us share.
-//!   - `cli.zig` — the argv surface: `Args`, the usage text and `version`, and `parse`, which
-//!     is the mode dispatch, the flag loop and the mode refusals that used to open `main()`.
-//!     `main()` sets `refuse.json_arena`, calls `cli.parse(argv)` and reads the mode, replay's
-//!     case path and the flags back; `cli.answerEntry` answers help, `version`, a bare
 //!     `sideeye` and a word that names no command before anything else (#705); the branches
 //!     before parsing (`mcp`, `evidence`, `demo`) are still here, and so are `splitArgs`,
 //!     `commandArgv` and the `resolve*` family,
@@ -56,28 +5,6 @@
 //!     (`spike/freeze-audit/surface-drift.sh`) and nothing in `cli.zig` calls them; the
 //!     digit grammar `expected_status` and `--expect-status` share is `config.parseExpectStatus`
 //!     for the same reason.
-//!   - `case.zig` — the saved case on both sides: `writeCase`, `prefixHash`, `jsonCommand`,
-//!     `ReplayCase` and `read`. This file decides when a case is written.
-//!   - `containment.zig` — the watch on a run contained in a cgroup of its own (contract v17,
-//!     #559): the spawn's cgroup, the names its shim is told, and the checks a contained run
-//!     meets after every refusal it already had. This file makes the cgroup, hands it to the
-//!     spawn, and calls the checks where they belong.
-//!
-//! Still here — twenty-two functions, each called from `main()`, from a phase, or from
-//! another of these (`isHex16` from its own test alone), named by what it is for: surface 1, which the freeze audit's rung 1 reads out of this file
-//! (`splitArgs`, `commandArgv`, `resolvePathAgainst`, `resolveCommandAgainst`,
-//! `resolveCommand`); the state directory's undo (`undoSetupMkdirs`); the operation's runs
-//! and their comparison (`runOperationObserved`, `recordingCapture`, `observeAgain`,
-//! `snapshotsEqual`); the observer's start (`startFsUsage`, `fsUsageSentinels`, `isHex16`);
-//! the apparatus check (`checkApparatus`, `envValue`, `namesLib`, `preloadNamed`,
-//! `pythonpathHas`); the preflight verdict (`preflightReport`); and the demo (`runDemo`,
-//! `findShim`, `shellSingleQuote`). Surface 1, the apparatus check, the observer's start,
-//! the demo and `preflightReport` are here by decision, with the reason for each in ADR
-//! 0062; the rest are the phases' own helpers. `main()`'s phases are the ten `phase*` functions below it, each
-//! reading and writing one `Run` (the struct above `main()`); `spike/check-main-shape.sh`
-//! holds the count of top-level functions and module-level variables in this file to a
-//! ceiling that came down through the seams, was set once at the fourth to the count the
-//! phases made, and only comes down from there.
 
 const std = @import("std");
 const builtin = @import("builtin");
@@ -99,13 +26,9 @@ const refuse = @import("refuse.zig");
 const cli = @import("cli.zig");
 const case = @import("case.zig");
 const evidence = @import("evidence.zig");
-// The recovery phase (#606, ADR 0072): run after the exploration, never able to end the process.
 const recovery = @import("recovery.zig");
 const containment = @import("containment.zig");
 const supervise = @import("supervise.zig");
-// Aliased rather than spelled `defang.` at each site, so the call sites read as they did
-// when the bodies lived here (#572): the report-side callers outnumber the boundary's, and
-// a move that renames every one of them is a move that cannot be read as a move.
 const sanitizeForReport = defang.sanitizeForReport;
 const textShown = defang.textShown;
 const appendSanitized = defang.appendSanitized;
@@ -117,77 +40,30 @@ const setupErrorFmt = refuse.setupErrorFmt;
 const unknown = refuse.unknown;
 const spawnFailure = refuse.spawnFailure;
 
-/// The trace-read ceiling this binary uses (#324). Zero — the shipped value, written as
-/// a literal in build.zig rather than as a flag's default — means the engine's own
-/// constant. Any other value comes from `-Dtest-trace-cap`, which builds a SEPARATE
-/// artifact, so no invocation of the build can lower a released binary's cap. The shape
-/// `-Dtest-seq-gap` established, for the same reason: the shipped cap is unreachable by
-/// any fixture, and a branch nothing can reach is a branch nothing can check.
-///
-/// "No invocation of the build" was always the whole of that promise — an edit to the
-/// literal is not an invocation, and CI's sha comparison cannot see one because it lands
-/// in both arms. Since #365 the literal is held by a test at the bottom of this file.
 const trace_cap: usize = if (engine_build_options.trace_cap_override == 0)
     engine.max_trace_bytes
 else
     engine_build_options.trace_cap_override;
 
-/// The same for the world read. Separate because the recording read happens first and
-/// exits: with one shared override the world branch is unreachable, so a test artifact
-/// that caps only this site is what lets the second branch fire at all.
 const trace_cap_world: usize = if (engine_build_options.trace_cap_override_world == 0)
     engine.max_trace_bytes
 else
     engine_build_options.trace_cap_override_world;
 
-/// The whole-trace ceiling (#377, ADR 0033), by the same rule as the two caps above: a
-/// zero override means the engine's constant, and any other value comes from a separate
-/// test artifact so no invocation of the build lowers a released binary's ceiling.
-///
-/// **One override, not one per site** — unlike the caps. Those needed a second knob
-/// because the recording read fires first and exits, leaving the world branch
-/// unreachable; the ceiling is a property of the sum, so a leg that exercises it needs
-/// two reads to be live at once rather than a particular one of them to break.
 const trace_budget_limit: usize = if (engine_build_options.trace_budget_override == 0)
     engine.max_trace_bytes_total
 else
     engine_build_options.trace_budget_override;
 
-/// How the loader is told to inject the shim. Same idea, different spelling.
 const preload_var = if (builtin.os.tag == .macos) "DYLD_INSERT_LIBRARIES" else "LD_PRELOAD";
 
-/// Every variable the engine sets for a child it spawns (the pairs handed to `runChild*`
-/// at the recording, the worlds and the baseline). `config.engineOwnedEnv` refuses these
-/// as apparatus, and a test below holds the two lists together: a pair added to the
-/// children without being refused here would be a device the parent has and the child
-/// does not — the silent-different-run the refusal exists to stop.
 const child_env_names = [_][]const u8{ "TOY_STATE", contract.env.state_dir, contract.env.state_dir_alt, contract.env.trace_path, contract.env.seq_base, contract.env.before_constructor, contract.env.observe, contract.env.kill_group, contract.env.run_cgroup, contract.env.kill_cgroup, contract.env.kill_aside, preload_var };
 
 test "every variable the engine sets for a child is refused as apparatus" {
     for (child_env_names) |n| try std.testing.expect(config.engineOwnedEnv(n));
 }
 
-/// What the report says so far.
-///
-/// These are module-level because `unknown()` and `setupError()` exit from deep inside
-/// the run and still have to emit the machine-readable half of the report: DESIGN §13's
-/// rule is that a value both forms carry has one definition, and these globals are how
-/// that holds from a path that exits early. UNKNOWN is the verdict a caller is most
-/// likely to be branching on. (This used to cite §13 as requiring "identical content";
-/// that sentence was retracted 2026-09-01, #280, because §13's own examples contradict
-/// it.)
-///
-/// There used to be two variables per note — a local the text report read, and a global
-/// the JSON read, copied across on the success path only. An UNKNOWN then printed
-/// `unknown_reason: checker_not_falsified` beside `checker: none configured`: the report
-/// contradicted itself about whether a checker existed. One variable each removes the
-/// possibility rather than fixing the two sites where it showed.
-/// #269, `--stop-when-orphaned`: refuse to start another world once `getppid()` stops
-/// answering what it answered at process start. `startup_ppid` is captured at the top of
-/// `main`, before anything else runs — parentage only changes when the parent dies, so
-/// the comparison needs no pid handed in from outside and nothing that could go stale.
 var startup_ppid: c_int = 0;
-/// Undo the two mkdirs setup resolution needs (state, then work), so a refusal
 /// leaves the filesystem as it found it. Every vet between those mkdirs and the
 /// first destructive step shares this one helper: a refusal branch that forgets
 /// half of it would leave a 0755 directory at a path the run just refused to use.
@@ -196,23 +72,12 @@ fn undoSetupMkdirs(work_created: bool, work_z: [*:0]const u8, state_created: boo
     if (state_created) _ = posix.rmdir(state_z);
 }
 
-/// How much fs_usage capture the engine will hold.
-///
-/// The capture is system-wide (`src/fsusage.zig` explains why it cannot be filtered),
-/// so its size is set by whatever else the machine is doing, not by the target. Two
-/// measurements, and the gap between them is the point: 27,994 lines in two seconds on
-/// an idle machine, and **233 MB in a single acceptance run** on one doing ordinary
-/// work — containers, a search indexer and a security agent all writing. `-t` bounds
-/// the observer's time, not its output.
-///
 /// A run that exceeds this refuses rather than growing the arena until the engine dies.
 /// That direction matters more than the number: an out-of-memory kill mid-exploration
 /// leaves the target's state directory in a crash world with nobody to restore it, and
 /// a refusal is recoverable where that is not.
 const fsusage_capture_cap: usize = 2 * 1024 * 1024 * 1024;
 
-/// Start `fs_usage` beside the run, or refuse with the reason.
-///
 /// Everything that can fail about the observer fails *here*, before the first child of
 /// the measured run exists: the credential check, the launch, and the proof that the
 /// capture is live. That placement is not a preference — `docs/contract-freeze.md`
@@ -220,12 +85,6 @@ const fsusage_capture_cap: usize = 2 * 1024 * 1024 * 1024;
 /// change that needs its own ruling, so a new way to fail that arrives after the
 /// recording has begun has no name to refuse under until a ruling gives it one, and
 /// refusing here means it never needs one. (Two earlier revisions of this paragraph
-/// misattributed its warrant: first to the freeze page's surface 3, which fixes which
-/// code a verdict carries and says nothing about phase — caught by a reader, #406
-/// follow-up — and then
-/// to DESIGN's exit-code table reading "before exploration began", which #469 corrected
-/// after finding the code had never matched it. The reason that survives both is the
-/// frozen reason set, which is about naming rather than about phase.)
 fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: []const u8, sentinel: []const u8, limit_s: u32) c_int {
     // `sudo -n`: never prompt. A prompt here would block a run nobody is watching, and
     // the caller who *is* watching gets a message naming the one command to run first.
@@ -246,17 +105,6 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
     // `fsusage.read`. `-t` is insurance against a root observer outliving its parent
     // and holding kdebug, which SIGPIPE cannot deliver: a process that has stopped
     // writing never learns the reader is gone.
-    // `-e` keeps fs_usage's own activity out of the capture. It does NOT lift the
-    // default exclusion list, which the man page says covers Terminal, sshd and the
-    // shells — measured, not assumed: with `-e` in force a `/bin/sh` child produced
-    // zero lines under its own name, and seven lines naming the file it wrote, carried
-    // by other processes' entries.
-    //
-    // That measurement is why scope is decided by path (`src/fsusage.zig`) rather than
-    // by process identity. A design that filtered by pid or by name would lose an
-    // excluded shell's mutations entirely; scoping by the state root still sees them,
-    // and the account records them as a thread other than the subject — which is the
-    // refusal it should be.
     const pid = posix.spawnSidecar(gpa, &.{ "/usr/bin/sudo", "-n", "/usr/bin/fs_usage", "-w", "-e", "-t", limit, "-f", "filesys" }, capture_path) catch |e|
         spawnFailure(e, .before_exploration, "could not start fs_usage");
     // Registered before anything below can refuse. From here on, every `setupError`
@@ -264,10 +112,6 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
     refuse.fsu_live = .{ .pid = pid, .gpa = gpa };
     refuse.fsu_capture = capture_path;
 
-    // The proof that the capture is live. Not a sleep: a sleep asserts a duration and
-    // this has to assert an observation. The engine creates a file inside the state
-    // root and waits for that path to appear in the capture; until it does, nothing
-    // the subject would do is guaranteed to be recorded.
     var zb: [contract.max_path]u8 = undefined;
     const sz = std.fmt.bufPrintZ(&zb, "{s}", .{sentinel}) catch setupError(.define_invalid, "path too long");
     // Created ONCE, before the loop. Inside it, the second iteration's O_EXCL open
@@ -275,8 +119,6 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
     // version of this refused every run that needed more than one poll, under a
     // message about the *closing* sentinel that named neither the file nor the loop
     // it came from. The O_EXCL that guards against clobbering a state file and the
-    // retry that waits for the observer are two different concerns; only the first
-    // belongs on the open.
     const fd = posix.open(sz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_EXCL, @as(c_uint, 0o600));
     if (fd < 0) setupError(.environment, "the fs_usage handshake could not create its sentinel inside the state directory; a file of that name is already there, or the directory is not writable");
     _ = posix.close(fd);
@@ -284,9 +126,6 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
     var waited: u64 = 0;
     var seen: u64 = 0; // bytes of the capture already scanned
     while (waited < 10_000) {
-        // An observer that has already exited will never show the sentinel; ten seconds
-        // of polling a dead process is a wrong answer arriving late. `ktrace_start:
-        // Resource busy` — another fs_usage still holding kdebug — is the usual cause.
         var st: c_int = 0;
         const w = posix.waitpid(pid, &st, posix.WNOHANG);
         if (w == pid or w < 0) {
@@ -327,14 +166,6 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
     setupError(.environment, "fs_usage started but its capture never showed the engine's own sentinel, so nothing proves the observer was recording; the run would have been judged against a capture of unknown coverage");
 }
 
-/// Spawn the operation under observation, the way the recording run does.
-///
-/// Extracted when `--twice` (#199) needed a second observation that cannot drift from
-/// the first. Everything that decides what the run *sees* — the oracle wrapper and its
-/// trace filter, the environment the child inherits, which failure wording a spawn
-/// error gets — lives at one site now, so a second caller cannot quietly observe under
-/// different conditions and have its snapshot compared as if it had not.
-///
 /// The trace and stdout paths are parameters because each observation needs its own: a
 /// second run writing over the first's trace would leave a snapshot being compared
 /// against an account that no longer describes it.
@@ -345,32 +176,14 @@ fn runOperationObserved(
     state_abs: []const u8,
     state_alt: []const u8,
     shim: []const u8,
-    // `oracle_path`, not `oracle`: the module imports `oracle.zig` under that name and
-    // Zig refuses the shadowing rather than letting the parameter win silently.
     oracle_path: ?[]const u8,
     oracle_out: []const u8,
     trace_path: []const u8,
     stdout_path: []const u8,
-    /// Where the define declared its commands run, `null` for the engine's own. Passed
-    /// through to both spawns below, including the oracle's: the cwd goes on the strace
-    /// invocation and the operation strace execs starts there too, because strace does
-    /// not chdir between its own start and the exec.
     cwd: ?[]const u8,
-    /// Which observation path this spawn asks the shim for.
-    ///
-    /// A parameter rather than a read of `args`, because the two runs a `--observe
-    /// syscalls` recording performs disagree about it on purpose: the oracle's run is
-    /// spawned as `wrappers` so that no write is trapped while strace is attached, and
-    /// the recording run is spawned as `syscalls` with no oracle. See the call site.
     observe: contract.ObserveMode,
-    /// The run's cgroup (contract v17, #559), or null for a run the engine does not contain.
-    /// Both branches carry it, the oracle's too: strace is the direct child there, and the
-    /// cgroup holds it and every process it follows.
     cg: ?*posix.CgroupSpawn,
 ) posix.Term {
-    // Under `--observe supervised` (#217, ADR 0089) the operation starts through the filter
-    // installer, the engine's session counts it, no shim is preloaded, and the trace path stays out
-    // of the target's environment (the engine writes the trace itself).
     const sup = supervise.Spawn.start(gpa, arena, observe, op_argv, trace_path, state_abs, state_alt, 0, containment.runName(cg), containment.killName(cg)) catch |e|
         setupError(.environment, supervise.startFailure(e));
     defer sup.finish();
@@ -440,10 +253,6 @@ fn runOperationObserved(
     }, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation");
 }
 
-/// The capture an observed run writes its evidence to, on both of the two branches
-/// above and for both of the two paths this function is called with
-/// (`<work>/stdout-record.txt`, and `preflight --twice`'s `stdout-record-2.txt`).
-///
 /// `exclusive` because the caller unlinks the path immediately before this (#469):
 /// `O_NOFOLLOW` refuses a *symlink* at the name and does nothing about a **hard link**,
 /// which is the same file rather than a pointer to one — so without `O_EXCL` a work
@@ -455,12 +264,6 @@ fn recordingCapture(stdout_path: []const u8) posix.Capture {
     return .{ .path = stdout_path, .exclusive = true };
 }
 
-/// Zig 0.16 passes the process's arguments and environment in; `std.process.argsAlloc`
-/// no longer exists. The shape of `Init.Minimal` comes from `std.start.callMain`.
-/// The state `main()`'s ten phases share, pinned in `main()`'s frame and handed to each
-/// phase by pointer (`run`). Grouped by the phase that writes each part, so `run.rec.trace` says where
-/// a value came from; a phase reads earlier groups and writes its own, and the two flags of
-/// `admitted` are the one exception (the oracle comparison changes them after the structural
 /// detectors set them). The buffers are fields because the slices into them
 /// (`define.state_abs`, `rec.rec_trace`, …) outlive the phase that filled them. Everything
 /// below the four values `main()` places — the two allocators and `cli.parse`'s answer — is
@@ -479,14 +282,7 @@ const Run = struct {
         alt_differs: bool,
         real_buf: [contract.max_path]u8,
         alt_buf: [contract.max_path]u8,
-        /// Where the define's commands run: the declared `cwd`, resolved, or Sideeye's own.
-        /// Computed once in phase 0 and read by both the report and the oracle (#647); null
-        /// only when Sideeye's own `getcwd` failed.
         effective_cwd: ?[]const u8,
-        /// The resolved directory a toml's relative paths were resolved against — its own
-        /// directory, not its target's when it is a symlink. Null without `--config`. Read by
-        /// preflight's `next` hint, which names the toml there (#704), so the hint and the
-        /// resolution cannot disagree about it.
         config_dir: ?[]const u8,
     };
     const Recording = struct {
@@ -501,10 +297,7 @@ const Run = struct {
         trace: engine.TraceInfo,
         final: engine.Snapshot,
         l0_plan: engine.L0Plan,
-        /// What besides a checker could fail in a crash world (#683, ADR 0091), measured once
-        /// from the recording beside the plan it reads.
         judgeable: refuse.Judgeable,
-        /// The recording run's cgroup (contract v17, #559); null when the run was not contained.
         cgroup: ?posix.CgroupSpawn,
         rec_trace_buf: [contract.max_path]u8,
         oracle_out_buf: [contract.max_path]u8,
@@ -528,14 +321,8 @@ const Run = struct {
         first_checker_l1: bool,
         first_checker_path: [contract.max_path]u8,
         first_checker_path_len: usize,
-        /// What each exhibit's world measured for its evidence bundle (#607), or null when
-        /// nothing could be measured there. Carried on this struct for the same reason the
-        /// paths above are: `phaseExploration` is the only place the crashed state exists,
-        /// and `phaseReport` is where it is written out beside the case.
         first_failure_ev: ?evidence.Draft,
         first_checker_ev: ?evidence.Draft,
-        /// Crash worlds whose capture held the marker — one of the three things that can make a
-        /// PASS mean something (ADR 0091), read where the PASS is printed.
         marker_worlds: u32,
     };
 
@@ -553,8 +340,6 @@ const Run = struct {
 };
 
 pub fn main(init: std.process.Init.Minimal) !void {
-    // The baseline for `--stop-when-orphaned` (#269), read at the top of the process.
-    //
     // Position matters more than it looks. Captured immediately before the world loop,
     // this would miss a launcher that died during `--setup` or the recording run — the
     // baseline would already be the reaper's pid, which never changes. Captured here, the
@@ -588,45 +373,15 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // `--version`, a bare `sideeye`, and a first word that names no command — answered and
     // exited in `cli.answerEntry` (#273, #296, #705), before `mcp` so that `mcp --help` is
     // answered too. What returns is a command word followed by anything else, for the
-    // branch below that owns it.
-    //
-    // Help in a late position (`explore --state X --help`) is still not answered as help:
-    // `--json` calls removeFile() while the loop parses, so a help branch inside the loop
-    // would let `explore --state X --json report.json --help` delete an existing report on
-    // its way to printing usage — a refusal with a side effect, the trap the comment on that
-    // removeFile records avoiding once already. The loop names the token instead and says
-    // where help is answered; answering it needs the parser split into a side-effect-free
-    // stage and a side-effecting one.
     cli.answerEntry(arena_state.allocator(), argv);
 
-    // `mcp` runs a stateless MCP stdio server and never returns to the explore/replay
-    // pipeline below (that pipeline is entirely explore/replay-specific). It forwards
-    // tool calls by self-exec'ing this same binary's `explore`/`replay`.
     if (argv.len >= 2 and std.mem.eql(u8, argv[1], "mcp")) {
-        // No further arguments: everything operational comes from SIDEEYE_MCP_*.
-        // Silently ignoring extras would start a stdin-reading server where the user
-        // expected a flag to have meant something.
         if (argv.len != 2) cli.refuseArgumentOf(arena_state.allocator(), "mcp", argv[2], "; operational settings come from SIDEEYE_MCP_* environment variables");
         mcp.runServer(gpa);
         return;
     }
 
-    // `evidence` renders the bundle a FAIL saved beside its case (#607, ADR 0071). Here
-    // rather than in `cli.parse`'s mode dispatch because it shares none of the define
-    // surface: it reads one file and writes one document, and the flag loop below has
-    // nothing it wants. No flags of its own either — the machine-readable form is the
-    // evidence file itself, whose path the report names, so a `--format json` would be a
-    // second way to ask for bytes already on disk. `evidence --help` is answered above.
-    //
-    // The body is `src/evidence.zig`'s. `spike/check-main-shape.sh` holds this file's
-    // declaration count at its ceiling (#572, ADR 0062), and a `runEvidence` beside
-    // `runDemo` would be over it — but the reason to put it there is the one that matters:
-    // the module that owns the behaviour owns the code, which is what that ratchet is for.
     if (argv.len >= 2 and std.mem.eql(u8, argv[1], "evidence")) {
-        // One argument, a path. A dash-led one is still a path when that file is there
-        // (`-x.json` was read before #705 and is read now); refused as the option it looks
-        // like only when nothing by that name exists. With more than one, the refusal names
-        // the extra that looks like an option, or else the second.
         const ea = arena_state.allocator();
         const one = "sideeye evidence takes one argument: the saved case, or the bundle beside it";
         const looks_like_option = argv.len == 3 and argv[2].len > 1 and argv[2][0] == '-' and
@@ -643,14 +398,8 @@ pub fn main(init: std.process.Init.Minimal) !void {
         std.process.exit(evidence.runCommand(gpa, argv[2]));
     }
 
-    // `completions <shell>` prints a completion script built from the usage lines (#712);
-    // `completions --help` and its mistakes are answered above, in `cli.answerEntry`.
     if (argv.len >= 2 and std.mem.eql(u8, argv[1], "completions")) cli.runCompletions(arena_state.allocator(), argv);
 
-    // `demo` writes the planted-bug toy built into this binary (#715) to a scratch
-    // directory and self-execs `explore` against it — it never returns. Exit codes are
-    // explore's own: the expected outcome is 1 (FAIL, the planted bug found), which makes
-    // the demo double as a smoke test of the installed binary + shim pair.
     if (argv.len >= 2 and std.mem.eql(u8, argv[1], "demo")) {
         runDemo(arena_state.allocator(), argv[2..]);
     }
@@ -675,15 +424,12 @@ pub fn main(init: std.process.Init.Minimal) !void {
     phaseReport(&run);
 }
 
-/// Phase 0 of the run: The define, resolved: the replay case or the config, the flags on top, every path made absolute and vetted, the state directory created. Writes `run.define` and hands `run.parsed.args` back with the config's values in it.
 fn phaseDefine(run: *Run) void {
     const arena_state = run.arena_state;
     const mode = run.parsed.mode;
     const case_arg = run.parsed.case_arg;
     var args = run.parsed.args;
 
-    // A replay's define comes from the case file itself: the counterexample's
-    // identity includes what was run, not just where it was killed (ADR 0009).
     var replay_case: ?case.ReplayCase = null;
     var only_k: ?u32 = null;
     if (mode == .replay) {
@@ -700,37 +446,11 @@ fn phaseDefine(run: *Run) void {
             .ok => |read_case| read_case,
             .invalid => |why| setupError(.define_invalid, why),
         };
-        // A relative `state` resolves against the CASE FILE, not the cwd of whoever
-        // invoked the replay (#325). ADR 0007 Decision 4 states the rule for a
-        // sideeye.toml — "Paths resolve against the toml's directory, not the process
-        // cwd, so the same file means the same thing from anywhere" — and this is the
-        // second door into the same property: replay empties and rebuilds the directory
-        // it resolves, so a case that meant a different directory from every cwd meant a
-        // different directory to empty.
-        //
-        // Nothing the engine writes changes meaning: `writeCase` stores `state_abs`
-        // (the resolved spelling), so every saved case takes the `path[0] == '/'` exit
-        // of `resolvePathAgainst` unchanged. What moves is the hand-written case, which
-        // is what the report was about. (The resolution of the case's own directory
-        // below does run for those too — one `realpath` more per replay, and two
-        // refusals that a saved case cannot reach.)
-        //
-        // `cwd` takes the same rule, for the same reason: `args.cwd` is `realpath`'d
-        // before the save (the declared-cwd vet below), so every case this engine wrote
-        // carries an absolute spelling and takes the unchanged early exit — while a
-        // hand-written relative `cwd` had exactly the `state` bug, resolved against the
-        // invoking process instead of the case. (A first draft excluded it on the ground
-        // that saved cases store it "as the CLI spelled it"; that is true of the commands
-        // and false of `cwd`, and the comment twenty lines below already said so. Caught
-        // in review.)
-        //
         // The COMMANDS are deliberately not resolved here. `writeCase` stores those as
         // the CLI spelled them — only `state` is overwritten with its resolved form at
         // the save site, and the flag path never calls `resolveCommand` — so resolving
         // them on the way in would point a saved case's `./op.sh` at the case directory,
         // breaking the cases this engine writes. Making them absolute is the save site's
-        // job, and a separate change (ADR 0009 Decision 1 claims a "resolved define",
-        // which is not true of the commands today).
         const case_dir = blk: {
             const raw = std.fs.path.dirname(case_arg.?) orelse ".";
             var dz_buf: [contract.max_path]u8 = undefined;
@@ -749,13 +469,7 @@ fn phaseDefine(run: *Run) void {
         // from here on, `case_no_longer_applies` included, reports what the case held (#352).
         report.settleDeclared(args.check != null, args.marker != null);
         args.expect_status = c.define.expected_status;
-        // Taken as stored: a saved case always carries the resolved spelling, so there is
-        // nothing here for a toml directory to resolve against. The vet below still runs
-        // — the directory may be gone by replay time, which is a refusal, not a verdict.
-        // A hand-written relative spelling is resolved against the case, like `state`
-        // above (#325): an engine-written case is absolute and passes through unchanged.
         args.cwd = if (c.define.cwd) |cd| resolvePathAgainst(rarena, case_dir, cd) else null;
-        // The declaration the exploration judged under (ADR 0043), so the replay judges
         // the same question. Normalised again on the way in: an engine-written case is
         // already normalised and passes through unchanged, a hand-written `cache/` would
         // otherwise be accepted by the grammar and match nothing.
@@ -772,21 +486,13 @@ fn phaseDefine(run: *Run) void {
         report.expected_status_val = c.define.expected_status orelse 0;
         replay_case = c;
         only_k = c.k;
-        // From here on, every verdict — including a refusal — names the case it is
-        // about: in the JSON's `case` always, and in the text where the verdict prints its
         // account block (a SETUP ERROR's text is its one sentence). Set before the contract
         // gate so the one refusal this block raises names it too.
         report.case_note = case_arg.?;
-        // A replay is never sent to another observation mode by a static parent's refusal
-        // (#685, ADR 0108): its crash point is a number in the mode it was counted under.
         boundary.replaying = true;
         // The mode the case was counted under (#691, ADR 0100), taken after `case_note` so the
         // refusal below carries the case in its JSON `case`, like every refusal from here on;
         // its sentence names the case too, since a SETUP ERROR's text prints no `case` line. Absent — every
-        // case before version 6, and every `wrappers` case — the flag or the default decides,
-        // as it always did. Present, it decides unless the caller named the same mode: a crash
-        // point is a number in one mode's count, and under another it addresses a different
-        // operation, which would be a verdict about a shifted address (surface 4).
         if (c.observe) |m| {
             const obs = contract.ObserveMode.parse(m).?; // vetted by the version gate above
             if (args.observe_named and args.observe != obs)
@@ -804,9 +510,6 @@ fn phaseDefine(run: *Run) void {
         // it mean anything. Nothing destructive happens in this block.
     }
 
-    // The define surface comes from exactly one place (ADR 0007): a config file or
-    // the flags, never a merge — a precedence table would make the file unreadable
-    // on its own, and which line was in effect would be invisible.
     var config_dir: ?[]const u8 = null;
     if (args.config) |cfg_path| {
         if (args.state != null or args.setup != null or args.operation != null or args.check != null or args.marker != null or args.expect_status != null or args.cwd != null or args.apparatus.len != 0 or args.scratch.len != 0 or args.recovery != null or args.recovery_check != null)
@@ -816,9 +519,6 @@ fn phaseDefine(run: *Run) void {
         // legitimately be a pipe — `--config /dev/stdin`, a process substitution — so it
         // cannot be refused by kind the way a case path is (#400), and it cannot be
         // waited on forever either. A ceiling comes with it: the largest config in this
-        // repository is 4.5 KiB, and an unbounded read was one of the three ways this
-        // call used not to return (`/dev/zero`; the other two were the open waiting for
-        // a peer, and a read waiting for one that had opened but sent nothing).
         const text = capture.readFileAllocCapped(arena, cfg_path, 1024 * 1024, .{ .bounded = true }) orelse setupError(
             .environment,
             std.fmt.allocPrint(arena, "--config could not be read: {s}", .{cfg_path}) catch "--config could not be read",
@@ -864,8 +564,6 @@ fn phaseDefine(run: *Run) void {
                 args.cwd = if (d.cwd) |c| resolvePathAgainst(arena, dir, c) else null;
                 args.apparatus = d.apparatus orelse &.{};
                 args.scratch = d.scratch orelse &.{};
-                // #606: resolved against the toml's directory like the checker, and kept in the
-                // string form the replay line will carry.
                 args.recovery = if (d.recovery) |r| resolveCommand(arena, dir, .{ .str = r }).str else null;
                 args.recovery_check = if (d.recovery_check) |r| resolveCommand(arena, dir, .{ .str = r }).str else null;
                 if (d.expected_status) |es| {
@@ -884,38 +582,23 @@ fn phaseDefine(run: *Run) void {
             },
         }
     }
-    // #706 (ADR 0095): the flags' define, read as typed. Not a replay's: its case holds what an
-    // exploration already read, and a toml-born case holds argv[0] resolved to a path.
     if (args.config == null and replay_case == null)
         report.define_warnings = config.shellWarnings(arena_state.allocator(), .flags, args.setup, args.operation, args.check, args.recovery, args.recovery_check);
 
     const state = args.state orelse setupError(.define_invalid, "--state is required");
     const operation = args.operation orelse setupError(.define_invalid, "--operation is required");
-    // One declared value, resolved once, governs every un-killed run of the operation:
-    // the recording run and the baseline world are the same command over the same
-    // state, so they answer to the same success status (ADR 0014). Killed worlds are
-    // untouched — a SIGKILL death is a signal, not an exit status, and the two never
-    // substitute for each other.
     const expect_status: u8 = args.expect_status orelse 0;
     report.expected_status_val = expect_status;
     if (args.marker) |m| {
         if (m.len == 0) setupError(.define_invalid, "the marker is empty");
         if (m.len >= 4096) setupError(.define_invalid, "the marker is unreasonably long (>= 4 KiB)");
         report.l1_configured = true;
-        // Already settled by whichever block read the marker's source; re-stated here so
-        // the vet and the account it vouches for sit together.
         report.l1_note = report.l1NoteFor(.named);
     }
 
     // The declared cwd is resolved and vetted here, ahead of the state directory's mkdir
     // below: a define naming a directory that is not there must refuse before anything on
     // disk has moved, and exit 3 is true of it — nothing of the define has run.
-    //
-    // Resolved rather than passed through. The oracle is handed this same string to
-    // resolve the subject's relative paths against (see the recording run), and a
-    // resolved path is also what a saved case stores as the run's identity — an
-    // unresolved one would name a different directory from every other cwd, which is
-    // exactly what ADR 0007 exists to remove.
     if (args.cwd) |declared| {
         var cwd_z_buf: [contract.max_path]u8 = undefined;
         const cwd_z = std.fmt.bufPrintZ(&cwd_z_buf, "{s}", .{declared}) catch setupError(.define_invalid, "the declared cwd is too long");
@@ -949,15 +632,9 @@ fn phaseDefine(run: *Run) void {
         // the target's linking and on macOS SIP, and as an oracle that vanished after the
         // parent's own `access(X_OK)` guard had confirmed it (that guard's comment says
         // it exists to stop exactly the report it then produced).
-        //
-        // Joined against the engine's directory by `resolvePathAgainst` — the same helper
-        // the toml route uses on `state`, rather than a second spelling of it (#65 is
         // about the copies this repo has already paid for). Lexical on purpose: `--work`
         // legitimately does not exist yet here, and the pin is about which directory the
         // name is read against, not about following symlinks. Nothing happens when no cwd
-        // is declared, so a run without the key keeps the report text it has always
-        // printed — these paths appear in the `case` and `reproduce` lines exactly as the
-        // caller spelled them.
         var pin_cwd_buf: [contract.max_path]u8 = undefined;
         const pin_base = if (posix.getcwd(&pin_cwd_buf, pin_cwd_buf.len)) |p| std.mem.span(p) else "/";
         const pin_arena = arena_state.allocator();
@@ -970,12 +647,6 @@ fn phaseDefine(run: *Run) void {
     // declared `cwd` has been resolved and pinned, and before anything else in phase 0 can
     // refuse. A SETUP ERROR raised from this line on carries the directory in its JSON; one
     // raised above it (the config, the `cwd` vet) does not, because there is no directory
-    // to name yet. The oracle reads this same value (`phaseOracle`), where it used to take
-    // its own `getcwd` — two spellings of one fact is how a report and an oracle come to
-    // name different directories for the same run.
-    //
-    // Undeclared, it is Sideeye's own directory: the engine never chdirs (only the forked
-    // child does, `src/posix.zig`), so that is what every child inherits.
     const effective_cwd: ?[]const u8 = args.cwd orelse blk: {
         var own_cwd_buf: [contract.max_path]u8 = undefined;
         const own = posix.getcwd(&own_cwd_buf, own_cwd_buf.len) orelse break :blk null;
@@ -991,8 +662,6 @@ fn phaseDefine(run: *Run) void {
     // directory, which is how the review found it.
     const shim = args.shim orelse findShim(arena_state.allocator());
 
-    // Resolve the state directory once, so every later comparison is against one
-    // spelling of the path. The shim resolves what it sees the same way.
     var state_z_buf: [contract.max_path]u8 = undefined;
     const state_z = std.fmt.bufPrintZ(&state_z_buf, "{s}", .{state}) catch setupError(.define_invalid, "--state is too long");
     // Create the directory before resolving it, and refuse to continue if resolution
@@ -1011,21 +680,9 @@ fn phaseDefine(run: *Run) void {
         // The errno is read first: the rmdir below issues its own syscall and would
         // overwrite it (#486).
         const why = std.c._errno().*;
-        // Reachable from a replayed case (ELOOP, a component raced away), not only
-        // from a broken environment — so the mkdir above is undone like every other
-        // refusal between it and the first destructive step (security review,
-        // Minor-3: this and the two --work refusals below predate the rule's helper
-        // and were the last three keeping their side effect).
         if (state_created) _ = posix.rmdir(state_z.ptr);
         setupErrorFmt(arena_state.allocator(), .environment, "--state {s}: {s}. Until it resolves, {s}", .{ textShown(arena_state.allocator(), state), refuse.resolveFailure(arena_state.allocator(), state, why), if (args.observe == .supervised) "the engine could not match the paths it reads from the target against it" else "the shim and the engine would filter on different spellings of it" });
     };
-    // #682: a `state` naming something that is there and is not a directory. The mkdir above
-    // failed with EEXIST and realpath resolved the file itself, so nothing downstream noticed:
-    // the snapshot of a file holds no entries, the operation's writes fell outside it, and the
-    // run PASSed with zero crash points. Here, the realpath has followed any symlink, the
-    // directory was not created by this invocation (a fresh one is a directory), and nothing
-    // has run — so `define_invalid` and exit 3 are both true of it. Also reached by `--state`
-    // and by a replayed case's state.
     if (posix.kindOfPathNoFollow(@ptrCast(state_abs.ptr))) |kind| {
         if (kind != .dir) setupErrorFmt(arena_state.allocator(), .define_invalid, "--state {s} is not a directory: the state is the one directory the target's state lives in, and a {s} there would be judged as an empty tree", .{ textShown(arena_state.allocator(), state), switch (kind) {
             .file => "regular file",
@@ -1054,11 +711,9 @@ fn phaseDefine(run: *Run) void {
             setupError(.define_invalid, if (words_cmd == 0) "--recovery is empty" else "--recovery-check is empty");
         }
     }
-    // True of every run that stops before a FAIL is saved, which is where this stays; the
     // exploration replaces it once a recovery has run. Preflight saves no world at all, and a
     // recovery reaches it only from a toml (#704): said as what preflight does with it, so a
     // refusal does not read as though worlds had been explored. Never started either way —
-    // a recovery that cannot be started is `unknown` and moves no verdict (ADR 0072).
     if (args.recovery != null) report.recovery_note = if (mode == .preflight)
         "declared; preflight runs no recovery"
     else
@@ -1072,12 +727,6 @@ fn phaseDefine(run: *Run) void {
         if (state_created) _ = posix.rmdir(state_z.ptr);
         setupError(.platform_unsupported, "--oracle-fs-usage is macOS only; on Linux the completeness oracle is --oracle <strace>, which needs no privilege");
     }
-    // The mirror (#702): `--oracle` wraps the target in strace and reads strace's account, and
-    // macOS has no strace — whatever executable the path names there, it is not a second
-    // witness this engine can read. Refused by platform rather than by "not an executable
-    // file", which is what a missing strace said on macOS and named no way forward. The step
-    // depends on the mode: preflight takes neither macOS flag (`cli.zig`), and under
-    // `sideeye mcp` the path arrives from SIDEEYE_MCP_ORACLE rather than a flag.
     if (args.oracle != null and builtin.os.tag == .macos) {
         if (state_created) _ = posix.rmdir(state_z.ptr);
         setupError(.platform_unsupported, if (mode == .preflight)
@@ -1086,22 +735,11 @@ fn phaseDefine(run: *Run) void {
             "--oracle runs strace, which is Linux only; drop it. On macOS the second witness is --oracle-fs-usage (run sudo -v first, in the same terminal), or accept the weaker claim with --allow-unverified; under sideeye mcp, leave SIDEEYE_MCP_ORACLE unset");
     }
 
-    // With no descriptor number exempt from observation (contract v8), the engine's
-    // own artifacts under --work — every operation's stdout capture rides the target's
-    // fd 1, and the shim's trace rides a descriptor it opens from the environment —
-    // would be observed as the target's state operations if the work directory sat
-    // inside the state directory. That would poison the snapshots, the operation
-    // count, and every saved case address, so it is refused before anything runs.
-    // The other nesting (state inside work) is fine: captures land at the work root,
-    // outside the state subtree.
-    //
     // This vet sits *before* --fresh-state's deletion below, and cleans up the one
     // side effect its own resolution needs (mkdir before realpath): a refusal must
     // leave the state directory exactly as it found it, and the first version of the
     // check emptied the state dir — or planted <state>/work — before refusing
     // (review finding). `isInsideDir` holds --work equal to the state directory, and
-    // any --work under a root state directory, inside; the hand-rolled prefix test it
-    // replaced answered "outside" for state `/`.
     var work_buf: [contract.max_path]u8 = undefined;
     const work_z = std.fmt.bufPrintZ(&work_buf, "{s}", .{args.work}) catch {
         if (state_created) _ = posix.rmdir(state_z.ptr);
@@ -1150,8 +788,6 @@ fn phaseDefine(run: *Run) void {
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
             setupErrorFmt(arena_state.allocator(), .environment, "--work {s}: {s}", .{ textShown(arena_state.allocator(), args.work), refuse.resolveFailure(arena_state.allocator(), args.work, why) });
         };
-        // Only `unclassifiable` is still pending here: the name resolved, and its kind or owner
-        // still could not be read.
         if (work_refusal != null) {
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
             setupError(.environment, work_refusal_msg);
@@ -1178,8 +814,6 @@ fn phaseDefine(run: *Run) void {
     // — the state IS inside the declared range, which is the only thing that test asks —
     // so this is its own vet, beside `--work`'s, on the same resolved bytes the
     // destruction will use. Measured before the vet existed: `"state": "."` with the case
-    // in `<root>/sub` under `--state-under <root>` emptied `sub/`, taking the case file
-    // and a planted file with it, and still exited 1 as if nothing were wrong.
     if (mode == .replay) {
         var case_z_buf: [contract.max_path]u8 = undefined;
         const czb = std.fmt.bufPrintZ(&case_z_buf, "{s}", .{case_arg.?}) catch setupError(.define_invalid, "the case file's path is too long");
@@ -1196,17 +830,6 @@ fn phaseDefine(run: *Run) void {
         }
     }
 
-    // The MCP adapter's state confinement, enforced where the value is read (#266).
-    //
-    // The server vets the CASE's path against SIDEEYE_MCP_ROOT, but the case file
-    // itself names the state directory the engine empties (`--fresh-state`) and
-    // deletes-and-rebuilds once per world (`restore`). Nothing about the case path
-    // says where that define points, so the server hands its destruction range down
-    // as a flag and the check runs here — on the same bytes the destruction will use,
-    // with no second parse and no check-to-use window. A config's path says no more
-    // about its state than a case's does, so `preflight --twice` (#717) and `explore`
-    // (#765, ADR 0106) take the same flag from the server and meet the same check.
-    //
     // Strict inside, not equal: a case naming the range itself would make the
     // operator's whole workspace the sacrificial directory. Both sides are compared
     // realpath'd — state_abs already is, and the flag resolves here — or the /tmp
@@ -1256,8 +879,6 @@ fn phaseDefine(run: *Run) void {
             // range — the refusal exists for an agent that wrote the state wrong, and telling it
             // to run the same config at the command line, where nothing confines it, would route
             // the mistake around the check. A replayed case's state is where the command that
-            // saved it put it, so replaying it there stays the first way for a case. Both name the
-            // range's two spellings: the server's variable, and the flag a command line passes.
             const way = if (mode == .replay)
                 "replay it from the command line, where its state was made, or widen the range"
             else
@@ -1266,8 +887,6 @@ fn phaseDefine(run: *Run) void {
         }
     }
 
-    // The destructive-root vet, here rather than only inside restore/freshDir.
-    //
     // `engine.restore` calls `assertSafeRoot` too, but the first world is far downstream:
     // `--setup` has already run by then, and a define whose operation records nothing
     // never reaches a world at all. Refusing a system path only after running the
@@ -1280,20 +899,11 @@ fn phaseDefine(run: *Run) void {
     // input to hold `isInsideDir`'s empty-prefix branch (the hand-rolled test it replaced
     // answered "outside" for `/`). Vetting the root first would take that input away and
     // leave the containment logic with no CLI-level case.
-    //
-    // Both mkdirs are undone on refusal, for the reason the vet above states for itself:
-    // a refusal must leave the filesystem as it found it, and this one would otherwise
-    // create the very directory it is refusing to use.
     engine.assertSafeRoot(state_abs) catch {
         undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
         setupError(.define_invalid, "--state names a location nothing sacrificial belongs in: exploration empties and rebuilds this directory once per world, hundreds of times. Point it at a scratch directory the run owns");
     };
 
-    // #701 (ADR 0092): a setup that cannot be started is refused as that, not spawned and
-    // read back as `--setup exited 127`. Here rather than in `phaseSetup` because a setup
-    // cannot create itself, so nothing is lost by asking before the one destructive step
-    // below — and the mkdirs are undone, as every refusal between them and that step does.
-    //
     // Not earlier. The CLI self-description check (spike/acceptance.sh) pins the base
     // command's first refusal — its `--state` that does not resolve, above — and reads a flag
     // that changes the first line as one the mode does not accept; a refusal of a dummy
@@ -1308,9 +918,6 @@ fn phaseDefine(run: *Run) void {
         setupError(.environment, m);
     }
 
-    // --fresh-state (#69): empty the case's state dir before setup runs. The dir is
-    // sacrificial by contract — exploration kills processes mid-write into it — and
-    // the deletion rides the engine's guarded path (assertSafeRoot + the same
     // deleteTree the restore path uses). It runs on state_abs, never the case's raw
     // spelling: the guard is lexical, and "/tmp/../etc" spells safe while resolving
     // unsafe — the realpath above is the guard's other half. Sitting here also keeps
@@ -1329,8 +936,6 @@ fn phaseDefine(run: *Run) void {
         }
     }
 
-    // The spelling the caller used, absolute but with symlinks left alone.
-    //
     // On macOS `--state /tmp/x` resolves to `/private/tmp/x`, and a target told its state
     // is at `/tmp/x` hands `/tmp/x/key.json` to `unlink` while `F_GETPATH` answers
     // `/private/tmp/x/key.json` for the same file. Exploration never saw this because the
@@ -1359,14 +964,12 @@ fn phaseDefine(run: *Run) void {
     run.define.config_dir = config_dir;
 }
 
-/// Phase 1 of the run: Runs the setup command, if any, and refuses on its failure.
 fn phaseSetup(run: *Run) void {
     const gpa = run.gpa;
     const arena_state = run.arena_state;
     const args = run.parsed.args;
     const state_abs = run.define.state_abs;
 
-    // ---- setup -------------------------------------------------------------------
     if (args.setup) |cmd| {
         const a = arena_state.allocator();
         const setup_argv = commandArgv(a, cmd) catch setupError(.define_invalid, "--setup is empty");
@@ -1394,9 +997,6 @@ fn phaseSetup(run: *Run) void {
         removeFile(setup_out);
         const term = posix.runChildCapture(gpa, setup_argv, &.{
             .{ "TOY_STATE", state_abs },
-            // #708: the variable the checker cookbook names for every define command. The
-            // operation, the check and the recovery had it; the setup had only the demo
-            // toy's name, so a setup written from the cookbook found an empty variable.
             .{ contract.env.state_dir, state_abs },
         }, .{
             .path = setup_out,
@@ -1409,25 +1009,13 @@ fn phaseSetup(run: *Run) void {
             .stderr_too = true,
             .exclusive = true,
         }, args.cwd) catch |e| spawnFailure(e, .before_exploration, "could not run --setup");
-        // The status this refusal will carry (#518), taken from the value being switched
-        // on rather than rebuilt in each arm — a fourth `Term` member would otherwise need
-        // a fourth assignment nobody would notice was missing. Set before the switch and
-        // read only under `setup_failed`, so the success path below leaves it where a
-        // report that never refuses cannot reach it.
         report.setup_status = term;
         switch (term) {
-            // The status is the observation; "non-zero" was a restatement of the
             // refusal's own name (#483). The number alone is what #483 asks for, and it
             // is all this can honestly carry: a first draft annotated 127 as "command
             // not found", and `exec /no/such/binary` under /bin/sh measured 126 here —
             // the mapping from a failed exec to a status is the shell's, not ours.
-            // #700 (ADR 0093): a SETUP ERROR has no `next_step`, so the observation and the line
-            // to add both ride on the one sentence, as other SETUP ERRORs carry their remedy.
             .exited => |code| if (code != 0) setupErrorFmt(a, .setup_failed, "--setup exited {d}{s}{s}{s}", .{ code, report.setupOutputDetail(a, setup_out), report.exit126Note(code), refuse.withObservation(a, "", refuse.cwdObservation(a, setup_argv), null) }),
-            // The same class, found by this PR's own same-class scan: `Term` carries
-            // `signaled: u8` and `unknown: c_int`, and the old `else` threw both away.
-            // A setup killed by a guard on the machine (the case #483 was filed from)
-            // lands here, not in `.exited`.
             .signaled => |sig| setupErrorFmt(a, .setup_failed, "--setup was killed by signal {d}{s}", .{ sig, report.setupOutputDetail(a, setup_out) }),
             .unknown => |st| setupErrorFmt(a, .setup_failed, "--setup ended in a way waitpid reported as status {d}{s}", .{ st, report.setupOutputDetail(a, setup_out) }),
         }
@@ -1436,10 +1024,6 @@ fn phaseSetup(run: *Run) void {
         // terminal where it used to appear. A setup that prints `warning: using a stale
         // fixture` on a run that succeeds would otherwise be unobservable to anyone, which
         // is a loss this change would have introduced while fixing the same shape (#483).
-        //
-        // So: kept when there is something in it, removed when there is not. The failing
-        // path removes an empty capture too, inside `setupOutputDetail` — between them,
-        // a capture survives a run only when it holds something a reader would want.
         // A short-lived arena: `arena_state` lives to the end of the process, and a
         // successful setup that talked (a `make`, a `git clone`) would otherwise keep its
         // whole output resident through every world that follows.
@@ -1449,14 +1033,12 @@ fn phaseSetup(run: *Run) void {
     }
 }
 
-/// Phase 2 of the run: Checks the declared apparatus is present and takes the initial snapshot (`run.initial`).
 fn phaseApparatus(run: *Run) void {
     const gpa = run.gpa;
     const arena_state = run.arena_state;
     const args = run.parsed.args;
     const state_abs = run.define.state_abs;
 
-    // ---- the operation and the checker can be started (#701, ADR 0092) --------------
     // After setup, not before it: a setup that builds the operation or writes the checker is
     // a define this must not refuse. Before the first snapshot and before either command
     // runs, so a name that is not there is a SETUP ERROR naming the file — not a recording
@@ -1469,7 +1051,6 @@ fn phaseApparatus(run: *Run) void {
         if (args.check) |c| if (refuse.unstartable(a, "check", commandArgv(a, c) catch none, cwd)) |m| setupError(.environment, m);
     }
 
-    // ---- apparatus (ADR 0041) -----------------------------------------------------
     // After setup, which is where the cohorts generated their devices (a sitecustomize, a
     // RUSTC stand-in), and before the first snapshot, so a define whose apparatus is absent
     // never records. Every path that runs a define passes here: explore, preflight, replay.
@@ -1488,7 +1069,6 @@ fn phaseApparatus(run: *Run) void {
     run.initial = initial;
 }
 
-/// Phase 3 of the run: The recording run: the operation once, observed, its trace read back and the final state snapshotted and classified. Writes `run.rec`.
 fn phaseRecording(run: *Run) void {
     const gpa = run.gpa;
     const arena_state = run.arena_state;
@@ -1500,7 +1080,6 @@ fn phaseRecording(run: *Run) void {
     const state_alt = run.define.state_alt;
     const initial = run.initial;
 
-    // ---- recording run -----------------------------------------------------------
     // The last snapshot that can honestly say "the define did not run" is above this
     // line; every one below it is at or past the recording run (#330).
     //
@@ -1521,8 +1100,6 @@ fn phaseRecording(run: *Run) void {
     const oracle_out = std.fmt.bufPrint(&run.rec.oracle_out_buf, "{s}/oracle.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
     removeFile(oracle_out);
 
-    // The operation's stdout is evidence — the L1 marker is read from it (ADR 0008) —
-    // so every operation run (recording, worlds, baseline) writes it to the work
     // directory. Every run gets the same shape whether or not a marker is configured:
     // an isatty branch in the target must not differ between the recording run and
     // the worlds, or the recorded operation sequence describes a different execution.
@@ -1549,20 +1126,9 @@ fn phaseRecording(run: *Run) void {
     // untouched" — `--setup` runs above this line and is allowed to write there, which is
     // what it is for (review, P2). What this placement buys is that the target's own
     // operation, the thing whose crash points the run is about, has not started.
-    //
-    // Asked of the kernel in this process rather than measured by a probe run of the
-    // target under the shim. The probe was the plan's design; `SECCOMP_GET_ACTION_AVAIL`
-    // answers the same question without a spawn and without the target's side effects
-    // landing before the engine has decided it can proceed. It is not the whole check —
-    // the shim announces its own install result and the trace is checked for it below —
-    // it is the half that catches the ordinary environment before anything runs.
     boundary.observe_mode = args.observe;
     report.noteObserver(args.observe == .supervised);
-    // Interrupted calls are dropped from the oracle's reading under this mode only (#217): its
-    // counting observer is the kernel's notification, which a signal withdraws.
     oracle.fold_restarted = args.observe == .supervised;
-    // A replayed case's mode reaches here without the caller having typed it (#691, ADR 0100);
-    // the platform refusals below say where it came from rather than naming a flag nobody gave.
     const mode_from = if (!args.observe_named and run.define.replay_case != null and run.define.replay_case.?.observe != null)
         "the case being replayed records the mode it was counted under: "
     else
@@ -1632,12 +1198,6 @@ fn phaseRecording(run: *Run) void {
             setupError(.environment, "could not name the fs_usage sentinels: either getentropy refused to supply the eight bytes each name is drawn from, or the state path plus 40 bytes did not fit the path buffer; refusing to start an observer whose sentinel a target could name");
         fsu_sentinel_a = pair.a;
         fsu_sentinel_b = pair.b;
-        // 90 seconds, not the ten minutes this first carried. The observer covers the
-        // recording run alone — `--oracle` has never watched the crash worlds — and a
-        // recording is seconds. `-t` is the insurance against a stop that does not
-        // land, so its right size is the smallest one that cannot cut a real recording
-        // short, and an oversized bound is not free: a run whose stop failed wrote
-        // **2.9 GB** of system-wide capture before its ten minutes were up, measured.
         fsu_pid = startFsUsage(gpa, arena, oracle_out, fsu_sentinel_a, 90);
     }
 
@@ -1648,11 +1208,6 @@ fn phaseRecording(run: *Run) void {
 
     // Before the spawn, where the comment on this mark says it belongs, so `--twice`
     // measures the interval between the two runs it compares. Its placement used to carry
-    // more than that: it sat AFTER a leading oracle-only run whose own duration would
-    // otherwise have counted toward the two-second floor `observeAgain` enforces and toward
-    // the "two runs N ms apart" the report prints, letting the report claim a gap the two
-    // observed runs never had (review, P1). That run is gone — every mode now takes both
-    // witnesses from this one — so only the obvious reason is left.
     const rec_started_ms = posix.monotonicMs();
 
     const rec_term = runOperationObserved(
@@ -1672,13 +1227,9 @@ fn phaseRecording(run: *Run) void {
     );
 
     if (fsu_pid) |pid| {
-        // The closing sentinel proves the capture was still live when the recording
-        // ended. A start sentinel alone establishes only that it began, and
-        // `oracle_verified` now rests on the whole window.
         var zb: [contract.max_path]u8 = undefined;
         const sz = std.fmt.bufPrintZ(&zb, "{s}", .{fsu_sentinel_b}) catch setupError(.define_invalid, "path too long");
         const fd = posix.open(sz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_EXCL, @as(c_uint, 0o600));
-        // `unknown` stops the observer on its way out; this site does not have to.
         if (fd < 0) unknown(.oracle_saw_nothing, "the closing sentinel could not be created inside the state directory, so nothing can establish that the capture covered the end of the recording", .environment);
         _ = posix.close(fd);
         // Stopped, not left to `-t`: the answer to "was it still running?" is what
@@ -1697,22 +1248,8 @@ fn phaseRecording(run: *Run) void {
             .would_not_die => unknown(.oracle_saw_nothing, "fs_usage did not stop when asked, so nothing bounds what its capture covers", .environment),
         }
     }
-    // The recording run's outcome decides whether its trace means anything.
-    //
-    // This used to be discarded. An operation that failed immediately — a bad argument,
-    // a missing input, EACCES — wrote its shim_ready marker, recorded no operations, and
-    // left the state untouched, so every structural detector stayed quiet and the run
-    // reported PASS over zero crash points. A partial failure was worse: five operations
-    // become two, and the exploration is confidently complete over a sequence the target
-    // never finishes. `--setup` was already checked here; the operation is the one whose
-    // result the entire trace depends on.
-    //
-    // #700 (ADR 0093): what the refusals below and the marker's say about where the operation
-    // ran, taken once so a detail and its step cannot disagree. Nothing is looked at unless the
-    // define came from a toml with no `cwd`, run from somewhere else.
     const op_obs = refuse.cwdObservation(arena, op_argv);
     const op_step = refuse.cwdStep(op_obs, boundary.fixDefineUnder(args.observe));
-    // #710 (ADR 0097): the two endings below name their own steps; `op_step` stays the marker's.
     const exit_step = refuse.cwdStep(op_obs, boundary.recordingEndedStep(args.observe, true));
     const sig_step = refuse.cwdStep(op_obs, boundary.recordingEndedStep(args.observe, false));
     switch (rec_term) {
@@ -1726,7 +1263,6 @@ fn phaseRecording(run: *Run) void {
             unknown(.recording_run_failed, "the operation exited 126 during the recording run: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the operation itself exited 126 — indistinguishable from here. Declaring 126 as the success convention would make a child that never ran read as a successful recording, so --expect-status is not the answer to this one", .environment)
         else if (code != expect_status)
             unknown(.recording_run_failed, refuse.withObservation(arena, std.fmt.allocPrint(arena, "the operation exited {d} during the recording run where {d} was expected, so the crash points derived from it describe an execution that did not happen (a different success convention is declared with --expect-status or the toml's expected_status)", .{ code, expect_status }) catch "the operation exited with an unexpected status during the recording run", op_obs, exit_step), exit_step),
-        // The signal named (#710): it is the observation the step sends the reader to look into.
         .signaled => |sig| unknown(.recording_run_failed, refuse.withObservation(arena, std.fmt.allocPrint(arena, "the operation did not exit normally during the recording run: it was killed by signal {d}", .{sig}) catch "the operation did not exit normally during the recording run", op_obs, sig_step), sig_step),
         .unknown => unknown(.recording_run_failed, refuse.withObservation(arena, "the operation did not exit normally during the recording run", op_obs, sig_step), sig_step),
     }
@@ -1736,9 +1272,6 @@ fn phaseRecording(run: *Run) void {
     // recording run — the run that completes normally, where even an unflushed stdio
     // buffer reaches the capture through the exit-time flush. A crash world killed
     // before the marker is not this: there the conditional simply does not apply.
-    // One observation serves two readers (#46): the marker scan and the capture
-    // fingerprint come from the same bytes, and this is the first of the two samples
-    // the tolerated-boundary path compares after containment.
     const rec_capture = capture.observeCapture(rec_stdout, args.marker) catch
         setupError(.environment, "the recording run's stdout capture could not be read back");
     if (args.marker != null) {
@@ -1755,10 +1288,6 @@ fn phaseRecording(run: *Run) void {
 
     // Classified before the structural detectors, so every exit below — including the
     // UNKNOWNs — reports the classification that actually existed, not a placeholder.
-    // The plan is the single source for both the judgement and the report (ADR 0004).
-    // `scratch_declared` was published beside the apparatus check, before the recording
-    // run: the plan matches on the same slice, so no rendering can name a declaration the
-    // judge did not read, and a refusal raised between there and here carries it too.
     const l0_plan = engine.classifyWith(gpa, initial, final, report.scratch_declared) catch setupError(.environment, "out of memory");
     report.l0_history_count = l0_plan.history_count;
     report.l0_note = report.buildL0Note(arena, l0_plan);
@@ -1785,36 +1314,23 @@ fn phaseRecording(run: *Run) void {
     run.rec.l0_plan = l0_plan;
 }
 
-/// Phase 4 of the run: The structural detectors, before anything is explored: the process and thread boundary and the write account. Writes `run.admitted`.
 fn phaseStructural(run: *Run) void {
     const args = run.parsed.args;
     const arena = run.arena;
     const trace = run.rec.trace;
 
-    // ---- structural detectors, before exploring anything --------------------------
-    //
     // These run first on purpose. Exploring N worlds on top of a recording run that
     // cannot be trusted only multiplies the untrustworthiness — and every one of those
     // worlds would produce a verdict that looks just as confident.
 
-    // The trace has been read. Whatever it says about boundaries is the account from
-    // here on; before this point there is no account, which is a different fact from
-    // "there was no boundary" and the report now tells them apart.
     boundary.boundary_ev.trace_read = true;
 
     if (trace.version_mismatch)
         unknown(.contract_version_mismatch, "the shim was built against a different trace contract than this engine", .rebuild_pair);
 
-    // One line for both platforms now, because the difference between them was never
-    // the platform: it was which facts had been looked at. The old macOS clause named a
-    // cause it had not measured and the old Linux clause named three (#10, #391); both
-    // are replaced by what the image actually shows. `no_shim_marker` itself, the
-    // verdict and the exit are unchanged, so no frozen surface moves.
     if (!trace.saw_shim_ready)
         unknown(.no_shim_marker, boundary.noShimDetail(arena), boundary.noShimNext());
 
-    // What the subject says it installed, against what was asked for.
-    //
     // Without this the mode is a request and not a fact: a shim that could not install
     // its filter records the write family through the wrappers instead, and the report
     // would carry a verdict for flush granularity while the invocation said syscalls.
@@ -1854,7 +1370,6 @@ fn phaseStructural(run: *Run) void {
     // never a default standing in for it.
     boundary.boundary_ev.shim_reported = true;
     boundary.boundary_ev.shim_boundary = trace.crossedBoundary();
-    // The account's half of the same observation; the field's doc says why they differ.
     boundary.boundary_ev.shim_process_boundary = trace.crossedProcessBoundary();
     boundary.boundary_ev.shim_foreign_touch = trace.foreign_kill_point;
     boundary.boundary_ev.exec_continuations = trace.exec_continuations;
@@ -1869,16 +1384,10 @@ fn phaseStructural(run: *Run) void {
             "an image replacement before the subject announced itself",
         else => null,
     };
-    // A process that left the process group (#559's second half), asked once because the
-    // account here and the refusal below must agree. Where the engine held the run it is a
-    // child like any other, and the account says what it says of one; where it did not, the
-    // account names the refusal by its own name, as it did when this was a hard boundary.
     const rec_cg: ?*const posix.CgroupSpawn = if (run.rec.cgroup) |*cg| cg else null;
     const detach_refused = trace.detached != null and !containment.holds(rec_cg, &trace, false);
     if (boundary.boundary_ev.shim_hard == null and detach_refused)
         boundary.boundary_ev.shim_hard = "a process leaving the containment group";
-    // The thread account (v16): how many the shim saw made, how many wrote, and whether
-    // a thread is the only boundary there was.
     // The larger of the two counts (v18): a creator's `.thread` is dropped when the shim is
     // re-entered, the child's own start is not, and either is the shim having seen it.
     boundary.boundary_ev.threads = @max(trace.thread_records, trace.thread_start_records);
@@ -1899,30 +1408,16 @@ fn phaseStructural(run: *Run) void {
     // ahead of one that is not. The message names the refusing record for the same
     // reason #485 exists: a refusal that names a different operation than the one it is
     // about sends the reader looking in the wrong place.
-    // A statically linked operation whose child closed the shim's trace (roswell, #685) takes
-    // the mode that holds the trace itself; every other kind keeps the wall.
     if (trace.unresolved_refusing != null)
         unknown(.unresolvable_path, boundary.unresolvedDetail(arena, trace.unresolved_refusing, "", "an operation was observed whose path could not be determined, so it cannot be placed among the crash points"), boundary.staticParentNext(.class_wall, boundary.traceClosedByTarget(trace.unresolved_refusing)));
 
-    // The shim's own `unsupported` refusal (v12). On Linux this arrives from the
-    // oracle instead — same reason, same spelling shape ("renamex_np(RENAME_SWAP)"
-    // here, "renameat2(RENAME_EXCHANGE)" there) — but macOS has no oracle, so the
-    // only observer the platform has issues it. The shim scope-gates the record the
-    // way the oracle scope-gates its refusal, so an out-of-scope swap refuses nothing.
     if (trace.first_unsupported) |name|
         unknown(.unsupported_syscall_observed, name, .class_wall);
 
-    // The boundaries that stay refusals whatever an oracle says. exec replaces the
-    // image the crash points were read from; a process that left the process group is
     // asked about below it since #559's second half. Read from `hard_boundary`, not
     // `boundary`: the first boundary in the trace can be a tolerable fork written
     // *before* the record that must refuse the run, and the refusal must not lose to it.
     if (trace.hard_boundary) |b| switch (b) {
-        // A subject exec is hard only when its chain broke (#123): an unbroken
-        // self-exec chain — exec record, then a same-pid shim_ready carrying the
-        // operation count — is a continuation and never reaches here.
-        // On macOS a framework Python's launcher is named, with the interpreter it hands the
-        // run to (#703): `boundary.selfExecStep` reads the image and chooses the step.
         .exec => if (trace.exec_chain_broken) {
             const broke = "the target replaced its own image and the chain of observation broke: no continuation record carrying the operation count followed, or the subject announced itself again without an exec record (an execl-family call, a static image, or a stripped environment cannot carry the count). An unbroken self-exec chain is judged; a separate process is not (#123)";
             const sx = boundary.selfExecStep(arena);
@@ -1930,57 +1425,22 @@ fn phaseStructural(run: *Run) void {
         } else unknown(.child_process_detected, "an image replacement was recorded before the subject announced itself; refusing is the safe misreading", .unwrap_or_class_wall),
         else => {},
     };
-    // A process that left the process group (#559's second half): judged where the engine held
-    // the run in a cgroup of its own, refused everywhere else with the reason it was not held.
     // After the image-change refusal above, which a detach recorded first no longer hides.
     if (detach_refused) containment.refuseDetach(arena, rec_cg, "");
-    // A thread is not among them since v16. What refuses is a thread of one process
-    // writing the judged directory OUT OF ORDER (v18, ADR 0067): its write is ordered after
-    // the process's current writer's last by nothing the shim recorded — no creation, no
-    // join — so the sequence they were numbered in is the one this run produced and a
-    // crash point would not name the same operation next time. Writes a recorded creation
-    // or join orders, from however many threads, are in one order and judged. Decided from
-    // the trace — every record names its thread, and the start and join records name the
-    // edges — so the world loop and preflight's second run ask the same question of their
     // own traces below. In front of the numbering check on purpose: the same race trips
     // that one too, and this is the refusal that says why.
     if (trace.second_writer_thread) |op|
         unknown(.multiple_threads_detected, boundary.threadDetail(arena, trace.first_writer_thread, op, trace.first_writer_thread_detached, ""), boundary.threadsStep(args.observe));
 
-    // An unbroken self-exec chain is disclosed, never silent (#123 R1): the pid count
-    // would otherwise read as one process while the crash points span more than one
-    // image, and every other note in this report says what the judgement covered — this
-    // one must too. The disclosure now rides in the evidence (set above, with the rest of
-    // the shim's account) and `boundaryAccount()` appends it to whatever clause applies,
-    // so no later assignment can drop it. One did: the world-only site overwrote the
-    // whole sentence and lost this.
-
-    // Whether this recording's writing children were admitted (v15). Read by the world
-    // loop and by `preflight --twice`'s second run, neither of which can decide it for
-    // itself: a world runs without an oracle and run B's capture is written and not
-    // parsed (`observeAgain` says so, and the report's `scope` line promises it). Both
-    // inherit this answer and disclose that they did.
     const children_admitted = false;
 
-    // **The shim-side refusal that stood here is gone** (v15), and what replaced it is
-    // one decision made where both witnesses are in hand (`childrenMayBeJudged`, called
     // from the oracle block below). The two witnesses have different blind spots — the
     // oracle reads paths textually and misses a child's relative spelling of a state
     // path, which the shim resolves against the child's own cwd; the shim misses any
     // child that never loaded it, which the oracle sees — and a slice that admits a run
     // has to hear from both. Refusing here, before the oracle has been read, could only
     // ever answer "no".
-    //
-    // A run that crosses a boundary with no oracle at all still refuses, two statements
-    // down (`boundary_without_oracle`), and that is the more useful sentence for it: it
-    // names the flag to pass. `docs/unknown-rate.md`'s `ctl-pass-mv` row was measured
-    // without one and records the old reason; the row moves with this change.
 
-    // Numbering integrity (#123): records vs highest number, over the whole run (v15).
-    // A gap or a duplicate — a restarted counter after an unobserved exec is a
-    // duplicate, and so is two processes taking one number — means any crash-point
-    // address may name a different operation than the one that ran.
-    //
     // **This answers before the child decision, and the message is what carries the
     // difference.** The refusal that used to sit above this line is gone — deciding
     // whether a run's children may be judged needs the oracle, which is parsed further
@@ -1989,31 +1449,12 @@ fn phaseStructural(run: *Run) void {
     // Rather than move the check (it must run for a run with no oracle at all, which
     // never reaches the later site), the sentence names the cause when more than one
     // process wrote. An earlier version of this comment claimed the opposite order and
-    // was wrong about its own code; review caught it, and `spike/acceptance.sh`'s
-    // concurrent-children leg accepts either refusal precisely because which one arrives
-    // is a race.
-    //
-    // Still above the oracle comparison, whose precedence check 2sp pins — and that leg's
-    // comment demands the experiment be redone before the ordering is trusted, which the
-    // suite run behind this change did.
     if (trace.kill_records != trace.kill_point_count)
         unknown(.sequence_numbering_broken, if (trace.foreign_kill_point)
-            // The same defect, named by its cause where the evidence for one is in hand.
-            // Two processes writing at the same time can read the same highest number and
-            // both take it, and that is what this disagreement means when more than one
-            // process wrote: they took the same number. `docs/report-schema.md` allows one
-            // reason to carry different wordings where the cause is known, which is the
-            // allowance `oracle_saw_phantom` already ships under.
             "two processes took the same number: the run's kill-point records and its highest sequence number disagree, which is what happens when their operations run at the same time — each reads the highest number the trace holds and both take the next one. No crash-point address can be trusted"
         else
             "the run's kill-point records and its highest sequence number disagree; the numbering has gaps or duplicates and no crash-point address can be trusted", .class_wall);
 
-    // A fork/spawn boundary — or any record from another pid — is tolerable only when
-    // an oracle can account for what the other processes did. The shim only sees
-    // processes that load it, and "was not seen" must never be read as "did nothing".
-    // Mutable: the oracle can reveal children the shim never saw (a raw clone whose
-    // child loads nothing), and every consequence of having crossed a boundary — the
-    // quiescence sampling above all — must engage for those too.
     const crossed_boundary = boundary.boundary_ev.shim_boundary;
     // `needsOracle`, not `crossed_boundary`, for the two requirements (v16): a thread
     // on its own arms the quiescence sampling below like any boundary, and needs no
@@ -2026,37 +1467,6 @@ fn phaseStructural(run: *Run) void {
     // name — the man page lists Terminal, sshd and the shells, and `-e` does not lift
     // that (measured: a `/bin/sh` child produced zero lines under its own name) — so a
     // child that execs one of them mutates the judged directory in nobody's account.
-    // Children that are visible are still caught by path scope (#405's shape refuses
-    // `child_touched_state_dir`); what this refuses is the tolerance, not the detection.
-    // A thread under `--oracle-fs-usage` was refused by name here until #544 (v16, owner
-    // ruling 2026-09-08). The rule that judges one writing thread per process is decided
-    // from the shim's trace and needs no oracle — but where an oracle IS given its account
-    // is compared against the shim's, and the fs_usage reader attributes a line to a
-    // thread id and knows no process for it (`src/fsusage.zig` sets no `primary_pid`), so
-    // a subject thread's write reached `childTouched()` as a child's. Refusing by name
-    // kept the account true while that stood: the alternative was
-    // `child_touched_state_dir`, the right exit for the wrong reason, calling a thread
-    // another process.
-    //
-    // The map that reader was missing now comes from the trace, where every record names
-    // both the process and the thread: `subject_writer_tid_list` carries the subject's
-    // writing threads into `fsusage.read`, which counts their lines as the subject's. So a
-    // single-process run whose state-directory writes come from one thread the shim
-    // recorded — the main thread or a worker — is explored and judged. A second writing
-    // thread of that process is still refused, by the v16 thread rule, which names both
-    // threads and is decided from the trace alone.
-    //
-    // What that list cannot hold is a writer whose OPERATIONS the shim never recorded —
-    // one going straight to syscalls. Its writes carry an id the trace never saw at all,
-    // and the refusal for those lives in `childrenMayBeJudged`, which names such an id as
-    // an id rather than asserting it is another process.
-    //
-    // A thread reached through a raw `clone` is a different miss, and this comment named
-    // it here wrongly on the day #544 was written (#543). That thread shares the subject's
-    // pid and its writes through libc are interposed like any other thread's, so its tid
-    // IS in the list and the run is judged rather than refused. What went unrecorded is
-    // its creation, which the account discloses on its own
-    // (`TraceInfo.unrecorded_writer_thread`).
     if (trace.needsOracle() and args.oracle_fs_usage)
         unknown(.boundary_without_oracle, "the target crossed a process boundary and the fs_usage oracle cannot account for other processes: fs_usage excludes some by name (the shells among them) and -e does not lift that, so what a child did in the state directory may be in nobody's account; on macOS the oracle verifies single-process runs", .class_wall);
 
@@ -2068,7 +1478,6 @@ fn phaseStructural(run: *Run) void {
 /// quotes it.
 const restore_carries = "Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore";
 
-/// Phase 5 of the run: The oracle comparison, and the crash points it leaves (`run.n`); may still change `run.admitted` when the oracle sees children.
 fn phaseOracle(run: *Run) void {
     const gpa = run.gpa;
     const args = run.parsed.args;
@@ -2087,11 +1496,8 @@ fn phaseOracle(run: *Run) void {
     const trace = run.rec.trace;
     const final = run.rec.final;
 
-    // The oracle's half of the watch on a contained run (v17, #559), carried out of the block
-    // below to where the rest of the watch is asked, at the end of this phase.
     var oracle_cgroup_move: ?[]const u8 = null;
 
-    // ---- oracle comparison ---------------------------------------------------------
     // The wording matters: a PASS carrying this line is making a weaker claim than one
     // that says the two views agreed, and a reader should be able to see which is which
     // without knowing how the run was invoked.
@@ -2105,29 +1511,18 @@ fn phaseOracle(run: *Run) void {
         // raised by the oracle having run and disagreed; a report saying "not run" beside
         // `unknown_reason: oracle_missed_operation` contradicts itself.
         report.oracle_note = if (args.observe == .supervised)
-            // Who kept the account the oracle disagreed with is most needed exactly here, on a
-            // run the comparison refused (#217 review): the engine's, not a shim's.
             "ran; the comparison did not complete — the account compared was the supervising engine's, counted from outside the target with no shim loaded"
         else
             "ran; the comparison did not complete";
         // "could not be read", not "produced no output": an oracle that ran and
         // recorded nothing leaves a readable empty file, which the lines-seen check
         // below answers with oracle_saw_nothing. This site fires when the capture
-        // file itself cannot be read, and until #363's adjudication its message
-        // claimed the other condition.
         const text = if (args.oracle_fs_usage)
             capture.readFileAllocCapped(arena, oracle_out, fsusage_capture_cap, .{ .no_follow = true }) orelse
                 unknown(.oracle_saw_nothing, "the fs_usage capture could not be read, or grew past the size this engine will hold; the comparison has nothing complete to read", .environment)
         else
             capture.readFileAlloc(arena, oracle_out) orelse setupError(.environment, "the oracle's capture file could not be read");
-        // The bytes are in the arena now; the file has done its job. The capture is
-        // system-wide and one measured run left 2.9 GB of it, so it does not stay.
         refuse.dropCapture();
-        // The oracle resolves relative paths against the subject's cwd (ADR 0006). Where
-        // the subject starts is the define's `cwd` when it declared one and the engine's
-        // own otherwise; the subject's own chdir/fchdir move it from there. The alt
-        // spelling is passed only when it genuinely differs, so containment accepts both.
-        //
         // This line is the whole reason `cwd` is not a one-line feature. The shim reads
         // the cwd inside the child, so it follows the chdir on its own; the oracle reads
         // a trace after the fact and has to be told. Left at the engine's cwd, the two
@@ -2135,18 +1530,9 @@ fn phaseOracle(run: *Run) void {
         // completeness check that compares them reports that as the shim having missed an
         // operation, or as a containment decision about a file nothing touched. A verdict
         // drawn from that is wrong in a way neither observer can see.
-        //
-        // Read from the one computation phase 0 made (#647) rather than a `getcwd` of its
-        // own, so the report's `command_cwd` and the directory the oracle resolves against are
-        // one value. `"/"` is kept for the case where Sideeye's own `getcwd` failed, exactly
-        // as before — and the report no longer papers over it: it carries no `command_cwd`.
         const oracle_cwd = run.define.effective_cwd orelse "/";
         const parsed = if (args.oracle_fs_usage) blk: {
             const r = fsusage.read(arena, text, state_abs, if (alt_differs) state_alt else "", rec_trace, fsu_sentinel_a, fsu_sentinel_b, oracle_cwd, trace.subject_writer_tid_list.items, trace.subject_started_tid_list.items) catch setupError(.environment, "out of memory");
-            // A capture with a hole in it is not an account to compare against. Each
-            // of these says the witness itself is unreadable, which is a different
-            // statement from "the two witnesses disagreed" — and only the second one
-            // is a divergence.
             if (r.defect) |d| switch (d) {
                 .unparsed => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "a line of the fs_usage capture did not match the grammar, so the account has a hole: {s}", .{textShown(arena, l)}) catch "a line of the fs_usage capture did not match the grammar", .sideeye_defect),
                 .truncated => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "fs_usage cut a pathname at its display width, so the line cannot be scoped to the state directory either way: {s}", .{textShown(arena, l)}) catch "fs_usage cut a pathname at its display width", .narrow_state),
@@ -2179,8 +1565,6 @@ fn phaseOracle(run: *Run) void {
         // block must still carry what the oracle saw being excluded (#121).
         report.metadata_note = blk: {
             const items = parsed.metadata_observed.items;
-            // On both branches, not only when a metadata write was seen: what restore drops is
-            // restore's, and a target that never chmods still runs its worlds without an owner.
             if (items.len == 0) break :blk "none observed. " ++ restore_carries;
             var names: std.ArrayList(u8) = .empty;
             var listed: std.ArrayList([]const u8) = .empty;
@@ -2211,15 +1595,11 @@ fn phaseOracle(run: *Run) void {
 
         // An oracle that observed nothing agrees with a shim that observed nothing, and
         // the report says "agreed" either way. The acceptance suite asserts by hand that
-        // more than ten lines were examined; the tool itself shipped without the check
-        // its own suite considered necessary.
         if (parsed.lines_seen == 0)
             unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the oracle produced no output, so nothing was compared against {s}'s account", .{boundary.recorder()}) catch "the oracle produced no output, so nothing was compared", .environment);
 
         if (parsed.boundary) |name|
             unknown(.child_process_detected, name, .unwrap_or_class_wall);
-        // An unshimmed child leaving the process group, which only the oracle sees (#559's
-        // second half): judged where the run was held in a cgroup, as the shim's own record is.
         if (detach_refused)
             containment.refuseDetach(arena, rec_cg, std.fmt.allocPrint(arena, ", seen by the oracle as a child's {s}", .{parsed.detached.?}) catch "");
         oracle_cgroup_move = parsed.cgroup_move;
@@ -2230,29 +1610,11 @@ fn phaseOracle(run: *Run) void {
         // oracle's has just been parsed.
         if (trace.foreign_kill_point or parsed.childTouched()) {
             if (boundary.childrenMayBeJudged(arena, trace, parsed)) |why| {
-                // WHICH refusal this is, and not only how it reads: under a witness that
-                // names threads an id nothing attributes may be a thread or a process, the
-                // message above says so, and the machine-readable reason still has to pick
                 // one. The rule and the evidence it reads live in
                 // `unattributedWriterReason`, as a function so that a test can reach it —
                 // written inline here it had no check at all, and switching it off left
                 // every unit test green while only the message branch was pinned.
-                //
-                // Removing the early refusal without this would have moved a whole class
-                // from an honest exit to one calling a thread another process, which is
-                // the sentence ADR 0055 declined to publish.
                 const reason = boundary.unattributedWriterReason(trace, parsed);
-                // And WHICH wall it is (#634, ADR 0076). The refusal has one name over
-                // two of them. The step names `--observe syscalls` for one shape only —
-                // a writer whose own shim announced itself and recorded no operation, so
-                // its writes went around the interposed entry points — because that is
-                // the shape measured to cross (lbdb) and the one the mode does not kill.
-                // Writers that overlap are ordered by the scheduler wherever their
-                // operations are counted, and a writer with no shim in its image is what
-                // ADR 0069 declined this step for. The step follows the wall the way
-                // `missedOperationNext` follows the mode (#599, ADR 0069).
-                // A static parent whose dynamic child carried the shim (#685) is the one more
-                // shape measured to cross, under supervised — and only on the shimmed arm.
                 unknown(reason, boundary.withOracleCapture(arena, why.detail, if (args.oracle != null) oracle_out else null, why.detail), boundary.staticParentNext(
                     boundary.childTouchedNext(why.wall, args.observe, builtin.os.tag == .linux),
                     why.wall == .shimmed_writer_unnumbered and boundary.shimAnnouncedElsewhere(trace.primary_pid, parsed.primary_pid),
@@ -2270,28 +1632,16 @@ fn phaseOracle(run: *Run) void {
         // account holds at the divergence instead of only that one exists (#41).
         var shim_ops: std.ArrayList(engine.Op) = .empty;
         for (trace.ops.items) |op| {
-            // Nor the thread-synchronisation records (v18): a start, a join or a detach
-            // is no file operation for the oracle to have seen. Left in, every run that
-            // created a thread refused `oracle_missed_operation` at operation 1 — caught
-            // by the container acceptance, invisible to the unit tests (no oracle) and to
-            // the macOS dry run (no oracle there either).
             if (op.class.isMarker() or op.class.isBoundary() or op.class.isThreadSync()) continue;
             // close stays in the trace but leaves the comparison (ADR 0003): the oracle
             // sees descriptors the shim never saw born, and pairing closes across the
             // two views has no honest fixpoint.
             if (op.class == .close) continue;
-            // Only the subject's account is compared against the oracle's view of the
-            // subject. A tolerated child's records (its own shim_ready arrives when it
-            // execs something dynamically linked) are not operations to reconcile.
             if (trace.primary_pid != null and op.pid != trace.primary_pid.?) continue;
             shim_classes.append(arena, op.class) catch setupError(.environment, "out of memory");
             shim_ops.append(arena, op) catch setupError(.environment, "out of memory");
         }
 
-        // Both witnesses are of this one run in every mode now, so the hint is no longer
-        // about the target repeating itself. What it names instead is this mode's own
-        // reading: a trapped write reaches the oracle twice, and the refused entry is
-        // retracted when its `--- SIGSYS … si_code=SYS_SECCOMP ---` is read.
         const mode_hint = if (args.observe == .syscalls)
             " — and under --observe syscalls each trapped call reaches the oracle twice, once refused and once re-issued, so this can also mean a refusal the capture did not carry (one operation too many) or a retraction that fired on an entry that had run (one too few)"
         else
@@ -2307,8 +1657,6 @@ fn phaseOracle(run: *Run) void {
                 parsed.names.items,
             ), boundary.staticParentNext(
                 boundary.missedOperationNext(args.observe, builtin.os.tag == .linux),
-                // aliyun-cli and lefthook (#685): a static parent, its dynamic child's shim the
-                // first to announce itself, and the parent's calls the operations nobody recorded.
                 boundary.shimAnnouncedElsewhere(trace.primary_pid, parsed.primary_pid),
             )),
             .phantom => |p| unknown(.oracle_saw_phantom, report.divergenceDetail(
@@ -2340,12 +1688,6 @@ fn phaseOracle(run: *Run) void {
             report.oracle_verified_subject_only = true
         else
             report.oracle_verified = true;
-        // The account names the witness and, where the witness is narrower, what it did
-        // not check. The promise this flag makes is that a macOS run *naming its oracle*
-        // carries the Linux claim — and a reader could not tell the two apart from this
-        // line, which read identically whichever observer had run. Prose, so surface 2
-        // permits it: `docs/contract-freeze.md` freezes the account fields' presence and
-        // the machine fields' meaning, not their wording.
         // The witness and its narrowing go at the END of the line. Two acceptance checks
         // match `agreed on N operations` as a substring (two legs in spike/acceptance.sh;
         // the line numbers that stood here, 703 and 2835, no longer point at them);
@@ -2359,7 +1701,6 @@ fn phaseOracle(run: *Run) void {
             "agreed on {d} operations ({d} syscall lines examined, {d} in scope of the judged state)",
             .{ parsed.classes.items.len, parsed.lines_seen, parsed.lines_in_scope },
         ) catch "agreed";
-        // The same number as data (#711, ADR 0096), from the value the sentence prints.
         report.oracle_operations_agreed = parsed.classes.items.len;
         report.oracle_note = if (args.oracle_fs_usage)
             std.fmt.allocPrint(
@@ -2380,11 +1721,6 @@ fn phaseOracle(run: *Run) void {
             // as a substring, and a prefix would break them.
             var note = std.fmt.allocPrint(arena, "{s}, witness strace", .{agreed}) catch agreed;
             if (args.observe == .syscalls)
-                // How this mode's capture was read, in the same line a reader already
-                // looks at for the witness. It is a disclosure, not a narrowing: the
-                // oracle watches the run whose trace is judged, so the claim is the full
-                // `oracle_verified`. What a reader needs to know is that the capture holds
-                // each trapped call twice and the refused entry was dropped.
                 note = std.fmt.allocPrint(
                     arena,
                     "{s} of THIS run — the kernel refuses each trapped call and the handler re-issues it, " ++
@@ -2393,10 +1729,6 @@ fn phaseOracle(run: *Run) void {
                     .{note},
                 ) catch note;
             if (args.observe == .supervised)
-                // Who counted, in the line a reader already looks at for the witness (#217, ADR
-                // 0089). Under this mode the account the oracle is compared with is the engine's,
-                // taken from outside the target, and the capture was read with one rule the other
-                // modes do not use.
                 note = std.fmt.allocPrint(
                     arena,
                     "{s} of THIS run — the operations were counted from outside the target by the supervising " ++
@@ -2405,9 +1737,6 @@ fn phaseOracle(run: *Run) void {
                     .{note},
                 ) catch note;
             if (run.admitted.children_admitted)
-                // The narrowing (v15). This comparison is the subject's account against
-                // the oracle's view of the subject, so a crash point performed by an
-                // awaited child is one the oracle placed and ordered and did not compare.
                 // Without this the line reads as full agreement — and on a target whose
                 // own process writes nothing it reads "agreed on 0 operations" beside a
                 // PASS over five crash points, which is exactly the shape a reader would
@@ -2427,15 +1756,9 @@ fn phaseOracle(run: *Run) void {
         // The oracle can reveal children the shim never saw (a raw clone whose child
         // loads nothing), and every consequence of having crossed a boundary — the
         // quiescence sampling below above all — must engage for those too. The account
-        // itself needs no assignment here: the child count is in the evidence, and the
-        // image disclosure rides beside it rather than having to be copied along, which
-        // is what the wholesale replacement this replaced had to remember to do.
         if (parsed.children > 0) run.admitted.crossed_boundary = true;
     }
 
-    // Quiescence, observed rather than proven. A tolerated child was killed with the
-    // group, but a grandchild reparented away is nobody's child to wait for — so when a
-    // boundary was crossed, the final state is sampled twice and any disagreement is a
     // writer still alive. Two equal samples do not prove a future writer cannot exist;
     // the report says "observed", never "proven".
     if (run.admitted.crossed_boundary) {
@@ -2463,12 +1786,6 @@ fn phaseOracle(run: *Run) void {
     // place an unreproducible entry could otherwise slip into the worlds.
     refuse.refuseUnsupportedEntry(arena, final, "appeared during the recording run");
 
-    // The general form of the zero-ops detector above (#405). That one asks whether the
-    // state moved while *nothing* was counted, and goes silent the moment one operation
-    // is recorded: a target whose libc write is seen and whose raw write is not looks
-    // exactly like one that was fully observed. Measured on the shipped build — a
-    // raw-forked child's file sat in the judged directory under a PASS.
-    //
     // Placed after `refuseUnsupportedEntry` on purpose. A `mknod`'d FIFO is a change no
     // operation names — the shim interposes no `mknod` anywhere — so running first would
     // take three acceptance legs' refusals and answer them under this name instead of
@@ -2521,7 +1838,6 @@ fn phaseOracle(run: *Run) void {
     // them is the contained run's account just above — so a refusal raised on a trace that was cut
     // short, too large, of another contract or not finished carries no count read from it (R1 and
     // R2 of the diff). From the same plan and records, so the count the report carries and the one
-    // the PASS gate reads are one measurement.
     run.rec.judgeable = refuse.measureJudgeable(gpa, arena, initial, final, run.rec.l0_plan, trace.ops.items, state_abs, if (alt_differs) state_alt else "");
     report.l0_judged_paths_touched = run.rec.judgeable.touched;
     // The same point, for the same reason, for the process account's figures (#711, ADR 0096).
@@ -2530,7 +1846,6 @@ fn phaseOracle(run: *Run) void {
     run.n = n;
 }
 
-/// Phase 6 of the run: The preflight cut: in preflight mode, the verdict and the exit.
 fn phasePreflight(run: *Run) void {
     const gpa = run.gpa;
     const mode = run.parsed.mode;
@@ -2549,8 +1864,6 @@ fn phasePreflight(run: *Run) void {
     const children_admitted = run.admitted.children_admitted;
     const n = run.n;
 
-    // ---- preflight cut ------------------------------------------------------------
-    //
     // Deliberately *before* the exploration's own zero-crash-point refusal and its loop: preflight
     // makes no PASS claim (so the completeness gate does not apply), and everything a
     // preflight can honestly say is known once the recording-phase gates above have all
@@ -2559,7 +1872,6 @@ fn phasePreflight(run: *Run) void {
     // report says so by name. This exit is unconditional; no explore/replay code below
     // is reachable in preflight mode.
     if (mode == .preflight) {
-        // The `next` hint repeats the define the way it came. From a toml (#704, ADR 0094) it
         // names the toml, and an argv-form define needs no spelling. From the flags the define
         // always carries the string form, so the unwraps below are structurally satisfied;
         // they are refusals rather than unreachables so that another route feeding preflight
@@ -2591,10 +1903,6 @@ fn phasePreflight(run: *Run) void {
             _ = refuse.checkerArgv(commandArgv(arena, c));
             refuse.refuseNothingToCorrupt(initial);
         }
-        // #199: the second observation, opt-in. Without `--twice` this is the answer
-        // preflight has always given from one run, and the report names determinism as
-        // unchecked; with it, the second run happens here and the report carries what
-        // the comparison found — including, when they differ, the refusal to accept.
         const repeat: ?Repeat = if (args.twice)
             observeAgain(gpa, arena, initial, final, state_abs, state_alt, op_argv, shim, args.oracle, args.work, expect_status, rec_started_ms, args.cwd, args.observe, children_admitted)
         else
@@ -2607,18 +1915,11 @@ fn phasePreflight(run: *Run) void {
     }
 
     if (n == 0) {
-        // The completeness gate first, as it always was (acceptance check 2f pins why): with no
-        // oracle, zero records is also what a target whose writes the shim never saw looks like,
-        // and the weaker claim is the caller's to accept before anything else is said.
         refuse.requireCompleteness(arena, args.has_oracle, args.allow_unverified);
-        // Was a PASS — "the operation performed nothing that can change the judged state" —
-        // until ADR 0091 (#682): a PASS no world could have failed, read by a caller that sees
-        // only the exit code as a check that ran. A checker declared here never ran either.
         refuse.refuseNoCrashPoint(arena, args.has_oracle, refuse.cwdObservation(arena, op_argv));
     }
 }
 
-/// Phase 7 of the run: The checker's falsification against the recording run's own final state. Writes `run.check_argv`.
 fn phaseChecker(run: *Run) void {
     const gpa = run.gpa;
     const args = run.parsed.args;
@@ -2626,8 +1927,6 @@ fn phaseChecker(run: *Run) void {
     const initial = run.initial;
     const arena = run.arena;
 
-    // ---- checker falsification (DESIGN §14-13) -------------------------------------
-    //
     // Run before exploring, not after: a checker that cannot tell a corrupted state
     // from a good one will report every world as fine, and the resulting PASS would be
     // a statement about nothing. Better to refuse than to produce a confident answer
@@ -2664,7 +1963,6 @@ fn phaseChecker(run: *Run) void {
         const probe = posix.runChildCapture(gpa, cargv, &.{
             .{ "TOY_STATE", state_abs },
             .{ contract.env.state_dir, state_abs },
-            // `stderr_too` is what `runChildCaptureAll` used to be a wrapper for; the
             // reason it exists is on the field. `exclusive` for the same reason as the
             // recording run's, and free for the same reason — `removeFile` is one line
             // up.
@@ -2676,12 +1974,6 @@ fn phaseChecker(run: *Run) void {
 
         switch (probe) {
             .exited => |code| {
-                // 126 is the fork stub's own exit code. It used to carry a capture the
-                // child could not open — read as "the checker went red", that let
-                // /bin/true pass the gate whenever the capture path was blocked, and a
-                // directory squatting on the default /tmp work dir did it (R1 of #134).
-                // **That cause is gone**: the capture is opened by the parent since
-                // #469 and a refusal arrives as `error.CaptureUnavailable`, above this
                 // switch, before any child exists. What still reaches 126 is `setpgid`
                 // or a `dup2` that failed in the child — which says so on the engine's
                 // stderr since 2026-09-08 — and a checker that genuinely exits 126,
@@ -2689,7 +1981,6 @@ fn phaseChecker(run: *Run) void {
                 if (code == 126)
                     unknown(.checker_not_falsified, "the checker probe exited 126: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the checker itself exited 126 — indistinguishable from here, so the gate refuses rather than counting it as red", .environment);
                 if (code == 0) {
-                    // #700 (ADR 0093): taken once, so the detail and the step cannot disagree.
                     const obs = refuse.cwdObservation(arena, cargv);
                     const step = refuse.cwdStep(obs, .fix_define);
                     unknown(.checker_not_falsified, refuse.withObservation(arena, "the checker accepted a state whose every file had been overwritten with junk and every symlink retargeted at a nonexistent name", obs, step), step);
@@ -2699,17 +1990,6 @@ fn phaseChecker(run: *Run) void {
         }
         report.checker_note = "falsified before the run (corrupted state -> check failed)";
 
-        // ---- the starting state (#756, ADR 0107) ------------------------------------------
-        //
-        // The other side of the gate. The falsification shows the checker can say no; nothing
-        // showed it says yes to the state the define starts from. A checker that refuses that
-        // state fails in the world killed before the first operation, and the report read as the
-        // target's FAIL at crash point 1 — `after (start)()` — when nothing the target did is in
-        // that world: xmake's first checker accepted only the value the operation writes, and
-        // the seed held another. No world can be judged by an instrument that rejects the state
-        // every world starts from, before any operation, so the run is refused before any is
-        // explored.
-        //
         // After the falsification and after `checker_note`, on purpose: every refusal the gate
         // had keeps its place and its output, and a refusal here leaves the note true — the
         // falsification did complete. The note itself is unchanged: README's demo block and
@@ -2756,7 +2036,6 @@ fn phaseChecker(run: *Run) void {
     run.check_argv = check_argv;
 }
 
-/// Phase 8 of the run: The worlds: one per crash point, restored, run again, judged. Writes `run.firsts`.
 fn phaseExploration(run: *Run) void {
     const gpa = run.gpa;
     const args = run.parsed.args;
@@ -2779,18 +2058,11 @@ fn phaseExploration(run: *Run) void {
     const first_failure_path = &run.firsts.first_failure_path;
     const first_checker_path = &run.firsts.first_checker_path;
 
-    // ---- exploration --------------------------------------------------------------
     var first_failure: ?engine.WorldResult = null;
     var first_failure_l0 = false;
     var first_failure_l1 = false;
     var first_failure_l2 = false;
     var first_failure_path_len: usize = 0;
-    // The claim exhibit (#231, ADR 0020): the earliest world whose violation
-    // includes the declared checker, latched independently of the overall
-    // earliest by the judgment-time bit (`l2_failed`), never by parsing the
-    // invariant string. Often the same world as `first_failure`; the poetry
-    // shape — an L0-only precision-limit world structurally ahead of the real
-    // checker-red one — is where the two diverge.
     var first_checker: ?engine.WorldResult = null;
     var first_checker_l0 = false;
     var first_checker_l1 = false;
@@ -2822,10 +2094,6 @@ fn phaseExploration(run: *Run) void {
         if (only_k) |okk| {
             if (k != okk and k != n + 1) continue;
         }
-        // Stop if whoever launched this exploration is gone (#269, --stop-when-orphaned).
-        //
-        // The MCP adapter passes the flag on every self-exec: an agent host restarts MCP
-        // servers as ordinary lifecycle, and an orphaned explore keeps killing processes
         // and rewriting the state directory with nobody left to report to. Checked before
         // `restore`, so what happens instead of the deletion is the refusal rather than
         // the deletion followed by one.
@@ -2845,8 +2113,6 @@ fn phaseExploration(run: *Run) void {
         removeFile(world_trace);
         removeFile(world_stdout);
 
-        // This world's cgroup (contract v17, #559), a fresh one per world: the last world's was
-        // stopped and removed before its spawn returned.
         var wcg = containment.spawn(true);
         const wcg_ptr: ?*posix.CgroupSpawn = if (wcg) |*c| c else null;
         const wsup = supervise.Spawn.start(gpa, arena, args.observe, op_argv, world_trace, state_abs, state_alt, @intCast(k), containment.runName(wcg_ptr), containment.killName(wcg_ptr)) catch |e|
@@ -2869,7 +2135,6 @@ fn phaseExploration(run: *Run) void {
             // index into the sequence the recording produced, and a world counting
             // through the other path would number differently and stop somewhere else.
             .{ contract.env.observe, args.observe.name() },
-            // The world's cgroup and its `cgroup.kill`, which the shim writes at the crash point
             // in place of signalling the group (v17). Pinned empty when this world is not
             // contained, for the reason on the recording pairs.
             .{ contract.env.run_cgroup, containment.runName(wcg_ptr) },
@@ -2881,11 +2146,6 @@ fn phaseExploration(run: *Run) void {
             // of this loop, so a re-run over one work directory never meets its own
             // leftover here.
         }, .{ .path = world_stdout, .exclusive = true }, if (args.world_timeout_s) |s| @as(u64, s) * 1000 else null, args.cwd, wcg_ptr) catch |e| switch (e) {
-            // Received here, at the one site that passes a budget, so the refusal can
-            // name the limit that fired — the rule #323 and #351 shipped under:
-            // a failure with a limit reports the limit, because the operator can move
-            // it. `spawnFailure` never sees TimedOut; every other call site's error
-            // type says so at compile time.
             error.TimedOut => {
                 // The format below is a fixed string plus at most five digits
                 // (parseWorldTimeout caps the value at 86400), so 320 bytes holds it
@@ -2929,14 +2189,10 @@ fn phaseExploration(run: *Run) void {
         // this the account for a world-side refusal is the *recording's* clause, which
         // review measured saying "no boundary was recorded" on a run refused because a
         // world's child wrote into the judged directory. The world-only site further
-        // down was generalised and these four siblings were not; same class, same file.
         boundary.boundary_ev.world_boundary = boundary.boundary_ev.world_boundary or
             wtrace.crossedBoundary();
         boundary.boundary_ev.world_process_boundary = boundary.boundary_ev.world_process_boundary or
             wtrace.crossedProcessBoundary();
-        // One bit across every world like its siblings, and it means "some world's only
-        // boundary was a thread" (v16) — the clause it selects is only reached when no
-        // world crossed a process boundary, so the bits cannot contradict each other.
         boundary.boundary_ev.world_thread_only = boundary.boundary_ev.world_thread_only or
             (wtrace.boundary == .thread and !wtrace.crossedProcessBoundary() and wtrace.exec_continuations == 0);
         boundary.boundary_ev.world_subject_detached = boundary.boundary_ev.world_subject_detached or
@@ -2965,13 +2221,6 @@ fn phaseExploration(run: *Run) void {
         // place. **This closes #522**, which is exactly this gap and was filed before the
         // `close` exemption existed: an unplaceable operation refused during recording and
         // was dropped silently in an explored world, towards a false PASS. An earlier
-        // draft of this comment argued the gap had been unreachable until the exemption
-        // made it reachable; that was false, and this repository's own BUILDLOG had said
-        // so since #485 (review caught it). A world takes branches the recording run did
-        // not — the comment above says so — so a world-only unplaceable operation was
-        // always possible. What the exemption changes is how ordinary it becomes: a target
-        // whose recording run holds only exempt records now reaches the worlds, and a
-        // world that performs an unlinked-fd WRITE there wrote bytes this run cannot name.
         if (wtrace.unresolved_refusing != null)
             unknown(.unresolvable_path, boundary.unresolvedDetail(arena, wtrace.unresolved_refusing, " in an explored world", "an operation was observed in an explored world whose path could not be determined, so it cannot be placed among the crash points"), .class_wall);
         if (wtrace.hard_boundary) |hb| switch (hb) {
@@ -2989,16 +2238,9 @@ fn phaseExploration(run: *Run) void {
         // in the recording. Nothing is inherited — the record names its thread.
         if (wtrace.second_writer_thread) |op|
             unknown(.multiple_threads_detected, boundary.threadDetail(arena, wtrace.first_writer_thread, op, wtrace.first_writer_thread_detached, " in an explored world"), boundary.threadsStep(args.observe));
-        // Run-wide since v15, like the recording run's copy. The world-side order needs
-        // no change: the child-touch refusal above already answers first here.
         if (wtrace.kill_records != wtrace.kill_point_count)
             unknown(.sequence_numbering_broken, "the run's kill-point numbering has gaps or duplicates in an explored world; the world's crash-point address cannot be trusted", .class_wall);
 
-        // Landing evidence: the kill must have happened where it was asked for.
-        //
-        // **The pid condition is gone** (v15), and its reason went with it: it required
-        // the landing to be the subject's because "a spawned child inherits
-        // SIDEEYE_KILL_AT and counts its own operations, and its k-th is a different
         // address entirely". A number is a position in the run now, so a child's k IS
         // the k the engine asked about — and requiring the subject would mean a world
         // armed at an awaited child's operation could never report a landing at all.
@@ -3006,31 +2248,11 @@ fn phaseExploration(run: *Run) void {
         if (k <= n and !landed)
             unknown(.kill_did_not_land, "a world was asked to die before a given operation and did not", .kill_not_landed);
 
-        // And it must have been the same operation. The address is an index into the
-        // sequence the RECORDING produced, so a world that reached its k-th operation
-        // through a different sequence died in front of something else — the number
         // landed and the operation did not. Compared by class, which is what a saved
         // case's `prefix_hash` compares for the same reason and with the same
         // deliberate blind spot: paths that carry a pid or a random suffix legitimately
         // differ between runs (the timewarrior shape), so they warn there and are not
         // compared here.
-        //
-        // This is the check that keeps the multi-process slice from resting on an
-        // assumption. The slice is admitted on the recording run, where both witnesses
-        // are present; a world runs without an oracle, so nothing there re-checks that
-        // the writers still took turns. What every world CAN check is whether the
-        // sequence it produced is the one the address was read from, and n+1 worlds
-        // checking that is a stronger statement about reproducibility than the two
-        // samples `preflight --twice` compares.
-        //
-        // **Only where children were admitted** (review, P1). A world's operations could
-        // differ from the recording's on any target, and refusing that is a promise this
-        // change does not make: single-process runs have never had the check, the
-        // reproducibility they rest on is the one `preflight --twice` measures, and adding
-        // a new refusal to every target is not something to do inside a change about
-        // children. Where children were admitted it is the compensation for a world that
-        // cannot re-ask the two conditions, so the cost — two prefix hashes per world,
-        // each a walk of the trace — is paid by the runs that need it.
         if (children_admitted and k <= n and k > 1) {
             var wh: [16]u8 = undefined;
             var rh: [16]u8 = undefined;
@@ -3045,12 +2267,6 @@ fn phaseExploration(run: *Run) void {
             containment.killCameBack(arena, &wtrace, k);
         if (k <= n and !term.isSignal(posix.SIGKILL))
             unknown(.kill_did_not_land, "a world that should have been killed exited on its own", .sideeye_defect);
-        // The baseline world is not killed, so nothing above inspects it — which is
-        // exactly the discarded-exit-status defect that was just fixed for the recording
-        // run. It is the same command over the same state, and the recording run was
-        // required to exit the declared success status; a different outcome here means
-        // the restored state is not the state that was recorded, and every other world
-        // started from it too.
         if (k > n) switch (term) {
             // 126 first, because it is not evidence about the state: it is the code the
             // engine's own fork stub keeps for a child it could not arrange before exec
@@ -3070,17 +2286,12 @@ fn phaseExploration(run: *Run) void {
         var crashed_kept = false;
         defer if (!crashed_kept) crashed.deinit();
 
-        // Same observation as after the recording run: when a boundary was crossed,
         // one sample is a moment and two agreeing samples are a state. Boundary
         // evidence is per-world as well as recording-global (#46): a recording that
         // never forked says nothing about a world where the parent dying earlier sent
         // the child down a forking path — the same reason the per-world witness above
         // re-checks what the recording already cleared.
         const world_armed = crossed_boundary or wtrace.crossedBoundary();
-        // A boundary the recording never crossed has no clearance to inherit: the
-        // recording's oracle accounted for no process beside the subject, and worlds
-        // run with no oracle at all, so nothing can say what this process did. The
-        // per-world analog of the recording-time refusal, under the same reason
         // token — the message is what distinguishes them. The account is written
         // BEFORE the refusal so the report's processes field tells the world's
         // story, never the recording's "single process".
@@ -3111,19 +2322,7 @@ fn phaseExploration(run: *Run) void {
 
         report.explored += 1;
 
-        // The checker runs in a fresh process, after the crash, exactly as DESIGN §12
-        // requires: in-memory state hides corruption, so nothing is evaluated inside
-        // the lifetime of the process that died.
         var l2_failed = false;
-        // Where this world's checker wrote, so the evidence bundle can quote its last line
-        // (#607). Null when there is no checker, or when the capture could not be opened.
-        //
-        // Captured rather than inherited, so the bundle can quote the exhibit's last line and
-        // the terminal copy can carry the world's mark (#707): inherited, a checker that runs
-        // once per crash point printed its diagnosis n+1 times with nothing saying which world
-        // spoke, and #134 records what a line nobody could attribute costs in a transcript (a
-        // gate line read as a world's). What the run says about the checker is the report's
-        // `checker` line, and for a FAIL the exhibit's own last line is in the bundle.
         var checker_out: ?[]const u8 = null;
         if (check_argv) |cargv| {
             var capture_opened = true;
@@ -3161,17 +2360,6 @@ fn phaseExploration(run: *Run) void {
             // written the line that says why, and the capture is what holds it.
             if (capture_opened) {
                 checker_out = co;
-                // Re-emitted with the world's mark on every line (#707): `world 3: ` for crash
-                // point 3 — the number the report's `crash point 3 of n` and a recovery's
-                // `recovery world 3` carry — and `baseline: ` for the un-killed world. Until
-                // #707 the lines came out unlabeled, and a checker that printed a traceback put
-                // fifty lines ahead of the verdict that no reader could attribute to a world.
-                // The capture file keeps the checker's own bytes, unmarked; the mark is for the
-                // terminal.
-                //
-                // Unlabeled was a reading of #134: the hazard there was the *gate's* output
-                // being harvested as a world's, and the fix labelled the gate (`falsify: `), so
-                // the world side staying bare was what told the two apart. A mark of its own
                 // tells them apart as well, and says which world. `spike/acceptance.sh` counts
                 // gate lines, world lines and unmarked checker lines, which must be none.
                 if (capture.readFileAllocCapped(arena, co, 1024 * 1024, .{ .no_follow = true })) |text| {
@@ -3181,9 +2369,6 @@ fn phaseExploration(run: *Run) void {
                         if (k > n) say("baseline: {s}\n", .{line}) else say("world {s}: {s}\n", .{ kstr, line });
                     }
                 }
-                // No else-branch saying so, unlike the gate's: a gate that cannot be read
-                // back decides a refusal, and this decides nothing — the exit status is the
-                // verdict's input and the unread line is reported as unknown in the bundle.
             }
             checks_run += 1;
             l2_failed = switch (ct) {
@@ -3194,10 +2379,6 @@ fn phaseExploration(run: *Run) void {
 
         const l0 = engine.judgeL0(l0_plan, crashed);
 
-        // The post-success invariant (ADR 0008), only in worlds where the operation's
-        // own success claim reached stdout before the kill. In every other world the
-        // conditional does not apply — which is the normal shape of a post-success
-        // invariant, not a gap: L0 and the checker judged every world above.
         var marker_seen = false;
         if (args.marker != null or world_capture_first != null) {
             const world_capture = capture.observeCapture(world_stdout, args.marker) catch
@@ -3230,16 +2411,6 @@ fn phaseExploration(run: *Run) void {
         // produces normally, or the operation is broken on its own — and neither is a
         // crash-consistency counterexample. Reporting it as "N of N explored worlds violated
         // an invariant" blames crashing for something that happens without it.
-        //
-        // Reachable two ways: a checker that rejects the operation's normal output, or
-        // an operation whose re-run writes different bytes than the recorded final —
-        // the baseline is a fresh execution, not the recorded snapshot. (An earlier
-        // comment here claimed only the first path exists; the first real target
-        // arrived through the second.) The history form (ADR 0004) removes the second
-        // path for files that only grow; a non-reproducible *rewrite* still lands
-        // here, and that refusal is the honest one: its crash worlds could not be
-        // judged either.
-        //
         // Three layers reach this refusal and the message names which (#199). The byte
         // layer first: the engine knows the path the re-run left holding neither
         // recorded content, and saying "check the checker" about it cost the first real
@@ -3248,24 +2419,13 @@ fn phaseExploration(run: *Run) void {
         // observation and the path, never a cause; the limit itself — byte-repeatable
         // writes — is the README's, beside `preflight --twice`; since #710 the step names
         // that and `scratch` (ADR 0097). The marker and the checker are the define's own
-        // declarations, and stay `fix_define`. Bytes first, then the marker, then the checker; the
-        // layers that also failed ride along as a clause.
         if (k > n and (l0 != null or l1 != null or l2_failed)) {
-            // The checker layer alone follows the observation mode (#599, ADR 0069); the marker
-            // layer does not. L1 compares this world with the recording's own final state, so a
-            // process the syscall mode killed in both runs leaves the same gap in both and L1 is
-            // green; it is red only when two runs of one mode disagree. The checker judges the
-            // state from outside, so the same gap in both runs is red at the first clean state left
-            // by the operation that it ever sees — this one: the falsification probe shows it a
-            // corrupted state, and the starting-state probe (#756) one no run has touched.
             const step: contract.NextStep = if (l0 != null) .scratch_or_twice else if (l1 != null) .fix_define else boundary.fixDefineUnder(args.observe);
             // #700 (ADR 0093): the checker layer alone, where a checker with a relative argument
             // read under the wrong directory rejects every state. The line above is pinned by
             // spike/acceptance.sh, so the step is replaced here rather than there.
             const base_obs: ?[]const u8 = if (l0 == null and l1 == null) (if (check_argv) |c| refuse.cwdObservation(arena, c) else null) else null;
             const base_step = refuse.cwdStep(base_obs, step);
-            // #688: the byte layer also says where the two runs' bytes differ, how long and
-            // what kind of bytes — the bytes themselves stay with `preflight --twice`.
             const what: []const u8 = if (l0) |v|
                 std.fmt.allocPrint(arena, "{s}{s}{s}", .{ report.baselineObserved(arena, v), report.baselineDiffers(arena, l0_plan, crashed, v), report.baselineAlsoFailed(l1 != null, l2_failed) }) catch "the re-run from the restored state did not leave the recorded bytes"
             else if (l1) |v|
@@ -3322,9 +2482,6 @@ fn phaseExploration(run: *Run) void {
                     @memcpy(first_checker_path[0..p.len], p);
                     first_checker_path_len = p.len;
                 }
-                // The claim exhibit's own measurement, for the same reason and at the same
-                // point. When the two exhibits are one world this measures it twice; the
-                // second is discarded in `phaseReport`, which writes one file for one case.
                 first_checker_ev = evidence.measure(arena, initial, final, crashed, l0_plan, .{
                     .configured = check_argv != null,
                     .failed = l2_failed,
@@ -3398,7 +2555,6 @@ fn phaseExploration(run: *Run) void {
     };
 }
 
-/// Phase 9 of the run: The report, text and JSON, and the exit code.
 fn phaseReport(run: *Run) void {
     const mode = run.parsed.mode;
     const case_arg = run.parsed.case_arg;
@@ -3423,7 +2579,6 @@ fn phaseReport(run: *Run) void {
     const first_checker_path = &run.firsts.first_checker_path;
     const first_checker_path_len = run.firsts.first_checker_path_len;
 
-    // ---- report --------------------------------------------------------------------
     if (first_failure) |f| {
         const addr = trace.logicalAddress(f.k);
         const after = if (addr.after) |a| a.class.name() else "(start)";
@@ -3445,17 +2600,9 @@ fn phaseReport(run: *Run) void {
             first_failure_path[0..first_failure_path_len]
         else
             "(named by the checker, not by path)";
-        // The shim arms itself only when it has somewhere to write, so a reproduce line
-        // without a trace path is inert: `init()` returns before setting `active`, no
-        // operation is counted, the kill never fires, and the command runs to completion
-        // leaving an intact state — the opposite of what the report above describes. The
-        // first version of this line omitted `SIDEEYE_STATE_DIR`; fixing that and not
-        // running the result left this one. Acceptance now executes what is printed.
         var repro_buf: [contract.max_path]u8 = undefined;
         const repro_trace = std.fmt.bufPrint(&repro_buf, "{s}/trace-repro.bin", .{args.work}) catch
             setupError(.define_invalid, "path too long");
-        // The counterexample outlives the console (ADR 0009). Saved on explore only:
-        // a replay re-verifies an existing case, it does not mint another.
         const saved_case: ?[]const u8 = if (only_k == null) blk: {
             // The stored state is the resolved spelling: a case must mean the same
             // state directory from any cwd, or the replay silently sets up elsewhere.
@@ -3467,19 +2614,14 @@ fn phaseReport(run: *Run) void {
         // #606: a replay line that dropped the recovery would replay a different run, so the
         // flags ride on it — each value single-quoted for /bin/sh, the whole escape, since a
         // recovery command's spaces separate its arguments. A local rather than a helper:
-        // `spike/check-main-shape.sh` holds this file's top-level declarations at its ceiling.
         const recovery_flags: []const u8 = if (args.recovery) |rc|
             (std.fmt.allocPrint(arena, " --recovery {s} --recovery-check {s}", .{ shellSingleQuote(arena, rc), shellSingleQuote(arena, args.recovery_check.?) }) catch "")
         else
             "";
         const replay_cmd = if (saved_case) |sc|
             (if (args.observe == .supervised)
-                // No shim to name. The mode is named although the case now records it (#691,
-                // ADR 0100) and a replay without the flag takes it: the flag is accepted when it
-                // matches, and it tells the reader of the line which mode counted.
                 std.fmt.allocPrint(arena, "sideeye replay {s} --observe supervised{s}", .{ report.shellWord(arena, sc) catch sc, recovery_flags })
             else if (args.observe == .syscalls)
-                // Named for the same reason, for the mode that counts at the kernel boundary (#711).
                 std.fmt.allocPrint(arena, "sideeye replay {s} --observe syscalls --shim {s}{s}", .{ report.shellWord(arena, sc) catch sc, report.shellWord(arena, shim) catch shim, recovery_flags })
             else
                 std.fmt.allocPrint(arena, "sideeye replay {s} --shim {s}{s}", .{ report.shellWord(arena, sc) catch sc, report.shellWord(arena, shim) catch shim, recovery_flags })) catch "-"
@@ -3489,16 +2631,6 @@ fn phaseReport(run: *Run) void {
             "-";
         report.case_note = case_shown;
         report.replay_note = replay_cmd;
-        // The evidence bundle (#607, ADR 0071), beside the case, built from what the
-        // exhibit's own world measured. Written only where the case was: the name is derived
-        // from the case's id, so a bundle claims no id of its own and the ownership the
-        // report documents — in a fresh work directory `000001` belongs to the overall
-        // earliest — holds however this turns out. A bundle that cannot be written leaves
-        // `-`, never a guess.
-        //
-        // `invariant`, `subject` and `observed` are carried across rather than re-rendered:
-        // one fact with two producers drifts, and an acceptance check holds these three to
-        // the report's own `earliest` by bytes.
         const saved_evidence: ?[]const u8 = if (saved_case) |sc| ev_blk: {
             const d = run.firsts.first_failure_ev orelse break :ev_blk null;
             const op_line = evidence.joinArgv(arena, run.rec.op_argv) catch break :ev_blk null;
@@ -3521,7 +2653,6 @@ fn phaseReport(run: *Run) void {
             });
         } else null;
         report.evidence_note = saved_evidence orelse "-";
-        // The claim exhibit (#231, ADR 0020). Same world as the earliest: it
         // shares the earliest's case file — no duplicate is written. Different
         // world: its case is written strictly AFTER the earliest's, so in a
         // fresh work directory 000001 always belongs to the overall earliest;
@@ -3557,16 +2688,12 @@ fn phaseReport(run: *Run) void {
                     std.fmt.allocPrint(arena, "sideeye replay {s} --shim {s}{s}", .{ report.shellWord(arena, cc) catch cc, report.shellWord(arena, shim) catch shim, recovery_flags })) catch "-"
             else
                 "-";
-            // One bundle per case, so the shared-world case reuses the earliest's rather
-            // than writing the same measurement to the same name twice.
             const cevidence: []const u8 = if (same_world)
                 (saved_evidence orelse "-")
             else if (csaved) |cc| cev_blk: {
                 const d = run.firsts.first_checker_ev orelse break :cev_blk "-";
                 const op_line = evidence.joinArgv(arena, run.rec.op_argv) catch break :cev_blk "-";
                 break :cev_blk evidence.save(arena, cc, op_line, state_abs, n, .{
-                    // Written on its own file only when the two exhibits are different
-                    // worlds; the shared-world case reuses the earliest's bundle above.
                     .exhibit = .checker,
                     .crash_point = fc.k,
                     .boundary = .{
@@ -3606,8 +2733,6 @@ fn phaseReport(run: *Run) void {
                 .evidence = cevidence,
             };
         } else null;
-        // The verdict word in a write of its own (#712): coloured on a terminal, and the
-        // table of arguments below keeps its two columns.
         say("{s}", .{report.paint("FAIL")});
         say(
             \\  {d} of {d} explored worlds violated an invariant
@@ -3630,9 +2755,6 @@ fn phaseReport(run: *Run) void {
             textShown(arena, before_path), textShown(arena, path_shown),
             what,
         });
-        // The second exhibit beside the first (#711 moved it up from among the account lines).
-        // Printed only when the two exhibits are different worlds; when the earliest is itself
-        // checker-red — every FAIL this engine produced before poetry — nothing is added here.
         if (checker_detail) |cd| {
             if (cd.e.k != f.k) say(
                 \\checker red crash point {d} of {d} ({s})
@@ -3658,15 +2780,9 @@ fn phaseReport(run: *Run) void {
         // crash point rather than the whole world. Replacing the `unset` with the variable
         // by hand reproduces the world exactly — from a shell you are willing to lose.
         say("\n", .{});
-        // Under `--observe supervised` there is no shim to preload: the crash point is the
-        // engine's, counted from outside the target (#217), so the one command that reproduces
-        // it is the replay line above.
         if (args.observe == .supervised)
-            // The replay line only where it is a command; a replay's own FAIL has none (review).
             say("reproduce   {s}  (the crash point is the engine's, from outside the operation; there is no shim to preload)\n", .{if (saved_case != null) replay_cmd else "this run again, with --observe supervised"})
         else
-            // #711: a command that runs as printed once the setup has run — `cd`, the world's
-            // variables and the operation's own argv — where it used to end in `<operation>`.
             say("reproduce   {s}\n", .{report.reproduceLine(arena, .{
                 .cwd = report.command_cwd,
                 .state = state_abs,
@@ -3711,10 +2827,6 @@ fn splitArgs(arena: std.mem.Allocator, cmd: []const u8) ![]const []const u8 {
     return list.items;
 }
 
-/// One spawn shape for both spellings: the string form splits on spaces here (the
-/// flags' rule, ADR 0007 decision 5) and the argv form passes through verbatim
-/// (ADR 0019) — the executor sees a `[]const []const u8` either way, and nothing
-/// downstream of this call knows which spelling the define used.
 fn commandArgv(arena: std.mem.Allocator, cmd: config.Command) ![]const []const u8 {
     return switch (cmd) {
         .str => |s| splitArgs(arena, s),
@@ -3722,47 +2834,20 @@ fn commandArgv(arena: std.mem.Allocator, cmd: config.Command) ![]const []const u
     };
 }
 
-// ---- preflight ---------------------------------------------------------------------
-
-/// The gap the cohort-2 protocol asks for between the two runs' starts.
-///
 /// Two seconds is what epoch-second stamping needs to move, and it is the interval one
 /// unpinned `borg create` split at — it is **not** a measured sufficiency threshold for
 /// nondeterminism in general, and the help text says so rather than implying a target
 /// that survives it is repeatable.
 const repeat_gap_ms: u64 = 2000;
 
-/// The rendered-byte ceiling for the split report's list of paths.
-///
-/// It exists for the pathological input, not the ordinary one: a single `rel` can
-/// approach `contract.max_path` (4096), and a handful of those would overrun the report
-/// buffer every other line shares. **On ordinary input the binding limit is
-/// `repeat_diff_slots` below** — short paths fill 64 slots long before they fill a
-/// kilobyte — which is the opposite of what an earlier version of this comment implied
-/// (review). Paths are target-chosen, so each goes through the same neutralisation the
-/// l0 note uses: an unescaped newline in a file name would let a target forge report
-/// lines. The first path is exempt from the ceiling; see `preflightReport`.
 const repeat_diff_byte_budget: usize = 1024;
 
-/// How many differences are collected before `DiffCount.total` carries the rest.
-///
-/// A separate bound from the byte budget above, and deliberately so: this one limits
-/// what is *held*, the other limits what is *printed*. Collapsing them would tie the
-/// allocation to a rendering decision — and `total` keeps counting past both, so a
-/// tree that overflows either still reports its real size rather than the cap's.
 const repeat_diff_slots: usize = 64;
 
-/// What the second observation found.
 const Repeat = struct {
-    /// Measured between the two runs' STARTS, on the monotonic clock — not the sleep
-    /// that was requested. A reported gap derived from the request would be the
-    /// measurement describing its own intent.
     gap_ms: u64,
     count: engine.DiffCount,
     diffs: []const engine.Difference,
-    /// Parallel to `diffs` (#688): where a `content_differs` path's two runs first differ,
-    /// with both stretches quoted, for the first `repeat_span_paths` such paths; null for
-    /// the rest and for every other kind of difference.
     spans: []const ?[]const u8,
     /// The same lines in their `.shape` form — where, how long, what kind, no byte of either
     /// run — for `--json` (#717). Made here beside `spans` because the second snapshot is
@@ -3770,13 +2855,8 @@ const Repeat = struct {
     shapes: []const ?[]const u8,
 };
 
-/// How many differing paths get a byte line under `--twice` (#688). Each line quotes up to
-/// two clipped stretches, a few hundred bytes at worst, and 64 of them would bury the
-/// paths they explain.
 const repeat_span_paths: usize = 8;
 
-/// Observe the operation a second time and compare the two post-states (#199).
-///
 /// Order is the cohort harness's, not the obvious one: **sleep, then restore**. The
 /// protocol defines the gap between the two runs' starts, and restoring before the wait
 /// would leave the freshly rebuilt pre-state exposed for the whole gap to anything the
@@ -3785,13 +2865,6 @@ const repeat_span_paths: usize = 8;
 /// Run B is gated explicitly here rather than by reusing the recording path wholesale:
 /// that path writes the report globals as it goes, so a second pass through it would
 /// overwrite what the first run reported.
-///
-/// **Not every gate run A passes.** Ten of the fifteen a preflight can reach: exit
-/// status, oversized trace, shim initialisation, truncation, the shim-side foreign
-/// writer, trace-contract version, the hard boundaries (exec, and a detach run B's own cgroup did not hold), the
-/// soft boundary without an oracle, quiescence of the state tree, and a state that moved
-/// while nothing was recorded.
-///
 /// What run B does NOT get, listed because an earlier draft of this comment claimed it
 /// got everything (review): `unresolvable_path`, `unsupported_syscall_observed`,
 /// `sequence_numbering_broken`, the oracle comparison, and stdout quiescence. The first
@@ -3799,13 +2872,6 @@ const repeat_span_paths: usize = 8;
 /// reuse this function exists to avoid — and the oracle comparison is disclosed in the
 /// report's `scope` line. Stdout quiescence guards the capture the marker is read from,
 /// which run B has no claim resting on.
-///
-/// The ones that WERE added are those whose absence would make the property's own words
-/// false: "the two runs observed" is not true of a run whose shim never loaded or whose
-/// operations went unrecorded, and a comparison against a run something else wrote into
-/// is not a comparison of this operation. **That criterion, not the cost of the check,
-/// is what decides the split** — `state_changed_without_ops` was excluded on cost in the
-/// first revision and review showed the cost reason was wrong for it, so it moved.
 fn observeAgain(
     gpa: std.mem.Allocator,
     arena: std.mem.Allocator,
@@ -3843,8 +2909,6 @@ fn observeAgain(
         posix.sleepForMs(repeat_gap_ms - elapsed);
     }
 
-    // Two different questions that were one variable until review separated them.
-    //
     // `oracle_path` answers "did the caller name an oracle?", which is what the refusals
     // below are about — telling someone who passed `--oracle` to pass `--oracle` is the
     // defect review found once this function started nulling it. `attached` answers "does
@@ -3871,23 +2935,13 @@ fn observeAgain(
     const oracle_out_b = std.fmt.bufPrint(&oracle_buf, "{s}/oracle-2.txt", .{work}) catch setupError(.define_invalid, "path too long");
     removeFile(trace_b);
     removeFile(stdout_b);
-    // The oracle capture too, for the same reason the recording run removes its own:
-    // a stale file from a previous invocation must not be mistaken for this run's.
-    // Nothing reads `oracle-2.txt` today (the report's `scope` line says so), and
-    // strace truncates on open regardless — the symmetry is the point, so a future
-    // reader of that file inherits the same guarantee run A's has.
     removeFile(oracle_out_b);
 
     const started = posix.monotonicMs();
-    // Run B's own cgroup (v17, #559). The probe behind it is answered once per engine, so run B
-    // is contained where run A was.
     var cg_b = containment.spawn(false);
     const cg_b_ptr: ?*posix.CgroupSpawn = if (cg_b) |*c| c else null;
     const term = runOperationObserved(gpa, arena, op_argv, state_abs, state_alt, shim, attached, oracle_out_b, trace_b, stdout_b, cwd, observe, cg_b_ptr);
 
-    // The same question the recording run's own status check asks, and the same reason
-    // it matters: a second run that failed says nothing about repeatability, and
-    // comparing its wreckage against a successful run would report the failure as a
     // split. `recording_run_failed` is the existing member for "the run this account
     // rests on did not complete" — no new closed-set name, which after the v1.0 tag
     // would be a breaking change (`docs/contract-freeze.md`, surface 2).
@@ -3922,8 +2976,6 @@ fn observeAgain(
     // is what makes it name run B. (A refusal that exits through `setupError` still prints
     // one line and no account — `restoreFailure` above and the snapshot OOM paths below take
     // that route — so the claim is about this block, not about every exit from here.)
-    // Whether run B's detach refuses, asked once for the label here and the refusal below
-    // (#559's second half): a detach run B's own cgroup held reads as any other boundary.
     const b_detach_refused = trace.detached != null and !containment.holds(cg_b_ptr, &trace, false);
     boundary.boundary_ev.second_run = boundary.secondRunLabel(trace, b_detach_refused);
     // The property says "the two runs OBSERVED in this invocation". A run whose shim
@@ -3932,20 +2984,14 @@ fn observeAgain(
     // path the second time, so a second run that loads nothing is not hypothetical.
     if (!trace.saw_shim_ready)
         unknown(.no_shim_marker, boundary.noShimDetailSecondRun(arena), .check_shim);
-    // A trace that ends mid-record leaves the operation count unknown for run B, which
-    // is the same reason run A refuses on it.
     if (trace.truncated)
         unknown(.trace_truncated, "the second observed run's trace ends mid-record; how many operations there were is unknown", .retry_then_report);
-    // The shim-side witness for a foreign writer, and it does not depend on an oracle.
     // Inherited from run A, for the reason the parameter's doc gives, and refusing a
     // child run A was admitted for would make `--twice` unusable on exactly the targets
     // this version exists to judge.
     if (trace.foreign_kill_point and !children_admitted)
         unknown(.child_touched_state_dir, boundary.foreignTouchDetail(arena, trace.first_foreign, "during the second observed run", if (attached != null) oracle_out_b else null, "a process other than the subject performed a state-directory operation during the second observed run"), .class_wall);
 
-    // Numbering integrity, which run B has never had and now needs (v15). The recording
-    // run and every explored world check that their records and their highest number
-    // agree; run B did not, and while a foreign writer refused here unconditionally that
     // cost nothing — a second process could not reach this point. It can now: run B
     // inherits run A's admission, so two of its processes taking one number is a state
     // nothing else in this function would notice. `--twice` compares post-state bytes and
@@ -3957,25 +3003,15 @@ fn observeAgain(
             "the second observed run's kill-point records and its highest sequence number disagree; the numbering has gaps or duplicates", .class_wall);
     if (trace.version_mismatch)
         unknown(.contract_version_mismatch, "the shim and engine disagree on the trace contract version in the second observed run", .rebuild_pair);
-    // The boundaries that stay refusals whatever an oracle says, applied to the second
     // run exactly as run A applies them. Read from `hard_boundary` for the same reason
     // run A does: the first boundary in a trace can be a tolerable fork written before
     // the record that must refuse.
-    //
-    // The first version of this function had only the check below it, gated on
-    // `oracle_path == null` — so passing `--oracle` REMOVED run B's boundary checking
-    // instead of strengthening it, the reverse of what an oracle does for run A. A run
-    // B that created a thread, replaced its image, or left the containment group was
-    // reported as "left equal state" (review, P1).
     if (trace.hard_boundary) |b| switch (b) {
         .exec => unknown(.child_process_detected, "the second observed run replaced its own image, so the two runs did not execute the same program to completion and cannot be compared", .class_wall),
         else => {},
     };
-    // A process that left the process group during run B, judged where run B's own cgroup held
-    // it, as run A's is (#559's second half).
     if (b_detach_refused)
         containment.refuseDetach(arena, cg_b_ptr, " during the second observed run");
-    // The thread rule, asked of run B's own trace (v16), as run A asks it of its own.
     if (trace.second_writer_thread) |op|
         unknown(.multiple_threads_detected, boundary.threadDetail(arena, trace.first_writer_thread, op, trace.first_writer_thread_detached, " in the second observed run"), boundary.threadsStep(observe));
     // A soft boundary in run B and not run A is still a boundary: the shim only sees
@@ -3984,10 +3020,6 @@ fn observeAgain(
     // What this does NOT do is compare run B's oracle capture against its shim account.
     // `oracle-2.txt` is written — run B executes under the same wrapper run A did, so
     // that the two runs differ in nothing the caller controls — and it is not parsed.
-    // The comparison run A performs (`oracle.compare`, reporting
-    // `oracle_missed_operation` / `oracle_saw_phantom` / `child_touched_state_dir`) is
-    // about the completeness of the *account*, which the property this flag establishes
-    // does not rest on: the post-states are read from the filesystem, not from either
     // witness. The report's `scope` line says so, and widening it is a separate promise.
     if (trace.needsOracle() and oracle_path == null)
         unknown(.boundary_without_oracle, if (builtin.os.tag == .macos) "the second observed run crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; on macOS no witness this engine reads can (#702)" else "the second observed run crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)", .account_boundary_or_unwrap);
@@ -4016,19 +3048,6 @@ fn observeAgain(
     if (!engine.diffSnapshots(second, again, &quiesce_buf).equal())
         unknown(.state_not_quiescent, "two samples of the state directory taken back to back after the second observed run disagreed: something was still writing, so the comparison would describe a moment nobody chose", .quiesce);
 
-    // The partial version of `no_shim_marker`, and it belongs on the same side.
-    //
-    // That one says nothing was observed because the shim never loaded; this one says
-    // the shim loaded and still missed operations — the tree moved while zero mutating
-    // calls were recorded. Both make "the two runs observed" false, and comparing a
-    // post-state nobody accounted for against one that was accounted for is not a
-    // comparison of this operation.
-    //
-    // An earlier revision left this out and justified it, in the doc above, as "analysis
-    // run A performs on its own trace and snapshots". Review measured that reason wrong
-    // for this one member: it needs one field of the trace already in hand and the two
-    // snapshots already taken, which is why it is a single line rather than the
-    // wholesale reuse the exclusion was about.
     if (!snapshotsEqual(initial, second) and trace.mutation_count == 0)
         unknown(.state_changed_without_ops, "the state directory changed during the second observed run while zero mutating operations were recorded: operations were missed", .class_wall);
 
@@ -4081,24 +3100,11 @@ fn observeAgain(
     };
 }
 
-/// The preflight verdict, on the accepted side. Refusals never reach here — they exit
-/// through `unknown()` upstream with the same detector names a real run uses.
-///
-/// The claim is deliberately "recording accepted", not "explorable": the refusals only
-/// a real exploration can raise (kill landing, world-side process boundaries, baseline
-/// behavior, checker falsification) have not run, and the fixed `not checked` list
-/// names them. The acceptance suite pins this wording — the claim cannot quietly grow
-/// back into one this command does not earn.
-/// What preflight's `next` hint repeats: the define flags it was given, or the toml it read
-/// (#704, ADR 0094), which the hint names instead of spelling the define out.
 const PreflightHint = union(enum) {
     flags: struct { setup: ?[]const u8, operation: []const u8 },
-    /// The toml as given, and the directory its relative paths were resolved against.
     config: struct { path: []const u8, dir: []const u8 },
 };
 
-/// What a toml declared beyond what the flags' define can carry (#704): the report names each
-/// and what preflight did with it, none of it run. All false from the flags, which refuse them.
 const PreflightDeclared = struct { check: bool, marker: bool, recovery: bool };
 
 fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: PreflightHint, cwd: ?[]const u8, shim: []const u8, oracle_path: ?[]const u8, expect_status: ?u8, declared: PreflightDeclared, repeat: ?Repeat) noreturn {
@@ -4111,9 +3117,6 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
     // agreed. Calling a split "accepted" and returning a non-zero code would contradict
     // the frozen sentence; narrowing what acceptance means under this flag does not.
     const split = if (repeat) |r| !r.count.equal() else false;
-    // #717: what `--json` writes at either exit below — the figures here, the account from
-    // the report's own variables. Every path the comparison stored is listed, not only the ones
-    // the text has room for, with the byte line's shape beside the content differences.
     const pf_doc: ?report.PreflightDoc = if (refuse.json_path != null) blk: {
         const rep: ?report.PreflightRepeat = if (repeat) |r| rb: {
             const out = arena.alloc(report.PreflightDiff, r.diffs.len) catch setupError(.environment, "out of memory");
@@ -4125,7 +3128,6 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
     if (split) {
         say("PREFLIGHT  not accepted — the two observed runs left different state\n\n", .{});
     } else {
-        // Never zero: a recording with no crash point is refused before this (#682, ADR 0091).
         say("PREFLIGHT  recording accepted — {d} state-changing operation(s) observed\n\n", .{n});
     }
     if (repeat) |r| {
@@ -4161,9 +3163,6 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
             say("\n", .{});
         }
     }
-    // #647: where the observed run's commands ran, and whether that was chosen. Preflight
-    // is where a define is first tried, so a tool that needs its own directory fails here
-    // first — and this is the line that names the directory it ran in.
     report.sayCwd(arena, "cwd          {s}{s}\n");
     say(
         \\atomicity    {s}
@@ -4178,7 +3177,6 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
     // files unjudged (an execute-only one; the script an interpreter is handed), so the line says
     // what was not refused rather than that it will start — had something in the state to
     // corrupt, and was not run. A recovery is never started
-    // (ADR 0072), and its line is the one the refusals print.
     if (declared.marker) say("marker       observed in the recording run's output; preflight explores no crash world\n", .{});
     if (declared.check) say(
         \\checker      declared, not run: not refused as a command that cannot be
@@ -4189,10 +3187,6 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
     // The parenthesis is #682's: with no check and no marker, explore can refuse an operation
     // that only creates files `nothing_could_fail`, which one recording cannot rule out. A toml
     // that declares either has said what makes a world fail, and the sentence would not apply.
-    // The five items are `report.preflight_not_checked`, which `--json` writes as a list: one
-    // definition for both forms (#717). Indexed rather than joined so the wrapping is the one
-    // these lines always had, and a sixth item is a compile error here rather than a silent
-    // difference between the two.
     const nc = report.preflight_not_checked;
     comptime std.debug.assert(nc.len == 5);
     if (declared.check or declared.marker) say(
@@ -4227,28 +3221,16 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
         , .{ r.gap_ms, verdict, state_named, state_named });
         // Stated only when run B actually carried the oracle, because otherwise it
         // describes a file that does not exist. Run B carries it in every mode since
-        // ADR 0054, so there is one sentence again: its capture exists and what it lacks
-        // is the account comparison run A performs. A second branch stood here while
-        // syscalls-mode run B carried no oracle — the sentence above had claimed a
-        // capture was written where nothing wrote one (review, P1) — and it is gone with
-        // the asymmetry it described.
         if (oracle_path != null)
             say(
                 \\               the second run's oracle capture is written but not
                 \\               compared; only the first run's account was checked
                 \\
             , .{});
-        // ADR 0043: the declaration is the same one the atomicity line above carries; this
-        // says what it did to the comparison, which the atomicity line is not about.
         if (report.scratch_declared.len > 0)
             say("scratch        declared scratch, not compared: {s}\n", .{report.scratchNote(arena)});
         say("\n", .{});
     }
-    // The note and the hint below name what explore on THIS platform takes (#702). macOS refuses
-    // `--oracle` — it runs strace — so a hint naming it there was a first command that could not
-    // run. The Linux text is unchanged byte for byte; the macOS one names the macOS witness and
-    // ends its hint with `--allow-unverified`, the flag that runs without `sudo` and without
-    // fs_usage's limit on how deep the state directory may sit.
     if (oracle_path == null) {
         if (builtin.os.tag == .macos) say(
             \\note         no oracle checked the shim's account against a second witness;
@@ -4264,8 +3246,6 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
             \\
         , .{});
     }
-    // When no oracle was given but strace is discoverable, the hint names the real
-    // path so the next command is pasteable — named, never attached (#78).
     const oracle_part = if (oracle_path) |o|
         std.fmt.allocPrint(arena, " --oracle {s}", .{o}) catch " --oracle <strace>"
     else if (builtin.os.tag == .macos)
@@ -4275,28 +3255,12 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
     else
         " --oracle <strace>";
     if (split) {
-        // No graduation hint on a split: the next step is not `explore` — that command
-        // would reach the same divergence in its un-killed baseline and refuse there,
-        // after the caller had written a full define. Naming the paths is the useful
-        // answer, and one of them is often pinnable (a timestamp file, a temp name).
         say(
             \\next         pin or relocate what differs, then re-run this command;
             \\             explore would reach the same divergence in its baseline
             \\             world, after a full define had been written
             \\
         , .{});
-        // Exit 1 here is not FAIL. `docs/ci-quickstart.md` states the rule: the four
-        // verdict rows are "the verdicts a run can reach", and commands producing no
-        // verdict are not in that table. preflight produces none, and the frozen
-        // verdict-to-code mapping is untouched by this.
-        //
-        // Said plainly because review asked for it: **this is an interpretation, not a
-        // quotation.** `docs/contract-freeze.md` §3 spells out the freedom of non-verdict
-        // commands for exit 0 only ("Exit 0 is not reserved to PASS"); the same reading
-        // extended to 1 is what this line rests on. It violates neither thing §3
-        // forbids — a verdict arriving under a different code, or exit 0 read as proof a
-        // check ran — but if the owner wants that reading written into §3, this comment
-        // is the place that owes the reference.
         if (refuse.json_path) |jp| report.writePreflightJson(arena, jp, pf_doc.?);
         report.emitSeal();
         std.process.exit(@intFromEnum(contract.ExitCode.fail));
@@ -4337,7 +3301,6 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
             , .{ state, setup_part, cwd_part, f.operation, expect_part, observe_part, oracle_part });
         },
         .config => |c| {
-            // #704: the toml that was read is the define, so the hint names it rather than
             // spelling it out. Named as the toml's resolved directory joined with its own name:
             // that directory is what `phaseDefine` resolved every relative path against, and what
             // explore will resolve them against when the line is pasted — so a toml that is a
@@ -4348,8 +3311,6 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
             // a name `textShown` would rewrite cannot be pasted as printed; both get the line that
             // says to save the define, rather than one that would read nothing or another file.
             const Sys = struct {
-                // A device or process path: what is read there need not be what a second
-                // command reads (`/dev/stdin`, `/dev/fd/N`, `/proc/self/fd/N`).
                 fn under(p: []const u8) bool {
                     for ([_][]const u8{ "/dev", "/proc" }) |sys| {
                         if (std.mem.eql(u8, p, sys) or (std.mem.startsWith(u8, p, sys) and p[sys.len] == '/')) return true;
@@ -4407,37 +3368,17 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
             , .{ textShown(arena, c.path), why, then, observe_part, oracle_part });
         },
     }
-    // #717: with `--json` the document is written and sealed here, the way a report is at
-    // explore's exit; without it `emitSeal` only puts out the warnings (#706), as before.
     if (refuse.json_path) |jp| report.writePreflightJson(arena, jp, pf_doc.?);
     report.emitSeal();
     std.process.exit(@intFromEnum(contract.ExitCode.pass));
 }
 
-// ---- demo --------------------------------------------------------------------------
-
-/// The demo's target and checker, embedded at build time (see build.zig): the toy is
-/// `spike/toys/toy.c` compiled for this binary's own target (#715, ADR 0101), the checker
-/// the script the acceptance suite drives, so the demo cannot drift from what CI proves.
 const demo_toy = @embedFile("demo_toy");
 const demo_check_sh = @embedFile("check_sh");
 
-/// Where the shim is looked for when --shim is not given: next to the binary
-/// (the release-tarball layout) first, then ../lib relative to it (the zig-out
-/// layout). One list serves demo, preflight, explore and replay (#78) — the demo
-/// proved the order before the flag learned to default.
-///
-/// The list itself moved to `mcp.zig`, beside `canonicalSelf`, when `sideeye mcp`
-/// became its fifth caller (#389): the server used to demand `SIDEEYE_MCP_SHIM` and
-/// refuse without it, which made it the one command that did not do what `docs/cli.md`
-/// says the product does. Two copies of a search order is how the two ends of that
-/// sentence drift apart again.
 const shim_basename = mcp.shim_basename;
 
 test "demo shim candidates: tarball sibling first, zig-out lib layout second" {
-    // Calls `mcp.shimCandidates` directly. This file used to keep a wrapper that turned
-    // its allocation failure into a setup error, and #423 left that wrapper with no
-    // caller but this test — a function alive only because something measured it.
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
     const arena = arena_state.allocator();
@@ -4448,16 +3389,8 @@ test "demo shim candidates: tarball sibling first, zig-out lib layout second" {
     try std.testing.expectEqualStrings(second, c[1]);
 }
 
-/// Resolve the shim when --shim was not given (#78): the canonical binary's
-/// neighbors per shimCandidates, realpath-normalized so the report and the
-/// reproduce line name the real file rather than a bin/../lib spelling.
 /// Absence stays loud, both looked-at paths named; argv[0] is never consulted
 /// (a PATH name or a wrapper must not decide which library gets injected).
-/// The probe is `mcp.findShimBeside`, not a second copy of it. Sharing only the
-/// candidate list left the two ends of the search free to disagree, and they did within
-/// the hour: on an allocation failure one answered the un-normalised candidate and the
-/// other aborted the process. This function now owns exactly what is different about the
-/// CLI — that absence is fatal here and answerable there.
 fn findShim(arena: std.mem.Allocator) []const u8 {
     const self = mcp.canonicalSelf() orelse setupError(.environment, "could not resolve the canonical path of this binary to look beside it for the shim; pass --shim <path>");
     const self_owned = arena.dupe(u8, self) catch setupError(.environment, "out of memory");
@@ -4493,15 +3426,12 @@ const fsu_sentinel_max_root: usize = 156 - 20 - 40;
 
 const SentinelPair = struct { a: []const u8, b: []const u8 };
 
-/// The two fs_usage sentinels for one run (#549): `<state>/.sideeye-fsusage-open.<hex>`
-/// and `<state>/.sideeye-fsusage-close.<hex>`, each from its own eight bytes of entropy.
 /// Two draws, not one shared: the opening name is readable from the capture once the
 /// handshake has passed (the capture is the engine's own file, `0600`, and the target
 /// runs as the same user), so a name derived from it would hand the closing name over
 /// too. The closing name is born after the target has exited and is never in a place
 /// the target or its children can read, which is what makes a forged capture line for
 /// it impossible rather than merely hard. Null when the kernel refuses entropy or a
-/// path does not fit; the caller refuses to start the observer either way.
 fn fsUsageSentinels(state_abs: []const u8, a_buf: *[contract.max_path]u8, b_buf: *[contract.max_path]u8) ?SentinelPair {
     var hex_a: [16]u8 = undefined;
     var hex_b: [16]u8 = undefined;
@@ -4537,7 +3467,6 @@ test "fs_usage sentinels: the shape, two names per run that differ from each oth
     // the closing name must not be derivable from it. One draw shared by both would
     // pass every other assertion here.
     try std.testing.expect(!std.mem.eql(u8, ha, hb));
-    // The next run draws again: the same state root, different names, both of them.
     try std.testing.expect(!std.mem.eql(u8, p1.a, p2.a));
     try std.testing.expect(!std.mem.eql(u8, p1.b, p2.b));
     // The printed-length arithmetic the bound above rests on: the opening name is
@@ -4546,9 +3475,6 @@ test "fs_usage sentinels: the shape, two names per run that differ from each oth
     try std.testing.expectEqual("/tmp/st".len + 40, p1.b.len);
 }
 
-/// Single-quote `s` for /bin/sh: 'foo', with every embedded ' spelled '\''. Complete
-/// for POSIX sh — inside single quotes nothing else is special, so this is the whole
-/// escape, not a denylist.
 fn shellSingleQuote(arena: std.mem.Allocator, s: []const u8) []const u8 {
     return report.shellQuote(arena, s) catch setupError(.environment, "out of memory");
 }
@@ -4561,18 +3487,8 @@ test "shellSingleQuote neutralizes metacharacters and embedded quotes" {
     try std.testing.expectEqualStrings("'a'\\''b; $(x) `y`'", shellSingleQuote(arena, "a'b; $(x) `y`"));
 }
 
-/// `sideeye demo`: write the embedded planted-bug toy and checker into a scratch
-/// directory and self-exec `explore` against them. The toy arrives compiled (#715,
-/// ADR 0101): this used to compile it here with whatever C compiler the machine
-/// had, and on a machine with none the prebuilt binary's first proof was a SETUP
-/// ERROR. Never returns; the exit code is explore's own (1 expected —
-/// the planted bug found).
-///
 /// Self-exec rather than an in-process call for the same reason the MCP adapter
 /// self-execs (ADR 0010): every verdict path in this file ends in `std.process.exit`.
-/// Plain `execvp` with the inherited environment — not the MCP minimal-env path, which
-/// exists to *withhold* credentials from an untrusted operation; the demo's operation
-/// is our own toy, and the report belongs on this same stdout.
 fn runDemo(arena: std.mem.Allocator, rest: []const []const u8) noreturn {
     var shim_flag: ?[]const u8 = null;
     var i: usize = 0;
@@ -4609,16 +3525,11 @@ fn runDemo(arena: std.mem.Allocator, rest: []const []const u8) noreturn {
 
     const tool = std.fmt.allocPrint(arena, "{s}/demo-tool", .{tmp}) catch setupError(.environment, "out of memory");
     const check_path = std.fmt.allocPrint(arena, "{s}/check.sh", .{tmp}) catch setupError(.environment, "out of memory");
-    // Created by this call or refused, owner-only from the moment it exists: the next thing
-    // this process does with the path is run it (files.writeNewExecutable says why each flag).
     if (!files.writeNewExecutable(tool, demo_toy))
         setupError(.environment, "could not write the demo's planted-bug tool into the scratch directory");
-    // TOY is baked into the script rather than passed through the environment: the
-    // checker runs in a fresh process several layers down, and a baked value cannot be
     // lost to a change in how those layers pass environments around. Single-quoted —
     // the path contains whatever $TMPDIR contained, and an unquoted value would hand
     // its metacharacters to the shell (R1 finding). The embedded script's shebang
-    // becomes a comment mid-file, which /bin/sh does not mind.
     if (!writeWholeFile(check_path, &.{ "TOY=", shellSingleQuote(arena, tool), "\nexport TOY\n", demo_check_sh }))
         setupError(.environment, "could not write the demo's checker into the scratch directory");
 
@@ -4652,10 +3563,6 @@ fn runDemo(arena: std.mem.Allocator, rest: []const []const u8) noreturn {
     setupError(.environment, "could not self-exec the exploration");
 }
 
-/// ADR 0041. Every entry the engine can check is checked against the environment the
-/// operation will inherit — this process's, which `runChild*` hands down, plus the pairs
-/// the engine adds, whose names the parser refused up front. A missing device is a SETUP
-/// ERROR naming the entry and what was looked at; `note:` entries are carried and listed
 /// as unchecked. `preload:` reads `/etc/ld.so.preload` and never `LD_PRELOAD`: the engine
 /// replaces that variable with its own shim for every child, so a library there is a
 /// device that does not arrive, and the refusal says so when that is where it was found.
@@ -4666,7 +3573,6 @@ fn runDemo(arena: std.mem.Allocator, rest: []const []const u8) noreturn {
 /// promise). `cwd` is the define's, for a relative PYTHONPATH entry — the operation
 /// resolves it from there, so the check must too.
 fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[]const u8) void {
-    // The global preload file is one file; read once, on the first `preload:` entry.
     var preload_file: ?[]const u8 = null;
     for (entries) |e| {
         const parsed = switch (config.parseApparatusEntry(e)) {
@@ -4713,18 +3619,12 @@ fn envValue(name: []const u8) ?[]const u8 {
     return std.mem.span(v);
 }
 
-/// Does a list of libraries — one line of `/etc/ld.so.preload`, or an `LD_PRELOAD`
-/// value — name one whose basename starts with `lib`? Entries are separated by
-/// whitespace or colons, the way the loader reads both. The one prefix rule, pure, so a
-/// unit test holds the predicate the acceptance suite cannot reach: the runner's file is
-/// one file for the whole job.
 fn namesLib(list: []const u8, lib: []const u8) bool {
     var it = std.mem.tokenizeAny(u8, list, " \t:");
     while (it.next()) |entry| if (std.mem.startsWith(u8, std.fs.path.basename(entry), lib)) return true;
     return false;
 }
 
-/// `namesLib` over the lines of `/etc/ld.so.preload`, skipping blanks and `#` comments.
 fn preloadNamed(contents: []const u8, lib: []const u8) bool {
     var lines = std.mem.tokenizeScalar(u8, contents, '\n');
     while (lines.next()) |raw| {
@@ -4738,9 +3638,6 @@ fn preloadNamed(contents: []const u8, lib: []const u8) bool {
 fn pythonpathHas(arena: std.mem.Allocator, pythonpath: []const u8, file: []const u8, cwd: ?[]const u8) bool {
     var it = std.mem.tokenizeScalar(u8, pythonpath, ':');
     while (it.next()) |dir| {
-        // A relative entry is relative to where the operation runs, which is the define's
-        // cwd when it declares one and this process's otherwise — the same rule
-        // `resolvePathAgainst` applies to every relative path of the define (ADR 0007).
         const base = if (cwd) |c| resolvePathAgainst(arena, c, dir) else dir;
         var zbuf: [contract.max_path]u8 = undefined;
         const z = std.fmt.bufPrintZ(&zbuf, "{s}/{s}", .{ base, file }) catch continue;
@@ -4766,20 +3663,11 @@ test "namesLib: an LD_PRELOAD value or a preload line, colon- or space-separated
     try std.testing.expect(!namesLib("", "libfaketime"));
 }
 
-/// A relative path in a sideeye.toml means "relative to the toml", not to wherever
-/// the process happens to run (ADR 0007) — the same file has to mean the same thing
-/// from anywhere, or a replayed define quietly points at a different state.
 fn resolvePathAgainst(arena: std.mem.Allocator, dir: []const u8, path: []const u8) []const u8 {
     if (path.len == 0 or path[0] == '/') return path;
     return std.fmt.allocPrint(arena, "{s}/{s}", .{ dir, path }) catch setupError(.environment, "out of memory");
 }
 
-/// Commands resolve their argv[0] only when it names a place (`./check.sh`), never a
-/// program (`mytool` stays a PATH lookup). The rest of the string is untouched — the
-/// split-on-spaces rule is the flags' rule, written into ADR 0007. argv[0] is found
-/// the way the executor finds it — after skipping leading spaces — or a value like
-/// `" ./check.sh"` would slip past resolution and run cwd-relative, quietly breaking
-/// the "same file means the same thing from anywhere" rule.
 fn resolveCommandAgainst(arena: std.mem.Allocator, dir: []const u8, cmd: []const u8) []const u8 {
     var start: usize = 0;
     while (start < cmd.len and cmd[start] == ' ') start += 1;
@@ -4791,20 +3679,10 @@ fn resolveCommandAgainst(arena: std.mem.Allocator, dir: []const u8, cmd: []const
     return std.fmt.allocPrint(arena, "{s}/{s}{s}", .{ dir, head, tail }) catch setupError(.environment, "out of memory");
 }
 
-/// The Command-shaped face of the same rule. The string form goes through
-/// `resolveCommandAgainst` unchanged. The argv form resolves element 0 only, under
-/// the names-a-place test — minus the string form's leading-space skip, on purpose:
-/// that skip mirrors how the space-split executor finds argv[0], and the argv form
-/// has no split — its bytes are verbatim, so an element 0 with a leading space is
-/// the author's own byte string, passed through untouched (and failing loudly at
-/// exec). The remaining elements are arguments — data, never paths to rewrite.
 fn resolveCommand(arena: std.mem.Allocator, dir: []const u8, cmd: config.Command) config.Command {
     switch (cmd) {
         .str => |s| return .{ .str = resolveCommandAgainst(arena, dir, s) },
         .argv => |a| {
-            // The parser refuses empty arrays; this guard is for any future route
-            // that reaches here without it — pass through, and let the spawn site's
-            // own emptiness refusal speak.
             if (a.len == 0) return .{ .argv = a };
             const head = a[0];
             if (head.len == 0 or head[0] == '/' or head[0] == ' ' or std.mem.indexOfScalar(u8, head, '/') == null)
@@ -4826,12 +3704,7 @@ test "toml paths resolve against the toml's directory, commands only when they n
     try std.testing.expectEqualStrings("/cfg/./check.sh --strict", resolveCommandAgainst(a, "/cfg", "./check.sh --strict"));
     try std.testing.expectEqualStrings("mytool rotate-key", resolveCommandAgainst(a, "/cfg", "mytool rotate-key"));
     try std.testing.expectEqualStrings("/usr/bin/tool x", resolveCommandAgainst(a, "/cfg", "/usr/bin/tool x"));
-    // argv[0] is found the way the executor finds it: leading spaces must not let a
-    // place-naming command slip past resolution and run cwd-relative.
     try std.testing.expectEqualStrings("/cfg/./check.sh", resolveCommandAgainst(a, "/cfg", " ./check.sh"));
-    // The argv arm: element 0 only, same names-a-place test, tail untouched — and
-    // verbatim means verbatim: a leading space disqualifies resolution instead of
-    // being skipped, because nothing here splits or trims (ADR 0019).
     const rel = resolveCommand(a, "/cfg", .{ .argv = &.{ "./check.sh", "--strict", "a b" } });
     try std.testing.expectEqualStrings("/cfg/./check.sh", rel.argv[0]);
     try std.testing.expectEqualStrings("--strict", rel.argv[1]);
@@ -4845,26 +3718,12 @@ test "toml paths resolve against the toml's directory, commands only when they n
     try std.testing.expectEqualStrings(" ./check.sh", spaced.argv[0]);
 }
 
-/// Two snapshots agree, on the same three fields `diffSnapshots` compares.
-///
-/// One implementation, not two. This was a length check plus a `find` per entry until
-/// `--twice` (#199) needed the differences themselves rather than a yes/no, and keeping
-/// both would leave two answers to one question free to drift — the shape #65 is about.
-/// The merge is also cheaper: linear in the two lengths rather than a binary search per
-/// entry, and it stops counting the moment a caller only wants `equal()`… which it does
-/// not, so the buffer is one slot and the count runs to completion. Callers that need
-/// the yes/no keep reading exactly that.
 fn snapshotsEqual(a: engine.Snapshot, b: engine.Snapshot) bool {
     var one: [1]engine.Difference = undefined;
     return engine.diffSnapshots(a, b, &one).equal();
 }
 
 test "the shipped engine options carry the shipped values (#365)" {
-    // What a released binary is built with. Until #365 the only machine holding these was
-    // the sha comparison in CI between a build with `-Dtest-trace-cap` and one without —
-    // and an edit to the literal in build.zig lands in BOTH arms of that comparison, so it
-    // stays green. What the comparison covers is the FLAG leaking in, not the value.
-    //
     // A loud edit is caught elsewhere: at 64 bytes every acceptance leg that drives the
     // SHIPPED binary refuses on a trace that size, and most of the suite does drive it —
     // not all, since four apparatus binaries are driven by their own names. A quiet one
@@ -4906,12 +3765,6 @@ test "no seventh engine build option arrives unchecked (#365)" {
     // the promise is universal: a `-Dtest-…` added later with no assertion above would
     // leave it false while CI stayed green. Pinning the count makes the next option fail
     // here until someone writes its line. Same instrument as the RestoreError arity pin
-    // above and the OpClass enumeration in contract.zig.
-    //
-    // It fired for real on 2026-08-30: #377's `trace_budget_override` was the fourth, and
-    // this test is what stopped it arriving without the two assertions above. #559's
-    // `no_cgroup` was the fifth. #217's `supervise_reply_delay_ms` was the sixth, and fired it
-    // on 2026-09-27 before its shipped-value assertion was read here.
     const decls = @typeInfo(engine_build_options).@"struct".decls;
     try std.testing.expectEqual(@as(usize, 6), decls.len);
 }

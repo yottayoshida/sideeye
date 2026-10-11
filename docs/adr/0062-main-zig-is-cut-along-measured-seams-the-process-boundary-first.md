@@ -556,6 +556,8 @@ happen here; the reason a design was chosen is not one, even phrased as "X rathe
 requests, the first of them `contract.zig`, `refuse.zig`, `capture.zig`, `engine.zig` and
 `engine/read.zig`. What a header stated about a boundary is in this file's seam records; the finer
 rules a header carried — what a module does not hold, which exits are not in it — go with the
-header. The ratchet `spike/check-main-shape.sh` counts declarations and never read one. ADR 0047, 0048
+header. The ratchet `spike/check-main-shape.sh` counts declarations and never read one; its two
+failure messages, which sent the reader to `main.zig`'s module map, point at this ADR's seam records
+since the series' sixth pull request removed that map. ADR 0047, 0048
 and 0050 describe the module maps and doc comments as they stood when those seams landed;
 that is history and stays as written. The boundaries this series drew are unchanged.
