@@ -575,7 +575,7 @@ int main(int argc, char **argv) {
     const char *mode = getenv("STDIO_MODE"); if (!mode) mode = "print";
     char p[1024]; snprintf(p, sizeof(p), "%s/keep", d);
     if (strcmp(mode, "outside") == 0) {
-        char o[1024]; snprintf(o, sizeof(o), "%s/../outside-%d.log", d, (int)getpid());
+        const char *o = getenv("OUTSIDE_LOG"); if (!o) return 1;
         int lf = open(o, O_WRONLY | O_CREAT | O_APPEND, 0600); if (lf < 0) return 1;
         if (dup2(lf, 1) != 1) return 1;
         close(lf);
@@ -598,7 +598,9 @@ EOF
 cc -O0 -o "$WORK/stdio_toy" "$WORK/stdio_toy.c" || fail "check 9: the toy did not build"
 for shape in print dup2 outside; do
     seed_keep "c9$shape"
-    rc9=$(STDIO_MODE=$shape run "c9$shape" stdio_toy --oracle-fs-usage)
+    # The outside file is named without passing through the state directory: the reader
+    # places an absolute operand by its text and does not resolve `..` in it.
+    rc9=$(STDIO_MODE=$shape OUTSIDE_LOG="$WORK/outside-c9.log" run "c9$shape" stdio_toy --oracle-fs-usage)
     echo "  $shape: exit=$rc9 verdict=$(field "c9$shape" verdict) oracle_verified=$(field "c9$shape" oracle_verified) reason=$(field "c9$shape" unknown_reason)"
     { [ "$rc9" = "0" ] || [ "$rc9" = "1" ]; } || { sed -n '1,12p' "$WORK/c9$shape.txt"; fail "check 9 $shape: expected a verdict, got exit $rc9"; }
     [ "$(field "c9$shape" oracle_verified)" = "True" ] || fail "check 9 $shape: the verdict is not oracle_verified"

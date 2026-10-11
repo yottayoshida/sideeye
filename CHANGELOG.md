@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **The CI quickstart and the MCP container pin v1.11.0** (`docs/ci-quickstart.md`, `docs/ci-quickstart/release/install-sideeye.sh`, `.github/workflows/quickstart-release.yml`, `docs/mcp-container/Dockerfile`). The release lane installs the published v1.11.0 asset, and the container fetches it, with the two Linux digests GitHub recorded for it. The pins move after the release, as on v1.10.0, because both download the asset and it exists only once the release is published; `spike/check-mcp-container.py` holds the Dockerfile's version to the quickstart's, so the two move together. With the container on v1.11.0, `sideeye_preflight` and `sideeye_evidence` reach an operator who builds it, as `docs/mcp.md` describes.
 
+### Fixed
+
+- **Under `--oracle-fs-usage`, a target that writes its standard output, or moves a file onto a standard descriptor and writes through it, is judged** (#796, ADR 0122; `src/main.zig`, `src/fsusage.zig`, `src/posix.zig`, `docs/cli.md`, `spike/fsusage/acceptance-local.sh`). Measured on GitHub's macOS 26 runner, every such run was refused `oracle_saw_nothing` on its first `write F=1` — a toy that prints `done`, a toy moving its state file onto 1 with `dup2`, and GNU `dd of=` alike — because the engine moves its capture onto 1 and 2 before the `exec`, on a thread the capture does not tie to the subject, and `-f filesys` prints no `dup2`. The engine now tells the reader where 0, 1 and 2 point, fs_usage runs without a class filter so that `dup` and `dup2` print with both numbers, the reader follows them and takes sockets as outside the state, and a `buffer overrun` on fs_usage's stderr, now kept, refuses the run. The probe's `dd` rewrite FAILs with a verified oracle (run 38116040180). Still refused: a pipe or `socketpair` the target makes itself, and a `dup2` from a number never seen opened.
+
 ## [1.11.0] - 2026-10-11
 
 ### Added
