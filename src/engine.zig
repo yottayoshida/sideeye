@@ -18,6 +18,7 @@ pub const diffSnapshots = snapshot.diffSnapshots;
 pub const diffSnapshotsExcept = snapshot.diffSnapshotsExcept;
 pub const Unaccounted = snapshot.Unaccounted;
 pub const Reconciled = snapshot.Reconciled;
+pub const relUnderRoot = snapshot.relUnderRoot;
 pub const Link = snapshot.Link;
 pub const reconcile = snapshot.reconcile;
 pub const collectLinks = snapshot.collectLinks;

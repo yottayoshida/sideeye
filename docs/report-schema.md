@@ -344,7 +344,7 @@ names, kinds, bytes and permission bits under `--state` (a directory with its ow
 bits, or timestamps (the permission bits since #678: the two records the step was written for,
 an executable bit and a `0600` key, met this refusal before then); `kill_did_not_land` takes `kill_not_landed` where no landing was
 recorded at the asked position and `not_repeating` where the world reached it through other
-operations; `multiple_threads_detected` raised from the run's own record of its threads takes
+operations — since #815 in every exploration, not only one with an admitted child: an operation of another class, or a path the recording spells at another position (ADR 0119), with `message` naming both; `multiple_threads_detected` raised from the run's own record of its threads takes
 `threads_limit`, which names the README's threads limit and the way past the records found — a tool's own switch for running its file calls on one
 thread (`UV_THREADPOOL_SIZE=1` for Node, `GOMAXPROCS=1` for Go), declared in `apparatus`, with
 `docs/apparatus.md` listing the switches measured and the targets each did not move (#686, ADR

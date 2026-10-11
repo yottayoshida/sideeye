@@ -93,6 +93,12 @@ kill alone does not reach a process that left the group, and the cgroup kill alo
 writer before its group kill. A crash point that cannot step aside says so in the trace, and the
 world is refused. Where there is no cgroup, the kill is the group's, as this decision says.
 
+**Amended 2026-10-11 (#815, ADR 0119).** The check below — the operations before a world's crash
+point compared by class, for a run with an admitted child — is now made in every exploration and
+every replay, and compares paths as well as classes: a world that names a path the recording spells,
+or reaches with another name a position where the recording named a path the state started with,
+is refused unless the two are the same.
+
 **Amended 2026-09-14 (#569).** The kill is followed, at both sites, by `raise(SIGKILL)` and a wait
 of nine 100 ms sleeps before the `_exit` that was there already. `kill(0, …)` is directed at the
 process group, and on macOS a process-directed signal is delivered to the first thread in the list

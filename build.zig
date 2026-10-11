@@ -546,6 +546,7 @@ pub fn build(b: *std.Build) void {
         // Named: its tests would otherwise run only while a test elsewhere happens to reach it.
         "src/case.zig",
         "src/workdir.zig",
+        "src/prefix.zig",
         // The evidence bundle (#607, ADR 0071). Named for the reason the shim's Linux root
         // below was: main.zig imports it, and collection through an import is what stopped
         // silently once before. Its tests reach no declaration of main.zig's.
