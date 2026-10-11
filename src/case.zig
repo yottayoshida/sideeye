@@ -1,18 +1,3 @@
-//! The saved case: the counterexample a FAIL writes and a replay reads back.
-//!
-//! `src/case.zig` owns the case file's shape on both sides. `writeCase` produces it from the
-//! resolved define, the crash point and the landing context — with `prefixHash`, the
-//! fingerprint of the trace prefix that decides whether a later replay still addresses the
-//! same operation, and `jsonCommand`, the JSON form of a define command that mirrors
-//! `config.Command.jsonParse` — and `ReplayCase` is what `replay` parses it back into,
-//! strictly: an unknown field is a case from a future schema, not something to skip. The
-//! `case_version` rules (ADR 0009, ADR 0019 and the versions since) are this file's to keep;
-//! `main.zig` decides when a case is written and refuses with what `read` returns. Nothing
-//! here prints a report line or exits.
-//!
-//! Third seam of #572 (ADR 0062), second half. Bodies moved from `main.zig` byte for byte on
-//! 2026-09-13 with `pub` where `main.zig` reads them; `writeCase` spells `cli.Args` and
-//! `cli.version` where `main.zig` had them bare — the qualifier class seam 3a declared.
 const std = @import("std");
 const contract = @import("contract");
 const config = @import("config.zig");
@@ -21,22 +6,11 @@ const posix = @import("posix.zig");
 const report = @import("report.zig");
 const cli = @import("cli.zig");
 
-/// A saved counterexample (ADR 0009): the resolved define it was found against, the
-/// crash point, and the landing context that decides whether a later replay still
-/// addresses the same operation. Parsed strictly — an unknown field is a case from a
-/// future schema, not something to skip.
 pub const ReplayCase = struct {
     schema: []const u8,
     case_version: u32,
     sideeye_version: []const u8,
     contract_version: u32,
-    /// Present exactly when the case is version 6 (#691, ADR 0100): the observation mode the
-    /// crash point was counted under, `syscalls` or `supervised`. Beside `contract_version`
-    /// and outside `define` because it is the same kind of fact — how the numbering `k` was
-    /// produced — and because a `sideeye.toml` has no key for it (frozen surface 1). Absent,
-    /// the file does not say: a case written since version 6 exists was counted under the
-    /// default, `wrappers`, and one written before may have been counted under any mode — the
-    /// limit #691 was about — so its replay takes the flag, or the default, as it always did.
     observe: ?[]const u8 = null,
     define: struct {
         state: []const u8,
@@ -44,19 +18,8 @@ pub const ReplayCase = struct {
         operation: config.Command,
         check: ?config.Command = null,
         marker: ?[]const u8 = null,
-        // Absent in a case_version 1 file; absent means "exit 0 was the contract",
-        // which is exactly what every v1 case was recorded under (ADR 0014).
         expected_status: ?u8 = null,
-        /// Present exactly when the case is version 4, the way the argv form is present
-        /// exactly in a version 3 or later file: the version moves because the field
-        /// arrived, so a define that declared no cwd still saves as the version its other
-        /// fields ask for. Always the resolved spelling.
         cwd: ?[]const u8 = null,
-        /// Present exactly when the case is version 5 (ADR 0043) or 6 (ADR 0100): non-empty in
-        /// version 5, which exists for it, and possibly empty in version 6, which exists for the
-        /// observation mode. Both spell `cwd` too, as null when none was declared; those keys'
-        /// presence is checked on a second, untyped parse, since this one cannot tell an absent
-        /// optional from a null.
         scratch: ?[]const []const u8 = null,
     },
     k: u32,
@@ -69,10 +32,6 @@ pub const ReplayCase = struct {
     violation: []const u8,
 };
 
-/// A define command as a bare JSON value, mirroring `config.Command.jsonParse`:
-/// the string form is one JSON string, the argv form one array of strings. The two
-/// functions are the write and read halves of the same shape — a case written here
-/// parses back through there.
 fn jsonCommand(w: *std.ArrayList(u8), arena: std.mem.Allocator, cmd: config.Command) !void {
     switch (cmd) {
         .str => |s| try report.jsonString(w, arena, s),
@@ -87,13 +46,6 @@ fn jsonCommand(w: *std.ArrayList(u8), arena: std.mem.Allocator, cmd: config.Comm
     }
 }
 
-/// FNV-1a over the class names of the subject's counted operations 1..k, hex-encoded.
-/// Classes only, deliberately: paths may legitimately differ between runs
-/// (pid-embedded temp names), and the replay treats a path difference as a warning,
-/// never as identity (ADR 0009).
-/// Returns false when any of seq 1..k is missing from the trace: a numbering gap
-/// means the recording itself is not a sequence this hash can vouch for, and hashing
-/// only what happens to be present would let two differently-broken traces agree.
 pub fn prefixHash(trace: engine.TraceInfo, k: u32, out: *[16]u8) bool {
     var h: u64 = 0xcbf29ce484222325;
     var seq: u32 = 1;
@@ -122,8 +74,6 @@ pub fn prefixHash(trace: engine.TraceInfo, k: u32, out: *[16]u8) bool {
     return true;
 }
 
-/// Write the counterexample to `<work>/cases/NNNNNN.json` and return its path. The id
-/// is claimed with O_EXCL, so two runs over one work directory cannot silently share a
 /// case file. Returns null when nothing could be written — the FAIL report is the
 /// product and must not die for the sake of its attachment.
 pub fn writeCase(
@@ -197,8 +147,6 @@ pub fn writeCase(
         w.appendSlice(arena, ",\n    \"cwd\": ") catch return null;
         report.jsonString(w, arena, c) catch return null;
     } else if (case_version >= 5) {
-        // From version 5 `cwd` is explicit beside `scratch` (ADR 0043): `null` says "none
-        // declared" in the file itself, so a reader can tell it from a key edited out.
         w.appendSlice(arena, ",\n    \"cwd\": null") catch return null;
     }
     if (case_version >= 5) {
@@ -209,9 +157,6 @@ pub fn writeCase(
         }
         w.append(arena, ']') catch return null;
     }
-    // Written even at the default (case_version 2): a case is a frozen contract, and
-    // "0 because nothing was declared" and "0 by declaration" must replay identically
-    // years later without consulting anything outside the file.
     w.appendSlice(arena, ",\n    \"expected_status\": ") catch return null;
     w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{args.expect_status orelse 0}) catch return null) catch return null;
     w.appendSlice(arena, "\n  },\n  \"k\": ") catch return null;
@@ -273,18 +218,11 @@ pub fn read(arena: std.mem.Allocator, text: []const u8) Read {
         return .{ .invalid = "the file does not declare itself a sideeye case" };
     if (c.case_version < 1 or c.case_version > 6)
         return .{ .invalid = "this binary understands case schema versions 1, 2, 3, 4, 5 and 6 only" };
-    // The same travel-together law, extended to the command shape (ADR 0019): the
-    // argv form arrived with version 3, so an older file carrying it is not an
-    // older file — it is malformed, and reading it under a guessed contract would
-    // replay a define no version-2-era binary ever produced.
     const carries_argv = (c.define.operation == .argv) or
         (c.define.setup != null and c.define.setup.? == .argv) or
         (c.define.check != null and c.define.check.? == .argv);
     if (c.case_version < 3 and carries_argv)
         return .{ .invalid = "a case_version 1 or 2 file cannot carry an argv-form command; the array form arrived with version 3" };
-    // The version and the declaration travel together (ADR 0014): a v1 file
-    // carrying a declaration is not a v1 file, and a v2 file without one has
-    // lost the very fact the version exists to freeze. Both are refused as
     // malformed rather than read under a guessed contract (R1 finding). One
     // deliberate softness: a JSON `null` is indistinguishable from an absent
     // field after parsing, so a v1 file spelling `"expected_status": null`
@@ -294,12 +232,6 @@ pub fn read(arena: std.mem.Allocator, text: []const u8) Read {
         return .{ .invalid = "a case_version 1 file cannot carry an expected_status declaration; it arrived with version 2" };
     if (c.case_version >= 2 and c.define.expected_status == null)
         return .{ .invalid = "a case_version 2, 3, 4, 5 or 6 file must carry define.expected_status; the case freezes the declaration" };
-    // The same law again, for the directory the define declared it runs in. A cwd is
-    // part of what the counterexample was found against — replaying the same commands
-    // somewhere else is replaying a different define — so the version moves with it.
-    // Both directions, for the reason the two above give: a v3 file carrying a cwd is
-    // malformed rather than old, and a v4 file without one has lost the fact the
-    // version exists to freeze.
     if (c.case_version < 4 and c.define.cwd != null)
         return .{ .invalid = "a case_version 1, 2 or 3 file cannot carry a cwd declaration; it arrived with version 4" };
     if (c.case_version == 4 and c.define.cwd == null)
@@ -311,18 +243,8 @@ pub fn read(arena: std.mem.Allocator, text: []const u8) Read {
     // none was declared and `scratch` as a non-empty array, and the reader asks for
     // the KEY, which the typed parse above cannot see (an absent optional and a null
     // land in the same place), through a second, untyped parse of the same bytes. A
-    // hand-edited v5 file that lost `cwd` refuses rather than replaying a define that
-    // ran somewhere else. The entries themselves are validated where they are
-    // normalised, in the apply block below, with the same refusals the flag gives.
     if (c.case_version < 5 and c.define.scratch != null)
         return .{ .invalid = "a case_version 1, 2, 3 or 4 file cannot carry a scratch declaration; it arrived with version 5" };
-    // Version 6 (#691, ADR 0100) carries the observation mode, and only a mode other than the
-    // default. It is a third independent optional fact, so it keeps version 5's law — every
-    // key the ladder's top rungs introduced is spelled — with one change: `scratch` may be
-    // the empty array there, because version 6 exists for the mode, not for scratch. Both
-    // directions again: an older file carrying `observe` is malformed, and a version-6 file
-    // without a mode it could not have been written for — absent, or the default — has
-    // lost the fact the version exists to freeze.
     if (c.case_version < 6 and c.observe != null)
         return .{ .invalid = "a case_version 1, 2, 3, 4 or 5 file cannot carry an observation mode; it arrived with version 6" };
     if (c.case_version == 6) {

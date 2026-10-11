@@ -1,12 +1,3 @@
-//! What the operation's executable file looked like when the run started.
-//!
-//! This module exists because a refusal was guessing. `no_shim_marker` proves only that
-//! the trace carried no `shim_ready` record, and the message that accompanied it listed
-//! candidate causes — statically linked, hardened, not injected, and on macOS an
-//! Apple-shipped platform binary — none of which the engine had looked at. README's
-//! first sentence about the limits is "Sideeye refuses to guess"; a list of guesses in
-//! the one message a refused user actually reads contradicts it.
-//!
 //! **This module observes. It does not conclude.** Two boundaries hold that line:
 //!
 //!   - *Not causation.* A library-validation bit is a fact about a file, not a proof
@@ -25,39 +16,17 @@
 //!     both identical is invisible, so a match is never reported as "this is what ran",
 //!     and a difference is never reported with a time: it says the two observations
 //!     disagree, not that the swap happened after the run.
-//!
-//! Integers are read one at a time with an explicit endianness, never by casting a
-//! struct over the bytes. That is `contract.zig`'s rule and it earns its keep twice
-//! here: Mach-O headers are host-endian while every code-signing blob is big-endian, so
-//! a single file needs both, and the two are three fields apart.
 
 const std = @import("std");
 const builtin = @import("builtin");
 const posix = @import("posix.zig");
 
-// ---------------------------------------------------------------------------
-// Caps. Each one bounds a count the file itself declares, so none of them can be
-// grown by the file being measured. They are deliberately far above anything a real
-// executable carries — the point is to bound the loop, not to judge the binary — and
-// a file that exceeds one is `undecidable`, never a partial answer.
-
-/// A universal binary carries one entry per architecture. Apple has shipped at most
-/// four in a shipping artifact; 64 leaves room without letting the count drive a loop.
 const max_fat_arch = 64;
-/// `ncmds` from the Mach-O header. Real binaries are in the tens.
 const max_load_commands = 4096;
-/// `sizeofcmds`, the byte span the load commands occupy.
 const max_sizeofcmds = 1 << 20;
-/// `count` from the signature SuperBlob. A signature carries a handful of blobs.
 const max_superblob_entries = 256;
-/// `e_phnum` from an ELF header.
 const max_program_headers = 4096;
 
-// Mach-O and code-signing constants that std.macho does not name. The values are
-// Apple's (`cs_blobs.h`); the two flags below were also read off this machine with
-// `codesign -dv --verbose=2` on 2026-08-29: the Command Line Tools git reports
-// `flags=0x2000(library-validation)`, a locally built binary `0x20002(adhoc,
-// linker-signed)`, and `/usr/bin/true` `0x0(none)` with `Platform identifier=16`.
 pub const cs_require_lv: u32 = 0x2000;
 pub const cs_runtime: u32 = 0x10000;
 const cs_adhoc: u32 = std.macho.CS_ADHOC;
@@ -66,10 +35,6 @@ const cs_linker_signed: u32 = std.macho.CS_LINKER_SIGNED;
 const cpu_type_x86_64: i32 = 0x01000007;
 const cpu_type_arm64: i32 = 0x0100000C;
 
-// ---------------------------------------------------------------------------
-
-/// Fields read out of the code directory the OS would most plausibly use. Every
-/// accessor below is named after the bit, not after what the bit is thought to prevent.
 pub const Signing = struct {
     flags: u32,
     platform: u8,
@@ -87,7 +52,6 @@ pub const Signing = struct {
     }
 };
 
-/// Why nothing could be read. Each value is a thing that happened, not a diagnosis.
 pub const Unreadable = enum {
     no_such_file,
     permission_denied,
@@ -95,49 +59,25 @@ pub const Unreadable = enum {
     read_failed,
 };
 
-/// Why the file was read but no single answer follows from it. These are the cases
-/// where guessing would be easy and wrong, so they are their own outcome.
 pub const Undecidable = enum {
-    /// More than one slice matches this machine's CPU and none matches its subtype, or
-    /// several do. Which one the kernel would pick is not decided here.
     slice_not_unique,
-    /// Several code directories were present and they disagree about the fields this
-    /// module reads. XNU picks by hash-type preference; that ordering is not
-    /// reimplemented here.
     code_directories_disagree,
-    /// A declared count or span exceeded a cap above, or an offset ran past the file.
     structure_out_of_range,
 };
 
 pub const Elf = struct {
-    /// A `PT_INTERP` program header is present, i.e. the file names an interpreter and
-    /// is therefore dynamically linked.
     has_interp: bool,
     class64: bool,
 };
 
 pub const MachO = struct {
-    /// `MH_DYLDLINK` in the Mach-O header.
     dyldlink: bool,
-    /// Absent when the slice carries no `LC_CODE_SIGNATURE`.
     signing: ?Signing,
 };
 
 pub const Facts = union(enum) {
-    /// `argv[0]` carried no `/` and `searchPath` named no file for it. Which of the two
-    /// happened is the payload, because the detail line says different things: nothing was
-    /// searched, or the search found nothing.
-    ///
-    /// This arm used to cover every bare name: `execvp`'s search was not reimplemented, so
-    /// that the tree would hold no second copy of the rule to drift and name the wrong file
-    /// with confidence. #217 added that copy anyway, in `supervise_linux.zig`, for the file
-    /// `__filter-exec` launches. ADR 0090 made the two one function, `searchPath`, rather
-    /// than a third.
     not_resolved: NotResolved,
     unreadable: Unreadable,
-    /// Read, and neither ELF nor Mach-O. A `#!` script lands here; so does anything
-    /// else. What the interpreter of a script would have been is a separate question
-    /// and a separate issue.
     unrecognised,
     undecidable: Undecidable,
     elf: Elf,
@@ -145,11 +85,7 @@ pub const Facts = union(enum) {
 };
 
 pub const NotResolved = enum {
-    /// `PATH` is not set, so there was nothing to search. `execvp` falls back to a default
-    /// list then, and glibc's and musl's differ; the engine does not know which libc will
-    /// exec the operation, so it does not pick one (ADR 0090).
     path_unset,
-    /// `PATH` was searched and no component held an executable regular file of that name.
     not_found,
 };
 
@@ -157,8 +93,6 @@ pub const Observation = struct {
     /// The path measured, or null when `facts` is `not_resolved`. Target-derived, so
     /// every caller that prints it must send it through `textShown` first.
     path: ?[]const u8,
-    /// The operation named a bare word and `searchPath` found `path` for it. Said beside the
-    /// path in the detail line, so a reader knows the file is the one this search chose, not
     /// one the define named. Not part of `sameAnswer`: a second reading takes the path as
     /// already found.
     via_path: bool = false,
@@ -168,26 +102,12 @@ pub const Observation = struct {
     facts: Facts,
 };
 
-/// Would a second reading have said anything different from the first?
-///
-/// Deliberately not "is it the same file". Comparing the answers rather than an inode
-/// keeps the comparison at the altitude of the claim: the refusal reports fields, so the
-/// question that matters is whether those fields moved.
 pub fn sameAnswer(a: Observation, b: Observation) bool {
     if (a.size != b.size) return false;
     return std.meta.eql(a.facts, b.facts);
 }
 
 /// Measure the file `argv0` names. Call this *before* the spawn.
-///
-/// `cwd` is the directory the child will `chdir` into (`[define] cwd`, #395); a
-/// relative `argv[0]` is resolved against it because that is what the child will do.
-///
-/// `path_env` is the `PATH` the operation inherits — the engine's own: the child is given
-/// only the engine's variables on top of it, and an `apparatus` `env:` entry is checked, not
-/// applied. A bare `argv[0]` is looked up along it with `searchPath` and its relative
-/// components against `cwd`, for the same reason. Null means `PATH` is unset, and then
-/// nothing is searched (`NotResolved.path_unset`).
 pub fn observe(arena: std.mem.Allocator, argv0: []const u8, cwd: ?[]const u8, path_env: ?[]const u8) Observation {
     if (std.mem.indexOfScalar(u8, argv0, '/') != null) {
         const path = resolveAgainst(arena, argv0, cwd) orelse
@@ -205,34 +125,17 @@ pub fn observe(arena: std.mem.Allocator, argv0: []const u8, cwd: ?[]const u8, pa
     return obs;
 }
 
-/// The longest candidate `searchPath` builds; a longer one is skipped, as `execvp` skips one
-/// past its own limit.
 pub const search_path_max = 4096;
 
-/// The one `PATH` search that decides which operation image the engine reads (`observe`) and
-/// which one `__filter-exec` launches (`supervise_linux.zig`), ADR 0090. Each component of `path_env` in
-/// order, an empty one meaning `.`; a relative component is taken against `cwd` when one is
-/// given, and against the process's own directory otherwise — `__filter-exec` passes none,
-/// because it runs after the child's `chdir`. The first candidate that is an executable
-/// regular file is the answer (`posix.isExecutableRegular`), written into `buf`.
-///
 /// What this does not copy from `execvp`: trying `execve` on each candidate, so a file that
 /// passes the test and then fails to exec is still the answer here, where `execvp` would move
 /// on to the next one only for `EACCES`; and the default list for an unset `PATH`, which the
 /// caller chooses. Under `--oracle` the file that runs is found by strace's own search, which
-/// agrees with this one as far as both follow the rule above. `refuse.zig`'s
-/// `findStraceForHint` is a separate search, for a hint that names strace, and is not this one.
 pub fn searchPath(buf: []u8, name: []const u8, path_env: []const u8, cwd: ?[]const u8) ?[:0]const u8 {
     var s = PathSearch.init(buf, name, path_env, cwd);
     return s.next();
 }
 
-/// `searchPath`'s walk, one candidate at a time: every executable regular file of that name
-/// along `PATH`, in order. `searchPath` is its first answer. `startable` reads further —
-/// execvp moves past a candidate whose `execve` fails ENOENT or EACCES, which a missing or
-/// non-executable `#!` interpreter makes it fail with — and this keeps that second reader on
-/// the same rule rather than a copy of it. Each answer is written into `buf`, so it is valid
-/// until the next call.
 pub const PathSearch = struct {
     buf: []u8,
     name: []const u8,
@@ -257,8 +160,6 @@ pub const PathSearch = struct {
     }
 };
 
-/// Read the file at `path`, already resolved. The half of `observe` after the name has
-/// become a path.
 fn observePath(arena: std.mem.Allocator, path: []const u8) Observation {
     const path_z = arena.dupeZ(u8, path) catch
         return .{ .path = path, .size = null, .facts = .{ .unreadable = .read_failed } };
@@ -266,7 +167,6 @@ fn observePath(arena: std.mem.Allocator, path: []const u8) Observation {
     // O_NONBLOCK because the path comes from the target's own define: a FIFO there
     // would otherwise block this open until a writer appeared, i.e. forever, and the
     // engine would hang before the OS ever got to reject the exec. `posix.zig`'s flag
-    // comment carries the incident (#5) this inherits.
     const fd = posix.open(path_z.ptr, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
     if (fd < 0) return .{
         .path = path,
@@ -285,16 +185,12 @@ fn observePath(arena: std.mem.Allocator, path: []const u8) Observation {
     return .{ .path = path, .size = size, .facts = classify(.{ .fd = fd, .size = size }) };
 }
 
-/// Read the same path again, for the comparison `sameAnswer` makes. Separate from
-/// `observe` only in that it takes the path already resolved: re-running the resolution
-/// would fold two different changes — the file moved, the cwd moved — into one answer.
 pub fn reobserve(arena: std.mem.Allocator, path: []const u8) Observation {
     const path_z = arena.dupeZ(u8, path) catch
         return .{ .path = path, .size = null, .facts = .{ .unreadable = .read_failed } };
     // O_NONBLOCK because the path comes from the target's own define: a FIFO there
     // would otherwise block this open until a writer appeared, i.e. forever, and the
     // engine would hang before the OS ever got to reject the exec. `posix.zig`'s flag
-    // comment carries the incident (#5) this inherits.
     const fd = posix.open(path_z.ptr, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
     if (fd < 0) return .{
         .path = path,
@@ -317,59 +213,29 @@ fn resolveAgainst(arena: std.mem.Allocator, p: []const u8, cwd: ?[]const u8) ?[]
     return std.fs.path.join(arena, &.{ base, p }) catch null;
 }
 
-/// What `startable` found. `fault` is the answer; the three paths say where.
 pub const Start = struct {
     fault: Fault,
-    /// The file argv[0] resolved to. Null when a bare name found nothing on `PATH`, or when
     /// nothing was judged. Define-derived, so a caller that prints it sends it through
     /// `textShown` first.
     file: ?[]const u8 = null,
-    /// Set when the fault is in the file's `#!` line rather than in the file: the
-    /// interpreter that line names.
     interpreter: ?[]const u8 = null,
-    /// The bare name a `PATH` search found nothing for — argv[0] itself, or the one name a
-    /// `#!/usr/bin/env NAME` line hands to `env`.
     name: ?[]const u8 = null,
 };
 
 pub const Fault = union(enum) {
     ok,
-    /// Nothing was judged: an empty argv[0] (the site's own emptiness refusal speaks), or a
-    /// bare name with `PATH` unset — execvp's default list differs between libcs and ADR 0090
-    /// declines to pick one.
     not_judged,
-    /// `access(F_OK)` answered ENOENT or ENOTDIR: no file at that path (a dangling link
-    /// included — the exec follows it to nothing).
     missing,
-    /// Present, and not a regular file: a directory, a device, a socket.
     not_regular,
-    /// A regular file this process may not execute.
     no_exec_bit,
-    /// The path could not be examined for a reason other than absence — a directory above it
     /// this user may not search (EACCES), a link loop. The errno, for the message; no
     /// instruction is built from it, because "make it executable" would be the wrong one.
     unreachable_path: c_int,
-    /// A bare name, and no component of `PATH` holds an executable regular file of that name.
     not_on_path,
 };
 
-/// The bytes of a `#!` line this reads. Linux's own limit (`BINPRM_BUF_SIZE`) is the same
-/// number since 5.1; a first line longer than this is not judged.
 const shebang_max = 256;
 
-/// Can a define command be started at all? Asked before it runs (#701, ADR 0092), so that a
-/// file that is not there or may not be executed is refused as what it is, instead of being
-/// spawned and read back as an exit status — 127 from the fork stub's failed exec, which
-/// the gates downstream took for a checker that rejected the state, or an operation that
-/// exited non-zero.
-///
-/// The same resolution the spawn uses: a name with a `/` against `cwd` (`resolveAgainst`,
-/// as `observe` does), a bare name along `path_env` with `PathSearch` (`searchPath`'s walk,
-/// ADR 0090), read past a first candidate whose `#!` fails the way execvp reads past it —
-/// see the body. `cwd` is the directory the child runs in.
-///
-/// A file that passes is read once more for a `#!` line, one step deep: the interpreter it
-/// names is put to the same test, and so is the one name a `#!/usr/bin/env NAME` line hands
 /// to `env`. Not deeper, and not wider: an `env` line with a flag or a second word is not
 /// judged (Linux hands everything after the interpreter to it as ONE argument and macOS
 /// splits it, so the name `env` would look for depends on the kernel), and a relative
@@ -386,18 +252,12 @@ pub fn startable(arena: std.mem.Allocator, argv0: []const u8, cwd: ?[]const u8, 
     }
     const env = path_env orelse return .{ .fault = .not_judged };
     const buf = arena.alloc(u8, search_path_max) catch return .{ .fault = .not_judged };
-    // A bare name is refused only when execvp would fail it too (review of #701). execvp
-    // tries each candidate in turn and moves past one whose `execve` fails ENOENT or EACCES —
-    // what a missing, non-regular or non-executable interpreter makes it fail with — so a
-    // broken `#!` in the first directory does not stop a name a later one supplies. A failing
-    // `env NAME` line is the exception: `env` itself executes, so execvp stops at that
     // candidate and `env` exits 127. `--observe supervised` and `--oracle` take the first
     // candidate and do not move on; there a broken first `#!` passes this check and fails at
     // the spawn as it always did — a refusal missed, never one added.
     var search = PathSearch.init(buf, argv0, env, cwd);
     var first: ?Start = null;
     while (search.next()) |found| {
-        // `PathSearch` answers only with an executable regular file, so what it found needs
         // no second `fileFault`. Copied: the next answer overwrites `buf`.
         const f = arena.dupe(u8, found) catch return .{ .fault = .not_judged };
         const s = interpreterOf(arena, f, cwd, path_env);
@@ -418,14 +278,9 @@ fn fileFault(arena: std.mem.Allocator, path: []const u8) Fault {
     return .ok;
 }
 
-/// The `#!` half of `startable`. Anything this cannot read — an execute-only file, a first
-/// line longer than `shebang_max` — is passed, not refused: the exec will say.
-/// What follows `#!` on the first line of `file`, when the first `max` bytes hold the whole
-/// line — or the whole file, when it is shorter than that and has no line end. Null for a
 /// file that cannot be opened, holds no `#!`, or whose line runs past `max`. Opened
 /// `O_NONBLOCK` for the reason `observePath` gives: the path is the define's, and a FIFO
 /// there must not hang the engine before anything has run. The one reader of a `#!` line
-/// here: `startable` asks it with Linux's limit and `frameworkPython` with macOS's (#703).
 fn shebangLine(arena: std.mem.Allocator, file: []const u8, comptime max: usize) ?[]const u8 {
     const z = arena.dupeZ(u8, file) catch return null;
     const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
@@ -444,9 +299,6 @@ fn shebangLine(arena: std.mem.Allocator, file: []const u8, comptime max: usize) 
 fn interpreterOf(arena: std.mem.Allocator, file: []const u8, cwd: ?[]const u8, path_env: ?[]const u8) Start {
     const ok: Start = .{ .fault = .ok, .file = file };
     const line = shebangLine(arena, file, shebang_max) orelse return ok;
-    // Spaces and tabs separate the words, and nothing else does: a CR is part of the
-    // interpreter's name to the kernel, so a script saved with CRLF line endings names
-    // `/bin/sh\r`, which does not exist — and saying so is the diagnosis.
     var words = std.mem.tokenizeAny(u8, line, " \t");
     const interp_word = words.next() orelse return ok;
     if (interp_word[0] != '/') return ok;
@@ -463,52 +315,20 @@ fn interpreterOf(arena: std.mem.Allocator, file: []const u8, cwd: ?[]const u8, p
     return .{ .fault = .not_on_path, .file = file, .interpreter = interp, .name = arena.dupe(u8, name_word) catch return ok };
 }
 
-// ---------------------------------------------------------------------------
-// A framework Python's launcher (#703).
-//
-// `bin/python3.x` in a framework build of CPython — Homebrew's among them — is not the
-// interpreter. It is built from `Mac/Tools/pythonw.c`: it finds the framework library that
-// holds `Py_Initialize`, appends `Resources/Python.app/Contents/MacOS/Python` to that
-// library's directory, sets `__PYVENV_LAUNCHER__` to the path it was started as (its
-// directory realpath'd, its own name kept), and replaces itself with that image through
-// `posix_spawn` with `POSIX_SPAWN_SETEXEC`. The shim's `posix_spawn` records a spawn only when
-// the call returns, which that one never does, so the trace holds no exec record and the new
-// image announces itself again: a broken self-exec chain. Measured on this repository's
-// macOS host on 2026-10-06: Homebrew's python@3.12 and @3.14 launchers import `posix_spawn`
-// and `posix_spawnattr_setflags` and no exec function, and the interpreter they name, given
-// as the operation directly, is observed and judged.
-//
 // What is read here is the layout that launcher relies on, read at the refusal. It observes
 // and does not conclude, like the rest of this module: the operation's image sits where a
 // framework's launcher sits and the framework's interpreter is there — never that a hand-off
 // happened, which nothing here saw.
 
-/// Where a framework Python's launcher would have handed the run, and what it would have
 /// passed. Every path is the target's and goes through `textShown` before it is printed.
 pub const FrameworkPython = struct {
-    /// `<V>/Resources/Python.app/Contents/MacOS/<name>`, where `<V>` holds the launcher's
-    /// `bin` directory and the framework's library, and `<name>` is the framework's own name
-    /// or `Python` (`frameworkOf` says which distribution takes which).
     interpreter: []const u8,
-    /// The launcher as it was started: the operation's first word, or the interpreter the
-    /// `#!` line of the operation's script names.
     launcher: []const u8,
-    /// The script the operation names, when the launcher is its `#!` interpreter (a console
-    /// script such as `black` or `pytest`).
     script: ?[]const u8,
-    /// What follows the interpreter on that `#!` line (`-sE`), which the launcher passes on
-    /// ahead of the script; empty when there is none or no script.
     script_options: []const u8,
-    /// `__PYVENV_LAUNCHER__` as the launcher would set it, when a `pyvenv.cfg` stands where
-    /// CPython looks for one beside that value — a virtual environment, which the
-    /// interpreter started directly would otherwise not know it is in. Null outside one.
     venv_launcher: ?[]const u8,
 };
 
-/// The framework Python behind the operation's image `obs`, or null. A Mach-O is read as the
-/// launcher itself; a file that is not an image is read for a `#!` line, whose interpreter is
-/// then the launcher if it is a Mach-O. Anything else, and any layout that does not hold
-/// both the framework library and the interpreter, is null.
 pub fn frameworkPython(arena: std.mem.Allocator, obs: Observation) ?FrameworkPython {
     const path = obs.path orelse return null;
     switch (obs.facts) {
@@ -529,13 +349,6 @@ fn frameworkOf(arena: std.mem.Allocator, launcher: []const u8, script: ?Shebang)
     const bin = std.fs.path.dirname(real) orelse return null;
     if (!std.mem.eql(u8, std.fs.path.basename(bin), "bin")) return null;
     const v = std.fs.path.dirname(bin) orelse return null;
-    // The framework library is named after the framework: `Python` in Homebrew's and
-    // python.org's `Python.framework`, `Python3` in the Command Line Tools' `Python3.framework`,
-    // `PythonT` in python.org's free-threaded `PythonT.framework` (review of #703; read off this
-    // host's Command Line Tools and python.org's 3.13.7 installer). The interpreter is named
-    // after the framework too, except in the Command Line Tools, whose launcher names
-    // `MacOS/Python` like the upstream one — so the framework's own name is tried first, then
-    // `Python`, which is what each launcher's own strings say it starts.
     const name = frameworkName(v);
     const lib = std.fs.path.joinZ(arena, &.{ v, name }) catch return null;
     if (posix.access(lib.ptr, posix.F_OK) != 0) return null;
@@ -552,8 +365,6 @@ fn frameworkOf(arena: std.mem.Allocator, launcher: []const u8, script: ?Shebang)
     };
 }
 
-/// The name of the framework `v` is a version of: `Python3` for `…/Python3.framework/Versions/3.9`,
-/// and `Python` when `v` is not inside a `.framework` bundle at all.
 fn frameworkName(v: []const u8) []const u8 {
     const versions = std.fs.path.dirname(v) orelse return "Python";
     const bundle = std.fs.path.basename(std.fs.path.dirname(versions) orelse return "Python");
@@ -562,9 +373,6 @@ fn frameworkName(v: []const u8) []const u8 {
     return if (name.len == 0) "Python" else name;
 }
 
-/// `__PYVENV_LAUNCHER__` as `pythonw.c` computes it — the launcher's directory realpath'd and
-/// its own name kept, so a venv's `bin/python` symlink stays the venv's — when a `pyvenv.cfg`
-/// stands in that directory or the one above it, the two places CPython's getpath looks.
 fn venvLauncher(arena: std.mem.Allocator, launcher: []const u8) ?[]const u8 {
     const dir = std.fs.path.dirname(launcher) orelse return null;
     var buf: [search_path_max]u8 = undefined;
@@ -584,15 +392,8 @@ fn venvLauncher(arena: std.mem.Allocator, launcher: []const u8) ?[]const u8 {
 /// the script (`-sE`), which a rewritten operation has to carry too (review of #703).
 const Shebang = struct { interpreter: []const u8, options: []const u8, path: []const u8 };
 
-/// The length of a `#!` line macOS's kernel honours (xnu's `IMG_SHSIZE`), where `startable`
-/// reads Linux's `shebang_max`: the launcher this is for runs only on macOS.
 const shebang_max_macos = 512;
 
-/// Read through `shebangLine`, so its words are split as `startable` splits them — a CR is
-/// part of the interpreter's name, as it is to the kernel. Null for no `#!`, a relative
-/// interpreter, or a line past `shebang_max_macos`. `#!/usr/bin/env python3` names
-/// `/usr/bin/env`, an Apple-shipped binary the shim never reaches, so such a script is
-/// refused before the chain this is for.
 fn shebangOf(arena: std.mem.Allocator, path: []const u8) ?Shebang {
     const line = shebangLine(arena, path, shebang_max_macos) orelse return null;
     var words = std.mem.tokenizeAny(u8, line, " \t");
@@ -601,23 +402,12 @@ fn shebangOf(arena: std.mem.Allocator, path: []const u8) ?Shebang {
     return .{ .interpreter = word, .options = std.mem.trim(u8, words.rest(), " \t\r"), .path = path };
 }
 
-// ---------------------------------------------------------------------------
-// Parsing. Every read goes through `at`, which is the only place a file offset turns
-// into bytes, so "did this offset run past the end" is answered once.
-
 const Reader = struct {
     fd: c_int,
     size: u64,
 
-    /// Read exactly `buf.len` bytes at `off`, or fail. A short read is a failure, not a
-    /// shorter answer: every field below is fixed-width and a partial one is noise.
-    /// Positional, so two field reads never depend on each other's cursor.
     fn at(r: Reader, off: u64, buf: []u8) bool {
         if (buf.len == 0) return true;
-        // Overflow is checked; running past the end is not, on purpose. A short read
-        // already fails below, and a `size` bound taken from one `lseek` cannot be
-        // reddened by any test — a regular file never returns `buf.len` bytes from past
-        // its end — so it would be a guard nothing can falsify.
         _ = std.math.add(u64, off, buf.len) catch return false;
         if (off > std.math.maxInt(i64)) return false;
         const n = posix.pread(r.fd, buf.ptr, buf.len, @intCast(off));
@@ -665,8 +455,6 @@ fn classify(r: Reader) Facts {
     return .unrecognised;
 }
 
-// --- ELF -------------------------------------------------------------------
-
 fn classifyElf(r: Reader) Facts {
     const class = r.u8At(4) orelse return .{ .undecidable = .structure_out_of_range };
     const data = r.u8At(5) orelse return .{ .undecidable = .structure_out_of_range };
@@ -681,9 +469,6 @@ fn classifyElf(r: Reader) Facts {
         else => return .unrecognised,
     };
 
-    // Offsets from the ELF spec. They differ between the two classes, which is exactly
-    // the sort of thing a struct cast would get right on one and silently wrong on the
-    // other.
     const phoff: u64 = if (class64)
         (r.u64At(0x20, endian) orelse return .{ .undecidable = .structure_out_of_range })
     else
@@ -709,8 +494,6 @@ fn classifyElf(r: Reader) Facts {
     return .{ .elf = .{ .has_interp = false, .class64 = class64 } };
 }
 
-// --- Mach-O ----------------------------------------------------------------
-
 fn hostCpuType() i32 {
     return switch (builtin.cpu.arch) {
         .aarch64 => cpu_type_arm64,
@@ -719,10 +502,6 @@ fn hostCpuType() i32 {
     };
 }
 
-/// Pick the slice this machine would run, without guessing.
-///
-/// Selection is by CPU *type* only, and the subtype is not consulted at all.
-///
 /// Not requiring a subtype match is what makes the common case work: `/usr/bin/true` on
 /// this machine is x86_64 + **arm64e**, and an arm64 host demanding an exact subtype
 /// would find no slice and report "could not measure" for the very file the macOS CI
@@ -765,8 +544,6 @@ fn classifyFat(r: Reader, is64: bool) Facts {
 }
 
 fn classifyMachOSlice(r: Reader, base: u64) Facts {
-    // The header is host-endian for a native slice; both spellings are accepted so a
-    // cross-endian file is read rather than mistaken for something else.
     const raw = r.u32At(base, .little) orelse return .{ .undecidable = .structure_out_of_range };
     const endian: std.builtin.Endian = if (raw == std.macho.MH_MAGIC_64 or raw == std.macho.MH_MAGIC)
         .little
@@ -796,38 +573,21 @@ fn classifyMachOSlice(r: Reader, base: u64) Facts {
         if (off >= limit) break;
         const cmd = r.u32At(off, endian) orelse return .{ .undecidable = .structure_out_of_range };
         const cmdsize = r.u32At(off + 4, endian) orelse return .{ .undecidable = .structure_out_of_range };
-        // A zero or unaligned size would loop forever or walk off the ladder.
         if (cmdsize < 8 or cmdsize % 4 != 0) return .{ .undecidable = .structure_out_of_range };
 
-        // The command must lie wholly inside the span the header declared. Without this
-        // a command that straddles the end is read anyway, and its fields come from
-        // whatever follows the load-command region.
         const cmd_end = std.math.add(u64, off, cmdsize) catch
             return .{ .undecidable = .structure_out_of_range };
         if (cmd_end > limit) return .{ .undecidable = .structure_out_of_range };
 
         if (cmd == @intFromEnum(std.macho.LC.CODE_SIGNATURE)) {
-            // Noted, not read. Acting on the first signature the moment it appears would
-            // leave the rest of the declared commands unwalked, and the check below —
-            // that the span actually held every command the header counted — would never
-            // run on the one path where a signature exists. That was the shape review
-            // found: `ncmds` of two with room for one, answered from the one.
             if (cmdsize < 16) return .{ .undecidable = .structure_out_of_range };
             if (sig_cmd == null) sig_cmd = off;
         }
         off = cmd_end;
     }
-    // The header must agree with itself before anything read from it is reported. Ending
-    // the span with commands still declared means it does not, and "carries no code
-    // signature" — or a signature read from the part that did fit — would be a claim the
-    // file never supported.
     if (i < ncmds) return .{ .undecidable = .structure_out_of_range };
 
     const cmd_off = sig_cmd orelse return .{ .macho = .{ .dyldlink = dyldlink, .signing = null } };
-    // `datasize` bounds the signature. Reading it is what makes "its code directory
-    // carries X" a statement about the signature rather than about bytes that happen to
-    // sit at the right offset: a `datasize` of zero, or one too small to hold what the
-    // blobs claim, must refuse rather than reach past.
     const dataoff = r.u32At(cmd_off + 8, endian) orelse
         return .{ .undecidable = .structure_out_of_range };
     const datasize = r.u32At(cmd_off + 12, endian) orelse
@@ -845,23 +605,7 @@ fn classifyMachOSlice(r: Reader, base: u64) Facts {
 
 const SigResult = union(enum) { ok: Signing, none, undecidable: Undecidable };
 
-/// Read the code directory's `flags` and `platform`.
-///
-/// A signature may carry more than one code directory (a primary plus alternates for
-/// other hash types). XNU chooses among them by hash-type preference; that ordering is
-/// not reimplemented here. Instead every code directory in the index is read, and if
-/// they agree on both fields the agreed value is the answer — which is the common case,
-/// alternates being the same statement hashed differently. If they disagree, so is the
-/// answer: `code_directories_disagree`.
-///
-/// Everything in a signature blob is big-endian regardless of the host, which is why
-/// `.big` appears on every read below while the load commands above used the header's.
 fn readSigning(r: Reader, at: u64, hi: u64) SigResult {
-    // Every offset below is checked against `hi`, the end of the region the load command
-    // declared. Without that the reads still land inside the file and still return
-    // plausible integers, and the sentence built from them — "its code directory carries
-    // the library-validation flag" — becomes a statement about bytes that were never
-    // part of a signature.
     if (hi <= at) return .{ .undecidable = .structure_out_of_range };
     const inside = struct {
         fn f(lo: u64, end: u64, off: u64, len: u64) bool {
@@ -874,8 +618,6 @@ fn readSigning(r: Reader, at: u64, hi: u64) SigResult {
     const magic = r.u32At(at, .big) orelse return .{ .undecidable = .structure_out_of_range };
     if (magic != std.macho.CSMAGIC_EMBEDDED_SIGNATURE) return .none;
 
-    // The SuperBlob's own declared length narrows the region further; a blob may not
-    // reach past what the superblob says it holds.
     const super_len = r.u32At(at + 4, .big) orelse return .{ .undecidable = .structure_out_of_range };
     const super_end = std.math.add(u64, at, super_len) catch
         return .{ .undecidable = .structure_out_of_range };
@@ -900,18 +642,11 @@ fn readSigning(r: Reader, at: u64, hi: u64) SigResult {
             return .{ .undecidable = .structure_out_of_range };
         if (bmagic != std.macho.CSMAGIC_CODEDIRECTORY) continue;
 
-        // The blob's own declared length has to cover the fields read from it. A code
-        // directory claiming eight bytes does not carry a platform byte at offset 38,
-        // and taking one from there would be reading the next blob.
         const blob_len = r.u32At(blob_at + 4, .big) orelse
             return .{ .undecidable = .structure_out_of_range };
         const blob_end = std.math.add(u64, blob_at, blob_len) catch
             return .{ .undecidable = .structure_out_of_range };
         if (blob_end > super_end) return .{ .undecidable = .structure_out_of_range };
-        // Field offsets inside CodeDirectory: flags at 12, platform at 38. `platform`
-        // is a byte three fields past the end of the u32 block, and it is the field that
-        // carries `/usr/bin/true`'s identity while its `flags` are zero — reading only
-        // `flags` is how a platform binary gets missed.
         if (!inside(blob_at, blob_end, blob_at + 12, 4) or !inside(blob_at, blob_end, blob_at + 38, 1))
             return .{ .undecidable = .structure_out_of_range };
 
@@ -931,19 +666,8 @@ fn readSigning(r: Reader, at: u64, hi: u64) SigResult {
     return .none;
 }
 
-// ---------------------------------------------------------------------------
-// Tests. The parser's own falsification is byte fixtures, one field at a time: a host
-// binary is a single sample whose value can change under a system update, and
-// `/usr/bin/git` (the Xcode selector shim, platform 16) and the Command Line Tools git
-// (library validation) are different files with opposite expectations, so a corpus
-// keyed by path is one rename away from asserting the wrong thing. The host smoke test
-// lives beside these and is skipped off macOS.
-
 const testing = std.testing;
 
-/// A minimal 64-bit little-endian Mach-O with one LC_CODE_SIGNATURE and one code
-/// directory. Every test below starts from this and breaks exactly one field, so a
-/// failure names the field rather than "the parser".
 fn buildMachO(a: std.mem.Allocator, opts: struct {
     flags: u32 = 0,
     platform: u8 = 0,
@@ -952,9 +676,6 @@ fn buildMachO(a: std.mem.Allocator, opts: struct {
     super_magic: u32 = std.macho.CSMAGIC_EMBEDDED_SIGNATURE,
     second_cd: ?struct { flags: u32, platform: u8 } = null,
     ncmds_override: ?u32 = null,
-    /// Overrides for the declared lengths the parser is required to honour. Each one
-    /// exists so a test can drive exactly the field whose check it names, rather than
-    /// asserting a refusal that some other bound happens to produce first.
     datasize_override: ?u32 = null,
     super_len_override: ?u32 = null,
     cd_len_override: ?u32 = null,
@@ -1028,13 +749,6 @@ fn writeFixtureMode(dir: [:0]const u8, name: []const u8, bytes: []const u8, out:
     return path;
 }
 
-/// Classify a byte string by putting it on disk and reading it back through the same
-/// path production takes — `observe`, not a hand-built Reader. A harness that skips the
-/// production entry point measures its own copy of the logic.
-/// A universal binary wrapping `slices`, each declared with the CPU type at the same
-/// index. `is64` selects the FAT64 layout, whose entries are 32 bytes with 64-bit
-/// offsets rather than 20 with 32-bit ones — the difference a single-layout reader gets
-/// silently wrong, because a FAT64 offset read as a u32 lands on the high half of zero.
 fn buildFat(a: std.mem.Allocator, slices: []const []const u8, types: []const i32, is64: bool) ![]u8 {
     const entry: usize = if (is64) 32 else 20;
     const head = 8 + entry * slices.len;
@@ -1078,9 +792,6 @@ fn factsOfBytes(tag: []const u8, bytes: []const u8) !Facts {
 }
 
 test "the platform byte is read even when flags are zero" {
-    // The shape of `/usr/bin/true`: nothing in `flags`, identity in `platform`. A
-    // parser that reads only `flags` returns the same answer here as for an unsigned
-    // binary, which is the miss this test exists to catch.
     const bytes = try buildMachO(testing.allocator, .{ .flags = 0, .platform = 16 });
     defer testing.allocator.free(bytes);
     const facts = try factsOfBytes("plat", bytes);
@@ -1106,10 +817,6 @@ test "adhoc and linker-signed are distinguished from a blocking flag" {
     defer testing.allocator.free(bytes);
     const facts = try factsOfBytes("adhoc", bytes);
     const s = facts.macho.signing.?;
-    // The bits are read (they are in `flags`), and none of the three predicates the
-    // refusal actually branches on fires for them. Asserted through those predicates
-    // rather than through accessors of their own: an accessor no production path reads
-    // is kept alive by its test and by nothing else.
     try testing.expectEqual(cs_adhoc | cs_linker_signed, s.flags);
     try testing.expect(!s.libraryValidation() and !s.hardenedRuntime() and !s.platformNamed());
 }
@@ -1159,8 +866,6 @@ test "a blob that is not a code directory is skipped, not read as one" {
 }
 
 test "a field that runs past the end of the file is out of range, not a default" {
-    // The first version of this test lopped eight bytes off the end and expected a
-    // refusal. It failed, correctly: `flags` sits at +12 and `platform` at +38 inside
     // the code directory, so a tail cut removes nothing either read touches. A
     // truncation test has to cut where the parser actually looks, or it passes for a
     // reason unrelated to the bounds check it claims to hold.
@@ -1171,13 +876,9 @@ test "a field that runs past the end of the file is out of range, not a default"
     // head and its single index entry.
     const cd_at: usize = 32 + 16 + 12 + 8;
 
-    // One byte short of `platform`, with `flags` fully present. An unchecked read here
-    // returns a zero platform, and a zero platform is the same value an ordinary signed
-    // binary carries — the failure would be silent and plausible.
     const cut_platform = try factsOfBytes("cut-platform", full[0 .. cd_at + 38]);
     try testing.expectEqual(Facts{ .undecidable = .structure_out_of_range }, cut_platform);
 
-    // Short of `flags` as well.
     const cut_flags = try factsOfBytes("cut-flags", full[0 .. cd_at + 12]);
     try testing.expectEqual(Facts{ .undecidable = .structure_out_of_range }, cut_flags);
 
@@ -1220,8 +921,6 @@ test "FAT64 offsets are read as 64-bit, not as the low half of a 32-bit field" {
 }
 
 test "two slices sharing this CPU type are undecidable, not first-wins" {
-    // arm64 and arm64e share a CPU type. Which one the kernel grades as runnable is not
-    // restated here, so two candidates is an admission rather than a pick.
     const a1 = try buildMachO(testing.allocator, .{ .flags = cs_require_lv });
     defer testing.allocator.free(a1);
     const a2 = try buildMachO(testing.allocator, .{ .flags = 0, .platform = 16 });
@@ -1246,10 +945,6 @@ test "a universal binary carrying no slice for this CPU says so" {
 test "the declared lengths bound the read, one field at a time" {
     // Each case drives exactly one declared length and leaves the bytes where they were,
     // so the refusal is attributable to that field rather than to the shape collapsing.
-    // Without these the reads still land inside the file and still return plausible
-    // integers — which is the failure mode, because the sentence built from them says
-    // the values came out of a code directory.
-    // `datasize` of zero: the signature region is empty, so nothing in it can be read.
     {
         const b = try buildMachO(testing.allocator, .{ .flags = cs_require_lv, .datasize_override = 0 });
         defer testing.allocator.free(b);
@@ -1264,20 +959,16 @@ test "the declared lengths bound the read, one field at a time" {
         defer testing.allocator.free(b);
         try testing.expectEqual(Facts{ .undecidable = .structure_out_of_range }, try factsOfBytes("len-datasize-short", b));
     }
-    // The SuperBlob claiming more than the load command allotted it.
     {
         const b = try buildMachO(testing.allocator, .{ .flags = cs_require_lv, .super_len_override = 1 << 20 });
         defer testing.allocator.free(b);
         try testing.expectEqual(Facts{ .undecidable = .structure_out_of_range }, try factsOfBytes("len-super", b));
     }
-    // A code directory that declares eight bytes does not reach its own platform byte at
-    // offset 38; reading one from there would be reading whatever follows the blob.
     {
         const b = try buildMachO(testing.allocator, .{ .flags = cs_require_lv, .cd_len_override = 8 });
         defer testing.allocator.free(b);
         try testing.expectEqual(Facts{ .undecidable = .structure_out_of_range }, try factsOfBytes("len-cd", b));
     }
-    // A load command that runs past the span the header declared.
     {
         const b = try buildMachO(testing.allocator, .{ .flags = cs_require_lv, .cmdsize_override = 1 << 16 });
         defer testing.allocator.free(b);
@@ -1295,9 +986,6 @@ test "the declared lengths bound the read, one field at a time" {
 }
 
 test "a header counting more commands than its span holds refuses, signature or not" {
-    // `ncmds` of two with room for one. The command that fits is a valid, readable
-    // signature, so a walk that acts on the first one it finds answers happily and never
-    // reaches the count check — which is the path review found still open after the
     // first round of bounds fixes. The signature being *valid* is the point of the
     // fixture: a malformed one would refuse for an unrelated reason and the test would
     // pass without covering anything.
@@ -1332,23 +1020,10 @@ test "a fat header declaring more slices than the cap is undecidable" {
 }
 
 test "hostile bytes produce an answer, never a crash" {
-    // The file being parsed is named by the target's own define, so every field is
-    // attacker-shaped: counts, offsets and lengths that may point anywhere. This walks
-    // mutations of real fixtures — every truncation, then every structural byte driven
-    // to the two values that break loops and offsets — and asserts only that a value
-    // comes back.
-    //
-    // It exists because of how two mutation runs failed. Killing `FAT64 offsets` and
-    // `fat entry size` aborted with SIGABRT rather than a clean assertion, and the abort
-    // was in the *test* unwrapping a null, not in the parser. That is a test asserting a
-    // shape with nothing asserting the parser stays on its feet at all.
     const thin = try buildMachO(testing.allocator, .{ .flags = cs_require_lv, .platform = 16 });
     defer testing.allocator.free(thin);
     const other: i32 = if (hostCpuType() == cpu_type_arm64) cpu_type_x86_64 else cpu_type_arm64;
 
-    // Both fat layouts are walked, not just the thin one. The first version of this test
-    // covered thin Mach-O and ELF only — leaving the two code paths whose mutations had
-    // aborted, fat and FAT64, untouched by the very walk written because of them.
     const fat32 = try buildFat(testing.allocator, &.{ thin, thin }, &.{ other, hostCpuType() }, false);
     defer testing.allocator.free(fat32);
     const fat64 = try buildFat(testing.allocator, &.{ thin, thin }, &.{ other, hostCpuType() }, true);
@@ -1391,7 +1066,6 @@ test "hostile bytes produce an answer, never a crash" {
             }
         }
     }
-    // Reaching here is the assertion: no panic, no hang, no unbounded read.
 }
 
 fn buildElf(a: std.mem.Allocator, opts: struct {
@@ -1466,8 +1140,6 @@ test "argv[0] without a slash is not resolved, and says so" {
 test "searchPath takes the first executable regular file, as execvp would (ADR 0090)" {
     var rbuf: [256]u8 = undefined;
     const root = fixtureDir(&rbuf, "search");
-    // a/tool is a directory, b/tool a file without execute permission, c/tool the program:
-    // each of the first two passes a test the next one does not.
     var b1: [320]u8 = undefined;
     var b2: [320]u8 = undefined;
     var b3: [320]u8 = undefined;
@@ -1498,7 +1170,6 @@ test "searchPath takes the first executable regular file, as execvp would (ADR 0
     var env_buf: [1024]u8 = undefined;
     const env = try std.fmt.bufPrint(&env_buf, "{s}:{s}:{s}", .{ a, b, c });
     try testing.expectEqualStrings(c_tool, searchPath(&out, "tool", env, null) orelse return error.TestUnexpectedResult);
-    // Order decides: c first names c's file even with the others behind it.
     const env_c_first = try std.fmt.bufPrint(&env_buf, "{s}:{s}", .{ c, b });
     try testing.expectEqualStrings(c_tool, searchPath(&out, "tool", env_c_first, null) orelse return error.TestUnexpectedResult);
     // Control: without c nothing qualifies, so the directory and the non-executable file
@@ -1506,7 +1177,6 @@ test "searchPath takes the first executable regular file, as execvp would (ADR 0
     const env_no_c = try std.fmt.bufPrint(&env_buf, "{s}:{s}", .{ a, b });
     try testing.expect(searchPath(&out, "tool", env_no_c, null) == null);
 
-    // A relative component, and an empty one (meaning "."), are taken against the cwd given.
     var want: [512]u8 = undefined;
     try testing.expectEqualStrings(
         try std.fmt.bufPrint(&want, "{s}/c/tool", .{root}),
@@ -1516,7 +1186,6 @@ test "searchPath takes the first executable regular file, as execvp would (ADR 0
         try std.fmt.bufPrint(&want, "{s}/./tool", .{c}),
         searchPath(&out, "tool", "/nonexistent-for-this-test::", c) orelse return error.TestUnexpectedResult,
     );
-    // The same relative component against another directory finds nothing there.
     try testing.expect(searchPath(&out, "tool", "c", a) == null);
 }
 
@@ -1550,12 +1219,9 @@ test "startable says which of missing, not a regular file, no execute bit, or of
         _ = posix.rmdir(dir.ptr);
         _ = posix.rmdir(root.ptr);
     }
-    // `/usr/bin/env` is where every platform this runs on keeps it; skip rather than
-    // assert something about a machine without it.
     if (posix.access("/usr/bin/env", posix.X_OK) != 0) return error.SkipZigTest;
 
     try testing.expect(startable(a, prog, null, null).fault == .ok);
-    // Each failing shape, and the path it names.
     var mb: [512]u8 = undefined;
     const absent = try std.fmt.bufPrint(&mb, "{s}/absent", .{root});
     const m = startable(a, absent, null, null);
@@ -1563,36 +1229,28 @@ test "startable says which of missing, not a regular file, no execute bit, or of
     try testing.expectEqualStrings(absent, m.file.?);
     try testing.expect(startable(a, plain, null, null).fault == .no_exec_bit);
     try testing.expect(startable(a, dir, null, null).fault == .not_regular);
-    // A path through a regular file is ENOTDIR to the kernel: nothing is there.
     var nb: [512]u8 = undefined;
     try testing.expect(startable(a, try std.fmt.bufPrint(&nb, "{s}/x", .{plain}), null, null).fault == .missing);
-    // Relative, against the cwd given — and the answer names the resolved file.
     const rel = startable(a, "./plain", root, null);
     try testing.expect(rel.fault == .no_exec_bit);
     try testing.expect(std.mem.endsWith(u8, rel.file.?, "/plain"));
 
-    // The `#!` line, one step deep.
     const bi = startable(a, bad_interp, null, null);
     try testing.expect(bi.fault == .missing);
     try testing.expectEqualStrings("/nonexistent-interpreter-for-701", bi.interpreter.?);
     try testing.expectEqualStrings(bad_interp, bi.file.?);
     try testing.expect(startable(a, good_interp, null, null).fault == .ok);
-    // A CR is part of the interpreter's name: CRLF scripts name `/bin/sh\r`.
     const cr = startable(a, crlf, null, null);
     try testing.expect(cr.fault == .missing);
     try testing.expectEqualStrings("/bin/sh\r", cr.interpreter.?);
-    // `env NAME`: NAME along PATH. `root` on PATH holds `prog`, not the missing name.
     const em = startable(a, env_missing, null, root);
     try testing.expect(em.fault == .not_on_path);
     try testing.expectEqualStrings("no-such-name-for-701", em.name.?);
     try testing.expectEqualStrings("/usr/bin/env", em.interpreter.?);
     try testing.expect(startable(a, env_found, null, root).fault == .ok);
-    // A second word is not judged: the kernels disagree about what `env` receives.
     try testing.expect(startable(a, env_two, null, root).fault == .ok);
-    // PATH unset: `env NAME` is not judged either.
     try testing.expect(startable(a, env_missing, null, null).fault == .ok);
 
-    // Bare names: off PATH, on PATH, and PATH unset.
     const off = startable(a, "no-such-name-for-701", null, root);
     try testing.expect(off.fault == .not_on_path);
     try testing.expectEqualStrings("no-such-name-for-701", off.name.?);
@@ -1606,9 +1264,6 @@ test "startable says which of missing, not a regular file, no execute bit, or of
 }
 
 test "a bare name passes when execvp would reach a later candidate past a broken #! (#701 review)" {
-    // execvp moves past a candidate whose execve fails ENOENT or EACCES — which is what a
-    // missing or non-executable interpreter makes it fail with — so the first file on PATH
-    // with a broken `#!` does not stop a bare name that a later directory supplies.
     var as = std.heap.ArenaAllocator.init(testing.allocator);
     defer as.deinit();
     const a = as.allocator();
@@ -1644,8 +1299,6 @@ test "a bare name passes when execvp would reach a later candidate past a broken
     const only = startable(a, "tool", null, d1);
     try testing.expect(only.fault == .missing);
     try testing.expectEqualStrings("/nonexistent-interpreter-for-701", only.interpreter.?);
-    // `env NAME` is different: the execve of `env` succeeds, so execvp stops at that
-    // candidate and `env` exits 127 — the later directory is never tried.
     const e = startable(a, "envtool", null, both);
     try testing.expect(e.fault == .not_on_path);
     try testing.expectEqualStrings(env_first, e.file.?);
@@ -1666,7 +1319,6 @@ test "a bare argv[0] is read off PATH and says it was, or says why it was not" {
     const found = observe(arena.allocator(), "prog", null, dir);
     try testing.expect(found.via_path);
     try testing.expectEqualStrings(path, found.path orelse return error.TestUnexpectedResult);
-    // Read the way a named path is read: the script is `unrecognised`, as it is by path.
     try testing.expectEqual(Facts.unrecognised, found.facts);
     try testing.expectEqual(observe(arena.allocator(), path, null, null).facts, found.facts);
 
@@ -1734,8 +1386,6 @@ test "the host's own binaries, as a smoke test only" {
     defer arena.deinit();
     const a = arena.allocator();
 
-    // /usr/bin/true: flags 0, platform 16, and universal with an arm64e slice on Apple
-    // silicon — the file that fails a subtype-exact slice picker.
     const t = observe(a, "/usr/bin/true", null, null);
     if (t.facts == .macho) {
         const s = t.facts.macho.signing.?;
@@ -1750,9 +1400,6 @@ test "the host's own binaries, as a smoke test only" {
     try testing.expect(other.facts == .macho or other.facts == .undecidable);
 }
 
-/// A framework Python laid out the way `pythonw.c` relies on, a virtual environment whose
-/// `bin/python` links to its launcher, and a console script whose `#!` line names that
-/// link, in a pid-unique directory (#703). Test-only: `boundary.zig`'s tests use it too.
 pub const FakeFramework = struct {
     root: [:0]const u8,
     dirs: [10][:0]const u8,
@@ -1764,8 +1411,6 @@ pub const FakeFramework = struct {
     script: [:0]const u8,
     stray: [:0]const u8,
 
-    /// Remove what `fakeFrameworkForTest` made, files first, then the directories deepest
-    /// first. Best effort, as every fixture cleanup in this file is.
     pub fn remove(self: FakeFramework) void {
         for ([_][:0]const u8{ self.script, self.venv_python, self.venv_cfg, self.interpreter, self.lib, self.launcher, self.stray }) |f| _ = posix.unlink(f.ptr);
         var i: usize = self.dirs.len;
@@ -1803,7 +1448,6 @@ pub fn fakeFrameworkForTest(a: std.mem.Allocator, tag: []const u8) !FakeFramewor
     if (posix.symlink(ff.launcher.ptr, ff.venv_python.ptr) != 0) return error.SkipZigTest;
     const shebang = try std.fmt.allocPrint(a, "#!{s} -sE\nprint('tool')\n", .{ff.venv_python});
     ff.script = try a.dupeZ(u8, try writeFixtureMode(ff.dirs[8], "tool", shebang, &pbuf, 0o755));
-    // A Mach-O outside any bin directory, for the layout that is not a framework's.
     ff.stray = try a.dupeZ(u8, try writeFixtureMode(ff.dirs[9], "python3", try buildMachO(a, .{}), &pbuf, 0o755));
     return ff;
 }
@@ -1821,21 +1465,16 @@ test "a framework Python's launcher names the framework's interpreter (#703)" {
     const ff = try fakeFrameworkForTest(a, "fw-launcher");
     defer ff.remove();
 
-    // The launcher named directly: no script, and no venv beside it.
     const direct = frameworkPython(a, observePath(a, ff.launcher)) orelse return error.TestUnexpectedResult;
     try testing.expectEqualStrings(try realpathOf(a, ff.interpreter), try realpathOf(a, direct.interpreter));
     try testing.expectEqualStrings(ff.launcher, direct.launcher);
     try testing.expect(direct.script == null and direct.venv_launcher == null);
 
-    // Through a venv's `bin/python` link: the venv's own path is the launcher, and the
-    // `__PYVENV_LAUNCHER__` value is its directory realpath'd with the link's name kept.
     const venv = frameworkPython(a, observePath(a, ff.venv_python)) orelse return error.TestUnexpectedResult;
     try testing.expectEqualStrings(ff.venv_python, venv.launcher);
     const want = try std.fs.path.join(a, &.{ try realpathOf(a, ff.dirs[8]), "python" });
     try testing.expectEqualStrings(want, venv.venv_launcher orelse return error.TestUnexpectedResult);
 
-    // A console script whose `#!` line names that link: the script is named, and the
-    // launcher is the interpreter its `#!` line names.
     const script = frameworkPython(a, observePath(a, ff.script)) orelse return error.TestUnexpectedResult;
     try testing.expectEqualStrings(ff.script, script.script orelse return error.TestUnexpectedResult);
     try testing.expectEqualStrings(ff.venv_python, script.launcher);
@@ -1848,10 +1487,7 @@ test "nothing is named where the framework's layout does not hold (#703)" {
     const ff = try fakeFrameworkForTest(a, "fw-negative");
     defer ff.remove();
 
-    // A Mach-O that is not in a bin directory.
     try testing.expect(frameworkPython(a, observePath(a, ff.stray)) == null);
-    // A `#!` script whose interpreter is not an image (a pip3 or pydoc in `<V>/bin`
-    // names the launcher and is read through it; one that names a text file is nothing).
     var pbuf: [512]u8 = undefined;
     const text_interp = try writeFixture(ff.dirs[9], "notanimage", "plain text\n", &pbuf);
     const text_interp_d = try a.dupeZ(u8, text_interp);
@@ -1860,11 +1496,7 @@ test "nothing is named where the framework's layout does not hold (#703)" {
     const bad_script_d = try a.dupeZ(u8, bad_script);
     defer _ = posix.unlink(bad_script_d.ptr);
     try testing.expect(frameworkPython(a, observePath(a, bad_script_d)) == null);
-    // The same file read as if it were the image: a `#!` script is never the launcher.
     try testing.expect(frameworkPython(a, .{ .path = bad_script_d, .size = 0, .facts = .unrecognised }) == null);
-    // A `#!` line naming a file in the framework's own bin directory that is not an image
-    // (a `python3.99-config` is itself a script): the layout holds, the interpreter does
-    // not, so nothing is named — only a Mach-O is read as the launcher.
     const config = try writeFixtureMode(ff.dirs[2], "python3.99-config", "#!/bin/sh\necho flags\n", &pbuf, 0o755);
     const config_d = try a.dupeZ(u8, config);
     defer _ = posix.unlink(config_d.ptr);
@@ -1872,11 +1504,8 @@ test "nothing is named where the framework's layout does not hold (#703)" {
     const via_config_d = try a.dupeZ(u8, via_config);
     defer _ = posix.unlink(via_config_d.ptr);
     try testing.expect(frameworkPython(a, observePath(a, via_config_d)) == null);
-    // An ELF observation, whatever the path.
     try testing.expect(frameworkPython(a, .{ .path = ff.launcher, .size = 0, .facts = .{ .elf = .{ .has_interp = true, .class64 = true } } }) == null);
 
-    // Take away the interpreter, then the framework library: either one missing is no
-    // framework.
     _ = posix.unlink(ff.interpreter.ptr);
     try testing.expect(frameworkPython(a, observePath(a, ff.launcher)) == null);
     var pbuf2: [512]u8 = undefined;
@@ -1898,8 +1527,6 @@ test "a #! line's interpreter is its first word, when that is an absolute path (
         .{ .body = "#! \t/opt/x/python3\n", .want = "/opt/x/python3" },
         .{ .body = "#!/usr/bin/env python3\n", .want = "/usr/bin/env" },
         .{ .body = "#!python3\n", .want = null },
-        // No line end, in a file shorter than what is read: the whole file is the line, as
-        // `startable` reads it (one reader of a `#!` line, #703).
         .{ .body = "#!/opt/x/python3", .want = "/opt/x/python3" },
         .{ .body = "print()\n", .want = null },
     };
@@ -1912,9 +1539,6 @@ test "a #! line's interpreter is its first word, when that is an absolute path (
     }
 }
 
-/// `<root>/<bundle>/Versions/<version>` and the directories under it down to the
-/// interpreter's, for the tests below that lay out a framework other than the fake one (#703).
-/// Index 2 is the version directory, 3 its bin, 7 the interpreter's.
 fn bundleDirsForTest(a: std.mem.Allocator, root: []const u8, bundle: []const u8, version: []const u8) ![8][:0]const u8 {
     const v = try std.fmt.allocPrint(a, "{s}/Versions/{s}", .{ bundle, version });
     const app = try std.fmt.allocPrint(a, "{s}/Resources/Python.app", .{v});
@@ -1936,7 +1560,6 @@ fn bundleDirsForTest(a: std.mem.Allocator, root: []const u8, bundle: []const u8,
     return dirs;
 }
 
-/// Remove `files`, then `dirs` deepest first, then `root`. Best effort.
 fn removeForTest(files: []const [:0]const u8, dirs: []const [:0]const u8, root: [:0]const u8) void {
     for (files) |f| _ = posix.unlink(f.ptr);
     var i: usize = dirs.len;
@@ -1951,7 +1574,6 @@ test "the framework library is named after the framework, as in the Command Line
     try testing.expectEqualStrings("Python3", frameworkName("/L/Frameworks/Python3.framework/Versions/3.9"));
     try testing.expectEqualStrings("Python", frameworkName("/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14"));
     try testing.expectEqualStrings("PythonT", frameworkName("/x/PythonT.framework/Versions/3.14"));
-    // Not inside a `.framework` bundle at all, as the test fixture is: the upstream name.
     try testing.expectEqualStrings("Python", frameworkName("/tmp/sideeye-image-x-1/Versions/3.99"));
     try testing.expectEqualStrings("Python", frameworkName("/a/b"));
 
@@ -1964,8 +1586,6 @@ test "the framework library is named after the framework, as in the Command Line
     var pbuf: [512]u8 = undefined;
     const launcher = try a.dupeZ(u8, try writeFixtureMode(dirs[3], "python3.9", try buildMachO(a, .{}), &pbuf, 0o755));
     const interp = try a.dupeZ(u8, try writeFixtureMode(dirs[7], "Python", try buildMachO(a, .{}), &pbuf, 0o755));
-    // A library under the upstream name only is not this framework's library, and nothing
-    // is named.
     const wrong = try a.dupeZ(u8, try writeFixture(dirs[2], "Python", "not this framework's library", &pbuf));
     try testing.expect(frameworkPython(a, observePath(a, launcher)) == null);
     _ = posix.unlink(wrong.ptr);
@@ -1995,7 +1615,6 @@ test "a #! line's options are carried with its interpreter (#703)" {
         try testing.expectEqualStrings(c.interp, sb.interpreter);
         try testing.expectEqualStrings(c.opts, sb.options);
     }
-    // A line longer than 256 bytes and within 512 — a deep venv's interpreter — is read.
     var long: [400]u8 = undefined;
     @memset(&long, 'd');
     long[0] = '/';
@@ -2022,7 +1641,6 @@ test "a free-threaded PythonT.framework names its PythonT interpreter (#703)" {
     removeForTest(&.{ launcher, interp, lib }, &dirs, root);
 }
 
-/// Test support for src/fuzz.zig: nothing a shipped build compiles references it.
 pub fn fuzzSeeds(a: std.mem.Allocator) ![]const []const u8 {
     var seeds: std.ArrayList([]const u8) = .empty;
     try seeds.append(a, try buildElf(a, .{}));

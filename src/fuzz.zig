@@ -1,12 +1,7 @@
-//! Fuzz entry points for five readers of untrusted bytes (ADR 0112).
-//! Not `zig build test --fuzz`: Zig 0.16.0's test runner does not compile under -ffuzz; the
-//! entry points keep the form that fuzzer takes.
 //! Inputs are copied out before each run, never printed after: a safety-check panic ends the
 //! process, and the test runner's panic handler cannot be replaced.
 //! The default seed is fixed: a random one would turn an unrelated pull request red.
 //! Nothing is printed while runs pass: the build runner labels a passing test's stderr "failed command".
-//! The entry points live here, not beside their parsers: there every test binary that reaches a
-//! parser would run them again.
 
 const std = @import("std");
 const builtin = @import("builtin");
@@ -101,8 +96,6 @@ fn scratchDir(buf: []u8, kind: []const u8, name: []const u8) ![:0]const u8 {
     return template;
 }
 
-/// A shared mapping, not a file write per run: its pages outlive a panicking process, with no
-/// system call per run.
 const Kept = struct {
     fd: c_int,
     map: []align(std.heap.page_size_min) u8,
@@ -136,8 +129,6 @@ const interesting_ints = [_]u64{
     0x7fffffff, 0x80000000, 0xffffffff, 0x100000000, 0x7fffffffffffffff, 0x8000000000000000, std.math.maxInt(u64),
 };
 
-/// Weighted toward one: each extra mutation is another chance to break a structured input at
-/// its first check, before anything deep.
 fn mutationCount(r: std.Random) u32 {
     return @min(8, 1 + @ctz(r.int(u32) | (1 << 7)));
 }
