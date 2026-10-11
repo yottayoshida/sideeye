@@ -1481,6 +1481,21 @@ if open_reply.get("id") != 42 or (open_reply.get("error") or {}).get("code") != 
     sys.exit("with stdin open, the over-long line was answered %r" % open_reply)
 PY
 
+echo "=========== mcp 32: a server stopped by SIGTERM hands it to its engine, which stops what it started; the server ends by SIGTERM and neither is left (#819) ==========="
+WSI=$WS/interrupt
+rm -rf "$WSI"; mkdir -p "$WSI/state"
+cat > "$WSI/sleep.toml" <<TOML
+[world]
+state = "./state"
+[define]
+setup     = "/bin/sleep 3004.$$"
+operation = "/bin/true"
+TOML
+printf '%s\n' "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WSI/sleep.toml\"}}}" > "$WSI/request"
+IR_STDIN=$WSI/request IR_ALSO=$WSI/sleep.toml python3 "$ROOT/spike/interrupt-run.py" SIGTERM "3004.$$" 0 "$SIDEEYE" mcp >/tmp/mcp.out 2>&1 &&
+    pass "SIGTERM to the server mid-call: the server ends by SIGTERM, and neither its engine nor the setup the engine started is left" ||
+    fail "a server stopped mid-call left its engine or the engine's child running, or did not end by SIGTERM"
+
 echo ""
 echo ""
 if [ "$fails" = "0" ]; then echo "ALL MCP ACCEPTANCE CHECKS PASSED"; else echo "$fails MCP check(s) failed"; exit 1; fi
