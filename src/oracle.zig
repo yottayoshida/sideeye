@@ -690,6 +690,68 @@ fn argContains(line: []const u8, index: usize, needle: []const u8) bool {
     return std.mem.indexOf(u8, a, needle) != null;
 }
 
+const clone_refusal = "ioctl(FICLONE)";
+const unreadable_ioctl_refusal = "ioctl on a state file whose request could not be read";
+
+const CloneKind = enum { whole, range, unreadable };
+const PendingClone = struct { pid: u32, kind: CloneKind };
+
+/// `FICLONERANGE` before `FICLONE`, whose name it contains.
+fn cloneKind(name: []const u8, line: []const u8) ?CloneKind {
+    if (!std.mem.eql(u8, name, "ioctl")) return null;
+    const request = syscallArg(line, 1) orelse return .unreadable;
+    for ([_][]const u8{ "FICLONERANGE", "BTRFS_IOC_CLONE_RANGE", "0x4020940d" }) |n| {
+        if (std.mem.indexOf(u8, request, n) != null) return .range;
+    }
+    for ([_][]const u8{ "FICLONE", "BTRFS_IOC_CLONE", "0x40049409" }) |n| {
+        if (std.mem.indexOf(u8, request, n) != null) return .whole;
+    }
+    if (!std.mem.startsWith(u8, request, "_IOC(")) return null;
+    const ioc_type = syscallArg(line, 2) orelse return null;
+    const ioc_nr = syscallArg(line, 3) orelse return null;
+    if (!std.mem.eql(u8, ioc_type, "0x94")) return null;
+    if (std.mem.eql(u8, ioc_nr, "0x9")) return .whole;
+    if (std.mem.eql(u8, ioc_nr, "0xd")) return .range;
+    return null;
+}
+
+fn cloneIntoState(line: []const u8, state_dir: []const u8, state_alt: []const u8) bool {
+    // Not `false` when the destination cannot be read: that would let an unreadable clone through.
+    const arg = syscallArg(line, 0) orelse return true;
+    const p = argAnnotation(arg) orelse return true;
+    return insideEither(p, state_dir, state_alt);
+}
+
+/// Only an errno raised before anything is remapped lets a clone through: btrfs can fail a
+/// whole-file clone after remapping part of it, and a range clone can fail that way on XFS too.
+fn cloneRefuses(kind: CloneKind, finished_line: []const u8) bool {
+    if (kind != .whole or !visiblyFailed(finished_line)) return true;
+    const at = std.mem.lastIndexOf(u8, finished_line, " = ") orelse return true;
+    for ([_][]const u8{ "EOPNOTSUPP", "ENOTSUP", "EXDEV", "EINVAL", "EBADF", "EISDIR", "EPERM", "ETXTBSY", "ENOTTY" }) |e| {
+        if (std.mem.indexOf(u8, finished_line[at..], e) != null) return false;
+    }
+    return true;
+}
+
+fn noteClone(arena: std.mem.Allocator, kind: CloneKind, line: []const u8, pid: ?u32, pending: *std.ArrayList(PendingClone), out: *Parsed) !void {
+    if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) {
+        try pending.append(arena, .{ .pid = pid orelse 0, .kind = kind });
+    } else if (cloneRefuses(kind, line) and out.unsupported == null) {
+        out.unsupported = try arena.dupe(u8, if (kind == .unreadable) unreadable_ioctl_refusal else clone_refusal);
+    }
+}
+
+fn takePendingClone(list: *std.ArrayList(PendingClone), pid: ?u32) ?CloneKind {
+    const want = pid orelse 0;
+    for (list.items, 0..) |c, i| {
+        if (c.pid == want) {
+            _ = list.swapRemove(i);
+            return c.kind;
+        }
+    }
+    return null;
+}
+
 /// An open that cannot change state, judged from the flags argument — the textual half
 /// of `openIsWriteCapable` (shim/src/common.zig, ADR 0003). The two must stay in
 /// agreement; the acceptance suite's mutation pair is the standing drift detector.
@@ -1029,6 +1091,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
     var pending_maps: std.ArrayList(PendingMap) = .empty;
     var rw_paths: std.ArrayList([]const u8) = .empty;
     var pending_rw_open: std.ArrayList(u32) = .empty;
+    var pending_clones: std.ArrayList(PendingClone) = .empty;
     var rw_narrowing = true;
 
     var pending: std.ArrayList(PendingWrite) = .empty;
@@ -1061,6 +1124,11 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
                 if (std.mem.eql(u8, rc, "mmap") or std.mem.eql(u8, rc, "mremap")) {
                     if (takePendingMap(&pending_maps, pid)) |len| {
                         if (returnedAddress(line)) |addr| try shared_maps.append(arena, .{ .start = addr, .end = addr +| pageUp(len) });
+                    }
+                } else if (std.mem.eql(u8, rc, "ioctl")) {
+                    if (takePendingClone(&pending_clones, pid)) |kind| {
+                        if (cloneRefuses(kind, line) and out.unsupported == null)
+                            out.unsupported = try arena.dupe(u8, if (kind == .unreadable) unreadable_ioctl_refusal else clone_refusal);
                     }
                 } else if (isOpenCall(rc) and takeThreadClone(&pending_rw_open, pid)) {
                     if (returnedPath(line)) |p| {
@@ -1284,6 +1352,9 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // the v15 rule, and the stores through the mapping ride a PASS.
             if (is_shared_write_map and out.unsupported == null)
                 out.unsupported = try arena.dupe(u8, contract.shared_map_refusal.writable);
+            if (cloneKind(name, line)) |kind| {
+                if (cloneIntoState(line, state_dir, state_alt)) try noteClone(arena, kind, line, pid, &pending_clones, &out);
+            }
             if (is_shared_write_map or changesPersistentState(name, line)) {
                 try noteEvent(arena, &out.mutations, pid.?, out.lines_seen);
                 if (isTrapped(name, line))
@@ -1302,6 +1373,11 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         if (is_shared_write_map) {
             if (out.unsupported == null)
                 out.unsupported = try arena.dupe(u8, contract.shared_map_refusal.writable);
+            continue;
+        }
+        // Not after `isReadOnly`: `ioctl` is on that list.
+        if (cloneKind(name, line)) |kind| {
+            if (cloneIntoState(line, state_dir, state_alt)) try noteClone(arena, kind, line, pid, &pending_clones, &out);
             continue;
         }
         if (isReadOnly(name)) continue;
@@ -1351,6 +1427,8 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             out.unsupported = try arena.dupe(u8, name);
         }
     }
+    if (pending_clones.items.len > 0 and out.unsupported == null)
+        out.unsupported = try arena.dupe(u8, if (pending_clones.items[0].kind == .unreadable) unreadable_ioctl_refusal else clone_refusal);
     // A thread's first line can precede the resumption of the clone that names it, so
     // it may have been listed as a child before it was known to be the subject's (v16).
     // Struck now, once every clone has resumed: `children` is a count of PROCESSES the
@@ -1909,6 +1987,97 @@ test "link is first-class and counts when either endpoint is inside" {
     ;
     const r = try parse(arena_state.allocator(), empty, "/repo/state", "", "/repo");
     try std.testing.expectEqualStrings("linkat(AT_EMPTY_PATH)", r.unsupported.?);
+}
+
+fn parseCloneRun(a: std.mem.Allocator, pid: []const u8, lines: []const u8) !Parsed {
+    const head = if (std.mem.eql(u8, pid, "9"))
+        "9  execve(\"/bin/cp\", [\"cp\"], 0x0) = 0\n"
+    else
+        "9  execve(\"/bin/sh\", [\"sh\"], 0x0) = 0\n9  clone(child_stack=NULL, flags=SIGCHLD) = 10\n";
+    const text = try std.fmt.allocPrint(a, "{s}{s}  openat(AT_FDCWD</w>, \"/s/key.txt\", O_WRONLY|O_TRUNC) = 4</s/key.txt>\n{s}", .{ head, pid, lines });
+    return parse(a, text, "/s", "", "/w");
+}
+
+test "a reflink clone into the judged state refuses, from the subject or a child, in the spellings strace prints (#814)" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const spellings = [_][]const u8{
+        "ioctl(4</s/key.txt>, BTRFS_IOC_CLONE or FICLONE, 3) = 0",
+        "ioctl(4</s/key.txt>, BTRFS_IOC_CLONE_RANGE or FICLONERANGE, {src_fd=3</o/src>, src_offset=4096, src_length=4096, dest_offset=4096}) = 0",
+        "ioctl(4</s/key.txt>, _IOC(_IOC_WRITE, 0x94, 0x9, 0x4), 3) = 0",
+        "ioctl(4</s/key.txt>, _IOC(_IOC_WRITE, 0x94, 0xd, 0x20), 0xffffd0a8b9c8) = 0",
+        "ioctl(4</s/key.txt>, 0x40049409, 3) = 0",
+        "ioctl(4</s/key.txt>, 0x4020940d, 0xffffd0a8b9c8) = 0",
+        // A range clone that failed may have remapped part of the range first.
+        "ioctl(4</s/key.txt>, BTRFS_IOC_CLONE_RANGE or FICLONERANGE, {src_fd=3</o/src>, src_offset=0, src_length=8192, dest_offset=0}) = -1 EINVAL (Invalid argument)",
+    };
+    for (spellings) |line| {
+        for ([_][]const u8{ "9", "10" }) |pid| {
+            const p = try parseCloneRun(a, pid, try std.fmt.allocPrint(a, "{s}  {s}\n", .{ pid, line }));
+            try std.testing.expectEqualStrings("ioctl(FICLONE)", p.unsupported orelse "(none)");
+        }
+    }
+}
+
+test "a clone split across two lines is judged by the half that carries its result" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const unfinished = "9  ioctl(4</s/key.txt>, BTRFS_IOC_CLONE or FICLONE, 3 <unfinished ...>\n10 epoll_pwait(5<anon_inode:[eventpoll]>, [], 1024, 0, NULL, 8) = 0\n";
+    const failed = try parseCloneRun(a, "9", try std.fmt.allocPrint(a, "{s}9  <... ioctl resumed>) = -1 EOPNOTSUPP (Operation not supported)\n", .{unfinished}));
+    try std.testing.expectEqual(@as(?[]const u8, null), failed.unsupported);
+    const done = try parseCloneRun(a, "9", try std.fmt.allocPrint(a, "{s}9  <... ioctl resumed>) = 0\n", .{unfinished}));
+    try std.testing.expectEqualStrings("ioctl(FICLONE)", done.unsupported orelse "(none)");
+    const never = try parseCloneRun(a, "9", unfinished);
+    try std.testing.expectEqualStrings("ioctl(FICLONE)", never.unsupported orelse "(none)");
+    // A range clone that failed after its split is refused like one on a single line.
+    const range = try parseCloneRun(a, "9", "9  ioctl(4</s/key.txt>, BTRFS_IOC_CLONE_RANGE or FICLONERANGE, {src_fd=3</o/src>, src_offset=0, src_length=8192, dest_offset=0} <unfinished ...>\n9  <... ioctl resumed>) = -1 EINVAL (Invalid argument)\n");
+    try std.testing.expectEqualStrings("ioctl(FICLONE)", range.unsupported orelse "(none)");
+    // Each half is paired by its own pid: the child's failed ioctl in between does not settle
+    // the subject's clone.
+    const interleaved = try parseCloneRun(a, "10", "9  ioctl(4</s/key.txt>, BTRFS_IOC_CLONE or FICLONE, 3 <unfinished ...>\n" ++
+        "10 ioctl(4</s/key.txt>, TCGETS <unfinished ...>\n10 <... ioctl resumed>, 0xffffd0a8b9c8) = -1 ENOTTY (Inappropriate ioctl for device)\n" ++
+        "9  <... ioctl resumed>) = 0\n");
+    try std.testing.expectEqualStrings("ioctl(FICLONE)", interleaved.unsupported orelse "(none)");
+}
+
+test "a whole-file clone is read as a read only when its errno says nothing was remapped" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const early = try parseCloneRun(a, "9", "9  ioctl(4</s/key.txt>, BTRFS_IOC_CLONE or FICLONE, 3) = -1 EXDEV (Invalid cross-device link)\n");
+    try std.testing.expectEqual(@as(?[]const u8, null), early.unsupported);
+    const midway = try parseCloneRun(a, "9", "9  ioctl(4</s/key.txt>, BTRFS_IOC_CLONE or FICLONE, 3) = -1 ENOSPC (No space left on device)\n");
+    try std.testing.expectEqualStrings("ioctl(FICLONE)", midway.unsupported orelse "(none)");
+}
+
+test "an ioctl that changes nothing in the state is still read-only: a failed whole clone, a clone out of the state, a block-size query" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const lines = [_][]const u8{
+        "ioctl(4</s/key.txt>, BTRFS_IOC_CLONE or FICLONE, 3) = -1 EOPNOTSUPP (Operation not supported)",
+        "ioctl(5</o/copy>, BTRFS_IOC_CLONE_RANGE or FICLONERANGE, {src_fd=4</s/key.txt>, src_offset=0, src_length=4096, dest_offset=0}) = 0",
+        "ioctl(4</s/key.txt>, FIGETBSZ, [4096]) = 0",
+        "ioctl(4</s/key.txt>, TCGETS, 0xffffd0a8b9c8) = -1 ENOTTY (Inappropriate ioctl for device)",
+    };
+    for (lines) |line| {
+        for ([_][]const u8{ "9", "10" }) |pid| {
+            const p = try parseCloneRun(a, pid, try std.fmt.allocPrint(a, "{s}  {s}\n", .{ pid, line }));
+            try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
+        }
+    }
+}
+
+test "an ioctl on a state file whose request cannot be read refuses" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const p = try parseCloneRun(a, "9", "9  ioctl(4</s/a\\\"b>, BTRFS_IOC_CLONE or FICLONE, 3) = 0\n");
+    try std.testing.expectEqualStrings("ioctl on a state file whose request could not be read", p.unsupported orelse "(none)");
+    const split = try parseCloneRun(a, "9", "9  ioctl(4</s/a\\\"b>, BTRFS_IOC_CLONE or FICLONE, 3 <unfinished ...>\n");
+    try std.testing.expectEqualStrings("ioctl on a state file whose request could not be read", split.unsupported orelse "(none)");
 }
 
 test "an unresolvable relative path refuses instead of dropping" {

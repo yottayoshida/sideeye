@@ -557,6 +557,7 @@ pub fn reconcileOrRefuse(
     ops: []const engine.Op,
     root: []const u8,
     alt: []const u8,
+    scratch_paths: []const []const u8,
 ) void {
     // The differences are walked a second time here — `snapshotsEqual` above already
     // asked whether there were any — and that duplication is deliberate. Folding the two
@@ -580,7 +581,7 @@ pub fn reconcileOrRefuse(
     const scratch = gpa.alloc(u8, 2 * contract.max_path) catch setupError(.environment, "out of memory");
     defer gpa.free(scratch);
 
-    const r = engine.reconcile(diffs[0..dc.stored], ops, links.items, root, alt, scratch, found);
+    const r = engine.reconcile(diffs[0..dc.stored], ops, links.items, root, alt, initial, final, scratch_paths, scratch, found);
 
     report.attributed_to_rename = r.by_rename_prefix;
     if (r.by_rename_prefix > 0)
@@ -608,14 +609,33 @@ pub fn reconcileOrRefuse(
         std.fmt.allocPrint(arena, " and {d} more", .{r.total - written}) catch ""
     else
         "";
+    var without_bytes: usize = 0;
+    for (found[0..r.stored]) |u| {
+        if (u.named_without_bytes) without_bytes += 1;
+    }
+    const unrecorded_bytes: []const u8 = if (builtin.os.tag == .macos)
+        ", a raw syscall or a stdio flush libc makes from inside itself (a stream left for exit to flush, an fwrite past the buffer) among them"
+    else switch (boundary.observe_mode) {
+        .wrappers => ", a reflink clone or io_uring among them, or a stdio flush libc makes from inside itself (a stream left for exit to flush, an fwrite past the buffer), which --observe syscalls counts",
+        .syscalls, .supervised => ", a reflink clone or io_uring among them",
+    };
+    const bytes_note = if (without_bytes > 0)
+        std.fmt.allocPrint(
+            arena,
+            "{d} of them hold bytes that no record naming them can have put there — an open or an fsync names a file, but only a write, the destination of a rename or a link (or its source, once its other name was written), or a truncate that cut or zero-filled it accounts for what the file holds; the bytes came through a call that left no write on record{s}. ",
+            .{ without_bytes, unrecorded_bytes },
+        ) catch ""
+    else
+        "";
     const detail = std.fmt.allocPrint(
         arena,
-        "the judged state changed at {d} path(s) that no recorded operation names, so the account of this run is incomplete: {s}{s}. {s}",
-        .{ r.total, names.items, more, if (boundary.observe_mode == .supervised)
-            "The supervising engine records the calls its filter watches, in the target and the processes it starts; a change made another way — through a mapped file, say, or by a process the target did not start — leaves no record at all"
-        else
-            "The shim records what crosses libc; a raw syscall, or a process that never loaded it, leaves no record at all" },
-    ) catch "the judged state changed at a path that no recorded operation names";
+        "the judged state changed at {d} path(s) that no recorded operation accounts for, so the account of this run is incomplete: {s}{s}. {s}{s}",
+        .{ r.total, names.items, more, bytes_note, switch (boundary.observe_mode) {
+            .supervised => "The supervising engine records the calls its filter watches, in the target and the processes it starts; a change made another way — through a mapped file, say, or by a process the target did not start — leaves no record at all",
+            .syscalls => "The shim records the calls its filter traps at the kernel boundary; a call outside that set — an ioctl, an io_uring submission — or a process that never loaded the shim leaves no record at all",
+            .wrappers => "The shim records what crosses libc; a raw syscall, or a process that never loaded it, leaves no record at all",
+        } },
+    ) catch "the judged state changed at a path that no recorded operation accounts for";
     unknown(.state_changed_unaccounted, detail, .class_wall);
 }
 
