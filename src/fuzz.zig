@@ -444,13 +444,14 @@ fn fuzzMcp(_: void, smith: *std.testing.Smith) anyerror!void {
     var as = std.heap.ArenaAllocator.init(run_allocator);
     defer as.deinit();
     const a = as.allocator();
-    // A small buffer, not the server's 256 KiB: the path that drops an over-long line must be reachable.
+    // A small buffer, not the server's 256 KiB: the path that reads an over-long line must be reachable.
     var line_buf: [512]u8 = undefined;
     var lines: mcp.Lines = .{ .buf = &line_buf };
+    var whole = std.mem.splitScalar(u8, bytes, '\n');
     var off: usize = 0;
     var step: usize = 1;
     while (true) {
-        while (lines.next()) |line| try fuzzMcpLine(a, line);
+        while (lines.next()) |item| try fuzzMcpItem(a, item, whole.next() orelse return error.LineCountDiffers);
         if (off == bytes.len) break;
         const space = lines.space();
         step = (step * 31 + bytes[off]) % 97 + 1;
@@ -459,15 +460,84 @@ fn fuzzMcp(_: void, smith: *std.testing.Smith) anyerror!void {
         lines.commit(n);
         off += n;
     }
-    if (lines.finish()) |line| try fuzzMcpLine(a, line);
+    if (lines.finish()) |item| try fuzzMcpItem(a, item, whole.next() orelse return error.LineCountDiffers);
+    // Only the empty piece after a final newline may be left: anything else is a line never answered.
+    if (whole.next()) |rest| if (rest.len != 0 or whole.next() != null) return error.LineCountDiffers;
+}
+
+fn fuzzMcpItem(a: std.mem.Allocator, item: mcp.Lines.Item, whole: []const u8) !void {
+    switch (item) {
+        .line => |line| {
+            try std.testing.expectEqualStrings(whole, line);
+            try fuzzMcpLine(a, line);
+        },
+        .oversized => |o| {
+            try std.testing.expect(whole.len > o.limit);
+            try fuzzMcpReply(a, mcp.routeOversized(a, o));
+            try fuzzMcpSameAsWhole(a, o, whole);
+        },
+    }
+}
+
+/// The streaming read must reach what reading the whole line reaches, apart from the three
+/// places `routeOversized` names.
+fn fuzzMcpSameAsWhole(a: std.mem.Allocator, o: mcp.Oversized, whole: []const u8) !void {
+    if (o.too_deep) return;
+    const trimmed = std.mem.trim(u8, whole, " \t\r");
+    const v = std.json.parseFromSliceLeaky(std.json.Value, a, trimmed, .{}) catch {
+        // A repeated key: the short line is a parse error, and the streaming read sees only a
+        // repeated top-level `id` — the first difference `routeOversized` names.
+        if (std.json.parseFromSliceLeaky(std.json.Value, a, trimmed, .{ .duplicate_field_behavior = .use_last })) |_| {
+            if (o.verdict != .unparsed) return;
+        } else |_| {}
+        return fuzzMcpSameReply(a, o, whole);
+    };
+    if (v != .object) {
+        try std.testing.expectEqual(.not_object, o.verdict);
+        return fuzzMcpSameReply(a, o, whole);
+    }
+    const id = v.object.get("id") orelse {
+        try std.testing.expectEqual(.notification, o.verdict);
+        return;
+    };
+    try std.testing.expectEqual(.request, o.verdict);
+    switch (id) {
+        .integer => |i| {
+            try std.testing.expect(o.id == .integer);
+            try std.testing.expectEqual(i, o.id.integer);
+        },
+        .string => |s| if (s.len <= mcp.IdFinder.max_id) {
+            try std.testing.expect(o.id == .string);
+            try std.testing.expectEqualStrings(s, o.id.string);
+        },
+        else => try std.testing.expect(o.id == .null),
+    }
+}
+
+/// Where neither answer can carry an id, the over-long line gets exactly the short line's reply.
+fn fuzzMcpSameReply(a: std.mem.Allocator, o: mcp.Oversized, whole: []const u8) !void {
+    const short = mcp.route(a, whole);
+    const long = mcp.routeOversized(a, o);
+    switch (short) {
+        .reply => |r| {
+            try std.testing.expect(long == .reply);
+            try std.testing.expectEqualStrings(r, long.reply);
+        },
+        .none => try std.testing.expect(long == .none),
+        .call => return error.ShortLineWasACall,
+    }
 }
 
 fn fuzzMcpLine(a: std.mem.Allocator, line: []const u8) !void {
-    switch (mcp.route(a, line)) {
+    try fuzzMcpReply(a, mcp.route(a, line));
+}
+
+fn fuzzMcpReply(a: std.mem.Allocator, r: mcp.Route) !void {
+    switch (r) {
         .none, .call => {},
-        .reply => |r| {
-            try std.testing.expect(std.mem.indexOfScalar(u8, r, '\n') == null);
-            const v = try std.json.parseFromSliceLeaky(std.json.Value, a, r, .{});
+        .reply => |text| {
+            try std.testing.expect(std.mem.indexOfScalar(u8, text, '\n') == null);
+            const v = try std.json.parseFromSliceLeaky(std.json.Value, a, text, .{});
             try std.testing.expectEqualStrings("2.0", v.object.get("jsonrpc").?.string);
         },
     }
@@ -484,5 +554,9 @@ test "fuzz: the MCP transport" {
         "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{" ++ meta ++ ",\"name\":\"sideeye_replay_case\",\"arguments\":{\"case_path\":\"c/case.json\"}}}\r\n" ++
             "{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"tools/call\",\"params\":{" ++ meta ++ ",\"name\":\"sideeye_evidence\",\"arguments\":{\"case_path\":\"c/case.json\"}}}\n" ++
             "{\"jsonrpc\":\"2.0\",\"id\":6,\"method\":\"tools/call\",\"params\":{\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"1999-01-01\",\"io.modelcontextprotocol/clientCapabilities\":{}},\"name\":\"x\"}}\n",
+        // Longer than the entry point's 512-byte buffer, so the streaming read is what answers them.
+        "{\"method\":\"tools/call\",\"params\":{" ++ meta ++ ",\"name\":\"sideeye_preflight\",\"arguments\":{\"config_path\":\"" ++ "d/" ** 200 ++ "sideeye.toml\",\"id\":9}},\"jsonrpc\":\"2.0\",\"id\":42}\n" ++
+            "{\"jsonrpc\":\"2.0\",\"id\":\"q\\u0022\\n\",\"method\":\"tools/call\",\"params\":{\"pad\":[" ++ "[1,{\"a\":null}]," ** 40 ++ "true]}}\n" ++
+            "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/cancelled\",\"params\":{\"reason\":\"" ++ "r" ** 600 ++ "\"}}\n",
     });
 }
