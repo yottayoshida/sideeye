@@ -12756,6 +12756,118 @@ EOF
     fi
 fi
 
+echo "=========== check 26: two runs never use one work directory at the same time (#816) ==========="
+L=/tmp/acc-lock
+rm -rf "$L"; mkdir -p "$L/s1" "$L/s2" "$L/s3"
+cat > "$L/slow-init.sh" <<EOF
+#!/bin/sh
+: > "$L/holding"
+sleep 3
+exec "$OUT/toy-bug" init
+EOF
+chmod 755 "$L/slow-init.sh"
+TOY_STATE=$L/s1 "$SIDEEYE" explore --state "$L/s1" --setup "$L/slow-init.sh" \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work "$L/w" --allow-unverified > "$L/first.txt" 2>&1 &
+first=$!
+i=0
+while [ ! -e "$L/holding" ] && [ "$i" -lt 100 ]; do sleep 0.1; i=$((i + 1)); done
+o=$(TOY_STATE=$L/s2 "$SIDEEYE" explore --state "$L/s2" --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work "$L/w" --allow-unverified 2>&1)
+rc=$?
+o3=$(TOY_STATE=$L/s3 "$SIDEEYE" explore --state "$L/s3" --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work "$L/w3" --allow-unverified 2>&1)
+rc3=$?
+wait "$first"
+rc1=$?
+if [ "$rc" = "3" ] && printf '%s\n' "$o" | grep -qF "is in use by another sideeye run (pid $first)" \
+    && [ ! -e "$L/s2/key.json" ] && [ "$rc1" = "1" ] && grep -q "^FAIL" "$L/first.txt"; then
+    echo "ok   a second run on a work directory in use is refused naming the first, before its setup, and the first is undisturbed"
+else
+    echo "FAIL a second run on a work directory in use: exit $rc (first exit $rc1), second setup ran: $( [ -e "$L/s2/key.json" ] && echo yes || echo no)"
+    printf '%s\n' "$o" | sed -n '1,3p' | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+if [ "$rc3" = "1" ]; then
+    echo "ok   a run on a work directory of its own goes ahead beside it (the control)"
+else
+    echo "FAIL check 26's control, its own work directory: exit $rc3"
+    printf '%s\n' "$o3" | sed -n '1,3p' | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+rm -f "$L/checking"
+cat > "$L/slow-check.sh" <<EOF
+#!/bin/sh
+: > "$L/checking"
+sleep 1
+"$OUT/toy-bug" doctor >/dev/null 2>&1 || true
+"$OUT/toy-bug" load-key >/dev/null 2>&1
+EOF
+chmod 755 "$L/slow-check.sh"
+mkdir -p "$L/s4" "$L/s5"
+TOY_STATE=$L/s4 "$SIDEEYE" explore --state "$L/s4" --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --check "$L/slow-check.sh" --shim "$SHIM" --work "$L/w4" --allow-unverified > "$L/fourth.txt" 2>&1 &
+fourth=$!
+i=0
+while [ ! -e "$L/checking" ] && [ "$i" -lt 200 ]; do sleep 0.1; i=$((i + 1)); done
+o5=$(TOY_STATE=$L/s5 "$SIDEEYE" explore --state "$L/s5" --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work "$L/w4" --allow-unverified 2>&1)
+rc5=$?
+wait "$fourth"
+if [ "$rc5" = "3" ] && printf '%s\n' "$o5" | grep -qF "is in use by another sideeye run (pid $fourth)" && [ ! -e "$L/s5/key.json" ]; then
+    echo "ok   the lock is held past the setup and the recording, while the checker runs"
+else
+    echo "FAIL a second run while the first explores: exit $rc5"
+    printf '%s\n' "$o5" | sed -n '1,3p' | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+case26=$(ls "$L/w/cases/"*.json 2>/dev/null | head -1)
+if [ -z "$case26" ]; then
+    echo "FAIL check 26's replay leg found no case from the first run"
+    fails=$((fails + 1))
+else
+    rm -f "$L/holding"
+    "$SIDEEYE" replay "$case26" --fresh-state --shim "$SHIM" --work "$L/w" --allow-unverified > "$L/replay1.txt" 2>&1 &
+    replay1=$!
+    i=0
+    while [ ! -e "$L/holding" ] && [ "$i" -lt 100 ]; do sleep 0.1; i=$((i + 1)); done
+    # Not judged by the second replay's exit alone: a --fresh-state that got past the lock
+    # would remove this.
+    : > "$L/s1/sentinel"
+    o6=$("$SIDEEYE" replay "$case26" --fresh-state --shim "$SHIM" --work "$L/w" --allow-unverified 2>&1)
+    rc6=$?
+    sentinel_kept=$( [ -e "$L/s1/sentinel" ] && echo yes || echo no)
+    wait "$replay1"
+    rcr1=$?
+    if [ "$rc6" = "3" ] && printf '%s\n' "$o6" | grep -qF "is in use by another sideeye run" && [ "$sentinel_kept" = "yes" ] && [ "$rcr1" = "1" ]; then
+        echo "ok   a second replay --fresh-state is refused before it empties the state the first replay is setting up"
+    else
+        echo "FAIL two replays --fresh-state on one work directory: second exit $rc6, first exit $rcr1, state left alone: $sentinel_kept"
+        printf '%s\n' "$o6" | sed -n '1,3p' | sed 's/^/     | /'
+        fails=$((fails + 1))
+    fi
+fi
+
+mkdir -p "$L/wh" "$L/wf" "$L/s7"
+printf 'keep me\n' > "$L/victim"
+ln "$L/victim" "$L/wh/run.lock"
+o7=$(TOY_STATE=$L/s7 "$SIDEEYE" explore --state "$L/s7" --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work "$L/wh" --allow-unverified 2>&1)
+rc7=$?
+mkfifo "$L/wf/run.lock"
+o8=$(TOY_STATE=$L/s7 "$SIDEEYE" explore --state "$L/s7" --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work "$L/wf" --allow-unverified 2>&1)
+rc8=$?
+if [ "$rc7" = "3" ] && printf '%s\n' "$o7" | grep -qF "run.lock is not a regular file of yours with one link" \
+    && [ "$(cat "$L/victim")" = "keep me" ] && [ "$rc8" = "3" ] && printf '%s\n' "$o8" | grep -qF "run.lock is not a regular file"; then
+    echo "ok   a hard link or a FIFO at run.lock is refused, and the linked file is left as it was"
+else
+    echo "FAIL a planted run.lock: hard link exit $rc7, FIFO exit $rc8, victim now '$(cat "$L/victim")'"
+    printf '%s\n' "$o7" "$o8" | sed -n '1,4p' | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then

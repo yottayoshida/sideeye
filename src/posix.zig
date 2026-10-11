@@ -26,6 +26,8 @@ pub const EINTR: c_int = 4;
 pub const ENOENT: c_int = 2;
 pub extern "c" fn mkdir(path: [*:0]const u8, mode: c_uint) c_int;
 pub extern "c" fn mkdtemp(template: [*:0]u8) ?[*:0]u8;
+pub extern "c" fn flock(fd: c_int, operation: c_int) c_int;
+pub extern "c" fn ftruncate(fd: c_int, length: i64) c_int;
 pub extern "c" fn rmdir(path: [*:0]const u8) c_int;
 pub extern "c" fn unlink(path: [*:0]const u8) c_int;
 pub extern "c" fn readlink(path: [*:0]const u8, buf: [*]u8, bufsiz: usize) isize;
@@ -122,6 +124,7 @@ pub fn siPid(info: *const std.c.siginfo_t) std.c.pid_t {
 
 pub const O_RDONLY: c_int = 0;
 pub const O_WRONLY: c_int = 1;
+pub const O_RDWR: c_int = 2;
 pub const O_CREAT: c_int = if (builtin.os.tag == .linux) 0o100 else 0x200;
 pub const O_TRUNC: c_int = if (builtin.os.tag == .linux) 0o1000 else 0x400;
 pub const O_EXCL: c_int = if (builtin.os.tag == .linux) 0o200 else 0x800;
@@ -191,6 +194,12 @@ pub const ENOTDIR: c_int = @intFromEnum(std.posix.E.NOTDIR);
 /// unreadable and refuses a config that was about to arrive. Every other test stays
 /// green while it does that.
 pub const EAGAIN: c_int = @intFromEnum(std.posix.E.AGAIN);
+pub const ENOLCK: c_int = @intFromEnum(std.posix.E.NOLCK);
+pub const EOPNOTSUPP: c_int = @intFromEnum(std.posix.E.OPNOTSUPP);
+pub const EBADF: c_int = @intFromEnum(std.posix.E.BADF);
+
+pub const LOCK_EX: c_int = 2;
+pub const LOCK_NB: c_int = 4;
 
 pub const DT_UNKNOWN: u8 = 0;
 pub const DT_DIR: u8 = 4;
@@ -451,6 +460,23 @@ pub const Identity = struct {
 /// why it is an error and not a null: an optional invites `orelse` at the call site, and
 /// the one thing that must not happen here is a missing answer read as agreement.
 pub const IdentityError = error{Unidentifiable};
+
+/// Asked of the descriptor, not the name: `O_NOFOLLOW` stops a symlink and nothing else, and a
+/// hard link or a FIFO planted at the name would have its target truncated or block the reader.
+pub fn isSoleRegularFile(fd: c_int, owned_by_caller: bool) bool {
+    if (builtin.os.tag == .linux) {
+        const lnx = std.os.linux;
+        var stx: lnx.Statx = undefined;
+        const rc = lnx.statx(fd, "", lnx.AT.EMPTY_PATH, .{ .TYPE = true, .UID = true, .NLINK = true }, &stx);
+        if (lnx.errno(rc) != .SUCCESS) return false;
+        if (!stx.mask.TYPE or !stx.mask.UID or !stx.mask.NLINK) return false;
+        return lnx.S.ISREG(stx.mode) and stx.nlink == 1 and (!owned_by_caller or stx.uid == geteuid());
+    } else {
+        var st: std.c.Stat = undefined;
+        if (std.c.fstat(fd, &st) != 0) return false;
+        return std.c.S.ISREG(st.mode) and st.nlink == 1 and (!owned_by_caller or st.uid == geteuid());
+    }
+}
 
 pub fn identityOfFd(fd: c_int) IdentityError!Identity {
     if (builtin.os.tag == .linux) {

@@ -252,13 +252,6 @@ python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));sc=d["result"].get
   && pass "self-exec ran the real binary (a real sideeye report), not the PATH fake" || fail "self-exec used argv[0]/PATH, not the canonical path"
 
 echo "=========== mcp 6: a reused work dir must not serve a stale verdict ==========="
-# Two SEPARATE server processes share SIDEEYE_MCP_WORK. Each process starts its
-# artifact counter at 1, so their report-1.json / child-1.out names collide. Server A
-# explores toy-bug (a real FAIL, the oracle is exported). Server B then explores
-# toy-FIXED: if the collision aborts B's child (the capture opens O_EXCL) and the
-# server reads A's leftover report, B answers FAIL — a stale verdict about the wrong
-# target, delivered as this call's result. Measured live on 2026-08-12: run 2 returned
-# a full report while neither work-dir file had been rewritten.
 drive "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/sideeye.toml\"}}}"
 python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));d["result"]["structuredContent"]["verdict"]=="FAIL" or sys.exit(d)' \
   || fail "precondition: server A did not reach toy-bug's FAIL"
@@ -266,6 +259,48 @@ drive "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META
 python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));v=d["result"]["structuredContent"]["verdict"];v=="PASS" or sys.exit(("stale or wrong verdict for toy-fixed: %s"%v,d))' \
   && pass "server B answered about ITS target (toy-fixed PASS), not server A's stale FAIL" \
   || fail "a reused work dir served a stale verdict (or toy-fixed did not PASS)"
+
+echo "=========== mcp 6b: two servers at once on one work directory answer each about its own config (#816) ==========="
+rm -rf "$WS/conc-a" "$WS/conc-b" /tmp/mcp-conc-holding; mkdir -p "$WS/conc-a" "$WS/conc-b"
+cat > "$WS/conc-slow-init.sh" <<SH
+#!/bin/sh
+: > /tmp/mcp-conc-holding
+sleep 3
+exec $OUT/toy-bug init
+SH
+chmod +x "$WS/conc-slow-init.sh"
+cat > "$WS/conc-a.toml" <<TOML
+[world]
+state = "./conc-a"
+[define]
+setup     = "$WS/conc-slow-init.sh"
+operation = "$OUT/toy-bug rotate"
+TOML
+cat > "$WS/conc-b.toml" <<TOML
+[world]
+state = "./conc-b"
+[define]
+setup     = "$OUT/toy-fixed init"
+operation = "$OUT/toy-fixed rotate"
+TOML
+printf '%s' "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/conc-a.toml\"}}}" \
+  | "$SIDEEYE" mcp >/tmp/mcp-conc-a.out 2>/tmp/mcp-conc-a.err &
+conc_a=$!
+i=0
+while [ ! -e /tmp/mcp-conc-holding ] && [ "$i" -lt 100 ]; do sleep 0.1; i=$((i + 1)); done
+printf '%s' "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/conc-b.toml\"}}}" \
+  | "$SIDEEYE" mcp >/tmp/mcp-conc-b.out 2>/tmp/mcp-conc-b.err
+b_done_while_a=$(kill -0 "$conc_a" 2>/dev/null && echo yes || echo no)
+wait "$conc_a"
+python3 - <<'CONC' && pass "two servers at once on one work directory: A answers FAIL about toy-bug, B answers PASS about toy-fixed" || fail "two servers at once mixed their answers, or B was refused"
+import json, sys
+a = json.load(open("/tmp/mcp-conc-a.out"))["result"]
+b = json.load(open("/tmp/mcp-conc-b.out"))["result"]
+if a.get("isError") or b.get("isError"): sys.exit("isError: A=%r B=%r %s" % (a.get("isError"), b.get("isError"), b["content"][0]["text"][:200]))
+va, vb = a["structuredContent"]["verdict"], b["structuredContent"]["verdict"]
+if (va, vb) != ("FAIL", "PASS"): sys.exit("verdicts A=%s B=%s" % (va, vb))
+CONC
+[ "$b_done_while_a" = "yes" ] || fail "staging: server A had finished before B answered, so nothing overlapped"
 
 echo "=========== mcp 6ap: a define's apparatus is checked in the child the server starts (#257) ==========="
 # The server starts `sideeye explore --config` with a minimal environment plus the names
@@ -367,14 +402,20 @@ state = "./state"
 setup     = "$WS2/init-once.sh"
 operation = "$OUT/toy-bug rotate"
 TOML
-req="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS2/once.toml\"}}}
-{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_replay_case\",\"arguments\":{\"case_path\":\"$WS2/work/cases/000001.json\"}}}
-{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_replay_case\",\"arguments\":{\"case_path\":\"$WS2/work/cases/000001.json\"}}}"
+# Not one session for the explore and the replays: the case lands under a directory the server
+# names, unknown until the explore has run.
+REQ="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS2/once.toml\"}}}" \
+  SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$WS2 SIDEEYE_MCP_WORK=$WS2/work \
+  sh -c "printf '%s' \"\$REQ\" | \"$SIDEEYE\" mcp >/tmp/mcp-explore.out 2>/tmp/mcp.err"
+CASE1=$(ls "$WS2"/work/server-*/cases/000001.json 2>/dev/null | head -1)
+req="{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_replay_case\",\"arguments\":{\"case_path\":\"$CASE1\"}}}
+{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_replay_case\",\"arguments\":{\"case_path\":\"$CASE1\"}}}"
 REQ="$req" SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$WS2 SIDEEYE_MCP_WORK=$WS2/work \
   sh -c "printf '%s' \"\$REQ\" | \"$SIDEEYE\" mcp >/tmp/mcp.out 2>/tmp/mcp.err"
+cat /tmp/mcp-explore.out /tmp/mcp.out > /tmp/mcp-both.out
 python3 - <<'PY' && pass "explore FAIL, then replay FAIL twice — the second call did not die on leftovers" || fail "the second replay in one session diverged (state freshness missing)"
 import json, sys
-lines=[l for l in open("/tmp/mcp.out") if l.strip()]
+lines=[l for l in open("/tmp/mcp-both.out") if l.strip()]
 if len(lines)!=3: sys.exit("wanted 3 responses, got %d"%len(lines))
 r1,r2,r3=[json.loads(l)["result"] for l in lines]
 for tag, r in (("explore", r1), ("first replay", r2), ("second replay", r3)):
@@ -423,8 +464,9 @@ srv_rc=$?
 
 # The orphaned engine finishes on its own: poll for its report with a deadline.
 i=0
-while [ ! -s "$ORPHAN_WORK/report-1.json" ] && [ "$i" -lt 100 ]; do sleep 0.1; i=$((i + 1)); done
-python3 - "$ORPHAN_WORK/report-1.json" <<'PY10' && pass "the server's child stopped itself: parent_exited before any world" || fail "the orphaned exploration did not stop (or stopped for the wrong reason)"
+orphan_report() { ls "$ORPHAN_WORK"/server-*/report-1.json 2>/dev/null | head -1; }
+while [ ! -s "$(orphan_report)" ] && [ "$i" -lt 100 ]; do sleep 0.1; i=$((i + 1)); done
+python3 - "$(orphan_report)" <<'PY10' && pass "the server's child stopped itself: parent_exited before any world" || fail "the orphaned exploration did not stop (or stopped for the wrong reason)"
 import json, sys
 try:
     r = json.load(open(sys.argv[1]))
@@ -443,7 +485,7 @@ echo "=========== mcp 10: a case's state outside the range is refused; the direc
 # outside must come back as a tool error, with the outside directory untouched.
 MCPVICTIM=/tmp/mcp-victim
 rm -rf "$MCPVICTIM"; mkdir -p "$MCPVICTIM"; echo "survives" > "$MCPVICTIM/sentinel.txt"
-python3 - "$WS2/work/cases/000001.json" "$WS2/evil.json" "$MCPVICTIM" <<'PY'
+python3 - "$CASE1" "$WS2/evil.json" "$MCPVICTIM" <<'PY'
 import json, sys
 c = json.load(open(sys.argv[1]))
 c["define"]["state"] = sys.argv[3]
@@ -480,7 +522,7 @@ echo "=========== mcp 10r: a case's RELATIVE state resolves against the case, an
 # the range, refused. (Measured: with the sibling spelling the leg failed on
 # `--setup exited non-zero`, and its message would have blamed the resolution.)
 mkdir -p "$WS2/rel"
-python3 - "$WS2/work/cases/000001.json" "$WS2/rel/sibling.json" "$WS2/rel/self.json" <<'PY'
+python3 - "$CASE1" "$WS2/rel/sibling.json" "$WS2/rel/self.json" <<'PY'
 import json, sys
 c = json.load(open(sys.argv[1]))
 c["define"]["state"] = "../state"         # the original state dir, named relatively
@@ -1115,20 +1157,21 @@ ev_session() {
       sh -c "printf '%s' \"\$REQ\" | \"$SIDEEYE\" mcp >/tmp/mcp.out 2>/tmp/mcp.err"
 }
 ev_session "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS3/ev.toml\"}}}"
-if [ ! -f /tmp/mcp-ev-ran ] || [ ! -f "$WS3/work/evidence/000001.json" ]; then
+EVW=$(ls -d "$WS3"/work/server-* 2>/dev/null | head -1)
+if [ ! -f /tmp/mcp-ev-ran ] || [ ! -f "$EVW/evidence/000001.json" ]; then
     fail "the explore that should leave a bundle did not (marker or bundle missing): the legs below would prove nothing"
 else
     rm -f /tmp/mcp-ev-ran
-    ev_session "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_evidence\",\"arguments\":{\"case_path\":\"$WS3/work/cases/000001.json\"}}}
-{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_evidence\",\"arguments\":{\"case_path\":\"$WS3/work/evidence/000001.json\"}}}"
-    WS3="$WS3" python3 - <<'PY' && pass "the bundle by the case's name and by its own, case and replay the server's, nothing run" || fail "sideeye_evidence did not return the saved bundle as documented"
+    ev_session "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_evidence\",\"arguments\":{\"case_path\":\"$EVW/cases/000001.json\"}}}
+{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_evidence\",\"arguments\":{\"case_path\":\"$EVW/evidence/000001.json\"}}}"
+    WS3="$WS3" EVW="$EVW" python3 - <<'PY' && pass "the bundle by the case's name and by its own, case and replay the server's, nothing run" || fail "sideeye_evidence did not return the saved bundle as documented"
 import json, os, sys
 lines = [l for l in open("/tmp/mcp.out") if l.strip()]
 if len(lines) != 2: sys.exit("wanted 2 responses, got %d" % len(lines))
 if os.path.exists("/tmp/mcp-ev-ran"): sys.exit("the define's setup ran: evidence started something")
 ws = os.environ["WS3"]
-case = os.path.realpath(ws + "/work/cases/000001.json")
-disk = json.load(open(ws + "/work/evidence/000001.json"))
+case = os.path.realpath(os.environ["EVW"] + "/cases/000001.json")
+disk = json.load(open(os.environ["EVW"] + "/evidence/000001.json"))
 for l in lines:
     r = json.loads(l)["result"]
     if r.get("isError") is not False: sys.exit("isError %r on a bundle that is there" % r.get("isError"))
@@ -1152,7 +1195,7 @@ echo "=========== mcp 23: a bundle the target rewrote cannot forge the region, h
 # carry in a safe build. The server answers, and a tools/list after it in the same session is
 # the proof that it is still up. Each attack is checked present in the text before it is
 # checked defeated.
-python3 - "$WS3/work/evidence/000001.json" <<'PY'
+python3 - "$EVW/evidence/000001.json" <<'PY'
 import json, sys
 p = sys.argv[1]
 d = json.load(open(p))
@@ -1166,7 +1209,7 @@ for _ in range(300): deep = [deep]
 d["future_field"] = deep
 json.dump(d, open(p, "w"))
 PY
-ev_session "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_evidence\",\"arguments\":{\"case_path\":\"$WS3/work/cases/000001.json\"}}}
+ev_session "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_evidence\",\"arguments\":{\"case_path\":\"$EVW/cases/000001.json\"}}}
 {\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"tools/list\",\"params\":{$META}}"
 python3 - <<'PY' && pass "a rewritten bundle stays data: one closing line, the server's replay, the server still up" || fail "a rewritten bundle reached past the region, or took the server down"
 import json, sys
@@ -1193,8 +1236,8 @@ echo "=========== mcp 24: a bundle outside the root is refused, whichever side o
 # And a path outside the root outright, refused as explore and replay refuse it.
 WS4=/tmp/mcp-ws-ev-link
 rm -rf "$WS4" /tmp/mcp-ev-outside; mkdir -p "$WS4/work/cases" /tmp/mcp-ev-outside
-cp "$WS3/work/cases/000001.json" "$WS4/work/cases/000001.json"
-python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); d.pop("future_field",None); d["replay"]="x"; json.dump(d,open(sys.argv[2],"w"))' "$WS3/work/evidence/000001.json" /tmp/mcp-ev-outside/000001.json
+cp "$EVW/cases/000001.json" "$WS4/work/cases/000001.json"
+python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); d.pop("future_field",None); d["replay"]="x"; json.dump(d,open(sys.argv[2],"w"))' "$EVW/evidence/000001.json" /tmp/mcp-ev-outside/000001.json
 ln -s /tmp/mcp-ev-outside "$WS4/work/evidence"
 REQ="{\"jsonrpc\":\"2.0\",\"id\":6,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_evidence\",\"arguments\":{\"case_path\":\"$WS4/work/cases/000001.json\"}}}
 {\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_evidence\",\"arguments\":{\"case_path\":\"/tmp/mcp-ev-outside/000001.json\"}}}" \
@@ -1219,12 +1262,12 @@ PY
 # is still one line of valid UTF-8 (json.loads below would refuse it otherwise).
 WS5=/tmp/mcp-ws-ev-case
 rm -rf "$WS5" /tmp/mcp-ev-cases-outside; mkdir -p "$WS5/work/evidence" /tmp/mcp-ev-cases-outside
-cp "$WS3/work/cases/000001.json" /tmp/mcp-ev-cases-outside/000001.json
+cp "$EVW/cases/000001.json" /tmp/mcp-ev-cases-outside/000001.json
 cp /tmp/mcp-ev-outside/000001.json "$WS5/work/evidence/000001.json"
 ln -s /tmp/mcp-ev-cases-outside "$WS5/work/cases"
 ODD="$WS5/odd-$(printf '\377')"
 mkdir -p "$ODD/cases" "$WS5/w2/evidence" "$WS5/w2/cases"
-cp "$WS3/work/cases/000001.json" "$ODD/cases/000001.json"
+cp "$EVW/cases/000001.json" "$ODD/cases/000001.json"
 ln -s "$ODD/cases/000001.json" "$WS5/w2/cases/000001.json"
 cp /tmp/mcp-ev-outside/000001.json "$WS5/w2/evidence/000001.json"
 REQ="{\"jsonrpc\":\"2.0\",\"id\":8,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_evidence\",\"arguments\":{\"case_path\":\"$WS5/work/evidence/000001.json\"}}}
