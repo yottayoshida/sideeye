@@ -21,6 +21,9 @@ jobs:
         run: HOMEBREW_NO_AUTO_UPDATE=1 brew install coreutils
       - name: "#796 measurements"
         run: OUT=/tmp/m796-out sh spike/fsusage/measure-796.sh
+      - name: "macOS acceptance against a real fs_usage, check 9 included"
+        if: always()
+        run: bash spike/fsusage/acceptance-local.sh
       - name: Upload
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

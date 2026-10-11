@@ -105,7 +105,9 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
     // `fsusage.read`. `-t` is insurance against a root observer outliving its parent
     // and holding kdebug, which SIGPIPE cannot deliver: a process that has stopped
     // writing never learns the reader is gone.
-    const pid = posix.spawnSidecar(gpa, &.{ "/usr/bin/sudo", "-n", "/usr/bin/fs_usage", "-w", "-e", "-t", limit, "-f", "filesys" }, capture_path) catch |e|
+    // No class filter: `-f filesys` drops `dup` and `dup2`, and a write through a moved
+    // descriptor is then a write on a number nothing opened (#796).
+    const pid = posix.spawnSidecar(gpa, &.{ "/usr/bin/sudo", "-n", "/usr/bin/fs_usage", "-w", "-e", "-t", limit }, capture_path, fsusage.errPath(arena, capture_path) catch setupError(.environment, "out of memory")) catch |e|
         spawnFailure(e, .before_exploration, "could not start fs_usage");
     // Registered before anything below can refuse. From here on, every `setupError`
     // and `unknown` stops it; no call site has to.
@@ -1532,7 +1534,11 @@ fn phaseOracle(run: *Run) void {
         // drawn from that is wrong in a way neither observer can see.
         const oracle_cwd = run.define.effective_cwd orelse "/";
         const parsed = if (args.oracle_fs_usage) blk: {
-            const r = fsusage.read(arena, text, state_abs, if (alt_differs) state_alt else "", rec_trace, fsu_sentinel_a, fsu_sentinel_b, oracle_cwd, trace.subject_writer_tid_list.items, trace.subject_started_tid_list.items) catch setupError(.environment, "out of memory");
+            const err_text = capture.readFileAllocCapped(arena, fsusage.errPath(arena, oracle_out) catch setupError(.environment, "out of memory"), 64 * 1024, .{ .no_follow = true }) orelse "";
+            if (std.mem.indexOf(u8, err_text, "buffer overrun") != null)
+                unknown(.oracle_saw_nothing, "fs_usage reported a buffer overrun: the machine produced events faster than it read them and it dropped some, so the capture can be missing an operation", .environment);
+            const std_scope = fsusage.standardFdScope(state_abs, if (alt_differs) state_alt else "", rec_stdout);
+            const r = fsusage.readWithStd(arena, text, state_abs, if (alt_differs) state_alt else "", rec_trace, fsu_sentinel_a, fsu_sentinel_b, oracle_cwd, trace.subject_writer_tid_list.items, trace.subject_started_tid_list.items, std_scope) catch setupError(.environment, "out of memory");
             if (r.defect) |d| switch (d) {
                 .unparsed => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "a line of the fs_usage capture did not match the grammar, so the account has a hole: {s}", .{textShown(arena, l)}) catch "a line of the fs_usage capture did not match the grammar", .sideeye_defect),
                 .truncated => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "fs_usage cut a pathname at its display width, so the line cannot be scoped to the state directory either way: {s}", .{textShown(arena, l)}) catch "fs_usage cut a pathname at its display width", .narrow_state),

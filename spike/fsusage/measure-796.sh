@@ -19,11 +19,17 @@ say() { echo "$*" | tee -a "$SUM"; }
 
 sudo -v || { say "sudo unavailable; nothing was measured"; exit 1; }
 ( cd "$HERE" && zig build --prefix "$WORK/cur" ) || { say "zig build failed"; exit 1; }
-mkdir -p "$WORK/variant-src"
-git -C "$HERE" archive HEAD | tar -x -C "$WORK/variant-src"
-sed -i '' 's/"-t", limit, "-f", "filesys" }/"-t", limit }/' "$WORK/variant-src/src/main.zig"
-grep -q '"-t", limit }' "$WORK/variant-src/src/main.zig" || { say "the filter could not be dropped from the variant's launch line"; exit 1; }
-( cd "$WORK/variant-src" && zig build --prefix "$WORK/nofilter" ) || { say "variant build failed"; exit 1; }
+BUILDS=cur
+if grep -q '"-t", limit, "-f", "filesys" }' "$HERE/src/main.zig"; then
+    mkdir -p "$WORK/variant-src"
+    git -C "$HERE" archive HEAD | tar -x -C "$WORK/variant-src"
+    sed -i '' 's/"-t", limit, "-f", "filesys" }/"-t", limit }/' "$WORK/variant-src/src/main.zig"
+    grep -q '"-t", limit }' "$WORK/variant-src/src/main.zig" || { say "the filter could not be dropped from the variant's launch line"; exit 1; }
+    ( cd "$WORK/variant-src" && zig build --prefix "$WORK/nofilter" ) || { say "variant build failed"; exit 1; }
+    BUILDS="cur nofilter"
+else
+    say "the launch at HEAD carries no class filter: M1 measures that build alone"
+fi
 
 cat > "$WORK/print_toy.c" <<'EOF'
 #include <fcntl.h>
@@ -114,7 +120,7 @@ leg() {  # leg <binary-dir> <tag> <name> <operation...>
 }
 say "== M1: the shipped launch (-f filesys), then the launch without the filter"
 printf 'new\n' > "$WORK/new"
-for b in cur nofilter; do
+for b in $BUILDS; do
     leg "$WORK/$b" "$b" print "$WORK/print_toy @ST@"
     leg "$WORK/$b" "$b" dup2 "$WORK/dup2_toy @ST@"
     leg "$WORK/$b" "$b" dup2-outside "$WORK/dup2_out_toy @ST@ @W@/outside.log"
