@@ -5,8 +5,9 @@
   XFS, and an io_uring write, PASS 4/4 with `oracle_verified: true`); #405 and ADR 0032 (the
   per-path reconciliation, `state_changed_unaccounted`), whose §2 this narrows.
 - **Scope:** `src/engine/snapshot.zig` (`reconcile`), `src/refuse.zig` (`reconcileOrRefuse`, the
-  refusal's sentence), `src/main.zig` (the scratch declaration passed in). Both platforms, every
-  observation mode: the reconciliation reads the recorded account, whatever recorded it.
+  refusal's sentence), `src/main.zig` (the scratch declaration passed in) — both platforms, every
+  observation mode, since the reconciliation reads the recorded account whatever recorded it; and
+  `src/oracle.zig` (the clone refusal), Linux under `--oracle`.
 
 ## Context
 
@@ -60,6 +61,34 @@ is which runs reach it: some that were PASS are now UNKNOWN, the fail-closed dir
 says "accounts for" where it said "names", since an `open` can now name a path and not account for
 it, and says how many of the listed paths were named only by records that cannot write.
 
+### The oracle refuses a reflink clone; it does not refuse io_uring
+
+The reconciliation is per path, so a clone into a file a recorded write also names — the first
+half written with `pwrite`, the second cloned in with `FICLONERANGE` — is accounted for, and the
+world holding the torn file is never explored. Measured in the same container on btrfs: PASS with
+`oracle_verified: true` from the subject, and with `oracle_verified_subject_only` when a shell runs
+the tool as a child. The oracle sees the clone — `ioctl(4</…/key.bin>, BTRFS_IOC_CLONE_RANGE or
+FICLONERANGE, …)` — and read it as read-only because `ioctl` is on that list. It now refuses
+`FICLONE` and `FICLONERANGE` on a state descriptor as `unsupported_syscall_observed`
+(`ioctl(FICLONE)`), before the read-only list and in the child branch as well (`#689`'s shared
+mapping is the precedent: a tool a shell runs is a child). The request is matched by name, by
+strace's `_IOC(…, 0x94, …)` fallback, and by number, and the destination is read from the first
+argument alone: a clone out of a state file into one outside is a read. A whole-file clone that
+failed with an errno raised before anything is remapped is not refused — GNU `cp` on overlayfs gets
+`EOPNOTSUPP`, falls back to `copy_file_range`, and FAILs as it should — but any other failed clone
+is, since btrfs can fail a whole-file clone, and XFS a range, after remapping part of it. A call strace split across two lines is judged on the
+half that carries the result (a parent's `epoll_pwait` between them is enough to split it), and an
+`ioctl` on a state file whose request cannot be read is refused rather than read as a read.
+
+io_uring is the other call neither witness counts, and refusing a successful `io_uring_setup` was
+the plan. Measured before doing it, outside Docker's default seccomp (which answers
+`io_uring_setup` with `EPERM`): Node 20.19.2 sets up no ring, and Node 22.23.3 sets up three at start
+— under `node -e 0`, and with `UV_USE_IO_URING=0` — while an asynchronous `fs.promises.writeFile`
+still reaches the kernel as a plain `write`. Refusing the ring would refuse every Node 22 target on
+a host that allows io_uring, for writes both witnesses see; the owner chose not to (2026-10-11). A
+write through a ring stays a gap: refused by the reconciliation where nothing able to write names
+the file, and by nothing otherwise.
+
 ## Alternatives considered
 
 - **Stop counting `open` at all.** Refuses the file a target creates and never writes, the false
@@ -69,6 +98,11 @@ it, and says how many of the listed paths were named only by records that cannot
   measured to avoid either.
 - **Count `truncate` unconditionally.** Leaves `ftruncate(fd, 0)` followed by a clone, an io_uring
   write or a store through a mapping accounted for — the same hole one call later.
+- **Refuse any successful `io_uring_setup` under the oracle.** Refuses every Node 22 target on a host
+  that allows io_uring, measured above, for rings that carry no file write.
+- **Make `ioctl` an allow-list of read-only requests.** Nothing has measured which requests real
+  targets issue on state files; a named deny-list of the requests that put bytes there is what is
+  known.
 - **Record `FICLONE` as a write in the shim and judge it** (the macOS shim already does this for
   `clonefile`). Turns the btrfs `cp` into the FAIL it is, but interposes `ioctl`, which every
   process calls; the owner chose refusal (2026-10-11). It would not reach io_uring either way.
@@ -76,7 +110,8 @@ it, and says how many of the listed paths were named only by records that cannot
 ## Consequences
 
 - The btrfs and XFS `cp`, the io_uring toy, the clone into a new file and both `ftruncate(0)`
-  shapes are refused `state_changed_unaccounted`; overlayfs `cp` and a libc write still FAIL, and a
+  shapes are refused `state_changed_unaccounted` — except that under `--oracle` a run holding a
+  reflink clone is refused before the reconciliation, as `unsupported_syscall_observed`; overlayfs `cp` and a libc write still FAIL, and a
   file created empty, truncated to empty, or cut short is still judged.
 - A run whose bytes reached a file through a write the default mode deliberately leaves unrecorded
   — a stream left for `exit` to flush, an `fwrite` past the buffer (ADR 0005), on either platform —
