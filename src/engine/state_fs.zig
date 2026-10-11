@@ -95,13 +95,11 @@ pub const SnapshotDiag = struct {
     file: FileTooLargeDiag = .{},
     tree: TreeTooLargeDiag = .{},
     entry: EntryDiag = .{},
-    /// Empty with `MountInside` when the mount table could not be read.
     mount: EntryRel = .{},
 };
 
 pub const MountScan = enum { none, found, unlisted };
 
-/// The first thing mounted strictly below `root`, asked before anything there is read or removed.
 pub fn firstMountInside(root: []const u8, out: *EntryRel) MountScan {
     out.len = 0;
     if (builtin.os.tag == .linux) {
@@ -115,12 +113,11 @@ var cleared_root_buf: [contract.max_path]u8 = undefined;
 var cleared_root_len: usize = 0;
 var table_watch: c_int = -1;
 
-/// Linux reads the table again only when a `poll` on a descriptor opened before the last reading
-/// says it changed. Do not read it at every snapshot and restore: on a host with thousands of
-/// mounts the reading outweighs the world. Do not keep an answer without the
-/// watch either: a bind mount made during the run, or by the setup after a replay's
-/// `--fresh-state`, keeps its device number and is seen by nothing else. macOS has no such
-/// notice and its walk is bounded by the state, so it walks every time.
+/// Do not read the table at every snapshot and restore: on a host with thousands of mounts the
+/// reading outweighs the world. Do not keep an answer without the watch either: a bind mount
+/// made during the run, or by the setup after a replay's `--fresh-state`, keeps its device
+/// number and is seen by nothing else. Not cached on macOS: it has no such notice, and its walk
+/// is bounded by the state.
 fn mountInsideWatched(root: []const u8, out: *EntryRel) MountScan {
     out.len = 0;
     if (builtin.os.tag != .linux) return firstMountInside(root, out);
@@ -164,8 +161,8 @@ fn mountTableScan(root: []const u8, out: *EntryRel) MountScan {
 }
 
 /// Not `getmntinfo` on macOS: its mount-on names can come back in the firmlinked spelling
-/// (`/System/Volumes/Data/…`), which a realpath'd root does not share. On Linux this is what names
-/// a btrfs subvolume, which the mount table does not list.
+/// (`/System/Volumes/Data/…`), which a realpath'd root does not share. Not skipped on Linux: it
+/// names a btrfs subvolume, which the mount table does not list.
 fn deviceScan(root: []const u8, out: *EntryRel) MountScan {
     var root_buf: [contract.max_path]u8 = undefined;
     const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return .unlisted;
@@ -174,8 +171,8 @@ fn deviceScan(root: []const u8, out: *EntryRel) MountScan {
     return deviceScanAt(root, id.dev, &rel_buf, 0, 0, out);
 }
 
-/// A directory that cannot be opened or identified is passed over, not refused: nothing can be
-/// removed through it either, and `walk` records it the same way.
+/// Do not refuse a directory that cannot be opened or identified: nothing can be removed
+/// through it either, and `walk` records it the same way.
 fn deviceScanAt(root: []const u8, dev: u64, rel_buf: *[contract.max_path]u8, rel_len: usize, depth: usize, out: *EntryRel) MountScan {
     if (depth > max_depth) return .none;
     var dir_buf: [contract.max_path]u8 = undefined;
