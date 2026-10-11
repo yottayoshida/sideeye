@@ -3,13 +3,12 @@ const contract = @import("contract");
 const posix = @import("posix.zig");
 const defang = @import("defang.zig");
 
-/// Held until the process exits; children do not inherit it.
 pub var lock_fd: c_int = -1;
 
 pub const Refusal = struct { reason: contract.SetupErrorReason, text: []const u8 };
 
 /// Refused, not waited for: a run stuck in its setup would otherwise stop the next one
-/// without a word. A filesystem without locks goes on as before.
+/// without a word.
 pub fn lock(arena: std.mem.Allocator, work: []const u8) ?Refusal {
     const shown = defang.textShown(arena, work);
     var path_buf: [contract.max_path]u8 = undefined;
