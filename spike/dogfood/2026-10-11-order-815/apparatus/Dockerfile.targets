@@ -1,0 +1,5 @@
+FROM debian:trixie-slim
+RUN apt-get update && apt-get install -y --no-install-recommends nodejs npm strace python3 python3-virtualenv ca-certificates && apt-get clean
+RUN npm install -g --no-fund --no-audit stylelint@17.15.0 > /tmp/npm.log 2>&1 && stylelint --version
+COPY doctl.tgz /tmp/doctl.tgz
+RUN tar xzf /tmp/doctl.tgz -C /usr/local/bin doctl && doctl version

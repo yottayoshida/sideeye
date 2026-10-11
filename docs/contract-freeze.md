@@ -330,6 +330,12 @@ stay the same.
    when the baseline listed the rebuilt directory in another order than the recording listed the
    setup's, can now reach a verdict. The verdict-to-code mapping is untouched and no reason is
    added.
+   **Which runs exit 2 moved on 2026-10-11** (ADR 0119): a run whose crash world reached its crash
+   point through other operations than the recording numbered — another class, or a path the
+   recording spells at another position — is refused `kill_did_not_land`, exit 2, where until now
+   it was judged (0 or 1) unless the run had admitted a child, and then by class alone. A target
+   whose order varies between runs reaches a verdict only when every crash world draws the
+   recording's order. The verdict-to-code mapping is untouched and no reason is added.
 4. **Replay compatibility.** A saved case replays across 1.x or refuses
    honestly — `case_no_longer_applies`, whether the code changed underneath
    it or the trace contract did (the refusal message names which) — never a
@@ -384,6 +390,10 @@ stay the same.
    paths at the crash point differ and goes on, as it does for a path carrying a pid, because the
    case's prefix compares classes (ADR 0009); the operation it kills before is the one of that
    class at that index in a run that starts as its worlds do.
+   **Read on 2026-10-11** (#815, ADR 0119): a replay's world is held to the replay's recording the
+   way an exploration's is, so a case saved from a target whose order varies is refused
+   `kill_did_not_land` when its world draws another order than its recording — an honest refusal,
+   not a verdict about a shifted address; the case's `prefix_hash` still compares classes only.
 5. **The MCP surface** (decided 2026-08-13, recorded in #86, codified here).
    The two tool names — `sideeye_explore_config`, `sideeye_replay_case` —
    their input schemas, and the isError derivation rule (isError follows the

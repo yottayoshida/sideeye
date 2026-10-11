@@ -12670,6 +12670,42 @@ else
     umnt "$T"
 fi
 
+
+echo "=========== check 28: a world that reaches its crash point through the recording's names in another order is refused (#815) ==========="
+for leg in "pair|operation 1 was open(beta) in the world and open(alpha) in the recording" \
+           "tmp|operation 1 was open(beta.tmp) in the world and open(alpha.tmp) in the recording" \
+           "mixed|in the world and open(alpha) in the recording" \
+           "redir|operation 3 was mkdir(d2) in the world and mkdir(d1) in the recording"; do
+    m=${leg%%|*}; want=${leg#*|}
+    S28=/tmp/acc-order/s-$m
+    rm -rf "$S28" "/tmp/acc-order/w-$m"; mkdir -p "$S28"
+    o=$(TOY_STATE=$S28 TOY_ORDER_FLIP=1 "$SIDEEYE" explore --state "$S28" --setup "$OUT/toy-order init" --operation "$OUT/toy-order $m" \
+        --shim "$SHIM" --work "/tmp/acc-order/w-$m" --allow-unverified 2>&1)
+    rc=$?
+    if refused_uncredited kill_did_not_land "$rc" "$o" && printf '%s\n' "$o" | grep -qF "$want"; then
+        echo "ok   toy-order $m with its order flipped in the worlds is refused, naming: $want"
+    else
+        echo "FAIL toy-order $m flipped in the worlds: exit $rc, wanted kill_did_not_land and '$want'"
+        printf '%s\n' "$o" | sed -n '1,3p' | sed 's/^/     | /'
+        fails=$((fails + 1))
+    fi
+done
+for leg in "pair 0 1" "uuid 0 0" "mkexist 1 1"; do
+    m=${leg%% *}; rest=${leg#* }; flip=${rest%% *}; want=${rest#* }
+    S28=/tmp/acc-order/c-$m-$flip
+    rm -rf "$S28" "/tmp/acc-order/cw-$m-$flip"; mkdir -p "$S28"
+    o=$(TOY_STATE=$S28 TOY_ORDER_FLIP=$flip "$SIDEEYE" explore --state "$S28" --setup "$OUT/toy-order init" --operation "$OUT/toy-order $m" \
+        --shim "$SHIM" --work "/tmp/acc-order/cw-$m-$flip" --allow-unverified 2>&1)
+    rc=$?
+    if [ "$rc" = "$want" ]; then
+        echo "ok   toy-order $m (flipped: $flip) keeps its verdict, exit $rc"
+    else
+        echo "FAIL toy-order $m (flipped: $flip): exit $rc, wanted $want"
+        printf '%s\n' "$o" | sed -n '1,3p' | sed 's/^/     | /'
+        fails=$((fails + 1))
+    fi
+done
+
 reached_end=1
 echo ""
 if [ "$fails" = "0" ]; then

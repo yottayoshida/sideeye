@@ -189,7 +189,7 @@ pub const Reconciled = struct {
     }
 };
 
-fn relUnderRoot(path: []const u8, root: []const u8, alt: []const u8) ?[]const u8 {
+pub fn relUnderRoot(path: []const u8, root: []const u8, alt: []const u8) ?[]const u8 {
     for ([_][]const u8{ root, alt }) |r| {
         if (r.len == 0) continue;
         if (!contract.isInsideDir(path, r)) continue;

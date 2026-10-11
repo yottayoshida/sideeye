@@ -23,6 +23,7 @@ const capture = @import("capture.zig");
 const files = @import("files.zig");
 const report = @import("report.zig");
 const refuse = @import("refuse.zig");
+const prefix = @import("prefix.zig");
 const cli = @import("cli.zig");
 const case = @import("case.zig");
 const evidence = @import("evidence.zig");
@@ -2066,6 +2067,7 @@ fn phaseExploration(run: *Run) void {
     var world_stdout_buf: [contract.max_path]u8 = undefined;
     const world_stdout = std.fmt.bufPrint(&world_stdout_buf, "{s}/stdout-world.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
 
+    const order = prefix.plan(arena, trace, n, initial, final, state_abs, state_alt) catch setupError(.environment, "out of memory");
     var k: u32 = 1;
     while (k <= n + 1) : (k += 1) {
         // A replay explores exactly the case's world plus the baseline; every trust
@@ -2228,18 +2230,9 @@ fn phaseExploration(run: *Run) void {
         if (k <= n and !landed)
             unknown(.kill_did_not_land, "a world was asked to die before a given operation and did not", .kill_not_landed);
 
-        // landed and the operation did not. Compared by class, which is what a saved
-        // case's `prefix_hash` compares for the same reason and with the same
-        // deliberate blind spot: paths that carry a pid or a random suffix legitimately
-        // differ between runs (the timewarrior shape), so they warn there and are not
-        // compared here.
-        if (children_admitted and k <= n and k > 1) {
-            var wh: [16]u8 = undefined;
-            var rh: [16]u8 = undefined;
-            const both = case.prefixHash(wtrace, k - 1, &wh) and case.prefixHash(trace, k - 1, &rh);
-            if (!both or !std.mem.eql(u8, &wh, &rh))
-                unknown(.kill_did_not_land, "a world died at the operation number it was given, but the operations leading up to it are not the ones the recording numbered: the address names a different operation in this world than in the recording, so nothing died in front of the operation the crash point stands for. An operation whose sequence of state-directory calls varies between runs cannot be explored at a fixed index", .not_repeating);
-        }
+        // Not by class alone: two writes of one class to two names swap without changing it.
+        if (k <= n) if (prefix.firstDivergence(&order, wtrace, k)) |d|
+            unknown(.kill_did_not_land, prefix.detail(arena, d, &order), .not_repeating);
         // A contained world's shim that could not kill it exits and says why (v17, #559) — the
         // one watch that answers ahead of an existing refusal, because this refusal would
         // otherwise file an environment's failure as sideeye's defect.
