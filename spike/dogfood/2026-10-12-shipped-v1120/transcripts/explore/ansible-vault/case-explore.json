@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.12.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/av",
+    "operation": "ansible-vault encrypt secrets.yml --vault-password-file /s/avaux/pw",
+    "cwd": "/s/av",
+    "expected_status": 0
+  },
+  "k": 3,
+  "ops_total": 17,
+  "prefix_hash": "51b46a8246658ffc",
+  "after_class": "write",
+  "after_path": "/s/av/secrets.yml",
+  "before_class": "fsync",
+  "before_path": "/s/av/secrets.yml",
+  "violation": "hybrid"
+}

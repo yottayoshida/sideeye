@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 5,
+  "sideeye_version": "1.12.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/fc",
+    "operation": "/opt/freecad/usr/bin/freecadcmd /s/fcaux/edit.py",
+    "check": "/s/fc-check.sh",
+    "cwd": "/s/fc",
+    "scratch": [".tmp", ".home"],
+    "expected_status": 0
+  },
+  "k": 24,
+  "ops_total": 38,
+  "prefix_hash": "85b2d91b8b508797",
+  "after_class": "rename",
+  "after_path": "/s/fc/part.FCStd",
+  "before_class": "rename",
+  "before_path": "/s/fc/part.FCStd.433f74c7-d550-49c0-a405-5a5b5f5fcb3f",
+  "violation": "missing"
+}

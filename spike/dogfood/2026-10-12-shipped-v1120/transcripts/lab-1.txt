@@ -1,0 +1,184 @@
+link keepassxc-cli: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-lin
+link sops: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=rrj6b6gK3UnderYTvZfY/M
+link rclone: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=SWtwIKVg9MEwzhQf8V0n/I
+link duckdb: ELF 64-bit LSB executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux-a
+link yq: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=7m6rUZDkbkhn2QbhJ6BB/P
+link crystal: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=4d378b54a31965cbd1e
+link bun: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch6
+link swiftlint: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aa
+link /opt/freecad/usr/bin/freecadcmd: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aa
+link /opt/py/bin/python3: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch6
+
+======== keepassxc-cli db-create / add help
+Missing positional argument(s).
+
+Usage: keepassxc-cli db-create [options] database
+Create a new database.
+
+Options:
+  -q, --quiet                   Silence password prompt and other secondary
+                                outputs.
+  --set-key-file <path>         Set the key file for the database.
+  -k <path>                     Set the key file for the database.
+                                This option is deprecated, use --set-key-file
+                                instead.
+  -p, --set-password            Set a password for the database.
+  -t, --decryption-time <time>  Target decryption time in MS for the database.
+  -h, --help                    Display this help.
+
+Arguments:
+  database                      Path of the database.
+  -k, --key-file <path>          Key file of the database.
+  --no-password                  Deactivate password key for the database.
+  -u, --username <username>      Username for the entry.
+  --url <URL>                    URL for the entry.
+  -p, --password-prompt          Prompt for the entry's password.
+Successfully created new database.
+db-create rc=0
+total 16
+drwxr-xr-x 2 root root 4096 Oct 12 03:21 .
+drwxr-xr-x 3 root root 4096 Oct 12 03:21 ..
+-r-------- 1 root root  278 Oct 12 03:21 key.keyx
+-rw------- 1 root root 1710 Oct 12 03:21 vault.kdbx
+Could not create entry with path Web/github.
+add rc=1
+[empty]
+ls rc=0
+
+======== sops set
+encrypt rc=0
+set rc=0
+db:
+    user: app
+    password: hunter2
+
+======== rclone config update
+{
+	"State": "",
+	"Option": null,
+	"Error": "",
+	"Result": ""
+}
+update rc=0
+[backup]
+type = local
+
+[s3prod]
+type = s3
+provider = AWS
+access_key_id = AKIAEXAMPLE
+region = eu-west-1
+
+total 12
+drwxr-xr-x 2 root root 4096 Oct 12 03:21 .
+drwxr-xr-x 5 root root 4096 Oct 12 03:21 ..
+-rw-r--r-- 1 root root  105 Oct 12 03:21 rclone.conf
+
+======== duckdb update
+create rc=0
+update rc=0
+┌─────────┬──────────────┐
+│ status  │ count_star() │
+│ varchar │    int64     │
+├─────────┼──────────────┤
+│ new     │          990 │
+│ shipped │           10 │
+└─────────┴──────────────┘
+total 788
+drwxr-xr-x 2 root root   4096 Oct 12 03:21 .
+drwxr-xr-x 6 root root   4096 Oct 12 03:21 ..
+-rw-r--r-- 1 root root 798720 Oct 12 03:21 shop.duckdb
+
+======== yq -i
+yq rc=0
+apiVersion: apps/v1
+kind: Deployment
+spec:
+  replicas: 3 # keep
+-rw-r----- 1 root root 64 Oct 12 03:21 d.yaml
+
+======== crystal tool format
+Format ./app.cr
+format rc=0
+def add(a, b)
+  a + b
+end
+
+puts add(1, 2)
+
+======== swiftlint --fix
+Correcting Swift files at paths App.swift
+Correcting 'App.swift' (1/1)
+SourceKittenFramework/library_wrapper.swift:63: Fatal error: Loading libsourcekitdInProc.so failed. Tried:
+  libsourcekitdInProc.so: libsourcekitdInProc.so: cannot open shared object file: No such file or directory
+Trace/breakpoint trap
+fix rc=133
+let a = 1;   $
+let b = 2;$
+OVERVIEW: A tool to enforce Swift style and conventions.
+
+USAGE: swiftlint <subcommand>
+
+OPTIONS:
+  --version               Show the version.
+  -h, --help              Show help information.
+
+SUBCOMMANDS:
+  analyze                 Run analysis rules
+  docs                    Open SwiftLint documentation website in the default
+                          web browser
+  generate-docs           Generates markdown documentation for selected group
+                          of rules
+  lint (default)          Print lint warnings and errors
+  baseline                Operations on existing baselines
+  reporters               Display the list of reporters and their identifiers
+  rules                   Display the list of rules and their identifiers
+  version                 Display the current version of SwiftLint
+
+
+======== bun add
+bun add v1.4.3 (c6da4a4d3)
+Resolving dependencies
+Resolved, downloaded and extracted [1]
+Saved lockfile
+
+installed probe-dep@/s/lab/bunaux/dep-1.0.0.tgz
+
+1 package installed [21.00ms]
+bun add rc=0
+{
+  "name": "probe-proj",
+  "version": "1.0.0",
+  "dependencies": {
+    "probe-dep": "/s/lab/bunaux/dep-1.0.0.tgz"
+  }
+}
+bun.lock
+node_modules
+package.json
+
+======== ansible-vault encrypt
+ERROR: Ansible requires blocking IO on stdin/stdout/stderr. Non-blocking file handles detected: <stdout>, <stderr>
+encrypt rc=1
+db_password: changeme
+api_token: abc123
+ERROR: Ansible requires blocking IO on stdin/stdout/stderr. Non-blocking file handles detected: <stdout>, <stderr>
+rekey rc=1
+
+======== freecadcmd save
+mk rc=0
+
+Recompute......
+						(100 %)									edit rc=0
+						(100 %)									Postprocessing......
+						(100 %)									Recompute......
+						(100 %)									total 36
+drwxr-xr-x  3 root root 4096 Oct 12 03:21 .
+drwxr-xr-x 15 root root 4096 Oct 12 03:21 ..
+drwxr-xr-x  2 root root 4096 Oct 12 03:21 __pycache__
+-rw-r--r--  1 root root  121 Oct 12 03:21 edit.py
+-rw-r--r--  1 root root  211 Oct 12 03:21 fc1.log
+-rw-r--r--  1 root root  310 Oct 12 03:21 fc2.log
+-rw-r--r--  1 root root  154 Oct 12 03:21 mk.py
+-rw-r--r--  1 root root 2456 Oct 12 03:21 part.20261012-032108.FCBak
+-rw-r--r--  1 root root 2472 Oct 12 03:21 part.FCStd

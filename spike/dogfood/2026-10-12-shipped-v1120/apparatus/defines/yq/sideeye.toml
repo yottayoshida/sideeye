@@ -1,0 +1,6 @@
+[world]
+state = "/s/yq"
+
+[define]
+operation = ["yq", "-i", ".spec.replicas = 3", "deploy.yaml"]
+cwd       = "/s/yq"

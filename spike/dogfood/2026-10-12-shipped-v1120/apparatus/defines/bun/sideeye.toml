@@ -1,0 +1,9 @@
+[world]
+state = "/s/bun"
+
+[define]
+operation = "bun add /s/bunaux/dep-1.0.0.tgz"
+# The manifest is the user's; node_modules and bun.lock are new paths. The checker reads whether
+# package.json parses and the install can still be finished (cohort 2's property, the 2026-09-16 copy).
+check     = "/s/bun-check.sh"
+cwd       = "/s/bun"

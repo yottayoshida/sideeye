@@ -1,0 +1,13 @@
+[world]
+state = "/s/kpfat"
+
+[define]
+operation = "keepassxc-cli add --no-password -k /s/kpaux/key.keyx vault.kdbx github -u me --url https://github.com"
+# The first define's state on a FAT filesystem (fat.sh): Qt's QSaveFile cannot open O_TMPFILE there
+# and saves through a named temporary, the path Kvantum and Hydrogen took on 2026-10-09.
+# Every KDBX save draws a fresh salt and IV and stamps the entries' times, which is what refused
+# KeePassXC in cohort 2 (spike/cohort2/probes/recheck-keepassxc.txt). Both are pinned from outside:
+# apparatus/pin-random.c and libfaketime, each a line of /etc/ld.so.preload (env.sh).
+apparatus = ["preload:pin-random", "preload:libfaketime", "env:FAKETIME=2026-01-01 00:00:00"]
+check     = "/s/kpfat-check.sh"
+cwd       = "/s/kpfat"

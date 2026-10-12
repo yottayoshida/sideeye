@@ -1,0 +1,2 @@
+ROW freecad-dev static=0 preflight_rc=0 gate=0 detail=accepted, 26 operations
+EXIT freecad-dev 0

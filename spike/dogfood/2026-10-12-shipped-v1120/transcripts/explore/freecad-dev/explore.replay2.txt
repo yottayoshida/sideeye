@@ -1,0 +1,40 @@
+note: the paths at the crash point differ from the recorded case (often pid-embedded temp names); the class structure matches, so the replay proceeds
+falsify: FreeCAD 26.3.0, Libs: 26.3.0RC1R20261008 (Git shallow)
+falsify: (C) 2001-2026 FreeCAD contributors
+falsify: FreeCAD is free and open-source software licensed under the terms of LGPL2+ license.
+falsify: Fatal Error at file "/s/fc/.home/.config/FreeCAD/v26-3/system.cfg", line 1, column 1
+falsify:    Message: invalid document structure
+falsify: Malformed Parameter document: Root group not found
+falsify: Malformed Parameter document: Root group not found in file /s/fc/.home/.config/FreeCAD/v26-3/system.cfg.
+falsify: Continue with an empty configuration.
+falsify: Fatal Error at file "/s/fc/.home/.config/FreeCAD/v26-3/user.cfg", line 1, column 1
+falsify:    Message: invalid document structure
+falsify: Malformed Parameter document: Root group not found
+falsify: Malformed Parameter document: Root group not found in file /s/fc/.home/.config/FreeCAD/v26-3/user.cfg.
+falsify: Continue with an empty configuration.
+world 18: <Exception> File '/s/fc/part.FCStd' does not exist!
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 18 of 26
+            after  rename(/s/fc/part.FCStd)
+            before rename(/s/fc/part.FCStd.a91d6037-d5e9-46cc-9b4f-e73a92ea2dc8)
+path        part.FCStd
+observed    present before and after the operation, but gone from the crashed state
+cwd         /s/fc
+
+explored    2 worlds (crash points 26 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post; 20 path(s) matched by scratch, not judged (declared: .tmp, .home)
+oracle      agreed on 26 operations (16369 syscall lines examined, 10154 in scope of the judged state), witness strace
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /out/freecad-dev/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 10 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 10 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+
+reproduce   (cd /s/fc && unset SIDEEYE_KILL_GROUP && : > /out/freecad-dev/work-explore-replay2/trace-repro.bin && SIDEEYE_STATE_DIR=/s/fc SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/freecad-dev/work-explore-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.12.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=18 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= /opt/freecad-dev/usr/bin/freecadcmd /s/fcaux/edit.py </dev/null)
+sideeye: json sha256=fc838493868dba40e05b004cbf6797bca34bcf077a65a74e04573057a04a716d;

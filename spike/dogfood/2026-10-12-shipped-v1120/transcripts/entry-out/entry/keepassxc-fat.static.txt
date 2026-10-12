@@ -1,0 +1,2 @@
+static: /usr/bin/keepassxc-cli: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=8571352345e8d0018a970e0ad5707a3f0611f3be, for GNU/Linux 3.7.0, stripped
+next: sideeye explore --state /s/kpfat --cwd "/s/kpfat" --operation "keepassxc-cli add --no-password -k /s/kpaux/key.keyx vault.kdbx github -u me --url https://github.com" \

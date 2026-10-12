@@ -1,0 +1,11 @@
+[world]
+state = "/s/kp"
+
+[define]
+operation = "keepassxc-cli add --no-password -k /s/kpaux/key.keyx vault.kdbx github -u me --url https://github.com"
+# Every KDBX save draws a fresh salt and IV and stamps the entries' times, which is what refused
+# KeePassXC in cohort 2 (spike/cohort2/probes/recheck-keepassxc.txt). Both are pinned from outside:
+# apparatus/pin-random.c and libfaketime, each a line of /etc/ld.so.preload (env.sh).
+apparatus = ["preload:pin-random", "preload:libfaketime", "env:FAKETIME=2026-01-01 00:00:00"]
+check     = "/s/kp-check.sh"
+cwd       = "/s/kp"

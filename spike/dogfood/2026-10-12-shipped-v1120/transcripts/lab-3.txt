@@ -1,0 +1,99 @@
+
+======== swiftlint: the crashed Ledger.swift beside the original and the finished one
+replay swiftlint: exit 1 (Correcting Swift files at paths Sources/Ledger.swift)
+ 701 /s/lab3/sw-orig/before.swift
+ 683 /s/sw/Sources/Ledger.swift
+ 683 /s/lab3/sw-orig/after.swift
+2067 total
+-- diff before -> crashed
+5,7c5,7
+<     let date: Date;
+<     let amount: Decimal;
+<     let memo: String;
+---
+>     let date: Date
+>     let amount: Decimal
+>     let memo: String
+10,11c10,11
+< final class Ledger{
+<     private(set) var entries: [Entry] = [];
+---
+> final class Ledger {
+>     private(set) var entries: [Entry] = []
+14c14
+<         entries.append(Entry(date: Date(), amount: amount, memo: memo));   
+---
+>         entries.append(Entry(date: Date(), amount: amount, memo: memo))
+17,18c17,18
+<     var balance: Decimal{
+<         entries.reduce(0) { $0 + $1.amount };
+---
+>     var balance: Decimal {
+>         entries.reduce(0) { $0 + $1.amount }
+22c22
+<         Array(entries.sorted { $0.amount > $1.amount }.prefix(n));  
+---
+>         Array(entries.sorted { $0.amount > $1.amount }.prefix(n))
+26,30c26,30
+< let ledger = Ledger();
+< ledger.add(1200, memo: "salary");
+< ledger.add(-85.5, memo: "groceries");   
+< ledger.add(-40, memo: "phone");
+< print(ledger.balance);
+---
+> let ledger = Ledger()
+> ledger.add(1200, memo: "salary")
+> ledger.add(-85.5, memo: "groceries")
+> ledger.add(-40, memo: "phone")
+> print(ledger.balance)
+-- diff crashed -> after
+
+======== ansible-vault: the crashed secrets.yml
+replay ansible-vault: exit 1 (FAIL  1 of 2 explored worlds violated an invariant)
+total 12
+drwxr-xr-x 2 root root 4096 Oct 12 03:33 .
+drwxr-xr-x 7 root root 4096 Oct 12 03:33 ..
+-rw------- 1 root root 1197 Oct 12 03:33 secrets.yml
+0000000 24 41 4e 53 49 42 4c 45 5f 56 41 55 4c 54 3b 31
+0000016 2e 31 3b 41 45 53 32 35 36 0a 33 30 36 32 33 33
+0000032 33 30 33 35 33 35 33 37 36 31 33 39 36 36 36 33
+0
+0000000   $   A   N   S   I   B   L   E   _   V   A   U   L   T   ;   1
+0000020
+
+======== crystal: the crashed source
+replay crystal: exit 1 (FAIL  1 of 2 explored worlds violated an invariant)
+total 12
+drwxr-xr-x 2 root root 4096 Oct 12 03:33 .
+drwxr-xr-x 3 root root 4096 Oct 12 03:33 ..
+-rw-r--r-- 1 root root  879 Oct 12 03:33 inventory.cr
+879 /s/cr/src/inventory.cr
+
+======== rclone: the crashed directory, and what rclone itself says next
+replay rclone: exit 1 (note: the paths at the crash point differ from the recorded case (often pid-embedded temp names); the class structure matches, so the replay proceeds)
+total 12
+drwxr-xr-x 2 root root 4096 Oct 12 03:33 .
+drwxr-xr-x 9 root root 4096 Oct 12 03:33 ..
+-rw------- 1 root root  405 Oct 12 03:33 rclone.conf
+backup:
+s3prod:
+photos:
+crypt:
+listremotes exit 0
+[s3prod]
+type = s3
+provider = AWS
+access_key_id = example-access-key-id
+
+======== keepassxc: where its random bytes come from, with pin-random.so loaded
+getrandom syscalls: 1
+290   getrandom("\x9e\x70\x9e\x69\x0d\x7f\x2c\x48", 8, GRND_NONBLOCK) = 8
+1
+
+======== duckdb: the unlinkat the gate refused
+313   unlinkat(AT_FDCWD, "/s/duck/shop.duckdb.wal", 0) = 0
+313   unlinkat(AT_FDCWD, "", 0)         = -1 ENOENT (No such file or directory)
+313   openat(AT_FDCWD, "/s/duck/shop.duckdb", O_RDONLY) = 3
+313   openat(AT_FDCWD, "/s/duck/shop.duckdb", O_RDWR|O_CLOEXEC) = 3
+313   openat(AT_FDCWD, "/s/duck/shop.duckdb.wal", O_RDONLY) = -1 ENOENT (No such file or directory)
+313   openat(AT_FDCWD, "/s/duck/shop.duckdb.wal", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0666) = 4

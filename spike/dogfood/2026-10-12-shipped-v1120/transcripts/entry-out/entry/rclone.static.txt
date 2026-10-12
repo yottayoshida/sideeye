@@ -1,0 +1,4 @@
+static: /opt/bin/rclone: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=SWtwIKVg9MEwzhQf8V0n/IAum_uJtIHrNlvLZEUx2/vGqx2mM7K7IM-MuLru6W/84P1eHFOyW1-KJCIljtw, BuildID[sha1]=69ea8a56cfdebe6d14df9e74a6c956a251efdcfc, stripped
+default mode: rc 2; no_shim_marker
+default next: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry in docs/cli.md names what it still refuses.
+next: sideeye explore --state /s/rclone --cwd "/s/rclone" --operation "rclone config update s3prod region eu-west-1 --non-interactive" \

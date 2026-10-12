@@ -12,7 +12,10 @@ draft it — or, where the project forbids that, you stop and say why.
 
 Read `CONTRIBUTING`, the issue templates, the code of conduct, and any policy on AI- or
 LLM-generated contributions (often in `CONTRIBUTING`, an `AGENTS.md`, or the project's
-governance pages).
+governance pages). Read each issue form field by field: every field with
+`validations.required: true` must be filled, under the form's own heading, or a bot may close
+the report within a minute. A checkbox is a statement — tick "I searched the forum" only after
+searching it.
 
 **Produce only what the policy permits; everything else is the person's.**
 
@@ -33,53 +36,55 @@ governance pages).
   for. If they did not decide to report on this project, stop and ask; a fresh FAIL in hand
   is not the moment to decide.
 - **Is it new?** Search the project's tracker, open and closed, for each distinctive word on
-  its own — the file, the operation, the symptom — as well as for phrases, and the person's
-  own earlier reports. If a near neighbour exists, the report must say how this differs, or
+  its own — the file, the operation, the symptom — as well as for phrases, its forum where it
+  has one, and the person's own earlier reports. If a near neighbour exists, the report must say how this differs, or
   not be written.
-- **Read the current upstream source**, not only the packaged build that was measured,
-  and say in the report that you did. A finding upstream has already fixed is not a report.
+- **Read the current upstream source**, not only the packaged build that was measured, and
+  measure the latest release — the development release where the issue form asks for it. A
+  finding upstream has already fixed is not a report.
 
-## 2. Let the recovery choose the opening
+## 2. Keep it to a first screen
 
-Write down how a user recovers first.
+Maintainers answer long, sectioned reports as what they look like — "walls of slop", "an
+AI-generated novel" — before reading what they found. Aim for a few short paragraphs, about
+250 words before any raw output the form requires (version strings, config dumps, logs). The
+measurements stay in the run's own record; the report points at what is needed to see the bug.
 
-| Recovery | Opening paragraph | Fourth section |
-|---|---|---|
-| one command (`mv file~ file`) | **Up front: this is minor, and closing it as won't-fix is a perfectly good outcome.** | why it might still be worth a line of documentation |
-| a person must work out what to delete, and the tool complains until they do | **No data is lost by this.** — then what does break and that it stays broken | what would close it |
-| none — the bytes are gone | no mitigating opening at all | why this one may be worth more than the usual in-place-write report |
+Write down how a user recovers first; it picks the opening.
 
-Calling unrecoverable loss minor is false, not polite.
+| Recovery | Opening |
+|---|---|
+| one command (`mv file~ file`) | say it is minor, and that closing it is fine |
+| a person must work out what to rename or delete, and the tool stays broken until they do | **No data is lost by this**, then what breaks and that it stays broken |
+| none — the bytes are gone | no mitigating opening at all; calling unrecoverable loss minor is false |
 
-## 3. Write the sections, in this order
+## 3. Five things, under the form's headings where there is a form
 
-1. **The opening paragraph** from the table, before any heading.
-2. **`## What happens`** — the mechanism, the tool's own source quoted with the file named;
-   what its design already handles, and what a killed process escapes.
-3. **`## Measured`** — literals, not characterisations: version, package, platform; the
-   write sequence as it was traced; which crash point of how many; the state before and
-   after with byte counts; the recovery actually run (or that the bytes are nowhere); how
-   many explored worlds showed it. `sideeye evidence <case.json>` prints most of this.
-4. **`## Why this is different from #N`** — only when the tracker holds a near neighbour.
-5. **The fourth section** from the table. Name at most two responses, cheaper first, say
-   you have no stake in which, and say the dearer one may not be worth it.
-6. **`## Disclosure`** — the tool named and linked; one or two sentences on what it does;
-   the person's own relationship to it, as it is (ask; do not assume none); and *if you
-   would rather not have tool-generated reports on this tracker, say so and I will stop*.
-   Then the invariant in one sentence, and — only if the run declared a checker — that the
-   checker was shown to fail on deliberately corrupted state before the run.
-7. **`## Not claimed`** — power loss, torn writes, concurrent processes: a process kill says
-   nothing about what the filesystem does with half-flushed data. Then what of this
-   tool was not measured.
+1. **What a kill leaves**, in one paragraph, opened as the table says.
+2. **Where**: one source location, and one sentence on what the design already handles and
+   what a killed process does not reach. If the tracker holds a near neighbour, one more
+   sentence on how this differs.
+3. **How to reproduce**: the version, the command, and the one or two system calls either side
+   of the window; what was left, in a line. `sideeye evidence <case.json>` has these.
+4. **One way to close it**, and where it is true, that not fixing it is fine.
+5. **Disclosure**, in one or two sentences: the tool named and linked, the person's own
+   relationship to it as it is (ask; do not assume none), and the AI assistance as the
+   project's policy asks it to be said.
 
-Leave out: a tested patch or an offer to send a pull request (that comes only after a
-maintainer engages); an opening that is not a fact (no thanks, no aside); your plans.
+Leave out: sections the form did not ask for (no *Measured*, no *Not claimed* — one clause can
+carry a limit that matters); the full trace and the evidence table; a tested patch or an offer
+to send a pull request (that comes only after a maintainer engages); an opening that is not a
+fact; your plans.
 
-## 4. Hand the draft over
+## 4. Hand the facts over, then the draft
 
-Give the person the whole text exactly as it would be posted, in the project's language,
-with nothing of yours mixed into it — commentary goes before or after, clearly apart. They
-read it, change it and file it. Do not file it, and do not open the issue for them.
+The text is the person's, in every report. Give them the facts first — what a kill leaves,
+where, how to reproduce, one way to close it — and let them write it in their own words; a
+short draft of yours is a starting point they rewrite, never a text to approve as it stands.
+Once they have, give the whole text back exactly as it would be posted, in the project's language, with nothing of yours mixed into it — commentary goes
+before or after, clearly apart. They read it, change it and file it. Do not file it, and do not
+open the issue for them. After filing, watch the first minutes: a bot that closes it names
+what was missing.
 
-Reference: [the full shape, with the reports it was drawn from](https://github.com/yottayoshida/sideeye/blob/main/spike/upstream-report-template.md),
+Reference: [the shape, and why it is short](https://github.com/yottayoshida/sideeye/blob/main/spike/upstream-report-template.md),
 [the evidence bundle](https://github.com/yottayoshida/sideeye/blob/main/docs/evidence.md).

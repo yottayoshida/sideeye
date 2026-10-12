@@ -1,0 +1,33 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.freecad-dev
+#1 transferring dockerfile: 679B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/sideeye-sv1012:latest
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/2] FROM docker.io/library/sideeye-sv1012:latest@sha256:a93282d7f80f5adfd36dd457b0b441bb7f97605a4969673a370deb108254e374
+#4 resolve docker.io/library/sideeye-sv1012:latest@sha256:a93282d7f80f5adfd36dd457b0b441bb7f97605a4969673a370deb108254e374 done
+#4 DONE 0.0s
+
+#5 [2/2] RUN cd /tmp/dl && curl -fsSL -o fcdev.AppImage https://github.com/FreeCAD/FreeCAD/releases/download/26.3rc1/FreeCAD_26.3rc1-Linux-aarch64.AppImage &&     chmod 755 fcdev.AppImage && (cd /opt && /tmp/dl/fcdev.AppImage --appimage-extract > /tmp/fcdev-extract.log 2>&1) && mv /opt/squashfs-root /opt/freecad-dev &&     echo "freecadcmd-dev $(/opt/freecad-dev/usr/bin/freecadcmd --version 2>&1 | head -1)" | tee -a /versions.txt
+#5 76.12 freecadcmd-dev FreeCAD 26.3.0 Revision: 20261008 (Git shallow)
+#5 DONE 76.7s
+
+#6 exporting to image
+#6 exporting layers
+#6 exporting layers 48.1s done
+#6 exporting manifest sha256:4dce727d866d2a64c244c65898dcc94afa8bfb9516675c4ab7b6bc2af7b439d3
+#6 exporting manifest sha256:4dce727d866d2a64c244c65898dcc94afa8bfb9516675c4ab7b6bc2af7b439d3 done
+#6 exporting config sha256:dcb9469b5c105045d97471b2f1a1ffb91383273d67409384eb3490ea8da5f3ec done
+#6 exporting attestation manifest sha256:6bae459a0c79c2fd8625bec4bff5639487c0ef431d6721752be6613249aee6bf done
+#6 exporting manifest list sha256:944375f16467856be9857df1ecd9a3dca80baf9b9be2f2063e367b7d4d009127 done
+#6 naming to docker.io/library/sideeye-sv1012:latest done
+#6 unpacking to docker.io/library/sideeye-sv1012:latest
+#6 unpacking to docker.io/library/sideeye-sv1012:latest 10.1s done
+#6 DONE 58.5s

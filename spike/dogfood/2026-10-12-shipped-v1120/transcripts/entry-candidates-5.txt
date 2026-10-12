@@ -1,0 +1,4 @@
+ROW keepassxc-fat static=0 preflight_rc=0 gate=0 detail=accepted, 5 operations
+EXIT keepassxc-fat 0
+ROW freecad static=0 preflight_rc=0 gate=0 detail=accepted, 38 operations
+EXIT freecad 0

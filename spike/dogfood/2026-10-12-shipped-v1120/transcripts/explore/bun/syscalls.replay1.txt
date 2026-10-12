@@ -1,0 +1,68 @@
+Resolving dependencies
+Resolved, downloaded and extracted [1]
+Saved lockfile
+falsify: Traceback (most recent call last):
+falsify:   File "<stdin>", line 2, in <module>
+falsify:   File "/usr/lib/python3.13/json/__init__.py", line 293, in load
+falsify:     return loads(fp.read(),
+falsify:         cls=cls, object_hook=object_hook,
+falsify:         parse_float=parse_float, parse_int=parse_int,
+falsify:         parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+falsify:   File "/usr/lib/python3.13/json/__init__.py", line 346, in loads
+falsify:     return _default_decoder.decode(s)
+falsify:            ~~~~~~~~~~~~~~~~~~~~~~~^^^
+falsify:   File "/usr/lib/python3.13/json/decoder.py", line 345, in decode
+falsify:     obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+falsify:                ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+falsify:   File "/usr/lib/python3.13/json/decoder.py", line 363, in raw_decode
+falsify:     raise JSONDecodeError("Expecting value", s, err.value) from None
+falsify: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+falsify: checker(bun): package.json does not parse, or lost its scripts - a torn manifest survived the crash
+Resolving dependencies
+Resolved, downloaded and extracted [1]
+Saved lockfile
+world 10: Traceback (most recent call last):
+world 10:   File "<stdin>", line 2, in <module>
+world 10:   File "/usr/lib/python3.13/json/__init__.py", line 293, in load
+world 10:     return loads(fp.read(),
+world 10:         cls=cls, object_hook=object_hook,
+world 10:         parse_float=parse_float, parse_int=parse_int,
+world 10:         parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+world 10:   File "/usr/lib/python3.13/json/__init__.py", line 346, in loads
+world 10:     return _default_decoder.decode(s)
+world 10:            ~~~~~~~~~~~~~~~~~~~~~~~^^^
+world 10:   File "/usr/lib/python3.13/json/decoder.py", line 345, in decode
+world 10:     obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+world 10:                ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+world 10:   File "/usr/lib/python3.13/json/decoder.py", line 363, in raw_decode
+world 10:     raise JSONDecodeError("Expecting value", s, err.value) from None
+world 10: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+world 10: checker(bun): package.json does not parse, or lost its scripts - a torn manifest survived the crash
+Resolving dependencies
+Resolved, downloaded and extracted [1]
+Saved lockfile
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 10 of 10
+            after  open(/s/bun/package.json)
+            before write(/s/bun/package.json)
+path        package.json
+observed    holding neither the old nor the new content
+cwd         /s/bun
+
+explored    2 worlds (crash points 10 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 10 operations (576 syscall lines examined, 95 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+metadata    1 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmod x1. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /out/bun/work-syscalls/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 6 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s) and 4 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/bun && unset SIDEEYE_KILL_GROUP && : > /out/bun/work-syscalls-replay1/trace-repro.bin && SIDEEYE_STATE_DIR=/s/bun SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/bun/work-syscalls-replay1/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.12.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=10 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=syscalls SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'bun' add /s/bunaux/dep-1.0.0.tgz </dev/null)
+sideeye: json sha256=ed67476e7d79e4c565d0a24f42f387ad99260c9d2c8c842a7f216ebee8737796;

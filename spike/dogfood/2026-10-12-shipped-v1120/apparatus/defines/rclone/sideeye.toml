@@ -1,0 +1,6 @@
+[world]
+state = "/s/rclone"
+
+[define]
+operation = "rclone config update s3prod region eu-west-1 --non-interactive"
+cwd       = "/s/rclone"

@@ -1,0 +1,104 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 028f47b4b1b58499b576e8c1de95da717cbb2db448cfd85d78d4f0a670eafd7d
+build: the page's (working tree)    sha256 028f47b4b1b58499b576e8c1de95da717cbb2db448cfd85d78d4f0a670eafd7d
+build: the page's at tag v1.12.0     sha256 41dd843a10c5996d4746487980232cf03bded32c7b3e005a641bb00a973bc3aa
+build: NOTE the page's installer has moved since v1.12.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 7.33kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/18] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.31kB done
+#5 DONE 0.0s
+
+#6 [ 3/18] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#6 CACHED
+
+#7 [11/18] RUN apt-get install -y --no-install-recommends libfaketime faketime > /tmp/apt-faketime.log 2>&1 && echo "OK libfaketime" || { echo "MISSING libfaketime"; tail -3 /tmp/apt-faketime.log; }
+#7 CACHED
+
+#8 [13/18] RUN gcc -shared -fPIC -O2 -o /opt/pin/pin-random.so /opt/pin/pin-random.c && echo "OK pin-random.so"
+#8 CACHED
+
+#9 [ 6/18] COPY install-sideeye.sh /opt/install-sideeye.sh
+#9 CACHED
+
+#10 [ 5/18] RUN mkdir -p /opt/bin /tmp/dl && python3 -m venv /opt/py
+#10 CACHED
+
+#11 [10/18] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.linux.arm64 sops;     get $gh/rclone/rclone/releases/download/v1.75.2/rclone-v1.75.2-linux-arm64.zip rclone.zip;     get $gh/duckdb/duckdb/releases/download/v1.5.6/duckdb_cli-linux-arm64.zip duckdb.zip;     get $gh/mikefarah/yq/releases/download/v4.54.1/yq_linux_arm64 yq;     get $gh/crystal-lang/crystal/releases/download/1.21.1/crystal-1.21.1-1-linux-aarch64-bundled.tar.gz crystal.tgz;     get $gh/FreeCAD/FreeCAD/releases/download/1.1.4/FreeCAD_1.1.4-Linux-aarch64-py311.AppImage freecad.AppImage;     get $gh/oven-sh/bun/releases/download/bun-v1.4.3/bun-linux-aarch64.zip bun.zip;     get $gh/realm/SwiftLint/releases/download/0.65.1/swiftlint_linux_arm64.zip swiftlint.zip;     install -m 755 sops /opt/bin/sops; install -m 755 yq /opt/bin/yq;     mkdir -p x-rclone && unzip -q rclone.zip -d x-rclone && install -m 755 "$(find x-rclone -type f -name rclone | head -1)" /opt/bin/rclone;     mkdir -p x-duckdb && unzip -q duckdb.zip -d x-duckdb && install -m 755 "$(find x-duckdb -type f -name duckdb | head -1)" /opt/bin/duckdb;     mkdir -p /opt/crystal && tar xzf crystal.tgz -C /opt/crystal && ln -sf "$(find /opt/crystal -maxdepth 3 -type f -path '*/bin/crystal' | head -1)" /opt/bin/crystal;     chmod 755 freecad.AppImage && (cd /opt && /tmp/dl/freecad.AppImage --appimage-extract > /tmp/freecad-extract.log 2>&1) && mv /opt/squashfs-root /opt/freecad && echo "OK freecad extracted" || { echo "FAILED freecad extract"; tail -3 /tmp/freecad-extract.log; };     mkdir -p x-bun && unzip -q bun.zip -d x-bun && install -m 755 "$(find x-bun -type f -name bun | head -1)" /opt/bin/bun;     mkdir -p x-swiftlint && unzip -q swiftlint.zip -d x-swiftlint && install -m 755 "$(find x-swiftlint -type f -name swiftlint | head -1)" /opt/bin/swiftlint;     ls -l /opt/bin
+#11 CACHED
+
+#12 [ 7/18] RUN sh /opt/install-sideeye.sh v1.12.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#12 CACHED
+
+#13 [14/18] RUN age-keygen -o /opt/sops-age-key.txt 2> /opt/sops-age-recipient.txt && chmod 600 /opt/sops-age-key.txt && echo "OK age key ($(sed -n 's/^Public key: //p' /opt/sops-age-recipient.txt))"
+#13 CACHED
+
+#14 [ 4/18] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#14 CACHED
+
+#15 [ 9/18] RUN apt-get install -y --no-install-recommends keepassxc-minimal age > /tmp/apt-kp.log 2>&1 && echo "OK keepassxc-minimal age" || { echo "MISSING keepassxc-minimal/age"; tail -3 /tmp/apt-kp.log; }
+#15 CACHED
+
+#16 [12/18] COPY pin-random.c /opt/pin/pin-random.c
+#16 CACHED
+
+#17 [ 2/18] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config
+#17 CACHED
+
+#18 [ 8/18] RUN "$(cat /install.path)" version
+#18 CACHED
+
+#19 [15/18] RUN /opt/py/bin/pip install --no-cache-dir ansible-core==2.21.5 > /tmp/pip-ansible.log 2>&1 && echo "OK ansible-core" || { echo "FAILED ansible-core"; tail -3 /tmp/pip-ansible.log; }
+#19 CACHED
+
+#20 [16/18] RUN apt-get install -y --no-install-recommends libncurses6 libxml2 libcurl4 libedit2 libsqlite3-0 libstdc++-14-dev > /tmp/apt-swift.log 2>&1 && echo "OK swift runtime deps" || { echo "MISSING swift deps"; tail -3 /tmp/apt-swift.log; }
+#20 0.967 OK swift runtime deps
+#20 DONE 1.0s
+
+#21 [17/18] RUN set -u; cd /tmp/dl; v=6.4.0;     curl -fsSL -o swift.tgz https://download.swift.org/swift-$v-release/debian12-aarch64/swift-$v-RELEASE/swift-$v-RELEASE-debian12-aarch64.tar.gz &&     mkdir -p /opt/swift && tar xzf swift.tgz -C /opt/swift --strip-components=1 --wildcards '*/usr/lib/*' && rm -f swift.tgz &&     ls /opt/swift/usr/lib/libsourcekitdInProc.so && echo "OK swift $v usr/lib" || echo "FAILED swift toolchain"
+#21 138.9 /opt/swift/usr/lib/libsourcekitdInProc.so
+#21 138.9 OK swift 6.4.0 usr/lib
+#21 DONE 139.8s
+
+#22 [18/18] RUN { echo "keepassxc-cli $(keepassxc-cli --version 2>&1 | head -1)"; echo "age $(age --version 2>&1 | head -1)";       echo "sops $(sops --version 2>&1 | head -1)"; echo "rclone $(rclone version 2>&1 | head -1)";       echo "duckdb $(duckdb --version 2>&1 | head -1)"; echo "yq $(yq --version 2>&1 | head -1)";       echo "crystal $(crystal --version 2>&1 | head -1)";       echo "freecadcmd $(ls /opt/freecad/usr/bin 2>/dev/null | grep -i -m1 cmd) $(/opt/freecad/usr/bin/freecadcmd --version 2>&1 | head -1)";       echo "bun $(bun --version 2>&1 | head -1)"; echo "swiftlint $(swiftlint version 2>&1 | head -1)";       echo "ansible-vault $(ansible-vault --version 2>&1 | head -1)"; } | tee /versions.txt
+#22 0.161 keepassxc-cli 2.7.10
+#22 0.163 age 1.2.1
+#22 0.527 sops sops 3.13.3 (latest)
+#22 0.576 rclone rclone v1.75.2
+#22 0.586 duckdb v1.5.6 (Variegata) 069cc9f9b5
+#22 0.589 yq yq (https://github.com/mikefarah/yq/) version v4.54.1
+#22 0.606 crystal Crystal 1.21.1 [73ea5c2b1] (2026-09-26)
+#22 0.644 freecadcmd freecadcmd FreeCAD 1.1.4 Revision: 20260928 (Git shallow)
+#22 0.645 bun 1.4.3
+#22 0.660 swiftlint 0.65.1
+#22 0.685 ansible-vault ERROR: Ansible requires blocking IO on stdin/stdout/stderr. Non-blocking file handles detected: <stdin>
+#22 DONE 0.7s
+
+#23 exporting to image
+#23 exporting layers
+#23 exporting layers 36.0s done
+#23 exporting manifest sha256:7fd58ace16bd9d5851174d14b7fdea61d8bb0af59dccef1162784a9f72a46a64
+#23 exporting manifest sha256:7fd58ace16bd9d5851174d14b7fdea61d8bb0af59dccef1162784a9f72a46a64 done
+#23 exporting config sha256:e33aebfe917c8f95f1fe2a05d7cc8e58fc38bdb1d3b4e610b9c8f5268cfcf3ee done
+#23 exporting attestation manifest sha256:e89f23dddd72236be9902dc7c79ba47b4f5018327bcb42b5c3915897e9cb01eb done
+#23 exporting manifest list sha256:1aeb822b00a493e3473c3984227d76f906fed14048ca4041d4b5cc2894e23ec2 done
+#23 naming to docker.io/library/sideeye-sv1012:latest done
+#23 unpacking to docker.io/library/sideeye-sv1012:latest
+#23 unpacking to docker.io/library/sideeye-sv1012:latest 5.9s done
+#23 DONE 42.0s
+build: sideeye-sv1012 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt

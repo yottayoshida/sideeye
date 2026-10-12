@@ -1,0 +1,6 @@
+[world]
+state = "/s/cr"
+
+[define]
+operation = "crystal tool format src/inventory.cr"
+cwd       = "/s/cr"
