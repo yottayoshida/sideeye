@@ -1,0 +1,18 @@
+[world]
+state = "/s/fc"
+
+[define]
+operation = "/opt/freecad-dev/usr/bin/freecadcmd /s/fcaux/edit.py"
+# A part document re-saved after one dimension changes. The save writes the time into the archive
+# and into the backup's name (part.<time>.FCBak, transcripts/lab-1.txt), so the clock is pinned.
+apparatus = ["preload:libfaketime", "env:FAKETIME=2026-01-01 00:00:00"]
+# FreeCAD keeps each open document's transient directory under TMPDIR and does not remove it when
+# killed; the next run then finds the UUID taken and saves under a fresh random one, which split
+# the baseline (transcripts/explore/freecad/explore.txt). TMPDIR is put inside the state, so the
+# restore before every world removes what the last one left; nothing there is the user's. Its
+# configuration (user.cfg, system.cfg) is moved in for the same reason: a killed world left it
+# unreadable to the next one ("Failed to access file for reading", transcripts/explore/freecad), and
+# the baseline then saved different bytes. What a kill does to that configuration is its own question.
+scratch   = [".tmp", ".home"]
+check     = "/s/fc-check.sh"
+cwd       = "/s/fc"

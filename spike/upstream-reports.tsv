@@ -81,3 +81,4 @@ crystal-lang/crystal	17620	standing	Crystal 1.21.1 `crystal tool format`
 ansible/ansible	87678	withdrawn	ansible-core 2.21.5 `ansible-vault encrypt`
 ansible/ansible	87679	standing	ansible-core 2.21.5 `ansible-vault encrypt`
 rclone/rclone	10076	standing	rclone 1.75.2 `config update s3prod region …`
+FreeCAD/FreeCAD	33493	standing	FreeCAD 1.1.4 `freecadcmd` changing one dimension

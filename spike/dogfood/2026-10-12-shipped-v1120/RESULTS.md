@@ -26,6 +26,11 @@ aside and leave both versions whole (rclone, FreeCAD) or stop between two correc
 | sops 3.13.3 `rotate --in-place` | supervised (static) | wall: the two clean runs differ | — | a static Go binary drawing its keys from `getrandom(2)` and stamping the clock; nothing outside it pins either |
 | DuckDB 1.5.6 `UPDATE` | default and syscalls | wall: `unsupported_syscall_observed` (`unlinkat`) | — | see below: an `unlinkat("")` that fails |
 
+**After filing.** crystal-lang/crystal#17620 drew, within the hour, a collaborator's "Don't paste AI.
+Especially walls of slop. Write down a summary of findings in your very own voice." — about the
+report's form, not its finding; the owner answered in their own words. The two reports filed after
+it (rclone, FreeCAD) were shortened at the owner's request.
+
 ## Crystal — the formatter empties the file it formats
 
 `crystal tool format src/inventory.cr` opens the file for writing with truncation and then writes
@@ -74,7 +79,11 @@ directory rebuilt from the evidence table): every remote looks lost until the us
 rclone/rclone#6656 (closed) met the same rename-aside save from Docker's side, a bind-mounted file
 that cannot be renamed. rclone's was filed on 2026-10-12 as rclone/rclone#10076: the owner's draft,
 arranged into the sections `bug.yml` requires (read field by field this time, after ansible's bot) and
-shortened at the owner's request (`report-rclone.md` holds the text filed).
+shortened at the owner's request (`report-rclone.md` holds the text filed). FreeCAD's was filed as
+FreeCAD/FreeCAD#33493 after its development release, 26.3rc1 (FreeCAD 26.3.0), FAILed the same way,
+1/27 and replayed twice (`transcripts/explore/freecad-dev/`, `apparatus/Dockerfile.freecad-dev`):
+FreeCAD's AI policy asks that descriptions be the contributor's own, so the owner wrote it in
+Japanese and it was translated (`report-freecad.md`).
 
 rclone's FAIL replayed once and then refused `multiple_threads_detected`; with `GOMAXPROCS=1`
 declared the gate itself refused it (`transcripts/entry-candidates-3.txt`) — OpenTofu's shape in

@@ -1,0 +1,6 @@
+# The run's box with FreeCAD's latest development release beside 1.1.4, for its issue template's
+# required "Development version" field: 26.3rc1, its aarch64 AppImage, extracted.
+FROM sideeye-sv1012
+RUN cd /tmp/dl && curl -fsSL -o fcdev.AppImage https://github.com/FreeCAD/FreeCAD/releases/download/26.3rc1/FreeCAD_26.3rc1-Linux-aarch64.AppImage && \
+    chmod 755 fcdev.AppImage && (cd /opt && /tmp/dl/fcdev.AppImage --appimage-extract > /tmp/fcdev-extract.log 2>&1) && mv /opt/squashfs-root /opt/freecad-dev && \
+    echo "freecadcmd-dev $(/opt/freecad-dev/usr/bin/freecadcmd --version 2>&1 | head -1)" | tee -a /versions.txt
