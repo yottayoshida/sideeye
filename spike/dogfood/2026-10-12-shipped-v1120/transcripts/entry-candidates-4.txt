@@ -1,0 +1,2 @@
+ROW sops static=1 preflight_rc=1 gate=1 detail=SUPERVISED; byte-repeatability: --twice found different bytes
+EXIT sops 1

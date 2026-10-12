@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.12.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/sw",
+    "operation": "swiftlint --fix --no-cache Sources/Ledger.swift",
+    "cwd": "/s/sw",
+    "expected_status": 0
+  },
+  "k": 5,
+  "ops_total": 12,
+  "prefix_hash": "82599d68622e1300",
+  "after_class": "rename",
+  "after_path": "/s/sw/Sources/.dat.nosync16.6yPBmo",
+  "before_class": "open",
+  "before_path": "/s/sw/Sources/.dat.nosync16.WV6O0G",
+  "violation": "hybrid"
+}

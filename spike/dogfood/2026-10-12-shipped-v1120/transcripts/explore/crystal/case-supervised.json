@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 6,
+  "sideeye_version": "1.12.0",
+  "contract_version": 19,
+  "observe": "supervised",
+  "define": {
+    "state": "/s/cr",
+    "operation": "crystal tool format src/inventory.cr",
+    "cwd": "/s/cr",
+    "scratch": [],
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/cr/src/inventory.cr",
+  "before_class": "write",
+  "before_path": "/s/cr/src/inventory.cr",
+  "violation": "hybrid"
+}

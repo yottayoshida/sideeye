@@ -1,0 +1,10 @@
+[world]
+state = "/s/duck"
+
+[define]
+operation = ["duckdb", "shop.duckdb", "-c", "UPDATE orders SET status = 'shipped' WHERE id < 10"]
+# One transaction: after a crash the table holds either none of the ten updates or all of them,
+# and all thousand rows. The checker opens a copy, so a WAL left behind is replayed as a user's
+# next open would.
+check     = "/s/duck-check.sh"
+cwd       = "/s/duck"

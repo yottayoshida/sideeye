@@ -1,0 +1,87 @@
+falsify: FreeCAD 1.1.4, Libs: 1.1.4R20260928 (Git shallow)
+falsify: (C) 2001-2026 FreeCAD contributors
+falsify: FreeCAD is free and open-source software licensed under the terms of LGPL2+ license.
+falsify: Fatal Error at file "/s/fc/.home/.config/FreeCAD/v1-1/system.cfg", line 1, column 1
+falsify:    Message: invalid document structure
+falsify: Malformed Parameter document: Root group not found
+falsify: Malformed Parameter document: Root group not found in file /s/fc/.home/.config/FreeCAD/v1-1/system.cfg.
+falsify: Continue with an empty configuration.
+falsify: Fatal Error at file "/s/fc/.home/.config/FreeCAD/v1-1/user.cfg", line 1, column 1
+falsify:    Message: invalid document structure
+falsify: Malformed Parameter document: Root group not found
+falsify: Malformed Parameter document: Root group not found in file /s/fc/.home/.config/FreeCAD/v1-1/user.cfg.
+falsify: Continue with an empty configuration.
+world 2: FreeCAD 1.1.4, Libs: 1.1.4R20260928 (Git shallow)
+world 2: (C) 2001-2026 FreeCAD contributors
+world 2: FreeCAD is free and open-source software licensed under the terms of LGPL2+ license.
+world 2: Failed to access file for reading: /s/fc/.home/.config/FreeCAD/v1-1/system.cfg
+world 6: FreeCAD 1.1.4, Libs: 1.1.4R20260928 (Git shallow)
+world 6: (C) 2001-2026 FreeCAD contributors
+world 6: FreeCAD is free and open-source software licensed under the terms of LGPL2+ license.
+world 6: Failed to access file for reading: /s/fc/.home/.config/FreeCAD/v1-1/user.cfg
+world 11: Document with the UUID '3c6b2a71-8b00-4f9f-91f6-fadca4eebde3' already exists, change to '735e73a9-78dc-41df-aa4f-5b75dafe17ab'
+world 12: Document with the UUID '3c6b2a71-8b00-4f9f-91f6-fadca4eebde3' already exists, change to '86806ed0-fca2-43d0-9d18-ac9a0de93fc2'
+world 13: Document with the UUID '3c6b2a71-8b00-4f9f-91f6-fadca4eebde3' already exists, change to '24e37879-4911-4792-a23a-1c3c5d3250cf'
+world 14: Document with the UUID '3c6b2a71-8b00-4f9f-91f6-fadca4eebde3' already exists, change to '00da4928-88fd-4de5-835a-68769263d1c2'
+world 15: Document with the UUID '3c6b2a71-8b00-4f9f-91f6-fadca4eebde3' already exists, change to 'f1feb97f-79fd-4b3b-b811-80edac3452eb'
+world 16: Document with the UUID '3c6b2a71-8b00-4f9f-91f6-fadca4eebde3' already exists, change to '8c2c9d4f-e694-44b2-a9b2-4cef153f1f7a'
+world 17: Document with the UUID '3c6b2a71-8b00-4f9f-91f6-fadca4eebde3' already exists, change to 'ae715c3e-bc85-470e-bb31-ae3c1dc56ee0'
+world 18: Document with the UUID '3c6b2a71-8b00-4f9f-91f6-fadca4eebde3' already exists, change to 'a07dbfea-1254-449f-b659-891e888541a0'
+world 19: Document with the UUID '3c6b2a71-8b00-4f9f-91f6-fadca4eebde3' already exists, change to 'd48e1590-629b-4d49-be36-b14514a50f68'
+world 20: Document with the UUID '3c6b2a71-8b00-4f9f-91f6-fadca4eebde3' already exists, change to '483a788f-5aef-4a3d-bce5-71a418c6787e'
+world 21: Document with the UUID '3c6b2a71-8b00-4f9f-91f6-fadca4eebde3' already exists, change to '96ddc3d4-0ba6-483c-84fe-4f90969528dc'
+world 22: Document with the UUID '3c6b2a71-8b00-4f9f-91f6-fadca4eebde3' already exists, change to '3f27301a-03f6-406d-aec3-b31e349b2455'
+world 23: Document with the UUID '3c6b2a71-8b00-4f9f-91f6-fadca4eebde3' already exists, change to 'c61ede42-fe12-44e4-beb1-f98610d9e811'
+world 24: <Exception> File '/s/fc/part.FCStd' does not exist!
+world 25: Document with the UUID '3c6b2a71-8b00-4f9f-91f6-fadca4eebde3' already exists, change to 'd69c0c7e-1846-48d9-a51a-787233ae61f2'
+world 26: Document with the UUID '3c6b2a71-8b00-4f9f-91f6-fadca4eebde3' already exists, change to 'e4de28f8-60c8-4718-a1f6-68ef0d3a382b'
+world 28: FreeCAD 1.1.4, Libs: 1.1.4R20260928 (Git shallow)
+world 28: (C) 2001-2026 FreeCAD contributors
+world 28: FreeCAD is free and open-source software licensed under the terms of LGPL2+ license.
+world 28: Failed to access file for reading: /s/fc/.home/.config/FreeCAD/v1-1/system.cfg
+world 31: FreeCAD 1.1.4, Libs: 1.1.4R20260928 (Git shallow)
+world 31: (C) 2001-2026 FreeCAD contributors
+world 31: FreeCAD is free and open-source software licensed under the terms of LGPL2+ license.
+world 31: Fatal Error at file "/s/fc/.home/.config/FreeCAD/v1-1/system.cfg", line 1, column 1
+world 31:    Message: invalid document structure
+world 31: Malformed Parameter document: Root group not found
+world 31: Malformed Parameter document: Root group not found in file /s/fc/.home/.config/FreeCAD/v1-1/system.cfg.
+world 31: Continue with an empty configuration.
+world 34: FreeCAD 1.1.4, Libs: 1.1.4R20260928 (Git shallow)
+world 34: (C) 2001-2026 FreeCAD contributors
+world 34: FreeCAD is free and open-source software licensed under the terms of LGPL2+ license.
+world 34: Failed to access file for reading: /s/fc/.home/.config/FreeCAD/v1-1/user.cfg
+world 37: FreeCAD 1.1.4, Libs: 1.1.4R20260928 (Git shallow)
+world 37: (C) 2001-2026 FreeCAD contributors
+world 37: FreeCAD is free and open-source software licensed under the terms of LGPL2+ license.
+world 37: Fatal Error at file "/s/fc/.home/.config/FreeCAD/v1-1/user.cfg", line 1, column 1
+world 37:    Message: invalid document structure
+world 37: Malformed Parameter document: Root group not found
+world 37: Malformed Parameter document: Root group not found in file /s/fc/.home/.config/FreeCAD/v1-1/user.cfg.
+world 37: Continue with an empty configuration.
+FAIL  1 of 39 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 24 of 38
+            after  rename(/s/fc/part.FCStd)
+            before rename(/s/fc/part.FCStd.433f74c7-d550-49c0-a405-5a5b5f5fcb3f)
+path        part.FCStd
+observed    present before and after the operation, but gone from the crashed state
+cwd         /s/fc
+apparatus   preload:libfaketime, env:FAKETIME=2026-01-01 00:00:00
+
+explored    39 worlds (crash points 38 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post; 17 path(s) matched by scratch, not judged (declared: .tmp, .home)
+oracle      agreed on 38 operations (11669 syscall lines examined, 5466 in scope of the judged state), witness strace
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 39 world(s)
+l1          no marker configured
+case        /out/freecad/work-explore/cases/000001.json
+replay      sideeye replay /out/freecad/work-explore/cases/000001.json --shim /opt/se/sideeye-v1.12.0-aarch64-linux/libsideeye_shim.so
+evidence    sideeye evidence /out/freecad/work-explore/evidence/000001.json
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 9 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+
+reproduce   (cd /s/fc && unset SIDEEYE_KILL_GROUP && : > /out/freecad/work-explore/trace-repro.bin && SIDEEYE_STATE_DIR=/s/fc SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/freecad/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.12.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=24 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= /opt/freecad/usr/bin/freecadcmd /s/fcaux/edit.py </dev/null)
+sideeye: json sha256=fbf0dc3b04daa3059f6e3c006811a55fd2085ef6bce8096e475c0240d4e9365e;

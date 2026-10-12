@@ -1,0 +1,13 @@
+[world]
+state = "/s/sops"
+
+[define]
+# `sops set` needs a path expression with double quotes, which neither a define string (no escapes)
+# nor an argv element (double-quoted strings only) can spell, and a script in between made the
+# dynamic sh the operation (child_process_detected, transcripts/entry-candidates-2.txt). rotate
+# needs no quotes and rewrites the whole secrets file in place under a new data key.
+operation = "sops rotate --in-place secrets.enc.yaml"
+# No apparatus: sops is a static Go binary drawing its keys and IVs from the getrandom system call
+# and stamping lastmodified from the clock, and neither can be pinned from outside it. If the
+# second clean run differs, that refusal is the result.
+cwd       = "/s/sops"

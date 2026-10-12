@@ -1,0 +1,22 @@
+
+======== swiftlint: is the 703-byte crashed file the original with only opening_brace applied
+only opening_brace: 703 bytes
+then the rest: 683 bytes
+
+======== rclone: the crashed directory of crash point 6 rebuilt - rclone.conf moved aside, the new one not yet in
+rclone.conf.old2541991190
+rclone.conf780660081
+-- rclone listremotes:
+2026/10/12 03:37:47 NOTICE: Config file "/s/rclone/rclone.conf" not found - using defaults
+exit 0
+-- rclone lsd backup: (a command a user would run next)
+2026/10/12 03:37:47 NOTICE: Config file "/s/rclone/rclone.conf" not found - using defaults
+2026/10/12 03:37:47 CRITICAL: Failed to create file system for "backup:": didn't find section in config file ("backup")
+-- rclone config update again (the documented way to set it):
+exit 2
+rclone.conf.old2541991190
+rclone.conf780660081
+head: cannot open 'rclone.conf' for reading: No such file or directory
+
+======== keepassxc: two clean adds under the pins, compared
+the two runs wrote the same bytes

@@ -1,0 +1,9 @@
+=== keepassxc-fat 2026-10-12T03:40:59Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== freecad 2026-10-12T03:41:00Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0

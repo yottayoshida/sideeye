@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 6,
+  "sideeye_version": "1.12.0",
+  "contract_version": 19,
+  "observe": "supervised",
+  "define": {
+    "state": "/s/rclone",
+    "operation": "rclone config update s3prod region eu-west-1 --non-interactive",
+    "cwd": "/s/rclone",
+    "scratch": [],
+    "expected_status": 0
+  },
+  "k": 6,
+  "ops_total": 18,
+  "prefix_hash": "60174dc50101cc1f",
+  "after_class": "rename",
+  "after_path": "/s/rclone/rclone.conf",
+  "before_class": "rename",
+  "before_path": "/s/rclone/rclone.conf249033223",
+  "violation": "missing"
+}

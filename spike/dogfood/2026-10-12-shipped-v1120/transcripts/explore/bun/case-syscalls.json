@@ -1,0 +1,23 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 6,
+  "sideeye_version": "1.12.0",
+  "contract_version": 19,
+  "observe": "syscalls",
+  "define": {
+    "state": "/s/bun",
+    "operation": "bun add /s/bunaux/dep-1.0.0.tgz",
+    "check": "/s/bun-check.sh",
+    "cwd": "/s/bun",
+    "scratch": [],
+    "expected_status": 0
+  },
+  "k": 10,
+  "ops_total": 10,
+  "prefix_hash": "eb730bcce30a1425",
+  "after_class": "open",
+  "after_path": "/s/bun/package.json",
+  "before_class": "write",
+  "before_path": "/s/bun/package.json",
+  "violation": "hybrid"
+}

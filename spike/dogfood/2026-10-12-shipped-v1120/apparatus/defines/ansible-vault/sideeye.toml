@@ -1,0 +1,9 @@
+[world]
+state = "/s/av"
+
+[define]
+operation = "ansible-vault encrypt secrets.yml --vault-password-file /s/avaux/pw"
+# The plaintext is the only copy; encrypt replaces it with the vault. The salt comes from
+# os.urandom, pinned by a sitecustomize.py on PYTHONPATH (docs/apparatus.md's recipe 3).
+apparatus = ["pythonpath:sitecustomize.py"]
+cwd       = "/s/av"

@@ -1,0 +1,6 @@
+[world]
+state = "/s/sw"
+
+[define]
+operation = "swiftlint --fix --no-cache Sources/Ledger.swift"
+cwd       = "/s/sw"

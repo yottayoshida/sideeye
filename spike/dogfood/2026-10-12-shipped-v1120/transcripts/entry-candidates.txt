@@ -1,0 +1,20 @@
+ROW ansible-vault static=0 preflight_rc=0 gate=0 detail=accepted, 17 operations
+EXIT ansible-vault 0
+ROW bun static=0 preflight_rc=2 gate=0 detail=FOLLOW --observe syscalls (oracle_missed_operation)
+EXIT bun 0
+ROW crystal static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 2 operations
+EXIT crystal 0
+ROW duckdb static=0 preflight_rc=2 gate=1 detail=wall: unsupported_syscall_observed
+EXIT duckdb 1
+ROW rclone static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 18 operations
+EXIT rclone 0
+ROW sops static=1 preflight_rc=3 gate=DEFINE detail=SUPERVISED; define: /ap/defines/sops/sideeye.toml line 5: escape sequences are not part of the contract; anything a plain string cannot spell belongs in a script file
+EXIT sops 3
+ROW swiftlint static=0 preflight_rc=0 gate=0 detail=accepted, 12 operations
+EXIT swiftlint 0
+ROW yq static=1 preflight_rc=0 gate=1 detail=SUPERVISED; interior: 1 operation(s)
+EXIT yq 1
+ROW freecad static=0 preflight_rc=0 gate=0 detail=accepted, 14 operations
+EXIT freecad 0
+ROW keepassxc static=0 preflight_rc=2 gate=1 detail=wall: unresolvable_path
+EXIT keepassxc 1

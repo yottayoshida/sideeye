@@ -1,0 +1,9 @@
+[world]
+state = "/s/rclone"
+
+[define]
+operation = "rclone config update s3prod region eu-west-1 --non-interactive"
+# The first define's FAIL replayed once and then met the threads wall (transcripts/explore/rclone);
+# one P is docs/apparatus.md's switch for Go, declared so the report says what the run ran under.
+apparatus = ["env:GOMAXPROCS=1"]
+cwd       = "/s/rclone"

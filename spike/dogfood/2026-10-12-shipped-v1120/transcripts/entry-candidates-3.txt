@@ -1,0 +1,8 @@
+ROW sops static=1 preflight_rc=3 gate=DEFINE detail=SUPERVISED; define: /ap/defines/sops/sideeye.toml line 8: every array element is one double-quoted string
+EXIT sops 3
+ROW rclone-1p static=1 preflight_rc=2 gate=1 detail=SUPERVISED; wall: multiple_threads_detected
+EXIT rclone-1p 1
+ROW freecad static=0 preflight_rc=0 gate=0 detail=accepted, 30 operations
+EXIT freecad 0
+ROW keepassxc-fat static=0 preflight_rc=0 gate=0 detail=accepted, 5 operations
+EXIT keepassxc-fat 0

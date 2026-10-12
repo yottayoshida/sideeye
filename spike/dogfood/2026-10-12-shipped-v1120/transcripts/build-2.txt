@@ -1,0 +1,101 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 028f47b4b1b58499b576e8c1de95da717cbb2db448cfd85d78d4f0a670eafd7d
+build: the page's (working tree)    sha256 028f47b4b1b58499b576e8c1de95da717cbb2db448cfd85d78d4f0a670eafd7d
+build: the page's at tag v1.12.0     sha256 41dd843a10c5996d4746487980232cf03bded32c7b3e005a641bb00a973bc3aa
+build: NOTE the page's installer has moved since v1.12.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 5.49kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/12] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.28kB done
+#5 DONE 0.0s
+
+#6 [ 3/12] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#6 CACHED
+
+#7 [ 4/12] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#7 CACHED
+
+#8 [ 5/12] RUN mkdir -p /opt/bin /tmp/dl && python3 -m venv /opt/py
+#8 CACHED
+
+#9 [ 7/12] RUN sh /opt/install-sideeye.sh v1.12.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#9 CACHED
+
+#10 [ 2/12] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config
+#10 CACHED
+
+#11 [ 6/12] COPY install-sideeye.sh /opt/install-sideeye.sh
+#11 CACHED
+
+#12 [ 8/12] RUN "$(cat /install.path)" version
+#12 CACHED
+
+#13 [ 9/12] RUN apt-get install -y --no-install-recommends keepassxc-minimal age > /tmp/apt-kp.log 2>&1 && echo "OK keepassxc-minimal age" || { echo "MISSING keepassxc-minimal/age"; tail -3 /tmp/apt-kp.log; }
+#13 CACHED
+
+#14 [10/12] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.linux.arm64 sops;     get $gh/rclone/rclone/releases/download/v1.75.2/rclone-v1.75.2-linux-arm64.zip rclone.zip;     get $gh/duckdb/duckdb/releases/download/v1.5.6/duckdb_cli-linux-arm64.zip duckdb.zip;     get $gh/mikefarah/yq/releases/download/v4.54.1/yq_linux_arm64 yq;     get $gh/crystal-lang/crystal/releases/download/1.21.1/crystal-1.21.1-1-linux-aarch64-bundled.tar.gz crystal.tgz;     get $gh/FreeCAD/FreeCAD/releases/download/1.1.4/FreeCAD_1.1.4-Linux-aarch64-py311.AppImage freecad.AppImage;     get $gh/oven-sh/bun/releases/download/bun-v1.4.3/bun-linux-aarch64.zip bun.zip;     get $gh/realm/SwiftLint/releases/download/0.65.1/swiftlint_linux_arm64.zip swiftlint.zip;     install -m 755 sops /opt/bin/sops; install -m 755 yq /opt/bin/yq;     mkdir -p x-rclone && unzip -q rclone.zip -d x-rclone && install -m 755 "$(find x-rclone -type f -name rclone | head -1)" /opt/bin/rclone;     mkdir -p x-duckdb && unzip -q duckdb.zip -d x-duckdb && install -m 755 "$(find x-duckdb -type f -name duckdb | head -1)" /opt/bin/duckdb;     mkdir -p /opt/crystal && tar xzf crystal.tgz -C /opt/crystal && ln -sf "$(find /opt/crystal -maxdepth 3 -type f -path '*/bin/crystal' | head -1)" /opt/bin/crystal;     chmod 755 freecad.AppImage && (cd /opt && /tmp/dl/freecad.AppImage --appimage-extract > /tmp/freecad-extract.log 2>&1) && mv /opt/squashfs-root /opt/freecad && echo "OK freecad extracted" || { echo "FAILED freecad extract"; tail -3 /tmp/freecad-extract.log; };     mkdir -p x-bun && unzip -q bun.zip -d x-bun && install -m 755 "$(find x-bun -type f -name bun | head -1)" /opt/bin/bun;     mkdir -p x-swiftlint && unzip -q swiftlint.zip -d x-swiftlint && install -m 755 "$(find x-swiftlint -type f -name swiftlint | head -1)" /opt/bin/swiftlint;     ls -l /opt/bin
+#14 6.139 OK sops
+#14 9.910 OK rclone.zip
+#14 12.82 OK duckdb.zip
+#14 14.85 OK yq
+#14 21.40 OK crystal.tgz
+#14 106.2 OK freecad.AppImage
+#14 111.4 OK bun.zip
+#14 119.0 OK swiftlint.zip
+#14 125.4 OK freecad extracted
+#14 126.8 total 365992
+#14 126.8 -rwxr-xr-x 1 root root 88465160 Oct 12 03:16 bun
+#14 126.8 lrwxrwxrwx 1 root root       41 Oct 12 03:16 crystal -> /opt/crystal/crystal-1.21.1-1/bin/crystal
+#14 126.8 -rwxr-xr-x 1 root root 54304672 Oct 12 03:16 duckdb
+#14 126.8 -rwxr-xr-x 1 root root 78643362 Oct 12 03:16 rclone
+#14 126.8 -rwxr-xr-x 1 root root 48300194 Oct 12 03:16 sops
+#14 126.8 -rwxr-xr-x 1 root root 91877032 Oct 12 03:16 swiftlint
+#14 126.8 -rwxr-xr-x 1 root root 13172896 Oct 12 03:16 yq
+#14 DONE 127.9s
+
+#15 [11/12] RUN /opt/py/bin/pip install --no-cache-dir ansible-core==2.21.5 > /tmp/pip-ansible.log 2>&1 && echo "OK ansible-core" || { echo "FAILED ansible-core"; tail -3 /tmp/pip-ansible.log; }
+#15 3.417 OK ansible-core
+#15 DONE 3.5s
+
+#16 [12/12] RUN { echo "keepassxc-cli $(keepassxc-cli --version 2>&1 | head -1)"; echo "age $(age --version 2>&1 | head -1)";       echo "sops $(sops --version 2>&1 | head -1)"; echo "rclone $(rclone version 2>&1 | head -1)";       echo "duckdb $(duckdb --version 2>&1 | head -1)"; echo "yq $(yq --version 2>&1 | head -1)";       echo "crystal $(crystal --version 2>&1 | head -1)";       echo "freecadcmd $(ls /opt/freecad/usr/bin 2>/dev/null | grep -i -m1 cmd) $(/opt/freecad/usr/bin/freecadcmd --version 2>&1 | head -1)";       echo "bun $(bun --version 2>&1 | head -1)"; echo "swiftlint $(swiftlint version 2>&1 | head -1)";       echo "ansible-vault $(ansible-vault --version 2>&1 | head -1)"; } | tee /versions.txt
+#16 0.283 keepassxc-cli 2.7.10
+#16 0.292 age 1.2.1
+#16 0.712 sops sops 3.13.3 (latest)
+#16 0.759 rclone rclone v1.75.2
+#16 0.770 duckdb v1.5.6 (Variegata) 069cc9f9b5
+#16 0.772 yq yq (https://github.com/mikefarah/yq/) version v4.54.1
+#16 0.794 crystal Crystal 1.21.1 [73ea5c2b1] (2026-09-26)
+#16 0.811 freecadcmd freecadcmd FreeCAD 1.1.4 Revision: 20260928 (Git shallow)
+#16 0.812 bun 1.4.3
+#16 0.827 swiftlint 0.65.1
+#16 0.841 ansible-vault ERROR: Ansible requires blocking IO on stdin/stdout/stderr. Non-blocking file handles detected: <stdin>
+#16 DONE 0.8s
+
+#17 exporting to image
+#17 exporting layers
+#17 exporting layers 75.1s done
+#17 exporting manifest sha256:ec2c64f6b9844628e8ec81af1df27fd1c055ca99730a8ffdd39c7fa99a2589c3
+#17 exporting manifest sha256:ec2c64f6b9844628e8ec81af1df27fd1c055ca99730a8ffdd39c7fa99a2589c3 done
+#17 exporting config sha256:d7503ed43be66c4402d001ce1d2fd2693d1151e20c32eea3acd89bb9e24a7c26 done
+#17 exporting attestation manifest sha256:8d39b0148f28574b5f0809d11b69b5407ba648e769d35cf0dfaf38356258536d done
+#17 exporting manifest list sha256:a63e12229b82e0ada3bf39420f2bf7771faef54e9526648a7f841f223d128a61 done
+#17 naming to docker.io/library/sideeye-sv1012:latest done
+#17 unpacking to docker.io/library/sideeye-sv1012:latest
+#17 unpacking to docker.io/library/sideeye-sv1012:latest 15.6s done
+#17 DONE 90.8s
+build: sideeye-sv1012 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt

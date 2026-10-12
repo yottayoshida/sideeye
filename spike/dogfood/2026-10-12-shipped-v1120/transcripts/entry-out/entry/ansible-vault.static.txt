@@ -1,0 +1,2 @@
+static: /opt/py/bin/ansible-vault: Python script, ASCII text executable
+next: sideeye explore --state /s/av --cwd "/s/av" --operation "ansible-vault encrypt secrets.yml --vault-password-file /s/avaux/pw" \
