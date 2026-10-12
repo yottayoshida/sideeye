@@ -2,282 +2,128 @@
 
 Every report this project files on GitHub goes in `spike/upstream-reports.tsv` (a
 report filed elsewhere, a Bugzilla say, has no row there yet), and `docs/found.md`
-lists those with their state. **Four** of them, filed 2026-09-04..05, are
-the worked examples this page was drawn from, and
-`ImageMagick/ImageMagick#8939` is the canonical instance — the owner's
-instruction on 2026-09-06 is that later reports go the same way. This page is
-that skeleton written out, so the next report is not re-derived from the last
-four. Four more went out the same week and took the same shape
-(`spike/dogfood/2026-09-06-userview-2/RESULTS.md`); one of them, jpegtran, sits
-between two of the rows below, which the sunset note at the end covers.
+lists those with their state. This page is the shape a report takes. **It is short.**
 
-The worked examples are the real instrument; this page is an index to them.
+## Why short
 
-| Report | What the crash leaves | Text |
-|---|---|---|
-| `ImageMagick/ImageMagick#8939` | the original at `<file>~` | `dogfood/2026-09-05-userview/report-imagemagick.md` |
-| `qpdf/qpdf#1773` | the original at `<file>.~qpdf-orig#` | on the tracker only |
-| `andreafrancia/trash-cli#414` | the user's file untouched, the trash directory permanently inconsistent | on the tracker only |
-| `Exiv2/exiv2#9482` | a zero-byte file, the original bytes nowhere | `dogfood/2026-09-05-userview/report-exiv2.md` |
+A maintainer reads the first screen and decides. Long, sectioned reports have been
+answered as what they look like, not as what they found:
 
-## The opening paragraph: what was lost decides it, not how bad it feels
+- `crystal-lang/crystal#17620` (2026-10-12), within the hour: *"Don't paste AI. Especially
+  walls of slop. Write down a quo summary of findings in your very own voice."* [sic] — an answer
+  to the report's form; the finding, a source file left at 0 bytes, went unaddressed.
+- `libjpeg-turbo/libjpeg-turbo#914` was called an "AI-generated novel", `pyupgrade#1101` was
+  locked as spam, and `poetry#11019` drew "your AI" (2026-09). The first two carried the old
+  shape: six measured items, the full trace, a section on why it mattered, another on what
+  was not claimed.
+- The two reports filed after that comment (`rclone/rclone#10076`, `FreeCAD/FreeCAD#33493`) were
+  shortened at the owner's request before they went out.
 
-Three openings, and the measurement picks one. **Write the recovery down first.**
-If it is one command, the finding is the first kind; if it takes a human deciding
-which file to delete, it is the second; if there is no recovery, it is the third.
-
-| The recovery | The opening | The fourth section |
-|---|---|---|
-| one command (`mv img1.png~ img1.png`, `mv f.pdf.~qpdf-orig# f.pdf`) | `**Up front: this is minor, and closing it as won't-fix is a perfectly good outcome.**` | *Why it might still be worth a line of documentation* |
-| a human must work out what to delete, and the tool complains on every run until they do | `**No data is lost by this.**` — then, in the same paragraph, what *does* break and that it stays broken | *What would close it* |
-| none — the bytes are gone | no mitigating opening at all | *Why this one may be worth more than the usual in-place-write report* |
-
-The middle row is trash-cli#414 and it is why this is a three-way branch rather
-than the two-way one this page shipped with: no data is lost there, and calling
-it minor would still have been wrong, because every later `trash-list` prints a
-parse error and only a hand-deleted file stops it. The bottom row must not carry
-a mitigating opening at all — calling unrecoverable loss minor is a false
-statement, not a courtesy.
+Length is not where the evidence lives. The run's `RESULTS.md` and its transcripts hold
+every number; the report points at what a maintainer needs to see the bug, and stops.
 
 ## Before any text is written
 
-0. **Read the project's contribution policy for rules on LLM-written text, before
-   the finding is even weighed.** rust-lang's policy
-   (`forge.rust-lang.org/policies/llm-usage.html`, adopted by cargo) bans an issue body
-   originally created by an LLM from a personal account unless it is clearly quoted and
-   marked; `rust-lang/cargo#17481` (2026-09-16) was closed `not planned` on that within
-   the hour, with the finding unread. A disclosure section is not the marking such a
-   policy asks for. Where the policy bans it, the report is the owner's to write in their
-   own words or not to file; nothing below applies. The path such a policy leaves a
-   non-native speaker is the one rust-lang's names: the owner writes the original in their
-   own language, the translation is disclosed as machine translation, and the original is
-   posted beside it — the agent may translate, not compose. Where the policy allows
-   AI-assisted reports on conditions, the conditions are met in the text and the policy's
-   location is recorded with the report: `aws/aws-cli#10648` carries the statement aws-cli's
-   `CONTRIBUTING.md` asks for, and `neovim/neovim#41940` was cut to neovim's "remove
-   verbosity" (`dogfood/2026-09-16-outside-git/RESULTS.md`).
-1. **Freshness against more than this repository.** `git grep` here returned
-   nothing for qpdf and the finding was written up as fresh; the owner had filed
-   `qpdf#1773` the previous day from a separate measurement, and the tool is in
-   production in four of the owner's work repositories. Search the target's own
-   tracker (`cohort4/novelty-prescan.sh`, one word per query — multi-word queries
-   silently return zero), this repository, and the owner's own filings.
-2. **Read the current upstream source, not only the packaged build, and say in
-   the report that you did.** All four were measured on a packaged build —
-   Debian for three, pip for trash-cli — and three of the four carry the
-   sentence (`The current main carries the same block`); qpdf#1773 does not,
-   which is the gap to close rather than the precedent to follow. A report
-   measured only on a packaged build is invalid the moment upstream has already
-   fixed it.
-3. **Owner sign-off on the full text, verbatim** — not a summary, and with no
-   Japanese around it. A draft shown with Japanese commentary was read as though
-   the commentary were part of the report.
+0. **Read the project's contribution policy on LLM-written text.** Where it bans an issue body
+   an LLM wrote, or asks that descriptions be the contributor's own (rust-lang's policy,
+   adopted by cargo, closed `rust-lang/cargo#17481` within the hour; FreeCAD's `AI_POLICY.md`),
+   the owner writes the text in their own words — in Japanese if they like — and the agent may
+   translate it, marked as a translation as the policy asks, with the original beside it where the
+   policy asks for that; translate, never compose. Where it allows assistance on conditions (aws-cli,
+   ansible's community policy: an `Assisted-by:` line), meet them in the text. Record where the
+   policy was read, in the draft's header comment.
+1. **Read the issue form field by field.** A tracker's `.github/ISSUE_TEMPLATE/*.yml` names its
+   required fields (`validations.required: true`); fill every one, briefly, under the form's own
+   headings. `ansible/ansible#87678` was closed by the project's bot 42 seconds after filing for
+   two required sections the text did not have, and had to be filed again as #87679. A checkbox
+   is a statement: tick "I searched the forum" only after searching it.
+2. **Freshness against more than this repository.** Search the target's own tracker (one word
+   per query — multi-word queries silently return zero), its forum where it has one, this
+   repository, and the owner's own filings. `qpdf#1773` was written up as fresh the day after
+   the owner had filed it.
+3. **Read the current upstream source, and measure the latest release** — the development
+   release where the form asks for it (FreeCAD's does). A report measured only on a packaged
+   build is void the moment upstream has fixed it.
+4. **The owner's own voice, in every report.** The agent hands over the facts — what a kill
+   leaves, where in the source, how to reproduce, one way to close it — and the owner writes the
+   text. A short draft from the agent is a starting point the owner rewrites in their own words,
+   never a text they approve as it stands: `crystal-lang/crystal#17620` was an agent's draft
+   approved verbatim. The owner then approves the final text as it will be posted, with no
+   Japanese around it.
 
-## The sections, in order
+## The shape
 
-### The opening paragraph
+Under the form's headings where there is a form, in this order where there is not. Aim for a
+first screen: a few short paragraphs, about 250 words before any required raw output (version
+strings, config dumps, logs).
 
-Per the table above. One paragraph, bold lead, before any heading.
+1. **What a kill leaves, in one paragraph.** Write the recovery down first; it picks the opening:
 
-### `## What happens`
+   | The recovery | The opening |
+   |---|---|
+   | one command (`mv part.<date>.FCBak part.FCStd`) | say it is minor, and that closing it is fine |
+   | a human must work out what to rename or delete, and the tool stays broken until they do | *No data is lost by this*, then what breaks and that it stays broken |
+   | none — the bytes are gone | no mitigating opening at all; calling unrecoverable loss minor is false |
 
-The mechanism, with the target's own source quoted and the file named —
-`MagickWand/mogrify.c`, `FileIo::transfer` in `src/basicio.cpp`, `writeOutfile`
-in `QPDFJob.cc`, `Janitor.trash_file_in` in `trashcli/put/janitor.py`. Separate
-what the design already handles from what it cannot: mogrify's report says the
-code renames the backup back when a write fails, and that a killed process
-reaches neither branch. That sentence is what keeps the report from reading as
-"you forgot your error handling".
-
-### `## Measured`
-
-Six things, each a literal rather than a characterisation:
-
-- version, package name, distribution, architecture;
-- the write path as `strace` printed it — the real lines — or, where the damage
-  is what the tool says afterwards, that output verbatim (`trash-list`'s parse
-  error, and that it still exits 0);
-- which crash point of how many (`crash point 5 of 6`);
-- the directory before and after, with byte counts;
-- the recovery **run**, not asserted (`identify img1.png~` succeeds and reports
-  the original dimensions) — or what a user has to do by hand, or that the bytes
-  are nowhere;
-- how many explored worlds showed it, that the invariant is named, and that a
-  second witness agreed.
-
-### `## Why this is different from #NNN` — only when the tracker holds a near neighbour
-
-The novelty check happens before the report is written; this section is where
-its result is shown to the reader instead of kept. trash-cli#414 carries it
-because `#322` looks like the same bug and is not: that one was a multi-file
-`trash-put`, fixed in 2024, and this window is inside `trash_file_in` on a
-single file. Name the neighbour, name the mechanism difference, say the current
-code is unchanged.
-
-### The fourth section — why it is worth anything at all
-
-Recoverable: discoverability is the argument, never severity. #8939 and #1773
-make it the same way — the backup is the right thing to have kept, but only for
-someone who knows to look, and the documentation does not mention it.
-
-State-broken: `## What would close it`, because there is no version of "leave it"
-that is not an error printed forever.
-
-Unrecoverable: the argument is what the data is, and it needs the cheaper
-same-shape finding beside it to carry — black rewrites files that sit under
-version control; photographs do not.
-
-In all three, the responses are **at most two, in increasing order of cost, with
-`I have no stake in which`**, and the more expensive one carries the sentence
-that it may well not be worth it. All four reports do this; it is not the fix
-section that was struck (see below).
-
-### `## Disclosure`
-
-Four elements, of which (c) and (d) are what stop it reading as promotion:
-(a) the tool named and linked; (b) one or two sentences on what it does;
-(c) no commercial interest, a personal open-source project; (d) *if you would
-rather not have tool-generated reports on this tracker, say so and I will stop*.
-
-Then the invariant in one sentence, and — where it was run — that the checker
-was falsified against deliberately corrupted state before the run, so a checker
-that could not fail did not produce this.
-
-### `## Not claimed`
-
-Name what was not measured: power loss, torn writes, concurrent processes.
-Process-kill granularity says what happens when the process dies between two
-syscalls and nothing about what the filesystem does with partially-flushed data.
-Then the target-specific gap — which argument was incidental (`-resize` is not
-the subject; any in-place `mogrify` reaches the same rename), or which variant
-was not measured (trash-cli's multi-path forms).
+2. **Where.** One source location (`src/App/Document.cpp`, `fs/config/configfile/configfile.go`)
+   and one sentence on what the code already handles and what a killed process does not reach
+   — the sentence that keeps it from reading as "you forgot your error handling". Where the tracker
+   holds a near neighbour, one more sentence on how this differs (`trash-cli#414` is not `#322`:
+   that one was a multi-file `trash-put`, fixed in 2024).
+3. **How to reproduce.** The version, the command, and the one or two system calls either side
+   of the window (`renameat` … `renameat`, `openat(… O_TRUNC)` … `write`). What was left, in a
+   line. No world counts, no invariant names, no full trace.
+4. **One way to close it**, and where it is true, that not fixing it is fine.
+5. **Disclosure, in one or two sentences**: found with Sideeye (linked), a personal open-source
+   project with no commercial interest; the AI assistance, as the project's policy asks it to be
+   said.
 
 ## What does not go in
 
-- **A tested patch, or an offer to send a PR.** What was struck from the
-  timewarrior draft was a section headed *A fix direction, tested* and the line
-  *Happy to turn this into a PR if the direction looks right to you* — the
-  patch and the offer, not the direction. Naming one or two directions is what
-  all four reports do. A verified patch stays local until the maintainer engages.
-- **An opening that is not a fact** — thanks, or an aside addressed to whoever
-  reads this later. Start with the finding.
-- **The reporter's future plans.** `I am not planning to take this further` is
-  information nobody asked for, and closing the issue already says it.
-- Em dashes are fine. The 2026-08-23 ban was lifted on 2026-09-05 by
-  measurement: the owner's own `qpdf#1773` carries eight of them and names
-  sideeye four times.
+- **A tested patch, or an offer to send a PR.** Naming a direction is fine; a verified patch
+  stays local until the maintainer engages.
+- **Sections the tracker did not ask for**: *Measured*, *Why this may be worth more*, *Not
+  claimed*. One clause can carry a limit that matters ("power loss was not measured").
+- **Raw output beyond the window**: the trace, the evidence table, the replay log.
+- **An opening that is not a fact** — thanks, an aside, the reporter's plans.
 
 ## The second contact: when the maintainer acts on it
 
-Everything above is the **first** report. Once a maintainer engages — and
-especially once they ship a patch — the shape changes, and 2026-09-06 measured
-what changes about it. `ImageMagick/ImageMagick#8939` drew a patch within a day;
-a build of `main` at `3501ef34` then lost the original image **with no crash at
-all**, because the new sequence hard-links the backup to the target before the
-`O_TRUNC`, so an `ENOSPC` write empties both names at once. Measured 2026-09-06
-on a 200 KB tmpfs and recorded in `spike/dogfood/2026-09-06-imagemagick-refix/RESULTS.md`: 7.1.1-43 leaves the
-original intact at 98,851 bytes with a matching sha256, the patched build leaves
-two names on one inode at 204,800 bytes and neither decodes.
-
-What a reply carries that a first report must not:
-
-- **The offer, and the sentence that keeps it an offer.** *"If you would like, I
-  can open a PR along those lines … I will not open one unless you say so."*
-  This is the stage the timewarrior correction was reserving it for.
-- **A fix direction with its unresolved details named.** Three of them there —
-  the coder prefix on the temp path, mode and ownership on a new inode, the
-  `preserve-timestamp` call — introduced by *"which is why I am describing a
-  direction rather than claiming it works as written"*. Detail 2 credits the
-  patch for something the old code did worse.
-- **Reverting named as an acceptable outcome**, when it is one: *"what I
-  reported was minor and fully recoverable; what is in `main` now is not."*
-- **Thanks, and an apology where one is owed.** Not a preamble — the first
-  report's silence about a fix direction is what this round cost, and the reply
-  says so.
-
-Unchanged: measure the patched build yourself before replying, and keep
-`## Not claimed` — the reply's version names the new axis it did not cover
-(other filesystems, the Windows `_wlink` path).
-
-**This is the argument against a bare first report.** The prohibition is on a
-tested patch and on selling a PR, never on saying what a fix would look like. A
-report that stays silent about the direction can be answered by a patch that is
-worse than the finding.
+Measure the patched build before replying. `ImageMagick/ImageMagick#8939` drew a patch within a
+day that lost the original image with no crash at all (`dogfood/2026-09-06-imagemagick-refix/`);
+the reply that said so could carry what a first report must not — the offer of a PR with the
+sentence that keeps it an offer, a fix direction with its open details named, and reverting
+named as an acceptable outcome. Keep it as short as the first report.
 
 ## After filing
 
-- **Both records, in the same sitting**: a row in `spike/upstream-reports.tsv` and an
+- **Watch the first minutes.** A project's bot can close a report it reads as incomplete. If it
+  does, file again with what it named, and record the first filing as `withdrawn`.
+- **Every record, in the same sitting**: a row in `spike/upstream-reports.tsv`; an
   `<!-- upstream-report: owner/repo#N -->` marker on that tool's row in
-  `docs/target-classes.md`. `spike/check-upstream-ledger.sh` holds the two to each
-  other and stays green over a filing that is in neither — that is the gap
-  `trash-cli#414` sat in for two days. Then the campaign's row in
-  `spike/outcome-funnel.tsv` at `filed`, a row in `spike/campaign-versions.tsv` for
-  that campaign if it has none, and `python3 spike/outcome-funnel.py --write-doc`;
-  CI is red until all of it is done. If it is not done, the daily `upstream-watch` job
-  still proposes the report for `docs/found.md`, marked not recorded yet, in its next
-  pull request — provided the report names Sideeye, as the Disclosure below has it do.
-- **Closing your own report uses `not planned`**, never `gh issue close`'s
-  default `completed`.
-- **A third party's question on your issue gets an answer**, even when the
-  answer is that you are not the one who decides.
+  `docs/target-classes.md` (`spike/check-upstream-ledger.sh` holds the two to each other); a row
+  in `spike/unknown-rate/b2-exclusion-aliases.tsv` for the ledger's spelling of the tool
+  (`count.py b2-selection`); the campaign's row in `spike/outcome-funnel.tsv` at `filed`; a row
+  in `spike/campaign-versions.tsv` for that campaign if it has none; then
+  `python3 spike/outcome-funnel.py --write-doc`. CI is red until all of it is done. If it is not
+  done, the daily `upstream-watch` job still proposes the report for `docs/found.md`, marked not
+  recorded yet — provided the report names Sideeye, as the Disclosure has it do.
+- **The text as filed** goes beside the run's results (`report-<tool>.md`), its header comment
+  naming the policy read and anything changed between draft and filing.
+- **Closing your own report uses `not planned`**, never `gh issue close`'s default `completed`.
+- **A third party's question on your issue gets an answer**, even when the answer is that you
+  are not the one who decides.
 
 ## What this page cannot tell you
 
-Whether the shape works. Ten standing reports, measured 2026-09-06 with
-`upstream-report-status.sh`: seven at zero comments, three with any reply at all.
-Of those three, #8939 is the only Up-front-shaped one, and it drew a maintainer reproduction and
-a patch commitment within fourteen hours — on a report that told them closing it
-was fine. That is n=1 against a variable this page does not control: rule 11 in
-`cohort4/SCOUT-BRIEF.md` exists because projects differ in responsiveness, and
-nothing here separates the shape from the project. Four reports filed on
-2026-09-06 are not in that count — they were too new to have drawn anything.
-
-**Measured again on 2026-09-14**, with `upstream-report-status.sh` and every
-thread read: fifteen standing reports, six at zero comments and nine with a
-reply. Of the nine that carry this page's Disclosure — the four worked
-examples, the four filed the same week and `oxipng/oxipng#873` — six drew a
-reply. `#8939` was patched; the third patch closed both items when it was
-measured on 2026-09-06 at `960adadd` (`dogfood/2026-09-06-imagemagick-patch3/`),
-and `mogrify.c` has changed since without being measured again.
-`libjpeg-turbo#914` was labelled `enhancement` and left open for now, to be
-considered if more project funding emerges. Four were closed by their
-maintainers with no change: `qpdf#1773` with a `wontfix` label, `fonttools#4170`
-and `oxipng#873` as not planned, and `pyupgrade#1101`, which was also locked as
-spam. `Exiv2#9482`, `trash-cli#414` and `beancount#1051` have no reply. Of the
-six standing reports without the Disclosure, `himalaya#738` was fixed upstream,
-`calcurse#529` drew the owner's agreement that it should be fixed, `topydo#341`
-was labelled `bug` with no comment, `poetry#11019` was closed by this project
-once the write turned out to be tomlkit's, and `timewarrior#778` and `stow#139`
-have no reply. Comments on three reports speak to how they were produced:
-`poetry#11019`'s ("your AI"), `libjpeg-turbo#914`'s (an "AI-generated novel",
-and later automated tools as a burden on that project), and `pyupgrade#1101`'s,
-which called the report spam; that report's link to this project now reads
-`<<spam>>`. The last two carry element (d); `poetry#11019` does not. No outcome
-in either group holds more than four reports, and nothing in them separates the
-shape from the project.
-
-**And a fast reply is not the same as a good outcome.** The reply arrived **51
-seconds** after the commit it announced (`1a0d1b71` at 2026-09-05T18:38:12Z, the
-comment at 18:39:03Z), so what fourteen hours bought was a declaration rather
-than a reviewed result. That commit added two things: the hard link, which is the
-loss described under the second contact, and a `remove_utf8(image->filename)` on
-the success path, which `3501ef34` took back 5h11m later as its only change.
-What that line would have done under the link is a reading of the diff and was
-not measured; what was measured is the timing, the two diffs, and that the line
-was taken back. A page about how to
-write reports cannot measure what a report causes. Only building the patched
-thing and measuring it again can, which is what `spike/dogfood/` is for.
+Whether a short report is answered more often than a long one. Measured on 2026-09-14, six of
+the nine reports carrying the old Disclosure drew a reply, and three reports in all drew remarks
+on how they were produced; the old version of this page counted them (`git log` on this file). The
+four filed on 2026-10-12 are too new to count. Nothing here separates the shape from the
+project.
 
 ## Sunset
 
-Delete this page if the next three reports each need a section it does not have,
-or need one of its sections dropped. It has already been wrong once in that
-direction: the first version read three reports, called the branch two-way, and
-banned the fix direction that all four reports carry — trash-cli#414, which was
-on the ledger the whole time, falsified both. Four worked examples are a better
-instrument than a bad abstraction of them.
-
-Delete element (d) of Disclosure — not the page — if a maintainer ever takes it
-up. As of 2026-09-14 no comment has asked for the reports to stop in those
-words; the nearest, on the two reports that carry element (d), are named under
-*What this page cannot tell you*.
+Rewrite this page when the next three reports each need something it does not say, or the
+owner cuts what it does say — which is how the long version ended (2026-10-12). Delete the
+250-word aim if a maintainer asks for more detail than it allows, twice.
