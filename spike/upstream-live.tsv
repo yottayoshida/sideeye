@@ -59,3 +59,6 @@ dotenvx/dotenvx	1012	closed-completed	a secure dotenv—from the creator of dote
 dotenvx/dotenvx	1016	open	a secure dotenv—from the creator of dotenv	dotenvx decrypt drops the backslash of &#36;, so a value with a literal &#36; changes	1020:open	2026-10-09
 dotenvx/dotenvx	1017	open	a secure dotenv—from the creator of dotenv	Two dotenvx encrypt runs at once with a shared .env.keys leave one env file undecryptable	-	2026-10-09
 dotenvx/dotenvx	1018	open	a secure dotenv—from the creator of dotenv	dotenvx protect empties a pre-commit hook or git attributes file if its write fails	1019:open	2026-10-09
+crystal-lang/crystal	17620	open	The Crystal Programming Language	crystal tool format leaves the file empty if it is killed mid-write	-	2026-10-12
+ansible/ansible	87678	closed-not_planned	Ansible is a radically simple IT automation platform that makes your applications and systems easier to deploy and maintain. Automate everything from code depl…	ansible-vault encrypt loses both the plaintext and the vault if it is killed mid-write	-	2026-10-12
+ansible/ansible	87679	open	Ansible is a radically simple IT automation platform that makes your applications and systems easier to deploy and maintain. Automate everything from code depl…	ansible-vault encrypt loses both the plaintext and the vault if it is killed mid-write	-	2026-10-12

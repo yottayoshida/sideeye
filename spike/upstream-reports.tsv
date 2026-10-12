@@ -77,3 +77,6 @@ dotenvx/dotenvx	1012	standing	dotenvx 2.32.4 `encrypt`
 dotenvx/dotenvx	1016	standing	dotenvx 2.34.2 `decrypt`
 dotenvx/dotenvx	1017	standing	dotenvx 2.34.2 `encrypt`, two at once
 dotenvx/dotenvx	1018	standing	dotenvx 2.34.2 `protect`
+crystal-lang/crystal	17620	standing	Crystal 1.21.1 `crystal tool format`
+ansible/ansible	87678	withdrawn	ansible-core 2.21.5 `ansible-vault encrypt`
+ansible/ansible	87679	standing	ansible-core 2.21.5 `ansible-vault encrypt`

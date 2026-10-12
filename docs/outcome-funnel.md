@@ -146,29 +146,29 @@ review the way ADR 0039 rules for figures quoted from other records.
 ```
 outcome funnel -- every campaign
 
-412 encounters (one campaign meeting one target) over 39 campaigns, 33 of them
-recording every target they met; 269 distinct targets.
-320 rows are held to a report this repository committed; 92 name a written record only.
+413 encounters (one campaign meeting one target) over 39 campaigns, 33 of them
+recording every target they met; 270 distinct targets.
+321 rows are held to a report this repository committed; 92 name a written record only.
 1301 candidates screened before the slates were fixed, over the 24 campaign(s) that
 recorded one; the rest kept no such count.
 
 reach, over the 33 campaign(s) that recorded every target they met
-  attempted       403
-  explored        274
-  judged          262
+  attempted       404
+  explored        275
+  judged          263
     PASS           87
-    FAIL          175
+    FAIL          176
 
 outcome            encounters   in full campaigns   distinct reports
-  novel                72              63             43
-  report_worthy        54              45             43
-  filed                51              42             43
+  novel                73              64             46
+  report_worthy        57              48             46
+  filed                54              45             46
   acknowledged         13              12             11
   fixed                12              11             10
   revalidated          11              10             10
 
-why encounters stopped: awaiting 29, declined 6, discussing 2, known 26, no_content_lost 17, not_worth 91, wall 119, withdrawn 2
-upstream states last read between 2026-08-14 and 2026-10-10; spike/upstream-report-status.sh measures them now.
+why encounters stopped: awaiting 31, declined 6, discussing 2, known 26, no_content_lost 17, not_worth 91, wall 119, withdrawn 3
+upstream states last read between 2026-08-14 and 2026-10-12; spike/upstream-report-status.sh measures them now.
 ```
 
 <!-- outcome-funnel:summary:end -->

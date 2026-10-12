@@ -34,7 +34,8 @@ the formatted text; killed between the two, the file is empty and the source exi
 operations, oracle agreed on both. Searched on crystal-lang/crystal (`formatter truncate`, `format
 empty file`, `tool format data loss`, `format atomic write`, `File.write atomic`, `formatter
 interrupted`): nothing on the formatter; #6133 (2018, closed) proposed a `File.atomic_write` for the
-standard library and was not merged. **Novel as far as that search reaches.**
+standard library and was not merged. **Novel as far as that search reaches.** Filed on 2026-10-12 as
+crystal-lang/crystal#17620, the text of `report-crystal.md` approved verbatim by the owner.
 
 ## ansible-vault — the plaintext is shredded before the vault is written
 
@@ -47,6 +48,11 @@ absent one to an empty one. The salt was pinned (`pythonpath:sitecustomize.py`),
 bytes repeat. ansible/ansible#81455 (2023, closed) is the same order met by another road — a
 directory the user cannot write — and was fixed by checking the directory first, which leaves this
 window as it was. #80675 (open) refactors vault without changing the order. **Novel in this form.**
+Filed on 2026-10-12 as ansible/ansible#87678, the text of `report-ansible-vault.md` approved verbatim
+by the owner; the project's AI policy (assistance allowed, disclosed in a preamble) was read first.
+The project's bot closed it within seconds: `bug_report.yml` requires a Configuration and an OS /
+Environment section, which the draft did not carry (the template was named, not read field by
+field). Filed again, with the owner's approval of the two sections, as ansible/ansible#87679.
 
 ## Bun 1.4.3 — the rewrite did not move it
 
