@@ -19,14 +19,14 @@ searching it.
 
 **Produce only what the policy permits; everything else is the person's.**
 
-- **If it forbids LLM-written or tool-generated reports, stop.** Tell the person the report
+- **If it forbids LLM-written or tool-generated reports — AI for code but not for issues
+  included — stop.** Tell the person the report
   is theirs to write in their own words, or not to file. Translate their text only if the
   policy itself allows a machine translation, marked as it asks, with the original beside it
   — translate, never compose. A disclosure paragraph of yours is not the marking such a
   policy asks for. For the measured facts, point them to `sideeye evidence <case.json>`; do
   not arrange those facts into a report for them.
-- **If it allows them on conditions** (a statement, a label, a template, a length, AI for code
-  but not for issues), meet each condition, and note where the policy lives so the person
+- **If it allows them on conditions** (a statement, a label, a template, a length), meet each condition, and note where the policy lives so the person
   can check.
 - If there is no policy, say that you looked and where.
 
@@ -48,7 +48,9 @@ searching it.
 Maintainers answer long, sectioned reports as what they look like — "walls of slop", "an
 AI-generated novel" — before reading what they found. Aim for a few short paragraphs, about
 250 words before any raw output the form requires (version strings, config dumps, logs). The
-measurements stay in the run's own record; the report points at what is needed to see the bug.
+250 words are an aim, not a limit: never cut what another developer needs to reproduce the
+finding to meet it — cut repetition instead. The measurements stay in the run's own record;
+the report points at what is needed to see the bug.
 
 Write down how a user recovers first; it picks the opening.
 
@@ -64,8 +66,12 @@ Write down how a user recovers first; it picks the opening.
 2. **Where**: one source location, and one sentence on what the design already handles and
    what a killed process does not reach. If the tracker holds a near neighbour, one more
    sentence on how this differs.
-3. **How to reproduce**: the version, the command, and the one or two system calls either side
-   of the window; what was left, in a line. `sideeye evidence <case.json>` has these.
+3. **How to reproduce**, enough for another developer to run the same experiment: the version;
+   the command; the input it started from (the file and its size, the config or flags that
+   matter, the filesystem where it matters); the one or two system calls either side of the
+   window; how the process was stopped there — the tool and its arguments (the `sideeye replay`
+   command line, not its output), not only "between these two calls"; and what was left, beside what an uninterrupted run leaves.
+   `sideeye evidence <case.json>` has these.
 4. **One way to close it**, and where it is true, that not fixing it is fine.
 5. **Disclosure**, in one or two sentences: the tool named and linked, the person's own
    relationship to it as it is (ask; do not assume none), and the AI assistance as the
@@ -78,10 +84,13 @@ fact; your plans.
 
 ## 4. Hand the facts over, then the draft
 
-The text is the person's, in every report. Give them the facts first — what a kill leaves,
-where, how to reproduce, one way to close it — and let them write it in their own words; a
-short draft of yours is a starting point they rewrite, never a text to approve as it stands.
-Once they have, give the whole text back exactly as it would be posted, in the project's language, with nothing of yours mixed into it — commentary goes
+The person answers for every word, in every report. Where the policy forbids an LLM-written report
+or asks for their own text (step 0), they write it. Everywhere else you may draft; give them the facts first — what a kill
+leaves, where, how to reproduce, one way to close it — so they can check each against the
+run's record, then the draft for them to edit until they understand every sentence and can
+defend it. A draft need not be rewritten, but it must be verified: a long draft approved as it
+stood is what crystal-lang/crystal#17620 was. Give the whole text back exactly as it would be
+posted, in the project's language, with nothing of yours mixed into it — commentary goes
 before or after, clearly apart. They read it, change it and file it. Do not file it, and do not
 open the issue for them. After filing, watch the first minutes: a bot that closes it names
 what was missing.
