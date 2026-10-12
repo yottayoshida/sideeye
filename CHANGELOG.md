@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **`docs/found.md` is read against the trackers every day, and lists a filing the record does not have yet** (ADR 0125; `spike/upstream-live.py`, `spike/upstream-live.tsv`, `spike/campaign-versions.tsv`, `spike/outcome-funnel.py`, `.github/workflows/upstream-watch.yml`, `docs/found.md`, `docs/outcome-funnel.md`, `spike/upstream-report-template.md`). The `upstream-watch` job reads every report in `spike/upstream-reports.tsv`, and every issue the owner opened elsewhere that names Sideeye and is not recorded, with the pull requests in its repository that are linked to it or mention it. When any of that differs from main it opens one pull request regenerating the page, closing the one before; a report it cannot read fails the job and opens nothing. The table now gives what each tool is, the tracker's state beside this project's own, the issue's title, its pull requests, the Sideeye that found it and when, newest first. A tracker's word never moves a stage in `spike/outcome-funnel.tsv`: qpdf closed its report as completed and declined the fix.
+
 ### Changed
 
 - **The CI quickstart and the MCP container pin v1.12.0** (`docs/ci-quickstart.md`, `docs/ci-quickstart/release/install-sideeye.sh`, `.github/workflows/quickstart-release.yml`, `docs/mcp-container/Dockerfile`). The release lane installs the published v1.12.0 asset, and the container fetches it, with the two Linux digests GitHub recorded for it. The pins move after the release, as on v1.11.0, because both download the asset and it exists only once the release is published. With the container on v1.12.0, the MCP server it carries keeps each server's work directory to itself and finds its state strictly inside `SIDEEYE_MCP_STATE_ROOT`, as `docs/mcp.md` describes.

@@ -1,0 +1,49 @@
+name: upstream-watch
+
+# ADR 0125. Never on pull_request: what an upstream tracker says must not turn an unrelated
+# change red. Its pull request's CI waits for approval because it is opened with this job's
+# own token; a personal token would start CI unattended and is one more secret to rotate.
+# Without "Allow GitHub Actions to create and approve pull requests" (Settings > Actions >
+# General) the job fails at `gh pr create` every day it has something to propose.
+
+on:
+  schedule:
+    - cron: '23 21 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: upstream-watch
+  # Not cancelled midway: a run stopped between opening its pull request and closing the
+  # one before leaves two open.
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    # Not from another branch: deliver compares against HEAD and proposes from it, and a
+    # branch's own commits would ride into the pull request against main.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Read every report, recorded or not, and its pull requests
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 spike/upstream-live.py fetch
+
+      - name: Regenerate the pages and hold them to the ledgers
+        run: |
+          python3 spike/outcome-funnel.py --write-doc
+          sh spike/check-upstream-ledger.sh
+          python3 spike/outcome-funnel.py check
+          python3 spike/outcome-funnel.py --check-doc
+
+      - name: Open, keep, replace or close the one upstream-watch pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 spike/upstream-live.py deliver

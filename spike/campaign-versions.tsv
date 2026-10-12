@@ -1,0 +1,41 @@
+# The Sideeye each filing campaign ran, for the "Sideeye" column of docs/found.md.
+# One row per campaign in spike/outcome-funnel-campaigns.tsv that filed a report;
+# spike/outcome-funnel.py check is red when a campaign that filed one has no row here.
+# A campaign that only re-measured an earlier filing needs none.
+#
+# Columns (tab-separated, exactly three, TABS not spaces):
+#
+#   campaign  version  basis
+#
+#   version  X.Y.Z       the campaign's record says it ran the released vX.Y.Z
+#            X.Y.Z+main  anything else: a build from the checkout, or a record that
+#                        names no engine. X.Y.Z is `git describe` of the commit that
+#                        added the record - the last tag before the run, as near as
+#                        the history can say
+#   basis    where the version was read, so a reader can check it
+#
+# Not derived from the campaign's date: three tags went out on 2026-08-13, and the
+# 2026-08-15 re-measurement ran on main the day v0.8.0 was tagged. A date picks one
+# and is wrong about the rest.
+blind-hunt	0.7.0+main	spike/blind-hunt/ledger.md: the re-run sweep's engine reports `sideeye 0.7.0 (trace contract v8)`, built from the branch
+loop-closure-timew	0.4.0+main	git describe of 995b7c5f, which added spike/loop-closure-timew/judge.sh; the record names no engine
+assisted	0.7.0+main	git describe of f755a4e4, which added spike/assisted/RESULTS.md; REMEASURE.md re-ran on main the day #121 and #122 merged
+cohort3	0.12.0+main	git describe of ded6987b, which added spike/cohort3/RESULTS.md; the record names no engine
+cohort4	0.12.0+main	git describe of 1949c62e, which added spike/cohort4/himalaya-r2/RESULTS.md; the record names no engine
+slate/2026-09-04	1.1.0+main	git describe of d9accf68, the first commit carrying the trash-cli row in docs/target-classes.md; the run left no record, so the version is the nearest the history gives
+dogfood/2026-09-05-userview	1.1.0+main	RESULTS.md: cross-built from the checkout, reporting `sideeye 1.1.0 (trace contract v13)`; git describe of b7d1c72f
+dogfood/2026-09-06-userview-2	1.2.0+main	git describe of 4e4f5349; the 2026-09-11 record says this run built from its own checkout
+dogfood/2026-09-11-past-walls	1.3.0	RESULTS.md: "Sideeye is the released v1.3.0, not a build"
+dogfood/2026-09-16-cargo-v16	1.4.0	RESULTS.md: "Sideeye is the released v1.4.0, not a build"
+dogfood/2026-09-16-outside-git	1.4.0	RESULTS.md: "explored with the released v1.4.0", main 047592d only for a second pass
+dogfood/2026-09-16-userview-3	1.4.0	RESULTS.md: "Sideeye is the released v1.4.0"
+dogfood/2026-09-22-shipped-v160	1.6.0	RESULTS.md: the installer read release v1.6.0, `sideeye 1.6.0 (trace contract v18)`
+dogfood/2026-09-28-shipped-v170	1.7.0	RESULTS.md: "The released v1.7.0, installed by the page's installer"
+dogfood/2026-10-02-gate-cleared-twelve	1.7.0	RESULTS.md: "The released v1.7.0"
+dogfood/2026-10-02-unjudged-on-v170	1.7.0	RESULTS.md: "The released v1.7.0"
+dogfood/2026-10-03-user-data	1.7.0	RESULTS.md: "the released v1.7.0"
+dogfood/2026-10-05-user-data-2	1.8.0	RESULTS.md: "the released v1.8.0"
+dogfood/2026-10-09-followups-2	1.10.0	RESULTS.md: "Released v1.10.0, installed by the page's installer"
+dogfood/2026-10-09-followups-3	1.10.0	RESULTS.md: "Released v1.10.0"
+dogfood/2026-10-09-user-data-4	1.10.0	RESULTS.md: "the released v1.10.0"
+dogfood/2026-10-10-dotenvx	1.10.0	RESULTS.md: "the released Sideeye v1.10.0 (installed by the page's install-sideeye.sh)"
