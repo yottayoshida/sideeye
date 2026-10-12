@@ -51,9 +51,11 @@ WHAT THIS CANNOT SEE, said here rather than left to be discovered:
     a refusal transcript is the only place the tool is named -- and nothing more;
     `summary` prints how many rows are in each state rather than letting the reader
     assume.
-  * The live state of an upstream report. `as_of` says when the tail was last read
-    and spike/upstream-report-status.sh measures it now; nothing here reaches a
-    tracker.
+  * The live state of an upstream report. `as_of` says when the tail was last read;
+    spike/upstream-live.tsv holds what the trackers said at the last daily read
+    (spike/upstream-live.py writes it) and spike/upstream-report-status.sh measures
+    them now. Nothing here reaches a tracker, and nothing here moves a stage on what a
+    tracker says: a report closed as completed can be a declined one.
   * Whether a dogfood run happened at all. There is deliberately NO rule that every
     directory under spike/dogfood/ has rows -- a new run would go red for no reason
     its author could act on. The containment that does exist runs the other way:
@@ -70,7 +72,9 @@ Usage:
   python3 spike/outcome-funnel.py --selftest             # falsify the checker
 
 Two pages carry a generated block: docs/outcome-funnel.md (the counts) and docs/found.md
-(every report in spike/upstream-reports.tsv with its furthest state here, #713).
+(every report in spike/upstream-reports.tsv with the tracker's state from
+spike/upstream-live.tsv, its furthest state here, and the Sideeye that found it from
+spike/campaign-versions.tsv).
 
 Exit 0 it holds, 1 the records disagree, 2 the check could not run -- and, from
 --selftest, a predicate that no longer fires, which is the same thing said of the
@@ -119,6 +123,17 @@ FOUND = "docs/found.md"
 FOUND_BEGIN = "<!-- found:begin -->"
 FOUND_END = "<!-- found:end -->"
 RENDER = object()
+VERSIONS = "spike/campaign-versions.tsv"
+VERSION_RE = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(\+main)?$")
+LIVE = "spike/upstream-live.tsv"
+LIVE_STATES = {
+    "open": "Open", "closed": "Closed", "closed-completed": "Closed (completed)",
+    "closed-not_planned": "Closed (not planned)", "closed-duplicate": "Closed (duplicate)",
+    "gone": "Gone",
+}
+PRS_RE = re.compile(r"^(-|[0-9]+:(open|closed|merged)(,[0-9]+:(open|closed|merged))*)$")
+NOT_READ = "Not read yet"
+UNRECORDED = "not in this project's record yet"
 
 
 class Broken(Exception):
@@ -175,6 +190,51 @@ def read_upstream(root):
         out.append({"line": n, "owner": owner, "number": number, "status": status,
                     "finding": finding, "report": "%s#%s" % (owner, number)})
     return out
+
+
+def read_versions(root):
+    out = {}
+    for n, (campaign, version, basis) in read_tsv(
+            os.path.join(root, VERSIONS), 3, "campaign-versions"):
+        if campaign in out:
+            raise Broken("campaign-versions line %d: %s is listed twice" % (n, campaign))
+        out[campaign] = {"line": n, "version": version, "basis": basis}
+    return out
+
+
+def read_live(root):
+    out = {}
+    for n, (owner, number, state, about, title, prs, opened) in read_tsv(
+            os.path.join(root, LIVE), 7, "upstream-live"):
+        report = "%s#%s" % (owner, number)
+        if report in out:
+            raise Broken("upstream-live line %d: %s is listed twice" % (n, report))
+        out[report] = {"line": n, "owner": owner, "number": number, "state": state,
+                       "about": about, "title": title, "prs": prs, "opened": opened}
+    return out
+
+
+def plain(text, limit=160):
+    """Not escaped with backslashes: an escape that misses one construct lets upstream's
+    text render a link, an image, a tag, a mention or math on this project's page.
+    Dropping the characters those constructs need cannot miss one. No word boundary
+    before the scheme: GFM autolinks after `_`, which is a word character."""
+    s = re.sub(r"\s+", " ", text or "").strip()
+    # Until nothing changes: one pass over `htthttps://ps://` leaves the scheme it removed
+    # the middle of.
+    while True:
+        cut = re.sub(r"(?i)(?:https?://|www\.)", "", s)
+        if cut == s:
+            break
+        s = cut
+    s = s.replace("|", "/").replace("@", "(at)")
+    s = re.sub(r"[\[\]<>`\\]", "", s)
+    if len(s) > limit:
+        s = s[:limit - 1].rstrip() + "…"
+    # `&` first and after the cut: an entity upstream wrote would decode to the `@` or
+    # `$` dropped above, and a cut after encoding could split one.
+    s = s.replace("&", "&amp;").replace("$", "&#36;")
+    return s or "-"
 
 
 def reports_at_filed(campaigns, rows):
@@ -439,6 +499,31 @@ def check(root):
                        "whether it was withdrawn"
                        % (u["report"], u["status"], top["line"], top["stop"]))
 
+    versions = read_versions(root)
+    for name, v in sorted(versions.items()):
+        if name not in campaigns:
+            bad.append("campaign-versions line %d: %s is not a campaign in the campaigns "
+                       "file" % (v["line"], name))
+        if not VERSION_RE.match(v["version"]):
+            bad.append("campaign-versions line %d: version %r is not X.Y.Z or X.Y.Z+main"
+                       % (v["line"], v["version"]))
+    # The filing campaign only. A campaign that re-measured a filing reaches filed or
+    # beyond too, and requiring a version of it would ask for one the page never shows.
+    filers = {dated[0][1]["campaign"] for dated in by_report.values()}
+    for name in sorted(filers - set(versions)):
+        bad.append("%s filed a report and has no row in %s -- docs/found.md cannot say "
+                   "which Sideeye found it" % (name, VERSIONS))
+    for report, l in sorted(read_live(root).items()):
+        if l["opened"] != "-" and not DATE_RE.match(l["opened"]):
+            bad.append("upstream-live line %d: opened %r is not YYYY-MM-DD or -"
+                       % (l["line"], l["opened"]))
+        if l["state"] not in LIVE_STATES:
+            bad.append("upstream-live line %d: state %r is not one of %s"
+                       % (l["line"], l["state"], "/".join(sorted(LIVE_STATES))))
+        if not PRS_RE.match(l["prs"]):
+            bad.append("upstream-live line %d: pull requests %r are not N:state,... or -"
+                       % (l["line"], l["prs"]))
+
     if bad:
         return 1, ["REFUSE the funnel does not agree with what it names:"] + \
                   ["  " + b for b in bad]
@@ -526,21 +611,40 @@ FOUND_STATES = ["fixed upstream, re-measured", "fixed upstream", "acknowledged",
 
 
 def found_state(u, top):
-    """What docs/found.md says of one report: the ledger's withdrawn, or the furthest
-    row's stage, with its stop where it has one -- `revalidated` with `discussing` is a
-    fix that was re-measured and argued over, and the page says so rather than drop it."""
+    """Never from the tracker: qpdf closed its report as completed and declined the fix."""
     if u["status"] == "withdrawn":
         return "withdrawn", "withdrawn"
     kind = {"revalidated": "fixed upstream, re-measured",
             "fixed": "fixed upstream"}.get(top["stage"], top["stage"])
-    shown = kind if top["stop"] == "-" else "%s (%s)" % (kind, top["stop"])
-    return kind, shown
+    word = "" if kind == "filed" else kind
+    if top["stop"] != "-":
+        word = "%s (%s)" % (word, top["stop"]) if word else top["stop"]
+    return kind, word
+
+
+def shown_version(v):
+    if v is None:
+        return "-"
+    if v["version"].endswith("+main"):
+        return "main after %s" % v["version"][:-len("+main")]
+    return v["version"]
+
+
+def shown_prs(u, prs):
+    if not PRS_RE.match(prs):
+        raise Broken("%s: pull requests %r in %s are not N:state,... or -"
+                     % (u["report"], prs, LIVE))
+    if prs == "-":
+        return "-"
+    return ", ".join("[#%s](https://github.com/%s/pull/%s) %s" % (n, u["owner"], n, st)
+                     for n, st in (p.split(":") for p in prs.split(",")))
 
 
 def found_block(root):
-    """docs/found.md's block: one row per report in spike/upstream-reports.tsv (#713)."""
     campaigns, rows, _filed = load(root)
     by_report = reports_at_filed(campaigns, rows)
+    versions = read_versions(root)
+    live = read_live(root)
     entries = []
     for u in read_upstream(root):
         dated = by_report.get(u["report"])
@@ -548,26 +652,57 @@ def found_block(root):
             raise Broken("%s is in spike/upstream-reports.tsv and has no funnel row at "
                          "filed or beyond -- %s cannot give it a state"
                          % (u["report"], FOUND))
-        top = furthest(dated)
-        kind, shown = found_state(u, top)
-        # The date the shown state was read: the furthest row's, not the newest row's. A
-        # later campaign that read a lower stage would otherwise date an older state.
-        entries.append((FOUND_STATES.index(kind), dated[0][0], u["line"], u, shown,
-                        top["as_of"]))
-    entries.sort(key=lambda e: e[:3])
+        kind, word = found_state(u, furthest(dated))
+        entries.append({"u": u, "kind": kind, "word": word, "found": dated[0][0],
+                        "version": versions.get(dated[0][1]["campaign"]),
+                        "live": live.get(u["report"]), "order": (0, u["line"])})
+    recorded = {e["u"]["report"] for e in entries}
+    for report, l in live.items():
+        if report in recorded:
+            continue
+        u = {"owner": l["owner"], "number": l["number"], "report": report,
+             "finding": l["owner"].split("/")[1]}
+        entries.append({"u": u, "kind": None, "word": UNRECORDED, "found": l["opened"],
+                        "version": None, "live": l, "order": (1, l["line"])})
+    entries.sort(key=lambda e: e["order"])
+    entries.sort(key=lambda e: e["found"], reverse=True)
+
+    tracker = {}
+    for e in entries:
+        group = e["live"]["state"].split("-")[0] if e["live"] else NOT_READ.lower()
+        tracker[group] = tracker.get(group, 0) + 1
+    on_trackers = ", ".join("%d %s" % (tracker[k], k)
+                            for k in ("open", "closed", "gone", NOT_READ.lower())
+                            if k in tracker)
     counts = []
-    for i, kind in enumerate(FOUND_STATES):
-        n = sum(1 for e in entries if e[0] == i)
+    for kind in FOUND_STATES:
+        n = sum(1 for e in entries if e["kind"] == kind)
         if n:
             counts.append("%d %s" % (n, kind.replace(", re-measured", " and re-measured")))
-    head = ("%d report%s: %s." % (len(entries), "" if len(entries) == 1 else "s",
-                                   ", ".join(counts)) if entries else "No reports.")
+    unrecorded = sum(1 for e in entries if e["kind"] is None)
+    if unrecorded:
+        counts.append("%d %s" % (unrecorded, "not in it yet"))
+    head = ("%d report%s. On the trackers: %s. In this project's record: %s."
+            % (len(entries), "" if len(entries) == 1 else "s", on_trackers,
+               ", ".join(counts)) if entries else "No reports.")
+
     out = [FOUND_BEGIN, "", head, "",
-           "| Tool | Report | State | As of |", "|---|---|---|---|"]
-    for _k, _d, _l, u, shown, as_of in entries:
-        out.append("| %s | [%s](https://github.com/%s/issues/%s) | %s | %s |"
-                   % (u["finding"].replace("|", "\\|"), u["report"], u["owner"],
-                      u["number"], shown, as_of))
+           "| Tool | What it is | Status | Issue | Report | Related pull requests "
+           "| Sideeye | Found |",
+           "|---|---|---|---|---|---|---|---|"]
+    for e in entries:
+        u, l = e["u"], e["live"]
+        status = LIVE_STATES.get(l["state"], l["state"]) if l else NOT_READ
+        if e["word"]:
+            status += " · " + e["word"]
+        out.append("| %s | %s | %s | %s | [%s](https://github.com/%s/issues/%s) | %s | %s "
+                   "| %s |"
+                   % (u["finding"].replace("|", "\\|"),
+                      plain(l["about"]) if l else "-", status,
+                      plain(l["title"]) if l else "-",
+                      u["report"], u["owner"], u["number"],
+                      shown_prs(u, l["prs"]) if l else "-",
+                      shown_version(e["version"]), e["found"]))
     out += ["", FOUND_END]
     return "\n".join(out)
 
@@ -647,8 +782,21 @@ UPSTREAM_T = "# c\nowner/repo\t7\tstanding\tthing\n"
 UPSTREAM_EMPTY = "# no filings in this tree\n"
 
 
+def _records(text):
+    return [line.split("\t") for line in text.splitlines()
+            if line.strip() and not line.startswith("#")]
+
+
 def _tree(tmp, rows, campaigns=CAMPAIGNS_T, upstream=UPSTREAM_T, report=None,
-          page=None, found=None):
+          page=None, found=None, versions=None, live=None):
+    # Derived from the tree's own records when a leg names neither: a fixed default would
+    # disagree with a leg's campaigns or ledger, and that leg would go red twice.
+    if versions is None:
+        names = dict.fromkeys(p[0] for p in _records(campaigns))
+        versions = "".join("%s\t1.4.0\tb\n" % n for n in names)
+    if live is None:
+        live = "".join("%s\t%s\topen\tA tool\tIt loses data\t-\t2026-09-15\n" % (p[0], p[1])
+                       for p in _records(upstream))
     os.makedirs(os.path.join(tmp, "spike/x"), exist_ok=True)
     os.makedirs(os.path.join(tmp, "docs"), exist_ok=True)
     with open(os.path.join(tmp, "spike/x/RESULTS.md"), "w") as fh:
@@ -661,7 +809,8 @@ def _tree(tmp, rows, campaigns=CAMPAIGNS_T, upstream=UPSTREAM_T, report=None,
         json.dump(doc, fh)
     for name, body in (("spike/outcome-funnel-campaigns.tsv", campaigns),
                        ("spike/outcome-funnel.tsv", rows),
-                       ("spike/upstream-reports.tsv", upstream)):
+                       ("spike/upstream-reports.tsv", upstream),
+                       (VERSIONS, versions), (LIVE, live)):
         with open(os.path.join(tmp, name), "w") as fh:
             fh.write(body)
     # The pages after the records, so RENDER can read them. Rendering runs here, outside
@@ -748,24 +897,43 @@ UPSTREAM_F = ("# f\nowner/a\t1\tstanding\ttool a\nowner/b\t2\tstanding\ttool b\n
               "owner/d\t4\tstanding\ttool | d\nowner/f\t6\twithdrawn\ttool f\n"
               "owner/g\t7\tstanding\ttool g\nowner/h\t8\tstanding\ttool h\n"
               "owner/i\t9\tstanding\ttool i\nowner/j\t10\tstanding\ttool j\n")
+VERSIONS_F = "dogfood/x\t1.1.0+main\tb\ndogfood/y\t1.4.0\tb\n"
+LIVE_F = ("owner/a\t1\tclosed-completed\tDoes a\ta eats files\t2:open,3:merged\t2026-09-15\n"
+          "owner/b\t2\topen\tDoes b\tb eats files\t-\t2026-09-15\n"
+          "owner/c\t3\tclosed-not_planned\tDoes c | pipes\tc eats [x](http://e) files\t-\t2026-09-15\n"
+          "owner/d\t4\tclosed-completed\tDoes d\td <img src=x> @someone\t-\t2026-09-15\n"
+          "owner/e\t5\topen\tDoes e_https://evil.x/y see_www.evil.x\te costs $x^2$\t-\t2026-09-15\n"
+          "owner/f\t6\tclosed\tDoes f\tf eats files\t-\t2026-09-15\n"
+          "owner/g\t7\tgone\t-\t-\t-\t2026-09-15\n"
+          "owner/h\t8\topen\tDoes h\th eats files\t9:closed\t2026-09-15\n"
+          "owner/i\t9\tclosed-duplicate\tDoes i\ti eats files\t-\t2026-09-15\n")
 FOUND_WANT = "\n".join([
     FOUND_BEGIN, "",
-    "10 reports: 1 fixed upstream and re-measured, 2 fixed upstream, 4 acknowledged, "
-    "2 filed, 1 withdrawn.",
+    "10 reports. On the trackers: 3 open, 5 closed, 1 gone, 1 not read yet. In this "
+    "project's record: 1 fixed upstream and re-measured, 2 fixed upstream, "
+    "4 acknowledged, 2 filed, 1 withdrawn.",
     "",
-    "| Tool | Report | State | As of |",
-    "|---|---|---|---|",
-    "| tool a | [owner/a#1](https://github.com/owner/a/issues/1) | fixed upstream, re-measured (discussing) | 2026-09-21 |",
-    "| tool b | [owner/b#2](https://github.com/owner/b/issues/2) | fixed upstream | 2026-09-20 |",
-    "| tool g | [owner/g#7](https://github.com/owner/g/issues/7) | fixed upstream | 2026-09-22 |",
-    "| tool c | [owner/c#3](https://github.com/owner/c/issues/3) | acknowledged | 2026-09-18 |",
-    "| tool h | [owner/h#8](https://github.com/owner/h/issues/8) | acknowledged (discussing) | 2026-09-24 |",
-    "| tool i | [owner/i#9](https://github.com/owner/i/issues/9) | acknowledged | 2026-09-26 |",
-    "| tool j | [owner/j#10](https://github.com/owner/j/issues/10) | acknowledged | 2026-09-27 |",
-    "| tool e | [owner/e#5](https://github.com/owner/e/issues/5) | filed (discussing) | 2026-09-17 |",
-    "| tool \\| d | [owner/d#4](https://github.com/owner/d/issues/4) | filed (declined) | 2026-09-19 |",
-    "| tool f | [owner/f#6](https://github.com/owner/f/issues/6) | withdrawn | 2026-09-16 |",
+    "| Tool | What it is | Status | Issue | Report | Related pull requests | Sideeye | Found |",
+    "|---|---|---|---|---|---|---|---|",
+    "| tool a | Does a | Closed (completed) · fixed upstream, re-measured (discussing) | a eats files | [owner/a#1](https://github.com/owner/a/issues/1) | [#2](https://github.com/owner/a/pull/2) open, [#3](https://github.com/owner/a/pull/3) merged | main after 1.1.0 | 2026-09-16 |",
+    "| tool b | Does b | Open · fixed upstream | b eats files | [owner/b#2](https://github.com/owner/b/issues/2) | - | main after 1.1.0 | 2026-09-16 |",
+    "| tool c | Does c / pipes | Closed (not planned) · acknowledged | c eats x(e) files | [owner/c#3](https://github.com/owner/c/issues/3) | - | main after 1.1.0 | 2026-09-16 |",
+    "| tool e | Does e_evil.x/y see_evil.x | Open · discussing | e costs &#36;x^2&#36; | [owner/e#5](https://github.com/owner/e/issues/5) | - | main after 1.1.0 | 2026-09-16 |",
+    "| tool \\| d | Does d | Closed (completed) · declined | d img src=x (at)someone | [owner/d#4](https://github.com/owner/d/issues/4) | - | main after 1.1.0 | 2026-09-16 |",
+    "| tool f | Does f | Closed · withdrawn | f eats files | [owner/f#6](https://github.com/owner/f/issues/6) | - | main after 1.1.0 | 2026-09-16 |",
+    "| tool g | - | Gone · fixed upstream | - | [owner/g#7](https://github.com/owner/g/issues/7) | - | main after 1.1.0 | 2026-09-16 |",
+    "| tool h | Does h | Open · acknowledged (discussing) | h eats files | [owner/h#8](https://github.com/owner/h/issues/8) | [#9](https://github.com/owner/h/pull/9) closed | main after 1.1.0 | 2026-09-16 |",
+    "| tool i | Does i | Closed (duplicate) · acknowledged | i eats files | [owner/i#9](https://github.com/owner/i/issues/9) | - | main after 1.1.0 | 2026-09-16 |",
+    "| tool j | - | Not read yet · acknowledged | - | [owner/j#10](https://github.com/owner/j/issues/10) | - | main after 1.1.0 | 2026-09-16 |",
     "", FOUND_END])
+
+
+def _found_newest_first(root):
+    block = found_block(root)
+    second, first = block.find("| thing |"), block.find("| later thing |")
+    if 0 <= first < second:
+        return 0, ["the later filing comes first"]
+    return 1, ["the rows are not newest first:"] + ["  " + l for l in block.splitlines()]
 
 
 def _found_as_wanted(root):
@@ -921,17 +1089,79 @@ LEGS = [
           campaigns=CAMPAIGNS_Y, upstream="# c\nowner/repo\t7\twithdrawn\tthing\n"),
      0, "each holding to the evidence"),
     ("one report is one report",
-     dict(rows=_row(), fn=lambda root: (0 if "\n1 report: 1 filed.\n" in found_block(root)
-                                        else 1, [found_block(root)])),
-     0, "1 report: 1 filed"),
+     dict(rows=_row(), fn=lambda root: (
+         0 if "\n1 report. On the trackers: 1 open. In this project's record: 1 filed.\n"
+         in found_block(root) else 1, [found_block(root)])),
+     0, "1 report. On the trackers: 1 open"),
     ("an empty report ledger renders no reports",
      dict(rows=_row(stage="judged", stop="known", report="-"), upstream=UPSTREAM_EMPTY,
           fn=lambda root: (0 if "\nNo reports.\n" in found_block(root) else 1,
                            [found_block(root)])),
      0, "No reports."),
     ("every state the found page can show, from both orders of rows",
-     dict(rows=ROWS_F, campaigns=CAMPAIGNS_F, upstream=UPSTREAM_F, fn=_found_as_wanted),
+     dict(rows=ROWS_F, campaigns=CAMPAIGNS_F, upstream=UPSTREAM_F, versions=VERSIONS_F,
+          live=LIVE_F, fn=_found_as_wanted),
      0, "renders the ledger as wanted"),
+    ("upstream text cannot rebuild a link, a mention or a split entity from what is dropped",
+     dict(rows=_row(), fn=lambda root: (
+         0 if [plain(t) for t in ("htthttps://ps://evil.x/a", "wwhttps://w.evil.x",
+                                  "x &#64;someone y", "$" * 200)]
+         == ["evil.x/a", "evil.x", "x &amp;#64;someone y", "&#36;" * 159 + "…"] else 1,
+         [plain(t) for t in ("htthttps://ps://evil.x/a", "wwhttps://w.evil.x",
+                             "x &#64;someone y")])),
+     0, "evil.x/a"),
+    ("the found page lists the latest filing first",
+     dict(rows=_row() + _row(campaign="dogfood/y", target="later thing",
+                             report="owner/later#8"),
+          campaigns=CAMPAIGNS_Y,
+          upstream=UPSTREAM_T + "owner/later\t8\tstanding\tlater thing\n",
+          fn=_found_newest_first),
+     0, "the later filing comes first"),
+    # --- the Sideeye that filed, and the trackers' state
+    ("a campaign that filed a report and names no Sideeye",
+     dict(rows=_row(), versions="# none\n"), 1, "has no row in spike/campaign-versions.tsv"),
+    ("a campaign that only re-measured needs no Sideeye",
+     dict(rows=_row() + _row(campaign="dogfood/y", stage="revalidated", stop="-"),
+          campaigns=CAMPAIGNS_Y, versions="dogfood/x\t1.4.0\tb\n"),
+     0, "each holding to the evidence"),
+    ("a version that is neither a release nor main after one",
+     dict(rows=_row(), versions="dogfood/x\tlatest\tb\n"), 1, "is not X.Y.Z or X.Y.Z+main"),
+    ("a version for a campaign nobody ran",
+     dict(rows=_row(), versions="dogfood/x\t1.4.0\tb\ndogfood/q\t1.4.0\tb\n"),
+     1, "is not a campaign in the campaigns file"),
+    ("a campaign given two versions",
+     dict(rows=_row(), versions="dogfood/x\t1.4.0\tb\ndogfood/x\t1.5.0\tb\n"),
+     2, "campaign-versions line 2: dogfood/x is listed twice"),
+    ("the versions file is not there at all",
+     dict(rows=_row(), remove=VERSIONS), 2, "cannot read campaign-versions"),
+    ("a filing the record does not have yet is listed, and says so",
+     dict(rows=_row(),
+          live=("owner/repo\t7\topen\ta\tt\t-\t2026-09-15\n"
+                "owner/fresh\t4\topen\tNew tool\tIt loses data too\t5:open\t2026-10-01\n"),
+          fn=lambda root: (0 if "| fresh | New tool | Open · not in this project's record yet "
+                           "| It loses data too | [owner/fresh#4](https://github.com/owner/fresh"
+                           "/issues/4) | [#5](https://github.com/owner/fresh/pull/5) open | - "
+                           "| 2026-10-01 |" in found_block(root)
+                           and "1 filed, 1 not in it yet." in found_block(root)
+                           else 1, [found_block(root)])),
+     0, "not in this project's record yet"),
+    ("a filing the record does not have yet is no disagreement",
+     dict(rows=_row(),
+          live=("owner/repo\t7\topen\ta\tt\t-\t2026-09-15\n"
+                "owner/fresh\t4\topen\tNew tool\tIt loses data too\t-\t2026-10-01\n")),
+     0, "each holding to the evidence"),
+    ("an opened date that is not a date",
+     dict(rows=_row(), live="owner/repo\t7\topen\ta\tt\t-\tlast week\n"),
+     1, "opened 'last week' is not YYYY-MM-DD"),
+    ("a tracker state outside the set",
+     dict(rows=_row(), live="owner/repo\t7\tmerged\ta\tt\t-\t-\n"), 1, "state 'merged' is not one of"),
+    ("a pull-request list nobody can read",
+     dict(rows=_row(), live="owner/repo\t7\topen\ta\tt\t#12\t-\n"), 1, "pull requests '#12'"),
+    ("a pull-request list nobody can read stops the page too",
+     dict(rows=_row(), live="owner/repo\t7\topen\ta\tt\t#12\t-\n", fn=check_doc, page=RENDER),
+     2, "pull requests '#12' in spike/upstream-live.tsv"),
+    ("the snapshot is not there at all",
+     dict(rows=_row(), remove=LIVE), 2, "cannot read upstream-live"),
     # --- the entrances `summary` opens
     ("a campaign nobody can summarise",
      dict(rows=_row(), fn=lambda root: (0, [summarise(root, campaign="nope")])),

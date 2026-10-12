@@ -211,8 +211,11 @@ worse than the finding.
   `docs/target-classes.md`. `spike/check-upstream-ledger.sh` holds the two to each
   other and stays green over a filing that is in neither — that is the gap
   `trash-cli#414` sat in for two days. Then the campaign's row in
-  `spike/outcome-funnel.tsv` at `filed`, and `python3 spike/outcome-funnel.py
-  --write-doc` so `docs/found.md` lists the report; CI is red until both are done.
+  `spike/outcome-funnel.tsv` at `filed`, a row in `spike/campaign-versions.tsv` for
+  that campaign if it has none, and `python3 spike/outcome-funnel.py --write-doc`;
+  CI is red until all of it is done. If it is not done, the daily `upstream-watch` job
+  still proposes the report for `docs/found.md`, marked not recorded yet, in its next
+  pull request — provided the report names Sideeye, as the Disclosure below has it do.
 - **Closing your own report uses `not planned`**, never `gh issue close`'s
   default `completed`.
 - **A third party's question on your issue gets an answer**, even when the

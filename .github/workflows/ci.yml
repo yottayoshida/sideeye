@@ -1565,6 +1565,9 @@ jobs:
       - name: The generated pages are what the ledgers render
         run: python3 spike/outcome-funnel.py --check-doc
 
+      - name: The daily tracker read can still see its own predicates fail
+        run: python3 spike/upstream-live.py --selftest
+
   changelog-block:
     runs-on: ubuntu-latest
     steps:
