@@ -27,7 +27,7 @@ aside and leave both versions whole (rclone, FreeCAD) or stop between two correc
 | DuckDB 1.5.6 `UPDATE` | default and syscalls | wall: `unsupported_syscall_observed` (`unlinkat`) | — | see below: an `unlinkat("")` that fails |
 
 **After filing.** crystal-lang/crystal#17620 drew, within the hour, a collaborator's "Don't paste AI.
-Especially walls of slop. Write down a summary of findings in your very own voice." — about the
+Especially walls of slop. Write down a quo [sic] summary of findings in your very own voice." — about the
 report's form, not its finding; the owner answered in their own words. The two reports filed after
 it (rclone, FreeCAD) were shortened at the owner's request.
 
@@ -55,7 +55,7 @@ directory the user cannot write — and was fixed by checking the directory firs
 window as it was. #80675 (open) refactors vault without changing the order. **Novel in this form.**
 Filed on 2026-10-12 as ansible/ansible#87678, the text of `report-ansible-vault.md` approved verbatim
 by the owner; the project's AI policy (assistance allowed, disclosed in a preamble) was read first.
-The project's bot closed it within seconds: `bug_report.yml` requires a Configuration and an OS /
+The project's bot closed it 42 seconds after filing: `bug_report.yml` requires a Configuration and an OS /
 Environment section, which the draft did not carry (the template was named, not read field by
 field). Filed again, with the owner's approval of the two sections, as ansible/ansible#87679.
 
