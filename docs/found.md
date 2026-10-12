@@ -10,13 +10,14 @@ This is a list of counterexamples, not a badge: nothing on it says a tool is saf
 
 <!-- found:begin -->
 
-46 reports. On the trackers: 28 open, 18 closed. In this project's record: 10 fixed upstream and re-measured, 1 acknowledged, 32 filed, 3 withdrawn.
+47 reports. On the trackers: 29 open, 18 closed. In this project's record: 10 fixed upstream and re-measured, 1 acknowledged, 33 filed, 3 withdrawn.
 
 | Tool | What it is | Status | Issue | Report | Related pull requests | Sideeye | Found |
 |---|---|---|---|---|---|---|---|
 | Crystal 1.21.1 `crystal tool format` | The Crystal Programming Language | Open · awaiting | crystal tool format leaves the file empty if it is killed mid-write | [crystal-lang/crystal#17620](https://github.com/crystal-lang/crystal/issues/17620) | - | 1.12.0 | 2026-10-12 |
 | ansible-core 2.21.5 `ansible-vault encrypt` | Ansible is a radically simple IT automation platform that makes your applications and systems easier to deploy and maintain. Automate everything from code depl… | Closed (not planned) · withdrawn | ansible-vault encrypt loses both the plaintext and the vault if it is killed mid-write | [ansible/ansible#87678](https://github.com/ansible/ansible/issues/87678) | - | 1.12.0 | 2026-10-12 |
 | ansible-core 2.21.5 `ansible-vault encrypt` | Ansible is a radically simple IT automation platform that makes your applications and systems easier to deploy and maintain. Automate everything from code depl… | Open · awaiting | ansible-vault encrypt loses both the plaintext and the vault if it is killed mid-write | [ansible/ansible#87679](https://github.com/ansible/ansible/issues/87679) | - | 1.12.0 | 2026-10-12 |
+| rclone 1.75.2 `config update s3prod region …` | "rsync for cloud storage" - Google Drive, S3, Dropbox, Backblaze B2, One Drive, Swift, Hubic, Wasabi, Google Cloud Storage, Azure Blob, Azure Files, Yandex Fil… | Open · awaiting | rclone.conf disappears if rclone is killed while saving the config | [rclone/rclone#10076](https://github.com/rclone/rclone/issues/10076) | - | 1.12.0 | 2026-10-12 |
 | dotenvx 2.34.2 `decrypt` | a secure dotenv—from the creator of dotenv | Open · awaiting | dotenvx decrypt drops the backslash of &amp;#36;, so a value with a literal &amp;#36; changes | [dotenvx/dotenvx#1016](https://github.com/dotenvx/dotenvx/issues/1016) | [#1020](https://github.com/dotenvx/dotenvx/pull/1020) open | 1.10.0 | 2026-10-10 |
 | dotenvx 2.34.2 `encrypt`, two at once | a secure dotenv—from the creator of dotenv | Open · awaiting | Two dotenvx encrypt runs at once with a shared .env.keys leave one env file undecryptable | [dotenvx/dotenvx#1017](https://github.com/dotenvx/dotenvx/issues/1017) | - | 1.10.0 | 2026-10-10 |
 | dotenvx 2.34.2 `protect` | a secure dotenv—from the creator of dotenv | Open · awaiting | dotenvx protect empties a pre-commit hook or git attributes file if its write fails | [dotenvx/dotenvx#1018](https://github.com/dotenvx/dotenvx/issues/1018) | [#1019](https://github.com/dotenvx/dotenvx/pull/1019) open | 1.10.0 | 2026-10-10 |

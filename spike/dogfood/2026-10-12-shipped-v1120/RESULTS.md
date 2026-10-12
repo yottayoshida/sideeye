@@ -72,7 +72,9 @@ directory rebuilt from the evidence table): every remote looks lost until the us
 `rclone.conf.old<n>` back by hand. FreeCAD reports `File '/s/fc/part.FCStd' does not exist!`
 (the checker). Nothing is lost in either; the stop is `no_content_lost`, as f2's and cabal's were.
 rclone/rclone#6656 (closed) met the same rename-aside save from Docker's side, a bind-mounted file
-that cannot be renamed.
+that cannot be renamed. rclone's was filed on 2026-10-12 as rclone/rclone#10076: the owner's draft,
+arranged into the sections `bug.yml` requires (read field by field this time, after ansible's bot) and
+shortened at the owner's request (`report-rclone.md` holds the text filed).
 
 rclone's FAIL replayed once and then refused `multiple_threads_detected`; with `GOMAXPROCS=1`
 declared the gate itself refused it (`transcripts/entry-candidates-3.txt`) — OpenTofu's shape in
