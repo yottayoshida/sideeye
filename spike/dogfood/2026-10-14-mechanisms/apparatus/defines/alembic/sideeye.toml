@@ -1,0 +1,11 @@
+[world]
+state = "/s/al"
+
+[define]
+operation = ["python3", "-m", "alembic", "-c", "/s/al-aux/proj/alembic.ini", "upgrade", "head"]
+# Python would otherwise write the migrations' bytecode beside them, outside the state.
+apparatus = ["env:PYTHONDONTWRITEBYTECODE=1"]
+# The database and its rollback journal are left torn by design and repaired by SQLite on the next
+# open; their correctness is the checker's, read after that open.
+scratch   = ["app.db", "app.db-journal"]
+check     = "/s/al-aux/check.sh"

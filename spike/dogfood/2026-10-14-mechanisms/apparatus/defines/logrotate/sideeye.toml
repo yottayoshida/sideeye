@@ -1,0 +1,8 @@
+[world]
+state = "/s/lr"
+
+[define]
+operation = ["logrotate", "-f", "-s", "/s/lr/status", "/s/lr-aux/app.conf"]
+# The state file records the date of each rotation; pinned so two runs and a later replay agree.
+apparatus = ["preload:libfaketime", "env:FAKETIME=2026-01-01 00:00:00"]
+check     = "/s/lr-aux/check.sh"

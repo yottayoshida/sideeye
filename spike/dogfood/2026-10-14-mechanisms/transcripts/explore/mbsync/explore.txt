@@ -1,0 +1,17 @@
+UNKNOWN  oracle_missed_operation
+         the oracle saw a state-directory operation the shim did not record; divergence at operation 15: the oracle saw: 24    write(10</s/mb/st/INBOX.journal>, "5\n", 2) = 2; the shim recorded: rename("/s/mb/near/new/1767225600.16_1.c9344e11b2e4,U=1:2," -> "/s/mb/near/cur/1767225600.16_1.c9344e11b2e4,U=1:2,S")
+next        Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.
+divergence  write
+cwd         /  (none declared: Sideeye's own)
+apparatus   preload:libfaketime, env:FAKETIME=@2026-01-01 00:00:00
+
+expected    exit 0
+atomicity   16 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=30382c6c18074da7ae01c943ac8b9ac1b12c61efc193194d9878d7f7f51529fa;

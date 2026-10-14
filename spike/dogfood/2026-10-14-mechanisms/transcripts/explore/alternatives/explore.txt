@@ -1,0 +1,17 @@
+UNKNOWN  oracle_missed_operation
+         the oracle saw a state-directory operation the shim did not record; divergence at operation 9: the oracle saw: 24    write(4</s/ua/log>, "update-alternatives 2026-01-01 0"..., 252) = 252; the shim's account ends after 8 operation(s)
+next        Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.
+divergence  write
+cwd         /  (none declared: Sideeye's own)
+apparatus   preload:libfaketime, env:FAKETIME=2026-01-01 00:00:00
+
+expected    exit 0
+atomicity   9 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): log
+l1          no marker configured
+case        (none)
+processes   single process
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=2ba129f969179334b4e57455ae04bc76542424816373075654ecd622c368abcb;

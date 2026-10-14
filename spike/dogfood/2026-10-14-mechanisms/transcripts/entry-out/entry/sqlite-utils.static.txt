@@ -1,0 +1,2 @@
+static: /usr/bin/sqlite-utils: Python script, ASCII text executable
+next: sideeye explore --config '/ap/defines/sqlite-utils/sideeye.toml' --shim /opt/se/sideeye-v1.12.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

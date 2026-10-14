@@ -1,0 +1,20 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 3,
+  "sideeye_version": "1.12.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/dv",
+    "operation": ["dpkg-divert", "--admindir", "/s/dv/admin", "--instdir", "/s/dv/root", "--rename", "--divert", "/usr/bin/tool.distrib", "--add", "/usr/bin/tool"],
+    "check": "/s/dv-aux/check.sh",
+    "expected_status": 0
+  },
+  "k": 11,
+  "ops_total": 11,
+  "prefix_hash": "cdbf381ba195f683",
+  "after_class": "rename",
+  "after_path": "/s/dv/admin/diversions-new",
+  "before_class": "rename",
+  "before_path": "/s/dv/root/usr/bin/tool",
+  "violation": "checker"
+}

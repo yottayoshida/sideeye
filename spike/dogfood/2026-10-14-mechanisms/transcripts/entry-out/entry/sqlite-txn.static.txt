@@ -1,0 +1,2 @@
+static: /usr/bin/sqlite3: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=3f7a5f6ddc4dc8cccc9739ce16d6a86f801cf154, for GNU/Linux 3.7.0, stripped
+next: sideeye explore --config '/ap/defines/sqlite-txn/sideeye.toml' --shim /opt/se/sideeye-v1.12.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

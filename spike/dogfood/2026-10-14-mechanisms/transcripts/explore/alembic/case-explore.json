@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 5,
+  "sideeye_version": "1.12.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/al",
+    "operation": ["python3", "-m", "alembic", "-c", "/s/al-aux/proj/alembic.ini", "upgrade", "head"],
+    "check": "/s/al-aux/check.sh",
+    "cwd": null,
+    "scratch": ["app.db", "app.db-journal"],
+    "expected_status": 0
+  },
+  "k": 15,
+  "ops_total": 42,
+  "prefix_hash": "590244e496cd820a",
+  "after_class": "unlink",
+  "after_path": "/s/al/app.db-journal",
+  "before_class": "open",
+  "before_path": "/s/al/app.db-journal",
+  "violation": "checker"
+}

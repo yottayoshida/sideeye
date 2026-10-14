@@ -1,0 +1,9 @@
+CANDIDATES.md sha256 95906a89dbfb84b45fed6ecd05a1a9b4a82d05364d5c17b79858c50d76a72d1d at 2026-10-14T05:06:11Z for: sqlite-txn
+ROW sqlite-txn static=0 preflight_rc=0 gate=0 detail=accepted, 25 operations
+EXIT sqlite-txn 0
+CANDIDATES.md sha256 95906a89dbfb84b45fed6ecd05a1a9b4a82d05364d5c17b79858c50d76a72d1d at 2026-10-14T05:06:13Z for: dpkg-upgrade
+ROW dpkg-upgrade static=0 preflight_rc=2 gate=1 detail=wall: unsupported_syscall_observed
+EXIT dpkg-upgrade 1
+CANDIDATES.md sha256 95906a89dbfb84b45fed6ecd05a1a9b4a82d05364d5c17b79858c50d76a72d1d at 2026-10-14T05:06:14Z for: mbsync
+ROW mbsync static=0 preflight_rc=2 gate=0 detail=FOLLOW --observe syscalls (oracle_missed_operation)
+EXIT mbsync 0

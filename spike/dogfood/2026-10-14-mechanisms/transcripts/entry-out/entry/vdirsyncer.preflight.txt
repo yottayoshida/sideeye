@@ -1,0 +1,28 @@
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+PREFLIGHT  recording accepted — 52 state-changing operation(s) observed
+
+cwd          /  (none declared: Sideeye's own)
+atomicity    12 path(s) judged pre-or-post; 3 path(s) matched by scratch, not judged (declared: status)
+oracle       agreed on 52 operations (7509 syscall lines examined, 358 in scope of the judged state), witness strace
+processes    single process
+checker      declared, not run: not refused as a command that cannot be
+             started, and the state holds something to corrupt
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail — only a real
+             exploration runs these
+
+repeatability  two runs 2004 ms apart left equal state under [world] state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside [world] state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+scratch        declared scratch, not compared: status
+
+next         sideeye explore --config '/ap/defines/vdirsyncer/sideeye.toml' --shim /opt/se/sideeye-v1.12.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

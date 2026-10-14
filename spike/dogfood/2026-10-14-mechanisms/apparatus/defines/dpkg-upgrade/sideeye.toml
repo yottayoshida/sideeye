@@ -1,0 +1,8 @@
+[world]
+state = "/s/dk"
+
+[define]
+operation = ["dpkg", "--admindir=/s/dk/admin", "--instdir=/s/dk/root", "--log=/s/dk/dpkg.log", "--force-not-root", "--force-script-chrootless", "-i", "/s/dk-aux/demo_2.0.deb"]
+# dpkg.log carries the time; pinned so two runs and a later replay agree.
+apparatus = ["preload:libfaketime", "env:FAKETIME=2026-01-01 00:00:00"]
+check     = "/s/dk-aux/check.sh"

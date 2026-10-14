@@ -1,0 +1,2 @@
+static: /usr/bin/vdirsyncer: Python script, ASCII text executable
+next: sideeye explore --config '/ap/defines/vdirsyncer/sideeye.toml' --shim /opt/se/sideeye-v1.12.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

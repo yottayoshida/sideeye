@@ -1,0 +1,8 @@
+[world]
+state = "/s/useradd"
+
+[define]
+operation = ["useradd", "--prefix", "/s/useradd/root", "-M", "-d", "/", "-G", "staff", "-p", "$6$s$h", "-s", "/bin/sh", "alice"]
+# shadow's last-change field is today's day number; pinned so two runs and a later replay agree.
+apparatus = ["preload:libfaketime", "env:FAKETIME=2026-01-01 00:00:00"]
+check     = "/s/useradd-aux/check.sh"

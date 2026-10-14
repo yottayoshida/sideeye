@@ -1,0 +1,3 @@
+CANDIDATES.md sha256 95906a89dbfb84b45fed6ecd05a1a9b4a82d05364d5c17b79858c50d76a72d1d at 2026-10-14T05:11:24Z for: django
+ROW django static=0 preflight_rc=0 gate=0 detail=accepted, 26 operations
+EXIT django 0

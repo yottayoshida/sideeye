@@ -1,0 +1,94 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 028f47b4b1b58499b576e8c1de95da717cbb2db448cfd85d78d4f0a670eafd7d
+build: the page's (working tree)    sha256 028f47b4b1b58499b576e8c1de95da717cbb2db448cfd85d78d4f0a670eafd7d
+build: the page's at tag v1.12.0     sha256 41dd843a10c5996d4746487980232cf03bded32c7b3e005a641bb00a973bc3aa
+build: NOTE the page's installer has moved since v1.12.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 3.54kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/12] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f done
+#4 CACHED
+
+#5 [internal] load build context
+#5 transferring context: 17.66kB 0.0s done
+#5 DONE 0.0s
+
+#6 [ 2/12] COPY proxy-ca.pem /tmp/proxy-ca.pem
+#6 DONE 0.0s
+
+#7 [ 3/12] RUN echo 'Types: deb' > /etc/apt/sources.list.d/debian.sources &&     echo 'URIs: http://snapshot.debian.org/archive/debian/20261014T000000Z' >> /etc/apt/sources.list.d/debian.sources &&     echo 'Suites: trixie trixie-updates' >> /etc/apt/sources.list.d/debian.sources &&     echo 'Components: main' >> /etc/apt/sources.list.d/debian.sources &&     echo 'Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg' >> /etc/apt/sources.list.d/debian.sources &&     echo 'Types: deb' >> /etc/apt/sources.list.d/debian.sources &&     echo 'URIs: http://snapshot.debian.org/archive/debian-security/20261014T000000Z' >> /etc/apt/sources.list.d/debian.sources &&     echo 'Suites: trixie-security' >> /etc/apt/sources.list.d/debian.sources &&     echo 'Components: main' >> /etc/apt/sources.list.d/debian.sources &&     echo 'Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg' >> /etc/apt/sources.list.d/debian.sources &&     echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99snapshot &&     echo 'Acquire::Retries "5";' >> /etc/apt/apt.conf.d/99snapshot
+#7 DONE 0.1s
+
+#8 [ 4/12] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 ca-certificates procps bash curl gcc libc6-dev
+#8 0.200 Get:1 http://snapshot.debian.org/archive/debian-security/20261014T000000Z trixie-security InRelease [43.4 kB]
+#8 1.084 Get:2 http://snapshot.debian.org/archive/debian-security/20261014T000000Z trixie-security/main arm64 Packages [267 kB]
+#8 1.141 Fetched 311 kB in 1s (307 kB/s)
+#8 1.141 Reading package lists...
+#8 1.158 Reading package lists...
+#8 1.167 Building dependency tree...
+#8 1.169 Reading state information...
+#8 1.170 Package procps is not available, but is referred to by another package.
+#8 1.170 This may mean that the package is missing, has been obsoleted, or
+#8 1.170 is only available from another source
+#8 1.170 
+#8 1.170 Package ca-certificates is not available, but is referred to by another package.
+#8 1.170 This may mean that the package is missing, has been obsoleted, or
+#8 1.170 is only available from another source
+#8 1.170 
+#8 1.170 Package curl is not available, but is referred to by another package.
+#8 1.170 This may mean that the package is missing, has been obsoleted, or
+#8 1.170 is only available from another source
+#8 1.170 
+#8 1.170 Package python3 is not available, but is referred to by another package.
+#8 1.170 This may mean that the package is missing, has been obsoleted, or
+#8 1.170 is only available from another source
+#8 1.170 
+#8 1.170 Package file is not available, but is referred to by another package.
+#8 1.170 This may mean that the package is missing, has been obsoleted, or
+#8 1.170 is only available from another source
+#8 1.170 
+#8 1.170 Package libc6-dev is not available, but is referred to by another package.
+#8 1.170 This may mean that the package is missing, has been obsoleted, or
+#8 1.170 is only available from another source
+#8 1.170 
+#8 1.170 E: Unable to locate package strace
+#8 1.170 E: Package 'file' has no installation candidate
+#8 1.170 E: Package 'python3' has no installation candidate
+#8 1.170 E: Package 'ca-certificates' has no installation candidate
+#8 1.170 E: Package 'procps' has no installation candidate
+#8 1.170 E: Package 'curl' has no installation candidate
+#8 1.170 E: Unable to locate package gcc
+#8 1.170 E: Package 'libc6-dev' has no installation candidate
+#8 ERROR: process "/bin/sh -c apt-get update && apt-get install -y --no-install-recommends       strace file python3 ca-certificates procps bash curl gcc libc6-dev" did not complete successfully: exit code: 100
+------
+ > [ 4/12] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 ca-certificates procps bash curl gcc libc6-dev:
+1.170 is only available from another source
+1.170 
+1.170 E: Unable to locate package strace
+1.170 E: Package 'file' has no installation candidate
+1.170 E: Package 'python3' has no installation candidate
+1.170 E: Package 'ca-certificates' has no installation candidate
+1.170 E: Package 'procps' has no installation candidate
+1.170 E: Package 'curl' has no installation candidate
+1.170 E: Unable to locate package gcc
+1.170 E: Package 'libc6-dev' has no installation candidate
+------
+Dockerfile:27
+--------------------
+  26 |     
+  27 | >>> RUN apt-get update && apt-get install -y --no-install-recommends \
+  28 | >>>       strace file python3 ca-certificates procps bash curl gcc libc6-dev
+  29 |     RUN cp /tmp/proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt && update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c apt-get update && apt-get install -y --no-install-recommends       strace file python3 ca-certificates procps bash curl gcc libc6-dev" did not complete successfully: exit code: 100

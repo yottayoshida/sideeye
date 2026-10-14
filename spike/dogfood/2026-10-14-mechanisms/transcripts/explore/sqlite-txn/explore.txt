@@ -1,0 +1,69 @@
+falsify: checker(sqlite-txn) before recovery: ledger.db=25 
+falsify: checker(sqlite-txn) recovery exited 26: Error: in prepare, file is not a database (26)
+falsify: checker(sqlite-txn) after recovery: a=FAIL b=FAIL(sum ) c=FAIL(A/journal /)
+world 1: checker(sqlite-txn) before recovery: ledger.db=20480 
+world 1: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 2: checker(sqlite-txn) before recovery: ledger.db=20480 
+world 2: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 3: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=0 
+world 3: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 4: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=512 
+world 4: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 5: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=516 
+world 5: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 6: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=4612 
+world 6: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 7: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=4616 
+world 7: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 8: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=4620 
+world 8: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 9: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=8716 
+world 9: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 10: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=8720 
+world 10: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 11: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=8724 
+world 11: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 12: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=12820 
+world 12: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 13: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=12824 
+world 13: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 14: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=12828 
+world 14: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 15: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=16924 
+world 15: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 16: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=16928 
+world 16: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 17: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=16928 
+world 17: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 18: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=16928 
+world 18: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 19: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=16928 
+world 19: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 20: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=16928 
+world 20: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 21: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=16928 
+world 21: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 22: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=16928 
+world 22: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 23: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=16928 
+world 23: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 24: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=16928 
+world 24: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+world 25: checker(sqlite-txn) before recovery: ledger.db=20480 ledger.db-journal=16928 
+world 25: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+baseline: checker(sqlite-txn) before recovery: ledger.db=20480 
+baseline: checker(sqlite-txn) after recovery: a=ok b=ok c=ok
+PASS  26/26 explored worlds satisfied the built-in atomicity invariant, but it had no path to judge
+cwd         /  (none declared: Sideeye's own)
+
+explored    26 worlds (crash points 25 + 1 baseline)
+expected    exit 0
+atomicity   0 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: ledger.db, ledger.db-journal)
+oracle      agreed on 25 operations (340 syscall lines examined, 124 in scope of the judged state), witness strace
+metadata    1 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchown x1. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 26 world(s)
+l1          no marker configured
+case        (none)
+processes   single process
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+sideeye: json sha256=a335302d3527b8148a7a940f42d4592692f224e9c7802ae98c1e120d4f5b2627;

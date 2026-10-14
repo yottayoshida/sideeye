@@ -1,0 +1,18 @@
+candidate	category	outcome	reason	transcript
+1.1 useradd	related-files	taken	gate 0, FOLLOW --observe syscalls (oracle_missed_operation)	transcripts/entry-candidates-1.txt
+1.2 update-alternatives	related-files	taken	gate 0, FOLLOW --observe syscalls (oracle_missed_operation)	transcripts/entry-candidates-1.txt
+1.3 dpkg-divert	related-files	taken	gate 0, accepted, 11 operations	transcripts/entry-candidates-1.txt
+1.4 fossil	related-files	not-prepared	the category had three	-
+1.5 notmuch	related-files	not-prepared	the category had three	-
+1.6 darcs	related-files	not-prepared	the category had three	-
+2.1 sqlite3	recovery	taken	gate 0, accepted, 25 operations	transcripts/entry-candidates-2.txt
+2.2 dpkg -i	recovery	out-reach	unsupported_syscall_observed	transcripts/entry-candidates-2.txt
+2.3 vim	recovery	out-measured	measured by this project on 2026-10-09 (follow-ups 3, FAIL); missing from CANDIDATES.md's list of measured tools, found before any preflight	-
+2.4 mbsync	recovery	taken	gate 0, FOLLOW --observe syscalls (oracle_missed_operation)	transcripts/entry-candidates-2.txt
+2.5 vdirsyncer	recovery	taken	gate 0, accepted, 52 operations	transcripts/entry-candidates-3.txt
+2.6 apk-tools	recovery	out-reach	not_installable	CANDIDATES.md
+3.1 logrotate	state-transitions	out-reach	unsupported_syscall_observed	transcripts/entry-candidates-4.txt
+3.2 sqlite-utils	state-transitions	taken	gate 0, accepted, 46 operations	transcripts/entry-candidates-4.txt
+3.3 Alembic	state-transitions	taken	gate 0, accepted, 42 operations	transcripts/entry-candidates-4.txt
+3.4 Django	state-transitions	taken	gate 0, accepted, 26 operations	transcripts/entry-candidates-5.txt
+3.5 sqlite3 VACUUM	state-transitions	not-prepared	the category had three	-
