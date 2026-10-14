@@ -914,12 +914,20 @@ pub fn vfork() callconv(.c) c_int {
 // carries its operation count into the new image (#123) — see callExecveSeqCarry and
 // execSeqCarrySet for who may carry and why the storage is what it is.
 pub fn execve(path: [*:0]const u8, argv: [*]const ?[*:0]const u8, envp: [*]const ?[*:0]const u8) callconv(.c) c_int {
-    common.noteBoundary(.exec);
+    const loan = common.noteExecBoundary();
+    defer takeBackKeepingErrno(loan);
     return common.callExecveSeqCarry(path, argv, envp);
 }
 
+fn takeBackKeepingErrno(loan: common.ExecLoan) void {
+    const saved = std.c._errno().*;
+    common.takeBackAfterFailedExec(loan);
+    std.c._errno().* = saved;
+}
+
 pub fn execv(path: [*:0]const u8, argv: [*]const ?[*:0]const u8) callconv(.c) c_int {
-    common.noteBoundary(.exec);
+    const loan = common.noteExecBoundary();
+    defer takeBackKeepingErrno(loan);
     const carried = common.execSeqCarrySet();
     // Before `init`, the mark of a call into the state, which this image can no longer report
     // (#753); `carried` is false then, since nothing is carried before `init`.
@@ -939,7 +947,8 @@ pub fn execv(path: [*:0]const u8, argv: [*]const ?[*:0]const u8) callconv(.c) c_
 }
 
 pub fn execvp(file: [*:0]const u8, argv: [*]const ?[*:0]const u8) callconv(.c) c_int {
-    common.noteBoundary(.exec);
+    const loan = common.noteExecBoundary();
+    defer takeBackKeepingErrno(loan);
     const carried = common.execSeqCarrySet();
     // Before `init`, the mark of a call into the state, which this image can no longer report
     // (#753); `carried` is false then, since nothing is carried before `init`.

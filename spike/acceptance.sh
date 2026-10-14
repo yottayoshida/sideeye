@@ -389,6 +389,31 @@ else
     fails=$((fails + 1))
 fi
 
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-vfork-many init" --operation "$OUT/toy-vfork-many 70" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if { [ "$rc" = "0" ] || [ "$rc" = "1" ]; } && ! printf '%s\n' "$o" | grep -q "thread-slots-exhausted"; then
+    echo "ok   a single thread that starts seventy children through vfork and execve is judged (exit $rc)"
+else
+    echo "FAIL seventy vfork+execve children from one thread: exit $rc, wanted a verdict"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-vfork-many init" --operation "$OUT/toy-vfork-many threads 8 20" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if { [ "$rc" = "0" ] || [ "$rc" = "1" ]; } && ! printf '%s\n' "$o" | grep -q "thread-slots-exhausted"; then
+    echo "ok   eight threads that start twenty vfork children each at once are judged (exit $rc)"
+else
+    echo "FAIL eight threads starting vfork children at once: exit $rc, wanted a verdict"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
 echo ""
 echo "=========== check 2st: what the shim takes from a target thread's memory (#555) ==========="
 # DESIGN.md, "Known constraints": less than 1 KiB of thread-local storage and at most

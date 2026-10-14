@@ -591,8 +591,9 @@ var kill_aside_fd: c_int = -1;
 /// handler is what this module's rules forbid. Whether it happens depends on the target
 /// and on the C library, so a run that worked would prove nothing about the next one. A
 /// fixed array keyed by `gettid()` — one syscall, one compare-and-swap — is
-/// async-signal-safe by construction. Slots are never freed: nothing here sees a thread
-/// end. The 65th thread shares `reserve`, whose `busy` is the old process-wide guard,
+/// async-signal-safe by construction. A thread's slot is never freed: nothing here sees a
+/// thread end. Only a process that shares the table without owning it — a `vfork` child —
+/// gives back the slot it claimed, before its exec. The 65th thread shares `reserve`, whose `busy` is the old process-wide guard,
 /// and the run records `thread-slots-exhausted` once so the engine refuses it rather
 /// than judges it.
 ///
@@ -601,8 +602,10 @@ var kill_aside_fd: c_int = -1;
 /// are nearly five megabytes the file need not carry. Only the pages a thread touches
 /// become memory.
 const ThreadState = struct {
-    /// Owner's thread id; 0 is free. Written once, by the compare-and-swap in `mine`.
+    /// Owner's thread id; 0 is free. Written by the compare-and-swap in `mine`, and cleared
+    /// only when a `vfork` child gives the slot back before its exec.
     tid: u64 = 0,
+    claimer_pid: c_int = 0,
     /// Guards against observing our own work. The path resolution below calls libc, and
     /// while none of those calls are interposed today, a future addition to the symbol
     /// list would silently start recording the shim's own behaviour as the target's.
@@ -682,6 +685,7 @@ var reserve: ThreadState = .{};
 /// one existed and nothing in production read it.
 var exhaustion_announced: bool = false;
 var active: bool = false;
+var table_pid: c_int = 0;
 
 /// The calling thread's id: `gettid` on Linux, `pthread_threadid_np` on Darwin. A raw
 /// syscall on Linux, which is what makes `mine` safe to call from the `SIGSYS` handler.
@@ -701,14 +705,19 @@ pub fn currentTid() u64 {
 /// BUILDLOG (2026-09-08) before the cost is claimed anywhere.
 fn mine() *ThreadState {
     const tid = currentTid();
-    // One pass: our own slot if we have one, else the first free one seen on the way —
-    // claimed by compare-and-swap, and if another thread took it meanwhile, the scan
-    // continues from there. Slots are never freed, so a slot seen taken stays taken.
-    var i: usize = 0;
-    while (i < slots.len) : (i += 1) {
-        const owner = @atomicLoad(u64, &slots[i].tid, .acquire);
-        if (owner == tid) return &slots[i];
-        if (owner == 0 and @cmpxchgStrong(u64, &slots[i].tid, 0, tid, .acq_rel, .acquire) == null) return &slots[i];
+    // Two passes, not one that takes the first free slot on the way: an exec gives a slot back
+    // mid-table, and a thread whose own slot lies past it would claim a second one and leave
+    // its counts behind in the first.
+    for (&slots) |*s| if (@atomicLoad(u64, &s.tid, .acquire) == tid) return s;
+    for (&slots) |*s| {
+        // Our own id again here too: a signal handler that interrupted this pass may have claimed
+        // a slot for this thread, and passing over it would give the thread a second one.
+        const owner = @atomicLoad(u64, &s.tid, .acquire);
+        if (owner == tid) return s;
+        if (owner == 0 and @cmpxchgStrong(u64, &s.tid, 0, tid, .acq_rel, .acquire) == null) {
+            s.claimer_pid = c.getpid();
+            return s;
+        }
     }
     // Announced HERE, at the moment of exhaustion, not at the next `writeRecord` — the
     // first version deferred it there, and review found the gap: the harm exhaustion does
@@ -758,20 +767,16 @@ fn mine() *ThreadState {
 /// of some 72 KB each are nearly five megabytes of copy-on-write pages the child would
 /// otherwise touch at once, and every buffer is written whole before it is read.
 pub fn resetSlotsInChild() void {
+    table_pid = c.getpid();
     for (&slots) |*s| {
         s.tid = 0;
+        s.claimer_pid = 0;
         s.busy = false;
-        s.seq = 0;
-        s.count_scanned = 0;
-        s.written = 0;
-        s.creates = 0;
+        clearCounts(s);
     }
     reserve.tid = 0;
     reserve.busy = false;
-    reserve.seq = 0;
-    reserve.count_scanned = 0;
-    reserve.written = 0;
-    reserve.creates = 0;
+    clearCounts(&reserve);
     exhaustion_announced = false;
     // The thread tables (v18): the child has one thread, and it is none of the ones the
     // parent was about to start or could still join. A pending start left `taken` here
@@ -1236,6 +1241,7 @@ pub fn init() void {
     if (c.getenv(contract.env.seq_base)) |b| ts.seq = parseU32(std.mem.span(b));
 
     armed_pid = c.getpid();
+    table_pid = armed_pid;
 
     // The filter goes up before the first byte of the trace is written, because
     // `writeAll` has to know which way to issue its own writes. `active` is still false
@@ -3172,6 +3178,38 @@ pub fn noteBoundary(op: contract.OpClass) void {
     if (!active) return;
     const ts = mine();
     if (ts.busy) return;
+    recordBoundary(ts, op);
+}
+
+/// What a thread gave back with its slot before an exec, held on the exec wrapper's stack so that
+/// an exec that fails returns it.
+pub const ExecLoan = struct {
+    given_back: bool = false,
+    seq: u32 = 0,
+    count_scanned: u64 = 0,
+    written: u32 = 0,
+    creates: u32 = 0,
+};
+
+pub fn noteExecBoundary() ExecLoan {
+    if (!active) return .{};
+    const ts = mine();
+    if (ts.busy) return .{};
+    recordBoundary(ts, .exec);
+    return returnSlotBeforeExec(ts);
+}
+
+pub fn takeBackAfterFailedExec(loan: ExecLoan) void {
+    if (!loan.given_back) return;
+    const ts = mine();
+    if (ts == &reserve) return;
+    ts.seq = loan.seq;
+    ts.count_scanned = loan.count_scanned;
+    ts.written = loan.written;
+    ts.creates = loan.creates;
+}
+
+fn recordBoundary(ts: *ThreadState, op: contract.OpClass) void {
     ts.busy = true;
     defer ts.busy = false;
     writeRecord(ts, op, 0, "", "");
@@ -3179,6 +3217,27 @@ pub fn noteBoundary(op: contract.OpClass) void {
     // whenever the answer is not `held`.
     if (run_cgroup_len > 0) if (notHeldAux(cgroupStanding())) |aux|
         writeRecord(ts, .cgroup, 0, stateDir(), aux);
+}
+
+fn clearCounts(s: *ThreadState) void {
+    s.seq = 0;
+    s.count_scanned = 0;
+    s.written = 0;
+    s.creates = 0;
+}
+
+fn returnSlotBeforeExec(ts: *ThreadState) ExecLoan {
+    const pid = c.getpid();
+    // Not a slot this process found already its own: that is a thread of the table's owner (a
+    // `vfork` child answering with its parent's thread id), and zeroing it would restart that
+    // thread's counts when the parent resumes.
+    if (ts == &reserve or table_pid == 0 or pid == table_pid or ts.claimer_pid != pid) return .{};
+    const loan: ExecLoan = .{ .given_back = true, .seq = ts.seq, .count_scanned = ts.count_scanned, .written = ts.written, .creates = ts.creates };
+    ts.exec_carrying = false;
+    clearCounts(ts);
+    ts.claimer_pid = 0;
+    @atomicStore(u64, &ts.tid, 0, .release);
+    return loan;
 }
 
 // ---------------------------------------------------------------------------------
@@ -3569,7 +3628,7 @@ test "slots: one per thread id, claimed once, and the reserve past the last" {
     const d = claim.run(&table, &res, &exhausted, 404);
     try std.testing.expectEqual(&res, d);
     try std.testing.expect(exhausted);
-    // Slots are never freed, so the earlier owners still resolve to theirs.
+    // Nothing here gives a slot back, so the earlier owners still resolve to theirs.
     try std.testing.expectEqual(b, claim.run(&table, &res, &exhausted, 202));
 }
 
@@ -3702,6 +3761,110 @@ test "exec carry: builds in the thread's own slot, and not on the reserve or whe
     reserve.exec_env[0] = null;
     try std.testing.expectEqual(@as(c_int, -1), callExecveSeqCarry(nowhere, &argv, &env));
     try std.testing.expect(reserve.exec_env[0] == null);
+}
+
+fn armForExecSlotTest() void {
+    if (builtin.os.tag != .macos) resolveAll();
+    resetSlotsInChild();
+    active = true;
+    trace_fd = -1;
+}
+
+test "an exec in the process that owns the slot table keeps the thread's slot and its counts" {
+    const saved_active = active;
+    defer active = saved_active;
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    defer resetSlotsInChild();
+    armForExecSlotTest();
+    const own = mine();
+    own.written = 5;
+    _ = noteExecBoundary();
+    try std.testing.expectEqual(currentTid(), @atomicLoad(u64, &own.tid, .acquire));
+    try std.testing.expectEqual(@as(u32, 5), own.written);
+}
+
+test "a process sharing the slot table without owning it gives back the slot it claimed when it execs" {
+    const saved_active = active;
+    defer active = saved_active;
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    defer resetSlotsInChild();
+    armForExecSlotTest();
+    table_pid = c.getpid() + 1;
+    const claimed = mine();
+    try std.testing.expect(claimed != &reserve);
+    claimed.written = 5;
+    _ = noteExecBoundary();
+    try std.testing.expectEqual(@as(u64, 0), @atomicLoad(u64, &claimed.tid, .acquire));
+    try std.testing.expectEqual(@as(u32, 0), claimed.written);
+    try std.testing.expect(!claimed.busy);
+    try std.testing.expectEqual(claimed, mine());
+}
+
+test "a process sharing the slot table keeps a slot it did not claim itself when it execs" {
+    const saved_active = active;
+    defer active = saved_active;
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    defer resetSlotsInChild();
+    armForExecSlotTest();
+    table_pid = c.getpid() + 1;
+    const parents = mine();
+    parents.claimer_pid = table_pid;
+    parents.written = 5;
+    _ = noteExecBoundary();
+    try std.testing.expectEqual(currentTid(), @atomicLoad(u64, &parents.tid, .acquire));
+    try std.testing.expectEqual(@as(u32, 5), parents.written);
+}
+
+test "a thread finds its own slot past a slot an exec gave back" {
+    const saved_active = active;
+    defer active = saved_active;
+    defer resetSlotsInChild();
+    if (builtin.os.tag != .macos) resolveAll();
+    resetSlotsInChild();
+    slots[1].tid = currentTid();
+    try std.testing.expectEqual(&slots[1], mine());
+    try std.testing.expectEqual(@as(u64, 0), slots[0].tid);
+}
+
+test "a thread whose exec fails after it gave its slot back carries on with its counts" {
+    const saved_active = active;
+    defer active = saved_active;
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    defer resetSlotsInChild();
+    armForExecSlotTest();
+    table_pid = c.getpid() + 1;
+    const claimed = mine();
+    claimed.written = 5;
+    claimed.creates = 2;
+    const loan = noteExecBoundary();
+    try std.testing.expectEqual(@as(u64, 0), @atomicLoad(u64, &claimed.tid, .acquire));
+    takeBackAfterFailedExec(loan);
+    const again = mine();
+    try std.testing.expectEqual(@as(u32, 5), again.written);
+    try std.testing.expectEqual(@as(u32, 2), again.creates);
+}
+
+test "an exec on the reserve gives nothing back" {
+    const saved_active = active;
+    defer active = saved_active;
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    defer resetSlotsInChild();
+    armForExecSlotTest();
+    table_pid = c.getpid() + 1;
+    for (&slots, 0..) |*s, i| s.tid = 100_000_000 + @as(u64, i);
+    const saved_announced = exhaustion_announced;
+    defer exhaustion_announced = saved_announced;
+    exhaustion_announced = true;
+    try std.testing.expectEqual(&reserve, mine());
+    reserve.written = 3;
+    _ = noteExecBoundary();
+    try std.testing.expectEqual(@as(u32, 3), reserve.written);
+    for (&slots, 0..) |*s, i| try std.testing.expectEqual(100_000_000 + @as(u64, i), s.tid);
 }
 
 fn clearThreadTablesForTest() void {
