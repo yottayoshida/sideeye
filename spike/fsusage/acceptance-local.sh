@@ -44,6 +44,11 @@ cat > "$WORK/libc_toy.c" <<'EOF'
 #include <unistd.h>
 int main(void) {
     const char *d = getenv("PROBE_STATE"); if (!d) d = "./state";
+    const char *log = getenv("PROBE_LOG");
+    if (log) {
+        int lfd = open(log, O_CREAT | O_WRONLY | O_APPEND, 0600);
+        if (lfd < 0 || write(lfd, "started\n", 8) != 8 || close(lfd) != 0) { perror("log"); return 1; }
+    }
     char p[1024]; snprintf(p, sizeof(p), "%s/keep", d);
     int fd = open(p, O_CREAT | O_WRONLY, 0600); /* in place, over the bytes `keep` holds (ADR 0091) */
     if (fd < 0) { perror("open"); return 1; }
@@ -614,5 +619,48 @@ echo "  print, same --work again: exit=$rc9 verdict=$(field c9print verdict) ora
 echo "  PASS"
 
 echo "=================================================================="
-echo "all nine checks passed"
+echo "Check 10 — the verdict does not depend on how --work is spelled (#795)"
+echo "  predicate: check 1's toy, with --work reached through /tmp, through /var, and relative,"
+echo "             is exit 0 and oracle_verified true each time, as check 1 is"
+echo "  red before, measured on main at e371ffe4 for /tmp and /var: the trace path went through the link;"
+echo "             the relative leg was not measured before"
+c10_tmp="/tmp/sideeye-c10-$$"
+c10_var="/var/tmp/sideeye-c10-$$"
+[ "$(cd /tmp && pwd -P)" != /tmp ] || fail "check 10: /tmp is not a link here, so the leg measures nothing"
+[ "$(cd /var && pwd -P)" != /var ] || fail "check 10: /var is not a link here, so the leg measures nothing"
+for leg in tmp var rel; do
+    ensure_no_fs_usage
+    st="$WORK/state-c10$leg"; seed_keep "c10$leg"
+    case $leg in
+        tmp) w="$c10_tmp" ;;
+        var) w="$c10_var" ;;
+        rel) w="w-c10rel" ;;
+    esac
+    (cd "$WORK" && PROBE_STATE="$st" "$SIDEEYE" explore --state "$st" --operation "$WORK/libc_toy" \
+        --shim "$SHIM" --work "$w" --json "$WORK/c10$leg.json" --oracle-fs-usage > "$WORK/c10$leg.txt" 2>&1)
+    rc10=$?
+    echo "  $leg ($w): exit=$rc10 verdict=$(field "c10$leg" verdict) oracle_verified=$(field "c10$leg" oracle_verified) reason=$(field "c10$leg" unknown_reason)"
+    [ "$rc10" = "0" ] || { sed -n '1,12p' "$WORK/c10$leg.txt"; fail "check 10 $leg: expected exit 0, got $rc10"; }
+    [ "$(field "c10$leg" oracle_verified)" = "True" ] || fail "check 10 $leg: the verdict is not oracle_verified"
+done
+rm -rf "$c10_tmp" "$c10_var"
+echo "  PASS"
+
+echo "=================================================================="
+echo "Check 11 — a write outside the state through /var's link is not a hole (#795)"
+echo "  predicate: check 1's toy, also appending a line to a log under \$TMPDIR as given,"
+echo "             is exit 0 and oracle_verified true, as check 1 is"
+[ -n "${TMPDIR:-}" ] || fail "check 11: TMPDIR is not set, so the leg measures nothing"
+[ "$(cd "$TMPDIR" && pwd -P)" != "${TMPDIR%/}" ] || fail "check 11: TMPDIR is not reached through a link here, so the leg measures nothing"
+c11_log="${TMPDIR%/}/sideeye-c11-$$.log"
+seed_keep c11
+rc11=$(PROBE_LOG="$c11_log" run c11 libc_toy --oracle-fs-usage)
+echo "  exit=$rc11 verdict=$(field c11 verdict) oracle_verified=$(field c11 oracle_verified) reason=$(field c11 unknown_reason)"
+[ "$rc11" = "0" ] || { sed -n '1,12p' "$WORK/c11.txt"; fail "check 11: expected exit 0, got $rc11"; }
+[ "$(field c11 oracle_verified)" = "True" ] || fail "check 11: the verdict is not oracle_verified"
+rm -f "$c11_log"
+echo "  PASS"
+
+echo "=================================================================="
+echo "all eleven checks passed"
 echo "artifacts: $WORK"

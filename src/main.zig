@@ -325,6 +325,8 @@ const Run = struct {
         alt_differs: bool,
         real_buf: [contract.max_path]u8,
         alt_buf: [contract.max_path]u8,
+        work_abs: []const u8,
+        work_real_buf: [contract.max_path]u8,
         effective_cwd: ?[]const u8,
         config_dir: ?[]const u8,
     };
@@ -829,9 +831,8 @@ fn phaseDefine(run: *Run) void {
         }
     }
     {
-        var work_real_buf: [contract.max_path]u8 = undefined;
         const work_abs = blk: {
-            if (posix.realpath(work_z.ptr, &work_real_buf)) |p| break :blk std.mem.span(p);
+            if (posix.realpath(work_z.ptr, &run.define.work_real_buf)) |p| break :blk std.mem.span(p);
             // Before undoSetupMkdirs, which issues syscalls of its own (#486).
             const why = std.c._errno().*;
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
@@ -849,6 +850,7 @@ fn phaseDefine(run: *Run) void {
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
             setupError(.define_invalid, "--work must not be the state directory or inside it: the engine's own captures and traces there would be observed as the target's state operations");
         }
+        run.define.work_abs = work_abs;
     }
 
     // The same shape, for the case file itself (#325 review). A replay empties the state
@@ -1116,7 +1118,9 @@ fn phaseRecording(run: *Run) void {
     const state_alt = run.define.state_alt;
     const initial = run.initial;
 
-    const rec_trace = std.fmt.bufPrint(&run.rec.rec_trace_buf, "{s}/trace-record.bin", .{args.work}) catch setupError(.define_invalid, "path too long");
+    // This and `rec_stdout` resolved, not `--work` as spelled: fs_usage prints a path reached
+    // through macOS's `/tmp` link as `/private/tmp/…`, which no match against `/tmp/…` meets.
+    const rec_trace = std.fmt.bufPrint(&run.rec.rec_trace_buf, "{s}/trace-record.bin", .{run.define.work_abs}) catch setupError(.define_invalid, "path too long");
     removeFile(rec_trace);
 
     const op_argv = commandArgv(arena_state.allocator(), operation) catch setupError(.define_invalid, "--operation is empty");
@@ -1130,7 +1134,7 @@ fn phaseRecording(run: *Run) void {
     // directory. Every run gets the same shape whether or not a marker is configured:
     // an isatty branch in the target must not differ between the recording run and
     // the worlds, or the recorded operation sequence describes a different execution.
-    const rec_stdout = std.fmt.bufPrint(&run.rec.rec_stdout_buf, "{s}/stdout-record.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
+    const rec_stdout = std.fmt.bufPrint(&run.rec.rec_stdout_buf, "{s}/stdout-record.txt", .{run.define.work_abs}) catch setupError(.define_invalid, "path too long");
     removeFile(rec_stdout);
 
     const arena = arena_state.allocator();
