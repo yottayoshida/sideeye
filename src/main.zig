@@ -412,6 +412,10 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // call it made would be the subject's.
     if (argv.len >= 2 and std.mem.eql(u8, argv[1], supervise.exec_arg)) supervise.filterExec(argv);
 
+    // Removed, not pinned empty on each spawn as `seq_base` is: the shim arms the group kill on
+    // `kill_group`'s presence, so an empty value would still arm it.
+    for (contract.env.removed_at_start) |name| _ = posix.unsetenv(name.ptr);
+
     // Help in every spelling and in the positions it is answered in, `version` and
     // `--version`, a bare `sideeye`, and a first word that names no command — answered and
     // exited in `cli.answerEntry` (#273, #296, #705), before `mcp` so that `mcp --help` is

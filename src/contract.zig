@@ -49,6 +49,7 @@ pub const env = struct {
     /// and for its reason: a world is the only run that is killed.
     pub const kill_cgroup = "SIDEEYE_KILL_CGROUP";
     pub const kill_aside = "SIDEEYE_KILL_ASIDE";
+    pub const removed_at_start = [_][:0]const u8{ kill_at, kill_group };
 };
 
 /// The exit-code contract from DESIGN.md §13. UNKNOWN is never 0: a caller that

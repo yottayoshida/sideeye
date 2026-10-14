@@ -379,6 +379,15 @@ python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));r=d["result"];(r["
   && pass "a listed-but-absent name is a loud tool error naming the variable" \
   || fail "a listed-but-absent name was not refused loudly"
 
+# Named but removed: the server drops the kill variables at start (#822), so listing one is
+# refused for that reason rather than as a name the server lacks.
+SIDEEYE_KILL_AT=1 SIDEEYE_MCP_CHILD_ENV=SIDEEYE_KILL_AT \
+  SIDEEYE_MCP_SHIM=$SHIM SIDEEYE_MCP_ROOT=$WS SIDEEYE_MCP_WORK=/tmp/mcp-work \
+  sh -c "printf '%s' '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/env2.toml\"}}}' | \"$SIDEEYE\" mcp >/tmp/mcp.out 2>/tmp/mcp.err"
+python3 -c 'import json,sys;d=json.load(open("/tmp/mcp.out"));r=d["result"];t=r["content"][0]["text"];(r["isError"] is True and "SIDEEYE_KILL_AT" in t and "removes" in t) or sys.exit(d)' \
+  && pass "a kill variable named in SIDEEYE_MCP_CHILD_ENV is refused as one Sideeye removes" \
+  || fail "a kill variable named in SIDEEYE_MCP_CHILD_ENV was not refused for the reason it is missing"
+
 echo "=========== mcp 8: two replays in ONE server session return the same verdict ==========="
 # #69: sideeye replay re-runs the case's setup onto whatever the state dir holds; every
 # CLI caller provided a pristine dir, so the precondition was invisible. An MCP server

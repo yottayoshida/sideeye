@@ -85,6 +85,7 @@ pub extern "c" fn clock_gettime(clockid: c_int, tp: *std.c.timespec) c_int;
 pub extern "c" fn nanosleep(req: *const std.c.timespec, rem: ?*std.c.timespec) c_int;
 pub extern "c" fn signal(sig: c_int, handler: usize) usize;
 pub extern "c" fn setenv(name: [*:0]const u8, value: [*:0]const u8, overwrite: c_int) c_int;
+pub extern "c" fn unsetenv(name: [*:0]const u8) c_int;
 pub extern "c" fn getenv(name: [*:0]const u8) ?[*:0]u8;
 pub extern "c" fn isatty(fd: c_int) c_int;
 pub extern "c" fn _exit(status: c_int) noreturn;
