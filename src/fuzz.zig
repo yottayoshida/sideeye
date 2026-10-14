@@ -555,3 +555,233 @@ test "fuzz: the MCP transport" {
             "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/cancelled\",\"params\":{\"reason\":\"" ++ "r" ** 600 ++ "\"}}\n",
     });
 }
+
+const fuzz_strace_max = 16 * 1024;
+
+// The seeds' own paths: any other state root and every line stops at the scope check, and a
+// mutation that is not coverage-guided never gets past it.
+fn parseStrace(a: std.mem.Allocator, input: []const u8) !parsers.oracle.Parsed {
+    parsers.oracle.fold_restarted = input[0] & 1 != 0;
+    const alt: []const u8 = if (input[0] & 2 != 0) "/var/o/state" else "";
+    return parsers.oracle.parse(a, input[1..], "/tmp/o/state", alt, "/work");
+}
+
+fn fuzzStrace(_: void, smith: *std.testing.Smith) anyerror!void {
+    var buf: [fuzz_strace_max]u8 = undefined;
+    const input = buf[0..smith.slice(&buf)];
+    if (input.len == 0) return;
+    var as = std.heap.ArenaAllocator.init(run_allocator);
+    defer as.deinit();
+    // The first byte picks what production sets around the reader: `--observe supervised`'s
+    // restarted-call folding, and a second spelling of the state. Left at one setting, the
+    // branches behind the other are never reached.
+    const saved = parsers.oracle.fold_restarted;
+    defer parsers.oracle.fold_restarted = saved;
+    const p = parseStrace(as.allocator(), input) catch return;
+    try std.testing.expectEqual(p.classes.items.len, p.names.items.len);
+    try std.testing.expectEqual(p.classes.items.len, p.lines.items.len);
+    try std.testing.expect(p.lines_in_scope >= p.classes.items.len);
+}
+
+const strace_rotate =
+    \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+    \\10    openat(AT_FDCWD</work>, "/tmp/o/state/key.json.tmp", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 3</tmp/o/state/key.json.tmp>
+    \\10    write(3</tmp/o/state/key.json.tmp>, "key=2\n", 6) = 6
+    \\10    fsync(3</tmp/o/state/key.json.tmp>) = 0
+    \\10    close(3</tmp/o/state/key.json.tmp>) = 0
+    \\10    rename("/tmp/o/state/key.json.tmp", "/tmp/o/state/key.json") = 0
+    \\10    unlink("/tmp/o/state/old") = 0
+    \\10    clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0xffff) = 11
+    \\11    exit_group(0) = ?
+    \\11    +++ exited with 0 +++
+    \\10    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=11, si_uid=0, si_status=0} ---
+    \\10    exit_group(0) = ?
+    \\10    +++ exited with 0 +++
+    \\
+;
+
+const strace_trapped =
+    \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+    \\10    write(3</tmp/o/state/key.json>, "key=2\n", 6) = 3
+    \\10    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_call_addr=0xffff, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+    \\10    write(3</tmp/o/state/key.json>, "key=2\n", 6) = 6
+    \\
+;
+
+const strace_two_pids =
+    \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+    \\10    write(3</tmp/o/state/a>, "x", 1) = 3
+    \\11    write(4</tmp/o/state/b>, "y", 1) = 4
+    \\11    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+    \\11    write(4</tmp/o/state/b>, "y", 1) = 1
+    \\10    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_write, si_arch=AUDIT_ARCH_AARCH64} ---
+    \\10    write(3</tmp/o/state/a>, "x", 1) = 1
+    \\
+;
+
+const strace_restarted =
+    \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+    \\10    write(3</tmp/o/state/key.json>, "key=2\n", 6 <unfinished ...>
+    \\10    <... write resumed>) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+    \\10    --- SIGSTOP {si_signo=SIGSTOP, si_code=SI_USER, si_pid=1, si_uid=0} ---
+    \\10    write(3</tmp/o/state/key.json>, "key=2\n", 6) = 6
+    \\
+;
+
+const strace_alt =
+    \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+    \\10    openat(AT_FDCWD</work>, "/var/o/state/key.json", O_WRONLY|O_TRUNC) = 3</var/o/state/key.json>
+    \\10    write(3</var/o/state/key.json>, "key=2\n", 6) = 6
+    \\10    rename("/var/o/state/key.json", "/tmp/o/state/key.json.bak") = 0
+    \\
+;
+
+const strace_seeds = [_][]const u8{
+    "\x00" ++ strace_rotate,
+    "\x00" ++ strace_trapped,
+    "\x00" ++ strace_two_pids,
+    "\x01" ++ strace_restarted,
+    "\x01" ++ strace_rotate,
+    "\x02" ++ strace_alt,
+    "\x03" ++ strace_rotate,
+};
+
+test "fuzz: the strace capture" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const saved = parsers.oracle.fold_restarted;
+    defer parsers.oracle.fold_restarted = saved;
+    for (strace_seeds) |seed| {
+        const p = try parseStrace(as.allocator(), seed);
+        try std.testing.expect(p.classes.items.len > 0);
+    }
+    parsers.oracle.fold_restarted = saved;
+    try run({}, fuzzStrace, .{ .name = "strace", .max_len = fuzz_strace_max }, &strace_seeds);
+}
+
+const fuzz_fsusage_max = 16 * 1024;
+
+fn readFsUsage(a: std.mem.Allocator, text: []const u8) !parsers.fsusage.Reading {
+    return parsers.fsusage.readWithStd(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "/work", &.{ 111, 112 }, &.{113}, .{ false, false, null });
+}
+
+fn fuzzFsUsage(_: void, smith: *std.testing.Smith) anyerror!void {
+    var buf: [fuzz_fsusage_max]u8 = undefined;
+    const text = buf[0..smith.slice(&buf)];
+    var as = std.heap.ArenaAllocator.init(run_allocator);
+    defer as.deinit();
+    // The seeds' own trace and sentinels: with other paths every capture stops at the sentinels
+    // or at naming the subject, before anything past them is read. The rest as production passes
+    // it: an empty cwd or no thread list would leave the relative operands and the thread checks
+    // unreached.
+    const r = readFsUsage(as.allocator(), text) catch return;
+    if (r.defect == null) {
+        try std.testing.expect(r.subject_tid != null);
+        try std.testing.expect(parsers.fsusage.capturesPath(text, "/tmp/st/sentinel-a"));
+        try std.testing.expect(parsers.fsusage.capturesPath(text, "/tmp/st/sentinel-b"));
+    }
+}
+
+const fsusage_seeds = [_][]const u8{
+    "10:00:00.000001  open              F=9   (RWCA__N_F__X___)  /work/trace.bin                       0.000100   subj.111\n" ++
+        "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
+        "10:00:00.000003  open              F=5   (_WC_T__________)  /tmp/st/key.json.tmp   0.000100   subj.111\n" ++
+        "10:00:00.000004  write             F=5   B=0x7                                 0.000100   subj.111\n" ++
+        "10:00:00.000005  fsync             F=5                                         0.000100   subj.111\n" ++
+        "10:00:00.000006  close             F=5                                         0.000100   subj.111\n" ++
+        "10:00:00.000007  rename                  /tmp/st/key.json.tmp                  0.000100   subj.111\n" ++
+        "10:00:00.000008  unlink                  /tmp/st/old                           0.000100   subj.111\n" ++
+        "10:00:00.000009  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n",
+    "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
+        "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
+        "10:00:00.000003  open              F=5   /somewhere/else                       0.000100   subj.111\n" ++
+        "10:00:00.000004  write             F=5   B=0x7                                 0.000100   subj.111\n" ++
+        "10:00:00.000005  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n",
+    "10:00:00.000001  open              F=9   (RWCA__N_F__X___)  /work/trace.bin                       0.000100   subj.111\n" ++
+        "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
+        "10:00:00.000003  open              F=5   (_WC_TE__F______)  private/var/folders/T/tool.log   0.000100   subj.111\n" ++
+        "10:00:00.000004  dup2              F=5   F=1                                   0.000100   subj.111\n" ++
+        "10:00:00.000005  write             F=1   B=0x4                                 0.000100   subj.111\n" ++
+        "10:00:00.000006  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n",
+    "10:00:00.000001  open              F=9   (RWCA__N_F__X___)  /work/trace.bin                       0.000100   subj.111\n" ++
+        "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
+        "10:00:00.000003  open              F=5   (_WC_T__________)  [-2]/build.log           0.000100   subj.111\n" ++
+        "10:00:00.000004  write             F=5   B=0x7                                 0.000100   subj.111\n" ++
+        "10:00:00.000005  write             F=1   B=0x3                                 0.000100   subj.111\n" ++
+        "10:00:00.000006  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n",
+    "10:00:00.000001  open              F=9   (RWCA__N_F__X___)  /work/trace.bin                       0.000100   subj.111\n" ++
+        "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
+        "10:00:00.000003  open              F=6   (_WC_T__________)  /tmp/st/part.json      0.000100   subj.112\n" ++
+        "10:00:00.000004  write             F=6   B=0x5                                 0.000100   subj.112\n" ++
+        "10:00:00.000005  open              F=7   (R_____________)  /tmp/st/part.json      0.000100   subj.113\n" ++
+        "10:00:00.000006  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n",
+};
+
+test "fuzz: the fs_usage capture" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    for (fsusage_seeds) |seed| {
+        const r = try readFsUsage(as.allocator(), seed);
+        try std.testing.expect(r.defect == null);
+    }
+    try run({}, fuzzFsUsage, .{ .name = "fsusage", .max_len = fuzz_fsusage_max }, &fsusage_seeds);
+}
+
+const fuzz_evidence_max = 16 * 1024;
+
+fn fuzzEvidence(_: void, smith: *std.testing.Smith) anyerror!void {
+    var buf: [fuzz_evidence_max]u8 = undefined;
+    const text = buf[0..smith.slice(&buf)];
+    var as = std.heap.ArenaAllocator.init(run_allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    switch (parsers.evidence.parseBundle(a, text)) {
+        .refused => |why| try std.testing.expect(why.len > 0),
+        // Past the parse too: a bundle that parses and then panics where it is rendered takes
+        // `sideeye mcp` down for every client.
+        .ok => |ev| {
+            _ = try parsers.evidence.render(a, ev);
+            _ = parsers.mcp.summarizeEvidence(a, ev, .none) orelse return error.EvidenceSummaryFailed;
+            const structured = parsers.mcp.evidenceStructured(a, ev, .{ .path = "/w/cases/000001.json" }) orelse return error.EvidenceStructuredFailed;
+            try std.testing.expect(try std.json.validate(a, structured));
+        },
+    }
+}
+
+fn evidenceSeed(a: std.mem.Allocator, exhibit: anytype, rows: []const parsers.evidence.PathRow) ![]const u8 {
+    const ev: parsers.evidence.Evidence = .{
+        .schema = "sideeye/evidence",
+        .evidence_version = parsers.evidence.current_version,
+        .sideeye_version = "1.12.0",
+        .contract_version = contract.contract_version,
+        .target = .{ .operation = "mdl --fix README.md", .state_root = "/st" },
+        .exhibit = exhibit,
+        .crash_point = 2,
+        .crash_points_total = 5,
+        .boundary = .{ .after_op = "open", .after_path = "/st/README.md", .before_op = "write", .before_path = "/st/README.md" },
+        .invariant = "built-in atomicity (L0)",
+        .subject = "README.md",
+        .observed = "holding neither the old nor the new content",
+        .consequence = rows,
+        .consequence_truncated = false,
+        .checker = .{ .configured = true, .failed = true, .diagnostic = "FAIL: README.md lost \"Title\"" },
+        .replay = "sideeye replay /w/cases/000001.json",
+        .case = "/w/cases/000001.json",
+        .recovery = .{ .result = "not_configured" },
+        .caveats = &.{"No oracle confirmed it."},
+    };
+    return parsers.evidence.buildJson(a, ev);
+}
+
+test "fuzz: an evidence bundle" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const rows = [_]parsers.evidence.PathRow{
+        .{ .path = "README.md", .before = .{ .kind = "file", .size = 61 }, .completed = .{ .kind = "file", .size = 60 }, .crashed = .{ .kind = "file", .size = 0 }, .pre_existing = true, .declared_scratch = false, .old_bytes_elsewhere = .no, .old_bytes_at = "" },
+        .{ .path = "docs/a b.md", .before = null, .completed = .{ .kind = "file", .size = 3 }, .crashed = null, .pre_existing = false, .declared_scratch = true, .old_bytes_elsewhere = .unknown, .old_bytes_at = "" },
+    };
+    const seeds = [_][]const u8{ try evidenceSeed(a, .earliest, rows[0..1]), try evidenceSeed(a, .checker, &rows) };
+    for (seeds) |seed| try std.testing.expect(parsers.evidence.parseBundle(a, seed) == .ok);
+    try run({}, fuzzEvidence, .{ .name = "evidence", .max_len = fuzz_evidence_max }, &seeds);
+}

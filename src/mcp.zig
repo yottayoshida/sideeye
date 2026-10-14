@@ -1344,7 +1344,7 @@ fn runEvidence(arena: std.mem.Allocator, id: std.json.Value, path_in: []const u8
     emitToolResult(arena, id, summary, structured, false);
 }
 
-const CaseRef = union(enum) { none, unprintable, path: []const u8 };
+pub const CaseRef = union(enum) { none, unprintable, path: []const u8 };
 
 fn caseRef(resolved: ?[]const u8) CaseRef {
     const c = resolved orelse return .none;
@@ -1372,7 +1372,7 @@ fn replayCall(arena: std.mem.Allocator, case_path: []const u8) ?[]const u8 {
 /// break and a quoted string cannot end early. Not the Markdown `sideeye evidence` prints:
 /// its line ends would make the region span lines, and the defang that would fold them
 /// spells a newline as `?`, which a target can also type.
-fn summarizeEvidence(arena: std.mem.Allocator, ev: evidence.Evidence, case_ref: CaseRef) ?[]const u8 {
+pub fn summarizeEvidence(arena: std.mem.Allocator, ev: evidence.Evidence, case_ref: CaseRef) ?[]const u8 {
     return summarizeEvidenceOrErr(arena, ev, case_ref) catch null;
 }
 
@@ -1437,7 +1437,7 @@ fn summarizeEvidenceOrErr(arena: std.mem.Allocator, ev: evidence.Evidence, case_
     return out.items;
 }
 
-fn evidenceStructured(arena: std.mem.Allocator, ev: evidence.Evidence, case_ref: CaseRef) ?[]const u8 {
+pub fn evidenceStructured(arena: std.mem.Allocator, ev: evidence.Evidence, case_ref: CaseRef) ?[]const u8 {
     var mine = ev;
     mine.case = if (case_ref == .path) case_ref.path else "";
     mine.replay = if (case_ref == .path) (replayCall(arena, case_ref.path) orelse return null) else "";

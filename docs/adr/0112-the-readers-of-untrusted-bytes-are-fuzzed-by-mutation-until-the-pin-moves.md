@@ -6,6 +6,8 @@
 - **Scope:** `src/fuzz.zig`, `src/fuzz_parsers.zig`, `build.zig` (the `fuzz` step, `-Dfuzz-runs`,
   `-Dfuzz-seed`), `.github/workflows/fuzz.yml`; `case.read` in `src/case.zig` and `mcp.Lines` /
   `mcp.route` in `src/mcp.zig`, moved out of `main.zig` and `handle` so they could be reached.
+  Since #826 also `oracle.parse`, `fsusage.readWithStd`, and `evidence.parseBundle` with
+  `evidence.render` and `mcp.summarizeEvidence` / `mcp.evidenceStructured` (made public).
 
 ## Context
 
@@ -30,7 +32,8 @@ one empty input, and nothing else.
 - Each reader has one entry point in `src/fuzz.zig`, a `fn (ctx, *std.testing.Smith)` that takes
   its whole input with one `smith.slice` and hands it to the reader's production entry:
   `readTraceCapped` and `image.reobserve` + `image.startable` through a file on disk,
-  `config.parse`, `case.read`, and `mcp.Lines` + `mcp.route`. `image.zig` already held that rule
+  `config.parse`, `case.read`, and `mcp.Lines` + `mcp.route` (#826 added three; see "Read on
+  2026-10-14" below). `image.zig` already held that rule
   for its own tests — a harness that skips the production entry point measures its own copy of
   the logic. Four of the entry points hold the reader to one thing beyond not crashing: the trace
   reader returns every byte of its budget, a config refusal names a line the document has, a
@@ -83,13 +86,38 @@ one (one half of the time, two a quarter, …) and adding the byte-copying mutat
 from the default seed and from each of five others (1 to 5) — and all five plants were measured
 again after the change.
 
+### Read on 2026-10-14: the three readers left out (#826)
+
+The strace capture (`oracle.parse`), the macOS `fs_usage` capture (`fsusage.readWithStd`) and the
+evidence bundle (`evidence.parseBundle`, then `evidence.render` and the MCP `sideeye_evidence`
+summary and structured result) have entry points of their own. Each is called as production calls
+it, and the two capture readers are seeded with the paths they check first, so a mutation gets past
+those checks:
+
+- **strace**: the state root and cwd the seeds name, and a first byte that turns on the
+  restarted-call folding `--observe supervised` sets and a second spelling of the state. It holds
+  the reader to its three lists staying index-aligned, with no more classified lines than lines in
+  scope.
+- **fs_usage**: the seeds' trace and sentinels, a cwd, the subject's thread list, the started
+  threads' list and descriptor scopes as the engine passes them, with a seed for each list. A
+  capture it reads as complete names both sentinels.
+- **evidence**: a bundle `buildJson` wrote. One it accepts renders, and the structured result is
+  JSON.
+
+Each was shown able to go red as the five were, without the repeat runs: a `@panic` planted past
+the reader's first check — a rename, a path or a subject the seeds do not have — passed with the
+seeds alone and failed, naming the plant, in the default thousand runs. The strace entry point
+found a real panic on its first thousand runs: a line that ends at its closing parenthesis, with
+no result, made the cgroup check slice past an empty string. The three's memory was not measured;
+the 7 MB above is the five's.
+
 ### What this does not reach
 
 - **Other readers of untrusted bytes.** The strace output the oracle parses (`oracle.parse`, whose
   lines carry paths the target chose), the evidence bundle `sideeye evidence` and the MCP
   `sideeye_evidence` read beside a case (`evidence.parseBundle`, in a work directory the target
   can write), and the macOS `fs_usage` reader have no entry point. #695 named five; these are
-  candidates for the next.
+  candidates for the next. The three have entry points since 2026-10-14 (#826; above).
 - **One door of the executable reader.** The entry point drives `reobserve` (the header) and
   `startable` (a `#!` line and the interpreter it names), not `frameworkPython`, which reads a
   script's `#!` line again on macOS to tell a framework Python's launcher from its binary.
