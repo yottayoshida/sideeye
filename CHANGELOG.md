@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **The CI quickstart and the MCP container pin v1.13.0** (`docs/ci-quickstart.md`, `docs/ci-quickstart/release/install-sideeye.sh`, `.github/workflows/quickstart-release.yml`, `docs/mcp-container/Dockerfile`). The release lane installs the published v1.13.0 asset, and the container fetches it, with the two Linux digests GitHub recorded for it. The pins move after the release, as on v1.12.0, because both download the asset and it exists only once the release is published. With the container on v1.13.0, the MCP server it carries reads its strace witness without the panic #826 fixed, leaves the shim off the `replay` it returns since the container sets no `SIDEEYE_MCP_SHIM`, and is not stopped by a `SIDEEYE_KILL_AT` or `SIDEEYE_KILL_GROUP` in its environment.
+
 ## [1.13.0] - 2026-10-14
 
 ### Added

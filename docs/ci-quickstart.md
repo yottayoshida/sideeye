@@ -84,7 +84,7 @@ install `strace` (the completeness oracle; without it a would-be PASS refuses as
 install a pinned Sideeye from the release, then explore:
 
 ```sh
-bin=$(sh install-sideeye.sh v1.12.0 "$RUNNER_TEMP/sideeye")
+bin=$(sh install-sideeye.sh v1.13.0 "$RUNNER_TEMP/sideeye")
 "$bin" explore --config sideeye.toml \
   --oracle /usr/bin/strace \
   --json report.json
