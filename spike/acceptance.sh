@@ -9015,7 +9015,7 @@ fi
 
 echo ""
 echo "=========== check 11b: each cookbook recipe shows its checker (#276) ==========="
-# docs/checker-cookbook.md's four recipe blocks are rendered from the committed checkers,
+# docs/checker-cookbook.md's recipe blocks are rendered from the committed checkers,
 # so the page cannot drift from what those files hold. `check` asserts marker cardinality
 # and ordering before it compares anything -- a duplicated BEGIN is the way a naive slice
 # stays green over a region nobody edits -- and exits 2 (BROKEN) rather than 1 when it
