@@ -1,4 +1,4 @@
-pub const config = @import("config.zig");
+pub const config   =   @import("config.zig");
 pub const engine = @import("engine.zig");
 pub const image = @import("image.zig");
 pub const case = @import("case.zig");
