@@ -1,0 +1,58 @@
+CANDIDATES.md sha256 95906a89dbfb84b45fed6ecd05a1a9b4a82d05364d5c17b79858c50d76a72d1d
+CONTROL useradd check=/s/useradd-aux/check.sh
+CONTROL useradd pre rc=0 after recovery: a=ok b=ok c=ok d=ok
+CONTROL useradd done rc=0 after recovery: a=ok b=ok c=ok d=ok
+CONTROL useradd leg-a rc=1 after recovery: a=FAIL b=ok c=ok d=ok
+CONTROL useradd leg-b rc=1 after recovery: a=ok b=FAIL c=ok d=ok
+CONTROL useradd leg-c rc=1 after recovery: a=ok b=ok c=FAIL(2 of 4) d=ok
+CONTROL useradd leg-d rc=1 after recovery: a=ok b=ok c=ok d=FAIL
+CONTROL alternatives check=/s/ua-aux/check.sh
+CONTROL alternatives pre rc=0 after recovery: a=ok b=ok c=ok
+CONTROL alternatives done rc=0 after recovery: a=ok b=ok c=ok
+CONTROL alternatives leg-a rc=1 after recovery: a=FAIL b=ok c=ok
+CONTROL alternatives leg-b rc=1 after recovery: a=ok b=FAIL(OSError) c=ok
+CONTROL alternatives leg-c rc=1 after recovery: a=ok b=ok c=FAIL
+CONTROL divert check=/s/dv-aux/check.sh
+CONTROL divert pre rc=0 after recovery: a=ok b=ok
+CONTROL divert done rc=0 after recovery: a=ok b=ok
+CONTROL divert leg-a rc=1 after recovery: a=FAIL(listed=1 moved=0) b=ok
+CONTROL divert leg-b rc=1 after recovery: a=ok b=FAIL(2 names)
+CONTROL sqlite-txn check=/s/sq-aux/check.sh
+CONTROL sqlite-txn pre rc=0 after recovery: a=ok b=ok c=ok
+CONTROL sqlite-txn done rc=0 after recovery: a=ok b=ok c=ok
+CONTROL sqlite-txn leg-a rc=1 after recovery: a=FAIL b=ok c=ok
+CONTROL sqlite-txn leg-b rc=1 after recovery: a=ok b=FAIL(sum 151) c=ok
+CONTROL sqlite-txn leg-c rc=1 after recovery: a=ok b=ok c=FAIL(A/journal 70/0)
+CONTROL mbsync check=/s/mb-aux/check.sh
+CONTROL mbsync pre rc=0 after recovery: a=ok b=ok c=ok d=ok
+CONTROL mbsync done rc=0 after recovery: a=ok b=ok c=ok d=ok
+CONTROL mbsync leg-a rc=1 after recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'three', 'two']) b=ok c=ok d=ok
+CONTROL mbsync leg-b rc=1 after recovery: a=ok b=FAIL(twice: ['two']) c=ok d=ok
+CONTROL mbsync leg-c rc=1 after recovery: a=ok b=ok c=FAIL(lost ['two']) d=ok
+CONTROL mbsync leg-d rc=1 after recovery: a=ok b=ok c=ok d=FAIL(flag far=False near=False)
+CONTROL vdirsyncer check=/s/vd-aux/check.sh
+CONTROL vdirsyncer pre rc=0 after recovery: a=ok b=ok c=ok
+CONTROL vdirsyncer done rc=0 after recovery: a=ok b=ok c=ok
+CONTROL vdirsyncer leg-a rc=1 after recovery: a=FAIL(a ['one', 'three', 'two'] b ['four', 'one', 'three', 'two']) b=ok c=ok
+CONTROL vdirsyncer leg-b rc=1 after recovery: a=ok b=FAIL(twice: ['two']) c=ok
+CONTROL vdirsyncer leg-c rc=1 after recovery: a=ok b=ok c=FAIL(lost ['two'])
+CONTROL sqlite-utils check=/s/su-aux/check.sh
+CONTROL sqlite-utils pre rc=0 after recovery: a=ok b=ok c=ok
+CONTROL sqlite-utils done rc=0 after recovery: a=ok b=ok c=ok
+CONTROL sqlite-utils leg-a rc=1 after recovery: a=FAIL b=ok c=ok
+CONTROL sqlite-utils leg-b rc=1 after recovery: a=ok b=FAIL([('id', 'INTEGER'), ('title', 'TEXT'), ('qty', 'INTEGER'), ('extra', 'TEXT')]) c=ok
+CONTROL sqlite-utils leg-c rc=1 after recovery: a=ok b=ok c=FAIL(199 rows, 100 differ)
+CONTROL alembic check=/s/al-aux/check.sh
+CONTROL alembic pre rc=0 after recovery: a=ok b=ok c=ok d=ok
+CONTROL alembic done rc=0 after recovery: a=ok b=ok c=ok d=ok
+CONTROL alembic leg-a rc=1 after recovery: a=FAIL(alembic_version ['r1', 'r2']) b=ok c=ok d=FAIL(exit 255: FAILED: Requested revision r2 overlaps with other requested revisions r1)
+CONTROL alembic leg-b rc=1 after recovery: a=ok b=FAIL([('id', 'INTEGER'), ('text', 'TEXT'), ('created', 'INTEGER'), ('extra', 'TEXT')] for ['r2']) c=ok d=ok
+CONTROL alembic leg-c rc=1 after recovery: a=ok b=ok c=FAIL(99 rows) d=ok
+CONTROL alembic leg-d rc=1 after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+CONTROL django check=/s/dj-aux/check.sh
+CONTROL django pre rc=0 after recovery: a=ok b=ok c=ok d=ok
+CONTROL django done rc=0 after recovery: a=ok b=ok c=ok d=ok
+CONTROL django leg-a rc=1 after recovery: a=FAIL(applied ['0001_initial', '0002_change', '0003_ghost']) b=ok c=ok d=ok
+CONTROL django leg-b rc=1 after recovery: a=ok b=FAIL([('id', 'INTEGER'), ('text', 'TEXT'), ('rank', 'INTEGER'), ('extra', 'TEXT')] for ['0001_initial', '0002_change']) c=ok d=ok
+CONTROL django leg-c rc=1 after recovery: a=ok b=ok c=FAIL(99 rows) d=ok
+CONTROL django leg-d rc=1 after recovery: a=ok b=ok c=ok d=FAIL(exit 1: django.db.utils.OperationalError: table "new__app_note" already exists)

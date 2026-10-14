@@ -1,0 +1,9 @@
+# The corporate proxy's CA, staged here by `build.sh` so Docker can mount it (Docker Desktop
+# will not share /Library). It is this machine's network configuration, not this project's, and
+# a public repository is the wrong place for it — the run records what it is for and where it
+# comes from instead.
+apparatus/proxy-ca.pem
+
+# The engine's work directories (cases, snapshots, the oracle's capture) stay on the machine that
+# ran them; the case each FAIL replays is copied beside its transcript.
+transcripts/explore/*/work-*/

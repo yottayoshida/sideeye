@@ -1,0 +1,21 @@
+PREFLIGHT  recording accepted — 11 state-changing operation(s) observed
+
+cwd          /  (none declared: Sideeye's own)
+atomicity    5 path(s) judged pre-or-post
+oracle       agreed on 11 operations (228 syscall lines examined, 43 in scope of the judged state), witness strace
+processes    single process
+checker      declared, not run: not refused as a command that cannot be
+             started, and the state holds something to corrupt
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail — only a real
+             exploration runs these
+
+repeatability  two runs 2009 ms apart left equal state under [world] state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside [world] state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --config '/ap/defines/divert/sideeye.toml' --shim /opt/se/sideeye-v1.12.0-aarch64-linux/libsideeye_shim.so --oracle /usr/bin/strace

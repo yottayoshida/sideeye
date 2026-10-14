@@ -1,0 +1,8 @@
+[world]
+state = "/s/ua"
+
+[define]
+operation = ["update-alternatives", "--altdir", "/s/ua/alt", "--admindir", "/s/ua/admin", "--log", "/s/ua/log", "--install", "/s/ua/bin/editor", "editor", "/s/ua/opt/ed2", "50"]
+# The log line carries the time; pinned so two runs and a later replay agree.
+apparatus = ["preload:libfaketime", "env:FAKETIME=2026-01-01 00:00:00"]
+check     = "/s/ua-aux/check.sh"

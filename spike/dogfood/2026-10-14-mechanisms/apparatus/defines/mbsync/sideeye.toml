@@ -1,0 +1,9 @@
+[world]
+state = "/s/mb"
+
+[define]
+operation = ["mbsync", "-c", "/s/mb/rc", "ch"]
+# Maildir names and UIDVALIDITY carry the time; pinned, but left running ("@"): mbsync sleeps until
+# a second has passed since a directory changed, and a stopped clock would never let it.
+apparatus = ["preload:libfaketime", "env:FAKETIME=@2026-01-01 00:00:00"]
+check     = "/s/mb-aux/check.sh"

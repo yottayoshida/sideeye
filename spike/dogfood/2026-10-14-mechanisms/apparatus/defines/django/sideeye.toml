@@ -1,0 +1,11 @@
+[world]
+state = "/s/dj"
+
+[define]
+operation = ["python3", "/s/dj-aux/proj/manage.py", "migrate", "app", "0002"]
+# Python would otherwise write the project's bytecode beside it, outside the state.
+apparatus = ["env:PYTHONDONTWRITEBYTECODE=1"]
+# The database and its rollback journal are left torn by design and repaired by SQLite on the next
+# open; their correctness is the checker's, read after that open.
+scratch   = ["db.sqlite3", "db.sqlite3-journal"]
+check     = "/s/dj-aux/check.sh"

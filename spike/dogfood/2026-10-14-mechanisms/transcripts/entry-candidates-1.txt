@@ -1,0 +1,9 @@
+CANDIDATES.md sha256 95906a89dbfb84b45fed6ecd05a1a9b4a82d05364d5c17b79858c50d76a72d1d at 2026-10-14T05:03:48Z for: divert
+ROW divert static=0 preflight_rc=0 gate=0 detail=accepted, 11 operations
+EXIT divert 0
+CANDIDATES.md sha256 95906a89dbfb84b45fed6ecd05a1a9b4a82d05364d5c17b79858c50d76a72d1d at 2026-10-14T05:03:51Z for: useradd
+ROW useradd static=0 preflight_rc=2 gate=0 detail=FOLLOW --observe syscalls (oracle_missed_operation)
+EXIT useradd 0
+CANDIDATES.md sha256 95906a89dbfb84b45fed6ecd05a1a9b4a82d05364d5c17b79858c50d76a72d1d at 2026-10-14T05:03:51Z for: alternatives
+ROW alternatives static=0 preflight_rc=2 gate=0 detail=FOLLOW --observe syscalls (oracle_missed_operation)
+EXIT alternatives 0

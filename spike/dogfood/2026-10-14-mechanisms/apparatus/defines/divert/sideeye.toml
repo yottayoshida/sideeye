@@ -1,0 +1,6 @@
+[world]
+state = "/s/dv"
+
+[define]
+operation = ["dpkg-divert", "--admindir", "/s/dv/admin", "--instdir", "/s/dv/root", "--rename", "--divert", "/usr/bin/tool.distrib", "--add", "/usr/bin/tool"]
+check     = "/s/dv-aux/check.sh"

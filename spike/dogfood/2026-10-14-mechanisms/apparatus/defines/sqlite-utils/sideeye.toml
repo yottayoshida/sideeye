@@ -1,0 +1,9 @@
+[world]
+state = "/s/su"
+
+[define]
+operation = ["sqlite-utils", "transform", "/s/su/data.db", "items", "--rename", "name", "title", "--type", "qty", "integer", "--drop", "junk"]
+# The database and its rollback journal are left torn by design and repaired by SQLite on the next
+# open; their correctness is the checker's, read after that open.
+scratch   = ["data.db", "data.db-journal"]
+check     = "/s/su-aux/check.sh"
