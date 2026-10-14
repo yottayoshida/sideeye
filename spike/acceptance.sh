@@ -105,6 +105,29 @@ echo "=========== check 1: inside the boundary ==========="
 run_case "toy-bug FAILs"       "$OUT/toy-bug"   1 "crash point 5 of 5"
 run_case "  ...names the window" "$OUT/toy-bug" 1 "after  unlink"
 run_case "  ...and the next op"  "$OUT/toy-bug" 1 "before rename"
+# Called directly, not through run_case: whether an assignment in front of a function call
+# outlives it is unspecified in sh, and a leftover here would arm every later check.
+rm -rf /tmp/acc-822 && mkdir -p /tmp/acc-822/state
+o=$(SIDEEYE_KILL_AT=1 SIDEEYE_KILL_GROUP=1 "$SIDEEYE" explore --state /tmp/acc-822/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" --shim "$SHIM" \
+    --work /tmp/acc-822/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = 1 ] && printf '%s\n' "$o" | grep -q "crash point 5 of 5"; then
+    echo "ok   SIDEEYE_KILL_AT and SIDEEYE_KILL_GROUP left in the shell no longer stop explore (exit $rc)"
+else
+    echo "FAIL SIDEEYE_KILL_AT and SIDEEYE_KILL_GROUP left in the shell stopped explore: exit $rc, wanted 1 at crash point 5 of 5"
+    printf '%s\n' "$o" | sed 's/^/     | /'; fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-822 && mkdir -p /tmp/acc-822/state
+o=$(SIDEEYE_KILL_AT=1 SIDEEYE_KILL_GROUP=1 "$SIDEEYE" preflight --twice --state /tmp/acc-822/state \
+    --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-822/work 2>&1)
+rc=$?
+if [ "$rc" = 0 ]; then
+    echo "ok   SIDEEYE_KILL_AT and SIDEEYE_KILL_GROUP left in the shell no longer stop preflight --twice (exit $rc)"
+else
+    echo "FAIL SIDEEYE_KILL_AT and SIDEEYE_KILL_GROUP left in the shell stopped preflight --twice: exit $rc, wanted 0"
+    printf '%s\n' "$o" | sed 's/^/     | /'; fails=$((fails + 1))
+fi
 run_case "toy-fixed PASSes"    "$OUT/toy-fixed" 0 "explored worlds satisfied"
 
 # Checked as a relation rather than a fixed number. The first version asserted
