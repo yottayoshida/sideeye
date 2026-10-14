@@ -786,8 +786,7 @@ const cgroup_move_files = [_][]const u8{ "cgroup.procs", "cgroup.threads", "cgro
 fn cgroupMove(arena: std.mem.Allocator, name: []const u8, line: []const u8) !?[]const u8 {
     const result = resultText(line);
     if (result) |r| {
-        const eq = std.mem.indexOfScalar(u8, r, '=') orelse 0;
-        const value = std.mem.trim(u8, r[eq + 1 ..], " \t");
+        const value = std.mem.trim(u8, if (std.mem.indexOfScalar(u8, r, '=')) |eq| r[eq + 1 ..] else r, " \t");
         if (value.len > 0 and value[0] == '-') return null;
     }
     if (std.mem.eql(u8, name, "clone3")) {
@@ -1489,6 +1488,22 @@ test "a seccomp refusal is told apart from every other signal line" {
     try std.testing.expect(!isSeccompRefusal("14    --- SIGKILL ---"));
     try std.testing.expect(!isSeccompRefusal("+++ killed by SIGKILL +++"));
     try std.testing.expect(!isSeccompRefusal("write(3</tmp/o/state/k>, \"x\", 1) = 1"));
+}
+
+test "a line that ends at its closing parenthesis, with no result, is read without stopping the parse" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    try std.testing.expect((try cgroupMove(a, "close", "10    close(3)")) == null);
+    try std.testing.expect((try cgroupMove(a, "openat", "10    openat(AT_FDCWD, \"/sys/fs/cgroup/x/cgroup.procs\", O_WRONLY)")) != null);
+    const text =
+        \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+        \\10    close(3)
+        \\10    write(3</tmp/o/state/a>, "x", 1) = 1
+        \\
+    ;
+    const p = try parse(a, text, "/tmp/o/state", "", "/work");
+    try std.testing.expect(p.classes.items.len > 0);
 }
 
 test "a refused write and its re-issue are one operation (--observe syscalls)" {

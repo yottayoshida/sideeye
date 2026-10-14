@@ -4,3 +4,6 @@ pub const image = @import("image.zig");
 pub const case = @import("case.zig");
 pub const mcp = @import("mcp.zig");
 pub const posix = @import("posix.zig");
+pub const oracle = @import("oracle.zig");
+pub const fsusage = @import("fsusage.zig");
+pub const evidence = @import("evidence.zig");
