@@ -24,7 +24,7 @@ nothing was invented for this page" and then gave four pointers into `spike/`. A
 could not copy anything; the promise was true only in the sense of *naming* a file. The
 blocks make it true in the sense of *showing* one.
 
-Pasting the text by hand would make the page correct once. These four checkers are edited
+Pasting the text by hand would make the page correct once. These checkers are edited
 — the buku one carries the history of a leg it dropped — so a hand-pasted copy only ever
 gets more wrong, silently, and the page's opening sentence would go quietly false.
 
@@ -51,14 +51,14 @@ normalisation is the whole of it, and it is why these notes do not say "byte-exa
 
 A checker containing a ``` line would close the block early: the page and a fresh render
 would still agree — `check` green — while the Markdown around it broke. None
-of today's four contains one. The fence is one backtick longer than the longest run in
+of the checkers shown today contains one. The fence is one backtick longer than the longest run in
 the file, which is what CommonMark requires, so the check's green keeps meaning "the page
 renders what the file holds" rather than only "the bytes agree".
 
 ## The adaptation line is generated too
 
-The owner's requirement for this page is that a reader can copy a recipe and start. Two of
-the four run as they stand; two name paths and binaries of the target they were written
+The owner's requirement for this page is that a reader can copy a recipe and start. Some
+run as they stand; the rest name paths and binaries of the target they were written
 for. Each recipe therefore carries one line saying what to swap — and that line lives
 *inside* the markers, from the table below, because a hand-written one outside them can be
 deleted or attached to the wrong recipe with `check` still green.
@@ -99,6 +99,31 @@ RECIPES = [
         "row for your target's, and take the state from `$SIDEEYE_STATE_DIR` "
         "(`export XDG_DATA_HOME=\"$SIDEEYE_STATE_DIR\"` here) rather than a fixed path; "
         "the leg ORDER is the part to copy unchanged.",
+    ),
+    (
+        "recipe 5",
+        "## Recipe 5",
+        "spike/dogfood/2026-10-14-mechanisms/apparatus/defines/useradd/check.sh",
+        "Swap the four account files under the state's root (`passwd`, `shadow`, `group`, "
+        "`gshadow`), the user `alice`, her group `staff` and "
+        "the two untouched entries for your target's files and records; the `useradd` line "
+        "for the command your user would run again; `/tmp/useradd-recovery.txt` for a "
+        "scratch file of your own. `pwck`/`grpck -R` chroot into the state, so the checker "
+        "runs as root; `\\b` needs GNU grep and `timeout` is coreutils'. Leg c, the count across all files, is the "
+        "part to copy.",
+    ),
+    (
+        "recipe 6",
+        "## Recipe 6",
+        "spike/dogfood/2026-10-14-mechanisms/apparatus/defines/alembic/check.sh",
+        "Swap `/s/al-aux/proj/alembic.ini` for your project's configuration — its database URL "
+        "must name the database under `$SIDEEYE_STATE_DIR`, or leg d tries another database "
+        "and says nothing about the world — the revisions `r1`/`r2` and their table shapes "
+        "for yours, the seed's values leg c expects (`app.db`, the table `notes`, its 100 rows "
+        "`note N`, the column renamed from `body` to `text`) for your own, and "
+        "`/tmp/al-recovery.txt` for a scratch file of your own; declare the database and its "
+        "journal as `scratch` in the toml. "
+        "Leg d, the next run's exit status, is the part to copy.",
     ),
 ]
 
@@ -159,8 +184,8 @@ def block(root, key, path, swap):
 def outside_generated(lines):
     """Line indices that are page prose -- everything not inside a generated region.
 
-    A checker is allowed to contain a line starting with `##`; two of the four already
-    open with `#`. Scanning every line for headings makes a checker's own comment end a
+    A checker is allowed to contain a line starting with `##`; every one of today's
+    checkers opens with `#`. Scanning every line for headings makes a checker's own comment end a
     section, or count as a second `## Recipe 1`, and review turned a valid page red both
     ways. Headings are looked for in the prose only.
 
