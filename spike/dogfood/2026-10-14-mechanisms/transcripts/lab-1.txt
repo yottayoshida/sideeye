@@ -1,0 +1,107 @@
+### useradd, crash point 46: passwd replaced, shadow, group and gshadow not yet
+ 84 /s/useradd/root/etc/passwd
+ 53 /s/useradd/root/etc/shadow
+ 41 /s/useradd/root/etc/group
+ 34 /s/useradd/root/etc/gshadow
+212 total
+--- pwck -r
+user 'root': program '/bin/sh' does not exist
+user 'carol': program '/bin/sh' does not exist
+user 'alice': no group 1002
+user 'alice': program '/bin/sh' does not exist
+no matching password file entry in /etc/shadow
+add user 'alice' in /etc/shadow? No
+pwck: no changes
+exit 2
+--- useradd alice again
+useradd: user 'alice' already exists
+exit 9
+--- passwd -S alice
+alice P
+exit 0
+--- userdel alice
+exit 0
+/s/useradd/root/etc/passwd:0
+/s/useradd/root/etc/shadow:0
+/s/useradd/root/etc/group:0
+/s/useradd/root/etc/gshadow:0
+
+### dpkg-divert, crash point 11: the diversion recorded, the file not yet moved
+tool
+--- --list
+local diversion of /usr/bin/tool to /usr/bin/tool.distrib
+--- --truename /usr/bin/tool
+/usr/bin/tool.distrib
+ls: cannot access '/s/dv/root/usr/bin/tool.distrib': No such file or directory
+--- the same --add again
+Leaving 'local diversion of /usr/bin/tool to /usr/bin/tool.distrib'
+exit 0
+tool
+--- --rename --remove
+Removing 'local diversion of /usr/bin/tool to /usr/bin/tool.distrib'
+exit 0
+tool
+
+### Alembic: where the batch migration's transactions begin and commit
+BEGIN (implicit)
+PRAGMA main.table_info("alembic_version")
+[raw sql] ()
+SELECT alembic_version.version_num 
+FROM alembic_version
+[generated in 0.00005s] ()
+PRAGMA main.table_xinfo("notes")
+[raw sql] ()
+SELECT sql FROM  (SELECT * FROM sqlite_master UNION ALL   SELECT * FROM sqlite_temp_master) WHERE name = ? AND type in ('table', 'view')
+[raw sql] ('notes',)
+PRAGMA main.foreign_key_list("notes")
+[raw sql] ()
+PRAGMA temp.foreign_key_list("notes")
+[raw sql] ()
+SELECT sql FROM  (SELECT * FROM sqlite_master UNION ALL   SELECT * FROM sqlite_temp_master) WHERE name = ? AND type in ('table', 'view')
+[raw sql] ('notes',)
+PRAGMA main.index_list("notes")
+[raw sql] ()
+PRAGMA temp.index_list("notes")
+[raw sql] ()
+PRAGMA main.table_info("notes")
+[raw sql] ()
+PRAGMA main.index_list("notes")
+[raw sql] ()
+PRAGMA temp.index_list("notes")
+[raw sql] ()
+PRAGMA main.table_info("notes")
+[raw sql] ()
+SELECT sql FROM  (SELECT * FROM sqlite_master UNION ALL   SELECT * FROM sqlite_temp_master) WHERE name = ? AND type in ('table', 'view')
+[raw sql] ('notes',)
+
+CREATE TABLE _alembic_tmp_notes (
+	id INTEGER NOT NULL, 
+	text TEXT, 
+	created INTEGER DEFAULT '0' NOT NULL, 
+	PRIMARY KEY (id)
+)
+
+
+[no key 0.00002s] ()
+INSERT INTO _alembic_tmp_notes (id, text) SELECT notes.id, notes.body 
+FROM notes
+[generated in 0.00004s] ()
+
+DROP TABLE notes
+[no key 0.00002s] ()
+ALTER TABLE _alembic_tmp_notes RENAME TO notes
+[no key 0.00006s] ()
+UPDATE alembic_version SET version_num='r2' WHERE alembic_version.version_num = 'r1'
+[generated in 0.00004s] ()
+COMMIT
+--- crash point 15's state: revision 1, its table and rows, and the batch's temporary table committed
+r1
+100
+alembic_version
+notes
+_alembic_tmp_notes
+--- alembic upgrade head
+sqlite3.OperationalError: table _alembic_tmp_notes already exists
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) table _alembic_tmp_notes already exists
+--- alembic current
+r1

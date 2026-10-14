@@ -1,0 +1,23 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 6,
+  "sideeye_version": "1.12.0",
+  "contract_version": 19,
+  "observe": "syscalls",
+  "define": {
+    "state": "/s/useradd",
+    "operation": ["useradd", "--prefix", "/s/useradd/root", "-M", "-d", "/", "-G", "staff", "-p", "$6$s$h", "-s", "/bin/sh", "alice"],
+    "check": "/s/useradd-aux/check.sh",
+    "cwd": null,
+    "scratch": [],
+    "expected_status": 0
+  },
+  "k": 46,
+  "ops_total": 70,
+  "prefix_hash": "1cc2f52e307b1d13",
+  "after_class": "rename",
+  "after_path": "/s/useradd/root/etc/passwd+",
+  "before_class": "open",
+  "before_path": "/s/useradd/root/etc/shadow-",
+  "violation": "checker"
+}

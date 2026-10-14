@@ -1,0 +1,48 @@
+=== useradd 2026-10-14T05:16:05Z SELECTION.md sha256 d99c8d39cc1c2ac98851d86e13fbf606b24d9270ce68f5b67404d41f17c01167 defines sha256 9e18aebe6799e2c17b8024f960a90a7ad238ff50f45c54f81230a782389577e9
+explore exit 2: UNKNOWN oracle_missed_operation
+explore --observe syscalls exit 1: FAIL -
+explore exit 2: UNKNOWN oracle_missed_operation
+next_step: Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.
+explore --observe syscalls exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== alternatives 2026-10-14T05:16:10Z SELECTION.md sha256 d99c8d39cc1c2ac98851d86e13fbf606b24d9270ce68f5b67404d41f17c01167 defines sha256 9e18aebe6799e2c17b8024f960a90a7ad238ff50f45c54f81230a782389577e9
+explore exit 2: UNKNOWN oracle_missed_operation
+explore --observe syscalls exit 0: PASS -
+explore exit 2: UNKNOWN oracle_missed_operation
+next_step: Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.
+explore --observe syscalls exit 0: PASS -
+=== divert 2026-10-14T05:16:11Z SELECTION.md sha256 d99c8d39cc1c2ac98851d86e13fbf606b24d9270ce68f5b67404d41f17c01167 defines sha256 9e18aebe6799e2c17b8024f960a90a7ad238ff50f45c54f81230a782389577e9
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== sqlite-txn 2026-10-14T05:16:12Z SELECTION.md sha256 d99c8d39cc1c2ac98851d86e13fbf606b24d9270ce68f5b67404d41f17c01167 defines sha256 9e18aebe6799e2c17b8024f960a90a7ad238ff50f45c54f81230a782389577e9
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== mbsync 2026-10-14T05:16:13Z SELECTION.md sha256 d99c8d39cc1c2ac98851d86e13fbf606b24d9270ce68f5b67404d41f17c01167 defines sha256 9e18aebe6799e2c17b8024f960a90a7ad238ff50f45c54f81230a782389577e9
+explore exit 2: UNKNOWN oracle_missed_operation
+explore --observe syscalls exit 1: FAIL -
+explore exit 2: UNKNOWN oracle_missed_operation
+next_step: Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the README entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset', and 'What --observe syscalls does not see' in docs/report-schema.md; if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.
+explore --observe syscalls exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== vdirsyncer 2026-10-14T05:16:17Z SELECTION.md sha256 d99c8d39cc1c2ac98851d86e13fbf606b24d9270ce68f5b67404d41f17c01167 defines sha256 9e18aebe6799e2c17b8024f960a90a7ad238ff50f45c54f81230a782389577e9
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== sqlite-utils 2026-10-14T05:16:35Z SELECTION.md sha256 d99c8d39cc1c2ac98851d86e13fbf606b24d9270ce68f5b67404d41f17c01167 defines sha256 9e18aebe6799e2c17b8024f960a90a7ad238ff50f45c54f81230a782389577e9
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== alembic 2026-10-14T05:16:42Z SELECTION.md sha256 d99c8d39cc1c2ac98851d86e13fbf606b24d9270ce68f5b67404d41f17c01167 defines sha256 9e18aebe6799e2c17b8024f960a90a7ad238ff50f45c54f81230a782389577e9
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== django 2026-10-14T05:17:04Z SELECTION.md sha256 d99c8d39cc1c2ac98851d86e13fbf606b24d9270ce68f5b67404d41f17c01167 defines sha256 9e18aebe6799e2c17b8024f960a90a7ad238ff50f45c54f81230a782389577e9
+explore exit 0: PASS -
+explore exit 0: PASS -

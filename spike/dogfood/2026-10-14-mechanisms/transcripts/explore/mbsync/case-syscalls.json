@@ -1,0 +1,23 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 6,
+  "sideeye_version": "1.12.0",
+  "contract_version": 19,
+  "observe": "syscalls",
+  "define": {
+    "state": "/s/mb",
+    "operation": ["mbsync", "-c", "/s/mb/rc", "ch"],
+    "check": "/s/mb-aux/check.sh",
+    "cwd": null,
+    "scratch": [],
+    "expected_status": 0
+  },
+  "k": 6,
+  "ops_total": 45,
+  "prefix_hash": "ebd71c56d07f36db",
+  "after_class": "write",
+  "after_path": "/s/mb/far/.uidvalidity",
+  "before_class": "truncate",
+  "before_path": "/s/mb/far/.uidvalidity",
+  "violation": "hybrid"
+}

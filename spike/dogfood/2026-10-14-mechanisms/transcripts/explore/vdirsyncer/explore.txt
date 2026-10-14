@@ -1,0 +1,261 @@
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+falsify: checker(vdirsyncer) before recovery: a=ok b=ok c=FAIL(lost ['one', 'two', 'three', 'four'])
+falsify: checker(vdirsyncer) recovery exited 1: critical: Error during reading config /s/vd/config: File contains no section headers.
+falsify: critical: file: '/s/vd/config', line: 1
+falsify: critical: 'sideeye-corruption-probe
+falsify: '
+falsify: checker(vdirsyncer) after recovery: a=ok b=ok c=FAIL(lost ['one', 'two', 'three', 'four'])
+Syncing p
+world 1: checker(vdirsyncer) before recovery: a=FAIL(a ['one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 1: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+world 2: checker(vdirsyncer) before recovery: a=FAIL(a ['one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 2: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+world 3: checker(vdirsyncer) before recovery: a=FAIL(a ['one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 3: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+world 4: checker(vdirsyncer) before recovery: a=FAIL(a ['one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 4: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+world 5: checker(vdirsyncer) before recovery: a=FAIL(a ['one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 5: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+world 6: checker(vdirsyncer) before recovery: a=FAIL(a ['one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 6: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+world 7: checker(vdirsyncer) before recovery: a=FAIL(a ['one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 7: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+world 8: checker(vdirsyncer) before recovery: a=FAIL(a ['one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 8: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+world 9: checker(vdirsyncer) before recovery: a=FAIL(a ['one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 9: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+world 10: checker(vdirsyncer) before recovery: a=FAIL(a ['one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 10: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+world 11: checker(vdirsyncer) before recovery: a=FAIL(a ['one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 11: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+world 12: checker(vdirsyncer) before recovery: a=FAIL(a ['one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 12: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+world 13: checker(vdirsyncer) before recovery: a=FAIL(a ['one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 13: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+world 14: checker(vdirsyncer) before recovery: a=FAIL(a ['one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 14: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+world 15: checker(vdirsyncer) before recovery: a=FAIL(a ['one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 15: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+world 16: checker(vdirsyncer) before recovery: a=FAIL(a ['four', 'one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 16: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+world 17: checker(vdirsyncer) before recovery: a=FAIL(a ['four', 'one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 17: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 18: checker(vdirsyncer) before recovery: a=FAIL(a ['four', 'one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 18: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 19: checker(vdirsyncer) before recovery: a=FAIL(a ['four', 'one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 19: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 20: checker(vdirsyncer) before recovery: a=FAIL(a ['four', 'one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 20: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 21: checker(vdirsyncer) before recovery: a=FAIL(a ['four', 'one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 21: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 22: checker(vdirsyncer) before recovery: a=FAIL(a ['four', 'one', 'three', 'two'] b ['four', 'one', 'two']) b=ok c=ok
+world 22: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 23: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 23: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 24: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 24: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 25: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 25: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 26: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 26: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 27: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 27: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 28: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 28: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 29: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 29: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 30: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 30: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 31: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 31: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 32: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 32: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 33: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 33: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 34: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 34: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 35: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 35: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 36: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 36: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 37: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 37: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 38: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 38: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 39: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 39: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 40: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 40: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 41: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 41: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 42: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 42: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 43: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 43: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 44: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 44: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 45: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 45: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 46: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 46: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 47: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 47: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 48: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 48: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 49: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 49: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 50: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 50: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 51: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 51: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+world 52: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+world 52: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+Syncing p
+Copying (uploading) item four to a
+Copying (uploading) item three to b
+baseline: checker(vdirsyncer) before recovery: a=ok b=ok c=ok
+baseline: checker(vdirsyncer) after recovery: a=ok b=ok c=ok
+PASS  53/53 explored worlds satisfied the built-in atomicity invariant, but the operation touched none of the 12 path(s) it judged
+cwd         /  (none declared: Sideeye's own)
+
+explored    53 worlds (crash points 52 + 1 baseline)
+expected    exit 0
+atomicity   12 path(s) judged pre-or-post; 3 path(s) matched by scratch, not judged (declared: status)
+oracle      agreed on 52 operations (7509 syscall lines examined, 358 in scope of the judged state), witness strace
+metadata    1 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchown x1. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 53 world(s)
+l1          no marker configured
+case        (none)
+processes   single process
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+sideeye: json sha256=d5e6a91625edda2e06f15243add53d024dd6167af8026b380e339fd863d21039;

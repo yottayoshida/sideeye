@@ -1,1 +1,10 @@
 target	report	verdict	unknown_reason	checker_caught	mechanism	basis
+useradd	transcripts/explore/useradd/syscalls.json	FAIL	-	yes	M3	passwd is replaced whole before shadow, group and gshadow are: killed between, alice is in passwd alone (crash point 46, after rename(passwd+)); the same useradd again refuses 'already exists' (transcripts/lab-1.txt), so the files stay out of step
+update-alternatives	transcripts/explore/alternatives/syscalls.json	PASS	-	no	-	-
+dpkg-divert	transcripts/explore/divert/explore.json	FAIL	-	yes	M3	the diversions file is replaced whole before the file is renamed aside: killed between (crash point 11), the diversion is listed and the original still at its name; the same --add again says 'Leaving' and moves nothing (transcripts/lab-1.txt)
+sqlite3	transcripts/explore/sqlite-txn/explore.json	PASS	-	no	-	-
+mbsync	transcripts/explore/mbsync/syscalls.json	FAIL	-	no	-	-
+vdirsyncer	transcripts/explore/vdirsyncer/explore.json	PASS	-	no	-	-
+sqlite-utils	transcripts/explore/sqlite-utils/explore.json	PASS	-	no	-	-
+Alembic	transcripts/explore/alembic/explore.json	FAIL	-	yes	M5	the batch migration's CREATE TABLE _alembic_tmp_notes commits alone (Python's sqlite3 sends no BEGIN before DDL; the journal gone at world 15 and a new one after it in transcripts/explore/alembic/explore.txt), the copy, drop, rename and version update in a second transaction: killed between (crash point 15), revision 1 and its rows are whole and the next alembic upgrade head fails (OperationalError; 'table _alembic_tmp_notes already exists' in the state rebuilt by hand, transcripts/lab-1.txt)
+Django	transcripts/explore/django/explore.json	PASS	-	no	-	-

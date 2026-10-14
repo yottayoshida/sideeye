@@ -1,0 +1,71 @@
+falsify: checker(django) before recovery: db.sqlite3=25 
+falsify: checker(django) after recovery: a=FAIL(DatabaseError) b=FAIL(DatabaseError) c=FAIL(DatabaseError) d=FAIL(exit 1: django.db.utils.DatabaseError: file is not a database)
+world 1: checker(django) before recovery: db.sqlite3=16384 
+world 1: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 2: checker(django) before recovery: db.sqlite3=16384 
+world 2: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 3: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=0 
+world 3: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 4: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=512 
+world 4: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 5: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=516 
+world 5: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 6: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=4612 
+world 6: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 7: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=4616 
+world 7: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 8: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=4620 
+world 8: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 9: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=8716 
+world 9: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 10: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=8720 
+world 10: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 11: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=8724 
+world 11: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 12: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=12820 
+world 12: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 13: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=12824 
+world 13: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 14: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=12828 
+world 14: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 15: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=16924 
+world 15: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 16: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=16928 
+world 16: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 17: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=16928 
+world 17: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 18: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=16928 
+world 18: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 19: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=16928 
+world 19: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 20: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=16928 
+world 20: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 21: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=16928 
+world 21: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 22: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=16928 
+world 22: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 23: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=16928 
+world 23: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 24: checker(django) before recovery: db.sqlite3=16384 db.sqlite3-journal=16928 
+world 24: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 25: checker(django) before recovery: db.sqlite3=20480 db.sqlite3-journal=16928 
+world 25: checker(django) after recovery: a=ok b=ok c=ok d=ok
+world 26: checker(django) before recovery: db.sqlite3=20480 db.sqlite3-journal=16928 
+world 26: checker(django) after recovery: a=ok b=ok c=ok d=ok
+baseline: checker(django) before recovery: db.sqlite3=20480 
+baseline: checker(django) after recovery: a=ok b=ok c=ok d=ok
+PASS  27/27 explored worlds satisfied the built-in atomicity invariant, but it had no path to judge
+cwd         /  (none declared: Sideeye's own)
+apparatus   env:PYTHONDONTWRITEBYTECODE=1
+
+explored    27 worlds (crash points 26 + 1 baseline)
+expected    exit 0
+atomicity   0 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: db.sqlite3, db.sqlite3-journal)
+oracle      agreed on 26 operations (8109 syscall lines examined, 175 in scope of the judged state), witness strace
+metadata    1 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchown x1. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 27 world(s)
+l1          no marker configured
+case        (none)
+processes   single process
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+sideeye: json sha256=1ddb07c61e316088eaf095c8741600ebb1819192eb068126965199f9d33497f9;

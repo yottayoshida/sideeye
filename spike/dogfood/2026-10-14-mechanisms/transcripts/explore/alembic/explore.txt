@@ -1,0 +1,114 @@
+falsify: checker(alembic) before recovery: app.db=25 
+falsify: checker(alembic) after recovery: a=FAIL(DatabaseError) b=FAIL(DatabaseError) c=FAIL(DatabaseError) d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/4xp6))
+world 1: checker(alembic) before recovery: app.db=16384 
+world 1: checker(alembic) after recovery: a=ok b=ok c=ok d=ok
+world 2: checker(alembic) before recovery: app.db=16384 
+world 2: checker(alembic) after recovery: a=ok b=ok c=ok d=ok
+world 3: checker(alembic) before recovery: app.db=16384 app.db-journal=0 
+world 3: checker(alembic) after recovery: a=ok b=ok c=ok d=ok
+world 4: checker(alembic) before recovery: app.db=16384 app.db-journal=512 
+world 4: checker(alembic) after recovery: a=ok b=ok c=ok d=ok
+world 5: checker(alembic) before recovery: app.db=16384 app.db-journal=516 
+world 5: checker(alembic) after recovery: a=ok b=ok c=ok d=ok
+world 6: checker(alembic) before recovery: app.db=16384 app.db-journal=4612 
+world 6: checker(alembic) after recovery: a=ok b=ok c=ok d=ok
+world 7: checker(alembic) before recovery: app.db=16384 app.db-journal=4616 
+world 7: checker(alembic) after recovery: a=ok b=ok c=ok d=ok
+world 8: checker(alembic) before recovery: app.db=16384 app.db-journal=4616 
+world 8: checker(alembic) after recovery: a=ok b=ok c=ok d=ok
+world 9: checker(alembic) before recovery: app.db=16384 app.db-journal=4616 
+world 9: checker(alembic) after recovery: a=ok b=ok c=ok d=ok
+world 10: checker(alembic) before recovery: app.db=16384 app.db-journal=4616 
+world 10: checker(alembic) after recovery: a=ok b=ok c=ok d=ok
+world 11: checker(alembic) before recovery: app.db=16384 app.db-journal=4616 
+world 11: checker(alembic) after recovery: a=ok b=ok c=ok d=ok
+world 12: checker(alembic) before recovery: app.db=16384 app.db-journal=4616 
+world 12: checker(alembic) after recovery: a=ok b=ok c=ok d=ok
+world 13: checker(alembic) before recovery: app.db=20480 app.db-journal=4616 
+world 13: checker(alembic) after recovery: a=ok b=ok c=ok d=ok
+world 14: checker(alembic) before recovery: app.db=20480 app.db-journal=4616 
+world 14: checker(alembic) after recovery: a=ok b=ok c=ok d=ok
+world 15: checker(alembic) before recovery: app.db=20480 
+world 15: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 16: checker(alembic) before recovery: app.db=20480 app.db-journal=0 
+world 16: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 17: checker(alembic) before recovery: app.db=20480 app.db-journal=512 
+world 17: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 18: checker(alembic) before recovery: app.db=20480 app.db-journal=516 
+world 18: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 19: checker(alembic) before recovery: app.db=20480 app.db-journal=4612 
+world 19: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 20: checker(alembic) before recovery: app.db=20480 app.db-journal=4616 
+world 20: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 21: checker(alembic) before recovery: app.db=20480 app.db-journal=4620 
+world 21: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 22: checker(alembic) before recovery: app.db=20480 app.db-journal=8716 
+world 22: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 23: checker(alembic) before recovery: app.db=20480 app.db-journal=8720 
+world 23: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 24: checker(alembic) before recovery: app.db=20480 app.db-journal=8724 
+world 24: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 25: checker(alembic) before recovery: app.db=20480 app.db-journal=12820 
+world 25: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 26: checker(alembic) before recovery: app.db=20480 app.db-journal=12824 
+world 26: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 27: checker(alembic) before recovery: app.db=20480 app.db-journal=12828 
+world 27: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 28: checker(alembic) before recovery: app.db=20480 app.db-journal=16924 
+world 28: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 29: checker(alembic) before recovery: app.db=20480 app.db-journal=16928 
+world 29: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 30: checker(alembic) before recovery: app.db=20480 app.db-journal=16932 
+world 30: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 31: checker(alembic) before recovery: app.db=20480 app.db-journal=21028 
+world 31: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 32: checker(alembic) before recovery: app.db=20480 app.db-journal=21032 
+world 32: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 33: checker(alembic) before recovery: app.db=20480 app.db-journal=21032 
+world 33: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 34: checker(alembic) before recovery: app.db=20480 app.db-journal=21032 
+world 34: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 35: checker(alembic) before recovery: app.db=20480 app.db-journal=21032 
+world 35: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 36: checker(alembic) before recovery: app.db=20480 app.db-journal=21032 
+world 36: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 37: checker(alembic) before recovery: app.db=20480 app.db-journal=21032 
+world 37: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 38: checker(alembic) before recovery: app.db=20480 app.db-journal=21032 
+world 38: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 39: checker(alembic) before recovery: app.db=20480 app.db-journal=21032 
+world 39: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 40: checker(alembic) before recovery: app.db=20480 app.db-journal=21032 
+world 40: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 41: checker(alembic) before recovery: app.db=20480 app.db-journal=21032 
+world 41: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+world 42: checker(alembic) before recovery: app.db=20480 app.db-journal=21032 
+world 42: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+baseline: checker(alembic) before recovery: app.db=20480 
+baseline: checker(alembic) after recovery: a=ok b=ok c=ok d=ok
+FAIL  28 of 43 explored worlds violated an invariant
+
+invariant   the checker (L2)
+earliest    crash point 15 of 42
+            after  unlink(/s/al/app.db-journal)
+            before open(/s/al/app.db-journal)
+path        (named by the checker, not by path)
+observed    the checker exited non-zero after restart
+cwd         /  (none declared: Sideeye's own)
+apparatus   env:PYTHONDONTWRITEBYTECODE=1
+
+explored    43 worlds (crash points 42 + 1 baseline)
+expected    exit 0
+atomicity   0 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: app.db, app.db-journal)
+oracle      agreed on 42 operations (6271 syscall lines examined, 267 in scope of the judged state), witness strace
+metadata    2 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchown x2. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 43 world(s)
+l1          no marker configured
+case        /out/alembic/work-explore/cases/000001.json
+replay      sideeye replay /out/alembic/work-explore/cases/000001.json --shim /opt/se/sideeye-v1.12.0-aarch64-linux/libsideeye_shim.so
+evidence    sideeye evidence /out/alembic/work-explore/evidence/000001.json
+processes   single process
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+
+reproduce   (cd / && unset SIDEEYE_KILL_GROUP && : > /out/alembic/work-explore/trace-repro.bin && SIDEEYE_STATE_DIR=/s/al SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/alembic/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.12.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=15 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'python3' -m alembic -c /s/al-aux/proj/alembic.ini upgrade head </dev/null)
+sideeye: json sha256=af7e6d69adc5afdd3127ea0c0275ed899f9559907a4a6bc701ed625501595850;
