@@ -1211,7 +1211,13 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
         .preflight => &.{ self, "preflight", "--config", path },
     };
     for (base) |a| push(&argv_buf, &argc, a);
-    for ([_][]const u8{ "--state-under", state_root, "--json", temp_json, "--shim", shim, "--work", own }) |a| push(&argv_buf, &argc, a);
+    for ([_][]const u8{ "--state-under", state_root, "--json", temp_json, "--work", own }) |a| push(&argv_buf, &argc, a);
+    // Found by the server, the shim is left for the child to find the same way: named, it
+    // would ride into the replay and next lines as one installed version's path.
+    if (posix.getenv("SIDEEYE_MCP_SHIM") != null) {
+        push(&argv_buf, &argc, "--shim");
+        push(&argv_buf, &argc, shim);
+    }
     if (kind == .preflight and kind.preflight.twice) push(&argv_buf, &argc, "--twice");
     if (oracle) |o| {
         push(&argv_buf, &argc, "--oracle");

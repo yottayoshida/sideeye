@@ -1958,7 +1958,7 @@ fn phasePreflight(run: *Run) void {
             observeAgain(gpa, arena, initial, final, state_abs, state_alt, op_argv, shim, args.oracle, args.work, expect_status, rec_started_ms, args.cwd, args.observe, children_admitted)
         else
             null;
-        preflightReport(arena, n, state, hint, args.cwd, shim, args.oracle, args.expect_status, .{
+        preflightReport(arena, n, state, hint, args.cwd, args.shim, args.oracle, args.expect_status, .{
             .check = args.check != null,
             .marker = args.marker != null,
             .recovery = args.recovery != null,
@@ -2685,12 +2685,7 @@ fn phaseReport(run: *Run) void {
         else
             "";
         const replay_cmd = if (saved_case) |sc|
-            (if (args.observe == .supervised)
-                std.fmt.allocPrint(arena, "sideeye replay {s} --observe supervised{s}", .{ report.shellWord(arena, sc) catch sc, recovery_flags })
-            else if (args.observe == .syscalls)
-                std.fmt.allocPrint(arena, "sideeye replay {s} --observe syscalls --shim {s}{s}", .{ report.shellWord(arena, sc) catch sc, report.shellWord(arena, shim) catch shim, recovery_flags })
-            else
-                std.fmt.allocPrint(arena, "sideeye replay {s} --shim {s}{s}", .{ report.shellWord(arena, sc) catch sc, report.shellWord(arena, shim) catch shim, recovery_flags })) catch "-"
+            report.replayLine(arena, sc, args.observe, args.shim, recovery_flags)
         else if (mode == .replay)
             "(this run is a replay; the case reproduced)"
         else
@@ -2746,12 +2741,7 @@ fn phaseReport(run: *Run) void {
             const creplay = if (same_world)
                 replay_cmd
             else if (csaved) |cc|
-                (if (args.observe == .supervised)
-                    std.fmt.allocPrint(arena, "sideeye replay {s} --observe supervised{s}", .{ report.shellWord(arena, cc) catch cc, recovery_flags })
-                else if (args.observe == .syscalls)
-                    std.fmt.allocPrint(arena, "sideeye replay {s} --observe syscalls --shim {s}{s}", .{ report.shellWord(arena, cc) catch cc, report.shellWord(arena, shim) catch shim, recovery_flags })
-                else
-                    std.fmt.allocPrint(arena, "sideeye replay {s} --shim {s}{s}", .{ report.shellWord(arena, cc) catch cc, report.shellWord(arena, shim) catch shim, recovery_flags })) catch "-"
+                report.replayLine(arena, cc, args.observe, args.shim, recovery_flags)
             else
                 "-";
             const cevidence: []const u8 = if (same_world)
@@ -3172,7 +3162,7 @@ const PreflightHint = union(enum) {
 
 const PreflightDeclared = struct { check: bool, marker: bool, recovery: bool };
 
-fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: PreflightHint, cwd: ?[]const u8, shim: []const u8, oracle_path: ?[]const u8, expect_status: ?u8, declared: PreflightDeclared, repeat: ?Repeat) noreturn {
+fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: PreflightHint, cwd: ?[]const u8, shim_given: ?[]const u8, oracle_path: ?[]const u8, expect_status: ?u8, declared: PreflightDeclared, repeat: ?Repeat) noreturn {
     // Where the comparison and the rewrite of `--twice` happen, named the way the define named
     // it: byte for byte the old wording from the flags, which acceptance pins.
     const state_named: []const u8 = if (hint == .config) "[world] state" else "--state";
@@ -3332,10 +3322,9 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
     }
     // Under `--observe supervised` the next command names the mode, not a shim: there is no shim
     // in that mode, and an explore without the flag counts through one the target cannot load.
-    const observe_part = if (boundary.observe_mode == .supervised)
-        "--observe supervised"
-    else
-        std.fmt.allocPrint(arena, "--shim {s}", .{shim}) catch "--shim <lib>";
+    // A shim the run found itself is left out rather than named: found beside the binary's real
+    // path, it is one installed version's, and a later upgrade deletes it.
+    const observe_part = report.observeFlags(arena, boundary.observe_mode, shim_given);
     switch (hint) {
         .flags => |f| {
             // The hint carries the define that was actually accepted — dropping --setup here
@@ -3361,7 +3350,7 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
                 "";
             say(
                 \\next         sideeye explore --state {s}{s}{s} --operation "{s}"{s} \
-                \\               --check <your-invariant.sh> {s}{s}
+                \\               --check <your-invariant.sh>{s}{s}
                 \\
             , .{ state, setup_part, cwd_part, f.operation, expect_part, observe_part, oracle_part });
         },
@@ -3423,12 +3412,12 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
                 break :blk named;
             };
             if (pastable) |p| say(
-                \\next         sideeye explore --config {s} {s}{s}
+                \\next         sideeye explore --config {s}{s}{s}
                 \\
             , .{ shellSingleQuote(arena, p), observe_part, oracle_part }) else say(
                 \\next         the define was read from {s},
                 \\             {s}: {s}
-                \\             sideeye explore --config <that file> {s}{s}
+                \\             sideeye explore --config <that file>{s}{s}
                 \\
             , .{ textShown(arena, c.path), why, then, observe_part, oracle_part });
         },
@@ -3618,12 +3607,15 @@ fn runDemo(arena: std.mem.Allocator, rest: []const []const u8) noreturn {
         "--setup",     setup_cmd,
         "--operation", op_cmd,
         "--check",     check_cmd,
-        "--shim",      shim,
         "--work",      work_dir,
+        "--shim",      shim,
     };
+    // `--shim` only when the demo was given one: one it found itself would ride into the
+    // report's replay line as one installed version's path.
+    const passed = if (shim_flag != null) exec_argv.len else exec_argv.len - 2;
     var argv_z: [exec_argv.len + 1]?[*:0]const u8 = undefined;
-    for (exec_argv, 0..) |a, j| argv_z[j] = (arena.dupeZ(u8, a) catch setupError(.environment, "out of memory")).ptr;
-    argv_z[exec_argv.len] = null;
+    for (exec_argv[0..passed], 0..) |a, j| argv_z[j] = (arena.dupeZ(u8, a) catch setupError(.environment, "out of memory")).ptr;
+    argv_z[passed] = null;
     _ = posix.execvp(argv_z[0].?, &argv_z);
     setupError(.environment, "could not self-exec the exploration");
 }

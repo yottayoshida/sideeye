@@ -128,6 +128,43 @@ else
     echo "FAIL SIDEEYE_KILL_AT and SIDEEYE_KILL_GROUP left in the shell stopped preflight --twice: exit $rc, wanted 0"
     printf '%s\n' "$o" | sed 's/^/     | /'; fails=$((fails + 1))
 fi
+rm -rf /tmp/acc-827 && mkdir -p /tmp/acc-827/A/bin /tmp/acc-827/A/lib /tmp/acc-827/state
+cp "$SIDEEYE" /tmp/acc-827/A/bin/sideeye && cp "$SHIM" /tmp/acc-827/A/lib/
+o=$(cd /tmp/acc-827 && /tmp/acc-827/A/bin/sideeye explore --state /tmp/acc-827/state --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --work /tmp/acc-827/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+rp=$(echo "$o" | sed -n 's/^replay      //p')
+pf=$(cd /tmp/acc-827 && /tmp/acc-827/A/bin/sideeye preflight --state /tmp/acc-827/state-pf --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --work /tmp/acc-827/work-pf 2>&1)
+pfrc=$?
+pf=$(printf '%s\n' "$pf" | sed -n '/^next/,$p')
+pfg=$("$SIDEEYE" preflight --state /tmp/acc-827/state-pfg --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc-827/work-pfg 2>&1)
+pfgrc=$?
+pfg=$(printf '%s\n' "$pfg" | sed -n '/^next/,$p')
+pfs=$(cd /tmp/acc-827 && /tmp/acc-827/A/bin/sideeye preflight --observe syscalls --state /tmp/acc-827/state-pfs --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --work /tmp/acc-827/work-pfs 2>&1)
+pfsrc=$?
+pfs=$(printf '%s\n' "$pfs" | sed -n '/^next/,$p')
+demo=$(cd /tmp/acc-827 && TMPDIR=/tmp/acc-827 /tmp/acc-827/A/bin/sideeye demo 2>&1 | sed -n 's/^replay      //p')
+mv /tmp/acc-827/A /tmp/acc-827/B
+(cd /tmp/acc-827 && PATH="/tmp/acc-827/B/bin:$PATH" sh -c "$rp") > /tmp/acc-827/rp.txt 2>&1
+rrc=$?
+given=$("$SIDEEYE" explore --state /tmp/acc-827/state-given --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc-827/work-given --oracle /usr/bin/strace 2>&1 | sed -n 's/^replay      //p')
+if [ "$rc" = 1 ] && [ -n "$rp" ] && ! printf '%s' "$rp" | grep -q -- '--shim' && [ "$rrc" = 1 ] \
+    && grep -q "the case reproduced" /tmp/acc-827/rp.txt \
+    && [ "$pfrc" = 0 ] && printf '%s' "$pf" | grep -q '^next         sideeye explore --state' && ! printf '%s' "$pf" | grep -q -- '--shim' \
+    && [ "$pfgrc" = 0 ] && printf '%s' "$pfg" | grep -qF -- "--shim $SHIM" \
+    && [ "$pfsrc" = 0 ] && printf '%s' "$pfs" | grep -q -- '--observe syscalls' \
+    && ! printf '%s' "$pfs" | grep -q -- '--shim' && [ -n "$demo" ] && ! printf '%s' "$demo" | grep -q -- '--shim' \
+    && printf '%s' "$given" | grep -qF -- "--shim $SHIM"; then
+    echo "ok   a run that found its shim names none on its replay and next lines, and the replay line reproduces after the install moved"
+else
+    echo "FAIL a found shim on the printed lines: explore exit $rc, replay after the move exit $rrc, preflight exits $pfrc $pfgrc $pfsrc"
+    printf '%s\n' "$rp" "$pf" "$pfg" "$pfs" "$demo" "$given" | sed 's/^/     | /'
+    sed -n '1,4p' /tmp/acc-827/rp.txt | sed 's/^/     | /'; fails=$((fails + 1))
+fi
 run_case "toy-fixed PASSes"    "$OUT/toy-fixed" 0 "explored worlds satisfied"
 
 # Checked as a relation rather than a fixed number. The first version asserted
