@@ -1386,10 +1386,8 @@ jobs:
         run: bash spike/fsusage/acceptance-local.sh
 
       - name: A run stopped by a signal stops what it started first, fs_usage included (#819)
-        # Paths resolved through `pwd -P`: under `--oracle-fs-usage` a state or work directory reached
-        # through /var's symlink is not one the observer reports (#795), and the recording would not start.
         run: |
-          ir="$(cd "$(mktemp -d)" && pwd -P)/ir"
+          ir="$(mktemp -d)/ir"
           mkdir -p "$ir/state" "$ir/work"
           python3 spike/interrupt-run.py SIGINT "3001.$$" 0 zig-out/bin/sideeye explore --state "$ir/state" --setup "/bin/sleep 3001.$$" --operation /bin/true --work "$ir/work" --allow-unverified
           cc -o "$ir/sleeper" spike/toys/sleeper.c

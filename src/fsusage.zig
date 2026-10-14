@@ -117,6 +117,7 @@ fn isTruncated(middle: []const u8) bool {
     while (it.next()) |tok| {
         if (std.mem.indexOfScalar(u8, tok, '/') == null) continue;
         if (tok[0] == '/') return false; // a whole path: the operand survived
+        if (startsAtDroppedSlashRoot(tok)) return false;
         if (tok[0] == '(' or tok[0] == '[') continue; // an annotation that holds a slash
         return true;
     }
@@ -218,7 +219,16 @@ const at_fdcwd: i64 = -2;
 /// — `[69]/libsideeye_shim.so` is relative to descriptor 69, and `[-2]//Users/x/f` is
 /// `openat(AT_FDCWD, "/Users/x/f")`, the separator fs_usage inserts sitting in front of
 /// an operand that is itself absolute. `mkstemp` on macOS opens through exactly that
-const Operand = struct { dirfd: ?i64, text: []const u8 };
+const Operand = struct { dirfd: ?i64, text: []const u8, slash_dropped: bool = false };
+
+/// Where macOS's `/tmp`, `/var` and `/etc` point. Their links are relative, and fs_usage prints a
+/// lookup that went through one as the link's text followed by the rest, with no leading slash.
+const dropped_slash_roots = [_][]const u8{ "private/tmp/", "private/var/", "private/etc/" };
+
+fn startsAtDroppedSlashRoot(token: []const u8) bool {
+    for (dropped_slash_roots) |root| if (std.mem.startsWith(u8, token, root)) return true;
+    return false;
+}
 
 fn operandOf(middle: []const u8) ?Operand {
     var from: usize = 0;
@@ -234,8 +244,23 @@ fn operandOf(middle: []const u8) ?Operand {
     const slash = std.mem.indexOfScalar(u8, middle, '/') orelse return null;
     // A `/dev/...` in an annotation field is not the operand; annotations are
     // parenthesised or `KEY=value` shaped and never start the tail.
-    if (slash > 0 and middle[slash - 1] != ' ') return null;
+    if (slash > 0 and middle[slash - 1] != ' ') {
+        const start = if (std.mem.lastIndexOfScalar(u8, middle[0..slash], ' ')) |sp| sp + 1 else 0;
+        const tail = std.mem.trim(u8, middle[start..], " \t");
+        // Only these roots, not any slashless operand: a pathname cut on the left is slashless
+        // too. One cut just below `/` or `/System/Volumes/Data` names the same file; one cut at a
+        // `private/tmp/` deeper in a longer path is placed wrongly, which the state's length
+        // check before the run keeps away from the state.
+        if (startsAtDroppedSlashRoot(tail)) return .{ .dirfd = null, .text = tail, .slash_dropped = true };
+        return null;
+    }
     return .{ .dirfd = null, .text = std.mem.trim(u8, middle[slash..], " \t") };
+}
+
+fn absoluteOperand(arena: std.mem.Allocator, op: Operand) !?[]const u8 {
+    if (op.text.len != 0 and op.text[0] == '/') return op.text;
+    if (op.slash_dropped) return try std.fmt.allocPrint(arena, "/{s}", .{op.text});
+    return null;
 }
 
 fn isSignedInt(t: []const u8) bool {
@@ -253,7 +278,7 @@ fn joinPath(arena: std.mem.Allocator, dir: []const u8, rel: []const u8) ![]const
 
 fn pathOf(arena: std.mem.Allocator, middle: []const u8, cwd: []const u8) ?[]const u8 {
     const op = operandOf(middle) orelse return null;
-    if (op.text.len != 0 and op.text[0] == '/') return op.text;
+    if (absoluteOperand(arena, op) catch return null) |abs| return abs;
     if (op.dirfd) |d| {
         if (d == at_fdcwd and cwd.len != 0) return joinPath(arena, cwd, op.text) catch null;
     }
@@ -491,7 +516,9 @@ pub fn capturesPath(text: []const u8, path: []const u8) bool {
         if (raw.len == 0) continue;
         const ln = parseLine(raw) orelse continue;
         const op = operandOf(ln.middle) orelse continue;
-        const p = if (op.text.len != 0 and op.text[0] == '/') op.text else continue;
+        var buf: [contract.max_path + 1]u8 = undefined;
+        var fba = std.heap.FixedBufferAllocator.init(&buf);
+        const p = (absoluteOperand(fba.allocator(), op) catch continue) orelse continue;
         if (samePath(p, path)) return true;
     }
     return false;
@@ -834,8 +861,8 @@ pub fn readWithStd(
         var dir_scope: ?bool = null; // placed through a directory descriptor
         var path_unresolvable = false;
         if (operandOf(ln.middle)) |op| {
-            if (op.text.len != 0 and op.text[0] == '/') {
-                path = op.text;
+            if (try absoluteOperand(arena, op)) |abs| {
+                path = abs;
             } else if (op.dirfd) |d| {
                 if (std.mem.indexOf(u8, op.text, "..") != null) {
                     // `..` can leave the directory the operand is relative to. The table
@@ -1021,6 +1048,36 @@ test "both measured truncation shapes are stumps, and a whole path is not" {
     try testing.expect(isTruncated(real_stump));
     try testing.expect(!isTruncated("F=3        (_WC_T_______)  /Users/i.yoshida/w/state/keep"));
     try testing.expect(!isTruncated("F=3    B=0x5"));
+}
+
+test "an open through macOS's /tmp, /var or /etc link prints slashless and is a whole path, not a stump" {
+    const via_tmp = "F=3        (RWCA__N_F__X___)  private/tmp/platform-measure-ni3YO5/default/trace-record.bin";
+    try testing.expect(!isTruncated(via_tmp));
+    const op = operandOf(via_tmp).?;
+    try testing.expect(op.slash_dropped);
+    try testing.expect(op.dirfd == null);
+    try testing.expectEqualStrings("private/tmp/platform-measure-ni3YO5/default/trace-record.bin", op.text);
+    try testing.expect(!isTruncated("F=5        (_WC_TE__F______)  private/var/folders/36/T/x.log"));
+    try testing.expect(isTruncated("F=3        (_WC_T__________)  private/Users/x/state/sentinel-start"));
+    try testing.expect(operandOf("F=3        (_WC_T__________)  private/Users/x/state/sentinel-start") == null);
+}
+
+test "a capture that reached the trace and the state through /tmp's link names the subject and counts the write" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const text =
+        "10:00:00.000001  open              F=9   (RWCA__N_F__X___)  private/tmp/w/trace.bin               0.000100   subj.111\n" ++
+        "10:00:00.000002  open              F=1   /private/tmp/st/sentinel-a                    0.000100   subj.111\n" ++
+        "10:00:00.000003  open              F=5   (_WC_TE__F______)  private/var/folders/T/tool.log   0.000100   subj.111\n" ++
+        "10:00:00.000004  write             F=5   B=0x7                                 0.000100   subj.111\n" ++
+        "10:00:00.000005  open              F=6   (_WC_T__________)  private/tmp/st/a.txt              0.000100   subj.111\n" ++
+        "10:00:00.000006  write             F=6   B=0x4                                 0.000100   subj.111\n" ++
+        "10:00:00.000007  open              F=2   /private/tmp/st/sentinel-b                    0.000100   subj.111\n";
+    const r = try read(a, text, "/private/tmp/st", "/tmp/st", "/private/tmp/w/trace.bin", "/private/tmp/st/sentinel-a", "/private/tmp/st/sentinel-b", "", &.{}, &.{});
+    try testing.expect(r.defect == null);
+    try testing.expectEqual(@as(usize, 2), r.parsed.classes.items.len);
+    try testing.expect(capturesPath(text, "/private/tmp/w/trace.bin"));
 }
 
 test "fd and operand come out of the middle, in both spellings" {
