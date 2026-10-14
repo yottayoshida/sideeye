@@ -102,6 +102,10 @@ change.
 - Every tracked `.zig` file is what `zig fmt` leaves it, and CI fails a pull request, or a
   push to `main`, where one is not (`spike/check-zig-fmt.sh`, the `fmt` job; #695). Run
   `zig fmt $(git ls-files '*.zig')` before pushing.
+- **A new job in `ci.yml` goes into the `required` job's `needs:` in the same pull request.**
+  Branch protection requires `required` (with `crash-consistency`, `linux` and `macos`), not a
+  list of job names, and `required` fails when a job of the workflow is missing from its list
+  (`spike/check-ci-required.py`, ADR 0131).
 - English for everything committed.
 
 ## Blind-hunt campaigns: the apparatus rules

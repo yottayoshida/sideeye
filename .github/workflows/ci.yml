@@ -2062,3 +2062,19 @@ jobs:
         run: sh spike/mcp-acceptance.sh
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
+
+  # Not a list of job names in the branch protection: that list went stale (`fmt`,
+  # `agent-skills`, `zig-ahead-judge` missing), and a job added here was optional until someone
+  # edited the setting.
+  required:
+    if: always()
+    needs: [linux, macos, timew-regression, classification, veto-rate, upstream-ledger, outcome-funnel, changelog-block, agent-skills, ledger-prose, main-shape, fmt, adr-numbering, action-pins, zig-ahead-judge, criterion-3-status, onboarding-clock, authoring-cost, linux-aarch64-releasesafe]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: The check proves it can go red
+        run: python3 spike/check-ci-required.py --selftest
+      - name: Every other job here is needed by this one, and every one succeeded
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: python3 spike/check-ci-required.py .github/workflows/ci.yml
