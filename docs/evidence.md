@@ -20,7 +20,7 @@ command that renders it, ready to paste (#709); `--json` carries the bundle's pa
 
 ```
 case        /tmp/sideeye-work/cases/000001.json
-replay      sideeye replay /tmp/sideeye-work/cases/000001.json --shim …
+replay      sideeye replay /tmp/sideeye-work/cases/000001.json
 evidence    sideeye evidence /tmp/sideeye-work/evidence/000001.json
 ```
 

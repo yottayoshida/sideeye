@@ -334,6 +334,20 @@ if s.get("apparatus_unchecked") != ["note:the flag form and the key form are one
 if "\napparatus: env:TOY_PIN=1, note:the flag form and the key form are one grammar" not in r["content"][0]["text"]: sys.exit(r["content"][0]["text"][:300])
 PY
 
+echo "=========== mcp 6c: a shim the server found is not named on the replay line ==========="
+call="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/sideeye.toml\"}}}"
+printf '%s' "$call" | env -u SIDEEYE_MCP_SHIM "$SIDEEYE" mcp >/tmp/mcp.out 2>/tmp/mcp.err
+cp /tmp/mcp.out /tmp/mcp-found.out
+drive "$call"
+python3 - "$SHIM" <<'FOUND' && pass "with no SIDEEYE_MCP_SHIM the replay line names no shim; with it, it names that one" || fail "the replay line named a shim the server found, or dropped one it was given"
+import json, sys
+found = json.load(open("/tmp/mcp-found.out"))["result"]["structuredContent"]
+given = json.load(open("/tmp/mcp.out"))["result"]["structuredContent"]
+assert found["verdict"] == "FAIL" and given["verdict"] == "FAIL", (found.get("verdict"), given.get("verdict"))
+assert "--shim" not in found["replay"], found["replay"]
+assert ("--shim " + sys.argv[1]) in given["replay"], given["replay"]
+FOUND
+
 echo "=========== mcp 7: SIDEEYE_MCP_CHILD_ENV passes named vars through — and only those ==========="
 # #68: a target that locates its state through an environment variable (TIMEWARRIORDB,
 # WATSON_DIR) never learns where it is, because the child env is PATH only. The fix is

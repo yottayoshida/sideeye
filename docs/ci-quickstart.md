@@ -127,7 +127,7 @@ is where `oracle_verified` is asserted. ADR 0080 has the three reasons.
 | Exit | Verdict | In CI |
 |---|---|---|
 | 0 | PASS | Green. Read `not_tested` in the report before celebrating — it lists what this run does not claim. |
-| 1 | FAIL | Fail the job. The report's `earliest` object is the counterexample; `replay` is the exact command that reproduces it (shim path included), and the saved case replays with `sideeye replay <case> --shim <lib> [--fresh-state]`. Hand the report to an agent — that loop has been closed end to end, twice (DESIGN §17). |
+| 1 | FAIL | Fail the job. The report's `earliest` object is the counterexample; `replay` is the exact command that reproduces it, and the saved case replays with `sideeye replay <case> [--fresh-state]`. Neither names a shim here: a run that found its own leaves it for the `sideeye` the line runs with to find beside itself (#827). Hand the report to an agent — that loop has been closed end to end, twice (DESIGN §17). |
 | 2 | UNKNOWN | **Fail the job by default.** Sideeye refused to judge and `unknown_reason` says why (see [report-schema.md](report-schema.md)). Treating UNKNOWN as green is how a target quietly leaves the tested set. |
 | 3 | SETUP_ERROR | Fail the job; the define itself did not run. |
 
