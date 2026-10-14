@@ -769,6 +769,10 @@ fn phaseDefine(run: *Run) void {
         "declared; preflight runs no recovery"
     else
         "configured; not run (no world was saved as a FAIL)";
+    if (args.leave_crash_state) {
+        report.crash_state_left = false;
+        report.crash_state_note = "not left: the run ended before a verdict";
+    }
 
     // Still before setup runs, so the refusal is a configuration error; the state directory
     // this run made above is undone, as the recovery refusals above undo it. See the flag's
@@ -880,6 +884,25 @@ fn phaseDefine(run: *Run) void {
             setupError(.define_invalid, "the case file lies inside the state directory this replay empties, so replaying it would delete the case (and any sibling case beside it); point define.state at a directory that does not contain the case");
         }
     }
+
+    // Refused when unresolvable rather than skipped: the report is written after the rewrite,
+    // into a directory the crash state may hold although the define's state did not.
+    if (args.leave_crash_state) if (args.json) |jp| {
+        var jdir_z_buf: [contract.max_path]u8 = undefined;
+        const jdir_z = std.fmt.bufPrintZ(&jdir_z_buf, "{s}", .{std.fs.path.dirname(jp) orelse "."}) catch {
+            undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
+            setupError(.define_invalid, "--json's directory is too long");
+        };
+        var jdir_real: [contract.max_path]u8 = undefined;
+        const jdir_abs = posix.realpath(jdir_z.ptr, &jdir_real) orelse {
+            undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
+            setupError(.define_invalid, "with --leave-crash-state, --json's directory must already exist: it is checked against the state directory the crash state is written to");
+        };
+        if (contract.isInsideDir(std.mem.span(jdir_abs), state_abs)) {
+            undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
+            setupError(.define_invalid, "--json lies inside the state directory --leave-crash-state rewrites to the crash state; the report would be an entry the crash never left");
+        }
+    };
 
     // Strict inside, not equal: a case naming the range itself would make the
     // operator's whole workspace the sacrificial directory. Both sides are compared
@@ -2115,6 +2138,7 @@ fn phaseExploration(run: *Run) void {
     const world_stdout = std.fmt.bufPrint(&world_stdout_buf, "{s}/stdout-world.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
 
     const order = prefix.plan(arena, trace, n, initial, final, state_abs, state_alt) catch setupError(.environment, "out of memory");
+    var leave_snap: ?engine.Snapshot = null;
     var k: u32 = 1;
     while (k <= n + 1) : (k += 1) {
         // A replay explores exactly the case's world plus the baseline; every trust
@@ -2301,8 +2325,8 @@ fn phaseExploration(run: *Run) void {
         };
 
         var crashed = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot a crashed state");
-        // Kept past this world only when it becomes a saved exhibit and a recovery was declared
-        // (#606); the recovery runs after the loop, and this is the only copy of the crash state.
+        // Kept past this world when it becomes a saved exhibit and a recovery was declared (#606),
+        // or when it is the case's world under --leave-crash-state; this is the only copy.
         var crashed_kept = false;
         defer if (!crashed_kept) crashed.deinit();
 
@@ -2515,6 +2539,12 @@ fn phaseExploration(run: *Run) void {
                 }
             }
         }
+        // Here, after every refusal this world can raise: kept earlier, a world refused for a
+        // FIFO or a still-running writer would leave a state the run never judged.
+        if (args.leave_crash_state and only_k != null and k == only_k.?) {
+            leave_snap = crashed;
+            crashed_kept = true;
+        }
     }
 
     if (report.l1_configured) {
@@ -2573,6 +2603,22 @@ fn phaseExploration(run: *Run) void {
         if (outcome.checker) |l| report.recovery_checker_earliest = .{ .result = l.result, .ms = l.ms, .command_exit = l.command_exit };
         report.recovery_note = recovery.note(arena, outcome, report.violations);
     };
+
+    // Not before the recovery: it rebuilds crash states of its own in this directory and runs
+    // a command over them, and the directory left would be what the recovery made.
+    // Not through `refuse.restoreFailure`: a FAIL must not become an UNKNOWN over this.
+    if (leave_snap) |snap| leave: {
+        if (args.stop_when_orphaned and posix.getppid() != startup_ppid) {
+            report.crash_state_note = "not left: the process that launched this replay is gone";
+            break :leave;
+        }
+        engine.restore(snap, state_abs) catch |e| {
+            report.crash_state_note = std.fmt.allocPrint(arena, "not left: rewriting the state directory to the crash state failed ({s}); it may hold part of each", .{@errorName(e)}) catch "not left: rewriting the state directory to the crash state failed";
+            break :leave;
+        };
+        report.crash_state_left = true;
+        report.crash_state_note = "left in the state directory: the kill's state, before the checker ran, whatever the verdict";
+    }
 }
 
 fn phaseReport(run: *Run) void {

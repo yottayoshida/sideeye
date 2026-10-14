@@ -48,6 +48,7 @@ pub const Args = struct {
     observe: contract.ObserveMode = .wrappers,
     observe_named: bool = false,
     fresh_state: bool = false,
+    leave_crash_state: bool = false,
     twice: bool = false,
     /// The per-world wall-clock budget in seconds (#263). Null — the default — means
     /// no budget anywhere: the flag is opt-in, and turning it on is the operator's
@@ -76,7 +77,7 @@ const usage_fmt =
     \\  sideeye preflight --config <sideeye.toml> [--shim <lib>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice] [--state-under <dir>]
     \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--recovery <cmd> --recovery-check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--state-under <dir>]
     \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--state-under <dir>]
-    \\  sideeye replay <case.json> [--shim <lib>] [--recovery <cmd> --recovery-check <cmd>] [--fresh-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+    \\  sideeye replay <case.json> [--shim <lib>] [--recovery <cmd> --recovery-check <cmd>] [--fresh-state] [--leave-crash-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye evidence <case.json>
     \\  sideeye mcp
     \\  sideeye help [<command>]
@@ -193,6 +194,10 @@ const usage_fmt =
     \\               pristine directory themselves. The MCP server passes it on
     \\               every replay: it lives for the whole client session, and the
     \\               second replay used to die in the leftovers of the first
+    \\  --leave-crash-state
+    \\               (replay only) end with the state directory holding what the kill
+    \\               left at the case's crash point, before the checker ran: names,
+    \\               kinds, contents and permission bits, whatever the verdict
     \\  --state-under
     \\               (explore, replay, preflight) refuse before setup a state
     \\               directory not strictly inside this one: each rebuilds the state a
@@ -1411,6 +1416,12 @@ pub fn parse(argv: []const []const u8) Parsed {
             // Said the moment the flag is read, so an exit anywhere after this line —
             // a later parse error included — reports the oracle as named (#352).
             report.noteOracle(.{ .named = .fs_usage });
+            i += 1;
+            continue;
+        }
+        if (std.mem.eql(u8, argv[i], "--leave-crash-state")) {
+            if (mode != .replay) setupError(.define_invalid, "--leave-crash-state applies to replay only: it leaves one case's crash state, and explore has saved no case until it ends");
+            args.leave_crash_state = true;
             i += 1;
             continue;
         }

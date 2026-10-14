@@ -279,6 +279,9 @@ pub const RecoveryResultJson = struct {
 pub var recovery_earliest: ?RecoveryResultJson = null;
 pub var recovery_checker_earliest: ?RecoveryResultJson = null;
 
+pub var crash_state_left: ?bool = null;
+pub var crash_state_note: ?[]const u8 = null;
+
 fn apparatusHasUnchecked() bool {
     for (apparatus_declared) |e| if (config.apparatusUnchecked(e)) return true;
     return false;
@@ -825,6 +828,10 @@ pub fn sayRecovery(comptime fmt: []const u8) void {
     if (recovery_note) |rn| say(fmt, .{rn});
 }
 
+pub fn sayCrashState(comptime fmt: []const u8) void {
+    if (crash_state_note) |cn| say(fmt, .{cn});
+}
+
 /// so. Defanged: a declared `cwd` arrives from a config or a case file, outside the trust
 /// boundary, and a control byte in a directory name would otherwise forge a report line.
 pub fn sayCwd(arena: std.mem.Allocator, comptime fmt: []const u8) void {
@@ -1001,6 +1008,7 @@ pub fn sayAccount(arena: std.mem.Allocator, of: AccountOf, points: usize) void {
     sayApparatus(arena, "apparatus   {s}\n");
     sayWarnings("warning     {s}\n");
     sayRecovery("recovery    {s}\n");
+    sayCrashState("crash state {s}\n");
     say("\n", .{});
     if (of != .unknown) {
         say("explored    {d} worlds (crash points {d} + 1 baseline)\n", .{ explored, points });
@@ -1583,6 +1591,13 @@ fn buildJson(
     if (recovery_note) |rn| {
         try w.appendSlice(arena, ",\n  \"recovery\": ");
         try jsonString(w, arena, rn);
+    }
+    if (crash_state_left) |left| {
+        try w.appendSlice(arena, if (left) ",\n  \"crash_state_left\": true" else ",\n  \"crash_state_left\": false");
+    }
+    if (crash_state_note) |cn| {
+        try w.appendSlice(arena, ",\n  \"crash_state_note\": ");
+        try jsonString(w, arena, cn);
     }
     try w.appendSlice(arena, ",\n  \"processes\": ");
     try jsonString(w, arena, boundary.boundaryAccount());
