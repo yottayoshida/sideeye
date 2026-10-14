@@ -281,6 +281,15 @@ stay the same.
    and this is the state before any. Ruled on its own merits, as the paragraphs above require.
    Its ledger row is a sweep's job, as the notes above give; `contract_version` does not move.
 
+   **Two plain additive fields, 2026-10-14 (ADR 0129).** `crash_state_left` (boolean) and
+   `crash_state_note` (string) appear only on a `replay` given `--leave-crash-state`, which ends
+   the run with the state directory rewritten to the case's crash state; a replay without the
+   flag carries neither (acceptance's control leg), and every other mode refuses the flag before
+   it runs. Neither is a closed
+   set, no exit code moves — a rewrite that fails is reported beside the verdict, never in its
+   place — and a saved case replays as it did, so the allowance covers both with no ruling of
+   their own; `contract_version` does not move.
+
 3. **Exit codes.** When a run produces a verdict, that verdict's exit code is
    fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is never 0.
    The promise runs in that direction. **Exit 0 is not reserved to PASS**: it

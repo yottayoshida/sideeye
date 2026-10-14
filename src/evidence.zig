@@ -574,6 +574,7 @@ pub fn render(arena: std.mem.Allocator, ev: Evidence) error{OutOfMemory}![]const
     try w.appendSlice(arena, asText(arena, ev.replay));
     try w.appendSlice(arena, "\n```\n\n");
     try w.print(arena, "Saved case: `{s}`\n\n", .{asText(arena, ev.case)});
+    try w.appendSlice(arena, "With `--leave-crash-state` added, a replay whose report says `crash_state_left: true` ends with the state directory holding what that replay's kill left, before the checker ran.\n\n");
 
     try w.appendSlice(arena, "## Recovery\n\n");
     if (std.mem.eql(u8, ev.recovery.result, "not_configured"))

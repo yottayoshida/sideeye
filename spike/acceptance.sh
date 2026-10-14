@@ -2450,6 +2450,135 @@ else
     fails=$((fails + 1))
 fi
 
+# ---- replay --leave-crash-state: the state directory left is the crash state ----
+# The checker rewrites the state after judging it, or the control could not tell the state the
+# replay ends with from the crash state. It accepts exactly the initial and completed contents:
+# one judging only "key.json is missing" would pass the falsify probe's junk and be refused
+# checker_not_falsified.
+lcs=/tmp/acc-lcs
+rm -rf "$lcs" && mkdir -p "$lcs"
+cat > "$lcs/setup.sh" <<EOF
+#!/bin/sh
+set -e
+"$OUT/toy-bug" init
+mkdir "\$SIDEEYE_STATE_DIR/sub"
+echo kept > "\$SIDEEYE_STATE_DIR/sub/f"
+chmod 600 "\$SIDEEYE_STATE_DIR/sub/f"
+chmod 750 "\$SIDEEYE_STATE_DIR/sub"
+EOF
+cat > "$lcs/check.sh" <<'EOF'
+#!/bin/sh
+d=$SIDEEYE_STATE_DIR
+c=$(cat "$d/key.json" 2>/dev/null)
+case "$c" in key=1|key=2) ok=0 ;; *) ok=1 ;; esac
+printf 'key=2\n' > "$d/key.json"
+rm -f "$d/key.json.tmp"
+chmod 755 "$d/sub" 2>/dev/null
+chmod 644 "$d/sub/f" 2>/dev/null
+# LCS_JAM: only the baseline world shows the completed contents, so only the replay's final
+# rewrite meets a subdirectory it cannot empty.
+if [ -n "${LCS_JAM:-}" ] && [ "$c" = key=2 ]; then chmod 000 "$d/sub"; fi
+exit $ok
+EOF
+cat > "$lcs/recover.sh" <<'EOF'
+#!/bin/sh
+d=$SIDEEYE_STATE_DIR
+[ -f "$d/key.json" ] || [ ! -f "$d/key.json.tmp" ] || mv "$d/key.json.tmp" "$d/key.json"
+EOF
+cat > "$lcs/rcheck.sh" <<'EOF'
+#!/bin/sh
+case "$(cat "$SIDEEYE_STATE_DIR/key.json" 2>/dev/null)" in key=1|key=2) exit 0 ;; *) exit 1 ;; esac
+EOF
+chmod 755 "$lcs/setup.sh" "$lcs/check.sh" "$lcs/recover.sh" "$lcs/rcheck.sh"
+TOY="$OUT/toy-bug" "$SIDEEYE" explore --state "$lcs/state" --setup "$lcs/setup.sh" --operation "$OUT/toy-bug rotate" \
+    --check "$lcs/check.sh" --shim "$SHIM" --work "$lcs/work" --oracle /usr/bin/strace > "$lcs/explore.txt" 2>&1
+lcs_case=$(ls "$lcs"/work/cases/*.json 2>/dev/null | head -1)
+lcs_state() { # key.json | key.json.tmp | sub mode | sub/f mode
+    printf '%s|%s|%s|%s' "$(cat "$lcs/state/key.json" 2>/dev/null || echo absent)" \
+        "$(cat "$lcs/state/key.json.tmp" 2>/dev/null || echo absent)" \
+        "$(stat -c %a "$lcs/state/sub" 2>/dev/null)" "$(stat -c %a "$lcs/state/sub/f" 2>/dev/null)"
+}
+lcs_json() { python3 -c 'import json,sys
+d=json.load(open(sys.argv[1])); print("%s|%s|%s" % (d.get("verdict"), d.get("crash_state_left"), d.get("crash_state_note")))' "$1" 2>/dev/null; }
+if [ -z "$lcs_case" ]; then
+    echo "FAIL --leave-crash-state: the toy explore saved no case"
+    sed 's/^/     | /' "$lcs/explore.txt" | head -6
+    fails=$((fails + 1))
+else
+    TOY="$OUT/toy-bug" "$SIDEEYE" replay "$lcs_case" --fresh-state --shim "$SHIM" --oracle /usr/bin/strace \
+        --work "$lcs/w-plain" --json "$lcs/plain.json" > "$lcs/plain.txt" 2>&1; rc=$?
+    got=$(lcs_state)
+    if [ "$rc" = 1 ] && [ "$got" = "key=2|absent|755|644" ] && [ "$(lcs_json "$lcs/plain.json")" = "FAIL|None|None" ]; then
+        echo "ok   --leave-crash-state control: without it the replay leaves the baseline's state after its checker, and the report has no crash-state field"
+    else
+        echo "FAIL --leave-crash-state control: exit $rc, state $got, report $(lcs_json "$lcs/plain.json")"
+        fails=$((fails + 1))
+    fi
+    TOY="$OUT/toy-bug" "$SIDEEYE" replay "$lcs_case" --fresh-state --leave-crash-state --shim "$SHIM" --oracle /usr/bin/strace \
+        --work "$lcs/w-leave" --json "$lcs/leave.json" > "$lcs/leave.txt" 2>&1; rc=$?
+    got=$(lcs_state)
+    if [ "$rc" = 1 ] && [ "$got" = "absent|key=2|750|600" ] && lcs_json "$lcs/leave.json" | grep -q '^FAIL|True|left in the state directory' \
+        && grep -q '^crash state left in the state directory' "$lcs/leave.txt"; then
+        echo "ok   --leave-crash-state: the state left is the crash state — key.json gone, key.json.tmp whole, the seeded 750/600 modes — before the checker's rewrite"
+    else
+        echo "FAIL --leave-crash-state: exit $rc, state $got (wanted absent|key=2|750|600), report $(lcs_json "$lcs/leave.json")"
+        sed 's/^/     | /' "$lcs/leave.txt" | head -8
+        fails=$((fails + 1))
+    fi
+    # Root empties a mode-000 directory anyway, so the unemptiable subdirectory exists only
+    # for an ordinary user (CI's runner).
+    if [ "$(id -u)" = 0 ]; then
+        echo "     NOT MEASURED: --leave-crash-state with an unemptiable subdirectory — running as root, which empties it"
+    else
+        LCS_JAM=1 TOY="$OUT/toy-bug" "$SIDEEYE" replay "$lcs_case" --fresh-state --leave-crash-state --shim "$SHIM" --oracle /usr/bin/strace \
+            --work "$lcs/w-jam" --json "$lcs/jam.json" > "$lcs/jam.txt" 2>&1; rc=$?
+        chmod 755 "$lcs/state/sub" 2>/dev/null
+        if [ "$rc" = 1 ] && lcs_json "$lcs/jam.json" | grep -q '^FAIL|False|not left: rewriting the state directory to the crash state failed'; then
+            echo "ok   --leave-crash-state: a rewrite that fails is reported beside the FAIL, which stays a FAIL"
+        else
+            echo "FAIL --leave-crash-state with an unemptiable subdirectory: exit $rc (wanted 1), report $(lcs_json "$lcs/jam.json")"
+            sed 's/^/     | /' "$lcs/jam.txt" | head -8
+            fails=$((fails + 1))
+        fi
+    fi
+    TOY="$OUT/toy-bug" "$SIDEEYE" replay "$lcs_case" --fresh-state --recovery "$lcs/recover.sh" --recovery-check "$lcs/rcheck.sh" \
+        --shim "$SHIM" --oracle /usr/bin/strace --work "$lcs/w-rec0" --json "$lcs/rec0.json" > /dev/null 2>&1
+    TOY="$OUT/toy-bug" "$SIDEEYE" replay "$lcs_case" --fresh-state --leave-crash-state --recovery "$lcs/recover.sh" --recovery-check "$lcs/rcheck.sh" \
+        --shim "$SHIM" --oracle /usr/bin/strace --work "$lcs/w-rec" --json "$lcs/rec.json" > "$lcs/rec.txt" 2>&1; rc=$?
+    got=$(lcs_state)
+    r0=$(python3 -c 'import json,sys; print((json.load(open(sys.argv[1]))["earliest"].get("recovery") or {}).get("result"))' "$lcs/rec0.json" 2>/dev/null)
+    r1=$(python3 -c 'import json,sys; print((json.load(open(sys.argv[1]))["earliest"].get("recovery") or {}).get("result"))' "$lcs/rec.json" 2>/dev/null)
+    if [ "$rc" = 1 ] && [ "$got" = "absent|key=2|750|600" ] && [ -n "$r0" ] && [ "$r0" != None ] && [ "$r0" = "$r1" ]; then
+        echo "ok   --leave-crash-state with a recovery: the recovery's result is the one it has without the flag, and the state is rewritten after it"
+    else
+        echo "FAIL --leave-crash-state with a recovery: exit $rc, state $got, recovery $r1 against $r0 without the flag"
+        sed 's/^/     | /' "$lcs/rec.txt" | head -8
+        fails=$((fails + 1))
+    fi
+    # A report directory the crash state holds but the state at define time does not would
+    # escape a check that only resolves what exists, so both shapes are refused.
+    for lcs_j in "$lcs/state/r.json|--json lies inside the state directory" "$lcs/state/later/r.json|must already exist"; do
+        lcs_jp=${lcs_j%%|*}; lcs_jm=${lcs_j#*|}
+        o=$("$SIDEEYE" replay "$lcs_case" --fresh-state --leave-crash-state --shim "$SHIM" --oracle /usr/bin/strace \
+            --work "$lcs/w-j" --json "$lcs_jp" 2>&1); rc=$?
+        if [ "$rc" = 3 ] && printf '%s\n' "$o" | grep -qF -- "$lcs_jm"; then
+            echo "ok   --leave-crash-state with --json $lcs_jp is SETUP ERROR"
+        else
+            echo "FAIL --leave-crash-state with --json $lcs_jp: exit $rc, wanted 3 saying \"$lcs_jm\""
+            printf '%s\n' "$o" | sed 's/^/     | /' | head -4
+            fails=$((fails + 1))
+        fi
+    done
+fi
+o=$("$SIDEEYE" explore --state "$lcs/ex-state" --operation "$OUT/toy-bug rotate" --leave-crash-state 2>&1); rc=$?
+if [ "$rc" = 3 ] && printf '%s\n' "$o" | grep -qF -- "--leave-crash-state applies to replay only"; then
+    echo "ok   --leave-crash-state on explore is SETUP ERROR"
+else
+    echo "FAIL --leave-crash-state on explore: exit $rc, wanted 3"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
 # ---- #700 (ADR 0093): a toml with no cwd, run from elsewhere, is told which line to add ----
 # A toml resolves its own paths and argv[0] against its directory, and every other argument
 # against the directory the commands run in — Sideeye's own when no `cwd` is declared. Each
@@ -6463,7 +6592,7 @@ fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
     "$ROOT/src/report.zig" \
     "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/warnings.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/children.json" \
-    "$SD/preflight-accepted.json" "$SD/preflight-split.json"; then
+    "$SD/preflight-accepted.json" "$SD/preflight-split.json" /tmp/acc-lcs/leave.json; then
     echo "ok   the schema page, the generated reports and preflight documents, the contract enum and the JSON writers' shared values agree"
 else
     echo "FAIL the report schema page drifted from the reports (or the reports from the page)"
