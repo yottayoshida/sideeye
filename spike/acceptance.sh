@@ -7703,17 +7703,17 @@ fails=$((fails + sc_fails))
 [ "$sc_fails" = "0" ] && echo "ok   check 2sc: the scratch declaration is honoured by both judges, the case and the preflight"
 
 echo "=========== check 2ap: a define names its apparatus, and the engine checks it reached the child (#257, ADR 0041) ==========="
-# `[define] apparatus` / `--apparatus`: after setup, before the first snapshot, every entry
-# the engine can check is checked against the environment the operation inherits, and a
-# missing one is a SETUP ERROR naming it. The legs: an env device unset, set to the wrong
+# `[define] apparatus` / `--apparatus`: before the first snapshot — the env: entries before
+# setup, the rest after it — every entry the engine can check is checked against the
+# environment the operation inherits, and a missing one is a SETUP ERROR naming it. The legs: an env device unset, set to the wrong
 # value, set right (the report carries the list, and a note is listed unchecked); a
 # pythonpath device under the second entry and under none; a preload device found in
 # LD_PRELOAD — which the engine replaces for every child, so it does not reach the
 # operation — and not in /etc/ld.so.preload. The positive preload leg is NOT here:
 # /etc/ld.so.preload is one file for the whole runner and every other leg would inherit
 # it; the content predicate is a unit test and the arrival was measured by hand (PR).
-# Seen red by removing the checkApparatus call: the unset, wrong-value and absent legs
-# then run to a verdict instead of exit 3.
+# Seen red by removing a checkApparatus call: without the one before the setup the unset and
+# wrong-value legs, without the one after it the absent legs, run to a verdict, not exit 3.
 ap_fails=0
 # ap_leg <label> <want-rc> <fragment> [NAME=VALUE...] [-- <extra explore flags...>]: a fresh
 # state and work directory, the toy define, the strace oracle. The assignments go to the
@@ -7775,6 +7775,75 @@ fi
 # command runs, with the parser's words.
 ap_leg "an entry of an unknown kind is refused by the flag with the parser's words" 3 \
     "kind is one of env, preload, pythonpath, note" -- --apparatus seccomp:enosys.json
+# An env: entry is checked before the setup runs: a setup run without the variable
+# writes wherever the tool falls back to — on a developer's machine, the real data. This
+# setup leaves a marker outside the state and generates a sitecustomize.py, then inits the
+# toy. The first leg is the control: with the variable set the marker appears, so its
+# absence in the refused legs is a setup that never ran, not a marker that never lands.
+# Seen red by moving the env: check back after the setup: the refused legs find the marker.
+m786=/tmp/acc/marker786
+printf '#!/bin/sh\n: > %s\nmkdir -p /tmp/acc/pp786 && : > /tmp/acc/pp786/sitecustomize.py\nexec %s init\n' \
+    "$m786" "$OUT/toy-fixed" > /tmp/acc/setup786.sh && chmod +x /tmp/acc/setup786.sh
+# ap786_leg <label> <command> <want-rc> <fragment> <marker present|absent> [NAME=VALUE...] -- <flags...>
+ap786_leg() {
+    _l=$1; _c=$2; _w=$3; _f=$4; _m=$5; shift 5
+    _e=""
+    while [ $# -gt 0 ] && [ "$1" != "--" ]; do _e="$_e $1"; shift; done
+    [ "${1-}" = "--" ] && shift
+    rm -rf /tmp/acc/state /tmp/acc/work /tmp/acc/pp786 && rm -f "$m786" && mkdir -p /tmp/acc/state
+    if [ -e "$m786" ] || [ -e /tmp/acc/pp786 ]; then
+        echo "FAIL $_l: the marker or the generated directory survived the reset"; ap_fails=$((ap_fails + 1)); return
+    fi
+    # shellcheck disable=SC2086
+    o=$(env $_e "$SIDEEYE" "$_c" "$@" --state /tmp/acc/state --setup /tmp/acc/setup786.sh \
+        --operation "$OUT/toy-fixed rotate" --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    _g=absent; [ -e "$m786" ] && _g=present
+    _k=absent; [ -e /tmp/acc/work ] && _k=present
+    if [ "$rc" = "$_w" ] && echo "$o" | grep -q -- "$_f" && [ "$_g" = "$_m" ] && { [ "$_w" != 3 ] || [ "$_k" = absent ]; }; then
+        echo "ok   $_l"
+    else
+        echo "FAIL $_l: exit $rc (wanted $_w), marker $_g (wanted $_m), work $_k, looked for [$_f]"
+        echo "$o" | sed 's/^/     | /' | head -3
+        ap_fails=$((ap_fails + 1))
+    fi
+}
+unset ACC_PIN_786 2>/dev/null || true
+ap786_leg "control: with the env device set, the setup runs and leaves its marker" explore 0 \
+    "apparatus   env:ACC_PIN_786=1" present ACC_PIN_786=1 -- --apparatus env:ACC_PIN_786=1
+ap786_leg "an env device that is not set is refused before the setup writes anything, and the work directory is gone" explore 3 \
+    "apparatus env:ACC_PIN_786=1: the environment the operation inherits has no ACC_PIN_786" absent -- --apparatus env:ACC_PIN_786=1
+ap786_leg "an env device set to another value is refused before the setup writes anything" explore 3 \
+    "ACC_PIN_786 is set, but to a different value (2)" absent ACC_PIN_786=2 -- --apparatus env:ACC_PIN_786=1
+ap786_leg "preflight refuses an unset env device before the setup writes anything" preflight 3 \
+    "apparatus env:ACC_PIN_786=1: the environment the operation inherits has no ACC_PIN_786" absent -- --apparatus env:ACC_PIN_786=1
+# The other kinds stay after the setup: a pythonpath device the setup generates is found.
+ap786_leg "a pythonpath device the setup generates is still found, so only env: moved ahead of the setup" explore 0 \
+    "apparatus   pythonpath:sitecustomize.py" present PYTHONPATH=/tmp/acc/pp786 -- --apparatus pythonpath:sitecustomize.py
+# A state directory the refused run created goes too, unless its JSON report goes under it or
+# under the work directory — the report would have nowhere to land — and that holds when the
+# report's path reaches the directory through a symlink.
+ln -sfn /tmp/acc /tmp/acc/lnk786
+# j786 <label> <--json path> <state after: gone|kept>
+j786() {
+    rm -rf /tmp/acc/state786n /tmp/acc/work786n && rm -f "$m786"
+    o=$("$SIDEEYE" explore --state /tmp/acc/state786n --setup /tmp/acc/setup786.sh --operation "$OUT/toy-fixed rotate" \
+        --shim "$SHIM" --work /tmp/acc/work786n --oracle /usr/bin/strace --json "$2" \
+        --apparatus env:ACC_PIN_786=1 2>&1)
+    rc=$?
+    _s=gone; [ -e /tmp/acc/state786n ] && _s=kept
+    if [ "$rc" = 3 ] && [ "$_s" = "$3" ] && [ ! -e "$m786" ] \
+        && python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d.get("verdict")=="SETUP_ERROR" and d.get("setup_error_reason")=="environment" else 1)' "$2" 2>/dev/null; then
+        echo "ok   $1"
+    else
+        echo "FAIL $1: exit $rc, state $_s (wanted $3), marker $( [ -e "$m786" ] && echo present || echo absent ), JSON $( [ -e "$2" ] && echo written || echo missing )"
+        echo "$o" | sed 's/^/     | /' | head -3
+        ap_fails=$((ap_fails + 1))
+    fi
+}
+j786 "a refused env device removes the state the run created and keeps the JSON report under its work directory" /tmp/acc/work786n/r.json gone
+j786 "...and keeps it when the report's path reaches the work directory through a symlink" /tmp/acc/lnk786/work786n/r.json gone
+j786 "...and keeps the created state directory when the report goes under it" /tmp/acc/state786n/r.json kept
 [ "$ap_fails" = 0 ] || fails=$((fails + 1))
 
 echo ""

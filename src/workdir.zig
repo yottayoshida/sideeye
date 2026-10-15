@@ -5,7 +5,14 @@ const defang = @import("defang.zig");
 
 pub var lock_fd: c_int = -1;
 
-pub const Refusal = struct { reason: contract.SetupErrorReason, text: []const u8 };
+pub const Refusal = struct {
+    reason: contract.SetupErrorReason,
+    text: []const u8,
+
+    pub fn print(arena: std.mem.Allocator, reason: contract.SetupErrorReason, comptime fmt: []const u8, args: anytype) Refusal {
+        return .{ .reason = reason, .text = std.fmt.allocPrint(arena, fmt, args) catch fmt };
+    }
+};
 
 /// Refused, not waited for: a run stuck in its setup would otherwise stop the next one
 /// without a word.
