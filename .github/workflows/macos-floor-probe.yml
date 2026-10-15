@@ -1,0 +1,75 @@
+name: macos-floor-probe
+
+# Temporary: removed before the pull request that adds it merges. macos-14 leaves GitHub on
+# 2026-11-02, so a standing job would go red on its own.
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/macos-floor-probe.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build (${{ matrix.floor }})
+    runs-on: macos-26
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - floor: "13.0"
+            target: aarch64-macos.13.0
+          - floor: zig-default
+            target: aarch64-macos
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          version: 0.17.0
+      - run: zig build -Doptimize=ReleaseSafe -Dtarget=${{ matrix.target }}
+      - run: python3 spike/check-macos-minos.py README.md docs/cli.md zig-out/bin/sideeye zig-out/lib/libsideeye_shim.dylib || true
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: pair-${{ matrix.floor }}
+          path: |
+            zig-out/bin/sideeye
+            zig-out/lib/libsideeye_shim.dylib
+          if-no-files-found: error
+
+  run:
+    name: ${{ matrix.runner }} runs the ${{ matrix.floor }} build
+    needs: build
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-14, macos-15]
+        floor: ["13.0", zig-default]
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: pair-${{ matrix.floor }}
+          path: pair
+      - name: sideeye demo, no compiler on PATH
+        env:
+          RUNNER_NAME: ${{ matrix.runner }}
+          FLOOR: ${{ matrix.floor }}
+        run: |
+          set -u
+          sw_vers
+          chmod +x pair/bin/sideeye
+          set +e
+          out=$(PATH=/nonexistent ./pair/bin/sideeye demo 2>&1)
+          rc=$?
+          set -e
+          echo "$out" | tail -20
+          echo "exit=$rc"
+          if [ "$FLOOR" = zig-default ] && [ "$RUNNER_NAME" = macos-14 ]; then
+            [ "$rc" != 1 ] && printf '%s' "$out" | grep -qi 'newer' || { echo "::error::expected dyld to refuse a 15.0 build on macOS 14"; exit 1; }
+          else
+            [ "$rc" = 1 ] || { echo "::error::expected exit 1 (the planted bug found), got $rc"; exit 1; }
+          fi
