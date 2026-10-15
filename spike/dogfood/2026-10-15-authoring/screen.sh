@@ -13,8 +13,8 @@ printf 'shape\trank\tpackage\tfixture_rc\toperation_rc\tnote\n' > "$out"
 fixture() {
     case "$1" in
     quilt) echo 'mkdir t && cd t && printf "a\n" > a.txt && printf "b\n" > b.txt && mkdir patches &&
-        printf "--- t.orig/a.txt\n+++ t/a.txt\n@@ -1 +1 @@\n-a\n+A\n" > patches/p1.diff &&
-        printf "--- t.orig/b.txt\n+++ t/b.txt\n@@ -1 +1 @@\n-b\n+B\n" > patches/p2.diff &&
+        printf "%s\n" "--- t.orig/a.txt" "+++ t/a.txt" "@@ -1 +1 @@" "-a" "+A" > patches/p1.diff &&
+        printf "%s\n" "--- t.orig/b.txt" "+++ t/b.txt" "@@ -1 +1 @@" "-b" "+B" > patches/p2.diff &&
         printf "p1.diff\np2.diff\n" > patches/series' ;;
     rcs) echo 'mkdir t && cd t && printf "v1\n" > notes.txt && ci -q -i -l -t-notes -mr1 notes.txt && printf "v2\n" >> notes.txt' ;;
     etckeeper) echo 'mkdir conf && printf "x\n" > conf/f && etckeeper init -d "$PWD/conf" && printf "y\n" >> conf/f' ;;
@@ -25,12 +25,12 @@ fixture() {
         stg init && stg new p1 -m p1 && printf "1\n" >> f && stg refresh && stg new p2 -m p2 && printf "2\n" >> f' ;;
     xapian-omega) echo 'mkdir docs && printf "alpha\n" > docs/a.txt && omindex --db db --url / docs > /dev/null && printf "beta\n" > docs/b.txt' ;;
     python3-yoyo) echo 'mkdir m && printf "CREATE TABLE t (id INTEGER PRIMARY KEY, v TEXT);\nINSERT INTO t (v) VALUES (\"a\"), (\"b\");\n" > m/0001.sql &&
-        yoyo apply --batch --database sqlite:///app.db m > /dev/null &&
+        python3 -m yoyo apply --batch --database sqlite:///app.db m > /dev/null &&
         printf "ALTER TABLE t ADD COLUMN w TEXT;\nUPDATE t SET w = v || v;\n" > m/0002.sql &&
         printf "CREATE INDEX t_w ON t (w);\n" > m/0003.sql' ;;
-    xapian-tools) echo 'exit 1  # no indexer in this box: xapian-tools alone cannot build a source database' ;;
-    slapd) echo 'exit 1  # slapadd needs a configured database the package builds only as root' ;;
-    python3-flask-migrate) echo 'exit 1  # flask db needs an application the package does not carry' ;;
+    xapian-tools) echo 'echo "no indexer in this box: xapian-tools alone cannot build a source database"; exit 1' ;;
+    slapd) echo 'echo "not prepared: no fixture was written for slapadd"; exit 1' ;;
+    python3-flask-migrate) echo 'echo "not prepared: no fixture was written for a Flask application"; exit 1' ;;
     esac
 }
 
@@ -43,7 +43,7 @@ operation() {
     gdbmtool) echo 'printf "store k4 v4\nstore k5 v5\nstore k6 v6\n" | gdbmtool db.gdbm' ;;
     stgit) echo 'cd t && stg refresh' ;;
     xapian-omega) echo 'omindex --db db --url / docs' ;;
-    python3-yoyo) echo 'yoyo apply --batch --database sqlite:///app.db m' ;;
+    python3-yoyo) echo 'python3 -m yoyo apply --batch --database sqlite:///app.db m' ;;
     *) echo 'exit 1' ;;
     esac
 }

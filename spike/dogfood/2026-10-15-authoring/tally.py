@@ -24,7 +24,7 @@ SEALED = [
     "exclude.sh", "screen.sh", "tally.py", "normalise.py", "run-subject.sh", "run-grader.sh", "box.sh",
     "watch-defines.py", "check-sealed.sh", "apparatus/Dockerfile", "apparatus/build.sh",
 ]
-SEALED_AFTER_SCREEN = ["SELECTION.md", "selection.tsv", "screen.tsv"]
+SEALED_AFTER_SCREEN = ["SELECTION.md", "selection.tsv", "screen.tsv", "screen-1.tsv"]
 NO_CHANGE = "no product change warranted"
 BEGIN, END = "<!-- tally:begin -->", "<!-- tally:end -->"
 RESULT = re.compile(r"(?:^|\\n)(PASS|FAIL|UNKNOWN|SETUP ERROR)  ")

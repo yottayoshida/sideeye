@@ -118,3 +118,16 @@ Three targets or 2026-10-22, whichever comes first. No DSL, no generated invaria
 model, no engine change, no upstream filing. Zero FAILs is a result. **One author, a language
 model, per target: this measures authoring by that author with these documents, not third-party
 usability or adoption.**
+
+## Amendments
+
+- **2026-10-15, before any subject ran, after the first screen.** The first screen's
+  `screen.tsv` is kept as `screen-1.tsv`. Three faults were the screen's own, not the candidates':
+  quilt's fixture wrote its patches with a `printf` format beginning `---`, which dash reads as an
+  option; the three fixtures written as `exit 1  # reason` lost their closing parenthesis to the
+  comment and failed as a syntax error; and python3-yoyo's operation was spelled `yoyo`, a script
+  Debian does not ship — the package carries the same entry point as `python3 -m yoyo`, so the
+  operation is respelled and the tool, the command and the contract are unchanged. Each is fixed
+  once, as #861 allowed a define fixed once, and the screen ran again from the start. slapd and
+  python3-flask-migrate still have no fixture: they are reached only if every candidate above them
+  in shape 3 is dropped, and that would be a further amendment.

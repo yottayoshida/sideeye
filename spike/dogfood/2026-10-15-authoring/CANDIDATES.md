@@ -60,7 +60,7 @@ The shape sentence is what the subject is given. The legs are the graders' card 
 
 ## Shape 3 — a migration or other multi-step change of logical state
 
-1. **python3-yoyo** `python3-yoyo=9.0.0+dfsg1-3`. Operation: `yoyo apply --batch` of two pending
+1. **python3-yoyo** `python3-yoyo=9.0.0+dfsg1-3`. Operation: `python3 -m yoyo apply --batch` (Debian ships yoyo as a module, without the `yoyo` script) of two pending
    migrations (add a column and backfill it; add an index) to a SQLite database with one applied.
    Documented contract (yoyo's documentation, "Transactions"): each migration runs in a
    transaction and is recorded when it commits; running `apply` again applies what is left. Legs,
