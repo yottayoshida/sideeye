@@ -87,13 +87,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: ubuntu-latest
+          - runner: ubuntu-24.04
             artifact: x86_64-linux
             target: x86_64-linux-gnu.2.28
           - runner: ubuntu-24.04-arm
             artifact: aarch64-linux
             target: aarch64-linux-gnu.2.28
-          - runner: macos-latest
+          - runner: macos-26
             artifact: aarch64-macos
             target: aarch64-macos
     runs-on: ${{ matrix.runner }}

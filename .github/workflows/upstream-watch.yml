@@ -26,7 +26,7 @@ jobs:
     # Not from another branch: deliver compares against HEAD and proposes from it, and a
     # branch's own commits would ride into the pull request against main.
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4

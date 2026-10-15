@@ -13,7 +13,7 @@ on:
 
 jobs:
   linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -380,7 +380,7 @@ jobs:
           zig build --prefix "$scratch/arm" -Doptimize=ReleaseSafe -Dtarget=aarch64-linux-gnu.2.28
 
   macos:
-    runs-on: macos-latest
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -1456,7 +1456,7 @@ jobs:
   # and unknown_reason — enough to tell apparatus breakage from a real regression.
 
   timew-regression:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -1483,7 +1483,7 @@ jobs:
   # rather than the text, because a pattern can be syntactically fine and semantically
   # dead. Its own job: it needs no toolchain, so a failure here is unambiguous.
   classification:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -1500,7 +1500,7 @@ jobs:
   # sentence and this job is what keeps it. Its own red proofs run first, the way every
   # other checker here does.
   veto-rate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -1522,7 +1522,7 @@ jobs:
   # is a checker whose predicates are untested, and this one's empty-versus-empty
   # leg is the exact shape that would otherwise pass as agreement.
   upstream-ledger:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -1550,7 +1550,7 @@ jobs:
   # docs/outcome-funnel.md and docs/found.md (#713) against a fresh rendering, so a figure
   # edited by one digit, or a report row edited by hand, is red.
   outcome-funnel:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -1567,7 +1567,7 @@ jobs:
         run: python3 spike/upstream-live.py --selftest
 
   changelog-block:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -1587,7 +1587,7 @@ jobs:
   # command, flag, name borrowed from the source and documentation link they hold is
   # checked against it here.
   agent-skills:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -1607,7 +1607,7 @@ jobs:
   # reason the two checkers above give: no toolchain, and a checker nobody has seen red
   # is a checker whose predicates are untested (#342).
   ledger-prose:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -1618,7 +1618,7 @@ jobs:
         run: sh spike/check-ledger-prose.sh
 
   main-shape:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -1635,7 +1635,7 @@ jobs:
 
   # Not folded into another job: a failure here has to name the instrument.
   fmt:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -1650,7 +1650,7 @@ jobs:
         run: sh spike/check-zig-fmt.sh
 
   adr-numbering:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -1697,27 +1697,26 @@ jobs:
   # release.yml never read; and two legal YAML spellings of the key (a flow mapping,
   # and a space before the colon) were missed by the walk and by the independent
   # count alike, so a file holding two tag references reported `ok 1 action
-  # reference(s)`. The selftest drives fifteen cases and every assertion has a
-  # mutation that kills it.
+  # reference(s)`. Every assertion has a mutation that kills it.
   #
   # This comment writes "the key" rather than spelling it, because the wider pattern
   # counts an occurrence in a comment too and the check refuses what it cannot read
   # rather than skipping it. Erring toward refusal is the point; it cost one reword
   # here, which is the correct price.
   action-pins:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: The check proves it can go red
         run: sh spike/check-action-pins.sh --selftest
 
-      - name: Every action a workflow runs is pinned to a commit
+      - name: Every action a workflow runs is pinned to a commit, and no runner is named -latest
         run: sh spike/check-action-pins.sh
 
   # Here, not only in the weekly run: a broken judge or list would otherwise surface a week late.
   zig-ahead-judge:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -1736,7 +1735,7 @@ jobs:
   # three real files: it proves the check goes red on every predicate it names and stays
   # green on the shapes it must not count (a marker in a fence, in prose, indented).
   criterion-3-status:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -1753,7 +1752,7 @@ jobs:
   # reason as the one above: no toolchain, so a failure here names the instrument and
   # nothing else.
   onboarding-clock:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -1882,7 +1881,7 @@ jobs:
         run: sh spike/check-box-name.sh
 
   authoring-cost:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       # Full history: the freshness predicate reads a FIXED commit (base-commit.txt), because
       # against the working tree it excludes this study's own selection the moment the study is
@@ -2069,7 +2068,7 @@ jobs:
   required:
     if: always()
     needs: [linux, macos, timew-regression, classification, veto-rate, upstream-ledger, outcome-funnel, changelog-block, agent-skills, ledger-prose, main-shape, fmt, adr-numbering, action-pins, zig-ahead-judge, criterion-3-status, onboarding-clock, authoring-cost, linux-aarch64-releasesafe]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: The check proves it can go red
