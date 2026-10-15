@@ -3638,7 +3638,7 @@ fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[
         };
         switch (parsed) {
             .env => |v| {
-                const got = envValue(v.name) orelse setupErrorFmt(arena, .environment, "apparatus {s}: the environment the operation inherits has no {s}", .{ e, v.name });
+                const got = envValue(v.name) orelse setupErrorFmt(arena, .environment, "apparatus {s}: the environment the operation inherits has no {s} (under sideeye mcp, a variable of the server's reaches it only when SIDEEYE_MCP_CHILD_ENV names it)", .{ e, v.name });
                 if (v.value) |want| if (!std.mem.eql(u8, got, want))
                     setupErrorFmt(arena, .environment, "apparatus {s}: {s} is set, but to a different value ({s})", .{ e, v.name, textShown(arena, got) });
             },
@@ -3659,7 +3659,7 @@ fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[
                 }
             },
             .pythonpath => |file| {
-                const pp = envValue("PYTHONPATH") orelse setupErrorFmt(arena, .environment, "apparatus {s}: PYTHONPATH is not set in the environment the operation inherits", .{e});
+                const pp = envValue("PYTHONPATH") orelse setupErrorFmt(arena, .environment, "apparatus {s}: PYTHONPATH is not set in the environment the operation inherits (under sideeye mcp, a variable of the server's reaches it only when SIDEEYE_MCP_CHILD_ENV names it)", .{e});
                 if (!pythonpathHas(arena, pp, file, cwd))
                     setupErrorFmt(arena, .environment, "apparatus {s}: no entry of PYTHONPATH ({s}) has {s} directly under it", .{ e, textShown(arena, pp), file });
             },
