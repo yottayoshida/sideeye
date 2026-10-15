@@ -35,7 +35,8 @@ on every pull request and on `main` as the `outcome-funnel` job, self-test first
 ## The stages
 
 A row carries the furthest stage its campaign reached. The stages are cumulative: a
-row at `filed` was judged, and a row that never got past a wall is at `attempted`.
+row at `filed` was judged, and a row that never got past a wall is at `attempted` — except a
+filing without a Sideeye verdict, below.
 
 | Stage | What it means |
 |---|---|
@@ -68,10 +69,11 @@ draft of this page, written from prose, put three fewer targets past exploration
 the reports did: bat, ccache and meson each explored worlds (8, 55 and 110) before
 refusing.
 
-`acknowledged` is confirmation, not contact. Four of the reports on this ledger were
-closed with a substantive reply that declined them, and one is open with several
-comments and no resolution; all five stay at `filed`, with `declined` or `discussing`
-saying which. Reading a reply as acknowledgement would make the stage
+`acknowledged` is confirmation, not contact. A report closed with a substantive reply
+that declined it, or open with several comments and no resolution, stays at the stage it
+had reached — `filed`, for all of them but ImageMagick's, whose fix was re-measured before
+the thread went on — with `declined` or `discussing` saying which; the generated block
+below counts them, so this paragraph does not. Reading a reply as acknowledgement would make the stage
 measure how much upstream wrote rather than whether the defect was granted, and the
 issue that asked for this page is explicit that upstream acceptance is not what
 makes a counterexample true.
@@ -80,6 +82,16 @@ One asymmetry is deliberate. `novel`, `report_worthy` and `filed` are about a
 counterexample and require a FAIL. The three stages above them do not: the 2026-09-06
 re-measurement of ImageMagick's third patch PASSes, and that PASS is exactly what
 `revalidated` means.
+
+**A filing without a Sideeye verdict** has the verdict `none` (#825). A report this project
+made while working with Sideeye whose finding was not one of its verdicts — a plain script,
+a run by hand, the tool's own behaviour read off its output — is still a report this
+project filed, and the ledger keeps it; but it is not a target the engine ran against, so
+it is counted at no stage from `attempted` to `revalidated` and in no verdict. The summary
+counts it on a line of its own, and `docs/found.md` lists it under a heading of its own.
+`none` is refused below `filed`, at `revalidated`, and on a row whose evidence is a report
+this engine wrote. It is the one exception to the stages being cumulative: such a row is at
+`filed` or beyond without having been `judged`.
 
 ## What the checker holds, and what it cannot
 
@@ -101,10 +113,14 @@ What it cannot see is written here rather than left to be discovered:
 - **Every stage above `judged`.** The comparison against a report stops there,
   because a report cannot know whether its finding was novel, was judged worth
   filing, or was filed. Those stages are the record's word. What holds them is
-  internal: `novel`, `report_worthy` and `filed` need a FAIL, `filed` and above need
+  internal: `novel` and `report_worthy` need a FAIL and `filed` a FAIL or `none`, `filed` and above need
   a report this project filed and the date its state was read, and a report is filed
   once. Nothing compares `acknowledged`, `fixed` or `revalidated` against anything
   outside this repository.
+- **Whether a filing had a Sideeye verdict, where its record is not a report.** `fail` and
+  `none` are the record's word on a row whose evidence is a written record or a transcript;
+  only a report JSON refuses `none`. `--since` counts one by its campaign's date, not its
+  filing's.
 - **A record that names every target.** Two rows cite
   [target-classes.md](target-classes.md) and one cites `BUILDLOG.md`, because the
   measurement behind them left no record of its own. Against a page that names every
@@ -146,28 +162,30 @@ review the way ADR 0039 rules for figures quoted from other records.
 ```
 outcome funnel -- every campaign
 
-424 encounters (one campaign meeting one target) over 40 campaigns, 34 of them
-recording every target they met; 281 distinct targets.
-330 rows are held to a report this repository committed; 94 name a written record only.
+419 encounters (one campaign meeting one target) over 40 campaigns, 34 of them
+recording every target they met; 277 distinct targets.
+330 rows are held to a report this repository committed; 89 name a written record only.
 1318 candidates screened before the slates were fixed, over the 25 campaign(s) that
 recorded one; the rest kept no such count.
 
 reach, over the 34 campaign(s) that recorded every target they met
-  attempted       415
-  explored        284
-  judged          272
-    PASS           92
-    FAIL          180
+  attempted       411
+  explored        280
+  judged          268
+    PASS           91
+    FAIL          177
 
 outcome            encounters   in full campaigns   distinct reports
-  novel                77              68             48
-  report_worthy        59              50             48
-  filed                56              47             48
-  acknowledged         13              12             11
-  fixed                12              11             10
-  revalidated          11              10             10
+  novel                72              64             44
+  report_worthy        54              46             44
+  filed                51              43             44
+  acknowledged         12              11             10
+  fixed                11              10              9
+  revalidated          10               9              9
 
-why encounters stopped: awaiting 33, declined 6, discussing 2, known 27, no_content_lost 16, not_worth 91, wall 121, withdrawn 3
+filed without a Sideeye verdict, counted in nothing above or below: 5 encounter(s), 4 report(s)
+
+why encounters stopped: awaiting 29, declined 6, discussing 2, known 27, no_content_lost 16, not_worth 91, wall 121, withdrawn 3
 upstream states last read between 2026-08-14 and 2026-10-12; spike/upstream-report-status.sh measures them now.
 ```
 

@@ -619,8 +619,9 @@ libfaketime and two interpreter pins before getting a verdict has done work,
 whatever it is called. This reading says that work is the instrument's and
 does not score against the target's setup weight — so if the apparatus burden
 ever becomes the reason a target cannot be reached at all, that is a fact
-about this tool which this row will not record. #257 tracks promoting a
-declared-apparatus bundle so the burden is paid once rather than per target.
+about this tool which this row will not record. #257 asked for a declared-apparatus bundle
+so the burden is paid once rather than per target; it closed on 2026-09-03 with ADR 0041's
+`apparatus`.
 
 ### Where this leaves criterion 3
 
