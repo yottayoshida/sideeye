@@ -791,8 +791,8 @@ def check_attribution(tables, published):
     from the same renderer.
 
     Named attribution, not conservation, because `check` already has an assert
-    called that (the disposition one below) and `spike/acceptance.sh` names it in
-    the sentence listing predicates without fixtures.
+    called that (the disposition one below) and `spike/check-unknown-rate.sh` names
+    it in the sentence listing predicates without fixtures.
 
     Two things this deliberately does NOT do, each for a measured reason:
 
@@ -1690,7 +1690,7 @@ def check(root):
     # numerator cannot survive. Unlike `pub_rows` above, this is not dead here.
     #
     # No data-only fixture can make it red — a fixture that perturbs the number
-    # dies earlier — so it is named in acceptance.sh's list of predicates
+    # dies earlier — so it is named in check-unknown-rate.sh's list of predicates
     # carrying no fixture rather than pretending to have one.
     pub_sections = split_published(published)
     for gen, _e, _m, trials, _w, _s in tables:

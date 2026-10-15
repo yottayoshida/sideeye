@@ -48,8 +48,9 @@
 #     repository setting and a separate decision.
 #   * whether a renumber is safe to perform. It is the prescribed remedy and it
 #     is not free: paths of the form docs/adr/NNNN-slug.md are hardcoded in
-#     several tracked documents, and only spike/acceptance.sh sweeps any of them
-#     (four pages, for slashed backtick references). Bare `ADR NNNN` prose
+#     several tracked documents, and only spike/check-doc-refs.sh (acceptance
+#     check 11) sweeps any of them (four pages, for slashed backtick
+#     references). Bare `ADR NNNN` prose
 #     citations are checked by nothing and break semantically rather than
 #     loudly — after a renumber they point at a different decision. Renumber
 #     before anything cites the path.
