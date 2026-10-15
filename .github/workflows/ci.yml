@@ -382,9 +382,14 @@ jobs:
           zig build --prefix "$scratch/x86" -Doptimize=ReleaseSafe -Dtarget=x86_64-linux-gnu.2.28
           zig build --prefix "$scratch/arm" -Doptimize=ReleaseSafe -Dtarget=aarch64-linux-gnu.2.28
 
+  # Not a Debug build after the unit tests: every step below checks the pair release.yml ships.
+  # Not a one-entry matrix as linux-releasesafe has: GitHub appends a matrix's values to the check's
+  # name, and branch protection requires one named `macos`. The flags step reads runs-on from here.
   macos:
     runs-on: macos-26
     timeout-minutes: 25
+    env:
+      ARTIFACT: aarch64-macos
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -395,8 +400,30 @@ jobs:
       - name: Unit tests
         run: zig build test --summary all
 
-      - name: Build engine and shim
-        run: zig build
+      - name: The build is release.yml's own, read rather than copied, on its runner and its Zig
+        id: flags
+        run: |
+          set -eu
+          JOB_RUNNER=$(sed -n '/^  macos:$/,/^    steps:$/s/^    runs-on: //p' .github/workflows/ci.yml)
+          [ -n "$JOB_RUNNER" ] || { echo "::error::could not read the macos job's runs-on from ci.yml"; exit 1; }
+          flags=$(sh spike/release-build-flags.sh .github/workflows/release.yml "$ARTIFACT")
+          echo "release.yml builds $ARTIFACT with: $flags"
+          runner=$(sh spike/release-build-flags.sh --runner .github/workflows/release.yml "$ARTIFACT")
+          [ "$runner" = "$JOB_RUNNER" ] || { echo "::error::release.yml builds $ARTIFACT on $runner, and this job runs on $JOB_RUNNER"; exit 1; }
+          zigv=$(sh spike/release-build-flags.sh --zig .github/workflows/release.yml)
+          [ "$zigv" = "$(zig version)" ] || { echo "::error::release.yml sets up Zig $zigv, and this job has $(zig version)"; exit 1; }
+          echo "flags=$flags" >> "$GITHUB_OUTPUT"
+
+      - name: Build engine and shim, as the release builds them
+        env:
+          RELEASE_FLAGS: ${{ steps.flags.outputs.flags }}
+        run: |
+          set -eu
+          # Not without flags: an empty list builds Debug, and every step below would check a pair nobody ships.
+          [ -n "$RELEASE_FLAGS" ] || { echo "::error::no release build flags reached this step"; exit 1; }
+          # shellcheck disable=SC2086 # a flag list, split on purpose
+          zig build $RELEASE_FLAGS
+          file zig-out/bin/sideeye zig-out/lib/libsideeye_shim.dylib
 
       # Runs on both platforms deliberately: the FIFO measurements behind #400 were
       # taken here on macOS, and the Linux leg is where the statx branch of `kindOfFd`
@@ -1387,6 +1414,9 @@ jobs:
         # spike/fsusage/RESULTS.md), which is what lets a root-only observer be
         # exercised in CI at all. The script builds first, so the binary under test is
         # the source under test.
+        env:
+          SIDEEYE_BUILD_FLAGS: ${{ steps.flags.outputs.flags }}
+          SIDEEYE_BUILD_SAME_AS: ${{ github.workspace }}/zig-out
         run: bash spike/fsusage/acceptance-local.sh
 
       - name: A run stopped by a signal stops what it started first, fs_usage included (#819)
@@ -1408,6 +1438,8 @@ jobs:
         # line was all that was kept of either.
         env:
           THREAD_KILL_LANDS_BASE: ${{ runner.temp }}/thread-kill-lands
+          SIDEEYE_BUILD_FLAGS: ${{ steps.flags.outputs.flags }}
+          SIDEEYE_BUILD_SAME_AS: ${{ github.workspace }}/zig-out
         run: |
           mkdir -p "$THREAD_KILL_LANDS_BASE"
           bash spike/thread-kill-lands.sh 12
@@ -1983,12 +2015,10 @@ jobs:
       - name: The box name has one spelling
         run: sh spike/authoring-cost/check-box-name.sh
 
-  # #694: the acceptance suite against the build the release ships for aarch64-linux — ReleaseSafe,
+  # #694: the acceptance suites against the builds the release ships for Linux — ReleaseSafe,
   # the release's own build line, on the release's own runner — on every pull request and every push
-  # to main, so it has run before a tag exists. The linux job above runs the suites Debug on x86_64,
-  # and until this job the shipped optimisation was exercised only by release.yml's demo, which runs
-  # when a release is published or release.yml itself changes. Between them the two jobs take each axis
-  # once: Debug on x86_64, ReleaseSafe on aarch64. What this job cannot see is a build that runs only
+  # to main, so they have run before a tag exists. The linux job above runs the suites Debug on
+  # x86_64. What this job cannot see is a build that runs only
   # on the CPU it was built on (v0.9.0 and v0.10.0's Illegal instruction): it runs on the release's own
   # runner class, as the demo does; the explicit `-Dtarget` in the release's build line is what pins the
   # baseline CPU, and a build line that loses it stops this job, which then cannot read its flags.
@@ -1996,7 +2026,7 @@ jobs:
   # The build arguments are read from release.yml (spike/release-build-flags.sh) — everything after
   # `zig build` on its build line, the matrix target put in — not spelled here, so a release that
   # changes that line moves this job with it. The runner and the Zig version a job fixes before any
-  # step runs, so they are spelled here — the runner once, as a one-entry matrix — and compared with
+  # step runs, so they are spelled here — the runner once per artifact, in the matrix — and compared with
   # release.yml's on every run. Everything is
   # built by ONE `zig build`: build.zig installs the shipped engine and shim on every build, so
   # per-flag builds (as the linux job does, to compare shas) would let one that dropped the flags
@@ -2006,16 +2036,21 @@ jobs:
   # added to the linux job alone would fail its legs here — or, for the supervise-delay engine, leave
   # its leg NOT MEASURED, which is green.
   #
-  # The shim's per-function stack ceiling (spike/check-shim-footprint.sh) holds for this build too.
-  # Measured before this job existed (2026-10-10, Docker on Apple silicon): the ReleaseSafe shim's
-  # largest frame is exactly 1024 bytes, the ceiling, where the Debug build's is 928 — no margin, by
-  # design: a change that grows a shipped function past it is red here.
-  linux-aarch64-releasesafe:
-    # One entry, so the runner is spelled once and the step below compares release.yml's with it.
-    name: linux-aarch64-releasesafe
+  # The shim's per-function stack ceiling (spike/check-shim-footprint.sh) holds for these builds too.
+  # Measured on aarch64 only, before this job existed (2026-10-10, Docker on Apple silicon): the
+  # ReleaseSafe shim's largest frame is exactly 1024 bytes, the ceiling, where the Debug build's is
+  # 928 — no margin, by design: a change that grows a shipped function past it is red here. The
+  # x86_64 entry is the first measurement of that build.
+  linux-releasesafe:
+    name: linux-releasesafe (${{ matrix.artifact }})
     strategy:
+      fail-fast: false
       matrix:
-        runner: [ubuntu-24.04-arm]
+        include:
+          - artifact: aarch64-linux
+            runner: ubuntu-24.04-arm
+          - artifact: x86_64-linux
+            runner: ubuntu-24.04
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 45
     steps:
@@ -2029,13 +2064,14 @@ jobs:
         id: flags
         env:
           JOB_RUNNER: ${{ matrix.runner }}
+          ARTIFACT: ${{ matrix.artifact }}
         run: |
           set -eu
           sh spike/release-build-flags.sh --selftest
-          flags=$(sh spike/release-build-flags.sh .github/workflows/release.yml aarch64-linux)
-          echo "release.yml builds aarch64-linux with: $flags"
-          runner=$(sh spike/release-build-flags.sh --runner .github/workflows/release.yml aarch64-linux)
-          [ "$runner" = "$JOB_RUNNER" ] || { echo "::error::release.yml builds aarch64-linux on $runner, and this job runs on $JOB_RUNNER"; exit 1; }
+          flags=$(sh spike/release-build-flags.sh .github/workflows/release.yml "$ARTIFACT")
+          echo "release.yml builds $ARTIFACT with: $flags"
+          runner=$(sh spike/release-build-flags.sh --runner .github/workflows/release.yml "$ARTIFACT")
+          [ "$runner" = "$JOB_RUNNER" ] || { echo "::error::release.yml builds $ARTIFACT on $runner, and this job runs on $JOB_RUNNER"; exit 1; }
           zigv=$(sh spike/release-build-flags.sh --zig .github/workflows/release.yml)
           [ "$zigv" = "$(zig version)" ] || { echo "::error::release.yml sets up Zig $zigv, and this job has $(zig version)"; exit 1; }
           echo "flags=$flags" >> "$GITHUB_OUTPUT"
@@ -2045,6 +2081,8 @@ jobs:
           RELEASE_FLAGS: ${{ steps.flags.outputs.flags }}
         run: |
           set -eu
+          # Not without flags: an empty list builds Debug, and the cmp below would then compare two Debug builds and pass.
+          [ -n "$RELEASE_FLAGS" ] || { echo "::error::no release build flags reached this step"; exit 1; }
           apparatus=$(sed -n 's/.*b\.option(bool, "\(test-[a-z-]*\)".*/-D\1/p' build.zig)
           [ -n "$apparatus" ] || { echo "::error::no -Dtest-* option was read from build.zig"; exit 1; }
           echo "apparatus: $apparatus"
@@ -2071,7 +2109,7 @@ jobs:
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
 
-      - name: Acceptance suite, against the ReleaseSafe aarch64-linux build
+      - name: Acceptance suite, against the ReleaseSafe build
         run: sh spike/acceptance.sh
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
@@ -2096,7 +2134,7 @@ jobs:
   # edited the setting.
   required:
     if: always()
-    needs: [linux, macos, timew-regression, classification, veto-rate, upstream-ledger, outcome-funnel, changelog-block, agent-skills, ledger-prose, main-shape, fmt, adr-numbering, action-pins, zig-ahead-judge, criterion-3-status, onboarding-clock, authoring-cost, linux-aarch64-releasesafe]
+    needs: [linux, macos, timew-regression, classification, veto-rate, upstream-ledger, outcome-funnel, changelog-block, agent-skills, ledger-prose, main-shape, fmt, adr-numbering, action-pins, zig-ahead-judge, criterion-3-status, onboarding-clock, authoring-cost, linux-releasesafe]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
