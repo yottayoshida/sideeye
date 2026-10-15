@@ -95,7 +95,7 @@ jobs:
             target: aarch64-linux-gnu.2.28
           - runner: macos-26
             artifact: aarch64-macos
-            target: aarch64-macos
+            target: aarch64-macos.13.0
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
@@ -163,7 +163,7 @@ YML
     want "the entry's runner on its last line, not its first" "ubuntu-26.04-arm" "$tmp/runner-last.yml" runner
     want "the x86_64-linux entry's flags" "-Doptimize=ReleaseSafe -Dtarget=x86_64-linux-gnu.2.28" "$tmp/base.yml" flags x86_64-linux
     want "the x86_64-linux entry's runner" "ubuntu-24.04" "$tmp/base.yml" runner x86_64-linux
-    want "the aarch64-macos entry's flags" "-Doptimize=ReleaseSafe -Dtarget=aarch64-macos" "$tmp/base.yml" flags aarch64-macos
+    want "the aarch64-macos entry's flags" "-Doptimize=ReleaseSafe -Dtarget=aarch64-macos.13.0" "$tmp/base.yml" flags aarch64-macos
     want "the aarch64-macos entry's runner" "macos-26" "$tmp/base.yml" runner aarch64-macos
     want "the Zig version set up" "0.16.0" "$tmp/base.yml" zig
     sed 's/version: 0.16.0/version: 0.17.0/' "$tmp/base.yml" > "$tmp/zig.yml"
