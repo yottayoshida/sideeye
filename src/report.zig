@@ -1,5 +1,6 @@
 const std = @import("std");
 const contract = @import("contract");
+const builtin = @import("builtin");
 const engine = @import("engine.zig");
 const posix = @import("posix.zig");
 const config = @import("config.zig");
@@ -868,7 +869,74 @@ pub fn observeFlags(arena: std.mem.Allocator, observe: contract.ObserveMode, shi
         .supervised => return " --observe supervised",
     };
     const s = shim_given orelse return mode_part;
-    return std.fmt.allocPrint(arena, "{s} --shim {s}", .{ mode_part, shellWord(arena, s) catch s }) catch mode_part;
+    return std.mem.concat(arena, u8, &.{ mode_part, flagWord(arena, "--shim", s) catch return mode_part }) catch mode_part;
+}
+
+pub fn flagWord(arena: std.mem.Allocator, flag: []const u8, value: []const u8) error{OutOfMemory}![]const u8 {
+    return std.fmt.allocPrint(arena, " {s} {s}", .{ flag, try shellWord(arena, value) });
+}
+
+pub const NextDefine = struct {
+    state: []const u8,
+    setup: ?[]const u8 = null,
+    cwd: ?[]const u8 = null,
+    operation: []const u8,
+    expect_status: ?u8 = null,
+    apparatus: []const []const u8 = &.{},
+    scratch: []const []const u8 = &.{},
+};
+
+pub fn nextDefineWords(arena: std.mem.Allocator, d: NextDefine) error{OutOfMemory}![]const u8 {
+    var out: std.ArrayList(u8) = .empty;
+    try out.appendSlice(arena, try flagWord(arena, "--state", d.state));
+    if (d.setup) |x| try out.appendSlice(arena, try flagWord(arena, "--setup", x));
+    if (d.cwd) |x| try out.appendSlice(arena, try flagWord(arena, "--cwd", x));
+    try out.appendSlice(arena, try flagWord(arena, "--operation", d.operation));
+    if (d.expect_status) |x| try out.print(arena, " --expect-status {d}", .{x});
+    for (d.apparatus) |x| try out.appendSlice(arena, try flagWord(arena, "--apparatus", x));
+    for (d.scratch) |x| try out.appendSlice(arena, try flagWord(arena, "--scratch", x));
+    return out.items;
+}
+
+pub const NextRun = struct {
+    work: ?[]const u8 = null,
+    state_under: ?[]const u8 = null,
+    observe: contract.ObserveMode = .wrappers,
+    shim: ?[]const u8 = null,
+    oracle: ?[]const u8 = null,
+    oracle_found: ?[]const u8 = null,
+};
+
+pub fn nextRunWords(arena: std.mem.Allocator, r: NextRun) error{OutOfMemory}![]const u8 {
+    var out: std.ArrayList(u8) = .empty;
+    // Left off, explore falls back to the default work directory, which may be the one another
+    // user owns or another run holds — the reason this run was given its own.
+    if (r.work) |x| try out.appendSlice(arena, try flagWord(arena, "--work", x));
+    // Left off, the pasted command explores without the bound the operator asked preflight for,
+    // and nothing refuses to say so: the flag only narrows.
+    if (r.state_under) |x| try out.appendSlice(arena, try flagWord(arena, "--state-under", x));
+    try out.appendSlice(arena, observeFlags(arena, r.observe, r.shim));
+    if (r.oracle orelse r.oracle_found) |x|
+        try out.appendSlice(arena, try flagWord(arena, "--oracle", x))
+    else
+        try out.appendSlice(arena, if (builtin.os.tag == .macos) " --allow-unverified" else " --oracle <strace>");
+    return out.items;
+}
+
+test "the next line's words are the define's and the run's, each quoted only where a shell would change it" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const t = std.testing;
+    try t.expectEqualStrings(
+        " --state '/a b/$HOME' --cwd /c --operation 't rotate' --expect-status 3 --apparatus 'note:x `y`' --scratch k --scratch 'm n'",
+        try nextDefineWords(a, .{ .state = "/a b/$HOME", .cwd = "/c", .operation = "t rotate", .expect_status = 3, .apparatus = &.{"note:x `y`"}, .scratch = &.{ "k", "m n" } }),
+    );
+    try t.expectEqualStrings(
+        " --work /w --state-under /u --observe syscalls --shim /l.so --oracle /usr/bin/strace",
+        try nextRunWords(a, .{ .work = "/w", .state_under = "/u", .observe = .syscalls, .shim = "/l.so", .oracle = "/usr/bin/strace" }),
+    );
+    try t.expectEqualStrings(" --observe supervised --oracle '/o p'", try nextRunWords(a, .{ .observe = .supervised, .shim = "/l.so", .oracle_found = "/o p" }));
 }
 
 pub fn replayLine(arena: std.mem.Allocator, case_path: []const u8, observe: contract.ObserveMode, shim_given: ?[]const u8, recovery_flags: []const u8) []const u8 {
