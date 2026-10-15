@@ -2,6 +2,9 @@
 
 Status: Accepted (2026-09-12)
 
+Amended by **ADR 0135**: Dependabot moves the pinned SHAs weekly, and `check-action-pins.sh`
+stays, since Dependabot does not stop a newly written tag reference.
+
 ## Context
 
 Two questions arrived together in an outside review of this repository, and they

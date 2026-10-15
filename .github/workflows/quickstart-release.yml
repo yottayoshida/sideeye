@@ -27,7 +27,7 @@ jobs:
   linux:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # Proves the installer can go red before it is trusted to say green — the platform map
       # (including macOS's `arm64` against the asset's `aarch64`), an asset the release does not
@@ -161,7 +161,7 @@ jobs:
   macos:
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: The installer's own failure cases still fail
         run: sh docs/ci-quickstart/release/install-sideeye.sh --selftest
