@@ -978,6 +978,22 @@ fn recordPortable(sys: SYS, a: [6]u64) void {
 /// fills for exactly this purpose and is ABI-stable, which makes the question moot rather
 /// than answered: there is no reason to depend on a register whose contents at delivery
 /// this machine cannot check.
+// Not written inside onSigsys: a Debug build gives every local of a function its slot in the
+// one frame, so this rare branch's sigaction and signal set would sit on the target thread's
+// stack at every trap.
+fn reraiseAtDefault() void {
+    var dfl: linux.Sigaction = .{
+        .handler = .{ .handler = linux.SIG.DFL },
+        .mask = linux.sigemptyset(),
+        .flags = 0,
+    };
+    _ = linux.sigaction(.SYS, &dfl, null);
+    var set = linux.sigemptyset();
+    linux.sigaddset(&set, .SYS);
+    _ = linux.sigprocmask(linux.SIG.UNBLOCK, &set, null);
+    _ = linux.kill(linux.getpid(), .SYS);
+}
+
 fn onSigsys(_: linux.SIG, info: *const linux.siginfo_t, uc_opaque: ?*anyopaque) callconv(.c) void {
     const l = layout orelse return;
     const uc = uc_opaque orelse return;
@@ -1000,19 +1016,7 @@ fn onSigsys(_: linux.SIG, info: *const linux.siginfo_t, uc_opaque: ?*anyopaque) 
     // disposition left at the default — and under `--observe syscalls` the next trap ends
     // the process instead.
     const code = std.mem.readInt(i32, info_bytes[si_code_off..][0..4], .little);
-    if (code != sys_seccomp) {
-        var dfl: linux.Sigaction = .{
-            .handler = .{ .handler = linux.SIG.DFL },
-            .mask = linux.sigemptyset(),
-            .flags = 0,
-        };
-        _ = linux.sigaction(.SYS, &dfl, null);
-        var set = linux.sigemptyset();
-        linux.sigaddset(&set, .SYS);
-        _ = linux.sigprocmask(linux.SIG.UNBLOCK, &set, null);
-        _ = linux.kill(linux.getpid(), .SYS);
-        return;
-    }
+    if (code != sys_seccomp) return reraiseAtDefault();
 
     const nr: u32 = @bitCast(std.mem.readInt(i32, info_bytes[si_syscall_off..][0..4], .little));
     var a: [6]u64 = undefined;
