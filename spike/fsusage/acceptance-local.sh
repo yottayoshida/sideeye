@@ -30,9 +30,17 @@ fail() { echo "FAIL: $*"; exit 1; }
 # what CI measured on the first PR after #406 that did not touch `src/`. An empty
 # prefix is the check that survives the cache: whatever is in it was installed by
 # this invocation from this tree, or it is not there.
-( cd "$HERE" && zig build --prefix "$OUT" ) || fail "zig build failed; nothing was measured"
+# Not the build's default flags when CI names the job's build: there the pair under test is the
+# one the release ships, and a build here that lost the flags would measure Debug, green.
+[ "${GITHUB_ACTIONS:-}" != true ] || [ -n "${SIDEEYE_BUILD_SAME_AS:-}" ] || fail "in CI, SIDEEYE_BUILD_SAME_AS must name the job's build; nothing was measured"
+# shellcheck disable=SC2086 # a flag list, split on purpose
+( cd "$HERE" && zig build ${SIDEEYE_BUILD_FLAGS:-} --prefix "$OUT" ) || fail "zig build failed; nothing was measured"
 [ -x "$SIDEEYE" ] || fail "zig build installed no binary at $SIDEEYE"
 [ -f "$SHIM" ] || fail "zig build installed no shim at $SHIM"
+if [ -n "${SIDEEYE_BUILD_SAME_AS:-}" ]; then
+    cmp -s "$SIDEEYE" "$SIDEEYE_BUILD_SAME_AS/bin/sideeye" && cmp -s "$SHIM" "$SIDEEYE_BUILD_SAME_AS/lib/$(basename "$SHIM")" \
+        || fail "the pair built here is not the one at $SIDEEYE_BUILD_SAME_AS (were SIDEEYE_BUILD_FLAGS passed?); nothing was measured"
+fi
 
 sudo -v || fail "sudo unavailable; nothing was measured"
 
