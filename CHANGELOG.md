@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **An accepted preflight's `next` line is the define it accepted, every flag of it, and its words reach explore as printed** (#823, ADR 0132; `src/report.zig`, `src/main.zig`, `src/cli.zig`, `src/mcp.zig`, `spike/acceptance.sh`, `docs/cli.md`). The line left out `--apparatus`, `--scratch`, `--work` and `--state-under`, so explore ran another define, in another work directory, or without the bound on what it may empty. It wrapped the setup, the cwd and the operation in double quotes and the state in none, so a `$` or a backquote was expanded where the line was pasted — measured: a backquoted command in a state path ran. Every word now goes through the quoting the `replay` line uses. Over MCP, `sideeye_preflight`'s `next:` names the `observe` the call carried, on an accepted recording and on two runs that differ; it named neither, and the call it suggested ran under the default mode.
+
 ### Changed
 
 - **The CI quickstart and the MCP container pin v1.13.0** (`docs/ci-quickstart.md`, `docs/ci-quickstart/release/install-sideeye.sh`, `.github/workflows/quickstart-release.yml`, `docs/mcp-container/Dockerfile`). The release lane installs the published v1.13.0 asset, and the container fetches it, with the two Linux digests GitHub recorded for it. The pins move after the release, as on v1.12.0, because both download the asset and it exists only once the release is published. With the container on v1.13.0, the MCP server it carries reads its strace witness without the panic #826 fixed, leaves the shim off the `replay` it returns since the container sets no `SIDEEYE_MCP_SHIM`, and is not stopped by a `SIDEEYE_KILL_AT` or `SIDEEYE_KILL_GROUP` in its environment.
