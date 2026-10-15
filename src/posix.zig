@@ -766,10 +766,10 @@ fn childArrangeFailed(what: []const u8) noreturn {
 /// down with it. `setpgid(0, 0)` is how the child gets there; it is not the only way it can
 /// arrive, and this side used to read any non-zero return as "it did not".
 fn childEnterOwnGroup() void {
-    childEnterOwnGroupWith(setpgid, setsid);
+    childEnterOwnGroupWith(setpgid, setsid, kill);
 }
 
-fn childEnterOwnGroupWith(setpgid_fn: anytype, setsid_fn: anytype) void {
+fn childEnterOwnGroupWith(setpgid_fn: anytype, setsid_fn: anytype, kill_fn: anytype) void {
     if (setpgid_fn(0, 0) == 0) return;
     const err = std.c._errno().*; // read before `getpgid`: a successful call may write errno
     const pid = getpid();
@@ -794,13 +794,15 @@ fn childEnterOwnGroupWith(setpgid_fn: anytype, setsid_fn: anytype) void {
         writeNoteLine(fmtChildKeptAfterSetsidRefusedNote(&kept, err, setsid_err, pid, getsid(0)));
         return;
     }
-    var buf: [128]u8 = undefined; // the bound both exits below are sized to
+    var buf: [168]u8 = undefined; // the bound both exits below are sized to
     if (setsid_rc >= 0) {
         const what = fmtChildSetsidWithoutGroupWhat(&buf, pid, now_group, getsid(0));
         std.c._errno().* = err; // the note's errno is the refused call's, not `getpgid`'s
         childArrangeFailed(what);
     }
-    const what = fmtChildBothRefusedWhat(&buf, pid, now_group, getsid(0), err);
+    const probe_rc = kill_fn(-pid, 0);
+    const probe_err: c_int = if (probe_rc == 0) 0 else std.c._errno().*; // not errno on a success: it still holds an earlier call's
+    const what = fmtChildBothRefusedWhat(&buf, pid, now_group, getsid(0), probe_rc, probe_err, err);
     std.c._errno().* = setsid_err;
     childArrangeFailed(what);
 }
@@ -810,10 +812,10 @@ fn childEnterOwnGroupWith(setpgid_fn: anytype, setsid_fn: anytype) void {
 /// write — ends the attempt: the line is worth less than the exit it precedes, so it
 /// is never retried past the bound and never waits on anything but the kernel.
 fn childArrangeNote(what: []const u8) void {
-    // 224: the sentence's own 54 bytes, the longest `what` this file builds (the 128-byte
+    // 256: the sentence's own 54 bytes, the longest `what` this file builds (the 168-byte
     // bound on `fmtChildBothRefusedWhat`'s buffer) and the errno tail (` failed, errno ` 15,
-    // a `c_int` at its widest 11, the newline), which is 209.
-    var buf: [224]u8 = undefined;
+    // a `c_int` at its widest 11, the newline), which is 249.
+    var buf: [256]u8 = undefined;
     writeNoteLine(fmtChildArrangeNote(&buf, what, std.c._errno().*));
 }
 
@@ -836,13 +838,13 @@ fn fmtChildArrangeNote(buf: []u8, what: []const u8, err: c_int) []const u8 {
     return std.fmt.bufPrint(buf, "sideeye: the child could not be arranged before exec: {s} failed, errno {d}\n", .{ what, err }) catch "sideeye: the child could not be arranged before exec\n";
 }
 
-/// swapped pair would read as correct. Its buffer is 128: the fixed text is 66 bytes and four
-/// `c_int`s at their widest 44, which is 110.
-fn fmtChildBothRefusedWhat(buf: []u8, pid: c_int, group: c_int, sid: c_int, setpgid_err: c_int) []const u8 {
-    return std.fmt.bufPrint(buf, "setpgid(0, 0) (pid {d}, group {d}, session {d}) failed, errno {d}, then setsid", .{ pid, group, sid, setpgid_err }) catch "setpgid(0, 0) then setsid";
+/// swapped pair would read as correct. Its buffer is 168: the fixed text is 99 bytes and six
+/// `c_int`s at their widest 66, which is 165.
+fn fmtChildBothRefusedWhat(buf: []u8, pid: c_int, group: c_int, sid: c_int, probe_rc: c_int, probe_err: c_int, setpgid_err: c_int) []const u8 {
+    return std.fmt.bufPrint(buf, "setpgid(0, 0) (pid {d}, group {d}, session {d}; kill(-pid, 0) answered {d}, errno {d}) failed, errno {d}, then setsid", .{ pid, group, sid, probe_rc, probe_err, setpgid_err }) catch "setpgid(0, 0) then setsid";
 }
 
-/// errno, the one refusal that happened. Its buffer is 128: the fixed text is 86 bytes and
+/// errno, the one refusal that happened. Its buffer is the caller's, sized for `fmtChildBothRefusedWhat`: the fixed text is 86 bytes and
 /// three `c_int`s at their widest 33, which is 119.
 fn fmtChildSetsidWithoutGroupWhat(buf: []u8, pid: c_int, group: c_int, sid: c_int) []const u8 {
     return std.fmt.bufPrint(buf, "setpgid(0, 0) (pid {d}, group {d}, session {d}; setsid answered 0 and the group did not follow)", .{ pid, group, sid }) catch "setpgid(0, 0) (setsid answered 0 and the group did not follow)";
@@ -922,8 +924,14 @@ test "the child's arrangement note names the call and the errno, on one line" {
     // a pair swapped in the format string is a failure here rather than a diagnosis that
     // misnames the state at the one moment it is read; too small, the calls still name
     // themselves rather than nothing.
-    try std.testing.expectEqualStrings("setpgid(0, 0) (pid 11, group 22, session 33) failed, errno 44, then setsid", fmtChildBothRefusedWhat(&buf, 11, 22, 33, 44));
-    try std.testing.expectEqualStrings("setpgid(0, 0) then setsid", fmtChildBothRefusedWhat(&tiny, 11, 22, 33, 44));
+    try std.testing.expectEqualStrings("setpgid(0, 0) (pid 11, group 22, session 33; kill(-pid, 0) answered -55, errno 66) failed, errno 44, then setsid", fmtChildBothRefusedWhat(&buf, 11, 22, 33, -55, 66, 44));
+    try std.testing.expectEqualStrings("setpgid(0, 0) then setsid", fmtChildBothRefusedWhat(&tiny, 11, 22, 33, -55, 66, 44));
+    const m = std.math.minInt(c_int);
+    var bound: [168]u8 = undefined;
+    const widest = fmtChildBothRefusedWhat(&bound, m, m, m, m, m, m);
+    try std.testing.expect(std.mem.indexOf(u8, widest, "kill(-pid, 0) answered") != null);
+    var whole: [256]u8 = undefined;
+    try std.testing.expect(std.mem.indexOf(u8, fmtChildArrangeNote(&whole, widest, m), "then setsid failed, errno ") != null);
     try std.testing.expectEqualStrings("setpgid(0, 0) (pid 11, group 22, session 33; setsid answered 0 and the group did not follow)", fmtChildSetsidWithoutGroupWhat(&buf, 11, 22, 33));
     try std.testing.expectEqualStrings("setpgid(0, 0) (setsid answered 0 and the group did not follow)", fmtChildSetsidWithoutGroupWhat(&tiny, 11, 22, 33));
 }
@@ -952,7 +960,7 @@ test "a child refused setsid because it already leads a group of its own runs (#
     if (pid == 0) {
         _ = close(fds[0]);
         if (dup2(fds[1], 2) < 0) _exit(10);
-        childEnterOwnGroupWith(Fake.setpgidRefused, Fake.setsidRefused);
+        childEnterOwnGroupWith(Fake.setpgidRefused, Fake.setsidRefused, kill);
         if (Fake.setsid_accepted) _exit(13);
         if (getsid(0) == getpid()) _exit(12); // a session of its own means `setsid` went through: not this branch
         if (getpgid(0) != getpid()) _exit(11); // the invariant, asked of the kernel
@@ -989,7 +997,7 @@ test "a child the kernel will not move out of the engine's group leaves it with 
         // No guard for "already leads its own group" here: `fork` may not hand this child a
         // pid matching an active group id (POSIX), so it cannot be leading one. The check
         // this test rests on is the `_exit(12)` below, which asks the kernel afterwards.
-        childEnterOwnGroupWith(Fake.setpgid, setsid);
+        childEnterOwnGroupWith(Fake.setpgid, setsid, kill);
         if (getpgid(0) != getpid()) _exit(12);
         _exit(7);
     }
@@ -1030,7 +1038,7 @@ test "a child that can leave the engine's group by neither call exits 126, namin
     if (pid == 0) {
         _ = close(fds[0]);
         if (dup2(fds[1], 2) < 0) _exit(10);
-        childEnterOwnGroupWith(Fake.setpgid, Fake.setsid);
+        childEnterOwnGroupWith(Fake.setpgid, Fake.setsid, kill);
         _exit(7); // reached only if the refusal was swallowed
     }
     _ = close(fds[1]);
@@ -1046,8 +1054,44 @@ test "a child that can leave the engine's group by neither call exits 126, namin
     // group is the parent's, read again after the second refusal, and the session is the one
     // both processes share.
     var expect: [256]u8 = undefined;
-    const line = try std.fmt.bufPrint(&expect, "sideeye: the child could not be arranged before exec: setpgid(0, 0) (pid {d}, group {d}, session {d}) failed, errno 1, then setsid failed, errno 13\n", .{ pid, parent_group, getsid(0) });
+    const line = try std.fmt.bufPrint(&expect, "sideeye: the child could not be arranged before exec: setpgid(0, 0) (pid {d}, group {d}, session {d}; kill(-pid, 0) answered -1, errno {d}) failed, errno 1, then setsid failed, errno 13\n", .{ pid, parent_group, getsid(0), ESRCH });
     try std.testing.expectEqualStrings(line, buf[0..@intCast(n)]);
+}
+
+test "a child refused both calls reports a group probe that succeeded as errno 0, whatever errno held" {
+    const Fake = struct {
+        fn setpgid(_: c_int, _: c_int) c_int {
+            std.c._errno().* = 1;
+            return -1;
+        }
+        fn setsid() c_int {
+            std.c._errno().* = 13;
+            return -1;
+        }
+        fn kill(_: c_int, _: c_int) c_int {
+            std.c._errno().* = 77;
+            return 0;
+        }
+    };
+    var fds: [2]c_int = undefined;
+    try std.testing.expect(pipe(&fds) == 0);
+    const pid = fork();
+    try std.testing.expect(pid >= 0);
+    if (pid == 0) {
+        _ = close(fds[0]);
+        if (dup2(fds[1], 2) < 0) _exit(10);
+        childEnterOwnGroupWith(Fake.setpgid, Fake.setsid, Fake.kill);
+        _exit(7);
+    }
+    _ = close(fds[1]);
+    var buf: [256]u8 = undefined;
+    const n = read(fds[0], &buf, buf.len);
+    _ = close(fds[0]);
+    var status: c_int = 0;
+    _ = waitpid(pid, &status, 0);
+    try std.testing.expectEqual(Term{ .exited = 126 }, decodeStatus(status));
+    try std.testing.expect(n > 0);
+    try std.testing.expect(std.mem.indexOf(u8, buf[0..@intCast(n)], "; kill(-pid, 0) answered 0, errno 0) failed, errno 1, then setsid failed, errno 13\n") != null);
 }
 
 test "a child that already leads its own group runs, and says so, when setpgid(0, 0) is refused (#629)" {

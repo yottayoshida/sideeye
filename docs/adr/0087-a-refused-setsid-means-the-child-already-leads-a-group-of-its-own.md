@@ -7,6 +7,9 @@
 - **Scope:** the engine's fork stub (`src/posix.zig`, `childEnterOwnGroupWith`) on every spawn —
   worlds, the sudo probe, the `fs_usage` sidecar, the MCP adapter's child. No contract change,
   no new `unknown_reason`, no exit-code change.
+- **Updated (2026-10-15, #829):** the exit-126 line the Decision quotes now also carries what
+  `kill(-pid, 0)` answered, inside the parentheses: `(pid, group, session; kill(-pid, 0)
+  answered R, errno K)`. A diagnosis only; the decision is unchanged.
 
 ## Context
 
