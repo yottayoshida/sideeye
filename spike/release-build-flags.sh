@@ -87,13 +87,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: ubuntu-latest
+          - runner: ubuntu-24.04
             artifact: x86_64-linux
             target: x86_64-linux-gnu.2.28
           - runner: ubuntu-24.04-arm
             artifact: aarch64-linux
             target: aarch64-linux-gnu.2.28
-          - runner: macos-latest
+          - runner: macos-26
             artifact: aarch64-macos
             target: aarch64-macos
     runs-on: ${{ matrix.runner }}
@@ -162,9 +162,9 @@ YML
     want "the entry's runner moved: it follows" "ubuntu-26.04-arm" "$tmp/runner.yml" runner
     want "the entry's runner on its last line, not its first" "ubuntu-26.04-arm" "$tmp/runner-last.yml" runner
     want "the x86_64-linux entry's flags" "-Doptimize=ReleaseSafe -Dtarget=x86_64-linux-gnu.2.28" "$tmp/base.yml" flags x86_64-linux
-    want "the x86_64-linux entry's runner" "ubuntu-latest" "$tmp/base.yml" runner x86_64-linux
+    want "the x86_64-linux entry's runner" "ubuntu-24.04" "$tmp/base.yml" runner x86_64-linux
     want "the aarch64-macos entry's flags" "-Doptimize=ReleaseSafe -Dtarget=aarch64-macos" "$tmp/base.yml" flags aarch64-macos
-    want "the aarch64-macos entry's runner" "macos-latest" "$tmp/base.yml" runner aarch64-macos
+    want "the aarch64-macos entry's runner" "macos-26" "$tmp/base.yml" runner aarch64-macos
     want "the Zig version set up" "0.16.0" "$tmp/base.yml" zig
     sed 's/version: 0.16.0/version: 0.17.0/' "$tmp/base.yml" > "$tmp/zig.yml"
     want "the Zig version moved: it follows" "0.17.0" "$tmp/zig.yml" zig

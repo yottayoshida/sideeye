@@ -17,16 +17,16 @@ permissions:
 
 jobs:
   sudo-fsusage:
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 30
     steps:
       # Pinned by commit, like every action in this repository (ADR 0061,
       # spike/check-action-pins.sh). These three were pinned first, when the
       # reason was local to this file — they run before a script that runs as
       # root — and the rule now covers the whole set rather than this one leg.
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
         with:
           version: 0.17.0
 
@@ -48,7 +48,7 @@ jobs:
 
       - name: Upload captures and accounts
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: fsusage-survey
           path: /tmp/fsu-out/

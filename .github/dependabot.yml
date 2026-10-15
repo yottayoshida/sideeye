@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    # Not taken the day it is published: a release pulled within a week never reaches
+    # a pull request here. Only default-days applies to this ecosystem.
+    cooldown:
+      default-days: 7
+    # No group for major versions: an update that matches no group gets a pull request
+    # of its own, so each action's major version is read alone against its release notes.
+    groups:
+      actions:
+        patterns: ["*"]
+        update-types: [minor, patch]

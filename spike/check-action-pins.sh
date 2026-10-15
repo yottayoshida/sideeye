@@ -22,6 +22,7 @@
 #     this header and into ADR 0061 and then dropped the comment before testing —
 #     a reference with no comment passed, so the page said a rule the code did not
 #     hold (measured, first-read review).
+#   * no line names `ubuntu-latest`, `macos-latest` or `windows-latest`, in any case.
 #   * finding NOTHING is a FAILURE. A directory with no workflow files, or workflow
 #     files with no `uses:` at all, exits 1 rather than reporting that every action
 #     it did not look at is pinned. The failure this repository keeps meeting is a
@@ -91,12 +92,12 @@
 #
 # Sunset: NOT "delete this if it has not failed by <date>". A pin check that never
 # goes red is a check doing its job — it means nobody added an unpinned action — so
-# the usual rule would delete it exactly while it is working. Delete it when one of
-# these becomes true instead:
-#   * GitHub makes action tags immutable, so `@v4` cannot be repointed; or
-#   * something else keeps these SHAs current (a Dependabot configuration that
-#     rewrites them), in which case that mechanism holds the invariant and this
-#     check becomes the second place one judgment lives.
+# the usual rule would delete it exactly while it is working. Delete it when both of
+# these are true instead:
+#   * GitHub makes action tags immutable, so `@v4` cannot be repointed; and
+#   * GitHub offers no `-latest` runner label.
+# `.github/dependabot.yml` is not one of them: it moves a pin that is already a SHA,
+# and leaves a newly written `@v4` or `ubuntu-latest` where it is.
 set -u
 
 self=$0
@@ -185,7 +186,8 @@ scan() {  # $1 = workflow directory. 0 = every action pinned, 1 = not.
         if ! is_pinned "$value"; then
             printf 'FAIL  %s:%s names %s\n' "${file##*/}" "$lineno" "${value:-<nothing>}"
             printf '      Pin it: uses: <owner>/<repo>@<40-char commit SHA> # <the tag it came from>\n'
-            printf '      The SHA for a tag: gh api repos/<owner>/<repo>/git/ref/tags/<tag> --jq .object.sha\n'
+            # Not git/ref/tags: for an annotated tag it gives the tag object, not the commit.
+            printf '      The SHA for a tag: gh api repos/<owner>/<repo>/commits/refs/tags/<tag> --jq .sha\n'
             fails=$((fails + 1))
             continue
         fi
@@ -226,19 +228,37 @@ RECORDS
             "$((n_wide - total))" >&2
         printf '      they are pinned. Flow mappings (`- {uses: a/b@sha}`) and a space before the colon\n' >&2
         printf '      are the two known shapes; a `uses:` inside a comment counts here too — reword it.\n' >&2
-        grep -nE 'uses[[:space:]]*:' "$@" 2>/dev/null |
-            grep -vE ':?[0-9]+:[[:space:]]*-?[[:space:]]*uses:' | sed 's/^/          /' >&2
+        grep -nHE 'uses[[:space:]]*:' "$@" 2>/dev/null |
+            grep -vE ':[0-9]+:[[:space:]]*-?[[:space:]]*uses:' | sed 's/^/          /' >&2
         return 1
     fi
 
-    if [ "$fails" -eq 0 ]; then
-        printf 'ok   %s action reference(s) across %s workflow(s) under %s, every one pinned by commit with its tag beside it\n' \
+    # Not only `runs-on:` lines: a matrix value carries the label with no key
+    # beside it, and a comment naming one is refused too rather than parsed out.
+    runner_fails=0
+    runner_hits=$(grep -inHE '(ubuntu|macos|windows)-latest' "$@" 2>/dev/null || true)
+    while IFS= read -r hit; do
+        [ -n "$hit" ] || continue
+        file=${hit%%:*}
+        rest=${hit#*:}
+        printf 'FAIL  %s:%s names a runner image by -latest\n' "${file##*/}" "${rest%%:*}"
+        runner_fails=$((runner_fails + 1))
+    done <<RUNNERS
+$runner_hits
+RUNNERS
+
+    if [ "$fails" -eq 0 ] && [ "$runner_fails" -eq 0 ]; then
+        printf 'ok   %s action reference(s) across %s workflow(s) under %s, every one pinned by commit with its tag beside it, and no runner named -latest\n' \
             "$total" "$n_find" "${dir##*/}"
         return 0
     fi
 
-    printf 'FAIL action pinning under %s: %s of %s reference(s) are not a commit-pinned action with its tag\n' \
-        "$dir" "$fails" "$total" >&2
+    [ "$fails" -eq 0 ] ||
+        printf 'FAIL action pinning under %s: %s of %s reference(s) are not a commit-pinned action with its tag\n' \
+            "$dir" "$fails" "$total" >&2
+    [ "$runner_fails" -eq 0 ] ||
+        printf 'FAIL runner images under %s: %s line(s) name a -latest label. Name the version (ubuntu-24.04, macos-26); -latest moves to a new OS without a commit here.\n' \
+            "$dir" "$runner_fails" >&2
     return 1
 }
 
@@ -271,7 +291,9 @@ jobs:
 YAML
     }
     # $1 = description, $2 = expected rc (0 or 1), $3.. = strings the output must carry
+    n_cases=0
     expect() {
+        n_cases=$((n_cases + 1))
         desc=$1; want=$2; shift 2
         out=$(sh "$self" "$tmp" 2>&1); got=$?
         if [ "$want" -eq 0 ] && [ "$got" -ne 0 ]; then
@@ -344,6 +366,27 @@ YAML
     base
     printf 'jobs:\n  two:\n    steps:\n      - uses : actions/cache@v4\n' > "$tmp/b.yml"
     expect "a space before the colon" 1 "a wider pattern counts"
+    reset
+    printf 'jobs:\n  one:\n    steps:\n      - {uses: actions/cache@v4}\n      - uses: actions/checkout@%s # v4\n' "$sha" > "$tmp/a.yml"
+    expect "one workflow file holding a flow mapping" 1 "a.yml:4:"
+
+    base
+    printf 'jobs:\n  two:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/cache@%s # v4\n' "$sha" > "$tmp/b.yml"
+    expect "a runs-on naming ubuntu-latest" 1 "b.yml:3 names a runner image by -latest"
+    base
+    printf 'jobs:\n  two:\n    strategy:\n      matrix:\n        os: [ubuntu-24.04, macos-latest]\n    runs-on: ${{ matrix.os }}\n    steps:\n      - uses: actions/cache@%s # v4\n' "$sha" > "$tmp/b.yml"
+    expect "a matrix naming macos-latest" 1 "b.yml:5 names a runner image by -latest"
+    base
+    printf 'jobs:\n  two:\n    runs-on: Ubuntu-Latest\n    steps:\n      - uses: actions/cache@%s # v4\n' "$sha" > "$tmp/b.yml"
+    expect "a runs-on naming Ubuntu-Latest" 1 "b.yml:3 names a runner image by -latest"
+    # grep drops the file name when it reads one file; the report must keep it.
+    reset
+    printf 'jobs:\n  one:\n    runs-on: windows-latest\n    steps:\n      - uses: actions/checkout@%s # v4\n' "$sha" > "$tmp/a.yml"
+    expect "one workflow file naming windows-latest" 1 "a.yml:3 names a runner image by -latest"
+    # Other keys may still say latest: the zig version and a lane name do.
+    base
+    printf 'jobs:\n  two:\n    strategy:\n      matrix:\n        zig: [0.16.0, latest]\n    runs-on: macos-26\n    steps:\n      - uses: actions/cache@%s # v4\n' "$sha" > "$tmp/b.yml"
+    expect "a named runner beside a matrix value of latest" 0
 
     # Assertion 3: the walk and the independent count disagreeing. A vertical tab
     # is whitespace to grep's [[:space:]] and not to awk's [ \t], so the line is
@@ -374,13 +417,14 @@ YAML
     expect "a directory with no workflow files" 1
 
     # A directory that is not there at all.
+    n_cases=$((n_cases + 1))
     if sh "$self" "$tmp/nope" >/dev/null 2>&1; then
         echo "SELFTEST FAIL  a missing directory was accepted" >&2
         rc=1
     fi
 
     if [ "$rc" = 0 ]; then
-        echo "ok   selftest: 16 cases — 3 pass (pinned, upper-case SHA, owner/repo/path), 13 refuse (tag, 39 hex, no @, docker:// and local path carrying 40 hex, missing tag comment, flow mapping, space before colon, the two listings disagreeing, walk/count disagreement, no actions, no files, missing directory)"
+        echo "ok   selftest: $n_cases cases, each passing or refusing as planted"
     fi
     return "$rc"
 }
