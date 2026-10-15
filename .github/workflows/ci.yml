@@ -14,6 +14,7 @@ on:
 jobs:
   linux:
     runs-on: ubuntu-24.04
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -212,13 +213,15 @@ jobs:
         run: python3 spike/check-readme-demo.py --selftest
 
       - name: Install the completeness oracle
-        run: sudo apt-get update && sudo apt-get install -y strace
+        timeout-minutes: 5
+        run: sudo apt-get -o Acquire::Retries=3 update && sudo apt-get -o Acquire::Retries=3 install -y strace
 
       # Acceptance check 5c asks bash, zsh and fish what `sideeye completions` offers (#712);
       # the runner has only bash, and SIDEEYE_EXPECT_SHELLS below turns a missing shell red
       # instead of NOT MEASURED.
       - name: Install the shells the completion scripts are checked in
-        run: sudo apt-get install -y zsh fish
+        timeout-minutes: 5
+        run: sudo apt-get -o Acquire::Retries=3 install -y zsh fish
 
       - name: Build the toy targets
         run: sh spike/build-toys.sh
@@ -381,6 +384,7 @@ jobs:
 
   macos:
     runs-on: macos-26
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -1469,7 +1473,8 @@ jobs:
         run: zig build
 
       - name: Install the toolchain the pinned timewarrior build needs
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends git ca-certificates cmake g++ make python3 strace
+        timeout-minutes: 10
+        run: sudo apt-get -o Acquire::Retries=3 update && sudo apt-get -o Acquire::Retries=3 install -y --no-install-recommends git ca-certificates cmake g++ make python3 strace
 
       - name: "Replay across the fix: record, FAIL unpatched, PASS patched (legs a-c)"
         run: LEGS=abc sh spike/dogfood-timew-replay.sh
@@ -1484,6 +1489,7 @@ jobs:
   # dead. Its own job: it needs no toolchain, so a failure here is unambiguous.
   classification:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -1501,6 +1507,7 @@ jobs:
   # other checker here does.
   veto-rate:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -1523,6 +1530,7 @@ jobs:
   # leg is the exact shape that would otherwise pass as agreement.
   upstream-ledger:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -1551,6 +1559,7 @@ jobs:
   # edited by one digit, or a report row edited by hand, is red.
   outcome-funnel:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -1568,6 +1577,7 @@ jobs:
 
   changelog-block:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -1588,6 +1598,7 @@ jobs:
   # checked against it here.
   agent-skills:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -1608,6 +1619,7 @@ jobs:
   # is a checker whose predicates are untested (#342).
   ledger-prose:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -1619,6 +1631,7 @@ jobs:
 
   main-shape:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -1636,6 +1649,7 @@ jobs:
   # Not folded into another job: a failure here has to name the instrument.
   fmt:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -1651,6 +1665,7 @@ jobs:
 
   adr-numbering:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -1705,6 +1720,7 @@ jobs:
   # here, which is the correct price.
   action-pins:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -1714,9 +1730,16 @@ jobs:
       - name: Every action a workflow runs is pinned to a commit, and no runner is named -latest
         run: sh spike/check-action-pins.sh
 
+      # Not in `required`: that job starts after the slowest one ends, and this answers in
+      # seconds; `required` needs this job, so a missing timeout still cannot merge.
+      - name: Every job in every workflow has a timeout of its own
+        if: always()
+        run: python3 spike/check-ci-required.py --timeouts .github/workflows
+
   # Here, not only in the weekly run: a broken judge or list would otherwise surface a week late.
   zig-ahead-judge:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -1736,6 +1759,7 @@ jobs:
   # green on the shapes it must not count (a marker in a fence, in prose, indented).
   criterion-3-status:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -1753,6 +1777,7 @@ jobs:
   # nothing else.
   onboarding-clock:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -1832,7 +1857,9 @@ jobs:
       - name: The launcher creates its box, and a second launch refuses to inherit one
         run: |
           set -eu
-          img=$(printf 'FROM busybox\nCMD ["sleep","infinity"]\n' | docker build -q -)
+          # Pinned by digest, and moved by hand: Dependabot does not read an image named
+          # inside a `run:` string.
+          img=$(printf 'FROM busybox:1.38.0@sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b6da3d7e6e\nCMD ["sleep","infinity"]\n' | docker build -q -)
           export BOX_NAME=onboarding-box-ci
           # A hosted runner is fresh; a self-hosted one is not, and this step's
           # own refusal leg would otherwise wedge it forever on a box left by a
@@ -1882,6 +1909,7 @@ jobs:
 
   authoring-cost:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       # Full history: the freshness predicate reads a FIXED commit (base-commit.txt), because
       # against the working tree it excludes this study's own selection the moment the study is
@@ -2031,10 +2059,11 @@ jobs:
           file zig-out/bin/sideeye zig-out/lib/libsideeye_shim.so || true
 
       - name: Install the completeness oracle, the shells, and a Rust compiler where the image has none
+        timeout-minutes: 10
         run: |
-          sudo apt-get update
-          sudo apt-get install -y strace zsh fish
-          command -v rustc > /dev/null || sudo apt-get install -y rustc
+          sudo apt-get -o Acquire::Retries=3 update
+          sudo apt-get -o Acquire::Retries=3 install -y strace zsh fish
+          command -v rustc > /dev/null || sudo apt-get -o Acquire::Retries=3 install -y rustc
           rustc --version
 
       - name: Build the toy targets
@@ -2069,6 +2098,7 @@ jobs:
     if: always()
     needs: [linux, macos, timew-regression, classification, veto-rate, upstream-ledger, outcome-funnel, changelog-block, agent-skills, ledger-prose, main-shape, fmt, adr-numbering, action-pins, zig-ahead-judge, criterion-3-status, onboarding-clock, authoring-cost, linux-aarch64-releasesafe]
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: The check proves it can go red
