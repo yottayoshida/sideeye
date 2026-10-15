@@ -647,7 +647,7 @@ test "the step for child_touched_state_dir follows the wall, not the refusal's n
             try std.testing.expectEqual(contract.NextStep.unwrap_or_class_wall, childTouchedNext(.not_the_modes_wall, m, linux));
         }
     }
-    try std.testing.expectEqual(@as(usize, 2), @typeInfo(ChildWall).@"enum".fields.len);
+    try std.testing.expectEqual(@as(usize, 2), std.meta.fieldNames(ChildWall).len);
 }
 
 test "foreignTouchDetail names the record, both ends of a two-path op, and defangs a forged line (#484)" {
@@ -1262,9 +1262,9 @@ fn traceFileForTest(tag: []const u8, records: []const contract.Record, fbuf: *[c
     var dbuf: [contract.max_path]u8 = undefined;
     const dir = std.fmt.bufPrint(&dbuf, "/tmp/sideeye-{s}-{d}", .{ tag, posix.getpid() }) catch unreachable;
     var pbuf: [contract.max_path]u8 = undefined;
-    const dz = std.fmt.bufPrintZ(&pbuf, "{s}", .{dir}) catch unreachable;
+    const dz = std.mem.printSentinel(&pbuf, "{s}", .{dir}, 0) catch unreachable;
     _ = posix.mkdir(dz.ptr, 0o755);
-    const fz = std.fmt.bufPrintZ(fbuf, "{s}/trace.bin", .{dir}) catch unreachable;
+    const fz = std.mem.printSentinel(fbuf, "{s}/trace.bin", .{dir}, 0) catch unreachable;
     const fd = posix.open(fz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
     try std.testing.expect(fd >= 0);
     var hbuf: [contract.header_len]u8 = undefined;

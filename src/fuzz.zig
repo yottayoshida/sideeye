@@ -53,7 +53,7 @@ pub fn run(
     var dir_buf: [256]u8 = undefined;
     const dir_z = try scratchDir(&dir_buf, "fuzz", target.name);
     var path_buf: [300]u8 = undefined;
-    const path_z = std.fmt.bufPrintZ(&path_buf, "{s}/input.bin", .{dir_z}) catch return error.FuzzPathTooLong;
+    const path_z = std.mem.printSentinel(&path_buf, "{s}/input.bin", .{dir_z}, 0) catch return error.FuzzPathTooLong;
 
     const seed = options.seed ^ std.hash.Wyhash.hash(0, target.name);
 
@@ -91,7 +91,7 @@ pub fn run(
 
 /// mkdtemp, not a fixed name: a link another user placed in advance must not become the directory.
 fn scratchDir(buf: []u8, kind: []const u8, name: []const u8) ![:0]const u8 {
-    const template = std.fmt.bufPrintZ(buf, "/tmp/sideeye-{s}-{s}-XXXXXX", .{ kind, name }) catch return error.FuzzPathTooLong;
+    const template = std.mem.printSentinel(buf, "/tmp/sideeye-{s}-{s}-XXXXXX", .{ kind, name }, 0) catch return error.FuzzPathTooLong;
     _ = posix.mkdtemp(template.ptr) orelse return error.FuzzScratchUnavailable;
     return template;
 }
@@ -242,7 +242,7 @@ const DiskInput = struct {
         self.dir = try scratchDir(&self.dir_buf, "fuzzfile", name);
         var real: [1024]u8 = undefined;
         const r = std.mem.span(posix.realpath(self.dir.ptr, &real) orelse return error.FuzzScratchUnavailable);
-        self.path = std.fmt.bufPrintZ(&self.path_buf, "{s}/{s}", .{ r, file }) catch return error.FuzzPathTooLong;
+        self.path = std.mem.printSentinel(&self.path_buf, "{s}/{s}", .{ r, file }, 0) catch return error.FuzzPathTooLong;
         self.fd = posix.open(self.path.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_EXCL | posix.O_NOFOLLOW | posix.O_CLOEXEC, self.mode);
         if (self.fd < 0) return error.FuzzInputUnwritable;
     }
@@ -550,9 +550,9 @@ test "fuzz: the MCP transport" {
             "{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"tools/call\",\"params\":{" ++ meta ++ ",\"name\":\"sideeye_evidence\",\"arguments\":{\"case_path\":\"c/case.json\"}}}\n" ++
             "{\"jsonrpc\":\"2.0\",\"id\":6,\"method\":\"tools/call\",\"params\":{\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"1999-01-01\",\"io.modelcontextprotocol/clientCapabilities\":{}},\"name\":\"x\"}}\n",
         // Not only short seeds: below the entry point's 512-byte buffer the streaming read is never reached.
-        "{\"method\":\"tools/call\",\"params\":{" ++ meta ++ ",\"name\":\"sideeye_preflight\",\"arguments\":{\"config_path\":\"" ++ "d/" ** 200 ++ "sideeye.toml\",\"id\":9}},\"jsonrpc\":\"2.0\",\"id\":42}\n" ++
-            "{\"jsonrpc\":\"2.0\",\"id\":\"q\\u0022\\n\",\"method\":\"tools/call\",\"params\":{\"pad\":[" ++ "[1,{\"a\":null}]," ** 40 ++ "true]}}\n" ++
-            "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/cancelled\",\"params\":{\"reason\":\"" ++ "r" ** 600 ++ "\"}}\n",
+        "{\"method\":\"tools/call\",\"params\":{" ++ meta ++ ",\"name\":\"sideeye_preflight\",\"arguments\":{\"config_path\":\"" ++ repeat("d/", 200) ++ "sideeye.toml\",\"id\":9}},\"jsonrpc\":\"2.0\",\"id\":42}\n" ++
+            "{\"jsonrpc\":\"2.0\",\"id\":\"q\\u0022\\n\",\"method\":\"tools/call\",\"params\":{\"pad\":[" ++ repeat("[1,{\"a\":null}],", 40) ++ "true]}}\n" ++
+            "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/cancelled\",\"params\":{\"reason\":\"" ++ @as([600]u8, @splat('r')) ++ "\"}}\n",
     });
 }
 
@@ -784,4 +784,13 @@ test "fuzz: an evidence bundle" {
     const seeds = [_][]const u8{ try evidenceSeed(a, .earliest, rows[0..1]), try evidenceSeed(a, .checker, &rows) };
     for (seeds) |seed| try std.testing.expect(parsers.evidence.parseBundle(a, seed) == .ok);
     try run({}, fuzzEvidence, .{ .name = "evidence", .max_len = fuzz_evidence_max }, &seeds);
+}
+
+fn repeat(comptime s: []const u8, comptime n: usize) *const [s.len * n]u8 {
+    const out = comptime blk: {
+        var buf: [s.len * n]u8 = undefined;
+        for (0..n) |i| @memcpy(buf[i * s.len ..][0..s.len], s);
+        break :blk buf;
+    };
+    return &out;
 }

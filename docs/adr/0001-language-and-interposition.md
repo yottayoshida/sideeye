@@ -27,8 +27,8 @@ updated and the other will not, and nothing about that mismatch is loud.
 
 ## Decision
 
-**Write everything in Zig — engine, CLI and shim — and pin Zig 0.16.0 (a tagged
-release, not a `-dev` build).**
+**Write everything in Zig — engine, CLI and shim — and pin one tagged Zig release, not a
+`-dev` build: 0.17.0 since 2026-10-15, 0.16.0 before it (see the amendment below).**
 
 The substance of the decision is a single file, `src/contract.zig`, holding the
 `OpClass` enum, the trace record encoding and decoding, the environment variable names
@@ -48,12 +48,12 @@ Supporting consequences of one language:
 - **One build file.** `build.zig` produces both artifacts; the shim is only built for
   targets whose interposition mechanism actually exists.
 
-Zig is pinned to **0.16.0 stable** rather than 0.17.0-dev because ziglang.org keeps only
+Zig was pinned to **0.16.0 stable** rather than 0.17.0-dev because ziglang.org keeps only
 tagged releases and the current master build: a pinned `-dev` version stops being
 downloadable once master moves on. CI is a required gate for v0.1, so a version that
 can vanish is not a version that can be pinned.
 
-The local toolchain is the Homebrew `zig` 0.16.0 formula. `anyzig` was considered — it
+The local toolchain is the Homebrew `zig` formula, at the pinned release. `anyzig` was considered — it
 reads `minimum_zig_version` from `build.zig.zon` and fetches the matching compiler — but
 it conflicts with the `zig` formula (both provide a `zig` binary), and the version it
 would fetch is the one already installed. The declaration in `build.zig.zon` is what
@@ -97,13 +97,14 @@ handling, scheduler and stack management fight the host process).
 
 Accepted costs:
 
-- The engine rides on `std.Io`, which 0.16 reworked and 0.17 will move again. Pinning
-  0.16.0 means the breakage arrives all at once at the upgrade rather than continuously.
+- The engine rides on `std.Io`, which 0.16 reworked. Pinning one
+  release means the breakage arrives all at once at the upgrade rather than continuously.
 - No JSON Schema generation and no snapshot-testing library; both are hand-written when
   needed. Property testing has an in-tree fuzzer, unused in v0.1 — the determinism claim
   is a byte comparison of two traces, which needs no generator. (Since #695, the parsers of
-  untrusted bytes have fuzz entry points in that fuzzer's form; the fuzzer itself does not
-  build on the pinned 0.16.0, so a mutation driver of Sideeye's own runs them — ADR 0112.)
+  untrusted bytes have fuzz entry points in that fuzzer's form; the fuzzer itself did not
+  build on 0.16.0, so a mutation driver of Sideeye's own runs them — ADR 0112. It runs on
+  0.17.0; CI does not drive it yet.)
 - Code generation for Zig is weaker than for Rust because training data predates these
   APIs. Mitigated by a project skill covering the 0.16/0.17 changes; that skill is
   itself unverified, so the first discrepancy found in practice is recorded in
@@ -124,3 +125,24 @@ The report schema is **not** frozen by this decision. Freezing the config format
 schema, exit codes and replay compatibility is what v1.0 means (PRD "Versioning
 philosophy"); v0.1 keeps the schema experimental so that what the spike learns can still
 change its shape.
+
+## Amended 2026-10-15: the pin moves to 0.17.0 (#782)
+
+Zig 0.17.0 was released on 2026-10-01 and Homebrew's `zig` moved to it, so a source build with
+the formula stopped at `build.zig`. The pin moves to 0.17.0: `build.zig.zon`'s
+`minimum_zig_version` and every workflow's `setup-zig`. The reasoning above for a tagged release
+over master stands; the paragraph choosing 0.16.0 over 0.17.0-dev is kept as it was decided.
+
+What the move took, measured on the tree before it: `b.args` gone from `std.Build`, the `**`
+repetition operator gone from the language (40 uses), `std.fmt.bufPrintZ` (244) and
+`Allocator.dupeZ` (42) gone, the type-info `fields` and `decls` arrays replaced by name lists,
+`ArrayList` gaining a field, and `linux.waitpid` taking an `i32` status — and `zig fmt` renaming
+the int/enum builtins. With those, the unit tests count the same on 0.17.0 as on 0.16.0 on both
+operating systems, every option CI builds with builds for the four targets it uses, and Zig
+master (0.18.0-dev.253) builds and passes too. The one test change beyond spelling: the two
+trace-budget tests now give the arena a fixed-buffer child of their own. The arena grows a node in
+place when its child can, and 0.17.0's `std.testing.allocator` is a different allocator from
+0.16.0's, under which whether it can depended on the tests before them and on the OS.
+
+Not moved: `spike/platforms/` and the Windows job of `spike-platforms.yml` fetch 0.16.0 to rebuild
+v1.10.0, a release made with it.

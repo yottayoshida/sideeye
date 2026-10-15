@@ -67,7 +67,7 @@ test "EntryRel names nothing rather than a cut path when the path does not fit (
     var rel: EntryRel = .{};
     rel.set("a/b");
     try std.testing.expectEqualStrings("a/b", rel.get());
-    const long = [_]u8{'x'} ** (contract.max_path + 1);
+    const long: [contract.max_path + 1]u8 = @splat('x');
     rel.set(&long);
     try std.testing.expectEqual(@as(usize, 0), rel.get().len);
 }
@@ -165,7 +165,7 @@ fn mountTableScan(root: []const u8, out: *EntryRel) MountScan {
 /// names a btrfs subvolume, which the mount table does not list.
 fn deviceScan(root: []const u8, out: *EntryRel) MountScan {
     var root_buf: [contract.max_path]u8 = undefined;
-    const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return .unlisted;
+    const root_z = std.mem.printSentinel(&root_buf, "{s}", .{root}, 0) catch return .unlisted;
     const id = posix.identityOfPath(root_z.ptr) catch return .none;
     var rel_buf: [contract.max_path]u8 = undefined;
     return deviceScanAt(root, id.dev, &rel_buf, 0, 0, out);
@@ -177,7 +177,7 @@ fn deviceScanAt(root: []const u8, dev: u64, rel_buf: *[contract.max_path]u8, rel
     if (depth > max_depth) return .none;
     var dir_buf: [contract.max_path]u8 = undefined;
     const dir_z = (if (rel_len == 0)
-        std.fmt.bufPrintZ(&dir_buf, "{s}", .{root})
+        std.mem.printSentinel(&dir_buf, "{s}", .{root}, 0)
     else
         joinZ(&dir_buf, root, rel_buf[0..rel_len])) catch return .unlisted;
     const dirp = posix.opendir(dir_z.ptr) orelse return .none;
@@ -299,7 +299,7 @@ fn refuseMountInside(root: []const u8) RestoreError!void {
 }
 
 fn joinZ(buf: []u8, a: []const u8, b: []const u8) error{PathTooLong}![:0]const u8 {
-    const s = std.fmt.bufPrintZ(buf, "{s}/{s}", .{ a, b }) catch return error.PathTooLong;
+    const s = std.mem.printSentinel(buf, "{s}/{s}", .{ a, b }, 0) catch return error.PathTooLong;
     return s;
 }
 
@@ -342,7 +342,7 @@ fn walk(ctx: *WalkCtx, rel_prefix: []const u8, depth: usize) SnapshotError!void 
     const arena = ctx.arena();
     var dir_buf: [contract.max_path]u8 = undefined;
     const dir_path = if (rel_prefix.len == 0)
-        std.fmt.bufPrintZ(&dir_buf, "{s}", .{ctx.root}) catch return error.PathTooLong
+        std.mem.printSentinel(&dir_buf, "{s}", .{ctx.root}, 0) catch return error.PathTooLong
     else
         try joinZ(&dir_buf, ctx.root, rel_prefix);
 
@@ -481,7 +481,7 @@ pub fn takeSnapshotCapped(gpa: Allocator, root: []const u8, caps: SnapshotCaps, 
         }
     }
     var root_z_buf: [contract.max_path]u8 = undefined;
-    const root_z = std.fmt.bufPrintZ(&root_z_buf, "{s}", .{root}) catch return error.PathTooLong;
+    const root_z = std.mem.printSentinel(&root_z_buf, "{s}", .{root}, 0) catch return error.PathTooLong;
     const root_dev: ?u64 = if (posix.identityOfPath(root_z.ptr)) |id| id.dev else |_| null;
 
     var ctx: WalkCtx = .{
@@ -639,7 +639,7 @@ const RootVet = union(enum) { identified: posix.Identity, absent };
 
 fn assertRootResolvesToItself(root: []const u8) RestoreError!RootVet {
     var root_buf: [contract.max_path]u8 = undefined;
-    const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return error.PathTooLong;
+    const root_z = std.mem.printSentinel(&root_buf, "{s}", .{root}, 0) catch return error.PathTooLong;
     var real_buf: [contract.max_path]u8 = undefined;
     const resolved = posix.realpath(root_z.ptr, &real_buf) orelse {
         if (std.c._errno().* == posix.ENOENT) return .absent; // nothing there to delete
@@ -658,7 +658,7 @@ const RootOpen = union(enum) { fd: c_int, absent };
 /// picking the right target — the same distinction the denylist's note gets wrong above.
 fn openRootDir(root: []const u8, vet: RootVet) RestoreError!RootOpen {
     var root_buf: [contract.max_path]u8 = undefined;
-    const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return error.PathTooLong;
+    const root_z = std.mem.printSentinel(&root_buf, "{s}", .{root}, 0) catch return error.PathTooLong;
     const fd = posix.open(
         root_z.ptr,
         posix.O_RDONLY | posix.O_DIRECTORY | posix.O_NOFOLLOW | posix.O_CLOEXEC,
@@ -715,7 +715,7 @@ fn deleteTree(root: []const u8) RestoreError!void {
     // too and the name checks are not, which is the accurate statement and the reason this
     // is not a fourth production entry point.
     var vet_buf: [contract.max_path]u8 = undefined;
-    const vet_z = std.fmt.bufPrintZ(&vet_buf, "{s}", .{root}) catch return error.PathTooLong;
+    const vet_z = std.mem.printSentinel(&vet_buf, "{s}", .{root}, 0) catch return error.PathTooLong;
     const vet: RootVet = if (posix.identityOfPath(vet_z.ptr)) |id| .{ .identified = id } else |_| .absent;
     switch (try openRootDir(root, vet)) {
         .absent => return,
@@ -794,7 +794,7 @@ fn deleteTreeAt(dirfd: c_int, depth: usize) RestoreError!void {
             // meaningful: an absolute path makes the kernel ignore the descriptor,
             // silently, on both platforms.
             var name_buf: [contract.max_path]u8 = undefined;
-            const name_z = std.fmt.bufPrintZ(&name_buf, "{s}", .{name}) catch return error.PathTooLong;
+            const name_z = std.mem.printSentinel(&name_buf, "{s}", .{name}, 0) catch return error.PathTooLong;
 
             // Recurse only into a real directory, never into a symlink that points at one.
             //
@@ -856,7 +856,7 @@ fn deleteTreeAt(dirfd: c_int, depth: usize) RestoreError!void {
 pub fn freshDir(root: []const u8) RestoreError!void {
     try assertSafeRoot(root);
     var root_buf: [contract.max_path]u8 = undefined;
-    const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return error.PathTooLong;
+    const root_z = std.mem.printSentinel(&root_buf, "{s}", .{root}, 0) catch return error.PathTooLong;
     if (posix.mkdir(root_z.ptr, 0o755) == 0) return; // did not exist: created empty
     const vet = try assertRootResolvesToItself(root);
     try refuseMountInside(root);
@@ -960,7 +960,7 @@ pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
     // would then run against an unlinked inode. Before the open there is nothing to
     // disagree with: a root that is simply gone is recreated here, as it always was.
     var root_buf: [contract.max_path]u8 = undefined;
-    const root_z = std.fmt.bufPrintZ(&root_buf, "{s}", .{root}) catch return error.PathTooLong;
+    const root_z = std.mem.printSentinel(&root_buf, "{s}", .{root}, 0) catch return error.PathTooLong;
     const after = try createRoot(root_z.ptr, vet);
 
     const fd = switch (try openRootDir(root, after)) {
@@ -973,7 +973,7 @@ pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
 
     for (snap.entries.items) |e| {
         var rel_buf: [contract.max_path]u8 = undefined;
-        const rel_z = std.fmt.bufPrintZ(&rel_buf, "{s}", .{e.rel}) catch return error.PathTooLong;
+        const rel_z = std.mem.printSentinel(&rel_buf, "{s}", .{e.rel}, 0) catch return error.PathTooLong;
         switch (e.kind) {
             // `missing` the moment they are judged (#164): a world starting without
             // an empty directory the recording had would read as the target's
@@ -995,7 +995,7 @@ pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
             },
             .symlink => {
                 var tz_buf: [contract.max_path]u8 = undefined;
-                const tz = std.fmt.bufPrintZ(&tz_buf, "{s}", .{e.content}) catch return error.PathTooLong;
+                const tz = std.mem.printSentinel(&tz_buf, "{s}", .{e.content}, 0) catch return error.PathTooLong;
                 if (posix.symlinkat(tz.ptr, fd, rel_z.ptr) != 0) return error.CreateFailed;
             },
             .file => try writeFileEntryAt(fd, rel_z.ptr, e.content, e.mode, false),
@@ -1011,14 +1011,14 @@ pub fn restore(snap: Snapshot, root: []const u8) RestoreError!void {
 test "#164 pin: restore goes loud when a directory cannot be created" {
     const gpa = std.testing.allocator;
     var pbuf: [contract.max_path]u8 = undefined;
-    const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-loud-dir-test-{d}", .{posix.getpid()}) catch unreachable;
+    const parent_z = std.mem.printSentinel(&pbuf, "/tmp/sideeye-loud-dir-test-{d}", .{posix.getpid()}, 0) catch unreachable;
     _ = posix.mkdir(parent_z.ptr, 0o755);
     var dbuf: [contract.max_path]u8 = undefined;
     const parent = std.mem.span(posix.realpath(parent_z.ptr, &dbuf) orelse return error.SkipZigTest);
     var rbuf: [contract.max_path]u8 = undefined;
     const root = std.fmt.bufPrint(&rbuf, "{s}/state", .{parent}) catch unreachable;
     var rzbuf: [contract.max_path]u8 = undefined;
-    const root_z = std.fmt.bufPrintZ(&rzbuf, "{s}", .{root}) catch unreachable;
+    const root_z = std.mem.printSentinel(&rzbuf, "{s}", .{root}, 0) catch unreachable;
     _ = posix.mkdir(root_z.ptr, 0o755);
     defer {
         _ = posix.rmdir(root_z.ptr);
@@ -1060,7 +1060,7 @@ pub fn corruptState(snap: Snapshot, root: []const u8) RestoreError!void {
         // even possible.
         if (e.kind != .file and e.kind != .symlink) continue;
         var rel_buf: [contract.max_path]u8 = undefined;
-        const rel_z = std.fmt.bufPrintZ(&rel_buf, "{s}", .{e.rel}) catch return error.PathTooLong;
+        const rel_z = std.mem.printSentinel(&rel_buf, "{s}", .{e.rel}, 0) catch return error.PathTooLong;
         if (e.kind == .symlink) {
             // Replace, not follow: opening the link would corrupt whatever it points
             // at, which may be outside the state directory entirely. A checker that
@@ -1292,7 +1292,7 @@ test "assertRootResolvesToItself refuses a root swapped for a symlink after reso
     // "/tmp/..." root never resolves to itself and every assertion below would be about
     // the wrong thing.
     var pbuf: [contract.max_path]u8 = undefined;
-    const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-rootswap-{d}", .{posix.getpid()}) catch unreachable;
+    const parent_z = std.mem.printSentinel(&pbuf, "/tmp/sideeye-rootswap-{d}", .{posix.getpid()}, 0) catch unreachable;
     _ = posix.mkdir(parent_z.ptr, 0o755);
     var base_buf: [contract.max_path]u8 = undefined;
     const base = std.mem.span(posix.realpath(parent_z.ptr, &base_buf) orelse return error.SkipZigTest);
@@ -1300,11 +1300,11 @@ test "assertRootResolvesToItself refuses a root swapped for a symlink after reso
     var good_buf: [contract.max_path]u8 = undefined;
     const good = std.fmt.bufPrint(&good_buf, "{s}/state", .{base}) catch unreachable;
     var good_z: [contract.max_path]u8 = undefined;
-    const good_zs = std.fmt.bufPrintZ(&good_z, "{s}", .{good}) catch unreachable;
+    const good_zs = std.mem.printSentinel(&good_z, "{s}", .{good}, 0) catch unreachable;
     var other_buf: [contract.max_path]u8 = undefined;
     const other = std.fmt.bufPrint(&other_buf, "{s}/elsewhere", .{base}) catch unreachable;
     var other_z: [contract.max_path]u8 = undefined;
-    const other_zs = std.fmt.bufPrintZ(&other_z, "{s}", .{other}) catch unreachable;
+    const other_zs = std.mem.printSentinel(&other_z, "{s}", .{other}, 0) catch unreachable;
     defer {
         _ = posix.unlink(good_zs.ptr);
         _ = posix.rmdir(good_zs.ptr);
@@ -1332,16 +1332,16 @@ test "openRootDir refuses a root swapped between the vet and the open (#338)" {
     var pbuf: [contract.max_path]u8 = undefined;
     const parent = std.fmt.bufPrint(&pbuf, "/tmp/sideeye-vetwin-{d}", .{std.c.getpid()}) catch unreachable;
     var pz: [contract.max_path]u8 = undefined;
-    const parent_z = std.fmt.bufPrintZ(&pz, "{s}", .{parent}) catch unreachable;
+    const parent_z = std.mem.printSentinel(&pz, "{s}", .{parent}, 0) catch unreachable;
     _ = posix.mkdir(parent_z.ptr, 0o755);
     var dbuf: [contract.max_path]u8 = undefined;
     const rparent = std.mem.span(posix.realpath(parent_z.ptr, &dbuf) orelse return error.SkipZigTest);
     var ab: [contract.max_path]u8 = undefined;
     const root = std.fmt.bufPrint(&ab, "{s}/state", .{rparent}) catch unreachable;
     var az: [contract.max_path]u8 = undefined;
-    const root_z = std.fmt.bufPrintZ(&az, "{s}", .{root}) catch unreachable;
+    const root_z = std.mem.printSentinel(&az, "{s}", .{root}, 0) catch unreachable;
     var bb: [contract.max_path]u8 = undefined;
-    const moved_z = std.fmt.bufPrintZ(&bb, "{s}/moved", .{rparent}) catch unreachable;
+    const moved_z = std.mem.printSentinel(&bb, "{s}/moved", .{rparent}, 0) catch unreachable;
     defer {
         _ = posix.rmdir(root_z.ptr);
         _ = posix.rmdir(moved_z.ptr);
@@ -1377,14 +1377,14 @@ test "openRootDir refuses a root that appeared after the vet found nothing (#338
     var pbuf: [contract.max_path]u8 = undefined;
     const parent = std.fmt.bufPrint(&pbuf, "/tmp/sideeye-vetabs-{d}", .{std.c.getpid()}) catch unreachable;
     var pz: [contract.max_path]u8 = undefined;
-    const parent_z = std.fmt.bufPrintZ(&pz, "{s}", .{parent}) catch unreachable;
+    const parent_z = std.mem.printSentinel(&pz, "{s}", .{parent}, 0) catch unreachable;
     _ = posix.mkdir(parent_z.ptr, 0o755);
     var dbuf: [contract.max_path]u8 = undefined;
     const rparent = std.mem.span(posix.realpath(parent_z.ptr, &dbuf) orelse return error.SkipZigTest);
     var ab: [contract.max_path]u8 = undefined;
     const root = std.fmt.bufPrint(&ab, "{s}/state", .{rparent}) catch unreachable;
     var az: [contract.max_path]u8 = undefined;
-    const root_z = std.fmt.bufPrintZ(&az, "{s}", .{root}) catch unreachable;
+    const root_z = std.mem.printSentinel(&az, "{s}", .{root}, 0) catch unreachable;
     defer {
         _ = posix.rmdir(root_z.ptr);
         _ = posix.rmdir(parent_z.ptr);
@@ -1408,12 +1408,12 @@ test "createRoot keeps the vetted identity across a swap, rather than re-reading
     var pbuf: [contract.max_path]u8 = undefined;
     const parent = std.fmt.bufPrint(&pbuf, "/tmp/sideeye-keepid-{d}", .{std.c.getpid()}) catch unreachable;
     var pz: [contract.max_path]u8 = undefined;
-    const parent_z = std.fmt.bufPrintZ(&pz, "{s}", .{parent}) catch unreachable;
+    const parent_z = std.mem.printSentinel(&pz, "{s}", .{parent}, 0) catch unreachable;
     _ = posix.mkdir(parent_z.ptr, 0o755);
     var ab: [contract.max_path]u8 = undefined;
-    const root_z = std.fmt.bufPrintZ(&ab, "{s}/state", .{parent}) catch unreachable;
+    const root_z = std.mem.printSentinel(&ab, "{s}/state", .{parent}, 0) catch unreachable;
     var bb: [contract.max_path]u8 = undefined;
-    const moved_z = std.fmt.bufPrintZ(&bb, "{s}/moved", .{parent}) catch unreachable;
+    const moved_z = std.mem.printSentinel(&bb, "{s}/moved", .{parent}, 0) catch unreachable;
     defer {
         _ = posix.rmdir(root_z.ptr);
         _ = posix.rmdir(moved_z.ptr);
@@ -1441,14 +1441,14 @@ test "a vetted root that vanishes leaves createRoot's own directory unvetted (#3
     var pbuf: [contract.max_path]u8 = undefined;
     const parent = std.fmt.bufPrint(&pbuf, "/tmp/sideeye-vanish-{d}", .{std.c.getpid()}) catch unreachable;
     var pz: [contract.max_path]u8 = undefined;
-    const parent_z = std.fmt.bufPrintZ(&pz, "{s}", .{parent}) catch unreachable;
+    const parent_z = std.mem.printSentinel(&pz, "{s}", .{parent}, 0) catch unreachable;
     _ = posix.mkdir(parent_z.ptr, 0o755);
     var dbuf: [contract.max_path]u8 = undefined;
     const rparent = std.mem.span(posix.realpath(parent_z.ptr, &dbuf) orelse return error.SkipZigTest);
     var ab: [contract.max_path]u8 = undefined;
     const root = std.fmt.bufPrint(&ab, "{s}/state", .{rparent}) catch unreachable;
     var az: [contract.max_path]u8 = undefined;
-    const root_z = std.fmt.bufPrintZ(&az, "{s}", .{root}) catch unreachable;
+    const root_z = std.mem.printSentinel(&az, "{s}", .{root}, 0) catch unreachable;
     defer {
         _ = posix.rmdir(root_z.ptr);
         _ = posix.rmdir(parent_z.ptr);
@@ -1485,10 +1485,10 @@ test "createRoot refuses a root that arrived after the vet found nothing (#338)"
     var pbuf: [contract.max_path]u8 = undefined;
     const parent = std.fmt.bufPrint(&pbuf, "/tmp/sideeye-mkwin-{d}", .{std.c.getpid()}) catch unreachable;
     var pz: [contract.max_path]u8 = undefined;
-    const parent_z = std.fmt.bufPrintZ(&pz, "{s}", .{parent}) catch unreachable;
+    const parent_z = std.mem.printSentinel(&pz, "{s}", .{parent}, 0) catch unreachable;
     _ = posix.mkdir(parent_z.ptr, 0o755);
     var ab: [contract.max_path]u8 = undefined;
-    const root_z = std.fmt.bufPrintZ(&ab, "{s}/state", .{parent}) catch unreachable;
+    const root_z = std.mem.printSentinel(&ab, "{s}/state", .{parent}, 0) catch unreachable;
     defer {
         _ = posix.rmdir(root_z.ptr);
         _ = posix.rmdir(parent_z.ptr);
@@ -1520,14 +1520,14 @@ test "restore still creates a root that is not there yet (#338)" {
     var pbuf: [contract.max_path]u8 = undefined;
     const parent = std.fmt.bufPrint(&pbuf, "/tmp/sideeye-firstrun-{d}", .{std.c.getpid()}) catch unreachable;
     var pz: [contract.max_path]u8 = undefined;
-    const parent_z = std.fmt.bufPrintZ(&pz, "{s}", .{parent}) catch unreachable;
+    const parent_z = std.mem.printSentinel(&pz, "{s}", .{parent}, 0) catch unreachable;
     _ = posix.mkdir(parent_z.ptr, 0o755);
     var dbuf: [contract.max_path]u8 = undefined;
     const rparent = std.mem.span(posix.realpath(parent_z.ptr, &dbuf) orelse return error.SkipZigTest);
     var ab: [contract.max_path]u8 = undefined;
     const root = std.fmt.bufPrint(&ab, "{s}/state", .{rparent}) catch unreachable;
     var az: [contract.max_path]u8 = undefined;
-    const root_z = std.fmt.bufPrintZ(&az, "{s}", .{root}) catch unreachable;
+    const root_z = std.mem.printSentinel(&az, "{s}", .{root}, 0) catch unreachable;
     defer {
         deleteTree(root) catch {};
         _ = posix.rmdir(root_z.ptr);
@@ -1559,7 +1559,7 @@ test "restore and freshDir refuse a swapped root — the guard is wired in front
     const gpa = std.testing.allocator;
 
     var pbuf: [contract.max_path]u8 = undefined;
-    const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-wired-{d}", .{posix.getpid()}) catch unreachable;
+    const parent_z = std.mem.printSentinel(&pbuf, "/tmp/sideeye-wired-{d}", .{posix.getpid()}, 0) catch unreachable;
     _ = posix.mkdir(parent_z.ptr, 0o755);
     var base_buf: [contract.max_path]u8 = undefined;
     const base = std.mem.span(posix.realpath(parent_z.ptr, &base_buf) orelse return error.SkipZigTest);
@@ -1567,11 +1567,11 @@ test "restore and freshDir refuse a swapped root — the guard is wired in front
     var rbuf: [contract.max_path]u8 = undefined;
     const root = std.fmt.bufPrint(&rbuf, "{s}/state", .{base}) catch unreachable;
     var rzbuf: [contract.max_path]u8 = undefined;
-    const root_z = std.fmt.bufPrintZ(&rzbuf, "{s}", .{root}) catch unreachable;
+    const root_z = std.mem.printSentinel(&rzbuf, "{s}", .{root}, 0) catch unreachable;
     var obuf: [contract.max_path]u8 = undefined;
     const outside = std.fmt.bufPrint(&obuf, "{s}/outside", .{base}) catch unreachable;
     var ozbuf: [contract.max_path]u8 = undefined;
-    const outside_z = std.fmt.bufPrintZ(&ozbuf, "{s}", .{outside}) catch unreachable;
+    const outside_z = std.mem.printSentinel(&ozbuf, "{s}", .{outside}, 0) catch unreachable;
     defer {
         _ = posix.unlink(root_z.ptr); // the symlink, if the swap below happened
         deleteTree(root) catch {};
@@ -1621,7 +1621,7 @@ test "the rebuild refuses to write through a symlink at an entry name (#446)" {
     try TreeFixture.writeAt(sentinel_z.ptr, keep);
 
     var rz: [contract.max_path]u8 = undefined;
-    const root_z = std.fmt.bufPrintZ(&rz, "{s}", .{root}) catch unreachable;
+    const root_z = std.mem.printSentinel(&rz, "{s}", .{root}, 0) catch unreachable;
     const fd = posix.open(root_z.ptr, posix.O_RDONLY | posix.O_DIRECTORY | posix.O_NOFOLLOW | posix.O_CLOEXEC, @as(c_uint, 0));
     try std.testing.expect(fd >= 0);
     defer _ = posix.close(fd);
@@ -1691,14 +1691,14 @@ test "corruptState refuses a planted symlink rather than corrupting what it poin
 
 test "the walk drains a directory past its collection bound, in one call (#327)" {
     var pb: [contract.max_path]u8 = undefined;
-    const base_z = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-drain-{d}", .{posix.getpid()}) catch unreachable;
+    const base_z = std.mem.printSentinel(&pb, "/tmp/sideeye-drain-{d}", .{posix.getpid()}, 0) catch unreachable;
     _ = posix.mkdir(base_z.ptr, 0o755);
     var base_buf: [contract.max_path]u8 = undefined;
     const base = std.mem.span(posix.realpath(base_z.ptr, &base_buf) orelse return error.SkipZigTest);
     var rb: [contract.max_path]u8 = undefined;
     const root = std.fmt.bufPrint(&rb, "{s}/state", .{base}) catch unreachable;
     var rzb: [contract.max_path]u8 = undefined;
-    const root_z = std.fmt.bufPrintZ(&rzb, "{s}", .{root}) catch unreachable;
+    const root_z = std.mem.printSentinel(&rzb, "{s}", .{root}, 0) catch unreachable;
     defer {
         deleteTree(root) catch {};
         _ = posix.rmdir(root_z.ptr);
@@ -1709,7 +1709,7 @@ test "the walk drains a directory past its collection bound, in one call (#327)"
     var i: usize = 0;
     while (i < 400) : (i += 1) {
         var nb: [contract.max_path]u8 = undefined;
-        const n_z = std.fmt.bufPrintZ(&nb, "{s}/entry-{d}", .{ root, i }) catch unreachable;
+        const n_z = std.mem.printSentinel(&nb, "{s}/entry-{d}", .{ root, i }, 0) catch unreachable;
         const fd = posix.open(n_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
         try std.testing.expect(fd >= 0);
         _ = posix.close(fd);
@@ -1725,7 +1725,7 @@ test "the walk drains a directory past its collection bound, in one call (#327)"
 
 test "freshDir on a missing parent stays loud; the shared open has two meanings (#327)" {
     var pb: [contract.max_path]u8 = undefined;
-    const base_z = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-noparent-{d}", .{posix.getpid()}) catch unreachable;
+    const base_z = std.mem.printSentinel(&pb, "/tmp/sideeye-noparent-{d}", .{posix.getpid()}, 0) catch unreachable;
     _ = posix.rmdir(base_z.ptr); // must not exist; a leftover from a crashed run would hide the case
     var rb: [contract.max_path]u8 = undefined;
     const root = std.fmt.bufPrint(&rb, "{s}/gone/state", .{base_z}) catch unreachable;
@@ -1735,9 +1735,9 @@ test "freshDir on a missing parent stays loud; the shared open has two meanings 
     // Control: with the parent there, the same call succeeds — so the refusal above is
     // about the missing parent and not about the path being rejected for some other reason.
     var gb: [contract.max_path]u8 = undefined;
-    const gone_z = std.fmt.bufPrintZ(&gb, "{s}/gone", .{base_z}) catch unreachable;
+    const gone_z = std.mem.printSentinel(&gb, "{s}/gone", .{base_z}, 0) catch unreachable;
     var rzb: [contract.max_path]u8 = undefined;
-    const root_z = std.fmt.bufPrintZ(&rzb, "{s}", .{root}) catch unreachable;
+    const root_z = std.mem.printSentinel(&rzb, "{s}", .{root}, 0) catch unreachable;
     defer {
         _ = posix.rmdir(root_z.ptr);
         _ = posix.rmdir(gone_z.ptr);
@@ -1750,7 +1750,7 @@ test "freshDir on a missing parent stays loud; the shared open has two meanings 
 
 test "the walk on its own follows a swapped root; the descriptor is what stops it (#327)" {
     var pbuf: [contract.max_path]u8 = undefined;
-    const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-isolated-{d}", .{posix.getpid()}) catch unreachable;
+    const parent_z = std.mem.printSentinel(&pbuf, "/tmp/sideeye-isolated-{d}", .{posix.getpid()}, 0) catch unreachable;
     _ = posix.mkdir(parent_z.ptr, 0o755);
     var base_buf: [contract.max_path]u8 = undefined;
     const base = std.mem.span(posix.realpath(parent_z.ptr, &base_buf) orelse return error.SkipZigTest);
@@ -1758,11 +1758,11 @@ test "the walk on its own follows a swapped root; the descriptor is what stops i
     var rbuf: [contract.max_path]u8 = undefined;
     const root = std.fmt.bufPrint(&rbuf, "{s}/state", .{base}) catch unreachable;
     var rzbuf: [contract.max_path]u8 = undefined;
-    const root_z = std.fmt.bufPrintZ(&rzbuf, "{s}", .{root}) catch unreachable;
+    const root_z = std.mem.printSentinel(&rzbuf, "{s}", .{root}, 0) catch unreachable;
     var obuf: [contract.max_path]u8 = undefined;
     const outside = std.fmt.bufPrint(&obuf, "{s}/outside", .{base}) catch unreachable;
     var ozbuf: [contract.max_path]u8 = undefined;
-    const outside_z = std.fmt.bufPrintZ(&ozbuf, "{s}", .{outside}) catch unreachable;
+    const outside_z = std.mem.printSentinel(&ozbuf, "{s}", .{outside}, 0) catch unreachable;
     defer {
         _ = posix.unlink(root_z.ptr); // the symlink planted below
         deleteTree(root) catch {};
@@ -1790,10 +1790,10 @@ test "the walk on its own follows a swapped root; the descriptor is what stops i
 
 test "readLinkTarget is fail-closed at its own boundary (#122)" {
     var dbuf: [contract.max_path]u8 = undefined;
-    const dir_z = std.fmt.bufPrintZ(&dbuf, "/tmp/sideeye-readlink-test-{d}", .{posix.getpid()}) catch unreachable;
+    const dir_z = std.mem.printSentinel(&dbuf, "/tmp/sideeye-readlink-test-{d}", .{posix.getpid()}, 0) catch unreachable;
     _ = posix.mkdir(dir_z.ptr, 0o755);
     var lbuf: [contract.max_path]u8 = undefined;
-    const link_z = std.fmt.bufPrintZ(&lbuf, "{s}/l", .{dir_z}) catch unreachable;
+    const link_z = std.mem.printSentinel(&lbuf, "{s}/l", .{dir_z}, 0) catch unreachable;
     _ = posix.unlink(link_z.ptr);
     try std.testing.expectEqual(@as(c_int, 0), posix.symlink("0123456789", link_z.ptr));
     defer {
@@ -1810,7 +1810,7 @@ test "readLinkTarget is fail-closed at its own boundary (#122)" {
     var roomy: [11]u8 = undefined;
     try std.testing.expectEqualStrings("0123456789", readLinkTarget(link_z.ptr, &roomy, null).?);
     var missing_buf: [contract.max_path]u8 = undefined;
-    const missing_z = std.fmt.bufPrintZ(&missing_buf, "{s}/absent", .{dir_z}) catch unreachable;
+    const missing_z = std.mem.printSentinel(&missing_buf, "{s}/absent", .{dir_z}, 0) catch unreachable;
     var big: [64]u8 = undefined;
     var missing_errno: ?c_int = null;
     try std.testing.expectEqual(@as(?[]const u8, null), readLinkTarget(missing_z.ptr, &big, &missing_errno));
@@ -1825,14 +1825,14 @@ test "snapshot, restore and corruptState carry symlinks as links (#122)" {
     // (assertRootResolvesToItself), which is what the call sites hand it. A literal "/tmp/..."
     // root satisfies that on Linux and fails on macOS, where /tmp is itself a link.
     var pbuf: [contract.max_path]u8 = undefined;
-    const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-symlink-test-{d}", .{posix.getpid()}) catch unreachable;
+    const parent_z = std.mem.printSentinel(&pbuf, "/tmp/sideeye-symlink-test-{d}", .{posix.getpid()}, 0) catch unreachable;
     _ = posix.mkdir(parent_z.ptr, 0o755);
     var base_buf: [contract.max_path]u8 = undefined;
     const base = std.mem.span(posix.realpath(parent_z.ptr, &base_buf) orelse return error.SkipZigTest);
     var dbuf: [contract.max_path]u8 = undefined;
     const root = std.fmt.bufPrint(&dbuf, "{s}/state", .{base}) catch unreachable;
     var rbuf: [contract.max_path]u8 = undefined;
-    const root_z = std.fmt.bufPrintZ(&rbuf, "{s}", .{root}) catch unreachable;
+    const root_z = std.mem.printSentinel(&rbuf, "{s}", .{root}, 0) catch unreachable;
     _ = posix.mkdir(root_z.ptr, 0o755);
     defer {
         deleteTree(root) catch {};
@@ -1898,7 +1898,7 @@ test "ownership/permission writes change nothing a snapshot judges (#121's own p
     var dbuf: [contract.max_path]u8 = undefined;
     const dir = std.fmt.bufPrint(&dbuf, "/tmp/sideeye-chmod-inv-{d}", .{posix.getpid()}) catch unreachable;
     var dz_buf: [contract.max_path]u8 = undefined;
-    const dz = std.fmt.bufPrintZ(&dz_buf, "{s}", .{dir}) catch unreachable;
+    const dz = std.mem.printSentinel(&dz_buf, "{s}", .{dir}, 0) catch unreachable;
     _ = posix.mkdir(dz.ptr, 0o755);
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try joinZ(&fbuf, dir, "f.txt");
@@ -1931,10 +1931,10 @@ test "deleteTree refuses a PARTIAL failure instead of leaving residue (#121, R1)
     var dbuf: [contract.max_path]u8 = undefined;
     const dir = std.fmt.bufPrint(&dbuf, "/tmp/sideeye-deltree-{d}/state", .{posix.getpid()}) catch unreachable;
     var pbuf: [contract.max_path]u8 = undefined;
-    const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-deltree-{d}", .{posix.getpid()}) catch unreachable;
+    const parent_z = std.mem.printSentinel(&pbuf, "/tmp/sideeye-deltree-{d}", .{posix.getpid()}, 0) catch unreachable;
     _ = posix.mkdir(parent_z.ptr, 0o755);
     var rz_buf: [contract.max_path]u8 = undefined;
-    const rz = std.fmt.bufPrintZ(&rz_buf, "{s}", .{dir}) catch unreachable;
+    const rz = std.mem.printSentinel(&rz_buf, "{s}", .{dir}, 0) catch unreachable;
     _ = posix.mkdir(rz.ptr, 0o755);
     var sb: [contract.max_path]u8 = undefined;
     const sub_z = try joinZ(&sb, dir, "locked");
@@ -1966,14 +1966,14 @@ test "the per-file cap refuses, names the file, and carries its size (#265)" {
     const gpa = std.testing.allocator;
 
     var pbuf: [contract.max_path]u8 = undefined;
-    const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-filecap-test-{d}", .{posix.getpid()}) catch unreachable;
+    const parent_z = std.mem.printSentinel(&pbuf, "/tmp/sideeye-filecap-test-{d}", .{posix.getpid()}, 0) catch unreachable;
     _ = posix.mkdir(parent_z.ptr, 0o755);
     var base_buf: [contract.max_path]u8 = undefined;
     const base = std.mem.span(posix.realpath(parent_z.ptr, &base_buf) orelse return error.SkipZigTest);
     var dbuf: [contract.max_path]u8 = undefined;
     const root = std.fmt.bufPrint(&dbuf, "{s}/state", .{base}) catch unreachable;
     var rbuf: [contract.max_path]u8 = undefined;
-    const root_z = std.fmt.bufPrintZ(&rbuf, "{s}", .{root}) catch unreachable;
+    const root_z = std.mem.printSentinel(&rbuf, "{s}", .{root}, 0) catch unreachable;
     _ = posix.mkdir(root_z.ptr, 0o755);
     defer {
         deleteTree(root) catch {};
@@ -2018,7 +2018,7 @@ const TreeFixture = struct {
     outside: []const u8 = &.{},
 
     fn init(self: *TreeFixture, tag: []const u8) ?[]const u8 {
-        const parent_z = std.fmt.bufPrintZ(&self.parent_z, "/tmp/sideeye-{s}-{d}", .{ tag, posix.getpid() }) catch unreachable;
+        const parent_z = std.mem.printSentinel(&self.parent_z, "/tmp/sideeye-{s}-{d}", .{ tag, posix.getpid() }, 0) catch unreachable;
         _ = posix.mkdir(parent_z.ptr, 0o755);
         var base_buf: [contract.max_path]u8 = undefined;
         // Every caller does `init(...) orelse return error.SkipZigTest`, which is BEFORE
@@ -2030,7 +2030,7 @@ const TreeFixture = struct {
         });
         self.root = std.fmt.bufPrint(&self.root_buf, "{s}/state", .{base}) catch unreachable;
         var rz: [contract.max_path]u8 = undefined;
-        const root_z = std.fmt.bufPrintZ(&rz, "{s}", .{self.root}) catch unreachable;
+        const root_z = std.mem.printSentinel(&rz, "{s}", .{self.root}, 0) catch unreachable;
         _ = posix.mkdir(root_z.ptr, 0o755);
         return self.root;
     }
@@ -2043,7 +2043,7 @@ const TreeFixture = struct {
         const base = std.fs.path.dirname(self.root) orelse return error.SkipZigTest;
         self.outside = std.fmt.bufPrint(&self.outside_buf, "{s}/{s}", .{ base, name }) catch unreachable;
         var oz: [contract.max_path]u8 = undefined;
-        const outside_z = std.fmt.bufPrintZ(&oz, "{s}", .{self.outside}) catch unreachable;
+        const outside_z = std.mem.printSentinel(&oz, "{s}", .{self.outside}, 0) catch unreachable;
         if (posix.mkdir(outside_z.ptr, 0o755) != 0) return error.SkipZigTest;
         return self.outside;
     }
@@ -2051,16 +2051,16 @@ const TreeFixture = struct {
     fn deinit(self: *TreeFixture) void {
         deleteTree(self.root) catch {};
         var rz: [contract.max_path]u8 = undefined;
-        const root_z = std.fmt.bufPrintZ(&rz, "{s}", .{self.root}) catch unreachable;
+        const root_z = std.mem.printSentinel(&rz, "{s}", .{self.root}, 0) catch unreachable;
         _ = posix.rmdir(root_z.ptr);
         if (self.outside.len != 0) {
             deleteTree(self.outside) catch {};
             var oz: [contract.max_path]u8 = undefined;
-            const outside_z = std.fmt.bufPrintZ(&oz, "{s}", .{self.outside}) catch unreachable;
+            const outside_z = std.mem.printSentinel(&oz, "{s}", .{self.outside}, 0) catch unreachable;
             _ = posix.rmdir(outside_z.ptr);
         }
         var pz: [contract.max_path]u8 = undefined;
-        const parent_z = std.fmt.bufPrintZ(&pz, "{s}", .{std.mem.sliceTo(&self.parent_z, 0)}) catch unreachable;
+        const parent_z = std.mem.printSentinel(&pz, "{s}", .{std.mem.sliceTo(&self.parent_z, 0)}, 0) catch unreachable;
         _ = posix.rmdir(parent_z.ptr);
     }
 
@@ -2210,7 +2210,7 @@ test "this file's public surface is the twenty-three the facade re-exports (#491
 test "an entry the walk cannot read is named in the diag, with the open's errno (#535)" {
     if (posix.geteuid() == 0) return error.SkipZigTest; // root reads mode 0000
     var dbuf: [contract.max_path]u8 = undefined;
-    const dir = std.fmt.bufPrintZ(&dbuf, "/tmp/sideeye-unreadable-{d}", .{posix.getpid()}) catch unreachable;
+    const dir = std.mem.printSentinel(&dbuf, "/tmp/sideeye-unreadable-{d}", .{posix.getpid()}, 0) catch unreachable;
     _ = posix.mkdir(dir.ptr, 0o755);
     var fb: [contract.max_path]u8 = undefined;
     const ok_z = try joinZ(&fb, dir, "readable.txt");
@@ -2350,7 +2350,7 @@ test "a mount point is inside the state only strictly below its root" {
 
 test "the mount table is read whole across reads, and a line longer than the reader's buffer yields its head and the next line" {
     var pb: [contract.max_path]u8 = undefined;
-    const path_z = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-mountinfo-{d}", .{posix.getpid()}) catch unreachable;
+    const path_z = std.mem.printSentinel(&pb, "/tmp/sideeye-mountinfo-{d}", .{posix.getpid()}, 0) catch unreachable;
     defer _ = posix.unlink(path_z.ptr);
 
     const filler = "21 1 0:20 / /proc rw,nosuid - proc proc rw\n";
@@ -2408,7 +2408,7 @@ test "the mount table is read whole across reads, and a line longer than the rea
 test "a directory under a parent without search permission is snapshotted as before, not refused" {
     if (posix.geteuid() == 0) return error.SkipZigTest; // root searches mode 0444
     var pb: [contract.max_path]u8 = undefined;
-    const base_z = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-nosearch-{d}", .{posix.getpid()}) catch unreachable;
+    const base_z = std.mem.printSentinel(&pb, "/tmp/sideeye-nosearch-{d}", .{posix.getpid()}, 0) catch unreachable;
     _ = posix.mkdir(base_z.ptr, 0o755);
     var base_buf: [contract.max_path]u8 = undefined;
     const base = std.mem.span(posix.realpath(base_z.ptr, &base_buf) orelse return error.SkipZigTest);
@@ -2433,7 +2433,7 @@ test "a directory under a parent without search permission is snapshotted as bef
 
 test "an ordinary tree has nothing on another device below its root" {
     var pb: [contract.max_path]u8 = undefined;
-    const base_z = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-devscan-{d}", .{posix.getpid()}) catch unreachable;
+    const base_z = std.mem.printSentinel(&pb, "/tmp/sideeye-devscan-{d}", .{posix.getpid()}, 0) catch unreachable;
     _ = posix.mkdir(base_z.ptr, 0o755);
     var base_buf: [contract.max_path]u8 = undefined;
     const base = std.mem.span(posix.realpath(base_z.ptr, &base_buf) orelse return error.SkipZigTest);

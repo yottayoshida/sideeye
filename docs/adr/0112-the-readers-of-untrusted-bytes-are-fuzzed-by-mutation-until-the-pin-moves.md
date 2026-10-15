@@ -154,3 +154,11 @@ allocator is under it, still catches a reader that leaks.
   endpoint scanning, a file write costs about a millisecond (measured), which the shared mapping
   removed for the driver's own copy.
 - A failure found by the weekly run is fixed with its input added to the entry point's seeds.
+
+## Amended 2026-10-15: the pin moved (#782)
+
+The pin is 0.17.0 now (ADR 0001, amended). On it, `zig build test --fuzz=<n>` builds and runs
+coverage-guided — measured once, locally, on the trace reader's entry point: 17,294 inputs, 20.74%
+coverage. Whether all eight entry points run under it was not measured. CI does not drive it yet; the mutation driver this record
+decides stays the one CI runs until #695 moves it, and the warning above about reading the
+output rather than the exit status still applies.

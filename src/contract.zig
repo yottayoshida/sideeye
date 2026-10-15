@@ -257,8 +257,8 @@ pub const unresolved_kind = struct {
             if (k.len > longest_kind) longest_kind = k.len;
         }
         var longest_op: usize = 0;
-        for (@typeInfo(OpClass).@"enum".fields) |f| {
-            if (f.name.len > longest_op) longest_op = f.name.len;
+        for (std.meta.fieldNames(OpClass)) |name| {
+            if (name.len > longest_op) longest_op = name.len;
         }
         break :blk longest_kind + 1 + longest_op + 4 + 11;
     };
@@ -320,8 +320,7 @@ pub const unresolved_kind = struct {
 
 test "unplaceableRefuses is exactly `not close` today, and says so out loud" {
     const t = std.testing;
-    inline for (@typeInfo(OpClass).@"enum".fields) |f| {
-        const c: OpClass = @enumFromInt(f.value);
+    for (std.meta.tags(OpClass)) |c| {
         try t.expectEqual(c != .close, c.unplaceableRefuses());
     }
 }
@@ -467,8 +466,8 @@ pub const OpClass = enum(u16) {
     }
 
     pub fn fromInt(raw: u16) ?OpClass {
-        inline for (@typeInfo(OpClass).@"enum".fields) |f| {
-            if (f.value == raw) return @enumFromInt(raw);
+        for (std.meta.tags(OpClass)) |c| {
+            if (@backingInt(c) == raw) return c;
         }
         return null;
     }
@@ -702,7 +701,7 @@ pub fn encodeRecord(buf: []u8, rec: Record) EncodeError!usize {
     if (buf.len < needed) return error.BufferTooSmall;
 
     var i: usize = 0;
-    std.mem.writeInt(u16, buf[i..][0..2], @intFromEnum(rec.op), .little);
+    std.mem.writeInt(u16, buf[i..][0..2], @backingInt(rec.op), .little);
     i += 2;
     std.mem.writeInt(u32, buf[i..][0..4], rec.seq, .little);
     i += 4;
@@ -959,7 +958,7 @@ test "normalizePath answers exactly as the array-of-starts version did (#555)" {
     const alphabet = [_][]const u8{ "", ".", "..", "a", "bb", "c", ".." };
     const bases = [_][]const u8{ "/", "/w", "/w/state/sub" };
     var pbuf: [64]u8 = undefined;
-    var idx = [_]usize{0} ** 6;
+    var idx: [6]usize = @splat(0);
     var checked: usize = 0;
     while (true) {
         for (1..7) |n| {
@@ -1135,8 +1134,7 @@ test "the encoding is little-endian regardless of host" {
 }
 
 test "op categories are disjoint and cover every value" {
-    inline for (@typeInfo(OpClass).@"enum".fields) |f| {
-        const op: OpClass = @enumFromInt(f.value);
+    for (std.meta.tags(OpClass)) |op| {
         var categories: usize = 0;
         if (op.isKillPoint()) categories += 1;
         if (op.isBoundary()) categories += 1;
@@ -1148,8 +1146,7 @@ test "op categories are disjoint and cover every value" {
 }
 
 test "mutations are a strict subset of kill-point ops" {
-    inline for (@typeInfo(OpClass).@"enum".fields) |f| {
-        const op: OpClass = @enumFromInt(f.value);
+    for (std.meta.tags(OpClass)) |op| {
         if (op.isMutation()) try std.testing.expect(op.isKillPoint());
     }
     try std.testing.expect(!OpClass.open.isMutation());

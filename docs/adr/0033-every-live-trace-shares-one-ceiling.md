@@ -150,3 +150,20 @@ goes to look for one oversized file, and under a shared ceiling there may be non
   would otherwise break: that `max_trace_bytes_total` does not clear one read at the per-read
   cap, deliberately, and that `max_trace_bytes` shares its value with `max_state_file_bytes`
   and nothing else.
+
+## Amended 2026-10-15: what a read costs on Zig 0.17.0 (#782)
+
+The pin moved to 0.17.0 (ADR 0001). `std.heap.ArenaAllocator` and `std.heap.DebugAllocator`, the
+child the engine gives the budget, behave the same in 0.17.0 as in 0.16.0; what changed is
+`std.testing.allocator`, which was a `DebugAllocator` and is a `SafeAllocator` now, and it is the
+allocator the `SIDEEYE_MEASURE` test reads through. With that test's child set to the engine's
+`DebugAllocator(.{})`, the same tree on 0.16.0 and on 0.17.0, on macOS and on Linux (a container),
+costs the same for every shape it reaches except a header-only trace, which costs less (2,576 →
+1,886 bytes; why was not traced). So the ceiling refuses where it did. As written, with the testing allocator, the
+test now measures a child the engine does not use, and the numbers it prints differ from the
+engine's (100 records of 16-byte paths: 37,008 on Linux, 51,470 with the engine's child).
+
+The table above predates both measurements and was already off on 0.16.0 (100 records measure
+51,470, not 22,580), and its two rows at the per-read cap no longer reach the decode — the record
+grew since, and the test's counts now exceed the cap. Re-sizing the table is outside the move; the
+decision does not rest on its exact figures.

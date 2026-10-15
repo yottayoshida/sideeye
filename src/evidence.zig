@@ -445,10 +445,10 @@ pub fn write(arena: std.mem.Allocator, case_path: []const u8, ev: Evidence) ?[]c
     const doc = buildJson(arena, ev) catch return null;
     var dbuf: [contract.max_path]u8 = undefined;
     const slash = std.mem.lastIndexOfScalar(u8, path, '/').?;
-    const dz = std.fmt.bufPrintZ(&dbuf, "{s}", .{path[0..slash]}) catch return null;
+    const dz = std.mem.printSentinel(&dbuf, "{s}", .{path[0..slash]}, 0) catch return null;
     _ = posix.mkdir(dz.ptr, 0o755); // EEXIST is fine; the open below decides
     var pbuf: [contract.max_path]u8 = undefined;
-    const pz = std.fmt.bufPrintZ(&pbuf, "{s}", .{path}) catch return null;
+    const pz = std.mem.printSentinel(&pbuf, "{s}", .{path}, 0) catch return null;
     _ = posix.unlink(pz.ptr);
     const fd = posix.open(pz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_EXCL, @as(c_uint, 0o644));
     if (fd < 0) return null;

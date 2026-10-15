@@ -4,7 +4,7 @@ const posix = @import("posix.zig");
 
 pub fn writeWholeFile(path: []const u8, parts: []const []const u8) bool {
     var zb: [contract.max_path]u8 = undefined;
-    const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch return false;
+    const z = std.mem.printSentinel(&zb, "{s}", .{path}, 0) catch return false;
     const fd = posix.open(z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
     if (fd < 0) return false;
     defer _ = posix.close(fd);
@@ -32,7 +32,7 @@ fn writeAll(fd: c_int, bytes: []const u8) bool {
 /// none, and the caller reports the failure either way.
 pub fn writeNewExecutable(path: []const u8, bytes: []const u8) bool {
     var zb: [contract.max_path]u8 = undefined;
-    const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch return false;
+    const z = std.mem.printSentinel(&zb, "{s}", .{path}, 0) catch return false;
     const fd = posix.open(z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_EXCL | posix.O_NOFOLLOW | posix.O_CLOEXEC, @as(c_uint, 0o700));
     if (fd < 0) return false;
     if (!writeAll(fd, bytes)) {
@@ -54,8 +54,8 @@ test "writeNewExecutable makes the file it runs, and nothing it did not make (#7
     const base = try std.fmt.bufPrint(&pb, "/tmp/sideeye-newexec-{d}", .{posix.getpid()});
     var b1: [128]u8 = undefined;
     var b2: [128]u8 = undefined;
-    const made = try std.fmt.bufPrintZ(&b1, "{s}-made", .{base});
-    const link = try std.fmt.bufPrintZ(&b2, "{s}-link", .{base});
+    const made = try std.mem.printSentinel(&b1, "{s}-made", .{base}, 0);
+    const link = try std.mem.printSentinel(&b2, "{s}-link", .{base}, 0);
     _ = posix.unlink(made.ptr);
     _ = posix.unlink(link.ptr);
     defer _ = posix.unlink(made.ptr);
@@ -78,6 +78,6 @@ test "writeNewExecutable makes the file it runs, and nothing it did not make (#7
 
 pub fn removeFile(path: []const u8) void {
     var buf: [contract.max_path]u8 = undefined;
-    const z = std.fmt.bufPrintZ(&buf, "{s}", .{path}) catch return;
+    const z = std.mem.printSentinel(&buf, "{s}", .{path}, 0) catch return;
     _ = posix.unlink(z.ptr);
 }

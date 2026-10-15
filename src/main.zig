@@ -75,7 +75,7 @@ fn undoSetupMkdirs(work_created: bool, work_z: [*:0]const u8, state_created: boo
         // this one made may be holding it, and a third would then lock a new file beside it.
         if (workdir.lock_fd >= 0) {
             var lock_buf: [contract.max_path]u8 = undefined;
-            if (std.fmt.bufPrintZ(&lock_buf, "{s}/run.lock", .{std.mem.span(work_z)})) |lock_z| _ = posix.unlink(lock_z.ptr) else |_| {}
+            if (std.mem.printSentinel(&lock_buf, "{s}/run.lock", .{std.mem.span(work_z)}, 0)) |lock_z| _ = posix.unlink(lock_z.ptr) else |_| {}
         }
         _ = posix.rmdir(work_z);
     }
@@ -84,11 +84,11 @@ fn undoSetupMkdirs(work_created: bool, work_z: [*:0]const u8, state_created: boo
 
 test "undoing a work directory this run made removes run.lock only while this run holds the lock (#816)" {
     var db: [contract.max_path]u8 = undefined;
-    const dir_z = std.fmt.bufPrintZ(&db, "/tmp/sideeye-undo-lock-{d}", .{posix.getpid()}) catch unreachable;
+    const dir_z = std.mem.printSentinel(&db, "/tmp/sideeye-undo-lock-{d}", .{posix.getpid()}, 0) catch unreachable;
     var lb: [contract.max_path]u8 = undefined;
-    const lock_z = std.fmt.bufPrintZ(&lb, "{s}/run.lock", .{dir_z}) catch unreachable;
+    const lock_z = std.mem.printSentinel(&lb, "{s}/run.lock", .{dir_z}, 0) catch unreachable;
     var nb: [contract.max_path]u8 = undefined;
-    const none_z = std.fmt.bufPrintZ(&nb, "/tmp/sideeye-undo-none-{d}", .{posix.getpid()}) catch unreachable;
+    const none_z = std.mem.printSentinel(&nb, "/tmp/sideeye-undo-none-{d}", .{posix.getpid()}, 0) catch unreachable;
     defer {
         _ = posix.unlink(lock_z.ptr);
         _ = posix.rmdir(dir_z.ptr);
@@ -153,7 +153,7 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
     refuse.fsu_capture = capture_path;
 
     var zb: [contract.max_path]u8 = undefined;
-    const sz = std.fmt.bufPrintZ(&zb, "{s}", .{sentinel}) catch setupError(.define_invalid, "path too long");
+    const sz = std.mem.printSentinel(&zb, "{s}", .{sentinel}, 0) catch setupError(.define_invalid, "path too long");
     // Created ONCE, before the loop. Inside it, the second iteration's O_EXCL open
     // necessarily fails on the file the first one made — which is how the first
     // version of this refused every run that needed more than one poll, under a
@@ -434,7 +434,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
         const ea = arena_state.allocator();
         const one = "sideeye evidence takes one argument: the saved case, or the bundle beside it";
         const looks_like_option = argv.len == 3 and argv[2].len > 1 and argv[2][0] == '-' and
-            std.c.access((ea.dupeZ(u8, argv[2]) catch argv[2]).ptr, std.c.F_OK) != 0;
+            std.c.access((ea.dupeSentinel(u8, argv[2], 0) catch argv[2]).ptr, std.c.F_OK) != 0;
         if (argv.len == 2) cli.refuseOnStderr(ea, one, .{});
         if (argv.len != 3 or looks_like_option) {
             const extra = if (argv.len == 3) argv[2] else for (argv[2..]) |a| {
@@ -505,7 +505,7 @@ fn phaseDefine(run: *Run) void {
         const case_dir = blk: {
             const raw = std.fs.path.dirname(case_arg.?) orelse ".";
             var dz_buf: [contract.max_path]u8 = undefined;
-            const dz = std.fmt.bufPrintZ(&dz_buf, "{s}", .{raw}) catch setupError(.define_invalid, "the case file's directory is too long to resolve against");
+            const dz = std.mem.printSentinel(&dz_buf, "{s}", .{raw}, 0) catch setupError(.define_invalid, "the case file's directory is too long to resolve against");
             var real_buf: [contract.max_path]u8 = undefined;
             const abs = posix.realpath(dz.ptr, &real_buf) orelse setupError(.environment, "the case file's directory could not be resolved");
             break :blk rarena.dupe(u8, std.mem.span(abs)) catch setupError(.environment, "out of memory");
@@ -587,7 +587,7 @@ fn phaseDefine(run: *Run) void {
                 // different command from every other cwd.
                 const dir_raw = std.fs.path.dirname(cfg_path) orelse ".";
                 var dir_z: [contract.max_path]u8 = undefined;
-                const dz = std.fmt.bufPrintZ(&dir_z, "{s}", .{dir_raw}) catch setupError(.define_invalid, "--config path is too long");
+                const dz = std.mem.printSentinel(&dir_z, "{s}", .{dir_raw}, 0) catch setupError(.define_invalid, "--config path is too long");
                 var dir_real: [contract.max_path]u8 = undefined;
                 const dir_abs = posix.realpath(dz.ptr, &dir_real) orelse setupError(.environment, "--config's directory could not be resolved");
                 const dir = arena.dupe(u8, std.mem.span(dir_abs)) catch setupError(.environment, "out of memory");
@@ -597,7 +597,7 @@ fn phaseDefine(run: *Run) void {
                 // "directory" is `/dev` or `/dev/fd`, and "add cwd" would point there.
                 {
                     var cfg_z: [contract.max_path]u8 = undefined;
-                    if (std.fmt.bufPrintZ(&cfg_z, "{s}", .{cfg_path})) |cz| {
+                    if (std.mem.printSentinel(&cfg_z, "{s}", .{cfg_path}, 0)) |cz| {
                         // Not followed through a link: `/dev/stdin` redirected from a file
                         // resolves to a regular file, and its directory is still `/dev`.
                         if ((posix.kindOfPathNoFollow(cz.ptr) catch .other) == .file) refuse.toml_dir = dir;
@@ -652,7 +652,7 @@ fn phaseDefine(run: *Run) void {
     // disk has moved, and exit 3 is true of it — nothing of the define has run.
     if (args.cwd) |declared| {
         var cwd_z_buf: [contract.max_path]u8 = undefined;
-        const cwd_z = std.fmt.bufPrintZ(&cwd_z_buf, "{s}", .{declared}) catch setupError(.define_invalid, "the declared cwd is too long");
+        const cwd_z = std.mem.printSentinel(&cwd_z_buf, "{s}", .{declared}, 0) catch setupError(.define_invalid, "the declared cwd is too long");
         var cwd_real: [contract.max_path]u8 = undefined;
         // Both refusals print a string that arrived from a config or a case file, and
         // both are declared trust boundaries — so both go through `textShown`, the way
@@ -714,7 +714,7 @@ fn phaseDefine(run: *Run) void {
     const shim = args.shim orelse findShim(arena_state.allocator());
 
     var state_z_buf: [contract.max_path]u8 = undefined;
-    const state_z = std.fmt.bufPrintZ(&state_z_buf, "{s}", .{state}) catch setupError(.define_invalid, "--state is too long");
+    const state_z = std.mem.printSentinel(&state_z_buf, "{s}", .{state}, 0) catch setupError(.define_invalid, "--state is too long");
     // Create the directory before resolving it, and refuse to continue if resolution
     // still fails.
     //
@@ -796,7 +796,7 @@ fn phaseDefine(run: *Run) void {
     // check emptied the state dir — or planted <state>/work — before refusing
     // (review finding). `isInsideDir` holds --work equal to the state directory, and
     var work_buf: [contract.max_path]u8 = undefined;
-    const work_z = std.fmt.bufPrintZ(&work_buf, "{s}", .{args.work}) catch {
+    const work_z = std.mem.printSentinel(&work_buf, "{s}", .{args.work}, 0) catch {
         if (state_created) _ = posix.rmdir(state_z.ptr);
         setupError(.define_invalid, "--work is too long");
     };
@@ -871,7 +871,7 @@ fn phaseDefine(run: *Run) void {
     // destruction will use. Measured before the vet existed: `"state": "."` with the case
     if (mode == .replay) {
         var case_z_buf: [contract.max_path]u8 = undefined;
-        const czb = std.fmt.bufPrintZ(&case_z_buf, "{s}", .{case_arg.?}) catch setupError(.define_invalid, "the case file's path is too long");
+        const czb = std.mem.printSentinel(&case_z_buf, "{s}", .{case_arg.?}, 0) catch setupError(.define_invalid, "the case file's path is too long");
         var case_real: [contract.max_path]u8 = undefined;
         // Unresolvable here means it moved since the read a moment ago: refuse rather
         // than skip the vet.
@@ -889,7 +889,7 @@ fn phaseDefine(run: *Run) void {
     // into a directory the crash state may hold although the define's state did not.
     if (args.leave_crash_state) if (args.json) |jp| {
         var jdir_z_buf: [contract.max_path]u8 = undefined;
-        const jdir_z = std.fmt.bufPrintZ(&jdir_z_buf, "{s}", .{std.fs.path.dirname(jp) orelse "."}) catch {
+        const jdir_z = std.mem.printSentinel(&jdir_z_buf, "{s}", .{std.fs.path.dirname(jp) orelse "."}, 0) catch {
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
             setupError(.define_invalid, "--json's directory is too long");
         };
@@ -910,7 +910,7 @@ fn phaseDefine(run: *Run) void {
     // and /private/tmp spellings of the same directory would split on macOS.
     if (args.state_under) |su| {
         var su_z_buf: [contract.max_path]u8 = undefined;
-        const su_z = std.fmt.bufPrintZ(&su_z_buf, "{s}", .{su}) catch {
+        const su_z = std.mem.printSentinel(&su_z_buf, "{s}", .{su}, 0) catch {
             undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
             setupError(.define_invalid, "--state-under is too long");
         };
@@ -991,7 +991,7 @@ fn phaseDefine(run: *Run) void {
             var jdir_buf: [contract.max_path]u8 = undefined;
             var jdir_real: [contract.max_path]u8 = undefined;
             var work_real: [contract.max_path]u8 = undefined;
-            if (std.fmt.bufPrintZ(&jdir_buf, "{s}", .{std.fs.path.dirname(jp) orelse "."})) |jdir_z| {
+            if (std.mem.printSentinel(&jdir_buf, "{s}", .{std.fs.path.dirname(jp) orelse "."}, 0)) |jdir_z| {
                 if (posix.realpath(jdir_z.ptr, &jdir_real)) |jdir_abs| {
                     const jdir = std.mem.span(jdir_abs);
                     if (posix.realpath(work_z.ptr, &work_real)) |w| keep_work = contract.isInsideDir(jdir, std.mem.span(w));
@@ -1189,7 +1189,7 @@ fn phaseRecording(run: *Run) void {
     // pass identically on a machine with no strace, so the check discriminated nothing.
     if (args.oracle) |oracle_path| {
         var ob: [contract.max_path]u8 = undefined;
-        const oz = std.fmt.bufPrintZ(&ob, "{s}", .{oracle_path}) catch setupError(.define_invalid, "--oracle path is too long");
+        const oz = std.mem.printSentinel(&ob, "{s}", .{oracle_path}, 0) catch setupError(.define_invalid, "--oracle path is too long");
         if (posix.access(oz.ptr, posix.X_OK) != 0)
             setupError(.environment, "--oracle is not an executable file; the completeness check cannot run");
     }
@@ -1294,7 +1294,7 @@ fn phaseRecording(run: *Run) void {
 
     if (fsu_pid) |pid| {
         var zb: [contract.max_path]u8 = undefined;
-        const sz = std.fmt.bufPrintZ(&zb, "{s}", .{fsu_sentinel_b}) catch setupError(.define_invalid, "path too long");
+        const sz = std.mem.printSentinel(&zb, "{s}", .{fsu_sentinel_b}, 0) catch setupError(.define_invalid, "path too long");
         const fd = posix.open(sz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_EXCL, @as(c_uint, 0o600));
         if (fd < 0) unknown(.oracle_saw_nothing, "the closing sentinel could not be created inside the state directory, so nothing can establish that the capture covered the end of the recording", .environment);
         _ = posix.close(fd);
@@ -2870,7 +2870,7 @@ fn phaseReport(run: *Run) void {
                 .observe = args.observe.name(),
                 .argv = run.rec.op_argv,
             }) catch "(the line could not be built: out of memory)"});
-        if (args.json) |jp| report.writeJsonReport(arena, jp, "FAIL", @intFromEnum(contract.ExitCode.fail), .{
+        if (args.json) |jp| report.writeJsonReport(arena, jp, "FAIL", @backingInt(contract.ExitCode.fail), .{
             .k = f.k,
             .after = after,
             .after_path = after_path,
@@ -2881,7 +2881,7 @@ fn phaseReport(run: *Run) void {
             .invariant = invariant,
         }, checker_detail, null, null, null, null);
         report.emitSeal();
-        std.process.exit(@intFromEnum(contract.ExitCode.fail));
+        std.process.exit(@backingInt(contract.ExitCode.fail));
     }
 
     refuse.requireCompleteness(arena, args.has_oracle, args.allow_unverified);
@@ -2891,9 +2891,9 @@ fn phaseReport(run: *Run) void {
 
     say("{s}  {d}/{d} explored worlds satisfied the built-in atomicity invariant{s}{s}\n", .{ report.paint("PASS"), report.explored, report.explored, report.singleCrashPointClause(n), report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged) });
     report.sayAccount(arena, .pass, n);
-    if (args.json) |jp| report.writeJsonReport(arena, jp, "PASS", @intFromEnum(contract.ExitCode.pass), null, null, null, null, null, null);
+    if (args.json) |jp| report.writeJsonReport(arena, jp, "PASS", @backingInt(contract.ExitCode.pass), null, null, null, null, null, null);
     report.emitSeal();
-    std.process.exit(@intFromEnum(contract.ExitCode.pass));
+    std.process.exit(@backingInt(contract.ExitCode.pass));
 }
 
 fn splitArgs(arena: std.mem.Allocator, cmd: []const u8) ![]const []const u8 {
@@ -3338,7 +3338,7 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
         , .{});
         if (refuse.json_path) |jp| report.writePreflightJson(arena, jp, pf_doc.?);
         report.emitSeal();
-        std.process.exit(@intFromEnum(contract.ExitCode.fail));
+        std.process.exit(@backingInt(contract.ExitCode.fail));
     }
     // Under `--observe supervised` the next command names the mode, not a shim: there is no shim
     // in that mode, and an explore without the flag counts through one the target cannot load.
@@ -3410,7 +3410,7 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
                 var cur: []const u8 = named;
                 var hops: usize = 0;
                 while (hops < 40) : (hops += 1) {
-                    const cz = arena.dupeZ(u8, cur) catch break :blk null;
+                    const cz = arena.dupeSentinel(u8, cur, 0) catch break :blk null;
                     const len = posix.readlink(cz.ptr, &hop_buf, hop_buf.len);
                     if (len < 0) break;
                     const target = hop_buf[0..@intCast(len)];
@@ -3420,9 +3420,9 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
                         break :blk null;
                     }
                 }
-                const nz = arena.dupeZ(u8, named) catch break :blk null;
+                const nz = arena.dupeSentinel(u8, named, 0) catch break :blk null;
                 const real = std.mem.span(posix.realpath(nz.ptr, &file_buf) orelse break :blk null);
-                const rz = arena.dupeZ(u8, real) catch break :blk null;
+                const rz = arena.dupeSentinel(u8, real, 0) catch break :blk null;
                 if ((posix.kindOfPathNoFollow(rz.ptr) catch .other) != .file) break :blk null;
                 if (!std.mem.eql(u8, textShown(arena, named), named)) {
                     why = "whose name cannot be printed here as a line to paste";
@@ -3444,7 +3444,7 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
     }
     if (refuse.json_path) |jp| report.writePreflightJson(arena, jp, pf_doc.?);
     report.emitSeal();
-    std.process.exit(@intFromEnum(contract.ExitCode.pass));
+    std.process.exit(@backingInt(contract.ExitCode.pass));
 }
 
 const demo_toy = @embedFile("demo_toy");
@@ -3593,7 +3593,7 @@ fn runDemo(arena: std.mem.Allocator, rest: []const []const u8) noreturn {
         break :blk "/tmp";
     };
     var templ_buf: [contract.max_path]u8 = undefined;
-    const templ = std.fmt.bufPrintZ(&templ_buf, "{s}/sideeye-demo-XXXXXX", .{troot}) catch setupError(.environment, "TMPDIR is unreasonably long");
+    const templ = std.mem.printSentinel(&templ_buf, "{s}/sideeye-demo-XXXXXX", .{troot}, 0) catch setupError(.environment, "TMPDIR is unreasonably long");
     const tmp_raw = posix.mkdtemp(templ.ptr) orelse setupError(.environment, "could not create the demo's scratch directory");
     const tmp = arena.dupe(u8, std.mem.span(tmp_raw)) catch setupError(.environment, "out of memory");
 
@@ -3634,7 +3634,7 @@ fn runDemo(arena: std.mem.Allocator, rest: []const []const u8) noreturn {
     // report's replay line as one installed version's path.
     const passed = if (shim_flag != null) exec_argv.len else exec_argv.len - 2;
     var argv_z: [exec_argv.len + 1]?[*:0]const u8 = undefined;
-    for (exec_argv[0..passed], 0..) |a, j| argv_z[j] = (arena.dupeZ(u8, a) catch setupError(.environment, "out of memory")).ptr;
+    for (exec_argv[0..passed], 0..) |a, j| argv_z[j] = (arena.dupeSentinel(u8, a, 0) catch setupError(.environment, "out of memory")).ptr;
     argv_z[passed] = null;
     _ = posix.execvp(argv_z[0].?, &argv_z);
     setupError(.environment, "could not self-exec the exploration");
@@ -3696,7 +3696,7 @@ fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[
 
 fn envValue(name: []const u8) ?[]const u8 {
     var zbuf: [256]u8 = undefined;
-    const z = std.fmt.bufPrintZ(&zbuf, "{s}", .{name}) catch return null;
+    const z = std.mem.printSentinel(&zbuf, "{s}", .{name}, 0) catch return null;
     const v = posix.getenv(z.ptr) orelse return null;
     return std.mem.span(v);
 }
@@ -3722,7 +3722,7 @@ fn pythonpathHas(arena: std.mem.Allocator, pythonpath: []const u8, file: []const
     while (it.next()) |dir| {
         const base = if (cwd) |c| resolvePathAgainst(arena, c, dir) else dir;
         var zbuf: [contract.max_path]u8 = undefined;
-        const z = std.fmt.bufPrintZ(&zbuf, "{s}/{s}", .{ base, file }) catch continue;
+        const z = std.mem.printSentinel(&zbuf, "{s}/{s}", .{ base, file }, 0) catch continue;
         if (posix.access(z.ptr, posix.F_OK) == 0) return true;
     }
     return false;
@@ -3847,6 +3847,6 @@ test "no seventh engine build option arrives unchecked (#365)" {
     // the promise is universal: a `-Dtest-…` added later with no assertion above would
     // leave it false while CI stayed green. Pinning the count makes the next option fail
     // here until someone writes its line. Same instrument as the RestoreError arity pin
-    const decls = @typeInfo(engine_build_options).@"struct".decls;
+    const decls = @typeInfo(engine_build_options).@"struct".decl_names;
     try std.testing.expectEqual(@as(usize, 6), decls.len);
 }

@@ -149,7 +149,7 @@ fn rawSet(comptime set: []const Trap) []const RawTrap {
     comptime {
         var out: [set.len]RawTrap = undefined;
         for (set, 0..) |t, i| out[i] = .{
-            .nr = @intCast(@intFromEnum(t.sys)),
+            .nr = @intCast(@backingInt(t.sys)),
             .flag_arg = t.flag_arg,
             .flag_mask = t.flag_mask,
         };
@@ -334,8 +334,8 @@ const audit_64bit: u32 = 0x8000_0000;
 const audit_le: u32 = 0x4000_0000;
 
 const audit_arch: u32 = switch (builtin.cpu.arch) {
-    .aarch64 => @intFromEnum(std.elf.EM.AARCH64) | audit_64bit | audit_le,
-    .x86_64 => @intFromEnum(std.elf.EM.X86_64) | audit_64bit | audit_le,
+    .aarch64 => @backingInt(std.elf.EM.AARCH64) | audit_64bit | audit_le,
+    .x86_64 => @backingInt(std.elf.EM.X86_64) | audit_64bit | audit_le,
     else => 0,
 };
 
@@ -438,7 +438,7 @@ const program = buildProgram(audit_arch, trapped_raw);
 /// `syscall6`'s sixth argument is the sentinel's slot; the caller never passes a real
 /// sixth argument because no trapped syscall has one.
 pub fn thunk(nr: u32, a0: u64, a1: u64, a2: u64, a3: u64, a4: u64) u64 {
-    const r = linux.syscall6(@enumFromInt(nr), a0, a1, a2, a3, a4, reissue_sentinel);
+    const r = linux.syscall6(@fromBackingInt(@intCast(nr)), a0, a1, a2, a3, a4, reissue_sentinel);
     // Clear the marker register before returning, or the NEXT syscall inherits it.
     //
     // This is not tidiness. The sixth argument register is caller-saved and nothing in
@@ -480,7 +480,7 @@ pub fn thunk(nr: u32, a0: u64, a1: u64, a2: u64, a3: u64, a4: u64) u64 {
 /// stack overflow rather than a refusal. This is the one call the sentinel exists for
 /// besides the re-issue.
 pub fn traceWrite(fd: i32, buf: [*]const u8, n: usize) isize {
-    const r = thunk(@intFromEnum(SYS.write), @bitCast(@as(i64, fd)), @intFromPtr(buf), n, 0, 0);
+    const r = thunk(@backingInt(SYS.write), @bitCast(@as(i64, fd)), @intFromPtr(buf), n, 0, 0);
     const signed: i64 = @bitCast(r);
     return @intCast(signed);
 }
@@ -592,7 +592,7 @@ pub fn install() Install {
     // a path that has no observable effect (review, P2).
     installHandler();
 
-    if (linux.prctl(@intFromEnum(linux.PR.SET_NO_NEW_PRIVS), 1, 0, 0, 0) != 0) return .failed;
+    if (linux.prctl(@backingInt(linux.PR.SET_NO_NEW_PRIVS), 1, 0, 0, 0) != 0) return .failed;
 
     // `SECCOMP_FILTER_FLAG_TSYNC` since #753. This runs from the library constructor, and a
     // filter is inherited by every thread `clone` makes afterwards — but a thread can exist
@@ -697,7 +697,7 @@ pub fn armGuards() void {
 }
 
 /// `SIGSYS` as a plain number, for comparison against a libc `signum` argument.
-const sigsys_no: c_int = @intFromEnum(linux.SIG.SYS);
+const sigsys_no: c_int = @backingInt(linux.SIG.SYS);
 
 const SigactionFn = *const fn (c_int, ?*const anyopaque, ?*anyopaque) callconv(.c) c_int;
 const SignalFn = *const fn (c_int, ?*const anyopaque) callconv(.c) ?*const anyopaque;
@@ -876,7 +876,7 @@ fn fdOf(v: u64) c_int {
 /// write-capable open), so no arm re-tests the flags — except `openat2`, whose flags live
 /// in a struct the filter cannot read.
 fn record(nr: u32, a: [6]u64) void {
-    const sys: SYS = @enumFromInt(nr);
+    const sys: SYS = @fromBackingInt(@intCast(nr));
     switch (builtin.cpu.arch) {
         .x86_64 => switch (sys) {
             // The legacy spellings glibc still issues on this architecture.
@@ -1238,7 +1238,7 @@ test "the built-in program is the one this architecture's set describes" {
             );
     }
     // `read` is in no set on either architecture.
-    const read_nr: i32 = @intCast(@intFromEnum(SYS.read));
+    const read_nr: i32 = @intCast(@backingInt(SYS.read));
     try std.testing.expectEqual(linux.SECCOMP.RET.ALLOW, simulate(&program, frame(read_nr, audit_arch, 0)));
 }
 
@@ -1247,11 +1247,11 @@ test "AUDIT_ARCH values match the header's" {
     // Composed from `elf.EM` here, so this pins the composition, not a copy of itself.
     try std.testing.expectEqual(
         @as(u32, 0xC000_00B7),
-        @intFromEnum(std.elf.EM.AARCH64) | audit_64bit | audit_le,
+        @backingInt(std.elf.EM.AARCH64) | audit_64bit | audit_le,
     );
     try std.testing.expectEqual(
         @as(u32, 0xC000_003E),
-        @intFromEnum(std.elf.EM.X86_64) | audit_64bit | audit_le,
+        @backingInt(std.elf.EM.X86_64) | audit_64bit | audit_le,
     );
 }
 
@@ -1352,8 +1352,8 @@ test "sigaction hands the caller's request on as written unless the guards are u
         guard_signal = saved_guard;
     }
     real_sigaction = .{ .found = &test_forward.fake };
-    const usr1: c_int = @intFromEnum(linux.SIG.USR1);
-    const usr2: c_int = @intFromEnum(linux.SIG.USR2);
+    const usr1: c_int = @backingInt(linux.SIG.USR1);
+    const usr2: c_int = @backingInt(linux.SIG.USR2);
 
     var full = std.mem.zeroes(std.c.Sigaction);
     try std.testing.expectEqual(@as(c_int, 0), test_libc.sigfillset(&full.mask));

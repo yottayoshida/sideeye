@@ -4,7 +4,7 @@
 #
 #   SIDEEYE_VERSION=v1.10.0 sh spike/platforms/build.sh <out dir>
 #
-# Zig 0.16.0 (the version the release builds with), fetched for this runner's CPU and checked
+# Zig 0.16.0 (the version v1.10.0 was built with; main needs 0.17.0 and fails here), fetched for this runner's CPU and checked
 # against ziglang.org's published shasum; -Doptimize=ReleaseSafe, as release.yml builds.
 #   alpine-src-<ref>   in Alpine 3.22 (musl), the source of SIDEEYE_VERSION and of the checked-out
 #                      commit ("main"): does it build, does the result explore the define

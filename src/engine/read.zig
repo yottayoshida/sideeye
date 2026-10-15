@@ -120,7 +120,7 @@ test "readWhole classifies the descriptor before the loop, and /dev/zero is what
     // answered `.other` for everything — would satisfy the assertion above while
     // refusing every state file in every snapshot.
     var bb: [128]u8 = undefined;
-    const path_z = std.fmt.bufPrintZ(&bb, ".zig-cache/tmp-readwhole400-{d}", .{posix.getpid()}) catch unreachable;
+    const path_z = std.mem.printSentinel(&bb, ".zig-cache/tmp-readwhole400-{d}", .{posix.getpid()}, 0) catch unreachable;
     const fd = posix.open(path_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
     try std.testing.expect(fd >= 0);
     const bytes = "abc\n";
@@ -137,10 +137,10 @@ test "readWholeDiag: a file this user cannot open reports the open's errno; a di
     defer arena_state.deinit();
     const arena = arena_state.allocator();
     var dbuf: [contract.max_path]u8 = undefined;
-    const dir = std.fmt.bufPrintZ(&dbuf, "/tmp/sideeye-readdiag-{d}", .{posix.getpid()}) catch unreachable;
+    const dir = std.mem.printSentinel(&dbuf, "/tmp/sideeye-readdiag-{d}", .{posix.getpid()}, 0) catch unreachable;
     _ = posix.mkdir(dir.ptr, 0o755);
     var fbuf: [contract.max_path]u8 = undefined;
-    const lock = std.fmt.bufPrintZ(&fbuf, "{s}/lock", .{dir}) catch unreachable;
+    const lock = std.mem.printSentinel(&fbuf, "{s}/lock", .{dir}, 0) catch unreachable;
     const fd = posix.open(lock.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o000));
     try std.testing.expect(fd >= 0);
     _ = posix.close(fd);
