@@ -106,6 +106,11 @@ change.
   Branch protection requires `required` (with `crash-consistency`, `linux` and `macos`), not a
   list of job names, and `required` fails when a job of the workflow is missing from its list
   (`spike/check-ci-required.py`, ADR 0131).
+- **Every job in every workflow carries its own `timeout-minutes`**, set from its longest recent
+  successes rather than GitHub's six-hour default; `required` fails on a job without one, in
+  any workflow, `.yml` or `.yaml`. A step's timeout does not count — the job around it can
+  still hold a runner for GitHub's six hours. The image `ci.yml` builds `FROM` is pinned by
+  digest inside a `run:` string, where Dependabot does not look, so it moves by hand.
 - English for everything committed.
 
 ## Blind-hunt campaigns: the apparatus rules
