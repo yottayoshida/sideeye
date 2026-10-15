@@ -700,20 +700,22 @@ pub fn encodeRecord(buf: []u8, rec: Record) EncodeError!usize {
     const needed = 2 + 4 + 4 + 8 + 4 + rec.path.len + 4 + rec.aux.len;
     if (buf.len < needed) return error.BufferTooSmall;
 
+    // Not std.mem.writeInt: a Debug build keeps each inlined call's locals in this frame, and
+    // every record a target thread writes passes through it, close to the stack bound.
     var i: usize = 0;
-    std.mem.writeInt(u16, buf[i..][0..2], @backingInt(rec.op), .little);
+    buf[i..][0..2].* = @bitCast(std.mem.nativeToLittle(u16, @backingInt(rec.op)));
     i += 2;
-    std.mem.writeInt(u32, buf[i..][0..4], rec.seq, .little);
+    buf[i..][0..4].* = @bitCast(std.mem.nativeToLittle(u32, rec.seq));
     i += 4;
-    std.mem.writeInt(u32, buf[i..][0..4], rec.pid, .little);
+    buf[i..][0..4].* = @bitCast(std.mem.nativeToLittle(u32, rec.pid));
     i += 4;
-    std.mem.writeInt(u64, buf[i..][0..8], rec.tid, .little);
+    buf[i..][0..8].* = @bitCast(std.mem.nativeToLittle(u64, rec.tid));
     i += 8;
-    std.mem.writeInt(u32, buf[i..][0..4], @intCast(rec.path.len), .little);
+    buf[i..][0..4].* = @bitCast(std.mem.nativeToLittle(u32, @intCast(rec.path.len)));
     i += 4;
     @memcpy(buf[i..][0..rec.path.len], rec.path);
     i += rec.path.len;
-    std.mem.writeInt(u32, buf[i..][0..4], @intCast(rec.aux.len), .little);
+    buf[i..][0..4].* = @bitCast(std.mem.nativeToLittle(u32, @intCast(rec.aux.len)));
     i += 4;
     @memcpy(buf[i..][0..rec.aux.len], rec.aux);
     i += rec.aux.len;
