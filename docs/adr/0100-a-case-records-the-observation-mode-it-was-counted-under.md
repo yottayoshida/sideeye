@@ -2,6 +2,9 @@
 
 Status: Accepted (2026-10-09)
 
+Amended by **ADR 0136**: a version-7 case spells `observe` whatever the mode, `wrappers`
+included.
+
 Closes #691. A case saved by a run under `--observe syscalls` or `--observe supervised` is
 `case_version` 6 and carries a top-level `observe`; a replay given no `--observe` replays it
 under that mode, through the CLI and through `sideeye_replay_case` alike. A case counted under
