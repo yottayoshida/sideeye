@@ -35,7 +35,7 @@ concurrency:
 
 jobs:
   sweep-g4:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 240
     steps:
       # Pinned by commit, like every action in this repository (ADR 0061,

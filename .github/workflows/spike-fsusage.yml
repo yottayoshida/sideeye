@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   sudo-fsusage:
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 30
     steps:
       # Pinned by commit, like every action in this repository (ADR 0061,
