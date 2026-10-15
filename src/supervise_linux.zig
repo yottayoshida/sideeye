@@ -101,7 +101,7 @@ fn buildFilter(out: *[max_filter]SockFilter) []SockFilter {
     out[n] = stmt(BPF.RET | BPF.K, SECCOMP.RET.ALLOW);
     n += 1;
     for (watched) |w| {
-        const nr: u32 = @intCast(@intFromEnum(w.sys));
+        const nr: u32 = @intCast(@backingInt(w.sys));
         out[n] = stmt(BPF.LD | BPF.W | BPF.ABS, off_nr);
         n += 1;
         if (w.flag_arg) |arg| {
@@ -152,7 +152,7 @@ pub fn kernelSupports() bool {
             // the first version of this pipe did exactly that and hung the engine (measured).
             const probe = [_]SockFilter{
                 stmt(BPF.LD | BPF.W | BPF.ABS, off_nr),
-                jump(BPF.JMP | BPF.JEQ | BPF.K, @intCast(@intFromEnum(SYS.mknodat)), 0, 1),
+                jump(BPF.JMP | BPF.JEQ | BPF.K, @intCast(@backingInt(SYS.mknodat)), 0, 1),
                 stmt(BPF.RET | BPF.K, SECCOMP.RET.USER_NOTIF),
                 stmt(BPF.RET | BPF.K, SECCOMP.RET.ALLOW),
             };
@@ -173,7 +173,7 @@ pub fn kernelSupports() bool {
         break;
     }
     _ = linux.close(p[0]);
-    var status: u32 = 0;
+    var status: i32 = 0;
     _ = linux.waitpid(@intCast(pid), &status, 0);
     return answered and got == 'y';
 }
@@ -222,7 +222,7 @@ pub fn filterExec(argv: []const [:0]const u8) noreturn {
     const prog: SockFprog = .{ .len = @intCast(f.len), .filter = f.ptr };
     const lrc = linux.seccomp(SECCOMP.SET_MODE_FILTER, SECCOMP.FILTER_FLAG.NEW_LISTENER | supervise.wait_killable_recv, &prog);
     if (linux.errno(lrc) != .SUCCESS)
-        die(126, "__filter-exec: seccomp(SECCOMP_FILTER_FLAG_NEW_LISTENER|WAIT_KILLABLE_RECV) was refused, errno {d}", .{@intFromEnum(linux.errno(lrc))});
+        die(126, "__filter-exec: seccomp(SECCOMP_FILTER_FLAG_NEW_LISTENER|WAIT_KILLABLE_RECV) was refused, errno {d}", .{@backingInt(linux.errno(lrc))});
     const listener: i32 = @intCast(lrc);
 
     const pid: i32 = linux.getpid();
@@ -241,9 +241,9 @@ pub fn filterExec(argv: []const [:0]const u8) noreturn {
         for (op[1..], 0..) |a, i| sh_argv[i + 2] = a.ptr;
         sh_argv[op.len + 1] = null;
         const rc2 = linux.execve("/bin/sh", @ptrCast(sh_argv.ptr), @ptrCast(std.c.environ));
-        die(127, "__filter-exec: exec /bin/sh {s} failed, errno {d}", .{ op[0], @intFromEnum(linux.errno(rc2)) });
+        die(127, "__filter-exec: exec /bin/sh {s} failed, errno {d}", .{ op[0], @backingInt(linux.errno(rc2)) });
     }
-    die(127, "__filter-exec: exec {s} failed, errno {d}", .{ op[0], @intFromEnum(linux.errno(rc)) });
+    die(127, "__filter-exec: exec {s} failed, errno {d}", .{ op[0], @backingInt(linux.errno(rc)) });
 }
 
 const Cmsg = extern struct {
@@ -461,7 +461,7 @@ const Tracer = struct {
 
     fn open(cfg: Config, primary: i32) ?Tracer {
         var pbuf: [contract.max_path + 1]u8 = undefined;
-        const p = std.fmt.bufPrintZ(&pbuf, "{s}", .{cfg.trace_path}) catch return null;
+        const p = std.mem.printSentinel(&pbuf, "{s}", .{cfg.trace_path}, 0) catch return null;
         // Non-blocking and held to a regular file, as the shim holds its own trace (#492, #400):
         // a FIFO planted at the name would otherwise block this open, and with it the target.
         const flags: linux.O = .{ .ACCMODE = .WRONLY, .CREAT = true, .APPEND = true, .CLOEXEC = true, .NOFOLLOW = true, .NONBLOCK = true };
@@ -532,7 +532,7 @@ const Tracer = struct {
 
     fn standing(self: *Tracer, pid: i32) contract.CgroupStanding {
         var pbuf: [64]u8 = undefined;
-        const p = std.fmt.bufPrintZ(&pbuf, "/proc/{d}/cgroup", .{pid}) catch return .unknown;
+        const p = std.mem.printSentinel(&pbuf, "/proc/{d}/cgroup", .{pid}, 0) catch return .unknown;
         var text: [4096]u8 = undefined;
         const t = readSmall(p, &text) orelse return .unknown;
         return contract.standingOf(t, self.cfg.run_cgroup);
@@ -561,7 +561,7 @@ const Tracer = struct {
             return .@"continue";
         };
         const a = [6]u64{ req.data.arg0, req.data.arg1, req.data.arg2, req.data.arg3, req.data.arg4, req.data.arg5 };
-        const sys: SYS = @enumFromInt(req.data.nr);
+        const sys: SYS = @fromBackingInt(@intCast(req.data.nr));
         var ctx: Call = .{ .t = self, .listener = listener, .id = req.id, .pid = pid, .tid = tid };
         return ctx.dispatch(sys, a);
     }
@@ -617,7 +617,7 @@ const Tracer = struct {
         if (self.cfg.kill_cgroup.len > 0) {
             var kbuf: [contract.max_path + 1]u8 = undefined;
             const wrote = blk: {
-                const kp = std.fmt.bufPrintZ(&kbuf, "{s}", .{self.cfg.kill_cgroup}) catch break :blk false;
+                const kp = std.mem.printSentinel(&kbuf, "{s}", .{self.cfg.kill_cgroup}, 0) catch break :blk false;
                 const rc = linux.open(kp.ptr, .{ .ACCMODE = .WRONLY, .CLOEXEC = true }, 0);
                 if (linux.errno(rc) != .SUCCESS) break :blk false;
                 const kfd: i32 = @intCast(rc);
@@ -805,7 +805,7 @@ const Call = struct {
         };
         const base = if (dirfd == AT_FDCWD) blk: {
             var lbuf: [64]u8 = undefined;
-            const link = std.fmt.bufPrintZ(&lbuf, "/proc/{d}/cwd", .{self.tid}) catch {
+            const link = std.mem.printSentinel(&lbuf, "/proc/{d}/cwd", .{self.tid}, 0) catch {
                 unresolvable.* = true;
                 return null;
             };
@@ -859,7 +859,7 @@ fn fdOf(v: u64) i32 {
 
 fn tgidOf(tid: i32) ?i32 {
     var pbuf: [64]u8 = undefined;
-    const p = std.fmt.bufPrintZ(&pbuf, "/proc/{d}/status", .{tid}) catch return null;
+    const p = std.mem.printSentinel(&pbuf, "/proc/{d}/status", .{tid}, 0) catch return null;
     var text: [2048]u8 = undefined;
     const t = readSmall(p, &text) orelse return null;
     const at = std.mem.indexOf(u8, t, "\nTgid:") orelse return null;
@@ -922,7 +922,7 @@ const FdKind = enum { path_backed, non_path, unresolvable };
 
 fn fdKind(tid: i32, fd: i32, deleted: *bool) FdKind {
     var pbuf: [64]u8 = undefined;
-    const p = std.fmt.bufPrintZ(&pbuf, "/proc/{d}/fd/{d}", .{ tid, fd }) catch return .unresolvable;
+    const p = std.mem.printSentinel(&pbuf, "/proc/{d}/fd/{d}", .{ tid, fd }, 0) catch return .unresolvable;
     var sx: linux.Statx = undefined;
     const rc = linux.statx(AT_FDCWD, p.ptr, 0, .{ .TYPE = true, .NLINK = true }, &sx);
     switch (linux.errno(rc)) {
@@ -944,7 +944,7 @@ const deleted_suffix = " (deleted)";
 
 fn fdPath(out: []u8, tid: i32, fd: i32, deleted: *bool) ?[]const u8 {
     var pbuf: [64]u8 = undefined;
-    const p = std.fmt.bufPrintZ(&pbuf, "/proc/{d}/fd/{d}", .{ tid, fd }) catch return null;
+    const p = std.mem.printSentinel(&pbuf, "/proc/{d}/fd/{d}", .{ tid, fd }, 0) catch return null;
     return readLinkAt(p, out, deleted);
 }
 

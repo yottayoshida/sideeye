@@ -81,9 +81,9 @@ pub const WorldResult = struct {
 
 test "the three read error sets hold what their readers can raise (#376)" {
     const t = std.testing;
-    try t.expectEqual(@as(usize, 9), @typeInfo(SnapshotError).error_set.?.len);
-    try t.expectEqual(@as(usize, 3), @typeInfo(ReadWholeError).error_set.?.len);
-    try t.expectEqual(@as(usize, 2), @typeInfo(TraceReadError).error_set.?.len);
+    try t.expectEqual(@as(usize, 9), @typeInfo(SnapshotError).error_set.error_names.?.len);
+    try t.expectEqual(@as(usize, 3), @typeInfo(ReadWholeError).error_set.error_names.?.len);
+    try t.expectEqual(@as(usize, 2), @typeInfo(TraceReadError).error_set.error_names.?.len);
 }
 
 test {
@@ -105,7 +105,7 @@ test {
 fn facadeExports(comptime name: []const u8) bool {
     @setEvalBranchQuota(100_000);
     for (std.meta.declarations(@This())) |d| {
-        if (std.mem.eql(u8, d.name, name)) return true;
+        if (std.mem.eql(u8, d, name)) return true;
     }
     return false;
 }
@@ -124,14 +124,14 @@ test "the facade re-exports every public declaration of each part (#491)" {
             // file `@hasDecl` is true for a private declaration too, so a
             // `const Reconciled = snapshot.Reconciled;` without `pub` would pass it and the
             // identity check both, while `main.zig` could not spell `engine.Reconciled`.
-            if (!comptime facadeExports(d.name)) {
-                @compileError("engine.zig does not re-export " ++ name ++ "." ++ d.name);
+            if (!comptime facadeExports(d)) {
+                @compileError("engine.zig does not re-export " ++ name ++ "." ++ d);
             }
             // Identity for types and functions; for a `usize` ceiling or an error set this
             // is a comparison of value or structure, and a hand-copied
             // `pub const max_trace_bytes = 64 * 1024 * 1024;` would pass it. The walk above
             // is what holds the list complete; this line holds what it can.
-            try std.testing.expect(@field(@This(), d.name) == @field(part, d.name));
+            try std.testing.expect(@field(@This(), d) == @field(part, d));
         }
     }
 }

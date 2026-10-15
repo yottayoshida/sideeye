@@ -19,7 +19,7 @@ pub const Refusal = struct {
 pub fn lock(arena: std.mem.Allocator, work: []const u8) ?Refusal {
     const shown = defang.textShown(arena, work);
     var path_buf: [contract.max_path]u8 = undefined;
-    const path = std.fmt.bufPrintZ(&path_buf, "{s}/run.lock", .{work}) catch
+    const path = std.mem.printSentinel(&path_buf, "{s}/run.lock", .{work}, 0) catch
         return .{ .reason = .define_invalid, .text = "--work is too long" };
     const flags = posix.O_RDWR | posix.O_NOFOLLOW | posix.O_CLOEXEC | posix.O_NONBLOCK;
     // Not asked who owns a file this run just made: a filesystem that squashes the owner would
@@ -76,9 +76,9 @@ test "a work directory another holder has locked is refused naming its pid, and 
     var db: [contract.max_path]u8 = undefined;
     const dir = std.fmt.bufPrint(&db, "/tmp/sideeye-workdir-lock-{d}", .{posix.getpid()}) catch unreachable;
     var dzb: [contract.max_path]u8 = undefined;
-    const dir_z = std.fmt.bufPrintZ(&dzb, "{s}", .{dir}) catch unreachable;
+    const dir_z = std.mem.printSentinel(&dzb, "{s}", .{dir}, 0) catch unreachable;
     var lb: [contract.max_path]u8 = undefined;
-    const lock_z = std.fmt.bufPrintZ(&lb, "{s}/run.lock", .{dir}) catch unreachable;
+    const lock_z = std.mem.printSentinel(&lb, "{s}/run.lock", .{dir}, 0) catch unreachable;
     _ = posix.mkdir(dir_z.ptr, 0o755);
     const saved = lock_fd;
     defer {

@@ -5,7 +5,7 @@
     // Pinned to a tagged release, not a -dev build: ziglang.org keeps only tagged
     // releases and the current master, so a pinned -dev version eventually 404s and
     // CI stops being reproducible.
-    .minimum_zig_version = "0.16.0",
+    .minimum_zig_version = "0.17.0",
     .dependencies = .{},
     .paths = .{
         "build.zig",

@@ -8,7 +8,7 @@
 
 ## Context
 
-ADR 0001 pins Zig 0.16.0 and accepts that "the breakage arrives all at once at the upgrade rather
+ADR 0001 pinned Zig 0.16.0 (0.17.0 since #782) and accepts that "the breakage arrives all at once at the upgrade rather
 than continuously". Nothing looked ahead. Zig 0.17.0 shipped on 2026-10-01, Homebrew's `zig`
 moved to it, and a source build with it stops at `build.zig:612` (`b.args` is gone) — measured on
 2026-10-10, nine days later, while #698 was being planned (#782). The released assets and the
@@ -89,3 +89,10 @@ Zig releases either, which is what #698 is about.
   workflow and the list instead of stating which newer versions build — a version written there
   would go stale with nothing to check it.
 - Whoever fixes a listed breakage removes its row, or the run goes red to say so.
+
+## Amended 2026-10-15: #782 landed, and the list is empty
+
+The change that moved the pin to 0.17.0 removed the two `b.args` rows and measured master as this
+record asks: Zig 0.18.0-dev.253 builds Sideeye and passes its tests on macOS and on Linux (a
+container), so master has no row, and the list holds none. From here the latest lane is the
+pinned release until 0.18.0 ships.

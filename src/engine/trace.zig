@@ -7,7 +7,7 @@ const Allocator = std.mem.Allocator;
 
 /// `PathTooLong` is nearly unreachable rather than unreachable, and the difference was
 /// found in review after the first draft claimed the stronger thing. The read's
-/// `bufPrintZ` needs one byte more than the `bufPrint` that built the same path at the
+/// `printSentinel` needs one byte more than the `bufPrint` that built the same path at the
 /// call site, so the window is `path.len == max_path` exactly. At the two record sites a
 /// longer sibling (`stdout-record.txt`, `stdout-record-2.txt`) is formatted into an
 /// equally sized buffer first and closes it. **The world loop is not closed**: its trace
@@ -554,7 +554,7 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
     const arena = info.arena.allocator();
 
     var path_buf: [contract.max_path]u8 = undefined;
-    const path_z = std.fmt.bufPrintZ(&path_buf, "{s}", .{path}) catch return error.PathTooLong;
+    const path_z = std.mem.printSentinel(&path_buf, "{s}", .{path}, 0) catch return error.PathTooLong;
 
     // Capped since #324, and the cap breaking is the one failure this read does NOT
     // collapse. #265 left the read uncapped precisely because collapsing it would
@@ -837,7 +837,7 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
 }
 
 fn joinZ(buf: []u8, a: []const u8, b: []const u8) error{PathTooLong}![:0]const u8 {
-    const s = std.fmt.bufPrintZ(buf, "{s}/{s}", .{ a, b }) catch return error.PathTooLong;
+    const s = std.mem.printSentinel(buf, "{s}/{s}", .{ a, b }, 0) catch return error.PathTooLong;
     return s;
 }
 
@@ -853,7 +853,7 @@ test "a trace written against another contract version is a mismatch, not a shor
     var dbuf: [contract.max_path]u8 = undefined;
     const dir = std.fmt.bufPrint(&dbuf, "/tmp/sideeye-version-test-{d}", .{posix.getpid()}) catch unreachable;
     var pbuf: [contract.max_path]u8 = undefined;
-    const dz = std.fmt.bufPrintZ(&pbuf, "{s}", .{dir}) catch unreachable;
+    const dz = std.mem.printSentinel(&pbuf, "{s}", .{dir}, 0) catch unreachable;
     _ = posix.mkdir(dz.ptr, 0o755);
     var fbuf: [contract.max_path]u8 = undefined;
     const fz = try joinZ(&fbuf, dir, "trace.bin");
@@ -887,7 +887,7 @@ fn writeTraceForTest(dir_tag: []const u8, records: []const contract.Record, fbuf
     var dbuf: [contract.max_path]u8 = undefined;
     const dir = std.fmt.bufPrint(&dbuf, "/tmp/sideeye-{s}-{d}", .{ dir_tag, posix.getpid() }) catch unreachable;
     var pbuf: [contract.max_path]u8 = undefined;
-    const dz = std.fmt.bufPrintZ(&pbuf, "{s}", .{dir}) catch unreachable;
+    const dz = std.mem.printSentinel(&pbuf, "{s}", .{dir}, 0) catch unreachable;
     _ = posix.mkdir(dz.ptr, 0o755);
     const fz = try joinZ(fbuf, dir, "trace.bin");
     const fd = posix.open(fz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
@@ -915,7 +915,7 @@ test "the trace read refuses a symlink, and reads the same bytes named directly 
     // except being a link. Reading the target directly is the control: without it, a
     // `readTrace` that had started refusing everything would satisfy the assertion below.
     var lbuf: [contract.max_path]u8 = undefined;
-    const link = std.fmt.bufPrintZ(&lbuf, "{s}.link", .{std.mem.span(real)}) catch unreachable;
+    const link = std.mem.printSentinel(&lbuf, "{s}.link", .{std.mem.span(real)}, 0) catch unreachable;
     _ = posix.unlink(link.ptr);
     try std.testing.expectEqual(@as(c_int, 0), posix.symlink(real, link.ptr));
     defer {
@@ -1305,13 +1305,13 @@ test "a child's exec never opens a continuation window and stays tolerable (#123
 
 fn traceFixture(tag: []const u8, bytes: []const u8, path_out: []u8) ?[]const u8 {
     var pbuf: [contract.max_path]u8 = undefined;
-    const parent_z = std.fmt.bufPrintZ(&pbuf, "/tmp/sideeye-{s}-{d}", .{ tag, posix.getpid() }) catch unreachable;
+    const parent_z = std.mem.printSentinel(&pbuf, "/tmp/sideeye-{s}-{d}", .{ tag, posix.getpid() }, 0) catch unreachable;
     _ = posix.mkdir(parent_z.ptr, 0o755);
     var base_buf: [contract.max_path]u8 = undefined;
     const base = std.mem.span(posix.realpath(parent_z.ptr, &base_buf) orelse return null);
     const path = std.fmt.bufPrint(path_out, "{s}/trace.bin", .{base}) catch unreachable;
     var fz: [contract.max_path]u8 = undefined;
-    const file_z = std.fmt.bufPrintZ(&fz, "{s}", .{path}) catch unreachable;
+    const file_z = std.mem.printSentinel(&fz, "{s}", .{path}, 0) catch unreachable;
     const fd = posix.open(file_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
     if (fd < 0) return null;
     _ = posix.write(fd, bytes.ptr, bytes.len);
@@ -1373,14 +1373,12 @@ test "MEASURE what a trace costs the budget, by shape (#377, ADR 0033)" {
     }
 }
 
-test "the ceiling covers resize and remap, which no trace read reaches (#377)" {
+test "the ceiling covers resize and remap called through the allocator interface (#377)" {
     const gpa = std.testing.allocator;
 
-    // **`ArenaAllocator` never asks its child to `remap`, and only `resize`s its last
-    // node.** So the two growth arms of this vtable are unreachable through every other
-    // test in this file: deleting their ceiling checks left the whole suite green,
-    // measured. They are reachable through the allocator interface directly, which is
-    // what a future non-arena caller would use, and that is what this drives.
+    // Not through a trace read: `ArenaAllocator` never asks its child to `remap`, and
+    // whether a read reaches `resize` depends on the child growing a node in place, so
+    // neither arm would be pinned by a read.
     var budget: TraceBudget = .{ .child = gpa, .limit = 4096 };
     const a = budget.allocator();
 
@@ -1457,8 +1455,15 @@ test "the whole-trace ceiling is shared: a second live trace is refused on the s
     const a = try budgetFixture("budget-sum-a", 100, gpa, &fbuf_a);
     const b = try budgetFixture("budget-sum-b", 100, gpa, &fbuf_b);
 
-    var budget: TraceBudget = .{ .child = gpa, .limit = 64 * 1024 };
+    // Not std.testing.allocator as the child: whether the arena grows its node in place
+    // depends on what that allocator still holds from earlier tests and on the OS, and a
+    // read's cost moves with it — one read fitting and two not would then be luck.
+    const backing = try gpa.alloc(u8, 1 << 20);
+    defer gpa.free(backing);
+    var fba = std.heap.FixedBufferAllocator.init(backing);
+    var budget: TraceBudget = .{ .child = fba.allocator(), .limit = 64 * 1024 };
     var first = try readTraceCapped(&budget, std.mem.span(a), max_trace_bytes);
+    try std.testing.expect(first.budget_refused == null);
     var refused = try readTraceCapped(&budget, std.mem.span(b), max_trace_bytes);
     try std.testing.expect(refused.budget_refused != null);
     refused.deinit();
@@ -1482,10 +1487,11 @@ test "a read that allocates nothing does not inherit the previous refusal (#377)
     const a = try budgetFixture("budget-inherit-a", 100, gpa, &fbuf_a);
     const b = try budgetFixture("budget-inherit-b", 100, gpa, &fbuf_b);
 
-    // Same limit as the test above, for the same reason: one of these fits, two do not
-    // (64 KiB since v18, when one came to cost 51,318 bytes; at 48 KiB the first read was
-    // refused too and the assertions below held for the wrong reason — review).
-    var budget: TraceBudget = .{ .child = gpa, .limit = 64 * 1024 };
+    // Not std.testing.allocator as the child, for the reason the test above gives.
+    const backing = try gpa.alloc(u8, 1 << 20);
+    defer gpa.free(backing);
+    var fba = std.heap.FixedBufferAllocator.init(backing);
+    var budget: TraceBudget = .{ .child = fba.allocator(), .limit = 64 * 1024 };
     var first = try readTraceCapped(&budget, std.mem.span(a), max_trace_bytes);
     defer first.deinit();
     try std.testing.expect(first.budget_refused == null);
@@ -1587,10 +1593,10 @@ test "a reservation that cannot be met does not relabel an oversized trace (#323
     const path = traceFixture("tracecap-reserve", "0123456789", &pbuf) orelse return error.SkipZigTest;
     defer {
         var fz: [contract.max_path]u8 = undefined;
-        const file_z = std.fmt.bufPrintZ(&fz, "{s}", .{path}) catch unreachable;
+        const file_z = std.mem.printSentinel(&fz, "{s}", .{path}, 0) catch unreachable;
         _ = posix.unlink(file_z.ptr);
         var dz: [contract.max_path]u8 = undefined;
-        const dir_z = std.fmt.bufPrintZ(&dz, "/tmp/sideeye-tracecap-reserve-{d}", .{posix.getpid()}) catch unreachable;
+        const dir_z = std.mem.printSentinel(&dz, "/tmp/sideeye-tracecap-reserve-{d}", .{posix.getpid()}, 0) catch unreachable;
         _ = posix.rmdir(dir_z.ptr);
     }
 
@@ -1622,10 +1628,10 @@ test "an oversized trace says so, instead of collapsing into the empty read (#32
     const path = traceFixture("tracecap", "0123456789", &pbuf) orelse return error.SkipZigTest;
     defer {
         var fz: [contract.max_path]u8 = undefined;
-        const file_z = std.fmt.bufPrintZ(&fz, "{s}", .{path}) catch unreachable;
+        const file_z = std.mem.printSentinel(&fz, "{s}", .{path}, 0) catch unreachable;
         _ = posix.unlink(file_z.ptr);
         var dz: [contract.max_path]u8 = undefined;
-        const dir_z = std.fmt.bufPrintZ(&dz, "/tmp/sideeye-tracecap-{d}", .{posix.getpid()}) catch unreachable;
+        const dir_z = std.mem.printSentinel(&dz, "/tmp/sideeye-tracecap-{d}", .{posix.getpid()}, 0) catch unreachable;
         _ = posix.rmdir(dir_z.ptr);
     }
 
@@ -1662,10 +1668,10 @@ test "a cap breach and an unreadable trace are different observations (#324)" {
     const path = traceFixture("tracecap-contrast", "0123456789", &pbuf) orelse return error.SkipZigTest;
     defer {
         var fz: [contract.max_path]u8 = undefined;
-        const file_z = std.fmt.bufPrintZ(&fz, "{s}", .{path}) catch unreachable;
+        const file_z = std.mem.printSentinel(&fz, "{s}", .{path}, 0) catch unreachable;
         _ = posix.unlink(file_z.ptr);
         var dz: [contract.max_path]u8 = undefined;
-        const dir_z = std.fmt.bufPrintZ(&dz, "/tmp/sideeye-tracecap-contrast-{d}", .{posix.getpid()}) catch unreachable;
+        const dir_z = std.mem.printSentinel(&dz, "/tmp/sideeye-tracecap-contrast-{d}", .{posix.getpid()}, 0) catch unreachable;
         _ = posix.rmdir(dir_z.ptr);
     }
     var big = try readTraceCapped(&gb_, path, 4);

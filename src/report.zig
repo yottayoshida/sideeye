@@ -482,14 +482,14 @@ test "setupOutputDetail separates read failure, empty output, and a line — and
     try t.expect(std.mem.indexOf(u8, forged, "\nUNKNOWN") == null);
     try t.expect(std.mem.indexOf(u8, forged, "kill_did_not_land") != null);
 
-    const ctrl = "\x01" ** (setup_line_max + 20);
+    const ctrl = &@as([setup_line_max + 20]u8, @splat(0x01));
     try t.expect(writeWholeFile(path, &.{ctrl}));
     const defanged = setupOutputDetail(arena, path);
     try t.expect(std.mem.indexOfScalar(u8, defanged, 0x01) == null);
     try t.expect(std.mem.indexOf(u8, defanged, "\\x01") != null);
     try t.expect(defanged.len > setup_line_max);
 
-    const long = "E" ** (setup_line_max + 50);
+    const long = &@as([setup_line_max + 50]u8, @splat('E'));
     try t.expect(writeWholeFile(path, &.{long}));
     const clamped = setupOutputDetail(arena, path);
     try t.expect(std.mem.indexOf(u8, clamped, "...") != null);
@@ -497,7 +497,7 @@ test "setupOutputDetail separates read failure, empty output, and a line — and
     // well, so its total length says nothing about whether the line was cut. What the
     // clamp promises is that the whole line is not in there.
     try t.expect(std.mem.indexOf(u8, clamped, long) == null);
-    try t.expect(std.mem.indexOf(u8, clamped, "E" ** setup_line_max) != null);
+    try t.expect(std.mem.indexOf(u8, clamped, &@as([setup_line_max]u8, @splat('E'))) != null);
 
     // The same reader the success path deletes on. It has to agree with the sentences
     // above about what "nothing" means, or a setup would be told it wrote nothing while
@@ -533,7 +533,7 @@ test "setupOutputDetail separates read failure, empty output, and a line — and
 
     removeFile(path);
     var db: [contract.max_path]u8 = undefined;
-    const dz = try std.fmt.bufPrintZ(&db, "{s}", .{path});
+    const dz = try std.mem.printSentinel(&db, "{s}", .{path}, 0);
     try t.expect(posix.mkdir(dz.ptr, @as(c_uint, 0o755)) == 0);
     defer _ = posix.rmdir(dz.ptr);
     const dir = setupOutputDetail(arena, path);
@@ -1446,10 +1446,10 @@ test "byteSpan names where two runs' bytes differ, how long and what kind, and t
     try std.testing.expect(std.mem.indexOf(u8, byteSpan(a, "f", "\x89PNG\x00\x01", "s", "\x89PNG\x00\x02", .shape), "both holding bytes outside printable text (1 and 1)") != null);
     try std.testing.expect(std.mem.indexOf(u8, byteSpan(a, "f", "id=3fa9c1", "s", "id=b07e2d", .shape), "both hex digits") != null);
     try std.testing.expect(std.mem.indexOf(u8, byteSpan(a, "f", "name=alpha;", "s", "name=omega;", .shape), "both printable text") != null);
-    const long_a = "x" ** 100;
-    const long_b = "y" ** 100;
+    const long_a = &@as([100]u8, @splat('x'));
+    const long_b = &@as([100]u8, @splat('y'));
     const clipped = byteSpan(a, "f", long_a, "s", long_b, .bytes);
-    try std.testing.expect(std.mem.indexOf(u8, clipped, "f \"" ++ "x" ** 48 ++ "\"…, s \"" ++ "y" ** 48 ++ "\"… — 100 and 100 byte(s)") != null);
+    try std.testing.expect(std.mem.indexOf(u8, clipped, "f \"" ++ @as([48]u8, @splat('x')) ++ "\"…, s \"" ++ @as([48]u8, @splat('y')) ++ "\"… — 100 and 100 byte(s)") != null);
     try std.testing.expectEqualStrings("hold the same bytes", byteSpan(a, "f", "same", "s", "same", .shape));
 }
 
@@ -1479,9 +1479,9 @@ test "byteSpan reads text as text: whole UTF-8 characters, lines, and hex only w
     try std.testing.expect(std.mem.endsWith(u8, byteSpan(a, "f", "grade=A\n", "s", "grade=B\n", .shape), ", both printable text"));
     try std.testing.expect(std.mem.endsWith(u8, byteSpan(a, "f", "w=bad\n", "s", "w=fee\n", .shape), ", both printable text"));
     try std.testing.expect(std.mem.endsWith(u8, byteSpan(a, "f", "id=3fa9c1\n", "s", "id=b07e2d\n", .shape), ", both hex digits"));
-    const long_a = "a" ** 47 ++ "é" ++ "aaz";
-    const long_b = "b" ** 47 ++ "é" ++ "bbz";
-    try std.testing.expect(std.mem.indexOf(u8, byteSpan(a, "f", long_a, "s", long_b, .bytes), "f \"" ++ "a" ** 47 ++ "\"…, s \"" ++ "b" ** 47 ++ "\"…") != null);
+    const long_a = @as([47]u8, @splat('a')) ++ "é" ++ "aaz";
+    const long_b = @as([47]u8, @splat('b')) ++ "é" ++ "bbz";
+    try std.testing.expect(std.mem.indexOf(u8, byteSpan(a, "f", long_a, "s", long_b, .bytes), "f \"" ++ @as([47]u8, @splat('a')) ++ "\"…, s \"" ++ @as([47]u8, @splat('b')) ++ "\"…") != null);
 }
 
 test "baselineDiffers names a kind change, reads the history form, and says nothing for a missing path (#688 review)" {
@@ -1838,7 +1838,7 @@ pub fn writeJsonReport(
 
 fn writeJsonDoc(path: []const u8, doc: []const u8) void {
     var pbuf: [contract.max_path]u8 = undefined;
-    const pz = std.fmt.bufPrintZ(&pbuf, "{s}", .{path}) catch
+    const pz = std.mem.printSentinel(&pbuf, "{s}", .{path}, 0) catch
         return jsonFailed("--json path is too long");
     var tbuf: [contract.max_path]u8 = undefined;
     const temp = openFreshTemp(&tbuf, std.fs.path.dirname(path) orelse ".", null) orelse
@@ -1878,7 +1878,7 @@ fn openFreshTemp(buf: []u8, dir: []const u8, first_name: ?[]const u8) ?FreshTemp
         var hex: [16]u8 = undefined;
         var name_buf: [64]u8 = undefined;
         const name = if (attempt == 0 and first_name != null) first_name.? else std.fmt.bufPrint(&name_buf, ".sideeye-json-{s}.tmp", .{posix.randomHex(&hex) orelse return null}) catch return null;
-        const tz = std.fmt.bufPrintZ(buf, "{s}{s}{s}", .{ dir, sep, name }) catch return null;
+        const tz = std.mem.printSentinel(buf, "{s}{s}{s}", .{ dir, sep, name }, 0) catch return null;
         // Never O_TRUNC an existing name: whatever sits there, a link included, would be written through.
         const fd = posix.open(tz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_EXCL | posix.O_NOFOLLOW | posix.O_CLOEXEC, @as(c_uint, 0o644));
         if (fd >= 0) return .{ .path = tz, .fd = fd };
@@ -1896,7 +1896,7 @@ pub const ReportSlot = union(enum) {
 
 pub fn reportSlot(path: []const u8) ReportSlot {
     var zb: [contract.max_path]u8 = undefined;
-    const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch return .leave;
+    const z = std.mem.printSentinel(&zb, "{s}", .{path}, 0) catch return .leave;
     const kind = posix.kindOfPathNoFollow(z.ptr) catch return .{ .refuse = "a path whose kind could not be read" };
     switch (kind) {
         .missing => return .leave,
@@ -1939,10 +1939,10 @@ const SlotTestDir = struct {
     fn init(self: *SlotTestDir, tag: []const u8) !void {
         self.dir = try std.fmt.bufPrint(&self.dir_buf, "/tmp/sideeye-{s}-{d}", .{ tag, posix.getpid() });
         var zb: [128]u8 = undefined;
-        _ = posix.mkdir(try std.fmt.bufPrintZ(&zb, "{s}", .{self.dir}), 0o700);
+        _ = posix.mkdir(try std.mem.printSentinel(&zb, "{s}", .{self.dir}, 0), 0o700);
     }
     fn at(self: *SlotTestDir, name: []const u8) [:0]const u8 {
-        return std.fmt.bufPrintZ(&self.path_buf, "{s}/{s}", .{ self.dir, name }) catch unreachable;
+        return std.mem.printSentinel(&self.path_buf, "{s}/{s}", .{ self.dir, name }, 0) catch unreachable;
     }
     fn track(self: *SlotTestDir, name: []const u8) void {
         self.names[self.n] = name;
@@ -1955,7 +1955,7 @@ const SlotTestDir = struct {
     fn link(self: *SlotTestDir, target: []const u8, name: []const u8) !void {
         self.track(name);
         var tb: [192]u8 = undefined;
-        const tz = try std.fmt.bufPrintZ(&tb, "{s}/{s}", .{ self.dir, target });
+        const tz = try std.mem.printSentinel(&tb, "{s}/{s}", .{ self.dir, target }, 0);
         if (posix.symlink(tz.ptr, self.at(name).ptr) != 0) return error.Setup;
     }
     fn read(self: *SlotTestDir, name: []const u8, out: []u8) []const u8 {
@@ -1971,7 +1971,7 @@ const SlotTestDir = struct {
             _ = posix.rmdir(self.at(name).ptr);
         }
         var zb: [128]u8 = undefined;
-        _ = posix.rmdir((std.fmt.bufPrintZ(&zb, "{s}", .{self.dir}) catch return).ptr);
+        _ = posix.rmdir((std.mem.printSentinel(&zb, "{s}", .{self.dir}, 0) catch return).ptr);
     }
 };
 
@@ -2344,22 +2344,10 @@ test "an item that would need JSON escaping is rejected, and the ones shipped do
 }
 
 test "every OpClass name is its own tag, which is why the hand-written switch could go (#280)" {
-    inline for (@typeInfo(contract.OpClass).@"enum".fields) |f| {
-        const v: contract.OpClass = @enumFromInt(f.value);
-        try std.testing.expectEqualStrings(f.name, v.name());
-    }
-    inline for (@typeInfo(contract.UnknownReason).@"enum".fields) |f| {
-        const v: contract.UnknownReason = @enumFromInt(f.value);
-        try std.testing.expectEqualStrings(f.name, v.name());
-    }
-    inline for (@typeInfo(contract.SetupErrorReason).@"enum".fields) |f| {
-        const v: contract.SetupErrorReason = @enumFromInt(f.value);
-        try std.testing.expectEqualStrings(f.name, v.name());
-    }
-    inline for (@typeInfo(boundary.BoundaryEvidence.Kind).@"enum".fields) |f| {
-        const v: boundary.BoundaryEvidence.Kind = @enumFromInt(f.value);
-        try std.testing.expectEqualStrings(f.name, v.name());
-    }
+    for (std.meta.tags(contract.OpClass)) |v| try std.testing.expectEqualStrings(@tagName(v), v.name());
+    for (std.meta.tags(contract.UnknownReason)) |v| try std.testing.expectEqualStrings(@tagName(v), v.name());
+    for (std.meta.tags(contract.SetupErrorReason)) |v| try std.testing.expectEqualStrings(@tagName(v), v.name());
+    for (std.meta.tags(boundary.BoundaryEvidence.Kind)) |v| try std.testing.expectEqualStrings(@tagName(v), v.name());
 }
 
 test "the oracle account says no oracle was given only once the arguments were read to the end (#352)" {

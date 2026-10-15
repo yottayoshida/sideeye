@@ -640,10 +640,10 @@ const ThreadState = struct {
     /// Where `refreshCount` decodes. Static rather than a stack array because this runs
     /// from arbitrary interposed calls and, under `--observe syscalls`, from inside the
     /// SIGSYS handler — 8 KB of stack is not a thing to spend there.
-    scan_buf: [contract.max_record_len]u8 = [_]u8{0} ** contract.max_record_len,
+    scan_buf: [contract.max_record_len]u8 = @splat(0),
     /// One record is built here and written with a single `write(2)`, so a trace never
     /// ends with half a record even when the process dies mid-run.
-    record_buf: [contract.max_record_len]u8 = [_]u8{0} ** contract.max_record_len,
+    record_buf: [contract.max_record_len]u8 = @splat(0),
 
     // Scratch space for path resolution and for the exec carry's rebuilt environment
     // (#555). These were arrays on the TARGET thread's stack — up to twenty kilobytes for
@@ -662,22 +662,22 @@ const ThreadState = struct {
     // `busy` is one non-atomic flag for every thread past the 64th, so two of them can
     // meet in the path buffers as they already could in `record_buf` — a run the engine
     // refuses on `thread-slots-exhausted`.
-    resolve_base: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
-    observe_path: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
-    observe_aux: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
-    note1_path: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
-    note2_path: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
-    note2_aux: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
-    unsup2_path: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
-    unsup2_canon: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
-    unsup2_aux: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
-    unsup2_aux_canon: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
-    unsup_fd_path: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
-    fd_path: [contract.max_path]u8 = [_]u8{0} ** contract.max_path,
-    exec_env: [max_env_entries + 1]?[*:0]const u8 = [_]?[*:0]const u8{null} ** (max_env_entries + 1),
+    resolve_base: [contract.max_path]u8 = @splat(0),
+    observe_path: [contract.max_path]u8 = @splat(0),
+    observe_aux: [contract.max_path]u8 = @splat(0),
+    note1_path: [contract.max_path]u8 = @splat(0),
+    note2_path: [contract.max_path]u8 = @splat(0),
+    note2_aux: [contract.max_path]u8 = @splat(0),
+    unsup2_path: [contract.max_path]u8 = @splat(0),
+    unsup2_canon: [contract.max_path]u8 = @splat(0),
+    unsup2_aux: [contract.max_path]u8 = @splat(0),
+    unsup2_aux_canon: [contract.max_path]u8 = @splat(0),
+    unsup_fd_path: [contract.max_path]u8 = @splat(0),
+    fd_path: [contract.max_path]u8 = @splat(0),
+    exec_env: [max_env_entries + 1]?[*:0]const u8 = @splat(null),
 };
 const max_threads = 64;
-var slots: [max_threads]ThreadState = [_]ThreadState{.{}} ** max_threads;
+var slots: [max_threads]ThreadState = @splat(.{});
 var reserve: ThreadState = .{};
 /// Whether the exhaustion notice has been written (v16). Taken with a compare-and-swap by
 /// the one thread that writes it — two threads overflowing together race for it and one
@@ -823,7 +823,7 @@ const PendingStart = struct {
     written: u32 = 0,
     ordinal: u32 = 0,
 };
-var pending_starts: [max_threads]PendingStart = [_]PendingStart{.{}} ** max_threads;
+var pending_starts: [max_threads]PendingStart = @splat(.{});
 
 const Joinable = struct {
     /// The key. 0 is free; `joinable_claiming` marks an entry whose payload is being
@@ -833,7 +833,7 @@ const Joinable = struct {
     ordinal: u32 = 0,
 };
 const joinable_claiming: usize = 1;
-var joinable: [max_threads]Joinable = [_]Joinable{.{}} ** max_threads;
+var joinable: [max_threads]Joinable = @splat(.{});
 
 fn claimPendingStart() ?*PendingStart {
     for (&pending_starts) |*e| {
@@ -1073,8 +1073,8 @@ var table_filled: bool = false;
 /// exactly this) must see the reason. Of those only `pwritev` exists on macOS, and only its
 /// helper has a darwin branch; the rest are Linux-only calls whose lookup is the only path.
 fn resolveAll() void {
-    inline for (@typeInfo(@TypeOf(real)).@"struct".fields) |field| {
-        @field(real, field.name) = lookup(RealFn(field.name), field.name);
+    inline for (comptime std.meta.fieldNames(@TypeOf(real))) |name| {
+        @field(real, name) = lookup(RealFn(name), name);
     }
     @atomicStore(bool, &table_filled, true, .release);
 }
@@ -1450,7 +1450,7 @@ fn cgroupStandingAt(proc_path: [*:0]const u8) CgroupStanding {
     while (true) {
         const r = std.c.read(fd, &window, window.len);
         if (r < 0) {
-            if (std.c._errno().* == @intFromEnum(std.posix.E.INTR)) continue;
+            if (std.c._errno().* == @backingInt(std.posix.E.INTR)) continue;
             return .unknown;
         }
         if (r == 0) break;
@@ -1606,7 +1606,7 @@ fn fdPath(out: []u8, fd: c_int, deleted: *bool) ?[]const u8 {
     }
 
     var link_buf: [64]u8 = undefined;
-    const link = std.fmt.bufPrintZ(&link_buf, "/proc/self/fd/{d}", .{fd}) catch return null;
+    const link = std.mem.printSentinel(&link_buf, "/proc/self/fd/{d}", .{fd}, 0) catch return null;
     const n = c.readlink(link, out.ptr, out.len);
     if (n <= 0) return null;
     var raw = out[0..@intCast(n)];
@@ -1946,7 +1946,7 @@ fn callExecvePreInit(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]const ?
     if (ts == &reserve or ts.exec_carrying) return callExecve(p, a, e);
     ts.exec_carrying = true;
     defer ts.exec_carrying = false;
-    const entry = std.fmt.bufPrintZ(&pre_init.carry_entry, "{s}={s}", .{ contract.env.before_constructor, std.mem.span(v) }) catch return callExecve(p, a, e);
+    const entry = std.mem.printSentinel(&pre_init.carry_entry, "{s}={s}", .{ contract.env.before_constructor, std.mem.span(v) }, 0) catch return callExecve(p, a, e);
     return execveAppending(ts, p, a, e, entry.ptr, contract.env.before_constructor ++ "=");
 }
 
@@ -2051,7 +2051,7 @@ fn killAtCrashPoint(group: bool) noreturn {
     if (group) _ = c.kill(0, SIGKILL);
     _ = c.raise(SIGKILL);
     for (0..9) |_| _ = c.usleep(100_000);
-    c._exit(@intFromEnum(contract.ExitCode.setup_error));
+    c._exit(@backingInt(contract.ExitCode.setup_error));
 }
 
 /// The single place where an operation becomes a counted event, and the single place
@@ -2153,7 +2153,7 @@ fn observe(ts: *ThreadState, op: contract.OpClass, raw_path: []const u8, raw_aux
                 const killed = kill_cgroup_fd >= 0 and shimWrite(kill_cgroup_fd, "1");
                 if (aside and killed) killAtCrashPoint(group_held);
                 writeRecord(ts, .cgroup, s, path, notHeldAux(cgroupStanding()) orelse contract.cgroup_aux.kill_returned);
-                c._exit(@intFromEnum(contract.ExitCode.setup_error));
+                c._exit(@backingInt(contract.ExitCode.setup_error));
             }
             killAtCrashPoint(kill_group);
         }
@@ -2535,7 +2535,7 @@ pub const MAP_ANON: c_int = if (is_darwin) 0x1000 else 0x20;
 const F_GETFL: c_int = 3;
 const shared_map_slots = 32;
 const SharedMapSlot = struct { start: usize = 0, end: usize = 0 };
-var shared_maps: [shared_map_slots]SharedMapSlot = [_]SharedMapSlot{.{}} ** shared_map_slots;
+var shared_maps: [shared_map_slots]SharedMapSlot = @splat(.{});
 var shared_map_next: usize = 0;
 var shared_map_overflow: bool = false;
 
@@ -2710,7 +2710,7 @@ const ENOSYS: c_int = if (is_darwin) 78 else 38;
 /// `pthread_create`'s answer for a function `reach` could not find: an error number, as its
 /// callers expect, and the one it returns for "insufficient resources". `-1` was what #753
 /// met: C++'s `std::thread` threw it as "Unknown error -1" and aborted.
-const EAGAIN_value: c_int = @intFromEnum(std.posix.E.AGAIN);
+const EAGAIN_value: c_int = @backingInt(std.posix.E.AGAIN);
 
 /// The `FILE *` wrappers' form of the same: null with errno set, not null with whatever errno
 /// held.
@@ -2992,7 +2992,7 @@ pub fn callExecveSeqCarry(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]co
     defer ts.exec_carrying = false;
     _ = refreshCount(ts);
     var entry_buf: [64]u8 = undefined;
-    const entry = std.fmt.bufPrintZ(&entry_buf, "{s}={d}", .{ contract.env.seq_base, ts.seq }) catch return callExecve(p, a, e);
+    const entry = std.mem.printSentinel(&entry_buf, "{s}={d}", .{ contract.env.seq_base, ts.seq }, 0) catch return callExecve(p, a, e);
     return execveAppending(ts, p, a, e, entry.ptr, contract.env.seq_base ++ "=");
 }
 
@@ -3024,7 +3024,7 @@ pub fn execSeqCarrySet() bool {
     const ts = mine();
     _ = refreshCount(ts);
     var val_buf: [16]u8 = undefined;
-    const v = std.fmt.bufPrintZ(&val_buf, "{d}", .{ts.seq}) catch return false;
+    const v = std.mem.printSentinel(&val_buf, "{d}", .{ts.seq}, 0) catch return false;
     return c.setenv(contract.env.seq_base, v.ptr, 1) == 0;
 }
 
@@ -3317,7 +3317,7 @@ test "the shipped shim options carry the shipped value (#365)" {
 test "no second shim build option arrives unchecked (#365)" {
     // The ratchet, as in the engine's: a second option added later with no assertion above
     // would leave the promise false while CI stayed green.
-    const decls = @typeInfo(shim_build_options).@"struct".decls;
+    const decls = @typeInfo(shim_build_options).@"struct".decl_names;
     try std.testing.expectEqual(@as(usize, 2), decls.len);
 }
 
@@ -3383,12 +3383,12 @@ test "the shim's O_NOFOLLOW actually refuses a symlink (#488)" {
     // several concurrent binaries, and a shared path passed every single run before
     // failing 66 of 80 paired ones (#28).
     var pb: [160]u8 = undefined;
-    const base = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-shim-nofollow-{d}", .{c.getpid()}) catch unreachable;
+    const base = std.mem.printSentinel(&pb, "/tmp/sideeye-shim-nofollow-{d}", .{c.getpid()}, 0) catch unreachable;
     _ = std.c.mkdir(base.ptr, 0o755);
     var tb: [160]u8 = undefined;
-    const target_z = std.fmt.bufPrintZ(&tb, "{s}/target", .{base}) catch unreachable;
+    const target_z = std.mem.printSentinel(&tb, "{s}/target", .{base}, 0) catch unreachable;
     var lb: [160]u8 = undefined;
-    const link_z = std.fmt.bufPrintZ(&lb, "{s}/link", .{base}) catch unreachable;
+    const link_z = std.mem.printSentinel(&lb, "{s}/link", .{base}, 0) catch unreachable;
     defer {
         _ = std.c.unlink(link_z.ptr);
         _ = std.c.unlink(target_z.ptr);
@@ -3444,10 +3444,10 @@ test "the trace open's kind check refuses a pipe and accepts a regular file (#49
     // binaries, and a fixed shared name passed every single run before failing 66 of 80
     // paired ones (#28).
     var bb: [160]u8 = undefined;
-    const base = std.fmt.bufPrintZ(&bb, "/tmp/sideeye-shim-tracekind-{d}", .{c.getpid()}) catch unreachable;
+    const base = std.mem.printSentinel(&bb, "/tmp/sideeye-shim-tracekind-{d}", .{c.getpid()}, 0) catch unreachable;
     _ = std.c.mkdir(base.ptr, 0o755);
     var fb: [160]u8 = undefined;
-    const file_z = std.fmt.bufPrintZ(&fb, "{s}/f", .{base}) catch unreachable;
+    const file_z = std.mem.printSentinel(&fb, "{s}/f", .{base}, 0) catch unreachable;
     defer {
         _ = std.c.unlink(file_z.ptr);
         _ = std.c.rmdir(base.ptr);
@@ -3485,10 +3485,10 @@ test "the run's operation count is read back from the trace, and a torn tail is 
     // A pid-unique directory, for the reason the trace-kind test above gives: several
     // concurrent test binaries run this file.
     var bb: [160]u8 = undefined;
-    const base = std.fmt.bufPrintZ(&bb, "/tmp/sideeye-shim-count-{d}", .{c.getpid()}) catch unreachable;
+    const base = std.mem.printSentinel(&bb, "/tmp/sideeye-shim-count-{d}", .{c.getpid()}, 0) catch unreachable;
     _ = std.c.mkdir(base.ptr, 0o755);
     var fb: [160]u8 = undefined;
-    const file_z = std.fmt.bufPrintZ(&fb, "{s}/trace.bin", .{base}) catch unreachable;
+    const file_z = std.mem.printSentinel(&fb, "{s}/trace.bin", .{base}, 0) catch unreachable;
     defer {
         _ = std.c.unlink(file_z.ptr);
         _ = std.c.rmdir(base.ptr);
@@ -3599,7 +3599,7 @@ test "the run's operation count is read back from the trace, and a torn tail is 
 test "slots: one per thread id, claimed once, and the reserve past the last" {
     // Nothing here touches the live table: the test builds its own, the way a fresh
     // process would find it, and drives the claim logic by hand with made-up ids.
-    var table = [_]ThreadState{.{}} ** 3;
+    var table: [3]ThreadState = @splat(.{});
     var exhausted = false;
     const claim = struct {
         fn run(t: []ThreadState, res: *ThreadState, flag: *bool, tid: u64) *ThreadState {
@@ -3665,10 +3665,10 @@ test "mine: the 65th thread takes the reserve, and the notice is in the trace at
     // test above cannot show this; review said so.
     if (builtin.os.tag != .macos) resolveAll();
     var bb: [160]u8 = undefined;
-    const base = std.fmt.bufPrintZ(&bb, "/tmp/sideeye-shim-slots-{d}", .{c.getpid()}) catch unreachable;
+    const base = std.mem.printSentinel(&bb, "/tmp/sideeye-shim-slots-{d}", .{c.getpid()}, 0) catch unreachable;
     _ = std.c.mkdir(base.ptr, 0o755);
     var fb: [160]u8 = undefined;
-    const file_z = std.fmt.bufPrintZ(&fb, "{s}/trace.bin", .{base}) catch unreachable;
+    const file_z = std.mem.printSentinel(&fb, "{s}/trace.bin", .{base}, 0) catch unreachable;
     defer {
         _ = std.c.unlink(file_z.ptr);
         _ = std.c.rmdir(base.ptr);
@@ -3920,10 +3920,10 @@ test "writeRecord counts the records that went out, and the fork child's slots a
     // A pid-unique path, as the other trace tests in this file: `zig build test` runs
     // several binaries at once and a fixed name would be shared between them.
     var bb: [128]u8 = undefined;
-    const base = std.fmt.bufPrintZ(&bb, "/tmp/sideeye-shim-written-{d}", .{c.getpid()}) catch unreachable;
+    const base = std.mem.printSentinel(&bb, "/tmp/sideeye-shim-written-{d}", .{c.getpid()}, 0) catch unreachable;
     _ = std.c.mkdir(base.ptr, 0o755);
     var fb: [160]u8 = undefined;
-    const file_z = std.fmt.bufPrintZ(&fb, "{s}/trace.bin", .{base}) catch unreachable;
+    const file_z = std.mem.printSentinel(&fb, "{s}/trace.bin", .{base}, 0) catch unreachable;
     defer {
         _ = std.c.unlink(file_z.ptr);
         _ = std.c.rmdir(base.ptr);

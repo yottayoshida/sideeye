@@ -19,7 +19,7 @@ jobs:
 
       - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
         with:
-          version: 0.16.0
+          version: 0.17.0
 
       # Reported with --summary all so the count is visible. A suite that silently
       # collects a subset is green in exactly the same way as a complete one; that
@@ -386,7 +386,7 @@ jobs:
 
       - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
         with:
-          version: 0.16.0
+          version: 0.17.0
 
       - name: Unit tests
         run: zig build test --summary all
@@ -1463,7 +1463,7 @@ jobs:
 
       - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
         with:
-          version: 0.16.0
+          version: 0.17.0
 
       - name: Build engine and shim
         run: zig build
@@ -1641,7 +1641,7 @@ jobs:
 
       - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
         with:
-          version: 0.16.0
+          version: 0.17.0
 
       - name: The check proves it can go red
         run: sh spike/check-zig-fmt.sh --selftest
@@ -1996,7 +1996,7 @@ jobs:
 
       - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
         with:
-          version: 0.16.0
+          version: 0.17.0
 
       - name: The build is release.yml's own, read rather than copied, on its runner and its Zig (#694)
         id: flags

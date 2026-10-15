@@ -89,7 +89,7 @@ pub fn findShimBeside(arena: std.mem.Allocator, self: []const u8) ShimSearch {
     const self_uid = posix.geteuid();
     for (cands) |c| {
         var zb: [contract.max_path]u8 = undefined;
-        const z = std.fmt.bufPrintZ(&zb, "{s}", .{c}) catch continue;
+        const z = std.mem.printSentinel(&zb, "{s}", .{c}, 0) catch continue;
         // A candidate that cannot be classified ends the search rather than being treated
         // as absent. `kindAtNoFollow`'s doc names that fold — EACCES, seccomp's EPERM,
         // ENOSYS on an old kernel, a `statx` that did not fill the mask — as the silent
@@ -118,7 +118,7 @@ pub fn findShimBeside(arena: std.mem.Allocator, self: []const u8) ShimSearch {
         // documented ways past it; widening would accept a planted file in silence.
         if (!ownerAccepted(uid, self_uid, null)) {
             var self_zb: [contract.max_path]u8 = undefined;
-            const binary_uid: ?u32 = if (std.fmt.bufPrintZ(&self_zb, "{s}", .{self})) |sz|
+            const binary_uid: ?u32 = if (std.mem.printSentinel(&self_zb, "{s}", .{self}, 0)) |sz|
                 if (posix.ownedKindNoFollow(sz.ptr)) |b| b.uid else |_| null
             else |_|
                 null;
@@ -203,7 +203,7 @@ pub fn workDirName(path: []const u8) ?[]const u8 {
 pub fn mkdirWorkDir(path: []const u8, mode: c_uint) c_int {
     const name = workDirName(path) orelse path;
     var zb: [contract.max_path]u8 = undefined;
-    const z = std.fmt.bufPrintZ(&zb, "{s}", .{name}) catch return -1;
+    const z = std.mem.printSentinel(&zb, "{s}", .{name}, 0) catch return -1;
     return posix.mkdir(z.ptr, mode);
 }
 
@@ -231,7 +231,7 @@ fn ignoreForGit(work: []const u8) void {
 pub fn workDirVerdict(path: []const u8) WorkDirVerdict {
     const name = workDirName(path) orelse return .{ .refused = .{ .why = .names_parent, .uid = null } };
     var zb: [contract.max_path]u8 = undefined;
-    const z = std.fmt.bufPrintZ(&zb, "{s}", .{name}) catch return .{ .refused = .{ .why = .unclassifiable, .uid = null } };
+    const z = std.mem.printSentinel(&zb, "{s}", .{name}, 0) catch return .{ .refused = .{ .why = .unclassifiable, .uid = null } };
     const ok = posix.ownedKindNoFollow(z.ptr) catch return .{ .refused = .{ .why = .unclassifiable, .uid = null } };
     switch (ok.kind) {
         .missing => return .missing,
@@ -278,11 +278,11 @@ const PrefixFixture = struct {
     lib: [:0]const u8 = "",
 
     fn init(self: *PrefixFixture, tag: []const u8) !void {
-        self.base = std.fmt.bufPrintZ(&self.base_buf, "/tmp/sideeye-{s}-{d}", .{ tag, posix.getpid() }) catch unreachable;
+        self.base = std.mem.printSentinel(&self.base_buf, "/tmp/sideeye-{s}-{d}", .{ tag, posix.getpid() }, 0) catch unreachable;
         _ = posix.mkdir(self.base.ptr, @as(c_uint, 0o755));
-        self.bin = std.fmt.bufPrintZ(&self.bin_buf, "{s}/bin", .{self.base}) catch unreachable;
+        self.bin = std.mem.printSentinel(&self.bin_buf, "{s}/bin", .{self.base}, 0) catch unreachable;
         if (posix.mkdir(self.bin.ptr, @as(c_uint, 0o755)) != 0 and std.c._errno().* != 17) return error.SkipZigTest;
-        self.lib = std.fmt.bufPrintZ(&self.lib_buf, "{s}/lib", .{self.base}) catch unreachable;
+        self.lib = std.mem.printSentinel(&self.lib_buf, "{s}/lib", .{self.base}, 0) catch unreachable;
         if (posix.mkdir(self.lib.ptr, @as(c_uint, 0o755)) != 0 and std.c._errno().* != 17) return error.SkipZigTest;
         // Pid-unique is not the same as unused: a pid comes round again, and a run that
         // died before its `deinit` leaves its files behind. Tolerating `EEXIST` on the
@@ -295,10 +295,10 @@ const PrefixFixture = struct {
     fn clear(self: *const PrefixFixture) void {
         var pb: [contract.max_path]u8 = undefined;
         for ([_][:0]const u8{ self.bin, self.lib }) |d| {
-            const shim = std.fmt.bufPrintZ(&pb, "{s}/{s}", .{ d, shim_basename }) catch continue;
+            const shim = std.mem.printSentinel(&pb, "{s}/{s}", .{ d, shim_basename }, 0) catch continue;
             _ = posix.unlink(shim.ptr);
         }
-        const spare = std.fmt.bufPrintZ(&pb, "{s}/elsewhere", .{self.base}) catch return;
+        const spare = std.mem.printSentinel(&pb, "{s}/elsewhere", .{self.base}, 0) catch return;
         _ = posix.unlink(spare.ptr);
     }
 
@@ -307,7 +307,7 @@ const PrefixFixture = struct {
     }
 
     fn shimIn(dir: []const u8, buf: []u8) ![:0]const u8 {
-        const path = std.fmt.bufPrintZ(buf, "{s}/{s}", .{ dir, shim_basename }) catch return error.SkipZigTest;
+        const path = std.mem.printSentinel(buf, "{s}/{s}", .{ dir, shim_basename }, 0) catch return error.SkipZigTest;
         const fd = posix.open(path.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
         if (fd < 0) return error.SkipZigTest;
         _ = posix.close(fd);
@@ -378,7 +378,7 @@ test "a symlinked candidate is refused, not followed and not skipped (#423)" {
     }
 
     var binb: [contract.max_path]u8 = undefined;
-    const bin_shim = std.fmt.bufPrintZ(&binb, "{s}/{s}", .{ fx.bin, shim_basename }) catch unreachable;
+    const bin_shim = std.mem.printSentinel(&binb, "{s}/{s}", .{ fx.bin, shim_basename }, 0) catch unreachable;
     if (posix.symlink(lib_shim.ptr, bin_shim.ptr) != 0) return error.SkipZigTest;
 
     switch (findShimBeside(arena, self)) {
@@ -401,7 +401,7 @@ test "a symlinked candidate is refused, not followed and not skipped (#423)" {
     _ = posix.unlink(bin_shim.ptr);
     _ = posix.unlink(lib_shim.ptr);
     var ob: [contract.max_path]u8 = undefined;
-    const outside = std.fmt.bufPrintZ(&ob, "{s}/elsewhere", .{fx.base}) catch unreachable;
+    const outside = std.mem.printSentinel(&ob, "{s}/elsewhere", .{fx.base}, 0) catch unreachable;
     {
         const fd = posix.open(outside.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
         if (fd < 0) return error.SkipZigTest;
@@ -482,7 +482,7 @@ test "a work directory that is a link, not a directory, or under `..` is refused
 
     // Pid-unique, removed on the way out (#28): this test runs in several binaries at once.
     var bb: [contract.max_path]u8 = undefined;
-    const base = std.fmt.bufPrintZ(&bb, "/tmp/sideeye-workdir-{d}", .{posix.getpid()}) catch unreachable;
+    const base = std.mem.printSentinel(&bb, "/tmp/sideeye-workdir-{d}", .{posix.getpid()}, 0) catch unreachable;
     _ = posix.mkdir(base.ptr, @as(c_uint, 0o700));
     const dir = try std.fmt.allocPrintSentinel(arena, "{s}/dir", .{base}, 0);
     const link = try std.fmt.allocPrintSentinel(arena, "{s}/link", .{base}, 0);
@@ -578,13 +578,13 @@ pub fn runServer(gpa: std.mem.Allocator) void {
     const self = canonicalSelf() orelse {
         const msg = "sideeye mcp: could not resolve the canonical path of this binary; refusing to start\n";
         _ = posix.write(2, msg.ptr, msg.len);
-        std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
+        std.process.exit(@backingInt(contract.ExitCode.setup_error));
     };
     const root = if (posix.getenv("SIDEEYE_MCP_ROOT")) |r| resolveDirInto(&root_buf, std.mem.span(r)) else null;
     if (root == null) {
         const msg = "sideeye mcp: SIDEEYE_MCP_ROOT is not set or unresolvable; refusing to start\n";
         _ = posix.write(2, msg.ptr, msg.len);
-        std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
+        std.process.exit(@backingInt(contract.ExitCode.setup_error));
     }
     server_root = root.?;
     // The phrase "must not be a workspace root" is load-bearing: two legs of mcp
@@ -593,7 +593,7 @@ pub fn runServer(gpa: std.mem.Allocator) void {
     engine.assertSafeNamingRoot(server_root) catch {
         const msg = "sideeye mcp: SIDEEYE_MCP_ROOT names a location that must not be a workspace root (/, a system tree like /usr or /var/lib, a scratch parent like /tmp, or a directory that CONTAINS one of those — /var and /private are refused for that reason); name a workspace of your own, not a system location and not a directory above one; refusing to start\n";
         _ = posix.write(2, msg.ptr, msg.len);
-        std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
+        std.process.exit(@backingInt(contract.ExitCode.setup_error));
     };
     // Unset falls back to the root: the narrow default. Unresolvable refuses
     // startup: a confinement knob that silently stopped confining would be worse
@@ -603,12 +603,12 @@ pub fn runServer(gpa: std.mem.Allocator) void {
         const resolved = resolveDirInto(&state_root_buf, std.mem.span(sr)) orelse {
             const msg = "sideeye mcp: SIDEEYE_MCP_STATE_ROOT is set but unresolvable; refusing to start rather than running unconfined\n";
             _ = posix.write(2, msg.ptr, msg.len);
-            std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
+            std.process.exit(@backingInt(contract.ExitCode.setup_error));
         };
         if (resolved.len <= 1) {
             const msg = "sideeye mcp: SIDEEYE_MCP_STATE_ROOT=/ would confine nothing; name the directory the state of replayed cases and explored configs may live under\n";
             _ = posix.write(2, msg.ptr, msg.len);
-            std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
+            std.process.exit(@backingInt(contract.ExitCode.setup_error));
         }
         break :blk resolved;
     } else server_root;
@@ -1080,7 +1080,7 @@ fn serverWork(work: []const u8) ?[]const u8 {
         if (workDirVerdict(server_work_buf[0..server_work_len]) == .ok) return server_work_buf[0..server_work_len];
         server_work_len = 0;
     }
-    const templ = std.fmt.bufPrintZ(&server_work_buf, "{s}/server-XXXXXX", .{work}) catch return null;
+    const templ = std.mem.printSentinel(&server_work_buf, "{s}/server-XXXXXX", .{work}, 0) catch return null;
     const made = posix.mkdtemp(templ.ptr) orelse return null;
     server_work_len = std.mem.len(made);
     return server_work_buf[0..server_work_len];
@@ -1088,7 +1088,7 @@ fn serverWork(work: []const u8) ?[]const u8 {
 
 test "a server's directory is its own, kept across calls, and made again when it is gone (#816)" {
     var bb: [contract.max_path]u8 = undefined;
-    const base_z = std.fmt.bufPrintZ(&bb, "/tmp/sideeye-serverwork-{d}", .{posix.getpid()}) catch unreachable;
+    const base_z = std.mem.printSentinel(&bb, "/tmp/sideeye-serverwork-{d}", .{posix.getpid()}, 0) catch unreachable;
     _ = posix.mkdir(base_z.ptr, 0o700);
     defer _ = posix.rmdir(base_z.ptr);
     server_work_len = 0;
@@ -1103,10 +1103,10 @@ test "a server's directory is its own, kept across calls, and made again when it
     try std.testing.expectEqualStrings(first_copy, serverWork(base).?);
 
     var fz: [contract.max_path]u8 = undefined;
-    _ = posix.rmdir((std.fmt.bufPrintZ(&fz, "{s}", .{first_copy}) catch unreachable).ptr);
+    _ = posix.rmdir((std.mem.printSentinel(&fz, "{s}", .{first_copy}, 0) catch unreachable).ptr);
     const second = serverWork(base) orelse return error.TestUnexpectedResult;
     var sz: [contract.max_path]u8 = undefined;
-    const second_z = std.fmt.bufPrintZ(&sz, "{s}", .{second}) catch unreachable;
+    const second_z = std.mem.printSentinel(&sz, "{s}", .{second}, 0) catch unreachable;
     defer _ = posix.rmdir(second_z.ptr);
     try std.testing.expect(workDirVerdict(second) == .ok);
 }
@@ -1205,7 +1205,7 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
             for (contract.env.removed_at_start) |removed| if (std.mem.eql(u8, name, removed))
                 return emitToolError(arena, id, std.fmt.allocPrint(arena, "SIDEEYE_MCP_CHILD_ENV names {s}, which Sideeye removes from its own environment when it starts; only a world, armed by Sideeye at its own crash point, carries it", .{name}) catch "SIDEEYE_MCP_CHILD_ENV names a variable Sideeye removes from its own environment when it starts");
             var name_z: [256]u8 = undefined;
-            const nz = std.fmt.bufPrintZ(&name_z, "{s}", .{name}) catch
+            const nz = std.mem.printSentinel(&name_z, "{s}", .{name}, 0) catch
                 return emitToolError(arena, id, "a SIDEEYE_MCP_CHILD_ENV name is longer than 255 bytes");
             const val = posix.getenv(nz.ptr) orelse
                 return emitToolError(arena, id, std.fmt.allocPrint(arena, "SIDEEYE_MCP_CHILD_ENV names {s}, but the server environment does not have it", .{name}) catch "SIDEEYE_MCP_CHILD_ENV names a variable the server environment does not have");
@@ -2020,14 +2020,14 @@ var state_root_buf: [contract.max_path]u8 = undefined;
 /// a name that hides which buffer it writes is the exact footgun this comment names).
 fn resolveDirInto(buf: *[contract.max_path]u8, dir: []const u8) ?[]const u8 {
     var zb: [contract.max_path]u8 = undefined;
-    const z = std.fmt.bufPrintZ(&zb, "{s}", .{dir}) catch return null;
+    const z = std.mem.printSentinel(&zb, "{s}", .{dir}, 0) catch return null;
     if (posix.realpath(z.ptr, buf)) |p| return std.mem.span(p);
     return null;
 }
 
 fn resolveInsideRoot(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
     var zb: [contract.max_path]u8 = undefined;
-    const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch return null;
+    const z = std.mem.printSentinel(&zb, "{s}", .{path}, 0) catch return null;
     var rp: [contract.max_path]u8 = undefined;
     const resolved = posix.realpath(z.ptr, &rp) orelse return null; // must exist
     const r = std.mem.span(resolved);
@@ -2075,11 +2075,11 @@ test "observe is absent, one of three names, or refused before anything runs (#6
     // red here rather than a mode the server accepts and `tools/list` never mentions.
     const schema = toolsListBody();
     var seen: usize = 0;
-    inline for (@typeInfo(contract.ObserveMode).@"enum".fields) |f| {
+    inline for (comptime std.meta.fieldNames(contract.ObserveMode)) |name| {
         seen += 1;
-        const parsed = try observeArg(args(arena, "{\"observe\":\"" ++ f.name ++ "\"}"));
-        try t.expectEqualStrings(f.name, parsed.?.name());
-        try t.expect(std.mem.indexOf(u8, schema, "\"" ++ f.name ++ "\"") != null);
+        const parsed = try observeArg(args(arena, "{\"observe\":\"" ++ name ++ "\"}"));
+        try t.expectEqualStrings(name, parsed.?.name());
+        try t.expect(std.mem.indexOf(u8, schema, "\"" ++ name ++ "\"") != null);
     }
     // A removal has to fail too, so the count is pinned: three names since #217, and the
     // schema's enum array names exactly those three.
@@ -2093,7 +2093,7 @@ test "cutOnBoundary keeps a cut it cannot align, rather than returning nothing (
     try t.expectEqualStrings("ab", cutOnBoundary("abcd", 2));
     try t.expectEqualStrings("\xe3\x81\x82", cutOnBoundary("\xe3\x81\x82\xe3\x81\x84", 4));
 
-    const cont = "\x80" ** 40;
+    const cont = &@as([40]u8, @splat(0x80));
     try t.expectEqual(@as(usize, 8), cutOnBoundary(cont, 8).len);
     try t.expect(cutOnBoundary(cont, 8).len > 0);
 }
@@ -2165,7 +2165,7 @@ test "the summary carries one warning line per define warning, after apparatus a
 
 fn unlinkPath(path: []const u8) void {
     var zb: [contract.max_path]u8 = undefined;
-    const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch return;
+    const z = std.mem.printSentinel(&zb, "{s}", .{path}, 0) catch return;
     _ = posix.unlink(z.ptr);
 }
 
@@ -2358,7 +2358,7 @@ test "minifyJson takes nesting std's writer cannot, keeps strings whole, and sti
 /// the cap keeps a runaway report from taking the server down.
 fn readFile(arena: std.mem.Allocator, path: []const u8, cap: usize) ?[]const u8 {
     var zb: [contract.max_path]u8 = undefined;
-    const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch return null;
+    const z = std.mem.printSentinel(&zb, "{s}", .{path}, 0) catch return null;
     // Do not drop `O_NONBLOCK` or `O_NOFOLLOW` because the server made this directory: the
     // report is written by the child into a directory the target can write, so a FIFO planted
     // at the path would hold the server with no timeout, and a symlink would hand the caller a
@@ -2471,13 +2471,13 @@ test "an over-long request is answered under its own top-level id, wherever in t
         .{ .text = "{\"jsonrpc\":\"2.0\",\"method\":\"x\"," ++ pad ++ ",\"id\":null}", .want = .{ .limit = 31, .verdict = .request } },
         .{ .text = "{\"jsonrpc\":\"2.0\",\"method\":\"x\"," ++ pad ++ ",\"id\":1.5}", .want = .{ .limit = 31, .verdict = .request } },
         .{ .text = "{\"jsonrpc\":\"2.0\",\"method\":\"x\"," ++ pad ++ ",\"id\":[1]}", .want = .{ .limit = 31, .verdict = .request } },
-        .{ .text = "{\"jsonrpc\":\"2.0\",\"id\":\"" ++ "x" ** 129 ++ "\"," ++ pad ++ "}", .want = .{ .limit = 31, .verdict = .request } },
+        .{ .text = "{\"jsonrpc\":\"2.0\",\"id\":\"" ++ @as([129]u8, @splat('x')) ++ "\"," ++ pad ++ "}", .want = .{ .limit = 31, .verdict = .request } },
         .{ .text = "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/x\"," ++ pad ++ "}", .want = .{ .limit = 31, .verdict = .notification } },
         .{ .text = "{\"jsonrpc\":\"2.0\",\"id\":1," ++ pad ++ ",\"id\":2}", .want = .{ .limit = 31, .verdict = .unparsed } },
         .{ .text = "{\"jsonrpc\":\"2.0\",\"id\":1," ++ pad, .want = .{ .limit = 31, .verdict = .unparsed } },
         .{ .text = "{\"jsonrpc\":\"2.0\",\"id\":1," ++ pad ++ "} trailing", .want = .{ .limit = 31, .verdict = .unparsed } },
         .{ .text = "[{\"jsonrpc\":\"2.0\",\"id\":1," ++ pad ++ "}]", .want = .{ .limit = 31, .verdict = .not_object } },
-        .{ .text = " \t\r" ** 30, .want = .{ .limit = 31, .verdict = .blank } },
+        .{ .text = repeat(" \t\r", 30), .want = .{ .limit = 31, .verdict = .blank } },
     };
     for (cases) |c| {
         var step: usize = 1;
@@ -2540,4 +2540,13 @@ test "route: replies are built, not written, and a tool call is returned rather 
 
     const unknown = route(a, "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{" ++ meta ++ ",\"name\":\"rm\",\"arguments\":{}}}").reply;
     try std.testing.expectEqualStrings("{\"jsonrpc\":\"2.0\",\"id\":2,\"error\":{\"code\":-32602,\"message\":\"Unknown tool\"}}", unknown);
+}
+
+fn repeat(comptime s: []const u8, comptime n: usize) *const [s.len * n]u8 {
+    const out = comptime blk: {
+        var buf: [s.len * n]u8 = undefined;
+        for (0..n) |i| @memcpy(buf[i * s.len ..][0..s.len], s);
+        break :blk buf;
+    };
+    return &out;
 }

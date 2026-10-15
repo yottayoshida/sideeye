@@ -152,7 +152,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     // Read through libc rather than `std.Io`: this is apparatus, it runs on one file
     // named on the command line, and the 0.16 file API wants an `Io` instance the rest
     // of this program has no use for.
-    const path_z = try arena.dupeZ(u8, args[args.len - 1]);
+    const path_z = try arena.dupeSentinel(u8, args[args.len - 1], 0);
     const fd = std.c.open(path_z.ptr, .{ .ACCMODE = .RDONLY });
     if (fd < 0) return error.OpenFailed;
     defer _ = std.c.close(fd);

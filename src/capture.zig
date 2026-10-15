@@ -56,7 +56,7 @@ pub const Appended = struct { text: []const u8, end: u64 };
 
 pub fn readFileFrom(arena: std.mem.Allocator, path: []const u8, from: u64, max: usize) ?Appended {
     var buf: [contract.max_path]u8 = undefined;
-    const z = std.fmt.bufPrintZ(&buf, "{s}", .{path}) catch return null;
+    const z = std.mem.printSentinel(&buf, "{s}", .{path}, 0) catch return null;
     // `O_NOFOLLOW` for the reason `observeCapture` has it (#469): the one production
     // caller reads the fs_usage capture out of the work directory, a file `spawnSidecar`
     // created refusing links, and reading it back *through* one would let somebody else
@@ -116,7 +116,7 @@ pub const CaptureObservation = struct {
 
 pub fn observeCapture(path: []const u8, needle: ?[]const u8) error{Unreadable}!CaptureObservation {
     var zb: [contract.max_path]u8 = undefined;
-    const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch return error.Unreadable;
+    const z = std.mem.printSentinel(&zb, "{s}", .{path}, 0) catch return error.Unreadable;
     // `O_NOFOLLOW` for the reason the write side has it (#469): the same file, the same
     // threat, and until this line the two answered a planted link differently. The
     // capture is written refusing to follow a symlink and was read *through* one — so
@@ -176,10 +176,10 @@ test "the readers ask what the descriptor is before reading it, at every call si
     // itself when there is no writer, and that is the hang. `spike/case-path-deadline.py`
     // measures it from outside the process, at the one call site the CLI reaches.
     var bb: [128]u8 = undefined;
-    const base = std.fmt.bufPrintZ(&bb, ".zig-cache/tmp-fifo400-{d}", .{posix.getpid()}) catch unreachable;
+    const base = std.mem.printSentinel(&bb, ".zig-cache/tmp-fifo400-{d}", .{posix.getpid()}, 0) catch unreachable;
     _ = posix.mkdir(base.ptr, @as(c_uint, 0o755));
     var fb: [160]u8 = undefined;
-    const fifo_z = std.fmt.bufPrintZ(&fb, "{s}/pipe", .{base}) catch unreachable;
+    const fifo_z = std.mem.printSentinel(&fb, "{s}/pipe", .{base}, 0) catch unreachable;
     _ = posix.unlink(fifo_z.ptr);
     try std.testing.expect(posix.mkfifo(fifo_z.ptr, @as(c_uint, 0o644)) == 0);
 
@@ -212,7 +212,7 @@ test "the readers ask what the descriptor is before reading it, at every call si
 
     const devzero = "/dev/zero";
     var dzb: [16]u8 = undefined;
-    const dz_z = std.fmt.bufPrintZ(&dzb, "{s}", .{devzero}) catch unreachable;
+    const dz_z = std.mem.printSentinel(&dzb, "{s}", .{devzero}, 0) catch unreachable;
     const dzfd = posix.open(dz_z.ptr, posix.O_RDONLY, @as(c_uint, 0));
     try std.testing.expect(dzfd >= 0);
     try std.testing.expectEqual(posix.Kind.other, try posix.kindOfFd(dzfd));
@@ -222,7 +222,7 @@ test "the readers ask what the descriptor is before reading it, at every call si
     try std.testing.expectError(error.Unreadable, observeCapture(devzero, null));
 
     var rb: [160]u8 = undefined;
-    const reg_z = std.fmt.bufPrintZ(&rb, "{s}/f", .{base}) catch unreachable;
+    const reg_z = std.mem.printSentinel(&rb, "{s}/f", .{base}, 0) catch unreachable;
     const ofd = posix.open(reg_z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
     try std.testing.expect(ofd >= 0);
     try std.testing.expect(posix.write(ofd, payload.ptr, payload.len) == @as(isize, @intCast(payload.len)));
@@ -242,12 +242,12 @@ test "the readers ask what the descriptor is before reading it, at every call si
 
 test "the work-directory readers refuse a symlink; the operator-named ones still follow one (#469)" {
     var pb: [160]u8 = undefined;
-    const base = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-nofollow-read-{d}", .{posix.getpid()}) catch unreachable;
+    const base = std.mem.printSentinel(&pb, "/tmp/sideeye-nofollow-read-{d}", .{posix.getpid()}, 0) catch unreachable;
     _ = posix.mkdir(base.ptr, 0o755);
     var tb: [200]u8 = undefined;
-    const target_z = std.fmt.bufPrintZ(&tb, "{s}/real", .{base}) catch unreachable;
+    const target_z = std.mem.printSentinel(&tb, "{s}/real", .{base}, 0) catch unreachable;
     var lb: [200]u8 = undefined;
-    const link_z = std.fmt.bufPrintZ(&lb, "{s}/link", .{base}) catch unreachable;
+    const link_z = std.mem.printSentinel(&lb, "{s}/link", .{base}, 0) catch unreachable;
     defer {
         _ = posix.unlink(link_z.ptr);
         _ = posix.unlink(target_z.ptr);
@@ -282,7 +282,7 @@ test "observeCapture finds a straddling marker and fingerprints the same bytes" 
     var pb: [128]u8 = undefined;
     const path = std.fmt.bufPrint(&pb, ".zig-cache/tmp-observecapture-{d}.txt", .{posix.getpid()}) catch unreachable;
     var zb: [contract.max_path]u8 = undefined;
-    const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch unreachable;
+    const z = std.mem.printSentinel(&zb, "{s}", .{path}, 0) catch unreachable;
     const fd = posix.open(z.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
     try std.testing.expect(fd >= 0);
     // 64 KiB of padding minus half the marker, so MARKER spans the read boundary.
@@ -317,7 +317,7 @@ test "observeCapture separates same-length rewrites by digest alone" {
     var pb: [128]u8 = undefined;
     const path = std.fmt.bufPrint(&pb, ".zig-cache/tmp-observecapture-rw-{d}.txt", .{posix.getpid()}) catch unreachable;
     var zb: [contract.max_path]u8 = undefined;
-    const z = std.fmt.bufPrintZ(&zb, "{s}", .{path}) catch unreachable;
+    const z = std.mem.printSentinel(&zb, "{s}", .{path}, 0) catch unreachable;
     defer _ = posix.unlink(z.ptr);
 
     for ([_][]const u8{ "AAAA", "AAAB" }, 0..) |content, i| {
@@ -347,7 +347,7 @@ test "observeCapture separates same-length rewrites by digest alone" {
 }
 
 test "a shrink observed inside one sample is its own evidence, not the next comparison's luck" {
-    const digest = [_]u8{7} ** std.crypto.hash.Blake3.digest_length;
+    const digest: [std.crypto.hash.Blake3.digest_length]u8 = @splat(7);
     const during = CaptureObservation{ .measured = 10, .bytes = 4, .digest = digest, .marker_seen = false };
     const honest = CaptureObservation{ .measured = 4, .bytes = 4, .digest = digest, .marker_seen = false };
     try std.testing.expect(during.sawTruncation());
@@ -376,7 +376,7 @@ pub fn readFileAllocCapped(
     mode: ReadMode,
 ) ?[]const u8 {
     var buf: [contract.max_path]u8 = undefined;
-    const z = std.fmt.bufPrintZ(&buf, "{s}", .{path}) catch return null;
+    const z = std.mem.printSentinel(&buf, "{s}", .{path}, 0) catch return null;
     // Both modes need the open to return, for different reasons: classification has to
     // get a descriptor before it can ask what it is, and the bounded read needs `EAGAIN`
     // where a blocking read would sit somewhere the deadline cannot see. Plain readers

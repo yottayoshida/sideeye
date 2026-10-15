@@ -26,7 +26,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     }
 
     var zb: [4096]u8 = undefined;
-    const z = try std.fmt.bufPrintZ(&zb, "{s}", .{args[1]});
+    const z = try std.mem.printSentinel(&zb, "{s}", .{args[1]}, 0);
     const fd = posix.open(z.ptr, posix.O_RDONLY, @as(c_uint, 0));
     if (fd < 0) {
         std.debug.print("cannot open {s}\n", .{args[1]});

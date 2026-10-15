@@ -435,7 +435,7 @@ fn didYouMean(arena: std.mem.Allocator, near: ?[]const u8) []const u8 {
 pub fn refuseOnStderr(arena: std.mem.Allocator, comptime fmt: []const u8, args: anytype) noreturn {
     const msg = std.fmt.allocPrint(arena, fmt ++ "\n", args) catch fmt ++ "\n";
     _ = posix.write(2, msg.ptr, msg.len);
-    std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
+    std.process.exit(@backingInt(contract.ExitCode.setup_error));
 }
 
 fn refuseUnknownCommand(arena: std.mem.Allocator, top: bool, token: []const u8) noreturn {
@@ -630,7 +630,7 @@ pub fn renderCommandHelp(arena: std.mem.Allocator, cmd: []const u8) error{OutOfM
 fn printCommandHelp(arena: std.mem.Allocator, cmd: []const u8) noreturn {
     const text = renderCommandHelp(arena, cmd) catch refuseOnStderr(arena, "sideeye: out of memory rendering the help for {s}", .{cmd});
     say("{s}", .{text});
-    std.process.exit(@intFromEnum(contract.ExitCode.pass));
+    std.process.exit(@backingInt(contract.ExitCode.pass));
 }
 
 /// A bare `sideeye`: the version line, the commands, and where help is. Exit 3, as the bare
@@ -640,7 +640,7 @@ fn printOverview(arena: std.mem.Allocator) noreturn {
     const cmds = synopsisCommands(&buf);
     const list = std.mem.join(arena, ", ", cmds) catch "";
     say("sideeye {s} (trace contract v{d})\n\nusage: sideeye <command> [options]\ncommands: {s}\n\nsideeye help <command> describes one command; sideeye help is the whole reference.\n", .{ version, contract.contract_version, list });
-    std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
+    std.process.exit(@backingInt(contract.ExitCode.setup_error));
 }
 
 fn isHelpSpelling(s: []const u8) bool {
@@ -662,7 +662,7 @@ pub fn answerEntry(arena: std.mem.Allocator, argv: []const []const u8) void {
     if (std.mem.eql(u8, argv[1], "--help") or std.mem.eql(u8, argv[1], "-h") or std.mem.eql(u8, argv[1], "help")) {
         if (argv.len == 2) {
             usage();
-            std.process.exit(@intFromEnum(contract.ExitCode.pass));
+            std.process.exit(@backingInt(contract.ExitCode.pass));
         }
         if (argv.len == 3 and isCommand(argv[2])) printCommandHelp(arena, argv[2]);
         if (argv.len == 3) refuseUnknownCommand(arena, false, argv[2]);
@@ -672,7 +672,7 @@ pub fn answerEntry(arena: std.mem.Allocator, argv: []const []const u8) void {
     if (std.mem.eql(u8, argv[1], "version") or std.mem.eql(u8, argv[1], "--version")) {
         if (argv.len != 2) refuseArgumentOf(arena, "version", argv[2], "");
         say("sideeye {s} (trace contract v{d})\n", .{ version, contract.contract_version });
-        std.process.exit(@intFromEnum(contract.ExitCode.pass));
+        std.process.exit(@backingInt(contract.ExitCode.pass));
     }
     if (!isCommand(argv[1])) refuseUnknownCommand(arena, true, argv[1]);
 }
@@ -1063,7 +1063,7 @@ pub fn runCompletions(arena: std.mem.Allocator, argv: []const []const u8) noretu
         if (w <= 0) refuseOnStderr(arena, "sideeye completions: could not write the {s} script to standard output", .{shell});
         off += @intCast(w);
     }
-    std.process.exit(@intFromEnum(contract.ExitCode.pass));
+    std.process.exit(@backingInt(contract.ExitCode.pass));
 }
 
 test "completions read what follows a flag and a command off the usage lines (#712)" {
@@ -1344,8 +1344,7 @@ test "the version in build.zig.zon and the one the CLI prints are the same strin
 }
 
 test "every NextStep renders one sentence whose flags the help text accepts (#274)" {
-    inline for (@typeInfo(contract.NextStep).@"enum".fields) |f| {
-        const member: contract.NextStep = @enumFromInt(f.value);
+    for (std.meta.tags(contract.NextStep)) |member| {
         const s = member.render();
         try std.testing.expect(s.len > 0);
         try std.testing.expect(s[s.len - 1] == '.');
@@ -1365,7 +1364,7 @@ test "every NextStep renders one sentence whose flags the help text accepts (#27
                 k = hit + 1;
             }
             if (!found) {
-                std.debug.print("NextStep.{s} names {s}, which the help text does not list\n", .{ f.name, flag });
+                std.debug.print("NextStep.{s} names {s}, which the help text does not list\n", .{ @tagName(member), flag });
                 return error.TestUnexpectedResult;
             }
             i = end;
@@ -1395,7 +1394,7 @@ pub fn parse(argv: []const []const u8) Parsed {
         // Not reached from `main()`, whose `answerEntry` refuses a word that names no command
         // before this runs; kept so a new caller cannot fall through to a mode it never chose.
         usage();
-        std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
+        std.process.exit(@backingInt(contract.ExitCode.setup_error));
     }
 
     var args: Args = .{};
@@ -1456,8 +1455,8 @@ pub fn parse(argv: []const []const u8) Parsed {
         if (std.mem.eql(u8, argv[i], "--observe")) {
             args.observe_named = true;
             args.observe = contract.ObserveMode.parse(v) orelse {
-                var modes: [@typeInfo(contract.ObserveMode).@"enum".fields.len][]const u8 = undefined;
-                inline for (@typeInfo(contract.ObserveMode).@"enum".fields, 0..) |f, k| modes[k] = f.name;
+                var modes: [std.meta.fieldNames(contract.ObserveMode).len][]const u8 = undefined;
+                for (std.meta.fieldNames(contract.ObserveMode), 0..) |name, k| modes[k] = name;
                 badValue(null, "--observe takes `wrappers` (the default), `syscalls` or `supervised`", v, nearest(v, &modes));
             };
         } else if (std.mem.eql(u8, argv[i], "--state")) args.state = v else if (std.mem.eql(u8, argv[i], "--setup")) args.setup = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--operation")) args.operation = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--shim")) args.shim = v else if (std.mem.eql(u8, argv[i], "--work")) {

@@ -182,22 +182,22 @@ pub const AT_REMOVEDIR: c_int = std.posix.AT.REMOVEDIR;
 
 /// else it can see falls to one loud default. `ELOOP` is 40 on Linux and 62 on Darwin, so
 /// it cannot be written out the way `EINTR` and `ENOENT` above are; `ENOTDIR` agrees
-pub const ELOOP: c_int = @intFromEnum(std.posix.E.LOOP);
-pub const EACCES: c_int = @intFromEnum(std.posix.E.ACCES);
-pub const EPERM: c_int = @intFromEnum(std.posix.E.PERM);
-pub const EIO: c_int = @intFromEnum(std.posix.E.IO);
-pub const EEXIST: c_int = @intFromEnum(std.posix.E.EXIST);
-pub const ENOTDIR: c_int = @intFromEnum(std.posix.E.NOTDIR);
+pub const ELOOP: c_int = @backingInt(std.posix.E.LOOP);
+pub const EACCES: c_int = @backingInt(std.posix.E.ACCES);
+pub const EPERM: c_int = @backingInt(std.posix.E.PERM);
+pub const EIO: c_int = @backingInt(std.posix.E.IO);
+pub const EEXIST: c_int = @backingInt(std.posix.E.EXIST);
+pub const ENOTDIR: c_int = @backingInt(std.posix.E.NOTDIR);
 /// Taken from `std.posix.E` for the same reason as its two neighbours, and with more at
 /// stake: this one differs **between operating systems** — 11 on Linux, 35 on Darwin —
 /// and it is compared against, not passed in. A wrong value here does not fail loudly;
 /// it makes "the peer has not written yet" unrecognisable, so the reader treats it as
 /// unreadable and refuses a config that was about to arrive. Every other test stays
 /// green while it does that.
-pub const EAGAIN: c_int = @intFromEnum(std.posix.E.AGAIN);
-pub const ENOLCK: c_int = @intFromEnum(std.posix.E.NOLCK);
-pub const EOPNOTSUPP: c_int = @intFromEnum(std.posix.E.OPNOTSUPP);
-pub const EBADF: c_int = @intFromEnum(std.posix.E.BADF);
+pub const EAGAIN: c_int = @backingInt(std.posix.E.AGAIN);
+pub const ENOLCK: c_int = @backingInt(std.posix.E.NOLCK);
+pub const EOPNOTSUPP: c_int = @backingInt(std.posix.E.OPNOTSUPP);
+pub const EBADF: c_int = @backingInt(std.posix.E.BADF);
 
 pub const LOCK_EX: c_int = 2;
 pub const LOCK_NB: c_int = 4;
@@ -1120,9 +1120,9 @@ pub fn spawnSidecar(
     const arena = arena_state.allocator();
 
     const cargv = try arena.alloc(?[*:0]const u8, argv.len + 1);
-    for (argv, 0..) |a, i| cargv[i] = (try arena.dupeZ(u8, a)).ptr;
+    for (argv, 0..) |a, i| cargv[i] = (try arena.dupeSentinel(u8, a, 0)).ptr;
     cargv[argv.len] = null;
-    const stdout_z = (try arena.dupeZ(u8, stdout_path)).ptr;
+    const stdout_z = (try arena.dupeSentinel(u8, stdout_path, 0)).ptr;
 
     // Same stdin discipline as every other spawn (#263), same reasons, same shape:
     // opened by the parent, handed to the child, never an exit code. `sudo -n` never
@@ -1137,7 +1137,7 @@ pub fn spawnSidecar(
         _ = close(nfd);
         return error.CaptureUnavailable;
     }
-    const efd: c_int = if (stderr_path) |ep| RealOps.openCapture((try arena.dupeZ(u8, ep)).ptr, captureFlags(true)) else -1;
+    const efd: c_int = if (stderr_path) |ep| RealOps.openCapture((try arena.dupeSentinel(u8, ep, 0)).ptr, captureFlags(true)) else -1;
     if (stderr_path != null and efd < 0) {
         _ = close(nfd);
         _ = close(cfd);
@@ -1300,22 +1300,22 @@ pub fn cgroupHome() ?CgroupHome {
     var cbuf: [4096]u8 = undefined;
     const rel = cgroup2Path(readSmallFile("/proc/self/cgroup", &cbuf) orelse return null) orelse return null;
     if (rel.len == 0 or rel.len >= cgroup_home_rel_buf.len) return null;
-    const dir = std.fmt.bufPrintZ(&cgroup_home_dir_buf, "{s}{s}", .{ mount, if (std.mem.eql(u8, rel, "/")) "" else rel }) catch return null;
+    const dir = std.mem.printSentinel(&cgroup_home_dir_buf, "{s}{s}", .{ mount, if (std.mem.eql(u8, rel, "/")) "" else rel }, 0) catch return null;
     var pid_buf: [16]u8 = undefined;
     const pid_s = std.fmt.bufPrint(&pid_buf, "{d}", .{getpid()}) catch return null;
     var procs_buf: [max_cgroup_path + 32]u8 = undefined;
-    const procs = std.fmt.bufPrintZ(&procs_buf, "{s}/cgroup.procs", .{dir}) catch return null;
+    const procs = std.mem.printSentinel(&procs_buf, "{s}/cgroup.procs", .{dir}, 0) catch return null;
     if (!writeSmallFile(procs.ptr, pid_s)) return null;
     var trial_buf: [max_cgroup_path + 32]u8 = undefined;
     // A random name, for the reason `CgroupSpawn.init` gives: an engine killed between this
     // mkdir and the rmdir leaves the directory behind, and a pid-derived name would meet it.
     var probe_hex: [16]u8 = undefined;
     const probe_tag = randomHex(&probe_hex) orelse return null;
-    const trial = std.fmt.bufPrintZ(&trial_buf, "{s}/sideeye-probe-{s}", .{ dir, probe_tag }) catch return null;
+    const trial = std.mem.printSentinel(&trial_buf, "{s}/sideeye-probe-{s}", .{ dir, probe_tag }, 0) catch return null;
     if (mkdir(trial.ptr, 0o755) != 0) return null;
     defer _ = rmdir(trial.ptr);
     var kill_buf: [max_cgroup_path + 64]u8 = undefined;
-    const kill_path = std.fmt.bufPrintZ(&kill_buf, "{s}/cgroup.kill", .{trial}) catch return null;
+    const kill_path = std.mem.printSentinel(&kill_buf, "{s}/cgroup.kill", .{trial}, 0) catch return null;
     if (access(kill_path.ptr, F_OK) != 0) return null;
     @memcpy(cgroup_home_rel_buf[0..rel.len], rel);
     cgroup_home = .{ .dir = dir, .rel = cgroup_home_rel_buf[0..rel.len] };
@@ -1408,16 +1408,16 @@ pub const CgroupSpawn = struct {
         var self: CgroupSpawn = .{ .world = world };
         var hex: [16]u8 = undefined;
         const tag = randomHex(&hex) orelse return null;
-        const d = std.fmt.bufPrintZ(&self.dir_buf, "{s}/sideeye-{d}-{s}", .{ home.dir, getpid(), tag }) catch return null;
+        const d = std.mem.printSentinel(&self.dir_buf, "{s}/sideeye-{d}-{s}", .{ home.dir, getpid(), tag }, 0) catch return null;
         self.dir_len = d.len;
         const sep: []const u8 = if (std.mem.endsWith(u8, home.rel, "/")) "" else "/";
         const r = std.fmt.bufPrint(&self.rel_buf, "{s}{s}sideeye-{d}-{s}", .{ home.rel, sep, getpid(), tag }) catch return null;
         self.rel_len = r.len;
-        const w = std.fmt.bufPrintZ(&self.work_buf, "{s}/work", .{d}) catch return null;
+        const w = std.mem.printSentinel(&self.work_buf, "{s}/work", .{d}, 0) catch return null;
         self.work_len = w.len;
-        const k = std.fmt.bufPrintZ(&self.kill_buf, "{s}/cgroup.kill", .{w}) catch return null;
+        const k = std.mem.printSentinel(&self.kill_buf, "{s}/cgroup.kill", .{w}, 0) catch return null;
         self.kill_len = k.len;
-        const a = std.fmt.bufPrintZ(&self.aside_buf, "{s}/cgroup.procs", .{d}) catch return null;
+        const a = std.mem.printSentinel(&self.aside_buf, "{s}/cgroup.procs", .{d}, 0) catch return null;
         self.aside_len = a.len;
         return self;
     }
@@ -1442,14 +1442,14 @@ pub const CgroupSpawn = struct {
     }
 };
 
-const ESRCH: c_int = @intFromEnum(std.posix.E.SRCH);
+const ESRCH: c_int = @backingInt(std.posix.E.SRCH);
 
 /// rest. Null only when there is no such process. A file that exists and cannot be read or
 /// parsed answers `?`, which a caller asking "is it dead?" must read as no — the survivor
 /// check (contract v17, #559) refuses on it rather than trusting a read it could not make.
 pub fn processState(pid: u32) ?u8 {
     var pbuf: [32]u8 = undefined;
-    const path = std.fmt.bufPrintZ(&pbuf, "/proc/{d}/stat", .{pid}) catch return '?';
+    const path = std.mem.printSentinel(&pbuf, "/proc/{d}/stat", .{pid}, 0) catch return '?';
     const fd = open(path.ptr, O_RDONLY | O_CLOEXEC, @as(c_uint, 0));
     if (fd < 0) return if (std.c._errno().* == ENOENT) null else '?';
     defer _ = close(fd);
@@ -1478,7 +1478,7 @@ fn cgroupMakeReal(cg: *CgroupSpawn) bool {
         return false;
     }
     var buf: [max_cgroup_path + 96]u8 = undefined;
-    const procs = std.fmt.bufPrintZ(&buf, "{s}/cgroup.procs", .{cg.workDir()}) catch {
+    const procs = std.mem.printSentinel(&buf, "{s}/cgroup.procs", .{cg.workDir()}, 0) catch {
         cg.removeDirs();
         return false;
     };
@@ -1506,7 +1506,7 @@ fn cgroupJoinReal(cg: *CgroupSpawn, pid: c_int) bool {
 fn cgroupStopReal(cg: *CgroupSpawn, read_lingering: bool) void {
     if (!cg.joined) return;
     var events_buf: [max_cgroup_path + 80]u8 = undefined;
-    const events = std.fmt.bufPrintZ(&events_buf, "{s}/cgroup.events", .{cg.dir()}) catch return;
+    const events = std.mem.printSentinel(&events_buf, "{s}/cgroup.events", .{cg.dir()}, 0) catch return;
     var ev_buf: [256]u8 = undefined;
     if (read_lingering) lingering: {
         const ev = readSmallFile(events.ptr, &ev_buf) orelse break :lingering;
@@ -1515,7 +1515,7 @@ fn cgroupStopReal(cg: *CgroupSpawn, read_lingering: bool) void {
         noteLingering(cg, cg.dir());
     }
     var kill_buf: [max_cgroup_path + 80]u8 = undefined;
-    const kill_path = std.fmt.bufPrintZ(&kill_buf, "{s}/cgroup.kill", .{cg.dir()}) catch return;
+    const kill_path = std.mem.printSentinel(&kill_buf, "{s}/cgroup.kill", .{cg.dir()}, 0) catch return;
     _ = writeSmallFile(kill_path.ptr, "1");
     const deadline = monotonicMs() + world_kill_grace_ms;
     while (true) {
@@ -1535,7 +1535,7 @@ fn cgroupStopReal(cg: *CgroupSpawn, read_lingering: bool) void {
 /// read holds counts as more than the array holds, not as the pids that fitted.
 fn noteLingering(cg: *CgroupSpawn, dir: []const u8) void {
     var procs_buf: [max_cgroup_path + 96]u8 = undefined;
-    const procs = std.fmt.bufPrintZ(&procs_buf, "{s}/cgroup.procs", .{dir}) catch return;
+    const procs = std.mem.printSentinel(&procs_buf, "{s}/cgroup.procs", .{dir}, 0) catch return;
     var list_buf: [4096]u8 = undefined;
     const list = readSmallFile(procs.ptr, &list_buf) orelse return;
     if (list.len == list_buf.len) cg.lingering_more = true;
@@ -1697,7 +1697,7 @@ fn defaultAction() std.c.Sigaction {
 
 pub fn dieBySignal(sig: c_int) noreturn {
     const dfl = defaultAction();
-    const s: std.c.SIG = @enumFromInt(sig);
+    const s: std.c.SIG = @fromBackingInt(@intCast(sig));
     _ = std.c.sigaction(s, &dfl, null);
     var set: std.c.sigset_t = undefined;
     _ = std.c.sigemptyset(&set);
@@ -1708,13 +1708,13 @@ pub fn dieBySignal(sig: c_int) noreturn {
 }
 
 fn liveChildWord(pgid: c_int, stop: ChildStop) u64 {
-    return (@as(u64, @intCast(pgid)) << 1) | @intFromEnum(stop);
+    return (@as(u64, @intCast(pgid)) << 1) | @backingInt(stop);
 }
 
 fn onInterrupt(s: std.c.SIG) callconv(.c) void {
     const saved_errno = std.c._errno().*;
     defer std.c._errno().* = saved_errno;
-    const sig: c_int = @intCast(@intFromEnum(s));
+    const sig: c_int = @intCast(@backingInt(s));
     const first = interrupt_sig.cmpxchgStrong(0, sig, .seq_cst, .seq_cst) == null;
     const word = live_child.load(.seq_cst);
     // No waiting on a second signal, even mid-stop: whoever sent it will not wait.
@@ -1722,9 +1722,9 @@ fn onInterrupt(s: std.c.SIG) callconv(.c) void {
     if (stopping_depth.load(.seq_cst) != 0) return;
     if (word != 0) {
         const pgid: c_int = @intCast(word >> 1);
-        const to: c_int = if (word & 1 == @intFromEnum(ChildStop.forward)) sig else SIGKILL;
+        const to: c_int = if (word & 1 == @backingInt(ChildStop.forward)) sig else SIGKILL;
         if (interrupt_kill(-pgid, to) != 0 and std.c._errno().* == ESRCH) _ = interrupt_kill(pgid, to);
-        _ = std.c.alarm(if (word & 1 == @intFromEnum(ChildStop.forward)) forward_grace_s else interrupt_grace_s);
+        _ = std.c.alarm(if (word & 1 == @backingInt(ChildStop.forward)) forward_grace_s else interrupt_grace_s);
         return;
     }
     if (sidecar_pgid.load(.seq_cst) != 0) return;
@@ -1868,16 +1868,16 @@ fn runChildSpawnAndWait(
     // allocation must not happen (a malloc lock held by another thread at fork time is
     // held forever in the child), and this is the same rule the argv and env arrays
     // above already follow.
-    const cwd_z: ?[*:0]const u8 = if (cwd) |c| (try arena.dupeZ(u8, c)).ptr else null;
+    const cwd_z: ?[*:0]const u8 = if (cwd) |c| (try arena.dupeSentinel(u8, c, 0)).ptr else null;
 
     const argv_z = try arena.alloc(?[*:0]const u8, argv.len + 1);
-    for (argv, 0..) |a, i| argv_z[i] = (try arena.dupeZ(u8, a)).ptr;
+    for (argv, 0..) |a, i| argv_z[i] = (try arena.dupeSentinel(u8, a, 0)).ptr;
     argv_z[argv.len] = null;
 
     const env_z = try arena.alloc([2][*:0]const u8, env_pairs.len);
     for (env_pairs, 0..) |kv, i| {
-        env_z[i][0] = (try arena.dupeZ(u8, kv[0])).ptr;
-        env_z[i][1] = (try arena.dupeZ(u8, kv[1])).ptr;
+        env_z[i][0] = (try arena.dupeSentinel(u8, kv[0], 0)).ptr;
+        env_z[i][1] = (try arena.dupeSentinel(u8, kv[1], 0)).ptr;
     }
     const envp: ?[*]const ?[*:0]const u8 = if (minimal_env) blk: {
         const list = try arena.alloc(?[*:0]const u8, env_pairs.len + 1);
@@ -1886,7 +1886,7 @@ fn runChildSpawnAndWait(
         list[env_pairs.len] = null;
         break :blk list.ptr;
     } else null;
-    const capture_z: ?[*:0]const u8 = if (capture) |cap| (try arena.dupeZ(u8, cap.path)).ptr else null;
+    const capture_z: ?[*:0]const u8 = if (capture) |cap| (try arena.dupeSentinel(u8, cap.path, 0)).ptr else null;
 
     // The budget clock starts before the fork: the child is runnable the moment fork
     // returns, and time the parent spends unscheduled between fork and its first poll
@@ -2415,7 +2415,7 @@ const ObserverTest = struct {
         const line = try std.fmt.bufPrint(&line_buf, "printf '%d ' $$ >&{d}; trap 'printf i >&{d}; exit 0' INT; while :; do sleep 0.1; done", .{ talk, talk });
         const pid = spawnSidecar(std.heap.page_allocator, &.{ "/bin/sh", "-c", line }, cap_path, null) catch return error.Setup;
         var zb: [96]u8 = undefined;
-        _ = unlink((std.fmt.bufPrintZ(&zb, "{s}", .{cap_path}) catch return pid).ptr);
+        _ = unlink((std.mem.printSentinel(&zb, "{s}", .{cap_path}, 0) catch return pid).ptr);
         return pid;
     }
 
@@ -2776,7 +2776,7 @@ const CaptureFixture = struct {
     base_len: usize = 0,
 
     fn init(self: *CaptureFixture, tag: []const u8) ![:0]const u8 {
-        const b = try std.fmt.bufPrintZ(&self.base, "/tmp/sideeye-capture-{s}-{d}", .{ tag, getpid() });
+        const b = try std.mem.printSentinel(&self.base, "/tmp/sideeye-capture-{s}-{d}", .{ tag, getpid() }, 0);
         self.base_len = b.len;
         _ = mkdir(b.ptr, 0o755);
         return b;
@@ -2812,9 +2812,9 @@ test "a symlink at the capture path is refused before the fork, and what it poin
     var fx: CaptureFixture = .{};
     const base = try fx.init("nofollow");
     var sb: [200]u8 = undefined;
-    const sentinel_z = try std.fmt.bufPrintZ(&sb, "{s}/outside", .{base});
+    const sentinel_z = try std.mem.printSentinel(&sb, "{s}/outside", .{base}, 0);
     var cb: [200]u8 = undefined;
-    const cap_z = try std.fmt.bufPrintZ(&cb, "{s}/capture", .{base});
+    const cap_z = try std.mem.printSentinel(&cb, "{s}/capture", .{base}, 0);
     defer {
         _ = unlink(cap_z.ptr);
         _ = unlink(sentinel_z.ptr);
@@ -2867,9 +2867,9 @@ test "a hard link at an exclusive capture path is refused too, and /dev/null sti
     var fx: CaptureFixture = .{};
     const base = try fx.init("excl");
     var sb: [200]u8 = undefined;
-    const sentinel_z = try std.fmt.bufPrintZ(&sb, "{s}/outside", .{base});
+    const sentinel_z = try std.mem.printSentinel(&sb, "{s}/outside", .{base}, 0);
     var cb: [200]u8 = undefined;
-    const cap_z = try std.fmt.bufPrintZ(&cb, "{s}/capture", .{base});
+    const cap_z = try std.mem.printSentinel(&cb, "{s}/capture", .{base}, 0);
     defer {
         _ = unlink(cap_z.ptr);
         _ = unlink(sentinel_z.ptr);
@@ -3110,37 +3110,37 @@ test "kindOfPathNoFollow classifies every kind without opening anything" {
     // rather than a wrong value. pid-unique paths: `zig build test` runs this file in
     // several concurrent binaries and a fixed shared path flakes under pairing (#28).
     var bb: [128]u8 = undefined;
-    const base = std.fmt.bufPrintZ(&bb, ".zig-cache/tmp-kindnf-{d}", .{getpid()}) catch unreachable;
+    const base = std.mem.printSentinel(&bb, ".zig-cache/tmp-kindnf-{d}", .{getpid()}, 0) catch unreachable;
     _ = mkdir(base.ptr, @as(c_uint, 0o755));
 
     var fb: [160]u8 = undefined;
-    const file_z = std.fmt.bufPrintZ(&fb, "{s}/f", .{base}) catch unreachable;
+    const file_z = std.mem.printSentinel(&fb, "{s}/f", .{base}, 0) catch unreachable;
     const fd = open(file_z.ptr, O_WRONLY | O_CREAT | O_TRUNC, @as(c_uint, 0o644));
     try std.testing.expect(fd >= 0);
     _ = close(fd);
     try std.testing.expectEqual(Kind.file, try kindOfPathNoFollow(file_z.ptr));
 
     var db: [160]u8 = undefined;
-    const dir_z = std.fmt.bufPrintZ(&db, "{s}/d", .{base}) catch unreachable;
+    const dir_z = std.mem.printSentinel(&db, "{s}/d", .{base}, 0) catch unreachable;
     try std.testing.expect(mkdir(dir_z.ptr, @as(c_uint, 0o755)) == 0);
     try std.testing.expectEqual(Kind.dir, try kindOfPathNoFollow(dir_z.ptr));
 
     var lb: [160]u8 = undefined;
-    const dangling_z = std.fmt.bufPrintZ(&lb, "{s}/l", .{base}) catch unreachable;
+    const dangling_z = std.mem.printSentinel(&lb, "{s}/l", .{base}, 0) catch unreachable;
     try std.testing.expect(symlink("no-such-target", dangling_z.ptr) == 0);
     try std.testing.expectEqual(Kind.symlink, try kindOfPathNoFollow(dangling_z.ptr));
     var l2b: [160]u8 = undefined;
-    const tofile_z = std.fmt.bufPrintZ(&l2b, "{s}/l2", .{base}) catch unreachable;
+    const tofile_z = std.mem.printSentinel(&l2b, "{s}/l2", .{base}, 0) catch unreachable;
     try std.testing.expect(symlink("f", tofile_z.ptr) == 0);
     try std.testing.expectEqual(Kind.symlink, try kindOfPathNoFollow(tofile_z.ptr));
 
     var qb: [160]u8 = undefined;
-    const fifo_z = std.fmt.bufPrintZ(&qb, "{s}/pipe", .{base}) catch unreachable;
+    const fifo_z = std.mem.printSentinel(&qb, "{s}/pipe", .{base}, 0) catch unreachable;
     try std.testing.expect(mkfifo(fifo_z.ptr, @as(c_uint, 0o644)) == 0);
     try std.testing.expectEqual(Kind.other, try kindOfPathNoFollow(fifo_z.ptr));
 
     var mb: [160]u8 = undefined;
-    const gone_z = std.fmt.bufPrintZ(&mb, "{s}/gone", .{base}) catch unreachable;
+    const gone_z = std.mem.printSentinel(&mb, "{s}/gone", .{base}, 0) catch unreachable;
     try std.testing.expectEqual(Kind.missing, try kindOfPathNoFollow(gone_z.ptr));
 
     _ = unlink(fifo_z.ptr);
@@ -3158,10 +3158,10 @@ test "EAGAIN is what the kernel returns for a non-blocking read with a peer and 
     // fail — it makes "the writer has not written yet" unrecognisable, and the reader
     // that depends on it stops retrying while every other test stays green.
     var bb: [128]u8 = undefined;
-    const base = std.fmt.bufPrintZ(&bb, ".zig-cache/tmp-eagain-{d}", .{getpid()}) catch unreachable;
+    const base = std.mem.printSentinel(&bb, ".zig-cache/tmp-eagain-{d}", .{getpid()}, 0) catch unreachable;
     _ = mkdir(base.ptr, @as(c_uint, 0o755));
     var fb: [160]u8 = undefined;
-    const fifo_z = std.fmt.bufPrintZ(&fb, "{s}/p", .{base}) catch unreachable;
+    const fifo_z = std.mem.printSentinel(&fb, "{s}/p", .{base}, 0) catch unreachable;
     _ = unlink(fifo_z.ptr);
     try std.testing.expect(mkfifo(fifo_z.ptr, @as(c_uint, 0o644)) == 0);
     defer {
@@ -3190,12 +3190,12 @@ test "O_NOFOLLOW actually refuses a symlink" {
     // satisfied by whatever the constant happens to say, which is how this constant
     // carried the x86_64 value for all of Linux and left its one caller inert on arm64.
     var pb: [160]u8 = undefined;
-    const base = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-nofollow-{d}", .{getpid()}) catch unreachable;
+    const base = std.mem.printSentinel(&pb, "/tmp/sideeye-nofollow-{d}", .{getpid()}, 0) catch unreachable;
     _ = mkdir(base.ptr, 0o755);
     var tb: [160]u8 = undefined;
-    const target_z = std.fmt.bufPrintZ(&tb, "{s}/target", .{base}) catch unreachable;
+    const target_z = std.mem.printSentinel(&tb, "{s}/target", .{base}, 0) catch unreachable;
     var lb: [160]u8 = undefined;
-    const link_z = std.fmt.bufPrintZ(&lb, "{s}/link", .{base}) catch unreachable;
+    const link_z = std.mem.printSentinel(&lb, "{s}/link", .{base}, 0) catch unreachable;
     defer {
         _ = unlink(link_z.ptr);
         _ = unlink(target_z.ptr);
@@ -3226,10 +3226,10 @@ test "O_DIRECTORY actually refuses a regular file" {
     // so that shape cannot discriminate this constant at all. A wrong O_DIRECTORY does
     // not refuse loudly either — it opens things the destructive walk then recurses into.
     var pb: [160]u8 = undefined;
-    const base = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-odirectory-{d}", .{getpid()}) catch unreachable;
+    const base = std.mem.printSentinel(&pb, "/tmp/sideeye-odirectory-{d}", .{getpid()}, 0) catch unreachable;
     _ = mkdir(base.ptr, 0o755);
     var fb: [160]u8 = undefined;
-    const file_z = std.fmt.bufPrintZ(&fb, "{s}/plain", .{base}) catch unreachable;
+    const file_z = std.mem.printSentinel(&fb, "{s}/plain", .{base}, 0) catch unreachable;
     defer {
         _ = unlink(file_z.ptr);
         _ = rmdir(base.ptr);
@@ -3267,14 +3267,14 @@ test "kindOfFd answers about the descriptor, and a pipe is not a regular file (#
 
     // pid-unique for the same reason as the neighbour above (#28).
     var bb: [128]u8 = undefined;
-    const base = std.fmt.bufPrintZ(&bb, ".zig-cache/tmp-kindfd-{d}", .{getpid()}) catch unreachable;
+    const base = std.mem.printSentinel(&bb, ".zig-cache/tmp-kindfd-{d}", .{getpid()}, 0) catch unreachable;
     _ = mkdir(base.ptr, @as(c_uint, 0o755));
 
     // The control. Without it, a `kindOfFd` that answered `.other` for everything would
     // pass the assertion above — the refusal would fire on every case file ever read and
     // the test would still be green.
     var fb: [160]u8 = undefined;
-    const file_z = std.fmt.bufPrintZ(&fb, "{s}/f", .{base}) catch unreachable;
+    const file_z = std.mem.printSentinel(&fb, "{s}/f", .{base}, 0) catch unreachable;
     const wfd = open(file_z.ptr, O_WRONLY | O_CREAT | O_TRUNC, @as(c_uint, 0o644));
     try std.testing.expect(wfd >= 0);
     _ = close(wfd);
@@ -3298,16 +3298,16 @@ test "kindAtNoFollow reads the descriptor it is given, not the name alone" {
     // identically for both, so this is the shape that catches the mistake the function's
     // doc warns about.
     var pb: [160]u8 = undefined;
-    const base = std.fmt.bufPrintZ(&pb, "/tmp/sideeye-kindat-{d}", .{getpid()}) catch unreachable;
+    const base = std.mem.printSentinel(&pb, "/tmp/sideeye-kindat-{d}", .{getpid()}, 0) catch unreachable;
     _ = mkdir(base.ptr, 0o755);
     var ab: [160]u8 = undefined;
-    const a_z = std.fmt.bufPrintZ(&ab, "{s}/a", .{base}) catch unreachable;
+    const a_z = std.mem.printSentinel(&ab, "{s}/a", .{base}, 0) catch unreachable;
     var bb: [160]u8 = undefined;
-    const b_z = std.fmt.bufPrintZ(&bb, "{s}/b", .{base}) catch unreachable;
+    const b_z = std.mem.printSentinel(&bb, "{s}/b", .{base}, 0) catch unreachable;
     var afb: [160]u8 = undefined;
-    const a_x = std.fmt.bufPrintZ(&afb, "{s}/a/x", .{base}) catch unreachable;
+    const a_x = std.mem.printSentinel(&afb, "{s}/a/x", .{base}, 0) catch unreachable;
     var bdb: [160]u8 = undefined;
-    const b_x = std.fmt.bufPrintZ(&bdb, "{s}/b/x", .{base}) catch unreachable;
+    const b_x = std.mem.printSentinel(&bdb, "{s}/b/x", .{base}, 0) catch unreachable;
     defer {
         _ = unlink(a_x.ptr);
         _ = rmdir(b_x.ptr);
@@ -3384,7 +3384,7 @@ test "a contained spawn's cgroup is stopped on every exit, and read for what lin
 test "a child whose move into the run's cgroup fails never runs, and the spawn says why (v17, #559)" {
     const home: CgroupHome = .{ .dir = "/nonexistent-cgroup-home", .rel = "/" };
     var mbuf: [128]u8 = undefined;
-    const mark = std.fmt.bufPrintZ(&mbuf, "/tmp/sideeye-cgroup-join-{d}", .{getpid()}) catch unreachable;
+    const mark = std.mem.printSentinel(&mbuf, "/tmp/sideeye-cgroup-join-{d}", .{getpid()}, 0) catch unreachable;
     _ = unlink(mark.ptr);
     var cbuf: [160]u8 = undefined;
     const cmd = std.fmt.bufPrint(&cbuf, "touch {s}", .{mark}) catch unreachable;
