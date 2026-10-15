@@ -165,6 +165,51 @@ else
     printf '%s\n' "$rp" "$pf" "$pfg" "$pfs" "$demo" "$given" | sed 's/^/     | /'
     sed -n '1,4p' /tmp/acc-827/rp.txt | sed 's/^/     | /'; fails=$((fails + 1))
 fi
+# The line is compared through a `sideeye` that records its argv, not by matching the printed
+# text: the text can hold every flag and still hand the shell a `$` it expands.
+rm -rf /tmp/acc-823 && mkdir -p /tmp/acc-823/bin /tmp/acc-823/run /tmp/acc-823/under
+cat > /tmp/acc-823/bin/sideeye <<'EOF823'
+#!/bin/sh
+for a in "$@"; do printf '%s\n' "$a"; done > /tmp/acc-823/argv.txt
+EOF823
+chmod +x /tmp/acc-823/bin/sideeye
+st823='/tmp/acc-823/under/st $HOME `id` x'
+o=$("$SIDEEYE" preflight --state "$st823" --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --cwd /tmp/acc-823/run --expect-status 0 --apparatus 'note:two words $HOME' --apparatus env:PATH \
+    --scratch 'cache dir' --state-under /tmp/acc-823/under --observe syscalls --shim "$SHIM" \
+    --oracle /usr/bin/strace --work /tmp/acc-823/work 2>&1)
+rc=$?
+nx=$(printf '%s\n' "$o" | sed -n '/^next  /,$p' | sed -e 's/^next  *//' -e 's/^  *//' \
+    | sed -e ':a' -e '/\\$/{N;s/\\\n//;ba' -e '}' | sed "s#<your-invariant.sh>#$ROOT/spike/check.sh#")
+(PATH="/tmp/acc-823/bin:$PATH" sh -c "$nx") > /tmp/acc-823/stub.out 2>&1
+printf '%s\n' explore --state "$st823" --setup "$OUT/toy-bug init" --cwd /tmp/acc-823/run \
+    --operation "$OUT/toy-bug rotate" --expect-status 0 --apparatus 'note:two words $HOME' \
+    --apparatus env:PATH --scratch 'cache dir' --check "$ROOT/spike/check.sh" --work /tmp/acc-823/work \
+    --state-under /tmp/acc-823/under --observe syscalls --shim "$SHIM" --oracle /usr/bin/strace \
+    > /tmp/acc-823/want.txt
+(TOY="$OUT/toy-bug" PATH="$(dirname "$SIDEEYE"):$PATH" sh -c "$nx --json /tmp/acc-823/r.json") > /tmp/acc-823/real.out 2>&1
+rrc=$?
+real=$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("scratch"), d.get("apparatus"))' /tmp/acc-823/r.json 2>&1)
+cat > /tmp/acc-823/c.toml <<EOF823
+[world]
+state = "under/cfg"
+[define]
+operation = "$OUT/toy-bug rotate"
+setup = "$OUT/toy-bug init"
+EOF823
+oc=$("$SIDEEYE" preflight --config /tmp/acc-823/c.toml --state-under /tmp/acc-823/under --shim "$SHIM" \
+    --oracle /usr/bin/strace --work /tmp/acc-823/work-c 2>&1)
+occ=$?
+if [ "$rc" = 0 ] && cmp -s /tmp/acc-823/argv.txt /tmp/acc-823/want.txt \
+    && [ "$rrc" = 1 ] && [ "$real" = "['cache dir'] ['note:two words \$HOME', 'env:PATH']" ] \
+    && [ "$occ" = 0 ] && printf '%s\n' "$oc" | grep -qxF "next         sideeye explore --config '/tmp/acc-823/c.toml' --work /tmp/acc-823/work-c --state-under /tmp/acc-823/under --shim $SHIM --oracle /usr/bin/strace"; then
+    echo "ok   an accepted preflight's next line, run as printed, hands explore every flag of the define it accepted"
+else
+    echo "FAIL preflight's next line is not the define it accepted: preflight exit $rc, the line run as printed exit $rrc (wanted 1), --config exit $occ"
+    printf '%s\n' "$nx" "$real" | sed 's/^/     | /'
+    diff /tmp/acc-823/want.txt /tmp/acc-823/argv.txt 2>&1 | sed 's/^/     | /'
+    printf '%s\n' "$oc" | sed -n '/^next/,$p' | sed 's/^/     | /'; fails=$((fails + 1))
+fi
 run_case "toy-fixed PASSes"    "$OUT/toy-fixed" 0 "explored worlds satisfied"
 
 # Checked as a relation rather than a fixed number. The first version asserted
@@ -7319,7 +7364,7 @@ ok=1
 printf '%s\n' "$op704" | grep -q "^PREFLIGHT  recording accepted" || ok=0
 printf '%s\n' "$op704" | grep -qxF "marker       observed in the recording run's output; preflight explores no crash world" || ok=0
 printf '%s\n' "$op704" | grep -qxF "checker      declared, not run: not refused as a command that cannot be" || ok=0
-printf '%s\n' "$op704" | grep -qxF "next         sideeye explore --config '/tmp/acc-704/T/good.toml' --shim $SHIM --oracle /usr/bin/strace" || ok=0
+printf '%s\n' "$op704" | grep -qxF "next         sideeye explore --config '/tmp/acc-704/T/good.toml' --work /tmp/acc-704/w --shim $SHIM --oracle /usr/bin/strace" || ok=0
 [ "$ran704" = no ] || ok=0
 e704 good
 unset TOY_MARKER
@@ -7336,7 +7381,7 @@ c704 argv "$d704
 $s704
 operation = [\"$OUT/toy-bug\", \"rotate\"]"
 p704 argv
-if [ "$prc704" = "0" ] && printf '%s\n' "$op704" | grep -qxF "next         sideeye explore --config '/tmp/acc-704/T/argv.toml' --shim $SHIM --oracle /usr/bin/strace"; then
+if [ "$prc704" = "0" ] && printf '%s\n' "$op704" | grep -qxF "next         sideeye explore --config '/tmp/acc-704/T/argv.toml' --work /tmp/acc-704/w --shim $SHIM --oracle /usr/bin/strace"; then
     echo "ok   #704: an argv-form operation is accepted by preflight --config and needs no spelling in the hint"
 else
     echo "FAIL #704: argv leg (exit $prc704)"
@@ -7445,7 +7490,7 @@ ln -sf ../real/real.toml /tmp/acc-704/T/link/sideeye.toml
 rm -rf /tmp/acc-704/T/link/state-argv
 o=$("$SIDEEYE" preflight --config /tmp/acc-704/T/link/sideeye.toml --shim "$SHIM" --work /tmp/acc-704/w --oracle /usr/bin/strace 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && printf '%s\n' "$o" | grep -qxF "next         sideeye explore --config '/tmp/acc-704/T/link/sideeye.toml' --shim $SHIM --oracle /usr/bin/strace"; then
+if [ "$rc" = "0" ] && printf '%s\n' "$o" | grep -qxF "next         sideeye explore --config '/tmp/acc-704/T/link/sideeye.toml' --work /tmp/acc-704/w --shim $SHIM --oracle /usr/bin/strace"; then
     echo "ok   #704: a toml that is a symlink is named on its own side, whose directory its paths resolved against"
 else
     echo "FAIL #704: symlink leg (exit $rc)"
@@ -11796,7 +11841,7 @@ else
 fi
 hint=$(printf '%s\n' "$o" | sed -n '/^next  /,$p' | tr -d '\\\n' | sed 's/^next *sideeye //; s/--check <your-invariant.sh> //')
 case "$hint" in
-    *"--cwd \"$proj_real\""*)
+    *"--cwd $proj_real "*)
         o=$(cd $cw/from && eval "TOY_PROJECT=quickstart-project \"\$SIDEEYE\" $hint --work $cw/w14b --json $cw/r14.json" 2>&1)
         rc=$?
         if [ "$rc" = "0" ] && [ "$(cwd_json $cw/r14.json verdict)" = '"PASS"' ]; then
@@ -11807,7 +11852,7 @@ case "$hint" in
             cwd_fails=$((cwd_fails + 1))
         fi ;;
     *)
-        echo "FAIL preflight's next hint does not carry --cwd \"$proj_real\": [$hint]"
+        echo "FAIL preflight's next hint does not carry --cwd $proj_real: [$hint]"
         cwd_fails=$((cwd_fails + 1)) ;;
 esac
 
