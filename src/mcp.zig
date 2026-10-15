@@ -213,7 +213,7 @@ pub fn mkdirWorkDir(path: []const u8, mode: c_uint) c_int {
 // link, and only the last component of a path is held by `O_NOFOLLOW`.
 fn ignoreForGit(work: []const u8) void {
     var zb: [contract.max_path]u8 = undefined;
-    const z = std.fmt.bufPrintZ(&zb, "{s}", .{work}) catch return;
+    const z = std.mem.printSentinel(&zb, "{s}", .{work}, 0) catch return;
     const dir = posix.open(z.ptr, posix.O_RDONLY | posix.O_DIRECTORY | posix.O_NOFOLLOW, @as(c_uint, 0));
     if (dir < 0) return;
     defer _ = posix.close(dir);
