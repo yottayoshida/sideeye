@@ -1072,23 +1072,10 @@ var table_filled: bool = false;
 /// a target that reads errno to decide whether to fall back (Rust std's kernel_copy does
 /// exactly this) must see the reason. Of those only `pwritev` exists on macOS, and only its
 /// helper has a darwin branch; the rest are Linux-only calls whose lookup is the only path.
-// Not an inline for over the names: a Debug build keeps each pass's capture in a slot of
-// one frame, hundreds of bytes, and this runs inside a target thread's first
-// interposed call, whose stack the shim may barely touch.
-const resolvers = blk: {
-    const names = std.meta.fieldNames(@TypeOf(real));
-    var fns: [names.len]*const fn () void = undefined;
-    for (names, &fns) |name, *f| f.* = struct {
-        fn resolve() void {
-            @field(real, name) = lookup(RealFn(name), name);
-        }
-    }.resolve;
-    const final = fns;
-    break :blk final;
-};
-
 fn resolveAll() void {
-    for (resolvers) |resolve| resolve();
+    inline for (comptime std.meta.fieldNames(@TypeOf(real))) |name| {
+        @field(real, name) = lookup(RealFn(name), name);
+    }
     @atomicStore(bool, &table_filled, true, .release);
 }
 
