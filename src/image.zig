@@ -151,9 +151,9 @@ pub const PathSearch = struct {
         while (self.it.next()) |raw| {
             const dir = if (raw.len == 0) "." else raw;
             const full = if (dir[0] != '/' and self.cwd != null)
-                std.fmt.bufPrintZ(self.buf, "{s}/{s}/{s}", .{ self.cwd.?, dir, self.name }) catch continue
+                std.mem.printSentinel(self.buf, "{s}/{s}/{s}", .{ self.cwd.?, dir, self.name }, 0) catch continue
             else
-                std.fmt.bufPrintZ(self.buf, "{s}/{s}", .{ dir, self.name }) catch continue;
+                std.mem.printSentinel(self.buf, "{s}/{s}", .{ dir, self.name }, 0) catch continue;
             if (posix.isExecutableRegular(full.ptr)) return full;
         }
         return null;
@@ -161,7 +161,7 @@ pub const PathSearch = struct {
 };
 
 fn observePath(arena: std.mem.Allocator, path: []const u8) Observation {
-    const path_z = arena.dupeZ(u8, path) catch
+    const path_z = arena.dupeSentinel(u8, path, 0) catch
         return .{ .path = path, .size = null, .facts = .{ .unreadable = .read_failed } };
 
     // O_NONBLOCK because the path comes from the target's own define: a FIFO there
@@ -186,7 +186,7 @@ fn observePath(arena: std.mem.Allocator, path: []const u8) Observation {
 }
 
 pub fn reobserve(arena: std.mem.Allocator, path: []const u8) Observation {
-    const path_z = arena.dupeZ(u8, path) catch
+    const path_z = arena.dupeSentinel(u8, path, 0) catch
         return .{ .path = path, .size = null, .facts = .{ .unreadable = .read_failed } };
     // O_NONBLOCK because the path comes from the target's own define: a FIFO there
     // would otherwise block this open until a writer appeared, i.e. forever, and the
@@ -268,7 +268,7 @@ pub fn startable(arena: std.mem.Allocator, argv0: []const u8, cwd: ?[]const u8, 
 }
 
 fn fileFault(arena: std.mem.Allocator, path: []const u8) Fault {
-    const z = arena.dupeZ(u8, path) catch return .not_judged;
+    const z = arena.dupeSentinel(u8, path, 0) catch return .not_judged;
     if (posix.access(z.ptr, posix.F_OK) != 0) {
         const e = std.c._errno().*;
         return if (e == posix.ENOENT or e == posix.ENOTDIR) .missing else .{ .unreachable_path = e };
@@ -282,7 +282,7 @@ fn fileFault(arena: std.mem.Allocator, path: []const u8) Fault {
 /// `O_NONBLOCK` for the reason `observePath` gives: the path is the define's, and a FIFO
 /// there must not hang the engine before anything has run. The one reader of a `#!` line
 fn shebangLine(arena: std.mem.Allocator, file: []const u8, comptime max: usize) ?[]const u8 {
-    const z = arena.dupeZ(u8, file) catch return null;
+    const z = arena.dupeSentinel(u8, file, 0) catch return null;
     const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NONBLOCK, @as(c_uint, 0));
     if (fd < 0) return null;
     defer _ = posix.close(fd);
@@ -344,7 +344,7 @@ pub fn frameworkPython(arena: std.mem.Allocator, obs: Observation) ?FrameworkPyt
 
 fn frameworkOf(arena: std.mem.Allocator, launcher: []const u8, script: ?Shebang) ?FrameworkPython {
     var buf: [search_path_max]u8 = undefined;
-    const lz = arena.dupeZ(u8, launcher) catch return null;
+    const lz = arena.dupeSentinel(u8, launcher, 0) catch return null;
     const real = std.mem.span(posix.realpath(lz.ptr, &buf) orelse return null);
     const bin = std.fs.path.dirname(real) orelse return null;
     if (!std.mem.eql(u8, std.fs.path.basename(bin), "bin")) return null;
@@ -376,7 +376,7 @@ fn frameworkName(v: []const u8) []const u8 {
 fn venvLauncher(arena: std.mem.Allocator, launcher: []const u8) ?[]const u8 {
     const dir = std.fs.path.dirname(launcher) orelse return null;
     var buf: [search_path_max]u8 = undefined;
-    const dz = arena.dupeZ(u8, dir) catch return null;
+    const dz = arena.dupeSentinel(u8, dir, 0) catch return null;
     const real_dir = std.mem.span(posix.realpath(dz.ptr, &buf) orelse return null);
     const value = std.fs.path.join(arena, &.{ real_dir, std.fs.path.basename(launcher) }) catch return null;
     const here = std.fs.path.joinZ(arena, &.{ real_dir, "pyvenv.cfg" }) catch return null;
@@ -579,7 +579,7 @@ fn classifyMachOSlice(r: Reader, base: u64) Facts {
             return .{ .undecidable = .structure_out_of_range };
         if (cmd_end > limit) return .{ .undecidable = .structure_out_of_range };
 
-        if (cmd == @intFromEnum(std.macho.LC.CODE_SIGNATURE)) {
+        if (cmd == @backingInt(std.macho.LC.CODE_SIGNATURE)) {
             if (cmdsize < 16) return .{ .undecidable = .structure_out_of_range };
             if (sig_cmd == null) sig_cmd = off;
         }
@@ -697,7 +697,7 @@ fn buildMachO(a: std.mem.Allocator, opts: struct {
     std.mem.writeInt(u32, buf[20..24], lc_size, .little);
     std.mem.writeInt(u32, buf[24..28], opts.mh_flags, .little);
 
-    std.mem.writeInt(u32, buf[32..36], @intFromEnum(std.macho.LC.CODE_SIGNATURE), .little);
+    std.mem.writeInt(u32, buf[32..36], @backingInt(std.macho.LC.CODE_SIGNATURE), .little);
     std.mem.writeInt(u32, buf[36..40], opts.cmdsize_override orelse lc_size, .little);
     std.mem.writeInt(u32, buf[40..44], sig_at, .little);
     std.mem.writeInt(u32, buf[44..48], opts.datasize_override orelse @as(u32, @intCast(index_size + entries * cd_size)), .little);
@@ -728,7 +728,7 @@ fn buildMachO(a: std.mem.Allocator, opts: struct {
 /// before failing 66 of 80 paired runs (#28) — seen-red-once validates assertions, not
 /// races, so the uniqueness is structural rather than checked.
 fn fixtureDir(buf: []u8, tag: []const u8) [:0]u8 {
-    const z = std.fmt.bufPrintZ(buf, "/tmp/sideeye-image-{s}-{d}", .{ tag, posix.getpid() }) catch unreachable;
+    const z = std.mem.printSentinel(buf, "/tmp/sideeye-image-{s}-{d}", .{ tag, posix.getpid() }, 0) catch unreachable;
     _ = posix.mkdir(z.ptr, 0o755);
     return z;
 }
@@ -738,7 +738,7 @@ fn writeFixture(dir: [:0]const u8, name: []const u8, bytes: []const u8, out: []u
 }
 
 fn writeFixtureMode(dir: [:0]const u8, name: []const u8, bytes: []const u8, out: []u8, mode: c_uint) ![:0]u8 {
-    const path = std.fmt.bufPrintZ(out, "{s}/{s}", .{ dir, name }) catch unreachable;
+    const path = std.mem.printSentinel(out, "{s}/{s}", .{ dir, name }, 0) catch unreachable;
     const fd = posix.open(path.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, mode);
     if (fd < 0) return error.SkipZigTest;
     defer _ = posix.close(fd);
@@ -1144,10 +1144,10 @@ test "searchPath takes the first executable regular file, as execvp would (ADR 0
     var b2: [320]u8 = undefined;
     var b3: [320]u8 = undefined;
     var b4: [320]u8 = undefined;
-    const a = try std.fmt.bufPrintZ(&b1, "{s}/a", .{root});
-    const b = try std.fmt.bufPrintZ(&b2, "{s}/b", .{root});
-    const c = try std.fmt.bufPrintZ(&b3, "{s}/c", .{root});
-    const a_tool = try std.fmt.bufPrintZ(&b4, "{s}/a/tool", .{root});
+    const a = try std.mem.printSentinel(&b1, "{s}/a", .{root}, 0);
+    const b = try std.mem.printSentinel(&b2, "{s}/b", .{root}, 0);
+    const c = try std.mem.printSentinel(&b3, "{s}/c", .{root}, 0);
+    const a_tool = try std.mem.printSentinel(&b4, "{s}/a/tool", .{root}, 0);
     _ = posix.mkdir(a.ptr, 0o755);
     _ = posix.mkdir(b.ptr, 0o755);
     _ = posix.mkdir(c.ptr, 0o755);
@@ -1196,7 +1196,7 @@ test "startable says which of missing, not a regular file, no execute bit, or of
     var rbuf: [256]u8 = undefined;
     const root = fixtureDir(&rbuf, "start");
     var pd: [320]u8 = undefined;
-    const dir = try std.fmt.bufPrintZ(&pd, "{s}/d", .{root});
+    const dir = try std.mem.printSentinel(&pd, "{s}/d", .{root}, 0);
     _ = posix.mkdir(dir.ptr, 0o755);
     var p1: [512]u8 = undefined;
     var p2: [512]u8 = undefined;
@@ -1271,8 +1271,8 @@ test "a bare name passes when execvp would reach a later candidate past a broken
     const root = fixtureDir(&rbuf, "start-path");
     var b1: [320]u8 = undefined;
     var b2: [320]u8 = undefined;
-    const d1 = try std.fmt.bufPrintZ(&b1, "{s}/one", .{root});
-    const d2 = try std.fmt.bufPrintZ(&b2, "{s}/two", .{root});
+    const d1 = try std.mem.printSentinel(&b1, "{s}/one", .{root}, 0);
+    const d2 = try std.mem.printSentinel(&b2, "{s}/two", .{root}, 0);
     _ = posix.mkdir(d1.ptr, 0o755);
     _ = posix.mkdir(d2.ptr, 0o755);
     var p1: [512]u8 = undefined;
@@ -1424,7 +1424,7 @@ pub const FakeFramework = struct {
 
 pub fn fakeFrameworkForTest(a: std.mem.Allocator, tag: []const u8) !FakeFramework {
     var dbuf: [256]u8 = undefined;
-    const root = try a.dupeZ(u8, fixtureDir(&dbuf, tag));
+    const root = try a.dupeSentinel(u8, fixtureDir(&dbuf, tag), 0);
     const rel = [_][]const u8{
         "Versions",                                          "Versions/3.99",
         "Versions/3.99/bin",                                 "Versions/3.99/Resources",
@@ -1439,22 +1439,22 @@ pub fn fakeFrameworkForTest(a: std.mem.Allocator, tag: []const u8) !FakeFramewor
         _ = posix.mkdir(ff.dirs[k].ptr, 0o755);
     }
     var pbuf: [512]u8 = undefined;
-    ff.launcher = try a.dupeZ(u8, try writeFixtureMode(ff.dirs[2], "python3.99", try buildMachO(a, .{}), &pbuf, 0o755));
-    ff.lib = try a.dupeZ(u8, try writeFixture(ff.dirs[1], "Python", "not a real dylib", &pbuf));
-    ff.interpreter = try a.dupeZ(u8, try writeFixtureMode(ff.dirs[6], "Python", try buildMachO(a, .{}), &pbuf, 0o755));
-    ff.venv_cfg = try a.dupeZ(u8, try writeFixture(ff.dirs[7], "pyvenv.cfg", "home = x\n", &pbuf));
+    ff.launcher = try a.dupeSentinel(u8, try writeFixtureMode(ff.dirs[2], "python3.99", try buildMachO(a, .{}), &pbuf, 0o755), 0);
+    ff.lib = try a.dupeSentinel(u8, try writeFixture(ff.dirs[1], "Python", "not a real dylib", &pbuf), 0);
+    ff.interpreter = try a.dupeSentinel(u8, try writeFixtureMode(ff.dirs[6], "Python", try buildMachO(a, .{}), &pbuf, 0o755), 0);
+    ff.venv_cfg = try a.dupeSentinel(u8, try writeFixture(ff.dirs[7], "pyvenv.cfg", "home = x\n", &pbuf), 0);
     ff.venv_python = try std.fs.path.joinZ(a, &.{ ff.dirs[8], "python" });
     _ = posix.unlink(ff.venv_python.ptr);
     if (posix.symlink(ff.launcher.ptr, ff.venv_python.ptr) != 0) return error.SkipZigTest;
     const shebang = try std.fmt.allocPrint(a, "#!{s} -sE\nprint('tool')\n", .{ff.venv_python});
-    ff.script = try a.dupeZ(u8, try writeFixtureMode(ff.dirs[8], "tool", shebang, &pbuf, 0o755));
-    ff.stray = try a.dupeZ(u8, try writeFixtureMode(ff.dirs[9], "python3", try buildMachO(a, .{}), &pbuf, 0o755));
+    ff.script = try a.dupeSentinel(u8, try writeFixtureMode(ff.dirs[8], "tool", shebang, &pbuf, 0o755), 0);
+    ff.stray = try a.dupeSentinel(u8, try writeFixtureMode(ff.dirs[9], "python3", try buildMachO(a, .{}), &pbuf, 0o755), 0);
     return ff;
 }
 
 fn realpathOf(a: std.mem.Allocator, p: []const u8) ![]const u8 {
     var buf: [search_path_max]u8 = undefined;
-    const z = try a.dupeZ(u8, p);
+    const z = try a.dupeSentinel(u8, p, 0);
     return a.dupe(u8, std.mem.span(posix.realpath(z.ptr, &buf) orelse return error.TestUnexpectedResult));
 }
 
@@ -1490,18 +1490,18 @@ test "nothing is named where the framework's layout does not hold (#703)" {
     try testing.expect(frameworkPython(a, observePath(a, ff.stray)) == null);
     var pbuf: [512]u8 = undefined;
     const text_interp = try writeFixture(ff.dirs[9], "notanimage", "plain text\n", &pbuf);
-    const text_interp_d = try a.dupeZ(u8, text_interp);
+    const text_interp_d = try a.dupeSentinel(u8, text_interp, 0);
     defer _ = posix.unlink(text_interp_d.ptr);
     const bad_script = try writeFixtureMode(ff.dirs[2], "pip3", try std.fmt.allocPrint(a, "#!{s}\n", .{text_interp_d}), &pbuf, 0o755);
-    const bad_script_d = try a.dupeZ(u8, bad_script);
+    const bad_script_d = try a.dupeSentinel(u8, bad_script, 0);
     defer _ = posix.unlink(bad_script_d.ptr);
     try testing.expect(frameworkPython(a, observePath(a, bad_script_d)) == null);
     try testing.expect(frameworkPython(a, .{ .path = bad_script_d, .size = 0, .facts = .unrecognised }) == null);
     const config = try writeFixtureMode(ff.dirs[2], "python3.99-config", "#!/bin/sh\necho flags\n", &pbuf, 0o755);
-    const config_d = try a.dupeZ(u8, config);
+    const config_d = try a.dupeSentinel(u8, config, 0);
     defer _ = posix.unlink(config_d.ptr);
     const via_config = try writeFixtureMode(ff.dirs[9], "uses-config", try std.fmt.allocPrint(a, "#!{s}\n", .{config_d}), &pbuf, 0o755);
-    const via_config_d = try a.dupeZ(u8, via_config);
+    const via_config_d = try a.dupeSentinel(u8, via_config, 0);
     defer _ = posix.unlink(via_config_d.ptr);
     try testing.expect(frameworkPython(a, observePath(a, via_config_d)) == null);
     try testing.expect(frameworkPython(a, .{ .path = ff.launcher, .size = 0, .facts = .{ .elf = .{ .has_interp = true, .class64 = true } } }) == null);
@@ -1581,15 +1581,15 @@ test "the framework library is named after the framework, as in the Command Line
     defer arena_state.deinit();
     const a = arena_state.allocator();
     var dbuf: [256]u8 = undefined;
-    const root = try a.dupeZ(u8, fixtureDir(&dbuf, "fw-clt"));
+    const root = try a.dupeSentinel(u8, fixtureDir(&dbuf, "fw-clt"), 0);
     const dirs = try bundleDirsForTest(a, root, "Python3.framework", "3.9");
     var pbuf: [512]u8 = undefined;
-    const launcher = try a.dupeZ(u8, try writeFixtureMode(dirs[3], "python3.9", try buildMachO(a, .{}), &pbuf, 0o755));
-    const interp = try a.dupeZ(u8, try writeFixtureMode(dirs[7], "Python", try buildMachO(a, .{}), &pbuf, 0o755));
-    const wrong = try a.dupeZ(u8, try writeFixture(dirs[2], "Python", "not this framework's library", &pbuf));
+    const launcher = try a.dupeSentinel(u8, try writeFixtureMode(dirs[3], "python3.9", try buildMachO(a, .{}), &pbuf, 0o755), 0);
+    const interp = try a.dupeSentinel(u8, try writeFixtureMode(dirs[7], "Python", try buildMachO(a, .{}), &pbuf, 0o755), 0);
+    const wrong = try a.dupeSentinel(u8, try writeFixture(dirs[2], "Python", "not this framework's library", &pbuf), 0);
     try testing.expect(frameworkPython(a, observePath(a, launcher)) == null);
     _ = posix.unlink(wrong.ptr);
-    const lib = try a.dupeZ(u8, try writeFixture(dirs[2], "Python3", "the framework's library", &pbuf));
+    const lib = try a.dupeSentinel(u8, try writeFixture(dirs[2], "Python3", "the framework's library", &pbuf), 0);
     const fw = frameworkPython(a, observePath(a, launcher)) orelse return error.TestUnexpectedResult;
     try testing.expectEqualStrings(try realpathOf(a, interp), try realpathOf(a, fw.interpreter));
     removeForTest(&.{ launcher, interp, lib }, &dirs, root);
@@ -1630,12 +1630,12 @@ test "a free-threaded PythonT.framework names its PythonT interpreter (#703)" {
     defer arena_state.deinit();
     const a = arena_state.allocator();
     var dbuf: [256]u8 = undefined;
-    const root = try a.dupeZ(u8, fixtureDir(&dbuf, "fw-t"));
+    const root = try a.dupeSentinel(u8, fixtureDir(&dbuf, "fw-t"), 0);
     const dirs = try bundleDirsForTest(a, root, "PythonT.framework", "3.13");
     var pbuf: [512]u8 = undefined;
-    const launcher = try a.dupeZ(u8, try writeFixtureMode(dirs[3], "python3.13t", try buildMachO(a, .{}), &pbuf, 0o755));
-    const lib = try a.dupeZ(u8, try writeFixture(dirs[2], "PythonT", "the framework's library", &pbuf));
-    const interp = try a.dupeZ(u8, try writeFixtureMode(dirs[7], "PythonT", try buildMachO(a, .{}), &pbuf, 0o755));
+    const launcher = try a.dupeSentinel(u8, try writeFixtureMode(dirs[3], "python3.13t", try buildMachO(a, .{}), &pbuf, 0o755), 0);
+    const lib = try a.dupeSentinel(u8, try writeFixture(dirs[2], "PythonT", "the framework's library", &pbuf), 0);
+    const interp = try a.dupeSentinel(u8, try writeFixtureMode(dirs[7], "PythonT", try buildMachO(a, .{}), &pbuf, 0o755), 0);
     const fw = frameworkPython(a, observePath(a, launcher)) orelse return error.TestUnexpectedResult;
     try testing.expectEqualStrings(try realpathOf(a, interp), try realpathOf(a, fw.interpreter));
     removeForTest(&.{ launcher, interp, lib }, &dirs, root);

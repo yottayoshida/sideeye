@@ -611,8 +611,8 @@ fn reconcileWithContentsExcept(
     out: []Unaccounted,
 ) Reconciled {
     var scratch: [2048]u8 = undefined;
-    const initial: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .entries = .{ .items = @constCast(before), .capacity = before.len } };
-    const final: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .entries = .{ .items = @constCast(after), .capacity = after.len } };
+    const initial: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .entries = .{ .items = @constCast(before), .capacity = before.len, .pointer_stability = .{} } };
+    const final: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .entries = .{ .items = @constCast(after), .capacity = after.len, .pointer_stability = .{} } };
     return reconcile(diffs, ops, &.{}, "/tmp/s", "", initial, final, scratch_paths, &scratch, out);
 }
 

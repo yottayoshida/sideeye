@@ -246,7 +246,7 @@ pub fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contrac
     dropCapture();
     const next_step = next.render();
     if (json_path) |jp| if (json_arena) |ja|
-        report.writeJsonReport(ja, jp, "UNKNOWN", @intFromEnum(contract.ExitCode.unknown), null, null, reason.name(), null, detail, next_step);
+        report.writeJsonReport(ja, jp, "UNKNOWN", @backingInt(contract.ExitCode.unknown), null, null, reason.name(), null, detail, next_step);
     // `next` sits AFTER the detail line: the acceptance suite reads the detail as the line
     // that follows `UNKNOWN  <reason>`, and that contract predates this line. `processes`
     // goes in the lower block for the same reason and joins the other verdicts there (#123):
@@ -269,7 +269,7 @@ pub fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contrac
         \\
     , .{});
     report.emitSeal();
-    std.process.exit(@intFromEnum(contract.ExitCode.unknown));
+    std.process.exit(@backingInt(contract.ExitCode.unknown));
 }
 
 pub const unchecked_supervised = "no oracle was given, so the supervising engine's account of what happened was not checked against anything";
@@ -304,7 +304,7 @@ pub fn findStraceForHint(arena: std.mem.Allocator) ?[]const u8 {
     while (it.next()) |dir| {
         if (dir.len == 0 or dir[0] != '/') continue;
         var zb: [contract.max_path]u8 = undefined;
-        const z = std.fmt.bufPrintZ(&zb, "{s}/strace", .{dir}) catch continue;
+        const z = std.mem.printSentinel(&zb, "{s}/strace", .{dir}, 0) catch continue;
         if (posix.access(z.ptr, posix.X_OK) == 0)
             return arena.dupe(u8, z) catch null;
     }
@@ -366,7 +366,7 @@ pub fn cwdObservation(arena: std.mem.Allocator, argv: []const []const u8) ?[]con
 
 fn existsUnder(arena: std.mem.Allocator, dir: []const u8, rel: []const u8) bool {
     const p = std.fs.path.join(arena, &.{ dir, rel }) catch return false;
-    const z = arena.dupeZ(u8, p) catch return false;
+    const z = arena.dupeSentinel(u8, p, 0) catch return false;
     return posix.access(z.ptr, posix.F_OK) == 0;
 }
 
@@ -398,16 +398,16 @@ test "cwdObservation names an argument found only under the toml's directory (#7
     const a = as.allocator();
     var tb: [128]u8 = undefined;
     var rb: [128]u8 = undefined;
-    const toml_z = try std.fmt.bufPrintZ(&tb, "/tmp/sideeye-cwdobs-toml-{d}", .{posix.getpid()});
-    const ran_z = try std.fmt.bufPrintZ(&rb, "/tmp/sideeye-cwdobs-ran-{d}", .{posix.getpid()});
+    const toml_z = try std.mem.printSentinel(&tb, "/tmp/sideeye-cwdobs-toml-{d}", .{posix.getpid()}, 0);
+    const ran_z = try std.mem.printSentinel(&rb, "/tmp/sideeye-cwdobs-ran-{d}", .{posix.getpid()}, 0);
     _ = posix.mkdir(toml_z.ptr, 0o755);
     _ = posix.mkdir(ran_z.ptr, 0o755);
     var sb: [192]u8 = undefined;
     var bb: [192]u8 = undefined;
     var cb: [192]u8 = undefined;
-    const seed = try std.fmt.bufPrintZ(&sb, "{s}/seed", .{toml_z});
-    const both_t = try std.fmt.bufPrintZ(&bb, "{s}/both", .{toml_z});
-    const both_r = try std.fmt.bufPrintZ(&cb, "{s}/both", .{ran_z});
+    const seed = try std.mem.printSentinel(&sb, "{s}/seed", .{toml_z}, 0);
+    const both_t = try std.mem.printSentinel(&bb, "{s}/both", .{toml_z}, 0);
+    const both_r = try std.mem.printSentinel(&cb, "{s}/both", .{ran_z}, 0);
     for ([_][:0]const u8{ seed, both_t, both_r }) |p| {
         const fd = posix.open(p.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_TRUNC, @as(c_uint, 0o644));
         if (fd < 0) return error.SkipZigTest;
@@ -429,7 +429,7 @@ test "cwdObservation names an argument found only under the toml's directory (#7
     report.command_cwd_declared = false;
 
     var db: [192]u8 = undefined;
-    const state_t = try std.fmt.bufPrintZ(&db, "{s}/state", .{toml_z});
+    const state_t = try std.mem.printSentinel(&db, "{s}/state", .{toml_z}, 0);
     _ = posix.mkdir(state_t.ptr, 0o755);
     defer _ = posix.rmdir(state_t.ptr);
     const nested = cwdObservation(a, &.{ "./cfgset", "./state/config.json", "theme" }) orelse return error.TestUnexpectedResult;
@@ -469,10 +469,10 @@ pub fn setupError(reason: contract.SetupErrorReason, detail: []const u8) noretur
     _ = stopLiveSidecar();
     dropCapture();
     if (json_path) |jp| if (json_arena) |ja|
-        report.writeJsonReport(ja, jp, "SETUP_ERROR", @intFromEnum(contract.ExitCode.setup_error), null, null, null, reason, detail, null);
+        report.writeJsonReport(ja, jp, "SETUP_ERROR", @backingInt(contract.ExitCode.setup_error), null, null, null, reason, detail, null);
     say("{s}  {s}\n", .{ report.paint("SETUP ERROR"), detail });
     report.emitSeal();
-    std.process.exit(@intFromEnum(contract.ExitCode.setup_error));
+    std.process.exit(@backingInt(contract.ExitCode.setup_error));
 }
 
 /// `phase` decides the verdict for `WaitFailed`, not just its wording. A child *ran* and
@@ -798,9 +798,9 @@ test "resolveFailure names the shallowest missing directory, and the errno other
     try std.testing.expect(std.mem.indexOf(u8, bare, "no directory above it") != null);
     try std.testing.expect(std.mem.indexOf(u8, bare, "the directory . ") == null);
 
-    const denied = resolveFailure(arena, "/x/y", @intFromEnum(std.posix.E.ACCES));
+    const denied = resolveFailure(arena, "/x/y", @backingInt(std.posix.E.ACCES));
     try std.testing.expect(std.mem.indexOf(u8, denied, "ACCES") != null);
-    const io = resolveFailure(arena, "/x/y", @intFromEnum(std.posix.E.IO));
+    const io = resolveFailure(arena, "/x/y", @backingInt(std.posix.E.IO));
     try std.testing.expect(std.mem.indexOf(u8, io, "IO") != null);
 
     const forged = resolveFailure(arena, "/nope-for-test\x1b[1m/leaf", posix.ENOENT);
@@ -816,7 +816,7 @@ pub fn resolveFailure(arena: std.mem.Allocator, path: []const u8, err: c_int) []
         var walk = parent;
         while (true) {
             var zbuf: [contract.max_path]u8 = undefined;
-            const z = std.fmt.bufPrintZ(&zbuf, "{s}", .{walk}) catch break;
+            const z = std.mem.printSentinel(&zbuf, "{s}", .{walk}, 0) catch break;
             if (posix.isDirPath(z.ptr)) break;
             probe = walk;
             const up = std.fs.path.dirname(walk) orelse break;
@@ -828,7 +828,7 @@ pub fn resolveFailure(arena: std.mem.Allocator, path: []const u8, err: c_int) []
         return std.fmt.allocPrint(arena, "the directory {s} does not exist (the leaf is created, the parent is not)", .{textShown(arena, probe)}) catch
             "a directory above the leaf does not exist (the leaf is created, the parent is not)";
     }
-    if (std.enums.tagName(std.posix.E, @as(std.posix.E, @enumFromInt(err)))) |tag|
+    if (std.enums.tagName(std.posix.E, @as(std.posix.E, @fromBackingInt(@intCast(err))))) |tag|
         return std.fmt.allocPrint(arena, "it could not be resolved: {s} (errno {d})", .{ tag, err }) catch "it could not be resolved";
     return std.fmt.allocPrint(arena, "it could not be resolved (errno {d})", .{err}) catch "it could not be resolved";
 }
@@ -880,7 +880,7 @@ test "a failed rewrite is SETUP_ERROR before exploration and UNKNOWN after, Unsa
     const errs = [_]engine.RestoreError{
         error.UnsafeRoot, error.DeleteFailed, error.CreateFailed, error.PathTooLong, error.MountInside,
     };
-    try std.testing.expectEqual(@as(usize, 5), @typeInfo(engine.RestoreError).error_set.?.len);
+    try std.testing.expectEqual(@as(usize, 5), @typeInfo(engine.RestoreError).error_set.error_names.?.len);
     for (errs) |e| {
         for ([_]SpawnPhase{ .before_exploration, .exploring }) |phase| {
             const d = rewriteFailureDisposition(phase, e, doing);

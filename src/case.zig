@@ -86,7 +86,7 @@ pub fn writeCase(
     violation_name: []const u8,
 ) ?[]const u8 {
     var dbuf: [contract.max_path]u8 = undefined;
-    const dz = std.fmt.bufPrintZ(&dbuf, "{s}/cases", .{work}) catch return null;
+    const dz = std.mem.printSentinel(&dbuf, "{s}/cases", .{work}, 0) catch return null;
     _ = posix.mkdir(dz.ptr, 0o755); // EEXIST is fine; open below decides
     const addr = trace.logicalAddress(k);
     var hh: [16]u8 = undefined;
@@ -181,7 +181,7 @@ pub fn writeCase(
     var id: u32 = 1;
     while (id <= 999999) : (id += 1) {
         var pbuf: [contract.max_path]u8 = undefined;
-        const pz = std.fmt.bufPrintZ(&pbuf, "{s}/cases/{d:0>6}.json", .{ work, id }) catch return null;
+        const pz = std.mem.printSentinel(&pbuf, "{s}/cases/{d:0>6}.json", .{ work, id }, 0) catch return null;
         const fd = posix.open(pz.ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_EXCL, @as(c_uint, 0o644));
         if (fd < 0) {
             // Only a taken id is worth trying past. An unwritable directory would
