@@ -162,8 +162,8 @@ threshold set from it would be satisfied by construction. So:
 - **Strict oracle everywhere**: every trial runs with
   `--oracle /usr/bin/strace` and never `--allow-unverified`. The sweep
   manifest records each trial's full launcher argv; `count.py` reads only
-  machine fields (never the report's prose accounts — #94 tracks the
-  machine-readable evidence level for PASS).
+  machine fields (never the report's prose accounts — the machine-readable evidence level for
+  PASS is `oracle_verified`, shipped when #94 closed on 2026-08-16).
 - **Each report is bound to the sweep that wrote it** (#349). The manifest
   carries the report's sha256 beside its path, written by `sweep.sh` from the
   file the trial had just produced, and `count.py check` recomputes it. Before

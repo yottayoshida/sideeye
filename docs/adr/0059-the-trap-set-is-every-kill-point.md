@@ -85,6 +85,10 @@ the single wrapper that uses the handler's door, because its six arguments keep 
 the set. `.close` needs no exception: it is not a kill point, so the class lets it through
 in both modes, which is what the trace has always said and what an acceptance leg now pins.
 
+*Decision 5, and the Alternatives entry that kept trapping `rt_sigaction` and `rt_sigprocmask`, are
+amended by **ADR 0063** (2026-09-13): a handler's mask does not take `SIGSYS`
+with it, and the filter does not trap the signal calls. What follows is decision 5 as first taken.*
+
 **5. In this mode the shim keeps `SIGSYS` deliverable, and this reverses a stated
 principle.** It interposes `sigaction`, `signal`, `sigprocmask` and `pthread_sigmask`: a
 request naming `SIGSYS` is accepted, answered successfully, and the part that would replace

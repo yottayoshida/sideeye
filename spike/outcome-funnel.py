@@ -37,6 +37,9 @@ Stages, in order. A row carries the FURTHEST one it reached:
   fixed         upstream landed a fix.
   revalidated   this project re-measured against the fix.
 
+A row whose verdict is `none` is a report filed without a Sideeye verdict, counted on a line
+of its own and nowhere else; docs/outcome-funnel.md says why it is the one exception above.
+
 WHAT THIS CANNOT SEE, said here rather than left to be discovered:
 
   * Every stage above `judged`. The comparison against a report stops there: a report
@@ -94,7 +97,9 @@ STAGES = [
     "filed", "acknowledged", "fixed", "revalidated",
 ]
 RANK = {s: i for i, s in enumerate(STAGES)}
-VERDICTS = {"pass", "fail", "unknown", "-"}
+# Not `-` for a filing without a Sideeye verdict: `-` at `attempted` already means the engine
+# ran and judged nothing, and one word meaning two things by stage counts the one as the other.
+VERDICTS = {"pass", "fail", "unknown", "-", "none"}
 # Why a row stopped where it did. A closed set so it can be counted; the reason in
 # prose lives in `note`. `known` and `not_worth` are separate on purpose: pre-commit
 # was not filed because no content is lost, which is a judgement about worth, and
@@ -383,7 +388,14 @@ def check(root):
                        % (at, row["stop"], "/".join(sorted(STOPS))))
         rank = RANK[row["stage"]]
 
-        if rank >= RANK["judged"] and row["verdict"] not in ("pass", "fail"):
+        if row["verdict"] == "none":
+            if rank < RANK["filed"]:
+                bad.append("%s: verdict none is a filing made without a Sideeye verdict, "
+                           "and stage %s is not a filing" % (at, row["stage"]))
+            if rank >= RANK["revalidated"]:
+                bad.append("%s: verdict none at revalidated, which is Sideeye run again "
+                           "against the fix" % at)
+        elif rank >= RANK["judged"] and row["verdict"] not in ("pass", "fail"):
             bad.append("%s: stage %s needs a verdict of pass or fail, not %r"
                        % (at, row["stage"], row["verdict"]))
         # A counterexample is what novel / report_worthy / filed are about, so those
@@ -391,7 +403,7 @@ def check(root):
         # mogrify against the fix and PASSed, and that PASS is exactly what
         # `revalidated` means. Requiring FAIL all the way up would make the top of
         # the ladder reachable only by a fix that did not work.
-        if RANK["novel"] <= rank <= RANK["filed"] and row["verdict"] != "fail":
+        if RANK["novel"] <= rank <= RANK["filed"] and row["verdict"] not in ("fail", "none"):
             bad.append("%s: stage %s is about a counterexample and the verdict is %r"
                        % (at, row["stage"], row["verdict"]))
 
@@ -454,7 +466,10 @@ def check(root):
                        % (at, row["evidence"]))
             continue
         want = verdict_from_report(doc)
-        if row["verdict"] != want:
+        if row["verdict"] == "none":
+            bad.append("%s: verdict none, and the evidence is a report this engine wrote, "
+                       "which says %s" % (at, want))
+        elif row["verdict"] != want:
             bad.append("%s: the row says %s, %s says %s"
                        % (at, row["verdict"], row["evidence"], want))
         check_refusal(bad, at, row, doc, None)
@@ -509,7 +524,8 @@ def check(root):
                        % (v["line"], v["version"]))
     # The filing campaign only. A campaign that re-measured a filing reaches filed or
     # beyond too, and requiring a version of it would ask for one the page never shows.
-    filers = {dated[0][1]["campaign"] for dated in by_report.values()}
+    filers = {dated[0][1]["campaign"] for dated in by_report.values()
+              if dated[0][1]["verdict"] != "none"}
     for name in sorted(filers - set(versions)):
         bad.append("%s filed a report and has no row in %s -- docs/found.md cannot say "
                    "which Sideeye found it" % (name, VERSIONS))
@@ -546,6 +562,8 @@ def summarise(root, campaign=None, since=None):
         names = {n for n in names if campaigns[n]["date"] >= since}
         rows = [r for r in rows if r["campaign"] in names]
 
+    unjudged = [r for r in rows if r["verdict"] == "none"]
+    rows = [r for r in rows if r["verdict"] != "none"]
     full = {n for n in names if campaigns[n]["coverage"] == "full"}
     reach = [r for r in rows if r["campaign"] in full]
     out = []
@@ -591,6 +609,11 @@ def summarise(root, campaign=None, since=None):
         reps = len({r["report"] for r in at_least if r["report"] != "-"})
         out.append("  %-14s %8d %15d %14d" % (stage, len(at_least), nf, reps))
     out.append("")
+    if unjudged:
+        out.append("filed without a Sideeye verdict, counted in nothing above or below: %d "
+                   "encounter(s), %d report(s)"
+                   % (len(unjudged), len({r["report"] for r in unjudged})))
+        out.append("")
     stops = {}
     for r in rows:
         if r["stop"] != "-":
@@ -640,33 +663,11 @@ def shown_prs(u, prs):
                      for n, st in (p.split(":") for p in prs.split(",")))
 
 
-def found_block(root):
-    campaigns, rows, _filed = load(root)
-    by_report = reports_at_filed(campaigns, rows)
-    versions = read_versions(root)
-    live = read_live(root)
-    entries = []
-    for u in read_upstream(root):
-        dated = by_report.get(u["report"])
-        if not dated:
-            raise Broken("%s is in spike/upstream-reports.tsv and has no funnel row at "
-                         "filed or beyond -- %s cannot give it a state"
-                         % (u["report"], FOUND))
-        kind, word = found_state(u, furthest(dated))
-        entries.append({"u": u, "kind": kind, "word": word, "found": dated[0][0],
-                        "version": versions.get(dated[0][1]["campaign"]),
-                        "live": live.get(u["report"]), "order": (0, u["line"])})
-    recorded = {e["u"]["report"] for e in entries}
-    for report, l in live.items():
-        if report in recorded:
-            continue
-        u = {"owner": l["owner"], "number": l["number"], "report": report,
-             "finding": l["owner"].split("/")[1]}
-        entries.append({"u": u, "kind": None, "word": UNRECORDED, "found": l["opened"],
-                        "version": None, "live": l, "order": (1, l["line"])})
-    entries.sort(key=lambda e: e["order"])
-    entries.sort(key=lambda e: e["found"], reverse=True)
+FOUND_OTHERS = "Filed while working with Sideeye, without a Sideeye verdict"
+FOUND_UNRECORDED = "Filed and not in this project's record yet"
 
+
+def _found_table(entries):
     tracker = {}
     for e in entries:
         group = e["live"]["state"].split("-")[0] if e["live"] else NOT_READ.lower()
@@ -685,8 +686,7 @@ def found_block(root):
     head = ("%d report%s. On the trackers: %s. In this project's record: %s."
             % (len(entries), "" if len(entries) == 1 else "s", on_trackers,
                ", ".join(counts)) if entries else "No reports.")
-
-    out = [FOUND_BEGIN, "", head, "",
+    out = [head, "",
            "| Tool | What it is | Status | Issue | Report | Related pull requests "
            "| Sideeye | Found |",
            "|---|---|---|---|---|---|---|---|"]
@@ -703,6 +703,47 @@ def found_block(root):
                       u["report"], u["owner"], u["number"],
                       shown_prs(u, l["prs"]) if l else "-",
                       shown_version(e["version"]), e["found"]))
+    return out
+
+
+def found_block(root):
+    campaigns, rows, _filed = load(root)
+    by_report = reports_at_filed(campaigns, rows)
+    versions = read_versions(root)
+    live = read_live(root)
+    entries = []
+    for u in read_upstream(root):
+        dated = by_report.get(u["report"])
+        if not dated:
+            raise Broken("%s is in spike/upstream-reports.tsv and has no funnel row at "
+                         "filed or beyond -- %s cannot give it a state"
+                         % (u["report"], FOUND))
+        kind, word = found_state(u, furthest(dated))
+        judged = dated[0][1]["verdict"] != "none"
+        entries.append({"u": u, "kind": kind, "word": word, "found": dated[0][0],
+                        "table": "judged" if judged else "unjudged",
+                        # No version beside a finding Sideeye did not make: the column reads
+                        # as the release that found it.
+                        "version": versions.get(dated[0][1]["campaign"]) if judged else None,
+                        "live": live.get(u["report"]), "order": (0, u["line"])})
+    recorded = {e["u"]["report"] for e in entries}
+    for report, l in live.items():
+        if report in recorded:
+            continue
+        u = {"owner": l["owner"], "number": l["number"], "report": report,
+             "finding": l["owner"].split("/")[1]}
+        entries.append({"u": u, "kind": None, "word": UNRECORDED, "found": l["opened"], "table": "unrecorded",
+                        "version": None, "live": l, "order": (1, l["line"])})
+    entries.sort(key=lambda e: e["order"])
+    entries.sort(key=lambda e: e["found"], reverse=True)
+
+    judged, unjudged, unrecorded = ([e for e in entries if e["table"] == t]
+                                    for t in ("judged", "unjudged", "unrecorded"))
+    out = [FOUND_BEGIN, ""] + _found_table(judged)
+    if unjudged:
+        out += ["", "### " + FOUND_OTHERS, ""] + _found_table(unjudged)
+    if unrecorded:
+        out += ["", "### " + FOUND_UNRECORDED, ""] + _found_table(unrecorded)
     out += ["", FOUND_END]
     return "\n".join(out)
 
@@ -936,6 +977,29 @@ def _found_newest_first(root):
     return 1, ["the rows are not newest first:"] + ["  " + l for l in block.splitlines()]
 
 
+def _found_unrecorded(root):
+    block = found_block(root)
+    main, _, rest = block.partition("### " + FOUND_UNRECORDED)
+    ok = ("\n\n1 report. On the trackers: 1 open. In this project's record: 1 not in it yet." in rest
+          and "| fresh | New tool | Open · not in this project's record yet | It loses data too "
+              "| [owner/fresh#4](https://github.com/owner/fresh/issues/4) "
+              "| [#5](https://github.com/owner/fresh/pull/5) open | - | 2026-10-01 |" in rest
+          and "In this project's record: 1 filed.\n" in main and "owner/fresh" not in main)
+    return (0, ["not in this project's record yet"]) if ok else (1, [block])
+
+
+def _found_unjudged(root):
+    block, summary = found_block(root), summarise(root)
+    main, _, rest = block.partition("### " + FOUND_OTHERS)
+    ok = ("owner/other#9" in rest and "owner/other#9" not in main and "owner/repo#7" in main
+          and "| 1.4.0 |" not in rest
+          and ("    %-12s %4d" % ("FAIL", 1)) in summary and ("  %-14s %4d" % ("judged", 1)) in summary
+          and ("  %-14s %8d" % ("filed", 1)) in summary and "1 encounters" in summary
+          and "filed without a Sideeye verdict, counted in nothing above or below: 1 encounter(s), "
+              "1 report(s)" in summary)
+    return (0, ["kept apart"]) if ok else (1, [block, summary])
+
+
 def _found_as_wanted(root):
     have = found_block(root)
     if have == FOUND_WANT:
@@ -1138,13 +1202,22 @@ LEGS = [
      dict(rows=_row(),
           live=("owner/repo\t7\topen\ta\tt\t-\t2026-09-15\n"
                 "owner/fresh\t4\topen\tNew tool\tIt loses data too\t5:open\t2026-10-01\n"),
-          fn=lambda root: (0 if "| fresh | New tool | Open · not in this project's record yet "
-                           "| It loses data too | [owner/fresh#4](https://github.com/owner/fresh"
-                           "/issues/4) | [#5](https://github.com/owner/fresh/pull/5) open | - "
-                           "| 2026-10-01 |" in found_block(root)
-                           and "1 filed, 1 not in it yet." in found_block(root)
-                           else 1, [found_block(root)])),
+          fn=lambda root: _found_unrecorded(root)),
      0, "not in this project's record yet"),
+    ("verdict none before a filing",
+     dict(rows=_wall(stage="judged", verdict="none")), 1,
+     "verdict none is a filing made without a Sideeye verdict"),
+    ("verdict none at revalidated",
+     dict(rows=_row(stage="revalidated", verdict="none", stop="-", evidence="spike/x/t.txt")),
+     1, "verdict none at revalidated"),
+    ("verdict none on a row its engine report judged",
+     dict(rows=_row(verdict="none")), 1, "the evidence is a report this engine wrote"),
+    ("a filing without a Sideeye verdict is listed under its own heading and in no count of verdicts",
+     dict(rows=_row() + _row(target="other", report="owner/other#9", verdict="none",
+                             evidence="spike/x/t.txt"),
+          upstream=UPSTREAM_T + "owner/other\t9\tstanding\tother tool\n",
+          fn=lambda root: _found_unjudged(root)),
+     0, "kept apart"),
     ("a filing the record does not have yet is no disagreement",
      dict(rows=_row(),
           live=("owner/repo\t7\topen\ta\tt\t-\t2026-09-15\n"

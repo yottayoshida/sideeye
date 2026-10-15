@@ -42,6 +42,10 @@ version 14; `shim_ready`'s `aux` — empty through v13 — carries the installat
 
 Four decisions inside that, each bought with a measurement:
 
+*Decision 1, and two of the Consequences, are amended by **ADR 0059** (2026-09-11): the trap set
+is every kill point, and the shim keeps `SIGSYS` deliverable. What follows is decision 1 as first
+taken.*
+
 **1. The trap set stops at the write family.** A set containing `openat` kills the process:
 the new image's `ld.so` opens libraries before any constructor has installed a handler, and
 an unhandled `SIGSYS` is fatal (measured: exit 159). It is also unnecessary —

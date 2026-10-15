@@ -2,6 +2,8 @@
 
 Status: Accepted (2026-09-05)
 
+Two sentences of the seam plan below are superseded by **ADR 0049**.
+
 ## Context
 
 ADR 0047 took the trace reader out of `src/engine.zig` as the first seam of #491 and left

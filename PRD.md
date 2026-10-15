@@ -122,15 +122,16 @@ acceptance sentence is met.** A context-free coding agent, handed only the
 counterexample (the report JSON, the case it names, the declared invariant it
 points at, bug-blind replay plumbing) and the pinned timewarrior checkout,
 re-derived the fix and the judge's own replay passed, with the feature intact
-and the audit clean (`spike/loop-closure-timew/`, BUILDLOG 2026-08-13,
-`spike/runs/sideeye-loop-1/manifest.json`). v1.0 entry criterion 2 is met by
+and the audit clean (`spike/loop-closure-timew/`; BUILDLOG 2026-08-13, "Loop closure: the
+protocol is fixed before the run", which quotes the run's manifest — written under
+`spike/runs/`, which is not committed (#825)). v1.0 entry criterion 2 is met by
 this measurement. Two honesty notes: the first run drove the CLI replay
 surface through the plumbing script, not the MCP adapter — **resolved the same
 day**: attempting the MCP-mediated variant first surfaced and fixed two real
 surface gaps (ADR 0011 — the child env dropped `TIMEWARRIORDB`-class
 variables, and a persistent server had no per-call state freshness), and the
 confirmation run then closed the loop **through this surface** with a second
-model (claude-fable-5, `spike/runs/sideeye-loop-2/manifest.json` —
+model (claude-fable-5, BUILDLOG 2026-08-13, "The MCP-mediated run", quoting its uncommitted manifest —
 loop_closed true, all three controls held, audit clean); and the input set is
 the report *and what it transitively names*, not "the report alone" (the
 exact set is declared in the BUILDLOG protocol). The milestone's remaining

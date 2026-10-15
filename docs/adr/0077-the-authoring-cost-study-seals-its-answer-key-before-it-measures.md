@@ -1,6 +1,6 @@
 # 0077. The authoring-cost study seals its answer key, and its pre-image, before it measures
 
-Status: Proposed (design-first: the protocol of a study that has not run; #618 requires it to be committed before the first measurement)
+Status: Accepted (sealed as PR #636 on 2026-09-19, before the first measurement, as #618 required; the study ran and ADR 0078 records its results, Accepted 2026-09-19; status flipped 2026-10-15 — the flip was owed when 0078 landed and went unrecorded, #825)
 
 ## Context
 
