@@ -979,6 +979,29 @@ fn phaseDefine(run: *Run) void {
         undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
         setupError(.environment, m);
     }
+    // Not after the setup: a setup run without a declared variable writes wherever the tool
+    // falls back to, which on a developer's machine is the real data.
+    if (checkApparatus(setup_arena, args.apparatus, args.cwd, .before_setup)) |r| {
+        // Not a directory the JSON report goes under: the report would have nowhere to land.
+        // Compared through realpath, not by spelling: a /tmp on one side and /private/tmp on
+        // the other is the same directory.
+        var keep_work = false;
+        var keep_state = false;
+        if (refuse.json_path) |jp| {
+            var jdir_buf: [contract.max_path]u8 = undefined;
+            var jdir_real: [contract.max_path]u8 = undefined;
+            var work_real: [contract.max_path]u8 = undefined;
+            if (std.fmt.bufPrintZ(&jdir_buf, "{s}", .{std.fs.path.dirname(jp) orelse "."})) |jdir_z| {
+                if (posix.realpath(jdir_z.ptr, &jdir_real)) |jdir_abs| {
+                    const jdir = std.mem.span(jdir_abs);
+                    if (posix.realpath(work_z.ptr, &work_real)) |w| keep_work = contract.isInsideDir(jdir, std.mem.span(w));
+                    keep_state = contract.isInsideDir(jdir, state_abs);
+                }
+            } else |_| {}
+        }
+        undoSetupMkdirs(work_created and !keep_work, work_z.ptr, state_created and !keep_state, state_z.ptr);
+        setupError(r.reason, r.text);
+    }
 
     // deleteTree the restore path uses). It runs on state_abs, never the case's raw
     // spelling: the guard is lexical, and "/tmp/../etc" spells safe while resolving
@@ -1112,10 +1135,7 @@ fn phaseApparatus(run: *Run) void {
         if (args.check) |c| if (refuse.unstartable(a, "check", commandArgv(a, c) catch none, cwd)) |m| setupError(.environment, m);
     }
 
-    // After setup, which is where the cohorts generated their devices (a sitecustomize, a
-    // RUSTC stand-in), and before the first snapshot, so a define whose apparatus is absent
-    // never records. Every path that runs a define passes here: explore, preflight, replay.
-    checkApparatus(arena_state.allocator(), args.apparatus, args.cwd);
+    if (checkApparatus(arena_state.allocator(), args.apparatus, args.cwd, .after_setup)) |r| setupError(r.reason, r.text);
     // The scratch declaration is published here too (ADR 0043), at the same point as the
     // apparatus: the define is final, and every report from here on — a refusal raised
     // by the recording run included — carries it under the same presence rule.
@@ -3624,49 +3644,54 @@ fn runDemo(arena: std.mem.Allocator, rest: []const []const u8) noreturn {
 /// replaces that variable with its own shim for every child, so a library there is a
 /// device that does not arrive, and the refusal says so when that is where it was found.
 ///
-/// `apparatus_declared` is set here, at the end, and only when every entry passed: a SETUP
-/// ERROR raised by this check carries no apparatus field, so a report that carries one is
-/// a run whose declared devices were present when the engine looked (the schema page's
-/// promise). `cwd` is the define's, for a relative PYTHONPATH entry — the operation
+/// `apparatus_declared` is set at the end of the after-setup pass, and only when every entry
+/// passed: a SETUP ERROR raised from a refusal this returns carries no apparatus field, so a
+/// report that carries one is a run whose declared devices were present when the engine
+/// looked (the schema page's promise). `cwd` is the define's, for a relative PYTHONPATH entry — the operation
 /// resolves it from there, so the check must too.
-fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[]const u8) void {
+fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[]const u8, phase: enum { before_setup, after_setup }) ?workdir.Refusal {
     var preload_file: ?[]const u8 = null;
     for (entries) |e| {
         const parsed = switch (config.parseApparatusEntry(e)) {
             .ok => |p| p,
-            .bad => |msg| setupError(.define_invalid, msg),
+            .bad => |msg| return .{ .reason = .define_invalid, .text = msg },
         };
+        // Only env: before the setup: the setup may make what the other kinds look for (a
+        // pythonpath: file, a preload line), and a define relying on that would be refused for
+        // a device it was about to make.
+        if ((parsed == .env) != (phase == .before_setup)) continue;
         switch (parsed) {
             .env => |v| {
-                const got = envValue(v.name) orelse setupErrorFmt(arena, .environment, "apparatus {s}: the environment the operation inherits has no {s} (under sideeye mcp, a variable of the server's reaches it only when SIDEEYE_MCP_CHILD_ENV names it)", .{ e, v.name });
+                const got = envValue(v.name) orelse return workdir.Refusal.print(arena, .environment, "apparatus {s}: the environment the operation inherits has no {s} (under sideeye mcp, a variable of the server's reaches it only when SIDEEYE_MCP_CHILD_ENV names it)", .{ e, v.name });
                 if (v.value) |want| if (!std.mem.eql(u8, got, want))
-                    setupErrorFmt(arena, .environment, "apparatus {s}: {s} is set, but to a different value ({s})", .{ e, v.name, textShown(arena, got) });
+                    return workdir.Refusal.print(arena, .environment, "apparatus {s}: {s} is set, but to a different value ({s})", .{ e, v.name, textShown(arena, got) });
             },
             .preload => |lib| {
                 if (builtin.os.tag == .macos)
-                    setupErrorFmt(arena, .platform_unsupported, "apparatus {s}: cannot be satisfied on macOS — there is no global preload file, and the engine owns DYLD_INSERT_LIBRARIES for every child", .{e});
+                    return workdir.Refusal.print(arena, .platform_unsupported, "apparatus {s}: cannot be satisfied on macOS — there is no global preload file, and the engine owns DYLD_INSERT_LIBRARIES for every child", .{e});
                 if (preload_file == null) preload_file = capture.readFileAllocCapped(arena, "/etc/ld.so.preload", 64 * 1024, .{ .require_regular = true }) orelse blk: {
                     // Absent is the common case and means "no preload"; present but unreadable
                     // is a different fact and must not be reported as "no line names it".
                     if (posix.access("/etc/ld.so.preload", posix.F_OK) == 0)
-                        setupErrorFmt(arena, .environment, "apparatus {s}: /etc/ld.so.preload exists but could not be read (not a regular file, unreadable, or over 64 KiB)", .{e});
+                        return workdir.Refusal.print(arena, .environment, "apparatus {s}: /etc/ld.so.preload exists but could not be read (not a regular file, unreadable, or over 64 KiB)", .{e});
                     break :blk "";
                 };
                 if (!preloadNamed(preload_file.?, lib)) {
                     if (envValue("LD_PRELOAD")) |lp| if (namesLib(lp, lib))
-                        setupErrorFmt(arena, .environment, "apparatus {s}: {s} is in LD_PRELOAD, which the engine replaces with its own shim for every child, so it does not reach the operation; a global preload goes in /etc/ld.so.preload", .{ e, lib });
-                    setupErrorFmt(arena, .environment, "apparatus {s}: no line of /etc/ld.so.preload names {s}", .{ e, lib });
+                        return workdir.Refusal.print(arena, .environment, "apparatus {s}: {s} is in LD_PRELOAD, which the engine replaces with its own shim for every child, so it does not reach the operation; a global preload goes in /etc/ld.so.preload", .{ e, lib });
+                    return workdir.Refusal.print(arena, .environment, "apparatus {s}: no line of /etc/ld.so.preload names {s}", .{ e, lib });
                 }
             },
             .pythonpath => |file| {
-                const pp = envValue("PYTHONPATH") orelse setupErrorFmt(arena, .environment, "apparatus {s}: PYTHONPATH is not set in the environment the operation inherits (under sideeye mcp, a variable of the server's reaches it only when SIDEEYE_MCP_CHILD_ENV names it)", .{e});
+                const pp = envValue("PYTHONPATH") orelse return workdir.Refusal.print(arena, .environment, "apparatus {s}: PYTHONPATH is not set in the environment the operation inherits (under sideeye mcp, a variable of the server's reaches it only when SIDEEYE_MCP_CHILD_ENV names it)", .{e});
                 if (!pythonpathHas(arena, pp, file, cwd))
-                    setupErrorFmt(arena, .environment, "apparatus {s}: no entry of PYTHONPATH ({s}) has {s} directly under it", .{ e, textShown(arena, pp), file });
+                    return workdir.Refusal.print(arena, .environment, "apparatus {s}: no entry of PYTHONPATH ({s}) has {s} directly under it", .{ e, textShown(arena, pp), file });
             },
             .note => {},
         }
     }
-    report.apparatus_declared = entries;
+    if (phase == .after_setup) report.apparatus_declared = entries;
+    return null;
 }
 
 fn envValue(name: []const u8) ?[]const u8 {

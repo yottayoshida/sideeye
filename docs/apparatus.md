@@ -9,10 +9,14 @@ Every one of those lived in a launcher script or in `setup`, and the committed
 define said nothing about it.
 
 `[define] apparatus` is where the define says it (ADR 0041). Sideeye applies
-none of it. After `setup` and before the first snapshot it checks that every
-entry it can check is present in the environment the operation will inherit,
-and refuses the run as SETUP ERROR — naming the entry and what it looked at —
-when one is not. The report carries the list as declared in `apparatus`, and
+none of it. It checks that every entry it can check is present in the
+environment the operation will inherit, and refuses the run as SETUP ERROR —
+naming the entry and what it looked at — when one is not. The `env:` entries
+are checked **before `setup` runs**, so a setup started without a declared
+variable does not get to write where the tool falls back to without it; the
+rest are checked after `setup`, which may generate them, and before the first
+snapshot. A variable exported empty is set: `env:NAME` passes it, and a tool
+that reads empty as unset still falls back — `env:NAME=VALUE` pins the value. The report carries the list as declared in `apparatus`, and
 the entries it could not check in `apparatus_unchecked`.
 
 ```toml
@@ -69,10 +73,12 @@ unsatisfiable.
 - The checker's environment is the define's business. A checker may drop a
   device on purpose (cohort 3's cargo-r2 unsets `RUSTC` to compare against the
   real compiler); the check is about the operation's environment only.
-- The saved case does not carry the declaration. A replay without the
-  apparatus is not silent — the baseline does not repeat the recorded bytes
-  and the refusal names the path — but the case file itself does not say
-  which device was missing.
+- The saved case does not carry the declaration, so `replay` checks no entry.
+  A replay without the apparatus is not silent — the baseline does not repeat
+  the recorded bytes and the refusal names the path — but the case file itself
+  does not say which device was missing, and that refusal comes after the setup
+  and the recording have run: a replay without an `env:` device writes where
+  the tool falls back to ([#875](https://github.com/yottayoshida/sideeye/issues/875)).
 
 ## Reading a byte difference
 
