@@ -92,12 +92,12 @@
 #
 # Sunset: NOT "delete this if it has not failed by <date>". A pin check that never
 # goes red is a check doing its job — it means nobody added an unpinned action — so
-# the usual rule would delete it exactly while it is working. Delete it when one of
-# these becomes true instead:
-#   * GitHub makes action tags immutable, so `@v4` cannot be repointed; or
-#   * something else keeps these SHAs current (a Dependabot configuration that
-#     rewrites them), in which case that mechanism holds the invariant and this
-#     check becomes the second place one judgment lives.
+# the usual rule would delete it exactly while it is working. Delete it when both of
+# these are true instead:
+#   * GitHub makes action tags immutable, so `@v4` cannot be repointed; and
+#   * GitHub offers no `-latest` runner label.
+# `.github/dependabot.yml` is not one of them: it moves a pin that is already a SHA,
+# and leaves a newly written `@v4` or `ubuntu-latest` where it is.
 set -u
 
 self=$0
@@ -186,7 +186,8 @@ scan() {  # $1 = workflow directory. 0 = every action pinned, 1 = not.
         if ! is_pinned "$value"; then
             printf 'FAIL  %s:%s names %s\n' "${file##*/}" "$lineno" "${value:-<nothing>}"
             printf '      Pin it: uses: <owner>/<repo>@<40-char commit SHA> # <the tag it came from>\n'
-            printf '      The SHA for a tag: gh api repos/<owner>/<repo>/git/ref/tags/<tag> --jq .object.sha\n'
+            # Not git/ref/tags: for an annotated tag it gives the tag object, not the commit.
+            printf '      The SHA for a tag: gh api repos/<owner>/<repo>/commits/refs/tags/<tag> --jq .sha\n'
             fails=$((fails + 1))
             continue
         fi

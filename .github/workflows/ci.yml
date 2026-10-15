@@ -15,9 +15,9 @@ jobs:
   linux:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
         with:
           version: 0.17.0
 
@@ -382,9 +382,9 @@ jobs:
   macos:
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
         with:
           version: 0.17.0
 
@@ -1429,7 +1429,7 @@ jobs:
         # would lose its worlds again with no sign of it. `warn` leaves an annotation and still
         # does not fail the job.
         if: always() && steps.thread-kill-lands.conclusion == 'failure'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: thread-kill-lands-failed-worlds
           path: ${{ runner.temp }}/thread-kill-lands/*/failed/
@@ -1459,9 +1459,9 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
         with:
           version: 0.17.0
 
@@ -1485,7 +1485,7 @@ jobs:
   classification:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Every file under spike/ is classified, and the two directions hold
         run: sh spike/check-gitattributes.sh
@@ -1502,7 +1502,7 @@ jobs:
   veto-rate:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: The rate checker can still see its own predicates fail
         run: python3 spike/check-veto-rate.py --selftest
@@ -1524,7 +1524,7 @@ jobs:
   upstream-ledger:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: The ledger checker can still see its own predicates fail
         run: sh spike/check-upstream-ledger.sh --selftest
@@ -1552,7 +1552,7 @@ jobs:
   outcome-funnel:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: The funnel checker can still see its own predicates fail
         run: python3 spike/outcome-funnel.py --selftest
@@ -1569,7 +1569,7 @@ jobs:
   changelog-block:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # First, for the reason the ADR job gives: a green from a check that cannot go red
       # says nothing. Four planted defects, each of which must redden exactly one clause —
@@ -1589,7 +1589,7 @@ jobs:
   agent-skills:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # First, for the reason the ADR job gives: each planted defect must redden exactly
       # the claim it plants.
@@ -1609,7 +1609,7 @@ jobs:
   ledger-prose:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: The prose checker can still see its own predicates fail
         run: sh spike/check-ledger-prose.sh --selftest
@@ -1620,7 +1620,7 @@ jobs:
   main-shape:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # #572 (ADR 0062): src/main.zig only loses top-level declarations. The ceilings
       # are the counts the last seam left and come down with the next one; a change
@@ -1637,9 +1637,9 @@ jobs:
   fmt:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
         with:
           version: 0.17.0
 
@@ -1652,7 +1652,7 @@ jobs:
   adr-numbering:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # First, because a green from a check that cannot go red says nothing. The
       # uniqueness pass is a pipeline with no `set -e` behind it: break its sed and
@@ -1706,7 +1706,7 @@ jobs:
   action-pins:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: The check proves it can go red
         run: sh spike/check-action-pins.sh --selftest
@@ -1718,7 +1718,7 @@ jobs:
   zig-ahead-judge:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: The judge proves it can go red, and stays green where it must
         run: sh spike/zig-ahead.sh --selftest
@@ -1737,7 +1737,7 @@ jobs:
   criterion-3-status:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: The status check proves it can go red, and stays green where it must
         run: sh spike/check-criterion3-status.sh --selftest
@@ -1754,7 +1754,7 @@ jobs:
   onboarding-clock:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: The clock's audit still holds its own predicates
         run: python3 spike/onboarding-clock/clock-audit.py --selftest
@@ -1887,7 +1887,7 @@ jobs:
       # against the working tree it excludes this study's own selection the moment the study is
       # published. A default shallow clone does not hold that commit, and the check exits 2
       # saying so — measured on this PR's first run.
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -1991,9 +1991,9 @@ jobs:
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
         with:
           version: 0.17.0
 
@@ -2070,7 +2070,7 @@ jobs:
     needs: [linux, macos, timew-regression, classification, veto-rate, upstream-ledger, outcome-funnel, changelog-block, agent-skills, ledger-prose, main-shape, fmt, adr-numbering, action-pins, zig-ahead-judge, criterion-3-status, onboarding-clock, authoring-cost, linux-aarch64-releasesafe]
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: The check proves it can go red
         run: python3 spike/check-ci-required.py --selftest
       - name: Every other job here is needed by this one, and every one succeeded

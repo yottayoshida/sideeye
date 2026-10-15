@@ -13,7 +13,8 @@ name: release
 #                        exist (gh release view) before announcing anything.
 #   workflow_dispatch  — the recovery path: re-builds, and uploads when a tag is named,
 #                        so a published release that lost its assets can be repaired.
-#   pull_request       — build-only proof of the matrix, for PRs touching this file.
+#   pull_request       — build-only proof of the matrix, for PRs touching this file,
+#                        down to the artifacts download-artifact hands back.
 
 on:
   release:
@@ -56,11 +57,11 @@ jobs:
       # run that rebuilt current main and uploaded it under the old tag's name would
       # attach an artifact whose content is not the tag's (R1 finding). On a release
       # event the default checkout is already the tag; on a PR it is the merge ref.
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || '' }}
 
-      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
         with:
           version: 0.17.0
 
@@ -185,21 +186,51 @@ jobs:
           tar -tzf "dist/$name.tar.gz" | sed "s|^$name/||" | grep -v '^$' | sort > got.txt
           printf '%s\n' "LICENSE-APACHE" "LICENSE-MIT" "${{ matrix.shim }}" "sideeye" | sort > want.txt
           diff -u want.txt got.txt || { echo "::error::tarball contents differ from the expected inventory"; exit 1; }
+          (cd dist && shasum -a 256 "$name.tar.gz" > "$name.tar.gz.sha256")
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      # The checksum travels in the artifact only: `upload` attaches `*.tar.gz`, and the
+      # release carries no SHA256SUMS (ADR 0061).
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: sideeye-${{ matrix.artifact }}
-          path: dist/*.tar.gz
+          path: |
+            dist/*.tar.gz
+            dist/*.tar.gz.sha256
           if-no-files-found: error
+
+  # Not folded into `upload`: `permissions` takes no expression, so a job that runs on
+  # pull requests and holds `contents: write` would hand that token to every PR run.
+  assets:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: dist
+          merge-multiple: true
+
+      # Not a second inventory: the build checked the tarball it packed, and a matching
+      # checksum says these are those bytes. The count is written out because an
+      # artifact that never arrived leaves no file to count.
+      - name: Every artifact arrived as the build packed it
+        working-directory: dist
+        run: |
+          set -eu
+          n=$(find . -maxdepth 1 -name '*.tar.gz' | wc -l | tr -d ' ')
+          [ "$n" = 3 ] || { echo "::error::$n tarballs arrived; the build packs three"; exit 1; }
+          for f in *.tar.gz; do
+            [ -f "$f.sha256" ] || { echo "::error::$f arrived without the checksum the build wrote beside it"; exit 1; }
+          done
+          shasum -a 256 -c *.tar.gz.sha256
 
   upload:
     if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.tag != '')
-    needs: build
+    needs: assets
     runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: dist
           merge-multiple: true
