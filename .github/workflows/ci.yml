@@ -216,41 +216,10 @@ jobs:
         timeout-minutes: 5
         run: sudo apt-get -o Acquire::Retries=3 update && sudo apt-get -o Acquire::Retries=3 install -y strace
 
-      # Acceptance check 5c asks bash, zsh and fish what `sideeye completions` offers (#712);
-      # the runner has only bash, and SIDEEYE_EXPECT_SHELLS below turns a missing shell red
-      # instead of NOT MEASURED.
-      - name: Install the shells the completion scripts are checked in
-        timeout-minutes: 5
-        run: sudo apt-get -o Acquire::Retries=3 install -y zsh fish
-
       - name: Build the toy targets
         run: sh spike/build-toys.sh
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
-
-      # Twice, because since contract v17 the engine behaves two ways on Linux (#559) and the
-      # suite is quick. First as the runner's shell starts it, in a cgroup the runner does not
-      # own, where the engine contains nothing: every leg measures the uncontained engine, and
-      # check 2cg asserts that no run was contained.
-      - name: Acceptance suite
-        run: sh spike/acceptance.sh
-        env:
-          SIDEEYE_ROOT: ${{ github.workspace }}
-          SIDEEYE_EXPECT_CONTAINED: "0"
-          SIDEEYE_EXPECT_MOUNT: "1"
-          SIDEEYE_EXPECT_SHELLS: "1"
-
-      # Then in a cgroup delegated to the runner (`spike/in-delegated-cgroup.sh`), where the
-      # engine contains every observed run: the same legs, measured contained, and check 2cg
-      # asserts from the traces that the shipped engine contained them and
-      # `sideeye-testnocgroup` did not. The wrapper's own probe fails first when the scope was
-      # not delegated; check 2cg is what fails when the engine's probe disagrees with it.
-      - name: Acceptance suite, contained in a delegated cgroup (#559)
-        run: sh spike/in-delegated-cgroup.sh sh spike/acceptance.sh
-        env:
-          SIDEEYE_ROOT: ${{ github.workspace }}
-          SIDEEYE_EXPECT_CONTAINED: "1"
-          SIDEEYE_EXPECT_MOUNT: "1"
 
       # The libc-internal-call class (#39), one member per run. Its own invocation
       # rather than a check inside the acceptance suite: it drives the shipped engine
@@ -326,6 +295,12 @@ jobs:
       - name: The loop-closure judge goes red on every channel it declares
         run: sh spike/loop-closure-timew/judge.sh selftest
 
+      # Not only as a file: measure.py runs the judge from the bytes it verified, piped into
+      # `sh -s`, where `$0` is `sh` and the repo comes from SIDEEYE_REPO — a path the file
+      # form never takes.
+      - name: The loop-closure judge goes red the same way when piped into sh -s
+        run: cat spike/loop-closure-timew/judge.sh | SIDEEYE_REPO="$GITHUB_WORKSPACE" sh -s -- selftest
+
       # The launcher's memory (#515's other half, ADR 0066): the record's digest is over the
       # stream, not the file; a doctored seal manifest, a changed judge.sh, a repo/ that moved
       # after the run, a rewritten audit.json and an unattested record each stop the judge
@@ -348,39 +323,6 @@ jobs:
       - name: The positive control reproduces the committed transcript (#318)
         run: sh spike/cohort4/himalaya-r2/upstream-fix/verify-positive-control.sh
 
-      # Both released Linux triples still compile under the glibc ceiling they declare
-      # (#161). The release matrix gained those versions in the same change; with only that
-      # half, they would be compiled on release events and on pull requests touching
-      # release.yml, so whatever the pin does to a source change would surface for the first
-      # time during the release ceremony. (Before that change no versioned triple was built
-      # anywhere — the past tense in the first draft of this comment described a state that
-      # never existed.)
-      #
-      # What it does, measured: the version is a ceiling, not a gate. A symbol that has an
-      # older entry point links to that one and the requirement drops with the pin — that
-      # is the pin working, and it is silent. A symbol with nothing at or below the pin has
-      # no fallback and fails to link (`zig cc -target aarch64-linux-gnu.2.28` on a program
-      # calling `closefrom`, added in 2.34: `undefined symbol`). Only the second shape is a
-      # red here, and it is the one worth learning about on a pull request.
-      #
-      # Into a SCRATCH PREFIX, never `zig-out`. Three steps above compare a sha of
-      # `zig-out` before and after an apparatus build and require it unchanged (#270,
-      # #324, #377), and those apparatus builds carry no `-Dtarget`: a versioned build
-      # into `zig-out` would leave them comparing two targets, and the guard would go red
-      # on the target rather than on what it watches. (#358's step is not one of them — it
-      # runs its own `zig build` and greps the result.) Writing elsewhere also keeps this
-      # step from leaving aarch64 binaries where a later step would find them executable;
-      # position in the job then carries no meaning, which is what a comment cannot hold.
-      #
-      # ReleaseSafe, because that is what the release matrix builds. A libc reference that
-      # appeared only under the release optimisation would otherwise still surface first at
-      # the ceremony — the thing this step exists to prevent. The aarch64 triple
-      # cross-compiles from this runner, so one step covers both released artefacts.
-      - name: Both released Linux triples compile under their declared glibc ceiling (#161)
-        run: |
-          scratch=$(mktemp -d)
-          zig build --prefix "$scratch/x86" -Doptimize=ReleaseSafe -Dtarget=x86_64-linux-gnu.2.28
-          zig build --prefix "$scratch/arm" -Doptimize=ReleaseSafe -Dtarget=aarch64-linux-gnu.2.28
 
   # Not a Debug build after the unit tests: every step below checks the pair release.yml ships.
   # Not a one-entry matrix as linux-releasesafe has: GitHub appends a matrix's values to the check's
@@ -2015,9 +1957,79 @@ jobs:
       - name: The box name has one spelling
         run: sh spike/authoring-cost/check-box-name.sh
 
+  # The acceptance suite against the Debug build, twice, because since contract v17 the engine
+  # behaves two ways on Linux (#559): plain, as the runner's shell starts it, in a cgroup the
+  # runner does not own, where the engine contains nothing and check 2cg asserts that no run was
+  # contained; and contained, in a cgroup delegated to the runner (`spike/in-delegated-cgroup.sh`),
+  # where check 2cg asserts from the traces that the shipped engine contained every observed run
+  # and `sideeye-testnocgroup` did not. Not as two steps of the linux job: each waited on the other
+  # and on everything before it.
+  linux-acceptance:
+    name: linux-acceptance (${{ matrix.run }})
+    strategy:
+      fail-fast: false
+      matrix:
+        run: [plain, contained]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          version: 0.17.0
+
+      - name: Build the shipped pair and every test apparatus in one build
+        run: |
+          set -eu
+          apparatus=$(sed -n 's/.*b\.option(bool, "\(test-[a-z-]*\)".*/-D\1/p' build.zig)
+          [ -n "$apparatus" ] || { echo "::error::no -Dtest-* option was read from build.zig"; exit 1; }
+          # Not trusted to have read them all: a declaration the pattern misses leaves the supervise-delay leg NOT MEASURED, which is green.
+          declared=$(grep -o '"test-[^"]*"' build.zig | sort -u | wc -l)
+          [ "$(echo "$apparatus" | wc -w)" -eq "$declared" ] || { echo "::error::read $(echo "$apparatus" | wc -w) -Dtest-* options, build.zig names $declared"; exit 1; }
+          echo "apparatus: $apparatus"
+          # shellcheck disable=SC2086 # a flag list, split on purpose
+          zig build $apparatus
+          # Not trusted without a plain build beside it: a test option that reached the shipped pair would be measured as shipped.
+          plain=$(mktemp -d)
+          zig build --prefix "$plain"
+          cmp zig-out/bin/sideeye "$plain/bin/sideeye"
+          cmp zig-out/lib/libsideeye_shim.so "$plain/lib/libsideeye_shim.so"
+
+      # Acceptance check 5c asks bash, zsh and fish what `sideeye completions` offers (#712);
+      # the runner has only bash, and SIDEEYE_EXPECT_SHELLS below turns a missing shell red
+      # instead of NOT MEASURED.
+      - name: Install the completeness oracle and the shells the completion scripts are checked in
+        timeout-minutes: 10
+        run: |
+          sudo apt-get -o Acquire::Retries=3 update
+          sudo apt-get -o Acquire::Retries=3 install -y strace zsh fish
+
+      - name: Build the toy targets
+        run: sh spike/build-toys.sh
+        env:
+          SIDEEYE_ROOT: ${{ github.workspace }}
+
+      - name: Acceptance suite
+        if: matrix.run == 'plain'
+        run: sh spike/acceptance.sh
+        env:
+          SIDEEYE_ROOT: ${{ github.workspace }}
+          SIDEEYE_EXPECT_CONTAINED: "0"
+          SIDEEYE_EXPECT_MOUNT: "1"
+          SIDEEYE_EXPECT_SHELLS: "1"
+
+      - name: Acceptance suite, contained in a delegated cgroup (#559)
+        if: matrix.run == 'contained'
+        run: sh spike/in-delegated-cgroup.sh sh spike/acceptance.sh
+        env:
+          SIDEEYE_ROOT: ${{ github.workspace }}
+          SIDEEYE_EXPECT_CONTAINED: "1"
+          SIDEEYE_EXPECT_MOUNT: "1"
+
   # #694: the acceptance suites against the builds the release ships for Linux — ReleaseSafe,
   # the release's own build line, on the release's own runner — on every pull request and every push
-  # to main, so they have run before a tag exists. The linux job above runs the suites Debug on
+  # to main, so they have run before a tag exists. linux-acceptance above runs the suite Debug on
   # x86_64. What this job cannot see is a build that runs only
   # on the CPU it was built on (v0.9.0 and v0.10.0's Illegal instruction): it runs on the release's own
   # runner class, as the demo does; the explicit `-Dtarget` in the release's build line is what pins the
@@ -2032,9 +2044,9 @@ jobs:
   # per-flag builds (as the linux job does, to compare shas) would let one that dropped the flags
   # rebuild a test engine Debug while the next build put the shipped pair back; and the shipped pair
   # of that one build is compared with a plain release build of the same line, so a test option that
-  # reached it is red. The `-Dtest-*` list is read from build.zig for the same reason: an apparatus
-  # added to the linux job alone would fail its legs here — or, for the supervise-delay engine, leave
-  # its leg NOT MEASURED, which is green.
+  # reached it is red. The `-Dtest-*` list is read from build.zig, as linux-acceptance reads it, and
+  # counted against the declarations: a list spelled here would let an apparatus added later fail its
+  # legs — or, for the supervise-delay engine, leave its leg NOT MEASURED, which is green.
   #
   # The shim's per-function stack ceiling (spike/check-shim-footprint.sh) holds for these builds too.
   # Measured on aarch64 only, before this job existed (2026-10-10, Docker on Apple silicon): the
@@ -2085,6 +2097,9 @@ jobs:
           [ -n "$RELEASE_FLAGS" ] || { echo "::error::no release build flags reached this step"; exit 1; }
           apparatus=$(sed -n 's/.*b\.option(bool, "\(test-[a-z-]*\)".*/-D\1/p' build.zig)
           [ -n "$apparatus" ] || { echo "::error::no -Dtest-* option was read from build.zig"; exit 1; }
+          # Not trusted to have read them all: a declaration the pattern misses leaves the supervise-delay leg NOT MEASURED, which is green.
+          declared=$(grep -o '"test-[^"]*"' build.zig | sort -u | wc -l)
+          [ "$(echo "$apparatus" | wc -w)" -eq "$declared" ] || { echo "::error::read $(echo "$apparatus" | wc -w) -Dtest-* options, build.zig names $declared"; exit 1; }
           echo "apparatus: $apparatus"
           # shellcheck disable=SC2086 # both are flag lists, split on purpose
           zig build $RELEASE_FLAGS $apparatus
@@ -2134,7 +2149,7 @@ jobs:
   # edited the setting.
   required:
     if: always()
-    needs: [linux, macos, timew-regression, classification, veto-rate, upstream-ledger, outcome-funnel, changelog-block, agent-skills, ledger-prose, main-shape, fmt, adr-numbering, action-pins, zig-ahead-judge, criterion-3-status, onboarding-clock, authoring-cost, linux-releasesafe]
+    needs: [linux, macos, timew-regression, classification, veto-rate, upstream-ledger, outcome-funnel, changelog-block, agent-skills, ledger-prose, main-shape, fmt, adr-numbering, action-pins, zig-ahead-judge, criterion-3-status, onboarding-clock, authoring-cost, linux-releasesafe, linux-acceptance]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

@@ -158,8 +158,10 @@ second, kills the group, then drains what is left into the record.
   sentences, so that blinding either record comparison alone fails it); `finalize-verified`
   now also requires the manifest to carry `inputs`. `WANT_CASES` is 87. Each new refusal has a
   mutation in `seal-reds/MUTATIONS.md`, and `always-clean`'s attribution is re-measured.
-- `measure.py --selftest` runs in CI beside the judge's, and `spike/acceptance.sh` runs the
-  judge's selftest through `cat judge.sh | sh -s selftest`, the path the measurement uses.
+- `measure.py --selftest` runs in CI beside the judge's, and the judge's selftest runs a second
+  time through `cat judge.sh | sh -s selftest`, the path the measurement uses — both once per CI
+  run, in ci.yml's linux job (until #834 the second ran inside `spike/acceptance.sh`, six times
+  per run).
 - The `next:` lines are gone from both launchers. A run is one command from `run-agent.sh` to
   `manifest.json`; `measure.py resume` is the second command when the first stops.
 - A stage sealed before this change has no `image_id` and no `inputs.json`; `eval` and
