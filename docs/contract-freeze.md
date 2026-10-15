@@ -451,3 +451,11 @@ stay the same.
    `SIDEEYE_MCP_STATE_ROOT`, as it already did with `twice`: every preflight now rebuilds the
    state before its run. Name, input schema and isError rule unchanged; a narrowing of which
    inputs run, read the way the 2026-10-10 entry reads #765's. No row in `surface-changes.tsv`.
+   **Read, not used, on 2026-10-15** (#824, ADR 0133): the report in a result's
+   `structuredContent` carries `next_step`, `replay` and `checker_earliest.replay` in the
+   server's terms — a step the caller can take through it, a `sideeye_replay_case` call or the
+   reason none is offered — and `completeness_not_verified`'s `message` without the flags that
+   close it. Each keeps its meaning (what to do; how to replay this case; what was not
+   checked), said for this surface, as `sideeye_evidence` already returned its `replay`. Names,
+   input schemas and the isError rule unchanged; surface 2's fields keep their meaning. No row
+   in `surface-changes.tsv`.

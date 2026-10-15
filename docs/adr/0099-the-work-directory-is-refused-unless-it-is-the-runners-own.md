@@ -2,6 +2,9 @@
 
 Status: Accepted (2026-10-09)
 
+Amended by **ADR 0133**: the MCP server's default work directory is `.sideeye-mcp` inside
+`SIDEEYE_MCP_ROOT`, no longer `/tmp/sideeye-mcp`. The question asked of it is unchanged.
+
 Closes #692. The engine and the MCP server now ask one question of the work directory before
 anything is written under it — is its last component a directory, not a symlink, owned by the
 effective user — and refuse with the directory's name, the reason, and the way past it when

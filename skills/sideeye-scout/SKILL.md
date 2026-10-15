@@ -67,7 +67,8 @@ check     = "./check.sh"          # exit 0 = the invariant holds after crash + r
 - The define sets no environment: setup, operation and check inherit the one Sideeye is
   started with. If the tool finds its store through a variable, export it before running
   `sideeye`, and list it as `apparatus = ["env:NAME=value"]` so a run without it is refused
-  instead of writing somewhere else.
+  instead of writing somewhere else. Through the MCP server only `PATH` and the names in
+  `SIDEEYE_MCP_CHILD_ENV` reach the target: exporting it to the server is not enough.
 - The check gets the state directory in `$SIDEEYE_STATE_DIR`. Make it **fail closed**: a
   missing file is a failure, an exact match beats a substring, and every failure message
   says which leg refused. Anchor it in the property from step 2. Sideeye corrupts the state

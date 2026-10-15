@@ -47,6 +47,7 @@ pub const Args = struct {
     allow_unverified: bool = false,
     observe: contract.ObserveMode = .wrappers,
     observe_named: bool = false,
+    work_named: bool = false,
     fresh_state: bool = false,
     leave_crash_state: bool = false,
     twice: bool = false,
@@ -131,8 +132,8 @@ const usage_fmt =
     \\               are still read against it
     \\  --apparatus  a device the operation's environment must carry, kind:value, repeatable:
     \\               env:NAME, env:NAME=VALUE, preload:LIB (a line of /etc/ld.so.preload),
-    \\               pythonpath:FILE, note:TEXT. Checked after setup, before anything is
-    \\               recorded; a missing one is a SETUP ERROR naming it. The report carries
+    \\               pythonpath:FILE, note:TEXT. env: is checked before setup runs, the rest
+    \\               after it; a missing one is a SETUP ERROR naming it. The report carries
     \\               the list as declared (docs/apparatus.md). The engine applies nothing
     \\  --scratch    a path under --state the built-in invariants leave alone, repeatable:
     \\               the path itself and everything beneath it, judged in no world — not
@@ -340,7 +341,7 @@ const FlagWords = struct {
     }
 };
 
-fn synopsisFlags(cmd: ?[]const u8, buf: [][]const u8) [][]const u8 {
+pub fn synopsisFlags(cmd: ?[]const u8, buf: [][]const u8) [][]const u8 {
     var n: usize = 0;
     var it = std.mem.splitScalar(u8, usage_fmt, '\n');
     while (it.next()) |line| {
@@ -1459,7 +1460,10 @@ pub fn parse(argv: []const []const u8) Parsed {
                 inline for (@typeInfo(contract.ObserveMode).@"enum".fields, 0..) |f, k| modes[k] = f.name;
                 badValue(null, "--observe takes `wrappers` (the default), `syscalls` or `supervised`", v, nearest(v, &modes));
             };
-        } else if (std.mem.eql(u8, argv[i], "--state")) args.state = v else if (std.mem.eql(u8, argv[i], "--setup")) args.setup = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--operation")) args.operation = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--shim")) args.shim = v else if (std.mem.eql(u8, argv[i], "--work")) args.work = v else if (std.mem.eql(u8, argv[i], "--oracle")) {
+        } else if (std.mem.eql(u8, argv[i], "--state")) args.state = v else if (std.mem.eql(u8, argv[i], "--setup")) args.setup = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--operation")) args.operation = .{ .str = v } else if (std.mem.eql(u8, argv[i], "--shim")) args.shim = v else if (std.mem.eql(u8, argv[i], "--work")) {
+            args.work = v;
+            args.work_named = true;
+        } else if (std.mem.eql(u8, argv[i], "--oracle")) {
             args.oracle = v;
             // As for --oracle-fs-usage above: named from this line on (#352).
             report.noteOracle(.{ .named = .strace });

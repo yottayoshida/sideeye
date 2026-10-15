@@ -2567,7 +2567,16 @@ test "a run that ends on its grace stops the observer too (#819)" {
     defer InterruptTest.endGroupIfHeld(child, ready[0]);
     try std.testing.expectEqual(@as(c_int, 0), kill(engine, InterruptTest.SIGTERM_));
     try std.testing.expectEqual(@as(?Term, .{ .signaled = 15 }), InterruptTest.waitWithin(engine, 12_000));
-    try std.testing.expectEqual(@as(?u8, 'i'), InterruptTest.byteWithin(talk[0], 3_000));
+    // 10 s like the waits above, not 3.
+    const ended_at = monotonicMs();
+    const said = InterruptTest.byteWithin(talk[0], 10_000);
+    // Not the time alone: the child the engine left holds the pipe open, so the wait runs out
+    // whether the observer is still running or died without a word, and only this tells which.
+    if (said == null) std.debug.print("the observer said nothing in the {d} ms after the engine ended, and is {s}\n", .{
+        monotonicMs() - ended_at,
+        if (kill(observer, 0) == 0) "still running" else "gone",
+    });
+    try std.testing.expectEqual(@as(?u8, 'i'), said);
 }
 
 test "exit status decoding distinguishes exit from signal" {

@@ -979,6 +979,29 @@ fn phaseDefine(run: *Run) void {
         undoSetupMkdirs(work_created, work_z.ptr, state_created, state_z.ptr);
         setupError(.environment, m);
     }
+    // Not after the setup: a setup run without a declared variable writes wherever the tool
+    // falls back to, which on a developer's machine is the real data.
+    if (checkApparatus(setup_arena, args.apparatus, args.cwd, .before_setup)) |r| {
+        // Not a directory the JSON report goes under: the report would have nowhere to land.
+        // Compared through realpath, not by spelling: a /tmp on one side and /private/tmp on
+        // the other is the same directory.
+        var keep_work = false;
+        var keep_state = false;
+        if (refuse.json_path) |jp| {
+            var jdir_buf: [contract.max_path]u8 = undefined;
+            var jdir_real: [contract.max_path]u8 = undefined;
+            var work_real: [contract.max_path]u8 = undefined;
+            if (std.fmt.bufPrintZ(&jdir_buf, "{s}", .{std.fs.path.dirname(jp) orelse "."})) |jdir_z| {
+                if (posix.realpath(jdir_z.ptr, &jdir_real)) |jdir_abs| {
+                    const jdir = std.mem.span(jdir_abs);
+                    if (posix.realpath(work_z.ptr, &work_real)) |w| keep_work = contract.isInsideDir(jdir, std.mem.span(w));
+                    keep_state = contract.isInsideDir(jdir, state_abs);
+                }
+            } else |_| {}
+        }
+        undoSetupMkdirs(work_created and !keep_work, work_z.ptr, state_created and !keep_state, state_z.ptr);
+        setupError(r.reason, r.text);
+    }
 
     // deleteTree the restore path uses). It runs on state_abs, never the case's raw
     // spelling: the guard is lexical, and "/tmp/../etc" spells safe while resolving
@@ -1112,10 +1135,7 @@ fn phaseApparatus(run: *Run) void {
         if (args.check) |c| if (refuse.unstartable(a, "check", commandArgv(a, c) catch none, cwd)) |m| setupError(.environment, m);
     }
 
-    // After setup, which is where the cohorts generated their devices (a sitecustomize, a
-    // RUSTC stand-in), and before the first snapshot, so a define whose apparatus is absent
-    // never records. Every path that runs a define passes here: explore, preflight, replay.
-    checkApparatus(arena_state.allocator(), args.apparatus, args.cwd);
+    if (checkApparatus(arena_state.allocator(), args.apparatus, args.cwd, .after_setup)) |r| setupError(r.reason, r.text);
     // The scratch declaration is published here too (ADR 0043), at the same point as the
     // apparatus: the define is final, and every report from here on — a refusal raised
     // by the recording run included — carries it under the same presence rule.
@@ -1938,7 +1958,7 @@ fn phasePreflight(run: *Run) void {
                 .str => |x| x,
                 .argv => setupError(.define_invalid, pf_msg),
             };
-            break :blk .{ .flags = .{ .setup = pf_setup, .operation = pf_op } };
+            break :blk .{ .flags = .{ .state = state, .setup = pf_setup, .cwd = args.cwd, .operation = pf_op, .expect_status = args.expect_status, .apparatus = args.apparatus, .scratch = args.scratch } };
         };
         // #682, ADR 0091: the README promises a preflight refusal names the detector a real
         // run would use, and an exploration with no crash point is refused. Ahead of the
@@ -1958,7 +1978,7 @@ fn phasePreflight(run: *Run) void {
             observeAgain(gpa, arena, initial, final, state_abs, state_alt, op_argv, shim, args.oracle, args.work, expect_status, rec_started_ms, args.cwd, args.observe, children_admitted)
         else
             null;
-        preflightReport(arena, n, state, hint, args.cwd, args.shim, args.oracle, args.expect_status, .{
+        preflightReport(arena, n, hint, .{ .work = if (args.work_named) args.work else null, .state_under = args.state_under, .shim = args.shim, .oracle = args.oracle }, .{
             .check = args.check != null,
             .marker = args.marker != null,
             .recovery = args.recovery != null,
@@ -3156,13 +3176,14 @@ fn observeAgain(
 }
 
 const PreflightHint = union(enum) {
-    flags: struct { setup: ?[]const u8, operation: []const u8 },
+    flags: report.NextDefine,
     config: struct { path: []const u8, dir: []const u8 },
 };
 
 const PreflightDeclared = struct { check: bool, marker: bool, recovery: bool };
 
-fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: PreflightHint, cwd: ?[]const u8, shim_given: ?[]const u8, oracle_path: ?[]const u8, expect_status: ?u8, declared: PreflightDeclared, repeat: ?Repeat) noreturn {
+fn preflightReport(arena: std.mem.Allocator, n: u32, hint: PreflightHint, next_run: report.NextRun, declared: PreflightDeclared, repeat: ?Repeat) noreturn {
+    const oracle_path = next_run.oracle;
     // Where the comparison and the rewrite of `--twice` happen, named the way the define named
     // it: byte for byte the old wording from the flags, which acceptance pins.
     const state_named: []const u8 = if (hint == .config) "[world] state" else "--state";
@@ -3301,14 +3322,6 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
             \\
         , .{});
     }
-    const oracle_part = if (oracle_path) |o|
-        std.fmt.allocPrint(arena, " --oracle {s}", .{o}) catch " --oracle <strace>"
-    else if (builtin.os.tag == .macos)
-        " --allow-unverified"
-    else if (refuse.findStraceForHint(arena)) |s|
-        std.fmt.allocPrint(arena, " --oracle {s}", .{s}) catch " --oracle <strace>"
-    else
-        " --oracle <strace>";
     if (split) {
         say(
             \\next         pin or relocate what differs, then re-run this command;
@@ -3324,36 +3337,19 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
     // in that mode, and an explore without the flag counts through one the target cannot load.
     // A shim the run found itself is left out rather than named: found beside the binary's real
     // path, it is one installed version's, and a later upgrade deletes it.
-    const observe_part = report.observeFlags(arena, boundary.observe_mode, shim_given);
+    var run = next_run;
+    run.observe = boundary.observe_mode;
+    if (run.oracle == null and builtin.os.tag != .macos) run.oracle_found = refuse.findStraceForHint(arena);
+    const tail = report.nextRunWords(arena, run) catch setupError(.environment, "out of memory");
     switch (hint) {
-        .flags => |f| {
-            // The hint carries the define that was actually accepted — dropping --setup here
-            // would hand the reader a silently different define than the one preflight ran
-            // (R1 finding; acceptance check 6 pins its presence). --expect-status rides the
-            // same rule: preflight accepted the recording *under that status*, and a hint
-            // without it would hand explore a define that refuses the very run preflight
-            // just blessed (the known defect class where a hint carries a different define).
-            const setup_part = if (f.setup) |s|
-                std.fmt.allocPrint(arena, " --setup \"{s}\"", .{s}) catch " --setup <cmd>"
-            else
-                "";
-            // #647: a declared `cwd` rides the same rule. Pasted without it, the hint runs the
-            // operation from wherever explore is started, and a tool that needs its own directory
-            // refuses `recording_run_failed` on the very define preflight accepted.
-            const cwd_part = if (cwd) |c|
-                std.fmt.allocPrint(arena, " --cwd \"{s}\"", .{c}) catch " --cwd <dir>"
-            else
-                "";
-            const expect_part = if (expect_status) |es|
-                std.fmt.allocPrint(arena, " --expect-status {d}", .{es}) catch " --expect-status <n>"
-            else
-                "";
-            say(
-                \\next         sideeye explore --state {s}{s}{s} --operation "{s}"{s} \
-                \\               --check <your-invariant.sh>{s}{s}
-                \\
-            , .{ state, setup_part, cwd_part, f.operation, expect_part, observe_part, oracle_part });
-        },
+        // Every word through `shellWord`, not double quotes: a `$` or a backquote in a path or a
+        // command would be expanded by the shell the line is pasted into, and explore would read
+        // another define than the one preflight accepted.
+        .flags => |f| say(
+            \\next         sideeye explore{s} \
+            \\               --check <your-invariant.sh>{s}
+            \\
+        , .{ report.nextDefineWords(arena, f) catch setupError(.environment, "out of memory"), tail }),
         .config => |c| {
             // spelling it out. Named as the toml's resolved directory joined with its own name:
             // that directory is what `phaseDefine` resolved every relative path against, and what
@@ -3412,14 +3408,14 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, state: []const u8, hint: Pr
                 break :blk named;
             };
             if (pastable) |p| say(
-                \\next         sideeye explore --config {s}{s}{s}
+                \\next         sideeye explore --config {s}{s}
                 \\
-            , .{ shellSingleQuote(arena, p), observe_part, oracle_part }) else say(
+            , .{ shellSingleQuote(arena, p), tail }) else say(
                 \\next         the define was read from {s},
                 \\             {s}: {s}
-                \\             sideeye explore --config <that file>{s}{s}
+                \\             sideeye explore --config <that file>{s}
                 \\
-            , .{ textShown(arena, c.path), why, then, observe_part, oracle_part });
+            , .{ textShown(arena, c.path), why, then, tail });
         },
     }
     if (refuse.json_path) |jp| report.writePreflightJson(arena, jp, pf_doc.?);
@@ -3529,6 +3525,31 @@ test "fs_usage sentinels: the shape, two names per run that differ from each oth
     try std.testing.expectEqual("/tmp/st".len + 40, p1.b.len);
 }
 
+test "every flag preflight takes is on its next line, or is preflight's own" {
+    const preflight_only = [_][]const u8{ "--json", "--twice" };
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const line = try std.mem.concat(a, u8, &.{
+        " --config t",
+        try report.nextDefineWords(a, .{ .state = "s", .setup = "u", .cwd = "c", .operation = "o", .expect_status = 3, .apparatus = &.{"note:x"}, .scratch = &.{"k"} }),
+        try report.nextRunWords(a, .{ .work = "w", .state_under = "b", .observe = .syscalls, .shim = "l", .oracle = "t" }),
+        " ",
+    });
+    var buf: [64][]const u8 = undefined;
+    const flags = cli.synopsisFlags("preflight", &buf);
+    try std.testing.expect(flags.len > preflight_only.len);
+    for (flags) |flag| {
+        var own = false;
+        for (preflight_only) |o| own = own or std.mem.eql(u8, o, flag);
+        const on_line = std.mem.indexOf(u8, line, try std.fmt.allocPrint(a, " {s} ", .{flag})) != null;
+        std.testing.expect(own != on_line) catch |e| {
+            std.debug.print("preflight's flag {s}: on the next line {}, preflight's own {}\n", .{ flag, on_line, own });
+            return e;
+        };
+    }
+}
+
 fn shellSingleQuote(arena: std.mem.Allocator, s: []const u8) []const u8 {
     return report.shellQuote(arena, s) catch setupError(.environment, "out of memory");
 }
@@ -3624,49 +3645,54 @@ fn runDemo(arena: std.mem.Allocator, rest: []const []const u8) noreturn {
 /// replaces that variable with its own shim for every child, so a library there is a
 /// device that does not arrive, and the refusal says so when that is where it was found.
 ///
-/// `apparatus_declared` is set here, at the end, and only when every entry passed: a SETUP
-/// ERROR raised by this check carries no apparatus field, so a report that carries one is
-/// a run whose declared devices were present when the engine looked (the schema page's
-/// promise). `cwd` is the define's, for a relative PYTHONPATH entry — the operation
+/// `apparatus_declared` is set at the end of the after-setup pass, and only when every entry
+/// passed: a SETUP ERROR raised from a refusal this returns carries no apparatus field, so a
+/// report that carries one is a run whose declared devices were present when the engine
+/// looked (the schema page's promise). `cwd` is the define's, for a relative PYTHONPATH entry — the operation
 /// resolves it from there, so the check must too.
-fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[]const u8) void {
+fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[]const u8, phase: enum { before_setup, after_setup }) ?workdir.Refusal {
     var preload_file: ?[]const u8 = null;
     for (entries) |e| {
         const parsed = switch (config.parseApparatusEntry(e)) {
             .ok => |p| p,
-            .bad => |msg| setupError(.define_invalid, msg),
+            .bad => |msg| return .{ .reason = .define_invalid, .text = msg },
         };
+        // Only env: before the setup: the setup may make what the other kinds look for (a
+        // pythonpath: file, a preload line), and a define relying on that would be refused for
+        // a device it was about to make.
+        if ((parsed == .env) != (phase == .before_setup)) continue;
         switch (parsed) {
             .env => |v| {
-                const got = envValue(v.name) orelse setupErrorFmt(arena, .environment, "apparatus {s}: the environment the operation inherits has no {s}", .{ e, v.name });
+                const got = envValue(v.name) orelse return workdir.Refusal.print(arena, .environment, "apparatus {s}: the environment the operation inherits has no {s} (under sideeye mcp, a variable of the server's reaches it only when SIDEEYE_MCP_CHILD_ENV names it)", .{ e, v.name });
                 if (v.value) |want| if (!std.mem.eql(u8, got, want))
-                    setupErrorFmt(arena, .environment, "apparatus {s}: {s} is set, but to a different value ({s})", .{ e, v.name, textShown(arena, got) });
+                    return workdir.Refusal.print(arena, .environment, "apparatus {s}: {s} is set, but to a different value ({s})", .{ e, v.name, textShown(arena, got) });
             },
             .preload => |lib| {
                 if (builtin.os.tag == .macos)
-                    setupErrorFmt(arena, .platform_unsupported, "apparatus {s}: cannot be satisfied on macOS — there is no global preload file, and the engine owns DYLD_INSERT_LIBRARIES for every child", .{e});
+                    return workdir.Refusal.print(arena, .platform_unsupported, "apparatus {s}: cannot be satisfied on macOS — there is no global preload file, and the engine owns DYLD_INSERT_LIBRARIES for every child", .{e});
                 if (preload_file == null) preload_file = capture.readFileAllocCapped(arena, "/etc/ld.so.preload", 64 * 1024, .{ .require_regular = true }) orelse blk: {
                     // Absent is the common case and means "no preload"; present but unreadable
                     // is a different fact and must not be reported as "no line names it".
                     if (posix.access("/etc/ld.so.preload", posix.F_OK) == 0)
-                        setupErrorFmt(arena, .environment, "apparatus {s}: /etc/ld.so.preload exists but could not be read (not a regular file, unreadable, or over 64 KiB)", .{e});
+                        return workdir.Refusal.print(arena, .environment, "apparatus {s}: /etc/ld.so.preload exists but could not be read (not a regular file, unreadable, or over 64 KiB)", .{e});
                     break :blk "";
                 };
                 if (!preloadNamed(preload_file.?, lib)) {
                     if (envValue("LD_PRELOAD")) |lp| if (namesLib(lp, lib))
-                        setupErrorFmt(arena, .environment, "apparatus {s}: {s} is in LD_PRELOAD, which the engine replaces with its own shim for every child, so it does not reach the operation; a global preload goes in /etc/ld.so.preload", .{ e, lib });
-                    setupErrorFmt(arena, .environment, "apparatus {s}: no line of /etc/ld.so.preload names {s}", .{ e, lib });
+                        return workdir.Refusal.print(arena, .environment, "apparatus {s}: {s} is in LD_PRELOAD, which the engine replaces with its own shim for every child, so it does not reach the operation; a global preload goes in /etc/ld.so.preload", .{ e, lib });
+                    return workdir.Refusal.print(arena, .environment, "apparatus {s}: no line of /etc/ld.so.preload names {s}", .{ e, lib });
                 }
             },
             .pythonpath => |file| {
-                const pp = envValue("PYTHONPATH") orelse setupErrorFmt(arena, .environment, "apparatus {s}: PYTHONPATH is not set in the environment the operation inherits", .{e});
+                const pp = envValue("PYTHONPATH") orelse return workdir.Refusal.print(arena, .environment, "apparatus {s}: PYTHONPATH is not set in the environment the operation inherits (under sideeye mcp, a variable of the server's reaches it only when SIDEEYE_MCP_CHILD_ENV names it)", .{e});
                 if (!pythonpathHas(arena, pp, file, cwd))
-                    setupErrorFmt(arena, .environment, "apparatus {s}: no entry of PYTHONPATH ({s}) has {s} directly under it", .{ e, textShown(arena, pp), file });
+                    return workdir.Refusal.print(arena, .environment, "apparatus {s}: no entry of PYTHONPATH ({s}) has {s} directly under it", .{ e, textShown(arena, pp), file });
             },
             .note => {},
         }
     }
-    report.apparatus_declared = entries;
+    if (phase == .after_setup) report.apparatus_declared = entries;
+    return null;
 }
 
 fn envValue(name: []const u8) ?[]const u8 {
