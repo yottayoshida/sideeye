@@ -370,9 +370,15 @@ stay the same.
    `scratch` is not an array, or an older file
    carrying a mode, refuses as malformed. A case counted under the default is
    written at the version its define asks for, so it still replays on every
-   earlier 1.x; a version-6 case does not, and an earlier binary refuses it as
+   earlier 1.x unless that version is 7 (below); a version-6 case does not, and an earlier binary refuses it as
    a file it cannot parse — an honest refusal, not a verdict, and the cost
-   ADR 0100 accepts in place of a mode the caller has to remember. A future trace-contract bump is therefore *not* a
+   ADR 0100 accepts in place of a mode the caller has to remember. Version 7 (#875, ADR 0136,
+   2026-10-15) carries the define's `apparatus`, written only for a define with an entry a replay
+   checks (`env:`, `preload:` or `pythonpath:`), and spells every key above it — `cwd`, `scratch`,
+   and `observe` whatever the mode, `wrappers` included; a v7 file without `observe`, without
+   `apparatus`, with notes alone or with an entry the define grammar refuses, or an older file
+   carrying an `apparatus` array, refuses as malformed, and an earlier binary refuses a v7 file as one it
+   cannot parse. A future trace-contract bump is therefore *not* a
    broken promise: old cases refuse with the mismatch named, and that
    refusal is the promised behavior.
    **Read on 2026-10-10** (#756, ADR 0107): a case saved from a define whose checker rejects the

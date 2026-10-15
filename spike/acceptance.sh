@@ -7844,6 +7844,64 @@ j786() {
 j786 "a refused env device removes the state the run created and keeps the JSON report under its work directory" /tmp/acc/work786n/r.json gone
 j786 "...and keeps it when the report's path reaches the work directory through a symlink" /tmp/acc/lnk786/work786n/r.json gone
 j786 "...and keeps the created state directory when the report goes under it" /tmp/acc/state786n/r.json kept
+# The control replays with the variable set, so a refused leg's absent marker is a setup that never ran.
+m875=/tmp/acc/marker875
+unset ACC_PIN_875 2>/dev/null || true
+printf '#!/bin/sh\n: > %s\nexec %s init\n' "$m875" "$OUT/toy-bug" > /tmp/acc/setup875.sh && chmod +x /tmp/acc/setup875.sh
+# sv875 <case path> <apparatus flags...>: the explore that saves the case, its exit status echoed.
+sv875() {
+    _w=$1; shift
+    rm -rf /tmp/acc/state875 "$_w" && mkdir -p /tmp/acc/state875
+    env ACC_PIN_875=1 "$SIDEEYE" explore --state /tmp/acc/state875 --setup /tmp/acc/setup875.sh --operation "$OUT/toy-bug rotate" \
+        --shim "$SHIM" --work "$_w" --oracle /usr/bin/strace "$@" > /dev/null 2>&1
+    echo $?
+}
+rc=$(sv875 /tmp/acc/work875n --apparatus note:pinned)
+if [ "$rc" = 1 ] && python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d["case_version"]==2 and "apparatus" not in d["define"] else 1)' /tmp/acc/work875n/cases/000001.json 2>/dev/null; then
+    echo "ok   a FAIL from a define declaring only notes saves the case version it saved before"
+else
+    echo "FAIL the case of a notes-only define: exit $rc, case $(head -c 200 /tmp/acc/work875n/cases/000001.json 2>/dev/null || echo missing)"
+    ap_fails=$((ap_fails + 1))
+fi
+rc=$(sv875 /tmp/acc/work875 --apparatus env:ACC_PIN_875=1 --apparatus note:pinned)
+case875=/tmp/acc/work875/cases/000001.json
+if [ "$rc" = 1 ] && python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d["case_version"]==7 and d["observe"]=="wrappers" and d["define"]["apparatus"]==["env:ACC_PIN_875=1","note:pinned"] else 1)' "$case875" 2>/dev/null; then
+    echo "ok   a FAIL from a define with an env device saves a version-7 case carrying the declaration as written"
+else
+    echo "FAIL the case of an env-device define: exit $rc, case $( [ -s "$case875" ] && head -c 300 "$case875" || echo missing )"
+    ap_fails=$((ap_fails + 1))
+fi
+rp875() {
+    _l=$1; _w=$2; _m=$3; shift 3
+    _e=""
+    while [ $# -gt 0 ] && [ "$1" != "--" ]; do _e="$_e $1"; shift; done
+    [ "${1-}" = "--" ] && shift
+    rm -f "$m875"
+    # shellcheck disable=SC2086
+    o=$(env $_e "$SIDEEYE" replay "$case875" --fresh-state --shim "$SHIM" --work /tmp/acc/work875r --oracle /usr/bin/strace $RP875_FLAGS 2>&1)
+    rc=$?
+    _g=absent; [ -e "$m875" ] && _g=present
+    _miss=""
+    for _f in "$@"; do echo "$o" | grep -q -- "$_f" || _miss="$_miss [$_f]"; done
+    if [ "$rc" = "$_w" ] && [ -z "$_miss" ] && [ "$_g" = "$_m" ]; then
+        echo "ok   $_l"
+    else
+        echo "FAIL $_l: exit $rc (wanted $_w), marker $_g (wanted $_m), missing$_miss"
+        echo "$o" | sed 's/^/     | /' | head -3
+        ap_fails=$((ap_fails + 1))
+    fi
+}
+RP875_FLAGS=""
+rp875 "control: replayed with the env device set, the case reproduces, its setup ran and the report names the declaration" 1 present ACC_PIN_875=1 -- \
+    "the case reproduced" "apparatus   env:ACC_PIN_875=1"
+rp875 "a replay without the env device is refused before the setup writes anything" 3 absent ACC_UNRELATED=1 -- \
+    "apparatus env:ACC_PIN_875=1: the environment the operation inherits has no ACC_PIN_875"
+rp875 "a replay with the env device set to another value is refused before the setup writes anything" 3 absent ACC_PIN_875=2 -- \
+    "ACC_PIN_875 is set, but to a different value (2)"
+RP875_FLAGS="--observe syscalls"
+rp875 "a version-7 case counted under the default refuses a replay under another mode" 3 absent ACC_PIN_875=1 -- \
+    "was recorded under --observe wrappers"
+RP875_FLAGS=""
 [ "$ap_fails" = 0 ] || fails=$((fails + 1))
 
 echo ""

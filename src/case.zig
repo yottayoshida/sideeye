@@ -21,6 +21,7 @@ pub const ReplayCase = struct {
         expected_status: ?u8 = null,
         cwd: ?[]const u8 = null,
         scratch: ?[]const []const u8 = null,
+        apparatus: ?[]const []const u8 = null,
     },
     k: u32,
     ops_total: u32,
@@ -107,12 +108,14 @@ pub fn writeCase(
     // A scratch declaration decides verdicts (ADR 0043), so it moves the version to 5, above
     // cwd for the reason cwd sits above argv: an older reader would drop the field and
     // judge a different question. A define that declares nothing keeps the case it always got.
-    // The observation mode is the top rung (#691, ADR 0100), and only a mode other than the
+    // The observation mode is the rung below (#691, ADR 0100), and only a mode other than the
     // default climbs it: a crash point is a number in that mode's count, so a replay under
     // another mode addresses a different operation. A `wrappers` case stays the version its
     // define asks for, byte for byte, so a reader before version 6 still replays it — the
-    // cost ADR 0071 named for a version 6 falls only on the cases that need the field.
-    const case_version: u32 = if (args.observe != .wrappers) 6 else if (args.scratch.len > 0) 5 else if (args.cwd != null) 4 else if (carries_argv) 3 else 2;
+    // cost ADR 0071 named for a version 6 falls only on the cases that need the field. A checked
+    // apparatus entry is the top rung (ADR 0136) for cwd's reason: an older reader would drop it
+    // and replay without the check.
+    const case_version: u32 = if (checksAnEntry(args.apparatus)) 7 else if (args.observe != .wrappers) 6 else if (args.scratch.len > 0) 5 else if (args.cwd != null) 4 else if (carries_argv) 3 else 2;
     w.appendSlice(arena, "{\n  \"schema\": \"sideeye/case\",\n  \"case_version\": ") catch return null;
     w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{case_version}) catch return null) catch return null;
     w.appendSlice(arena, ",\n  \"sideeye_version\": ") catch return null;
@@ -154,6 +157,14 @@ pub fn writeCase(
         for (args.scratch, 0..) |s, i| {
             if (i > 0) w.appendSlice(arena, ", ") catch return null;
             report.jsonString(w, arena, s) catch return null;
+        }
+        w.append(arena, ']') catch return null;
+    }
+    if (case_version >= 7) {
+        w.appendSlice(arena, ",\n    \"apparatus\": [") catch return null;
+        for (args.apparatus, 0..) |e, i| {
+            if (i > 0) w.appendSlice(arena, ", ") catch return null;
+            report.jsonString(w, arena, e) catch return null;
         }
         w.append(arena, ']') catch return null;
     }
@@ -207,6 +218,16 @@ pub fn writeCase(
     return null;
 }
 
+// Not every declared entry: a define declaring only `note:` entries has nothing for a replay to
+// check, and moving its case to version 7 would only stop earlier binaries replaying it.
+fn checksAnEntry(entries: []const []const u8) bool {
+    for (entries) |e| switch (config.parseApparatusEntry(e)) {
+        .ok => |p| if (p != .note) return true,
+        .bad => {},
+    };
+    return false;
+}
+
 pub const Read = union(enum) { ok: ReplayCase, invalid: []const u8 };
 
 /// Returns the refusal, never exits: the fuzz entry point calls it in-process.
@@ -216,8 +237,8 @@ pub fn read(arena: std.mem.Allocator, text: []const u8) Read {
     const c = parsed.value;
     if (!std.mem.eql(u8, c.schema, "sideeye/case"))
         return .{ .invalid = "the file does not declare itself a sideeye case" };
-    if (c.case_version < 1 or c.case_version > 6)
-        return .{ .invalid = "this binary understands case schema versions 1, 2, 3, 4, 5 and 6 only" };
+    if (c.case_version < 1 or c.case_version > 7)
+        return .{ .invalid = "this binary understands case schema versions 1, 2, 3, 4, 5, 6 and 7 only" };
     const carries_argv = (c.define.operation == .argv) or
         (c.define.setup != null and c.define.setup.? == .argv) or
         (c.define.check != null and c.define.check.? == .argv);
@@ -231,7 +252,7 @@ pub fn read(arena: std.mem.Allocator, text: []const u8) Read {
     if (c.case_version == 1 and c.define.expected_status != null)
         return .{ .invalid = "a case_version 1 file cannot carry an expected_status declaration; it arrived with version 2" };
     if (c.case_version >= 2 and c.define.expected_status == null)
-        return .{ .invalid = "a case_version 2, 3, 4, 5 or 6 file must carry define.expected_status; the case freezes the declaration" };
+        return .{ .invalid = "a case_version 2, 3, 4, 5, 6 or 7 file must carry define.expected_status; the case freezes the declaration" };
     if (c.case_version < 4 and c.define.cwd != null)
         return .{ .invalid = "a case_version 1, 2 or 3 file cannot carry a cwd declaration; it arrived with version 4" };
     if (c.case_version == 4 and c.define.cwd == null)
@@ -252,6 +273,15 @@ pub fn read(arena: std.mem.Allocator, text: []const u8) Read {
         const obs = contract.ObserveMode.parse(m) orelse return .{ .invalid = "a case_version 6 file's observe names no mode this binary knows; it must be `syscalls` or `supervised`" };
         if (obs == .wrappers) return .{ .invalid = "a case_version 6 file's observe must be `syscalls` or `supervised`: a case counted under the default is written at the version its define asks for" };
     }
+    if (c.case_version < 7 and c.define.apparatus != null)
+        return .{ .invalid = "a case_version 1, 2, 3, 4, 5 or 6 file cannot carry an apparatus declaration; it arrived with version 7" };
+    if (c.case_version == 7) {
+        const m = c.observe orelse return .{ .invalid = "a case_version 7 file must carry observe, `wrappers` included; from version 7 the mode is always spelled" };
+        if (contract.ObserveMode.parse(m) == null) return .{ .invalid = "a case_version 7 file's observe names no mode this binary knows; it must be `wrappers`, `syscalls` or `supervised`" };
+        const decl = c.define.apparatus orelse return .{ .invalid = "a case_version 7 file must carry define.apparatus; the version exists to freeze it" };
+        for (decl) |e| if (config.apparatusFault(e)) |why| return .{ .invalid = why };
+        if (!checksAnEntry(decl)) return .{ .invalid = "a case_version 7 file's define.apparatus must hold an entry a replay checks (env, preload or pythonpath); a declaration of notes alone is written at the version its define asks for" };
+    }
     if (c.case_version == 5) {
         const decl = c.define.scratch orelse return .{ .invalid = "a case_version 5 file must carry define.scratch as a non-empty array; the version exists to freeze it" };
         if (decl.len == 0) return .{ .invalid = "a case_version 5 file must carry define.scratch as a non-empty array; the version exists to freeze it" };
@@ -268,16 +298,16 @@ pub fn read(arena: std.mem.Allocator, text: []const u8) Read {
             else => false,
         };
         if (!has_cwd)
-            return .{ .invalid = "a case_version 5 or 6 file must spell define.cwd, as null when none was declared: from version 5 both cwd and scratch are explicit" };
+            return .{ .invalid = "a case_version 5, 6 or 7 file must spell define.cwd, as null when none was declared: from version 5 both cwd and scratch are explicit" };
         // The typed parse reads an absent `scratch` and a JSON `null` alike, so the key and
         // its shape are asked of the untyped value. Version 5 already refused both through
-        // the non-empty gate above; version 6, where empty is allowed, needs it here.
+        // the non-empty gate above; versions 6 and 7, where empty is allowed, need it here.
         const scratch_is_array = switch (def) {
             .object => |o| if (o.get("scratch")) |v| v == .array else false,
             else => false,
         };
         if (!scratch_is_array)
-            return .{ .invalid = "a case_version 6 file must spell define.scratch as an array, empty when none was declared: from version 5 both cwd and scratch are explicit" };
+            return .{ .invalid = "a case_version 6 or 7 file must spell define.scratch as an array, empty when none was declared: from version 5 both cwd and scratch are explicit" };
     }
     return .{ .ok = c };
 }
@@ -319,14 +349,40 @@ test "read refuses with replay's sentences, in replay's order" {
         .{ .text = "{", .says = "the case file could not be parsed as a sideeye case" },
         .{ .text = try testCaseWith(a, "\"k\":7,", "\"k\":7,\"extra\":1,"), .says = "the case file could not be parsed as a sideeye case" },
         .{ .text = try testCaseWith(a, "sideeye/case", "other/case"), .says = "the file does not declare itself a sideeye case" },
-        .{ .text = try testCaseWith(a, "\"case_version\":5,", "\"case_version\":7,"), .says = "this binary understands case schema versions 1, 2, 3, 4, 5 and 6 only" },
+        .{ .text = try testCaseWith(a, "\"case_version\":5,", "\"case_version\":8,"), .says = "this binary understands case schema versions 1, 2, 3, 4, 5, 6 and 7 only" },
         .{ .text = try testCaseWith(a, "\"case_version\":5,", "\"case_version\":6,"), .says = "a case_version 6 file must carry observe, `syscalls` or `supervised`; the version exists to freeze it" },
         .{ .text = try testCaseWith(a, "\"case_version\":5,", "\"case_version\":6,\"observe\":\"wrappers\","), .says = "a case_version 6 file's observe must be `syscalls` or `supervised`: a case counted under the default is written at the version its define asks for" },
-        .{ .text = try testCaseWith(a, "\"cwd\":null,", ""), .says = "a case_version 5 or 6 file must spell define.cwd, as null when none was declared: from version 5 both cwd and scratch are explicit" },
+        .{ .text = try testCaseWith(a, "\"cwd\":null,", ""), .says = "a case_version 5, 6 or 7 file must spell define.cwd, as null when none was declared: from version 5 both cwd and scratch are explicit" },
         .{ .text = try testCaseWith(a, "\"scratch\":[\"m.yaml\"],", ""), .says = "a case_version 5 file must carry define.scratch as a non-empty array; the version exists to freeze it" },
     };
     for (cases) |cs| try std.testing.expectEqualStrings(cs.says, read(a, cs.text).invalid);
 
-    const twice = try std.mem.replaceOwned(u8, a, try testCaseWith(a, "sideeye/case", "other/case"), "\"case_version\":5,", "\"case_version\":7,");
+    const twice = try std.mem.replaceOwned(u8, a, try testCaseWith(a, "sideeye/case", "other/case"), "\"case_version\":5,", "\"case_version\":8,");
     try std.testing.expectEqualStrings("the file does not declare itself a sideeye case", read(a, twice).invalid);
+}
+
+test "a version-7 case carries the apparatus a replay checks, and every rung below it refuses one" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const v7 = try std.mem.replaceOwned(u8, a, try testCaseWith(a, "\"case_version\":5,", "\"case_version\":7,\"observe\":\"wrappers\","), "\"scratch\":[\"m.yaml\"],", "\"scratch\":[],\"apparatus\":[\"env:XDG_DATA_HOME=/d\",\"note:x\"],");
+    const c = read(a, v7).ok;
+    try std.testing.expectEqualStrings("wrappers", c.observe.?);
+    try std.testing.expectEqualStrings("env:XDG_DATA_HOME=/d", c.define.apparatus.?[0]);
+
+    const T = struct { from: []const u8, to: []const u8, says: []const u8 };
+    const cases = [_]T{
+        .{ .from = "\"case_version\":7,", .to = "\"case_version\":6,", .says = "a case_version 6 file's observe must be `syscalls` or `supervised`: a case counted under the default is written at the version its define asks for" },
+        .{ .from = "\"case_version\":7,\"observe\":\"wrappers\",", .to = "\"case_version\":6,\"observe\":\"syscalls\",", .says = "a case_version 1, 2, 3, 4, 5 or 6 file cannot carry an apparatus declaration; it arrived with version 7" },
+        .{ .from = "\"observe\":\"wrappers\",", .to = "", .says = "a case_version 7 file must carry observe, `wrappers` included; from version 7 the mode is always spelled" },
+        .{ .from = "\"observe\":\"wrappers\",", .to = "\"observe\":\"strace\",", .says = "a case_version 7 file's observe names no mode this binary knows; it must be `wrappers`, `syscalls` or `supervised`" },
+        .{ .from = ",\"apparatus\":[\"env:XDG_DATA_HOME=/d\",\"note:x\"]", .to = "", .says = "a case_version 7 file must carry define.apparatus; the version exists to freeze it" },
+        .{ .from = "\"env:XDG_DATA_HOME=/d\",", .to = "", .says = "a case_version 7 file's define.apparatus must hold an entry a replay checks (env, preload or pythonpath); a declaration of notes alone is written at the version its define asks for" },
+        .{ .from = "\"env:XDG_DATA_HOME=/d\"", .to = "\"env:LD_PRELOAD\"", .says = "env: names a variable the engine sets for every child (LD_PRELOAD, DYLD_INSERT_LIBRARIES, TOY_STATE, SIDEEYE_*); the engine's own doing is not the define's apparatus" },
+        .{ .from = "\"scratch\":[],", .to = "", .says = "a case_version 6 or 7 file must spell define.scratch as an array, empty when none was declared: from version 5 both cwd and scratch are explicit" },
+    };
+    for (cases) |cs| {
+        std.debug.assert(std.mem.indexOf(u8, v7, cs.from) != null);
+        try std.testing.expectEqualStrings(cs.says, read(a, try std.mem.replaceOwned(u8, a, v7, cs.from, cs.to)).invalid);
+    }
 }
