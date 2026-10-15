@@ -334,18 +334,18 @@ if s.get("apparatus_unchecked") != ["note:the flag form and the key form are one
 if "\napparatus: env:TOY_PIN=1, note:the flag form and the key form are one grammar" not in r["content"][0]["text"]: sys.exit(r["content"][0]["text"][:300])
 PY
 
-echo "=========== mcp 6c: a shim the server found is not named on the replay line ==========="
+echo "=========== mcp 6c: the replay the server returns names no shim, found or given ==========="
 call="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/sideeye.toml\"}}}"
 printf '%s' "$call" | env -u SIDEEYE_MCP_SHIM "$SIDEEYE" mcp >/tmp/mcp.out 2>/tmp/mcp.err
 cp /tmp/mcp.out /tmp/mcp-found.out
 drive "$call"
-python3 - "$SHIM" <<'FOUND' && pass "with no SIDEEYE_MCP_SHIM the replay line names no shim; with it, it names that one" || fail "the replay line named a shim the server found, or dropped one it was given"
+python3 - <<'FOUND' && pass "with or without SIDEEYE_MCP_SHIM the replay the server returns is no command line and names no shim" || fail "the replay the server returned named a shim, or was a command line"
 import json, sys
 found = json.load(open("/tmp/mcp-found.out"))["result"]["structuredContent"]
 given = json.load(open("/tmp/mcp.out"))["result"]["structuredContent"]
-assert found["verdict"] == "FAIL" and given["verdict"] == "FAIL", (found.get("verdict"), given.get("verdict"))
-assert "--shim" not in found["replay"], found["replay"]
-assert ("--shim " + sys.argv[1]) in given["replay"], given["replay"]
+ok = found["verdict"] == "FAIL" and given["verdict"] == "FAIL"
+ok = ok and all(not r.startswith("sideeye replay") and "--shim" not in r for r in (found["replay"], given["replay"]))
+sys.exit(0 if ok else (found.get("replay"), given.get("replay")))
 FOUND
 
 echo "=========== mcp 7: SIDEEYE_MCP_CHILD_ENV passes named vars through — and only those ==========="
@@ -979,7 +979,7 @@ echo "=========== mcp 19: the observation mode the engine names is one the tool 
 # The loop this closes: explore -> named refusal -> next_step -> retry -> verdict. The
 # default mode cannot see a write issued inside libc (a buffer overflow inside fprintf),
 # so the oracle sees an operation the shim did not and the run refuses
-# `oracle_missed_operation`, naming `--observe syscalls` in its step (#599, ADR 0069).
+# `oracle_missed_operation`, its step naming the observe argument (#599, ADR 0069; #824).
 # Before #617 that step was unreachable from here. The two legs below are the same target
 # and the same config, differing only in the parameter, so neither an implementation that
 # ignores it (leg 2 would repeat the refusal) nor one that always sends `syscalls`
@@ -1010,7 +1010,7 @@ obs_call() {  # obs_call <id> <arguments-json>
 # still refuse, and the refusal must still carry the step that names the mode.
 obs_reset
 obs_call 30 "{\"config_path\":\"$WS/observe.toml\"}"
-python3 - <<'PY' && pass "omitting observe refuses oracle_missed_operation, and the step names --observe syscalls" || fail "the default-mode leg did not refuse the way #599 says it does"
+python3 - <<'PY' && pass "omitting observe refuses oracle_missed_operation, and the step names observe \"syscalls\"" || fail "the default-mode leg did not refuse the way #599 says it does"
 import json, sys
 d = json.load(open("/tmp/mcp.out"))
 r = d["result"]; sc = r["structuredContent"]
@@ -1018,8 +1018,8 @@ if sc.get("verdict") != "UNKNOWN":
     sys.exit("verdict %r, wanted UNKNOWN" % sc.get("verdict"))
 if sc.get("unknown_reason") != "oracle_missed_operation":
     sys.exit("reason %r, wanted oracle_missed_operation" % sc.get("unknown_reason"))
-if "--observe syscalls" not in (sc.get("next_step") or ""):
-    sys.exit("the step does not name the mode: %r" % sc.get("next_step"))
+if 'observe "syscalls"' not in (sc.get("next_step") or ""):
+    sys.exit("the step does not name the argument: %r" % sc.get("next_step"))
 if r["isError"] is not True:
     sys.exit("a refusal must be isError true (ADR 0010)")
 PY
@@ -1077,7 +1077,7 @@ WDM=/tmp/mcp-workdir
 rm -rf "$WDM"; mkdir -p "$WDM/own"
 ln -s "$WDM/own" "$WDM/link"
 wd_call() {
-    # $1: SIDEEYE_MCP_WORK, or empty to leave it unset (the default /tmp/sideeye-mcp).
+    # $1: SIDEEYE_MCP_WORK, or empty to leave it unset (the default, inside the root).
     wreq="{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{$META,\"name\":\"sideeye_explore_config\",\"arguments\":{\"config_path\":\"$WS/sideeye.toml\"}}}"
     rm -rf "$WS/state"; mkdir -p "$WS/state"
     if [ -n "$1" ]; then
@@ -1102,26 +1102,51 @@ wd_judge false "" && pass "control: a work directory of the runner's own serves 
 wd_call "$WDM/link"
 wd_judge true "SIDEEYE_MCP_WORK $WDM/link is a symbolic link" && pass "SIDEEYE_MCP_WORK naming a link is refused by the server, by name" \
     || fail "SIDEEYE_MCP_WORK naming a link was not refused by the server"
-# The default, with the variable unset: whatever is at /tmp/sideeye-mcp is moved aside and
-# put back, and a link to the runner's own directory is planted there.
-wdm_aside=""
-if [ -e /tmp/sideeye-mcp ] || [ -L /tmp/sideeye-mcp ]; then
-    if mv /tmp/sideeye-mcp "$WDM/aside" 2>/dev/null; then wdm_aside="$WDM/aside"; else wdm_aside="stuck"; fi
-fi
-if [ "$wdm_aside" = "stuck" ]; then
-    # A fact about the host (another user's /tmp/sideeye-mcp), said loudly rather than counted
-    # as a failure of the product — the way spike/acceptance.sh check 2wd reports it.
-    echo "     NOT MEASURED: /tmp/sideeye-mcp is there and could not be moved aside, so the default was not driven"
-else
-    ln -s "$WDM/own" /tmp/sideeye-mcp
-    wd_call ""
-    rm -f /tmp/sideeye-mcp
-    [ -n "$wdm_aside" ] && mv "$wdm_aside" /tmp/sideeye-mcp
-    wd_judge true "the default work directory /tmp/sideeye-mcp (SIDEEYE_MCP_WORK is unset) is a symbolic link" \
-        && pass "the default /tmp/sideeye-mcp, a planted link, is refused with the variable unset" \
-        || fail "a link planted at the default /tmp/sideeye-mcp was followed with SIDEEYE_MCP_WORK unset"
-fi
+# Driven with the variable unset: the default's name is the server's to choose, so a check of
+# the operator's spelling alone would not reach it.
+wdm_default="$(cd "$WS" && pwd -P)/.sideeye-mcp"
+rm -rf "$wdm_default"
+ln -s "$WDM/own" "$wdm_default"
+wd_call ""
+rm -f "$wdm_default"
+wd_judge true "the default work directory $wdm_default (SIDEEYE_MCP_WORK is unset) is a symbolic link" \
+    && pass "the default work directory inside the root, a planted link, is refused with the variable unset" \
+    || fail "a link planted at the default work directory was followed with SIDEEYE_MCP_WORK unset"
 rm -rf "$WDM"
+
+# SIDEEYE_MCP_WORK and SIDEEYE_MCP_ORACLE are unset, not left as the suite exports them: with
+# either set, the defaults this leg is about are never reached.
+WSR=/tmp/mcp-rootonly
+rm -rf "$WSR"; mkdir -p "$WSR"
+cp "$WS/sideeye.toml" "$WS/sideeye-fixed.toml" "$WSR/"
+ro_call() {
+    printf '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{%s,"name":"%s","arguments":%s}}' "$META" "$1" "$2" \
+      | env -u SIDEEYE_MCP_WORK -u SIDEEYE_MCP_ORACLE -u SIDEEYE_MCP_SHIM SIDEEYE_MCP_ROOT="$WSR" "$SIDEEYE" mcp > "$3" 2>/tmp/mcp.err
+}
+ro_call sideeye_explore_config "{\"config_path\":\"$WSR/sideeye.toml\"}" /tmp/mcp-ro-ex.json
+rcase=$(python3 -c 'import json,sys; sc=json.load(open(sys.argv[1]))["result"]["structuredContent"]; r=sc["replay"]; p="sideeye_replay_case "; print(json.loads(r[len(p):])["case_path"] if r.startswith(p) else "")' /tmp/mcp-ro-ex.json 2>/dev/null)
+ro_call sideeye_evidence "{\"case_path\":\"$rcase\"}" /tmp/mcp-ro-ev.json
+ro_call sideeye_replay_case "{\"case_path\":\"$rcase\"}" /tmp/mcp-ro-rp.json
+ro_call sideeye_explore_config "{\"config_path\":\"$WSR/sideeye-fixed.toml\"}" /tmp/mcp-ro-fx.json
+python3 - "$WSR" <<'PY' && pass "with only SIDEEYE_MCP_ROOT set, a FAIL is followed to its evidence and replay, and a refusal's next step is one the server takes" || fail "with only SIDEEYE_MCP_ROOT set, a FAIL could not be followed through the server, or a next step named the command line"
+import json, re, sys
+root = sys.argv[1]
+def res(p): return json.load(open(p))["result"]
+ex, ev, rp, fx = (res(f"/tmp/mcp-ro-{k}.json") for k in ("ex", "ev", "rp", "fx"))
+sc = ex["structuredContent"]
+ok = sc["verdict"] == "FAIL" and "/.sideeye-mcp/server-" in sc["case"] and sc["replay"].startswith("sideeye_replay_case ")
+ok = ok and ("\nreplay: " + sc["replay"]) in ex["content"][0]["text"]
+ok = ok and open(root + "/.sideeye-mcp/.gitignore").read() == "*\n"
+ok = ok and ev["isError"] is False and rp["isError"] is False and rp["structuredContent"]["verdict"] == "FAIL"
+fs = fx["structuredContent"]
+ok = ok and fs.get("unknown_reason") == "completeness_not_verified" and "SIDEEYE_MCP_ORACLE" in fs["next_step"]
+ok = ok and not re.search(r"--[a-z]", fs["next_step"]) and ("\nnext: " + fs["next_step"]) in fx["content"][0]["text"]
+ok = ok and not re.search(r"--[a-z]", fs["message"]) and "not checked against anything" in fs["message"]
+for name, r in (("explore", ex), ("evidence", ev), ("replay", rp), ("fixed", fx)):
+    print("    ", name, r.get("isError"), (r.get("structuredContent") or {}).get("replay"), file=sys.stderr)
+sys.exit(0 if ok else 1)
+PY
+rm -rf "$WSR"
 
 echo "=========== mcp 21: a case saved under --observe syscalls replays under it through sideeye_replay_case (#691) ==========="
 # sideeye_replay_case has no observe, and passes the engine none: until the case recorded its

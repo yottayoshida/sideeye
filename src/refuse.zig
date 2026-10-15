@@ -272,14 +272,21 @@ pub fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contrac
     std.process.exit(@intFromEnum(contract.ExitCode.unknown));
 }
 
+pub const unchecked_supervised = "no oracle was given, so the supervising engine's account of what happened was not checked against anything";
+pub const unchecked_shim = "no oracle was given, so the shim's account of what happened was not checked against anything";
+const no_oracle_supervised = unchecked_supervised ++ "; pass --oracle, or --allow-unverified to accept the weaker claim";
+const no_oracle_macos = unchecked_shim ++ "; pass --oracle-fs-usage (run sudo -v first, in the same terminal), or --allow-unverified to accept the weaker claim";
+const no_oracle_linux = unchecked_shim ++ "; pass --oracle, or --allow-unverified to accept the weaker claim";
+pub const no_oracle_messages = [_][]const u8{ no_oracle_supervised, no_oracle_macos, no_oracle_linux };
+
 pub fn requireCompleteness(arena: std.mem.Allocator, has_oracle: bool, allow_unverified: bool) void {
     if (has_oracle or allow_unverified) return;
     const base = if (boundary.observe_mode == .supervised)
-        "no oracle was given, so the supervising engine's account of what happened was not checked against anything; pass --oracle, or --allow-unverified to accept the weaker claim"
+        no_oracle_supervised
     else if (builtin.os.tag == .macos)
-        "no oracle was given, so the shim's account of what happened was not checked against anything; pass --oracle-fs-usage (run sudo -v first, in the same terminal), or --allow-unverified to accept the weaker claim"
+        no_oracle_macos
     else
-        "no oracle was given, so the shim's account of what happened was not checked against anything; pass --oracle, or --allow-unverified to accept the weaker claim";
+        no_oracle_linux;
     // A discovered strace is only ever NAMED here, never attached: a second witness
     // joining on its own would silently strengthen what a flagless verdict claims —
     // and flip every caller that measured the no-oracle behavior (#78).
