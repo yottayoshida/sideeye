@@ -1,0 +1,4 @@
+shape	rank	package	fixture_rc	operation_rc	note
+1	1	quilt=0.68-1	0	0	patching file b.txt  Now at patch patches/p2.diff 
+2	1	gdbmtool=1.24-2	0	0	
+3	1	python3-yoyo=9.0.0+dfsg1-3	0	0	
