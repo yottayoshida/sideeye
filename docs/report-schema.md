@@ -286,7 +286,10 @@ state directory are read as reads too** (#684): vim asking for a file's ACL, dot
 firewall-offline-cmd listing a file's attributes, and fish watching its variables'
 directory were each refused for asking. Extended-attribute writes (`setxattr`,
 `removexattr` and their `l`/`f` forms) still refuse, through a relative path as through an
-absolute one, from the subject and from every child: what an attribute write does to the state
+absolute one, from the subject and from every child. The path is resolved by its spelling, as every
+path this reader scopes is, so a write through a symbolic link outside the state that points into it
+is not seen; a content change through such a link still meets the snapshots, an attribute does not.
+They refuse because what an attribute write does to the state
 has not been ruled on — the restore does not put attributes back, and nothing yet says whether
 such a write is judged or, like the ownership and permission calls #121 observes, set aside.
 The macOS fs_usage oracle keeps its own list (`src/fsusage.zig`), which already reads
