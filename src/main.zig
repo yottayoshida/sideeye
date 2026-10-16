@@ -681,26 +681,27 @@ fn phaseDefine(run: *Run) void {
             std.fmt.allocPrint(arena_state.allocator(), "the declared cwd is not a directory: {s}", .{textShown(arena_state.allocator(), cwd_span)}) catch "the declared cwd is not a directory",
         );
         args.cwd = arena_state.allocator().dupe(u8, cwd_span) catch setupError(.environment, "out of memory");
+    }
 
-        // The engine's own paths are pinned here, and only here, because only a declared
-        // cwd can move them. `--work`, `--shim` and `--oracle` name things the ENGINE
-        // chose, but three of their uses are opened by the child *after* it has chdir'd:
-        // the shim opens `SIDEEYE_TRACE_PATH` from the environment, strace opens its `-o`
-        // capture, and the loader resolves the shim library. Spelled relatively, each
-        // would land in the declared directory instead — measured before this pin as a
-        // run whose traces were never written, reported as `no_shim_marker` and blamed on
-        // the target's linking and on macOS SIP, and as an oracle that vanished after the
-        // parent's own `access(X_OK)` guard had confirmed it (that guard's comment says
-        // it exists to stop exactly the report it then produced).
-        // about the copies this repo has already paid for). Lexical on purpose: `--work`
-        // legitimately does not exist yet here, and the pin is about which directory the
-        // name is read against, not about following symlinks. Nothing happens when no cwd
+    // Not only under a declared cwd: the target itself can chdir before it execs, and the image
+    // it execs opens `SIDEEYE_TRACE_PATH`, and the loader the shim, against the directory it moved
+    // to. Lexical, not realpath: `--work` may not exist yet.
+    const cwd_declared = args.cwd != null;
+    const shim_pins = if (args.shim) |sh| pinsName(sh, cwd_declared) else false;
+    const oracle_pins = if (args.oracle) |o| pinsName(o, cwd_declared) else false;
+    if (isRelativePath(args.work) or shim_pins or oracle_pins) {
         var pin_cwd_buf: [contract.max_path]u8 = undefined;
-        const pin_base = if (posix.getcwd(&pin_cwd_buf, pin_cwd_buf.len)) |p| std.mem.span(p) else "/";
+        // No fallback to `/`: a relative `--work` would then be made at the root.
+        const pin_base = if (posix.getcwd(&pin_cwd_buf, pin_cwd_buf.len)) |p| std.mem.span(p) else setupError(.environment, "the directory Sideeye was started in could not be read, and a relative --work, --shim or --oracle is read against it; pass absolute paths");
         const pin_arena = arena_state.allocator();
         args.work = resolvePathAgainst(pin_arena, pin_base, args.work);
-        if (args.shim) |s| args.shim = resolvePathAgainst(pin_arena, pin_base, s);
-        if (args.oracle) |o| args.oracle = resolvePathAgainst(pin_arena, pin_base, o);
+        if (shim_pins) {
+            const pinned = resolvePathAgainst(pin_arena, pin_base, args.shim.?);
+            // Not pinned into a name the preload variable splits — LD_PRELOAD on spaces and colons,
+            // DYLD_INSERT_LIBRARIES on colons — unless a declared cwd already required it.
+            if (cwd_declared or std.mem.indexOfAny(u8, pinned, " \t:") == null) args.shim = pinned;
+        }
+        if (oracle_pins) args.oracle = resolvePathAgainst(pin_arena, pin_base, args.oracle.?);
     }
 
     // #647: where the define's commands run, decided once, here — directly after the
@@ -3753,6 +3754,25 @@ test "namesLib: an LD_PRELOAD value or a preload line, colon- or space-separated
     try std.testing.expect(namesLib("/y/libfaketime.so.1 /x/other.so", "libfaketime"));
     try std.testing.expect(!namesLib("/x/libsideeye_shim.so", "libfaketime"));
     try std.testing.expect(!namesLib("", "libfaketime"));
+}
+
+fn isRelativePath(path: []const u8) bool {
+    return path.len > 0 and path[0] != '/';
+}
+
+fn pinsName(path: []const u8, cwd_declared: bool) bool {
+    // A name without `/` is left to the loader's search path, which no directory moves, unless a
+    // declared cwd already pinned it.
+    return isRelativePath(path) and (cwd_declared or std.mem.indexOfScalar(u8, path, '/') != null);
+}
+
+test "a relative --shim or --oracle is pinned when it names a directory, and a bare name only under a declared cwd" {
+    try std.testing.expect(pinsName("./shim.so", false));
+    try std.testing.expect(pinsName("lib/shim.so", false));
+    try std.testing.expect(!pinsName("libsideeye_shim.so", false));
+    try std.testing.expect(pinsName("libsideeye_shim.so", true));
+    try std.testing.expect(!pinsName("/opt/shim.so", true));
+    try std.testing.expect(!pinsName("", true));
 }
 
 fn resolvePathAgainst(arena: std.mem.Allocator, dir: []const u8, path: []const u8) []const u8 {

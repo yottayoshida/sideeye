@@ -11194,6 +11194,73 @@ else
     cwd_fails=$((cwd_fails + 1))
 fi
 
+# B holds no `relw`: a relative spelling that leaked there would find a file to append to and pass.
+p5=/tmp/acc/pin895
+rm -rf $p5 && mkdir -p $p5/a $p5/b $p5/state
+printf '#!/bin/sh\ncd %s && exec "$@"\n' "$p5/b" > $p5/cd-exec.sh && chmod 755 $p5/cd-exec.sh
+cp "$SHIM" $p5/a/shim.so
+p5_run() {   # p5_run <label> <explore|preflight> <--work value> <--shim value> [extra...]
+    _l=$1 _m=$2 _w=$3 _s=$4; shift 4
+    (cd $p5/a && "$SIDEEYE" "$_m" --state $p5/state --setup "$OUT/toy-bug init" \
+        --operation "$p5/cd-exec.sh $OUT/toy-bug rotate" --shim "$_s" --work "$_w" \
+        --oracle /usr/bin/strace --json $p5/$_l.json "$@" > $p5/$_l.txt 2>&1)
+    echo $?
+}
+p5_ctl=$(p5_run ctl explore $p5/a/absw "$SHIM")
+p5_rel=$(p5_run rel explore relw "$SHIM")
+p5_shm=$(p5_run shm explore $p5/a/absw2 ./shim.so)
+p5_pre=$(p5_run pre preflight relw2 "$SHIM" --twice)
+# Not pinned: an absolute path holding a space is split by LD_PRELOAD, and the shim given as
+# `./shim.so` from such a directory loaded before the pin was taken for every run.
+mkdir -p "$p5/sp ace" && cp "$SHIM" "$p5/sp ace/shim.so"
+p5_spc=$(cd "$p5/sp ace" && "$SIDEEYE" explore --state $p5/state --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --shim ./shim.so --work $p5/absw3 --oracle /usr/bin/strace \
+    --json $p5/spc.json > $p5/spc.txt 2>&1; echo $?)
+if [ "$p5_ctl" != 1 ]; then
+    echo "FAIL #895: the absolute --work control exited $p5_ctl, not FAIL 1 — the legs measure nothing"
+    sed 's/^/     | /' $p5/ctl.txt | head -4
+    cwd_fails=$((cwd_fails + 1))
+else
+    for l in rel:--work shm:--shim; do
+        f=${l#*:} l=${l%%:*}
+        eval "_rc=\$p5_$l"
+        if [ "$_rc" = 1 ] && [ "$(grep -c '^FAIL' $p5/$l.txt)" = "$(grep -c '^FAIL' $p5/ctl.txt)" ] \
+            && [ "$(sed -n 's/^explored *//p' $p5/$l.txt)" = "$(sed -n 's/^explored *//p' $p5/ctl.txt)" ]; then
+            echo "ok   a target that cds and execs is traced in every world with a relative $f (#895)"
+        else
+            echo "FAIL #895 ($l): exit $_rc, reason $(field $p5/$l.json unknown_reason), explored '$(sed -n 's/^explored *//p' $p5/$l.txt)' against the control's '$(sed -n 's/^explored *//p' $p5/ctl.txt)'"
+            cwd_fails=$((cwd_fails + 1))
+        fi
+    done
+    case "$(sed -n 's/^case *//p' $p5/rel.txt)|$(sed -n 's/^replay *sideeye replay //p' $p5/rel.txt)" in
+        /*"|/"*) echo "ok   a relative --work prints its case and replay line as absolute paths (#895)" ;;
+        *) echo "FAIL #895: a relative --work printed '$(sed -n 's/^case *//p' $p5/rel.txt)' and '$(sed -n 's/^replay *//p' $p5/rel.txt)'"
+           cwd_fails=$((cwd_fails + 1)) ;;
+    esac
+    if [ "$p5_spc" = 1 ]; then
+        echo "ok   a relative --shim from a directory whose path holds a space still loads (#895)"
+    else
+        echo "FAIL #895: a relative --shim under a directory with a space: exit $p5_spc, reason $(field $p5/spc.json unknown_reason)"
+        cwd_fails=$((cwd_fails + 1))
+    fi
+    if [ "$p5_pre" = 0 ] && grep -q '^PREFLIGHT  recording accepted' $p5/pre.txt; then
+        echo "ok   preflight --twice's second run keeps its trace across the target's cd with a relative --work (#895)"
+    else
+        echo "FAIL #895 (preflight --twice): exit $p5_pre, reason $(field $p5/pre.json unknown_reason)"
+        cwd_fails=$((cwd_fails + 1))
+    fi
+fi
+# Not read against `/`: a relative --work would be made at the root.
+mkdir -p $p5/gone && o=$(cd $p5/gone && rmdir $p5/gone && "$SIDEEYE" explore --state $p5/state \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work relw-gone 2>&1)
+rc=$?
+if [ "$rc" = 3 ] && echo "$o" | grep -q "the directory Sideeye was started in could not be read" && [ ! -e /relw-gone ]; then
+    echo "ok   a relative --work under an unreadable starting directory is refused, not made at / (#895)"
+else
+    echo "FAIL #895: an unreadable starting directory gave exit $rc: $(echo "$o" | head -2)"
+    cwd_fails=$((cwd_fails + 1))
+fi
+
 # Leg 4: the version and the shape travel together. A case saved from a define carrying a
 # cwd is version 4 and carries it; a file that says one without the other is malformed in
 # both directions. Nothing else in this suite reaches version 4, so without this leg the
