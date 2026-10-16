@@ -700,9 +700,19 @@ sleep 5
 cap13=$(wc -c < "$WORK/w-c13/oracle.txt" 2>/dev/null || echo 0)
 el13=$(( $(date +%s) - t13 ))
 pgrep -x fs_usage > /dev/null || { kill -9 "$eng13" 2>/dev/null; fail "check 13: no fs_usage was running before the kill, so nothing was measured"; }
+diag13() { ps -ax -o pid,ppid,pgid,ruid,uid,stat,comm | grep -E "fs_usage|sudo|sideeye" | grep -v grep | sed 's/^/    /'; }
+sudo13=$(pgrep -P "$eng13" -x sudo | head -1)
+echo "  diag: before the kill (engine $eng13, sudo ${sudo13:-none}):"; diag13
+kill -0 -- "-${sudo13:-0}" 2>/dev/null; echo "  diag: kill -0 to sudo's group as this user: rc=$?"
 kill -9 "$eng13"
 gone=no
 for _ in $(seq 1 10); do pgrep -x fs_usage > /dev/null || { gone=yes; break; }; sleep 1; done
+echo "  diag: 10 s after the kill:"; diag13
+if [ "$gone" = no ] && [ -n "$sudo13" ]; then
+    kill -INT -- "-$sudo13" 2>/dev/null; echo "  diag: SIGINT to sudo's group as this user: rc=$?"
+    sleep 5
+    if pgrep -x fs_usage > /dev/null; then echo "  diag: fs_usage still runs 5 s after that SIGINT"; else echo "  diag: that SIGINT stopped fs_usage"; fi
+fi
 pkill -x libc_toy 2>/dev/null || true
 echo "  fs_usage gone within 10 s: $gone; its capture held $cap13 bytes after about $el13 s ($(( cap13 / (el13 > 0 ? el13 : 1) )) bytes/s)"
 [ "$gone" = yes ] || { ensure_no_fs_usage; fail "check 13: fs_usage outlived the killed engine"; }
