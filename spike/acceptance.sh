@@ -105,6 +105,24 @@ echo "=========== check 1: inside the boundary ==========="
 run_case "toy-bug FAILs"       "$OUT/toy-bug"   1 "crash point 5 of 5"
 run_case "  ...names the window" "$OUT/toy-bug" 1 "after  unlink"
 run_case "  ...and the next op"  "$OUT/toy-bug" 1 "before rename"
+
+# A state path holding bytes strace escapes in its descriptor annotations — non-ASCII, and a
+# bracket it does not escape — reaches the verdicts the ASCII path above reaches.
+for c899 in "toy-bug|1|crash point 5 of 5" "toy-fixed|0|explored worlds satisfied"; do
+    t899=${c899%%|*}; w899=${c899#*|}; x899=${w899%%|*}; f899=${w899#*|}
+    rm -rf /tmp/acc-899 && mkdir -p "/tmp/acc-899/デ[x/state"
+    o=$("$SIDEEYE" explore --state "/tmp/acc-899/デ[x/state" --setup "$OUT/$t899 init" \
+        --operation "$OUT/$t899 rotate" --shim "$SHIM" --work /tmp/acc-899/work \
+        --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if [ "$rc" = "$x899" ] && printf '%s\n' "$o" | grep -q "$f899"; then
+        echo "ok   $t899 under a state path strace escapes reaches its ASCII verdict (exit $rc)"
+    else
+        echo "FAIL $t899 under a state path strace escapes: exit $rc, wanted $x899 and '$f899'"
+        printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+        fails=$((fails + 1))
+    fi
+done
 # Called directly, not through run_case: whether an assignment in front of a function call
 # outlives it is unspecified in sh, and a leftover here would arm every later check.
 rm -rf /tmp/acc-822 && mkdir -p /tmp/acc-822/state
