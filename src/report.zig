@@ -939,20 +939,30 @@ test "the next line's words are the define's and the run's, each quoted only whe
     try t.expectEqualStrings(" --observe supervised --oracle '/o p'", try nextRunWords(a, .{ .observe = .supervised, .shim = "/l.so", .oracle_found = "/o p" }));
 }
 
-pub fn replayLine(arena: std.mem.Allocator, case_path: []const u8, observe: contract.ObserveMode, shim_given: ?[]const u8, recovery_flags: []const u8) []const u8 {
-    return std.fmt.allocPrint(arena, "sideeye replay {s}{s}{s}", .{ shellWord(arena, case_path) catch case_path, observeFlags(arena, observe, shim_given), recovery_flags }) catch "-";
+pub fn replayLine(arena: std.mem.Allocator, case_path: []const u8, observe: contract.ObserveMode, shim_given: ?[]const u8, oracle: ?[]const u8, recovery_flags: []const u8) []const u8 {
+    const oracle_part: []const u8 = if (oracle) |o| (flagWord(arena, "--oracle", o) catch return "-") else "";
+    return std.fmt.allocPrint(arena, "sideeye replay {s}{s}{s}{s}", .{ shellWord(arena, case_path) catch case_path, observeFlags(arena, observe, shim_given), oracle_part, recovery_flags }) catch "-";
 }
 
 test "a replay line names --shim only when the run was given one" {
     var as = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer as.deinit();
     const a = as.allocator();
-    try std.testing.expectEqualStrings("sideeye replay /w/cases/000001.json", replayLine(a, "/w/cases/000001.json", .wrappers, null, ""));
-    try std.testing.expectEqualStrings("sideeye replay /w/cases/000001.json --shim /opt/lib/libsideeye_shim.so", replayLine(a, "/w/cases/000001.json", .wrappers, "/opt/lib/libsideeye_shim.so", ""));
-    try std.testing.expectEqualStrings("sideeye replay /w/c.json --observe syscalls", replayLine(a, "/w/c.json", .syscalls, null, ""));
-    try std.testing.expectEqualStrings("sideeye replay /w/c.json --observe syscalls --shim /l.so --recovery 'r' --recovery-check 'c'", replayLine(a, "/w/c.json", .syscalls, "/l.so", " --recovery 'r' --recovery-check 'c'"));
-    try std.testing.expectEqualStrings("sideeye replay /w/c.json --observe supervised", replayLine(a, "/w/c.json", .supervised, "/l.so", ""));
-    try std.testing.expectEqualStrings("sideeye replay '/w/a b.json' --shim '/x y/l.so'", replayLine(a, "/w/a b.json", .wrappers, "/x y/l.so", ""));
+    try std.testing.expectEqualStrings("sideeye replay /w/cases/000001.json", replayLine(a, "/w/cases/000001.json", .wrappers, null, null, ""));
+    try std.testing.expectEqualStrings("sideeye replay /w/cases/000001.json --shim /opt/lib/libsideeye_shim.so", replayLine(a, "/w/cases/000001.json", .wrappers, "/opt/lib/libsideeye_shim.so", null, ""));
+    try std.testing.expectEqualStrings("sideeye replay /w/c.json --observe syscalls", replayLine(a, "/w/c.json", .syscalls, null, null, ""));
+    try std.testing.expectEqualStrings("sideeye replay /w/c.json --observe syscalls --shim /l.so --recovery 'r' --recovery-check 'c'", replayLine(a, "/w/c.json", .syscalls, "/l.so", null, " --recovery 'r' --recovery-check 'c'"));
+    try std.testing.expectEqualStrings("sideeye replay /w/c.json --observe supervised", replayLine(a, "/w/c.json", .supervised, "/l.so", null, ""));
+    try std.testing.expectEqualStrings("sideeye replay '/w/a b.json' --shim '/x y/l.so'", replayLine(a, "/w/a b.json", .wrappers, "/x y/l.so", null, ""));
+}
+
+test "a replay line carries the --oracle its run was given, so a FAIL across a process boundary replays as printed" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    try std.testing.expectEqualStrings("sideeye replay /w/c.json --oracle /opt/x/strace", replayLine(a, "/w/c.json", .wrappers, null, "/opt/x/strace", ""));
+    try std.testing.expectEqualStrings("sideeye replay /w/c.json --observe supervised --oracle '/o p/strace' --recovery 'r' --recovery-check 'c'", replayLine(a, "/w/c.json", .supervised, "/l.so", "/o p/strace", " --recovery 'r' --recovery-check 'c'"));
+    try std.testing.expectEqualStrings("sideeye replay /w/c.json --shim /l.so --oracle ./strace", replayLine(a, "/w/c.json", .wrappers, "/l.so", "./strace", ""));
 }
 
 test "a shell word is the value itself unless a shell would read it otherwise (#711)" {
