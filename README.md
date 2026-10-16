@@ -32,7 +32,7 @@ Runs on macOS 14+ (Apple silicon) and Linux glibc (x86_64, aarch64): Homebrew, o
 ```
 $ brew install yottayoshida/tap/sideeye
 
-$ tar xzf sideeye-v1.13.0-aarch64-macos.tar.gz && cd sideeye-v1.13.0-aarch64-macos
+$ tar xzf sideeye-v1.14.0-aarch64-macos.tar.gz && cd sideeye-v1.14.0-aarch64-macos
 $ ./sideeye version
 ```
 
