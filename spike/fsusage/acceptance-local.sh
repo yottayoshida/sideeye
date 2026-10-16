@@ -712,6 +712,12 @@ if [ "$gone" = no ] && [ -n "$sudo13" ]; then
     kill -INT -- "-$sudo13" 2>/dev/null; echo "  diag: SIGINT to sudo's group as this user: rc=$?"
     sleep 5
     if pgrep -x fs_usage > /dev/null; then echo "  diag: fs_usage still runs 5 s after that SIGINT"; else echo "  diag: that SIGINT stopped fs_usage"; fi
+    if pgrep -x fs_usage > /dev/null; then
+        kill -INT "$sudo13" 2>/dev/null; echo "  diag: SIGINT to sudo's pid as this user: rc=$?"
+        sleep 5
+        if pgrep -x fs_usage > /dev/null; then echo "  diag: fs_usage still runs 5 s after the pid's SIGINT"; else echo "  diag: the pid's SIGINT stopped fs_usage"; fi
+        echo "  diag: after it:"; diag13
+    fi
 fi
 pkill -x libc_toy 2>/dev/null || true
 echo "  fs_usage gone within 10 s: $gone; its capture held $cap13 bytes after about $el13 s ($(( cap13 / (el13 > 0 ? el13 : 1) )) bytes/s)"
