@@ -60,9 +60,17 @@ echo "work: $WORK"
 
 # Into a prefix that did not exist a moment ago, for the reason spike/fsusage/acceptance-local.sh
 # gives: an existence or mtime check on zig-out cannot tell this tree's binary from a cached one.
-( cd "$HERE" && zig build --prefix "$OUT" ) || fail "zig build failed; nothing was measured"
+# Not the build's default flags when CI names the job's build: the reason
+# spike/fsusage/acceptance-local.sh gives.
+[ "${GITHUB_ACTIONS:-}" != true ] || [ -n "${SIDEEYE_BUILD_SAME_AS:-}" ] || fail "in CI, SIDEEYE_BUILD_SAME_AS must name the job's build; nothing was measured"
+# shellcheck disable=SC2086 # a flag list, split on purpose
+( cd "$HERE" && zig build ${SIDEEYE_BUILD_FLAGS:-} --prefix "$OUT" ) || fail "zig build failed; nothing was measured"
 [ -x "$SIDEEYE" ] || fail "zig build installed no binary at $SIDEEYE"
 [ -f "$SHIM" ] || fail "zig build installed no shim at $SHIM"
+if [ -n "${SIDEEYE_BUILD_SAME_AS:-}" ]; then
+    cmp -s "$SIDEEYE" "$SIDEEYE_BUILD_SAME_AS/bin/sideeye" && cmp -s "$SHIM" "$SIDEEYE_BUILD_SAME_AS/lib/$(basename "$SHIM")" \
+        || fail "the pair built here is not the one at $SIDEEYE_BUILD_SAME_AS (were SIDEEYE_BUILD_FLAGS passed?); nothing was measured"
+fi
 
 cat > "$WORK/toy.c" <<'EOF'
 #include <dispatch/dispatch.h>

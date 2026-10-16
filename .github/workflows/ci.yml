@@ -13,11 +13,12 @@ on:
 
 jobs:
   linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
         with:
           version: 0.17.0
 
@@ -212,42 +213,13 @@ jobs:
         run: python3 spike/check-readme-demo.py --selftest
 
       - name: Install the completeness oracle
-        run: sudo apt-get update && sudo apt-get install -y strace
-
-      # Acceptance check 5c asks bash, zsh and fish what `sideeye completions` offers (#712);
-      # the runner has only bash, and SIDEEYE_EXPECT_SHELLS below turns a missing shell red
-      # instead of NOT MEASURED.
-      - name: Install the shells the completion scripts are checked in
-        run: sudo apt-get install -y zsh fish
+        timeout-minutes: 5
+        run: sudo apt-get -o Acquire::Retries=3 update && sudo apt-get -o Acquire::Retries=3 install -y strace
 
       - name: Build the toy targets
         run: sh spike/build-toys.sh
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
-
-      # Twice, because since contract v17 the engine behaves two ways on Linux (#559) and the
-      # suite is quick. First as the runner's shell starts it, in a cgroup the runner does not
-      # own, where the engine contains nothing: every leg measures the uncontained engine, and
-      # check 2cg asserts that no run was contained.
-      - name: Acceptance suite
-        run: sh spike/acceptance.sh
-        env:
-          SIDEEYE_ROOT: ${{ github.workspace }}
-          SIDEEYE_EXPECT_CONTAINED: "0"
-          SIDEEYE_EXPECT_MOUNT: "1"
-          SIDEEYE_EXPECT_SHELLS: "1"
-
-      # Then in a cgroup delegated to the runner (`spike/in-delegated-cgroup.sh`), where the
-      # engine contains every observed run: the same legs, measured contained, and check 2cg
-      # asserts from the traces that the shipped engine contained them and
-      # `sideeye-testnocgroup` did not. The wrapper's own probe fails first when the scope was
-      # not delegated; check 2cg is what fails when the engine's probe disagrees with it.
-      - name: Acceptance suite, contained in a delegated cgroup (#559)
-        run: sh spike/in-delegated-cgroup.sh sh spike/acceptance.sh
-        env:
-          SIDEEYE_ROOT: ${{ github.workspace }}
-          SIDEEYE_EXPECT_CONTAINED: "1"
-          SIDEEYE_EXPECT_MOUNT: "1"
 
       # The libc-internal-call class (#39), one member per run. Its own invocation
       # rather than a check inside the acceptance suite: it drives the shipped engine
@@ -323,6 +295,12 @@ jobs:
       - name: The loop-closure judge goes red on every channel it declares
         run: sh spike/loop-closure-timew/judge.sh selftest
 
+      # Not only as a file: measure.py runs the judge from the bytes it verified, piped into
+      # `sh -s`, where `$0` is `sh` and the repo comes from SIDEEYE_REPO — a path the file
+      # form never takes.
+      - name: The loop-closure judge goes red the same way when piped into sh -s
+        run: cat spike/loop-closure-timew/judge.sh | SIDEEYE_REPO="$GITHUB_WORKSPACE" sh -s -- selftest
+
       # The launcher's memory (#515's other half, ADR 0066): the record's digest is over the
       # stream, not the file; a doctored seal manifest, a changed judge.sh, a repo/ that moved
       # after the run, a rewritten audit.json and an unattested record each stop the judge
@@ -345,54 +323,55 @@ jobs:
       - name: The positive control reproduces the committed transcript (#318)
         run: sh spike/cohort4/himalaya-r2/upstream-fix/verify-positive-control.sh
 
-      # Both released Linux triples still compile under the glibc ceiling they declare
-      # (#161). The release matrix gained those versions in the same change; with only that
-      # half, they would be compiled on release events and on pull requests touching
-      # release.yml, so whatever the pin does to a source change would surface for the first
-      # time during the release ceremony. (Before that change no versioned triple was built
-      # anywhere — the past tense in the first draft of this comment described a state that
-      # never existed.)
-      #
-      # What it does, measured: the version is a ceiling, not a gate. A symbol that has an
-      # older entry point links to that one and the requirement drops with the pin — that
-      # is the pin working, and it is silent. A symbol with nothing at or below the pin has
-      # no fallback and fails to link (`zig cc -target aarch64-linux-gnu.2.28` on a program
-      # calling `closefrom`, added in 2.34: `undefined symbol`). Only the second shape is a
-      # red here, and it is the one worth learning about on a pull request.
-      #
-      # Into a SCRATCH PREFIX, never `zig-out`. Three steps above compare a sha of
-      # `zig-out` before and after an apparatus build and require it unchanged (#270,
-      # #324, #377), and those apparatus builds carry no `-Dtarget`: a versioned build
-      # into `zig-out` would leave them comparing two targets, and the guard would go red
-      # on the target rather than on what it watches. (#358's step is not one of them — it
-      # runs its own `zig build` and greps the result.) Writing elsewhere also keeps this
-      # step from leaving aarch64 binaries where a later step would find them executable;
-      # position in the job then carries no meaning, which is what a comment cannot hold.
-      #
-      # ReleaseSafe, because that is what the release matrix builds. A libc reference that
-      # appeared only under the release optimisation would otherwise still surface first at
-      # the ceremony — the thing this step exists to prevent. The aarch64 triple
-      # cross-compiles from this runner, so one step covers both released artefacts.
-      - name: Both released Linux triples compile under their declared glibc ceiling (#161)
-        run: |
-          scratch=$(mktemp -d)
-          zig build --prefix "$scratch/x86" -Doptimize=ReleaseSafe -Dtarget=x86_64-linux-gnu.2.28
-          zig build --prefix "$scratch/arm" -Doptimize=ReleaseSafe -Dtarget=aarch64-linux-gnu.2.28
 
+  # Not a Debug build after the unit tests: every step below checks the pair release.yml ships.
+  # Not a one-entry matrix as linux-releasesafe has: GitHub appends a matrix's values to the check's
+  # name, and branch protection requires one named `macos`. The flags step reads runs-on from here.
   macos:
-    runs-on: macos-latest
+    runs-on: macos-26
+    timeout-minutes: 25
+    env:
+      ARTIFACT: aarch64-macos
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
         with:
           version: 0.17.0
 
       - name: Unit tests
         run: zig build test --summary all
 
-      - name: Build engine and shim
-        run: zig build
+      - name: The build is release.yml's own, read rather than copied, on its runner and its Zig
+        id: flags
+        run: |
+          set -eu
+          JOB_RUNNER=$(sed -n '/^  macos:$/,/^    steps:$/s/^    runs-on: //p' .github/workflows/ci.yml)
+          [ -n "$JOB_RUNNER" ] || { echo "::error::could not read the macos job's runs-on from ci.yml"; exit 1; }
+          flags=$(sh spike/release-build-flags.sh .github/workflows/release.yml "$ARTIFACT")
+          echo "release.yml builds $ARTIFACT with: $flags"
+          runner=$(sh spike/release-build-flags.sh --runner .github/workflows/release.yml "$ARTIFACT")
+          [ "$runner" = "$JOB_RUNNER" ] || { echo "::error::release.yml builds $ARTIFACT on $runner, and this job runs on $JOB_RUNNER"; exit 1; }
+          zigv=$(sh spike/release-build-flags.sh --zig .github/workflows/release.yml)
+          [ "$zigv" = "$(zig version)" ] || { echo "::error::release.yml sets up Zig $zigv, and this job has $(zig version)"; exit 1; }
+          echo "flags=$flags" >> "$GITHUB_OUTPUT"
+
+      - name: Build engine and shim, as the release builds them
+        env:
+          RELEASE_FLAGS: ${{ steps.flags.outputs.flags }}
+        run: |
+          set -eu
+          # Not without flags: an empty list builds Debug, and every step below would check a pair nobody ships.
+          [ -n "$RELEASE_FLAGS" ] || { echo "::error::no release build flags reached this step"; exit 1; }
+          # shellcheck disable=SC2086 # a flag list, split on purpose
+          zig build $RELEASE_FLAGS
+          file zig-out/bin/sideeye zig-out/lib/libsideeye_shim.dylib
+
+      - name: The minimum-macOS check proves it can go red
+        run: python3 spike/check-macos-minos.py --selftest
+
+      - name: Every Mach-O in the pair requires the macOS docs/cli.md states, no newer than README's
+        run: python3 spike/check-macos-minos.py README.md docs/cli.md zig-out/bin/sideeye zig-out/lib/libsideeye_shim.dylib
 
       # Runs on both platforms deliberately: the FIFO measurements behind #400 were
       # taken here on macOS, and the Linux leg is where the statx branch of `kindOfFd`
@@ -1383,6 +1362,9 @@ jobs:
         # spike/fsusage/RESULTS.md), which is what lets a root-only observer be
         # exercised in CI at all. The script builds first, so the binary under test is
         # the source under test.
+        env:
+          SIDEEYE_BUILD_FLAGS: ${{ steps.flags.outputs.flags }}
+          SIDEEYE_BUILD_SAME_AS: ${{ github.workspace }}/zig-out
         run: bash spike/fsusage/acceptance-local.sh
 
       - name: A run stopped by a signal stops what it started first, fs_usage included (#819)
@@ -1404,6 +1386,8 @@ jobs:
         # line was all that was kept of either.
         env:
           THREAD_KILL_LANDS_BASE: ${{ runner.temp }}/thread-kill-lands
+          SIDEEYE_BUILD_FLAGS: ${{ steps.flags.outputs.flags }}
+          SIDEEYE_BUILD_SAME_AS: ${{ github.workspace }}/zig-out
         run: |
           mkdir -p "$THREAD_KILL_LANDS_BASE"
           bash spike/thread-kill-lands.sh 12
@@ -1429,7 +1413,7 @@ jobs:
         # would lose its worlds again with no sign of it. `warn` leaves an annotation and still
         # does not fail the job.
         if: always() && steps.thread-kill-lands.conclusion == 'failure'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: thread-kill-lands-failed-worlds
           path: ${{ runner.temp }}/thread-kill-lands/*/failed/
@@ -1456,12 +1440,12 @@ jobs:
   # and unknown_reason — enough to tell apparatus breakage from a real regression.
 
   timew-regression:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
         with:
           version: 0.17.0
 
@@ -1469,7 +1453,8 @@ jobs:
         run: zig build
 
       - name: Install the toolchain the pinned timewarrior build needs
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends git ca-certificates cmake g++ make python3 strace
+        timeout-minutes: 10
+        run: sudo apt-get -o Acquire::Retries=3 update && sudo apt-get -o Acquire::Retries=3 install -y --no-install-recommends git ca-certificates cmake g++ make python3 strace
 
       - name: "Replay across the fix: record, FAIL unpatched, PASS patched (legs a-c)"
         run: LEGS=abc sh spike/dogfood-timew-replay.sh
@@ -1483,9 +1468,10 @@ jobs:
   # rather than the text, because a pattern can be syntactically fine and semantically
   # dead. Its own job: it needs no toolchain, so a failure here is unambiguous.
   classification:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Every file under spike/ is classified, and the two directions hold
         run: sh spike/check-gitattributes.sh
@@ -1500,9 +1486,10 @@ jobs:
   # sentence and this job is what keeps it. Its own red proofs run first, the way every
   # other checker here does.
   veto-rate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: The rate checker can still see its own predicates fail
         run: python3 spike/check-veto-rate.py --selftest
@@ -1522,9 +1509,10 @@ jobs:
   # is a checker whose predicates are untested, and this one's empty-versus-empty
   # leg is the exact shape that would otherwise pass as agreement.
   upstream-ledger:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: The ledger checker can still see its own predicates fail
         run: sh spike/check-upstream-ledger.sh --selftest
@@ -1550,9 +1538,10 @@ jobs:
   # docs/outcome-funnel.md and docs/found.md (#713) against a fresh rendering, so a figure
   # edited by one digit, or a report row edited by hand, is red.
   outcome-funnel:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: The funnel checker can still see its own predicates fail
         run: python3 spike/outcome-funnel.py --selftest
@@ -1567,9 +1556,10 @@ jobs:
         run: python3 spike/upstream-live.py --selftest
 
   changelog-block:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # First, for the reason the ADR job gives: a green from a check that cannot go red
       # says nothing. Four planted defects, each of which must redden exactly one clause —
@@ -1582,14 +1572,25 @@ jobs:
       - name: The changelog block agrees with itself
         run: python3 spike/check-changelog-block.py CHANGELOG.md
 
+  release-pins:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: The check proves it can go red
+        run: python3 spike/release_pins.py check --selftest
+      - name: Every place that names a release names build.zig.zon's, or the pinned one CHANGELOG.md lists below it
+        run: python3 spike/release_pins.py check
+
   # #716 (ADR 0103): the agent skills under skills/ are installed as copies outside this
   # repository, so nothing reads them against the code again once they leave. Each
   # command, flag, name borrowed from the source and documentation link they hold is
   # checked against it here.
   agent-skills:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # First, for the reason the ADR job gives: each planted defect must redden exactly
       # the claim it plants.
@@ -1607,9 +1608,10 @@ jobs:
   # reason the two checkers above give: no toolchain, and a checker nobody has seen red
   # is a checker whose predicates are untested (#342).
   ledger-prose:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: The prose checker can still see its own predicates fail
         run: sh spike/check-ledger-prose.sh --selftest
@@ -1618,9 +1620,10 @@ jobs:
         run: sh spike/check-ledger-prose.sh
 
   main-shape:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # #572 (ADR 0062): src/main.zig only loses top-level declarations. The ceilings
       # are the counts the last seam left and come down with the next one; a change
@@ -1635,11 +1638,12 @@ jobs:
 
   # Not folded into another job: a failure here has to name the instrument.
   fmt:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
         with:
           version: 0.17.0
 
@@ -1650,9 +1654,10 @@ jobs:
         run: sh spike/check-zig-fmt.sh
 
   adr-numbering:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # First, because a green from a check that cannot go red says nothing. The
       # uniqueness pass is a pipeline with no `set -e` behind it: break its sed and
@@ -1697,29 +1702,36 @@ jobs:
   # release.yml never read; and two legal YAML spellings of the key (a flow mapping,
   # and a space before the colon) were missed by the walk and by the independent
   # count alike, so a file holding two tag references reported `ok 1 action
-  # reference(s)`. The selftest drives fifteen cases and every assertion has a
-  # mutation that kills it.
+  # reference(s)`. Every assertion has a mutation that kills it.
   #
   # This comment writes "the key" rather than spelling it, because the wider pattern
   # counts an occurrence in a comment too and the check refuses what it cannot read
   # rather than skipping it. Erring toward refusal is the point; it cost one reword
   # here, which is the correct price.
   action-pins:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: The check proves it can go red
         run: sh spike/check-action-pins.sh --selftest
 
-      - name: Every action a workflow runs is pinned to a commit
+      - name: Every action a workflow runs is pinned to a commit, and no runner is named -latest
         run: sh spike/check-action-pins.sh
+
+      # Not in `required`: that job starts after the slowest one ends, and this answers in
+      # seconds; `required` needs this job, so a missing timeout still cannot merge.
+      - name: Every job in every workflow has a timeout of its own
+        if: always()
+        run: python3 spike/check-ci-required.py --timeouts .github/workflows
 
   # Here, not only in the weekly run: a broken judge or list would otherwise surface a week late.
   zig-ahead-judge:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: The judge proves it can go red, and stays green where it must
         run: sh spike/zig-ahead.sh --selftest
@@ -1736,9 +1748,10 @@ jobs:
   # three real files: it proves the check goes red on every predicate it names and stays
   # green on the shapes it must not count (a marker in a fence, in prose, indented).
   criterion-3-status:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: The status check proves it can go red, and stays green where it must
         run: sh spike/check-criterion3-status.sh --selftest
@@ -1753,9 +1766,10 @@ jobs:
   # reason as the one above: no toolchain, so a failure here names the instrument and
   # nothing else.
   onboarding-clock:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: The clock's audit still holds its own predicates
         run: python3 spike/onboarding-clock/clock-audit.py --selftest
@@ -1833,7 +1847,9 @@ jobs:
       - name: The launcher creates its box, and a second launch refuses to inherit one
         run: |
           set -eu
-          img=$(printf 'FROM busybox\nCMD ["sleep","infinity"]\n' | docker build -q -)
+          # Pinned by digest, and moved by hand: Dependabot does not read an image named
+          # inside a `run:` string.
+          img=$(printf 'FROM busybox:1.38.0@sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b6da3d7e6e\nCMD ["sleep","infinity"]\n' | docker build -q -)
           export BOX_NAME=onboarding-box-ci
           # A hosted runner is fresh; a self-hosted one is not, and this step's
           # own refusal leg would otherwise wedge it forever on a box left by a
@@ -1881,14 +1897,32 @@ jobs:
       - name: The box name has one spelling
         run: sh spike/check-box-name.sh
 
+  # Not a shallow clone: exclude.sh greps the fixed commit the candidates were screened against.
+  authoring-873:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: The tally proves it can go red
+        run: python3 spike/dogfood/2026-10-15-authoring/tally.py --selftest
+      - name: The sealed files are the ones seal.json records
+        run: sh spike/dogfood/2026-10-15-authoring/check-sealed.sh
+      - name: The seal reached GitHub before every run, and SYNTHESIS.md's block recomputes
+        run: python3 spike/dogfood/2026-10-15-authoring/tally.py --check
+      - name: No selected candidate is named elsewhere under spike/ at the screened commit
+        run: sh spike/dogfood/2026-10-15-authoring/exclude.sh
+
   authoring-cost:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       # Full history: the freshness predicate reads a FIXED commit (base-commit.txt), because
       # against the working tree it excludes this study's own selection the moment the study is
       # published. A default shallow clone does not hold that commit, and the check exits 2
       # saying so — measured on this PR's first run.
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -1956,12 +1990,80 @@ jobs:
       - name: The box name has one spelling
         run: sh spike/authoring-cost/check-box-name.sh
 
-  # #694: the acceptance suite against the build the release ships for aarch64-linux — ReleaseSafe,
+  # The acceptance suite against the Debug build, twice, because since contract v17 the engine
+  # behaves two ways on Linux (#559): plain, as the runner's shell starts it, in a cgroup the
+  # runner does not own, where the engine contains nothing and check 2cg asserts that no run was
+  # contained; and contained, in a cgroup delegated to the runner (`spike/in-delegated-cgroup.sh`),
+  # where check 2cg asserts from the traces that the shipped engine contained every observed run
+  # and `sideeye-testnocgroup` did not. Not as two steps of the linux job: each waited on the other
+  # and on everything before it.
+  linux-acceptance:
+    name: linux-acceptance (${{ matrix.run }})
+    strategy:
+      fail-fast: false
+      matrix:
+        run: [plain, contained]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          version: 0.17.0
+
+      - name: Build the shipped pair and every test apparatus in one build
+        run: |
+          set -eu
+          apparatus=$(sed -n 's/.*b\.option(bool, "\(test-[a-z-]*\)".*/-D\1/p' build.zig)
+          [ -n "$apparatus" ] || { echo "::error::no -Dtest-* option was read from build.zig"; exit 1; }
+          # Not trusted to have read them all: a declaration the pattern misses leaves the supervise-delay leg NOT MEASURED, which is green.
+          declared=$(grep -o '"test-[^"]*"' build.zig | sort -u | wc -l)
+          [ "$(echo "$apparatus" | wc -w)" -eq "$declared" ] || { echo "::error::read $(echo "$apparatus" | wc -w) -Dtest-* options, build.zig names $declared"; exit 1; }
+          echo "apparatus: $apparatus"
+          # shellcheck disable=SC2086 # a flag list, split on purpose
+          zig build $apparatus
+          # Not trusted without a plain build beside it: a test option that reached the shipped pair would be measured as shipped.
+          plain=$(mktemp -d)
+          zig build --prefix "$plain"
+          cmp zig-out/bin/sideeye "$plain/bin/sideeye"
+          cmp zig-out/lib/libsideeye_shim.so "$plain/lib/libsideeye_shim.so"
+
+      # Acceptance check 5c asks bash, zsh and fish what `sideeye completions` offers (#712);
+      # the runner has only bash, and SIDEEYE_EXPECT_SHELLS below turns a missing shell red
+      # instead of NOT MEASURED.
+      - name: Install the completeness oracle and the shells the completion scripts are checked in
+        timeout-minutes: 10
+        run: |
+          sudo apt-get -o Acquire::Retries=3 update
+          sudo apt-get -o Acquire::Retries=3 install -y strace zsh fish
+
+      - name: Build the toy targets
+        run: sh spike/build-toys.sh
+        env:
+          SIDEEYE_ROOT: ${{ github.workspace }}
+
+      - name: Acceptance suite
+        if: matrix.run == 'plain'
+        run: sh spike/acceptance.sh
+        env:
+          SIDEEYE_ROOT: ${{ github.workspace }}
+          SIDEEYE_EXPECT_CONTAINED: "0"
+          SIDEEYE_EXPECT_MOUNT: "1"
+          SIDEEYE_EXPECT_SHELLS: "1"
+
+      - name: Acceptance suite, contained in a delegated cgroup (#559)
+        if: matrix.run == 'contained'
+        run: sh spike/in-delegated-cgroup.sh sh spike/acceptance.sh
+        env:
+          SIDEEYE_ROOT: ${{ github.workspace }}
+          SIDEEYE_EXPECT_CONTAINED: "1"
+          SIDEEYE_EXPECT_MOUNT: "1"
+
+  # #694: the acceptance suites against the builds the release ships for Linux — ReleaseSafe,
   # the release's own build line, on the release's own runner — on every pull request and every push
-  # to main, so it has run before a tag exists. The linux job above runs the suites Debug on x86_64,
-  # and until this job the shipped optimisation was exercised only by release.yml's demo, which runs
-  # when a release is published or release.yml itself changes. Between them the two jobs take each axis
-  # once: Debug on x86_64, ReleaseSafe on aarch64. What this job cannot see is a build that runs only
+  # to main, so they have run before a tag exists. linux-acceptance above runs the suite Debug on
+  # x86_64. What this job cannot see is a build that runs only
   # on the CPU it was built on (v0.9.0 and v0.10.0's Illegal instruction): it runs on the release's own
   # runner class, as the demo does; the explicit `-Dtarget` in the release's build line is what pins the
   # baseline CPU, and a build line that loses it stops this job, which then cannot read its flags.
@@ -1969,32 +2071,37 @@ jobs:
   # The build arguments are read from release.yml (spike/release-build-flags.sh) — everything after
   # `zig build` on its build line, the matrix target put in — not spelled here, so a release that
   # changes that line moves this job with it. The runner and the Zig version a job fixes before any
-  # step runs, so they are spelled here — the runner once, as a one-entry matrix — and compared with
+  # step runs, so they are spelled here — the runner once per artifact, in the matrix — and compared with
   # release.yml's on every run. Everything is
   # built by ONE `zig build`: build.zig installs the shipped engine and shim on every build, so
   # per-flag builds (as the linux job does, to compare shas) would let one that dropped the flags
   # rebuild a test engine Debug while the next build put the shipped pair back; and the shipped pair
   # of that one build is compared with a plain release build of the same line, so a test option that
-  # reached it is red. The `-Dtest-*` list is read from build.zig for the same reason: an apparatus
-  # added to the linux job alone would fail its legs here — or, for the supervise-delay engine, leave
-  # its leg NOT MEASURED, which is green.
+  # reached it is red. The `-Dtest-*` list is read from build.zig, as linux-acceptance reads it, and
+  # counted against the declarations: a list spelled here would let an apparatus added later fail its
+  # legs — or, for the supervise-delay engine, leave its leg NOT MEASURED, which is green.
   #
-  # The shim's per-function stack ceiling (spike/check-shim-footprint.sh) holds for this build too.
-  # Measured before this job existed (2026-10-10, Docker on Apple silicon): the ReleaseSafe shim's
-  # largest frame is exactly 1024 bytes, the ceiling, where the Debug build's is 928 — no margin, by
-  # design: a change that grows a shipped function past it is red here.
-  linux-aarch64-releasesafe:
-    # One entry, so the runner is spelled once and the step below compares release.yml's with it.
-    name: linux-aarch64-releasesafe
+  # The shim's per-function stack ceiling (spike/check-shim-footprint.sh) holds for these builds too.
+  # Measured on aarch64 only, before this job existed (2026-10-10, Docker on Apple silicon): the
+  # ReleaseSafe shim's largest frame is exactly 1024 bytes, the ceiling, where the Debug build's is
+  # 928 — no margin, by design: a change that grows a shipped function past it is red here. The
+  # x86_64 entry is the first measurement of that build.
+  linux-releasesafe:
+    name: linux-releasesafe (${{ matrix.artifact }})
     strategy:
+      fail-fast: false
       matrix:
-        runner: [ubuntu-24.04-arm]
+        include:
+          - artifact: aarch64-linux
+            runner: ubuntu-24.04-arm
+          - artifact: x86_64-linux
+            runner: ubuntu-24.04
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
         with:
           version: 0.17.0
 
@@ -2002,13 +2109,14 @@ jobs:
         id: flags
         env:
           JOB_RUNNER: ${{ matrix.runner }}
+          ARTIFACT: ${{ matrix.artifact }}
         run: |
           set -eu
           sh spike/release-build-flags.sh --selftest
-          flags=$(sh spike/release-build-flags.sh .github/workflows/release.yml aarch64-linux)
-          echo "release.yml builds aarch64-linux with: $flags"
-          runner=$(sh spike/release-build-flags.sh --runner .github/workflows/release.yml aarch64-linux)
-          [ "$runner" = "$JOB_RUNNER" ] || { echo "::error::release.yml builds aarch64-linux on $runner, and this job runs on $JOB_RUNNER"; exit 1; }
+          flags=$(sh spike/release-build-flags.sh .github/workflows/release.yml "$ARTIFACT")
+          echo "release.yml builds $ARTIFACT with: $flags"
+          runner=$(sh spike/release-build-flags.sh --runner .github/workflows/release.yml "$ARTIFACT")
+          [ "$runner" = "$JOB_RUNNER" ] || { echo "::error::release.yml builds $ARTIFACT on $runner, and this job runs on $JOB_RUNNER"; exit 1; }
           zigv=$(sh spike/release-build-flags.sh --zig .github/workflows/release.yml)
           [ "$zigv" = "$(zig version)" ] || { echo "::error::release.yml sets up Zig $zigv, and this job has $(zig version)"; exit 1; }
           echo "flags=$flags" >> "$GITHUB_OUTPUT"
@@ -2018,8 +2126,13 @@ jobs:
           RELEASE_FLAGS: ${{ steps.flags.outputs.flags }}
         run: |
           set -eu
+          # Not without flags: an empty list builds Debug, and the cmp below would then compare two Debug builds and pass.
+          [ -n "$RELEASE_FLAGS" ] || { echo "::error::no release build flags reached this step"; exit 1; }
           apparatus=$(sed -n 's/.*b\.option(bool, "\(test-[a-z-]*\)".*/-D\1/p' build.zig)
           [ -n "$apparatus" ] || { echo "::error::no -Dtest-* option was read from build.zig"; exit 1; }
+          # Not trusted to have read them all: a declaration the pattern misses leaves the supervise-delay leg NOT MEASURED, which is green.
+          declared=$(grep -o '"test-[^"]*"' build.zig | sort -u | wc -l)
+          [ "$(echo "$apparatus" | wc -w)" -eq "$declared" ] || { echo "::error::read $(echo "$apparatus" | wc -w) -Dtest-* options, build.zig names $declared"; exit 1; }
           echo "apparatus: $apparatus"
           # shellcheck disable=SC2086 # both are flag lists, split on purpose
           zig build $RELEASE_FLAGS $apparatus
@@ -2032,10 +2145,11 @@ jobs:
           file zig-out/bin/sideeye zig-out/lib/libsideeye_shim.so || true
 
       - name: Install the completeness oracle, the shells, and a Rust compiler where the image has none
+        timeout-minutes: 10
         run: |
-          sudo apt-get update
-          sudo apt-get install -y strace zsh fish
-          command -v rustc > /dev/null || sudo apt-get install -y rustc
+          sudo apt-get -o Acquire::Retries=3 update
+          sudo apt-get -o Acquire::Retries=3 install -y strace zsh fish
+          command -v rustc > /dev/null || sudo apt-get -o Acquire::Retries=3 install -y rustc
           rustc --version
 
       - name: Build the toy targets
@@ -2043,7 +2157,7 @@ jobs:
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
 
-      - name: Acceptance suite, against the ReleaseSafe aarch64-linux build
+      - name: Acceptance suite, against the ReleaseSafe build
         run: sh spike/acceptance.sh
         env:
           SIDEEYE_ROOT: ${{ github.workspace }}
@@ -2068,10 +2182,11 @@ jobs:
   # edited the setting.
   required:
     if: always()
-    needs: [linux, macos, timew-regression, classification, veto-rate, upstream-ledger, outcome-funnel, changelog-block, agent-skills, ledger-prose, main-shape, fmt, adr-numbering, action-pins, zig-ahead-judge, criterion-3-status, onboarding-clock, authoring-cost, linux-aarch64-releasesafe]
-    runs-on: ubuntu-latest
+    needs: [linux, macos, timew-regression, classification, veto-rate, upstream-ledger, outcome-funnel, changelog-block, release-pins, agent-skills, ledger-prose, main-shape, fmt, adr-numbering, action-pins, zig-ahead-judge, criterion-3-status, onboarding-clock, authoring-cost, authoring-873, linux-releasesafe, linux-acceptance]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: The check proves it can go red
         run: python3 spike/check-ci-required.py --selftest
       - name: Every other job here is needed by this one, and every one succeeded

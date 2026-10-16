@@ -1,0 +1,13 @@
+{
+  "target": "gdbmtool",
+  "package": "gdbmtool=1.24-2",
+  "seal": "Seal: 7bb29afa33e85f716392abaff1fd0945240c572f935f569280b19e331523e2ab (draft pull request #909, opened 2026-10-15T12:45:30Z)",
+  "started": "2026-10-15T23:58:25Z",
+  "ended": "2026-10-16T00:03:47Z",
+  "session_exit": 0,
+  "claude_cli": "2.1.301 (Claude Code)",
+  "subject_model": "claude-opus-5-5",
+  "image": "sha256:e4d980eeef5d0ea7bbc531a4b0824cd30492852295600bcc8b74d99ebde2ec7d",
+  "disposition": "counted",
+  "disposition_evidence": "no WebFetch or WebSearch call (server tool counts 0) and no tool call naming the public repository or this directory; the #861 paths in the transcript are inside the box's v1.13.0 checker cookbook, which the subject was given"
+}

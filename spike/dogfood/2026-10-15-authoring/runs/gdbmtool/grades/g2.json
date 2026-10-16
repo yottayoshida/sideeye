@@ -1,0 +1,99 @@
+{
+  "checker": "wrong question",
+  "checker_why": "check.sh's leg e rejects any set of new keys that is not a prefix of k4,k5,k6 (k5 alone, or k4+k6), which contradicts the card's line 'Admissible after a crash: any subset of k4–k6 stored, k1–k3 intact, after recovery' and its 'Not claimed: that the three new keys are stored together'.",
+  "controls": [
+    {
+      "file": "control-a.sh",
+      "breaks_only_its_leg": "yes",
+      "why": "Overwriting the magic byte leaves a file at the database's path that is not a GDBM database, and recover cannot repair it; this is exactly the card's 'broken alone' state for leg (a)."
+    },
+    {
+      "file": "control-b.sh",
+      "breaks_only_its_leg": "yes",
+      "why": "Deleting k2 through gdbmtool leaves a database that opens, with k4–k6 absent (which the card admits under (c)) and k2 missing, so only (b) is violated."
+    },
+    {
+      "file": "control-c.sh",
+      "breaks_only_its_leg": "yes",
+      "why": "k4=v4x alongside an intact k1–k3 and a readable database violates only (c), whose broken-alone state is a new key holding a value that was not stored."
+    },
+    {
+      "file": "control-d.sh",
+      "breaks_only_its_leg": "no",
+      "why": "Leg d (no other keys) is not on the card, and the k1–k3 plus k7 state it builds violates none of the card's legs (a)–(c)."
+    },
+    {
+      "file": "control-e.sh",
+      "breaks_only_its_leg": "no",
+      "why": "Leg e (prefix order) is not on the card, and k5 alone with k1–k3 intact is an admissible state under 'any subset of k4–k6 stored', so it breaks no card leg."
+    }
+  ],
+  "friction": [
+    {
+      "row": 1,
+      "key": "target",
+      "why": "The missing recover entry in gdbmtool(1) and the GDBM Texinfo manual not being installed are about learning gdbmtool, not sideeye."
+    },
+    {
+      "row": 2,
+      "key": "cli:--state",
+      "why": "The obstacle was where sideeye's state directory had to live relative to a flat define directory, which is what the state setting governs."
+    },
+    {
+      "row": 3,
+      "key": "target",
+      "why": "gdbmtool exiting 0 when a command fails is gdbmtool's own behaviour."
+    },
+    {
+      "row": 4,
+      "key": "readme:what-the-target-has-to-be",
+      "why": "Preflight refused the mmap writes with state_changed_without_ops, and its next line pointed to the README's 'What the target has to be' for the limits on what Sideeye can observe."
+    },
+    {
+      "row": 5,
+      "key": "cli:--operation",
+      "why": "The warning came from the string form of --operation, which splits on spaces and passes ';' through as written, so the subject switched to the argv form."
+    },
+    {
+      "row": 6,
+      "key": "target",
+      "why": "gdbmtool recover reporting success while dropping every record is gdbmtool behaviour the subject had to discover."
+    },
+    {
+      "row": 7,
+      "key": "target",
+      "why": "No crash point needing recovery follows from how gdbmtool writes each store (one bucket write per store), so finding a recoverable state meant probing gdbmtool's file format by hand."
+    },
+    {
+      "row": 8,
+      "key": "other",
+      "why": "The && / || precedence mistake was in the subject's own runner script and involved neither sideeye's documents nor gdbmtool."
+    },
+    {
+      "row": 9,
+      "key": "cookbook:failure-patterns",
+      "why": "The aim of a control that turns exactly one leg red comes from the failure-patterns section's 'red suite … proving each leg can individually' fail, and that section does not cover a leg (an unreadable database) that leaves the others with nothing to judge."
+    },
+    {
+      "row": 10,
+      "key": "cli:--scratch",
+      "why": "Whether the in-place-rewritten db.gdbm could be declared scratch (documented as paths nobody depends on) for the byte layer while the checker still judges it is a question of the scratch setting's wording."
+    },
+    {
+      "row": 11,
+      "key": "cli:missing",
+      "why": "Nothing in the documents explains that a PASS headline saying 'it had no path to judge' can sit above a checker that judged all 12 worlds."
+    }
+  ],
+  "added": [],
+  "read_outside": [
+    "/usr/share/man/man1/gdbmtool.1.gz (man gdbmtool, man -k gdbm, ls /usr/share/man/man3)",
+    "/usr/share/doc/gdbmtool",
+    "/usr/share/info",
+    "/home/user/se/sideeye-v1.13.0-aarch64-linux",
+    "/tmp/t (the subject's own probe databases)",
+    "/tmp/se-work2/cases/000001.json (via sideeye replay)",
+    "~/.claude/projects/-~--cctmp-subject-teD7OR/041e2849-8897-48b5-9ce2-207101fac1d5/tool-results/bxrno0avg.txt",
+    "~/.claude/projects/-~--cctmp-subject-teD7OR/041e2849-8897-48b5-9ce2-207101fac1d5/tool-results/beueboby5.txt"
+  ]
+}

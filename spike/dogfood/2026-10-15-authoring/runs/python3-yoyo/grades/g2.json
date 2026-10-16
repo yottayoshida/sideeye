@@ -1,0 +1,99 @@
+{
+  "checker": "semantically valid",
+  "checker_why": "checker は card の『Legs, read after the recovery a user would run (opening the database; apply again …)』のとおり、yoyo 自身が指示する break-lock（その open で hot journal も戻る）のあとに判定しており、(a)・(b) の部分は脚 a/b/c で全部見ている。脚 d は (c) の『exits 0 and leaves the final schema』より弱く、最終スキーマを見ないが、記録が prefix でスキーマも一致することを a/b が保証するので、AND で合わせれば card と同じ問いになる。app.db のバイトを scratch にしているが、これはどの記載とも矛盾しない。",
+  "controls": [
+    {
+      "file": "control-data.sh",
+      "breaks_only_its_leg": "yes",
+      "why": "0002 を記録・適用したうえで 1 行の body_len を NULL にしているので、壊れるのは card (a) の『backfilled』（主体の脚 c が持っている部分）だけ。既存の行と値は残るので (b) は成り立ち、次の apply は 0003 の index だけを作って exit 0、最終スキーマにもなるので (c) も成り立つ。"
+    },
+    {
+      "file": "control-nextrun.sh",
+      "breaks_only_its_leg": "yes",
+      "why": "記録は {0001} で、スキーマと 100 行は開始時のまま。だから (a) と (b) は成り立ち、UPDATE を止める trigger のせいで次の apply が exit 1 になるので、(c) だけが破れる。"
+    },
+    {
+      "file": "control-record.sh",
+      "breaks_only_its_leg": "no",
+      "why": "mark -m 0003 で index のない 0003 を記録するので card (a) が破れる。ただ、次の apply は 0002 だけを流し、記録済みの 0003 は飛ばすので、idx_notes_body_len ができず (c) の『leaves the final schema』も破れる。主体は脚 d を弱めてこれを隠している（friction 7 行目）。"
+    },
+    {
+      "file": "control-schema.sh",
+      "breaks_only_its_leg": "no",
+      "why": "どの migration も作らない idx_extra を足しても、card のどの脚にも当たらない。記録 {0001} の変更はそろっていて (a) は成り立ち、行は残って (b) も成り立ち、次の apply は通る。だから主体の脚 b は赤になっても、card の脚は破れていない（強いて言えば (c) の『final schema』に余計な index が残る程度）。"
+    }
+  ],
+  "friction": [
+    {
+      "row": 2,
+      "key": "other",
+      "why": "docker exec の sh -c しか使えず、クォートが壊れたので base64 で送った。これは研究側の箱の制約で、sideeye の文書・フラグとも yoyo とも関係ない。"
+    },
+    {
+      "row": 3,
+      "key": "target",
+      "why": "yoyo に --version がなく、dpkg で版を調べた。対象ツールを知る手間だった。"
+    },
+    {
+      "row": 4,
+      "key": "cli:--cwd",
+      "why": "cwd は state ディレクトリが作られる前に解決されると docs/cli.md にあり、そのせいで state を define の外に手で作り、絶対パスで指定することになった。"
+    },
+    {
+      "row": 5,
+      "key": "cookbook:recipe-6-the-next-run-must-still-go-through",
+      "why": "脚 d だけを壊す control を作るために脚 b の範囲を狭めた。脚の結合と control の話は recipe 6 の『Two things not to copy』が扱っている。"
+    },
+    {
+      "row": 6,
+      "key": "cookbook:recipe-4-leg-order-is-part-of-the-contract",
+      "why": "recipe 4 にならって integrity_check の脚を計画したが、その脚だけを壊す状態が作れず、外した。"
+    },
+    {
+      "row": 7,
+      "key": "cookbook:recipe-6-the-next-run-must-still-go-through",
+      "why": "脚 d（次の実行）を強くすると脚 a の control でも赤になるので、recipe 6 型の脚 d を exit と list の確認だけに弱めた。"
+    },
+    {
+      "row": 8,
+      "key": "target",
+      "why": "kill された apply が yoyo_lock に行を残し、break-lock が要ることを、yoyo の lock コードとエラー文から学ぶ必要があった。"
+    },
+    {
+      "row": 9,
+      "key": "target",
+      "why": "yoyo list が必ず lock を取るので、回復前の記録が読めない。これは yoyo の挙動。"
+    },
+    {
+      "row": 10,
+      "key": "other",
+      "why": "dash に time キーワードがない、というシェル環境の問題。"
+    },
+    {
+      "row": 11,
+      "key": "other",
+      "why": "主体自身が run-controls.sh で sed にパイプしたため終了コードが消えた、という書き方のミス。"
+    },
+    {
+      "row": 12,
+      "key": "cli:--twice",
+      "why": "preflight --twice が、yoyo の書く時刻・uuid で app.db のバイトが違うとして受け付けず、app.db と journal を scratch にした。"
+    },
+    {
+      "row": 13,
+      "key": "cli:refusal-message",
+      "why": "explore の FAIL 報告が『named by the checker, not by path』としか言わず、どの脚が赤かは world 行を読むしかなかった。sideeye の出す文面の問題で、いちばん近いキーとしてこれを選んだ（これは refusal ではなく報告なので、ぴったりのキーはない）。"
+    }
+  ],
+  "added": [],
+  "read_outside": [
+    "/usr/lib/python3/dist-packages/yoyo/backends/core/sqlite3.py",
+    "/usr/lib/python3/dist-packages/yoyo/backends/base.py",
+    "/usr/lib/python3/dist-packages/yoyo/migrations.py",
+    "/usr/lib/python3/dist-packages/yoyo/scripts/migrate.py",
+    "/usr/lib/python3/dist-packages/yoyo/scripts/main.py",
+    "/usr/lib/python3/dist-packages/yoyo/connections.py",
+    "~/.claude/projects/-~--cctmp-subject-bPPo6w/c1444c1b-aec1-4d81-b532-dbe9ba89bb60/tool-results/br3npw9sn.txt",
+    "~/.claude/projects/-~--cctmp-subject-bPPo6w/c1444c1b-aec1-4d81-b532-dbe9ba89bb60/tool-results/bt9nqmeue.txt"
+  ]
+}

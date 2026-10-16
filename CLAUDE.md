@@ -115,7 +115,29 @@ change.
   Branch protection requires `required` (with `crash-consistency`, `linux` and `macos`), not a
   list of job names, and `required` fails when a job of the workflow is missing from its list
   (`spike/check-ci-required.py`, ADR 0131).
+- **Every job in every workflow carries its own `timeout-minutes`**, set from its longest recent
+  successes rather than GitHub's six-hour default; `required` fails on a job without one, in
+  any workflow, `.yml` or `.yaml`. A step's timeout does not count — the job around it can
+  still hold a runner for GitHub's six hours. The image `ci.yml` builds `FROM` is pinned by
+  digest inside a `run:` string, where Dependabot does not look, so it moves by hand.
 - English for everything committed.
+
+## Releasing
+
+- **Every place in this repository that names a release's version is written by
+  `spike/release_pins.py`, and CI fails a change where a place a release moves before it
+  differs from `build.zig.zon`, or the places it moves after it name another release than
+  `build.zig.zon`'s or the one `CHANGELOG.md` lists right below it.**
+- Before the release, `python3 spike/release_pins.py bump X.Y.Z`, in the commit that renames
+  `[Unreleased]` to `[X.Y.Z]`: the check fails a `build.zig.zon` whose version has no heading.
+- Once the release is published, `python3 spike/release_pins.py pin vX.Y.Z --tap <checkout of
+  yottayoshida/homebrew-tap>`. It downloads the three assets, refuses one whose sha256 is not
+  the digest the release publishes, and writes the CI quickstart, its workflow, the MCP
+  container's Dockerfile and the tap's `Formula/sideeye.rb`. The pull request to the tap is
+  opened by hand. A pin never written fails the next bump.
+- The places are the script's `BEFORE`, `AFTER` and `TAP` lists, each found by a fixed string
+  that must match one line exactly once; a version anywhere else — a measurement's record, a
+  dependency's — is not touched.
 
 ## Blind-hunt campaigns: the apparatus rules
 

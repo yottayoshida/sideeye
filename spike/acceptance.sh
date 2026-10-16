@@ -7844,6 +7844,64 @@ j786() {
 j786 "a refused env device removes the state the run created and keeps the JSON report under its work directory" /tmp/acc/work786n/r.json gone
 j786 "...and keeps it when the report's path reaches the work directory through a symlink" /tmp/acc/lnk786/work786n/r.json gone
 j786 "...and keeps the created state directory when the report goes under it" /tmp/acc/state786n/r.json kept
+# The control replays with the variable set, so a refused leg's absent marker is a setup that never ran.
+m875=/tmp/acc/marker875
+unset ACC_PIN_875 2>/dev/null || true
+printf '#!/bin/sh\n: > %s\nexec %s init\n' "$m875" "$OUT/toy-bug" > /tmp/acc/setup875.sh && chmod +x /tmp/acc/setup875.sh
+# sv875 <case path> <apparatus flags...>: the explore that saves the case, its exit status echoed.
+sv875() {
+    _w=$1; shift
+    rm -rf /tmp/acc/state875 "$_w" && mkdir -p /tmp/acc/state875
+    env ACC_PIN_875=1 "$SIDEEYE" explore --state /tmp/acc/state875 --setup /tmp/acc/setup875.sh --operation "$OUT/toy-bug rotate" \
+        --shim "$SHIM" --work "$_w" --oracle /usr/bin/strace "$@" > /dev/null 2>&1
+    echo $?
+}
+rc=$(sv875 /tmp/acc/work875n --apparatus note:pinned)
+if [ "$rc" = 1 ] && python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d["case_version"]==2 and "apparatus" not in d["define"] else 1)' /tmp/acc/work875n/cases/000001.json 2>/dev/null; then
+    echo "ok   a FAIL from a define declaring only notes saves the case version it saved before"
+else
+    echo "FAIL the case of a notes-only define: exit $rc, case $(head -c 200 /tmp/acc/work875n/cases/000001.json 2>/dev/null || echo missing)"
+    ap_fails=$((ap_fails + 1))
+fi
+rc=$(sv875 /tmp/acc/work875 --apparatus env:ACC_PIN_875=1 --apparatus note:pinned)
+case875=/tmp/acc/work875/cases/000001.json
+if [ "$rc" = 1 ] && python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d["case_version"]==7 and d["observe"]=="wrappers" and d["define"]["apparatus"]==["env:ACC_PIN_875=1","note:pinned"] else 1)' "$case875" 2>/dev/null; then
+    echo "ok   a FAIL from a define with an env device saves a version-7 case carrying the declaration as written"
+else
+    echo "FAIL the case of an env-device define: exit $rc, case $( [ -s "$case875" ] && head -c 300 "$case875" || echo missing )"
+    ap_fails=$((ap_fails + 1))
+fi
+rp875() {
+    _l=$1; _w=$2; _m=$3; shift 3
+    _e=""
+    while [ $# -gt 0 ] && [ "$1" != "--" ]; do _e="$_e $1"; shift; done
+    [ "${1-}" = "--" ] && shift
+    rm -f "$m875"
+    # shellcheck disable=SC2086
+    o=$(env $_e "$SIDEEYE" replay "$case875" --fresh-state --shim "$SHIM" --work /tmp/acc/work875r --oracle /usr/bin/strace $RP875_FLAGS 2>&1)
+    rc=$?
+    _g=absent; [ -e "$m875" ] && _g=present
+    _miss=""
+    for _f in "$@"; do echo "$o" | grep -q -- "$_f" || _miss="$_miss [$_f]"; done
+    if [ "$rc" = "$_w" ] && [ -z "$_miss" ] && [ "$_g" = "$_m" ]; then
+        echo "ok   $_l"
+    else
+        echo "FAIL $_l: exit $rc (wanted $_w), marker $_g (wanted $_m), missing$_miss"
+        echo "$o" | sed 's/^/     | /' | head -3
+        ap_fails=$((ap_fails + 1))
+    fi
+}
+RP875_FLAGS=""
+rp875 "control: replayed with the env device set, the case reproduces, its setup ran and the report names the declaration" 1 present ACC_PIN_875=1 -- \
+    "the case reproduced" "apparatus   env:ACC_PIN_875=1"
+rp875 "a replay without the env device is refused before the setup writes anything" 3 absent ACC_UNRELATED=1 -- \
+    "apparatus env:ACC_PIN_875=1: the environment the operation inherits has no ACC_PIN_875"
+rp875 "a replay with the env device set to another value is refused before the setup writes anything" 3 absent ACC_PIN_875=2 -- \
+    "ACC_PIN_875 is set, but to a different value (2)"
+RP875_FLAGS="--observe syscalls"
+rp875 "a version-7 case counted under the default refuses a replay under another mode" 3 absent ACC_PIN_875=1 -- \
+    "was recorded under --observe wrappers"
+RP875_FLAGS=""
 [ "$ap_fails" = 0 ] || fails=$((fails + 1))
 
 echo ""
@@ -9347,90 +9405,6 @@ for lib in lib/probes lib/drills lib/snapshot lib/check-transcript check-cohort-
 done
 [ "$lib_fails" = 0 ] || fails=$((fails + 1))
 
-echo "=========== check 11f: the loop-closure judge is seen refusing (#63) ==========="
-# The judge declares a void condition "enforced per escape channel, against EVERY tool
-# call" and a restore that must not fail silently -- and until this check neither had ever
-# been observed refusing anything. `judge.sh selftest` drives seventy refusals with
-# synthetic roots and transcripts (four by name, four by network alternation, three path
-# markers, thirty-three spellings of the repo or the config dir that the path channel resolves (#510),
-# three docker — one a relative mount source outside the stage — the transcript with no
-# tool calls, and a seal that does not match
-# its manifest, a record that disagrees with its digest, a record holding a line the reader
-# cannot parse, a manifest whose audit verified no digest, four more finalize refusals from
-# #515's other half — no inputs.json, a record inputs.json does not attest, one that changed
-# since the launcher recorded it, a transcript that is neither what the audit read nor what
-# the launcher recorded — six stages the pristine check
-# refuses and two the rebuild refuses, and six seals on the eval container's channels) plus twenty-four greens: a clean transcript stays clean, the trusted mcp
-# server's own tool is counted rather than voided, seven records the path channel leaves clean
-# (a `..` that stays in the stage, a sibling named like the repo, ten `cd`s whose candidate
-# directories grow by one per call, an ancestor grep that reads the stage, a grep whose pattern
-# is `/`, a recursive read after a `cd` that may not have run, a `~` no user has), a mount the
-# candidate directories disagree on recorded as unresolved, a doctored file comes back from the
-# seal, a deleted one is put back, `check` records without copying, a pristine stage passes
-# the pristine check, and the rebuild removes an added file and a read-only directory,
-# restores the owner's x bit, replaces a symlink and a symlinked directory without writing
-# through either, keeps repo/, names a file added inside a closed directory, and on a
-# second run records its own change while the history keeps the first (#512, #513).
-# The forty-nine voiding refusals each assert that the ONE field their channel owns is the
-# non-empty one, so a case that voided for another reason does not stand in for the
-# branch it names; the pristine refusals assert the same of their one stage-record key, and
-# the no-tool-calls, restore-failure, unverified-digest, no-repo and symlinked-stage cases are judged on their
-# own terms, since none reaches a field-by-field classification.
-# Seen red: seventy-nine mutations of judge.sh plus one of the case list, each killing the cases
-# it should (one, the candidate-carry row, also a green through the bound that green asserts) --
-# UNSEALED blinded (name-unsealed), the mcp branch blinded (name-mcp-foreign), the network
-# regex unmatchable (all four net-*), the path test as text made False (path-dotclaude only,
-# since path-repo and path-tilde also resolve), the
-# --network none test made False (docker-nonet only, because the mount test is separate),
-# the out-of-stage mount test made False (docker-mount and docker-mount-relative), the
-# no-tool-calls exit removed (unauditable), the rebuild's re-verify made False (restore-fail),
-# the owner-bits, non-regular, removal, pristine, repo, unlock, unreadable, symlinked-stage,
-# history, descent, stage-opening and finalize-union branches each killing the rebuild,
-# pristine and finalize cases that name them, each branch of the path channel's resolution and
-# of the mount source's killing the cases that name it — the relative-word and cd rows also kill
-# a mount case, since the mount check resolves its source with the same function (#510,
-# seal-reds/mutations.txt), and the
-# verdict forced to clean (forty-six of them; not unauditable or the two record cases, which
-# exit earlier, not name-off-allowlist, whose field that program does not empty, and not
-# the twenty cases that never reach the audit: restore-fail, the five finalize refusals, the six seal refusals (#597), the six
-# pristine refusals and the two rebuild refusals).
-# Through a pipe into `sh -s`, not as a file: that is how measure.py runs the judge — from the
-# bytes it verified, on stdin — and until this leg only the measurement itself took that path
-# (#515's other half). A pipe, not `< file`: a redirected file is seekable and the stdin-eating
-# accident has different conditions there. SIDEEYE_REPO is given because `$0` is `sh` inside.
-if cat "$ROOT/spike/loop-closure-timew/judge.sh" | SIDEEYE_REPO="$ROOT" sh -s -- selftest > /tmp/acc-judge-selftest.txt 2>&1; then
-    echo "ok   judge.sh selftest: seventy refusals and twenty-four greens, through sh -s"
-else
-    echo "FAIL judge.sh selftest (rc=$?): a channel stopped refusing, or a red moved"
-    # Every failing line, not a tail: a green run is already twenty-odd lines, so `tail -20` would
-    # have dropped the first FAIL as soon as four channels went at once — which is exactly
-    # what one blinded regex does (all four net-* cases fail together).
-    # BROKEN and the restore's own message are in the pattern too: the first is how a
-    # missing work directory reports itself, and the second is what a green-side
-    # restore_and_diff prints when it dies under set -e. Neither starts with FAIL.
-    grep -E '^(FAIL|BROKEN|selftest:)|restore failed for' /tmp/acc-judge-selftest.txt | sed 's/^/     | /'
-    fails=$((fails + 1))
-fi
-
-echo "=========== check 11g: the launcher refuses to judge what it did not record (#515) ==========="
-# #515's other half (ADR 0066): the digests a verdict rests on live in measure.py's memory,
-# taken before the thing they guard is exposed, and the judge is called only when everything
-# a step reads still matches. Its selftest drives one case per refusal channel — the record's
-# digest is the stream's and not the file's (a by-name append during the run makes the two
-# differ; the old `> file` shape loses the record to the same subject, measured beside it), a
-# doctored seal manifest, a changed judge.sh, a repo/ that moved after the run, a rewritten
-# audit.json and an unattested record each stop the judge before it is called and by name, a
-# process left in the agent's group is listed, killed and not waited for, and `resume` redoes a
-# step from the recorded digests. The live-container case skips where docker or a small image
-# is not at hand — this container has neither — and the closing line says so.
-if python3 -I "$ROOT/spike/loop-closure-timew/measure.py" --selftest > /tmp/acc-measure-selftest.txt 2>&1; then
-    echo "ok   measure.py selftest: $(grep '^measure.py selftest:' /tmp/acc-measure-selftest.txt | sed 's/^measure.py selftest: //')"
-else
-    echo "FAIL measure.py selftest: a channel stopped refusing, or a red moved"
-    grep -E '^(FAIL|skip|measure.py selftest:)' /tmp/acc-measure-selftest.txt | sed 's/^/     | /'
-    fails=$((fails + 1))
-fi
-
 echo "=========== check 11h: the seals on the eval container's channels are one text, and its CLI agrees with it (#597) ==========="
 # spike/container_seals.py is what the loop-closure judge reads the eval container's outputs
 # with: sideeye's own digest of the report, and the shell's rc, functional status and export, each
@@ -9438,8 +9412,7 @@ echo "=========== check 11h: the seals on the eval container's channels are one 
 # the report file then held to the digest. Its --selftest runs a clean stream and every refusal
 # (no token, a forgery beside the real one with the real one's line start taken away, the file
 # rewritten after the seal, a FIFO, a symlink, a directory, an oversized file, unparsable bytes)
-# and holds the CLI to judge_eval(). Run on its own, as 11c and 11d are: when judge.sh's selftest
-# fails for another reason, this line still says whether the seals hold.
+# and holds the CLI to judge_eval(). Run on its own, as 11c and 11d are.
 if python3 "$ROOT/spike/container_seals.py" --selftest; then
     echo "ok   container_seals.py: every channel seals on a clean stream, every refusal refuses, and the CLI agrees"
 else

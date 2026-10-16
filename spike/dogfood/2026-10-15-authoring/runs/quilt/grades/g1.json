@@ -1,0 +1,147 @@
+{
+  "checker": "semantically valid",
+  "checker_why": "check.sh's legs B, C and D compare the working files and the restored files byte for byte with references built from the setup, so they ask the card's legs (a), (b) and the (c) line \"`quilt pop -a` exits 0 and leaves both files as they were before the operation\"; its leg A asks the card's \"Admissible after a crash: any prefix of the push\" line; and neither the `pop -a -f` it uses, nor its extra records leg, nor the `quilt upgrade` it runs first makes it accept a state the card rejects or reject one the card admits.",
+  "controls": [
+    {
+      "file": "control-applied.sh",
+      "breaks_only_its_leg": "yes",
+      "why": "Both patches are listed and b.txt is put back to pristine, which is the card's own 'broken alone' state for (a); (b) holds because no patch is unlisted, and the backups that pop restores from are untouched, which is what (c) is about."
+    },
+    {
+      "file": "control-backup.sh",
+      "breaks_only_its_leg": "yes",
+      "why": "It is exactly the card's 'broken alone' state for (c): the backup in .pc/p1.diff/ is overwritten while applied-patches and both working files agree after a clean push, so (a) and (b) hold."
+    },
+    {
+      "file": "control-order.sh",
+      "breaks_only_its_leg": "yes",
+      "why": "Only p2.diff is listed and b.txt holds its change, a.txt is pristine and p2's backup restores b.txt, so (a), (b) and (c) all hold, while [p2.diff] is not a prefix of the series, which breaks the card's admissible-prefix line that leg A encodes."
+    },
+    {
+      "file": "control-records.sh",
+      "breaks_only_its_leg": "yes",
+      "why": "Nothing is applied and both files are pristine, so (a), (b) and (c) hold; the only thing violated is leg E (patch files equal to the setup's bytes), an extra leg the card does not state but does not contradict either."
+    },
+    {
+      "file": "control-unapplied.sh",
+      "breaks_only_its_leg": "yes",
+      "why": "a.txt holds p1's change while there is no .pc and nothing is listed, which breaks (b); (a) holds with nothing to check, and as with the card's own (b) example, pop has no listed patch to restore, so (c) is not what fails."
+    }
+  ],
+  "friction": [
+    {
+      "row": 1,
+      "key": "other",
+      "why": "The quoting failure came from the subject's docker exec sh -c transport, not from any sideeye document, flag or tool."
+    },
+    {
+      "row": 2,
+      "key": "cli:--cwd",
+      "why": "The obstacle that mattered was that the define's cwd has to exist when sideeye resolves it, so the tree was put at /home/user/qtree and created beforehand."
+    },
+    {
+      "row": 3,
+      "key": "cli:--oracle",
+      "why": "The boundary_without_oracle refusal is answered by passing --oracle /usr/bin/strace on every run."
+    },
+    {
+      "row": 4,
+      "key": "cli:--fresh-state",
+      "why": "The only documented way to empty the state before setup is --fresh-state, and it is replay-only, so preflight's setup ran on the last run's .pc/ and the setup had to empty the directory itself."
+    },
+    {
+      "row": 5,
+      "key": "target",
+      "why": "Moving to `quilt pop -a -f` came from learning how quilt's pop and push react to files changed by hand."
+    },
+    {
+      "row": 6,
+      "key": "target",
+      "why": "Finding that quilt has no crash recovery and that `quilt upgrade` is its one named repair is about quilt, not sideeye."
+    },
+    {
+      "row": 7,
+      "key": "target",
+      "why": "quilt's consistency_check touching .pc/applied-patches during reads is quilt behaviour the checker had to work around."
+    },
+    {
+      "row": 8,
+      "key": "target",
+      "why": "quilt refusing to list anything when the series is newer than applied-patches is quilt behaviour."
+    },
+    {
+      "row": 9,
+      "key": "target",
+      "why": "QUILT_PATCHES_PREFIX in /etc/quilt.quiltrc is a quilt configuration detail."
+    },
+    {
+      "row": 10,
+      "key": "readme:what-the-target-has-to-be",
+      "why": "The child_touched_state_dir refusal is the constraint that README section names ('Other processes take turns with the state, and every writing child is reaped'), and quilt's subshell running patch(1) was refused under it even though strace shows the child reaped first."
+    },
+    {
+      "row": 11,
+      "key": "cli:--observe",
+      "why": "The obstacle was finding that the syscalls mode refuses the same way."
+    },
+    {
+      "row": 12,
+      "key": "cli:--observe",
+      "why": "--observe supervised needs a cgroup v2 it can create cgroups in, as the --observe entry and the platform floors say, and this box had none."
+    },
+    {
+      "row": 13,
+      "key": "cli:refusal-message",
+      "why": "The refusal's `next` line (invoke the wrapped command as the operation) did not fit an operation that is quilt itself."
+    },
+    {
+      "row": 14,
+      "key": "checker:verification-helper-missing",
+      "why": "With the run refused before any world, nothing in sideeye could exercise the checker, so its ability to fail rests on hand-run controls."
+    },
+    {
+      "row": 15,
+      "key": "cli:refusal-message",
+      "why": "The probes were needed because the refusal says the child was still running and 'nothing had collected it yet', while the child had been reaped."
+    },
+    {
+      "row": 16,
+      "key": "cli:--operation",
+      "why": "The --operation argv form is documented as 'one line, passed verbatim' and says nothing about escapes, so the escaped quote in the probe's operation was refused unexpectedly."
+    },
+    {
+      "row": 17,
+      "key": "cli:--observe",
+      "why": "The default wrappers mode missing bash's own >> write, where only --observe syscalls accepted it, is a question of which mode counts the operation."
+    }
+  ],
+  "added": [
+    {
+      "event": 362,
+      "key": "other",
+      "what": "The final verification command failed because `tail -1` was given several files ('tail: option used in invalid context -- 1') and had to be rewritten as a loop in event 363."
+    }
+  ],
+  "read_outside": [
+    "/etc/os-release",
+    "/usr/share/quilt/push",
+    "/usr/share/quilt/scripts/patchfns",
+    "/usr/share/quilt/upgrade",
+    "/etc/quilt.quiltrc",
+    "/home/user (ls -la ~)",
+    "/home/user/revisions/index.tsv",
+    "/home/user/revisions/scripts",
+    "/home/user/se/sideeye-v1.13.0-aarch64-linux",
+    "/home/user/qtree/.pc",
+    "/home/user/sework/oracle.txt",
+    "/tmp/pf.json",
+    "/proc/self/cgroup",
+    "/sys/fs/cgroup",
+    "/sys/fs/cgroup/cgroup.subtree_control",
+    "~/.claude/projects/-~--cctmp-subject-2e74gX/7694d72e-5d24-4ad1-888f-f74db7d1ec91/tool-results/bgbvbbwr1.txt",
+    "~/.claude/projects/-~--cctmp-subject-2e74gX/7694d72e-5d24-4ad1-888f-f74db7d1ec91/tool-results/b97p12tup.txt",
+    "~/.cctmp/subject-2e74gX/stage/run-controls.sh",
+    "~/.cctmp/subject-2e74gX/stage/INVARIANT.md",
+    "~/.cctmp/subject-2e74gX/probe/t3.toml"
+  ]
+}

@@ -1,0 +1,38 @@
+== accept-completed
+   build exit: 0
+   check: checker(yoyo) before recovery: app.db migrations 
+   check: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+   check exit: 0
+== accept-recovered
+   build exit: 0
+   build: Killed
+   build: left by the kill: app.db migrations 
+   build: without recovery: list failed: yoyo.exceptions.LockTimeout: Process 719 has locked this database (run yoyo break-lock to remove this lock)
+   check: checker(yoyo) before recovery: app.db migrations 
+   check: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+   check exit: 0
+== accept-start
+   build exit: 0
+   check: checker(yoyo) before recovery: app.db migrations 
+   check: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+   check exit: 0
+== control-data
+   build exit: 0
+   check: checker(yoyo) before recovery: app.db migrations 
+   check: checker(yoyo) after recovery: a=ok b=ok c=FAIL(1 rows not backfilled) d=ok
+   check exit: 1
+== control-nextrun
+   build exit: 0
+   check: checker(yoyo) before recovery: app.db migrations 
+   check: checker(yoyo) after recovery: a=ok b=ok c=ok d=FAIL(next apply exit 1: sqlite3.IntegrityError: notes are frozen)
+   check exit: 1
+== control-record
+   build exit: 0
+   check: checker(yoyo) before recovery: app.db migrations 
+   check: checker(yoyo) after recovery: a=FAIL(list exit 0: A:0001-create-notes U:0002-add-body-len A:0003-index-body-len A         0003-index-body-len  migrations) b=ok c=ok d=ok
+   check exit: 1
+== control-schema
+   build exit: 0
+   check: checker(yoyo) before recovery: app.db migrations 
+   check: checker(yoyo) after recovery: a=ok b=FAIL(shape ([('id', 'INTEGER', 0, 1), ('body', 'TEXT', 1, 0)], [('idx_extra', 0, ('body',))])) c=ok d=ok
+   check exit: 1

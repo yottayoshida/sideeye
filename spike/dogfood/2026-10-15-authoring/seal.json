@@ -1,0 +1,14 @@
+{
+  "manifest": "7bb29afa33e85f716392abaff1fd0945240c572f935f569280b19e331523e2ab",
+  "commit": "685c23a61c0385d5c10b8d3ccfeee440bd5171b2",
+  "pr": 909,
+  "pr_created_at": "2026-10-15T12:45:30Z",
+  "first_check_suite_created_at": "2026-10-15T12:45:23Z",
+  "amendments": [
+    {
+      "manifest": "4bc1490eb71280a5378fd9498da96985ae3f2367a4cd5d6e83f9cdb1fb2cfe40",
+      "after": "all three subjects and every grader ran",
+      "what": "tally.py reads the first timestamped event, takes the seal a session was given from meta.json because stream-json does not echo the prompt, and reads 'result' and 'first explore' from the subject's own explore tool calls; check-sealed.sh compares against the latest manifest. The decision table, the agreement rules and the counts are unchanged. An exploration is read from the tool call's command, not its description, and a SETUP ERROR is listed but is no result."
+    }
+  ]
+}

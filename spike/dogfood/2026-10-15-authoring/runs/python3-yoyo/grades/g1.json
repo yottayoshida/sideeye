@@ -1,0 +1,97 @@
+{
+  "checker": "semantically valid",
+  "checker_why": "The checker runs `yoyo break-lock` first, which opens the database, and the card leaves yoyo's lock out of the contract; after that, legs a and b reject anything outside the card's 'Admissible after a crash' line (zero, one or both migrations, each whole, with (c) holding): b fails a recorded migration whose column or index is missing (the card's (a) broken state), c fails a lost row (the card's (b) broken state), and b and d both fail a column that exists without its record (the card's (c) broken state).",
+  "controls": [
+    {
+      "file": "control-data.sh",
+      "breaks_only_its_leg": "yes",
+      "why": "0002 is recorded and row 42 has body_len NULL, so only the 'backfilled' part of card leg (a) breaks; the original rows keep their id and body, which keeps (b), and the next apply only builds 0003's index and exits 0, which keeps (c)."
+    },
+    {
+      "file": "control-nextrun.sh",
+      "breaks_only_its_leg": "yes",
+      "why": "With the start's record, schema and rows plus a trigger that aborts every UPDATE, (a) and (b) hold and only card leg (c) breaks, because the next apply fails at 0002's backfill."
+    },
+    {
+      "file": "control-record.sh",
+      "breaks_only_its_leg": "no",
+      "why": "`mark -m 0003` records 0003 with no index, which breaks card leg (a); the next apply then skips 0003 and never makes the index, so card leg (c) ('leaves the final schema') breaks too, as friction row 6 itself admits."
+    },
+    {
+      "file": "control-schema.sh",
+      "breaks_only_its_leg": "no",
+      "why": "An extra index on notes with record {0001} breaks neither card (a) (0001's change is all there) nor (b); at most it touches (c)'s 'final schema', so it does not break the card leg its schema leg stands for."
+    }
+  ],
+  "friction": [
+    {
+      "row": 1,
+      "key": "other",
+      "why": "The docker-exec-only quoting limit comes from the study's box, not from any sideeye document, flag or tool."
+    },
+    {
+      "row": 2,
+      "key": "target",
+      "why": "Not knowing yoyo's version (yoyo has no --version) is about learning yoyo itself."
+    },
+    {
+      "row": 3,
+      "key": "cli:--cwd",
+      "why": "The subject cites docs/cli.md, which resolves cwd before the state directory exists, so the state was moved outside the flat define directory."
+    },
+    {
+      "row": 4,
+      "key": "cookbook:recipe-6-the-next-run-must-still-go-through",
+      "why": "Coupling between the next-run leg and the schema leg, and making a control for each, is exactly what Recipe 6's note on leg coupling and controls covers, and that is the text the subject worked from."
+    },
+    {
+      "row": 5,
+      "key": "cookbook:recipe-4-leg-order-is-part-of-the-contract",
+      "why": "The integrity_check leg was planned from Recipe 4 and then dropped."
+    },
+    {
+      "row": 6,
+      "key": "cookbook:recipe-6-the-next-run-must-still-go-through",
+      "why": "The leg a/d coupling that weakened leg d is the same coupling Recipe 6 describes for Alembic."
+    },
+    {
+      "row": 7,
+      "key": "target",
+      "why": "Finding that a killed apply leaves a yoyo_lock row and that break-lock is the step a user runs meant learning yoyo's locking."
+    },
+    {
+      "row": 8,
+      "key": "target",
+      "why": "The fact that `yoyo list` always takes the lock and waits 10 s is yoyo behaviour."
+    },
+    {
+      "row": 9,
+      "key": "other",
+      "why": "dash having no `time` keyword is a shell detail unrelated to sideeye or yoyo."
+    },
+    {
+      "row": 10,
+      "key": "other",
+      "why": "The lost exit status came from the subject's own pipe into sed in its runner, not from any document."
+    },
+    {
+      "row": 11,
+      "key": "cli:--twice",
+      "why": "`preflight --twice` refused because app.db bytes differed between two clean runs, which forced the scratch declaration."
+    },
+    {
+      "row": 12,
+      "key": "cli:missing",
+      "why": "The FAIL report says the path is '(named by the checker, not by path)', and nothing in the documents explains how to tell which checker legs were red."
+    }
+  ],
+  "added": [],
+  "read_outside": [
+    "/usr/lib/python3/dist-packages/yoyo/backends/core/sqlite3.py",
+    "/usr/lib/python3/dist-packages/yoyo/backends/base.py",
+    "/usr/lib/python3/dist-packages/yoyo/migrations.py",
+    "/usr/lib/python3/dist-packages/yoyo/scripts/migrate.py",
+    "/usr/lib/python3/dist-packages/yoyo/scripts/main.py",
+    "/usr/lib/python3/dist-packages/yoyo/connections.py"
+  ]
+}

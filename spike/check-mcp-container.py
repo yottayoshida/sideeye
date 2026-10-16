@@ -8,10 +8,10 @@ The page tells an operator to copy docs/mcp-container/Dockerfile, add their tool
 and run one block. This does exactly that, with spike/toys/toy.c as the tool, and holds four
 things to it:
 
-  pins        the Dockerfile's SIDEEYE_VERSION equals the quickstart's pinned version
-              (.github/workflows/quickstart-release.yml), and its two digests are the ones the
-              release publishes for the two Linux assets. A version moved without its digests
-              is caught here before ADD --checksum is.
+  pins        the Dockerfile's two digests are the ones the release it names publishes for
+              the two Linux assets. A version moved without its digests is caught here
+              before ADD --checksum is; that it equals the quickstart's is
+              spike/release_pins.py's check, which ci.yml requires.
   verdicts    the page's first call (the jsonrpc fence of the MCP section) reaches a FAIL on a
               target with a planted bug and a PASS with oracle_verified on a correct one —
               through the page's own `docker run`, flags and all.
@@ -169,18 +169,6 @@ def dockerfile_pins(text):
     return version, digests
 
 
-def quickstart_version(text):
-    found = re.findall(r"^\s*SIDEEYE_VERSION:\s*(\S+)\s*$", text, re.M)
-    if len(found) != 1:
-        raise Fail("wanted exactly one SIDEEYE_VERSION in quickstart-release.yml, found %d" % len(found))
-    return found[0]
-
-
-def check_pins_agree(version, quick):
-    if version != quick:
-        raise Fail("the Dockerfile pins %s and quickstart-release.yml pins %s; move them together" % (version, quick))
-
-
 def check_release_digests(version, digests, release):
     published = {a.get("name"): (a.get("digest") or "") for a in release.get("assets") or []}
     for asset, digest in sorted(digests.items()):
@@ -267,9 +255,8 @@ def run(root, workdir):
     dockerfile = read(root, "docs/mcp-container/Dockerfile")
     block, reqs, image, context = page_parts(page)
     version, digests = dockerfile_pins(dockerfile)
-    check_pins_agree(version, quickstart_version(read(root, ".github/workflows/quickstart-release.yml")))
     check_release_digests(version, digests, release_json(version))
-    print("ok pins: %s, digests match the release, and the quickstart pins the same version" % version)
+    print("ok pins: %s, digests match the release" % version)
 
     workdir.mkdir(parents=True, exist_ok=True)
     ctx = Path(tempfile.mkdtemp(prefix="ctx-", dir=workdir))
@@ -307,7 +294,6 @@ def run(root, workdir):
 def selftest(root):
     page = read(root, "docs/mcp.md")
     dockerfile = read(root, "docs/mcp-container/Dockerfile")
-    quick = read(root, ".github/workflows/quickstart-release.yml")
     fails = []
 
     def ok(name, fn):
@@ -327,7 +313,6 @@ def selftest(root):
 
     block, reqs, image, context = page_parts(page)
     version, digests = dockerfile_pins(dockerfile)
-    ok("the real page, Dockerfile and quickstart agree", lambda: check_pins_agree(version, quickstart_version(quick)))
     ok("the real block's server command can be swapped for the probe", lambda: probe_block(block))
 
     sec = section(page, CONTAINER_HEADING)
@@ -340,7 +325,6 @@ def selftest(root):
     red("the block builds from the mount itself", lambda: page_parts(page.replace("docker build -t %s %s" % (image, context), "docker build -t %s sideeye-work" % image)), "a directory of its own")
     red("the block's build names no image", lambda: page_parts(page.replace("docker build -t %s" % image, "docker build")), "names no image")
 
-    red("the Dockerfile's version moved alone", lambda: check_pins_agree("v9.9.9", quickstart_version(quick)), "move them together")
     red("no version default", lambda: dockerfile_pins(dockerfile.replace("ARG SIDEEYE_VERSION=", "ARG SIDEEYE_VERSION_X=")), "found 0")
     swapped = dockerfile.replace("-x86_64-linux.tar.gz", "-TMP.tar.gz").replace("-aarch64-linux.tar.gz", "-x86_64-linux.tar.gz").replace("-TMP.tar.gz", "-aarch64-linux.tar.gz")
     red("the two stages fetch each other's asset", lambda: dockerfile_pins(swapped), "not sideeye-")

@@ -1,0 +1,16 @@
+# MM	observed	sha256	path	revision	note
+01	2026-10-16T00:02:29Z	bf26ef54171f72446e6cf4c5af23fd28b2530e9cc47c3879a965502968ad743f	/home/user/authoring/define/check.sh	01	
+02	2026-10-16T00:02:29Z	cdd4b66480921694ab84d51b69af6fb6ce26a9d0cb3fc15f0f900803b919abce	/home/user/authoring/define/control-a.sh	01	
+03	2026-10-16T00:02:29Z	b6c0cc72997bccdc3307837f47bec57ef6eba1f88f0dec78f7578bdc31ab3d4b	/home/user/authoring/define/control-b.sh	01	
+04	2026-10-16T00:02:29Z	bc8234726ec23cc27e42933cca51bfe8c0bb4a0a28851f6ce5cc0a77629a8c98	/home/user/authoring/define/control-c.sh	01	
+05	2026-10-16T00:02:29Z	5a9bda6f9b3022633f6dabb5a8cf8bd1aa27b974de3a6239d92b179d1afec8ea	/home/user/authoring/define/control-d.sh	01	
+06	2026-10-16T00:02:29Z	31fbff9dd5095e386932b574d05de7bf5fa68d1d28226a2129c22803174c0341	/home/user/authoring/define/control-e.sh	01	
+07	2026-10-16T00:02:29Z	1a35c902d107ac760a776f43468dd082a8ef7d166ce8ee5b25517b7ff7d6fd2c	/home/user/authoring/define/controls.txt	01	
+08	2026-10-16T00:02:29Z	fa8469a9cf39e786a9f6c95aacd2e0f4bbd4748842ab41f48ea59aa247eb482a	/home/user/authoring/define/recover.sh	01	
+09	2026-10-16T00:02:29Z	9d231d3172e9689412990d485cadb6c92a8ac65122fa65446324c639cdc1543f	/home/user/authoring/define/run-controls.sh	01	
+10	2026-10-16T00:02:29Z	2c3bd84b82520933cdd2e5d353ba36333668b832c6d92c2792b04030e4f6a894	/home/user/authoring/define/setup.sh	01	
+11	2026-10-16T00:02:33Z	a99f08a9597513072265f630bcf7c7d4ccfec7ac0c29f9bf88e78c193a93b8b6	/home/user/authoring/define/explore-1.txt	01	
+12	2026-10-16T00:02:43Z	50235299cd464a7162472a497763b719368e599c338b7a4c25e35d8f04d022f6	/home/user/authoring/define/explore-2-noscratch.txt	02	
+13	2026-10-16T00:02:48Z	4f0174b65e500147b2db22fbd5f6e3aed0cf23d91c08276e33a7f46f4f48c942	/home/user/authoring/define/replay-2-noscratch.txt	02	
+14	2026-10-16T00:03:27Z	5a21bd2c34f4d1b8069f92804ce9e79a3e8138cf616d83aaa2e184b35c00f1e2	/home/user/authoring/define/INVARIANT.md	02	
+15	2026-10-16T00:03:27Z	d696767513f7d7ac2ee94dc2af40f6d36d98d07a5bcad3c0ae6d34787c0d1a9f	/home/user/authoring/define/friction.tsv	02	

@@ -1,0 +1,343 @@
+falsify: checker(yoyo) before recovery: app.db migrations 
+falsify: checker(yoyo) recovery exited 1: sqlite3.DatabaseError: file is not a database
+falsify: checker(yoyo) after recovery: a=FAIL(list exit 1: sqlite3.DatabaseError: file is not a database) b=FAIL(DatabaseError: file is not a database) c=FAIL(DatabaseError: file is not a database) d=FAIL(next apply exit 1: sqlite3.DatabaseError: file is not a database)
+world 1: checker(yoyo) before recovery: app.db migrations 
+world 1: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 2: checker(yoyo) before recovery: app.db migrations 
+world 2: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 3: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 3: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 4: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 4: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 5: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 5: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 6: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 6: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 7: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 7: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 8: checker(yoyo) before recovery: app.db migrations 
+world 8: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 9: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 9: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 10: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 10: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 11: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 11: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 12: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 12: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 13: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 13: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 14: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 14: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 15: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 15: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 16: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 16: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 17: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 17: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 18: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 18: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 19: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 19: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 20: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 20: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 21: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 21: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 22: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 22: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 23: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 23: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 24: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 24: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 25: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 25: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 26: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 26: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 27: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 27: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 28: checker(yoyo) before recovery: app.db migrations 
+world 28: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 29: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 29: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 30: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 30: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 31: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 31: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 32: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 32: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 33: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 33: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 34: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 34: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 35: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 35: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 36: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 36: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 37: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 37: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 38: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 38: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 39: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 39: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 40: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 40: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 41: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 41: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 42: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 42: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 43: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 43: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 44: checker(yoyo) before recovery: app.db migrations 
+world 44: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 45: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 45: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 46: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 46: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 47: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 47: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 48: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 48: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 49: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 49: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 50: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 50: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 51: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 51: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 52: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 52: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 53: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 53: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 54: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 54: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 55: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 55: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 56: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 56: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 57: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 57: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 58: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 58: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 59: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 59: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 60: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 60: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 61: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 61: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 62: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 62: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 63: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 63: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 64: checker(yoyo) before recovery: app.db migrations 
+world 64: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 65: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 65: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 66: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 66: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 67: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 67: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 68: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 68: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 69: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 69: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 70: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 70: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 71: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 71: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 72: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 72: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 73: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 73: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 74: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 74: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 75: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 75: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 76: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 76: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 77: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 77: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 78: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 78: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 79: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 79: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 80: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 80: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 81: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 81: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 82: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 82: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 83: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 83: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+world 84: checker(yoyo) before recovery: app.db migrations 
+world 84: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 85: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 85: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 86: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 86: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 87: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 87: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 88: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 88: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 89: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 89: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 90: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 90: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 91: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 91: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 92: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 92: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 93: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 93: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 94: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 94: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 95: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 95: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 96: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 96: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 97: checker(yoyo) before recovery: app.db migrations 
+world 97: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 98: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 98: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 99: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 99: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 100: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 100: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 101: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 101: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 102: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 102: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 103: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 103: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 104: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 104: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 105: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 105: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 106: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 106: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 107: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 107: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 108: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 108: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 109: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 109: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 110: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 110: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 111: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 111: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 112: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 112: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 113: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 113: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 114: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 114: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 115: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 115: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 116: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 116: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 117: checker(yoyo) before recovery: app.db migrations 
+world 117: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 118: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 118: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 119: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 119: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 120: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 120: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 121: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 121: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 122: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 122: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 123: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 123: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 124: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 124: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 125: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 125: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 126: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 126: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 127: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 127: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 128: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 128: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 129: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 129: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 130: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 130: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 131: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 131: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 132: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 132: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 133: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 133: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 134: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 134: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 135: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 135: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 136: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 136: checker(yoyo) after recovery: a=ok b=FAIL(schema of 3 migrations, record of 2) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: index idx_notes_body_len already exists)
+world 137: checker(yoyo) before recovery: app.db migrations 
+world 137: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 138: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 138: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 139: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 139: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 140: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 140: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 141: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 141: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 142: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 142: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 143: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 143: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 144: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 144: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 145: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 145: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 146: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 146: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 147: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 147: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 148: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 148: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 149: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 149: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 150: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 150: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 151: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 151: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 152: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 152: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 153: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 153: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 154: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 154: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 155: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 155: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+world 156: checker(yoyo) before recovery: app.db app.db-journal migrations 
+world 156: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+baseline: checker(yoyo) before recovery: app.db migrations 
+baseline: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+FAIL  80 of 157 explored worlds violated an invariant
+
+invariant   the checker (L2)
+earliest    crash point 44 of 156
+            after  unlink(/home/user/yoyo-state/app.db-journal)
+            before open(/home/user/yoyo-state/app.db-journal)
+path        (named by the checker, not by path)
+observed    the checker exited non-zero after restart
+cwd         /home/user/yoyo-state
+
+explored    157 worlds (crash points 156 + 1 baseline)
+expected    exit 0
+atomicity   4 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: app.db, app.db-journal)
+oracle      agreed on 156 operations (4257 syscall lines examined, 1796 in scope of the judged state), witness strace
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 157 world(s)
+l1          no marker configured
+case        /tmp/se-work/cases/000001.json
+replay      sideeye replay /tmp/se-work/cases/000001.json
+evidence    sideeye evidence /tmp/se-work/evidence/000001.json
+processes   single process
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+
+reproduce   (cd /home/user/yoyo-state && unset SIDEEYE_KILL_GROUP && : > /tmp/se-work/trace-repro.bin && SIDEEYE_STATE_DIR=/home/user/yoyo-state SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/tmp/se-work/trace-repro.bin LD_PRELOAD=/home/user/sideeye-dist/sideeye-v1.13.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=44 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'python3' -m yoyo apply --batch --database sqlite:///app.db migrations </dev/null)
+sideeye: json sha256=c88417b01cfd2106db8e481edb5cc53bc44b3cb952ca0d2108113d6a59ba7ddd;
+rc=1

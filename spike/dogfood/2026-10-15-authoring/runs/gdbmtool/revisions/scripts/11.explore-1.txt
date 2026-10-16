@@ -1,0 +1,30 @@
+falsify: recover.sh: read failed (gdbmtool: argv:1.5: cannot open database /home/user/authoring/state/db.gdbm: Unexpected end of file); running gdbmtool recover
+falsify: gdbmtool: argv:1.16: cannot open database /home/user/authoring/state/db.gdbm: Unexpected end of file
+falsify: checker(gdbmtool-store3): a=FAIL(exit 0: gdbmtool: argv:1.5: cannot open database /home/user/authoring/state/db.gdbm: Unexpected end of file ) b=- c=- d=- e=-
+world 1: checker(gdbmtool-store3): a=ok b=ok c=ok d=ok e=ok
+world 2: checker(gdbmtool-store3): a=ok b=ok c=ok d=ok e=ok
+world 3: checker(gdbmtool-store3): a=ok b=ok c=ok d=ok e=ok
+world 4: checker(gdbmtool-store3): a=ok b=ok c=ok d=ok e=ok
+world 5: checker(gdbmtool-store3): a=ok b=ok c=ok d=ok e=ok
+world 6: checker(gdbmtool-store3): a=ok b=ok c=ok d=ok e=ok
+world 7: checker(gdbmtool-store3): a=ok b=ok c=ok d=ok e=ok
+world 8: checker(gdbmtool-store3): a=ok b=ok c=ok d=ok e=ok
+world 9: checker(gdbmtool-store3): a=ok b=ok c=ok d=ok e=ok
+world 10: checker(gdbmtool-store3): a=ok b=ok c=ok d=ok e=ok
+world 11: checker(gdbmtool-store3): a=ok b=ok c=ok d=ok e=ok
+baseline: checker(gdbmtool-store3): a=ok b=ok c=ok d=ok e=ok
+PASS  12/12 explored worlds satisfied the built-in atomicity invariant, but it had no path to judge
+cwd         /home/user/authoring/define
+
+explored    12 worlds (crash points 11 + 1 baseline)
+expected    exit 0
+atomicity   0 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: db.gdbm)
+oracle      agreed on 11 operations (173 syscall lines examined, 49 in scope of the judged state), witness strace
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 12 world(s)
+l1          no marker configured
+case        (none)
+processes   single process
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+sideeye: json sha256=11a9eef5c29e83bd0f2d2970440c968c0fa6a46491da46036112d1c032bde114;
+rc=0

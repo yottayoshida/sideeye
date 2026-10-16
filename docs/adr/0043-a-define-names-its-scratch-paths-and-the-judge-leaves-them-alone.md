@@ -2,6 +2,9 @@
 
 Status: Accepted (2026-09-03)
 
+Amended by **ADR 0136**: the case now carries `apparatus` too, so the alternative below that
+cites its absence describes the case as it was then.
+
 Closes #261. The eighth key of `[define]` (`apparatus`, ADR 0041, was the seventh), and the
 sixth time DESIGN.md §12's sentence — *if Define ever needs more than this, that is movement
 toward the kill criteria in §18, and we should notice* — is faced on the record. This one

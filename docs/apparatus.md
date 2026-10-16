@@ -73,12 +73,16 @@ unsatisfiable.
 - The checker's environment is the define's business. A checker may drop a
   device on purpose (cohort 3's cargo-r2 unsets `RUSTC` to compare against the
   real compiler); the check is about the operation's environment only.
-- The saved case does not carry the declaration, so `replay` checks no entry.
-  A replay without the apparatus is not silent — the baseline does not repeat
-  the recorded bytes and the refusal names the path — but the case file itself
-  does not say which device was missing, and that refusal comes after the setup
-  and the recording have run: a replay without an `env:` device writes where
-  the tool falls back to ([#875](https://github.com/yottayoshida/sideeye/issues/875)).
+- A case saved from a define with an `env:`, `preload:` or `pythonpath:` entry
+  carries the declaration as written (`case_version` 7, ADR 0136), and `replay`
+  checks each entry where `explore` does: an `env:` device the replay's
+  environment lacks is refused before the setup runs. A define declaring only
+  `note:` entries keeps the case version it would otherwise get.
+- A case saved before that change carries no declaration, so its `replay`
+  checks no entry. That replay is not silent — the baseline does not repeat
+  the recorded bytes and the refusal names the path — but the refusal comes
+  after the setup and the recording have run: replayed without an `env:`
+  device, such a case writes where the tool falls back to.
 
 ## Reading a byte difference
 

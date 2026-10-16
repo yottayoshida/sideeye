@@ -1,0 +1,3 @@
+store n1 w1
+store n2 w2
+store n3 w3

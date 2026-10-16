@@ -413,12 +413,13 @@ fn fuzzCase(_: void, smith: *std.testing.Smith) anyerror!void {
     switch (case.read(as.allocator(), text)) {
         .ok => |c| {
             try std.testing.expectEqualStrings("sideeye/case", c.schema);
-            try std.testing.expect(c.case_version >= 1 and c.case_version <= 6);
+            try std.testing.expect(c.case_version >= 1 and c.case_version <= 7);
             // main.zig reads the mode with `.?`: read must not accept one that does not parse.
             if (c.observe) |m| {
                 const mode = contract.ObserveMode.parse(m) orelse return error.ReadAcceptedAnUnknownMode;
-                try std.testing.expect(mode != .wrappers);
+                try std.testing.expect(mode != .wrappers or c.case_version == 7);
             }
+            try std.testing.expect((c.define.apparatus != null) == (c.case_version == 7));
         },
         .invalid => |why| try std.testing.expect(why.len > 0),
     }
@@ -433,6 +434,7 @@ test "fuzz: a saved case" {
         "{\"schema\":\"sideeye/case\",\"case_version\":6,\"sideeye_version\":\"1.10.0\",\"contract_version\":19,\"observe\":\"supervised\",\"define\":{\"state\":\"/s/state\",\"operation\":\"tool\",\"marker\":\"done\",\"cwd\":\"/w\",\"scratch\":[],\"expected_status\":0}," ++ tail,
         "{\"schema\":\"sideeye/case\",\"case_version\":6,\"sideeye_version\":\"1.10.0\",\"contract_version\":19,\"observe\":\"syscalls\",\"define\":{\"state\":\"s\",\"operation\":[\"t\"],\"cwd\":null,\"scratch\":[\"a\"],\"expected_status\":1}," ++ tail,
         "{\"schema\":\"sideeye/case\",\"case_version\":4,\"sideeye_version\":\"1.4.0\",\"contract_version\":16,\"define\":{\"state\":\"/s/state\",\"setup\":\"seed\",\"operation\":\"tool run\",\"check\":[\"c\",\"x\"],\"cwd\":\"/w\",\"expected_status\":0}," ++ tail,
+        "{\"schema\":\"sideeye/case\",\"case_version\":7,\"sideeye_version\":\"1.13.0\",\"contract_version\":19,\"observe\":\"wrappers\",\"define\":{\"state\":\"/s/state\",\"setup\":\"seed\",\"operation\":\"tool\",\"cwd\":null,\"scratch\":[],\"apparatus\":[\"env:XDG_DATA_HOME=/d\",\"pythonpath:sitecustomize.py\",\"note:x\"],\"expected_status\":0}," ++ tail,
     });
 }
 

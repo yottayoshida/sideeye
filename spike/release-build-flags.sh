@@ -6,8 +6,8 @@
 #   sh spike/release-build-flags.sh --zig <release.yml>                the Zig version set up
 #   sh spike/release-build-flags.sh --selftest
 #
-# ci.yml's ReleaseSafe aarch64-linux job runs the acceptance suite against the build the release
-# ships. It reads the arguments from release.yml rather than spelling them, so a release that changes
+# ci.yml builds every artifact the release ships the way release.yml builds it: the two Linux ones
+# in the ReleaseSafe job that runs the acceptance suites, the macOS one in the macos job. It reads the arguments from release.yml rather than spelling them, so a release that changes
 # its build line — the optimisation, the triple, a flag added — moves that job with it; a value
 # spelled in ci.yml would be one more copy to drift, and the job would go on testing a build nobody
 # ships, green. The runner and the Zig version a job fixes before any step runs, so the job compares
@@ -87,15 +87,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: ubuntu-latest
+          - runner: ubuntu-24.04
             artifact: x86_64-linux
             target: x86_64-linux-gnu.2.28
           - runner: ubuntu-24.04-arm
             artifact: aarch64-linux
             target: aarch64-linux-gnu.2.28
-          - runner: macos-latest
+          - runner: macos-26
             artifact: aarch64-macos
-            target: aarch64-macos
+            target: aarch64-macos.13.0
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2
@@ -122,10 +122,10 @@ jobs:
       - run: zig build -Doptimize=ReleaseSafe -Dtarget=${{ matrix.target }}
 YML
     fails=0
-    want() { # <label> <expected output, or FAIL> <file> [mode]
-        if [ "${4:-}" = runner ]; then got=$(one runner "$(entry_field "$3" aarch64-linux runner)" 2>/dev/null); rc=$?
+    want() { # <label> <expected output, or FAIL> <file> [flags|runner|zig] [artifact]
+        if [ "${4:-}" = runner ]; then got=$(one runner "$(entry_field "$3" "${5:-aarch64-linux}" runner)" 2>/dev/null); rc=$?
         elif [ "${4:-}" = zig ]; then got=$(one zig "$(zig_of "$3")" 2>/dev/null); rc=$?
-        else got=$(flags_of "$3" aarch64-linux 2>/dev/null); rc=$?; fi
+        else got=$(flags_of "$3" "${5:-aarch64-linux}" 2>/dev/null); rc=$?; fi
         if [ "$2" = FAIL ]; then
             [ "$rc" != 0 ] && echo "ok   $1: refused" || { echo "FAIL $1: printed '$got' where it must refuse"; fails=$((fails + 1)); }
         else
@@ -161,10 +161,14 @@ YML
     sed 's/runner: ubuntu-24.04-arm/runner: ubuntu-26.04-arm/' "$tmp/base.yml" > "$tmp/runner.yml"
     want "the entry's runner moved: it follows" "ubuntu-26.04-arm" "$tmp/runner.yml" runner
     want "the entry's runner on its last line, not its first" "ubuntu-26.04-arm" "$tmp/runner-last.yml" runner
+    want "the x86_64-linux entry's flags" "-Doptimize=ReleaseSafe -Dtarget=x86_64-linux-gnu.2.28" "$tmp/base.yml" flags x86_64-linux
+    want "the x86_64-linux entry's runner" "ubuntu-24.04" "$tmp/base.yml" runner x86_64-linux
+    want "the aarch64-macos entry's flags" "-Doptimize=ReleaseSafe -Dtarget=aarch64-macos.13.0" "$tmp/base.yml" flags aarch64-macos
+    want "the aarch64-macos entry's runner" "macos-26" "$tmp/base.yml" runner aarch64-macos
     want "the Zig version set up" "0.16.0" "$tmp/base.yml" zig
     sed 's/version: 0.16.0/version: 0.17.0/' "$tmp/base.yml" > "$tmp/zig.yml"
     want "the Zig version moved: it follows" "0.17.0" "$tmp/zig.yml" zig
-    [ "$fails" = 0 ] && echo "ok   release-build-flags selftest: 17 of 17" || { echo "FAIL release-build-flags selftest: $fails"; exit 1; }
+    [ "$fails" = 0 ] && echo "ok   release-build-flags selftest: 21 of 21" || { echo "FAIL release-build-flags selftest: $fails"; exit 1; }
     exit 0
 fi
 

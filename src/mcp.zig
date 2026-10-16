@@ -213,7 +213,7 @@ pub fn mkdirWorkDir(path: []const u8, mode: c_uint) c_int {
 // link, and only the last component of a path is held by `O_NOFOLLOW`.
 fn ignoreForGit(work: []const u8) void {
     var zb: [contract.max_path]u8 = undefined;
-    const z = std.fmt.bufPrintZ(&zb, "{s}", .{work}) catch return;
+    const z = std.mem.printSentinel(&zb, "{s}", .{work}, 0) catch return;
     const dir = posix.open(z.ptr, posix.O_RDONLY | posix.O_DIRECTORY | posix.O_NOFOLLOW, @as(c_uint, 0));
     if (dir < 0) return;
     defer _ = posix.close(dir);
@@ -1403,7 +1403,7 @@ fn serverStep(step: contract.NextStep) ?[]const u8 {
         .kill_not_landed => "The world was armed to die in front of the operation the recording numbered, and no kill landed there, so the crash points cannot be trusted to name the same operations in every world. The restore rebuilds the names, kinds, bytes and permission bits under the config's state (a directory with its owner's read, write and search bits added) — not their owners, set-id or sticky bits, or timestamps, and nothing outside it (a cache kept beside the configuration, a lock) — so a tool that reads those can take another path; sideeye_preflight with twice compares what two clean runs leave. If neither explains it, file it with the report attached.",
         .not_repeating => "The world reached the operation number it was given through other operations than the recording's. Every run starts from the same rebuilt state, so what varied is the target's own order: a hash seed (PYTHONHASHSEED orders a Python set), a random choice, a thread, the clock, or something outside the config's state (a cache, a lock). Pin it in the environment, which reaches the target through this server only when SIDEEYE_MCP_CHILD_ENV names it, and declare it as apparatus. sideeye_preflight with twice compares what two clean runs leave, not the operations they perform.",
         .name_framework_interpreter => "Make the interpreter the detail above names the operation's first word — followed by the #! line's options and the script, when the detail names them — and, when the detail names a __PYVENV_LAUNCHER__ value, have the operator set that variable to it in the server's environment and name it in SIDEEYE_MCP_CHILD_ENV, the only way it reaches the target through this server (an apparatus entry env:__PYVENV_LAUNCHER__=<value> then stops a run without it as a SETUP ERROR; the variable reaches setup and the checker too): a framework Python's bin/python3 is a launcher that replaces itself with that interpreter where the shim cannot follow.",
-        .environment => "Ask the operator to fix what the detail above names in the server's environment, then call again; the config itself is unchanged.",
+        .environment => "Ask the operator to fix what the detail above names in the server's environment, then call again; the config or the case itself is unchanged.",
         .threads_limit => "Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit the README states under 'What the target has to be': threads are judged where a creation or a join the shim saw orders their writes. " ++ mcp_one_thread_switch,
         .threads_supervised => "Two threads of one process wrote the judged directory, and under observe \"supervised\" no join is recorded, nor which thread a creation made, so nothing orders their writes. " ++ mcp_one_thread_switch,
         else => null,
