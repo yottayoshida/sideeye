@@ -77,8 +77,13 @@ const path_syscalls = [_]PathSpec{
     .{ .name = "removexattrat", .args = &.{.{ .dirfd = 0, .path = 1 }} },
 };
 
+const xattr_writes = [_][]const u8{
+    "setxattr",    "lsetxattr",    "fsetxattr",    "setxattrat",
+    "removexattr", "lremovexattr", "fremovexattr", "removexattrat",
+};
+
 fn isXattrWrite(name: []const u8) bool {
-    for ([_][]const u8{ "setxattr", "lsetxattr", "fsetxattr", "setxattrat", "removexattr", "lremovexattr", "fremovexattr", "removexattrat" }) |x| {
+    for (xattr_writes) |x| {
         if (std.mem.eql(u8, x, name)) return true;
     }
     return false;
