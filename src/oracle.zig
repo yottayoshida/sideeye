@@ -594,7 +594,9 @@ const PendingMap = struct { pid: u32, len: u64 };
 
 fn pageUp(len: u64) u64 {
     const page: u64 = std.heap.pageSize();
-    return (len + page - 1) / page * page;
+    // Saturates rather than wraps: a wrapped end would be a small address, and the range
+    // would stop covering what it was asked to cover.
+    return (len +| (page - 1)) / page * page;
 }
 
 fn overlapsShared(maps: []const SharedMap, start: u64, len: u64) bool {
@@ -2895,6 +2897,78 @@ test "a shared mapping of a state file made writable later is refused, and nothi
         \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0) = 0x7f0000000000
         \\42    mprotect(0x7f0000000000, 4096, PROT_READ) = 0
         \\42    mprotect(0x7f2000000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+    };
+    for (cases) |c| {
+        const p = try parse(a, c.text, "/tmp/s", "", "/work");
+        if (c.refused) |r| {
+            std.testing.expectEqualStrings(r, p.unsupported orelse "(none)") catch |e| {
+                std.debug.print("case: {s}\n", .{c.what});
+                return e;
+            };
+        } else if (p.unsupported) |u| {
+            std.debug.print("case: {s} refused as {s}\n", .{ c.what, u });
+            return error.TestUnexpectedResult;
+        }
+    }
+}
+
+test "a mapping call whose length is near 2^64 is read without overflowing, and still refused where it overlaps a shared state map" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const want = "mprotect(PROT_WRITE) on a shared mapping of a state file";
+    const Case = struct { what: []const u8, text: []const u8, refused: ?[]const u8 };
+    const cases = [_]Case{
+        .{ .what = "a failed mremap of (size_t)-1 with no shared map", .refused = null, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    mremap(NULL, 18446744073709551615, 4096, 0) = -1 EINVAL (Invalid argument)
+        \\
+        },
+        .{ .what = "a split mprotect of (size_t)-1, whose failure is not shown yet", .refused = null, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    mprotect(0x7f0000000000, 18446744073709551615, PROT_READ|PROT_WRITE <unfinished ...>
+        \\43    getpid() = 43
+        \\42    <... mprotect resumed>) = -1 ENOMEM (Cannot allocate memory)
+        \\
+        },
+        .{ .what = "a read-only shared map of (size_t)-1 bytes covers the rest of the address space", .refused = want, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDWR) = 3</tmp/s/db>
+        \\42    mmap(NULL, 18446744073709551615, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0) = 0x7f0000000000
+        \\42    mprotect(0x7fff00000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "a split read-only shared map of (size_t)-1 bytes, its address on the resumed half", .refused = want, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDWR) = 3</tmp/s/db>
+        \\42    mmap(NULL, 18446744073709551615, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0 <unfinished ...>
+        \\43    getpid() = 43
+        \\42    <... mmap resumed>) = 0x7f0000000000
+        \\42    mprotect(0x7fff00000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "an mremap of a shared state map to (size_t)-1 bytes", .refused = want, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDWR) = 3</tmp/s/db>
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0) = 0x7f0000000000
+        \\42    mremap(0x7f0000000000, 8192, 18446744073709551615, MREMAP_MAYMOVE) = 0x7f1000000000
+        \\42    mprotect(0x7fff00000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "an mprotect(PROT_WRITE) of (size_t)-1 bytes over a shared state map", .refused = want, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDWR) = 3</tmp/s/db>
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0) = 0x7f0000000000
+        \\42    mprotect(0x7f0000000000, 18446744073709551615, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "an mprotect(PROT_WRITE) of (size_t)-1 bytes starting above every shared map", .refused = null, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDWR) = 3</tmp/s/db>
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0) = 0x7f0000000000
+        \\42    mprotect(0x7f0000100000, 18446744073709551615, PROT_READ|PROT_WRITE) = 0
         \\
         },
     };

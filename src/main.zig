@@ -2717,7 +2717,7 @@ fn phaseReport(run: *Run) void {
         else
             "";
         const replay_cmd = if (saved_case) |sc|
-            report.replayLine(arena, sc, args.observe, args.shim, recovery_flags)
+            report.replayLine(arena, sc, args.observe, args.shim, args.oracle, recovery_flags)
         else if (mode == .replay)
             "(this run is a replay; the case reproduced)"
         else
@@ -2773,7 +2773,7 @@ fn phaseReport(run: *Run) void {
             const creplay = if (same_world)
                 replay_cmd
             else if (csaved) |cc|
-                report.replayLine(arena, cc, args.observe, args.shim, recovery_flags)
+                report.replayLine(arena, cc, args.observe, args.shim, args.oracle, recovery_flags)
             else
                 "-";
             const cevidence: []const u8 = if (same_world)
