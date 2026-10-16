@@ -7902,6 +7902,38 @@ RP875_FLAGS="--observe syscalls"
 rp875 "a version-7 case counted under the default refuses a replay under another mode" 3 absent ACC_PIN_875=1 -- \
     "was recorded under --observe wrappers"
 RP875_FLAGS=""
+sp893() {
+    _d="/tmp/acc/sp893/$1"
+    rm -rf /tmp/acc/sp893 && mkdir -p "$_d" && cp "$OUT/toy-bug" "$_d/toy" && rm -f /tmp/acc/marker893
+    printf '#!/bin/sh\n: > /tmp/acc/marker893\nexec ./toy init\n' > "$_d/mk.sh" && chmod +x "$_d/mk.sh"
+    printf '[world]\nstate = "./state"\n\n[define]\nsetup = "./mk.sh"\noperation = "./toy rotate"\ncwd = "."\n' > "$_d/sideeye.toml"
+    if [ "$2" = yes ]; then printf '\n[recovery]\ncommand = "./mk.sh"\ncheck = "./mk.sh"\n' >> "$_d/sideeye.toml"; fi
+    o=$("$SIDEEYE" explore --config "$_d/sideeye.toml" --shim "$SHIM" --work /tmp/acc/sp893/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    _g=absent; [ -e /tmp/acc/marker893 ] && _g=present
+    _w=absent; [ -e /tmp/acc/sp893/work ] && _w=present
+    if [ "$rc" = "$3" ] && echo "$o" | grep -q -- "$4" && [ "$_g" = "$5" ] && { [ "$3" != 3 ] || [ "$_w" = absent ]; }; then
+        echo "ok   $1 ($2 recovery): explore exits $rc"
+    else
+        echo "FAIL $1 ($2 recovery): explore exit $rc (wanted $3), marker $_g (wanted $5), work directory $_w, looked for [$4]"
+        echo "$o" | sed 's/^/     | /' | head -3
+        ap_fails=$((ap_fails + 1)); return
+    fi
+    [ "$3" = 1 ] || return
+    o=$("$SIDEEYE" replay /tmp/acc/sp893/work/cases/000001.json --fresh-state --shim "$SHIM" --work /tmp/acc/sp893/work-r --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if [ "$rc" = 1 ] && echo "$o" | grep -q "the case reproduced"; then
+        echo "ok   $1: the case it saved replays to the same FAIL"
+    else
+        echo "FAIL $1: replay exit $rc (wanted 1)"
+        echo "$o" | sed 's/^/     | /' | head -3
+        ap_fails=$((ap_fails + 1))
+    fi
+}
+sp893 "MyProject" no 1 "explored worlds violated" present
+sp893 "My Project" no 1 "explored worlds violated" present
+sp893 "My Project" yes 3 "holds a space: move the sideeye.toml to a path without one" absent
+sp893 "MyProject" yes 1 "explored worlds violated" present
 [ "$ap_fails" = 0 ] || fails=$((fails + 1))
 
 echo ""
