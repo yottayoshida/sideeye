@@ -1623,7 +1623,9 @@ fn phaseOracle(run: *Run) void {
                 .missing_sentinel => |sp| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the fs_usage capture is missing a sentinel the engine placed ({s}), so nothing establishes that the observer covered the whole recording", .{textShown(arena, sp)}) catch "the fs_usage capture is missing a sentinel the engine placed", .environment),
             };
             break :blk r.parsed;
-        } else oracle.parse(arena, text, state_abs, if (alt_differs) state_alt else "", oracle_cwd) catch setupError(.environment, "out of memory");
+        // Not "/" when the engine's own cwd could not be read: a relative path resolved
+        // against the wrong directory reads as outside the state, where unknown refuses.
+        } else oracle.parse(arena, text, state_abs, if (alt_differs) state_alt else "", run.define.effective_cwd orelse "") catch setupError(.environment, "out of memory");
 
         // The witness has now looked, and what it saw is part of the account from here
         // on — including on the refusals immediately below, which are exactly the runs
