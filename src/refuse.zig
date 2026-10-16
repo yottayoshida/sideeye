@@ -228,6 +228,8 @@ pub fn stopLiveSidecar() posix.SidecarEnd {
     posix.beginStopping();
     defer posix.endStopping();
     const end = posix.stopSidecar(live.gpa, live.pid, &.{ "/usr/bin/sudo", "-n" }, 5000);
+    // After the stop, not before: released early, the watch would leave while fs_usage still ran.
+    posix.releaseSidecarWatch();
     fsu_live = null;
     posix.noteSidecar(0);
     return end;
