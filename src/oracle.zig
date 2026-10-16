@@ -576,8 +576,7 @@ fn pageUp(len: u64) u64 {
     const page: u64 = std.heap.pageSize();
     // Saturates rather than wraps: a wrapped end would be a small address, and the range
     // would stop covering what it was asked to cover.
-    const padded = std.math.add(u64, len, page - 1) catch return std.math.maxInt(u64);
-    return padded / page * page;
+    return (len +| (page - 1)) / page * page;
 }
 
 fn overlapsShared(maps: []const SharedMap, start: u64, len: u64) bool {
@@ -2873,6 +2872,15 @@ test "a mapping call whose length is near 2^64 is read without overflowing, and 
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDWR) = 3</tmp/s/db>
         \\42    mmap(NULL, 18446744073709551615, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0) = 0x7f0000000000
+        \\42    mprotect(0x7fff00000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "a split read-only shared map of (size_t)-1 bytes, its address on the resumed half", .refused = want, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDWR) = 3</tmp/s/db>
+        \\42    mmap(NULL, 18446744073709551615, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0 <unfinished ...>
+        \\43    getpid() = 43
+        \\42    <... mmap resumed>) = 0x7f0000000000
         \\42    mprotect(0x7fff00000000, 4096, PROT_READ|PROT_WRITE) = 0
         \\
         },
