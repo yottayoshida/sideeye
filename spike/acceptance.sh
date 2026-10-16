@@ -4431,6 +4431,66 @@ if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
     else
         echo "     NOT MEASURED: sideeye-testhandover is not built (zig build -Dtest-supervise-handover)"
     fi
+    # The two detaching shapes fork nothing: a fork is a boundary of its own and would refuse the
+    # run whatever the engine made of the setsid or setpgid after it. The succeeding setsid is
+    # counted in the trace, because a contained run that detaches is judged and its report says
+    # "single process" in both modes.
+    /bin/rm -f /tmp/acc-sd-pgid
+    python3 -c 'import os, time; os.setpgid(0, 0); open("/tmp/acc-sd-pgid", "w").write(str(os.getpgrp())); time.sleep(300)' &
+    sd_sleeper=$!
+    i=0
+    while [ ! -s /tmp/acc-sd-pgid ] && [ "$i" -lt 50 ]; do sleep 0.1; i=$((i + 1)); done
+    sd_pgid=$(cat /tmp/acc-sd-pgid 2>/dev/null)
+    sd_run() {
+        st=$1 ev=$2; shift 2
+        rm -rf /tmp/acc-sd && mkdir -p /tmp/acc-sd/s
+        sd_out=$(env "$ev" TOY=$st TOY_STATE=/tmp/acc-sd/s TOY_ESCAPE_WITNESS=/tmp/acc-sd/witness timeout 120 "$SIDEEYE" explore --state /tmp/acc-sd/s \
+            --setup "$st init" --operation "$st rotate" --check "$ROOT/spike/check.sh" --work /tmp/acc-sd/w "$@" 2>&1)
+        sd_rc=$?
+    }
+    sd_want() {
+        if [ "$sd_rc" = "$2" ] && printf '%s\n' "$sd_out" | grep -qF -- "$3" && grep -qxF -- "$4" /tmp/acc-sd/witness 2>/dev/null; then
+            echo "ok   $1: exit $2, [$3], the toy wrote [$4]"
+        else
+            echo "FAIL $1: exit $sd_rc (wanted $2), looked for [$3] and a witness line [$4]: $(head -2 /tmp/acc-sd/witness 2>/dev/null | tr '\n' ' ')"
+            printf '%s\n' "$sd_out" | sed 's/^/     | /' | head -4
+            fails=$((fails + 1))
+        fi
+    }
+    if [ -n "$sd_pgid" ]; then
+        for sd_mode in supervised wrappers; do
+            if [ "$sd_mode" = supervised ]; then sd_toy=$OUT/toy-static; sd_flags="--observe supervised"
+            else sd_toy=$OUT/toy-bug; sd_flags="--shim $SHIM"; fi
+            sd_run "$sd_toy" TOY_SETSID=1 $sd_flags --allow-unverified
+            sd_want "$sd_mode: a setsid by the group's leader, which fails, is judged" 1 "crash point 5 of 5" "setsid rc=-1"
+            sd_run "$sd_toy" TOY_SETSID_THREAD=1 $sd_flags --allow-unverified
+            sd_want "$sd_mode: a setsid from a second thread, which fails, is judged" 1 "crash point 5 of 5" "setsid-thread rc=-1"
+            # Counted, not judged: the thread's creation is recorded first, and a run whose first
+            # boundary is a thread is judged whatever is recorded after it.
+            sd_det=$(count_op_records /tmp/acc-sd/w/trace-record.bin 204)
+            [ "$sd_det" = 0 ] || { echo "FAIL $sd_mode: a setsid from a second thread, which fails, left $sd_det detached record(s) (wanted 0)"; fails=$((fails + 1)); }
+            sd_run "$sd_toy" TOY_SETPGID_NOOP=1 $sd_flags --allow-unverified
+            sd_want "$sd_mode: setpgid(0, 0) by the group's leader is judged" 1 "crash point 5 of 5" "setpgid-noop rc=0"
+            sd_run "$sd_toy" "TOY_SETPGID_OUT=$sd_pgid" $sd_flags --allow-unverified
+            sd_want "$sd_mode: the subject joining a group outside the run is a detachment" 2 "UNKNOWN  boundary_without_oracle" "setpgid-out rc=0 pgrp=$sd_pgid"
+            sd_det=$(count_op_records /tmp/acc-sd/w/trace-record.bin 204)
+            [ "$sd_det" = 1 ] || { echo "FAIL $sd_mode: the subject joining a group outside the run left $sd_det detached record(s) (wanted 1)"; fails=$((fails + 1)); }
+            sd_run "$sd_toy" TOY_SETSID=1 $sd_flags --oracle /usr/bin/strace
+            sd_det=$(count_op_records /tmp/acc-sd/w/trace-record.bin 204)
+            if [ "$sd_det" = 1 ] && grep -qxF "setsid rc=0" /tmp/acc-sd/witness 2>/dev/null; then
+                echo "ok   $sd_mode: a setsid that succeeds under strace is recorded as one detachment"
+            else
+                echo "FAIL $sd_mode: a setsid that succeeds under strace left $sd_det detached record(s) in the recording's trace (wanted 1; exit $sd_rc)"
+                fails=$((fails + 1))
+            fi
+        done
+    else
+        echo "FAIL #904: the sleeper that holds a group outside the run never started, so nothing was measured"
+        fails=$((fails + 1))
+    fi
+    kill "$sd_sleeper" 2>/dev/null
+    wait "$sd_sleeper" 2>/dev/null
+    /bin/rm -f /tmp/acc-sd-pgid
 else
     rm -rf /tmp/acc && mkdir -p /tmp/acc/state
     o=$("$SIDEEYE" explore --state /tmp/acc/state --operation "$OUT/toy-static rotate" \

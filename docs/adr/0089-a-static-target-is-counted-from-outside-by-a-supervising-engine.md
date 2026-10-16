@@ -77,6 +77,23 @@ catches a signal while its call waits for the supervisor has the call restarted 
    the plan's review found that recording it would refuse every run without an oracle as
    `boundary_without_oracle` (measured red by mutation). `readTrace` and `containment.holds` are
    unchanged — the plan expected a branch in each; writing the shim's records made them unnecessary.
+   **Amended 2026-10-17 (#904): `detached` from `setsid` and `setpgid` follows the shim's rule as
+   far as a call that has not run yet allows.** The shim records a `setsid` that succeeded and a
+   `setpgid` that moved a group; this engine answers before the call runs and never sees its
+   result, so it recorded every one, and a target that called `setsid` while leading the group the
+   engine made it (`EPERM`), or `setpgid(0, 0)`, was refused `boundary_without_oracle` where the
+   shim judged it. It now leaves a call unrecorded only when the kernel's own condition says it
+   certainly does nothing: a `setsid` whose caller's pid names an existing process group
+   (`kill(-pid, 0)` answering 0 or `EPERM`, the condition `setsid` fails on), and a `setpgid` whose
+   subject is already in the target group, asked only for `setpgid(0, 0)` or a caller in the
+   engine's pid namespace, since the arguments are numbers in the caller's. Everything else is
+   recorded, so what is left over refuses rather than misses: a `setpgid` that would move a group
+   and that the kernel refuses (not a child, an exec'd child, a session leader, a group in another
+   session or none, `EINVAL`), one in a nested pid namespace, and a parent and child moving the
+   same group at once (two records where the shim has one). One residue runs the other way and is
+   rare: a group named after the caller whose last member is reaped between the question and the
+   call, so a `setsid` that succeeds goes unrecorded. Like every `/proc` read here, this assumes
+   `/proc` is mounted for the engine's pid namespace.
 4. **The cgroup is required.** Without the shim there is nothing inside a process to notice it left
    the process group, so the crash point's kill reaches the run through the world's cgroup; an
    engine that cannot create one refuses the mode as a setup error.
