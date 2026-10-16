@@ -46,8 +46,9 @@ change.
   up-to-date requirement or a merge queue, which is a repository setting and a separate
   call.
   If your number collides, renumber yours — **and do it before anything cites the path**.
-  Several tracked documents hardcode `docs/adr/NNNN-slug.md`, and only `spike/acceptance.sh`
-  sweeps any of them (four pages, for slashed backtick references). Bare `ADR NNNN` prose
+  Several tracked documents hardcode `docs/adr/NNNN-slug.md`, and only
+  `spike/check-doc-refs.sh` (acceptance check 11) sweeps any of them (four pages, for
+  slashed backtick references). Bare `ADR NNNN` prose
   citations are checked by nothing and break semantically rather than loudly: after a
   renumber they point at a different decision.
 - `CHANGELOG.md` keeps a `[Unreleased]` section; every merged feat/fix appends to it.
@@ -92,6 +93,14 @@ change.
   the pages moving when the cohort does is the fix.
 - Acceptance (`spike/acceptance.sh`) runs in the Linux container; every new check must be
   seen red once (mutation or synthetic input) before it is trusted.
+- Before pushing, merge the latest `origin/main` into the branch, commit everything, and run
+  `sh spike/check-doc-refs.sh && sh spike/check-unknown-rate.sh`. They are acceptance checks
+  11 and 12, need no build and take seconds; otherwise a moved path a page still cites, or a
+  ledger row no B2 rule covers, turns up as a red Acceptance suite after the push. CI runs
+  them on the branch merged with `main`, which is why the merge comes first. They read the
+  filesystem, not git: a file left uncommitted or ignored by `.gitignore` makes them green
+  here and red in CI, and so does a path that differs from the real one only in case, which
+  macOS's file system does not tell apart.
 - Unit tests never write to a fixed shared path: `zig build test` runs the same test in
   several concurrent binaries, and seen-red-once validates assertions, not races — a
   fixed `/tmp` name passed every single run and then failed 66 of 80 paired runs (#28).

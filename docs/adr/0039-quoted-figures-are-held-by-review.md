@@ -11,7 +11,8 @@ repository's own pattern for holding a page to its source.
 Two of the three pages acceptance check 11 sweeps quote figures from other records —
 `docs/kill-criteria-review.md` and `docs/target-classes.md`; the third,
 `docs/checker-cookbook.md`, is rendered from the checkers and quotes none. What holds them
-today is check 11 in `spike/acceptance.sh` ("the docs pages' repo paths exist"): every
+today is check 11, `spike/check-doc-refs.sh` run by `spike/acceptance.sh` ("the docs
+pages' repo paths exist"): every
 backticked token containing a slash must resolve to a repository path, and nothing more.
 Its own comment says the rest — claim-vs-transcript verification "stays a review-time
 axis" — and the review page says the same about itself: the numbers are quotations, and

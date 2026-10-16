@@ -115,6 +115,13 @@ says what it cannot see: *"a filing in neither record is outside what these two
 can say"*. Two reports filed before this directory existed sat in exactly that
 gap, and the check was green the whole time.
 
+Both records are also read by checks that otherwise run only in CI's Acceptance
+suite. Before pushing the run, merge the latest `origin/main`, commit
+everything, and run `sh spike/check-doc-refs.sh && sh spike/check-unknown-rate.sh`:
+a path a page cites that the run moved, or a `spike/upstream-reports.tsv` row no
+B2 rule covers, fails there in seconds instead of after the push. What they
+cannot see on a Mac is listed beside the same instruction in `CLAUDE.md`.
+
 ## What this directory does not do
 
 - **It does not claim blindness.** `docs/scouting.md`'s "what a scout must never

@@ -154,7 +154,7 @@ leg 1 wrappers "$root"
 # matched on the opening of the `observe_syscalls` step (src/contract.zig),
 # because the `syscalls_may_have_killed` step names the flag too, in a
 # sentence that says the opposite. count.py's SYSCALLS_STEP is the same
-# phrase, and spike/acceptance.sh holds all three copies to each other.
+# phrase, and spike/check-unknown-rate.sh holds all three copies to each other.
 case "$v:$nstep" in
   UNKNOWN:*"Run explore or preflight again with --observe syscalls"*)
     leg 2 syscalls "$root2" --observe syscalls ;;
