@@ -21,7 +21,7 @@ permissions:
 env:
   # Pinned, never `latest`: a build you did not choose must not be able to turn your gate red,
   # or green. Moving this is a deliberate edit, which is the point.
-  SIDEEYE_VERSION: v1.13.0
+  SIDEEYE_VERSION: v1.14.0
 
 # Both jobs' timeout-minutes: not five like the checks beside them, since the demo takes seconds
 # and a define of your own explores longer. Set it to a few times your longest run; it bounds a
