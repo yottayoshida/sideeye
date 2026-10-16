@@ -618,8 +618,8 @@ fn phaseDefine(run: *Run) void {
                 args.cwd = if (d.cwd) |c| resolvePathAgainst(arena, dir, c) else null;
                 args.apparatus = d.apparatus orelse &.{};
                 args.scratch = d.scratch orelse &.{};
-                args.recovery = if (d.recovery) |r| resolveCommand(arena, dir, .{ .str = r }).str else null;
-                args.recovery_check = if (d.recovery_check) |r| resolveCommand(arena, dir, .{ .str = r }).str else null;
+                args.recovery = if (d.recovery) |r| resolveRecoveryAgainst(arena, dir, r) else null;
+                args.recovery_check = if (d.recovery_check) |r| resolveRecoveryAgainst(arena, dir, r) else null;
                 if (d.expected_status) |es| {
                     args.expect_status = config.parseExpectStatus(es) orelse setupError(.define_invalid, "expected_status must be an integer in 0..255 (one double-quoted string, as every value here)");
                     // Same mirror as the flag: refusals between here and the
@@ -3765,9 +3765,24 @@ fn resolveCommandAgainst(arena: std.mem.Allocator, dir: []const u8, cmd: []const
     return std.fmt.allocPrint(arena, "{s}/{s}{s}", .{ dir, head, tail }) catch setupError(.environment, "out of memory");
 }
 
+fn resolveRecoveryAgainst(arena: std.mem.Allocator, dir: []const u8, cmd: []const u8) []const u8 {
+    const resolved = resolveCommandAgainst(arena, dir, cmd);
+    // Not turned into argv as the define's commands are: a recovery is carried and printed on the
+    // replay line as one string, which splits on spaces wherever it is read again.
+    if (resolved.ptr != cmd.ptr and std.mem.indexOfScalar(u8, dir, ' ') != null)
+        setupErrorFmt(arena, .define_invalid, "[recovery] takes the string form only, split on spaces, and {s}, the directory its relative command resolves against, holds a space: move the sideeye.toml to a path without one, or name the recovery by an absolute path without one", .{textShown(arena, dir)});
+    return resolved;
+}
+
 fn resolveCommand(arena: std.mem.Allocator, dir: []const u8, cmd: config.Command) config.Command {
     switch (cmd) {
-        .str => |s| return .{ .str = resolveCommandAgainst(arena, dir, s) },
+        .str => |s| {
+            const resolved = resolveCommandAgainst(arena, dir, s);
+            // Not left as a string when `dir` holds a space: a string command is split on spaces
+            // when it runs, and that would split the directory joined to its head.
+            if (resolved.ptr == s.ptr or std.mem.indexOfScalar(u8, dir, ' ') == null) return .{ .str = resolved };
+            return resolveCommand(arena, dir, .{ .argv = splitArgs(arena, s) catch setupError(.environment, "out of memory") });
+        },
         .argv => |a| {
             if (a.len == 0) return .{ .argv = a };
             const head = a[0];
@@ -3795,6 +3810,13 @@ test "toml paths resolve against the toml's directory, commands only when they n
     try std.testing.expectEqualStrings("/cfg/./check.sh", rel.argv[0]);
     try std.testing.expectEqualStrings("--strict", rel.argv[1]);
     try std.testing.expectEqualStrings("a b", rel.argv[2]);
+    const in_space_dir = resolveCommand(a, "/My Project", .{ .str = "./w rotate --n 3" });
+    try std.testing.expectEqual(@as(usize, 4), in_space_dir.argv.len);
+    try std.testing.expectEqualStrings("/My Project/./w", in_space_dir.argv[0]);
+    try std.testing.expectEqualStrings("3", in_space_dir.argv[3]);
+    try std.testing.expectEqualStrings("mytool x", resolveCommand(a, "/My Project", .{ .str = "mytool x" }).str);
+    try std.testing.expectEqualStrings("/usr/bin/tool x", resolveCommand(a, "/My Project", .{ .str = "/usr/bin/tool x" }).str);
+    try std.testing.expectEqualStrings("/MyProject/./w rotate", resolveCommand(a, "/MyProject", .{ .str = "./w rotate" }).str);
     const bare = resolveCommand(a, "/cfg", .{ .argv = &.{ "mytool", "x/y" } });
     try std.testing.expectEqualStrings("mytool", bare.argv[0]);
     try std.testing.expectEqualStrings("x/y", bare.argv[1]);
