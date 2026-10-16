@@ -75,6 +75,7 @@ pub fn build(b: *std.Build) void {
     // so a measurement of `WAIT_KILLABLE_RECV` that relied on the race would pass with the flag
     // removed (measured: 8 of 8 runs agreed without it). This engine holds the window open.
     const test_supervise_delay = b.option(bool, "test-supervise-delay", "also build sideeye-testsupervisedelay, an engine that delays each supervised answer, used only by acceptance (#217)") orelse false;
+    const test_supervise_handover = b.option(bool, "test-supervise-handover", "also build sideeye-testhandover, an engine whose supervised listener hand-over fails on request (SIDEEYE_TEST_HANDOVER_FAULT), used only by acceptance (#905)") orelse false;
     // Not an engine variant: a reader for the shim's trace, used by
     // `spike/fsevents/survey.sh`'s L7a to ask what was recorded ABOUT a path rather than
     // whether the path appears at all (#344). Gated the same way for the same reason —
@@ -89,7 +90,7 @@ pub fn build(b: *std.Build) void {
     // `zig build test` and the new option all stayed green; the sibling variant was not
     // in the measurement. Built here instead, a module cannot be short a field.
     const engineOptions = struct {
-        fn make(bld: *std.Build, trace_cap: usize, trace_cap_world: usize, trace_budget: usize, ancestor_probe: bool, no_cgroup: bool, supervise_reply_delay_ms: u32) *std.Build.Step.Options {
+        fn make(bld: *std.Build, trace_cap: usize, trace_cap_world: usize, trace_budget: usize, ancestor_probe: bool, no_cgroup: bool, supervise_reply_delay_ms: u32, supervise_handover_fault: bool) *std.Build.Step.Options {
             const o = bld.addOptions();
             o.addOption(usize, "trace_cap_override", trace_cap);
             o.addOption(usize, "trace_cap_override_world", trace_cap_world);
@@ -97,6 +98,7 @@ pub fn build(b: *std.Build) void {
             o.addOption(bool, "ancestor_probe", ancestor_probe);
             o.addOption(bool, "no_cgroup", no_cgroup);
             o.addOption(u32, "supervise_reply_delay_ms", supervise_reply_delay_ms);
+            o.addOption(bool, "supervise_handover_fault", supervise_handover_fault);
             return o;
         }
     }.make;
@@ -133,7 +135,7 @@ pub fn build(b: *std.Build) void {
     // sentence never covered is an edit to the literal itself (#365): the sha comparison
     // in CI puts such an edit in both arms and stays green. The unit tests below assert
     // these values, so the literal is held by a check rather than by the sentence.
-    const exe_opts = engineOptions(b, 0, 0, 0, false, false, 0);
+    const exe_opts = engineOptions(b, 0, 0, 0, false, false, 0, false);
 
     // ONE module object, handed to both the shipped executable and the unit tests.
     // `createModule` returns a fresh Module on every call, and calling it separately in
@@ -213,7 +215,7 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(exe);
 
     if (test_ancestor_probe) {
-        const probe_opts = engineOptions(b, 0, 0, 0, true, false, 0);
+        const probe_opts = engineOptions(b, 0, 0, 0, true, false, 0, false);
         const exe_probe = b.addExecutable(.{
             .name = "sideeye-ancprobe",
             .root_module = b.createModule(.{
@@ -263,7 +265,7 @@ pub fn build(b: *std.Build) void {
         // This said "the two read sites" until #377 counted them and found three. The
         // third — `preflight --twice`'s second observation — shares `trace_cap` with the
         // recording read, so neither artifact can reach it: run A's read fires first.
-        const cap_opts = engineOptions(b, 64, 0, 0, false, false, 0);
+        const cap_opts = engineOptions(b, 64, 0, 0, false, false, 0, false);
         const exe_cap = b.addExecutable(.{
             .name = "sideeye-testtracecap",
             .root_module = b.createModule(.{
@@ -280,7 +282,7 @@ pub fn build(b: *std.Build) void {
         embedDemo(b, exe_cap.root_module, demo_toy_bin);
         b.installArtifact(exe_cap);
 
-        const world_opts = engineOptions(b, 0, 64, 0, false, false, 0);
+        const world_opts = engineOptions(b, 0, 64, 0, false, false, 0, false);
         const exe_cap_world = b.addExecutable(.{
             .name = "sideeye-testtracecap-world",
             .root_module = b.createModule(.{
@@ -303,7 +305,7 @@ pub fn build(b: *std.Build) void {
         // separates this refusal from `trace_too_large`: every trace involved is well
         // under the per-read cap, and what runs out is the sum. The value is read off a
         // measured toy trace rather than guessed — see BUILDLOG for the run.
-        const budget_opts = engineOptions(b, 0, 0, 3 * 1024, false, false, 0);
+        const budget_opts = engineOptions(b, 0, 0, 3 * 1024, false, false, 0, false);
         const exe_budget = b.addExecutable(.{
             .name = "sideeye-testtracebudget",
             .root_module = b.createModule(.{
@@ -322,7 +324,7 @@ pub fn build(b: *std.Build) void {
     }
 
     if (test_supervise_delay) {
-        const delay_opts = engineOptions(b, 0, 0, 0, false, false, 2);
+        const delay_opts = engineOptions(b, 0, 0, 0, false, false, 2, false);
         const exe_delay = b.addExecutable(.{
             .name = "sideeye-testsupervisedelay",
             .root_module = b.createModule(.{
@@ -340,8 +342,27 @@ pub fn build(b: *std.Build) void {
         b.installArtifact(exe_delay);
     }
 
+    if (test_supervise_handover) {
+        const handover_opts = engineOptions(b, 0, 0, 0, false, false, 0, true);
+        const exe_handover = b.addExecutable(.{
+            .name = "sideeye-testhandover",
+            .root_module = b.createModule(.{
+                .root_source_file = b.path("src/main.zig"),
+                .target = target,
+                .optimize = optimize,
+                .link_libc = true,
+                .imports = &.{
+                    .{ .name = "contract", .module = contract },
+                    .{ .name = "engine_build_options", .module = handover_opts.createModule() },
+                },
+            }),
+        });
+        embedDemo(b, exe_handover.root_module, demo_toy_bin);
+        b.installArtifact(exe_handover);
+    }
+
     if (test_no_cgroup) {
-        const nocg_opts = engineOptions(b, 0, 0, 0, false, true, 0);
+        const nocg_opts = engineOptions(b, 0, 0, 0, false, true, 0, false);
         const exe_nocg = b.addExecutable(.{
             .name = "sideeye-testnocgroup",
             .root_module = b.createModule(.{
@@ -555,6 +576,9 @@ pub fn build(b: *std.Build) void {
         // and a file whose tests are collected only through an import runs them nowhere the day
         // that import moves.
         "src/recovery.zig",
+        // Not left to main.zig's import: a file imported for its declarations does not
+        // contribute its tests.
+        "src/supervise.zig",
         // The shim's own logic. It had no unit tests at all, which is backwards: it is
         // the half that runs inside somebody else's process, and every defect found in
         // it so far produced a plausible value rather than an error.

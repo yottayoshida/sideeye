@@ -4397,6 +4397,40 @@ if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
     else
         echo "     NOT MEASURED: sideeye-testsupervisedelay is not built (zig build -Dtest-supervise-delay)"
     fi
+    # The installer's stderr is held empty: one whose filter was refused also exits 126 at once,
+    # with a line.
+    timeout 10 "$SIDEEYE" __filter-exec 3 -- /bin/true 3</dev/null >/dev/null 2>/tmp/acc-fe.err
+    fe_rc=$?
+    if [ "$fe_rc" = 126 ] && [ ! -s /tmp/acc-fe.err ]; then
+        echo "ok   __filter-exec that cannot hand its listener over exits 126 at once, writing nothing"
+    else
+        echo "FAIL __filter-exec with no socket to hand its listener to: exit $fe_rc (wanted 126; 124 is the hang), stderr [$(head -c 200 /tmp/acc-fe.err)]"
+        fails=$((fails + 1))
+    fi
+    if [ -x "$ROOT/zig-out/bin/sideeye-testhandover" ]; then
+        sup_handover() {
+            rm -rf /tmp/acc-ho && mkdir -p /tmp/acc-ho/s
+            o=$(SIDEEYE_TEST_HANDOVER_FAULT=$1 TOY=$OUT/toy-static TOY_STATE=/tmp/acc-ho/s timeout 120 \
+                "$ROOT/zig-out/bin/sideeye-testhandover" explore --state /tmp/acc-ho/s --setup "$OUT/toy-static init" \
+                --operation "$OUT/toy-static rotate" --check "$ROOT/spike/check.sh" --observe supervised \
+                --allow-unverified --work /tmp/acc-ho/w 2>&1)
+            ho_rc=$?
+            if [ "$ho_rc" = "$2" ] && printf '%s\n' "$o" | grep -qF -- "$3"; then
+                echo "ok   a hand-over that fails ($1) ends the run with exit $2 and says: $3"
+            else
+                echo "FAIL a hand-over that fails ($1): exit $ho_rc (wanted $2; 124 is the hang), looked for [$3]"
+                printf '%s\n' "$o" | sed 's/^/     | /' | head -4
+                fails=$((fails + 1))
+            fi
+        }
+        sup_handover helper 2 "the run exited 126 before its operation started"
+        sup_handover engine 2 "the run never started its operation: the engine could not complete the hand-over"
+        sup_handover reply 2 "the run never started its operation: the engine could not complete the hand-over"
+        sup_handover helper-world 3 "a world's run exited 126 before its operation started"
+        sup_handover engine-world 3 "a world's run never started its operation: the engine could not complete the hand-over"
+    else
+        echo "     NOT MEASURED: sideeye-testhandover is not built (zig build -Dtest-supervise-handover)"
+    fi
 else
     rm -rf /tmp/acc && mkdir -p /tmp/acc/state
     o=$("$SIDEEYE" explore --state /tmp/acc/state --operation "$OUT/toy-static rotate" \

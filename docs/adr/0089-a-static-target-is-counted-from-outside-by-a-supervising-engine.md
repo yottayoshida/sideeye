@@ -45,6 +45,19 @@ catches a signal while its call waits for the supervisor has the call restarted 
    `setsid` and `setpgid`, sends the listener and its own pid back over the inherited socket, and
    execs. The pid does not change, so the process strace or the engine started is the subject, as
    under a shim.
+   **Amended 2026-10-17 (#905): the hand-over is answered.** After sending the listener the
+   installer reads one byte back, `y` when the engine took it and `n` when data arrived without a
+   listener it could take, and execs only on `y`. Once its filter is in, every way the installer
+   could report a failure — a `write`, even the `close` of the listener — is a watched call that
+   only the listener's holder answers, so a failed send, or a send the engine could not take, used
+   to leave it waiting forever, and the recording run's wait with it. It now exits 126 writing
+   nothing, and the engine, which knows the listener never arrived, says the operation never
+   started: `recording_run_failed` for the recording and the second run, the existing SETUP ERROR
+   for a world. The reason, exit code and next step of an exit 126 are unchanged; only its sentence
+   is, and it names the engine's fork stub as well, since that stub also exits 126 before the
+   installer runs. The exception is a define that declares 126 its success status: the recording's
+   126 check passed it, and it stopped later as a SETUP ERROR on an account nothing wrote; it is now
+   refused at the hand-over, as `recording_run_failed`, which says what happened.
 2. **The engine counts, in a thread.** A session thread starts before the spawn, takes the listener,
    and for each notification reads the call's paths from the target (`process_vm_readv`,
    `/proc/<tid>/fd`, `/proc/<tid>/cwd`), asks `SECCOMP_IOCTL_NOTIF_ID_VALID` after every read, and
