@@ -1,0 +1,4 @@
+events	92
+json_lines_rejected	0
+repo_root_named_before_normalisation	0
+operator_user_name_replaced	after grading: the per-directory session path and file owner named the operator's account; replaced with ~ and operator

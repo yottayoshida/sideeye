@@ -1,0 +1,12 @@
+# quilt push -a over a tree whose patches/series names p1.diff (a.txt) and p2.diff (b.txt).
+# The state is the source tree itself; quilt finds patches/ and .pc/ from its cwd, so
+# cwd is the same directory (made before sideeye starts: mkdir -p /home/user/qtree).
+[world]
+state = "/home/user/qtree"
+
+[define]
+cwd       = "/home/user/qtree"
+setup     = "/home/user/authoring/define/setup.sh"
+operation = "quilt push -a"
+check     = "/home/user/authoring/define/check.sh"
+marker    = "Now at patch patches/p2.diff"

@@ -1,0 +1,4 @@
+# setup.sh, then mkdir .pc (killed before .pc/.version); check.sh judged beside a recover.sh that is exit 0
+checker(quilt) recovery exited 0: 
+checker(quilt) applied []: a=FAIL(quilt series exited 1: The working tree was created by an older version of quilt. Please run 'quilt upgrade'.) b=ok c=ok d=ok e=ok
+exit=1

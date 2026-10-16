@@ -1,0 +1,17 @@
+# The define: a gdbmtool session storing k4, k5, k6 into a GDBM database holding k1, k2, k3.
+# The state lives beside this directory (../state), because this directory is kept flat.
+# gdbmtool runs with -m (--no-mmap): with GDBM's default memory mapping its writes are
+# stores into a mapping, which no recorded operation carries, and preflight refuses the
+# run (state_changed_without_ops). -N skips any .gdbmtoolrc so the session is the same
+# everywhere. db.gdbm is scratch for the built-in byte layer only: GDBM rewrites its file
+# in place by design, and check.sh carries the real claim (INVARIANT.md).
+
+[world]
+state = "../state"
+
+[define]
+cwd       = "."
+setup     = "./setup.sh"
+operation = ["gdbmtool", "-N", "-q", "-m", "../state/db.gdbm", "store", "k4", "v4", ";", "store", "k5", "v5", ";", "store", "k6", "v6"]
+check     = "./check.sh"
+scratch   = ["db.gdbm"]

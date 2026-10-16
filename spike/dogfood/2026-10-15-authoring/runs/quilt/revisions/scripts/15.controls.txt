@@ -1,0 +1,10 @@
+start: want 0 got 0 as-expected | checker(quilt) applied []: a=ok b=ok c=ok d=ok e=ok
+completed: want 0 got 0 as-expected | checker(quilt) applied [p1.diff p2.diff]: a=ok b=ok c=ok d=ok e=ok
+recovered: want 0 got 0 as-expected | checker(quilt) applied []: a=ok b=ok c=ok d=ok e=ok
+order: want 1 got 1 as-expected | checker(quilt) applied [p2.diff]: a=FAIL(quilt series exited 1: The series file no longer matches the applied patches. Please run 'quilt pop -a'.) b=ok c=ok d=ok e=ok
+applied: want 1 got 1 as-expected | checker(quilt) applied [p1.diff p2.diff]: a=ok b=FAIL(p2.diff is applied but b.txt is not its result) c=ok d=ok e=ok
+unapplied: want 1 got 1 as-expected | checker(quilt) applied []: a=ok b=ok c=FAIL(p1.diff is not applied but a.txt is not pristine) d=ok e=ok
+backup: want 1 got 1 as-expected | checker(quilt) applied [p1.diff p2.diff]: a=ok b=ok c=ok d=FAIL(popping p1.diff did not restore pristine a.txt) e=ok
+records: want 1 got 1 as-expected | checker(quilt) applied []: a=ok b=ok c=ok d=ok e=FAIL(patches/p2.diff differs from the setup)
+crash-window: want 1 got 1 as-expected | checker(quilt) applied []: a=ok b=ok c=FAIL(p1.diff is not applied but a.txt is not pristine) d=ok e=ok
+exit=0

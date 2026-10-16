@@ -1,0 +1,139 @@
+{
+  "checker": "semantically valid",
+  "checker_why": "B・C・D の脚は、カードの leg (a)「applied means present」、leg (b)「present means applied」、leg (c)「`quilt pop -a` exits 0 and leaves both files as they were」にそれぞれ対応しています。D はカードが (c) の壊れた例に挙げる「`.pc/p1.diff/` holds a backup whose content is not the original」を `cmp` で落とします。`-f` を付けていても、B が成り立つ状態では付けない pop と結果は同じです。A の prefix 判定も「Admissible after a crash: any prefix of the push」に合っています。",
+  "controls": [
+    {
+      "file": "control-applied.sh",
+      "breaks_only_its_leg": "no",
+      "why": "b.txt を手で元に戻すので leg (a) が壊れます。ただし p2.diff がきれいに外れなくなり、`-f` なしの `quilt pop -a` は断って 0 以外で終わるので、カードの leg (c) も同時に壊れます（本人も friction 5 行目で「pop refuses a patch whose file was changed by hand」と書いています）。"
+    },
+    {
+      "file": "control-backup.sh",
+      "breaks_only_its_leg": "yes",
+      "why": "カードが leg (c) の『Broken alone』に挙げる状態そのものです（`.pc/p1.diff/a.txt` が元の中身ではない）。applied-patches と作業ファイルは push 完了後と同じなので、(a) と (b) は成り立ちます。"
+    },
+    {
+      "file": "control-order.sh",
+      "breaks_only_its_leg": "yes",
+      "why": "p2 だけが載っていて b.txt は p2 の結果、a.txt は元のままです。なので (a) と (b) は成り立ち、`quilt pop -a` も p2 を外して両方のファイルを元に戻せるので (c) も成り立ちます。破るのはカードの『any prefix』という許容条件だけです。"
+    },
+    {
+      "file": "control-records.sh",
+      "breaks_only_its_leg": "yes",
+      "why": "何も適用されておらず作業ファイルも元のままなので、カードの (a)(b)(c) はすべて成り立ちます（(c) はカードが許す『none』状態と同じ扱いです）。変わるのは本人の leg E（patches/p2.diff の中身）だけです。"
+    },
+    {
+      "file": "control-unapplied.sh",
+      "breaks_only_its_leg": "yes",
+      "why": "どのパッチも載っていないのに a.txt に p1 の変更があるので、leg (b) だけが壊れます。(a) は判定するものがなく、(c) は外すものがありません。カードが許す『none』状態と同じ扱いになります。"
+    }
+  ],
+  "friction": [
+    {
+      "row": 1,
+      "key": "other",
+      "why": "docker exec sh -c の引用符が崩れた件で、箱へファイルを送る手段の問題です。sideeye の文書やフラグとは関係ありません。"
+    },
+    {
+      "row": 2,
+      "key": "cli:--cwd",
+      "why": "cwd は解決する時点で存在していなければならず、そのため state と cwd を define/ の外に先に作る必要がありました。"
+    },
+    {
+      "row": 3,
+      "key": "cli:--oracle",
+      "why": "quilt は別プロセスを起こすので boundary_without_oracle で断られ、毎回 `--oracle /usr/bin/strace` が必要になりました。"
+    },
+    {
+      "row": 4,
+      "key": "cli:--fresh-state",
+      "why": "sideeye が setup の前に state を空にしないことを知らず、前回の `.pc/` が残って recording_run_failed になりました。これを扱うのが `--fresh-state` で、使われていません。"
+    },
+    {
+      "row": 5,
+      "key": "target",
+      "why": "D の脚の形は、pop が手で変えたファイルを断ることや、push が適用済みのファイルで失敗することなど、quilt の動きを知ることで決まりました。"
+    },
+    {
+      "row": 6,
+      "key": "target",
+      "why": "quilt に crash 復旧の手段がなく、使える修復は `quilt upgrade` だけだと突き止めたのは、quilt 自体を調べた結果です。"
+    },
+    {
+      "row": 7,
+      "key": "target",
+      "why": "quilt が読むだけのコマンドでも consistency_check で `.pc/applied-patches` に触れることは、quilt 側の性質です。"
+    },
+    {
+      "row": 8,
+      "key": "target",
+      "why": "series が applied-patches より新しいと quilt の series/applied/files がすべて断ることは、quilt 側の性質です。"
+    },
+    {
+      "row": 9,
+      "key": "target",
+      "why": "`/etc/quilt.quiltrc` の QUILT_PATCHES_PREFIX で一覧に `patches/` が付くことは、quilt 側の設定です。"
+    },
+    {
+      "row": 10,
+      "key": "readme:what-the-target-has-to-be",
+      "why": "子が回収された後に親が書く形でも child_touched_state_dir で断られました。これはこの refusal が参照する README『What the target has to be』の制約に当たり、文書からはこの形が断られると読み取れなかったのが原因です。"
+    },
+    {
+      "row": 11,
+      "key": "cli:--observe",
+      "why": "`--observe syscalls` に切り替えても同じ refusal が出て、mode を変えても抜けられませんでした。"
+    },
+    {
+      "row": 12,
+      "key": "cli:--observe",
+      "why": "`--observe supervised` には書き込める cgroup v2 が必要で、この箱では SETUP ERROR になりました。"
+    },
+    {
+      "row": 13,
+      "key": "cli:refusal-message",
+      "why": "refusal の next 行は「ラップされたコマンドを operation にせよ」と勧めますが、quilt push 自体がその pipeline を持つので当てはまりませんでした。"
+    },
+    {
+      "row": 14,
+      "key": "checker:verification-helper-missing",
+      "why": "explore が world の前で断ったので falsification などの checker gate が一度も動かず、checker を単独で確かめる手段がないため、手で走らせた control に頼るしかありませんでした。"
+    },
+    {
+      "row": 15,
+      "key": "readme:what-the-target-has-to-be",
+      "why": "どのプロセスの形が受け入れられるかが文書から分からず、probe を書いて自分で確かめる必要がありました。"
+    },
+    {
+      "row": 16,
+      "key": "cli:--config",
+      "why": "toml の argv 文字列に escape を入れると「escape sequences are not part of the contract」で断られ、script ファイルに分ける必要がありました。"
+    },
+    {
+      "row": 17,
+      "key": "cli:--observe",
+      "why": "default mode では bash 自身の `>>` が shim に記録されず（oracle_missed_operation）、syscalls mode でだけ受け入れられました。"
+    }
+  ],
+  "added": [
+    {
+      "event": 362,
+      "key": "other",
+      "what": "最終確認で、複数ファイルに `tail -1` を使って「option used in invalid context」で失敗し、`tail -n 1` のループで書き直しました。"
+    }
+  ],
+  "read_outside": [
+    "/usr/share/quilt/push",
+    "/usr/share/quilt/scripts/patchfns",
+    "/usr/share/quilt/upgrade",
+    "/usr/share/quilt (directory listing)",
+    "/etc/quilt.quiltrc",
+    "/etc/os-release",
+    "/home/user/revisions/index.tsv",
+    "/home/user/sework/oracle.txt",
+    "/home/user/qtree (and /home/user/qtree/.pc listing)",
+    "/tmp/pf.json",
+    "~/.claude/projects/-~--cctmp-subject-2e74gX/7694d72e-5d24-4ad1-888f-f74db7d1ec91/tool-results/bgbvbbwr1.txt",
+    "~/.claude/projects/-~--cctmp-subject-2e74gX/7694d72e-5d24-4ad1-888f-f74db7d1ec91/tool-results/b97p12tup.txt"
+  ]
+}
