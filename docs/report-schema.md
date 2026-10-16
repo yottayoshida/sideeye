@@ -191,11 +191,22 @@ after it, or a truncate whose result is a prefix of the old bytes followed by ze
 directory a recorded rename moved in from outside the judged root (`paths_attributed_to_rename`);
 an `open` accounts only for a file it left empty. Any other difference — a path removed, a
 directory, a file left empty, a path the define declares `scratch` — is accounted for by any
-operation that names it. A run with a difference nothing accounts for is never a PASS: it is
-refused `state_changed_unaccounted` unless an earlier detector refuses it first. The net is per
+operation that names it. A rename inside the judged root is followed (#892, ADR 0137): when the
+recorded operations that create, remove or move a name, replayed over the first snapshot's names
+and each succeeding only where POSIX would let it, end on exactly the second snapshot's names, a
+record names a path by the name it had when it was made, a file a rename moved still holding the
+bytes it held under its first name is accounted for by the move, and a path the replay removed is
+accounted for unless a rename took it out of the root. A replay that ends on other names — a name
+operation a call made without a record — is not used, nor is one where the names cannot say
+whether a rename moved anything (a directory renamed over an existing empty one, which a no-replace
+rename refuses; a recorded removal of a source the replay says a rename emptied; renames from more
+than one thread), nor in a run with no rename; the run is then reconciled without it. A run with a
+difference nothing accounts for is never a PASS: it is refused `state_changed_unaccounted` unless an earlier detector refuses it first. The net is per
 path and reads only the two snapshots, so it does not reach a call neither witness records on a
 file one of those operations also names — a recorded write beside it, a rename or link that put the
-file there first, or a truncate whose result the file's final bytes happen to match
+file there first, a directory rename that put it there, even one that failed for a reason the names
+do not show (permissions) when calls without a record then built its destination and removed its
+source, or left a source declared `scratch` where it was, or a truncate whose result the file's final bytes happen to match
 (`ftruncate(fd, 0)` followed by an unrecorded write of the old bytes' first part, the shape of
 dropping a file's last line) — nor on a `scratch` path, which a checker can still read. That file is
 accounted for, and the world in front of the unrecorded call is not explored. Under `--oracle` a

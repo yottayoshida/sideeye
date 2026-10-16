@@ -321,6 +321,222 @@ fn resolveForRecord(
     return joined[0 .. parent.len + 1 + base.len];
 }
 
+const Alias = struct { name: []const u8, from: u32, until: u32 };
+
+const Node = struct {
+    dir: bool,
+    origin: ?[]const u8,
+    outside: bool,
+    aliases: std.ArrayList(Alias),
+};
+
+const Names = std.StringArrayHashMapUnmanaged(*Node);
+
+const Replayed = struct {
+    names: Names,
+    moved_out: std.StringHashMapUnmanaged(void),
+
+    fn underOutside(self: Replayed, rel: []const u8) bool {
+        var it = self.names.iterator();
+        while (it.next()) |kv| if (kv.value_ptr.*.outside and isStrictAncestor(kv.key_ptr.*, rel)) return true;
+        return false;
+    }
+};
+
+fn inSubtree(top: []const u8, rel: []const u8) bool {
+    return contract.isInsideDir(rel, top);
+}
+
+fn hasChildren(names: *Names, rel: []const u8) bool {
+    for (names.keys()) |k| if (isStrictAncestor(rel, k)) return true;
+    return false;
+}
+
+fn parentIsDir(names: *Names, rel: []const u8) bool {
+    const parent = std.fs.path.dirname(rel) orelse return true;
+    const n = names.get(parent) orelse return false;
+    return n.dir;
+}
+
+fn addNode(a: Allocator, names: *Names, rel: []const u8, dir: bool, origin: ?[]const u8, outside: bool, seq: u32) !void {
+    const n = try a.create(Node);
+    n.* = .{ .dir = dir, .origin = origin, .outside = outside, .aliases = .empty };
+    try n.aliases.append(a, .{ .name = rel, .from = seq, .until = std.math.maxInt(u32) });
+    try names.put(a, rel, n);
+}
+
+fn moveSubtree(a: Allocator, names: *Names, src: []const u8, dst: []const u8, seq: u32) !void {
+    var moving: std.ArrayList([]const u8) = .empty;
+    for (names.keys()) |k| if (inSubtree(src, k)) try moving.append(a, k);
+    for (moving.items) |k| {
+        const n = names.fetchSwapRemove(k).?.value;
+        const to = try std.mem.concat(a, u8, &.{ dst, k[src.len..] });
+        n.aliases.items[n.aliases.items.len - 1].until = seq;
+        try n.aliases.append(a, .{ .name = to, .from = seq, .until = std.math.maxInt(u32) });
+        try names.put(a, to, n);
+    }
+}
+
+fn dropSubtree(names: *Names, rel: []const u8) void {
+    var i: usize = 0;
+    while (i < names.count()) {
+        if (inSubtree(rel, names.keys()[i])) names.swapRemoveAt(i) else i += 1;
+    }
+}
+
+fn bySeq(_: void, x: Op, y: Op) bool {
+    return x.seq < y.seq;
+}
+
+fn isNameOp(class: contract.OpClass) bool {
+    return actsOnLastComponent(class) or class == .open;
+}
+
+const Replay = struct {
+    a: Allocator,
+    names: Names = .empty,
+    vacated: std.StringHashMapUnmanaged(void) = .empty,
+
+    fn create(self: *Replay, rel: []const u8, dir: bool, outside: bool, seq: u32) !void {
+        if (rel.len == 0 or self.names.get(rel) != null or !parentIsDir(&self.names, rel)) return;
+        try addNode(self.a, &self.names, rel, dir, null, outside, seq);
+        _ = self.vacated.remove(rel);
+    }
+
+    fn vacate(self: *Replay, rel: []const u8) !void {
+        for (self.names.keys()) |k| if (inSubtree(rel, k)) try self.vacated.put(self.a, k, {});
+    }
+};
+
+// Not a guess from the final tree at which renames succeeded: a failed rename leaves its record
+// too. The record carries no result, so a later record that removes or moves a name the replay
+// says a rename emptied is read as that rename having failed, and the replay is not used.
+// ponytail: a flat name table, not one indexed by parent directory, so each name operation scans
+// all of it; a run that renames among very many names spends that here, before any world runs.
+fn replayNames(a: Allocator, ops: []const Op, links: []const Link, root: []const u8, alt: []const u8, initial: Snapshot, final: Snapshot, scratch_paths: []const []const u8, scratch: []u8) !?Replayed {
+    var name_ops: std.ArrayList(Op) = .empty;
+    var renames_here = false;
+    for (ops) |op| {
+        if (op.class == .unresolved or op.class == .unsupported) return null;
+        if (!isNameOp(op.class)) continue;
+        if (relUnderRoot(op.path, root, alt) == null and relUnderRoot(op.aux, root, alt) == null) continue;
+        if (op.class == .rename) renames_here = true;
+        try name_ops.append(a, op);
+    }
+    if (!renames_here) return null;
+    std.sort.block(Op, name_ops.items, {}, bySeq);
+    var r: Replay = .{ .a = a };
+    var moved_out: std.StringHashMapUnmanaged(void) = .empty;
+    for (initial.entries.items) |e| try addNode(a, &r.names, e.rel, e.kind == .dir, e.rel, false, 0);
+    var joined: [contract.max_path]u8 = undefined;
+    var renamer: ?[2]u64 = null;
+    for (name_ops.items) |op| {
+        var rel: [2]?[]const u8 = .{ null, null };
+        for ([2][]const u8{ op.path, op.aux }, 0..) |end, i| if (end.len > 0) if (relUnderRoot(end, root, alt)) |lex| {
+            rel[i] = try a.dupe(u8, resolveForRecord(lex, op.class, links, root, alt, scratch, &joined));
+        };
+        const removes = op.class == .unlink or op.class == .rmdir or op.class == .rename;
+        if (removes) if (rel[0]) |p| if (r.names.get(p) == null and r.vacated.contains(p)) return null;
+        switch (op.class) {
+            .mkdir, .open, .symlink => if (rel[0]) |p| try r.create(p, op.class == .mkdir, false, op.seq),
+            .unlink => if (rel[0]) |p| {
+                if (r.names.get(p)) |n| if (!n.dir) dropSubtree(&r.names, p);
+            },
+            .rmdir => if (rel[0]) |p| {
+                if (r.names.get(p)) |n| if (n.dir and !hasChildren(&r.names, p)) dropSubtree(&r.names, p);
+            },
+            // Not marked outside when its source is: only a rename carries a subtree in (ADR 0032 §4).
+            .link => if (rel[1]) |dst| try r.create(dst, false, false, op.seq),
+            .rename => {
+                // Not ordered across threads: each record's position is taken before its call runs.
+                const who = [2]u64{ op.pid, op.tid };
+                if (renamer) |w| {
+                    if (w[0] != who[0] or w[1] != who[1]) return null;
+                } else renamer = who;
+                const src = rel[0];
+                const dst = rel[1];
+                if (src != null and src.?.len == 0) continue;
+                if (dst != null and dst.?.len == 0) continue;
+                if (src == null) {
+                    if (dst) |d| try r.create(d, true, true, op.seq);
+                    continue;
+                }
+                const sn = r.names.get(src.?) orelse continue;
+                if (dst == null) {
+                    // Not counted as removed by a record: what the subtree held before it left was
+                    // never compared with anything.
+                    for (r.names.keys(), r.names.values()) |k, n| if (inSubtree(src.?, k)) {
+                        if (n.origin) |o| try moved_out.put(a, o, {});
+                    };
+                    try r.vacate(src.?);
+                    dropSubtree(&r.names, src.?);
+                    continue;
+                }
+                const d = dst.?;
+                if (std.mem.eql(u8, src.?, d) or isStrictAncestor(src.?, d) or !parentIsDir(&r.names, d)) continue;
+                if (r.names.get(d)) |dn| {
+                    if (sn.dir and (!dn.dir or hasChildren(&r.names, d))) continue;
+                    if (!sn.dir and dn.dir) continue;
+                    // Not replayed as replacing an empty directory: `RENAME_NOREPLACE` and
+                    // `RENAME_EXCL` record as a plain rename and refuse exactly this.
+                    if (sn.dir) return null;
+                    dropSubtree(&r.names, d);
+                }
+                try r.vacate(src.?);
+                try moveSubtree(a, &r.names, src.?, d, op.seq);
+                for (r.names.keys()) |k| if (inSubtree(d, k)) {
+                    _ = r.vacated.remove(k);
+                };
+            },
+            else => {},
+        }
+    }
+    const replayed: Replayed = .{ .names = r.names, .moved_out = moved_out };
+    for (final.entries.items) |e| {
+        if (scratchMatches(scratch_paths, e.rel)) continue;
+        if (replayed.names.get(e.rel)) |n| {
+            if (!n.outside and n.dir != (e.kind == .dir)) return null;
+        } else if (!replayed.underOutside(e.rel)) return null;
+    }
+    for (replayed.names.keys()) |k| {
+        if (scratchMatches(scratch_paths, k)) continue;
+        if (final.find(k) == null) return null;
+    }
+    return replayed;
+}
+
+// Not trusted when the differences name paths the snapshots do not hold: the replay's verdict
+// that the run ended with the final tree's names is only about those snapshots.
+fn diffsAgree(diffs: []const Difference, initial: Snapshot, final: Snapshot) bool {
+    for (diffs) |d| {
+        const before = initial.find(d.rel) != null;
+        const after = final.find(d.rel) != null;
+        const ok = switch (d.how) {
+            .only_in_first => before and !after,
+            .only_in_second => !before and after,
+            .kind_differs, .content_differs => before and after,
+        };
+        if (!ok) return false;
+    }
+    return true;
+}
+
+fn namesAlias(node: *const Node, lexical: []const u8, rel: []const u8, seq: u32) bool {
+    for (node.aliases.items) |al| {
+        if (seq < al.from or seq >= al.until) continue;
+        if (std.mem.eql(u8, al.name, lexical) or std.mem.eql(u8, al.name, rel)) return true;
+    }
+    return false;
+}
+
+fn movedUnchanged(node: *const Node, rel: []const u8, initial: Snapshot, final: Snapshot) bool {
+    const origin = node.origin orelse return false;
+    if (std.mem.eql(u8, origin, rel)) return false;
+    const before = initial.find(origin) orelse return false;
+    const after = final.find(rel) orelse return false;
+    return before.kind == after.kind and std.mem.eql(u8, before.content, after.content);
+}
+
 /// The direction is deliberate and one-way. "No operation names this path" is evidence
 /// the account is incomplete; "every path is named" is NOT evidence it is complete —
 /// a failed syscall leaves a record with no change behind it, and a subtree renamed in
@@ -339,6 +555,7 @@ fn resolveForRecord(
 /// that names it, `open` included, so a created-and-never-written file still explains itself
 /// (ADR 0032 §2).
 pub fn reconcile(
+    a: Allocator,
     diffs: []const Difference,
     ops: []const Op,
     links: []const Link,
@@ -352,7 +569,9 @@ pub fn reconcile(
 ) Reconciled {
     var res: Reconciled = .{ .stored = 0, .total = 0, .by_rename_prefix = 0 };
     var joined: [contract.max_path]u8 = undefined;
+    const replayed = if (replayNames(a, ops, links, root, alt, initial, final, scratch_paths, scratch) catch null) |rp| (if (diffsAgree(diffs, initial, final)) rp else null) else null;
     for (diffs) |d| {
+        const node: ?*Node = if (replayed) |rp| rp.names.get(d.rel) else null;
         const left = if (scratchMatches(scratch_paths, d.rel)) null else bytesLeft(d, initial, final);
         var named = false;
         var named_without_bytes = false;
@@ -372,7 +591,9 @@ pub fn reconcile(
                 // `symlink`+`rename` generation swap both went PASS exit 0 → UNKNOWN,
                 // naming `cur`. That is the same regression the substitution was written
                 // to fix, one level up, and the second revision of this code introduced it.
-                if (std.mem.eql(u8, lexical, d.rel) or std.mem.eql(u8, rel, d.rel)) {
+                if (std.mem.eql(u8, lexical, d.rel) or std.mem.eql(u8, rel, d.rel) or
+                    (node != null and op.class.isKillPoint() and namesAlias(node.?, lexical, rel, op.seq)))
+                {
                     if (left) |b| if (!canPutBytes(op, end, b, ops, root, alt)) {
                         named_without_bytes = true;
                         continue;
@@ -390,6 +611,13 @@ pub fn reconcile(
             }
             if (named) break;
         }
+        if (!named) if (replayed) |rp| {
+            if (d.how == .only_in_first) {
+                named = node == null and !rp.moved_out.contains(d.rel);
+            } else if (node) |n| {
+                if (n.outside) by_prefix = true else if (movedUnchanged(n, d.rel, initial, final)) named = true;
+            } else if (rp.underOutside(d.rel)) by_prefix = true;
+        };
         if (named) continue;
         if (by_prefix) {
             res.by_rename_prefix += 1;
@@ -589,7 +817,9 @@ fn reconcileIn(
 ) Reconciled {
     var scratch: [2048]u8 = undefined;
     const empty: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .entries = .empty };
-    return reconcile(diffs, ops, links, root, alt, empty, empty, &.{}, &scratch, out);
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    return reconcile(arena.allocator(), diffs, ops, links, root, alt, empty, empty, &.{}, &scratch, out);
 }
 
 fn reconcileWithContents(
@@ -599,12 +829,13 @@ fn reconcileWithContents(
     after: []const Entry,
     out: []Unaccounted,
 ) Reconciled {
-    return reconcileWithContentsExcept(diffs, ops, before, after, &.{}, out);
+    return reconcileWithContentsExcept(diffs, ops, &.{}, before, after, &.{}, out);
 }
 
 fn reconcileWithContentsExcept(
     diffs: []const Difference,
     ops: []const Op,
+    links: []const Link,
     before: []const Entry,
     after: []const Entry,
     scratch_paths: []const []const u8,
@@ -613,7 +844,9 @@ fn reconcileWithContentsExcept(
     var scratch: [2048]u8 = undefined;
     const initial: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .entries = .{ .items = @constCast(before), .capacity = before.len, .pointer_stability = .{} } };
     const final: Snapshot = .{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .entries = .{ .items = @constCast(after), .capacity = after.len, .pointer_stability = .{} } };
-    return reconcile(diffs, ops, &.{}, "/tmp/s", "", initial, final, scratch_paths, &scratch, out);
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    return reconcile(arena.allocator(), diffs, ops, links, "/tmp/s", "", initial, final, scratch_paths, &scratch, out);
 }
 
 test "reconcile: a file left holding bytes is accounted for only by a record that can have put them there (#814)" {
@@ -718,8 +951,8 @@ test "reconcile: a path declared scratch is accounted for by any record that nam
     const old = [_]Entry{.{ .rel = "cache/index", .kind = .file, .content = "v1" }};
     const new = [_]Entry{.{ .rel = "cache/index", .kind = .file, .content = "v2" }};
     const opened = [_]Op{.{ .class = .open, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/cache/index", .aux = "" }};
-    try std.testing.expect(reconcileWithContentsExcept(&changed, &opened, &old, &new, &.{"cache"}, &buf).clean());
-    try std.testing.expectEqual(@as(usize, 1), reconcileWithContentsExcept(&changed, &opened, &old, &new, &.{"elsewhere"}, &buf).total);
+    try std.testing.expect(reconcileWithContentsExcept(&changed, &opened, &.{}, &old, &new, &.{"cache"}, &buf).clean());
+    try std.testing.expectEqual(@as(usize, 1), reconcileWithContentsExcept(&changed, &opened, &.{}, &old, &new, &.{"elsewhere"}, &buf).total);
 }
 
 test "reconcile: a change no operation names is unaccounted (#405)" {
@@ -1352,4 +1585,289 @@ test "a mode alone is not a difference: the judgement reads kind and content (#6
     try std.testing.expectEqual(@as(usize, 0), diffSnapshots(a, b, &out).total);
     b.entries.items[0].content = "other";
     try std.testing.expectEqual(@as(usize, 1), diffSnapshots(a, b, &out).total);
+}
+
+fn testOp(class: contract.OpClass, seq: u32, path: []const u8, aux: []const u8) Op {
+    return .{ .class = class, .seq = seq, .pid = 7, .tid = 7, .path = path, .aux = aux };
+}
+
+fn testDir(rel: []const u8) Entry {
+    return .{ .rel = rel, .kind = .dir, .content = "" };
+}
+
+fn testFile(rel: []const u8, content: []const u8) Entry {
+    return .{ .rel = rel, .kind = .file, .content = content };
+}
+
+test "reconcile: a directory built under one name and renamed into place inside the root is accounted for" {
+    var buf: [4]Unaccounted = undefined;
+    const diffs = [_]Difference{ .{ .rel = "gen", .how = .only_in_second }, .{ .rel = "gen/data", .how = .only_in_second } };
+    const after = [_]Entry{ testDir("gen"), testFile("gen/data", "D") };
+    const ops = [_]Op{
+        testOp(.mkdir, 1, "/tmp/s/gen.tmp", ""),
+        testOp(.open, 2, "/tmp/s/gen.tmp/data", ""),
+        testOp(.write, 3, "/tmp/s/gen.tmp/data", ""),
+        testOp(.rename, 4, "/tmp/s/gen.tmp", "/tmp/s/gen"),
+    };
+    const r = reconcileWithContents(&diffs, &ops, &.{}, &after, &buf);
+    try std.testing.expect(r.clean());
+    try std.testing.expectEqual(@as(usize, 0), r.by_rename_prefix);
+}
+
+test "reconcile: a directory swapped for another whose old one is then removed is accounted for" {
+    var buf: [4]Unaccounted = undefined;
+    const before = [_]Entry{ testDir("cur"), testFile("cur/x", "X"), testDir("new"), testFile("new/y", "Y") };
+    const after = [_]Entry{ testDir("cur"), testFile("cur/y", "Y") };
+    const diffs = [_]Difference{
+        .{ .rel = "cur/x", .how = .only_in_first },
+        .{ .rel = "cur/y", .how = .only_in_second },
+        .{ .rel = "new", .how = .only_in_first },
+        .{ .rel = "new/y", .how = .only_in_first },
+    };
+    const ops = [_]Op{
+        testOp(.rename, 1, "/tmp/s/cur", "/tmp/s/old"),
+        testOp(.rename, 2, "/tmp/s/new", "/tmp/s/cur"),
+        testOp(.unlink, 3, "/tmp/s/old/x", ""),
+        testOp(.rmdir, 4, "/tmp/s/old", ""),
+    };
+    try std.testing.expect(reconcileWithContents(&diffs, &ops, &before, &after, &buf).clean());
+}
+
+test "reconcile: a write is followed through a chain of renames inside the root" {
+    var buf: [4]Unaccounted = undefined;
+    const before = [_]Entry{testDir("a")};
+    const after = [_]Entry{ testDir("c"), testFile("c/x", "X") };
+    const diffs = [_]Difference{ .{ .rel = "a", .how = .only_in_first }, .{ .rel = "c", .how = .only_in_second }, .{ .rel = "c/x", .how = .only_in_second } };
+    const ops = [_]Op{
+        testOp(.open, 1, "/tmp/s/a/x", ""),
+        testOp(.write, 2, "/tmp/s/a/x", ""),
+        testOp(.rename, 3, "/tmp/s/a", "/tmp/s/b"),
+        testOp(.rename, 4, "/tmp/s/b", "/tmp/s/c"),
+    };
+    try std.testing.expect(reconcileWithContents(&diffs, &ops, &before, &after, &buf).clean());
+}
+
+test "reconcile: a directory moved in from outside and renamed inside is counted as the move's" {
+    var buf: [4]Unaccounted = undefined;
+    const after = [_]Entry{ testDir("gen"), testFile("gen/f", "F") };
+    const diffs = [_]Difference{ .{ .rel = "gen", .how = .only_in_second }, .{ .rel = "gen/f", .how = .only_in_second } };
+    const ops = [_]Op{
+        testOp(.rename, 1, "/outside/stage", "/tmp/s/gen.tmp"),
+        testOp(.rename, 2, "/tmp/s/gen.tmp", "/tmp/s/gen"),
+    };
+    const r = reconcileWithContents(&diffs, &ops, &.{}, &after, &buf);
+    try std.testing.expect(r.clean());
+    try std.testing.expectEqual(@as(usize, 1), r.by_rename_prefix);
+}
+
+test "reconcile: a file a rename moved without a write is accounted for when its bytes did not change" {
+    var buf: [4]Unaccounted = undefined;
+    const before = [_]Entry{ testDir("cur"), testFile("cur/x", "X") };
+    const kept = [_]Entry{ testDir("cur"), testDir("old"), testFile("old/x", "X") };
+    const diffs = [_]Difference{ .{ .rel = "cur/x", .how = .only_in_first }, .{ .rel = "old", .how = .only_in_second }, .{ .rel = "old/x", .how = .only_in_second } };
+    const ops = [_]Op{ testOp(.rename, 1, "/tmp/s/cur", "/tmp/s/old"), testOp(.mkdir, 2, "/tmp/s/cur", "") };
+    try std.testing.expect(reconcileWithContents(&diffs, &ops, &before, &kept, &buf).clean());
+
+    const rewritten = [_]Entry{ testDir("cur"), testDir("old"), testFile("old/x", "EVIL") };
+    const r = reconcileWithContents(&diffs, &ops, &before, &rewritten, &buf);
+    try std.testing.expectEqual(@as(usize, 1), r.total);
+    try std.testing.expectEqualStrings("old/x", buf[0].rel);
+}
+
+test "reconcile: a child deleted without a record after its directory was renamed is not accounted for" {
+    var buf: [4]Unaccounted = undefined;
+    const before = [_]Entry{ testDir("cur"), testFile("cur/x", "X") };
+    const after = [_]Entry{testDir("old")};
+    const diffs = [_]Difference{ .{ .rel = "cur", .how = .only_in_first }, .{ .rel = "cur/x", .how = .only_in_first }, .{ .rel = "old", .how = .only_in_second } };
+    const ops = [_]Op{testOp(.rename, 1, "/tmp/s/cur", "/tmp/s/old")};
+    const r = reconcileWithContents(&diffs, &ops, &before, &after, &buf);
+    try std.testing.expect(!r.clean());
+    try std.testing.expectEqualStrings("cur/x", buf[0].rel);
+}
+
+test "reconcile: a rename whose source never existed moves nothing, so a write under that source explains nothing" {
+    var buf: [4]Unaccounted = undefined;
+    const before = [_]Entry{ testDir("b"), testFile("b/x", "OLD") };
+    const after = [_]Entry{ testDir("b"), testFile("b/x", "EVIL") };
+    const diffs = [_]Difference{.{ .rel = "b/x", .how = .content_differs }};
+    const ops = [_]Op{ testOp(.write, 1, "/tmp/s/a/x", ""), testOp(.rename, 2, "/tmp/s/a", "/tmp/s/b") };
+    const r = reconcileWithContents(&diffs, &ops, &before, &after, &buf);
+    try std.testing.expectEqual(@as(usize, 1), r.total);
+}
+
+test "reconcile: a rename refused for a non-empty destination moves nothing, even after its source is removed" {
+    var buf: [4]Unaccounted = undefined;
+    const before = [_]Entry{ testDir("b"), testFile("b/x", "OLD") };
+    const after = [_]Entry{ testDir("b"), testFile("b/x", "EVIL") };
+    const diffs = [_]Difference{.{ .rel = "b/x", .how = .content_differs }};
+    const ops = [_]Op{
+        testOp(.mkdir, 1, "/tmp/s/a", ""),
+        testOp(.open, 2, "/tmp/s/a/x", ""),
+        testOp(.write, 3, "/tmp/s/a/x", ""),
+        testOp(.rename, 4, "/tmp/s/a", "/tmp/s/b"),
+        testOp(.unlink, 5, "/tmp/s/a/x", ""),
+        testOp(.rmdir, 6, "/tmp/s/a", ""),
+    };
+    try std.testing.expectEqual(@as(usize, 1), reconcileWithContents(&diffs, &ops, &before, &after, &buf).total);
+}
+
+test "reconcile: a write under a renamed directory's old name, made after the rename, explains nothing at the new name" {
+    var buf: [4]Unaccounted = undefined;
+    const before = [_]Entry{ testDir("cur"), testFile("cur/x", "X") };
+    const after = [_]Entry{ testDir("cur"), testFile("cur/x", "NEW"), testDir("old"), testFile("old/x", "EVIL") };
+    const diffs = [_]Difference{ .{ .rel = "cur/x", .how = .content_differs }, .{ .rel = "old", .how = .only_in_second }, .{ .rel = "old/x", .how = .only_in_second } };
+    const ops = [_]Op{
+        testOp(.rename, 1, "/tmp/s/cur", "/tmp/s/old"),
+        testOp(.mkdir, 2, "/tmp/s/cur", ""),
+        testOp(.open, 3, "/tmp/s/cur/x", ""),
+        testOp(.write, 4, "/tmp/s/cur/x", ""),
+    };
+    const r = reconcileWithContents(&diffs, &ops, &before, &after, &buf);
+    try std.testing.expectEqual(@as(usize, 1), r.total);
+    try std.testing.expectEqualStrings("old/x", buf[0].rel);
+}
+
+test "reconcile: a subtree renamed out of the root is still not accounted for below its top" {
+    var buf: [4]Unaccounted = undefined;
+    const before = [_]Entry{ testDir("cur"), testFile("cur/x", "X") };
+    const diffs = [_]Difference{ .{ .rel = "cur", .how = .only_in_first }, .{ .rel = "cur/x", .how = .only_in_first } };
+    const ops = [_]Op{testOp(.rename, 1, "/tmp/s/cur", "/outside/cur")};
+    const r = reconcileWithContents(&diffs, &ops, &before, &.{}, &buf);
+    try std.testing.expectEqual(@as(usize, 1), r.total);
+    try std.testing.expectEqualStrings("cur/x", buf[0].rel);
+}
+
+test "reconcile: a directory renamed through an interior symlink is accounted for where the snapshot holds it" {
+    var buf: [4]Unaccounted = undefined;
+    const before = [_]Entry{ .{ .rel = "cur", .kind = .symlink, .content = "v1" }, testDir("v1"), testDir("v1/d"), testFile("v1/d/x", "X") };
+    const after = [_]Entry{ .{ .rel = "cur", .kind = .symlink, .content = "v1" }, testDir("v1"), testDir("v1/e"), testFile("v1/e/x", "X") };
+    const diffs = [_]Difference{
+        .{ .rel = "v1/d", .how = .only_in_first },
+        .{ .rel = "v1/d/x", .how = .only_in_first },
+        .{ .rel = "v1/e", .how = .only_in_second },
+        .{ .rel = "v1/e/x", .how = .only_in_second },
+    };
+    const ops = [_]Op{testOp(.rename, 1, "/tmp/s/cur/d", "/tmp/s/cur/e")};
+    const links = [_]Link{.{ .rel = "cur", .target = "v1" }};
+    try std.testing.expect(reconcileWithContentsExcept(&diffs, &ops, &links, &before, &after, &.{}, &buf).clean());
+    try std.testing.expect(!reconcileWithContents(&diffs, &ops, &before, &after, &buf).clean());
+}
+
+test "reconcile: a child rewritten without a record before its directory's rename is not accounted for" {
+    var buf: [4]Unaccounted = undefined;
+    const before = [_]Entry{ testDir("cur"), testFile("cur/x", "X") };
+    const after = [_]Entry{ testDir("old"), testFile("old/x", "EVIL") };
+    const diffs = [_]Difference{ .{ .rel = "cur", .how = .only_in_first }, .{ .rel = "cur/x", .how = .only_in_first }, .{ .rel = "old", .how = .only_in_second }, .{ .rel = "old/x", .how = .only_in_second } };
+    const ops = [_]Op{testOp(.rename, 1, "/tmp/s/cur", "/tmp/s/old")};
+    const r = reconcileWithContents(&diffs, &ops, &before, &after, &buf);
+    try std.testing.expectEqual(@as(usize, 1), r.total);
+    try std.testing.expectEqualStrings("old/x", buf[0].rel);
+}
+
+test "reconcile: a rename onto the root itself moves nothing" {
+    var buf: [4]Unaccounted = undefined;
+    const before = [_]Entry{ testDir("a"), testFile("a/x", "X") };
+    const after = [_]Entry{ testDir("a"), testFile("a/x", "EVIL") };
+    const diffs = [_]Difference{.{ .rel = "a/x", .how = .content_differs }};
+    const ops = [_]Op{testOp(.rename, 1, "/tmp/s/a", "/tmp/s")};
+    try std.testing.expectEqual(@as(usize, 1), reconcileWithContents(&diffs, &ops, &before, &after, &buf).total);
+}
+
+test "reconcile: a write without a record under a name a link brought in from outside is not accounted for" {
+    var buf: [4]Unaccounted = undefined;
+    const before = [_]Entry{testDir("a")};
+    const after = [_]Entry{ testDir("b"), testDir("x"), testFile("x/evil", "E") };
+    const diffs = [_]Difference{
+        .{ .rel = "a", .how = .only_in_first },
+        .{ .rel = "b", .how = .only_in_second },
+        .{ .rel = "x", .how = .only_in_second },
+        .{ .rel = "x/evil", .how = .only_in_second },
+    };
+    const ops = [_]Op{ testOp(.link, 1, "/outside/f", "/tmp/s/x"), testOp(.rename, 2, "/tmp/s/a", "/tmp/s/b") };
+    const r = reconcileWithContents(&diffs, &ops, &before, &after, &buf);
+    try std.testing.expectEqual(@as(usize, 1), r.total);
+    try std.testing.expectEqualStrings("x/evil", buf[0].rel);
+    try std.testing.expectEqual(@as(usize, 0), r.by_rename_prefix);
+}
+
+test "reconcile: a directory renamed over an empty one explains nothing, since a no-replace rename refuses it" {
+    var buf: [4]Unaccounted = undefined;
+    const before = [_]Entry{testDir("pub")};
+    const after = [_]Entry{ testDir("pub"), testFile("pub/f", "EVIL") };
+    const diffs = [_]Difference{.{ .rel = "pub/f", .how = .only_in_second }};
+    const ops = [_]Op{
+        testOp(.mkdir, 1, "/tmp/s/stage", ""),
+        testOp(.open, 2, "/tmp/s/stage/f", ""),
+        testOp(.write, 3, "/tmp/s/stage/f", ""),
+        testOp(.rename, 4, "/tmp/s/stage", "/tmp/s/pub"),
+    };
+    try std.testing.expectEqual(@as(usize, 1), reconcileWithContents(&diffs, &ops, &before, &after, &buf).total);
+}
+
+test "reconcile: a rename whose source a later record removes is read as failed, and moves nothing" {
+    var buf: [4]Unaccounted = undefined;
+    const after = [_]Entry{ testDir("pub"), testFile("pub/f", "EVIL") };
+    const diffs = [_]Difference{ .{ .rel = "pub", .how = .only_in_second }, .{ .rel = "pub/f", .how = .only_in_second } };
+    const ops = [_]Op{
+        testOp(.mkdir, 1, "/tmp/s/stage", ""),
+        testOp(.open, 2, "/tmp/s/stage/f", ""),
+        testOp(.write, 3, "/tmp/s/stage/f", ""),
+        testOp(.rename, 4, "/tmp/s/stage", "/tmp/s/pub"),
+        testOp(.unlink, 5, "/tmp/s/stage/f", ""),
+        testOp(.rmdir, 6, "/tmp/s/stage", ""),
+    };
+    const r = reconcileWithContents(&diffs, &ops, &.{}, &after, &buf);
+    try std.testing.expectEqual(@as(usize, 1), r.total);
+    try std.testing.expectEqualStrings("pub/f", buf[0].rel);
+}
+
+test "reconcile: renames recorded by two threads are not replayed" {
+    var buf: [4]Unaccounted = undefined;
+    const after = [_]Entry{ testDir("gen"), testFile("gen/data", "D") };
+    const diffs = [_]Difference{ .{ .rel = "gen", .how = .only_in_second }, .{ .rel = "gen/data", .how = .only_in_second } };
+    var ops = [_]Op{
+        testOp(.mkdir, 1, "/tmp/s/gen.tmp", ""),
+        testOp(.open, 2, "/tmp/s/gen.tmp/data", ""),
+        testOp(.write, 3, "/tmp/s/gen.tmp/data", ""),
+        testOp(.rename, 4, "/tmp/s/gen.tmp", "/tmp/s/gen.mid"),
+        testOp(.rename, 5, "/tmp/s/gen.mid", "/tmp/s/gen"),
+    };
+    try std.testing.expect(reconcileWithContents(&diffs, &ops, &.{}, &after, &buf).clean());
+    ops[4].tid = 8;
+    try std.testing.expectEqual(@as(usize, 1), reconcileWithContents(&diffs, &ops, &.{}, &after, &buf).total);
+}
+
+test "reconcile: a record that is not a crash point names no earlier name of a moved path" {
+    var buf: [4]Unaccounted = undefined;
+    const before = [_]Entry{ testDir("cur"), testFile("cur/x", "X") };
+    const after = [_]Entry{ testDir("cur"), testFile("cur/x", ""), testDir("old"), .{ .rel = "old/x", .kind = .symlink, .content = "t" } };
+    const diffs = [_]Difference{
+        .{ .rel = "cur/x", .how = .content_differs },
+        .{ .rel = "old", .how = .only_in_second },
+        .{ .rel = "old/x", .how = .only_in_second },
+    };
+    const ops = [_]Op{
+        testOp(.rename, 1, "/tmp/s/cur", "/tmp/s/old"),
+        testOp(.mkdir, 2, "/tmp/s/cur", ""),
+        testOp(.open, 3, "/tmp/s/cur/x", ""),
+        testOp(.close, 0, "/tmp/s/cur/x", ""),
+    };
+    const r = reconcileWithContents(&diffs, &ops, &before, &after, &buf);
+    try std.testing.expectEqual(@as(usize, 1), r.total);
+    try std.testing.expectEqualStrings("old/x", buf[0].rel);
+}
+
+test "reconcile: a scratch path removed without a record is not accounted for by a run that renames" {
+    var buf: [4]Unaccounted = undefined;
+    const before = [_]Entry{ testDir("a"), testDir("cache"), testFile("cache/x", "C") };
+    const after = [_]Entry{ testDir("b"), testDir("cache") };
+    const diffs = [_]Difference{
+        .{ .rel = "a", .how = .only_in_first },
+        .{ .rel = "b", .how = .only_in_second },
+        .{ .rel = "cache/x", .how = .only_in_first },
+    };
+    const ops = [_]Op{testOp(.rename, 1, "/tmp/s/a", "/tmp/s/b")};
+    const r = reconcileWithContentsExcept(&diffs, &ops, &.{}, &before, &after, &.{"cache"}, &buf);
+    try std.testing.expectEqual(@as(usize, 1), r.total);
+    try std.testing.expectEqualStrings("cache/x", buf[0].rel);
 }

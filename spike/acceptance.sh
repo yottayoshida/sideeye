@@ -11642,6 +11642,54 @@ else
     fails=$((fails + rn_fails))
 fi
 
+echo ""
+echo "=========== check 2dr: a directory renamed inside the root is accounted for ==========="
+dr_fails=0
+dr() {
+    label=$1 init=$2 op=$3 chk=$4 want_rc=$5 want=$6 named=$7; shift 7
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    set -- --state /tmp/acc/state --operation "$OUT/toy-dirswap $op" --shim "$SHIM" \
+        --work /tmp/acc/work --json /tmp/acc/dirswap.json "$@"
+    [ "$init" = "-" ] || set -- "$@" --setup "$OUT/toy-dirswap $init"
+    [ "$chk" = "-" ] || set -- "$@" --check "$OUT/toy-dirswap $chk"
+    o=$("$SIDEEYE" explore "$@" 2>&1)
+    rc=$?
+    case "$want" in PASS|FAIL) refusal_ok=yes ;; *) refused_uncredited "$want" "$rc" "$o" && refusal_ok=yes || refusal_ok=no ;; esac
+    if [ "$rc" != "$want_rc" ] || [ "$refusal_ok" = no ]; then
+        echo "FAIL $label: wanted exit $want_rc ($want), got $rc"
+        printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+        dr_fails=$((dr_fails + 1)); return
+    fi
+    WANT=$want NAMED=$named python3 - <<'PYEOF' || { echo "FAIL $label"; dr_fails=$((dr_fails + 1)); return; }
+import json, os, sys
+d = json.load(open("/tmp/acc/dirswap.json"))
+want, named = os.environ["WANT"], os.environ["NAMED"]
+if want in ("PASS", "FAIL"):
+    if d.get("verdict") != want:
+        sys.exit("     | verdict %r %r" % (d.get("verdict"), d.get("unknown_reason")))
+    # Not by the outside-in rule: a nonzero count would mean that rule was widened to the root.
+    if d.get("paths_attributed_to_rename") != 0:
+        sys.exit("     | paths_attributed_to_rename %r" % d.get("paths_attributed_to_rename"))
+else:
+    if d.get("unknown_reason") != want:
+        sys.exit("     | unknown_reason %r" % d.get("unknown_reason"))
+    if named not in (d.get("message") or ""):
+        sys.exit("     | the refusal does not name %s: %r" % (named, d.get("message")))
+PYEOF
+    echo "ok   $label"
+}
+dr "a directory built as gen.tmp and renamed to gen passes" init-publish publish check-publish 0 PASS - \
+    --scratch gen.tmp --oracle /usr/bin/strace
+dr "a directory swapped for a new one, the old removed, fails where cur is missing" init-swap swap check-swap 1 FAIL - \
+    --oracle /usr/bin/strace
+dr "a child rewritten without a record after its directory's rename is refused" init-swap ctl-rewrite - 2 state_changed_unaccounted old/x \
+    --allow-unverified
+dr "a child removed without a record after its directory's rename is refused" init-swap ctl-delete - 2 state_changed_unaccounted cur/x \
+    --allow-unverified
+dr "a write without a record after a rename refused for a non-empty destination is refused" init-enotempty ctl-enotempty - 2 state_changed_unaccounted b/x \
+    --allow-unverified
+[ "$dr_fails" = "0" ] || fails=$((fails + dr_fails))
+
 
 echo ""
 echo "=========== check 2ah: the mixed-visibility target refuses without an oracle too ==========="
