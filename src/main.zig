@@ -618,8 +618,14 @@ fn phaseDefine(run: *Run) void {
                 args.cwd = if (d.cwd) |c| resolvePathAgainst(arena, dir, c) else null;
                 args.apparatus = d.apparatus orelse &.{};
                 args.scratch = d.scratch orelse &.{};
-                args.recovery = if (d.recovery) |r| resolveRecoveryAgainst(arena, dir, r) else null;
-                args.recovery_check = if (d.recovery_check) |r| resolveRecoveryAgainst(arena, dir, r) else null;
+                args.recovery = if (d.recovery) |r| resolveCommandAgainst(arena, dir, r) else null;
+                args.recovery_check = if (d.recovery_check) |r| resolveCommandAgainst(arena, dir, r) else null;
+                // Not turned into argv as the define's commands are: a recovery is carried and printed on
+                // the replay line as one string, which splits on spaces wherever it is read again.
+                if (std.mem.indexOfScalar(u8, dir, ' ') != null) for ([_]?[]const u8{ d.recovery, d.recovery_check }, [_]?[]const u8{ args.recovery, args.recovery_check }) |written, resolved| {
+                    if (written != null and resolved.?.ptr != written.?.ptr)
+                        setupErrorFmt(arena, .define_invalid, "[recovery] takes the string form only, split on spaces, and {s}, the directory its relative command resolves against, holds a space: move the sideeye.toml to a path without one, or name the recovery by an absolute path without one", .{textShown(arena, dir)});
+                };
                 if (d.expected_status) |es| {
                     args.expect_status = config.parseExpectStatus(es) orelse setupError(.define_invalid, "expected_status must be an integer in 0..255 (one double-quoted string, as every value here)");
                     // Same mirror as the flag: refusals between here and the
@@ -3763,15 +3769,6 @@ fn resolveCommandAgainst(arena: std.mem.Allocator, dir: []const u8, cmd: []const
     const tail = if (sp) |p| rest[p..] else "";
     if (head.len == 0 or head[0] == '/' or std.mem.indexOfScalar(u8, head, '/') == null) return cmd;
     return std.fmt.allocPrint(arena, "{s}/{s}{s}", .{ dir, head, tail }) catch setupError(.environment, "out of memory");
-}
-
-fn resolveRecoveryAgainst(arena: std.mem.Allocator, dir: []const u8, cmd: []const u8) []const u8 {
-    const resolved = resolveCommandAgainst(arena, dir, cmd);
-    // Not turned into argv as the define's commands are: a recovery is carried and printed on the
-    // replay line as one string, which splits on spaces wherever it is read again.
-    if (resolved.ptr != cmd.ptr and std.mem.indexOfScalar(u8, dir, ' ') != null)
-        setupErrorFmt(arena, .define_invalid, "[recovery] takes the string form only, split on spaces, and {s}, the directory its relative command resolves against, holds a space: move the sideeye.toml to a path without one, or name the recovery by an absolute path without one", .{textShown(arena, dir)});
-    return resolved;
 }
 
 fn resolveCommand(arena: std.mem.Allocator, dir: []const u8, cmd: config.Command) config.Command {
