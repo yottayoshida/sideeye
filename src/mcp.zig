@@ -1677,7 +1677,14 @@ fn summarizeEvidenceOrErr(arena: std.mem.Allocator, ev: evidence.Evidence, case_
         if (r.old_bytes_elsewhere == .yes) try body.print(arena, " at {s}", .{try q(arena, r.old_bytes_at)});
         try body.print(arena, " scratch {s}", .{if (r.declared_scratch) "yes" else "no"});
     }
-    if (ev.checker.diagnostic) |d| try body.print(arena, "; checker said {s}", .{try q(arena, d)});
+    // Nothing said for null: a bundle written before "" existed holds null for a checker that
+    // printed nothing as well.
+    if (ev.checker.diagnostic) |d| {
+        if (d.len == 0)
+            try body.appendSlice(arena, "; checker printed nothing")
+        else
+            try body.print(arena, "; checker's last line, up to its first {d} bytes, {s}", .{ evidence.diagnostic_max, try q(arena, d) });
+    }
     for (ev.caveats) |c| try body.print(arena, "; caveat {s}", .{try q(arena, c)});
     if (!recovery_closed) try body.print(arena, "; recovery {s}", .{try q(arena, ev.recovery.result)});
     try body.print(arena, "; state {s}; measured by sideeye {s}", .{ try q(arena, ev.target.state_root), try q(arena, ev.sideeye_version) });
@@ -2549,4 +2556,23 @@ fn repeat(comptime s: []const u8, comptime n: usize) *const [s.len * n]u8 {
         break :blk buf;
     };
     return &out;
+}
+
+test "an evidence summary says a checker printed nothing only when its bundle says so, and calls no null unreadable" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    var ev = evidence.testBundle(.{ .configured = true, .failed = true, .diagnostic = "" });
+    const silent = summarizeEvidence(arena, ev, .none).?;
+    try std.testing.expect(std.mem.indexOf(u8, silent, "; checker printed nothing") != null);
+    try std.testing.expect(std.mem.indexOf(u8, silent, "could not be read back") == null);
+
+    ev.checker.diagnostic = null;
+    const unreadable = summarizeEvidence(arena, ev, .none).?;
+    try std.testing.expect(std.mem.indexOf(u8, unreadable, "could not be read back") == null);
+    try std.testing.expect(std.mem.indexOf(u8, unreadable, "printed nothing") == null);
+
+    ev.checker.diagnostic = "FAIL: a";
+    const said = summarizeEvidence(arena, ev, .none).?;
+    try std.testing.expect(std.mem.indexOf(u8, said, "; checker's last line, up to its first 400 bytes, \"FAIL: a\"") != null);
 }
