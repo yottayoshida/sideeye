@@ -635,10 +635,16 @@ fn returnedPath(line: []const u8, out: []u8) ?[]const u8 {
     return null;
 }
 
+// Not searched for anywhere on the line: a quoted path can spell it, and strace leaves `<`
+// and `>` unescaped there.
+fn isUnfinished(line: []const u8) bool {
+    return std.mem.endsWith(u8, line, "<unfinished ...>");
+}
+
 fn visiblyFailed(line: []const u8) bool {
     // An unfinished half has no result at all; a ` = -` on it is inside an argument — a file
     // name the target chose (second review).
-    if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) return false;
+    if (isUnfinished(line)) return false;
     const at = std.mem.lastIndexOf(u8, line, " = ") orelse return false;
     const rhs = std.mem.trim(u8, line[at + 3 ..], " \t");
     return rhs.len > 0 and rhs[0] == '-';
@@ -751,7 +757,7 @@ fn cloneRefuses(kind: CloneKind, finished_line: []const u8) bool {
 }
 
 fn noteClone(arena: std.mem.Allocator, kind: CloneKind, line: []const u8, pid: ?u32, pending: *std.ArrayList(PendingClone), out: *Parsed) !void {
-    if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) {
+    if (isUnfinished(line)) {
         try pending.append(arena, .{ .pid = pid orelse 0, .kind = kind });
     } else if (cloneRefuses(kind, line) and out.unsupported == null) {
         out.unsupported = try arena.dupe(u8, if (kind == .unreadable) unreadable_ioctl_refusal else clone_refusal);
@@ -1177,7 +1183,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // did not change the state, and the restarted call, if any, is its own line.
             if (fold_restarted and isRestartedCall(line)) {
                 if (takePending(&pending, pid)) |q| {
-                    if (std.mem.indexOf(u8, line, " resumed>") != null) try retract(arena, q, &dead_ops, &dead_muts, &out);
+                    if (resumedCall(line) != null) try retract(arena, q, &dead_ops, &dead_muts, &out);
                 }
                 continue;
             }
@@ -1219,7 +1225,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         if (renamesOrLinks(name) and !visiblyFailed(line)) rw_narrowing = false;
         if (isOpenCall(name) and !isReadOnlyOpen(name, line)) {
             var rbuf: [contract.max_path]u8 = undefined;
-            if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) {
+            if (isUnfinished(line)) {
                 try pending_rw_open.append(arena, pid orelse 0);
             } else if (returnedPath(line, &rbuf)) |p| {
                 if (insideEither(p, state_dir, state_alt)) try rw_paths.append(arena, try arena.dupe(u8, p));
@@ -1229,7 +1235,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             !argContains(line, 2, "PROT_WRITE") and mapsWritableStateFile(line, state_dir, state_alt, rw_paths.items, rw_narrowing))
         {
             if (traceNumber(syscallArg(line, 1))) |len| {
-                if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) {
+                if (isUnfinished(line)) {
                     try pending_maps.append(arena, .{ .pid = pid orelse 0, .len = len });
                 } else if (returnedAddress(line)) |addr| {
                     try shared_maps.append(arena, .{ .start = addr, .end = addr +| pageUp(len) });
@@ -1239,7 +1245,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         if (std.mem.eql(u8, name, "mremap")) {
             if (traceNumber(syscallArg(line, 0))) |old| if (traceNumber(syscallArg(line, 1))) |old_len| if (traceNumber(syscallArg(line, 2))) |new_len| {
                 if (overlapsShared(shared_maps.items, old, @max(old_len, 1))) {
-                    if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) {
+                    if (isUnfinished(line)) {
                         try pending_maps.append(arena, .{ .pid = pid orelse 0, .len = new_len });
                     } else if (returnedAddress(line)) |addr| {
                         try shared_maps.append(arena, .{ .start = addr, .end = addr +| pageUp(new_len) });
@@ -1278,7 +1284,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
                 if (is_primary) {
                     if (returnedPid(line)) |t| {
                         try out.subject_tids.append(arena, t);
-                    } else if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) {
+                    } else if (isUnfinished(line)) {
                         try pending_thread_clone.append(arena, pid orelse 0);
                     }
                 }
@@ -1316,7 +1322,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
                     if (dir.len > 0 and dir.len <= cwd_buf.len) {
                         @memcpy(cwd_buf[0..dir.len], dir);
                         cwd = cwd_buf[0..dir.len];
-                    } else cwd = null; // no annotation (a raw fd), or one past the buffer: cwd is now unknown
+                    } else cwd = null;
                 }
             }
             continue;
@@ -1563,6 +1569,37 @@ test "a state file opened for writing under a name holding ' = ' is remembered, 
     ;
     const p = try parse(a, text, "/tmp/s", "", "/work");
     try std.testing.expectEqualStrings("mprotect(PROT_WRITE) on a shared mapping of a state file", p.unsupported orelse "(none)");
+}
+
+test "a quoted path spelling '<unfinished ...>' does not make a finished open look split" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD</work>, "/tmp/s/x<unfinished ...>", O_RDWR) = 3</tmp/s/x\74unfinished ...\76>
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/x\74unfinished ...\76>, 0) = 0x7f0000000000
+        \\42    mprotect(0x7f0000000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+    ;
+    const p = try parse(a, text, "/tmp/s", "", "/work");
+    try std.testing.expectEqualStrings("mprotect(PROT_WRITE) on a shared mapping of a state file", p.unsupported orelse "(none)");
+}
+
+test "a restarted write whose data spells ' resumed>' does not retract the operation before it" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const text =
+        \\45    execve("/tmp/toy-sig", ["toy-sig", "rotate"], 0x7ff) = 0
+        \\45    write(3</tmp/sg/f>, "x\n", 2) = 2
+        \\45    write(3</tmp/sg/f>, " resumed>", 9) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+        \\45    write(3</tmp/sg/f>, " resumed>", 9) = 9
+        \\
+    ;
+    fold_restarted = true;
+    defer fold_restarted = false;
+    const p = try parse(arena_state.allocator(), text, "/tmp/sg", "", "/work");
+    try std.testing.expectEqualSlices(contract.OpClass, &.{ .write, .write }, p.classes.items);
 }
 
 test "an fchdir into a directory whose escaped annotation is long moves the cwd, and one past the buffer leaves it unknown" {

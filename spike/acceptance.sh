@@ -106,8 +106,6 @@ run_case "toy-bug FAILs"       "$OUT/toy-bug"   1 "crash point 5 of 5"
 run_case "  ...names the window" "$OUT/toy-bug" 1 "after  unlink"
 run_case "  ...and the next op"  "$OUT/toy-bug" 1 "before rename"
 
-# A state path holding bytes strace escapes in its descriptor annotations — non-ASCII, and a
-# bracket it does not escape — reaches the verdicts the ASCII path above reaches.
 for c899 in "toy-bug|1|crash point 5 of 5" "toy-fixed|0|explored worlds satisfied"; do
     t899=${c899%%|*}; w899=${c899#*|}; x899=${w899%%|*}; f899=${w899#*|}
     rm -rf /tmp/acc-899 && mkdir -p "/tmp/acc-899/デ[x/state"
