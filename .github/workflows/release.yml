@@ -13,6 +13,9 @@ name: release
 #                        exist (gh release view) before announcing anything.
 #   workflow_dispatch  — the recovery path: re-builds, and uploads when a tag is named,
 #                        so a published release that lost its assets can be repaired.
+#                        Dispatch it from main, naming a tag main's copy of this file builds
+#                        (v1.14.0 on): not from the tag, whose copy replaces every asset, and
+#                        not for an older tag, whose tree lacks what this copy runs.
 #   pull_request       — build-only proof of the matrix, for PRs touching this file,
 #                        down to the artifacts download-artifact hands back.
 
@@ -28,6 +31,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/release.yml
+      - spike/release-upload-missing.sh
 
 permissions:
   contents: read
@@ -210,6 +214,16 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
+      # Not `ref: inputs.tag`: a tag older than the upload script has no copy of it.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: The upload proves it can go red, and this file uploads through it
+        run: |
+          sh spike/release-upload-missing.sh --selftest
+          sh spike/release-upload-missing.sh --check-workflow .github/workflows/release.yml
+
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: dist
@@ -237,6 +251,11 @@ jobs:
     permissions:
       contents: write
     steps:
+      # Not `ref: inputs.tag`: a tag older than the upload script has no copy of it.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: dist
@@ -249,4 +268,4 @@ jobs:
         run: |
           set -eu
           ls -la dist
-          gh release upload "$TAG" dist/*.tar.gz --clobber --repo "$GITHUB_REPOSITORY"
+          sh spike/release-upload-missing.sh "$TAG" dist
