@@ -595,7 +595,7 @@ pub fn reconcileOrRefuse(
     const scratch = gpa.alloc(u8, 2 * contract.max_path) catch setupError(.environment, "out of memory");
     defer gpa.free(scratch);
 
-    const r = engine.reconcile(diffs[0..dc.stored], ops, links.items, root, alt, initial, final, scratch_paths, scratch, found);
+    const r = engine.reconcile(arena, diffs[0..dc.stored], ops, links.items, root, alt, initial, final, scratch_paths, scratch, found);
 
     report.attributed_to_rename = r.by_rename_prefix;
     if (r.by_rename_prefix > 0)

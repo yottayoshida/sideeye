@@ -1,6 +1,6 @@
 # ADR 0032 — A changed path names the operation that changed it, and the freeze is broken once to say so
 
-- **Status:** Accepted (2026-08-30; amended 2026-10-10 for #807; §2 narrowed by ADR 0121, 2026-10-11)
+- **Status:** Accepted (2026-08-30; amended 2026-10-10 for #807; §2 narrowed by ADR 0121, 2026-10-11; §4's rename inside the root implemented by ADR 0137, 2026-10-16)
 - **Supersedes:** nothing. Generalises the detector ADR 0003 describes in passing and
   `src/contract.zig`'s `isMutation` doc comment defines.
 - **Scope:** the reconciliation of the judged state's differences against the recorded
@@ -100,7 +100,8 @@ taken from either end of a two-path record, and the exemption tested only that t
 was `rename` — so a rename entirely inside the root (`mv a b`, an ordinary generation
 swap) and one moving a subtree *out* both took the umbrella. Neither needs it: for those
 the source is in `initial`, so the descendants are reconcilable, and absorbing them hides
-exactly what this detector exists to find. The exemption now requires the source to
+exactly what this detector exists to find. (Reconcilable, and until ADR 0137 not reconciled: a
+run renaming a directory inside the root was refused with every operation recorded, #892.) The exemption now requires the source to
 resolve under neither spelling of the root, which also makes the disclosure sentence true
 — it asserts the source subtree was never snapshotted, which was false for both shapes
 above.
