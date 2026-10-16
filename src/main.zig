@@ -687,9 +687,9 @@ fn phaseDefine(run: *Run) void {
     // it execs opens `SIDEEYE_TRACE_PATH`, and the loader the shim, against the directory it moved
     // to. Lexical, not realpath: `--work` may not exist yet.
     const cwd_declared = args.cwd != null;
-    const shim_pins = if (args.shim) |sh| pinsName(sh, cwd_declared) else false;
-    const oracle_pins = if (args.oracle) |o| pinsName(o, cwd_declared) else false;
-    if (isRelativePath(args.work) or shim_pins or oracle_pins) {
+    const shim_pins = if (args.shim) |sh| workdir.pinsName(sh, cwd_declared) else false;
+    const oracle_pins = if (args.oracle) |o| workdir.pinsName(o, cwd_declared) else false;
+    if (workdir.isRelativePath(args.work) or shim_pins or oracle_pins) {
         var pin_cwd_buf: [contract.max_path]u8 = undefined;
         // No fallback to `/`: a relative `--work` would then be made at the root.
         const pin_base = if (posix.getcwd(&pin_cwd_buf, pin_cwd_buf.len)) |p| std.mem.span(p) else setupError(.environment, "the directory Sideeye was started in could not be read, and a relative --work, --shim or --oracle is read against it; pass absolute paths");
@@ -3754,25 +3754,6 @@ test "namesLib: an LD_PRELOAD value or a preload line, colon- or space-separated
     try std.testing.expect(namesLib("/y/libfaketime.so.1 /x/other.so", "libfaketime"));
     try std.testing.expect(!namesLib("/x/libsideeye_shim.so", "libfaketime"));
     try std.testing.expect(!namesLib("", "libfaketime"));
-}
-
-fn isRelativePath(path: []const u8) bool {
-    return path.len > 0 and path[0] != '/';
-}
-
-fn pinsName(path: []const u8, cwd_declared: bool) bool {
-    // A name without `/` is left to the loader's search path, which no directory moves, unless a
-    // declared cwd already pinned it.
-    return isRelativePath(path) and (cwd_declared or std.mem.indexOfScalar(u8, path, '/') != null);
-}
-
-test "a relative --shim or --oracle is pinned when it names a directory, and a bare name only under a declared cwd" {
-    try std.testing.expect(pinsName("./shim.so", false));
-    try std.testing.expect(pinsName("lib/shim.so", false));
-    try std.testing.expect(!pinsName("libsideeye_shim.so", false));
-    try std.testing.expect(pinsName("libsideeye_shim.so", true));
-    try std.testing.expect(!pinsName("/opt/shim.so", true));
-    try std.testing.expect(!pinsName("", true));
 }
 
 fn resolvePathAgainst(arena: std.mem.Allocator, dir: []const u8, path: []const u8) []const u8 {
