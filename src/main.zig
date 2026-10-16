@@ -532,6 +532,9 @@ fn phaseDefine(run: *Run) void {
             };
             args.scratch = norm;
         }
+        // Not from a flag: `--apparatus` was refused above, so a case saved before it carried the
+        // declaration replays with none checked.
+        if (c.define.apparatus) |decl| args.apparatus = decl;
         // Mirrored into the report before any refusal below can fire: a contract
         // mismatch on a status-3 case must not report expected_status 0 (R1 finding).
         report.expected_status_val = c.define.expected_status orelse 0;

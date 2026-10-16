@@ -2,6 +2,9 @@
 
 Status: Accepted (2026-09-03)
 
+Amended by **ADR 0136**: a case saved from a define with a checked entry carries the
+declaration, and `replay` checks it where `explore` does.
+
 Closes #257. The eighth key of the define (`[world] state` and, in `[define]`, the seventh),
 and the fifth time DESIGN.md §12's sentence — *if Define ever needs more than this, that is
 movement toward the kill criteria in §18, and we should notice* — is faced on the record.

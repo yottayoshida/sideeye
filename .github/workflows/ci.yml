@@ -367,6 +367,12 @@ jobs:
           zig build $RELEASE_FLAGS
           file zig-out/bin/sideeye zig-out/lib/libsideeye_shim.dylib
 
+      - name: The minimum-macOS check proves it can go red
+        run: python3 spike/check-macos-minos.py --selftest
+
+      - name: Every Mach-O in the pair requires the macOS docs/cli.md states, no newer than README's
+        run: python3 spike/check-macos-minos.py README.md docs/cli.md zig-out/bin/sideeye zig-out/lib/libsideeye_shim.dylib
+
       # Runs on both platforms deliberately: the FIFO measurements behind #400 were
       # taken here on macOS, and the Linux leg is where the statx branch of `kindOfFd`
       # is exercised at all — the Darwin branch uses fstat and neither compiles the
