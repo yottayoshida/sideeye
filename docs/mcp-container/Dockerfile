@@ -21,17 +21,17 @@
 # directory you mount for the server: a build sends its whole directory as context, and the
 # mount holds whatever a target left there.
 
-ARG SIDEEYE_VERSION=v1.13.0
+ARG SIDEEYE_VERSION=v1.14.0
 
 FROM scratch AS fetch-amd64
 ARG SIDEEYE_VERSION
-ADD --checksum=sha256:e2aaf8b5fcba752edca019a8a9503095bcea6bfeb582b4e7a1a702324e4e798f \
+ADD --checksum=sha256:910e793edea575cdc05e2d513c5ca819eecd25f649a29b460e7e1ccf2bcbee24 \
     https://github.com/yottayoshida/sideeye/releases/download/${SIDEEYE_VERSION}/sideeye-${SIDEEYE_VERSION}-x86_64-linux.tar.gz \
     /sideeye.tar.gz
 
 FROM scratch AS fetch-arm64
 ARG SIDEEYE_VERSION
-ADD --checksum=sha256:93046775f9f5e28f6f6716730aaa3cbab8fa1916c1f41ff0afc73b7cc1ed2e06 \
+ADD --checksum=sha256:ee7982013c2108e3932af0ae148dc129d6c956f687bc97df00013260c3a467b8 \
     https://github.com/yottayoshida/sideeye/releases/download/${SIDEEYE_VERSION}/sideeye-${SIDEEYE_VERSION}-aarch64-linux.tar.gz \
     /sideeye.tar.gz
 

@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **The CI quickstart and the MCP container pin v1.14.0** (`docs/ci-quickstart.md`, `.github/workflows/quickstart-release.yml`, `docs/mcp-container/Dockerfile`; the Homebrew tap's formula, in its own repository). The release lane installs the published v1.14.0 asset, and the container fetches it, with the two Linux digests GitHub recorded for it, written by `spike/release_pins.py pin v1.14.0 --tap`, which also moved the formula's three URLs and digests and its Zig note to 0.17.0. The pins move after the release because both download the asset. With the container on v1.14.0, its MCP server keeps its work in `.sideeye-mcp` inside the root rather than `/tmp/sideeye-mcp` (#824), and `sideeye_replay_case` refuses a version-7 case whose `env:` variable the server does not pass through (#875).
+
 ## [1.14.0] - 2026-10-16
 
 ### Added
