@@ -285,7 +285,8 @@ reads (`getxattr`, `lgetxattr`, `fgetxattr`, `listxattr`, `llistxattr`, `flistxa
 state directory are read as reads too** (#684): vim asking for a file's ACL, dotdrop and
 firewall-offline-cmd listing a file's attributes, and fish watching its variables'
 directory were each refused for asking. Extended-attribute writes (`setxattr`,
-`removexattr` and their `l`/`f` forms) still refuse: what an attribute write does to the state
+`removexattr` and their `l`/`f` forms) still refuse, through a relative path as through an
+absolute one, and a child's counts as touching the state: what an attribute write does to the state
 has not been ruled on — the restore does not put attributes back, and nothing yet says whether
 such a write is judged or, like the ownership and permission calls #121 observes, set aside.
 The macOS fs_usage oracle keeps its own list (`src/fsusage.zig`), which already reads
