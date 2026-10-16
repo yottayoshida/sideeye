@@ -1,0 +1,17 @@
+# yoyo 9.0.0 applying two pending migrations (0002 adds and backfills a column, 0003 adds an
+# index) to a SQLite database where 0001 is applied. INVARIANT.md is the contract; check.sh
+# judges it after recover.sh (yoyo break-lock). The state directory is outside this flat
+# define directory and has to exist before sideeye starts (cwd is checked before setup runs).
+[world]
+state = "/home/user/yoyo-state"
+
+[define]
+cwd       = "/home/user/yoyo-state"
+setup     = "/home/user/authoring/define/setup.sh"
+operation = "python3 -m yoyo apply --batch --database sqlite:///app.db migrations"
+check     = "/home/user/authoring/define/check.sh"
+# yoyo writes wall-clock times, uuid1 ids and the host name into app.db on every run
+# (_yoyo_log, _yoyo_migration, yoyo_lock), so two clean runs never leave the same bytes
+# (preflight --twice: app.db differs at offset 16148). SQLite also leaves its journal torn by
+# design and repairs it on the next open. The checker carries the whole claim instead.
+scratch   = ["app.db", "app.db-journal"]

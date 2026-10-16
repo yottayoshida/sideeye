@@ -1,0 +1,24 @@
+# MM	observed	sha256	path	revision	note
+01	2026-10-15T12:51:24Z	e5e464c7165888e5ab942d075b7ed687dbf09a34c9f0ca0ea6d99f237e6097fa	/home/user/authoring/define/check.sh	01	
+02	2026-10-15T12:51:24Z	3eaa7a5cecffa5e4850539b19868a428debf54287f64056a3d16498a75205707	/home/user/authoring/define/control-applied.sh	01	
+03	2026-10-15T12:51:24Z	4a287d4f2a5c5bc9e62f564f59b5846bb028fcfa9606be5b2fc9d986f788347d	/home/user/authoring/define/control-backup.sh	01	
+04	2026-10-15T12:51:24Z	4a553707df7218d8948514b65a8aa63c9201ca6e578a3b9dfee4aa2679a08802	/home/user/authoring/define/control-order.sh	01	
+05	2026-10-15T12:51:24Z	0ddedc8fbd4b1a1c0c31f6322296fc5d8232b2b700104e86be8d4705560da048	/home/user/authoring/define/control-records.sh	01	
+06	2026-10-15T12:51:24Z	603fc561b88732126e1f55d7ebfe6d2b2c13ce4d02a7c1bc8873413cd49020c0	/home/user/authoring/define/control-unapplied.sh	01	
+07	2026-10-15T12:51:24Z	fbb4667b7cb1f6abd729572cc70d2067b55392093ab8020c13933848a8aae099	/home/user/authoring/define/controls.txt	01	
+08	2026-10-15T12:51:24Z	dbccfcf5799d6fa4661fdf5aea31af1d3f7bb3a14fc7c75c55963291fb732ea3	/home/user/authoring/define/recover.sh	01	
+09	2026-10-15T12:51:24Z	9c09db2c56445663f752e15b877c5876f44d2c3c0c85324637689de9ee673c79	/home/user/authoring/define/run-controls.sh	01	
+10	2026-10-15T12:51:24Z	0e1c9d35d130aaffa6fc92839823f0bce21f6ccda012d42fcd7d7c6eb1cb7bd6	/home/user/authoring/define/setup.sh	01	
+11	2026-10-15T12:51:40Z	89d9c5580d38ba8524ed32c2642c631b24162f95597f3b68f79a68152827044a	/home/user/authoring/define/setup.sh	01	
+12	2026-10-15T12:53:21Z	04f9af90761768395101db903ad9ea5b43a424dde7365cfe8099c70ce2c80ea6	/home/user/authoring/define/explore.txt	01	
+13	2026-10-15T12:53:30Z	ce56e821db5aa726413477f7b3426ec89d83931521323b92621d5f84b3e049d2	/home/user/authoring/define/explore-supervised.txt	01	
+14	2026-10-15T12:53:30Z	e039c43f489a8e690894eded7c79aefc46b50a7b64f270ff06d2f279442f5b8f	/home/user/authoring/define/explore-syscalls.txt	01	
+15	2026-10-15T12:53:53Z	ae60a4d0a458d9c042c1479c2cfc7746a4b74f2438fab145b47eb001cdb8b16d	/home/user/authoring/define/controls.txt	01	
+16	2026-10-15T12:53:53Z	4518e6ed4866fe493abf1de0545642c0cf256a98942b2bcfe817ae4eba0cd5aa	/home/user/authoring/define/run-controls.sh	01	
+17	2026-10-15T12:54:02Z	1ab04c3aa3a49903eb679d6d20dfb16a67df6b163233c329849ba30fa17255d3	/home/user/authoring/define/probe-inner.sh	05	
+18	2026-10-15T12:54:02Z	d205f58aa447b04b50098f2a2093815730608536d8c2b26189a8b7bfcaa50e12	/home/user/authoring/define/probe-setup.sh	05	
+19	2026-10-15T12:54:02Z	c3e2380adaf21013c4de4ab76f4f0f89db5c39ce441bcae3a2bbcbec0cfce945	/home/user/authoring/define/probe.txt	05	
+20	2026-10-15T12:54:40Z	fa8a82bd3b660bec5c1d05554e12287f5b1e5795cb11d7b596a333f50cf278c0	/home/user/authoring/define/INVARIANT.md	05	
+21	2026-10-15T12:54:40Z	9f9ba2e28cba5947aeda9a10bc4918c7a24313c205b67d6533ff7a1e2d487b9a	/home/user/authoring/define/norecover.txt	05	
+22	2026-10-15T12:55:11Z	c20bf279b148d33fa03feef8e26a76425548649fa03a72de05427d7b4fdee225	/home/user/authoring/define/friction.tsv	05	
+23	2026-10-15T12:55:17Z	f89fddfc041d68ae18b496e506538fce810ffcf40e011b9d5e68bd0cd29a7113	/home/user/authoring/define/friction.tsv	05	

@@ -1,0 +1,33 @@
+falsify: checker(yoyo) before recovery: app.db migrations 
+falsify: checker(yoyo) recovery exited 1: sqlite3.DatabaseError: file is not a database
+falsify: checker(yoyo) after recovery: a=FAIL(list exit 1: sqlite3.DatabaseError: file is not a database) b=FAIL(DatabaseError: file is not a database) c=FAIL(DatabaseError: file is not a database) d=FAIL(next apply exit 1: sqlite3.DatabaseError: file is not a database)
+world 44: checker(yoyo) before recovery: app.db migrations 
+world 44: checker(yoyo) after recovery: a=ok b=FAIL(schema of 2 migrations, record of 1) c=ok d=FAIL(next apply exit 1: sqlite3.OperationalError: duplicate column name: body_len)
+baseline: checker(yoyo) before recovery: app.db migrations 
+baseline: checker(yoyo) after recovery: a=ok b=ok c=ok d=ok
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   the checker (L2)
+earliest    crash point 44 of 156
+            after  unlink(/home/user/yoyo-state/app.db-journal)
+            before open(/home/user/yoyo-state/app.db-journal)
+path        (named by the checker, not by path)
+observed    the checker exited non-zero after restart
+cwd         /home/user/yoyo-state
+crash state left in the state directory: the kill's state, before the checker ran, whatever the verdict
+
+explored    2 worlds (crash points 156 + 1 baseline)
+expected    exit 0
+atomicity   4 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: app.db, app.db-journal)
+oracle      agreed on 156 operations (4257 syscall lines examined, 1796 in scope of the judged state), witness strace
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /tmp/se-work/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   single process
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+
+reproduce   (cd /home/user/yoyo-state && unset SIDEEYE_KILL_GROUP && : > /tmp/se-work/trace-repro.bin && SIDEEYE_STATE_DIR=/home/user/yoyo-state SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/tmp/se-work/trace-repro.bin LD_PRELOAD=/home/user/sideeye-dist/sideeye-v1.13.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=44 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'python3' -m yoyo apply --batch --database sqlite:///app.db migrations </dev/null)
+rc=1

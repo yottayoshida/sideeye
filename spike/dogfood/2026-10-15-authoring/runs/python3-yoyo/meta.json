@@ -1,0 +1,13 @@
+{
+  "target": "python3-yoyo",
+  "package": "python3-yoyo=9.0.0+dfsg1-3",
+  "seal": "Seal: 7bb29afa33e85f716392abaff1fd0945240c572f935f569280b19e331523e2ab (draft pull request #909, opened 2026-10-15T12:45:30Z)",
+  "started": "2026-10-16T00:03:48Z",
+  "ended": "2026-10-16T00:12:18Z",
+  "session_exit": 0,
+  "claude_cli": "2.1.301 (Claude Code)",
+  "subject_model": "claude-opus-5-5",
+  "image": "sha256:4f49d2762d2a6d94f46efcba51ed8a60704cee1a38a8fea0fde339f52faae29c",
+  "disposition": "counted",
+  "disposition_evidence": "no WebFetch or WebSearch call (server tool counts 0) and no tool call naming the public repository or this directory; the #861 paths in the transcript are inside the box's v1.13.0 checker cookbook, which the subject was given"
+}

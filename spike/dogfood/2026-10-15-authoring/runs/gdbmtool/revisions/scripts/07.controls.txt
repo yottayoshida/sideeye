@@ -1,0 +1,32 @@
+as-expected	control-a	exit 1	expected reject
+recover.sh: read failed (gdbmtool: argv:1.5: cannot open database /tmp/tmp.iUkPnfjf1j/a/db.gdbm: Bad magic number); running gdbmtool recover
+gdbmtool: argv:1.16: cannot open database /tmp/tmp.iUkPnfjf1j/a/db.gdbm: Bad magic number
+checker(gdbmtool-store3): a=FAIL(exit 0: gdbmtool: argv:1.5: cannot open database /tmp/tmp.iUkPnfjf1j/a/db.gdbm: Bad magic number ) b=- c=- d=- e=-
+
+as-expected	control-b	exit 1	expected reject
+checker(gdbmtool-store3): a=ok b=FAIL(k2: ) c=ok d=ok e=ok
+
+as-expected	control-c	exit 1	expected reject
+checker(gdbmtool-store3): a=ok b=ok c=FAIL(k4: k4 v4x) d=ok e=ok
+
+as-expected	control-d	exit 1	expected reject
+checker(gdbmtool-store3): a=ok b=ok c=ok d=FAIL(unexpected keys: k7 ) e=ok
+
+as-expected	control-e	exit 1	expected reject
+checker(gdbmtool-store3): a=ok b=ok c=ok d=ok e=FAIL(new keys present: 5, not a prefix of 456)
+
+as-expected	valid-start	exit 0	expected accept
+checker(gdbmtool-store3): a=ok b=ok c=ok d=ok e=ok
+
+as-expected	valid-completed	exit 0	expected accept
+checker(gdbmtool-store3): a=ok b=ok c=ok d=ok e=ok
+
+as-expected	valid-recovered	exit 0	expected accept
+recover.sh: read failed (gdbmtool: argv:1.5: gdbm_firstkey: Malformed avail_block); running gdbmtool recover
+Recovery succeeded.
+Keys recovered: 4, failed: 0, duplicate: 0
+Buckets recovered: 1, failed: 1
+
+checker(gdbmtool-store3): a=ok b=ok c=ok d=ok e=ok
+
+rc=0

@@ -1,0 +1,42 @@
+== accept-start
+   checker(gdbm) before recovery: a=- b=ok c=ok d=ok e=ok (new keys present: none)
+   recover: Recovery succeeded. Keys recovered: 0, failed: 0, duplicate: 0 Buckets recovered: 0, failed: 0
+   checker(gdbm) after recovery: a=ok b=ok c=ok d=ok e=ok (new keys present: none)
+   => as expected (exit 0, red legs: none)
+== accept-complete
+   checker(gdbm) before recovery: a=- b=ok c=ok d=ok e=ok (new keys present: n1n2n3)
+   recover: Recovery succeeded. Keys recovered: 0, failed: 0, duplicate: 0 Buckets recovered: 0, failed: 0
+   checker(gdbm) after recovery: a=ok b=ok c=ok d=ok e=ok (new keys present: n1n2n3)
+   => as expected (exit 0, red legs: none)
+== accept-recovered
+   checker(gdbm) before recovery: a=- b=FAIL(list: gdbmtool: argv:1.5: gdbm_firstkey: File seek error: Invalid argument) c=ok d=ok e=FAIL(count says 'unreadable', list has 0) (new keys present: none)
+   recover: Recovery succeeded. Keys recovered: 4, failed: 0, duplicate: 0 Buckets recovered: 1, failed: 1
+   checker(gdbm) after recovery: a=ok b=ok c=ok d=ok e=ok (new keys present: n1)
+   => as expected (exit 0, red legs: none)
+== control-usable
+   checker(gdbm) before recovery: a=- b=ok c=ok d=ok e=ok (new keys present: none)
+   recover: 
+   recover: gdbmtool: argv:1.16: cannot open database /tmp/gdbm-controls/control-usable/db.gdbm: File open error: Permission denied
+   checker(gdbm) after recovery: a=FAIL(recover exited 1) b=ok c=ok d=ok e=ok (new keys present: none)
+   => as expected (exit 1, red legs: a)
+== control-old
+   checker(gdbm) before recovery: a=- b=FAIL(k2 listed 0 time(s): ) c=ok d=ok e=ok (new keys present: none)
+   recover: Recovery succeeded. Keys recovered: 0, failed: 0, duplicate: 0 Buckets recovered: 0, failed: 0
+   checker(gdbm) after recovery: a=ok b=FAIL(k2 listed 0 time(s): ) c=ok d=ok e=ok (new keys present: none)
+   => as expected (exit 1, red legs: b)
+== control-new
+   checker(gdbm) before recovery: a=- b=ok c=FAIL(n1 holds: n1 wrong) d=ok e=ok (new keys present: n1)
+   recover: Recovery succeeded. Keys recovered: 0, failed: 0, duplicate: 0 Buckets recovered: 0, failed: 0
+   checker(gdbm) after recovery: a=ok b=ok c=FAIL(n1 holds: n1 wrong) d=ok e=ok (new keys present: n1)
+   => as expected (exit 1, red legs: c)
+== control-nothing
+   checker(gdbm) before recovery: a=- b=ok c=ok d=FAIL(other keys: zz ) e=ok (new keys present: none)
+   recover: Recovery succeeded. Keys recovered: 0, failed: 0, duplicate: 0 Buckets recovered: 0, failed: 0
+   checker(gdbm) after recovery: a=ok b=ok c=ok d=FAIL(other keys: zz ) e=ok (new keys present: none)
+   => as expected (exit 1, red legs: d)
+== control-agree
+   checker(gdbm) before recovery: a=- b=ok c=ok d=ok e=FAIL(count says '4', list has 3) (new keys present: none)
+   recover: Recovery succeeded. Keys recovered: 0, failed: 0, duplicate: 0 Buckets recovered: 0, failed: 0
+   checker(gdbm) after recovery: a=ok b=ok c=ok d=ok e=FAIL(count says '4', list has 3) (new keys present: none)
+   => as expected (exit 1, red legs: e)
+exit=0

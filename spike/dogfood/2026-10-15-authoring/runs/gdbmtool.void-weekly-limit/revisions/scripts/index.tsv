@@ -1,0 +1,15 @@
+# MM	observed	sha256	path	revision	note
+01	2026-10-15T13:54:43Z	8207c3aa7608649709ef1ff2fd80b1b7bc567ea9be5fb6660b761fa42ac6f7cd	/home/user/authoring/define/accept-complete.sh	01	
+02	2026-10-15T13:54:43Z	29f60963e2031df8f2e4f02c1658c8b665e17703b4a01e52993379285ad54824	/home/user/authoring/define/accept-recovered.sh	01	
+03	2026-10-15T13:54:43Z	04fffe95389399743c6ef4c10650b37f37ce15a92b333d815b39b0ddac221270	/home/user/authoring/define/accept-start.sh	01	
+04	2026-10-15T13:54:43Z	c2d662ff122819febff3db9c0270f564b8acaa1bdaf34fcea3e6186cfc805a86	/home/user/authoring/define/check.sh	01	
+05	2026-10-15T13:54:43Z	fae29eb8229a7d2ca09e5274edf9d7bd9e991e505490fc2064abf8d6c2f1bf19	/home/user/authoring/define/control-agree.sh	01	
+06	2026-10-15T13:54:43Z	947e49247e0898e2b9ed0714a49b5d0c9043d63d5b8a05a4e0b0f333adc0d91d	/home/user/authoring/define/control-new.sh	01	
+07	2026-10-15T13:54:43Z	f9232c86e2b81c405028b4bd9ea241a73e957f5b0a1c6461d69efbcbc8e2da7d	/home/user/authoring/define/control-nothing.sh	01	
+08	2026-10-15T13:54:43Z	e933bba4348b76f51dd7c1f22d59d8cc2ab67272093d55681e55049e3d89387d	/home/user/authoring/define/control-old.sh	01	
+09	2026-10-15T13:54:43Z	45923db38558d69b1b2857cf3d320eac357f0613d97592226a0850f42876008b	/home/user/authoring/define/control-usable.sh	01	
+10	2026-10-15T13:54:43Z	841f9fb785e6bfb6fe15cb0f6697750f40685e1362fc25a17aec9f4b689fd01d	/home/user/authoring/define/controls.txt	01	
+11	2026-10-15T13:54:43Z	9820a78dd9efa303c2ce9168281c39925f86deff608e83876f67e206e13f4f2e	/home/user/authoring/define/recover.sh	01	
+12	2026-10-15T13:54:43Z	7a4502cc447aacdfdef6d693671ebc0e4adbd3e0a330246df927c48a9edd9299	/home/user/authoring/define/run-controls.sh	01	
+13	2026-10-15T13:54:43Z	cf6d0f77c290786c1bfbb24b6c0d7ad57bd5a1670c8ebc87a137b4159bf6b086	/home/user/authoring/define/session.txt	01	
+14	2026-10-15T13:54:43Z	cb2aac253966dfb625d20406d2731054ae3c67afe703e353a9669fd68cc9c1e0	/home/user/authoring/define/setup.sh	01	

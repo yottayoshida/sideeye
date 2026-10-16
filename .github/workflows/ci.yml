@@ -1897,6 +1897,23 @@ jobs:
       - name: The box name has one spelling
         run: sh spike/check-box-name.sh
 
+  # Not a shallow clone: exclude.sh greps the fixed commit the candidates were screened against.
+  authoring-873:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: The tally proves it can go red
+        run: python3 spike/dogfood/2026-10-15-authoring/tally.py --selftest
+      - name: The sealed files are the ones seal.json records
+        run: sh spike/dogfood/2026-10-15-authoring/check-sealed.sh
+      - name: The seal reached GitHub before every run, and SYNTHESIS.md's block recomputes
+        run: python3 spike/dogfood/2026-10-15-authoring/tally.py --check
+      - name: No selected candidate is named elsewhere under spike/ at the screened commit
+        run: sh spike/dogfood/2026-10-15-authoring/exclude.sh
+
   authoring-cost:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -2165,7 +2182,7 @@ jobs:
   # edited the setting.
   required:
     if: always()
-    needs: [linux, macos, timew-regression, classification, veto-rate, upstream-ledger, outcome-funnel, changelog-block, release-pins, agent-skills, ledger-prose, main-shape, fmt, adr-numbering, action-pins, zig-ahead-judge, criterion-3-status, onboarding-clock, authoring-cost, linux-releasesafe, linux-acceptance]
+    needs: [linux, macos, timew-regression, classification, veto-rate, upstream-ledger, outcome-funnel, changelog-block, release-pins, agent-skills, ledger-prose, main-shape, fmt, adr-numbering, action-pins, zig-ahead-judge, criterion-3-status, onboarding-clock, authoring-cost, authoring-873, linux-releasesafe, linux-acceptance]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

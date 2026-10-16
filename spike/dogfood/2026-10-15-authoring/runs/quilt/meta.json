@@ -1,0 +1,13 @@
+{
+  "target": "quilt",
+  "package": "quilt=0.68-1",
+  "seal": "Seal: 7bb29afa33e85f716392abaff1fd0945240c572f935f569280b19e331523e2ab (draft pull request #909, opened 2026-10-15T12:45:30Z)",
+  "started": "2026-10-15T12:46:09Z",
+  "ended": "2026-10-15T12:55:36Z",
+  "session_exit": 0,
+  "claude_cli": "2.1.300 (Claude Code)",
+  "subject_model": "claude-opus-5-5",
+  "image": "sha256:6ba076790419b9659f7ffdcdb680fefc4053910663a1f26280e14f7ba242ab5b",
+  "disposition": "counted",
+  "disposition_evidence": "no WebFetch or WebSearch call (server tool counts 0) and no tool call naming the public repository or this directory; the #861 paths in the transcript are inside the box's v1.13.0 checker cookbook, which the subject was given"
+}

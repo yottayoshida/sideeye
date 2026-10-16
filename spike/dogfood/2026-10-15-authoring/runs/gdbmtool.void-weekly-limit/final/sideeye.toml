@@ -1,0 +1,15 @@
+# A gdbmtool session storing three new keys into a GDBM database that holds three.
+# The invariant is INVARIANT.md; check.sh runs the user's recovery (recover.sh) first.
+[world]
+state = "/home/user/work/state"
+
+[define]
+cwd       = "."
+setup     = "./setup.sh"
+operation = "/usr/bin/gdbmtool -N -q -m -f session.txt /home/user/work/state/db.gdbm"
+check     = "./check.sh"
+apparatus = ["note:gdbmtool -m (no mmap) is on the operation's command line; with mmap the session's writes reach the file through memory and preflight refused state_changed_without_ops"]
+
+[recovery]
+command   = "./recover.sh"
+check     = "./check.sh"

@@ -1,0 +1,30 @@
+falsify: recover.sh: read failed (gdbmtool: argv:1.5: cannot open database /home/user/authoring/state/db.gdbm: Unexpected end of file); running gdbmtool recover
+falsify: gdbmtool: argv:1.16: cannot open database /home/user/authoring/state/db.gdbm: Unexpected end of file
+falsify: checker(gdbmtool-store3): a=FAIL(exit 0: gdbmtool: argv:1.5: cannot open database /home/user/authoring/state/db.gdbm: Unexpected end of file ) b=- c=- d=- e=-
+world 3: checker(gdbmtool-store3): a=ok b=ok c=ok d=ok e=ok
+baseline: checker(gdbmtool-store3): a=ok b=ok c=ok d=ok e=ok
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 3 of 11
+            after  write(/home/user/authoring/state/db.gdbm)
+            before write(/home/user/authoring/state/db.gdbm)
+path        db.gdbm
+observed    holding neither the old nor the new content
+cwd         /home/user/authoring/define
+
+explored    2 worlds (crash points 11 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 11 operations (173 syscall lines examined, 49 in scope of the judged state), witness strace
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /tmp/se-work2/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /home/user/authoring/define && unset SIDEEYE_KILL_GROUP && : > /tmp/se-work2/trace-repro.bin && SIDEEYE_STATE_DIR=/home/user/authoring/state SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/tmp/se-work2/trace-repro.bin LD_PRELOAD=/home/user/se/sideeye-v1.13.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=3 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'gdbmtool' -N -q -m ../state/db.gdbm store k4 v4 ';' store k5 v5 ';' store k6 v6 </dev/null)
+rc=1

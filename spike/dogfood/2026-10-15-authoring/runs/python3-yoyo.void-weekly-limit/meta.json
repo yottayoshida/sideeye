@@ -1,0 +1,13 @@
+{
+  "target": "python3-yoyo",
+  "package": "python3-yoyo=9.0.0+dfsg1-3",
+  "seal": "Seal: 7bb29afa33e85f716392abaff1fd0945240c572f935f569280b19e331523e2ab (draft pull request #909, opened 2026-10-15T12:45:30Z)",
+  "started": "2026-10-15T14:04:48Z",
+  "ended": "2026-10-15T14:04:50Z",
+  "session_exit": 1,
+  "claude_cli": "2.1.300 (Claude Code)",
+  "subject_model": "claude-opus-5-5",
+  "image": "sha256:fa3ca278c971b5c2ceb869d9d9d57583027deb48f31a1abf94c4f0f91937e4c9",
+  "disposition": "void",
+  "void_reason": "the session ended on the account's weekly usage limit (API 429, 'You've hit your weekly limit'), not on the task; the transcript's final result event says so. Re-run under the same seal."
+}

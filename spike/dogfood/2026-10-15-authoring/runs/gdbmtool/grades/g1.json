@@ -1,0 +1,100 @@
+{
+  "checker": "wrong question",
+  "checker_why": "check.sh の leg e は、残った新キーが k4, k5, k6 の前から順に詰まっていることを求める。そのため k5 だけ、または k4+k6 が残った状態を落とす。だが card の \"Admissible after a crash: any subset of k4–k6 stored, k1–k3 intact, after recovery\"（と \"Not claimed: that the three new keys are stored together\"）は、そうした状態を許している。",
+  "controls": [
+    {
+      "file": "control-a.sh",
+      "breaks_only_its_leg": "yes",
+      "why": "先頭の magic number を潰して、DB のパスに GDBM でないファイルを置く。recover でも直らない。これは card が leg (a) の \"Broken alone\" として書いている状態そのもの。"
+    },
+    {
+      "file": "control-b.sh",
+      "breaks_only_its_leg": "yes",
+      "why": "k2 を delete で消すだけ。DB は開けて、k4–k6 は無い（leg c では「無い」は許される）。なので card の legs のうち (b) だけが壊れる。"
+    },
+    {
+      "file": "control-c.sh",
+      "breaks_only_its_leg": "yes",
+      "why": "k4 に v4x という保存していない値を入れる。DB は開けて k1–k3 もそのままなので、card の legs のうち (c) だけが壊れる。"
+    },
+    {
+      "file": "control-d.sh",
+      "breaks_only_its_leg": "no",
+      "why": "leg d（他のキーが無い）は card に無い。k7=v7 を足した状態は card の a・b・c をすべて満たすので、card のどの leg も壊していない。"
+    },
+    {
+      "file": "control-e.sh",
+      "breaks_only_its_leg": "no",
+      "why": "leg e（前から詰まる順序）は card に無い。k5 だけ足した状態は \"any subset of k4–k6 stored\" に当たり、card の上では許される状態。"
+    }
+  ],
+  "friction": [
+    {
+      "row": 1,
+      "key": "target",
+      "why": "gdbmtool(1) に recover が載っておらず、GDBM の Texinfo マニュアルも入っていなかった。gdbmtool そのものを調べる手間で、sideeye の問題ではない。"
+    },
+    {
+      "row": 2,
+      "key": "cli:--state",
+      "why": "state はディレクトリでないといけないので define の外の ../state に置いた。state の宣言の仕方の問題。"
+    },
+    {
+      "row": 3,
+      "key": "target",
+      "why": "gdbmtool はコマンドが失敗しても exit 0 を返す。これは gdbmtool 側の性質。"
+    },
+    {
+      "row": 4,
+      "key": "readme:what-the-target-has-to-be",
+      "why": "mmap 書き込みで state_changed_without_ops を断られた。断りの文は README の 'What the target has to be' を見るよう言うが、その節に mmap の話は無く、-m は自分で見つけるしかなかった。"
+    },
+    {
+      "row": 5,
+      "key": "cli:--operation",
+      "why": "文字列で書いた operation の ';' に警告が出て、argv 形式に切り替えた。cli.md の operation の書き方の項の話。"
+    },
+    {
+      "row": 6,
+      "key": "target",
+      "why": "gdbmtool recover は全件を失っても \"Recovery succeeded\" と出して exit 0 で終わる。gdbmtool の性質。"
+    },
+    {
+      "row": 7,
+      "key": "target",
+      "why": "どの crash world でも recover が要る状態にならなかった。原因は GDBM が 1 回の 4096 バイト write で bucket を書くことで、修復後の状態は手で作るしかなかった。"
+    },
+    {
+      "row": 8,
+      "key": "other",
+      "why": "run-controls.sh の && / || の優先順位の間違い。subject 自身の shell のミスで、どの文書にもつながらない。"
+    },
+    {
+      "row": 9,
+      "key": "cookbook:recipe-6-the-next-run-must-still-go-through",
+      "why": "leg a が落ちると他の legs は判定できず、leg a の control が他の legs から切り離せない。この問題を扱う cookbook の節は recipe 6 の \"Two things not to copy\"（leg a の control の話）だけ。"
+    },
+    {
+      "row": 10,
+      "key": "cli:--scratch",
+      "why": "byte 層の FAIL を消すために、唯一の大事なファイル db.gdbm を scratch にした。ところが cli.md の scratch の説明は \"paths under state that nobody depends on\" で、この使い方に合っていない。"
+    },
+    {
+      "row": 11,
+      "key": "cli:--check",
+      "why": "scratch で判定するパスが無いと、PASS の見出しは \"had no path to judge\" と書くだけで、checker が 12 世界すべてを判定したことは言わない。check の結果の見せ方の問題。"
+    }
+  ],
+  "added": [],
+  "read_outside": [
+    "man gdbmtool (/usr/share/man/man1/gdbmtool.1)",
+    "man -k gdbm (/usr/share/man index)",
+    "/usr/share/man/man3",
+    "/usr/share/doc/gdbmtool",
+    "/usr/share/info",
+    "/etc/os-release",
+    "/home/user/se/sideeye-v1.13.0-aarch64-linux",
+    "/tmp/t",
+    "/tmp/se-work2/cases/000001.json"
+  ]
+}

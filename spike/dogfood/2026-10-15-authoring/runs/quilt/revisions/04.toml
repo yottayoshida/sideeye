@@ -1,0 +1,6 @@
+[world]
+state = "/tmp/pst"
+[define]
+cwd = "/tmp/pst"
+setup = "/tmp/probe/setup.sh"
+operation = ["/bin/bash", "-c", "( touch x; echo hi >> y ); echo z >> y"]

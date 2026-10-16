@@ -1,0 +1,8 @@
+shape	rank	package	fixture_rc	operation_rc	note
+1	1	quilt=0.68-1	2	-	sh: 4: printf: Illegal option -- 
+1	2	rcs=5.10.1-2	0	0	
+2	1	gdbmtool=1.24-2	0	0	
+3	1	python3-yoyo=9.0.0+dfsg1-3	127	-	sh: 4: yoyo: not found 
+3	2	xapian-tools=1.4.29-3+deb13u1	-	-	sh: 1: Syntax error: end of file unexpected (expecting ")") 
+3	3	slapd=2.6.10+dfsg-1	-	-	sh: 1: Syntax error: end of file unexpected (expecting ")") 
+3	4	python3-flask-migrate=4.1.0-1	-	-	sh: 1: Syntax error: end of file unexpected (expecting ")") 
