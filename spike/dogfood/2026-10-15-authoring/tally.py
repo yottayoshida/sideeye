@@ -27,8 +27,6 @@ SEALED = [
 SEALED_AFTER_SCREEN = ["SELECTION.md", "selection.tsv", "screen.tsv", "screen-1.tsv"]
 NO_CHANGE = "no product change warranted"
 BEGIN, END = "<!-- tally:begin -->", "<!-- tally:end -->"
-RESULT = re.compile(r"(?:^|\\n)(PASS|FAIL|UNKNOWN|SETUP ERROR)  ")
-SEAL = re.compile(r"Seal: ([0-9a-f]{64})")
 
 
 def _audit():
@@ -107,11 +105,42 @@ def decide(agreed_by_target, vocab):
     return 3, NO_CHANGE, False, []
 
 
+def timed(events):
+    # Not events[0]: stream-json opens with system events that carry no timestamp.
+    return [e for e in events if e["ts"]]
+
+
+def explore_calls(events):
+    # Not the whole tool input: the model's own `description` says "explore" too, and a heredoc
+    # writing friction.tsv quotes the command. Only a command whose result printed a verdict counts.
+    sub = re.compile(r"(?:sideeye\S*|\$\{?\w+\}?)\s+explore\b")
+    defined = re.compile(r"--config\s+(?:\S*/)?sideeye\.toml(?![\w.-])")
+    calls, verdicts, starts = {}, [], []
+    for e in events:
+        obj = json.loads(e["text"])
+        for c in (obj.get("message") or {}).get("content") or []:
+            if not isinstance(c, dict):
+                continue
+            command = (c.get("input") or {}).get("command", "") if c.get("type") == "tool_use" else ""
+            if command and sub.search(command):
+                calls[c["id"]] = (e, bool(defined.search(command)))
+            elif c.get("type") == "tool_result" and c.get("tool_use_id") in calls:
+                body = c.get("content")
+                text = (body if isinstance(body, str) else json.dumps(body)).replace("\\n", "\n")
+                found = re.findall(r"(?:^|\n)(PASS|FAIL|UNKNOWN|SETUP ERROR)  ", text)
+                if found:
+                    started, is_define = calls[c["tool_use_id"]]
+                    starts.append(started)
+                    verdicts += [(v, is_define) for v in found]
+    return starts, verdicts
+
+
 def run_figures(run, audit):
     meta = json.loads((run / "meta.json").read_text())
-    events = audit.read_transcript(run / "transcript.jsonl")
-    explores = [e for e in events if "sideeye explore" in e["text"] or "/sideeye explore" in e["text"]]
-    results = [m.group(1) for e in events for m in RESULT.finditer(e["text"])]
+    events = timed(audit.read_transcript(run / "transcript.jsonl"))
+    explores, verdicts = explore_calls(events)
+    # Not a SETUP ERROR: no world was explored, so it is no exploration's result.
+    of_define = [v for v, is_define in verdicts if is_define and v != "SETUP ERROR"]
     idx = run / "revisions" / "scripts" / "index.tsv"
     script_rows = [l.split("\t") for l in idx.read_text().splitlines() if l and not l.startswith("#")] if idx.exists() else []
     revisions = {}
@@ -127,7 +156,8 @@ def run_figures(run, audit):
         "disposition": meta.get("disposition", "pending"),
         "judged_states": len(audit.judged_sets(events)),
         "revisions": revisions,
-        "result": results[-1] if results else "none",
+        "result": of_define[-1] if of_define else "none",
+        "explores": ", ".join(v if d else v + " (another define)" for v, d in verdicts) or "none",
         "session_s": int((last - first).total_seconds()),
         "first_explore_s": None if first_explore is None else int(first_explore),
         "events": events,
@@ -148,8 +178,8 @@ def block():
         if a:
             agreed[run.name] = a
         revs = ", ".join("%s %d" % (k, v) for k, v in sorted(f["revisions"].items()))
-        lines.append("%s: %s; judged states %d; revisions: %s; result %s; session %ds, first explore %s (a model's seconds, host clock)"
-                     % (run.name, f["disposition"], f["judged_states"], revs, f["result"], f["session_s"],
+        lines.append("%s: %s; judged states %d; revisions: %s; explores %s; result of sideeye.toml %s; session %ds, first explore %s (a model's seconds, host clock)"
+                     % (run.name, f["disposition"], f["judged_states"], revs, f["explores"], f["result"], f["session_s"],
                         "-" if f["first_explore_s"] is None else "%ds" % f["first_explore_s"]))
         if a:
             ctl = ", ".join("%s %s" % (k, v) for k, v in sorted(a["controls"].items())) or "none"
@@ -163,19 +193,26 @@ def block():
     return "\n".join(lines)
 
 
+def current_manifest(s):
+    return (s.get("amendments") or [{"manifest": s["manifest"]}])[-1]["manifest"]
+
+
 def check():
     bad = []
     s = seal()
-    if manifest() != s["manifest"]:
-        bad.append("the sealed files hash to %s, not the %s seal.json records" % (manifest(), s["manifest"]))
+    if manifest() != current_manifest(s):
+        bad.append("the sealed files hash to %s, not the %s seal.json records" % (manifest(), current_manifest(s)))
     sealed_at = _when(s["pr_created_at"])
     audit = _audit()
     for run in sorted(p for p in (HERE / "runs").glob("*") if p.is_dir()):
-        events = audit.read_transcript(run / "transcript.jsonl")
+        events = timed(audit.read_transcript(run / "transcript.jsonl"))
         if _when(events[0]["ts"]) <= sealed_at:
             bad.append("%s's first event precedes the seal reaching GitHub (%s)" % (run.name, s["pr_created_at"]))
-        if not any(SEAL.search(e["text"]) and s["manifest"] in e["text"] for e in events[:5]):
-            bad.append("%s's transcript does not open with the seal line" % run.name)
+        # Not the transcript: stream-json does not echo the prompt, so the seal the session was
+        # given is the launcher's record, meta.json, and only the timestamps above are GitHub's.
+        given = json.loads((run / "meta.json").read_text()).get("seal", "")
+        if s["manifest"] not in given:
+            bad.append("%s's meta.json does not record this seal as the one its prompt carried" % run.name)
     text = (HERE / "SYNTHESIS.md").read_text()
     m = re.search(re.escape(BEGIN) + r"\n```\n(.*?)\n```\n" + re.escape(END), text, re.S)
     if not m or m.group(1) != block():

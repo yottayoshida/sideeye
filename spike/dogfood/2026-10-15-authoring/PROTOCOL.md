@@ -131,3 +131,34 @@ usability or adoption.**
   once, as #861 allowed a define fixed once, and the screen ran again from the start. slapd and
   python3-flask-migrate still have no fixture: they are reached only if every candidate above them
   in shape 3 is dropped, and that would be a further amendment.
+- **2026-10-16, after all three subjects and every grader ran.** `tally.py --check` could not
+  pass as sealed, for two reasons the runs exposed and no run caused. `stream-json` opens with
+  system events that carry no timestamp, so `events[0]` had none to read; and it does not echo the
+  prompt, so "the transcript opens with the seal line" could never hold. The amendment reads the
+  first timestamped event, and takes the seal the session was given from `meta.json`, the
+  launcher's record — **a weaker witness than the transcript would have been, the same one #618
+  had**; what stays GitHub's is that the seal's pull request was opened before each run's first
+  timestamped event. `seal.json` keeps the manifest the subjects were given and records this one
+  as an amendment; `check-sealed.sh` compares against the latest. The decision table, the
+  agreement rules and the counts are unchanged: the diff is in the commit that adds this entry.
+  The same amendment corrects two descriptive columns the decision does not read: "result" took
+  the last verdict-shaped line anywhere in the transcript (for gdbmtool, a replay's FAIL rather than
+  the last exploration's PASS) and "first explore" the first event quoting `sideeye explore` (the
+  documents the subject read first); both now come from the subject's own `explore` tool calls and
+  their results.
+  "result" is the last exploration of `sideeye.toml`, the define the prompt names, and every
+  exploration's verdict is listed beside it: gdbmtool's last exploration was a comparison it ran on
+  another file, marked so in its own command. An exploration is a tool call whose **command** runs
+  `explore` and whose result prints a verdict — not the model's description of the call; a call that
+  only quotes the command, such as a heredoc, prints none and is not counted — and a SETUP ERROR, which explored no world, is listed but is not a
+  result. This last reading was corrected once more after the first review of this pull request and
+  before the amendment was pushed: the first form matched the description and missed two of quilt's
+  explorations. `seal.json`'s amendment records the final manifest.
+- **2026-10-16, after grading, a second normalisation pass.** The per-directory session path
+  (`.claude/projects/-Users-<name>-…`) and `ls -l`'s file owner named the operator's account, which
+  `normalise.py`'s home-directory rule does not reach. Both are replaced in every file under `runs/`
+  and each touched transcript's `normalisation.txt` says so. No figure reads either string.
+- **2026-10-15/16, the weekly usage limit.** gdbmtool's first session and python3-yoyo's first
+  session, and quilt's second grader, ended on the account's weekly limit (API 429). They are kept
+  as `runs/*.void-weekly-limit/` and `grades/void-weekly-limit-*`, void, and were run again under
+  the same seal once the limit reset.
