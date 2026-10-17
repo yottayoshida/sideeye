@@ -2463,6 +2463,19 @@ const ObserverTest = struct {
         return pid;
     }
 
+    // Not a trapped SIGINT: a shell that drops one turns this red where the engine did its part.
+    // TERM, HUP and QUIT ignored, which survives the exec, so another fatal signal does not pass.
+    fn spawnQuiet(talk: c_int) !c_int {
+        _ = signal(SIGINT, SIG_DFL);
+        const cap_path = try std.fmt.bufPrint(&cap_buf, "/tmp/sideeye-observer-{d}-{d}", .{ getpid(), talk });
+        var line_buf: [96]u8 = undefined;
+        const line = try std.fmt.bufPrint(&line_buf, "printf '%d ' $$ >&{d}; trap '' TERM HUP QUIT; exec sleep 300", .{talk});
+        const pid = spawnSidecar(std.heap.page_allocator, &.{ "/bin/sh", "-c", line }, cap_path, null) catch return error.Setup;
+        var zb: [96]u8 = undefined;
+        _ = unlink((std.mem.printSentinel(&zb, "{s}", .{cap_path}, 0) catch return pid).ptr);
+        return pid;
+    }
+
     fn slowStop(sig: c_int) noreturn {
         beginStopping();
         sleepForMs(7_000);
@@ -2595,7 +2608,9 @@ test "a run that ends on its grace stops the observer too (#819)" {
         _ = close(ready[0]);
         InterruptTest.refuseKill();
         installInterruptHandlers(InterruptTest.die);
-        _ = ObserverTest.spawn(talk[1]) catch _exit(10);
+        _ = ObserverTest.spawnQuiet(talk[1]) catch _exit(10);
+        // Not kept: with the observer its only holder, the pipe's end is the observer's end.
+        _ = close(talk[1]);
         var buf: [96]u8 = undefined;
         const line = std.fmt.bufPrint(&buf, "printf '%d ' $$ >&{d}; exec sleep 300", .{ready[1]}) catch _exit(11);
         _ = runChild(std.heap.page_allocator, &.{ "/bin/sh", "-c", line }, &.{}, null) catch _exit(12);
@@ -2613,14 +2628,9 @@ test "a run that ends on its grace stops the observer too (#819)" {
     try std.testing.expectEqual(@as(?Term, .{ .signaled = 15 }), InterruptTest.waitWithin(engine, 12_000));
     // 10 s like the waits above, not 3.
     const ended_at = monotonicMs();
-    const said = InterruptTest.byteWithin(talk[0], 10_000);
-    // Not the time alone: the child the engine left holds the pipe open, so the wait runs out
-    // whether the observer is still running or died without a word, and only this tells which.
-    if (said == null) std.debug.print("the observer said nothing in the {d} ms after the engine ended, and is {s}\n", .{
-        monotonicMs() - ended_at,
-        if (kill(observer, 0) == 0) "still running" else "gone",
-    });
-    try std.testing.expectEqual(@as(?u8, 'i'), said);
+    const gone = InterruptTest.eofWithin(talk[0], 10_000);
+    if (!gone) std.debug.print("the observer was still running {d} ms after the engine ended\n", .{monotonicMs() - ended_at});
+    try std.testing.expect(gone);
 }
 
 test "exit status decoding distinguishes exit from signal" {
