@@ -511,6 +511,22 @@ else
     echo "$o" | sed 's/^/     | /' | head -4
     fails=$((fails + 1))
 fi
+printf '%s\n' 'import os, subprocess' 'for _ in range(70):' '    try: subprocess.run(["no-such-tool-sideeye"])' \
+    '    except FileNotFoundError: pass' 'open(os.environ["TOY_STATE"] + "/out.txt", "w").write("done\n")' > /tmp/acc-missing.py
+for vm_op in "$OUT/toy-vfork-many missing 70" "python3 /tmp/acc-missing.py"; do
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-vfork-many init" --operation "$vm_op" \
+        --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if { [ "$rc" = "0" ] || [ "$rc" = "1" ]; } && ! printf '%s\n' "$o" | grep -q "thread-slots-exhausted"; then
+        echo "ok   seventy vfork children whose every exec fails are judged: $vm_op (exit $rc)"
+    else
+        echo "FAIL seventy vfork children whose every exec fails: $vm_op: exit $rc, wanted a verdict"
+        echo "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    fi
+done
 
 echo ""
 echo "=========== check 2st: what the shim takes from a target thread's memory (#555) ==========="
@@ -4413,6 +4429,100 @@ if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
     else
         echo "     NOT MEASURED: sideeye-testsupervisedelay is not built (zig build -Dtest-supervise-delay)"
     fi
+    # The installer's stderr is held empty: one whose filter was refused also exits 126 at once,
+    # with a line.
+    timeout 10 "$SIDEEYE" __filter-exec 3 -- /bin/true 3</dev/null >/dev/null 2>/tmp/acc-fe.err
+    fe_rc=$?
+    if [ "$fe_rc" = 126 ] && [ ! -s /tmp/acc-fe.err ]; then
+        echo "ok   __filter-exec that cannot hand its listener over exits 126 at once, writing nothing"
+    else
+        echo "FAIL __filter-exec with no socket to hand its listener to: exit $fe_rc (wanted 126; 124 is the hang), stderr [$(head -c 200 /tmp/acc-fe.err)]"
+        fails=$((fails + 1))
+    fi
+    if [ -x "$ROOT/zig-out/bin/sideeye-testhandover" ]; then
+        sup_handover() {
+            rm -rf /tmp/acc-ho && mkdir -p /tmp/acc-ho/s
+            o=$(SIDEEYE_TEST_HANDOVER_FAULT=$1 TOY=$OUT/toy-static TOY_STATE=/tmp/acc-ho/s timeout 120 \
+                "$ROOT/zig-out/bin/sideeye-testhandover" explore --state /tmp/acc-ho/s --setup "$OUT/toy-static init" \
+                --operation "$OUT/toy-static rotate" --check "$ROOT/spike/check.sh" --observe supervised \
+                --allow-unverified --work /tmp/acc-ho/w 2>&1)
+            ho_rc=$?
+            if [ "$ho_rc" = "$2" ] && printf '%s\n' "$o" | grep -qF -- "$3"; then
+                echo "ok   a hand-over that fails ($1) ends the run with exit $2 and says: $3"
+            else
+                echo "FAIL a hand-over that fails ($1): exit $ho_rc (wanted $2; 124 is the hang), looked for [$3]"
+                printf '%s\n' "$o" | sed 's/^/     | /' | head -4
+                fails=$((fails + 1))
+            fi
+        }
+        sup_handover helper 2 "the run exited 126 before its operation started"
+        sup_handover engine 2 "the run never started its operation: the engine could not complete the hand-over"
+        sup_handover reply 2 "the run never started its operation: the engine could not complete the hand-over"
+        sup_handover helper-world 3 "a world's run exited 126 before its operation started"
+        sup_handover engine-world 3 "a world's run never started its operation: the engine could not complete the hand-over"
+    else
+        echo "     NOT MEASURED: sideeye-testhandover is not built (zig build -Dtest-supervise-handover)"
+    fi
+    # The two detaching shapes fork nothing: a fork is a boundary of its own and would refuse the
+    # run whatever the engine made of the setsid or setpgid after it. The succeeding setsid is
+    # counted in the trace, because a contained run that detaches is judged and its report says
+    # "single process" in both modes.
+    /bin/rm -f /tmp/acc-sd-pgid
+    python3 -c 'import os, time; os.setpgid(0, 0); open("/tmp/acc-sd-pgid", "w").write(str(os.getpgrp())); time.sleep(300)' &
+    sd_sleeper=$!
+    i=0
+    while [ ! -s /tmp/acc-sd-pgid ] && [ "$i" -lt 50 ]; do sleep 0.1; i=$((i + 1)); done
+    sd_pgid=$(cat /tmp/acc-sd-pgid 2>/dev/null)
+    sd_run() {
+        st=$1 ev=$2; shift 2
+        rm -rf /tmp/acc-sd && mkdir -p /tmp/acc-sd/s
+        sd_out=$(env "$ev" TOY=$st TOY_STATE=/tmp/acc-sd/s TOY_ESCAPE_WITNESS=/tmp/acc-sd/witness timeout 120 "$SIDEEYE" explore --state /tmp/acc-sd/s \
+            --setup "$st init" --operation "$st rotate" --check "$ROOT/spike/check.sh" --work /tmp/acc-sd/w "$@" 2>&1)
+        sd_rc=$?
+    }
+    sd_want() {
+        if [ "$sd_rc" = "$2" ] && printf '%s\n' "$sd_out" | grep -qF -- "$3" && grep -qxF -- "$4" /tmp/acc-sd/witness 2>/dev/null; then
+            echo "ok   $1: exit $2, [$3], the toy wrote [$4]"
+        else
+            echo "FAIL $1: exit $sd_rc (wanted $2), looked for [$3] and a witness line [$4]: $(head -2 /tmp/acc-sd/witness 2>/dev/null | tr '\n' ' ')"
+            printf '%s\n' "$sd_out" | sed 's/^/     | /' | head -4
+            fails=$((fails + 1))
+        fi
+    }
+    if [ -n "$sd_pgid" ]; then
+        for sd_mode in supervised wrappers; do
+            if [ "$sd_mode" = supervised ]; then sd_toy=$OUT/toy-static; sd_flags="--observe supervised"
+            else sd_toy=$OUT/toy-bug; sd_flags="--shim $SHIM"; fi
+            sd_run "$sd_toy" TOY_SETSID=1 $sd_flags --allow-unverified
+            sd_want "$sd_mode: a setsid by the group's leader, which fails, is judged" 1 "crash point 5 of 5" "setsid rc=-1"
+            sd_run "$sd_toy" TOY_SETSID_THREAD=1 $sd_flags --allow-unverified
+            sd_want "$sd_mode: a setsid from a second thread, which fails, is judged" 1 "crash point 5 of 5" "setsid-thread rc=-1"
+            # Counted, not judged: the thread's creation is recorded first, and a run whose first
+            # boundary is a thread is judged whatever is recorded after it.
+            sd_det=$(count_op_records /tmp/acc-sd/w/trace-record.bin 204)
+            [ "$sd_det" = 0 ] || { echo "FAIL $sd_mode: a setsid from a second thread, which fails, left $sd_det detached record(s) (wanted 0)"; fails=$((fails + 1)); }
+            sd_run "$sd_toy" TOY_SETPGID_NOOP=1 $sd_flags --allow-unverified
+            sd_want "$sd_mode: setpgid(0, 0) by the group's leader is judged" 1 "crash point 5 of 5" "setpgid-noop rc=0"
+            sd_run "$sd_toy" "TOY_SETPGID_OUT=$sd_pgid" $sd_flags --allow-unverified
+            sd_want "$sd_mode: the subject joining a group outside the run is a detachment" 2 "UNKNOWN  boundary_without_oracle" "setpgid-out rc=0 pgrp=$sd_pgid"
+            sd_det=$(count_op_records /tmp/acc-sd/w/trace-record.bin 204)
+            [ "$sd_det" = 1 ] || { echo "FAIL $sd_mode: the subject joining a group outside the run left $sd_det detached record(s) (wanted 1)"; fails=$((fails + 1)); }
+            sd_run "$sd_toy" TOY_SETSID=1 $sd_flags --oracle /usr/bin/strace
+            sd_det=$(count_op_records /tmp/acc-sd/w/trace-record.bin 204)
+            if [ "$sd_det" = 1 ] && grep -qxF "setsid rc=0" /tmp/acc-sd/witness 2>/dev/null; then
+                echo "ok   $sd_mode: a setsid that succeeds under strace is recorded as one detachment"
+            else
+                echo "FAIL $sd_mode: a setsid that succeeds under strace left $sd_det detached record(s) in the recording's trace (wanted 1; exit $sd_rc)"
+                fails=$((fails + 1))
+            fi
+        done
+    else
+        echo "FAIL #904: the sleeper that holds a group outside the run never started, so nothing was measured"
+        fails=$((fails + 1))
+    fi
+    kill "$sd_sleeper" 2>/dev/null
+    wait "$sd_sleeper" 2>/dev/null
+    /bin/rm -f /tmp/acc-sd-pgid
 else
     rm -rf /tmp/acc && mkdir -p /tmp/acc/state
     o=$("$SIDEEYE" explore --state /tmp/acc/state --operation "$OUT/toy-static rotate" \
@@ -8654,6 +8764,44 @@ else
     fails=$((fails + 1))
 fi
 
+if nm -D --undefined-only "$OUT/toy-fortify" 2>/dev/null | grep -q "__open_2"; then
+    echo "ok   toy-fortify reaches __open_2"
+else
+    echo "FAIL toy-fortify does not import __open_2: the compiler folded its flags, and no leg below reaches a fortified open"
+    fails=$((fails + 1))
+fi
+for fo in "rotate:--observe wrappers" "rotate:--observe syscalls" "sweep:--observe wrappers" \
+    "sweep:--observe syscalls" "sweep-range:--observe wrappers"; do
+    fo_cmd=${fo%%:*}
+    fo_mode=${fo#*:}
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-fortify init" --operation "$OUT/toy-fortify $fo_cmd" \
+        --shim "$SHIM" --work /tmp/acc/work $fo_mode --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if [ "$rc" = 1 ] && printf '%s\n' "$o" | grep -q "^oracle  *agreed on"; then
+        echo "ok   a fortified rewrite ($fo) is counted, and the oracle agrees: FAIL"
+    else
+        echo "FAIL a fortified rewrite ($fo): exit $rc, wanted FAIL with the oracle agreeing"
+        printf '%s\n' "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    fi
+done
+for fo_cmd in sweep-lowlimit spawn-lowlimit; do
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-fortify init" --operation "$OUT/toy-fortify $fo_cmd" \
+        --shim "$SHIM" --work /tmp/acc/work --allow-unverified 2>&1)
+    rc=$?
+    if refused_uncredited unresolvable_path "$rc" "$o"; then
+        echo "ok   a sweep whose trace cannot go back on its number ($fo_cmd) refuses"
+    else
+        echo "FAIL a sweep whose trace cannot go back on its number ($fo_cmd): exit $rc, wanted the refusal"
+        printf '%s\n' "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    fi
+done
+
 # Descriptors that are provably not files — eventfd and epoll stat with zero type
 # bits, the kernel's anon-inode spelling — must be invisible to the verdict. Before
 # fdKind knew that spelling, one close() of an eventfd sent the whole run to
@@ -9512,7 +9660,7 @@ else
 fi
 
 echo "=========== check 11i: the evidence bundle says what the run measured (#607) ==========="
-# spike/check-evidence-bundle.sh explores seven fixtures whose impact columns disagree, holds
+# spike/check-evidence-bundle.sh explores fixtures whose impact columns disagree, holds
 # each bundle to the case and the report that describe the same run, requires the rendered
 # document to carry exactly its eight sections — the fixture whose file name holds `\n## ` is
 # why that is an equality and not a contains — and refuses one that ranks what it found. Its

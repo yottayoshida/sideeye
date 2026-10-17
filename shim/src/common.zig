@@ -309,6 +309,10 @@ pub const PthreadDetachFn = *const fn (usize) callconv(.c) c_int;
 /// A thread's start routine, as `pthread_create` takes it.
 pub const RoutineFn = *const fn (?*anyopaque) callconv(.c) ?*anyopaque;
 pub const SetsidFn = *const fn () callconv(.c) c_int;
+pub const Open2Fn = *const fn ([*:0]const u8, c_int) callconv(.c) c_int;
+pub const Openat2Fn = *const fn (c_int, [*:0]const u8, c_int) callconv(.c) c_int;
+pub const ClosefromFn = *const fn (c_int) callconv(.c) void;
+pub const CloseRangeFn = *const fn (c_uint, c_uint, c_int) callconv(.c) c_int;
 pub const SetpgidFn = *const fn (c_int, c_int) callconv(.c) c_int;
 
 // --- stdio, at flush granularity (ADR 0005) ----------------------------------------
@@ -535,6 +539,12 @@ pub var real: struct {
     pthread_detach: ?PthreadDetachFn = null,
     setsid: ?SetsidFn = null,
     setpgid: ?SetpgidFn = null,
+    __open_2: ?Open2Fn = null,
+    __open64_2: ?Open2Fn = null,
+    __openat_2: ?Openat2Fn = null,
+    __openat64_2: ?Openat2Fn = null,
+    closefrom: ?ClosefromFn = null,
+    close_range: ?CloseRangeFn = null,
     fopen: ?FopenFn = null,
     fopen64: ?FopenFn = null,
     freopen: ?FreopenFn = null,
@@ -569,6 +579,15 @@ var run_cgroup_len: usize = 0;
 /// That cgroup's `cgroup.kill`, opened at init and relocated the way `trace_fd` is (v17);
 /// -1 when this is not a world, when the open failed, or when the target closed it.
 var kill_cgroup_fd: c_int = -1;
+// Not read back from the environment when a sweep's casualty is reopened: the target may have
+// changed it by then.
+var trace_path_buf: [contract.max_path + 1]u8 = @splat(0);
+var trace_path_len: usize = 0;
+var trace_identity: ?FileIdentity = null;
+var kill_cgroup_path_buf: [contract.max_path + 1]u8 = @splat(0);
+var kill_cgroup_path_len: usize = 0;
+var kill_aside_path_buf: [contract.max_path + 1]u8 = @splat(0);
+var kill_aside_path_len: usize = 0;
 /// The run's own `cgroup.procs`, one level above the cgroup the run's processes are in, opened
 /// at init the same way (v17): where a world's crash point steps aside to before it kills.
 var kill_aside_fd: c_int = -1;
@@ -593,7 +612,8 @@ var kill_aside_fd: c_int = -1;
 /// fixed array keyed by `gettid()` — one syscall, one compare-and-swap — is
 /// async-signal-safe by construction. A thread's slot is never freed: nothing here sees a
 /// thread end. Only a process that shares the table without owning it — a `vfork` child —
-/// gives back the slot it claimed, before its exec. The 65th thread shares `reserve`, whose `busy` is the old process-wide guard,
+/// gives back the slot it claimed, before its exec; and once the table is full, a slot whose
+/// claiming process has exited and been reaped is taken back. The 65th thread shares `reserve`, whose `busy` is the old process-wide guard,
 /// and the run records `thread-slots-exhausted` once so the engine refuses it rather
 /// than judges it.
 ///
@@ -602,8 +622,9 @@ var kill_aside_fd: c_int = -1;
 /// are nearly five megabytes the file need not carry. Only the pages a thread touches
 /// become memory.
 const ThreadState = struct {
-    /// Owner's thread id; 0 is free. Written by the compare-and-swap in `mine`, and cleared
-    /// only when a `vfork` child gives the slot back before its exec.
+    /// Owner's thread id; 0 is free. Written by the compare-and-swap in `mine` or by
+    /// `reclaimDeparted`, and cleared only when a `vfork` child gives the slot back before its
+    /// exec.
     tid: u64 = 0,
     claimer_pid: c_int = 0,
     /// Guards against observing our own work. The path resolution below calls libc, and
@@ -708,17 +729,18 @@ fn mine() *ThreadState {
     // Two passes, not one that takes the first free slot on the way: an exec gives a slot back
     // mid-table, and a thread whose own slot lies past it would claim a second one and leave
     // its counts behind in the first.
-    for (&slots) |*s| if (@atomicLoad(u64, &s.tid, .acquire) == tid) return s;
+    for (&slots) |*s| if (@atomicLoad(u64, &s.tid, .acquire) == tid and adopt(s)) return s;
     for (&slots) |*s| {
         // Our own id again here too: a signal handler that interrupted this pass may have claimed
         // a slot for this thread, and passing over it would give the thread a second one.
         const owner = @atomicLoad(u64, &s.tid, .acquire);
-        if (owner == tid) return s;
+        if (owner == tid and adopt(s)) return s;
         if (owner == 0 and @cmpxchgStrong(u64, &s.tid, 0, tid, .acq_rel, .acquire) == null) {
-            s.claimer_pid = c.getpid();
+            @atomicStore(c_int, &s.claimer_pid, c.getpid(), .release);
             return s;
         }
     }
+    if (reclaimDeparted(tid)) |s| return s;
     // Announced HERE, at the moment of exhaustion, not at the next `writeRecord` — the
     // first version deferred it there, and review found the gap: the harm exhaustion does
     // is two reserve-sharing threads racing on one `busy`, which drops a record before
@@ -751,6 +773,55 @@ fn mine() *ThreadState {
         _ = writeAll(notice[0..n]);
     }
     return &reserve;
+}
+
+const reclaiming: c_int = -1;
+
+// A slot found by id but claimed by a process that is not this one: on macOS a `vfork` child
+// runs on its parent's thread id, so a slot it claimed is that parent thread's once the child is
+// gone. Left with the child's pid, `reclaimDeparted` would take it from the thread using it; and
+// one `reclaimDeparted` is already taking is not used, or two threads would share it.
+fn adopt(s: *ThreadState) bool {
+    while (true) {
+        const claimer = @atomicLoad(c_int, &s.claimer_pid, .acquire);
+        if (claimer == reclaiming) return false;
+        if (claimer == 0 or claimer == table_pid or c.getpid() != table_pid) return true;
+        if (@cmpxchgStrong(c_int, &s.claimer_pid, claimer, table_pid, .acq_rel, .acquire) == null) return true;
+    }
+}
+
+// Not taken while the table has room: a departed claimer costs nothing until then, and `kill`
+// on every call would. Arbitrated on `claimer_pid`, not `tid`: a claim writes `tid` first, so a
+// second reclaimer reading the new `tid` with the old pid would take the same slot again.
+fn reclaimDeparted(tid: u64) ?*ThreadState {
+    var self_pid: c_int = 0;
+    var saved_errno: ?c_int = null;
+    defer if (saved_errno) |e| {
+        std.c._errno().* = e;
+    };
+    for (&slots) |*s| {
+        const owner_pid = @atomicLoad(c_int, &s.claimer_pid, .acquire);
+        if (owner_pid <= 0 or owner_pid == table_pid) continue;
+        if (self_pid == 0) self_pid = c.getpid();
+        if (owner_pid == self_pid) continue;
+        if (saved_errno == null) saved_errno = std.c._errno().*;
+        if (c.kill(owner_pid, 0) == 0 or std.c._errno().* != @backingInt(std.c.E.SRCH)) continue;
+        if (@cmpxchgStrong(c_int, &s.claimer_pid, owner_pid, reclaiming, .acq_rel, .acquire) != null) continue;
+        s.busy = false;
+        s.exec_carrying = false;
+        clearCounts(s);
+        @atomicStore(c_int, &s.claimer_pid, self_pid, .release);
+        @atomicStore(u64, &s.tid, tid, .release);
+        // Given back if a signal handler on this thread claimed another slot before the store: two
+        // slots for one id would split its counts.
+        for (&slots) |*o| if (o != s and @atomicLoad(u64, &o.tid, .acquire) == tid) {
+            @atomicStore(c_int, &s.claimer_pid, 0, .release);
+            @atomicStore(u64, &s.tid, 0, .release);
+            return o;
+        };
+        return s;
+    }
+    return null;
 }
 
 /// After `fork`, in the child (v16). The child inherits the table as the parent had it —
@@ -1223,6 +1294,8 @@ pub fn init() void {
     // rejects F_DUPFD at 900; if both floors fail the low number is kept, and a sweep
     // that reaches it still ends in refusal, never in a silent half-account.
     trace_fd = relocateHigh(trace_fd);
+    keepName(&trace_path_buf, &trace_path_len, std.mem.span(tp));
+    trace_identity = fileIdentity(trace_fd);
 
     if (c.getenv(contract.env.kill_at)) |k| kill_at = parseU32(std.mem.span(k));
     // Only a run the engine put in its own process group may take the group down; see
@@ -1334,10 +1407,12 @@ fn takeRunCgroup() void {
     if (kp[0] == 0) return;
     const kfd = callOpen(kp, O_WRONLY | O_CLOEXEC, 0);
     if (kfd >= 0) kill_cgroup_fd = relocateHigh(kfd);
+    keepName(&kill_cgroup_path_buf, &kill_cgroup_path_len, std.mem.span(kp));
     const ap = c.getenv(contract.env.kill_aside) orelse return;
     if (ap[0] == 0) return;
     const afd = callOpen(ap, O_WRONLY | O_CLOEXEC, 0);
     if (afd >= 0) kill_aside_fd = relocateHigh(afd);
+    keepName(&kill_aside_path_buf, &kill_aside_path_len, std.mem.span(ap));
 }
 
 /// Where this image stands against the run's cgroup, as a `cgroup` record (v17, #559). A
@@ -1358,11 +1433,13 @@ fn notHeldAux(standing: CgroupStanding) ?[]const u8 {
     };
 }
 
+const relocation_floor: c_int = 200;
+
 /// Move a descriptor the shim holds above the range daemonize loops sweep — the reason is
 /// the paragraph at `trace_fd`'s relocation in `init` — keeping the low number when both
 /// floors fail. Returns the number the caller holds from here on.
 fn relocateHigh(fd: c_int) c_int {
-    for ([_]c_int{ 900, 200 }) |floor| {
+    for ([_]c_int{ 900, relocation_floor }) |floor| {
         const high = c.fcntl(fd, F_DUPFD, floor);
         if (high < 0) continue;
         _ = c.fcntl(high, F_SETFD, FD_CLOEXEC);
@@ -1504,16 +1581,20 @@ fn canonical(out: []u8, path: []const u8) []const u8 {
 /// library exports. The shim's own output therefore never passes its own interposition
 /// and cannot appear in the trace as if the target had produced it.
 fn writeAll(bytes: []const u8) bool {
-    if (trace_fd < 0) return false;
+    return writeAllTo(trace_fd, bytes);
+}
+
+fn writeAllTo(fd: c_int, bytes: []const u8) bool {
+    if (fd < 0) return false;
     var off: usize = 0;
     while (off < bytes.len) {
         // Through the thunk when the filter is up: libc's `write` would trap, the
         // handler would record, and recording writes another record — recursion with
         // no bottom. `traceWrite` carries the sentinel the filter allows.
         const w = if (syscalls.armed)
-            syscalls.traceWrite(trace_fd, bytes[off..].ptr, bytes.len - off)
+            syscalls.traceWrite(fd, bytes[off..].ptr, bytes.len - off)
         else
-            callWrite(trace_fd, bytes[off..].ptr, bytes.len - off);
+            callWrite(fd, bytes[off..].ptr, bytes.len - off);
         if (w <= 0) return false;
         off += @intCast(w);
     }
@@ -1542,6 +1623,150 @@ fn encodeAndWrite(buf: *[contract.max_record_len]u8, op: contract.OpClass, s: u3
     };
     const n = contract.encodeRecord(buf, rec) catch return false;
     return writeAll(buf[0..n]);
+}
+
+fn keepName(buf: *[contract.max_path + 1]u8, len: *usize, name: []const u8) void {
+    if (name.len > contract.max_path) return;
+    @memcpy(buf[0..name.len], name);
+    buf[name.len] = 0;
+    len.* = name.len;
+}
+
+const at_empty_path = 0x1000;
+
+const FileIdentity = struct { dev_major: u32, dev_minor: u32, ino: u64 };
+
+fn fileIdentity(fd: c_int) ?FileIdentity {
+    if (is_darwin) return null;
+    var stx: std.os.linux.Statx = undefined;
+    const rc = std.os.linux.statx(@intCast(fd), "", at_empty_path, .{ .INO = true }, &stx);
+    if (std.os.linux.errno(rc) != .SUCCESS or !stx.mask.INO) return null;
+    return .{ .dev_major = stx.dev_major, .dev_minor = stx.dev_minor, .ino = stx.ino };
+}
+
+fn descriptorClosed(fd: c_int) bool {
+    return fd >= 0 and fdStat(fd) == .bad_fd;
+}
+
+// Not through libc's `openat` once the filter is up: a write-capable open traps, and a trap that
+// meets a moment with SIGSYS blocked ends the process.
+fn reopen(name: [*:0]const u8, flags: c_int) c_int {
+    if (!syscalls.armed) return callOpen(name, flags, 0);
+    const r = syscalls.thunk(@backingInt(std.os.linux.SYS.openat), @bitCast(@as(i64, AT_FDCWD)), @intFromPtr(name), @as(u32, @bitCast(flags)), 0, 0);
+    const signed: i64 = @bitCast(r);
+    return if (signed < 0) -1 else @intCast(signed);
+}
+
+// Back onto the old number, never a new one: the old number is the value every process sharing
+// this memory reads, and a `vfork` child that wrote a new one would move its parent's channel to
+// a descriptor only the child has.
+fn restoreOnto(old: c_int, fresh: c_int) bool {
+    const rc = std.os.linux.dup3(fresh, old, @as(u32, @bitCast(O_CLOEXEC)));
+    return std.os.linux.errno(rc) == .SUCCESS;
+}
+
+// Not below the relocation floors, where the target's next open may take the number.
+fn reinstate(old: c_int, name: *const [contract.max_path + 1]u8, name_len: usize) bool {
+    if (old < relocation_floor or name_len == 0) return false;
+    const fresh = reopen(@ptrCast(name), O_WRONLY | O_CLOEXEC);
+    if (fresh < 0) return false;
+    defer _ = callClose(fresh);
+    return restoreOnto(old, fresh);
+}
+
+fn reinstateOrDrop(fd: *c_int, name: *const [contract.max_path + 1]u8, name_len: usize, owner: bool) void {
+    if (!descriptorClosed(fd.*) or reinstate(fd.*, name, name_len)) return;
+    if (owner) fd.* = -1;
+}
+
+fn isTraceFile(fd: c_int) bool {
+    return trace_identity != null and std.meta.eql(fileIdentity(fd), trace_identity);
+}
+
+// Not through the thread's record buffer: a sweep from a signal handler can land while that
+// buffer holds the half-encoded record of the call it interrupted.
+fn writeDeathThrough(fd: c_int) void {
+    var buf: [64]u8 = undefined;
+    const n = contract.encodeRecord(&buf, .{
+        .op = .unresolved,
+        .seq = 0,
+        .pid = @bitCast(c.getpid()),
+        .tid = currentTid(),
+        .path = "",
+        .aux = contract.unresolved_kind.trace_closed,
+    }) catch return;
+    _ = writeAllTo(fd, buf[0..n]);
+}
+
+pub fn afterSweep() void {
+    if (is_darwin or !active) return;
+    const saved_errno = std.c._errno().*;
+    defer std.c._errno().* = saved_errno;
+    // A `vfork` child shares these numbers with its parent, whose own descriptors the child's
+    // sweep never touched: a -1 written here would silence the parent.
+    const owner = c.getpid() == table_pid;
+    reinstateOrDrop(&kill_cgroup_fd, &kill_cgroup_path_buf, kill_cgroup_path_len, owner);
+    reinstateOrDrop(&kill_aside_fd, &kill_aside_path_buf, kill_aside_path_len, owner);
+    if (trace_fd < 0) return;
+    const closed = descriptorClosed(trace_fd);
+    if (!closed and (trace_identity == null or isTraceFile(trace_fd))) return;
+    const fresh = if (trace_path_len > 0) reopen(@ptrCast(&trace_path_buf), O_RDWR | O_APPEND | O_CLOEXEC | O_NOFOLLOW | O_NONBLOCK) else -1;
+    defer if (fresh >= 0) {
+        _ = callClose(fresh);
+    };
+    const same = fresh >= 0 and isTraceFile(fresh);
+    // Not restored below the relocation floors, where the target's next open may take the number;
+    // nor onto a number that already holds another file, which is the target's now.
+    if (same and closed and trace_fd >= relocation_floor and restoreOnto(trace_fd, fresh)) {
+        if (otherThreadsHere()) writeDeathThrough(trace_fd);
+        return;
+    }
+    if (same) writeDeathThrough(fresh);
+    if (owner) trace_fd = -1;
+}
+
+// A slot outlives the thread that claimed it; only a live thread may have
+// written while the channel was gone.
+fn otherThreadsHere() bool {
+    const pid = c.getpid();
+    const self = currentTid();
+    for (&slots) |*s| {
+        const tid = @atomicLoad(u64, &s.tid, .acquire);
+        if (tid == 0 or tid == self or @atomicLoad(c_int, &s.claimer_pid, .acquire) != pid) continue;
+        const rc = std.os.linux.syscall3(.tgkill, @as(usize, @bitCast(@as(isize, pid))), @intCast(tid), 0);
+        if (std.os.linux.errno(rc) != .SRCH) return true;
+    }
+    return false;
+}
+
+pub inline fn callOpen2(comptime name: [:0]const u8, path: [*:0]const u8, flags: c_int) c_int {
+    const f = reach(name) orelse return optionalMissingInt();
+    return f(path, flags);
+}
+pub inline fn callOpenat2(comptime name: [:0]const u8, dirfd: c_int, path: [*:0]const u8, flags: c_int) c_int {
+    const f = reach(name) orelse return optionalMissingInt();
+    return f(dirfd, path, flags);
+}
+
+// Not left undone when glibc predates the function: `closefrom` cannot report failure, and a
+// target that found the symbol by lookup expects its descriptors gone.
+pub fn callClosefrom(low: c_int) void {
+    if (reach("closefrom")) |f| return f(low);
+    if (callCloseRange(@intCast(@max(low, 0)), std.math.maxInt(c_uint), 0) == 0) return;
+    const limit = std.posix.getrlimit(.NOFILE) catch return;
+    var fd: c_int = @max(low, 0);
+    const top: c_int = @intCast(@min(limit.cur, 1 << 20));
+    while (fd < top) : (fd += 1) _ = callClose(fd);
+}
+
+pub fn callCloseRange(first: c_uint, last: c_uint, flags: c_int) c_int {
+    if (reach("close_range")) |f| return f(first, last, flags);
+    const rc = std.os.linux.syscall3(.close_range, first, last, @as(u32, @bitCast(flags)));
+    if (std.os.linux.errno(rc) != .SUCCESS) {
+        std.c._errno().* = @backingInt(std.os.linux.errno(rc));
+        return -1;
+    }
+    return 0;
 }
 
 /// The target is closing the shim's own trace descriptor.
@@ -2354,8 +2579,7 @@ fn fdStat(fd: c_int) FdStatResult {
         return .{ .ok = .{ .mode = @intCast(st.mode), .nlink = @intCast(st.nlink) } };
     }
     var stx: std.os.linux.Statx = undefined;
-    // 0x1000 is AT_EMPTY_PATH: statx the descriptor itself, no path walk.
-    const rc = std.os.linux.statx(@intCast(fd), "", 0x1000, .{ .TYPE = true, .NLINK = true }, &stx);
+    const rc = std.os.linux.statx(@intCast(fd), "", at_empty_path, .{ .TYPE = true, .NLINK = true }, &stx);
     switch (std.os.linux.errno(rc)) {
         .SUCCESS => {},
         .BADF => return .bad_fd,
@@ -3235,7 +3459,7 @@ fn returnSlotBeforeExec(ts: *ThreadState) ExecLoan {
     const loan: ExecLoan = .{ .given_back = true, .seq = ts.seq, .count_scanned = ts.count_scanned, .written = ts.written, .creates = ts.creates };
     ts.exec_carrying = false;
     clearCounts(ts);
-    ts.claimer_pid = 0;
+    @atomicStore(c_int, &ts.claimer_pid, 0, .release);
     @atomicStore(u64, &ts.tid, 0, .release);
     return loan;
 }
@@ -3965,4 +4189,361 @@ test "writeRecord counts the records that went out, and the fork child's slots a
     try std.testing.expectEqual(@as(u32, 0), reserve.creates);
     try std.testing.expect(joinableTake(0x3000) == null);
     for (&pending_starts) |*e| try std.testing.expect(!e.taken);
+}
+
+fn departedPid() !c_int {
+    const pid = try zombiePid();
+    reap(pid);
+    return pid;
+}
+
+// Not reaped: running or a zombie, `kill` answers either way, however privileged the test.
+fn zombiePid() !c_int {
+    const pid = std.c.fork();
+    if (pid < 0) return error.SkipZigTest;
+    if (pid == 0) std.c._exit(0);
+    return pid;
+}
+
+fn reap(pid: c_int) void {
+    var status: c_int = 0;
+    _ = std.c.waitpid(pid, &status, 0);
+}
+
+test "a full table takes back a slot whose claimer has exited, and no slot whose claimer is alive" {
+    const saved_active = active;
+    defer active = saved_active;
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    const saved_announced = exhaustion_announced;
+    defer exhaustion_announced = saved_announced;
+    defer resetSlotsInChild();
+    armForExecSlotTest();
+    table_pid = c.getpid();
+    exhaustion_announced = true;
+    const zombie = try zombiePid();
+    defer reap(zombie);
+    const gone = try departedPid();
+    for (&slots, 0..) |*s, i| {
+        s.tid = 100_000_000 + @as(u64, i);
+        s.claimer_pid = zombie;
+    }
+    slots[6].claimer_pid = 0;
+    slots[7].claimer_pid = table_pid;
+    slots[5].claimer_pid = gone;
+    slots[5].seq = 4;
+    slots[5].count_scanned = 77;
+    slots[5].written = 9;
+    slots[5].creates = 3;
+    slots[5].busy = true;
+    slots[5].exec_carrying = true;
+    std.c._errno().* = 0;
+
+    const got = mine();
+    try std.testing.expectEqual(@as(c_int, 0), std.c._errno().*);
+    try std.testing.expectEqual(&slots[5], got);
+    try std.testing.expectEqual(currentTid(), got.tid);
+    try std.testing.expectEqual(c.getpid(), got.claimer_pid);
+    try std.testing.expectEqual(@as(u32, 0), got.seq);
+    try std.testing.expectEqual(@as(u64, 0), got.count_scanned);
+    try std.testing.expectEqual(@as(u32, 0), got.written);
+    try std.testing.expectEqual(@as(u32, 0), got.creates);
+    try std.testing.expect(!got.busy);
+    try std.testing.expect(!got.exec_carrying);
+    for (&slots, 0..) |*s, i| if (i != 5) try std.testing.expectEqual(100_000_000 + @as(u64, i), s.tid);
+    try std.testing.expectEqual(got, mine());
+}
+
+test "a full table whose claimers are all alive still hands out the reserve" {
+    const saved_active = active;
+    defer active = saved_active;
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    const saved_announced = exhaustion_announced;
+    defer exhaustion_announced = saved_announced;
+    defer resetSlotsInChild();
+    armForExecSlotTest();
+    table_pid = c.getpid();
+    exhaustion_announced = true;
+    const zombie = try zombiePid();
+    defer reap(zombie);
+    for (&slots, 0..) |*s, i| {
+        s.tid = 100_000_000 + @as(u64, i);
+        s.claimer_pid = if (i % 2 == 0) zombie else table_pid;
+    }
+    try std.testing.expectEqual(&reserve, mine());
+}
+
+test "a slot found by this thread's id under a departed claimer becomes this process's, and is not taken back" {
+    const saved_active = active;
+    defer active = saved_active;
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    const saved_announced = exhaustion_announced;
+    defer exhaustion_announced = saved_announced;
+    defer resetSlotsInChild();
+    armForExecSlotTest();
+    table_pid = c.getpid();
+    exhaustion_announced = true;
+    const gone = try departedPid();
+    for (&slots, 0..) |*s, i| {
+        s.tid = 100_000_000 + @as(u64, i);
+        s.claimer_pid = table_pid;
+    }
+    slots[3].tid = currentTid();
+    slots[3].claimer_pid = gone;
+    slots[3].written = 7;
+    try std.testing.expectEqual(&slots[3], mine());
+    try std.testing.expectEqual(table_pid, slots[3].claimer_pid);
+    try std.testing.expectEqual(@as(u32, 7), slots[3].written);
+}
+
+test "a slot another thread is taking back is not used, even under this thread's id" {
+    const saved_active = active;
+    defer active = saved_active;
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    defer resetSlotsInChild();
+    armForExecSlotTest();
+    table_pid = c.getpid();
+    for (&slots, 0..) |*s, i| {
+        s.tid = 100_000_000 + @as(u64, i);
+        s.claimer_pid = table_pid;
+    }
+    slots[3].tid = currentTid();
+    slots[3].claimer_pid = reclaiming;
+    slots[6].tid = 0;
+    slots[6].claimer_pid = 0;
+    try std.testing.expectEqual(&slots[6], mine());
+    try std.testing.expectEqual(reclaiming, slots[3].claimer_pid);
+}
+
+const sweep_trace_path = "/tmp/sideeye-sweep-test-trace";
+const sweep_other_path = "/tmp/sideeye-sweep-test-other";
+
+const SweepTestState = struct {
+    active: bool,
+    trace_fd: c_int,
+    trace_path_len: usize,
+    trace_identity: ?FileIdentity,
+    kill_cgroup_fd: c_int,
+    kill_cgroup_path_len: usize,
+    kill_aside_fd: c_int,
+
+    fn save() SweepTestState {
+        return .{
+            .active = active,
+            .trace_fd = trace_fd,
+            .trace_path_len = trace_path_len,
+            .trace_identity = trace_identity,
+            .kill_cgroup_fd = kill_cgroup_fd,
+            .kill_cgroup_path_len = kill_cgroup_path_len,
+            .kill_aside_fd = kill_aside_fd,
+        };
+    }
+
+    fn restore(s: SweepTestState) void {
+        active = s.active;
+        trace_fd = s.trace_fd;
+        trace_path_len = s.trace_path_len;
+        trace_identity = s.trace_identity;
+        kill_cgroup_fd = s.kill_cgroup_fd;
+        kill_cgroup_path_len = s.kill_cgroup_path_len;
+        kill_aside_fd = s.kill_aside_fd;
+        resetSlotsInChild();
+    }
+};
+
+fn openFileAt(path: [*:0]const u8, at: c_int) !void {
+    const fd = callOpen(path, O_RDWR | O_CREAT | O_TRUNC | O_APPEND, 0o600);
+    if (fd < 0) return error.SkipZigTest;
+    defer _ = callClose(fd);
+    if (std.os.linux.errno(std.os.linux.dup3(fd, at, @as(u32, @bitCast(O_CLOEXEC)))) != .SUCCESS) return error.SkipZigTest;
+}
+
+fn armSweepTrace(at: c_int) !void {
+    armForExecSlotTest();
+    kill_cgroup_fd = -1;
+    kill_aside_fd = -1;
+    try openFileAt(sweep_trace_path, at);
+    keepName(&trace_path_buf, &trace_path_len, sweep_trace_path);
+    trace_identity = fileIdentity(at);
+    trace_fd = at;
+}
+
+fn fileHolds(path: [*:0]const u8) []const u8 {
+    const S = struct {
+        var buf: [256]u8 = undefined;
+    };
+    const fd = callOpen(path, O_RDONLY, 0);
+    if (fd < 0) return "";
+    defer _ = callClose(fd);
+    const n = std.c.read(fd, &S.buf, S.buf.len);
+    return if (n <= 0) "" else S.buf[0..@intCast(n)];
+}
+
+fn holdsTraceDeath(path: [*:0]const u8) bool {
+    return std.mem.indexOf(u8, fileHolds(path), contract.unresolved_kind.trace_closed) != null;
+}
+
+fn withNofileSoftLimit(soft: u64) !std.posix.rlimit {
+    const was = try std.posix.getrlimit(.NOFILE);
+    std.posix.setrlimit(.NOFILE, .{ .cur = soft, .max = was.max }) catch return error.SkipZigTest;
+    return was;
+}
+
+test "a sweep that closed the trace puts the same file back on its number, and says nothing" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    defer _ = callClose(950);
+    _ = callClose(950);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, 950), trace_fd);
+    try std.testing.expect(isTraceFile(950));
+    try std.testing.expectEqualStrings("", fileHolds(sweep_trace_path));
+}
+
+test "a sweep whose restore fails says so through the reopened trace before it drops the channel" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    const was = try withNofileSoftLimit(256);
+    defer std.posix.setrlimit(.NOFILE, was) catch {};
+    _ = callClose(950);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, -1), trace_fd);
+    try std.testing.expect(holdsTraceDeath(sweep_trace_path));
+}
+
+test "a process sharing the table without owning it leaves the shared trace number alone when the restore fails" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    const was = try withNofileSoftLimit(256);
+    defer std.posix.setrlimit(.NOFILE, was) catch {};
+    table_pid = c.getpid() + 1;
+    _ = callClose(950);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, 950), trace_fd);
+    try std.testing.expect(holdsTraceDeath(sweep_trace_path));
+}
+
+test "a trace below the relocation floor is never put back, and its death goes through the reopened file" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(150);
+    _ = callClose(150);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, -1), trace_fd);
+    try std.testing.expect(descriptorClosed(150));
+    try std.testing.expect(holdsTraceDeath(sweep_trace_path));
+}
+
+test "a trace number that now holds another file is dropped with a death, and nothing is written into that file" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    defer _ = callClose(950);
+    _ = callClose(950);
+    try openFileAt(sweep_other_path, 950);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, -1), trace_fd);
+    try std.testing.expect(!isTraceFile(950));
+    try std.testing.expectEqualStrings("", fileHolds(sweep_other_path));
+    try std.testing.expect(holdsTraceDeath(sweep_trace_path));
+}
+
+fn claimAndLeave() void {
+    _ = mine();
+}
+
+fn claimAndWait(hold: *std.atomic.Value(bool), claimed: *std.atomic.Value(bool)) void {
+    _ = mine();
+    claimed.store(true, .release);
+    while (hold.load(.acquire)) std.atomic.spinLoopHint();
+}
+
+test "a thread that has exited does not count as another thread here, and a live one does" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    armForExecSlotTest();
+    _ = mine();
+    const gone = try std.Thread.spawn(.{}, claimAndLeave, .{});
+    gone.join();
+    // Not asked once: `join` returns when the kernel clears the thread's id, a moment before it
+    // reaps the thread, and `tgkill` still finds it until then.
+    var tries: usize = 0;
+    while (otherThreadsHere() and tries < 1000) : (tries += 1) {
+        const ms: std.os.linux.timespec = .{ .sec = 0, .nsec = 1_000_000 };
+        _ = std.os.linux.nanosleep(&ms, null);
+    }
+    try std.testing.expect(!otherThreadsHere());
+
+    var hold = std.atomic.Value(bool).init(true);
+    var claimed = std.atomic.Value(bool).init(false);
+    const live = try std.Thread.spawn(.{}, claimAndWait, .{ &hold, &claimed });
+    defer live.join();
+    defer hold.store(false, .release);
+    while (!claimed.load(.acquire)) std.atomic.spinLoopHint();
+    try std.testing.expect(otherThreadsHere());
+}
+
+test "a sweep that closed cgroup.kill puts the same file back on its number" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    armForExecSlotTest();
+    kill_aside_fd = -1;
+    try openFileAt(sweep_other_path, 951);
+    defer _ = callClose(951);
+    const before = fileIdentity(951);
+    keepName(&kill_cgroup_path_buf, &kill_cgroup_path_len, sweep_other_path);
+    kill_cgroup_fd = 951;
+    _ = callClose(951);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, 951), kill_cgroup_fd);
+    try std.testing.expect(before != null);
+    try std.testing.expect(std.meta.eql(fileIdentity(951), before));
+}
+
+test "a sweep that closed cgroup.kill below the relocation floor leaves it closed and drops it" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    armForExecSlotTest();
+    kill_aside_fd = -1;
+    try openFileAt(sweep_other_path, 150);
+    keepName(&kill_cgroup_path_buf, &kill_cgroup_path_len, sweep_other_path);
+    kill_cgroup_fd = 150;
+    _ = callClose(150);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, -1), kill_cgroup_fd);
+    try std.testing.expect(descriptorClosed(150));
+}
+
+test "a sweep the trace comes back from still says so when another thread here is alive" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    defer _ = callClose(950);
+    _ = mine();
+    var hold = std.atomic.Value(bool).init(true);
+    var claimed = std.atomic.Value(bool).init(false);
+    const live = try std.Thread.spawn(.{}, claimAndWait, .{ &hold, &claimed });
+    defer live.join();
+    defer hold.store(false, .release);
+    while (!claimed.load(.acquire)) std.atomic.spinLoopHint();
+    _ = callClose(950);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, 950), trace_fd);
+    try std.testing.expect(isTraceFile(950));
+    try std.testing.expect(holdsTraceDeath(sweep_trace_path));
 }

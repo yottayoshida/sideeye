@@ -228,7 +228,12 @@ pub fn filterExec(argv: []const [:0]const u8) noreturn {
     const pid: i32 = linux.getpid();
     var payload: [4]u8 = undefined;
     std.mem.writeInt(i32, &payload, pid, .little);
-    if (!sendFd(fd, listener, &payload)) die(126, "__filter-exec: could not hand the listener to the engine", .{});
+    // No `die` from here until the engine answers: its write is a watched call, and the only
+    // holder of the listener that would answer it is this process.
+    if ((engine_build_options.supervise_handover_fault and handoverFault(.helper, std.c.getenv(contract.env.kill_at) != null)) or
+        !sendFd(fd, listener, &payload))
+        linux.exit(126);
+    if (!acknowledged(fd)) linux.exit(126);
     // Closed through the filter: the engine holds the listener by now and answers these.
     _ = linux.close(listener);
     _ = linux.close(fd);
@@ -276,7 +281,9 @@ fn sendFd(sock: i32, fd: i32, payload: []const u8) bool {
     }
 }
 
-fn recvFd(sock: i32, pid: *i32) ?i32 {
+const Received = union(enum) { listener: i32, closed, refused };
+
+fn recvFd(sock: i32, pid: *i32) Received {
     var payload: [4]u8 = undefined;
     var cm: Cmsg = .{ .len = 0, .level = 0, .type = 0, .fd = -1 };
     var iov = [_]std.posix.iovec{.{ .base = &payload, .len = payload.len }};
@@ -293,15 +300,50 @@ fn recvFd(sock: i32, pid: *i32) ?i32 {
         const rc = linux.recvmsg(sock, &msg, linux.MSG.CMSG_CLOEXEC);
         switch (linux.errno(rc)) {
             .SUCCESS => {
-                if (rc != payload.len) return null;
-                if (cm.level != linux.SOL.SOCKET or cm.type != linux.SCM.RIGHTS or cm.fd < 0) return null;
+                if (rc == 0) return .closed;
+                const carried = cm.level == linux.SOL.SOCKET and cm.type == linux.SCM.RIGHTS and cm.fd >= 0;
+                if (rc != payload.len or !carried) {
+                    if (carried) _ = linux.close(cm.fd);
+                    return .refused;
+                }
                 pid.* = std.mem.readInt(i32, &payload, .little);
-                return cm.fd;
+                return .{ .listener = cm.fd };
             },
             .INTR => continue,
-            else => return null,
+            else => return .refused,
         }
     }
+}
+
+fn reply(sock: i32, byte: u8) bool {
+    while (true) {
+        const rc = linux.sendto(sock, @ptrCast(&byte), 1, linux.MSG.NOSIGNAL, null, 0);
+        switch (linux.errno(rc)) {
+            .SUCCESS => return rc == 1,
+            .INTR => continue,
+            else => return false,
+        }
+    }
+}
+
+fn acknowledged(sock: i32) bool {
+    var got: u8 = 0;
+    while (true) {
+        const rc = linux.read(sock, @ptrCast(&got), 1);
+        switch (linux.errno(rc)) {
+            .SUCCESS => return rc == 1 and got == 'y',
+            .INTR => continue,
+            else => return false,
+        }
+    }
+}
+
+const HandoverSide = enum { helper, engine, reply };
+
+fn handoverFault(comptime side: HandoverSide, in_world: bool) bool {
+    if (!engine_build_options.supervise_handover_fault) return false;
+    const v = std.mem.span(std.c.getenv("SIDEEYE_TEST_HANDOVER_FAULT") orelse return false);
+    return std.mem.eql(u8, v, @tagName(side)) or (in_world and std.mem.eql(u8, v, @tagName(side) ++ "-world"));
 }
 
 pub const Session = struct {
@@ -310,6 +352,7 @@ pub const Session = struct {
     sock: [2]i32,
     thread: std.Thread,
     stop: std.atomic.Value(bool) = .init(false),
+    handover: std.atomic.Value(supervise.Handover) = .init(.absent),
 
     pub fn start(gpa: std.mem.Allocator, cfg: Config) Error!*Session {
         const self = gpa.create(Session) catch return error.OutOfMemory;
@@ -349,10 +392,11 @@ pub const Session = struct {
         return self.sock[1];
     }
 
-    pub fn finish(self: *Session) void {
+    pub fn finish(self: *Session) supervise.Handover {
         _ = linux.close(self.sock[1]);
         self.stop.store(true, .release);
         self.thread.join();
+        const handover = self.handover.load(.acquire);
         _ = linux.close(self.sock[0]);
         const gpa = self.gpa;
         gpa.free(self.cfg.trace_path);
@@ -361,6 +405,15 @@ pub const Session = struct {
         gpa.free(self.cfg.run_cgroup);
         gpa.free(self.cfg.kill_cgroup);
         gpa.destroy(self);
+        return handover;
+    }
+
+    // Not `n` alone: an answer that could not be sent leaves the installer waiting, and the end
+    // of the stream is the one answer that cannot fail to arrive.
+    fn refuse(self: *Session, answer: bool) void {
+        if (answer) _ = reply(self.sock[0], 'n');
+        _ = linux.shutdown(self.sock[0], linux.SHUT.WR);
+        self.handover.store(.refused, .release);
     }
 
     fn stopping(self: *const Session) bool {
@@ -384,9 +437,28 @@ fn monotonicMs() u64 {
 
 fn run(self: *Session) void {
     var primary: i32 = 0;
+    // No bare return once data arrived: the installer waits on the answer byte, and without
+    // it waits forever in its next watched call.
     const listener = while (true) {
         const ev = pollOne(self.sock[0], 50);
-        if (ev != 0) break recvFd(self.sock[0], &primary) orelse return;
+        if (ev != 0) switch (recvFd(self.sock[0], &primary)) {
+            .listener => |fd| {
+                const in_world = self.cfg.kill_at != 0;
+                const unanswerable = handoverFault(.reply, in_world);
+                if (handoverFault(.engine, in_world) or unanswerable or !reply(self.sock[0], 'y')) {
+                    _ = linux.close(fd);
+                    self.refuse(!unanswerable);
+                    return;
+                }
+                self.handover.store(.arrived, .release);
+                break fd;
+            },
+            .closed => return,
+            .refused => {
+                self.refuse(true);
+                return;
+            },
+        };
         if (self.stopping()) return;
     };
     defer _ = linux.close(listener);
@@ -714,7 +786,11 @@ const Call = struct {
                 if (!readMem(self.tid, a[0], &fl)) break :blk self.boundary(.fork);
                 break :blk self.boundary(cloneClass(std.mem.readInt(u64, &fl, .little)));
             },
-            .setsid, .setpgid => self.boundary(.detached),
+            // Departs from the shim, which records a setsid that succeeded and a setpgid that moved a
+            // group: here the call has not run yet. Left unrecorded only when it certainly fails or
+            // certainly moves nothing; anything unread, another pid namespace's numbers, and a
+            // setpgid the kernel refuses for another reason are recorded — refused, never missed.
+            .setsid, .setpgid => if (detachMovesNothing(sys, a, self.pid, self.tid, ProcProbe{})) .@"continue" else self.boundary(.detached),
             else => .@"continue",
         };
     }
@@ -844,6 +920,58 @@ const Call = struct {
             unresolvable.* = true;
             return null;
         };
+    }
+};
+
+fn argPid(arg: u64) i32 {
+    return @bitCast(@as(u32, @truncate(arg)));
+}
+
+fn setsidFails(group_named_after_caller: E) bool {
+    return group_named_after_caller == .SUCCESS or group_named_after_caller == .PERM;
+}
+
+fn setpgidChangesNothing(pid_arg: i32, pgid_arg: i32, caller: i32, tid: i32, probe: anytype) bool {
+    if (pid_arg < 0 or pgid_arg < 0) return false;
+    if (!(pid_arg == 0 and pgid_arg == 0) and !probe.samePidNamespace(tid)) return false;
+    const subject = if (pid_arg == 0) caller else pid_arg;
+    const target = if (pgid_arg == 0) subject else pgid_arg;
+    const current = probe.of(subject) orelse return false;
+    return current == target;
+}
+
+// Not below 2: a pid misread as 1 or 0 would make kill(-pid, 0) ask about every process, or the
+// engine's own group, and either answers that a group exists.
+fn detachMovesNothing(sys: SYS, a: [6]u64, pid: i32, tid: i32, probe: anytype) bool {
+    if (pid <= 1) return false;
+    return switch (sys) {
+        .setsid => setsidFails(probe.groupNamedAfter(pid)),
+        .setpgid => setpgidChangesNothing(argPid(a[0]), argPid(a[1]), pid, tid, probe),
+        else => false,
+    };
+}
+
+const ProcProbe = struct {
+    fn groupNamedAfter(_: ProcProbe, pid: i32) E {
+        return linux.errno(linux.kill(-pid, @fromBackingInt(@intCast(0))));
+    }
+
+    fn samePidNamespace(_: ProcProbe, tid: i32) bool {
+        var pbuf: [64]u8 = undefined;
+        const p = std.mem.printSentinel(&pbuf, "/proc/{d}/ns/pid", .{tid}, 0) catch return false;
+        var theirs: [64]u8 = undefined;
+        var ours: [64]u8 = undefined;
+        const a = linux.readlink(p.ptr, &theirs, theirs.len);
+        if (linux.errno(a) != .SUCCESS) return false;
+        const b = linux.readlink("/proc/self/ns/pid", &ours, ours.len);
+        if (linux.errno(b) != .SUCCESS) return false;
+        return std.mem.eql(u8, theirs[0..a], ours[0..b]);
+    }
+
+    fn of(_: ProcProbe, pid: i32) ?i32 {
+        const rc = linux.syscall1(.getpgid, @as(usize, @bitCast(@as(isize, pid))));
+        if (linux.errno(rc) != .SUCCESS) return null;
+        return @intCast(rc);
     }
 };
 
@@ -990,4 +1118,123 @@ pub fn selfExe(arena: std.mem.Allocator) ?[]const u8 {
     const rc = linux.readlink("/proc/self/exe", &buf, buf.len);
     if (linux.errno(rc) != .SUCCESS or rc == 0 or rc >= buf.len) return null;
     return arena.dupe(u8, buf[0..rc]) catch null;
+}
+
+fn testSession(dir: []const u8, trace: *[contract.max_path]u8) !*Session {
+    const tp = try std.fmt.bufPrint(trace, "{s}/trace", .{dir});
+    return Session.start(std.testing.allocator, .{
+        .trace_path = tp,
+        .state_dir = dir,
+        .state_alt = "",
+        .kill_at = 0,
+        .run_cgroup = "",
+        .kill_cgroup = "",
+    });
+}
+
+fn answerByte(sock: i32) ?u8 {
+    if (pollOne(sock, 5000) & linux.POLL.IN == 0) return null;
+    var got: u8 = 0;
+    if (linux.read(sock, @ptrCast(&got), 1) != 1) return null;
+    return got;
+}
+
+test "a session that is sent nothing says no listener arrived" {
+    var templ = "/tmp/sideeye-handover-test-XXXXXX".*;
+    _ = posix.mkdtemp(&templ) orelse return error.SkipZigTest;
+    defer _ = posix.rmdir(&templ);
+    var trace: [contract.max_path]u8 = undefined;
+    const s = try testSession(std.mem.sliceTo(&templ, 0), &trace);
+    try std.testing.expectEqual(supervise.Handover.absent, s.finish());
+}
+
+test "a session answers y to a descriptor it took and n to a message that carried none" {
+    var templ = "/tmp/sideeye-handover-test-XXXXXX".*;
+    _ = posix.mkdtemp(&templ) orelse return error.SkipZigTest;
+    defer _ = posix.rmdir(&templ);
+    const dir = std.mem.sliceTo(&templ, 0);
+    var trace: [contract.max_path]u8 = undefined;
+    var tz: [contract.max_path + 1]u8 = undefined;
+    const trace_z = try std.mem.printSentinel(&tz, "{s}/trace", .{dir}, 0);
+    defer _ = posix.unlink(trace_z.ptr);
+
+    const taken = try testSession(dir, &trace);
+    var p: [2]i32 = undefined;
+    try std.testing.expectEqual(linux.E.SUCCESS, linux.errno(linux.pipe2(&p, .{ .CLOEXEC = true })));
+    var payload: [4]u8 = undefined;
+    std.mem.writeInt(i32, &payload, linux.getpid(), .little);
+    try std.testing.expect(sendFd(taken.childFd(), p[0], &payload));
+    try std.testing.expectEqual(@as(?u8, 'y'), answerByte(taken.childFd()));
+    _ = linux.close(p[0]);
+    _ = linux.close(p[1]);
+    try std.testing.expectEqual(supervise.Handover.arrived, taken.finish());
+
+    const refused = try testSession(dir, &trace);
+    try std.testing.expectEqual(@as(usize, payload.len), linux.write(refused.childFd(), &payload, payload.len));
+    try std.testing.expectEqual(@as(?u8, 'n'), answerByte(refused.childFd()));
+    try std.testing.expect(pollOne(refused.childFd(), 5000) & linux.POLL.IN != 0);
+    var after: u8 = 0;
+    try std.testing.expectEqual(@as(usize, 0), linux.read(refused.childFd(), @ptrCast(&after), 1));
+    try std.testing.expectEqual(supervise.Handover.refused, refused.finish());
+}
+
+test "a setsid is recorded unless a group named after its caller exists, which is when the kernel refuses it" {
+    try std.testing.expect(setsidFails(.SUCCESS));
+    try std.testing.expect(setsidFails(.PERM));
+    try std.testing.expect(!setsidFails(.SRCH));
+    try std.testing.expect(!setsidFails(.INVAL));
+}
+
+test "a setpgid is left unrecorded only when it certainly moves no group" {
+    const leader: FakeProbe = .{ .pid = 40, .tid = 40, .named_group = .SUCCESS, .same_namespace = true, .group = 40 };
+    var elsewhere = leader;
+    elsewhere.same_namespace = false;
+    try std.testing.expect(setpgidChangesNothing(0, 0, 40, 40, elsewhere));
+    try std.testing.expect(setpgidChangesNothing(40, 40, 40, 40, leader));
+    try std.testing.expect(!setpgidChangesNothing(0, 77, 40, 40, leader));
+    try std.testing.expect(!setpgidChangesNothing(40, 40, 40, 40, elsewhere));
+    var unread = elsewhere;
+    unread.group = null;
+    try std.testing.expect(!setpgidChangesNothing(0, 0, 40, 40, unread));
+    var moved = elsewhere;
+    moved.group = 12;
+    try std.testing.expect(!setpgidChangesNothing(0, 0, 40, 40, moved));
+    var other = leader;
+    other.group = 41;
+    try std.testing.expect(!setpgidChangesNothing(41, 0, 40, 40, other));
+    try std.testing.expect(!setpgidChangesNothing(-1, 0, 40, 40, leader));
+}
+
+const FakeProbe = struct {
+    pid: i32,
+    tid: i32,
+    named_group: E,
+    same_namespace: bool,
+    group: ?i32,
+    fn groupNamedAfter(self: FakeProbe, pid: i32) E {
+        return if (pid == self.pid) self.named_group else .SRCH;
+    }
+    fn samePidNamespace(self: FakeProbe, tid: i32) bool {
+        return tid == self.tid and self.same_namespace;
+    }
+    fn of(self: FakeProbe, pid: i32) ?i32 {
+        return if (pid == self.pid) self.group else null;
+    }
+};
+
+test "the detach decision asks about the calling process, not its thread, and reads a numbered setpgid only in the engine's pid namespace" {
+    const none = [_]u64{ 0, 0, 0, 0, 0, 0 };
+    const leader: FakeProbe = .{ .pid = 40, .tid = 41, .named_group = .SUCCESS, .same_namespace = true, .group = 40 };
+    try std.testing.expect(detachMovesNothing(.setsid, none, 40, 41, leader));
+    try std.testing.expect(detachMovesNothing(.setpgid, none, 40, 41, leader));
+    const numbered = [_]u64{ 40, 40, 0, 0, 0, 0 };
+    try std.testing.expect(detachMovesNothing(.setpgid, numbered, 40, 41, leader));
+    var elsewhere = leader;
+    elsewhere.same_namespace = false;
+    try std.testing.expect(!detachMovesNothing(.setpgid, numbered, 40, 41, elsewhere));
+    try std.testing.expect(detachMovesNothing(.setpgid, none, 40, 41, elsewhere));
+    var free = leader;
+    free.named_group = .SRCH;
+    try std.testing.expect(!detachMovesNothing(.setsid, none, 40, 41, free));
+    try std.testing.expect(!detachMovesNothing(.setsid, none, 1, 1, FakeProbe{ .pid = 1, .tid = 1, .named_group = .SUCCESS, .same_namespace = true, .group = 1 }));
 }

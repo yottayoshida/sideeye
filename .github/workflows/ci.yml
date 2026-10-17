@@ -167,6 +167,14 @@ jobs:
           test -x zig-out/bin/sideeye-testsupervisedelay
           test "$sha_before" = "$sha_after"
 
+      - name: Build the supervised hand-over test engine, shipped engine unchanged (#905)
+        run: |
+          sha_before=$(sha256sum zig-out/bin/sideeye | cut -d' ' -f1)
+          zig build -Dtest-supervise-handover
+          sha_after=$(sha256sum zig-out/bin/sideeye | cut -d' ' -f1)
+          test -x zig-out/bin/sideeye-testhandover
+          test "$sha_before" = "$sha_after"
+
       # The ancestor probe (#358) needs its own invocation — folding it into the step
       # above would leave the new option unexercised — and asserts a property rather than
       # a difference. Both options keep their shipped value as a separate literal in
