@@ -9512,7 +9512,7 @@ else
 fi
 
 echo "=========== check 11i: the evidence bundle says what the run measured (#607) ==========="
-# spike/check-evidence-bundle.sh explores seven fixtures whose impact columns disagree, holds
+# spike/check-evidence-bundle.sh explores fixtures whose impact columns disagree, holds
 # each bundle to the case and the report that describe the same run, requires the rendered
 # document to carry exactly its eight sections — the fixture whose file name holds `\n## ` is
 # why that is an equality and not a contains — and refuses one that ranks what it found. Its
