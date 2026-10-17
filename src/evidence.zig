@@ -11,6 +11,9 @@ pub const current_version: u32 = 1;
 
 pub const path_slots: usize = 256;
 
+pub const diagnostic_max: usize = 400;
+pub const last_line_lead = std.fmt.comptimePrint("Its last output line, up to its first {d} bytes", .{diagnostic_max});
+
 const checker_read_cap: usize = 1024 * 1024;
 
 pub const Answer = enum { yes, no, unknown, not_applicable };
@@ -106,7 +109,9 @@ fn snapOf(s: engine.Snapshot, rel: []const u8) ?Snap {
     return .{ .kind = kindName(e.kind), .size = e.content.len };
 }
 
-fn unionRels(a: []const engine.Difference, b: []const engine.Difference, out: [][]const u8) usize {
+const Union = struct { n: usize, dropped: bool };
+
+fn unionRels(a: []const engine.Difference, b: []const engine.Difference, out: [][]const u8) Union {
     var i: usize = 0;
     var j: usize = 0;
     var n: usize = 0;
@@ -128,7 +133,8 @@ fn unionRels(a: []const engine.Difference, b: []const engine.Difference, out: []
         }
         n += 1;
     }
-    return n;
+    // Not `n == out.len`: a union that fills the buffer exactly has dropped nothing.
+    return .{ .n = n, .dropped = i < a.len or j < b.len };
 }
 
 /// Regular files only. A symlink's recorded content is its target string, and a directory's
@@ -165,7 +171,8 @@ pub fn measure(
     const post = engine.diffSnapshots(final, crashed, post_diffs);
 
     const rels = try arena.alloc([]const u8, path_slots);
-    const n = unionRels(pre_diffs[0..pre.stored], post_diffs[0..post.stored], rels);
+    const u = unionRels(pre_diffs[0..pre.stored], post_diffs[0..post.stored], rels);
+    const n = u.n;
 
     const rows = try arena.alloc(PathRow, n);
     for (rels[0..n], 0..) |rel, idx| {
@@ -200,7 +207,7 @@ pub fn measure(
 
     return .{
         .consequence = rows,
-        .consequence_truncated = pre.total > pre.stored or post.total > post.stored or n == path_slots,
+        .consequence_truncated = pre.total > pre.stored or post.total > post.stored or u.dropped,
         .checker = .{
             .configured = checker.configured,
             .failed = if (checker.configured) checker.failed else null,
@@ -226,12 +233,11 @@ fn lastLine(arena: std.mem.Allocator, path: []const u8) ?[]const u8 {
         .no_follow = true,
     }) orelse return null;
     const chosen = capture.lastNonEmptyLine(text);
-    if (chosen.len == 0) return null;
     var names: std.ArrayList(u8) = .empty;
     // The checker's bytes are target-influenced the way a file name is, so they go through
     // the same choke point before they reach a line of output (#26, #167).
     defang.appendSanitized(&names, arena, chosen) catch return null;
-    const clipped = if (names.items.len > 400) names.items[0..400] else names.items;
+    const clipped = if (names.items.len > diagnostic_max) names.items[0..diagnostic_max] else names.items;
     return clipped;
 }
 
@@ -561,12 +567,15 @@ pub fn render(arena: std.mem.Allocator, ev: Evidence) error{OutOfMemory}![]const
         try w.appendSlice(arena, "None was configured, so nothing here says whether the resulting state is correct for the application.\n\n");
     } else {
         try w.print(arena, "The define's own checker {s} in this world.\n\n", .{if (ev.checker.failed orelse false) "rejected the state" else "accepted the state"});
-        if (ev.checker.diagnostic) |d| {
-            try w.appendSlice(arena, "Its last output line:\n\n> ");
-            try w.appendSlice(arena, asText(arena, d));
-            try w.appendSlice(arena, "\n\n");
-        } else {
+        const said = ev.checker.diagnostic orelse "";
+        if (ev.checker.diagnostic == null) {
             try w.appendSlice(arena, "Its output could not be read back, so what it said is unknown.\n\n");
+        } else if (said.len == 0) {
+            try w.appendSlice(arena, "It printed nothing: no line of its output held any text.\n\n");
+        } else {
+            try w.appendSlice(arena, last_line_lead ++ ":\n\n> ");
+            try w.appendSlice(arena, asText(arena, said));
+            try w.appendSlice(arena, "\n\n");
         }
     }
 
@@ -666,8 +675,9 @@ test "the union of two difference lists names each path once, in order" {
         .{ .rel = "c", .how = .content_differs },
     };
     var out: [8][]const u8 = undefined;
-    const n = unionRels(&a, &b, &out);
-    try std.testing.expectEqual(@as(usize, 3), n);
+    const u = unionRels(&a, &b, &out);
+    try std.testing.expectEqual(@as(usize, 3), u.n);
+    try std.testing.expect(!u.dropped);
     try std.testing.expectEqualStrings("a", out[0]);
     try std.testing.expectEqualStrings("b", out[1]);
     // The control the duplicate exists for: without the `.eq` arm advancing `j`, this is
@@ -682,7 +692,11 @@ test "the union stops at the caller's buffer rather than past it" {
         .{ .rel = "c", .how = .content_differs },
     };
     var out: [2][]const u8 = undefined;
-    try std.testing.expectEqual(@as(usize, 2), unionRels(&a, &.{}, &out));
+    const u = unionRels(&a, &.{}, &out);
+    try std.testing.expectEqual(@as(usize, 2), u.n);
+    try std.testing.expect(u.dropped);
+    var exact: [3][]const u8 = undefined;
+    try std.testing.expect(!unionRels(&a, &.{}, &exact).dropped);
 }
 
 test "casePathOf reads siblingPath backwards, and leaves a path it does not move (#717)" {
@@ -934,4 +948,107 @@ test "the rendered bundle carries the measured fields and no severity word" {
     for (md, 0..) |c, i| lower[i] = std.ascii.toLower(c);
     for ([_][]const u8{ "critical", "severe", "high severity", "data-loss", "data loss" }) |banned|
         try std.testing.expect(std.mem.indexOf(u8, lower, banned) == null);
+}
+
+pub fn testBundle(checker: Checker) Evidence {
+    return .{
+        .schema = "sideeye/evidence",
+        .evidence_version = current_version,
+        .sideeye_version = "1.14.0",
+        .contract_version = contract.contract_version,
+        .target = .{ .operation = "tool fix", .state_root = "/st" },
+        .exhibit = .earliest,
+        .crash_point = 1,
+        .crash_points_total = 2,
+        .boundary = .{ .after_op = "open", .after_path = "/st/a", .before_op = "write", .before_path = "/st/a" },
+        .invariant = "built-in atomicity (L0)",
+        .subject = "a",
+        .observed = "empty",
+        .consequence = &.{},
+        .consequence_truncated = false,
+        .checker = checker,
+        .replay = "sideeye replay /w/cases/000001.json",
+        .case = "/w/cases/000001.json",
+        .recovery = .{ .result = "not_configured" },
+        .caveats = &.{},
+    };
+}
+
+test "a checker that printed nothing is said to have printed nothing, and only an unreadable capture is called unreadable" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    var templ = "/tmp/sideeye-evidence-test-XXXXXX".*;
+    _ = posix.mkdtemp(&templ) orelse return error.SkipZigTest;
+    defer _ = posix.rmdir(&templ);
+
+    const blank = try std.fmt.allocPrintSentinel(arena, "{s}/blank", .{std.mem.sliceTo(&templ, 0)}, 0);
+    const big = try std.fmt.allocPrintSentinel(arena, "{s}/big", .{std.mem.sliceTo(&templ, 0)}, 0);
+    defer _ = posix.unlink(blank.ptr);
+    defer _ = posix.unlink(big.ptr);
+    for ([_]struct { [:0]const u8, usize }{ .{ blank, 0 }, .{ big, checker_read_cap + 1 } }) |f| {
+        const fd = posix.open(f[0].ptr, posix.O_WRONLY | posix.O_CREAT | posix.O_EXCL, @as(c_uint, 0o600));
+        try std.testing.expect(fd >= 0);
+        defer _ = posix.close(fd);
+        const bytes = if (f[1] == 0) "\n  \n\t\n" else blk: {
+            const b = try arena.alloc(u8, f[1]);
+            @memset(b, 'x');
+            break :blk b;
+        };
+        try std.testing.expectEqual(@as(isize, @intCast(bytes.len)), posix.write(fd, bytes.ptr, bytes.len));
+    }
+
+    const silent = lastLine(arena, blank).?;
+    try std.testing.expectEqualStrings("", silent);
+    try std.testing.expect(lastLine(arena, big) == null);
+    try std.testing.expect(lastLine(arena, "/nonexistent-sideeye-evidence/checker-output.txt") == null);
+
+    const said_nothing = try render(arena, testBundle(.{ .configured = true, .failed = true, .diagnostic = silent }));
+    try std.testing.expect(std.mem.indexOf(u8, said_nothing, "It printed nothing") != null);
+    try std.testing.expect(std.mem.indexOf(u8, said_nothing, "could not be read back") == null);
+    const said = try render(arena, testBundle(.{ .configured = true, .failed = true, .diagnostic = "FAIL: a" }));
+    try std.testing.expect(std.mem.indexOf(u8, said, last_line_lead ++ ":\n\n> FAIL: a") != null);
+    const unreadable = try render(arena, testBundle(.{ .configured = true, .failed = true, .diagnostic = null }));
+    try std.testing.expect(std.mem.indexOf(u8, unreadable, "could not be read back") != null);
+    try std.testing.expect(std.mem.indexOf(u8, unreadable, "It printed nothing") == null);
+
+    const back = try std.json.parseFromSlice(Evidence, arena, try buildJson(arena, testBundle(.{ .configured = true, .failed = true, .diagnostic = "" })), .{});
+    try std.testing.expectEqualStrings("", back.value.checker.diagnostic.?);
+    const back_null = try std.json.parseFromSlice(Evidence, arena, try buildJson(arena, testBundle(.{ .configured = true, .failed = true, .diagnostic = null })), .{});
+    try std.testing.expect(back_null.value.checker.diagnostic == null);
+}
+
+fn measureTruncated(gpa: std.mem.Allocator, extra_on_completed_side: bool) !bool {
+    var arena_state = std.heap.ArenaAllocator.init(gpa);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    var initial_pairs: std.ArrayList([2][]const u8) = .empty;
+    var crashed_pairs: std.ArrayList([2][]const u8) = .empty;
+    var final_pairs: std.ArrayList([2][]const u8) = .empty;
+    for (0..path_slots) |i| {
+        const rel = try std.fmt.allocPrint(arena, "x{d:0>3}", .{i});
+        try initial_pairs.append(arena, .{ rel, "a" });
+        try crashed_pairs.append(arena, .{ rel, "b" });
+        try final_pairs.append(arena, .{ rel, "b" });
+    }
+    try initial_pairs.append(arena, .{ "y", "c" });
+    try crashed_pairs.append(arena, .{ "y", "c" });
+    try final_pairs.append(arena, .{ "y", if (extra_on_completed_side) "d" else "c" });
+    var initial = try engine.testSnapshot(gpa, initial_pairs.items);
+    defer initial.deinit();
+    var crashed = try engine.testSnapshot(gpa, crashed_pairs.items);
+    defer crashed.deinit();
+    var final = try engine.testSnapshot(gpa, final_pairs.items);
+    defer final.deinit();
+    var plan: engine.L0Plan = .{ .arena = std.heap.ArenaAllocator.init(gpa), .files = .empty };
+    defer plan.arena.deinit();
+    const draft = try measure(arena, initial, final, crashed, plan, .{ .configured = false, .failed = false, .output_path = null });
+    try std.testing.expectEqual(@as(usize, path_slots), draft.consequence.len);
+    return draft.consequence_truncated;
+}
+
+test "a bundle says paths were left out only when more than it lists differed" {
+    try std.testing.expect(!try measureTruncated(std.testing.allocator, false));
+    // Not 257 on one side: that side's own overflow would say truncated without the union.
+    try std.testing.expect(try measureTruncated(std.testing.allocator, true));
 }
