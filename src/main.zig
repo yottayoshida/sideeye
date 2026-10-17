@@ -1606,6 +1606,9 @@ fn phaseOracle(run: *Run) void {
         // operation, or as a containment decision about a file nothing touched. A verdict
         // drawn from that is wrong in a way neither observer can see.
         const oracle_cwd = run.define.effective_cwd orelse "/";
+        // The strace reader is not handed "/" when the engine's own cwd could not be read: a
+        // relative path resolved against the wrong directory reads as outside the state,
+        // where an unknown cwd refuses.
         const parsed = if (args.oracle_fs_usage) blk: {
             const err_text = capture.readFileAllocCapped(arena, fsusage.errPath(arena, oracle_out) catch setupError(.environment, "out of memory"), 64 * 1024, .{ .no_follow = true }) orelse
                 unknown(.oracle_saw_nothing, "fs_usage's stderr could not be read back, or grew past what this engine reads, so whether it dropped events is unknown", .environment);
@@ -1623,7 +1626,7 @@ fn phaseOracle(run: *Run) void {
                 .missing_sentinel => |sp| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the fs_usage capture is missing a sentinel the engine placed ({s}), so nothing establishes that the observer covered the whole recording", .{textShown(arena, sp)}) catch "the fs_usage capture is missing a sentinel the engine placed", .environment),
             };
             break :blk r.parsed;
-        } else oracle.parse(arena, text, state_abs, if (alt_differs) state_alt else "", oracle_cwd) catch setupError(.environment, "out of memory");
+        } else oracle.parse(arena, text, state_abs, if (alt_differs) state_alt else "", run.define.effective_cwd orelse "") catch setupError(.environment, "out of memory");
 
         // The witness has now looked, and what it saw is part of the account from here
         // on — including on the refusals immediately below, which are exactly the runs
@@ -2714,7 +2717,7 @@ fn phaseReport(run: *Run) void {
         else
             "";
         const replay_cmd = if (saved_case) |sc|
-            report.replayLine(arena, sc, args.observe, args.shim, recovery_flags)
+            report.replayLine(arena, sc, args.observe, args.shim, args.oracle, recovery_flags)
         else if (mode == .replay)
             "(this run is a replay; the case reproduced)"
         else
@@ -2770,7 +2773,7 @@ fn phaseReport(run: *Run) void {
             const creplay = if (same_world)
                 replay_cmd
             else if (csaved) |cc|
-                report.replayLine(arena, cc, args.observe, args.shim, recovery_flags)
+                report.replayLine(arena, cc, args.observe, args.shim, args.oracle, recovery_flags)
             else
                 "-";
             const cevidence: []const u8 = if (same_world)

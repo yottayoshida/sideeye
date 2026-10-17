@@ -648,7 +648,19 @@ const strace_escaped_names =
     \\
 ;
 
+const strace_huge_maps =
+    \\10    execve("/work/toy", ["toy", "rotate"], 0x7ff) = 0
+    \\10    openat(AT_FDCWD</work>, "/tmp/o/state/db", O_RDWR) = 3</tmp/o/state/db>
+    \\10    mmap(NULL, 18446744073709551615, PROT_READ, MAP_SHARED, 3</tmp/o/state/db>, 0) = 0x7f0000000000
+    \\10    mremap(NULL, 18446744073709551615, 4096, 0) = -1 EINVAL (Invalid argument)
+    \\10    mprotect(0x7f0000000000, 18446744073709551615, PROT_READ|PROT_WRITE <unfinished ...>
+    \\10    <... mprotect resumed>) = -1 ENOMEM (Cannot allocate memory)
+    \\10    write(3</tmp/o/state/db>, "x", 1) = 1
+    \\
+;
+
 const strace_seeds = [_][]const u8{
+    "\x00" ++ strace_huge_maps,
     "\x00" ++ strace_escaped_names,
     "\x00" ++ strace_rotate,
     "\x00" ++ strace_trapped,
