@@ -9,6 +9,10 @@
  *                            the call fails and the subject goes on
  *   toy close-fds [N]        as above, with each child closing descriptors 3..63 before its
  *                            execve
+ *   toy missing [N]          as above, but each child's execve fails at three places, as a
+ *                            PATH search for a program that is not installed does; the child
+ *                            writes its errno to a pipe and _exits 127, as CPython's
+ *                            subprocess does, and the parent takes the 127 as expected
  *   toy threads K N          K threads at once, each starting N such children that close
  *                            descriptors 3..63, then the rewrite from the main thread
  *
@@ -51,6 +55,34 @@ static int start_children(int n, int close_fds) {
     return 0;
 }
 
+static int start_missing(int n) {
+    const char *places[] = { "/nonexistent-a/no-such-tool", "/nonexistent-b/no-such-tool", "/nonexistent-c/no-such-tool" };
+    for (int i = 0; i < n; i++) {
+        int err[2];
+        if (pipe(err) != 0) { perror("pipe"); return 1; }
+        pid_t p = vfork();
+        if (p < 0) { perror("vfork"); return 1; }
+        if (p == 0) {
+            for (int k = 0; k < 3; k++) {
+                char *const child[] = { (char *)places[k], NULL };
+                execve(child[0], child, environ);
+            }
+            if (write(err[1], "OSError:", 8) < 0) {}
+            _exit(127);
+        }
+        close(err[1]);
+        char buf[16];
+        if (read(err[0], buf, sizeof buf) <= 0) { fprintf(stderr, "child %d said nothing\n", i); return 1; }
+        close(err[0]);
+        int status;
+        if (waitpid(p, &status, 0) != p || !WIFEXITED(status) || WEXITSTATUS(status) != 127) {
+            fprintf(stderr, "child %d did not exit 127\n", i);
+            return 1;
+        }
+    }
+    return 0;
+}
+
 static int per_thread;
 
 static void *starter(void *unused) {
@@ -78,8 +110,9 @@ int main(int argc, char **argv) {
     }
 
     int arg = 1;
-    int self_exec_fails = 0, close_fds = 0;
+    int self_exec_fails = 0, close_fds = 0, missing_tool = 0;
     if (argc > arg && strcmp(argv[arg], "self-exec-fails") == 0) { self_exec_fails = 1; arg++; }
+    else if (argc > arg && strcmp(argv[arg], "missing") == 0) { missing_tool = 1; arg++; }
     else if (argc > arg && strcmp(argv[arg], "close-fds") == 0) { close_fds = 1; arg++; }
     int n = argc > arg ? atoi(argv[arg]) : 70;
 
@@ -87,6 +120,6 @@ int main(int argc, char **argv) {
         char *const missing[] = { "/nonexistent-sideeye-toy", NULL };
         execve(missing[0], missing, environ);
     }
-    if (start_children(n, close_fds)) return 1;
+    if (missing_tool ? start_missing(n) : start_children(n, close_fds)) return 1;
     return put(out, "done\n", O_TRUNC);
 }

@@ -593,7 +593,8 @@ var kill_aside_fd: c_int = -1;
 /// fixed array keyed by `gettid()` — one syscall, one compare-and-swap — is
 /// async-signal-safe by construction. A thread's slot is never freed: nothing here sees a
 /// thread end. Only a process that shares the table without owning it — a `vfork` child —
-/// gives back the slot it claimed, before its exec. The 65th thread shares `reserve`, whose `busy` is the old process-wide guard,
+/// gives back the slot it claimed, before its exec; and once the table is full, a slot whose
+/// claiming process has exited and been reaped is taken back. The 65th thread shares `reserve`, whose `busy` is the old process-wide guard,
 /// and the run records `thread-slots-exhausted` once so the engine refuses it rather
 /// than judges it.
 ///
@@ -602,8 +603,9 @@ var kill_aside_fd: c_int = -1;
 /// are nearly five megabytes the file need not carry. Only the pages a thread touches
 /// become memory.
 const ThreadState = struct {
-    /// Owner's thread id; 0 is free. Written by the compare-and-swap in `mine`, and cleared
-    /// only when a `vfork` child gives the slot back before its exec.
+    /// Owner's thread id; 0 is free. Written by the compare-and-swap in `mine` or by
+    /// `reclaimDeparted`, and cleared only when a `vfork` child gives the slot back before its
+    /// exec.
     tid: u64 = 0,
     claimer_pid: c_int = 0,
     /// Guards against observing our own work. The path resolution below calls libc, and
@@ -708,17 +710,18 @@ fn mine() *ThreadState {
     // Two passes, not one that takes the first free slot on the way: an exec gives a slot back
     // mid-table, and a thread whose own slot lies past it would claim a second one and leave
     // its counts behind in the first.
-    for (&slots) |*s| if (@atomicLoad(u64, &s.tid, .acquire) == tid) return s;
+    for (&slots) |*s| if (@atomicLoad(u64, &s.tid, .acquire) == tid and adopt(s)) return s;
     for (&slots) |*s| {
         // Our own id again here too: a signal handler that interrupted this pass may have claimed
         // a slot for this thread, and passing over it would give the thread a second one.
         const owner = @atomicLoad(u64, &s.tid, .acquire);
-        if (owner == tid) return s;
+        if (owner == tid and adopt(s)) return s;
         if (owner == 0 and @cmpxchgStrong(u64, &s.tid, 0, tid, .acq_rel, .acquire) == null) {
-            s.claimer_pid = c.getpid();
+            @atomicStore(c_int, &s.claimer_pid, c.getpid(), .release);
             return s;
         }
     }
+    if (reclaimDeparted(tid)) |s| return s;
     // Announced HERE, at the moment of exhaustion, not at the next `writeRecord` — the
     // first version deferred it there, and review found the gap: the harm exhaustion does
     // is two reserve-sharing threads racing on one `busy`, which drops a record before
@@ -751,6 +754,55 @@ fn mine() *ThreadState {
         _ = writeAll(notice[0..n]);
     }
     return &reserve;
+}
+
+const reclaiming: c_int = -1;
+
+// A slot found by id but claimed by a process that is not this one: on macOS a `vfork` child
+// runs on its parent's thread id, so a slot it claimed is that parent thread's once the child is
+// gone. Left with the child's pid, `reclaimDeparted` would take it from the thread using it; and
+// one `reclaimDeparted` is already taking is not used, or two threads would share it.
+fn adopt(s: *ThreadState) bool {
+    while (true) {
+        const claimer = @atomicLoad(c_int, &s.claimer_pid, .acquire);
+        if (claimer == reclaiming) return false;
+        if (claimer == 0 or claimer == table_pid or c.getpid() != table_pid) return true;
+        if (@cmpxchgStrong(c_int, &s.claimer_pid, claimer, table_pid, .acq_rel, .acquire) == null) return true;
+    }
+}
+
+// Not taken while the table has room: a departed claimer costs nothing until then, and `kill`
+// on every call would. Arbitrated on `claimer_pid`, not `tid`: a claim writes `tid` first, so a
+// second reclaimer reading the new `tid` with the old pid would take the same slot again.
+fn reclaimDeparted(tid: u64) ?*ThreadState {
+    var self_pid: c_int = 0;
+    var saved_errno: ?c_int = null;
+    defer if (saved_errno) |e| {
+        std.c._errno().* = e;
+    };
+    for (&slots) |*s| {
+        const owner_pid = @atomicLoad(c_int, &s.claimer_pid, .acquire);
+        if (owner_pid <= 0 or owner_pid == table_pid) continue;
+        if (self_pid == 0) self_pid = c.getpid();
+        if (owner_pid == self_pid) continue;
+        if (saved_errno == null) saved_errno = std.c._errno().*;
+        if (c.kill(owner_pid, 0) == 0 or std.c._errno().* != @backingInt(std.c.E.SRCH)) continue;
+        if (@cmpxchgStrong(c_int, &s.claimer_pid, owner_pid, reclaiming, .acq_rel, .acquire) != null) continue;
+        s.busy = false;
+        s.exec_carrying = false;
+        clearCounts(s);
+        @atomicStore(c_int, &s.claimer_pid, self_pid, .release);
+        @atomicStore(u64, &s.tid, tid, .release);
+        // Given back if a signal handler on this thread claimed another slot before the store: two
+        // slots for one id would split its counts.
+        for (&slots) |*o| if (o != s and @atomicLoad(u64, &o.tid, .acquire) == tid) {
+            @atomicStore(c_int, &s.claimer_pid, 0, .release);
+            @atomicStore(u64, &s.tid, 0, .release);
+            return o;
+        };
+        return s;
+    }
+    return null;
 }
 
 /// After `fork`, in the child (v16). The child inherits the table as the parent had it —
@@ -3235,7 +3287,7 @@ fn returnSlotBeforeExec(ts: *ThreadState) ExecLoan {
     const loan: ExecLoan = .{ .given_back = true, .seq = ts.seq, .count_scanned = ts.count_scanned, .written = ts.written, .creates = ts.creates };
     ts.exec_carrying = false;
     clearCounts(ts);
-    ts.claimer_pid = 0;
+    @atomicStore(c_int, &ts.claimer_pid, 0, .release);
     @atomicStore(u64, &ts.tid, 0, .release);
     return loan;
 }
@@ -3965,4 +4017,131 @@ test "writeRecord counts the records that went out, and the fork child's slots a
     try std.testing.expectEqual(@as(u32, 0), reserve.creates);
     try std.testing.expect(joinableTake(0x3000) == null);
     for (&pending_starts) |*e| try std.testing.expect(!e.taken);
+}
+
+fn departedPid() !c_int {
+    const pid = try zombiePid();
+    reap(pid);
+    return pid;
+}
+
+// Not reaped: running or a zombie, `kill` answers either way, however privileged the test.
+fn zombiePid() !c_int {
+    const pid = std.c.fork();
+    if (pid < 0) return error.SkipZigTest;
+    if (pid == 0) std.c._exit(0);
+    return pid;
+}
+
+fn reap(pid: c_int) void {
+    var status: c_int = 0;
+    _ = std.c.waitpid(pid, &status, 0);
+}
+
+test "a full table takes back a slot whose claimer has exited, and no slot whose claimer is alive" {
+    const saved_active = active;
+    defer active = saved_active;
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    const saved_announced = exhaustion_announced;
+    defer exhaustion_announced = saved_announced;
+    defer resetSlotsInChild();
+    armForExecSlotTest();
+    table_pid = c.getpid();
+    exhaustion_announced = true;
+    const zombie = try zombiePid();
+    defer reap(zombie);
+    const gone = try departedPid();
+    for (&slots, 0..) |*s, i| {
+        s.tid = 100_000_000 + @as(u64, i);
+        s.claimer_pid = zombie;
+    }
+    slots[6].claimer_pid = 0;
+    slots[7].claimer_pid = table_pid;
+    slots[5].claimer_pid = gone;
+    slots[5].seq = 4;
+    slots[5].count_scanned = 77;
+    slots[5].written = 9;
+    slots[5].creates = 3;
+    slots[5].busy = true;
+    slots[5].exec_carrying = true;
+    std.c._errno().* = 0;
+
+    const got = mine();
+    try std.testing.expectEqual(@as(c_int, 0), std.c._errno().*);
+    try std.testing.expectEqual(&slots[5], got);
+    try std.testing.expectEqual(currentTid(), got.tid);
+    try std.testing.expectEqual(c.getpid(), got.claimer_pid);
+    try std.testing.expectEqual(@as(u32, 0), got.seq);
+    try std.testing.expectEqual(@as(u64, 0), got.count_scanned);
+    try std.testing.expectEqual(@as(u32, 0), got.written);
+    try std.testing.expectEqual(@as(u32, 0), got.creates);
+    try std.testing.expect(!got.busy);
+    try std.testing.expect(!got.exec_carrying);
+    for (&slots, 0..) |*s, i| if (i != 5) try std.testing.expectEqual(100_000_000 + @as(u64, i), s.tid);
+    try std.testing.expectEqual(got, mine());
+}
+
+test "a full table whose claimers are all alive still hands out the reserve" {
+    const saved_active = active;
+    defer active = saved_active;
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    const saved_announced = exhaustion_announced;
+    defer exhaustion_announced = saved_announced;
+    defer resetSlotsInChild();
+    armForExecSlotTest();
+    table_pid = c.getpid();
+    exhaustion_announced = true;
+    const zombie = try zombiePid();
+    defer reap(zombie);
+    for (&slots, 0..) |*s, i| {
+        s.tid = 100_000_000 + @as(u64, i);
+        s.claimer_pid = if (i % 2 == 0) zombie else table_pid;
+    }
+    try std.testing.expectEqual(&reserve, mine());
+}
+
+test "a slot found by this thread's id under a departed claimer becomes this process's, and is not taken back" {
+    const saved_active = active;
+    defer active = saved_active;
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    const saved_announced = exhaustion_announced;
+    defer exhaustion_announced = saved_announced;
+    defer resetSlotsInChild();
+    armForExecSlotTest();
+    table_pid = c.getpid();
+    exhaustion_announced = true;
+    const gone = try departedPid();
+    for (&slots, 0..) |*s, i| {
+        s.tid = 100_000_000 + @as(u64, i);
+        s.claimer_pid = table_pid;
+    }
+    slots[3].tid = currentTid();
+    slots[3].claimer_pid = gone;
+    slots[3].written = 7;
+    try std.testing.expectEqual(&slots[3], mine());
+    try std.testing.expectEqual(table_pid, slots[3].claimer_pid);
+    try std.testing.expectEqual(@as(u32, 7), slots[3].written);
+}
+
+test "a slot another thread is taking back is not used, even under this thread's id" {
+    const saved_active = active;
+    defer active = saved_active;
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    defer resetSlotsInChild();
+    armForExecSlotTest();
+    table_pid = c.getpid();
+    for (&slots, 0..) |*s, i| {
+        s.tid = 100_000_000 + @as(u64, i);
+        s.claimer_pid = table_pid;
+    }
+    slots[3].tid = currentTid();
+    slots[3].claimer_pid = reclaiming;
+    slots[6].tid = 0;
+    slots[6].claimer_pid = 0;
+    try std.testing.expectEqual(&slots[6], mine());
+    try std.testing.expectEqual(reclaiming, slots[3].claimer_pid);
 }

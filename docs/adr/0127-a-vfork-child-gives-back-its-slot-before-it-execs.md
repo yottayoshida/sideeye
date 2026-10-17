@@ -82,3 +82,25 @@ rewrites its state file in place: N = 10 was FAIL 1 of 3, and N = 70 and N = 200
   because the trace descriptor is moved above that range.
 - macOS was not measured: the toy's runs end `recording_run_failed` there before and after this
   change.
+- **Amended 2026-10-17 (#901): a slot whose claimer has exited is taken back when the table is
+  full.** The give-back before an exec does not cover a child whose every exec fails: the failed
+  exec takes the slot back so the child carries on with its counts, and a child whose every exec
+  fails then `_exit`s holding it — CPython's after writing its errno to the parent's pipe — so
+  each all-fail spawn still cost the parent a slot for good (`subprocess.run` of a program that is not installed,
+  seventy times). `mine` now runs a third pass when the first two find no slot: a slot whose
+  `claimer_pid` is not zero, not the table's owner and not this process, and for which
+  `kill(pid, 0)` answers `ESRCH`, is taken back — arbitrated by a compare-and-swap on
+  `claimer_pid`, the counts cleared before `tid` is published, so two threads cannot take it
+  together. A zombie still answers `kill`, so a slot is taken back only once its child was
+  reaped; a target that starts more than sixty-four failing children before it reaps any is
+  still refused. A pid reused by another process or thread is alive to `kill` and keeps its
+  slot. The same pass returns a slot a child left behind by `_exit`ing before any exec. A slot
+  found by this thread's id under a claimer that is not this process is made this process's
+  when the caller owns the table: on macOS a `vfork` child runs on its parent's thread id, so
+  the slot it claimed is that parent thread's once the child is gone, and left with the child's
+  pid it would be taken back from the thread using it. `kill`'s errno is put back. Left as it
+  was: a child in a pid namespace of its own wrote a pid this process cannot `kill`, which reads
+  as departed; a thread whose id equals a departed claimer's (the id reused after a pid wrap)
+  resolves to that claimer's slot by id and carries on with its counts; and while the table is
+  full and nothing is reclaimable every reserve call asks `kill` up to once per slot, on a run
+  that is refused anyway.
