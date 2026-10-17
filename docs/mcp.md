@@ -18,6 +18,8 @@ The README gets a person to a first verdict at the command line. This page is th
 
 **`sideeye_replay_case` checks the apparatus a case carries** (ADR 0136): a case whose define declared an `env:` entry is refused before its setup runs when the variable does not reach the target — of the server's environment, only `PATH` and the names in `SIDEEYE_MCP_CHILD_ENV` do — as `sideeye_explore_config` refuses the config.
 
+**The lines under the counted region cannot start a line of their own** (#902). The region folds control bytes, C1 controls and U+2028/U+2029 to `?` before it counts, and so do the `apparatus:` and `warning:` lines, which in a replay come from a case file in the work directory the target writes. The `case:` line prints the path — the server's realpath of the one given, which a link in that directory decides — only when every byte is printable ASCII, as `replay:` already did; otherwise it says the path is not shown and `structuredContent` carries it. A work directory or root whose path is outside ASCII therefore has every case path there not shown.
+
 **`sideeye_replay_case` does not leave a crash state behind** (ADR 0129). The CLI's `replay --leave-crash-state` ends a replay with the state directory rewritten to what the kill left at the case's crash point; the server does not pass it, so a replayed case's state afterwards holds what the baseline left, as it always has, and its report carries no `crash_state_left`. A client that wants the crash state runs the CLI.
 
 ### The first call
