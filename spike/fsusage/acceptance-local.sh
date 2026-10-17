@@ -62,6 +62,8 @@ int main(void) {
     if (fd < 0) { perror("open"); return 1; }
     if (write(fd, "ok\n", 3) != 3) { perror("write"); return 1; }
     if (close(fd) != 0) { perror("close"); return 1; }
+    const char *linger = getenv("PROBE_LINGER_S"); /* in this image: an exec'd sleep is a boundary fs_usage refuses */
+    if (linger) sleep((unsigned)atoi(linger));
     return 0;
 }
 EOF
@@ -670,5 +672,85 @@ rm -f "$c11_log"
 echo "  PASS"
 
 echo "=================================================================="
-echo "all eleven checks passed"
+echo "Check 12 — a recording longer than 90 s is judged (#896)"
+echo "  predicate: check 1's toy, waiting 100 s after its write, is exit 0 and oracle_verified true"
+echo "  before #896 fs_usage stopped at its own 90 s and the run was refused oracle_saw_nothing"
+seed_keep c12
+t12=$(date +%s)
+rc12=$(PROBE_LINGER_S=100 run c12 libc_toy --oracle-fs-usage)
+echo "  exit=$rc12 verdict=$(field c12 verdict) oracle_verified=$(field c12 oracle_verified) reason=$(field c12 unknown_reason) took=$(( $(date +%s) - t12 )) s"
+[ "$rc12" = "0" ] || { sed -n '1,12p' "$WORK/c12.txt"; fail "check 12: expected exit 0, got $rc12"; }
+[ "$(field c12 oracle_verified)" = "True" ] || fail "check 12: the verdict is not oracle_verified"
+echo "  PASS"
+
+echo "=================================================================="
+echo "Check 13 — an engine killed by SIGKILL leaves no fs_usage behind (#896)"
+echo "  predicate: within 10 s of SIGKILL to the engine during the recording, no fs_usage runs"
+echo "  before #896 it ran on to its own -t, which the engine cannot shorten once it is dead"
+ensure_no_fs_usage
+seed_keep c13
+st13="$WORK/state-c13"; log13="$WORK/c13.log"; rm -f "$log13"
+PROBE_STATE="$st13" PROBE_LOG="$log13" PROBE_LINGER_S=100 "$SIDEEYE" explore --state "$st13" --operation "$WORK/libc_toy" \
+    --shim "$SHIM" --work "$WORK/w-c13" --oracle-fs-usage > "$WORK/c13.txt" 2>&1 &
+eng13=$!
+t13=$(date +%s)
+for _ in $(seq 1 60); do [ -s "$log13" ] && break; sleep 1; done
+[ -s "$log13" ] || { kill -9 "$eng13" 2>/dev/null; fail "check 13: the recording never started, so nothing was measured"; }
+sleep 5
+cap13=$(wc -c < "$WORK/w-c13/oracle.txt" 2>/dev/null || echo 0)
+el13=$(( $(date +%s) - t13 ))
+pgrep -x fs_usage > /dev/null || { kill -9 "$eng13" 2>/dev/null; fail "check 13: no fs_usage was running before the kill, so nothing was measured"; }
+diag13() { ps -ax -o pid,ppid,pgid,ruid,uid,stat,comm | grep -E "fs_usage|sudo|sideeye" | grep -v grep | sed 's/^/    /'; }
+sudo13=$(pgrep -P "$eng13" -x sudo | head -1)
+echo "  diag: before the kill (engine $eng13, sudo ${sudo13:-none}):"; diag13
+kill -0 -- "-${sudo13:-0}" 2>/dev/null; echo "  diag: kill -0 to sudo's group as this user: rc=$?"
+kill -9 "$eng13"
+gone=no
+for _ in $(seq 1 10); do pgrep -x fs_usage > /dev/null || { gone=yes; break; }; sleep 1; done
+echo "  diag: 10 s after the kill:"; diag13
+if [ "$gone" = no ] && [ -n "$sudo13" ]; then
+    kill -INT -- "-$sudo13" 2>/dev/null; echo "  diag: SIGINT to sudo's group as this user: rc=$?"
+    sleep 5
+    if pgrep -x fs_usage > /dev/null; then echo "  diag: fs_usage still runs 5 s after that SIGINT"; else echo "  diag: that SIGINT stopped fs_usage"; fi
+    if pgrep -x fs_usage > /dev/null; then
+        kill -INT "$sudo13" 2>/dev/null; echo "  diag: SIGINT to sudo's pid as this user: rc=$?"
+        sleep 5
+        if pgrep -x fs_usage > /dev/null; then echo "  diag: fs_usage still runs 5 s after the pid's SIGINT"; else echo "  diag: the pid's SIGINT stopped fs_usage"; fi
+        echo "  diag: after it:"; diag13
+    fi
+fi
+pkill -x libc_toy 2>/dev/null || true
+echo "  fs_usage gone within 10 s: $gone; its capture held $cap13 bytes after about $el13 s ($(( cap13 / (el13 > 0 ? el13 : 1) )) bytes/s)"
+[ "$gone" = yes ] || { ensure_no_fs_usage; fail "check 13: fs_usage outlived the killed engine"; }
+echo "  PASS"
+
+echo "=================================================================="
+echo "Check 14 — an engine killed by SIGKILL during the handshake leaves no fs_usage behind (#896)"
+echo "  predicate: killed while its opening sentinel is in the state, no fs_usage runs 10 s later"
+ensure_no_fs_usage
+seed_keep c14
+st14="$WORK/state-c14"
+PROBE_STATE="$st14" PROBE_LINGER_S=100 "$SIDEEYE" explore --state "$st14" --operation "$WORK/libc_toy" \
+    --shim "$SHIM" --work "$WORK/w-c14" --oracle-fs-usage > "$WORK/c14.txt" 2>&1 &
+eng14=$!
+seen14=no
+for _ in $(seq 1 300); do
+    if ls "$st14"/.sideeye-fsusage-open.* > /dev/null 2>&1; then seen14=yes; break; fi
+    sleep 0.05
+done
+kill -9 "$eng14" 2>/dev/null
+gone14=no
+for _ in $(seq 1 10); do pgrep -x fs_usage > /dev/null || { gone14=yes; break; }; sleep 1; done
+pkill -x libc_toy 2>/dev/null || true
+if [ "$seen14" = no ]; then
+    ensure_no_fs_usage
+    echo "  NOT MEASURED: the handshake ended before its sentinel was seen; the kill landed after it"
+else
+    echo "  killed during the handshake; fs_usage gone within 10 s: $gone14"
+    [ "$gone14" = yes ] || { ensure_no_fs_usage; fail "check 14: fs_usage outlived an engine killed during the handshake"; }
+    echo "  PASS"
+fi
+
+echo "=================================================================="
+echo "all fourteen checks passed"
 echo "artifacts: $WORK"

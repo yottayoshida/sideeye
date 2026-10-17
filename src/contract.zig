@@ -612,6 +612,7 @@ pub const NextStep = enum {
     threads_limit,
     threads_supervised,
     non_system_build,
+    oracle_fixed_limit,
 
     const one_thread_switch = "A tool's own switch for running its file calls on one thread can move it past this — UV_THREADPOOL_SIZE=1 for Node, GOMAXPROCS=1 for Go: set it in the environment Sideeye runs in and declare it in the define's apparatus (env:UV_THREADPOOL_SIZE=1, for example); docs/apparatus.md lists the switches measured and the targets each did not move.";
 
@@ -630,6 +631,7 @@ pub const NextStep = enum {
             .rebuild_pair => "Use the shim and the engine from the same build: --shim must name the library this binary shipped with.",
             .re_record => "Explore the define again under this build; the saved case does not apply here, and a fresh recording yields a fresh case.",
             .environment => "Fix what the detail above names in the environment, then re-run; the define itself is unchanged.",
+            .oracle_fixed_limit => "The limit the detail names is fixed in this build: under --oracle-fs-usage the recording has to finish inside it. On Linux, --oracle <strace> has neither limit.",
             .retry_then_report => "Re-run once; if it happens again, file it with the report attached, because the detail cannot say whether the machine or Sideeye stopped short.",
             .unreadable_entry_appeared => "An entry this user cannot read appeared in the state during the run (a lock created with mode 0000 is the common case): re-run as a user that can read it, or point --state at a directory that leaves it outside.",
             .narrow_state => "Point --state at a smaller or shallower directory, or reduce what the operation writes there and how deep it nests; the ceiling the detail names is fixed in this build.",

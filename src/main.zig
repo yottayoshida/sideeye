@@ -116,6 +116,64 @@ test "undoing a work directory this run made removes run.lock only while this ru
 /// a refusal is recoverable where that is not.
 const fsusage_capture_cap: usize = 2 * 1024 * 1024 * 1024;
 
+// Not raised from `--world-timeout`: a replay line does not carry it, and it changes what worlds
+// do. Not removed either: it is what stops a root fs_usage if the watch is gone too.
+const fsusage_time_limit_s: u32 = 1800;
+
+const Refusal = struct { detail: []const u8, next: contract.NextStep };
+
+fn fsUsageEnded(arena: std.mem.Allocator, ran_ms: u64, limit_s: u32) Refusal {
+    // Not exact: the engine's clock starts before the spawn, fs_usage's own after it.
+    if (ran_ms + 1000 >= @as(u64, limit_s) * 1000) return .{
+        .detail = std.fmt.allocPrint(arena, "the recording ended {d} s after fs_usage was started, past the {d} s Sideeye gives it, so its capture describes a window that closed before the run did", .{ ran_ms / 1000, limit_s }) catch "the recording ended past the time limit Sideeye gives fs_usage",
+        .next = .oracle_fixed_limit,
+    };
+    return .{ .detail = "fs_usage was no longer running when the recording finished, so its capture describes a window that closed before the run did", .next = .environment };
+}
+
+fn fsUsageUnread(arena: std.mem.Allocator, size: ?u64, cap: usize) Refusal {
+    if (size) |n| if (n > cap) return .{
+        .detail = std.fmt.allocPrint(arena, "the fs_usage capture holds {d} bytes, past the {d} Sideeye reads: fs_usage records the whole machine, so a long recording reaches it", .{ n, cap }) catch "the fs_usage capture grew past the size Sideeye reads",
+        .next = .oracle_fixed_limit,
+    };
+    return .{ .detail = "the fs_usage capture could not be read; the comparison has nothing complete to read", .next = .environment };
+}
+
+fn sizeNoFollow(path: []const u8) ?u64 {
+    var buf: [contract.max_path]u8 = undefined;
+    const z = std.mem.printSentinel(&buf, "{s}", .{path}, 0) catch return null;
+    const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NOFOLLOW | posix.O_NONBLOCK, @as(c_uint, 0));
+    if (fd < 0) return null;
+    defer _ = posix.close(fd);
+    const end = posix.lseek(fd, 0, posix.SEEK_END);
+    return if (end < 0) null else @intCast(end);
+}
+
+test "an fs_usage that stopped at Sideeye's own time limit is refused as that limit, and one that stopped earlier as the environment" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const at = fsUsageEnded(a, 1_800_400, 1800);
+    try std.testing.expectEqual(contract.NextStep.oracle_fixed_limit, at.next);
+    try std.testing.expect(std.mem.indexOf(u8, at.detail, "ended 1800 s after fs_usage was started") != null);
+    try std.testing.expect(std.mem.indexOf(u8, at.detail, "past the 1800 s Sideeye gives it") != null);
+    try std.testing.expectEqual(contract.NextStep.oracle_fixed_limit, fsUsageEnded(a, 1_799_000, 1800).next);
+    const early = fsUsageEnded(a, 95_000, 1800);
+    try std.testing.expectEqual(contract.NextStep.environment, early.next);
+    try std.testing.expect(std.mem.indexOf(u8, early.detail, "Sideeye gives") == null);
+}
+
+test "a capture past the size Sideeye reads is refused as that limit, naming both sizes, and an unreadable one as the environment" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const big = fsUsageUnread(a, 3_000_000_000, fsusage_capture_cap);
+    try std.testing.expectEqual(contract.NextStep.oracle_fixed_limit, big.next);
+    try std.testing.expect(std.mem.indexOf(u8, big.detail, "3000000000 bytes, past the 2147483648") != null);
+    try std.testing.expectEqual(contract.NextStep.environment, fsUsageUnread(a, null, fsusage_capture_cap).next);
+    try std.testing.expectEqual(contract.NextStep.environment, fsUsageUnread(a, 10, fsusage_capture_cap).next);
+}
+
 /// Everything that can fail about the observer fails *here*, before the first child of
 /// the measured run exists: the credential check, the launch, and the proof that the
 /// capture is live. That placement is not a preference — `docs/contract-freeze.md`
@@ -140,9 +198,9 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
     // Unfiltered: `fs_usage`'s pid filter does not follow a fork, so filtering by the
     // subject leaves a raw-forked child invisible to this witness exactly where it is
     // already invisible to the shim (#405). Scope is the state root, decided in
-    // `fsusage.read`. `-t` is insurance against a root observer outliving its parent
-    // and holding kdebug, which SIGPIPE cannot deliver: a process that has stopped
-    // writing never learns the reader is gone.
+    // `fsusage.read`. `-t` stays behind the watch: SIGPIPE cannot stop a root observer that
+    // outlived its parent and holds kdebug, since a process that has stopped writing never
+    // learns the reader is gone.
     // No class filter: `-f filesys` drops `dup` and `dup2`, and a write through a moved
     // descriptor is then a write on a number nothing opened (#796).
     const pid = posix.spawnSidecar(gpa, &.{ "/usr/bin/sudo", "-n", "/usr/bin/fs_usage", "-w", "-e", "-t", limit }, capture_path, fsusage.errPath(arena, capture_path) catch setupError(.environment, "out of memory")) catch |e|
@@ -151,6 +209,10 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
     // and `unknown` stops it; no call site has to.
     refuse.fsu_live = .{ .pid = pid, .gpa = gpa };
     refuse.fsu_capture = capture_path;
+    // Not after the handshake: an engine that died during it would leave a root observer to run
+    // out its whole `-t`, nothing else watching.
+    if (!posix.watchSidecar(pid))
+        setupError(.environment, "could not start the process that stops fs_usage if this run ends without stopping it; refusing rather than leaving a root observer running until its own time limit");
 
     var zb: [contract.max_path]u8 = undefined;
     const sz = std.mem.printSentinel(&zb, "{s}", .{sentinel}, 0) catch setupError(.define_invalid, "path too long");
@@ -169,6 +231,7 @@ fn startFsUsage(gpa: std.mem.Allocator, arena: std.mem.Allocator, capture_path: 
         var st: c_int = 0;
         const w = posix.waitpid(pid, &st, posix.WNOHANG);
         if (w == pid or w < 0) {
+            posix.releaseSidecarWatch();
             refuse.fsu_live = null;
             removeFile(sentinel);
             posix.noteSidecar(0);
@@ -1274,7 +1337,8 @@ fn phaseRecording(run: *Run) void {
     // `--twice` promises between its runs' starts. Not per world: it is not an observer.
     boundary.rec_image = image.observe(arena, op_argv[0], args.cwd, if (std.c.getenv("PATH")) |p| std.mem.span(p) else null);
 
-    if (args.oracle_fs_usage) fsu_pid = startFsUsage(gpa, arena, oracle_out, fsu_sentinel_a, 90);
+    const fsu_started_ms = posix.monotonicMs();
+    if (args.oracle_fs_usage) fsu_pid = startFsUsage(gpa, arena, oracle_out, fsu_sentinel_a, fsusage_time_limit_s);
 
     // The recording run's cgroup (contract v17, #559), made before the mark for the reason the
     // image reading above gives: nothing whose cost this engine does not bound sits between the
@@ -1319,7 +1383,10 @@ fn phaseRecording(run: *Run) void {
         removeFile(fsu_sentinel_b);
         switch (end) {
             .was_running => {},
-            .had_exited => unknown(.oracle_saw_nothing, "fs_usage was no longer running when the recording finished, so its capture describes a window that closed before the run did", .environment),
+            .had_exited => {
+                const ended = fsUsageEnded(arena, posix.monotonicMs() - fsu_started_ms, fsusage_time_limit_s);
+                unknown(.oracle_saw_nothing, ended.detail, ended.next);
+            },
             .would_not_die => unknown(.oracle_saw_nothing, "fs_usage did not stop when asked, so nothing bounds what its capture covers", .environment),
         }
     }
@@ -1593,8 +1660,10 @@ fn phaseOracle(run: *Run) void {
         // recorded nothing leaves a readable empty file, which the lines-seen check
         // below answers with oracle_saw_nothing. This site fires when the capture
         const text = if (args.oracle_fs_usage)
-            capture.readFileAllocCapped(arena, oracle_out, fsusage_capture_cap, .{ .no_follow = true }) orelse
-                unknown(.oracle_saw_nothing, "the fs_usage capture could not be read, or grew past the size this engine will hold; the comparison has nothing complete to read", .environment)
+            capture.readFileAllocCapped(arena, oracle_out, fsusage_capture_cap, .{ .no_follow = true }) orelse {
+                const unread = fsUsageUnread(arena, sizeNoFollow(oracle_out), fsusage_capture_cap);
+                unknown(.oracle_saw_nothing, unread.detail, unread.next);
+            }
         else
             capture.readFileAlloc(arena, oracle_out) orelse setupError(.environment, "the oracle's capture file could not be read");
         refuse.dropCapture();
