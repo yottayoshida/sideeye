@@ -494,16 +494,30 @@ fn isProcessSyscall(name: []const u8) bool {
 fn touchesStateDir(line: []const u8, state_dir: []const u8, alt: []const u8) bool {
     var i: usize = 0;
     while (i < line.len) : (i += 1) {
-        const open_ch = line[i];
-        if (open_ch != '"' and open_ch != '<') continue;
-        const close_ch: u8 = if (open_ch == '"') '"' else '>';
-        const rest = line[i + 1 ..];
-        const end = std.mem.indexOfScalar(u8, rest, close_ch) orelse break;
-        const candidate = rest[0..end];
-        if (candidate.len > 0 and candidate[0] == '/' and insideEither(candidate, state_dir, alt)) return true;
-        i += end + 1;
+        if (line[i] != '"' and line[i] != '<') continue;
+        const end = closingIndex(line, i) orelse break;
+        var buf: [contract.max_path]u8 = undefined;
+        if (unescape(line[i + 1 .. end], &buf)) |candidate| {
+            if (candidate.len > 0 and candidate[0] == '/' and insideEither(candidate, state_dir, alt)) return true;
+        }
+        i = end;
     }
     return false;
+}
+
+// An annotation is skipped whole, not counted as a bracket: strace leaves `[`, `{`, `,` and
+// `)` in a path unescaped, and a depth count would lose the commas after them.
+fn closingIndex(line: []const u8, at: usize) ?usize {
+    const close: u8 = if (line[at] == '"') '"' else '>';
+    var i = at + 1;
+    while (i < line.len) : (i += 1) {
+        if (line[i] == '\\') {
+            i += 1;
+            continue;
+        }
+        if (line[i] == close) return i;
+    }
+    return null;
 }
 
 /// argument splits the list. Reading a field this way rather than searching the whole
@@ -517,18 +531,9 @@ fn syscallArg(raw: []const u8, index: usize) ?[]const u8 {
     var depth: usize = 0;
     while (i < line.len) : (i += 1) {
         switch (line[i]) {
-            '"' => {
-                i += 1;
-                while (i < line.len) : (i += 1) {
-                    if (line[i] == '\\') {
-                        i += 1; // strace escapes quotes and backslashes inside strings
-                        continue;
-                    }
-                    if (line[i] == '"') break;
-                }
-            },
-            '[', '{', '<' => depth += 1,
-            ']', '}', '>' => {
+            '"', '<' => i = closingIndex(line, i) orelse line.len,
+            '[', '{' => depth += 1,
+            ']', '}' => {
                 if (depth > 0) depth -= 1;
             },
             ',' => if (depth == 0) {
@@ -617,7 +622,8 @@ fn takePendingMap(list: *std.ArrayList(PendingMap), pid: ?u32) ?u64 {
 /// moment the run renames or links anything, and every state file mapped shared is
 /// remembered from then on — refusing more, never less.
 fn mapsWritableStateFile(line: []const u8, state: []const u8, alt: []const u8, rw_paths: []const []const u8, narrowing: bool) bool {
-    const p = argAnnotation(syscallArg(line, 4) orelse return false) orelse return false;
+    var abuf: [contract.max_path]u8 = undefined;
+    const p = argAnnotation(syscallArg(line, 4) orelse return false, &abuf) orelse return false;
     if (!insideEither(p, state, alt)) return false;
     if (!narrowing) return true;
     for (rw_paths) |w| if (std.mem.eql(u8, w, p)) return true;
@@ -636,15 +642,31 @@ fn isOpenCall(name: []const u8) bool {
         std.mem.eql(u8, name, "openat2") or std.mem.eql(u8, name, "creat");
 }
 
-fn returnedPath(line: []const u8) ?[]const u8 {
-    const at = std.mem.lastIndexOf(u8, line, " = ") orelse return null;
-    return argAnnotation(std.mem.trim(u8, line[at + 3 ..], " \t"));
+// Not the last ` = ` on the line, as the numeric results are found: this result is an
+// annotation, and a path can hold ` = ` itself.
+fn returnedPath(line: []const u8, out: []u8) ?[]const u8 {
+    var i: usize = 0;
+    while (i < line.len) : (i += 1) {
+        switch (line[i]) {
+            '"', '<' => i = closingIndex(line, i) orelse return null,
+            ' ' => if (std.mem.startsWith(u8, line[i..], " = "))
+                return argAnnotation(std.mem.trim(u8, line[i + 3 ..], " \t"), out),
+            else => {},
+        }
+    }
+    return null;
+}
+
+// Not searched for anywhere on the line: a quoted path can spell it, and strace leaves `<`
+// and `>` unescaped there.
+fn isUnfinished(line: []const u8) bool {
+    return std.mem.endsWith(u8, line, "<unfinished ...>");
 }
 
 fn visiblyFailed(line: []const u8) bool {
     // An unfinished half has no result at all; a ` = -` on it is inside an argument — a file
     // name the target chose (second review).
-    if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) return false;
+    if (isUnfinished(line)) return false;
     const at = std.mem.lastIndexOf(u8, line, " = ") orelse return false;
     const rhs = std.mem.trim(u8, line[at + 3 ..], " \t");
     return rhs.len > 0 and rhs[0] == '-';
@@ -740,7 +762,8 @@ fn cloneKind(name: []const u8, line: []const u8) ?CloneKind {
 fn cloneIntoState(line: []const u8, state_dir: []const u8, state_alt: []const u8) bool {
     // Not `false` when the destination cannot be read: that would let an unreadable clone through.
     const arg = syscallArg(line, 0) orelse return true;
-    const p = argAnnotation(arg) orelse return true;
+    var abuf: [contract.max_path]u8 = undefined;
+    const p = argAnnotation(arg, &abuf) orelse return true;
     return insideEither(p, state_dir, state_alt);
 }
 
@@ -756,7 +779,7 @@ fn cloneRefuses(kind: CloneKind, finished_line: []const u8) bool {
 }
 
 fn noteClone(arena: std.mem.Allocator, kind: CloneKind, line: []const u8, pid: ?u32, pending: *std.ArrayList(PendingClone), out: *Parsed) !void {
-    if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) {
+    if (isUnfinished(line)) {
         try pending.append(arena, .{ .pid = pid orelse 0, .kind = kind });
     } else if (cloneRefuses(kind, line) and out.unsupported == null) {
         out.unsupported = try arena.dupe(u8, if (kind == .unreadable) unreadable_ioctl_refusal else clone_refusal);
@@ -833,7 +856,8 @@ fn cgroupMove(arena: std.mem.Allocator, name: []const u8, line: []const u8) !?[]
     } else if (isReadOnlyOpen(name, line)) return null;
     var pbuf: [contract.max_path]u8 = undefined;
     const named: ?[]const u8 = if (path_index) |i| (if (syscallArg(line, i)) |arg| argPath(arg, &pbuf) else null) else null;
-    const returned: ?[]const u8 = if (result) |r| argAnnotation(r) else null;
+    var abuf: [contract.max_path]u8 = undefined;
+    const returned: ?[]const u8 = if (result) |r| argAnnotation(r, &abuf) else null;
     for (cgroup_move_files) |file| {
         for ([_]?[]const u8{ named, returned }) |candidate| {
             const p = candidate orelse continue;
@@ -855,18 +879,9 @@ fn resultText(raw: []const u8) ?[]const u8 {
     var depth: usize = 0;
     while (i < line.len) : (i += 1) {
         switch (line[i]) {
-            '"' => {
-                i += 1;
-                while (i < line.len) : (i += 1) {
-                    if (line[i] == '\\') {
-                        i += 1;
-                        continue;
-                    }
-                    if (line[i] == '"') break;
-                }
-            },
-            '[', '{', '<' => depth += 1,
-            ']', '}', '>' => {
+            '"', '<' => i = closingIndex(line, i) orelse line.len,
+            '[', '{' => depth += 1,
+            ']', '}' => {
                 if (depth > 0) depth -= 1;
             },
             ')' => if (depth == 0) return line[i + 1 ..],
@@ -878,44 +893,50 @@ fn resultText(raw: []const u8) ?[]const u8 {
 
 fn argPath(arg: []const u8, out: []u8) ?[]const u8 {
     const q = std.mem.indexOfScalar(u8, arg, '"') orelse return null;
-    var i = q + 1;
-    var n: usize = 0;
-    while (i < arg.len) : (i += 1) {
-        const ch = arg[i];
-        if (ch == '"') return out[0..n];
-        if (n >= out.len) return null;
-        if (ch == '\\' and i + 1 < arg.len) {
-            i += 1;
-            const e = arg[i];
-            switch (e) {
-                'n' => out[n] = '\n',
-                't' => out[n] = '\t',
-                'r' => out[n] = '\r',
-                '0'...'7' => {
-                    var v: u16 = e - '0';
-                    var k: usize = 0;
-                    while (k < 2 and i + 1 < arg.len and arg[i + 1] >= '0' and arg[i + 1] <= '7') : (k += 1) {
-                        i += 1;
-                        v = v * 8 + (arg[i] - '0');
-                    }
-                    out[n] = @truncate(v);
-                },
-                else => out[n] = e, // \" \\ and the rest are literal
-            }
-        } else {
-            out[n] = ch;
-        }
-        n += 1;
-    }
-    return null; // unterminated
+    const end = closingIndex(arg, q) orelse return null;
+    return unescape(arg[q + 1 .. end], out);
 }
 
-fn argAnnotation(arg: []const u8) ?[]const u8 {
+// Do not hold the result past `out`: it points into `out` whenever the path holds an escape.
+fn argAnnotation(arg: []const u8, out: []u8) ?[]const u8 {
     const lt = std.mem.indexOfScalar(u8, arg, '<') orelse return null;
-    const gt = std.mem.indexOfScalarPos(u8, arg, lt + 1, '>') orelse return null;
-    const p = arg[lt + 1 .. gt];
+    const gt = closingIndex(arg, lt) orelse return null;
+    const raw = arg[lt + 1 .. gt];
+    const p = if (std.mem.indexOfScalar(u8, raw, '\\') == null) raw else unescape(raw, out) orelse return null;
     if (p.len == 0 or p[0] != '/') return null;
     return p;
+}
+
+fn unescape(text: []const u8, out: []u8) ?[]const u8 {
+    var n: usize = 0;
+    var i: usize = 0;
+    while (i < text.len) : (i += 1) {
+        if (n >= out.len) return null;
+        var ch = text[i];
+        if (ch == '\\' and i + 1 < text.len) {
+            i += 1;
+            ch = switch (text[i]) {
+                'n' => '\n',
+                't' => '\t',
+                'r' => '\r',
+                'v' => 0x0b,
+                'f' => 0x0c,
+                '0'...'7' => blk: {
+                    var v: u16 = text[i] - '0';
+                    var k: usize = 0;
+                    while (k < 2 and i + 1 < text.len and text[i + 1] >= '0' and text[i + 1] <= '7') : (k += 1) {
+                        i += 1;
+                        v = v * 8 + (text[i] - '0');
+                    }
+                    break :blk @truncate(v);
+                },
+                else => text[i],
+            };
+        }
+        out[n] = ch;
+        n += 1;
+    }
+    return out[0..n];
 }
 
 const Scope = enum { inside, outside, unresolvable };
@@ -933,8 +954,9 @@ fn resolvePath(line: []const u8, arg: PathArg, cwd: ?[]const u8, out: []u8) ?[]c
     if (p[0] == '/') return contract.normalizePath(out, "/", p) catch null;
 
     var base: ?[]const u8 = null;
+    var bbuf: [contract.max_path]u8 = undefined;
     if (arg.dirfd) |di| {
-        if (syscallArg(line, di)) |da| base = argAnnotation(da);
+        if (syscallArg(line, di)) |da| base = argAnnotation(da, &bbuf);
     }
     if (base == null) base = cwd;
     const b = base orelse return null;
@@ -1005,7 +1027,8 @@ fn fdWriteArg(name: []const u8) usize {
 /// `fd_write_args` above; the default is argument 0.
 fn fdSyscallInScope(line: []const u8, name: []const u8, state: []const u8, alt: []const u8) bool {
     const arg = syscallArg(line, fdWriteArg(name)) orelse return false;
-    const p = argAnnotation(arg) orelse return false;
+    var abuf: [contract.max_path]u8 = undefined;
+    const p = argAnnotation(arg, &abuf) orelse return false;
     return insideEither(p, state, alt);
 }
 
@@ -1152,7 +1175,8 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
                             out.unsupported = try arena.dupe(u8, if (kind == .unreadable) unreadable_ioctl_refusal else clone_refusal);
                     }
                 } else if (isOpenCall(rc) and takeThreadClone(&pending_rw_open, pid)) {
-                    if (returnedPath(line)) |p| {
+                    var abuf: [contract.max_path]u8 = undefined;
+                    if (returnedPath(line, &abuf)) |p| {
                         if (insideEither(p, state_dir, state_alt)) try rw_paths.append(arena, try arena.dupe(u8, p));
                     }
                 }
@@ -1181,7 +1205,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // did not change the state, and the restarted call, if any, is its own line.
             if (fold_restarted and isRestartedCall(line)) {
                 if (takePending(&pending, pid)) |q| {
-                    if (std.mem.indexOf(u8, line, " resumed>") != null) try retract(arena, q, &dead_ops, &dead_muts, &out);
+                    if (resumedCall(line) != null) try retract(arena, q, &dead_ops, &dead_muts, &out);
                 }
                 continue;
             }
@@ -1222,9 +1246,10 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         // would be dropped as outside the state.
         if (renamesOrLinks(name) and !visiblyFailed(line)) rw_narrowing = false;
         if (isOpenCall(name) and !isReadOnlyOpen(name, line)) {
-            if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) {
+            var rbuf: [contract.max_path]u8 = undefined;
+            if (isUnfinished(line)) {
                 try pending_rw_open.append(arena, pid orelse 0);
-            } else if (returnedPath(line)) |p| {
+            } else if (returnedPath(line, &rbuf)) |p| {
                 if (insideEither(p, state_dir, state_alt)) try rw_paths.append(arena, try arena.dupe(u8, p));
             }
         }
@@ -1232,7 +1257,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             !argContains(line, 2, "PROT_WRITE") and mapsWritableStateFile(line, state_dir, state_alt, rw_paths.items, rw_narrowing))
         {
             if (traceNumber(syscallArg(line, 1))) |len| {
-                if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) {
+                if (isUnfinished(line)) {
                     try pending_maps.append(arena, .{ .pid = pid orelse 0, .len = len });
                 } else if (returnedAddress(line)) |addr| {
                     try shared_maps.append(arena, .{ .start = addr, .end = addr +| pageUp(len) });
@@ -1242,7 +1267,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         if (std.mem.eql(u8, name, "mremap")) {
             if (traceNumber(syscallArg(line, 0))) |old| if (traceNumber(syscallArg(line, 1))) |old_len| if (traceNumber(syscallArg(line, 2))) |new_len| {
                 if (overlapsShared(shared_maps.items, old, @max(old_len, 1))) {
-                    if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) {
+                    if (isUnfinished(line)) {
                         try pending_maps.append(arena, .{ .pid = pid orelse 0, .len = new_len });
                     } else if (returnedAddress(line)) |addr| {
                         try shared_maps.append(arena, .{ .start = addr, .end = addr +| pageUp(new_len) });
@@ -1281,7 +1306,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
                 if (is_primary) {
                     if (returnedPid(line)) |t| {
                         try out.subject_tids.append(arena, t);
-                    } else if (std.mem.indexOf(u8, line, "<unfinished ...>") != null) {
+                    } else if (isUnfinished(line)) {
                         try pending_thread_clone.append(arena, pid orelse 0);
                     }
                 }
@@ -1314,10 +1339,12 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         if (is_primary and std.mem.eql(u8, name, "fchdir")) {
             if (syscallSucceeded(line)) {
                 if (syscallArg(line, 0)) |a| {
-                    if (argAnnotation(a)) |dir| {
+                    var abuf: [contract.max_path]u8 = undefined;
+                    const dir = argAnnotation(a, &abuf) orelse "";
+                    if (dir.len > 0 and dir.len <= cwd_buf.len) {
                         @memcpy(cwd_buf[0..dir.len], dir);
                         cwd = cwd_buf[0..dir.len];
-                    } else cwd = null; // no annotation (a raw fd): cwd is now unknown
+                    } else cwd = null;
                 }
             }
             continue;
@@ -1490,6 +1517,138 @@ pub fn compare(shim: []const contract.OpClass, oracle: []const contract.OpClass)
     if (oracle.len > shim.len) return .{ .missed = .{ .index = i, .class = oracle[i] } };
     if (shim.len > oracle.len) return .{ .phantom = .{ .index = i, .class = shim[i] } };
     return null;
+}
+
+test "a state path holding bytes strace escapes is counted as an ASCII one is" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const Case = struct { what: []const u8, state: []const u8, lines: []const u8 };
+    const cases = [_]Case{
+        .{ .what = "non-ASCII (measured, strace 6.1)", .state = "/tmp/\xe3\x83\x87/s", .lines =
+        \\42    openat(AT_FDCWD</work>, "/tmp/\343\203\207/s/k", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 3</tmp/\343\203\207/s/k>
+        \\42    write(3</tmp/\343\203\207/s/k>, "v\n", 2) = 2
+        \\
+        },
+        .{ .what = "a quote and angle brackets (measured)", .state = "/tmp/a\"b<c>/s", .lines =
+        \\42    openat(AT_FDCWD</work>, "/tmp/a\"b<c>/s/k", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 3</tmp/a\"b\74c\76/s/k>
+        \\42    write(3</tmp/a\"b\74c\76/s/k>, "v\n", 2) = 2
+        \\
+        },
+        .{ .what = "an open bracket, which strace does not escape (measured)", .state = "/tmp/a[b/s", .lines =
+        \\42    openat(AT_FDCWD</work>, "/tmp/a[b/s/k", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 3</tmp/a[b/s/k>
+        \\42    write(3</tmp/a[b/s/k>, "v\n", 2) = 2
+        \\
+        },
+        .{ .what = "a brace (measured)", .state = "/tmp/a{b/s", .lines =
+        \\42    openat(AT_FDCWD</work>, "/tmp/a{b/s/k", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 3</tmp/a{b/s/k>
+        \\42    write(3</tmp/a{b/s/k>, "v\n", 2) = 2
+        \\
+        },
+        .{ .what = "a backslash (measured)", .state = "/tmp/a\\b/s", .lines =
+        \\42    openat(AT_FDCWD</work>, "/tmp/a\\b/s/k", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 3</tmp/a\\b/s/k>
+        \\42    write(3</tmp/a\\b/s/k>, "v\n", 2) = 2
+        \\
+        },
+        .{ .what = "a vertical tab, one of strace's one-letter escapes (measured)", .state = "/tmp/a\x0bb/s", .lines =
+        \\42    openat(AT_FDCWD</work>, "/tmp/a\vb/s/k", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 3</tmp/a\vb/s/k>
+        \\42    write(3</tmp/a\vb/s/k>, "v\n", 2) = 2
+        \\
+        },
+        .{ .what = "a directory descriptor whose annotation is escaped", .state = "/tmp/\xe3\x83\x87/s", .lines =
+        \\42    openat(5</tmp/\343\203\207/s>, "k", O_WRONLY|O_TRUNC) = 3</tmp/\343\203\207/s/k>
+        \\42    write(3</tmp/\343\203\207/s/k>, "v\n", 2) = 2
+        \\
+        },
+        .{ .what = "a directory descriptor whose path ends in a backslash", .state = "/tmp/x\\", .lines =
+        \\42    openat(5</tmp/x\\>, "k", O_WRONLY|O_TRUNC) = 3</tmp/x\\/k>
+        \\42    write(3</tmp/x\\/k>, "v\n", 2) = 2
+        \\
+        },
+    };
+    for (cases) |c| {
+        const text = try std.fmt.allocPrint(a, "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n{s}", .{c.lines});
+        const p = try parse(a, text, c.state, "", "/work");
+        const want = [_]contract.OpClass{ .open, .write };
+        std.testing.expectEqualSlices(contract.OpClass, &want, p.classes.items) catch |e| {
+            std.debug.print("case: {s}\n", .{c.what});
+            return e;
+        };
+        try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
+    }
+    const child = "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242\n4242  write(3</tmp/\\343\\203\\207/s/k>, \"v\\n\", 2) = 2\n";
+    const q = try parse(a, child, "/tmp/\xe3\x83\x87/s", "", "/work");
+    try std.testing.expect(q.childTouched());
+}
+
+test "a state file opened for writing under a name holding ' = ' is remembered, so a shared map of it made writable refuses" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD</work>, "/tmp/s/x = y", O_RDWR) = 3</tmp/s/x = y>
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/x = y>, 0) = 0x7f0000000000
+        \\42    mprotect(0x7f0000000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+    ;
+    const p = try parse(a, text, "/tmp/s", "", "/work");
+    try std.testing.expectEqualStrings("mprotect(PROT_WRITE) on a shared mapping of a state file", p.unsupported orelse "(none)");
+}
+
+test "a quoted path spelling '<unfinished ...>' does not make a finished open look split" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD</work>, "/tmp/s/x<unfinished ...>", O_RDWR) = 3</tmp/s/x\74unfinished ...\76>
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/x\74unfinished ...\76>, 0) = 0x7f0000000000
+        \\42    mprotect(0x7f0000000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+    ;
+    const p = try parse(a, text, "/tmp/s", "", "/work");
+    try std.testing.expectEqualStrings("mprotect(PROT_WRITE) on a shared mapping of a state file", p.unsupported orelse "(none)");
+}
+
+test "a restarted write whose data spells ' resumed>' does not retract the operation before it" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const text =
+        \\45    execve("/tmp/toy-sig", ["toy-sig", "rotate"], 0x7ff) = 0
+        \\45    write(3</tmp/sg/f>, "x\n", 2) = 2
+        \\45    write(3</tmp/sg/f>, " resumed>", 9) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+        \\45    write(3</tmp/sg/f>, " resumed>", 9) = 9
+        \\
+    ;
+    fold_restarted = true;
+    defer fold_restarted = false;
+    const p = try parse(arena_state.allocator(), text, "/tmp/sg", "", "/work");
+    try std.testing.expectEqualSlices(contract.OpClass, &.{ .write, .write }, p.classes.items);
+}
+
+test "an fchdir into a directory whose escaped annotation is long moves the cwd, and one past the buffer leaves it unknown" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    for ([_]struct { bytes: usize, fits: bool }{ .{ .bytes = 1500, .fits = true }, .{ .bytes = 4200, .fits = false } }) |c| {
+        var escaped: std.ArrayList(u8) = .empty;
+        var decoded: std.ArrayList(u8) = .empty;
+        try escaped.appendSlice(a, "/tmp/");
+        try decoded.appendSlice(a, "/tmp/");
+        for (0..c.bytes) |_| {
+            try escaped.appendSlice(a, "\\343");
+            try decoded.append(a, 0xe3);
+        }
+        const text = try std.fmt.allocPrint(a, "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    fchdir(5<{s}>) = 0\n42    open(\"k\", O_WRONLY|O_CREAT, 0644) = 3\n", .{escaped.items});
+        const p = try parse(a, text, decoded.items, "", "/work");
+        if (c.fits) {
+            try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
+            try std.testing.expectEqualSlices(contract.OpClass, &.{.open}, p.classes.items);
+        } else {
+            try std.testing.expectEqualStrings("open", p.unsupported orelse "(none)");
+        }
+    }
 }
 
 test "containment uses component boundaries, not string prefixes" {
@@ -2114,10 +2273,19 @@ test "an ioctl on a state file whose request cannot be read refuses" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    const p = try parseCloneRun(a, "9", "9  ioctl(4</s/a\\\"b>, BTRFS_IOC_CLONE or FICLONE, 3) = 0\n");
-    try std.testing.expectEqualStrings("ioctl on a state file whose request could not be read", p.unsupported orelse "(none)");
-    const split = try parseCloneRun(a, "9", "9  ioctl(4</s/a\\\"b>, BTRFS_IOC_CLONE or FICLONE, 3 <unfinished ...>\n");
+    const split = try parseCloneRun(a, "9", "9  ioctl(4</s/key.txt> <unfinished ...>\n");
     try std.testing.expectEqualStrings("ioctl on a state file whose request could not be read", split.unsupported orelse "(none)");
+}
+
+test "an ioctl into a state file whose name holds a quote is read as the clone it is" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const text = "9  execve(\"/bin/cp\", [\"cp\"], 0x0) = 0\n9  ioctl(4</s/a\\\"b>, BTRFS_IOC_CLONE or FICLONE, 3) = 0\n";
+    const p = try parse(a, text, "/s", "", "/w");
+    try std.testing.expectEqualStrings("ioctl(FICLONE)", p.unsupported orelse "(none)");
+    const split = try parse(a, "9  execve(\"/bin/cp\", [\"cp\"], 0x0) = 0\n9  ioctl(4</s/a\\\"b>, BTRFS_IOC_CLONE or FICLONE, 3 <unfinished ...>\n9  <... ioctl resumed>) = 0\n", "/s", "", "/w");
+    try std.testing.expectEqualStrings("ioctl(FICLONE)", split.unsupported orelse "(none)");
 }
 
 test "an unresolvable relative path refuses instead of dropping" {

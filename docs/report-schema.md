@@ -265,9 +265,11 @@ explored. A whole-file `FICLONE` that failed with an errno raised before anythin
 `copy_file_range` on a filesystem without reflinks. Any other failure, and a `FICLONERANGE` that
 failed, is refused all the same, since btrfs and XFS can fail after part of the file was remapped. A call split across
 two lines is judged by the half that carries its result, and refused when that half never comes. An
-`ioctl` on a state file whose request strace printed in a form this reader cannot split — a file
-name holding a `"` or an unclosed bracket — is refused as `ioctl on a state file whose request
-could not be read`, whatever the request was. A clone
+`ioctl` on a state file whose request this reader cannot find on the line — a call split before
+strace printed it — is refused as `ioctl on a state file whose request
+could not be read`, whatever the request was. A file name holding a `"`, a bracket or a byte
+strace escapes is not such a form: a descriptor's path is read whole and its escapes undone, as a
+quoted path's are (#899). A clone
 out of a state file, into one outside, is a read. A write submitted through io_uring is not refused:
 a ring's submissions are not in strace's account, and Node 22 sets up rings it writes no file
 through (measured on 22.23.3), so refusing the ring would refuse every such target. Explored worlds,
