@@ -28,6 +28,10 @@ comptime {
     @export(&ops.openat, .{ .name = "openat64" });
     @export(&ops.creat, .{ .name = "creat" });
     @export(&ops.creat, .{ .name = "creat64" });
+    @export(&ops.open_2, .{ .name = "__open_2" });
+    @export(&ops.open64_2, .{ .name = "__open64_2" });
+    @export(&ops.openat_2, .{ .name = "__openat_2" });
+    @export(&ops.openat64_2, .{ .name = "__openat64_2" });
 
     @export(&ops.write, .{ .name = "write" });
     @export(&ops.pwrite, .{ .name = "pwrite" });
@@ -71,6 +75,9 @@ comptime {
     @export(&ops.ftruncate, .{ .name = "ftruncate64" });
     @export(&ops.truncate, .{ .name = "truncate" });
     @export(&ops.truncate, .{ .name = "truncate64" });
+
+    @export(&ops.closefrom, .{ .name = "closefrom" });
+    @export(&ops.close_range, .{ .name = "close_range" });
 
     @export(&ops.mkdir, .{ .name = "mkdir" });
     @export(&ops.mkdirat, .{ .name = "mkdirat" });

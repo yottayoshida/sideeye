@@ -55,6 +55,31 @@ const open_impl = if (builtin.os.tag == .macos) struct {
 };
 pub const open = open_impl.f;
 
+const O_TMPFILE_BIT: c_int = 0o20000000;
+
+// Not recorded with O_CREAT or O_TMPFILE: the fortified entry aborts on those before any open,
+// and a crash point in front of an open that never happens moves every later one.
+fn fortifiedRecords(flags: c_int) bool {
+    return flags & (common.O_CREAT | O_TMPFILE_BIT) == 0 and common.openIsWriteCapable(flags);
+}
+
+pub fn open_2(path: [*:0]const u8, flags: c_int) callconv(.c) c_int {
+    if (fortifiedRecords(flags)) common.note1(.open, AT_FDCWD, path);
+    return common.callOpen2("__open_2", path, flags);
+}
+pub fn open64_2(path: [*:0]const u8, flags: c_int) callconv(.c) c_int {
+    if (fortifiedRecords(flags)) common.note1(.open, AT_FDCWD, path);
+    return common.callOpen2("__open64_2", path, flags);
+}
+pub fn openat_2(dirfd: c_int, path: [*:0]const u8, flags: c_int) callconv(.c) c_int {
+    if (fortifiedRecords(flags)) common.note1(.open, dirfd, path);
+    return common.callOpenat2("__openat_2", dirfd, path, flags);
+}
+pub fn openat64_2(dirfd: c_int, path: [*:0]const u8, flags: c_int) callconv(.c) c_int {
+    if (fortifiedRecords(flags)) common.note1(.open, dirfd, path);
+    return common.callOpenat2("__openat64_2", dirfd, path, flags);
+}
+
 const openat_impl = if (builtin.os.tag == .macos) struct {
     pub fn f(dirfd: c_int, path: [*:0]const u8, flags: c_int, ...) callconv(.c) c_int {
         var ap = @cVaStart();
@@ -695,6 +720,19 @@ pub fn rmdir(path: [*:0]const u8) callconv(.c) c_int {
 }
 
 // --- lifecycle -------------------------------------------------------------------
+
+const CLOSE_RANGE_CLOEXEC: c_int = 1 << 2;
+
+pub fn closefrom(low: c_int) callconv(.c) void {
+    common.callClosefrom(low);
+    common.afterSweep();
+}
+
+pub fn close_range(first: c_uint, last: c_uint, flags: c_int) callconv(.c) c_int {
+    const rc = common.callCloseRange(first, last, flags);
+    if (rc == 0 and flags & CLOSE_RANGE_CLOEXEC == 0) common.afterSweep();
+    return rc;
+}
 
 pub fn close(fd: c_int) callconv(.c) c_int {
     // Recorded before the call: afterwards the descriptor no longer resolves to a path.

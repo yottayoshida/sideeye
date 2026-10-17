@@ -115,6 +115,8 @@ echo "building toy-order"
 gcc $cc_flags -o "$out/toy-order" "$root/spike/toys/toy_order.c"
 echo "building toy-vfork-many"
 gcc $cc_flags -o "$out/toy-vfork-many" "$root/spike/toys/toy_vfork_many.c" -lpthread
+echo "building toy-fortify"
+gcc -O2 -D_FORTIFY_SOURCE=2 -Wall -o "$out/toy-fortify" "$root/spike/toys/toy_fortify.c"
 
 echo "building toy-copy"
 # Calls copy_file_range directly, in both directions (destination inside the state
