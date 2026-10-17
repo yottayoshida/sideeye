@@ -229,71 +229,74 @@ fn runOperationObserved(
 ) posix.Term {
     const sup = supervise.Spawn.start(gpa, arena, observe, op_argv, trace_path, state_abs, state_alt, 0, containment.runName(cg), containment.killName(cg)) catch |e|
         setupError(.environment, supervise.startFailure(e));
-    defer sup.finish();
     const argv = sup.argv;
     const env_trace = if (observe == .supervised) "" else trace_path;
     const preload = supervise.preloadFor(observe, shim);
-    if (oracle_path) |strace_path| {
-        // Environment goes to the target via strace's -E, not through our own
-        // setenv: LD_PRELOAD applied here would load the shim into strace itself,
-        // and strace's own file operations would land in the trace as if the
-        // target had produced them.
-        var list: std.ArrayList([]const u8) = .empty;
-        list.append(arena, strace_path) catch setupError(.environment, "out of memory");
-        // `-f` follows children and `%process` covers clone/fork/execve. Without
-        // both, a target that creates a child through a raw clone is invisible to
-        // the oracle as well as to the shim, and the child's work on the state
-        // directory never appears anywhere. setsid/setpgid are named explicitly
-        // because `%process` does not include them (measured), and an *unshimmed*
-        // child detaching from the containment group is visible nowhere else.
-        // `mprotect`, `pkey_mprotect` and `mremap` are not file calls either (#689, ADR
-        // 0098): they are how a state file mapped shared and read-only becomes writable or
-        // moves, and a store through it has no call of its own. `?` keeps an strace that
-        // has no name for `pkey_mprotect` from refusing to start.
-        for ([_][]const u8{ "-f", "-y", "-e", "trace=%file,%desc,%process,setsid,setpgid,mprotect,?pkey_mprotect,mremap", "-o", oracle_out }) |a|
-            list.append(arena, a) catch setupError(.environment, "out of memory");
-        const pairs = [_][2][]const u8{
+    const term: posix.Term = run: {
+        if (oracle_path) |strace_path| {
+            // Environment goes to the target via strace's -E, not through our own
+            // setenv: LD_PRELOAD applied here would load the shim into strace itself,
+            // and strace's own file operations would land in the trace as if the
+            // target had produced them.
+            var list: std.ArrayList([]const u8) = .empty;
+            list.append(arena, strace_path) catch setupError(.environment, "out of memory");
+            // `-f` follows children and `%process` covers clone/fork/execve. Without
+            // both, a target that creates a child through a raw clone is invisible to
+            // the oracle as well as to the shim, and the child's work on the state
+            // directory never appears anywhere. setsid/setpgid are named explicitly
+            // because `%process` does not include them (measured), and an *unshimmed*
+            // child detaching from the containment group is visible nowhere else.
+            // `mprotect`, `pkey_mprotect` and `mremap` are not file calls either (#689, ADR
+            // 0098): they are how a state file mapped shared and read-only becomes writable or
+            // moves, and a store through it has no call of its own. `?` keeps an strace that
+            // has no name for `pkey_mprotect` from refusing to start.
+            for ([_][]const u8{ "-f", "-y", "-e", "trace=%file,%desc,%process,setsid,setpgid,mprotect,?pkey_mprotect,mremap", "-o", oracle_out }) |a|
+                list.append(arena, a) catch setupError(.environment, "out of memory");
+            const pairs = [_][2][]const u8{
+                .{ "TOY_STATE", state_abs },
+                .{ contract.env.state_dir, state_abs },
+                .{ contract.env.state_dir_alt, state_alt },
+                .{ contract.env.trace_path, env_trace },
+                // Pinned empty so an ambient value in the operator's shell cannot
+                // become the first image's numbering base (R1; parseU32("") is 0).
+                .{ contract.env.seq_base, "" },
+                // Pinned empty for the same reason (#753): a carried mark in the operator's shell
+                // would refuse every run. Empty is how the shim reads "no mark".
+                .{ contract.env.before_constructor, "" },
+                .{ contract.env.observe, observe.name() },
+                // Pinned empty when there is no cgroup, for the reason `seq_base` is above (v17).
+                // The kill path is a world's alone, and pinned empty here for the same reason.
+                .{ contract.env.run_cgroup, containment.runName(cg) },
+                .{ contract.env.kill_cgroup, "" },
+                .{ contract.env.kill_aside, "" },
+                .{ preload_var, preload },
+            };
+            for (pairs) |kv| {
+                list.append(arena, "-E") catch setupError(.environment, "out of memory");
+                const joined = std.fmt.allocPrint(arena, "{s}={s}", .{ kv[0], kv[1] }) catch setupError(.environment, "out of memory");
+                list.append(arena, joined) catch setupError(.environment, "out of memory");
+            }
+            for (argv) |a| list.append(arena, a) catch setupError(.environment, "out of memory");
+            break :run posix.runChildCaptureContained(gpa, list.items, &.{}, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation under the oracle");
+        }
+        break :run posix.runChildCaptureContained(gpa, argv, &.{
             .{ "TOY_STATE", state_abs },
             .{ contract.env.state_dir, state_abs },
             .{ contract.env.state_dir_alt, state_alt },
             .{ contract.env.trace_path, env_trace },
-            // Pinned empty so an ambient value in the operator's shell cannot
-            // become the first image's numbering base (R1; parseU32("") is 0).
+            // Pinned empty: see the oracle-path pairs above.
             .{ contract.env.seq_base, "" },
-            // Pinned empty for the same reason (#753): a carried mark in the operator's shell
-            // would refuse every run. Empty is how the shim reads "no mark".
             .{ contract.env.before_constructor, "" },
             .{ contract.env.observe, observe.name() },
-            // Pinned empty when there is no cgroup, for the reason `seq_base` is above (v17).
-            // The kill path is a world's alone, and pinned empty here for the same reason.
+            // Pinned empty where there is nothing to name: see the oracle-path pairs above.
             .{ contract.env.run_cgroup, containment.runName(cg) },
             .{ contract.env.kill_cgroup, "" },
             .{ contract.env.kill_aside, "" },
             .{ preload_var, preload },
-        };
-        for (pairs) |kv| {
-            list.append(arena, "-E") catch setupError(.environment, "out of memory");
-            const joined = std.fmt.allocPrint(arena, "{s}={s}", .{ kv[0], kv[1] }) catch setupError(.environment, "out of memory");
-            list.append(arena, joined) catch setupError(.environment, "out of memory");
-        }
-        for (argv) |a| list.append(arena, a) catch setupError(.environment, "out of memory");
-        return posix.runChildCaptureContained(gpa, list.items, &.{}, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation under the oracle");
-    }
-    return posix.runChildCaptureContained(gpa, argv, &.{
-        .{ "TOY_STATE", state_abs },
-        .{ contract.env.state_dir, state_abs },
-        .{ contract.env.state_dir_alt, state_alt },
-        .{ contract.env.trace_path, env_trace },
-        // Pinned empty: see the oracle-path pairs above.
-        .{ contract.env.seq_base, "" },
-        .{ contract.env.before_constructor, "" },
-        .{ contract.env.observe, observe.name() },
-        // Pinned empty where there is nothing to name: see the oracle-path pairs above.
-        .{ contract.env.run_cgroup, containment.runName(cg) },
-        .{ contract.env.kill_cgroup, "" },
-        .{ contract.env.kill_aside, "" },
-        .{ preload_var, preload },
-    }, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation");
+        }, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation");
+    };
+    if (supervise.handoverFailure(sup.finish(), term, "the run")) |why| unknown(.recording_run_failed, why, .environment);
+    return term;
 }
 
 /// `exclusive` because the caller unlinks the path immediately before this (#469):
@@ -2250,7 +2253,7 @@ fn phaseExploration(run: *Run) void {
         };
         // Every process of the world is dead by now; the supervising thread's account is
         // complete once it has been joined (#217).
-        wsup.finish();
+        if (supervise.handoverFailure(wsup.finish(), wterm, "a world's run")) |why| setupError(.environment, why);
         const term = wterm;
 
         var wtrace = refuse.readTraceOrRefuse(world_trace, trace_cap_world, "could not read a world trace");
@@ -3854,6 +3857,9 @@ test "the shipped engine options carry the shipped values (#365)" {
     // under the shipped name: slower, and the one measurement of WAIT_KILLABLE_RECV would
     // compare it with itself.
     try std.testing.expectEqual(@as(u32, 0), engine_build_options.supervise_reply_delay_ms);
+    // Not true in the shipped engine: an environment variable would then make its supervised
+    // hand-over fail.
+    try std.testing.expect(!engine_build_options.supervise_handover_fault);
 }
 
 test "the shipped trace caps fall back to the engine's constant (#365)" {
@@ -3868,11 +3874,11 @@ test "the shipped trace caps fall back to the engine's constant (#365)" {
     try std.testing.expectEqual(engine.max_trace_bytes_total, trace_budget_limit);
 }
 
-test "no seventh engine build option arrives unchecked (#365)" {
+test "no eighth engine build option arrives unchecked (#365)" {
     // The ratchet. Asserting five values says nothing about a SIXTH option arriving, and
     // the promise is universal: a `-Dtest-…` added later with no assertion above would
     // leave it false while CI stayed green. Pinning the count makes the next option fail
     // here until someone writes its line. Same instrument as the RestoreError arity pin
     const decls = @typeInfo(engine_build_options).@"struct".decl_names;
-    try std.testing.expectEqual(@as(usize, 6), decls.len);
+    try std.testing.expectEqual(@as(usize, 7), decls.len);
 }
