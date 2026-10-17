@@ -332,6 +332,13 @@
  *                     TOY_RUN2_MARK as TOY_UNLINKED_WRITE_RUN2 is.
  *   TOY_SPAWN_SETSID  posix_spawn setsid(1) over true with an empty environment: the process
  *                     that leaves the group never loads the shim, so only the oracle sees it.
+ *   TOY_SETSID        the subject itself calls setsid before rotating. It leads the group the
+ *                     engine made it, so the call fails, unless strace leads it (--oracle).
+ *   TOY_SETPGID_NOOP  the subject calls setpgid(0, 0), which moves nothing for a leader.
+ *   TOY_SETPGID_OUT   the subject itself joins the process group named by the value before
+ *                     rotating: no fork, so the move is the only boundary.
+ *   TOY_SETSID_THREAD TOY_SETSID from a second thread, whose tid is not the pid.
+ *                     All four append the call's result to TOY_ESCAPE_WITNESS.
  *
  * The three below walk out of the run's cgroup, into the engine's own, in an explored world
  * only: a world runs without an oracle, so the move itself is seen by nothing but the watch
@@ -557,7 +564,33 @@ static void *rotating_thread(void *arg) {
 
 /* Optional boundary behaviour, requested through the environment so one binary
  * can play both the supported and the unsupported target. */
+static void append_witness(const char *line);
+static void *setsid_thread(void *arg) {
+    char line[64];
+    (void)arg;
+    snprintf(line, sizeof line, "setsid-thread rc=%d\n", setsid() < 0 ? -1 : 0);
+    append_witness(line);
+    return NULL;
+}
 static void maybe_leave_the_supported_region(void) {
+    char line[96];
+    if (getenv("TOY_SETSID_THREAD")) {
+        pthread_t t;
+        if (pthread_create(&t, NULL, setsid_thread, NULL) == 0) pthread_join(t, NULL);
+    }
+    if (getenv("TOY_SETSID")) {
+        snprintf(line, sizeof line, "setsid rc=%d\n", setsid() < 0 ? -1 : 0);
+        append_witness(line);
+    }
+    if (getenv("TOY_SETPGID_NOOP")) {
+        snprintf(line, sizeof line, "setpgid-noop rc=%d\n", setpgid(0, 0));
+        append_witness(line);
+    }
+    if (getenv("TOY_SETPGID_OUT") && *getenv("TOY_SETPGID_OUT")) {
+        int rc = setpgid(0, (pid_t)atoi(getenv("TOY_SETPGID_OUT")));
+        snprintf(line, sizeof line, "setpgid-out rc=%d pgrp=%d\n", rc, (int)getpgrp());
+        append_witness(line);
+    }
     if (getenv("TOY_FORK")) {
         pid_t p = fork();
         if (p == 0) _exit(0);

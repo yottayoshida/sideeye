@@ -786,7 +786,11 @@ const Call = struct {
                 if (!readMem(self.tid, a[0], &fl)) break :blk self.boundary(.fork);
                 break :blk self.boundary(cloneClass(std.mem.readInt(u64, &fl, .little)));
             },
-            .setsid, .setpgid => self.boundary(.detached),
+            // Departs from the shim, which records a setsid that succeeded and a setpgid that moved a
+            // group: here the call has not run yet. Left unrecorded only when it certainly fails or
+            // certainly moves nothing; anything unread, another pid namespace's numbers, and a
+            // setpgid the kernel refuses for another reason are recorded — refused, never missed.
+            .setsid, .setpgid => if (detachMovesNothing(sys, a, self.pid, self.tid, ProcProbe{})) .@"continue" else self.boundary(.detached),
             else => .@"continue",
         };
     }
@@ -916,6 +920,58 @@ const Call = struct {
             unresolvable.* = true;
             return null;
         };
+    }
+};
+
+fn argPid(arg: u64) i32 {
+    return @bitCast(@as(u32, @truncate(arg)));
+}
+
+fn setsidFails(group_named_after_caller: E) bool {
+    return group_named_after_caller == .SUCCESS or group_named_after_caller == .PERM;
+}
+
+fn setpgidChangesNothing(pid_arg: i32, pgid_arg: i32, caller: i32, tid: i32, probe: anytype) bool {
+    if (pid_arg < 0 or pgid_arg < 0) return false;
+    if (!(pid_arg == 0 and pgid_arg == 0) and !probe.samePidNamespace(tid)) return false;
+    const subject = if (pid_arg == 0) caller else pid_arg;
+    const target = if (pgid_arg == 0) subject else pgid_arg;
+    const current = probe.of(subject) orelse return false;
+    return current == target;
+}
+
+// Not below 2: a pid misread as 1 or 0 would make kill(-pid, 0) ask about every process, or the
+// engine's own group, and either answers that a group exists.
+fn detachMovesNothing(sys: SYS, a: [6]u64, pid: i32, tid: i32, probe: anytype) bool {
+    if (pid <= 1) return false;
+    return switch (sys) {
+        .setsid => setsidFails(probe.groupNamedAfter(pid)),
+        .setpgid => setpgidChangesNothing(argPid(a[0]), argPid(a[1]), pid, tid, probe),
+        else => false,
+    };
+}
+
+const ProcProbe = struct {
+    fn groupNamedAfter(_: ProcProbe, pid: i32) E {
+        return linux.errno(linux.kill(-pid, @fromBackingInt(@intCast(0))));
+    }
+
+    fn samePidNamespace(_: ProcProbe, tid: i32) bool {
+        var pbuf: [64]u8 = undefined;
+        const p = std.mem.printSentinel(&pbuf, "/proc/{d}/ns/pid", .{tid}, 0) catch return false;
+        var theirs: [64]u8 = undefined;
+        var ours: [64]u8 = undefined;
+        const a = linux.readlink(p.ptr, &theirs, theirs.len);
+        if (linux.errno(a) != .SUCCESS) return false;
+        const b = linux.readlink("/proc/self/ns/pid", &ours, ours.len);
+        if (linux.errno(b) != .SUCCESS) return false;
+        return std.mem.eql(u8, theirs[0..a], ours[0..b]);
+    }
+
+    fn of(_: ProcProbe, pid: i32) ?i32 {
+        const rc = linux.syscall1(.getpgid, @as(usize, @bitCast(@as(isize, pid))));
+        if (linux.errno(rc) != .SUCCESS) return null;
+        return @intCast(rc);
     }
 };
 
@@ -1120,4 +1176,65 @@ test "a session answers y to a descriptor it took and n to a message that carrie
     var after: u8 = 0;
     try std.testing.expectEqual(@as(usize, 0), linux.read(refused.childFd(), @ptrCast(&after), 1));
     try std.testing.expectEqual(supervise.Handover.refused, refused.finish());
+}
+
+test "a setsid is recorded unless a group named after its caller exists, which is when the kernel refuses it" {
+    try std.testing.expect(setsidFails(.SUCCESS));
+    try std.testing.expect(setsidFails(.PERM));
+    try std.testing.expect(!setsidFails(.SRCH));
+    try std.testing.expect(!setsidFails(.INVAL));
+}
+
+test "a setpgid is left unrecorded only when it certainly moves no group" {
+    const leader: FakeProbe = .{ .pid = 40, .tid = 40, .named_group = .SUCCESS, .same_namespace = true, .group = 40 };
+    var elsewhere = leader;
+    elsewhere.same_namespace = false;
+    try std.testing.expect(setpgidChangesNothing(0, 0, 40, 40, elsewhere));
+    try std.testing.expect(setpgidChangesNothing(40, 40, 40, 40, leader));
+    try std.testing.expect(!setpgidChangesNothing(0, 77, 40, 40, leader));
+    try std.testing.expect(!setpgidChangesNothing(40, 40, 40, 40, elsewhere));
+    var unread = elsewhere;
+    unread.group = null;
+    try std.testing.expect(!setpgidChangesNothing(0, 0, 40, 40, unread));
+    var moved = elsewhere;
+    moved.group = 12;
+    try std.testing.expect(!setpgidChangesNothing(0, 0, 40, 40, moved));
+    var other = leader;
+    other.group = 41;
+    try std.testing.expect(!setpgidChangesNothing(41, 0, 40, 40, other));
+    try std.testing.expect(!setpgidChangesNothing(-1, 0, 40, 40, leader));
+}
+
+const FakeProbe = struct {
+    pid: i32,
+    tid: i32,
+    named_group: E,
+    same_namespace: bool,
+    group: ?i32,
+    fn groupNamedAfter(self: FakeProbe, pid: i32) E {
+        return if (pid == self.pid) self.named_group else .SRCH;
+    }
+    fn samePidNamespace(self: FakeProbe, tid: i32) bool {
+        return tid == self.tid and self.same_namespace;
+    }
+    fn of(self: FakeProbe, pid: i32) ?i32 {
+        return if (pid == self.pid) self.group else null;
+    }
+};
+
+test "the detach decision asks about the calling process, not its thread, and reads a numbered setpgid only in the engine's pid namespace" {
+    const none = [_]u64{ 0, 0, 0, 0, 0, 0 };
+    const leader: FakeProbe = .{ .pid = 40, .tid = 41, .named_group = .SUCCESS, .same_namespace = true, .group = 40 };
+    try std.testing.expect(detachMovesNothing(.setsid, none, 40, 41, leader));
+    try std.testing.expect(detachMovesNothing(.setpgid, none, 40, 41, leader));
+    const numbered = [_]u64{ 40, 40, 0, 0, 0, 0 };
+    try std.testing.expect(detachMovesNothing(.setpgid, numbered, 40, 41, leader));
+    var elsewhere = leader;
+    elsewhere.same_namespace = false;
+    try std.testing.expect(!detachMovesNothing(.setpgid, numbered, 40, 41, elsewhere));
+    try std.testing.expect(detachMovesNothing(.setpgid, none, 40, 41, elsewhere));
+    var free = leader;
+    free.named_group = .SRCH;
+    try std.testing.expect(!detachMovesNothing(.setsid, none, 40, 41, free));
+    try std.testing.expect(!detachMovesNothing(.setsid, none, 1, 1, FakeProbe{ .pid = 1, .tid = 1, .named_group = .SUCCESS, .same_namespace = true, .group = 1 }));
 }
