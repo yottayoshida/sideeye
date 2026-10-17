@@ -8764,6 +8764,44 @@ else
     fails=$((fails + 1))
 fi
 
+if nm -D --undefined-only "$OUT/toy-fortify" 2>/dev/null | grep -q "__open_2"; then
+    echo "ok   toy-fortify reaches __open_2"
+else
+    echo "FAIL toy-fortify does not import __open_2: the compiler folded its flags, and no leg below reaches a fortified open"
+    fails=$((fails + 1))
+fi
+for fo in "rotate:--observe wrappers" "rotate:--observe syscalls" "sweep:--observe wrappers" \
+    "sweep:--observe syscalls" "sweep-range:--observe wrappers"; do
+    fo_cmd=${fo%%:*}
+    fo_mode=${fo#*:}
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-fortify init" --operation "$OUT/toy-fortify $fo_cmd" \
+        --shim "$SHIM" --work /tmp/acc/work $fo_mode --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if [ "$rc" = 1 ] && printf '%s\n' "$o" | grep -q "^oracle  *agreed on"; then
+        echo "ok   a fortified rewrite ($fo) is counted, and the oracle agrees: FAIL"
+    else
+        echo "FAIL a fortified rewrite ($fo): exit $rc, wanted FAIL with the oracle agreeing"
+        printf '%s\n' "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    fi
+done
+for fo_cmd in sweep-lowlimit spawn-lowlimit; do
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-fortify init" --operation "$OUT/toy-fortify $fo_cmd" \
+        --shim "$SHIM" --work /tmp/acc/work --allow-unverified 2>&1)
+    rc=$?
+    if refused_uncredited unresolvable_path "$rc" "$o"; then
+        echo "ok   a sweep whose trace cannot go back on its number ($fo_cmd) refuses"
+    else
+        echo "FAIL a sweep whose trace cannot go back on its number ($fo_cmd): exit $rc, wanted the refusal"
+        printf '%s\n' "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    fi
+done
+
 # Descriptors that are provably not files — eventfd and epoll stat with zero type
 # bits, the kernel's anon-inode spelling — must be invisible to the verdict. Before
 # fdKind knew that spelling, one close() of an eventfd sent the whole run to

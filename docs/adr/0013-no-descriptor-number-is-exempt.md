@@ -140,3 +140,34 @@ sequences are unchanged.
 - Saved cases recorded under v7 must be re-recorded; the CI-resident regression
   case planned in #82 should be captured only after this lands.
 - Chatty targets pay a per-write resolution cost on standard descriptors.
+- **Amended 2026-10-17 (#900): a sweep through libc's `closefrom` or `close_range` no longer
+  ends observation.** Both are libc entry points the shim can interpose, as it does `close`, and
+  CPython's subprocess calls `close_range(3, ~0U, 0)` in every child before its exec — refusing
+  on it, as `close` does, would have refused every target that starts a Python subprocess, and a
+  `vfork` child that wrote the shared `trace_fd` would have silenced its parent. The shim now
+  lets the call run, then asks whether its own descriptors (the trace, `cgroup.kill`, the
+  step-aside) were closed; for each that was, it opens the same file again from the name kept at
+  `init` and puts it back on the **old** number with `dup3`. A process that shares this memory
+  without owning the slot table — a `vfork` child — never writes these numbers, whatever happens:
+  its parent's descriptors were not swept, and a -1 written by the child would silence them. The
+  trace is opened without `O_CREAT` and must be the same inode `init` opened; when it is not, when
+  the trace sits below the relocation floors (a number the target's next open may take), when its
+  number is open again on another file (the target's now, never overwritten), when the `dup3`
+  fails (the target lowered `RLIMIT_NOFILE`'s soft value below the number), or when the reopen
+  fails, the channel is given up as before, the death written through the reopened file whenever
+  it is the trace. The death goes through a buffer of its own, never the thread's record buffer,
+  so a sweep from a signal handler is handled like any other. A process with another live thread
+  writes the death after reopening, since what that thread lost while the channel was gone cannot
+  be told from what it never did; a thread that has exited holds its slot still and is not
+  counted. A reopen that fails leaves no death, as a closed trace did before. Two windows stay
+  open without a lock the shim cannot take: another thread that takes the number between the
+  check and the `dup3` has its descriptor replaced by the trace (its process is refused, since
+  that thread is alive); and a `vfork` child whose number now holds another file leaves the
+  shared number alone, so its own records until its exec land in that file (its run is refused
+  by the death it wrote). `cgroup.kill` and the step-aside descriptor are put back the same way,
+  never below the relocation floors. The reopen is a second open of the trace by name, the
+  exposure the comment in `init` describes — the same one every exec'd image already takes.
+  `close(2)` of the relocated number still refuses as decided above, and a raw `close_range(2)`
+  syscall is still outside the guard. The fortified opens glibc substitutes for `open` and
+  `openat` under `_FORTIFY_SOURCE` (`__open_2`, `__open64_2`, `__openat_2`, `__openat64_2`) are
+  interposed in the same change.
