@@ -511,6 +511,22 @@ else
     echo "$o" | sed 's/^/     | /' | head -4
     fails=$((fails + 1))
 fi
+printf '%s\n' 'import os, subprocess' 'for _ in range(70):' '    try: subprocess.run(["no-such-tool-sideeye"])' \
+    '    except FileNotFoundError: pass' 'open(os.environ["TOY_STATE"] + "/out.txt", "w").write("done\n")' > /tmp/acc-missing.py
+for vm_op in "$OUT/toy-vfork-many missing 70" "python3 /tmp/acc-missing.py"; do
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-vfork-many init" --operation "$vm_op" \
+        --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if { [ "$rc" = "0" ] || [ "$rc" = "1" ]; } && ! printf '%s\n' "$o" | grep -q "thread-slots-exhausted"; then
+        echo "ok   seventy vfork children whose every exec fails are judged: $vm_op (exit $rc)"
+    else
+        echo "FAIL seventy vfork children whose every exec fails: $vm_op: exit $rc, wanted a verdict"
+        echo "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    fi
+done
 
 echo ""
 echo "=========== check 2st: what the shim takes from a target thread's memory (#555) ==========="
