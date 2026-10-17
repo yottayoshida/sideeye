@@ -6,7 +6,7 @@
 # Three claims, in the order they were designed, each with its own reason for not passing by
 # accident:
 #
-#   1. THE MATRIX. Seven fixtures, and the four impact fields — pre_existing,
+#   1. THE MATRIX. The fixtures, and the four impact fields — pre_existing,
 #      old_bytes_elsewhere, declared_scratch, checker_failed — take different values across
 #      them. Asserted as a table written here before the runs, so an implementation that
 #      hard-codes any single answer fails at least two rows. The check refuses a matrix with
@@ -80,6 +80,7 @@ mkchecker check-marker.sh  'grep -q ok "$SIDEEYE_STATE_DIR/MARKER.txt" || { echo
 # equality test alone accepts the corrupted state and the gate refuses the run before any
 # world (measured, first run of this fixture).
 mkchecker check-evil.sh    'for f in "$SIDEEYE_STATE_DIR"/*; do grep -q Rewritten "$f" || grep -q Original "$f" || { echo "FAIL: a file holds neither generation"; exit 1; }; done'
+mkchecker check-silent.sh  'grep -q Rewritten "$SIDEEYE_STATE_DIR/README.md" || grep -q Original "$SIDEEYE_STATE_DIR/README.md" || exit 1'
 mkchecker check-pair.sh    'a=$(cat "$SIDEEYE_STATE_DIR/a.txt"); b=$(cat "$SIDEEYE_STATE_DIR/b.txt"); case "$a" in gen1|gen2) ;; *) echo "FAIL: a.txt holds no known generation"; exit 1 ;; esac; [ "$a" = "$b" ] || { echo "FAIL: a.txt is $a but b.txt is $b"; exit 1; }'
 
 # One fixture: set up its state, explore it, and leave the bundle path in $BUNDLE.
@@ -91,7 +92,7 @@ run_fixture() { # name, mode, checker, extra-args...
     wk="$SCRATCH/$name/work"
     mkdir -p "$st" "$wk"
     case "$name" in
-        truncate|backup|marker) printf 'Original\n' > "$st/README.md" ;;
+        truncate|backup|marker|silent) printf 'Original\n' > "$st/README.md" ;;
         empty)   : > "$st/README.md"; printf 'Original\n' > "$st/DATA.txt" ;;
         scratch) mkdir -p "$st/cache"; printf 'Original\n' > "$st/cache/data" ;;
         twofile) printf 'gen1\n' > "$st/a.txt"; printf 'gen1\n' > "$st/b.txt" ;;
@@ -114,8 +115,9 @@ run_fixture scratch   scratch   check-cache.sh  --scratch cache
 run_fixture marker    truncate  check-marker.sh
 run_fixture twofile   twofile   check-pair.sh
 run_fixture evilname  evilname  check-evil.sh
+run_fixture silent    truncate  check-silent.sh
 
-for f in truncate backup empty scratch marker twofile evilname; do
+for f in truncate backup empty scratch marker twofile evilname silent; do
     b="$SCRATCH/$f/work/evidence/000001.json"
     if [ ! -f "$b" ]; then
         bad "fixture $f wrote no bundle; its report says:"
@@ -155,6 +157,7 @@ MATRIX = {
     # neutralising happens on the way to the terminal, not on the way into the record, so
     # this row is also the assertion that the JSON side did not quietly rewrite it.
     "evilname": [("ev\n## Forged\n\x1b[31m.md", True, "no", False, True)],
+    "silent":   [("README.md",  True,  "no",             False, True)],
 }
 
 seen = []
@@ -217,6 +220,14 @@ for name in MATRIX:
     if b["recovery"]["result"] != "not_configured":
         problems.append(f"{name}: recovery is {b['recovery']['result']!r}, expected not_configured")
 
+# `truncate` is the same checker with its line, so the two differ only in what it said.
+diag = {n: json.loads((scratch / n / "work" / "evidence" / "000001.json").read_text())["checker"]["diagnostic"]
+        for n in ("silent", "truncate")}
+if diag["silent"] != "":
+    problems.append(f"silent: the checker printed nothing and its diagnostic is {diag['silent']!r}, expected ''")
+if diag["truncate"] != "FAIL: README.md holds neither generation":
+    problems.append(f"truncate: diagnostic is {diag['truncate']!r}")
+
 for p in problems:
     print(f"     {p}")
 sys.exit(1 if problems else 0)
@@ -224,7 +235,7 @@ PY
 
 # Claim 3, on the rendered document rather than on the JSON: the rank the bundle must not
 # carry is a thing a reader sees, and rendering is where one would be introduced.
-for f in truncate backup empty scratch marker twofile evilname; do
+for f in truncate backup empty scratch marker twofile evilname silent; do
     md=$("$SIDEEYE" evidence "$SCRATCH/$f/work/cases/000001.json") || {
         bad "rendering $f's bundle failed"
         continue
@@ -258,6 +269,12 @@ for f in truncate backup empty scratch marker twofile evilname; do
         bad "$f's rendered bundle does not carry exactly the eight sections; it has:"
         printf '%s\n' "$got" | sed 's/^/       | /'
     fi
+    case "$f:$md" in
+        silent:*"could not be read back"*) bad "silent's rendered bundle calls a checker that printed nothing unreadable" ;;
+        silent:*"It printed nothing"*) ;;
+        silent:*) bad "silent's rendered bundle does not say the checker printed nothing" ;;
+        truncate:*"It printed nothing"*) bad "truncate's rendered bundle says its checker printed nothing" ;;
+    esac
 done
 
 # `--help` reaches the usage banner rather than the file reader. It is checked because the
@@ -279,7 +296,7 @@ else
 fi
 
 if [ "$fails" -eq 0 ]; then
-    echo "ok   the evidence bundle's seven fixtures split every impact field, agree with the case and the report, forge no section from a file name, and rank nothing"
+    echo "ok   the evidence bundle's fixtures split every impact field, agree with the case and the report, forge no section from a file name, rank nothing, and tell a silent checker from an unreadable one"
     exit 0
 fi
 echo "FAIL evidence bundle: $fails"

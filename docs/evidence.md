@@ -39,7 +39,7 @@ UNKNOWN, a verdict, and this command produces none ([docs/contract-freeze.md](co
 | Consequence | every path whose before / completed / crashed state differs, with its kind and size in each |
 | Where it was interrupted | the operation that completed and the one that never ran, either side of the crash point |
 | Built-in invariant | which layer judged it, the subject, and what was seen — the same three strings the report's `earliest` carries |
-| Checker | whether the declared checker rejected this world, and its last output line |
+| Checker | whether the declared checker rejected this world, and its last output line, up to its first 400 bytes — or that it printed none |
 | Reproducing it | the `sideeye replay` command and the saved case's path, and that the same replay with `--leave-crash-state` ends with the state directory holding this kill's state when its report says `crash_state_left: true` |
 | Recovery | `not configured`, or — when the define declared a recovery (#606, ADR 0072) — `pass`, `fail` or `unknown`: what the tool's own recovery did when handed this exhibit's crash state, with a caveat, on `pass` and `fail`, that the rebuilt state carried restore-time timestamps (since #678 it carries the crash's permission bits, a directory with its owner's bits added; not set-id or sticky bits) (not on `unknown`, which may be a recovery that never ran). The value, not a new field: `evidence_version` stays 1 |
 | What this did and did not establish | the run's own observation caveats |
@@ -135,9 +135,15 @@ since #707, which also distinguishes them from the falsification gate's, prefixe
 since #134. The file keeps the checker's own bytes, unmarked, and holds whichever world ran last, which is the un-killed baseline; the exhibit's own last
 line is in the bundle, read in the world that produced it, and that is the copy worth keeping.
 
-If the capture cannot be opened, the checker still runs — the verdict rests on its exit
-status, which is unaffected — and the bundle's checker diagnostic is reported as unreadable.
-An attachment does not turn a FAIL into an UNKNOWN.
+If the capture cannot be opened, the checker still runs — the verdict rests on its exit status,
+which is unaffected. A capture that could not be opened or read back, or that holds more than
+1 MiB, is reported as unreadable (`"diagnostic": null`); an attachment does not turn a FAIL into an
+UNKNOWN. A checker that printed nothing, or only blank lines, was read, so it is not unreadable:
+the diagnostic is `""` and the Markdown says the checker printed nothing. The line quoted is the
+last one that holds any text, kept up to its first 400 bytes after control bytes are made
+visible, and the Markdown says so. A bundle written by a release before this distinction carries
+`null` for both, and its Markdown still calls that unreadable; `sideeye_evidence` says nothing
+about a `null` for that reason.
 
 ## What it will not do
 
