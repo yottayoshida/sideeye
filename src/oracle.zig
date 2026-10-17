@@ -67,7 +67,27 @@ const path_syscalls = [_]PathSpec{
     .{ .name = "symlink", .args = &.{.{ .dirfd = null, .path = 1 }} },
     .{ .name = "rename", .args = &.{ .{ .dirfd = null, .path = 0 }, .{ .dirfd = null, .path = 1 } } },
     .{ .name = "link", .args = &.{ .{ .dirfd = null, .path = 0 }, .{ .dirfd = null, .path = 1 } } },
+    // Not scoped by `touchesStateDir` like the rest of the unnamed calls: it sees absolute
+    // strings only, and a relative attribute write would be judged instead of refused.
+    .{ .name = "setxattr", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "lsetxattr", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "removexattr", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "lremovexattr", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "setxattrat", .args = &.{.{ .dirfd = 0, .path = 1 }} },
+    .{ .name = "removexattrat", .args = &.{.{ .dirfd = 0, .path = 1 }} },
 };
+
+const xattr_writes = [_][]const u8{
+    "setxattr",    "lsetxattr",    "fsetxattr",    "setxattrat",
+    "removexattr", "lremovexattr", "fremovexattr", "removexattrat",
+};
+
+fn isXattrWrite(name: []const u8) bool {
+    for (xattr_writes) |x| {
+        if (std.mem.eql(u8, x, name)) return true;
+    }
+    return false;
+}
 
 fn pathSpec(name: []const u8) ?PathSpec {
     for (path_syscalls) |s| {
@@ -1353,6 +1373,9 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // the v15 rule, and the stores through the mapping ride a PASS.
             if (is_shared_write_map and out.unsupported == null)
                 out.unsupported = try arena.dupe(u8, contract.shared_map_refusal.writable);
+            // Refused, not only counted as a touch, for the same reason.
+            if (isXattrWrite(name) and out.unsupported == null)
+                out.unsupported = try arena.dupe(u8, name);
             if (cloneKind(name, line)) |kind| {
                 if (cloneIntoState(line, state_dir, state_alt)) try noteClone(arena, kind, line, pid, &pending_clones, &out);
             }
@@ -2434,12 +2457,54 @@ test "extended-attribute reads, inotify_add_watch, preadv and the polls are read
         const child = try std.fmt.allocPrint(a, "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242\n4242  {s}\n", .{c.line});
         const q = try parse(a, child, "/tmp/s", "", "/work");
         try std.testing.expectEqual(@as(usize, 1), q.children);
-        try std.testing.expectEqual(@as(?[]const u8, null), q.unsupported);
-        if (!q.childTouched()) {
-            std.debug.print("{s}: a child's write was let through\n", .{c.what});
+        if (q.unsupported == null or !std.mem.eql(u8, q.unsupported.?, name) or !q.childTouched()) {
+            std.debug.print("{s}: a child's write was not refused\n", .{c.what});
             return error.TestUnexpectedResult;
         }
     }
+}
+
+test "an extended-attribute write refuses through a relative path as it does through an absolute one" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const Case = struct { what: []const u8, lines: []const u8, refused: ?[]const u8 };
+    const cases = [_]Case{
+        .{ .what = "setxattr, relative to the cwd", .refused = "setxattr", .lines = "42    setxattr(\"s/key.json\", \"user.k\", \"1\", 1, 0) = 0\n" },
+        .{ .what = "lsetxattr, relative to the cwd", .refused = "lsetxattr", .lines = "42    lsetxattr(\"s/key.json\", \"user.k\", \"1\", 1, 0) = 0\n" },
+        .{ .what = "removexattr, relative to the cwd", .refused = "removexattr", .lines = "42    removexattr(\"s/key.json\", \"user.k\") = 0\n" },
+        .{ .what = "lremovexattr, relative to the cwd", .refused = "lremovexattr", .lines = "42    lremovexattr(\"s/key.json\", \"user.k\") = 0\n" },
+        .{ .what = "setxattrat through AT_FDCWD", .refused = "setxattrat", .lines = "42    setxattrat(AT_FDCWD</tmp>, \"s/key.json\", 0, \"user.k\", {value=\"1\", size=1, flags=0}, 16) = 0\n" },
+        .{ .what = "removexattrat through AT_FDCWD", .refused = "removexattrat", .lines = "42    removexattrat(AT_FDCWD</tmp>, \"s/key.json\", 0, \"user.k\") = 0\n" },
+        .{ .what = "setxattrat through a directory descriptor in the state", .refused = "setxattrat", .lines = "42    setxattrat(5</tmp/s>, \"key.json\", 0, \"user.k\", {value=\"1\", size=1, flags=0}, 16) = 0\n" },
+        .{ .what = "setxattr relative to a cwd the subject moved into the state", .refused = "setxattr", .lines = "42    chdir(\"/tmp/s\") = 0\n42    setxattr(\"key.json\", \"user.k\", \"1\", 1, 0) = 0\n" },
+        .{ .what = "control: setxattr relative to the cwd, outside the state", .refused = null, .lines = "42    setxattr(\"other/x\", \"user.k\", \"1\", 1, 0) = 0\n" },
+        .{ .what = "control: setxattr on an absolute path outside the state", .refused = null, .lines = "42    setxattr(\"/etc/x\", \"user.k\", \"1\", 1, 0) = 0\n" },
+        .{ .what = "control: the cwd moved out of the state before a relative write", .refused = null, .lines = "42    chdir(\"/tmp/s\") = 0\n42    chdir(\"..\") = 0\n42    setxattr(\"key.json\", \"user.k\", \"1\", 1, 0) = 0\n" },
+    };
+    for (cases) |c| {
+        const text = try std.fmt.allocPrint(a, "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n{s}", .{c.lines});
+        const p = try parse(a, text, "/tmp/s", "", "/tmp");
+        if (c.refused) |r| {
+            std.testing.expectEqualStrings(r, p.unsupported orelse "(none)") catch |e| {
+                std.debug.print("case: {s}\n", .{c.what});
+                return e;
+            };
+        } else if (p.unsupported) |u| {
+            std.debug.print("case: {s} refused as {s}\n", .{ c.what, u });
+            return error.TestUnexpectedResult;
+        }
+    }
+    const child = "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242\n4242  setxattr(\"s/key.json\", \"user.k\", \"1\", 1, 0) = 0\n";
+    const q = try parse(a, child, "/tmp/s", "", "/tmp");
+    try std.testing.expectEqualStrings("setxattr", q.unsupported orelse "(none)");
+    try std.testing.expect(q.childTouched());
+    const child_outside = "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242\n4242  setxattr(\"/etc/x\", \"user.k\", \"1\", 1, 0) = 0\n";
+    const r = try parse(a, child_outside, "/tmp/s", "", "/tmp");
+    try std.testing.expectEqual(@as(?[]const u8, null), r.unsupported);
+    const no_cwd = "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    setxattr(\"s/key.json\", \"user.k\", \"1\", 1, 0) = 0\n";
+    const u = try parse(a, no_cwd, "/tmp/s", "", "");
+    try std.testing.expectEqualStrings("setxattr", u.unsupported orelse "(none)");
 }
 
 test "both of strace's -f pid prefixes are stripped" {
