@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **The platform table says what three real macOS workflows get from the current release** (#929; `docs/cli.md`, `spike/macos-shapes-929/`, `.github/workflows/spike-macos-shapes.yml`). Measured with v1.15.0 on macOS 14.8.9 and 26.6.2: GNU sed's in-place edit passes only with `--allow-unverified`, because the macOS witness refuses `fstat64_extended`, an attribute read it does not model (#963); a tool that starts helpers (`git gc`) is refused at its process boundary; an Apple platform binary (`plutil`) does not load the shim, and on macOS 14 and 26 its refusal names the wrong limit (#964). The selection was committed before the first run, and the first run, whose measure script skipped the witness, is kept beside the one the table reads.
 - **The CI quickstart and the MCP container pin v1.15.0** (`docs/ci-quickstart.md`, `.github/workflows/quickstart-release.yml`, `docs/mcp-container/Dockerfile`; the Homebrew tap's formula, in its own repository). The release lane installs the published v1.15.0 asset, and the container fetches it, with the two Linux digests GitHub recorded for it, written by `spike/release_pins.py pin v1.15.0 --tap`, which also moved the formula's three URLs and digests. The pins move after the release because both download the asset. With the container on v1.15.0, its MCP server folds a replayed case's path, apparatus and replay line, so no line under the counted region is the target's (#902).
 
 ### Fixed

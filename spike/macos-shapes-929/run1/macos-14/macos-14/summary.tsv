@@ -1,0 +1,12 @@
+sed-control	the checker fails the broken state, as it must
+sed-preflight	exit 0	2s	PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+sed-preflight-oracle	not run: the preflight did not accept the recording
+sed-preflight-unverified	exit 0	0s	PASS  4/4 explored worlds satisfied the built-in atomicity invariant
+git-control	the checker fails the broken state, as it must
+git-preflight	exit 2	1s	UNKNOWN  boundary_without_oracle
+git-preflight-oracle	not run: the preflight did not accept the recording
+git-preflight-unverified	exit 3	0s	SETUP ERROR  --setup exited 1; its last output line was: nothing to commit, working tree clean (all of it is in /var/folders/s6/5hzmn6lx4dz5nxs7k_0slzph0000gn/T//shapes-git-HXR2vM/u/setup-output-21970.txt)
+plutil-control	the checker fails the broken state, as it must
+plutil-preflight	exit 2	0s	UNKNOWN  recording_run_failed
+plutil-preflight-oracle	not run: the preflight did not accept the recording
+plutil-preflight-unverified	exit 2	0s	UNKNOWN  recording_run_failed
