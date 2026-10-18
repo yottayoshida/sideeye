@@ -1464,7 +1464,10 @@ static int cmd_rotate_body(void) {
         struct timespec ts;
         clock_gettime(CLOCK_MONOTONIC, &ts);
         char line[128];
-        int len = snprintf(line, sizeof line, "append pid=%d t=%ld.%09ld\n",
+        /* Not %d or %ld: a pid or a clock second one digit longer in a world can cross an
+         * 8-byte boundary, add a write and move every later operation's number, so the
+         * world's crash point lands elsewhere. */
+        int len = snprintf(line, sizeof line, "append pid=%010d t=%012ld.%09ld\n",
                            (int)getpid(), (long)ts.tv_sec, (long)ts.tv_nsec);
         for (int off = 0; off < len; off += 8) {
             int chunk = len - off < 8 ? len - off : 8;

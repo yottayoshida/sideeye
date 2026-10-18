@@ -1928,13 +1928,15 @@ try:
 except OSError:
     print(0); raise SystemExit
 want = int(sys.argv[2])
+suffix = sys.argv[3].encode() if len(sys.argv) > 3 else b""
 i, n = 12, 0
 while i + 22 <= len(b):
-    op, seq, pid, tid, plen = struct.unpack_from("<HIIQI", b, i); i += 22 + plen
+    op, seq, pid, tid, plen = struct.unpack_from("<HIIQI", b, i)
+    path = b[i + 22:i + 22 + plen]; i += 22 + plen
     if i + 4 > len(b): break
     (alen,) = struct.unpack_from("<I", b, i); i += 4 + alen
-    if op == want: n += 1
-print(n)' "$1" "$2"; }
+    if op == want and path.endswith(suffix): n += 1
+print(n)' "$@"; }
 
 field() { python3 -c 'import json,sys
 d=json.load(open(sys.argv[1]))
@@ -3607,6 +3609,17 @@ if [ "$rc" = "0" ] && echo "$o" | grep -qF "1 path(s) judged pre-or-post; 1 file
 else
     echo "FAIL append toy: exit $rc (wanted PASS naming exactly log.txt under the history form)"
     echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+append_writes=$(count_op_records /tmp/acc/work/trace-record.bin 2 /log.txt)
+mkdir -p /tmp/acc/fmt
+TOY_STATE=/tmp/acc/fmt TOY_APPEND=1 "$OUT/toy-fixed" init >/dev/null 2>&1
+TOY_STATE=/tmp/acc/fmt TOY_APPEND=1 "$OUT/toy-fixed" rotate >/dev/null 2>&1
+append_line=$(tail -n 1 /tmp/acc/fmt/log.txt 2>/dev/null)
+if [ "$append_writes" = 6 ] && printf '%s\n' "$append_line" | grep -qE '^append pid=[0-9]{10} t=[0-9]{12}\.[0-9]{9}$'; then
+    echo "ok   the append toy's line is fixed-width (pid, seconds and nanoseconds zero-padded), written in 6 writes"
+else
+    echo "FAIL append toy: ${append_writes:-no} write(s) to log.txt in the recording (wanted 6), line [$append_line]: a field that grows a digit moves the world's crash point"
     fails=$((fails + 1))
 fi
 # DESIGN §13: the JSON carries the same claim, and the untested set widened with it.
