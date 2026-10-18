@@ -1,0 +1,15 @@
+UNKNOWN  unsupported_syscall_observed
+         fs_usage reported a call on the state directory that this version does not model: 05:18:09.027976  fstat64_extended  F=3                                                                                                                                                                                        0.000003   gsed.6341
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+cwd         /Users/runner/work/sideeye/sideeye  (none declared: Sideeye's own)
+
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   not established: no boundary was recorded by the shim, and the fs_usage account was not read
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=61793d42fb4ca93fb946777b7d82e386daf1ef29a063476e454d37974878b3d8;

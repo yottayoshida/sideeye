@@ -47,7 +47,6 @@ shape() {   # shape <name> <operation> <setup> <check>
     st=$root/$name/st
     ctl=$root/$name/control
     rm -rf "$root/$name" && mkdir -p "$st" "$ctl"
-    # The control: the setup's state, broken by hand, must fail the checker before any verdict counts.
     SIDEEYE_STATE_DIR=$ctl sh -c "$setup" > "$out/$name-control.txt" 2>&1
     sh "$here/$name/break.sh" "$ctl" >> "$out/$name-control.txt" 2>&1
     if SIDEEYE_STATE_DIR=$ctl sh -c "$check" >> "$out/$name-control.txt" 2>&1; then
@@ -57,7 +56,7 @@ shape() {   # shape <name> <operation> <setup> <check>
     fi
     w=$(mktemp -d "${TMPDIR:-/tmp}/shapes-$name-XXXXXX")
     # preflight takes no --oracle-fs-usage, so on macOS it cannot accept a process boundary; the
-    # oracle's explore runs either way, and summary.tsv says whether #929's protocol reached it.
+    # oracle's explore runs either way.
     timed "$name-preflight" "$se" preflight --twice --state "$st" --setup "$setup" --operation "$op" \
         --work "$w/p" --json "$out/$name-preflight.json"
     if grep -q "recording accepted" "$out/$name-preflight.txt"; then

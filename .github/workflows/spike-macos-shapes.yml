@@ -6,8 +6,6 @@
 name: spike-macos-shapes
 on:
   workflow_dispatch:
-  push:
-    branches: [measure/b_f5521c0b8c8f-macos]
 permissions:
   contents: read
 env:
@@ -33,11 +31,13 @@ jobs:
 
       - name: Measure
         env:
-          GH_TOKEN: ${{ github.token }}
+          TOKEN: ${{ github.token }}
           LABEL: ${{ matrix.runner }}
         run: |
+          set -o pipefail
           o=spike/macos-shapes-929/out; mkdir -p "$o"
-          bin=$(sh docs/ci-quickstart/release/install-sideeye.sh "$SIDEEYE_VERSION" "$RUNNER_TEMP/sideeye" 2> "$o/install-$LABEL.txt")
+          bin=$(GH_TOKEN=$TOKEN sh docs/ci-quickstart/release/install-sideeye.sh "$SIDEEYE_VERSION" "$RUNNER_TEMP/sideeye" 2> "$o/install-$LABEL.txt")
+          unset TOKEN
           sh spike/macos-shapes-929/measure.sh "$bin" "$o" "$LABEL" 2>&1 | tee "$o/runner-$LABEL.txt"
 
       - name: Keep the record
