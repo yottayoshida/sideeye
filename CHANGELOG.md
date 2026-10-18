@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **The CI quickstart and the MCP container pin v1.15.0** (`docs/ci-quickstart.md`, `.github/workflows/quickstart-release.yml`, `docs/mcp-container/Dockerfile`; the Homebrew tap's formula, in its own repository). The release lane installs the published v1.15.0 asset, and the container fetches it, with the two Linux digests GitHub recorded for it, written by `spike/release_pins.py pin v1.15.0 --tap`, which also moved the formula's three URLs and digests. The pins move after the release because both download the asset. With the container on v1.15.0, its MCP server folds a replayed case's path, apparatus and replay line, so no line under the counted region is the target's (#902).
 
+### Fixed
+
+- **Under `--observe supervised`, a close is recorded as the other modes record it** (#932; `src/supervise_linux.zig`, `spike/acceptance.sh`, `spike/mode-agreement.py`, `spike/mode-agreement.tsv`). The supervising engine recorded a close of an unlinked state file as a plain close, where the shim records it as an unlinked-descriptor placement, and recorded nothing for a close of a descriptor whose path it could not read, where the shim refuses the run. It now closes through the same path as its other descriptor operations, so a supervised run that closes such a descriptor is refused as a run under the default mode is. Acceptance check 2ma records seventeen toy behaviours under every mode a job can run and fails on any difference `spike/mode-agreement.tsv` does not allow; it found this one.
+
 ## [1.15.0] - 2026-10-18
 
 ### Changed

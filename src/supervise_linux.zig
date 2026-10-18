@@ -778,7 +778,7 @@ const Call = struct {
                 break :blk self.note2(.link, fdOf(a[0]), a[1], fdOf(a[2]), a[3]);
             },
             .symlinkat => self.note1(.symlink, fdOf(a[1]), a[2]),
-            .close => self.noteClose(fdOf(a[0])),
+            .close => self.noteFd(.close, fdOf(a[0])),
             .execve, .execveat => self.exec(),
             .clone => self.boundary(cloneClass(a[0])),
             .clone3 => blk: {
@@ -808,19 +808,6 @@ const Call = struct {
         self.t.boundary(.exec, self.pid, self.tid);
         self.t.announce(self.pid, self.tid);
         return .@"continue";
-    }
-
-    fn noteClose(self: *Call, fd: i32) Answer {
-        if (fd < 0) return .@"continue";
-        var deleted = false;
-        switch (fdKind(self.tid, fd, &deleted)) {
-            .non_path, .unresolvable => return .@"continue",
-            .path_backed => {},
-        }
-        var link_deleted = false;
-        const p = fdPath(&self.t.path_a, self.tid, fd, &link_deleted) orelse return .@"continue";
-        if (!self.stillValid()) return .@"continue";
-        return self.t.observe(.close, self.pid, self.tid, p, "");
     }
 
     fn noteFd(self: *Call, op: contract.OpClass, fd: i32) Answer {
