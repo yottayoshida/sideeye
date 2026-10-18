@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **The CI quickstart and the MCP container pin v1.15.0** (`docs/ci-quickstart.md`, `.github/workflows/quickstart-release.yml`, `docs/mcp-container/Dockerfile`; the Homebrew tap's formula, in its own repository). The release lane installs the published v1.15.0 asset, and the container fetches it, with the two Linux digests GitHub recorded for it, written by `spike/release_pins.py pin v1.15.0 --tap`, which also moved the formula's three URLs and digests. The pins move after the release because both download the asset. With the container on v1.15.0, its MCP server folds a replayed case's path, apparatus and replay line, so no line under the counted region is the target's (#902).
+
 ## [1.15.0] - 2026-10-18
 
 ### Changed
