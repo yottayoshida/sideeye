@@ -4687,6 +4687,85 @@ else
     fails=$((fails + 1))
 fi
 
+echo "=========== check 2ma: the observation modes keep one account of the same toy (#932) ==========="
+if [ "$(uname -s)" = "Linux" ]; then
+    case "${SIDEEYE_EXPECT_CONTAINED:-}" in
+        1) ma_modes="wrappers syscalls supervised" ;;
+        *) ma_modes="wrappers syscalls"
+           echo "     supervised not compared here: runs are not contained (SIDEEYE_EXPECT_CONTAINED=${SIDEEYE_EXPECT_CONTAINED:-unset}); the contained jobs compare it" ;;
+    esac
+    ma_arch=$(uname -m)
+    # Not one oracle setting for every toy: without one a fork or exec is refused, and with
+    # strace leading a setsid succeeds, which hides the detachment a mode might wrongly record.
+    # name|oracle|where|a record the toy exists to make, or refused:<reason>|toy variable
+    ma_toys="rotate||any|p1 rename S/key.json.tmp S/key.json|MA_PLAIN=1
+link||any|p1 link S/obj.tmp S/obj.final|TOY_LINK=1
+symlink||any|p1 symlink S/sym|TOY_SYMLINK=1
+remove||any|p1 rmdir S/subdir|TOY_REMOVE=1
+relative||any|p1 link S/obj.tmp S/obj.final|TOY_RELATIVE=1
+stdio||any|p1 write S/stdio.txt|TOY_STDIO=1
+append-rewrite||any|truncate S/log.txt|TOY_APPEND_REWRITE=1
+close-after-unlink||any|unlinked-fd close|TOY_CLOSE_AFTER_UNLINK=1
+thread||any|p1 thread|TOY_THREAD=1
+setsid||any|-|TOY_SETSID=1
+setpgid-noop||any|-|TOY_SETPGID_NOOP=1
+mmap-write||any|refused:state_changed_unaccounted|TOY_MMAP=write
+anonfd||any|-|TOY_ANONFD=1
+fork|oracle|any|p1 fork|TOY_FORK=1
+spawn|oracle|any|p1 spawn|TOY_SPAWN=1
+selfexec|oracle|any|exec|TOY_SELFEXEC=1
+setsid-oracle|oracle|contained|p1 detached|TOY_SETSID=1"
+    ma_names=$(printf '%s\n' "$ma_toys" | sed 's/|.*//' | tr '\n' ' ')
+    python3 "$ROOT/spike/mode-agreement.py" validate "$ROOT/spike/mode-agreement.tsv" $ma_names || fails=$((fails + 1))
+    while IFS= read -r ma; do
+        ma_name=${ma%%|*}; ma_rest=${ma#*|}
+        ma_orc=${ma_rest%%|*}; ma_rest=${ma_rest#*|}
+        ma_where=${ma_rest%%|*}; ma_rest=${ma_rest#*|}
+        ma_expect=${ma_rest%%|*}
+        ma_env=${ma_rest#*|}
+        if [ "$ma_where" = contained ] && [ "${SIDEEYE_EXPECT_CONTAINED:-}" != 1 ]; then
+            echo "     $ma_name not compared here: it detaches, which only a contained run judges"
+            continue
+        fi
+        if [ "$ma_orc" = oracle ]; then ma_flags="--oracle /usr/bin/strace"; else ma_flags=""; fi
+        ma_pairs=""
+        ma_ok=1
+        for ma_mode in $ma_modes; do
+            rm -rf /tmp/acc-ma && mkdir -p /tmp/acc-ma/s
+            ma_out=$(env "$ma_env" TOY_STATE=/tmp/acc-ma/s TOY_ESCAPE_WITNESS=/tmp/acc-ma/witness "$SIDEEYE" preflight \
+                --state /tmp/acc-ma/s --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+                --shim "$SHIM" --observe "$ma_mode" --work /tmp/acc-ma/w $ma_flags 2>&1 </dev/null)
+            if [ "${ma_expect#refused:}" != "$ma_expect" ]; then
+                printf '%s\n' "$ma_out" | grep -qxF "UNKNOWN  ${ma_expect#refused:}" && continue
+                echo "FAIL $ma_name: --observe $ma_mode did not refuse ${ma_expect#refused:} as the other modes must"
+                printf '%s\n' "$ma_out" | sed 's/^/     | /' | head -3
+                fails=$((fails + 1))
+                ma_ok=0
+                continue
+            fi
+            if ! printf '%s\n' "$ma_out" | grep -q "recording accepted"; then
+                echo "FAIL $ma_name: --observe $ma_mode did not accept the recording, so its account cannot be compared"
+                printf '%s\n' "$ma_out" | sed 's/^/     | /' | head -4
+                fails=$((fails + 1))
+                ma_ok=0
+                continue
+            fi
+            cp /tmp/acc-ma/w/trace-record.bin "/tmp/acc-ma-$ma_mode.bin"
+            ma_pairs="$ma_pairs $ma_mode=/tmp/acc-ma-$ma_mode.bin"
+        done
+        [ "$ma_ok" = 1 ] || continue
+        if [ "${ma_expect#refused:}" != "$ma_expect" ]; then
+            echo "ok   $ma_name: every mode compared refuses ${ma_expect#refused:} ($ma_arch)"
+            continue
+        fi
+        python3 "$ROOT/spike/mode-agreement.py" compare "$ROOT/spike/mode-agreement.tsv" \
+            "$ma_name" "$ma_arch" /tmp/acc-ma/s "$ma_expect" $ma_pairs || fails=$((fails + 1))
+    done <<EOF
+$ma_toys
+EOF
+    rm -rf /tmp/acc-ma /tmp/acc-ma-*.bin
+fi
+
 echo "=========== check 2v: typed path resolution and first-class links (ADR 0006) ==========="
 # git's last wall (#31): the oracle scoped by scanning the whole line for an absolute
 # state-directory string, so a relative mkdir/link with only a dirfd annotation was
