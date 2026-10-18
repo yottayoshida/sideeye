@@ -1,0 +1,50 @@
+# The macOS target-shape measurement behind #929: the released engine run on the three shapes
+# spike/macos-shapes-929/SELECTION.md fixed, on macOS 14 and 26. This is a measurement apparatus,
+# not standing CI — it must never be made a required check (spike-fsusage.yml and
+# spike-platforms.yml are the precedent). The record is copied into the tree by hand, in a pull
+# request; this workflow has no write access.
+name: spike-macos-shapes
+on:
+  workflow_dispatch:
+  push:
+    branches: [measure/b_f5521c0b8c8f-macos]
+permissions:
+  contents: read
+env:
+  SIDEEYE_VERSION: v1.15.0
+jobs:
+  measure:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-14, macos-26]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: GNU sed and git from Homebrew (the shapes' targets)
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+          HOMEBREW_NO_INSTALL_CLEANUP: "1"
+        run: brew install gnu-sed git
+
+      - name: Measure
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LABEL: ${{ matrix.runner }}
+        run: |
+          o=spike/macos-shapes-929/out; mkdir -p "$o"
+          bin=$(sh docs/ci-quickstart/release/install-sideeye.sh "$SIDEEYE_VERSION" "$RUNNER_TEMP/sideeye" 2> "$o/install-$LABEL.txt")
+          sh spike/macos-shapes-929/measure.sh "$bin" "$o" "$LABEL" 2>&1 | tee "$o/runner-$LABEL.txt"
+
+      - name: Keep the record
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: macos-shapes-${{ matrix.runner }}-run-${{ github.run_id }}
+          path: spike/macos-shapes-929/out
+          if-no-files-found: warn
+          retention-days: 90
