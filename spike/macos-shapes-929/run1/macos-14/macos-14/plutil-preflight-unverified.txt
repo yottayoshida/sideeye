@@ -1,0 +1,17 @@
+dyld[22006]: terminating because inserted dylib '/Users/runner/work/_temp/sideeye/sideeye-v1.15.0-aarch64-macos/libsideeye_shim.dylib' could not be loaded: tried: '/Users/runner/work/_temp/sideeye/sideeye-v1.15.0-aarch64-macos/libsideeye_shim.dylib' (mach-o file, but is an incompatible architecture (have 'arm64', need 'arm64e')), '/System/Volumes/Preboot/Cryptexes/OS/Users/runner/work/_temp/sideeye/sideeye-v1.15.0-aarch64-macos/libsideeye_shim.dylib' (no such file), '/Users/runner/work/_temp/sideeye/sideeye-v1.15.0-aarch64-macos/libsideeye_shim.dylib' (mach-o file, but is an incompatible architecture (have 'arm64', need 'arm64e'))
+dyld[22006]: tried: '/Users/runner/work/_temp/sideeye/sideeye-v1.15.0-aarch64-macos/libsideeye_shim.dylib' (mach-o file, but is an incompatible architecture (have 'arm64', need 'arm64e')), '/System/Volumes/Preboot/Cryptexes/OS/Users/runner/work/_temp/sideeye/sideeye-v1.15.0-aarch64-macos/libsideeye_shim.dylib' (no such file), '/Users/runner/work/_temp/sideeye/sideeye-v1.15.0-aarch64-macos/libsideeye_shim.dylib' (mach-o file, but is an incompatible architecture (have 'arm64', need 'arm64e'))
+UNKNOWN  recording_run_failed
+         the operation did not exit normally during the recording run: it was killed by signal 6
+next        Run the operation once by hand, after the setup and in the directory the report names on its cwd line (command_cwd in the JSON), to see what stopped it: it ended without an exit status (the detail names the signal when there was one), which nothing a define declares accounts for — the README's limit 'A clean run exits its declared success status' is the one it stands at. On macOS, a SIGKILL as it starts can be the system refusing an image's signature.
+cwd         /Users/runner/work/sideeye/sideeye  (none declared: Sideeye's own)
+
+expected    exit 0
+atomicity   not classified (the run was refused before L0 classification)
+l1          no marker configured
+case        (none)
+processes   not established: this run was refused before the shim's account of it was read
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=d762260fd23ac89f11f07b77be7a8658719fe2e120c7a490f50e6ce699588fbb;

@@ -30,15 +30,16 @@ git=$(brew --prefix)/bin/git
 if sudo -n true 2> "$out/sudo.txt"; then echo "sudo:      no password asked" >> "$out/env.txt"
 else echo "sudo:      asks for a password — the oracle runs below are a missing privilege" >> "$out/env.txt"; fi
 
-timed() {   # timed <name> <command...> — run, record exit and seconds
-    name=$1; shift
+# Not `name`: sh has no local variables, and shape() reads its own `name` after each call.
+timed() {   # timed <label> <command...> — run, record exit and seconds
+    t_label=$1; shift
     t0=$(date +%s)
-    "$@" > "$out/$name.txt" 2>&1
-    rc=$?
+    "$@" > "$out/$t_label.txt" 2>&1
+    t_rc=$?
     t1=$(date +%s)
-    verdict=$(grep -m1 -E '^(PASS|FAIL|UNKNOWN|SETUP ERROR|PREFLIGHT)' "$out/$name.txt")
-    printf '%s\texit %s\t%ss\t%s\n' "$name" "$rc" "$((t1 - t0))" "${verdict:-(no verdict line)}" >> "$out/summary.tsv"
-    return "$rc"
+    verdict=$(grep -m1 -E '^(PASS|FAIL|UNKNOWN|SETUP ERROR|PREFLIGHT)' "$out/$t_label.txt")
+    printf '%s\texit %s\t%ss\t%s\n' "$t_label" "$t_rc" "$((t1 - t0))" "${verdict:-(no verdict line)}" >> "$out/summary.tsv"
+    return "$t_rc"
 }
 
 shape() {   # shape <name> <operation> <setup> <check>
@@ -55,14 +56,17 @@ shape() {   # shape <name> <operation> <setup> <check>
         printf '%s-control\tthe checker fails the broken state, as it must\n' "$name" >> "$out/summary.tsv"
     fi
     w=$(mktemp -d "${TMPDIR:-/tmp}/shapes-$name-XXXXXX")
-    timed "$name-preflight" "$se" preflight --twice --state "$st" --setup "$setup" --operation "$op" --work "$w/p" \
-        --json "$out/$name-preflight.json"
+    # preflight takes no --oracle-fs-usage, so on macOS it cannot accept a process boundary; the
+    # oracle's explore runs either way, and summary.tsv says whether #929's protocol reached it.
+    timed "$name-preflight" "$se" preflight --twice --state "$st" --setup "$setup" --operation "$op" \
+        --work "$w/p" --json "$out/$name-preflight.json"
     if grep -q "recording accepted" "$out/$name-preflight.txt"; then
-        timed "$name-oracle" "$se" explore --state "$st" --setup "$setup" --operation "$op" --check "$check" \
-            --oracle-fs-usage --work "$w/o" --json "$out/$name-oracle.json"
+        printf '%s-oracle\tthe preflight accepted the recording: #929 protocol\n' "$name" >> "$out/summary.tsv"
     else
-        printf '%s-oracle\tnot run: the preflight did not accept the recording\n' "$name" >> "$out/summary.tsv"
+        printf '%s-oracle\tthe preflight refused: run beyond #929 protocol\n' "$name" >> "$out/summary.tsv"
     fi
+    timed "$name-oracle" "$se" explore --state "$st" --setup "$setup" --operation "$op" --check "$check" \
+        --oracle-fs-usage --work "$w/o" --json "$out/$name-oracle.json"
     timed "$name-unverified" "$se" explore --state "$st" --setup "$setup" --operation "$op" --check "$check" \
         --allow-unverified --work "$w/u" --json "$out/$name-unverified.json"
     for f in "$w"/*/cases/*.json; do

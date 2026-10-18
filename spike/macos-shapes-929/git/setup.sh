@@ -3,6 +3,7 @@
 set -eu
 git=$1
 r=$SIDEEYE_STATE_DIR/repo
+rm -rf "$r" "$SIDEEYE_STATE_DIR/.home"
 mkdir -p "$r"
 export GIT_AUTHOR_NAME=sideeye GIT_AUTHOR_EMAIL=sideeye@example.invalid
 export GIT_COMMITTER_NAME=sideeye GIT_COMMITTER_EMAIL=sideeye@example.invalid
