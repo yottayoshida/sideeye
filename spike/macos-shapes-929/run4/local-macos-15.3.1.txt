@@ -1,0 +1,27 @@
+# The owner's Mac, by hand, with the engine built from this branch as it is committed in the commit that adds this file (#964 with its review fixes, on top of daec8a2a).
+macOS:   15.3.1 (24D70)
+SIP:     System Integrity Protection status: enabled.
+sideeye: sideeye 1.15.0 (trace contract v19)
+
+$ sideeye preflight --operation '/usr/bin/true'
+UNKNOWN  no_shim_marker
+         the trace carries no shim marker; read before the run started, on /usr/bin/true: its code directory names a platform, the marker an Apple-shipped binary carries
+
+$ sideeye preflight --operation '/usr/bin/perl -ekill(6,$$)'
+UNKNOWN  no_shim_marker
+         the trace carries no shim marker; read before the run started, on /usr/bin/perl: its code directory names a platform, the marker an Apple-shipped binary carries; the recording run was killed by signal 6
+
+$ sideeye preflight --operation '<tmp>/abort-own (an own build: int main(void){abort();})'
+UNKNOWN  recording_run_failed
+         the operation did not exit normally during the recording run: it was killed by signal 6
+
+$ sideeye explore --operation '/usr/bin/true' --marker DONE
+UNKNOWN  marker_never_observed
+
+$ sideeye explore --operation '/usr/bin/perl -ekill(6,$$)' --marker DONE
+UNKNOWN  no_shim_marker
+         the trace carries no shim marker; read before the run started, on /usr/bin/perl: its code directory names a platform, the marker an Apple-shipped binary carries; the recording run was killed by signal 6
+
+$ sideeye explore --operation '/bin/echo done' --marker done
+UNKNOWN  no_shim_marker
+         the trace carries no shim marker; read before the run started, on /bin/echo: its code directory names a platform, the marker an Apple-shipped binary carries
