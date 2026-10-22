@@ -1,6 +1,6 @@
 # The macOS target-shape measurement behind #929: the released engine, or with `build: source` the
 # dispatched ref built as the release builds it, run on the three shapes
-# spike/macos-shapes-929/SELECTION.md fixed, on macOS 14 and 26. This is a measurement apparatus,
+# spike/macos-shapes-929/SELECTION.md fixed, on macOS 14, 15 and 26. This is a measurement apparatus,
 # not standing CI — it must never be made a required check (spike-fsusage.yml and
 # spike-platforms.yml are the precedent). The record is copied into the tree by hand, in a pull
 # request; this workflow has no write access.
@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner: [macos-14, macos-26]
+        runner: [macos-14, macos-15, macos-26]
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     steps:
