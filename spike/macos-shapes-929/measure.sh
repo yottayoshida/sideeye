@@ -26,6 +26,8 @@ git=$(brew --prefix)/bin/git
         echo "file of $b: $(file -b "$b")"
     done
     echo "user:      $(id -un) (uid $(id -u))"
+    echo "SIP:       $(csrutil status 2>&1)"
+    echo "fs_usage's _extended spellings: $(strings /usr/bin/fs_usage | grep '_extended' | sort | tr '\n' ' ')"
 } > "$out/env.txt"
 if sudo -n true 2> "$out/sudo.txt"; then echo "sudo:      no password asked" >> "$out/env.txt"
 else echo "sudo:      asks for a password — the oracle runs below are a missing privilege" >> "$out/env.txt"; fi
