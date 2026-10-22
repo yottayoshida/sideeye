@@ -1,0 +1,1 @@
+app.conf is neither the old content nor the new
