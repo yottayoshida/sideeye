@@ -1,0 +1,25 @@
+falsify: checker(duckdb): the database does not open: IO Error: The file "/s/aux/tmp/tmp.K4YahEpiOi/shop.duckdb" exists, but it is not a valid DuckDB database file! 
+FAIL  3 of 13 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 8 of 12
+            after  write(/s/duck/shop.duckdb)
+            before write(/s/duck/shop.duckdb)
+path        shop.duckdb
+observed    holding neither the old nor the new content
+cwd         /s/duck
+
+explored    13 worlds (crash points 12 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 12 operations (477 syscall lines examined, 103 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 13 world(s)
+l1          no marker configured
+case        /tmp/w/cases/000001.json
+replay      sideeye replay /tmp/w/cases/000001.json --observe syscalls --shim /t/branch-out/lib/libsideeye_shim.so --oracle /usr/bin/strace
+evidence    sideeye evidence /tmp/w/evidence/000001.json
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 9 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/duck && unset SIDEEYE_KILL_GROUP && : > /tmp/w/trace-repro.bin && SIDEEYE_STATE_DIR=/s/duck SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/tmp/w/trace-repro.bin LD_PRELOAD=/t/branch-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=8 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=syscalls SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'duckdb' shop.duckdb -c 'UPDATE orders SET status = '\''shipped'\'' WHERE id < 10' </dev/null)
