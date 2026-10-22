@@ -1,7 +1,7 @@
 #!/bin/sh
 # spike/check-comment-only.sh — a pull request that removed comment lines changed nothing else.
 #
-#   sh spike/check-comment-only.sh <base-ref>    every src/*.zig that differs from <base-ref>
+#   sh spike/check-comment-only.sh <base-ref>    every src/*.zig and shim/src/*.zig that differs from <base-ref>
 #   sh spike/check-comment-only.sh --selftest    the shapes this check must see red, and the ones green
 #
 # Zig has line comments only, and every line of a multi-line string begins with `\\`, so a
@@ -61,9 +61,14 @@ compare_pair() {
     return 1
 }
 
+# checked_files <newline-separated list of changed paths>
+checked_files() {
+    printf '%s\n' "$1" | grep -E '^(src|shim/src)/.*\.zig$' || true
+}
+
 # require_files <newline-separated list>
 require_files() {
-    [ -n "$1" ] || { echo "FAIL no src/*.zig differs from the base — nothing was checked"; return 1; }
+    [ -n "$1" ] || { echo "FAIL no src/*.zig or shim/src/*.zig differs from the base — nothing was checked"; return 1; }
 }
 
 selftest() {
@@ -151,6 +156,13 @@ EOF
     expect deleted red-deleted-code.zig "a code line deleted"
     expect deleted red-deleted-string-line.zig "a line of a multi-line string deleted"
     total=$((total + 1))
+    picked=$(checked_files "$(printf 'src/engine/a.zig\nshim/src/b.zig\nbuild.zig\nspike/c.zig\nsrc/d.py\n')" | tr '\n' ' ')
+    if [ "$picked" = "src/engine/a.zig shim/src/b.zig " ]; then
+        echo "ok   selftest: the engine's and the shim's sources are checked, and nothing else"
+    else
+        echo "FAIL selftest: the changed paths picked were '$picked'"; failures=$((failures + 1))
+    fi
+    total=$((total + 1))
     if require_files "" >"$tmp/verdict"; then
         echo "FAIL selftest: zero changed files reads green"; failures=$((failures + 1))
     else
@@ -168,16 +180,16 @@ esac
 base=$1
 all=$(git -C "$root" diff --name-only "$base") \
     || { echo "FAIL git diff against '$base' failed — an unknown ref or a shallow clone, not a comment-only change"; exit 1; }
-files=$(printf '%s\n' "$all" | grep '^src/.*\.zig$' || true)
-others=$(printf '%s\n' "$all" | grep -v '^src/.*\.zig$' || true)
+files=$(checked_files "$all")
+others=$(printf '%s\n' "$all" | grep -vxF "$files" || true)
 require_files "$files" || exit 1
 if [ -n "$others" ]; then
-    echo "note: changed outside src/*.zig, not checked here:"
+    echo "note: changed outside src/*.zig and shim/src/*.zig, not checked here:"
     printf '%s\n' "$others" | sed 's/^/      /'
 fi
 mkdir -p "$tmp/base"
-git -C "$root" archive "$base" -- src | tar -x -C "$tmp/base" \
-    || { echo "FAIL could not read src/ at '$base'"; exit 1; }
+git -C "$root" archive "$base" -- src shim/src | tar -x -C "$tmp/base" \
+    || { echo "FAIL could not read src/ and shim/src/ at '$base'"; exit 1; }
 rc=0
 count=0
 for f in $files; do

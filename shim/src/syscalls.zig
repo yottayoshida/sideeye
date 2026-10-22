@@ -1,28 +1,3 @@
-//! Observation at the syscall boundary (`--observe syscalls`, Linux only).
-//!
-//! The interposed entry points in `ops.zig` see an operation only when the target calls
-//! one of them. Buffered stdio does not: `fwrite` past the buffer's capacity issues the
-//! `write` from *inside* libc, and a raw `syscall(SYS_write, …)` never enters libc at
-//! all. ADR 0005 chose flush granularity deliberately and listed those two shapes as
-//! outside it; `docs/target-classes.md` records metaflac and fontforge refusing there.
-//! A runtime that issues its syscalls directly — Go's, which reaches the kernel without
-//! libc for everything but the handful of calls cgo routes through it — is the same shape
-//! one layer up: every one of its writes, renames and unlinks is invisible to a wrapper.
-//! This module is the second observation path, not a replacement. The default mode
-//! declines nothing and records nothing through it, but it is not untouched: the `SIGSYS`
-//! handler is installed in every mode, and the four signal entry points below are exported
-//! in every mode and forward there (see `installHandler` and `resolveGuards`).
-//!
-//! A seccomp filter answers `SECCOMP_RET_TRAP` for the trap set, the kernel raises
-//! `SIGSYS` *without executing the call*, and the handler counts the operation through
-//! the same `noteFd` / `note1` / `note2` the wrappers use before re-issuing the syscall
-//! itself.
-//!
-//! `syscalls.armed` decides which of the two doors counts: the handler records only while
-//! it is set, and each wrapper whose syscall is in the set stays silent while it is set
-//! (`common.countedAtSyscall`). One operation therefore reaches the account once, whether
-//! it arrived through libc or not.
-//!
 //! ## Why the handler can re-issue without trapping itself
 //!
 //! The re-issue goes through `std.os.linux.syscall6`, whose sixth argument lands in the
@@ -45,9 +20,6 @@
 //! sentinel already in its sixth argument register. That operation would be allowed
 //! uncounted. `docs/report-schema.md` discloses it; the odds are 2^-64 per call, and the
 //! oracle is the net for the case where it happens anyway.
-//!
-//! ## Why an unhandled `SIGSYS` does not end the run
-//!
 //! A filter survives `execve` and cannot be replaced; a handler does not survive it. So
 //! the image an exec puts in front of this one inherits the trap set with `SIGSYS` back
 //! at its default, and dies at the first trapped call — which for a set containing every
@@ -74,9 +46,6 @@
 //! the libc calls that can block it — the mask-setting calls, and `sigaction` for the mask
 //! another signal's handler runs under. What reaches the kernel around libc is not covered;
 //! "keeping the signal deliverable" below names it.
-//!
-//! ## What this mode does not see
-//!
 //! `copy_file_range` and `pwritev2` are not in the set: six arguments each, so neither has
 //! a free register for the sentinel. `copy_file_range`'s wrapper simply keeps recording —
 //! nothing else reaches that number. `pwritev2` cannot be handled that way, because glibc
@@ -99,20 +68,10 @@ const shim_build_options = @import("shim_build_options");
 const linux = std.os.linux;
 const SYS = linux.SYS;
 
-/// Left in the sixth argument register by `thunk`, recognised by the filter.
-///
-/// Spelled once here and read by nothing else: the filter builds its comparison from
-/// this constant and the thunk passes this constant, so the two cannot drift apart.
 pub const reissue_sentinel: u64 = 0x51DEE7E5CA11ED01;
 
-/// glibc's `errno` accessor. Declared here rather than in `common.zig`'s shared `c`
-/// block because that block is compiled for both platforms and this spelling is Linux's
-/// (Darwin's is `__error`), and nothing outside this file needs it.
 extern "c" fn __errno_location() *c_int;
 
-/// One member of the trap set: a syscall number, and optionally the argument whose flags
-/// decide whether this call can change anything.
-///
 /// The flag test exists for `open` and `openat`. `openat2` has no `flag_arg` and is
 /// trapped unconditionally — its flags are inside `struct open_how`, which classic BPF
 /// cannot reach — and the handler re-reads them instead.
@@ -130,15 +89,10 @@ extern "c" fn __errno_location() *c_int;
 /// or `O_TRUNC`.
 const Trap = struct {
     sys: SYS,
-    /// Index of the flags argument, when this member is trapped conditionally.
     flag_arg: ?usize = null,
     flag_mask: u32 = 0,
 };
 
-/// The same member with its number resolved. The filter is built from these: a program is
-/// arithmetic over numbers, and the tests below need to describe one architecture's numbers
-/// while running on another's, which naming `SYS` members cannot do (an `x86_64` number is
-/// not a tag of the `aarch64` enum).
 const RawTrap = struct {
     nr: u32,
     flag_arg: ?usize = null,
@@ -163,19 +117,6 @@ const o_creat: u32 = 0o100;
 const o_trunc: u32 = 0o1000;
 const write_capable_mask: u32 = o_accmode | o_creat | o_trunc;
 
-/// The syscalls this mode counts: every operation `contract.OpClass.isKillPoint` admits,
-/// in the spellings the target's architecture has, plus the write family this mode started
-/// with. Two are deliberately absent — `copy_file_range` and `pwritev2` take six arguments,
-/// so the sentinel's register is not free for them (`docs/report-schema.md` discloses both).
-///
-/// Every member takes at most five arguments, which is what makes `args[5]` available for
-/// the sentinel — asserted in `install` rather than trusted.
-///
-/// The numbers come from `std.os.linux.SYS`, which is per-architecture: a name absent on
-/// the target architecture is a compile error here rather than a silently missing member
-/// of a hand-written table. That is the whole reason for not writing the table — and the
-/// reason the legacy spellings below sit behind a comptime branch: `.open`, `.rename` and
-/// the rest do not exist on aarch64.
 const trapped: []const Trap = switch (builtin.cpu.arch) {
     .aarch64 => &.{
         .{ .sys = .write },     .{ .sys = .pwrite64 },  .{ .sys = .writev },
@@ -202,9 +143,6 @@ const trapped: []const Trap = switch (builtin.cpu.arch) {
     else => &.{},
 };
 
-/// True once the filter is installed, i.e. once the handler — not the wrappers — is the
-/// thing that counts the trapped operations.
-///
 /// Read by both doors: `onSigsys` records only while it is set, and
 /// `common.countedAtSyscall` answers on it so that every wrapper whose syscall is in the
 /// set stays silent while it is. A process standing in front of a filter it did not
@@ -212,20 +150,11 @@ const trapped: []const Trap = switch (builtin.cpu.arch) {
 pub var armed: bool = false;
 
 pub const Install = enum {
-    /// The filter is in place; the handler counts writes.
     armed,
-    /// This build cannot install a filter at all (not Linux, or an architecture whose
-    /// register layout is not known here). Distinct from `failed`: nothing went wrong.
     unsupported,
-    /// The kernel refused. The engine turns this into a setup error rather than a
-    /// verdict — `docs/report-schema.md`'s `unknown_reason` set is closed, and
-    /// "the shim is the right version but could not install its filter" has no member
-    /// in it (`docs/contract-freeze.md`, surface 2).
     failed,
 };
 
-// --- register layout ---------------------------------------------------------------
-//
 // Byte offsets into `ucontext_t`, MEASURED on 2026-09-07 with a C program compiled
 // against each platform's own <ucontext.h> and run on that platform, not derived from
 // the struct definitions:
@@ -241,13 +170,8 @@ pub const Install = enum {
 ///
 ///   aarch64  sizeof(siginfo_t)=128  si_call_addr=16  si_syscall=24  si_arch=28
 ///   x86_64   sizeof(siginfo_t)=128  si_call_addr=16  si_syscall=24  si_arch=28
-///
-/// Read at an offset because this toolchain's `std.os.linux.siginfo_t` has no SIGSYS
-/// member in its field union.
 const si_syscall_off: usize = 24;
 
-/// Byte offset of `si_code`, and the value the kernel writes there for a seccomp trap.
-///
 /// **The handler must test this before it reads anything else**, and the reason is
 /// specific rather than defensive. MEASURED the same way, on both platforms
 /// (2026-09-11): `si_code` is at 8, `si_syscall` at 24 — and `si_value` is at 24 **too**.
@@ -259,9 +183,7 @@ const si_code_off: usize = 8;
 const sys_seccomp: i32 = 1;
 
 const Layout = struct {
-    /// The six argument registers, in syscall order.
     args: [6]usize,
-    /// Where the return value has to be written for the target to see it.
     ret: usize,
 };
 
@@ -286,8 +208,6 @@ fn regPtr(uc: *anyopaque, off: usize) *u64 {
     return @ptrCast(@alignCast(base + off));
 }
 
-// --- the filter --------------------------------------------------------------------
-
 const SockFilter = extern struct { code: u16, jt: u8, jf: u8, k: u32 };
 const SockFprog = extern struct { len: u16, filter: [*]const SockFilter };
 
@@ -298,12 +218,8 @@ const BPF_RET_K: u16 = 0x06;
 /// block per member — a member's block has to reach the shared tail, and seccomp's jumps
 /// only go forward, so the tail is where ALLOW and TRAP live.
 const BPF_JA: u16 = 0x05;
-/// `BPF_ALU | BPF_AND | BPF_K`: masks the accumulator, which is how the open family's
-/// flags argument is tested without reading memory the filter cannot reach.
 const BPF_AND_K: u16 = 0x54;
 
-/// `seccomp_data` field offsets, from `std.os.linux.SECCOMP.data`'s own layout rather
-/// than a comment: nr, arch, instruction_pointer, then six 64-bit arguments.
 const data_off = struct {
     const nr: u32 = @offsetOf(linux.SECCOMP.data, "nr");
     const arch: u32 = @offsetOf(linux.SECCOMP.data, "arch");
@@ -321,15 +237,6 @@ const data_off = struct {
     };
 };
 
-/// `AUDIT_ARCH_*` — the machine type with the width and endianness bits, exactly as
-/// `linux/audit.h` composes it.
-///
-/// Built here rather than read from `std.os.linux.AUDIT.ARCH` because naming any member
-/// of that enum forces the whole of it to be analysed, and this toolchain's copy does
-/// not compile: `FRV = toAudit(.FRV, 0)` names an `elf.EM` member that does not exist
-/// (zig 0.16.0, measured — the shim failed to cross-compile for Linux on it). Composing
-/// from the two `elf.EM` members actually needed touches nothing broken, and the test at
-/// the end of this file pins both results against the header's values.
 const audit_64bit: u32 = 0x8000_0000;
 const audit_le: u32 = 0x4000_0000;
 
@@ -339,35 +246,17 @@ const audit_arch: u32 = switch (builtin.cpu.arch) {
     else => 0,
 };
 
-/// How many instructions `buildProgram` emits for a set. Written as its own function so
-/// the array's size and the offsets below are computed from the same arithmetic.
 fn programLen(comptime set: []const RawTrap) usize {
-    // arch load, arch compare, nr load, one compare per member, the "no member matched"
-    // jump, each member's block, the sentinel's four, and the two returns.
     var n: usize = 3 + set.len + 1;
     for (set) |t| n += if (t.flag_arg != null) 4 else 1;
     return n + 4 + 2;
 }
 
-/// Built at comptime from `trapped`, so adding a syscall to the set cannot leave a
-/// jump offset behind. A hand-written program was the first draft and its offsets were
-/// wrong for a five-member set; a later version sized its array one instruction short and
-/// put ALLOW and TRAP in the same slot, which trapped the handler's own re-issue.
-///
-/// Shape — every jump goes forward, because seccomp's do:
-///   arch != ours                      -> ALLOW   (an ABI whose `nr` we cannot read)
-///   nr not in `trapped`               -> ALLOW
-///   nr in `trapped`                   -> that member's block
-///     a member with a flag test:      flags & mask == 0 -> ALLOW   (a read-only open)
-///     otherwise                       -> the sentinel check
-///   args[5] == sentinel               -> ALLOW   (our own re-issue)
-///   otherwise                         -> TRAP
 fn buildProgram(comptime arch_id: u32, comptime set: []const RawTrap) [programLen(set)]SockFilter {
     @setEvalBranchQuota(10000);
     const n = set.len;
     var insns: [programLen(set)]SockFilter = undefined;
 
-    // Where each member's block starts, and where the shared tail does.
     var block_at: [set.len]usize = undefined;
     var next = 3 + n + 1;
     for (set, 0..) |t, i| {
@@ -397,8 +286,6 @@ fn buildProgram(comptime arch_id: u32, comptime set: []const RawTrap) [programLe
         if (t.flag_arg) |arg| {
             insns[b] = .{ .code = BPF_LD_W_ABS, .jt = 0, .jf = 0, .k = data_off.args_lo[arg] };
             insns[b + 1] = .{ .code = BPF_AND_K, .jt = 0, .jf = 0, .k = t.flag_mask };
-            // Nothing of the mask set: a call that cannot change anything. Allowed, and
-            // this is what keeps a loader's read-only opens out of the trap.
             insns[b + 2] = .{ .code = BPF_JEQ_K, .jt = @intCast(allow_i - (b + 2) - 1), .jf = 0, .k = 0 };
             insns[b + 3] = .{ .code = BPF_JA, .jt = 0, .jf = 0, .k = @intCast(sent - (b + 3) - 1) };
         } else {
@@ -425,18 +312,10 @@ fn buildProgram(comptime arch_id: u32, comptime set: []const RawTrap) [programLe
     return insns;
 }
 
-/// The set with its numbers resolved, once, at comptime: `rawSet` builds a comptime array
-/// and cannot hand it back from a call made at run time.
 const trapped_raw: []const RawTrap = rawSet(trapped);
 
 const program = buildProgram(audit_arch, trapped_raw);
 
-// --- the thunk ---------------------------------------------------------------------
-
-/// Re-issue a syscall so that the filter lets it through.
-///
-/// `syscall6`'s sixth argument is the sentinel's slot; the caller never passes a real
-/// sixth argument because no trapped syscall has one.
 pub fn thunk(nr: u32, a0: u64, a1: u64, a2: u64, a3: u64, a4: u64) u64 {
     const r = linux.syscall6(@fromBackingInt(@intCast(nr)), a0, a1, a2, a3, a4, reissue_sentinel);
     // Clear the marker register before returning, or the NEXT syscall inherits it.
@@ -447,18 +326,6 @@ pub fn thunk(nr: u32, a0: u64, a1: u64, a2: u64, a3: u64, a4: u64) u64 {
     // no sixth argument of its own, arrives at the filter carrying it and is ALLOWED.
     // The shim's own trace writes go through this thunk, so that sequence is not rare: a
     // record is written, and the write it was recording about is then invisible.
-    //
-    // Measured in CI, which is where it surfaced: on x86_64 every syscalls-mode
-    // acceptance leg failed while the same legs passed on aarch64, and the divergence
-    // named exactly one missing operation — the direct `write(2)` in the toy's
-    // `write_file`, issued immediately after the shim had recorded the `open` through
-    // this thunk. The register survives on one architecture's allocation and not the
-    // other's, which is why a local aarch64 run could not see it.
-    //
-    // It also corrects what `docs/report-schema.md` disclosed: the collision was
-    // described as 2^-64 per call, and while that is the odds of a TARGET holding the
-    // marker by chance, the shim was producing the collision itself, systematically.
-    // Zeroing here is what makes the disclosed figure the true one.
     //
     // A separate `volatile` statement rather than one asm block: the register is an
     // input to `syscall6` above, and an operand that is also clobbered is not
@@ -473,8 +340,6 @@ pub fn thunk(nr: u32, a0: u64, a1: u64, a2: u64, a3: u64, a4: u64) u64 {
     return r;
 }
 
-/// A `write` the shim itself performs, issued so the handler never sees it.
-///
 /// The trace channel cannot go through libc's `write` in this mode: that syscall traps,
 /// the handler records, and recording writes another record — recursion that ends in a
 /// stack overflow rather than a refusal. This is the one call the sentinel exists for
@@ -484,8 +349,6 @@ pub fn traceWrite(fd: i32, buf: [*]const u8, n: usize) isize {
     const signed: i64 = @bitCast(r);
     return @intCast(signed);
 }
-
-// --- installation ------------------------------------------------------------------
 
 /// Called by `common.init()` before `active` is set, so nothing is recorded through a
 /// half-installed filter.
@@ -523,12 +386,6 @@ pub fn installHandler() void {
     // wrong — and with SIGSYS blocked the kernel ends the process, which the engine
     // reads as a run that did not complete. Allowing re-entry instead would recurse
     // quietly, which is the worse of the two.
-    //
-    // The premise was re-measured when the set widened (#542), by reading what the
-    // handler issues between a trap and its re-issue in a capture of `toy-raw raw-all`,
-    // 20 traps: `lseek`, `pread64`, `statx`, `readlinkat` — and `write`, 19 times. That
-    // last one IS in the trap set, and the earlier spelling of this comment ("nothing the
-    // handler calls is in the trap set") was therefore wrong rather than merely dated.
     // What makes it safe is not absence: the shim's trace channel goes through
     // `traceWrite`, which carries the re-issue sentinel, so the filter allows it. Nothing
     // else the handler reaches is in the set, and the trace write is in it but marked.
@@ -552,7 +409,6 @@ pub fn install() Install {
         // the set at all. Every name below was read off its own man page for the count;
         // the arm exists so a new member cannot join without someone doing that.
         for (trapped) |t| switch (t.sys) {
-            // At most five arguments: renameat2 and linkat have five, the rest fewer.
             .write,
             .pwrite64,
             .writev,
@@ -572,7 +428,6 @@ pub fn install() Install {
             .fdatasync,
             => {},
             else => switch (builtin.cpu.arch) {
-                // The legacy spellings, which exist on this architecture only.
                 .x86_64 => switch (t.sys) {
                     .open, .creat, .rename, .unlink, .rmdir, .mkdir, .link, .symlink => {},
                     else => @compileError("a trapped syscall must take at most five arguments: " ++
@@ -584,12 +439,6 @@ pub fn install() Install {
         };
     }
 
-    // `init` has already done this, before its own trace open; calling it again costs one
-    // syscall and makes this function correct when read on its own. A failure below leaves
-    // the handler installed with no filter behind it. Left that way deliberately: the
-    // engine refuses the run on the announcement, so the process is going nowhere, and
-    // restoring the previous disposition would mean storing it and putting the restore on
-    // a path that has no observable effect (review, P2).
     installHandler();
 
     if (linux.prctl(@backingInt(linux.PR.SET_NO_NEW_PRIVS), 1, 0, 0, 0) != 0) return .failed;
@@ -656,7 +505,6 @@ pub fn install() Install {
 // and `install` does not unblock a mask carried across `exec`. Trapping `rt_sigaction` and
 // `rt_sigprocmask` in the filter is the step this comment used to propose; measured, it
 // kills targets that run today, and ADR 0063 records why it was not taken.
-// `docs/report-schema.md` item (4) names the ways known.
 
 /// Whether the four wrappers below actually decline anything, set by `common.init` when
 /// this process's mode is `syscalls` — before the filter goes up, because a trap can
@@ -696,7 +544,6 @@ pub fn armGuards() void {
     guard_signal = builtin.os.tag == .linux and layout != null;
 }
 
-/// `SIGSYS` as a plain number, for comparison against a libc `signum` argument.
 const sigsys_no: c_int = @backingInt(linux.SIG.SYS);
 
 const SigactionFn = *const fn (c_int, ?*const anyopaque, ?*anyopaque) callconv(.c) c_int;
@@ -728,10 +575,6 @@ pub fn resolveGuards() void {
 
 /// One symbol, memoised. Reached from `resolveGuards` at startup and — only in the window
 /// before it runs — from a wrapper. Two threads racing write the same pointer.
-///
-/// A miss is memoised too, as `.missing`: `dlsym` walks the link map, and a symbol absent
-/// once is absent every time, so retrying it on every call would put that walk on a path
-/// that is supposed to cost a load (review, P2).
 fn nextSymbol(comptime T: type, name: [*:0]const u8, slot: *Resolved(T)) ?T {
     switch (slot.*) {
         .unresolved => {},
@@ -751,13 +594,6 @@ fn Resolved(comptime T: type) type {
     return union(enum) { unresolved, missing, found: T };
 }
 
-/// Put `SIGSYS` back in this thread's deliverable set, whatever the call just before did.
-///
-/// std's `rt_sigprocmask` over a set built with std's own helpers, so nothing in this
-/// path depends on how the C library spells `sigset_t` — the kernel's is the one std
-/// knows, and it passes the size the kernel wants. The caller's own set is never copied:
-/// it goes to the library's function untouched, and this undoes one bit of the result.
-///
 /// `SIGSYS` is blocked on this thread between the two calls. Nothing can trap in that
 /// gap: the thread is inside these two calls, and neither the library function nor
 /// `rt_sigprocmask` is in the trap set.
@@ -767,15 +603,6 @@ fn unblockSigsys() void {
     _ = linux.sigprocmask(linux.SIG.UNBLOCK, &set, null);
 }
 
-// glibc's `struct sigaction`, MEASURED with `offsetof` and `sigaddset` (2026-09-13, glibc
-// 2.36, `spike/followup-556/probes/saoff.c`), identical on both platforms:
-//
-//   sizeof=152  sa_handler=0  sa_mask=8 (128 bytes)  sa_flags=136
-//   sigaddset(SIGSYS) sets byte 11 of the struct to 0x40
-//
-// The wrapper reads it through std's `c.Sigaction`, so what is pinned here is that std's
-// idea of the struct is still the measured one. A toolchain that moved it stops the build
-// instead of clearing a bit in the wrong place.
 comptime {
     if (layout != null and (@sizeOf(std.c.Sigaction) != 152 or
         @offsetOf(std.c.Sigaction, "mask") != 8 or @sizeOf(std.c.sigset_t) != 128 or
@@ -783,14 +610,9 @@ comptime {
         @compileError("std.c.Sigaction is no longer glibc's measured struct sigaction");
 }
 
-/// `SIGSYS`'s place in the C library's `sigset_t`: one bit per signal, numbered from 1,
-/// from the low bit of the first word.
 const sigsys_word: usize = @intCast(@divTrunc(sigsys_no - 1, @bitSizeOf(c_ulong)));
 const sigsys_bit: c_ulong = @as(c_ulong, 1) << @intCast(@mod(sigsys_no - 1, @bitSizeOf(c_ulong)));
 
-/// The request at `act` with `SIGSYS` taken out of its `sa_mask`, or null when the mask
-/// does not hold it.
-///
 /// Copied byte for byte rather than cast: the caller's struct has whatever alignment the
 /// caller gave it, and the caller's own struct is never written.
 fn withoutSigsys(act: *const anyopaque) ?std.c.Sigaction {
@@ -801,11 +623,6 @@ fn withoutSigsys(act: *const anyopaque) ?std.c.Sigaction {
     return copy;
 }
 
-/// A request for `SIGSYS` itself is declined. A request for any other signal whose
-/// `sa_mask` holds `SIGSYS` goes to the library as a copy without that one bit, so the
-/// handler it installs does not block `SIGSYS` while it runs. Every other request is
-/// forwarded pointer-for-pointer.
-///
 /// The copy lives in this frame, never on the heap: `sigaction` may be called from a
 /// signal handler. `oldact` is still the library's answer, so a target that later queries
 /// a handler installed this way reads its mask back without `SIGSYS`.
@@ -854,15 +671,10 @@ pub fn pthread_sigmask(how: c_int, set: ?*const anyopaque, oldset: ?*anyopaque) 
     return maskGuard(nextSymbol(MaskFn, "pthread_sigmask", &real_pthread_sigmask), how, set, oldset);
 }
 
-// --- the handler -------------------------------------------------------------------
-
-/// A pointer argument, read as the path it is. The handler runs in the target's own
-/// address space, so the pointer the kernel refused is still the target's own.
 fn pathOf(v: u64) [*:0]const u8 {
     return @ptrFromInt(v);
 }
 
-/// A descriptor or `AT_FDCWD` argument, which the kernel passes sign-extended.
 fn fdOf(v: u64) c_int {
     return @truncate(@as(i64, @bitCast(v)));
 }
@@ -879,7 +691,6 @@ fn record(nr: u32, a: [6]u64) void {
     const sys: SYS = @fromBackingInt(@intCast(nr));
     switch (builtin.cpu.arch) {
         .x86_64 => switch (sys) {
-            // The legacy spellings glibc still issues on this architecture.
             .open, .creat => common.note1FromTrap(.open, common.AT_FDCWD, pathOf(a[0])),
             .rename => common.note2FromTrap(.rename, common.AT_FDCWD, pathOf(a[0]), common.AT_FDCWD, pathOf(a[1])),
             .unlink => common.note1FromTrap(.unlink, common.AT_FDCWD, pathOf(a[0])),
@@ -953,31 +764,6 @@ fn recordPortable(sys: SYS, a: [6]u64) void {
     }
 }
 
-/// One trapped call.
-///
-/// The counting, the scope decision, the path resolution and the kill all belong to
-/// `noteFd`, exactly as they do for an interposed call — this function's whole job is to
-/// read the descriptor out of the trap frame, hand it over, and then perform the call
-/// the kernel refused. Everything `noteFd` reaches for (`statx`, `readlinkat`, `fcntl`,
-/// `getpid`, the trace write through `traceWrite`) is outside the trap set or carries
-/// the sentinel, so nothing here re-enters.
-///
-/// `noteFd` runs BEFORE the re-issue for the same reason the wrappers record before
-/// calling through (ADR 0036): the k-th operation has to be stopped, and an operation
-/// counted after the bytes have landed cannot be.
-///
-/// **The syscall number comes from `siginfo`, not from a register.** The first version
-/// read it from the trap frame — `x8` on aarch64, `RAX` on x86_64 — and review pointed
-/// out that those two are not the same kind of place. `x8` is an argument register the
-/// kernel does not write, so it still holds the number; `RAX` is where the *result* goes,
-/// and on x86_64 a syscall that is not executed leaves `-ENOSYS` there before the signal
-/// frame is built. Measured on aarch64: `si_syscall` and `x8` agree, both hold `write`.
-/// **x86_64 could not be measured here** — the only x86_64 environment available is an
-/// emulated container, and it refuses `seccomp(SET_MODE_FILTER)` with `EINVAL` — so CI is
-/// the first execution of this code on that platform. `si_syscall` is the channel seccomp
-/// fills for exactly this purpose and is ABI-stable, which makes the question moot rather
-/// than answered: there is no reason to depend on a register whose contents at delivery
-/// this machine cannot check.
 // Not written inside onSigsys: a Debug build gives every local of a function its slot in the
 // one frame, so this rare branch's sigaction and signal set would sit on the target thread's
 // stack at every trap.
@@ -1041,17 +827,6 @@ fn onSigsys(_: linux.SIG, info: *const linux.siginfo_t, uc_opaque: ?*anyopaque) 
     regPtr(uc, l.ret).* = thunk(nr, a[0], a[1], a[2], a[3], a[4]);
 }
 
-// --- tests -------------------------------------------------------------------------
-
-/// A classic-BPF interpreter covering exactly the four opcodes `buildProgram` emits.
-///
-/// The filter's jump offsets are computed at comptime from the trap set's length, and
-/// reading them back is not a check. The first version of `buildProgram` sized its array
-/// one instruction short, which put the final ALLOW and the final TRAP at the same index
-/// — the TRAP was written second, so it won, and the handler's own re-issue was trapped
-/// as well: recursion, not a refusal. Nothing about the code looked wrong. This test
-/// found it on the first run, which is the argument for simulating the program rather
-/// than reading it.
 fn simulate(prog: []const SockFilter, d: linux.SECCOMP.data) u32 {
     const bytes: [*]const u8 = @ptrCast(&d);
     var acc: u32 = 0;
@@ -1080,7 +855,6 @@ fn simulate(prog: []const SockFilter, d: linux.SECCOMP.data) u32 {
 }
 
 const test_arch: u32 = 0xC000_003E; // AUDIT_ARCH_X86_64, chosen so the test is host-independent
-// write, pwrite64, writev, pwritev on x86_64, and openat with the open family's flag test.
 const test_set = [_]RawTrap{
     .{ .nr = 1 },
     .{ .nr = 18 },
@@ -1128,62 +902,40 @@ test "the filter traps an unmarked write and allows the handler's re-issue" {
     const T = linux.SECCOMP.RET.TRAP;
     const A = linux.SECCOMP.RET.ALLOW;
 
-    // Every member of the set traps when the sentinel is absent — a member with a flag
-    // test only when its flags say the call can change something.
     for (test_set) |t| {
-        // O_WRONLY where the member has a flag test, and the filter reads it from that
-        // member's own argument.
         try std.testing.expectEqual(T, simulate(&prog, frameFor(t, test_arch, 1, 0)));
-        // …and is allowed once the thunk has marked it.
         try std.testing.expectEqual(
             A,
             simulate(&prog, frameFor(t, test_arch, 1, reissue_sentinel)),
         );
     }
 
-    // A sentinel that matches only one half must not pass: the two halves are compared
-    // separately, and a program that jumped to ALLOW after the low word would let any
-    // call whose sixth register happened to hold that word through uncounted.
     try std.testing.expectEqual(T, simulate(&prog, frame(1, test_arch, reissue_sentinel & 0xffff_ffff)));
     try std.testing.expectEqual(T, simulate(&prog, frame(1, test_arch, reissue_sentinel & 0xffff_ffff_0000_0000)));
 
-    // Outside the set: `fsync` is not in this test's set, and `read` is in no set.
     try std.testing.expectEqual(A, simulate(&prog, frame(74, test_arch, 0)));
     try std.testing.expectEqual(A, simulate(&prog, frame(0, test_arch, 0)));
 
-    // A syscall ABI the filter cannot read `nr` in is allowed rather than trapped, and
-    // the oracle is what accounts for it (ADR).
     try std.testing.expectEqual(A, simulate(&prog, frame(1, 0x4000_0003, 0)));
 }
 
 test "an open's flags decide whether it is trapped" {
-    // The whole reason a widened trap set does not kill the image an exec puts in front of
-    // it: a loader opens its libraries read-only, and a read-only open is allowed without
-    // a handler anywhere. Measured on the real filter too (BUILDLOG 2026-09-11).
     const prog = buildProgram(test_arch, &test_set);
     const T = linux.SECCOMP.RET.TRAP;
     const A = linux.SECCOMP.RET.ALLOW;
     const openat = 257;
 
-    // O_RDONLY, and O_RDONLY with flags outside the mask (O_CLOEXEC, O_DIRECTORY): allowed.
     try std.testing.expectEqual(A, simulate(&prog, frameFlags(openat, test_arch, 0, 0)));
     try std.testing.expectEqual(A, simulate(&prog, frameFlags(openat, test_arch, 0o2000000, 0)));
     try std.testing.expectEqual(A, simulate(&prog, frameFlags(openat, test_arch, 0o200000, 0)));
-    // Each bit of the mask on its own: O_WRONLY, O_RDWR, O_CREAT, O_TRUNC.
     for ([_]u64{ 1, 2, 0o100, 0o1000 }) |f|
         try std.testing.expectEqual(T, simulate(&prog, frameFlags(openat, test_arch, f, 0)));
-    // The invalid access mode (both low bits) counts as write-capable on both sides.
     try std.testing.expectEqual(T, simulate(&prog, frameFlags(openat, test_arch, 3, 0)));
-    // A write-capable open the handler re-issues is allowed, like any other member's.
     try std.testing.expectEqual(A, simulate(&prog, frameFlags(openat, test_arch, 1, reissue_sentinel)));
-    // Only the low word of the flags argument is read; a high half cannot smuggle a trap.
     try std.testing.expectEqual(A, simulate(&prog, frameFlags(openat, test_arch, 1 << 32, 0)));
 }
 
 test "the trap set's length does not move the jump targets" {
-    // The offsets are arithmetic on the set's length and on where each member's block
-    // starts, so a one-member and a many-member program have to behave the same for their
-    // own members. This is the check the hand-written program failed.
     const one = [_]RawTrap{.{ .nr = 1 }};
     const one_prog = buildProgram(test_arch, &one);
     try std.testing.expectEqual(linux.SECCOMP.RET.TRAP, simulate(&one_prog, frame(1, test_arch, 0)));
@@ -1209,8 +961,6 @@ test "the trap set's length does not move the jump targets" {
             linux.SECCOMP.RET.ALLOW,
             simulate(&six_prog, frameFor(t, test_arch, 1, reissue_sentinel)),
         );
-        // A member with a flag test, read-only: allowed, and the others are unaffected
-        // because their frame carries nothing in that argument either way.
         if (t.flag_arg != null)
             try std.testing.expectEqual(
                 linux.SECCOMP.RET.ALLOW,
@@ -1234,20 +984,17 @@ test "the built-in program is the one this architecture's set describes" {
             linux.SECCOMP.RET.ALLOW,
             simulate(&program, frameFor(t, audit_arch, 1, reissue_sentinel)),
         );
-        // Every member with a flag test lets its read-only form through.
         if (t.flag_arg != null)
             try std.testing.expectEqual(
                 linux.SECCOMP.RET.ALLOW,
                 simulate(&program, frameFor(t, audit_arch, 0, 0)),
             );
     }
-    // `read` is in no set on either architecture.
     const read_nr: i32 = @intCast(@backingInt(SYS.read));
     try std.testing.expectEqual(linux.SECCOMP.RET.ALLOW, simulate(&program, frame(read_nr, audit_arch, 0)));
 }
 
 test "AUDIT_ARCH values match the header's" {
-    // `linux/audit.h`: AUDIT_ARCH_AARCH64 0xc00000b7, AUDIT_ARCH_X86_64 0xc000003e.
     // Composed from `elf.EM` here, so this pins the composition, not a copy of itself.
     try std.testing.expectEqual(
         @as(u32, 0xC000_00B7),
@@ -1278,10 +1025,7 @@ test "the trap frame's offsets keep the shape a transcription slip would break" 
             try std.testing.expectEqual(l.args[0], l.ret);
         },
         .x86_64 => {
-            // RAX is not an argument register, so the result offset must differ from all
-            // six — the slip this catches is pasting an argument offset into `ret`.
             for (l.args) |a| try std.testing.expect(a != l.ret);
-            // Every offset lands on an 8-byte `greg` boundary from `gregs[0]` at 40.
             for (l.args) |a| try std.testing.expectEqual(@as(usize, 0), (a - 40) % 8);
             try std.testing.expectEqual(@as(usize, 0), (l.ret - 40) % 8);
         },
@@ -1297,7 +1041,6 @@ const test_libc = struct {
 };
 
 test "a sa_mask holding SIGSYS comes back without it, and nothing else in the request moves" {
-    // glibc is the reference because the shim runs on nothing else.
     if (layout == null or builtin.abi != .gnu) return error.SkipZigTest;
 
     var act = std.mem.zeroes(std.c.Sigaction);
@@ -1309,10 +1052,8 @@ test "a sa_mask holding SIGSYS comes back without it, and nothing else in the re
 
     const out = withoutSigsys(&act) orelse return error.TestUnexpectedResult;
 
-    // The bit glibc calls SIGSYS is gone — and it is the byte the measurement named.
     try std.testing.expectEqual(@as(c_int, 0), test_libc.sigismember(&out.mask, sigsys_no));
     try std.testing.expectEqual(@as(u8, 0x40), std.mem.asBytes(&act)[11] ^ std.mem.asBytes(&out)[11]);
-    // Every other bit of the mask, and the rest of the request, as the caller wrote them.
     try std.testing.expectEqual(act.mask[0] & ~sigsys_bit, out.mask[0]);
     try std.testing.expectEqualSlices(c_ulong, act.mask[1..], out.mask[1..]);
     try std.testing.expectEqual(act.handler.sigaction, out.handler.sigaction);
@@ -1332,7 +1073,6 @@ test "a sa_mask without SIGSYS is forwarded as the caller's own" {
     try std.testing.expect(withoutSigsys(&act) == null);
 }
 
-/// What the stand-in for glibc's `sigaction` below was handed.
 const test_forward = struct {
     var ptr: ?*const anyopaque = null;
     var seen: std.c.Sigaction = undefined;
@@ -1362,13 +1102,11 @@ test "sigaction hands the caller's request on as written unless the guards are u
     var full = std.mem.zeroes(std.c.Sigaction);
     try std.testing.expectEqual(@as(c_int, 0), test_libc.sigfillset(&full.mask));
 
-    // The default mode: the caller's own pointer, SIGSYS still in the mask.
     guard_signal = false;
     try std.testing.expectEqual(@as(c_int, 0), sigaction(usr1, &full, null));
     try std.testing.expect(test_forward.ptr.? == @as(*const anyopaque, &full));
     try std.testing.expectEqual(@as(c_int, 1), test_libc.sigismember(&test_forward.seen.mask, sigsys_no));
 
-    // `syscalls` mode, a mask holding SIGSYS: a copy without it, and the caller's struct as it was.
     guard_signal = true;
     try std.testing.expectEqual(@as(c_int, 0), sigaction(usr1, &full, null));
     try std.testing.expect(test_forward.ptr.? != @as(*const anyopaque, &full));
@@ -1376,7 +1114,6 @@ test "sigaction hands the caller's request on as written unless the guards are u
     try std.testing.expectEqual(@as(c_int, 1), test_libc.sigismember(&test_forward.seen.mask, usr2));
     try std.testing.expectEqual(@as(c_int, 1), test_libc.sigismember(&full.mask, sigsys_no));
 
-    // `syscalls` mode, a mask without SIGSYS: the caller's own pointer again.
     var partial = full;
     partial.mask[sigsys_word] &= ~sigsys_bit;
     try std.testing.expectEqual(@as(c_int, 0), sigaction(usr1, &partial, null));
