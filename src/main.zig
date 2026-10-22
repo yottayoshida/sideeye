@@ -2110,7 +2110,7 @@ fn phaseChecker(run: *Run) void {
                 // docs/cli.md's to say (#678 is changing it), so the sentence points there rather
                 // than naming what is lost.
                 const seen = std.fmt.allocPrint(arena, "the checker exited {d} on the state the define starts from, as Sideeye restores it before every world, before the operation ran: nothing the target did is in it", .{code}) catch "the checker rejected the state the define starts from, before the operation ran";
-                const what = if (obs != null) seen else std.fmt.allocPrint(arena, "{s}, so a world the checker fails there says nothing about the target — make the checker accept that state (docs/cli.md says what a restore does not carry)", .{seen}) catch seen;
+                const what = if (obs != null) seen else std.fmt.allocPrint(arena, "{s}, so a world the checker fails there says nothing about the target — make the checker accept that state (" ++ contract.docUrl("docs/cli.md#example") ++ " says what a restore does not carry)", .{seen}) catch seen;
                 unknown(.checker_rejects_initial_state, refuse.withObservation(arena, what, obs, step), step);
             },
             else => {
