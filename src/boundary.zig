@@ -14,6 +14,28 @@ const textShown = defang.textShown;
 /// match is still never reported as identity. Null on every path that never spawned.
 pub var rec_image: ?image.Observation = null;
 
+pub var rec_end_deferred: ?posix.Term = null;
+
+pub fn heldEndStands(t: engine.TraceInfo) bool {
+    // Not only the marker: a header from another version, bytes that do not decode and a trace
+    // too large to read all read as one without it, and in each the shim may have loaded.
+    return t.saw_header or t.truncated or t.too_large or t.budget_refused != null;
+}
+
+pub fn defersRecordingEnd(term: posix.Term, observed: ?image.Observation) bool {
+    switch (term) {
+        // Not on an exit status: the target ran and chose it, or it is the fork stub's 126,
+        // whose child never ran an image that could have carried the marker.
+        .exited => return false,
+        .signaled, .unknown => {},
+    }
+    const obs = observed orelse return false;
+    return switch (obs.facts) {
+        .macho => |m| if (m.signing) |s| s.platformNamed() else false,
+        else => false,
+    };
+}
+
 pub var boundary_ev: BoundaryEvidence = .{};
 pub var observe_mode: contract.ObserveMode = .wrappers;
 
@@ -907,8 +929,13 @@ pub fn noShimDetail(arena: std.mem.Allocator) []const u8 {
     // "before the run started", not "as it started". The reading is taken ahead of the
     // spawn and nothing pins it to the instant of exec; the honest upper bound on what
     // the observation supports is that it happened first.
-    return std.fmt.allocPrint(arena, "{s}; read before the run started, on {s}{s}: {s}{s}", .{
-        opening, shown, found, body, drift,
+    const ended: []const u8 = if (rec_end_deferred) |t| switch (t) {
+        .signaled => |sig| std.fmt.allocPrint(arena, "; the recording run was killed by signal {d}", .{sig}) catch "",
+        .unknown => "; the recording run did not exit normally",
+        .exited => "",
+    } else "";
+    return std.fmt.allocPrint(arena, "{s}; read before the run started, on {s}{s}: {s}{s}{s}", .{
+        opening, shown, found, body, drift, ended,
     }) catch opening;
 }
 
@@ -1133,6 +1160,73 @@ test "noShimDetail says a bare name's file was found along PATH, and why none wa
     const st = noShimDetail(arena);
     try std.testing.expect(std.mem.indexOf(u8, st, "statically linked and no preloaded library can reach it") != null);
     try std.testing.expect(std.mem.indexOf(u8, st, "--observe supervised") == null);
+}
+
+test "a platform image that died is held for the shim's marker, and every other end is refused where it was" {
+    const of = struct {
+        fn f(facts: image.Facts) ?image.Observation {
+            return .{ .path = "/usr/bin/plutil", .size = 0, .facts = facts };
+        }
+    }.f;
+    const platform: image.Facts = .{ .macho = .{ .dyldlink = true, .signing = .{ .flags = 0, .platform = 1 } } };
+    const own_build: image.Facts = .{ .macho = .{ .dyldlink = true, .signing = .{ .flags = image.cs_runtime, .platform = 0 } } };
+
+    try std.testing.expect(defersRecordingEnd(.{ .signaled = 6 }, of(platform)));
+    try std.testing.expect(defersRecordingEnd(.{ .unknown = 0 }, of(platform)));
+    try std.testing.expect(!defersRecordingEnd(.{ .exited = 126 }, of(platform)));
+    try std.testing.expect(!defersRecordingEnd(.{ .exited = 1 }, of(platform)));
+    try std.testing.expect(!defersRecordingEnd(.{ .signaled = 6 }, of(own_build)));
+    try std.testing.expect(!defersRecordingEnd(.{ .signaled = 6 }, of(.{ .macho = .{ .dyldlink = true, .signing = null } })));
+    try std.testing.expect(!defersRecordingEnd(.{ .signaled = 6 }, of(.{ .elf = .{ .has_interp = true, .class64 = true } })));
+    try std.testing.expect(!defersRecordingEnd(.{ .signaled = 6 }, null));
+}
+
+test "a held recording run goes on only when its trace is empty, and is refused as it ended otherwise" {
+    var t: engine.TraceInfo = .{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .ops = .empty };
+    defer t.arena.deinit();
+    try std.testing.expect(!heldEndStands(t));
+    t.saw_header = true;
+    t.saw_shim_ready = true;
+    try std.testing.expect(heldEndStands(t));
+    t.saw_shim_ready = false;
+    t.version_mismatch = true;
+    try std.testing.expect(heldEndStands(t));
+    t.version_mismatch = false;
+    t.saw_header = false;
+    t.truncated = true;
+    try std.testing.expect(heldEndStands(t));
+    t.truncated = false;
+    t.too_large = true;
+    try std.testing.expect(heldEndStands(t));
+    t.too_large = false;
+    t.budget_refused = 1;
+    try std.testing.expect(heldEndStands(t));
+}
+
+test "a no_shim_marker detail says how a held recording run ended, and nothing when none was held" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    const saved_mode = observe_mode;
+    const saved_image = rec_image;
+    const saved_end = rec_end_deferred;
+    defer {
+        observe_mode = saved_mode;
+        rec_image = saved_image;
+        rec_end_deferred = saved_end;
+    }
+    observe_mode = .wrappers;
+    rec_image = .{ .path = "/nonexistent-for-this-test/plutil", .size = null, .facts = .{ .macho = .{ .dyldlink = true, .signing = .{ .flags = 0, .platform = 1 } } } };
+
+    rec_end_deferred = null;
+    const plain = noShimDetail(arena);
+    try std.testing.expect(std.mem.indexOf(u8, plain, "its code directory names a platform") != null);
+    try std.testing.expect(std.mem.indexOf(u8, plain, "recording run") == null);
+
+    rec_end_deferred = .{ .signaled = 6 };
+    try std.testing.expect(std.mem.endsWith(u8, noShimDetail(arena), "; the recording run was killed by signal 6"));
+    rec_end_deferred = .{ .unknown = 0 };
+    try std.testing.expect(std.mem.endsWith(u8, noShimDetail(arena), "; the recording run did not exit normally"));
 }
 
 test "missedOperationNext names the syscall mode only on Linux and only where it is not in use (#599)" {
