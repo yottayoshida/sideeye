@@ -1,0 +1,15 @@
+falsify: app.conf is neither the old content nor the new
+PASS  4/4 explored worlds satisfied the built-in atomicity invariant
+cwd         /Users/runner/work/sideeye/sideeye  (none declared: Sideeye's own)
+
+explored    4 worlds (crash points 3 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 3 operations (8048 syscall lines examined, 5 in scope of the judged state), witness fs_usage. Narrower than strace, each toward refusal: a rename is checked at its old path only (fs_usage prints no destination); a process boundary is not tolerated (fs_usage excludes some processes by name); a chdir by the subject leaves relative operands unplaceable; a pathname cut by the display width refuses. Two things it cannot see at all: a process leaving the containment group, and a neighbour's descriptor into the state directory opened before the capture began
+metadata    2 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchown x1, fchmod x1. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 4 world(s)
+l1          no marker configured
+case        (none)
+processes   no other process mutated the judged directory in the fs_usage capture; fs_usage excludes some processes by name, so a child that execs one of them would not appear (ADR 0031)
+not tested  power loss, torn writes, concurrent processes
+sideeye: json sha256=0040663427377a2cd51535787fdb3ac2c0458e8ee7eefea4499b8a4e3ab7d59f;
