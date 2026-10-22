@@ -1,0 +1,24 @@
+PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+
+cwd          /Users/runner/work/sideeye/sideeye  (none declared: Sideeye's own)
+atomicity    1 path(s) judged pre-or-post
+oracle       not run (no --oracle given)
+processes    not established: no boundary was recorded, but the shim sees only libc's own entry points (fork, vfork, posix_spawn, the exec family, pthread_create, setsid, setpgid) — a child created through a raw syscall would not appear here — and no second witness ran
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2001 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+
+note         no oracle checked the shim's account against a second witness;
+             explore's PASS will require --oracle-fs-usage (after sudo -v)
+             or --allow-unverified
+
+next         sideeye explore --state /Users/runner/s929/sed/st --setup /Users/runner/work/sideeye/sideeye/spike/macos-shapes-929/sed/setup.sh --operation '/opt/homebrew/bin/gsed -i s/mode=old/mode=new/ /Users/runner/s929/sed/st/app.conf' \
+               --check <your-invariant.sh> --work /var/folders/s6/5hzmn6lx4dz5nxs7k_0slzph0000gn/T//shapes-sed-BNv8Zm/p --allow-unverified
+sideeye: json sha256=ac1872e990d9b99c3006b62e812e2851ba596a01cc0fe79d5c0322ccc2464c51;
