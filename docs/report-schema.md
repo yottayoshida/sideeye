@@ -447,7 +447,15 @@ hardened-runtime flag without naming a platform take the class wall. One whose
 code directory names a platform — the marker Apple's own binaries carry, whatever
 flags sit beside it — takes `non_system_build`, which names a build of the tool
 that is not part of macOS (#710, ADR 0097; measured on `/bin/cp`, an ad-hoc
-re-signed copy of it, which the system killed as it started, and Homebrew's `xz`). A file that was
+re-signed copy of it, which the system killed as it started, and Homebrew's `xz`). A recording
+run with such an image that ends on a signal, or without a status, is not refused
+`recording_run_failed` where the run ends: the engine reads the trace first, and if it is empty, holding
+nothing the shim wrote, the run goes on to this refusal, after the final snapshot like one that
+completed, with the signal named at the end of `message` (#964; measured as dyld refusing the
+arm64 shim in an arm64e image, signal 6, on GitHub's macOS runners). A trace holding anything — the
+marker, a header from another version, bytes that do not decode — or too large to read whole is
+refused `recording_run_failed` as before, and an exit status, 126 among them, is
+refused where the run ends whatever the image. A file that was
 read and could not be recognised as an executable image — first four bytes
 unreadable, a magic none of the three families claims (where a `#!` script lands,
 named by path or by a bare name), an ELF magic followed by a class or data byte
