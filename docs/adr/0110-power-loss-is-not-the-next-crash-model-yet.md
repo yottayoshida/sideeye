@@ -85,7 +85,10 @@ to be argued, not a design:
 
 Which call counts as a sync is a decision of its own: on macOS, `fsync` does not flush the
 device's cache and `fcntl(F_FULLFSYNC)` does, so the rule as written would let a macOS PASS claim
-more than happened (§4.5).
+more than happened (§4.5). The oracle reads `sync_file_range` and `syncfs` as calls that change
+nothing (#946), which is true under the process crash and no ruling on either: a reopening
+classifies them itself, and does not count `sync_file_range` as a sync — it writes no metadata and
+flushes no device cache.
 
 The trace already records `fsync` as an operation the engine can kill at (`OpClass.isKillPoint`
 in `src/contract.zig`), so the boundaries the rule speaks of are observed today. What is missing is
