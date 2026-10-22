@@ -8630,8 +8630,8 @@ elif ! echo "$wstep" | grep -q "invoke that command as the operation instead"; t
     # "Check whether …" and rewrote what to do about it would survive all four legs.
     echo "FAIL wrapped operation: the step asks the question but names no action: $wstep"
     fails=$((fails + 1))
-elif ! echo "$wstep" | grep -q "What the target has to be"; then
-    echo "FAIL wrapped operation: the step dropped the class wall the README entrance gives (#506)"
+elif ! echo "$wstep" | grep -q "report-schema.md#refusals-by-reason"; then
+    echo "FAIL wrapped operation: the step dropped the class wall, the list of what each refusal stands at (#506)"
     fails=$((fails + 1))
 else
     echo "ok   a wrapped operation's refusal asks about the wrapper AND keeps the class wall (#506)"
@@ -11887,7 +11887,7 @@ if [ -z "$tstep" ]; then
 elif ! echo "$tstep" | grep -q "Check whether the operation is a shell script"; then
     echo "FAIL boundary step (oracle-seen): still the old class-wall sentence: $tstep"
     fails=$((fails + 1))
-elif ! echo "$tstep" | grep -q "What the target has to be"; then
+elif ! echo "$tstep" | grep -q "report-schema.md#refusals-by-reason"; then
     echo "FAIL boundary step (oracle-seen): the step dropped the class wall (#506)"
     fails=$((fails + 1))
 else
@@ -12426,11 +12426,11 @@ for doc in $ns_docs; do
         ns_fails=$((ns_fails + 1))
     fi
 done
-# The README section the class-wall sentence sends the operator to, by its heading.
+# The README section the threads and the --observe syscalls sentences send the operator to, by its heading.
 if grep -q '^## What the target has to be' "$ROOT/README.md"; then
-    echo "ok   next_step: README still has the 'What the target has to be' section the class-wall step names"
+    echo "ok   next_step: README still has the 'What the target has to be' section the threads and syscalls steps name"
 else
-    echo "FAIL next_step: the class-wall step names a README section that is not there"
+    echo "FAIL next_step: the threads and syscalls steps name a README section that is not there"
     ns_fails=$((ns_fails + 1))
 fi
 # The define surface has to say which of the three commands the insertion goes into, in
