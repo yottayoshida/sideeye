@@ -161,7 +161,7 @@ the case file — nothing else in the report was load-bearing for them.
 | `apparatus` | string[] | the define declared it | The define's `[define] apparatus` entries (or `--apparatus` flags; on a replay, the case's `define.apparatus`), each as spelled — `env:NAME`, `env:NAME=VALUE`, `preload:LIB`, `pythonpath:FILE`, `note:TEXT` — in order. The engine checked every entry it can — the `env:` entries before `setup` ran, the rest after it and before recording — and refused the run as SETUP ERROR when one was missing; a report that carries this field is a run those devices reached (ADR 0041). Absent when the define declared nothing, so a report from a define without the key reads as it always did. A field added after the v1.0 tag, under the additive allowance surface 2 of `docs/contract-freeze.md` keeps open. |
 | `apparatus_unchecked` | string[] | `apparatus` has a `note:` entry | The `note:` entries of `apparatus` again: declared, carried, not checked by the engine. Present only when there is at least one, beside `apparatus`. A field added after the v1.0 tag, under the same allowance. |
 | `scratch` | string[] | the define declared it | The define's `[define] scratch` entries (or `--scratch` flags), each as spelled after normalisation (trailing slashes dropped), in order: paths relative to the state directory that the built-in invariants judged in no world — not their bytes, not their presence, whether the recording had them before, after, or both — each entry covering the path itself and everything beneath it (ADR 0043). The `l0` line says how many recorded paths the declaration matched, and `not_tested` names the declaration. Absent when the define declared nothing, so a report from a define without the key reads as it always did. A field added after the v1.0 tag, under the additive allowance surface 2 of `docs/contract-freeze.md` keeps open. |
-| `next_step` | string | UNKNOWN | One sentence saying what to do about the refusal — change the define, pass a flag, narrow the state directory, fix the environment, re-run as a user that can read what the run left, or file it as Sideeye's defect. Chosen at the site that raised the refusal, where the cause is known, so two refusals sharing an `unknown_reason` may carry different steps; `message` keeps the observation and this keeps the action (ADR 0030's line). A field added after the v1.0 tag, under the additive allowance surface 2 of `docs/contract-freeze.md` keeps open. |
+| `next_step` | string | UNKNOWN | One sentence saying what to do about the refusal — change the define, pass a flag, narrow the state directory, fix the environment, run the operation or the checker by hand and read what it printed, re-run as a user that can read what the run left, or file it as Sideeye's defect. Chosen at the site that raised the refusal, where the cause is known, so two refusals sharing an `unknown_reason` may carry different steps; `message` keeps the observation and this keeps the action (ADR 0030's line). A field added after the v1.0 tag, under the additive allowance surface 2 of `docs/contract-freeze.md` keeps open. |
 
 `unknown_reason` values (closed set, contract v19 — v19 moved the recorded account, not the
 vocabulary, ADR 0098; the set gained `nothing_could_fail` after v18 without moving the version, ADR 0091, and `checker_rejects_initial_state` after v19 without moving it, ADR 0107; before that it was unchanged from v12, the version having
@@ -237,9 +237,10 @@ reported as the target's FAIL at crash point 1, `after (start)()`, although noth
 in it. It is raised by `explore` and by `replay`, both of which falsify the checker, after the
 falsification has passed; never by `preflight`, which does not run the checker. The checker's output
 on that state is re-emitted with each line marked `start: `, as the falsification's are marked
-`falsify: `, and only when it refuses. `next_step` is `fix_define` under every observation mode — no
-run of the operation has touched the state it judged — or, for a toml that declares no `cwd`, the
-step below; an exit of 126 takes `environment`, as the falsification's does, because the engine's
+`falsify: `, and only when it refuses. `next_step` is `fix_define` under every observation mode when
+the checker exited non-zero — no run of the operation has touched the state it judged — or, for a
+toml that declares no `cwd`, the step below; a checker that ended without an exit status takes
+`run_checker_by_hand`, as one that does so on the corrupted state does; an exit of 126 takes `environment`, as the falsification's does, because the engine's
 fork stub exits 126 too.
 
 A member added after the v1.0 tag is a break of surface 2: each needs its own owner ruling, none licenses the next, and `docs/contract-freeze.md` records every one; whichever change adds one, the acceptance check above holds this page to the enum.
@@ -478,8 +479,8 @@ syscalls` takes `syscalls_may_have_killed`, because following the site's own
 sentence (declare a different success convention, check the marker string, check
 the operation and the checker against each other) would have a broken run
 judged. The branches that exit 126 keep `environment`. `preflight --twice`'s
-second run (`second_run_diverged`), the baseline's exit and the baseline's marker
-layer (`fix_define`) keep their own steps: each compares against a recording the same mode already completed,
+second run and the baseline's exit (`second_run_diverged`, or `run_by_hand_signalled` when the
+baseline ended on a signal) and the baseline's marker layer (`fix_define`) keep their own steps: each compares against a recording the same mode already completed,
 so a kill that happened in both runs does not reach it. The checker is the
 exception because it judges the state from outside rather than against the
 recording, and the baseline is the first clean state left by the operation that it sees.

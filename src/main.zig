@@ -570,7 +570,7 @@ fn phaseDefine(run: *Run) void {
     var config_dir: ?[]const u8 = null;
     if (args.config) |cfg_path| {
         if (args.state != null or args.setup != null or args.operation != null or args.check != null or args.marker != null or args.expect_status != null or args.cwd != null or args.apparatus.len != 0 or args.scratch.len != 0 or args.recovery != null or args.recovery_check != null)
-            setupError(.define_invalid, "--config and the define-surface flags (--state, --setup, --operation, --check, --marker, --expect-status, --cwd, --apparatus, --scratch, --recovery, --recovery-check) are mutually exclusive: the define lives in one place or the other");
+            setupError(.define_invalid, "--config and the define-surface flags (" ++ cli.define_surface_list ++ ") are mutually exclusive: the define lives in one place or the other");
         const arena = arena_state.allocator();
         // Bounded, and the only reader that is. The path is operator-named and may
         // legitimately be a pipe — `--config /dev/stdin`, a process substitution — so it
@@ -1203,8 +1203,11 @@ fn phaseRecording(run: *Run) void {
     if (args.oracle) |oracle_path| {
         var ob: [contract.max_path]u8 = undefined;
         const oz = std.mem.printSentinel(&ob, "{s}", .{oracle_path}, 0) catch setupError(.define_invalid, "--oracle path is too long");
-        if (posix.access(oz.ptr, posix.X_OK) != 0)
-            setupError(.environment, "--oracle is not an executable file; the completeness check cannot run");
+        if (posix.access(oz.ptr, posix.X_OK) != 0) {
+            const bare = if (std.mem.indexOfScalar(u8, oracle_path, '/') == null) " — it is checked as a path from the directory Sideeye was started in, not looked up on PATH, so pass strace's full path" else "";
+            const found = if (refuse.findStraceForHint(arena)) |s| std.fmt.allocPrint(arena, "; strace is on this machine: {s}", .{s}) catch "" else "";
+            setupError(.environment, std.fmt.allocPrint(arena, "--oracle (SIDEEYE_MCP_ORACLE under sideeye mcp) names {s}, which is not an executable file{s}{s}; the completeness check cannot run", .{ textShown(arena, oracle_path), bare, found }) catch "--oracle is not an executable file; the completeness check cannot run");
+        }
     }
 
     // Checked here for the reason the line above is: before the operation runs, so that
@@ -1683,7 +1686,7 @@ fn phaseOracle(run: *Run) void {
         // An oracle that observed nothing agrees with a shim that observed nothing, and
         // the report says "agreed" either way. The acceptance suite asserts by hand that
         if (parsed.lines_seen == 0)
-            unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the oracle produced no output, so nothing was compared against {s}'s account", .{boundary.recorder()}) catch "the oracle produced no output, so nothing was compared", .environment);
+            unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the oracle produced no output, so nothing was compared against {s}'s account — the program given as the oracle wrote nothing to the file it was told to: check that it is strace, and that it writes its account where -o names", .{boundary.recorder()}) catch "the oracle produced no output, so nothing was compared", .environment);
 
         if (parsed.boundary) |name|
             unknown(.child_process_detected, name, .unwrap_or_class_wall);
@@ -2073,7 +2076,7 @@ fn phaseChecker(run: *Run) void {
                     unknown(.checker_not_falsified, refuse.withObservation(arena, "the checker accepted a state whose every file had been overwritten with junk and every symlink retargeted at a nonexistent name", obs, step), step);
                 }
             },
-            else => unknown(.checker_not_falsified, "the checker did not exit normally when given a corrupted state", .fix_define),
+            else => unknown(.checker_not_falsified, "the checker did not exit normally when given a corrupted state", .run_checker_by_hand),
         }
         report.checker_note = "falsified before the run (corrupted state -> check failed)";
 
@@ -2115,7 +2118,7 @@ fn phaseChecker(run: *Run) void {
             },
             else => {
                 report.sayCaptureMarked(arena, start_out, "start");
-                unknown(.checker_rejects_initial_state, "the checker did not exit normally on the state the define starts from, as Sideeye restores it before every world, before the operation ran; make the checker accept that state", .fix_define);
+                unknown(.checker_rejects_initial_state, "the checker did not exit normally on the state the define starts from, as Sideeye restores it before every world, before the operation ran", .run_checker_by_hand);
             },
         }
     }
@@ -2356,8 +2359,9 @@ fn phaseExploration(run: *Run) void {
             .exited => |code| if (code == 126 and code != expect_status)
                 unknown(.baseline_run_failed, "the un-killed baseline world exited 126: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the operation itself exited 126 — indistinguishable from here, and not a statement about the restored state", .environment)
             else if (code != expect_status)
-                unknown(.baseline_run_failed, std.fmt.allocPrint(arena, "the un-killed baseline world exited {d} where {d} was expected although the recording run of the same command succeeded: the restored state differs from the recorded one", .{ code, expect_status }) catch "the un-killed baseline world exited with an unexpected status", .fix_define),
-            else => unknown(.baseline_run_failed, "the un-killed baseline world did not exit normally", .fix_define),
+                unknown(.baseline_run_failed, std.fmt.allocPrint(arena, "the un-killed baseline world exited {d} where {d} was expected although the recording run of the same command succeeded: the restored state differs from the recorded one", .{ code, expect_status }) catch "the un-killed baseline world exited with an unexpected status", .second_run_diverged),
+            .signaled => |sig| unknown(.baseline_run_failed, std.fmt.allocPrint(arena, "the un-killed baseline world was killed by signal {d}", .{sig}) catch "the un-killed baseline world was killed by a signal", .run_by_hand_signalled),
+            else => unknown(.baseline_run_failed, "the un-killed baseline world did not exit normally", .run_by_hand_signalled),
         };
 
         var crashed = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot a crashed state");
