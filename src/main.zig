@@ -1677,7 +1677,7 @@ fn phaseOracle(run: *Run) void {
         // An oracle that observed nothing agrees with a shim that observed nothing, and
         // the report says "agreed" either way. The acceptance suite asserts by hand that
         if (parsed.lines_seen == 0)
-            unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the oracle produced no output, so nothing was compared against {s}'s account — the program given as the oracle wrote nothing to the file it was told to: check that it is strace, and that it writes its account where -o names", .{boundary.recorder()}) catch "the oracle produced no output, so nothing was compared", .environment);
+            unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the oracle produced no output, so nothing was compared against {s}'s account — the program given as the oracle wrote nothing to its output file: check that it is strace, and that it writes its account where -o names", .{boundary.recorder()}) catch "the oracle produced no output, so nothing was compared", .environment);
 
         if (parsed.boundary) |name|
             unknown(.child_process_detected, name, .unwrap_or_class_wall);
@@ -2104,7 +2104,7 @@ fn phaseChecker(run: *Run) void {
                 // docs/cli.md's to say (#678 is changing it), so the sentence points there rather
                 // than naming what is lost.
                 const seen = std.fmt.allocPrint(arena, "the checker exited {d} on the state the define starts from, as Sideeye restores it before every world, before the operation ran: nothing the target did is in it", .{code}) catch "the checker rejected the state the define starts from, before the operation ran";
-                const what = if (obs != null) seen else std.fmt.allocPrint(arena, "{s}, so a world the checker fails there says nothing about the target — make the checker accept that state (docs/cli.md says what a restore does not carry)", .{seen}) catch seen;
+                const what = if (obs != null) seen else std.fmt.allocPrint(arena, "{s}, so a world the checker fails there says nothing about the target — make the checker accept that state (" ++ contract.docUrl("docs/cli.md#example") ++ " says what a restore does not carry)", .{seen}) catch seen;
                 unknown(.checker_rejects_initial_state, refuse.withObservation(arena, what, obs, step), step);
             },
             else => {

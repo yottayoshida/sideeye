@@ -200,7 +200,7 @@ fn toleratedChildrenClause(scratch: []u8, children: usize) []const u8 {
 /// (measured), so ADR 0031 §2a rules that a boundary is never tolerated under it. One
 /// constant because two sites need the same sentence — the no-boundary arm below, and
 /// the image-change arm above it, which must not borrow strace's stronger wording.
-const fs_usage_silence = "no other process mutated the judged directory in the fs_usage capture; fs_usage excludes some processes by name, so a child that execs one of them would not appear (ADR 0031)";
+const fs_usage_silence = "no other process mutated the judged directory in the fs_usage capture; fs_usage excludes some processes by name, so a child that execs one of them would not appear (" ++ contract.docUrl("docs/adr/0031-the-macos-oracle-is-fs-usage-and-what-it-cannot-scope-refuses.md") ++ ")";
 
 fn boundaryRecordingClause(scratch: []u8) []const u8 {
     const ev = boundary_ev;

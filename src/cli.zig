@@ -17,7 +17,7 @@ const setupError = refuse.setupError;
 const say = report.say;
 const removeFile = files.removeFile;
 
-pub const version = "1.15.0";
+pub const version = contract.sideeye_version;
 
 pub const define_surface_flags = [_][]const u8{ "--state", "--setup", "--operation", "--check", "--marker", "--expect-status", "--cwd", "--apparatus", "--scratch", "--recovery", "--recovery-check" };
 
@@ -328,10 +328,14 @@ const usage_fmt =
     \\so a target that fails partway through would be explored against a sequence it
     \\never performs; v0.1 reports UNKNOWN rather than guess.
     \\
+    \\Pages named above are in the repository at the URL below; ADR NNNN is
+    \\docs/adr/NNNN-*.md there.
+    \\{s}
+    \\
 ;
 
 pub fn usage() void {
-    say(usage_fmt, .{ version, contract.contract_version });
+    say(usage_fmt, .{ version, contract.contract_version, contract.docUrl("") });
 }
 
 const synopsis_prefix = "  sideeye ";
@@ -647,7 +651,9 @@ pub fn renderCommandHelp(arena: std.mem.Allocator, cmd: []const u8) error{OutOfM
             };
         }
     }
-    try out.appendSlice(arena, "\nEvery flag in full, and the other commands: sideeye help\n");
+    const names_adr = std.mem.indexOf(u8, out.items, "ADR ") != null;
+    try out.appendSlice(arena, "\nEvery flag in full, and the other commands: sideeye help\nPages named here: " ++ contract.docUrl("") ++ "\n");
+    if (names_adr) try out.appendSlice(arena, "ADR NNNN is docs/adr/NNNN-*.md there.\n");
     return out.items;
 }
 
@@ -1174,7 +1180,7 @@ test "the whole help fits what one say can print (#712)" {
     // here as a number so this test root does not pull in report.zig's own tests.
     const capacity = 32 * 1024;
     var buf: [capacity]u8 = undefined;
-    const text = try std.fmt.bufPrint(&buf, usage_fmt, .{ version, contract.contract_version });
+    const text = try std.fmt.bufPrint(&buf, usage_fmt, .{ version, contract.contract_version, contract.docUrl("") });
     try std.testing.expect(text.len + 64 < capacity);
 }
 
@@ -1374,6 +1380,10 @@ test "every NextStep renders one sentence whose flags the help text accepts (#27
         try std.testing.expect(s[s.len - 1] == '.');
         var i: usize = 0;
         while (std.mem.indexOfPos(u8, s, i, "--")) |at| {
+            if (insideUrl(s, at)) {
+                i = at + 2;
+                continue;
+            }
             var end = at + 2;
             while (end < s.len and (std.ascii.isAlphabetic(s[end]) or s[end] == '-')) end += 1;
             const flag = s[at..end];
@@ -1596,4 +1606,9 @@ test "the --config help names exactly the flags --config is refused beside" {
         try std.testing.expect(known);
     }
     try std.testing.expectEqual(define_surface_flags.len, named);
+}
+
+fn insideUrl(s: []const u8, at: usize) bool {
+    const start = std.mem.lastIndexOf(u8, s[0..at], "https://") orelse return false;
+    return std.mem.indexOfScalar(u8, s[start..at], ' ') == null;
 }

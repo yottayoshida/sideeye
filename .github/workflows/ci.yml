@@ -1621,6 +1621,12 @@ jobs:
       - name: The skills name only commands, flags, names and pages that exist
         run: python3 spike/check-skills.py .
 
+      - name: The printed-pages check proves it can go red
+        run: python3 spike/check-printed-links.py --selftest
+
+      - name: Every page the engine prints opens at the release's tag, and every unknown_reason has its line
+        run: python3 spike/check-printed-links.py .
+
   # The other half of docs/unknown-rate.md. Check 12 holds everything between the
   # results markers to a fresh recomputation; the counts describing how the cohort
   # defines are sorted sit outside them, in prose, and moved whenever a cohort closed.
