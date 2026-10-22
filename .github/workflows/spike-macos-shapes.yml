@@ -1,4 +1,5 @@
-# The macOS target-shape measurement behind #929: the released engine run on the three shapes
+# The macOS target-shape measurement behind #929: the released engine, or with `build: source` the
+# dispatched ref built as the release builds it, run on the three shapes
 # spike/macos-shapes-929/SELECTION.md fixed, on macOS 14 and 26. This is a measurement apparatus,
 # not standing CI — it must never be made a required check (spike-fsusage.yml and
 # spike-platforms.yml are the precedent). The record is copied into the tree by hand, in a pull

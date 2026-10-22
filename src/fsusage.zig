@@ -1679,6 +1679,8 @@ test "an attribute read in fs_usage's _extended spelling on a state file is a re
         try cases.append(a, .{ .line = try std.fmt.allocPrint(a, "05:18:09.027977  {s}  F=3                                0.000003   gsed.6341\n", .{call}), .refuses = false });
     for ([_][]const u8{ "fchmod_extended", "chmod_extended", "open_extended" }) |call|
         try cases.append(a, .{ .line = try std.fmt.allocPrint(a, "05:18:09.027977  {s}  F=3                                0.000003   gsed.6341\n", .{call}), .refuses = true });
+    for ([_][]const u8{ "chmod_extended", "open_extended", "mkdir_extended" }) |call|
+        try cases.append(a, .{ .line = try std.fmt.allocPrint(a, "05:18:09.027977  {s}         /tmp/st/sedXYZ                     0.000003   gsed.6341\n", .{call}), .refuses = true });
     for (cases.items) |c| {
         const text = try std.fmt.allocPrint(a, "05:18:09.000001  open              F=9   /work/trace.bin                       0.000100   gsed.6341\n" ++
             "05:18:09.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   gsed.6341\n" ++
