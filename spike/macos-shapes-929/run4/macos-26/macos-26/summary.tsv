@@ -1,0 +1,15 @@
+sed-control	the checker fails the broken state, as it must
+sed-preflight	exit 0	2s	PREFLIGHT  recording accepted — 3 state-changing operation(s) observed
+sed-oracle	the preflight accepted the recording: #929 protocol
+sed-oracle	exit 0	2s	PASS  4/4 explored worlds satisfied the built-in atomicity invariant
+sed-unverified	exit 0	1s	PASS  4/4 explored worlds satisfied the built-in atomicity invariant
+git-control	the checker fails the broken state, as it must
+git-preflight	exit 2	0s	UNKNOWN  boundary_without_oracle
+git-oracle	the preflight refused: run beyond #929 protocol
+git-oracle	exit 2	2s	UNKNOWN  boundary_without_oracle
+git-unverified	exit 2	1s	UNKNOWN  boundary_without_oracle
+plutil-control	the checker fails the broken state, as it must
+plutil-preflight	exit 2	0s	UNKNOWN  no_shim_marker
+plutil-oracle	the preflight refused: run beyond #929 protocol
+plutil-oracle	exit 2	2s	UNKNOWN  no_shim_marker
+plutil-unverified	exit 2	0s	UNKNOWN  no_shim_marker

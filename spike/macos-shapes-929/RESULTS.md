@@ -53,3 +53,17 @@ On macOS, the current release judges **GNU sed's in-place edit only with `--allo
 git and plutil read as they did in run2 on both hosts (`boundary_without_oracle`; `recording_run_failed`, #964); this change does not touch them.
 
 `env.txt` now records two more facts. **SIP is disabled on both runners** (`csrutil status`), which bears on #964 and is not a property of macOS 14 or 26. And `fs_usage`'s own table holds thirteen `_extended` spellings on both hosts: the seven reads the reader now accepts (`stat_extended`, `lstat_extended`, `fstat_extended`, `access_extended`, `stat_extended64`, `lstat_extended64`, `fstat64_extended`) and six it does not take as reads: five that change a file and are still refused on the judged directory (`open_extended`, `mkdir_extended`, `chmod_extended`, `fchmod_extended`, `mkfifo_extended`), and `umask_extended`, which names neither a path nor a descriptor and so is never placed in it. The two sets were compared both ways, so no read spelling on these hosts is missing from the list and none in the list is absent from the table. Only `fstat64_extended` has been seen, and that says nothing about the others: run2's reader stops at its first unmodelled line, and run3's accepts these and keeps no capture. The other six are there because they are the same kind of call, and the list is spelled from `fs_usage`'s table, not from xnu's syscall names (`stat64_extended` there is `stat_extended64` here).
+
+## run4: the plutil shape after #964, and a third runner
+
+`run4/` is Actions run 39749747468, dispatched with `build: source` on the branch that carries #964's change on top of #963's (commit `daec8a2a`), on three images: macOS 14.8.9, **15.7.9** (added for this run) and 26.6.2. SIP is disabled on all three.
+
+| Shape | Host | `preflight --twice` | `explore --oracle-fs-usage` | `explore --allow-unverified` |
+|---|---|---|---|---|
+| 3. `/usr/bin/plutil` | 14.8.9 | UNKNOWN `no_shim_marker` | UNKNOWN `no_shim_marker` | UNKNOWN `no_shim_marker` |
+| 3. `/usr/bin/plutil` | 15.7.9 | UNKNOWN `no_shim_marker` | UNKNOWN `no_shim_marker` | UNKNOWN `no_shim_marker` |
+| 3. `/usr/bin/plutil` | 26.6.2 | UNKNOWN `no_shim_marker` | UNKNOWN `no_shim_marker` | UNKNOWN `no_shim_marker` |
+
+Every plutil report names the platform marker it read, ends its detail with "the recording run was killed by signal 6", carries an L0 account (one path judged), and takes the step naming a build that is not part of macOS. run2 and run3 had `recording_run_failed` on 14 and 26, with no L0 account. sed (PASS 4/4, oracle-verified) and git (`boundary_without_oracle`) read as in run3 on all three hosts.
+
+**The 15.7.9 runner dies of signal 6 too.** The owner's macOS 15.3.1, SIP enabled, strips the insertion and the run completes (the 2026-08-18 reading, and again with this build in `run4/local-macos-15.3.1.txt`, which also holds a platform binary killed by signal 6, an own build that aborts, and the `--marker` cases). So the difference #964 was filed under, macOS 14 and 26 against 15, is not the macOS version. SIP is the one difference the record names, not the only one: the runners are virtual machines on other hardware. The change does not depend on which it is: it reads the image's platform marker and the trace's missing marker, and both ways of keeping the shim out now answer alike.
