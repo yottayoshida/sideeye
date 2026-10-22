@@ -286,7 +286,18 @@ reads (`getxattr`, `lgetxattr`, `fgetxattr`, `listxattr`, `llistxattr`, `flistxa
 `inotify_add_watch`, `preadv`/`preadv2`, `poll`/`ppoll` and `select`/`pselect6` on the
 state directory are read as reads too** (#684): vim asking for a file's ACL, dotdrop and
 firewall-offline-cmd listing a file's attributes, and fish watching its variables'
-directory were each refused for asking. Extended-attribute writes (`setxattr`,
+directory were each refused for asking. **`sync_file_range` and `syncfs` are read as reads too, and
+a call that names its files by path — an open, create, rename, link, unlink, mkdir, rmdir, symlink,
+truncate or attribute call — given the empty path is passed over** (#945, #946): under the
+process-crash model neither sync changes what a crashed state holds, and an empty path without
+`AT_EMPTY_PATH` is answered `ENOENT` before anything is looked up — DuckDB's checkpoint and dpkg's
+upgrade were refused for them. The empty path is judged from the argument, not the result, so the
+trapped first line under `--observe syscalls` is passed over as well. Not passed over: `linkat`'s
+first path and an `*xattrat` call's when the flags hold `AT_EMPTY_PATH` or cannot be read. A
+`linkat` with an empty first path, called directly or under `--observe syscalls` or `supervised`,
+is still refused by the recording witnesses, which record it as a link by descriptor; the one glibc
+issues for `link(3)` under the default mode is recorded by nothing and passed over here; an ownership, permission or timestamp call given the empty path is still listed
+in `metadata_observed`, and any other call given one is read as it was before. Extended-attribute writes (`setxattr`,
 `removexattr` and their `l`/`f` forms) still refuse, through a relative path as through an
 absolute one, from the subject and from every child. A path argument is resolved by its spelling, as
 this reader resolves every path argument, so a write naming a symbolic link outside the state that

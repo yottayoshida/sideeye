@@ -40,3 +40,16 @@ v1.15.0 carries no fix aimed at the refusals met here: the witness's reader, the
 On macOS, the current release judges **GNU sed's in-place edit only with `--allow-unverified`**: the witness refuses an attribute read it does not model. That is GNU sed's result, not every single-process tool's: the platform table's `gdd` probe, also from Homebrew, gets an oracle-verified FAIL. The release cannot judge a tool that starts helper processes, by design; git's refusal names Linux's `--oracle` as the next step, which was not measured here. It cannot judge an Apple platform binary, which will not load the shim.
 
 **One next change**, supported by the same line on both hosts: model `fs_usage`'s `_extended` stat spellings as the read-only calls they are, then re-run the sed shape (#963).
+
+## run3: the sed shape after #963
+
+`run3/` is Actions run 39746110360, dispatched with `build: source` on the branch that carries #963's change (commit `15963469`), on the same two images: macOS 14.8.9 and 26.6.2. The engine and shim were built on each runner with the flags `release.yml` uses for `aarch64-macos`, read from that file, so `sideeye version` still prints 1.15.0; `install-*.txt` names the commit. Nothing else about the shapes, their checkers or their controls changed.
+
+| Shape | Host | `preflight --twice` | `explore --oracle-fs-usage` | `explore --allow-unverified` |
+|---|---|---|---|---|
+| 1. GNU sed 4.10 | 14.8.9 | accepted, 3 operations | **PASS 4/4, `oracle_verified: true`** | PASS 4/4 |
+| 1. GNU sed 4.10 | 26.6.2 | accepted, 3 operations | **PASS 4/4, `oracle_verified: true`** | PASS 4/4 |
+
+git and plutil read as they did in run2 on both hosts (`boundary_without_oracle`; `recording_run_failed`, #964); this change does not touch them.
+
+`env.txt` now records two more facts. **SIP is disabled on both runners** (`csrutil status`), which bears on #964 and is not a property of macOS 14 or 26. And `fs_usage`'s own table holds thirteen `_extended` spellings on both hosts: the seven reads the reader now accepts (`stat_extended`, `lstat_extended`, `fstat_extended`, `access_extended`, `stat_extended64`, `lstat_extended64`, `fstat64_extended`) and six it does not take as reads: five that change a file and are still refused on the judged directory (`open_extended`, `mkdir_extended`, `chmod_extended`, `fchmod_extended`, `mkfifo_extended`), and `umask_extended`, which names neither a path nor a descriptor and so is never placed in it. The two sets were compared both ways, so no read spelling on these hosts is missing from the list and none in the list is absent from the table. Only `fstat64_extended` has been seen, and that says nothing about the others: run2's reader stops at its first unmodelled line, and run3's accepts these and keeps no capture. The other six are there because they are the same kind of call, and the list is spelled from `fs_usage`'s table, not from xnu's syscall names (`stat64_extended` there is `stat_extended64` here).

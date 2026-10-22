@@ -96,6 +96,42 @@ fn pathSpec(name: []const u8) ?PathSpec {
     return null;
 }
 
+const at_empty_path_linux: u64 = 0x1000;
+
+const EmptyPathTaker = struct { name: []const u8, flags: usize };
+const empty_path_takers = [_]EmptyPathTaker{
+    .{ .name = "linkat", .flags = 4 },
+    .{ .name = "setxattrat", .flags = 2 },
+    .{ .name = "removexattrat", .flags = 2 },
+};
+
+fn emptyPathNamesNothing(spec: PathSpec, line: []const u8) bool {
+    var any_empty = false;
+    for (spec.args, 0..) |a, i| {
+        const arg = syscallArg(line, a.path) orelse continue;
+        if (!std.mem.eql(u8, arg, "\"\"")) continue;
+        if (i == 0) for (empty_path_takers) |t| {
+            if (std.mem.eql(u8, t.name, spec.name) and
+                !flagsLackEmptyPath(syscallArg(line, t.flags))) return false;
+        };
+        any_empty = true;
+    }
+    return any_empty;
+}
+
+// Flags that cannot be read are not taken for none: the attribute calls are recorded by
+// neither witness, so one passed over here would be refused by nothing.
+fn flagsLackEmptyPath(flags: ?[]const u8) bool {
+    const f = flags orelse return false;
+    if (std.mem.indexOf(u8, f, "AT_EMPTY_PATH") != null) return false;
+    if (std.fmt.parseInt(u64, f, 0)) |v| return v & at_empty_path_linux == 0 else |_| {}
+    var tokens = std.mem.splitScalar(u8, f, '|');
+    while (tokens.next()) |t| {
+        if (!std.mem.startsWith(u8, t, "AT_")) return false;
+    }
+    return true;
+}
+
 const metadata_path_syscalls = [_]PathSpec{
     .{ .name = "chown", .args = &.{.{ .dirfd = null, .path = 0 }} },
     .{ .name = "lchown", .args = &.{.{ .dirfd = null, .path = 0 }} },
@@ -158,6 +194,10 @@ const read_only = [_][]const u8{
      "getxattr",   "lgetxattr",         "fgetxattr",  "listxattr",
     "llistxattr", "flistxattr", "inotify_add_watch", "preadv",     "preadv2",
     "poll",       "ppoll",      "select",            "pselect6",
+    // Not counted as `.fsync`: `sync_file_range` writes no metadata and flushes no device
+    // cache, and which of these a power-loss model would count is for ADR 0110 to decide.
+      "sync_file_range",
+    "syncfs",
 };
 
 const process_syscalls = [_][]const u8{
@@ -1242,6 +1282,13 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         // because the process-syscall branch `continue`s a clone3 away.
         if (out.cgroup_move == null) out.cgroup_move = try cgroupMove(arena, name, line);
 
+        // Not decided by the result: a trapped call's first line ends in ENOSYS or whatever
+        // the register held, and a split call carries its result on the resumed half. Not
+        // after the narrowing below: an empty rename's trapped first line would end it.
+        if (pathSpec(name)) |spec| {
+            if (emptyPathNamesNothing(spec, line)) continue;
+        }
+
         // Here, ahead of the scope rules, because `mprotect` and `mremap` name no path and
         // would be dropped as outside the state.
         if (renamesOrLinks(name) and !visiblyFailed(line)) rw_narrowing = false;
@@ -2188,6 +2235,161 @@ test "link is first-class and counts when either endpoint is inside" {
     try std.testing.expectEqualStrings("linkat(AT_EMPTY_PATH)", r.unsupported.?);
 }
 
+test "a path call given the empty path changes nothing, in every shape the trace prints it" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const Case = struct { what: []const u8, lines: []const u8 };
+    const cases = [_]Case{
+        .{ .what = "one line", .lines =
+        \\10    unlinkat(AT_FDCWD</tmp/o/state>, "", 0) = -1 ENOENT (No such file or directory)
+        \\
+        },
+        .{ .what = "trapped under --observe syscalls", .lines =
+        \\10    unlinkat(AT_FDCWD</tmp/o/state>, "", 0) = -1 ENOSYS (Function not implemented)
+        \\10    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_unlinkat, si_arch=AUDIT_ARCH_AARCH64} ---
+        \\10    unlinkat(AT_FDCWD</tmp/o/state>, "", 0) = -1 ENOENT (No such file or directory)
+        \\
+        },
+        .{ .what = "trapped, the first line holding what the register held", .lines =
+        \\10    unlinkat(AT_FDCWD</tmp/o/state>, "", 0) = 0
+        \\10    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_unlinkat, si_arch=AUDIT_ARCH_X86_64} ---
+        \\10    unlinkat(AT_FDCWD</tmp/o/state>, "", 0) = -1 ENOENT (No such file or directory)
+        \\
+        },
+        .{ .what = "split by another thread's line", .lines =
+        \\10    unlinkat(AT_FDCWD</tmp/o/state>, "", 0 <unfinished ...>
+        \\12    read(7</tmp/o/state/db.wal>, "", 4096) = 0
+        \\10    <... unlinkat resumed>) = -1 ENOENT (No such file or directory)
+        \\
+        },
+        .{ .what = "unlink", .lines =
+        \\10    unlink("") = -1 ENOENT (No such file or directory)
+        \\
+        },
+        .{ .what = "a rename whose source is empty", .lines =
+        \\10    renameat(AT_FDCWD</tmp/o/state>, "", AT_FDCWD</tmp/o/state>, "key.json") = -1 ENOENT (No such file or directory)
+        \\
+        },
+        .{ .what = "a link whose new name is empty", .lines =
+        \\10    linkat(AT_FDCWD</tmp/o/state>, "key.json", AT_FDCWD</tmp/o/state>, "", 0) = -1 ENOENT (No such file or directory)
+        \\
+        },
+        .{ .what = "a link whose first name is empty, without AT_EMPTY_PATH (link(3) on aarch64)", .lines =
+        \\10    linkat(AT_FDCWD</tmp/o/state>, "", AT_FDCWD</tmp/o/state>, "key.json", 0) = -1 ENOENT (No such file or directory)
+        \\
+        },
+        .{ .what = "an attribute write through an empty path, flags 0", .lines =
+        \\10    setxattrat(5</tmp/o/state>, "", 0, "user.k", {value="1", size=1, flags=0}, 16) = -1 ENOENT (No such file or directory)
+        \\
+        },
+        .{ .what = "an attribute removal through an empty path, symbolic flags without AT_EMPTY_PATH", .lines =
+        \\10    removexattrat(5</tmp/o/state>, "", AT_SYMLINK_NOFOLLOW, "user.k") = -1 ENOENT (No such file or directory)
+        \\
+        },
+        .{ .what = "the legacy attribute write", .lines =
+        \\10    setxattr("", "user.k", "1", 1, 0) = -1 ENOENT (No such file or directory)
+        \\
+        },
+    };
+    for (cases) |c| {
+        const text = try std.mem.concat(arena_state.allocator(), u8, &.{
+            "10    execve(\"/work/toy\", [\"toy\", \"rotate\"], 0x7ff) = 0\n", c.lines,
+        });
+        const p = try parse(arena_state.allocator(), text, "/tmp/o/state", "", "/tmp/o/state");
+        std.testing.expectEqual(@as(?[]const u8, null), p.unsupported) catch |e| {
+            std.debug.print("refused: {s}\n", .{c.what});
+            return e;
+        };
+        std.testing.expectEqual(@as(usize, 0), p.classes.items.len) catch |e| {
+            std.debug.print("counted: {s}\n", .{c.what});
+            return e;
+        };
+    }
+}
+
+test "a child's call given the empty path does not touch the judged directory" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const shapes = [_][]const u8{
+        \\4242  unlinkat(AT_FDCWD</tmp/s>, "", 0) = -1 ENOENT (No such file or directory)
+        \\
+        ,
+        \\4242  unlinkat(AT_FDCWD</tmp/s>, "", 0) = -1 ENOSYS (Function not implemented)
+        \\4242  --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_unlinkat, si_arch=AUDIT_ARCH_AARCH64} ---
+        \\4242  unlinkat(AT_FDCWD</tmp/s>, "", 0) = -1 ENOENT (No such file or directory)
+        \\
+        ,
+    };
+    for (shapes) |lines| {
+        const text = try std.mem.concat(arena_state.allocator(), u8, &.{
+            "42    execve(\"/work/toy\", [\"toy\", \"rotate\"], 0x7ff) = 0\n",
+            "42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242\n",
+            lines,
+        });
+        const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
+        try std.testing.expectEqual(@as(usize, 0), p.mutations.items.len);
+        try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
+    }
+}
+
+test "an empty path that names a file through its descriptor is still not passed over" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const head = "9  execve(\"/work/git\", [\"git\"], 0x0) = 0\n";
+    const a = arena_state.allocator();
+
+    const linkats = [_][]const u8{
+        "9  linkat(3</tmp/x>, \"\", AT_FDCWD</repo>, \"state/ENOENT\", AT_EMPTY_PATH) = 0\n",
+        "9  linkat(3</tmp/x>, \"\", AT_FDCWD</repo>, \"state/name\", 0x1000) = 0\n",
+        "9  linkat(3</tmp/x>, \"\", AT_FDCWD</repo>, \"state/name\", AT_SYMLINK_FOLLOW|0x1000) = 0\n",
+    };
+    for (linkats) |l| {
+        const p = try parse(a, try std.mem.concat(a, u8, &.{ head, l }), "/repo/state", "", "/repo");
+        try std.testing.expect(p.unsupported != null or p.classes.items.len == 1);
+    }
+
+    const xattrs = [_][]const u8{
+        "9  setxattrat(5</repo/state>, \"\", AT_EMPTY_PATH, \"user.k\", {value=\"1\", size=1, flags=0}, 16) = 0\n",
+        "9  removexattrat(5</repo/state>, \"\", AT_EMPTY_PATH, \"user.k\") = 0\n",
+        "9  setxattrat(5</repo/state>, \"\", 0x1000, \"user.k\", {value=\"1\", size=1, flags=0}, 16) = 0\n",
+        "9  setxattrat(5</repo/state>, \"\", AT_SYMLINK_NOFOLLOW|0x1000, \"user.k\", {value=\"1\", size=1, flags=0}, 16) = 0\n",
+        "9  removexattrat(5</repo/state>, \"\" <unfinished ...>\n",
+    };
+    for (xattrs) |l| {
+        const p = try parse(a, try std.mem.concat(a, u8, &.{ head, l }), "/repo/state", "", "/repo");
+        std.testing.expect(p.unsupported != null) catch |e| {
+            std.debug.print("passed over: {s}", .{l});
+            return e;
+        };
+    }
+}
+
+test "sync_file_range and syncfs on a state file change nothing, from the subject or a child" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const text =
+        \\42    execve("/work/dpkg", ["dpkg"], 0x7ff) = 0
+        \\42    sync_file_range(3</tmp/s/status-new>, 0, 0, SYNC_FILE_RANGE_WRITE) = 0
+        \\42    syncfs(3</tmp/s/status-new>) = 0
+        \\42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242
+        \\4242  sync_file_range(5</tmp/s/info/x.list>, 0, 0, SYNC_FILE_RANGE_WAIT_BEFORE|SYNC_FILE_RANGE_WRITE|SYNC_FILE_RANGE_WAIT_AFTER) = 0
+        \\4242  syncfs(5</tmp/s/info/x.list>) = 0
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
+    try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
+    try std.testing.expectEqual(@as(usize, 0), p.classes.items.len);
+    try std.testing.expectEqual(@as(usize, 0), p.mutations.items.len);
+
+    const control =
+        \\42    execve("/work/dpkg", ["dpkg"], 0x7ff) = 0
+        \\42    fallocate(3</tmp/s/status-new>, 0, 0, 4096) = 0
+        \\
+    ;
+    const q = try parse(arena_state.allocator(), control, "/tmp/s", "", "/work");
+    try std.testing.expectEqualStrings("fallocate", q.unsupported.?);
+}
+
 fn parseCloneRun(a: std.mem.Allocator, pid: []const u8, lines: []const u8) !Parsed {
     const head = if (std.mem.eql(u8, pid, "9"))
         "9  execve(\"/bin/cp\", [\"cp\"], 0x0) = 0\n"
@@ -3018,6 +3220,16 @@ test "a shared mapping of a state file made writable later is refused, and nothi
         .{ .what = "a read-only open mapped, unmapped, and the address made writable by something else (memmap2)", .refused = null, .text =
         \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
         \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDONLY|O_CLOEXEC) = 3</tmp/s/db>
+        \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0) = 0x7f0000000000
+        \\42    mprotect(0x7f0000000000, 4096, PROT_READ|PROT_WRITE) = 0
+        \\
+        },
+        .{ .what = "a read-only open mapped and made writable, after a trapped rename of the empty path", .refused = null, .text =
+        \\42    execve("/work/toy", ["toy"], 0x7ff) = 0
+        \\42    openat(AT_FDCWD, "/tmp/s/db", O_RDONLY|O_CLOEXEC) = 3</tmp/s/db>
+        \\42    renameat(AT_FDCWD</tmp/s>, "", AT_FDCWD</tmp/s>, "db") = 4294967196
+        \\42    --- SIGSYS {si_signo=SIGSYS, si_code=SYS_SECCOMP, si_syscall=__NR_renameat, si_arch=AUDIT_ARCH_X86_64} ---
+        \\42    renameat(AT_FDCWD</tmp/s>, "", AT_FDCWD</tmp/s>, "db") = -1 ENOENT (No such file or directory)
         \\42    mmap(NULL, 8192, PROT_READ, MAP_SHARED, 3</tmp/s/db>, 0) = 0x7f0000000000
         \\42    mprotect(0x7f0000000000, 4096, PROT_READ|PROT_WRITE) = 0
         \\
