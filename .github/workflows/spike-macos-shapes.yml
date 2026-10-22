@@ -1,4 +1,5 @@
-# The macOS target-shape measurement behind #929: the released engine run on the three shapes
+# The macOS target-shape measurement behind #929: the released engine, or with `build: source` the
+# dispatched ref built as the release builds it, run on the three shapes
 # spike/macos-shapes-929/SELECTION.md fixed, on macOS 14 and 26. This is a measurement apparatus,
 # not standing CI — it must never be made a required check (spike-fsusage.yml and
 # spike-platforms.yml are the precedent). The record is copied into the tree by hand, in a pull
@@ -6,6 +7,12 @@
 name: spike-macos-shapes
 on:
   workflow_dispatch:
+    inputs:
+      build:
+        description: "release: the published SIDEEYE_VERSION asset. source: the dispatched ref, built as release.yml builds aarch64-macos"
+        type: choice
+        options: [release, source]
+        default: release
 permissions:
   contents: read
 env:
@@ -23,6 +30,22 @@ jobs:
         with:
           persist-credentials: false
 
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        if: inputs.build == 'source'
+        with:
+          version: 0.17.0
+
+      - name: Build engine and shim from the dispatched ref, as the release builds them
+        if: inputs.build == 'source'
+        run: |
+          set -eu
+          flags=$(sh spike/release-build-flags.sh .github/workflows/release.yml aarch64-macos)
+          [ -n "$flags" ] || { echo "::error::no release build flags read from release.yml"; exit 1; }
+          zigv=$(sh spike/release-build-flags.sh --zig .github/workflows/release.yml)
+          [ "$zigv" = "$(zig version)" ] || { echo "::error::release.yml sets up Zig $zigv, and this job has $(zig version)"; exit 1; }
+          # shellcheck disable=SC2086 # a flag list, split on purpose
+          zig build $flags
+
       - name: GNU sed and git from Homebrew (the shapes' targets)
         env:
           HOMEBREW_NO_AUTO_UPDATE: "1"
@@ -33,10 +56,16 @@ jobs:
         env:
           TOKEN: ${{ github.token }}
           LABEL: ${{ matrix.runner }}
+          BUILD: ${{ inputs.build }}
         run: |
           set -o pipefail
           o=spike/macos-shapes-929/out; mkdir -p "$o"
-          bin=$(GH_TOKEN=$TOKEN sh docs/ci-quickstart/release/install-sideeye.sh "$SIDEEYE_VERSION" "$RUNNER_TEMP/sideeye" 2> "$o/install-$LABEL.txt")
+          if [ "$BUILD" = source ]; then
+              bin=$PWD/zig-out/bin/sideeye
+              echo "built from $(git rev-parse HEAD)" > "$o/install-$LABEL.txt"
+          else
+              bin=$(GH_TOKEN=$TOKEN sh docs/ci-quickstart/release/install-sideeye.sh "$SIDEEYE_VERSION" "$RUNNER_TEMP/sideeye" 2> "$o/install-$LABEL.txt")
+          fi
           unset TOKEN
           sh spike/macos-shapes-929/measure.sh "$bin" "$o" "$LABEL" 2>&1 | tee "$o/runner-$LABEL.txt"
 
