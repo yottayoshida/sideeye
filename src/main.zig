@@ -1163,23 +1163,6 @@ fn phaseApparatus(run: *Run) void {
     run.initial = initial;
 }
 
-fn refuseRecordingEnd(arena: std.mem.Allocator, rec_term: posix.Term, expect_status: u8, op_obs: ?[]const u8, exit_step: contract.NextStep, sig_step: contract.NextStep) void {
-    switch (rec_term) {
-        // 126 before the status comparison, and without the --expect-status advice: it
-        // is the code the engine's own fork stub keeps for a child it could not arrange
-        // before exec (`posix.childArrangeFailed`, which says which call on stderr), and
-        // a define that declared 126 as success on that advice would read a child that
-        // never ran as a successful recording — the shape #469 named and closed for the
-        // capture open, still open for `setpgid` and the `dup2`s until 2026-09-08.
-        .exited => |code| if (code == 126 and code != expect_status)
-            unknown(.recording_run_failed, "the operation exited 126 during the recording run: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the operation itself exited 126 — indistinguishable from here. Declaring 126 as the success convention would make a child that never ran read as a successful recording, so --expect-status is not the answer to this one", .environment)
-        else if (code != expect_status)
-            unknown(.recording_run_failed, refuse.withObservation(arena, std.fmt.allocPrint(arena, "the operation exited {d} during the recording run where {d} was expected, so the crash points derived from it describe an execution that did not happen (a different success convention is declared with --expect-status or the toml's expected_status)", .{ code, expect_status }) catch "the operation exited with an unexpected status during the recording run", op_obs, exit_step), exit_step),
-        .signaled => |sig| unknown(.recording_run_failed, refuse.withObservation(arena, std.fmt.allocPrint(arena, "the operation did not exit normally during the recording run: it was killed by signal {d}", .{sig}) catch "the operation did not exit normally during the recording run", op_obs, sig_step), sig_step),
-        .unknown => unknown(.recording_run_failed, refuse.withObservation(arena, "the operation did not exit normally during the recording run", op_obs, sig_step), sig_step),
-    }
-}
-
 fn phaseRecording(run: *Run) void {
     const gpa = run.gpa;
     const arena_state = run.arena_state;
@@ -1351,7 +1334,7 @@ fn phaseRecording(run: *Run) void {
     // Not refused here when the image names a platform and the run died: refusing before the
     // trace is read would blame the target for a library that never loaded in it.
     const end_deferred = boundary.defersRecordingEnd(rec_term, boundary.rec_image);
-    if (end_deferred) boundary.rec_end_deferred = rec_term else refuseRecordingEnd(arena, rec_term, expect_status, op_obs, exit_step, sig_step);
+    if (end_deferred) boundary.rec_end_deferred = rec_term else refuse.recordingEnd(arena, rec_term, expect_status, op_obs, exit_step, sig_step);
 
     // A marker the clean run cannot produce would make every post-success obligation
     // vacuous while the report still said PASS (ADR 0008). Checked against the
@@ -1369,7 +1352,7 @@ fn phaseRecording(run: *Run) void {
     }
 
     const trace = refuse.readTraceOrRefuse(rec_trace, trace_cap, "could not read the trace");
-    if (end_deferred and boundary.heldEndStands(trace)) refuseRecordingEnd(arena, rec_term, expect_status, op_obs, exit_step, sig_step);
+    if (end_deferred and boundary.heldEndStands(trace)) refuse.recordingEnd(arena, rec_term, expect_status, op_obs, exit_step, sig_step);
 
     const final = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot the final state");
 
