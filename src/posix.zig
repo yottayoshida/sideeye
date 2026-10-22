@@ -567,7 +567,7 @@ pub fn decodeStatus(status: c_int) Term {
     return .{ .unknown = status };
 }
 
-pub const SpawnError = error{ ForkFailed, OutOfMemory, WaitFailed, StdinUnavailable, CaptureUnavailable };
+pub const SpawnError = error{ ForkFailed, OutOfMemory, WaitFailed, StdinUnavailable, CaptureUnavailable, ChildGroupRefused };
 
 pub const ContainedSpawnError = SpawnError || error{CgroupJoinFailed};
 
@@ -652,7 +652,7 @@ pub fn runChildCaptureContained(
 ) ContainedSpawnError!Term {
     return runChildImplWithOps(gpa, argv, env_pairs, cap, false, null, cwd, cg, .kill, RealOps) catch |e| switch (e) {
         error.TimedOut => unreachable,
-        error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable, error.CgroupJoinFailed => |narrow| narrow,
+        error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable, error.CgroupJoinFailed, error.ChildGroupRefused => |narrow| narrow,
     };
 }
 
@@ -760,16 +760,88 @@ fn childArrangeFailed(what: []const u8) noreturn {
     _exit(126);
 }
 
+fn childGroupRefused(refusal_fd: c_int, what: []const u8) noreturn {
+    childArrangeNote(what);
+    // After the note, not before: the parent reaps a child it has seen the byte from, and a note
+    // still blocked on a full stderr would hold that reap.
+    if (refusal_fd >= 0) _ = write(refusal_fd, &refusal_byte, 1);
+    _exit(126);
+}
+
+const refusal_byte = [1]u8{'g'};
+
+pub const max_group_forks = 3;
+
+fn refusalPipe(fds: *[2]c_int) bool {
+    if (pipe(fds) != 0) return false;
+    // Not inheritable: the sidecar's read waits on every holder of the write end, and an image the
+    // child execs would be one. Not `pipe2`, which macOS lacks: a thread forking between the
+    // `pipe` and the `fcntl` would still carry it — none forks while a sidecar starts.
+    _ = std.c.fcntl(fds[0], std.c.F.SETFD, @as(c_int, 1));
+    _ = std.c.fcntl(fds[1], std.c.F.SETFD, @as(c_int, 1));
+    return true;
+}
+
+const RefusedChildren = struct {
+    pids: [max_group_forks]c_int = undefined,
+    len: usize = 0,
+
+    // Not reaped before the next fork: a reaped pid, and on XNU the proc structure behind it,
+    // can go straight to the next child, and both refusals are tied to one of them.
+    fn hold(self: *RefusedChildren, pid: c_int) void {
+        self.pids[self.len] = pid;
+        self.len += 1;
+    }
+
+    fn reap(self: *RefusedChildren) void {
+        for (self.pids[0..self.len]) |pid| {
+            while (waitpid(pid, null, 0) < 0 and std.c._errno().* == EINTR) {}
+        }
+        self.len = 0;
+    }
+};
+
+fn refusedAgain(refused: ?*RefusedChildren, pid: c_int, attempt: u32, cg: ?*CgroupSpawn) bool {
+    clearLiveChild();
+    if (refused) |r| r.hold(pid);
+    if (attempt + 1 < max_group_forks) {
+        noteForkingAgain(attempt + 2);
+        return true;
+    }
+    if (cg) |spawn_cg| spawn_cg.removeDirs();
+    return false;
+}
+
+fn noteForkingAgain(fork_number: u32) void {
+    var buf: [128]u8 = undefined;
+    writeNoteLine(std.fmt.bufPrint(&buf, "sideeye: that child was refused a process group of its own; forking it again ({d} of {d})\n", .{ fork_number, max_group_forks }) catch return);
+}
+
+// `timeout_ms` -1 only where the child waits on nothing before it closes its end: a child held
+// before exec (the cgroup go-ahead) would hold the caller with it, outside any budget.
+fn childRefusedGroup(read_fd: c_int, timeout_ms: c_int) bool {
+    var pfd = [1]std.c.pollfd{.{ .fd = read_fd, .events = std.c.POLL.IN, .revents = 0 }};
+    const ready = while (true) {
+        const rc = std.c.poll(&pfd, 1, timeout_ms);
+        if (rc < 0 and std.c._errno().* == EINTR) continue;
+        break rc > 0;
+    };
+    if (!ready) return false;
+    var b: [1]u8 = undefined;
+    const n = while (true) {
+        const r = read(read_fd, &b, 1);
+        if (r < 0 and std.c._errno().* == EINTR) continue;
+        break r;
+    };
+    return n == 1 and b[0] == refusal_byte[0];
+}
+
 /// **The invariant is the group, not the call** (#629). The child must not `exec` while it
 /// still shares the engine's group — the shim's crash point kills `kill(0, SIGKILL)`, the
 /// caller's whole group, so a target left in the engine's group could take the exploration
 /// down with it. `setpgid(0, 0)` is how the child gets there; it is not the only way it can
 /// arrive, and this side used to read any non-zero return as "it did not".
-fn childEnterOwnGroup() void {
-    childEnterOwnGroupWith(setpgid, setsid, kill);
-}
-
-fn childEnterOwnGroupWith(setpgid_fn: anytype, setsid_fn: anytype, kill_fn: anytype) void {
+fn childEnterOwnGroupWith(setpgid_fn: anytype, setsid_fn: anytype, kill_fn: anytype, refusal_fd: c_int) void {
     if (setpgid_fn(0, 0) == 0) return;
     const err = std.c._errno().*; // read before `getpgid`: a successful call may write errno
     const pid = getpid();
@@ -798,13 +870,13 @@ fn childEnterOwnGroupWith(setpgid_fn: anytype, setsid_fn: anytype, kill_fn: anyt
     if (setsid_rc >= 0) {
         const what = fmtChildSetsidWithoutGroupWhat(&buf, pid, now_group, getsid(0));
         std.c._errno().* = err; // the note's errno is the refused call's, not `getpgid`'s
-        childArrangeFailed(what);
+        childGroupRefused(refusal_fd, what);
     }
     const probe_rc = kill_fn(-pid, 0);
     const probe_err: c_int = if (probe_rc == 0) 0 else std.c._errno().*; // not errno on a success: it still holds an earlier call's
     const what = fmtChildBothRefusedWhat(&buf, pid, now_group, getsid(0), probe_rc, probe_err, err);
     std.c._errno().* = setsid_err;
-    childArrangeFailed(what);
+    childGroupRefused(refusal_fd, what);
 }
 
 /// bound as the `dup2`s. Anything else the `write` answers — a reader that is gone
@@ -960,7 +1032,7 @@ test "a child refused setsid because it already leads a group of its own runs (#
     if (pid == 0) {
         _ = close(fds[0]);
         if (dup2(fds[1], 2) < 0) _exit(10);
-        childEnterOwnGroupWith(Fake.setpgidRefused, Fake.setsidRefused, kill);
+        childEnterOwnGroupWith(Fake.setpgidRefused, Fake.setsidRefused, kill, -1);
         if (Fake.setsid_accepted) _exit(13);
         if (getsid(0) == getpid()) _exit(12); // a session of its own means `setsid` went through: not this branch
         if (getpgid(0) != getpid()) _exit(11); // the invariant, asked of the kernel
@@ -997,7 +1069,7 @@ test "a child the kernel will not move out of the engine's group leaves it with 
         // No guard for "already leads its own group" here: `fork` may not hand this child a
         // pid matching an active group id (POSIX), so it cannot be leading one. The check
         // this test rests on is the `_exit(12)` below, which asks the kernel afterwards.
-        childEnterOwnGroupWith(Fake.setpgid, setsid, kill);
+        childEnterOwnGroupWith(Fake.setpgid, setsid, kill, -1);
         if (getpgid(0) != getpid()) _exit(12);
         _exit(7);
     }
@@ -1038,7 +1110,7 @@ test "a child that can leave the engine's group by neither call exits 126, namin
     if (pid == 0) {
         _ = close(fds[0]);
         if (dup2(fds[1], 2) < 0) _exit(10);
-        childEnterOwnGroupWith(Fake.setpgid, Fake.setsid, kill);
+        childEnterOwnGroupWith(Fake.setpgid, Fake.setsid, kill, -1);
         _exit(7); // reached only if the refusal was swallowed
     }
     _ = close(fds[1]);
@@ -1080,7 +1152,7 @@ test "a child refused both calls reports a group probe that succeeded as errno 0
     if (pid == 0) {
         _ = close(fds[0]);
         if (dup2(fds[1], 2) < 0) _exit(10);
-        childEnterOwnGroupWith(Fake.setpgid, Fake.setsid, Fake.kill);
+        childEnterOwnGroupWith(Fake.setpgid, Fake.setsid, Fake.kill, -1);
         _exit(7);
     }
     _ = close(fds[1]);
@@ -1110,7 +1182,7 @@ test "a child that already leads its own group runs, and says so, when setpgid(0
         // Vacuity guard: if this kernel accepts the call, the test never reaches the
         // branch it is about, and says so with a code of its own instead of passing.
         if (setpgid(0, 0) == 0) _exit(12);
-        childEnterOwnGroup();
+        childEnterOwnGroupWith(setpgid, setsid, kill, -1);
         _exit(7);
     }
     _ = close(fds[1]);
@@ -1159,6 +1231,16 @@ pub fn spawnSidecar(
     stdout_path: []const u8,
     stderr_path: ?[]const u8,
 ) SpawnError!c_int {
+    return spawnSidecarWithOps(gpa, argv, stdout_path, stderr_path, RealOps);
+}
+
+fn spawnSidecarWithOps(
+    gpa: std.mem.Allocator,
+    argv: []const []const u8,
+    stdout_path: []const u8,
+    stderr_path: ?[]const u8,
+    comptime Ops: type,
+) SpawnError!c_int {
     var arena_state = std.heap.ArenaAllocator.init(gpa);
     defer arena_state.deinit();
     const arena = arena_state.allocator();
@@ -1188,36 +1270,62 @@ pub fn spawnSidecar(
         return error.CaptureUnavailable;
     }
 
+    var refused: RefusedChildren = .{};
+    defer refused.reap();
     var old_mask: std.c.sigset_t = undefined;
-    blockInterrupts(&old_mask);
-    const pid = fork();
-    if (pid < 0) {
+    const pid = attempts: for (0..max_group_forks) |_| {
+        var refusal: [2]c_int = undefined;
+        if (!refusalPipe(&refusal)) {
+            _ = close(nfd);
+            _ = close(cfd);
+            if (efd >= 0) _ = close(efd);
+            return error.ForkFailed;
+        }
+        blockInterrupts(&old_mask);
+        const child = Ops.forkChild();
+        if (child < 0) {
+            restoreMask(&old_mask);
+            _ = close(refusal[0]);
+            _ = close(refusal[1]);
+            _ = close(nfd);
+            _ = close(cfd);
+            if (efd >= 0) _ = close(efd);
+            return error.ForkFailed;
+        }
+        if (child == 0) {
+            childRestoreSignals(&old_mask);
+            _ = close(refusal[0]);
+            // **A failure here must not be exec'd through** (v15). Since the shim kills the
+            // run's crash point with `kill(0, SIGKILL)` — the caller's whole process group,
+            // because killing one process leaves the shell that spawned it to run the next
+            // command — a target that never got its own group is a target in the ENGINE's
+            // group, and that signal would take the exploration with it. The result used to
+            childEnterOwnGroupWith(Ops.childSetpgid, Ops.childSetsid, kill, refusal[1]);
+            adoptStdin(nfd);
+            if (cfd != 1) {
+                if (!dup2Bounded(dup2, cfd, 1)) childArrangeFailed("dup2(capture, 1)");
+                _ = close(cfd);
+            }
+            if (efd >= 0 and efd != 2) {
+                if (!dup2Bounded(dup2, efd, 2)) childArrangeFailed("dup2(stderr capture, 2)");
+                _ = close(efd);
+            }
+            _ = execvp(cargv[0].?, cargv.ptr);
+            _exit(127);
+        }
+        _ = close(refusal[1]);
+        const was_refused = childRefusedGroup(refusal[0], -1);
+        _ = close(refusal[0]);
+        if (!was_refused) break :attempts child;
         restoreMask(&old_mask);
+        refused.hold(child);
+        if (refused.len < max_group_forks) noteForkingAgain(@intCast(refused.len + 1));
+    } else {
         _ = close(nfd);
         _ = close(cfd);
         if (efd >= 0) _ = close(efd);
-        return error.ForkFailed;
-    }
-    if (pid == 0) {
-        childRestoreSignals(&old_mask);
-        // **A failure here must not be exec'd through** (v15). Since the shim kills the
-        // run's crash point with `kill(0, SIGKILL)` — the caller's whole process group,
-        // because killing one process leaves the shell that spawned it to run the next
-        // command — a target that never got its own group is a target in the ENGINE's
-        // group, and that signal would take the exploration with it. The result used to
-        childEnterOwnGroup();
-        adoptStdin(nfd);
-        if (cfd != 1) {
-            if (!dup2Bounded(dup2, cfd, 1)) childArrangeFailed("dup2(capture, 1)");
-            _ = close(cfd);
-        }
-        if (efd >= 0 and efd != 2) {
-            if (!dup2Bounded(dup2, efd, 2)) childArrangeFailed("dup2(stderr capture, 2)");
-            _ = close(efd);
-        }
-        _ = execvp(cargv[0].?, cargv.ptr);
-        _exit(127);
-    }
+        return error.ChildGroupRefused;
+    };
     noteSidecar(pid);
     restoreMask(&old_mask);
     _ = close(nfd);
@@ -1308,7 +1416,7 @@ fn runChildImpl(
     return runChildImplWithOps(gpa, argv, env_pairs, capture, minimal_env, null, cwd, null, stop, RealOps) catch |e| switch (e) {
         error.TimedOut => unreachable,
         error.CgroupJoinFailed => unreachable,
-        error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable => |narrow| narrow,
+        error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable, error.ChildGroupRefused => |narrow| narrow,
     };
 }
 
@@ -1521,17 +1629,17 @@ fn cgroupMakeReal(cg: *CgroupSpawn) bool {
         _ = rmdir(cg.dir().ptr);
         return false;
     }
-    var buf: [max_cgroup_path + 96]u8 = undefined;
-    const procs = std.mem.printSentinel(&buf, "{s}/cgroup.procs", .{cg.workDir()}, 0) catch {
-        cg.removeDirs();
-        return false;
-    };
-    cg.procs_fd = open(procs.ptr, O_WRONLY | O_CLOEXEC, @as(c_uint, 0));
-    if (cg.procs_fd < 0) {
+    if (!cgroupRearmReal(cg)) {
         cg.removeDirs();
         return false;
     }
     return true;
+}
+fn cgroupRearmReal(cg: *CgroupSpawn) bool {
+    var buf: [max_cgroup_path + 96]u8 = undefined;
+    const procs = std.mem.printSentinel(&buf, "{s}/cgroup.procs", .{cg.workDir()}, 0) catch return false;
+    cg.procs_fd = open(procs.ptr, O_WRONLY | O_CLOEXEC, @as(c_uint, 0));
+    return cg.procs_fd >= 0;
 }
 
 fn cgroupJoinReal(cg: *CgroupSpawn, pid: c_int) bool {
@@ -1632,11 +1740,23 @@ const RealOps = struct {
     fn cgroupMake(cg: *CgroupSpawn) bool {
         return cgroupMakeReal(cg);
     }
+    fn cgroupRearm(cg: *CgroupSpawn) bool {
+        return cgroupRearmReal(cg);
+    }
     fn cgroupJoin(cg: *CgroupSpawn, pid: c_int) bool {
         return cgroupJoinReal(cg, pid);
     }
     fn cgroupStop(cg: *CgroupSpawn, read_lingering: bool) void {
         cgroupStopReal(cg, read_lingering);
+    }
+    fn parentSetpgid(pid: c_int, pgid: c_int) c_int {
+        return setpgid(pid, pgid);
+    }
+    fn childSetpgid(pid: c_int, pgid: c_int) c_int {
+        return setpgid(pid, pgid);
+    }
+    fn childSetsid() c_int {
+        return setsid();
     }
 };
 
@@ -1964,291 +2084,322 @@ fn runChildSpawnAndWait(
     // in the target's exit-status namespace. The pipe is how the child waits — after it leads
     // its own group, before it execs — until the parent has moved it: a child that execs first
     // runs, however briefly, outside the cgroup that is meant to stop it.
-    var join_pipe: [2]c_int = .{ -1, -1 };
-    // Not blocked after the mkdir: a handler running before the child's registration would find nothing
-    // to stop and end the process, leaving the directory behind.
-    var old_mask: std.c.sigset_t = undefined;
-    blockInterrupts(&old_mask);
-    if (cg) |spawn_cg| {
-        if (!Ops.cgroupMake(spawn_cg)) {
-            restoreMask(&old_mask);
-            _ = close(nfd);
-            if (cfd >= 0) _ = close(cfd);
-            return error.CgroupJoinFailed;
-        }
-        if (pipe(&join_pipe) != 0) {
-            if (spawn_cg.procs_fd >= 0) _ = close(spawn_cg.procs_fd);
-            spawn_cg.procs_fd = -1;
-            spawn_cg.removeDirs();
-            restoreMask(&old_mask);
-            _ = close(nfd);
-            if (cfd >= 0) _ = close(cfd);
-            return error.CgroupJoinFailed;
-        }
-    }
-
-    const pid = Ops.forkChild();
-    if (pid < 0) {
-        restoreMask(&old_mask);
+    // Held until this spawn ends, not closed at the fork: a child refused its group is forked
+    // again with the same descriptors, and an `O_EXCL` capture cannot be opened a second time.
+    defer {
         _ = close(nfd);
         if (cfd >= 0) _ = close(cfd);
+    }
+    var refused: RefusedChildren = .{};
+    defer refused.reap();
+
+    var attempt: u32 = 0;
+    attempts: while (true) : (attempt += 1) {
+        var join_pipe: [2]c_int = .{ -1, -1 };
+        // Not blocked after the mkdir: a handler running before the child's registration would find nothing
+        // to stop and end the process, leaving the directory behind.
+        var old_mask: std.c.sigset_t = undefined;
+        blockInterrupts(&old_mask);
         if (cg) |spawn_cg| {
-            _ = close(join_pipe[0]);
-            _ = close(join_pipe[1]);
-            if (spawn_cg.procs_fd >= 0) _ = close(spawn_cg.procs_fd);
-            spawn_cg.procs_fd = -1;
-            spawn_cg.removeDirs();
-        }
-        return error.ForkFailed;
-    }
-    if (pid == 0) {
-        childRestoreSignals(&old_mask);
-        // Before exec, so the target never runs in the engine's group — and 126 rather
-        // than a discarded result, for the reason `runChildImpl`'s copy of this line
-        // carries: the shim's crash-point kill now addresses the caller's whole group,
-        // so a target sharing the engine's group could kill the exploration.
-        childEnterOwnGroup();
-        if (join_pipe[0] >= 0) {
-            // Wait to be moved into the run's cgroup (v17, #559). One byte means the parent
-            // moved it; anything else — the move failed, or the parent is gone — means this
-            // child must not run at all.
-            _ = close(join_pipe[1]);
-            var byte: [1]u8 = undefined;
-            const got = while (true) {
-                const r = read(join_pipe[0], &byte, 1);
-                if (r < 0 and std.c._errno().* == EINTR) continue;
-                break r;
-            };
-            if (got != 1) childArrangeFailed("waiting to be moved into the run's cgroup");
-            _ = close(join_pipe[0]);
-        }
-        // stdin first, before any capture: a child that could not be given its stdin
-        // must not run at all. The retry bound, the abort, and the fd-0 case are all
-        // in `adoptStdin`, shared with the sidecar's fork.
-        adoptStdin(nfd);
-        if (cfd >= 0) {
-            // A capture that cannot be arranged must not fall back to the engine's own
-            // stdout: a world whose evidence went to the wrong stream would read as
-            // "marker never appeared".
-            if (cfd != 1) {
-                if (!dup2Bounded(dup2, cfd, 1)) childArrangeFailed("dup2(capture, 1)");
-                _ = close(cfd);
+            // Not opened once before the loop: the join closes it.
+            if (!(if (attempt == 0) Ops.cgroupMake(spawn_cg) else Ops.cgroupRearm(spawn_cg))) {
+                restoreMask(&old_mask);
+                if (attempt > 0) spawn_cg.removeDirs();
+                return error.CgroupJoinFailed;
             }
-            if (capture.?.stderr_too) {
-                // Both streams into the capture: a partial capture would leak the
-                // other stream to the inherited fds — the exact failure this variant
-                // exists to prevent. 126 for the same reason as the dup2 above.
-                if (!dup2Bounded(dup2, 1, 2)) childArrangeFailed("dup2(1, 2)");
-            }
-            if (minimal_env) {
-                // The child (a config's operation, untrusted) must not write to the MCP
-                // transport on fd 2 either: stderr → the same capture file. (fd 0 was
-                // already pointed at /dev/null above, for every child, not only this
-                // path — #263.) Higher fds are closed so no inherited descriptor (the
-                // JSON-RPC stdin among them) survives into the child.
-                if (!dup2Bounded(dup2, 1, 2)) childArrangeFailed("dup2(1, 2)"); // stderr → capture
-                var fd: c_int = 3;
-                while (fd < 256) : (fd += 1) _ = close(fd);
+            if (pipe(&join_pipe) != 0) {
+                if (spawn_cg.procs_fd >= 0) _ = close(spawn_cg.procs_fd);
+                spawn_cg.procs_fd = -1;
+                spawn_cg.removeDirs();
+                restoreMask(&old_mask);
+                return error.CgroupJoinFailed;
             }
         }
-        // 125 is its own code: 126 still carries two meanings the engine cannot tell
-        // apart (a `dup2` failure here, and a target that genuinely exits 126), and
-        // adding a third would make the ambiguity structural rather than local. The
-        // parent resolves and vets this path before the fork, so reaching here means
-        // the directory went away between the vet and the exec.
-        if (cwd_z) |cz| {
-            if (chdir(cz) != 0) _exit(125);
-        }
-        if (envp) |ep| {
-            _ = execve(argv_z[0].?, argv_z.ptr, ep);
-        } else {
-            for (env_z) |kv| _ = setenv(kv[0], kv[1], 1);
-            _ = execvp(argv_z[0].?, argv_z.ptr);
-        }
-        _exit(127);
-    }
-    // The capture's copy matters more than stdin's — held open, the engine would keep a
-    // descriptor on a work-directory file for the whole run, and every later world's
-    // open would add another.
-    _ = close(nfd);
-    if (cfd >= 0) _ = close(cfd);
-    // Repeated in the parent to close the window where the child has not been scheduled
-    // yet. Whichever call runs first wins; the second fails harmlessly (EACCES once the
-    // child has exec'd, ESRCH if it has already exited, and since #632 EPERM when the child
-    // has left for a session of its own, which this call may not cross). The result is
-    // discarded for all of them: the child checks its own group, and that check is the one
-    // the `exec` depends on.
-    _ = setpgid(pid, pid);
-    registerLiveChild(pid, stop);
-    restoreMask(&old_mask);
 
-    if (cg) |spawn_cg| {
-        if (!Ops.cgroupJoin(spawn_cg, pid)) {
-            _ = kill(pid, SIGKILL);
-            clearLiveChild();
-            _ = close(join_pipe[1]);
-            _ = close(join_pipe[0]);
-            var reaped: c_int = 0;
-            while (waitpid(pid, &reaped, 0) < 0 and std.c._errno().* == EINTR) {}
-            spawn_cg.removeDirs();
-            return error.CgroupJoinFailed;
+        var refusal: [2]c_int = .{ -1, -1 };
+        const pid = if (!refusalPipe(&refusal)) -1 else Ops.forkChild();
+        if (pid < 0) {
+            restoreMask(&old_mask);
+            if (refusal[0] >= 0) _ = close(refusal[0]);
+            if (refusal[1] >= 0) _ = close(refusal[1]);
+            if (cg) |spawn_cg| {
+                _ = close(join_pipe[0]);
+                _ = close(join_pipe[1]);
+                if (spawn_cg.procs_fd >= 0) _ = close(spawn_cg.procs_fd);
+                spawn_cg.procs_fd = -1;
+                spawn_cg.removeDirs();
+            }
+            return error.ForkFailed;
         }
-        spawn_cg.joined = true;
-        // The read end stays open in this process until the go-ahead is written. A child that
-        // died before reading it — its own `setpgid` failed, or something outside killed it —
-        // would otherwise leave a pipe with no reader, and the write raises SIGPIPE here
-        // (review, #559 PR A).
-        _ = write(join_pipe[1], "1", 1);
-        _ = close(join_pipe[1]);
-        _ = close(join_pipe[0]);
-    }
-
-    // Wait for the child to finish, but leave it reapable so its pid — and therefore the
-    // group id about to be signalled — cannot be handed to anything else.
-    if (budget_ms) |budget| {
-        // The bounded wait (#263). Same WNOWAIT discipline as the blocking branch
-        // below, plus WNOHANG and a monotonic deadline. Every path out of this block
-        // returns from inside it — the blocking reap-and-drain below belongs to the
-        // null-budget branch alone — and none of them contains an unbounded call.
-        const deadline = budget_t0 + budget;
-        var interval: u64 = 1;
-        var eintr_streak: u32 = 0;
-        var past_deadline = false;
-        const outcome: enum { exited, timed_out, waitid_broke } = poll: while (true) {
-            var info: std.c.siginfo_t = std.mem.zeroes(std.c.siginfo_t);
-            const rc = Ops.waitidPoll(pid, &info, WEXITED | WNOWAIT | WNOHANG);
-            if (rc != 0) {
-                // An interruption is retried — bounded by the same nine-attempt
-                // discipline as the blocking reap below, because a storm of them
-                // would otherwise poll forever without ever reaching the clock, and
-                // "the budget path never waits without bound" has to hold against
-                // the storm too. Exhaustion joins every other failure in the
-                // permanent arm, and the permanent arm does NOT kill: ECHILD here
-                // can mean an inherited SIGCHLD disposition auto-reaped the child,
-                // and a reaped child's pid may already name a stranger. The
-                // conservative rule of the blocking branch holds — nothing is
-                // signalled on an unpinned id. A failed call is not an observation
-                // of "still running" either, so it can never answer .timed_out.
-                if (std.c._errno().* == EINTR) {
-                    eintr_streak += 1;
-                    if (eintr_streak < 9) continue :poll;
+        if (pid == 0) {
+            childRestoreSignals(&old_mask);
+            _ = close(refusal[0]);
+            // Before exec, so the target never runs in the engine's group — and 126 rather
+            // than a discarded result, for the reason `runChildImpl`'s copy of this line
+            // carries: the shim's crash-point kill now addresses the caller's whole group,
+            // so a target sharing the engine's group could kill the exploration.
+            childEnterOwnGroupWith(Ops.childSetpgid, Ops.childSetsid, kill, refusal[1]);
+            if (join_pipe[0] >= 0) {
+                // Wait to be moved into the run's cgroup (v17, #559). One byte means the parent
+                // moved it; anything else — the move failed, or the parent is gone — means this
+                // child must not run at all.
+                _ = close(join_pipe[1]);
+                var byte: [1]u8 = undefined;
+                const got = while (true) {
+                    const r = read(join_pipe[0], &byte, 1);
+                    if (r < 0 and std.c._errno().* == EINTR) continue;
+                    break r;
+                };
+                if (got != 1) childArrangeFailed("waiting to be moved into the run's cgroup");
+                _ = close(join_pipe[0]);
+            }
+            // stdin first, before any capture: a child that could not be given its stdin
+            // must not run at all. The retry bound, the abort, and the fd-0 case are all
+            // in `adoptStdin`, shared with the sidecar's fork.
+            adoptStdin(nfd);
+            if (cfd >= 0) {
+                // A capture that cannot be arranged must not fall back to the engine's own
+                // stdout: a world whose evidence went to the wrong stream would read as
+                // "marker never appeared".
+                if (cfd != 1) {
+                    if (!dup2Bounded(dup2, cfd, 1)) childArrangeFailed("dup2(capture, 1)");
+                    _ = close(cfd);
                 }
-                break :poll .waitid_broke;
+                if (capture.?.stderr_too) {
+                    // Both streams into the capture: a partial capture would leak the
+                    // other stream to the inherited fds — the exact failure this variant
+                    // exists to prevent. 126 for the same reason as the dup2 above.
+                    if (!dup2Bounded(dup2, 1, 2)) childArrangeFailed("dup2(1, 2)");
+                }
+                if (minimal_env) {
+                    // The child (a config's operation, untrusted) must not write to the MCP
+                    // transport on fd 2 either: stderr → the same capture file. (fd 0 was
+                    // already pointed at /dev/null above, for every child, not only this
+                    // path — #263.) Higher fds are closed so no inherited descriptor (the
+                    // JSON-RPC stdin among them) survives into the child.
+                    if (!dup2Bounded(dup2, 1, 2)) childArrangeFailed("dup2(1, 2)"); // stderr → capture
+                    var fd: c_int = 3;
+                    while (fd < 256) : (fd += 1) _ = close(fd);
+                }
             }
-            eintr_streak = 0;
-            if (siPid(&info) == pid) break :poll .exited;
-            const now = Ops.nowMs();
-            if (now >= deadline) {
-                // classifies toward the child. This is the measurement rule the
-                // member's doc promises, not a proof the child finished its work
-                // inside the budget. Only a *successful* post-deadline observation
-                // can answer .timed_out; a failing one lands above in .waitid_broke
-                // and kills nothing.
-                if (past_deadline) break :poll .timed_out;
-                past_deadline = true;
-                continue :poll;
+            // 125 is its own code: 126 still carries two meanings the engine cannot tell
+            // apart (a `dup2` failure here, and a target that genuinely exits 126), and
+            // adding a third would make the ambiguity structural rather than local. The
+            // parent resolves and vets this path before the fork, so reaching here means
+            // the directory went away between the vet and the exec.
+            if (cwd_z) |cz| {
+                if (chdir(cz) != 0) _exit(125);
             }
-            Ops.sleepMs(@min(interval, deadline - now));
-            interval = @min(interval * 2, 10);
-        };
-        switch (outcome) {
-            .exited => {
-                // What is still in the run's cgroup is read before anything is killed (v17).
+            if (envp) |ep| {
+                _ = execve(argv_z[0].?, argv_z.ptr, ep);
+            } else {
+                for (env_z) |kv| _ = setenv(kv[0], kv[1], 1);
+                _ = execvp(argv_z[0].?, argv_z.ptr);
+            }
+            _exit(127);
+        }
+        _ = close(refusal[1]);
+        defer _ = close(refusal[0]);
+        // Repeated in the parent to close the window where the child has not been scheduled
+        // yet. Whichever call runs first wins; the second fails harmlessly (EACCES once the
+        // child has exec'd, ESRCH if it has already exited, and since #632 EPERM when the child
+        // has left for a session of its own, which this call may not cross). The result is
+        // discarded for all of them: the child checks its own group, and that check is the one
+        // the `exec` depends on.
+        _ = Ops.parentSetpgid(pid, pid);
+        registerLiveChild(pid, stop);
+        restoreMask(&old_mask);
+
+        if (cg) |spawn_cg| {
+            if (!Ops.cgroupJoin(spawn_cg, pid)) {
+                // The go-ahead's write end is closed first, so a child still waiting for it ends
+                // without the byte, and the wait below has an end. Asked before the reap, which
+                // would free the pid a refused child must keep.
+                _ = close(join_pipe[1]);
+                const refused_here = childRefusedGroup(refusal[0], -1);
+                _ = close(join_pipe[0]);
+                if (refused_here) {
+                    if (refusedAgain(&refused, pid, attempt, cg)) continue :attempts;
+                    return error.ChildGroupRefused;
+                }
+                _ = kill(pid, SIGKILL);
+                clearLiveChild();
+                var reaped: c_int = 0;
+                while (waitpid(pid, &reaped, 0) < 0 and std.c._errno().* == EINTR) {}
+                spawn_cg.removeDirs();
+                return error.CgroupJoinFailed;
+            }
+            spawn_cg.joined = true;
+            // The read end stays open in this process until the go-ahead is written. A child that
+            // died before reading it — its own `setpgid` failed, or something outside killed it —
+            // would otherwise leave a pipe with no reader, and the write raises SIGPIPE here
+            // (review, #559 PR A).
+            _ = write(join_pipe[1], "1", 1);
+            _ = close(join_pipe[1]);
+            _ = close(join_pipe[0]);
+        }
+
+        // Wait for the child to finish, but leave it reapable so its pid — and therefore the
+        // group id about to be signalled — cannot be handed to anything else.
+        if (budget_ms) |budget| {
+            // The bounded wait (#263). Same WNOWAIT discipline as the blocking branch
+            // below, plus WNOHANG and a monotonic deadline. Every path out of this block
+            // returns from inside it — the blocking reap-and-drain below belongs to the
+            // null-budget branch alone — and none of them contains an unbounded call.
+            const deadline = budget_t0 + budget;
+            var interval: u64 = 1;
+            var eintr_streak: u32 = 0;
+            var past_deadline = false;
+            const outcome: enum { exited, timed_out, waitid_broke } = poll: while (true) {
+                var info: std.c.siginfo_t = std.mem.zeroes(std.c.siginfo_t);
+                const rc = Ops.waitidPoll(pid, &info, WEXITED | WNOWAIT | WNOHANG);
+                if (rc != 0) {
+                    // An interruption is retried — bounded by the same nine-attempt
+                    // discipline as the blocking reap below, because a storm of them
+                    // would otherwise poll forever without ever reaching the clock, and
+                    // "the budget path never waits without bound" has to hold against
+                    // the storm too. Exhaustion joins every other failure in the
+                    // permanent arm, and the permanent arm does NOT kill: ECHILD here
+                    // can mean an inherited SIGCHLD disposition auto-reaped the child,
+                    // and a reaped child's pid may already name a stranger. The
+                    // conservative rule of the blocking branch holds — nothing is
+                    // signalled on an unpinned id. A failed call is not an observation
+                    // of "still running" either, so it can never answer .timed_out.
+                    if (std.c._errno().* == EINTR) {
+                        eintr_streak += 1;
+                        if (eintr_streak < 9) continue :poll;
+                    }
+                    break :poll .waitid_broke;
+                }
+                eintr_streak = 0;
+                if (siPid(&info) == pid) break :poll .exited;
+                const now = Ops.nowMs();
+                if (now >= deadline) {
+                    // classifies toward the child. This is the measurement rule the
+                    // member's doc promises, not a proof the child finished its work
+                    // inside the budget. Only a *successful* post-deadline observation
+                    // can answer .timed_out; a failing one lands above in .waitid_broke
+                    // and kills nothing.
+                    if (past_deadline) break :poll .timed_out;
+                    past_deadline = true;
+                    continue :poll;
+                }
+                Ops.sleepMs(@min(interval, deadline - now));
+                interval = @min(interval * 2, 10);
+            };
+            switch (outcome) {
+                .exited => {
+                    if (childRefusedGroup(refusal[0], 0)) {
+                        if (refusedAgain(&refused, pid, attempt, cg)) continue :attempts;
+                        return error.ChildGroupRefused;
+                    }
+                    // What is still in the run's cgroup is read before anything is killed (v17).
+                    if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, true);
+                    Ops.killGroup(pid);
+                    // The direct reap may block: the child was observed exited and the
+                    // default disposition holds it zombie, so the wait returns without
+                    // waiting. The group drain may NOT block — the target can have put
+                    // other processes in the group directly, and if the SIGKILL failed
+                    // to land on one of them (uninterruptible sleep, changed
+                    // credentials) a blocking drain would hang the very path that
+                    // promises not to. Survivors are strays for the quiescence check.
+                    var status: c_int = 0;
+                    clearLiveChild();
+                    const wait_failed = for (0..9) |_| {
+                        if (Ops.wait(pid, &status, 0) >= 0) break false;
+                        if (std.c._errno().* != EINTR) break true;
+                    } else true;
+                    while (Ops.wait(-pid, null, WNOHANG) > 0) {}
+                    if (wait_failed) return error.WaitFailed;
+                    return decodeStatus(status);
+                },
+                .timed_out => {
+                    // The observation one line up saw the child alive, and the default
+                    // SIGCHLD disposition holds it zombie once it dies, so the id is
+                    // pinned here too.
+                    Ops.killGroup(pid);
+                    if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, false);
+                    // Reap under a grace, not without bound: SIGKILL normally produces a
+                    // reapable child in microseconds, and when it cannot — uninterruptible
+                    // sleep, or credentials the group signal does not reach — the child is
+                    // left as a stray for the quiescence check rather than hanging the
+                    // very path that exists to end a hang. The kill's rc is deliberately
+                    // not consulted for the verdict: the budget expiry was measured, and
+                    // a group-kill rc of 0 would not prove delivery to the direct child
+                    // anyway.
+                    const grace_deadline = Ops.nowMs() + world_kill_grace_ms;
+                    var ginterval: u64 = 1;
+                    clearLiveChild();
+                    reap: while (true) {
+                        const wrc = Ops.wait(pid, null, WNOHANG);
+                        if (wrc == pid) break :reap;
+                        if (wrc < 0 and std.c._errno().* != EINTR) break :reap;
+                        const gnow = Ops.nowMs();
+                        if (gnow >= grace_deadline) break :reap;
+                        Ops.sleepMs(@min(ginterval, grace_deadline - gnow));
+                        ginterval = @min(ginterval * 2, 10);
+                    }
+                    while (Ops.wait(-pid, null, WNOHANG) > 0) {}
+                    return error.TimedOut;
+                },
+                .waitid_broke => {
+                    // Nothing was signalled (see the loop comment), so nothing here may
+                    // block on a child that might still be running: one non-blocking reap
+                    // attempt, a non-blocking drain, and the same refusal the blocking
+                    // branch gives a broken wait. A live child this leaves behind is a
+                    // stray; the stray is what the quiescence check is for.
+                    if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, false);
+                    clearLiveChild();
+                    _ = Ops.wait(pid, null, WNOHANG);
+                    while (Ops.wait(-pid, null, WNOHANG) > 0) {}
+                    return error.WaitFailed;
+                },
+            }
+        } else {
+            var info: [256]u8 align(16) = undefined;
+            const observed = while (true) {
+                if (waitid(P_PID, pid, &info, WEXITED | WNOWAIT) == 0) break true;
+                if (std.c._errno().* != EINTR) break false;
+            };
+            if (observed and childRefusedGroup(refusal[0], 0)) {
+                if (refusedAgain(&refused, pid, attempt, cg)) continue :attempts;
+                return error.ChildGroupRefused;
+            }
+            if (observed) {
                 if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, true);
                 Ops.killGroup(pid);
-                // The direct reap may block: the child was observed exited and the
-                // default disposition holds it zombie, so the wait returns without
-                // waiting. The group drain may NOT block — the target can have put
-                // other processes in the group directly, and if the SIGKILL failed
-                // to land on one of them (uninterruptible sleep, changed
-                // credentials) a blocking drain would hang the very path that
-                // promises not to. Survivors are strays for the quiescence check.
-                var status: c_int = 0;
-                clearLiveChild();
-                const wait_failed = for (0..9) |_| {
-                    if (Ops.wait(pid, &status, 0) >= 0) break false;
-                    if (std.c._errno().* != EINTR) break true;
-                } else true;
-                while (Ops.wait(-pid, null, WNOHANG) > 0) {}
-                if (wait_failed) return error.WaitFailed;
-                return decodeStatus(status);
-            },
-            .timed_out => {
-                // The observation one line up saw the child alive, and the default
-                // SIGCHLD disposition holds it zombie once it dies, so the id is
-                // pinned here too.
-                Ops.killGroup(pid);
-                if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, false);
-                // Reap under a grace, not without bound: SIGKILL normally produces a
-                // reapable child in microseconds, and when it cannot — uninterruptible
-                // sleep, or credentials the group signal does not reach — the child is
-                // left as a stray for the quiescence check rather than hanging the
-                // very path that exists to end a hang. The kill's rc is deliberately
-                // not consulted for the verdict: the budget expiry was measured, and
-                // a group-kill rc of 0 would not prove delivery to the direct child
-                // anyway.
-                const grace_deadline = Ops.nowMs() + world_kill_grace_ms;
-                var ginterval: u64 = 1;
-                clearLiveChild();
-                reap: while (true) {
-                    const wrc = Ops.wait(pid, null, WNOHANG);
-                    if (wrc == pid) break :reap;
-                    if (wrc < 0 and std.c._errno().* != EINTR) break :reap;
-                    const gnow = Ops.nowMs();
-                    if (gnow >= grace_deadline) break :reap;
-                    Ops.sleepMs(@min(ginterval, grace_deadline - gnow));
-                    ginterval = @min(ginterval * 2, 10);
-                }
-                while (Ops.wait(-pid, null, WNOHANG) > 0) {}
-                return error.TimedOut;
-            },
-            .waitid_broke => {
-                // Nothing was signalled (see the loop comment), so nothing here may
-                // block on a child that might still be running: one non-blocking reap
-                // attempt, a non-blocking drain, and the same refusal the blocking
-                // branch gives a broken wait. A live child this leaves behind is a
-                // stray; the stray is what the quiescence check is for.
-                if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, false);
-                clearLiveChild();
-                _ = Ops.wait(pid, null, WNOHANG);
-                while (Ops.wait(-pid, null, WNOHANG) > 0) {}
-                return error.WaitFailed;
-            },
+            } else if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, false);
+            // If `waitid` failed the id is not pinned, so nothing is signalled: sending SIGKILL to
+            // a group that may have been recycled is worse than leaving a stray process. The stray
+            // is what the quiescence check is for.
         }
-    } else {
-        var info: [256]u8 align(16) = undefined;
-        const observed = while (true) {
-            if (waitid(P_PID, pid, &info, WEXITED | WNOWAIT) == 0) break true;
-            if (std.c._errno().* != EINTR) break false;
-        };
-        if (observed) {
-            if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, true);
-            Ops.killGroup(pid);
-        } else if (cg) |spawn_cg| Ops.cgroupStop(spawn_cg, false);
-        // If `waitid` failed the id is not pinned, so nothing is signalled: sending SIGKILL to
-        // a group that may have been recycled is worse than leaving a stray process. The stray
-        // is what the quiescence check is for.
+
+        // Retried rather than assumed. `status` is only written when the call succeeds, so a
+        // discarded failure leaves it zero, `decodeStatus` reads a killed world as a clean
+        // exit, and the world is reported as `kill_did_not_land` — the wrong reason. Same class
+        // as the ordering defect above: a wait call's side effect trusted without checking that
+        // the call happened.
+        var status: c_int = 0;
+        clearLiveChild();
+        const wait_failed = for (0..9) |_| {
+            if (Ops.wait(pid, &status, 0) >= 0) break false;
+            if (std.c._errno().* != EINTR) break true;
+        } else true;
+
+        // This runs *before* the wait failure is returned. Returning early would skip the drain
+        // and leave behind the direct child itself — never reaped, since reaping it is exactly
+        // what just failed. A fix for a wrong verdict must not introduce a process leak.
+        while (Ops.wait(-pid, null, 0) > 0) {}
+
+        if (wait_failed) return error.WaitFailed;
+        // Asked again after the reap: a `waitid` that failed above skipped the first question.
+        // Not held: this pid is reaped already, and a held one is waited on again at the end.
+        if (childRefusedGroup(refusal[0], 0)) {
+            if (refusedAgain(null, pid, attempt, cg)) continue :attempts;
+            return error.ChildGroupRefused;
+        }
+        return decodeStatus(status);
     }
-
-    // Retried rather than assumed. `status` is only written when the call succeeds, so a
-    // discarded failure leaves it zero, `decodeStatus` reads a killed world as a clean
-    // exit, and the world is reported as `kill_did_not_land` — the wrong reason. Same class
-    // as the ordering defect above: a wait call's side effect trusted without checking that
-    // the call happened.
-    var status: c_int = 0;
-    clearLiveChild();
-    const wait_failed = for (0..9) |_| {
-        if (Ops.wait(pid, &status, 0) >= 0) break false;
-        if (std.c._errno().* != EINTR) break true;
-    } else true;
-
-    // This runs *before* the wait failure is returned. Returning early would skip the drain
-    // and leave behind the direct child itself — never reaped, since reaping it is exactly
-    // what just failed. A fix for a wrong verdict must not introduce a process leak.
-    while (Ops.wait(-pid, null, 0) > 0) {}
-
-    if (wait_failed) return error.WaitFailed;
-    return decodeStatus(status);
 }
 
 const InterruptTest = struct {
@@ -2728,6 +2879,13 @@ const FakeWait = struct {
         cgroup_make_calls += 1;
         return true;
     }
+    fn cgroupRearm(cg: *CgroupSpawn) bool {
+        _ = cg;
+        return true;
+    }
+    const parentSetpgid = RealOps.parentSetpgid;
+    const childSetpgid = RealOps.childSetpgid;
+    const childSetsid = RealOps.childSetsid;
     fn cgroupJoin(cg: *CgroupSpawn, pid: c_int) bool {
         _ = cg;
         if (cgroup_join_kills_child) {
@@ -3036,6 +3194,10 @@ const FakeBudget = struct {
         sleep_calls += 1;
     }
     const cgroupMake = FakeWait.cgroupMake;
+    const cgroupRearm = FakeWait.cgroupRearm;
+    const parentSetpgid = RealOps.parentSetpgid;
+    const childSetpgid = RealOps.childSetpgid;
+    const childSetsid = RealOps.childSetsid;
     const cgroupJoin = FakeWait.cgroupJoin;
     const cgroupStop = FakeWait.cgroupStop;
     const forkChild = RealOps.forkChild;
@@ -3508,4 +3670,130 @@ test "a child that dies before its go-ahead does not take the engine down with a
     _ = try runChildImplWithOps(std.testing.allocator, &.{"true"}, &.{}, null, false, null, null, &cg, .kill, FakeWait);
     try std.testing.expect(cg.joined);
     try std.testing.expectEqual(@as(u32, 1), FakeWait.fork_calls);
+}
+
+const FakeGroup = struct {
+    var refuse_forks: u32 = 0;
+    var fork_calls: u32 = 0;
+    var pids: [8]c_int = undefined;
+    var reaped_before_next_fork = false;
+
+    fn reset(refuse: u32) void {
+        refuse_forks = refuse;
+        fork_calls = 0;
+        reaped_before_next_fork = false;
+    }
+
+    fn forkChild() c_int {
+        for (pids[0..@min(fork_calls, pids.len)]) |earlier| {
+            var info: std.c.siginfo_t = undefined;
+            if (waitid(P_PID, earlier, @ptrCast(&info), WEXITED | WNOWAIT | WNOHANG) != 0) reaped_before_next_fork = true;
+        }
+        fork_calls += 1;
+        const pid = fork();
+        if (pid > 0 and fork_calls <= pids.len) pids[fork_calls - 1] = pid;
+        return pid;
+    }
+    fn parentSetpgid(_: c_int, _: c_int) c_int {
+        return 0;
+    }
+    fn childSetpgid(pid: c_int, pgid: c_int) c_int {
+        if (fork_calls <= refuse_forks) {
+            std.c._errno().* = EPERM;
+            return -1;
+        }
+        return setpgid(pid, pgid);
+    }
+    fn childSetsid() c_int {
+        if (fork_calls <= refuse_forks) {
+            std.c._errno().* = EPERM;
+            return -1;
+        }
+        return setsid();
+    }
+    const wait = RealOps.wait;
+    const waitidPoll = RealOps.waitidPoll;
+    const killGroup = RealOps.killGroup;
+    const nowMs = RealOps.nowMs;
+    const sleepMs = RealOps.sleepMs;
+    const openDevNull = RealOps.openDevNull;
+    const openCapture = RealOps.openCapture;
+    const cgroupMake = RealOps.cgroupMake;
+    const cgroupRearm = RealOps.cgroupRearm;
+    const cgroupJoin = RealOps.cgroupJoin;
+    const cgroupStop = RealOps.cgroupStop;
+
+    fn expectAllReaped() !void {
+        for (pids[0..@min(fork_calls, pids.len)]) |pid| {
+            try std.testing.expectEqual(@as(c_int, -1), waitpid(pid, null, WNOHANG));
+            try std.testing.expectEqual(@as(c_int, @backingInt(std.posix.E.CHILD)), std.c._errno().*);
+        }
+    }
+};
+
+test "a child refused a group of its own is forked again and the command runs" {
+    // The parent's rescue is faked away too: a real `setpgid(pid, pid)` landing first would
+    // give the child its group, and the refusal under test would never happen.
+    FakeGroup.reset(1);
+    const term = try runChildImplWithOps(std.testing.allocator, &.{ "/bin/sh", "-c", "exit 0" }, &.{}, null, false, 10_000, null, null, .kill, FakeGroup);
+    try std.testing.expectEqual(Term{ .exited = 0 }, term);
+    try std.testing.expectEqual(@as(u32, 2), FakeGroup.fork_calls);
+    try std.testing.expect(!FakeGroup.reaped_before_next_fork);
+    try FakeGroup.expectAllReaped();
+}
+
+test "a command that itself exits 126 is still read as its own exit 126, and is not forked again" {
+    FakeGroup.reset(0);
+    const term = try runChildImplWithOps(std.testing.allocator, &.{ "/bin/sh", "-c", "exit 126" }, &.{}, null, false, null, null, null, .kill, FakeGroup);
+    try std.testing.expectEqual(Term{ .exited = 126 }, term);
+    try std.testing.expectEqual(@as(u32, 1), FakeGroup.fork_calls);
+}
+
+test "a sidecar that runs on is handed back at once, not when it ends" {
+    var cap_buf: [64]u8 = undefined;
+    const cap_path = try std.fmt.bufPrint(&cap_buf, "/tmp/sideeye-groupfork-{d}-long", .{getpid()});
+    var zb: [64]u8 = undefined;
+    const cap_z = try std.mem.printSentinel(&zb, "{s}", .{cap_path}, 0);
+    _ = unlink(cap_z.ptr);
+    defer _ = unlink(cap_z.ptr);
+    FakeGroup.reset(0);
+    const t0 = monotonicMs();
+    const pid = try spawnSidecarWithOps(std.testing.allocator, &.{ "/bin/sh", "-c", "sleep 5" }, cap_path, null, FakeGroup);
+    const took = monotonicMs() - t0;
+    _ = kill(pid, SIGKILL);
+    while (waitpid(pid, null, 0) < 0 and std.c._errno().* == EINTR) {}
+    try std.testing.expect(took < 2000);
+}
+
+test "three refused forks are reported as the refusal, never as the command's exit 126" {
+    FakeGroup.reset(max_group_forks);
+    const r = runChildImplWithOps(std.testing.allocator, &.{ "/bin/sh", "-c", "exit 0" }, &.{}, null, false, null, null, null, .kill, FakeGroup);
+    try std.testing.expectError(error.ChildGroupRefused, r);
+    try std.testing.expectEqual(@as(u32, max_group_forks), FakeGroup.fork_calls);
+    try FakeGroup.expectAllReaped();
+}
+
+test "a sidecar refused a group of its own is forked again, and three refusals are reported" {
+    var cap_buf: [64]u8 = undefined;
+    for ([_]u32{ 1, max_group_forks }) |refuse| {
+        const cap_path = try std.fmt.bufPrint(&cap_buf, "/tmp/sideeye-groupfork-{d}-{d}", .{ getpid(), refuse });
+        var zb: [64]u8 = undefined;
+        const cap_z = try std.mem.printSentinel(&zb, "{s}", .{cap_path}, 0);
+        _ = unlink(cap_z.ptr);
+        defer _ = unlink(cap_z.ptr);
+        FakeGroup.reset(refuse);
+        const r = spawnSidecarWithOps(std.testing.allocator, &.{ "/bin/sh", "-c", "exit 0" }, cap_path, null, FakeGroup);
+        try std.testing.expect(!FakeGroup.reaped_before_next_fork);
+        if (refuse < max_group_forks) {
+            const pid = try r;
+            var status: c_int = 0;
+            while (waitpid(pid, &status, 0) < 0 and std.c._errno().* == EINTR) {}
+            try std.testing.expectEqual(Term{ .exited = 0 }, decodeStatus(status));
+            try std.testing.expectEqual(@as(u32, 2), FakeGroup.fork_calls);
+        } else {
+            try std.testing.expectError(error.ChildGroupRefused, r);
+            try std.testing.expectEqual(@as(u32, max_group_forks), FakeGroup.fork_calls);
+        }
+        try FakeGroup.expectAllReaped();
+    }
 }

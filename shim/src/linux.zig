@@ -1,14 +1,3 @@
-//! Linux symbol installation.
-//!
-//! Under `LD_PRELOAD` the dynamic linker resolves a symbol to the first library that
-//! defines it, so exporting these names means the target's calls land in `ops.zig`.
-//! The real functions are reached through `dlsym(RTLD_NEXT, …)`, filled in by
-//! `common.resolveAll()`.
-//!
-//! Several libc entry points are aliases that differ only in name — `open64` is `open`
-//! on a 64-bit target, `pwrite64` is `pwrite`. They get the same replacement rather
-//! than a wrapper each, so there is one body to keep correct.
-
 const ops = @import("ops.zig");
 const syscalls = @import("syscalls.zig");
 
@@ -99,8 +88,6 @@ comptime {
 
     @export(&ops.close, .{ .name = "close" });
 
-    // stdio, at flush granularity (ADR 0005). fdopen needs no wrapper: no syscall
-    // happens there, and the descriptor's open was recorded by the raw wrappers.
     @export(&ops.fopen, .{ .name = "fopen" });
     @export(&ops.fopen64, .{ .name = "fopen64" });
     @export(&ops.freopen, .{ .name = "freopen" });

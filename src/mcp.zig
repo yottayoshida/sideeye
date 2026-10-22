@@ -1270,6 +1270,7 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
             // the child's exit code 126 and is answered below; it arrives here now,
             // before any child exists, which is why the sentence says "could not start".
             error.CaptureUnavailable => "could not start sideeye: its stdout capture in the work directory could not be opened. The path is refused when it is a symlink, or when it already holds a file or directory the server did not just create — check SIDEEYE_MCP_WORK and what is inside it",
+            error.ChildGroupRefused => std.fmt.comptimePrint("could not start sideeye: the kernel refused its process a process group of its own in each of {d} forks — setpgid(0, 0), then setsid — and a line per refusal on the server's stderr says what each call answered", .{posix.max_group_forks}),
             error.ForkFailed, error.OutOfMemory => "could not run sideeye",
         });
     const exit_code: i64 = switch (term) {
@@ -1280,13 +1281,7 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
     // leaves a report for this call, so anything found at the report path would be
     // somebody else's file; say what broke instead of reading it.
     //
-    // 126 no longer means "the capture could not be opened": that open moved to the
-    // parent in #469 and its failure is `error.CaptureUnavailable`, answered above
-    // before any child exists. What remains here is `setpgid` and the `dup2`s the
-    // child issues before exec — each of which, since 2026-09-08, writes a line on
-    // this server's stderr naming the call and the errno before exiting 126 — and a
-    // child that itself exited 126, indistinguishable from those.
-    if (exit_code == 126) return emitToolError(arena, id, "the child exited 126: either the engine's fork stub could not arrange it before exec — setpgid, or a dup2; a line on the server's stderr names the call and the errno — or the child itself exited 126");
+    if (exit_code == 126) return emitToolError(arena, id, "the child exited 126: either the engine's fork stub could not arrange it before exec — a dup2; a line on the server's stderr names the call and the errno — or the child itself exited 126");
     if (exit_code == 127) return emitToolError(arena, id, "self-exec failed: the canonical sideeye binary could not be executed");
 
     const report = readFile(arena, temp_json, 4 * 1024 * 1024) orelse

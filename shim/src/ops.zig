@@ -1,22 +1,9 @@
-//! The replacement functions, shared by both platforms.
-//!
-//! Every one does the same two things: note the operation, then forward to the real
-//! function through `common.call*`. Those wrappers are where the platforms differ —
-//! Linux goes through a `dlsym`-filled table, macOS calls the original directly — and
-//! keeping that difference in one place means a fix to path handling or ordering cannot
-//! land on one platform and miss the other.
-//!
-//! How these get installed differs too: `linux.zig` exports the symbols for
-//! `LD_PRELOAD` to resolve, `macos.zig` lists them in a `__DATA,__interpose` table.
-
 const std = @import("std");
 const builtin = @import("builtin");
 const contract = @import("contract");
 const common = @import("common.zig");
 
 const AT_FDCWD = common.AT_FDCWD;
-
-// --- kill-point ops: open family -------------------------------------------------
 
 /// `open` and `openat` are the only variadic entry points, and the right declaration
 /// differs by platform — not as a preference, but because each ABI makes the other
@@ -26,11 +13,6 @@ const AT_FDCWD = common.AT_FDCWD;
 /// so a fixed-arity declaration reads `mode` from a register the caller never wrote.
 /// On Linux the two agree, and Zig refuses `@cVaStart` for that target outright
 /// ("disabled due to miscompilations") — its own statement about that ABI.
-// A write-incapable open is not observed at all (ADR 0003): it cannot change state, so
-// the world killed immediately before it is byte-identical to the world killed at the
-// next address — the same treatment as a path outside the state directory. The oracle
-// applies the matching predicate textually and skips the same opens.
-//
 // `countedAtSyscall()` guards this family the way it guards every wrapper below whose
 // syscall the filter traps: under `--observe syscalls` the handler records the open, and
 // recording here as well would put two records in the account for one operation. The
@@ -107,8 +89,6 @@ pub fn creat(path: [*:0]const u8, mode: c_uint) callconv(.c) c_int {
     return common.callCreat(path, mode);
 }
 
-// --- kill-point ops: write family ------------------------------------------------
-
 // Four of these five ask `countedAtSyscall()` first. Under `--observe syscalls`
 // the syscall each one is about to issue is trapped and counted by the handler, so
 // recording here as well would count one operation twice — and the engine compares the
@@ -163,8 +143,6 @@ pub fn pwritev2(fd: c_int, iov: *const anyopaque, iovcnt: c_int, offset: i64, fl
     return common.callPwritev2(fd, iov, iovcnt, offset, flags);
 }
 
-// --- kill-point ops: the kernel's copy primitives (#244) --------------------------
-
 /// The destination descriptor is the third argument, not the first — the one place in
 /// this file where the written descriptor is not `fd`. `src/oracle.zig`'s
 /// `fd_write_args` carries the same fact for the other observer; both must agree or
@@ -188,8 +166,6 @@ pub fn sendfile(out_fd: c_int, in_fd: c_int, offset: ?*i64, count: usize) callco
     common.noteFd(.write, out_fd);
     return common.callSendfile(out_fd, in_fd, offset, count);
 }
-
-// --- kill-point ops: rename ------------------------------------------------------
 
 pub fn rename(old: [*:0]const u8, new: [*:0]const u8) callconv(.c) c_int {
     common.note2(.rename, AT_FDCWD, old, AT_FDCWD, new);
@@ -215,20 +191,6 @@ pub fn renameat2(olddirfd: c_int, old: [*:0]const u8, newdirfd: c_int, new: [*:0
     return common.callRenameat2(olddirfd, old, newdirfd, new, flags);
 }
 
-// --- The macOS family (v12, #333) ------------------------------------------------
-//
-// Everything below is installed by macos.zig only. Linux never exports these names,
-// and the call helpers answer ENOSYS if a future mistake changes that.
-//
-// The clone family records a `.write` on the DESTINATION, one record: a clone is one
-// atomic syscall after which a name holds content, and its source is copy-on-write —
-// unchanged — so scope reads the destination alone (the same reasoning ADR 0023
-// applied to `copy_file_range`, whose written descriptor is not argument 0 either).
-// The record is an attempt, like every record this file writes: `clonefile` fails
-// when its destination exists, callers (Rust std, `copyfile(COPYFILE_CLONE)`) then
-// fall back to plain writes, and the failed attempt's crash point is a state-twin of
-// its successor — same state, same judgment (measured; the CI leg pins it).
-
 pub fn clonefile(src: [*:0]const u8, dst: [*:0]const u8, flags: u32) callconv(.c) c_int {
     common.note1(.write, AT_FDCWD, dst);
     return common.callClonefile(src, dst, flags);
@@ -239,10 +201,6 @@ pub fn clonefileat(src_dirfd: c_int, src: [*:0]const u8, dst_dirfd: c_int, dst: 
     return common.callClonefileat(src_dirfd, src, dst_dirfd, dst, flags);
 }
 
-/// Argument 0 is the SOURCE FILE's descriptor, not a dirfd — the destination is
-/// argument 2, relative to the dirfd in argument 1. Handing `srcfd` to `note1` would
-/// not fail loudly: `fdKind` answers `path_backed` for a regular file and the record
-/// would name a path under the source file. The CI leg drives exactly that swap.
 pub fn fclonefileat(srcfd: c_int, dst_dirfd: c_int, dst: [*:0]const u8, flags: u32) callconv(.c) c_int {
     common.note1(.write, dst_dirfd, dst);
     return common.callFclonefileat(srcfd, dst_dirfd, dst, flags);
@@ -272,9 +230,6 @@ pub fn renameatx_np(olddirfd: c_int, old: [*:0]const u8, newdirfd: c_int, new: [
     return common.callRenameatxNp(olddirfd, old, newdirfd, new, flags);
 }
 
-/// Always the refusal: there is no flag under which an atomic contents swap fits the
-/// model. Scope-gated like the rest — swapping two files outside the state directory
-/// is none of this tool's business.
 pub fn exchangedata(p1: [*:0]const u8, p2: [*:0]const u8, opts: c_uint) callconv(.c) c_int {
     common.noteUnsupportedInScope2("exchangedata", AT_FDCWD, p1, AT_FDCWD, p2);
     return common.callExchangedata(p1, p2, opts);
@@ -301,7 +256,6 @@ pub fn mmap(addr: ?*anyopaque, len: usize, prot: c_int, flags: c_int, fd: c_int,
     return r;
 }
 
-/// `PROT_WRITE` added to a range `mmap` above remembered is refused (v19, #689).
 pub fn mprotect(addr: ?*anyopaque, len: usize, prot: c_int) callconv(.c) c_int {
     if ((prot & common.PROT_WRITE) != 0) common.noteMprotectWrite(@intFromPtr(addr), len);
     return common.callMprotect(addr, len, prot);
@@ -309,8 +263,6 @@ pub fn mprotect(addr: ?*anyopaque, len: usize, prot: c_int) callconv(.c) c_int {
 
 /// The one bit that turns a metadata call into a rename. `struct attrlist` is
 /// fixed-layout: `bitmapcount` u16, `reserved` u16, then `commonattr` u32 at offset 4.
-/// Everything else this family sets (xattrs, ACLs, times) falls under the report's
-/// standing "metadata is not observable" declaration and records nothing.
 fn attrlistRenames(al: *anyopaque) bool {
     const b: [*]const u8 = @ptrCast(al);
     const common_attr = std.mem.bytesToValue(u32, b[4..8]);
@@ -355,9 +307,6 @@ pub fn open_dprotected_np(path: [*:0]const u8, flags: c_int, class: c_int, dpfla
 /// guarded open created a file the account never mentioned, and with any other recorded
 /// mutation present the run PASSed. That is the #333 shape one family over — and worse
 /// on the default path, where the shim is the only observer there is.
-///
-/// Each notes what its unguarded twin notes. The guard changes who may touch the
-/// descriptor, not what the call does to the file.
 pub fn guarded_open_np(path: [*:0]const u8, guard: *const u64, gflags: c_uint, flags: c_int, ...) callconv(.c) c_int {
     var ap = @cVaStart();
     defer @cVaEnd(&ap);
@@ -401,8 +350,6 @@ pub fn guarded_close_np(fd: c_int, guard: *const u64) callconv(.c) c_int {
     return common.callGuardedCloseNp(fd, guard);
 }
 
-// --- kill-point ops: unlink ------------------------------------------------------
-
 pub fn unlink(path: [*:0]const u8) callconv(.c) c_int {
     common.note1(.unlink, AT_FDCWD, path);
     return common.callUnlink(path);
@@ -434,8 +381,6 @@ pub fn remove(path: [*:0]const u8) callconv(.c) c_int {
     return rmdir(path);
 }
 
-// --- kill-point ops: the temp-name creators (#39) ---------------------------------
-//
 // `mkstemp` and its three variants open from inside libc, and `mkdtemp` makes its
 // directory from inside libc; neither inner call crosses the PLT, so a shim that
 // replaces only `open` and `mkdir` records nothing for them. Measured twice: on
@@ -499,9 +444,6 @@ const temp_letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345
 /// collision a retry rather than a wrong answer, exactly as they do in libc.
 const temp_attempts: u32 = 62 * 62 * 62;
 
-/// Flags `mkostemp`/`mkostemps` accept on Darwin. Values read from the SDK header and
-/// confirmed by running each one: `O_APPEND` 0x8, `O_CLOEXEC` 0x1000000,
-/// `O_SHLOCK` 0x10, `O_EXLOCK` 0x20.
 const darwin_ostemp_flags: c_int = 0x8 | 0x1000000 | 0x10 | 0x20;
 
 var temp_seq: u64 = 0;
@@ -510,8 +452,6 @@ var temp_seq: u64 = 0;
 /// on Darwin and means the template is used as it stands.
 const TempSlot = struct { at: [*]u8, len: usize };
 
-/// Fill the slot with a name unlikely to collide.
-///
 /// Deliberately not `arc4random_buf`: it reached glibc only in 2.36 and this
 /// repository pins no glibc floor (#161), so depending on it would narrow where the
 /// shim loads. Deliberately not `std.crypto.random`: it does not exist in the Zig this
@@ -538,7 +478,6 @@ fn fillTempName(slot: TempSlot) void {
     }
 }
 
-/// The caller's extra flags as the real function would take them, or null for EINVAL.
 fn tempFlags(extra: c_int) ?c_int {
     if (is_darwin) {
         if (extra & ~darwin_ostemp_flags != 0) return null;
@@ -547,7 +486,6 @@ fn tempFlags(extra: c_int) ?c_int {
     return extra & ~common.O_ACCMODE;
 }
 
-/// The `X` run this platform's libc would fill, or null for EINVAL.
 fn tempSlot(template: [*:0]u8, suffixlen: c_int) ?TempSlot {
     if (suffixlen < 0) return null;
     const suffix: usize = @intCast(suffixlen);
@@ -575,9 +513,6 @@ fn tempAttempts(n: usize) u32 {
     return space;
 }
 
-/// EEXIST and EINVAL are 17 and 22 on both platforms (checked, not recalled — the
-/// pair `remove` had to branch on, EISDIR/EPERM, is the reminder that agreement is
-/// not the rule here).
 const EEXIST: c_int = 17;
 const EINVAL: c_int = 22;
 
@@ -637,14 +572,6 @@ pub fn mkdtemp(template: [*:0]u8) callconv(.c) ?[*:0]u8 {
     return null;
 }
 
-// --- kill-point ops: link --------------------------------------------------------
-//
-// A second name for an inode changes the tree, so link is a kill point and a mutation
-// (ADR 0006). Recorded before the call like every kill point, and with the same old,new
-// orientation as rename (path = old, aux = new); scope is "either endpoint inside the
-// state directory", decided in observe, so the record order carries no correctness
-// weight of its own.
-
 pub fn link(old: [*:0]const u8, new: [*:0]const u8) callconv(.c) c_int {
     common.note2(.link, AT_FDCWD, old, AT_FDCWD, new);
     return common.callLink(old, new);
@@ -661,8 +588,6 @@ pub fn linkat(olddirfd: c_int, old: [*:0]const u8, newdirfd: c_int, new: [*:0]co
     return common.callLinkat(olddirfd, old, newdirfd, new, flags);
 }
 
-// --- kill-point ops: symlink -------------------------------------------------------
-//
 // Creating a symbolic link writes a directory entry, so it is a kill point and a
 // mutation — the same nature as link (#122, contract v9). Only the LINK PATH is
 // resolved and recorded; the target string is content the subject chose, not a path
@@ -679,8 +604,6 @@ pub fn symlinkat(target: [*:0]const u8, newdirfd: c_int, linkpath: [*:0]const u8
     common.note1(.symlink, newdirfd, linkpath);
     return common.callSymlinkat(target, newdirfd, linkpath);
 }
-
-// --- kill-point ops: sync and truncate -------------------------------------------
 
 pub fn fsync(fd: c_int) callconv(.c) c_int {
     common.noteFd(.fsync, fd);
@@ -702,8 +625,6 @@ pub fn truncate(path: [*:0]const u8, length: i64) callconv(.c) c_int {
     return common.callTruncate(path, length);
 }
 
-// --- kill-point ops: directories -------------------------------------------------
-
 pub fn mkdir(path: [*:0]const u8, mode: c_uint) callconv(.c) c_int {
     common.note1(.mkdir, AT_FDCWD, path);
     return common.callMkdir(path, mode);
@@ -718,8 +639,6 @@ pub fn rmdir(path: [*:0]const u8) callconv(.c) c_int {
     common.note1(.rmdir, AT_FDCWD, path);
     return common.callRmdir(path);
 }
-
-// --- lifecycle -------------------------------------------------------------------
 
 const CLOSE_RANGE_CLOEXEC: c_int = 1 << 2;
 
@@ -743,8 +662,6 @@ pub fn close(fd: c_int) callconv(.c) c_int {
     return common.callClose(fd);
 }
 
-// --- stdio, at flush granularity (ADR 0005) ----------------------------------------
-//
 // Libc-internal calls never cross the PLT, so interposing `write` says nothing about
 // `fprintf` — measured as the whole of taskwarrior's data writes and the two operations
 // that cost git its run (#30). These wrappers observe the one place where stdio
@@ -758,17 +675,6 @@ pub fn close(fd: c_int) callconv(.c) c_int {
 // much smaller. Recording happens before the call, like every wrapper here, so a kill
 // lands *before* the flush and the crash world loses the unflushed buffer — which is
 // what a real crash loses.
-
-// The open a stdio wrapper records is an ordinary `openat` once libc issues it, so under
-// `--observe syscalls` the handler counts it and `common.note1`'s wrapper door keeps these
-// three silent, on the class, like every other recorder in this file.
-//
-// One asymmetry follows, and it runs in the improving direction. `stdioActive()` is false
-// on a Linux whose libc has no `__fpending`, and there these three record nothing in the
-// default mode — the oracle then sees an `openat` the shim did not, and the run refuses.
-// Under `--observe syscalls` the same `openat` traps and the handler records it whatever
-// `stdioActive()` says, so that run is judged. The account differs by mode only where the
-// default mode was already refusing (review, P2).
 
 pub fn fopen(path: [*:0]const u8, mode: [*:0]const u8) callconv(.c) ?*common.FILE {
     if (common.stdioOpenRecorded(mode))
@@ -883,18 +789,11 @@ pub fn fsetpos64(stream: *common.FILE, pos: *const anyopaque) callconv(.c) c_int
     return common.callFsetpos64(stream, pos);
 }
 
-// --- boundary detectors ----------------------------------------------------------
-//
-// These do not make the operation fail; they record that the run crossed a process
-// boundary. Whether that is tolerable is the engine's decision, not this file's.
-//
 // Recorded *after* the call succeeds, except where noted. The old pre-call records
 // meant a failed fork — no child anywhere — read exactly like a real one, and the
 // difference between those is the difference between a refusal and a verdict.
 //
 // `clone`, `clone3` and a raw `syscall(SYS_clone, …)` bypass this file entirely.
-// That gap is why the recording run is compared against an external oracle where one
-// exists, and why the engine carries detectors that do not depend on interposition.
 
 pub fn fork() callconv(.c) c_int {
     const rc = common.callFork();
@@ -933,11 +832,6 @@ pub fn fork() callconv(.c) c_int {
 /// record the boundary first (an ordinary call, safely before the fork), then tail-jump.
 /// At the jump the stack is exactly as if the target had called `vfork` directly, and
 /// both returns land in the target without touching this function again.
-///
-/// Why the other process-creating wrappers do not need this: a `fork` child runs on a
-/// *copy* of the stack, and glibc's `posix_spawn` gives its `CLONE_VM|CLONE_VFORK` child
-/// a freshly mmap'd stack — measured as the reason spawn survived an ordinary wrapper
-/// while vfork did not. Only `vfork` shares the parent's.
 pub fn vfork() callconv(.c) c_int {
     // The one boundary still recorded before the call: there is no frame afterwards to
     // record from. The cost is that a failed vfork leaves a fork record with no child —
@@ -967,8 +861,6 @@ pub fn execv(path: [*:0]const u8, argv: [*]const ?[*:0]const u8) callconv(.c) c_
     const loan = common.noteExecBoundary();
     defer takeBackKeepingErrno(loan);
     const carried = common.execSeqCarrySet();
-    // Before `init`, the mark of a call into the state, which this image can no longer report
-    // (#753); `carried` is false then, since nothing is carried before `init`.
     const marked = common.preInitCarrySet();
     const rc = common.callExecv(path, argv);
     if (marked) common.preInitCarryUndo();
@@ -988,8 +880,6 @@ pub fn execvp(file: [*:0]const u8, argv: [*]const ?[*:0]const u8) callconv(.c) c
     const loan = common.noteExecBoundary();
     defer takeBackKeepingErrno(loan);
     const carried = common.execSeqCarrySet();
-    // Before `init`, the mark of a call into the state, which this image can no longer report
-    // (#753); `carried` is false then, since nothing is carried before `init`.
     const marked = common.preInitCarrySet();
     const rc = common.callExecvp(file, argv);
     if (marked) common.preInitCarryUndo();
@@ -1036,19 +926,8 @@ pub fn pthread_create(
     start_routine: *const anyopaque,
     arg: ?*anyopaque,
 ) callconv(.c) c_int {
-    // The creation is recorded as before; since v18 the new thread also runs a trampoline
-    // that writes its own first record naming this creator, and the handle is kept for
-    // the join that may follow (`common.createThread`, ADR 0067).
     return common.createThread(thread, attr, start_routine, arg);
 }
-
-// --- thread synchronisation (v18) -----------------------------------------------------
-//
-// A join is the one call that orders a thread's writes before the caller's later ones, and
-// a creation the one that orders the caller's earlier writes before the new thread's. The
-// engine draws its order from these records and the `thread_started` the trampoline writes;
-// a detach is recorded because it says the join will never come. `pthread_t` is passed by
-// value as the integer it is on both libcs (`common.PthreadJoinFn`).
 
 pub fn pthread_join(thread: usize, retval: ?*?*anyopaque) callconv(.c) c_int {
     return common.joinThread(thread, retval);
@@ -1057,13 +936,6 @@ pub fn pthread_join(thread: usize, retval: ?*?*anyopaque) callconv(.c) c_int {
 pub fn pthread_detach(thread: usize) callconv(.c) c_int {
     return common.detachThread(thread);
 }
-
-// --- containment escapes -----------------------------------------------------------
-//
-// The engine confines the target by putting it in its own process group and killing the
-// group, and where it can in a cgroup of its own as well (v17). A process that leaves the group
-// is one the group kill no longer reaches — so the departure itself is recorded, and the engine
-// judges it only where the cgroup held the run and refuses it everywhere else (#559).
 
 pub fn setsid() callconv(.c) c_int {
     const rc = common.callSetsid();
