@@ -2450,7 +2450,7 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/no-such-strace 2>&1)
 rc=$?
-if [ "$rc" = "3" ] && echo "$o" | grep -q "oracle is not an executable"; then
+if [ "$rc" = "3" ] && echo "$o" | grep -q "which is not an executable file"; then
     echo "ok   a missing oracle is SETUP ERROR, not a verdict about the target"
 else
     echo "FAIL missing oracle: exit $rc"
@@ -2859,6 +2859,21 @@ if refused checker_rejects_initial_state "$rc" "$o" \
     echo "ok   a checker that rejects the starting state is refused before any world, its output marked start:, next step fix_define"
 else
     echo "FAIL #756: a checker that rejects the starting state: exit $rc (wanted 2 checker_rejects_initial_state, no world, no earliest crash point)"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+# #835: a checker that ends on a signal has no answer to change the define by; the step sends the
+# operator to run it by hand instead.
+printf '#!/bin/sh\nkill -KILL $$\n' > /tmp/acc-756/killed.sh
+chmod 755 /tmp/acc-756/killed.sh
+o=$(TOY_STATE=/tmp/acc-756/s-killed "$SIDEEYE" explore --state /tmp/acc-756/s-killed --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --check /tmp/acc-756/killed.sh --shim "$SHIM" --work /tmp/acc-756/w-killed --allow-unverified --json /tmp/acc-756/killed.json 2>&1)
+rc=$?
+if refused checker_not_falsified "$rc" "$o" \
+    && python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d.get("next_step", "").startswith("The checker ended without an exit status") else 1)' /tmp/acc-756/killed.json; then
+    echo "ok   a checker killed by a signal is refused with the step that says to run it by hand"
+else
+    echo "FAIL #835: a checker killed by a signal: exit $rc (wanted 2 checker_not_falsified, next step run_checker_by_hand)"
     printf '%s\n' "$o" | sed 's/^/     | /' | head -8
     fails=$((fails + 1))
 fi
@@ -10879,6 +10894,7 @@ rc=$?
 if [ "$rc" = "2" ] \
     && echo "$o" | grep -q "state_rewrite_failed" \
     && echo "$o" | grep -q "could not restore the state directory" \
+    && echo "$o" | grep -q "could not be removed — look at the permissions there" \
     && grep -q '"unknown_reason": "state_rewrite_failed"' /tmp/acc-rw/r.json \
     && grep -q '"verdict": "UNKNOWN"' /tmp/acc-rw/r.json \
     && ! grep -q '"earliest"' /tmp/acc-rw/r.json; then

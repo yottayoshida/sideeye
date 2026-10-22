@@ -884,6 +884,9 @@ fn rewriteFailureDisposition(
 
 pub fn restoreFailure(e: engine.RestoreError, doing: []const u8, root: []const u8) noreturn {
     var d = rewriteFailureDisposition(run_phase, e, doing);
+    var named: [768]u8 = undefined;
+    if (e == error.DeleteFailed) d.detail = std.fmt.bufPrint(&named, "{s}: an entry under the state directory could not be removed — look at the permissions there (a directory without its owner's write and search bits), an immutable or append-only attribute, a read-only filesystem, a tree nested deeper than the engine walks, or the open-file limit", .{doing}) catch doing;
+    if (e == error.CreateFailed) d.detail = std.fmt.bufPrint(&named, "{s}: an entry could not be recreated under the state directory — look at the space and inodes left on its filesystem, a read-only filesystem, a directory without its owner's write bit, or a mount that will not take the mode the snapshot recorded", .{doing}) catch doing;
     if (e == error.MountInside) if (json_arena) |ja| {
         var rel: engine.EntryRel = .{};
         const scan = engine.firstMountInside(root, &rel);
