@@ -2055,9 +2055,9 @@ fn phaseChecker(run: *Run) void {
 
         switch (probe) {
             .exited => |code| {
-                // switch, before any child exists. What still reaches 126 is `setpgid`
-                // or a `dup2` that failed in the child — which says so on the engine's
-                // stderr since 2026-09-08 — and a checker that genuinely exits 126,
+                // switch, before any child exists. What still reaches 126 is a `dup2`
+                // that failed in the child — which says so on the engine's
+                // stderr — and a checker that genuinely exits 126,
                 // which is indistinguishable from it and gets the fail-closed reading.
                 if (code == 126)
                     unknown(.checker_not_falsified, "the checker probe exited 126: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the checker itself exited 126 — indistinguishable from here, so the gate refuses rather than counting it as red", .environment);
@@ -2244,7 +2244,7 @@ fn phaseExploration(run: *Run) void {
                 ) catch unreachable;
                 unknown(.child_timed_out, detail, .raise_world_timeout);
             },
-            error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable, error.CgroupJoinFailed => |se| spawnFailure(se, .exploring, "could not run --operation"),
+            error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable, error.CgroupJoinFailed, error.ChildGroupRefused => |se| spawnFailure(se, .exploring, "could not run --operation"),
         };
         // Every process of the world is dead by now; the supervising thread's account is
         // complete once it has been joined (#217).

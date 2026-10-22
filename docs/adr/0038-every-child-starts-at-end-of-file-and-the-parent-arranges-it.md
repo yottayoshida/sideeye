@@ -71,7 +71,9 @@ under no budget, which is the silent hang this change exists to remove.
   engine's stderr naming the call and the errno before the 126 — against a checker that
   exits 126 itself. The decision this
   ADR records is unchanged; the sentence illustrating it named a case that has since
-  been fixed by applying it.)
+  been fixed by applying it. **On 2026-10-22 `setpgid` left that list too** (#829, ADR 0087's
+  amendment): a child refused a group of its own says so over a pipe, and the parent forks
+  it again or refuses by name.)
 - **A one-time `/dev/null` check at startup, then the child-side open.** A window between
   the check and each fork, and the child-side failure is back in the exit-code namespace.
   Opening per spawn in the parent makes the check unnecessary.
