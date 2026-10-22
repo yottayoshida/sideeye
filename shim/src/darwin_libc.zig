@@ -1,8 +1,3 @@
-//! The real libc entry points, for macOS.
-//!
-//! Kept in their own file so that both the interposition table (`macos.zig`) and the
-//! call wrappers (`common.zig`) can reach them without importing each other.
-//!
 //! Calling these from inside the shim reaches the genuine functions: dyld does not
 //! interpose calls that stay within one image. That is what makes it possible to avoid
 //! a pointer table here — and avoiding it is not an optimisation, it is required.
@@ -10,9 +5,6 @@
 //! runs much later; anything reached through a table filled by that constructor is null
 //! for every call the system libraries make in between. That gap is what made the first
 //! macOS attempt return -1 to `libxpc` before `main` was ever entered.
-//!
-//! `@extern` rather than `extern fn` so the Zig-side name can differ from the symbol
-//! name — this file needs to talk about `open` while the shim is busy exporting one.
 
 const F = fn ([*:0]const u8, c_int, ...) callconv(.c) c_int;
 
@@ -22,57 +14,31 @@ pub const creat = @extern(*const fn ([*:0]const u8, c_uint) callconv(.c) c_int, 
 pub const write = @extern(*const fn (c_int, [*]const u8, usize) callconv(.c) isize, .{ .name = "write" });
 pub const pwrite = @extern(*const fn (c_int, [*]const u8, usize, i64) callconv(.c) isize, .{ .name = "pwrite" });
 pub const writev = @extern(*const fn (c_int, *const anyopaque, c_int) callconv(.c) isize, .{ .name = "writev" });
-/// `pwritev` is a BSD/Linux extension rather than POSIX, and macOS gained it in 11.0
-/// — measured present on this host (`/usr/lib/libSystem`), which is why it is taken
-/// here while `pwritev2` (Linux only) is not. One of the two members of #256 that
-/// narrow the macOS PASS hole, where no oracle exists to refuse what the shim cannot
-/// see; `fdatasync` below is the other.
 pub const pwritev = @extern(*const fn (c_int, *const anyopaque, c_int, i64) callconv(.c) isize, .{ .name = "pwritev" });
-/// `fdatasync` is in libSystem on macOS — measured by linking against an
-/// `extern int fdatasync(int)` declaration of our own — even though no public header
-/// declares it. The oracle has classified it as `.fsync` since v0.1 and the Linux shim has
-/// exported it just as long; this side never did, which is #256's shape exactly:
-/// a classified operation invisible to both observers on the platform that has no
-/// oracle to notice. Found by the first-look review of the batch that closed the
-/// Linux half, not by the check that batch added — that check reads linux.zig only.
 pub const fdatasync = @extern(*const fn (c_int) callconv(.c) c_int, .{ .name = "fdatasync" });
 /// The clone family (v12, #333). All three are separate stubs at separate addresses in
 /// libsystem_kernel — interposing one covers none of the others — and their argument
 /// orders disagree: `clonefile`'s destination is argument 1, `clonefileat`'s is 3, and
 /// `fclonefileat`'s is 2 with a *source file descriptor* (not a dirfd) in argument 0.
-/// Rust std's `fs::copy` reaches `fclonefileat` first on this platform; `copyfile`'s
-/// `COPYFILE_CLONE` reaches `clonefileat` (measured in libcopyfile's import table).
 pub const clonefile = @extern(*const fn ([*:0]const u8, [*:0]const u8, u32) callconv(.c) c_int, .{ .name = "clonefile" });
 pub const clonefileat = @extern(*const fn (c_int, [*:0]const u8, c_int, [*:0]const u8, u32) callconv(.c) c_int, .{ .name = "clonefileat" });
 pub const fclonefileat = @extern(*const fn (c_int, c_int, [*:0]const u8, u32) callconv(.c) c_int, .{ .name = "fclonefileat" });
-/// macOS's spelling of `renameat2` (v12). The interpose table has named it as such
-/// since #256 closed the Linux half; it was named and not taken.
 pub const renamex_np = @extern(*const fn ([*:0]const u8, [*:0]const u8, c_uint) callconv(.c) c_int, .{ .name = "renamex_np" });
 pub const renameatx_np = @extern(*const fn (c_int, [*:0]const u8, c_int, [*:0]const u8, c_uint) callconv(.c) c_int, .{ .name = "renameatx_np" });
-/// Atomic contents swap — the mutation the restore model cannot reproduce, macOS's
-/// `RENAME_EXCHANGE`-shaped relative (v12). Interposed to refuse in scope, never to count.
 pub const exchangedata = @extern(*const fn ([*:0]const u8, [*:0]const u8, c_uint) callconv(.c) c_int, .{ .name = "exchangedata" });
-/// The mapping calls (v19, #689): a store through a shared mapping of a state file has no
-/// call behind it, so a writable one — made so, or by an `mprotect` later — is refused in
-/// scope, never counted. Interposed on this platform only: Linux's oracle sees both.
 pub const mmap = @extern(*const fn (?*anyopaque, usize, c_int, c_int, c_int, i64) callconv(.c) ?*anyopaque, .{ .name = "mmap" });
 pub const mprotect = @extern(*const fn (?*anyopaque, usize, c_int) callconv(.c) c_int, .{ .name = "mprotect" });
-/// The attrlist family (v12): metadata writers, except that `ATTR_CMN_NAME` renames.
 /// The `options` word is declared `unsigned int` in one SDK header and `unsigned long`
 /// in another — declared wide here, matching the wider header, since arm64 passes both
 /// in a register and the wrapper only forwards it.
 pub const setattrlist = @extern(*const fn ([*:0]const u8, *anyopaque, ?*anyopaque, usize, c_ulong) callconv(.c) c_int, .{ .name = "setattrlist" });
 pub const fsetattrlist = @extern(*const fn (c_int, *anyopaque, ?*anyopaque, usize, c_ulong) callconv(.c) c_int, .{ .name = "fsetattrlist" });
 pub const setattrlistat = @extern(*const fn (c_int, [*:0]const u8, *anyopaque, ?*anyopaque, usize, u32) callconv(.c) c_int, .{ .name = "setattrlistat" });
-/// The open variant libcopyfile imports beside plain `open` (v12): same flag word in
-/// argument 1, two protection arguments before the variadic mode.
 pub const open_dprotected_np = @extern(*const fn ([*:0]const u8, c_int, c_int, c_int, ...) callconv(.c) c_int, .{ .name = "open_dprotected_np" });
 pub const rename = @extern(*const fn ([*:0]const u8, [*:0]const u8) callconv(.c) c_int, .{ .name = "rename" });
 pub const renameat = @extern(*const fn (c_int, [*:0]const u8, c_int, [*:0]const u8) callconv(.c) c_int, .{ .name = "renameat" });
 pub const unlink = @extern(*const fn ([*:0]const u8) callconv(.c) c_int, .{ .name = "unlink" });
 pub const unlinkat = @extern(*const fn (c_int, [*:0]const u8, c_int) callconv(.c) c_int, .{ .name = "unlinkat" });
-// Never called — the remove wrapper reimplements the two-step itself — but the
-// interpose table needs the original symbol's address as its key.
 pub const remove = @extern(*const fn ([*:0]const u8) callconv(.c) c_int, .{ .name = "remove" });
 pub const link = @extern(*const fn ([*:0]const u8, [*:0]const u8) callconv(.c) c_int, .{ .name = "link" });
 pub const linkat = @extern(*const fn (c_int, [*:0]const u8, c_int, [*:0]const u8, c_int) callconv(.c) c_int, .{ .name = "linkat" });
@@ -85,13 +51,6 @@ pub const truncate = @extern(*const fn ([*:0]const u8, i64) callconv(.c) c_int, 
 pub const mkdir = @extern(*const fn ([*:0]const u8, c_uint) callconv(.c) c_int, .{ .name = "mkdir" });
 pub const mkdirat = @extern(*const fn (c_int, [*:0]const u8, c_uint) callconv(.c) c_int, .{ .name = "mkdirat" });
 pub const rmdir = @extern(*const fn ([*:0]const u8) callconv(.c) c_int, .{ .name = "rmdir" });
-/// The temp-name creators (#39). All five are here, not only the GNU-looking ones:
-/// `libsystem_c.dylib` exports `mkstemp`, `mkostemp`, `mkstemps`, `mkostemps` and
-/// `mkdtemp` (measured with `dyld_info -exports`, not assumed from the fact that
-/// `mkostemp*` are GNU extensions elsewhere). None of these is ever *called* from
-/// here — the replacements reimplement the sequence — but the interpose table names
-/// the original to say which function dyld should replace, the same way `remove`'s
-/// entry does while `ops.remove` calls `unlink` and `rmdir`.
 pub const mkstemp = @extern(*const fn ([*:0]u8) callconv(.c) c_int, .{ .name = "mkstemp" });
 pub const mkostemp = @extern(*const fn ([*:0]u8, c_int) callconv(.c) c_int, .{ .name = "mkostemp" });
 pub const mkstemps = @extern(*const fn ([*:0]u8, c_int) callconv(.c) c_int, .{ .name = "mkstemps" });
@@ -107,8 +66,6 @@ pub const posix_spawnp = @extern(*const fn (?*anyopaque, [*:0]const u8, ?*const 
 pub const pthread_create = @extern(*const fn (*anyopaque, ?*const anyopaque, *const anyopaque, ?*anyopaque) callconv(.c) c_int, .{ .name = "pthread_create" });
 pub const pthread_join = @extern(*const fn (usize, ?*?*anyopaque) callconv(.c) c_int, .{ .name = "pthread_join" });
 pub const pthread_detach = @extern(*const fn (usize) callconv(.c) c_int, .{ .name = "pthread_detach" });
-/// The calling thread's 64-bit id (v16). Not interposed — the shim reads it, the target
-/// does not see it — so a plain extern is right here, the way `getpid` is in `common.c`.
 pub const pthread_threadid_np = @extern(*const fn (?*anyopaque, *u64) callconv(.c) c_int, .{ .name = "pthread_threadid_np" });
 pub const setsid = @extern(*const fn () callconv(.c) c_int, .{ .name = "setsid" });
 pub const setpgid = @extern(*const fn (c_int, c_int) callconv(.c) c_int, .{ .name = "setpgid" });
@@ -121,13 +78,6 @@ pub const fseeko = @extern(*const fn (*anyopaque, i64, c_int) callconv(.c) c_int
 pub const rewind = @extern(*const fn (*anyopaque) callconv(.c) void, .{ .name = "rewind" });
 pub const fsetpos = @extern(*const fn (*anyopaque, *const anyopaque) callconv(.c) c_int, .{ .name = "fsetpos" });
 
-// The guarded-descriptor family (#299). SQLite reaches five of these — every one but
-// `guarded_writev_np`, measured with `dyld_info -imports /usr/lib/libsqlite3.dylib`,
-// and not weakly (`libobjc.A.dylib` shows a weak row, so the absent marker is a
-// reading rather than a gap in the tool) — and several corpus targets
-// keep a SQLite store, so a target writing through one of these was writing where the
-// only observer this platform has by default could not see it.
-//
 // These signatures are TRANSCRIBED, which is the thing this project otherwise refuses
 // to do. There is no alternative: `sys/guarded.h` is not in the SDK (nor is
 // `guardid_t`), and a symbol carries no type, so `dyld_info` and `nm` can confirm the
