@@ -1,0 +1,513 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 2a2abcfa4303dfd8a5f783e21b6cb8c648f7dafad6dd29184eb13945f67a5eaf
+build: the page's (working tree)    sha256 2a2abcfa4303dfd8a5f783e21b6cb8c648f7dafad6dd29184eb13945f67a5eaf
+build: the page's at tag v1.9.0     sha256 45c7cc0c812e083a417914776f47758fc25bb4791cf862949c52906efe88c82d
+build: NOTE the page's installer has moved since v1.9.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 27.55kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/61] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#4 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 14.27kB 0.0s done
+#5 DONE 0.0s
+
+#6 [ 2/61] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 python3-venv python3-dev ca-certificates procps bash git curl unzip xz-utils bzip2       build-essential pkg-config
+#6 CACHED
+
+#7 [ 3/61] COPY proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt
+#7 CACHED
+
+#8 [ 4/61] RUN update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#8 CACHED
+
+#9 [ 5/61] RUN for p in nodejs npm ruby ruby-dev php-cli php-xml php-mbstring golang-go libfaketime faketime; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done | tee /tmp/apt-summary.txt
+#9 CACHED
+
+#10 [ 6/61] RUN mkdir -p /opt/bin /tmp/dl && python3 -m venv /opt/py
+#10 CACHED
+
+#11 [ 7/61] COPY install-sideeye.sh /opt/install-sideeye.sh
+#11 DONE 0.1s
+
+#12 [ 8/61] RUN sh /opt/install-sideeye.sh v1.9.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#12 2.210 installer exit: 0
+#12 2.210 stdout: [/opt/se/sideeye-v1.9.0-aarch64-linux/sideeye]
+#12 2.211 install-sideeye: reading yottayoshida/sideeye release v1.9.0 (unauthenticated; shares this runner's rate limit)
+#12 2.211 install-sideeye: sideeye-v1.9.0-aarch64-linux.tar.gz published digest sha256:2960d33d0f32352ac635dd8b14f1256678e444691f5f779558dfc0f089078bdb
+#12 2.211 install-sideeye: downloaded digest matches (2960d33d0f32352ac635dd8b14f1256678e444691f5f779558dfc0f089078bdb)
+#12 2.211 install-sideeye: sideeye 1.9.0 (trace contract v18)
+#12 DONE 2.2s
+
+#13 [ 9/61] RUN "$(cat /install.path)" version
+#13 0.069 sideeye 1.9.0 (trace contract v18)
+#13 DONE 0.1s
+
+#14 [10/61] WORKDIR /w
+#14 DONE 0.0s
+
+#15 [11/61] RUN for p in minisign zsh; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done
+#15 3.548 OK minisign
+#15 5.703 OK zsh
+#15 DONE 5.8s
+
+#16 [12/61] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/openssl/openssl/releases/download/openssl-4.0.3/openssl-4.0.3.tar.gz openssl.tgz;     get $gh/smallstep/cli/releases/download/v0.31.0/step_linux_0.31.0_arm64.tar.gz step.tgz;     get $gh/lxc/incus/releases/download/v7.5.1/bin.linux.incus.aarch64 incus;     get $gh/canonical/lxd/releases/download/lxd-6.9/bin.linux.lxc.aarch64 lxc;     get $gh/git-lfs/git-lfs/releases/download/v3.8.0/git-lfs-linux-arm64-v3.8.0.tar.gz git-lfs.tgz;     get $gh/gilbertchen/duplicacy/releases/download/v3.2.5/duplicacy_linux_arm64_3.2.5 duplicacy;     get $gh/PlakarKorp/plakar/releases/download/v1.1.7/plakar_1.1.7_linux_arm64.tar.gz plakar.tgz;     get $gh/rustic-rs/rustic/releases/download/v0.11.4/rustic-v0.11.4-aarch64-unknown-linux-gnu.tar.gz rustic.tgz;     get $gh/gorilla-devs/ferium/releases/download/v4.7.1/ferium-linux-arm64-nogui.zip ferium.zip;     get $gh/OpenVPN/easy-rsa/releases/download/v3.2.7/EasyRSA-3.2.7.tgz easyrsa.tgz;     get $gh/acmesh-official/acme.sh/archive/refs/tags/3.1.6.tar.gz acme.tgz;     get $gh/agkozak/zsh-z/archive/refs/tags/v2.0.1.tar.gz zshz.tgz;     ls -l /tmp/dl
+#16 6.201 OK openssl.tgz
+#16 8.279 OK step.tgz
+#16 11.33 OK incus
+#16 13.94 OK lxc
+#16 14.98 OK git-lfs.tgz
+#16 19.49 OK duplicacy
+#16 22.29 OK plakar.tgz
+#16 24.11 OK rustic.tgz
+#16 25.22 OK ferium.zip
+#16 25.68 OK easyrsa.tgz
+#16 26.40 OK acme.tgz
+#16 27.47 OK zshz.tgz
+#16 27.47 total 181716
+#16 27.47 -rw-r--r-- 1 root root   488447 Oct 22 12:03 acme.tgz
+#16 27.47 -rw-r--r-- 1 root root 35042281 Oct 22 12:03 duplicacy
+#16 27.47 -rw-r--r-- 1 root root    94087 Oct 22 12:03 easyrsa.tgz
+#16 27.47 -rw-r--r-- 1 root root  3579126 Oct 22 12:03 ferium.zip
+#16 27.47 -rw-r--r-- 1 root root  5341074 Oct 22 12:03 git-lfs.tgz
+#16 27.47 -rw-r--r-- 1 root root 23724192 Oct 22 12:03 incus
+#16 27.47 -rw-r--r-- 1 root root 16122018 Oct 22 12:03 lxc
+#16 27.47 -rw-r--r-- 1 root root 55235667 Oct 22 12:03 openssl.tgz
+#16 27.47 -rw-r--r-- 1 root root 20271637 Oct 22 12:03 plakar.tgz
+#16 27.47 -rw-r--r-- 1 root root 11219665 Oct 22 12:03 rustic.tgz
+#16 27.47 -rw-r--r-- 1 root root 13558778 Oct 22 12:03 step.tgz
+#16 27.47 -rw-r--r-- 1 root root  1371980 Oct 22 12:04 zshz.tgz
+#16 DONE 27.6s
+
+#17 [13/61] RUN set -u; cd /tmp/dl; mkdir -p x-openssl && tar xzf openssl.tgz -C x-openssl --strip-components=1 && cd x-openssl &&     ./Configure --prefix=/opt/openssl --openssldir=/opt/openssl/ssl --libdir=lib '-Wl,-rpath,/opt/openssl/lib' > /tmp/openssl-configure.log 2>&1 &&     make -j"$(nproc)" > /tmp/openssl-make.log 2>&1 && make install_sw install_ssldirs > /tmp/openssl-install.log 2>&1 &&     ln -sf /opt/openssl/bin/openssl /opt/bin/openssl && echo "openssl: $(/opt/bin/openssl version)" || { echo "openssl: FAILED"; tail -5 /tmp/openssl-make.log; }
+#17 55.66 openssl: OpenSSL 4.0.3 29 Sep 2026 (Library: OpenSSL 4.0.3 29 Sep 2026)
+#17 DONE 56.1s
+
+#18 [14/61] RUN set -u; cd /tmp/dl;     for t in step git-lfs plakar rustic easyrsa acme zshz; do mkdir -p x-$t && tar xzf $t.tgz -C x-$t && echo "untar $t: ok" || echo "untar $t: FAILED"; done;     mkdir -p x-ferium && unzip -q ferium.zip -d x-ferium && echo "unzip ferium: ok";     install -m 755 incus /opt/bin/incus; install -m 755 lxc /opt/bin/lxc; install -m 755 duplicacy /opt/bin/duplicacy;     for n in step git-lfs plakar rustic ferium; do       f=$(find /tmp/dl/x-* -type f -name "$n" | head -1);       [ -n "$f" ] && install -m 755 "$f" /opt/bin/$n && echo "bin $n <- $f" || echo "bin $n: NOT FOUND";     done;     d=$(dirname "$(find /tmp/dl/x-easyrsa -type f -name easyrsa | head -1)"); cp -a "$d" /opt/easyrsa && ln -sf /opt/easyrsa/easyrsa /opt/bin/easyrsa && echo "easyrsa <- $d";     d=$(find /tmp/dl/x-acme -maxdepth 1 -mindepth 1 -type d | head -1); cp -a "$d" /opt/acme.sh-src && echo "acme.sh src <- $d";     d=$(find /tmp/dl/x-zshz -maxdepth 1 -mindepth 1 -type d | head -1); cp -a "$d" /opt/zsh-z && echo "zsh-z <- $d";     ls -l /opt/bin
+#18 0.334 untar step: ok
+#18 0.412 untar git-lfs: ok
+#18 0.663 untar plakar: ok
+#18 0.829 untar rustic: ok
+#18 0.831 tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.metadata:kMDItemTextContentLanguage'
+#18 0.833 untar easyrsa: ok
+#18 0.849 untar acme: ok
+#18 0.862 untar zshz: ok
+#18 0.911 unzip ferium: ok
+#18 0.984 bin step <- /tmp/dl/x-step/step_0.31.0/bin/step
+#18 0.993 bin git-lfs <- /tmp/dl/x-git-lfs/git-lfs-3.8.0/git-lfs
+#18 1.013 bin plakar <- /tmp/dl/x-plakar/plakar
+#18 1.026 bin rustic <- /tmp/dl/x-rustic/rustic
+#18 1.033 bin ferium <- /tmp/dl/x-ferium/ferium
+#18 1.038 easyrsa <- /tmp/dl/x-easyrsa/EasyRSA-3.2.7
+#18 1.052 acme.sh src <- /tmp/dl/x-acme/acme.sh-3.1.6
+#18 1.057 zsh-z <- /tmp/dl/x-zshz/zsh-z-2.0.1
+#18 1.058 total 205224
+#18 1.058 -rwxr-xr-x 1 root root 35042281 Oct 22 12:04 duplicacy
+#18 1.058 lrwxrwxrwx 1 root root       20 Oct 22 12:04 easyrsa -> /opt/easyrsa/easyrsa
+#18 1.058 -rwxr-xr-x 1 root root  7170464 Oct 22 12:04 ferium
+#18 1.058 -rwxr-xr-x 1 root root 12910752 Oct 22 12:04 git-lfs
+#18 1.058 -rwxr-xr-x 1 root root 23724192 Oct 22 12:04 incus
+#18 1.058 -rwxr-xr-x 1 root root 16122018 Oct 22 12:04 lxc
+#18 1.058 lrwxrwxrwx 1 root root       24 Oct 22 12:04 openssl -> /opt/openssl/bin/openssl
+#18 1.058 -rwxr-xr-x 1 root root 50725024 Oct 22 12:04 plakar
+#18 1.058 -rwxr-xr-x 1 root root 23177192 Oct 22 12:04 rustic
+#18 1.058 -rwxr-xr-x 1 root root 41251890 Oct 22 12:04 step
+#18 DONE 1.6s
+
+#19 [15/61] RUN for p in certstrap@v1.3.0 sbctl@0.18; do       case "$p" in certstrap*) m=github.com/square/certstrap@v1.3.0 ;; sbctl*) m=github.com/foxboron/sbctl/cmd/sbctl@0.18 ;; esac;       GOFLAGS=-mod=mod go install "$m" > /tmp/go-$p.log 2>&1 && echo "OK go $p" || { echo "FAILED go $p"; tail -3 /tmp/go-$p.log; };     done; ls -l /root/go/bin
+#19 23.17 OK go certstrap@v1.3.0
+#19 57.86 FAILED go sbctl@0.18
+#19 57.86 Perhaps you should add the directory containing `libpcsclite.pc'
+#19 57.86 to the PKG_CONFIG_PATH environment variable
+#19 57.86 Package 'libpcsclite', required by 'virtual:world', not found
+#19 57.87 total 8072
+#19 57.87 -rwxr-xr-x 1 root root 8258585 Oct 22 12:05 certstrap
+#19 DONE 58.9s
+
+#20 [16/61] RUN for p in afdko==5.0.1 legendary-gl==0.21.1 weewx==5.5.2 snakemake==9.27.0 esptool==5.4.0; do       /opt/py/bin/pip install --no-cache-dir "$p" > /tmp/pip-$p.log 2>&1 && echo "OK $p" || { echo "FAILED $p"; tail -3 /tmp/pip-$p.log; };     done
+#20 70.83 OK afdko==5.0.1
+#20 74.26 OK legendary-gl==0.21.1
+#20 80.38 OK weewx==5.5.2
+#20 98.91 OK snakemake==9.27.0
+#20 103.7 OK esptool==5.4.0
+#20 DONE 104.1s
+
+#21 [17/61] RUN npm install -g --no-fund --no-audit netlify-cli@27.11.2 > /tmp/npm-netlify.log 2>&1 && echo "OK netlify-cli" || { echo "FAILED netlify-cli"; tail -3 /tmp/npm-netlify.log; }
+#21 26.36 OK netlify-cli
+#21 DONE 27.3s
+
+#22 [18/61] RUN { for c in "openssl version" "minisign -v" "zsh --version" "step version" "incus version" "lxc version" "git-lfs version"         "duplicacy -h" "plakar version" "rustic --version" "ferium --version" "easyrsa --version" "certstrap --version" "sbctl --version"         "sfntedit -h" "legendary --version" "weectl --version" "snakemake --version" "esptool version" "netlify --version"; do         printf '%s: ' "$c"; sh -c "$c" 2>&1 | head -1; done; } > /versions.txt 2>&1; cat /versions.txt
+#22 1.313 openssl version: OpenSSL 4.0.3 29 Sep 2026 (Library: OpenSSL 4.0.3 29 Sep 2026)
+#22 1.313 minisign -v: minisign 0.12
+#22 1.313 zsh --version: zsh 5.9 (aarch64-unknown-linux-gnu)
+#22 1.313 step version: Smallstep CLI/0.31.0 (linux/arm64)
+#22 1.313 incus version: Client version: 7.5.1
+#22 1.313 lxc version: Client version: 6.9
+#22 1.313 git-lfs version: git-lfs/3.8.0 (GitHub; linux arm64; go 1.27.0; git aece9221)
+#22 1.313 duplicacy -h: NAME:
+#22 1.313 plakar version: Welcome to plakar !
+#22 1.313 rustic --version: rustic 0.11.4
+#22 1.313 ferium --version: ferium 4.7.1
+#22 1.313 easyrsa --version: EasyRSA Version Information
+#22 1.313 certstrap --version: certstrap version 1.3.0
+#22 1.313 sbctl --version: sh: 1: sbctl: not found
+#22 1.313 sfntedit -h: Usage:
+#22 1.313 legendary --version: legendary version "0.21.1", codename "Lowlife"
+#22 1.313 weectl --version: weectl 5.5.2
+#22 1.313 snakemake --version: 9.27.0
+#22 1.313 esptool version: esptool v5.4.0
+#22 1.313 netlify --version: netlify-cli/27.11.2 linux-arm64 node-v20.19.2
+#22 DONE 1.3s
+
+#23 [19/61] RUN for p in keyring==25.7.0 keyrings.alt==5.0.2; do       /opt/py/bin/pip install --no-cache-dir "$p" > /tmp/pip-$p.log 2>&1 && echo "OK $p" || { echo "FAILED $p"; tail -3 /tmp/pip-$p.log; };     done; printf 'keyring --version: ' >> /versions.txt; /opt/py/bin/keyring --version >> /versions.txt 2>&1; tail -1 /versions.txt
+#23 1.364 OK keyring==25.7.0
+#23 1.797 OK keyrings.alt==5.0.2
+#23 1.843 keyring: error: unrecognized arguments: --version
+#23 DONE 1.9s
+
+#24 [20/61] RUN apt-get install -y --no-install-recommends cmake zlib1g-dev libbz2-dev liblzma-dev libzstd-dev > /tmp/apt-cmake.log 2>&1 && echo "OK cmake and zlib" || echo "MISSING cmake"
+#24 3.625 OK cmake and zlib
+#24 DONE 3.7s
+
+#25 [21/61] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/Canop/broot/releases/download/v1.61.0/broot_1.61.0.zip broot.zip;     get $gh/j178/prek/releases/download/v0.5.5/prek-aarch64-unknown-linux-gnu.tar.gz prek.tgz;     get $gh/savedra1/clipse/releases/download/v1.2.1/clipse_v1.2.1_linux_x11_arm64.tar.gz clipse.tgz;     get $gh/tstack/lnav/releases/download/v0.14.1/lnav-0.14.1-linux-musl-arm64.zip lnav.zip;     get $gh/nih-at/libzip/releases/download/v1.11.4/libzip-1.11.4.tar.gz libzip.tgz;     get $gh/fish-shell/fish-shell/releases/download/4.9.3/fish-4.9.3-linux-aarch64.tar.xz fish.txz;     get $gh/oh-my-fish/oh-my-fish/archive/refs/tags/v8.tar.gz omf.tgz;     ls -l /tmp/dl | tail -n 8
+#25 8.239 OK broot.zip
+#25 9.398 OK prek.tgz
+#25 10.77 OK clipse.tgz
+#25 17.65 OK lnav.zip
+#25 18.41 OK libzip.tgz
+#25 19.40 OK fish.txz
+#25 20.14 OK omf.tgz
+#25 20.14 drwxr-xr-x  2 root root     4096 Oct 22 12:04 x-ferium
+#25 20.14 drwxr-xr-x  3 root root     4096 Oct 22 12:04 x-git-lfs
+#25 20.14 drwxr-xr-x 26 root root     4096 Oct 22 12:04 x-openssl
+#25 20.14 drwxr-xr-x  3 root root     4096 Oct 22 12:04 x-plakar
+#25 20.14 drwxr-xr-x  4 root root     4096 Oct 22 12:04 x-rustic
+#25 20.14 drwxr-xr-x  3 root root     4096 Oct 22 12:04 x-step
+#25 20.14 drwxr-xr-x  3 root root     4096 Oct 22 12:04 x-zshz
+#25 20.14 -rw-r--r--  1 root root  1371980 Oct 22 12:04 zshz.tgz
+#25 DONE 20.3s
+
+#26 [22/61] RUN set -u; cd /tmp/dl;     mkdir -p x-broot && unzip -q broot.zip -d x-broot && f=$(find x-broot -path '*aarch64-unknown-linux-gnu*' -type f -name broot | head -1) && install -m 755 "$f" /opt/bin/broot && echo "bin broot <- $f";     mkdir -p x-prek && tar xzf prek.tgz -C x-prek && install -m 755 "$(find x-prek -type f -name prek | head -1)" /opt/bin/prek && echo "bin prek";     mkdir -p x-clipse && tar xzf clipse.tgz -C x-clipse && install -m 755 "$(find x-clipse -type f -name 'clipse*' ! -name '*.tar.gz' | head -1)" /opt/bin/clipse && echo "bin clipse";     mkdir -p x-lnav && unzip -q lnav.zip -d x-lnav && install -m 755 "$(find x-lnav -type f -name lnav | head -1)" /opt/bin/lnav && echo "bin lnav";     mkdir -p x-fish && tar xJf fish.txz -C x-fish && install -m 755 "$(find x-fish -type f -name fish | head -1)" /opt/bin/fish && echo "bin fish";     mkdir -p x-omf && tar xzf omf.tgz -C x-omf && d=$(find x-omf -maxdepth 1 -mindepth 1 -type d | head -1) && cp -a "$d" /opt/omf-src && echo "omf src <- $d"
+#26 0.916 bin broot <- x-broot/aarch64-unknown-linux-gnu/broot
+#26 0.986 bin prek
+#26 1.036 bin clipse
+#26 1.463 bin lnav
+#26 1.598 bin fish
+#26 1.627 omf src <- x-omf/oh-my-fish-8
+#26 DONE 2.4s
+
+#27 [23/61] RUN set -u; cd /tmp/dl; mkdir -p x-libzip && tar xzf libzip.tgz -C x-libzip --strip-components=1 && cd x-libzip && mkdir build && cd build &&     cmake .. -DCMAKE_INSTALL_PREFIX=/opt/libzip -DCMAKE_INSTALL_RPATH=/opt/libzip/lib -DENABLE_GNUTLS=OFF -DENABLE_OPENSSL=OFF -DENABLE_MBEDTLS=OFF -DBUILD_REGRESS=OFF -DBUILD_DOC=OFF > /tmp/libzip-cmake.log 2>&1 &&     make -j"$(nproc)" > /tmp/libzip-make.log 2>&1 && make install > /tmp/libzip-install.log 2>&1 &&     cp src/ziptool /opt/bin/ziptool 2>/dev/null || find . -type f -name ziptool -perm -u+x -exec cp {} /opt/bin/ziptool \; ;     ls -l /opt/bin/ziptool && echo "ziptool built" || { echo "ziptool: FAILED"; tail -5 /tmp/libzip-make.log; }
+#27 3.966 -rwxr-xr-x 1 root root 77456 Oct 22 12:08 /opt/bin/ziptool
+#27 3.966 ziptool built
+#27 DONE 4.0s
+
+#28 [24/61] RUN npm install -g --no-fund --no-audit tiddlywiki@5.4.1 > /tmp/npm-tiddlywiki.log 2>&1 && echo "OK tiddlywiki" || { echo "FAILED tiddlywiki"; tail -3 /tmp/npm-tiddlywiki.log; }
+#28 5.984 OK tiddlywiki
+#28 DONE 6.2s
+
+#29 [25/61] RUN { for c in "broot --version" "prek --version" "clipse -v" "lnav -V" "ziptool -h" "fish --version" "tiddlywiki --version"; do         printf '%s: ' "$c"; sh -c "$c" 2>&1 | head -1; done; } >> /versions.txt 2>&1; tail -7 /versions.txt
+#29 0.246 broot --version: broot 1.61.0
+#29 0.246 prek --version: prek 0.5.5
+#29 0.246 clipse -v: clipse: error while loading shared libraries: libX11.so.6: cannot open shared object file: No such file or directory
+#29 0.246 lnav -V: lnav 0.14.1
+#29 0.246 ziptool -h: usage: ziptool [-ceghnrst] [-l len] [-o offset] archive command1 [args] [command2 [args] ...]
+#29 0.246 fish --version: fish, version 4.9.3
+#29 0.246 tiddlywiki --version: 5.4.1
+#29 DONE 0.3s
+
+#30 [26/61] RUN for p in testdisk sndfile-programs libarchive-dev libssl-dev libmpfr-dev libgmp-dev libxml2-dev libicu-dev libreadline-dev intltool autoconf automake libtool; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done
+#30 1.808 OK testdisk
+#30 4.299 OK sndfile-programs
+#30 6.649 OK libarchive-dev
+#30 7.111 OK libssl-dev
+#30 8.055 OK libmpfr-dev
+#30 8.457 OK libgmp-dev
+#30 8.904 OK libxml2-dev
+#30 11.97 OK libicu-dev
+#30 13.18 OK libreadline-dev
+#30 16.06 OK intltool
+#30 16.66 OK autoconf
+#30 17.41 OK automake
+#30 18.80 OK libtool
+#30 DONE 19.0s
+
+#31 [27/61] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/nesbox/TIC-80/releases/download/v1.3.1/tic80-v1.3-linux-arm64.zip tic80.zip;     get $gh/kubernetes-sigs/krew/releases/download/v0.5.0/krew-linux_arm64.tar.gz krew.tgz;     get $gh/zlib-ng/minizip-ng/archive/refs/tags/4.2.2.tar.gz minizip.tgz;     get $gh/LAStools/LAStools/archive/refs/tags/v2.0.5.tar.gz lastools.tgz;     get $gh/XboxDev/extract-xiso/archive/refs/tags/build-202609111233.tar.gz xiso.tgz;     get $gh/Limine-Bootloader/Limine/releases/download/v12.9.3/limine-12.9.3.tar.gz limine.tgz;     get $gh/void-linux/xbps/archive/refs/tags/0.60.7.tar.gz xbps.tgz;     get $gh/Qalculate/libqalculate/releases/download/v5.13.1/libqalculate-5.13.1.tar.gz qalc.tgz;     ls -l /tmp/dl | tail -n 8
+#31 1.584 OK tic80.zip
+#31 2.858 OK krew.tgz
+#31 3.801 OK minizip.tgz
+#31 5.646 OK lastools.tgz
+#31 6.319 OK xiso.tgz
+#31 7.175 OK limine.tgz
+#31 8.053 OK xbps.tgz
+#31 9.119 OK qalc.tgz
+#31 9.123 drwxr-xr-x  3 root root     4096 Oct 22 12:04 x-plakar
+#31 9.123 drwxr-xr-x  3 root root     4096 Oct 22 12:08 x-prek
+#31 9.123 drwxr-xr-x  4 root root     4096 Oct 22 12:04 x-rustic
+#31 9.123 drwxr-xr-x  3 root root     4096 Oct 22 12:04 x-step
+#31 9.123 drwxr-xr-x  3 root root     4096 Oct 22 12:04 x-zshz
+#31 9.123 -rw-r--r--  1 root root   437206 Oct 22 12:09 xbps.tgz
+#31 9.123 -rw-r--r--  1 root root    26319 Oct 22 12:09 xiso.tgz
+#31 9.123 -rw-r--r--  1 root root  1371980 Oct 22 12:04 zshz.tgz
+#31 DONE 9.2s
+
+#32 [28/61] RUN set -u; cd /tmp/dl;     mkdir -p x-tic && unzip -q tic80.zip -d x-tic && f=$(find x-tic -type f -name 'tic80*' ! -name '*.zip' | head -1) && install -m 755 "$f" /opt/bin/tic80 && echo "bin tic80 <- $f";     mkdir -p x-krew && tar xzf krew.tgz -C x-krew && install -m 755 "$(find x-krew -type f -name 'krew-linux_arm64' | head -1)" /opt/bin/kubectl-krew && echo "bin kubectl-krew"
+#32 0.161 bin tic80 <- x-tic/tic80
+#32 0.233 bin kubectl-krew
+#32 DONE 0.3s
+
+#33 [29/61] RUN set -u; cd /tmp/dl; mkdir -p x-mz && tar xzf minizip.tgz -C x-mz --strip-components=1 && cd x-mz &&     cmake -S . -B build -DMZ_BUILD_TESTS=ON -DMZ_FETCH_LIBS=OFF -DMZ_OPENSSL=OFF -DMZ_LIBBSD=OFF -DMZ_ZSTD=OFF -DMZ_LZMA=OFF -DMZ_BZIP2=OFF -DMZ_ICONV=OFF -DMZ_BUILD_UNIT_TESTS=OFF -DCMAKE_BUILD_TYPE=Release > /tmp/mz-cmake.log 2>&1 &&     cmake --build build -j"$(nproc)" > /tmp/mz-make.log 2>&1 && f=$(find build -type f -name 'minizip' -perm -u+x | head -1) && install -m 755 "$f" /opt/bin/minizip && echo "minizip built <- $f" || { echo "minizip: FAILED"; tail -n 5 /tmp/mz-cmake.log /tmp/mz-make.log || true; }
+#33 3.142 minizip built <- build/minizip
+#33 DONE 3.2s
+
+#34 [30/61] RUN set -u; cd /tmp/dl; mkdir -p x-las && tar xzf lastools.tgz -C x-las --strip-components=1 && cd x-las &&     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release > /tmp/las-cmake.log 2>&1 && cmake --build build -j"$(nproc)" --target lasinfo > /tmp/las-make.log 2>&1 &&     f=$(find . -type f -name lasinfo -perm -u+x | head -1) && install -m 755 "$f" /opt/bin/lasinfo && echo "lasinfo built <- $f" || { echo "lasinfo: FAILED"; tail -n 5 /tmp/las-cmake.log /tmp/las-make.log || true; }
+#34 19.24 install: cannot stat '': No such file or directory
+#34 19.24 lasinfo: FAILED
+#34 19.24 ==> /tmp/las-cmake.log <==
+#34 19.24 -- Detecting C compile features
+#34 19.24 -- Detecting C compile features - done
+#34 19.24 -- Configuring done (0.2s)
+#34 19.24 -- Generating done (0.0s)
+#34 19.24 -- Build files have been written to: /tmp/dl/x-las/build
+#34 19.24 
+#34 19.24 ==> /tmp/las-make.log <==
+#34 19.24 /tmp/dl/x-las/src/lasinfo.cpp:142:18: warning: 'CsvString Quoted(const std::string&)' defined but not used [-Wunused-function]
+#34 19.24   142 | static CsvString Quoted(const std::string& string) {
+#34 19.24       |                  ^~~~~~
+#34 19.24 [100%] Linking CXX executable /tmp/dl/x-las/bin64/lasinfo64
+#34 19.24 [100%] Built target lasinfo
+#34 DONE 19.3s
+
+#35 [31/61] RUN set -u; cd /tmp/dl; mkdir -p x-xiso && tar xzf xiso.tgz -C x-xiso --strip-components=1 && cd x-xiso &&     cmake -S . -B build -DCMAKE_BUILD_TYPE=Release > /tmp/xiso-cmake.log 2>&1 && cmake --build build -j"$(nproc)" > /tmp/xiso-make.log 2>&1 &&     f=$(find build -type f -name extract-xiso -perm -u+x | head -1) && install -m 755 "$f" /opt/bin/extract-xiso && echo "extract-xiso built <- $f" || { echo "extract-xiso: FAILED"; tail -n 5 /tmp/xiso-make.log || true; }
+#35 0.681 extract-xiso built <- build/extract-xiso
+#35 DONE 0.7s
+
+#36 [32/61] RUN set -u; cd /tmp/dl; mkdir -p x-lim && tar xzf limine.tgz -C x-lim --strip-components=1 && cd x-lim &&     { ./configure --disable-all > /tmp/lim-conf.log 2>&1 || true; } && { make -j"$(nproc)" > /tmp/lim-make.log 2>&1 || true; } &&     f=$(find . -maxdepth 3 -type f -name limine -perm -u+x | head -1);     if [ -z "$f" ] && [ -f limine.c ]; then cc -O2 -std=c99 -o limine-host limine.c > /tmp/lim-cc.log 2>&1 && f=./limine-host; fi;     [ -n "$f" ] && install -m 755 "$f" /opt/bin/limine && echo "limine built <- $f" || { echo "limine: FAILED"; tail -n 5 /tmp/lim-conf.log /tmp/lim-make.log || true; }
+#36 0.587 limine: FAILED
+#36 0.588 ==> /tmp/lim-conf.log <==
+#36 0.588 checking for inttypes.h... (cached) yes
+#36 0.588 checking for limits.h... yes
+#36 0.588 checking for time.h... yes
+#36 0.588 checking for clang... no
+#36 0.588 configure: error: clang invalid, set CC_FOR_TARGET to a valid program
+#36 0.588 
+#36 0.588 ==> /tmp/lim-make.log <==
+#36 0.588 make: *** No targets specified and no makefile found.  Stop.
+#36 DONE 0.6s
+
+#37 [33/61] RUN set -u; cd /tmp/dl; mkdir -p x-xbps && tar xzf xbps.tgz -C x-xbps --strip-components=1 && cd x-xbps &&     ./configure --prefix=/opt/xbps > /tmp/xbps-conf.log 2>&1 && make -j"$(nproc)" > /tmp/xbps-make.log 2>&1 && make install > /tmp/xbps-install.log 2>&1 &&     ln -sf /opt/xbps/bin/xbps-pkgdb /opt/bin/xbps-pkgdb && ln -sf /opt/xbps/bin/xbps-install /opt/bin/xbps-install && ln -sf /opt/xbps/bin/xbps-query /opt/bin/xbps-query && echo "xbps built" || { echo "xbps: FAILED"; tail -n 5 /tmp/xbps-conf.log /tmp/xbps-make.log || true; }
+#37 3.114 xbps built
+#37 DONE 3.2s
+
+#38 [34/61] RUN set -u; cd /tmp/dl; mkdir -p x-qalc && tar xzf qalc.tgz -C x-qalc --strip-components=1 && cd x-qalc &&     ./configure --prefix=/opt/qalc --without-libcurl --disable-nls > /tmp/qalc-conf.log 2>&1 && make -j"$(nproc)" > /tmp/qalc-make.log 2>&1 && make install > /tmp/qalc-install.log 2>&1 &&     ln -sf /opt/qalc/bin/qalc /opt/bin/qalc && echo "qalc built" || { echo "qalc: FAILED"; tail -n 5 /tmp/qalc-conf.log /tmp/qalc-make.log || true; }
+#38 100.6 qalc built
+#38 DONE 100.9s
+
+#39 [35/61] RUN for p in ezdxf==1.4.4 mcpm==2.15.0; do       /opt/py/bin/pip install --no-cache-dir "$p" > /tmp/pip-$p.log 2>&1 && echo "OK $p" || { echo "FAILED $p"; tail -3 /tmp/pip-$p.log; };     done
+#39 5.126 OK ezdxf==1.4.4
+#39 18.97 OK mcpm==2.15.0
+#39 DONE 19.2s
+
+#40 [36/61] RUN { for c in "testdisk /version" "sndfile-metadata-set --version" "tic80 --version" "kubectl-krew version" "minizip -h" "lasinfo -version" "extract-xiso -h" "limine --version" "xbps-pkgdb -V" "qalc --version" "ezdxf --version" "mcpm --version"; do         printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; } >> /versions.txt 2>&1; tail -12 /versions.txt
+#40 1.080 testdisk /version: TestDisk 7.2, Data Recovery Utility, February 2024
+#40 1.080 sndfile-metadata-set --version: 
+#40 1.080 tic80 --version: tic80: error while loading shared libraries: libGL.so.1: cannot open shared object file: No such file or directory
+#40 1.080 kubectl-krew version: OPTION            VALUE
+#40 1.080 minizip -h: minizip-ng 4.2.2 - https://github.com/zlib-ng/minizip-ng
+#40 1.080 lasinfo -version: sh: 1: lasinfo: not found
+#40 1.080 extract-xiso -h: extract-xiso v2.7.1 (01.11.14) for linux - written by in <in@fishtank.com>
+#40 1.080 limine --version: sh: 1: limine: not found
+#40 1.080 xbps-pkgdb -V: xbps-pkgdb: error while loading shared libraries: libxbps.so.6: cannot open shared object file: No such file or directory
+#40 1.080 qalc --version: 5.13.1
+#40 1.080 ezdxf --version: ezdxf 1.4.4 from /opt/py/lib/python3.13/site-packages/ezdxf
+#40 1.080 mcpm --version: /opt/py/lib/python3.13/site-packages/fastmcp/server/auth/providers/jwt.py:10: AuthlibDeprecationWarning: authlib.jose module is deprecated, please use joserfc instead.
+#40 DONE 1.1s
+
+#41 [37/61] RUN install -m 755 /tmp/dl/x-las/bin64/lasinfo64 /opt/bin/lasinfo && echo "bin lasinfo <- bin64/lasinfo64";     echo /opt/xbps/lib > /etc/ld.so.conf.d/xbps.conf && ldconfig && echo "xbps libs registered";     apt-get install -y --no-install-recommends libgl1 libegl1 > /tmp/apt-libgl.log 2>&1 && echo "OK libgl1" || echo "MISSING libgl1"
+#41 0.096 bin lasinfo <- bin64/lasinfo64
+#41 0.105 xbps libs registered
+#41 7.894 OK libgl1
+#41 DONE 8.1s
+
+#42 [38/61] RUN { for c in "lasinfo -version" "xbps-pkgdb -V" "tic80 --version"; do printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; } >> /versions.txt 2>&1; tail -3 /versions.txt
+#42 0.112 lasinfo -version: LAStools lasinfo (by info@rapidlasso.de) version 260505
+#42 0.112 xbps-pkgdb -V: XBPS: 0.60.7 API: 20250629 GIT: UNSET
+#42 0.112 tic80 --version: 1.3.1 (62c24e5)
+#42 DONE 0.1s
+
+#43 [39/61] RUN for p in fdisk e2fsprogs; do apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p"; done
+#43 1.406 OK fdisk
+#43 2.832 OK e2fsprogs
+#43 DONE 2.9s
+
+#44 [40/61] RUN for p in @earendil-works/pi-coding-agent@1.0.4 cspell@10.3.6 @intellectronica/ruler@0.3.44; do       npm install -g --no-fund --no-audit "$p" > /tmp/npm-$(echo $p | tr /@ __).log 2>&1 && echo "OK $p" || { echo "FAILED $p"; tail -3 /tmp/npm-$(echo $p | tr /@ __).log; };     done
+#44 7.059 OK @earendil-works/pi-coding-agent@1.0.4
+#44 11.45 OK cspell@10.3.6
+#44 12.60 OK @intellectronica/ruler@0.3.44
+#44 DONE 13.2s
+
+#45 [41/61] RUN /opt/py/bin/pip install --no-cache-dir doit==0.37.0 > /tmp/pip-doit.log 2>&1 && echo "OK doit" || { echo "FAILED doit"; tail -3 /tmp/pip-doit.log; }
+#45 0.860 OK doit
+#45 DONE 0.9s
+
+#46 [42/61] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/stacklok/toolhive/releases/download/v0.51.4/toolhive_0.51.4_linux_arm64.tar.gz thv.tgz;     get $gh/kovidgoyal/kitty/releases/download/v0.49.2/kitten-linux-arm64 kitten;     get https://codeload.github.com/kovidgoyal/kitty-themes/zip/refs/heads/master kitty-themes.zip;     mkdir -p x-thv && tar xzf thv.tgz -C x-thv && install -m 755 "$(find x-thv -type f -name thv | head -1)" /opt/bin/thv && echo "bin thv";     install -m 755 kitten /opt/bin/kitten && echo "bin kitten";     mkdir -p /opt/kitty-themes && cp kitty-themes.zip /opt/kitty-themes/kitty-themes.zip && ls -l /opt/kitty-themes
+#46 5.367 OK thv.tgz
+#46 8.938 OK kitten
+#46 9.513 OK kitty-themes.zip
+#46 10.10 bin thv
+#46 10.11 bin kitten
+#46 10.14 total 556
+#46 10.14 -rw-r--r-- 1 root root 565739 Oct 22 12:12 kitty-themes.zip
+#46 DONE 12.6s
+
+#47 [43/61] RUN set -u; cd /tmp/dl/x-las && cmake --build build -j"$(nproc)" --target txt2las > /tmp/las-txt2las.log 2>&1;     f=$(find . -type f -name 'txt2las*' -perm -u+x | head -1); [ -n "$f" ] && install -m 755 "$f" /opt/bin/txt2las && echo "bin txt2las <- $f" || { echo "txt2las: FAILED"; tail -n 5 /tmp/las-txt2las.log || true; }
+#47 3.975 bin txt2las <- ./bin64/txt2las64
+#47 DONE 4.1s
+
+#48 [44/61] RUN { for c in "pi --version" "cspell --version" "ruler --version" "doit --version" "thv version" "kitten --version" "txt2las -version" "sfdisk --version" "mkfs.ext2 -V"; do         printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; } >> /versions.txt 2>&1; tail -9 /versions.txt
+#48 1.391 pi --version: file:///usr/local/lib/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js:2
+#48 1.391 cspell --version: Unsupported NodeJS version (20.19.2); >=22.18.0 is required
+#48 1.391 ruler --version: 0.3.44
+#48 1.391 doit --version: 0.37.0
+#48 1.391 thv version: A new version of ToolHive is available: v0.56.0
+#48 1.391 kitten --version: kitten 0.49.2 created by Kovid Goyal
+#48 1.391 txt2las -version: LAStools txt2las (by info@rapidlasso.de) version 260505
+#48 1.391 sfdisk --version: sfdisk from util-linux 2.41.5
+#48 1.391 mkfs.ext2 -V: mke2fs 1.47.2 (1-Jan-2025)
+#48 DONE 1.4s
+
+#49 [45/61] RUN set -u; cd /tmp/dl; curl -fsSL -o node22.txz https://nodejs.org/dist/v22.23.3/node-v22.23.3-linux-arm64.tar.xz &&     echo "a44aeb94849a299b22df10b9e622ec2f605c2183501bc40590705131de7c740f  node22.txz" | sha256sum -c &&     mkdir -p /opt/node22 && tar xJf node22.txz -C /opt/node22 --strip-components=1 && /opt/node22/bin/node --version
+#49 3.628 node22.txz: OK
+#49 5.632 v22.23.3
+#49 DONE 6.1s
+
+#50 [46/61] RUN for p in @earendil-works/pi-coding-agent@1.0.4 cspell@10.3.6; do       PATH=/opt/node22/bin:/opt/bin:/opt/py/bin:/usr/local/bin:/root/go/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin /opt/node22/bin/npm install -g --no-fund --no-audit "$p" > /tmp/npm22-$(echo $p | tr /@ __).log 2>&1 && echo "OK node22 $p" || { echo "FAILED $p"; tail -3 /tmp/npm22-$(echo $p | tr /@ __).log; };     done
+#50 6.340 OK node22 @earendil-works/pi-coding-agent@1.0.4
+#50 8.863 OK node22 cspell@10.3.6
+#50 DONE 9.4s
+
+#51 [47/61] RUN { for c in "pi --version" "cspell --version"; do printf '%s (node22): ' "$c"; PATH=/opt/node22/bin:/opt/bin:/opt/py/bin:/usr/local/bin:/root/go/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin sh -c "$c" < /dev/null 2>&1 | head -1; done; } >> /versions.txt 2>&1; tail -2 /versions.txt
+#51 0.608 pi --version (node22): 1.0.4
+#51 0.608 cspell --version (node22): 10.3.6
+#51 DONE 0.6s
+
+#52 [48/61] RUN for p in cargo rustc libfreetype-dev libfontconfig-dev libxcb-xfixes0-dev libxkbcommon-dev libncurses-dev gettext autopoint              libglib2.0-dev libgpgme-dev libmount-dev libfuse3-dev e2fslibs-dev libcurl4-openssl-dev bison; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done
+#52 10.06 OK cargo
+#52 10.48 OK rustc
+#52 11.71 OK libfreetype-dev
+#52 13.16 OK libfontconfig-dev
+#52 14.75 OK libxcb-xfixes0-dev
+#52 16.35 OK libxkbcommon-dev
+#52 16.99 OK libncurses-dev
+#52 17.54 OK gettext
+#52 18.68 OK autopoint
+#52 21.86 OK libglib2.0-dev
+#52 24.27 OK libgpgme-dev
+#52 24.70 OK libmount-dev
+#52 25.69 OK libfuse3-dev
+#52 26.15 OK e2fslibs-dev
+#52 28.25 OK libcurl4-openssl-dev
+#52 29.40 OK bison
+#52 DONE 30.1s
+
+#53 [49/61] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/alacritty/alacritty/archive/refs/tags/v0.17.0.tar.gz alacritty.tgz;     get $gh/allinurl/goaccess/archive/refs/tags/v1.12.tar.gz goaccess.tgz;     get $gh/ostreedev/ostree/releases/download/v2026.4/libostree-2026.4.tar.xz ostree.txz
+#53 1.384 OK alacritty.tgz
+#53 2.276 OK goaccess.tgz
+#53 3.199 OK ostree.txz
+#53 DONE 3.2s
+
+#54 [50/61] RUN set -u; cd /tmp/dl; mkdir -p x-alac && tar xzf alacritty.tgz -C x-alac --strip-components=1 && cd x-alac &&     CARGO_HTTP_CAINFO=/etc/ssl/certs/ca-certificates.crt cargo build --release --locked -p alacritty > /tmp/alac-build.log 2>&1 &&     install -m 755 target/release/alacritty /opt/bin/alacritty && echo "alacritty built" || { echo "alacritty: FAILED"; tail -n 8 /tmp/alac-build.log || true; }
+#54 60.59 alacritty built
+#54 DONE 64.1s
+
+#55 [51/61] RUN set -u; cd /tmp/dl; mkdir -p x-goa && tar xzf goaccess.tgz -C x-goa --strip-components=1 && cd x-goa &&     { autoreconf -fiv > /tmp/goa-autoreconf.log 2>&1; ./configure --prefix=/opt/goaccess > /tmp/goa-conf.log 2>&1; } && make -j"$(nproc)" > /tmp/goa-make.log 2>&1 && make install > /tmp/goa-install.log 2>&1 &&     ln -sf /opt/goaccess/bin/goaccess /opt/bin/goaccess && echo "goaccess built" || { echo "goaccess: FAILED"; tail -n 8 /tmp/goa-conf.log /tmp/goa-make.log || true; }
+#55 5.938 goaccess built
+#55 DONE 6.0s
+
+#56 [52/61] RUN set -u; cd /tmp/dl; mkdir -p x-ost && tar xJf ostree.txz -C x-ost --strip-components=1 && cd x-ost &&     ./configure --prefix=/opt/ostree --without-soup --without-libarchive --without-selinux --without-libsystemd --without-avahi --disable-man --disable-gtk-doc --without-composefs > /tmp/ost-conf.log 2>&1 &&     make -j"$(nproc)" > /tmp/ost-make.log 2>&1 && make install > /tmp/ost-install.log 2>&1 &&     echo /opt/ostree/lib > /etc/ld.so.conf.d/ostree.conf && ldconfig && ln -sf /opt/ostree/bin/ostree /opt/bin/ostree && echo "ostree built" || { echo "ostree: FAILED"; tail -n 8 /tmp/ost-conf.log /tmp/ost-make.log || true; }
+#56 6.900 ostree built
+#56 DONE 7.0s
+
+#57 [53/61] RUN npm install -g --no-fund --no-audit gitmoji-cli@9.7.0 > /tmp/npm-gitmoji.log 2>&1 && echo "OK gitmoji-cli" || { echo "FAILED gitmoji-cli"; tail -3 /tmp/npm-gitmoji.log; }
+#57 3.737 OK gitmoji-cli
+#57 DONE 3.8s
+
+#58 [54/61] RUN { for c in "alacritty --version" "goaccess --version" "ostree --version" "gitmoji --version"; do printf '%s: ' "$c"; sh -c "$c" < /dev/null 2>&1 | head -1; done; } >> /versions.txt 2>&1; tail -4 /versions.txt
+#58 0.243 alacritty --version: alacritty 0.17.0
+#58 0.243 goaccess --version: GoAccess - 1.12.
+#58 0.243 ostree --version: libostree:
+#58 0.243 gitmoji --version: 9.7.0
+#58 DONE 0.3s
+
+#59 [55/61] RUN for p in @capacitor/cli@8.5.2 astro@7.3.6; do       npm install -g --no-fund --no-audit "$p" > /tmp/npm-$(echo $p | tr /@ __).log 2>&1 && echo "OK $p" || { echo "FAILED $p"; tail -3 /tmp/npm-$(echo $p | tr /@ __).log; };     done
+#59 2.901 OK @capacitor/cli@8.5.2
+#59 21.46 OK astro@7.3.6
+#59 DONE 21.9s
+
+#60 [56/61] RUN { for c in "cap --version" "astro --version"; do printf '%s: ' "$c"; ASTRO_TELEMETRY_DISABLED=1 sh -c "$c" < /dev/null 2>&1 | head -1; done; } >> /versions.txt 2>&1; tail -2 /versions.txt
+#60 0.243 cap --version: [31m[fatal][39m The Capacitor CLI requires NodeJS >=22.0.0
+#60 0.243 astro --version: Node.js v20.19.2 is not supported by Astro!
+#60 DONE 0.3s
+
+#61 [57/61] RUN for p in @capacitor/cli@8.5.2 astro@7.3.6; do       PATH=/opt/node22/bin:/opt/bin:/opt/py/bin:/usr/local/bin:/root/go/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin /opt/node22/bin/npm install -g --no-fund --no-audit "$p" > /tmp/npm22-$(echo $p | tr /@ __).log 2>&1 && echo "OK node22 $p" || { echo "FAILED $p"; tail -3 /tmp/npm22-$(echo $p | tr /@ __).log; };     done
+#61 2.255 OK node22 @capacitor/cli@8.5.2
+#61 18.76 OK node22 astro@7.3.6
+#61 DONE 19.4s
+
+#62 [58/61] RUN { for c in "cap --version" "astro --version"; do printf '%s (node22): ' "$c"; PATH=/opt/node22/bin:/opt/bin:/opt/py/bin:/usr/local/bin:/root/go/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin ASTRO_TELEMETRY_DISABLED=1 sh -c "$c" < /dev/null 2>&1 | head -1; done; } >> /versions.txt 2>&1; tail -2 /versions.txt
+#62 0.189 cap --version (node22): 8.5.2
+#62 0.189 astro --version (node22):    astro  v7.3.6
+#62 DONE 0.2s
+
+#63 [59/61] RUN set -u; cd /tmp/dl; curl -fsSL -o ros.tbz https://github.com/roswell/roswell/releases/download/v26.02.116/roswell-26.02.116-linux-arm64.tar.bz2 && echo "OK ros.tbz" &&     mkdir -p x-ros && tar xjf ros.tbz -C x-ros && f=$(find x-ros -type f -name ros -perm -u+x | head -1) && install -m 755 "$f" /opt/bin/ros && echo "bin ros <- $f";     d=$(dirname "$(find x-ros -type f -name ros | head -1)"); ls "$d" | head; printf 'ros version: ' >> /versions.txt; /opt/bin/ros version >> /versions.txt 2>&1 || true; tail -3 /versions.txt
+#63 5.273 OK ros.tbz
+#63 5.828 bin ros <- x-ros/roswell/ros
+#63 5.829 Makefile
+#63 5.829 lisp
+#63 5.829 man
+#63 5.829 patch
+#63 5.829 ros
+#63 17.11 
+#63 17.11 unhandled condition in --disable-debugger mode, quitting
+#63 17.11 sbcl-bin/ does not exist.stop.
+#63 DONE 17.3s
+
+#64 [60/61] RUN set -u; cd /tmp/dl/x-ros/roswell && make install > /tmp/ros-install.log 2>&1 && echo "ros installed" || { echo "ros install: FAILED"; tail -n 5 /tmp/ros-install.log || true; }
+#64 0.121 ros installed
+#64 DONE 0.2s
+
+#65 [61/61] RUN ROSWELL_HOME=/opt/roswell-home ros setup > /tmp/ros-setup.log 2>&1 && echo "ros setup ok" || { echo "ros setup: FAILED"; tail -n 8 /tmp/ros-setup.log || true; };     ls /opt/roswell-home 2>/dev/null | head
+#65 30.58 ros setup ok
+#65 30.58 archives
+#65 30.58 config
+#65 30.58 env
+#65 30.58 impls
+#65 30.58 lisp
+#65 30.58 local-projects
+#65 30.58 src
+#65 30.58 tmp
+#65 DONE 30.7s
+
+#66 exporting to image
+#66 exporting layers
+#66 exporting layers 41.2s done
+#66 exporting manifest sha256:447e53e9904ffec552318caa31b403ea8137645081d12c9274cdaedbbb3e69e9 done
+#66 exporting config sha256:b56515ae55625cfa1c9f26522effcb47abfbcfdb2ee4f38a594b99d253be160e done
+#66 exporting attestation manifest sha256:a0b611eded6f363e43aeeb8f10b6842e900ed2ceda68a2468e2a0a8c5724419d done
+#66 exporting manifest list sha256:0ca202cca21620915583e1a903fbe91523530559fcf5d47bac1ec26745300db5 done
+#66 naming to docker.io/library/sideeye-ud1007:latest done
+#66 unpacking to docker.io/library/sideeye-ud1007:latest
+#66 unpacking to docker.io/library/sideeye-ud1007:latest 58.3s done
+#66 DONE 99.6s
+build: sideeye-ud1007 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt

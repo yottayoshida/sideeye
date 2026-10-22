@@ -1,0 +1,2 @@
+ROW logrotate static=0 preflight_rc=2 gate=1 detail=wall: unsupported_syscall_observed
+EXIT logrotate 1

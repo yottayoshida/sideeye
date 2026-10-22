@@ -1,0 +1,90 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from v1150.Dockerfile
+#1 transferring dockerfile: 517B 0.0s done
+#1 WARN: InvalidDefaultArgInFrom: Default value for ARG ${BOX} results in empty or invalid base image name (line 5)
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/sideeye-fu4-1009:latest
+#2 DONE 0.4s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/2] FROM docker.io/library/sideeye-fu4-1009:latest@sha256:b957edbaa34cbe37a7548701af7f8bcc8867c0c39e9bd77a0b0e9eefb381e7b7
+#4 resolve docker.io/library/sideeye-fu4-1009:latest@sha256:b957edbaa34cbe37a7548701af7f8bcc8867c0c39e9bd77a0b0e9eefb381e7b7 0.0s done
+#4 DONE 1.3s
+
+#4 [1/2] FROM docker.io/library/sideeye-fu4-1009:latest@sha256:b957edbaa34cbe37a7548701af7f8bcc8867c0c39e9bd77a0b0e9eefb381e7b7
+#4 extracting sha256:c76c098128af55bd945c1f687912e2d036c4a3819b5e64f6142d8675da1a4ed4
+#4 extracting sha256:c76c098128af55bd945c1f687912e2d036c4a3819b5e64f6142d8675da1a4ed4 2.9s done
+#4 DONE 4.2s
+
+#4 [1/2] FROM docker.io/library/sideeye-fu4-1009:latest@sha256:b957edbaa34cbe37a7548701af7f8bcc8867c0c39e9bd77a0b0e9eefb381e7b7
+#4 extracting sha256:d26f01e23411de99d03989d0cb150c3af18926b7de38997088a121172a075493 0.0s done
+#4 extracting sha256:2265b2f2b9abf511cc502e7ce76799649445a137a919de258b35a8f249f63e35 done
+#4 extracting sha256:7d1086a175ea57f7df3f48e3d27a23e184184fdaeb78711282ca44b56cf1a8a7
+#4 extracting sha256:7d1086a175ea57f7df3f48e3d27a23e184184fdaeb78711282ca44b56cf1a8a7 2.3s done
+#4 DONE 6.5s
+
+#4 [1/2] FROM docker.io/library/sideeye-fu4-1009:latest@sha256:b957edbaa34cbe37a7548701af7f8bcc8867c0c39e9bd77a0b0e9eefb381e7b7
+#4 extracting sha256:e99f31c26a51a0f3d09ea27518966b00154621aa246a4e3565493ceb3663cf5f 0.1s done
+#4 DONE 6.6s
+
+#4 [1/2] FROM docker.io/library/sideeye-fu4-1009:latest@sha256:b957edbaa34cbe37a7548701af7f8bcc8867c0c39e9bd77a0b0e9eefb381e7b7
+#4 extracting sha256:b476519f6078e8e51e7ad8c901a1a0bf280d098db98891f280c0b43d5dc98328 0.0s done
+#4 extracting sha256:1cfa0b8e9ee9171a7259d1c6fdda0bc10cba6297cd706676315837922a28e7e3 0.0s done
+#4 extracting sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1 done
+#4 extracting sha256:4183caf67428c1c3915a24a25188308e7f90d3cbfe3f6dc3253086ba9af3e398 0.0s done
+#4 DONE 6.7s
+
+#4 [1/2] FROM docker.io/library/sideeye-fu4-1009:latest@sha256:b957edbaa34cbe37a7548701af7f8bcc8867c0c39e9bd77a0b0e9eefb381e7b7
+#4 extracting sha256:ee519f5858e4684ee1acea85c45b4262153b3bb871a4fc76adbbe8ddaa227cae
+#4 extracting sha256:ee519f5858e4684ee1acea85c45b4262153b3bb871a4fc76adbbe8ddaa227cae 1.5s done
+#4 DONE 8.2s
+
+#4 [1/2] FROM docker.io/library/sideeye-fu4-1009:latest@sha256:b957edbaa34cbe37a7548701af7f8bcc8867c0c39e9bd77a0b0e9eefb381e7b7
+#4 extracting sha256:6ca3a2cc87d41a6da6e88d1569c91dd6d01477fd8dd0d91e983c3ce420c84a94 done
+#4 extracting sha256:1f715aac5ef59a3f46a5ad12b5f985d1b1a361f7cce8d0ac1e33139159ac56ec
+#4 extracting sha256:1f715aac5ef59a3f46a5ad12b5f985d1b1a361f7cce8d0ac1e33139159ac56ec 4.3s done
+#4 DONE 12.5s
+
+#4 [1/2] FROM docker.io/library/sideeye-fu4-1009:latest@sha256:b957edbaa34cbe37a7548701af7f8bcc8867c0c39e9bd77a0b0e9eefb381e7b7
+#4 extracting sha256:6bd437d3b500bb1539108c4da0cbba6c51a634a12e3163d61bcfee6158d5a370
+#4 extracting sha256:6bd437d3b500bb1539108c4da0cbba6c51a634a12e3163d61bcfee6158d5a370 0.9s done
+#4 DONE 13.4s
+
+#4 [1/2] FROM docker.io/library/sideeye-fu4-1009:latest@sha256:b957edbaa34cbe37a7548701af7f8bcc8867c0c39e9bd77a0b0e9eefb381e7b7
+#4 extracting sha256:80b7a3a6487c918765d8fff0c38a7844228572306d7be6bba6586ee2f7620ae7 0.0s done
+#4 extracting sha256:00d9992bf5469a90ae5c618337f2ffe8f0339df4eefc9bd27560d3311ca25712
+#4 extracting sha256:00d9992bf5469a90ae5c618337f2ffe8f0339df4eefc9bd27560d3311ca25712 4.2s done
+#4 DONE 17.6s
+
+#4 [1/2] FROM docker.io/library/sideeye-fu4-1009:latest@sha256:b957edbaa34cbe37a7548701af7f8bcc8867c0c39e9bd77a0b0e9eefb381e7b7
+#4 extracting sha256:e30a635f6c10e208da1132d526b77c2976657b45786e8657cb50309acc3b5981 done
+#4 extracting sha256:2a7e8873fe591f0e628f1d25fa964cb0efcaa2f36769e61b05a2239615b48f61
+#4 extracting sha256:2a7e8873fe591f0e628f1d25fa964cb0efcaa2f36769e61b05a2239615b48f61 2.5s done
+#4 DONE 20.1s
+
+#4 [1/2] FROM docker.io/library/sideeye-fu4-1009:latest@sha256:b957edbaa34cbe37a7548701af7f8bcc8867c0c39e9bd77a0b0e9eefb381e7b7
+#4 extracting sha256:7bd6917d55cf6f75ba04e1eaf591d102d3b42a7934efd8f7d181ed9d47977725 0.0s done
+#4 DONE 20.1s
+
+#5 [2/2] RUN sh /opt/install-sideeye.sh v1.15.0 /opt/se15 > /install.path 2>/install.log  && "$(cat /install.path)" version  && grep -q 'digest matches' /install.log
+#5 4.947 sideeye 1.15.0 (trace contract v19)
+#5 DONE 5.7s
+
+#6 exporting to image
+#6 exporting layers
+#6 exporting layers 0.4s done
+#6 exporting manifest sha256:9316e6f4b153cce97d86e082b5471b0bed9bf57db05ab1f0395ca394eb70d3ed done
+#6 exporting config sha256:733404c6852b024e20a885992a95984c900bac4406815ba4647bc7b6721b8065 done
+#6 exporting attestation manifest sha256:b1d6c7ba04e07056288a98dfc3853b23b27ac0b9b6511a91db0acb7af0db702f done
+#6 exporting manifest list sha256:d8ebb6b3a9fdf2bedcf90fc796c875d5a32f05db6e401f163fa17d3324dcb7ee done
+#6 naming to docker.io/library/sideeye-fu4-1009-v1150:latest done
+#6 unpacking to docker.io/library/sideeye-fu4-1009-v1150:latest 0.0s done
+#6 DONE 0.5s
+
+ [33m1 warning found (use docker --debug to expand):
+[0m - InvalidDefaultArgInFrom: Default value for ARG ${BOX} results in empty or invalid base image name (line 5)

@@ -1,0 +1,4 @@
+target logrotate  campaign 2026-10-14-mechanisms  box sideeye-m1014-v1150  procedure gate-all.sh logrotate
+box sha256:f8cab1f76d5fd8ad59ec890b737435ca42db816a851a598a86bc6c2e6bcd3010 created 2026-10-22T11:43:45.620342709Z
+start 2026-10-22T11:44:18Z
+exit 0  end 2026-10-22T11:44:18Z

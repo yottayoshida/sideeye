@@ -1,0 +1,167 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 5.55kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/sideeye-sv170:latest
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/9] FROM docker.io/library/sideeye-sv170:latest@sha256:0fa8bb99f57e773da1e78edb1d3750c2a573c0752e17cc5ee66395d4c690846d
+#4 resolve docker.io/library/sideeye-sv170:latest@sha256:0fa8bb99f57e773da1e78edb1d3750c2a573c0752e17cc5ee66395d4c690846d 0.0s done
+#4 DONE 0.1s
+
+#4 [1/9] FROM docker.io/library/sideeye-sv170:latest@sha256:0fa8bb99f57e773da1e78edb1d3750c2a573c0752e17cc5ee66395d4c690846d
+#4 extracting sha256:e9e654902ec255ac52a0ebd291c33d66b2d73cfc701f61a9df3d7ce0162c042b
+#4 extracting sha256:e9e654902ec255ac52a0ebd291c33d66b2d73cfc701f61a9df3d7ce0162c042b 0.8s done
+#4 DONE 0.9s
+
+#4 [1/9] FROM docker.io/library/sideeye-sv170:latest@sha256:0fa8bb99f57e773da1e78edb1d3750c2a573c0752e17cc5ee66395d4c690846d
+#4 extracting sha256:e3741be83689e7762d869dfd947d0328f86ffa8d3f27a4d7b4d8215dc1ec49c8 done
+#4 extracting sha256:985115e70f0f883b4e88fe7864e6da2ac58405b7f651a9b8ea35c6a948675a12 done
+#4 extracting sha256:4d13a40b2208a91506e0d4c634631fccb71146220ce5758f98773d7f5bcd1da9
+#4 extracting sha256:4d13a40b2208a91506e0d4c634631fccb71146220ce5758f98773d7f5bcd1da9 3.2s done
+#4 DONE 4.2s
+
+#4 [1/9] FROM docker.io/library/sideeye-sv170:latest@sha256:0fa8bb99f57e773da1e78edb1d3750c2a573c0752e17cc5ee66395d4c690846d
+#4 extracting sha256:eddffc34d7c16e26ba75b556ef6ee05dcb85ad93fe1e4e5f4415d1713a673f11 0.0s done
+#4 extracting sha256:eca415a714e73a83dbfc673c3d9c52b0635597c43d573c4d3c14d39688db1b45
+#4 extracting sha256:eca415a714e73a83dbfc673c3d9c52b0635597c43d573c4d3c14d39688db1b45 0.9s done
+#4 DONE 5.1s
+
+#4 [1/9] FROM docker.io/library/sideeye-sv170:latest@sha256:0fa8bb99f57e773da1e78edb1d3750c2a573c0752e17cc5ee66395d4c690846d
+#4 extracting sha256:85055f7be93e91cceb84135520bf8263cdcb71063d581345b516a813527558fe
+#4 extracting sha256:85055f7be93e91cceb84135520bf8263cdcb71063d581345b516a813527558fe 2.6s done
+#4 extracting sha256:08618d0af2b0ba7e32a8744c4d74dfd327f0dc858e584f169d5e4e166d60e6f5
+#4 extracting sha256:08618d0af2b0ba7e32a8744c4d74dfd327f0dc858e584f169d5e4e166d60e6f5 1.2s done
+#4 extracting sha256:2f8ab4ff0ddc00dc126cfa41a375d2f5912e45961f553d2e31264dde57a4eb90
+#4 extracting sha256:2f8ab4ff0ddc00dc126cfa41a375d2f5912e45961f553d2e31264dde57a4eb90 0.2s done
+#4 DONE 9.0s
+
+#4 [1/9] FROM docker.io/library/sideeye-sv170:latest@sha256:0fa8bb99f57e773da1e78edb1d3750c2a573c0752e17cc5ee66395d4c690846d
+#4 extracting sha256:3b1f55a34ee865cadd4ea5d70b2f875afdf0826b428abbc437b0816c8584284b
+#4 extracting sha256:3b1f55a34ee865cadd4ea5d70b2f875afdf0826b428abbc437b0816c8584284b 1.0s done
+#4 DONE 10.1s
+
+#4 [1/9] FROM docker.io/library/sideeye-sv170:latest@sha256:0fa8bb99f57e773da1e78edb1d3750c2a573c0752e17cc5ee66395d4c690846d
+#4 extracting sha256:b08fe4ae24f17a4105b25327b7bf81a60ae40e6d3b29bf7dc205237a0e5c574e
+#4 extracting sha256:b08fe4ae24f17a4105b25327b7bf81a60ae40e6d3b29bf7dc205237a0e5c574e 0.5s done
+#4 DONE 10.6s
+
+#4 [1/9] FROM docker.io/library/sideeye-sv170:latest@sha256:0fa8bb99f57e773da1e78edb1d3750c2a573c0752e17cc5ee66395d4c690846d
+#4 extracting sha256:c888c781b0ef7a8eda483bcfed7164d3ecf23b25dc6f7fb7331ba82cf4b9fdd3 0.0s done
+#4 extracting sha256:d99b7b6c5ac37ba184e936a318e832895004e7207b7427fcd9f3d66b49da721d 0.0s done
+#4 extracting sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1 0.0s done
+#4 extracting sha256:21749618256235655dfda69e34955090da69cf645d289de072354f1e0321df0b done
+#4 extracting sha256:10c65773350df56935103a613b7adda7828bf3604d57c0fe3b47aadb76989b96 done
+#4 DONE 10.7s
+
+#5 [2/9] RUN apt-get update > /tmp/apt-uj-update.log 2>&1; echo "apt update exit: $?"
+#5 0.894 apt update exit: 0
+#5 DONE 1.5s
+
+#6 [3/9] RUN for p in flac python3-mutagen lame fontforge fonts-dejavu-core mupdf-tools beets              zstd lz4 bat ccache meson ninja-build gcc libc6-dev              ocrmypdf tesseract-ocr-eng ghostscript fish vim rrdtool ormolu              faketime libfaketime python3-pip              make g++ python3-dev libsecret-1-dev pkg-config libnode-dev; do       apt-get install -y --no-install-recommends "$p" >/tmp/apt-uj-$p.log 2>&1 && echo "OK $p" || echo "MISSING $p";     done | tee /tmp/apt-uj-summary.txt
+#6 1.845 OK flac
+#6 3.267 OK python3-mutagen
+#6 5.225 OK lame
+#6 17.34 OK fontforge
+#6 18.06 OK fonts-dejavu-core
+#6 23.51 OK mupdf-tools
+#6 25.85 OK beets
+#6 27.05 OK zstd
+#6 28.11 OK lz4
+#6 29.77 OK bat
+#6 31.02 OK ccache
+#6 33.87 OK meson
+#6 34.40 OK ninja-build
+#6 34.95 OK gcc
+#6 35.48 OK libc6-dev
+#6 48.63 OK ocrmypdf
+#6 49.09 OK tesseract-ocr-eng
+#6 49.53 OK ghostscript
+#6 51.96 OK fish
+#6 54.63 OK vim
+#6 56.25 OK rrdtool
+#6 59.51 OK ormolu
+#6 60.64 OK faketime
+#6 61.14 OK libfaketime
+#6 62.92 OK python3-pip
+#6 63.45 OK make
+#6 64.03 OK g++
+#6 66.25 OK python3-dev
+#6 69.79 OK libsecret-1-dev
+#6 70.81 OK pkg-config
+#6 71.32 OK libnode-dev
+#6 DONE 71.8s
+
+#7 [4/9] RUN pip3 install --break-system-packages setuptools > /tmp/pip-setuptools.log 2>&1;     npm config set registry https://registry.npmjs.org/     && npm install -g --unsafe-perm joplin@3.7.1 > /tmp/npm-joplin.log 2>&1;     echo "npm joplin exit: $?"; tail -2 /tmp/npm-joplin.log;     joplin version > /dev/null 2>&1; echo "joplin version rc=$?"
+#7 21.58 npm joplin exit: 0
+#7 21.58 81 packages are looking for funding
+#7 21.58   run `npm fund` for details
+#7 22.48 joplin version rc=0
+#7 DONE 22.9s
+
+#8 [5/9] RUN set -u; mkdir -p /tmp/dl /opt/cz /opt/gp; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/twpayne/chezmoi/releases/download/v2.72.1/chezmoi_2.72.1_linux_arm64.tar.gz chezmoi.tgz;     get $gh/gopasspw/gopass/releases/download/v1.17.0/gopass-1.17.0-linux-arm64.tar.gz gopass.tgz;     get $gh/evilmartians/lefthook/releases/download/v1.13.6/lefthook_1.13.6_Linux_arm64 lefthook;     get $gh/pinterest/ktlint/releases/download/1.8.0/ktlint ktlint;     sha256sum chezmoi.tgz gopass.tgz lefthook ktlint | tee /tmp/dl-uj-sums.txt;     tar xzf chezmoi.tgz -C /opt/cz && install -m 755 /opt/cz/chezmoi /usr/local/bin/chezmoi;     tar xzf gopass.tgz -C /opt/gp && install -m 755 /opt/gp/gopass /usr/local/bin/gopass;     install -m 755 lefthook /usr/local/bin/lefthook; install -m 755 ktlint /opt/ktlint;     /opt/py/bin/pip install --no-cache-dir git-cliff==2.14.2 > /tmp/pip-git-cliff.log 2>&1; echo "pip git-cliff exit: $?";     [ -x /opt/py/bin/git-cliff ] && ln -sf /opt/py/bin/git-cliff /usr/local/bin/git-cliff; ls -l /usr/local/bin | tail -5
+#8 2.421 OK chezmoi.tgz
+#8 4.053 OK gopass.tgz
+#8 6.383 OK lefthook
+#8 14.67 OK ktlint
+#8 14.68 75508ef41216b6d64f3145986b751729d7f92d09c6bad77d51cf2895ab35a508  chezmoi.tgz
+#8 14.69 dc716451c395264e47e3f13702cdab4a7721f375a7465f6969c872f7c75092e2  gopass.tgz
+#8 14.69 1e61c71d221143e4c2351c551a6ae66d36b62cce1d916cad67c40c4bd9211530  lefthook
+#8 14.73 a3fd620207d5c40da6ca789b95e7f823c54e854b7fade7f613e91096a3706d75  ktlint
+#8 17.01 pip git-cliff exit: 0
+#8 17.02 lrwxrwxrwx 1 root root       35 Oct 22 12:34 oxfmt -> ../lib/node_modules/oxfmt/bin/oxfmt
+#8 17.02 -rwxr-xr-x 1 root root      548 Oct 22 12:34 rubocop
+#8 17.02 -rwxr-xr-x 1 root root      550 Oct 22 12:34 ruby-parse
+#8 17.02 -rwxr-xr-x 1 root root      554 Oct 22 12:34 ruby-rewrite
+#8 17.02 -rwxr-xr-x 1 root root      558 Oct 22 12:34 standardrb
+#8 DONE 17.1s
+
+#9 [6/9] RUN set -u; cd /tmp/dl; gh=https://github.com;     npm install --prefix /opt/oxfmt071 --no-fund --no-audit oxfmt@0.71.0 > /tmp/npm-oxfmt071.log 2>&1; echo "npm oxfmt@0.71.0 exit: $?";     curl -fsSL -o pgf511.tgz $gh/darold/pgFormatter/archive/refs/tags/v5.11.tar.gz && mkdir -p /opt/pgf511       && tar xzf pgf511.tgz -C /opt/pgf511 --strip-components=1 && echo "OK pgFormatter v5.11" || echo "MISSING pgFormatter v5.11";     curl -fsSL -o /opt/bin/php-cs-fixer.phar $gh/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.95.27/php-cs-fixer.phar       && echo "OK php-cs-fixer v3.95.27" || echo "MISSING php-cs-fixer v3.95.27";     sha256sum pgf511.tgz /opt/bin/php-cs-fixer.phar | tee -a /tmp/dl-uj-sums.txt
+#9 6.690 npm oxfmt@0.71.0 exit: 0
+#9 7.696 OK pgFormatter v5.11
+#9 8.629 OK php-cs-fixer v3.95.27
+#9 8.633 563619e13294b3db55d7a98a761786024ea3609d007fa94654a69a7346b8fd67  pgf511.tgz
+#9 8.635 47231757eefdd08778e2bd047d98a63dfaad881006c8c1d1bc870d63be7f6a9b  /opt/bin/php-cs-fixer.phar
+#9 DONE 8.7s
+
+#10 [7/9] RUN npm install -g --no-fund --no-audit eslint@10.11.0 stylelint@17.15.0 js-beautify@2.0.3       prettier@3.9.7 svgo@4.1.0 > /tmp/npm-uj.log 2>&1; echo "npm exit: $?"; tail -2 /tmp/npm-uj.log
+#10 4.178 npm exit: 0
+#10 4.178 
+#10 4.178 added 231 packages in 4s
+#10 DONE 4.3s
+
+#11 [8/9] RUN npm install -g --no-fund --no-audit @bitwarden/cli@2026.8.0 > /tmp/npm-bw.log 2>&1; echo "npm bw exit: $?"; tail -2 /tmp/npm-bw.log; bw --version
+#11 5.341 npm bw exit: 0
+#11 5.341 
+#11 5.341 added 221 packages in 5s
+#11 5.634 Could not find dir, "/root/.config/Bitwarden CLI"; creating it instead.
+#11 5.635 Could not find data file, "/root/.config/Bitwarden CLI/data.json"; creating it instead.
+#11 5.679 2026.8.0
+#11 DONE 5.8s
+
+#12 [9/9] RUN set -u; cd /tmp/dl; curl -fsSL -o mupdf-1.28.5.tgz https://mupdf.com/downloads/archive/mupdf-1.28.5-source.tar.gz       && echo "OK mupdf-1.28.5 source" || echo "MISSING mupdf-1.28.5 source"; sha256sum mupdf-1.28.5.tgz | tee -a /tmp/dl-uj-sums.txt;     mkdir -p /opt/mupdf-src && tar xzf mupdf-1.28.5.tgz -C /opt/mupdf-src --strip-components=1 && cd /opt/mupdf-src       && make HAVE_X11=no HAVE_GLUT=no build=release -j8 build/release/mutool > /tmp/mupdf-build.log 2>&1; echo "make exit: $?"; tail -2 /tmp/mupdf-build.log;     mkdir -p /opt/mupdf1285 && cp build/release/mutool /opt/mupdf1285/mutool && /opt/mupdf1285/mutool -v
+#12 8.375 OK mupdf-1.28.5 source
+#12 8.411 98a5c10cda20c3992cdf76ff6b2a1149c32bd79cc796d3f703230b1185b7e934  mupdf-1.28.5.tgz
+#12 45.02 make exit: 0
+#12 45.02     AR build/release/libmupdf-third.a
+#12 45.02     LINK build/release/mutool
+#12 45.04 mutool version 1.28.5
+#12 DONE 45.2s
+
+#13 exporting to image
+#13 exporting layers
+#13 exporting layers 14.3s done
+#13 exporting manifest sha256:33ecca2cd16f24f2322e4648180ed7ac449113b0207cb51bcea974f2d411980a 0.0s done
+#13 exporting config sha256:15a7c8e5e51ffdf56df61b39d21139af8dbb528a7749ce289e42737335a307d4 done
+#13 exporting attestation manifest sha256:8b45365e6e8c1bd5d5940d92e0370734b0473751f5ecab82e28175f140cbf5e8 done
+#13 exporting manifest list sha256:f2e09d06531d17c3d635119d5a37b5e629a2e109c1d405c1c73a496cc792543c done
+#13 naming to docker.io/library/sideeye-uj170:latest done
+#13 unpacking to docker.io/library/sideeye-uj170:latest
+#13 unpacking to docker.io/library/sideeye-uj170:latest 10.9s done
+#13 DONE 25.2s

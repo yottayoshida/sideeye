@@ -1,0 +1,14 @@
+UNKNOWN  multiple_threads_detected
+         two threads of process 128 wrote in the judged directory: tid 144 performed open(/s/bm/notes/Plans.tmp) and tid 146 performed write(/s/bm/notes/Plans.tmp). No thread creation or join the shim recorded orders the first of those before the second, so their order is the scheduler's choice on this run, the sequence they were numbered in is the one it happened to produce, and a crash point would not name the same operation on the next. A process whose threads' writes are all ordered by the creations and joins the shim recorded is judged, however many threads it created (v18)
+next        Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit the README states under 'What the target has to be': threads are judged where a creation or a join the shim saw orders their writes. A tool's own switch for running its file calls on one thread can move it past this — UV_THREADPOOL_SIZE=1 for Node, GOMAXPROCS=1 for Go: set it in the environment Sideeye runs in and declare it in the define's apparatus (env:UV_THREADPOOL_SIZE=1, for example); docs/apparatus.md lists the switches measured and the targets each did not move.
+cwd         /s/bm-in
+
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): notes/Plans.md
+l1          no marker configured
+case        (none)
+processes   the shim recorded a thread; the strace account was not read; the shim recorded 29 thread(s) created, and 3 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 22 join(s) and 7 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

@@ -1,0 +1,15 @@
+UNKNOWN  unsupported_syscall_observed
+         fallocate
+next        This target does something Sideeye refuses by design: 'What the target has to be' in the README names each limit, and DESIGN.md gives the reason behind each refusal.
+cwd         /s/ost-in
+
+expected    exit 0
+atomicity   9 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): config
+l1          no marker configured
+case        (none)
+processes   single process
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=03c66f241d01c93ba8441dc321bde688f4a99b58e7452660fcab9aa891b6246d;

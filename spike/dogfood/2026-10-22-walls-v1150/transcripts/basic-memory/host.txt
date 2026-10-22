@@ -1,0 +1,4 @@
+target basic-memory  campaign 2026-10-05-user-data-2  box sideeye-ud1005-v1150  procedure gate-all.sh basic-memory
+box sha256:fc2cc72541cbe883555ea9e067f5f853baa185bd1d2d9f40446b5e1852c1de4f created 2026-10-22T12:03:19.490358377Z
+start 2026-10-22T12:19:13Z
+exit 0  end 2026-10-22T12:21:31Z

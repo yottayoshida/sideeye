@@ -1,0 +1,3 @@
+bw: 2026.8.0
+ostree:  Version: '2025.2'
+rrdtool: RRDtool 1.7.2  Copyright by Tobias Oetiker <tobi@oetiker.ch>

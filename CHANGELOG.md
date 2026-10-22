@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Whether the funnel's thread and unsupported-syscall walls still block on v1.15.0 (#944): all 14 no later run judged meet the wall they met before** (`spike/dogfood/2026-10-22-walls-v1150/`; `spike/outcome-funnel.tsv`, `spike/outcome-funnel-campaigns.tsv`, `spike/dogfood/RUNS.md`, `docs/target-classes.md`, `docs/outcome-funnel.md`). Of the 44 targets the funnel records behind such a wall, 28 have a later PASS or FAIL and DuckDB and dpkg's upgrade crossed theirs in #970; the other 14 were run on the released v1.15.0, each in its own campaign's rebuilt box at its original version, on the define that met its last wall, with the selection and a prediction per target fixed before the first run. Seven are two threads writing with nothing recorded ordering them, the tools' one-thread switches set where they exist (ADR 0067's limit); vercel and codex are refused by the threads gate for a failing `mkdir` and a scratch path; flatpak and ostree meet `fallocate`; goaccess and rrdtool write through a shared mapping (ADR 0098); logrotate writes an extended attribute (#947). The threads refusal names `UV_THREADPOOL_SIZE=1` to the two Node runs that already set it. The funnel's generated counts rise by these 14 encounters; `summary --campaign` reads the run alone.
+
 ### Changed
 
 - **The platform table says what three real macOS workflows got from v1.15.0** (#929; `docs/cli.md`, `spike/macos-shapes-929/`, `.github/workflows/spike-macos-shapes.yml`). Measured with v1.15.0 on macOS 14.8.9 and 26.6.2: GNU sed's in-place edit passed only with `--allow-unverified`, because the macOS witness refused `fstat64_extended`, an attribute read it did not model (#963, fixed below); a tool that starts helpers (`git gc`) is refused at its process boundary; an Apple platform binary (`plutil`) does not load the shim, and on macOS 14 and 26 its refusal names the wrong limit (#964). The selection was committed before the first run, and the first run, whose measure script skipped the witness, is kept beside the one the table reads.

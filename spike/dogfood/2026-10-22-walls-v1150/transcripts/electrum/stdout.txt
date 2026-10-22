@@ -1,0 +1,2 @@
+ROW electrum static=0 preflight_rc=2 gate=2 detail=unmapped preflight answer (rc 2)
+EXIT electrum 2
