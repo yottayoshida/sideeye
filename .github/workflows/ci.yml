@@ -535,7 +535,9 @@ jobs:
       # that was measured must be present, and the old guess must be ABSENT.
       # A containment-only check would pass against the old build too, which is
       # what the first draft of this step got wrong.
-      # Each predicate seen red once (BUILDLOG 2026-08-18, 2026-08-29).
+      # Each predicate seen red once (BUILDLOG 2026-08-18, 2026-08-29); the platform binary's
+      # reason, message and step checks on the engine before #964, whose macOS 26 report
+      # (spike/macos-shapes-929/run3/macos-26) answers recording_run_failed.
       - name: The macOS refusal keeps its shape, and the clause is pinned
         run: |
           set +e

@@ -16,10 +16,16 @@ pub var rec_image: ?image.Observation = null;
 
 pub var rec_end_deferred: ?posix.Term = null;
 
+pub fn heldEndStands(t: engine.TraceInfo) bool {
+    // Not only the marker: a header from another version, bytes that do not decode and a trace
+    // too large to read all read as one without it, and in each the shim may have loaded.
+    return t.saw_header or t.truncated or t.too_large or t.budget_refused != null;
+}
+
 pub fn defersRecordingEnd(term: posix.Term, observed: ?image.Observation) bool {
     switch (term) {
-        // Not on an exit status: 126 is the engine's fork stub, whose child never ran an image
-        // that could have carried the marker.
+        // Not on an exit status: the target ran and chose it, or it is the fork stub's 126,
+        // whose child never ran an image that could have carried the marker.
         .exited => return false,
         .signaled, .unknown => {},
     }
@@ -1173,6 +1179,28 @@ test "a platform image that died is held for the shim's marker, and every other 
     try std.testing.expect(!defersRecordingEnd(.{ .signaled = 6 }, of(.{ .macho = .{ .dyldlink = true, .signing = null } })));
     try std.testing.expect(!defersRecordingEnd(.{ .signaled = 6 }, of(.{ .elf = .{ .has_interp = true, .class64 = true } })));
     try std.testing.expect(!defersRecordingEnd(.{ .signaled = 6 }, null));
+}
+
+test "a held recording run goes on only when its trace is empty, and is refused as it ended otherwise" {
+    var t: engine.TraceInfo = .{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .ops = .empty };
+    defer t.arena.deinit();
+    try std.testing.expect(!heldEndStands(t));
+    t.saw_header = true;
+    t.saw_shim_ready = true;
+    try std.testing.expect(heldEndStands(t));
+    t.saw_shim_ready = false;
+    t.version_mismatch = true;
+    try std.testing.expect(heldEndStands(t));
+    t.version_mismatch = false;
+    t.saw_header = false;
+    t.truncated = true;
+    try std.testing.expect(heldEndStands(t));
+    t.truncated = false;
+    t.too_large = true;
+    try std.testing.expect(heldEndStands(t));
+    t.too_large = false;
+    t.budget_refused = 1;
+    try std.testing.expect(heldEndStands(t));
 }
 
 test "a no_shim_marker detail says how a held recording run ended, and nothing when none was held" {

@@ -1369,7 +1369,7 @@ fn phaseRecording(run: *Run) void {
     }
 
     const trace = refuse.readTraceOrRefuse(rec_trace, trace_cap, "could not read the trace");
-    if (end_deferred and trace.saw_shim_ready) refuseRecordingEnd(arena, rec_term, expect_status, op_obs, exit_step, sig_step);
+    if (end_deferred and boundary.heldEndStands(trace)) refuseRecordingEnd(arena, rec_term, expect_status, op_obs, exit_step, sig_step);
 
     const final = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot the final state");
 
