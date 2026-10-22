@@ -1,0 +1,2 @@
+/Users/runner/s929/plutil/control/prefs.plist: (Value missing for key inside <dict> at line 6)
+prefs.plist is not a valid property list

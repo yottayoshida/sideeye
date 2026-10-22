@@ -8922,19 +8922,28 @@ done
 # issue poll and select as ppoll and pselect6 — it does on aarch64, and newer glibc may on
 # x86_64 too — so whether `poll` and `select` themselves appear here depends on the runner;
 # the unit test in src/oracle.zig holds both spellings either way.
-rm -rf /tmp/acc && mkdir -p /tmp/acc/state
-o=$(TOY_ANONFD=1 "$SIDEEYE" explore --state /tmp/acc/state \
-    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
-    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
-rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "explored  *5 worlds (crash points 4 + 1 baseline)"; then
-    echo "ok   anon-inode descriptors (eventfd, epoll), and calls on a state file that change nothing"
-    echo "     (epoll_ctl, faccessat2, xattr reads, inotify_add_watch, preadv/preadv2, the polls) are invisible to the verdict"
-else
-    echo "FAIL anon-inode descriptors or a call that changes nothing moved the verdict: exit $rc"
-    echo "$o" | sed 's/^/     | /' | head -6
-    fails=$((fails + 1))
-fi
+# Both modes, not the default alone: under --observe syscalls the first line of a trapped
+# call ends in ENOSYS, and a rule read from the result would pass one mode and refuse the other.
+case "${SIDEEYE_EXPECT_CONTAINED:-}" in
+    1) anon_modes="wrappers syscalls supervised" ;;
+    *) anon_modes="wrappers syscalls" ;;
+esac
+for anon_mode in $anon_modes; do
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(TOY_ANONFD=1 "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --observe "$anon_mode" \
+        --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if [ "$rc" = "0" ] && echo "$o" | grep -q "explored  *5 worlds (crash points 4 + 1 baseline)"; then
+        echo "ok   ($anon_mode) anon-inode descriptors (eventfd, epoll), and calls on a state file that change nothing"
+        echo "     (epoll_ctl, faccessat2, xattr reads, inotify_add_watch, preadv/preadv2, the polls, an unlink of the"
+        echo "     empty path, sync_file_range, syncfs) are invisible to the verdict"
+    else
+        echo "FAIL ($anon_mode) anon-inode descriptors or a call that changes nothing moved the verdict: exit $rc"
+        echo "$o" | sed 's/^/     | /' | head -6
+        fails=$((fails + 1))
+    fi
+done
 # The control (#684): the writing side of the same family is still a call the oracle has no
 # class for, and refuses by name. A list grown into "anything *xattr" would let it through.
 # `TOY_SETXATTR` is read by rotate only (cmd_rotate_body), so setup never issues it and the
