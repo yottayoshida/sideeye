@@ -388,7 +388,14 @@ fn isReadOnlyCall(call_in: []const u8) bool {
         "ioctl",      "select",    "exit",            "getattrlistbulk", "getdirentriesattr", "searchfs",
         "statfs",     "fstatfs",
     };
+    // Spelled as fs_usage's own table spells them, not as xnu names the syscalls:
+    // xnu's `stat64_extended` prints as `stat_extended64` and never appears in a capture.
+    const extended = [_][]const u8{
+        "stat_extended",   "lstat_extended",   "fstat_extended",   "access_extended",
+        "stat_extended64", "lstat_extended64", "fstat64_extended",
+    };
     for (names) |n| if (std.mem.eql(u8, call, n)) return true;
+    for (extended) |n| if (std.mem.eql(u8, call, n)) return true;
     return false;
 }
 
@@ -1657,6 +1664,37 @@ test "an unknown CALL inside the judged directory refuses rather than being igno
     switch (r.defect.?) {
         .unknown_call => {},
         else => return error.WrongDefect,
+    }
+}
+
+test "an attribute read in fs_usage's _extended spelling on a state file is a read, and an _extended write still refuses" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const Case = struct { line: []const u8, refuses: bool };
+    var cases: std.ArrayList(Case) = .empty;
+    const recorded_gap: [184]u8 = @splat(' ');
+    try cases.append(a, .{ .line = try std.fmt.allocPrint(a, "05:18:09.027976  fstat64_extended  F=3{s}0.000003   gsed.6341\n", .{&recorded_gap}), .refuses = false });
+    for ([_][]const u8{ "stat_extended", "lstat_extended", "fstat_extended", "access_extended", "stat_extended64", "lstat_extended64", "fstat64_extended" }) |call|
+        try cases.append(a, .{ .line = try std.fmt.allocPrint(a, "05:18:09.027977  {s}  F=3                                0.000003   gsed.6341\n", .{call}), .refuses = false });
+    for ([_][]const u8{ "fchmod_extended", "chmod_extended", "open_extended" }) |call|
+        try cases.append(a, .{ .line = try std.fmt.allocPrint(a, "05:18:09.027977  {s}  F=3                                0.000003   gsed.6341\n", .{call}), .refuses = true });
+    for (cases.items) |c| {
+        const text = try std.fmt.allocPrint(a, "05:18:09.000001  open              F=9   /work/trace.bin                       0.000100   gsed.6341\n" ++
+            "05:18:09.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   gsed.6341\n" ++
+            "05:18:09.000003  open              F=3        (R___________)  /tmp/st/app.conf  0.000072   gsed.6341\n" ++
+            "{s}" ++
+            "05:18:09.090000  open              F=2   /tmp/st/sentinel-b                    0.000100   gsed.6341\n", .{c.line});
+        const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{}, &.{});
+        if (!c.refuses) {
+            try testing.expect(r.defect == null);
+        } else {
+            try testing.expect(r.defect != null);
+            switch (r.defect.?) {
+                .unknown_call => {},
+                else => return error.WrongDefect,
+            }
+        }
     }
 }
 
