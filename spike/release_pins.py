@@ -5,7 +5,7 @@ Usage: release_pins.py bump X.Y.Z
        release_pins.py pin vX.Y.Z [--tap <homebrew-tap checkout>]
        release_pins.py check [--selftest]
 
-bump   writes the places that move before a release: build.zig.zon, src/cli.zig, and the
+bump   writes the places that move before a release: build.zig.zon, src/contract.zig, and the
        install lines of README.md and docs/cli.md.
 pin    writes the places that move after it, because they download the published asset:
        the CI quickstart, its workflow, and the MCP container's Dockerfile with its two Linux
@@ -40,7 +40,7 @@ Site = namedtuple("Site", "path needle offset kind")
 
 BEFORE = [
     Site("build.zig.zon", '    .version = "', 0, "version"),
-    Site("src/cli.zig", 'pub const version = "', 0, "version"),
+    Site("src/contract.zig", 'pub const sideeye_version = "', 0, "version"),
     Site("README.md", "$ tar xzf sideeye-v", 0, "version"),
     Site("docs/cli.md", "$ tar xzf sideeye-v", 0, "version"),
     Site("docs/cli.md", "$ gh api repos/yottayoshida/sideeye/releases/tags/v", 0, "version"),
@@ -255,7 +255,7 @@ def selftest(root):
     outcome("the pins ahead of build.zig.zon", lambda: check(with_sites(after_versions, zon, with_sites(BEFORE, below))), "may name")
     outcome("one line naming two versions", lambda: check(replace_once(real, "README.md", "&& cd sideeye-v%s" % zon, "&& cd sideeye-v%s" % below)), "wanted one version")
     outcome("a locating line repeated", lambda: check({**real, "docs/cli.md": real["docs/cli.md"] + "\n$ shasum -a 256 sideeye-v%s-x.tar.gz\n" % zon}), "found 2")
-    outcome("a locating line gone", lambda: check(replace_once(real, "src/cli.zig", 'pub const version = "', 'pub const VERSION = "')), "found 0")
+    outcome("a locating line gone", lambda: check(replace_once(real, "src/contract.zig", 'pub const sideeye_version = "', 'pub const SIDEEYE_VERSION = "')), "found 0")
 
     bumped = with_sites(BEFORE, "9.9.9")
     pins = {"version": "9.9.9", "digest:x86_64-linux": "a" * 64, "digest:aarch64-linux": "b" * 64}

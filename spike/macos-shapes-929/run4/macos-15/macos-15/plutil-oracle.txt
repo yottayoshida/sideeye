@@ -1,0 +1,17 @@
+dyld[3444]: terminating because inserted dylib '/Users/runner/work/sideeye/sideeye/zig-out/lib/libsideeye_shim.dylib' could not be loaded: tried: '/Users/runner/work/sideeye/sideeye/zig-out/lib/libsideeye_shim.dylib' (mach-o file, but is an incompatible architecture (have 'arm64', need 'arm64e')), '/System/Volumes/Preboot/Cryptexes/OS/Users/runner/work/sideeye/sideeye/zig-out/lib/libsideeye_shim.dylib' (no such file), '/Users/runner/work/sideeye/sideeye/zig-out/lib/libsideeye_shim.dylib' (mach-o file, but is an incompatible architecture (have 'arm64', need 'arm64e'))
+dyld[3444]: tried: '/Users/runner/work/sideeye/sideeye/zig-out/lib/libsideeye_shim.dylib' (mach-o file, but is an incompatible architecture (have 'arm64', need 'arm64e')), '/System/Volumes/Preboot/Cryptexes/OS/Users/runner/work/sideeye/sideeye/zig-out/lib/libsideeye_shim.dylib' (no such file), '/Users/runner/work/sideeye/sideeye/zig-out/lib/libsideeye_shim.dylib' (mach-o file, but is an incompatible architecture (have 'arm64', need 'arm64e'))
+UNKNOWN  no_shim_marker
+         the trace carries no shim marker; read before the run started, on /usr/bin/plutil: its code directory names a platform, the marker an Apple-shipped binary carries; the recording run was killed by signal 6
+next        The operation's image names a platform in its code directory, the marker Apple's own binaries carry, and macOS keeps an inserted library out of those: it strips the insertion on some machines, and on others dyld refuses the library and the run dies; an ad-hoc re-signed copy did not start when that was measured. Make a build of the tool that is not part of macOS (Homebrew's, for example) the operation's first word.
+cwd         /Users/runner/work/sideeye/sideeye  (none declared: Sideeye's own)
+
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   not established: the shim never announced itself in this run, so nothing observed process boundaries
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=2a90ed0d004bd16c823a63073aec32ce3928b2cc02fed5075b65442545c81580;

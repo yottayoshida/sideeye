@@ -1331,20 +1331,10 @@ fn phaseRecording(run: *Run) void {
     const op_step = refuse.cwdStep(op_obs, boundary.fixDefineUnder(args.observe));
     const exit_step = refuse.cwdStep(op_obs, boundary.recordingEndedStep(args.observe, true));
     const sig_step = refuse.cwdStep(op_obs, boundary.recordingEndedStep(args.observe, false));
-    switch (rec_term) {
-        // 126 before the status comparison, and without the --expect-status advice: it
-        // is the code the engine's own fork stub keeps for a child it could not arrange
-        // before exec (`posix.childArrangeFailed`, which says which call on stderr), and
-        // a define that declared 126 as success on that advice would read a child that
-        // never ran as a successful recording — the shape #469 named and closed for the
-        // capture open, still open for `setpgid` and the `dup2`s until 2026-09-08.
-        .exited => |code| if (code == 126 and code != expect_status)
-            unknown(.recording_run_failed, "the operation exited 126 during the recording run: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the operation itself exited 126 — indistinguishable from here. Declaring 126 as the success convention would make a child that never ran read as a successful recording, so --expect-status is not the answer to this one", .environment)
-        else if (code != expect_status)
-            unknown(.recording_run_failed, refuse.withObservation(arena, std.fmt.allocPrint(arena, "the operation exited {d} during the recording run where {d} was expected, so the crash points derived from it describe an execution that did not happen (a different success convention is declared with --expect-status or the toml's expected_status)", .{ code, expect_status }) catch "the operation exited with an unexpected status during the recording run", op_obs, exit_step), exit_step),
-        .signaled => |sig| unknown(.recording_run_failed, refuse.withObservation(arena, std.fmt.allocPrint(arena, "the operation did not exit normally during the recording run: it was killed by signal {d}", .{sig}) catch "the operation did not exit normally during the recording run", op_obs, sig_step), sig_step),
-        .unknown => unknown(.recording_run_failed, refuse.withObservation(arena, "the operation did not exit normally during the recording run", op_obs, sig_step), sig_step),
-    }
+    // Not refused here when the image names a platform and the run died: refusing before the
+    // trace is read would blame the target for a library that never loaded in it.
+    const end_deferred = boundary.defersRecordingEnd(rec_term, boundary.rec_image);
+    if (end_deferred) boundary.rec_end_deferred = rec_term else refuse.recordingEnd(arena, rec_term, expect_status, op_obs, exit_step, sig_step);
 
     // A marker the clean run cannot produce would make every post-success obligation
     // vacuous while the report still said PASS (ADR 0008). Checked against the
@@ -1353,7 +1343,7 @@ fn phaseRecording(run: *Run) void {
     // before the marker is not this: there the conditional simply does not apply.
     const rec_capture = capture.observeCapture(rec_stdout, args.marker) catch
         setupError(.environment, "the recording run's stdout capture could not be read back");
-    if (args.marker != null) {
+    if (args.marker != null and !end_deferred) {
         if (!rec_capture.marker_seen) {
             report.l1_note = "marker configured; never observed, even in the recording run";
             unknown(.marker_never_observed, refuse.withObservation(arena, "the success marker never appeared in the recording run's own stdout; check the marker string, and whether the target writes it to stdout at all", op_obs, op_step), op_step);
@@ -1362,6 +1352,7 @@ fn phaseRecording(run: *Run) void {
     }
 
     const trace = refuse.readTraceOrRefuse(rec_trace, trace_cap, "could not read the trace");
+    if (end_deferred and boundary.heldEndStands(trace)) refuse.recordingEnd(arena, rec_term, expect_status, op_obs, exit_step, sig_step);
 
     const final = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot the final state");
 
@@ -2061,9 +2052,9 @@ fn phaseChecker(run: *Run) void {
 
         switch (probe) {
             .exited => |code| {
-                // switch, before any child exists. What still reaches 126 is `setpgid`
-                // or a `dup2` that failed in the child — which says so on the engine's
-                // stderr since 2026-09-08 — and a checker that genuinely exits 126,
+                // switch, before any child exists. What still reaches 126 is a `dup2`
+                // that failed in the child — which says so on the engine's
+                // stderr — and a checker that genuinely exits 126,
                 // which is indistinguishable from it and gets the fail-closed reading.
                 if (code == 126)
                     unknown(.checker_not_falsified, "the checker probe exited 126: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the checker itself exited 126 — indistinguishable from here, so the gate refuses rather than counting it as red", .environment);
@@ -2110,7 +2101,7 @@ fn phaseChecker(run: *Run) void {
                 // docs/cli.md's to say (#678 is changing it), so the sentence points there rather
                 // than naming what is lost.
                 const seen = std.fmt.allocPrint(arena, "the checker exited {d} on the state the define starts from, as Sideeye restores it before every world, before the operation ran: nothing the target did is in it", .{code}) catch "the checker rejected the state the define starts from, before the operation ran";
-                const what = if (obs != null) seen else std.fmt.allocPrint(arena, "{s}, so a world the checker fails there says nothing about the target — make the checker accept that state (docs/cli.md says what a restore does not carry)", .{seen}) catch seen;
+                const what = if (obs != null) seen else std.fmt.allocPrint(arena, "{s}, so a world the checker fails there says nothing about the target — make the checker accept that state (" ++ contract.docUrl("docs/cli.md#example") ++ " says what a restore does not carry)", .{seen}) catch seen;
                 unknown(.checker_rejects_initial_state, refuse.withObservation(arena, what, obs, step), step);
             },
             else => {
@@ -2250,7 +2241,7 @@ fn phaseExploration(run: *Run) void {
                 ) catch unreachable;
                 unknown(.child_timed_out, detail, .raise_world_timeout);
             },
-            error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable, error.CgroupJoinFailed => |se| spawnFailure(se, .exploring, "could not run --operation"),
+            error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable, error.CgroupJoinFailed, error.ChildGroupRefused => |se| spawnFailure(se, .exploring, "could not run --operation"),
         };
         // Every process of the world is dead by now; the supervising thread's account is
         // complete once it has been joined (#217).

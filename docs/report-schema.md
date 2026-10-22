@@ -182,6 +182,50 @@ moved because the recorded account did, not the vocabulary):
 `state_not_quiescent`, `unsupported_state_entry`, `state_changed_unaccounted`,
 `trace_budget_exhausted`, `nothing_could_fail`, `checker_rejects_initial_state`.
 
+### Refusals by reason
+
+What each refusal stands at — what the run met that Sideeye does not judge past, or what failed —
+one line per `unknown_reason`. A refusal whose step names no way past it ("This target does
+something Sideeye refuses by design") sends the reader here, and `spike/check-printed-links.py`
+holds this list to the enum.
+
+- `no_shim_marker` — The trace carries no shim marker, so the shim never loaded into the operation, as with a statically linked image or a macOS binary carrying hardened runtime, library validation or a platform marker. Under --observe supervised, the engine could not write its own start record. Why: DESIGN.md, the bullet beginning 'Under the default mode and'.
+- `state_changed_without_ops` — The state directory changed during the recording run, or preflight --twice's second run, while the trace holds zero mutating operations, so operations were missed.
+- `contract_version_mismatch` — The trace was written by a shim built against a different trace contract than this engine, in the recording run or preflight --twice's second run.
+- `unsupported_syscall_observed` — The shim or the oracle saw a call on the state directory that Sideeye does not model: a writable shared mapping of a state file, an extended-attribute write, a reflink clone, a swapping rename, a link by descriptor, or a call the oracle has no name for.
+- `oracle_missed_operation` — The oracle's account of the subject's state-directory operations holds one the recorder did not record (or a different one) at the same position, such as a write libc issued from inside itself. Why: DESIGN.md, the bullet beginning 'Where a write is counted'.
+- `oracle_saw_phantom` — The recorder holds more state-directory operations for the subject than the oracle's account, so it recorded one the oracle never saw; this points at Sideeye itself.
+- `child_process_detected` — A process left Sideeye's reach: the target replaced its image and the observation chain broke, the oracle saw a clone sharing the working directory or an unshare, or a process left the process group or the run's cgroup, or outlived it, where the engine cannot stop it. Why: DESIGN.md, the bullet beginning 'A target that creates other'.
+- `multiple_threads_detected` — Two threads of one process wrote in the state directory with no thread creation or join recorded between them to order them, so no crash-point address can be trusted; or the fs_usage oracle saw a writer that recorded nothing where the shim saw only threads. Why: DESIGN.md, the bullet beginning 'A target that creates other'.
+- `unresolvable_path` — A recorded operation cannot be placed: its path could not be resolved, a descriptor could not be read back to a path or named an unlinked file, the target closed the trace, more than sixty-four threads took slots, or a write-capable call ran before the shim's constructor.
+- `kill_did_not_land` — A world asked to die before an operation did not: no kill was recorded there, it exited on its own, it ran an operation at or past the crash point, its cgroup kill failed, or it reached the crash point through other operations than the recording numbered. Why: DESIGN.md, the bullet beginning 'A world is judged only'.
+- `child_wait_failed` — From the recording run on, a child process ran but its exit status could never be read (the wait was interrupted repeatedly or failed), so nothing says how it ended.
+- `child_timed_out` — A world's operation was still running when the --world-timeout budget expired; it was sent SIGKILL and the remaining worlds cannot be judged.
+- `sequence_numbering_broken` — The trace's kill-point records and its highest sequence number disagree, so the numbering has gaps or duplicates (two processes writing at once take the same number), in the recording run, an explored world or preflight --twice's second run.
+- `completeness_not_verified` — The run reached no FAIL and no oracle was given, so nothing checked the recorder's account; --allow-unverified accepts that weaker claim. Raised by explore and replay.
+- `trace_too_large` — A trace (the recording run's, an explored world's or the second observed run's) is larger than the per-read cap the engine will hold, although its account is complete.
+- `trace_budget_exhausted` — Reading a trace would take the engine past the ceiling that all traces it holds at once must fit under; each trace may be under its own cap, but their sum is not.
+- `state_file_too_large` — From the recording run on, a file in the state directory is larger than the engine will snapshot for byte-level judgment.
+- `state_tree_too_large` — From the recording run on, the state directory as a whole is larger than the engine will snapshot.
+- `state_unsnapshotable` — From the recording run on, the state directory could not be snapshotted: it is nested too deep, a path is too long, or an entry could not be read or classified.
+- `state_rewrite_failed` — From the recording run on, rebuilding the state directory failed: it no longer resolves to the directory this run vetted, an entry could not be deleted or created, a path is too long, or something is mounted inside it.
+- `trace_truncated` — The trace of the recording run or of the second observed run ends mid-record (or its header cannot be read), so how many operations there were is unknown.
+- `checker_not_falsified` — The checker was not seen to fail: it accepted a state whose files were overwritten with junk and symlinks retargeted, did not exit normally on it, or exited 126; or the state holds no file or symlink to corrupt.
+- `marker_never_observed` — The declared success marker never appeared in the recording run's own stdout.
+- `case_no_longer_applies` — The case no longer names the same operation: it was recorded under another trace contract, or the recording now counts other operations — a different number, a gap before the crash point, or a changed class up to or around it — or the crash point is out of range.
+- `recording_run_failed` — The operation in the recording run, or in preflight --twice's second run, exited with a status other than the expected one, was killed by a signal, or did not exit normally; under --observe supervised, the hand-over to the engine failed.
+- `oracle_saw_nothing` — The oracle's capture cannot vouch for the run: it produced no output, or fs_usage dropped events, stopped early or would not stop, lost a sentinel, could not be read back, or holds a line the reader cannot parse, place or attribute to the subject.
+- `baseline_violates_invariant` — The un-killed baseline world, re-run from the restored state, failed an invariant with no crash: its bytes differ from the recording's, the marker's promise did not hold, or the checker rejected the state. Why: DESIGN.md, the bullet beginning 'Writes must repeat byte-for-byte across'.
+- `baseline_run_failed` — The un-killed baseline world exited with a status other than the expected one or did not exit normally, although the recording run of the same command succeeded.
+- `child_touched_state_dir` — A process other than the subject wrote in the state directory in a way that cannot be judged: it recorded nothing, the oracle did not place it, it overlapped another writer, nothing waited for it, or it wrote in a later run whose recording admitted no children. Why: DESIGN.md, the bullet beginning 'A target that creates other'.
+- `boundary_without_oracle` — The target crossed a process boundary (a child, an image change, or leaving its process group) with no oracle to account for the other processes, under --oracle-fs-usage, which cannot, or in an explored world when the recording never crossed it. Why: DESIGN.md, the bullet beginning 'A target that creates other'.
+- `state_not_quiescent` — Two samples of the state directory, or of the stdout capture, taken back to back after a run or a crashed world ended disagreed: something the target started is still writing.
+- `state_changed_unaccounted` — The state changed at a path that no recorded operation accounts for — a file holding bytes no recorded write could have put there, or a path no operation names — so the account of the run is incomplete. Why: DESIGN.md, the bullet beginning 'Some calls put bytes in'.
+- `unsupported_state_entry` — The state directory holds an entry that is not a regular file, a directory or a symlink (a FIFO, socket or device), which restore cannot recreate, or, from the recording run on, something is mounted inside it. Why: DESIGN.md, the bullet beginning 'Targets must keep persistent state'.
+- `parent_exited` — Under --stop-when-orphaned, the process that launched the exploration was gone at a world boundary, so the engine stopped rather than keep killing processes and rewriting the state.
+- `nothing_could_fail` — No world could have failed: the recording had no crash point, or there was no checker, no marker world with a created or removed path to judge, and no judged path a crash point changed or named.
+- `checker_rejects_initial_state` — The checker exited non-zero or did not exit normally on the restored state the define starts from, before any world ran; a world it fails there says nothing about the target.
+
 **`state_changed_unaccounted` is a change the recorded account does not explain** (#405, ADR
 0032; #814, ADR 0121). Every way the judged state differs between the recording's two snapshots
 needs a recorded operation that accounts for it. A regular file the run leaves holding bytes is
@@ -384,8 +428,8 @@ same reason raised under `--oracle-fs-usage` on macOS for a writer the shim neve
 fs_usage capture saw a thread write that no record names (ADR 0060) — keeps the step it had,
 `unwrap_or_class_wall`: that writer went around the shim, which is not what a pool's size changes.
 Three refusals the records met keep the class wall because this build's step names no way past
-them and no README line names their limit: `unresolvable_path`, `unsupported_syscall_observed`,
-and `oracle_missed_operation` under `--observe syscalls` — except
+them; their limits are the lines under "Refusals by reason" above: `unresolvable_path`,
+`unsupported_syscall_observed`, and `oracle_missed_operation` under `--observe syscalls` — except
 for a statically linked operation in a shape measured to be crossed, the next paragraph.
 
 **A static parent whose dynamic child carried the shim** (#685, ADR 0108). The default gate lets
@@ -446,7 +490,15 @@ hardened-runtime flag without naming a platform take the class wall. One whose
 code directory names a platform — the marker Apple's own binaries carry, whatever
 flags sit beside it — takes `non_system_build`, which names a build of the tool
 that is not part of macOS (#710, ADR 0097; measured on `/bin/cp`, an ad-hoc
-re-signed copy of it, which the system killed as it started, and Homebrew's `xz`). A file that was
+re-signed copy of it, which the system killed as it started, and Homebrew's `xz`). A recording
+run with such an image that ends on a signal, or without a status, is not refused
+`recording_run_failed` where the run ends: the engine reads the trace first, and if it is empty, holding
+nothing the shim wrote, the run goes on to this refusal, after the final snapshot like one that
+completed, with the signal named at the end of `message` (#964; measured as dyld refusing the
+arm64 shim in an arm64e image, signal 6, on GitHub's macOS runners). A trace holding anything — the
+marker, a header from another version, bytes that do not decode — or too large to read whole is
+refused `recording_run_failed` as before, and an exit status, 126 among them, is
+refused where the run ends whatever the image. A file that was
 read and could not be recognised as an executable image — first four bytes
 unreadable, a magic none of the three families claims (where a `#!` script lands,
 named by path or by a bare name), an ELF magic followed by a class or data byte
