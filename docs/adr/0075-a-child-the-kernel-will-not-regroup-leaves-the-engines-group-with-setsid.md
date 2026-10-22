@@ -76,6 +76,7 @@ to match twice. Rejected for this round: the parent would have to tell this refu
 other 126s (a `dup2` failure), which share one exit code, and the exit codes are a frozen
 surface (`docs/contract-freeze.md`, surface 3) — the signal would have to be something other
 than a new code, which is a larger change than the one this replaces.
+**Amended 2026-10-22 (#829, ADR 0087).** Taken: the signal is a pipe, and no exit code moves.
 
 **Leave it and re-run CI.** Rejected by the owner on 2026-09-19: two of the five occurrences
 landed within two minutes of each other on different checks, so re-running is not a bounded
