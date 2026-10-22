@@ -1,0 +1,16 @@
+upx --version: upx 5.2.1
+argocd version --client --short: argocd: v3.5.3+c9c369e
+lz4 --version: *** lz4 v1.10.0 64-bit multithread, by Yann Collet ***
+prefsCleaner ## version: 2.1
+gemini --version: 0.62.0
+vercel --version: Vercel CLI 62.2.0
+bw --version: Could not find dir, "/tmp/vh/.config/Bitwarden CLI"; creating it instead.
+tofu version: OpenTofu v1.13.1
+electrum version --offline: 4.8.2
+basic-memory --version: Basic Memory version: 0.23.2
+rustic --version: rustic 0.11.4
+prek --version: prek 0.5.5
+codex --version: codex-cli 0.160.0
+steamguard --version: steamguard-cli 0.18.4
+easyrsa --version: EasyRSA Version Information
+openssl version: OpenSSL 3.5.7 9 Jun 2026 (Library: OpenSSL 3.5.7 9 Jun 2026)

@@ -1,0 +1,204 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from v1150.Dockerfile
+#1 transferring dockerfile: 517B done
+#1 WARN: InvalidDefaultArgInFrom: Default value for ARG ${BOX} results in empty or invalid base image name (line 5)
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/sideeye-ud1005:latest
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 resolve docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f done
+#4 DONE 0.2s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:74ae9271e6e09154d25642a9108fbbe86aa794c0a31b8ac818da0caf4a3e5a92
+#4 extracting sha256:74ae9271e6e09154d25642a9108fbbe86aa794c0a31b8ac818da0caf4a3e5a92 1.8s done
+#4 DONE 2.0s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:93a9ea8bc9e65d9747509a35352c91911fa24d80d6c0adf7942bb06cf63629d4 0.0s done
+#4 extracting sha256:b349c06ddd587c91199265499006a628f72a1535a223434c627e3ba9ba009ac5 done
+#4 extracting sha256:c10def5418856453d888cc1de18af4977f5ea1a4871eadd915c4cf27f34c200d
+#4 extracting sha256:c10def5418856453d888cc1de18af4977f5ea1a4871eadd915c4cf27f34c200d 4.8s done
+#4 DONE 6.9s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:34f4e84b0890e633ccd746a843dc5db62ddac33d07df2197ff3c7c62a2106377
+#4 extracting sha256:34f4e84b0890e633ccd746a843dc5db62ddac33d07df2197ff3c7c62a2106377 0.9s done
+#4 DONE 7.8s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:4ac476eec9893eaf0a7a6db068a156d5af515d7f50e0c377854d8b591686ab0e
+#4 extracting sha256:4ac476eec9893eaf0a7a6db068a156d5af515d7f50e0c377854d8b591686ab0e 5.4s done
+#4 DONE 13.2s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:51be64b3293c5c78b5c990297b677bc494292d92cbc9d84ae498657ee3dee55d
+#4 extracting sha256:51be64b3293c5c78b5c990297b677bc494292d92cbc9d84ae498657ee3dee55d 4.3s done
+#4 DONE 17.5s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:097746fb777b99fa5928faf8ebc164097f31b2bcd66ca5be52278f1d5bd3cca8
+#4 extracting sha256:097746fb777b99fa5928faf8ebc164097f31b2bcd66ca5be52278f1d5bd3cca8 3.6s done
+#4 DONE 21.1s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:c5158ccbabb7f491fd3a7f77013bb051ca19a8100b66c758ac1f3debba741a36
+#4 extracting sha256:c5158ccbabb7f491fd3a7f77013bb051ca19a8100b66c758ac1f3debba741a36 0.3s done
+#4 DONE 21.4s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:64916f71b09796b64f9e6e6d3b0070c886533ecfd73995449333db14b344b545
+#4 extracting sha256:64916f71b09796b64f9e6e6d3b0070c886533ecfd73995449333db14b344b545 0.3s done
+#4 DONE 21.7s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:1e0073b8d359924f8cf9e3b74364028cba29fabec27c1a9745edbf6a96649e54 0.0s done
+#4 extracting sha256:2363a0e3fcf7fec994cfcd1e48e5ea0e5950eb5bb31b7100a08dd5e45eeb8fc9 0.0s done
+#4 extracting sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1 done
+#4 extracting sha256:bac8baae29b0acdb65b0bcb36e970d0007c8f866ff5a56930b9eaee708e23ae6 done
+#4 extracting sha256:8f74015cd86f41a77ebef5238942f6b756a4153d09898daa63325201b16c6341
+#4 extracting sha256:8f74015cd86f41a77ebef5238942f6b756a4153d09898daa63325201b16c6341 0.9s done
+#4 DONE 22.6s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:acf7577f9e0cadc9f7bb785d0d4662fd728b3383d6b7c59f815bffa51cd46785
+#4 extracting sha256:acf7577f9e0cadc9f7bb785d0d4662fd728b3383d6b7c59f815bffa51cd46785 0.3s done
+#4 DONE 22.9s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:d283f6f82fe5ee32899dee80eb24882f28c0d5ec4dae39d75f3864b4c84eec2e
+#4 extracting sha256:d283f6f82fe5ee32899dee80eb24882f28c0d5ec4dae39d75f3864b4c84eec2e 0.5s done
+#4 DONE 23.4s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:0768aab61352bb7a5b74f15a09c9fab14f949a012a95bf4feabaae7cefc81879
+#4 extracting sha256:0768aab61352bb7a5b74f15a09c9fab14f949a012a95bf4feabaae7cefc81879 1.0s done
+#4 DONE 24.4s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:2fbb78157c38b018dcaadbc210b758ad45e1499b7c22caa43b921de5ba137c79
+#4 extracting sha256:2fbb78157c38b018dcaadbc210b758ad45e1499b7c22caa43b921de5ba137c79 0.9s done
+#4 DONE 25.3s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:33607d2a3033445dcb3510f8970b729a6c0a8db2cc8cad1e5d710fb1d3285bd3
+#4 extracting sha256:33607d2a3033445dcb3510f8970b729a6c0a8db2cc8cad1e5d710fb1d3285bd3 0.3s done
+#4 DONE 25.5s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:8f960480753cec2fb2db836cadfcf6d6612ff30d831f8af9daa94ab028d249fa
+#4 extracting sha256:8f960480753cec2fb2db836cadfcf6d6612ff30d831f8af9daa94ab028d249fa 0.9s done
+#4 DONE 26.4s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:9f2f960014b27e598eccc5a5fb24404c5249d704d4e7d7741f9454a41efa755a
+#4 extracting sha256:9f2f960014b27e598eccc5a5fb24404c5249d704d4e7d7741f9454a41efa755a 0.6s done
+#4 DONE 27.0s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:ba75d620c449005f35af7bbb58f39b94849175cf22dd651bcfc1359e2b044dc8
+#4 extracting sha256:ba75d620c449005f35af7bbb58f39b94849175cf22dd651bcfc1359e2b044dc8 1.0s done
+#4 DONE 28.0s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:dcaece8e3affc1fee7d2a4f9fe0b1165ed77ec93433d9f0fc4f20d0273457c73
+#4 extracting sha256:dcaece8e3affc1fee7d2a4f9fe0b1165ed77ec93433d9f0fc4f20d0273457c73 0.9s done
+#4 DONE 28.9s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:1828914ebd1308d2c48eab940a378c739e7deb7e5042abe0a055c9633f66da4b
+#4 extracting sha256:1828914ebd1308d2c48eab940a378c739e7deb7e5042abe0a055c9633f66da4b 3.2s done
+#4 DONE 32.0s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:16159af30c6f1f39e774a6824ef0adc2a66152ec6f6ef132e14d8f18b083b8c5
+#4 extracting sha256:16159af30c6f1f39e774a6824ef0adc2a66152ec6f6ef132e14d8f18b083b8c5 1.6s done
+#4 DONE 33.7s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:04b7dd6c07bebe831096522216909ca6e6a67e637dc6cf11a84e165fc37c77cc 0.0s done
+#4 extracting sha256:1a98b4dd628ea0c38ede27bcb9cd7f1370e11f1b83d55c7174f4b25ba1d01336
+#4 extracting sha256:1a98b4dd628ea0c38ede27bcb9cd7f1370e11f1b83d55c7174f4b25ba1d01336 7.8s done
+#4 DONE 41.5s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:dae1d34bcb0ff5ecff97d90d42715178d60ea63d3a087658c595f68279434473 0.0s done
+#4 extracting sha256:9df3dc53cb578288c43867cd4aea1126ecd6ab27207f53d82fca3f663fd1a9b8 0.0s done
+#4 extracting sha256:38caf6fac40153a645063d6eeac09e5728fb05a0d1ceaa1b69b20937950aa626
+#4 extracting sha256:38caf6fac40153a645063d6eeac09e5728fb05a0d1ceaa1b69b20937950aa626 0.4s done
+#4 DONE 42.0s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:9c8fe0143894170a5210a5b40ac8e8bf86341e2a01bf539f15e7c144980bfcbd
+#4 extracting sha256:9c8fe0143894170a5210a5b40ac8e8bf86341e2a01bf539f15e7c144980bfcbd 0.2s done
+#4 DONE 42.1s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:1485e283f65a80a5c650fa930a260067cfbf76c98334b466e2683cd4aa5a7b7d
+#4 extracting sha256:1485e283f65a80a5c650fa930a260067cfbf76c98334b466e2683cd4aa5a7b7d 0.9s done
+#4 DONE 43.1s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:96deb59c79eddebaa9df6308935a43cdbd948de5f6e8bfc6348f20dca64622dd
+#4 extracting sha256:96deb59c79eddebaa9df6308935a43cdbd948de5f6e8bfc6348f20dca64622dd 2.4s done
+#4 DONE 45.5s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:f1b9339279f174d5db6d3686b2749e96ad9c32a0946a492cfd4d740f01cb241b
+#4 extracting sha256:f1b9339279f174d5db6d3686b2749e96ad9c32a0946a492cfd4d740f01cb241b 0.3s done
+#4 DONE 45.8s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:fb891984b96e1dc3473da8ba79516d248753c703393334a443a47e2735e7d00a
+#4 extracting sha256:fb891984b96e1dc3473da8ba79516d248753c703393334a443a47e2735e7d00a 1.3s done
+#4 DONE 47.1s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:2bc5b6fc9685f08e0cfd50910f48886cee7891d9f3f8acdf622f14e793cf7d13
+#4 extracting sha256:2bc5b6fc9685f08e0cfd50910f48886cee7891d9f3f8acdf622f14e793cf7d13 3.1s done
+#4 DONE 50.2s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:313d4d8dccef6c85f49fd1686eb17f5147c5a748f21302a546f4383d8b62014a
+#4 extracting sha256:313d4d8dccef6c85f49fd1686eb17f5147c5a748f21302a546f4383d8b62014a 1.9s done
+#4 DONE 52.1s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:fb19496dfa577fdf7dcd4198868c9ebdbc3552259d6ed2dfc045a8c5db73e88c
+#4 extracting sha256:fb19496dfa577fdf7dcd4198868c9ebdbc3552259d6ed2dfc045a8c5db73e88c 5.6s done
+#4 DONE 57.7s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:146338331dde912b57060f6d9b88477a8c3d59d27dd546d01da8bca44bea679a
+#4 extracting sha256:146338331dde912b57060f6d9b88477a8c3d59d27dd546d01da8bca44bea679a 0.3s done
+#4 DONE 58.0s
+
+#4 [1/2] FROM docker.io/library/sideeye-ud1005:latest@sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f
+#4 extracting sha256:25ed9a9e5a448beeb486867350919bea1a16e8fcaffb7c0a0041126f61255cdd
+#4 extracting sha256:25ed9a9e5a448beeb486867350919bea1a16e8fcaffb7c0a0041126f61255cdd 1.9s done
+#4 DONE 59.9s
+
+#5 [2/2] RUN sh /opt/install-sideeye.sh v1.15.0 /opt/se15 > /install.path 2>/install.log  && "$(cat /install.path)" version  && grep -q 'digest matches' /install.log
+#5 2.333 sideeye 1.15.0 (trace contract v19)
+#5 DONE 3.8s
+
+#6 exporting to image
+#6 exporting layers
+#6 exporting layers 0.4s done
+#6 exporting manifest sha256:cdf5f9f675ab96d792b4b47d7c0698e22221740237d4002415c49555cf5d213c done
+#6 exporting config sha256:7b01c29e05699293ed6ec05aa5c1da5861914c32a857287b1f1f58bf8f731c27 0.0s done
+#6 exporting attestation manifest sha256:d38a02b45378f939064a15ef394742754c3f62473433a7f7ad494e2192139b6b 0.0s done
+#6 exporting manifest list sha256:fc2cc72541cbe883555ea9e067f5f853baa185bd1d2d9f40446b5e1852c1de4f 0.0s done
+#6 naming to docker.io/library/sideeye-ud1005-v1150:latest done
+#6 unpacking to docker.io/library/sideeye-ud1005-v1150:latest 0.1s done
+#6 DONE 0.6s
+
+ [33m1 warning found (use docker --debug to expand):
+[0m - InvalidDefaultArgInFrom: Default value for ARG ${BOX} results in empty or invalid base image name (line 5)

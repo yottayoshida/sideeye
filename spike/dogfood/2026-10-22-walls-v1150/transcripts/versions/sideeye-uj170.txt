@@ -1,0 +1,25 @@
+sideeye: sideeye 1.7.0 (trace contract v18)
+gofumpt: v0.12.0 (go1.27.1)
+yamlfmt: yamlfmt 0.21.0 (21ca532)
+helm: v4.3.0+gbec5b06
+jsonnetfmt: Jsonnet reformatter v0.22.0
+terraform: Terraform v1.16.4
+kubectl: Client Version: v1.37.1
+biome: Version: 2.5.14
+rumdl: rumdl 0.2.77
+sqruff: sqruff 0.40.0
+tombi: tombi 1.5.6 (aarch64-unknown-linux-musl)
+alejandra: Alejandra 4.0.0
+phpcbf: PHP_CodeSniffer version 4.0.4 (stable) by Squiz and PHPCSStandards
+pint: Pint 1.32.1
+ktfmt: ktfmt version 0.64
+scalafmt: scalafmt 3.11.5
+oxfmt: Version: 0.70.0
+nbqa: nbqa 1.9.1
+black: black, 26.5.1 (compiled: no)
+standardrb: 1.56.0
+pg_format: pg_format version 5.6
+node: v20.19.2
+java: openjdk version "21.0.12.1" 2026-08-18
+php: PHP 8.4.27 (cli) (built: Oct 21 2026 07:53:46) (NTS)
+ruby: ruby 3.3.8 (2025-04-09 revision b200bad6cd) [aarch64-linux-gnu]

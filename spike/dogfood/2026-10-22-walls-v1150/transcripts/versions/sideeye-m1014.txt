@@ -1,0 +1,16 @@
+darcs 2.18.4-1
+dpkg 1.22.22
+fossil 1:2.26-2
+isync 1.5.1-1
+libfaketime 0.9.10+2024-06-05+gba9ed5b2-0.6
+logrotate 3.22.0-1+b2
+notmuch 0.39-1
+passwd 1:4.17.4-2
+python3-alembic 1.13.2-4
+python3-django 3:4.2.28-0+deb13u2
+python3-sqlalchemy 2.0.40+ds1-1
+sqlite-utils 3.38-1
+sqlite3 3.46.1-7+deb13u2
+strace 6.13+ds-1
+vdirsyncer 0.19.3-3
+vim 2:9.1.1230-2

@@ -1,0 +1,4 @@
+target rrdtool  campaign 2026-10-02-unjudged-on-v170  box sideeye-uj170-v1150  procedure run.sh rrdtool
+box sha256:e895921dc171cad067eff90dcbb528e9cfae1a3f1c406a0a66d14f1744689010 created 2026-10-22T12:38:58.983871714Z
+start 2026-10-22T12:39:35Z
+exit 0  end 2026-10-22T12:39:35Z

@@ -1,0 +1,65 @@
+wall rows: 74 (threads 57, syscall 17; 7 of them named only by the note)
+targets: 44 = later verdict 28 + crossed on main 2 + remaining 14
+
+## remaining
+target	wall	campaign	evidence
+basic-memory	threads	dogfood/2026-10-05-user-data-2	spike/dogfood/2026-10-05-user-data-2/transcripts/entry-out/entry/basic-memory.preflight.txt
+Bitwarden	threads	dogfood/2026-10-09-followups-3	spike/dogfood/2026-10-09-followups-3/transcripts/explore/bitwarden/explore.json
+codex	threads	dogfood/2026-10-09-followups-4	spike/dogfood/2026-10-09-followups-4/transcripts/explore/codex-scratch/supervised.json
+electrum	threads	dogfood/2026-10-03-user-data	spike/dogfood/2026-10-03-user-data/transcripts/entry-out/entry/electrum.preflight.txt
+flatpak	syscall	dogfood/2026-10-09-followups-3	spike/dogfood/2026-10-09-followups-3/transcripts/explore/flatpak-fat/explore.json
+goaccess	syscall	dogfood/2026-10-07-user-data-3	spike/dogfood/2026-10-07-user-data-3/transcripts/entry-out/entry/goaccess.preflight.txt
+logrotate	syscall	dogfood/2026-10-14-mechanisms	spike/dogfood/2026-10-14-mechanisms/transcripts/entry-out/entry/logrotate.preflight.txt
+lz4	threads	dogfood/2026-10-09-followups-4	spike/dogfood/2026-10-09-followups-4/transcripts/explore/lz4-bd/syscalls.json
+ostree	syscall	dogfood/2026-10-09-followups-3	spike/dogfood/2026-10-09-followups-3/transcripts/explore/ostree-fat/explore.json
+prek	threads	dogfood/2026-10-09-followups-3	spike/dogfood/2026-10-09-followups-3/transcripts/explore/prek/explore.json
+rrdtool	syscall	dogfood/2026-10-02-unjudged-on-v170	spike/dogfood/2026-10-02-unjudged-on-v170/transcripts/page/rrdtool/explore.json
+rustic	threads	dogfood/2026-10-09-followups-3	spike/dogfood/2026-10-09-followups-3/transcripts/explore/rustic/explore.json
+steamguard	threads	dogfood/2026-10-09-followups-3	spike/dogfood/2026-10-09-followups-3/transcripts/explore/steamguard/explore.json
+vercel	threads	dogfood/2026-10-09-followups-3	spike/dogfood/2026-10-09-followups-3/transcripts/explore/vercel/explore.json
+
+## crossed on main (#970)
+target	wall	campaign	evidence
+dpkg-upgrade	syscall	dogfood/2026-10-14-mechanisms	spike/dogfood/2026-10-14-mechanisms/transcripts/entry-out/entry/dpkg-upgrade.preflight.txt
+duckdb	syscall	dogfood/2026-10-12-shipped-v1120	spike/dogfood/2026-10-12-shipped-v1120/transcripts/entry-out/entry/duckdb.preflight.txt
+
+## later verdict
+target	wall	last wall	verdicts after it
+beets	threads	dogfood/2026-10-02-unjudged-on-v170	dogfood/2026-10-09-followups-3 pass
+bibtex-tidy	threads	dogfood/2026-10-03-user-data	dogfood/2026-10-09-followups-3 fail
+capacitor	threads	dogfood/2026-10-07-user-data-3	dogfood/2026-10-09-followups-3 fail
+cspell	threads	dogfood/2026-10-07-user-data-3	dogfood/2026-10-09-followups-3 fail
+doctl	threads	dogfood/2026-10-03-user-data	dogfood/2026-10-09-followups-3 fail
+dotdrop	syscall	dogfood/2026-10-03-user-data	dogfood/2026-10-06-read-only-684 fail
+dotenvx	threads	dogfood/2026-10-03-user-data	dogfood/2026-10-09-followups-3 pass
+eslint	threads	dogfood/2026-10-02-unjudged-on-v170	dogfood/2026-10-09-followups-3 fail
+firewalld	syscall	dogfood/2026-10-05-user-data-2	dogfood/2026-10-06-read-only-684 fail
+fish	syscall	dogfood/2026-10-02-unjudged-on-v170	dogfood/2026-10-06-read-only-684 pass
+fitscheck	syscall	dogfood/2026-10-05-user-data-2	dogfood/2026-10-09-followups-3 fail
+gemini	threads	dogfood/2026-10-09-followups-3	dogfood/2026-10-09-followups-4 fail
+gltf-transform	threads	dogfood/2026-10-05-user-data-2	dogfood/2026-10-09-followups-3 fail
+infracost	threads	dogfood/2026-10-09-followups-2	dogfood/2026-10-09-followups-3 fail
+joplin	threads	dogfood/2026-10-02-unjudged-on-v170	dogfood/2026-10-09-followups-3 pass
+lingui	threads	dogfood/2026-10-05-user-data-2	dogfood/2026-10-09-followups-3 fail
+npm pkg set	threads	dogfood/2026-10-02-unjudged-on-v170	dogfood/2026-10-09-followups-3 fail
+ocrmypdf	syscall	dogfood/2026-09-11-past-walls	dogfood/2026-10-09-followups-2 fail
+plakar	threads	dogfood/2026-10-09-followups-2	dogfood/2026-10-09-followups-3 pass
+prettier	threads	dogfood/2026-10-02-unjudged-on-v170	dogfood/2026-10-09-followups-3 fail
+stylelint	threads	dogfood/2026-10-02-unjudged-on-v170	dogfood/2026-10-09-followups-3 pass
+svgo	threads	dogfood/2026-10-02-unjudged-on-v170	dogfood/2026-10-09-followups-3 fail
+tofu	threads	dogfood/2026-10-09-followups-3	dogfood/2026-10-09-followups-4 fail
+trash	threads	dogfood/2026-10-09-followups	dogfood/2026-10-09-followups-3 pass
+vim	syscall	dogfood/2026-10-06-read-only-684	dogfood/2026-10-09-followups-3 fail
+virtualenv	threads	dogfood/2026-09-16-userview-3	dogfood/2026-09-16-threads-take-turns pass
+yarn	threads	dogfood/2026-10-09-followups	dogfood/2026-10-09-followups-3 fail
+zstd	threads	dogfood/2026-10-02-unjudged-on-v170	dogfood/2026-10-09-followups-3 pass
+
+## wall rows read from the note, not the record
+campaign	target	note
+dogfood/2026-09-13-joplin-turns	joplin	The refusal stands: multiple_threads_detected, the same two operations named. Forty kept captures --
+dogfood/2026-09-16-crossed-walls	lz4	multiple_threads_detected, the same shape as zstd
+dogfood/2026-09-16-crossed-walls	prettier	Refused on two writing threads, the joplin shape
+dogfood/2026-09-16-crossed-walls	svgo	Refused on two writing threads, the joplin shape
+dogfood/2026-09-16-crossed-walls	npm pkg set	Refused on two writing threads, the joplin shape
+dogfood/2026-09-16-outside-git	Bitwarden	multiple_threads_detected, the Node asynchronous class
+dogfood/2026-10-07-user-data-3	goaccess	goaccess 1.12 --persist --restore: unsupported_syscall_observed at the gate, a write through mmap(PR
