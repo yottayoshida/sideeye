@@ -1,0 +1,10 @@
+base: 22b0e1d3407366e9a8bbcb6968d42a4db733e805 (origin/main)
+main engine: built from that commit (a detached worktree), zig build -Dtarget=aarch64-linux-gnu, zig 0.17.0
+branch engine: the same base with this change's working tree, same command
+sha256 of git diff HEAD -- src/oracle.zig: 1628397623f55a6ce40fa99c8f61674b41f8d5dd5c6a44ff835a1ec327d69315
+2f9174755f1547498c210c342852da13ed3f7fe135ef7addf9ba5af8e72456db  main-out/bin/sideeye
+038d3f057a90d78feafb30727d5d28cfd686d9744884c452d3b799141d504e70  branch-out/bin/sideeye
+85af25373fce0494561b7c8cfbf27a684ecb5c42a4dd811fedb4df1f0d455a73  branch-out/lib/libsideeye_shim.so
+boxes: sideeye-spike (spike/Dockerfile) for the toy; sideeye-sv1012 (spike/dogfood/2026-10-12-shipped-v1120/apparatus/Dockerfile: DuckDB 1.5.6, dpkg 1.22.22, libfaketime) for both targets
+every docker run: --privileged --cgroupns=private (the targets' also --network none)
+after these runs: the empty-path table lost a field every row held as 0 (a refactor; the unit tests were re-run green on it, the boxes were not), so the committed diff's sha256 differs from the one above
