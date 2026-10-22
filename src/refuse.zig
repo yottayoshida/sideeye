@@ -392,8 +392,7 @@ pub fn recordingEnd(arena: std.mem.Allocator, rec_term: posix.Term, expect_statu
         // is the code the engine's own fork stub keeps for a child it could not arrange
         // before exec (`posix.childArrangeFailed`, which says which call on stderr), and
         // a define that declared 126 as success on that advice would read a child that
-        // never ran as a successful recording — the shape #469 named and closed for the
-        // capture open, still open for `setpgid` and the `dup2`s until 2026-09-08.
+        // never ran as a successful recording.
         .exited => |code| if (code == 126 and code != expect_status)
             unknown(.recording_run_failed, "the operation exited 126 during the recording run: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the operation itself exited 126 — indistinguishable from here. Declaring 126 as the success convention would make a child that never ran read as a successful recording, so --expect-status is not the answer to this one", .environment)
         else if (code != expect_status)
@@ -528,7 +527,7 @@ pub fn spawnFailure(e: posix.ContainedSpawnError, phase: SpawnPhase, doing: []co
     // a wait, a cgroup — so every arm is `environment`, and the switch is exhaustive so a
     // member added to `ContainedSpawnError` has to be given a class here rather than inherit one.
     const reason: contract.SetupErrorReason = switch (e) {
-        error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable, error.CgroupJoinFailed => .environment,
+        error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable, error.CgroupJoinFailed, error.ChildGroupRefused => .environment,
     };
     if (e == error.WaitFailed) {
         const detail = "a child process ran, but its exit status could never be read: the wait was interrupted repeatedly, or failed permanently. Every verdict here rests on how that child ended, so the run refuses instead of deriving one from a status that was never written";
@@ -549,6 +548,10 @@ pub fn spawnFailure(e: posix.ContainedSpawnError, phase: SpawnPhase, doing: []co
     if (e == error.CaptureUnavailable) {
         var buf: [512]u8 = undefined;
         setupError(reason, std.fmt.bufPrint(&buf, "{s}: the command's stdout capture in the work directory could not be opened. The engine refuses a capture path that is a symlink, or that already holds a file or directory the engine did not just create — check --work, and what is at the capture path inside it", .{doing}) catch doing);
+    }
+    if (e == error.ChildGroupRefused) {
+        var buf: [512]u8 = undefined;
+        setupError(reason, std.fmt.bufPrint(&buf, "{s}: the kernel refused the command's process a process group of its own in each of {d} forks — setpgid(0, 0), then setsid — so nothing of the command ran; the engine's stderr has a line per refusal saying what each call answered", .{ doing, posix.max_group_forks }) catch doing);
     }
     if (e == error.CgroupJoinFailed) {
         var buf: [512]u8 = undefined;

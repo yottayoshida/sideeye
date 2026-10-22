@@ -32,6 +32,7 @@ const std = @import("std");
 const contract = @import("contract");
 const engine = @import("engine.zig");
 const posix = @import("posix.zig");
+const forks_text = std.fmt.comptimePrint("{d}", .{posix.max_group_forks});
 const capture = @import("capture.zig");
 const files = @import("files.zig");
 const report = @import("report.zig");
@@ -224,6 +225,7 @@ fn on(ctx: Context, d: Declared, k: u32, state: engine.Snapshot, tag: []const u8
     const cterm = runCaptured(ctx, d.command, cmd_name, cmd_label, &stopped) catch |e| return switch (e) {
         error.LeftRunning => survivorLeg(k, started, null, "the recovery command left a process its cgroup could not stop"),
         error.TimedOut => unknownLeg(k, started, null, "the recovery command did not end within --world-timeout"),
+        error.ChildGroupRefused => unknownLeg(k, started, null, "the recovery command could not be started: the kernel refused it a process group of its own in each of " ++ forks_text ++ " forks"),
         else => unknownLeg(k, started, null, "the recovery command could not be started"),
     };
     const command_exit: ?u8 = switch (cterm) {
@@ -240,6 +242,7 @@ fn on(ctx: Context, d: Declared, k: u32, state: engine.Snapshot, tag: []const u8
     const kterm = runCaptured(ctx, d.check, chk_name, chk_label, null) catch |e| return withStopped(switch (e) {
         error.LeftRunning => survivorLeg(k, started, command_exit, "the recovery checker left a process its cgroup could not stop"),
         error.TimedOut => unknownLeg(k, started, command_exit, "the recovery checker did not end within --world-timeout"),
+        error.ChildGroupRefused => unknownLeg(k, started, command_exit, "the recovery checker could not be started: the kernel refused it a process group of its own in each of " ++ forks_text ++ " forks"),
         else => unknownLeg(k, started, command_exit, "the recovery checker could not be started"),
     }, stopped);
     const end = checkerEnd(kterm);
@@ -279,6 +282,7 @@ fn falsify(ctx: Context, d: Declared, final: engine.Snapshot) ?[]const u8 {
     const term = runCaptured(ctx, d.check, "recovery-falsify-check.txt", "recovery falsify: ", null) catch |e| return switch (e) {
         error.TimedOut => "the recovery checker did not end within --world-timeout on the corrupted state",
         error.LeftRunning => "the recovery checker left a process its cgroup could not stop on the corrupted state",
+        error.ChildGroupRefused => "the recovery checker could not be started against the corrupted state: the kernel refused it a process group of its own in each of " ++ forks_text ++ " forks",
         else => "the recovery checker could not be started against the corrupted state",
     };
     return switch (term) {
