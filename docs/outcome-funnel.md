@@ -176,17 +176,17 @@ reach, over the 37 campaign(s) that recorded every target they met
     FAIL          192
 
 outcome            encounters   in full campaigns   distinct reports
-  novel                84              76             44
-  report_worthy        54              46             44
-  filed                51              43             44
+  novel                84              76             46
+  report_worthy        56              48             46
+  filed                53              45             46
   acknowledged         12              11             10
   fixed                11              10              9
   revalidated          10               9              9
 
 filed without a Sideeye verdict, counted in nothing above or below: 5 encounter(s), 4 report(s)
 
-why encounters stopped: awaiting 29, declined 6, discussing 2, known 28, no_content_lost 17, not_worth 91, wall 147, withdrawn 3
-upstream states last read between 2026-08-14 and 2026-10-12; spike/upstream-report-status.sh measures them now.
+why encounters stopped: awaiting 31, declined 6, discussing 2, known 28, no_content_lost 17, not_worth 101, wall 147, withdrawn 3
+upstream states last read between 2026-08-14 and 2026-10-25; spike/upstream-report-status.sh measures them now.
 ```
 
 <!-- outcome-funnel:summary:end -->

@@ -1,5 +1,6 @@
 <!--
-Draft for saltstack/salt, 2026-10-25. Not filed.
+Filed as saltstack/salt#70554 on 2026-10-25, unchanged from this draft apart from this comment and the Title line (the issue's title).
+Draft for saltstack/salt, 2026-10-25.
 Policy read: CONTRIBUTING.rst and CODE_OF_CONDUCT.md (no rule on AI-written text); .github/ISSUE_TEMPLATE/bug.yml (required: What happened?, Type of salt install, Major version, OS, salt --versions-report; all filled).
 Freshness: tracker searched one word at a time (grains.setval, setval, truncated, "grains file", "grains lost"): #58411 is two writers racing (closed not planned 2026-10-15). Owner's prior filings here: 0.
 Latest release v3008.4 (measured, onedir). Source at v3008.4: salt/modules/grains.py setvals.

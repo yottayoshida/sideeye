@@ -220,3 +220,5 @@ gogs	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): gogs/gogs; t
 gqlgen	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): 99designs/gqlgen; the release binary
 juicefs	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): juicedata/juicefs; the release tarball
 navidrome	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): navidrome/navidrome; the release tarball
+Symfony 8.1.9 `secrets:generate-keys --rotate`	php-symfony	upstream-reports.tsv (symfony-secrets)
+Salt 3008.4 `salt-call --local grains.setval`	-	upstream-reports.tsv (salt-call)

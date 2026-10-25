@@ -123,6 +123,6 @@ box (`transcripts/repro-s2-php.txt`, `transcripts/plain-repro-s3.txt`, `transcri
 - **Vagrant is milder than the table above first said.** After the kill, running Vagrant in a
   machine's own project puts it back in the index (`transcripts/plain-repro-s3-vagrant-recover.txt`);
   what is lost until then is the list across projects. Its draft opens "No data is lost by this".
-- Drafts, not filed: `report-symfony.md`, `report-vagrant.md`, `report-salt.md`. Nextcloud's
+- **Filed, the owner having read and approved both texts as drafted**: symfony/symfony#67446 (`report-symfony.md`) and saltstack/salt#70554 (`report-salt.md`), 2026-10-25; neither was closed by a bot in its first minutes. **Not filed, the owner's call**: Vagrant (`report-vagrant.md`, recoverable as above). Nextcloud's
   `AI_POLICY.md` and systemd's `docs/CONTRIBUTING.md` ask for an issue in the contributor's own words,
-  so for those two the owner writes and the agent may only translate; no draft was made.
+  so for those two the owner writes and the agent may only translate; no draft was made, and the owner chose not to file either.

@@ -1,4 +1,4 @@
-<!-- Draft for symfony/symfony, not filed. Policy: CONTRIBUTING.md, symfony.com/doc/current/contributing/code/bugs.html (no LLM rule; AI disclosed). Form 1_Bug_report.yaml: version, Description, How to reproduce required. Search: secrets:generate-keys, SodiumVault, rotate, decrypt.private — none. Owner's posts: 0. Repro: transcripts/repro-s2-php.txt -->
+<!-- Filed as symfony/symfony#67446 on 2026-10-25, unchanged from this draft apart from this comment and the Title line (the issue's title). Draft for symfony/symfony. Policy: CONTRIBUTING.md, symfony.com/doc/current/contributing/code/bugs.html (no LLM rule; AI disclosed). Form 1_Bug_report.yaml: version, Description, How to reproduce required. Search: secrets:generate-keys, SodiumVault, rotate, decrypt.private — none. Owner's posts: 0. Repro: transcripts/repro-s2-php.txt -->
 Title: [FrameworkBundle] `secrets:generate-keys --rotate` killed midway leaves secrets no key can decrypt
 
 ### Symfony version(s) affected
