@@ -1,0 +1,68 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.68kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/sideeye-sv1025-s3:latest
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/4] FROM docker.io/library/sideeye-sv1025-s3:latest@sha256:9a86a3b0654d80aff0807a59a5feacccc40875e448b671113e9fbd4b0c85b81c
+#4 resolve docker.io/library/sideeye-sv1025-s3:latest@sha256:9a86a3b0654d80aff0807a59a5feacccc40875e448b671113e9fbd4b0c85b81c done
+#4 DONE 0.0s
+
+#5 [2/4] RUN printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d && chmod 755 /usr/sbin/policy-rc.d &&     apt-get install -y --no-install-recommends gnupg debconf-utils > /tmp/apt-gpg.log 2>&1 &&     curl -fsSL https://packagecloud.io/dokku/dokku/gpgkey | gpg --dearmor -o /usr/share/keyrings/dokku.gpg &&     echo "deb [signed-by=/usr/share/keyrings/dokku.gpg] https://packagecloud.io/dokku/dokku/debian/ trixie main" > /etc/apt/sources.list.d/dokku.list &&     apt-get update > /tmp/apt-upd.log 2>&1 && echo "OK dokku repo"
+#5 4.830 OK dokku repo
+#5 DONE 4.9s
+
+#6 [3/4] RUN printf 'dokku dokku/vhost_enable boolean true\ndokku dokku/hostname string dokku.home.example\ndokku dokku/skip_key_file boolean true\ndokku dokku/key_file string /dev/null\ndokku dokku/nginx_enable boolean true\n' | debconf-set-selections &&     DEBIAN_FRONTEND=noninteractive apt-get install -y dokku=0.38.32 > /tmp/apt-dokku.log 2>&1 && echo "OK dokku" || { echo "FAILED dokku"; tail -25 /tmp/apt-dokku.log; }
+#6 201.7 FAILED dokku
+#6 201.7 Checking for stray cats under /var/cache/man...
+#6 201.7 Processing manual pages under /usr/local/man...
+#6 201.7 0 man subdirectories contained newer manual pages.
+#6 201.7 0 manual pages were added.
+#6 201.7 0 stray cats were added.
+#6 201.7 0 old database entries were purged.
+#6 201.7 Setting up dokku user
+#6 201.7 usermod: no changes
+#6 201.7 docker:x:101:
+#6 201.7 Setting up storage directories
+#6 201.7 Setting VHOST contents to dokku.home.example
+#6 201.7 Deleting invalid plugins
+#6 201.7 Setting up plugin directories
+#6 201.7 Migrating old plugins
+#6 201.7 Enabling all core plugins
+#6 201.7 Install all core plugins
+#6 201.7 System has not been booted with systemd as init system (PID 1). Can't operate.
+#6 201.7 Failed to connect to system scope bus via local transport: Host is down
+#6 201.7 dpkg: error processing package dokku (--configure):
+#6 201.7  installed dokku package post-installation script subprocess returned error exit status 1
+#6 201.7 Processing triggers for libc-bin (2.41-12+deb13u4) ...
+#6 201.7 Errors were encountered while processing:
+#6 201.7  herokuish
+#6 201.7  dokku
+#6 201.7 E: Sub-process /usr/bin/dpkg returned an error code (1)
+#6 DONE 201.7s
+
+#7 [4/4] RUN dokku version 2>&1 | tail -2; ls /var/lib/dokku/core-plugins/available | head -50 | tr '\n' ' '; echo;     echo "dokku $(dokku version 2>&1 | tail -1)" >> /versions.txt; echo "link /usr/bin/dokku: $(file -bL /usr/bin/dokku | cut -c1-60)" >> /versions.txt; tail -2 /versions.txt
+#7 0.112 dokku version 0.38.32
+#7 0.112 00_dokku-standard 20_events app-json apps builder builder-dockerfile builder-herokuish builder-lambda builder-nixpacks builder-null builder-pack builder-railpack buildpacks builds caddy-vhosts certs checks common config cron docker-options domains enter git haproxy-vhosts logs network nginx-vhosts openresty-vhosts plugin ports proxy ps registry repo resource run scheduler scheduler-docker-local scheduler-k3s scheduler-null shell ssh-keys storage trace traefik-vhosts 
+#7 0.130 dokku dokku version 0.38.32
+#7 0.130 link /usr/bin/dokku: Bourne-Again shell script, ASCII text executable
+#7 DONE 0.1s
+
+#8 exporting to image
+#8 exporting layers
+#8 exporting layers 19.6s done
+#8 exporting manifest sha256:54c2334596932eec721841d9d23a0f95fa890df3ab8a9e59912d8b51149b7ff7 0.0s done
+#8 exporting config sha256:6c743b1b1eb7772b3a1b5c5df3010d09a0357d267979a984a71f2df56130ccb8 0.0s done
+#8 exporting attestation manifest sha256:39f21ad21adb947eb2691ff30a944b777553bc3573abe068566566d2584eddc2 done
+#8 exporting manifest list sha256:e5b063f58cfe6998c6260287d5bf12881afdffb4640b6ee56275b652101250b5 done
+#8 naming to docker.io/library/sideeye-sv1025-s3b:latest done
+#8 unpacking to docker.io/library/sideeye-sv1025-s3b:latest
+#8 unpacking to docker.io/library/sideeye-sv1025-s3b:latest 3.8s done
+#8 DONE 23.6s

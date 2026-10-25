@@ -1,0 +1,9 @@
+[world]
+state = "/s/colmap"
+
+[define]
+# A reconstruction's outliers filtered in place, the way COLMAP's own pipeline names the output as
+# its input: cameras.bin, images.bin and points3D.bin rewritten under sparse/0.
+operation = "/opt/bin/colmap point_filtering --input_path /s/colmap/sparse/0 --output_path /s/colmap/sparse/0 --max_reproj_error 4"
+cwd       = "/s/colmap"
+check     = "/s/colmap-check.sh"

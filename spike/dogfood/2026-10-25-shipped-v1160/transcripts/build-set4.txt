@@ -1,0 +1,92 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 5.33kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/sideeye-sv1025:latest
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/11] FROM docker.io/library/sideeye-sv1025:latest@sha256:7c85c644f5cc261eed850331726992f1d4f581a80ff47353838e8c8d77914ece
+#4 resolve docker.io/library/sideeye-sv1025:latest@sha256:7c85c644f5cc261eed850331726992f1d4f581a80ff47353838e8c8d77914ece done
+#4 DONE 0.0s
+
+#5 [ 2/11] RUN apt-get update > /dev/null && apt-get install -y --no-install-recommends       php8.4-cli php8.4-sqlite3 php8.4-intl php8.4-bcmath php8.4-mbstring php8.4-xml php8.4-zip php8.4-curl php8.4-gd composer       cmake ninja-build libsqlite3-dev zlib1g-dev libzstd-dev libluajit-5.1-dev libgmp-dev libjsoncpp-dev libcurl4-openssl-dev       libfontconfig1 libtag2 sqlite3 file > /tmp/apt-s4.log 2>&1 && echo "OK apt" || { echo "FAILED apt"; tail -5 /tmp/apt-s4.log; }
+#5 CACHED
+
+#6 [ 3/11] RUN set -u; cd /tmp/dl; curl -fsSL -o godot.zip https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.arm64.zip &&     mkdir -p x-godot && unzip -q godot.zip -d x-godot && install -m 755 "$(find x-godot -type f -name 'Godot_v4.7.2-stable_linux.arm64' | head -1)" /opt/bin/godot && echo "OK godot" || echo "FAILED godot"
+#6 CACHED
+
+#7 [ 4/11] RUN set -u; cd /tmp/dl; curl -fsSL -o nd.tgz https://github.com/navidrome/navidrome/releases/download/v0.64.2/navidrome_0.64.2_linux_arm64.tar.gz &&     mkdir -p x-nd && tar xzf nd.tgz -C x-nd && install -m 755 x-nd/navidrome /opt/bin/navidrome && echo "OK navidrome" || echo "FAILED navidrome"
+#7 2.595 OK navidrome
+#7 DONE 2.7s
+
+#8 [ 5/11] RUN set -u; cd /tmp/dl; curl -fsSL -o luanti.tgz https://github.com/luanti-org/luanti/archive/refs/tags/5.17.0.tar.gz &&     tar xzf luanti.tgz && cd luanti-5.17.0 &&     cmake -G Ninja -B build -DBUILD_CLIENT=FALSE -DBUILD_SERVER=TRUE -DRUN_IN_PLACE=FALSE -DCMAKE_BUILD_TYPE=Release           -DENABLE_CURL=FALSE -DENABLE_PROMETHEUS=FALSE -DENABLE_POSTGRESQL=FALSE -DENABLE_REDIS=FALSE -DENABLE_LEVELDB=FALSE -DCMAKE_INSTALL_PREFIX=/opt/luanti > /tmp/luanti-cmake.log 2>&1 &&     ninja -C build > /tmp/luanti-build.log 2>&1 && ninja -C build install > /tmp/luanti-install.log 2>&1 &&     ln -sf /opt/luanti/bin/luantiserver /opt/bin/luantiserver && echo "OK luanti" || { echo "FAILED luanti"; tail -15 /tmp/luanti-cmake.log /tmp/luanti-build.log; }
+#8 38.18 OK luanti
+#8 DONE 38.4s
+
+#9 [ 6/11] RUN set -u; cd /opt && curl -fsSL -o /tmp/dl/p.txz https://github.com/paperless-ngx/paperless-ngx/releases/download/v3.3.4/paperless-ngx-v3.3.4.tar.xz &&     tar xJf /tmp/dl/p.txz && python3 -m venv /opt/paperless-venv &&     grep -v -E '^(mysqlclient|psycopg-c)' /opt/paperless-ngx/requirements.txt > /tmp/preq.txt &&     /opt/paperless-venv/bin/pip install --no-cache-dir -r /tmp/preq.txt > /tmp/pip-paperless.log 2>&1 && echo "OK paperless deps" || { echo "FAILED paperless deps"; tail -15 /tmp/pip-paperless.log; }
+#9 ...
+
+#4 [ 1/11] FROM docker.io/library/sideeye-sv1025:latest@sha256:7c85c644f5cc261eed850331726992f1d4f581a80ff47353838e8c8d77914ece
+#4 CACHED
+
+#9 [ 6/11] RUN set -u; cd /opt && curl -fsSL -o /tmp/dl/p.txz https://github.com/paperless-ngx/paperless-ngx/releases/download/v3.3.4/paperless-ngx-v3.3.4.tar.xz &&     tar xJf /tmp/dl/p.txz && python3 -m venv /opt/paperless-venv &&     grep -v -E '^(mysqlclient|psycopg-c)' /opt/paperless-ngx/requirements.txt > /tmp/preq.txt &&     /opt/paperless-venv/bin/pip install --no-cache-dir -r /tmp/preq.txt > /tmp/pip-paperless.log 2>&1 && echo "OK paperless deps" || { echo "FAILED paperless deps"; tail -15 /tmp/pip-paperless.log; }
+#9 358.7 OK paperless deps
+#9 DONE 359.1s
+
+#10 [ 7/11] RUN apt-get install -y --no-install-recommends libmagic1 > /dev/null 2>&1 && echo "OK libmagic"
+#10 0.786 OK libmagic
+#10 DONE 0.8s
+
+#11 [ 8/11] RUN set -u; mkdir -p /opt/firefly && cd /opt/firefly && curl -fsSL -o /tmp/dl/ff.tgz https://github.com/firefly-iii/firefly-iii/releases/download/v6.7.9/FireflyIII-v6.7.9.tar.gz &&     tar xzf /tmp/dl/ff.tgz && ls vendor/autoload.php && echo "OK firefly" || echo "FAILED firefly"
+#11 7.742 vendor/autoload.php
+#11 7.742 OK firefly
+#11 DONE 7.9s
+
+#12 [ 9/11] RUN set -u; curl -fsSL -o /usr/share/keyrings/sury-php.gpg https://packages.sury.org/php/apt.gpg &&     echo "deb [signed-by=/usr/share/keyrings/sury-php.gpg] https://packages.sury.org/php/ trixie main" > /etc/apt/sources.list.d/sury-php.list &&     apt-get update > /dev/null && apt-get install -y --no-install-recommends php8.5-cli php8.5-sqlite3 php8.5-intl php8.5-bcmath       php8.5-mbstring php8.5-xml php8.5-zip php8.5-curl php8.5-gd > /tmp/apt-php85.log 2>&1 && echo "OK php8.5" || { echo "FAILED php8.5"; tail -5 /tmp/apt-php85.log; }
+#12 15.47 OK php8.5
+#12 DONE 15.5s
+
+#13 [10/11] RUN mkdir -p /opt/luanti/share/luanti/games && cp -a /tmp/dl/luanti-5.17.0/games/devtest /opt/luanti/share/luanti/games/ && echo "OK devtest"
+#13 0.145 OK devtest
+#13 DONE 0.2s
+
+#14 [11/11] RUN { echo "paperless-ngx $(cd /opt/paperless-ngx/src && /opt/paperless-venv/bin/python -c 'import paperless.version as v; print(".".join(map(str, v.__version__)))' 2>&1 | tail -1) (python $(/opt/paperless-venv/bin/python -V 2>&1 | cut -d' ' -f2))";       echo "godot $(godot --version 2>&1 | tail -1)"; echo "luantiserver $(luantiserver --version 2>&1 | head -1)";       echo "navidrome $(navidrome --version 2>&1 | tail -1)";       echo "firefly-iii $(grep -m1 "'version'" /opt/firefly/config/firefly.php | tr -d " ,'") (php $(php8.5 -r 'echo PHP_VERSION;'))";       for b in /opt/paperless-venv/bin/python /opt/bin/godot /opt/bin/luantiserver /opt/bin/navidrome /usr/bin/php8.5; do echo "link $b: $(file -bL $b | cut -c1-90)"; done; } | tee /versions.txt
+#14 0.233 paperless-ngx 3.3.4 (python 3.13.5)
+#14 0.312 godot 4.7.2.stable.official.ed1daf0bf
+#14 0.323 luantiserver Luanti 5.17.0 (Linux)
+#14 0.355 navidrome 0.64.2 (10114574)
+#14 0.416 firefly-iii version=>6.7.9 (php 8.5.11)
+#14 0.426 link /opt/paperless-venv/bin/python: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter 
+#14 0.429 link /opt/bin/godot: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter 
+#14 0.432 link /opt/bin/luantiserver: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+#14 0.435 link /opt/bin/navidrome: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]
+#14 0.438 link /usr/bin/php8.5: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+#14 DONE 0.4s
+
+#15 exporting to image
+#15 exporting layers
+#15 exporting layers 56.4s done
+#15 exporting manifest sha256:aa6d0c2f954bfd8680cea28bf83797c3186bf10739c81064c35d5591815cb7df done
+#15 exporting config sha256:54b93c1a3f091737f881742f85ef9680e363c2e347396845197986d43eecf148 done
+#15 exporting attestation manifest sha256:40ab08415337ba90ec2a4b717fc5a7ae851698e964399903666698dd7b0c2d9e done
+#15 exporting manifest list sha256:036942424d8a2d29168d31ac1e3e7c6009d618a74e2822514569092bac9dcdbd done
+#15 naming to docker.io/library/sideeye-sv1025-s4:latest done
+#15 unpacking to docker.io/library/sideeye-sv1025-s4:latest
+#15 unpacking to docker.io/library/sideeye-sv1025-s4:latest 14.9s done
+#15 DONE 71.4s
+paperless-ngx 3.3.4 (python 3.13.5)
+godot 4.7.2.stable.official.ed1daf0bf
+luantiserver Luanti 5.17.0 (Linux)
+navidrome 0.64.2 (10114574)
+firefly-iii version=>6.7.9 (php 8.5.11)
+link /opt/paperless-venv/bin/python: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter 
+link /opt/bin/godot: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter 
+link /opt/bin/luantiserver: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+link /opt/bin/navidrome: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]
+link /usr/bin/php8.5: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre

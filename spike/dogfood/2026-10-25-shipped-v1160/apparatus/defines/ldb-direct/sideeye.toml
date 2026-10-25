@@ -1,0 +1,13 @@
+[world]
+state = "/s/rdb"
+
+[define]
+# One key overwritten. The open that serves it replays the previous run's log into a table file,
+# rolls the MANIFEST and writes a new OPTIONS file, each through a temporary name and a rename.
+operation = "ldb --db=/s/rdb --try_load_options put k1 changed"
+# use_direct_reads=true (seed.sh): the buffered reads of the `ldb` define call readahead(2), which
+# Sideeye refuses unsupported_syscall_observed; direct reads do not prefetch through it.
+# RocksDB's info log, which carries the time on every line.
+scratch   = ["LOG"]
+check     = "/s/rdb-check.sh"
+cwd       = "/s"

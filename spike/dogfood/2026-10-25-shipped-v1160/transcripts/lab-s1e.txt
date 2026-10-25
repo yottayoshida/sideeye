@@ -1,0 +1,7 @@
+check-before=0
+falsify: @@map("customers") is gone from schema.prisma
+check-empty=1
+check-after=0
+.
+..
+jiti

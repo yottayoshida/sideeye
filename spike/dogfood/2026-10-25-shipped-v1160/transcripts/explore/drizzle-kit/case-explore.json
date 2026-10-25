@@ -1,0 +1,24 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 7,
+  "sideeye_version": "1.16.0",
+  "contract_version": 19,
+  "observe": "wrappers",
+  "define": {
+    "state": "/s/dz/db",
+    "operation": "node node_modules/drizzle-kit/bin.cjs migrate --config drizzle.config.ts",
+    "check": "/s/dz-check.sh",
+    "cwd": "/s/dz",
+    "scratch": [],
+    "apparatus": ["env:UV_THREADPOOL_SIZE=1"],
+    "expected_status": 0
+  },
+  "k": 36,
+  "ops_total": 46,
+  "prefix_hash": "84de951403efe8c1",
+  "after_class": "write",
+  "after_path": "/s/dz/db/app.db",
+  "before_class": "write",
+  "before_path": "/s/dz/db/app.db",
+  "violation": "hybrid"
+}

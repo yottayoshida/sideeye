@@ -1,0 +1,2 @@
+SETUP ERROR  /ap/defines/grafana/sideeye.toml line 15: not a key = "value" line
+sideeye: json sha256=288bf149938d5338fe9622ee720e667a446a010904be77b467d5df73afa39295;

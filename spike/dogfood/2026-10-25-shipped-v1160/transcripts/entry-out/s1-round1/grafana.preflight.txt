@@ -1,0 +1,14 @@
+UNKNOWN  child_process_detected
+         the target replaced its own image and the chain of observation broke: no continuation record carrying the operation count followed, or the subject announced itself again without an exec record (an execl-family call, a static image, or a stripped environment cannot carry the count). An unbroken self-exec chain is judged; a separate process is not (#123)
+next        Check whether the operation is a shell script wrapping another command — if it is, invoke that command as the operation instead; the refusal itself is one Sideeye makes by design, and https://github.com/yottayoshida/sideeye/blob/v1.16.0/docs/report-schema.md#refusals-by-reason says what its unknown_reason stands at.
+cwd         /s/grafana
+
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   the shim recorded an image replacement whose chain of observation broke; the subject's image replaced 1 time(s) with the chain followed, and a further image change escaped observation (#123)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

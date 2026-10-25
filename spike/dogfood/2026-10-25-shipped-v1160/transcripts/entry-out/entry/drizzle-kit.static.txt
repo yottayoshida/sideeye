@@ -1,0 +1,2 @@
+static: /opt/node/bin/node: ELF 64-bit LSB executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=be87cc3223ab725e7e517ce0c309401a9801b339, for GNU/Linux 3.7.0, with debug_info, not stripped, too many notes (256)
+next: sideeye explore --state /s/dz/db --cwd /s/dz --operation 'node node_modules/drizzle-kit/bin.cjs migrate --config drizzle.config.ts' --apparatus 'env:UV_THREADPOOL_SIZE=1' \

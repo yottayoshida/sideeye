@@ -1,0 +1,11 @@
+#!/bin/sh
+# A stand-in for VirtualBox's CLI that answers the two questions Vagrant's virtualbox provider asks to
+# decide whether a machine exists: its version, and one machine's state, always running. Nothing is
+# started; it lets `global-status --prune` keep a machine the way it keeps a real one.
+case "$1" in
+  --version) echo "7.1.12r169651" ;;
+  showvminfo) printf 'name="web"\nUUID="%s"\nVMState="running"\nVMStateChangeTime="2026-10-25T00:00:00.000000000"\n' "$2" ;;
+  list) [ "$2" = vms ] && echo '"web" {8b3c0c5e-2f4c-4d7a-9a51-000000000001}' ;;
+  *) : ;;
+esac
+exit 0

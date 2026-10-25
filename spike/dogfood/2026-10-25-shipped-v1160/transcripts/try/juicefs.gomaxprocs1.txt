@@ -1,0 +1,18 @@
+2026/10/25 03:36:59.938866 juicefs[29] <INFO>: Meta address: sqlite3:///s/jfs/jfs.db?_journal=DELETE [NewClient@interface.go:645]
+2026/10/25 03:36:59.966639 juicefs[29] <WARNING>: The latency to database is too high: 27.260833ms [newSQLMeta@sql.go:513]
+2026/10/25 03:37:01.873016 juicefs[38] <INFO>: Meta address: sqlite3:///s/jfs/jfs.db?_journal=DELETE [NewClient@interface.go:645]
+UNKNOWN  multiple_threads_detected
+         two threads of process 38 wrote in the judged directory in the second observed run: tid 38 performed open(/s/jfs/jfs.db) and tid 43 performed open(/s/jfs/jfs.db-journal). Nothing the supervising engine recorded orders the first of those before the second: under --observe supervised no join is recorded, nor which thread a creation made, so however the target orders them this run cannot establish that a crash point names the same operation on the next run, and writes from two or more threads of one process refuse. The modes that load a shim, which records creations and joins, judge a process whose threads' writes they order (v18)
+next        Two threads of one process wrote the judged directory, and under --observe supervised no join is recorded, nor which thread a creation made, so nothing orders their writes. A tool's own switch for running its file calls on one thread can move it past this — UV_THREADPOOL_SIZE=1 for Node, GOMAXPROCS=1 for Go: set it in the environment Sideeye runs in and declare it in the define's apparatus (env:UV_THREADPOOL_SIZE=1, for example); https://github.com/yottayoshida/sideeye/blob/v1.16.0/docs/apparatus.md#a-tools-own-switch-for-one-thread lists the switches measured and the targets each did not move.
+cwd         /s/jfs
+apparatus   env:GOMAXPROCS=1
+
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   single process in the recording; the second observed run recorded a thread, and that run's capture is never parsed, so nothing accounts for it; the supervising engine recorded 4 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

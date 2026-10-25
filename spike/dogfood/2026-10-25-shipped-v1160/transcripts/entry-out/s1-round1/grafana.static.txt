@@ -1,0 +1,2 @@
+static: /usr/sbin/grafana: Bourne-Again shell script, ASCII text executable
+next: Check whether the operation is a shell script wrapping another command — if it is, invoke that command as the operation instead; the refusal itself is one Sideeye makes by design, and https://github.com/yottayoshida/sideeye/blob/v1.16.0/docs/report-schema.md#refusals-by-reason says what its unknown_reason stands at.

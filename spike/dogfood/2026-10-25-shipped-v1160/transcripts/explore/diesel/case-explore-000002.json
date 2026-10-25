@@ -1,0 +1,24 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 7,
+  "sideeye_version": "1.16.0",
+  "contract_version": 19,
+  "observe": "wrappers",
+  "define": {
+    "state": "/s/app",
+    "operation": "diesel migration run",
+    "check": "/s/diesel-check.sh",
+    "cwd": "/s/app",
+    "scratch": [],
+    "apparatus": ["preload:libfaketime", "env:FAKETIME=2026-01-01 00:00:00"],
+    "expected_status": 0
+  },
+  "k": 52,
+  "ops_total": 52,
+  "prefix_hash": "f3972ece7438c0fb",
+  "after_class": "open",
+  "after_path": "/s/app/src/schema.rs",
+  "before_class": "write",
+  "before_path": "/s/app/src/schema.rs",
+  "violation": "hybrid"
+}

@@ -192,3 +192,31 @@ dpkg-upgrade	dpkg	outcome-funnel.tsv (dpkg -i, the 2026-10-14 mechanisms define'
 mbsync	isync	outcome-funnel.tsv (isync's mbsync)
 alembic	python3-alembic	outcome-funnel.tsv (Alembic)
 django	python3-django	outcome-funnel.tsv (Django)
+diesel	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): diesel-rs/diesel; trixie has none, the release binary fetched from GitHub
+prisma	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): prisma/orm; npm
+tursodb	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): tursodatabase/turso; the release binary fetched from GitHub
+ldb	rocksdb-tools	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): RocksDB's ldb, Debian trixie
+flyway	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): flyway/flyway; the release tarball
+symfony-secrets	php-symfony	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): symfony/symfony; composer, Debian's php
+nextcloud-occ	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): nextcloud/server; the release tarball
+docusaurus	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): facebook/docusaurus; npm
+vcpkg	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): microsoft/vcpkg-tool; the release binary
+drizzle-kit	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): drizzle-team/drizzle-orm; npm
+systemd-sysusers	systemd;systemd-standalone-sysusers	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): systemd/systemd, Debian trixie
+salt-call	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): saltstack/salt; trixie has none, the onedir release
+freshrss	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): FreshRSS/FreshRSS; the release tarball
+wallabag	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): wallabag/wallabag; the release tarball
+godot	godot3	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): godotengine/godot; the 4.7.2 release zip (trixie carries Godot 3)
+paperless-ngx	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): paperless-ngx/paperless-ngx; the release tarball
+firefly-iii	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): firefly-iii/firefly-iii; the release tarball
+etcdutl	etcd-server;etcd-client	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): etcd-io/etcd; the release tarball
+dolt	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): dolthub/dolt; the release tarball
+grafana	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): grafana/grafana; the release .deb
+vmrestore	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): VictoriaMetrics/VictoriaMetrics; vmutils release
+sqlx	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): transact-rs/sqlx; crates.io
+chroma	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): chroma-core/chroma; PyPI (trixie's chroma is another tool)
+lerna	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): lerna/lerna; npm
+gogs	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): gogs/gogs; the release tarball
+gqlgen	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): 99designs/gqlgen; the release binary
+juicefs	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): juicedata/juicefs; the release tarball
+navidrome	-	outcome-funnel.tsv (spike/dogfood/2026-10-25-shipped-v1160): navidrome/navidrome; the release tarball

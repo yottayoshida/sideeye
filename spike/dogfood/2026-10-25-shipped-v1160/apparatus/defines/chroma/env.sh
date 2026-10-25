@@ -1,0 +1,1 @@
+export ANONYMIZED_TELEMETRY=False

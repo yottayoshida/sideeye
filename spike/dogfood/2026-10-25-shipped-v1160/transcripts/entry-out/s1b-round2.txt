@@ -1,0 +1,6 @@
+ROW flyway-fork static=0 preflight_rc=2 gate=1 detail=wall: unresolvable_path
+EXIT flyway-fork 1
+ROW flyway-vfork static=0 preflight_rc=2 gate=1 detail=wall: unresolvable_path
+EXIT flyway-vfork 1
+ROW ldb static=0 preflight_rc=2 gate=1 detail=wall: unsupported_syscall_observed
+EXIT ldb 1

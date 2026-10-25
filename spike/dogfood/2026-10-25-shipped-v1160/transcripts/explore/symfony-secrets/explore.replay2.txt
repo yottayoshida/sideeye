@@ -1,0 +1,48 @@
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+ // Existing secrets have been rotated to the new keys.                         
+
+ ! [CAUTION] DO NOT COMMIT THE DECRYPTION KEY FOR THE PROD ENVIRONMENT⚠️        
+
+falsify: checker(symfony-secrets): secrets:list exited 255: untime/Runner/Symfony/ConsoleApplicationRunner.php:49 { …}
+falsify:     ./vendor/autoload_runtime.php:32 { …}
+falsify:     ./bin/console:15 { …}
+falsify:   }
+falsify: }
+falsify: 2026-01-01T00:00:00+00:00 [critical] Uncaught Error: Symfony\Bundle\FrameworkBundle\Secrets\SodiumVault::list(): Return value must be of type array, int returned
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+ // Existing secrets have been rotated to the new keys.                         
+
+ ! [CAUTION] DO NOT COMMIT THE DECRYPTION KEY FOR THE PROD ENVIRONMENT⚠️        
+
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 3 of 24
+            after  truncate(/s/sf/config/secrets/prod/prod.encrypt.public.php)
+            before write(/s/sf/config/secrets/prod/prod.encrypt.public.php)
+path        prod.encrypt.public.php
+observed    holding neither the old nor the new content
+cwd         /s/sf
+apparatus   preload:pin-random, preload:libfaketime, env:FAKETIME=2026-01-01 00:00:00
+
+explored    2 worlds (crash points 24 + 1 baseline)
+expected    exit 0
+atomicity   6 path(s) judged pre-or-post
+oracle      agreed on 24 operations (4918 syscall lines examined, 183 in scope of the judged state), witness strace
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /out/symfony-secrets/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   2 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/sf && unset SIDEEYE_KILL_GROUP && : > /out/symfony-secrets/work-explore-replay2/trace-repro.bin && SIDEEYE_STATE_DIR=/s/sf/config/secrets/prod SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/symfony-secrets/work-explore-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.16.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=3 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'php' bin/console secrets:generate-keys --rotate '--env=prod' </dev/null)
+sideeye: json sha256=f8ebe243b32f91cb6c09b52ff83bb08d180b4661f88d5cc5cfad4acf3c7edfd7;

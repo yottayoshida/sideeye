@@ -1,0 +1,2 @@
+static: /opt/bin/godot: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, for GNU/Linux 5.15.0, stripped
+next: sideeye explore --state /s/godot --cwd /s/godot --operation '/opt/bin/godot --headless --path /s/godot --convert-3to4' --scratch .godot \

@@ -1,0 +1,84 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.80kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/sideeye-sv1025-s1:latest
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/4] FROM docker.io/library/sideeye-sv1025-s1:latest@sha256:f73b5f55abfe2a3982572a0b3959c787b665b572687ba476e6f60d19fde2336a
+#4 resolve docker.io/library/sideeye-sv1025-s1:latest@sha256:f73b5f55abfe2a3982572a0b3959c787b665b572687ba476e6f60d19fde2336a 0.0s done
+#4 DONE 0.0s
+
+#5 [2/4] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/VictoriaMetrics/VictoriaMetrics/releases/download/v1.154.1/vmutils-linux-arm64-v1.154.1.tar.gz vmutils.tgz;     get $gh/VictoriaMetrics/VictoriaMetrics/releases/download/v1.154.1/victoria-metrics-linux-arm64-v1.154.1.tar.gz vm.tgz;     get $gh/flyway/flyway/releases/download/flyway-13.11.1/flyway-commandline-13.11.1.tar.gz flyway.tgz;     mkdir -p x-vm && tar xzf vmutils.tgz -C x-vm && tar xzf vm.tgz -C x-vm &&       for b in vmbackup-prod vmrestore-prod victoria-metrics-prod; do install -m 755 "x-vm/$b" "/opt/bin/${b%-prod}"; done;     mkdir -p /opt/flyway && tar xzf flyway.tgz -C /opt/flyway --strip-components=1 && ln -sf /opt/flyway/flyway /opt/bin/flyway;     ls -l /opt/bin
+#5 17.91 OK vmutils.tgz
+#5 19.40 OK vm.tgz
+#5 44.24 OK flyway.tgz
+#5 48.01 total 428652
+#5 48.01 -rwxr-xr-x 1 root root  26060120 Oct 25 03:28 diesel
+#5 48.01 -rwxr-xr-x 1 root root 117418040 Oct 25 03:28 dolt
+#5 48.01 -rwxr-xr-x 1 root root  23068834 Oct 25 03:28 etcd
+#5 48.01 -rwxr-xr-x 1 root root  15728802 Oct 25 03:28 etcdctl
+#5 48.01 -rwxr-xr-x 1 root root  15597730 Oct 25 03:28 etcdutl
+#5 48.01 lrwxrwxrwx 1 root root        18 Oct 25 03:38 flyway -> /opt/flyway/flyway
+#5 48.01 -rwxr-xr-x 1 root root 109680856 Oct 25 03:28 tursodb
+#5 48.01 -rwxr-xr-x 1 root root  26306776 Oct 25 03:38 victoria-metrics
+#5 48.01 -rwxr-xr-x 1 root root  52613545 Oct 25 03:38 vmbackup
+#5 48.01 -rwxr-xr-x 1 root root  52440825 Oct 25 03:38 vmrestore
+#5 DONE 48.7s
+
+#6 [3/4] RUN apt-get install -y --no-install-recommends openjdk-21-jre-headless rocksdb-tools > /tmp/apt-1b.log 2>&1 && echo "OK jre rocksdb-tools" || { echo "MISSING jre/rocksdb-tools"; tail -3 /tmp/apt-1b.log; }
+#6 21.96 OK jre rocksdb-tools
+#6 DONE 22.1s
+
+#7 [4/4] RUN { cat /versions.txt; echo "vmrestore $(vmrestore -version 2>&1 | head -1)"; echo "flyway $(flyway -v 2>&1 | grep -i -m1 'flyway')";       echo "ldb $(dpkg-query -W rocksdb-tools)"; echo "java $(java -version 2>&1 | head -1)";       for b in vmrestore ldb; do echo "link $b: $(file -bL $(command -v $b) | cut -c1-90)"; done; } > /versions.new && mv /versions.new /versions.txt && cat /versions.txt
+#7 0.446 etcdutl etcdutl version: 3.7.3
+#7 0.446 dolt dolt version 2.6.0
+#7 0.446 tursodb Turso 0.8.3
+#7 0.446 diesel diesel 
+#7 0.446 grafana grafana version 13.2.4
+#7 0.446 link etcdutl: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=kH
+#7 0.446 link dolt: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]
+#7 0.446 link tursodb: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+#7 0.446 link diesel: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, int
+#7 0.446 link /usr/share/grafana/bin/grafana: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=Fk
+#7 0.446 vmrestore vmrestore-20261019-123614-tags-v1.154.1-0-g64c2e75fe7
+#7 0.446 flyway Flyway OSS Edition 13.11.1 by Redgate
+#7 0.446 ldb rocksdb-tools	9.10.0-1
+#7 0.446 java openjdk version "21.0.12.1" 2026-08-18
+#7 0.446 link vmrestore: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=0U
+#7 0.446 link ldb: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+#7 DONE 0.4s
+
+#8 exporting to image
+#8 exporting layers
+#8 exporting layers 21.6s done
+#8 exporting manifest sha256:d05a4b6ea62ebcf9f8d157348fa7af1946133bac3e82edc1d373749a1b6d9cf6 done
+#8 exporting config sha256:c849b9735887478df26e35418d16e3b713d13d3e01a14b950f7a976185b5fcba done
+#8 exporting attestation manifest sha256:85a46d698e04513f4c1714026604ac3d80ccda626e1ecbcc74a40726c9eb44de done
+#8 exporting manifest list sha256:1ce631787ede27a091e5eb63b16ee4565b755ac4713accffdf48a6572100c6ea done
+#8 naming to docker.io/library/sideeye-sv1025-s1b:latest done
+#8 unpacking to docker.io/library/sideeye-sv1025-s1b:latest
+#8 unpacking to docker.io/library/sideeye-sv1025-s1b:latest 6.8s done
+#8 DONE 28.4s
+etcdutl etcdutl version: 3.7.3
+dolt dolt version 2.6.0
+tursodb Turso 0.8.3
+diesel diesel 
+grafana grafana version 13.2.4
+link etcdutl: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=kH
+link dolt: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]
+link tursodb: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+link diesel: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, int
+link /usr/share/grafana/bin/grafana: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=Fk
+vmrestore vmrestore-20261019-123614-tags-v1.154.1-0-g64c2e75fe7
+flyway Flyway OSS Edition 13.11.1 by Redgate
+ldb rocksdb-tools	9.10.0-1
+java openjdk version "21.0.12.1" 2026-08-18
+link vmrestore: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=0U
+link ldb: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre

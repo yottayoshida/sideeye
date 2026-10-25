@@ -1,0 +1,26 @@
+falsify: checker(tursodb): does not open: 2026-10-25T03:38:50.570483Z ERROR ThreadId(01) turso_core::database: 318: short read on database header: expected 512 bytes, got 25 Error: File is not a database 
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 6 of 14
+            after  write(/s/turso/shop.db-wal)
+            before fsync(/s/turso/shop.db-wal)
+path        shop.db-wal
+observed    holding neither the old nor the new content
+cwd         /s/turso
+
+explored    2 worlds (crash points 14 + 1 baseline)
+expected    exit 0
+atomicity   2 path(s) judged pre-or-post
+oracle      agreed on 14 operations (269 syscall lines examined, 62 in scope of the judged state), witness strace
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /out/tursodb/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 2 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 0 join(s) and 1 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/turso && unset SIDEEYE_KILL_GROUP && : > /out/tursodb/work-explore-replay1/trace-repro.bin && SIDEEYE_STATE_DIR=/s/turso SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/tursodb/work-explore-replay1/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.16.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=6 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'tursodb' -q -v syscall shop.db 'UPDATE orders SET status = '\''shipped'\'', cents = cents + 1 WHERE id % 2 = 0' </dev/null)
+sideeye: json sha256=bbf74a4f3f99e47e134fe3e612d2529285b50ea05f96e6a288b4c9fb8d22ab66;

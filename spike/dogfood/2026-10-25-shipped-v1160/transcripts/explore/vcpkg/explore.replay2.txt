@@ -1,0 +1,30 @@
+falsify: checker(vcpkg): vcpkg list exited 1: /s/vcpkg/installed/vcpkg/status:1:25: error: expected ':' after field name
+falsify:   on expression: sideeye-corruption-probe
+falsify:                                          ^
+world 9: checker(vcpkg): zlib.h is still on disk after the re-run
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   the checker (L2)
+earliest    crash point 9 of 54
+            after  rename(/s/vcpkg/installed/vcpkg/updates/incomplete)
+            before unlink(/s/vcpkg/installed/arm64-linux/debug/lib/libz.a)
+path        (named by the checker, not by path)
+observed    the checker exited non-zero after restart
+cwd         /s/vcpkg
+apparatus   env:VCPKG_DISABLE_METRICS=1
+
+explored    2 worlds (crash points 54 + 1 baseline)
+expected    exit 0
+atomicity   46 path(s) judged pre-or-post
+oracle      agreed on 54 operations (971 syscall lines examined, 239 in scope of the judged state), witness strace
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /out/vcpkg/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/vcpkg && unset SIDEEYE_KILL_GROUP && : > /out/vcpkg/work-explore-replay2/trace-repro.bin && SIDEEYE_STATE_DIR=/s/vcpkg/installed SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/vcpkg/work-explore-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.16.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=9 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= /s/vcpkg/vcpkg remove zlib </dev/null)
+sideeye: json sha256=246e1816c70466729656f6be4fb55bc55d1816a15f660dbfb3475a1bf2f09d0e;

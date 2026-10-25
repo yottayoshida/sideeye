@@ -1,0 +1,11 @@
+[world]
+# The project: prisma/schema.prisma (hand-written) and prisma.config.ts; the database it introspects is
+# /s/db/dev.db, outside (see seed.sh).
+state = "/s/shop"
+
+[define]
+# prisma's bin is a #! script; its interpreter is the operation's first word (ADR 0092).
+operation = "/opt/node/bin/node /opt/prisma-proto/node_modules/prisma/build/index.js db pull"
+apparatus = ["env:UV_THREADPOOL_SIZE=1", "env:JITI_FS_CACHE=false", "env:PRISMA_HIDE_UPDATE_MESSAGE=1", "env:CHECKPOINT_DISABLE=1"]
+check     = "/s/prisma-check.sh"
+cwd       = "/s/shop"

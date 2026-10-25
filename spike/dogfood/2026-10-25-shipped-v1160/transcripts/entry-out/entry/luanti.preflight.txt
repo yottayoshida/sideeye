@@ -1,0 +1,35 @@
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+2026-01-01 00:00:00: ACTION[Main]: Successfully migrated 5 players
+2026-01-01 00:00:00: ACTION[Main]: world.mt updated
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+2026-01-01 00:00:00: ACTION[Main]: Successfully migrated 5 players
+2026-01-01 00:00:00: ACTION[Main]: world.mt updated
+PREFLIGHT  recording accepted — 286 state-changing operation(s) observed
+
+cwd          /s/world
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 286 operations (2355 syscall lines examined, 1187 in scope of the judged state), witness strace
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2012 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/world --cwd /s/world --operation '/opt/bin/luantiserver --world /s/world --migrate-players sqlite3' --apparatus preload:libfaketime --apparatus 'env:FAKETIME=2026-01-01 00:00:00' --apparatus 'env:FAKETIME_DONT_FAKE_MONOTONIC=1' \
+               --check <your-invariant.sh> --oracle /usr/bin/strace

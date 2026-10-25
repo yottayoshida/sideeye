@@ -1,0 +1,40 @@
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+PREFLIGHT  recording accepted — 209 state-changing operation(s) observed
+
+cwd          /opt/paperless-ngx/src
+atomicity    13 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: media/media.lock)
+oracle       agreed on 209 operations (43726 syscall lines examined, 1584 in scope of the judged state), witness strace
+processes    7 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the second observed run recorded a process boundary, and that run's capture is never parsed, so nothing accounts for it
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 3033 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+scratch        declared scratch, not compared: media/media.lock
+
+next         sideeye explore --state /s/paperless --cwd /opt/paperless-ngx/src --operation '/opt/paperless-venv/bin/python /opt/paperless-ngx/src/manage.py document_renamer --no-progress-bar' --apparatus preload:libfaketime --apparatus 'env:FAKETIME=2026-01-01 00:00:00' --apparatus 'env:FAKETIME_DONT_FAKE_MONOTONIC=1' --apparatus env:PAPERLESS_FILENAME_FORMAT --apparatus env:PAPERLESS_DB_OPTIONS --apparatus env:PAPERLESS_CACHE_BACKEND --apparatus env:PAPERLESS_CHANNELS_BACKEND --scratch media/media.lock \
+               --check <your-invariant.sh> --oracle /usr/bin/strace

@@ -1,0 +1,1 @@
+export UV_THREADPOOL_SIZE=1

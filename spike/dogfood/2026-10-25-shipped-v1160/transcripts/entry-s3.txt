@@ -1,0 +1,10 @@
+ROW salt-grains static=0 preflight_rc=2 gate=1 detail=wall: unresolvable_path
+EXIT salt-grains 1
+ROW sysusers static=0 preflight_rc=0 gate=0 detail=accepted, 45 operations
+EXIT sysusers 0
+ROW vagrant static=0 preflight_rc=0 gate=0 detail=accepted, 35 operations
+EXIT vagrant 0
+ROW freshrss static=0 preflight_rc=0 gate=0 detail=accepted, 6 operations
+EXIT freshrss 0
+ROW juicefs static=1 preflight_rc=2 gate=1 detail=SUPERVISED; wall: multiple_threads_detected
+EXIT juicefs 1

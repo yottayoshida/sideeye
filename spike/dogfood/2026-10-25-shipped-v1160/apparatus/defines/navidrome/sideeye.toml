@@ -1,0 +1,13 @@
+[world]
+state = "/s/nd"
+
+[define]
+# A full rescan of a library a listener has used: Navidrome reads the music folder (outside the state),
+# imports the album that appeared since the last scan and rewrites its database around the play
+# counts, ratings and stars already in it.
+operation = "/opt/bin/navidrome scan --full"
+cwd       = "/s/nd"
+apparatus = ["env:GOMAXPROCS=1", "env:ND_CONFIGFILE"]
+# The image, transcoding and plugin caches: not the user's.
+scratch   = ["cache"]
+check     = "/s/navidrome-check.sh"

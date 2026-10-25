@@ -1,0 +1,2 @@
+explore exit 2: UNKNOWN unresolvable_path
+next_step: This target does something Sideeye refuses by design: the unknown_reason above names the limit, https://github.com/yottayoshida/sideeye/blob/v1.16.0/docs/report-schema.md#refusals-by-reason says what each one stands at, and https://github.com/yottayoshida/sideeye/blob/v1.16.0/DESIGN.md#known-constraints-declared-not-hidden gives the reasons.

@@ -1,0 +1,25 @@
+PREFLIGHT  not accepted — the two observed runs left different state
+
+difference   app.db (content differs)
+             bytes first differ at byte offset 8153: first run "2", second run "4" — 1 and 1 byte(s) of 61440 and 61440, both decimal digits
+
+cwd          /s/app
+atomicity    11 path(s) judged pre-or-post
+oracle       agreed on 52 operations (724 syscall lines examined, 411 in scope of the judged state), witness strace
+processes    1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2003 ms apart differed under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         pin or relocate what differs, then re-run this command;
+             explore would reach the same divergence in its baseline
+             world, after a full define had been written

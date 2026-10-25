@@ -1,0 +1,13 @@
+replay 1 exit 1: falsify: checker(diesel): integrity_check: Error: in prepare, file is not a database (26)
+replay 2 exit 1: falsify: checker(diesel): integrity_check: Error: in prepare, file is not a database (26)
+evidence exit 0
+left exit 1
+crash state:
+-rw-r--r-- 1 root root 0 Jan  1  2026 /s/app/src/schema.rs
+20260101000000,20260102000000
+-- next diesel migration run, as a user would retry:
+exit 0
+-rw-r--r-- 1 root root 198 Jan  1  2026 /s/app/src/schema.rs
+schema.rs restored by the next run
+-- diesel print-schema:
+print-schema regenerates it

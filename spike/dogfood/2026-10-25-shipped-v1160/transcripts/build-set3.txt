@@ -1,0 +1,104 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [ 1/11] FROM docker.io/library/sideeye-sv1025:latest@sha256:7c85c644f5cc261eed850331726992f1d4f581a80ff47353838e8c8d77914ece
+#1 resolve docker.io/library/sideeye-sv1025:latest@sha256:7c85c644f5cc261eed850331726992f1d4f581a80ff47353838e8c8d77914ece done
+#1 CACHED
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 3.77kB done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/sideeye-sv1025:latest
+#3 DONE 0.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [ 2/10] RUN set -u; cd /tmp/dl;     curl -fsSL -o salt.txz https://github.com/saltstack/salt/releases/download/v3008.4/salt-3008.4-onedir-linux-arm64.tar.xz && echo "OK salt.txz";     mkdir -p /opt/salt && tar xJf salt.txz -C /opt/salt && ls /opt/salt &&     ln -sf "$(find /opt/salt -maxdepth 2 -name salt-call | head -1)" /opt/bin/salt-call && echo "OK salt-call"
+#5 4.157 OK salt.txz
+#5 6.128 salt
+#5 6.129 OK salt-call
+#5 DONE 6.4s
+
+#6 [ 3/10] RUN set -u; cd /tmp/dl;     curl -fsSL -o jfs.tgz https://github.com/juicedata/juicefs/releases/download/v1.4.2/juicefs-1.4.2-linux-arm64.tar.gz &&     mkdir -p x-jfs && tar xzf jfs.tgz -C x-jfs && install -m 755 "$(find x-jfs -type f -name juicefs | head -1)" /opt/bin/juicefs && echo "OK juicefs"
+#6 4.398 OK juicefs
+#6 DONE 4.5s
+
+#7 [ 4/10] RUN apt-get install -y --no-install-recommends systemd passwd > /tmp/apt-systemd.log 2>&1 && echo "OK systemd" || { echo "FAILED systemd"; tail -5 /tmp/apt-systemd.log; }
+#7 2.633 OK systemd
+#7 DONE 2.8s
+
+#8 [ 5/10] RUN apt-get install -y --no-install-recommends php8.4-cli php8.4-sqlite3 php8.4-mbstring php8.4-xml php8.4-curl php8.4-intl php8.4-zip > /tmp/apt-php.log 2>&1 && echo "OK php" || { echo "FAILED php"; tail -5 /tmp/apt-php.log; }
+#8 6.207 OK php
+#8 DONE 6.2s
+
+#9 [ 6/10] RUN set -u; cd /tmp/dl;     curl -fsSL -o freshrss.tgz https://github.com/FreshRSS/FreshRSS/archive/refs/tags/1.30.4.tar.gz &&     mkdir -p /opt/freshrss && tar xzf freshrss.tgz -C /opt/freshrss --strip-components=1 && echo "OK freshrss"
+#9 1.316 OK freshrss
+#9 DONE 1.4s
+
+#10 [ 7/10] RUN apt-get install -y --no-install-recommends ruby ruby-dev libxml2-dev libxslt1-dev zlib1g-dev libffi-dev libssl-dev > /tmp/apt-ruby.log 2>&1 && echo "OK ruby" || { echo "FAILED ruby"; tail -5 /tmp/apt-ruby.log; }
+#10 2.845 OK ruby
+#10 DONE 2.9s
+
+#11 [ 8/10] RUN set -u; cd /tmp/dl;     git clone -q --depth 1 --branch v2.4.9 https://github.com/hashicorp/vagrant.git vagrant-src && cd vagrant-src &&     gem build vagrant.gemspec > /tmp/gem-build.log 2>&1 &&     gem install --no-document --install-dir /opt/vagrant-gems ./vagrant-2.4.9.gem > /tmp/gem-install.log 2>&1 && echo "OK vagrant 2.4.9 gem" || { echo "FAILED vagrant gem"; tail -15 /tmp/gem-build.log /tmp/gem-install.log; }
+#11 1.346 Note: switching to '97d5ea2501e81d05eacac7fa7be6fc6665c10b74'.
+#11 1.346 
+#11 1.346 You are in 'detached HEAD' state. You can look around, make experimental
+#11 1.346 changes and commit them, and you can discard any commits you make in this
+#11 1.346 state without impacting any branches by switching back to a branch.
+#11 1.346 
+#11 1.346 If you want to create a new branch to retain commits you create, you may
+#11 1.346 do so (now or later) by using -c with the switch command. Example:
+#11 1.346 
+#11 1.346   git switch -c <new-branch-name>
+#11 1.346 
+#11 1.346 Or undo this operation with:
+#11 1.346 
+#11 1.346   git switch -
+#11 1.346 
+#11 1.346 Turn off this advice by setting config variable advice.detachedHead to false
+#11 1.346 
+#11 19.80 OK vagrant 2.4.9 gem
+#11 DONE 19.8s
+
+#12 [ 9/10] RUN printf '#!/bin/sh\nexport GEM_HOME=/opt/vagrant-gems GEM_PATH=/opt/vagrant-gems VAGRANT_CHECKPOINT_DISABLE=1 VAGRANT_DISABLE_VBOXSYMLINKCREATE=1\nexec ruby /opt/vagrant-gems/bin/vagrant "$@"\n' > /opt/bin/vagrant-upstream && chmod 755 /opt/bin/vagrant-upstream;     VAGRANT_HOME=/tmp/vh /opt/bin/vagrant-upstream --version 2>&1 | tail -3
+#12 0.158 Vagrant 2.4.9
+#12 DONE 0.2s
+
+#13 [10/10] RUN { echo "salt-call $(salt-call --version 2>&1 | head -1)"; echo "juicefs $(juicefs --version 2>&1 | head -1)";       echo "systemd-sysusers $(systemd-sysusers --version 2>&1 | head -1)"; echo "php $(php --version 2>&1 | head -1)";       echo "freshrss $(grep -o "FRESHRSS_VERSION', '[^']*" /opt/freshrss/constants.php)";       echo "vagrant-upstream $(VAGRANT_HOME=/tmp/vh vagrant-upstream --version 2>&1 | tail -1)";       for b in "$(readlink -f /opt/bin/salt-call)" /opt/bin/juicefs /usr/bin/systemd-sysusers /usr/bin/php8.4 /usr/bin/ruby3.3; do echo "link $b: $(file -bL $b | cut -c1-90)"; done; } | tee /versions.txt
+#13 1.004 salt-call salt-call 3008.4 (Argon)
+#13 1.063 juicefs juicefs version 1.4.2+2026-10-22.46af7af
+#13 1.065 systemd-sysusers systemd 257 (257.13-1~deb13u1)
+#13 1.116 php PHP 8.4.27 (cli) (built: Oct 21 2026 07:53:46) (NTS)
+#13 1.116 freshrss 
+#13 1.183 vagrant-upstream Vagrant 2.4.9
+#13 1.187 link /opt/salt/salt/salt-call: POSIX shell script, ASCII text executable
+#13 1.191 link /opt/bin/juicefs: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]
+#13 1.192 link /usr/bin/systemd-sysusers: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+#13 1.195 link /usr/bin/php8.4: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+#13 1.195 link /usr/bin/ruby3.3: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+#13 DONE 1.2s
+
+#14 exporting to image
+#14 exporting layers
+#14 exporting layers 5.0s done
+#14 exporting manifest sha256:24c4c992bcc122376d7fac6ee253e8b6e9cc1342ef0e96d1d999a9de81b6de6a done
+#14 exporting config sha256:dcb84c3ad39395831d7379c58c700fdf744ce8cdef6b71af03a0d19fb766f77c done
+#14 exporting attestation manifest sha256:6e0505e6958cf23d6ed00e25848152b3d968a4e4fa2e9ebf6c2455b4a4f58749 done
+#14 exporting manifest list sha256:9a86a3b0654d80aff0807a59a5feacccc40875e448b671113e9fbd4b0c85b81c done
+#14 naming to docker.io/library/sideeye-sv1025-s3:latest done
+#14 unpacking to docker.io/library/sideeye-sv1025-s3:latest
+#14 unpacking to docker.io/library/sideeye-sv1025-s3:latest 3.3s done
+#14 DONE 8.3s
+salt-call salt-call 3008.4 (Argon)
+juicefs juicefs version 1.4.2+2026-10-22.46af7af
+systemd-sysusers systemd 257 (257.13-1~deb13u1)
+php PHP 8.4.27 (cli) (built: Oct 21 2026 07:53:46) (NTS)
+freshrss 
+vagrant-upstream Vagrant 2.4.9
+link /opt/salt/salt/salt-call: POSIX shell script, ASCII text executable
+link /opt/bin/juicefs: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]
+link /usr/bin/systemd-sysusers: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+link /usr/bin/php8.4: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+link /usr/bin/ruby3.3: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre

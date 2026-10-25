@@ -1,0 +1,21 @@
+PREFLIGHT  recording accepted — 52 state-changing operation(s) observed
+
+cwd          /s/vagrant.d
+atomicity    15 path(s) judged pre-or-post
+oracle       agreed on 52 operations (50154 syscall lines examined, 12997 in scope of the judged state), witness strace
+processes    5 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the second observed run recorded a process boundary, and that run's capture is never parsed, so nothing accounts for it; the shim recorded 16 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 1 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 3429 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/vagrant.d --cwd /s/vagrant.d --operation 'ruby /opt/vagrant-gems/bin/vagrant global-status --prune' --apparatus 'note:a stand-in VBoxManage at /s/vagrantaux/bin, first on PATH (env.sh), answers version and running' \
+               --check <your-invariant.sh> --oracle /usr/bin/strace

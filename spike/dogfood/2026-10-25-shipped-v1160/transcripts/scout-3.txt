@@ -1,0 +1,159 @@
+scout 3 — personal and creative data with a CLI that edits it in place (2026-10-25, read-only)
+
+Method: fresh.sh on ~185 name spellings (about 150 tools) in three batches; word-recheck.sh on every
+fresh name kept for screening (all clean: the only whole-word hits were "Nextcloud" as a CalDAV
+server in spike/cohort4/novelty-prescan-vdirsyncer.txt and "actual" as an English word — neither is
+the tool); stars.sh on 98 repositories; `gh api repos/O/R/releases/latest` for assets; source read
+through `gh api .../contents` for the command and the write path. Nothing installed, nothing run.
+None of the kept repositories is in reported-repos.txt.
+
+Substring SEENs overridden by the common name: `occ` (hit "occurrence"; Nextcloud itself fresh),
+`stash` (hit "git stash"; stashapp fresh but out for other reasons). `calibre` is SEEN
+(b2-exclusions:71 "calibre read (dogfood selection)"); calibre-web is a separate project (janeczku)
+and its names are fresh with no whole-word hit.
+
+KEPT (strongest first)
+
+1. Paperless-ngx — paperless-ngx/paperless-ngx — 47,071★, pushed 2026-10-25, v3.3.4 (2026-10-22).
+   Artifact: paperless-ngx-v3.3.4.tar.xz (arch-independent Python; deps by uv, arm64 wheels; the
+   official image is multi-arch). Not on PyPI.
+   Command: `python3 manage.py document_renamer --no-progress-bar` after changing
+   PAPERLESS_FILENAME_FORMAT. State: data/db.sqlite3 + media/documents/{originals,archive,thumbnails}.
+   Each document's post_save handler moves its files to the new path, makes new directories, removes
+   empty ones, and updates the DB row. Checker for free: `manage.py document_sanity_checker`
+   ("original of document does not exist").
+   Code read: document_renamer.py has supports_multiprocessing = False; a plain loop.
+   Walls: SQLite WAL is hard-coded in settings/custom.py init_command (`PRAGMA journal_mode=WAL`, plus
+   mmap_size=128 MiB, which is a read-only map) — the -shm file is a shared writable mapping (ADR 0098).
+   Switch: PAPERLESS_DB_OPTIONS overrides the OPTIONS dict (parse_dict_from_str, "," separator) —
+   `init_command=PRAGMA journal_mode=DELETE` should replace it; verify. No threads expected.
+   Shape: renames and directory creation/removal inside the state (next to v1.13's directory rename).
+
+2. Nextcloud server — nextcloud/server — 37,282★, pushed 2026-10-25, v33.0.10 (2026-10-15).
+   Artifact: no GitHub asset; the release tarball from download.nextcloud.com (arch-independent PHP),
+   Debian trixie PHP 8.4 modules.
+   Command: `php occ files:sanitize-filenames alice` (or `files:move`, `files:transfer-ownership`).
+   State: data/ (user files) + the filecache in data/owncloud.db (SQLite) + config/config.php.
+   SanitizeFilenames.php walks getDirectoryListing() and calls $node->move() on files AND folders:
+   a rename on disk plus a filecache update, per node.
+   Walls: SQLite WAL is the default (ConnectionFactory: sqlite.journal_mode default 'WAL'); switch
+   documented in config.sample.php: `'sqlite.journal_mode' => 'DELETE'`. PHP, one thread. No network
+   expected for files:* (verify no update check on occ start).
+   Shape: hits v1.13's "a directory renamed inside the state" directly.
+
+3. Godot — godotengine/godot — 119,022★, pushed 2026-10-23, 4.7.2-stable (2026-08-18).
+   Artifact: Godot_v4.7.2-stable_linux.arm64.zip (editor build, dynamic glibc).
+   Command: `godot --headless --path proj --convert-3to4` (main.cpp: a cmdline tool, handled in
+   start()). State: a Godot 3 project — project.godot, *.tscn, *.tres, *.gd — every file rewritten.
+   FileAccessUnix writes `<file>.tmp` and renames over (backup-save on by default), so per-file PASS is
+   likely; the interesting window is the half-converted project across files.
+   Walls: WorkerThreadPool threads start at init; only the main thread is expected to write.
+   Alternative op: `--headless --path proj --import` writes .import files from pool threads; one-thread
+   switch is the project setting `editor/import/use_multiple_threads` (defined in
+   editor/register_editor_types.cpp; verify name).
+
+4. Luanti (Minetest) — luanti-org/luanti — 13,770★, pushed 2026-10-22, 5.17.0 (2026-08-20).
+   Artifact: no Linux release asset (Windows/macOS/Android only); Debian trixie `luanti-server`
+   believed present (5.10.x, verify — confidence 70%), else a CMake source build.
+   Command: `luantiserver --world W --migrate-players files` (or `--migrate-auth files`,
+   `--migrate-mod-storage files`, `--recompress`). State: the world directory — map.sqlite,
+   players.sqlite, auth.sqlite, world.mt. main.cpp dispatches these before any bind; migrate_map_database
+   writes the new DB in batches then rewrites world.mt via Settings::updateConfigFile.
+   Walls: SQLite rollback journal (no WAL in database-sqlite3.cpp); single thread. `--recompress`
+   constructs a Server with UDPSocket::CreateEphemeral (a socket syscall, no traffic) — prefer the
+   migrate-* commands.
+
+5. Navidrome — navidrome/navidrome — 24,347★, pushed 2026-10-24, v0.64.2 (2026-09-24).
+   Artifact: navidrome_0.64.2_linux_arm64.tar.gz / .deb (cgo go-sqlite3 → dynamic).
+   Command: `navidrome scan --full` or `navidrome user delete -u bob` / `user create`.
+   State: data folder — navidrome.db holds user annotations (stars, ratings, play counts) and
+   playlists; the music folder is only read.
+   Walls: DefaultDbPath carries `_journal_mode=WAL` (consts.go) → switch ND_DBPATH with
+   `_journal_mode=DELETE`; Go threads → GOMAXPROCS=1, which OpenTofu showed may not fix the writing
+   thread per run (cgo calls migrate between Ms).
+
+6. Firefly III — firefly-iii/firefly-iii — 24,986★, pushed 2026-10-24, v6.7.9 (2026-10-11).
+   Artifact: FireflyIII-v6.7.9.tar.gz (arch-independent PHP, vendor included).
+   Command: `php artisan firefly-iii:correct-database` (runs ~35 correction commands) or
+   `firefly-iii:apply-rules`. State: storage/database/database.sqlite (DB_CONNECTION=sqlite) and
+   storage/oauth-*.key (RestoresOAuthKeys). Laravel SQLite: rollback journal by default; one thread.
+
+7. QGIS — qgis/QGIS — 14,706★, pushed 2026-10-24, final-3_44_15 (2026-09-25).
+   Artifact: none on GitHub; Debian trixie `qgis` (arm64, 3.40.x believed — verify).
+   Command: `qgis_process run native:savefeatures --INPUT=… --OUTPUT=user.gpkg
+   --ACTION_ON_EXISTING_FILE=1` (adds a layer into the user's existing GeoPackage).
+   Walls: QGIS turns on WAL for GPKG (setting qgis/walForSqlite3, verify) → shared mapping; Qt and GDAL
+   threads (writes expected from the main thread). C++/Qt over GDAL.
+
+8. Tiled — mapeditor/tiled — 12,994★, pushed 2026-10-24, v1.12.2 (2026-05-27).
+   Artifact: x86_64 AppImage only; Debian trixie `tiled` believed. Command:
+   `QT_QPA_PLATFORM=offscreen tiled --export-map tmx level.tmx level.tmx`, or `--evaluate edit.js`
+   (a script that opens and saves the map). Qt SaveFile → PASS likely.
+
+9. FreshRSS — FreshRSS/FreshRSS — 16,414★, pushed 2026-10-24, 1.30.4 (2026-10-21), no assets (PHP
+   source tag). Commands: `cli/update-user.php --user alice --language fr` (users/alice/config.php
+   written to .tmp.php then renamed — PASS likely), `cli/import-for-user.php`, `cli/purge.php` on
+   data/users/alice/db.sqlite.
+
+10. wallabag — wallabag/wallabag — 13,022★, pushed 2026-10-23, 2.6.14 (2025-10-07; the release is a
+    year old). wallabag-2.6.14.tar.gz. `bin/console wallabag:clean-duplicates alice` on SQLite.
+
+11. COLMAP — colmap/colmap — 13,056★, pushed 2026-10-23, 4.2.1 (2026-09-29). No Linux asset; Debian
+    trixie `colmap` believed (older 3.x, verify). `colmap point_filtering --input_path sparse/0
+    --output_path sparse/0` rewrites cameras.bin/images.bin/points3D.bin in place (std::ofstream) —
+    FAIL window likely. The database commands are out: database_sqlite.cc hard-codes
+    `PRAGMA journal_mode=WAL` with no switch.
+
+12. Label Studio — HumanSignal/label-studio — 28,542★, 1.23.2 (PyPI wheel). `label-studio
+    reset_password --username u --password p --data-dir D` (migrations applied, one row changed).
+    collect_versions() may reach PyPI — verify a switch. Weak.
+
+13. calibre-web — janeczku/calibre-web — 18,459★, 0.6.27 (2026-08-08), PyPI `calibreweb`.
+    `cps -p app.db -s user:pass` (password reset, exits). Weak.
+
+14. draw.io desktop — jgraph/drawio-desktop — 63,639★, v32.6.1 (2026-10-23), drawio-arm64-32.6.1.AppImage
+    and .deb. `drawio -x -f xml --uncompressed -o d.drawio d.drawio`: electron.js opens the output
+    (openExportFile) then fs.writeFileSync + fsyncSync — a truncate-before-write window. Walls: Electron
+    multi-process, xvfb-run, many threads; 2026-10-07 put vscode/code-server out for Electron/Node
+    worker threads. High wall risk.
+
+15. OrcaSlicer — OrcaSlicer/OrcaSlicer — 16,119★, v2.4.2 aarch64 AppImage. `orca-slicer --uptodate
+    --slice 0 --outputdir . --export-3mf proj.3mf proj.3mf` re-saves the user's project. TBB threads;
+    heavy. Low.
+
+COUNTS (approx. 150 tools, ~185 spellings)
+- SEEN: ~51 tools (archivebox, aseprite, atuin, beets, bitwarden, buku, calibre, chezmoi, czkawka,
+  darktable, dnote, dvc, ebook-meta, gdal, git-crypt, gopass, homeassistant, joplin, jrnl, jupyter,
+  jupytext, kicad, kid3, libvips, linkding, ludusavi, mkvtoolnix, musescore, openrct2, pandoc, pdfcpu,
+  photoprism, picard, retroarch, shiori, svgo, tiddlywiki, borg, dokuwiki, hledger, immich, khal,
+  kopia, ledger, rnote, vdirsyncer, bottles, jabref, mlflow, ollama, veracrypt)
+- issues off: 10 (blender, gramps, gnucash, standardnotes, mediawiki, inkscape, gimp, krita,
+  libreoffice, dolphin)
+- archived: 3 (filebrowser, maybe-finance, buttercup)
+- under 10k stars: ~22 (prusaslicer 9.4k, devilutionx 9.9k, miniflux 9.8k, ghostfolio 9.5k, grocy,
+  openttd, wesnoth, komga, qownnotes, silverbullet, onlyoffice, radicale, shaarli, passbolt, dolibarr,
+  tagstudio, roundcube, mopidy, librephotos, tandoor, vikunja, cuberite)
+- no headless CLI that changes a kept file (GUI/server only, or writes only a new file): ~40
+  (trilium, siyuan, appflowy, affine, memos, notesnook, zettlr, excalidraw, penpot, mailspring,
+  linkwarden, jellyfin, kodi, kavita, audiobookshelf, stashapp, koreader, anki, zotero, keeweb,
+  mindustry, papermc, prismlauncher, heroic, ppsspp, pcsx2, rpcs3, spacedrive, cryptomator, wekan,
+  mealie, open3d, meshroom, xournalpp, openscad, pixelorama, marimo, mpv, vaultwarden, cataclysm)
+- network during the command: actual (its new @actual-app/cli requires a sync server), karakeep,
+  lutris, seafile
+- writer is a separate DB server (MySQL/Postgres only): bookstack, odoo, erpnext, invoiceninja,
+  akaunting, monica
+- no arm64 path: openra (x86_64 AppImage, dotnet source build), lmms (last release 2020, x86_64)
+
+NOTABLE OUTS
+- Actual Budget (29.7k): packages/cli exists but its README says it "connects to a running Actual
+  sync server. It does not operate on local budget files directly."
+- filebrowser (35.9k): archived 2026-07.
+- Blender (21.2k): issues off on the GitHub mirror.
+- Maybe (54k): archived.
+- Joplin, Atuin, beets, calibre, MuseScore, OpenRCT2, Aseprite: SEEN in earlier selections.
+- Karakeep (30k), Linkwarden (20k): only network clients to a server.
+- Vaultwarden (69.6k): its only CLI writes a new backup file.
+- Stirling-PDF, Immich, Memos, SiYuan, Trilium: server or GUI, no editing CLI.
+- COLMAP database commands: WAL hard-coded, no switch (the model commands stay in).
+- QGIS/Navidrome/Paperless/Nextcloud: all four default to SQLite WAL; each has a switch (above) except
+  Paperless's, which is an options override to verify.

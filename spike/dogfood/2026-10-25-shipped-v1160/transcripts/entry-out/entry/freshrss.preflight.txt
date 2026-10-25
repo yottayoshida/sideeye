@@ -1,0 +1,23 @@
+Reconfiguring FreshRSS…
+Reconfiguring FreshRSS…
+PREFLIGHT  recording accepted — 6 state-changing operation(s) observed
+
+cwd          /s/freshrss
+atomicity    49 path(s) judged pre-or-post
+oracle       agreed on 6 operations (2250 syscall lines examined, 733 in scope of the judged state), witness strace
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2004 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/freshrss --cwd /s/freshrss --operation 'php /opt/freshrss/cli/reconfigure.php --title Team-feeds --base-url https://feeds.home.example --default-user alice' \
+               --check <your-invariant.sh> --oracle /usr/bin/strace

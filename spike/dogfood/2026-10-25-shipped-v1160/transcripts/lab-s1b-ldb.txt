@@ -1,0 +1,16 @@
+=== ldb-direct
+seed ok
+check before: accepts
+operation exit 0
+OK
+check after: accepts
+state after:
+  4545 /s/rdb/000013.sst
+  31 /s/rdb/000016.log
+  16 /s/rdb/CURRENT
+  36 /s/rdb/IDENTITY
+  0 /s/rdb/LOCK
+  23698 /s/rdb/LOG
+  261 /s/rdb/MANIFEST-000017
+  7609 /s/rdb/OPTIONS-000012
+  7609 /s/rdb/OPTIONS-000019

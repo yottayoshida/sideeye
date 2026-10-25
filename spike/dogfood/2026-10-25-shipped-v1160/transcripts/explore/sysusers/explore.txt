@@ -1,0 +1,121 @@
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+falsify: checker(sysusers): pwck -r exited 2: invalid password file entry delete line 'sideeye-corruption-probe'? No invalid shadow password file entry 
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+world 43: checker(sysusers): grpck -r exited 2: group ssl-cert: no user appsvc delete member 'appsvc'? No 'appsvc' is a member of the 'ssl-cert' group in /etc/group but not in /etc/gshadow 
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+world 44: checker(sysusers): grpck -r exited 2: group ssl-cert: no user appsvc delete member 'appsvc'? No shadow group ssl-cert: no user appsvc 
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+world 45: checker(sysusers): pwck -r exited 2: no matching password file entry in /etc/shadow add user 'appsvc' in /etc/shadow? No pwck: no changes 
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+FAIL  3 of 46 explored worlds violated an invariant
+
+invariant   the checker (L2)
+earliest    crash point 43 of 45
+            after  rename(/s/sysroot/etc/.#group743f3640ec76c758)
+            before rename(/s/sysroot/etc/.#gshadowe2c51b7dfd62573e)
+path        (named by the checker, not by path)
+observed    the checker exited non-zero after restart
+cwd         /s/sysroot
+
+explored    46 worlds (crash points 45 + 1 baseline)
+expected    exit 0
+atomicity   3 path(s) judged pre-or-post; 2 file(s) judged by the history form (appended tails not judged): etc/passwd, etc/shadow
+oracle      agreed on 45 operations (842 syscall lines examined, 420 in scope of the judged state), witness strace
+metadata    12 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmodat2 x8, utimensat x4. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 46 world(s)
+l1          no marker configured
+case        /out/sysusers/work-explore/cases/000001.json
+replay      sideeye replay /out/sysusers/work-explore/cases/000001.json --oracle /usr/bin/strace
+evidence    sideeye evidence /out/sysusers/work-explore/evidence/000001.json
+processes   single process
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+reproduce   (cd /s/sysroot && unset SIDEEYE_KILL_GROUP && : > /out/sysusers/work-explore/trace-repro.bin && SIDEEYE_STATE_DIR=/s/sysroot SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/sysusers/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.16.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=43 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'systemd-sysusers' '--root=/s/sysroot' /s/sysaux/app.conf </dev/null)
+sideeye: json sha256=f2d7a9dc2faf05e99812aa75b309b4de2b50a7d866b5685048ee1b383e54b255;

@@ -1,0 +1,10 @@
+=== sqlx
+seed ok
+check before: accepts
+operation exit 0
+Applied 20260102000000/migrate ship (1.604875ms)
+check after: accepts
+state after:
+  61440 /s/sx/app.db
+  220 /s/sx/migrations/20260101000000_orders.sql
+  175 /s/sx/migrations/20260102000000_ship.sql

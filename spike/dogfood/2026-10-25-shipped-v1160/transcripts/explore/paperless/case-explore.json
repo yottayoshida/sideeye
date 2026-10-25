@@ -1,0 +1,24 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 7,
+  "sideeye_version": "1.16.0",
+  "contract_version": 19,
+  "observe": "wrappers",
+  "define": {
+    "state": "/s/paperless",
+    "operation": "/opt/paperless-venv/bin/python /opt/paperless-ngx/src/manage.py document_renamer --no-progress-bar",
+    "check": "/s/paperless-check.sh",
+    "cwd": "/opt/paperless-ngx/src",
+    "scratch": ["media/media.lock", "data/db.sqlite3", "data/db.sqlite3-journal"],
+    "apparatus": ["preload:libfaketime", "env:FAKETIME=2026-01-01 00:00:00", "env:FAKETIME_DONT_FAKE_MONOTONIC=1", "env:PAPERLESS_FILENAME_FORMAT", "env:PAPERLESS_DB_OPTIONS", "env:PAPERLESS_CACHE_BACKEND", "env:PAPERLESS_CHANNELS_BACKEND"],
+    "expected_status": 0
+  },
+  "k": 11,
+  "ops_total": 209,
+  "prefix_hash": "1ccafada4fdec599",
+  "after_class": "rename",
+  "after_path": "/s/paperless/media/documents/originals/0000006.pdf",
+  "before_class": "mkdir",
+  "before_path": "/s/paperless/media/documents/archive/Bank",
+  "violation": "checker"
+}

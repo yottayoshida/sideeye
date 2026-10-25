@@ -1,0 +1,106 @@
+scout-2 — developer tooling that changes project/user state in place (not formatters/linters)
+2026-10-25, worktree sideeye-dogfood-1025, read-only (gh api reads only; no installs, no docker)
+
+Method: fresh.sh on every name (and its common aliases), word-recheck.sh on every fresh name,
+reported-repos.txt grep, stars.sh, latest release assets via `gh api repos/O/R/releases/latest`.
+Code spot-reads via gh api (pocketbase db_connect.go, gogs cmd/gogs/restore.go, etcd backend.go,
+dolt mmap.go). GitHub code-search hit its rate limit near the end; nothing after that relied on it.
+
+KEPT (strongest first). Stars/push from stars.sh 2026-10-25; none in reported-repos.txt.
+
+1. Gogs — gogs/gogs ★47,904, push 2026-10-21, v0.14.3 (2026-06-07), gogs_v0.14.3_linux_arm64.tar.gz
+   cmd: `gogs restore --config custom/conf/app.ini --tempdir <state>/tmp --from backup.zip`
+        (also `gogs admin create-user --name a --password p --email e --admin --config ...`)
+   state: gogs data dir: custom/, data/{attachments,avatars,repo-avatars}, gogs.db (pure-Go sqlite,
+        glebarez/go-sqlite, no WAL pragma), repositories/
+   read in restore.go: rename(custom -> custom.bak), rename(archive/custom -> custom), same for each
+        data dir — directories renamed inside the state, the v1.15.0 shape. DB import before them.
+   wall: Go, GOMAXPROCS=1, --observe supervised if static; zip extraction of repositories.zip is many
+        writes. Reachable ~70%.
+2. Symfony console secrets vault — symfony/symfony ★31,202, push 2026-10-24, v8.1.9 / v7.4.21 (the
+   API's "latest" says v5.4.54 — LTS ordering), Debian trixie php8.4-cli + composer (skeleton via
+   composer at setup)
+   cmd: `php bin/console secrets:generate-keys --rotate --env=prod` (re-encrypts every secret and
+        rewrites the decrypt key), or `echo v | php bin/console secrets:set API_KEY - --env=prod`
+   state: config/secrets/prod/ (prod.decrypt.private.php, prod.encrypt.public.php, prod.list.php,
+        prod.<NAME>.<hash>.php); --local writes .env.prod.local
+   wall: PHP one thread; file_put_contents (truncating open). Debian php is _FORTIFY_SOURCE built
+        (__open_2, v1.13 shape). Reachable ~80%. A torn rotation = key and secrets out of step.
+3. etcd (etcdutl) — etcd-io/etcd ★52,423, push 2026-10-23, v3.7.3, etcd-v3.7.3-linux-arm64.tar.gz
+   cmd: `etcdutl defrag --data-dir default.etcd` (offline); alt `etcdutl migrate --data-dir ...`
+   state: member/snap/db (bbolt) + db.tmp.* in the same dir, renamed over the live db
+   wall: static Go, supervised, GOMAXPROCS=1. bbolt maps PROT_READ|MAP_SHARED and writes with pwrite —
+        ADR 0098 names exactly this as the judged control; fdatasync, flock, ftruncate; no fallocate
+        found. backend.go comment: tmp db is synced before the rename -> PASS likely. Reachable ~70%.
+4. Dolt — dolthub/dolt ★24,725, push 2026-10-24, v2.6.0, dolt-linux-arm64.tar.gz
+   cmd: in an existing repo `dolt sql -q "insert into t values (2)"`, then `dolt commit -am x`; or `dolt gc`
+   state: .dolt/noms (chunk journal, manifest, table files); DOLT_ROOT_PATH inside or outside
+   wall: static Go, supervised, GOMAXPROCS=1; mmap via mmap-go is read-only (ReadAt only); background
+        goroutines (stats, events flush) may write from another M -> writer-count risk. ~55%.
+5. Diesel CLI — diesel-rs/diesel ★14,219, push 2026-10-24, v2.3.14, diesel_cli-aarch64-unknown-linux-gnu.tar.xz
+   cmd: `diesel migration run` with DATABASE_URL=app.db, diesel.toml print_schema.file=src/schema.rs
+   state: app.db (rollback journal) + src/schema.rs rewritten after the migration commits
+   wall: Rust, one thread, dynamic glibc (+libsqlite3) -> wrappers. Reachable ~85%.
+6. gqlgen — 99designs/gqlgen ★10,769, push 2026-10-22, v0.17.98, gqlgen_Linux_arm64.tar.gz (+ Debian golang-go)
+   cmd: `gqlgen generate` after a schema change (GOFLAGS=-mod=mod GOPROXY=off, GOCACHE outside)
+   state: graph/schema.resolvers.go (user's resolver bodies, rewritten in place), generated.go, models_gen.go
+   wall: Go GOMAXPROCS=1 (inherited by children); go/packages runs `go list` helpers — the
+        helper/many-children shape. Reachable ~65%.
+7. Docusaurus — facebook/docusaurus ★66,574, push 2026-10-23, v3.10.2, npm (pure JS)
+   cmd: `npx docusaurus write-translations --locale fr` (merges into existing i18n/fr/*.json the
+        translator wrote) or `npx docusaurus docs:version 2.0` (versions.json rewritten)
+   wall: Node, UV_THREADPOOL_SIZE=1 (fs-extra async writes on the pool thread). ~60%.
+8. drizzle-kit — drizzle-team/drizzle-orm ★36,133, push 2026-10-23, drizzle-kit@0.31.11, npm
+   cmd: `drizzle-kit migrate` (better-sqlite3, sync on main) or `drizzle-kit generate` (rewrites
+        drizzle/meta/_journal.json)
+   wall: Node UV_THREADPOOL_SIZE=1; esbuild Go child for the TS config (GOMAXPROCS=1, reads only). ~65%.
+9. Nextcloud occ — nextcloud/server ★37,282, push 2026-10-25, v33.0.10, tarball (setup network) + Debian PHP
+   cmd: `php occ config:system:set trusted_domains 1 --value=x`
+   state: config/ only (config.php: instance secret, passwordsalt, DB creds). Keep data/ outside —
+        Nextcloud's SQLite defaults to WAL and the -shm mapping is the ADR 0098 wall.
+   wall: PHP, truncate-in-place under flock -> FAIL-shaped. ~70%. FLAG: `occ` reads SEEN in fresh.sh
+        only as a substring ("occurrence", user-data-4 SELECTION:294); `nextcloud` is fresh.
+10. Grafana CLI — grafana/grafana ★77,486, push 2026-10-25, v13.2.4, grafana_..._linux_arm64.deb
+   cmd: `grafana cli --homepath ... admin reset-admin-password newpass`
+   state: data/grafana.db (sqlite; [database] wal=false by default)
+   wall: Go GOMAXPROCS=1, many init goroutines. ~60%. Field borderline (ops tool).
+11. vcpkg — microsoft/vcpkg ★27,535, push 2026-10-25; tool microsoft/vcpkg-tool 2026-09-26, vcpkg-glibc-arm64
+   cmd: classic `vcpkg remove zlib` (installed/vcpkg/status + updates/ journal) or `vcpkg add port fmt`
+   wall: C++, threads for parallel file ops unknown. ~50%. Setup builds ports (slow).
+12. Lerna — lerna/lerna ★36,038, push 2026-10-23, v10.1.1, npm
+   cmd: `lerna version 2.0.0 --yes --no-git-tag-version --no-push` (package.json x N + lockfile)
+   wall: Node + nx native module (Rust threads, read-side); NX_DAEMON=false. ~50%.
+13. knex ★20,340 (push 2026-06-26, 3.3.0) / TypeORM ★36,662 (push 10-24, 1.1.2): `knex migrate:latest`,
+   `typeorm migration:run -d ds.js` on better-sqlite3 (sync, rollback journal). Node. ~70%.
+14. Vagrant — hashicorp/vagrant ★27,218, push 2026-10-19, v2.4.9 (no GitHub assets; Debian trixie
+   vagrant likely 2.3.x — UNVERIFIED, 確度 70%)
+   cmd: `vagrant box add --name local ./local.box` (extract to temp, dir moved into ~/.vagrant.d/boxes:
+        the v1.15 dir-rename shape) or `vagrant global-status --prune` (machine index)
+   wall: Ruby, bsdtar child. ~50%.
+15. Prisma — prisma/prisma (full name prisma/orm) ★47,667, push 10-23, npm
+   cmd: `prisma db pull --force` (schema.prisma rewritten from Node; engine only reads)
+   wall: migrate commands write via the Rust schema-engine (tokio) -> threads wall likely; db pull ~45%.
+16. Airflow ★47,270 3.3.2 PyPI: `airflow connections import conns.json` (sqlite, connections incl.
+   credentials). ~50%. npm-check-updates ★10,320 v23.1.1: `ncu -u --registryType json --registry
+   ./reg.json` (package.json). Strapi ★73,376 v5.59.0: `strapi import -f x.tar.gz --force`. Weaker.
+
+SCREEN COUNTS: 117 names
+- SEEN by fresh.sh (incl. common name): 66 — pnpm yarn npm nx uv pip pipx pipenv pdm hatch conda mamba
+  micromamba pixi composer bundler gradle conan nvm volta asdf mise pyenv homebrew nix changesets
+  turborepo rush ninja dvc git-lfs sapling pre-commit husky kustomize kubectx(+kubens) minikube skaffold
+  podman pulumi serverless salt goose rails laravel(artisan) angular-cli capacitor jscodeshift rector
+  bitwarden mkcert zoxide atuin xmake go(go mod/golang) gitea authelia caddy certbot acme.sh lima
+  kubeseal mlflow prefect occ*
+- word-recheck hit that is the tool: 1 (golang-migrate: 2026-10-15-authoring CANDIDATES "not in trixie")
+- < 10,000 stars: 10 (atlas 8,796; dbmate 7,485; liquibase 5,633; terragrunt 9,897; bbolt 9,787;
+  conventional-changelog 8,523; mikro-orm 9,254; release-it 9,077; sea-orm 9,930; aws-cdk-cli 107)
+- push before 2026-04-25: 2 (cookiecutter 04-01; patch-package 2025-09-30)
+- no Linux arm64 artifact: 3 (gitbutler: 0 assets on release/0.22.x; teambit/bit: no assets;
+  flyway: linux-x64/alpine-x64 only)
+- wall decisive: 4 (pocketbase: WAL pragma in core/db_connect.go -> -shm writable map, ADR 0098 says
+  scratch does not lift; keycloak: H2 background writer + JVM; sqlx-cli: tokio; n8n 2.x pooled sqlite WAL, 確度 60%)
+- needs a server/network: 1 (hasura)
+- state regenerable or settings: 5 (fnm, go-task checksums, sqlc, openapi-generator, fastlane-on-Linux)
+- weak/field, not kept: sequelize (CLI in sequelize/cli), efcore (.NET + MSBuild), dagster, payload,
+  directus, tauri (`permission add`), kops (file:// state store unverified, cloud calls)
+- kept: 19 tools in 16 rows

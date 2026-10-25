@@ -1,0 +1,10 @@
+[world]
+state = "/s/dolt"
+
+[define]
+# dolt's other write: an UPDATE into the working set, asked whether it is written from one thread
+# where `dolt gc` was not (transcripts/lab-s1-writers.txt).
+operation = ["dolt", "sql", "-q", "UPDATE orders SET status = 'shipped' WHERE id >= 500"]
+apparatus = ["env:GOMAXPROCS=1"]
+check     = "/s/dolt-sql-check.sh"
+cwd       = "/s/dolt"

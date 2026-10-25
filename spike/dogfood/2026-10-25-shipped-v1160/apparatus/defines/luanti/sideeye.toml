@@ -1,0 +1,16 @@
+[world]
+state = "/s/world"
+
+[define]
+# A world's players moved from the old `files` backend to sqlite3 with the server's own migration:
+# each player saved to players.sqlite and its file moved to players.bak/, then world.mt rewritten to
+# name the new backend (src/serverenvironment.cpp, migratePlayersDatabase).
+operation = "/opt/bin/luantiserver --world /s/world --migrate-players sqlite3"
+cwd       = "/s/world"
+apparatus = ["preload:libfaketime", "env:FAKETIME=2026-01-01 00:00:00", "env:FAKETIME_DONT_FAKE_MONOTONIC=1"]
+check     = "/s/luanti-check.sh"
+
+# What a server owner does after an interrupted migration: run it again (recover.sh).
+[recovery]
+command = "/s/luanti-recover.sh"
+check   = "/s/luanti-check.sh"

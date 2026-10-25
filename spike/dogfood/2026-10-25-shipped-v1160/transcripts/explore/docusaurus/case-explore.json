@@ -1,0 +1,24 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 7,
+  "sideeye_version": "1.16.0",
+  "contract_version": 19,
+  "observe": "wrappers",
+  "define": {
+    "state": "/s/docu/i18n",
+    "operation": "node node_modules/@docusaurus/core/bin/docusaurus.mjs write-translations --locale fr",
+    "check": "/s/docu-check.sh",
+    "cwd": "/s/docu",
+    "scratch": [],
+    "apparatus": ["env:UV_THREADPOOL_SIZE=1", "env:NO_UPDATE_NOTIFIER=1"],
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 11,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/docu/i18n/fr/code.json",
+  "before_class": "write",
+  "before_path": "/s/docu/i18n/fr/code.json",
+  "violation": "hybrid"
+}

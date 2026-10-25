@@ -1,0 +1,8 @@
+ROW etcdutl static=1 preflight_rc=2 gate=1 detail=SUPERVISED; wall: multiple_threads_detected
+EXIT etcdutl 1
+ROW dolt static=1 preflight_rc=2 gate=1 detail=SUPERVISED; wall: multiple_threads_detected
+EXIT dolt 1
+ROW grafana static=1 preflight_rc=1 gate=1 detail=SUPERVISED; byte-repeatability: --twice found different bytes
+EXIT grafana 1
+ROW diesel static=0 preflight_rc=0 gate=0 detail=accepted, 52 operations
+EXIT diesel 0

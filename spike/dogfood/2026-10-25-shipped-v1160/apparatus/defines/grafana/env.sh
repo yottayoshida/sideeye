@@ -1,0 +1,1 @@
+export GOMAXPROCS=1

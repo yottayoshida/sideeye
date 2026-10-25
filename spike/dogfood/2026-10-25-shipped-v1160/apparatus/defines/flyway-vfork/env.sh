@@ -1,0 +1,1 @@
+export REDGATE_DISABLE_TELEMETRY=true

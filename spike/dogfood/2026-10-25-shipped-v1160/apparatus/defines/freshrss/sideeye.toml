@@ -1,0 +1,7 @@
+[world]
+state = "/s/freshrss"
+
+[define]
+operation = "php /opt/freshrss/cli/reconfigure.php --title Team-feeds --base-url https://feeds.home.example --default-user alice"
+cwd       = "/s/freshrss"
+check     = "sh /ap/defines/freshrss/check.sh"

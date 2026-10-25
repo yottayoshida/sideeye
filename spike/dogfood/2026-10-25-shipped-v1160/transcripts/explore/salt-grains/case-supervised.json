@@ -1,0 +1,23 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 6,
+  "sideeye_version": "1.16.0",
+  "contract_version": 19,
+  "observe": "supervised",
+  "define": {
+    "state": "/s/salt",
+    "operation": "/opt/salt/salt/bin/python3.14 /opt/salt/salt/salt-call -c /s/salt --local grains.setval maintainer ops-oncall",
+    "check": "sh /ap/defines/salt-grains/check.sh",
+    "cwd": "/s/salt",
+    "scratch": [],
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/salt/grains",
+  "before_class": "write",
+  "before_path": "/s/salt/grains",
+  "violation": "hybrid"
+}

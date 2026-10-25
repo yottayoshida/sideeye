@@ -1,0 +1,12 @@
+[world]
+# A VictoriaMetrics data directory the user already has, restored over from a local backup: the
+# restore deletes the parts the backup lacks and writes the ones it has ("works like rsync --delete").
+state = "/s/vm"
+
+[define]
+# One worker, no preallocation (the default preallocates with fallocate), the metrics listener on
+# loopback; one P for Go (docs/apparatus.md).
+operation = "vmrestore -src=fs:///s/.vm-backup -storageDataPath=/s/vm -concurrency=1 -skipFilePreallocation -httpListenAddr=127.0.0.1:8421 -loggerLevel=ERROR"
+apparatus = ["env:GOMAXPROCS=1"]
+check     = "/s/vm-check.sh"
+cwd       = "/s"

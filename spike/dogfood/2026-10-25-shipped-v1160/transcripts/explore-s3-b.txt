@@ -1,0 +1,9 @@
+ROW vagrant-live static=0 preflight_rc=0 gate=0 detail=accepted, 52 operations
+EXIT vagrant-live 0
+=== vagrant-live 2026-10-25T03:41:44Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+DONE

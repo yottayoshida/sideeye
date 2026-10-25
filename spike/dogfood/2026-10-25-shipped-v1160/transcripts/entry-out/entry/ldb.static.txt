@@ -1,0 +1,2 @@
+static: /usr/bin/ldb: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=34ba16b81d3e4a2b57fc2a2088c7811917bdfc33, for GNU/Linux 3.7.0, stripped
+next: This target does something Sideeye refuses by design: the unknown_reason above names the limit, https://github.com/yottayoshida/sideeye/blob/v1.16.0/docs/report-schema.md#refusals-by-reason says what each one stands at, and https://github.com/yottayoshida/sideeye/blob/v1.16.0/DESIGN.md#known-constraints-declared-not-hidden gives the reasons.

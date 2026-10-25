@@ -1,0 +1,41 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.85kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/sideeye-sv1025-s4:latest
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/4] FROM docker.io/library/sideeye-sv1025-s4:latest@sha256:036942424d8a2d29168d31ac1e3e7c6009d618a74e2822514569092bac9dcdbd
+#4 resolve docker.io/library/sideeye-sv1025-s4:latest@sha256:036942424d8a2d29168d31ac1e3e7c6009d618a74e2822514569092bac9dcdbd done
+#4 DONE 0.0s
+
+#5 [2/4] RUN apt-get install -y --no-install-recommends libboost-program-options-dev libboost-graph-dev libboost-system-dev       libeigen3-dev libceres-dev libgoogle-glog-dev libgflags-dev libsqlite3-dev libmetis-dev libopenimageio-dev       libflann-dev libfreeimage-dev libcgal-dev libgmock-dev libgtest-dev libssl-dev openimageio-tools libgl-dev libglx-dev libglew-dev libopengl-dev libopencv-dev > /tmp/apt-colmap.log 2>&1 && echo "OK colmap deps" || { echo "FAILED colmap deps"; tail -5 /tmp/apt-colmap.log; }
+#5 CACHED
+
+#6 [3/4] RUN set -u; cd /tmp/dl && curl -fsSL -o colmap.tgz https://github.com/colmap/colmap/archive/refs/tags/4.2.1.tar.gz && tar xzf colmap.tgz && cd colmap-4.2.1 &&     cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DCUDA_ENABLED=OFF -DGUI_ENABLED=OFF -DOPENGL_ENABLED=OFF -DTESTS_ENABLED=OFF -DONNX_ENABLED=OFF           -DCMAKE_INSTALL_PREFIX=/opt/colmap > /tmp/colmap-cmake.log 2>&1 &&     ninja -C build -j2 > /tmp/colmap-build.log 2>&1 && ninja -C build install > /tmp/colmap-install.log 2>&1 &&     ln -sf /opt/colmap/bin/colmap /opt/bin/colmap && echo "OK colmap" || { echo "FAILED colmap"; tail -25 /tmp/colmap-cmake.log; tail -25 /tmp/colmap-build.log; }
+#6 468.4 OK colmap
+#6 DONE 468.5s
+
+#7 [4/4] RUN { cat /versions.txt; echo "colmap $(colmap -h 2>&1 | grep -m1 -i colmap)"; echo "link /opt/bin/colmap: $(file -bL /opt/bin/colmap | cut -c1-90)"; } > /versions.new && mv /versions.new /versions.txt && tail -2 /versions.txt
+#7 0.328 colmap COLMAP 4.2.1 (Commit Unknown on Unknown without GPU support, std hash maps)
+#7 0.328 link /opt/bin/colmap: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, int
+#7 DONE 0.3s
+
+#8 exporting to image
+#8 exporting layers
+#8 exporting layers 4.3s done
+#8 exporting manifest sha256:c76f5fc6ede173ba28fa7f6439f21a91932d4b5d12e8a31fca1b6bd397ad196e done
+#8 exporting config sha256:06bb33d052d4b811341d32c17b125fd93f03320d24ac57a4ad2b2a54675b701e done
+#8 exporting attestation manifest sha256:baf6d065d34d521a30aaad9134fffa670da6a4b0b4d9e60729b3cef2cb676b2d done
+#8 exporting manifest list sha256:eb184353412c0d9945a792291847d1d15d05a5b69d884f80e419790e84d84996 done
+#8 naming to docker.io/library/sideeye-sv1025-s4b:latest done
+#8 unpacking to docker.io/library/sideeye-sv1025-s4b:latest
+#8 unpacking to docker.io/library/sideeye-sv1025-s4b:latest 0.8s done
+#8 DONE 5.1s
+rc=0

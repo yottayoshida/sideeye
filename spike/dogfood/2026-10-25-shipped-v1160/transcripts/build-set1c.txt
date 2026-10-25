@@ -1,0 +1,76 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.11kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/sideeye-sv1025-s1b:latest
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context:
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/5] FROM docker.io/library/sideeye-sv1025-s1b:latest@sha256:1ce631787ede27a091e5eb63b16ee4565b755ac4713accffdf48a6572100c6ea
+#4 resolve docker.io/library/sideeye-sv1025-s1b:latest@sha256:1ce631787ede27a091e5eb63b16ee4565b755ac4713accffdf48a6572100c6ea 0.0s done
+#4 extracting sha256:bf92766a09adecc7c813e7b1a76fb0477e0df975b38d1d2b5c1ea80fa460344b 0.0s done
+#4 extracting sha256:ded2991f91a996b4f72c1c101ab596467c993ba9384bef9d6e1bbddc3bf8c1c3 done
+#4 extracting sha256:743aa7661146366ff6870d06bc5ae4b5f382cf5106c87c92848b844a4480f16b
+#4 extracting sha256:743aa7661146366ff6870d06bc5ae4b5f382cf5106c87c92848b844a4480f16b 4.3s done
+#4 DONE 4.4s
+
+#4 [1/5] FROM docker.io/library/sideeye-sv1025-s1b:latest@sha256:1ce631787ede27a091e5eb63b16ee4565b755ac4713accffdf48a6572100c6ea
+#4 extracting sha256:f86222e1eecd7c98838adc2e8f4a0639aed3422aebea3f370f03863db0379ec8
+#4 extracting sha256:f86222e1eecd7c98838adc2e8f4a0639aed3422aebea3f370f03863db0379ec8 0.8s done
+#4 DONE 5.2s
+
+#4 [1/5] FROM docker.io/library/sideeye-sv1025-s1b:latest@sha256:1ce631787ede27a091e5eb63b16ee4565b755ac4713accffdf48a6572100c6ea
+#4 extracting sha256:bd31d5587c4f925ec8baee4adb42f766c47cb4276258775660df8d474f0e8ca2 done
+#4 DONE 5.2s
+
+#5 [2/5] RUN curl -fsSL https://sh.rustup.rs -o /tmp/rustup.sh && sh /tmp/rustup.sh -y --profile minimal > /tmp/rustup.log 2>&1 && echo "OK rustup $(/root/.cargo/bin/rustc --version)"
+#5 13.37 OK rustup rustc 1.99.1 (58cf8f9c3 2026-10-13)
+#5 DONE 13.4s
+
+#6 [3/5] RUN /root/.cargo/bin/cargo install sqlx-cli --version 0.9.0 --locked --no-default-features --features sqlite,completions --root /opt/sqlx > /tmp/cargo-sqlx.log 2>&1 && echo "OK sqlx-cli" || { echo "FAILED sqlx-cli"; tail -20 /tmp/cargo-sqlx.log; }
+#6 49.41 OK sqlx-cli
+#6 DONE 49.4s
+
+#7 [4/5] RUN ln -sf /opt/sqlx/bin/sqlx /opt/bin/sqlx && ln -sf /opt/sqlx/bin/cargo-sqlx /opt/bin/cargo-sqlx && rm -rf /root/.cargo/registry /root/.rustup
+#7 DONE 0.8s
+
+#8 [5/5] RUN { cat /versions.txt; echo "sqlx $(sqlx --version 2>&1 | head -1)"; echo "link sqlx: $(file -bL /opt/bin/sqlx | cut -c1-90)"; } > /versions.new && mv /versions.new /versions.txt && tail -2 /versions.txt
+#8 0.086 sqlx sqlx-cli 0.9.0
+#8 0.086 link sqlx: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+#8 DONE 0.1s
+
+#9 exporting to image
+#9 exporting layers
+#9 exporting layers 8.7s done
+#9 exporting manifest sha256:61899d1cec9d42679b34ca54f0a4e460f8c57c6b92142486feb75ad20a0b6824 0.0s done
+#9 exporting config sha256:62f8ec96342cc5b9330264d043b8f4dbb1237917bafd8d1290158c9c5ed9c6cf done
+#9 exporting attestation manifest sha256:ae19fd1bb260be1da7a24aff2a09d736101f541b393f52c380dc3ac32033e0ab done
+#9 exporting manifest list sha256:cd0a80fb7a19736d82b8dce3a70b1ca102001950dc0fbc1df3ddd721e2224aec done
+#9 naming to docker.io/library/sideeye-sv1025-s1c:latest done
+#9 unpacking to docker.io/library/sideeye-sv1025-s1c:latest
+#9 unpacking to docker.io/library/sideeye-sv1025-s1c:latest 2.4s done
+#9 DONE 11.1s
+etcdutl etcdutl version: 3.7.3
+dolt dolt version 2.6.0
+tursodb Turso 0.8.3
+diesel diesel 
+grafana grafana version 13.2.4
+link etcdutl: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=kH
+link dolt: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]
+link tursodb: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+link diesel: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, int
+link /usr/share/grafana/bin/grafana: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=Fk
+vmrestore vmrestore-20261019-123614-tags-v1.154.1-0-g64c2e75fe7
+flyway Flyway OSS Edition 13.11.1 by Redgate
+ldb rocksdb-tools	9.10.0-1
+java openjdk version "21.0.12.1" 2026-08-18
+link vmrestore: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=0U
+link ldb: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+sqlx sqlx-cli 0.9.0
+link sqlx: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre

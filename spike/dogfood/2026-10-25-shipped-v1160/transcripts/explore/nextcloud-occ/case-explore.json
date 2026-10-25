@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.16.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/ncconf",
+    "operation": "php /opt/nextcloud/occ config:system:set trusted_domains 1 --value=cloud.example.com",
+    "check": "/s/nc-check.sh",
+    "cwd": "/s/ncconf",
+    "expected_status": 0
+  },
+  "k": 3,
+  "ops_total": 3,
+  "prefix_hash": "d5256dbb45ab4561",
+  "after_class": "truncate",
+  "after_path": "/s/ncconf/config.php",
+  "before_class": "write",
+  "before_path": "/s/ncconf/config.php",
+  "violation": "hybrid"
+}

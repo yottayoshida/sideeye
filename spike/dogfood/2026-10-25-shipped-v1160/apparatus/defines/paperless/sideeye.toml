@@ -1,0 +1,21 @@
+[world]
+state = "/s/paperless"
+
+[define]
+# The library refiled under a new PAPERLESS_FILENAME_FORMAT (env.sh): document_renamer moves each
+# document's original and archived version into a correspondent's directory and then updates its row.
+operation = "/opt/paperless-venv/bin/python /opt/paperless-ngx/src/manage.py document_renamer --no-progress-bar"
+cwd       = "/opt/paperless-ngx/src"
+apparatus = ["preload:libfaketime", "env:FAKETIME=2026-01-01 00:00:00", "env:FAKETIME_DONT_FAKE_MONOTONIC=1", "env:PAPERLESS_FILENAME_FORMAT", "env:PAPERLESS_DB_OPTIONS", "env:PAPERLESS_CACHE_BACKEND", "env:PAPERLESS_CHANNELS_BACKEND"]
+# The lock file the move holds (filelock leaves it behind): not the user's data. The database and its
+# rollback journal are left torn by design and repaired by SQLite on the next open; their correctness
+# is the checker's, read after that open (2026-10-14 mechanisms' sqlite-txn define).
+scratch   = ["media/media.lock", "data/db.sqlite3", "data/db.sqlite3-journal"]
+check     = "/s/paperless-check.sh"
+
+# What a user does after an interrupted refile, per the code's own comment: run it again. A file
+# already at its new name with the stored checksum is adopted (signals/handlers.py,
+# original_already_moved), so the second run's sanity check is the recovery's question.
+[recovery]
+command = "/opt/paperless-venv/bin/python /opt/paperless-ngx/src/manage.py document_renamer --no-progress-bar"
+check   = "/s/paperless-check.sh"

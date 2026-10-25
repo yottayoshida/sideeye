@@ -1,0 +1,24 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 7,
+  "sideeye_version": "1.16.0",
+  "contract_version": 19,
+  "observe": "wrappers",
+  "define": {
+    "state": "/s/sf/config/secrets/prod",
+    "operation": "php bin/console secrets:generate-keys --rotate --env=prod",
+    "check": "/s/sf-check.sh",
+    "cwd": "/s/sf",
+    "scratch": [],
+    "apparatus": ["preload:pin-random", "preload:libfaketime", "env:FAKETIME=2026-01-01 00:00:00"],
+    "expected_status": 0
+  },
+  "k": 6,
+  "ops_total": 24,
+  "prefix_hash": "531694173994105d",
+  "after_class": "truncate",
+  "after_path": "/s/sf/config/secrets/prod/prod.decrypt.private.php",
+  "before_class": "write",
+  "before_path": "/s/sf/config/secrets/prod/prod.decrypt.private.php",
+  "violation": "hybrid"
+}

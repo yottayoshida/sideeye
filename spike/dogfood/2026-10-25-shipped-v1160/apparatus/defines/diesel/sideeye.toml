@@ -1,0 +1,12 @@
+[world]
+# The application's tree: the SQLite database and the src/schema.rs diesel rewrites after a migration.
+state = "/s/app"
+
+[define]
+operation = "diesel migration run"
+# diesel records each migration's run_on from SQLite's clock, so two runs a second apart differ
+# (the first gate's --twice, transcripts/entry-out/s1-round1/): the clock is pinned by libfaketime,
+# a line of /etc/ld.so.preload (env.sh).
+apparatus = ["preload:libfaketime", "env:FAKETIME=2026-01-01 00:00:00"]
+check     = "/s/diesel-check.sh"
+cwd       = "/s/app"

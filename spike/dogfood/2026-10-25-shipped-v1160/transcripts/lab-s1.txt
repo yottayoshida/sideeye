@@ -1,0 +1,63 @@
+=== etcdutl
+seed ok
+check before: accepts
+operation exit 0
+2026-10-25T03:34:24Z	info	bbolt	backend/backend.go:584	Opening db file (/s/etcd/member/snap/db) with mode -rw------- and with options: {Timeout: 10s, NoGrowSync: false, NoFreelistSync: true, PreLoadFr
+2026-10-25T03:34:24Z	info	bbolt	bbolt@v1.5.0/db.go:327	Opening bbolt db (/s/etcd/member/snap/db) successfully
+2026-10-25T03:34:24Z	info	backend/backend.go:602	finished defragmenting directory	{"path": "/s/etcd/member/snap/db", "current-db-size-bytes-diff": -4096, "current-db-size-bytes": 184320, "current-db-s
+check after: accepts
+state after:
+  262144 /s/etcd/member/snap/db
+=== dolt
+seed ok
+check before: accepts
+operation exit 0
+check after: accepts
+state after:
+  2 /s/dolt/.dolt/config.json
+  700 /s/dolt/.dolt/noms/15isnj8peied9ke8614ahibfdd67rj6u.darc
+  0 /s/dolt/.dolt/noms/LOCK
+  144 /s/dolt/.dolt/noms/manifest
+  0 /s/dolt/.dolt/noms/oldgen/LOCK
+  19226 /s/dolt/.dolt/noms/oldgen/d0c2q7dpp8gvkb0sk8vi492ln517j2aj.darc
+  145 /s/dolt/.dolt/noms/oldgen/manifest
+  83 /s/dolt/.dolt/repo_state.json
+  2 /s/dolt/.dolt/stats/.dolt/config.json
+  0 /s/dolt/.dolt/stats/.dolt/noms/LOCK
+  261 /s/dolt/.dolt/stats/.dolt/noms/journal.idx
+  144 /s/dolt/.dolt/stats/.dolt/noms/manifest
+  0 /s/dolt/.dolt/stats/.dolt/noms/oldgen/LOCK
+  1856 /s/dolt/.dolt/stats/.dolt/noms/vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+  83 /s/dolt/.dolt/stats/.dolt/repo_state.json
+=== tursodb
+seed ok
+check before: accepts
+operation exit 0
+check after: accepts
+state after:
+  28672 /s/turso/shop.db
+  0 /s/turso/shop.db-wal
+=== diesel
+seed ok
+check before: accepts
+operation exit 0
+Running migration 2026-01-02-000000_add_shipped_at
+check after: accepts
+state after:
+  61440 /s/app/app.db
+  38 /s/app/diesel.toml
+  19 /s/app/migrations/2026-01-01-000000_create_orders/down.sql
+  229 /s/app/migrations/2026-01-01-000000_create_orders/up.sql
+  69 /s/app/migrations/2026-01-02-000000_add_shipped_at/down.sql
+  175 /s/app/migrations/2026-01-02-000000_add_shipped_at/up.sql
+  198 /s/app/src/schema.rs
+=== grafana
+seed ok
+check before: accepts
+operation exit 0
+
+
+
+check after: accepts
+state after:
+  1191936 /s/grafana/data/grafana.db

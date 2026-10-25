@@ -1,0 +1,15 @@
+falsify: checker(flyway): integrity_check: Error: in prepare, file is not a database (26) 
+PASS  53/53 explored worlds satisfied the built-in atomicity invariant, but the operation touched none of the 3 path(s) it judged
+cwd         /s/fw
+
+explored    53 worlds (crash points 52 + 1 baseline)
+expected    exit 0
+atomicity   3 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: app.db)
+oracle      agreed on 52 operations (24495 syscall lines examined, 2980 in scope of the judged state), witness strace of THIS run — the operations were counted from outside the target by the supervising engine through a seccomp user-notification filter, no shim loaded; in this mode the oracle does not count an entry strace ended `= ? ERESTART...` (a signal took the call back before it completed)
+metadata    1 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchown x1. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 53 world(s)
+l1          no marker configured
+case        (none)
+processes   1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle; the supervising engine recorded 33 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+sideeye: json sha256=48daa7644a2474df2bc4dbf5caac820915b3b008c36f7227a6946d81a777853a;

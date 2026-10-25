@@ -1,0 +1,36 @@
+falsify: checker(godot): ./default_env.tres is neither as written nor as converted (25 bytes)
+falsify: checker(godot): ./icon.png is neither as written nor as converted (25 bytes)
+falsify: checker(godot): ./project.godot is neither as written nor as converted (25 bytes)
+falsify: checker(godot): ./scenes/Crate.tscn is neither as written nor as converted (25 bytes)
+falsify: checker(godot): ./scenes/Main.tscn is neither as written nor as converted (25 bytes)
+falsify: checker(godot): ./scripts/Crate.gd is neither as written nor as converted (25 bytes)
+falsify: checker(godot): ./scripts/Player.gd is neither as written nor as converted (25 bytes)
+falsify: checker(godot): 0 of 7 files converted, 7 torn or missing
+world 7: checker(godot): ./project.godot is neither as written nor as converted (0 bytes)
+world 7: checker(godot): 0 of 7 files converted, 1 torn or missing
+baseline: checker(godot): 6 of 7 files converted, 0 torn or missing
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 7 of 19
+            after  open(/s/godot/project.godot)
+            before write(/s/godot/project.godot)
+path        project.godot
+observed    holding neither the old nor the new content
+cwd         /s/godot
+
+explored    2 worlds (crash points 19 + 1 baseline)
+expected    exit 0
+atomicity   9 path(s) judged pre-or-post; 4 path(s) matched by scratch, not judged (declared: .godot)
+oracle      agreed on 19 operations (2810 syscall lines examined, 935 in scope of the judged state), witness strace
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /out/godot/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle; the shim recorded 13 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 13 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+
+reproduce   (cd /s/godot && unset SIDEEYE_KILL_GROUP && : > /out/godot/work-explore-replay2/trace-repro.bin && SIDEEYE_STATE_DIR=/s/godot SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/godot/work-explore-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.16.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=7 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= /opt/bin/godot --headless --path /s/godot --convert-3to4 </dev/null)
+sideeye: json sha256=7eff3913308749d045e1a0be31ee976f5103c33580b75b2916d4ac382e7853cf;

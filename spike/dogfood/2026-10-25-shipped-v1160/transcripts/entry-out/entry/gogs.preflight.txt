@@ -1,0 +1,15 @@
+UNKNOWN  multiple_threads_detected
+         two threads of process 64 wrote in the judged directory: tid 64 performed open(/s/gogs/data/gogs.db) and tid 67 performed open(/s/gogs/data/gogs.db-journal). Nothing the supervising engine recorded orders the first of those before the second: under --observe supervised no join is recorded, nor which thread a creation made, so however the target orders them this run cannot establish that a crash point names the same operation on the next run, and writes from two or more threads of one process refuse. The modes that load a shim, which records creations and joins, judge a process whose threads' writes they order (v18)
+next        Two threads of one process wrote the judged directory, and under --observe supervised no join is recorded, nor which thread a creation made, so nothing orders their writes. A tool's own switch for running its file calls on one thread can move it past this — UV_THREADPOOL_SIZE=1 for Node, GOMAXPROCS=1 for Go: set it in the environment Sideeye runs in and declare it in the define's apparatus (env:UV_THREADPOOL_SIZE=1, for example); https://github.com/yottayoshida/sideeye/blob/v1.16.0/docs/apparatus.md#a-tools-own-switch-for-one-thread lists the switches measured and the targets each did not move.
+cwd         /s/gogs
+apparatus   env:GOMAXPROCS=1
+
+expected    exit 0
+atomicity   37 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   the supervising engine recorded a thread; the strace account was not read; the supervising engine recorded 3 thread(s) created, and 3 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

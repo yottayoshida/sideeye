@@ -1,0 +1,14 @@
+[world]
+state = "/s/turso"
+
+[define]
+# One transaction over 500 of 1,000 rows, so it spans pages: after a crash the table holds either
+# none of the update or all of it, and the file passes integrity_check.
+operation = ["tursodb", "-q", "-v", "syscall", "shop.db", "UPDATE orders SET status = 'shipped', cents = cents + 1 WHERE id % 2 = 0"]
+# The write-ahead log holds frames between a commit and the checkpoint by design, and the next
+# open reads them back: judged byte for byte it fails in every world after its first frame while
+# the checker accepts each (transcripts/explore/tursodb-wal-judged/). So it is scratch, and the
+# checker — tursodb's own open, then integrity_check — judges.
+scratch   = ["shop.db-wal"]
+check     = "/s/turso-check.sh"
+cwd       = "/s/turso"
