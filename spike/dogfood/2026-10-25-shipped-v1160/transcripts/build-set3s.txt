@@ -1,0 +1,46 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.68kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/sideeye-sv1025-s3:latest
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/5] FROM docker.io/library/sideeye-sv1025-s3:latest@sha256:9a86a3b0654d80aff0807a59a5feacccc40875e448b671113e9fbd4b0c85b81c
+#4 resolve docker.io/library/sideeye-sv1025-s3:latest@sha256:9a86a3b0654d80aff0807a59a5feacccc40875e448b671113e9fbd4b0c85b81c done
+#4 DONE 0.0s
+
+#5 [2/5] RUN apt-get install -y --no-install-recommends meson ninja-build gperf python3-jinja2 libcap-dev libmount-dev libcrypt-dev pkgconf > /tmp/apt-sd.log 2>&1 && echo "OK build deps" || { echo "FAILED build deps"; tail -5 /tmp/apt-sd.log; }
+#5 CACHED
+
+#6 [3/5] RUN set -u; cd /tmp/dl;     curl -fsSL -o systemd.tgz https://github.com/systemd/systemd/archive/refs/tags/v262.1.tar.gz && echo "OK systemd.tgz";     mkdir -p /opt/sd-src && tar xzf systemd.tgz -C /opt/sd-src --strip-components=1 &&     cd /opt/sd-src && PATH=/usr/bin:/bin meson setup build -Dmode=release -Dstandalone-binaries=true -Dtests=false -Dman=disabled -Dhtml=disabled         > /tmp/meson-setup.log 2>&1 && echo "OK meson setup" || { echo "FAILED meson setup"; tail -30 /tmp/meson-setup.log; }
+#6 2.743 OK systemd.tgz
+#6 7.983 OK meson setup
+#6 DONE 8.3s
+
+#7 [4/5] RUN cd /opt/sd-src && PATH=/usr/bin:/bin ninja -C build systemd-sysusers.standalone > /tmp/ninja.log 2>&1 &&     install -m 755 build/systemd-sysusers.standalone /opt/bin/systemd-sysusers-262 && echo "OK sysusers 262" || { echo "FAILED ninja"; tail -30 /tmp/ninja.log; }
+#7 3.743 OK sysusers 262
+#7 DONE 3.8s
+
+#8 [5/5] RUN { echo "systemd-sysusers-262 $(/opt/bin/systemd-sysusers-262 --version | head -1)"; echo "link: $(file -bL /opt/bin/systemd-sysusers-262 | cut -c1-90)"; echo "debian: $(systemd-sysusers --version | head -1)"; } | tee /versions.txt
+#8 0.086 systemd-sysusers-262 systemd 262 (262.1)
+#8 0.089 link: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+#8 0.091 debian: systemd 257 (257.13-1~deb13u1)
+#8 DONE 0.1s
+
+#9 exporting to image
+#9 exporting layers
+#9 exporting layers 1.7s done
+#9 exporting manifest sha256:f4f8059e2d55b9f031ec1adad58d07242512f2b0daca0361b4f6ce361a2039f3 0.0s done
+#9 exporting config sha256:40a44da3430ec4b1f70409c7ecd3ae2c7e341fc434dc32b53d544da009c9eb34 done
+#9 exporting attestation manifest sha256:775ef0b1aa016cb88eac20460774c1295359cfbc7b74abd00a85e45a07be7839 0.0s done
+#9 exporting manifest list sha256:6c2f902870cb8d29da5079c5dd15af1d67ffab5081c187bf29ad3fc818a4eb14 done
+#9 naming to docker.io/library/sideeye-sv1025-s3s:latest done
+#9 unpacking to docker.io/library/sideeye-sv1025-s3s:latest
+#9 unpacking to docker.io/library/sideeye-sv1025-s3s:latest 0.8s done
+#9 DONE 2.5s

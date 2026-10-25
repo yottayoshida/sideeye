@@ -1,0 +1,10 @@
+ROW paperless static=0 preflight_rc=1 gate=1 detail=byte-repeatability: --twice found different bytes
+EXIT paperless 1
+ROW godot static=0 preflight_rc=0 gate=0 detail=accepted, 19 operations
+EXIT godot 0
+ROW luanti static=0 preflight_rc=1 gate=1 detail=byte-repeatability: --twice found different bytes
+EXIT luanti 1
+ROW navidrome static=1 preflight_rc=2 gate=1 detail=SUPERVISED; wall: multiple_threads_detected
+EXIT navidrome 1
+ROW firefly static=0 preflight_rc=1 gate=1 detail=byte-repeatability: --twice found different bytes
+EXIT firefly 1

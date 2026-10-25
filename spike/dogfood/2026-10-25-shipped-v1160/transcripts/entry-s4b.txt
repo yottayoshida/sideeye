@@ -1,0 +1,2 @@
+ROW colmap static=0 preflight_rc=0 gate=0 detail=accepted, 10 operations
+EXIT colmap 0

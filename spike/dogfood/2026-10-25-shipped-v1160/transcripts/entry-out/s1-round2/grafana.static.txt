@@ -1,0 +1,4 @@
+static: /usr/share/grafana/bin/grafana: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=Fk4P8n_On4U6lzTVgHzr/gszQXLV2__ezF9dZ8ooV/U0voLIELcRY1WCcTOVkt/UFcTsGSYaVgC9l915pvf, BuildID[sha1]=d6f38a9501d2f06b1801df420e0cb3222f6fd3c2, with debug_info, not stripped
+default mode: rc 2; no_shim_marker
+default next: Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry at https://github.com/yottayoshida/sideeye/blob/v1.16.0/docs/cli.md#the-flags-the-define-does-not-spell names what it still refuses.
+next: pin or relocate what differs, then re-run this command;

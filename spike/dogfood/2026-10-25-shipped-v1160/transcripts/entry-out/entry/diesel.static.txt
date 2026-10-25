@@ -1,0 +1,2 @@
+static: /opt/bin/diesel: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=62b22abdc8d3ecbcae90393b3ec2497e6fca4d50, for GNU/Linux 3.7.0, not stripped
+next: sideeye explore --state /s/app --cwd /s/app --operation 'diesel migration run' --apparatus preload:libfaketime --apparatus 'env:FAKETIME=2026-01-01 00:00:00' \

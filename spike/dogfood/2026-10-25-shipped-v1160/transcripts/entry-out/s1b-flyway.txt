@@ -1,0 +1,2 @@
+ROW flyway static=0 preflight_rc=2 gate=1 detail=wall: unresolvable_path
+EXIT flyway 1

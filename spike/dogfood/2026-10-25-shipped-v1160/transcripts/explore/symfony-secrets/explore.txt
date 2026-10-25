@@ -1,0 +1,171 @@
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+ // Existing secrets have been rotated to the new keys.                         
+
+ ! [CAUTION] DO NOT COMMIT THE DECRYPTION KEY FOR THE PROD ENVIRONMENT⚠️        
+
+falsify: checker(symfony-secrets): secrets:list exited 255: untime/Runner/Symfony/ConsoleApplicationRunner.php:49 { …}
+falsify:     ./vendor/autoload_runtime.php:32 { …}
+falsify:     ./bin/console:15 { …}
+falsify:   }
+falsify: }
+falsify: 2026-01-01T00:00:00+00:00 [critical] Uncaught Error: Symfony\Bundle\FrameworkBundle\Secrets\SodiumVault::list(): Return value must be of type array, int returned
+world 6: checker(symfony-secrets): secrets:list exited 1:                                 
+world 6:   sodium_crypto_box_seal_open(): Argument #2 ($key_pair) must be SODIUM_CRYPT  
+world 6:   O_BOX_KEYPAIRBYTES bytes long                                                
+world 6:                                                                                
+world 6: secrets:list [-r|--reveal]
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+world 9: checker(symfony-secrets): a secret no longer decrypts to its value (postgresql://app:Pg-2026-prod@db.internal:5432/app): ----- 
+world 9:  Secret Value Local Value 
+world 9:  --------------- ------------------------------------------- ------------- 
+world 9:  DATABASE_URL ****** 
+world 9:  MAILER_DSN "smtp://mailer:Mx-2026@smtp.internal:587" 
+world 9:  STRIPE_SECRET "example-stripe-live-secret-0001" 
+world 9:  --------------- ------------------------------------------- ------------- 
+world 9:  // Local values override secret values. 
+world 9:  // Use secrets:set --local to define them. 
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+world 12: checker(symfony-secrets): secrets:list exited 255: untime/Runner/Symfony/ConsoleApplicationRunner.php:49 { …}
+world 12:     ./vendor/autoload_runtime.php:32 { …}
+world 12:     ./bin/console:15 { …}
+world 12:   }
+world 12: }
+world 12: 2026-01-01T00:00:00+00:00 [critical] Uncaught Error: Symfony\Bundle\FrameworkBundle\Secrets\SodiumVault::list(): Return value must be of type array, int returned
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+world 15: checker(symfony-secrets): a secret no longer decrypts to its value (smtp://mailer:Mx-2026@smtp.internal:587): 
+world 15:  --------------- ------------------------------------------------------ ------------- 
+world 15:  DATABASE_URL "postgresql://app:Pg-2026-prod@db.internal:5432/app" 
+world 15:  MAILER_DSN ****** 
+world 15:  STRIPE_SECRET "example-stripe-live-secret-0001" 
+world 15:  --------------- ------------------------------------------------------ ------------- 
+world 15:  // Local values override secret values. 
+world 15:  // Use secrets:set --local to define them. 
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+world 18: checker(symfony-secrets): secrets:list exited 255: untime/Runner/Symfony/ConsoleApplicationRunner.php:49 { …}
+world 18:     ./vendor/autoload_runtime.php:32 { …}
+world 18:     ./bin/console:15 { …}
+world 18:   }
+world 18: }
+world 18: 2026-01-01T00:00:00+00:00 [critical] Uncaught Error: Symfony\Bundle\FrameworkBundle\Secrets\SodiumVault::list(): Return value must be of type array, int returned
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+world 21: checker(symfony-secrets): a secret no longer decrypts to its value (example-stripe-live-secret-0001): --------- ------------------------------------------------------ ------------- 
+world 21:  DATABASE_URL "postgresql://app:Pg-2026-prod@db.internal:5432/app" 
+world 21:  MAILER_DSN "smtp://mailer:Mx-2026@smtp.internal:587" 
+world 21:  STRIPE_SECRET ****** 
+world 21:  --------------- ------------------------------------------------------ ------------- 
+world 21:  // Local values override secret values. 
+world 21:  // Use secrets:set --local to define them. 
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+world 24: checker(symfony-secrets): secrets:list exited 255: untime/Runner/Symfony/ConsoleApplicationRunner.php:49 { …}
+world 24:     ./vendor/autoload_runtime.php:32 { …}
+world 24:     ./bin/console:15 { …}
+world 24:   }
+world 24: }
+world 24: 2026-01-01T00:00:00+00:00 [critical] Uncaught Error: Symfony\Bundle\FrameworkBundle\Secrets\SodiumVault::list(): Return value must be of type array, int returned
+
+ [OK] Sodium keys have been generated at                                        
+      "config/secrets/prod/prod.*.public/private.php".                          
+
+ // Existing secrets have been rotated to the new keys.                         
+
+ ! [CAUTION] DO NOT COMMIT THE DECRYPTION KEY FOR THE PROD ENVIRONMENT⚠️        
+
+FAIL  8 of 25 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 3 of 24
+            after  truncate(/s/sf/config/secrets/prod/prod.encrypt.public.php)
+            before write(/s/sf/config/secrets/prod/prod.encrypt.public.php)
+path        prod.encrypt.public.php
+observed    holding neither the old nor the new content
+checker red crash point 6 of 24 (built-in atomicity, and the checker)
+            case     /out/symfony-secrets/work-explore/cases/000002.json
+            replay   sideeye replay /out/symfony-secrets/work-explore/cases/000002.json --oracle /usr/bin/strace
+            evidence sideeye evidence /out/symfony-secrets/work-explore/evidence/000002.json
+cwd         /s/sf
+apparatus   preload:pin-random, preload:libfaketime, env:FAKETIME=2026-01-01 00:00:00
+
+explored    25 worlds (crash points 24 + 1 baseline)
+expected    exit 0
+atomicity   6 path(s) judged pre-or-post
+oracle      agreed on 24 operations (4919 syscall lines examined, 183 in scope of the judged state), witness strace
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 25 world(s)
+l1          no marker configured
+case        /out/symfony-secrets/work-explore/cases/000001.json
+replay      sideeye replay /out/symfony-secrets/work-explore/cases/000001.json --oracle /usr/bin/strace
+evidence    sideeye evidence /out/symfony-secrets/work-explore/evidence/000001.json
+processes   2 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/sf && unset SIDEEYE_KILL_GROUP && : > /out/symfony-secrets/work-explore/trace-repro.bin && SIDEEYE_STATE_DIR=/s/sf/config/secrets/prod SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/symfony-secrets/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.16.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=3 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'php' bin/console secrets:generate-keys --rotate '--env=prod' </dev/null)
+sideeye: json sha256=224940a783d2d780edfd2eacd8458ad050acedde9a19e17a9423ffcae8bee1ba;

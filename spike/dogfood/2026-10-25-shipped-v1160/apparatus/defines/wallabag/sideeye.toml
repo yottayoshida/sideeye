@@ -1,0 +1,9 @@
+[world]
+state = "/opt/wallabag/data/db"
+
+[define]
+operation = "php bin/console wallabag:import wallabag /s/wbaux/second.json --importer=v2 --env=prod -n"
+cwd       = "/opt/wallabag"
+check     = "sh /ap/defines/wallabag/check.sh"
+apparatus = ["preload:libfaketime", "env:FAKETIME=2026-01-01 00:00:00"]
+scratch   = ["wallabag.sqlite", "wallabag.sqlite-journal"]

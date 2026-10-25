@@ -1,0 +1,98 @@
+falsify: Traceback (most recent call last):
+falsify:   File "<stdin>", line 4, in <module>
+falsify:   File "/usr/lib/python3.13/json/__init__.py", line 346, in loads
+falsify:     return _default_decoder.decode(s)
+falsify:            ~~~~~~~~~~~~~~~~~~~~~~~^^^
+falsify:   File "/usr/lib/python3.13/json/decoder.py", line 345, in decode
+falsify:     obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+falsify:                ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+falsify:   File "/usr/lib/python3.13/json/decoder.py", line 363, in raw_decode
+falsify:     raise JSONDecodeError("Expecting value", s, err.value) from None
+falsify: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+falsify: checker(docusaurus): a translation file is torn or the translator's messages are gone
+world 2: Traceback (most recent call last):
+world 2:   File "<stdin>", line 4, in <module>
+world 2:   File "/usr/lib/python3.13/json/__init__.py", line 346, in loads
+world 2:     return _default_decoder.decode(s)
+world 2:            ~~~~~~~~~~~~~~~~~~~~~~~^^^
+world 2:   File "/usr/lib/python3.13/json/decoder.py", line 345, in decode
+world 2:     obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+world 2:                ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+world 2:   File "/usr/lib/python3.13/json/decoder.py", line 363, in raw_decode
+world 2:     raise JSONDecodeError("Expecting value", s, err.value) from None
+world 2: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+world 2: checker(docusaurus): a translation file is torn or the translator's messages are gone
+world 4: Traceback (most recent call last):
+world 4:   File "<stdin>", line 4, in <module>
+world 4:   File "/usr/lib/python3.13/json/__init__.py", line 346, in loads
+world 4:     return _default_decoder.decode(s)
+world 4:            ~~~~~~~~~~~~~~~~~~~~~~~^^^
+world 4:   File "/usr/lib/python3.13/json/decoder.py", line 345, in decode
+world 4:     obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+world 4:                ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+world 4:   File "/usr/lib/python3.13/json/decoder.py", line 363, in raw_decode
+world 4:     raise JSONDecodeError("Expecting value", s, err.value) from None
+world 4: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+world 4: checker(docusaurus): a translation file is torn or the translator's messages are gone
+world 6: Traceback (most recent call last):
+world 6:   File "<stdin>", line 4, in <module>
+world 6:   File "/usr/lib/python3.13/json/__init__.py", line 346, in loads
+world 6:     return _default_decoder.decode(s)
+world 6:            ~~~~~~~~~~~~~~~~~~~~~~~^^^
+world 6:   File "/usr/lib/python3.13/json/decoder.py", line 345, in decode
+world 6:     obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+world 6:                ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+world 6:   File "/usr/lib/python3.13/json/decoder.py", line 363, in raw_decode
+world 6:     raise JSONDecodeError("Expecting value", s, err.value) from None
+world 6: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+world 6: checker(docusaurus): a translation file is torn or the translator's messages are gone
+world 9: Traceback (most recent call last):
+world 9:   File "<stdin>", line 4, in <module>
+world 9:   File "/usr/lib/python3.13/json/__init__.py", line 346, in loads
+world 9:     return _default_decoder.decode(s)
+world 9:            ~~~~~~~~~~~~~~~~~~~~~~~^^^
+world 9:   File "/usr/lib/python3.13/json/decoder.py", line 345, in decode
+world 9:     obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+world 9:                ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+world 9:   File "/usr/lib/python3.13/json/decoder.py", line 363, in raw_decode
+world 9:     raise JSONDecodeError("Expecting value", s, err.value) from None
+world 9: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+world 9: checker(docusaurus): a translation file is torn or the translator's messages are gone
+world 11: Traceback (most recent call last):
+world 11:   File "<stdin>", line 4, in <module>
+world 11:   File "/usr/lib/python3.13/json/__init__.py", line 346, in loads
+world 11:     return _default_decoder.decode(s)
+world 11:            ~~~~~~~~~~~~~~~~~~~~~~~^^^
+world 11:   File "/usr/lib/python3.13/json/decoder.py", line 345, in decode
+world 11:     obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+world 11:                ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+world 11:   File "/usr/lib/python3.13/json/decoder.py", line 363, in raw_decode
+world 11:     raise JSONDecodeError("Expecting value", s, err.value) from None
+world 11: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+world 11: checker(docusaurus): a translation file is torn or the translator's messages are gone
+FAIL  5 of 12 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 11
+            after  open(/s/docu/i18n/fr/code.json)
+            before write(/s/docu/i18n/fr/code.json)
+path        fr/code.json
+observed    holding neither the old nor the new content
+cwd         /s/docu
+apparatus   env:UV_THREADPOOL_SIZE=1, env:NO_UPDATE_NOTIFIER=1
+
+explored    12 worlds (crash points 11 + 1 baseline)
+expected    exit 0
+atomicity   6 path(s) judged pre-or-post
+oracle      agreed on 11 operations (54523 syscall lines examined, 77 in scope of the judged state), witness strace
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 12 world(s)
+l1          no marker configured
+case        /out/docusaurus/work-explore/cases/000001.json
+replay      sideeye replay /out/docusaurus/work-explore/cases/000001.json --oracle /usr/bin/strace
+evidence    sideeye evidence /out/docusaurus/work-explore/evidence/000001.json
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 18 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 7 join(s) and 10 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/docu && unset SIDEEYE_KILL_GROUP && : > /out/docusaurus/work-explore/trace-repro.bin && SIDEEYE_STATE_DIR=/s/docu/i18n SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/docusaurus/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.16.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'node' node_modules/@docusaurus/core/bin/docusaurus.mjs write-translations --locale fr </dev/null)
+sideeye: json sha256=82d99298e14dfe87e4bac196c731914a9c95cc6cbeaf2d7f47d3c40e494bc798;

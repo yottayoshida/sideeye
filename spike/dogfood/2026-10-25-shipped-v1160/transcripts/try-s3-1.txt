@@ -1,0 +1,4 @@
+juicefs gomaxprocs1 rc=3 apparatus env:GOMAXPROCS=1: the environment the operation inherits has no GOMAXPROCS (under sideeye mcp, a variable of the server's reaches it only when SIDEEYE_MCP_CHILD_ENV names it) 
+salt-grains syscalls rc=2 unresolvable_path 
+salt-grains supervised rc=0  recording accepted — 2 state-changing
+juicefs gomaxprocs1 rc=2 multiple_threads_detected 

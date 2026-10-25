@@ -1,0 +1,17 @@
+[world]
+# An application's SQLite database and its migrations directory, one migration pending.
+state = "/s/fw"
+
+[define]
+# The JVM itself: the `flyway` command is a bash script that execs java, and a wrapper is refused
+# child_process_detected (grafana's first gate). The arguments are the script's own on Linux (lines 36-55):
+# its classpath, which java expands at each `*`, and its native-access flag. The JVM runs `uname -o`
+# through jspawnhelper, which closes the shim's trace descriptor (the `flyway` define's gate:
+# unresolvable_path, trace-closed-by-target); launchMechanism=VFORK starts the child without the helper.
+operation = ["/usr/lib/jvm/java-21-openjdk-arm64/bin/java", "--enable-native-access=ALL-UNNAMED", "-Djdk.lang.Process.launchMechanism=VFORK", "-cp", "/opt/flyway/lib/*:/opt/flyway/lib/aad/*:/opt/flyway/lib/plugins/*:/opt/flyway/lib/oracle_wallet/*:/opt/flyway/lib/flyway/*:/opt/flyway/lib/netty/*:/opt/flyway/lib/opentelemetry/*:/opt/flyway/drivers/*:/opt/flyway/drivers/aws/*:/opt/flyway/drivers/cassandra/*:/opt/flyway/drivers/couchbase/*:/opt/flyway/drivers/mongo/*", "org.flywaydb.commandline.Main", "-url=jdbc:sqlite:/s/fw/app.db", "-locations=filesystem:/s/fw/sql", "migrate"]
+# flyway_schema_history stamps each migration with its install time and its execution time in
+# milliseconds, so app.db differs between two clean runs: it is scratch to the built-in invariants and
+# the checker judges it.
+scratch   = ["app.db"]
+check     = "/s/fw-check.sh"
+cwd       = "/s/fw"

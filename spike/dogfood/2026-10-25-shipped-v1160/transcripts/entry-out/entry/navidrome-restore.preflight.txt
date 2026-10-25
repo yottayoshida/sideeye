@@ -1,0 +1,42 @@
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:08:26Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+time="2026-10-25T04:08:26Z" level=info msg="Restore complete" elapsed=100.6ms
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:08:28Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+time="2026-10-25T04:08:28Z" level=info msg="Restore complete" elapsed=106.9ms
+PREFLIGHT  recording accepted — 717 state-changing operation(s) observed
+
+cwd          /s/nd
+atomicity    2 path(s) judged pre-or-post; 9 path(s) matched by scratch, not judged (declared: cache)
+oracle       agreed on 717 operations (1886 syscall lines examined, 1005 in scope of the judged state), witness strace of THIS run — the operations were counted from outside the target by the supervising engine through a seccomp user-notification filter, no shim loaded; in this mode the oracle does not count an entry strace ended `= ? ERESTART...` (a signal took the call back before it completed)
+processes    single process in the recording; the second observed run recorded a thread, and that run's capture is never parsed, so nothing accounts for it; the supervising engine recorded 5 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2014 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+scratch        declared scratch, not compared: cache
+
+next         sideeye explore --state /s/nd --cwd /s/nd --operation '/opt/bin/navidrome backup restore --backup-file /s/aux/ndbk/before-third-album.db --force' --apparatus 'env:GOMAXPROCS=1' --apparatus env:ND_CONFIGFILE --scratch cache \
+               --check <your-invariant.sh> --observe supervised --oracle /usr/bin/strace

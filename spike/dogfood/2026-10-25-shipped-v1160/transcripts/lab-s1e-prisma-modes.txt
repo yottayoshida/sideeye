@@ -1,0 +1,9 @@
+== prisma --observe supervised
+UNKNOWN  child_touched_state_dir
+         a process other than the subject (pid 47) performed open(/s/shop/prisma/dev.db) and the oracle's account does not place it. That reader resolves a relative path against the subject's working directory, so a child that changed its own is invisible to it — and with only one witness for those operations, nothing can check 
+next        Check whether the operation is a shell script wrapping another command — if it is, invoke that command as the operation instead; the refusal itself is one Sideeye makes by design, and https://github.com/yottayoshida/sideeye/blob/v1.16.0/docs/report-schema.md#refusals-by-reason says what its unknown_reason stands at.
+atomicity   6 path(s) judged pre-or-post
+== prisma --observe syscalls
+UNKNOWN  recording_run_failed
+next        Under --observe syscalls a run also ends this way when that mode killed a process or otherwise changed what the target does — the entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset' (https://github.com/yottayoshida/sideeye/blob/v1.16.0/README.md#w
+atomicity   not classified (the run was refused before L0 classification)

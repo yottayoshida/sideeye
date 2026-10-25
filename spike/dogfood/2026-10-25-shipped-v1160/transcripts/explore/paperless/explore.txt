@@ -1,0 +1,2782 @@
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 1: checker(paperless): │ No issues detected.                                                          │
+world 2: checker(paperless): │ No issues detected.                                                          │
+world 3: checker(paperless): │ No issues detected.                                                          │
+world 4: checker(paperless): │ No issues detected.                                                          │
+world 5: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 5: checker(paperless): Found 1 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 6: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 7: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 8: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 9: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 10: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 11: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 11: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 11: checker(paperless): Found 1 document(s) with errors and 1 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 12: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 12: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 12: checker(paperless): Found 1 document(s) with errors and 1 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 13: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 13: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 13: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 13: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 13: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 14: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 14: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 14: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 14: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 14: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 15: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 15: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 15: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 15: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 15: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 16: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 16: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 16: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 16: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 16: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 17: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 17: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 17: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 17: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 17: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 18: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 18: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 18: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 18: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 18: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 19: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 19: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 19: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 19: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 19: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 20: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 20: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 20: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 20: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 20: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 21: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 21: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 21: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 21: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 21: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 22: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 22: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 22: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 22: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 22: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 23: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 23: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 23: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 23: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 23: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 24: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 24: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 24: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 24: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 24: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 25: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 25: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 25: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 25: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 25: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 26: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 26: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 26: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 26: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 26: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 27: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 27: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 27: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 27: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 27: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 28: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 28: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 28: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 28: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 28: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 29: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 29: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 29: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 29: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 29: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 30: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 30: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 30: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 30: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 30: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 31: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 31: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 31: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 31: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 31: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 32: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 32: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 32: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 32: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 32: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 33: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 33: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 33: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 33: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 33: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 34: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 34: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 34: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 34: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 34: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 35: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 35: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 35: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 35: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 35: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 36: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 36: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 36: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 36: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 36: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 37: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 37: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 37: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 37: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 37: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 38: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 38: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 38: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 38: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 38: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 39: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 39: checker(paperless): │ ERROR   │ #6 Letter 6          │ Archived version of document does not       │
+world 39: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 39: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 39: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 40: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 41: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 42: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 43: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 44: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 45: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 45: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 45: checker(paperless): Found 1 document(s) with errors and 1 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 46: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 46: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 46: checker(paperless): Found 1 document(s) with errors and 1 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 47: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 47: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 47: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 47: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 47: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 48: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 48: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 48: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 48: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 48: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 49: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 49: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 49: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 49: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 49: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 50: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 50: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 50: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 50: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 50: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 51: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 51: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 51: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 51: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 51: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 52: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 52: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 52: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 52: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 52: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 53: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 53: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 53: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 53: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 53: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 54: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 54: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 54: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 54: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 54: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 55: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 55: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 55: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 55: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 55: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 56: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 56: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 56: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 56: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 56: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 57: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 57: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 57: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 57: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 57: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 58: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 58: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 58: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 58: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 58: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 59: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 59: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 59: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 59: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 59: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 60: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 60: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 60: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 60: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 60: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 61: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 61: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 61: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 61: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 61: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 62: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 62: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 62: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 62: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 62: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 63: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 63: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 63: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 63: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 63: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 64: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 64: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 64: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 64: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 64: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 65: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 65: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 65: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 65: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 65: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 66: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 66: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 66: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 66: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 66: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 67: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 67: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 67: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 67: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 67: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 68: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 68: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 68: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 68: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 68: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 69: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 69: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 69: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 69: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 69: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 70: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 70: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 70: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 70: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 70: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 71: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 71: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 71: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 71: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 71: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 72: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 72: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 72: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 72: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 72: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 73: checker(paperless): │ ERROR   │ #5 Letter 5          │ Original of document does not exist.        │
+world 73: checker(paperless): │ ERROR   │ #5 Letter 5          │ Archived version of document does not       │
+world 73: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 73: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 73: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 74: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 75: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 76: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 77: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 78: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 79: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 79: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 79: checker(paperless): Found 1 document(s) with errors and 1 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 80: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 80: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 80: checker(paperless): Found 1 document(s) with errors and 1 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 81: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 81: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 81: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 81: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 81: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 82: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 82: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 82: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 82: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 82: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 83: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 83: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 83: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 83: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 83: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 84: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 84: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 84: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 84: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 84: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 85: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 85: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 85: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 85: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 85: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 86: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 86: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 86: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 86: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 86: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 87: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 87: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 87: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 87: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 87: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 88: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 88: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 88: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 88: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 88: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 89: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 89: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 89: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 89: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 89: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 90: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 90: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 90: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 90: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 90: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 91: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 91: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 91: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 91: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 91: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 92: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 92: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 92: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 92: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 92: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 93: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 93: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 93: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 93: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 93: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 94: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 94: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 94: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 94: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 94: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 95: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 95: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 95: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 95: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 95: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 96: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 96: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 96: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 96: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 96: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 97: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 97: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 97: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 97: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 97: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 98: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 98: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 98: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 98: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 98: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 99: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 99: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 99: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 99: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 99: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 100: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 100: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 100: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 100: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 100: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 101: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 101: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 101: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 101: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 101: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 102: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 102: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 102: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 102: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 102: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 103: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 103: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 103: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 103: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 103: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 104: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 104: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 104: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 104: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 104: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 105: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 105: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 105: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 105: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 105: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 106: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 106: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 106: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 106: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 106: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 107: checker(paperless): │ ERROR   │ #4 Letter 4          │ Original of document does not exist.        │
+world 107: checker(paperless): │ ERROR   │ #4 Letter 4          │ Archived version of document does not       │
+world 107: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 107: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 107: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 108: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 109: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 110: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 111: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 112: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 113: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 113: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 113: checker(paperless): Found 1 document(s) with errors and 1 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 114: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 114: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 114: checker(paperless): Found 1 document(s) with errors and 1 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 115: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 115: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 115: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 115: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 115: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 116: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 116: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 116: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 116: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 116: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 117: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 117: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 117: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 117: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 117: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 118: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 118: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 118: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 118: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 118: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 119: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 119: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 119: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 119: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 119: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 120: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 120: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 120: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 120: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 120: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 121: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 121: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 121: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 121: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 121: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 122: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 122: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 122: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 122: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 122: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 123: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 123: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 123: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 123: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 123: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 124: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 124: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 124: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 124: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 124: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 125: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 125: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 125: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 125: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 125: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 126: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 126: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 126: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 126: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 126: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 127: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 127: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 127: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 127: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 127: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 128: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 128: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 128: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 128: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 128: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 129: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 129: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 129: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 129: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 129: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 130: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 130: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 130: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 130: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 130: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 131: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 131: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 131: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 131: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 131: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 132: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 132: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 132: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 132: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 132: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 133: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 133: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 133: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 133: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 133: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 134: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 134: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 134: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 134: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 134: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 135: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 135: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 135: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 135: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 135: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 136: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 136: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 136: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 136: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 136: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 137: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 137: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 137: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 137: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 137: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 138: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 138: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 138: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 138: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 138: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 139: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 139: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 139: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 139: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 139: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 140: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 140: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 140: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 140: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 140: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 141: checker(paperless): │ ERROR   │ #3 Letter 3          │ Original of document does not exist.        │
+world 141: checker(paperless): │ ERROR   │ #3 Letter 3          │ Archived version of document does not       │
+world 141: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 141: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 141: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 142: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 143: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 144: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 145: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 146: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 147: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 147: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 147: checker(paperless): Found 1 document(s) with errors and 1 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 148: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 148: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 148: checker(paperless): Found 1 document(s) with errors and 1 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 149: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 149: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 149: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 149: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 149: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 150: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 150: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 150: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 150: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 150: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 151: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 151: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 151: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 151: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 151: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 152: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 152: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 152: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 152: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 152: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 153: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 153: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 153: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 153: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 153: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 154: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 154: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 154: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 154: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 154: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 155: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 155: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 155: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 155: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 155: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 156: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 156: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 156: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 156: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 156: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 157: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 157: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 157: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 157: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 157: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 158: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 158: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 158: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 158: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 158: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 159: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 159: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 159: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 159: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 159: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 160: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 160: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 160: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 160: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 160: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 161: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 161: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 161: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 161: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 161: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 162: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 162: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 162: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 162: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 162: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 163: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 163: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 163: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 163: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 163: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 164: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 164: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 164: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 164: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 164: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 165: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 165: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 165: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 165: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 165: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 166: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 166: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 166: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 166: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 166: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 167: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 167: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 167: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 167: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 167: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 168: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 168: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 168: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 168: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 168: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 169: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 169: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 169: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 169: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 169: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 170: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 170: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 170: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 170: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 170: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 171: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 171: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 171: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 171: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 171: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 172: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 172: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 172: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 172: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 172: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 173: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 173: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 173: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 173: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 173: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 174: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 174: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 174: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 174: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 174: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 175: checker(paperless): │ ERROR   │ #2 Letter 2          │ Original of document does not exist.        │
+world 175: checker(paperless): │ ERROR   │ #2 Letter 2          │ Archived version of document does not       │
+world 175: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 175: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 175: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 176: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 177: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 178: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 179: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 180: checker(paperless): │ No issues detected.                                                          │
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 181: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 181: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 181: checker(paperless): Found 1 document(s) with errors and 1 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 182: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 182: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 182: checker(paperless): Found 1 document(s) with errors and 1 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 183: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 183: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 183: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 183: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 183: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 184: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 184: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 184: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 184: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 184: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 185: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 185: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 185: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 185: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 185: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 186: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 186: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 186: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 186: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 186: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 187: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 187: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 187: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 187: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 187: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 188: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 188: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 188: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 188: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 188: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 189: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 189: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 189: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 189: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 189: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 190: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 190: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 190: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 190: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 190: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 191: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 191: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 191: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 191: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 191: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 192: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 192: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 192: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 192: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 192: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 193: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 193: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 193: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 193: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 193: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 194: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 194: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 194: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 194: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 194: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 195: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 195: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 195: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 195: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 195: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 196: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 196: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 196: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 196: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 196: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 197: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 197: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 197: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 197: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 197: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 198: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 198: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 198: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 198: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 198: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 199: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 199: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 199: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 199: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 199: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 200: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 200: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 200: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 200: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 200: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 201: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 201: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 201: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 201: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 201: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 202: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 202: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 202: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 202: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 202: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 203: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 203: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 203: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 203: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 203: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 204: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 204: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 204: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 204: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 204: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 205: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 205: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 205: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 205: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 205: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 206: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 206: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 206: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 206: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 206: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 207: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 207: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 207: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 207: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 207: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 208: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 208: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 208: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 208: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 208: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 209: checker(paperless): │ ERROR   │ #1 Letter 1          │ Original of document does not exist.        │
+world 209: checker(paperless): │ ERROR   │ #1 Letter 1          │ Archived version of document does not       │
+world 209: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 209: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 209: checker(paperless): Found 1 document(s) with errors and 2 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+baseline: checker(paperless): │ No issues detected.                                                          │
+recovery baseline: System check identified some issues:
+recovery baseline: WARNINGS:
+recovery baseline: ?: Paperless can't find convert. Without it, consumption is impossible.
+recovery baseline: 	HINT: Either it's not in your ${PATH} or it's not installed.
+recovery baseline: ?: Paperless can't find gs. Without it, consumption is impossible.
+recovery baseline: 	HINT: Either it's not in your ${PATH} or it's not installed.
+recovery baseline: ?: Paperless can't find tesseract. Without it, consumption is impossible.
+recovery baseline: 	HINT: Either it's not in your ${PATH} or it's not installed.
+recovery baseline check: checker(paperless): │ No issues detected.                                                          │
+recovery world 11: System check identified some issues:
+recovery world 11: WARNINGS:
+recovery world 11: ?: Paperless can't find convert. Without it, consumption is impossible.
+recovery world 11: 	HINT: Either it's not in your ${PATH} or it's not installed.
+recovery world 11: ?: Paperless can't find gs. Without it, consumption is impossible.
+recovery world 11: 	HINT: Either it's not in your ${PATH} or it's not installed.
+recovery world 11: ?: Paperless can't find tesseract. Without it, consumption is impossible.
+recovery world 11: 	HINT: Either it's not in your ${PATH} or it's not installed.
+recovery world 11 check: checker(paperless): │ No issues detected.                                                          │
+FAIL  174 of 210 explored worlds violated an invariant
+
+invariant   the checker (L2)
+earliest    crash point 11 of 209
+            after  rename(/s/paperless/media/documents/originals/0000006.pdf)
+            before mkdir(/s/paperless/media/documents/archive/Bank)
+path        (named by the checker, not by path)
+observed    the checker exited non-zero after restart
+cwd         /opt/paperless-ngx/src
+apparatus   preload:libfaketime, env:FAKETIME=2026-01-01 00:00:00, env:FAKETIME_DONT_FAKE_MONOTONIC=1, env:PAPERLESS_FILENAME_FORMAT, env:PAPERLESS_DB_OPTIONS, env:PAPERLESS_CACHE_BACKEND, env:PAPERLESS_CHANNELS_BACKEND
+recovery    configured; the recovery checker was trusted after two controls (corrupted state -> recovery check failed; completed state, recovery run on it -> recovery check passed); crash point 11: pass (the recovery checker accepted the recovered state, recovery command exit 0, 1.418s); ran against 1 of 174 failing world(s), the saved ones, in 3.432s; the crash states were rebuilt from snapshots, so contents and permission bits are as the crash left them (a directory with its owner's bits added) and timestamps and owners are not
+
+explored    210 worlds (crash points 209 + 1 baseline)
+expected    exit 0
+atomicity   12 path(s) judged pre-or-post; 2 path(s) matched by scratch, not judged (declared: media/media.lock, data/db.sqlite3, data/db.sqlite3-journal)
+oracle      agreed on 209 operations (43720 syscall lines examined, 1584 in scope of the judged state), witness strace
+metadata    6 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchown x6. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 210 world(s)
+l1          no marker configured
+case        /out/paperless/work-explore/cases/000001.json
+replay      sideeye replay /out/paperless/work-explore/cases/000001.json --oracle /usr/bin/strace --recovery '/opt/paperless-venv/bin/python /opt/paperless-ngx/src/manage.py document_renamer --no-progress-bar' --recovery-check '/s/paperless-check.sh'
+evidence    sideeye evidence /out/paperless/work-explore/evidence/000001.json
+processes   7 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+
+reproduce   (cd /opt/paperless-ngx/src && unset SIDEEYE_KILL_GROUP && : > /out/paperless/work-explore/trace-repro.bin && SIDEEYE_STATE_DIR=/s/paperless SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/paperless/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.16.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=11 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= /opt/paperless-venv/bin/python /opt/paperless-ngx/src/manage.py document_renamer --no-progress-bar </dev/null)
+sideeye: json sha256=76a8097278303e4bfa34382443aa0c17781d96856df3ec3a1af7fa75fb3b08c2;

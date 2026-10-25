@@ -1,0 +1,2 @@
+ROW vmrestore static=1 preflight_rc=2 gate=1 detail=SUPERVISED; wall: multiple_threads_detected
+EXIT vmrestore 1

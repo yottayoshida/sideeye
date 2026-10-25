@@ -1,0 +1,15 @@
+falsify: checker(vcpkg): vcpkg list exited 1: /s/vcpkg/vcpkg/status:1:25: error: expected ':' after field name   on expression: sideeye-corruption-probe                                          ^ 
+PASS  40/40 explored worlds satisfied the built-in atomicity invariant
+cwd         /opt/vcpkg
+
+explored    40 worlds (crash points 39 + 1 baseline)
+expected    exit 0
+atomicity   94 path(s) judged pre-or-post
+oracle      agreed on 39 operations (856 syscall lines examined, 169 in scope of the judged state), witness strace
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 40 world(s)
+l1          no marker configured
+case        (none)
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+sideeye: json sha256=54ed3708d86fd2833971d77e0148e9bf7d255bb76ebf66331531fc44f4410b6f;

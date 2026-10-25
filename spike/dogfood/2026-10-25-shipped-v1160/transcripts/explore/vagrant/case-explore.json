@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.16.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/vagrant.d",
+    "operation": "ruby /opt/vagrant-gems/bin/vagrant global-status --prune",
+    "check": "sh /ap/defines/vagrant/check.sh",
+    "cwd": "/s/vagrant.d",
+    "expected_status": 0
+  },
+  "k": 10,
+  "ops_total": 35,
+  "prefix_hash": "9d91fa4ea07ff7ba",
+  "after_class": "open",
+  "after_path": "/s/vagrant.d/data/machine-index/index",
+  "before_class": "write",
+  "before_path": "/s/vagrant.d/data/machine-index/index",
+  "violation": "hybrid"
+}

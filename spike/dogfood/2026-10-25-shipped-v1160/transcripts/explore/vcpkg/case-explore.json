@@ -1,0 +1,24 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 7,
+  "sideeye_version": "1.16.0",
+  "contract_version": 19,
+  "observe": "wrappers",
+  "define": {
+    "state": "/s/vcpkg/installed",
+    "operation": "/s/vcpkg/vcpkg remove zlib",
+    "check": "/s/vcpkg-check.sh",
+    "cwd": "/s/vcpkg",
+    "scratch": [],
+    "apparatus": ["env:VCPKG_DISABLE_METRICS=1"],
+    "expected_status": 0
+  },
+  "k": 9,
+  "ops_total": 54,
+  "prefix_hash": "e36c10c6d48ae7d2",
+  "after_class": "rename",
+  "after_path": "/s/vcpkg/installed/vcpkg/updates/incomplete",
+  "before_class": "unlink",
+  "before_path": "/s/vcpkg/installed/arm64-linux/debug/lib/libz.a",
+  "violation": "checker"
+}

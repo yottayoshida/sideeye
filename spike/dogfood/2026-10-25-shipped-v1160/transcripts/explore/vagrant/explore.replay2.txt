@@ -1,0 +1,26 @@
+falsify: checker(vagrant): vagrant global-status exited 1: Vagrant failed to initialize at a very early stage:  It appears that a newer version of Vagrant was run on this machine at some point. The current version of Vagrant is unable to read the configuration structure of this newer version. Pleas
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 10 of 35
+            after  open(/s/vagrant.d/data/machine-index/index)
+            before write(/s/vagrant.d/data/machine-index/index)
+path        data/machine-index/index
+observed    holding neither the old nor the new content
+cwd         /s/vagrant.d
+
+explored    2 worlds (crash points 35 + 1 baseline)
+expected    exit 0
+atomicity   15 path(s) judged pre-or-post
+oracle      agreed on 35 operations (46452 syscall lines examined, 12196 in scope of the judged state), witness strace
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /out/vagrant/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 10 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 1 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/vagrant.d && unset SIDEEYE_KILL_GROUP && : > /out/vagrant/work-explore-replay2/trace-repro.bin && SIDEEYE_STATE_DIR=/s/vagrant.d SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/vagrant/work-explore-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.16.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=10 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'ruby' /opt/vagrant-gems/bin/vagrant global-status --prune </dev/null)
+sideeye: json sha256=e9fa9eac5acaac05b2c972472979ffdf70a8461a252224ac59b424c9adc55565;

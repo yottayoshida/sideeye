@@ -1,0 +1,16 @@
+rc=2
+capture: /tmp/pw/oracle.txt
+9302:43    execve("/opt/prisma-proto/node_modules/@prisma/engines/schema-engine-linux-arm64-openssl-3.0.x", ["/opt/prisma-proto/node_modules/@"..., "--datamodels", "/s/shop/prisma/schema.prisma", "--datasource", "{\"url\
+9730:48    statx(AT_FDCWD</s/shop>, "./prisma/dev.db", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=24576, ...}) = 0
+9731:48    statx(AT_FDCWD</s/shop>, "./prisma/dev.db", AT_STATX_SYNC_AS_STAT, STATX_ALL, {stx_mask=STATX_ALL|STATX_MNT_ID, stx_attributes=0, stx_mode=S_IFREG|0644, stx_size=24576, ...}) = 0
+9736:48    newfstatat(AT_FDCWD</s/shop>, "/s/shop/prisma/dev.db", {st_mode=S_IFREG|0644, st_size=24576, ...}, AT_SYMLINK_NOFOLLOW) = 0
+9740:48    openat(AT_FDCWD</s/shop>, "/s/shop/prisma/dev.db", O_RDWR|O_CREAT|O_NOFOLLOW|O_CLOEXEC, 0644) = 9</s/shop/prisma/dev.db>
+9741:48    fstat(9</s/shop/prisma/dev.db>, {st_mode=S_IFREG|0644, st_size=24576, ...}) = 0
+9742:48    fstat(9</s/shop/prisma/dev.db>, {st_mode=S_IFREG|0644, st_size=24576, ...}) = 0
+9743:48    newfstatat(AT_FDCWD</s/shop>, "/s/shop/prisma/dev.db", {st_mode=S_IFREG|0644, st_size=24576, ...}, 0) = 0
+9744:48    pread64(9</s/shop/prisma/dev.db>, "SQLite format 3\0\20\0\1\1\0@  \0\0\0\6\0\0\0\6"..., 100, 0) = 100
+9746:48    fcntl(9</s/shop/prisma/dev.db>, F_SETLK, {l_type=F_RDLCK, l_whence=SEEK_SET, l_start=1073741824, l_len=1}) = 0
+9747:48    fcntl(9</s/shop/prisma/dev.db>, F_SETLK, {l_type=F_RDLCK, l_whence=SEEK_SET, l_start=1073741826, l_len=510}) = 0
+9748:48    fcntl(9</s/shop/prisma/dev.db>, F_SETLK, {l_type=F_UNLCK, l_whence=SEEK_SET, l_start=1073741824, l_len=1}) = 0
+
+9297:43    chdir("/s/shop")                  = 0

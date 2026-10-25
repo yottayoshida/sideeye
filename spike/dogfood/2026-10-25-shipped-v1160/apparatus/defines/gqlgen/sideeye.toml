@@ -1,0 +1,12 @@
+[world]
+state = "/s/gql/graph"
+
+[define]
+# Regenerating a GraphQL server after a schema change: `gqlgen generate` rewrites generated.go and
+# models_gen.go and rewrites schema.resolvers.go in place, copying the resolver bodies the developer
+# wrote through and adding a stub for the new field. It loads the packages through `go list` children.
+operation = "gqlgen generate"
+check     = "/s/gql-check.sh"
+cwd       = "/s/gql"
+# Go: one P, inherited by the `go` children (docs/apparatus.md).
+apparatus = ["env:GOMAXPROCS=1"]

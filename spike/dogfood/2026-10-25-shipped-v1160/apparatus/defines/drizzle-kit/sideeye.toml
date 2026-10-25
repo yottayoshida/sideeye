@@ -1,0 +1,10 @@
+[world]
+state = "/s/dz/db"
+
+[define]
+# Applying a pending migration to an app's SQLite database with drizzle-kit (better-sqlite3): a new
+# column, a new table and a data migration over the rows the app already holds.
+operation = "node node_modules/drizzle-kit/bin.cjs migrate --config drizzle.config.ts"
+check     = "/s/dz-check.sh"
+cwd       = "/s/dz"
+apparatus = ["env:UV_THREADPOOL_SIZE=1"]

@@ -1,0 +1,10 @@
+ROW etcdutl static=1 preflight_rc=2 gate=1 detail=SUPERVISED; wall: multiple_threads_detected
+EXIT etcdutl 1
+ROW dolt static=1 preflight_rc=2 gate=1 detail=SUPERVISED; wall: multiple_threads_detected
+EXIT dolt 1
+ROW tursodb static=0 preflight_rc=0 gate=0 detail=accepted, 14 operations
+EXIT tursodb 0
+ROW diesel static=0 preflight_rc=1 gate=1 detail=byte-repeatability: --twice found different bytes
+EXIT diesel 1
+ROW grafana static=0 preflight_rc=2 gate=1 detail=wall: child_process_detected
+EXIT grafana 1

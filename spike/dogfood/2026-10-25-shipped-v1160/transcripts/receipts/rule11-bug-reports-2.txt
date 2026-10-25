@@ -1,0 +1,59 @@
+== etcd-io/etcd (label type/bug)
+#22653 2026-10-23 comments=0 first_project_reply=none
+#22646 2026-10-22 comments=1 first_project_reply=none
+#22645 2026-10-22 comments=0 first_project_reply=none
+#22614 2026-10-19 comments=0 first_project_reply=none
+#22613 2026-10-19 comments=0 first_project_reply=none
+#22612 2026-10-19 comments=2 first_project_reply=MEMBER 2026-10-21
+#22547 2026-10-08 comments=1 first_project_reply=MEMBER 2026-10-08
+#22528 2026-10-05 comments=2 first_project_reply=none
+#22500 2026-09-29 comments=7 first_project_reply=CONTRIBUTOR 2026-09-29
+#22498 2026-09-29 comments=0 first_project_reply=none
+== gogs/gogs (label 💊 bug)
+#8410 2026-08-30 comments=1 first_project_reply=none
+#8409 2026-08-30 comments=2 first_project_reply=MEMBER 2026-09-05
+#8385 2026-07-12 comments=0 first_project_reply=none
+#8380 2026-07-08 comments=1 first_project_reply=none
+#8375 2026-06-25 comments=6 first_project_reply=MEMBER 2026-07-14
+#8349 2026-06-09 comments=7 first_project_reply=MEMBER 2026-06-10
+#8277 2026-05-20 comments=1 first_project_reply=none
+#8232 2026-04-15 comments=0 first_project_reply=none
+#8230 2026-04-08 comments=0 first_project_reply=none
+#8219 2026-03-31 comments=0 first_project_reply=none
+== systemd/systemd (label bug 🐛)
+#44396 2026-10-23 comments=0 first_project_reply=none
+#44378 2026-10-23 comments=1 first_project_reply=none
+#44354 2026-10-21 comments=2 first_project_reply=CONTRIBUTOR 2026-10-23
+#44342 2026-10-21 comments=1 first_project_reply=none
+#44333 2026-10-21 comments=0 first_project_reply=none
+#44317 2026-10-20 comments=6 first_project_reply=CONTRIBUTOR 2026-10-22
+#44289 2026-10-19 comments=0 first_project_reply=none
+#44277 2026-10-18 comments=0 first_project_reply=none
+#44245 2026-10-16 comments=0 first_project_reply=none
+#44216 2026-10-15 comments=0 first_project_reply=none
+== FreshRSS/FreshRSS (label Bug (unconfirmed))
+#9488 2026-10-22 comments=1 first_project_reply=MEMBER 2026-10-22
+#9485 2026-10-22 comments=1 first_project_reply=MEMBER 2026-10-22
+#9482 2026-10-22 comments=7 first_project_reply=MEMBER 2026-10-22
+#9478 2026-10-21 comments=2 first_project_reply=MEMBER 2026-10-21
+#9477 2026-10-21 comments=4 first_project_reply=MEMBER 2026-10-21
+#9465 2026-10-19 comments=2 first_project_reply=MEMBER 2026-10-19
+#9464 2026-10-19 comments=0 first_project_reply=none
+#9437 2026-10-12 comments=0 first_project_reply=none
+#9434 2026-10-11 comments=2 first_project_reply=MEMBER 2026-10-11
+#9428 2026-10-10 comments=2 first_project_reply=MEMBER 2026-10-10
+== grafana/grafana (label type/bug)
+#135929 2026-10-23 comments=1 first_project_reply=none
+#135906 2026-10-23 comments=0 first_project_reply=none
+#135905 2026-10-23 comments=1 first_project_reply=none
+#135904 2026-10-23 comments=1 first_project_reply=none
+#135903 2026-10-23 comments=0 first_project_reply=none
+#135902 2026-10-23 comments=0 first_project_reply=none
+#135901 2026-10-23 comments=1 first_project_reply=none
+#135900 2026-10-23 comments=0 first_project_reply=none
+#135899 2026-10-23 comments=1 first_project_reply=none
+#135898 2026-10-23 comments=0 first_project_reply=none
+== symfony/symfony (label Bug)
+#67369 2026-10-23 comments=2 first_project_reply=MEMBER 2026-10-23
+#67310 2026-10-22 comments=0 first_project_reply=none
+#67159 2026-10-19 comments=2 first_project_reply=none

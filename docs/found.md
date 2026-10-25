@@ -10,10 +10,12 @@ The first table is a list of counterexamples Sideeye found, not a badge: nothing
 
 <!-- found:begin -->
 
-44 reports. On the trackers: 22 open, 22 closed. In this project's record: 9 fixed upstream and re-measured, 1 acknowledged, 31 filed, 3 withdrawn.
+46 reports. On the trackers: 22 open, 22 closed, 2 not read yet. In this project's record: 9 fixed upstream and re-measured, 1 acknowledged, 33 filed, 3 withdrawn.
 
 | Tool | What it is | Status | Issue | Report | Related pull requests | Sideeye | Found |
 |---|---|---|---|---|---|---|---|
+| Symfony 8.1.9 `secrets:generate-keys --rotate` | - | Not read yet · awaiting | - | [symfony/symfony#67446](https://github.com/symfony/symfony/issues/67446) | - | 1.16.0 | 2026-10-25 |
+| Salt 3008.4 `salt-call --local grains.setval` | - | Not read yet · awaiting | - | [saltstack/salt#70554](https://github.com/saltstack/salt/issues/70554) | - | 1.16.0 | 2026-10-25 |
 | Crystal 1.21.1 `crystal tool format` | The Crystal Programming Language | Open · awaiting | crystal tool format leaves the file empty if it is killed mid-write | [crystal-lang/crystal#17620](https://github.com/crystal-lang/crystal/issues/17620) | - | 1.12.0 | 2026-10-12 |
 | ansible-core 2.21.5 `ansible-vault encrypt` | Ansible is a radically simple IT automation platform that makes your applications and systems easier to deploy and maintain. Automate everything from code depl… | Closed (not planned) · withdrawn | ansible-vault encrypt loses both the plaintext and the vault if it is killed mid-write | [ansible/ansible#87678](https://github.com/ansible/ansible/issues/87678) | - | 1.12.0 | 2026-10-12 |
 | ansible-core 2.21.5 `ansible-vault encrypt` | Ansible is a radically simple IT automation platform that makes your applications and systems easier to deploy and maintain. Automate everything from code depl… | Open · awaiting | ansible-vault encrypt loses both the plaintext and the vault if it is killed mid-write | [ansible/ansible#87679](https://github.com/ansible/ansible/issues/87679) | - | 1.12.0 | 2026-10-12 |

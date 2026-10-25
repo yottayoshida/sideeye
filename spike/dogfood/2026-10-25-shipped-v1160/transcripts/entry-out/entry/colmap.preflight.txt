@@ -1,0 +1,23 @@
+I20261025 04:38:29.312171    67 sfm.cc:604] Filtered observations: 4
+I20261025 04:38:31.366065    84 sfm.cc:604] Filtered observations: 4
+PREFLIGHT  recording accepted — 10 state-changing operation(s) observed
+
+cwd          /s/colmap
+atomicity    7 path(s) judged pre-or-post
+oracle       agreed on 10 operations (3403 syscall lines examined, 80 in scope of the judged state), witness strace
+processes    single process in the recording; the second observed run recorded a thread, and that run's capture is never parsed, so nothing accounts for it; the shim recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 9 join(s) and 4 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2011 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/colmap --cwd /s/colmap --operation '/opt/bin/colmap point_filtering --input_path /s/colmap/sparse/0 --output_path /s/colmap/sparse/0 --max_reproj_error 4' \
+               --check <your-invariant.sh> --oracle /usr/bin/strace

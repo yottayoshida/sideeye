@@ -1,0 +1,31 @@
+I20261025 04:38:57.089850   599 sfm.cc:604] Filtered observations: 4
+falsify: checker(colmap): the model does not load: terminate called after throwing an instance of 'std::domain_error'
+I20261025 04:38:57.696504   648 sfm.cc:604] Filtered observations: 4
+world 2: checker(colmap): the model does not load: 
+I20261025 04:38:58.109359   680 sfm.cc:604] Filtered observations: 4
+baseline: checker(colmap): 1 camera(s), 3 image(s), 12 point(s); consistent
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 10
+            after  open(/s/colmap/sparse/0/rigs.bin)
+            before write(/s/colmap/sparse/0/rigs.bin)
+path        sparse/0/rigs.bin
+observed    holding neither the old nor the new content
+cwd         /s/colmap
+
+explored    2 worlds (crash points 10 + 1 baseline)
+expected    exit 0
+atomicity   7 path(s) judged pre-or-post
+oracle      agreed on 10 operations (3409 syscall lines examined, 80 in scope of the judged state), witness strace
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /out/colmap/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   single process in the recording; a thread was created in an explored world; the shim recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 9 join(s) and 4 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/colmap && unset SIDEEYE_KILL_GROUP && : > /out/colmap/work-explore-replay2/trace-repro.bin && SIDEEYE_STATE_DIR=/s/colmap SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/colmap/work-explore-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.16.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= /opt/bin/colmap point_filtering --input_path /s/colmap/sparse/0 --output_path /s/colmap/sparse/0 --max_reproj_error 4 </dev/null)
+sideeye: json sha256=933ef164d54c78e40a6df653cc58e7a7351cf923e7aa65ec1f2f5e849c4fafda;

@@ -1,0 +1,9 @@
+[world]
+state = "/s/salt"
+
+[define]
+# salt-call is a shell/Python polyglot that execs the onedir's interpreter; the interpreter is the
+# operation's first word so the shim enters the process that writes.
+operation = "/opt/salt/salt/bin/python3.14 /opt/salt/salt/salt-call -c /s/salt --local grains.setval maintainer ops-oncall"
+cwd       = "/s/salt"
+check     = "sh /ap/defines/salt-grains/check.sh"

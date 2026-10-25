@@ -1,0 +1,111 @@
+scout-4 — 2026-10-25 shipped-v1160
+Field: Linux system, ops and infrastructure tools that change local state in place.
+Read: apparatus/scout-brief.md, 2026-10-12-shipped-v1120/SELECTION.md, docs/target-classes.md wall rows.
+Tools used: apparatus/fresh.sh, apparatus/word-recheck.sh, apparatus/stars.sh, `gh api` reads of
+releases and of source files (no installs, no docker, nothing posted).
+
+== KEPT (strongest first) ==
+All: fresh.sh `fresh`, word-recheck clean (or only other-meaning hits), not in reported-repos.txt,
+>=10k stars, pushed 2026-10, not archived, issues on.
+
+1. Nextcloud — nextcloud/server — 37,282★ — pushed 2026-10-25 — v33.0.10 (2026-10-15)
+   artifact: PHP tarball from download.nextcloud.com (no GitHub asset) + Debian trixie php-cli/php-sqlite3
+   command: `php occ config:system:set trusted_domains 1 --value=x` (or `occ maintenance:mode --on`)
+            after an offline `occ maintenance:install --database sqlite`
+   state: config/config.php (instanceid, passwordsalt, secret, dbpassword) — losing it breaks the instance
+   mechanism (READ in lib/private/Config.php L296-327): fopen(r+), chmod, flock, ftruncate(0), fwrite,
+            fflush, no fsync, no temp, no backup  -> FAIL forecast (truncate before write)
+   wall: none expected (single-threaded php-cli; flock is fine). shape: Debian php is FORTIFY-built (`__open_2`)
+   word-recheck: only vdirsyncer issue titles naming the server (other meaning).
+
+2. Salt — saltstack/salt — 15,727★ — pushed 2026-10-24 — v3008.4 (2026-10-24)
+   artifact: salt-3008.4-onedir-linux-arm64.tar.xz (GitHub asset); also PyPI `salt`
+   command: `salt-call --local grains.setval roles '[web]'` (enable_fqdns_grains: False to avoid DNS)
+   state: /etc/salt/grains (user-set grains that targeting depends on)
+   mechanism (READ in salt/modules/grains.py L283): fopen(gfn, "w+") then yaml.safe_dump -> FAIL forecast
+   wall: unknown thread count of salt-call --local (risk: logging/event threads); minion cache written
+         outside the judged dir. shape: grain probes run many children whose exec fails (v1.15), Python
+         subprocess close_range (v1.13+).
+   word-recheck: "salt" hits only cryptographic salt in borg probes (other meaning).
+
+3. systemd-sysusers (systemd) — systemd/systemd — 16,909★ — pushed 2026-10-25 — v262.1; Debian trixie systemd 257
+   command: `systemd-sysusers --root=/srv/root /srv/root/usr/lib/sysusers.d/x.conf` (adds a user + group)
+   state: <root>/etc/passwd, shadow, group, gshadow (+ `-` backups)
+   mechanism (READ in src/sysusers/sysusers.c): each file temp + fflush_sync + backup(fsync, rename) +
+            rename; group, gshadow, passwd, shadow renamed in sequence -> per-file PASS forecast, a
+            cross-file tear (passwd renamed, shadow not) is the thing to judge (checker: pwck/grpck -r -R)
+   wall: copy_rights_with_fallback is fchmod/fchown only (READ src/shared/copy.c) — no xattr write;
+         SELinux labels off in a container. shape: Debian FORTIFY `__open_2`, close_range.
+   fresh note: "systemd" hits only a bug-label screen line (2026-10-05 SELECTION.md:61) — same status
+   FreeCAD had when 2026-10-12 took it; no systemd tool in funnel/target-classes.
+
+4. Vagrant — hashicorp/vagrant — 27,218★ — pushed 2026-10-19 — v2.4.9 (2025-08-21)
+   artifact: Debian trixie `vagrant` (2.3.7, arch all, Ruby) — upstream linux arm64 binary uncertain (40%)
+   command: `VAGRANT_CHECKPOINT_DISABLE=1 vagrant global-status --prune` (entries whose dir is gone)
+            or `vagrant box add mybox ./local.box` (extract into temp dir, rename into boxes/ — dir-rename shape)
+   state: ~/.vagrant.d/data/machine-index/index (every machine Vagrant knows)
+   mechanism (READ lib/vagrant/machine_index.rb L340-347): @index_file.open("w") then write -> FAIL forecast
+   wall: Ruby threads unknown; version gap Debian 2.3.7 vs upstream 2.4.9.
+
+5. etcd (`etcdutl`) — etcd-io/etcd — 52,423★ — pushed 2026-10-23 — v3.7.3; etcd-v3.7.3-linux-arm64.tar.gz
+   command: `etcdutl defrag --data-dir default.etcd` (also `etcdutl migrate --target-version`)
+   state: member/snap/db (bbolt; the whole cluster's keyspace)
+   mechanism (READ server/storage/backend/backend.go L498-590): CreateTemp "db.tmp.*" opened NoSync,
+            copy, tmpdb.Sync, close, rename over db, reopen -> PASS forecast
+   wall: static Go, `--observe supervised`, GOMAXPROCS=1 (OpenTofu precedent); bbolt maps PROT_READ
+         MAP_SHARED (read-only, not the PROT_WRITE wall); random temp name is renamed away.
+
+6. Grafana — grafana/grafana — 77,486★ — pushed 2026-10-25 — v13.2.4; linux_arm64 .deb/.rpm assets
+   command: `grafana cli --homepath /usr/share/grafana admin reset-admin-password newpass`
+   state: data/grafana.db (dashboards, users, alert rules)
+   mechanism: default `[database] wal = false` -> `_journal_mode=DELETE` (READ database_config.go L120,205-210),
+            migrations run at open -> many crash points
+   wall: Go + cgo sqlite; thread wall is the main risk even at GOMAXPROCS=1.
+
+7. Dolt — dolthub/dolt — 24,725★ — pushed 2026-10-24 — v2.6.0; dolt-linux-arm64.tar.gz
+   command: `dolt sql -q "insert into t values (2)"` then `dolt commit -am x` / `dolt gc`
+   state: .dolt/noms (chunk journal, manifest) — a versioned database
+   wall: static Go, heavily concurrent; GOMAXPROCS=1 under supervised; code search found no Fallocate or
+         MAP_SHARED (search API is partial — not proof). metrics: `dolt config --global --add metrics.disabled true`.
+
+8. Dokku — dokku/dokku — 32,202★ — pushed 2026-10-25 — v0.38.32 (no GitHub asset; arm64 .deb on packagecloud)
+   command: `dokku config:set --no-restart app K=V`, `dokku domains:add app x.example`
+   state: /home/dokku/<app>/ENV, VHOST and property files
+   mechanism (READ): ENV = CreateTemp + Rename (PASS forecast); common.WriteBytesToFile = O_TRUNC in place
+            (whether domains/properties use it: not read)
+   shape: bash + plugn + Go triggers — many children (v1.15). install depends on docker packages.
+
+9. FreshRSS — FreshRSS/FreshRSS — 16,414★ — pushed 2026-10-24 — 1.30.4 (no assets; PHP source + Debian php)
+   command: `./cli/reconfigure.php --title X` / `./cli/update-user.php --user a --language fr`
+   state: data/config.php, data/users/<u>/config.php (+ per-user SQLite)
+   mechanism (READ lib/Minz/Configuration.php L223-245): tmp file, copy() to .bak.php, rename, no fsync -> PASS forecast
+
+10. JuiceFS — juicedata/juicefs — 14,571★ — pushed 2026-10-23 — v1.4.2; juicefs-1.4.2-linux-arm64.tar.gz
+   command: `juicefs format "sqlite3://jfs.db?_journal=DELETE" v --storage file --bucket /s/b/` then
+            `juicefs config ... --capacity 10 --yes` / `juicefs gc --delete`
+   state: jfs.db (filesystem metadata) + file-storage objects
+   wall: default `_journal=WAL` (READ pkg/meta/sql.go L473) = -shm shared writable mapping; the URL switch
+         moves it. cgo sqlite threads.
+
+Lower, not checked further: Gogs (gogs/gogs 47,904★, v0.14.3 linux_arm64, `gogs admin create-user` on
+SQLite); Turso (tursodatabase/turso 25,008★, v0.8.3 aarch64-linux-gnu, `tursodb x.db "insert…"`, threads
+unknown); n8n (208,510★, `n8n import:workflow`, SQLite WAL in 2.x forecast = shared-mapping wall);
+Firefly III (24,986★, `php artisan` on SQLite); Paperless-ngx (47,071★, `document_importer`, heavy).
+
+== COUNTS ==
+Names put to fresh.sh: ~170 (incl. aliases), ~150 distinct tools.
+SEEN by fresh.sh, real: 81 (7zip, acme.sh, asdf, atuin, authelia, borg, bup, brotli, caddy, certbot,
+  cfssl, czkawka, direnv, duplicacy, duplicati, dvc, gguf/llama.cpp, git-crypt, git-lfs, gitea, kopia,
+  kubectx, kustomize, mackup, mcfly, mkcert, mosquitto, nvm, oh-my-zsh, ollama, openssl, openvpn, p7zip,
+  podman, pulumi, sgpt/shell_gpt, smallstep, talosctl, veracrypt, wireguard, zerotier, zoxide, bentoml,
+  buildah, calibre, conda, dotbot, fabric, fisher, goose, immich, incus, kubeadm, limactl, minikube,
+  mlflow, nebula, nerdctl, oh-my-posh, photoprism, pixi, pm2, rsnapshot, rustup, sheldon, shiori, llm,
+  sing-box, skopeo, wandb, yadm, espanso, grav, homebrew, promptfoo, qwen-code, rbenv, runc, nix (word-recheck: cohort4-rejected))
+SEEN by fresh.sh but a substring false hit: 3 (cscli<-"pcsclite", redis<-"rediscovered", systemd<-bug-label screen only)
+Out, stars <10k: 7 (bbolt 9,787; lego 9,964; kanboard 9,930; multipass 9,298; supervisor 9,151; dehydrated 6,264; timeshift 4,318)
+Out, wall: 6 (prometheus/promtool, thanos — fallocate READ tsdb/fileutil/preallocate_linux.go; rocksdb, osquery, clickhouse — threads; badger — shared writable mmap)
+Out, daemon or network: ~19 (tailscale, headscale, netbird, mihomo, AdGuardHome, cloudflared, pi-hole v6, netdata, vector,
+  victoriametrics, uptime-kuma, vaultwarden, jellyfin, infisical, opencode, aider, aichat, vault, colima)
+Out, settings or regenerable: 7 (bash-it, zinit, antidote, telegraf config, StevenBlack hosts, seaweedfs `weed fix` idx, valkey/redis check-aof)
+Out, install or license: 4 (claude-code not open source; crowdsec no arm64 GitHub asset; seafile no arm64 server build; home-manager/devbox need nix)
+Kept: 10 (+5 lower)

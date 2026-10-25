@@ -1,0 +1,57 @@
+scout-1 — field: databases, storage engines, search indexes, queues, caches (C/C++/Rust/Go/Zig/Java)
+2026-10-25. Read-only. Commands: apparatus/fresh.sh (two batches, ~150 names incl. aliases),
+apparatus/word-recheck.sh (60 fresh names), apparatus/stars.sh, gh api releases/latest, gh api contents
+for source facts. Code search hit its rate limit once (10/min); contents API used after.
+
+KEPT (strongest first)
+1. etcd — etcd-io/etcd 52,423★ pushed 2026-10-23, v3.7.3 (10-22), etcd-v3.7.3-linux-arm64.tar.gz.
+   `etcdutl defrag --data-dir D` (also `etcdutl migrate --data-dir D --target-version 3.6`): member/snap/db (bbolt).
+   Defrag copies into os.CreateTemp(dir,"db.tmp.*") with fsync skipped on intermediate commits, then renames over db
+   (server/storage/backend/backend.go:510-534). bbolt mmap = PROT_READ, MAP_SHARED (bolt_unix.go:57) — ADR 0098's
+   judged control shape. Preallocate (fallocate) only in WAL code, not touched by defrag (確度 75%). Static Go, supervised.
+2. Dolt — dolthub/dolt 24,725★ pushed 10-24, v2.6.0 (10-23), dolt-linux-arm64.tar.gz.
+   `dolt sql -q "insert…"`, `dolt commit -am m`, `dolt gc`: .dolt/noms (manifest, chunk journal, table files).
+   No Fallocate in repo; mmap is RDONLY (go/libraries/utils/file/mmap.go). Go goroutines (GOMAXPROCS=1). Must set
+   metrics.disabled=true (else spawns `dolt send-metrics`, network). gc may rename dirs inside .dolt (v1.13 shape, 確度 40%).
+3. Turso (tursodb) — tursodatabase/turso 25,008★ pushed 10-25, v0.8.3 (10-12), turso_cli-aarch64-unknown-linux-gnu.tar.xz.
+   `tursodb app.db "INSERT…"` or SQL on stdin: app.db + app.db-wal. Shared-WAL MAP_SHARED mmap exists (core/io/unix.rs)
+   but only behind --experimental-multiprocess-wal (cli/app.rs:117-120). Pick syscall VFS, not io_uring. Rust rewrite of
+   SQLite, beta: high bug value. Threads unknown (確度 60% one writer).
+4. VictoriaMetrics vmrestore — 17,903★ pushed 10-25, v1.154.1 (10-20), vmutils-linux-arm64-v1.154.1.tar.gz.
+   `vmrestore -src=fs:///bk -storageDataPath=D -concurrency=1 -skipFilePreallocation`: deletes/overwrites parts in D,
+   restore lock file. fallocate by default (lib/backup/fslocal/prealloc_linux.go) — switch exists. Binds HTTP :8421
+   (listen only; set 127.0.0.1:port). Goroutines.
+5. Grafana — grafana/grafana 77,486★ pushed 10-25, v13.2.4 (10-13), grafana_13.2.4_*_linux_arm64.deb.
+   `grafana cli --homepath H admin reset-admin-password pw`: data/grafana.db (dashboards too). SQLite journal DELETE by
+   default (conf/defaults.ini wal=false; database_config.go:120,205-210). Go + sqlite; migrations on open. Cross-field.
+6. Flyway — flyway/flyway 10,165★ pushed 10-22, 13.11.1 (10-22), flyway-commandline-13.11.1.tar.gz (no JRE) + Debian JDK.
+   `flyway -url=jdbc:sqlite:app.db -locations=filesystem:sql migrate`: app.db. JVM threads, one writer expected; sqlite-jdbc
+   extracts its .so to tmpdir; telemetry/report must be turned off (unverified).
+7. diesel_cli — diesel-rs/diesel 14,219★ pushed 10-24, v2.3.14 (10-07), diesel_cli-aarch64-unknown-linux-gnu.tar.xz.
+   `diesel migration run --database-url app.db`: app.db, and src/schema.rs rewritten when diesel.toml has print_schema.
+   Sync single-thread Rust (確度 80%); may need libpq/libmysqlclient at runtime (確度 60%).
+8. sqlx-cli — launchbadge/sqlx (now transact-rs/sqlx) 17,594★ pushed 10-22, crates.io. `sqlx migrate run`.
+   tokio + one sqlite worker thread; WAL default dropped in 0.7 (確度 70%) — if WAL, refused at -shm mmap.
+9. RocksDB ldb — facebook/rocksdb 32,221★, no GH assets; Debian trixie rocksdb-tools (確度 70%). `ldb --db=D repair`/`put`.
+   bg thread pool (repair runs in caller, 確度 50%); fallocate default, switch allow_fallocate=false via OPTIONS + --try_load_options.
+10. Chroma — chroma-core/chroma 29,572★ pushed 10-23, 1.5.9 (05-05), PyPI wheels. `chroma utils vacuum --path D`.
+   Python+Rust, telemetry off; threads/journal uncertain.
+
+COUNTS: ~150 names. SEEN by fresh.sh 25 (atuin borg consul geth goose kopia leveldb lmdb minio mongodb mysql nebula
+postgres redis redpanda sqlite vault ccache kafka lix sccache zoxide; substring-only: ldb h2 nix). Word-hit out 2
+(golang-migrate: 2026-10-15-authoring/CANDIDATES.md:14; nix: cohort4/CANDIDATES-REJECTED.md:51). <10k★ 6 measured
+(bbolt 9,787 atlas 8,796 immudb 9,042 sea-orm 9,930 kvrocks 4,480 MariaDB 8,446+issues off) + ~10 known small.
+Server-only/no offline one-shot ~30. No arm64 artifact path 7. Forecast wall 11. Kept 10.
+
+NOTABLE OUTS
+- prometheus promtool tsdb create-blocks-from (66,744★): would hit v1.13 dir-rename shape, but chunks.cutSegmentFile
+  preallocates via fallocate (tsdb/chunks/chunks.go:399,454), no switch. thanos tools bucket rewrite: same tsdb writer.
+- pocketbase (61,597★) superuser upsert: journal_mode(WAL) fixed in core/db_connect.go:14 -> -shm MAP_SHARED, no switch.
+- golang-migrate (18,989★): already screened 2026-10-15 (authoring CANDIDATES).
+- badger (15,789★) flatten: vlog/memtable via writable shared mmap (確度 70%).
+- tigerbeetle (17,244★): io_uring + fallocate; format writes a new file.
+- clickhouse local --path (50,587★), quickwit tool local-ingest (11,738★), surreal -e rocksdb:// (33,225★): many writer threads, no one-thread switch.
+- elasticsearch-keystore/-node (78,370★), opensearch, neo4j-admin, manticore indexer: no GH/Debian/PyPI arm64 artifact.
+- litestream restore: writes a new file only. seaweedfs weed fix: rebuilds a derivable .idx (low value).
+- valkey-check-aof --fix (27,508★, Debian): a single ftruncate, low value.
+- meilisearch, typesense, qdrant, rqlite, questdb, nats-server: servers, no offline one-shot command.

@@ -1,0 +1,2 @@
+SETUP ERROR  operation: /ap/defines/vcpkg/./vcpkg does not exist
+sideeye: json sha256=fd7a055b0686ed4eef5b65bd59e643e6d7463f1b3ae0a5568044e00cbb720854;

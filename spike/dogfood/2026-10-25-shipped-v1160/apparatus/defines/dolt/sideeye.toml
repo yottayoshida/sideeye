@@ -1,0 +1,12 @@
+[world]
+state = "/s/dolt"
+
+[define]
+# gc moves every chunk into archive files, rewrites both manifests and removes the journal: the
+# repository's whole history passes through it.
+operation = "dolt gc"
+# One P, docs/apparatus.md's switch for Go: the first gate refused two writing threads under
+# --observe supervised (transcripts/entry-out/s1-round1/).
+apparatus = ["env:GOMAXPROCS=1"]
+check     = "/s/dolt-check.sh"
+cwd       = "/s/dolt"

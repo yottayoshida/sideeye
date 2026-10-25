@@ -1,0 +1,24 @@
+=== sysusers 2026-10-25T03:37:42Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== vagrant 2026-10-25T03:37:44Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== freshrss 2026-10-25T03:38:34Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== salt-grains 2026-10-25T03:38:36Z
+explore exit 2: UNKNOWN unresolvable_path
+explore exit 2: UNKNOWN unresolvable_path
+next_step: This target does something Sideeye refuses by design: the unknown_reason above names the limit, https://github.com/yottayoshida/sideeye/blob/v1.16.0/docs/report-schema.md#refusals-by-reason says what each one stands at, and https://github.com/yottayoshida/sideeye/blob/v1.16.0/DESIGN.md#known-constraints-declared-not-hidden gives the reasons.
+explore supervised (--observe supervised) exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+DONE

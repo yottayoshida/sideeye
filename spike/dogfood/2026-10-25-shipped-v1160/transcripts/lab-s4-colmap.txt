@@ -1,0 +1,14 @@
+link /opt/paperless-venv/bin/python: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter 
+link /opt/bin/godot: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter 
+link /opt/bin/luantiserver: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+link /opt/bin/navidrome: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]
+link /usr/bin/php8.5: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+colmap COLMAP 4.2.1 (Commit Unknown on Unknown without GPU support, std hash maps)
+link /opt/bin/colmap: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, int
+=== colmap
+before: 5 files
+operation exit 0
+I20261025 04:38:20.277937    33 sfm.cc:604] Filtered observations: 4
+after: 5 files
+checker(colmap): 1 camera(s), 3 image(s), 12 point(s); consistent
+check exit 0

@@ -1,0 +1,7 @@
+[world]
+state = "/s/jfs"
+
+[define]
+operation = "juicefs config sqlite3:///s/jfs/jfs.db?_journal=DELETE --capacity 50 --inodes 200000 --trash-days 3 --yes"
+cwd       = "/s/jfs"
+check     = "sh /ap/defines/juicefs/check.sh"

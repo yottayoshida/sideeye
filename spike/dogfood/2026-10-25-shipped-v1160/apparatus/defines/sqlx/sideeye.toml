@@ -1,0 +1,12 @@
+[world]
+# An application's SQLite database and its migrations directory, one migration pending.
+state = "/s/sx"
+
+[define]
+operation = "sqlx migrate run --source /s/sx/migrations"
+# _sqlx_migrations stamps each migration with its install time and its execution time in
+# nanoseconds, so app.db differs between two clean runs: it is scratch to the built-in invariants and
+# the checker judges it.
+scratch   = ["app.db"]
+check     = "/s/sx-check.sh"
+cwd       = "/s/sx"

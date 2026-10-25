@@ -1,0 +1,39 @@
+===== vagrant-live
+seed exit 0
+operation exit 0
+up-to-date (use "vagrant global-status --prune" to prune invalid
+entries). To interact with any of the machines, you can go to that
+directory and run Vagrant, or you can use the ID directly with
+Vagrant commands from any directory. For example:
+"vagrant destroy 1a2b3c4d"
+-- changed files:
+< 305b86c8f33af7a8  /s/vagrant.d/data/machine-index/index
+> 8a124c4699d08880  /s/vagrant.d/data/machine-index/index
+check exit 0
+-- writing threads/children (strace -f, the operation's calls on the state):
+pids: 21; execve: 8; clone: 23; fallocate: 0; xattr: 0; MAP_SHARED+PROT_WRITE: 0
+112   openat(AT_FDCWD, "/s/vagrant.d/perm_test_UJJJHYULXDTJRHQPJXIOFBXWANLSOTDN", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+112   unlinkat(AT_FDCWD, "/s/vagrant.d/perm_test_UJJJHYULXDTJRHQPJXIOFBXWANLSOTDN", AT_REMOVEDIR) = -1 ENOTDIR (Not a directory)
+112   unlinkat(AT_FDCWD, "/s/vagrant.d/perm_test_UJJJHYULXDTJRHQPJXIOFBXWANLSOTDN", 0) = 0
+112   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+112   openat(AT_FDCWD, "/s/vagrant.d/perm_test_ULUVNKTQCMQKZKNBEYOJBXFMAJKQWOAH", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+112   unlinkat(AT_FDCWD, "/s/vagrant.d/perm_test_ULUVNKTQCMQKZKNBEYOJBXFMAJKQWOAH", AT_REMOVEDIR) = -1 ENOTDIR (Not a directory)
+112   unlinkat(AT_FDCWD, "/s/vagrant.d/perm_test_ULUVNKTQCMQKZKNBEYOJBXFMAJKQWOAH", 0) = 0
+112   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 8
+112   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 8
+112   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/00000000000000000000000000c0ffee.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 11
+112   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 8
+112   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 12
+112   unlinkat(AT_FDCWD, "/s/vagrant.d/data/machine-index/00000000000000000000000000c0ffee.lock", 0) = 0
+112   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 11
+112   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/00000000000000000000000000c0ffee.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 14
+112   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 11
+112   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 15
+112   unlinkat(AT_FDCWD, "/s/vagrant.d/data/machine-index/00000000000000000000000000c0ffee.lock", 0) = 0
+112   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 11
+112   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/0000000000000000000000005eed0000.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 14
+112   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 11
+112   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 15
+112   unlinkat(AT_FDCWD, "/s/vagrant.d/data/machine-index/0000000000000000000000005eed0000.lock", 0) = 0
+112   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 11
+112   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/0000000000000000000000005eed0001.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 14

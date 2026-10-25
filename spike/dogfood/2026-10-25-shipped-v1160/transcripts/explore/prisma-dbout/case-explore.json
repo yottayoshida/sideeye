@@ -1,0 +1,24 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 7,
+  "sideeye_version": "1.16.0",
+  "contract_version": 19,
+  "observe": "wrappers",
+  "define": {
+    "state": "/s/shop",
+    "operation": "/opt/node/bin/node /opt/prisma-proto/node_modules/prisma/build/index.js db pull",
+    "check": "/s/prisma-check.sh",
+    "cwd": "/s/shop",
+    "scratch": [],
+    "apparatus": ["env:UV_THREADPOOL_SIZE=1", "env:JITI_FS_CACHE=false", "env:PRISMA_HIDE_UPDATE_MESSAGE=1", "env:CHECKPOINT_DISABLE=1"],
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 2,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/shop/prisma/schema.prisma",
+  "before_class": "write",
+  "before_path": "/s/shop/prisma/schema.prisma",
+  "violation": "hybrid"
+}

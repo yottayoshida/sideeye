@@ -1,0 +1,24 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 7,
+  "sideeye_version": "1.16.0",
+  "contract_version": 19,
+  "observe": "wrappers",
+  "define": {
+    "state": "/s/world",
+    "operation": "/opt/bin/luantiserver --world /s/world --migrate-players sqlite3",
+    "check": "/s/luanti-check.sh",
+    "cwd": "/s/world",
+    "scratch": [],
+    "apparatus": ["preload:libfaketime", "env:FAKETIME=2026-01-01 00:00:00", "env:FAKETIME_DONT_FAKE_MONOTONIC=1"],
+    "expected_status": 0
+  },
+  "k": 102,
+  "ops_total": 286,
+  "prefix_hash": "7773af29cfbd2685",
+  "after_class": "rename",
+  "after_path": "/s/world/players/alice",
+  "before_class": "open",
+  "before_path": "/s/world/players.sqlite-journal",
+  "violation": "checker"
+}

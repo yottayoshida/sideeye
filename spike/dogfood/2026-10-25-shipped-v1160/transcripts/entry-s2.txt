@@ -1,0 +1,20 @@
+ROW gogs static=1 preflight_rc=2 gate=1 detail=SUPERVISED; wall: multiple_threads_detected
+EXIT gogs 1
+ROW nextcloud-occ static=0 preflight_rc=0 gate=0 detail=accepted, 3 operations
+EXIT nextcloud-occ 0
+ROW docusaurus static=0 preflight_rc=0 gate=0 detail=accepted, 11 operations
+EXIT docusaurus 0
+ROW drizzle-kit static=0 preflight_rc=0 gate=0 detail=accepted, 46 operations
+EXIT drizzle-kit 0
+ROW symfony-secrets static=0 preflight_rc=1 gate=1 detail=byte-repeatability: --twice found different bytes
+EXIT symfony-secrets 1
+ROW symfony-secrets static=0 preflight_rc=0 gate=0 detail=accepted, 24 operations
+EXIT symfony-secrets 0
+ROW gogs-dyn static=0 preflight_rc=2 gate=0 detail=FOLLOW --observe syscalls (oracle_missed_operation)
+EXIT gogs-dyn 0
+ROW gqlgen static=1 preflight_rc=2 gate=1 detail=SUPERVISED; wall: multiple_threads_detected
+EXIT gqlgen 1
+ROW vcpkg static=0 preflight_rc=0 gate=0 detail=accepted, 54 operations
+EXIT vcpkg 0
+ROW vcpkg static=0 preflight_rc=0 gate=0 detail=accepted, 54 operations
+EXIT vcpkg 0

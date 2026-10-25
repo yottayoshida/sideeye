@@ -1,0 +1,12 @@
+== etcdutl defrag, GOMAXPROCS=1
+2797 clone(child_stack=0x699e5e708000,
+2797 clone(child_stack=0x699e5e744000,
+2797 clone(child_stack=0x699e5e740000,
+2797 clone(child_stack=0x699e5e818000,
+2797 openat(AT_FDCWD,
+2797 openat(AT_FDCWD,
+2797 renameat(AT_FDCWD,
+2797 openat(AT_FDCWD,
+
+writer tids on snap/:
+      1 2797

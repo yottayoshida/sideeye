@@ -1,0 +1,746 @@
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:03Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+time="2026-10-25T04:09:03Z" level=info msg="Restore complete" elapsed=173.6ms
+falsify: checker(navidrome): the database does not read: file is not a database
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:03Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 1: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:03Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 2: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:03Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 3: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:03Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 4: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:03Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 5: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:03Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 6: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:03Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 7: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:03Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 8: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:03Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 9: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:03Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 10: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:03Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 11: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 12: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 13: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 14: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 15: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 16: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 17: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 18: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 19: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 20: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 21: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 22: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 23: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 24: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 25: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 26: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 27: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 28: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 29: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 30: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 31: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 32: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:04Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 33: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:05Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 34: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:05Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 35: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:05Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 36: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:05Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 37: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:05Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 38: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:05Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 39: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:05Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 40: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:05Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 41: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:05Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 42: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:05Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 43: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:05Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 44: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:05Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 45: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:05Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 46: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:05Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 47: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:05Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 48: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:05Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 49: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:05Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 50: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:05Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 51: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:05Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 52: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:05Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 53: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:06Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 54: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:06Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 55: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:06Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 56: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:06Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 57: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:06Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 58: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:06Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 59: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:06Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 60: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:06Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 61: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:06Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 62: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:06Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 63: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:06Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 64: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:06Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 65: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:06Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 66: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:06Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 67: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:06Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 68: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:06Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 69: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:06Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 70: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:06Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+world 71: checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:09:06Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+UNKNOWN  multiple_threads_detected
+         two threads of process 618 wrote in the judged directory in an explored world: tid 622 performed open(/s/nd/navidrome.db) and tid 623 performed open(/s/nd/navidrome.db-journal). Nothing the supervising engine recorded orders the first of those before the second: under --observe supervised no join is recorded, nor which thread a creation made, so however the target orders them this run cannot establish that a crash point names the same operation on the next run, and writes from two or more threads of one process refuse. The modes that load a shim, which records creations and joins, judge a process whose threads' writes they order (v18)
+next        Two threads of one process wrote the judged directory, and under --observe supervised no join is recorded, nor which thread a creation made, so nothing orders their writes. A tool's own switch for running its file calls on one thread can move it past this — UV_THREADPOOL_SIZE=1 for Node, GOMAXPROCS=1 for Go: set it in the environment Sideeye runs in and declare it in the define's apparatus (env:UV_THREADPOOL_SIZE=1, for example); https://github.com/yottayoshida/sideeye/blob/v1.16.0/docs/apparatus.md#a-tools-own-switch-for-one-thread lists the switches measured and the targets each did not move.
+cwd         /s/nd
+apparatus   env:GOMAXPROCS=1, env:ND_CONFIGFILE
+
+expected    exit 0
+atomicity   2 path(s) judged pre-or-post; 9 path(s) matched by scratch, not judged (declared: cache)
+l1          no marker configured
+case        (none)
+processes   single process in the recording; a thread was created in an explored world; the supervising engine recorded 6 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=14f1014bde232999f3e45c618f83c4b6a30a48243641f3f629fd4f21c6032a6c;

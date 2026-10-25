@@ -1,0 +1,7 @@
+[world]
+state = "/s/vcpkg"
+
+[define]
+operation = "/opt/vcpkg/vcpkg remove utfcpp --x-install-root=/s/vcpkg"
+cwd       = "/opt/vcpkg"
+check     = "sh /ap/defines/vcpkg-s3/check.sh"

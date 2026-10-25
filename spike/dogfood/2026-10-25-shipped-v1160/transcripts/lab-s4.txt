@@ -1,0 +1,65 @@
+paperless-ngx 3.3.4 (python 3.13.5)
+godot 4.7.2.stable.official.ed1daf0bf
+luantiserver Luanti 5.17.0 (Linux)
+navidrome 0.64.2 (10114574)
+firefly-iii version=>6.7.9 (php 8.5.11)
+link /opt/paperless-venv/bin/python: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter 
+link /opt/bin/godot: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter 
+link /opt/bin/luantiserver: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+link /opt/bin/navidrome: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]
+link /usr/bin/php8.5: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+=== paperless
+before: 19 files
+operation exit 0
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+after: 20 files
+checker(paperless): WARNINGS:
+checker(paperless): │ No issues detected.                                                          │
+check exit 0
+checker(paperless): WARNINGS:
+checker(paperless): │ No issues detected.                                                          │
+recovery check exit 0
+=== godot
+before: 7 files
+operation exit 0
+    File was changed, conversion took 0 ms.
+Conversion ended - all files(6), converted files: (6), not converted files: (0).
+Conversion of all files took      0.011 seconds.
+after: 8 files
+checker(godot): 6 of 7 files converted, 0 torn or missing
+check exit 0
+checker(godot recovery): the project is the one conversion gives
+recovery check exit 0
+=== luanti
+before: 6 files
+operation exit 0
+2026-10-25 04:04:58: ACTION[Main]: Migrating player dave
+2026-10-25 04:04:58: ACTION[Main]: Successfully migrated 5 players
+2026-10-25 04:04:58: ACTION[Main]: world.mt updated
+after: 7 files
+checker(luanti): world.mt says sqlite3; 5 players read; missing []; wrong []
+check exit 0
+checker(luanti): world.mt says sqlite3; 5 players read; missing []; wrong []
+recovery check exit 0
+=== navidrome
+before: 4 files
+operation exit 0
+time="2026-10-25T04:05:04Z" level=info msg="Scanner: Finished scanning all libraries" duration=41ms
+time="2026-10-25T04:05:04Z" level=info msg="Finished full rescan"
+time="2026-10-25T04:05:04Z" level=info msg="DB analysis complete" elapsed=328.1ms
+after: 4 files
+checker(navidrome): integrity ok; users ['admin']; annotations (6, 72, 18, 6); tracks 9
+check exit 0
+=== firefly
+before: 1 files
+operation exit 0
+[2026-10-25 04:05:06] production.DEBUG: End of integrity:file-permissions  
+      [04:05:06] Command integrity:file-permissions took 0.0002 seconds.
+      [04:05:06] Command firefly-iii:report-integrity took 0.0015 seconds.
+after: 1 files
+checker(firefly): 9 journals; balances {'Checking': 3052.7, 'Savings': 8500.0}; rent to [('Employer', 'Expense account')]; ok
+check exit 0
+checker(firefly strict): 9 journals; balances {'Checking': 3052.7, 'Savings': 8500.0}; rent to [('Employer', 'Expense account')]; ok
+recovery check exit 0

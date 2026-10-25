@@ -1,0 +1,18 @@
+[world]
+# Grafana's data path: grafana.db holds the users, dashboards, data sources and alert rules.
+# Logs and plugins are configured outside it.
+state = "/s/grafana/data"
+
+[define]
+# The binary itself: /usr/sbin/grafana is the package's bash wrapper, refused child_process_detected
+# at the first gate (transcripts/entry-out/s1-round1/).
+operation = "/usr/share/grafana/bin/grafana cli --homepath /usr/share/grafana --config /s/grafana/grafana.ini admin reset-admin-password second"
+# One P: the gate's runs wrote from one thread, but the explore's supervised recording from two
+# (transcripts/explore/grafana-default-procs/).
+apparatus = ["env:GOMAXPROCS=1"]
+# The reset stamps the user row with the time it ran, so two clean runs differ in one byte of
+# grafana.db (the second gate's --twice); the binary is static Go, out of libfaketime's reach. So
+# grafana.db is scratch to the built-in invariants and the checker is what judges it.
+scratch   = ["grafana.db"]
+check     = "/s/grafana-check.sh"
+cwd       = "/s/grafana"

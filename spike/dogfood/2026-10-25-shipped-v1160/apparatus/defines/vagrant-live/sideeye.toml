@@ -1,0 +1,8 @@
+[world]
+state = "/s/vagrant.d"
+
+[define]
+operation = "ruby /opt/vagrant-gems/bin/vagrant global-status --prune"
+cwd       = "/s/vagrant.d"
+check     = "sh /ap/defines/vagrant-live/check.sh"
+apparatus = ["note:a stand-in VBoxManage at /s/vagrantaux/bin, first on PATH (env.sh), answers version and running"]

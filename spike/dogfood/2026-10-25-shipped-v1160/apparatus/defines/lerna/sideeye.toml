@@ -1,0 +1,10 @@
+[world]
+# The workspace: lerna.json, the root package-lock.json and the three packages' package.json.
+state = "/s/mono"
+
+[define]
+# Lerna's bin is a #! script; its interpreter is the operation's first word (ADR 0092).
+operation = "/opt/node/bin/node /opt/lerna-proto/node_modules/lerna/dist/cli.js version 2.0.0 --yes --no-git-tag-version --no-push"
+apparatus = ["env:UV_THREADPOOL_SIZE=1", "env:NX_DAEMON=false", "env:NX_NO_CLOUD=true", "env:NX_WORKSPACE_DATA_DIRECTORY=/s/aux/nx-data", "env:NX_CACHE_DIRECTORY=/s/aux/nx-cache"]
+check     = "/s/lerna-check.sh"
+cwd       = "/s/mono"

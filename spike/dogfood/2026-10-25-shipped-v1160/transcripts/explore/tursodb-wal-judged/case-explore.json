@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.16.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/turso",
+    "operation": ["tursodb", "-q", "-v", "syscall", "shop.db", "UPDATE orders SET status = 'shipped', cents = cents + 1 WHERE id % 2 = 0"],
+    "check": "/s/turso-check.sh",
+    "cwd": "/s/turso",
+    "expected_status": 0
+  },
+  "k": 6,
+  "ops_total": 14,
+  "prefix_hash": "262280c99eadd63b",
+  "after_class": "write",
+  "after_path": "/s/turso/shop.db-wal",
+  "before_class": "fsync",
+  "before_path": "/s/turso/shop.db-wal",
+  "violation": "hybrid"
+}

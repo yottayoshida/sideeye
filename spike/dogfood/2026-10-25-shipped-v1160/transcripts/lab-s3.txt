@@ -1,0 +1,133 @@
+===== salt-grains
+seed exit 0
+operation exit 0
+local:
+    ----------
+    maintainer:
+        ops-oncall
+-- changed files:
+< 930f48b5a13894c1  /s/salt/grains
+> dba97da58e1e935b  /s/salt/grains
+check exit 0
+-- writing threads/children (strace -f, the operation's calls on the state):
+pids: 18; execve: 102; clone: 34; fallocate: 0; xattr: 0; MAP_SHARED+PROT_WRITE: 1
+84    execve("/opt/salt/salt/bin/python3.14", ["/opt/salt/salt/bin/python3.14", "/opt/salt/salt/salt-call", "-c", "/s/salt", "--local", "grains.setval", "maintainer", "op
+84    openat(AT_FDCWD, "/s/saltaux/log/minion", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 4
+84    openat(AT_FDCWD, "/s/saltaux/log/minion", O_WRONLY|O_CREAT|O_APPEND|O_CLOEXEC, 0666) = 4
+84    openat(AT_FDCWD, "/s/saltaux/cache/roots/mtime_map", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+84    openat(AT_FDCWD, "/s/saltaux/cache/proc/20261025033523192026", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+84    openat(AT_FDCWD, "/s/salt/grains", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+84    openat(AT_FDCWD, "/s/saltaux/cache/module_refresh", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+84    unlinkat(AT_FDCWD, "/s/saltaux/cache/proc/20261025033523192026", 0) = 0
+===== sysusers
+seed exit 0
+operation exit 0
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+-- changed files:
+< 49d1ef655a2ef0ab  /s/sysroot/etc/group
+< fbbfb502c468ff76  /s/sysroot/etc/gshadow
+< 27d26edd7c2fdf3c  /s/sysroot/etc/passwd
+< 45ebb7d05e82c05c  /s/sysroot/etc/shadow
+> e3b0c44298fc1c14  /s/sysroot/etc/.pwd.lock
+> acbf86c0ca163862  /s/sysroot/etc/group
+> 49d1ef655a2ef0ab  /s/sysroot/etc/group-
+> 2af45ddf80221dd5  /s/sysroot/etc/gshadow
+> fbbfb502c468ff76  /s/sysroot/etc/gshadow-
+> 29abfd91150ca37a  /s/sysroot/etc/passwd
+> 27d26edd7c2fdf3c  /s/sysroot/etc/passwd-
+> 8bb4570b88a5ce38  /s/sysroot/etc/shadow
+> 45ebb7d05e82c05c  /s/sysroot/etc/shadow-
+check exit 0
+-- writing threads/children (strace -f, the operation's calls on the state):
+pids: 2; execve: 3; clone: 2; fallocate: 0; xattr: 0; MAP_SHARED+PROT_WRITE: 0
+190   execve("/usr/bin/systemd-sysusers", ["systemd-sysusers", "--root=/s/sysroot", "/s/sysaux/app.conf"], 0xaaaaee9ef718 /* 14 vars */ <unfinished ...>
+190   openat(AT_FDCWD, "/s/sysroot/etc/.pwd.lock", O_WRONLY|O_CREAT|O_NOCTTY|O_NOFOLLOW|O_CLOEXEC, 0600) = 3
+190   openat(AT_FDCWD, "/s/sysroot/etc/.#group8fc8515bc2926d80", O_RDWR|O_CREAT|O_EXCL|O_NOCTTY|O_CLOEXEC, 0600) = 4
+190   openat(AT_FDCWD, "/s/sysroot/etc/.#gshadow71c22652630a71b8", O_RDWR|O_CREAT|O_EXCL|O_NOCTTY|O_CLOEXEC, 0600) = 5
+190   openat(AT_FDCWD, "/s/sysroot/etc/.#passwdcafb34372935e5bc", O_RDWR|O_CREAT|O_EXCL|O_NOCTTY|O_CLOEXEC, 0600) = 6
+190   openat(AT_FDCWD, "/s/sysroot/etc/.#shadow48db893540789b47", O_RDWR|O_CREAT|O_EXCL|O_NOCTTY|O_CLOEXEC, 0600) = 7
+190   openat(AT_FDCWD, "/s/sysroot/etc/.#groupc184ca7c1f052db9", O_RDWR|O_CREAT|O_EXCL|O_NOCTTY|O_CLOEXEC, 0600) = 9
+190   renameat(AT_FDCWD, "/s/sysroot/etc/.#groupc184ca7c1f052db9", AT_FDCWD, "/s/sysroot/etc/group-") = 0
+190   openat(AT_FDCWD, "/s/sysroot/etc/.#gshadow11014796fc569a15", O_RDWR|O_CREAT|O_EXCL|O_NOCTTY|O_CLOEXEC, 0600) = 9
+190   renameat(AT_FDCWD, "/s/sysroot/etc/.#gshadow11014796fc569a15", AT_FDCWD, "/s/sysroot/etc/gshadow-") = 0
+190   openat(AT_FDCWD, "/s/sysroot/etc/.#passwda8b7c7fd3e48fd03", O_RDWR|O_CREAT|O_EXCL|O_NOCTTY|O_CLOEXEC, 0600) = 9
+190   renameat(AT_FDCWD, "/s/sysroot/etc/.#passwda8b7c7fd3e48fd03", AT_FDCWD, "/s/sysroot/etc/passwd-") = 0
+190   openat(AT_FDCWD, "/s/sysroot/etc/.#shadowabb44543af87cfb2", O_RDWR|O_CREAT|O_EXCL|O_NOCTTY|O_CLOEXEC, 0600) = 9
+190   renameat(AT_FDCWD, "/s/sysroot/etc/.#shadowabb44543af87cfb2", AT_FDCWD, "/s/sysroot/etc/shadow-") = 0
+190   renameat(AT_FDCWD, "/s/sysroot/etc/.#group8fc8515bc2926d80", AT_FDCWD, "/s/sysroot/etc/group") = 0
+190   renameat(AT_FDCWD, "/s/sysroot/etc/.#gshadow71c22652630a71b8", AT_FDCWD, "/s/sysroot/etc/gshadow") = 0
+190   renameat(AT_FDCWD, "/s/sysroot/etc/.#passwdcafb34372935e5bc", AT_FDCWD, "/s/sysroot/etc/passwd") = 0
+190   renameat(AT_FDCWD, "/s/sysroot/etc/.#shadow48db893540789b47", AT_FDCWD, "/s/sysroot/etc/shadow") = 0
+===== vagrant
+seed exit 0
+operation exit 0
+id       name   provider state  directory                           
+--------------------------------------------------------------------
+There are no active Vagrant environments on this computer! Or,
+you haven't destroyed and recreated Vagrant environments that were
+started with an older version of Vagrant.
+-- changed files:
+< 9253fbb0bfdeb54a  /s/vagrant.d/data/machine-index/index
+> 5f2d330821879882  /s/vagrant.d/data/machine-index/index
+check exit 0
+-- writing threads/children (strace -f, the operation's calls on the state):
+pids: 9; execve: 3; clone: 12; fallocate: 0; xattr: 0; MAP_SHARED+PROT_WRITE: 0
+285   openat(AT_FDCWD, "/s/vagrant.d/perm_test_ZVQJXOJASUQVQCXTBJNYZHNHLBSQQTGT", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+285   unlinkat(AT_FDCWD, "/s/vagrant.d/perm_test_ZVQJXOJASUQVQCXTBJNYZHNHLBSQQTGT", AT_REMOVEDIR) = -1 ENOTDIR (Not a directory)
+285   unlinkat(AT_FDCWD, "/s/vagrant.d/perm_test_ZVQJXOJASUQVQCXTBJNYZHNHLBSQQTGT", 0) = 0
+285   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+285   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+285   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/0000000000000000000000005eed0000.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 6
+285   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+285   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 7
+285   unlinkat(AT_FDCWD, "/s/vagrant.d/data/machine-index/0000000000000000000000005eed0000.lock", 0) = 0
+285   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+285   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/0000000000000000000000005eed0001.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 6
+285   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+285   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 7
+285   unlinkat(AT_FDCWD, "/s/vagrant.d/data/machine-index/0000000000000000000000005eed0001.lock", 0) = 0
+285   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+285   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/0000000000000000000000005eed0002.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 6
+285   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+285   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 7
+285   unlinkat(AT_FDCWD, "/s/vagrant.d/data/machine-index/0000000000000000000000005eed0002.lock", 0) = 0
+285   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+285   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/0000000000000000000000005eed0003.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 6
+285   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+285   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 7
+285   unlinkat(AT_FDCWD, "/s/vagrant.d/data/machine-index/0000000000000000000000005eed0003.lock", 0) = 0
+285   openat(AT_FDCWD, "/s/vagrant.d/data/machine-index/index.lock", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+===== freshrss
+seed exit 0
+operation exit 0
+Reconfiguring FreshRSS…
+-- changed files:
+< 4cf41422156d9ca2  /s/freshrss/config.php
+> ca679d27133d9232  /s/freshrss/config.php
+> 4cf41422156d9ca2  /s/freshrss/config.php.bak.php
+checker(freshrss): health.php exited 1: Error: Health check failed for http://localhost/api/: Failed to connect to localhost port 80 after 0 ms: Could not connect to server 
+check exit 1
+-- writing threads/children (strace -f, the operation's calls on the state):
+pids: 2; execve: 3; clone: 2; fallocate: 0; xattr: 0; MAP_SHARED+PROT_WRITE: 0
+358   openat(AT_FDCWD, "/s/freshrss/config.php.tmp.php", O_WRONLY|O_CREAT, 0666) = 4
+358   openat(AT_FDCWD, "/s/freshrss/config.php.bak.php", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 5
+358   renameat(AT_FDCWD, "/s/freshrss/config.php.tmp.php", AT_FDCWD, "/s/freshrss/config.php") = 0
+===== juicefs
+seed exit 0
+operation exit 0
+2026/10/25 03:35:28.307922 juicefs[412] <INFO>: Meta address: sqlite3:///s/jfs/jfs.db?_journal=DELETE [NewClient@interface.go:645]
+  capacity: 0 B -> 50 GiB
+    inodes: 0 -> 200,000
+trash-days: 0 -> 3
+-- changed files:
+< 9fa40c5685ef4ef8  /s/jfs/jfs.db
+> c4b5e7b9a5259d6f  /s/jfs/jfs.db
+check exit 0
+-- writing threads/children (strace -f, the operation's calls on the state):
+pids: 8; execve: 3; clone: 12; fallocate: 0; xattr: 0; MAP_SHARED+PROT_WRITE: 0
+485   execve("/usr/bin/sh", ["sh", "-c", "juicefs config sqlite3:///s/jfs/"...], 0xfffff384d6d0 /* 14 vars */) = 0
+486   execve("/opt/bin/juicefs", ["juicefs", "config", "sqlite3:///s/jfs/jfs.db?_journal"..., "--capacity", "50", "--inodes", "200000", "--trash-days", "3", "--yes"], 0xa
+486   openat(AT_FDCWD, "/s/jfs/jfs.db", O_RDWR|O_CREAT|O_LARGEFILE|O_NOFOLLOW|O_CLOEXEC, 0644) = 9
+492   openat(AT_FDCWD, "/s/jfs/jfs.db-journal", O_RDWR|O_CREAT|O_LARGEFILE|O_NOFOLLOW|O_CLOEXEC, 0644) = 8
+492   unlinkat(AT_FDCWD, "/s/jfs/jfs.db-journal", 0) = 0

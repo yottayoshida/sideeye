@@ -1,0 +1,13 @@
+[world]
+state = "/s/gogs"
+
+[define]
+# Restoring a Gogs instance from its own backup archive (`gogs backup`, made in the box at build):
+# the database is imported table by table, then `custom` and each data directory are renamed aside to
+# `*.bak` and the archive's copies renamed into place — directories renamed inside the state, the
+# shape v1.15.0 judges. The archive is extracted under --tempdir, outside the state.
+operation = "gogs restore --config /s/gogsaux/app.ini --tempdir /s/gogsaux/tmp --from /opt/gogs-backup/gogs-backup.zip"
+check     = "/s/gogs-check.sh"
+cwd       = "/s/gogs"
+# Go: one P, so the runtime does not spread the restore's writes over threads (docs/apparatus.md).
+apparatus = ["env:GOMAXPROCS=1"]

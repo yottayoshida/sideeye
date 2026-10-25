@@ -1,0 +1,193 @@
+[2026-01-01 00:00:00] production.DEBUG: Restore OAuth Keys command.  
+[2026-01-01 00:00:00] production.DEBUG: keysInDatabase: hasPrivate:true, hasPublic:true  
+[2026-01-01 00:00:00] production.DEBUG: SHA2 hash of private key in DB: 3feb70b6f8bd8e98a4ea0ff523d568e8c7c03c68ae87208923a7f69fd0c72c9b  
+[2026-01-01 00:00:00] production.DEBUG: SHA2 hash of public key in DB : f7620312491f830d4cee56f76635a1f41f5b4fa6d1bd1382ceb8700de05b819a  
+[2026-01-01 00:00:00] production.DEBUG: keysInDatabase will return true  
+[2026-01-01 00:00:00] production.DEBUG: keysInDatabase: hasPrivate:true, hasPublic:true  
+[2026-01-01 00:00:00] production.DEBUG: SHA2 hash of private key in DB: 3feb70b6f8bd8e98a4ea0ff523d568e8c7c03c68ae87208923a7f69fd0c72c9b  
+[2026-01-01 00:00:00] production.DEBUG: SHA2 hash of public key in DB : f7620312491f830d4cee56f76635a1f41f5b4fa6d1bd1382ceb8700de05b819a  
+[2026-01-01 00:00:00] production.DEBUG: keysInDatabase will return true  
+[2026-01-01 00:00:00] production.DEBUG: hasKeyFiles()  
+[2026-01-01 00:00:00] production.DEBUG: Private key file at "/opt/firefly/storage/oauth-private.key" exists? true  
+[2026-01-01 00:00:00] production.DEBUG: Public key file at "/opt/firefly/storage/oauth-public.key" exists ? true  
+[2026-01-01 00:00:00] production.DEBUG: Method will return true  
+[2026-01-01 00:00:00] production.DEBUG: keysInDatabase: hasPrivate:true, hasPublic:true  
+[2026-01-01 00:00:00] production.DEBUG: SHA2 hash of private key in DB: 3feb70b6f8bd8e98a4ea0ff523d568e8c7c03c68ae87208923a7f69fd0c72c9b  
+[2026-01-01 00:00:00] production.DEBUG: SHA2 hash of public key in DB : f7620312491f830d4cee56f76635a1f41f5b4fa6d1bd1382ceb8700de05b819a  
+[2026-01-01 00:00:00] production.DEBUG: keysInDatabase will return true  
+[2026-01-01 00:00:00] production.DEBUG: Done with OAuth Keys command.  
+[2026-01-01 00:00:00] production.DEBUG: Will now correct transfers.  
+[2026-01-01 00:00:00] production.DEBUG: getPrimaryCurrencyByUserGroup(#1, "owner@example.com") = EUR  
+[2026-01-01 00:00:00] production.DEBUG: Now correcting currencies for user group #1  
+[2026-01-01 00:00:00] production.DEBUG: Found currencies for user group #1: 1  
+[2026-01-01 00:00:00] production.DEBUG: convertOldStyleTransfers()  
+[2026-01-01 00:00:00] production.DEBUG: convertOldStyleTransactions()  
+[2026-01-01 00:00:00] production.DEBUG: fixUnevenAmounts()  
+[2026-01-01 00:00:00] production.WARNING: Sum of journal #4 is not zero, journal is broken and now fixed.  
+[2026-01-01 00:00:00] production.WARNING: Sum of journal #5 is not zero, journal is broken and now fixed.  
+[2026-01-01 00:00:00] production.DEBUG: start of optimizedCalculation with date ""  
+[2026-01-01 00:00:00] production.DEBUG: Found 18 transaction(s)  
+[2026-01-01 00:00:00] production.DEBUG: end of optimizedCalculation, corrected 14 balance(s)  
+[2026-01-01 00:00:00] production.DEBUG: Now fixing journal #8  
+[2026-01-01 00:00:00] production.DEBUG: Now inspecting journal #8  
+[2026-01-01 00:00:00] production.DEBUG: [b] Going to fix journal #8  
+[2026-01-01 00:00:00] production.DEBUG: Going to fix journal #8  
+[2026-01-01 00:00:00] production.DEBUG: Combination is "WithdrawalAsset accountRevenue account"  
+[2026-01-01 00:00:00] production.DEBUG: findOrCreate("Employer", "Expense account")  
+[2026-01-01 00:00:00] production.DEBUG: Found nothing. Will create a new one.  
+[2026-01-01 00:00:00] production.DEBUG: Now in AccountFactory::create()  
+[2026-01-01 00:00:00] production.DEBUG: Found account type based on 7 and "": "Expense account"  
+[2026-01-01 00:00:00] production.DEBUG: Now in AccountFactory::find("Employer", "Expense account")  
+[2026-01-01 00:00:00] production.DEBUG: Now in resetAccountOrder()  
+[2026-01-01 00:00:00] production.DEBUG: Cannot find anything on empty currency code and empty currency ID!  
+[2026-01-01 00:00:00] production.DEBUG: storeCreditLiability  
+[2026-01-01 00:00:00] production.DEBUG: Return max order of "Expense account" set: 25000  
+[2026-01-01 00:00:00] production.DEBUG: Now in FireflyIII\Services\Internal\Update\AccountUpdateService::update  
+[2026-01-01 00:00:00] production.DEBUG: Will not change order of this account.  
+[2026-01-01 00:00:00] production.DEBUG: deleteOB() for account #8  
+[2026-01-01 00:00:00] production.DEBUG: deleteCreditTransaction() for account #8  
+[2026-01-01 00:00:00] production.DEBUG: Now at FireflyIII\Services\Internal\Support\AccountServiceTrait::getCreditTransaction  
+[2026-01-01 00:00:00] production.DEBUG: Will call CreditRecalculateService because a new account was created or updated.  
+[2026-01-01 00:00:00] production.DEBUG: No work found for recalculate() to do.  
+[2026-01-01 00:00:00] production.DEBUG: Will updateVirtualBalance  
+[2026-01-01 00:00:00] production.DEBUG: Updated account, will now correct rules.  
+[2026-01-01 00:00:00] production.DEBUG: Will call CreditRecalculateService because a new account was created or updated.  
+[2026-01-01 00:00:00] production.DEBUG: No work found for recalculate() to do.  
+[2026-01-01 00:00:00] production.DEBUG: Will updateVirtualBalance  
+[2026-01-01 00:00:00] production.DEBUG: Transaction journal #8, destination account changed from #5 ("Employer") to #8 ("Employer").  
+[2026-01-01 00:00:00] production.DEBUG: Now inspecting journal #8  
+[2026-01-01 00:00:00] production.DEBUG: 1 journals had to be fixed.  
+[2026-01-01 00:00:00] production.DEBUG: Now in resetAccountOrder()  
+[2026-01-01 00:00:00] production.DEBUG: Return NULL, create no preference.  
+[2026-01-01 00:00:00] production.DEBUG: Start of correction:group-accounts  
+[2026-01-01 00:00:00] production.DEBUG: Fire event for 0 transaction group(s)  
+[2026-01-01 00:00:00] production.DEBUG: Now handling event FireflyIII\Events\Model\TransactionGroup\UpdatedSingleTransactionGroup  
+[2026-01-01 00:00:00] production.DEBUG: Now in unifyAccounts()  
+[2026-01-01 00:00:00] production.DEBUG: Done with unifyAccounts(0)  
+[2026-01-01 00:00:00] production.DEBUG: Effect of unifyAccounts = 0  
+[2026-01-01 00:00:00] production.DEBUG: Transaction journal count is 0  
+[2026-01-01 00:00:00] production.DEBUG: Will NOT process rules for 0 journal(s)  
+[2026-01-01 00:00:00] production.DEBUG: Will NOT recalculate credit for 0 journal(s)  
+[2026-01-01 00:00:00] production.DEBUG: Will NOT fire webhooks for 0 journal(s)  
+[2026-01-01 00:00:00] production.DEBUG: Will NOT remove period statistics for all objects, because no user detected.  
+[2026-01-01 00:00:00] production.DEBUG: Effect = 0, will not recalculate running balance.  
+[2026-01-01 00:00:00] production.DEBUG: Done with handle() for UpdatedSingleTransactionGroup  
+[2026-01-01 00:00:00] production.DEBUG: Now in FireflyIII\Listeners\Model\Webhook\SendsWebhookMessages::handle for FireflyIII\Events\Model\Webhook\WebhookMessagesRequestSending  
+[2026-01-01 00:00:00] production.DEBUG: Webhook event handler is disabled, do not run sendWebhookMessages().  
+[2026-01-01 00:00:00] production.DEBUG: End of correction:group-accounts  
+[2026-01-01 00:00:00] production.DEBUG: No inverted budget limits found.  
+[2026-01-01 00:00:00] production.DEBUG: Start of integrity:file-permissions  
+[2026-01-01 00:00:00] production.DEBUG: Processing directory: /opt/firefly/storage/upload  
+[2026-01-01 00:00:00] production.DEBUG: It is a directory!  
+[2026-01-01 00:00:00] production.DEBUG: It is writeable!  
+[2026-01-01 00:00:00] production.DEBUG: Done processing /opt/firefly/storage/upload  
+[2026-01-01 00:00:00] production.DEBUG: Done with loop.  
+[2026-01-01 00:00:00] production.DEBUG: No errors.  
+[2026-01-01 00:00:00] production.DEBUG: End of integrity:file-permissions  
+[2026-01-01 00:00:00] production.DEBUG: Restore OAuth Keys command.  
+[2026-01-01 00:00:00] production.DEBUG: keysInDatabase: hasPrivate:true, hasPublic:true  
+[2026-01-01 00:00:00] production.DEBUG: SHA2 hash of private key in DB: 3feb70b6f8bd8e98a4ea0ff523d568e8c7c03c68ae87208923a7f69fd0c72c9b  
+[2026-01-01 00:00:00] production.DEBUG: SHA2 hash of public key in DB : f7620312491f830d4cee56f76635a1f41f5b4fa6d1bd1382ceb8700de05b819a  
+[2026-01-01 00:00:00] production.DEBUG: keysInDatabase will return true  
+[2026-01-01 00:00:00] production.DEBUG: keysInDatabase: hasPrivate:true, hasPublic:true  
+[2026-01-01 00:00:00] production.DEBUG: SHA2 hash of private key in DB: 3feb70b6f8bd8e98a4ea0ff523d568e8c7c03c68ae87208923a7f69fd0c72c9b  
+[2026-01-01 00:00:00] production.DEBUG: SHA2 hash of public key in DB : f7620312491f830d4cee56f76635a1f41f5b4fa6d1bd1382ceb8700de05b819a  
+[2026-01-01 00:00:00] production.DEBUG: keysInDatabase will return true  
+[2026-01-01 00:00:00] production.DEBUG: hasKeyFiles()  
+[2026-01-01 00:00:00] production.DEBUG: Private key file at "/opt/firefly/storage/oauth-private.key" exists? true  
+[2026-01-01 00:00:00] production.DEBUG: Public key file at "/opt/firefly/storage/oauth-public.key" exists ? true  
+[2026-01-01 00:00:00] production.DEBUG: Method will return true  
+[2026-01-01 00:00:00] production.DEBUG: keysInDatabase: hasPrivate:true, hasPublic:true  
+[2026-01-01 00:00:00] production.DEBUG: SHA2 hash of private key in DB: 3feb70b6f8bd8e98a4ea0ff523d568e8c7c03c68ae87208923a7f69fd0c72c9b  
+[2026-01-01 00:00:00] production.DEBUG: SHA2 hash of public key in DB : f7620312491f830d4cee56f76635a1f41f5b4fa6d1bd1382ceb8700de05b819a  
+[2026-01-01 00:00:00] production.DEBUG: keysInDatabase will return true  
+[2026-01-01 00:00:00] production.DEBUG: Done with OAuth Keys command.  
+[2026-01-01 00:00:00] production.DEBUG: Will now correct transfers.  
+[2026-01-01 00:00:00] production.DEBUG: getPrimaryCurrencyByUserGroup(#1, "owner@example.com") = EUR  
+[2026-01-01 00:00:00] production.DEBUG: Now correcting currencies for user group #1  
+[2026-01-01 00:00:00] production.DEBUG: Found currencies for user group #1: 1  
+[2026-01-01 00:00:00] production.DEBUG: convertOldStyleTransfers()  
+[2026-01-01 00:00:00] production.DEBUG: convertOldStyleTransactions()  
+[2026-01-01 00:00:00] production.DEBUG: fixUnevenAmounts()  
+[2026-01-01 00:00:00] production.WARNING: Sum of journal #4 is not zero, journal is broken and now fixed.  
+[2026-01-01 00:00:00] production.WARNING: Sum of journal #5 is not zero, journal is broken and now fixed.  
+[2026-01-01 00:00:00] production.DEBUG: start of optimizedCalculation with date ""  
+[2026-01-01 00:00:00] production.DEBUG: Found 18 transaction(s)  
+[2026-01-01 00:00:00] production.DEBUG: end of optimizedCalculation, corrected 14 balance(s)  
+[2026-01-01 00:00:00] production.DEBUG: Now fixing journal #8  
+[2026-01-01 00:00:00] production.DEBUG: Now inspecting journal #8  
+[2026-01-01 00:00:00] production.DEBUG: [b] Going to fix journal #8  
+[2026-01-01 00:00:00] production.DEBUG: Going to fix journal #8  
+[2026-01-01 00:00:00] production.DEBUG: Combination is "WithdrawalAsset accountRevenue account"  
+[2026-01-01 00:00:00] production.DEBUG: findOrCreate("Employer", "Expense account")  
+[2026-01-01 00:00:00] production.DEBUG: Found nothing. Will create a new one.  
+[2026-01-01 00:00:00] production.DEBUG: Now in AccountFactory::create()  
+[2026-01-01 00:00:00] production.DEBUG: Found account type based on 7 and "": "Expense account"  
+[2026-01-01 00:00:00] production.DEBUG: Now in AccountFactory::find("Employer", "Expense account")  
+[2026-01-01 00:00:00] production.DEBUG: Now in resetAccountOrder()  
+[2026-01-01 00:00:00] production.DEBUG: Cannot find anything on empty currency code and empty currency ID!  
+[2026-01-01 00:00:00] production.DEBUG: storeCreditLiability  
+[2026-01-01 00:00:00] production.DEBUG: Return max order of "Expense account" set: 25000  
+[2026-01-01 00:00:00] production.DEBUG: Now in FireflyIII\Services\Internal\Update\AccountUpdateService::update  
+[2026-01-01 00:00:00] production.DEBUG: Will not change order of this account.  
+[2026-01-01 00:00:00] production.DEBUG: deleteOB() for account #8  
+[2026-01-01 00:00:00] production.DEBUG: deleteCreditTransaction() for account #8  
+[2026-01-01 00:00:00] production.DEBUG: Now at FireflyIII\Services\Internal\Support\AccountServiceTrait::getCreditTransaction  
+[2026-01-01 00:00:00] production.DEBUG: Will call CreditRecalculateService because a new account was created or updated.  
+[2026-01-01 00:00:00] production.DEBUG: No work found for recalculate() to do.  
+[2026-01-01 00:00:00] production.DEBUG: Will updateVirtualBalance  
+[2026-01-01 00:00:00] production.DEBUG: Updated account, will now correct rules.  
+[2026-01-01 00:00:00] production.DEBUG: Will call CreditRecalculateService because a new account was created or updated.  
+[2026-01-01 00:00:00] production.DEBUG: No work found for recalculate() to do.  
+[2026-01-01 00:00:00] production.DEBUG: Will updateVirtualBalance  
+[2026-01-01 00:00:00] production.DEBUG: Transaction journal #8, destination account changed from #5 ("Employer") to #8 ("Employer").  
+[2026-01-01 00:00:00] production.DEBUG: Now inspecting journal #8  
+[2026-01-01 00:00:00] production.DEBUG: 1 journals had to be fixed.  
+[2026-01-01 00:00:00] production.DEBUG: Now in resetAccountOrder()  
+[2026-01-01 00:00:00] production.DEBUG: Return NULL, create no preference.  
+[2026-01-01 00:00:00] production.DEBUG: Start of correction:group-accounts  
+[2026-01-01 00:00:00] production.DEBUG: Fire event for 0 transaction group(s)  
+[2026-01-01 00:00:00] production.DEBUG: Now handling event FireflyIII\Events\Model\TransactionGroup\UpdatedSingleTransactionGroup  
+[2026-01-01 00:00:00] production.DEBUG: Now in unifyAccounts()  
+[2026-01-01 00:00:00] production.DEBUG: Done with unifyAccounts(0)  
+[2026-01-01 00:00:00] production.DEBUG: Effect of unifyAccounts = 0  
+[2026-01-01 00:00:00] production.DEBUG: Transaction journal count is 0  
+[2026-01-01 00:00:00] production.DEBUG: Will NOT process rules for 0 journal(s)  
+[2026-01-01 00:00:00] production.DEBUG: Will NOT recalculate credit for 0 journal(s)  
+[2026-01-01 00:00:00] production.DEBUG: Will NOT fire webhooks for 0 journal(s)  
+[2026-01-01 00:00:00] production.DEBUG: Will NOT remove period statistics for all objects, because no user detected.  
+[2026-01-01 00:00:00] production.DEBUG: Effect = 0, will not recalculate running balance.  
+[2026-01-01 00:00:00] production.DEBUG: Done with handle() for UpdatedSingleTransactionGroup  
+[2026-01-01 00:00:00] production.DEBUG: Now in FireflyIII\Listeners\Model\Webhook\SendsWebhookMessages::handle for FireflyIII\Events\Model\Webhook\WebhookMessagesRequestSending  
+[2026-01-01 00:00:00] production.DEBUG: Webhook event handler is disabled, do not run sendWebhookMessages().  
+[2026-01-01 00:00:00] production.DEBUG: End of correction:group-accounts  
+[2026-01-01 00:00:00] production.DEBUG: No inverted budget limits found.  
+[2026-01-01 00:00:00] production.DEBUG: Start of integrity:file-permissions  
+[2026-01-01 00:00:00] production.DEBUG: Processing directory: /opt/firefly/storage/upload  
+[2026-01-01 00:00:00] production.DEBUG: It is a directory!  
+[2026-01-01 00:00:00] production.DEBUG: It is writeable!  
+[2026-01-01 00:00:00] production.DEBUG: Done processing /opt/firefly/storage/upload  
+[2026-01-01 00:00:00] production.DEBUG: Done with loop.  
+[2026-01-01 00:00:00] production.DEBUG: No errors.  
+[2026-01-01 00:00:00] production.DEBUG: End of integrity:file-permissions  
+PREFLIGHT  recording accepted — 413 state-changing operation(s) observed
+
+cwd          /opt/firefly
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 413 operations (20249 syscall lines examined, 4022 in scope of the judged state), witness strace
+processes    2 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the second observed run recorded a process boundary, and that run's capture is never parsed, so nothing accounts for it
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2006 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/ff --cwd /opt/firefly --operation '/usr/bin/php8.5 /opt/firefly/artisan firefly-iii:correct-database' --apparatus preload:libfaketime --apparatus 'env:FAKETIME=2026-01-01 00:00:00' --apparatus 'env:FAKETIME_DONT_FAKE_MONOTONIC=1' --apparatus 'env:DB_CONNECTION=sqlite' --apparatus 'env:CACHE_STORE=array' \
+               --check <your-invariant.sh> --oracle /usr/bin/strace

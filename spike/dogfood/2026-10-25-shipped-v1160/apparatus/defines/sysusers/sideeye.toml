@@ -1,0 +1,7 @@
+[world]
+state = "/s/sysroot"
+
+[define]
+operation = "systemd-sysusers --root=/s/sysroot /s/sysaux/app.conf"
+cwd       = "/s/sysroot"
+check     = "sh /ap/defines/sysusers/check.sh"

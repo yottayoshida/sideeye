@@ -1,0 +1,33 @@
+=== symfony-secrets 2026-10-25T03:48:46Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== nextcloud-occ 2026-10-25T03:48:53Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== docusaurus 2026-10-25T03:49:02Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== drizzle-kit 2026-10-25T03:49:36Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0
+=== vcpkg 2026-10-25T03:50:20Z
+explore exit 3: SETUP_ERROR -
+explore exit 3: SETUP_ERROR -
+=== vcpkg 2026-10-25T03:51:10Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0

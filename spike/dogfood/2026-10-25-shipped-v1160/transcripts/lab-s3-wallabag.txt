@@ -1,0 +1,17 @@
+===== wallabag
+seed exit 0
+operation exit 0
+PHP Deprecated:  Symfony\Component\DependencyInjection\ServiceLocator::formatAlternatives(): Implicitly marking parameter $alternatives as nullable is deprecated, the explicit nullable type must be used instead in /opt/wallabag/vendor/symfony/dependency-injection/ServiceLocator.php on line 137
+Start : 25-10-2026 3:50:55 ---
+4 imported
+0 already saved
+End : 25-10-2026 3:50:55 ---
+-- changed files:
+< d682a00b2d45c608  /opt/wallabag/data/db/wallabag.sqlite
+> 42718300c64f4927  /opt/wallabag/data/db/wallabag.sqlite
+check exit 0
+-- writing threads/children (strace -f, the operation's calls on the state):
+pids: 8; execve: 11; clone: 12; fallocate: 0; xattr: 0; MAP_SHARED+PROT_WRITE: 0
+82    openat(AT_FDCWD, "/opt/wallabag/data/db/wallabag.sqlite", O_RDWR|O_CREAT|O_NOFOLLOW|O_CLOEXEC, 0644) = 4
+82    openat(AT_FDCWD, "/opt/wallabag/data/db/wallabag.sqlite-journal", O_RDWR|O_CREAT|O_NOFOLLOW|O_CLOEXEC, 0644) = 5
+82    unlinkat(AT_FDCWD, "/opt/wallabag/data/db/wallabag.sqlite-journal", 0) = 0

@@ -1,0 +1,2 @@
+ROW ldb-direct static=0 preflight_rc=0 gate=0 detail=accepted, 42 operations
+EXIT ldb-direct 0

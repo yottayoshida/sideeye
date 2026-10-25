@@ -1,0 +1,1098 @@
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+2026-01-01 00:00:00: ACTION[Main]: Successfully migrated 5 players
+2026-01-01 00:00:00: ACTION[Main]: world.mt updated
+falsify: checker(luanti): world.mt says None; 0 players read; missing ['alice', 'bob', 'carol', 'dave', 'eve']; wrong []
+world 1: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+world 2: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 3: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 4: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 5: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 6: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 7: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 8: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 9: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 10: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 11: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 12: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 13: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 14: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 15: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 16: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 17: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 18: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 19: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 20: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 21: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 22: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 23: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 24: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 25: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 26: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 27: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 28: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 29: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 30: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 31: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 32: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 33: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 34: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 35: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 36: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 37: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 38: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 39: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 40: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 41: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 42: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 43: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 44: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 45: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 46: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 47: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 48: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 49: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 50: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 51: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 52: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 53: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 54: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 55: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 56: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 57: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 58: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 59: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 60: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 61: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 62: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 63: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 64: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 65: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 66: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 67: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 68: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 69: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 70: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 71: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 72: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 73: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 74: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 75: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 76: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 77: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 78: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 79: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 80: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 81: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 82: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 83: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 84: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 85: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 86: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 87: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 88: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 89: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 90: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 91: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 92: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 93: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 94: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 95: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 96: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 97: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 98: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 99: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 100: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+world 101: checker(luanti): world.mt says files; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 102: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 103: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 104: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 105: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 106: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 107: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 108: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 109: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 110: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 111: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 112: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 113: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 114: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 115: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 116: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 117: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 118: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 119: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 120: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 121: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 122: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 123: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 124: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 125: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 126: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 127: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 128: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 129: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 130: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 131: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 132: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 133: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 134: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 135: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 136: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 137: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 138: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 139: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 140: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 141: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 142: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 143: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 144: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 145: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 146: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 147: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 148: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 149: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 150: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 151: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 152: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 153: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 154: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 155: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 156: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 157: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 158: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 159: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 160: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 161: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 162: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 163: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 164: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 165: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 166: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 167: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 168: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 169: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 170: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 171: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 172: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 173: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 174: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 175: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 176: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 177: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 178: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 179: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 180: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 181: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 182: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 183: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 184: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 185: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 186: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 187: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 188: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 189: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 190: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+world 191: checker(luanti): world.mt says files; 3 players read; missing ['alice', 'bob']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 192: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 193: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 194: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 195: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 196: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 197: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 198: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 199: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 200: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 201: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 202: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 203: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 204: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 205: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 206: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 207: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 208: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 209: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 210: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 211: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 212: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 213: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 214: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 215: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 216: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 217: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 218: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 219: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 220: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 221: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 222: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 223: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 224: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 225: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 226: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 227: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 228: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 229: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 230: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 231: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 232: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 233: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 234: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 235: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+world 236: checker(luanti): world.mt says files; 2 players read; missing ['alice', 'bob', 'carol']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 237: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 238: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 239: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 240: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 241: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 242: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 243: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 244: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 245: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 246: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 247: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 248: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 249: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 250: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 251: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 252: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 253: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 254: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 255: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 256: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 257: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 258: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 259: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 260: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 261: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 262: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 263: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 264: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 265: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 266: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 267: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 268: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 269: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 270: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 271: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 272: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 273: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 274: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 275: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 276: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 277: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 278: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 279: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 280: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+world 281: checker(luanti): world.mt says files; 1 players read; missing ['alice', 'bob', 'carol', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+2026-01-01 00:00:00: ACTION[Main]: Successfully migrated 5 players
+world 282: checker(luanti): world.mt says files; 0 players read; missing ['alice', 'bob', 'carol', 'dave', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+2026-01-01 00:00:00: ACTION[Main]: Successfully migrated 5 players
+world 283: checker(luanti): world.mt says files; 0 players read; missing ['alice', 'bob', 'carol', 'dave', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+2026-01-01 00:00:00: ACTION[Main]: Successfully migrated 5 players
+world 284: checker(luanti): world.mt says files; 0 players read; missing ['alice', 'bob', 'carol', 'dave', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+2026-01-01 00:00:00: ACTION[Main]: Successfully migrated 5 players
+world 285: checker(luanti): world.mt says files; 0 players read; missing ['alice', 'bob', 'carol', 'dave', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+2026-01-01 00:00:00: ACTION[Main]: Successfully migrated 5 players
+2026-01-01 00:00:00: ACTION[Main]: world.mt updated
+world 286: checker(luanti): world.mt says sqlite3; 5 players read; missing []; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+2026-01-01 00:00:00: ACTION[Main]: Successfully migrated 5 players
+2026-01-01 00:00:00: ACTION[Main]: world.mt updated
+baseline: checker(luanti): world.mt says sqlite3; 5 players read; missing []; wrong []
+recovery falsify: checker(luanti): world.mt says None; 0 players read; missing ['alice', 'bob', 'carol', 'dave', 'eve']; wrong []
+recovery baseline check: checker(luanti): world.mt says sqlite3; 5 players read; missing []; wrong []
+recovery world 102: 2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+recovery world 102: 2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+recovery world 102: 2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+recovery world 102: 2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+recovery world 102: 2026-01-01 00:00:00: ACTION[Main]: Successfully migrated 4 players
+recovery world 102: 2026-01-01 00:00:00: ACTION[Main]: world.mt updated
+recovery world 102 check: checker(luanti): world.mt says sqlite3; 5 players read; missing []; wrong []
+FAIL  184 of 287 explored worlds violated an invariant
+
+invariant   the checker (L2)
+earliest    crash point 102 of 286
+            after  rename(/s/world/players/alice)
+            before open(/s/world/players.sqlite-journal)
+path        (named by the checker, not by path)
+observed    the checker exited non-zero after restart
+cwd         /s/world
+apparatus   preload:libfaketime, env:FAKETIME=2026-01-01 00:00:00, env:FAKETIME_DONT_FAKE_MONOTONIC=1
+recovery    configured; the recovery checker was trusted after two controls (corrupted state -> recovery check failed; completed state, recovery run on it -> recovery check passed); crash point 102: pass (the recovery checker accepted the recovered state, recovery command exit 0, 0.032s); ran against 1 of 184 failing world(s), the saved ones, in 0.064s; the crash states were rebuilt from snapshots, so contents and permission bits are as the crash left them (a directory with its owner's bits added) and timestamps and owners are not
+
+explored    287 worlds (crash points 286 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 286 operations (2355 syscall lines examined, 1187 in scope of the judged state), witness strace
+metadata    9 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchown x9. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 287 world(s)
+l1          no marker configured
+case        /out/luanti/work-explore/cases/000001.json
+replay      sideeye replay /out/luanti/work-explore/cases/000001.json --oracle /usr/bin/strace --recovery '/s/luanti-recover.sh' --recovery-check '/s/luanti-check.sh'
+evidence    sideeye evidence /out/luanti/work-explore/evidence/000001.json
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/world && unset SIDEEYE_KILL_GROUP && : > /out/luanti/work-explore/trace-repro.bin && SIDEEYE_STATE_DIR=/s/world SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/luanti/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.16.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=102 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= /opt/bin/luantiserver --world /s/world --migrate-players sqlite3 </dev/null)
+sideeye: json sha256=65f2ba52ab6c931a648af75fc716d235d9774f75be795552b0c9769e5a5443b6;

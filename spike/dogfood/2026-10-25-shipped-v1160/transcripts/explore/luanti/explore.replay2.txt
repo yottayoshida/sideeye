@@ -1,0 +1,45 @@
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+2026-01-01 00:00:00: ACTION[Main]: Successfully migrated 5 players
+2026-01-01 00:00:00: ACTION[Main]: world.mt updated
+falsify: checker(luanti): world.mt says None; 0 players read; missing ['alice', 'bob', 'carol', 'dave', 'eve']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+world 102: checker(luanti): world.mt says files; 4 players read; missing ['alice']; wrong []
+2026-01-01 00:00:00: ACTION[Main]: Migrating player alice
+2026-01-01 00:00:00: ACTION[Main]: Migrating player bob
+2026-01-01 00:00:00: ACTION[Main]: Migrating player carol
+2026-01-01 00:00:00: ACTION[Main]: Migrating player eve
+2026-01-01 00:00:00: ACTION[Main]: Migrating player dave
+2026-01-01 00:00:00: ACTION[Main]: Successfully migrated 5 players
+2026-01-01 00:00:00: ACTION[Main]: world.mt updated
+baseline: checker(luanti): world.mt says sqlite3; 5 players read; missing []; wrong []
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   the checker (L2)
+earliest    crash point 102 of 286
+            after  rename(/s/world/players/alice)
+            before open(/s/world/players.sqlite-journal)
+path        (named by the checker, not by path)
+observed    the checker exited non-zero after restart
+cwd         /s/world
+apparatus   preload:libfaketime, env:FAKETIME=2026-01-01 00:00:00, env:FAKETIME_DONT_FAKE_MONOTONIC=1
+
+explored    2 worlds (crash points 286 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 286 operations (2348 syscall lines examined, 1183 in scope of the judged state), witness strace
+metadata    9 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchown x9. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /out/luanti/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/world && unset SIDEEYE_KILL_GROUP && : > /out/luanti/work-explore-replay2/trace-repro.bin && SIDEEYE_STATE_DIR=/s/world SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/luanti/work-explore-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.16.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=102 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= /opt/bin/luantiserver --world /s/world --migrate-players sqlite3 </dev/null)
+sideeye: json sha256=418feec34c5104ad323d4c2daf68ab18f9c2a6e89e3046762e94efa8023d7b97;

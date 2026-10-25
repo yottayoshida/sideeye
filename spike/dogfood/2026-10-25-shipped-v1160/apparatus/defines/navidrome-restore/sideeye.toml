@@ -1,0 +1,13 @@
+[world]
+state = "/s/nd"
+
+[define]
+# The listener's database put back from a backup Navidrome made itself: `backup restore` copies the
+# backup into the live database through SQLite's online backup API (db/backup.go, backupOrRestore).
+# A full scan (the navidrome define) is refused on threads; this is the same database written from
+# one call.
+operation = "/opt/bin/navidrome backup restore --backup-file /s/aux/ndbk/before-third-album.db --force"
+cwd       = "/s/nd"
+apparatus = ["env:GOMAXPROCS=1", "env:ND_CONFIGFILE"]
+scratch   = ["cache"]
+check     = "/s/navidrome-check.sh"

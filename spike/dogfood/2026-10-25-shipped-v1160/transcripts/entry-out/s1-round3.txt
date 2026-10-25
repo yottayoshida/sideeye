@@ -1,0 +1,4 @@
+ROW grafana static=1 preflight_rc=0 gate=0 detail=SUPERVISED; accepted, 17 operations
+EXIT grafana 0
+ROW dolt-sql static=1 preflight_rc=2 gate=1 detail=SUPERVISED; wall: multiple_threads_detected
+EXIT dolt-sql 1
