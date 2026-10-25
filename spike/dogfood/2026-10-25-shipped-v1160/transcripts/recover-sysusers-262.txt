@@ -1,0 +1,63 @@
+== the renames of an uninterrupted run
+renameat(AT_FDCWD, "/s/sysroot/etc/.#group7057071a5d4994de", AT_FDCWD, "/s/sysroot/etc/group-") = 0
+renameat(AT_FDCWD, "/s/sysroot/etc/.#gshadowc26c47ca1c638732", AT_FDCWD, "/s/sysroot/etc/gshadow-") = 0
+renameat(AT_FDCWD, "/s/sysroot/etc/.#passwd3f21f73982913206", AT_FDCWD, "/s/sysroot/etc/passwd-") = 0
+renameat(AT_FDCWD, "/s/sysroot/etc/.#shadowb1c7384de6ea45c1", AT_FDCWD, "/s/sysroot/etc/shadow-") = 0
+renameat(AT_FDCWD, "/s/sysroot/etc/.#group7bee57e8160288c4", AT_FDCWD, "/s/sysroot/etc/group") = 0
+renameat(AT_FDCWD, "/s/sysroot/etc/.#gshadowf974f1e32a4fd2b0", AT_FDCWD, "/s/sysroot/etc/gshadow") = 0
+renameat(AT_FDCWD, "/s/sysroot/etc/.#passwde089cde04eb67337", AT_FDCWD, "/s/sysroot/etc/passwd") = 0
+renameat(AT_FDCWD, "/s/sysroot/etc/.#shadowdd0344eaaa9d6577", AT_FDCWD, "/s/sysroot/etc/shadow") = 0
++++ exited with 0 +++
+  uninterrupted passwd: appsvc:x:999:999:Example application service:/var/lib/appsvc:/usr/sbin/nologin
+  uninterrupted shadow: appsvc:!*:20751::::::
+  uninterrupted group: appsvc:x:999:
+  uninterrupted gshadow: appsvc:!*::
+===== killed at rename 5
+killed run exit 137
+check exit 0
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+re-run exit 0
+check after re-run exit 0
+group group- gshadow gshadow- passwd passwd- shadow shadow- 
+  after re-run passwd: appsvc:x:999:999:Example application service:/var/lib/appsvc:/usr/sbin/nologin
+  after re-run shadow: appsvc:!*:20751::::::
+  after re-run group: appsvc:x:999:
+  after re-run gshadow: appsvc:!*::
+===== killed at rename 6
+killed run exit 137
+checker(sysusers): grpck -r exited 2: group ssl-cert: no user appsvc delete member 'appsvc'? No 'appsvc' is a member of the 'ssl-cert' group in /etc/group but not in /etc/gshadow 
+check exit 1
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+re-run exit 0
+checker(sysusers): grpck -r exited 2: no matching group file entry in /etc/gshadow add group 'appsvc' in /etc/gshadow? No grpck: no changes 
+check after re-run exit 1
+group group- gshadow gshadow- passwd passwd- shadow shadow- 
+  after re-run passwd: appsvc:x:999:999:Example application service:/var/lib/appsvc:/usr/sbin/nologin
+  after re-run shadow: appsvc:!*:20751::::::
+  after re-run group: appsvc:x:999:
+  after re-run gshadow: (no appsvc line)
+===== killed at rename 7
+killed run exit 137
+checker(sysusers): grpck -r exited 2: group ssl-cert: no user appsvc delete member 'appsvc'? No shadow group ssl-cert: no user appsvc 
+check exit 1
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+re-run exit 0
+check after re-run exit 0
+group group- gshadow gshadow- passwd passwd- shadow shadow- 
+  after re-run passwd: appsvc:x:999:999:Example application service:/var/lib/appsvc:/usr/sbin/nologin
+  after re-run shadow: appsvc:!*:20751::::::
+  after re-run group: appsvc:x:999:
+  after re-run gshadow: appsvc:!*::
+===== killed at rename 8
+killed run exit 137
+checker(sysusers): pwck -r exited 2: no matching password file entry in /etc/shadow add user 'appsvc' in /etc/shadow? No pwck: no changes 
+check exit 1
+re-run exit 0
+checker(sysusers): pwck -r exited 2: no matching password file entry in /etc/shadow add user 'appsvc' in /etc/shadow? No pwck: no changes 
+check after re-run exit 1
+group group- gshadow gshadow- passwd passwd- shadow shadow- 
+  after re-run passwd: appsvc:x:999:999:Example application service:/var/lib/appsvc:/usr/sbin/nologin
+  after re-run shadow: (no appsvc line)
+  after re-run group: appsvc:x:999:
+  after re-run gshadow: appsvc:!*::

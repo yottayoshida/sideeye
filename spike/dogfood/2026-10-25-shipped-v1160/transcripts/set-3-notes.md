@@ -46,3 +46,32 @@ Engine: the released v1.16.0 in every box (`sideeye-sv1025-s3` and the three bui
 Defines: `apparatus/defines/{salt-grains,sysusers,vagrant,vagrant-live,freshrss,juicefs,vcpkg-s3,wallabag}/`.
 Tools: `apparatus/lab-s3.sh` (plain run + strace summary), `try-s3.sh` (preflight under extra flags), `run-named.sh` (explore under a named mode, replay, evidence), `recover-sysusers.sh`, `recover-sysusers-k.sh`, `keep-cases-s3.sh`.
 Transcripts: `lab-s3*.txt`, `entry-s3.txt`, `try-s3-1.txt`, `try/`, `explore-s3-{a,b,c,d,d2,d3}.txt`, `explore/<target>/`, `recover-sysusers{,-k}.txt`.
+
+## systemd-sysusers on upstream v262.1 (re-measured for a report, 2026-10-25)
+
+`spike/upstream-report-template.md` step 3 asks for the latest release; the run measured Debian's 257.13.
+Box `sideeye-sv1025-s3s` (`apparatus/sets/3s/Dockerfile`, `transcripts/build-set3s.txt`): the v262.1 tag
+built with meson, `systemd-sysusers.standalone` only (`systemd 262 (262.1)`, dynamic). Define
+`apparatus/defines/sysusers-262/` is `sysusers/` with the operation's binary swapped.
+
+- **Explore: FAIL 3/46, the same three worlds as 257** (crash points 43, 44, 45: a member or group in
+  group and not gshadow, then a user in passwd and not shadow), replayed twice, FAIL both times
+  (`transcripts/explore/sysusers-262/`, `transcripts/explore-s3s.txt`).
+- **Without Sideeye** (`apparatus/recover-sysusers-262.sh`, `transcripts/recover-sysusers-262.txt`): an
+  uninterrupted run makes eight renames — the backups `group-`, `gshadow-`, `passwd-`, `shadow-`, then the
+  new `group`, `gshadow`, `passwd`, `shadow` (`src/sysusers/sysusers.c` L1063–1091 in `write_files`).
+  `strace -f -e inject=renameat2,renameat,rename:signal=KILL:when=N` kills the process on entry to its Nth
+  rename. N=5 (before the new group): consistent, and a rerun completes. **N=6** (group renamed, gshadow
+  not): grpck fails, and after a rerun `appsvc` is still missing from gshadow. N=7: inconsistent, a rerun
+  repairs it. **N=8** (passwd renamed, shadow not): pwck fails, and after a rerun `appsvc` is still
+  missing from shadow — `add_user` (L1222) returns when the name is in passwd. In every case the backups
+  hold the pre-run files and every existing account is intact: no data is lost, the databases disagree,
+  and the tool's own rerun leaves two of the three windows broken.
+- **Report**: not drafted. systemd's `docs/CONTRIBUTING.md`, "Policy on the use of Large Language Models",
+  item 3 ("You must speak for yourself … Write issues … yourself"; a warning, then a ban, for AI-written
+  posts) asks for the reporter's own text, so per the template's step 0 the owner writes it and an
+  agent may only translate. The form (`.github/ISSUE_TEMPLATE/bug_report.yml`) requires the systemd
+  version only; it also asks for distribution, kernel, architecture, component, expected and unexpected
+  behaviour, steps, output. Tracker searched (sysusers with interrupted / atomic / crash / inconsistent /
+  interrupt / rename / shadow / gshadow): nothing on this window; #43269 (closed) handled the opposite
+  state, a group only in gshadow. The owner has filed nothing in systemd/systemd.

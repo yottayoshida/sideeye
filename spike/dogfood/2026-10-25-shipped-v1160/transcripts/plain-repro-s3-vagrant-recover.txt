@@ -1,0 +1,9 @@
+after the kill: 0 bytes
+vagrant status in the project: exit 0
+You appear to be running Vagrant outside of the official installers.
+web                       running (virtualbox)
+The VM is running. To stop this VM, you can run `vagrant halt` to
+index now: 292 bytes
+{'00000000000000000000000000c0ffee': 'web'}
+00000000000000000000000000c0ffee <- index_uuid in the project
+0000000  web    virtualbox running /s/vagrantaux/payments              

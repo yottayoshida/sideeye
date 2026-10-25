@@ -1,0 +1,1 @@
+colmap/colmap                              6/10  pass       label=bug

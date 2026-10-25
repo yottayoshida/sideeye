@@ -27,7 +27,7 @@ Every FAIL was replayed twice from its case (`transcripts/explore/<t>/`), and ev
 | 2 | vcpkg | tool 2026-09-26 | `vcpkg remove zlib` → `installed/` | **FAIL** 4/55, by the checker | status left `purge ok half-installed`: `vcpkg list` no longer shows zlib, its files stay, and `remove` again says it is not installed. `install zlib` again repairs it; no user data lost |
 | 2 | drizzle-kit | 0.31.11 | `drizzle-kit migrate` → `db/app.db` | FAIL 9/47 by the built-in invariant only; the checker accepted every world | **no loss**: SQLite's hot journal rolls the database back on the next open |
 | 3 | systemd-sysusers | 257 (Debian; upstream 262.1) | `systemd-sysusers --root=R app.conf` → `R/etc/{passwd,shadow,group,gshadow}` | **FAIL** 3/46, by `pwck`/`grpck` | the four files renamed one after another, killed between: a group in `group` and not `gshadow`, a user in `passwd` and not `shadow`. **Running it again repairs only one of the three**: `add_user` returns when the name is in `passwd` without looking at `shadow` (262.1's source the same). Existing accounts survive |
-| 3 | Vagrant | 2.4.9 (built from the tag as a gem) | `vagrant global-status --prune` → the machine index | **FAIL** 25/36; with one machine left running (define `vagrant-live`) **FAIL** 37/53 | the index 0 bytes, and `JSON.load("")` returns nil: **every machine's record gone with no error**; with a live machine, it silently drops out of `global-status` in seven worlds |
+| 3 | Vagrant | 2.4.9 (built from the tag as a gem) | `vagrant global-status --prune` → the machine index | **FAIL** 25/36; with one machine left running (define `vagrant-live`) **FAIL** 37/53 | the index 0 bytes, and `JSON.load("")` returns nil, so `global-status` lists no machines, with no error. **Nothing is lost for good**: running Vagrant in a machine's own project puts it back (`transcripts/plain-repro-s3-vagrant-recover.txt`); until then the cross-project list is empty, and the next save keeps it so. With a live machine, it drops out of `global-status` in seven worlds |
 | 3 | Salt `salt-call --local` | 3008.4 (onedir) | `grains.setval` → `grains` | **FAIL** 1/3 under `--observe supervised` (named; the next step did not) | `grains` empty (`O_TRUNC`, then the YAML dump): every grain the user set reads back as `""`, with no error |
 | 3 | FreshRSS | 1.30.4 | `cli/reconfigure.php` → `data/config.php` | **PASS** 7/7 | — (temporary file, `.bak`, rename) |
 | 3 | wallabag | 2.6.14 | `wallabag:import` → the SQLite database | **PASS** 88/88 by the checker (database and journal scratch) | — (judged byte for byte, FAIL 20/88: `explore/wallabag-l0/`, the journal doing its job) |
@@ -104,11 +104,25 @@ Each FAIL's tracker was read (searches in `transcripts/set-N-notes.md`, "Known u
 | Docusaurus | no hit |
 | vcpkg | no hit |
 | systemd-sysusers | no hit; #43269 fixed the opposite direction |
-| Vagrant | #6680 (2015) reports a corrupt index; the silent loss of an empty one is not reported |
+| Vagrant | #6680 (2015) reports a corrupt index, which raises an error; an empty one read silently as no machines is not reported |
 | Salt | no hit |
 | Godot | godotengine/godot#45354 (an empty file written when the disk is full, open since 2021) is the same write; the converter's "already converted" stamp is not reported |
 | Luanti | no hit |
 | Paperless-ngx | the symptom (file and row disagree after a rename) in #5614 and #12386, both closed |
 | COLMAP | no hit |
 
-Whether any of these goes upstream is the owner's call; nothing is filed by this run.
+The owner chose five to draft: Nextcloud, Symfony, Vagrant, systemd-sysusers and Salt (2026-10-25;
+Salt and COLMAP were the two set aside first, Salt then brought back as a silent loss at a project that
+answers 7 of 10). Each was reproduced without Sideeye, by `strace -e inject=…:signal=KILL` in the set's
+box (`transcripts/repro-s2-php.txt`, `transcripts/plain-repro-s3.txt`, `transcripts/recover-sysusers-262.txt`):
+
+- **systemd-sysusers on upstream's v262.1** (`apparatus/sets/3s/`, built from the tag) FAILs as 257
+  did, 3/46 at the same crash points, replayed twice (`transcripts/explore/sysusers-262/`). Killed
+  before the sixth or the eighth of its eight renames, a rerun does not repair it; before the seventh,
+  it does.
+- **Vagrant is milder than the table above first said.** After the kill, running Vagrant in a
+  machine's own project puts it back in the index (`transcripts/plain-repro-s3-vagrant-recover.txt`);
+  what is lost until then is the list across projects. Its draft opens "No data is lost by this".
+- Drafts, not filed: `report-symfony.md`, `report-vagrant.md`, `report-salt.md`. Nextcloud's
+  `AI_POLICY.md` and systemd's `docs/CONTRIBUTING.md` ask for an issue in the contributor's own words,
+  so for those two the owner writes and the agent may only translate; no draft was made.
