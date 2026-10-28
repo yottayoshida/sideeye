@@ -1,0 +1,30 @@
+falsify: Traceback (most recent call last):
+falsify:   File "<stdin>", line 3, in <module>
+falsify: sqlite3.DatabaseError: file is not a database
+falsify: checker(drizzle-kit): the database is unreadable, fails integrity_check or lost notes
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 36 of 46
+            after  write(/s/dz/db/app.db)
+            before write(/s/dz/db/app.db)
+path        app.db
+observed    holding neither the old nor the new content
+cwd         /s/dz
+apparatus   env:UV_THREADPOOL_SIZE=1
+
+explored    2 worlds (crash points 46 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 46 operations (5611 syscall lines examined, 195 in scope of the judged state), witness strace
+metadata    1 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchown x1. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /out/drizzle-kit/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   3 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle; the shim recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 8 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/dz && unset SIDEEYE_KILL_GROUP && : > /out/drizzle-kit/work-explore-replay2/trace-repro.bin && SIDEEYE_STATE_DIR=/s/dz/db SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/drizzle-kit/work-explore-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.16.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=36 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'node' node_modules/drizzle-kit/bin.cjs migrate --config drizzle.config.ts </dev/null)
+sideeye: json sha256=0c17e9ae521b8c758f220724cca4dd8b20836e8a4e000075f6d9987ad2d80e91;

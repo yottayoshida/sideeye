@@ -1,0 +1,8 @@
+# The differences acceptance check 2ma lets the observation modes keep, one per line, read by
+# spike/mode-agreement.py. Columns (tab-separated): base mode, other mode, CPU (any, x86_64 or
+# aarch64), toy, side (base or mode: which mode records the line), the normalized record, why.
+# A row allows one occurrence; a row that does not occur on a pair and CPU the run compared
+# fails the check as stale. Not compared at all: close, the thread-order records (started, join,
+# detach), the markers (shim_ready, kill_landed, cgroup), and an exec's image path. A toy every
+# mode refuses is compared by its refusal's reason alone.
+wrappers	supervised	any	spawn	mode	p2 exec	posix_spawn execs its child inside libc, where the shim has no wrapper; the supervisor sees the execve itself

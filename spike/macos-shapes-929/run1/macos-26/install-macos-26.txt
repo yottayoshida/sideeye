@@ -1,0 +1,4 @@
+install-sideeye: reading yottayoshida/sideeye release v1.15.0 (authenticated)
+install-sideeye: sideeye-v1.15.0-aarch64-macos.tar.gz published digest sha256:0dc1477abd9a966a99c1478183fbf98f8da3f24ad6a1b46547ac5d3deb8ff383
+install-sideeye: downloaded digest matches (0dc1477abd9a966a99c1478183fbf98f8da3f24ad6a1b46547ac5d3deb8ff383)
+install-sideeye: sideeye 1.15.0 (trace contract v19)

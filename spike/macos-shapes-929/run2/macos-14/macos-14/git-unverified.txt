@@ -1,0 +1,15 @@
+UNKNOWN  boundary_without_oracle
+         the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; on macOS no witness this engine reads can (#702)
+next        Re-run with --oracle <strace> on Linux, the witness that can account for the other process — or, if the operation is a shell script wrapping another command, invoke that command as the operation instead; on macOS a process boundary is refused by design, and --allow-unverified does not lift this refusal.
+cwd         /Users/runner/work/sideeye/sideeye  (none declared: Sideeye's own)
+
+expected    exit 0
+atomicity   48 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   a process other than the subject operated on the judged directory; its operations have no crash-point address; the shim recorded 1 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 1 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=c6a1535c9525e21e6b30db03bcbc2dcd60b053f275ce601a9db17108b0f2e60e;

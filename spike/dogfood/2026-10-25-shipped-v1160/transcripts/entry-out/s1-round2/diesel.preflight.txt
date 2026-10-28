@@ -1,0 +1,21 @@
+PREFLIGHT  recording accepted — 52 state-changing operation(s) observed
+
+cwd          /s/app
+atomicity    11 path(s) judged pre-or-post
+oracle       agreed on 52 operations (756 syscall lines examined, 411 in scope of the judged state), witness strace
+processes    1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2006 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/app --cwd /s/app --operation 'diesel migration run' --apparatus preload:libfaketime --apparatus 'env:FAKETIME=2026-01-01 00:00:00' \
+               --check <your-invariant.sh> --oracle /usr/bin/strace

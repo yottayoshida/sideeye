@@ -1,0 +1,2 @@
+ROW sqlx static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected
+EXIT sqlx 1

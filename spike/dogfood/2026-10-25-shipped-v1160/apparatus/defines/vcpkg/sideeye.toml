@@ -1,0 +1,13 @@
+[world]
+state = "/s/vcpkg/installed"
+
+[define]
+# Removing a port from a classic-mode vcpkg tree: vcpkg records the removal in its status database
+# (installed/vcpkg/status, with incremental files under installed/vcpkg/updates) and deletes every file
+# the port's .list names. bzip2, installed beside it, must survive.
+# The tool is named by its absolute path: a relative first word in a toml resolves against the
+# toml's directory (docs/contract-freeze.md), not cwd; the first explore was a SETUP ERROR on that.
+operation = "/s/vcpkg/vcpkg remove zlib"
+check     = "/s/vcpkg-check.sh"
+cwd       = "/s/vcpkg"
+apparatus = ["env:VCPKG_DISABLE_METRICS=1"]

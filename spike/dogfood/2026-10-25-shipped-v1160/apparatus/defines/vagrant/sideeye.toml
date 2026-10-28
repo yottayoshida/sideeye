@@ -1,0 +1,9 @@
+[world]
+state = "/s/vagrant.d"
+
+[define]
+# The upstream wrapper is a #! script; ruby is the operation's first word so the shim enters the
+# process that writes the index.
+operation = "ruby /opt/vagrant-gems/bin/vagrant global-status --prune"
+cwd       = "/s/vagrant.d"
+check     = "sh /ap/defines/vagrant/check.sh"

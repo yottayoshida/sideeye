@@ -167,6 +167,14 @@ jobs:
           test -x zig-out/bin/sideeye-testsupervisedelay
           test "$sha_before" = "$sha_after"
 
+      - name: Build the supervised hand-over test engine, shipped engine unchanged (#905)
+        run: |
+          sha_before=$(sha256sum zig-out/bin/sideeye | cut -d' ' -f1)
+          zig build -Dtest-supervise-handover
+          sha_after=$(sha256sum zig-out/bin/sideeye | cut -d' ' -f1)
+          test -x zig-out/bin/sideeye-testhandover
+          test "$sha_before" = "$sha_after"
+
       # The ancestor probe (#358) needs its own invocation — folding it into the step
       # above would leave the new option unexercised — and asserts a property rather than
       # a difference. Both options keep their shipped value as a separate literal in
@@ -507,12 +515,13 @@ jobs:
           SIDEEYE_BASH: /bin/bash
           SIDEEYE_EXPECT_BASH3: "1"
 
-      # An Apple-shipped platform binary can never be observed, but *how* it
-      # refuses is OS-dependent — measured, not assumed: macOS 15 strips the
-      # insertion silently (the run completes, no_shim_marker), while macOS 26's
-      # dyld terminates the target over the arm64/arm64e mismatch
-      # (recording_run_failed) — so the platform binary pins only the refusal
-      # fact, exit 2 and never a verdict. (A hardened-runtime ad-hoc binary was
+      # An Apple-shipped platform binary can never be observed, and the shim is kept out of
+      # it in two ways that depend on the machine, not on the macOS version as first read:
+      # the insertion is stripped and the run completes, or dyld refuses the arm64 shim in
+      # an arm64e image and the run dies (this runner, whose SIP is disabled). Both answer
+      # no_shim_marker with the step naming a build that is not part of macOS, so the
+      # platform binary pins that reason and that step — not the end of the run, which is
+      # the machine's. (A hardened-runtime ad-hoc binary was
       # tried as the clause carrier and is OS-dependent in the other direction:
       # macOS 15 ignores the insertion, macOS 26 lets it through.) The prose is
       # therefore pinned on the deterministic synthesis of a missing marker: a
@@ -526,7 +535,9 @@ jobs:
       # that was measured must be present, and the old guess must be ABSENT.
       # A containment-only check would pass against the old build too, which is
       # what the first draft of this step got wrong.
-      # Each predicate seen red once (BUILDLOG 2026-08-18, 2026-08-29).
+      # Each predicate seen red once (BUILDLOG 2026-08-18, 2026-08-29); the platform binary's
+      # reason, message and step checks on the engine before #964, whose macOS 26 report
+      # (spike/macos-shapes-929/run3/macos-26) answers recording_run_failed.
       - name: The macOS refusal keeps its shape, and the clause is pinned
         run: |
           set +e
@@ -537,6 +548,16 @@ jobs:
           set -e
           printf '%s\n' "$out" | head -3
           [ "$rc" = "2" ] || { echo "expected exit 2 from an Apple platform binary, got $rc"; exit 1; }
+          python3 - "$d/report-apple.json" <<'EOF'
+          import json, sys
+          r = json.load(open(sys.argv[1]))
+          if r.get("unknown_reason") != "no_shim_marker":
+              sys.exit("an Apple platform binary answered %r, wanted no_shim_marker" % r.get("unknown_reason"))
+          if "names a platform" not in (r.get("message") or ""):
+              sys.exit("the refusal does not report the platform marker it read: %r" % r.get("message"))
+          if "Make a build of the tool that is not part of macOS" not in (r.get("next_step") or ""):
+              sys.exit("the step does not name a build outside macOS: %r" % r.get("next_step"))
+          EOF
 
           printf 'int main(void){return 0;}\n' > "$d/noop.c"
           zig cc -o "$d/noop" "$d/noop.c"
@@ -1599,6 +1620,12 @@ jobs:
 
       - name: The skills name only commands, flags, names and pages that exist
         run: python3 spike/check-skills.py .
+
+      - name: The printed-pages check proves it can go red
+        run: python3 spike/check-printed-links.py --selftest
+
+      - name: Every page the engine prints opens at the release's tag, and every unknown_reason has its line
+        run: python3 spike/check-printed-links.py .
 
   # The other half of docs/unknown-rate.md. Check 12 holds everything between the
   # results markers to a fresh recomputation; the counts describing how the cohort

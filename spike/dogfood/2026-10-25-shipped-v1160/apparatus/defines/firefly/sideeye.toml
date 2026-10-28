@@ -1,0 +1,18 @@
+[world]
+state = "/s/ff"
+
+[define]
+# Firefly III's own repair of a database an older version or a bad import left (inject.sql): it
+# evens two journals, moves the rent to a new expense account and recomputes every running balance.
+operation = "/usr/bin/php8.5 /opt/firefly/artisan firefly-iii:correct-database"
+cwd       = "/opt/firefly"
+apparatus = ["preload:libfaketime", "env:FAKETIME=2026-01-01 00:00:00", "env:FAKETIME_DONT_FAKE_MONOTONIC=1", "env:DB_CONNECTION=sqlite", "env:CACHE_STORE=array"]
+# The database and its rollback journal are left torn by design and repaired by SQLite on the next
+# open; their correctness is the checker's, read after that open (2026-10-14 mechanisms' sqlite-txn).
+scratch   = ["database.sqlite", "database.sqlite-journal"]
+check     = "/s/firefly-check.sh"
+
+# What a user does after an interrupted repair: run it again; then the repair must be complete.
+[recovery]
+command = "/usr/bin/php8.5 /opt/firefly/artisan firefly-iii:correct-database"
+check   = "/s/firefly-check-strict.sh"

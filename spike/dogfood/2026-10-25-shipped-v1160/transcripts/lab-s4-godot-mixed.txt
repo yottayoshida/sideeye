@@ -1,0 +1,15 @@
+mixed: project.godot converted, the rest as written
+checker(godot): 1 of 7 files converted, 0 torn or missing
+ERROR: Project was already converted with this tool.
+checker(godot): 1 of 7 files converted, 0 torn or missing
+checker(godot recovery): 1c1
+checker(godot recovery): < 58de5d76a30d38d7697826b0d981dcaf1f9fd370e4b06d8db44034379cc1c365  ./default_env.tres
+checker(godot recovery): ---
+checker(godot recovery): > 3a1fe35a97723377d5cae0e17fcbd055f5e32a59eacc6216771d627afc6eb7a7  ./default_env.tres
+checker(godot recovery): 4,7c4,7
+checker(godot recovery): < 0db8b178ca5ed53b14d7ffe521ee781eb306e774d6a42073c5c5e85a33700d9c  ./scenes/Crate.tscn
+checker(godot recovery): < 4a88d1876e0dba0cf839ba91f0ad88c3389efe3feb5f41e4d34acd148c8fe88b  ./scenes/Main.tscn
+checker(godot recovery): < bf735783f27f8984ce496c3b872179605e274c4084bce5f19719431cf00b1233  ./scripts/Crate.gd
+extends KinematicBody
+
+export var speed := 5.0

@@ -162,31 +162,31 @@ review the way ADR 0039 rules for figures quoted from other records.
 ```
 outcome funnel -- every campaign
 
-422 encounters (one campaign meeting one target) over 41 campaigns, 35 of them
-recording every target they met; 280 distinct targets.
-331 rows are held to a report this repository committed; 91 name a written record only.
-1329 candidates screened before the slates were fixed, over the 26 campaign(s) that
+467 encounters (one campaign meeting one target) over 43 campaigns, 37 of them
+recording every target they met; 311 distinct targets.
+363 rows are held to a report this repository committed; 104 name a written record only.
+1432 candidates screened before the slates were fixed, over the 28 campaign(s) that
 recorded one; the rest kept no such count.
 
-reach, over the 35 campaign(s) that recorded every target they met
-  attempted       414
-  explored        282
-  judged          270
-    PASS           92
-    FAIL          178
+reach, over the 37 campaign(s) that recorded every target they met
+  attempted       459
+  explored        304
+  judged          290
+    PASS           98
+    FAIL          192
 
 outcome            encounters   in full campaigns   distinct reports
-  novel                72              64             44
-  report_worthy        54              46             44
-  filed                51              43             44
+  novel                84              76             46
+  report_worthy        56              48             46
+  filed                53              45             46
   acknowledged         12              11             10
   fixed                11              10              9
   revalidated          10               9              9
 
 filed without a Sideeye verdict, counted in nothing above or below: 5 encounter(s), 4 report(s)
 
-why encounters stopped: awaiting 29, declined 6, discussing 2, known 27, no_content_lost 16, not_worth 91, wall 122, withdrawn 3
-upstream states last read between 2026-08-14 and 2026-10-12; spike/upstream-report-status.sh measures them now.
+why encounters stopped: awaiting 31, declined 6, discussing 2, known 28, no_content_lost 17, not_worth 101, wall 147, withdrawn 3
+upstream states last read between 2026-08-14 and 2026-10-25; spike/upstream-report-status.sh measures them now.
 ```
 
 <!-- outcome-funnel:summary:end -->

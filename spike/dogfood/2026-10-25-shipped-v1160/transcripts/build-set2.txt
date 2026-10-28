@@ -1,0 +1,136 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 5.33kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/sideeye-sv1025:latest
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [ 1/11] FROM docker.io/library/sideeye-sv1025:latest@sha256:7c85c644f5cc261eed850331726992f1d4f581a80ff47353838e8c8d77914ece
+#4 resolve docker.io/library/sideeye-sv1025:latest@sha256:7c85c644f5cc261eed850331726992f1d4f581a80ff47353838e8c8d77914ece done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 565B done
+#5 DONE 0.0s
+
+#6 [ 2/11] RUN apt-get install -y --no-install-recommends php8.4-cli php8.4-xml php8.4-mbstring php8.4-sqlite3       php8.4-zip php8.4-gd php8.4-curl php8.4-intl php8.4-bcmath php8.4-gmp composer sqlite3       > /tmp/apt-php.log 2>&1 && echo "OK php composer" || { echo "MISSING php"; tail -5 /tmp/apt-php.log; }
+#6 CACHED
+
+#7 [ 3/11] RUN cd /tmp/dl && curl -fsSL -o node.txz https://nodejs.org/dist/v24.22.1/node-v24.22.1-linux-arm64.tar.xz &&     mkdir -p /opt/node && tar xJf node.txz -C /opt/node --strip-components=1 && /opt/node/bin/node --version
+#7 CACHED
+
+#8 [ 4/11] RUN cd /tmp/dl && curl -fsSL -o gogs.tgz https://github.com/gogs/gogs/releases/download/v0.14.3/gogs_v0.14.3_linux_arm64.tar.gz &&     tar xzf gogs.tgz -C /opt && ls /opt/gogs && ln -sf /opt/gogs/gogs /opt/bin/gogs
+#8 CACHED
+
+#9 [ 5/11] COPY gogs-app.ini /opt/gogs-proto/custom/conf/app.ini
+#9 DONE 0.0s
+
+#10 [ 6/11] RUN set -eu; P=/opt/gogs-proto; mkdir -p $P/data/avatars $P/repositories /s/gogsaux/log; cd $P;     export GOGS_WORK_DIR=$P GOGS_CUSTOM=$P/custom;     (gogs web --config $P/custom/conf/app.ini > /tmp/gogs-web.log 2>&1 & echo $! > /tmp/gogs.pid; sleep 8; kill $(cat /tmp/gogs.pid)); sleep 1;     gogs admin create-user --config $P/custom/conf/app.ini --name alice --password 'correct-horse-9' --email alice@example.com --admin;     mkdir -p $P/repositories/alice/notes.git && git init -q --bare $P/repositories/alice/notes.git;     printf 'avatar-of-alice-v1' > $P/data/avatars/1;     mkdir -p /opt/gogs-backup && gogs backup --config $P/custom/conf/app.ini --target /opt/gogs-backup --archive-name gogs-backup.zip;     gogs admin create-user --config $P/custom/conf/app.ini --name bob --password 'battery-staple-7' --email bob@example.com;     printf 'avatar-of-alice-v2' > $P/data/avatars/1; printf 'avatar-of-bob' > $P/data/avatars/2;     sqlite3 $P/data/gogs.db 'select name from "user"'; ls -la /opt/gogs-backup $P $P/data; echo "OK gogs proto + backup"
+#10 9.129 New user "alice" has been successfully created!
+#10 9.150 2026/10/25 03:34:32 [ INFO] Backup root directory: /tmp/gogs-backup-1259695776
+#10 9.150 2026/10/25 03:34:32 [ INFO] Packing backup files to: /opt/gogs-backup/gogs-backup.zip
+#10 9.153 2026/10/25 03:34:32 [ INFO] Dumping repositories in "/opt/gogs-proto/repositories"
+#10 9.154 2026/10/25 03:34:32 [ INFO] Repositories dumped to: /tmp/gogs-backup-1259695776/repositories.zip
+#10 9.159 2026/10/25 03:34:32 [ INFO] Backup succeed! Archive is located at: /opt/gogs-backup/gogs-backup.zip
+#10 9.172 New user "bob" has been successfully created!
+#10 9.176 alice
+#10 9.176 bob
+#10 9.178 /opt/gogs-backup:
+#10 9.178 total 36
+#10 9.178 drwxr-xr-x 2 root root  4096 Oct 25 03:34 .
+#10 9.178 drwxr-xr-x 1 root root  4096 Oct 25 03:34 ..
+#10 9.178 -rw-r--r-- 1 root root 21693 Oct 25 03:34 gogs-backup.zip
+#10 9.178 
+#10 9.178 /opt/gogs-proto:
+#10 9.178 total 24
+#10 9.178 drwxr-xr-x 1 root root 4096 Oct 25 03:34 .
+#10 9.178 drwxr-xr-x 1 root root 4096 Oct 25 03:34 ..
+#10 9.178 drwxr-xr-x 3 root root 4096 Oct 25 03:34 custom
+#10 9.178 drwxr-xr-x 3 root root 4096 Oct 25 03:34 data
+#10 9.178 drwxr-xr-x 3 root root 4096 Oct 25 03:34 repositories
+#10 9.178 
+#10 9.178 /opt/gogs-proto/data:
+#10 9.178 total 392
+#10 9.178 drwxr-xr-x 3 root root   4096 Oct 25 03:34 .
+#10 9.178 drwxr-xr-x 1 root root   4096 Oct 25 03:34 ..
+#10 9.178 drwxr-xr-x 2 root root   4096 Oct 25 03:34 avatars
+#10 9.178 -rw-r--r-- 1 root root 385024 Oct 25 03:34 gogs.db
+#10 9.178 OK gogs proto + backup
+#10 DONE 9.2s
+
+#11 [ 7/11] RUN set -eu; COMPOSER_ALLOW_SUPERUSER=1 composer create-project --no-interaction --no-progress symfony/skeleton:8.1.* /opt/symfony-app > /tmp/symfony.log 2>&1 || { tail -20 /tmp/symfony.log; exit 1; };     cd /opt/symfony-app && php bin/console --version
+#11 8.491 Symfony v8.1.9 (env: dev, debug: true)
+#11 DONE 8.5s
+
+#12 [ 8/11] RUN set -eu; cd /tmp/dl && curl -fsSL -o nc.tbz https://download.nextcloud.com/server/releases/nextcloud-33.0.10.tar.bz2 &&     tar xjf nc.tbz -C /opt && mkdir -p /opt/nc-config-proto /opt/nc-data &&     NEXTCLOUD_CONFIG_DIR=/opt/nc-config-proto/ php /opt/nextcloud/occ maintenance:install --database sqlite       --admin-user admin --admin-pass 'correct-horse-9' --data-dir /opt/nc-data > /tmp/nc-install.log 2>&1 || { tail -20 /tmp/nc-install.log; exit 1; };     NEXTCLOUD_CONFIG_DIR=/opt/nc-config-proto/ php /opt/nextcloud/occ status; ls -la /opt/nc-config-proto
+#12 ...
+
+#4 [ 1/11] FROM docker.io/library/sideeye-sv1025:latest@sha256:7c85c644f5cc261eed850331726992f1d4f581a80ff47353838e8c8d77914ece
+#4 CACHED
+
+#12 [ 8/11] RUN set -eu; cd /tmp/dl && curl -fsSL -o nc.tbz https://download.nextcloud.com/server/releases/nextcloud-33.0.10.tar.bz2 &&     tar xjf nc.tbz -C /opt && mkdir -p /opt/nc-config-proto /opt/nc-data &&     NEXTCLOUD_CONFIG_DIR=/opt/nc-config-proto/ php /opt/nextcloud/occ maintenance:install --database sqlite       --admin-user admin --admin-pass 'correct-horse-9' --data-dir /opt/nc-data > /tmp/nc-install.log 2>&1 || { tail -20 /tmp/nc-install.log; exit 1; };     NEXTCLOUD_CONFIG_DIR=/opt/nc-config-proto/ php /opt/nextcloud/occ status; ls -la /opt/nc-config-proto
+#12 49.65   - installed: true
+#12 49.65   - version: 33.0.10.1
+#12 49.65   - versionstring: 33.0.10
+#12 49.65   - edition: 
+#12 49.65   - maintenance: false
+#12 49.65   - needsDbUpgrade: false
+#12 49.65   - productname: Nextcloud
+#12 49.65   - extendedSupport: false
+#12 49.67 total 12
+#12 49.67 drwxr-xr-x 2 root root 4096 Oct 25 03:35 .
+#12 49.67 drwxr-xr-x 1 root root 4096 Oct 25 03:35 ..
+#12 49.67 -rw-r----- 1 root root  400 Oct 25 03:35 config.php
+#12 DONE 49.9s
+
+#13 [ 9/11] RUN set -eu; cd /opt && npx --yes create-docusaurus@3.10.2 docusite classic --javascript --package-manager npm > /tmp/docu.log 2>&1 || { tail -20 /tmp/docu.log; exit 1; };     cd /opt/docusite && npx docusaurus --version
+#13 72.34 3.10.2
+#13 DONE 72.5s
+
+#14 [10/11] RUN set -eu; mkdir -p /opt/drizzle-proj && cd /opt/drizzle-proj && npm init -y > /dev/null &&     npm install --no-audit --no-fund drizzle-kit@0.31.11 drizzle-orm@0.45.4 better-sqlite3@13.0.3 > /tmp/drizzle.log 2>&1 || { tail -20 /tmp/drizzle.log; exit 1; };     npx drizzle-kit --version
+#14 18.71 drizzle-kit: v0.31.11
+#14 18.71 drizzle-orm: v0.45.4 
+#14 18.71 
+#14 DONE 18.7s
+
+#15 [11/11] RUN { echo "gogs $(gogs --version 2>&1 | head -1)"; echo "php $(php -r 'echo PHP_VERSION;')";       echo "symfony $(cd /opt/symfony-app && php bin/console --version 2>&1 | head -1)";       echo "nextcloud $(NEXTCLOUD_CONFIG_DIR=/opt/nc-config-proto/ php /opt/nextcloud/occ --version 2>&1 | head -1)";       echo "node $(node --version)"; echo "docusaurus $(cd /opt/docusite && npx docusaurus --version 2>&1 | tail -1)";       echo "drizzle-kit $(cd /opt/drizzle-proj && npx drizzle-kit --version 2>&1 | tr '\n' ' ')";       for b in /opt/gogs/gogs /usr/bin/php8.4 /opt/node/bin/node; do echo "link $b: $(file -bL $b | cut -c1-100)"; done; } | tee /versions.txt
+#15 0.136 gogs Gogs version 0.14.3
+#15 0.292 php 8.4.27
+#15 0.366 symfony Symfony v8.1.9 (env: dev, debug: true)
+#15 0.650 nextcloud Nextcloud 33.0.10
+#15 0.652 node v24.22.1
+#15 1.303 docusaurus 3.10.2
+#15 1.468 drizzle-kit drizzle-kit: v0.31.11 drizzle-orm: v0.45.4   
+#15 1.478 link /opt/gogs/gogs: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=5e78d5b41
+#15 1.481 link /usr/bin/php8.4: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/l
+#15 1.488 link /opt/node/bin/node: ELF 64-bit LSB executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, interpreter /lib/
+#15 DONE 1.5s
+
+#16 exporting to image
+#16 exporting layers
+#16 exporting layers 22.5s done
+#16 exporting manifest sha256:f099a5685dbcbaad685ed2c43ba56b486224d8eebb2abad0a394e7b26d0ab3cf 0.0s done
+#16 exporting config sha256:0a937cffb112117b6159e1b38e5da84b782759722cd0474472a7b477f330abf9 0.0s done
+#16 exporting attestation manifest sha256:5472a2d9fa2050d9c1699100b00b6dd36858ed4be0514e90bfffd37e2a069ffc 0.0s done
+#16 exporting manifest list sha256:5ceb0a9f63620e9a043b5d3aedbde3cde258d94b825f198aa2199da302141ff5 done
+#16 naming to docker.io/library/sideeye-sv1025-s2:latest
+#16 naming to docker.io/library/sideeye-sv1025-s2:latest done
+#16 unpacking to docker.io/library/sideeye-sv1025-s2:latest
+#16 unpacking to docker.io/library/sideeye-sv1025-s2:latest 14.5s done
+#16 DONE 37.1s
+gogs Gogs version 0.14.3
+php 8.4.27
+symfony Symfony v8.1.9 (env: dev, debug: true)
+nextcloud Nextcloud 33.0.10
+node v24.22.1
+docusaurus 3.10.2
+drizzle-kit drizzle-kit: v0.31.11 drizzle-orm: v0.45.4   
+link /opt/gogs/gogs: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]=5e78d5b41
+link /usr/bin/php8.4: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/l
+link /opt/node/bin/node: ELF 64-bit LSB executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, interpreter /lib/

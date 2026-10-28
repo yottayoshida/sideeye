@@ -1,0 +1,31 @@
+=== Nextcloud: occ config:system:set, killed entering the write(config.php) after its ftruncate
+before: 400 bytes
+exit: 137
+after:  0 bytes
+Nextcloud is not installed - only a limited number of commands are available
+  - installed: false
+  - version: 33.0.10.1
+--- the same command run through, for comparison
+run through: 430 bytes
+
+=== Symfony: secrets:generate-keys --rotate, killed entering the second open of DATABASE_URL's file (the one that seals it again), both new keys written
+total 20
+-rw-r--r-- 1 root root 340 Oct 25 05:03 prod.DATABASE_URL.8ea85a.php
+-rw-r--r-- 1 root root 296 Oct 25 05:03 prod.STRIPE_SECRET.df0204.php
+-rw-r--r-- 1 root root 406 Oct 25 05:03 prod.decrypt.private.php
+-rw-r--r-- 1 root root 183 Oct 25 05:03 prod.encrypt.public.php
+-rw-r--r-- 1 root root  76 Oct 25 05:03 prod.list.php
+before:
+  DATABASE_URL    "postgresql://app:pw@db:5432/app"                
+  STRIPE_SECRET   "example-secret-0001"                            
+exit: 137
+after:
+ // Secret "STRIPE_SECRET" cannot be revealed as the wrong decryption key was   
+  DATABASE_URL    ******                
+  STRIPE_SECRET   ******                
+total 20
+-rw-r--r-- 1 root root 340 Oct 25 05:03 prod.DATABASE_URL.8ea85a.php
+-rw-r--r-- 1 root root 296 Oct 25 05:03 prod.STRIPE_SECRET.df0204.php
+-rw-r--r-- 1 root root 412 Oct 25 05:03 prod.decrypt.private.php
+-rw-r--r-- 1 root root 189 Oct 25 05:03 prod.encrypt.public.php
+-rw-r--r-- 1 root root  76 Oct 25 05:03 prod.list.php

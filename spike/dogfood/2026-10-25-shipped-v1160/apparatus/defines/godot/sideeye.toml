@@ -1,0 +1,16 @@
+[world]
+state = "/s/godot"
+
+[define]
+# A Godot 3 project converted in place by Godot 4.7.2's own converter, as its documentation's
+# "Upgrading from Godot 3 to Godot 4" page runs it.
+operation = "/opt/bin/godot --headless --path /s/godot --convert-3to4"
+cwd       = "/s/godot"
+# The editor's own cache directory, made by every run: not the user's.
+scratch   = [".godot"]
+check     = "/s/godot-check.sh"
+
+# What a user does after an interrupted conversion: run it again.
+[recovery]
+command = "/opt/bin/godot --headless --path /s/godot --convert-3to4"
+check   = "/s/godot-check-recovered.sh"

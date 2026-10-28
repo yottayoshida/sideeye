@@ -40,3 +40,4 @@ dogfood/2026-10-09-followups-3	1.10.0	RESULTS.md: "Released v1.10.0"
 dogfood/2026-10-09-user-data-4	1.10.0	RESULTS.md: "the released v1.10.0"
 dogfood/2026-10-10-dotenvx	1.10.0	RESULTS.md: "the released Sideeye v1.10.0 (installed by the page's install-sideeye.sh)"
 dogfood/2026-10-12-shipped-v1120	1.12.0	RESULTS.md: the released v1.12.0 installed by the page's installer, digest matched
+dogfood/2026-10-25-shipped-v1160	1.16.0	RESULTS.md: the released v1.16.0 installed by the page's installer, digest matched

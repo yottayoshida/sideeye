@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.16.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/sysroot",
+    "operation": "/opt/bin/systemd-sysusers-262 --root=/s/sysroot /s/sysaux/app.conf",
+    "check": "sh /ap/defines/sysusers/check.sh",
+    "cwd": "/s/sysroot",
+    "expected_status": 0
+  },
+  "k": 43,
+  "ops_total": 45,
+  "prefix_hash": "c7e8fc4b205d4de4",
+  "after_class": "rename",
+  "after_path": "/s/sysroot/etc/.#group578d04b30b22c317",
+  "before_class": "rename",
+  "before_path": "/s/sysroot/etc/.#gshadowf0e1e2906af3bb2e",
+  "violation": "checker"
+}

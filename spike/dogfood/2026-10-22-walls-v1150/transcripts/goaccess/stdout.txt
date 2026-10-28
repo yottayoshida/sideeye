@@ -1,0 +1,2 @@
+ROW goaccess static=0 preflight_rc=2 gate=1 detail=wall: 
+EXIT goaccess 1

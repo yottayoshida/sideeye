@@ -1,0 +1,99 @@
+build: staged the proxy CA from /Library/Application Support/Netskope/STAgent/data/nscacert.pem
+build: vendored install-sideeye.sh  sha256 2a2abcfa4303dfd8a5f783e21b6cb8c648f7dafad6dd29184eb13945f67a5eaf
+build: the page's (working tree)    sha256 2a2abcfa4303dfd8a5f783e21b6cb8c648f7dafad6dd29184eb13945f67a5eaf
+build: the page's at tag v1.12.0     sha256 41dd843a10c5996d4746487980232cf03bded32c7b3e005a641bb00a973bc3aa
+build: NOTE the page's installer has moved since v1.12.0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 3.27kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [ 1/12] FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+#5 resolve docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f 0.0s done
+#5 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 17.65kB done
+#4 DONE 0.0s
+
+#6 [ 2/12] COPY proxy-ca.pem /tmp/proxy-ca.pem
+#6 CACHED
+
+#7 [ 3/12] RUN printf '%s\n'       'Types: deb'       'URIs: http://snapshot.debian.org/archive/debian/20261014T000000Z'       'Suites: trixie trixie-updates'       'Components: main'       'Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg'       ''       'Types: deb'       'URIs: http://snapshot.debian.org/archive/debian-security/20261014T000000Z'       'Suites: trixie-security'       'Components: main'       'Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg'       > /etc/apt/sources.list.d/debian.sources &&     printf '%s\n' 'Acquire::Check-Valid-Until "false";' 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/99snapshot
+#7 CACHED
+
+#8 [ 4/12] RUN apt-get update && apt-get install -y --no-install-recommends       strace file python3 ca-certificates procps bash curl gcc libc6-dev
+#8 CACHED
+
+#9 [ 5/12] RUN cp /tmp/proxy-ca.pem /usr/local/share/ca-certificates/proxy.crt && update-ca-certificates > /tmp/ca.log 2>&1 && tail -1 /tmp/ca.log
+#9 CACHED
+
+#10 [ 6/12] COPY install-sideeye.sh /opt/install-sideeye.sh
+#10 DONE 0.0s
+
+#11 [ 7/12] RUN sh /opt/install-sideeye.sh v1.12.0 /opt/se > /install.path 2>/install.log;     echo "installer exit: $?";     echo "stdout: [$(cat /install.path)]";     grep -E 'digest|sideeye ' /install.log || true
+#11 1.868 installer exit: 0
+#11 1.870 stdout: [/opt/se/sideeye-v1.12.0-aarch64-linux/sideeye]
+#11 1.872 install-sideeye: reading yottayoshida/sideeye release v1.12.0 (unauthenticated; shares this runner's rate limit)
+#11 1.872 install-sideeye: sideeye-v1.12.0-aarch64-linux.tar.gz published digest sha256:fff6251988833d90d4496bcbe396a3deac8ba456e36ff07c350dfc60814cd555
+#11 1.872 install-sideeye: downloaded digest matches (fff6251988833d90d4496bcbe396a3deac8ba456e36ff07c350dfc60814cd555)
+#11 1.872 install-sideeye: sideeye 1.12.0 (trace contract v19)
+#11 DONE 1.9s
+
+#12 [ 8/12] RUN "$(cat /install.path)" version
+#12 0.143 sideeye 1.12.0 (trace contract v19)
+#12 DONE 0.2s
+
+#13 [ 9/12] RUN apt-get install -y --no-install-recommends       fossil notmuch darcs isync vdirsyncer sqlite3 vim logrotate       python3-alembic python3-sqlalchemy python3-django sqlite-utils       libfaketime faketime > /tmp/apt-candidates.log 2>&1 && echo "OK candidates" || { echo "FAILED candidates"; tail -5 /tmp/apt-candidates.log; exit 1; }
+#13 124.9 OK candidates
+#13 DONE 125.3s
+
+#14 [10/12] COPY pin-random.c /opt/pin/pin-random.c
+#14 DONE 0.1s
+
+#15 [11/12] RUN gcc -shared -fPIC -O2 -o /opt/pin/pin-random.so /opt/pin/pin-random.c -ldl &&     python3 -c "import sys; sys.stdout.buffer.write(bytes((i * 131 + 7) % 256 for i in range(1 << 20)))" > /opt/pin/urandom.bin && echo "OK pin-random.so"
+#15 0.203 OK pin-random.so
+#15 DONE 0.2s
+
+#16 [12/12] RUN dpkg-query -W -f '${Package} ${Version}\n' passwd dpkg fossil notmuch darcs isync vdirsyncer sqlite3 vim logrotate       python3-alembic python3-sqlalchemy python3-django sqlite-utils libfaketime strace > /versions.txt && cat /versions.txt
+#16 0.072 darcs 2.18.4-1
+#16 0.072 dpkg 1.22.22
+#16 0.072 fossil 1:2.26-2
+#16 0.072 isync 1.5.1-1
+#16 0.072 libfaketime 0.9.10+2024-06-05+gba9ed5b2-0.6
+#16 0.072 logrotate 3.22.0-1+b2
+#16 0.072 notmuch 0.39-1
+#16 0.072 passwd 1:4.17.4-2
+#16 0.072 python3-alembic 1.13.2-4
+#16 0.072 python3-django 3:4.2.28-0+deb13u2
+#16 0.072 python3-sqlalchemy 2.0.40+ds1-1
+#16 0.072 sqlite-utils 3.38-1
+#16 0.072 sqlite3 3.46.1-7+deb13u2
+#16 0.072 strace 6.13+ds-1
+#16 0.072 vdirsyncer 0.19.3-3
+#16 0.072 vim 2:9.1.1230-2
+#16 DONE 0.1s
+
+#17 exporting to image
+#17 exporting layers
+#17 exporting layers 3.8s done
+#17 exporting manifest sha256:da34312c7ddd2f141386dbb887ab6daf2506faf446f1b3a125aa3543bb0b741a done
+#17 exporting config sha256:e3ad0319b715bf0e227e4bc3e86bb4f20d3d08e9151d3c20e5b49015f06118c3 done
+#17 exporting attestation manifest sha256:d463e04a6e69c457de6add070a8e172b3273fc739fe21494bb06747df81dd79e done
+#17 exporting manifest list sha256:a5dca934ffd7186cc0e2cbc2686df0844a2355eb7623bafe37b364c46aeaed1c done
+#17 naming to docker.io/library/sideeye-m1014:latest done
+#17 unpacking to docker.io/library/sideeye-m1014:latest
+#17 unpacking to docker.io/library/sideeye-m1014:latest 2.5s done
+#17 DONE 6.3s
+build: sideeye-m1014 ready; the install log is /install.log, its stdout /install.path, the tools /versions.txt

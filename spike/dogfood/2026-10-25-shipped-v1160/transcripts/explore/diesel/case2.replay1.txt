@@ -1,0 +1,28 @@
+falsify: checker(diesel): integrity_check: Error: in prepare, file is not a database (26)
+world 52: checker(diesel): src/schema.rs (0 bytes) is neither the file before the migration nor the one after
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 52 of 52
+            after  open(/s/app/src/schema.rs)
+            before write(/s/app/src/schema.rs)
+path        src/schema.rs
+observed    holding neither the old nor the new content
+cwd         /s/app
+apparatus   preload:libfaketime, env:FAKETIME=2026-01-01 00:00:00
+
+explored    2 worlds (crash points 52 + 1 baseline)
+expected    exit 0
+atomicity   11 path(s) judged pre-or-post
+oracle      agreed on 52 operations (757 syscall lines examined, 411 in scope of the judged state), witness strace
+metadata    1 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchown x1. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /out/diesel/work-explore/cases/000002.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/app && unset SIDEEYE_KILL_GROUP && : > /out/diesel/work-case2-replay1/trace-repro.bin && SIDEEYE_STATE_DIR=/s/app SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/diesel/work-case2-replay1/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.16.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=52 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'diesel' migration run </dev/null)
+sideeye: json sha256=02dd8339e7b11fbb2538ec30f25cdc77c85b348f4131ca7ab4290ca2be0ed1f0;

@@ -1,14 +1,3 @@
-//! Linux symbol installation.
-//!
-//! Under `LD_PRELOAD` the dynamic linker resolves a symbol to the first library that
-//! defines it, so exporting these names means the target's calls land in `ops.zig`.
-//! The real functions are reached through `dlsym(RTLD_NEXT, …)`, filled in by
-//! `common.resolveAll()`.
-//!
-//! Several libc entry points are aliases that differ only in name — `open64` is `open`
-//! on a 64-bit target, `pwrite64` is `pwrite`. They get the same replacement rather
-//! than a wrapper each, so there is one body to keep correct.
-
 const ops = @import("ops.zig");
 const syscalls = @import("syscalls.zig");
 
@@ -28,6 +17,10 @@ comptime {
     @export(&ops.openat, .{ .name = "openat64" });
     @export(&ops.creat, .{ .name = "creat" });
     @export(&ops.creat, .{ .name = "creat64" });
+    @export(&ops.open_2, .{ .name = "__open_2" });
+    @export(&ops.open64_2, .{ .name = "__open64_2" });
+    @export(&ops.openat_2, .{ .name = "__openat_2" });
+    @export(&ops.openat64_2, .{ .name = "__openat64_2" });
 
     @export(&ops.write, .{ .name = "write" });
     @export(&ops.pwrite, .{ .name = "pwrite" });
@@ -72,6 +65,9 @@ comptime {
     @export(&ops.truncate, .{ .name = "truncate" });
     @export(&ops.truncate, .{ .name = "truncate64" });
 
+    @export(&ops.closefrom, .{ .name = "closefrom" });
+    @export(&ops.close_range, .{ .name = "close_range" });
+
     @export(&ops.mkdir, .{ .name = "mkdir" });
     @export(&ops.mkdirat, .{ .name = "mkdirat" });
     @export(&ops.rmdir, .{ .name = "rmdir" });
@@ -92,8 +88,6 @@ comptime {
 
     @export(&ops.close, .{ .name = "close" });
 
-    // stdio, at flush granularity (ADR 0005). fdopen needs no wrapper: no syscall
-    // happens there, and the descriptor's open was recorded by the raw wrappers.
     @export(&ops.fopen, .{ .name = "fopen" });
     @export(&ops.fopen64, .{ .name = "fopen64" });
     @export(&ops.freopen, .{ .name = "freopen" });

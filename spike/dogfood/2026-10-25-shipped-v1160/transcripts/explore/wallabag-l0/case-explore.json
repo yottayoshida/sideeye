@@ -1,0 +1,24 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 7,
+  "sideeye_version": "1.16.0",
+  "contract_version": 19,
+  "observe": "wrappers",
+  "define": {
+    "state": "/opt/wallabag/data/db",
+    "operation": "php bin/console wallabag:import wallabag /s/wbaux/second.json --importer=v2 --env=prod -n",
+    "check": "sh /ap/defines/wallabag/check.sh",
+    "cwd": "/opt/wallabag",
+    "scratch": [],
+    "apparatus": ["preload:libfaketime", "env:FAKETIME=2026-01-01 00:00:00"],
+    "expected_status": 0
+  },
+  "k": 66,
+  "ops_total": 87,
+  "prefix_hash": "11c629c7c3389311",
+  "after_class": "write",
+  "after_path": "/opt/wallabag/data/db/wallabag.sqlite",
+  "before_class": "write",
+  "before_path": "/opt/wallabag/data/db/wallabag.sqlite",
+  "violation": "hybrid"
+}

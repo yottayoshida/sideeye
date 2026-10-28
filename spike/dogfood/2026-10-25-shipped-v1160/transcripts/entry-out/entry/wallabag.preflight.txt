@@ -1,0 +1,28 @@
+PHP Deprecated:  Symfony\Component\DependencyInjection\Container::__construct(): Implicitly marking parameter $parameterBag as nullable is deprecated, the explicit nullable type must be used instead in /opt/wallabag/vendor/symfony/dependency-injection/Container.php on line 65
+PHP Deprecated:  Symfony\Component\DependencyInjection\Argument\ServiceLocator::__construct(): Implicitly marking parameter $serviceTypes as nullable is deprecated, the explicit nullable type must be used instead in /opt/wallabag/vendor/symfony/dependency-injection/Argument/ServiceLocator.php on line 27
+PHP Deprecated:  Symfony\Component\DependencyInjection\ServiceLocator::formatAlternatives(): Implicitly marking parameter $alternatives as nullable is deprecated, the explicit nullable type must be used instead in /opt/wallabag/vendor/symfony/dependency-injection/ServiceLocator.php on line 137
+PHP Deprecated:  Symfony\Component\DependencyInjection\Container::__construct(): Implicitly marking parameter $parameterBag as nullable is deprecated, the explicit nullable type must be used instead in /opt/wallabag/vendor/symfony/dependency-injection/Container.php on line 65
+PHP Deprecated:  Symfony\Component\DependencyInjection\Argument\ServiceLocator::__construct(): Implicitly marking parameter $serviceTypes as nullable is deprecated, the explicit nullable type must be used instead in /opt/wallabag/vendor/symfony/dependency-injection/Argument/ServiceLocator.php on line 27
+PHP Deprecated:  Symfony\Component\DependencyInjection\ServiceLocator::formatAlternatives(): Implicitly marking parameter $alternatives as nullable is deprecated, the explicit nullable type must be used instead in /opt/wallabag/vendor/symfony/dependency-injection/ServiceLocator.php on line 137
+PREFLIGHT  recording accepted — 87 state-changing operation(s) observed
+
+cwd          /opt/wallabag
+atomicity    1 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: wallabag.sqlite, wallabag.sqlite-journal)
+oracle       agreed on 87 operations (17695 syscall lines examined, 456 in scope of the judged state), witness strace
+processes    6 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the second observed run recorded a process boundary, and that run's capture is never parsed, so nothing accounts for it
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2006 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+scratch        declared scratch, not compared: wallabag.sqlite, wallabag.sqlite-journal
+
+next         sideeye explore --state /opt/wallabag/data/db --cwd /opt/wallabag --operation 'php bin/console wallabag:import wallabag /s/wbaux/second.json --importer=v2 --env=prod -n' --apparatus preload:libfaketime --apparatus 'env:FAKETIME=2026-01-01 00:00:00' --scratch wallabag.sqlite --scratch wallabag.sqlite-journal \
+               --check <your-invariant.sh> --oracle /usr/bin/strace

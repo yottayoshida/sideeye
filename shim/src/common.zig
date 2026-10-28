@@ -1,19 +1,6 @@
-//! The part of the shim that does not depend on how symbols get replaced.
-//!
 //! Everything here runs *inside somebody else's process*, which sets the rules:
 //! no heap, no standard-library I/O, no locks, no assumptions about what the target
 //! has already initialised. State lives in globals; buffers are fixed and static.
-//!
-//! Through contract v15 this module supported single-threaded targets only — a target
-//! that created a thread was refused, so the globals needed no synchronisation, and a
-//! lock would have hidden the very condition to report. A run whose threads never write
-//! the judged directory is judged now (v16), and its other threads still pass through
-//! every interposed entry point, so the state one interposed call needs — the
-//! re-entrancy guard, the record buffer, the count scan — is **per thread**, held in a
-//! slot keyed by thread id (`ThreadState`, below). What stays process-wide is read-only
-//! after `init`. There is still no lock: two threads writing the judged directory are
-//! refused by the engine, not serialised here, and `refreshCount`'s comment says why the
-//! numbering survives the race that leaves.
 
 const std = @import("std");
 const builtin = @import("builtin");
@@ -23,19 +10,8 @@ const contract = @import("contract");
 /// flag, and true only into the separately named libsideeye_shim_testgap that
 /// `-Dtest-seq-gap` additionally produces. There is no runtime knob: an environment
 /// variable that could bend the numbering would be a production backdoor.
-///
-/// Since #365 that hardcoded `false` is held by a test at the bottom of this file rather
-/// than by this paragraph alone. CI's sha comparison covers the FLAG leaking into the
-/// shipped shim; an edit to the literal itself lands in both arms of that comparison and
-/// leaves it green.
 const shim_build_options = @import("shim_build_options");
 
-/// The syscall-layer observation path (contract v14, Linux only).
-///
-/// Imported behind a platform test rather than unconditionally: the module speaks
-/// seccomp, `ucontext` register offsets and `SIGSYS`, none of which exist on Darwin, and
-/// an unconditional import would make the macOS build analyse them. The stub carries the
-/// same three names so every use site below reads the same on both platforms.
 const syscalls = if (builtin.os.tag == .linux) @import("syscalls.zig") else struct {
     pub var armed: bool = false;
     pub var guard_signal: bool = false;
@@ -51,9 +27,6 @@ const syscalls = if (builtin.os.tag == .linux) @import("syscalls.zig") else stru
     }
 };
 
-/// Whether an operation recorded at a libc entry point would be recorded a second time
-/// at the syscall boundary.
-///
 /// `syscalls.armed` is the one flag both doors read: the `SIGSYS` handler records only
 /// while it is set, and every wrapper whose syscall the filter traps stays silent while
 /// it is set. Exactly one of the two counts any operation, in every case — including a
@@ -80,14 +53,8 @@ pub const c = struct {
     /// that spawned it would carry on to the next command.
     pub extern "c" fn kill(pid: c_int, sig: c_int) c_int;
     pub extern "c" fn _exit(status: c_int) noreturn;
-    /// The wait behind a crash point's kill (#569), and nothing else. Not interposed on
-    /// either platform, and under `--observe syscalls` the sleep is not a trapped call.
     pub extern "c" fn usleep(usec: c_uint) c_int;
     pub extern "c" fn lseek(fd: c_int, offset: i64, whence: c_int) i64;
-    /// Reads the trace back to find the run's highest operation number (v15). Not
-    /// interposed — the shim wraps mutations, not reads — so this extern reaches libc
-    /// directly on both platforms, and `--observe syscalls` does not trap it either
-    /// (`syscalls.zig`'s set holds kill points only, and reading is not one).
     /// Positional because the read must not depend on where the descriptor happens to be:
     /// the offset is shared with a forked child, and `refreshCount` moves it itself with
     /// `lseek(SEEK_END)` to find the file's size. Moving it is harmless — every write here
@@ -99,8 +66,6 @@ pub const c = struct {
     /// in this file, and a cached pid would be the parent's — in the one process the
     /// pid field exists to tell apart.
     pub extern "c" fn getpid() c_int;
-    /// Coarse, and that is all it is for: the temp-name creators mix it with the pid
-    /// and a counter so two runs of one pid do not produce one name sequence (#39).
     /// `time_t` is 64-bit on both platforms this builds for.
     pub extern "c" fn time(t: ?*i64) i64;
     /// Only the subject calls these (execSeqCarrySet guards on getpid == armed_pid),
@@ -109,16 +74,12 @@ pub const c = struct {
     pub extern "c" fn unsetenv(name: [*:0]const u8) c_int;
     pub extern "c" fn getpgrp() c_int;
     pub extern "c" fn getpgid(pid: c_int) c_int;
-    /// macOS only: asks a descriptor for its path.
-    ///
     /// Variadic, as C declares it. A fixed third argument was the third instance of the
     /// same ABI mistake in this codebase: on arm64 the buffer pointer went into a
     /// register the callee never read, `F_GETPATH` failed, and every fd-based operation
     /// (`write`, `fsync`, `close`) was silently dropped from the trace — macOS counted
     /// three operations where Linux counted five, with nothing reporting an error.
     pub extern "c" fn fcntl(fd: c_int, cmd: c_int, ...) c_int;
-    /// Not interposed, so the extern reaches libc directly on both platforms. Used by
-    /// the stdio wrappers to hand a stream's descriptor to `noteFd`.
     pub extern "c" fn fileno(stream: *FILE) c_int;
 };
 
@@ -126,7 +87,6 @@ const SEEK_END: c_int = 2;
 /// Darwin's F_GETPATH. The buffer must hold at least PATH_MAX (1024) bytes.
 const F_GETPATH: c_int = 50;
 const darwin_path_max: usize = 1024;
-/// These three predate the Linux/BSD split and share values everywhere.
 const F_DUPFD: c_int = 0;
 const F_SETFD: c_int = 2;
 const FD_CLOEXEC: c_int = 1;
@@ -140,9 +100,6 @@ pub const AT_FDCWD: c_int = if (builtin.os.tag == .macos) -2 else -100;
 /// a directory removal, and misreading it records `.unlink` where Linux records
 /// `.rmdir` — a parity claim that fails only for targets which remove directories.
 pub const AT_REMOVEDIR: c_int = if (builtin.os.tag == .macos) 0x0080 else 0x200;
-/// The two `renameat2` flags that make it something other than a rename (Linux only;
-/// values from `std.os.linux.RENAME`'s bit order). NOREPLACE has no constant here
-/// because nothing branches on it — it IS a rename, so it takes the default path.
 pub const RENAME_EXCHANGE: c_uint = 2;
 pub const RENAME_WHITEOUT: c_uint = 4;
 /// Darwin's `renamex_np`/`renameatx_np` flags (v12). The NUMBERS collide with the
@@ -153,8 +110,6 @@ pub const RENAME_WHITEOUT: c_uint = 4;
 /// wrapper reads as the header does.
 pub const DARWIN_RENAME_SWAP: c_uint = 0x2;
 pub const DARWIN_RENAME_EXCL: c_uint = 0x4;
-/// `struct attrlist.commonattr` bit for the entry's name (v12): the one bit that turns
-/// a metadata call into a rename.
 pub const ATTR_CMN_NAME: u32 = 0x00000001;
 const SIGKILL: c_int = 9;
 
@@ -165,64 +120,31 @@ const SIGKILL: c_int = 9;
 const is_darwin = builtin.os.tag == .macos;
 const O_RDONLY: c_int = 0;
 const O_WRONLY: c_int = 0o1;
-/// Public because `ops.zig` has to decide whether a variadic `mode` argument is even
-/// present before reading it.
 pub const O_CREAT: c_int = if (is_darwin) 0x200 else 0o100;
 const O_APPEND: c_int = if (is_darwin) 0x8 else 0o2000;
 const O_CLOEXEC: c_int = if (is_darwin) 0x1000000 else 0o2000000;
-/// Public for the same reason as `O_CREAT`: `ops.zig`'s temp-name creators build the
-/// open the real `mkstemp` builds, rather than forwarding to it (#39). Read from the
-/// two platforms' headers rather than recalled — `O_RDWR` happens to agree and
-/// `O_EXCL` does not, which is exactly the pair a memory would get wrong.
 pub const O_RDWR: c_int = 0x2;
 pub const O_EXCL: c_int = if (is_darwin) 0x800 else 0o200;
-/// The access-mode mask and O_TRUNC agree across Linux and Darwin; O_CREAT does not
-/// and is branched above. Public for the same reason as the three above: `ops.zig`'s
-/// temp-name creators need it to strip what glibc strips out of a caller's flags.
 pub const O_ACCMODE: c_int = 0o3;
 const O_TRUNC: c_int = if (is_darwin) 0x400 else 0o1000;
-/// Derived from `std.posix.O` rather than written out the way this block's other flags are,
-/// and it is the only one that must be. (Eight neighbours, five of which branch on the
-/// platform: `O_CREAT`, `O_APPEND`, `O_CLOEXEC`, `O_EXCL`, `O_TRUNC`. The other three —
-/// `O_WRONLY`, `O_RDWR`, `O_ACCMODE` — agree everywhere and are plain literals.)
-///
 /// The value differs *within* Linux by architecture — 0o400000 on x86_64, 0o100000 on
 /// aarch64 — so the `is_darwin` shape above cannot express it. The engine's copy carried
 /// the x86_64 number for all of Linux once, which left the one guard that used it inert on
 /// arm64: measured in an arm64 container, a symlink planted at a capture path was opened
 /// straight through (#316). The five literals above were checked on three targets then and
 /// are right; a sixth written the same way is where the next one goes wrong.
-/// `src/posix.zig` derives it for exactly this reason, and this is the same derivation, so
-/// the two sides cannot drift apart.
-///
-/// The `@bitCast` is comptime: no heap, no libc, no runtime code — the rule this file
-/// opens with holds.
 const O_NOFOLLOW: c_int = blk: {
     var f: std.posix.O = .{};
     f.NOFOLLOW = true;
     break :blk @bitCast(f);
 };
 
-/// Derived the same way `O_NOFOLLOW` above is, for a weaker reason: this value does not
-/// vary within a platform, so a literal would have been right here. It is derived anyway
-/// because the warning in that comment is about the *writing*, not about which values
-/// happen to be safe — the next flag written by hand is where the next one goes wrong.
-/// Its example is not one of the five literals above; those were checked on three targets
-/// and are right. It is the engine's `O_NOFOLLOW`, which carried the x86_64 number for all
-/// of Linux and left its one caller inert on arm64 (#316).
-/// `src/posix.zig` keeps a literal for the engine's copy of this flag and
-/// stays that way: `build.zig` gives this file's test module `contract`,
-/// `engine_build_options` and `shim_build_options`, with no edge to `posix.zig`, so a test
-/// pinning the two against each other cannot be written from this side. Deriving is what
-/// removes the need for one.
 const O_NONBLOCK: c_int = blk: {
     var f: std.posix.O = .{};
     f.NONBLOCK = true;
     break :blk @bitCast(f);
 };
 
-/// Is this open capable of changing state? (ADR 0003)
-///
 /// True iff the access mode is not read-only, or the call can create or truncate. The
 /// oracle applies the same predicate textually (`isReadOnlyOpen`, src/oracle.zig) —
 /// the two must stay in agreement, and the acceptance suite's mutation pair is the
@@ -267,9 +189,6 @@ pub const CreatFn = *const fn ([*:0]const u8, c_uint) callconv(.c) c_int;
 pub const WriteFn = *const fn (c_int, [*]const u8, usize) callconv(.c) isize;
 pub const PwriteFn = *const fn (c_int, [*]const u8, usize, i64) callconv(.c) isize;
 pub const WritevFn = *const fn (c_int, *const anyopaque, c_int) callconv(.c) isize;
-/// The vectored positional writes (#256). `pwritev2` differs only by its trailing
-/// flags argument; both keep the descriptor first, so scope reads argument 0 on
-/// either observer.
 pub const PwritevFn = *const fn (c_int, *const anyopaque, c_int, i64) callconv(.c) isize;
 pub const Pwritev2Fn = *const fn (c_int, *const anyopaque, c_int, i64, c_int) callconv(.c) isize;
 /// The kernel copy primitives (#244). `copy_file_range` is the one whose destination
@@ -279,9 +198,6 @@ pub const CopyFileRangeFn = *const fn (c_int, ?*i64, c_int, ?*i64, usize, c_uint
 pub const SendfileFn = *const fn (c_int, c_int, ?*i64, usize) callconv(.c) isize;
 pub const RenameFn = *const fn ([*:0]const u8, [*:0]const u8) callconv(.c) c_int;
 pub const RenameatFn = *const fn (c_int, [*:0]const u8, c_int, [*:0]const u8) callconv(.c) c_int;
-/// `renameat2` adds flags, and the flags change what the call MEANS (#256):
-/// `RENAME_EXCHANGE` swaps two files atomically and `RENAME_WHITEOUT` creates a
-/// whiteout inode — neither is the plain rename `note2(.rename, …)` models.
 pub const Renameat2Fn = *const fn (c_int, [*:0]const u8, c_int, [*:0]const u8, c_uint) callconv(.c) c_int;
 pub const UnlinkFn = *const fn ([*:0]const u8) callconv(.c) c_int;
 pub const UnlinkatFn = *const fn (c_int, [*:0]const u8, c_int) callconv(.c) c_int;
@@ -306,12 +222,13 @@ pub const PthreadCreateFn = *const fn (*anyopaque, ?*const anyopaque, *const any
 /// `pthread_equal` as the comparison; on both libcs the shim runs under it is the integer's.
 pub const PthreadJoinFn = *const fn (usize, ?*?*anyopaque) callconv(.c) c_int;
 pub const PthreadDetachFn = *const fn (usize) callconv(.c) c_int;
-/// A thread's start routine, as `pthread_create` takes it.
 pub const RoutineFn = *const fn (?*anyopaque) callconv(.c) ?*anyopaque;
 pub const SetsidFn = *const fn () callconv(.c) c_int;
+pub const Open2Fn = *const fn ([*:0]const u8, c_int) callconv(.c) c_int;
+pub const Openat2Fn = *const fn (c_int, [*:0]const u8, c_int) callconv(.c) c_int;
+pub const ClosefromFn = *const fn (c_int) callconv(.c) void;
+pub const CloseRangeFn = *const fn (c_uint, c_uint, c_int) callconv(.c) c_int;
 pub const SetpgidFn = *const fn (c_int, c_int) callconv(.c) c_int;
-
-// --- stdio, at flush granularity (ADR 0005) ----------------------------------------
 
 pub const FILE = opaque {};
 pub const FopenFn = *const fn ([*:0]const u8, [*:0]const u8) callconv(.c) ?*FILE;
@@ -324,8 +241,6 @@ pub const FseekoFn = *const fn (*FILE, i64, c_int) callconv(.c) c_int;
 pub const RewindFn = *const fn (*FILE) callconv(.c) void;
 pub const FsetposFn = *const fn (*FILE, *const anyopaque) callconv(.c) c_int;
 
-/// A stream's write capability, from its fopen mode string (C11 7.21.5.3): the mode
-/// begins 'r', 'w' or 'a', optionally followed by 'b', '+' and platform extensions.
 /// Only a plain 'r' without '+' is read-only. Unknown shapes err toward write-capable —
 /// the unparseable is counted, the same stance as `openIsWriteCapable`. The oracle
 /// needs no matching text predicate: for every *valid* mode it classifies the openat
@@ -363,9 +278,6 @@ test "the mode-string predicate, pinned case by case" {
 /// musl ship it; macOS may not, and falls back to the SDK-public `__sFILE` fields.
 var fpending: ?FpendingFn = null;
 
-/// The head of Darwin's `struct __sFILE`, as the SDK's <stdio.h> declares it. Only the
-/// fields up to `_bf` are read. The layout has been ABI-stable for decades; the pin
-/// test below writes into a real stream and fails loudly the day that stops being true.
 const DarwinSFile = extern struct {
     p: ?[*]u8,
     r: c_int,
@@ -375,9 +287,6 @@ const DarwinSFile = extern struct {
     bf_base: ?[*]u8,
     bf_size: c_int,
 };
-/// __SWR: the stream is open for writing. A read stream's `_p` also sits past its
-/// buffer base, so without this check a read position would masquerade as pending
-/// output and every fclose of a read stream would invent a write.
 const darwin_swr: c_short = 0x0008;
 
 fn darwinPending(stream: *FILE) usize {
@@ -389,9 +298,6 @@ fn darwinPending(stream: *FILE) usize {
     return @intFromPtr(p) - @intFromPtr(base);
 }
 
-/// `noteStdioFlush`'s and `noteStdioClose`'s door before `init`: the stream's descriptor, when
-/// it was opened for writing. Conservative where `init`'s side is exact — without `fpending` a
-/// flush with nothing pending is marked too.
 fn preInitStream(stream: *FILE) bool {
     if (preInitDecided()) |decided| return decided;
     return preInitFd(c.fileno(stream));
@@ -405,10 +311,6 @@ pub fn stdioOpenRecorded(mode: [*:0]const u8) bool {
     return (stdioActive() or !active) and modeIsWriteCapable(mode);
 }
 
-/// stdio recording is armed only when the pending-bytes question can be answered.
-/// Without `__fpending` (Linux) the shim records nothing stdio-shaped and behaves
-/// exactly as v4 did — the oracle still refuses stdio targets rather than misjudging
-/// them. macOS always has the `__sFILE` fallback.
 pub fn stdioActive() bool {
     if (is_darwin) return true;
     return fpending != null;
@@ -429,10 +331,6 @@ fn pendingBytes(stream: *FILE) usize {
 /// `noteFd` would refuse the record anyway, but an inactive or re-entered shim must
 /// not so much as read `__sFILE` fields of a stream it was never armed to observe.
 pub fn noteStdioFlush(stream: *FILE) void {
-    // Before `init` (#753), a flush through a stream on a state file is a write nothing records
-    // — stdout redirected into the state by an earlier image, say. The pending count needs
-    // `fpending`, which `init` looks up, so the stream's descriptor is asked instead, when it
-    // can be written at all.
     if (!active and !preInitStream(stream)) return;
     if (mine().busy) return;
     if (!stdioActive()) return;
@@ -461,8 +359,6 @@ pub fn noteStdioClose(stream: *FILE) void {
     noteFd(.close, c.fileno(stream));
 }
 
-/// Whether a flush is due, for the freopen wrapper's explicit pre-flush. Same guards
-/// as noteStdioFlush: an inactive shim answers "no" without touching the stream.
 pub fn stdioHasPending(stream: *FILE) bool {
     if (!active or mine().busy) return false;
     if (!stdioActive()) return false;
@@ -470,10 +366,6 @@ pub fn stdioHasPending(stream: *FILE) bool {
 }
 
 test "pending bytes are read from a real stream, not assumed" {
-    // The one place the shim depends on stdio internals. On Linux this exercises the
-    // dlsym'd __fpending; on macOS, whichever of __fpending / __sFILE the init chose.
-    // Failing here means the pending source is wrong for this platform — which must be
-    // a loud test failure, never a quiet phantom write in a trace.
     if (fpending == null and !is_darwin) fpending = lookup(FpendingFn, "__fpending");
     if (!stdioActive()) return error.SkipZigTest;
 
@@ -535,6 +427,12 @@ pub var real: struct {
     pthread_detach: ?PthreadDetachFn = null,
     setsid: ?SetsidFn = null,
     setpgid: ?SetpgidFn = null,
+    __open_2: ?Open2Fn = null,
+    __open64_2: ?Open2Fn = null,
+    __openat_2: ?Openat2Fn = null,
+    __openat64_2: ?Openat2Fn = null,
+    closefrom: ?ClosefromFn = null,
+    close_range: ?CloseRangeFn = null,
     fopen: ?FopenFn = null,
     fopen64: ?FopenFn = null,
     freopen: ?FreopenFn = null,
@@ -552,13 +450,10 @@ pub var real: struct {
 
 var state_dir_buf: [contract.max_path]u8 = undefined;
 var state_dir_len: usize = 0;
-/// A second spelling of the same directory; empty when there is only one.
 var alt_dir_buf: [contract.max_path]u8 = undefined;
 var alt_dir_len: usize = 0;
 var trace_fd: c_int = -1;
 var kill_at: u32 = 0;
-/// Whether the crash-point kill may reach the whole process group (v15). False unless the
-/// engine says so, which it does only where it has made the target a group leader.
 var kill_group: bool = false;
 /// The run's cgroup as `/proc/self/cgroup` spells it (v17, #559): the path after `0::`, or
 /// empty when the engine gave this spawn no cgroup. Copied out of the environment at init,
@@ -566,24 +461,17 @@ var kill_group: bool = false;
 /// every boundary and at the crash point.
 var run_cgroup_buf: [contract.max_path]u8 = undefined;
 var run_cgroup_len: usize = 0;
-/// That cgroup's `cgroup.kill`, opened at init and relocated the way `trace_fd` is (v17);
-/// -1 when this is not a world, when the open failed, or when the target closed it.
 var kill_cgroup_fd: c_int = -1;
-/// The run's own `cgroup.procs`, one level above the cgroup the run's processes are in, opened
-/// at init the same way (v17): where a world's crash point steps aside to before it kills.
+// Not read back from the environment when a sweep's casualty is reopened: the target may have
+// changed it by then.
+var trace_path_buf: [contract.max_path + 1]u8 = @splat(0);
+var trace_path_len: usize = 0;
+var trace_identity: ?FileIdentity = null;
+var kill_cgroup_path_buf: [contract.max_path + 1]u8 = @splat(0);
+var kill_cgroup_path_len: usize = 0;
+var kill_aside_path_buf: [contract.max_path + 1]u8 = @splat(0);
+var kill_aside_path_len: usize = 0;
 var kill_aside_fd: c_int = -1;
-/// Per-thread state (contract v16).
-///
-/// Through v15 the five fields below were plain globals, and this module's first
-/// paragraph said why that was safe: a target that created a thread was refused, so
-/// nothing ever shared them. A run whose threads never write the judged directory is
-/// judged now, and its worker threads still pass through every interposed entry point —
-/// `open` on a library, `write` on a pipe — so the re-entrancy guard, the record buffer
-/// and the count scan would be shared between threads the design never meant to share
-/// them. Measured before this existed: a worker opening `/dev/null` in a loop set the
-/// process-wide `busy`, and the main thread's in-scope write, arriving inside that
-/// window, was dropped without a record.
-///
 /// **Slots keyed by thread id, not `threadlocal`.** A shared object's `threadlocal`
 /// compiles to the general-dynamic TLS model, whose first access from a thread takes
 /// `__tls_get_addr`'s slow path under the loader's lock; under `--observe syscalls` that
@@ -593,7 +481,8 @@ var kill_aside_fd: c_int = -1;
 /// fixed array keyed by `gettid()` — one syscall, one compare-and-swap — is
 /// async-signal-safe by construction. A thread's slot is never freed: nothing here sees a
 /// thread end. Only a process that shares the table without owning it — a `vfork` child —
-/// gives back the slot it claimed, before its exec. The 65th thread shares `reserve`, whose `busy` is the old process-wide guard,
+/// gives back the slot it claimed, before its exec; and once the table is full, a slot whose
+/// claiming process has exited and been reaped is taken back. The 65th thread shares `reserve`, whose `busy` is the old process-wide guard,
 /// and the run records `thread-slots-exhausted` once so the engine refuses it rather
 /// than judges it.
 ///
@@ -602,8 +491,6 @@ var kill_aside_fd: c_int = -1;
 /// are nearly five megabytes the file need not carry. Only the pages a thread touches
 /// become memory.
 const ThreadState = struct {
-    /// Owner's thread id; 0 is free. Written by the compare-and-swap in `mine`, and cleared
-    /// only when a `vfork` child gives the slot back before its exec.
     tid: u64 = 0,
     claimer_pid: c_int = 0,
     /// Guards against observing our own work. The path resolution below calls libc, and
@@ -615,10 +502,6 @@ const ThreadState = struct {
     /// also stop the shim recording anything else that handler does — recorded before the
     /// array moved here.
     exec_carrying: bool = false,
-    /// The highest in-scope operation number this thread knows the RUN to have reached
-    /// (v15) — not a count of its own operations. `refreshCount` brings it up to what the
-    /// trace holds before every number is handed out, so a parent that resumes after an
-    /// awaited child continues from the child's last number instead of from its own.
     seq: u32 = 0,
     /// How far into the trace `seq` has been read. Only complete records advance it, so a
     /// record still being written is read again next time rather than skipped.
@@ -633,13 +516,7 @@ const ThreadState = struct {
     /// Reset in the fork child with the rest of the slot: a child that inherited its
     /// parent's count would tell the engine a creation happened later than it did.
     written: u32 = 0,
-    /// Successful `pthread_create` calls from this thread (v18). The k-th creation is what
-    /// a join names the created thread by — `(creator, k)` — because the created thread's
-    /// id is not known to the creator and its `pthread_t` is reused after a join.
     creates: u32 = 0,
-    /// Where `refreshCount` decodes. Static rather than a stack array because this runs
-    /// from arbitrary interposed calls and, under `--observe syscalls`, from inside the
-    /// SIGSYS handler — 8 KB of stack is not a thing to spend there.
     scan_buf: [contract.max_record_len]u8 = @splat(0),
     /// One record is built here and written with a single `write(2)`, so a trace never
     /// ends with half a record even when the process dies mid-run.
@@ -679,10 +556,6 @@ const ThreadState = struct {
 const max_threads = 64;
 var slots: [max_threads]ThreadState = @splat(.{});
 var reserve: ThreadState = .{};
-/// Whether the exhaustion notice has been written (v16). Taken with a compare-and-swap by
-/// the one thread that writes it — two threads overflowing together race for it and one
-/// wins — and cleared only by `resetSlotsInChild`. There is no separate "exhausted" flag:
-/// one existed and nothing in production read it.
 var exhaustion_announced: bool = false;
 var active: bool = false;
 var table_pid: c_int = 0;
@@ -700,25 +573,23 @@ pub fn currentTid() u64 {
     return @intCast(std.os.linux.gettid());
 }
 
-/// This thread's slot, claimed on first sight. Linear over the array on every interposed
-/// call: the syscall for the id costs more than the scan does, and both are measured in
-/// BUILDLOG (2026-09-08) before the cost is claimed anywhere.
 fn mine() *ThreadState {
     const tid = currentTid();
     // Two passes, not one that takes the first free slot on the way: an exec gives a slot back
     // mid-table, and a thread whose own slot lies past it would claim a second one and leave
     // its counts behind in the first.
-    for (&slots) |*s| if (@atomicLoad(u64, &s.tid, .acquire) == tid) return s;
+    for (&slots) |*s| if (@atomicLoad(u64, &s.tid, .acquire) == tid and adopt(s)) return s;
     for (&slots) |*s| {
         // Our own id again here too: a signal handler that interrupted this pass may have claimed
         // a slot for this thread, and passing over it would give the thread a second one.
         const owner = @atomicLoad(u64, &s.tid, .acquire);
-        if (owner == tid) return s;
+        if (owner == tid and adopt(s)) return s;
         if (owner == 0 and @cmpxchgStrong(u64, &s.tid, 0, tid, .acq_rel, .acquire) == null) {
-            s.claimer_pid = c.getpid();
+            @atomicStore(c_int, &s.claimer_pid, c.getpid(), .release);
             return s;
         }
     }
+    if (reclaimDeparted(tid)) |s| return s;
     // Announced HERE, at the moment of exhaustion, not at the next `writeRecord` — the
     // first version deferred it there, and review found the gap: the harm exhaustion does
     // is two reserve-sharing threads racing on one `busy`, which drops a record before
@@ -753,12 +624,55 @@ fn mine() *ThreadState {
     return &reserve;
 }
 
-/// After `fork`, in the child (v16). The child inherits the table as the parent had it —
-/// every parent thread still claiming its slot, `busy` flags mid-call included — and has
-/// exactly one thread, with a new id. Left alone, a parent that had used the table up
-/// would leave its single-threaded child no slot at all (a false `thread-slots-exhausted`),
-/// and a later thread of the child that reuses a parent thread's id would inherit a slot
-/// whose `busy` was true at the fork and record nothing through it. Review found both.
+const reclaiming: c_int = -1;
+
+// A slot found by id but claimed by a process that is not this one: on macOS a `vfork` child
+// runs on its parent's thread id, so a slot it claimed is that parent thread's once the child is
+// gone. Left with the child's pid, `reclaimDeparted` would take it from the thread using it; and
+// one `reclaimDeparted` is already taking is not used, or two threads would share it.
+fn adopt(s: *ThreadState) bool {
+    while (true) {
+        const claimer = @atomicLoad(c_int, &s.claimer_pid, .acquire);
+        if (claimer == reclaiming) return false;
+        if (claimer == 0 or claimer == table_pid or c.getpid() != table_pid) return true;
+        if (@cmpxchgStrong(c_int, &s.claimer_pid, claimer, table_pid, .acq_rel, .acquire) == null) return true;
+    }
+}
+
+// Not taken while the table has room: a departed claimer costs nothing until then, and `kill`
+// on every call would. Arbitrated on `claimer_pid`, not `tid`: a claim writes `tid` first, so a
+// second reclaimer reading the new `tid` with the old pid would take the same slot again.
+fn reclaimDeparted(tid: u64) ?*ThreadState {
+    var self_pid: c_int = 0;
+    var saved_errno: ?c_int = null;
+    defer if (saved_errno) |e| {
+        std.c._errno().* = e;
+    };
+    for (&slots) |*s| {
+        const owner_pid = @atomicLoad(c_int, &s.claimer_pid, .acquire);
+        if (owner_pid <= 0 or owner_pid == table_pid) continue;
+        if (self_pid == 0) self_pid = c.getpid();
+        if (owner_pid == self_pid) continue;
+        if (saved_errno == null) saved_errno = std.c._errno().*;
+        if (c.kill(owner_pid, 0) == 0 or std.c._errno().* != @backingInt(std.c.E.SRCH)) continue;
+        if (@cmpxchgStrong(c_int, &s.claimer_pid, owner_pid, reclaiming, .acq_rel, .acquire) != null) continue;
+        s.busy = false;
+        s.exec_carrying = false;
+        clearCounts(s);
+        @atomicStore(c_int, &s.claimer_pid, self_pid, .release);
+        @atomicStore(u64, &s.tid, tid, .release);
+        // Given back if a signal handler on this thread claimed another slot before the store: two
+        // slots for one id would split its counts.
+        for (&slots) |*o| if (o != s and @atomicLoad(u64, &o.tid, .acquire) == tid) {
+            @atomicStore(c_int, &s.claimer_pid, 0, .release);
+            @atomicStore(u64, &s.tid, 0, .release);
+            return o;
+        };
+        return s;
+    }
+    return null;
+}
+
 /// Called from the fork wrapper's child arm, before the child records anything. `vfork`
 /// must not do this — the child runs in the parent's memory — and a raw `clone` bypasses
 /// the wrapper and inherits the table as it stands: a parent past sixty-four threads that
@@ -785,10 +699,6 @@ pub fn resetSlotsInChild() void {
     for (&pending_starts) |*e| e.* = .{};
     for (&joinable) |*e| e.* = .{};
 }
-// --- the thread tables (v18, ADR 0067) ---------------------------------------------------
-//
-// Two static tables, sized like the slot table and, like it, zero-initialised into `.bss`.
-//
 // `pending_starts` carries a start routine and its argument from `pthread_create` to the
 // trampoline the new thread runs first, together with what the new thread's first record
 // must say: who created it, how many records that creator had written, and which of the
@@ -826,8 +736,6 @@ const PendingStart = struct {
 var pending_starts: [max_threads]PendingStart = @splat(.{});
 
 const Joinable = struct {
-    /// The key. 0 is free; `joinable_claiming` marks an entry whose payload is being
-    /// written, so a concurrent insert moves on and a concurrent lookup does not match it.
     pthread: usize = 0,
     creator: u64 = 0,
     ordinal: u32 = 0,
@@ -858,7 +766,6 @@ fn joinableClaim(e: *Joinable, expected: usize, pthread: usize, creator: u64, or
 
 fn joinableInsert(pthread: usize, creator: u64, ordinal: u32) void {
     if (pthread == 0 or pthread == joinable_claiming) return;
-    // The value's previous holder is finished: overwrite its entry rather than add a second.
     for (&joinable) |*e| {
         if (joinableClaim(e, pthread, pthread, creator, ordinal)) return;
     }
@@ -867,8 +774,6 @@ fn joinableInsert(pthread: usize, creator: u64, ordinal: u32) void {
     }
 }
 
-/// Resolve and remove: the caller is about to join or detach this thread, after which the
-/// value may belong to another.
 fn joinableTake(pthread: usize) ?contract.thread_aux.Joined {
     if (pthread == 0 or pthread == joinable_claiming) return null;
     for (&joinable) |*e| {
@@ -881,10 +786,6 @@ fn joinableTake(pthread: usize) ?contract.thread_aux.Joined {
     return null;
 }
 
-/// The new thread's first instructions. Copies the entry out and returns it, writes the
-/// `thread_started` record, then runs the routine the target asked for — whose return value
-/// is this function's, so `pthread_join` hands the target what its routine returned;
-/// `pthread_exit` unwinds through here as it would through the routine itself.
 fn trampoline(p: ?*anyopaque) callconv(.c) ?*anyopaque {
     const e: *PendingStart = @ptrCast(@alignCast(p.?));
     const routine = e.routine.?;
@@ -918,8 +819,6 @@ fn noteThreadStarted(creator: u64, written: u32, ordinal: u32) void {
     _ = writeAll(rec[0..n]);
 }
 
-/// A join or a detach, recorded from the calling thread's slot with the pair `joinableTake`
-/// resolved before the real call, or `?`.
 fn noteThreadSync(op: contract.OpClass, who: ?contract.thread_aux.Joined) void {
     if (!active) return;
     const ts = mine();
@@ -934,11 +833,6 @@ fn noteThreadSync(op: contract.OpClass, who: ?contract.thread_aux.Joined) void {
     writeRecord(ts, op, 0, "", aux);
 }
 
-/// `pthread_create` (v18). Installs the trampoline where an entry is free, records the
-/// creation as before, and fills `joinable` for the join that may follow. The `.thread`
-/// record is still the creator's and still written through `noteBoundary`, which drops it
-/// when the shim is re-entered; nothing that pairs the child with this creation depends on
-/// it — the child's own record carries the pairing.
 pub fn createThread(thread: *anyopaque, attr: ?*const anyopaque, start_routine: *const anyopaque, arg: ?*anyopaque) c_int {
     if (!active) return callPthreadCreate(thread, attr, start_routine, arg);
     const ts = mine();
@@ -967,15 +861,11 @@ pub fn createThread(thread: *anyopaque, attr: ?*const anyopaque, start_routine: 
     return rc;
 }
 
-/// `pthread_join` (v18): the target is resolved before the call and recorded after it
-/// succeeded. A failed join puts the entry back — the thread is still joinable.
 pub fn joinThread(thread: usize, retval: ?*?*anyopaque) c_int {
     const who = joinableTake(thread);
     return settleSync(.thread_join, thread, who, callPthreadJoin(thread, retval));
 }
 
-/// After the real join or detach: record it where it succeeded, put the entry back where it
-/// failed — the thread is still joinable then.
 fn settleSync(op: contract.OpClass, thread: usize, who: ?contract.thread_aux.Joined, rc: c_int) c_int {
     if (rc == 0) {
         noteThreadSync(op, who);
@@ -985,16 +875,11 @@ fn settleSync(op: contract.OpClass, thread: usize, who: ?contract.thread_aux.Joi
     return rc;
 }
 
-/// `pthread_detach` (v18): the same shape. After a detach the thread cannot be joined, so
-/// its entry goes whether or not the value is reused.
 pub fn detachThread(thread: usize) c_int {
     const who = joinableTake(thread);
     return settleSync(.thread_detach, thread, who, callPthreadDetach(thread));
 }
 
-/// The pid this shim instance initialised in. Read by `execCarryAllowed` — only the
-/// subject carries its operation count across an image change (#123).
-///
 /// **It no longer gates the kill** (v15). It did, and the reason was addressing: a forked
 /// child counted its own operations, so its k-th belonged to nobody and killing there
 /// would have reported a landing at the right number from the wrong process. The number
@@ -1010,14 +895,10 @@ fn lookup(comptime T: type, name: [*:0]const u8) ?T {
     return @ptrCast(@alignCast(p));
 }
 
-/// The type of the function behind `real`'s field `name`.
 fn RealFn(comptime name: [:0]const u8) type {
     return @typeInfo(@TypeOf(@field(real, name))).optional.child;
 }
 
-/// The real function `name`: the entry `resolveAll` filled in, or — when the table has not
-/// been filled yet — looked up now (#753).
-///
 /// The table is filled from this library's own `.init_array`, and another shared library's
 /// constructor can run first: the loader orders constructors by dependency, and nothing a
 /// library can declare puts its own ahead of an unrelated one's. A call interposed from such a
@@ -1040,11 +921,6 @@ fn RealFn(comptime name: [:0]const u8) type {
 /// One more window this opens, unmeasured: a constructor that `dlopen`s a library whose own
 /// constructor starts a thread and waits for it, while that thread makes an interposed call —
 /// the thread's `dlsym` waits for the loader's lock the `dlopen` holds. ADR 0115 names it.
-///
-/// Not `inline`, unlike the wrappers that call it: each of those is expanded at its every call
-/// site, and `callExecveSeqCarry` expands `callExecve` six times — inlining this as well put
-/// that function's frame at 1,168 bytes, over the shim's 1 KiB bound
-/// (`spike/check-shim-footprint.sh`, check C).
 fn reach(comptime name: [:0]const u8) ?RealFn(name) {
     // Looked up only while the table is still unfilled. After `resolveAll` a null entry is a
     // symbol this C library does not have — an optional one, `pwritev2` before glibc 2.26 —
@@ -1059,13 +935,8 @@ fn reach(comptime name: [:0]const u8) ?RealFn(name) {
     return @field(real, name) orelse lookup(RealFn(name), name);
 }
 
-/// Set once `resolveAll` has filled `real`: from then on a null entry means "not in this C
-/// library", and `reach` stops asking.
 var table_filled: bool = false;
 
-/// Fills `real`, one `dlsym(RTLD_NEXT)` per field, the field's name being the symbol's — one
-/// rule in one place, which `reach` relies on for the same names.
-///
 /// Optional symbols (#244, #256): some of these can genuinely be absent — pwritev2 needs
 /// glibc 2.26, copy_file_range 2.27, renameat2 2.28, and musl spells some of them
 /// differently. Their helpers answer a missing symbol with ENOSYS (`optionalMissing`), because
@@ -1088,8 +959,6 @@ fn parseU32(s: []const u8) u32 {
     return v;
 }
 
-/// Runs before `main` via `.init_array`.
-///
 /// Initialising lazily — on the first interposed call — would be simpler, but it would
 /// make "the shim never loaded" and "the target performed no operations" produce the
 /// same empty trace. The `shim_ready` marker written here is what lets the engine tell
@@ -1105,12 +974,8 @@ pub fn init() void {
     // survived. Costless where no filter exists: it only changes a disposition.
     syscalls.installHandler();
 
-    // Every way out of this function that does not arm the shim says so (#753): a mark left by
-    // a call before it then stays unread, and every later call is dropped as it was.
     defer if (!active) @atomicStore(u32, &pre_init.word, pre_init.unused, .release);
 
-    // macOS fills `real` from extern declarations before this runs (see shim.zig);
-    // dlsym is a Linux-only step.
     if (builtin.os.tag != .macos) resolveAll();
 
     // The four signal entry points, resolved here rather than on first use. They are
@@ -1139,8 +1004,6 @@ pub fn init() void {
         const a = std.mem.span(alt);
         if (a.len != 0 and a.len <= contract.max_path) {
             if (contract.normalizePath(&alt_dir_buf, "/", a)) |n| {
-                // Identical spellings would make `canonical` copy a path onto itself for
-                // no reason; only a genuinely different one is worth carrying.
                 if (!std.mem.eql(u8, n, normalized)) alt_dir_len = n.len;
             } else |_| {}
         }
@@ -1171,30 +1034,9 @@ pub fn init() void {
     // flag because `O_WRONLY | O_RDWR` is 3, which is not an access mode at all
     // (`openIsWriteCapable` pins 3 as invalid); adding it would make this open fail and the
     // engine report `no_shim_marker` with nothing saying why.
-    //
-    // `O_NONBLOCK` is the half of #492 that has to be on the open itself: a FIFO with no
-    // reader answers `O_WRONLY` by blocking until one arrives, and this open runs from
-    // `.init_array` inside a recording run that has nothing to time it out. With the flag
-    // it answers `ENXIO` instead. The flag is without effect on a regular file, so the
-    // ordinary path is unchanged. **Under `O_RDWR` that reason no longer holds** — a
-    // readerless FIFO opens straight away for read-write — so the flag is no longer what
-    // keeps this open from hanging. What refuses a FIFO now is `traceTargetIsOrdinary`
-    // below, which was already the half of #492 covering a FIFO someone is reading, a
-    // device and a socket. The flag stays because it costs nothing on a regular file and
-    // because dropping it would need `F_SETFL`, which replaces the whole status word.
     trace_fd = callOpen(tp, O_RDWR | O_CREAT | O_APPEND | O_CLOEXEC | O_NOFOLLOW | O_NONBLOCK, 0o644);
-    // Refused is silent-then-not-ready, deliberately for now: the engine reports
-    // `no_shim_marker` (or, in a world, `kill_did_not_land`) and neither names the path.
-    // Saying which of the two it was is a separate promise — it has three call sites that
-    // refuse differently — and it is filed rather than folded in here.
     if (trace_fd < 0) return;
 
-    // The other half of #492, and the flag alone does not cover it: a FIFO somebody is
-    // *already reading* opens fine, and the records would go into it. So would a device or
-    // a socket planted at the name. `traceTargetIsOrdinary` reads what the descriptor
-    // turned out to be — the same question `kindOfFd` answers for the engine's read (#400),
-    // asked on this side for the first time.
-    //
     // **`trace_fd = -1` is not decoration here.** This exit is reached through a
     // *successful* open, which the `trace_fd < 0` path above never is, and a closed
     // positive number left in the global is exactly the descriptor-reuse hazard the
@@ -1215,28 +1057,18 @@ pub fn init() void {
     // The channel's one weakness is its number: the shim holds trace_fd as an integer,
     // and a target that closes that number — daemonize loops sweep 3..255 as ordinary
     // hygiene — leaves later trace writes landing in whatever file inherits it.
-    // Measured before this guard existed: a state file with trace records spliced
-    // between its own bytes. Two moves shrink that surface. The descriptor is
-    // relocated above the range hygiene sweeps reach, and a close() of the relocated
-    // number is treated as the channel dying (noteTraceClose) rather than ignored.
     // The fallback floor exists because a 256-descriptor rlimit — the macOS default —
     // rejects F_DUPFD at 900; if both floors fail the low number is kept, and a sweep
     // that reaches it still ends in refusal, never in a silent half-account.
     trace_fd = relocateHigh(trace_fd);
+    keepName(&trace_path_buf, &trace_path_len, std.mem.span(tp));
+    trace_identity = fileIdentity(trace_fd);
 
     if (c.getenv(contract.env.kill_at)) |k| kill_at = parseU32(std.mem.span(k));
     // Only a run the engine put in its own process group may take the group down; see
     // `contract.env.kill_group` for why the shim cannot decide this for itself.
     kill_group = c.getenv(contract.env.kill_group) != null;
 
-    // A self-exec'd image continues the subject's numbering (#123): the exec wrapper
-    // of the previous image carried the count here. Absent means a fresh start —
-    // for the first image that is correct, and for an image that arrived through a
-    // non-interposed exec path (execl family, fexecve, a stripped environment) the
-    // fresh start is what the engine's continuation predicate refuses on.
-    // Into the initialising thread's own slot: `init` runs from `.init_array`, before the
-    // target has created any thread, so this is the main thread's, and the announcement
-    // below is written from the same slot.
     const ts = mine();
     if (c.getenv(contract.env.seq_base)) |b| ts.seq = parseU32(std.mem.span(b));
 
@@ -1274,21 +1106,12 @@ pub fn init() void {
         }
     }
 
-    // The shim writes the header, not the engine.
-    //
-    // If the engine wrote it, the version field would be one the engine had just
-    // produced and was about to read back — a check of nothing. Written here, it
-    // records which contract *this binary* was built against, which is what makes a
-    // stale shim paired with a fresh engine detectable instead of silently misread.
-    // The file is opened O_APPEND, so an offset of zero means nobody has written yet.
     if (c.lseek(trace_fd, 0, SEEK_END) == 0) {
         var head: [contract.header_len]u8 = undefined;
         const n = contract.encodeHeader(&head) catch return;
         _ = writeAll(head[0..n]);
     }
 
-    // The run's cgroup (v17, #559), before the announcement because nothing in it writes a
-    // record.
     takeRunCgroup();
 
     // **These two statements must stay adjacent, and the engine depends on it.** Once
@@ -1317,11 +1140,6 @@ pub fn init() void {
 /// The run's cgroup, copied out of the environment while it is still the engine's (v17,
 /// #559), and a world's `cgroup.kill` opened now: at the crash point this may be the SIGSYS
 /// handler, where a write-capable open would trap on itself.
-///
-/// A function of its own rather than lines in `init`, and so is `announceCgroup`: `init`'s
-/// frame is held to 1 KiB with the rest of the shim's (`spike/check-shim-footprint.sh`, the
-/// README's stack bound from #555), and the locals these need took it over — 1,072 bytes on
-/// aarch64 Debug, measured, against 896 for the largest frame before.
 fn takeRunCgroup() void {
     const rc = c.getenv(contract.env.run_cgroup) orelse return;
     const name = std.mem.span(rc);
@@ -1334,10 +1152,12 @@ fn takeRunCgroup() void {
     if (kp[0] == 0) return;
     const kfd = callOpen(kp, O_WRONLY | O_CLOEXEC, 0);
     if (kfd >= 0) kill_cgroup_fd = relocateHigh(kfd);
+    keepName(&kill_cgroup_path_buf, &kill_cgroup_path_len, std.mem.span(kp));
     const ap = c.getenv(contract.env.kill_aside) orelse return;
     if (ap[0] == 0) return;
     const afd = callOpen(ap, O_WRONLY | O_CLOEXEC, 0);
     if (afd >= 0) kill_aside_fd = relocateHigh(afd);
+    keepName(&kill_aside_path_buf, &kill_aside_path_len, std.mem.span(ap));
 }
 
 /// Where this image stands against the run's cgroup, as a `cgroup` record (v17, #559). A
@@ -1349,7 +1169,6 @@ fn announceCgroup(ts: *ThreadState) void {
         if (kill_cgroup_fd >= 0) contract.cgroup_aux.held_kill else contract.cgroup_aux.held);
 }
 
-/// The `aux` a process that is not inside the run's cgroup records, or null when it is.
 fn notHeldAux(standing: CgroupStanding) ?[]const u8 {
     return switch (standing) {
         .held => null,
@@ -1358,11 +1177,10 @@ fn notHeldAux(standing: CgroupStanding) ?[]const u8 {
     };
 }
 
-/// Move a descriptor the shim holds above the range daemonize loops sweep — the reason is
-/// the paragraph at `trace_fd`'s relocation in `init` — keeping the low number when both
-/// floors fail. Returns the number the caller holds from here on.
+const relocation_floor: c_int = 200;
+
 fn relocateHigh(fd: c_int) c_int {
-    for ([_]c_int{ 900, 200 }) |floor| {
+    for ([_]c_int{ 900, relocation_floor }) |floor| {
         const high = c.fcntl(fd, F_DUPFD, floor);
         if (high < 0) continue;
         _ = c.fcntl(high, F_SETFD, FD_CLOEXEC);
@@ -1417,16 +1235,11 @@ fn groupLeaderHeld() bool {
     return cgroupStandingAt(p) == .held;
 }
 
-/// A write of the shim's own to a cgroup file, through the path that does not trap on itself
-/// under `--observe syscalls`. True when every byte was taken.
 fn shimWrite(fd: c_int, bytes: []const u8) bool {
     const n = if (syscalls.armed) syscalls.traceWrite(fd, bytes.ptr, bytes.len) else callWrite(fd, bytes.ptr, bytes.len);
     return n == @as(isize, @intCast(bytes.len));
 }
 
-/// Whether this process is inside the run's cgroup (v17, #559): its `/proc/self/cgroup` line
-/// `0::<path>` names the run's cgroup or one below it. Within rather than equal, because a
-/// target may make cgroups under the one it was given, and an engine it runs makes its own.
 /// The real `open`, libc's `read` (the shim does not interpose it), no allocation: safe in
 /// the SIGSYS handler, where a read-only open is outside the trap set.
 ///
@@ -1440,7 +1253,6 @@ fn cgroupStanding() CgroupStanding {
     return cgroupStandingAt("/proc/self/cgroup");
 }
 
-/// `cgroupStanding` of any process, by its `/proc/<pid>/cgroup` path (#559's second review).
 fn cgroupStandingAt(proc_path: [*:0]const u8) CgroupStanding {
     const fd = callOpen(proc_path, O_RDONLY | O_CLOEXEC, 0);
     if (fd < 0) return .unknown;
@@ -1461,8 +1273,6 @@ fn cgroupStandingAt(proc_path: [*:0]const u8) CgroupStanding {
     return line.finish();
 }
 
-/// One `/proc/self/cgroup` line at a time, fed a byte at a time, answering at the end of the
-/// first `0::` line whether its path is the run's cgroup or below it.
 const CgroupLine = contract.CgroupLine;
 const standingOf = contract.standingOf;
 
@@ -1474,20 +1284,15 @@ fn altDir() []const u8 {
     return alt_dir_buf[0..alt_dir_len];
 }
 
-/// Is this path inside the state directory, under either spelling of it?
 pub fn isInState(path: []const u8) bool {
     if (contract.isInsideDir(path, stateDir())) return true;
     return alt_dir_len != 0 and contract.isInsideDir(path, altDir());
 }
 
-/// Rewrite a path under the alternative spelling into the canonical one.
-///
 /// Containment has to accept both spellings, but the *trace* must hold one: the engine
 /// compares paths textually to place crash points, and a run that recorded
 /// `/tmp/x/key.json` for the unlink and `/private/tmp/x/key.json` for the open would
 /// describe two files where the target touched one.
-///
-/// Returns `path` unchanged when it is already canonical or outside both.
 fn canonical(out: []u8, path: []const u8) []const u8 {
     if (alt_dir_len == 0) return path;
     if (contract.isInsideDir(path, stateDir())) return path;
@@ -1504,29 +1309,26 @@ fn canonical(out: []u8, path: []const u8) []const u8 {
 /// library exports. The shim's own output therefore never passes its own interposition
 /// and cannot appear in the trace as if the target had produced it.
 fn writeAll(bytes: []const u8) bool {
-    if (trace_fd < 0) return false;
+    return writeAllTo(trace_fd, bytes);
+}
+
+fn writeAllTo(fd: c_int, bytes: []const u8) bool {
+    if (fd < 0) return false;
     var off: usize = 0;
     while (off < bytes.len) {
         // Through the thunk when the filter is up: libc's `write` would trap, the
         // handler would record, and recording writes another record — recursion with
         // no bottom. `traceWrite` carries the sentinel the filter allows.
         const w = if (syscalls.armed)
-            syscalls.traceWrite(trace_fd, bytes[off..].ptr, bytes.len - off)
+            syscalls.traceWrite(fd, bytes[off..].ptr, bytes.len - off)
         else
-            callWrite(trace_fd, bytes[off..].ptr, bytes.len - off);
+            callWrite(fd, bytes[off..].ptr, bytes.len - off);
         if (w <= 0) return false;
         off += @intCast(w);
     }
     return true;
 }
 
-/// The pid is taken here, once for every record, rather than accepted from the caller:
-/// there is exactly one correct value and it is whoever is executing this line.
-///
-/// The buffer is the calling thread's (v16). The exhaustion notice is the one record
-/// written through the shared `reserve` buffer, and `mine` writes it at the moment of
-/// overflow rather than here, so it is in the trace whether or not anything is recorded
-/// afterwards.
 fn writeRecord(ts: *ThreadState, op: contract.OpClass, s: u32, path: []const u8, aux: []const u8) void {
     if (encodeAndWrite(&ts.record_buf, op, s, path, aux)) ts.written += 1;
 }
@@ -1544,8 +1346,150 @@ fn encodeAndWrite(buf: *[contract.max_record_len]u8, op: contract.OpClass, s: u3
     return writeAll(buf[0..n]);
 }
 
-/// The target is closing the shim's own trace descriptor.
-///
+fn keepName(buf: *[contract.max_path + 1]u8, len: *usize, name: []const u8) void {
+    if (name.len > contract.max_path) return;
+    @memcpy(buf[0..name.len], name);
+    buf[name.len] = 0;
+    len.* = name.len;
+}
+
+const at_empty_path = 0x1000;
+
+const FileIdentity = struct { dev_major: u32, dev_minor: u32, ino: u64 };
+
+fn fileIdentity(fd: c_int) ?FileIdentity {
+    if (is_darwin) return null;
+    var stx: std.os.linux.Statx = undefined;
+    const rc = std.os.linux.statx(@intCast(fd), "", at_empty_path, .{ .INO = true }, &stx);
+    if (std.os.linux.errno(rc) != .SUCCESS or !stx.mask.INO) return null;
+    return .{ .dev_major = stx.dev_major, .dev_minor = stx.dev_minor, .ino = stx.ino };
+}
+
+fn descriptorClosed(fd: c_int) bool {
+    return fd >= 0 and fdStat(fd) == .bad_fd;
+}
+
+// Not through libc's `openat` once the filter is up: a write-capable open traps, and a trap that
+// meets a moment with SIGSYS blocked ends the process.
+fn reopen(name: [*:0]const u8, flags: c_int) c_int {
+    if (!syscalls.armed) return callOpen(name, flags, 0);
+    const r = syscalls.thunk(@backingInt(std.os.linux.SYS.openat), @bitCast(@as(i64, AT_FDCWD)), @intFromPtr(name), @as(u32, @bitCast(flags)), 0, 0);
+    const signed: i64 = @bitCast(r);
+    return if (signed < 0) -1 else @intCast(signed);
+}
+
+// Back onto the old number, never a new one: the old number is the value every process sharing
+// this memory reads, and a `vfork` child that wrote a new one would move its parent's channel to
+// a descriptor only the child has.
+fn restoreOnto(old: c_int, fresh: c_int) bool {
+    const rc = std.os.linux.dup3(fresh, old, @as(u32, @bitCast(O_CLOEXEC)));
+    return std.os.linux.errno(rc) == .SUCCESS;
+}
+
+// Not below the relocation floors, where the target's next open may take the number.
+fn reinstate(old: c_int, name: *const [contract.max_path + 1]u8, name_len: usize) bool {
+    if (old < relocation_floor or name_len == 0) return false;
+    const fresh = reopen(@ptrCast(name), O_WRONLY | O_CLOEXEC);
+    if (fresh < 0) return false;
+    defer _ = callClose(fresh);
+    return restoreOnto(old, fresh);
+}
+
+fn reinstateOrDrop(fd: *c_int, name: *const [contract.max_path + 1]u8, name_len: usize, owner: bool) void {
+    if (!descriptorClosed(fd.*) or reinstate(fd.*, name, name_len)) return;
+    if (owner) fd.* = -1;
+}
+
+fn isTraceFile(fd: c_int) bool {
+    return trace_identity != null and std.meta.eql(fileIdentity(fd), trace_identity);
+}
+
+// Not through the thread's record buffer: a sweep from a signal handler can land while that
+// buffer holds the half-encoded record of the call it interrupted.
+fn writeDeathThrough(fd: c_int) void {
+    var buf: [64]u8 = undefined;
+    const n = contract.encodeRecord(&buf, .{
+        .op = .unresolved,
+        .seq = 0,
+        .pid = @bitCast(c.getpid()),
+        .tid = currentTid(),
+        .path = "",
+        .aux = contract.unresolved_kind.trace_closed,
+    }) catch return;
+    _ = writeAllTo(fd, buf[0..n]);
+}
+
+pub fn afterSweep() void {
+    if (is_darwin or !active) return;
+    const saved_errno = std.c._errno().*;
+    defer std.c._errno().* = saved_errno;
+    // A `vfork` child shares these numbers with its parent, whose own descriptors the child's
+    // sweep never touched: a -1 written here would silence the parent.
+    const owner = c.getpid() == table_pid;
+    reinstateOrDrop(&kill_cgroup_fd, &kill_cgroup_path_buf, kill_cgroup_path_len, owner);
+    reinstateOrDrop(&kill_aside_fd, &kill_aside_path_buf, kill_aside_path_len, owner);
+    if (trace_fd < 0) return;
+    const closed = descriptorClosed(trace_fd);
+    if (!closed and (trace_identity == null or isTraceFile(trace_fd))) return;
+    const fresh = if (trace_path_len > 0) reopen(@ptrCast(&trace_path_buf), O_RDWR | O_APPEND | O_CLOEXEC | O_NOFOLLOW | O_NONBLOCK) else -1;
+    defer if (fresh >= 0) {
+        _ = callClose(fresh);
+    };
+    const same = fresh >= 0 and isTraceFile(fresh);
+    // Not restored below the relocation floors, where the target's next open may take the number;
+    // nor onto a number that already holds another file, which is the target's now.
+    if (same and closed and trace_fd >= relocation_floor and restoreOnto(trace_fd, fresh)) {
+        if (otherThreadsHere()) writeDeathThrough(trace_fd);
+        return;
+    }
+    if (same) writeDeathThrough(fresh);
+    if (owner) trace_fd = -1;
+}
+
+// A slot outlives the thread that claimed it; only a live thread may have
+// written while the channel was gone.
+fn otherThreadsHere() bool {
+    const pid = c.getpid();
+    const self = currentTid();
+    for (&slots) |*s| {
+        const tid = @atomicLoad(u64, &s.tid, .acquire);
+        if (tid == 0 or tid == self or @atomicLoad(c_int, &s.claimer_pid, .acquire) != pid) continue;
+        const rc = std.os.linux.syscall3(.tgkill, @as(usize, @bitCast(@as(isize, pid))), @intCast(tid), 0);
+        if (std.os.linux.errno(rc) != .SRCH) return true;
+    }
+    return false;
+}
+
+pub inline fn callOpen2(comptime name: [:0]const u8, path: [*:0]const u8, flags: c_int) c_int {
+    const f = reach(name) orelse return optionalMissingInt();
+    return f(path, flags);
+}
+pub inline fn callOpenat2(comptime name: [:0]const u8, dirfd: c_int, path: [*:0]const u8, flags: c_int) c_int {
+    const f = reach(name) orelse return optionalMissingInt();
+    return f(dirfd, path, flags);
+}
+
+// Not left undone when glibc predates the function: `closefrom` cannot report failure, and a
+// target that found the symbol by lookup expects its descriptors gone.
+pub fn callClosefrom(low: c_int) void {
+    if (reach("closefrom")) |f| return f(low);
+    if (callCloseRange(@intCast(@max(low, 0)), std.math.maxInt(c_uint), 0) == 0) return;
+    const limit = std.posix.getrlimit(.NOFILE) catch return;
+    var fd: c_int = @max(low, 0);
+    const top: c_int = @intCast(@min(limit.cur, 1 << 20));
+    while (fd < top) : (fd += 1) _ = callClose(fd);
+}
+
+pub fn callCloseRange(first: c_uint, last: c_uint, flags: c_int) c_int {
+    if (reach("close_range")) |f| return f(first, last, flags);
+    const rc = std.os.linux.syscall3(.close_range, first, last, @as(u32, @bitCast(flags)));
+    if (std.os.linux.errno(rc) != .SUCCESS) {
+        std.c._errno().* = @backingInt(std.os.linux.errno(rc));
+        return -1;
+    }
+    return 0;
+}
+
 /// That is legal behaviour — descriptor-hygiene sweeps close numbers they never
 /// opened — but it ends observation, and the cost of ignoring it is measured: the
 /// number gets re-used for a target file, and the shim's later trace writes land
@@ -1555,14 +1499,10 @@ fn encodeAndWrite(buf: *[contract.max_record_len]u8, op: contract.OpClass, s: u3
 /// the target now owns. Called from every wrapper that retires a descriptor —
 /// close, fclose, freopen — before the real call retires it.
 pub fn noteTraceClose(fd: c_int) void {
-    // The cgroup's `cgroup.kill` is held the same way (v17, #559). A target that closes it
-    // leaves the crash point nothing to write, which the crash point records as the kill
-    // failing rather than falling back to the group kill.
     if (fd >= 0 and fd == kill_cgroup_fd) {
         kill_cgroup_fd = -1;
         return;
     }
-    // And the step-aside descriptor: without it the crash point's kill is the cgroup's alone.
     if (fd >= 0 and fd == kill_aside_fd) {
         kill_aside_fd = -1;
         return;
@@ -1577,9 +1517,6 @@ pub fn noteTraceClose(fd: c_int) void {
 
 const deleted_suffix = " (deleted)";
 
-/// Absolute path of an open descriptor — `/proc/self/fd/N` on Linux, `F_GETPATH` on
-/// macOS.
-///
 /// Callers ask `fdKind` first (contract v8), so the descriptors that reach this
 /// function are the ones fstat proved to be regular files or directories. A null
 /// here is therefore always a failed measurement on something real — never proof of
@@ -1623,10 +1560,6 @@ fn cwdPath(out: []u8) ?[]const u8 {
     return std.mem.span(r);
 }
 
-/// Resolve a (dirfd, path) pair the way the kernel would, minus symlink following.
-/// Resolve a (dirfd, path) pair, distinguishing "not our business" from "could not
-/// tell".
-///
 /// `unresolvable` is set only for the second kind. A directory descriptor that cannot
 /// name a path at all — a socket, a pipe — is proof the operation is not in the state
 /// directory, and treating that as uncertainty would make ordinary programs
@@ -1647,8 +1580,6 @@ fn resolveAt(ts: *ThreadState, out: []u8, dirfd: c_int, path: [*:0]const u8, unr
     var base_deleted = false;
     const base = if (dirfd == AT_FDCWD) blk: {
         break :blk cwdPath(base_buf) orelse {
-            // The working directory itself could not be read; a relative path cannot be
-            // placed, and it may well have been inside the state directory.
             unresolvable.* = true;
             return null;
         };
@@ -1688,43 +1619,13 @@ fn resolveAt(ts: *ThreadState, out: []u8, dirfd: c_int, path: [*:0]const u8, unr
     };
 }
 
-/// An operation that was seen but could not be placed.
-///
 /// Dropping it silently is the failure this whole tool exists to avoid: the engine
 /// would then see a trace that is complete as far as it can tell, and PASS is the
 /// honest-looking answer to that. Recorded instead, so the engine can refuse to judge.
-/// `kind` names WHY the operation could not be placed, in the `aux` field (#485).
-///
-/// The refusal used to be one fixed sentence for every one of these call sites, so two
-/// targets failing for different reasons produced identical output and the operator
-/// could not tell them apart. `class` and `seq` cannot carry it — this record type
-/// always writes `.unresolved` and `0` — and `path` is already spoken for (it is the
-/// name the file had, where there was one). `aux` is free here: for `.unresolved` the
-/// engine never reads it as a path, because `isMarker()` takes the record out of the
-/// snapshot walk's name matching (`engine/snapshot.zig`).
-///
-/// The argument has no default on purpose: a new call site has to choose a kind, and
-/// forgetting it is a compile error rather than a record that says nothing.
 fn noteUnresolved(ts: *ThreadState, path: []const u8, kind: []const u8) void {
     writeRecord(ts, .unresolved, 0, path, kind);
 }
 
-// --- calls made before this library's constructor (#753) ---------------------------------
-//
-// `reach` lets a call made before `init` — from another shared library's constructor, which
-// the loader may run first — reach the real function. Nothing records it: `active` is false
-// until `init` has opened the trace. Most such calls are none of the run's business (a log
-// line, a thread pool, a read of /dev/urandom). One that changes the judged state is: it lands
-// before crash point 1 in every world, so the windows around it are never explored, and a later
-// recorded operation on the same path makes the per-path reconciliation
-// (`state_changed_unaccounted`) read the path as accounted for. Until #753 such a target never
-// got that far — the call answered -1 and the process usually died, an honest UNKNOWN — so
-// letting the call through without this would have turned that UNKNOWN into a verdict.
-//
-// So a write-capable call that reaches the state before `init` has finished leaves a mark, and
-// `init`, once the trace is open, writes one `unresolved` record for it
-// (`before_constructor`); the engine refuses on it as on any other operation it cannot place.
-//
 // **One atomic word holds where this image stands and the mark**, because both change under
 // threads: a constructor that ran first can have started threads that are still calling while
 // `init` runs, and `init` itself reads the mark. A call that loads `before` and finds no mark
@@ -1736,7 +1637,6 @@ fn noteUnresolved(ts: *ThreadState, path: []const u8, kind: []const u8) void {
 const pre_init = struct {
     const before: u32 = 0;
     const recording: u32 = 1;
-    /// `init` returned without arming: no run, no trace, or `--observe supervised`.
     const unused: u32 = 2;
     const stage_mask: u32 = 3;
     const marked: u32 = 1 << 8;
@@ -1746,15 +1646,11 @@ const pre_init = struct {
     /// child shares this memory and must not run `setenv` in it, and a forked child's copy of
     /// the mark belongs to the parent, which reports it at its own `init`.
     var pid: c_int = 0;
-    /// NUL-terminated, so an `exec` before `init` can hand it on (`preInitCarrySet`).
     var path_buf: [contract.max_path + 1]u8 = undefined;
     var path_len: usize = 0;
-    /// `NAME=path` for an `execve` before `init` whose environment is rebuilt to carry it.
     var carry_entry: [contract.env.before_constructor.len + 1 + contract.max_path + 1]u8 = undefined;
 };
 
-/// Where a call that found `active` false stands: record it after all, consider it for the
-/// mark, or drop it.
 fn preInitStage() enum { record, consider, drop } {
     // macOS calls the originals directly from the first instant, so #753 never happened there,
     // and its system libraries make interposed calls in great number while libSystem is still
@@ -1768,8 +1664,6 @@ fn preInitStage() enum { record, consider, drop } {
     };
 }
 
-/// The doors' common first question: decided (record it after all, or drop it) or still to be
-/// considered against the state — `null`.
 fn preInitDecided() ?bool {
     return switch (preInitStage()) {
         .record => true,
@@ -1778,14 +1672,11 @@ fn preInitDecided() ?bool {
     };
 }
 
-/// A descriptor opened read-only: nothing that goes through it changes a file.
 fn fdReadOnly(fd: c_int) bool {
     const fl = c.fcntl(fd, F_GETFL);
     return fl != -1 and (fl & O_ACCMODE) == O_RDONLY;
 }
 
-/// Sets the mark for `path` (empty when the path could not be read). True when the call should
-/// be recorded the ordinary way after all: `init` finished while this one was deciding.
 fn preInitMark(path: []const u8) bool {
     while (true) {
         const w = @atomicLoad(u32, &pre_init.word, .acquire);
@@ -1818,8 +1709,6 @@ fn preInitInState(path: []const u8) bool {
     return false;
 }
 
-/// One path of a call that found `active` false. A path that cannot be resolved is marked,
-/// as `note1FromTrap` records it once armed.
 fn preInitPath(ts: *ThreadState, dirfd: c_int, path: [*:0]const u8) bool {
     var unresolvable = false;
     const resolved = resolveAt(ts, &ts.note1_path, dirfd, path, &unresolvable) orelse
@@ -1828,7 +1717,6 @@ fn preInitPath(ts: *ThreadState, dirfd: c_int, path: [*:0]const u8) bool {
     return preInitMark(resolved);
 }
 
-/// The path-shaped calls' door before `init`: true when the call should go on to be recorded.
 fn preInit1(dirfd: c_int, path: [*:0]const u8) bool {
     if (preInitDecided()) |decided| return decided;
     const ts = mine();
@@ -1838,7 +1726,6 @@ fn preInit1(dirfd: c_int, path: [*:0]const u8) bool {
     return preInitPath(ts, dirfd, path);
 }
 
-/// Both endpoints, as the armed side counts them (ADR 0006).
 fn preInit2(dirfd: c_int, path: [*:0]const u8, adirfd: c_int, apath: ?[*:0]const u8) bool {
     if (preInitDecided()) |decided| return decided;
     const ts = mine();
@@ -1846,8 +1733,6 @@ fn preInit2(dirfd: c_int, path: [*:0]const u8, adirfd: c_int, apath: ?[*:0]const
     ts.busy = true;
     defer ts.busy = false;
     if (preInitPath(ts, dirfd, path)) return true;
-    // The first endpoint may have set the mark (nothing more to do) or lost the race to
-    // `init` (record), and the second is asked only while neither happened.
     if (preInitDecided()) |decided| return decided;
     const a = apath orelse return false;
     return preInitPath(ts, adirfd, a);
@@ -1857,12 +1742,9 @@ fn preInit2(dirfd: c_int, path: [*:0]const u8, adirfd: c_int, apath: ?[*:0]const
 /// and inherited — `exec ./prog 2>>"$STATE/log"` — so the open's own mark is not enough: where
 /// the descriptor points is asked here, as `noteFdFromTrap` asks once armed (contract v8: no
 /// descriptor number is exempt). `statx` and `readlink` only — nothing in `real` is needed.
-/// Sockets, pipes and terminals are not the state; a regular file outside it is not either.
 fn preInitFd(fd: c_int) bool {
     if (preInitDecided()) |decided| return decided;
     if (fd < 0) return false;
-    // A descriptor opened read-only changes nothing whatever goes through it — the `close` of a
-    // file a constructor only read included, which the armed side does not refuse either.
     if (fdReadOnly(fd)) return false;
     const ts = mine();
     if (ts.busy) return false;
@@ -1880,8 +1762,6 @@ fn preInitFd(fd: c_int) bool {
     return preInitMark(resolved);
 }
 
-/// A call before `init` that is recorded once armed whatever it names (`linkat` through a
-/// descriptor): marked the same way.
 fn preInitAlways() bool {
     return preInitDecided() orelse preInitMark("");
 }
@@ -1906,8 +1786,6 @@ fn reportPreInit(ts: *ThreadState) void {
     noteUnresolved(ts, if (std.mem.eql(u8, carried, std.mem.span(pre_init_unread))) "" else carried, contract.unresolved_kind.before_constructor);
 }
 
-/// The mark, when there is one to hand on: this image has not armed, and a call before its
-/// constructor marked. The path, NUL-terminated, or "" when it was not published in time.
 fn preInitCarried() ?[*:0]const u8 {
     if (is_darwin) return null;
     const w = @atomicLoad(u32, &pre_init.word, .acquire);
@@ -1919,7 +1797,6 @@ fn preInitCarried() ?[*:0]const u8 {
     return @ptrCast(&pre_init.path_buf);
 }
 
-/// The carried value when the path was not read in time: never a path, never empty.
 const pre_init_unread: [*:0]const u8 = "?";
 
 /// For `execv` and `execvp`, which take the process's environment: an `exec` before `init`
@@ -1938,8 +1815,6 @@ pub fn preInitCarryUndo() void {
     std.c._errno().* = saved;
 }
 
-/// `execve` before `init`: its environment is the caller's array, so it is rebuilt with the mark
-/// appended — the same rebuild the operation count's carry makes once armed.
 fn callExecvePreInit(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]const ?[*:0]const u8) c_int {
     const v = preInitCarried() orelse return callExecve(p, a, e);
     const ts = mine();
@@ -1950,14 +1825,6 @@ fn callExecvePreInit(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]const ?
     return execveAppending(ts, p, a, e, entry.ptr, contract.env.before_constructor ++ "=");
 }
 
-/// Bring `seq` up to the highest operation number the trace holds (v15).
-///
-/// The trace is the source of the count because nothing else can be. A parent cannot be
-/// told what its children consumed — an environment variable travels one way, and
-/// `system()` and `popen()` spawn and wait from inside libc where no wrapper sees them —
-/// while the trace is written by every process that records anything and is created fresh
-/// for every run, so a number read from it cannot be stale from a previous world.
-///
 /// Returns false when the trace could not be read. The caller records
 /// `count-read-failed` and lets the engine refuse: numbering from a count this process
 /// happens to remember would give the operation an address that belongs to another one.
@@ -1991,9 +1858,6 @@ fn refreshCount(ts: *ThreadState) bool {
                 // this window. Either way the answer is to stop here: `off` advances by
                 // what was consumed, so the next read starts on a record boundary.
                 error.Truncated => break,
-                // Anything else means the bytes at this offset are not a record this
-                // contract can produce. Whoever wrote them is not the shim, and the count
-                // derived from them would be a guess.
                 else => return false,
             };
             // `kill_landed` counts towards the maximum even though it is a marker, and
@@ -2016,10 +1880,6 @@ fn refreshCount(ts: *ThreadState) bool {
     return true;
 }
 
-/// The crash point's kill, at both of `observe`'s kill sites: the process group where `group`
-/// says the engine arranged one, and then — for every caller, since #569 — what keeps the
-/// thread that issued it from running on into anything of its own.
-///
 /// `kill(0, …)` is directed at a process group, and XNU delivers a process-directed signal to
 /// the first thread in the list that is not a workqueue thread (`get_signalthread`). When the
 /// crash point is reached on any other thread, `kill` returns to it. The `_exit` below used to
@@ -2054,10 +1914,7 @@ fn killAtCrashPoint(group: bool) noreturn {
     c._exit(@backingInt(contract.ExitCode.setup_error));
 }
 
-/// The single place where an operation becomes a counted event, and the single place
-/// where the process dies.
 fn observe(ts: *ThreadState, op: contract.OpClass, raw_path: []const u8, raw_aux: []const u8) void {
-    // Both spellings count; one is recorded.
     const path = canonical(&ts.observe_path, raw_path);
     const aux = canonical(&ts.observe_aux, raw_aux);
 
@@ -2071,9 +1928,6 @@ fn observe(ts: *ThreadState, op: contract.OpClass, raw_path: []const u8, raw_aux
         const in_scope = contract.isInsideDir(path, stateDir()) or
             (op.isTwoPath() and aux.len > 0 and contract.isInsideDir(aux, stateDir()));
         if (!in_scope) return;
-        // The number comes from the run, not from this process (v15). Read before the
-        // increment and inside the scope test, so a target that never writes in the judged
-        // directory reads nothing at all and an out-of-scope operation costs no syscall.
         if (!refreshCount(ts)) {
             noteUnresolved(ts, path, contract.unresolved_kind.count_read_failed);
             return;
@@ -2120,9 +1974,6 @@ fn observe(ts: *ThreadState, op: contract.OpClass, raw_path: []const u8, raw_aux
             // before the k-th operation" would rest on the engine having set a variable,
             // not on anything the target actually did.
             writeRecord(ts, .kill_landed, s, path, aux);
-            // The group where the engine arranged one, this process alone otherwise —
-            // which is what an operator typing the report's `reproduce` line gets, and
-            // what every run got before v15.
             // A contained world (v17, #559) is killed twice over, so it loses nothing an
             // uncontained world's group kill took. This process first steps aside, from the
             // run's `work` cgroup up into the run's own; then `work`'s `cgroup.kill` takes every
@@ -2134,10 +1985,6 @@ fn observe(ts: *ThreadState, op: contract.OpClass, raw_path: []const u8, raw_aux
             // A). Where the step aside fails — a target that changed its uid, a descriptor it
             // closed — the kill is the cgroup's alone, and a `cgroup:kill-alone` record says so
             // first, so the engine refuses the world rather than trust a kill it knows was short.
-            //
-            // A kill that did not happen — the write failed, or there was nothing to write it to
-            // — is recorded before exiting and never covered by the group kill: the record says
-            // whether this process was outside the cgroup, could not tell, or the write failed.
             if (kill_group and run_cgroup_len > 0) {
                 const aside = stepAside();
                 // Said before the kill, which ends this process when it lands: without a step
@@ -2166,15 +2013,12 @@ fn observe(ts: *ThreadState, op: contract.OpClass, raw_path: []const u8, raw_aux
     writeRecord(ts, op, s, path, aux);
 }
 
-// --- the two doors ------------------------------------------------------------------
-//
 // `note1` / `note2` / `noteFd` / `noteLinkByDescriptor` are the WRAPPER's door and carry
 // the gate; the `*FromTrap` names beside them are the handler's and do not. One operation
 // reaches the account once because exactly one door is open at a time: under
 // `--observe syscalls` the handler counts and the wrappers are silent, otherwise the
 // wrappers count and the handler only re-issues (`syscalls.armed`, read by both).
 //
-// **The gate is the class, not a list of wrappers, and that is what makes it reliable.**
 // The trap set is exactly the operations `OpClass.isKillPoint` admits (ADR 0059), so the
 // class a wrapper is about to record already answers "is the handler counting this" —
 // there is no per-wrapper fact to remember and no way for a new wrapper to forget. An
@@ -2185,21 +2029,16 @@ fn observe(ts: *ThreadState, op: contract.OpClass, raw_path: []const u8, raw_aux
 // `copy_file_range` is the one wrapper that records a kill point the handler never sees —
 // six arguments leave the filter no register for its marker, so that syscall is not in
 // the set. It calls `noteFdFromTrap` for that reason and no other.
-//
-// `.close` needs nothing: it is not a kill point, not in the trap set, and the gate lets
-// it through on the class alone.
 
 inline fn wrapperSilent(op: contract.OpClass) bool {
     return countedAtSyscall() and op.isKillPoint();
 }
 
-/// The wrapper door. See "the two doors" above.
 pub fn note1(op: contract.OpClass, dirfd: c_int, path: [*:0]const u8) void {
     if (wrapperSilent(op)) return;
     note1FromTrap(op, dirfd, path);
 }
 
-/// The wrapper door. See "the two doors" above.
 pub fn note2(
     op: contract.OpClass,
     dirfd: c_int,
@@ -2211,14 +2050,11 @@ pub fn note2(
     note2FromTrap(op, dirfd, path, adirfd, apath);
 }
 
-/// The wrapper door. See "the two doors" above.
 pub fn noteFd(op: contract.OpClass, fd: c_int) void {
     if (wrapperSilent(op)) return;
     noteFdFromTrap(op, fd);
 }
 
-/// The wrapper door. See "the two doors" above. `linkat(…, AT_EMPTY_PATH)` is a `.link`,
-/// and `linkat` is trapped, so the gate is unconditional here.
 pub fn noteLinkByDescriptor(fd: c_int) void {
     if (countedAtSyscall()) return;
     noteLinkByDescriptorFromTrap(fd);
@@ -2233,8 +2069,6 @@ pub fn note1FromTrap(op: contract.OpClass, dirfd: c_int, path: [*:0]const u8) vo
 
     var unresolvable = false;
     const resolved = resolveAt(ts, &ts.note1_path, dirfd, path, &unresolvable) orelse {
-        // Recorded only when the path genuinely could not be determined. A descriptor
-        // that names no path at all says the operation is elsewhere, which is an answer.
         if (unresolvable) noteUnresolved(ts, std.mem.span(path), contract.unresolved_kind.unresolvable_path);
         return;
     };
@@ -2249,12 +2083,6 @@ pub fn note1FromTrap(op: contract.OpClass, dirfd: c_int, path: [*:0]const u8) vo
 /// out-of-scope swap must not refuse here either, or the two platforms answer the same
 /// scenario differently. Both endpoints count, per the two-path rule (ADR 0006): a swap
 /// with either side inside the state directory mutates it.
-///
-/// `noteUnresolved` is deliberately not this function: that one is unconditional, and
-/// its one caller class is justified in being so because the *path cannot be resolved*
-/// — there is nothing to scope-gate on. Here the paths resolve fine; the operation's
-/// meaning is what the model lacks. `label` is the syscall-and-flag spelling the
-/// refusal will show ("renamex_np(RENAME_SWAP)"), the same shape Linux's shows.
 pub fn noteUnsupportedInScope2(
     label: [*:0]const u8,
     dirfd: c_int,
@@ -2273,8 +2101,6 @@ pub fn noteUnsupportedInScope2(
     if (resolveAt(ts, &ts.unsup2_path, dirfd, path, &unresolvable)) |resolved| {
         in_scope = contract.isInsideDir(canonical(&ts.unsup2_canon, resolved), stateDir());
     } else if (unresolvable) {
-        // Cannot place it, so cannot clear it: the unconditional channel is right
-        // exactly here, for the reason its own doc gives.
         noteUnresolved(ts, std.mem.span(path), contract.unresolved_kind.unresolvable_path);
         return;
     }
@@ -2318,8 +2144,6 @@ pub fn note2FromTrap(
     observe(ts, op, resolved, aresolved);
 }
 
-/// What stands behind a descriptor, asked of fstat before any path query.
-///
 /// Three answers, and the difference is the contract (v8): a socket, pipe or device
 /// is *proof* the operation is not in the state directory — nothing to record. A
 /// regular file or directory is path-backed and must go on to name its path. Anything
@@ -2354,8 +2178,7 @@ fn fdStat(fd: c_int) FdStatResult {
         return .{ .ok = .{ .mode = @intCast(st.mode), .nlink = @intCast(st.nlink) } };
     }
     var stx: std.os.linux.Statx = undefined;
-    // 0x1000 is AT_EMPTY_PATH: statx the descriptor itself, no path walk.
-    const rc = std.os.linux.statx(@intCast(fd), "", 0x1000, .{ .TYPE = true, .NLINK = true }, &stx);
+    const rc = std.os.linux.statx(@intCast(fd), "", at_empty_path, .{ .TYPE = true, .NLINK = true }, &stx);
     switch (std.os.linux.errno(rc)) {
         .SUCCESS => {},
         .BADF => return .bad_fd,
@@ -2377,15 +2200,6 @@ const S_IFDIR: u32 = 0o040000;
 const S_IFCHR: u32 = 0o020000;
 const S_IFIFO: u32 = 0o010000;
 
-/// Is the trace channel's descriptor backed by an ordinary file? (#492)
-///
-/// The write side of the answer #400 gave the read. A FIFO at the trace path blocks
-/// `O_WRONLY` until a reader arrives, and that open runs from `.init_array` — before
-/// `main` — inside a recording run with no budget to time it out (`runChildCapture`, not
-/// `runChildCaptureWorld`). `O_NONBLOCK` on the open answers the readerless case with
-/// `ENXIO`; this answers every other kind an open can succeed on: a FIFO somebody is
-/// already reading, a device, a socket, a directory.
-///
 /// **Not `fdKind` below**, which answers a neighbouring question and would be the obvious
 /// thing to reach for. Its `.path_backed` covers a directory as well as a regular file, and
 /// its three values are about whether an *operation* can be placed inside the state
@@ -2427,8 +2241,6 @@ fn traceTargetIsOrdinary(fd: c_int) bool {
 
 fn fdKind(fd: c_int, deleted: *bool) FdKind {
     switch (fdStat(fd)) {
-        // EBADF: there is nothing real behind this number; the operation the wrapper
-        // is about to attempt will fail without touching anything.
         .bad_fd => return .non_path,
         // The stat itself failed on a live descriptor: a measurement that could not
         // be taken, never evidence of innocence.
@@ -2454,37 +2266,23 @@ fn fdKind(fd: c_int, deleted: *bool) FdKind {
     }
 }
 
-/// `noteUnresolved` for the operations that went through a descriptor (#485).
-///
 /// The descriptor goes in the kind, not the path. `path` is "the name the file had", and
 /// since #485 the engine prints it that way — so `fd:7` sitting there produced "last
 /// named fd:7", a filename that never was.
-///
-/// The buffer lives here and not at the three call sites, and the format lives in
-/// `contract` and not here: a suffix grammar spelled in shim literals is a format the
-/// engine reads and nothing defines, which is the half of ADR 0003 that survived #485's
-/// narrowing.
 fn noteUnresolvedWithFd(ts: *ThreadState, path: []const u8, kind: []const u8, fd: c_int) void {
     var b: [contract.unresolved_kind.with_fd_max]u8 = undefined;
     noteUnresolved(ts, path, contract.unresolved_kind.withFd(&b, kind, fd));
 }
 
-/// `noteUnresolvedWithFd` where the operation is known as well (#485).
 fn noteUnresolvedWithOp(ts: *ThreadState, path: []const u8, kind: []const u8, op: contract.OpClass, fd: c_int) void {
     var b: [contract.unresolved_kind.with_fd_max]u8 = undefined;
     noteUnresolved(ts, path, contract.unresolved_kind.withOp(&b, kind, op, fd));
 }
 
-/// An fd-addressed operation that was seen but could not be placed. The label names
-/// the descriptor because there is no path to name — the point of recording it is
-/// that the engine refuses instead of passing.
 fn noteUnresolvedFd(ts: *ThreadState, fd: c_int) void {
     noteUnresolvedWithFd(ts, "", contract.unresolved_kind.fd_without_path, fd);
 }
 
-/// The fd-taking form of `noteUnsupportedInScope2` (v12): `fsetattrlist` names its file
-/// by descriptor. Resolution mirrors `noteFd` below — the same three-way answer, the
-/// same refusal on a measurement that failed — and the scope gate is the same one.
 pub fn noteUnsupportedInScopeFd(label: [*:0]const u8, fd: c_int) void {
     if (!active and !preInitFd(fd)) return;
     if (fd < 0) return;
@@ -2511,8 +2309,6 @@ pub fn noteUnsupportedInScopeFd(label: [*:0]const u8, fd: c_int) void {
     writeRecord(ts, .unsupported, 0, std.mem.span(label), "");
 }
 
-// --- shared mappings of state files (#689, ADR 0098) ---------------------------------
-//
 // A store through a `MAP_SHARED` mapping changes the file with no call behind it, so no
 // crash point can be placed before it. A writable mapping of a state file is refused where
 // it is made (`noteUnsupportedInScopeFd`, the same refusal Linux's oracle issues). A
@@ -2539,16 +2335,11 @@ var shared_maps: [shared_map_slots]SharedMapSlot = @splat(.{});
 var shared_map_next: usize = 0;
 var shared_map_overflow: bool = false;
 
-// Past the table the shim can no longer tell which ranges are state files, and says so rather
-// than naming one it did not see (review; ADR 0030): `contract.shared_map_refusal.past_table`.
-
 fn pageUp(len: usize) usize {
     const page = std.heap.pageSize();
     return (len +| (page - 1)) / page * page;
 }
 
-/// Remember a read-only shared mapping the target just made, when its descriptor is a
-/// state file opened for writing. Called after the real `mmap` succeeded.
 pub fn noteSharedMapping(fd: c_int, start: usize, len: usize) void {
     if (!active) return;
     if (fd < 0) return;
@@ -2560,7 +2351,6 @@ pub fn noteSharedMapping(fd: c_int, start: usize, len: usize) void {
     var deleted = false;
     switch (fdKind(fd, &deleted)) {
         .non_path => return,
-        // Cannot place it, so remember it: the table only ever adds a refusal.
         .unresolvable => {},
         .path_backed => {
             var link_deleted = false;
@@ -2578,8 +2368,6 @@ pub fn noteSharedMapping(fd: c_int, start: usize, len: usize) void {
     @atomicStore(usize, &shared_maps[i].end, start +| pageUp(len), .release);
 }
 
-/// Refuse an `mprotect` that adds `PROT_WRITE` to a remembered range — or to anything, once
-/// the table has overflowed. Cheap when nothing was remembered: two atomic loads.
 pub fn noteMprotectWrite(start: usize, len: usize) void {
     if (!active) return;
     const n = @min(@atomicLoad(usize, &shared_map_next, .acquire), shared_map_slots);
@@ -2620,8 +2408,6 @@ pub fn noteFdFromTrap(op: contract.OpClass, fd: c_int) void {
 
     var deleted = false;
     switch (fdKind(fd, &deleted)) {
-        // Proof, not uncertainty: sockets, pipes and devices are not state-directory
-        // entries, so an operation through one is legitimately none of our business.
         .non_path => return,
         .unresolvable => {
             noteUnresolvedWithOp(ts, "", contract.unresolved_kind.fd_without_path, op, fd);
@@ -2640,30 +2426,17 @@ pub fn noteFdFromTrap(op: contract.OpClass, fd: c_int) void {
     };
     if (!isInState(resolved)) return;
     if (deleted or link_deleted) {
-        // The file was inside the state directory and has since been unlinked. Writing
-        // through such a descriptor still changes bytes the engine cannot see in any
-        // snapshot, so the operation exists but has no address.
-        //
-        // The descriptor is named for the reason `noteUnresolvedFd` names its own: #485
-        // asks for the operation class, the descriptor and the last resolved name, and
-        // this is the branch that has all three. Two writes through different unlinked
-        // descriptors are otherwise one indistinguishable sentence.
         noteUnresolvedWithOp(ts, resolved, contract.unresolved_kind.unlinked_fd, op, fd);
         return;
     }
     observe(ts, op, resolved, "");
 }
 
-// --- reaching the real function ---------------------------------------------------
-//
 // Linux has to look the original up with `dlsym` and keep it somewhere, so it goes
 // through the `real` table. macOS must NOT: interposition is live from the moment the
 // library loads, while the constructor that would fill such a table runs much later,
 // and every call the system libraries make in between would find it empty. There the
 // original is called directly.
-//
-// These wrappers are the only place that difference appears. `ops.zig` calls them and
-// stays identical on both platforms.
 
 const darwin = if (is_darwin) @import("darwin_libc.zig") else struct {};
 
@@ -2724,9 +2497,6 @@ fn optionalMissing() isize {
     return -1;
 }
 
-/// The same, for the wrappers that return `c_int`. Two shapes rather than one so
-/// neither call site open-codes the errno store — the version that did was the one
-/// that could be fixed on its own and drift.
 pub fn optionalMissingInt() c_int {
     std.c._errno().* = ENOSYS;
     return -1;
@@ -2754,11 +2524,6 @@ pub inline fn callRenameat2(olddirfd: c_int, old: [*:0]const u8, newdirfd: c_int
     return f(olddirfd, old, newdirfd, new, flags);
 }
 
-// The macOS-only symbols (v12, #333). Darwin calls the real function directly, the way
-// every helper above does; the Linux arm is unreachable in practice — linux.zig never
-// exports these names, so nothing on that platform can call the wrappers — and answers
-// ENOSYS rather than trapping, so a future mistaken export fails loudly instead of
-// undefined.
 pub inline fn callClonefile(src: [*:0]const u8, dst: [*:0]const u8, flags: u32) c_int {
     if (is_darwin) return darwin.clonefile(src, dst, flags);
     return optionalMissingInt();
@@ -2783,7 +2548,6 @@ pub inline fn callExchangedata(p1: [*:0]const u8, p2: [*:0]const u8, opts: c_uin
     if (is_darwin) return darwin.exchangedata(p1, p2, opts);
     return optionalMissingInt();
 }
-// Darwin only (#689): on Linux the oracle sees mappings, and these are not exported there.
 pub inline fn callMmap(addr: ?*anyopaque, len: usize, prot: c_int, flags: c_int, fd: c_int, off: i64) ?*anyopaque {
     if (is_darwin) return darwin.mmap(addr, len, prot, flags, fd, off);
     return @ptrFromInt(std.math.maxInt(usize)); // MAP_FAILED
@@ -2808,8 +2572,6 @@ pub inline fn callOpenDprotectedNp(path: [*:0]const u8, flags: c_int, class: c_i
     if (is_darwin) return darwin.open_dprotected_np(path, flags, class, dpflags, mode);
     return optionalMissingInt();
 }
-// The guarded family (#299). macOS-only, like the two above: the Linux arm is the
-// missing-symbol return, which no caller reaches because nothing on Linux exports these.
 pub inline fn callGuardedOpenNp(path: [*:0]const u8, guard: *const u64, gflags: c_uint, flags: c_int, mode: c_uint) c_int {
     if (is_darwin) return darwin.guarded_open_np(path, guard, gflags, flags, mode);
     return optionalMissingInt();
@@ -2926,8 +2688,6 @@ pub inline fn callFork() c_int {
     const f = reach("fork") orelse return optionalMissingInt();
     return f();
 }
-/// The real `vfork`, returned rather than called.
-///
 /// Every other wrapper goes through a `call*` function here. `vfork` cannot: any frame
 /// alive across its double return is corrupted by the child running on the shared stack,
 /// so the *exported wrapper itself* must make the call — as a guaranteed tail call, with
@@ -2956,10 +2716,6 @@ pub fn execCarryAllowed() bool {
 /// silently changes the target.
 const max_env_entries = 1024;
 
-/// execve with the current operation count appended to the environment. A stale
-/// SEQ_BASE already in the caller's envp (a previous failed exec's leftover) is dropped
-/// rather than duplicated.
-///
 /// The rebuilt array lives in the calling thread's slot, not on its stack (#555): at
 /// 8 KB it was the largest single frame the shim took from a target thread. It used to be
 /// on the stack for a vfork child's sake — no heap there, and a global is memory the
@@ -2996,9 +2752,6 @@ pub fn callExecveSeqCarry(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]co
     return execveAppending(ts, p, a, e, entry.ptr, contract.env.seq_base ++ "=");
 }
 
-/// `execve` with `e` rebuilt in the thread's own slot: every entry but the ones starting with
-/// `prefix`, then `entry`. An environment too long for the slot is passed on unchanged and the
-/// carry dropped — never truncated (`max_env_entries`).
 fn execveAppending(ts: *ThreadState, p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]const ?[*:0]const u8, entry: [*:0]const u8, comptime prefix: []const u8) c_int {
     const new_env = &ts.exec_env;
     var n: usize = 0;
@@ -3015,7 +2768,6 @@ fn execveAppending(ts: *ThreadState, p: [*:0]const u8, a: [*]const ?[*:0]const u
     return callExecve(p, a, @ptrCast(new_env));
 }
 
-/// setenv-based carry for `execv`/`execvp`, which use the ambient environment.
 /// Returns whether the variable was set — the caller unsets it when the exec
 /// returns (failure), so a later fork's child does not inherit a stale count.
 pub fn execSeqCarrySet() bool {
@@ -3087,8 +2839,6 @@ pub inline fn callFopen(path: [*:0]const u8, mode: [*:0]const u8) ?*FILE {
     return f(path, mode);
 }
 pub inline fn callFopen64(path: [*:0]const u8, mode: [*:0]const u8) ?*FILE {
-    // Never installed on macOS (no such symbol there); routed to fopen for the sake of
-    // compiling one ops.zig for both platforms.
     if (is_darwin) return @ptrCast(darwin.fopen(path, mode));
     const f = reach("fopen64") orelse return missingFile();
     return f(path, mode);
@@ -3181,8 +2931,6 @@ pub fn noteBoundary(op: contract.OpClass) void {
     recordBoundary(ts, op);
 }
 
-/// What a thread gave back with its slot before an exec, held on the exec wrapper's stack so that
-/// an exec that fails returns it.
 pub const ExecLoan = struct {
     given_back: bool = false,
     seq: u32 = 0,
@@ -3213,8 +2961,6 @@ fn recordBoundary(ts: *ThreadState, op: contract.OpClass) void {
     ts.busy = true;
     defer ts.busy = false;
     writeRecord(ts, op, 0, "", "");
-    // A boundary is where a process can have moved (v17, #559): asked again here, and said
-    // whenever the answer is not `held`.
     if (run_cgroup_len > 0) if (notHeldAux(cgroupStanding())) |aux|
         writeRecord(ts, .cgroup, 0, stateDir(), aux);
 }
@@ -3235,15 +2981,11 @@ fn returnSlotBeforeExec(ts: *ThreadState) ExecLoan {
     const loan: ExecLoan = .{ .given_back = true, .seq = ts.seq, .count_scanned = ts.count_scanned, .written = ts.written, .creates = ts.creates };
     ts.exec_carrying = false;
     clearCounts(ts);
-    ts.claimer_pid = 0;
+    @atomicStore(c_int, &ts.claimer_pid, 0, .release);
     @atomicStore(u64, &ts.tid, 0, .release);
     return loan;
 }
 
-// ---------------------------------------------------------------------------------
-
-/// Set the two spellings directly. `init()` reads them from the environment, which a
-/// test cannot arrange without a child process.
 fn setDirsForTest(canonical_dir: []const u8, alt: []const u8) void {
     @memcpy(state_dir_buf[0..canonical_dir.len], canonical_dir);
     state_dir_len = canonical_dir.len;
@@ -3257,7 +2999,6 @@ test "both spellings of the state directory are inside it" {
 
     try std.testing.expect(isInState("/private/tmp/x/state/key.json"));
     try std.testing.expect(isInState("/tmp/x/state/key.json"));
-    // Component boundaries still hold for the alternative spelling.
     try std.testing.expect(!isInState("/tmp/x/state2/key.json"));
     try std.testing.expect(!isInState("/etc/passwd"));
 }
@@ -3267,8 +3008,6 @@ test "a path under the alternative spelling is recorded under the canonical one"
     defer setDirsForTest("", "");
 
     var buf: [contract.max_path]u8 = undefined;
-    // The reason this matters: the engine places crash points by comparing recorded
-    // paths textually. One file recorded under two spellings reads as two files.
     try std.testing.expectEqualStrings(
         "/private/tmp/x/state/key.json",
         canonical(&buf, "/tmp/x/state/key.json"),
@@ -3277,7 +3016,6 @@ test "a path under the alternative spelling is recorded under the canonical one"
         "/private/tmp/x/state/key.json",
         canonical(&buf, "/private/tmp/x/state/key.json"),
     );
-    // Outside both: returned untouched, not rewritten into the state directory.
     try std.testing.expectEqualStrings("/etc/passwd", canonical(&buf, "/etc/passwd"));
 }
 
@@ -3296,21 +3034,7 @@ test "with one spelling, canonical is the identity" {
 // unrecorded.
 
 test "the shipped shim options carry the shipped value (#365)" {
-    // Weaker than its counterpart in src/main.zig, and kept anyway for stated reasons.
-    // `test_seq_gap` is a bool, so the only edit to build.zig's literal is false -> true,
-    // and that edit is loud: a shim skipping number 2 fails every acceptance leg with two
-    // in-scope operations. There is no quiet mutation here for this test to be the only
-    // net against, unlike the trace caps, which are numbers with a wide quiet range.
-    //
-    // What it does buy: the promise is universal over the shipped build values, so leaving
-    // one of them held by nothing would make it false for a reader who checked; the
-    // failure arrives at `zig build test` instead of minutes later in acceptance; and it
-    // runs on macOS, where the acceptance suite does not.
     try std.testing.expect(!shim_build_options.test_seq_gap);
-    // `test_observe_fail` (contract v14) is the same shape and the same argument: a bool
-    // whose only edit is false -> true, and that edit is loud — a shipped shim reporting a
-    // failed install makes every `--observe syscalls` run a setup error. The reason it is
-    // held here anyway is the one above: the promise is universal over the shipped values.
     try std.testing.expect(!shim_build_options.test_observe_fail);
 }
 
@@ -3322,7 +3046,6 @@ test "no second shim build option arrives unchecked (#365)" {
 }
 
 test "a call made before init filled the table reaches the real function, and fills nothing (#753)" {
-    // macOS never reads the table: the original is called directly from the first instant.
     if (is_darwin) return error.SkipZigTest;
     // Emptied here rather than assumed empty: other tests in this file call `resolveAll`, and
     // the order tests run in is not this test's to choose. Put back after, for the same reason.
@@ -3333,8 +3056,6 @@ test "a call made before init filled the table reaches the real function, and fi
     defer table_filled = saved_filled;
     table_filled = false;
 
-    // `pthread_create` answers an error number, never -1: C++'s std::thread threw that -1 as
-    // "Unknown error -1" and aborted (#753). Here it has to start a thread that runs.
     const Routine = struct {
         var ran: bool = false;
         fn run(_: ?*anyopaque) callconv(.c) ?*anyopaque {
@@ -3348,18 +3069,14 @@ test "a call made before init filled the table reaches the real function, and fi
     try std.testing.expectEqual(@as(c_int, 0), callPthreadJoin(thread, null));
     try std.testing.expect(Routine.ran);
 
-    // `open` and `fopen`: ROOT's std::ifstream of /dev/urandom failed on the second.
     const fd = callOpen("/dev/null", O_RDONLY, 0);
     try std.testing.expect(fd >= 0);
     try std.testing.expectEqual(@as(c_int, 0), callClose(fd));
     const f = callFopen("/dev/urandom", "r") orelse return error.TestUnexpectedResult;
     try std.testing.expectEqual(@as(c_int, 0), callFclose(f));
 
-    // Nothing was written back: `resolveAll` stays the table's only writer.
     try std.testing.expect(real.pthread_create == null and real.open == null and real.fopen == null);
 
-    // Once the table is filled a null entry is a symbol this C library lacks: nothing is looked
-    // up, and the answer is -1 with ENOSYS, not a stale errno.
     table_filled = true;
     std.c._errno().* = 0;
     try std.testing.expectEqual(@as(c_int, -1), callOpen("/dev/null", O_RDONLY, 0));
@@ -3467,21 +3184,10 @@ test "the trace open's kind check refuses a pipe and accepts a regular file (#49
     defer _ = std.c.close(dfd);
     try std.testing.expect(!traceTargetIsOrdinary(dfd));
 
-    // The `.bad_fd` arm. It cannot arrive at the call site, where the descriptor has just
-    // been opened successfully, but the function answers for it and the answer is `false`:
-    // there is no file to put records in. `.failed` is deliberately not tested — producing
-    // a live descriptor whose `fstat` fails takes a kernel this test cannot arrange, and
-    // faking it would be testing the fake.
     try std.testing.expect(!traceTargetIsOrdinary(-1));
 }
 
 test "the run's operation count is read back from the trace, and a torn tail is not a failure (v15)" {
-    // `refreshCount` is where a number stops being this process's own. The cases below are
-    // the ones the mechanism turns on: another process's record raises the count, a
-    // partially written record does NOT (it is an operation still happening), a marker
-    // that carries a number does, and bytes that are not records at all refuse rather
-    // than produce a guess.
-    //
     // A pid-unique directory, for the reason the trace-kind test above gives: several
     // concurrent test binaries run this file.
     var bb: [160]u8 = undefined;
@@ -3518,9 +3224,6 @@ test "the run's operation count is read back from the trace, and a torn tail is 
         }
     };
 
-    // An empty file, then a header and nothing else: both answer "read fine, nothing to
-    // count". A version that treated an empty trace as unreadable would refuse every
-    // first operation of every run.
     try std.testing.expect(refreshCount(&ts));
     try std.testing.expectEqual(@as(u32, 0), ts.seq);
     var hbuf: [contract.header_len]u8 = undefined;
@@ -3529,22 +3232,16 @@ test "the run's operation count is read back from the trace, and a torn tail is 
     try std.testing.expect(refreshCount(&ts));
     try std.testing.expectEqual(@as(u32, 0), ts.seq);
 
-    // Another process's operations raise the count. This is the whole point: pid 8 is not
-    // this process, and its numbers are positions in the same run.
     try append.record(fd, .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" });
     try append.record(fd, .{ .op = .rename, .seq = 2, .pid = 8, .tid = 8, .path = "/tmp/s/a", .aux = "/tmp/s/b" });
     try std.testing.expect(refreshCount(&ts));
     try std.testing.expectEqual(@as(u32, 2), ts.seq);
 
-    // Records that carry no number leave it alone — a close, and an unplaceable operation.
     try append.record(fd, .{ .op = .close, .seq = 0, .pid = 8, .tid = 8, .path = "/tmp/s/b", .aux = "" });
     try append.record(fd, .{ .op = .unresolved, .seq = 0, .pid = 8, .tid = 8, .path = "/tmp/s/b", .aux = "unlinked-fd write fd:3" });
     try std.testing.expect(refreshCount(&ts));
     try std.testing.expectEqual(@as(u32, 2), ts.seq);
 
-    // A torn tail: the first bytes of a record and no more. The scan stops in front of it
-    // and the count does not move — the operation is still being written, and taking its
-    // number now would hand the same number out twice.
     const scanned_before = ts.count_scanned;
     var partial: [2 * contract.max_path]u8 = undefined;
     const pn = try contract.encodeRecord(&partial, .{ .op = .write, .seq = 3, .pid = 7, .tid = 7, .path = "/tmp/s/c", .aux = "" });
@@ -3553,37 +3250,24 @@ test "the run's operation count is read back from the trace, and a torn tail is 
     try std.testing.expectEqual(@as(u32, 2), ts.seq);
     try std.testing.expectEqual(scanned_before, ts.count_scanned);
 
-    // Completed, it counts — and the read resumes from where it stopped rather than from
-    // the start, which is what `count_scanned` is for.
     try append.bytes(fd, partial[pn - 4 .. pn]);
     try std.testing.expect(refreshCount(&ts));
     try std.testing.expectEqual(@as(u32, 3), ts.seq);
     try std.testing.expect(ts.count_scanned > scanned_before);
 
-    // `kill_landed` is a marker and still counts. A world that died in front of operation
-    // 9 never wrote 9's own record, so leaving this out would let a sibling still running
-    // take 9 for a real operation at the address the world claims to have died before.
     try append.record(fd, .{ .op = .kill_landed, .seq = 9, .pid = 7, .tid = 7, .path = "/tmp/s/d", .aux = "" });
     try std.testing.expect(refreshCount(&ts));
     try std.testing.expectEqual(@as(u32, 9), ts.seq);
 
-    // The count never goes backwards: a later record with a smaller number cannot lower
-    // it. (The shim does not write this; a hard link at the trace path could.)
     try append.record(fd, .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/e", .aux = "" });
     try std.testing.expect(refreshCount(&ts));
     try std.testing.expectEqual(@as(u32, 9), ts.seq);
 
-    // A second slot scanning the same trace reads the same maximum from its own start
-    // (v16): the count is the run's, not the slot's, and a fresh thread does not begin
-    // at zero because its scan does.
     var other: ThreadState = .{};
     try std.testing.expect(refreshCount(&other));
     try std.testing.expectEqual(@as(u32, 9), other.seq);
     try std.testing.expectEqual(ts.count_scanned, other.count_scanned);
 
-    // Bytes that are not a record refuse. Numbering past them would mean numbering from
-    // whatever this process happened to remember, which is the address of another
-    // operation. The caller records `count-read-failed` and the engine refuses the run.
     // At least a record's fixed prefix long (22 bytes since v16), or the decoder would
     // read them as a record still being written and the scan would stop politely in
     // front of them instead of refusing — which is what happened when the prefix grew
@@ -3591,14 +3275,11 @@ test "the run's operation count is read back from the trace, and a torn tail is 
     try append.bytes(fd, &[_]u8{ 0xff, 0xff, 1, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
     try std.testing.expect(!refreshCount(&ts));
 
-    // A closed channel refuses too, rather than answering from memory.
     trace_fd = -1;
     try std.testing.expect(!refreshCount(&ts));
 }
 
 test "slots: one per thread id, claimed once, and the reserve past the last" {
-    // Nothing here touches the live table: the test builds its own, the way a fresh
-    // process would find it, and drives the claim logic by hand with made-up ids.
     var table: [3]ThreadState = @splat(.{});
     var exhausted = false;
     const claim = struct {
@@ -3616,25 +3297,18 @@ test "slots: one per thread id, claimed once, and the reserve past the last" {
     var res: ThreadState = .{};
     const a = claim.run(&table, &res, &exhausted, 101);
     const b = claim.run(&table, &res, &exhausted, 202);
-    // The same id comes back to the same slot, not a new one.
     try std.testing.expectEqual(a, claim.run(&table, &res, &exhausted, 101));
     try std.testing.expect(a != b);
     try std.testing.expect(!exhausted);
     _ = claim.run(&table, &res, &exhausted, 303);
     try std.testing.expect(!exhausted);
-    // The fourth id finds no free slot: it gets the reserve. (In the live table `mine`
-    // writes the exhaustion notice at this moment; the test below drives that path on the
-    // real function.)
     const d = claim.run(&table, &res, &exhausted, 404);
     try std.testing.expectEqual(&res, d);
     try std.testing.expect(exhausted);
-    // Nothing here gives a slot back, so the earlier owners still resolve to theirs.
     try std.testing.expectEqual(b, claim.run(&table, &res, &exhausted, 202));
 }
 
 test "the fork child starts from an empty slot table, however full the parent's was (v16)" {
-    // Three slots claimed, one of them mid-call, the table marked exhausted — the shape a
-    // fork can catch the parent in. The child must see none of it.
     slots[0].tid = 1001;
     slots[0].busy = true;
     slots[0].seq = 5;
@@ -3659,10 +3333,6 @@ test "the fork child starts from an empty slot table, however full the parent's 
 }
 
 test "mine: the 65th thread takes the reserve, and the notice is in the trace at that moment (v16)" {
-    // The live table this time, filled by hand with ids no real thread has, and the trace
-    // descriptor pointed at a file this test owns — so `mine()` itself runs the overflow
-    // path, and what it wrote is read back and decoded. The hand-copied claim logic in the
-    // test above cannot show this; review said so.
     if (builtin.os.tag != .macos) resolveAll();
     var bb: [160]u8 = undefined;
     const base = std.mem.printSentinel(&bb, "/tmp/sideeye-shim-slots-{d}", .{c.getpid()}, 0) catch unreachable;
@@ -3680,7 +3350,6 @@ test "mine: the 65th thread takes the reserve, and the notice is in the trace at
     const saved_fd = trace_fd;
     defer trace_fd = saved_fd;
     trace_fd = fd;
-    // Armed, as the notice requires since #753: before `init` it would go nowhere.
     const saved_active = active;
     defer active = saved_active;
     active = true;
@@ -3699,7 +3368,6 @@ test "mine: the 65th thread takes the reserve, and the notice is in the trace at
     const got = mine();
     try std.testing.expectEqual(&reserve, got);
     try std.testing.expect(exhaustion_announced);
-    // Read back: exactly one record, the notice, carrying this thread's id.
     var buf: [128]u8 = undefined;
     const n = c.pread(fd, &buf, buf.len, 0);
     try std.testing.expect(n > 0);
@@ -3708,14 +3376,11 @@ test "mine: the 65th thread takes the reserve, and the notice is in the trace at
     try std.testing.expectEqualStrings(contract.unresolved_kind.thread_slots_exhausted, d.rec.aux);
     try std.testing.expectEqual(currentTid(), d.rec.tid);
     try std.testing.expectEqual(@as(usize, d.consumed), @as(usize, @intCast(n)));
-    // A second overflow takes the reserve again and writes nothing more.
     try std.testing.expectEqual(&reserve, mine());
     try std.testing.expectEqual(n, c.pread(fd, &buf, buf.len, 0));
 }
 
 test "exec carry: builds in the thread's own slot, and not on the reserve or when re-entered (#555)" {
-    // An exec that cannot succeed, so the carry runs to the end and returns. Whether it
-    // built the environment is read off `exec_env[0]`, cleared before each call.
     if (builtin.os.tag != .macos) resolveAll();
     const saved_active = active;
     defer active = saved_active;
@@ -3740,7 +3405,6 @@ test "exec carry: builds in the thread's own slot, and not on the reserve or whe
     try std.testing.expect(own.exec_env[0] != null);
     try std.testing.expect(!own.exec_carrying);
 
-    // Re-entered: a carry already in progress on this thread — the array is left alone.
     {
         // Cleared on the way out even when an assertion fails: `resetSlotsInChild` does not
         // touch the flag, and a later test in this binary would find it set.
@@ -3751,8 +3415,6 @@ test "exec carry: builds in the thread's own slot, and not on the reserve or whe
         try std.testing.expect(own.exec_env[0] == null);
     }
 
-    // The reserve: every slot taken by ids no real thread has — the shared array is left
-    // alone. The notice is marked written so this test writes nothing.
     for (&slots, 0..) |*s, i| s.tid = 100_000_000 + @as(u64, i);
     const saved_announced = exhaustion_announced;
     defer exhaustion_announced = saved_announced;
@@ -3880,23 +3542,17 @@ test "the joinable table: the creator inserts, the joiner takes once, a reused v
     const a = joinableTake(0x1000) orelse return error.TestUnexpectedResult;
     try std.testing.expectEqual(@as(u64, 7), a.creator);
     try std.testing.expectEqual(@as(u32, 1), a.ordinal);
-    // Taken once, gone: the value may be another thread's from here on.
     try std.testing.expect(joinableTake(0x1000) == null);
-    // glibc hands a joined thread's value to the next creation. The later pair is what a
-    // join must resolve to, so the insert overwrites the entry rather than adding a second.
     joinableInsert(0x2000, 9, 3);
     const b = joinableTake(0x2000) orelse return error.TestUnexpectedResult;
     try std.testing.expectEqual(@as(u64, 9), b.creator);
     try std.testing.expectEqual(@as(u32, 3), b.ordinal);
     try std.testing.expect(joinableTake(0x2000) == null);
-    // Neither 0 nor the claiming sentinel is ever a key.
     joinableInsert(0, 7, 4);
     joinableInsert(joinable_claiming, 7, 5);
     try std.testing.expect(joinableTake(0) == null);
     try std.testing.expect(joinableTake(joinable_claiming) == null);
     for (&joinable) |*e| try std.testing.expectEqual(@as(usize, 0), e.pthread);
-    // Full: sixty-four distinct values fill it, the sixty-fifth is dropped and resolves to
-    // nothing (the join then records `?`), and the sixty-four still resolve.
     var i: usize = 0;
     while (i < max_threads) : (i += 1) joinableInsert(0x10000 + i * 16, 1, @intCast(i + 1));
     joinableInsert(0xFFFF0, 1, 99);
@@ -3911,7 +3567,6 @@ test "pending starts: sixty-four claims, the sixty-fifth refused, a release make
     var claimed: [max_threads]*PendingStart = undefined;
     for (&claimed) |*slot| slot.* = claimPendingStart() orelse return error.TestUnexpectedResult;
     try std.testing.expect(claimPendingStart() == null);
-    // What the trampoline and a failed `pthread_create` both do: give the entry back.
     @atomicStore(bool, &claimed[3].taken, false, .release);
     try std.testing.expectEqual(claimed[3], claimPendingStart() orelse return error.TestUnexpectedResult);
 }
@@ -3943,14 +3598,10 @@ test "writeRecord counts the records that went out, and the fork child's slots a
     writeRecord(&ts, .close, 0, "/tmp/x", "");
     writeRecord(&ts, .thread_join, 0, "", "7 1");
     try std.testing.expectEqual(@as(u32, 2), ts.written);
-    // A record that could not go out is not a record the engine will count.
     trace_fd = -1;
     writeRecord(&ts, .close, 0, "/tmp/x", "");
     try std.testing.expectEqual(@as(u32, 2), ts.written);
 
-    // The fork child. A count inherited from the parent would date the child's own
-    // creations later than they were (review, R2 C1); a pending start or a joinable entry
-    // inherited would name threads the child does not have.
     slots[0].written = 5;
     slots[0].creates = 2;
     reserve.written = 3;
@@ -3965,4 +3616,361 @@ test "writeRecord counts the records that went out, and the fork child's slots a
     try std.testing.expectEqual(@as(u32, 0), reserve.creates);
     try std.testing.expect(joinableTake(0x3000) == null);
     for (&pending_starts) |*e| try std.testing.expect(!e.taken);
+}
+
+fn departedPid() !c_int {
+    const pid = try zombiePid();
+    reap(pid);
+    return pid;
+}
+
+// Not reaped: running or a zombie, `kill` answers either way, however privileged the test.
+fn zombiePid() !c_int {
+    const pid = std.c.fork();
+    if (pid < 0) return error.SkipZigTest;
+    if (pid == 0) std.c._exit(0);
+    return pid;
+}
+
+fn reap(pid: c_int) void {
+    var status: c_int = 0;
+    _ = std.c.waitpid(pid, &status, 0);
+}
+
+test "a full table takes back a slot whose claimer has exited, and no slot whose claimer is alive" {
+    const saved_active = active;
+    defer active = saved_active;
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    const saved_announced = exhaustion_announced;
+    defer exhaustion_announced = saved_announced;
+    defer resetSlotsInChild();
+    armForExecSlotTest();
+    table_pid = c.getpid();
+    exhaustion_announced = true;
+    const zombie = try zombiePid();
+    defer reap(zombie);
+    const gone = try departedPid();
+    for (&slots, 0..) |*s, i| {
+        s.tid = 100_000_000 + @as(u64, i);
+        s.claimer_pid = zombie;
+    }
+    slots[6].claimer_pid = 0;
+    slots[7].claimer_pid = table_pid;
+    slots[5].claimer_pid = gone;
+    slots[5].seq = 4;
+    slots[5].count_scanned = 77;
+    slots[5].written = 9;
+    slots[5].creates = 3;
+    slots[5].busy = true;
+    slots[5].exec_carrying = true;
+    std.c._errno().* = 0;
+
+    const got = mine();
+    try std.testing.expectEqual(@as(c_int, 0), std.c._errno().*);
+    try std.testing.expectEqual(&slots[5], got);
+    try std.testing.expectEqual(currentTid(), got.tid);
+    try std.testing.expectEqual(c.getpid(), got.claimer_pid);
+    try std.testing.expectEqual(@as(u32, 0), got.seq);
+    try std.testing.expectEqual(@as(u64, 0), got.count_scanned);
+    try std.testing.expectEqual(@as(u32, 0), got.written);
+    try std.testing.expectEqual(@as(u32, 0), got.creates);
+    try std.testing.expect(!got.busy);
+    try std.testing.expect(!got.exec_carrying);
+    for (&slots, 0..) |*s, i| if (i != 5) try std.testing.expectEqual(100_000_000 + @as(u64, i), s.tid);
+    try std.testing.expectEqual(got, mine());
+}
+
+test "a full table whose claimers are all alive still hands out the reserve" {
+    const saved_active = active;
+    defer active = saved_active;
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    const saved_announced = exhaustion_announced;
+    defer exhaustion_announced = saved_announced;
+    defer resetSlotsInChild();
+    armForExecSlotTest();
+    table_pid = c.getpid();
+    exhaustion_announced = true;
+    const zombie = try zombiePid();
+    defer reap(zombie);
+    for (&slots, 0..) |*s, i| {
+        s.tid = 100_000_000 + @as(u64, i);
+        s.claimer_pid = if (i % 2 == 0) zombie else table_pid;
+    }
+    try std.testing.expectEqual(&reserve, mine());
+}
+
+test "a slot found by this thread's id under a departed claimer becomes this process's, and is not taken back" {
+    const saved_active = active;
+    defer active = saved_active;
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    const saved_announced = exhaustion_announced;
+    defer exhaustion_announced = saved_announced;
+    defer resetSlotsInChild();
+    armForExecSlotTest();
+    table_pid = c.getpid();
+    exhaustion_announced = true;
+    const gone = try departedPid();
+    for (&slots, 0..) |*s, i| {
+        s.tid = 100_000_000 + @as(u64, i);
+        s.claimer_pid = table_pid;
+    }
+    slots[3].tid = currentTid();
+    slots[3].claimer_pid = gone;
+    slots[3].written = 7;
+    try std.testing.expectEqual(&slots[3], mine());
+    try std.testing.expectEqual(table_pid, slots[3].claimer_pid);
+    try std.testing.expectEqual(@as(u32, 7), slots[3].written);
+}
+
+test "a slot another thread is taking back is not used, even under this thread's id" {
+    const saved_active = active;
+    defer active = saved_active;
+    const saved_fd = trace_fd;
+    defer trace_fd = saved_fd;
+    defer resetSlotsInChild();
+    armForExecSlotTest();
+    table_pid = c.getpid();
+    for (&slots, 0..) |*s, i| {
+        s.tid = 100_000_000 + @as(u64, i);
+        s.claimer_pid = table_pid;
+    }
+    slots[3].tid = currentTid();
+    slots[3].claimer_pid = reclaiming;
+    slots[6].tid = 0;
+    slots[6].claimer_pid = 0;
+    try std.testing.expectEqual(&slots[6], mine());
+    try std.testing.expectEqual(reclaiming, slots[3].claimer_pid);
+}
+
+const sweep_trace_path = "/tmp/sideeye-sweep-test-trace";
+const sweep_other_path = "/tmp/sideeye-sweep-test-other";
+
+const SweepTestState = struct {
+    active: bool,
+    trace_fd: c_int,
+    trace_path_len: usize,
+    trace_identity: ?FileIdentity,
+    kill_cgroup_fd: c_int,
+    kill_cgroup_path_len: usize,
+    kill_aside_fd: c_int,
+
+    fn save() SweepTestState {
+        return .{
+            .active = active,
+            .trace_fd = trace_fd,
+            .trace_path_len = trace_path_len,
+            .trace_identity = trace_identity,
+            .kill_cgroup_fd = kill_cgroup_fd,
+            .kill_cgroup_path_len = kill_cgroup_path_len,
+            .kill_aside_fd = kill_aside_fd,
+        };
+    }
+
+    fn restore(s: SweepTestState) void {
+        active = s.active;
+        trace_fd = s.trace_fd;
+        trace_path_len = s.trace_path_len;
+        trace_identity = s.trace_identity;
+        kill_cgroup_fd = s.kill_cgroup_fd;
+        kill_cgroup_path_len = s.kill_cgroup_path_len;
+        kill_aside_fd = s.kill_aside_fd;
+        resetSlotsInChild();
+    }
+};
+
+fn openFileAt(path: [*:0]const u8, at: c_int) !void {
+    const fd = callOpen(path, O_RDWR | O_CREAT | O_TRUNC | O_APPEND, 0o600);
+    if (fd < 0) return error.SkipZigTest;
+    defer _ = callClose(fd);
+    if (std.os.linux.errno(std.os.linux.dup3(fd, at, @as(u32, @bitCast(O_CLOEXEC)))) != .SUCCESS) return error.SkipZigTest;
+}
+
+fn armSweepTrace(at: c_int) !void {
+    armForExecSlotTest();
+    kill_cgroup_fd = -1;
+    kill_aside_fd = -1;
+    try openFileAt(sweep_trace_path, at);
+    keepName(&trace_path_buf, &trace_path_len, sweep_trace_path);
+    trace_identity = fileIdentity(at);
+    trace_fd = at;
+}
+
+fn fileHolds(path: [*:0]const u8) []const u8 {
+    const S = struct {
+        var buf: [256]u8 = undefined;
+    };
+    const fd = callOpen(path, O_RDONLY, 0);
+    if (fd < 0) return "";
+    defer _ = callClose(fd);
+    const n = std.c.read(fd, &S.buf, S.buf.len);
+    return if (n <= 0) "" else S.buf[0..@intCast(n)];
+}
+
+fn holdsTraceDeath(path: [*:0]const u8) bool {
+    return std.mem.indexOf(u8, fileHolds(path), contract.unresolved_kind.trace_closed) != null;
+}
+
+fn withNofileSoftLimit(soft: u64) !std.posix.rlimit {
+    const was = try std.posix.getrlimit(.NOFILE);
+    std.posix.setrlimit(.NOFILE, .{ .cur = soft, .max = was.max }) catch return error.SkipZigTest;
+    return was;
+}
+
+test "a sweep that closed the trace puts the same file back on its number, and says nothing" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    defer _ = callClose(950);
+    _ = callClose(950);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, 950), trace_fd);
+    try std.testing.expect(isTraceFile(950));
+    try std.testing.expectEqualStrings("", fileHolds(sweep_trace_path));
+}
+
+test "a sweep whose restore fails says so through the reopened trace before it drops the channel" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    const was = try withNofileSoftLimit(256);
+    defer std.posix.setrlimit(.NOFILE, was) catch {};
+    _ = callClose(950);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, -1), trace_fd);
+    try std.testing.expect(holdsTraceDeath(sweep_trace_path));
+}
+
+test "a process sharing the table without owning it leaves the shared trace number alone when the restore fails" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    const was = try withNofileSoftLimit(256);
+    defer std.posix.setrlimit(.NOFILE, was) catch {};
+    table_pid = c.getpid() + 1;
+    _ = callClose(950);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, 950), trace_fd);
+    try std.testing.expect(holdsTraceDeath(sweep_trace_path));
+}
+
+test "a trace below the relocation floor is never put back, and its death goes through the reopened file" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(150);
+    _ = callClose(150);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, -1), trace_fd);
+    try std.testing.expect(descriptorClosed(150));
+    try std.testing.expect(holdsTraceDeath(sweep_trace_path));
+}
+
+test "a trace number that now holds another file is dropped with a death, and nothing is written into that file" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    defer _ = callClose(950);
+    _ = callClose(950);
+    try openFileAt(sweep_other_path, 950);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, -1), trace_fd);
+    try std.testing.expect(!isTraceFile(950));
+    try std.testing.expectEqualStrings("", fileHolds(sweep_other_path));
+    try std.testing.expect(holdsTraceDeath(sweep_trace_path));
+}
+
+fn claimAndLeave() void {
+    _ = mine();
+}
+
+fn claimAndWait(hold: *std.atomic.Value(bool), claimed: *std.atomic.Value(bool)) void {
+    _ = mine();
+    claimed.store(true, .release);
+    while (hold.load(.acquire)) std.atomic.spinLoopHint();
+}
+
+test "a thread that has exited does not count as another thread here, and a live one does" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    armForExecSlotTest();
+    _ = mine();
+    const gone = try std.Thread.spawn(.{}, claimAndLeave, .{});
+    gone.join();
+    // Not asked once: `join` returns when the kernel clears the thread's id, a moment before it
+    // reaps the thread, and `tgkill` still finds it until then.
+    var tries: usize = 0;
+    while (otherThreadsHere() and tries < 1000) : (tries += 1) {
+        const ms: std.os.linux.timespec = .{ .sec = 0, .nsec = 1_000_000 };
+        _ = std.os.linux.nanosleep(&ms, null);
+    }
+    try std.testing.expect(!otherThreadsHere());
+
+    var hold = std.atomic.Value(bool).init(true);
+    var claimed = std.atomic.Value(bool).init(false);
+    const live = try std.Thread.spawn(.{}, claimAndWait, .{ &hold, &claimed });
+    defer live.join();
+    defer hold.store(false, .release);
+    while (!claimed.load(.acquire)) std.atomic.spinLoopHint();
+    try std.testing.expect(otherThreadsHere());
+}
+
+test "a sweep that closed cgroup.kill puts the same file back on its number" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    armForExecSlotTest();
+    kill_aside_fd = -1;
+    try openFileAt(sweep_other_path, 951);
+    defer _ = callClose(951);
+    const before = fileIdentity(951);
+    keepName(&kill_cgroup_path_buf, &kill_cgroup_path_len, sweep_other_path);
+    kill_cgroup_fd = 951;
+    _ = callClose(951);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, 951), kill_cgroup_fd);
+    try std.testing.expect(before != null);
+    try std.testing.expect(std.meta.eql(fileIdentity(951), before));
+}
+
+test "a sweep that closed cgroup.kill below the relocation floor leaves it closed and drops it" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    armForExecSlotTest();
+    kill_aside_fd = -1;
+    try openFileAt(sweep_other_path, 150);
+    keepName(&kill_cgroup_path_buf, &kill_cgroup_path_len, sweep_other_path);
+    kill_cgroup_fd = 150;
+    _ = callClose(150);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, -1), kill_cgroup_fd);
+    try std.testing.expect(descriptorClosed(150));
+}
+
+test "a sweep the trace comes back from still says so when another thread here is alive" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    defer _ = callClose(950);
+    _ = mine();
+    var hold = std.atomic.Value(bool).init(true);
+    var claimed = std.atomic.Value(bool).init(false);
+    const live = try std.Thread.spawn(.{}, claimAndWait, .{ &hold, &claimed });
+    defer live.join();
+    defer hold.store(false, .release);
+    while (!claimed.load(.acquire)) std.atomic.spinLoopHint();
+    _ = callClose(950);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, 950), trace_fd);
+    try std.testing.expect(isTraceFile(950));
+    try std.testing.expect(holdsTraceDeath(sweep_trace_path));
 }

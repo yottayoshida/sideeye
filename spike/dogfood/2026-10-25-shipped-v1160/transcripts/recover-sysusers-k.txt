@@ -1,0 +1,48 @@
+===== kill at 43
+killed run exit 137
+Killed
+checker(sysusers): grpck -r exited 2: group ssl-cert: no user appsvc delete member 'appsvc'? No 'appsvc' is a member of the 'ssl-cert' group in /etc/group but not in /etc/gshadow 
+check exit 1
+  before re-run: ssl-cert:x:111:appsvc,postgres
+  before re-run: appsvc:x:999:
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+re-run exit 0
+checker(sysusers): grpck -r exited 2: no matching group file entry in /etc/gshadow add group 'appsvc' in /etc/gshadow? No grpck: no changes 
+check after re-run exit 1
+  after re-run passwd: appsvc:x:999:999:Example application service:/var/lib/appsvc:/usr/sbin/nologin
+  after re-run shadow: appsvc:!*:20751::::::
+  after re-run group: appsvc:x:999:
+  after re-run gshadow: (no appsvc line)
+===== kill at 44
+Killed
+killed run exit 137
+checker(sysusers): grpck -r exited 2: group ssl-cert: no user appsvc delete member 'appsvc'? No shadow group ssl-cert: no user appsvc 
+check exit 1
+  before re-run: ssl-cert:x:111:appsvc,postgres
+  before re-run: appsvc:x:999:
+  before re-run: ssl-cert:!::appsvc,postgres
+  before re-run: appsvc:!*::
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+re-run exit 0
+check after re-run exit 0
+  after re-run passwd: appsvc:x:999:999:Example application service:/var/lib/appsvc:/usr/sbin/nologin
+  after re-run shadow: appsvc:!*:20751::::::
+  after re-run group: appsvc:x:999:
+  after re-run gshadow: appsvc:!*::
+===== kill at 45
+Killed
+killed run exit 137
+checker(sysusers): pwck -r exited 2: no matching password file entry in /etc/shadow add user 'appsvc' in /etc/shadow? No pwck: no changes 
+check exit 1
+  before re-run: appsvc:x:999:999:Example application service:/var/lib/appsvc:/usr/sbin/nologin
+  before re-run: ssl-cert:x:111:appsvc,postgres
+  before re-run: appsvc:x:999:
+  before re-run: ssl-cert:!::appsvc,postgres
+  before re-run: appsvc:!*::
+re-run exit 0
+checker(sysusers): pwck -r exited 2: no matching password file entry in /etc/shadow add user 'appsvc' in /etc/shadow? No pwck: no changes 
+check after re-run exit 1
+  after re-run passwd: appsvc:x:999:999:Example application service:/var/lib/appsvc:/usr/sbin/nologin
+  after re-run shadow: (no appsvc line)
+  after re-run group: appsvc:x:999:
+  after re-run gshadow: appsvc:!*::

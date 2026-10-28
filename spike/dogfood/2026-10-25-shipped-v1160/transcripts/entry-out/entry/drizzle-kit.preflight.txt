@@ -1,0 +1,21 @@
+PREFLIGHT  recording accepted — 46 state-changing operation(s) observed
+
+cwd          /s/dz
+atomicity    1 path(s) judged pre-or-post
+oracle       agreed on 46 operations (4858 syscall lines examined, 195 in scope of the judged state), witness strace
+processes    4 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; the second observed run recorded a process boundary, and that run's capture is never parsed, so nothing accounts for it; the shim recorded 9 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 8 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2005 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/dz/db --cwd /s/dz --operation 'node node_modules/drizzle-kit/bin.cjs migrate --config drizzle.config.ts' --apparatus 'env:UV_THREADPOOL_SIZE=1' \
+               --check <your-invariant.sh> --oracle /usr/bin/strace

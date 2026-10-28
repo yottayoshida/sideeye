@@ -1,0 +1,59 @@
+== etcdutl (etcdutl defrag --data-dir /s/etcd), GOMAXPROCS=1
+1 2799 fsync
+1 2799 ftruncate
+8 2799 mmap
+19 2799 pwrite64
+1 2803 mmap
+26 2803 pwrite64
+1 2803 renameat
+-- order (tid call):
+      1 2799 pwrite64 7</s/etcd/member/snap/db.tmp.2923683176>
+      1 2799 pwrite64 4</s/etcd/member/snap/db>
+      1 2799 ftruncate 7</s/etcd/member/snap/db.tmp.2923683176>
+      1 2799 fsync 7</s/etcd/member/snap/db.tmp.2923683176>
+     17 2799 pwrite64 7</s/etcd/member/snap/db.tmp.2923683176>
+     25 2803 pwrite64 7</s/etcd/member/snap/db.tmp.2923683176>
+      1 2803 renameat AT_FDCWD</s/etcd>
+      1 2803 pwrite64 4</s/etcd/member/snap/db>
+== dolt (dolt gc), GOMAXPROCS=1
+3 2963 fsync
+2 2963 ftruncate
+2 2963 renameat
+5 2963 unlinkat
+1 2963 write
+14 2977 fsync
+2 2977 ftruncate
+6 2977 renameat
+26 2977 unlinkat
+7 2977 write
+-- order (tid call):
+      1 2963 ftruncate 10</s/dolt/.dolt/noms/journal.idx>
+      1 2963 ftruncate 9</s/dolt/.dolt/noms/vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv>
+      1 2963 fsync 9</s/dolt/.dolt/noms/vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv>
+      1 2963 renameat AT_FDCWD</s/dolt>
+      3 2963 unlinkat AT_FDCWD</s/dolt>
+      1 2963 write 11</s/dolt/.dolt/noms/nbs_manifest_216984975>
+      1 2963 fsync 11</s/dolt/.dolt/noms/nbs_manifest_216984975>
+      1 2963 renameat AT_FDCWD</s/dolt>
+      1 2963 fsync 11</s/dolt/.dolt/noms>
+      2 2963 unlinkat AT_FDCWD</s/dolt>
+      1 2977 ftruncate 14</s/dolt/.dolt/stats/.dolt/noms/journal.idx>
+      1 2977 ftruncate 13</s/dolt/.dolt/stats/.dolt/noms/vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv>
+      1 2977 fsync 13</s/dolt/.dolt/stats/.dolt/noms/vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv>
+      1 2977 write 15</s/dolt/.dolt/stats/.dolt/noms/nbs_manifest_2089545365>
+      1 2977 fsync 15</s/dolt/.dolt/stats/.dolt/noms/nbs_manifest_2089545365>
+      1 2977 renameat AT_FDCWD</s/dolt>
+      1 2977 fsync 15</s/dolt/.dolt/stats/.dolt/noms>
+      2 2977 unlinkat AT_FDCWD</s/dolt>
+      1 2977 renameat AT_FDCWD</s/dolt>
+      1 2977 write 16</s/dolt/.dolt/noms/oldgen/nbs_manifest_3337234618>
+      1 2977 fsync 16</s/dolt/.dolt/noms/oldgen/nbs_manifest_3337234618>
+      1 2977 renameat AT_FDCWD</s/dolt>
+      1 2977 fsync 16</s/dolt/.dolt/noms/oldgen>
+      2 2977 unlinkat AT_FDCWD</s/dolt>
+      1 2977 fsync 17</s/dolt/.dolt/noms/nbs_table_3432486092>
+      1 2977 write 17</s/dolt/.dolt/noms/nbs_manifest_617014001>
+      1 2977 fsync 17</s/dolt/.dolt/noms/nbs_manifest_617014001>
+      1 2977 renameat AT_FDCWD</s/dolt>
+      1 2977 fsync 17</s/dolt/.dolt/noms>
+      2 2977 unlinkat AT_FDCWD</s/dolt>

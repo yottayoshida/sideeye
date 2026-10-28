@@ -1,0 +1,13 @@
+[world]
+state = "/s/docu/i18n"
+
+[define]
+# Extracting a site's new UI strings into the French translation a translator has been filling in:
+# write-translations merges into the existing i18n/fr/*.json, keeping the translator's messages and
+# adding the keys the site gained. The CLI's script is invoked through node directly (npx starts a
+# shell and a second node; a #! script is not an image the shim enters).
+operation = "node node_modules/@docusaurus/core/bin/docusaurus.mjs write-translations --locale fr"
+check     = "/s/docu-check.sh"
+cwd       = "/s/docu"
+# Node: libuv's pool on one thread (docs/apparatus.md); no update check (it would start a detached child).
+apparatus = ["env:UV_THREADPOOL_SIZE=1", "env:NO_UPDATE_NOTIFIER=1"]

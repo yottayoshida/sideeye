@@ -1,0 +1,18 @@
+replay --leave-crash-state exit 1
+FAIL  1 of 2 explored worlds violated an invariant
+crash state left in the state directory: the kill's state, before the checker ran, whatever the verdict
+-- crash state:
+checker(sysusers): grpck -r exited 2: group ssl-cert: no user appsvc delete member 'appsvc'? No 'appsvc' is a member of the 'ssl-cert' group in /etc/group but not in /etc/gshadow 
+check exit 1
+/s/sysroot/etc/group:ssl-cert:x:111:appsvc,postgres
+/s/sysroot/etc/group:appsvc:x:999:
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+re-run exit 0
+-- after the re-run:
+checker(sysusers): grpck -r exited 2: no matching group file entry in /etc/gshadow add group 'appsvc' in /etc/gshadow? No grpck: no changes 
+check exit 1
+/s/sysroot/etc/passwd:appsvc:x:999:999:Example application service:/var/lib/appsvc:/usr/sbin/nologin
+/s/sysroot/etc/shadow:appsvc:!*:20751::::::
+/s/sysroot/etc/group:ssl-cert:x:111:appsvc,postgres
+/s/sysroot/etc/group:appsvc:x:999:
+/s/sysroot/etc/gshadow:ssl-cert:!::appsvc,postgres

@@ -99,3 +99,22 @@ test "a work directory another holder has locked is refused naming its pid, and 
     try std.testing.expect(std.mem.indexOf(u8, r.text, "is in use by another sideeye run") != null);
     try std.testing.expect(std.mem.indexOf(u8, r.text, want) != null);
 }
+
+pub fn isRelativePath(path: []const u8) bool {
+    return path.len > 0 and path[0] != '/';
+}
+
+pub fn pinsName(path: []const u8, cwd_declared: bool) bool {
+    // A name without `/` is left to the loader's search path, which no directory moves, unless a
+    // declared cwd already pinned it.
+    return isRelativePath(path) and (cwd_declared or std.mem.indexOfScalar(u8, path, '/') != null);
+}
+
+test "a relative --shim or --oracle is pinned when it names a directory, and a bare name only under a declared cwd" {
+    try std.testing.expect(pinsName("./shim.so", false));
+    try std.testing.expect(pinsName("lib/shim.so", false));
+    try std.testing.expect(!pinsName("libsideeye_shim.so", false));
+    try std.testing.expect(pinsName("libsideeye_shim.so", true));
+    try std.testing.expect(!pinsName("/opt/shim.so", true));
+    try std.testing.expect(!pinsName("", true));
+}

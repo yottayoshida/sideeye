@@ -1,0 +1,34 @@
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+note: the paths at the crash point differ from the recorded case (often pid-embedded temp names); the class structure matches, so the replay proceeds
+falsify: checker(sysusers): pwck -r exited 2: invalid password file entry delete line 'sideeye-corruption-probe'? No invalid shadow password file entry 
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+world 43: checker(sysusers): grpck -r exited 2: group ssl-cert: no user appsvc delete member 'appsvc'? No 'appsvc' is a member of the 'ssl-cert' group in /etc/group but not in /etc/gshadow 
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   the checker (L2)
+earliest    crash point 43 of 45
+            after  rename(/s/sysroot/etc/.#group57339b9b7c567bcf)
+            before rename(/s/sysroot/etc/.#gshadow2235e163db3f4eb1)
+path        (named by the checker, not by path)
+observed    the checker exited non-zero after restart
+cwd         /s/sysroot
+
+explored    2 worlds (crash points 45 + 1 baseline)
+expected    exit 0
+atomicity   3 path(s) judged pre-or-post; 2 file(s) judged by the history form (appended tails not judged): etc/passwd, etc/shadow
+oracle      agreed on 45 operations (820 syscall lines examined, 512 in scope of the judged state), witness strace
+metadata    12 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmodat2 x8, utimensat x4. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /out/sysusers-262/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   single process
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+reproduce   (cd /s/sysroot && unset SIDEEYE_KILL_GROUP && : > /out/sysusers-262/work-explore-replay2/trace-repro.bin && SIDEEYE_STATE_DIR=/s/sysroot SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/sysusers-262/work-explore-replay2/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.16.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=43 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= /opt/bin/systemd-sysusers-262 '--root=/s/sysroot' /s/sysaux/app.conf </dev/null)
+sideeye: json sha256=e6cb9553977cef7d95165abc8db376bd8a89ebe21d0c44c114288e5d20518d38;

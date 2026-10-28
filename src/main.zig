@@ -292,71 +292,74 @@ fn runOperationObserved(
 ) posix.Term {
     const sup = supervise.Spawn.start(gpa, arena, observe, op_argv, trace_path, state_abs, state_alt, 0, containment.runName(cg), containment.killName(cg)) catch |e|
         setupError(.environment, supervise.startFailure(e));
-    defer sup.finish();
     const argv = sup.argv;
     const env_trace = if (observe == .supervised) "" else trace_path;
     const preload = supervise.preloadFor(observe, shim);
-    if (oracle_path) |strace_path| {
-        // Environment goes to the target via strace's -E, not through our own
-        // setenv: LD_PRELOAD applied here would load the shim into strace itself,
-        // and strace's own file operations would land in the trace as if the
-        // target had produced them.
-        var list: std.ArrayList([]const u8) = .empty;
-        list.append(arena, strace_path) catch setupError(.environment, "out of memory");
-        // `-f` follows children and `%process` covers clone/fork/execve. Without
-        // both, a target that creates a child through a raw clone is invisible to
-        // the oracle as well as to the shim, and the child's work on the state
-        // directory never appears anywhere. setsid/setpgid are named explicitly
-        // because `%process` does not include them (measured), and an *unshimmed*
-        // child detaching from the containment group is visible nowhere else.
-        // `mprotect`, `pkey_mprotect` and `mremap` are not file calls either (#689, ADR
-        // 0098): they are how a state file mapped shared and read-only becomes writable or
-        // moves, and a store through it has no call of its own. `?` keeps an strace that
-        // has no name for `pkey_mprotect` from refusing to start.
-        for ([_][]const u8{ "-f", "-y", "-e", "trace=%file,%desc,%process,setsid,setpgid,mprotect,?pkey_mprotect,mremap", "-o", oracle_out }) |a|
-            list.append(arena, a) catch setupError(.environment, "out of memory");
-        const pairs = [_][2][]const u8{
+    const term: posix.Term = run: {
+        if (oracle_path) |strace_path| {
+            // Environment goes to the target via strace's -E, not through our own
+            // setenv: LD_PRELOAD applied here would load the shim into strace itself,
+            // and strace's own file operations would land in the trace as if the
+            // target had produced them.
+            var list: std.ArrayList([]const u8) = .empty;
+            list.append(arena, strace_path) catch setupError(.environment, "out of memory");
+            // `-f` follows children and `%process` covers clone/fork/execve. Without
+            // both, a target that creates a child through a raw clone is invisible to
+            // the oracle as well as to the shim, and the child's work on the state
+            // directory never appears anywhere. setsid/setpgid are named explicitly
+            // because `%process` does not include them (measured), and an *unshimmed*
+            // child detaching from the containment group is visible nowhere else.
+            // `mprotect`, `pkey_mprotect` and `mremap` are not file calls either (#689, ADR
+            // 0098): they are how a state file mapped shared and read-only becomes writable or
+            // moves, and a store through it has no call of its own. `?` keeps an strace that
+            // has no name for `pkey_mprotect` from refusing to start.
+            for ([_][]const u8{ "-f", "-y", "-e", "trace=%file,%desc,%process,setsid,setpgid,mprotect,?pkey_mprotect,mremap", "-o", oracle_out }) |a|
+                list.append(arena, a) catch setupError(.environment, "out of memory");
+            const pairs = [_][2][]const u8{
+                .{ "TOY_STATE", state_abs },
+                .{ contract.env.state_dir, state_abs },
+                .{ contract.env.state_dir_alt, state_alt },
+                .{ contract.env.trace_path, env_trace },
+                // Pinned empty so an ambient value in the operator's shell cannot
+                // become the first image's numbering base (R1; parseU32("") is 0).
+                .{ contract.env.seq_base, "" },
+                // Pinned empty for the same reason (#753): a carried mark in the operator's shell
+                // would refuse every run. Empty is how the shim reads "no mark".
+                .{ contract.env.before_constructor, "" },
+                .{ contract.env.observe, observe.name() },
+                // Pinned empty when there is no cgroup, for the reason `seq_base` is above (v17).
+                // The kill path is a world's alone, and pinned empty here for the same reason.
+                .{ contract.env.run_cgroup, containment.runName(cg) },
+                .{ contract.env.kill_cgroup, "" },
+                .{ contract.env.kill_aside, "" },
+                .{ preload_var, preload },
+            };
+            for (pairs) |kv| {
+                list.append(arena, "-E") catch setupError(.environment, "out of memory");
+                const joined = std.fmt.allocPrint(arena, "{s}={s}", .{ kv[0], kv[1] }) catch setupError(.environment, "out of memory");
+                list.append(arena, joined) catch setupError(.environment, "out of memory");
+            }
+            for (argv) |a| list.append(arena, a) catch setupError(.environment, "out of memory");
+            break :run posix.runChildCaptureContained(gpa, list.items, &.{}, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation under the oracle");
+        }
+        break :run posix.runChildCaptureContained(gpa, argv, &.{
             .{ "TOY_STATE", state_abs },
             .{ contract.env.state_dir, state_abs },
             .{ contract.env.state_dir_alt, state_alt },
             .{ contract.env.trace_path, env_trace },
-            // Pinned empty so an ambient value in the operator's shell cannot
-            // become the first image's numbering base (R1; parseU32("") is 0).
+            // Pinned empty: see the oracle-path pairs above.
             .{ contract.env.seq_base, "" },
-            // Pinned empty for the same reason (#753): a carried mark in the operator's shell
-            // would refuse every run. Empty is how the shim reads "no mark".
             .{ contract.env.before_constructor, "" },
             .{ contract.env.observe, observe.name() },
-            // Pinned empty when there is no cgroup, for the reason `seq_base` is above (v17).
-            // The kill path is a world's alone, and pinned empty here for the same reason.
+            // Pinned empty where there is nothing to name: see the oracle-path pairs above.
             .{ contract.env.run_cgroup, containment.runName(cg) },
             .{ contract.env.kill_cgroup, "" },
             .{ contract.env.kill_aside, "" },
             .{ preload_var, preload },
-        };
-        for (pairs) |kv| {
-            list.append(arena, "-E") catch setupError(.environment, "out of memory");
-            const joined = std.fmt.allocPrint(arena, "{s}={s}", .{ kv[0], kv[1] }) catch setupError(.environment, "out of memory");
-            list.append(arena, joined) catch setupError(.environment, "out of memory");
-        }
-        for (argv) |a| list.append(arena, a) catch setupError(.environment, "out of memory");
-        return posix.runChildCaptureContained(gpa, list.items, &.{}, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation under the oracle");
-    }
-    return posix.runChildCaptureContained(gpa, argv, &.{
-        .{ "TOY_STATE", state_abs },
-        .{ contract.env.state_dir, state_abs },
-        .{ contract.env.state_dir_alt, state_alt },
-        .{ contract.env.trace_path, env_trace },
-        // Pinned empty: see the oracle-path pairs above.
-        .{ contract.env.seq_base, "" },
-        .{ contract.env.before_constructor, "" },
-        .{ contract.env.observe, observe.name() },
-        // Pinned empty where there is nothing to name: see the oracle-path pairs above.
-        .{ contract.env.run_cgroup, containment.runName(cg) },
-        .{ contract.env.kill_cgroup, "" },
-        .{ contract.env.kill_aside, "" },
-        .{ preload_var, preload },
-    }, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation");
+        }, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation");
+    };
+    if (supervise.handoverFailure(sup.finish(), term, "the run")) |why| unknown(.recording_run_failed, why, .environment);
+    return term;
 }
 
 /// `exclusive` because the caller unlinks the path immediately before this (#469):
@@ -630,7 +633,7 @@ fn phaseDefine(run: *Run) void {
     var config_dir: ?[]const u8 = null;
     if (args.config) |cfg_path| {
         if (args.state != null or args.setup != null or args.operation != null or args.check != null or args.marker != null or args.expect_status != null or args.cwd != null or args.apparatus.len != 0 or args.scratch.len != 0 or args.recovery != null or args.recovery_check != null)
-            setupError(.define_invalid, "--config and the define-surface flags (--state, --setup, --operation, --check, --marker, --expect-status, --cwd, --apparatus, --scratch, --recovery, --recovery-check) are mutually exclusive: the define lives in one place or the other");
+            setupError(.define_invalid, "--config and the define-surface flags (" ++ cli.define_surface_list ++ ") are mutually exclusive: the define lives in one place or the other");
         const arena = arena_state.allocator();
         // Bounded, and the only reader that is. The path is operator-named and may
         // legitimately be a pipe — `--config /dev/stdin`, a process substitution — so it
@@ -744,26 +747,27 @@ fn phaseDefine(run: *Run) void {
             std.fmt.allocPrint(arena_state.allocator(), "the declared cwd is not a directory: {s}", .{textShown(arena_state.allocator(), cwd_span)}) catch "the declared cwd is not a directory",
         );
         args.cwd = arena_state.allocator().dupe(u8, cwd_span) catch setupError(.environment, "out of memory");
+    }
 
-        // The engine's own paths are pinned here, and only here, because only a declared
-        // cwd can move them. `--work`, `--shim` and `--oracle` name things the ENGINE
-        // chose, but three of their uses are opened by the child *after* it has chdir'd:
-        // the shim opens `SIDEEYE_TRACE_PATH` from the environment, strace opens its `-o`
-        // capture, and the loader resolves the shim library. Spelled relatively, each
-        // would land in the declared directory instead — measured before this pin as a
-        // run whose traces were never written, reported as `no_shim_marker` and blamed on
-        // the target's linking and on macOS SIP, and as an oracle that vanished after the
-        // parent's own `access(X_OK)` guard had confirmed it (that guard's comment says
-        // it exists to stop exactly the report it then produced).
-        // about the copies this repo has already paid for). Lexical on purpose: `--work`
-        // legitimately does not exist yet here, and the pin is about which directory the
-        // name is read against, not about following symlinks. Nothing happens when no cwd
+    // Not only under a declared cwd: the target itself can chdir before it execs, and the image
+    // it execs opens `SIDEEYE_TRACE_PATH`, and the loader the shim, against the directory it moved
+    // to. Lexical, not realpath: `--work` may not exist yet.
+    const cwd_declared = args.cwd != null;
+    const shim_pins = if (args.shim) |sh| workdir.pinsName(sh, cwd_declared) else false;
+    const oracle_pins = if (args.oracle) |o| workdir.pinsName(o, cwd_declared) else false;
+    if (workdir.isRelativePath(args.work) or shim_pins or oracle_pins) {
         var pin_cwd_buf: [contract.max_path]u8 = undefined;
-        const pin_base = if (posix.getcwd(&pin_cwd_buf, pin_cwd_buf.len)) |p| std.mem.span(p) else "/";
+        // No fallback to `/`: a relative `--work` would then be made at the root.
+        const pin_base = if (posix.getcwd(&pin_cwd_buf, pin_cwd_buf.len)) |p| std.mem.span(p) else setupError(.environment, "the directory Sideeye was started in could not be read, and a relative --work, --shim or --oracle is read against it; pass absolute paths");
         const pin_arena = arena_state.allocator();
         args.work = resolvePathAgainst(pin_arena, pin_base, args.work);
-        if (args.shim) |s| args.shim = resolvePathAgainst(pin_arena, pin_base, s);
-        if (args.oracle) |o| args.oracle = resolvePathAgainst(pin_arena, pin_base, o);
+        if (shim_pins) {
+            const pinned = resolvePathAgainst(pin_arena, pin_base, args.shim.?);
+            // Not pinned into a name the preload variable splits — LD_PRELOAD on spaces and colons,
+            // DYLD_INSERT_LIBRARIES on colons — unless a declared cwd already required it.
+            if (cwd_declared or std.mem.indexOfAny(u8, pinned, " \t:") == null) args.shim = pinned;
+        }
+        if (oracle_pins) args.oracle = resolvePathAgainst(pin_arena, pin_base, args.oracle.?);
     }
 
     // #647: where the define's commands run, decided once, here — directly after the
@@ -1262,8 +1266,11 @@ fn phaseRecording(run: *Run) void {
     if (args.oracle) |oracle_path| {
         var ob: [contract.max_path]u8 = undefined;
         const oz = std.mem.printSentinel(&ob, "{s}", .{oracle_path}, 0) catch setupError(.define_invalid, "--oracle path is too long");
-        if (posix.access(oz.ptr, posix.X_OK) != 0)
-            setupError(.environment, "--oracle is not an executable file; the completeness check cannot run");
+        if (posix.access(oz.ptr, posix.X_OK) != 0) {
+            const bare = if (std.mem.indexOfScalar(u8, oracle_path, '/') == null) " — it is checked as a path from the directory Sideeye was started in, not looked up on PATH, so pass strace's full path" else "";
+            const found = if (refuse.findStraceForHint(arena)) |s| std.fmt.allocPrint(arena, "; strace is on this machine: {s}", .{s}) catch "" else "";
+            setupError(.environment, std.fmt.allocPrint(arena, "--oracle (SIDEEYE_MCP_ORACLE under sideeye mcp) names {s}, which is not an executable file{s}{s}; the completeness check cannot run", .{ textShown(arena, oracle_path), bare, found }) catch "--oracle is not an executable file; the completeness check cannot run");
+        }
     }
 
     // Checked here for the reason the line above is: before the operation runs, so that
@@ -1394,20 +1401,10 @@ fn phaseRecording(run: *Run) void {
     const op_step = refuse.cwdStep(op_obs, boundary.fixDefineUnder(args.observe));
     const exit_step = refuse.cwdStep(op_obs, boundary.recordingEndedStep(args.observe, true));
     const sig_step = refuse.cwdStep(op_obs, boundary.recordingEndedStep(args.observe, false));
-    switch (rec_term) {
-        // 126 before the status comparison, and without the --expect-status advice: it
-        // is the code the engine's own fork stub keeps for a child it could not arrange
-        // before exec (`posix.childArrangeFailed`, which says which call on stderr), and
-        // a define that declared 126 as success on that advice would read a child that
-        // never ran as a successful recording — the shape #469 named and closed for the
-        // capture open, still open for `setpgid` and the `dup2`s until 2026-09-08.
-        .exited => |code| if (code == 126 and code != expect_status)
-            unknown(.recording_run_failed, "the operation exited 126 during the recording run: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the operation itself exited 126 — indistinguishable from here. Declaring 126 as the success convention would make a child that never ran read as a successful recording, so --expect-status is not the answer to this one", .environment)
-        else if (code != expect_status)
-            unknown(.recording_run_failed, refuse.withObservation(arena, std.fmt.allocPrint(arena, "the operation exited {d} during the recording run where {d} was expected, so the crash points derived from it describe an execution that did not happen (a different success convention is declared with --expect-status or the toml's expected_status)", .{ code, expect_status }) catch "the operation exited with an unexpected status during the recording run", op_obs, exit_step), exit_step),
-        .signaled => |sig| unknown(.recording_run_failed, refuse.withObservation(arena, std.fmt.allocPrint(arena, "the operation did not exit normally during the recording run: it was killed by signal {d}", .{sig}) catch "the operation did not exit normally during the recording run", op_obs, sig_step), sig_step),
-        .unknown => unknown(.recording_run_failed, refuse.withObservation(arena, "the operation did not exit normally during the recording run", op_obs, sig_step), sig_step),
-    }
+    // Not refused here when the image names a platform and the run died: refusing before the
+    // trace is read would blame the target for a library that never loaded in it.
+    const end_deferred = boundary.defersRecordingEnd(rec_term, boundary.rec_image);
+    if (end_deferred) boundary.rec_end_deferred = rec_term else refuse.recordingEnd(arena, rec_term, expect_status, op_obs, exit_step, sig_step);
 
     // A marker the clean run cannot produce would make every post-success obligation
     // vacuous while the report still said PASS (ADR 0008). Checked against the
@@ -1416,7 +1413,7 @@ fn phaseRecording(run: *Run) void {
     // before the marker is not this: there the conditional simply does not apply.
     const rec_capture = capture.observeCapture(rec_stdout, args.marker) catch
         setupError(.environment, "the recording run's stdout capture could not be read back");
-    if (args.marker != null) {
+    if (args.marker != null and !end_deferred) {
         if (!rec_capture.marker_seen) {
             report.l1_note = "marker configured; never observed, even in the recording run";
             unknown(.marker_never_observed, refuse.withObservation(arena, "the success marker never appeared in the recording run's own stdout; check the marker string, and whether the target writes it to stdout at all", op_obs, op_step), op_step);
@@ -1425,6 +1422,7 @@ fn phaseRecording(run: *Run) void {
     }
 
     const trace = refuse.readTraceOrRefuse(rec_trace, trace_cap, "could not read the trace");
+    if (end_deferred and boundary.heldEndStands(trace)) refuse.recordingEnd(arena, rec_term, expect_status, op_obs, exit_step, sig_step);
 
     const final = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot the final state");
 
@@ -1748,7 +1746,7 @@ fn phaseOracle(run: *Run) void {
         // An oracle that observed nothing agrees with a shim that observed nothing, and
         // the report says "agreed" either way. The acceptance suite asserts by hand that
         if (parsed.lines_seen == 0)
-            unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the oracle produced no output, so nothing was compared against {s}'s account", .{boundary.recorder()}) catch "the oracle produced no output, so nothing was compared", .environment);
+            unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the oracle produced no output, so nothing was compared against {s}'s account — the program given as the oracle wrote nothing to its output file: check that it is strace, and that it writes its account where -o names", .{boundary.recorder()}) catch "the oracle produced no output, so nothing was compared", .environment);
 
         if (parsed.boundary) |name|
             unknown(.child_process_detected, name, .unwrap_or_class_wall);
@@ -2126,9 +2124,9 @@ fn phaseChecker(run: *Run) void {
 
         switch (probe) {
             .exited => |code| {
-                // switch, before any child exists. What still reaches 126 is `setpgid`
-                // or a `dup2` that failed in the child — which says so on the engine's
-                // stderr since 2026-09-08 — and a checker that genuinely exits 126,
+                // switch, before any child exists. What still reaches 126 is a `dup2`
+                // that failed in the child — which says so on the engine's
+                // stderr — and a checker that genuinely exits 126,
                 // which is indistinguishable from it and gets the fail-closed reading.
                 if (code == 126)
                     unknown(.checker_not_falsified, "the checker probe exited 126: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the checker itself exited 126 — indistinguishable from here, so the gate refuses rather than counting it as red", .environment);
@@ -2138,7 +2136,7 @@ fn phaseChecker(run: *Run) void {
                     unknown(.checker_not_falsified, refuse.withObservation(arena, "the checker accepted a state whose every file had been overwritten with junk and every symlink retargeted at a nonexistent name", obs, step), step);
                 }
             },
-            else => unknown(.checker_not_falsified, "the checker did not exit normally when given a corrupted state", .fix_define),
+            else => unknown(.checker_not_falsified, "the checker did not exit normally when given a corrupted state", .run_checker_by_hand),
         }
         report.checker_note = "falsified before the run (corrupted state -> check failed)";
 
@@ -2175,12 +2173,12 @@ fn phaseChecker(run: *Run) void {
                 // docs/cli.md's to say (#678 is changing it), so the sentence points there rather
                 // than naming what is lost.
                 const seen = std.fmt.allocPrint(arena, "the checker exited {d} on the state the define starts from, as Sideeye restores it before every world, before the operation ran: nothing the target did is in it", .{code}) catch "the checker rejected the state the define starts from, before the operation ran";
-                const what = if (obs != null) seen else std.fmt.allocPrint(arena, "{s}, so a world the checker fails there says nothing about the target — make the checker accept that state (docs/cli.md says what a restore does not carry)", .{seen}) catch seen;
+                const what = if (obs != null) seen else std.fmt.allocPrint(arena, "{s}, so a world the checker fails there says nothing about the target — make the checker accept that state (" ++ contract.docUrl("docs/cli.md#example") ++ " says what a restore does not carry)", .{seen}) catch seen;
                 unknown(.checker_rejects_initial_state, refuse.withObservation(arena, what, obs, step), step);
             },
             else => {
                 report.sayCaptureMarked(arena, start_out, "start");
-                unknown(.checker_rejects_initial_state, "the checker did not exit normally on the state the define starts from, as Sideeye restores it before every world, before the operation ran; make the checker accept that state", .fix_define);
+                unknown(.checker_rejects_initial_state, "the checker did not exit normally on the state the define starts from, as Sideeye restores it before every world, before the operation ran", .run_checker_by_hand);
             },
         }
     }
@@ -2315,11 +2313,11 @@ fn phaseExploration(run: *Run) void {
                 ) catch unreachable;
                 unknown(.child_timed_out, detail, .raise_world_timeout);
             },
-            error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable, error.CgroupJoinFailed => |se| spawnFailure(se, .exploring, "could not run --operation"),
+            error.ForkFailed, error.OutOfMemory, error.WaitFailed, error.StdinUnavailable, error.CaptureUnavailable, error.CgroupJoinFailed, error.ChildGroupRefused => |se| spawnFailure(se, .exploring, "could not run --operation"),
         };
         // Every process of the world is dead by now; the supervising thread's account is
         // complete once it has been joined (#217).
-        wsup.finish();
+        if (supervise.handoverFailure(wsup.finish(), wterm, "a world's run")) |why| setupError(.environment, why);
         const term = wterm;
 
         var wtrace = refuse.readTraceOrRefuse(world_trace, trace_cap_world, "could not read a world trace");
@@ -2421,8 +2419,9 @@ fn phaseExploration(run: *Run) void {
             .exited => |code| if (code == 126 and code != expect_status)
                 unknown(.baseline_run_failed, "the un-killed baseline world exited 126: either the engine's fork stub could not arrange the child before exec (a line on the engine's stderr names the call and the errno) or the operation itself exited 126 — indistinguishable from here, and not a statement about the restored state", .environment)
             else if (code != expect_status)
-                unknown(.baseline_run_failed, std.fmt.allocPrint(arena, "the un-killed baseline world exited {d} where {d} was expected although the recording run of the same command succeeded: the restored state differs from the recorded one", .{ code, expect_status }) catch "the un-killed baseline world exited with an unexpected status", .fix_define),
-            else => unknown(.baseline_run_failed, "the un-killed baseline world did not exit normally", .fix_define),
+                unknown(.baseline_run_failed, std.fmt.allocPrint(arena, "the un-killed baseline world exited {d} where {d} was expected although the recording run of the same command succeeded: the restored state differs from the recorded one", .{ code, expect_status }) catch "the un-killed baseline world exited with an unexpected status", .second_run_diverged),
+            .signaled => |sig| unknown(.baseline_run_failed, std.fmt.allocPrint(arena, "the un-killed baseline world was killed by signal {d}", .{sig}) catch "the un-killed baseline world was killed by a signal", .run_by_hand_signalled),
+            else => unknown(.baseline_run_failed, "the un-killed baseline world did not exit normally", .run_by_hand_signalled),
         };
 
         var crashed = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot a crashed state");
@@ -3923,6 +3922,9 @@ test "the shipped engine options carry the shipped values (#365)" {
     // under the shipped name: slower, and the one measurement of WAIT_KILLABLE_RECV would
     // compare it with itself.
     try std.testing.expectEqual(@as(u32, 0), engine_build_options.supervise_reply_delay_ms);
+    // Not true in the shipped engine: an environment variable would then make its supervised
+    // hand-over fail.
+    try std.testing.expect(!engine_build_options.supervise_handover_fault);
 }
 
 test "the shipped trace caps fall back to the engine's constant (#365)" {
@@ -3937,11 +3939,11 @@ test "the shipped trace caps fall back to the engine's constant (#365)" {
     try std.testing.expectEqual(engine.max_trace_bytes_total, trace_budget_limit);
 }
 
-test "no seventh engine build option arrives unchecked (#365)" {
+test "no eighth engine build option arrives unchecked (#365)" {
     // The ratchet. Asserting five values says nothing about a SIXTH option arriving, and
     // the promise is universal: a `-Dtest-…` added later with no assertion above would
     // leave it false while CI stayed green. Pinning the count makes the next option fail
     // here until someone writes its line. Same instrument as the RestoreError arity pin
     const decls = @typeInfo(engine_build_options).@"struct".decl_names;
-    try std.testing.expectEqual(@as(usize, 6), decls.len);
+    try std.testing.expectEqual(@as(usize, 7), decls.len);
 }

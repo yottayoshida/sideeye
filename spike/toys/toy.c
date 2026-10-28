@@ -236,7 +236,7 @@
  *                  permission query — which the oracle must read as reads (#542); and,
  *                  since #684, its extended attributes in all three spellings, an
  *                  inotify watch, preadv/preadv2, and the polls (poll, ppoll, select,
- *                  pselect).
+ *                  pselect); and an unlink of the empty path, sync_file_range and syncfs.
  *   TOY_SETXATTR   on Linux, rotate also sets an extended attribute on key.json — a
  *                  write the oracle has no class for, which must still refuse
  *                  (unsupported_syscall_observed naming setxattr; #684's control).
@@ -332,6 +332,13 @@
  *                     TOY_RUN2_MARK as TOY_UNLINKED_WRITE_RUN2 is.
  *   TOY_SPAWN_SETSID  posix_spawn setsid(1) over true with an empty environment: the process
  *                     that leaves the group never loads the shim, so only the oracle sees it.
+ *   TOY_SETSID        the subject itself calls setsid before rotating. It leads the group the
+ *                     engine made it, so the call fails, unless strace leads it (--oracle).
+ *   TOY_SETPGID_NOOP  the subject calls setpgid(0, 0), which moves nothing for a leader.
+ *   TOY_SETPGID_OUT   the subject itself joins the process group named by the value before
+ *                     rotating: no fork, so the move is the only boundary.
+ *   TOY_SETSID_THREAD TOY_SETSID from a second thread, whose tid is not the pid.
+ *                     All four append the call's result to TOY_ESCAPE_WITNESS.
  *
  * The three below walk out of the run's cgroup, into the engine's own, in an explored world
  * only: a world runs without an oracle, so the move itself is seen by nothing but the watch
@@ -557,7 +564,33 @@ static void *rotating_thread(void *arg) {
 
 /* Optional boundary behaviour, requested through the environment so one binary
  * can play both the supported and the unsupported target. */
+static void append_witness(const char *line);
+static void *setsid_thread(void *arg) {
+    char line[64];
+    (void)arg;
+    snprintf(line, sizeof line, "setsid-thread rc=%d\n", setsid() < 0 ? -1 : 0);
+    append_witness(line);
+    return NULL;
+}
 static void maybe_leave_the_supported_region(void) {
+    char line[96];
+    if (getenv("TOY_SETSID_THREAD")) {
+        pthread_t t;
+        if (pthread_create(&t, NULL, setsid_thread, NULL) == 0) pthread_join(t, NULL);
+    }
+    if (getenv("TOY_SETSID")) {
+        snprintf(line, sizeof line, "setsid rc=%d\n", setsid() < 0 ? -1 : 0);
+        append_witness(line);
+    }
+    if (getenv("TOY_SETPGID_NOOP")) {
+        snprintf(line, sizeof line, "setpgid-noop rc=%d\n", setpgid(0, 0));
+        append_witness(line);
+    }
+    if (getenv("TOY_SETPGID_OUT") && *getenv("TOY_SETPGID_OUT")) {
+        int rc = setpgid(0, (pid_t)atoi(getenv("TOY_SETPGID_OUT")));
+        snprintf(line, sizeof line, "setpgid-out rc=%d pgrp=%d\n", rc, (int)getpgrp());
+        append_witness(line);
+    }
     if (getenv("TOY_FORK")) {
         pid_t p = fork();
         if (p == 0) _exit(0);
@@ -1376,6 +1409,9 @@ static int cmd_rotate_body(void) {
         (void)select(kfd + 1, &rs, NULL, NULL, &tv);
         FD_ZERO(&rs); FD_SET(kfd, &rs);
         (void)pselect(kfd + 1, &rs, NULL, NULL, &zero, NULL);
+        (void)unlinkat(AT_FDCWD, "", 0);
+        (void)sync_file_range(kfd, 0, 0, SYNC_FILE_RANGE_WRITE);
+        (void)syncfs(kfd);
         close(kfd);
         close(efd);
         close(epfd);
@@ -1431,7 +1467,10 @@ static int cmd_rotate_body(void) {
         struct timespec ts;
         clock_gettime(CLOCK_MONOTONIC, &ts);
         char line[128];
-        int len = snprintf(line, sizeof line, "append pid=%d t=%ld.%09ld\n",
+        /* Not %d or %ld: a pid or a clock second one digit longer in a world can cross an
+         * 8-byte boundary, add a write and move every later operation's number, so the
+         * world's crash point lands elsewhere. */
+        int len = snprintf(line, sizeof line, "append pid=%010d t=%012ld.%09ld\n",
                            (int)getpid(), (long)ts.tv_sec, (long)ts.tv_nsec);
         for (int off = 0; off < len; off += 8) {
             int chunk = len - off < 8 ? len - off : 8;

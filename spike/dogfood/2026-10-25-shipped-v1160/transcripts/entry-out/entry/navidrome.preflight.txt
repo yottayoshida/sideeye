@@ -1,0 +1,34 @@
+ _   _             _     _
+| \ | |           (_)   | |
+|  \| | __ ___   ___  __| |_ __ ___  _ __ ___   ___
+| . ` |/ _` \ \ / / |/ _` | '__/ _ \| '_ ` _ \ / _ \
+| |\  | (_| |\ V /| | (_| | | | (_) | | | | | |  __/
+\_| \_/\__,_| \_/ |_|\__,_|_|  \___/|_| |_| |_|\___|
+                          Version: 0.64.2 (10114574)
+
+time="2026-10-25T04:07:52Z" level=info msg="Loaded configuration" file=/s/aux/navidrome.toml
+time="2026-10-25T04:07:52Z" level=info msg="Scanner: Starting scan" fullScan=true numLibraries=1
+time="2026-10-25T04:07:52Z" level=info msg="Scanner: Completed processing folder" audioCount=3 elapsed=157.4ms imageCount=0 library="Music Library" plsCount=0 tracksImported=3 tracksMissing=0 ​folder="Ada Lake/Lowlands"
+time="2026-10-25T04:07:52Z" level=info msg="Scanner: Completed processing folder" audioCount=3 elapsed=46.4ms imageCount=0 library="Music Library" plsCount=0 tracksImported=3 tracksMissing=0 ​folder="Ada Lake/Northern Lights"
+time="2026-10-25T04:07:52Z" level=info msg="Scanner: Completed processing folder" audioCount=0 elapsed=4ms imageCount=0 library="Music Library" plsCount=0 tracksImported=0 tracksMissing=0 ​folder="Ada Lake"
+time="2026-10-25T04:07:52Z" level=info msg="Scanner: Completed processing folder" audioCount=3 elapsed=58.8ms imageCount=0 library="Music Library" plsCount=0 tracksImported=3 tracksMissing=0 ​folder="The Pilots/Harbour"
+time="2026-10-25T04:07:52Z" level=info msg="Scanner: Completed processing folder" audioCount=0 elapsed=25.3ms imageCount=0 library="Music Library" plsCount=0 tracksImported=0 tracksMissing=0 ​folder="The Pilots"
+time="2026-10-25T04:07:52Z" level=info msg="Scanner: Completed processing folder" audioCount=0 elapsed=100ms imageCount=0 library="Music Library" plsCount=0 tracksImported=0 tracksMissing=0 ​folder=.
+time="2026-10-25T04:07:52Z" level=info msg="Scanner: Finished scanning all libraries" duration=290.6ms
+time="2026-10-25T04:07:52Z" level=info msg="Finished full rescan"
+time="2026-10-25T04:07:53Z" level=info msg="DB analysis complete" elapsed=913.3ms
+UNKNOWN  multiple_threads_detected
+         two threads of process 100 wrote in the judged directory: tid 102 performed unlink(/s/nd/navidrome.db-journal) and tid 105 performed open(/s/nd/navidrome.db). Nothing the supervising engine recorded orders the first of those before the second: under --observe supervised no join is recorded, nor which thread a creation made, so however the target orders them this run cannot establish that a crash point names the same operation on the next run, and writes from two or more threads of one process refuse. The modes that load a shim, which records creations and joins, judge a process whose threads' writes they order (v18)
+next        Two threads of one process wrote the judged directory, and under --observe supervised no join is recorded, nor which thread a creation made, so nothing orders their writes. A tool's own switch for running its file calls on one thread can move it past this — UV_THREADPOOL_SIZE=1 for Node, GOMAXPROCS=1 for Go: set it in the environment Sideeye runs in and declare it in the define's apparatus (env:UV_THREADPOOL_SIZE=1, for example); https://github.com/yottayoshida/sideeye/blob/v1.16.0/docs/apparatus.md#a-tools-own-switch-for-one-thread lists the switches measured and the targets each did not move.
+cwd         /s/nd
+apparatus   env:GOMAXPROCS=1, env:ND_CONFIGFILE
+
+expected    exit 0
+atomicity   2 path(s) judged pre-or-post; 9 path(s) matched by scratch, not judged (declared: cache)
+l1          no marker configured
+case        (none)
+processes   the supervising engine recorded a thread; the strace account was not read; the supervising engine recorded 7 thread(s) created, and 3 thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.

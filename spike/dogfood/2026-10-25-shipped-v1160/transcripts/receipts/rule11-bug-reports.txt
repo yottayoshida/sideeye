@@ -1,0 +1,210 @@
+== etcd-io/etcd (label (none matched; last issues of any label))
+#22653 2026-10-23 comments=0 first_project_reply=none
+#22649 2026-10-23 comments=0 first_project_reply=none
+#22646 2026-10-22 comments=1 first_project_reply=none
+#22645 2026-10-22 comments=0 first_project_reply=none
+#22638 2026-10-21 comments=0 first_project_reply=none
+#22635 2026-10-21 comments=0 first_project_reply=none
+#22633 2026-10-20 comments=4 first_project_reply=MEMBER 2026-10-22
+#22628 2026-10-20 comments=4 first_project_reply=CONTRIBUTOR 2026-10-20
+#22614 2026-10-19 comments=0 first_project_reply=none
+#22613 2026-10-19 comments=0 first_project_reply=none
+== dolthub/dolt (label bug)
+#12199 2026-10-23 comments=0 first_project_reply=none
+#12191 2026-10-22 comments=1 first_project_reply=none
+#12175 2026-10-22 comments=1 first_project_reply=none
+#12160 2026-10-20 comments=1 first_project_reply=none
+#12141 2026-10-19 comments=1 first_project_reply=none
+#12127 2026-10-16 comments=0 first_project_reply=none
+#12126 2026-10-16 comments=2 first_project_reply=none
+#12124 2026-10-16 comments=0 first_project_reply=none
+#12100 2026-10-15 comments=2 first_project_reply=CONTRIBUTOR 2026-10-15
+#12039 2026-10-07 comments=1 first_project_reply=CONTRIBUTOR 2026-10-08
+== tursodatabase/turso (label (none matched; last issues of any label))
+#10711 2026-10-25 comments=0 first_project_reply=none
+#10710 2026-10-25 comments=0 first_project_reply=none
+#10709 2026-10-25 comments=1 first_project_reply=none
+#10707 2026-10-25 comments=0 first_project_reply=none
+#10706 2026-10-25 comments=0 first_project_reply=none
+#10705 2026-10-25 comments=0 first_project_reply=none
+#10704 2026-10-24 comments=0 first_project_reply=none
+#10702 2026-10-24 comments=0 first_project_reply=none
+#10700 2026-10-24 comments=0 first_project_reply=none
+#10698 2026-10-24 comments=0 first_project_reply=none
+== diesel-rs/diesel (label bug)
+#5280 2026-10-09 comments=5 first_project_reply=MEMBER 2026-10-09
+#5264 2026-10-02 comments=1 first_project_reply=none
+#5253 2026-09-25 comments=2 first_project_reply=none
+#5235 2026-09-22 comments=1 first_project_reply=MEMBER 2026-09-22
+#5226 2026-09-18 comments=0 first_project_reply=none
+#5184 2026-09-02 comments=2 first_project_reply=MEMBER 2026-09-02
+#5156 2026-08-18 comments=2 first_project_reply=MEMBER 2026-08-21
+#5152 2026-08-13 comments=1 first_project_reply=MEMBER 2026-08-13
+#5124 2026-07-23 comments=2 first_project_reply=MEMBER 2026-07-24
+#5110 2026-07-09 comments=0 first_project_reply=none
+== grafana/grafana (label bug)
+#121324 2026-03-27 comments=0 first_project_reply=none
+#120968 2026-03-24 comments=0 first_project_reply=none
+#117661 2026-02-09 comments=3 first_project_reply=none
+#117559 2026-02-06 comments=0 first_project_reply=none
+#117429 2026-02-04 comments=0 first_project_reply=none
+#117145 2026-01-30 comments=0 first_project_reply=none
+#116546 2026-01-20 comments=1 first_project_reply=none
+== gogs/gogs (label (none matched; last issues of any label))
+#8427 2026-10-20 comments=0 first_project_reply=none
+#8426 2026-10-20 comments=0 first_project_reply=none
+#8424 2026-10-14 comments=0 first_project_reply=none
+#8410 2026-08-30 comments=1 first_project_reply=none
+#8409 2026-08-30 comments=2 first_project_reply=MEMBER 2026-09-05
+#8404 2026-08-09 comments=1 first_project_reply=none
+#8403 2026-08-09 comments=1 first_project_reply=none
+#8399 2026-07-29 comments=3 first_project_reply=none
+#8397 2026-07-24 comments=0 first_project_reply=none
+#8396 2026-07-24 comments=0 first_project_reply=none
+== symfony/symfony (label bug)
+#67369 2026-10-23 comments=2 first_project_reply=MEMBER 2026-10-23
+#67310 2026-10-22 comments=0 first_project_reply=none
+#67159 2026-10-19 comments=2 first_project_reply=none
+== nextcloud/server (label bug)
+#65883 2026-10-24 comments=0 first_project_reply=none
+#65872 2026-10-24 comments=0 first_project_reply=none
+#65820 2026-10-23 comments=0 first_project_reply=none
+#65818 2026-10-23 comments=0 first_project_reply=none
+#65814 2026-10-23 comments=0 first_project_reply=none
+#65797 2026-10-22 comments=0 first_project_reply=none
+#65794 2026-10-22 comments=1 first_project_reply=CONTRIBUTOR 2026-10-22
+#65781 2026-10-22 comments=9 first_project_reply=CONTRIBUTOR 2026-10-22
+#65780 2026-10-22 comments=5 first_project_reply=CONTRIBUTOR 2026-10-22
+#65778 2026-10-22 comments=5 first_project_reply=none
+== facebook/docusaurus (label bug)
+#12743 2026-10-21 comments=0 first_project_reply=none
+#12739 2026-10-19 comments=1 first_project_reply=none
+#12646 2026-10-14 comments=0 first_project_reply=none
+#12644 2026-10-13 comments=1 first_project_reply=COLLABORATOR 2026-10-13
+#12599 2026-10-09 comments=5 first_project_reply=COLLABORATOR 2026-10-09
+#12586 2026-10-07 comments=1 first_project_reply=none
+#12584 2026-10-07 comments=7 first_project_reply=COLLABORATOR 2026-10-07
+#12583 2026-10-06 comments=5 first_project_reply=COLLABORATOR 2026-10-08
+#12578 2026-10-04 comments=3 first_project_reply=none
+#12495 2026-09-25 comments=1 first_project_reply=none
+== drizzle-team/drizzle-orm (label bug)
+#6591 2026-10-24 comments=1 first_project_reply=none
+#6534 2026-10-19 comments=1 first_project_reply=none
+#6533 2026-10-19 comments=2 first_project_reply=none
+#6531 2026-10-19 comments=0 first_project_reply=none
+#6525 2026-10-18 comments=0 first_project_reply=none
+#6455 2026-10-06 comments=1 first_project_reply=none
+#6447 2026-10-06 comments=0 first_project_reply=none
+#6423 2026-10-02 comments=0 first_project_reply=none
+#6410 2026-10-01 comments=0 first_project_reply=none
+#6408 2026-10-01 comments=0 first_project_reply=none
+== saltstack/salt (label bug)
+#70548 2026-10-24 comments=0 first_project_reply=none
+#70543 2026-10-23 comments=0 first_project_reply=none
+#70463 2026-10-22 comments=1 first_project_reply=CONTRIBUTOR 2026-10-23
+#70458 2026-10-21 comments=1 first_project_reply=none
+#70456 2026-10-20 comments=1 first_project_reply=CONTRIBUTOR 2026-10-23
+#70455 2026-10-20 comments=1 first_project_reply=CONTRIBUTOR 2026-10-23
+#70454 2026-10-20 comments=1 first_project_reply=CONTRIBUTOR 2026-10-23
+#70453 2026-10-20 comments=1 first_project_reply=CONTRIBUTOR 2026-10-23
+#70452 2026-10-20 comments=1 first_project_reply=CONTRIBUTOR 2026-10-23
+#70451 2026-10-20 comments=1 first_project_reply=CONTRIBUTOR 2026-10-23
+== systemd/systemd (label (none matched; last issues of any label))
+#44415 2026-10-24 comments=0 first_project_reply=none
+#44405 2026-10-23 comments=0 first_project_reply=none
+#44399 2026-10-23 comments=0 first_project_reply=none
+#44396 2026-10-23 comments=0 first_project_reply=none
+#44378 2026-10-23 comments=1 first_project_reply=none
+#44372 2026-10-22 comments=0 first_project_reply=none
+#44354 2026-10-21 comments=2 first_project_reply=CONTRIBUTOR 2026-10-23
+#44342 2026-10-21 comments=1 first_project_reply=none
+#44339 2026-10-21 comments=0 first_project_reply=none
+#44336 2026-10-21 comments=4 first_project_reply=CONTRIBUTOR 2026-10-21
+== hashicorp/vagrant (label bug)
+#13737 2025-10-31 comments=7 first_project_reply=MEMBER 2025-11-03
+#13714 2025-08-22 comments=0 first_project_reply=none
+#13705 2025-08-12 comments=15 first_project_reply=MEMBER 2025-08-14
+#13703 2025-08-11 comments=0 first_project_reply=none
+#13697 2025-07-30 comments=2 first_project_reply=MEMBER 2025-07-31
+#13698 2025-07-30 comments=4 first_project_reply=MEMBER 2025-07-30
+#13696 2025-07-28 comments=5 first_project_reply=MEMBER 2025-08-06
+#13676 2025-05-27 comments=6 first_project_reply=MEMBER 2025-08-07
+#13664 2025-05-09 comments=0 first_project_reply=none
+#13656 2025-04-24 comments=4 first_project_reply=MEMBER 2025-04-24
+== FreshRSS/FreshRSS (label (none matched; last issues of any label))
+#9490 2026-10-23 comments=1 first_project_reply=MEMBER 2026-10-23
+#9488 2026-10-22 comments=1 first_project_reply=MEMBER 2026-10-22
+#9485 2026-10-22 comments=1 first_project_reply=MEMBER 2026-10-22
+#9483 2026-10-22 comments=0 first_project_reply=none
+#9482 2026-10-22 comments=7 first_project_reply=MEMBER 2026-10-22
+#9478 2026-10-21 comments=2 first_project_reply=MEMBER 2026-10-21
+#9477 2026-10-21 comments=4 first_project_reply=MEMBER 2026-10-21
+#9475 2026-10-21 comments=30 first_project_reply=MEMBER 2026-10-21
+#9474 2026-10-21 comments=1 first_project_reply=none
+#9466 2026-10-19 comments=0 first_project_reply=none
+== juicedata/juicefs (label kind/bug)
+#7744 2026-10-23 comments=0 first_project_reply=none
+#7742 2026-10-23 comments=0 first_project_reply=none
+#7719 2026-10-21 comments=0 first_project_reply=none
+#7706 2026-10-17 comments=0 first_project_reply=none
+#7698 2026-10-15 comments=0 first_project_reply=none
+#7695 2026-10-15 comments=0 first_project_reply=none
+#7688 2026-10-14 comments=0 first_project_reply=none
+#7635 2026-10-06 comments=1 first_project_reply=CONTRIBUTOR 2026-10-13
+#7616 2026-10-04 comments=0 first_project_reply=none
+#7613 2026-10-03 comments=0 first_project_reply=none
+== paperless-ngx/paperless-ngx (label bug)
+#14527 2026-10-22 comments=0 first_project_reply=none
+#14521 2026-10-22 comments=0 first_project_reply=none
+#14502 2026-10-20 comments=0 first_project_reply=none
+#14495 2026-10-19 comments=0 first_project_reply=none
+#14481 2026-10-18 comments=0 first_project_reply=none
+#14477 2026-10-17 comments=2 first_project_reply=MEMBER 2026-10-17
+#14471 2026-10-16 comments=1 first_project_reply=none
+#14467 2026-10-15 comments=0 first_project_reply=none
+#14436 2026-10-13 comments=7 first_project_reply=MEMBER 2026-10-13
+#14428 2026-10-12 comments=3 first_project_reply=CONTRIBUTOR 2026-10-12
+== godotengine/godot (label bug)
+#124834 2026-10-24 comments=0 first_project_reply=none
+#124817 2026-10-23 comments=6 first_project_reply=MEMBER 2026-10-23
+#124815 2026-10-23 comments=2 first_project_reply=CONTRIBUTOR 2026-10-23
+#124809 2026-10-23 comments=0 first_project_reply=none
+#124808 2026-10-23 comments=1 first_project_reply=MEMBER 2026-10-23
+#124805 2026-10-23 comments=0 first_project_reply=none
+#124803 2026-10-23 comments=0 first_project_reply=none
+#124800 2026-10-23 comments=1 first_project_reply=CONTRIBUTOR 2026-10-23
+#124796 2026-10-22 comments=2 first_project_reply=MEMBER 2026-10-22
+#124795 2026-10-22 comments=0 first_project_reply=none
+== luanti-org/luanti (label bug)
+#17680 2026-10-20 comments=6 first_project_reply=MEMBER 2026-10-20
+#17670 2026-10-18 comments=1 first_project_reply=CONTRIBUTOR 2026-10-18
+#17647 2026-10-14 comments=7 first_project_reply=CONTRIBUTOR 2026-10-15
+#17645 2026-10-13 comments=4 first_project_reply=MEMBER 2026-10-14
+#17611 2026-09-30 comments=1 first_project_reply=MEMBER 2026-10-01
+#17610 2026-09-30 comments=0 first_project_reply=none
+#17607 2026-09-29 comments=2 first_project_reply=CONTRIBUTOR 2026-09-29
+#17605 2026-09-29 comments=5 first_project_reply=MEMBER 2026-09-29
+#17597 2026-09-27 comments=1 first_project_reply=CONTRIBUTOR 2026-09-27
+#17593 2026-09-23 comments=4 first_project_reply=MEMBER 2026-09-23
+== navidrome/navidrome (label bug)
+#6380 2026-10-24 comments=0 first_project_reply=none
+#6379 2026-10-23 comments=1 first_project_reply=none
+#6371 2026-10-22 comments=7 first_project_reply=MEMBER 2026-10-23
+#6369 2026-10-21 comments=0 first_project_reply=none
+#6365 2026-10-21 comments=0 first_project_reply=none
+#6363 2026-10-21 comments=0 first_project_reply=none
+#6361 2026-10-20 comments=0 first_project_reply=none
+#6360 2026-10-20 comments=0 first_project_reply=none
+#6355 2026-10-18 comments=0 first_project_reply=none
+#6352 2026-10-18 comments=0 first_project_reply=none
+== firefly-iii/firefly-iii (label (none matched; last issues of any label))
+#13095 2026-10-23 comments=6 first_project_reply=MEMBER 2026-10-24
+#13092 2026-10-23 comments=3 first_project_reply=MEMBER 2026-10-23
+#13090 2026-10-22 comments=1 first_project_reply=CONTRIBUTOR 2026-10-22
+#13087 2026-10-21 comments=11 first_project_reply=MEMBER 2026-10-21
+#13084 2026-10-21 comments=1 first_project_reply=MEMBER 2026-10-21
+#13083 2026-10-20 comments=2 first_project_reply=CONTRIBUTOR 2026-10-20
+#13081 2026-10-18 comments=2 first_project_reply=MEMBER 2026-10-19
+#13079 2026-10-18 comments=1 first_project_reply=MEMBER 2026-10-18
+#13078 2026-10-18 comments=3 first_project_reply=MEMBER 2026-10-18
+#13077 2026-10-18 comments=1 first_project_reply=MEMBER 2026-10-18

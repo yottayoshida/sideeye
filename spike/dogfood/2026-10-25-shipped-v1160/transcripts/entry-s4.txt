@@ -1,0 +1,10 @@
+ROW navidrome static=1 preflight_rc=2 gate=1 detail=SUPERVISED; wall: multiple_threads_detected
+EXIT navidrome 1
+ROW navidrome-restore static=1 preflight_rc=3 gate=DEFINE detail=SUPERVISED; define: apparatus env:GOMAXPROCS=1: the environment the operation inherits has no GOMAXPROCS (under sideeye mcp, a variable of the server's reaches it only when SIDEEYE_MCP_CHILD_ENV names it)
+EXIT navidrome-restore 3
+ROW paperless static=0 preflight_rc=0 gate=0 detail=accepted, 209 operations
+EXIT paperless 0
+ROW luanti static=0 preflight_rc=0 gate=0 detail=accepted, 286 operations
+EXIT luanti 0
+ROW firefly static=0 preflight_rc=0 gate=0 detail=accepted, 413 operations
+EXIT firefly 0

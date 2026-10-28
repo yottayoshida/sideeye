@@ -1,0 +1,2 @@
+SETUP ERROR  --setup exited 1; its last output line was: nothing to commit, working tree clean (all of it is in /var/folders/s6/5hzmn6lx4dz5nxs7k_0slzph0000gn/T//shapes-git-HXR2vM/u/setup-output-21970.txt)
+sideeye: json sha256=7c48ca5dcb03a40e62c1d0440aae605ecea6dd3291bfa9ad5bece7bd0f5ed790;

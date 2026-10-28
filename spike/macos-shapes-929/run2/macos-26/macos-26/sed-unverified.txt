@@ -1,0 +1,15 @@
+falsify: app.conf is neither the old content nor the new
+PASS  4/4 explored worlds satisfied the built-in atomicity invariant
+cwd         /Users/runner/work/sideeye/sideeye  (none declared: Sideeye's own)
+
+explored    4 worlds (crash points 3 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      NOT VERIFIED (--allow-unverified) — nothing checked what the shim reported
+metadata    not observable (no oracle ran; the shim does not interpose ownership/permission/timestamp calls)
+checker     falsified before the run (corrupted state -> check failed); ran in 4 world(s)
+l1          no marker configured
+case        (none)
+processes   not established: no boundary was recorded, but the shim sees only libc's own entry points (fork, vfork, posix_spawn, the exec family, pthread_create, setsid, setpgid) — a child created through a raw syscall would not appear here — and no second witness ran
+not tested  power loss, torn writes, concurrent processes
+sideeye: json sha256=62105a310b10e0d8d8d377fc7f4a759fe733245d07c6958da03f23436237a362;

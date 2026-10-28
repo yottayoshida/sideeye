@@ -1,0 +1,22 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 5,
+  "sideeye_version": "1.16.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/godot",
+    "operation": "/opt/bin/godot --headless --path /s/godot --convert-3to4",
+    "check": "/s/godot-check.sh",
+    "cwd": "/s/godot",
+    "scratch": [".godot"],
+    "expected_status": 0
+  },
+  "k": 7,
+  "ops_total": 19,
+  "prefix_hash": "385ad9debedf51e3",
+  "after_class": "open",
+  "after_path": "/s/godot/project.godot",
+  "before_class": "write",
+  "before_path": "/s/godot/project.godot",
+  "violation": "hybrid"
+}

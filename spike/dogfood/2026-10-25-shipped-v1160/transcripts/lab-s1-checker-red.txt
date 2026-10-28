@@ -1,0 +1,23 @@
+etcdutl db emptied: rc=1 checker(etcdutl): snapshot status fails: Error: write /s/aux/tmp/tmp.mrfI8d295b/db: bad file descriptor
+dolt .dolt/noms/manifest emptied: rc=1 checker(dolt): rows = EOF (want 1000,10,1.4985e+06)
+tursodb shop.db emptied: rc=1 checker(tursodb): does not open:   × Parse error: no such table: orders 
+diesel src/schema.rs emptied: rc=1 checker(diesel): src/schema.rs (0 bytes) is neither the file before the migration nor the one after
+diesel app.db emptied: rc=1 checker(diesel): migrations|column|rows = Error: in prepare, no such table: __diesel_schema_migrations|0|Error: in prepare, no such table: orders
+grafana grafana.db emptied: rc=1 checker(grafana): migrations tables = Error: in prepare, no such table: migration_log , want 719 77 
+checker(ldb): checkconsistency: Failed: Corruption: Sst file size mismatch: /s/aux/tmp/tmp.qsPFPPY6Jt/000013.sst. Expected 4545, actual size 100   The file /s/aux/tmp/tmp.qsPFPPY6Jt/MANIFEST-000010 may be corrupted. 
+ldb torn sst rc=1
+checker(ldb): 0 keys, want 300
+ldb wrong key rc=1
+checker(flyway): history|column|index|rows = 1:0|0|0|1000|0|1498500
+flyway failed row rc=1
+checker(flyway): history|column|index|rows = Error: in prepare, no such table: flyway_schema_history|0|0|Error: in prepare, no such table: orders
+flyway empty rc=1
+checker(ldb): checkconsistency: Failed: Corruption: Sst file size mismatch: /s/aux/tmp/tmp.aod7Ximc9M/000013.sst. Expected 4545, actual size 100   The file /s/aux/tmp/tmp.aod7Ximc9M/MANIFEST-000010 may be corrupted. 
+ldb torn sst rc=1
+checker(ldb): the 299 keys other than k1 do not hold the seed's values
+ldb wrong key rc=1
+wal
+checker(sqlx): migrations|column|index|rows = 20260101000000:0|0|0|1000|0|1498500
+sqlx failed row rc=1
+checker(chroma): integrity_check: Error: in prepare, database disk image is malformed (11) 
+chroma torn rc=0

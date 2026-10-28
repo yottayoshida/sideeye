@@ -1,0 +1,75 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 2.30kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/sideeye-sv1025:latest
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/5] FROM docker.io/library/sideeye-sv1025:latest@sha256:7c85c644f5cc261eed850331726992f1d4f581a80ff47353838e8c8d77914ece
+#4 resolve docker.io/library/sideeye-sv1025:latest@sha256:7c85c644f5cc261eed850331726992f1d4f581a80ff47353838e8c8d77914ece done
+#4 DONE 0.0s
+
+#5 [2/5] RUN set -u; cd /tmp/dl; gh=https://github.com;     get() { curl -fsSL -o "$2" "$1" && echo "OK $2" || echo "MISSING $2 ($1)"; };     get $gh/etcd-io/etcd/releases/download/v3.7.3/etcd-v3.7.3-linux-arm64.tar.gz etcd.tgz;     get $gh/dolthub/dolt/releases/download/v2.6.0/dolt-linux-arm64.tar.gz dolt.tgz;     get $gh/tursodatabase/turso/releases/download/v0.8.3/turso_cli-aarch64-unknown-linux-gnu.tar.xz turso.txz;     get $gh/diesel-rs/diesel/releases/download/v2.3.14/diesel_cli-aarch64-unknown-linux-gnu.tar.xz diesel.txz;     get $gh/grafana/grafana/releases/download/v13.2.4/grafana_13.2.4_38252365904_linux_arm64.deb grafana.deb;     mkdir -p x-etcd && tar xzf etcd.tgz -C x-etcd && for b in etcd etcdutl etcdctl; do install -m 755 "$(find x-etcd -type f -name $b | head -1)" /opt/bin/$b; done;     mkdir -p x-dolt && tar xzf dolt.tgz -C x-dolt && install -m 755 "$(find x-dolt -type f -name dolt | head -1)" /opt/bin/dolt;     mkdir -p x-turso && tar xJf turso.txz -C x-turso && install -m 755 "$(find x-turso -type f -name tursodb | head -1)" /opt/bin/tursodb;     mkdir -p x-diesel && tar xJf diesel.txz -C x-diesel && install -m 755 "$(find x-diesel -type f -name diesel | head -1)" /opt/bin/diesel;     ls -l /opt/bin
+#5 2.289 OK etcd.tgz
+#5 5.464 OK dolt.tgz
+#5 7.289 OK turso.txz
+#5 8.367 OK diesel.txz
+#5 33.56 OK grafana.deb
+#5 35.53 total 300364
+#5 35.53 -rwxr-xr-x 1 root root  26060120 Oct 25 03:28 diesel
+#5 35.53 -rwxr-xr-x 1 root root 117418040 Oct 25 03:28 dolt
+#5 35.53 -rwxr-xr-x 1 root root  23068834 Oct 25 03:28 etcd
+#5 35.53 -rwxr-xr-x 1 root root  15728802 Oct 25 03:28 etcdctl
+#5 35.53 -rwxr-xr-x 1 root root  15597730 Oct 25 03:28 etcdutl
+#5 35.53 -rwxr-xr-x 1 root root 109680856 Oct 25 03:28 tursodb
+#5 DONE 35.9s
+
+#6 [3/5] RUN apt-get install -y --no-install-recommends /tmp/dl/grafana.deb > /tmp/apt-grafana.log 2>&1 && echo "OK grafana" || { echo "FAILED grafana"; tail -5 /tmp/apt-grafana.log; }
+#6 14.63 OK grafana
+#6 DONE 15.0s
+
+#7 [4/5] RUN apt-get install -y --no-install-recommends libpq5 libmariadb3 libsqlite3-0 sqlite3 > /tmp/apt-libs.log 2>&1; ldd /opt/bin/diesel | grep -i "not found" || echo "OK diesel links"
+#7 1.107 OK diesel links
+#7 DONE 1.1s
+
+#8 [5/5] RUN { echo "etcdutl $(etcdutl version 2>&1 | head -1)"; echo "dolt $(dolt version 2>&1 | head -1)";       echo "tursodb $(tursodb --version 2>&1 | head -1)"; echo "diesel $(diesel --version 2>&1 | head -1)";       echo "grafana $(grafana cli --version 2>&1 | head -1)";       for b in etcdutl dolt tursodb diesel /usr/share/grafana/bin/grafana; do echo "link $b: $(file -bL $(command -v $b || echo $b) | cut -c1-90)"; done; } | tee /versions.txt
+#8 0.098 etcdutl etcdutl version: 3.7.3
+#8 0.438 dolt dolt version 2.6.0
+#8 0.443 tursodb Turso 0.8.3
+#8 0.448 diesel diesel 
+#8 0.536 grafana grafana version 13.2.4
+#8 0.547 link etcdutl: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=kH
+#8 0.551 link dolt: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]
+#8 0.555 link tursodb: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+#8 0.559 link diesel: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, int
+#8 0.563 link /usr/share/grafana/bin/grafana: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=Fk
+#8 DONE 0.6s
+
+#9 exporting to image
+#9 exporting layers
+#9 exporting layers 30.0s done
+#9 exporting manifest sha256:971f6bd9f9e69c456a9b442a9612b02a10b968a1772a9d13b649222c85248608 0.1s done
+#9 exporting config sha256:12933d007571120b8592ed27f515988c53715c2285eb68e9c4ff9216b618b2e5 done
+#9 exporting attestation manifest sha256:76fe967ba3d1303420f9a164dab7d043705ce17c008f0a3b89ce66f45fedd9cc done
+#9 exporting manifest list sha256:f73b5f55abfe2a3982572a0b3959c787b665b572687ba476e6f60d19fde2336a done
+#9 naming to docker.io/library/sideeye-sv1025-s1:latest
+#9 naming to docker.io/library/sideeye-sv1025-s1:latest done
+#9 unpacking to docker.io/library/sideeye-sv1025-s1:latest
+#9 unpacking to docker.io/library/sideeye-sv1025-s1:latest 7.7s done
+#9 DONE 37.9s
+etcdutl etcdutl version: 3.7.3
+dolt dolt version 2.6.0
+tursodb Turso 0.8.3
+diesel diesel 
+grafana grafana version 13.2.4
+link etcdutl: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=kH
+link dolt: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, BuildID[sha1]
+link tursodb: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpre
+link diesel: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, int
+link /usr/share/grafana/bin/grafana: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), statically linked, Go BuildID=Fk

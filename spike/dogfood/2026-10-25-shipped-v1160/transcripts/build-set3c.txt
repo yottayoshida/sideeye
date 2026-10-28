@@ -1,0 +1,62 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.60kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/sideeye-sv1025-s3:latest
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/5] FROM docker.io/library/sideeye-sv1025-s3:latest@sha256:9a86a3b0654d80aff0807a59a5feacccc40875e448b671113e9fbd4b0c85b81c
+#4 resolve docker.io/library/sideeye-sv1025-s3:latest@sha256:9a86a3b0654d80aff0807a59a5feacccc40875e448b671113e9fbd4b0c85b81c done
+#4 CACHED
+
+#5 [2/5] RUN apt-get install -y --no-install-recommends cmake ninja-build zip tar > /tmp/apt-vcpkg.log 2>&1 && echo "OK cmake ninja"
+#5 3.123 OK cmake ninja
+#5 DONE 3.3s
+
+#6 [3/5] RUN set -u; git clone -q --depth 1 https://github.com/microsoft/vcpkg.git /opt/vcpkg && git -C /opt/vcpkg log -1 --format='vcpkg ports commit %H %cs' &&     curl -fsSL -o /opt/vcpkg/vcpkg https://github.com/microsoft/vcpkg-tool/releases/download/2026-09-26/vcpkg-glibc-arm64 && chmod 755 /opt/vcpkg/vcpkg &&     /opt/vcpkg/vcpkg version | head -1
+#6 2.279 vcpkg ports commit 817892b0ecbc6af994dd6df999c73faf795adbf2 2026-10-24
+#6 3.599 vcpkg package management program version 2026-09-26-51bf87ca6e9bf3e622d84ff323bd202ab1ca0c0b
+#6 DONE 3.9s
+
+#7 [4/5] RUN cd /opt/vcpkg && ./vcpkg install nlohmann-json utfcpp --x-install-root=/opt/vcpkg-installed > /tmp/vcpkg-install.log 2>&1 && echo "OK vcpkg install" || { echo "FAILED vcpkg install"; tail -30 /tmp/vcpkg-install.log; };     ls /opt/vcpkg-installed /opt/vcpkg-installed/vcpkg; cat /opt/vcpkg-installed/vcpkg/status | grep -E "^Package|^Status" | paste - - | head
+#7 4.246 OK vcpkg install
+#7 4.250 /opt/vcpkg-installed:
+#7 4.250 arm64-linux
+#7 4.250 vcpkg
+#7 4.250 
+#7 4.250 /opt/vcpkg-installed/vcpkg:
+#7 4.250 compiler-file-hash-cache.json
+#7 4.250 info
+#7 4.250 status
+#7 4.250 updates
+#7 4.250 vcpkg-running.lock
+#7 4.255 Package: vcpkg-cmake	Status: install ok installed
+#7 4.255 Package: vcpkg-cmake-config	Status: install ok installed
+#7 4.255 Package: nlohmann-json	Status: install ok installed
+#7 4.255 Package: utfcpp	Status: install ok installed
+#7 DONE 4.6s
+
+#8 [5/5] RUN { echo "vcpkg $(/opt/vcpkg/vcpkg version | head -1)"; echo "vcpkg ports $(git -C /opt/vcpkg log -1 --format='%H %cs')"; echo "link /opt/vcpkg/vcpkg: $(file -bL /opt/vcpkg/vcpkg | cut -c1-80)"; } | tee -a /versions.txt
+#8 0.291 vcpkg vcpkg package management program version 2026-09-26-51bf87ca6e9bf3e622d84ff323bd202ab1ca0c0b
+#8 0.292 vcpkg ports 817892b0ecbc6af994dd6df999c73faf795adbf2 2026-10-24
+#8 0.317 link /opt/vcpkg/vcpkg: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (GNU/Linux), dynamically l
+#8 DONE 0.4s
+
+#9 exporting to image
+#9 exporting layers
+#9 exporting layers 3.7s done
+#9 exporting manifest sha256:578e843e663c98da3b70fc88387a16c0c9720a417bdee7a7c3de741a1ec257d4 0.0s done
+#9 exporting config sha256:8c46116d8b105270a4a51cfa4f21445ac5dbf6533d8cb0880077952e21acab55 0.0s done
+#9 exporting attestation manifest sha256:31e0c3e20436bc029359adcb9f0163034b48f87c1a36ecb77b95cb2891e0693d 0.0s done
+#9 exporting manifest list sha256:92c4be89e9fea4579c8bc7c635a2791b67d74f59237497017a7f8eb3faa27bd2
+#9 exporting manifest list sha256:92c4be89e9fea4579c8bc7c635a2791b67d74f59237497017a7f8eb3faa27bd2 0.0s done
+#9 naming to docker.io/library/sideeye-sv1025-s3c:latest done
+#9 unpacking to docker.io/library/sideeye-sv1025-s3c:latest
+#9 unpacking to docker.io/library/sideeye-sv1025-s3c:latest 4.0s done
+#9 DONE 8.0s

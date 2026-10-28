@@ -1,0 +1,6 @@
+=== tursodb 2026-10-25T03:38:49Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0

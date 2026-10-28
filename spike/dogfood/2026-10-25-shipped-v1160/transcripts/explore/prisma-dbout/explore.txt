@@ -1,0 +1,40 @@
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+falsify: falsify: prisma validate: Failed to load config file "/s/shop" as a TypeScript/JavaScript module. Error: ReferenceError: sideeye is not defined  (25 bytes)
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+world 2: falsify: @@map("customers") is gone from schema.prisma
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 2
+            after  open(/s/shop/prisma/schema.prisma)
+            before write(/s/shop/prisma/schema.prisma)
+path        prisma/schema.prisma
+observed    holding neither the old nor the new content
+cwd         /s/shop
+apparatus   env:UV_THREADPOOL_SIZE=1, env:JITI_FS_CACHE=false, env:PRISMA_HIDE_UPDATE_MESSAGE=1, env:CHECKPOINT_DISABLE=1
+
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   5 path(s) judged pre-or-post
+oracle      agreed on 2 operations (10554 syscall lines examined, 2707 in scope of the judged state), witness strace
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+l1          no marker configured
+case        /out/prisma-dbout/work-explore/cases/000001.json
+replay      sideeye replay /out/prisma-dbout/work-explore/cases/000001.json --oracle /usr/bin/strace
+evidence    sideeye evidence /out/prisma-dbout/work-explore/evidence/000001.json
+processes   24 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle; the shim recorded 30 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 19 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/shop && unset SIDEEYE_KILL_GROUP && : > /out/prisma-dbout/work-explore/trace-repro.bin && SIDEEYE_STATE_DIR=/s/shop SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/prisma-dbout/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.16.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= /opt/node/bin/node /opt/prisma-proto/node_modules/prisma/build/index.js db pull </dev/null)
+sideeye: json sha256=ad70c04cc86c6718b966535e3f445047fca98bf0416bb05251e7b6ae8fe9c201;

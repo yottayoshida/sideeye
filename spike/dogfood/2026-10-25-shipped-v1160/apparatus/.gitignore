@@ -1,0 +1,5 @@
+# The corporate proxy's CA, staged here by `build.sh` so Docker can mount it (Docker Desktop
+# will not share /Library). It is this machine's network configuration, not this project's, and
+# a public repository is the wrong place for it — the run records what it is for and where it
+# comes from instead.
+proxy-ca.pem

@@ -1,0 +1,14 @@
+=== chroma
+seed ok
+check before: accepts
+operation exit 0
+🧼 Vacuum complete!
+Database size reduced by 36.0KiB (⬇️1%)
+
+check after: accepts
+state after:
+  20400 /s/chroma/410f6f2e-bd71-48f1-9d1f-e3f714b2c1d0/data_level0.bin
+  100 /s/chroma/410f6f2e-bd71-48f1-9d1f-e3f714b2c1d0/header.bin
+  400 /s/chroma/410f6f2e-bd71-48f1-9d1f-e3f714b2c1d0/length.bin
+  0 /s/chroma/410f6f2e-bd71-48f1-9d1f-e3f714b2c1d0/link_lists.bin
+  270336 /s/chroma/chroma.sqlite3

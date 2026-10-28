@@ -1,0 +1,25 @@
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+Creating group 'appsvc' with GID 999.
+Creating user 'appsvc' (Example application service) with UID 999 and GID 999.
+PREFLIGHT  recording accepted — 45 state-changing operation(s) observed
+
+cwd          /s/sysroot
+atomicity    3 path(s) judged pre-or-post; 2 file(s) judged by the history form (appended tails not judged): etc/passwd, etc/shadow
+oracle       agreed on 45 operations (842 syscall lines examined, 420 in scope of the judged state), witness strace
+processes    single process
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail (with no
+             check or marker, an operation that only creates files is refused
+             nothing_could_fail) — only a real exploration runs these
+
+repeatability  two runs 2001 ms apart left equal state under --state
+scope          file bytes, entry kinds and symlink targets only; modes,
+               ownership, timestamps, and anything outside --state are
+               not compared, and two runs are not all runs
+               the second run's oracle capture is written but not
+               compared; only the first run's account was checked
+
+next         sideeye explore --state /s/sysroot --cwd /s/sysroot --operation 'systemd-sysusers --root=/s/sysroot /s/sysaux/app.conf' \
+               --check <your-invariant.sh> --oracle /usr/bin/strace

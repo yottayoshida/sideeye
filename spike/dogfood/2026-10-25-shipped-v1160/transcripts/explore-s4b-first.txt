@@ -1,0 +1,9 @@
+=== firefly 2026-10-25T04:12:15Z
+explore exit 0: PASS -
+explore exit 0: PASS -
+=== paperless 2026-10-25T04:14:02Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0

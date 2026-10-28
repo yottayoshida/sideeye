@@ -1,0 +1,73 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 3.61kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/sideeye-sv1025-s2:latest
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/7] FROM docker.io/library/sideeye-sv1025-s2:latest@sha256:5ceb0a9f63620e9a043b5d3aedbde3cde258d94b825f198aa2199da302141ff5
+#4 resolve docker.io/library/sideeye-sv1025-s2:latest@sha256:5ceb0a9f63620e9a043b5d3aedbde3cde258d94b825f198aa2199da302141ff5 done
+#4 DONE 0.0s
+
+#5 [2/7] RUN cd /tmp/dl && curl -fsSL -o go.tgz https://go.dev/dl/go1.27.3.linux-arm64.tar.gz && tar xzf go.tgz -C /opt && /opt/go/bin/go version
+#5 CACHED
+
+#6 [3/7] RUN set -eu; cd /tmp/dl && git clone -q --depth 1 --branch v0.14.3 https://github.com/gogs/gogs.git gogs-src && cd gogs-src &&     CGO_ENABLED=1 GOFLAGS=-buildvcs=false /opt/go/bin/go build -o /opt/gogs-dyn/gogs ./ > /tmp/gogs-build.log 2>&1 || { tail -20 /tmp/gogs-build.log; exit 1; };     cp -a /opt/gogs/templates /opt/gogs/public /opt/gogs/scripts /opt/gogs-dyn/ 2>/dev/null || true;     /opt/gogs-dyn/gogs --version; file -bL /opt/gogs-dyn/gogs | cut -c1-100
+#6 CACHED
+
+#7 [4/7] RUN set -eu; cd /tmp/dl && curl -fsSL -o gqlgen.tgz https://github.com/99designs/gqlgen/releases/download/v0.17.98/gqlgen_Linux_arm64.tar.gz &&     mkdir -p x-gqlgen && tar xzf gqlgen.tgz -C x-gqlgen && install -m 755 "$(find x-gqlgen -type f -name gqlgen | head -1)" /opt/bin/gqlgen;     mkdir -p /opt/gql-proto && cd /opt/gql-proto && go mod init example.com/notes > /dev/null 2>&1 &&     go get github.com/99designs/gqlgen@v0.17.98 > /tmp/gql-get.log 2>&1 && gqlgen init > /tmp/gql-init.log 2>&1 && go mod tidy > /tmp/gql-tidy.log 2>&1 && go build ./... &&     chmod -R a+rwX /opt/gomod /opt/gocache && ls -R /opt/gql-proto | head -30 && gqlgen version
+#7 CACHED
+
+#8 [5/7] RUN apt-get install -y --no-install-recommends cmake ninja-build zip > /tmp/apt-vcpkg.log 2>&1 && echo "OK cmake ninja" || { tail -3 /tmp/apt-vcpkg.log; exit 1; }
+#8 3.108 OK cmake ninja
+#8 DONE 3.7s
+
+#9 [6/7] RUN set -eu; git clone -q --depth 1 --branch 2026.10.16 https://github.com/microsoft/vcpkg.git /opt/vcpkg-proto &&     curl -fsSL -o /opt/vcpkg-proto/vcpkg https://github.com/microsoft/vcpkg-tool/releases/download/2026-09-26/vcpkg-glibc-arm64 && chmod 755 /opt/vcpkg-proto/vcpkg &&     cd /opt/vcpkg-proto && ./vcpkg install zlib bzip2 > /tmp/vcpkg-install.log 2>&1 || { tail -30 /tmp/vcpkg-install.log; exit 1; };     ./vcpkg list; ./vcpkg version | head -1; du -sh /opt/vcpkg-proto/installed /opt/vcpkg-proto/buildtrees /opt/vcpkg-proto/packages 2>/dev/null; true
+#9 1.815 Note: switching to '9eec002df1cd109f8f104cd966a763daf9751489'.
+#9 1.815 
+#9 1.815 You are in 'detached HEAD' state. You can look around, make experimental
+#9 1.815 changes and commit them, and you can discard any commits you make in this
+#9 1.815 state without impacting any branches by switching back to a branch.
+#9 1.815 
+#9 1.815 If you want to create a new branch to retain commits you create, you may
+#9 1.815 do so (now or later) by using -c with the switch command. Example:
+#9 1.815 
+#9 1.815   git switch -c <new-branch-name>
+#9 1.815 
+#9 1.815 Or undo this operation with:
+#9 1.815 
+#9 1.815   git switch -
+#9 1.815 
+#9 1.815 Turn off this advice by setting config variable advice.detachedHead to false
+#9 1.815 
+#9 9.673 bzip2:arm64-linux                                 1.0.8#6             bzip2 is a freely available, patent free, high-q...
+#9 9.673 bzip2[tool]:arm64-linux                                               Builds bzip2 executable
+#9 9.673 vcpkg-cmake-config:arm64-linux                    2026-07-21          
+#9 9.673 vcpkg-cmake:arm64-linux                           2025-08-07          
+#9 9.673 zlib:arm64-linux                                  1.3.2#2             A compression library
+#9 9.677 vcpkg package management program version 2026-09-26-51bf87ca6e9bf3e622d84ff323bd202ab1ca0c0b
+#9 9.679 2.5M	/opt/vcpkg-proto/installed
+#9 9.680 12M	/opt/vcpkg-proto/buildtrees
+#9 9.680 164K	/opt/vcpkg-proto/packages
+#9 DONE 9.9s
+
+#10 [7/7] RUN { cat /versions.txt; echo "gogs-dyn $(/opt/gogs-dyn/gogs --version 2>&1 | head -1) (built from v0.14.3 with cgo, $(/opt/go/bin/go version))";       echo "gqlgen $(gqlgen version 2>&1 | head -1)"; echo "link /opt/bin/gqlgen: $(file -bL /opt/bin/gqlgen | cut -c1-100)"; echo "vcpkg $(/opt/vcpkg-proto/vcpkg version 2>&1 | head -1)"; echo "link /opt/vcpkg-proto/vcpkg: $(file -bL /opt/vcpkg-proto/vcpkg | cut -c1-100)"; echo "link /opt/gogs-dyn/gogs: $(file -bL /opt/gogs-dyn/gogs | cut -c1-100)"; } > /versions.new && mv /versions.new /versions.txt
+#10 DONE 0.2s
+
+#11 exporting to image
+#11 exporting layers
+#11 exporting layers 1.3s done
+#11 exporting manifest sha256:f93709f2f3d93c5e51ce6f382053dcc204c7321cc9391808b9c4c249ef9f1ce3 done
+#11 exporting config sha256:37cea741d78ac762c5038376c11874d0e35bfbfe223fe28edb0ec1345c9863c8 done
+#11 exporting attestation manifest sha256:6e5a3dcfa37bb50027fe00de8fdeba45f89f67e688d51e6dcc5e48536d232a12 done
+#11 exporting manifest list sha256:2f92a77216467970b61e980c87c75e68542edf919139e9d1c219a21e34a8e2a2 done
+#11 naming to docker.io/library/sideeye-sv1025-s2b:latest done
+#11 unpacking to docker.io/library/sideeye-sv1025-s2b:latest
+#11 unpacking to docker.io/library/sideeye-sv1025-s2b:latest 1.5s done
+#11 DONE 2.9s

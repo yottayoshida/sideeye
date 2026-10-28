@@ -1,0 +1,13 @@
+[world]
+# A Chroma persistent directory: chroma.sqlite3 (collections, documents, metadata, the write-ahead
+# log of embeddings) and one HNSW segment directory.
+state = "/s/chroma"
+
+[define]
+# The interpreter first: `chroma` is a Python script (#!/opt/chroma/bin/python3.13).
+operation = "/opt/chroma/bin/python3.13 /opt/chroma/bin/chroma vacuum --path /s/chroma --force"
+# One tokio worker: the `chroma` define's gate saw tid 120 make the directory and tid 129 open the
+# database (transcripts/entry-out/s1d-chroma.txt).
+apparatus = ["env:TOKIO_WORKER_THREADS=1"]
+check     = "/s/chroma-check.sh"
+cwd       = "/s"

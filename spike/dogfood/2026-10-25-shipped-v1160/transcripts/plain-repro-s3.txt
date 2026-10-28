@@ -1,0 +1,33 @@
+### vagrant 2.4.9: global-status --prune over five stale entries and one live machine (vagrant-live's seed), killed at its first write to the machine index
+before: 1978 bytes, machines: 6 ['db', 'default', 'devbox', 'web', 'web', 'worker']
+exit: 137
+[pid    34] write(12, "{\"version\":1,\"machines\":{\"000000"..., 1856) = ?
+[pid    35] +++ killed by SIGKILL +++
++++ killed by SIGKILL +++
+after the kill: 0 bytes
+-- vagrant global-status (next run, exit and the lines after the installer warning):
+exit: 0
+  bsdtar, ssh
+id       name   provider state  directory                           
+--------------------------------------------------------------------
+There are no active Vagrant environments on this computer! Or,
+you haven't destroyed and recreated Vagrant environments that were
+started with an older version of Vagrant.
+-- the index the next run left: 0 bytes
+run through instead: 390 bytes, machines: 1 ['web']
+
+### salt 3008.4: salt-call --local grains.setval, killed at its first write to grains
+before: 148 bytes, 7 grains
+exit: 137
+openat(AT_FDCWD, "/s/salt/grains", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 5
+write(5, "backup_window: 02:00-03:00\ncost_"..., 171) = ?
++++ killed by SIGKILL +++
+after the kill: 0 bytes
+-- salt-call --local grains.item datacenter roles (next run):
+local:
+    ----------
+    datacenter:
+    roles:
+the next setval leaves: 23 bytes:
+maintainer: ops-oncall
+run through instead: 171 bytes, 8 grains

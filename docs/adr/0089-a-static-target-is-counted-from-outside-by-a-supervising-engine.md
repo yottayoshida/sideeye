@@ -45,6 +45,19 @@ catches a signal while its call waits for the supervisor has the call restarted 
    `setsid` and `setpgid`, sends the listener and its own pid back over the inherited socket, and
    execs. The pid does not change, so the process strace or the engine started is the subject, as
    under a shim.
+   **Amended 2026-10-17 (#905): the hand-over is answered.** After sending the listener the
+   installer reads one byte back, `y` when the engine took it and `n` when data arrived without a
+   listener it could take, and execs only on `y`. Once its filter is in, every way the installer
+   could report a failure — a `write`, even the `close` of the listener — is a watched call that
+   only the listener's holder answers, so a failed send, or a send the engine could not take, used
+   to leave it waiting forever, and the recording run's wait with it. It now exits 126 writing
+   nothing, and the engine, which knows the listener never arrived, says the operation never
+   started: `recording_run_failed` for the recording and the second run, the existing SETUP ERROR
+   for a world. The reason, exit code and next step of an exit 126 are unchanged; only its sentence
+   is, and it names the engine's fork stub as well, since that stub also exits 126 before the
+   installer runs. The exception is a define that declares 126 its success status: the recording's
+   126 check passed it, and it stopped later as a SETUP ERROR on an account nothing wrote; it is now
+   refused at the hand-over, as `recording_run_failed`, which says what happened.
 2. **The engine counts, in a thread.** A session thread starts before the spawn, takes the listener,
    and for each notification reads the call's paths from the target (`process_vm_readv`,
    `/proc/<tid>/fd`, `/proc/<tid>/cwd`), asks `SECCOMP_IOCTL_NOTIF_ID_VALID` after every read, and
@@ -64,6 +77,23 @@ catches a signal while its call waits for the supervisor has the call restarted 
    the plan's review found that recording it would refuse every run without an oracle as
    `boundary_without_oracle` (measured red by mutation). `readTrace` and `containment.holds` are
    unchanged — the plan expected a branch in each; writing the shim's records made them unnecessary.
+   **Amended 2026-10-17 (#904): `detached` from `setsid` and `setpgid` follows the shim's rule as
+   far as a call that has not run yet allows.** The shim records a `setsid` that succeeded and a
+   `setpgid` that moved a group; this engine answers before the call runs and never sees its
+   result, so it recorded every one, and a target that called `setsid` while leading the group the
+   engine made it (`EPERM`), or `setpgid(0, 0)`, was refused `boundary_without_oracle` where the
+   shim judged it. It now leaves a call unrecorded only when the kernel's own condition says it
+   certainly does nothing: a `setsid` whose caller's pid names an existing process group
+   (`kill(-pid, 0)` answering 0 or `EPERM`, the condition `setsid` fails on), and a `setpgid` whose
+   subject is already in the target group, asked only for `setpgid(0, 0)` or a caller in the
+   engine's pid namespace, since the arguments are numbers in the caller's. Everything else is
+   recorded, so what is left over refuses rather than misses: a `setpgid` that would move a group
+   and that the kernel refuses (not a child, an exec'd child, a session leader, a group in another
+   session or none, `EINVAL`), one in a nested pid namespace, and a parent and child moving the
+   same group at once (two records where the shim has one). One residue runs the other way and is
+   rare: a group named after the caller whose last member is reaped between the question and the
+   call, so a `setsid` that succeeds goes unrecorded. Like every `/proc` read here, this assumes
+   `/proc` is mounted for the engine's pid namespace.
 4. **The cgroup is required.** Without the shim there is nothing inside a process to notice it left
    the process group, so the crash point's kill reaches the run through the world's cgroup; an
    engine that cannot create one refuses the mode as a setup error.

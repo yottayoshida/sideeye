@@ -1,0 +1,13 @@
+[world]
+state = "/s/sf/config/secrets/prod"
+
+[define]
+# Rotating the prod vault's keys (Symfony's documented rotation): every secret is decrypted with the
+# old key, a new key pair is written over the old one, and each secret is sealed again with the new key.
+operation = "php bin/console secrets:generate-keys --rotate --env=prod"
+check     = "/s/sf-check.sh"
+cwd       = "/s/sf"
+# libsodium seals with a fresh ephemeral key and the new pair is random, and every file's first line
+# carries the time it was written: getrandom is pinned (apparatus/pin-random.c) and the clock stopped
+# (libfaketime), each a line of /etc/ld.so.preload (env.sh), so two clean runs write the same bytes.
+apparatus = ["preload:pin-random", "preload:libfaketime", "env:FAKETIME=2026-01-01 00:00:00"]

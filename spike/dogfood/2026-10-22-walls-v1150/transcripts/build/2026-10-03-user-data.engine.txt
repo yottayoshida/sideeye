@@ -1,0 +1,5 @@
+/opt/se15/sideeye-v1.15.0-aarch64-linux/sideeye
+sideeye 1.15.0 (trace contract v19)
+install-sideeye: reading yottayoshida/sideeye release v1.15.0 (unauthenticated; shares this runner's rate limit)
+install-sideeye: downloaded digest matches (5bdb0f7034810ed7d97787b194edf74e392c4e905bc5b29b7d49ac4b81f6ccd5)
+install-sideeye: sideeye 1.15.0 (trace contract v19)

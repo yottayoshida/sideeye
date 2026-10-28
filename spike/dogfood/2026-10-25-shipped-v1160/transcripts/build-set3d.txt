@@ -1,0 +1,63 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.54kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/sideeye-sv1025-s3:latest
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B 0.0s done
+#3 DONE 0.1s
+
+#4 [1/5] FROM docker.io/library/sideeye-sv1025-s3:latest@sha256:9a86a3b0654d80aff0807a59a5feacccc40875e448b671113e9fbd4b0c85b81c
+#4 resolve docker.io/library/sideeye-sv1025-s3:latest@sha256:9a86a3b0654d80aff0807a59a5feacccc40875e448b671113e9fbd4b0c85b81c 0.0s done
+#4 CACHED
+
+#5 [2/5] RUN apt-get install -y --no-install-recommends php8.4-gd php8.4-bcmath php8.4-tidy php8.4-zip php8.4-intl php8.4-xml php8.4-mbstring php8.4-curl php8.4-sqlite3 > /tmp/apt-wb.log 2>&1 && echo "OK php ext"
+#5 6.589 OK php ext
+#5 DONE 6.6s
+
+#6 [3/5] RUN set -u; cd /tmp/dl && curl -fsSL -o wb.tgz https://github.com/wallabag/wallabag/releases/download/2.6.14/wallabag-2.6.14.tar.gz &&     mkdir -p /opt/wallabag && tar xzf wb.tgz -C /opt/wallabag --strip-components=1 && ls /opt/wallabag | tr '\n' ' ' && echo &&     sed -n '1,40p' /opt/wallabag/app/config/parameters.yml 2>/dev/null | grep -E "database_driver|database_path|secret" || true
+#6 6.096 CHANGELOG.md CODE_OF_CONDUCT.md COPYING.md CREDITS.md GNUmakefile Makefile README.md RELEASE_PROCESS.md SECURITY.md app bin composer.json composer.lock data docker docker-compose.yml package.json phpstan-baseline.neon phpstan.neon phpunit.xml.dist scripts src stylelint.config.js templates tests translations var vendor web webpack.config.js yarn.lock 
+#6 6.097     database_driver: pdo_mysql
+#6 6.097     database_path: null
+#6 6.097     secret: CHANGE_ME_TO_SOMETHING_SECRET_AND_RANDOM
+#6 DONE 6.4s
+
+#7 [4/5] RUN cd /opt/wallabag &&     sed -i -e 's/database_driver: .*/database_driver: pdo_sqlite/' -e 's#database_path: .*#database_path: "%kernel.project_dir%/data/db/wallabag.sqlite"#' app/config/parameters.yml &&     php bin/console wallabag:install --env=prod -n > /tmp/wb-install.log 2>&1 && echo "OK wallabag install" || { echo "FAILED wallabag install"; tail -20 /tmp/wb-install.log; };     ls -la /opt/wallabag/data/db; php bin/console list wallabag --env=prod 2>&1 | grep -E "^ +wallabag:" | head -30
+#7 2.192 OK wallabag install
+#7 2.192 total 232
+#7 2.192 drwxr-xr-x 1 1001 1001   4096 Oct 25 03:49 .
+#7 2.192 drwxr-xr-x 1 1001 1001   4096 Oct  7  2025 ..
+#7 2.192 -rw-r--r-- 1 1001 1001      0 Oct  7  2025 .gitignore
+#7 2.192 -rw-r--r-- 1 root root 221184 Oct 25 03:49 wallabag.sqlite
+#7 2.341   wallabag:clean-downloaded-images  Cleans downloaded images which are no more associated to an entry
+#7 2.341   wallabag:clean-duplicates         Cleans the database for duplicates
+#7 2.341   wallabag:entry:reload             Reload entries
+#7 2.341   wallabag:export                   Export all entries for an user
+#7 2.341   wallabag:generate-hashed-urls     Generates hashed urls for each entry
+#7 2.341   wallabag:import                   Import entries from a JSON export
+#7 2.341   wallabag:import:redis-worker      Launch Redis worker
+#7 2.341   wallabag:install                  wallabag installer.
+#7 2.341   wallabag:tag:all                  Tag all entries using the tagging rules.
+#7 2.341   wallabag:user:list                List all users
+#7 2.341   wallabag:user:show                Show user details
+#7 DONE 2.4s
+
+#8 [5/5] RUN { echo "wallabag $(cd /opt/wallabag && php bin/console --version --env=prod 2>&1 | tail -1)"; } | tee -a /versions.txt
+#8 0.144 wallabag Symfony 4.4.51 (env: prod, debug: false) #StandWithUkraine https://sf.to/ukraine
+#8 DONE 0.2s
+
+#9 exporting to image
+#9 exporting layers
+#9 exporting layers 3.9s done
+#9 exporting manifest sha256:919c95b807135c7c2871329609569c69c4875bd34787cd0801d0151044674db3 0.0s done
+#9 exporting config sha256:f94b258ee2dd28867bc7fd9a544786074cd39f4fa67b51d1c5fcb6256f550063 done
+#9 exporting attestation manifest sha256:5937171c38e3c8ee30ab460c67fd402a9cd0668532bafcf6f0bf44881cb8e940 done
+#9 exporting manifest list sha256:d4fd862c00458363563af0b0831d4d038814a90b971271d5f2f978509e9a5130 done
+#9 naming to docker.io/library/sideeye-sv1025-s3d:latest done
+#9 unpacking to docker.io/library/sideeye-sv1025-s3d:latest
+#9 unpacking to docker.io/library/sideeye-sv1025-s3d:latest 2.0s done
+#9 DONE 5.9s

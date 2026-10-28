@@ -17,7 +17,15 @@ const setupError = refuse.setupError;
 const say = report.say;
 const removeFile = files.removeFile;
 
-pub const version = "1.14.0";
+pub const version = contract.sideeye_version;
+
+pub const define_surface_flags = [_][]const u8{ "--state", "--setup", "--operation", "--check", "--marker", "--expect-status", "--cwd", "--apparatus", "--scratch", "--recovery", "--recovery-check" };
+
+pub const define_surface_list = blk: {
+    var out: []const u8 = "";
+    for (define_surface_flags, 0..) |f, i| out = out ++ (if (i == 0) "" else ", ") ++ f;
+    break :blk out;
+};
 
 const max_apparatus = 32;
 var apparatus_flag_buf: [max_apparatus][]const u8 = undefined;
@@ -117,6 +125,20 @@ const usage_fmt =
     \\completions prints a completion script for zsh, bash or fish (docs/cli.md: how
     \\to load it).
     \\
+    \\explore runs the operation once under observation to record what it does to
+    \\the state directory, then once more for each crash point, killed just before
+    \\one of those operations, rebuilding the state directory from its snapshot
+    \\before every run; it judges each state a kill left with the built-in
+    \\invariants, the --check command and the --marker. A FAIL saves its
+    \\counterexample under --work; the exit code is the verdict.
+    \\
+    \\mcp serves preflight, explore, replay and evidence to an agent over the Model
+    \\Context Protocol on stdin and stdout, as the tools sideeye_preflight,
+    \\sideeye_explore_config, sideeye_replay_case and sideeye_evidence. It refuses
+    \\to start without SIDEEYE_MCP_ROOT, the directory every path a tool is given
+    \\must lie in; SIDEEYE_MCP_STATE_ROOT, SIDEEYE_MCP_WORK, SIDEEYE_MCP_SHIM,
+    \\SIDEEYE_MCP_ORACLE and SIDEEYE_MCP_CHILD_ENV are optional (docs/mcp.md).
+    \\
     \\replay re-runs one saved counterexample: the same pipeline as explore — the
     \\oracle comparison, the structural detectors, checker falsification, landing
     \\evidence — restricted to the case's crash point plus the baseline (ADR 0009).
@@ -124,7 +146,9 @@ const usage_fmt =
     \\is "case no longer applies" (exit 2), never a verdict about a shifted point.
     \\
     \\  --config     path to a sideeye.toml carrying the define surface (ADR 0007);
-    \\               mutually exclusive with --state/--setup/--operation/--check.
+    \\               mutually exclusive with --state, --setup, --operation, --check,
+    \\               --marker, --expect-status, --cwd, --apparatus, --scratch,
+    \\               --recovery and --recovery-check.
     \\               Relative paths in the file resolve against its own directory
     \\  --state      directory whose contents define the target's state
     \\  --cwd        directory the define's commands run in (default: this process's).
@@ -304,10 +328,14 @@ const usage_fmt =
     \\so a target that fails partway through would be explored against a sequence it
     \\never performs; v0.1 reports UNKNOWN rather than guess.
     \\
+    \\Pages named above are in the repository at the URL below; ADR NNNN is
+    \\docs/adr/NNNN-*.md there.
+    \\{s}
+    \\
 ;
 
 pub fn usage() void {
-    say(usage_fmt, .{ version, contract.contract_version });
+    say(usage_fmt, .{ version, contract.contract_version, contract.docUrl("") });
 }
 
 const synopsis_prefix = "  sideeye ";
@@ -623,7 +651,9 @@ pub fn renderCommandHelp(arena: std.mem.Allocator, cmd: []const u8) error{OutOfM
             };
         }
     }
-    try out.appendSlice(arena, "\nEvery flag in full, and the other commands: sideeye help\n");
+    const names_adr = std.mem.indexOf(u8, out.items, "ADR ") != null;
+    try out.appendSlice(arena, "\nEvery flag in full, and the other commands: sideeye help\nPages named here: " ++ contract.docUrl("") ++ "\n");
+    if (names_adr) try out.appendSlice(arena, "ADR NNNN is docs/adr/NNNN-*.md there.\n");
     return out.items;
 }
 
@@ -1150,7 +1180,7 @@ test "the whole help fits what one say can print (#712)" {
     // here as a number so this test root does not pull in report.zig's own tests.
     const capacity = 32 * 1024;
     var buf: [capacity]u8 = undefined;
-    const text = try std.fmt.bufPrint(&buf, usage_fmt, .{ version, contract.contract_version });
+    const text = try std.fmt.bufPrint(&buf, usage_fmt, .{ version, contract.contract_version, contract.docUrl("") });
     try std.testing.expect(text.len + 64 < capacity);
 }
 
@@ -1192,7 +1222,7 @@ test "each command's help is its own: every flag it takes has a summary line, no
                 return error.TestUnexpectedResult;
             }
         }
-        try std.testing.expect(lines <= 76);
+        try std.testing.expect(lines <= 80);
         try std.testing.expect(help.len * 2 < usage_fmt.len);
         var own_buf: [max_names][]const u8 = undefined;
         const own = synopsisFlags(cmd, &own_buf);
@@ -1350,6 +1380,10 @@ test "every NextStep renders one sentence whose flags the help text accepts (#27
         try std.testing.expect(s[s.len - 1] == '.');
         var i: usize = 0;
         while (std.mem.indexOfPos(u8, s, i, "--")) |at| {
+            if (insideUrl(s, at)) {
+                i = at + 2;
+                continue;
+            }
             var end = at + 2;
             while (end < s.len and (std.ascii.isAlphabetic(s[end]) or s[end] == '-')) end += 1;
             const flag = s[at..end];
@@ -1556,4 +1590,25 @@ pub fn parse(argv: []const []const u8) Parsed {
         if (args.allow_unverified) setupError(.define_invalid, "preflight never claims PASS, so there is nothing --allow-unverified could weaken");
     }
     return .{ .mode = mode, .case_arg = case_arg, .args = args };
+}
+
+test "the --config help names exactly the flags --config is refused beside" {
+    const at = std.mem.indexOf(u8, usage_fmt, "mutually exclusive with").?;
+    const end = std.mem.indexOfScalarPos(u8, usage_fmt, at, '.').?;
+    var named: usize = 0;
+    var words = std.mem.tokenizeAny(u8, usage_fmt[at..end], " ,\n");
+    while (words.next()) |w| {
+        if (!std.mem.startsWith(u8, w, "--")) continue;
+        named += 1;
+        const known = for (define_surface_flags) |f| {
+            if (std.mem.eql(u8, f, w)) break true;
+        } else false;
+        try std.testing.expect(known);
+    }
+    try std.testing.expectEqual(define_surface_flags.len, named);
+}
+
+fn insideUrl(s: []const u8, at: usize) bool {
+    const start = std.mem.lastIndexOf(u8, s[0..at], "https://") orelse return false;
+    return std.mem.indexOfScalar(u8, s[start..at], ' ') == null;
 }

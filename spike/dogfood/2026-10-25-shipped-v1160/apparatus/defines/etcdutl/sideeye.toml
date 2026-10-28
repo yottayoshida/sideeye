@@ -1,0 +1,14 @@
+[world]
+# The bbolt file etcd keeps every key in. The write-ahead log beside it (member/wal) is not touched
+# by an offline defrag and stays outside, so a world does not copy its 64 MB preallocation.
+state = "/s/etcd/member/snap"
+
+[define]
+operation = "etcdutl defrag --data-dir /s/etcd"
+# After a crash the keyspace is the one the seed wrote: the hash, revision and key count
+# `etcdutl snapshot status` read before the defrag (a defrag keeps all three, transcripts/lab-s1.txt).
+# One P, docs/apparatus.md's switch for Go: the first gate refused two writing threads under
+# --observe supervised (transcripts/entry-out/s1-round1/).
+apparatus = ["env:GOMAXPROCS=1"]
+check     = "/s/etcd-check.sh"
+cwd       = "/s/etcd"

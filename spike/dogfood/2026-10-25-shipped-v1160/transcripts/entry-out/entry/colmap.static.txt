@@ -1,0 +1,2 @@
+static: /opt/bin/colmap: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, BuildID[sha1]=a2733a777d92604def0ec392772d6354ed600301, for GNU/Linux 3.7.0, not stripped
+next: sideeye explore --state /s/colmap --cwd /s/colmap --operation '/opt/bin/colmap point_filtering --input_path /s/colmap/sparse/0 --output_path /s/colmap/sparse/0 --max_reproj_error 4' \

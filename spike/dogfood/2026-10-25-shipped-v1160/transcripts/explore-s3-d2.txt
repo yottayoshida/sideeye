@@ -1,0 +1,8 @@
+ROW wallabag static=0 preflight_rc=0 gate=0 detail=accepted, 87 operations
+EXIT wallabag 0
+=== wallabag 2026-10-25T03:51:54Z
+explore exit 1: FAIL -
+explore exit 1: FAIL -
+replay 1 exit 1: FAIL -
+replay 2 exit 1: FAIL -
+evidence exit 0

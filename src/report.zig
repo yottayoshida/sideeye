@@ -373,9 +373,6 @@ test "a mount inside the state is named when it is known, and the unread table i
     try std.testing.expect(std.mem.indexOf(u8, device, "on another device") != null);
 }
 
-/// A clause for a status of 126 from any child the engine forked: since 2026-09-08 that
-/// is also the code `posix.childArrangeFailed` exits with when `setpgid` or a `dup2`
-/// failed in the child before `exec`, and the child says which on the engine's stderr.
 pub fn exit126Note(code: anytype) []const u8 {
     return if (code == 126) "; 126 is also the code the engine's own fork stub uses for a child it could not arrange before exec — if that was it, a line on the engine's stderr names the call and the errno" else "";
 }

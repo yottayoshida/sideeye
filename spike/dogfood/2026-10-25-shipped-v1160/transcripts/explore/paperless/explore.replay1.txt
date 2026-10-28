@@ -1,0 +1,57 @@
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+world 11: checker(paperless): │ ERROR   │ #6 Letter 6          │ Original of document does not exist.        │
+world 11: checker(paperless): │ WARN    │ (global)             │ Orphaned file in media dir:                 │
+world 11: checker(paperless): Found 1 document(s) with errors and 1 global warning(s).
+System check identified some issues:
+
+WARNINGS:
+?: Paperless can't find convert. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find gs. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+?: Paperless can't find tesseract. Without it, consumption is impossible.
+	HINT: Either it's not in your ${PATH} or it's not installed.
+baseline: checker(paperless): │ No issues detected.                                                          │
+FAIL  1 of 2 explored worlds violated an invariant
+
+invariant   the checker (L2)
+earliest    crash point 11 of 209
+            after  rename(/s/paperless/media/documents/originals/0000006.pdf)
+            before mkdir(/s/paperless/media/documents/archive/Bank)
+path        (named by the checker, not by path)
+observed    the checker exited non-zero after restart
+cwd         /opt/paperless-ngx/src
+apparatus   preload:libfaketime, env:FAKETIME=2026-01-01 00:00:00, env:FAKETIME_DONT_FAKE_MONOTONIC=1, env:PAPERLESS_FILENAME_FORMAT, env:PAPERLESS_DB_OPTIONS, env:PAPERLESS_CACHE_BACKEND, env:PAPERLESS_CHANNELS_BACKEND
+
+explored    2 worlds (crash points 209 + 1 baseline)
+expected    exit 0
+atomicity   12 path(s) judged pre-or-post; 2 path(s) matched by scratch, not judged (declared: media/media.lock, data/db.sqlite3, data/db.sqlite3-journal)
+oracle      agreed on 209 operations (43707 syscall lines examined, 1584 in scope of the judged state), witness strace
+metadata    6 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchown x6. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 2 world(s)
+l1          no marker configured
+case        /out/paperless/work-explore/cases/000001.json
+replay      (this run is a replay; the case reproduced)
+evidence    -
+processes   7 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+
+reproduce   (cd /opt/paperless-ngx/src && unset SIDEEYE_KILL_GROUP && : > /out/paperless/work-explore-replay1/trace-repro.bin && SIDEEYE_STATE_DIR=/s/paperless SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/paperless/work-explore-replay1/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.16.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=11 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= /opt/paperless-venv/bin/python /opt/paperless-ngx/src/manage.py document_renamer --no-progress-bar </dev/null)
+sideeye: json sha256=acb3bca1f4f92bc48d03ff6b98838b22cfb1ebc58bd4bd75746c73f62c8f64e3;

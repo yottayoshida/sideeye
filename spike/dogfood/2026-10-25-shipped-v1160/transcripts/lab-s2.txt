@@ -1,0 +1,102 @@
+=== gogs
+state before: 22 files, 536 KiB
+check on seed rc=0
+operation rc=0
+2026/10/25 03:40:39 [ INFO] Restoring backup from: /opt/gogs-backup/gogs-backup.zip
+2026/10/25 03:40:40 [ INFO] Restore succeed!
+state after: 24 files
+/s/gogs
+/s/gogs/data
+/s/gogs/data/avatars
+/s/gogs/data/gogs.db
+/s/gogs/data/avatars.bak
+/s/gogs/custom.bak
+/s/gogs/custom.bak/conf
+/s/gogs/custom
+/s/gogs/custom/conf
+/s/gogs/repositories
+/s/gogs/repositories/alice
+check after rc=0
+=== symfony-secrets
+state before: 6 files, 28 KiB
+check on seed rc=0
+operation rc=0
+
+ ! [CAUTION] DO NOT COMMIT THE DECRYPTION KEY FOR THE PROD ENVIRONMENT⚠️        
+
+state after: 6 files
+/s/sf/config/secrets/prod
+/s/sf/config/secrets/prod/prod.MAILER_DSN.97e321.php
+/s/sf/config/secrets/prod/prod.STRIPE_SECRET.df0204.php
+/s/sf/config/secrets/prod/prod.encrypt.public.php
+/s/sf/config/secrets/prod/prod.DATABASE_URL.8ea85a.php
+/s/sf/config/secrets/prod/prod.list.php
+/s/sf/config/secrets/prod/prod.decrypt.private.php
+check after rc=0
+=== nextcloud-occ
+state before: 1 files, 8 KiB
+check on seed rc=0
+operation rc=0
+System config value trusted_domains => 1 set to string cloud.example.com
+state after: 1 files
+/s/ncconf
+/s/ncconf/config.php
+check after rc=0
+=== docusaurus
+state before: 3 files, 32 KiB
+check on seed rc=0
+operation rc=0
+[INFO] 5 translations will be written at "i18n/fr/docusaurus-theme-classic/navbar.json".
+[INFO] 3 translations will be written at "i18n/fr/docusaurus-plugin-content-blog/options.json".
+[INFO] 4 translations will be written at "i18n/fr/docusaurus-plugin-content-docs/current.json".
+state after: 5 files
+/s/docu/i18n
+/s/docu/i18n/fr
+/s/docu/i18n/fr/docusaurus-theme-classic
+/s/docu/i18n/fr/code.json
+/s/docu/i18n/fr/docusaurus-plugin-content-docs
+/s/docu/i18n/fr/docusaurus-plugin-content-blog
+check after rc=0
+=== drizzle-kit
+state before: 1 files, 44 KiB
+check on seed rc=0
+operation rc=0
+Reading config file '/s/dz/drizzle.config.ts'
+[⣷] applying migrations...[2K[1G[✓] migrations applied successfully!state after: 1 files
+/s/dz/db
+/s/dz/db/app.db
+check after rc=0
+=== gqlgen
+state before: 5 files, 120 KiB
+check on seed rc=0
+operation rc=0
+state after: 5 files
+/s/gql/graph
+/s/gql/graph/model
+/s/gql/graph/model/models_gen.go
+/s/gql/graph/schema.graphqls
+/s/gql/graph/generated.go
+/s/gql/graph/resolver.go
+/s/gql/graph/schema.resolvers.go
+check after rc=0
+=== vcpkg
+state before: 56 files, 2524 KiB
+check on seed rc=0
+operation rc=0
+The following packages are not installed:
+    zlib:arm64-linux
+state after: 30 files
+/s/vcpkg/installed
+/s/vcpkg/installed/vcpkg
+/s/vcpkg/installed/vcpkg/info
+/s/vcpkg/installed/vcpkg/compiler-file-hash-cache.json
+/s/vcpkg/installed/vcpkg/updates
+/s/vcpkg/installed/vcpkg/status
+/s/vcpkg/installed/vcpkg/vcpkg-running.lock
+/s/vcpkg/installed/arm64-linux
+/s/vcpkg/installed/arm64-linux/lib
+/s/vcpkg/installed/arm64-linux/include
+/s/vcpkg/installed/arm64-linux/share
+/s/vcpkg/installed/arm64-linux/tools
+/s/vcpkg/installed/arm64-linux/debug
+check after rc=0

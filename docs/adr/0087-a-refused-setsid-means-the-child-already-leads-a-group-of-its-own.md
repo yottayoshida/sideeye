@@ -10,6 +10,9 @@
 - **Updated (2026-10-15, #829):** the exit-126 line the Decision quotes now also carries what
   `kill(-pid, 0)` answered, inside the parentheses: `(pid, group, session; kill(-pid, 0)
   answered R, errno K)`. A diagnosis only; the decision is unchanged.
+- **Amended (2026-10-22, #829):** a child refused by both calls is forked again, up to three forks,
+  and three refusals are a named spawn error rather than the child's exit 126. See the amendment
+  at the end of this page; it reverses this page's "Fork again" alternative.
 
 ## Context
 
@@ -136,3 +139,38 @@ for a race the child can close by asking one more question.
   group of its own, which is how the new branch is tested against the real call rather than a
   fake's `-1`. ADR 0075's "no host available here can be made to refuse either" was true of
   `setpgid` only.
+
+## Amendment (2026-10-22, #829): fork again
+
+Run 38035849946 (2026-10-10, `f57083d4`) failed the required `macos` job with both calls refused
+and the child still in the engine's group after #652's second question — the one case this page
+left to exit 126. Nothing time-dependent separates it: in xnu-12377 a self-`setpgid` is refused only
+by `SESS_LEADER`, a pointer comparison, and `setsid` only when the caller leads its group or a group
+with its pid already exists. The occurrence's `session 1` fits neither reading cleanly, and the run
+predates the runner pin to macOS 26 (ADR 0134), so the kernel it ran is not known. Both readings
+tie the refusal to the child — its pid or its `proc` — and not to the moment.
+
+**Decision.** The child reports a refusal by writing one byte to a pipe whose ends are
+close-on-exec, so nothing it execs can write it. Where the parent waits for the child, it reads
+the pipe without blocking once it has observed the child's end, before it signals the child's group;
+the `fs_usage` sidecar, whose child waits on nothing before it closes its end, reads it blocking. A
+refused child is held unreaped while the next one is forked, so neither its pid nor its `proc` can be
+handed to the next child; all are reaped when the spawn ends. The parent keeps its stdin and capture
+descriptors until then and gives the same ones to each fork. After three refused forks the spawn
+fails with `error.ChildGroupRefused`: a SETUP ERROR (`environment`) naming the refusal, a named
+unknown leg in recovery, and a tool error over MCP. The parent writes a line on stderr each time it
+forks again.
+
+**What 0075 rejected, and why that no longer holds.** "Fork again" was turned down because the parent
+could not tell this refusal from the other 126s without a signal other than an exit code, and the
+exit codes are frozen. The pipe is that signal; no exit code moves, and a target can still exit 126
+and be read as it was.
+
+**Rejected.** Asking the kernel again inside the child before exiting (#829's first direction): if
+the refusal is tied to the child, waiting changes nothing, and holding the refused child covers the
+case where it is not. Having the parent wait for the byte right after `fork`: on the cgroup path the
+child is held before exec, and the wait would sit outside `--world-timeout`.
+
+**Consequences.** Exit 126 now means a `dup2`, the cgroup go-ahead, or the target itself — not a
+group refusal. The sidecar paragraph above ("unchanged and unequal") still holds for the parent-side
+rescue; it now forks again like every other spawn.

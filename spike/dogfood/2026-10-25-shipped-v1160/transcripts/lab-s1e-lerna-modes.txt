@@ -1,0 +1,8 @@
+== lerna --observe supervised
+UNKNOWN  multiple_threads_detected
+         two threads of process 31 wrote in the judged directory: tid 60 performed write(/s/mono/packages/c/package.json) and tid 31 performed mkdir(/s/mono). Nothing the supervising engine recorded orders the first of those before the second: under --observe supervised no join is recorded, nor which thread a creation made, so however the target orders them this run cannot establish that a crash p
+next        Two threads of one process wrote the judged directory, and under --observe supervised no join is recorded, nor which thread a creation made, so nothing orders their writes. A tool's own switch for running its file calls on one thread can move it past this — UV_THREADPOOL_SIZE=1 for Node, GOMAXPROCS=1 for Go: set it in the environment Sideeye runs in and declare it in the define's appar
+== lerna --observe syscalls
+UNKNOWN  multiple_threads_detected
+         two threads of process 29 wrote in the judged directory: tid 54 performed write(/s/mono/packages/c/package.json) and tid 29 performed mkdir(/s/mono). No thread creation or join the shim recorded orders the first of those before the second, so their order is the scheduler's choice on this run, the sequence they were numbered in is the one it happened to produce, and a crash point would not
+next        Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit stated under 'What the target has to be' (https://github.com/yottayoshida/sideeye/blob/v1.16.0/README.md#what-the-target-has-to-be): threads are judged where a creation or a join the shim saw orders their writes. A tool's own switch for running its file calls on one thre

@@ -1,0 +1,3 @@
+export VAGRANT_HOME=/s/vagrant.d GEM_HOME=/opt/vagrant-gems GEM_PATH=/opt/vagrant-gems \
+       VAGRANT_CHECKPOINT_DISABLE=1 VAGRANT_DISABLE_VBOXSYMLINKCREATE=1 VAGRANT_NO_PLUGINS=1 \
+       PATH=/s/vagrantaux/bin:$PATH

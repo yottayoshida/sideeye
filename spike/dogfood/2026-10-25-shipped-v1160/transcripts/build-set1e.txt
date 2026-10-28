@@ -1,0 +1,55 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [ 1/11] FROM docker.io/library/sideeye-sv1025:latest@sha256:7c85c644f5cc261eed850331726992f1d4f581a80ff47353838e8c8d77914ece
+#1 resolve docker.io/library/sideeye-sv1025:latest@sha256:7c85c644f5cc261eed850331726992f1d4f581a80ff47353838e8c8d77914ece done
+#1 CACHED
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 2.43kB done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/sideeye-sv1025:latest
+#3 DONE 0.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [2/6] RUN cd /tmp/dl && curl -fsSL -o node.txz https://nodejs.org/dist/v24.22.1/node-v24.22.1-linux-arm64.tar.xz &&     mkdir -p /opt/node && tar xJf node.txz -C /opt/node --strip-components=1 && /opt/node/bin/node --version
+#5 CACHED
+
+#6 [3/6] RUN set -e; P=/opt/lerna-proto; mkdir -p $P/packages/a $P/packages/b $P/packages/c && cd $P &&     printf '{\n  "name": "mono",\n  "private": true,\n  "workspaces": ["packages/*"],\n  "devDependencies": {"lerna": "10.1.1"}\n}\n' > package.json &&     printf '{\n  "$schema": "node_modules/lerna/schemas/lerna-schema.json",\n  "version": "1.0.0"\n}\n' > lerna.json &&     for p in a b c; do printf '{\n  "name": "@mono/%s",\n  "version": "1.0.0",\n  "dependencies": {%s}\n}\n' $p "$( [ $p = a ] || echo '"@mono/a": "^1.0.0"' )" > packages/$p/package.json; done &&     npm install --no-audit --no-fund > /tmp/npm-lerna.log 2>&1 && npx lerna --version && echo "OK lerna proto"
+#6 CACHED
+
+#7 [4/6] RUN set -e; P=/opt/prisma-proto; mkdir -p $P/prisma && cd $P && npm init -y > /dev/null &&     npm install --no-audit --no-fund prisma@7.10.1 > /tmp/npm-prisma.log 2>&1 && npx prisma --version | head -3 && echo "OK prisma"
+#7 12.59 prisma               : 7.10.1
+#7 12.59 @prisma/client       : Not found
+#7 12.59 Operating System     : linux
+#7 12.61 OK prisma
+#7 DONE 13.0s
+
+#8 [5/6] RUN set -e; P=/opt/knex-proto; mkdir -p $P && cd $P && npm init -y > /dev/null &&     npm install --no-audit --no-fund knex@3.3.0 better-sqlite3@13.0.3 > /tmp/npm-knex.log 2>&1 && npx knex --version && echo "OK knex"
+#8 2.155 Knex CLI version: 3.3.0
+#8 2.155 Knex Local version: 3.3.0
+#8 2.163 OK knex
+#8 DONE 2.2s
+
+#9 [6/6] RUN apt-get install -y --no-install-recommends sqlite3 > /dev/null 2>&1;     { echo "node $(node --version)"; echo "lerna $(cd /opt/lerna-proto && npx lerna --version)";       echo "prisma $(cd /opt/prisma-proto && npx prisma --version 2>&1 | head -1)"; echo "knex $(cd /opt/knex-proto && npx knex --version 2>&1 | head -1)";       echo "link node: $(file -bL /opt/node/bin/node | cut -c1-100)"; } | tee /versions.txt
+#9 1.323 node v24.22.1
+#9 2.334 lerna 10.1.1
+#9 2.884 prisma prisma               : 7.10.1
+#9 3.023 knex Knex CLI version: 3.3.0
+#9 3.032 link node: ELF 64-bit LSB executable, ARM aarch64, version 1 (GNU/Linux), dynamically linked, interpreter /lib/
+#9 DONE 3.1s
+
+#10 exporting to image
+#10 exporting layers
+#10 exporting layers 7.3s done
+#10 exporting manifest sha256:aa2fbb658105710008194d81144dd735279f39def376ab6f3b873f93b20c6b88 done
+#10 exporting config sha256:95d65c14d823c51b3feeed84d8242d50a01164f7e35f699e826fecdf1c17e0c1 done
+#10 exporting attestation manifest sha256:36e197ad24be3afc4f886a10c63425ac48f66e3a422c539c9ed4a302ecc85c32 done
+#10 exporting manifest list sha256:7e3ac58235a19c25776796b6b9f43da913e0d6039363c729a665df99a3d1b8b2 done
+#10 naming to docker.io/library/sideeye-sv1025-s1e:latest done
+#10 unpacking to docker.io/library/sideeye-sv1025-s1e:latest
+#10 unpacking to docker.io/library/sideeye-sv1025-s1e:latest 2.6s done
+#10 DONE 10.0s

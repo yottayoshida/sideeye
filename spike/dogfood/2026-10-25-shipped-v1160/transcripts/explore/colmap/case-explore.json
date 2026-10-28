@@ -1,0 +1,21 @@
+{
+  "schema": "sideeye/case",
+  "case_version": 4,
+  "sideeye_version": "1.16.0",
+  "contract_version": 19,
+  "define": {
+    "state": "/s/colmap",
+    "operation": "/opt/bin/colmap point_filtering --input_path /s/colmap/sparse/0 --output_path /s/colmap/sparse/0 --max_reproj_error 4",
+    "check": "/s/colmap-check.sh",
+    "cwd": "/s/colmap",
+    "expected_status": 0
+  },
+  "k": 2,
+  "ops_total": 10,
+  "prefix_hash": "749c1517e977c656",
+  "after_class": "open",
+  "after_path": "/s/colmap/sparse/0/rigs.bin",
+  "before_class": "write",
+  "before_path": "/s/colmap/sparse/0/rigs.bin",
+  "violation": "hybrid"
+}

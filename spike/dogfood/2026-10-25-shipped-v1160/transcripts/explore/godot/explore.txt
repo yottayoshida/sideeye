@@ -1,0 +1,95 @@
+falsify: checker(godot): ./default_env.tres is neither as written nor as converted (25 bytes)
+falsify: checker(godot): ./icon.png is neither as written nor as converted (25 bytes)
+falsify: checker(godot): ./project.godot is neither as written nor as converted (25 bytes)
+falsify: checker(godot): ./scenes/Crate.tscn is neither as written nor as converted (25 bytes)
+falsify: checker(godot): ./scenes/Main.tscn is neither as written nor as converted (25 bytes)
+falsify: checker(godot): ./scripts/Crate.gd is neither as written nor as converted (25 bytes)
+falsify: checker(godot): ./scripts/Player.gd is neither as written nor as converted (25 bytes)
+falsify: checker(godot): 0 of 7 files converted, 7 torn or missing
+world 1: checker(godot): 0 of 7 files converted, 0 torn or missing
+world 2: checker(godot): 0 of 7 files converted, 0 torn or missing
+world 3: checker(godot): 0 of 7 files converted, 0 torn or missing
+world 4: checker(godot): 0 of 7 files converted, 0 torn or missing
+world 5: checker(godot): 0 of 7 files converted, 0 torn or missing
+world 6: checker(godot): 0 of 7 files converted, 0 torn or missing
+world 7: checker(godot): ./project.godot is neither as written nor as converted (0 bytes)
+world 7: checker(godot): 0 of 7 files converted, 1 torn or missing
+world 8: checker(godot): ./project.godot is neither as written nor as converted (573 bytes)
+world 8: checker(godot): 0 of 7 files converted, 1 torn or missing
+world 9: checker(godot): ./project.godot is neither as written nor as converted (0 bytes)
+world 9: checker(godot): 0 of 7 files converted, 1 torn or missing
+world 10: checker(godot): 1 of 7 files converted, 0 torn or missing
+world 11: checker(godot): ./default_env.tres is neither as written nor as converted (0 bytes)
+world 11: checker(godot): 1 of 7 files converted, 1 torn or missing
+world 12: checker(godot): 2 of 7 files converted, 0 torn or missing
+world 13: checker(godot): ./scenes/Crate.tscn is neither as written nor as converted (0 bytes)
+world 13: checker(godot): 2 of 7 files converted, 1 torn or missing
+world 14: checker(godot): 3 of 7 files converted, 0 torn or missing
+world 15: checker(godot): ./scenes/Main.tscn is neither as written nor as converted (0 bytes)
+world 15: checker(godot): 3 of 7 files converted, 1 torn or missing
+world 16: checker(godot): 4 of 7 files converted, 0 torn or missing
+world 17: checker(godot): ./scripts/Player.gd is neither as written nor as converted (0 bytes)
+world 17: checker(godot): 4 of 7 files converted, 1 torn or missing
+world 18: checker(godot): 5 of 7 files converted, 0 torn or missing
+world 19: checker(godot): ./scripts/Crate.gd is neither as written nor as converted (0 bytes)
+world 19: checker(godot): 5 of 7 files converted, 1 torn or missing
+baseline: checker(godot): 6 of 7 files converted, 0 torn or missing
+recovery falsify: checker(godot recovery): 1,7c1,7
+recovery falsify: checker(godot recovery): < 58de5d76a30d38d7697826b0d981dcaf1f9fd370e4b06d8db44034379cc1c365  ./default_env.tres
+recovery falsify: checker(godot recovery): < 2b1da20a14b97d8f01f0a809d9f7d53eeefc59df6312eaa5a0c8b5c1228d1d7f  ./icon.png
+recovery falsify: checker(godot recovery): < cab2b1fe29f4a9b8394ab1f2d8df9f59e238b6f4b9833d2913efc1da4ed21e01  ./project.godot
+recovery falsify: checker(godot recovery): < 0db8b178ca5ed53b14d7ffe521ee781eb306e774d6a42073c5c5e85a33700d9c  ./scenes/Crate.tscn
+recovery falsify: checker(godot recovery): < 4a88d1876e0dba0cf839ba91f0ad88c3389efe3feb5f41e4d34acd148c8fe88b  ./scenes/Main.tscn
+recovery falsify: checker(godot recovery): < bf735783f27f8984ce496c3b872179605e274c4084bce5f19719431cf00b1233  ./scripts/Crate.gd
+recovery falsify: checker(godot recovery): < 659f679122445f4bce2d56496dba2a6f1af826bb1b36aee3933fd13931559b3a  ./scripts/Player.gd
+recovery baseline: Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+recovery baseline: Starting conversion.
+recovery baseline: ERROR: Project was already converted with this tool.
+recovery baseline:    at: convert (editor/project_upgrade/project_converter_3_to_4.cpp:301)
+recovery baseline check: checker(godot recovery): the project is the one conversion gives
+recovery world 7: Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+recovery world 7: Starting conversion.
+recovery world 7: Trying to convert	1/6 file - "project.godot" with size - 0 KB
+recovery world 7:     File was changed, conversion took 0 ms.
+recovery world 7: Trying to convert	2/6 file - "default_env.tres" with size - 0 KB
+recovery world 7:     File was changed, conversion took 0 ms.
+recovery world 7: Trying to convert	3/6 file - "scenes/Crate.tscn" with size - 0 KB
+recovery world 7:     File was changed, conversion took 0 ms.
+recovery world 7: Trying to convert	4/6 file - "scenes/Main.tscn" with size - 0 KB
+recovery world 7:     File was changed, conversion took 1 ms.
+recovery world 7: Trying to convert	5/6 file - "scripts/Player.gd" with size - 0 KB
+recovery world 7:     File was changed, conversion took 0 ms.
+recovery world 7: Trying to convert	6/6 file - "scripts/Crate.gd" with size - 0 KB
+recovery world 7:     File was changed, conversion took 0 ms.
+recovery world 7: Conversion ended - all files(6), converted files: (6), not converted files: (0).
+recovery world 7: Conversion of all files took      0.010 seconds.
+recovery world 7 check: checker(godot recovery): 3c3
+recovery world 7 check: checker(godot recovery): < cab2b1fe29f4a9b8394ab1f2d8df9f59e238b6f4b9833d2913efc1da4ed21e01  ./project.godot
+recovery world 7 check: checker(godot recovery): ---
+recovery world 7 check: checker(godot recovery): > 2308ce299e77e728cf69e9bd86786a68f996066098f618a660b453cd935416aa  ./project.godot
+FAIL  8 of 20 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 7 of 19
+            after  open(/s/godot/project.godot)
+            before write(/s/godot/project.godot)
+path        project.godot
+observed    holding neither the old nor the new content
+cwd         /s/godot
+recovery    configured; the recovery checker was trusted after two controls (corrupted state -> recovery check failed; completed state, recovery run on it -> recovery check passed); crash point 7: fail (the recovery checker rejected the recovered state, recovery command exit 0, 0.155s); ran against 1 of 8 failing world(s), the saved ones, in 0.331s; the crash states were rebuilt from snapshots, so contents and permission bits are as the crash left them (a directory with its owner's bits added) and timestamps and owners are not
+
+explored    20 worlds (crash points 19 + 1 baseline)
+expected    exit 0
+atomicity   9 path(s) judged pre-or-post; 4 path(s) matched by scratch, not judged (declared: .godot)
+oracle      agreed on 19 operations (2811 syscall lines examined, 937 in scope of the judged state), witness strace
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 20 world(s)
+l1          no marker configured
+case        /out/godot/work-explore/cases/000001.json
+replay      sideeye replay /out/godot/work-explore/cases/000001.json --oracle /usr/bin/strace --recovery '/opt/bin/godot --headless --path /s/godot --convert-3to4' --recovery-check '/s/godot-check-recovered.sh'
+evidence    sideeye evidence /out/godot/work-explore/evidence/000001.json
+processes   1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle; the shim recorded 13 thread(s) created, and 1 thread id(s) of the subject's own process wrote the judged directory; 0 hand-over(s) between threads in causal order, 13 join(s) and 0 detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)
+not tested  power loss, torn writes, concurrent processes, declared scratch paths (neither bytes nor presence judged)
+
+reproduce   (cd /s/godot && unset SIDEEYE_KILL_GROUP && : > /out/godot/work-explore/trace-repro.bin && SIDEEYE_STATE_DIR=/s/godot SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/godot/work-explore/trace-repro.bin LD_PRELOAD=/opt/se/sideeye-v1.16.0-aarch64-linux/libsideeye_shim.so SIDEEYE_KILL_AT=7 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= /opt/bin/godot --headless --path /s/godot --convert-3to4 </dev/null)
+sideeye: json sha256=291025afc31f91b060713965b864ba79b702a08420881e826b8fb91cc24c5f03;

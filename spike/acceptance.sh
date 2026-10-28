@@ -511,6 +511,22 @@ else
     echo "$o" | sed 's/^/     | /' | head -4
     fails=$((fails + 1))
 fi
+printf '%s\n' 'import os, subprocess' 'for _ in range(70):' '    try: subprocess.run(["no-such-tool-sideeye"])' \
+    '    except FileNotFoundError: pass' 'open(os.environ["TOY_STATE"] + "/out.txt", "w").write("done\n")' > /tmp/acc-missing.py
+for vm_op in "$OUT/toy-vfork-many missing 70" "python3 /tmp/acc-missing.py"; do
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-vfork-many init" --operation "$vm_op" \
+        --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if { [ "$rc" = "0" ] || [ "$rc" = "1" ]; } && ! printf '%s\n' "$o" | grep -q "thread-slots-exhausted"; then
+        echo "ok   seventy vfork children whose every exec fails are judged: $vm_op (exit $rc)"
+    else
+        echo "FAIL seventy vfork children whose every exec fails: $vm_op: exit $rc, wanted a verdict"
+        echo "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    fi
+done
 
 echo ""
 echo "=========== check 2st: what the shim takes from a target thread's memory (#555) ==========="
@@ -1912,13 +1928,15 @@ try:
 except OSError:
     print(0); raise SystemExit
 want = int(sys.argv[2])
+suffix = sys.argv[3].encode() if len(sys.argv) > 3 else b""
 i, n = 12, 0
 while i + 22 <= len(b):
-    op, seq, pid, tid, plen = struct.unpack_from("<HIIQI", b, i); i += 22 + plen
+    op, seq, pid, tid, plen = struct.unpack_from("<HIIQI", b, i)
+    path = b[i + 22:i + 22 + plen]; i += 22 + plen
     if i + 4 > len(b): break
     (alen,) = struct.unpack_from("<I", b, i); i += 4 + alen
-    if op == want: n += 1
-print(n)' "$1" "$2"; }
+    if op == want and path.endswith(suffix): n += 1
+print(n)' "$@"; }
 
 field() { python3 -c 'import json,sys
 d=json.load(open(sys.argv[1]))
@@ -2432,7 +2450,7 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/no-such-strace 2>&1)
 rc=$?
-if [ "$rc" = "3" ] && echo "$o" | grep -q "oracle is not an executable"; then
+if [ "$rc" = "3" ] && echo "$o" | grep -q "which is not an executable file"; then
     echo "ok   a missing oracle is SETUP ERROR, not a verdict about the target"
 else
     echo "FAIL missing oracle: exit $rc"
@@ -2841,6 +2859,21 @@ if refused checker_rejects_initial_state "$rc" "$o" \
     echo "ok   a checker that rejects the starting state is refused before any world, its output marked start:, next step fix_define"
 else
     echo "FAIL #756: a checker that rejects the starting state: exit $rc (wanted 2 checker_rejects_initial_state, no world, no earliest crash point)"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -8
+    fails=$((fails + 1))
+fi
+# #835: a checker that ends on a signal has no answer to change the define by; the step sends the
+# operator to run it by hand instead.
+printf '#!/bin/sh\nkill -KILL $$\n' > /tmp/acc-756/killed.sh
+chmod 755 /tmp/acc-756/killed.sh
+o=$(TOY_STATE=/tmp/acc-756/s-killed "$SIDEEYE" explore --state /tmp/acc-756/s-killed --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --check /tmp/acc-756/killed.sh --shim "$SHIM" --work /tmp/acc-756/w-killed --allow-unverified --json /tmp/acc-756/killed.json 2>&1)
+rc=$?
+if refused checker_not_falsified "$rc" "$o" \
+    && python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d.get("next_step", "").startswith("The checker ended without an exit status") else 1)' /tmp/acc-756/killed.json; then
+    echo "ok   a checker killed by a signal is refused with the step that says to run it by hand"
+else
+    echo "FAIL #835: a checker killed by a signal: exit $rc (wanted 2 checker_not_falsified, next step run_checker_by_hand)"
     printf '%s\n' "$o" | sed 's/^/     | /' | head -8
     fails=$((fails + 1))
 fi
@@ -3591,6 +3624,17 @@ if [ "$rc" = "0" ] && echo "$o" | grep -qF "1 path(s) judged pre-or-post; 1 file
 else
     echo "FAIL append toy: exit $rc (wanted PASS naming exactly log.txt under the history form)"
     echo "$o" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+append_writes=$(count_op_records /tmp/acc/work/trace-record.bin 2 /log.txt)
+mkdir -p /tmp/acc/fmt
+TOY_STATE=/tmp/acc/fmt TOY_APPEND=1 "$OUT/toy-fixed" init >/dev/null 2>&1
+TOY_STATE=/tmp/acc/fmt TOY_APPEND=1 "$OUT/toy-fixed" rotate >/dev/null 2>&1
+append_line=$(tail -n 1 /tmp/acc/fmt/log.txt 2>/dev/null)
+if [ "$append_writes" = 6 ] && printf '%s\n' "$append_line" | grep -qE '^append pid=[0-9]{10} t=[0-9]{12}\.[0-9]{9}$'; then
+    echo "ok   the append toy's line is fixed-width (pid, seconds and nanoseconds zero-padded), written in 6 writes"
+else
+    echo "FAIL append toy: ${append_writes:-no} write(s) to log.txt in the recording (wanted 6), line [$append_line]: a field that grows a digit moves the world's crash point"
     fails=$((fails + 1))
 fi
 # DESIGN §13: the JSON carries the same claim, and the untested set widened with it.
@@ -4413,6 +4457,100 @@ if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
     else
         echo "     NOT MEASURED: sideeye-testsupervisedelay is not built (zig build -Dtest-supervise-delay)"
     fi
+    # The installer's stderr is held empty: one whose filter was refused also exits 126 at once,
+    # with a line.
+    timeout 10 "$SIDEEYE" __filter-exec 3 -- /bin/true 3</dev/null >/dev/null 2>/tmp/acc-fe.err
+    fe_rc=$?
+    if [ "$fe_rc" = 126 ] && [ ! -s /tmp/acc-fe.err ]; then
+        echo "ok   __filter-exec that cannot hand its listener over exits 126 at once, writing nothing"
+    else
+        echo "FAIL __filter-exec with no socket to hand its listener to: exit $fe_rc (wanted 126; 124 is the hang), stderr [$(head -c 200 /tmp/acc-fe.err)]"
+        fails=$((fails + 1))
+    fi
+    if [ -x "$ROOT/zig-out/bin/sideeye-testhandover" ]; then
+        sup_handover() {
+            rm -rf /tmp/acc-ho && mkdir -p /tmp/acc-ho/s
+            o=$(SIDEEYE_TEST_HANDOVER_FAULT=$1 TOY=$OUT/toy-static TOY_STATE=/tmp/acc-ho/s timeout 120 \
+                "$ROOT/zig-out/bin/sideeye-testhandover" explore --state /tmp/acc-ho/s --setup "$OUT/toy-static init" \
+                --operation "$OUT/toy-static rotate" --check "$ROOT/spike/check.sh" --observe supervised \
+                --allow-unverified --work /tmp/acc-ho/w 2>&1)
+            ho_rc=$?
+            if [ "$ho_rc" = "$2" ] && printf '%s\n' "$o" | grep -qF -- "$3"; then
+                echo "ok   a hand-over that fails ($1) ends the run with exit $2 and says: $3"
+            else
+                echo "FAIL a hand-over that fails ($1): exit $ho_rc (wanted $2; 124 is the hang), looked for [$3]"
+                printf '%s\n' "$o" | sed 's/^/     | /' | head -4
+                fails=$((fails + 1))
+            fi
+        }
+        sup_handover helper 2 "the run exited 126 before its operation started"
+        sup_handover engine 2 "the run never started its operation: the engine could not complete the hand-over"
+        sup_handover reply 2 "the run never started its operation: the engine could not complete the hand-over"
+        sup_handover helper-world 3 "a world's run exited 126 before its operation started"
+        sup_handover engine-world 3 "a world's run never started its operation: the engine could not complete the hand-over"
+    else
+        echo "     NOT MEASURED: sideeye-testhandover is not built (zig build -Dtest-supervise-handover)"
+    fi
+    # The two detaching shapes fork nothing: a fork is a boundary of its own and would refuse the
+    # run whatever the engine made of the setsid or setpgid after it. The succeeding setsid is
+    # counted in the trace, because a contained run that detaches is judged and its report says
+    # "single process" in both modes.
+    /bin/rm -f /tmp/acc-sd-pgid
+    python3 -c 'import os, time; os.setpgid(0, 0); open("/tmp/acc-sd-pgid", "w").write(str(os.getpgrp())); time.sleep(300)' &
+    sd_sleeper=$!
+    i=0
+    while [ ! -s /tmp/acc-sd-pgid ] && [ "$i" -lt 50 ]; do sleep 0.1; i=$((i + 1)); done
+    sd_pgid=$(cat /tmp/acc-sd-pgid 2>/dev/null)
+    sd_run() {
+        st=$1 ev=$2; shift 2
+        rm -rf /tmp/acc-sd && mkdir -p /tmp/acc-sd/s
+        sd_out=$(env "$ev" TOY=$st TOY_STATE=/tmp/acc-sd/s TOY_ESCAPE_WITNESS=/tmp/acc-sd/witness timeout 120 "$SIDEEYE" explore --state /tmp/acc-sd/s \
+            --setup "$st init" --operation "$st rotate" --check "$ROOT/spike/check.sh" --work /tmp/acc-sd/w "$@" 2>&1)
+        sd_rc=$?
+    }
+    sd_want() {
+        if [ "$sd_rc" = "$2" ] && printf '%s\n' "$sd_out" | grep -qF -- "$3" && grep -qxF -- "$4" /tmp/acc-sd/witness 2>/dev/null; then
+            echo "ok   $1: exit $2, [$3], the toy wrote [$4]"
+        else
+            echo "FAIL $1: exit $sd_rc (wanted $2), looked for [$3] and a witness line [$4]: $(head -2 /tmp/acc-sd/witness 2>/dev/null | tr '\n' ' ')"
+            printf '%s\n' "$sd_out" | sed 's/^/     | /' | head -4
+            fails=$((fails + 1))
+        fi
+    }
+    if [ -n "$sd_pgid" ]; then
+        for sd_mode in supervised wrappers; do
+            if [ "$sd_mode" = supervised ]; then sd_toy=$OUT/toy-static; sd_flags="--observe supervised"
+            else sd_toy=$OUT/toy-bug; sd_flags="--shim $SHIM"; fi
+            sd_run "$sd_toy" TOY_SETSID=1 $sd_flags --allow-unverified
+            sd_want "$sd_mode: a setsid by the group's leader, which fails, is judged" 1 "crash point 5 of 5" "setsid rc=-1"
+            sd_run "$sd_toy" TOY_SETSID_THREAD=1 $sd_flags --allow-unverified
+            sd_want "$sd_mode: a setsid from a second thread, which fails, is judged" 1 "crash point 5 of 5" "setsid-thread rc=-1"
+            # Counted, not judged: the thread's creation is recorded first, and a run whose first
+            # boundary is a thread is judged whatever is recorded after it.
+            sd_det=$(count_op_records /tmp/acc-sd/w/trace-record.bin 204)
+            [ "$sd_det" = 0 ] || { echo "FAIL $sd_mode: a setsid from a second thread, which fails, left $sd_det detached record(s) (wanted 0)"; fails=$((fails + 1)); }
+            sd_run "$sd_toy" TOY_SETPGID_NOOP=1 $sd_flags --allow-unverified
+            sd_want "$sd_mode: setpgid(0, 0) by the group's leader is judged" 1 "crash point 5 of 5" "setpgid-noop rc=0"
+            sd_run "$sd_toy" "TOY_SETPGID_OUT=$sd_pgid" $sd_flags --allow-unverified
+            sd_want "$sd_mode: the subject joining a group outside the run is a detachment" 2 "UNKNOWN  boundary_without_oracle" "setpgid-out rc=0 pgrp=$sd_pgid"
+            sd_det=$(count_op_records /tmp/acc-sd/w/trace-record.bin 204)
+            [ "$sd_det" = 1 ] || { echo "FAIL $sd_mode: the subject joining a group outside the run left $sd_det detached record(s) (wanted 1)"; fails=$((fails + 1)); }
+            sd_run "$sd_toy" TOY_SETSID=1 $sd_flags --oracle /usr/bin/strace
+            sd_det=$(count_op_records /tmp/acc-sd/w/trace-record.bin 204)
+            if [ "$sd_det" = 1 ] && grep -qxF "setsid rc=0" /tmp/acc-sd/witness 2>/dev/null; then
+                echo "ok   $sd_mode: a setsid that succeeds under strace is recorded as one detachment"
+            else
+                echo "FAIL $sd_mode: a setsid that succeeds under strace left $sd_det detached record(s) in the recording's trace (wanted 1; exit $sd_rc)"
+                fails=$((fails + 1))
+            fi
+        done
+    else
+        echo "FAIL #904: the sleeper that holds a group outside the run never started, so nothing was measured"
+        fails=$((fails + 1))
+    fi
+    kill "$sd_sleeper" 2>/dev/null
+    wait "$sd_sleeper" 2>/dev/null
+    /bin/rm -f /tmp/acc-sd-pgid
 else
     rm -rf /tmp/acc && mkdir -p /tmp/acc/state
     o=$("$SIDEEYE" explore --state /tmp/acc/state --operation "$OUT/toy-static rotate" \
@@ -4575,6 +4713,85 @@ else
     echo "FAIL --observe typo: exit $rc (wanted 3)"
     echo "$o" | sed 's/^/     | /' | head -3
     fails=$((fails + 1))
+fi
+
+echo "=========== check 2ma: the observation modes keep one account of the same toy (#932) ==========="
+if [ "$(uname -s)" = "Linux" ]; then
+    case "${SIDEEYE_EXPECT_CONTAINED:-}" in
+        1) ma_modes="wrappers syscalls supervised" ;;
+        *) ma_modes="wrappers syscalls"
+           echo "     supervised not compared here: runs are not contained (SIDEEYE_EXPECT_CONTAINED=${SIDEEYE_EXPECT_CONTAINED:-unset}); the contained jobs compare it" ;;
+    esac
+    ma_arch=$(uname -m)
+    # Not one oracle setting for every toy: without one a fork or exec is refused, and with
+    # strace leading a setsid succeeds, which hides the detachment a mode might wrongly record.
+    # name|oracle|where|a record the toy exists to make, or refused:<reason>|toy variable
+    ma_toys="rotate||any|p1 rename S/key.json.tmp S/key.json|MA_PLAIN=1
+link||any|p1 link S/obj.tmp S/obj.final|TOY_LINK=1
+symlink||any|p1 symlink S/sym|TOY_SYMLINK=1
+remove||any|p1 rmdir S/subdir|TOY_REMOVE=1
+relative||any|p1 link S/obj.tmp S/obj.final|TOY_RELATIVE=1
+stdio||any|p1 write S/stdio.txt|TOY_STDIO=1
+append-rewrite||any|truncate S/log.txt|TOY_APPEND_REWRITE=1
+close-after-unlink||any|unlinked-fd close|TOY_CLOSE_AFTER_UNLINK=1
+thread||any|p1 thread|TOY_THREAD=1
+setsid||any|-|TOY_SETSID=1
+setpgid-noop||any|-|TOY_SETPGID_NOOP=1
+mmap-write||any|refused:state_changed_unaccounted|TOY_MMAP=write
+anonfd||any|-|TOY_ANONFD=1
+fork|oracle|any|p1 fork|TOY_FORK=1
+spawn|oracle|any|p1 spawn|TOY_SPAWN=1
+selfexec|oracle|any|exec|TOY_SELFEXEC=1
+setsid-oracle|oracle|contained|p1 detached|TOY_SETSID=1"
+    ma_names=$(printf '%s\n' "$ma_toys" | sed 's/|.*//' | tr '\n' ' ')
+    python3 "$ROOT/spike/mode-agreement.py" validate "$ROOT/spike/mode-agreement.tsv" $ma_names || fails=$((fails + 1))
+    while IFS= read -r ma; do
+        ma_name=${ma%%|*}; ma_rest=${ma#*|}
+        ma_orc=${ma_rest%%|*}; ma_rest=${ma_rest#*|}
+        ma_where=${ma_rest%%|*}; ma_rest=${ma_rest#*|}
+        ma_expect=${ma_rest%%|*}
+        ma_env=${ma_rest#*|}
+        if [ "$ma_where" = contained ] && [ "${SIDEEYE_EXPECT_CONTAINED:-}" != 1 ]; then
+            echo "     $ma_name not compared here: it detaches, which only a contained run judges"
+            continue
+        fi
+        if [ "$ma_orc" = oracle ]; then ma_flags="--oracle /usr/bin/strace"; else ma_flags=""; fi
+        ma_pairs=""
+        ma_ok=1
+        for ma_mode in $ma_modes; do
+            rm -rf /tmp/acc-ma && mkdir -p /tmp/acc-ma/s
+            ma_out=$(env "$ma_env" TOY_STATE=/tmp/acc-ma/s TOY_ESCAPE_WITNESS=/tmp/acc-ma/witness "$SIDEEYE" preflight \
+                --state /tmp/acc-ma/s --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+                --shim "$SHIM" --observe "$ma_mode" --work /tmp/acc-ma/w $ma_flags 2>&1 </dev/null)
+            if [ "${ma_expect#refused:}" != "$ma_expect" ]; then
+                printf '%s\n' "$ma_out" | grep -qxF "UNKNOWN  ${ma_expect#refused:}" && continue
+                echo "FAIL $ma_name: --observe $ma_mode did not refuse ${ma_expect#refused:} as the other modes must"
+                printf '%s\n' "$ma_out" | sed 's/^/     | /' | head -3
+                fails=$((fails + 1))
+                ma_ok=0
+                continue
+            fi
+            if ! printf '%s\n' "$ma_out" | grep -q "recording accepted"; then
+                echo "FAIL $ma_name: --observe $ma_mode did not accept the recording, so its account cannot be compared"
+                printf '%s\n' "$ma_out" | sed 's/^/     | /' | head -4
+                fails=$((fails + 1))
+                ma_ok=0
+                continue
+            fi
+            cp /tmp/acc-ma/w/trace-record.bin "/tmp/acc-ma-$ma_mode.bin"
+            ma_pairs="$ma_pairs $ma_mode=/tmp/acc-ma-$ma_mode.bin"
+        done
+        [ "$ma_ok" = 1 ] || continue
+        if [ "${ma_expect#refused:}" != "$ma_expect" ]; then
+            echo "ok   $ma_name: every mode compared refuses ${ma_expect#refused:} ($ma_arch)"
+            continue
+        fi
+        python3 "$ROOT/spike/mode-agreement.py" compare "$ROOT/spike/mode-agreement.tsv" \
+            "$ma_name" "$ma_arch" /tmp/acc-ma/s "$ma_expect" $ma_pairs || fails=$((fails + 1))
+    done <<EOF
+$ma_toys
+EOF
+    rm -rf /tmp/acc-ma /tmp/acc-ma-*.bin
 fi
 
 echo "=========== check 2v: typed path resolution and first-class links (ADR 0006) ==========="
@@ -8428,8 +8645,8 @@ elif ! echo "$wstep" | grep -q "invoke that command as the operation instead"; t
     # "Check whether …" and rewrote what to do about it would survive all four legs.
     echo "FAIL wrapped operation: the step asks the question but names no action: $wstep"
     fails=$((fails + 1))
-elif ! echo "$wstep" | grep -q "What the target has to be"; then
-    echo "FAIL wrapped operation: the step dropped the class wall the README entrance gives (#506)"
+elif ! echo "$wstep" | grep -q "report-schema.md#refusals-by-reason"; then
+    echo "FAIL wrapped operation: the step dropped the class wall, the list of what each refusal stands at (#506)"
     fails=$((fails + 1))
 else
     echo "ok   a wrapped operation's refusal asks about the wrapper AND keeps the class wall (#506)"
@@ -8654,6 +8871,44 @@ else
     fails=$((fails + 1))
 fi
 
+if nm -D --undefined-only "$OUT/toy-fortify" 2>/dev/null | grep -q "__open_2"; then
+    echo "ok   toy-fortify reaches __open_2"
+else
+    echo "FAIL toy-fortify does not import __open_2: the compiler folded its flags, and no leg below reaches a fortified open"
+    fails=$((fails + 1))
+fi
+for fo in "rotate:--observe wrappers" "rotate:--observe syscalls" "sweep:--observe wrappers" \
+    "sweep:--observe syscalls" "sweep-range:--observe wrappers"; do
+    fo_cmd=${fo%%:*}
+    fo_mode=${fo#*:}
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-fortify init" --operation "$OUT/toy-fortify $fo_cmd" \
+        --shim "$SHIM" --work /tmp/acc/work $fo_mode --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if [ "$rc" = 1 ] && printf '%s\n' "$o" | grep -q "^oracle  *agreed on"; then
+        echo "ok   a fortified rewrite ($fo) is counted, and the oracle agrees: FAIL"
+    else
+        echo "FAIL a fortified rewrite ($fo): exit $rc, wanted FAIL with the oracle agreeing"
+        printf '%s\n' "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    fi
+done
+for fo_cmd in sweep-lowlimit spawn-lowlimit; do
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-fortify init" --operation "$OUT/toy-fortify $fo_cmd" \
+        --shim "$SHIM" --work /tmp/acc/work --allow-unverified 2>&1)
+    rc=$?
+    if refused_uncredited unresolvable_path "$rc" "$o"; then
+        echo "ok   a sweep whose trace cannot go back on its number ($fo_cmd) refuses"
+    else
+        echo "FAIL a sweep whose trace cannot go back on its number ($fo_cmd): exit $rc, wanted the refusal"
+        printf '%s\n' "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    fi
+done
+
 # Descriptors that are provably not files — eventfd and epoll stat with zero type
 # bits, the kernel's anon-inode spelling — must be invisible to the verdict. Before
 # fdKind knew that spelling, one close() of an eventfd sent the whole run to
@@ -8667,19 +8922,28 @@ fi
 # issue poll and select as ppoll and pselect6 — it does on aarch64, and newer glibc may on
 # x86_64 too — so whether `poll` and `select` themselves appear here depends on the runner;
 # the unit test in src/oracle.zig holds both spellings either way.
-rm -rf /tmp/acc && mkdir -p /tmp/acc/state
-o=$(TOY_ANONFD=1 "$SIDEEYE" explore --state /tmp/acc/state \
-    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
-    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
-rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "explored  *5 worlds (crash points 4 + 1 baseline)"; then
-    echo "ok   anon-inode descriptors (eventfd, epoll), and calls on a state file that change nothing"
-    echo "     (epoll_ctl, faccessat2, xattr reads, inotify_add_watch, preadv/preadv2, the polls) are invisible to the verdict"
-else
-    echo "FAIL anon-inode descriptors or a call that changes nothing moved the verdict: exit $rc"
-    echo "$o" | sed 's/^/     | /' | head -6
-    fails=$((fails + 1))
-fi
+# Both modes, not the default alone: under --observe syscalls the first line of a trapped
+# call ends in ENOSYS, and a rule read from the result would pass one mode and refuse the other.
+case "${SIDEEYE_EXPECT_CONTAINED:-}" in
+    1) anon_modes="wrappers syscalls supervised" ;;
+    *) anon_modes="wrappers syscalls" ;;
+esac
+for anon_mode in $anon_modes; do
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(TOY_ANONFD=1 "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --observe "$anon_mode" \
+        --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+    rc=$?
+    if [ "$rc" = "0" ] && echo "$o" | grep -q "explored  *5 worlds (crash points 4 + 1 baseline)"; then
+        echo "ok   ($anon_mode) anon-inode descriptors (eventfd, epoll), and calls on a state file that change nothing"
+        echo "     (epoll_ctl, faccessat2, xattr reads, inotify_add_watch, preadv/preadv2, the polls, an unlink of the"
+        echo "     empty path, sync_file_range, syncfs) are invisible to the verdict"
+    else
+        echo "FAIL ($anon_mode) anon-inode descriptors or a call that changes nothing moved the verdict: exit $rc"
+        echo "$o" | sed 's/^/     | /' | head -6
+        fails=$((fails + 1))
+    fi
+done
 # The control (#684): the writing side of the same family is still a call the oracle has no
 # class for, and refuses by name. A list grown into "anything *xattr" would let it through.
 # `TOY_SETXATTR` is read by rotate only (cmd_rotate_body), so setup never issues it and the
@@ -9512,7 +9776,7 @@ else
 fi
 
 echo "=========== check 11i: the evidence bundle says what the run measured (#607) ==========="
-# spike/check-evidence-bundle.sh explores seven fixtures whose impact columns disagree, holds
+# spike/check-evidence-bundle.sh explores fixtures whose impact columns disagree, holds
 # each bundle to the case and the report that describe the same run, requires the rendered
 # document to carry exactly its eight sections — the fixture whose file name holds `\n## ` is
 # why that is an equality and not a contains — and refuses one that ranks what it found. Its
@@ -10630,6 +10894,7 @@ rc=$?
 if [ "$rc" = "2" ] \
     && echo "$o" | grep -q "state_rewrite_failed" \
     && echo "$o" | grep -q "could not restore the state directory" \
+    && echo "$o" | grep -q "could not be removed — look at the permissions there" \
     && grep -q '"unknown_reason": "state_rewrite_failed"' /tmp/acc-rw/r.json \
     && grep -q '"verdict": "UNKNOWN"' /tmp/acc-rw/r.json \
     && ! grep -q '"earliest"' /tmp/acc-rw/r.json; then
@@ -11253,6 +11518,73 @@ else
     cwd_fails=$((cwd_fails + 1))
 fi
 
+# B holds no `relw`: a relative spelling that leaked there would find a file to append to and pass.
+p5=/tmp/acc/pin895
+rm -rf $p5 && mkdir -p $p5/a $p5/b $p5/state
+printf '#!/bin/sh\ncd %s && exec "$@"\n' "$p5/b" > $p5/cd-exec.sh && chmod 755 $p5/cd-exec.sh
+cp "$SHIM" $p5/a/shim.so
+p5_run() {   # p5_run <label> <explore|preflight> <--work value> <--shim value> [extra...]
+    _l=$1 _m=$2 _w=$3 _s=$4; shift 4
+    (cd $p5/a && "$SIDEEYE" "$_m" --state $p5/state --setup "$OUT/toy-bug init" \
+        --operation "$p5/cd-exec.sh $OUT/toy-bug rotate" --shim "$_s" --work "$_w" \
+        --oracle /usr/bin/strace --json $p5/$_l.json "$@" > $p5/$_l.txt 2>&1)
+    echo $?
+}
+p5_ctl=$(p5_run ctl explore $p5/a/absw "$SHIM")
+p5_rel=$(p5_run rel explore relw "$SHIM")
+p5_shm=$(p5_run shm explore $p5/a/absw2 ./shim.so)
+p5_pre=$(p5_run pre preflight relw2 "$SHIM" --twice)
+# Not pinned: an absolute path holding a space is split by LD_PRELOAD, and the shim given as
+# `./shim.so` from such a directory loaded before the pin was taken for every run.
+mkdir -p "$p5/sp ace" && cp "$SHIM" "$p5/sp ace/shim.so"
+p5_spc=$(cd "$p5/sp ace" && "$SIDEEYE" explore --state $p5/state --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --shim ./shim.so --work $p5/absw3 --oracle /usr/bin/strace \
+    --json $p5/spc.json > $p5/spc.txt 2>&1; echo $?)
+if [ "$p5_ctl" != 1 ]; then
+    echo "FAIL #895: the absolute --work control exited $p5_ctl, not FAIL 1 — the legs measure nothing"
+    sed 's/^/     | /' $p5/ctl.txt | head -4
+    cwd_fails=$((cwd_fails + 1))
+else
+    for l in rel:--work shm:--shim; do
+        f=${l#*:} l=${l%%:*}
+        eval "_rc=\$p5_$l"
+        if [ "$_rc" = 1 ] && [ "$(grep -c '^FAIL' $p5/$l.txt)" = "$(grep -c '^FAIL' $p5/ctl.txt)" ] \
+            && [ "$(sed -n 's/^explored *//p' $p5/$l.txt)" = "$(sed -n 's/^explored *//p' $p5/ctl.txt)" ]; then
+            echo "ok   a target that cds and execs is traced in every world with a relative $f (#895)"
+        else
+            echo "FAIL #895 ($l): exit $_rc, reason $(field $p5/$l.json unknown_reason), explored '$(sed -n 's/^explored *//p' $p5/$l.txt)' against the control's '$(sed -n 's/^explored *//p' $p5/ctl.txt)'"
+            cwd_fails=$((cwd_fails + 1))
+        fi
+    done
+    case "$(sed -n 's/^case *//p' $p5/rel.txt)|$(sed -n 's/^replay *sideeye replay //p' $p5/rel.txt)" in
+        /*"|/"*) echo "ok   a relative --work prints its case and replay line as absolute paths (#895)" ;;
+        *) echo "FAIL #895: a relative --work printed '$(sed -n 's/^case *//p' $p5/rel.txt)' and '$(sed -n 's/^replay *//p' $p5/rel.txt)'"
+           cwd_fails=$((cwd_fails + 1)) ;;
+    esac
+    if [ "$p5_spc" = 1 ]; then
+        echo "ok   a relative --shim from a directory whose path holds a space still loads (#895)"
+    else
+        echo "FAIL #895: a relative --shim under a directory with a space: exit $p5_spc, reason $(field $p5/spc.json unknown_reason)"
+        cwd_fails=$((cwd_fails + 1))
+    fi
+    if [ "$p5_pre" = 0 ] && grep -q '^PREFLIGHT  recording accepted' $p5/pre.txt; then
+        echo "ok   preflight --twice's second run keeps its trace across the target's cd with a relative --work (#895)"
+    else
+        echo "FAIL #895 (preflight --twice): exit $p5_pre, reason $(field $p5/pre.json unknown_reason)"
+        cwd_fails=$((cwd_fails + 1))
+    fi
+fi
+# Not read against `/`: a relative --work would be made at the root.
+mkdir -p $p5/gone && o=$(cd $p5/gone && rmdir $p5/gone && "$SIDEEYE" explore --state $p5/state \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work relw-gone 2>&1)
+rc=$?
+if [ "$rc" = 3 ] && echo "$o" | grep -q "the directory Sideeye was started in could not be read" && [ ! -e /relw-gone ]; then
+    echo "ok   a relative --work under an unreadable starting directory is refused, not made at / (#895)"
+else
+    echo "FAIL #895: an unreadable starting directory gave exit $rc: $(echo "$o" | head -2)"
+    cwd_fails=$((cwd_fails + 1))
+fi
+
 # Leg 4: the version and the shape travel together. A case saved from a define carrying a
 # cwd is version 4 and carries it; a file that says one without the other is malformed in
 # both directions. Nothing else in this suite reaches version 4, so without this leg the
@@ -11571,7 +11903,7 @@ if [ -z "$tstep" ]; then
 elif ! echo "$tstep" | grep -q "Check whether the operation is a shell script"; then
     echo "FAIL boundary step (oracle-seen): still the old class-wall sentence: $tstep"
     fails=$((fails + 1))
-elif ! echo "$tstep" | grep -q "What the target has to be"; then
+elif ! echo "$tstep" | grep -q "report-schema.md#refusals-by-reason"; then
     echo "FAIL boundary step (oracle-seen): the step dropped the class wall (#506)"
     fails=$((fails + 1))
 else
@@ -12110,11 +12442,11 @@ for doc in $ns_docs; do
         ns_fails=$((ns_fails + 1))
     fi
 done
-# The README section the class-wall sentence sends the operator to, by its heading.
+# The README section the threads and the --observe syscalls sentences send the operator to, by its heading.
 if grep -q '^## What the target has to be' "$ROOT/README.md"; then
-    echo "ok   next_step: README still has the 'What the target has to be' section the class-wall step names"
+    echo "ok   next_step: README still has the 'What the target has to be' section the threads and syscalls steps name"
 else
-    echo "FAIL next_step: the class-wall step names a README section that is not there"
+    echo "FAIL next_step: the threads and syscalls steps name a README section that is not there"
     ns_fails=$((ns_fails + 1))
 fi
 # The define surface has to say which of the three commands the insertion goes into, in

@@ -1,0 +1,30 @@
+=== ldb-direct
+seed ok
+checker(ldb): 0 keys, want 300
+check before: REJECTS
+operation exit 0
+OK
+checker(ldb): 0 keys, want 300
+check after: REJECTS
+state after:
+  4545 /s/rdb/000013.sst
+  31 /s/rdb/000016.log
+  16 /s/rdb/CURRENT
+  36 /s/rdb/IDENTITY
+  0 /s/rdb/LOCK
+  23699 /s/rdb/LOG
+  261 /s/rdb/MANIFEST-000017
+  7609 /s/rdb/OPTIONS-000012
+  7609 /s/rdb/OPTIONS-000019
+=== flyway
+seed ok
+check before: accepts
+operation exit 0
+Current version of schema "main": 1
+Migrating schema "main" to version "2 - ship"
+Successfully applied 1 migration to schema "main", now at version v2 (execution time 00:00.003s)
+check after: accepts
+state after:
+  65536 /s/fw/app.db
+  220 /s/fw/sql/V1__orders.sql
+  175 /s/fw/sql/V2__ship.sql

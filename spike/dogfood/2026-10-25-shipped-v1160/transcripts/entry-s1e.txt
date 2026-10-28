@@ -1,0 +1,8 @@
+ROW lerna static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected
+EXIT lerna 1
+ROW lerna static=0 preflight_rc=2 gate=1 detail=wall: multiple_threads_detected
+EXIT lerna 1
+ROW prisma static=0 preflight_rc=2 gate=1 detail=wall: child_touched_state_dir
+EXIT prisma 1
+ROW prisma-dbout static=0 preflight_rc=0 gate=0 detail=accepted, 2 operations
+EXIT prisma-dbout 0
