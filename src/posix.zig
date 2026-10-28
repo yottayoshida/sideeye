@@ -1369,8 +1369,7 @@ pub fn stopSidecar(gpa: std.mem.Allocator, pid: c_int, signal_helper: []const []
     if (first < 0) return .had_exited;
 
     // Not left to the SIGKILL below when the helper is refused (a credential cache that expired
-    // during the recording): that ends sudo alone. SIGTERM is what sudo on macOS passes on; the
-    // buffer it may cost the capture leaves the closing sentinel out, which refuses the run.
+    // during the recording): that ends sudo alone. Not SIGINT: sudo on macOS drops it.
     if (!signalGroup(gpa, pid, "-INT", signal_helper)) _ = kill(-pid, @as(c_int, SIGTERM));
     var waited: u64 = 0;
     while (waited < grace_ms) {
@@ -1971,6 +1970,7 @@ test "a stop whose helper is refused still ends the observer with a signal sudo 
     const line = try std.fmt.bufPrint(&line_buf, "trap 'printf t >&{d}; exit 0' TERM; trap '' INT HUP QUIT; printf r >&{d}; while :; do sleep 0.1; done", .{ talk[1], talk[1] });
     const pid = spawnSidecar(std.heap.page_allocator, &.{ "/bin/sh", "-c", line }, cap_path, null) catch return error.Setup;
     defer noteSidecar(0);
+    defer _ = kill(-pid, @as(c_int, SIGKILL));
     var zb: [96]u8 = undefined;
     _ = unlink((try std.mem.printSentinel(&zb, "{s}", .{cap_path}, 0)).ptr);
     _ = close(talk[1]);
