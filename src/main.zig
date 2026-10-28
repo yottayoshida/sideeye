@@ -110,12 +110,6 @@ test "undoing a work directory this run made removes run.lock only while this ru
     try std.testing.expect(posix.access(dir_z.ptr, 0) != 0);
 }
 
-/// A run that exceeds this refuses rather than growing the arena until the engine dies.
-/// That direction matters more than the number: an out-of-memory kill mid-exploration
-/// leaves the target's state directory in a crash world with nobody to restore it, and
-/// a refusal is recoverable where that is not.
-const fsusage_capture_cap: usize = 2 * 1024 * 1024 * 1024;
-
 // Not raised from `--world-timeout`: a replay line does not carry it, and it changes what worlds
 // do. Not removed either: it is what stops a root fs_usage if the watch is gone too.
 const fsusage_time_limit_s: u32 = 1800;
@@ -1604,8 +1598,8 @@ fn phaseOracle(run: *Run) void {
         // recorded nothing leaves a readable empty file, which the lines-seen check
         // below answers with oracle_saw_nothing. This site fires when the capture
         const text = if (args.oracle_fs_usage)
-            capture.readFileAllocCapped(arena, oracle_out, fsusage_capture_cap, .{ .no_follow = true }) orelse {
-                const unread = fsusage.unread(arena, fsusage.sizeNoFollow(oracle_out), fsusage_capture_cap);
+            capture.readFileAllocCapped(arena, oracle_out, fsusage.capture_cap, .{ .no_follow = true }) orelse {
+                const unread = fsusage.unread(arena, fsusage.sizeNoFollow(oracle_out), fsusage.capture_cap);
                 unknown(.oracle_saw_nothing, unread.detail, unread.next);
             }
         else

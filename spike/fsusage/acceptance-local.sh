@@ -709,13 +709,13 @@ gone=no
 for _ in $(seq 1 10); do pgrep -x fs_usage > /dev/null || { gone=yes; break; }; sleep 1; done
 echo "  diag: 10 s after the kill:"; diag13
 if [ "$gone" = no ] && [ -n "$sudo13" ]; then
-    kill -INT -- "-$sudo13" 2>/dev/null; echo "  diag: SIGINT to sudo's group as this user: rc=$?"
+    kill -TERM -- "-$sudo13" 2>/dev/null; echo "  diag: SIGTERM to sudo's group as this user: rc=$?"
     sleep 5
-    if pgrep -x fs_usage > /dev/null; then echo "  diag: fs_usage still runs 5 s after that SIGINT"; else echo "  diag: that SIGINT stopped fs_usage"; fi
+    if pgrep -x fs_usage > /dev/null; then echo "  diag: fs_usage still runs 5 s after that SIGTERM"; else echo "  diag: that SIGTERM stopped fs_usage"; fi
     if pgrep -x fs_usage > /dev/null; then
-        kill -INT "$sudo13" 2>/dev/null; echo "  diag: SIGINT to sudo's pid as this user: rc=$?"
+        kill -TERM "$sudo13" 2>/dev/null; echo "  diag: SIGTERM to sudo's pid as this user: rc=$?"
         sleep 5
-        if pgrep -x fs_usage > /dev/null; then echo "  diag: fs_usage still runs 5 s after the pid's SIGINT"; else echo "  diag: the pid's SIGINT stopped fs_usage"; fi
+        if pgrep -x fs_usage > /dev/null; then echo "  diag: fs_usage still runs 5 s after the pid's SIGTERM"; else echo "  diag: the pid's SIGTERM stopped fs_usage"; fi
         echo "  diag: after it:"; diag13
     fi
 fi

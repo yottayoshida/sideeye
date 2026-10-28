@@ -183,13 +183,15 @@ run for a day. A recording that outlasts the 1800 seconds, or whose capture grow
 2 GiB the reader holds, is refused with the limit and the measured value, as Sideeye's
 limit rather than the environment's (`next_step` `oracle_fixed_limit`). Residues, said
 rather than closed: between the engine reaping the observer and writing the byte, an
-engine killed by SIGKILL leaves the watch to signal a group that is already gone — a
-group id the user may hold again, since the signal carries the user's credentials; and
-after a stop that ended in `would_not_die`, or one whose SIGKILL the `sudo -n` helper
-could not deliver because the credential cache had expired during a long recording (now
-`would_not_die` while the observer's group is still there, where a reaped sudo used to read
-as a stopped observer), the observer
-runs on to the 1800 seconds instead of the 90.)
+engine killed by SIGKILL, or a second signal, leaves the watch to signal a group that is
+already gone — a group id the user may hold again, since the signal carries the user's
+credentials; after a stop that ended in `would_not_die` (now also when the `sudo -n`
+helper could not deliver the SIGKILL while the observer's group is still there, where a
+reaped sudo used to read as a stopped observer), the observer runs on to the 1800 seconds
+instead of the 90; and a stop the helper is refused for, because the credential cache
+expired during a long recording, sends the observer SIGTERM, which sudo passes on, so
+`fs_usage` stops — whether it writes its buffer on SIGTERM is not measured, and a capture
+cut short is refused for its missing closing sentinel, never judged.)
 
 ### 5. Everything unresolvable refuses
 

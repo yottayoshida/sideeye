@@ -1034,8 +1034,11 @@ const testing = std.testing;
 
 const cap_line = "18:51:42.041795  open              F=3        (_WC_T_______)  /tmp/st/load                                    0.000383   loadprobe.79512937";
 
-// main.zig's `fsusage_capture_cap`, for the tests below.
-const capture_cap_in_main: usize = 2 * 1024 * 1024 * 1024;
+/// A run that exceeds this refuses rather than growing the arena until the engine dies.
+/// That direction matters more than the number: an out-of-memory kill mid-exploration
+/// leaves the target's state directory in a crash world with nobody to restore it, and
+/// a refusal is recoverable where that is not.
+pub const capture_cap: usize = 2 * 1024 * 1024 * 1024;
 
 pub const Refusal = struct { detail: []const u8, next: contract.NextStep };
 
@@ -1084,11 +1087,11 @@ test "a capture past the size Sideeye reads is refused as that limit, naming bot
     var as = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer as.deinit();
     const a = as.allocator();
-    const big = unread(a, 3_000_000_000, capture_cap_in_main);
+    const big = unread(a, 3_000_000_000, capture_cap);
     try std.testing.expectEqual(contract.NextStep.oracle_fixed_limit, big.next);
     try std.testing.expect(std.mem.indexOf(u8, big.detail, "3000000000 bytes, past the 2147483648") != null);
-    try std.testing.expectEqual(contract.NextStep.environment, unread(a, null, capture_cap_in_main).next);
-    try std.testing.expectEqual(contract.NextStep.environment, unread(a, 10, capture_cap_in_main).next);
+    try std.testing.expectEqual(contract.NextStep.environment, unread(a, null, capture_cap).next);
+    try std.testing.expectEqual(contract.NextStep.environment, unread(a, 10, capture_cap).next);
 }
 
 test "parseLine takes the call, the tid and the middle" {

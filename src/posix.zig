@@ -1368,7 +1368,10 @@ pub fn stopSidecar(gpa: std.mem.Allocator, pid: c_int, signal_helper: []const []
     if (first == pid) return .had_exited;
     if (first < 0) return .had_exited;
 
-    _ = signalGroup(gpa, pid, "-INT", signal_helper);
+    // Not left to the SIGKILL below when the helper is refused (a credential cache that expired
+    // during the recording): that ends sudo alone. SIGTERM is what sudo on macOS passes on; the
+    // buffer it may cost the capture leaves the closing sentinel out, which refuses the run.
+    if (!signalGroup(gpa, pid, "-INT", signal_helper)) _ = kill(-pid, @as(c_int, SIGTERM));
     var waited: u64 = 0;
     while (waited < grace_ms) {
         const w = waitpid(pid, &st, WNOHANG);
@@ -1958,6 +1961,25 @@ test "the watch stops the observer's group with a signal sudo relays on macOS wh
     try std.testing.expect(endedBySigtermWithin(stopped, 5000));
 }
 
+test "a stop whose helper is refused still ends the observer with a signal sudo relays on macOS, before any SIGKILL" {
+    var talk: [2]c_int = undefined;
+    if (pipe(&talk) != 0) return error.Setup;
+    defer _ = close(talk[0]);
+    var cap_buf: [96]u8 = undefined;
+    const cap_path = try std.fmt.bufPrint(&cap_buf, "/tmp/sideeye-refused-helper-{d}", .{getpid()});
+    var line_buf: [160]u8 = undefined;
+    const line = try std.fmt.bufPrint(&line_buf, "trap 'printf t >&{d}; exit 0' TERM; trap '' INT HUP QUIT; printf r >&{d}; while :; do sleep 0.1; done", .{ talk[1], talk[1] });
+    const pid = spawnSidecar(std.heap.page_allocator, &.{ "/bin/sh", "-c", line }, cap_path, null) catch return error.Setup;
+    defer noteSidecar(0);
+    var zb: [96]u8 = undefined;
+    _ = unlink((try std.mem.printSentinel(&zb, "{s}", .{cap_path}, 0)).ptr);
+    _ = close(talk[1]);
+    try std.testing.expectEqual(@as(?u8, 'r'), InterruptTest.byteWithin(talk[0], 10_000));
+
+    try std.testing.expectEqual(SidecarEnd.was_running, stopSidecar(std.heap.page_allocator, pid, &.{"/usr/bin/false"}, 3000));
+    try std.testing.expectEqual(@as(?u8, 't'), InterruptTest.byteWithin(talk[0], 0));
+}
+
 /// Without it, a recorded signal would stop the `sudo -n /bin/kill` that stopping fs_usage runs.
 pub fn beginStopping() void {
     _ = stopping_depth.fetchAdd(1, .seq_cst);
@@ -2029,7 +2051,7 @@ fn onGraceOver(_: std.c.SIG) callconv(.c) void {
 
 fn graceOver(sig: c_int, word: u64) noreturn {
     // Not SIGINT: on macOS sudo drops it (see `watchUntilReleased`). Not SIGKILL: sudo cannot
-    // relay that. The watch is left armed, so a SIGTERM this misses is sent again once the engine dies.
+    // relay that. Not releasing the watch: a SIGTERM this misses is sent again once the engine dies.
     const observer = sidecar_pgid.load(.seq_cst);
     if (observer != 0) _ = kill(-observer, SIGTERM);
     writeStopLine(sig, if (word != 0) @intCast(word >> 1) else 0);
