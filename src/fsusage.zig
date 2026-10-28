@@ -1034,6 +1034,63 @@ const testing = std.testing;
 
 const cap_line = "18:51:42.041795  open              F=3        (_WC_T_______)  /tmp/st/load                                    0.000383   loadprobe.79512937";
 
+// main.zig's `fsusage_capture_cap`, for the tests below.
+const capture_cap_in_main: usize = 2 * 1024 * 1024 * 1024;
+
+pub const Refusal = struct { detail: []const u8, next: contract.NextStep };
+
+pub fn ended(arena: std.mem.Allocator, ran_ms: u64, limit_s: u32) Refusal {
+    // Not exact: the engine's clock starts before the spawn, fs_usage's own after it.
+    if (ran_ms + 1000 >= @as(u64, limit_s) * 1000) return .{
+        .detail = std.fmt.allocPrint(arena, "the recording ended {d} s after fs_usage was started, past the {d} s Sideeye gives it, so its capture describes a window that closed before the run did", .{ ran_ms / 1000, limit_s }) catch "the recording ended past the time limit Sideeye gives fs_usage",
+        .next = .oracle_fixed_limit,
+    };
+    return .{ .detail = "fs_usage was no longer running when the recording finished, so its capture describes a window that closed before the run did", .next = .environment };
+}
+
+pub fn unread(arena: std.mem.Allocator, size: ?u64, cap: usize) Refusal {
+    if (size) |n| if (n > cap) return .{
+        .detail = std.fmt.allocPrint(arena, "the fs_usage capture holds {d} bytes, past the {d} Sideeye reads: fs_usage records the whole machine, so a long recording reaches it", .{ n, cap }) catch "the fs_usage capture grew past the size Sideeye reads",
+        .next = .oracle_fixed_limit,
+    };
+    return .{ .detail = "the fs_usage capture could not be read; the comparison has nothing complete to read", .next = .environment };
+}
+
+pub fn sizeNoFollow(path: []const u8) ?u64 {
+    var buf: [contract.max_path]u8 = undefined;
+    const z = std.mem.printSentinel(&buf, "{s}", .{path}, 0) catch return null;
+    const fd = posix.open(z.ptr, posix.O_RDONLY | posix.O_NOFOLLOW | posix.O_NONBLOCK, @as(c_uint, 0));
+    if (fd < 0) return null;
+    defer _ = posix.close(fd);
+    const end = posix.lseek(fd, 0, posix.SEEK_END);
+    return if (end < 0) null else @intCast(end);
+}
+
+test "an fs_usage that stopped at Sideeye's own time limit is refused as that limit, and one that stopped earlier as the environment" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const at = ended(a, 1_800_400, 1800);
+    try std.testing.expectEqual(contract.NextStep.oracle_fixed_limit, at.next);
+    try std.testing.expect(std.mem.indexOf(u8, at.detail, "ended 1800 s after fs_usage was started") != null);
+    try std.testing.expect(std.mem.indexOf(u8, at.detail, "past the 1800 s Sideeye gives it") != null);
+    try std.testing.expectEqual(contract.NextStep.oracle_fixed_limit, ended(a, 1_799_000, 1800).next);
+    const early = ended(a, 95_000, 1800);
+    try std.testing.expectEqual(contract.NextStep.environment, early.next);
+    try std.testing.expect(std.mem.indexOf(u8, early.detail, "Sideeye gives") == null);
+}
+
+test "a capture past the size Sideeye reads is refused as that limit, naming both sizes, and an unreadable one as the environment" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const big = unread(a, 3_000_000_000, capture_cap_in_main);
+    try std.testing.expectEqual(contract.NextStep.oracle_fixed_limit, big.next);
+    try std.testing.expect(std.mem.indexOf(u8, big.detail, "3000000000 bytes, past the 2147483648") != null);
+    try std.testing.expectEqual(contract.NextStep.environment, unread(a, null, capture_cap_in_main).next);
+    try std.testing.expectEqual(contract.NextStep.environment, unread(a, 10, capture_cap_in_main).next);
+}
+
 test "parseLine takes the call, the tid and the middle" {
     const ln = parseLine(cap_line).?;
     try testing.expectEqualStrings("open", ln.call);

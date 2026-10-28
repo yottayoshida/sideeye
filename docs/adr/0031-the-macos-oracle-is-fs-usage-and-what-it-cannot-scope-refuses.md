@@ -165,10 +165,14 @@ panic. The 90 seconds also ended every recording longer than that, refused
 `oracle_saw_nothing` and blamed on the environment. Now a detached process started with the
 observer, before the handshake, holds the read end of a pipe whose write end only the engine has
 (`O_CLOEXEC`, so the target never holds a copy); the engine writes one byte to it wherever
-it lets go of the observer — after the stop, when the handshake finds it already gone, and
-in the second-signal path that does not wait for one — and a pipe that closes without the byte, which the kernel does however the
-engine ended, makes that process send the observer's group the SIGINT the engine would
-have, from the user's own credentials, which sudo relays. It is a grandchild in a session
+it lets go of the observer — after the stop, and when the handshake finds it already gone —
+and a pipe that closes without the byte, which the kernel does however the
+engine ended, makes that process send the observer's group SIGTERM, from the user's own
+credentials, which sudo relays to `fs_usage`. Not SIGINT: sudo relays SIGINT only when the
+signal's `si_code` is `SI_USER`, and macOS leaves it 0 on a `kill()`, so a SIGINT from the
+user reaches sudo and stops nothing (measured 2026-10-28: Check 13 red, and a test program
+reading `si_code` on macOS 15). The second-signal path sends the observer SIGTERM for the
+same reason and leaves the watch armed. It is a grandchild in a session
 of its own, so a teardown of the engine's process tree does not take it, and it closes
 every descriptor it inherited. `-t` stays, at 1800 seconds, for when that process is gone
 too. The limit is not taken from `--world-timeout`, the issue's suggestion: a replay line
