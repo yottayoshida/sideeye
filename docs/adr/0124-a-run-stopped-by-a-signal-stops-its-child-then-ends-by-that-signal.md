@@ -43,7 +43,9 @@ for SIGINT, SIGTERM, SIGHUP and SIGPIPE, with `SA_RESTART`, after the arguments 
   terminal, which it always did. The MCP server waits 20 seconds for its engine, which stops its own
   child and `fs_usage` first. The alarm is cancelled once the child has returned, so it does not
   cut short the stop of `fs_usage`. A second signal ends the run at once, at any point: whoever sends
-  it will not wait. Either way `fs_usage` is first sent the SIGINT that stops it, not waited for.
+  it will not wait. Either way `fs_usage` is first sent the SIGTERM that stops it, not waited for.
+  (Amended 2026-10-28, #896: this was SIGINT, which sudo on macOS does not pass on, because it
+  relays SIGINT only when `si_code` is `SI_USER` and macOS leaves it 0 on a `kill()`; ADR 0031 §4.)
 - **What the process started with is kept.** A signal ignored at startup gets no handler; children
   get the mask, the SIGCHLD and SIGALRM dispositions the engine started with, and the four signals
   at their default, before they exec. An inherited SIGCHLD of `SIG_IGN` is set to its default in the engine

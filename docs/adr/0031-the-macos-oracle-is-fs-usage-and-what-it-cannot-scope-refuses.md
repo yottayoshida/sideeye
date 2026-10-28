@@ -158,6 +158,41 @@ neighbour is held to account only for what it opened under the root during the w
 The setup that populates the directory runs before the observer starts, which is where
 that window sits.
 
+(**Amended 2026-10-17, #896.** `-t` was 90 seconds, and it was the only thing that stopped
+a root `fs_usage` whose engine had died before stopping it: the engine stops it on SIGINT,
+SIGTERM, SIGHUP and SIGPIPE (#819), and on nothing else — not SIGKILL, a crash or a
+panic. The 90 seconds also ended every recording longer than that, refused
+`oracle_saw_nothing` and blamed on the environment. Now a detached process started with the
+observer, before the handshake, holds the read end of a pipe whose write end only the engine has
+(`O_CLOEXEC`, so the target never holds a copy); the engine writes one byte to it wherever
+it lets go of the observer — after the stop, and when the handshake finds it already gone —
+and a pipe that closes without the byte, which the kernel does however the
+engine ended, makes that process send the observer's group SIGTERM, from the user's own
+credentials, which sudo relays to `fs_usage`. Not SIGINT: sudo relays SIGINT only when the
+signal's `si_code` is `SI_USER`, and macOS leaves it 0 on a `kill()`, so a SIGINT from the
+user reaches sudo and stops nothing (measured 2026-10-28: Check 13 red, and a test program
+reading `si_code` on macOS 15). The second-signal path sends the observer SIGTERM for the
+same reason and leaves the watch armed. It is a grandchild in a session
+of its own, so a teardown of the engine's process tree does not take it, and it closes
+every descriptor it inherited. `-t` stays, at 1800 seconds, for when that process is gone
+too. The limit is not taken from `--world-timeout`, the issue's suggestion: a replay line
+does not carry that flag, so a FAIL found under a raised limit would not reproduce from
+its own line, the flag changes what worlds do (they are killed at it, and `SIGCHLD` is
+reset for the whole run), and at its 86400-second ceiling an orphaned root observer would
+run for a day. A recording that outlasts the 1800 seconds, or whose capture grows past the
+2 GiB the reader holds, is refused with the limit and the measured value, as Sideeye's
+limit rather than the environment's (`next_step` `oracle_fixed_limit`). Residues, said
+rather than closed: between the engine reaping the observer and writing the byte, an
+engine killed by SIGKILL, or a second signal, leaves the watch to signal a group that is
+already gone — a group id the user may hold again, since the signal carries the user's
+credentials; after a stop that ended in `would_not_die` (now also when the `sudo -n`
+helper could not deliver the SIGKILL while the observer's group is still there, where a
+reaped sudo used to read as a stopped observer), the observer runs on to the 1800 seconds
+instead of the 90; and a stop the helper is refused for, because the credential cache
+expired during a long recording, sends the observer SIGTERM, which sudo passes on, so
+`fs_usage` stops — whether it writes its buffer on SIGTERM is not measured, and a capture
+cut short is refused for its missing closing sentinel, never judged.)
+
 ### 5. Everything unresolvable refuses
 
 > **Narrower than this heading says, and it always was (2026-09-08).** This reader's own

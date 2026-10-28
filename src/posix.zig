@@ -103,6 +103,7 @@ pub const F_OK: c_int = 0;
 /// decline to die would make the crash point a request rather than a fact.
 pub const SIGKILL: u8 = 9;
 pub const SIGINT: u8 = 2;
+const SIGTERM: u8 = 15;
 
 pub const P_PID: c_int = 1;
 pub const WEXITED: c_int = 4;
@@ -1367,7 +1368,9 @@ pub fn stopSidecar(gpa: std.mem.Allocator, pid: c_int, signal_helper: []const []
     if (first == pid) return .had_exited;
     if (first < 0) return .had_exited;
 
-    signalGroup(gpa, pid, "-INT", signal_helper);
+    // Not left to the SIGKILL below when the helper is refused (a credential cache that expired
+    // during the recording): that ends sudo alone. Not SIGINT: sudo on macOS drops it.
+    if (!signalGroup(gpa, pid, "-INT", signal_helper)) _ = kill(-pid, @as(c_int, SIGTERM));
     var waited: u64 = 0;
     while (waited < grace_ms) {
         const w = waitpid(pid, &st, WNOHANG);
@@ -1376,32 +1379,42 @@ pub fn stopSidecar(gpa: std.mem.Allocator, pid: c_int, signal_helper: []const []
         sleepForMs(10);
         waited += 10;
     }
-    signalGroup(gpa, pid, "-KILL", signal_helper);
+    const helper_reached = signalGroup(gpa, pid, "-KILL", signal_helper);
     waited = 0;
     while (waited < grace_ms) {
         const w = waitpid(pid, &st, WNOHANG);
-        if (w == pid) return .was_running;
-        if (w < 0) return .was_running;
+        // Not `.was_running` on sudo's exit alone: the engine's own SIGKILL ends sudo, which does
+        // not relay it, while fs_usage runs on as root. Nor on the helper's failure alone: it also
+        // fails on a group that had already emptied itself.
+        if (w == pid or w < 0) return if (helper_reached or groupGone(pid)) .was_running else .would_not_die;
         sleepForMs(10);
         waited += 10;
     }
     return .would_not_die;
 }
 
-fn signalGroup(gpa: std.mem.Allocator, pgid: c_int, sig: []const u8, helper: []const []const u8) void {
+fn groupGone(pgid: c_int) bool {
+    return kill(-pgid, 0) != 0 and std.c._errno().* == ESRCH;
+}
+
+fn signalGroup(gpa: std.mem.Allocator, pgid: c_int, sig: []const u8, helper: []const []const u8) bool {
     const raw: u8 = if (std.mem.eql(u8, sig, "-KILL")) SIGKILL else SIGINT;
     _ = kill(-pgid, @as(c_int, raw));
-    if (helper.len == 0) return;
+    if (helper.len == 0) return true;
     var arena_state = std.heap.ArenaAllocator.init(gpa);
     defer arena_state.deinit();
     const arena = arena_state.allocator();
     var list: std.ArrayList([]const u8) = .empty;
-    for (helper) |h| list.append(arena, h) catch return;
-    list.append(arena, "/bin/kill") catch return;
-    list.append(arena, sig) catch return;
-    const target = std.fmt.allocPrint(arena, "-{d}", .{pgid}) catch return;
-    list.append(arena, target) catch return;
-    _ = runChildCapture(gpa, list.items, &.{}, .{ .path = "/dev/null" }, null) catch return;
+    for (helper) |h| list.append(arena, h) catch return false;
+    list.append(arena, "/bin/kill") catch return false;
+    list.append(arena, sig) catch return false;
+    const target = std.fmt.allocPrint(arena, "-{d}", .{pgid}) catch return false;
+    list.append(arena, target) catch return false;
+    const term = runChildCapture(gpa, list.items, &.{}, .{ .path = "/dev/null" }, null) catch return false;
+    return switch (term) {
+        .exited => |c| c == 0,
+        else => false,
+    };
 }
 
 fn runChildImpl(
@@ -1783,6 +1796,7 @@ var interrupt_sig = std.atomic.Value(c_int).init(0);
 /// Cleared before every reaping wait: a reaped id may already name a stranger.
 var live_child = std.atomic.Value(u64).init(0);
 var sidecar_pgid = std.atomic.Value(c_int).init(0);
+var sidecar_watch_fd = std.atomic.Value(c_int).init(-1);
 var stopping_depth = std.atomic.Value(u32).init(0);
 var saved_sigchld: std.c.Sigaction = undefined;
 var sigchld_changed = false;
@@ -1833,6 +1847,137 @@ pub fn installInterruptHandlers(hook: *const fn (c_int) noreturn) void {
 pub fn noteSidecar(pgid: c_int) void {
     sidecar_pgid.store(pgid, .seq_cst);
     if (pgid == 0) stopIfInterrupted();
+}
+
+// Not a signal handler: SIGKILL and a crash run none, and the kernel closes the write end either way.
+pub fn watchSidecar(pgid: c_int) bool {
+    var fds: [2]c_int = undefined;
+    if (pipe(&fds) != 0) return false;
+    // Not inherited by the target or anything else the engine starts: a copy of the write end
+    // held there would keep the pipe open past the engine.
+    for (fds) |fd| _ = std.c.fcntl(fd, std.c.F.SETFD, @as(c_int, fd_cloexec));
+    // Not left to raise SIGPIPE: a watch killed from outside would turn the release that follows a
+    // clean stop into the engine's own death by that signal.
+    if (comptime builtin.os.tag == .macos) _ = std.c.fcntl(fds[1], std.c.F.SETNOSIGPIPE, @as(c_int, 1));
+    var old_mask: std.c.sigset_t = undefined;
+    blockInterrupts(&old_mask);
+    const pid = fork();
+    if (pid == 0) {
+        _ = setsid();
+        // Not the engine's child: a teardown that kills the engine's process tree would take it too.
+        const grandchild = fork();
+        if (grandchild != 0) _exit(if (grandchild > 0) 0 else 1);
+        watchUntilReleased(fds[0], pgid);
+    }
+    restoreMask(&old_mask);
+    _ = close(fds[0]);
+    var st: c_int = 0;
+    const reaped = pid > 0 and blk: {
+        while (true) {
+            if (waitpid(pid, &st, 0) == pid) break :blk true;
+            if (std.c._errno().* != EINTR) break :blk false;
+        }
+    };
+    if (!reaped or !std.meta.eql(decodeStatus(st), Term{ .exited = 0 })) {
+        _ = close(fds[1]);
+        return false;
+    }
+    sidecar_watch_fd.store(fds[1], .seq_cst);
+    return true;
+}
+
+const fd_cloexec: c_int = 1;
+
+fn watchUntilReleased(rfd: c_int, pgid: c_int) noreturn {
+    var none: std.c.sigset_t = undefined;
+    _ = std.c.sigemptyset(&none);
+    const ignore: std.c.Sigaction = .{ .handler = .{ .handler = std.c.SIG.IGN }, .mask = none, .flags = 0 };
+    for ([_]std.c.SIG{ .INT, .TERM, .HUP, .PIPE, .QUIT, .ALRM }) |sig| _ = std.c.sigaction(sig, &ignore, null);
+    _ = std.c.sigprocmask(std.c.SIG.SETMASK, &none, null);
+    // Not one inherited descriptor kept, stdout and stderr included: a pipe the engine writes into
+    // would stay open for its reader until this process ends.
+    var rl: std.c.rlimit = undefined;
+    const top: c_int = if (std.c.getrlimit(.NOFILE, &rl) == 0) @intCast(@min(rl.cur, 1 << 16)) else 1024;
+    var fd: c_int = 0;
+    while (fd < top) : (fd += 1) {
+        if (fd != rfd) _ = close(fd);
+    }
+    var b: [1]u8 = undefined;
+    while (true) {
+        const n = read(rfd, &b, 1);
+        if (n == 1) _exit(0);
+        if (n < 0 and std.c._errno().* == EINTR) continue;
+        break;
+    }
+    // Not SIGINT: sudo relays it only when si_code is SI_USER, and macOS leaves si_code 0 on a
+    // kill(), so a SIGINT from this user stops sudo's command never.
+    _ = kill(-pgid, @as(c_int, SIGTERM));
+    _exit(0);
+}
+
+pub fn releaseSidecarWatch() void {
+    const fd = sidecar_watch_fd.swap(-1, .seq_cst);
+    if (fd < 0) return;
+    _ = write(fd, "x", 1);
+    _ = close(fd);
+}
+
+fn forkGroupLeader() c_int {
+    const pid = fork();
+    if (pid == 0) {
+        _ = setpgid(0, 0);
+        _ = signal(@backingInt(std.c.SIG.TERM), 0);
+        while (true) sleepForMs(1000);
+    }
+    // Both sides, or the watch can signal a group that does not exist yet.
+    if (pid > 0) _ = setpgid(pid, pid);
+    return pid;
+}
+
+fn endedBySigtermWithin(pid: c_int, ms: u64) bool {
+    var st: c_int = 0;
+    var waited: u64 = 0;
+    while (waited < ms) : (waited += 20) {
+        if (waitpid(pid, &st, WNOHANG) == pid) return decodeStatus(st).isSignal(SIGTERM);
+        sleepForMs(20);
+    }
+    return false;
+}
+
+test "the watch stops the observer's group with a signal sudo relays on macOS when the engine's end of the pipe closes unreleased, and leaves it once released" {
+    const kept = forkGroupLeader();
+    try std.testing.expect(kept > 0);
+    defer _ = kill(-kept, @as(c_int, SIGKILL));
+    try std.testing.expect(watchSidecar(kept));
+    releaseSidecarWatch();
+    try std.testing.expect(!endedBySigtermWithin(kept, 500));
+
+    const stopped = forkGroupLeader();
+    try std.testing.expect(stopped > 0);
+    defer _ = kill(-stopped, @as(c_int, SIGKILL));
+    try std.testing.expect(watchSidecar(stopped));
+    _ = close(sidecar_watch_fd.swap(-1, .seq_cst));
+    try std.testing.expect(endedBySigtermWithin(stopped, 5000));
+}
+
+test "a stop whose helper is refused still ends the observer with a signal sudo relays on macOS, before any SIGKILL" {
+    var talk: [2]c_int = undefined;
+    if (pipe(&talk) != 0) return error.Setup;
+    defer _ = close(talk[0]);
+    var cap_buf: [96]u8 = undefined;
+    const cap_path = try std.fmt.bufPrint(&cap_buf, "/tmp/sideeye-refused-helper-{d}", .{getpid()});
+    var line_buf: [160]u8 = undefined;
+    const line = try std.fmt.bufPrint(&line_buf, "trap 'printf t >&{d}; exit 0' TERM; trap '' INT HUP QUIT; printf r >&{d}; while :; do sleep 0.1; done", .{ talk[1], talk[1] });
+    const pid = spawnSidecar(std.heap.page_allocator, &.{ "/bin/sh", "-c", line }, cap_path, null) catch return error.Setup;
+    defer noteSidecar(0);
+    defer _ = kill(-pid, @as(c_int, SIGKILL));
+    var zb: [96]u8 = undefined;
+    _ = unlink((try std.mem.printSentinel(&zb, "{s}", .{cap_path}, 0)).ptr);
+    _ = close(talk[1]);
+    try std.testing.expectEqual(@as(?u8, 'r'), InterruptTest.byteWithin(talk[0], 10_000));
+
+    try std.testing.expectEqual(SidecarEnd.was_running, stopSidecar(std.heap.page_allocator, pid, &.{"/usr/bin/false"}, 3000));
+    try std.testing.expectEqual(@as(?u8, 't'), InterruptTest.byteWithin(talk[0], 0));
 }
 
 /// Without it, a recorded signal would stop the `sudo -n /bin/kill` that stopping fs_usage runs.
@@ -1905,9 +2050,10 @@ fn onGraceOver(_: std.c.SIG) callconv(.c) void {
 }
 
 fn graceOver(sig: c_int, word: u64) noreturn {
-    // SIGINT, not SIGKILL: fs_usage flushes its capture on it, and sudo passes it on.
+    // Not SIGINT: on macOS sudo drops it (see `watchUntilReleased`). Not SIGKILL: sudo cannot
+    // relay that. Not releasing the watch: a SIGTERM this misses is sent again once the engine dies.
     const observer = sidecar_pgid.load(.seq_cst);
-    if (observer != 0) _ = kill(-observer, SIGINT);
+    if (observer != 0) _ = kill(-observer, SIGTERM);
     writeStopLine(sig, if (word != 0) @intCast(word >> 1) else 0);
     dieBySignal(sig);
 }
@@ -2614,13 +2760,12 @@ const ObserverTest = struct {
         return pid;
     }
 
-    // Not a trapped SIGINT: a shell that drops one turns this red where the engine did its part.
-    // TERM, HUP and QUIT ignored, which survives the exec, so another fatal signal does not pass.
+    // Not a trapped SIGTERM: a shell that drops one turns this red where the engine did its part.
+    // INT ignored like sudo on macOS ignores it, and HUP and QUIT, so no other fatal signal passes.
     fn spawnQuiet(talk: c_int) !c_int {
-        _ = signal(SIGINT, SIG_DFL);
         const cap_path = try std.fmt.bufPrint(&cap_buf, "/tmp/sideeye-observer-{d}-{d}", .{ getpid(), talk });
         var line_buf: [96]u8 = undefined;
-        const line = try std.fmt.bufPrint(&line_buf, "printf '%d ' $$ >&{d}; trap '' TERM HUP QUIT; exec sleep 300", .{talk});
+        const line = try std.fmt.bufPrint(&line_buf, "printf '%d ' $$ >&{d}; trap '' INT HUP QUIT; exec sleep 300", .{talk});
         const pid = spawnSidecar(std.heap.page_allocator, &.{ "/bin/sh", "-c", line }, cap_path, null) catch return error.Setup;
         var zb: [96]u8 = undefined;
         _ = unlink((std.mem.printSentinel(&zb, "{s}", .{cap_path}, 0) catch return pid).ptr);
