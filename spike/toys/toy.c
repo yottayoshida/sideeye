@@ -236,7 +236,8 @@
  *                  permission query — which the oracle must read as reads (#542); and,
  *                  since #684, its extended attributes in all three spellings, an
  *                  inotify watch, preadv/preadv2, and the polls (poll, ppoll, select,
- *                  pselect); and an unlink of the empty path, sync_file_range and syncfs.
+ *                  pselect); and an unlink of the empty path, sync_file_range and syncfs;
+ *                  and readahead, posix_fadvise and madvise on a private read mapping.
  *   TOY_SETXATTR   on Linux, rotate also sets an extended attribute on key.json — a
  *                  write the oracle has no class for, which must still refuse
  *                  (unsupported_syscall_observed naming setxattr; #684's control).
@@ -308,6 +309,9 @@
  *   TOY_SPAWN         posix_spawn a process that touches nothing and wait for it.
  *                     Tolerable: the subject's account remains complete.
  *                     With TOY_SPAWN_PATH=<image>, spawn `<image> rotate` instead (#685).
+ *                     With TOY_CHILD_RAW=second|main as well, and TOY_THREAD_ONLY_WORKER,
+ *                     the child then rewrites key.json's first byte through raw system
+ *                     calls, from a second thread or from its main thread (#990).
  *   TOY_EXEC_PATH     exec `<image> rotate` in this same process before writing anything (#685).
  *   TOY_REQUIRE_MODE  rotate exits 1 unless key.json carries this mode, octal (#678).
  *   TOY_KEY_MODE      the new key takes this mode, octal, before the rename (#678).
@@ -562,6 +566,22 @@ static void *rotating_thread(void *arg) {
     return NULL;
 }
 
+#ifdef __linux__
+/* Raw system calls, not libc: the shim must not record this write, and the byte written is the
+ * one read, so a run that admitted it would still reach a verdict rather than fail the checker. */
+static void *raw_rewrite_first_byte(void *arg) {
+    (void)arg;
+    char key[4096];
+    join_path(key, sizeof key, KEY_NAME);
+    long fd = syscall(SYS_openat, AT_FDCWD, key, O_RDWR | O_CLOEXEC);
+    if (fd < 0) return NULL;
+    char b;
+    if (syscall(SYS_pread64, fd, &b, 1, 0) == 1) (void)syscall(SYS_pwrite64, fd, &b, 1, 0);
+    (void)syscall(SYS_close, fd);
+    return NULL;
+}
+#endif
+
 /* Optional boundary behaviour, requested through the environment so one binary
  * can play both the supported and the unsupported target. */
 static void append_witness(const char *line);
@@ -752,6 +772,11 @@ static void maybe_leave_the_supported_region(void) {
             unsetenv("TOY_SPAWN_PATH");
             unsetenv("TOY_SPAWN");
         }
+        const char *child_raw = getenv("TOY_CHILD_RAW");
+        if (child_raw) {
+            setenv("TOY_RAW_REWRITE", child_raw, 1);
+            unsetenv("TOY_CHILD_RAW");
+        }
         char *const av_true[] = { spawn_path, NULL };
         char *const av_rotate[] = { spawn_path, (char *)"rotate", NULL };
         pid_t sp;
@@ -759,6 +784,7 @@ static void maybe_leave_the_supported_region(void) {
             int st;
             waitpid(sp, &st, 0);
         }
+        unsetenv("TOY_RAW_REWRITE");
     }
     /* The refusal case for a spawned child — and deliberately one the shim cannot see.
      * The environment passed to the child is empty: no LD_PRELOAD, no shim, no records.
@@ -1093,6 +1119,14 @@ static int cmd_rotate(void) {
         pthread_t t;
         if (pthread_create(&t, NULL, rotating_thread, NULL) != 0) return 1;
         pthread_join(t, NULL);
+#ifdef __linux__
+        const char *raw = getenv("TOY_RAW_REWRITE");
+        if (raw && strcmp(raw, "main") == 0) raw_rewrite_first_byte(NULL);
+        if (raw && strcmp(raw, "second") == 0) {
+            pthread_t r;
+            if (pthread_create(&r, NULL, raw_rewrite_first_byte, NULL) == 0) pthread_join(r, NULL);
+        }
+#endif
         return only_worker_rc;
     }
     if (!getenv("TOY_THREAD_BUSY")) return cmd_rotate_body();
@@ -1412,6 +1446,10 @@ static int cmd_rotate_body(void) {
         (void)unlinkat(AT_FDCWD, "", 0);
         (void)sync_file_range(kfd, 0, 0, SYNC_FILE_RANGE_WRITE);
         (void)syncfs(kfd);
+        (void)readahead(kfd, 0, 4096);
+        (void)posix_fadvise(kfd, 0, 0, POSIX_FADV_WILLNEED);
+        void *rm = mmap(NULL, 4096, PROT_READ, MAP_PRIVATE, kfd, 0);
+        if (rm != MAP_FAILED) { (void)madvise(rm, 4096, MADV_WILLNEED); munmap(rm, 4096); }
         close(kfd);
         close(efd);
         close(epfd);

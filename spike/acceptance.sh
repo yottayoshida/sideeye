@@ -638,6 +638,37 @@ else
 fi
 unset TOY_SPAWN_WRITES
 
+# An admission keyed on the process, or on every thread the shim names, lets the two raw writers
+# below through; the byte they rewrite is the one they read, so a run that admitted them would
+# reach a verdict rather than a refusal.
+TOY_SPAWN=1 TOY_SPAWN_PATH=$OUT/toy-fixed TOY_THREAD_ONLY_WORKER=1 export TOY_SPAWN TOY_SPAWN_PATH TOY_THREAD_ONLY_WORKER
+run_case "a child writing from a thread it created is judged (#990)" "$OUT/toy-fixed" 0 "those operations hold crash-point addresses"
+for raw_side in second main; do
+    TOY_CHILD_RAW=$raw_side export TOY_CHILD_RAW
+    run_case "the same child's $raw_side thread writing through raw calls is refused (#990)" "$OUT/toy-fixed" 2 "child_touched_state_dir"
+    if echo "$output" | grep -qE "thread [0-9]+ of process [0-9]+ mutated the judged directory" &&
+       echo "$output" | grep '^next  ' | grep -qF "again with --observe syscalls"; then
+        echo "ok   the refusal names the $raw_side thread of the child the shim recorded writing, and sends it to --observe syscalls (#990)"
+    else
+        echo "FAIL the refusal does not name the $raw_side thread of the recorded child, or does not send it to --observe syscalls (#990)"
+        echo "$output" | sed 's/^/     | /' | head -6
+        fails=$((fails + 1))
+    fi
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$("$SIDEEYE" explore --state /tmp/acc/state --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+        --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --observe syscalls 2>&1)
+    rc=$?
+    if [ "$rc" = 0 ] && echo "$o" | grep -qF "those operations hold crash-point addresses"; then
+        echo "ok   under --observe syscalls, where the step sends it, the $raw_side thread's raw write is recorded and the run is judged (#990)"
+    else
+        echo "FAIL the $raw_side thread's raw write under --observe syscalls: exit $rc, wanted 0 with the child admitted (#990)"
+        echo "$o" | sed 's/^/     | /' | head -6
+        fails=$((fails + 1))
+    fi
+    unset TOY_CHILD_RAW
+done
+unset TOY_SPAWN TOY_SPAWN_PATH TOY_THREAD_ONLY_WORKER
+
 # Condition 2: two children forked before either is awaited, both writing. Their order is
 # the scheduler's, so the sequence they were numbered in is one sample — and the trace's
 # own record order cannot tell this apart from the awaited hand-off above, which is why
@@ -8955,7 +8986,7 @@ for anon_mode in $anon_modes; do
     if [ "$rc" = "0" ] && echo "$o" | grep -q "explored  *5 worlds (crash points 4 + 1 baseline)"; then
         echo "ok   ($anon_mode) anon-inode descriptors (eventfd, epoll), and calls on a state file that change nothing"
         echo "     (epoll_ctl, faccessat2, xattr reads, inotify_add_watch, preadv/preadv2, the polls, an unlink of the"
-        echo "     empty path, sync_file_range, syncfs) are invisible to the verdict"
+        echo "     empty path, sync_file_range, syncfs, readahead, posix_fadvise, madvise) are invisible to the verdict"
     else
         echo "FAIL ($anon_mode) anon-inode descriptors or a call that changes nothing moved the verdict: exit $rc"
         echo "$o" | sed 's/^/     | /' | head -6
