@@ -1,0 +1,18 @@
+sideeye 1.16.0 (trace contract v19)
+command: preflight 
+
+UNKNOWN  unresolvable_path
+         an operation was observed whose path could not be determined (trace-closed-by-target, pid 18, no name recorded for it), so it cannot be placed among the crash points
+next        A process this run observed — the operation, or one it started — closed the descriptor the shim writes its records through, as a program does when it closes every descriptor before it starts another, so what it did after that went unrecorded. Run the same command with --observe supervised (explore and preflight take it), under which the engine keeps that record outside the target, where nothing the target closes reaches it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry at https://github.com/yottayoshida/sideeye/blob/v1.16.0/docs/cli.md#the-flags-the-define-does-not-spell names what it still refuses.
+cwd         /s/salt
+
+expected    exit 0
+atomicity   2 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   the shim recorded a process boundary; the strace account was not read, so nothing accounts for what the other process did
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+rc=2

@@ -1,0 +1,18 @@
+sideeye 1.16.0 (trace contract v19)
+command: preflight 
+
+UNKNOWN  unresolvable_path
+         an operation was observed whose path could not be determined (trace-closed-by-target, pid 18, no name recorded for it), so it cannot be placed among the crash points
+next        This target does something Sideeye refuses by design: the unknown_reason above names the limit, https://github.com/yottayoshida/sideeye/blob/v1.16.0/docs/report-schema.md#refusals-by-reason says what each one stands at, and https://github.com/yottayoshida/sideeye/blob/v1.16.0/DESIGN.md#known-constraints-declared-not-hidden gives the reasons.
+cwd         /s/salt
+
+expected    exit 0
+atomicity   2 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   the shim recorded a process boundary; the strace account was not read, so nothing accounts for what the other process did
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+rc=2
