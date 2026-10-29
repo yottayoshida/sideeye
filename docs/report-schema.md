@@ -342,7 +342,13 @@ first path and an `*xattrat` call's when the flags hold `AT_EMPTY_PATH` or canno
 `linkat` with an empty first path, called directly or under `--observe syscalls` or `supervised`,
 is still refused by the recording witnesses, which record it as a link by descriptor; the one glibc
 issues for `link(3)` under the default mode is recorded by nothing and passed over here; an ownership, permission or timestamp call given the empty path is still listed
-in `metadata_observed`, and any other call given one is read as it was before. Extended-attribute writes (`setxattr`,
+in `metadata_observed`, and any other call given one is read as it was before. **`readahead` is read
+as a read too** (#989): it asks the kernel to prefetch a file's pages and changes nothing on disk, and
+RocksDB's `ldb` issues it from its buffered reads; from a child it no longer counts as that child's
+write either. `posix_fadvise` (strace prints `fadvise64`) was already among the reads, and `madvise`
+names neither a descriptor nor a path, so this reader never places it in the state; the advice that
+could change a file needs a writable shared mapping, which is refused at the `mmap` or `mprotect` that
+made it. Extended-attribute writes (`setxattr`,
 `removexattr` and their `l`/`f` forms) still refuse, through a relative path as through an
 absolute one, from the subject and from every child. A path argument is resolved by its spelling, as
 this reader resolves every path argument, so a write naming a symbolic link outside the state that

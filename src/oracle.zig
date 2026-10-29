@@ -197,7 +197,7 @@ const read_only = [_][]const u8{
     // Not counted as `.fsync`: `sync_file_range` writes no metadata and flushes no device
     // cache, and which of these a power-loss model would count is for ADR 0110 to decide.
       "sync_file_range",
-    "syncfs",
+    "syncfs",     "readahead",
 };
 
 const process_syscalls = [_][]const u8{
@@ -2388,6 +2388,26 @@ test "sync_file_range and syncfs on a state file change nothing, from the subjec
     ;
     const q = try parse(arena_state.allocator(), control, "/tmp/s", "", "/work");
     try std.testing.expectEqualStrings("fallocate", q.unsupported.?);
+}
+
+test "readahead, posix_fadvise and madvise on a state file change nothing, from the subject or a child" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const text =
+        \\42    execve("/work/ldb", ["ldb"], 0x7ff) = 0
+        \\42    readahead(3</tmp/s/000008.sst>, 0, 4096) = 0
+        \\42    fadvise64(3</tmp/s/000008.sst>, 0, 0, POSIX_FADV_WILLNEED) = 0
+        \\42    mmap(NULL, 4096, PROT_READ, MAP_PRIVATE, 3</tmp/s/000008.sst>, 0) = 0xffff9a000000
+        \\42    madvise(0xffff9a000000, 4096, MADV_WILLNEED) = 0
+        \\42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242
+        \\4242  readahead(5</tmp/s/MANIFEST-000005>, 0, 65536) = 0
+        \\4242  fadvise64(5</tmp/s/MANIFEST-000005>, 0, 0, POSIX_FADV_SEQUENTIAL) = 0
+        \\
+    ;
+    const p = try parse(arena_state.allocator(), text, "/tmp/s", "", "/work");
+    try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
+    try std.testing.expectEqual(@as(usize, 0), p.classes.items.len);
+    try std.testing.expectEqual(@as(usize, 0), p.mutations.items.len);
 }
 
 fn parseCloneRun(a: std.mem.Allocator, pid: []const u8, lines: []const u8) !Parsed {

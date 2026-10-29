@@ -236,7 +236,8 @@
  *                  permission query — which the oracle must read as reads (#542); and,
  *                  since #684, its extended attributes in all three spellings, an
  *                  inotify watch, preadv/preadv2, and the polls (poll, ppoll, select,
- *                  pselect); and an unlink of the empty path, sync_file_range and syncfs.
+ *                  pselect); and an unlink of the empty path, sync_file_range and syncfs;
+ *                  and readahead, posix_fadvise and madvise on a private read mapping.
  *   TOY_SETXATTR   on Linux, rotate also sets an extended attribute on key.json — a
  *                  write the oracle has no class for, which must still refuse
  *                  (unsupported_syscall_observed naming setxattr; #684's control).
@@ -1412,6 +1413,10 @@ static int cmd_rotate_body(void) {
         (void)unlinkat(AT_FDCWD, "", 0);
         (void)sync_file_range(kfd, 0, 0, SYNC_FILE_RANGE_WRITE);
         (void)syncfs(kfd);
+        (void)readahead(kfd, 0, 4096);
+        (void)posix_fadvise(kfd, 0, 0, POSIX_FADV_WILLNEED);
+        void *rm = mmap(NULL, 4096, PROT_READ, MAP_PRIVATE, kfd, 0);
+        if (rm != MAP_FAILED) { (void)madvise(rm, 4096, MADV_WILLNEED); munmap(rm, 4096); }
         close(kfd);
         close(efd);
         close(epfd);

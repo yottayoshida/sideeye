@@ -8937,7 +8937,7 @@ for anon_mode in $anon_modes; do
     if [ "$rc" = "0" ] && echo "$o" | grep -q "explored  *5 worlds (crash points 4 + 1 baseline)"; then
         echo "ok   ($anon_mode) anon-inode descriptors (eventfd, epoll), and calls on a state file that change nothing"
         echo "     (epoll_ctl, faccessat2, xattr reads, inotify_add_watch, preadv/preadv2, the polls, an unlink of the"
-        echo "     empty path, sync_file_range, syncfs) are invisible to the verdict"
+        echo "     empty path, sync_file_range, syncfs, readahead, posix_fadvise, madvise) are invisible to the verdict"
     else
         echo "FAIL ($anon_mode) anon-inode descriptors or a call that changes nothing moved the verdict: exit $rc"
         echo "$o" | sed 's/^/     | /' | head -6
