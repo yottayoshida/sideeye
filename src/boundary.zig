@@ -334,6 +334,48 @@ pub fn unattributedWriterReason(trace: engine.TraceInfo, parsed: oracle.Parsed) 
     return .child_touched_state_dir;
 }
 
+const WriterThread = struct { tid: u64, first: engine.Op };
+
+fn recordedThread(threads: []const WriterThread, tid: u64) ?engine.Op {
+    for (threads) |t| {
+        if (t.tid == tid) return t.first;
+    }
+    return null;
+}
+
+fn writerName(arena: std.mem.Allocator, parsed: oracle.Parsed, by_thread: bool, owner: ?u64, id: u64) []const u8 {
+    if (by_thread) {
+        const process: ?u64 = if (parsed.isSubject(id)) (if (parsed.primary_pid) |p| p else null) else owner;
+        if (process) |pid| {
+            if (pid != id) return std.fmt.allocPrint(arena, "process {d} (its thread {d})", .{ pid, id }) catch "another process";
+        }
+    }
+    return std.fmt.allocPrint(arena, "process {d}", .{id}) catch "another process";
+}
+
+fn shimInImageOf(trace: engine.TraceInfo, pid: u64) bool {
+    var shim_in_image = false;
+    for (trace.ops.items) |op| {
+        if (op.pid != pid) continue;
+        switch (op.class) {
+            .shim_ready => shim_in_image = true,
+            .exec => shim_in_image = false,
+            else => {},
+        }
+    }
+    return shim_in_image;
+}
+
+fn shimmedProcessOfThread(trace: engine.TraceInfo, shim_writers: []const engine.Op, tid: u64) ?u32 {
+    for (trace.ops.items) |op| {
+        if (op.tid != tid) continue;
+        for (shim_writers) |w| {
+            if (w.pid == op.pid) return op.pid;
+        }
+    }
+    return null;
+}
+
 pub fn childrenMayBeJudged(
     arena: std.mem.Allocator,
     trace: engine.TraceInfo,
@@ -348,6 +390,12 @@ pub fn childrenMayBeJudged(
     // in exactly the runs this version exists to judge — a target with many operations in
     // many children is the one that pays. One writer per process, and the comparisons are
     var shim_writers: std.ArrayList(engine.Op) = .empty;
+    // Only a thread the shim recorded WRITING is given to its process — not every thread the
+    // shim names: `thread_started` is written by a
+    // thread that may then write only through raw calls, and giving its lines to the process
+    // would admit writes nothing numbered.
+    const by_thread = parsed.primary_pid != null;
+    var writer_threads: std.ArrayList(WriterThread) = .empty;
     for (trace.ops.items) |op| {
         if (!op.class.isKillPoint() or op.pid == primary) continue;
         var seen = false;
@@ -356,87 +404,113 @@ pub fn childrenMayBeJudged(
         }
         if (!seen) shim_writers.append(arena, op) catch
             return .{ .wall = .not_the_modes_wall, .detail = "out of memory while reading which processes wrote in the judged directory" };
+        if (!by_thread) continue;
+        if (recordedThread(writer_threads.items, op.tid)) |first| {
+            if (first.pid != op.pid) return .{ .wall = .not_the_modes_wall, .detail = std.fmt.allocPrint(
+                arena,
+                "thread id {d} wrote in the judged directory under two processes in the shim's account ({d} and {d}), so the oracle's lines for that id cannot be given to either",
+                .{ op.tid, first.pid, op.pid },
+            ) catch "one thread id wrote in the judged directory under two processes" };
+        } else writer_threads.append(arena, .{ .tid = op.tid, .first = op }) catch
+            return .{ .wall = .not_the_modes_wall, .detail = "out of memory while reading which threads wrote in the judged directory" };
     }
-    var oracle_writers: std.ArrayList(oracle.Event) = .empty;
-    for (parsed.mutations.items) |m| {
+    const owners = arena.alloc(?u64, parsed.mutations.items.len) catch
+        return .{ .wall = .not_the_modes_wall, .detail = "out of memory while reading which processes the oracle saw write" };
+    for (parsed.mutations.items, owners) |m, *owner| {
+        owner.* = if (!by_thread) m.id else if (recordedThread(writer_threads.items, m.id)) |first| first.pid else null;
+    }
+    var oracle_writers: std.ArrayList(usize) = .empty;
+    for (parsed.mutations.items, 0..) |m, i| {
         // The subject's threads are the subject (v16): a mutation from one is not a
-        // child's, and comparing its tid against the shim's pid-keyed writer list would
+        // child's, and comparing its tid against the shim's writer list would
         // have refused it as "recorded nothing of its own".
         if (parsed.isSubject(m.id)) continue;
         var seen = false;
         for (oracle_writers.items) |w| {
-            if (w.id == m.id) seen = true;
+            if (parsed.mutations.items[w].id == m.id) seen = true;
         }
-        if (!seen) oracle_writers.append(arena, m) catch
+        if (!seen) oracle_writers.append(arena, i) catch
             return .{ .wall = .not_the_modes_wall, .detail = "out of memory while reading which processes the oracle saw write" };
     }
 
     for (shim_writers.items) |w| {
         var in_oracle = false;
         for (oracle_writers.items) |o| {
-            if (o.id == w.pid) in_oracle = true;
+            if (owners[o] == w.pid) in_oracle = true;
         }
         if (!in_oracle)
             return .{ .wall = .not_the_modes_wall, .detail = std.fmt.allocPrint(
                 arena,
-                "a process other than the subject (pid {d}) performed {s}({s}) and the oracle's account does not place it. That reader resolves a relative path against the subject's working directory, so a child that changed its own is invisible to it — and with only one witness for those operations, nothing can check that nobody else wrote while they ran",
-                .{ w.pid, w.class.name(), w.path },
+                "a process other than the subject (pid {d}) performed {s}({s}) and the oracle's account does not place it: no write in the judged directory there comes from that process{s} — and with only one witness for those operations, nothing can check that nobody else wrote while they ran",
+                .{ w.pid, w.class.name(), w.path, if (by_thread) " or from a thread it was recorded writing on" else "" },
             ) catch "a process recorded state-directory operations the oracle's account does not place" };
     }
 
-    for (oracle_writers.items) |w| {
-        var recorded: ?engine.Op = null;
-        for (shim_writers.items) |sw| {
-            if (sw.pid == w.id) recorded = sw;
+    const recorded_ops = arena.alloc(engine.Op, oracle_writers.items.len) catch
+        return .{ .wall = .not_the_modes_wall, .detail = "out of memory while reading which processes wrote in the judged directory" };
+    for (oracle_writers.items, recorded_ops) |o, *slot| {
+        const w = parsed.mutations.items[o];
+        const recorded: ?engine.Op = if (by_thread) recordedThread(writer_threads.items, w.id) else for (shim_writers.items) |sw| {
+            if (sw.pid == w.id) break sw;
+        } else null;
+        if (recorded) |r| {
+            slot.* = r;
+            continue;
         }
-        if (recorded == null) {
-            // That this id is a PROCESS is a claim, and until #544 the refusal below made
-            // it whatever the witness was. It holds for a witness that reads pids: strace
-            // names the process on every line, and `Parsed.primary_pid` is set from one.
-            // It does not hold for `fs_usage`, which attributes a line to a THREAD id and
-            // prints no process anywhere (ADR 0031) — `src/fsusage.zig` sets no
-            // `primary_pid` in consequence, and that absence is the discriminator here,
-            // the same one `childTouched()` already keys on. Under that witness an id
-            // Is the shim in the image this writer is running NOW? The question is about
-            // the image, not the pid (#634, ADR 0076). `exec` is recorded by the image that
-            // calls it, before the call — so an `exec` from this pid says only that some
-            // image in it called one, and the next image may be the static or env-stripped
-            // one `--observe syscalls` kills. `shim_ready` is written by a shim that has
-            // initialised, so the shim is here iff the LAST of the two, in trace order, is
-            // a `shim_ready`. lbdb's child records `exec` then `shim_ready`, and a child
-            var shim_in_writer_image = false;
-            for (trace.ops.items) |op| {
-                if (op.pid != w.id) continue;
-                switch (op.class) {
-                    .shim_ready => shim_in_writer_image = true,
-                    .exec => shim_in_writer_image = false,
-                    else => {},
-                }
-            }
-            if (parsed.primary_pid == null)
-                return .{ .wall = .not_the_modes_wall, .detail = std.fmt.allocPrint(
+        if (by_thread) {
+            if (shimmedProcessOfThread(trace, shim_writers.items, w.id)) |pid| if (shimInImageOf(trace, pid))
+                return .{ .wall = .shimmed_writer_unnumbered, .detail = std.fmt.allocPrint(
                     arena,
-                    "id {d} mutated the judged directory in the oracle's account and recorded nothing of its own. This witness names a thread and knows no process for it, so this is either a process that never loaded the shim or a thread whose operations went around the shim's wrappers; calling it a process would assert the half this run cannot see. Either way its operations hold no crash-point number and the sequence the crash points were read from is incomplete",
-                    .{w.id},
-                ) catch "an id mutated the judged directory and the witness cannot say whether it is a process" };
-            return .{
-                .wall = if (shim_in_writer_image) .shimmed_writer_unnumbered else .not_the_modes_wall,
-                .detail = std.fmt.allocPrint(
-                    arena,
-                    "process {d} mutated the judged directory in the oracle's account and recorded nothing of its own, so its operations hold no crash-point number and the sequence the crash points were read from is incomplete. {s}",
-                    // Checked first (#217, review): the supervising engine writes a start record
-                    // at every exec, so `shim_in_writer_image` holds there too, and the filter is
-                    // inherited by every process the target starts — which is all strace follows.
-                    .{ w.id, if (observe_mode == .supervised)
-                        "Under --observe supervised every process the target starts inherits the engine's filter, so this one wrote the judged directory some way the filter does not watch — through a mapped file, say — or its calls were not counted"
-                    else if (shim_in_writer_image)
-                        "Its shim announced itself and recorded no operation, so its writes went around the interposed entry points — a buffered stream flushed inside libc does that"
-                    else
-                        "A child that never loaded the shim — an emptied environment, a static image — is seen only by the oracle" },
-                ) catch "a process mutated the judged directory without recording anything of its own",
-            };
+                    "thread {d} of process {d} mutated the judged directory in the oracle's account, and {s} recorded no write from that thread though it recorded others of that process: that thread's writes went around what records them — {s} — so they hold no crash-point number and the sequence the crash points were read from is incomplete",
+                    .{ w.id, pid, recorder(), switch (observe_mode) {
+                        .wrappers => "a raw system call, or a stream flushed inside libc, which pass by the interposed entry points",
+                        .syscalls => "a write the filter does not trap, through a mapped file, say",
+                        .supervised => "a write the engine's filter does not watch, through a mapped file, say, or calls that were not counted",
+                    } },
+                ) catch "a thread of a recorded process mutated the judged directory without recording anything of its own" };
         }
+        // That this id is a PROCESS is a claim, and until #544 the refusal below made
+        // it whatever the witness was. It holds for a witness that reads pids: strace
+        // names the process on every line, and `Parsed.primary_pid` is set from one.
+        // It does not hold for `fs_usage`, which attributes a line to a THREAD id and
+        // prints no process anywhere (ADR 0031) — `src/fsusage.zig` sets no
+        // `primary_pid` in consequence, and that absence is the discriminator here,
+        // the same one `childTouched()` already keys on. Under that witness an id
+        // Is the shim in the image this writer is running NOW? The question is about
+        // the image, not the pid (#634, ADR 0076). `exec` is recorded by the image that
+        // calls it, before the call — so an `exec` from this pid says only that some
+        // image in it called one, and the next image may be the static or env-stripped
+        // one `--observe syscalls` kills. `shim_ready` is written by a shim that has
+        // initialised, so the shim is here iff the LAST of the two, in trace order, is
+        // a `shim_ready`. lbdb's child records `exec` then `shim_ready`, and a child
+        const shim_in_writer_image = shimInImageOf(trace, w.id);
+        if (parsed.primary_pid == null)
+            return .{ .wall = .not_the_modes_wall, .detail = std.fmt.allocPrint(
+                arena,
+                "id {d} mutated the judged directory in the oracle's account and recorded nothing of its own. This witness names a thread and knows no process for it, so this is either a process that never loaded the shim or a thread whose operations went around the shim's wrappers; calling it a process would assert the half this run cannot see. Either way its operations hold no crash-point number and the sequence the crash points were read from is incomplete",
+                .{w.id},
+            ) catch "an id mutated the judged directory and the witness cannot say whether it is a process" };
+        return .{
+            .wall = if (shim_in_writer_image) .shimmed_writer_unnumbered else .not_the_modes_wall,
+            .detail = std.fmt.allocPrint(
+                arena,
+                "process {d} mutated the judged directory in the oracle's account and recorded nothing of its own, so its operations hold no crash-point number and the sequence the crash points were read from is incomplete. {s}",
+                // Checked first (#217, review): the supervising engine writes a start record
+                // at every exec, so `shim_in_writer_image` holds there too, and the filter is
+                // inherited by every process the target starts — which is all strace follows.
+                .{ w.id, if (observe_mode == .supervised)
+                    "Under --observe supervised every process the target starts inherits the engine's filter, so this one wrote the judged directory some way the filter does not watch — through a mapped file, say — or its calls were not counted"
+                else if (shim_in_writer_image)
+                    "Its shim announced itself and recorded no operation, so its writes went around the interposed entry points — a buffered stream flushed inside libc does that"
+                else
+                    "A child that never loaded the shim — an emptied environment, a static image — is seen only by the oracle" },
+            ) catch "a process mutated the judged directory without recording anything of its own",
+        };
+    }
 
+    for (oracle_writers.items, recorded_ops) |o, recorded| {
+        const w = parsed.mutations.items[o];
+        const writer = owners[o] orelse w.id;
         // Where this child was created. Without it the window would start at the child's
         // own first write, and a parent that wrote in between — with the child already
         // running — would be admitted.
@@ -450,18 +524,18 @@ pub fn childrenMayBeJudged(
             // nothing was wrong with. Taking the earlier of the two keeps the window at
             // least as wide as the child's own activity, which is the property the check
             // needs.
-            if (c.id == w.id and (spawned_at == null or c.at < spawned_at.?)) spawned_at = c.at;
+            if (c.id == writer and (spawned_at == null or c.at < spawned_at.?)) spawned_at = c.at;
         }
         const window_from = if (spawned_at) |sp| @min(sp, w.at) else null;
         const from = window_from orelse return .{ .wall = .not_the_modes_wall, .detail = std.fmt.allocPrint(
             arena,
             "the oracle's capture does not show where process {d} was created, and it wrote in the judged directory: without that point there is no window in which to ask whether anything else wrote while it ran",
-            .{w.id},
+            .{writer},
         ) catch "the capture does not show where a writing process was created" };
 
         var reaped_at: ?usize = null;
         for (parsed.reaps.items) |r| {
-            if (r.id == w.id and r.at >= w.at) {
+            if (r.id == writer and r.at >= w.at) {
                 reaped_at = r.at;
                 break;
             }
@@ -469,21 +543,16 @@ pub fn childrenMayBeJudged(
         const until = reaped_at orelse return .{ .wall = .not_the_modes_wall, .detail = std.fmt.allocPrint(
             arena,
             "a process other than the subject (pid {d}) performed {s}({s}) and nothing waited for it afterwards: its operations and the subject's are ordered by the scheduler rather than by a join, so the sequence they were numbered in is one sample rather than the order the program imposes",
-            .{ w.id, if (recorded) |o| o.class.name() else "an operation", if (recorded) |o| o.path else "" },
+            .{ writer, recorded.class.name(), recorded.path },
         ) catch "nothing waited for a process that wrote in the judged directory" };
 
-        for (parsed.mutations.items) |other| {
-            if (other.id == w.id) continue;
+        for (parsed.mutations.items, owners) |other, other_owner| {
+            if ((other_owner orelse other.id) == writer) continue;
             if (other.at > from and other.at < until)
                 return .{ .wall = .not_the_modes_wall, .detail = std.fmt.allocPrint(
                     arena,
-                    "a process other than the subject (pid {d}) performed {s}({s}), and process {d} wrote in the judged directory while it was still running — nothing had collected it yet. Two processes writing at once are ordered by the scheduler, so the sequence they were numbered in is the one this run happened to produce and a crash point would not name the same operation on the next. A run whose writers take turns is judged; one whose writers overlap is not",
-                    .{
-                        w.id,
-                        if (recorded) |o| o.class.name() else "an operation",
-                        if (recorded) |o| o.path else "",
-                        other.id,
-                    },
+                    "a process other than the subject (pid {d}) performed {s}({s}), and {s} wrote in the judged directory while it was still running — nothing had collected it yet. Two processes writing at once are ordered by the scheduler, so the sequence they were numbered in is the one this run happened to produce and a crash point would not name the same operation on the next. A run whose writers take turns is judged; one whose writers overlap is not",
+                    .{ writer, recorded.class.name(), recorded.path, writerName(arena, parsed, by_thread, other_owner, other.id) },
                 ) catch "two processes wrote in the judged directory at the same time" };
         }
     }
@@ -1454,6 +1523,14 @@ test "an id a thread-naming witness cannot attribute is refused as an id, not as
     try std.testing.expectEqual(ChildWall.not_the_modes_wall, why.wall);
 }
 
+const test_events = struct {
+    fn list(a: std.mem.Allocator, items: []const oracle.Event) !std.ArrayList(oracle.Event) {
+        var l: std.ArrayList(oracle.Event) = .empty;
+        for (items) |e| try l.append(a, e);
+        return l;
+    }
+};
+
 test "the two conditions on a run with a writing child (v15)" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
@@ -1472,28 +1549,21 @@ test "the two conditions on a run with a writing child (v15)" {
     var trace = try engine.readTrace(&tb, std.mem.span(fz));
     defer trace.deinit();
 
-    const events = struct {
-        fn list(a: std.mem.Allocator, items: []const oracle.Event) !std.ArrayList(oracle.Event) {
-            var l: std.ArrayList(oracle.Event) = .empty;
-            for (items) |e| try l.append(a, e);
-            return l;
-        }
-    };
     const handoff = oracle.Parsed{
         .classes = .empty,
         .names = .empty,
         .lines = .empty,
         .metadata_observed = .empty,
-        .mutations = try events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 8, .at = 20 }, .{ .id = 7, .at = 40 } }),
-        .reaps = try events.list(arena, &.{.{ .id = 8, .at = 30 }}),
-        .spawns = try events.list(arena, &.{.{ .id = 8, .at = 15 }}),
+        .mutations = try test_events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 8, .at = 20 }, .{ .id = 7, .at = 40 } }),
+        .reaps = try test_events.list(arena, &.{.{ .id = 8, .at = 30 }}),
+        .spawns = try test_events.list(arena, &.{.{ .id = 8, .at = 15 }}),
         .subject_tids = .empty,
         .primary_pid = 7,
     };
     try std.testing.expectEqual(@as(?ChildRefusal, null), childrenMayBeJudged(arena, trace, handoff));
 
     var overlap = handoff;
-    overlap.mutations = try events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 8, .at = 20 }, .{ .id = 7, .at = 25 } });
+    overlap.mutations = try test_events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 8, .at = 20 }, .{ .id = 7, .at = 25 } });
     const raced = childrenMayBeJudged(arena, trace, overlap) orelse return error.TestExpectedRefusal;
     try std.testing.expect(std.mem.indexOf(u8, raced.detail, "(pid 8) performed rename(/tmp/s/a)") != null);
     try std.testing.expect(std.mem.indexOf(u8, raced.detail, "process 7 wrote in the judged directory while it was still running") != null);
@@ -1506,7 +1576,7 @@ test "the two conditions on a run with a writing child (v15)" {
     try std.testing.expectEqual(ChildWall.not_the_modes_wall, unreaped.wall);
 
     var oracle_blind = handoff;
-    oracle_blind.mutations = try events.list(arena, &.{.{ .id = 7, .at = 10 }});
+    oracle_blind.mutations = try test_events.list(arena, &.{.{ .id = 7, .at = 10 }});
     const unplaced = childrenMayBeJudged(arena, trace, oracle_blind) orelse return error.TestExpectedRefusal;
     try std.testing.expect(std.mem.indexOf(u8, unplaced.detail, "(pid 8) performed rename(/tmp/s/a) and the oracle's account does not place it") != null);
     try std.testing.expectEqual(ChildWall.not_the_modes_wall, unplaced.wall);
@@ -1517,8 +1587,8 @@ test "the two conditions on a run with a writing child (v15)" {
     // left no records. A first version of this fixture put it inside pid 8's window and
     // measured the interleaving refusal instead — two defects in one input tell you
     // nothing about which check caught them.
-    unshimmed.mutations = try events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 8, .at = 20 }, .{ .id = 99, .at = 35 }, .{ .id = 7, .at = 40 } });
-    unshimmed.reaps = try events.list(arena, &.{ .{ .id = 8, .at = 30 }, .{ .id = 99, .at = 37 } });
+    unshimmed.mutations = try test_events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 8, .at = 20 }, .{ .id = 99, .at = 35 }, .{ .id = 7, .at = 40 } });
+    unshimmed.reaps = try test_events.list(arena, &.{ .{ .id = 8, .at = 30 }, .{ .id = 99, .at = 37 } });
     const no_records = childrenMayBeJudged(arena, trace, unshimmed) orelse return error.TestExpectedRefusal;
     try std.testing.expect(std.mem.indexOf(u8, no_records.detail, "process 99 mutated the judged directory") != null);
     try std.testing.expectEqual(ChildWall.not_the_modes_wall, no_records.wall);
@@ -1553,7 +1623,7 @@ test "the two conditions on a run with a writing child (v15)" {
     try std.testing.expect(std.mem.indexOf(u8, gone.detail, "never loaded the shim") != null);
 
     var parent_in_window = handoff;
-    parent_in_window.mutations = try events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 7, .at = 18 }, .{ .id = 8, .at = 20 } });
+    parent_in_window.mutations = try test_events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 7, .at = 18 }, .{ .id = 8, .at = 20 } });
     const straddled = childrenMayBeJudged(arena, trace, parent_in_window) orelse return error.TestExpectedRefusal;
     try std.testing.expect(std.mem.indexOf(u8, straddled.detail, "process 7 wrote in the judged directory while it was still running") != null);
 
@@ -1603,6 +1673,105 @@ test "two children writing before either is collected are refused (v15)" {
     const why = childrenMayBeJudged(arena, trace, racing) orelse return error.TestExpectedRefusal;
     try std.testing.expect(std.mem.indexOf(u8, why.detail, "(pid 8) performed write(/tmp/s/x)") != null);
     try std.testing.expect(std.mem.indexOf(u8, why.detail, "process 9 wrote in the judged directory while it was still running") != null);
+}
+
+test "a child's thread the shim recorded writing is that child to both witnesses; one it never recorded writing is refused by name" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+
+    var aux_buf: [contract.thread_aux.max_len]u8 = undefined;
+    const started81 = try arena.dupe(u8, try contract.thread_aux.started(&aux_buf, 8, 0, 1));
+    const started82 = try arena.dupe(u8, try contract.thread_aux.started(&aux_buf, 8, 0, 2));
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try traceFileForTest("child-thread", &.{
+        .{ .op = .shim_ready, .seq = 0, .pid = 7, .tid = 7, .path = "/tmp/s", .aux = "" },
+        .{ .op = .write, .seq = 1, .pid = 7, .tid = 7, .path = "/tmp/s/a", .aux = "" },
+        .{ .op = .fork, .seq = 0, .pid = 7, .tid = 7, .path = "", .aux = "" },
+        .{ .op = .shim_ready, .seq = 0, .pid = 8, .tid = 8, .path = "/tmp/s", .aux = "" },
+        .{ .op = .thread_started, .seq = 0, .pid = 8, .tid = 81, .path = "", .aux = started81 },
+        .{ .op = .thread_started, .seq = 0, .pid = 8, .tid = 82, .path = "", .aux = started82 },
+        .{ .op = .rename, .seq = 2, .pid = 8, .tid = 81, .path = "/tmp/s/a", .aux = "/tmp/s/b" },
+        .{ .op = .write, .seq = 3, .pid = 7, .tid = 7, .path = "/tmp/s/c", .aux = "" },
+    }, &fbuf);
+    defer _ = posix.unlink(fz);
+    var tb = engine.unboundedBudget(std.testing.allocator);
+    var trace = try engine.readTrace(&tb, std.mem.span(fz));
+    defer trace.deinit();
+
+    const recorded_thread = oracle.Parsed{
+        .classes = .empty,
+        .names = .empty,
+        .lines = .empty,
+        .metadata_observed = .empty,
+        .mutations = try test_events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 81, .at = 20 }, .{ .id = 7, .at = 40 } }),
+        .reaps = try test_events.list(arena, &.{.{ .id = 8, .at = 30 }}),
+        .spawns = try test_events.list(arena, &.{.{ .id = 8, .at = 15 }}),
+        .subject_tids = .empty,
+        .primary_pid = 7,
+    };
+    try std.testing.expectEqual(@as(?ChildRefusal, null), childrenMayBeJudged(arena, trace, recorded_thread));
+
+    var raw_thread = recorded_thread;
+    raw_thread.mutations = try test_events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 81, .at = 20 }, .{ .id = 82, .at = 22 }, .{ .id = 7, .at = 40 } });
+    const around = childrenMayBeJudged(arena, trace, raw_thread) orelse return error.TestExpectedRefusal;
+    try std.testing.expect(std.mem.indexOf(u8, around.detail, "thread 82 of process 8 mutated the judged directory") != null);
+    try std.testing.expect(std.mem.indexOf(u8, around.detail, "a raw system call") != null);
+    try std.testing.expectEqual(ChildWall.shimmed_writer_unnumbered, around.wall);
+
+    var raw_initial = recorded_thread;
+    raw_initial.mutations = try test_events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 81, .at = 20 }, .{ .id = 8, .at = 22 }, .{ .id = 7, .at = 40 } });
+    const initial = childrenMayBeJudged(arena, trace, raw_initial) orelse return error.TestExpectedRefusal;
+    try std.testing.expect(std.mem.indexOf(u8, initial.detail, "thread 8 of process 8 mutated the judged directory") != null);
+    {
+        const saved_mode = observe_mode;
+        defer observe_mode = saved_mode;
+        observe_mode = .supervised;
+        const supervised = childrenMayBeJudged(arena, trace, raw_initial) orelse return error.TestExpectedRefusal;
+        try std.testing.expect(std.mem.indexOf(u8, supervised.detail, "thread 8 of process 8 mutated the judged directory") != null);
+        try std.testing.expect(std.mem.indexOf(u8, supervised.detail, "shim") == null);
+        try std.testing.expect(std.mem.indexOf(u8, supervised.detail, "a raw system call") == null);
+        observe_mode = .syscalls;
+        const trapped = childrenMayBeJudged(arena, trace, raw_initial) orelse return error.TestExpectedRefusal;
+        try std.testing.expect(std.mem.indexOf(u8, trapped.detail, "a raw system call") == null);
+    }
+    var exec_away = trace;
+    var exec_ops: std.ArrayList(engine.Op) = .empty;
+    for (trace.ops.items) |op| try exec_ops.append(arena, op);
+    try exec_ops.append(arena, .{ .class = .exec, .seq = 0, .pid = 8, .tid = 8, .path = "/usr/bin/static-helper", .aux = "" });
+    exec_away.ops = exec_ops;
+    const gone = childrenMayBeJudged(arena, exec_away, raw_initial) orelse return error.TestExpectedRefusal;
+    try std.testing.expectEqual(ChildWall.not_the_modes_wall, gone.wall);
+    try std.testing.expect(std.mem.indexOf(u8, gone.detail, "never loaded the shim") != null);
+    try std.testing.expect(std.mem.indexOf(u8, gone.detail, "a raw system call") == null);
+
+    var blind = recorded_thread;
+    blind.mutations = try test_events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 7, .at = 40 } });
+    const unplaced = childrenMayBeJudged(arena, trace, blind) orelse return error.TestExpectedRefusal;
+    try std.testing.expect(std.mem.indexOf(u8, unplaced.detail, "(pid 8) performed rename(/tmp/s/a) and the oracle's account does not place it") != null);
+    try std.testing.expect(std.mem.indexOf(u8, unplaced.detail, "or from a thread it was recorded writing on") != null);
+    try std.testing.expect(std.mem.indexOf(u8, unplaced.detail, "relative path") == null);
+    var blind_by_id = blind;
+    blind_by_id.primary_pid = null;
+    const unplaced_by_id = childrenMayBeJudged(arena, trace, blind_by_id) orelse return error.TestExpectedRefusal;
+    try std.testing.expect(std.mem.indexOf(u8, unplaced_by_id.detail, "does not place it") != null);
+    try std.testing.expect(std.mem.indexOf(u8, unplaced_by_id.detail, "thread it was recorded writing on") == null);
+
+    var subject_thread_in_window = recorded_thread;
+    var tids: std.ArrayList(u64) = .empty;
+    try tids.append(arena, 70);
+    subject_thread_in_window.subject_tids = tids;
+    subject_thread_in_window.mutations = try test_events.list(arena, &.{ .{ .id = 7, .at = 10 }, .{ .id = 81, .at = 20 }, .{ .id = 70, .at = 25 }, .{ .id = 7, .at = 40 } });
+    const overlapped = childrenMayBeJudged(arena, trace, subject_thread_in_window) orelse return error.TestExpectedRefusal;
+    try std.testing.expect(std.mem.indexOf(u8, overlapped.detail, "(pid 8) performed rename(/tmp/s/a), and process 7 (its thread 70) wrote in the judged directory while it was still running") != null);
+
+    var reused = trace;
+    var ops: std.ArrayList(engine.Op) = .empty;
+    for (trace.ops.items) |op| try ops.append(arena, op);
+    try ops.append(arena, .{ .class = .write, .seq = 4, .pid = 9, .tid = 81, .path = "/tmp/s/d", .aux = "" });
+    reused.ops = ops;
+    const twice = childrenMayBeJudged(arena, reused, recorded_thread) orelse return error.TestExpectedRefusal;
+    try std.testing.expect(std.mem.indexOf(u8, twice.detail, "thread id 81 wrote in the judged directory under two processes") != null);
 }
 
 test "preflight's second run names a thread as a thread, not as an image change (v16)" {

@@ -1,0 +1,10 @@
+# Lines of the strace oracle's capture of 'prisma db pull' under the #990 build (sideeye preflight --twice --oracle), by line number.
+# 22 is the subject (node), 30 a thread it created, 31 the schema engine it started, 38 a thread of 31.
+# Lines are clipped at 240 characters; 8098's end, read off the same capture before it was discarded, is after the [...].
+8098:22    clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, child_tid=0xffff55f8e070, parent_tid=0xffff55f8e070, exit_signal=0, stack=0xffff5577f000, stac [...] parent_tid=[30]}, 88) = 30
+15310:31    execve("/opt/prisma-proto/node_modules/@prisma/engines/schema-engine-linux-arm64-openssl-3.0.x", ["/opt/prisma-proto/node_modules/@"..., "--datamodels", "/s/shop/prisma/schema.prisma", "--datasource", "{\"url\":\"file:./prisma/dev.db\
+15733:38    openat(AT_FDCWD</s/shop>, "/s/shop/prisma/dev.db", O_RDWR|O_CREAT|O_NOFOLLOW|O_CLOEXEC, 0644) = 9</s/shop/prisma/dev.db>
+15910:30    openat(AT_FDCWD</s/shop>, "/s/shop/prisma/schema.prisma", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 21</s/shop/prisma/schema.prisma>
+15957:30    write(21</s/shop/prisma/schema.prisma>, "generator client {\n  provider = "..., 879) = 879
+16029:31    +++ exited with 0 +++
+16046:22    wait4(31, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], WNOHANG, NULL) = 31

@@ -125,6 +125,28 @@ worlds and by `preflight --twice`'s second run:
    is judged over an incomplete sequence — `TOY_SPAWN_WRITES` spawns exactly that, a
    `/bin/sh` with an emptied environment. The other direction guards against asking
    condition 2 about a set that does not contain the writer it was meant to be asked about.
+
+   **Amended 2026-10-29 (#990).** Under strace a line names the thread that made it, and the
+   shim's records name the process and the thread; until this amendment the two were compared
+   as though both named processes, so a child whose writes came from a thread it created — the
+   engine Prisma's `db pull` starts — was refused as a writer the oracle did not place. A writer
+   is now asked by thread: an id in the oracle's account is a thread the shim recorded
+   **writing** (a kill-point record carrying that thread id), or the run is refused, and only
+   then is it given to that record's process for this condition's other direction and for
+   condition 2's window, whose creation and reap name processes. Not by process, and not by
+   every thread the shim names: a child's main thread shares its process's id, and a thread
+   announces its start before it writes, so either reading admits a thread that wrote only
+   through raw calls — writes nothing numbered. One thread id recorded writing under two
+   processes is refused. Such a thread, where the trace names it, is refused as a thread of its
+   process and, when the shim is in the image that process runs now (ADR 0076's reading: the
+   last of its `exec` and `shim_ready`), sent to `--observe syscalls` (ADR 0076's shimmed-writer
+   step), under which a raw write is trapped and recorded — measured on the acceptance toy, which
+   that mode judges; after an `exec` the shim did not follow, it keeps the class wall. Every
+   writer is asked this before any child's window is. A refusal under condition 2 names a writer that is a thread as its
+   process and the thread (`process 22 (its thread 30)`) — Prisma's next refusal, measured on
+   this change, is the subject's libuv thread rewriting `schema.prisma` while the engine it
+   started was still alive, which the sentence used to call process 30. `fs_usage`, whose ids
+   are threads with no process for them (ADR 0060), reads as before.
 2. **Each writing child was collected before anyone else wrote again.** In the oracle's
    line order: from a child's first state-directory operation to the wait that reaped it,
    no other process performs one.
