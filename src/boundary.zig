@@ -862,11 +862,40 @@ fn staticParentNextFor(
     can_supervise: bool,
     replay: bool,
 ) contract.NextStep {
-    if (!shape_measured or mode == .supervised or !can_supervise or replay) return site_step;
-    const obs = observed orelse return site_step;
+    const e = supervisableElf(shape_measured, mode, observed, can_supervise, replay) orelse return site_step;
+    return if (staticElf64(e)) .observe_supervised_static_parent else site_step;
+}
+
+pub fn traceClosedNext(refusing: ?engine.Op) contract.NextStep {
+    return traceClosedNextFor(traceClosedByTarget(refusing), observe_mode, rec_image, supervise.available, replaying);
+}
+
+// Not for a 32-bit image: the supervising engine does not see i386-compat or x32 calls, and a
+// step into a mode that cannot see the writes leads to a count that misses them.
+fn traceClosedNextFor(
+    closed: bool,
+    mode: contract.ObserveMode,
+    observed: ?image.Observation,
+    can_supervise: bool,
+    replay: bool,
+) contract.NextStep {
+    const e = supervisableElf(closed, mode, observed, can_supervise, replay) orelse return .class_wall;
+    if (!e.class64) return .class_wall;
+    return if (e.has_interp) .observe_supervised_trace_closed else .observe_supervised_static_parent;
+}
+
+fn supervisableElf(
+    shape_measured: bool,
+    mode: contract.ObserveMode,
+    observed: ?image.Observation,
+    can_supervise: bool,
+    replay: bool,
+) ?image.Elf {
+    if (!shape_measured or mode == .supervised or !can_supervise or replay) return null;
+    const obs = observed orelse return null;
     return switch (obs.facts) {
-        .elf => |e| if (staticElf64(e)) .observe_supervised_static_parent else site_step,
-        else => site_step,
+        .elf => |e| e,
+        else => null,
     };
 }
 
@@ -903,6 +932,30 @@ test "staticParentNextFor: each condition, pinned by a neighbour that differs in
     try std.testing.expectEqual(S.class_wall, staticParentNextFor(.class_wall, true, .wrappers, obs(.{ .elf = .{ .has_interp = false, .class64 = false } }), true, false));
     try std.testing.expectEqual(S.class_wall, staticParentNextFor(.class_wall, true, .wrappers, obs(.{ .macho = .{ .dyldlink = false, .signing = null } }), true, false));
     try std.testing.expectEqual(S.class_wall, staticParentNextFor(.class_wall, true, .wrappers, null, true, false));
+}
+
+test "a trace the target closed names --observe supervised for a 64-bit ELF, static or dynamic, and nowhere else" {
+    const obs = struct {
+        fn of(f: image.Facts) image.Observation {
+            return .{ .path = "/x", .size = 0, .facts = f };
+        }
+    }.of;
+    const dynamic64: image.Facts = .{ .elf = .{ .has_interp = true, .class64 = true } };
+    const static64: image.Facts = .{ .elf = .{ .has_interp = false, .class64 = true } };
+    const S = contract.NextStep;
+    try std.testing.expectEqual(S.observe_supervised_trace_closed, traceClosedNextFor(true, .wrappers, obs(dynamic64), true, false));
+    try std.testing.expectEqual(S.observe_supervised_trace_closed, traceClosedNextFor(true, .syscalls, obs(dynamic64), true, false));
+    try std.testing.expectEqual(S.observe_supervised_static_parent, traceClosedNextFor(true, .wrappers, obs(static64), true, false));
+    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(false, .wrappers, obs(dynamic64), true, false));
+    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .supervised, obs(dynamic64), true, false));
+    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .wrappers, obs(dynamic64), false, false));
+    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .wrappers, obs(dynamic64), true, true));
+    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .wrappers, obs(.{ .elf = .{ .has_interp = true, .class64 = false } }), true, false));
+    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .wrappers, obs(.{ .elf = .{ .has_interp = false, .class64 = false } }), true, false));
+    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .wrappers, obs(.{ .macho = .{ .dyldlink = true, .signing = null } }), true, false));
+    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .wrappers, null, true, false));
+    try std.testing.expectEqual(S.class_wall, staticParentNextFor(.class_wall, true, .wrappers, obs(dynamic64), true, false));
+    try std.testing.expectEqual(S.unwrap_or_class_wall, staticParentNextFor(.unwrap_or_class_wall, true, .wrappers, obs(dynamic64), true, false));
 }
 
 test "the two measured shapes read only what they were measured on (#685)" {

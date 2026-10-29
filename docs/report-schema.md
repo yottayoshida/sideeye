@@ -437,7 +437,8 @@ fs_usage capture saw a thread write that no record names (ADR 0060) — keeps th
 Three refusals the records met keep the class wall because this build's step names no way past
 them; their limits are the lines under "Refusals by reason" above: `unresolvable_path`,
 `unsupported_syscall_observed`, and `oracle_missed_operation` under `--observe syscalls` — except
-for a statically linked operation in a shape measured to be crossed, the next paragraph.
+for a statically linked operation in a shape measured to be crossed, the next paragraph, and for
+an `unresolvable_path` whose trace a process closed, the one after it.
 
 **A static parent whose dynamic child carried the shim** (#685, ADR 0108). The default gate lets
 this shape through, because the child's shim announces itself, and the parent's own calls are
@@ -461,6 +462,21 @@ descriptor are refused under that mode too, as `supervise_linux.zig` reads; not 
 `oracle_missed_operation` and `child_touched_state_dir`, a static image that execs a dynamic one in
 its own process, whose shim announces itself from the oracle's subject; `child_touched_state_dir`'s
 other arm. A replay keeps the mode its crash point was counted in and is not sent on.
+
+**A trace a process closed, whatever the image's linkage** (#988). The recording run's
+`unresolvable_path` whose refusing record's kind is `trace-closed-by-target` takes
+`observe_supervised_trace_closed` when the operation's image is a dynamically linked 64-bit ELF,
+under the conditions of the paragraph above — `--observe wrappers` or `--observe syscalls`, a
+build that can supervise, outside a replay — and a statically linked one keeps
+`observe_supervised_static_parent`. The sentence says that a process the run observed closed the
+descriptor the shim writes its records through, as a program does when it closes every descriptor
+before it starts another, and names `--observe supervised`, under which the engine keeps that
+record outside the target. Measured to be crossed by that mode on Flyway 13.11.1, whose JVM helper
+closes every descriptor before it execs (PASS 53/53), and Salt 3008.4, whose Python closes each
+descriptor `/proc/self/fd` lists, one `close` at a time (FAIL 1/3). The same kind keeps the class
+wall in an explored world and in preflight's second run, where neither target met it; in a 32-bit
+image, whose i386-compat and x32 calls that mode does not see; and where the image was not read as
+an ELF.
 
 `child_process_detected` from the recording run's broken self-exec chain chooses
 its `next_step` from an observation on macOS (#703). When the operation's first

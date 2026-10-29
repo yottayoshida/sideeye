@@ -1,0 +1,31 @@
+sideeye 1.16.0 (trace contract v19)
+command: explore --observe supervised
+
+falsify: checker(salt-grains): salt-call grains.item exited 1:  parsing configuration file: /s/salt/minion - conf should be a document, not <class 'str'>.
+falsify: [ERROR   ] Error parsing configuration file: /s/salt/minion - conf should be a document, not <class 'str'>.
+world 2: checker(salt-grains): grain value tokyo-2 is gone: {    "local": {        "datacenter": "",        "environment": "",        "owner": "",        "rack": "",        "cost_center": ""    }}
+FAIL  1 of 3 explored worlds violated an invariant
+
+invariant   built-in atomicity, and the checker
+earliest    crash point 2 of 2
+            after  open(/s/salt/grains)
+            before write(/s/salt/grains)
+path        grains
+observed    holding neither the old nor the new content
+cwd         /s/salt
+
+explored    3 worlds (crash points 2 + 1 baseline)
+expected    exit 0
+atomicity   2 path(s) judged pre-or-post
+oracle      agreed on 2 operations (13843 syscall lines examined, 4541 in scope of the judged state), witness strace of THIS run — the operations were counted from outside the target by the supervising engine through a seccomp user-notification filter, no shim loaded; in this mode the oracle does not count an entry strace ended `= ? ERESTART...` (a signal took the call back before it completed)
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 3 world(s)
+l1          no marker configured
+case        /tmp/work/cases/000001.json
+replay      sideeye replay /tmp/work/cases/000001.json --observe supervised --oracle /usr/bin/strace
+evidence    sideeye evidence /tmp/work/evidence/000001.json
+processes   12 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   sideeye replay /tmp/work/cases/000001.json --observe supervised --oracle /usr/bin/strace  (the crash point is the engine's, from outside the operation; there is no shim to preload)
+rc=1
