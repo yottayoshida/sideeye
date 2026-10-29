@@ -1489,7 +1489,7 @@ fn phaseStructural(run: *Run) void {
     // reason #485 exists: a refusal that names a different operation than the one it is
     // about sends the reader looking in the wrong place.
     if (trace.unresolved_refusing != null)
-        unknown(.unresolvable_path, boundary.unresolvedDetail(arena, trace.unresolved_refusing, "", "an operation was observed whose path could not be determined, so it cannot be placed among the crash points"), boundary.staticParentNext(.class_wall, boundary.traceClosedByTarget(trace.unresolved_refusing)));
+        unknown(.unresolvable_path, boundary.unresolvedDetail(arena, trace.unresolved_refusing, "", "an operation was observed whose path could not be determined, so it cannot be placed among the crash points"), boundary.traceClosedNext(trace.unresolved_refusing));
 
     if (trace.first_unsupported) |name|
         unknown(.unsupported_syscall_observed, name, .class_wall);

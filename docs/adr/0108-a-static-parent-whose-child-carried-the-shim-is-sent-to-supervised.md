@@ -60,6 +60,19 @@ keyed on `oracle_missed_operation` alone would still send roswell away.
 3. **Everywhere else the site's step stands.** A step that cannot work is worse than one that only points at the
    class (`childTouchedNext`, ADR 0076).
 
+**Amended 2026-10-29 (#988).** The recording run's `unresolvable_path` of kind `trace-closed-by-target` no
+longer needs a static image to be sent on. The dynamic twin kept the class wall here because no dynamic image
+had been measured to cross; two have since, under `--observe supervised`: Flyway 13.11.1, whose JVM helper closes
+every descriptor before it execs (PASS 53/53), and Salt 3008.4, whose Python closes each descriptor
+`/proc/self/fd` lists (FAIL 1/3) — `spike/dogfood/2026-10-25-shipped-v1160/`. A dynamically linked 64-bit ELF
+takes `NextStep.observe_supervised_trace_closed`, which opens on a process having closed the shim's trace rather
+than on the image, since the static sentence would be false of it; a static one keeps this decision's member.
+The choice is `boundary.traceClosedNext`, a function of its own: `staticParentNext` serves the other two sites,
+which keep their step for a dynamic image. A 32-bit image and one not read as an ELF keep the class wall (ADR
+0090: that mode does not see i386-compat or x32 calls), and so do the explored world's and preflight's second
+run's sites, which no target has met — decision 3 holds for them. The root cause, a shim that stops recording
+when `close` takes its descriptor where a libc sweep's loss is reopened, is #941's (ADR 0013).
+
 ## Alternatives considered
 
 - **Fix `missedOperationNext` alone** (#685's own "What to add"). roswell keeps the class wall.

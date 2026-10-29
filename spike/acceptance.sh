@@ -4578,7 +4578,8 @@ fi
 # announcing the shim, another kind of unplaceable record, the other arm — so a site that stopped
 # reading its shape (a reason-and-image rule at the exit would) is red there too.
 sp685="which no shim can be loaded into: the shim records this run read came from a process the operation started"
-st685() {   # st685 <label> <reason> <new|keep> <text the kept step carries> <toy> <flags...>
+sp988="closed the descriptor the shim writes its records through"
+st685() {   # st685 <label> <reason> <new|closed|keep> <text the kept step carries> <toy> <flags...>
     s685_label=$1; s685_reason=$2; s685_want=$3; s685_keep=$4; s685_toy=$5; shift 5
     rm -rf /tmp/acc-685 && mkdir -p /tmp/acc-685/state
     o=$("$SIDEEYE" explore --state /tmp/acc-685/state --setup "$s685_toy init" --operation "$s685_toy rotate" \
@@ -4592,7 +4593,10 @@ st685() {   # st685 <label> <reason> <new|keep> <text the kept step carries> <to
     elif [ "$s685_want" = new ] && ! printf '%s\n' "$s685_step" | grep -qF "$sp685"; then
         echo "FAIL #685 $s685_label: the step does not say the shim was not in the operation: $(printf '%s' "$s685_step" | cut -c1-100)"
         fails=$((fails + 1))
-    elif [ "$s685_want" = keep ] && { printf '%s\n' "$s685_step" | grep -qF "$sp685" || ! printf '%s\n' "$s685_step" | grep -qF "$s685_keep"; }; then
+    elif [ "$s685_want" = closed ] && { printf '%s\n' "$s685_step" | grep -qF "$sp685" || ! printf '%s\n' "$s685_step" | grep -qF "$sp988"; }; then
+        echo "FAIL #685 $s685_label: the step does not say a process closed the shim's trace: $(printf '%s' "$s685_step" | cut -c1-100)"
+        fails=$((fails + 1))
+    elif [ "$s685_want" = keep ] && { printf '%s\n' "$s685_step" | grep -qF "$sp685" || printf '%s\n' "$s685_step" | grep -qF "$sp988" || ! printf '%s\n' "$s685_step" | grep -qF "$s685_keep"; }; then
         echo "FAIL #685 $s685_label: the twin's step moved: $(printf '%s' "$s685_step" | cut -c1-100)"
         fails=$((fails + 1))
     else
@@ -4616,8 +4620,12 @@ unset TOY_EXEC_PATH
 TOY_SPAWN=1 TOY_SPAWN_PATH=$OUT/toy-fixed TOY_CLOSE_SWEEP=1023 export TOY_SPAWN TOY_SPAWN_PATH TOY_CLOSE_SWEEP
 st685 "unresolvable_path from a child that closed the shim's trace under a static parent names --observe supervised" unresolvable_path new "" "$OUT/toy-static" --allow-unverified
 unset TOY_SPAWN TOY_SPAWN_PATH
-st685 "unresolvable_path's dynamic twin, closing its own trace, keeps the class wall" unresolvable_path keep "refuses by design" "$OUT/toy-fixed" --allow-unverified
+st685 "unresolvable_path's dynamic twin, closing its own trace, names --observe supervised in a step of its own (#988)" unresolvable_path closed "" "$OUT/toy-fixed" --allow-unverified
 unset TOY_CLOSE_SWEEP
+# A step keyed on the image rather than on the record's kind would send this one on too.
+TOY_WRITE_AFTER_UNLINK=1 export TOY_WRITE_AFTER_UNLINK
+st685 "unresolvable_path of another kind (unlinked-fd) in a dynamic image keeps the class wall (#988)" unresolvable_path keep "refuses by design" "$OUT/toy-fixed" --allow-unverified
+unset TOY_WRITE_AFTER_UNLINK
 # The same static parent and child, the child writing through a descriptor whose file it
 # unlinked: an unplaceable record of another kind, which supervised refuses too.
 TOY_SPAWN=1 TOY_SPAWN_PATH=$OUT/toy-fixed TOY_WRITE_AFTER_UNLINK=1 export TOY_SPAWN TOY_SPAWN_PATH TOY_WRITE_AFTER_UNLINK
@@ -4663,8 +4671,18 @@ if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
         sed 's/^/     | /' /tmp/acc-685s/out.txt | head -6
         fails=$((fails + 1))
     fi
+    TOY_CLOSE_SWEEP=1023 export TOY_CLOSE_SWEEP
+    sup_explore /tmp/acc-988s "$OUT/toy-bug" --observe supervised; s988_r=$?
+    unset TOY_CLOSE_SWEEP
+    if [ "$s988_r" = 1 ]; then
+        echo "ok   #988 a dynamic image that closes every descriptor reaches the FAIL under --observe supervised, where the step sends it"
+    else
+        echo "FAIL #988 the dynamic image closing its trace under --observe supervised: exit $s988_r (wanted 1)"
+        sed 's/^/     | /' /tmp/acc-988s/out.txt | head -6
+        fails=$((fails + 1))
+    fi
 else
-    echo "     NOT MEASURED: #685's static parents under --observe supervised — SIDEEYE_EXPECT_CONTAINED is not 1"
+    echo "     NOT MEASURED: #685's static parents and #988's dynamic image under --observe supervised — SIDEEYE_EXPECT_CONTAINED is not 1"
 fi
 
 # ---- contract v14: the inherited filter's cost, pinned so it cannot drift silently ----
