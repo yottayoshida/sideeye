@@ -124,21 +124,20 @@ const trapped: []const Trap = switch (builtin.cpu.arch) {
         .{ .sys = .openat2 },   .{ .sys = .renameat },  .{ .sys = .renameat2 },
         .{ .sys = .unlinkat },  .{ .sys = .mkdirat },   .{ .sys = .linkat },
         .{ .sys = .symlinkat }, .{ .sys = .truncate },  .{ .sys = .ftruncate },
-        .{ .sys = .fsync },     .{ .sys = .fdatasync },
+        .{ .sys = .fsync },     .{ .sys = .fdatasync }, .{ .sys = .fallocate },
     },
     .x86_64 => &.{
-        .{ .sys = .write },     .{ .sys = .pwrite64 },  .{ .sys = .writev },
-        .{ .sys = .pwritev },   .{ .sys = .sendfile },  .{ .sys = .openat, .flag_arg = 2, .flag_mask = write_capable_mask },
-        .{ .sys = .openat2 },   .{ .sys = .renameat },  .{ .sys = .renameat2 },
-        .{ .sys = .unlinkat },  .{ .sys = .mkdirat },   .{ .sys = .linkat },
-        .{ .sys = .symlinkat }, .{ .sys = .truncate },  .{ .sys = .ftruncate },
-        .{ .sys = .fsync },     .{ .sys = .fdatasync },
+        .{ .sys = .write },                                                .{ .sys = .pwrite64 },  .{ .sys = .writev },
+        .{ .sys = .pwritev },                                              .{ .sys = .sendfile },  .{ .sys = .openat, .flag_arg = 2, .flag_mask = write_capable_mask },
+        .{ .sys = .openat2 },                                              .{ .sys = .renameat },  .{ .sys = .renameat2 },
+        .{ .sys = .unlinkat },                                             .{ .sys = .mkdirat },   .{ .sys = .linkat },
+        .{ .sys = .symlinkat },                                            .{ .sys = .truncate },  .{ .sys = .ftruncate },
+        .{ .sys = .fsync },                                                .{ .sys = .fdatasync }, .{ .sys = .fallocate },
         // The legacy spellings glibc still issues on this architecture (the oracle's own
         // comment on `cwd` records measuring `rename`, `unlink` and `mkdir` here).
-        .{ .sys = .open, .flag_arg = 1, .flag_mask = write_capable_mask },
-        .{ .sys = .creat },     .{ .sys = .rename },    .{ .sys = .unlink },
-        .{ .sys = .rmdir },     .{ .sys = .mkdir },     .{ .sys = .link },
-        .{ .sys = .symlink },
+        .{ .sys = .open, .flag_arg = 1, .flag_mask = write_capable_mask }, .{ .sys = .creat },     .{ .sys = .rename },
+        .{ .sys = .unlink },                                               .{ .sys = .rmdir },     .{ .sys = .mkdir },
+        .{ .sys = .link },                                                 .{ .sys = .symlink },
     },
     else => &.{},
 };
@@ -426,6 +425,7 @@ pub fn install() Install {
             .ftruncate,
             .fsync,
             .fdatasync,
+            .fallocate,
             => {},
             else => switch (builtin.cpu.arch) {
                 .x86_64 => switch (t.sys) {
@@ -713,6 +713,8 @@ fn recordPortable(sys: SYS, a: [6]u64) void {
         .write, .pwrite64, .writev, .pwritev, .sendfile => common.noteFdFromTrap(.write, fdOf(a[0])),
         .fsync, .fdatasync => common.noteFdFromTrap(.fsync, fdOf(a[0])),
         .ftruncate => common.noteFdFromTrap(.truncate, fdOf(a[0])),
+        // Not the other modes: the wrapper records mode 0 only, and the two doors have to agree.
+        .fallocate => if (contract.fallocateCounts(@truncate(a[1]))) common.noteFdFromTrap(.truncate, fdOf(a[0])),
         .truncate => common.note1FromTrap(.truncate, common.AT_FDCWD, pathOf(a[0])),
         .openat => common.note1FromTrap(.open, fdOf(a[0]), pathOf(a[1])),
         .openat2 => {

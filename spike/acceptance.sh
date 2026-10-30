@@ -72,7 +72,7 @@ fi
 # completeness_not_verified case below — so a suite that omitted it would only ever be
 # exercising the FAIL and UNKNOWN paths.
 run_case() {
-    name=$1; toy=$2; want_exit=$3; want_text=$4
+    name=$1; toy=$2; want_exit=$3; want_text=$4; shift 4
     rm -rf /tmp/acc && mkdir -p /tmp/acc/state
     output=$("$SIDEEYE" explore \
         --state /tmp/acc/state \
@@ -80,7 +80,7 @@ run_case() {
         --operation "$toy rotate" \
         --shim "$SHIM" \
         --work /tmp/acc/work \
-        --oracle /usr/bin/strace 2>&1)
+        --oracle /usr/bin/strace "$@" 2>&1)
     rc=$?
 
     if [ "$rc" != "$want_exit" ]; then
@@ -4342,6 +4342,19 @@ sup_explore() {   # sup_explore <dir> <toy> <mode flags...>
         --check "$ROOT/spike/check.sh" "$@" --oracle /usr/bin/strace --work "$sd/work" \
         --json "$sd/r.json" > "$sd/out.txt" 2>&1
 }
+# Not one count for both: mode 0 counts as a truncate and FALLOC_FL_KEEP_SIZE alone does not (6 against 5).
+fa_modes="wrappers syscalls"
+[ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ] && fa_modes="$fa_modes supervised"
+for fa_obs in $fa_modes; do
+    TOY_FALLOCATE=0 export TOY_FALLOCATE
+    run_case "fallocate in mode 0 under --observe $fa_obs: a truncate crash point, judged (#978)" "$OUT/toy-fixed" 0 "6/6 explored worlds" --observe "$fa_obs"
+    TOY_FALLOCATE=keep export TOY_FALLOCATE
+    run_case "fallocate with FALLOC_FL_KEEP_SIZE alone under --observe $fa_obs: counted by no witness (#978)" "$OUT/toy-fixed" 0 "5/5 explored worlds" --observe "$fa_obs"
+    TOY_FALLOCATE=punch export TOY_FALLOCATE
+    run_case "fallocate punching a hole under --observe $fa_obs: refused naming the mode (#978)" "$OUT/toy-fixed" 2 "fallocate(FALLOC_FL_KEEP_SIZE|FALLOC_FL_PUNCH_HOLE)" --observe "$fa_obs"
+done
+unset TOY_FALLOCATE
+
 if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
     sup_explore /tmp/acc-sup "$OUT/toy-static" --observe supervised
     sup_rc=$?

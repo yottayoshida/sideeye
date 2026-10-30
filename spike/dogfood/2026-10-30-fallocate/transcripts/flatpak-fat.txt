@@ -1,0 +1,7 @@
+base run1 rc=2 unsupported_syscall_observed
+fallocate
+base run2 rc=2 unsupported_syscall_observed
+base run3 rc=2 unsupported_syscall_observed
+mineB run1 rc=0 PASS  31/31 explored worlds satisfied the built-in atomicity invariant
+mineB run2 rc=0 PASS  31/31 explored worlds satisfied the built-in atomicity invariant
+mineB run3 rc=0 PASS  31/31 explored worlds satisfied the built-in atomicity invariant

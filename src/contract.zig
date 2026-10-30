@@ -382,6 +382,13 @@ test "unresolved_kind.withFd appends the descriptor, and its buffer fits every m
     );
 }
 
+pub const falloc_keep_size: u32 = 0x1;
+
+// Not any mode with a size: only mode 0 grows a file with zeros; the others keep the size or rewrite bytes in place.
+pub fn fallocateCounts(mode: u32) bool {
+    return mode == 0;
+}
+
 pub const OpClass = enum(u16) {
     open = 1,
     write = 2,

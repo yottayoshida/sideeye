@@ -138,6 +138,11 @@
  *                      family are flush points too. init creates the file so it is in
  *                      the pre snapshot.
  *
+ *   TOY_FALLOCATE      every file written is first given its size with fallocate (Linux):
+ *                  `0` mode 0, libglnx's and glib's call — a truncate crash point, judged;
+ *                  `keep` FALLOC_FL_KEEP_SIZE alone — changes nothing, counted by no
+ *                  witness; `punch` FALLOC_FL_KEEP_SIZE|FALLOC_FL_PUNCH_HOLE — refused by name
+ *
  * The four below exist for typed path resolution and first-class links (ADR 0006).
  *   TOY_LINK           the git loose-object idiom: write a tmp, link it into its final
  *                      name, unlink the tmp — link is a first-class kill point.
@@ -450,6 +455,14 @@ static int write_file(const char *path, const char *content) {
     int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd < 0) return -1;
     size_t len = strlen(content);
+#ifdef __linux__
+    const char *fa = getenv("TOY_FALLOCATE");
+    if (fa != NULL) {
+        int mode = strcmp(fa, "keep") == 0 ? FALLOC_FL_KEEP_SIZE
+                 : strcmp(fa, "punch") == 0 ? FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE : 0;
+        if (fallocate(fd, mode, 0, (off_t)len) != 0 && errno != EOPNOTSUPP) { close(fd); return -1; }
+    }
+#endif
     size_t off = 0;
     while (off < len) {
         ssize_t w = write(fd, content + off, len - off);

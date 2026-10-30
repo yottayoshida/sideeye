@@ -620,6 +620,18 @@ pub fn ftruncate(fd: c_int, length: i64) callconv(.c) c_int {
     return common.callFtruncate(fd, length);
 }
 
+// Not recorded for any mode but 0: `FALLOC_FL_KEEP_SIZE` alone changes nothing a crash leaves, and the
+// oracle refuses the others by name, as it does `renameat2`'s flags.
+pub fn fallocate(fd: c_int, mode: c_int, offset: i64, len: i64) callconv(.c) c_int {
+    if (contract.fallocateCounts(@bitCast(mode))) common.noteFd(.truncate, fd);
+    return common.callFallocate(fd, mode, offset, len);
+}
+
+pub fn posix_fallocate(fd: c_int, offset: i64, len: i64) callconv(.c) c_int {
+    common.noteFd(.truncate, fd);
+    return common.callPosixFallocate(fd, offset, len);
+}
+
 pub fn truncate(path: [*:0]const u8, length: i64) callconv(.c) c_int {
     common.note1(.truncate, AT_FDCWD, path);
     return common.callTruncate(path, length);

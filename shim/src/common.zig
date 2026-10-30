@@ -207,6 +207,8 @@ pub const SymlinkFn = *const fn ([*:0]const u8, [*:0]const u8) callconv(.c) c_in
 pub const SymlinkatFn = *const fn ([*:0]const u8, c_int, [*:0]const u8) callconv(.c) c_int;
 pub const FdFn = *const fn (c_int) callconv(.c) c_int;
 pub const FtruncateFn = *const fn (c_int, i64) callconv(.c) c_int;
+pub const FallocateFn = *const fn (c_int, c_int, i64, i64) callconv(.c) c_int;
+pub const PosixFallocateFn = *const fn (c_int, i64, i64) callconv(.c) c_int;
 pub const TruncateFn = *const fn ([*:0]const u8, i64) callconv(.c) c_int;
 pub const MkdirFn = *const fn ([*:0]const u8, c_uint) callconv(.c) c_int;
 pub const MkdiratFn = *const fn (c_int, [*:0]const u8, c_uint) callconv(.c) c_int;
@@ -411,6 +413,8 @@ pub var real: struct {
     fdatasync: ?FdFn = null,
     close: ?FdFn = null,
     ftruncate: ?FtruncateFn = null,
+    fallocate: ?FallocateFn = null,
+    posix_fallocate: ?PosixFallocateFn = null,
     truncate: ?TruncateFn = null,
     mkdir: ?MkdirFn = null,
     mkdirat: ?MkdiratFn = null,
@@ -2661,6 +2665,15 @@ pub inline fn callFtruncate(fd: c_int, len: i64) c_int {
     if (is_darwin) return darwin.ftruncate(fd, len);
     const f = reach("ftruncate") orelse return optionalMissingInt();
     return f(fd, len);
+}
+pub inline fn callFallocate(fd: c_int, mode: c_int, off: i64, len: i64) c_int {
+    const f = reach("fallocate") orelse return optionalMissingInt();
+    return f(fd, mode, off, len);
+}
+// Not `optionalMissingInt`: posix_fallocate returns the error number rather than setting errno.
+pub inline fn callPosixFallocate(fd: c_int, off: i64, len: i64) c_int {
+    const f = reach("posix_fallocate") orelse return ENOSYS;
+    return f(fd, off, len);
 }
 pub inline fn callTruncate(path: [*:0]const u8, len: i64) c_int {
     if (is_darwin) return darwin.truncate(path, len);
