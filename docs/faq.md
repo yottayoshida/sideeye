@@ -47,7 +47,7 @@ def test_no_crash_window(tmp_path):
     assert result["verdict"] == "PASS" and result["oracle_verified"], result
 ```
 
-On macOS a framework Python's `python3` — Homebrew's, python.org's — is a launcher that replaces itself, and Sideeye refuses it (`child_process_detected`) and names the interpreter to write in the define instead ([what the target has to be](../README.md#what-the-target-has-to-be)).
+On macOS a framework Python's `python3` — Homebrew's, python.org's — is a launcher that replaces itself, and Sideeye refuses it (`child_process_detected`) and names the interpreter to write in the define instead ([what macOS cannot judge](cli.md#what-macos-cannot-judge)).
 
 cargo test, as `tests/crash_consistency.rs`, with `sideeye.toml` at the package root naming `./target/debug/<your-binary>` — cargo builds the package's binaries before it runs integration tests. That path is the one a plain `cargo test` in a single package writes; under `--release`, `--target`, `CARGO_TARGET_DIR` or a workspace member the binary is elsewhere, and a define still naming `./target/debug/` would judge whatever build was left there, so name the path your test command builds:
 

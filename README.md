@@ -60,7 +60,7 @@ operation = "mytool rotate-key" # the shim is inserted into this one, not into s
 check     = "./check.sh"        # exit 0 = invariant holds
 ```
 
-`operation` is the one command the shim is inserted into; command strings split on spaces, no quoting. `--oracle` is a second witness, the kernel's account (Linux; on macOS, `--oracle-fs-usage`); without one, PASS needs `--allow-unverified`, and the report says so. `--shim` names the shim when it is not beside the binary; `--work` moves the scratch directory. Exit codes: **0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR**. A FAIL saves a replayable case, and `sideeye evidence <case>` renders it for an issue tracker. Run `explore --config` in CI ([docs/ci-quickstart.md](docs/ci-quickstart.md)). For agents there is `sideeye mcp`, and three skills (`npx skills@1.7.1 add yottayoshida/sideeye`): [docs/mcp.md](docs/mcp.md).
+`operation` is the one command the shim is inserted into; command strings split on spaces, no quoting; an argument holding a space takes the argv form ([docs/cli.md](docs/cli.md#usage)). `--oracle` is a second witness, the kernel's account (Linux; on macOS, `--oracle-fs-usage`); without one, PASS needs `--allow-unverified`, and the report says so. `--shim` names the shim when it is not beside the binary; `--work` moves the scratch directory. Exit codes: **0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR**. A FAIL saves a replayable case, and `sideeye evidence <case>` renders it for an issue tracker. Run `explore --config` in CI ([docs/ci-quickstart.md](docs/ci-quickstart.md)). For agents there is `sideeye mcp`, and three skills (`npx skills@1.7.1 add yottayoshida/sideeye`): [docs/mcp.md](docs/mcp.md).
 
 ## Writing the check
 
@@ -75,7 +75,7 @@ case "$claim:$reality" in
 esac
 ```
 
-Sideeye refuses to trust a checker it has not seen fail: it corrupts the state first. A checker that cannot fail makes the run UNKNOWN, not PASS; so does an exploration in which no world could have failed ([conditions](docs/report-schema.md)).
+Sideeye refuses to trust a checker it has not seen fail: it corrupts the state first. A checker that cannot fail makes the run UNKNOWN, not PASS; so does an exploration in which no world could have failed ([conditions](docs/report-schema.md)). Worked checkers: [docs/checker-cookbook.md](docs/checker-cookbook.md).
 
 ## What the target has to be
 
@@ -85,7 +85,6 @@ Sideeye refuses to guess: outside these limits the verdict is UNKNOWN, naming th
 - **Under `--observe syscalls`, a process whose `SIGSYS` is blocked or reset dies at its first state-changing call** — an `exec`'d image the shim cannot reach, a `posix_spawn` child.
 - **Byte-repeatable writes** (`preflight --twice` checks), **state in one directory**, **a clean run exits its declared success status**.
 - **Other processes take turns with the state**, and every writing child is reaped; a process boundary needs Linux's `--oracle`, and one that leaves its process group is judged only where the engine can hold the run in a cgroup (Linux) — otherwise UNKNOWN.
-- **On macOS, a framework Python's `bin/python3` is a launcher**; Sideeye refuses it and names the interpreter to run instead.
 
 No language model decides a verdict; a PASS is a search record naming what was *not* tested.
 
