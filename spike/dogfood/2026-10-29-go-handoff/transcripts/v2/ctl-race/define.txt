@@ -1,0 +1,4 @@
+state=/s/ctl
+cwd=/s
+scratch=-
+op=/opt/bin/ctl-race /s/ctl

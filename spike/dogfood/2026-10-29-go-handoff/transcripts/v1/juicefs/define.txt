@@ -1,0 +1,4 @@
+state=/s/jfs
+cwd=/s/jfs
+scratch=-
+op=juicefs config sqlite3:///s/jfs/jfs.db?_journal=DELETE --capacity 50 --inodes 200000 --trash-days 3 --yes

@@ -1,0 +1,4 @@
+state=/s/gql/graph
+cwd=/s/gql
+scratch=-
+op=gqlgen generate
