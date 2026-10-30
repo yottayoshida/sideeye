@@ -17,6 +17,7 @@
 //! touch the heap; the engine gets the same guarantee for free.
 
 const std = @import("std");
+const builtin = @import("builtin");
 
 /// Bumped whenever the trace format or the meaning of an `OpClass` changes.
 /// The engine refuses a trace whose version differs (`contract_version_mismatch`),
@@ -573,6 +574,13 @@ pub inline fn docUrl(comptime path: []const u8) []const u8 {
     return repo_url ++ "/blob/v" ++ sideeye_version ++ "/" ++ path;
 }
 
+pub const macos_table = docUrl("docs/cli.md#what-macos-cannot-judge") ++ " lists what macOS cannot judge and the Linux run that goes past each.";
+pub const ci_linux_run = "in GitHub Actions, " ++ docUrl("docs/ci-quickstart.md") ++ " sets one up";
+pub const no_kernel_mode_on_macos = "macOS has no mode that counts at the kernel boundary: a write that went past the libc entry points the shim is inserted at — a raw syscall, a stdio flush libc makes from inside itself — leaves no record here, and only Linux counts it.";
+pub const no_cgroup_on_macos = "macOS gives the engine no cgroup, so a process that leaves the run's process group cannot be stopped with the run.";
+pub const trace_closed_on_macos = "A process this run observed closed the descriptor the shim writes its records through, as a program does when it closes every descriptor before starting another, so what it did after that went unrecorded; macOS has no mode that keeps the trace out of the target's reach.";
+pub const where_engine_contains = "where it can make cgroups under its own and move processes into them — a writable cgroup v2 delegated to its user, or root over a writable cgroup v2 (a default container mounts it read-only) — and a process that leaves the group is stopped with the run's cgroup and judged";
+
 /// **Closed and payload-free**, so the sentence is a comptime string. `unknown()` is
 /// `noreturn` and the promise is "every UNKNOWN carries it": a sentence assembled at run
 /// time from an arena could fail to allocate exactly when the report is being written,
@@ -624,6 +632,12 @@ pub const NextStep = enum {
     threads_supervised,
     non_system_build,
     oracle_fixed_limit,
+    observe_syscalls_on_linux,
+    strace_on_linux,
+    contain_on_linux,
+    observe_supervised_on_linux,
+
+    const strace_run_off_linux = if (builtin.os.tag == .macos) " For a Linux run with strace, " ++ ci_linux_run ++ "." else "";
 
     const one_thread_switch = "A tool's own switch for running its file calls on one thread can move it past this — UV_THREADPOOL_SIZE=1 for Node, GOMAXPROCS=1 for Go: set it in the environment Sideeye runs in and declare it in the define's apparatus (env:UV_THREADPOOL_SIZE=1, for example); " ++ docUrl("docs/apparatus.md#a-tools-own-switch-for-one-thread") ++ " lists the switches measured and the targets each did not move.";
 
@@ -631,8 +645,8 @@ pub const NextStep = enum {
         return switch (self) {
             .fix_define => "Change the define: the detail above names the declaration this run contradicted, and nothing is judged until it holds.",
             .pass_oracle => "Re-run with --oracle <strace> on Linux or --oracle-fs-usage on macOS, or accept the weaker claim with --allow-unverified.",
-            .account_boundary => "Re-run with --oracle <strace> on Linux, the witness that can account for the other process; on macOS a process boundary is refused by design, and --allow-unverified does not lift this refusal.",
-            .account_boundary_or_unwrap => "Re-run with --oracle <strace> on Linux, the witness that can account for the other process — or, if the operation is a shell script wrapping another command, invoke that command as the operation instead; on macOS a process boundary is refused by design, and --allow-unverified does not lift this refusal.",
+            .account_boundary => "Re-run with --oracle <strace> on Linux, the witness that can account for the other process; on macOS a process boundary is refused by design, and --allow-unverified does not lift this refusal." ++ strace_run_off_linux,
+            .account_boundary_or_unwrap => "Re-run with --oracle <strace> on Linux, the witness that can account for the other process — or, if the operation is a shell script wrapping another command, invoke that command as the operation instead; on macOS a process boundary is refused by design, and --allow-unverified does not lift this refusal." ++ strace_run_off_linux,
             .raise_world_timeout => "Raise --world-timeout, or find out what the operation waits on.",
             .class_wall => "This target does something Sideeye refuses by design: the unknown_reason above names the limit, " ++ docUrl("docs/report-schema.md#refusals-by-reason") ++ " says what each one stands at, and " ++ docUrl("DESIGN.md#known-constraints-declared-not-hidden") ++ " gives the reasons.",
             .unwrap_or_class_wall => "Check whether the operation is a shell script wrapping another command — if it is, invoke that command as the operation instead; the refusal itself is one Sideeye makes by design, and " ++ docUrl("docs/report-schema.md#refusals-by-reason") ++ " says what its unknown_reason stands at.",
@@ -642,7 +656,7 @@ pub const NextStep = enum {
             .rebuild_pair => "Use the shim and the engine from the same build: --shim must name the library this binary shipped with.",
             .re_record => "Explore the define again under this build; the saved case does not apply here, and a fresh recording yields a fresh case.",
             .environment => "Fix what the detail above names in the environment, then re-run; the define itself is unchanged.",
-            .oracle_fixed_limit => "The limit the detail names is fixed in this build: under --oracle-fs-usage the recording has to finish inside it. On Linux, --oracle <strace> has neither limit.",
+            .oracle_fixed_limit => "The limit the detail names is fixed in this build: under --oracle-fs-usage the recording has to finish inside it. On Linux, --oracle <strace> has neither limit." ++ strace_run_off_linux,
             .retry_then_report => "Re-run once; if it happens again, file it at " ++ issues_url ++ " with the report attached, because the detail cannot say whether the machine or Sideeye stopped short.",
             .unreadable_entry_appeared => "An entry this user cannot read appeared in the state during the run (a lock created with mode 0000 is the common case): re-run as a user that can read it, or point --state at a directory that leaves it outside.",
             .narrow_state => "Point --state at a smaller or shallower directory, or reduce what the operation writes there and how deep it nests; the ceiling the detail names is fixed in this build.",
@@ -668,6 +682,10 @@ pub const NextStep = enum {
             .threads_limit => "Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit stated under 'What the target has to be' (" ++ docUrl("README.md#what-the-target-has-to-be") ++ "): threads are judged where a creation or a join the shim saw orders their writes. " ++ one_thread_switch,
             .threads_supervised => "Two threads of one process wrote the judged directory, and under --observe supervised no join is recorded, nor which thread a creation made, so nothing orders their writes. " ++ one_thread_switch,
             .non_system_build => "The operation's image names a platform in its code directory, the marker Apple's own binaries carry, and macOS keeps an inserted library out of those: it strips the insertion on some machines, and on others dyld refuses the library and the run dies; an ad-hoc re-signed copy did not start when that was measured. Make a build of the tool that is not part of macOS (Homebrew's, for example) the operation's first word.",
+            .observe_syscalls_on_linux => no_kernel_mode_on_macos ++ " Run the same define on Linux — under the default mode, and if it refuses the same way there, with --observe syscalls, after reading the entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset' (" ++ docUrl("README.md#what-the-target-has-to-be") ++ "). For that run, " ++ ci_linux_run ++ ", with the flag added; " ++ macos_table,
+            .strace_on_linux => "This is a limit of fs_usage, the witness macOS has: its reader could not account for what the detail names. On Linux the witness is strace, read by another reader: run the same define there with --oracle <strace>; " ++ ci_linux_run ++ ". On macOS the one way past is the weaker claim, --allow-unverified in place of --oracle-fs-usage, which no witness checks. " ++ macos_table,
+            .contain_on_linux => no_cgroup_on_macos ++ " On Linux, run the engine " ++ where_engine_contains ++ "; " ++ macos_table,
+            .observe_supervised_on_linux => trace_closed_on_macos ++ " On Linux 5.19 or later, on aarch64 or x86_64, with a cgroup v2 the engine can create cgroups in, run the same command with --observe supervised: the engine holds the trace there, outside the target; " ++ macos_table,
         };
     }
 };

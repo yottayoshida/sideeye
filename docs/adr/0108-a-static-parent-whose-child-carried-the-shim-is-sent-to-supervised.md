@@ -108,3 +108,14 @@ when `close` takes its descriptor where a libc sweep's loss is reopened, is #941
   number in the default's count. No acceptance leg drives that condition: a case of this shape is saved where it
   reaches a verdict, under `--observe supervised`, and a replay of it is excluded by the mode before the flag is
   read. The unit test pins the flag as an argument; `main.zig` sets it where a replay reads its case.
+
+## Amended 2026-10-29: off Linux a trace the target closed names a Linux run (#953)
+
+"One not read as an ELF keeps the class wall" covered macOS, where every image is a Mach-O and
+the supervising mode does not exist. Off Linux the recording run's refusal of this kind now takes
+`observe_supervised_on_linux`: the same `--observe supervised`, for a run of the same command on
+Linux, with that mode's floor (5.19, aarch64 or x86_64, a cgroup the engine can make). Outside
+Linux the step names no mode on this machine, so the reason the class wall was kept — a step into
+a mode that cannot run here — does not reach it. A replay, the explored world's site and preflight's
+second run keep the class wall, as decision 3 says; on Linux a 32-bit image and one not read as an
+ELF keep it too.

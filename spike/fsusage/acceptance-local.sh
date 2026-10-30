@@ -217,9 +217,15 @@ echo "  predicate: exit 2 AND oracle_verified false AND a divergence reason"
 rc2=$(run c2 dprintf_toy --oracle-fs-usage)
 echo "  exit=$rc2 reason=$(field c2 unknown_reason) oracle_verified=$(field c2 oracle_verified)"
 [ "$rc2" = "2" ] || { sed -n '1,12p' "$WORK/c2.txt"; fail "check 2: expected exit 2"; }
-case "$(field c2 unknown_reason)" in
-    oracle_missed_operation|oracle_saw_phantom) ;;
-    *) fail "check 2: expected a divergence, got $(field c2 unknown_reason)" ;;
+c2_reason=$(field c2 unknown_reason)
+case "$c2_reason" in
+    oracle_missed_operation)
+        c2_next=$(field c2 next_step)
+        case "$c2_next" in *"--observe syscalls"*) ;; *) fail "check 2: the step does not name --observe syscalls: $c2_next" ;; esac
+        case "$c2_next" in *Linux*) ;; *) fail "check 2: the step does not name a Linux run: $c2_next" ;; esac
+        case "$c2_next" in *"docs/ci-quickstart.md"*) ;; *) fail "check 2: the step does not link the CI quickstart: $c2_next" ;; esac ;;
+    oracle_saw_phantom) ;;
+    *) fail "check 2: expected a divergence, got $c2_reason" ;;
 esac
 echo "  PASS"
 
@@ -241,6 +247,7 @@ echo "  flagged exit=$rc3 reason=$(field c3 unknown_reason)"
 [ "$rc3ctl" = "2" ] || { sed -n '1,12p' "$WORK/c3ctl.txt"; fail "check 3 control: expected exit 2 (state_changed_unaccounted); a PASS here is #405's detection half reopening"; }
 [ "$(field c3ctl unknown_reason)" = "state_changed_unaccounted" ] || fail "check 3 control: expected state_changed_unaccounted, got $(field c3ctl unknown_reason)"
 case "$(field c3ctl message)" in *from-raw-child*) ;; *) fail "check 3 control: the refusal does not name the unexplained path: $(field c3ctl message)" ;; esac
+case "$(field c3ctl next_step)" in *"--observe syscalls"*Linux*|*Linux*"--observe syscalls"*) ;; *) fail "check 3 control: the step does not name --observe syscalls on a Linux run: $(field c3ctl next_step)" ;; esac
 # The report half (#409) still holds on the same run: the account does not answer a
 # question nothing looked at.
 ctl3_p=$(field c3ctl processes)
@@ -248,6 +255,8 @@ case "$ctl3_p" in *"single process"*) fail "check 3 control: an unwitnessed run 
 case "$ctl3_p" in *"raw syscall"*) ;; *) fail "check 3 control: the account does not say what the shim cannot see: $ctl3_p" ;; esac
 [ "$rc3" = "2" ] || { sed -n '1,12p' "$WORK/c3.txt"; fail "check 3: expected exit 2"; }
 [ "$(field c3 unknown_reason)" = "child_touched_state_dir" ] || fail "check 3: expected child_touched_state_dir, got $(field c3 unknown_reason) — a refusal for another reason would leave this check green over a parser failure"
+# Shown, not asserted: which wall this raw-fork child meets on a runner has not been read yet.
+echo "  next_step opens: $(field c3 next_step | cut -c1-60)"
 echo "  PASS"
 
 echo "=================================================================="
@@ -276,6 +285,9 @@ rc4=$(run c4 libcchild_toy --oracle-fs-usage)
 echo "  exit=$rc4 reason=$(field c4 unknown_reason)"
 [ "$rc4" = "2" ] || { sed -n '1,12p' "$WORK/c4.txt"; fail "check 4: expected exit 2"; }
 [ "$(field c4 unknown_reason)" = "boundary_without_oracle" ] || fail "check 4: expected boundary_without_oracle, got $(field c4 unknown_reason)"
+c4_next=$(field c4 next_step)
+case "$c4_next" in *"--oracle <strace> on Linux"*) ;; *) fail "check 4: the step does not name strace on Linux: $c4_next" ;; esac
+case "$c4_next" in *"docs/ci-quickstart.md"*) ;; *) fail "check 4: the step does not link the CI quickstart: $c4_next" ;; esac
 echo "  PASS"
 
 echo "=================================================================="

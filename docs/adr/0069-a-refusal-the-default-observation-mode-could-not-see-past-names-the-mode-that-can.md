@@ -148,3 +148,15 @@ what `--observe syscalls` finds behind it, and nothing the wrappers observation 
 - A define with no checker and no marker can still be judged without a killed child's work, as
   `docs/report-schema.md` says of this mode; no step is raised there to change, and it was not
   measured.
+
+## Amended 2026-10-29: off Linux the step names a Linux run (#953)
+
+Decision 1 kept the class wall off Linux because the flag answers `platform_unsupported` there: a
+step naming the mode would send a macOS reader to a refusal. That reason stands, and the step off
+Linux no longer is the class wall. `missedOperationNext` returns `observe_syscalls_on_linux`, which
+names no mode on macOS: it says macOS has no mode that counts this, and sends the reader to run the
+same define on Linux — under the default mode, and with `--observe syscalls` where that refuses the
+same way — with the CI quickstart for GitHub Actions and `docs/cli.md`'s "What macOS cannot judge"
+for the rest. The class wall said "Sideeye refuses this by design" of a target Linux judges, and a
+macOS user met each such difference one refusal at a time. The step under `--observe syscalls` on
+Linux is unchanged.
