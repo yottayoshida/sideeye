@@ -127,6 +127,14 @@ else bad "sideeye evidence is gone; a reader of this page cannot learn a FAIL re
 if grep -qE 'npx skills@[0-9]+\.[0-9]+\.[0-9]+ add yottayoshida/sideeye' "$R"; then ok "the agent skills' install command, its installer pinned"
 else bad "the agent skills' install command is gone, or no longer pins the installer's version"; fi
 
+# 12. The argv form, beside the rule it is the way past.
+if grep -F 'split on spaces' "$R" | grep -qF 'argv form'; then ok "the argv form, in the sentence that says command strings split on spaces"
+else bad "the argv form is gone, or no longer sits beside the rule that command strings split on spaces"; fi
+
+# 13. The checker cookbook.
+if has '](docs/checker-cookbook.md)'; then ok "the checker cookbook is linked"
+else bad "docs/checker-cookbook.md is no longer linked; a reader of this page cannot find the worked checks"; fi
+
 if [ "$fails" -ne 0 ]; then
     echo "$fails check(s) failed on $R"
     exit 1
