@@ -1,0 +1,4 @@
+state=/s/dolt
+cwd=/s/dolt
+scratch=-
+op=dolt gc

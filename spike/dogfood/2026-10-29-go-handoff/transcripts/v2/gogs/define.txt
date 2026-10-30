@@ -1,0 +1,4 @@
+state=/s/gogs
+cwd=/s/gogs
+scratch=-
+op=gogs restore --config /s/gogsaux/app.ini --tempdir /s/gogsaux/tmp --from /opt/gogs-backup/gogs-backup.zip

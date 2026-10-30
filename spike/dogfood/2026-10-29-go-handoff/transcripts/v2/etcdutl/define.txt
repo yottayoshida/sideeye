@@ -1,0 +1,4 @@
+state=/s/etcd/member/snap
+cwd=/s/etcd
+scratch=-
+op=etcdutl defrag --data-dir /s/etcd

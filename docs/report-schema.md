@@ -430,7 +430,17 @@ operations — since #815 in every exploration, not only one with an admitted ch
 thread (`UV_THREADPOOL_SIZE=1` for Node, `GOMAXPROCS=1` for Go), declared in `apparatus`, with
 `docs/apparatus.md` listing the switches measured and the targets each did not move (#686, ADR
 0113) — and under `--observe supervised`, which records no join and not which thread a creation
-made, `threads_supervised`, which says that and names the same switch without naming a shim. The
+made, `threads_supervised`, which says that and names the same switch without naming a shim. When
+the environment Sideeye runs in already sets one of the switches a variable sets — `UV_THREADPOOL_SIZE`,
+`GOMAXPROCS`, `RAYON_NUM_THREADS` or `TOKIO_WORKER_THREADS`, at `1` — the step is
+`threads_switch_set`, or `threads_switch_set_supervised` under that mode: it says that switch is not
+the target's runtime's or did not remove the second writer, and sends the reader to the list for the
+others, asking for none (#980, ADR
+0138); a switch set inside the operation itself is not seen. Each of the four says that no creation or
+join orders these two writes and that an order only a lock, a queue or a wake sets does not count (#981),
+and the supervised two that
+`GOMAXPROCS=1` does not stop Go's runtime moving one run of writes from one OS thread to another
+(#987). The
 same reason raised under `--oracle-fs-usage` on macOS for a writer the shim never recorded — the
 fs_usage capture saw a thread write that no record names (ADR 0060) — keeps the step it had,
 `unwrap_or_class_wall`: that writer went around the shim, which is not what a pool's size changes.

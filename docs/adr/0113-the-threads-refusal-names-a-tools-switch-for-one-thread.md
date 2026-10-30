@@ -1,6 +1,7 @@
 # 0113 — The threads refusal names a tool's own switch for one thread, in every mode
 
-- **Status:** Accepted (2026-10-10)
+- **Status:** Accepted (2026-10-10). *Amended by ADR 0138 (2026-10-29, #980): the step is chosen from
+  the environment as well — when a switch a variable sets is already `1`, the refusal asks for none.*
 - **Amends:** ADR 0097 — `threads_limit`'s "No flag", and the supervised threads refusal among its
   four exceptions.
 - **Refs:** #686 (from the 2026-10-05 whole-product review); #687, whose measurement this leans on

@@ -1512,7 +1512,7 @@ fn phaseStructural(run: *Run) void {
     // own traces below. In front of the numbering check on purpose: the same race trips
     // that one too, and this is the refusal that says why.
     if (trace.second_writer_thread) |op|
-        unknown(.multiple_threads_detected, boundary.threadDetail(arena, trace.first_writer_thread, op, trace.first_writer_thread_detached, ""), boundary.threadsStep(args.observe));
+        unknown(.multiple_threads_detected, boundary.threadDetail(arena, trace.first_writer_thread, op, trace.first_writer_thread_detached, ""), boundary.threadsStep(args.observe, boundary.oneThreadSwitchSet(&envValue)));
 
     const children_admitted = false;
 
@@ -2331,7 +2331,7 @@ fn phaseExploration(run: *Run) void {
         // the recording did not, and a second thread writing here is as unordered as one
         // in the recording. Nothing is inherited — the record names its thread.
         if (wtrace.second_writer_thread) |op|
-            unknown(.multiple_threads_detected, boundary.threadDetail(arena, wtrace.first_writer_thread, op, wtrace.first_writer_thread_detached, " in an explored world"), boundary.threadsStep(args.observe));
+            unknown(.multiple_threads_detected, boundary.threadDetail(arena, wtrace.first_writer_thread, op, wtrace.first_writer_thread_detached, " in an explored world"), boundary.threadsStep(args.observe, boundary.oneThreadSwitchSet(&envValue)));
         if (wtrace.kill_records != wtrace.kill_point_count)
             unknown(.sequence_numbering_broken, "the run's kill-point numbering has gaps or duplicates in an explored world; the world's crash-point address cannot be trusted", .class_wall);
 
@@ -3110,7 +3110,7 @@ fn observeAgain(
     if (b_detach_refused)
         containment.refuseDetach(arena, cg_b_ptr, " during the second observed run");
     if (trace.second_writer_thread) |op|
-        unknown(.multiple_threads_detected, boundary.threadDetail(arena, trace.first_writer_thread, op, trace.first_writer_thread_detached, " in the second observed run"), boundary.threadsStep(observe));
+        unknown(.multiple_threads_detected, boundary.threadDetail(arena, trace.first_writer_thread, op, trace.first_writer_thread_detached, " in the second observed run"), boundary.threadsStep(observe, boundary.oneThreadSwitchSet(&envValue)));
     // A soft boundary in run B and not run A is still a boundary: the shim only sees
     // what loads it, and "was not seen" must not read as "did nothing" here either.
     //
