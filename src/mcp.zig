@@ -1404,6 +1404,10 @@ fn serverStep(step: contract.NextStep) ?[]const u8 {
         .threads_supervised => comptime contract.threadsSentence(.server, true, false),
         .threads_switch_set => comptime contract.threadsSentence(.server, false, true),
         .threads_switch_set_supervised => comptime contract.threadsSentence(.server, true, true),
+        .observe_syscalls_on_linux => contract.no_kernel_mode_on_macos ++ " Ask the operator to run this server on Linux, then call sideeye_explore_config or sideeye_preflight again — and if the default mode refuses the same way there, with observe \"syscalls\", after reading the entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset' (" ++ contract.docUrl("README.md#what-the-target-has-to-be") ++ "). " ++ contract.macos_table,
+        .strace_on_linux => "This is a limit of fs_usage, the witness macOS has, and this server does not run that witness: on a Linux server, strace set as SIDEEYE_MCP_ORACLE is read by another reader. " ++ contract.macos_table,
+        .contain_on_linux => contract.no_cgroup_on_macos ++ " Ask the operator to run this server on Linux, with the engine " ++ contract.where_engine_contains ++ "; " ++ contract.macos_table,
+        .observe_supervised_on_linux => contract.trace_closed_on_macos ++ " Ask the operator to run this server on Linux 5.19 or later, on aarch64 or x86_64, with a cgroup v2 the engine can create cgroups in, then call sideeye_explore_config or sideeye_preflight with observe \"supervised\": the engine holds the trace there, outside the target; " ++ contract.macos_table,
         else => null,
     };
 }

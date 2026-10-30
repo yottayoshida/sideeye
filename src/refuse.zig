@@ -672,7 +672,7 @@ pub fn reconcileOrRefuse(
             .wrappers => "The shim records what crosses libc; a raw syscall, or a process that never loaded it, leaves no record at all",
         } },
     ) catch "the judged state changed at a path that no recorded operation accounts for";
-    unknown(.state_changed_unaccounted, detail, .class_wall);
+    unknown(.state_changed_unaccounted, detail, boundary.unrecordedWriteNext(builtin.os.tag == .linux));
 }
 
 pub const Judgeable = struct {

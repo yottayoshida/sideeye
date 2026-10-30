@@ -94,3 +94,11 @@ is an existing member named at a second site. #634 keeps that question open.
   the step's table. The call site is covered by the acceptance legs for the unchanged shapes
   only; nothing here exercises the changed step end to end, because no toy produces `lbdb`'s
   shape.
+
+## Amended 2026-10-29: off Linux the writer the shim was loaded into names a Linux run (#953)
+
+The step for a writer the shim was loaded into was "not off Linux, where the flag answers
+`platform_unsupported`". Off Linux it is now `observe_syscalls_on_linux`, as for
+`oracle_missed_operation` (ADR 0069, amended the same day): the step names a run of the same
+define on Linux rather than the mode on macOS, so the reason for leaving macOS out still holds. A
+writer the shim never reached keeps `unwrap_or_class_wall` on every platform.

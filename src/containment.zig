@@ -48,12 +48,12 @@ pub fn detachFinding(arena: std.mem.Allocator, cg: ?*const posix.CgroupSpawn, wh
     if (!linux) return .{
         .reason = .child_process_detected,
         .detail = std.fmt.allocPrint(arena, "{s}{s}; this platform gives the engine no cgroup to stop it with, so the engine cannot claim to have stopped it", .{ lead, where }) catch lead,
-        .next = .class_wall,
+        .next = .contain_on_linux,
     };
     const joined = if (cg) |c| c.joined else false;
     if (!joined and !can_contain) return .{
         .reason = .child_process_detected,
-        .detail = std.fmt.allocPrint(arena, "{s}{s}, and the engine could not give this run a cgroup of its own, so it cannot claim to have stopped it. Run the engine where it can make cgroups under its own and move processes into them — a writable cgroup v2 delegated to its user, or root over a writable cgroup v2 (a default container mounts it read-only) — and a process that leaves the group is stopped with the run's cgroup and judged", .{ lead, where }) catch lead,
+        .detail = std.fmt.allocPrint(arena, "{s}{s}, and the engine could not give this run a cgroup of its own, so it cannot claim to have stopped it. Run the engine " ++ contract.where_engine_contains, .{ lead, where }) catch lead,
         .next = .environment,
     };
     if (!joined) return .{
@@ -368,7 +368,7 @@ test "a run is held for a detach only when every image answered, and a killed wo
     try t.expect(!holds(&cg, &trace, true));
 }
 
-test "a detach the engine did not hold is refused with the reason, and the step is the environment's only where the engine cannot make cgroups (#559)" {
+test "a detach the engine did not hold is refused with the reason; the step is the environment's where Linux cannot make cgroups, and the Linux run's off Linux" {
     var as = std.heap.ArenaAllocator.init(t.allocator);
     defer as.deinit();
     const a = as.allocator();
@@ -378,7 +378,7 @@ test "a detach the engine did not hold is refused with the reason, and the step 
     try t.expect(std.mem.indexOf(u8, no_cgroup.detail, "writable cgroup v2 delegated") != null);
     try t.expect(std.mem.indexOf(u8, no_cgroup.detail, " in an explored world") != null);
     const mac = detachFinding(a, null, "", false, false);
-    try t.expectEqual(contract.NextStep.class_wall, mac.next);
+    try t.expectEqual(contract.NextStep.contain_on_linux, mac.next);
     const missed = detachFinding(a, null, "", true, true);
     try t.expectEqual(contract.NextStep.retry_then_report, missed.next);
     try t.expect(std.mem.indexOf(u8, missed.detail, "can make them here") != null);

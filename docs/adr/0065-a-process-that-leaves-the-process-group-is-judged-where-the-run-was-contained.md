@@ -159,3 +159,12 @@ run was.
   container, the only place it was measured, and is refused naming the environment in a default
   container (`spike/dogfood/2026-09-13-cgroup-559/`). A non-root engine in a delegated cgroup runs
   the acceptance suite in CI and was not pointed at ansible.
+
+## Amended 2026-10-29: on macOS the step names a Linux run (#953)
+
+The macOS row of the table above took `class_wall`: the platform gives the engine no cgroup. That
+reason stands, and the step is now `contain_on_linux`, which says so and names the Linux run that
+judges the same detach — the engine where it can make cgroups, a writable cgroup v2 delegated to
+its user or root over one — with `docs/cli.md`'s "What macOS cannot judge" for the rest. It does
+not link the CI quickstart: a GitHub-hosted runner's steps sit in a cgroup root owns, where the
+engine makes none. The Linux rows are unchanged.
