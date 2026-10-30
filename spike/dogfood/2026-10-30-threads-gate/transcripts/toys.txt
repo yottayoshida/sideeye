@@ -1,0 +1,12 @@
+== base TOY_THREAD_ROOT_MKDIR rc=2
+UNKNOWN  multiple_threads_detected
+next        Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit stated under 'What the target h
+== base TOY_THREAD_SIBLINGS rc=2
+UNKNOWN  multiple_threads_detected
+next        Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit stated under 'What the target h
+== mine TOY_THREAD_ROOT_MKDIR rc=1
+FAIL  1 of 8 explored worlds violated an invariant
+earliest    crash point 7 of 7
+== mine TOY_THREAD_SIBLINGS rc=2
+UNKNOWN  multiple_threads_detected
+next        Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit stated under 'What the target h

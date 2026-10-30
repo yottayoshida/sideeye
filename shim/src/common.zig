@@ -1836,8 +1836,7 @@ fn callExecvePreInit(p: [*:0]const u8, a: [*]const ?[*:0]const u8, e: [*]const ?
 /// one where they do, two processes can take the same number, and the engine refuses
 /// `sequence_numbering_broken` rather than judging a world at an ambiguous address.
 /// Two threads of one process are the same case (v16): each scans from its own slot,
-/// both read the trace's maximum, and if both take it the engine refuses — after having
-/// refused the run for its second writing thread first.
+/// both read the trace's maximum, and if both take it the engine refuses.
 fn refreshCount(ts: *ThreadState) bool {
     if (trace_fd < 0) return false;
     const end = c.lseek(trace_fd, 0, SEEK_END);

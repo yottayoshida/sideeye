@@ -1,0 +1,7 @@
+base run1 rc=2 multiple_threads_detected
+two threads of process 18 wrote in the judged directory: tid 18 performed symlink(/s/codex/tmp/arg0/codex-arg0OyghDp/codex-execve-wrapper) and tid 22 performed mkdir(/s/codex). Nothing the supervising engine recorded ord
+base run2 rc=2 multiple_threads_detected
+base run3 rc=2 multiple_threads_detected
+mine run1 rc=0 PASS  21/21 explored worlds satisfied the built-in atomicity invariant
+mine run2 rc=0 PASS  21/21 explored worlds satisfied the built-in atomicity invariant
+mine run3 rc=0 PASS  21/21 explored worlds satisfied the built-in atomicity invariant

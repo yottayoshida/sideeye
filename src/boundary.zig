@@ -154,7 +154,7 @@ pub fn boundaryAccount() []const u8 {
     // The counts of hand-overs, joins and detaches are left out rather than printed as
     // zeros a reader would take for measured absences.
     const threads: []const u8 = if (boundary_ev.threads > 0 and observe_mode == .supervised)
-        std.fmt.bufPrint(&thread_buf, "; the supervising engine recorded {d} thread(s) created, and {d} thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse)", .{ boundary_ev.threads, boundary_ev.writer_threads }) catch
+        std.fmt.bufPrint(&thread_buf, "; the supervising engine recorded {d} thread(s) created, and {d} thread id(s) of the subject's own process wrote the judged directory (under --observe supervised no join is recorded, nor which thread a creation made, so two threads of one process writing what a crash can change refuse)", .{ boundary_ev.threads, boundary_ev.writer_threads }) catch
             "; the supervising engine recorded threads created"
     else if (boundary_ev.threads > 0)
         std.fmt.bufPrint(&thread_buf, "; the shim recorded {d} thread(s) created, and {d} thread id(s) of the subject's own process wrote the judged directory; {d} hand-over(s) between threads in causal order, {d} join(s) and {d} detach(es) recorded (v18: writes ordered by a recorded creation or join are judged, unordered ones refuse)", .{ boundary_ev.threads, boundary_ev.writer_threads, boundary_ev.thread_turns, boundary_ev.thread_joins, boundary_ev.thread_detaches }) catch
@@ -1991,7 +1991,7 @@ test "under --observe supervised the processes line names the engine and that mo
     observe_mode = .supervised;
     const sup = boundaryAccount();
     try std.testing.expect(std.mem.indexOf(u8, sup, "the supervising engine recorded 3 thread(s) created, and 1 thread id(s)") != null);
-    try std.testing.expect(std.mem.indexOf(u8, sup, "no join is recorded, nor which thread a creation made, so writes from two or more threads of one process refuse") != null);
+    try std.testing.expect(std.mem.indexOf(u8, sup, "no join is recorded, nor which thread a creation made, so two threads of one process writing what a crash can change refuse") != null);
     try std.testing.expect(std.mem.indexOf(u8, sup, "the shim") == null);
     try std.testing.expect(std.mem.indexOf(u8, sup, "writes ordered by a recorded creation or join are judged") == null);
 

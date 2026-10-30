@@ -2,6 +2,7 @@ const std = @import("std");
 const contract = @import("contract");
 const posix = @import("../posix.zig");
 const read = @import("read.zig");
+const snapshots = @import("snapshot.zig");
 
 const Allocator = std.mem.Allocator;
 
@@ -22,6 +23,107 @@ pub const Op = struct {
     tid: u64,
     path: []const u8,
     aux: []const u8,
+};
+
+pub const GateExempt = struct {
+    root: []const u8,
+    alt: []const u8,
+    scratch: []const []const u8,
+    initial: *const snapshots.Snapshot,
+
+    // Not the whole exemption: what comes later in the trace is left out, so a world cut short at its
+    // crash point reads an operation as its recording does.
+    pub fn inertAlone(self: GateExempt, op: Op) bool {
+        if (!op.class.isKillPoint()) return false;
+        const first = snapshots.relUnderRoot(op.path, self.root, self.alt) orelse return false;
+        const second: ?[]const u8 = if (op.class.isTwoPath()) snapshots.relUnderRoot(op.aux, self.root, self.alt) else null;
+        if (op.class.isTwoPath() and second == null) return false;
+        if (snapshots.scratchMatches(self.scratch, first) and (second == null or snapshots.scratchMatches(self.scratch, second.?))) return true;
+        return op.class == .mkdir and (first.len == 0 or self.initial.find(first) != null);
+    }
+};
+
+const Removal = struct { pid: u32, tid: u64, at: usize, paths: [2]?[]const u8, through_link: bool = false };
+
+const GatePlan = struct {
+    e: GateExempt,
+    aliases: std.StringHashMapUnmanaged(void),
+    removals: []const Removal,
+
+    fn build(arena: Allocator, e: GateExempt, bytes: []const u8) error{OutOfMemory}!GatePlan {
+        var plan: GatePlan = .{ .e = e, .aliases = .empty, .removals = &.{} };
+        var removals: std.ArrayList(Removal) = .empty;
+        for (e.initial.entries.items) |entry| {
+            if (entry.kind == .symlink) try plan.aliases.put(arena, entry.rel, {});
+        }
+        var off: usize = 0;
+        var at: usize = 0;
+        while (off < bytes.len) : (at += 1) {
+            const dec = contract.decodeRecord(bytes[off..]) catch break;
+            off += dec.consumed;
+            const r = dec.rec;
+            // Not only symlinks: a name a rename or a hard link brings in can be a link, or another name
+            // for a file of the state, and the record does not say which.
+            switch (r.op) {
+                .symlink => if (snapshots.relUnderRoot(r.path, e.root, e.alt)) |rel| try plan.aliases.put(arena, rel, {}),
+                .link, .rename => if (snapshots.relUnderRoot(r.aux, e.root, e.alt)) |rel| try plan.aliases.put(arena, rel, {}),
+                else => {},
+            }
+            // Not the new name alone: after a hard link the old name reaches the same file. A rename's old name is gone.
+            if (r.op == .link) if (snapshots.relUnderRoot(r.path, e.root, e.alt)) |rel| try plan.aliases.put(arena, rel, {});
+            switch (r.op) {
+                .unlink, .rmdir, .rename => {
+                    const second = if (r.op == .rename) snapshots.relUnderRoot(r.aux, e.root, e.alt) else null;
+                    try removals.append(arena, .{ .pid = r.pid, .tid = r.tid, .at = at, .paths = .{ snapshots.relUnderRoot(r.path, e.root, e.alt), second } });
+                },
+                else => {},
+            }
+        }
+        for (removals.items) |*r| {
+            for (r.paths) |maybe| if (maybe) |path| if (plan.throughAlias(path, false)) {
+                r.through_link = true;
+            };
+        }
+        plan.removals = removals.items;
+        return plan;
+    }
+
+    fn throughAlias(self: GatePlan, rel: []const u8, itself: bool) bool {
+        if (itself and self.aliases.contains(rel)) return true;
+        var i: usize = 0;
+        while (std.mem.indexOfScalarPos(u8, rel, i, '/')) |slash| : (i = slash + 1) {
+            if (self.aliases.contains(rel[0..slash])) return true;
+        }
+        return false;
+    }
+
+    // Not a byte comparison: on a case-folding filesystem `D` removes `d`.
+    fn atOrAbove(removed: []const u8, name: []const u8) bool {
+        if (removed.len == 0) return true;
+        if (removed.len > name.len or !std.ascii.eqlIgnoreCase(removed, name[0..removed.len])) return false;
+        return removed.len == name.len or name[removed.len] == '/';
+    }
+
+    fn exempt(self: GatePlan, op: Op, at: usize) bool {
+        if (!self.e.inertAlone(op)) return false;
+        const first = snapshots.relUnderRoot(op.path, self.e.root, self.e.alt).?;
+        // Not every class through a link: a create or a remove changes the name, not the file the link reaches.
+        const follows = switch (op.class) {
+            .open, .write, .fsync, .truncate => true,
+            else => false,
+        };
+        if (self.throughAlias(first, follows)) return false;
+        if (op.class.isTwoPath() and self.throughAlias(snapshots.relUnderRoot(op.aux, self.e.root, self.e.alt).?, false)) return false;
+        if (snapshots.scratchMatches(self.e.scratch, first)) return true;
+        // Not record order between threads: a record is written before its call runs.
+        for (self.removals) |r| {
+            if (r.at == at) continue;
+            if (r.pid == op.pid and r.tid == op.tid and r.at > at) continue;
+            if (r.through_link) return false;
+            for (r.paths) |maybe| if (maybe) |path| if (atOrAbove(path, first)) return false;
+        }
+        return true;
+    }
 };
 
 fn unplacedRefuses(op: Op) bool {
@@ -512,6 +614,10 @@ pub fn readTrace(budget: *TraceBudget, path: []const u8) TraceReadError!TraceInf
 /// `TraceInfo` was built on a budget. Review caught the gap between the claim and the
 /// type. `unboundedBudget` is how a caller opts out, visibly.
 pub fn readTraceCapped(budget: *TraceBudget, path: []const u8, max: usize) TraceReadError!TraceInfo {
+    return readTraceGated(budget, path, max, null);
+}
+
+pub fn readTraceGated(budget: *TraceBudget, path: []const u8, max: usize, gate: ?GateExempt) TraceReadError!TraceInfo {
     // **A ceiling refusal is an observation, not an error**, and this wrapper is what
     // makes it one. The read below reaches the ceiling by two different doors: during the
     // raw read, where `readWhole`'s failure collapses into an empty TraceInfo returned
@@ -526,7 +632,7 @@ pub fn readTraceCapped(budget: *TraceBudget, path: []const u8, max: usize) Trace
     // the previous read's refusal and report a ceiling that did not stop it.
     budget.refused = null;
 
-    var info = readTraceCappedInner(budget, path, max) catch |err| {
+    var info = readTraceCappedInner(budget, path, max, gate) catch |err| {
         if (err == error.OutOfMemory) {
             if (budget.refused) |want| {
                 var empty: TraceInfo = .{
@@ -545,7 +651,7 @@ pub fn readTraceCapped(budget: *TraceBudget, path: []const u8, max: usize) Trace
     return info;
 }
 
-fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) TraceReadError!TraceInfo {
+fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize, gate: ?GateExempt) TraceReadError!TraceInfo {
     var info: TraceInfo = .{
         .arena = std.heap.ArenaAllocator.init(budget.allocator()),
         .ops = .empty,
@@ -610,8 +716,13 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
 
     var order: ThreadOrder = .{};
     var subject_tids: std.ArrayList(u64) = .empty;
+    // Not in the trace's arena: the plan is needed only while this read lasts.
+    var gate_arena = std.heap.ArenaAllocator.init(budget.allocator());
+    defer gate_arena.deinit();
+    const gate_plan: ?GatePlan = if (gate) |g| try GatePlan.build(gate_arena.allocator(), g, bytes[off..]) else null;
+    var at: usize = 0;
 
-    while (off < bytes.len) {
+    while (off < bytes.len) : (at += 1) {
         const dec = contract.decodeRecord(bytes[off..]) catch {
             info.truncated = true;
             break;
@@ -742,7 +853,8 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
             info.kill_point_count = @max(info.kill_point_count, op.seq);
             info.kill_records += 1;
             if (op.class.isMutation()) info.mutation_count += 1;
-            switch (try order.killPoint(arena, op.pid, op.tid, op)) {
+            const gate_exempt = if (gate_plan) |g| g.exempt(op, at) else false;
+            if (!gate_exempt) switch (try order.killPoint(arena, op.pid, op.tid, op)) {
                 .first, .same => {},
                 .turned => info.thread_turns += 1,
                 .unordered => |u| {
@@ -752,7 +864,7 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize) Trac
                         info.first_writer_thread_detached = u.writer_detached;
                     }
                 },
-            }
+            };
             if (is_primary) {
                 var seen = false;
                 for (subject_tids.items) |t| {
@@ -2305,4 +2417,115 @@ test "more threads than the shim has slots for do not break the reader (v18, R2 
     try std.testing.expectEqual(@as(?Op, null), info.second_writer_thread);
     try std.testing.expectEqual(@as(u32, 1), info.thread_turns);
     try std.testing.expectEqual(@as(u32, 0), info.thread_unpaired_starts);
+}
+
+fn readGated(tag: []const u8, records: []const R, budget: *TraceBudget, gate: GateExempt) !TraceInfo {
+    var fbuf: [contract.max_path]u8 = undefined;
+    const fz = try writeTraceForTest(tag, records, &fbuf);
+    return try readTraceGated(budget, std.mem.span(fz), max_trace_bytes, gate);
+}
+
+fn testInitial(entries: []const snapshots.Entry) snapshots.Snapshot {
+    return .{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .entries = .{ .items = @constCast(entries), .capacity = entries.len, .pointer_stability = .{} } };
+}
+
+const siblings_head = [_]R{
+    rd(7, .shim_ready, 0, "/tmp/s", ""),
+    rd(7, .thread, 0, "", ""),
+    rd(9, .thread_started, 0, "", "7 1 1"),
+    rd(7, .thread, 0, "", ""),
+    rd(10, .thread_started, 0, "", "7 2 2"),
+};
+
+fn siblings(comptime tail: []const R) [siblings_head.len + tail.len]R {
+    return siblings_head ++ tail[0..tail.len].*;
+}
+
+test "two sibling threads that only mkdir the state root are not held to an order" {
+    const initial = testInitial(&.{});
+    const gate: GateExempt = .{ .root = "/tmp/s", .alt = "", .scratch = &.{}, .initial = &initial };
+    const shape = siblings(&.{ rd(9, .mkdir, 1, "/tmp/s", ""), rd(10, .mkdir, 2, "/tmp/s", "") });
+    var tb = unboundedBudget(std.testing.allocator);
+    var gated = try readGated("gate-root-mkdir", &shape, &tb, gate);
+    defer gated.deinit();
+    try std.testing.expectEqual(@as(?Op, null), gated.second_writer_thread);
+    try std.testing.expectEqual(@as(u32, 2), gated.subject_writer_tids);
+    var tb2 = unboundedBudget(std.testing.allocator);
+    var ungated = try readShape("gate-root-mkdir-control", &shape, &tb2);
+    defer ungated.deinit();
+    try std.testing.expect(ungated.second_writer_thread != null);
+}
+
+test "a mkdir of a directory the state started with is held to the order once another thread removes that directory, even later in the trace" {
+    const before = [_]snapshots.Entry{ .{ .rel = "d", .kind = .dir, .content = "" }, .{ .rel = "e", .kind = .dir, .content = "" } };
+    const initial = testInitial(&before);
+    const gate: GateExempt = .{ .root = "/tmp/s", .alt = "", .scratch = &.{}, .initial = &initial };
+    var tb = unboundedBudget(std.testing.allocator);
+    var removed = try readGated("gate-mkdir-removed", &siblings(&.{ rd(9, .mkdir, 1, "/tmp/s/d", ""), rd(10, .rmdir, 2, "/tmp/s/D", "") }), &tb, gate);
+    defer removed.deinit();
+    try std.testing.expect(removed.second_writer_thread != null);
+    var tb2 = unboundedBudget(std.testing.allocator);
+    var sibling_removed = try readGated("gate-mkdir-sibling-removed", &siblings(&.{ rd(9, .mkdir, 1, "/tmp/s/d", ""), rd(10, .rmdir, 2, "/tmp/s/e", "") }), &tb2, gate);
+    defer sibling_removed.deinit();
+    try std.testing.expectEqual(@as(?Op, null), sibling_removed.second_writer_thread);
+    var tb3 = unboundedBudget(std.testing.allocator);
+    var new_dir = try readGated("gate-mkdir-new", &siblings(&.{ rd(9, .mkdir, 1, "/tmp/s/n", ""), rd(10, .mkdir, 2, "/tmp/s/n", "") }), &tb3, gate);
+    defer new_dir.deinit();
+    try std.testing.expect(new_dir.second_writer_thread != null);
+}
+
+test "writes under a declared scratch path are not held to an order, unless they pass through a link the run made" {
+    const initial = testInitial(&.{});
+    const gate: GateExempt = .{ .root = "/tmp/s", .alt = "/private/tmp/s", .scratch = &.{"tmp"}, .initial = &initial };
+    const in_scratch = siblings(&.{ rd(9, .write, 1, "/private/tmp/s/tmp/x.123", ""), rd(10, .write, 2, "/tmp/s/a", "") });
+    var tb = unboundedBudget(std.testing.allocator);
+    var gated = try readGated("gate-scratch", &in_scratch, &tb, gate);
+    defer gated.deinit();
+    try std.testing.expectEqual(@as(?Op, null), gated.second_writer_thread);
+    try std.testing.expectEqual(@as(u32, 2), gated.subject_writer_tids);
+    var tb2 = unboundedBudget(std.testing.allocator);
+    var ungated = try readShape("gate-scratch-control", &in_scratch, &tb2);
+    defer ungated.deinit();
+    try std.testing.expect(ungated.second_writer_thread != null);
+    var tb3 = unboundedBudget(std.testing.allocator);
+    var linked = try readGated("gate-scratch-link", &siblings(&.{
+        rd(10, .symlink, 1, "/tmp/s/tmp/l", ""),
+        rd(9, .write, 2, "/tmp/s/tmp/l/x", ""),
+        rd(10, .write, 3, "/tmp/s/a", ""),
+    }), &tb3, gate);
+    defer linked.deinit();
+    try std.testing.expect(linked.second_writer_thread != null);
+    var tb5 = unboundedBudget(std.testing.allocator);
+    var renamed_in = try readGated("gate-scratch-renamed-in", &siblings(&.{
+        rd(10, .symlink, 1, "/tmp/s/x", ""),
+        rd(10, .rename, 2, "/tmp/s/x", "/tmp/s/tmp/d"),
+        rd(9, .open, 3, "/tmp/s/tmp/d/f", ""),
+        rd(10, .write, 4, "/tmp/s/a", ""),
+    }), &tb5, gate);
+    defer renamed_in.deinit();
+    try std.testing.expect(renamed_in.second_writer_thread != null);
+    var tb6 = unboundedBudget(std.testing.allocator);
+    var hard_linked = try readGated("gate-scratch-hard-link", &siblings(&.{
+        rd(10, .link, 1, "/tmp/s/a", "/tmp/s/tmp/b"),
+        rd(9, .write, 2, "/tmp/s/tmp/b", ""),
+        rd(10, .write, 3, "/tmp/s/c", ""),
+    }), &tb6, gate);
+    defer hard_linked.deinit();
+    try std.testing.expect(hard_linked.second_writer_thread != null);
+    var tb8 = unboundedBudget(std.testing.allocator);
+    var linked_out = try readGated("gate-scratch-linked-out", &siblings(&.{
+        rd(10, .link, 1, "/tmp/s/tmp/a", "/tmp/s/b"),
+        rd(9, .write, 2, "/tmp/s/tmp/a", ""),
+        rd(10, .write, 3, "/tmp/s/c", ""),
+    }), &tb8, gate);
+    defer linked_out.deinit();
+    try std.testing.expect(linked_out.second_writer_thread != null);
+    var tb7 = unboundedBudget(std.testing.allocator);
+    var made_link = try readGated("gate-scratch-made-link", &siblings(&.{ rd(9, .symlink, 1, "/tmp/s/tmp/arg0", ""), rd(10, .write, 2, "/tmp/s/a", "") }), &tb7, gate);
+    defer made_link.deinit();
+    try std.testing.expectEqual(@as(?Op, null), made_link.second_writer_thread);
+    var tb4 = unboundedBudget(std.testing.allocator);
+    var outside = try readGated("gate-scratch-outside", &siblings(&.{ rd(9, .write, 1, "/tmp/s/b", ""), rd(10, .write, 2, "/tmp/s/a", "") }), &tb4, gate);
+    defer outside.deinit();
+    try std.testing.expect(outside.second_writer_thread != null);
 }

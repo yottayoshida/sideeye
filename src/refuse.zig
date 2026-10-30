@@ -151,13 +151,13 @@ fn snapshotRefusal(reason: contract.UnknownReason, setup: contract.SetupErrorRea
 /// (#324) — the world loop's read has no shim-marker branch to catch the collapse, so a
 /// missed check there refused with `kill_did_not_land`, a claim about the engine's own
 /// kill drawn from a trace it declined to read.
-pub fn readTraceOrRefuse(path: []const u8, cap: usize, setup_msg: []const u8) engine.TraceInfo {
+pub fn readTraceOrRefuse(path: []const u8, cap: usize, gate: engine.GateExempt, setup_msg: []const u8) engine.TraceInfo {
     // Not `.?`: an ordering mistake should report itself rather than panic. It cannot
     // happen today — `main` installs the budget before any argument is parsed — and a
     // local budget could not stand in if it could, because the `TraceInfo` returned here
     // outlives this frame and frees through the budget's child.
     const b = trace_budget orelse setupError(.internal, "internal: a trace was read before the whole-trace ceiling was installed");
-    return engine.readTraceCapped(b, path, cap) catch setupError(.environment, setup_msg);
+    return engine.readTraceGated(b, path, cap, gate) catch setupError(.environment, setup_msg);
 }
 
 /// The cost of the split, stated because it is the defect this issue is about: nothing
