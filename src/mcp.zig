@@ -1376,8 +1376,6 @@ const no_bundle_in_root = "no evidence bundle could be read beside that case ins
 
 const max_report = 4 * 1024 * 1024;
 
-const mcp_one_thread_switch = "A tool's own switch for running its file calls on one thread can move it past this — UV_THREADPOOL_SIZE=1 for Node, GOMAXPROCS=1 for Go: it reaches the target through this server only when SIDEEYE_MCP_CHILD_ENV names it and the server's environment sets it, which is the operator's to do; declare it in the config's apparatus (env:UV_THREADPOOL_SIZE=1, for example); " ++ contract.docUrl("docs/apparatus.md#a-tools-own-switch-for-one-thread") ++ " lists the switches measured and the targets each did not move.";
-
 fn serverStep(step: contract.NextStep) ?[]const u8 {
     return switch (step) {
         .pass_oracle => "This server has no second witness to verify a PASS with. On Linux, ask the operator to set SIDEEYE_MCP_ORACLE to strace's path; on macOS this server cannot verify one, and the fs_usage witness, or the weaker claim, is taken at the command line (" ++ contract.docUrl("docs/cli.md#the-flags-the-define-does-not-spell") ++ ").",
@@ -1402,8 +1400,10 @@ fn serverStep(step: contract.NextStep) ?[]const u8 {
         .run_checker_by_hand => "The checker ended without an exit status — a signal, or a crash — on a state Sideeye prepared for it, so it could not be read as accepting or rejecting that state; what it printed is in the server's work directory, in falsify-check.txt or start-check.txt. Run the check by hand the way Sideeye runs it — in the directory command_cwd in the JSON names, with SIDEEYE_STATE_DIR naming the state directory — on the state the detail names (the one the config starts from, or one whose every file is overwritten with junk) to see what stops it.",
         .environment => "Ask the operator to fix what the detail above names in the server's environment, then call again; the config or the case itself is unchanged.",
         .oracle_fixed_limit => "The limit the detail names is fixed in this build and belongs to the macOS fs_usage witness, which this server does not run; on a Linux server, strace set as SIDEEYE_MCP_ORACLE has neither limit.",
-        .threads_limit => "Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit stated under 'What the target has to be' (" ++ contract.docUrl("README.md#what-the-target-has-to-be") ++ "): threads are judged where a creation or a join the shim saw orders their writes. " ++ mcp_one_thread_switch,
-        .threads_supervised => "Two threads of one process wrote the judged directory, and under observe \"supervised\" no join is recorded, nor which thread a creation made, so nothing orders their writes. " ++ mcp_one_thread_switch,
+        .threads_limit => comptime contract.threadsSentence(.server, false, false),
+        .threads_supervised => comptime contract.threadsSentence(.server, true, false),
+        .threads_switch_set => comptime contract.threadsSentence(.server, false, true),
+        .threads_switch_set_supervised => comptime contract.threadsSentence(.server, true, true),
         else => null,
     };
 }
