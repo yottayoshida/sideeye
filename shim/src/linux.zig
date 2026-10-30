@@ -62,6 +62,10 @@ comptime {
 
     @export(&ops.ftruncate, .{ .name = "ftruncate" });
     @export(&ops.ftruncate, .{ .name = "ftruncate64" });
+    @export(&ops.fallocate, .{ .name = "fallocate" });
+    @export(&ops.fallocate, .{ .name = "fallocate64" });
+    @export(&ops.posix_fallocate, .{ .name = "posix_fallocate" });
+    @export(&ops.posix_fallocate, .{ .name = "posix_fallocate64" });
     @export(&ops.truncate, .{ .name = "truncate" });
     @export(&ops.truncate, .{ .name = "truncate64" });
 

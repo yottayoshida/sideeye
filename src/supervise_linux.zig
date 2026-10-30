@@ -70,7 +70,7 @@ const common_watched = [_]Watched{
     .{ .sys = .truncate },        .{ .sys = .ftruncate },             .{ .sys = .fsync },
     .{ .sys = .fdatasync },       .{ .sys = .close },                 .{ .sys = .execve },
     .{ .sys = .execveat },        .{ .sys = .clone },                 .{ .sys = .clone3 },
-    .{ .sys = .setsid },          .{ .sys = .setpgid },
+    .{ .sys = .setsid },          .{ .sys = .setpgid },               .{ .sys = .fallocate },
 };
 
 const off_nr: u32 = @offsetOf(SECCOMP.data, "nr");
@@ -746,6 +746,8 @@ const Call = struct {
             .copy_file_range => self.noteFd(.write, fdOf(a[2])),
             .fsync, .fdatasync => self.noteFd(.fsync, fdOf(a[0])),
             .ftruncate => self.noteFd(.truncate, fdOf(a[0])),
+            // Not the other modes: the shim records mode 0 only, and the oracle refuses the rest by name.
+            .fallocate => if (contract.fallocateCounts(@truncate(a[1]))) self.noteFd(.truncate, fdOf(a[0])) else .@"continue",
             .truncate => self.note1(.truncate, AT_FDCWD, a[0]),
             .openat => self.note1(.open, fdOf(a[0]), a[1]),
             .openat2 => blk: {

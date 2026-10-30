@@ -1,0 +1,18 @@
+base fallocate=0 wrappers rc=2 unsupported_syscall_observed | fallocate
+base fallocate=0 syscalls rc=2 unsupported_syscall_observed | fallocate
+base fallocate=0 supervised rc=2 unsupported_syscall_observed | fallocate
+base fallocate=keep wrappers rc=2 unsupported_syscall_observed | fallocate
+base fallocate=keep syscalls rc=2 unsupported_syscall_observed | fallocate
+base fallocate=keep supervised rc=2 unsupported_syscall_observed | fallocate
+base fallocate=punch wrappers rc=2 unsupported_syscall_observed | fallocate
+base fallocate=punch syscalls rc=2 unsupported_syscall_observed | fallocate
+base fallocate=punch supervised rc=2 unsupported_syscall_observed | fallocate
+mineB fallocate=0 wrappers rc=0 6/6 explored worlds satisfied the built-in atomicity invariant | 
+mineB fallocate=0 syscalls rc=0 6/6 explored worlds satisfied the built-in atomicity invariant | 
+mineB fallocate=0 supervised rc=0 6/6 explored worlds satisfied the built-in atomicity invariant | 
+mineB fallocate=keep wrappers rc=0 5/5 explored worlds satisfied the built-in atomicity invariant | 
+mineB fallocate=keep syscalls rc=0 5/5 explored worlds satisfied the built-in atomicity invariant | 
+mineB fallocate=keep supervised rc=0 5/5 explored worlds satisfied the built-in atomicity invariant | 
+mineB fallocate=punch wrappers rc=2 unsupported_syscall_observed | fallocate(FALLOC_FL_KEEP_SIZE|FALLOC_FL_PUNCH_HOLE)
+mineB fallocate=punch syscalls rc=2 unsupported_syscall_observed | fallocate(FALLOC_FL_KEEP_SIZE|FALLOC_FL_PUNCH_HOLE)
+mineB fallocate=punch supervised rc=2 unsupported_syscall_observed | fallocate(FALLOC_FL_KEEP_SIZE|FALLOC_FL_PUNCH_HOLE)

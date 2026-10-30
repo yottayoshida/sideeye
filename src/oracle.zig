@@ -33,6 +33,7 @@ const known = [_]Mapping{
     .{ .name = "truncate", .class = .truncate },
     .{ .name = "ftruncate", .class = .truncate },
     .{ .name = "ftruncate64", .class = .truncate },
+    .{ .name = "fallocate", .class = .truncate },
     .{ .name = "mkdir", .class = .mkdir },
     .{ .name = "mkdirat", .class = .mkdir },
     .{ .name = "rmdir", .class = .rmdir },
@@ -376,11 +377,12 @@ fn isSeccompRefusal(raw: []const u8) bool {
 /// silent, because nothing ever raises the signal that would use it.
 fn isTrapped(name: []const u8, line: []const u8) bool {
     const set = [_][]const u8{
-        "write",   "pwrite64",  "writev",    "pwritev",   "sendfile",
-        "openat",  "openat2",   "renameat",  "renameat2", "unlinkat",
-        "mkdirat", "linkat",    "symlinkat", "truncate",  "ftruncate",
-        "fsync",   "fdatasync", "open",      "creat",     "rename",
-        "unlink",  "rmdir",     "mkdir",     "link",      "symlink",
+        "write",     "pwrite64",  "writev",    "pwritev",   "sendfile",
+        "openat",    "openat2",   "renameat",  "renameat2", "unlinkat",
+        "mkdirat",   "linkat",    "symlinkat", "truncate",  "ftruncate",
+        "fsync",     "fdatasync", "open",      "creat",     "rename",
+        "unlink",    "rmdir",     "mkdir",     "link",      "symlink",
+        "fallocate",
     };
     for (set) |f| {
         if (!std.mem.eql(u8, name, f)) continue;
@@ -751,6 +753,22 @@ fn renameat2Flag(line: []const u8, symbol: []const u8, bit: u64) bool {
     return (v & bit) != 0;
 }
 
+const FallocateMode = enum { grows, keeps_size, other };
+
+// Not "has FALLOC_FL_KEEP_SIZE": the kernel takes hole punching only with it, so that test would pass
+// `FALLOC_FL_KEEP_SIZE|FALLOC_FL_PUNCH_HOLE` as a read.
+fn fallocateMode(line: []const u8) FallocateMode {
+    const arg = std.mem.trim(u8, syscallArg(line, 1) orelse return .other, " ");
+    if (std.mem.eql(u8, arg, "FALLOC_FL_KEEP_SIZE")) return .keeps_size;
+    const mode = std.fmt.parseInt(u32, arg, 0) catch return .other;
+    if (contract.fallocateCounts(mode)) return .grows;
+    return if (mode == contract.falloc_keep_size) .keeps_size else .other;
+}
+
+fn fallocateRefusal(arena: std.mem.Allocator, line: []const u8) ![]const u8 {
+    return std.fmt.allocPrint(arena, "fallocate({s})", .{std.mem.trim(u8, syscallArg(line, 1) orelse "?", " ")});
+}
+
 fn classify(name: []const u8) ?contract.OpClass {
     for (known) |m| {
         if (std.mem.eql(u8, m.name, name)) return m.class;
@@ -1029,6 +1047,7 @@ fn syscallSucceeded(line: []const u8) bool {
 
 fn changesPersistentState(name: []const u8, line: []const u8) bool {
     if (isReadOnly(name)) return false;
+    if (std.mem.eql(u8, name, "fallocate") and fallocateMode(line) == .keeps_size) return false;
     if (std.mem.eql(u8, name, "close")) return false;
     if ((std.mem.eql(u8, name, "open") or std.mem.eql(u8, name, "openat") or
         std.mem.eql(u8, name, "openat2")) and isReadOnlyOpen(name, line)) return false;
@@ -1051,7 +1070,7 @@ const fd_arg0 = [_][]const u8{
     "close",       "fdatasync", "fsync",      "ftruncate",
     "ftruncate64", "pwrite",    "pwrite64",   "pwritev",
     "pwritev2",    "sendfile",  "sendfile64", "write",
-    "writev",
+    "writev",      "fallocate",
 };
 
 fn fdWriteArg(name: []const u8) usize {
@@ -1450,6 +1469,8 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // Refused, not only counted as a touch, for the same reason.
             if (isXattrWrite(name) and out.unsupported == null)
                 out.unsupported = try arena.dupe(u8, name);
+            if (std.mem.eql(u8, name, "fallocate") and fallocateMode(line) == .other and out.unsupported == null)
+                out.unsupported = try fallocateRefusal(arena, line);
             if (cloneKind(name, line)) |kind| {
                 if (cloneIntoState(line, state_dir, state_alt)) try noteClone(arena, kind, line, pid, &pending_clones, &out);
             }
@@ -1505,6 +1526,14 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
                 continue;
             }
         }
+        if (std.mem.eql(u8, name, "fallocate")) switch (fallocateMode(line)) {
+            .grows => {},
+            .keeps_size => continue,
+            .other => {
+                if (out.unsupported == null) out.unsupported = try fallocateRefusal(arena, line);
+                continue;
+            },
+        };
         if (classify(name)) |cls| {
             if (cls == .close) continue;
             if (cls == .open and isReadOnlyOpen(name, line)) continue;
@@ -2383,11 +2412,49 @@ test "sync_file_range and syncfs on a state file change nothing, from the subjec
 
     const control =
         \\42    execve("/work/dpkg", ["dpkg"], 0x7ff) = 0
-        \\42    fallocate(3</tmp/s/status-new>, 0, 0, 4096) = 0
+        \\42    fallocate(3</tmp/s/status-new>, FALLOC_FL_KEEP_SIZE|FALLOC_FL_PUNCH_HOLE, 0, 4096) = 0
         \\
     ;
     const q = try parse(arena_state.allocator(), control, "/tmp/s", "", "/work");
-    try std.testing.expectEqualStrings("fallocate", q.unsupported.?);
+    try std.testing.expectEqualStrings("fallocate(FALLOC_FL_KEEP_SIZE|FALLOC_FL_PUNCH_HOLE)", q.unsupported.?);
+}
+
+test "fallocate in mode 0 on a state file is a truncate, FALLOC_FL_KEEP_SIZE alone is a read, and any other mode is refused by name" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const grows = try parse(a,
+        \\42    execve("/work/flatpak", ["flatpak"], 0x7ff) = 0
+        \\42    fallocate(6</tmp/s/repo/tmp.cGA6LE>, 0, 0, 42) = 0
+        \\42    fallocate(6</tmp/s/repo/tmp.cGA6LE>, 0x0, 0, 42) = 0
+        \\
+    , "/tmp/s", "", "/work");
+    try std.testing.expectEqual(@as(?[]const u8, null), grows.unsupported);
+    try std.testing.expectEqual(@as(usize, 2), grows.classes.items.len);
+    try std.testing.expectEqual(contract.OpClass.truncate, grows.classes.items[0]);
+    const keeps = try parse(a,
+        \\42    execve("/work/x", ["x"], 0x7ff) = 0
+        \\42    fallocate(6</tmp/s/a>, FALLOC_FL_KEEP_SIZE, 0, 42) = 0
+        \\42    fallocate(6</tmp/s/a>, 0x1, 0, 42) = 0
+        \\42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242
+        \\4242  fallocate(5</tmp/s/b>, FALLOC_FL_KEEP_SIZE, 0, 42) = 0
+        \\
+    , "/tmp/s", "", "/work");
+    try std.testing.expectEqual(@as(?[]const u8, null), keeps.unsupported);
+    const child_punch = try parse(a,
+        \\42    execve("/work/x", ["x"], 0x7ff) = 0
+        \\42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242
+        \\4242  fallocate(5</tmp/s/b>, FALLOC_FL_KEEP_SIZE|FALLOC_FL_PUNCH_HOLE, 0, 42) = 0
+        \\
+    , "/tmp/s", "", "/work");
+    try std.testing.expectEqualStrings("fallocate(FALLOC_FL_KEEP_SIZE|FALLOC_FL_PUNCH_HOLE)", child_punch.unsupported orelse "(none)");
+    try std.testing.expectEqual(@as(usize, 0), keeps.classes.items.len);
+    try std.testing.expectEqual(@as(usize, 0), keeps.mutations.items.len);
+    for ([_][]const u8{ "FALLOC_FL_KEEP_SIZE|FALLOC_FL_PUNCH_HOLE", "0x3", "FALLOC_FL_ZERO_RANGE", "FALLOC_FL_COLLAPSE_RANGE" }) |mode| {
+        const line = try std.fmt.allocPrint(a, "42    execve(\"/work/x\", [\"x\"], 0x7ff) = 0\n42    fallocate(6</tmp/s/a>, {s}, 0, 42) = 0\n", .{mode});
+        const other = try parse(a, line, "/tmp/s", "", "/work");
+        try std.testing.expectEqualStrings(try std.fmt.allocPrint(a, "fallocate({s})", .{mode}), other.unsupported orelse "(none)");
+    }
 }
 
 test "readahead, posix_fadvise and madvise on a state file change nothing, from the subject or a child" {
