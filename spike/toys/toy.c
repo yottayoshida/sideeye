@@ -266,6 +266,10 @@
  *   TOY_THREAD_SIBLINGS  two workers each write a file of their own and are joined only
  *                  afterwards — beets' shape. Refused: no creation or join orders one
  *                  sibling's write before the other's
+ *   TOY_THREAD_ROOT_MKDIR  two workers each mkdir the state directory, which is there, one
+ *                  after the other on a flag, and are joined only afterwards. Judged: a
+ *                  mkdir of a directory the state started with changes nothing, so the
+ *                  threads gate holds neither to an order
  *   TOY_THREAD_RACE  a worker writes; the main thread writes BEFORE joining it. Refused:
  *                  the main thread's write is after the creation and before the join
  *   TOY_THREAD_DETACH  a worker writes and is detached, never joined; the main thread waits
@@ -516,6 +520,15 @@ static void *writing_thread_named(const char *name) {
 static void *writing_thread_a(void *arg) { (void)arg; return writing_thread_named("from-thread-a.txt"); }
 static void *writing_thread_b(void *arg) { (void)arg; return writing_thread_named("from-thread-b.txt"); }
 static volatile int signalled_write_done = 0;
+
+// Not at the same moment: two threads taking a crash-point number at once can take the same one.
+static void *mkdir_root_thread(void *arg) {
+    if (arg != NULL)
+        while (!signalled_write_done) usleep(1000);
+    (void)mkdir(state_dir(), 0755);
+    if (arg == NULL) signalled_write_done = 1;
+    return NULL;
+}
 static void *writing_thread_signalling(void *arg) {
     (void)arg;
     writing_thread_named("from-thread.txt");
@@ -676,6 +689,14 @@ static void maybe_leave_the_supported_region(void) {
         pthread_t a, b;
         int ok_a = pthread_create(&a, NULL, writing_thread_a, NULL) == 0;
         int ok_b = pthread_create(&b, NULL, writing_thread_b, NULL) == 0;
+        if (ok_a) pthread_join(a, NULL);
+        if (ok_b) pthread_join(b, NULL);
+    }
+    if (getenv("TOY_THREAD_ROOT_MKDIR")) {
+        pthread_t a, b;
+        signalled_write_done = 0;
+        int ok_a = pthread_create(&a, NULL, mkdir_root_thread, NULL) == 0;
+        int ok_b = pthread_create(&b, NULL, mkdir_root_thread, (void *)1) == 0;
         if (ok_a) pthread_join(a, NULL);
         if (ok_b) pthread_join(b, NULL);
     }

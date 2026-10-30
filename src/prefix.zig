@@ -12,11 +12,12 @@ pub const Plan = struct {
     final: engine.Snapshot,
     root: []const u8,
     alt: []const u8,
+    scratch: []const []const u8,
 };
 
 pub const Divergence = struct { seq: u32, world: ?engine.Op, recording: ?engine.Op };
 
-pub fn plan(arena: std.mem.Allocator, recording: engine.TraceInfo, n: u32, initial: engine.Snapshot, final: engine.Snapshot, root: []const u8, alt: []const u8) error{OutOfMemory}!Plan {
+pub fn plan(arena: std.mem.Allocator, recording: engine.TraceInfo, n: u32, initial: engine.Snapshot, final: engine.Snapshot, root: []const u8, alt: []const u8, scratch: []const []const u8) error{OutOfMemory}!Plan {
     const at = try arena.alloc(u32, @as(usize, n) + 1);
     index(at, recording);
     var spelled: std.StringHashMapUnmanaged(void) = .{};
@@ -35,6 +36,7 @@ pub fn plan(arena: std.mem.Allocator, recording: engine.TraceInfo, n: u32, initi
         .final = final,
         .root = root,
         .alt = alt,
+        .scratch = scratch,
     };
 }
 
@@ -79,6 +81,8 @@ fn describe(arena: std.mem.Allocator, op: ?engine.Op, p: *const Plan) []const u8
 /// anything was removed or renamed: by a symlink, a case-folding filesystem or a directory
 /// above, a removal can reach a name it does not spell.
 fn same(p: *const Plan, w: engine.Op, r: engine.Op, removed_any: bool) bool {
+    const gate: engine.GateExempt = .{ .root = p.root, .alt = p.alt, .scratch = p.scratch, .initial = &p.initial };
+    if (gate.inertAlone(w) != gate.inertAlone(r)) return false;
     if (w.class != r.class) return false;
     if (w.class == .fsync) return true;
     if (w.class == .mkdir and !removed_any and startedWith(p, w.path) and startedWith(p, r.path)) return true;
@@ -136,7 +140,7 @@ test "a world that reaches its crash point through the recording's names in anot
     var end = try engine.testSnapshot(std.testing.allocator, &.{ .{ "alpha", "" }, .{ "beta", "" }, .{ "marker", "" } });
     defer end.deinit();
     const rec = try testTrace(a, &.{ testOp(.open, 1, "/s/alpha", ""), testOp(.write, 2, "/s/alpha", ""), testOp(.open, 3, "/s/beta", ""), testOp(.write, 4, "/s/beta", "") });
-    const p = try plan(a, rec, 4, start, end, "/s", "");
+    const p = try plan(a, rec, 4, start, end, "/s", "", &.{});
 
     const swapped = try testTrace(a, &.{ testOp(.open, 1, "/s/beta", ""), testOp(.write, 2, "/s/beta", ""), testOp(.open, 3, "/s/alpha", "") });
     const d = firstDivergence(&p, swapped, 3).?;
@@ -150,7 +154,7 @@ test "a world that reaches its crash point through the recording's names in anot
     var only_alpha = try engine.testSnapshot(std.testing.allocator, &.{.{ "alpha", "" }});
     defer only_alpha.deinit();
     const fresh_rec = try testTrace(a, &.{ testOp(.open, 1, "/s/x.111.tmp", ""), testOp(.write, 2, "/s/x.111.tmp", ""), testOp(.rename, 3, "/s/x.111.tmp", "/s/alpha") });
-    const fp = try plan(a, fresh_rec, 3, only_alpha, only_alpha, "/s", "");
+    const fp = try plan(a, fresh_rec, 3, only_alpha, only_alpha, "/s", "", &.{});
     const fresh_world = try testTrace(a, &.{ testOp(.open, 1, "/s/x.222.tmp", ""), testOp(.write, 2, "/s/x.222.tmp", ""), testOp(.rename, 3, "/s/x.222.tmp", "/s/alpha") });
     try std.testing.expect(firstDivergence(&fp, fresh_world, 3) == null);
 }
@@ -164,7 +168,7 @@ test "a rename is held to its destination apart from its source, and a class out
     var end = try engine.testSnapshot(std.testing.allocator, &.{ .{ "alpha", "" }, .{ "beta", "" } });
     defer end.deinit();
     const rec = try testTrace(a, &.{ testOp(.rename, 1, "/s/alpha.tmp", "/s/alpha"), testOp(.rename, 2, "/s/beta.tmp", "/s/beta"), testOp(.unlink, 3, "/s/old", "") });
-    const p = try plan(a, rec, 3, start, end, "/s", "");
+    const p = try plan(a, rec, 3, start, end, "/s", "", &.{});
     const crossed = try testTrace(a, &.{ testOp(.rename, 1, "/s/alpha.tmp", "/s/beta"), testOp(.rename, 2, "/s/beta.tmp", "/s/alpha") });
     try std.testing.expectEqual(@as(u32, 1), firstDivergence(&p, crossed, 3).?.seq);
     const reclassed = try testTrace(a, &.{ testOp(.rename, 1, "/s/alpha.tmp", "/s/alpha"), testOp(.unlink, 2, "/s/beta.tmp", "") });
@@ -178,17 +182,17 @@ test "fsync and a mkdir on a directory already there are not held to a name, and
     var start = try engine.testSnapshot(std.testing.allocator, &.{ .{ "d1", "" }, .{ "d2", "" }, .{ "f", "" } });
     defer start.deinit();
     const rec = try testTrace(a, &.{ testOp(.mkdir, 1, "/s/d1", ""), testOp(.mkdir, 2, "/s/d2", ""), testOp(.fsync, 3, "/s/d1", ""), testOp(.write, 4, "/s/f", "") });
-    const p = try plan(a, rec, 4, start, start, "/s", "");
+    const p = try plan(a, rec, 4, start, start, "/s", "", &.{});
     const swapped = try testTrace(a, &.{ testOp(.mkdir, 1, "/s/d2", ""), testOp(.mkdir, 2, "/s/d1", ""), testOp(.fsync, 3, "/s/d2", ""), testOp(.write, 4, "/s/f", "") });
     try std.testing.expect(firstDivergence(&p, swapped, 4) == null);
 
     const rrec = try testTrace(a, &.{ testOp(.rmdir, 1, "/s/d1", ""), testOp(.rmdir, 2, "/s/d2", ""), testOp(.mkdir, 3, "/s/d1", ""), testOp(.mkdir, 4, "/s/d2", "") });
-    const rp = try plan(a, rrec, 4, start, start, "/s", "");
+    const rp = try plan(a, rrec, 4, start, start, "/s", "", &.{});
     const rswapped = try testTrace(a, &.{ testOp(.rmdir, 1, "/s/d1", ""), testOp(.rmdir, 2, "/s/d2", ""), testOp(.mkdir, 3, "/s/d2", ""), testOp(.mkdir, 4, "/s/d1", "") });
     try std.testing.expectEqual(@as(u32, 3), firstDivergence(&rp, rswapped, 4).?.seq);
 
     const mrec = try testTrace(a, &.{ testOp(.rename, 1, "/s/f", "/s/g"), testOp(.mkdir, 2, "/s/d1", ""), testOp(.mkdir, 3, "/s/d2", "") });
-    const mp = try plan(a, mrec, 3, start, start, "/s", "");
+    const mp = try plan(a, mrec, 3, start, start, "/s", "", &.{});
     const mswapped = try testTrace(a, &.{ testOp(.rename, 1, "/s/f", "/s/g"), testOp(.mkdir, 2, "/s/d2", ""), testOp(.mkdir, 3, "/s/d1", "") });
     try std.testing.expectEqual(@as(u32, 2), firstDivergence(&mp, mswapped, 3).?.seq);
 }
@@ -200,7 +204,43 @@ test "a world that writes a scratch name where the recording wrote a name the st
     var start = try engine.testSnapshot(std.testing.allocator, &.{ .{ "alpha", "" }, .{ "beta", "" } });
     defer start.deinit();
     const rec = try testTrace(a, &.{ testOp(.open, 1, "/s/alpha", ""), testOp(.write, 2, "/s/alpha", ""), testOp(.open, 3, "/s/beta.111.tmp", ""), testOp(.write, 4, "/s/beta.111.tmp", ""), testOp(.rename, 5, "/s/beta.111.tmp", "/s/beta") });
-    const p = try plan(a, rec, 5, start, start, "/s", "");
+    const p = try plan(a, rec, 5, start, start, "/s", "", &.{});
     const flipped = try testTrace(a, &.{ testOp(.open, 1, "/s/beta.222.tmp", ""), testOp(.write, 2, "/s/beta.222.tmp", "") });
     try std.testing.expectEqual(@as(u32, 1), firstDivergence(&p, flipped, 2).?.seq);
+}
+
+test "a world that trades a scratch write for a state write is held to the trade, whatever the names" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    var start = try engine.testSnapshot(std.testing.allocator, &.{});
+    defer start.deinit();
+    var end = try engine.testSnapshot(std.testing.allocator, &.{.{ "new.json", "" }});
+    defer end.deinit();
+    const rec = try testTrace(a, &.{ testOp(.write, 1, "/s/new.json", ""), testOp(.write, 2, "/s/tmp/t.123", "") });
+    const traded = try testTrace(a, &.{ testOp(.write, 1, "/s/tmp/t.456", ""), testOp(.write, 2, "/s/new.json", "") });
+    const p = try plan(a, rec, 2, start, end, "/s", "", &.{"tmp"});
+    try std.testing.expectEqual(@as(u32, 1), (firstDivergence(&p, traded, 2) orelse return error.TestUnexpectedResult).seq);
+    const unscratched = try plan(a, rec, 2, start, end, "/s", "", &.{});
+    try std.testing.expect(firstDivergence(&unscratched, traded, 2) == null);
+    const scratch_first = try testTrace(a, &.{ testOp(.write, 1, "/s/tmp/t.123", ""), testOp(.write, 2, "/s/new.json", "") });
+    const p_scratch = try plan(a, scratch_first, 2, start, end, "/s", "", &.{"tmp"});
+    try std.testing.expect(firstDivergence(&p_scratch, try testTrace(a, &.{ testOp(.write, 1, "/s/tmp/t.789", ""), testOp(.write, 2, "/s/new.json", "") }), 2) == null);
+}
+
+test "a world cut short before a later removal reads a mkdir of a directory the state started with as its recording does" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    var start = try engine.testSnapshot(std.testing.allocator, &.{.{ "d", "" }});
+    defer start.deinit();
+    var end = try engine.testSnapshot(std.testing.allocator, &.{.{ "x", "" }});
+    defer end.deinit();
+    var later = testOp(.rmdir, 3, "/s/d", "");
+    later.tid = 2;
+    var worker_write = testOp(.write, 2, "/s/x", "");
+    worker_write.tid = 2;
+    const rec = try testTrace(a, &.{ testOp(.mkdir, 1, "/s/d", ""), worker_write, later });
+    const p = try plan(a, rec, 3, start, end, "/s", "", &.{});
+    try std.testing.expect(firstDivergence(&p, try testTrace(a, &.{ testOp(.mkdir, 1, "/s/d", ""), worker_write }), 2) == null);
 }

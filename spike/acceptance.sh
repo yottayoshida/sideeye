@@ -374,6 +374,9 @@ unset TOY_THREAD_EXIT
 TOY_THREAD_CANCEL=1 export TOY_THREAD_CANCEL
 run_case "a worker that writes and is cancelled in pause, joined: judged (v18)" "$OUT/toy-bug" 1 "crash point 8 of 8"
 unset TOY_THREAD_CANCEL
+TOY_THREAD_ROOT_MKDIR=1 export TOY_THREAD_ROOT_MKDIR
+run_case "two workers that only mkdir the state directory, which is there, nothing ordering them: judged (#979)" "$OUT/toy-bug" 1 "crash point 7 of 7"
+unset TOY_THREAD_ROOT_MKDIR
 # The refusals, and what each sentence has to name. SIBLINGS carries the v16 pins — both
 # thread ids, both operations by name — that hung on TOY_THREAD_WRITES until v18 judged it.
 TOY_THREAD_SIBLINGS=1 export TOY_THREAD_SIBLINGS

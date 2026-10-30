@@ -1363,7 +1363,7 @@ fn phaseRecording(run: *Run) void {
         report.l1_note = "marker observed in the recording run; crash worlds not explored yet";
     }
 
-    const trace = refuse.readTraceOrRefuse(rec_trace, trace_cap, "could not read the trace");
+    const trace = refuse.readTraceOrRefuse(rec_trace, trace_cap, .{ .root = state_abs, .alt = state_alt, .scratch = args.scratch, .initial = &initial }, "could not read the trace");
     if (end_deferred and boundary.heldEndStands(trace)) refuse.recordingEnd(arena, rec_term, expect_status, op_obs, exit_step, sig_step);
 
     const final = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot the final state");
@@ -1996,7 +1996,7 @@ fn phasePreflight(run: *Run) void {
             refuse.refuseNothingToCorrupt(initial);
         }
         const repeat: ?Repeat = if (args.twice)
-            observeAgain(gpa, arena, initial, final, state_abs, state_alt, op_argv, shim, args.oracle, args.work, expect_status, rec_started_ms, args.cwd, args.observe, children_admitted)
+            observeAgain(gpa, arena, initial, final, state_abs, state_alt, .{ .root = state_abs, .alt = state_alt, .scratch = args.scratch, .initial = &initial }, op_argv, shim, args.oracle, args.work, expect_status, rec_started_ms, args.cwd, args.observe, children_admitted)
         else
             null;
         preflightReport(arena, n, hint, .{ .work = if (args.work_named) args.work else null, .state_under = args.state_under, .shim = args.shim, .oracle = args.oracle }, .{
@@ -2178,7 +2178,7 @@ fn phaseExploration(run: *Run) void {
     var world_stdout_buf: [contract.max_path]u8 = undefined;
     const world_stdout = std.fmt.bufPrint(&world_stdout_buf, "{s}/stdout-world.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
 
-    const order = prefix.plan(arena, trace, n, initial, final, state_abs, state_alt) catch setupError(.environment, "out of memory");
+    const order = prefix.plan(arena, trace, n, initial, final, state_abs, state_alt, args.scratch) catch setupError(.environment, "out of memory");
     var leave_snap: ?engine.Snapshot = null;
     var k: u32 = 1;
     while (k <= n + 1) : (k += 1) {
@@ -2262,7 +2262,7 @@ fn phaseExploration(run: *Run) void {
         if (supervise.handoverFailure(wsup.finish(), wterm, "a world's run")) |why| setupError(.environment, why);
         const term = wterm;
 
-        var wtrace = refuse.readTraceOrRefuse(world_trace, trace_cap_world, "could not read a world trace");
+        var wtrace = refuse.readTraceOrRefuse(world_trace, trace_cap_world, .{ .root = state_abs, .alt = state_alt, .scratch = args.scratch, .initial = &initial }, "could not read a world trace");
         refuse.answerForOversizedTrace(wtrace, "an explored world", trace_cap_world);
         defer wtrace.deinit();
 
@@ -2977,6 +2977,7 @@ fn observeAgain(
     first: engine.Snapshot,
     state_abs: []const u8,
     state_alt: []const u8,
+    gate: engine.GateExempt,
     op_argv: []const []const u8,
     shim: []const u8,
     oracle_path: ?[]const u8,
@@ -3051,7 +3052,7 @@ fn observeAgain(
         else => unknown(.recording_run_failed, "the second observed run did not exit normally, although the first run of the same command succeeded", .second_run_diverged),
     }
 
-    var trace = refuse.readTraceOrRefuse(trace_b, trace_cap, "could not read the second observed run's trace");
+    var trace = refuse.readTraceOrRefuse(trace_b, trace_cap, gate, "could not read the second observed run's trace");
     defer trace.deinit();
     // #324's pairing: every site that reads with a cap must answer for it. Forgetting
     // this at one site is the defect that issue exists to fix, and its own doc warns

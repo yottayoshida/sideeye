@@ -63,6 +63,8 @@ pub const TraceBudget = trace.TraceBudget;
 pub const unboundedBudget = trace.unboundedBudget;
 pub const readTrace = trace.readTrace;
 pub const readTraceCapped = trace.readTraceCapped;
+pub const readTraceGated = trace.readTraceGated;
+pub const GateExempt = trace.GateExempt;
 
 pub const Violation = judge.Violation;
 pub const FileForm = judge.FileForm;
