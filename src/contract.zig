@@ -572,7 +572,7 @@ pub const RecoveryResult = enum {
     }
 };
 
-pub const sideeye_version = "1.16.0";
+pub const sideeye_version = "1.17.0";
 
 const repo_url = "https://github.com/yottayoshida/sideeye";
 pub const issues_url = repo_url ++ "/issues/new";
