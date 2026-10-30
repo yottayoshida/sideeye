@@ -1,0 +1,15 @@
+# ctl-race without strace: the bytes left at offset 0 after each of 20 runs (the last writer)
+     18 AAAAAAAA
+      2 BBBBBBBB
+
+# ctl-race under strace (rules v2, arm 1): hand-overs and overlapping hand-overs per run
+run01 100 hand-overs, 10 overlapping
+run02 100 hand-overs, 18 overlapping
+run03 100 hand-overs, 35 overlapping
+run04 100 hand-overs, 43 overlapping
+run05 100 hand-overs, 47 overlapping
+run06 100 hand-overs, 34 overlapping
+run07 100 hand-overs, 39 overlapping
+run08 100 hand-overs, 48 overlapping
+run09 100 hand-overs, 37 overlapping
+run10 100 hand-overs, 42 overlapping

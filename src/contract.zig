@@ -573,6 +573,40 @@ pub inline fn docUrl(comptime path: []const u8) []const u8 {
     return repo_url ++ "/blob/v" ++ sideeye_version ++ "/" ++ path;
 }
 
+pub const one_thread_env_switches = [_][]const u8{ "UV_THREADPOOL_SIZE", "GOMAXPROCS", "RAYON_NUM_THREADS", "TOKIO_WORKER_THREADS" };
+
+const one_thread_env_names = blk: {
+    var s: []const u8 = "";
+    for (one_thread_env_switches, 0..) |n, i|
+        s = s ++ (if (i == 0) "" else if (i + 1 == one_thread_env_switches.len) " or " else ", ") ++ n;
+    break :blk s;
+};
+
+pub const ThreadsSurface = enum { cli, server };
+
+pub fn threadsSentence(comptime surface: ThreadsSurface, comptime supervised: bool, comptime switch_set: bool) []const u8 {
+    const cli = surface == .cli;
+    const switch_doc = docUrl("docs/apparatus.md#a-tools-own-switch-for-one-thread");
+    const go_handoff = "GOMAXPROCS=1 does not stop Go's runtime moving one run of writes from one OS thread to another, which this mode reads as two threads";
+    const opening = "Two threads of one process wrote the judged directory" ++ if (supervised)
+        ", and under " ++ (if (cli) "--observe supervised" else "observe \"supervised\"") ++ " no join is recorded, nor which thread a creation made, so nothing orders their writes"
+    else
+        " with nothing recorded ordering their writes";
+    const rule = (if (supervised)
+        "In every mode, threads are judged only where a creation or a join orders their writes"
+    else
+        "That is the limit stated under 'What the target has to be' (" ++ docUrl("README.md#what-the-target-has-to-be") ++ "): threads are judged where a creation or a join the shim saw orders their writes") ++ ", and these two writes are not. An order that only a lock, a queue or a wake sets does not count";
+    if (switch_set) {
+        const env_named = if (cli) "the environment Sideeye runs in" else "the environment this server passed the target";
+        return opening ++ ", though " ++ env_named ++ " already sets a tool's own switch for running its file calls on one thread (" ++ one_thread_env_names ++ " at 1): it is not this target's runtime's, or it did not remove the second writer" ++ (if (supervised) " — " ++ go_handoff else "") ++ ". " ++ rule ++ "; " ++ switch_doc ++ " lists the other switches and the targets each did not move.";
+    }
+    const set_it = if (cli)
+        "set it in the environment Sideeye runs in and declare it in the define's apparatus"
+    else
+        "it reaches the target through this server only when SIDEEYE_MCP_CHILD_ENV names it and the server's environment sets it, which is the operator's to do; declare it in the config's apparatus";
+    return opening ++ ". " ++ rule ++ ". A tool's own switch for running its file calls on one thread can move it past this — UV_THREADPOOL_SIZE=1 for Node, GOMAXPROCS=1 for Go" ++ (if (supervised) " (it moved some Go tools past this; in others " ++ go_handoff ++ ")" else "") ++ ": " ++ set_it ++ " (env:" ++ (if (supervised) "GOMAXPROCS=1" else "UV_THREADPOOL_SIZE=1") ++ ", for example); " ++ switch_doc ++ " lists the switches measured and the targets each did not move.";
+}
+
 /// **Closed and payload-free**, so the sentence is a comptime string. `unknown()` is
 /// `noreturn` and the promise is "every UNKNOWN carries it": a sentence assembled at run
 /// time from an arena could fail to allocate exactly when the report is being written,
@@ -622,10 +656,10 @@ pub const NextStep = enum {
     /// The opening words are kept: the dogfood entry gate sorts refusals by them.
     threads_limit,
     threads_supervised,
+    threads_switch_set,
+    threads_switch_set_supervised,
     non_system_build,
     oracle_fixed_limit,
-
-    const one_thread_switch = "A tool's own switch for running its file calls on one thread can move it past this — UV_THREADPOOL_SIZE=1 for Node, GOMAXPROCS=1 for Go: set it in the environment Sideeye runs in and declare it in the define's apparatus (env:UV_THREADPOOL_SIZE=1, for example); " ++ docUrl("docs/apparatus.md#a-tools-own-switch-for-one-thread") ++ " lists the switches measured and the targets each did not move.";
 
     pub fn render(self: NextStep) []const u8 {
         return switch (self) {
@@ -665,8 +699,10 @@ pub const NextStep = enum {
             .scratch_or_twice => "The path the detail names did not come back with the bytes the recording left, in a world nothing crashed. If those bytes are not what the verdict should judge (a cache, a log, a timestamp), declare the path scratch in the define (--scratch, or scratch in a sideeye.toml); sideeye preflight --twice names the paths two clean runs leave differently, before an exploration.",
             .kill_not_landed => "The world was armed to die in front of the operation the recording numbered, and no kill landed there, so the crash points cannot be trusted to name the same operations in every world. The restore rebuilds the names, kinds, bytes and permission bits under --state (a directory with its owner's read, write and search bits added) — not their owners, set-id or sticky bits, or timestamps, and nothing outside it (a cache kept beside the configuration, a lock) — so a tool that reads those can take another path; sideeye preflight --twice compares what two clean runs leave. If neither explains it, file it at " ++ issues_url ++ " with the report attached.",
             .not_repeating => "The world reached the operation number it was given through other operations than the recording's. Every run starts from the same rebuilt state, so what varied is the target's own order: a hash seed (PYTHONHASHSEED orders a Python set), a random choice, a thread, the clock, or something outside --state (a cache, a lock). Pin it in the define's environment and declare it as apparatus. sideeye preflight --twice compares what two clean runs leave, not the operations they perform.",
-            .threads_limit => "Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit stated under 'What the target has to be' (" ++ docUrl("README.md#what-the-target-has-to-be") ++ "): threads are judged where a creation or a join the shim saw orders their writes. " ++ one_thread_switch,
-            .threads_supervised => "Two threads of one process wrote the judged directory, and under --observe supervised no join is recorded, nor which thread a creation made, so nothing orders their writes. " ++ one_thread_switch,
+            .threads_limit => comptime threadsSentence(.cli, false, false),
+            .threads_supervised => comptime threadsSentence(.cli, true, false),
+            .threads_switch_set => comptime threadsSentence(.cli, false, true),
+            .threads_switch_set_supervised => comptime threadsSentence(.cli, true, true),
             .non_system_build => "The operation's image names a platform in its code directory, the marker Apple's own binaries carry, and macOS keeps an inserted library out of those: it strips the insertion on some machines, and on others dyld refuses the library and the run dies; an ad-hoc re-signed copy did not start when that was measured. Make a build of the tool that is not part of macOS (Homebrew's, for example) the operation's first word.",
         };
     }

@@ -115,7 +115,7 @@ on the next run.
 | switch | how the define says it | moved past the wall | not moved, and why | record |
 |---|---|---|---|---|
 | Node: `UV_THREADPOOL_SIZE=1` | `env:UV_THREADPOOL_SIZE=1` | ten of the thirteen Node targets that met the wall on v1.10.0 — joplin and stylelint to PASS; prettier, svgo, `npm pkg set`, eslint, dotenvx, bibtex-tidy and glTF-Transform to FAIL; lingui to its next wall — and yarn, trash-cli, cspell and capacitor (the last two on Node 22). Without it, all thirteen refuse | Bitwarden CLI (its lock directory is taken on the pool thread), vercel (`mkdirp` of its state directory on the pool thread at every start), gemini-cli (the pool thread writes its home registry) | `spike/dogfood/2026-10-09-followups-3/`, `spike/dogfood/2026-10-09-followups-4/`, `spike/dogfood/2026-10-10-uv-threadpool/` |
-| Go: `GOMAXPROCS=1` | `env:GOMAXPROCS=1` | doctl, infracost and plakar, under `--observe supervised` | OpenTofu: with one P the writing thread is still the scheduler's choice per run | `spike/dogfood/2026-10-09-followups-3/`, `spike/dogfood/2026-10-09-followups-4/` |
+| Go: `GOMAXPROCS=1` | `env:GOMAXPROCS=1` | doctl, infracost and plakar, under `--observe supervised` | OpenTofu: with one P the writing thread is still the scheduler's choice per run. etcd 3.7.3 `etcdutl defrag`, Dolt 2.6.0, Grafana 13.2.4, vmrestore 1.154.1, Gogs 0.14.3, gqlgen 0.17.98, JuiceFS 1.4.2 and Navidrome 0.64.2: two thread ids still write under `--observe supervised` (#987; the shape of each, and whether it could be judged, in `spike/dogfood/2026-10-29-go-handoff/RESULTS.md`) | `spike/dogfood/2026-10-09-followups-3/`, `spike/dogfood/2026-10-09-followups-4/`, `spike/dogfood/2026-10-25-shipped-v1160/`, `spike/dogfood/2026-10-29-go-handoff/` |
 | zstd: `--single-thread --no-asyncio` | on the operation's command line, and a `note:` | zstd 1.5.7 `--rm` (`--single-thread` alone still writes through an I/O thread) | — | `spike/dogfood/2026-10-09-followups-3/` |
 | beets: `threaded: no` | a line in its configuration, and a `note:` | beets 2.1.0 `import` | — | `spike/dogfood/2026-10-09-followups-3/` |
 | Rust: `RAYON_NUM_THREADS=1 TOKIO_WORKER_THREADS=1` | — | none: measured, and none of four moved | a second writer neither variable removes — rustic's one rayon worker deletes the old snapshot while the main thread writes the index; prek and steamguard-cli write from two threads of their own; codex's start-up threads make and clear `tmp/arg0` beside the thread writing `config.toml` | `spike/dogfood/2026-10-09-followups-3/`, `spike/dogfood/2026-10-09-followups-4/` |
@@ -124,6 +124,14 @@ on the next run.
 Under `--observe supervised` no join is recorded, nor which thread a creation made, so a switch is the
 only way past there: recording creations and exits from outside was measured and not built (#687,
 `spike/dogfood/2026-10-10-thread-order/`).
+
+The refusal reads the switches a variable sets — the Node, Go and Rust rows — from the environment
+Sideeye runs in, the one it hands the operation. When one is already `1` there, its step does not ask
+for a switch: it says the one set is not the target's runtime's or did not remove the second writer, and
+sends the reader here for the others (ADR 0138). A switch set inside the operation (`env GOMAXPROCS=1 tool`) is not seen, and the
+step names the switches as if none were set. In any mode, an order between two threads that only a
+lock, a queue or a wake sets is outside what Sideeye judges (ADR 0138): a switch moves a run past this
+wall only by leaving one thread to write.
 
 ## Where the recipes came from
 

@@ -1,0 +1,6 @@
+# The corporate proxy's CA, staged here by `build.sh` so Docker can mount it (Docker Desktop
+# will not share /Library). It is this machine's network configuration, not this project's, and
+# a public repository is the wrong place for it.
+proxy-ca.pem
+# Staged by build.sh from 2026-10-25 set 2, where it is committed.
+gogs-app.ini

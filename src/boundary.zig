@@ -797,8 +797,15 @@ pub fn recordingEndedStep(observe: contract.ObserveMode, exited: bool) contract.
     return if (exited) .run_then_expect_status else .run_by_hand_signalled;
 }
 
-pub fn threadsStep(observe: contract.ObserveMode) contract.NextStep {
-    return if (observe == .supervised) .threads_supervised else .threads_limit;
+pub fn oneThreadSwitchSet(getenv: *const fn ([]const u8) ?[]const u8) bool {
+    for (contract.one_thread_env_switches) |name|
+        if (getenv(name)) |v| if (std.mem.eql(u8, v, "1")) return true;
+    return false;
+}
+
+pub fn threadsStep(observe: contract.ObserveMode, switch_set: bool) contract.NextStep {
+    if (observe == .supervised) return if (switch_set) .threads_switch_set_supervised else .threads_supervised;
+    return if (switch_set) .threads_switch_set else .threads_limit;
 }
 
 test "the recording run's end and the threads refusal choose their steps by mode (#710)" {
@@ -807,9 +814,45 @@ test "the recording run's end and the threads refusal choose their steps by mode
     try std.testing.expectEqual(contract.NextStep.run_then_expect_status, recordingEndedStep(.supervised, true));
     try std.testing.expectEqual(contract.NextStep.syscalls_may_have_killed, recordingEndedStep(.syscalls, true));
     try std.testing.expectEqual(contract.NextStep.syscalls_may_have_killed, recordingEndedStep(.syscalls, false));
-    try std.testing.expectEqual(contract.NextStep.threads_limit, threadsStep(.wrappers));
-    try std.testing.expectEqual(contract.NextStep.threads_limit, threadsStep(.syscalls));
-    try std.testing.expectEqual(contract.NextStep.threads_supervised, threadsStep(.supervised));
+    try std.testing.expectEqual(contract.NextStep.threads_limit, threadsStep(.wrappers, false));
+    try std.testing.expectEqual(contract.NextStep.threads_limit, threadsStep(.syscalls, false));
+    try std.testing.expectEqual(contract.NextStep.threads_supervised, threadsStep(.supervised, false));
+    try std.testing.expectEqual(contract.NextStep.threads_switch_set, threadsStep(.wrappers, true));
+    try std.testing.expectEqual(contract.NextStep.threads_switch_set, threadsStep(.syscalls, true));
+    try std.testing.expectEqual(contract.NextStep.threads_switch_set_supervised, threadsStep(.supervised, true));
+}
+
+test "a threads refusal does not ask for a one-thread switch the environment already sets" {
+    const env = struct {
+        fn none(_: []const u8) ?[]const u8 {
+            return null;
+        }
+        fn uv(n: []const u8) ?[]const u8 {
+            return if (std.mem.eql(u8, n, "UV_THREADPOOL_SIZE")) "1" else null;
+        }
+        fn rust_only(n: []const u8) ?[]const u8 {
+            return if (std.mem.eql(u8, n, "RAYON_NUM_THREADS") or std.mem.eql(u8, n, "TOKIO_WORKER_THREADS")) "1" else null;
+        }
+        fn two_threads(n: []const u8) ?[]const u8 {
+            return if (std.mem.eql(u8, n, "UV_THREADPOOL_SIZE")) "2" else null;
+        }
+        fn empty(n: []const u8) ?[]const u8 {
+            return if (std.mem.eql(u8, n, "GOMAXPROCS")) "" else null;
+        }
+    };
+    try std.testing.expect(!oneThreadSwitchSet(&env.none));
+    try std.testing.expect(oneThreadSwitchSet(&env.uv));
+    try std.testing.expect(oneThreadSwitchSet(&env.rust_only));
+    try std.testing.expect(!oneThreadSwitchSet(&env.two_threads));
+    try std.testing.expect(!oneThreadSwitchSet(&env.empty));
+    const asks = "set it in the environment Sideeye runs in";
+    for ([_]contract.ObserveMode{ .wrappers, .syscalls, .supervised }) |m| {
+        const set = threadsStep(m, true).render();
+        try std.testing.expect(std.mem.indexOf(u8, set, asks) == null);
+        try std.testing.expect(std.mem.indexOf(u8, set, "already sets") != null);
+        for (contract.one_thread_env_switches) |name| try std.testing.expect(std.mem.indexOf(u8, set, name) != null);
+        try std.testing.expect(std.mem.indexOf(u8, threadsStep(m, false).render(), asks) != null);
+    }
 }
 
 fn noShimNextFor(observed: ?image.Observation, mode: contract.ObserveMode, can_supervise: bool) contract.NextStep {

@@ -1,0 +1,4 @@
+state=/s/nd
+cwd=/s/nd
+scratch=cache
+op=/opt/bin/navidrome backup restore --backup-file /s/aux/ndbk/before-third-album.db --force
