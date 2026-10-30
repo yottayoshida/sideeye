@@ -801,9 +801,9 @@ fn phaseDefine(run: *Run) void {
     if (args.oracle != null and builtin.os.tag == .macos) {
         if (state_created) _ = posix.rmdir(state_z.ptr);
         setupError(.platform_unsupported, if (mode == .preflight)
-            "--oracle runs strace, which is Linux only; preflight on macOS answers without a second witness, so drop --oracle"
+            "--oracle runs strace, which is Linux only; preflight on macOS answers without a second witness, so drop --oracle. To ask with strace as the witness, run preflight on Linux; " ++ contract.ci_linux_run
         else
-            "--oracle runs strace, which is Linux only; drop it. On macOS the second witness is --oracle-fs-usage (run sudo -v first, in the same terminal), or accept the weaker claim with --allow-unverified; under sideeye mcp, leave SIDEEYE_MCP_ORACLE unset");
+            "--oracle runs strace, which is Linux only; drop it. On macOS the second witness is --oracle-fs-usage (run sudo -v first, in the same terminal), or accept the weaker claim with --allow-unverified; under sideeye mcp, leave SIDEEYE_MCP_ORACLE unset. To run with strace as the witness, run on Linux; " ++ contract.ci_linux_run);
     }
 
     // This vet sits *before* --fresh-state's deletion below, and cleans up the one
@@ -1227,6 +1227,8 @@ fn phaseRecording(run: *Run) void {
     else
         "";
     if (args.observe == .supervised) {
+        if (builtin.os.tag == .macos)
+            setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe supervised is Linux only, on aarch64 and x86_64: it counts through a seccomp user-notification filter, which macOS has no equivalent of. On Linux 5.19 or later, with a cgroup v2 the engine can create cgroups in, the same command takes it; " ++ contract.macos_table, .{mode_from});
         if (!supervise.available)
             setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe supervised is Linux only, on aarch64 and x86_64: it counts through a seccomp user-notification filter, which this platform has no equivalent of", .{mode_from});
         if (!supervise.kernelSupports())
@@ -1239,7 +1241,7 @@ fn phaseRecording(run: *Run) void {
     }
     if (args.observe == .syscalls) {
         if (builtin.os.tag != .linux)
-            setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe syscalls is Linux only: it installs a seccomp filter, which this platform has no equivalent of. macOS observes at the libc entry points (--observe wrappers, the default)", .{mode_from});
+            setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe syscalls is Linux only: it installs a seccomp filter, which this platform has no equivalent of. macOS observes at the libc entry points (--observe wrappers, the default). To count at the kernel boundary, run on Linux; " ++ contract.ci_linux_run ++ ", with the flag added, and " ++ contract.macos_table, .{mode_from});
         if (!posix.seccompTrapAvailable())
             setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe syscalls needs a kernel that accepts SECCOMP_RET_TRAP and this one does not (CONFIG_SECCOMP_FILTER); the default --observe wrappers works everywhere", .{mode_from});
     }
@@ -1510,7 +1512,7 @@ fn phaseStructural(run: *Run) void {
     // own traces below. In front of the numbering check on purpose: the same race trips
     // that one too, and this is the refusal that says why.
     if (trace.second_writer_thread) |op|
-        unknown(.multiple_threads_detected, boundary.threadDetail(arena, trace.first_writer_thread, op, trace.first_writer_thread_detached, ""), boundary.threadsStep(args.observe));
+        unknown(.multiple_threads_detected, boundary.threadDetail(arena, trace.first_writer_thread, op, trace.first_writer_thread_detached, ""), boundary.threadsStep(args.observe, boundary.oneThreadSwitchSet(&envValue)));
 
     const children_admitted = false;
 
@@ -1548,7 +1550,7 @@ fn phaseStructural(run: *Run) void {
     // that (measured: a `/bin/sh` child produced zero lines under its own name) — so a
     // child that execs one of them mutates the judged directory in nobody's account.
     if (trace.needsOracle() and args.oracle_fs_usage)
-        unknown(.boundary_without_oracle, "the target crossed a process boundary and the fs_usage oracle cannot account for other processes: fs_usage excludes some by name (the shells among them) and -e does not lift that, so what a child did in the state directory may be in nobody's account; on macOS the oracle verifies single-process runs", .class_wall);
+        unknown(.boundary_without_oracle, "the target crossed a process boundary and the fs_usage oracle cannot account for other processes: fs_usage excludes some by name (the shells among them) and -e does not lift that, so what a child did in the state directory may be in nobody's account; on macOS the oracle verifies single-process runs", .account_boundary);
 
     run.admitted.children_admitted = children_admitted;
     run.admitted.crossed_boundary = crossed_boundary;
@@ -1626,10 +1628,10 @@ fn phaseOracle(run: *Run) void {
             if (r.defect) |d| switch (d) {
                 .unparsed => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "a line of the fs_usage capture did not match the grammar, so the account has a hole: {s}", .{textShown(arena, l)}) catch "a line of the fs_usage capture did not match the grammar", .sideeye_defect),
                 .truncated => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "fs_usage cut a pathname at its display width, so the line cannot be scoped to the state directory either way: {s}", .{textShown(arena, l)}) catch "fs_usage cut a pathname at its display width", .narrow_state),
-                .unresolved_fd => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the capture carries an operation on a descriptor it never saw opened, so where it points is unknown: {s}", .{textShown(arena, l)}) catch "the capture carries an operation on a descriptor it never saw opened", .sideeye_defect),
+                .unresolved_fd => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the capture carries an operation on a descriptor it never saw opened, so where it points is unknown: {s}", .{textShown(arena, l)}) catch "the capture carries an operation on a descriptor it never saw opened", .strace_on_linux),
                 .unresolvable_path => |l| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the capture carries an operation whose path this reader could not read or place, so where it points is unknown: {s}", .{textShown(arena, l)}) catch "the capture carries an operation whose path could not be read or placed", .sideeye_defect),
-                .unknown_call => |l| unknown(.unsupported_syscall_observed, std.fmt.allocPrint(arena, "fs_usage reported a call on the state directory that this version does not model: {s}", .{textShown(arena, l)}) catch "fs_usage reported a call this version does not model", .class_wall),
-                .no_subject => unknown(.oracle_saw_nothing, "no thread in the fs_usage capture wrote to the shim's trace file, so the capture cannot say which lines are the subject's", .class_wall),
+                .unknown_call => |l| unknown(.unsupported_syscall_observed, std.fmt.allocPrint(arena, "fs_usage reported a call on the state directory that this version does not model: {s}", .{textShown(arena, l)}) catch "fs_usage reported a call this version does not model", .strace_on_linux),
+                .no_subject => unknown(.oracle_saw_nothing, "no thread in the fs_usage capture wrote to the shim's trace file, so the capture cannot say which lines are the subject's", .strace_on_linux),
                 .missing_sentinel => |sp| unknown(.oracle_saw_nothing, std.fmt.allocPrint(arena, "the fs_usage capture is missing a sentinel the engine placed ({s}), so nothing establishes that the observer covered the whole recording", .{textShown(arena, sp)}) catch "the fs_usage capture is missing a sentinel the engine placed", .environment),
             };
             break :blk r.parsed;
@@ -1867,7 +1869,7 @@ fn phaseOracle(run: *Run) void {
     }
 
     if (!snapshotsEqual(initial, final) and trace.mutation_count == 0)
-        unknown(.state_changed_without_ops, "the state directory changed while zero mutating operations were recorded: operations were missed", .class_wall);
+        unknown(.state_changed_without_ops, "the state directory changed while zero mutating operations were recorded: operations were missed", boundary.unrecordedWriteNext(builtin.os.tag == .linux));
 
     // #5, after every trust detector above has had its say: under an oracle a mid-run
     // mknod already refused as unsupported_syscall_observed (#121's defined list keeps
@@ -2329,7 +2331,7 @@ fn phaseExploration(run: *Run) void {
         // the recording did not, and a second thread writing here is as unordered as one
         // in the recording. Nothing is inherited — the record names its thread.
         if (wtrace.second_writer_thread) |op|
-            unknown(.multiple_threads_detected, boundary.threadDetail(arena, wtrace.first_writer_thread, op, wtrace.first_writer_thread_detached, " in an explored world"), boundary.threadsStep(args.observe));
+            unknown(.multiple_threads_detected, boundary.threadDetail(arena, wtrace.first_writer_thread, op, wtrace.first_writer_thread_detached, " in an explored world"), boundary.threadsStep(args.observe, boundary.oneThreadSwitchSet(&envValue)));
         if (wtrace.kill_records != wtrace.kill_point_count)
             unknown(.sequence_numbering_broken, "the run's kill-point numbering has gaps or duplicates in an explored world; the world's crash-point address cannot be trusted", .class_wall);
 
@@ -3108,7 +3110,7 @@ fn observeAgain(
     if (b_detach_refused)
         containment.refuseDetach(arena, cg_b_ptr, " during the second observed run");
     if (trace.second_writer_thread) |op|
-        unknown(.multiple_threads_detected, boundary.threadDetail(arena, trace.first_writer_thread, op, trace.first_writer_thread_detached, " in the second observed run"), boundary.threadsStep(observe));
+        unknown(.multiple_threads_detected, boundary.threadDetail(arena, trace.first_writer_thread, op, trace.first_writer_thread_detached, " in the second observed run"), boundary.threadsStep(observe, boundary.oneThreadSwitchSet(&envValue)));
     // A soft boundary in run B and not run A is still a boundary: the shim only sees
     // what loads it, and "was not seen" must not read as "did nothing" here either.
     //
@@ -3144,7 +3146,7 @@ fn observeAgain(
         unknown(.state_not_quiescent, "two samples of the state directory taken back to back after the second observed run disagreed: something was still writing, so the comparison would describe a moment nobody chose", .quiesce);
 
     if (!snapshotsEqual(initial, second) and trace.mutation_count == 0)
-        unknown(.state_changed_without_ops, "the state directory changed during the second observed run while zero mutating operations were recorded: operations were missed", .class_wall);
+        unknown(.state_changed_without_ops, "the state directory changed during the second observed run while zero mutating operations were recorded: operations were missed", boundary.unrecordedWriteNext(builtin.os.tag == .linux));
 
     // The watch on run B (v17, #559), after every refusal run B already had, as run A's is. The
     // oracle's half is not asked: run B's capture is written and not parsed, which the report's
@@ -3689,7 +3691,7 @@ fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[
             },
             .preload => |lib| {
                 if (builtin.os.tag == .macos)
-                    return workdir.Refusal.print(arena, .platform_unsupported, "apparatus {s}: cannot be satisfied on macOS — there is no global preload file, and the engine owns DYLD_INSERT_LIBRARIES for every child", .{e});
+                    return workdir.Refusal.print(arena, .platform_unsupported, "apparatus {s}: cannot be satisfied on macOS — there is no global preload file, and the engine owns DYLD_INSERT_LIBRARIES for every child; on Linux the entry names a line of /etc/ld.so.preload, and " ++ contract.macos_table, .{e});
                 if (preload_file == null) preload_file = capture.readFileAllocCapped(arena, "/etc/ld.so.preload", 64 * 1024, .{ .require_regular = true }) orelse blk: {
                     // Absent is the common case and means "no preload"; present but unreadable
                     // is a different fact and must not be reported as "no line names it".

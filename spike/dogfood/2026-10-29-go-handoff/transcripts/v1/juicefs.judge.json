@@ -1,0 +1,1 @@
+{"arm1_runs_with_handover": 10, "arm1_handovers": 11, "arm2_handovers": 7, "overlaps": 0, "q2": "sequence", "result": "fail", "arm1_runs": 10, "arm2_runs": 10, "q3_next_call": {"fcntl": 10, "futex": 1}, "q3_next_call_before_later_write": 11}

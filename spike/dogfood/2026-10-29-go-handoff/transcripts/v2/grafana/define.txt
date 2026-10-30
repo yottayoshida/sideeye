@@ -1,0 +1,4 @@
+state=/s/grafana/data
+cwd=/s/grafana
+scratch=grafana.db
+op=/usr/share/grafana/bin/grafana cli --homepath /usr/share/grafana --config /s/grafana/grafana.ini admin reset-admin-password second

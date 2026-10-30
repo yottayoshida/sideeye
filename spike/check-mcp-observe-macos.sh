@@ -11,8 +11,8 @@
 # mode had been tried when it had not.
 #
 # This is not the property of #617 — that one is Linux's, and it is
-# `spike/mcp-acceptance.sh` mcp 19. Here there is not even a `next_step` naming the mode:
-# `missedOperationNext` (src/boundary.zig) returns the class wall off Linux. What is
+# `spike/mcp-acceptance.sh` mcp 19. Here no `next_step` names the mode on this platform:
+# `missedOperationNext` (src/boundary.zig) names it only for a run on Linux. What is
 # asserted is narrower and worth its own leg: the argument reaches the engine, and the
 # refusal that comes back is the engine's own, named.
 #

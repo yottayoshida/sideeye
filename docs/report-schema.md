@@ -430,7 +430,17 @@ operations — since #815 in every exploration, not only one with an admitted ch
 thread (`UV_THREADPOOL_SIZE=1` for Node, `GOMAXPROCS=1` for Go), declared in `apparatus`, with
 `docs/apparatus.md` listing the switches measured and the targets each did not move (#686, ADR
 0113) — and under `--observe supervised`, which records no join and not which thread a creation
-made, `threads_supervised`, which says that and names the same switch without naming a shim. The
+made, `threads_supervised`, which says that and names the same switch without naming a shim. When
+the environment Sideeye runs in already sets one of the switches a variable sets — `UV_THREADPOOL_SIZE`,
+`GOMAXPROCS`, `RAYON_NUM_THREADS` or `TOKIO_WORKER_THREADS`, at `1` — the step is
+`threads_switch_set`, or `threads_switch_set_supervised` under that mode: it says that switch is not
+the target's runtime's or did not remove the second writer, and sends the reader to the list for the
+others, asking for none (#980, ADR
+0138); a switch set inside the operation itself is not seen. Each of the four says that no creation or
+join orders these two writes and that an order only a lock, a queue or a wake sets does not count (#981),
+and the supervised two that
+`GOMAXPROCS=1` does not stop Go's runtime moving one run of writes from one OS thread to another
+(#987). The
 same reason raised under `--oracle-fs-usage` on macOS for a writer the shim never recorded — the
 fs_usage capture saw a thread write that no record names (ADR 0060) — keeps the step it had,
 `unwrap_or_class_wall`: that writer went around the shim, which is not what a pool's size changes.
@@ -475,8 +485,9 @@ record outside the target. Measured to be crossed by that mode on Flyway 13.11.1
 closes every descriptor before it execs (PASS 53/53), and Salt 3008.4, whose Python closes each
 descriptor `/proc/self/fd` lists, one `close` at a time (FAIL 1/3). The same kind keeps the class
 wall in an explored world and in preflight's second run, where neither target met it; in a 32-bit
-image, whose i386-compat and x32 calls that mode does not see; and where the image was not read as
-an ELF.
+image, whose i386-compat and x32 calls that mode does not see; and, on Linux, where the image was
+not read as an ELF. Off Linux, outside a replay, the recording run's refusal of this kind takes
+`observe_supervised_on_linux`, which names that mode for a run of the same command on Linux (#953).
 
 `child_process_detected` from the recording run's broken self-exec chain chooses
 its `next_step` from an observation on macOS (#703). When the operation's first
@@ -549,7 +560,10 @@ zstd input and `multiple_threads_detected` for another — and before the flag i
 reached for it names the README entry under 'What the target has to be' that
 begins 'Under `--observe syscalls`, a process whose `SIGSYS` is blocked or reset',
 and this page's 'What `--observe syscalls` does not see': that mode changes what
-some targets do. Under `--observe syscalls`, or off Linux, the step is the class
+some targets do. Off Linux, which has no such mode, the step is
+`observe_syscalls_on_linux`: the same advice for a run of the define on Linux, with the
+[CI quickstart](ci-quickstart.md) for one in GitHub Actions (#953, ADR 0069 as amended).
+Under `--observe syscalls` the step is the class
 wall — except, on Linux in a build that can supervise and outside a replay, for an
 operation whose image was read as a statically linked 64-bit ELF while the shim
 announced itself from another process, which takes `observe_supervised_static_parent` under either
@@ -606,7 +620,8 @@ trace holds an `exec` or a `shim_ready` from it and no operation of its own, so
 its writes went around the interposed entry points — is counted at the kernel
 boundary, and a run in the default mode on Linux is sent to `--observe
 syscalls`, the step `oracle_missed_operation` already uses; a run already in
-that mode, or off Linux, is not. A static parent whose child carried the shim
+that mode is not, and off Linux the step is `observe_syscalls_on_linux`, that
+mode on a Linux run (#953). A static parent whose child carried the shim
 can reach this arm — when the child that announced first is the one that wrote, its
 operations were counted as the first announcer's, so "no operation of its own" does
 not describe it — and there takes `observe_supervised_static_parent` on the

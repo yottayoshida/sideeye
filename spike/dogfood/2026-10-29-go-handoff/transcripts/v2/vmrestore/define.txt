@@ -1,0 +1,4 @@
+state=/s/vm
+cwd=/s
+scratch=-
+op=vmrestore -src=fs:///s/.vm-backup -storageDataPath=/s/vm -concurrency=1 -skipFilePreallocation -httpListenAddr=127.0.0.1:8421 -loggerLevel=ERROR

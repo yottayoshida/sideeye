@@ -323,7 +323,10 @@ pub const ChildRefusal = struct {
 /// than one that only points at the class.
 pub fn childTouchedNext(wall: ChildWall, observe: contract.ObserveMode, on_linux: bool) contract.NextStep {
     return switch (wall) {
-        .shimmed_writer_unnumbered => if (observe == .wrappers and on_linux) .observe_syscalls else .unwrap_or_class_wall,
+        .shimmed_writer_unnumbered => switch (missedOperationNext(observe, on_linux)) {
+            .class_wall => .unwrap_or_class_wall,
+            else => |step| step,
+        },
         .not_the_modes_wall => .unwrap_or_class_wall,
     };
 }
@@ -729,10 +732,10 @@ pub fn withOracleCapture(arena: std.mem.Allocator, sentence: []const u8, capture
     return sanitizeForReport(arena, joined) catch fallback;
 }
 
-test "the step for child_touched_state_dir follows the wall, not the refusal's name (#634)" {
+test "the step for child_touched_state_dir follows the wall and the platform, not the refusal's name" {
     try std.testing.expectEqual(contract.NextStep.observe_syscalls, childTouchedNext(.shimmed_writer_unnumbered, .wrappers, true));
     try std.testing.expectEqual(contract.NextStep.unwrap_or_class_wall, childTouchedNext(.shimmed_writer_unnumbered, .syscalls, true));
-    try std.testing.expectEqual(contract.NextStep.unwrap_or_class_wall, childTouchedNext(.shimmed_writer_unnumbered, .wrappers, false));
+    try std.testing.expectEqual(contract.NextStep.observe_syscalls_on_linux, childTouchedNext(.shimmed_writer_unnumbered, .wrappers, false));
     for ([_]contract.ObserveMode{ .wrappers, .syscalls }) |m| {
         for ([_]bool{ true, false }) |linux| {
             try std.testing.expectEqual(contract.NextStep.unwrap_or_class_wall, childTouchedNext(.not_the_modes_wall, m, linux));
@@ -785,7 +788,12 @@ pub fn noShimNext() contract.NextStep {
 /// `seccomp(2)` call, which the default mode had never issued, on a refusal path, and an outer
 /// filter that kills on `seccomp` would end the engine before the report was written (review). A
 pub fn missedOperationNext(observe: contract.ObserveMode, on_linux: bool) contract.NextStep {
-    return if (observe == .wrappers and on_linux) .observe_syscalls else .class_wall;
+    if (!on_linux) return .observe_syscalls_on_linux;
+    return if (observe == .wrappers) .observe_syscalls else .class_wall;
+}
+
+pub fn unrecordedWriteNext(on_linux: bool) contract.NextStep {
+    return if (on_linux) .class_wall else .observe_syscalls_on_linux;
 }
 
 pub fn fixDefineUnder(observe: contract.ObserveMode) contract.NextStep {
@@ -797,8 +805,15 @@ pub fn recordingEndedStep(observe: contract.ObserveMode, exited: bool) contract.
     return if (exited) .run_then_expect_status else .run_by_hand_signalled;
 }
 
-pub fn threadsStep(observe: contract.ObserveMode) contract.NextStep {
-    return if (observe == .supervised) .threads_supervised else .threads_limit;
+pub fn oneThreadSwitchSet(getenv: *const fn ([]const u8) ?[]const u8) bool {
+    for (contract.one_thread_env_switches) |name|
+        if (getenv(name)) |v| if (std.mem.eql(u8, v, "1")) return true;
+    return false;
+}
+
+pub fn threadsStep(observe: contract.ObserveMode, switch_set: bool) contract.NextStep {
+    if (observe == .supervised) return if (switch_set) .threads_switch_set_supervised else .threads_supervised;
+    return if (switch_set) .threads_switch_set else .threads_limit;
 }
 
 test "the recording run's end and the threads refusal choose their steps by mode (#710)" {
@@ -807,9 +822,45 @@ test "the recording run's end and the threads refusal choose their steps by mode
     try std.testing.expectEqual(contract.NextStep.run_then_expect_status, recordingEndedStep(.supervised, true));
     try std.testing.expectEqual(contract.NextStep.syscalls_may_have_killed, recordingEndedStep(.syscalls, true));
     try std.testing.expectEqual(contract.NextStep.syscalls_may_have_killed, recordingEndedStep(.syscalls, false));
-    try std.testing.expectEqual(contract.NextStep.threads_limit, threadsStep(.wrappers));
-    try std.testing.expectEqual(contract.NextStep.threads_limit, threadsStep(.syscalls));
-    try std.testing.expectEqual(contract.NextStep.threads_supervised, threadsStep(.supervised));
+    try std.testing.expectEqual(contract.NextStep.threads_limit, threadsStep(.wrappers, false));
+    try std.testing.expectEqual(contract.NextStep.threads_limit, threadsStep(.syscalls, false));
+    try std.testing.expectEqual(contract.NextStep.threads_supervised, threadsStep(.supervised, false));
+    try std.testing.expectEqual(contract.NextStep.threads_switch_set, threadsStep(.wrappers, true));
+    try std.testing.expectEqual(contract.NextStep.threads_switch_set, threadsStep(.syscalls, true));
+    try std.testing.expectEqual(contract.NextStep.threads_switch_set_supervised, threadsStep(.supervised, true));
+}
+
+test "a threads refusal does not ask for a one-thread switch the environment already sets" {
+    const env = struct {
+        fn none(_: []const u8) ?[]const u8 {
+            return null;
+        }
+        fn uv(n: []const u8) ?[]const u8 {
+            return if (std.mem.eql(u8, n, "UV_THREADPOOL_SIZE")) "1" else null;
+        }
+        fn rust_only(n: []const u8) ?[]const u8 {
+            return if (std.mem.eql(u8, n, "RAYON_NUM_THREADS") or std.mem.eql(u8, n, "TOKIO_WORKER_THREADS")) "1" else null;
+        }
+        fn two_threads(n: []const u8) ?[]const u8 {
+            return if (std.mem.eql(u8, n, "UV_THREADPOOL_SIZE")) "2" else null;
+        }
+        fn empty(n: []const u8) ?[]const u8 {
+            return if (std.mem.eql(u8, n, "GOMAXPROCS")) "" else null;
+        }
+    };
+    try std.testing.expect(!oneThreadSwitchSet(&env.none));
+    try std.testing.expect(oneThreadSwitchSet(&env.uv));
+    try std.testing.expect(oneThreadSwitchSet(&env.rust_only));
+    try std.testing.expect(!oneThreadSwitchSet(&env.two_threads));
+    try std.testing.expect(!oneThreadSwitchSet(&env.empty));
+    const asks = "set it in the environment Sideeye runs in";
+    for ([_]contract.ObserveMode{ .wrappers, .syscalls, .supervised }) |m| {
+        const set = threadsStep(m, true).render();
+        try std.testing.expect(std.mem.indexOf(u8, set, asks) == null);
+        try std.testing.expect(std.mem.indexOf(u8, set, "already sets") != null);
+        for (contract.one_thread_env_switches) |name| try std.testing.expect(std.mem.indexOf(u8, set, name) != null);
+        try std.testing.expect(std.mem.indexOf(u8, threadsStep(m, false).render(), asks) != null);
+    }
 }
 
 fn noShimNextFor(observed: ?image.Observation, mode: contract.ObserveMode, can_supervise: bool) contract.NextStep {
@@ -867,7 +918,7 @@ fn staticParentNextFor(
 }
 
 pub fn traceClosedNext(refusing: ?engine.Op) contract.NextStep {
-    return traceClosedNextFor(traceClosedByTarget(refusing), observe_mode, rec_image, supervise.available, replaying);
+    return traceClosedNextFor(traceClosedByTarget(refusing), observe_mode, rec_image, supervise.available, replaying, @import("builtin").os.tag == .linux);
 }
 
 // Not for a 32-bit image: the supervising engine does not see i386-compat or x32 calls, and a
@@ -878,7 +929,9 @@ fn traceClosedNextFor(
     observed: ?image.Observation,
     can_supervise: bool,
     replay: bool,
+    on_linux: bool,
 ) contract.NextStep {
+    if (closed and !on_linux and !replay) return .observe_supervised_on_linux;
     const e = supervisableElf(closed, mode, observed, can_supervise, replay) orelse return .class_wall;
     if (!e.class64) return .class_wall;
     return if (e.has_interp) .observe_supervised_trace_closed else .observe_supervised_static_parent;
@@ -934,7 +987,7 @@ test "staticParentNextFor: each condition, pinned by a neighbour that differs in
     try std.testing.expectEqual(S.class_wall, staticParentNextFor(.class_wall, true, .wrappers, null, true, false));
 }
 
-test "a trace the target closed names --observe supervised for a 64-bit ELF, static or dynamic, and nowhere else" {
+test "a trace the target closed names --observe supervised for a 64-bit ELF, static or dynamic, a Linux run of it off Linux, and nowhere else" {
     const obs = struct {
         fn of(f: image.Facts) image.Observation {
             return .{ .path = "/x", .size = 0, .facts = f };
@@ -943,17 +996,21 @@ test "a trace the target closed names --observe supervised for a 64-bit ELF, sta
     const dynamic64: image.Facts = .{ .elf = .{ .has_interp = true, .class64 = true } };
     const static64: image.Facts = .{ .elf = .{ .has_interp = false, .class64 = true } };
     const S = contract.NextStep;
-    try std.testing.expectEqual(S.observe_supervised_trace_closed, traceClosedNextFor(true, .wrappers, obs(dynamic64), true, false));
-    try std.testing.expectEqual(S.observe_supervised_trace_closed, traceClosedNextFor(true, .syscalls, obs(dynamic64), true, false));
-    try std.testing.expectEqual(S.observe_supervised_static_parent, traceClosedNextFor(true, .wrappers, obs(static64), true, false));
-    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(false, .wrappers, obs(dynamic64), true, false));
-    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .supervised, obs(dynamic64), true, false));
-    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .wrappers, obs(dynamic64), false, false));
-    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .wrappers, obs(dynamic64), true, true));
-    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .wrappers, obs(.{ .elf = .{ .has_interp = true, .class64 = false } }), true, false));
-    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .wrappers, obs(.{ .elf = .{ .has_interp = false, .class64 = false } }), true, false));
-    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .wrappers, obs(.{ .macho = .{ .dyldlink = true, .signing = null } }), true, false));
-    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .wrappers, null, true, false));
+    try std.testing.expectEqual(S.observe_supervised_trace_closed, traceClosedNextFor(true, .wrappers, obs(dynamic64), true, false, true));
+    try std.testing.expectEqual(S.observe_supervised_trace_closed, traceClosedNextFor(true, .syscalls, obs(dynamic64), true, false, true));
+    try std.testing.expectEqual(S.observe_supervised_static_parent, traceClosedNextFor(true, .wrappers, obs(static64), true, false, true));
+    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(false, .wrappers, obs(dynamic64), true, false, true));
+    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .supervised, obs(dynamic64), true, false, true));
+    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .wrappers, obs(dynamic64), false, false, true));
+    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .wrappers, obs(dynamic64), true, true, true));
+    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .wrappers, obs(.{ .elf = .{ .has_interp = true, .class64 = false } }), true, false, true));
+    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .wrappers, obs(.{ .elf = .{ .has_interp = false, .class64 = false } }), true, false, true));
+    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .wrappers, obs(.{ .macho = .{ .dyldlink = true, .signing = null } }), true, false, true));
+    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .wrappers, null, true, false, true));
+    const macho: image.Facts = .{ .macho = .{ .dyldlink = true, .signing = null } };
+    try std.testing.expectEqual(S.observe_supervised_on_linux, traceClosedNextFor(true, .wrappers, obs(macho), false, false, false));
+    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(true, .wrappers, obs(macho), false, true, false));
+    try std.testing.expectEqual(S.class_wall, traceClosedNextFor(false, .wrappers, obs(macho), false, false, false));
     try std.testing.expectEqual(S.class_wall, staticParentNextFor(.class_wall, true, .wrappers, obs(dynamic64), true, false));
     try std.testing.expectEqual(S.unwrap_or_class_wall, staticParentNextFor(.unwrap_or_class_wall, true, .wrappers, obs(dynamic64), true, false));
 }
@@ -1351,11 +1408,15 @@ test "a no_shim_marker detail says how a held recording run ended, and nothing w
     try std.testing.expect(std.mem.endsWith(u8, noShimDetail(arena), "; the recording run did not exit normally"));
 }
 
-test "missedOperationNext names the syscall mode only on Linux and only where it is not in use (#599)" {
+test "missedOperationNext names the syscall mode on Linux where it is not in use, and off Linux names the Linux run" {
     try std.testing.expectEqual(contract.NextStep.observe_syscalls, missedOperationNext(.wrappers, true));
     try std.testing.expectEqual(contract.NextStep.class_wall, missedOperationNext(.syscalls, true));
-    try std.testing.expectEqual(contract.NextStep.class_wall, missedOperationNext(.wrappers, false));
-    try std.testing.expectEqual(contract.NextStep.class_wall, missedOperationNext(.syscalls, false));
+    try std.testing.expectEqual(contract.NextStep.observe_syscalls_on_linux, missedOperationNext(.wrappers, false));
+}
+
+test "a state change no record accounts for keeps the class wall on Linux and names the Linux run off it" {
+    try std.testing.expectEqual(contract.NextStep.class_wall, unrecordedWriteNext(true));
+    try std.testing.expectEqual(contract.NextStep.observe_syscalls_on_linux, unrecordedWriteNext(false));
 }
 
 test "fixDefineUnder keeps fix_define except under the syscall mode (#599)" {

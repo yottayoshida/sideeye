@@ -25,6 +25,9 @@ ROOT=${SIDEEYE_ROOT:-/work}
 SIDEEYE=$ROOT/zig-out/bin/sideeye
 SHIM=$ROOT/zig-out/lib/libsideeye_shim.so
 OUT=$ROOT/spike/out
+# Not the runner's environment: a one-thread switch set there changes which threads step is printed.
+# The names are contract.one_thread_env_switches'; one missing here leaks into the legs that expect none.
+no_switches="-u UV_THREADPOOL_SIZE -u GOMAXPROCS -u RAYON_NUM_THREADS -u TOKIO_WORKER_THREADS"
 
 fails=0
 reasons=""
@@ -3151,13 +3154,24 @@ fi
 o=$(TOY_TWICE_COUNTER=/tmp/acc-710/w/count "$SIDEEYE" preflight --twice --state /tmp/acc-710/w/state \
     --setup "$OUT/toy-twice init" --operation "$OUT/toy-twice" --shim "$SHIM" --work /tmp/acc-710/w/work 2>&1)
 want710 "preflight --twice's second run ending differently names what the restore does not put back" "$o" $? 2 recording_run_failed "not their owners, set-id or sticky bits, or timestamps"
-o=$(TOY_THREAD_RACE=1 "$SIDEEYE" explore --state /tmp/acc-710/t/state --setup "$OUT/toy-bug init" \
+o=$(TOY_THREAD_RACE=1 env $no_switches "$SIDEEYE" explore --state /tmp/acc-710/t/state --setup "$OUT/toy-bug init" \
     --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-710/t/work --oracle /usr/bin/strace 2>&1)
 rc=$?
 want710 "two threads writing unordered names the README's threads limit" "$o" $rc 2 multiple_threads_detected "threads are judged where a creation or a join the shim saw orders their writes"
 # #686, ADR 0113: and the way past the records found, a tool's own switch for one thread, declared
 # in apparatus. Before it the step named the limit and nothing else (ADR 0097 believed there was none).
 want710 "...and a tool's own switch for one thread, declared in apparatus (#686)" "$o" $rc 2 multiple_threads_detected "UV_THREADPOOL_SIZE=1 for Node, GOMAXPROCS=1 for Go: set it in the environment Sideeye runs in and declare it in the define's apparatus"
+rm -rf /tmp/acc-710/t/state /tmp/acc-710/t/work
+o=$(TOY_THREAD_RACE=1 env $no_switches UV_THREADPOOL_SIZE=1 "$SIDEEYE" explore --state /tmp/acc-710/t/state --setup "$OUT/toy-bug init" \
+    --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-710/t/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+want710 "...and with UV_THREADPOOL_SIZE=1 already set, says it is set (#980)" "$o" $rc 2 multiple_threads_detected "already sets a tool's own switch for running its file calls on one thread"
+if printf '%s\n' "$o" | grep '^next  ' | grep -qF "set it in the environment Sideeye runs in"; then
+    echo "FAIL #980: with UV_THREADPOOL_SIZE=1 set, the threads step still asks for a switch to be set"
+    printf '%s\n' "$o" | grep '^next  ' | sed 's/^/     | /'; fails=$((fails + 1))
+else
+    echo "ok   #980: ...and does not ask for one to be set"
+fi
 
 # #711, ADR 0096: the figures the `oracle`, `checker` and `processes` sentences state, as optional
 # JSON fields. Each has to equal the number its sentence prints — read back out of the sentence
@@ -4425,7 +4439,7 @@ if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
     sup_threads() {   # sup_threads <label> <toy> <mode flags...>: exit status in th_rc
         lb=$1; tt=$2; shift 2
         rm -rf /tmp/acc-th/s /tmp/acc-th/w && mkdir -p /tmp/acc-th/s
-        TOY_STATE=/tmp/acc-th/s "$SIDEEYE" preflight --state /tmp/acc-th/s --setup "$tt init" \
+        TOY_STATE=/tmp/acc-th/s env $no_switches "$SIDEEYE" preflight --state /tmp/acc-th/s --setup "$tt init" \
             --operation "$tt rotate" "$@" --oracle /usr/bin/strace --work /tmp/acc-th/w > "/tmp/acc-th-$lb.txt" 2>&1
         th_rc=$?
     }
@@ -4449,7 +4463,7 @@ if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
     # JSON form (#717 gave it one), so the JSON is an explore's, refused at its recording the
     # same way.
     rm -rf /tmp/acc-th/s /tmp/acc-th/w /tmp/acc-th-sup.json && mkdir -p /tmp/acc-th/s
-    TOY_STATE=/tmp/acc-th/s "$SIDEEYE" explore --state /tmp/acc-th/s --setup "$OUT/toy-supthreads init" \
+    TOY_STATE=/tmp/acc-th/s env $no_switches "$SIDEEYE" explore --state /tmp/acc-th/s --setup "$OUT/toy-supthreads init" \
         --operation "$OUT/toy-supthreads rotate" --observe supervised --oracle /usr/bin/strace \
         --work /tmp/acc-th/w --json /tmp/acc-th-sup.json > /dev/null 2>&1
     # On the detail's own line: the next step (since #686) and the processes line repeat "no join is
@@ -4475,6 +4489,22 @@ if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
     else
         echo "FAIL the supervised thread refusal does not name a tool's switch for one thread (#686)"
         grep -h '^next  ' /tmp/acc-th-sup.txt | sed 's/^/     | /'
+        fails=$((fails + 1))
+    fi
+    rm -rf /tmp/acc-th/s /tmp/acc-th/w && mkdir -p /tmp/acc-th/s
+    TOY_STATE=/tmp/acc-th/s env $no_switches GOMAXPROCS=1 "$SIDEEYE" preflight --state /tmp/acc-th/s \
+        --setup "$OUT/toy-supthreads init" --operation "$OUT/toy-supthreads rotate" --observe supervised \
+        --oracle /usr/bin/strace --work /tmp/acc-th/w > /tmp/acc-th-supgo.txt 2>&1
+    th_rc=$?
+    if [ "$th_rc" = 2 ] && grep -q "^UNKNOWN  multiple_threads_detected$" /tmp/acc-th-supgo.txt \
+        && grep '^next  ' /tmp/acc-th-supgo.txt | grep -qF "already sets a tool's own switch for running its file calls on one thread" \
+        && grep '^next  ' /tmp/acc-th-supgo.txt | grep -qF "GOMAXPROCS=1 does not stop Go's runtime moving one run of writes" \
+        && ! grep '^next  ' /tmp/acc-th-supgo.txt | grep -qF "GOMAXPROCS=1 for Go" \
+        && ! grep -q -i "the shim" /tmp/acc-th-supgo.txt; then
+        echo "ok   with GOMAXPROCS=1 set, the supervised thread refusal does not send the reader to it (#987)"
+    else
+        echo "FAIL with GOMAXPROCS=1 set, the supervised thread refusal still sends the reader to it, or names the shim (#987)"
+        grep -h -E '^(UNKNOWN|next) ' /tmp/acc-th-supgo.txt | sed 's/^/     | /'
         fails=$((fails + 1))
     fi
     if [ -x "$ROOT/zig-out/bin/sideeye-testsupervisedelay" ]; then

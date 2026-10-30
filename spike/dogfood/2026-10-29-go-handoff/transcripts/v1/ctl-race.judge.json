@@ -1,0 +1,1 @@
+{"arm1_runs_with_handover": 10, "arm1_handovers": 1000, "arm2_handovers": 1000, "overlaps": 412, "q2": "same", "result": "fail", "arm1_runs": 10, "arm2_runs": 10, "q3_next_call": {"sched_yield": 990, "rt_sigaction": 10}, "q3_next_call_before_later_write": 500}

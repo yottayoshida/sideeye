@@ -1,6 +1,7 @@
 # 0067 — A process's threads are judged in the order its creations and joins give their writes
 
-- **Status:** Accepted (2026-09-16)
+- **Status:** Accepted (2026-09-16). *Revisited by ADR 0138 (2026-10-29, #981): the line is kept — a
+  recorded lock, futex, pipe or channel hand-over is not counted as an order.*
 - **Amends:** ADR 0055 decision 4 ("one writing thread per process is judged; a second
   refuses") — the count is no longer the rule; the order is. Takes the "second stage" that
   ADR 0055's Alternatives left "if a target asks for it": one did (#539), and the measurement

@@ -17,6 +17,7 @@
 //! touch the heap; the engine gets the same guarantee for free.
 
 const std = @import("std");
+const builtin = @import("builtin");
 
 /// Bumped whenever the trace format or the meaning of an `OpClass` changes.
 /// The engine refuses a trace whose version differs (`contract_version_mismatch`),
@@ -573,6 +574,47 @@ pub inline fn docUrl(comptime path: []const u8) []const u8 {
     return repo_url ++ "/blob/v" ++ sideeye_version ++ "/" ++ path;
 }
 
+pub const macos_table = docUrl("docs/cli.md#what-macos-cannot-judge") ++ " lists what macOS cannot judge and the Linux run that goes past each.";
+pub const ci_linux_run = "in GitHub Actions, " ++ docUrl("docs/ci-quickstart.md") ++ " sets one up";
+pub const no_kernel_mode_on_macos = "macOS has no mode that counts at the kernel boundary: a write that went past the libc entry points the shim is inserted at — a raw syscall, a stdio flush libc makes from inside itself — leaves no record here, and only Linux counts it.";
+pub const no_cgroup_on_macos = "macOS gives the engine no cgroup, so a process that leaves the run's process group cannot be stopped with the run.";
+pub const trace_closed_on_macos = "A process this run observed closed the descriptor the shim writes its records through, as a program does when it closes every descriptor before starting another, so what it did after that went unrecorded; macOS has no mode that keeps the trace out of the target's reach.";
+pub const where_engine_contains = "where it can make cgroups under its own and move processes into them — a writable cgroup v2 delegated to its user, or root over a writable cgroup v2 (a default container mounts it read-only) — and a process that leaves the group is stopped with the run's cgroup and judged";
+
+pub const one_thread_env_switches = [_][]const u8{ "UV_THREADPOOL_SIZE", "GOMAXPROCS", "RAYON_NUM_THREADS", "TOKIO_WORKER_THREADS" };
+
+const one_thread_env_names = blk: {
+    var s: []const u8 = "";
+    for (one_thread_env_switches, 0..) |n, i|
+        s = s ++ (if (i == 0) "" else if (i + 1 == one_thread_env_switches.len) " or " else ", ") ++ n;
+    break :blk s;
+};
+
+pub const ThreadsSurface = enum { cli, server };
+
+pub fn threadsSentence(comptime surface: ThreadsSurface, comptime supervised: bool, comptime switch_set: bool) []const u8 {
+    const cli = surface == .cli;
+    const switch_doc = docUrl("docs/apparatus.md#a-tools-own-switch-for-one-thread");
+    const go_handoff = "GOMAXPROCS=1 does not stop Go's runtime moving one run of writes from one OS thread to another, which this mode reads as two threads";
+    const opening = "Two threads of one process wrote the judged directory" ++ if (supervised)
+        ", and under " ++ (if (cli) "--observe supervised" else "observe \"supervised\"") ++ " no join is recorded, nor which thread a creation made, so nothing orders their writes"
+    else
+        " with nothing recorded ordering their writes";
+    const rule = (if (supervised)
+        "In every mode, threads are judged only where a creation or a join orders their writes"
+    else
+        "That is the limit stated under 'What the target has to be' (" ++ docUrl("README.md#what-the-target-has-to-be") ++ "): threads are judged where a creation or a join the shim saw orders their writes") ++ ", and these two writes are not. An order that only a lock, a queue or a wake sets does not count";
+    if (switch_set) {
+        const env_named = if (cli) "the environment Sideeye runs in" else "the environment this server passed the target";
+        return opening ++ ", though " ++ env_named ++ " already sets a tool's own switch for running its file calls on one thread (" ++ one_thread_env_names ++ " at 1): it is not this target's runtime's, or it did not remove the second writer" ++ (if (supervised) " — " ++ go_handoff else "") ++ ". " ++ rule ++ "; " ++ switch_doc ++ " lists the other switches and the targets each did not move.";
+    }
+    const set_it = if (cli)
+        "set it in the environment Sideeye runs in and declare it in the define's apparatus"
+    else
+        "it reaches the target through this server only when SIDEEYE_MCP_CHILD_ENV names it and the server's environment sets it, which is the operator's to do; declare it in the config's apparatus";
+    return opening ++ ". " ++ rule ++ ". A tool's own switch for running its file calls on one thread can move it past this — UV_THREADPOOL_SIZE=1 for Node, GOMAXPROCS=1 for Go" ++ (if (supervised) " (it moved some Go tools past this; in others " ++ go_handoff ++ ")" else "") ++ ": " ++ set_it ++ " (env:" ++ (if (supervised) "GOMAXPROCS=1" else "UV_THREADPOOL_SIZE=1") ++ ", for example); " ++ switch_doc ++ " lists the switches measured and the targets each did not move.";
+}
+
 /// **Closed and payload-free**, so the sentence is a comptime string. `unknown()` is
 /// `noreturn` and the promise is "every UNKNOWN carries it": a sentence assembled at run
 /// time from an arena could fail to allocate exactly when the report is being written,
@@ -622,17 +664,23 @@ pub const NextStep = enum {
     /// The opening words are kept: the dogfood entry gate sorts refusals by them.
     threads_limit,
     threads_supervised,
+    threads_switch_set,
+    threads_switch_set_supervised,
     non_system_build,
     oracle_fixed_limit,
+    observe_syscalls_on_linux,
+    strace_on_linux,
+    contain_on_linux,
+    observe_supervised_on_linux,
 
-    const one_thread_switch = "A tool's own switch for running its file calls on one thread can move it past this — UV_THREADPOOL_SIZE=1 for Node, GOMAXPROCS=1 for Go: set it in the environment Sideeye runs in and declare it in the define's apparatus (env:UV_THREADPOOL_SIZE=1, for example); " ++ docUrl("docs/apparatus.md#a-tools-own-switch-for-one-thread") ++ " lists the switches measured and the targets each did not move.";
+    const strace_run_off_linux = if (builtin.os.tag == .macos) " For a Linux run with strace, " ++ ci_linux_run ++ "." else "";
 
     pub fn render(self: NextStep) []const u8 {
         return switch (self) {
             .fix_define => "Change the define: the detail above names the declaration this run contradicted, and nothing is judged until it holds.",
             .pass_oracle => "Re-run with --oracle <strace> on Linux or --oracle-fs-usage on macOS, or accept the weaker claim with --allow-unverified.",
-            .account_boundary => "Re-run with --oracle <strace> on Linux, the witness that can account for the other process; on macOS a process boundary is refused by design, and --allow-unverified does not lift this refusal.",
-            .account_boundary_or_unwrap => "Re-run with --oracle <strace> on Linux, the witness that can account for the other process — or, if the operation is a shell script wrapping another command, invoke that command as the operation instead; on macOS a process boundary is refused by design, and --allow-unverified does not lift this refusal.",
+            .account_boundary => "Re-run with --oracle <strace> on Linux, the witness that can account for the other process; on macOS a process boundary is refused by design, and --allow-unverified does not lift this refusal." ++ strace_run_off_linux,
+            .account_boundary_or_unwrap => "Re-run with --oracle <strace> on Linux, the witness that can account for the other process — or, if the operation is a shell script wrapping another command, invoke that command as the operation instead; on macOS a process boundary is refused by design, and --allow-unverified does not lift this refusal." ++ strace_run_off_linux,
             .raise_world_timeout => "Raise --world-timeout, or find out what the operation waits on.",
             .class_wall => "This target does something Sideeye refuses by design: the unknown_reason above names the limit, " ++ docUrl("docs/report-schema.md#refusals-by-reason") ++ " says what each one stands at, and " ++ docUrl("DESIGN.md#known-constraints-declared-not-hidden") ++ " gives the reasons.",
             .unwrap_or_class_wall => "Check whether the operation is a shell script wrapping another command — if it is, invoke that command as the operation instead; the refusal itself is one Sideeye makes by design, and " ++ docUrl("docs/report-schema.md#refusals-by-reason") ++ " says what its unknown_reason stands at.",
@@ -642,16 +690,16 @@ pub const NextStep = enum {
             .rebuild_pair => "Use the shim and the engine from the same build: --shim must name the library this binary shipped with.",
             .re_record => "Explore the define again under this build; the saved case does not apply here, and a fresh recording yields a fresh case.",
             .environment => "Fix what the detail above names in the environment, then re-run; the define itself is unchanged.",
-            .oracle_fixed_limit => "The limit the detail names is fixed in this build: under --oracle-fs-usage the recording has to finish inside it. On Linux, --oracle <strace> has neither limit.",
+            .oracle_fixed_limit => "The limit the detail names is fixed in this build: under --oracle-fs-usage the recording has to finish inside it. On Linux, --oracle <strace> has neither limit." ++ strace_run_off_linux,
             .retry_then_report => "Re-run once; if it happens again, file it at " ++ issues_url ++ " with the report attached, because the detail cannot say whether the machine or Sideeye stopped short.",
             .unreadable_entry_appeared => "An entry this user cannot read appeared in the state during the run (a lock created with mode 0000 is the common case): re-run as a user that can read it, or point --state at a directory that leaves it outside.",
             .narrow_state => "Point --state at a smaller or shallower directory, or reduce what the operation writes there and how deep it nests; the ceiling the detail names is fixed in this build.",
             .quiesce => "Wait for whatever the target left running to finish, or stop it, so the state directory holds still; then re-run.",
             .relaunch => "Start the exploration from a process that stays alive for its whole duration; the one that launched this run has exited.",
             .observe_syscalls => "Run explore or preflight again with --observe syscalls, which counts most operations at the kernel boundary, including ones that do not pass through libc's interposed entry points — but that mode changes what some targets do, so first read the entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset' (" ++ docUrl("README.md#what-the-target-has-to-be") ++ "), and 'What --observe syscalls does not see' (" ++ docUrl("docs/report-schema.md#what---observe-syscalls-does-not-see") ++ "); if the run then fails where it did not under the default mode, the mode may have killed a process or otherwise changed what the target does, which is not a reason to change the define.",
-            .observe_supervised => "Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry at " ++ docUrl("docs/cli.md#the-flags-the-define-does-not-spell") ++ " names what it still refuses.",
-            .observe_supervised_static_parent => "The file the operation names was read before the run as a statically linked image, which no shim can be loaded into: the shim records this run read came from a process the operation started, or from an image it replaced itself with, and what the operation did in its own image went unrecorded. Run the same command with --observe supervised (explore and preflight take it), which counts those calls from outside the process, where no preloaded library has to reach them — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry at " ++ docUrl("docs/cli.md#the-flags-the-define-does-not-spell") ++ " names what it still refuses.",
-            .observe_supervised_trace_closed => "A process this run observed — the operation, or one it started — closed the descriptor the shim writes its records through, as a program does when it closes every descriptor before it starts another, so what it did after that went unrecorded. Run the same command with --observe supervised (explore and preflight take it), under which the engine keeps that record outside the target, where nothing the target closes reaches it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and the --observe entry at " ++ docUrl("docs/cli.md#the-flags-the-define-does-not-spell") ++ " names what it still refuses.",
+            .observe_supervised => "Run the same command again with --observe supervised (explore, preflight and replay all take it), which counts the operation's state-changing calls from outside the process, where no preloaded library has to reach it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and " ++ docUrl("docs/cli.md#how-supervised-mode-counts-and-what-it-refuses") ++ " names what it still refuses.",
+            .observe_supervised_static_parent => "The file the operation names was read before the run as a statically linked image, which no shim can be loaded into: the shim records this run read came from a process the operation started, or from an image it replaced itself with, and what the operation did in its own image went unrecorded. Run the same command with --observe supervised (explore and preflight take it), which counts those calls from outside the process, where no preloaded library has to reach them — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and " ++ docUrl("docs/cli.md#how-supervised-mode-counts-and-what-it-refuses") ++ " names what it still refuses.",
+            .observe_supervised_trace_closed => "A process this run observed — the operation, or one it started — closed the descriptor the shim writes its records through, as a program does when it closes every descriptor before it starts another, so what it did after that went unrecorded. Run the same command with --observe supervised (explore and preflight take it), under which the engine keeps that record outside the target, where nothing the target closes reaches it — it needs Linux 5.19 or later on aarch64 or x86_64 and a cgroup v2 the engine can create cgroups in, and " ++ docUrl("docs/cli.md#how-supervised-mode-counts-and-what-it-refuses") ++ " names what it still refuses.",
             .syscalls_may_have_killed => "Under --observe syscalls a run also ends this way when that mode killed a process or otherwise changed what the target does — the entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset' (" ++ docUrl("README.md#what-the-target-has-to-be") ++ ") names the processes it kills — so run the operation once under the default mode and compare its exit status, its output and the state it leaves (running the checker on that state by hand) before changing the define, its checker, --expect-status or --marker.",
             .declare_cwd => "Add cwd = \".\" under [define]: the define declares none, so its commands ran in Sideeye's own directory rather than the toml's, and the detail names an argument, or a directory above one, that exists only under the toml's directory.",
             .sideeye_defect => "Nothing in the define fixes this: it is a defect in Sideeye. File it at " ++ issues_url ++ " with the report attached.",
@@ -665,9 +713,15 @@ pub const NextStep = enum {
             .scratch_or_twice => "The path the detail names did not come back with the bytes the recording left, in a world nothing crashed. If those bytes are not what the verdict should judge (a cache, a log, a timestamp), declare the path scratch in the define (--scratch, or scratch in a sideeye.toml); sideeye preflight --twice names the paths two clean runs leave differently, before an exploration.",
             .kill_not_landed => "The world was armed to die in front of the operation the recording numbered, and no kill landed there, so the crash points cannot be trusted to name the same operations in every world. The restore rebuilds the names, kinds, bytes and permission bits under --state (a directory with its owner's read, write and search bits added) — not their owners, set-id or sticky bits, or timestamps, and nothing outside it (a cache kept beside the configuration, a lock) — so a tool that reads those can take another path; sideeye preflight --twice compares what two clean runs leave. If neither explains it, file it at " ++ issues_url ++ " with the report attached.",
             .not_repeating => "The world reached the operation number it was given through other operations than the recording's. Every run starts from the same rebuilt state, so what varied is the target's own order: a hash seed (PYTHONHASHSEED orders a Python set), a random choice, a thread, the clock, or something outside --state (a cache, a lock). Pin it in the define's environment and declare it as apparatus. sideeye preflight --twice compares what two clean runs leave, not the operations they perform.",
-            .threads_limit => "Two threads of one process wrote the judged directory with nothing recorded ordering their writes. That is the limit stated under 'What the target has to be' (" ++ docUrl("README.md#what-the-target-has-to-be") ++ "): threads are judged where a creation or a join the shim saw orders their writes. " ++ one_thread_switch,
-            .threads_supervised => "Two threads of one process wrote the judged directory, and under --observe supervised no join is recorded, nor which thread a creation made, so nothing orders their writes. " ++ one_thread_switch,
+            .threads_limit => comptime threadsSentence(.cli, false, false),
+            .threads_supervised => comptime threadsSentence(.cli, true, false),
+            .threads_switch_set => comptime threadsSentence(.cli, false, true),
+            .threads_switch_set_supervised => comptime threadsSentence(.cli, true, true),
             .non_system_build => "The operation's image names a platform in its code directory, the marker Apple's own binaries carry, and macOS keeps an inserted library out of those: it strips the insertion on some machines, and on others dyld refuses the library and the run dies; an ad-hoc re-signed copy did not start when that was measured. Make a build of the tool that is not part of macOS (Homebrew's, for example) the operation's first word.",
+            .observe_syscalls_on_linux => no_kernel_mode_on_macos ++ " Run the same define on Linux — under the default mode, and if it refuses the same way there, with --observe syscalls, after reading the entry under 'What the target has to be' that begins 'Under --observe syscalls, a process whose SIGSYS is blocked or reset' (" ++ docUrl("README.md#what-the-target-has-to-be") ++ "). For that run, " ++ ci_linux_run ++ ", with the flag added; " ++ macos_table,
+            .strace_on_linux => "This is a limit of fs_usage, the witness macOS has: its reader could not account for what the detail names. On Linux the witness is strace, read by another reader: run the same define there with --oracle <strace>; " ++ ci_linux_run ++ ". On macOS the one way past is the weaker claim, --allow-unverified in place of --oracle-fs-usage, which no witness checks. " ++ macos_table,
+            .contain_on_linux => no_cgroup_on_macos ++ " On Linux, run the engine " ++ where_engine_contains ++ "; " ++ macos_table,
+            .observe_supervised_on_linux => trace_closed_on_macos ++ " On Linux 5.19 or later, on aarch64 or x86_64, with a cgroup v2 the engine can create cgroups in, run the same command with --observe supervised: the engine holds the trace there, outside the target; " ++ macos_table,
         };
     }
 };
