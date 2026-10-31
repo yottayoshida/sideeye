@@ -261,7 +261,7 @@ explored    6 worlds (crash points 5 + 1 baseline)
 expected    exit 0
 atomicity   1 path(s) judged pre-or-post
 oracle      agreed on 5 operations (88 syscall lines examined, 12 in scope of the judged state), witness strace
-metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, extended attributes or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
 checker     falsified before the run (corrupted state -> check failed); ran in 6 world(s)
 l1          no marker configured
 case        /tmp/se/work/cases/000001.json

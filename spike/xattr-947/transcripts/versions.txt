@@ -1,0 +1,5 @@
+acl 2.3.2-2+b1
+libfaketime 0.9.10+2024-06-05+gba9ed5b2-0.6
+logrotate 3.22.0-1+b2
+strace 6.13+ds-1
+vim 2:9.1.1230-2

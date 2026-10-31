@@ -244,8 +244,8 @@
  *                  pselect); and an unlink of the empty path, sync_file_range and syncfs;
  *                  and readahead, posix_fadvise and madvise on a private read mapping.
  *   TOY_SETXATTR   on Linux, rotate also sets an extended attribute on key.json — a
- *                  write the oracle has no class for, which must still refuse
- *                  (unsupported_syscall_observed naming setxattr; #684's control).
+ *                  write the oracle sets aside as metadata and names in
+ *                  metadata_writes, as it does chmod.
  *                  rotate only: init never reads it.
  *   TOY_EXIT_STATUS=N  rotate exits N after completing all of its state work — the
  *                  git-convention shape (#3). Without --expect-status N the run must
@@ -1421,8 +1421,8 @@ static int cmd_rotate_body(void) {
     }
 
 #ifdef __linux__
-    /* #684's control: an attribute WRITE on key.json, which the oracle must still refuse by
-     * name. Read here, in rotate, and never in init. */
+    /* An attribute WRITE on key.json, which the oracle names as metadata. Read here, in
+     * rotate, and never in init. */
     if (getenv("TOY_SETXATTR")) {
         char sp[4096];
         join_path(sp, sizeof sp, "key.json");

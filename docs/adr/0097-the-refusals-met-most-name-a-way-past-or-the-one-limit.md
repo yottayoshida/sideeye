@@ -1,6 +1,7 @@
 # 0097 — The refusals met most name a way past them, or the one limit they stand at
 
 Status: Accepted (2026-10-08)
+Amended by: ADR 0142 (2026-10-31, #947), which rules on `setxattr`: set aside as metadata, no longer refused.
 
 Closes #710. Amends ADR 0040, whose framework this keeps: the step is chosen at the site that
 raises the refusal, from what that site observed, as a payload-free member of
