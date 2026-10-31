@@ -299,6 +299,14 @@ stay the same.
    place — and a saved case replays as it did, so the allowance covers both with no ruling of
    their own; `contract_version` does not move.
 
+   **One plain additive field, 2026-10-31 (#956).** `crash_model` (string) is present in every
+   report and names how each crash world was made to fail; `"process-kill"` is its one value.
+   Optional in the allowance's sense: present from the release that carries it, absent from every
+   report before, and a consumer reads its absence as unknown. It
+   is an open set, documented as one, so a second crash model adds a value under this same
+   allowance rather than a break. No exit code moves and a saved case replays as it did;
+   `contract_version` does not move.
+
 3. **Exit codes.** When a run produces a verdict, that verdict's exit code is
    fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is never 0.
    The promise runs in that direction. **Exit 0 is not reserved to PASS**: it

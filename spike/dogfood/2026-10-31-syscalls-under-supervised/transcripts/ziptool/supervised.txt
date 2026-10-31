@@ -1,0 +1,14 @@
+PASS  6/6 explored worlds satisfied the built-in atomicity invariant
+cwd         /s/zip-in
+
+explored    6 worlds (crash points 5 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 5 operations (147 syscall lines examined, 34 in scope of the judged state), witness strace of THIS run — the operations were counted from outside the target by the supervising engine through a seccomp user-notification filter, no shim loaded; in this mode the oracle does not count an entry strace ended `= ? ERESTART...` (a signal took the call back before it completed)
+metadata    1 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmod x1. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        (none)
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+sideeye: json sha256=41134e34ac5718feae29d7f9e91bf0f2416fb40817d5a9f3acc5c6e0fbe62256;

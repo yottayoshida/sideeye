@@ -1579,6 +1579,9 @@ jobs:
       - name: The daily tracker read can still see its own predicates fail
         run: python3 spike/upstream-live.py --selftest
 
+      - name: The survey ledger reads whole, and its counts can go red (#937)
+        run: python3 spike/survey-ledger.py --selftest
+
   changelog-block:
     runs-on: ubuntu-24.04
     timeout-minutes: 5

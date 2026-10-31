@@ -78,6 +78,72 @@ pub const Args = struct {
     stop_when_orphaned: bool = false,
 };
 
+pub const Carry = enum { printed, in_case, left_off, derived };
+
+// No `else`: a field added to `Args` must not compile until both lines have a class for it.
+// Referenced here and not only from the tests, which a plain `zig build` never analyses.
+comptime {
+    for (std.enums.values(std.meta.FieldEnum(Args))) |field| _ = carried(field);
+}
+
+pub fn carried(comptime field: std.meta.FieldEnum(Args)) struct { replay: Carry, next: Carry } {
+    return switch (field) {
+        .state => .{ .replay = .in_case, .next = .printed },
+        .setup => .{ .replay = .in_case, .next = .printed },
+        .operation => .{ .replay = .in_case, .next = .printed },
+        .cwd => .{ .replay = .in_case, .next = .printed },
+        .expect_status => .{ .replay = .in_case, .next = .printed },
+        .apparatus => .{ .replay = .in_case, .next = .printed },
+        .scratch => .{ .replay = .in_case, .next = .printed },
+        .config => .{ .replay = .in_case, .next = .printed },
+        // Not on preflight's line: its flags cannot carry them, and the toml the line names does.
+        .check => .{ .replay = .in_case, .next = .in_case },
+        .marker => .{ .replay = .in_case, .next = .in_case },
+        // Not in the case: a replay line without the pair replays a different run.
+        .recovery => .{ .replay = .printed, .next = .in_case },
+        .recovery_check => .{ .replay = .printed, .next = .in_case },
+        // Not left to the case, which records it: a reader of the line would not see the mode.
+        .observe => .{ .replay = .printed, .next = .printed },
+        .shim => .{ .replay = .printed, .next = .printed },
+        .oracle => .{ .replay = .printed, .next = .printed },
+        // Left off the replay line: it refuses every process boundary, so its FAIL replays without
+        // a witness, and carrying it would ask the paste for `sudo -v`. Preflight refuses it.
+        .oracle_fs_usage => .{ .replay = .left_off, .next = .left_off },
+        // Left off, the default work directory may be another user's or another run's.
+        .work => .{ .replay = .printed, .next = .printed },
+        // Left off, the pasted line runs without the bound on what it may empty, and nothing
+        // refuses to say so: the flag only narrows.
+        .state_under => .{ .replay = .printed, .next = .printed },
+        // Left off, a replay that no longer fails reaches a PASS the run would have accepted and
+        // the paste refuses. Not carried to preflight's line, which refuses it as a flag; the
+        // `--allow-unverified` that line prints on macOS is advice, not this field's value.
+        .allow_unverified => .{ .replay = .printed, .next = .left_off },
+        // Left off, the paste runs the target with another SIGCHLD disposition and no budget.
+        // Preflight does not take it.
+        .world_timeout_s => .{ .replay = .printed, .next = .left_off },
+        // Left off: a FAIL's run never made these choices, and explore does not take them.
+        .fresh_state => .{ .replay = .left_off, .next = .left_off },
+        .leave_crash_state => .{ .replay = .left_off, .next = .left_off },
+        // Carried, the file would receive the pasted run's report in place of this one's.
+        .json => .{ .replay = .left_off, .next = .left_off },
+        .twice => .{ .replay = .left_off, .next = .left_off },
+        // Left off: a pasted line has a shell for a parent, not an MCP host that may vanish.
+        .stop_when_orphaned => .{ .replay = .left_off, .next = .left_off },
+        .has_oracle, .observe_named, .work_named => .{ .replay = .derived, .next = .derived },
+    };
+}
+
+pub fn flagOf(comptime field: std.meta.FieldEnum(Args)) []const u8 {
+    if (field == .world_timeout_s) return "--world-timeout";
+    const spelled = comptime blk: {
+        var name: [@tagName(field).len]u8 = @tagName(field)[0..].*;
+        std.mem.replaceScalar(u8, &name, '_', '-');
+        const fixed = name;
+        break :blk fixed;
+    };
+    return "--" ++ &spelled;
+}
+
 const usage_fmt =
     \\sideeye {s} (trace contract v{d})
     \\
