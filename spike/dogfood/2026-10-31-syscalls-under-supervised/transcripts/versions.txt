@@ -1,0 +1,20 @@
+engine tarball  a92ee6514c045c82d1256582309f675d63a06b7e8be764df1fabf6871d7c85c5  sideeye-v1.17.0-aarch64-linux.tar.gz
+todo.txt-cli    71a703ecbf79a163f1aa9b831e7ea0e6036cdbb06fdfc6b5c3502b627efb873d  todo.tgz
+image           sideeye-ud1003 sha256:efe80b2ec534e5babb98fb0947d2a17cea4ee54d1976a4d4a5b260af19c5c018 arm64
+image           sideeye-ud1005 sha256:b512dc31e4e2f1bbcc74994dc4a1bdf8f5908471a4a6d7fc48668b8dfbb7919f arm64
+image           sideeye-ud1007 sha256:0ca202cca21620915583e1a903fbe91523530559fcf5d47bac1ec26745300db5 arm64
+image           sideeye-fu3-1009 sha256:74b5777f4274a331ef00c561fb7babd77f1047b01e298e94c140784e43db3768 arm64
+image           sideeye-m1014 sha256:a5dca934ffd7186cc0e2cbc2686df0844a2355eb7623bafe37b364c46aeaed1c arm64
+podman          podman version 5.4.2
+skopeo          skopeo version 1.18.0
+ntfs-3g         ntfs-3g	1:2022.10.3-5+deb13u2
+solvespace      Unrecognized command '--version'.
+ziptool         bin include lib
+alacritty       alacritty 0.17.0
+acme.sh         v3.1.6
+zsh-z           # Zsh-z - jump around with Zsh - A native Zsh version of rupa/z without awk,
+bash            GNU bash, version 5.2.37(1)-release (aarch64-unknown-linux-gnu)
+zstd            *** Zstandard CLI (64-bit) v1.5.7, by Yann Collet ***
+shadow-utils    passwd	1:4.17.4-2
+isync           isync	1.5.1-1
+dpkg            dpkg	1.22.22

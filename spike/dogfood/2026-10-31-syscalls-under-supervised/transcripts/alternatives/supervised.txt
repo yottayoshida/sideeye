@@ -1,0 +1,38 @@
+falsify: checker(alternatives) before recovery: a=FAIL b=FAIL(bin/editor does not point into alt) c=FAIL
+falsify: checker(alternatives) recovery exited 2: update-alternatives: error: /s/ua/admin/editor corrupt: invalid status
+falsify: checker(alternatives) after recovery: a=FAIL b=FAIL(bin/editor does not point into alt) c=FAIL
+world 1: checker(alternatives) before recovery: a=ok b=ok c=ok
+world 1: checker(alternatives) after recovery: a=ok b=ok c=ok
+world 2: checker(alternatives) before recovery: a=ok b=ok c=ok
+world 2: checker(alternatives) after recovery: a=ok b=ok c=ok
+world 3: checker(alternatives) before recovery: a=ok b=ok c=ok
+world 3: checker(alternatives) after recovery: a=ok b=ok c=ok
+world 4: checker(alternatives) before recovery: a=ok b=ok c=ok
+world 4: checker(alternatives) after recovery: a=ok b=ok c=ok
+world 5: checker(alternatives) before recovery: a=ok b=ok c=ok
+world 5: checker(alternatives) after recovery: a=ok b=ok c=ok
+world 6: checker(alternatives) before recovery: a=ok b=ok c=ok
+world 6: checker(alternatives) after recovery: a=ok b=ok c=ok
+world 7: checker(alternatives) before recovery: a=ok b=ok c=ok
+world 7: checker(alternatives) after recovery: a=ok b=ok c=ok
+world 8: checker(alternatives) before recovery: a=ok b=FAIL(auto -> /s/ua/opt/ed1, admin says /s/ua/opt/ed2) c=ok
+world 8: checker(alternatives) after recovery: a=ok b=ok c=ok
+world 9: checker(alternatives) before recovery: a=ok b=ok c=ok
+world 9: checker(alternatives) after recovery: a=ok b=ok c=ok
+baseline: checker(alternatives) before recovery: a=ok b=ok c=ok
+baseline: checker(alternatives) after recovery: a=ok b=ok c=ok
+PASS  10/10 explored worlds satisfied the built-in atomicity invariant
+cwd         /  (none declared: Sideeye's own)
+apparatus   preload:libfaketime, env:FAKETIME=2026-01-01 00:00:00
+
+explored    10 worlds (crash points 9 + 1 baseline)
+expected    exit 0
+atomicity   9 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): log
+oracle      agreed on 9 operations (235 syscall lines examined, 39 in scope of the judged state), witness strace of THIS run — the operations were counted from outside the target by the supervising engine through a seccomp user-notification filter, no shim loaded; in this mode the oracle does not count an entry strace ended `= ? ERESTART...` (a signal took the call back before it completed)
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 10 world(s)
+l1          no marker configured
+case        (none)
+processes   single process
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+sideeye: json sha256=f14e244c4a9bb5406c6faf3aedb41f912038387f62871271eb2ce310185abfef;
