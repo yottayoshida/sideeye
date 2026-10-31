@@ -1521,7 +1521,7 @@ pub fn violationObserved(v: ?engine.Violation) []const u8 {
         .hybrid => "holding neither the old nor the new content",
         .rewritten => "present, but its recorded history is no longer a prefix of its content",
         .not_durable => "the operation claimed success before the kill, and this part of the new state did not survive",
-    } else "the checker exited non-zero after restart";
+    } else "the checker exited non-zero in a fresh process after the crash";
 }
 
 const Earliest = struct {

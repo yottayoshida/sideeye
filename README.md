@@ -2,7 +2,7 @@
 [![CI](https://github.com/yottayoshida/sideeye/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/yottayoshida/sideeye/actions/workflows/ci.yml?query=branch%3Amain) [![Release](https://img.shields.io/github/v/release/yottayoshida/sideeye)](https://github.com/yottayoshida/sideeye/releases/latest)
 <p align="center"><img src="docs/sideeye.jpg" alt="Sideeye" width="360"></p>
 
-Sideeye finds out what your program leaves on disk when it dies at the worst possible moment. Declare an invariant — *"if this operation said it succeeded, this must still hold after a restart"* — and Sideeye kills your process before each state-changing operation, one crash world each, and brings back the earliest failing one as a replayable case.
+Sideeye finds out what your program leaves on disk when it dies at the worst possible moment. Declare an invariant — *"if this operation said it succeeded, this must still hold on the next run"* — and Sideeye kills your process before each state-changing operation, one crash world each, and brings back the earliest failing one as a replayable case.
 
 `sideeye demo`, trimmed, checked line by line in CI:
 

@@ -137,7 +137,7 @@ state = "./state"               # the one directory your tool's state lives in
 [define]
 setup     = "mytool init"
 operation = "mytool rotate-key" # the shim is inserted into this one, not into setup or check
-check     = "./check.sh"        # exit 0 = invariant holds; runs after crash + restart
+check     = "./check.sh"        # exit 0 = invariant holds; runs after the crash, in a fresh process
 marker    = "Recorded"          # optional: the operation's own success claim
 expected_status = "3"           # optional: the exit status that means "completed" (default "0")
 cwd       = "./repo"            # optional: where the three commands run (default: sideeye's own cwd)
