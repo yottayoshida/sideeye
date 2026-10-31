@@ -1,0 +1,7 @@
+# spike/followup-item4/run.sh's zstd leg: `zstd -q --rm a.bin`, the default thread count.
+[world]
+state = "/s/zstd/state"
+
+[define]
+operation = "zstd -q --rm /s/zstd/state/a.bin"
+check     = "/ap/defines/zstd/check.sh"

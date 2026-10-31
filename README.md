@@ -19,7 +19,7 @@ observed    present before and after the operation, but gone from the crashed st
 explored    6 worlds (crash points 5 + 1 baseline)
 checker     falsified before the run (corrupted state -> check failed); ran in 6 world(s)
 case        …/work/cases/000001.json
-not tested  power loss, torn writes, concurrent processes
+not tested  power loss (a missing fsync cannot fail this run), torn writes, concurrent processes
 ```
 <!-- demo-output:end -->
 

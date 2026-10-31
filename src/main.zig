@@ -965,6 +965,8 @@ fn phaseDefine(run: *Run) void {
                 "move the state inside the range, or widen the range";
             setupError(.define_invalid, std.fmt.allocPrint(arena, "the state directory resolves outside the allowed range, or is the range itself: state {s}, --state-under {s}. To go on, {s} to a directory holding this state (SIDEEYE_MCP_STATE_ROOT on the MCP server, --state-under on the command line)", .{ textShown(arena, state_abs), textShown(arena, su_abs), way }) catch "the state directory resolves outside the allowed range (--state-under)");
         }
+        // Not the spelling given: a relative one on a printed line refuses when pasted elsewhere.
+        args.state_under = arena_state.allocator().dupe(u8, su_abs) catch setupError(.environment, "out of memory");
     }
 
     // Not left to `engine.restore`'s own `assertSafeRoot`: that runs once `--setup` has run
@@ -1228,16 +1230,11 @@ fn phaseRecording(run: *Run) void {
         "";
     if (args.observe == .supervised) {
         if (builtin.os.tag == .macos)
-            setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe supervised is Linux only, on aarch64 and x86_64: it counts through a seccomp user-notification filter, which macOS has no equivalent of. On Linux 5.19 or later, with a cgroup v2 the engine can create cgroups in, the same command takes it; " ++ contract.macos_table, .{mode_from});
+            setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe supervised is Linux only, on aarch64 and x86_64: it counts through a seccomp user-notification filter, which macOS has no equivalent of. On Linux 5.19 or later the same command takes it; " ++ contract.macos_table, .{mode_from});
         if (!supervise.available)
             setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe supervised is Linux only, on aarch64 and x86_64: it counts through a seccomp user-notification filter, which this platform has no equivalent of", .{mode_from});
         if (!supervise.kernelSupports())
             setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe supervised needs a kernel that accepts a seccomp user-notification listener with SECCOMP_FILTER_FLAG_WAIT_KILLABLE_RECV (Linux 5.19 or later), and this one does not", .{mode_from});
-        // Required, not preferred (#217, review): the crash point's kill reaches a process that
-        // left the process group only through a cgroup, and without the shim there is nothing
-        // inside the process to notice that it left.
-        if (containment.spawn(false) == null)
-            setupErrorFmt(arena_state.allocator(), .environment, "{s}--observe supervised needs a cgroup v2 the engine can create cgroups in (delegated to its user, or root): the crash point's kill reaches every process of the run through it, however one left the process group", .{mode_from});
     }
     if (args.observe == .syscalls) {
         if (builtin.os.tag != .linux)
@@ -2719,15 +2716,8 @@ fn phaseReport(run: *Run) void {
             break :blk case.writeCase(arena, args.work, case_args, f.k, n, trace, if (f.violation) |v| @tagName(v) else "checker");
         } else null;
         const case_shown = saved_case orelse (if (mode == .replay) case_arg.? else "(not saved)");
-        // #606: a replay line that dropped the recovery would replay a different run, so the
-        // flags ride on it — each value single-quoted for /bin/sh, the whole escape, since a
-        // recovery command's spaces separate its arguments. A local rather than a helper:
-        const recovery_flags: []const u8 = if (args.recovery) |rc|
-            (std.fmt.allocPrint(arena, " --recovery {s} --recovery-check {s}", .{ shellSingleQuote(arena, rc), shellSingleQuote(arena, args.recovery_check.?) }) catch "")
-        else
-            "";
         const replay_cmd = if (saved_case) |sc|
-            report.replayLine(arena, sc, args.observe, args.shim, args.oracle, recovery_flags)
+            report.replayLine(arena, sc, args)
         else if (mode == .replay)
             "(this run is a replay; the case reproduced)"
         else
@@ -2783,7 +2773,7 @@ fn phaseReport(run: *Run) void {
             const creplay = if (same_world)
                 replay_cmd
             else if (csaved) |cc|
-                report.replayLine(arena, cc, args.observe, args.shim, args.oracle, recovery_flags)
+                report.replayLine(arena, cc, args)
             else
                 "-";
             const cevidence: []const u8 = if (same_world)
@@ -2911,7 +2901,7 @@ fn phaseReport(run: *Run) void {
     // replay, whose one world answers a different question.
     if (only_k == null) refuse.requireSomethingCouldFail(arena, run.rec.judgeable, run.check_argv != null, args.marker != null, run.firsts.marker_worlds);
 
-    say("{s}  {d}/{d} explored worlds satisfied the built-in atomicity invariant{s}{s}\n", .{ report.paint("PASS"), report.explored, report.explored, report.singleCrashPointClause(n), report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged) });
+    say("{s}  {d}/{d} explored worlds satisfied the built-in atomicity invariant under a process kill{s}{s}\n", .{ report.paint("PASS"), report.explored, report.explored, report.singleCrashPointClause(n), report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged) });
     report.sayAccount(arena, .pass, n);
     if (args.json) |jp| report.writeJsonReport(arena, jp, "PASS", @backingInt(contract.ExitCode.pass), null, null, null, null, null, null);
     report.emitSeal();
@@ -3549,7 +3539,13 @@ test "fs_usage sentinels: the shape, two names per run that differ from each oth
 }
 
 test "every flag preflight takes is on its next line, or is preflight's own" {
-    const preflight_only = [_][]const u8{ "--json", "--twice" };
+    const preflight_only = comptime blk: {
+        var own: []const []const u8 = &.{};
+        for (std.enums.values(std.meta.FieldEnum(cli.Args))) |field| {
+            if (cli.carried(field).next == .left_off) own = own ++ .{cli.flagOf(field)};
+        }
+        break :blk own;
+    };
     var as = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer as.deinit();
     const a = as.allocator();
@@ -3561,16 +3557,18 @@ test "every flag preflight takes is on its next line, or is preflight's own" {
     });
     var buf: [64][]const u8 = undefined;
     const flags = cli.synopsisFlags("preflight", &buf);
-    try std.testing.expect(flags.len > preflight_only.len);
+    var carried_count: usize = 0;
     for (flags) |flag| {
         var own = false;
         for (preflight_only) |o| own = own or std.mem.eql(u8, o, flag);
         const on_line = std.mem.indexOf(u8, line, try std.fmt.allocPrint(a, " {s} ", .{flag})) != null;
+        if (on_line) carried_count += 1;
         std.testing.expect(own != on_line) catch |e| {
             std.debug.print("preflight's flag {s}: on the next line {}, preflight's own {}\n", .{ flag, on_line, own });
             return e;
         };
     }
+    try std.testing.expect(carried_count > 0);
 }
 
 fn shellSingleQuote(arena: std.mem.Allocator, s: []const u8) []const u8 {

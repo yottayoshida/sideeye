@@ -120,7 +120,7 @@ func TestNoCrashWindow(t *testing.T) {
 }
 ```
 
-A pure-Go binary is statically linked (one built with cgo is not), so on Linux it is explored under `--observe supervised`: Linux 5.19 or later, and a cgroup v2 the engine can create cgroups in, as root or delegated to its user ([`--observe`](cli.md#usage)). Under Docker's defaults that is a SETUP ERROR naming the cgroup; `docker run --privileged --cgroupns=private` ran it; this repository's own CI delegates one with [`spike/in-delegated-cgroup.sh`](../spike/in-delegated-cgroup.sh). Writes that come from two threads are refused there, and Go's runtime, not your code, decides which thread runs a goroutine — the runs here were one each, so a refusal on a later run is not ruled out. On macOS a Go binary goes through libSystem like everything else, so drop `--observe supervised`.
+A pure-Go binary is statically linked (one built with cgo is not), so on Linux it is explored under `--observe supervised`: Linux 5.19 or later ([`--observe`](cli.md#usage)). Under Docker's defaults it runs without a cgroup, and a process that leaves its process group is refused; with a cgroup v2 the engine can create cgroups in — `docker run --privileged --cgroupns=private`, or one delegated to its user as this repository's own CI does with [`spike/in-delegated-cgroup.sh`](../spike/in-delegated-cgroup.sh) — that process is stopped with the run and judged. Writes that come from two threads are refused there, and Go's runtime, not your code, decides which thread runs a goroutine — the runs here were one each, so a refusal on a later run is not ruled out. On macOS a Go binary goes through libSystem like everything else, so drop `--observe supervised`.
 
 ## My first run on macOS is UNKNOWN. Why?
 

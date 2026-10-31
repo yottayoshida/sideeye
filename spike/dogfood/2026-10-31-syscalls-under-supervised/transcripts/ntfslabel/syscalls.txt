@@ -1,0 +1,25 @@
+FAIL  1 of 5 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 3 of 4
+            after  write(/s/ntfs/vol.img)
+            before write(/s/ntfs/vol.img)
+path        vol.img
+observed    holding neither the old nor the new content
+cwd         /s/ntfs-in
+
+explored    5 worlds (crash points 4 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+oracle      agreed on 4 operations (229 syscall lines examined, 54 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/ntfslabel/work-syscalls/cases/000001.json
+replay      sideeye replay /out/ntfslabel/work-syscalls/cases/000001.json --observe syscalls --oracle /usr/bin/strace
+evidence    sideeye evidence /out/ntfslabel/work-syscalls/evidence/000001.json
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/ntfs-in && unset SIDEEYE_KILL_GROUP && : > /out/ntfslabel/work-syscalls/trace-repro.bin && SIDEEYE_STATE_DIR=/s/ntfs SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/ntfslabel/work-syscalls/trace-repro.bin LD_PRELOAD=/se/libsideeye_shim.so SIDEEYE_KILL_AT=3 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=syscalls SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'ntfslabel' /s/ntfs/vol.img NEWLABEL </dev/null)
+sideeye: json sha256=9c497582b7974c34bea5f22ee108cbc6ac4aa6d6ec68264036c5734caf64f780;

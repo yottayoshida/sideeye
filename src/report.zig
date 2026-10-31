@@ -9,6 +9,7 @@ const boundary = @import("boundary.zig");
 const defang = @import("defang.zig");
 const capture = @import("capture.zig");
 const files = @import("files.zig");
+const cli = @import("cli.zig");
 const sanitizeForReport = defang.sanitizeForReport;
 const textShown = defang.textShown;
 const appendSanitized = defang.appendSanitized;
@@ -628,8 +629,8 @@ fn buildL0NoteBase(arena: std.mem.Allocator, plan: engine.L0Plan) []const u8 {
 /// Comptime rather than a runtime join, deliberately: the old functions returned static
 /// strings and allocate nothing, and **four of the five** call sites are inside format
 /// strings where an allocation failure has nowhere to go. The tables cost nothing at
-/// runtime and keep the output the same bytes it was.
-const not_tested_always = [_][]const u8{ "power loss", "torn writes", "concurrent processes" };
+/// runtime.
+const not_tested_always = [_][]const u8{ "power loss (a missing fsync cannot fail this run)", "torn writes", "concurrent processes" };
 const not_tested_history = "appended tails (files under the history form)";
 const not_tested_l1 = "post-only file contents (L1 checks existence only; post-only link targets are judged)";
 const not_tested_scratch = "declared scratch paths (neither bytes nor presence judged)";
@@ -761,6 +762,22 @@ test "the report names where the define's commands ran, and whether that was dec
     const esc = try buildJson(a, "PASS", 0, null, null, null, null, null, null);
     try std.testing.expect(std.mem.indexOf(u8, esc, "/tmp/a\\nb") != null);
     try std.testing.expect(std.mem.indexOf(u8, esc, "/tmp/a\nb") == null);
+}
+
+test "every report names the crash model it explored, whatever its verdict" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const docs = [_][]const u8{
+        try buildJson(a, "PASS", 0, null, null, null, null, null, null),
+        try buildJson(a, "FAIL", 1, null, null, null, null, null, null),
+        try buildJson(a, "UNKNOWN", 2, null, null, "recording_run_failed", null, "m", "Do this."),
+        try buildJson(a, "SETUP_ERROR", 3, null, null, null, .define_invalid, "m", null),
+    };
+    for (docs) |doc| {
+        const parsed = try std.json.parseFromSlice(std.json.Value, a, doc, .{});
+        try std.testing.expectEqualStrings("process-kill", parsed.value.object.get("crash_model").?.string);
+    }
 }
 
 test "a SETUP_ERROR report carries its class, and the setup's status only under setup_failed and only as measured (#518)" {
@@ -936,30 +953,126 @@ test "the next line's words are the define's and the run's, each quoted only whe
     try t.expectEqualStrings(" --observe supervised --oracle '/o p'", try nextRunWords(a, .{ .observe = .supervised, .shim = "/l.so", .oracle_found = "/o p" }));
 }
 
-pub fn replayLine(arena: std.mem.Allocator, case_path: []const u8, observe: contract.ObserveMode, shim_given: ?[]const u8, oracle: ?[]const u8, recovery_flags: []const u8) []const u8 {
-    const oracle_part: []const u8 = if (oracle) |o| (flagWord(arena, "--oracle", o) catch return "-") else "";
-    return std.fmt.allocPrint(arena, "sideeye replay {s}{s}{s}{s}", .{ shellWord(arena, case_path) catch case_path, observeFlags(arena, observe, shim_given), oracle_part, recovery_flags }) catch "-";
+pub fn replayLine(arena: std.mem.Allocator, case_path: []const u8, args: cli.Args) []const u8 {
+    return replayWords(arena, case_path, args) catch "-";
+}
+
+fn replayWords(arena: std.mem.Allocator, case_path: []const u8, args: cli.Args) error{OutOfMemory}![]const u8 {
+    var out: std.ArrayList(u8) = .empty;
+    try out.print(arena, "sideeye replay {s}", .{try shellWord(arena, case_path)});
+    try out.appendSlice(arena, observeFlags(arena, args.observe, args.shim));
+    if (args.oracle) |o| try out.appendSlice(arena, try flagWord(arena, "--oracle", o));
+    if (args.recovery) |rc| if (args.recovery_check) |rcc|
+        try out.print(arena, " --recovery {s} --recovery-check {s}", .{ try shellQuote(arena, rc), try shellQuote(arena, rcc) });
+    // Only when named: a default written into the line would read as the operator's choice.
+    if (args.work_named) try out.appendSlice(arena, try flagWord(arena, "--work", args.work));
+    if (args.state_under) |u| try out.appendSlice(arena, try flagWord(arena, "--state-under", u));
+    if (args.allow_unverified) try out.appendSlice(arena, " --allow-unverified");
+    if (args.world_timeout_s) |t| try out.print(arena, " --world-timeout {d}", .{t});
+    return out.items;
 }
 
 test "a replay line names --shim only when the run was given one" {
     var as = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer as.deinit();
     const a = as.allocator();
-    try std.testing.expectEqualStrings("sideeye replay /w/cases/000001.json", replayLine(a, "/w/cases/000001.json", .wrappers, null, null, ""));
-    try std.testing.expectEqualStrings("sideeye replay /w/cases/000001.json --shim /opt/lib/libsideeye_shim.so", replayLine(a, "/w/cases/000001.json", .wrappers, "/opt/lib/libsideeye_shim.so", null, ""));
-    try std.testing.expectEqualStrings("sideeye replay /w/c.json --observe syscalls", replayLine(a, "/w/c.json", .syscalls, null, null, ""));
-    try std.testing.expectEqualStrings("sideeye replay /w/c.json --observe syscalls --shim /l.so --recovery 'r' --recovery-check 'c'", replayLine(a, "/w/c.json", .syscalls, "/l.so", null, " --recovery 'r' --recovery-check 'c'"));
-    try std.testing.expectEqualStrings("sideeye replay /w/c.json --observe supervised", replayLine(a, "/w/c.json", .supervised, "/l.so", null, ""));
-    try std.testing.expectEqualStrings("sideeye replay '/w/a b.json' --shim '/x y/l.so'", replayLine(a, "/w/a b.json", .wrappers, "/x y/l.so", null, ""));
+    const t = std.testing;
+    try t.expectEqualStrings("sideeye replay /w/cases/000001.json", replayLine(a, "/w/cases/000001.json", .{}));
+    try t.expectEqualStrings("sideeye replay /w/cases/000001.json --shim /opt/lib/libsideeye_shim.so", replayLine(a, "/w/cases/000001.json", .{ .shim = "/opt/lib/libsideeye_shim.so" }));
+    try t.expectEqualStrings("sideeye replay /w/c.json --observe syscalls", replayLine(a, "/w/c.json", .{ .observe = .syscalls }));
+    try t.expectEqualStrings("sideeye replay /w/c.json --observe syscalls --shim /l.so --recovery 'r' --recovery-check 'c'", replayLine(a, "/w/c.json", .{ .observe = .syscalls, .shim = "/l.so", .recovery = "r", .recovery_check = "c" }));
+    try t.expectEqualStrings("sideeye replay /w/c.json --observe supervised", replayLine(a, "/w/c.json", .{ .observe = .supervised, .shim = "/l.so" }));
+    try t.expectEqualStrings("sideeye replay '/w/a b.json' --shim '/x y/l.so'", replayLine(a, "/w/a b.json", .{ .shim = "/x y/l.so" }));
 }
 
 test "a replay line carries the --oracle its run was given, so a FAIL across a process boundary replays as printed" {
     var as = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer as.deinit();
     const a = as.allocator();
-    try std.testing.expectEqualStrings("sideeye replay /w/c.json --oracle /opt/x/strace", replayLine(a, "/w/c.json", .wrappers, null, "/opt/x/strace", ""));
-    try std.testing.expectEqualStrings("sideeye replay /w/c.json --observe supervised --oracle '/o p/strace' --recovery 'r' --recovery-check 'c'", replayLine(a, "/w/c.json", .supervised, "/l.so", "/o p/strace", " --recovery 'r' --recovery-check 'c'"));
-    try std.testing.expectEqualStrings("sideeye replay /w/c.json --shim /l.so --oracle ./strace", replayLine(a, "/w/c.json", .wrappers, "/l.so", "./strace", ""));
+    const t = std.testing;
+    try t.expectEqualStrings("sideeye replay /w/c.json --oracle /opt/x/strace", replayLine(a, "/w/c.json", .{ .oracle = "/opt/x/strace" }));
+    try t.expectEqualStrings("sideeye replay /w/c.json --observe supervised --oracle '/o p/strace' --recovery 'r' --recovery-check 'c'", replayLine(a, "/w/c.json", .{ .observe = .supervised, .shim = "/l.so", .oracle = "/o p/strace", .recovery = "r", .recovery_check = "c" }));
+    try t.expectEqualStrings("sideeye replay /w/c.json --shim /l.so --oracle ./strace", replayLine(a, "/w/c.json", .{ .shim = "/l.so", .oracle = "./strace" }));
+}
+
+const ArgsField = std.meta.FieldEnum(cli.Args);
+
+fn withField(comptime field: ArgsField) cli.Args {
+    var args: cli.Args = .{};
+    const name = @tagName(field);
+    const T = @FieldType(cli.Args, name);
+    @field(args, name) = if (T == bool)
+        true
+    else if (T == []const u8 or T == ?[]const u8)
+        "/x"
+    else if (T == ?config.Command)
+        .{ .str = "x" }
+    else if (T == []const []const u8)
+        &.{"x"}
+    else if (T == ?u8 or T == ?u32)
+        3
+    else if (T == contract.ObserveMode)
+        .syscalls
+    else
+        @compileError("no off-default value for a field of this type: " ++ name);
+    switch (field) {
+        .work => args.work_named = true,
+        .recovery, .recovery_check => {
+            args.recovery = "r";
+            args.recovery_check = "c";
+        },
+        else => {},
+    }
+    return args;
+}
+
+fn hasFlag(line: []const u8, flag: []const u8) bool {
+    var words = std.mem.tokenizeScalar(u8, line, ' ');
+    while (words.next()) |w| if (std.mem.eql(u8, w, flag)) return true;
+    return false;
+}
+
+test "every flag the replay line carries reaches it, and no flag it leaves off or a case carries does" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    inline for (comptime std.enums.values(ArgsField)) |field| {
+        const class = comptime cli.carried(field).replay;
+        if (class != .derived) {
+            const line = replayLine(a, "/c.json", withField(field));
+            std.testing.expectEqual(class == .printed, hasFlag(line, cli.flagOf(field))) catch |e| {
+                std.debug.print("{s} is classified {s} on the replay line, and the line is: {s}\n", .{ @tagName(field), @tagName(class), line });
+                return e;
+            };
+        }
+    }
+}
+
+test "every flag the replay and next lines are classified as printing is one the pasted command takes" {
+    var buf: [64][]const u8 = undefined;
+    const replay_flags = cli.synopsisFlags("replay", &buf);
+    var buf2: [64][]const u8 = undefined;
+    const explore_flags = cli.synopsisFlags("explore", &buf2);
+    inline for (comptime std.enums.values(ArgsField)) |field| {
+        const c = comptime cli.carried(field);
+        if (c.replay == .printed) try std.testing.expect(containsFlag(replay_flags, cli.flagOf(field)));
+        if (c.next == .printed) try std.testing.expect(containsFlag(explore_flags, cli.flagOf(field)));
+    }
+    for (replay_flags) |flag| {
+        var named = false;
+        inline for (comptime std.enums.values(ArgsField)) |field| {
+            if (comptime cli.carried(field).replay != .derived) named = named or std.mem.eql(u8, cli.flagOf(field), flag);
+        }
+        std.testing.expect(named) catch |e| {
+            std.debug.print("replay takes {s}, and no field of cli.Args is classified under that flag\n", .{flag});
+            return e;
+        };
+    }
+}
+
+fn containsFlag(flags: []const []const u8, flag: []const u8) bool {
+    for (flags) |f| if (std.mem.eql(u8, f, flag)) return true;
+    return false;
 }
 
 test "a shell word is the value itself unless a shell would read it otherwise (#711)" {
@@ -1567,6 +1680,7 @@ fn buildJson(
     try jsonString(w, arena, verdict);
     try w.appendSlice(arena, ",\n  \"exit_code\": ");
     try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{exit_code}));
+    try w.appendSlice(arena, ",\n  \"crash_model\": \"process-kill\"");
     try w.appendSlice(arena, ",\n  \"oracle_verified\": ");
     try w.appendSlice(arena, if (oracle_verified) "true" else "false");
     // Emitted only when it is true, so every report a v14 consumer has seen is
@@ -2251,18 +2365,18 @@ test "the l0 note neutralises control bytes in target-chosen file names" {
     try std.testing.expect(std.mem.indexOf(u8, note, "evil?name?.log") != null);
 }
 
-test "the not-tested list renders the same eight strings it shipped as two hand-written functions (#280)" {
+test "the not-tested list renders eight strings, the three always-present items first and the declared ones after" {
     const want_text = [4][]const u8{
-        "power loss, torn writes, concurrent processes",
-        "power loss, torn writes, concurrent processes, appended tails (files under the history form)",
-        "power loss, torn writes, concurrent processes, post-only file contents (L1 checks existence only; post-only link targets are judged)",
-        "power loss, torn writes, concurrent processes, appended tails (files under the history form), post-only file contents (L1 checks existence only; post-only link targets are judged)",
+        "power loss (a missing fsync cannot fail this run), torn writes, concurrent processes",
+        "power loss (a missing fsync cannot fail this run), torn writes, concurrent processes, appended tails (files under the history form)",
+        "power loss (a missing fsync cannot fail this run), torn writes, concurrent processes, post-only file contents (L1 checks existence only; post-only link targets are judged)",
+        "power loss (a missing fsync cannot fail this run), torn writes, concurrent processes, appended tails (files under the history form), post-only file contents (L1 checks existence only; post-only link targets are judged)",
     };
     const want_json = [4][]const u8{
-        "[\"power loss\", \"torn writes\", \"concurrent processes\"]",
-        "[\"power loss\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\"]",
-        "[\"power loss\", \"torn writes\", \"concurrent processes\", \"post-only file contents (L1 checks existence only; post-only link targets are judged)\"]",
-        "[\"power loss\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\", \"post-only file contents (L1 checks existence only; post-only link targets are judged)\"]",
+        "[\"power loss (a missing fsync cannot fail this run)\", \"torn writes\", \"concurrent processes\"]",
+        "[\"power loss (a missing fsync cannot fail this run)\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\"]",
+        "[\"power loss (a missing fsync cannot fail this run)\", \"torn writes\", \"concurrent processes\", \"post-only file contents (L1 checks existence only; post-only link targets are judged)\"]",
+        "[\"power loss (a missing fsync cannot fail this run)\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\", \"post-only file contents (L1 checks existence only; post-only link targets are judged)\"]",
     };
     for (want_text, 0..) |w, i| try std.testing.expectEqualStrings(w, not_tested_text_by_variant[i]);
     for (want_json, 0..) |w, i| try std.testing.expectEqualStrings(w, not_tested_json_by_variant[i]);
