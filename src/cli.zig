@@ -331,11 +331,13 @@ const usage_fmt =
     \\               state-changing call waits for the engine, which counts it and
     \\               lets it run — or, at the crash point, kills the run before it
     \\               runs. The mode for a statically linked target, which the other
-    \\               two refuse as no_shim_marker. It needs a cgroup v2 the engine
-    \\               can create cgroups in. Its walls: a run whose writes come from
-    \\               two threads refuses (the thread-order records are the shim's);
-    \\               a target that installs its own seccomp filter can hide calls
-    \\               from it; setuid children lose their privilege (no_new_privs).
+    \\               two refuse as no_shim_marker. Without a cgroup v2 the engine
+    \\               can create cgroups in, a process that leaves the process group
+    \\               refuses child_process_detected. Its walls: a run whose writes
+    \\               come from two threads refuses (the thread-order records are the
+    \\               shim's); a target that installs its own seccomp filter can hide
+    \\               calls from it; setuid children lose their privilege
+    \\               (no_new_privs).
     \\               Its case records the mode; replay takes it with no flag
     \\  --allow-unverified
     \\               accept PASS with no completeness check. On macOS this is the

@@ -77,7 +77,7 @@
 0087	Deferred, as ADR 0075 already deferred it	refusal wording deferred (UX)
 0088	the residual ADR 0068 named in its Consequences	eval harness; closed here
 0088	that is the residual below (what it writes during the repl	eval-harness trust, not verdict
-0089	so a `setsid` that succeeds goes unrecorded	supervised group bookkeeping; cgroup still contains, no state op missed
+0089	so a `setsid` that succeeds goes unrecorded	an unrecorded setsid opens no gap: the group keeps it alive, or an earlier recorded call refused
 0089	calls pass unseen; macOS has no equivalent	compat calls: strace oracle sees them and refuses (cf schema item 2)
 0091	The README refuses to trust a checker it has not seen fail	past; closed by ADR 0091 (nothing_could_fail)
 0095	Not seen: a glob	shell-spelling warning coverage (UX)
@@ -115,4 +115,5 @@ DESIGN.md	A directory a recorded `rename` moved into the judged tree from outsid
 0031	Two residues are disclosed rather than closed	reconciliation-per-path-gap
 0031	Residues, said	the observer's cleanup after the engine dies, not a verdict
 0042	residue is judged wrong, and deleting the tree	deleting the work tree safely, not a verdict
-0089	One residue runs the other way and is	supervised mode: the cgroup still holds the process, which is refused
+0089	One residue runs the other way and is	an unrecorded setsid opens no gap: the group keeps it alive, or an earlier recorded call refused
+0089	escapes the kill unrecorded where the cgroup used to reach it	a compat call: the strace oracle sees it and refuses
