@@ -52,6 +52,7 @@ pub const Args = struct {
     /// the config has been read, so a mode's own first refusal still comes first.
     recovery: ?[]const u8 = null,
     recovery_check: ?[]const u8 = null,
+    controls: []const config.Control = &.{},
     allow_unverified: bool = false,
     observe: contract.ObserveMode = .wrappers,
     observe_named: bool = false,
@@ -1583,7 +1584,7 @@ pub fn parse(argv: []const []const u8) Parsed {
         // flag given beside a toml would be told something about preflight instead of that
         // the define lives in one place. Only the flags' preflight refuses them by name.
         if (args.config == null) {
-            if (args.check != null) setupError(.define_invalid, "--check belongs to explore, which falsifies it before trusting it; a check declared in a sideeye.toml is read by preflight --config, which refuses it if it cannot be started or the state holds nothing to corrupt, and does not run it");
+            if (args.check != null) setupError(.define_invalid, "--check belongs to explore, which falsifies it before trusting it; a check declared in a sideeye.toml is read by preflight --config, which refuses it if it cannot be started or the state holds nothing to corrupt, and runs it only for the toml's [controls]");
             if (args.marker != null) setupError(.define_invalid, "--marker belongs to explore; a marker declared in a sideeye.toml is read by preflight --config, which confirms the recording run printed it");
             if (args.recovery != null or args.recovery_check != null) setupError(.define_invalid, "--recovery and --recovery-check belong to explore and replay; preflight saves no FAIL for a recovery to be run against, and a recovery declared in a sideeye.toml is read by preflight --config without being run");
         }

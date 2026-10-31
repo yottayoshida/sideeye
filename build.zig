@@ -527,6 +527,7 @@ pub fn build(b: *std.Build) void {
     // file builds as a root on its own, which the files under src/engine/ cannot.
     const test_sources = [_][]const u8{
         "src/engine.zig",
+        "src/controls.zig",
         "src/posix.zig",
         "src/oracle.zig",
         "src/fsusage.zig",

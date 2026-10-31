@@ -1172,12 +1172,17 @@ fn saySingleCrashPointNote(n: usize) void {
 fn jsonArrayField(w: *std.ArrayList(u8), arena: std.mem.Allocator, name: []const u8, items: []const []const u8, only_unchecked: bool) !void {
     try w.appendSlice(arena, ",\n  \"");
     try w.appendSlice(arena, name);
-    try w.appendSlice(arena, "\": [");
-    var first = true;
-    for (items) |e| {
-        if (only_unchecked and !config.apparatusUnchecked(e)) continue;
-        if (!first) try w.appendSlice(arena, ", ");
-        first = false;
+    try w.appendSlice(arena, "\": ");
+    if (!only_unchecked) return jsonStringArray(w, arena, items);
+    var kept: std.ArrayList([]const u8) = .empty;
+    for (items) |e| if (config.apparatusUnchecked(e)) try kept.append(arena, e);
+    try jsonStringArray(w, arena, kept.items);
+}
+
+fn jsonStringArray(w: *std.ArrayList(u8), arena: std.mem.Allocator, items: []const []const u8) !void {
+    try w.append(arena, '[');
+    for (items, 0..) |e, i| {
+        if (i > 0) try w.appendSlice(arena, ", ");
         try jsonString(w, arena, e);
     }
     try w.append(arena, ']');
@@ -2041,6 +2046,26 @@ pub const PreflightDoc = struct {
     operations: u32,
     marker_declared: bool,
     repeat: ?PreflightRepeat,
+    controls: ?PreflightControls = null,
+};
+
+pub const PreflightControl = struct {
+    leg: []const u8,
+    word: []const u8,
+    control_exit: ?[]const u8,
+    checker_exit: ?[]const u8,
+    red: []const []const u8,
+};
+
+pub const PreflightBaseline = struct {
+    word: []const u8,
+    checker_exit: []const u8,
+    red: []const []const u8,
+};
+
+pub const PreflightControls = struct {
+    baseline: PreflightBaseline,
+    controls: []const PreflightControl,
 };
 
 pub const PreflightRepeat = struct {
@@ -2114,6 +2139,29 @@ fn buildPreflightJson(arena: std.mem.Allocator, pd: PreflightDoc) ![]const u8 {
             try w.appendSlice(arena, "}");
         }
         try w.appendSlice(arena, if (r.diffs.len == 0) "]" else "\n  ]");
+    }
+    if (pd.controls) |c| {
+        try w.appendSlice(arena, ",\n  \"controls\": {\"baseline\": {\"word\": ");
+        try jsonString(w, arena, c.baseline.word);
+        try w.appendSlice(arena, ", \"checker_exit\": ");
+        try jsonString(w, arena, c.baseline.checker_exit);
+        try w.appendSlice(arena, ", \"red\": ");
+        try jsonStringArray(w, arena, c.baseline.red);
+        try w.appendSlice(arena, "}, \"legs\": [");
+        for (c.controls, 0..) |k, i| {
+            try w.appendSlice(arena, if (i == 0) "\n    {\"leg\": " else ",\n    {\"leg\": ");
+            try jsonString(w, arena, k.leg);
+            try w.appendSlice(arena, ", \"word\": ");
+            try jsonString(w, arena, k.word);
+            try w.appendSlice(arena, ", \"control_exit\": ");
+            if (k.control_exit) |e| try jsonString(w, arena, e) else try w.appendSlice(arena, "null");
+            try w.appendSlice(arena, ", \"checker_exit\": ");
+            if (k.checker_exit) |e| try jsonString(w, arena, e) else try w.appendSlice(arena, "null");
+            try w.appendSlice(arena, ", \"red\": ");
+            try jsonStringArray(w, arena, k.red);
+            try w.appendSlice(arena, "}");
+        }
+        try w.appendSlice(arena, if (c.controls.len == 0) "]}" else "\n  ]}");
     }
     try appendFigures(w, arena);
     try appendJudgedSet(w, arena);

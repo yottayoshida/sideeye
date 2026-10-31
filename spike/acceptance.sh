@@ -6949,6 +6949,14 @@ else
     sed 's/^/     | /' "$SD/pfa.err" | head -4
     fails=$((fails + 1))
 fi
+# Not asserting the words here: check-controls.sh does; this keeps its document for the schema check.
+if SIDEEYE="$SIDEEYE" SHIM="$SHIM" CONTROLS_JSON_OUT="$SD/preflight-controls.json" sh "$ROOT/spike/check-controls.sh" > "$SD/pfc.out" 2>&1; then
+    echo "ok   preflight --config with [controls] reports each control by its own word"
+else
+    echo "FAIL preflight [controls]: spike/check-controls.sh did not pass"
+    sed 's/^/     | /' "$SD/pfc.out" | head -8
+    fails=$((fails + 1))
+fi
 TOY_STATE=$SD/pfs/state TOY_NONDET_REWRITE=1 "$SIDEEYE" preflight --state "$SD/pfs/state" \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" --shim "$SHIM" \
     --work "$SD/wpfs" --twice --json "$SD/preflight-split.json" >"$SD/pfs.out" 2>"$SD/pfs.err"
@@ -7002,7 +7010,7 @@ fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
     "$ROOT/src/report.zig" \
     "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/warnings.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/children.json" \
-    "$SD/preflight-accepted.json" "$SD/preflight-split.json" /tmp/acc-lcs/leave.json; then
+    "$SD/preflight-accepted.json" "$SD/preflight-split.json" "$SD/preflight-controls.json" /tmp/acc-lcs/leave.json; then
     echo "ok   the schema page, the generated reports and preflight documents, the contract enum and the JSON writers' shared values agree"
 else
     echo "FAIL the report schema page drifted from the reports (or the reports from the page)"
