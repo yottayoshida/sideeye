@@ -1294,6 +1294,10 @@ fn jsonArrayField(w: *std.ArrayList(u8), arena: std.mem.Allocator, name: []const
     try jsonStringArray(w, arena, kept.items);
 }
 
+fn jsonOptString(w: *std.ArrayList(u8), arena: std.mem.Allocator, s: ?[]const u8) !void {
+    if (s) |v| try jsonString(w, arena, v) else try w.appendSlice(arena, "null");
+}
+
 fn jsonStringArray(w: *std.ArrayList(u8), arena: std.mem.Allocator, items: []const []const u8) !void {
     try w.append(arena, '[');
     for (items, 0..) |e, i| {
@@ -2270,9 +2274,9 @@ fn buildPreflightJson(arena: std.mem.Allocator, pd: PreflightDoc) ![]const u8 {
             try w.appendSlice(arena, ", \"word\": ");
             try jsonString(w, arena, k.word);
             try w.appendSlice(arena, ", \"control_exit\": ");
-            if (k.control_exit) |e| try jsonString(w, arena, e) else try w.appendSlice(arena, "null");
+            try jsonOptString(w, arena, k.control_exit);
             try w.appendSlice(arena, ", \"checker_exit\": ");
-            if (k.checker_exit) |e| try jsonString(w, arena, e) else try w.appendSlice(arena, "null");
+            try jsonOptString(w, arena, k.checker_exit);
             try w.appendSlice(arena, ", \"red\": ");
             try jsonStringArray(w, arena, k.red);
             try w.appendSlice(arena, "}");

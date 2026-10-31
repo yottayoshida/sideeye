@@ -29,7 +29,7 @@ const cli = @import("cli.zig");
 const case = @import("case.zig");
 const evidence = @import("evidence.zig");
 const recovery = @import("recovery.zig");
-const controls_mod = @import("controls.zig");
+const controls_run = @import("controls_run.zig");
 const containment = @import("containment.zig");
 const supervise = @import("supervise.zig");
 const sanitizeForReport = defang.sanitizeForReport;
@@ -633,14 +633,14 @@ fn phaseDefine(run: *Run) void {
                     const resolved = arena.alloc(config.Control, d.controls.len) catch setupError(.environment, "out of memory");
                     for (d.controls, resolved) |c, *r| {
                         r.* = .{ .leg = c.leg, .command = resolveCommandAgainst(arena, dir, c.command) };
-                        refuseSpacedDir(arena, dir, "controls", "control", c.command, r.command);
+                        refuse.refuseSpacedDir(arena, dir, "controls", "control", c.command, r.command);
                     }
                     args.controls = resolved;
                 }
                 // Not turned into argv as the define's commands are: a recovery is carried and printed on
                 // the replay line as one string, which splits on spaces wherever it is read again.
                 for ([_]?[]const u8{ d.recovery, d.recovery_check }, [_]?[]const u8{ args.recovery, args.recovery_check }) |written, resolved| {
-                    if (written) |w| refuseSpacedDir(arena, dir, "recovery", "recovery", w, resolved.?);
+                    if (written) |w| refuse.refuseSpacedDir(arena, dir, "recovery", "recovery", w, resolved.?);
                 }
                 if (d.expected_status) |es| {
                     args.expect_status = config.parseExpectStatus(es) orelse setupError(.define_invalid, "expected_status must be an integer in 0..255 (one double-quoted string, as every value here)");
@@ -2012,10 +2012,11 @@ fn phasePreflight(run: *Run) void {
         else
             null;
         // Not after two runs that split: they leave no one state for a control to break.
-        const ran_controls: ?report.PreflightControls = if (args.controls.len > 0 and (if (repeat) |r| r.count.equal() else true))
-            runControls(gpa, arena, args, state_abs, final)
-        else
-            null;
+        const ran_controls: ?report.PreflightControls = if (args.controls.len > 0 and (if (repeat) |r| r.count.equal() else true)) blk: {
+            const control_argvs = arena.alloc([]const []const u8, args.controls.len) catch setupError(.environment, "out of memory");
+            for (args.controls, control_argvs) |c, *v| v.* = commandArgv(arena, .{ .str = c.command }) catch setupError(.environment, "out of memory");
+            break :blk controls_run.run(gpa, arena, args, state_abs, final, refuse.checkerArgv(commandArgv(arena, args.check.?)), control_argvs);
+        } else null;
         preflightReport(arena, n, hint, .{ .work = if (args.work_named) args.work else null, .state_under = args.state_under, .shim = args.shim, .oracle = args.oracle }, .{
             .check = args.check != null,
             .marker = args.marker != null,
@@ -2027,124 +2028,6 @@ fn phasePreflight(run: *Run) void {
         refuse.requireCompleteness(arena, args.has_oracle, args.allow_unverified);
         refuse.refuseNoCrashPoint(arena, args.has_oracle, refuse.cwdObservation(arena, op_argv));
     }
-}
-
-fn refuseSpacedDir(arena: std.mem.Allocator, dir: []const u8, section: []const u8, noun: []const u8, written: []const u8, resolved: []const u8) void {
-    if (resolved.ptr != written.ptr and std.mem.indexOfScalar(u8, dir, ' ') != null)
-        setupErrorFmt(arena, .define_invalid, "[{s}] takes the string form only, split on spaces, and {s}, the directory its relative command resolves against, holds a space: move the sideeye.toml to a path without one, or name the {s} by an absolute path without one", .{ section, textShown(arena, dir), noun });
-}
-
-const LegRun = struct { term: posix.Term, legs: ?[]const controls_mod.Leg };
-
-var unread_legs_buf: [contract.max_path]u8 = undefined;
-
-// Not `/dev/null`: a checker that replaces or removes the file it is handed (`mv`, `rm -f`)
-// would, run as root, replace or remove the system's.
-fn unreadLegs(work: []const u8) []const u8 {
-    const p = std.fmt.bufPrint(&unread_legs_buf, "{s}/legs.unread.txt", .{work}) catch setupError(.define_invalid, "path too long");
-    clearLegs(p);
-    return p;
-}
-
-// An empty directory a checker made at the path is removed too, or every later run would read it;
-// one with something in it is left, and reads as unreadable.
-fn clearLegs(p: []const u8) void {
-    removeFile(p);
-    var z: [contract.max_path]u8 = undefined;
-    const pz = std.mem.printSentinel(&z, "{s}", .{p}, 0) catch return;
-    _ = posix.rmdir(pz.ptr);
-}
-
-fn checkerEnv(state_abs: []const u8, legs_path: []const u8) [3][2][]const u8 {
-    return .{ .{ "TOY_STATE", state_abs }, .{ contract.env.state_dir, state_abs }, .{ contract.env.legs, legs_path } };
-}
-
-fn termWords(arena: std.mem.Allocator, term: posix.Term) []const u8 {
-    return switch (term) {
-        .exited => |c| std.fmt.allocPrint(arena, "exit {d}", .{c}) catch "exited",
-        .signaled => |sig| std.fmt.allocPrint(arena, "signal {d}", .{sig}) catch "signaled",
-        .unknown => "ended in a way the engine could not read",
-    };
-}
-
-fn termPassed(term: posix.Term) bool {
-    return switch (term) {
-        .exited => |c| c == 0,
-        else => false,
-    };
-}
-
-fn runLabelled(gpa: std.mem.Allocator, arena: std.mem.Allocator, args: cli.Args, argv: []const []const u8, state_abs: []const u8, legs_path: []const u8, capture_name: []const u8, name: []const u8) posix.Term {
-    const out = std.fmt.allocPrint(arena, "{s}/{s}", .{ args.work, capture_name }) catch setupError(.environment, "out of memory");
-    removeFile(out);
-    const term = posix.runChildCapture(gpa, argv, &checkerEnv(state_abs, legs_path), .{ .path = out, .stderr_too = true, .exclusive = true }, args.cwd) catch |e|
-        spawnFailure(e, .exploring, "could not run a [controls] command or the checker after it");
-    // Labelled on every line: unlabelled, a control's output would read as a world's.
-    if (capture.readFileAllocCapped(arena, out, 1024 * 1024, .{ .no_follow = true })) |text| {
-        var lines = std.mem.splitScalar(u8, text, '\n');
-        while (lines.next()) |line| if (line.len > 0) say("{s}: {s}\n", .{ name, textShown(arena, line) });
-    }
-    return term;
-}
-
-// `stem` is `baseline` or `control.<leg>`: a leg name holds no `.`, so no leg's files are the baseline's.
-fn checkWithLegs(gpa: std.mem.Allocator, arena: std.mem.Allocator, args: cli.Args, cargv: []const []const u8, state_abs: []const u8, stem: []const u8, name: []const u8) LegRun {
-    const legs_path = std.fmt.allocPrint(arena, "{s}/{s}.legs.txt", .{ args.work, stem }) catch setupError(.environment, "out of memory");
-    // Not a file left from the run before: its lines would be read as this run's.
-    clearLegs(legs_path);
-    const label = std.fmt.allocPrint(arena, "{s} checker", .{name}) catch setupError(.environment, "out of memory");
-    const capture_name = std.fmt.allocPrint(arena, "{s}.check.txt", .{stem}) catch setupError(.environment, "out of memory");
-    const term = runLabelled(gpa, arena, args, cargv, state_abs, legs_path, capture_name, label);
-    return .{ .term = term, .legs = readLegs(arena, legs_path) };
-}
-
-fn readLegs(arena: std.mem.Allocator, legs_path: []const u8) ?[]const controls_mod.Leg {
-    var z: [contract.max_path]u8 = undefined;
-    const pz = std.mem.printSentinel(&z, "{s}", .{legs_path}, 0) catch return null;
-    if ((posix.kindOfPathNoFollow(pz.ptr) catch return null) == .missing) return &.{};
-    // `require_regular`, not the kind above: a FIFO put there after it was looked at would hold
-    // a plain open forever.
-    const text = capture.readFileAllocCapped(arena, legs_path, 64 * 1024, .{ .no_follow = true, .require_regular = true }) orelse return null;
-    return controls_mod.parseLegs(arena, text) catch setupError(.environment, "out of memory");
-}
-
-fn redNames(arena: std.mem.Allocator, legs: ?[]const controls_mod.Leg) []const []const u8 {
-    var out: std.ArrayList([]const u8) = .empty;
-    for (legs orelse &.{}) |l| if (l.red) out.append(arena, l.name) catch setupError(.environment, "out of memory");
-    return out.items;
-}
-
-fn runControls(gpa: std.mem.Allocator, arena: std.mem.Allocator, args: cli.Args, state_abs: []const u8, final: engine.Snapshot) report.PreflightControls {
-    const cargv = refuse.checkerArgv(commandArgv(arena, args.check.?));
-    engine.restore(final, state_abs) catch |e| refuse.restoreFailure(e, "could not restore the recorded state before the [controls] baseline", state_abs);
-    const base = checkWithLegs(gpa, arena, args, cargv, state_abs, "baseline", "control baseline");
-    const base_word = controls_mod.baseline(termPassed(base.term), base.legs);
-    const out = arena.alloc(report.PreflightControl, args.controls.len) catch setupError(.environment, "out of memory");
-    for (args.controls, out) |c, *o| {
-        o.* = .{ .leg = c.leg, .word = @tagName(controls_mod.Word.baseline_red), .control_exit = null, .checker_exit = null, .red = &.{} };
-        // Not run under a red baseline: no control can be told apart from it.
-        if (base_word != .none) continue;
-        engine.restore(final, state_abs) catch |e| refuse.restoreFailure(e, "could not restore the recorded state before a control", state_abs);
-        const cargv_ctl = commandArgv(arena, .{ .str = c.command }) catch setupError(.environment, "out of memory");
-        const name = std.fmt.allocPrint(arena, "control({s})", .{c.leg}) catch setupError(.environment, "out of memory");
-        const stem = std.fmt.allocPrint(arena, "control.{s}", .{c.leg}) catch setupError(.environment, "out of memory");
-        const ctl_capture = std.fmt.allocPrint(arena, "{s}.txt", .{stem}) catch setupError(.environment, "out of memory");
-        const ctl_term = runLabelled(gpa, arena, args, cargv_ctl, state_abs, unreadLegs(args.work), ctl_capture, name);
-        o.control_exit = termWords(arena, ctl_term);
-        if (!termPassed(ctl_term)) {
-            o.word = @tagName(controls_mod.Word.control_failed);
-            continue;
-        }
-        const chk = checkWithLegs(gpa, arena, args, cargv, state_abs, stem, name);
-        o.word = @tagName(controls_mod.control(base.legs orelse &.{}, c.leg, termPassed(chk.term), chk.legs));
-        o.checker_exit = termWords(arena, chk.term);
-        o.red = redNames(arena, chk.legs);
-    }
-    engine.restore(final, state_abs) catch |e| refuse.restoreFailure(e, "could not restore the recorded state after the [controls]", state_abs);
-    return .{
-        .baseline = .{ .word = @tagName(base_word), .checker_exit = termWords(arena, base.term), .red = redNames(arena, base.legs) },
-        .controls = out,
-    };
 }
 
 fn phaseChecker(run: *Run) void {
@@ -2189,7 +2072,7 @@ fn phaseChecker(run: *Run) void {
         removeFile(fal_out);
         // `exclusive` for the same reason as the recording run's, and free for the same reason —
         // `removeFile` is one line up.
-        const probe = posix.runChildCapture(gpa, cargv, &checkerEnv(state_abs, unreadLegs(args.work)), .{ .path = fal_out, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check");
+        const probe = posix.runChildCapture(gpa, cargv, &controls_run.checkerEnv(state_abs, controls_run.unreadLegs(args.work)), .{ .path = fal_out, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check");
 
         // Re-emitted before the verdict on the probe: unknown() exits the process,
         // and the gate's output is evidence in the refusal case too.
@@ -2223,7 +2106,7 @@ fn phaseChecker(run: *Run) void {
         var start_buf: [contract.max_path]u8 = undefined;
         const start_out = std.fmt.bufPrint(&start_buf, "{s}/start-check.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
         removeFile(start_out);
-        const start = posix.runChildCapture(gpa, cargv, &checkerEnv(state_abs, unreadLegs(args.work)), .{ .path = start_out, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check on the starting state");
+        const start = posix.runChildCapture(gpa, cargv, &controls_run.checkerEnv(state_abs, controls_run.unreadLegs(args.work)), .{ .path = start_out, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check on the starting state");
         switch (start) {
             .exited => |code| if (code != 0) {
                 // Marked `start: ` for the reason the falsification's lines are marked: this is
@@ -2548,7 +2431,7 @@ fn phaseExploration(run: *Run) void {
             // stderr too, for the reason #483 gives on the setup capture: a checker reports
             // through either stream, and capturing stdout alone would leave the file empty for
             // the ordinary failure.
-            const ct = posix.runChildCapture(gpa, cargv, &checkerEnv(state_abs, unreadLegs(args.work)), .{ .path = co, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| switch (e) {
+            const ct = posix.runChildCapture(gpa, cargv, &controls_run.checkerEnv(state_abs, controls_run.unreadLegs(args.work)), .{ .path = co, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| switch (e) {
                 // The one failure that is about the capture and not about the child: since
                 // #469 the parent opens the file, so this arrives before any child exists.
                 // The checker still has to run — the verdict rests on its exit status — so
@@ -2560,7 +2443,7 @@ fn phaseExploration(run: *Run) void {
                     // and "the capture is empty" are different answers, and only the first
                     // is true here.
                     capture_opened = false;
-                    break :blk_cap posix.runChild(gpa, cargv, &checkerEnv(state_abs, unreadLegs(args.work)), args.cwd) catch |e2| spawnFailure(e2, .exploring, "could not run --check");
+                    break :blk_cap posix.runChild(gpa, cargv, &controls_run.checkerEnv(state_abs, controls_run.unreadLegs(args.work)), args.cwd) catch |e2| spawnFailure(e2, .exploring, "could not run --check");
                 },
                 else => spawnFailure(e, .exploring, "could not run --check"),
             };
