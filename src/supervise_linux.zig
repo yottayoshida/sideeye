@@ -680,10 +680,11 @@ const Tracer = struct {
 
     /// The crash point. The call that reached it is still suspended — this function does not
     /// answer it — so it never runs. The cgroup's `cgroup.kill` first where the world has one
-    /// (it reaches a process however it left the group), then the subject's process group. The
-    /// engine stands outside the cgroup, so unlike the shim there is nothing to step aside
-    /// from. A `cgroup.kill` that could not be written is said before the group kill, as the
-    /// shim says it, so the engine refuses the world rather than trust a short kill.
+    /// (it reaches a process however it left the group); without one, the caller and the
+    /// subject themselves; then the subject's process group. The engine stands outside the
+    /// cgroup, so unlike the shim there is nothing to step aside from. A `cgroup.kill` that
+    /// could not be written is said before the group kill, as the shim says it, so the engine
+    /// refuses the world rather than trust a short kill.
     fn kill(self: *Tracer, s: u32, pid: i32, tid: i32, path: []const u8) void {
         self.killed = true;
         if (self.cfg.kill_cgroup.len > 0) {
@@ -698,6 +699,12 @@ const Tracer = struct {
                 break :blk linux.errno(w) == .SUCCESS and w == 1;
             };
             if (!wrote) self.record(.cgroup, s, pid, tid, path, contract.cgroup_aux.kill_returned);
+        }
+        // Not the group alone where no cgroup.kill reaches the run: a caller or a subject that
+        // left it would wait forever on a call this engine no longer answers.
+        if (self.cfg.kill_cgroup.len == 0) {
+            _ = linux.kill(pid, linux.SIG.KILL);
+            _ = linux.kill(self.primary, linux.SIG.KILL);
         }
         _ = linux.kill(-self.primary, linux.SIG.KILL);
     }
