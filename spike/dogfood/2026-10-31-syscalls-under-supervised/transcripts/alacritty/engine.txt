@@ -1,0 +1,2 @@
+sideeye 1.17.0 (trace contract v19)
+aarch64

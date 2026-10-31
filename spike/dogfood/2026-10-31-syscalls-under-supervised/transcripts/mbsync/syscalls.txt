@@ -1,0 +1,121 @@
+falsify: checker(mbsync) before recovery: a=ok b=ok c=FAIL(lost ['one', 'two', 'three', 'four']) d=FAIL(flag far=False near=False)
+falsify: checker(mbsync) recovery exited 1: /s/mb/rc:1: parameter missing
+falsify: checker(mbsync) after recovery: a=ok b=ok c=FAIL(lost ['one', 'two', 'three', 'four']) d=FAIL(flag far=False near=False)
+world 1: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=FAIL(flag far=True near=False)
+world 1: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 2: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=FAIL(flag far=True near=False)
+world 2: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 3: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=FAIL(flag far=True near=False)
+world 3: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 4: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=FAIL(flag far=True near=False)
+world 4: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 5: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=FAIL(flag far=True near=False)
+world 5: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 6: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=FAIL(flag far=True near=False)
+world 6: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 7: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=FAIL(flag far=True near=False)
+world 7: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 8: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=FAIL(flag far=True near=False)
+world 8: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 9: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=FAIL(flag far=True near=False)
+world 9: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 10: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=FAIL(flag far=True near=False)
+world 10: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 11: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=FAIL(flag far=True near=False)
+world 11: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 12: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=FAIL(flag far=True near=False)
+world 12: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 13: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=FAIL(flag far=True near=False)
+world 13: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 14: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=FAIL(flag far=True near=False)
+world 14: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 15: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=FAIL(flag far=True near=False)
+world 15: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 16: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=FAIL(flag far=True near=False)
+world 16: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 17: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=FAIL(flag far=True near=False)
+world 17: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 18: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=FAIL(flag far=True near=False)
+world 18: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 19: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 19: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 20: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 20: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 21: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 21: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 22: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 22: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 23: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 23: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 24: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 24: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 25: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 25: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 26: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 26: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 27: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 27: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 28: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 28: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 29: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 29: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 30: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 30: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 31: checker(mbsync) before recovery: a=FAIL(far ['one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 31: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 32: checker(mbsync) before recovery: a=FAIL(far ['four', 'one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 32: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 33: checker(mbsync) before recovery: a=FAIL(far ['four', 'one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 33: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 34: checker(mbsync) before recovery: a=FAIL(far ['four', 'one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 34: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 35: checker(mbsync) before recovery: a=FAIL(far ['four', 'one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 35: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 36: checker(mbsync) before recovery: a=FAIL(far ['four', 'one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 36: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 37: checker(mbsync) before recovery: a=FAIL(far ['four', 'one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 37: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 38: checker(mbsync) before recovery: a=FAIL(far ['four', 'one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 38: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 39: checker(mbsync) before recovery: a=FAIL(far ['four', 'one', 'three', 'two'] near ['four', 'one', 'two']) b=ok c=ok d=ok
+world 39: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 40: checker(mbsync) before recovery: a=ok b=ok c=ok d=ok
+world 40: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 41: checker(mbsync) before recovery: a=ok b=ok c=ok d=ok
+world 41: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 42: checker(mbsync) before recovery: a=ok b=ok c=ok d=ok
+world 42: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 43: checker(mbsync) before recovery: a=ok b=ok c=ok d=ok
+world 43: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 44: checker(mbsync) before recovery: a=ok b=ok c=ok d=ok
+world 44: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+world 45: checker(mbsync) before recovery: a=ok b=ok c=ok d=ok
+world 45: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+baseline: checker(mbsync) before recovery: a=ok b=ok c=ok d=ok
+baseline: checker(mbsync) after recovery: a=ok b=ok c=ok d=ok
+FAIL  28 of 46 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 6 of 45
+            after  write(/s/mb/far/.uidvalidity)
+            before truncate(/s/mb/far/.uidvalidity)
+path        far/.uidvalidity
+observed    holding neither the old nor the new content
+cwd         /  (none declared: Sideeye's own)
+apparatus   preload:libfaketime, env:FAKETIME=@2026-01-01 00:00:00
+
+explored    46 worlds (crash points 45 + 1 baseline)
+expected    exit 0
+atomicity   16 path(s) judged pre-or-post
+oracle      agreed on 45 operations (619 syscall lines examined, 214 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 46 world(s)
+l1          no marker configured
+case        /out/mbsync/work-syscalls/cases/000001.json
+replay      sideeye replay /out/mbsync/work-syscalls/cases/000001.json --observe syscalls --oracle /usr/bin/strace
+evidence    sideeye evidence /out/mbsync/work-syscalls/evidence/000001.json
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd / && unset SIDEEYE_KILL_GROUP && : > /out/mbsync/work-syscalls/trace-repro.bin && SIDEEYE_STATE_DIR=/s/mb SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/mbsync/work-syscalls/trace-repro.bin LD_PRELOAD=/se/libsideeye_shim.so SIDEEYE_KILL_AT=6 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=syscalls SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'mbsync' -c /s/mb/rc ch </dev/null)
+sideeye: json sha256=ac4dc6bcde0f17a90d70119b76b0806b812834da98ca52067e859748fcbcc2cb;
