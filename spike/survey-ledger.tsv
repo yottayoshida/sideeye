@@ -1,0 +1,111 @@
+# Format and the meaning of each direction: CLAUDE.md, "Every whole-product survey".
+survey	2026-08-23	4cd510e	256	281	whole-product survey before the Filed-under guard; no issue carries the line
+survey	2026-10-05	ef4beb1	682	723	four read-only passes: walls, a first-time macOS operator, distribution/CI/code, neighbouring tools
+survey	2026-10-11	e814b84d	814	835	whole-product survey
+survey	2026-10-15	9a96170b	890	905	whole-product survey
+issue	256	silent	shim	three writes the oracle classifies go unrecorded
+issue	257	other	apparatus	
+issue	258	other	research	
+issue	259	other	research	
+issue	260	other	research	
+issue	261	other	engine	
+issue	262	other	engine	
+issue	263	other	engine	
+issue	264	silent	engine	a failed waitpid decodes as exit 0
+issue	265	other	engine	
+issue	266	other	mcp	
+issue	267	other	engine	
+issue	268	silent	workdir	two concurrent runs interleave silently, as #816
+issue	269	other	mcp	
+issue	270	other	ci	
+issue	271	other	research	
+issue	272	other	research	
+issue	273	over-refusal	cli	`sideeye --help` is refused as a setup error
+issue	274	other	report	
+issue	275	other	define	
+issue	276	other	docs	
+issue	277	other	docs	
+issue	278	other	docs	
+issue	279	other	engine	
+issue	280	other	engine	
+issue	281	other	research	
+issue	682	silent	define	PASS with zero crash points on a misplaced root
+issue	683	silent	report	a PASS that judged zero paths does not say so
+issue	684	over-refusal	oracle	read-only calls refuse
+issue	685	over-refusal	report	the next step leads to a mode that refuses
+issue	686	other	research	
+issue	687	over-refusal	supervise	a second writer refuses under supervised
+issue	688	other	report	
+issue	689	over-refusal	shim	a shared-mapping write refuses
+issue	690	other	engine	verdicts change between identical runs; neither direction is known to be the wrong one
+issue	691	other	engine	
+issue	692	other	workdir	
+issue	693	other	docs	
+issue	694	other	ci	
+issue	695	other	ci	
+issue	696	other	research	
+issue	697	other	docs	
+issue	698	other	ci	
+issue	699	other	research	
+issue	700	silent	define	its own Filed-under: the README toml fails or silently misses from another directory
+issue	701	silent	define	a check that does not exist is reported as a checker that rejected the state
+issue	702	over-refusal	docs	the README explore line fails as written on macOS
+issue	703	over-refusal	report	a Python or shell tool on macOS cannot be judged
+issue	704	other	cli	
+issue	705	other	cli	
+issue	706	silent	define	a define that looks right runs a different argv and can still PASS
+issue	707	other	report	
+issue	708	other	docs	
+issue	709	other	docs	
+issue	710	other	report	
+issue	711	other	report	
+issue	712	other	cli	
+issue	713	other	docs	
+issue	714	other	docs	
+issue	715	other	cli	
+issue	716	other	docs	
+issue	717	other	mcp	
+issue	718	other	docs	
+issue	719	other	docs	
+issue	720	other	research	
+issue	721	other	mcp	
+issue	722	other	docs	
+issue	723	other	docs	
+issue	814	silent	engine	a reflink clone or io_uring write is accepted
+issue	815	silent	engine	a world not checked to have died at its point
+issue	816	silent	workdir	two runs overwrite each other's reports
+issue	817	other	engine	
+issue	818	other	cli	
+issue	819	other	engine	
+issue	820	other	mcp	
+issue	821	over-refusal	shim	a vfork child keeps a thread slot; the run refuses
+issue	822	over-refusal	engine	an exported kill variable kills the recording run
+issue	823	over-refusal	report	the pasted next line runs a mode the define was refused in
+issue	824	over-refusal	mcp	with only the root set, the server refuses its own FAIL case and evidence
+issue	825	other	docs	
+issue	826	other	oracle	
+issue	827	over-refusal	report	a pasted line refuses after an upgrade removes the shim it names
+issue	828	other	ci	
+issue	829	over-refusal	engine	a world child on macOS is refused both setpgid and setsid
+issue	830	other	ci	
+issue	831	other	ci	
+issue	832	other	ci	
+issue	833	other	ci	
+issue	834	other	ci	
+issue	835	other	report	
+issue	890	other	ci	
+issue	891	other	ci	
+issue	892	over-refusal	engine	a directory rename refuses state_changed_unaccounted
+issue	893	over-refusal	define	a toml under a path with a space cannot run
+issue	894	over-refusal	report	the replay line refuses boundary_without_oracle
+issue	895	over-refusal	workdir	a relative --work loses the account in every world
+issue	896	over-refusal	oracle	fs_usage refuses every recording over 90 s
+issue	897	silent	oracle	an xattr write through a relative path reaches a verdict
+issue	898	other	oracle	
+issue	899	over-refusal	oracle	a non-ASCII state path refuses oracle_saw_phantom
+issue	900	silent	shim	a fortified open goes unrecorded
+issue	901	over-refusal	shim	the rest of #821: a failed exec keeps its slot, and the run refuses
+issue	902	silent	mcp	a case path can forge lines the agent reads as the engine's
+issue	903	silent	evidence	the bundle states two false facts
+issue	904	over-refusal	supervise	a failed setsid refuses as detached
+issue	905	other	supervise	
