@@ -1390,6 +1390,15 @@ jobs:
           ! grep -q 'unsupported_syscall_observed' /tmp/ci-v12/r.json || {
             echo "swap-out: an out-of-scope swap must not refuse as unsupported"; cat /tmp/ci-v12/r.json; exit 1; }
 
+      # Not left to the image: macos-26 has no Go, and check 15 fails rather than skip its Go toy.
+      - name: Install Go for the fs_usage acceptance's Go toy (#948)
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+          HOMEBREW_NO_INSTALL_CLEANUP: "1"
+        run: |
+          command -v go || brew install go
+          go version
+
       - name: "macOS oracle: fs_usage verifies a PASS, catches a missed op, refuses an unseen process (ADR 0031)"
         # The three falsifiable checks from the plan, against a real fs_usage. The
         # runner's sudo is passwordless (measured 27 times in the Route F1 survey,
