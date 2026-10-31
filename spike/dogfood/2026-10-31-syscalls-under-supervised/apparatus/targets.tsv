@@ -1,0 +1,15 @@
+# row	name	image	apparatus (the record whose defines/ is mounted at /ap)	define
+59	zstd	sideeye-fu3-1009	apparatus/item4	zstd
+86	todo.txt	sideeye-ud1007	dogfood/2026-09-22-shipped-v160/apparatus	todo.txt
+128	podman	sideeye-ud1003	dogfood/2026-10-03-user-data/apparatus	podman
+130	solvespace	sideeye-ud1005	dogfood/2026-10-05-user-data-2/apparatus	solvespace
+156	skopeo	sideeye-ud1005	dogfood/2026-10-05-user-data-2/apparatus	skopeo
+163	ntfslabel	sideeye-ud1005	dogfood/2026-10-05-user-data-2/apparatus	ntfslabel
+185	ziptool	sideeye-ud1007	dogfood/2026-10-07-user-data-3/apparatus	ziptool
+188	alacritty	sideeye-ud1007	dogfood/2026-10-07-user-data-3/apparatus	alacritty
+189	zshz	sideeye-ud1007	dogfood/2026-10-07-user-data-3/apparatus	zshz
+192	acmesh	sideeye-ud1007	dogfood/2026-10-07-user-data-3/apparatus	acmesh
+252	zstd-check	sideeye-fu3-1009	dogfood/2026-10-09-followups-3/apparatus	zstd-check
+278	useradd	sideeye-m1014	dogfood/2026-10-14-mechanisms/apparatus	useradd
+281	mbsync	sideeye-m1014	dogfood/2026-10-14-mechanisms/apparatus	mbsync
+282	alternatives	sideeye-m1014	dogfood/2026-10-14-mechanisms/apparatus	alternatives

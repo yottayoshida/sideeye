@@ -274,15 +274,15 @@ observed   : doctor: healthy=true / loadable key: none
 expected   : doctor's claim matches reality
 reproduce  : sideeye replay 000042        (reproduced 10/10)
 explored   : 5 crash points, 5 restarts, 5 checks
-not tested : power loss, torn writes, concurrent processes
+not tested : power loss (a missing fsync cannot fail this run), torn writes, concurrent processes
 ```
 
 And a PASS:
 
 ```
-PASS  rotate-key: 5/5 explored worlds satisfied the invariant
+PASS  rotate-key: 5/5 explored worlds satisfied the invariant under a process kill
       checker falsified before run: corrupted state -> check exited 1  [ok]
-      not tested : power loss, torn writes, concurrent processes
+      not tested : power loss (a missing fsync cannot fail this run), torn writes, concurrent processes
 ```
 
 Every report includes:
