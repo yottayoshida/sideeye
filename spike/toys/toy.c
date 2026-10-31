@@ -1950,7 +1950,7 @@ static int escape_cgroup(void) {
 
 int main(int argc, char **argv) {
     if (argc < 2) {
-        fprintf(stderr, "usage: %s init|rotate|rotate-msg|doctor|load-key\n", argv[0]);
+        fprintf(stderr, "usage: %s init|rotate|rotate-msg|rotate-quoted|doctor|load-key\n", argv[0]);
         return 2;
     }
     if (strcmp(argv[1], "init") == 0) return cmd_init();
@@ -1986,6 +1986,13 @@ int main(int argc, char **argv) {
     if (strcmp(argv[1], "rotate-msg") == 0) {
         if (argc != 3 || strcmp(argv[2], "note with spaces") != 0) {
             fprintf(stderr, "rotate-msg requires exactly one argument, the exact string \"note with spaces\"\n");
+            return 1;
+        }
+        return cmd_rotate();
+    }
+    if (strcmp(argv[1], "rotate-quoted") == 0) {
+        if (argc != 3 || strcmp(argv[2], "[\"k\"] \"v\"") != 0) {
+            fprintf(stderr, "rotate-quoted requires exactly one argument, the exact string [\"k\"] \"v\"\n");
             return 1;
         }
         return cmd_rotate();

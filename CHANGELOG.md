@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **A command's argv element may be a single-quoted literal string, so an argument holding a `"` can be passed** (#949, ADR 0019 amended; `src/config.zig`, `docs/cli.md`, `docs/contract-freeze.md`, `spike/acceptance.sh`, `spike/toys/toy.c`). `operation = ["sops", "set", "f.yaml", '["k"]', '"v"']` now passes `["k"]` and `"v"` byte for byte, where until now a `sideeye.toml` had no spelling for an argument holding a `"`: a toml string ends at its first `"`, a double-quoted element has no escapes, and a script in between makes `sh` the operation. A literal has no escapes either; a `\` or a control byte in one is refused as in a double-quoted element, and `apparatus` and `scratch` entries stay double-quoted. The warning for a string-form command spelled with shell quotes now offers such a word as a literal element. A word holding both quote characters still has no argv spelling.
+
 ### Changed
 
 - **The CI quickstart and the MCP container pin v1.17.0** (`docs/ci-quickstart.md`, `.github/workflows/quickstart-release.yml`, `docs/mcp-container/Dockerfile`; the Homebrew tap's formula, in its own repository). The release lane installs the published v1.17.0 asset, and the container fetches it, with the two Linux digests GitHub recorded for it, written by `spike/release_pins.py pin v1.17.0 --tap`, which also moved the formula's three URLs and digests. The pins move after the release because both download the asset.

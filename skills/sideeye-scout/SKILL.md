@@ -62,7 +62,8 @@ check     = "./check.sh"          # exit 0 = the invariant holds after crash + r
 ```
 
 - Commands split on spaces with no quoting; an argument with a space takes the argv form:
-  `operation = ["mytool", "commit", "-m", "a message"]`.
+  `operation = ["mytool", "commit", "-m", "a message"]`; an element that holds a `"` is
+  single-quoted: `'["k"]'`.
 - Name an executable, not a `#!` script, as the `operation` where you can.
 - The define sets no environment: setup, operation and check inherit the one Sideeye is
   started with. If the tool finds its store through a variable, export it before running

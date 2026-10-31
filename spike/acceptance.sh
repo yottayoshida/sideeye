@@ -6668,6 +6668,52 @@ else
     fails=$((fails + 1))
 fi
 
+echo "=========== check 2ab2: a single-quoted argv element carries a double quote (#949) ==========="
+# The toy's rotate-quoted demands ONE argv element, the bytes ["k"] "v". The control is the
+# same element double-quoted: no escapes exist, so the parser refuses it before anything
+# runs. The literal spelling then reaches the toy verbatim — the buggy rotate explores to
+# FAIL — and the saved case replays it, so the bytes survived the JSON round trip too.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+cat > /tmp/acc/quoted-esc.toml <<TOML
+[world]
+state = "./state"
+[define]
+setup     = "$OUT/toy-bug init"
+operation = ["$OUT/toy-bug", "rotate-quoted", "[\"k\"] \"v\""]
+TOML
+o=$("$SIDEEYE" explore --config /tmp/acc/quoted-esc.toml \
+    --shim "$SHIM" --work /tmp/acc/work-esc --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "line 5: .*escape sequences"; then
+    echo "ok   a double-quoted element cannot spell the quote (SETUP ERROR, escape sequences)"
+else
+    echo "FAIL #949 double-quoted control: exit $rc (wanted 3 + escape sequences)"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc/state && mkdir -p /tmp/acc/state
+cat > /tmp/acc/quoted.toml <<TOML
+[world]
+state = "./state"
+[define]
+setup     = "$OUT/toy-bug init"
+operation = ["$OUT/toy-bug", "rotate-quoted", '["k"] "v"']
+TOML
+o=$("$SIDEEYE" explore --config /tmp/acc/quoted.toml \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+qcase=/tmp/acc/work/cases/000001.json
+o2=$("$SIDEEYE" replay "$qcase" --shim "$SHIM" --work /tmp/acc/work-r 2>&1)
+rc2=$?
+if [ "$rc" = "1" ] && grep -qF '"rotate-quoted", "[\"k\"] \"v\""' "$qcase" 2>/dev/null \
+    && [ "$rc2" = "1" ] && echo "$o2" | grep -q "the case reproduced"; then
+    echo "ok   the literal element reaches the toy verbatim, explores to FAIL, and its case replays"
+else
+    echo "FAIL #949 literal element: explore=$rc replay=$rc2"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+
 echo "=========== check 3b: traces are identical up to pid renaming ==========="
 # v0.1 claimed the recording run's trace was byte-identical across runs. v3 puts a pid
 # in every record, and pids differ between runs by nature — so the claim becomes:
