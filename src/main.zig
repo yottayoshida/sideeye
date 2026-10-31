@@ -1228,16 +1228,11 @@ fn phaseRecording(run: *Run) void {
         "";
     if (args.observe == .supervised) {
         if (builtin.os.tag == .macos)
-            setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe supervised is Linux only, on aarch64 and x86_64: it counts through a seccomp user-notification filter, which macOS has no equivalent of. On Linux 5.19 or later, with a cgroup v2 the engine can create cgroups in, the same command takes it; " ++ contract.macos_table, .{mode_from});
+            setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe supervised is Linux only, on aarch64 and x86_64: it counts through a seccomp user-notification filter, which macOS has no equivalent of. On Linux 5.19 or later the same command takes it; " ++ contract.macos_table, .{mode_from});
         if (!supervise.available)
             setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe supervised is Linux only, on aarch64 and x86_64: it counts through a seccomp user-notification filter, which this platform has no equivalent of", .{mode_from});
         if (!supervise.kernelSupports())
             setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe supervised needs a kernel that accepts a seccomp user-notification listener with SECCOMP_FILTER_FLAG_WAIT_KILLABLE_RECV (Linux 5.19 or later), and this one does not", .{mode_from});
-        // Required, not preferred (#217, review): the crash point's kill reaches a process that
-        // left the process group only through a cgroup, and without the shim there is nothing
-        // inside the process to notice that it left.
-        if (containment.spawn(false) == null)
-            setupErrorFmt(arena_state.allocator(), .environment, "{s}--observe supervised needs a cgroup v2 the engine can create cgroups in (delegated to its user, or root): the crash point's kill reaches every process of the run through it, however one left the process group", .{mode_from});
     }
     if (args.observe == .syscalls) {
         if (builtin.os.tag != .linux)
