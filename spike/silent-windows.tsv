@@ -1,0 +1,118 @@
+# Every gap an ADR records, filed: source (an ADR number or a path), an anchor that occurs once there,
+# and the window docs/silent-windows.md lists it as, or the reason it is not one. Read by
+# spike/check-silent-windows.py.
+0002	boundaries the recording crossed and an oracle accounted f	explored-worlds-no-oracle
+0002	One path is knowingly left open	explored-worlds-no-oracle
+0003	The shim cannot see a call that never enters	past: raw open refused oracle_missed_operation (#19)
+0005	so its open likewise stays unrecorded	default-mode shim gap; oracle sees the reopen and refuses
+0006	a fail-open of the tool's central promise	past state; closed by this ADR's typed resolution
+0006	Unseen is never read as untouched	rule: unresolvable path becomes unsupported/child_touched (refused)
+0006	closes a pre-existing blind spot	closed by this ADR (outside->state rename in scope)
+0007	becomes invisible; drift between the two sources	rejected alternative (config precedence)
+0010	remains open is the window the check cannot reach	MCP shim-path TOCTOU; security, not verdict
+0010	residual issues are out of scope *only under this precondi	MCP config-root TOCTOU; security, not verdict
+0010	A third residual, and it is not closed by the precondition	MCP relays target-influenced text; not verdict
+0010	between fork and the engine's first instruction is not seen	MCP server cleanup bound; not verdict
+0011	takes its path as an argument, so this was invisible	past state; MCP env/fresh-state fix
+0012	residual is stated in §17 rather than hidden	research-ledger protocol, not a run verdict
+0013	every write through it was invisible	past state; closed by ADR 0013
+0013	What remains outside the	raw close_range loses trace; oracle diverges and refuses
+0013	Two windows stay	both races end refused (live thread / vfork death record)
+0018	`prefixHash` provably cannot see duplicates	refused sequence_numbering_broken
+0018	the multi-process slice; #123 remains open and says which	past; retired by 2026-09-02 amendment
+0018	The second half of this decision — "#123 remains open	past; amendment closing #123
+0018	after the lost one fail too and the window stays open to t	persistent trace loss refuses; transient loss misses no operation
+0021	Naming it in neither is green, and the check cannot see it.	spike classification check; repo tooling
+0021	cost, paid knowingly	spike classification check; repo tooling
+0023	The invariant that made this gap invisible for ten contract	past state; now checked in CI
+0024	and that the window stays open	engine deletion-safety race; closed by ADR 0037
+0024	recorded here so the residual is not read as	closed by ADR 0037 (#338)
+0026	misses is invisible to everything, and the existing zero-o	past: macOS had no oracle; fs_usage oracle since ADR 0031
+0026	what was invisible was the **clone family**	past; clone family interposed by this ADR
+0026	classifies and macOS does not interpose … this check canno	past; coverage-check tooling
+0026	declared blind spot became this issue	past; coverage-check tooling
+0026	msync-class (invisible), was refused under v11 and can fal	macOS no-oracle only (allow-unverified); mapping refused since ADR 0098
+0027	The set-equality check cannot see any of it	audit manifest tooling; past
+0027	form is already applied four ways on thirteen rows, and th	rejected alternative; tooling
+0028	a phrase wrapping across a line break is invisible to a li	audit-tooling method note
+0028	constant's value on a line whose text is otherwise unchang	audit-tooling method note
+0031	another agrees when calibrated and is invisible when judged	rejected alternative (calibration receipt)
+0031	Filtering by the subject therefore leaves a raw-forked chi	closed by this ADR: capture unfiltered, scoped by root
+0031	exactly where it is already invisible to the shim	closed by this ADR: capture unfiltered, scoped by root
+0032	changed the state is a blind spot worth catching	rationale: zero-ops form stricter; refuses
+0032	`oracle_missed_operation` names the syscall that went unseen	refused oracle_missed_operation
+0032	Deferring a real silent PASS to a major	rejected alternative (wait for 2.0)
+0032	`README.md`'s "never a silent PASS" true with no exception	rename-in-from-outside
+0034	**The residual is #39's class**	fs_usage oracle sees it and refuses; else allow-unverified
+0034	export is invisible to any wrapper set	fs_usage oracle sees it and refuses; else allow-unverified
+0036	which measured the mechanism, and of ADR 0034, which named	macOS libSystem self-calls: fs_usage oracle refuses; else allow-unverified
+0037	is an opt-out, and the opt-out would be invisible at the c	rejected alternative; engine deletion code
+0037	warning about what the vet cannot see	engine deletion-safety comment, not verdict
+0045	sensitivity leg plants is invisible to the shim's account	acceptance-leg design, not verdict
+0052	was recording about becomes invisible	past bug, fixed (marker leak on x86_64)
+0053	This is the step that would close the world residual below.	explored-worlds-no-oracle
+0053	Closes the same residual from the other side	explored-worlds-no-oracle
+0057	of the set (checks that remove their directory at the end	acceptance tooling coverage
+0059	**Two calls stay outside, for one structural reason**	raw copy_file_range: oracle refuses; pwritev2 refused unsupported
+0059	cannot see. Not taken here: it puts the shim in the business	rejected alternative (trap rt_sigaction)
+0060	cannot see a process was never going to derive it from the	rationale; thread list handed to fs_usage reader
+0060	A subject thread that recorded nothing stays invisible to	reconciliation-per-path-gap
+0063	What still takes `SIGSYS` away is named, not refused.	sigsys-loss-child-death
+0065	## What containment cannot see	explored-worlds-no-oracle
+0065	knowingly-open window — a child whose behaviour a world di	explored-worlds-no-oracle
+0066	That window is the one named among the residuals below	eval-harness digest race; not verdict
+0066	Named residual, and a separate promise:	eval-harness trust; closed by ADR 0068
+0067	cannot see. **No rule built on what the shim records admit	refused multiple_threads_detected
+0067	Windows left open, each on the refusing side	each ends refused
+0067	`pthread_timedjoin_np`, `pthread_tryjoin_np` and a raw `cl	unseen join leaves threads unordered: refused
+0067	Each unseen join leaves two threads unordered and the run	refused
+0068	the named residual in Consequences	eval-harness trust; closed by ADR 0088
+0068	the residual ADR 0066 named	eval-harness trust; closed by ADR 0068
+0068	So does everything else there — which is the residual below.	eval-harness trust; closed by ADR 0088
+0068	the root-filesystem residual below	rejected alternative; eval harness
+0068	Named residual, and a separate promise — the measurement's	eval-harness trust; closed by ADR 0088
+0075	It remains open as part of #630.	refusal wording deferred (UX)
+0079	The freeze audit's extraction cannot see either name	freeze-audit tooling
+0080	invisible length rule	quickstart docs; long path refuses oracle_saw_nothing
+0087	Deferred, as ADR 0075 already deferred it	refusal wording deferred (UX)
+0088	the residual ADR 0068 named in its Consequences	eval harness; closed here
+0088	that is the residual below (what it writes during the repl	eval-harness trust, not verdict
+0089	so a `setsid` that succeeds goes unrecorded	supervised group bookkeeping; cgroup still contains, no state op missed
+0089	calls pass unseen; macOS has no equivalent	compat calls: strace oracle sees them and refuses (cf schema item 2)
+0091	The README refuses to trust a checker it has not seen fail	past; closed by ADR 0091 (nothing_could_fail)
+0095	Not seen: a glob	shell-spelling warning coverage (UX)
+0098	- **Linux, by a child:** not refused.	past; closed by ADR 0098
+0098	- **Either platform, a mapping made writable later:** not	past; closed by ADR 0098 (mprotect read)
+0098	- **macOS:** not refused.	past; closed by ADR 0098 (shim refuses)
+0098	mapping that failed is not refused.	failed mapping writes nothing
+0098	A read-only shared mapping is not refused:	read-only mapping writes nothing; writes counted as calls
+0098	invisible until the page is protected again	rejected alternative (write-protect pages)
+0098	What stays unseen: on macOS, the Mach calls that map or pr	shared-mapping-store-unseen
+0116	A directory the snapshot cannot identify is not refused fo	engine deletion safety; other reasons refuse
+0116	rebuild after it is not seen	mount TOCTOU; security, not verdict
+0118	hash order unseen. Not taken (owner, 2026-10-11).	rejected alternative
+0121	failed with an errno raised before anything is remapped is	failed whole clone changed nothing; read as read
+0122	With the standard descriptors known and `dup2` still invis	hypothetical avoided by shipping 1 and 2 together
+0128	word, not refused.	unmeasured placement; shim still records the libc call so mismatch refuses
+0137	**One shape is not refused.**	failed-dir-rename-replayed
+0138	Threads that only a lock, a queue or a wake orders stay ou	refused multiple_threads_detected
+0138	A switch set inside the operation (`env GOMAXPROCS=1 tool`	refusal next_step wording (UX)
+0140	a call in another mode passes unseen	no-oracle only (allow-unverified); oracle refuses other modes
+0053	one witness where the subject's have two	child-ops-one-witness
+DESIGN.md	Some calls put bytes in a file and are recorded by neither witness	reconciliation-per-path-gap
+docs/report-schema.md	a path the define declares `scratch` — is accounted for by any	scratch-unrecorded-write
+0145	promised "never a silent PASS", with one exception	quotes the README promise this ADR changes
+0145	says "never a silent PASS — except the known windows	quotes the README promise this ADR writes
+0121	reaches neither witness at all	reconciliation-per-path-gap
+DESIGN.md	A directory a recorded `rename` moved into the judged tree from outside it is attributed to that one record	rename-in-from-outside
+0002	the residue is the unshimmed-and-relative	reconciliation-per-path-gap
+0005	there is no oracle, so this net does not exist; the residue	past: macOS had no oracle then (ADR 0031)
+0028	3. **The named residue**, printed as unmeasured	a page's unmeasured clauses, not a run's verdict
+0028	named five paragraphs' worth of residue	a page's unmeasured clauses, not a run's verdict
+0028	The residue is real and stays.	a page's unmeasured clauses, not a run's verdict
+0028	At that point the residue is empty	a page's unmeasured clauses, not a run's verdict
+0029	that member is the residue for failures	a refusal reason's catch-all, not a verdict
+0031	Two residues are disclosed rather than closed	reconciliation-per-path-gap
+0031	Residues, said	the observer's cleanup after the engine dies, not a verdict
+0042	residue is judged wrong, and deleting the tree	deleting the work tree safely, not a verdict
+0089	One residue runs the other way and is	supervised mode: the cgroup still holds the process, which is refused

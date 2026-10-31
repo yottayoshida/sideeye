@@ -51,6 +51,10 @@ change.
   slashed backtick references). Bare `ADR NNNN` prose
   citations are checked by nothing and break semantically rather than loudly: after a
   renumber they point at a different decision.
+- **An ADR numbered after 0145 ends with a `## Residual windows` section** — the ways a run under an oracle can
+  still reach PASS with something unseen once the decision is in, or "None" — and each item, like every line of an
+  ADR the vocabulary in `spike/check-silent-windows.py` matches, is filed in `spike/silent-windows.tsv`: as a window
+  `docs/silent-windows.md` lists, or with the reason it is not one. CI fails on one nobody filed (ADR 0145).
 - `CHANGELOG.md` keeps a `[Unreleased]` section; every merged feat/fix appends to it.
   **A release reads the block against itself before it renames the heading**, and records
   the reading in the release pull request's body — which entries a later one falsified,

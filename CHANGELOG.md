@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **The README's "never a silent PASS" now links the known windows, each with what shows it, instead of naming one exception** (#936, ADR 0145; `docs/silent-windows.md`). The ADRs recorded more ways a run under an oracle can reach PASS with something missed than the one the README named; the page lists the eight, each with the report field or test that shows it, or says that nothing does, and CI holds it to the ADRs, every ADR after 0145 listing its own.
+
 - **The CI quickstart and the MCP container pin v1.17.0** (`docs/ci-quickstart.md`, `.github/workflows/quickstart-release.yml`, `docs/mcp-container/Dockerfile`; the Homebrew tap's formula, in its own repository). The release lane installs the published v1.17.0 asset, and the container fetches it, with the two Linux digests GitHub recorded for it, written by `spike/release_pins.py pin v1.17.0 --tap`, which also moved the formula's three URLs and digests. The pins move after the release because both download the asset.
 
 ## [1.17.0] - 2026-10-30
