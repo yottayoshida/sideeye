@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Every function glibc exports is interposed by the Linux shim or classified with a reason, and CI fails on one that is neither** (#934; `spike/check-glibc-exports.py`, `spike/glibc-exports.tsv`, `.github/workflows/ci.yml`, `DESIGN.md`, `spike/check-shim-coverage.py`). The existing coverage check compared the shim's exports with the syscalls the oracle names, and a libc entry point that is not a syscall's name passed it — that is how the fortified `__open_2` family shipped uninterposed (#900). The new check reads the runner's own `libc.so.6` with `nm` and files each of its 2,487 functions as interposed or under one of 37 families (`write`, `fd` or `none`, each with its reason), so a glibc that adds an entry point, or a change that drops an interposer, turns CI red; it also fails when a function at the same address as an interposed one — the same function under a second name, as `__open` is `open` — is left uninterposed.
+
+### Fixed
+
+- **The Linux shim counts the operations a program reaches through glibc's public second spellings** (#934; `shim/src/linux.zig`, `spike/toys/toy_aliases.c`, `spike/build-toys.sh`, `spike/acceptance.sh`). `__open`, `__open64`, `__write`, `__pwrite64`, `__close`, `_IO_fopen`, `_IO_fflush`, `_IO_fclose`, `_IO_fsetpos`, `_IO_fsetpos64`, `__fork`, `__vfork`, `__setpgid`, `__sigaction`, `bsd_signal` and `ssignal` are the same functions as their plain names, at the same addresses, and a program can link against them; a call through one bound past the wrapper for the plain name. Each now goes to that wrapper. For the opens, writes and closes that was a missed operation — refused under `--oracle` (`oracle_missed_operation`), its crash point never explored under `--allow-unverified` — and a rewrite through `__open`/`__write`, `__pwrite64` or `_IO_fopen`/`_IO_fflush` that was refused is now judged, FAIL with the oracle agreeing (measured on Ubuntu 24.04, aarch64); for the forks and `__setpgid` it was a boundary not recorded, and for the three signal names a `SIGSYS` disposition `--observe syscalls` did not guard.
+
 ### Changed
 
 - **The CI quickstart and the MCP container pin v1.17.0** (`docs/ci-quickstart.md`, `.github/workflows/quickstart-release.yml`, `docs/mcp-container/Dockerfile`; the Homebrew tap's formula, in its own repository). The release lane installs the published v1.17.0 asset, and the container fetches it, with the two Linux digests GitHub recorded for it, written by `spike/release_pins.py pin v1.17.0 --tap`, which also moved the formula's three URLs and digests. The pins move after the release because both download the asset.
