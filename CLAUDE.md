@@ -120,6 +120,18 @@ change.
   any workflow, `.yml` or `.yaml`. A step's timeout does not count — the job around it can
   still hold a runner for GitHub's six hours. The image `ci.yml` builds `FROM` is pinned by
   digest inside a `run:` string, where Dependabot does not look, so it moves by hand.
+- **Every whole-product survey since 2026-08-23 is a row in `spike/survey-ledger.tsv`, and so
+  is every issue it files**, with a direction and a surface. A survey is a read of the whole
+  product for defects whose findings are filed together; the 2026-10-18 product review (#962)
+  filed directions rather than findings and is not one. `silent`: a verdict, or a fact a report
+  states about the run, is false and the run does not say so. `over-refusal`: Sideeye refuses a
+  run it could judge, or a Sideeye command line a document gives fails. Everything else is
+  `other`. The surfaces are the script's fixed list. `python3 spike/survey-ledger.py` prints
+  each survey's counts by direction, and for `silent` and `over-refusal` by surface, and lists every issue filed `wrong-verdict` whose ledger direction
+  is not `silent` (#937). The direction is the ledger's, not the `Filed-under:` line's: that
+  line names the predicate its author chose, and `broken-promise` can be a silent verdict too.
+  Add the survey's rows the day it files its issues; a range with an issue missing fails the
+  script.
 - English for everything committed.
 
 ## Releasing

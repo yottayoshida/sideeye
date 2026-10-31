@@ -1180,14 +1180,15 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state \
 rc=$?
 hd=$(HEADLINE="$(echo "$o" | head -1)" python3 -c 'import json,os,re,sys
 h = os.environ["HEADLINE"]
-m = re.match(r"^PASS  ([0-9]+)/([0-9]+) explored worlds satisfied the built-in atomicity invariant$", h)
+m = re.match(r"^PASS  ([0-9]+)/([0-9]+) explored worlds satisfied the built-in atomicity invariant under a process kill$", h)
 if not m: sys.exit("headline shape: %r" % h)
 d = json.load(open("/tmp/acc/report.json"))
+if d.get("crash_model") != "process-kill": sys.exit("crash_model %r, wanted process-kill" % d.get("crash_model"))
 if int(m.group(1)) != d["explored"]: sys.exit("numerator %s != explored %r" % (m.group(1), d["explored"]))
 if int(m.group(2)) != d["explored"]: sys.exit("denominator %s != explored %r" % (m.group(2), d["explored"]))
 sys.stdout.write("ok")' 2>&1)
 if [ "$rc" = "0" ] && [ "${hd:-}" = "ok" ] && ! echo "$o" | grep -q "crash worlds satisfied"; then
-    echo "ok   PASS headline: both numbers==explored, old label absent"
+    echo "ok   PASS headline: both numbers==explored, the crash model named in the line and the JSON, old label absent"
 else
     echo "FAIL #150 PASS-side structural pin: rc=$rc ${hd:-}"
     echo "$o" | sed 's/^/     | /' | head -4
@@ -8617,8 +8618,7 @@ fi
 # which is two — `open` and `write` are separate kill points.
 #
 # **Do not hand an anchored verdict-line matcher a define with one crash point.** The #150
-# structure pin — `^PASS  ([0-9]+)/([0-9]+) explored worlds satisfied the built-in atomicity
-# invariant$` against `head -1`, at line 557, some three thousand lines ABOVE this — drives
+# structure pin, which anchors the whole PASS line from `head -1` far above this, drives
 # toy-fixed at four crash points and would fail on this define, because the clause is part of
 # the line it anchors.
 #
