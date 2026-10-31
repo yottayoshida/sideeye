@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **The docs, the skills, `--help` and the checker's FAIL line no longer say "restart" for the program running again** (README, DESIGN, `docs/cli.md`, `docs/checker-cookbook.md`, `skills/`, `src/cli.zig`, `src/report.zig`; #957). "Restart" read as a machine restart, and DESIGN's "Post-success invariants (durability)" as a promise about power loss, which [the crash model](DESIGN.md#the-crash-model-precisely) does not make. The label is now "what a reported success promises", and a checker FAIL's `observed` reads `the checker exited non-zero in a fresh process after the crash`.
+
 - **The CI quickstart and the MCP container pin v1.17.0** (`docs/ci-quickstart.md`, `.github/workflows/quickstart-release.yml`, `docs/mcp-container/Dockerfile`; the Homebrew tap's formula, in its own repository). The release lane installs the published v1.17.0 asset, and the container fetches it, with the two Linux digests GitHub recorded for it, written by `spike/release_pins.py pin v1.17.0 --tap`, which also moved the formula's three URLs and digests. The pins move after the release because both download the asset.
 
 ## [1.17.0] - 2026-10-30
