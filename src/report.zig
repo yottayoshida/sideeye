@@ -1009,6 +1009,8 @@ fn withField(comptime field: ArgsField) cli.Args {
         .{ .str = "x" }
     else if (T == []const []const u8)
         &.{"x"}
+    else if (T == []const config.Control)
+        &.{.{ .leg = "a", .command = "x" }}
     else if (T == ?u8 or T == ?u32)
         3
     else if (T == contract.ObserveMode)

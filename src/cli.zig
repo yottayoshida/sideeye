@@ -99,6 +99,8 @@ pub fn carried(comptime field: std.meta.FieldEnum(Args)) struct { replay: Carry,
         // Not on preflight's line: its flags cannot carry them, and the toml the line names does.
         .check => .{ .replay = .in_case, .next = .in_case },
         .marker => .{ .replay = .in_case, .next = .in_case },
+        // Left off the replay line: only preflight runs them, and a world they never touch.
+        .controls => .{ .replay = .left_off, .next = .in_case },
         // Not in the case: a replay line without the pair replays a different run.
         .recovery => .{ .replay = .printed, .next = .in_case },
         .recovery_check => .{ .replay = .printed, .next = .in_case },
