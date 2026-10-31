@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **A PASS names the crash it was tested under, in its first line and in the JSON** (`src/main.zig`, `src/report.zig`, `docs/report-schema.md`; #956). The headline now reads `PASS  N/N explored worlds satisfied the built-in atomicity invariant under a process kill`, where it ended at `invariant`; a caller matching the old line anchored at its end needs the new words. Every JSON report carries `"crash_model": "process-kill"` beside `exit_code`, a new field under the additive allowance of surface 2, and the first `not_tested` item reads `power loss (a missing fsync cannot fail this run)`. Until now that fact was in `docs/faq.md` and in a `not tested` line some fourteen lines below the verdict, and a CI gate reading only `verdict == "PASS"` had no field to tell it that the run could not have failed on a missing `fsync`; a gate that reads `crash_model` now has one. FAIL and UNKNOWN lines are unchanged: a FAIL is a state a process kill reaches. `contract_version` does not move.
+
 - **The CI quickstart and the MCP container pin v1.17.0** (`docs/ci-quickstart.md`, `.github/workflows/quickstart-release.yml`, `docs/mcp-container/Dockerfile`; the Homebrew tap's formula, in its own repository). The release lane installs the published v1.17.0 asset, and the container fetches it, with the two Linux digests GitHub recorded for it, written by `spike/release_pins.py pin v1.17.0 --tap`, which also moved the formula's three URLs and digests. The pins move after the release because both download the asset.
 
 ## [1.17.0] - 2026-10-30

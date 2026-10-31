@@ -628,8 +628,8 @@ fn buildL0NoteBase(arena: std.mem.Allocator, plan: engine.L0Plan) []const u8 {
 /// Comptime rather than a runtime join, deliberately: the old functions returned static
 /// strings and allocate nothing, and **four of the five** call sites are inside format
 /// strings where an allocation failure has nowhere to go. The tables cost nothing at
-/// runtime and keep the output the same bytes it was.
-const not_tested_always = [_][]const u8{ "power loss", "torn writes", "concurrent processes" };
+/// runtime.
+const not_tested_always = [_][]const u8{ "power loss (a missing fsync cannot fail this run)", "torn writes", "concurrent processes" };
 const not_tested_history = "appended tails (files under the history form)";
 const not_tested_l1 = "post-only file contents (L1 checks existence only; post-only link targets are judged)";
 const not_tested_scratch = "declared scratch paths (neither bytes nor presence judged)";
@@ -761,6 +761,22 @@ test "the report names where the define's commands ran, and whether that was dec
     const esc = try buildJson(a, "PASS", 0, null, null, null, null, null, null);
     try std.testing.expect(std.mem.indexOf(u8, esc, "/tmp/a\\nb") != null);
     try std.testing.expect(std.mem.indexOf(u8, esc, "/tmp/a\nb") == null);
+}
+
+test "every report names the crash model it explored, whatever its verdict" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const docs = [_][]const u8{
+        try buildJson(a, "PASS", 0, null, null, null, null, null, null),
+        try buildJson(a, "FAIL", 1, null, null, null, null, null, null),
+        try buildJson(a, "UNKNOWN", 2, null, null, "recording_run_failed", null, "m", "Do this."),
+        try buildJson(a, "SETUP_ERROR", 3, null, null, null, .define_invalid, "m", null),
+    };
+    for (docs) |doc| {
+        const parsed = try std.json.parseFromSlice(std.json.Value, a, doc, .{});
+        try std.testing.expectEqualStrings("process-kill", parsed.value.object.get("crash_model").?.string);
+    }
 }
 
 test "a SETUP_ERROR report carries its class, and the setup's status only under setup_failed and only as measured (#518)" {
@@ -1567,6 +1583,7 @@ fn buildJson(
     try jsonString(w, arena, verdict);
     try w.appendSlice(arena, ",\n  \"exit_code\": ");
     try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{exit_code}));
+    try w.appendSlice(arena, ",\n  \"crash_model\": \"process-kill\"");
     try w.appendSlice(arena, ",\n  \"oracle_verified\": ");
     try w.appendSlice(arena, if (oracle_verified) "true" else "false");
     // Emitted only when it is true, so every report a v14 consumer has seen is
@@ -2251,18 +2268,18 @@ test "the l0 note neutralises control bytes in target-chosen file names" {
     try std.testing.expect(std.mem.indexOf(u8, note, "evil?name?.log") != null);
 }
 
-test "the not-tested list renders the same eight strings it shipped as two hand-written functions (#280)" {
+test "the not-tested list renders eight strings, the three always-present items first and the declared ones after" {
     const want_text = [4][]const u8{
-        "power loss, torn writes, concurrent processes",
-        "power loss, torn writes, concurrent processes, appended tails (files under the history form)",
-        "power loss, torn writes, concurrent processes, post-only file contents (L1 checks existence only; post-only link targets are judged)",
-        "power loss, torn writes, concurrent processes, appended tails (files under the history form), post-only file contents (L1 checks existence only; post-only link targets are judged)",
+        "power loss (a missing fsync cannot fail this run), torn writes, concurrent processes",
+        "power loss (a missing fsync cannot fail this run), torn writes, concurrent processes, appended tails (files under the history form)",
+        "power loss (a missing fsync cannot fail this run), torn writes, concurrent processes, post-only file contents (L1 checks existence only; post-only link targets are judged)",
+        "power loss (a missing fsync cannot fail this run), torn writes, concurrent processes, appended tails (files under the history form), post-only file contents (L1 checks existence only; post-only link targets are judged)",
     };
     const want_json = [4][]const u8{
-        "[\"power loss\", \"torn writes\", \"concurrent processes\"]",
-        "[\"power loss\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\"]",
-        "[\"power loss\", \"torn writes\", \"concurrent processes\", \"post-only file contents (L1 checks existence only; post-only link targets are judged)\"]",
-        "[\"power loss\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\", \"post-only file contents (L1 checks existence only; post-only link targets are judged)\"]",
+        "[\"power loss (a missing fsync cannot fail this run)\", \"torn writes\", \"concurrent processes\"]",
+        "[\"power loss (a missing fsync cannot fail this run)\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\"]",
+        "[\"power loss (a missing fsync cannot fail this run)\", \"torn writes\", \"concurrent processes\", \"post-only file contents (L1 checks existence only; post-only link targets are judged)\"]",
+        "[\"power loss (a missing fsync cannot fail this run)\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\", \"post-only file contents (L1 checks existence only; post-only link targets are judged)\"]",
     };
     for (want_text, 0..) |w, i| try std.testing.expectEqualStrings(w, not_tested_text_by_variant[i]);
     for (want_json, 0..) |w, i| try std.testing.expectEqualStrings(w, not_tested_json_by_variant[i]);

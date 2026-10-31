@@ -268,7 +268,7 @@ case        /tmp/se/work/cases/000001.json
 replay      sideeye replay /tmp/se/work/cases/000001.json --shim /work/zig-out/lib/libsideeye_shim.so --oracle /usr/bin/strace
 evidence    sideeye evidence /tmp/se/work/evidence/000001.json
 processes   single process
-not tested  power loss, torn writes, concurrent processes
+not tested  power loss (a missing fsync cannot fail this run), torn writes, concurrent processes
 
 reproduce   (cd /work && unset SIDEEYE_KILL_GROUP && : > /tmp/se/work/trace-repro.bin && SIDEEYE_STATE_DIR=/tmp/se/state SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/tmp/se/work/trace-repro.bin LD_PRELOAD=/work/zig-out/lib/libsideeye_shim.so SIDEEYE_KILL_AT=5 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=wrappers SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= /tmp/se/toy-bug rotate </dev/null)
 ```
