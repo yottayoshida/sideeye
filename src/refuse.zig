@@ -281,7 +281,7 @@ const no_oracle_macos = unchecked_shim ++ "; pass --oracle-fs-usage (run sudo -v
 const no_oracle_linux = unchecked_shim ++ "; pass --oracle, or --allow-unverified to accept the weaker claim";
 pub const no_oracle_messages = [_][]const u8{ no_oracle_supervised, no_oracle_macos, no_oracle_linux };
 
-pub fn requireCompleteness(arena: std.mem.Allocator, has_oracle: bool, allow_unverified: bool) void {
+pub fn requireCompleteness(arena: std.mem.Allocator, has_oracle: bool, allow_unverified: bool, stance: report.OracleStance) void {
     if (has_oracle or allow_unverified) return;
     const base = if (boundary.observe_mode == .supervised)
         no_oracle_supervised
@@ -289,13 +289,11 @@ pub fn requireCompleteness(arena: std.mem.Allocator, has_oracle: bool, allow_unv
         no_oracle_macos
     else
         no_oracle_linux;
-    // A discovered strace is only ever NAMED here, never attached: a second witness
-    // joining on its own would silently strengthen what a flagless verdict claims —
-    // and flip every caller that measured the no-oracle behavior (#78).
-    const msg = if (findStraceForHint(arena)) |s|
-        std.fmt.allocPrint(arena, "{s} (strace is on this machine: pass --oracle {s})", .{ base, s }) catch base
-    else
-        base;
+    const msg = switch (stance) {
+        .unusable => |why| std.fmt.allocPrint(arena, "{s} ({s})", .{ base, why }) catch base,
+        .declined => std.fmt.allocPrint(arena, "{s} (--no-oracle was given)", .{base}) catch base,
+        .given, .found => base,
+    };
     unknown(.completeness_not_verified, msg, .pass_oracle);
 }
 

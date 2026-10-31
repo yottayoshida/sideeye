@@ -1242,10 +1242,12 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
         push(&argv_buf, &argc, shim);
     }
     if (kind == .preflight and kind.preflight.twice) push(&argv_buf, &argc, "--twice");
+    // `--no-oracle`, not nothing: the child would otherwise attach a strace it found on PATH,
+    // and the operator's SIDEEYE_MCP_ORACLE is this server's only way to name its witness.
     if (oracle) |o| {
         push(&argv_buf, &argc, "--oracle");
         push(&argv_buf, &argc, o);
-    }
+    } else push(&argv_buf, &argc, "--no-oracle");
     const observe_mode: ?contract.ObserveMode = switch (kind) {
         .explore => |m| m,
         .preflight => |pf| pf.observe,
@@ -1556,7 +1558,7 @@ test "the completeness refusal reaches the caller with its observation and witho
     var as = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer as.deinit();
     const a = as.allocator();
-    for (refuse.no_oracle_messages) |m| for ([_][]const u8{ "", " (strace is on this machine: pass --oracle /usr/bin/strace)" }) |tail| {
+    for (refuse.no_oracle_messages) |m| for ([_][]const u8{ "", " (--no-oracle was given)", " (strace at /usr/bin/strace is on this machine and could not trace here: strace: test_ptrace_get_syscall_info: PTRACE_TRACEME: Operation not permitted)" }) |tail| {
         var doc: std.ArrayList(u8) = .empty;
         try doc.appendSlice(a, "{\"verdict\":\"UNKNOWN\",\"unknown_reason\":\"completeness_not_verified\",\"message\":");
         try appendJsonString(a, &doc, try std.mem.concat(a, u8, &.{ m, tail }));
