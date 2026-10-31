@@ -1014,6 +1014,19 @@ jobs:
       - name: Every watched write-capable export is interposed or explained (#333)
         run: python3 spike/check-macos-coverage.py shim/src/macos.zig shim/src/darwin_libc.zig
 
+      # Not the diff alone: a shim that never loaded compares equal, so dyld's line is checked.
+      - name: The fcntl wrapper hands each command the argument the caller passed (#948)
+        run: |
+          set -eu
+          d=$(mktemp -d)
+          cc -Wall -Werror -o "$d/toy_fcntl" spike/toys/toy_fcntl.c
+          "$d/toy_fcntl" "$d/a.dat" > "$d/plain.txt"
+          DYLD_PRINT_LIBRARIES=1 DYLD_INSERT_LIBRARIES="$PWD/zig-out/lib/libsideeye_shim.dylib" \
+            "$d/toy_fcntl" "$d/a.dat" > "$d/shim.txt" 2> "$d/shim.err"
+          grep -q libsideeye_shim "$d/shim.err" || { echo "the shim was not loaded"; cat "$d/shim.err"; exit 1; }
+          diff "$d/plain.txt" "$d/shim.txt"
+          cat "$d/shim.txt"
+
       # The other direction, and a different question (#299): the step above compares
       # libsystem_kernel's exports against a curated set, which is a claim about a list;
       # this one compares the fs_usage oracle's classifier against the interpose table,

@@ -23,7 +23,7 @@ const builtin = @import("builtin");
 /// The engine refuses a trace whose version differs (`contract_version_mismatch`),
 /// because `contract.zig` is shared at *build* time — a stale shim binary paired
 /// with a fresh engine is a real combination that must not be misread.
-pub const contract_version: u32 = 19;
+pub const contract_version: u32 = 20;
 
 pub const magic = "SIDEEYE1";
 

@@ -615,6 +615,20 @@ pub fn fdatasync(fd: c_int) callconv(.c) c_int {
     return common.callFdatasync(fd);
 }
 
+const F_FULLFSYNC: c_int = 51;
+const F_BARRIERFSYNC: c_int = 85;
+
+pub fn fcntl(fd: c_int, cmd: c_int, ...) callconv(.c) c_int {
+    var ap = @cVaStart();
+    defer @cVaEnd(&ap);
+    // One whole slot whatever `cmd` is, never narrowed here: libsystem_kernel's `fcntl`
+    // reads exactly one slot and narrows it itself, so an int read here would cut every
+    // pointer command's argument (`F_GETPATH`, `F_GETLK`) in half.
+    const arg = @cVaArg(&ap, usize);
+    if (cmd == F_FULLFSYNC or cmd == F_BARRIERFSYNC) common.noteFd(.fsync, fd);
+    return common.callFcntl(fd, cmd, arg);
+}
+
 pub fn ftruncate(fd: c_int, length: i64) callconv(.c) c_int {
     common.noteFd(.truncate, fd);
     return common.callFtruncate(fd, length);
