@@ -524,8 +524,7 @@ supervised` — a statically linked 64-bit ELF refused under
 `--observe wrappers` or `syscalls` takes the step naming `--observe supervised`,
 whether the operation names it by path or by a bare name found on the engine's
 `PATH`**: that mode counts such a target from outside it, and the sentence names
-its conditions (Linux 5.19 or later, aarch64 or x86_64, a cgroup v2 the engine can
-create cgroups in). A 32-bit static ELF, a static ELF off Linux or on a Linux build for
+its conditions (Linux 5.19 or later, aarch64 or x86_64). A 32-bit static ELF, a static ELF off Linux or on a Linux build for
 another architecture, a Mach-O not linked
 against dyld, and one whose code directory carries the library-validation or
 hardened-runtime flag without naming a platform take the class wall. One whose

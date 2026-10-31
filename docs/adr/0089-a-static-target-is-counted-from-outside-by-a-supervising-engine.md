@@ -97,6 +97,29 @@ catches a signal while its call waits for the supervisor has the call restarted 
 4. **The cgroup is required.** Without the shim there is nothing inside a process to notice it left
    the process group, so the crash point's kill reaches the run through the world's cgroup; an
    engine that cannot create one refuses the mode as a setup error.
+   **Amended 2026-10-31 (#952): the cgroup is no longer required.** The reason above was already
+   false when it was written: decision 1's filter traps `setsid` and `setpgid`, decision 3 records
+   each as `detached`, and a `detached` record in a run with no cgroup is refused
+   `child_process_detected` at the recording, the second run and every world — the path the other
+   modes take when they run without one. So where the engine cannot make a cgroup (Docker's
+   defaults, a GitHub-hosted runner's steps) a supervised run is held by its process group, as an
+   uncontained run of the other modes is: the crash point's kill goes to the subject's group and,
+   added here for a run without a cgroup, to the process that made the call and to the subject
+   itself, either of which would otherwise wait forever on a call this engine no longer answers if
+   it had left the group (a contained run is unchanged: `cgroup.kill` reaches them); a process still running when the direct child exits is
+   stopped by the group kill, unnamed. What #904 leaves unrecorded does not open a gap without the
+   cgroup: an unrecorded `setsid` is one whose caller's pid names a process group, a caller that is
+   in that group keeps it alive, and one that is not got there through an earlier `setsid` or
+   `setpgid` that was recorded and so refused; a pid is not reused while it names a group or
+   session. Three things the cgroup gave are not given without it, and they are the other modes'
+   uncontained level: a process that leaves the group is refused but not stopped, so it may go on
+   writing after the refusal; a writer still running at the direct child's exit is killed without
+   being named; and an i386-compat or x32 `setsid` or `setpgid` on x86_64, which passes the filter
+   unseen (a wall in Consequences), escapes the kill unrecorded where the cgroup used to reach it.
+   No `unknown_reason`, `next_step` or report field is added, and `contract_version` does not move.
+   Measured before the change, in Docker Desktop's default container (aarch64): busybox-static
+   `sed -i` under this mode reached the same PASS as in a privileged container once the check was
+   removed, and the same write behind `busybox setsid` refused `child_process_detected`.
 5. **The two witnesses stay two** — the answer to ADR 0052 decision 3. That decision declined user
    notification because the engine would then be the supervisor and `oracle_verified` would become
    "one observer agreed with itself". Here the engine counts through the kernel's notifications and
