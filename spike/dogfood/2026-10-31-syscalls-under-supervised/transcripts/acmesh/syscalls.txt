@@ -1,0 +1,25 @@
+FAIL  3 of 5 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 2 of 4
+            after  open(/s/acme/conf/account.conf)
+            before write(/s/acme/conf/account.conf)
+path        account.conf
+observed    holding neither the old nor the new content
+cwd         /s/acme-in
+
+explored    5 worlds (crash points 4 + 1 baseline)
+expected    exit 0
+atomicity   2 path(s) judged pre-or-post
+oracle      agreed on 4 operations (3996 syscall lines examined, 23 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+metadata    none observed. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/acmesh/work-syscalls/cases/000001.json
+replay      sideeye replay /out/acmesh/work-syscalls/cases/000001.json --observe syscalls --oracle /usr/bin/strace
+evidence    sideeye evidence /out/acmesh/work-syscalls/evidence/000001.json
+processes   53 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+not tested  power loss, torn writes, concurrent processes
+
+reproduce   (cd /s/acme-in && unset SIDEEYE_KILL_GROUP && : > /out/acmesh/work-syscalls/trace-repro.bin && SIDEEYE_STATE_DIR=/s/acme/conf SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/acmesh/work-syscalls/trace-repro.bin LD_PRELOAD=/se/libsideeye_shim.so SIDEEYE_KILL_AT=2 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=syscalls SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= /s/acme/acme.sh --home /s/acme --config-home /s/acme/conf --set-default-ca --server letsencrypt </dev/null)
+sideeye: json sha256=beb3571d4c4792d22b4464ec63c5410cd8beeef993103e689e6abd74a6005fd9;

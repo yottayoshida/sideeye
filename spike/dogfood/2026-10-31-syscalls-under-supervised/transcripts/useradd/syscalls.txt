@@ -1,0 +1,171 @@
+falsify: checker(useradd) before recovery: a=FAIL b=FAIL c=ok d=FAIL
+falsify: checker(useradd) recovery exited 6: useradd: group 'staff' does not exist
+falsify: checker(useradd) after recovery: a=FAIL b=FAIL c=ok d=FAIL
+world 1: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 1: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 2: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 2: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 3: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 3: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 4: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 4: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 5: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 5: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 6: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 6: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 7: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 7: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 8: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 8: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 9: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 9: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 10: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 10: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 11: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 11: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 12: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 12: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 13: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 13: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 14: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 14: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 15: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 15: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 16: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 16: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 17: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 17: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 18: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 18: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 19: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 19: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 20: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 20: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 21: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 21: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 22: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 22: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 23: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 23: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 24: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 24: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 25: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 25: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 26: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 26: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 27: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 27: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 28: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 28: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 29: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 29: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 30: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 30: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 31: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 31: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 32: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 32: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 33: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 33: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 34: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 34: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 35: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 35: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 36: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 36: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 37: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 37: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 38: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 38: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 39: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 39: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 40: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 40: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 41: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 41: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 42: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 42: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 43: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 43: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 44: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 44: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 45: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 45: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 46: checker(useradd) before recovery: a=FAIL b=ok c=FAIL(1 of 4) d=ok
+world 46: checker(useradd) after recovery: a=FAIL b=ok c=FAIL(1 of 4) d=ok
+world 47: checker(useradd) before recovery: a=FAIL b=ok c=FAIL(1 of 4) d=ok
+world 47: checker(useradd) after recovery: a=FAIL b=ok c=FAIL(1 of 4) d=ok
+world 48: checker(useradd) before recovery: a=FAIL b=ok c=FAIL(1 of 4) d=ok
+world 48: checker(useradd) after recovery: a=FAIL b=ok c=FAIL(1 of 4) d=ok
+world 49: checker(useradd) before recovery: a=FAIL b=ok c=FAIL(1 of 4) d=ok
+world 49: checker(useradd) after recovery: a=FAIL b=ok c=FAIL(1 of 4) d=ok
+world 50: checker(useradd) before recovery: a=FAIL b=ok c=FAIL(1 of 4) d=ok
+world 50: checker(useradd) after recovery: a=FAIL b=ok c=FAIL(1 of 4) d=ok
+world 51: checker(useradd) before recovery: a=FAIL b=ok c=FAIL(1 of 4) d=ok
+world 51: checker(useradd) after recovery: a=FAIL b=ok c=FAIL(1 of 4) d=ok
+world 52: checker(useradd) before recovery: a=FAIL b=ok c=FAIL(1 of 4) d=ok
+world 52: checker(useradd) after recovery: a=FAIL b=ok c=FAIL(1 of 4) d=ok
+world 53: checker(useradd) before recovery: a=ok b=ok c=FAIL(2 of 4) d=ok
+world 53: checker(useradd) after recovery: a=ok b=ok c=FAIL(2 of 4) d=ok
+world 54: checker(useradd) before recovery: a=ok b=ok c=FAIL(2 of 4) d=ok
+world 54: checker(useradd) after recovery: a=ok b=ok c=FAIL(2 of 4) d=ok
+world 55: checker(useradd) before recovery: a=ok b=ok c=FAIL(2 of 4) d=ok
+world 55: checker(useradd) after recovery: a=ok b=ok c=FAIL(2 of 4) d=ok
+world 56: checker(useradd) before recovery: a=ok b=ok c=FAIL(2 of 4) d=ok
+world 56: checker(useradd) after recovery: a=ok b=ok c=FAIL(2 of 4) d=ok
+world 57: checker(useradd) before recovery: a=ok b=ok c=FAIL(2 of 4) d=ok
+world 57: checker(useradd) after recovery: a=ok b=ok c=FAIL(2 of 4) d=ok
+world 58: checker(useradd) before recovery: a=ok b=ok c=FAIL(2 of 4) d=ok
+world 58: checker(useradd) after recovery: a=ok b=ok c=FAIL(2 of 4) d=ok
+world 59: checker(useradd) before recovery: a=ok b=ok c=FAIL(2 of 4) d=ok
+world 59: checker(useradd) after recovery: a=ok b=ok c=FAIL(2 of 4) d=ok
+world 60: checker(useradd) before recovery: a=ok b=FAIL c=FAIL(3 of 4) d=ok
+world 60: checker(useradd) after recovery: a=ok b=FAIL c=FAIL(3 of 4) d=ok
+world 61: checker(useradd) before recovery: a=ok b=FAIL c=FAIL(3 of 4) d=ok
+world 61: checker(useradd) after recovery: a=ok b=FAIL c=FAIL(3 of 4) d=ok
+world 62: checker(useradd) before recovery: a=ok b=FAIL c=FAIL(3 of 4) d=ok
+world 62: checker(useradd) after recovery: a=ok b=FAIL c=FAIL(3 of 4) d=ok
+world 63: checker(useradd) before recovery: a=ok b=FAIL c=FAIL(3 of 4) d=ok
+world 63: checker(useradd) after recovery: a=ok b=FAIL c=FAIL(3 of 4) d=ok
+world 64: checker(useradd) before recovery: a=ok b=FAIL c=FAIL(3 of 4) d=ok
+world 64: checker(useradd) after recovery: a=ok b=FAIL c=FAIL(3 of 4) d=ok
+world 65: checker(useradd) before recovery: a=ok b=FAIL c=FAIL(3 of 4) d=ok
+world 65: checker(useradd) after recovery: a=ok b=FAIL c=FAIL(3 of 4) d=ok
+world 66: checker(useradd) before recovery: a=ok b=FAIL c=FAIL(3 of 4) d=ok
+world 66: checker(useradd) after recovery: a=ok b=FAIL c=FAIL(3 of 4) d=ok
+world 67: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 67: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 68: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 68: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 69: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 69: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+world 70: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+world 70: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+baseline: checker(useradd) before recovery: a=ok b=ok c=ok d=ok
+baseline: checker(useradd) after recovery: a=ok b=ok c=ok d=ok
+FAIL  21 of 71 explored worlds violated an invariant
+
+invariant   the checker (L2)
+earliest    crash point 46 of 70
+            after  rename(/s/useradd/root/etc/passwd+)
+            before open(/s/useradd/root/etc/shadow-)
+path        (named by the checker, not by path)
+observed    the checker exited non-zero after restart
+cwd         /  (none declared: Sideeye's own)
+apparatus   preload:libfaketime, env:FAKETIME=2026-01-01 00:00:00
+
+explored    71 worlds (crash points 70 + 1 baseline)
+expected    exit 0
+atomicity   5 path(s) judged pre-or-post; 2 file(s) judged by the history form (appended tails not judged): root/etc/passwd, root/etc/shadow
+oracle      agreed on 70 operations (1120 syscall lines examined, 330 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+metadata    20 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchown x8, fchmod x8, utimensat x4. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     falsified before the run (corrupted state -> check failed); ran in 71 world(s)
+l1          no marker configured
+case        /out/useradd/work-syscalls/cases/000001.json
+replay      sideeye replay /out/useradd/work-syscalls/cases/000001.json --observe syscalls --oracle /usr/bin/strace
+evidence    sideeye evidence /out/useradd/work-syscalls/evidence/000001.json
+processes   4 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+reproduce   (cd / && unset SIDEEYE_KILL_GROUP && : > /out/useradd/work-syscalls/trace-repro.bin && SIDEEYE_STATE_DIR=/s/useradd SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/useradd/work-syscalls/trace-repro.bin LD_PRELOAD=/se/libsideeye_shim.so SIDEEYE_KILL_AT=46 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=syscalls SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'useradd' --prefix /s/useradd/root -M -d / -G staff -p '$6$s$h' -s /bin/sh alice </dev/null)
+sideeye: json sha256=9007255c791abae317cb2a7fc166e87c16fae200e572acf60b8eb80996a3056d;

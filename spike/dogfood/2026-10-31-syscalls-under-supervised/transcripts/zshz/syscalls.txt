@@ -1,0 +1,25 @@
+FAIL  1 of 7 explored worlds violated an invariant
+
+invariant   built-in atomicity (L0)
+earliest    crash point 5 of 6
+            after  open(/s/z/data/.z)
+            before write(/s/z/data/.z)
+path        .z
+observed    present, but its recorded history is no longer a prefix of its content
+cwd         /s/z-in
+
+explored    7 worlds (crash points 6 + 1 baseline)
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post; 1 file(s) judged by the history form (appended tails not judged): .z
+oracle      agreed on 6 operations (1099 syscall lines examined, 62 in scope of the judged state), witness strace of THIS run — the kernel refuses each trapped call and the handler re-issues it, so the capture carries the refused entry beside the one that ran; each refused entry is retracted when its `--- SIGSYS ... si_code=SYS_SECCOMP ---` is read
+metadata    2 ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): fchmodat x2. Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore
+checker     none configured
+l1          no marker configured
+case        /out/zshz/work-syscalls/cases/000001.json
+replay      sideeye replay /out/zshz/work-syscalls/cases/000001.json --observe syscalls --oracle /usr/bin/strace
+evidence    sideeye evidence /out/zshz/work-syscalls/evidence/000001.json
+processes   1 other process(es) observed; none touched the state directory. A FAIL's window is attributed to the subject only; a process boundary appeared in an explored world, which runs with no oracle
+not tested  power loss, torn writes, concurrent processes, appended tails (files under the history form)
+
+reproduce   (cd /s/z-in && unset SIDEEYE_KILL_GROUP && : > /out/zshz/work-syscalls/trace-repro.bin && SIDEEYE_STATE_DIR=/s/z/data SIDEEYE_STATE_DIR_ALT= SIDEEYE_TRACE_PATH=/out/zshz/work-syscalls/trace-repro.bin LD_PRELOAD=/se/libsideeye_shim.so SIDEEYE_KILL_AT=5 SIDEEYE_SEQ_BASE= SIDEEYE_OBSERVE=syscalls SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= 'zsh' /s/z-in/op.zsh </dev/null)
+sideeye: json sha256=b44592ab66ddbfc852cf497d600a816b0c2ed6d069f655ef2553696902f8e711;
