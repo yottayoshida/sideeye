@@ -79,6 +79,7 @@ WATCHED_INTERPOSED = {
     # file, or PROT_WRITE added to a read-only one, is refused in scope — a store
     # through it has no call to count.
     "mmap", "mprotect",
+    "fcntl",
 }
 NOT_INTERPOSED = {
     # The mmap/async class: the mutation is a memory store no wrapper can see; the
@@ -93,6 +94,9 @@ NOT_INTERPOSED = {
     # public ones; none has been seen to, and ADR 0098 names them among what stays unseen.
     "__mmap": "syscall stub behind mmap: imported by name, it bypasses interposition (ADR 0098)",
     "__mprotect": "syscall stub behind mprotect: imported by name, it bypasses interposition (ADR 0098)",
+    "__fcntl": "syscall stub behind fcntl: imported by name, it bypasses interposition",
+    "__fcntl_nocancel": "libc-internal fcntl stub that libsystem_c imports: a sync made through it passes the interposed name by",
+    "fcntl$NOCANCEL": "libc-internal fcntl: libsystem_c's own syncs reach it, not the interposed name",
     "aio_write": "async class: completion, not issuance, changes the file; same 1.0+ observer question",
     # Creates entries the snapshot classifies `.other`, which every snapshot site
     # refuses (`unsupported_state_entry`) — measured: mkfifo-as-the-only-op refuses
@@ -150,7 +154,7 @@ def main() -> None:
         broken(f"dyld_info did not run: {e}")
     if out.returncode != 0:
         broken(f"dyld_info exited {out.returncode}: {out.stderr.strip()[:200]}")
-    exports = set(re.findall(r"^\s*0x[0-9A-Fa-f]+\s+_(\w+)\s*$", out.stdout, re.M))
+    exports = set(re.findall(r"^\s*0x[0-9A-Fa-f]+\s+_([\w$]+)\s*$", out.stdout, re.M))
     # Plausibility floor: libsystem_kernel exports hundreds of names. A parse that
     # sees fewer saw a format change, not a smaller library.
     if len(exports) < 300:

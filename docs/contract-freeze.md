@@ -49,6 +49,13 @@ stay the same.
    `--recovery` / `--recovery-check`, where no argv form exists; the argv form under
    `[recovery]` refuses by name. The config's `[world]`/`[define]` refusal message now
    names three sections, a prose change to an error the freeze does not cover.
+   **A second section, 2026-10-31 (#943, ADR 0143):** `[controls]`, under the same allowance
+   and for the same reason. Its keys are not a fixed set: each names a leg of the checker,
+   in letters, digits, `_` and `-`, at most 64, and its value is a command in the string form only, as
+   `[recovery]`'s are; the argv form refuses by name, and a define with `[controls]` and no
+   `check` refuses. The unknown-section message now names four sections. The checker's
+   environment gains `SIDEEYE_LEGS` (a file preflight reads under its controls, and one
+   nothing reads elsewhere), and a name under `SIDEEYE_` was already the engine's to set.
 2. **Report schema.** The fields, presence rules and `unknown_reason` closed
    set documented in `docs/report-schema.md`, held to the code by acceptance
    check 4 — `oracle_verified` included (#94). The account fields' prose may
@@ -270,7 +277,9 @@ stay the same.
    `schema` but `"sideeye/report"`, as the envelope says to, never reads the new one. The new
    document is held to this surface's rule from its first release — fields may be added, none
    removed or redefined — and says so in its own `schema_status`, `"frozen"`, since an MCP
-   tool hands it to agents from the same release.
+   tool hands it to agents from the same release. **Its first added field, 2026-10-31 (#943,
+   ADR 0143):** `controls`, present only when the define declares `[controls]`; `outcome` and
+   `exit_code` do not move with it.
 
    **Amended 2026-10-10: broken a sixth time, by owner ruling — the fourth addition to
    `unknown_reason`.** `checker_rejects_initial_state` takes the set from 35 members to 36 (#756,
@@ -292,6 +301,14 @@ stay the same.
    set, no exit code moves — a rewrite that fails is reported beside the verdict, never in its
    place — and a saved case replays as it did, so the allowance covers both with no ruling of
    their own; `contract_version` does not move.
+
+   **One plain additive field, 2026-10-31 (#956).** `crash_model` (string) is present in every
+   report and names how each crash world was made to fail; `"process-kill"` is its one value.
+   Optional in the allowance's sense: present from the release that carries it, absent from every
+   report before, and a consumer reads its absence as unknown. It
+   is an open set, documented as one, so a second crash model adds a value under this same
+   allowance rather than a break. No exit code moves and a saved case replays as it did;
+   `contract_version` does not move.
 
 3. **Exit codes.** When a run produces a verdict, that verdict's exit code is
    fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is never 0.

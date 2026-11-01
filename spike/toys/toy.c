@@ -351,7 +351,13 @@
  *   TOY_SETPGID_OUT   the subject itself joins the process group named by the value before
  *                     rotating: no fork, so the move is the only boundary.
  *   TOY_SETSID_THREAD TOY_SETSID from a second thread, whose tid is not the pid.
- *                     All four append the call's result to TOY_ESCAPE_WITNESS.
+ *   TOY_SETPGID_OUT_WORLD  TOY_SETPGID_OUT in explored worlds only (SIDEEYE_KILL_AT set): the
+ *                     subject reaches its crash point outside the group the engine made it.
+ *   TOY_SETPGID_OUT_PARENT_WORLD  in explored worlds only, the subject joins the group named
+ *                     by the value, forks the rotate and reaps it, then closes a descriptor, a
+ *                     call the engine watches: the child reaches the crash point and the subject
+ *                     is the caller of nothing when it does.
+ *                     All five append the call's result to TOY_ESCAPE_WITNESS.
  *
  * The three below walk out of the run's cgroup, into the engine's own, in an explored world
  * only: a world runs without an oracle, so the move itself is seen by nothing but the watch
@@ -632,8 +638,11 @@ static void maybe_leave_the_supported_region(void) {
         snprintf(line, sizeof line, "setpgid-noop rc=%d\n", setpgid(0, 0));
         append_witness(line);
     }
-    if (getenv("TOY_SETPGID_OUT") && *getenv("TOY_SETPGID_OUT")) {
-        int rc = setpgid(0, (pid_t)atoi(getenv("TOY_SETPGID_OUT")));
+    const char *out = getenv("TOY_SETPGID_OUT");
+    const char *in_world = getenv("SIDEEYE_KILL_AT");
+    if (!(out && *out) && in_world && *in_world) out = getenv("TOY_SETPGID_OUT_WORLD");
+    if (out && *out) {
+        int rc = setpgid(0, (pid_t)atoi(out));
         snprintf(line, sizeof line, "setpgid-out rc=%d pgrp=%d\n", rc, (int)getpgrp());
         append_witness(line);
     }
@@ -2060,6 +2069,17 @@ int main(int argc, char **argv) {
             _exit(127);
         }
         if (p > 0) { int st; waitpid(p, &st, 0); }
+    }
+    if (strcmp(argv[1], "rotate") == 0 && getenv("TOY_SETPGID_OUT_PARENT_WORLD") && *getenv("TOY_SETPGID_OUT_PARENT_WORLD")
+        && getenv("SIDEEYE_KILL_AT") && *getenv("SIDEEYE_KILL_AT")) {
+        char line[96];
+        snprintf(line, sizeof line, "setpgid-out-parent rc=%d\n", setpgid(0, (pid_t)atoi(getenv("TOY_SETPGID_OUT_PARENT_WORLD"))));
+        append_witness(line);
+        pid_t c = fork();
+        if (c == 0) _exit(cmd_rotate() == 0 ? 0 : 1);
+        int st = reap_status(c);
+        close(dup(1));
+        return st;
     }
     /* #559. The four shapes the header describes, each a whole rotate of its own. */
     if (strcmp(argv[1], "rotate") == 0 && getenv("TOY_DETACH_WRITE")) {
