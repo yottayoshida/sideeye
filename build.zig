@@ -598,6 +598,7 @@ pub fn build(b: *std.Build) void {
         // and a file whose tests are collected only through an import runs them nowhere the day
         // that import moves.
         "src/recovery.zig",
+        "src/rerun.zig",
         // Not left to main.zig's import: a file imported for its declarations does not
         // contribute its tests.
         "src/supervise.zig",

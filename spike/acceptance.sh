@@ -7067,6 +7067,17 @@ if ! grep -q '"apparatus_unchecked"' "$SD/apparatus.json" 2>/dev/null; then
     echo "FAIL the apparatus fixture carries no apparatus_unchecked field, so the schema check below cannot see the rows it documents"
     fails=$((fails + 1))
 fi
+# A report carrying `invariants` and `rerun` (#942, ADR 0150), which appear only when the define declares
+# the rerun invariant.
+mkdir -p "$SD/srr"
+TOY_STATE=$SD/srr "$SIDEEYE" explore --state "$SD/srr" \
+    --setup "$OUT/toy-rerun init" --operation "$OUT/toy-rerun rename" --invariant rerun \
+    --shim "$SHIM" --work "$SD/wrr" --oracle /usr/bin/strace \
+    --json "$SD/rerun.json" >/dev/null 2>&1
+if ! grep -q '"rerun"' "$SD/rerun.json" 2>/dev/null; then
+    echo "FAIL the rerun fixture carries no rerun field, so the schema check below cannot see the rows it documents"
+    fails=$((fails + 1))
+fi
 # A report carrying define_warnings (#706, ADR 0095): an operation spelled with shell quotes.
 mkdir -p "$SD/sdw"
 TOY_STATE=$SD/sdw "$SIDEEYE" explore --state "$SD/sdw" \
@@ -7299,7 +7310,7 @@ else
 fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
     "$ROOT/src/report.zig" \
-    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/warnings.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/marker.json" "$SD/power-loss.json" "$SD/children.json" \
+    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/rerun.json" "$SD/warnings.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/marker.json" "$SD/power-loss.json" "$SD/children.json" \
     "$SD/preflight-accepted.json" "$SD/preflight-split.json" "$SD/preflight-controls.json" /tmp/acc-lcs/leave.json; then
     echo "ok   the schema page, the generated reports and preflight documents, the contract enum and the JSON writers' shared values agree"
 else
@@ -8414,7 +8425,7 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state --operation x --scratch 'a/../b' 2
 o=$("$SIDEEYE" explore --config /dev/null --scratch x 2>&1); rc=$?
 [ "$rc" = "3" ] && echo "$o" | grep -q -- "--scratch[,)].*are mutually exclusive" && sc_ok "--scratch is exclusive with --config" || sc_fail "scratch config exclusivity" "$rc" "$o"
 o=$("$SIDEEYE" replay "$sc_case" --scratch x --shim "$SHIM" --work /tmp/acc/work-r4 2>&1); rc=$?
-[ "$rc" = "3" ] && echo "$o" | grep -q -- "--apparatus and --scratch included" && sc_ok "replay refuses --scratch: the case carries the declaration" || sc_fail "scratch replay exclusivity" "$rc" "$o"
+[ "$rc" = "3" ] && echo "$o" | grep -q -- "--apparatus, --scratch and --invariant included" && sc_ok "replay refuses --scratch: the case carries the declaration" || sc_fail "scratch replay exclusivity" "$rc" "$o"
 # (e) preflight --twice: the declared path is left out of the comparison and the report says
 # so, beside the split the same toy produces without the declaration (check 19).
 rm -rf /tmp/acc-sc && mkdir -p /tmp/acc-sc/state
@@ -9456,6 +9467,37 @@ for wb_obs in $wb_modes; do
         fails=$((fails + 1))
         ;;
     esac
+done
+# The built-in rerun invariant (#942): with no checker, a crash world fails when the operation,
+# run again there, ends as neither the run from the state before nor the run after it does.
+for rr in "lock:1:rerun: the operation, run again from this crash state" "rename:0:0 of them ended as neither the run from the state before nor the run after it" \
+    "temp:0:path(s) a crash left and the run did not touch were counted" "clock:2:baseline_run_failed"; do
+    rr_cmd=${rr%%:*}; rr_rest=${rr#*:}; rr_rc=${rr_rest%%:*}; rr_text=${rr_rest#*:}
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-rerun init" --operation "$OUT/toy-rerun $rr_cmd" --invariant rerun \
+        --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/r.json 2>&1)
+    rc=$?
+    if [ "$rc" = "$rr_rc" ] && printf '%s\n' "$o" | grep -qF "$rr_text"; then
+        echo "ok   --invariant rerun on toy-rerun $rr_cmd: exit $rc"
+    else
+        echo "FAIL --invariant rerun on toy-rerun $rr_cmd: exit $rc, wanted $rr_rc with '$rr_text'"
+        printf '%s\n' "$o" | sed 's/^/     | /' | head -8
+        fails=$((fails + 1))
+    fi
+    if [ "$rr_cmd" = lock ]; then
+        rr_case=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("case") or "")' /tmp/acc/r.json 2>/dev/null)
+        rr_v=$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d["case_version"], d["define"].get("invariant"))' "$rr_case" 2>/dev/null)
+        o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" replay "$rr_case" --shim "$SHIM" --work /tmp/acc/work2 --oracle /usr/bin/strace 2>&1)
+        rc=$?
+        if [ "$rc" = 1 ] && [ "$rr_v" = "10 ['rerun']" ]; then
+            echo "ok   the rerun FAIL's case is version 10, carries the invariant, and replays to FAIL"
+        else
+            echo "FAIL the rerun FAIL's case ($rr_v) replayed: exit $rc, wanted version 10 with the invariant, and FAIL"
+            printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+            fails=$((fails + 1))
+        fi
+    fi
 done
 for fo_cmd in sweep-lowlimit spawn-lowlimit; do
     rm -rf /tmp/acc && mkdir -p /tmp/acc/state
@@ -10585,6 +10627,7 @@ acc_dummy() {
         --apparatus)      printf 'note:x' ;;
         # A well-formed relative path: the dummy below is absolute, which --scratch refuses.
         --scratch)        printf 'x' ;;
+        --invariant)      printf 'rerun' ;;
         # One of the two mode names: the value is checked at parse time, so the dummy
         # path below would make the flag read as refused by every synopsis line.
         --observe)        printf 'wrappers' ;;

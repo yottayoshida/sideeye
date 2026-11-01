@@ -125,6 +125,8 @@ echo "building toy-fortify"
 gcc -O2 -D_FORTIFY_SOURCE=2 -Wall -o "$out/toy-fortify" "$root/spike/toys/toy_fortify.c"
 echo "building toy-aliases"
 gcc $cc_flags -o "$out/toy-aliases" "$root/spike/toys/toy_aliases.c"
+echo "building toy-rerun"
+gcc $cc_flags -o "$out/toy-rerun" "$root/spike/toys/toy_rerun.c"
 echo "building toy-worldbranch"
 gcc $cc_flags -o "$out/toy-worldbranch" "$root/spike/toys/toy_world_branch.c"
 

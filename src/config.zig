@@ -30,6 +30,7 @@ pub const Define = struct {
     cwd: ?[]const u8 = null,
     apparatus: ?[]const []const u8 = null,
     scratch: ?[]const []const u8 = null,
+    invariant: ?[]const []const u8 = null,
     recovery: ?[]const u8 = null,
     recovery_check: ?[]const u8 = null,
     controls: []const Control = &.{},
@@ -37,6 +38,18 @@ pub const Define = struct {
 };
 
 pub const Control = struct { leg: []const u8, command: []const u8 };
+
+pub const invariant_rerun = "rerun";
+
+pub fn invariantFault(name: []const u8) ?[]const u8 {
+    if (std.mem.eql(u8, name, invariant_rerun)) return null;
+    return "an invariant names a built-in one, and `rerun` is the only one: run the operation again from each crash state and require it to end as a run from the state before or after does";
+}
+
+pub fn declaresRerun(invariants: ?[]const []const u8) bool {
+    for (invariants orelse return false) |n| if (std.mem.eql(u8, n, invariant_rerun)) return true;
+    return false;
+}
 
 pub const Fault = struct {
     line: usize,
@@ -64,6 +77,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
     var cwd: ?[]const u8 = null;
     var apparatus: ?[]const []const u8 = null;
     var scratch: ?[]const []const u8 = null;
+    var invariant: ?[]const []const u8 = null;
     var recovery: ?[]const u8 = null;
     var recovery_check: ?[]const u8 = null;
     var controls: std.ArrayList(Control) = .empty;
@@ -114,7 +128,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
             try controls.append(arena, .{ .leg = try arena.dupe(u8, key), .command = try arena.dupe(u8, value) });
             continue;
         }
-        const ListKey = enum { apparatus, scratch };
+        const ListKey = enum { apparatus, scratch, invariant };
         const ListSlot = struct { p: *?[]const []const u8, key: ListKey };
         const Slot = union(enum) { cmd: *?Command, str: *?[]const u8, list: ListSlot };
         const slot: Slot = switch (section) {
@@ -140,8 +154,10 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
                 Slot{ .list = .{ .p = &apparatus, .key = .apparatus } }
             else if (std.mem.eql(u8, key, "scratch"))
                 Slot{ .list = .{ .p = &scratch, .key = .scratch } }
+            else if (std.mem.eql(u8, key, "invariant"))
+                Slot{ .list = .{ .p = &invariant, .key = .invariant } }
             else
-                return fault(line_no, "unknown key in [define]: only `setup`, `operation`, `check`, `marker`, `expected_status`, `cwd`, `apparatus` and `scratch` exist"),
+                return fault(line_no, "unknown key in [define]: only `setup`, `operation`, `check`, `marker`, `expected_status`, `cwd`, `apparatus`, `scratch` and `invariant` exist"),
             .recovery => if (is_array)
                 return fault(line_no, "[recovery] takes the string form only: one double-quoted command line, split on spaces, the way `--recovery` spells it on a replay")
             else if (std.mem.eql(u8, key, "command"))
@@ -185,12 +201,14 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
                     return fault(line_no, switch (l.key) {
                         .apparatus => "apparatus takes the array form: one `[` ... `]` line of double-quoted `kind:value` entries (env:NAME, env:NAME=VALUE, preload:LIB, pythonpath:FILE, pin:random, note:TEXT)",
                         .scratch => "scratch takes the array form: one `[` ... `]` line of double-quoted paths relative to the state directory",
+                        .invariant => "invariant takes the array form: one `[` ... `]` line of double-quoted names, and `rerun` is the one built-in invariant",
                     });
                 const inner = std.mem.trimStart(u8, rawv[1..], " \t");
                 if (inner.len > 0 and inner[0] == ']')
                     return fault(line_no, switch (l.key) {
                         .apparatus => "apparatus is empty; leave the key out to declare nothing",
                         .scratch => "scratch is empty; leave the key out to declare nothing",
+                        .invariant => "invariant is empty; leave the key out to declare nothing",
                     });
                 switch (try parseArrayValue(arena, rawv, false)) {
                     .ok => |elems| l.p.* = switch (l.key) {
@@ -206,6 +224,10 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
                             };
                             break :blk norm;
                         },
+                        .invariant => blk: {
+                            for (elems) |e| if (invariantFault(e)) |msg| return fault(line_no, msg);
+                            break :blk elems;
+                        },
                     },
                     .bad => |msg| return fault(line_no, msg),
                 }
@@ -214,7 +236,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
     }
     if (state == null) return fault(0, "[world] state is required");
     if (operation == null) return fault(0, "[define] operation is required");
-    return .{ .ok = .{ .state = state.?, .setup = setup, .operation = operation.?, .check = check, .marker = marker, .expected_status = expected_status, .cwd = cwd, .apparatus = apparatus, .scratch = scratch, .recovery = recovery, .recovery_check = recovery_check, .controls = controls.items, .cut_at_comment = cut_at_comment.items } };
+    return .{ .ok = .{ .state = state.?, .setup = setup, .operation = operation.?, .check = check, .marker = marker, .expected_status = expected_status, .cwd = cwd, .apparatus = apparatus, .scratch = scratch, .invariant = invariant, .recovery = recovery, .recovery_check = recovery_check, .controls = controls.items, .cut_at_comment = cut_at_comment.items } };
 }
 
 pub const ScratchParse = union(enum) { ok: []const u8, bad: []const u8 };
@@ -266,7 +288,7 @@ test "scratch parses as an array of relative paths, normalises trailing slashes,
     const dbl = try parse(a, base ++ "scratch = [\"a//b\"]\n");
     try t.expect(std.mem.indexOf(u8, dbl.fault.what, "empty segment") != null);
     const unknown = try parse(a, base ++ "scratchy = [\"x\"]\n");
-    try t.expect(std.mem.indexOf(u8, unknown.fault.what, "`scratch` exist") != null);
+    try t.expect(std.mem.indexOf(u8, unknown.fault.what, "`scratch` and `invariant` exist") != null);
     try t.expectEqualStrings("a/b", parseScratchEntry("a/b//").ok);
     try t.expect(scratchFault("./a") != null);
     try t.expect(scratchFault("a") == null);
@@ -1206,4 +1228,16 @@ test "a $ a shell would expand, quoted or mid-word, gets no argv; a $ it would n
     const re = (try shellWarning(a, .toml, "check", "grep -E \"^x$\" f", false)).?;
     try t.expect(std.mem.indexOf(u8, re, "check = [\"grep\", \"-E\", \"^x$\", \"f\"]") != null);
     try t.expect((try shellWarning(a, .toml, "check", "sed s/$/x/ f", false)) == null);
+}
+
+test "invariant takes the array form, names rerun alone, and stays optional" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const base = "[world]\nstate = \"/s\"\n[define]\noperation = \"tool\"\n";
+    try t.expect(!declaresRerun((try parse(a, base)).ok.invariant));
+    try t.expect(declaresRerun((try parse(a, base ++ "invariant = [\"rerun\"]\n")).ok.invariant));
+    try t.expect(std.mem.indexOf(u8, (try parse(a, base ++ "invariant = [\"repeat\"]\n")).fault.what, "`rerun` is the only one") != null);
+    try t.expect(std.mem.indexOf(u8, (try parse(a, base ++ "invariant = \"rerun\"\n")).fault.what, "invariant takes the array form") != null);
+    try t.expect(std.mem.indexOf(u8, (try parse(a, base ++ "invariant = []\n")).fault.what, "invariant is empty") != null);
 }
