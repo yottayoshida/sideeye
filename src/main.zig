@@ -29,6 +29,7 @@ const cli = @import("cli.zig");
 const case = @import("case.zig");
 const evidence = @import("evidence.zig");
 const recovery = @import("recovery.zig");
+const controls_run = @import("controls_run.zig");
 const containment = @import("containment.zig");
 const supervise = @import("supervise.zig");
 const sanitizeForReport = defang.sanitizeForReport;
@@ -626,12 +627,21 @@ fn phaseDefine(run: *Run) void {
                 args.scratch = d.scratch orelse &.{};
                 args.recovery = if (d.recovery) |r| resolveCommandAgainst(arena, dir, r) else null;
                 args.recovery_check = if (d.recovery_check) |r| resolveCommandAgainst(arena, dir, r) else null;
+                if (d.controls.len > 0) {
+                    if (d.check == null)
+                        setupError(.define_invalid, "[controls] needs [define] check: a control is read by the legs the checker reports on the state it broke");
+                    const resolved = arena.alloc(config.Control, d.controls.len) catch setupError(.environment, "out of memory");
+                    for (d.controls, resolved) |c, *r| {
+                        r.* = .{ .leg = c.leg, .command = resolveCommandAgainst(arena, dir, c.command) };
+                        refuse.refuseSpacedDir(arena, dir, "controls", "control", c.command, r.command);
+                    }
+                    args.controls = resolved;
+                }
                 // Not turned into argv as the define's commands are: a recovery is carried and printed on
                 // the replay line as one string, which splits on spaces wherever it is read again.
-                if (std.mem.indexOfScalar(u8, dir, ' ') != null) for ([_]?[]const u8{ d.recovery, d.recovery_check }, [_]?[]const u8{ args.recovery, args.recovery_check }) |written, resolved| {
-                    if (written != null and resolved.?.ptr != written.?.ptr)
-                        setupErrorFmt(arena, .define_invalid, "[recovery] takes the string form only, split on spaces, and {s}, the directory its relative command resolves against, holds a space: move the sideeye.toml to a path without one, or name the recovery by an absolute path without one", .{textShown(arena, dir)});
-                };
+                for ([_]?[]const u8{ d.recovery, d.recovery_check }, [_]?[]const u8{ args.recovery, args.recovery_check }) |written, resolved| {
+                    if (written) |w| refuse.refuseSpacedDir(arena, dir, "recovery", "recovery", w, resolved.?);
+                }
                 if (d.expected_status) |es| {
                     args.expect_status = config.parseExpectStatus(es) orelse setupError(.define_invalid, "expected_status must be an integer in 0..255 (one double-quoted string, as every value here)");
                     // Same mirror as the flag: refusals between here and the
@@ -965,6 +975,8 @@ fn phaseDefine(run: *Run) void {
                 "move the state inside the range, or widen the range";
             setupError(.define_invalid, std.fmt.allocPrint(arena, "the state directory resolves outside the allowed range, or is the range itself: state {s}, --state-under {s}. To go on, {s} to a directory holding this state (SIDEEYE_MCP_STATE_ROOT on the MCP server, --state-under on the command line)", .{ textShown(arena, state_abs), textShown(arena, su_abs), way }) catch "the state directory resolves outside the allowed range (--state-under)");
         }
+        // Not the spelling given: a relative one on a printed line refuses when pasted elsewhere.
+        args.state_under = arena_state.allocator().dupe(u8, su_abs) catch setupError(.environment, "out of memory");
     }
 
     // Not left to `engine.restore`'s own `assertSafeRoot`: that runs once `--setup` has run
@@ -1228,16 +1240,11 @@ fn phaseRecording(run: *Run) void {
         "";
     if (args.observe == .supervised) {
         if (builtin.os.tag == .macos)
-            setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe supervised is Linux only, on aarch64 and x86_64: it counts through a seccomp user-notification filter, which macOS has no equivalent of. On Linux 5.19 or later, with a cgroup v2 the engine can create cgroups in, the same command takes it; " ++ contract.macos_table, .{mode_from});
+            setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe supervised is Linux only, on aarch64 and x86_64: it counts through a seccomp user-notification filter, which macOS has no equivalent of. On Linux 5.19 or later the same command takes it; " ++ contract.macos_table, .{mode_from});
         if (!supervise.available)
             setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe supervised is Linux only, on aarch64 and x86_64: it counts through a seccomp user-notification filter, which this platform has no equivalent of", .{mode_from});
         if (!supervise.kernelSupports())
             setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe supervised needs a kernel that accepts a seccomp user-notification listener with SECCOMP_FILTER_FLAG_WAIT_KILLABLE_RECV (Linux 5.19 or later), and this one does not", .{mode_from});
-        // Required, not preferred (#217, review): the crash point's kill reaches a process that
-        // left the process group only through a cgroup, and without the shim there is nothing
-        // inside the process to notice that it left.
-        if (containment.spawn(false) == null)
-            setupErrorFmt(arena_state.allocator(), .environment, "{s}--observe supervised needs a cgroup v2 the engine can create cgroups in (delegated to its user, or root): the crash point's kill reaches every process of the run through it, however one left the process group", .{mode_from});
     }
     if (args.observe == .syscalls) {
         if (builtin.os.tag != .linux)
@@ -2008,11 +2015,17 @@ fn phasePreflight(run: *Run) void {
             observeAgain(gpa, arena, initial, final, state_abs, state_alt, .{ .root = state_abs, .alt = state_alt, .scratch = args.scratch, .initial = &initial }, op_argv, shim, args.oracle, args.work, expect_status, rec_started_ms, args.cwd, args.observe, children_admitted)
         else
             null;
+        // Not after two runs that split: they leave no one state for a control to break.
+        const ran_controls: ?report.PreflightControls = if (args.controls.len > 0 and (if (repeat) |r| r.count.equal() else true)) blk: {
+            const control_argvs = arena.alloc([]const []const u8, args.controls.len) catch setupError(.environment, "out of memory");
+            for (args.controls, control_argvs) |c, *v| v.* = commandArgv(arena, .{ .str = c.command }) catch setupError(.environment, "out of memory");
+            break :blk controls_run.run(gpa, arena, args, state_abs, final, refuse.checkerArgv(commandArgv(arena, args.check.?)), control_argvs);
+        } else null;
         preflightReport(arena, n, hint, .{ .work = if (args.work_named) args.work else null, .state_under = args.state_under, .shim = args.shim, .oracle = args.oracle, .stance = args.oracle_stance }, .{
             .check = args.check != null,
             .marker = args.marker != null,
             .recovery = args.recovery != null,
-        }, repeat);
+        }, repeat, ran_controls);
     }
 
     if (n == 0) {
@@ -2061,13 +2074,9 @@ fn phaseChecker(run: *Run) void {
         var fal_buf: [contract.max_path]u8 = undefined;
         const fal_out = std.fmt.bufPrint(&fal_buf, "{s}/falsify-check.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
         removeFile(fal_out);
-        const probe = posix.runChildCapture(gpa, cargv, &.{
-            .{ "TOY_STATE", state_abs },
-            .{ contract.env.state_dir, state_abs },
-            // reason it exists is on the field. `exclusive` for the same reason as the
-            // recording run's, and free for the same reason — `removeFile` is one line
-            // up.
-        }, .{ .path = fal_out, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check");
+        // `exclusive` for the same reason as the recording run's, and free for the same reason —
+        // `removeFile` is one line up.
+        const probe = posix.runChildCapture(gpa, cargv, &controls_run.checkerEnv(state_abs, controls_run.unreadLegs(args.work)), .{ .path = fal_out, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check");
 
         // Re-emitted before the verdict on the probe: unknown() exits the process,
         // and the gate's output is evidence in the refusal case too.
@@ -2101,10 +2110,7 @@ fn phaseChecker(run: *Run) void {
         var start_buf: [contract.max_path]u8 = undefined;
         const start_out = std.fmt.bufPrint(&start_buf, "{s}/start-check.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
         removeFile(start_out);
-        const start = posix.runChildCapture(gpa, cargv, &.{
-            .{ "TOY_STATE", state_abs },
-            .{ contract.env.state_dir, state_abs },
-        }, .{ .path = start_out, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check on the starting state");
+        const start = posix.runChildCapture(gpa, cargv, &controls_run.checkerEnv(state_abs, controls_run.unreadLegs(args.work)), .{ .path = start_out, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check on the starting state");
         switch (start) {
             .exited => |code| if (code != 0) {
                 // Marked `start: ` for the reason the falsification's lines are marked: this is
@@ -2426,13 +2432,10 @@ fn phaseExploration(run: *Run) void {
             // `exclusive` needs the removal, and without `O_EXCL` a FIFO planted at the name
             // would block the parent's open — the pair `Capture.exclusive` asks for by name.
             files.removeFile(co);
-            const ct = posix.runChildCapture(gpa, cargv, &.{
-                .{ "TOY_STATE", state_abs },
-                .{ contract.env.state_dir, state_abs },
-                // stderr too, for the reason #483 gives on the setup capture: a checker
-                // reports through either stream, and capturing stdout alone would leave the
-                // file empty for the ordinary failure.
-            }, .{ .path = co, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| switch (e) {
+            // stderr too, for the reason #483 gives on the setup capture: a checker reports
+            // through either stream, and capturing stdout alone would leave the file empty for
+            // the ordinary failure.
+            const ct = posix.runChildCapture(gpa, cargv, &controls_run.checkerEnv(state_abs, controls_run.unreadLegs(args.work)), .{ .path = co, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| switch (e) {
                 // The one failure that is about the capture and not about the child: since
                 // #469 the parent opens the file, so this arrives before any child exists.
                 // The checker still has to run — the verdict rests on its exit status — so
@@ -2444,10 +2447,7 @@ fn phaseExploration(run: *Run) void {
                     // and "the capture is empty" are different answers, and only the first
                     // is true here.
                     capture_opened = false;
-                    break :blk_cap posix.runChild(gpa, cargv, &.{
-                        .{ "TOY_STATE", state_abs },
-                        .{ contract.env.state_dir, state_abs },
-                    }, args.cwd) catch |e2| spawnFailure(e2, .exploring, "could not run --check");
+                    break :blk_cap posix.runChild(gpa, cargv, &controls_run.checkerEnv(state_abs, controls_run.unreadLegs(args.work)), args.cwd) catch |e2| spawnFailure(e2, .exploring, "could not run --check");
                 },
                 else => spawnFailure(e, .exploring, "could not run --check"),
             };
@@ -2728,15 +2728,8 @@ fn phaseReport(run: *Run) void {
             break :blk case.writeCase(arena, args.work, case_args, f.k, n, trace, if (f.violation) |v| @tagName(v) else "checker");
         } else null;
         const case_shown = saved_case orelse (if (mode == .replay) case_arg.? else "(not saved)");
-        // #606: a replay line that dropped the recovery would replay a different run, so the
-        // flags ride on it — each value single-quoted for /bin/sh, the whole escape, since a
-        // recovery command's spaces separate its arguments. A local rather than a helper:
-        const recovery_flags: []const u8 = if (args.recovery) |rc|
-            (std.fmt.allocPrint(arena, " --recovery {s} --recovery-check {s}", .{ shellSingleQuote(arena, rc), shellSingleQuote(arena, args.recovery_check.?) }) catch "")
-        else
-            "";
         const replay_cmd = if (saved_case) |sc|
-            report.replayLine(arena, sc, args.observe, args.shim, if (args.oracle_stance == .found) null else args.oracle, recovery_flags)
+            report.replayLine(arena, sc, args)
         else if (mode == .replay)
             "(this run is a replay; the case reproduced)"
         else
@@ -2792,7 +2785,7 @@ fn phaseReport(run: *Run) void {
             const creplay = if (same_world)
                 replay_cmd
             else if (csaved) |cc|
-                report.replayLine(arena, cc, args.observe, args.shim, if (args.oracle_stance == .found) null else args.oracle, recovery_flags)
+                report.replayLine(arena, cc, args)
             else
                 "-";
             const cevidence: []const u8 = if (same_world)
@@ -2920,7 +2913,7 @@ fn phaseReport(run: *Run) void {
     // replay, whose one world answers a different question.
     if (only_k == null) refuse.requireSomethingCouldFail(arena, run.rec.judgeable, run.check_argv != null, args.marker != null, run.firsts.marker_worlds);
 
-    say("{s}  {d}/{d} explored worlds satisfied the built-in atomicity invariant{s}{s}\n", .{ report.paint("PASS"), report.explored, report.explored, report.singleCrashPointClause(n), report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged) });
+    say("{s}  {d}/{d} explored worlds satisfied the built-in atomicity invariant under a process kill{s}{s}\n", .{ report.paint("PASS"), report.explored, report.explored, report.singleCrashPointClause(n), report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged) });
     report.sayAccount(arena, .pass, n);
     if (args.json) |jp| report.writeJsonReport(arena, jp, "PASS", @backingInt(contract.ExitCode.pass), null, null, null, null, null, null);
     report.emitSeal();
@@ -3214,7 +3207,7 @@ const PreflightHint = union(enum) {
 
 const PreflightDeclared = struct { check: bool, marker: bool, recovery: bool };
 
-fn preflightReport(arena: std.mem.Allocator, n: u32, hint: PreflightHint, next_run: report.NextRun, declared: PreflightDeclared, repeat: ?Repeat) noreturn {
+fn preflightReport(arena: std.mem.Allocator, n: u32, hint: PreflightHint, next_run: report.NextRun, declared: PreflightDeclared, repeat: ?Repeat, ran_controls: ?report.PreflightControls) noreturn {
     const oracle_path = next_run.oracle;
     // Where the comparison and the rewrite of `--twice` happen, named the way the define named
     // it: byte for byte the old wording from the flags, which acceptance pins.
@@ -3231,7 +3224,7 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, hint: PreflightHint, next_r
             for (r.diffs, r.shapes, out) |d, sh, *o| o.* = .{ .path = d.rel, .how = @tagName(d.how), .shape = sh };
             break :rb .{ .gap_ms = r.gap_ms, .total = r.count.total, .diffs = out };
         } else null;
-        break :blk .{ .runs_differ = split, .operations = n, .marker_declared = declared.marker, .repeat = rep };
+        break :blk .{ .runs_differ = split, .operations = n, .marker_declared = declared.marker, .repeat = rep, .controls = ran_controls };
     } else null;
     if (split) {
         say("PREFLIGHT  not accepted — the two observed runs left different state\n\n", .{});
@@ -3286,7 +3279,26 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, hint: PreflightHint, next_r
     // what was not refused rather than that it will start — had something in the state to
     // corrupt, and was not run. A recovery is never started
     if (declared.marker) say("marker       observed in the recording run's output; preflight explores no crash world\n", .{});
-    if (declared.check) say(
+    if (ran_controls) |c| {
+        say("checker      run on the state the recording left, and after each [controls] command broke it\n", .{});
+        say("controls     baseline {s} ({s}{s}{s})\n", .{ c.baseline.word, c.baseline.checker_exit, if (c.baseline.red.len > 0) "; red " else "", std.mem.join(arena, ", ", c.baseline.red) catch "" });
+        for (c.controls) |k| {
+            const ctl_exit = k.control_exit orelse {
+                say("             {s}: {s} (not run)\n", .{ k.leg, k.word });
+                continue;
+            };
+            const red = std.mem.join(arena, ", ", k.red) catch "";
+            say("             {s}: {s} (control {s}{s}{s}{s}{s})\n", .{
+                k.leg,
+                k.word,
+                ctl_exit,
+                if (k.checker_exit != null) ", checker " else "",
+                k.checker_exit orelse "",
+                if (red.len > 0) "; red " else "",
+                red,
+            });
+        }
+    } else if (declared.check) say(
         \\checker      declared, not run: not refused as a command that cannot be
         \\             started, and the state holds something to corrupt
         \\
@@ -3557,7 +3569,13 @@ test "fs_usage sentinels: the shape, two names per run that differ from each oth
 }
 
 test "every flag preflight takes is on its next line, or is preflight's own" {
-    const preflight_only = [_][]const u8{ "--json", "--twice" };
+    const preflight_only = comptime blk: {
+        var own: []const []const u8 = &.{};
+        for (std.enums.values(std.meta.FieldEnum(cli.Args))) |field| {
+            if (cli.carried(field).next == .left_off) own = own ++ .{cli.flagOf(field)};
+        }
+        break :blk own;
+    };
     var as = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer as.deinit();
     const a = as.allocator();
@@ -3570,16 +3588,18 @@ test "every flag preflight takes is on its next line, or is preflight's own" {
     });
     var buf: [64][]const u8 = undefined;
     const flags = cli.synopsisFlags("preflight", &buf);
-    try std.testing.expect(flags.len > preflight_only.len);
+    var carried_count: usize = 0;
     for (flags) |flag| {
         var own = false;
         for (preflight_only) |o| own = own or std.mem.eql(u8, o, flag);
         const on_line = std.mem.indexOf(u8, line, try std.fmt.allocPrint(a, " {s} ", .{flag})) != null;
+        if (on_line) carried_count += 1;
         std.testing.expect(own != on_line) catch |e| {
             std.debug.print("preflight's flag {s}: on the next line {}, preflight's own {}\n", .{ flag, on_line, own });
             return e;
         };
     }
+    try std.testing.expect(carried_count > 0);
 }
 
 fn shellSingleQuote(arena: std.mem.Allocator, s: []const u8) []const u8 {

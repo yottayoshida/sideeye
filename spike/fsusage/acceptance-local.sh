@@ -764,5 +764,40 @@ else
 fi
 
 echo "=================================================================="
-echo "all fourteen checks passed"
+echo "Check 15 — a tool that syncs with F_FULLFSYNC is judged, and the sync is a crash point (#948)"
+echo "  predicate: Rust's sync_all and Go's Sync, the FAQ's toys: the clean build PASSes with the"
+echo "             oracle verified over 4 crash points (3 before #948: the sync was not one), the"
+echo "             planted-bug build FAILs"
+command -v cargo > /dev/null || fail "check 15: no cargo on this machine; nothing was measured"
+command -v go > /dev/null || fail "check 15: no go on this machine; nothing was measured"
+FAQ="$HERE/spike/faq/2026-10-10/box"
+cp -R "$FAQ/rs" "$WORK/rs15" && cp -R "$FAQ/go" "$WORK/go15" || fail "check 15: could not copy the FAQ's toys"
+( cd "$WORK/rs15" && cargo build -q && cp target/debug/keytool "$WORK/rs-clean" \
+    && cargo build -q --features buggy && cp target/debug/keytool "$WORK/rs-bug" ) || fail "check 15: the Rust toy did not build"
+( cd "$WORK/go15" && go build -o "$WORK/go-clean" . \
+    && sed 's/const buggy = false/const buggy = true/' clean.go > clean.go.new && mv clean.go.new clean.go \
+    && go build -o "$WORK/go-bug" . ) || fail "check 15: the Go toy did not build"
+for lang in rs go; do
+    st15="/tmp/keytool-$lang-state"
+    mkdir -p "$st15"
+    for kind in clean bug; do
+        n="c15-$lang-$kind"
+        ensure_no_fs_usage
+        "$SIDEEYE" explore --state "$st15" --setup "$WORK/$lang-$kind init" --operation "$WORK/$lang-$kind rotate" \
+            --shim "$SHIM" --work "$WORK/w-$n" --json "$WORK/$n.json" --oracle-fs-usage > "$WORK/$n.txt" 2>&1
+        rc=$?
+        echo "  $lang $kind: exit=$rc verdict=$(field "$n" verdict) crash_points=$(field "$n" crash_points) oracle_verified=$(field "$n" oracle_verified) reason=$(field "$n" unknown_reason)"
+        if [ "$kind" = clean ]; then
+            [ "$rc" = 0 ] || { sed -n '1,12p' "$WORK/$n.txt"; fail "check 15: the clean $lang build did not PASS"; }
+            [ "$(field "$n" oracle_verified)" = True ] || fail "check 15: the clean $lang build's PASS is not oracle-verified"
+            [ "$(field "$n" crash_points)" = 4 ] || fail "check 15: the clean $lang build did not explore its sync as a crash point"
+        else
+            [ "$rc" = 1 ] || { sed -n '1,12p' "$WORK/$n.txt"; fail "check 15: the planted-bug $lang build did not FAIL"; }
+        fi
+    done
+done
+echo "  PASS"
+
+echo "=================================================================="
+echo "all fifteen checks passed"
 echo "artifacts: $WORK"
