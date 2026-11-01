@@ -183,15 +183,35 @@ pub fn build(b: *std.Build) void {
     demo_toy.root_module.linkSystemLibrary("pthread", .{});
     const demo_toy_bin = demo_toy.getEmittedBin();
 
+    // Embedded rather than installed beside the shim: no package, tap or container has a second
+    // library to carry.
+    const pin_bin: std.Build.LazyPath = if (target.result.os.tag == .linux) blk: {
+        const pin = b.addLibrary(.{
+            .name = "sideeye_pin",
+            .linkage = .dynamic,
+            // Not the self-hosted backend: it refuses the vfork wrapper's guaranteed tail call.
+            .use_llvm = true,
+            .root_module = b.createModule(.{
+                .root_source_file = b.path("pin/src/pin.zig"),
+                .target = target,
+                .optimize = optimize,
+                .link_libc = true,
+                .strip = true,
+            }),
+        });
+        break :blk pin.getEmittedBin();
+    } else b.addWriteFiles().add("no-pin-library", "");
+
     // Every build of src/main.zig takes both demo imports from here: main.zig reads them at
     // module scope, so a variant one import short fails to compile — and only that variant,
     // the way `engineOptions` above explains. These are the same files the acceptance suite
     // drives, so the demo cannot drift from what CI proves, and both sources are listed in
     // build.zig.zon's `.paths`, or a fetched package would fail to build.
     const embedDemo = struct {
-        fn add(bld: *std.Build, m: *std.Build.Module, toy: std.Build.LazyPath) void {
+        fn add(bld: *std.Build, m: *std.Build.Module, toy: std.Build.LazyPath, pin: std.Build.LazyPath) void {
             m.addAnonymousImport("demo_toy", .{ .root_source_file = toy });
             m.addAnonymousImport("check_sh", .{ .root_source_file = bld.path("spike/check.sh") });
+            m.addAnonymousImport("pin_lib", .{ .root_source_file = pin });
         }
     }.add;
 
@@ -210,7 +230,7 @@ pub fn build(b: *std.Build) void {
             },
         }),
     });
-    embedDemo(b, exe.root_module, demo_toy_bin);
+    embedDemo(b, exe.root_module, demo_toy_bin, pin_bin);
     assertBuiltWith(exe.root_module, "engine_build_options", shipped_engine_opts, "the shipped engine");
     b.installArtifact(exe);
 
@@ -229,7 +249,7 @@ pub fn build(b: *std.Build) void {
                 },
             }),
         });
-        embedDemo(b, exe_probe.root_module, demo_toy_bin);
+        embedDemo(b, exe_probe.root_module, demo_toy_bin, pin_bin);
         b.installArtifact(exe_probe);
     }
 
@@ -279,7 +299,7 @@ pub fn build(b: *std.Build) void {
                 },
             }),
         });
-        embedDemo(b, exe_cap.root_module, demo_toy_bin);
+        embedDemo(b, exe_cap.root_module, demo_toy_bin, pin_bin);
         b.installArtifact(exe_cap);
 
         const world_opts = engineOptions(b, 0, 64, 0, false, false, 0, false);
@@ -296,7 +316,7 @@ pub fn build(b: *std.Build) void {
                 },
             }),
         });
-        embedDemo(b, exe_cap_world.root_module, demo_toy_bin);
+        embedDemo(b, exe_cap_world.root_module, demo_toy_bin, pin_bin);
         b.installArtifact(exe_cap_world);
     }
 
@@ -319,7 +339,7 @@ pub fn build(b: *std.Build) void {
                 },
             }),
         });
-        embedDemo(b, exe_budget.root_module, demo_toy_bin);
+        embedDemo(b, exe_budget.root_module, demo_toy_bin, pin_bin);
         b.installArtifact(exe_budget);
     }
 
@@ -338,7 +358,7 @@ pub fn build(b: *std.Build) void {
                 },
             }),
         });
-        embedDemo(b, exe_delay.root_module, demo_toy_bin);
+        embedDemo(b, exe_delay.root_module, demo_toy_bin, pin_bin);
         b.installArtifact(exe_delay);
     }
 
@@ -357,7 +377,7 @@ pub fn build(b: *std.Build) void {
                 },
             }),
         });
-        embedDemo(b, exe_handover.root_module, demo_toy_bin);
+        embedDemo(b, exe_handover.root_module, demo_toy_bin, pin_bin);
         b.installArtifact(exe_handover);
     }
 
@@ -376,7 +396,7 @@ pub fn build(b: *std.Build) void {
                 },
             }),
         });
-        embedDemo(b, exe_nocg.root_module, demo_toy_bin);
+        embedDemo(b, exe_nocg.root_module, demo_toy_bin, pin_bin);
         b.installArtifact(exe_nocg);
     }
 
@@ -637,8 +657,20 @@ pub fn build(b: *std.Build) void {
         t.root_module.addAnonymousImport("build_zon", .{ .root_source_file = b.path("build.zig.zon") });
         // The demo's embedded assets: main.zig references them at module scope, so the
         // test build of main.zig must resolve them too.
-        embedDemo(b, t.root_module, demo_toy_bin);
+        embedDemo(b, t.root_module, demo_toy_bin, pin_bin);
         test_step.dependOn(&b.addRunArtifact(t).step);
+    }
+    if (target.result.os.tag == .linux) {
+        const pin_tests = b.addTest(.{
+            .use_llvm = true,
+            .root_module = b.createModule(.{
+                .root_source_file = b.path("pin/src/pin.zig"),
+                .target = target,
+                .optimize = optimize,
+                .link_libc = true,
+            }),
+        });
+        test_step.dependOn(&b.addRunArtifact(pin_tests).step);
     }
 
     // The parsers as a module, not files of the root: as files their tests would run here a second time.

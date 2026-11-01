@@ -6663,6 +6663,139 @@ else
 fi
 
 echo ""
+echo "=========== check 2pin: pin:random pins libc's randomness per process (#951, ADR 0146) ==========="
+# The toy under TOY_ENTROPY draws 48 bytes in itself and in children started nine ways, and
+# writes every draw into the state. Pinned, two runs of one invocation leave equal state and
+# every process drew its own bytes; unpinned, the two runs differ. A FAIL's case carries the
+# seed, and its replay draws the same bytes again — and other bytes with another seed. Where
+# the engine cannot make cgroups the pin is refused by name; the refusals that need no cgroup
+# and the absence of the pin from a run that did not ask are held on every host.
+pin_preflight() {   # pin_preflight <mode> <apparatus flags...> — sets o, rc
+    pm=$1; shift
+    rm -rf /tmp/acc-pin && mkdir -p /tmp/acc-pin/state /tmp/acc-pin/ent
+    o=$(TOY_ENTROPY=/tmp/acc-pin/ent TOY_STATE=/tmp/acc-pin/state "$SIDEEYE" preflight --twice --state /tmp/acc-pin/state \
+        --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --shim "$SHIM" --observe "$pm" \
+        --oracle /usr/bin/strace --work /tmp/acc-pin/work "$@" 2>&1)
+    rc=$?
+}
+if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
+    for pm in wrappers syscalls; do
+        pin_preflight "$pm" --apparatus pin:random
+        lines=$(wc -l < /tmp/acc-pin/state/entropy.txt 2>/dev/null)
+        uniq=$(cut -d' ' -f2 /tmp/acc-pin/state/entropy.txt 2>/dev/null | sort -u | wc -l)
+        if [ "$rc" = "0" ] && echo "$o" | grep -q "repeatability .*left equal state under --state" \
+            && [ "$lines" = "11" ] && [ "$uniq" = "11" ]; then
+            echo "ok   pin:random ($pm): two runs leave equal state, and the 11 processes drew 11 different streams"
+        else
+            echo "FAIL pin:random ($pm): exit $rc, $lines line(s), $uniq distinct"
+            echo "$o" | sed 's/^/     | /' | head -6
+            fails=$((fails + 1))
+        fi
+        pin_preflight "$pm"
+        if [ "$rc" = "1" ] && echo "$o" | grep -q "entropy.txt"; then
+            echo "ok   without pin:random ($pm) the same toy's two runs differ, at entropy.txt"
+        else
+            echo "FAIL pin:random control ($pm): exit $rc (wanted 1 naming entropy.txt)"
+            echo "$o" | sed 's/^/     | /' | head -6
+            fails=$((fails + 1))
+        fi
+    done
+    # An exec'd image under --observe syscalls inherits the seccomp filter before the shim has
+    # installed its handler; a library constructor that draws there must not meet a trapped call.
+    rm -rf /tmp/acc-pin && mkdir -p /tmp/acc-pin/state /tmp/acc-pin/ent
+    o=$(TOY_ENTROPY_CTOR="$OUT/toy-ctorrand" TOY_ENTROPY=/tmp/acc-pin/ent TOY_STATE=/tmp/acc-pin/state "$SIDEEYE" preflight \
+        --state /tmp/acc-pin/state --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --shim "$SHIM" \
+        --observe syscalls --oracle /usr/bin/strace --apparatus pin:random --work /tmp/acc-pin/work 2>&1)
+    rc=$?
+    if [ "$rc" = "0" ] && [ -s /tmp/acc-pin/ent/ctor ]; then
+        echo "ok   under --observe syscalls, an exec'd image whose library draws in its constructor runs pinned"
+    else
+        echo "FAIL pin:random with a constructor that draws, --observe syscalls: exit $rc"
+        echo "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    fi
+    # Two children of a static relay the pin is not loaded in are handed the one seed the relay
+    # was given. The first claims it; the second draws the real source, so the two never draw
+    # the same bytes — a shared stream would be a pinned run that agrees with itself.
+    rm -rf /tmp/acc-pin && mkdir -p /tmp/acc-pin/state /tmp/acc-pin/ent
+    TOY_ENTROPY_RELAY="$OUT/toy-static" TOY_ENTROPY=/tmp/acc-pin/ent TOY_STATE=/tmp/acc-pin/state "$SIDEEYE" preflight \
+        --state /tmp/acc-pin/state --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --shim "$SHIM" \
+        --oracle /usr/bin/strace --apparatus pin:random --work /tmp/acc-pin/work >/dev/null 2>&1
+    rl1=$(cat /tmp/acc-pin/ent/relay1 2>/dev/null); rl2=$(cat /tmp/acc-pin/ent/relay2 2>/dev/null)
+    if [ -n "$rl1" ] && [ -n "$rl2" ] && [ "$rl1" != "$rl2" ]; then
+        echo "ok   two children of a relay the pin is not loaded in never draw one stream: the second finds the seed claimed"
+    else
+        echo "FAIL pin:random through a static relay: relay1 [$rl1] relay2 [$rl2]"
+        fails=$((fails + 1))
+    fi
+    rm -rf /tmp/acc-pin && mkdir -p /tmp/acc-pin/state /tmp/acc-pin/ent
+    # Run from inside the state, as KeePassXC's define runs: strace prints AT_FDCWD with the working
+    # directory, and nothing the pin does may then read as a call on the state.
+    o=$(TOY_ENTROPY=/tmp/acc-pin/ent TOY_STATE=/tmp/acc-pin/state "$SIDEEYE" explore --state /tmp/acc-pin/state \
+        --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" --shim "$SHIM" --oracle /usr/bin/strace \
+        --apparatus pin:random --cwd /tmp/acc-pin/state --work /tmp/acc-pin/work 2>&1)
+    rc=$?
+    pcase=/tmp/acc-pin/work/cases/000001.json
+    pin_replay() {   # pin_replay <case> <copy-to>
+        rm -rf /tmp/acc-pin/ent && mkdir -p /tmp/acc-pin/ent
+        TOY_ENTROPY=/tmp/acc-pin/ent "$SIDEEYE" replay "$1" --fresh-state --shim "$SHIM" --oracle /usr/bin/strace \
+            --work /tmp/acc-pin/wr >/dev/null 2>&1
+        prc=$?
+        rm -rf "$2" && cp -r /tmp/acc-pin/ent "$2"
+    }
+    python3 -c 'import json,sys; c=json.load(open(sys.argv[1])); c["pin_seed"]="f"*64; json.dump(c, open(sys.argv[2],"w"))' "$pcase" /tmp/acc-pin/other.json 2>/dev/null
+    pin_replay "$pcase" /tmp/acc-pin/r1; r1=$prc
+    pin_replay "$pcase" /tmp/acc-pin/r2; r2=$prc
+    pin_replay /tmp/acc-pin/other.json /tmp/acc-pin/r3; r3=$prc
+    if [ "$rc" = "1" ] && grep -q '"case_version": 8' "$pcase" && grep -q '"pin_seed": "[0-9a-f]\{64\}"' "$pcase" \
+        && [ "$r1" = "1" ] && [ "$r2" = "1" ] && diff -r /tmp/acc-pin/r1 /tmp/acc-pin/r2 >/dev/null \
+        && ! diff -r /tmp/acc-pin/r1 /tmp/acc-pin/r3 >/dev/null; then
+        echo "ok   a pinned FAIL saves a v8 case with its seed; its replay draws the same bytes twice, and other bytes under another seed"
+    else
+        echo "FAIL pinned case and replay: explore $rc, replays $r1 $r2 $r3"
+        echo "$o" | sed 's/^/     | /' | head -6
+        fails=$((fails + 1))
+    fi
+else
+    rm -rf /tmp/acc-pin && mkdir -p /tmp/acc-pin/state
+    o=$("$SIDEEYE" explore --state /tmp/acc-pin/state --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+        --shim "$SHIM" --apparatus pin:random --work /tmp/acc-pin/work 2>&1)
+    rc=$?
+    if [ "$rc" = "3" ] && echo "$o" | grep -q "apparatus pin:random: needs a cgroup v2"; then
+        echo "ok   pin:random where the engine cannot make cgroups is a SETUP ERROR naming the cgroup"
+    else
+        echo "FAIL pin:random without cgroups: exit $rc"
+        echo "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    fi
+fi
+rm -rf /tmp/acc-pin && mkdir -p /tmp/acc-pin/state "/tmp/acc-pin/w d"
+o=$("$SIDEEYE" explore --state /tmp/acc-pin/state --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --apparatus pin:random --observe supervised --work /tmp/acc-pin/work 2>&1)
+rc=$?
+o2=$("$SIDEEYE" explore --state /tmp/acc-pin/state --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --apparatus pin:random --work "/tmp/acc-pin/w d" 2>&1)
+rc2=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "observe supervised loads nothing into the operation" \
+    && [ "$rc2" = "3" ] && echo "$o2" | grep -q "holds a space, a tab or a colon"; then
+    echo "ok   pin:random under --observe supervised, or with a work directory LD_PRELOAD would split, is refused by name"
+else
+    echo "FAIL pin:random refusals: supervised exit $rc, spaced work exit $rc2"
+    echo "$o" | sed 's/^/     | /' | head -3
+    echo "$o2" | sed 's/^/     | /' | head -3
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-pin && mkdir -p /tmp/acc-pin/state
+SIDEEYE_PIN_SEED=$(printf '%064d' 7) "$SIDEEYE" explore --state /tmp/acc-pin/state --operation /usr/bin/env \
+    --shim "$SHIM" --allow-unverified --work /tmp/acc-pin/work >/dev/null 2>&1
+if grep -qx 'SIDEEYE_PIN_SEED=' /tmp/acc-pin/work/stdout-record.txt 2>/dev/null \
+    && ! grep -q 'libsideeye_pin' /tmp/acc-pin/work/stdout-record.txt; then
+    echo "ok   a run that did not ask hands its operation an empty seed and no pin library, whatever the shell held"
+else
+    echo "FAIL a run that did not ask for the pin: $(grep -E 'SIDEEYE_PIN_SEED|LD_PRELOAD' /tmp/acc-pin/work/stdout-record.txt 2>/dev/null | tr '\n' ' ')"
+    fails=$((fails + 1))
+fi
+
 echo "=========== check 2ab: the argv form spells what split-on-space cannot (#95, ADR 0019) ==========="
 # The toy's rotate-msg demands ONE argv element "note with spaces". The negative
 # control runs first and from the same define material: the string form splits that
@@ -8229,7 +8362,7 @@ fi
 # The grammar is one function for the flag and the key: a bad entry is refused before any
 # command runs, with the parser's words.
 ap_leg "an entry of an unknown kind is refused by the flag with the parser's words" 3 \
-    "kind is one of env, preload, pythonpath, note" -- --apparatus seccomp:enosys.json
+    "kind is one of env, preload, pythonpath, pin, note" -- --apparatus seccomp:enosys.json
 # An env: entry is checked before the setup runs: a setup run without the variable
 # writes wherever the tool falls back to — on a developer's machine, the real data. This
 # setup leaves a marker outside the state and generates a sitecustomize.py, then inits the
