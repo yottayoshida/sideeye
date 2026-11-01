@@ -1,0 +1,6 @@
+state=/s/zip
+marker=no
+cwd=/s/zip-in
+op=ziptool /s/zip/a.zip delete 0
+strace -- version 6.13
+aarch64

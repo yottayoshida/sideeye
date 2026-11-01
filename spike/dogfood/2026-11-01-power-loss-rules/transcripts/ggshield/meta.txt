@@ -1,0 +1,6 @@
+state=/s/gg
+marker=no
+cwd=/s/gg-in
+op=ggshield config set default_token_lifetime 30
+strace -- version 6.13
+aarch64

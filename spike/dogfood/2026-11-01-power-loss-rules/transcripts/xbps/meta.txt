@@ -1,0 +1,6 @@
+state=/s/xbps/root/var/db/xbps
+marker=no
+cwd=/s/xbps-in
+op=xbps-pkgdb -r /s/xbps/root -m hold hello
+strace -- version 6.13
+aarch64

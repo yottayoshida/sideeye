@@ -1,0 +1,3 @@
+./juliaup
+./juliaup/.juliaup-lock
+./juliaup/juliaup.json

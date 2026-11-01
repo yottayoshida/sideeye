@@ -1,0 +1,9 @@
+a.md:1:1: [MD022] Expected 1 blank line below heading [fixed]
+a.md:3:1: [MD032] List should be preceded by blank line [fixed]
+a.md:3:2: [MD030] Spaces after list markers (Expected: 1; Actual: 2) [fixed]
+a.md:4:2: [MD030] Spaces after list markers (Expected: 1; Actual: 2) [fixed]
+a.md:6:1: [MD012] Multiple consecutive blank lines between content [fixed]
+a.md:7:1: [MD012] Multiple consecutive blank lines between content [fixed]
+a.md:8:4: [MD009] 3 trailing spaces found [fixed]
+
+Fixed: 7/7 issues in 1 file (4ms)

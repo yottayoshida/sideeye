@@ -1,0 +1,14 @@
+54    openat(AT_FDCWD</s/jump-dirs>, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>
+54    openat(AT_FDCWD</s/jump-dirs>, "/s/jump/.jump3886953939", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 3</s/jump/.jump3886953939>
+54    openat(AT_FDCWD</s/jump-dirs>, "/s/jump/scores.json", O_RDWR|O_CLOEXEC) = 6</s/jump/scores.json>
+54    copy_file_range(6</s/jump/scores.json>, NULL, 3</s/jump/.jump3886953939>, NULL, 2147479552, 0) = 279
+54    copy_file_range(6</s/jump/scores.json>, NULL, 3</s/jump/.jump3886953939>, NULL, 2147479552, 0) = 0
+54    renameat(AT_FDCWD</s/jump-dirs>, "/s/jump/.jump3886953939", AT_FDCWD</s/jump-dirs>, "/s/jump/scores.json") = 0
+54    write(1</out/jump/op.log>, "Cleaning /s/jump-dirs/old-projec"..., 34) = 34
+54    openat(AT_FDCWD</s/jump-dirs>, "/s/jump/.jump1075492828", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 3</s/jump/.jump1075492828>
+54    openat(AT_FDCWD</s/jump-dirs>, "/s/jump/scores.json", O_RDWR|O_CLOEXEC) = 6</s/jump/scores.json>
+54    copy_file_range(6</s/jump/scores.json>, NULL, 3</s/jump/.jump1075492828>, NULL, 2147479552, 0) = 279
+54    copy_file_range(6</s/jump/scores.json>, NULL, 3</s/jump/.jump1075492828>, NULL, 2147479552, 0) = 0
+54    ftruncate(3</s/jump/.jump1075492828>, 0) = 0
+54    write(3</s/jump/.jump1075492828>, "[{\"Path\":\"/s/jump-dirs/photos\",\""..., 183) = 183
+54    renameat(AT_FDCWD</s/jump-dirs>, "/s/jump/.jump1075492828", AT_FDCWD</s/jump-dirs>, "/s/jump/scores.json") = 0

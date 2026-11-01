@@ -1,0 +1,6 @@
+state=/s/sq
+marker=no
+cwd=/
+op=sqlite3 /s/sq/ledger.db 'BEGIN; UPDATE accounts SET bal = bal - 30 WHERE id = '"'"'A'"'"'; UPDATE accounts SET bal = bal + 30 WHERE id = '"'"'B'"'"'; INSERT INTO journal(src, dst, amt) VALUES('"'"'A'"'"', '"'"'B'"'"', 30); COMMIT;'
+strace -- version 6.13
+aarch64

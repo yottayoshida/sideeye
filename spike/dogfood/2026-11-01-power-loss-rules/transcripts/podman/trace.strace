@@ -1,0 +1,64 @@
+17    openat(AT_FDCWD</s/podman>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libsubid.so.5", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libsubid.so.5.0.0>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libsqlite3.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libsqlite3.so.0.8.6>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libgpgme.so.11", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libgpgme.so.11.33.2>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libseccomp.so.2", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libseccomp.so.2.6.0>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libaudit.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libaudit.so.1.0.0>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libselinux.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libselinux.so.1>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libsemanage.so.2", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libsemanage.so.2>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libcrypt.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libcrypt.so.1.1.0>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libacl.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libacl.so.1.1.2302>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libattr.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libattr.so.1.1.2502>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libpam.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpam.so.0.85.1>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libpam_misc.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpam_misc.so.0.82.1>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libbsd.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libbsd.so.0.12.2>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libm.so.6>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libassuan.so.9", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libassuan.so.9.0.2>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libgpg-error.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libgpg-error.so.0.38.0>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libcap-ng.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libcap-ng.so.0.0.0>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.14.0>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libsepol.so.2", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libsepol.so.2>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libbz2.so.1.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libbz2.so.1.0.4>
+17    openat(AT_FDCWD</s/podman>, "/lib/aarch64-linux-gnu/libmd.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libmd.so.0.1.0>
+17    openat(AT_FDCWD</s/podman>, "/proc/sys/kernel/cap_last_cap", O_RDONLY) = 3</proc/sys/kernel/cap_last_cap>
+17    openat(AT_FDCWD</s/podman>, "/proc/filesystems", O_RDONLY|O_CLOEXEC) = 3</proc/filesystems>
+17    openat(AT_FDCWD</s/podman>, "/proc/self/fd", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</proc/17/fd>
+17    openat(AT_FDCWD</s/podman>, "/proc/self/cmdline", O_RDONLY) = 4</proc/17/cmdline>
+17    openat(AT_FDCWD</s/podman>, "/proc/self/maps", O_RDONLY|O_CLOEXEC) = 3</proc/17/maps>
+17    openat(AT_FDCWD</s/podman>, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>
+17    openat(AT_FDCWD</s/podman>, "/etc/localtime", O_RDONLY) = 3</usr/share/zoneinfo/Etc/UTC>
+17    openat(AT_FDCWD</s/podman>, "/usr/bin/podman", O_RDONLY|O_CLOEXEC) = 3</usr/bin/podman>
+17    openat(AT_FDCWD</s/podman>, "/proc/sys/kernel/cap_last_cap", O_RDONLY|O_CLOEXEC) = 3</proc/sys/kernel/cap_last_cap>
+17    openat(AT_FDCWD</s/podman>, "/proc/self/auxv", O_RDONLY|O_CLOEXEC) = 3</proc/17/auxv>
+17    openat(AT_FDCWD</s/podman>, "/proc/stat", O_RDONLY|O_CLOEXEC) = 3</proc/stat>
+17    openat(AT_FDCWD</s/podman>, "/proc/stat", O_RDONLY|O_CLOEXEC) = 3</proc/stat>
+17    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=17, si_uid=0} ---
+19    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=17, si_uid=0} ---
+17    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=17, si_uid=0} ---
+19    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=17, si_uid=0} ---
+26    openat(AT_FDCWD</s/podman>, "/sys/devices/system/cpu/online", O_RDONLY|O_CLOEXEC) = 3</sys/devices/system/cpu/online>
+17    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=17, si_uid=0} ---
+24    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=17, si_uid=0} ---
+25    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=17, si_uid=0} ---
+17    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=17, si_uid=0} ---
+17    openat(AT_FDCWD</s/podman>, "/proc/cpuinfo", O_RDONLY|O_CLOEXEC) = 3</proc/cpuinfo>
+17    openat(AT_FDCWD</s/podman>, "/proc/self/status", O_RDONLY|O_CLOEXEC) = 3</proc/17/status>
+17    openat(AT_FDCWD</s/podman>, "/proc/self/uid_map", O_RDONLY|O_CLOEXEC) = 3</proc/17/uid_map>
+17    openat(AT_FDCWD</s/podman>, "/proc/1/comm", O_RDONLY|O_CLOEXEC) = 3</proc/1/comm>
+17    openat(AT_FDCWD</s/podman>, "/proc/filesystems", O_RDONLY|O_CLOEXEC) = 3</proc/filesystems>
+17    openat(AT_FDCWD</s/podman>, "/usr/share/containers/containers.conf", O_RDONLY|O_CLOEXEC) = 3</usr/share/containers/containers.conf>
+17    openat(AT_FDCWD</s/podman>, "/etc/containers/containers.conf", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+17    openat(AT_FDCWD</s/podman>, "/s/podman/config/containers/containers.conf", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+17    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=17, si_uid=0} ---
+24    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=17, si_uid=0} ---
+17    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=17, si_uid=0} ---
+17    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=17, si_uid=0} ---
+17    openat(AT_FDCWD</s/podman>, "/s/podman/config/containers/podman-connections.json", O_RDONLY|O_CLOEXEC) = 3</s/podman/config/containers/podman-connections.json>
+17    openat(AT_FDCWD</s/podman>, "/s/podman/config/containers/podman-connections.json.lock", O_RDWR|O_CREAT|O_CLOEXEC, 0644) = 3</s/podman/config/containers/podman-connections.json.lock>
+17    openat(AT_FDCWD</s/podman>, "/s/podman/config/containers/podman-connections.json.lock", O_RDWR|O_CREAT|O_CLOEXEC, 0644) = 3</s/podman/config/containers/podman-connections.json.lock>
+17    openat(AT_FDCWD</s/podman>, "/s/podman/config/containers/podman-connections.json", O_RDONLY|O_CLOEXEC) = 6</s/podman/config/containers/podman-connections.json>
+17    openat(AT_FDCWD</s/podman>, "/s/podman/config/containers/.tmp-podman-connections.json1336027306", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 6</s/podman/config/containers/.tmp-podman-connections.json1336027306>
+17    write(6</s/podman/config/containers/.tmp-podman-connections.json1336027306>, "{\"Connection\":{\"Default\":\"work\","..., 282) = 282
+17    fdatasync(6</s/podman/config/containers/.tmp-podman-connections.json1336027306>) = 0
+17    renameat(AT_FDCWD</s/podman>, "/s/podman/config/containers/.tmp-podman-connections.json1336027306", AT_FDCWD</s/podman>, "/s/podman/config/containers/podman-connections.json") = 0

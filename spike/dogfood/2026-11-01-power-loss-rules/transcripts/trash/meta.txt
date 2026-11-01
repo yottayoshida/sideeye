@@ -1,0 +1,6 @@
+state=/s/td
+marker=no
+cwd=/s/td/docs
+op=trash report.txt
+strace -- version 6.13
+aarch64

@@ -1,0 +1,25 @@
+23    openat(AT_FDCWD</s/xbps-in>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+23    openat(AT_FDCWD</s/xbps-in>, "/opt/xbps/lib/libxbps.so.6", O_RDONLY|O_CLOEXEC) = 3</opt/xbps/lib/libxbps.so.6.0.0>
+23    openat(AT_FDCWD</s/xbps-in>, "/lib/aarch64-linux-gnu/libssl.so.3", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libssl.so.3>
+23    openat(AT_FDCWD</s/xbps-in>, "/lib/aarch64-linux-gnu/libarchive.so.13", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libarchive.so.13.7.4>
+23    openat(AT_FDCWD</s/xbps-in>, "/lib/aarch64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libz.so.1.3.1>
+23    openat(AT_FDCWD</s/xbps-in>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+23    openat(AT_FDCWD</s/xbps-in>, "/lib/aarch64-linux-gnu/libcrypto.so.3", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libcrypto.so.3>
+23    openat(AT_FDCWD</s/xbps-in>, "/lib/aarch64-linux-gnu/libnettle.so.8", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libnettle.so.8.10>
+23    openat(AT_FDCWD</s/xbps-in>, "/lib/aarch64-linux-gnu/libacl.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libacl.so.1.1.2302>
+23    openat(AT_FDCWD</s/xbps-in>, "/lib/aarch64-linux-gnu/liblzma.so.5", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/liblzma.so.5.8.1>
+23    openat(AT_FDCWD</s/xbps-in>, "/lib/aarch64-linux-gnu/libzstd.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libzstd.so.1.5.7>
+23    openat(AT_FDCWD</s/xbps-in>, "/lib/aarch64-linux-gnu/liblz4.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/liblz4.so.1.10.0>
+23    openat(AT_FDCWD</s/xbps-in>, "/lib/aarch64-linux-gnu/libbz2.so.1.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libbz2.so.1.0.4>
+23    openat(AT_FDCWD</s/xbps-in>, "/lib/aarch64-linux-gnu/libxml2.so.2", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libxml2.so.2.9.14>
+23    openat(AT_FDCWD</s/xbps-in>, "/lib/aarch64-linux-gnu/libxxhash.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libxxhash.so.0.8.3>
+23    openat(AT_FDCWD</s/xbps-in>, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libm.so.6>
+23    openat(AT_FDCWD</s/xbps-in>, "/s/xbps/root/opt/xbps/etc/xbps.d", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+23    openat(AT_FDCWD</s/xbps-in>, "/s/xbps/root/opt/xbps/share/xbps.d", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+23    openat(AT_FDCWD</s/xbps-in>, "/s/xbps/root/var/db/xbps/lock", O_WRONLY|O_CREAT|O_CLOEXEC, 0664) = 3</s/xbps/root/var/db/xbps/lock>
+23    openat(AT_FDCWD</s/xbps-in>, "/s/xbps/root/var/db/xbps/pkgdb-0.38.plist", O_RDONLY) = 4</s/xbps/root/var/db/xbps/pkgdb-0.38.plist>
+23    openat(AT_FDCWD</s/xbps-in>, "/s/xbps/root/var/db/xbps/pkgdb-0.38.plist", O_RDONLY) = 4</s/xbps/root/var/db/xbps/pkgdb-0.38.plist>
+23    openat(AT_FDCWD</s/xbps-in>, "/s/xbps/root/var/db/xbps/.plistS5ISrK", O_RDWR|O_CREAT|O_EXCL, 0600) = 4</s/xbps/root/var/db/xbps/.plistS5ISrK>
+23    write(4</s/xbps/root/var/db/xbps/.plistS5ISrK>, "<?xml version=\"1.0\" encoding=\"UT"..., 905) = 905
+23    fdatasync(4</s/xbps/root/var/db/xbps/.plistS5ISrK>) = 0
+23    renameat(AT_FDCWD</s/xbps-in>, "/s/xbps/root/var/db/xbps/.plistS5ISrK", AT_FDCWD</s/xbps-in>, "/s/xbps/root/var/db/xbps/pkgdb-0.38.plist") = 0

@@ -1,0 +1,6 @@
+state=/s/transmission
+marker=no
+cwd=/s/transmission-in
+op=transmission-edit -a https://tracker2.example.invalid/announce /s/transmission/linux-isos.torrent
+strace -- version 6.13
+aarch64

@@ -1,0 +1,6 @@
+state=/s/rdb
+marker=no
+cwd=/s
+op=ldb --db=/s/rdb --try_load_options put k1 changed
+strace -- version 6.13
+aarch64

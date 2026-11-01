@@ -1,0 +1,6 @@
+state=/s/samtools
+marker=no
+cwd=/s/samtools-in
+op=samtools reheader -i /s/samtools-in/new.hdr /s/samtools/a.cram
+strace -- version 6.13
+aarch64

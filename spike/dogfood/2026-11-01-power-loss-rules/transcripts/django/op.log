@@ -1,0 +1,4 @@
+Operations to perform:
+  Target specific migration: 0002_change, from app
+Running migrations:
+  Applying app.0002_change... OK

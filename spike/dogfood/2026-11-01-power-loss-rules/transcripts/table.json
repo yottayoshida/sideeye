@@ -1,0 +1,685 @@
+[
+ {
+  "renames_into_state": 2,
+  "b_named": [
+   "alacritty.toml",
+   "colors.toml"
+  ],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 2,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "alacritty",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 2,
+  "b_named": [],
+  "b_unjudged": 1,
+  "a_rule": "all lost",
+  "a_names_old": 3,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "alternatives",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 2,
+  "b_named": [
+   "translations/fr/LC_MESSAGES/messages.po",
+   "translations/ja/LC_MESSAGES/messages.po"
+  ],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 2,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "babel",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 0,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "neither old nor new",
+  "a_names_old": 2,
+  "a_names_new": 2,
+  "a_names_neither": 1,
+  "seen_not_applied": [],
+  "name": "beets-check",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 0,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 13,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "broot",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 0,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 2,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "bzip3",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [
+   "remotes.json"
+  ],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "conan",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [
+   "key.json"
+  ],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "control-nosync",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "all kept",
+  "a_names_old": 0,
+  "a_names_new": 1,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "control-sync",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "control-syncfile",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 0,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "neither old nor new",
+  "a_names_old": 0,
+  "a_names_new": 1,
+  "a_names_neither": 1,
+  "seen_not_applied": [],
+  "name": "django",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [
+   ".env"
+  ],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "dotenv",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 0,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 3,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "ggshield",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 4,
+  "b_named": [
+   "gitconfig"
+  ],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "gitlfs",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 0,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "neither old nor new",
+  "a_names_old": 1,
+  "a_names_new": 2,
+  "a_names_neither": 1,
+  "seen_not_applied": [],
+  "name": "joplin-check3",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "juju",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "juliaup",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 2,
+  "b_named": [
+   "scores.json"
+  ],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "jump",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "keepassxc-fat",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 2,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 3,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "kitten",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "kvantum-fat",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 2,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "neither old nor new",
+  "a_names_old": 3,
+  "a_names_new": 2,
+  "a_names_neither": 3,
+  "seen_not_applied": [
+   "sync_file_range"
+  ],
+  "name": "ldb",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [
+   "validators/validator_definitions.yml"
+  ],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "lighthouse",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [
+   "config.json"
+  ],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "nerdctl",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [
+   "config"
+  ],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "opam",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [
+   "config.json"
+  ],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "oras",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 2,
+  "b_named": [
+   "a.txt",
+   "b.txt"
+  ],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 2,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "perl",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [
+   "states/8d/8db9d897b7741e3303eb4e5a3ea373c0795ab0e1d175e7573376cb82c3be1dd0"
+  ],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "plakar",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 2,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "podman",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [
+   "config.json"
+  ],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "regctl",
+  "marker": "no",
+  "exit": "1"
+ },
+ {
+  "renames_into_state": 0,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "all kept",
+  "a_names_old": 0,
+  "a_names_new": 1,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "rootrm-check",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [
+   "a.md"
+  ],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "rumdl-nocache",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 0,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "all kept",
+  "a_names_old": 0,
+  "a_names_new": 1,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "samtools",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "skopeo",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 0,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "neither old nor new",
+  "a_names_old": 0,
+  "a_names_new": 1,
+  "a_names_neither": 1,
+  "seen_not_applied": [],
+  "name": "sqlite-txn",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 0,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "neither old nor new",
+  "a_names_old": 0,
+  "a_names_new": 1,
+  "a_names_neither": 1,
+  "seen_not_applied": [],
+  "name": "sqlite-utils",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "stylelint",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 0,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 2,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "todo.txt",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 2,
+  "b_named": [
+   "a.txt",
+   "b.txt"
+  ],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 2,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "toybox",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [
+   "linux-isos.torrent"
+  ],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "transmission",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [],
+  "b_unjudged": 1,
+  "a_rule": "all lost",
+  "a_names_old": 6,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "trash",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 0,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "neither old nor new",
+  "a_names_old": 0,
+  "a_names_new": 3,
+  "a_names_neither": 1,
+  "seen_not_applied": [],
+  "name": "vdirsyncer",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 2,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "xbps",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [
+   "deploy.yaml"
+  ],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "yq",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 0,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "yt-dlp",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [
+   "a.zip"
+  ],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "ziptool",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 1,
+  "b_named": [
+   "zlua.db"
+  ],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 1,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "zlua",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 0,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 2,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "zstd",
+  "marker": "no",
+  "exit": "0"
+ },
+ {
+  "renames_into_state": 0,
+  "b_named": [],
+  "b_unjudged": 0,
+  "a_rule": "all lost",
+  "a_names_old": 2,
+  "a_names_new": 0,
+  "a_names_neither": 0,
+  "seen_not_applied": [],
+  "name": "zstd-check",
+  "marker": "no",
+  "exit": "0"
+ }
+]

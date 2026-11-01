@@ -1,0 +1,6 @@
+state=/s/sk
+marker=no
+cwd=/s/sk-in
+op=skopeo logout --authfile /s/sk/auth.json registry.example.com
+strace -- version 6.13
+aarch64

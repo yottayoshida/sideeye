@@ -1,0 +1,6 @@
+./tmp
+./database.sqlite
+./log.txt
+./resources
+./settings.json
+./cache

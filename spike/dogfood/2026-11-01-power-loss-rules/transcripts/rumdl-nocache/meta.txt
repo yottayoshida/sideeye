@@ -1,0 +1,6 @@
+state=/s/rumdl/proj
+marker=no
+cwd=/s/rumdl/proj
+op=rumdl fmt --no-cache a.md
+strace -- version 6.13
+aarch64

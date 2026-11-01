@@ -1,0 +1,47 @@
+# line at 6011b492	tool	record	box	define	apparatus (the directory mounted at /ap)
+115	rumdl 0.2.77 `fmt --no-cache`	spike/dogfood/2026-10-02-gate-cleared-twelve	sideeye-sv170	rumdl-nocache	spike/dogfood/2026-10-02-gate-cleared-twelve/apparatus
+132	samtools 1.24 `reheader -i`	spike/dogfood/2026-10-03-user-data	sideeye-ud1003	samtools	spike/dogfood/2026-10-03-user-data/apparatus
+133	Babel 2.18.0 `pybabel update`	spike/dogfood/2026-10-03-user-data	sideeye-ud1003	babel	spike/dogfood/2026-10-03-user-data/apparatus
+134	transmission-edit 4.1.0~beta2 (Debian) `-a`	spike/dogfood/2026-10-03-user-data	sideeye-ud1003	transmission	spike/dogfood/2026-10-03-user-data/apparatus
+135	perl 5.40.1 (Debian) `-i -pe`	spike/dogfood/2026-10-03-user-data	sideeye-ud1003	perl	spike/dogfood/2026-10-03-user-data/apparatus
+136	z.lua 1.8.26 `--add`	spike/dogfood/2026-10-03-user-data	sideeye-ud1003	zlua	spike/dogfood/2026-10-03-user-data/apparatus
+137	podman 5.4.2 (Debian) `system connection defa	spike/dogfood/2026-10-03-user-data	sideeye-ud1003	podman	spike/dogfood/2026-10-03-user-data/apparatus
+138	bzip3 1.5.4 `-e --rm`	spike/dogfood/2026-10-03-user-data	sideeye-ud1003	bzip3	spike/dogfood/2026-10-03-user-data/apparatus
+161	juju 3.6.29 `remove-credential --client`	spike/dogfood/2026-10-05-user-data-2	sideeye-ud1005	juju	spike/dogfood/2026-10-05-user-data-2/apparatus
+162	toybox 0.8.14 `sed -i`	spike/dogfood/2026-10-05-user-data-2	sideeye-ud1005	toybox	spike/dogfood/2026-10-05-user-data-2/apparatus
+163	yt-dlp 2026.8.19 `--download-archive`	spike/dogfood/2026-10-05-user-data-2	sideeye-ud1005	yt-dlp	spike/dogfood/2026-10-05-user-data-2/apparatus
+164	conan 2.33.0 `remote disable`	spike/dogfood/2026-10-05-user-data-2	sideeye-ud1005	conan	spike/dogfood/2026-10-05-user-data-2/apparatus
+165	skopeo 1.18.0 (Debian) `logout`	spike/dogfood/2026-10-05-user-data-2	sideeye-ud1005	skopeo	spike/dogfood/2026-10-05-user-data-2/apparatus
+166	regctl 0.11.6 `registry set`	spike/dogfood/2026-10-05-user-data-2	sideeye-ud1005	regctl	spike/dogfood/2026-10-05-user-data-2/apparatus
+167	nerdctl 2.4.1 `logout`	spike/dogfood/2026-10-05-user-data-2	sideeye-ud1005	nerdctl	spike/dogfood/2026-10-05-user-data-2/apparatus
+168	oras 1.3.4 `logout`	spike/dogfood/2026-10-05-user-data-2	sideeye-ud1005	oras	spike/dogfood/2026-10-05-user-data-2/apparatus
+174	opam 2.6.0 `option`	spike/dogfood/2026-10-05-user-data-2	sideeye-ud1005	opam	spike/dogfood/2026-10-05-user-data-2/apparatus
+175	juliaup 1.22.7 `config`	spike/dogfood/2026-10-05-user-data-2	sideeye-ud1005	juliaup	spike/dogfood/2026-10-05-user-data-2/apparatus
+176	python-dotenv 1.2.4 `set`	spike/dogfood/2026-10-05-user-data-2	sideeye-ud1005	dotenv	spike/dogfood/2026-10-05-user-data-2/apparatus
+177	ggshield 1.55.0 `config set`	spike/dogfood/2026-10-05-user-data-2	sideeye-ud1005	ggshield	spike/dogfood/2026-10-05-user-data-2/apparatus
+193	broot 1.61.0 `--install`	spike/dogfood/2026-10-07-user-data-3	sideeye-ud1007	broot	spike/dogfood/2026-10-07-user-data-3/apparatus
+194	ziptool (libzip 1.11.4) `delete`	spike/dogfood/2026-10-07-user-data-3	sideeye-ud1007	ziptool	spike/dogfood/2026-10-07-user-data-3/apparatus
+195	xbps 0.60.7 `xbps-pkgdb -m hold`	spike/dogfood/2026-10-07-user-data-3	sideeye-ud1007	xbps	spike/dogfood/2026-10-07-user-data-3/apparatus
+196	kitty 0.49.2 `kitten themes`	spike/dogfood/2026-10-07-user-data-3	sideeye-ud1007	kitten	spike/dogfood/2026-10-07-user-data-3/apparatus
+197	alacritty 0.17.0 `migrate`	spike/dogfood/2026-10-07-user-data-3	sideeye-ud1007	alacritty	spike/dogfood/2026-10-07-user-data-3/apparatus
+247	sindresorhus's trash-cli 7.2.0 `trash`	spike/dogfood/2026-10-09-followups-3	sideeye-fu3-1009	trash	spike/dogfood/2026-10-09-followups-3/apparatus
+254	stylelint 17.15.0 `--fix`	spike/dogfood/2026-10-09-followups-3	sideeye-fu3-1009	stylelint	spike/dogfood/2026-10-09-followups-3/apparatus
+257	joplin 3.7.1 `mknote`	spike/dogfood/2026-10-09-followups-3	sideeye-fu3-1009	joplin-check3	spike/dogfood/2026-10-09-followups-3/apparatus
+260	plakar 1.1.7 `rm -apply`	spike/dogfood/2026-10-09-followups-3	sideeye-fu3-1009	plakar	spike/dogfood/2026-10-09-followups-3/apparatus
+261	zstd 1.5.7 `--rm`	spike/dogfood/2026-10-09-followups-3	sideeye-fu3-1009	zstd-check	spike/dogfood/2026-10-09-followups-3/apparatus
+262	beets 2.1.0 `import`	spike/dogfood/2026-10-09-followups-3	sideeye-fu3-1009	beets-check	spike/dogfood/2026-10-09-followups-3/apparatus
+264	Lighthouse 8.2.3	spike/dogfood/2026-10-09-followups-3	sideeye-fu3-1009	lighthouse	spike/dogfood/2026-10-09-followups-3/apparatus
+265	jump 0.69.0	spike/dogfood/2026-10-09-followups-3	sideeye-fu3-1009	jump	spike/dogfood/2026-10-09-followups-3/apparatus
+267	git-lfs 3.8.0 `install`	spike/dogfood/2026-10-09-followups-3	sideeye-fu3-1009	gitlfs	spike/dogfood/2026-10-09-followups-3/apparatus
+269	Kvantum 1.1.4 `kvantummanager --set`	spike/dogfood/2026-10-09-followups-3	sideeye-fu3-1009	kvantum-fat	spike/dogfood/2026-10-09-followups-3/apparatus
+273	ROOT 6.40.04 `rootrm data.root:h2`	spike/dogfood/2026-10-09-followups-3	sideeye-fu3-1009	rootrm-check	spike/dogfood/2026-10-09-followups-3/apparatus
+285	yq 4.54.1 `-i`	spike/dogfood/2026-10-12-shipped-v1120	sideeye-sv1012	yq	spike/dogfood/2026-10-12-shipped-v1120/apparatus
+286	KeePassXC 2.7.10 `keepassxc-cli add`	spike/dogfood/2026-10-12-shipped-v1120	sideeye-sv1012	keepassxc-fat	spike/dogfood/2026-10-12-shipped-v1120/apparatus
+291	dpkg 1.22.22 `update-alternatives --install`	spike/dogfood/2026-10-14-mechanisms	sideeye-m1014	alternatives	spike/dogfood/2026-10-14-mechanisms/apparatus
+292	sqlite3 3.46.1	spike/dogfood/2026-10-14-mechanisms	sideeye-m1014	sqlite-txn	spike/dogfood/2026-10-14-mechanisms/apparatus
+293	vdirsyncer 0.19.3 `sync`	spike/dogfood/2026-10-14-mechanisms	sideeye-m1014	vdirsyncer	spike/dogfood/2026-10-14-mechanisms/apparatus
+294	sqlite-utils 3.38 `transform`	spike/dogfood/2026-10-14-mechanisms	sideeye-m1014	sqlite-utils	spike/dogfood/2026-10-14-mechanisms/apparatus
+295	Django 4.2.28 `migrate app 0002`	spike/dogfood/2026-10-14-mechanisms	sideeye-m1014	django	spike/dogfood/2026-10-14-mechanisms/apparatus
+68	zstd (worker threads, one writing)	spike/dogfood/2026-10-31-syscalls-under-supervised	sideeye-fu3-1009	zstd	spike/dogfood/2026-10-31-syscalls-under-supervised/apparatus/item4
+95	todo.txt-cli 2.14.0	spike/dogfood/2026-10-31-syscalls-under-supervised	sideeye-ud1007	todo.txt	spike/dogfood/2026-09-22-shipped-v160/apparatus
+301	RocksDB 9.10.0 `ldb put`	spike/dogfood/2026-10-29-refusals-988-990	sideeye-r1029	ldb	spike/dogfood/2026-10-25-shipped-v1160/apparatus

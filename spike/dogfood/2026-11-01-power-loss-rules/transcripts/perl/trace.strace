@@ -1,0 +1,17 @@
+18    openat(AT_FDCWD</s/perl>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+18    openat(AT_FDCWD</s/perl>, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libm.so.6>
+18    openat(AT_FDCWD</s/perl>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+18    openat(AT_FDCWD</s/perl>, "/lib/aarch64-linux-gnu/libcrypt.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libcrypt.so.1.1.0>
+18    openat(AT_FDCWD</s/perl>, "/dev/urandom", O_RDONLY|O_CLOEXEC) = 3</dev/urandom>
+18    openat(AT_FDCWD</s/perl>, "/dev/urandom", O_RDONLY|O_CLOEXEC) = 3</dev/urandom>
+18    openat(AT_FDCWD</s/perl>, "/dev/null", O_RDONLY|O_CLOEXEC) = 3</dev/null>
+18    openat(AT_FDCWD</s/perl>, "a.txt", O_RDONLY|O_CLOEXEC) = 3</s/perl/a.txt>
+18    openat(AT_FDCWD</s/perl>, "XXRqoFKn", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 4</s/perl/XXRqoFKn>
+18    openat(AT_FDCWD</s/perl>, ".", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 5</s/perl>
+18    write(4</s/perl/XXRqoFKn>, "alpha bar\nbeta bar\ngamma\n", 25) = 25
+18    renameat(5</s/perl>, "XXRqoFKn", 5</s/perl>, "a.txt") = 0
+18    openat(AT_FDCWD</s/perl>, "b.txt", O_RDONLY|O_CLOEXEC) = 3</s/perl/b.txt>
+18    openat(AT_FDCWD</s/perl>, "XXg1J74d", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 4</s/perl/XXg1J74d>
+18    openat(AT_FDCWD</s/perl>, ".", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 5</s/perl>
+18    write(4</s/perl/XXg1J74d>, "delta bar\nepsilon\n", 18) = 18
+18    renameat(5</s/perl>, "XXg1J74d", 5</s/perl>, "b.txt") = 0

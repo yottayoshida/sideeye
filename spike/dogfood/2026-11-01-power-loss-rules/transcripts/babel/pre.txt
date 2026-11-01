@@ -1,0 +1,8 @@
+./translations
+./translations/ja
+./translations/ja/LC_MESSAGES
+./translations/ja/LC_MESSAGES/messages.po
+./translations/fr
+./translations/fr/LC_MESSAGES
+./translations/fr/LC_MESSAGES/messages.po
+./messages.pot

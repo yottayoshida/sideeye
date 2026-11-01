@@ -1,0 +1,6 @@
+state=/s/alac
+marker=no
+cwd=/s/alac-in
+op=alacritty migrate -c /s/alac/alacritty.toml
+strace -- version 6.13
+aarch64

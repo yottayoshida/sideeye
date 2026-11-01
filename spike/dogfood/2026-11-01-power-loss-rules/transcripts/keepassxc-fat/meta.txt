@@ -1,0 +1,6 @@
+state=/s/kpfat
+marker=no
+cwd=/s/kpfat
+op=keepassxc-cli add --no-password -k /s/kpaux/key.keyx vault.kdbx github -u me --url https://github.com
+strace -- version 6.13
+aarch64

@@ -1,0 +1,6 @@
+state=/s/ctl
+marker=no
+cwd=/s/ctl
+op=python3 /ap/controls/nosync/op.py
+strace -- version 6.13
+aarch64

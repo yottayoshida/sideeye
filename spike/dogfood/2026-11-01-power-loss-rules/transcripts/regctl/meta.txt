@@ -1,0 +1,6 @@
+state=/s/aux/home/.regctl
+marker=no
+cwd=/s/regctl-in
+op=regctl registry set registry.example.com --tls disabled
+strace -- version 6.13
+aarch64

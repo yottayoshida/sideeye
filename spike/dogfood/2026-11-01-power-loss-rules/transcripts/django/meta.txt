@@ -1,0 +1,6 @@
+state=/s/dj
+marker=no
+cwd=/
+op=python3 /s/dj-aux/proj/manage.py migrate app 0002
+strace -- version 6.13
+aarch64

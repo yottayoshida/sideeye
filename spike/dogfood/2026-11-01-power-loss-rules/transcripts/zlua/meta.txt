@@ -1,0 +1,6 @@
+state=/s/zlua
+marker=no
+cwd=/s/zlua-dirs
+op=lua5.4 /opt/bin/z.lua --add /s/zlua-dirs/projects
+strace -- version 6.13
+aarch64

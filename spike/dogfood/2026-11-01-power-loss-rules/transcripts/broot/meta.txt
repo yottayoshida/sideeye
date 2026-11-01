@@ -1,0 +1,6 @@
+state=/s/broot/home
+marker=no
+cwd=/s/broot-in
+op=broot --install
+strace -- version 6.13
+aarch64

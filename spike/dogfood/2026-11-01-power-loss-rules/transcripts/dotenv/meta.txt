@@ -1,0 +1,6 @@
+state=/s/env
+marker=no
+cwd=/s/env
+op=dotenv -f /s/env/.env set DEBUG true
+strace -- version 6.13
+aarch64
