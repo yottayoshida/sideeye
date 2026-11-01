@@ -310,6 +310,14 @@ stay the same.
    allowance rather than a break. No exit code moves and a saved case replays as it did;
    `contract_version` does not move.
 
+   **One plain additive field, 2026-11-01 (#940, ADR 0149).** `oracle_worlds` (integer) is the
+   number of explored worlds strace watched under `--oracle`, present when every world was
+   compared. No closed set, and a saved case replays as it did; `contract_version` does not
+   move. What the decision moves is which runs reach a verdict: a world strace saw doing
+   something the observer did not record is now refused with a reason that already exists,
+   as the recording always was. Each verdict keeps its exit code (surface 3); a run that
+   reached PASS or FAIL this way is UNKNOWN now, exit 2, a saved case's replay included.
+
 3. **Exit codes.** When a run produces a verdict, that verdict's exit code is
    fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is never 0.
    The promise runs in that direction. **Exit 0 is not reserved to PASS**: it

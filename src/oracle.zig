@@ -1262,7 +1262,17 @@ pub const Parsed = struct {
     }
 };
 
+pub const WorldScope = struct {
+    killed_tid: ?u64 = null,
+    shim_cgroup_files: []const []const u8 = &.{},
+};
+
 pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, state_alt: []const u8, initial_cwd: []const u8) !Parsed {
+    return parseWorld(arena, text, state_dir, state_alt, initial_cwd, .{});
+}
+
+pub fn parseWorld(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, state_alt: []const u8, initial_cwd: []const u8, world: WorldScope) !Parsed {
+    var shim_opens: std.ArrayList(u32) = .empty;
     var out: Parsed = .{ .classes = .empty, .names = .empty, .lines = .empty, .metadata_observed = .empty, .mutations = .empty, .reaps = .empty, .spawns = .empty, .subject_tids = .empty };
     var child_pids: std.ArrayList(u32) = .empty;
     var launched = false;
@@ -1312,7 +1322,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
                         if (cloneRefuses(kind, line) and out.unsupported == null)
                             out.unsupported = try arena.dupe(u8, if (kind == .unreadable) unreadable_ioctl_refusal else clone_refusal);
                     }
-                } else if (isOpenCall(rc) and takeThreadClone(&pending_rw_open, pid)) {
+                } else if (isOpenCall(rc) and takePid(&pending_rw_open, pid)) {
                     var abuf: [contract.max_path]u8 = undefined;
                     if (returnedPath(line, &abuf)) |p| {
                         if (insideEither(p, state_dir, state_alt)) try rw_paths.append(arena, try arena.dupe(u8, p));
@@ -1323,7 +1333,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // Whether it was a thread was decided on the unfinished half and remembered
             // by caller; a remembered one is the subject's new thread and not a spawn.
             if (spawnedPid(line)) |c| {
-                if (isResumedClone(line) and takeThreadClone(&pending_thread_clone, pid)) {
+                if (isResumedClone(line) and takePid(&pending_thread_clone, pid)) {
                     try out.subject_tids.append(arena, c);
                 } else {
                     try noteEvent(arena, &out.spawns, c, out.lines_seen);
@@ -1378,7 +1388,18 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
 
         // A move between cgroups (v17, #559), from any process, and here rather than below
         // because the process-syscall branch `continue`s a clone3 away.
-        if (out.cgroup_move == null) out.cgroup_move = try cgroupMove(arena, name, line);
+        if (takePid(&shim_opens, pid) and !isShimRelocation(world.shim_cgroup_files, name, line) and out.cgroup_move == null)
+            out.cgroup_move = shim_open_unrelocated;
+        if (out.cgroup_move == null) {
+            if (try cgroupMove(arena, name, line)) |m| {
+                // Not by the path alone: a world hands that path to the target's environment too, and
+                // the target opening it is a way out of the cgroup the crash point kills.
+                if (opensShimFile(world.shim_cgroup_files, name, line))
+                    try shim_opens.append(arena, pid orelse 0)
+                else
+                    out.cgroup_move = m;
+            }
+        }
 
         // Not decided by the result: a trapped call's first line ends in ENOSYS or whatever
         // the register held, and a split call carries its result on the resumed half. Not
@@ -1656,11 +1677,78 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         }
     }
     out.children = kept;
+    if (shim_opens.items.len > 0 and out.cgroup_move == null) out.cgroup_move = shim_open_unrelocated;
+    if (world.killed_tid) |t| try dropKilledCall(arena, &out, text, t, &dead_ops, &dead_muts);
     try dropRetracted(arena, &out, dead_ops.items, dead_muts.items);
     return out;
 }
 
-fn takeThreadClone(list: *std.ArrayList(u32), pid: ?u32) bool {
+const shim_open_unrelocated = "a process opened the run's own cgroup files for writing and did not move the descriptor out of the way as the shim does, so it may have used them to leave the cgroup the crash point kills";
+
+fn opensShimFile(files: []const []const u8, name: []const u8, line: []const u8) bool {
+    if (files.len == 0) return false;
+    const i: usize = if (std.mem.eql(u8, name, "open")) 0 else if (std.mem.eql(u8, name, "openat")) 1 else return false;
+    var buf: [contract.max_path]u8 = undefined;
+    return listed(files, argPath(syscallArg(line, i) orelse return false, &buf) orelse return false);
+}
+
+fn listed(files: []const []const u8, path: []const u8) bool {
+    for (files) |f| if (std.mem.eql(u8, path, f)) return true;
+    return false;
+}
+
+fn isShimRelocation(files: []const []const u8, name: []const u8, line: []const u8) bool {
+    if (std.mem.eql(u8, name, "fcntl")) {
+        const cmd = syscallArg(line, 1) orelse return false;
+        if (std.mem.indexOf(u8, cmd, "F_DUPFD") == null) return false;
+    } else if (!std.mem.eql(u8, name, "dup2") and !std.mem.eql(u8, name, "dup3")) return false;
+    var buf: [contract.max_path]u8 = undefined;
+    return listed(files, argAnnotation(syscallArg(line, 0) orelse return false, &buf) orelse return false);
+}
+
+fn endedWithoutResult(line: []const u8) bool {
+    if (isUnfinished(line)) return true;
+    const r = resultText(line) orelse if (std.mem.lastIndexOf(u8, line, ") = ")) |at| line[at + 1 ..] else return true;
+    const eq = std.mem.indexOfScalar(u8, r, '=') orelse return true;
+    return std.mem.eql(u8, std.mem.trim(u8, r[eq + 1 ..], " \t"), "?");
+}
+
+fn sameThread(line_pid: ?u32, tid: u64) bool {
+    return if (line_pid) |p| p == tid else true;
+}
+
+// Only the crash point's own call, and only while it has no result: any other process's call the
+// kill cut short is still counted, so a write the observer missed there refuses rather than passing.
+fn dropKilledCall(arena: std.mem.Allocator, out: *Parsed, text: []const u8, tid: u64, dead_ops: *std.ArrayList(usize), dead_muts: *std.ArrayList(usize)) !void {
+    var it = std.mem.splitScalar(u8, text, '\n');
+    var seen: usize = 0;
+    var last: ?[]const u8 = null;
+    var last_at: usize = 0;
+    while (it.next()) |raw| {
+        const l = std.mem.trim(u8, raw, " \t\r");
+        if (l.len == 0) continue;
+        seen += 1;
+        if (!sameThread(pidOf(l), tid)) continue;
+        const bare = stripPidPrefix(l);
+        if (std.mem.startsWith(u8, bare, "+++ ") or std.mem.startsWith(u8, bare, "--- ")) continue;
+        if (std.mem.startsWith(u8, bare, "<... ") and endedWithoutResult(l)) continue;
+        last = l;
+        last_at = seen;
+    }
+    const line = last orelse return;
+    if (!endedWithoutResult(line)) return;
+    for (out.lines.items, 0..) |l, i| if (l.ptr == line.ptr) {
+        if (std.mem.indexOfScalar(usize, dead_ops.items, i) != null) return;
+        try retract(arena, .{ .pid = null, .op = i, .mutation = null }, dead_ops, dead_muts, out);
+        break;
+    };
+    for (out.mutations.items, 0..) |m, i| if (m.id == tid and m.at == last_at) {
+        if (std.mem.indexOfScalar(usize, dead_muts.items, i) == null) try dead_muts.append(arena, i);
+        break;
+    };
+}
+
+fn takePid(list: *std.ArrayList(u32), pid: ?u32) bool {
     const want = pid orelse 0;
     for (list.items, 0..) |p, i| {
         if (p == want) {
@@ -4252,4 +4340,59 @@ test "a bind or move mount whose source is inside the state is refused however i
     try std.testing.expectEqualStrings("mount", relative_move.unsupported orelse "(none)");
     const bind_elsewhere = try parse(a, header ++ "42    chdir(\"/tmp\") = 0\n42    mount(\"o/x\", \"/mnt\", NULL, MS_BIND, NULL) = 0\n", "/tmp/s", "", "/work");
     try std.testing.expectEqualStrings("(none)", bind_elsewhere.unsupported orelse "(none)");
+}
+
+test "in a killed world only the crash point's own call, left without a result, goes uncounted" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const launch = "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n";
+    const done = "42    openat(AT_FDCWD</work>, \"/tmp/s/a\", O_WRONLY|O_CREAT, 0644) = 3</tmp/s/a>\n";
+    const cut = "42    openat(AT_FDCWD</work>, \"/tmp/s/b\", O_WRONLY|O_CREAT, 0644\n";
+    const text = try std.mem.concat(a, u8, &.{ launch, done, cut });
+    try std.testing.expectEqual(@as(usize, 1), (try parseWorld(a, text, "/tmp/s", "", "/work", .{ .killed_tid = 42 })).classes.items.len);
+    try std.testing.expectEqual(@as(usize, 2), (try parse(a, text, "/tmp/s", "", "/work")).classes.items.len);
+    try std.testing.expectEqual(@as(usize, 2), (try parseWorld(a, text, "/tmp/s", "", "/work", .{ .killed_tid = 43 })).classes.items.len);
+
+    const unfinished = "42    openat(AT_FDCWD</work>, \"/tmp/s/b\", O_WRONLY|O_CREAT, 0644 <unfinished ...>\n";
+    const resumed = "42    <... openat resumed>) = 4</tmp/s/b>\n";
+    const came_back = try std.mem.concat(a, u8, &.{ launch, done, unfinished, resumed });
+    try std.testing.expectEqual(@as(usize, 2), (try parseWorld(a, came_back, "/tmp/s", "", "/work", .{ .killed_tid = 42 })).classes.items.len);
+    const killed = try std.mem.concat(a, u8, &.{ launch, done, unfinished, "42    +++ killed by SIGKILL +++\n" });
+    try std.testing.expectEqual(@as(usize, 1), (try parseWorld(a, killed, "/tmp/s", "", "/work", .{ .killed_tid = 42 })).classes.items.len);
+    const split_unknown = try std.mem.concat(a, u8, &.{ launch, done, unfinished, "4242  +++ killed by SIGKILL +++\n", "42    <... openat resumed>) = ?\n", "42    +++ killed by SIGKILL +++\n" });
+    try std.testing.expectEqual(@as(usize, 1), (try parseWorld(a, split_unknown, "/tmp/s", "", "/work", .{ .killed_tid = 42 })).classes.items.len);
+    const unknown_result = try std.mem.concat(a, u8, &.{ launch, done, "42    openat(AT_FDCWD</work>, \"/tmp/s/b\", O_WRONLY|O_CREAT, 0644) = ?\n", "42    +++ killed by SIGKILL +++\n" });
+    try std.testing.expectEqual(@as(usize, 1), (try parseWorld(a, unknown_result, "/tmp/s", "", "/work", .{ .killed_tid = 42 })).classes.items.len);
+
+    const sibling = "4242  openat(AT_FDCWD</work>, \"/tmp/s/c\", O_WRONLY|O_CREAT, 0644 <unfinished ...>\n";
+    const with_sibling = try std.mem.concat(a, u8, &.{ launch, done, sibling, cut });
+    const p = try parseWorld(a, with_sibling, "/tmp/s", "", "/work", .{ .killed_tid = 42 });
+    try std.testing.expectEqual(@as(usize, 1), p.classes.items.len);
+    try std.testing.expect(p.childTouched());
+
+    const child_cut = "4242  openat(AT_FDCWD</work>, \"/tmp/s/c\", O_WRONLY|O_CREAT, 0644) = ?\n4242  +++ killed by SIGKILL +++\n";
+    const child_killed = try std.mem.concat(a, u8, &.{ launch, done, child_cut });
+    try std.testing.expect(!(try parseWorld(a, child_killed, "/tmp/s", "", "/work", .{ .killed_tid = 4242 })).childTouched());
+    try std.testing.expect((try parseWorld(a, child_killed, "/tmp/s", "", "/work", .{ .killed_tid = 42 })).childTouched());
+}
+
+test "the shim's own opening of the run's cgroup files is not a move, and the target's opening of them is" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const files: []const []const u8 = &.{"/sys/fs/cgroup/sideeye-1-ab/cgroup.procs"};
+    const launch = "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n";
+    const open = "42    openat(AT_FDCWD</work>, \"/sys/fs/cgroup/sideeye-1-ab/cgroup.procs\", O_WRONLY|O_CLOEXEC) = 5</sys/fs/cgroup/sideeye-1-ab/cgroup.procs>\n";
+    const relocate = "42    fcntl(5</sys/fs/cgroup/sideeye-1-ab/cgroup.procs>, F_DUPFD_CLOEXEC, 900) = 900</sys/fs/cgroup/sideeye-1-ab/cgroup.procs>\n";
+    const shim = try std.mem.concat(a, u8, &.{ launch, open, relocate });
+    try std.testing.expect((try parseWorld(a, shim, "/tmp/s", "", "/work", .{ .shim_cgroup_files = files })).cgroup_move == null);
+    try std.testing.expect((try parse(a, shim, "/tmp/s", "", "/work")).cgroup_move != null);
+
+    const used = try std.mem.concat(a, u8, &.{ launch, open, "42    write(5</sys/fs/cgroup/sideeye-1-ab/cgroup.procs>, \"42\", 2) = 2\n" });
+    try std.testing.expect((try parseWorld(a, used, "/tmp/s", "", "/work", .{ .shim_cgroup_files = files })).cgroup_move != null);
+    const put_back = try std.mem.concat(a, u8, &.{ launch, open, "42    dup3(5</sys/fs/cgroup/sideeye-1-ab/cgroup.procs>, 901, O_CLOEXEC) = 901</sys/fs/cgroup/sideeye-1-ab/cgroup.procs>\n" });
+    try std.testing.expect((try parseWorld(a, put_back, "/tmp/s", "", "/work", .{ .shim_cgroup_files = files })).cgroup_move == null);
+    const last = try std.mem.concat(a, u8, &.{ launch, open });
+    try std.testing.expect((try parseWorld(a, last, "/tmp/s", "", "/work", .{ .shim_cgroup_files = files })).cgroup_move != null);
 }

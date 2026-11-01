@@ -590,10 +590,10 @@ else
     fails=$((fails + 1))
 fi
 # And the report says so rather than leaving a reader to infer it from the count. The
-# second half is the disclosure R1 asked for: a world runs without an oracle, so it
+# second half is the disclosure R1 asked for: a world does not re-ask the conditions, so it
 # inherits this finding instead of re-deciding it.
 if echo "$output" | grep -qF "those operations hold crash-point addresses" \
-    && echo "$output" | grep -qF "An explored world does not re-check that"; then
+    && echo "$output" | grep -qF "An explored world does not re-check the waits"; then
     echo "ok   the account says the child's operations were admitted, and what a world does not re-check"
 else
     echo "FAIL the account does not disclose the admitted children"
@@ -9276,6 +9276,63 @@ for fo in "toy-fortify:rotate:--observe wrappers" "toy-fortify:rotate:--observe 
         printf '%s\n' "$o" | sed 's/^/     | /' | head -4
         fails=$((fails + 1))
     fi
+done
+# Every explored world runs under the oracle too (#940): a write the shim never sees, made only in
+# world 2, is refused there; the same rotation without it agrees in every world, the baseline
+# included, in each mode — under supervised the crash point's own call is left without a result.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-worldbranch init" --operation "$OUT/toy-worldbranch rotate branch" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = 2 ] && printf '%s\n' "$o" | grep -q "oracle_missed_operation" && printf '%s\n' "$o" | grep -q "in explored world 2"; then
+    echo "ok   a write only explored world 2 makes, through syscall(2), is refused in world 2"
+else
+    echo "FAIL a write only explored world 2 makes, through syscall(2): exit $rc, wanted oracle_missed_operation naming world 2"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-worldbranch init" --operation "$OUT/toy-worldbranch rotate children branch" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = 2 ] && printf '%s\n' "$o" | grep -q "child_touched_state_dir" && printf '%s\n' "$o" | grep -q "recorded nothing of its own" && printf '%s\n' "$o" | grep -q "in explored world 2"; then
+    echo "ok   a child with no shim that writes only in explored world 2, beside an admitted child, is refused in world 2"
+else
+    echo "FAIL a child with no shim that writes only in explored world 2, beside an admitted child: exit $rc, wanted child_touched_state_dir naming world 2"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-worldbranch init" --operation "$OUT/toy-worldbranch rotate children" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = 0 ] && printf '%s\n' "$o" | grep -q "agreed in each of"; then
+    echo "ok   the same admitted child without the world-2 branch is PASS, every world agreeing"
+else
+    echo "FAIL the same admitted child without the world-2 branch: exit $rc, wanted PASS with every world agreeing"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+wb_modes="wrappers syscalls"
+[ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ] && wb_modes="$wb_modes supervised"
+for wb_obs in $wb_modes; do
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-worldbranch init" --operation "$OUT/toy-worldbranch rotate" \
+        --shim "$SHIM" --work /tmp/acc/work --observe "$wb_obs" --oracle /usr/bin/strace --json /tmp/acc/r.json 2>&1)
+    rc=$?
+    wb=$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("verdict"), d.get("oracle_worlds") == d.get("crash_points", -9) + 1, d.get("oracle_worlds"))' /tmp/acc/r.json 2>/dev/null)
+    case "$rc:$wb" in
+    "0:PASS True "*) echo "ok   under --observe $wb_obs every explored world agrees with the oracle ($wb)" ;;
+    *)
+        echo "FAIL under --observe $wb_obs every explored world agrees with the oracle: exit $rc, $wb"
+        printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+        fails=$((fails + 1))
+        ;;
+    esac
 done
 for fo_cmd in sweep-lowlimit spawn-lowlimit; do
     rm -rf /tmp/acc && mkdir -p /tmp/acc/state

@@ -13,6 +13,7 @@ const engine = @import("engine.zig");
 const posix = @import("posix.zig");
 const image = @import("image.zig");
 const oracle = @import("oracle.zig");
+const witness = @import("witness.zig");
 const fsusage = @import("fsusage.zig");
 const config = @import("config.zig");
 const mcp = @import("mcp.zig");
@@ -239,12 +240,6 @@ fn runOperationObserved(
     const preload = supervise.preloadFor(observe, shim);
     const term: posix.Term = run: {
         if (oracle_path) |strace_path| {
-            // Environment goes to the target via strace's -E, not through our own
-            // setenv: LD_PRELOAD applied here would load the shim into strace itself,
-            // and strace's own file operations would land in the trace as if the
-            // target had produced them.
-            var list: std.ArrayList([]const u8) = .empty;
-            list.append(arena, strace_path) catch setupError(.environment, "out of memory");
             // `-f` follows children and `%process` covers clone/fork/execve. Without
             // both, a target that creates a child through a raw clone is invisible to
             // the oracle as well as to the shim, and the child's work on the state
@@ -255,8 +250,6 @@ fn runOperationObserved(
             // 0098): they are how a state file mapped shared and read-only becomes writable or
             // moves, and a store through it has no call of its own. `?` keeps an strace that
             // has no name for `pkey_mprotect` from refusing to start.
-            for ([_][]const u8{ "-f", "-y", "-e", oracle.strace_trace_spec, "-o", oracle_out }) |a|
-                list.append(arena, a) catch setupError(.environment, "out of memory");
             const pairs = [_][2][]const u8{
                 .{ "TOY_STATE", state_abs },
                 .{ contract.env.state_dir, state_abs },
@@ -278,13 +271,7 @@ fn runOperationObserved(
                 .{ contract.env.pin_claims, pinning.claimsFor(arena) },
                 .{ preload_var, preload },
             };
-            for (pairs) |kv| {
-                list.append(arena, "-E") catch setupError(.environment, "out of memory");
-                const joined = std.fmt.allocPrint(arena, "{s}={s}", .{ kv[0], kv[1] }) catch setupError(.environment, "out of memory");
-                list.append(arena, joined) catch setupError(.environment, "out of memory");
-            }
-            for (argv) |a| list.append(arena, a) catch setupError(.environment, "out of memory");
-            break :run posix.runChildCaptureContained(gpa, list.items, &.{}, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation under the oracle");
+            break :run posix.runChildCaptureContained(gpa, witness.straceArgv(arena, strace_path, oracle_out, &pairs, argv), &.{}, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation under the oracle");
         }
         break :run posix.runChildCaptureContained(gpa, argv, &.{
             .{ "TOY_STATE", state_abs },
@@ -1743,49 +1730,7 @@ fn phaseOracle(run: *Run) void {
         if (parsed.unsupported) |name|
             unknown(.unsupported_syscall_observed, name, .class_wall);
 
-        var shim_classes: std.ArrayList(contract.OpClass) = .empty;
-        // Index-aligned with shim_classes, so a refusal can say what the shim's
-        // account holds at the divergence instead of only that one exists (#41).
-        var shim_ops: std.ArrayList(engine.Op) = .empty;
-        for (trace.ops.items) |op| {
-            if (op.class.isMarker() or op.class.isBoundary() or op.class.isThreadSync()) continue;
-            // close stays in the trace but leaves the comparison (ADR 0003): the oracle
-            // sees descriptors the shim never saw born, and pairing closes across the
-            // two views has no honest fixpoint.
-            if (op.class == .close) continue;
-            if (trace.primary_pid != null and op.pid != trace.primary_pid.?) continue;
-            shim_classes.append(arena, op.class) catch setupError(.environment, "out of memory");
-            shim_ops.append(arena, op) catch setupError(.environment, "out of memory");
-        }
-
-        const mode_hint = if (args.observe == .syscalls)
-            " — and under --observe syscalls each trapped call reaches the oracle twice, once refused and once re-issued, so this can also mean a refusal the capture did not carry (one operation too many) or a retraction that fired on an entry that had run (one too few)"
-        else
-            "";
-        if (oracle.compare(shim_classes.items, parsed.classes.items)) |f| switch (f) {
-            .missed => |m| unknown(.oracle_missed_operation, report.divergenceDetail(
-                arena,
-                std.fmt.allocPrint(arena, "the oracle saw a state-directory operation the {s} did not record{s}", .{ supervise.observerName(args.observe), mode_hint }) catch
-                    "the oracle saw a state-directory operation the observer did not record",
-                m.index,
-                shim_ops.items,
-                parsed.lines.items,
-                parsed.names.items,
-            ), boundary.staticParentNext(
-                boundary.missedOperationNext(args.observe, builtin.os.tag == .linux),
-                boundary.shimAnnouncedElsewhere(trace.primary_pid, parsed.primary_pid),
-            )),
-            .phantom => |p| unknown(.oracle_saw_phantom, report.divergenceDetail(
-                arena,
-                std.fmt.allocPrint(arena, "the {s} recorded an operation the oracle did not see{s}", .{ supervise.observerName(args.observe), mode_hint }) catch
-                    "the observer recorded an operation the oracle did not see",
-                p.index,
-                shim_ops.items,
-                parsed.lines.items,
-                parsed.names.items,
-            ), .sideeye_defect),
-            .unsupported => |name| unknown(.unsupported_syscall_observed, name, .class_wall),
-        };
+        witness.compareOrRefuse(arena, &trace, &parsed, args.observe, "");
 
         // **Not `oracle_verified` when the run's crash points include operations this
         // comparison did not cover** (v15). The comparison is the subject's account
@@ -2162,7 +2107,6 @@ fn phaseExploration(run: *Run) void {
     const state_alt = run.define.state_alt;
     const initial = run.initial;
     const op_argv = run.rec.op_argv;
-    const oracle_out = run.rec.oracle_out;
     const arena = run.arena;
     const trace = run.rec.trace;
     const final = run.rec.final;
@@ -2193,6 +2137,7 @@ fn phaseExploration(run: *Run) void {
     var first_checker_ev: ?evidence.Draft = null;
     var marker_worlds: u32 = 0;
     var checks_run: u32 = 0;
+    var oracle_worlds: u32 = 0;
 
     // Beside `world_stdout_buf` and not inside the checker block, although only that block
     // spells it: `co` escapes into `checker_out`, which the exhibit branches read after the
@@ -2203,6 +2148,7 @@ fn phaseExploration(run: *Run) void {
     const world_stdout = std.fmt.bufPrint(&world_stdout_buf, "{s}/stdout-world.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
 
     const order = prefix.plan(arena, trace, n, initial, final, state_abs, state_alt, args.scratch) catch setupError(.environment, "out of memory");
+    boundary.boundary_ev.worlds_witnessed = args.oracle != null;
     var leave_snap: ?engine.Snapshot = null;
     var k: u32 = 1;
     while (k <= n + 1) : (k += 1) {
@@ -2235,7 +2181,7 @@ fn phaseExploration(run: *Run) void {
         const wcg_ptr: ?*posix.CgroupSpawn = if (wcg) |*c| c else null;
         const wsup = supervise.Spawn.start(gpa, arena, args.observe, op_argv, world_trace, state_abs, state_alt, @intCast(k), containment.runName(wcg_ptr), containment.killName(wcg_ptr)) catch |e|
             setupError(.environment, supervise.startFailure(e));
-        const wterm = posix.runChildCaptureWorld(gpa, wsup.argv, &.{
+        const world_env = [_][2][]const u8{
             .{ "TOY_STATE", state_abs },
             .{ contract.env.state_dir, state_abs },
             .{ contract.env.state_dir_alt, state_alt },
@@ -2261,11 +2207,29 @@ fn phaseExploration(run: *Run) void {
             .{ contract.env.pin_seed, pinning.seed_hex },
             .{ contract.env.pin_claims, pinning.claimsFor(arena) },
             .{ preload_var, supervise.preloadFor(args.observe, shim) },
+        };
+        var spawn_arena = std.heap.ArenaAllocator.init(gpa);
+        defer spawn_arena.deinit();
+        var wo_buf: [contract.max_path]u8 = undefined;
+        const world_oracle: ?[]const u8 = if (args.oracle == null) null else std.fmt.bufPrint(&wo_buf, "{s}/oracle-world-{d}.txt", .{ args.work, k }) catch setupError(.define_invalid, "path too long");
+        if (world_oracle) |wo| removeFile(wo);
+        const w_argv, const w_env = if (world_oracle) |wo|
+            .{ witness.straceArgv(spawn_arena.allocator(), args.oracle.?, wo, &world_env, wsup.argv), &.{} }
+        else
+            .{ wsup.argv, &world_env };
+        const wterm = posix.runChildCaptureWorld(
+            gpa,
+            w_argv,
+            w_env,
             // `exclusive` for the reason on `recordingCapture`, and free for the same
             // reason: `removeFile(world_stdout)` is two lines up and runs on every pass
             // of this loop, so a re-run over one work directory never meets its own
             // leftover here.
-        }, .{ .path = world_stdout, .exclusive = true }, if (args.world_timeout_s) |s| @as(u64, s) * 1000 else null, args.cwd, wcg_ptr) catch |e| switch (e) {
+            .{ .path = world_stdout, .exclusive = true },
+            if (args.world_timeout_s) |s| @as(u64, s) * 1000 else null,
+            args.cwd,
+            wcg_ptr,
+        ) catch |e| switch (e) {
             error.TimedOut => {
                 // The format below is a fixed string plus at most five digits
                 // (parseWorldTimeout caps the value at 86400), so 320 bytes holds it
@@ -2323,16 +2287,10 @@ fn phaseExploration(run: *Run) void {
         // behaviour is allowed to differ between worlds — the parent dying earlier
         // changes which path the child takes — so clearing the recording run clears
         // nothing else.
-        // A world runs without an oracle, so it cannot ask the three conditions itself;
-        // it inherits the recording's answer (v15). What a world does NOT inherit is
-        // permission for a child it did not have: a boundary that appears only in an
-        // explored world refuses above (#169), and a recording with no writing child
-        // leaves `children_admitted` false, so the first one to appear here still stops
-        // the run. The residual — a run whose admitted children behave differently in a
-        // world — is the window ADR 0002 already records, narrowed by the prefix check
-        // below, and named in the report rather than left to be discovered.
+        // Not the waits a world: the kill cuts them short, so it inherits the recording's answer
+        // on those, and never permission for a child the recording did not have.
         if (wtrace.foreign_kill_point and !children_admitted)
-            unknown(.child_touched_state_dir, boundary.foreignTouchDetail(arena, wtrace.first_foreign, "in an explored world", if (args.oracle != null) oracle_out else null, "a process other than the subject performed a state-directory operation in an explored world"), .class_wall);
+            unknown(.child_touched_state_dir, boundary.foreignTouchDetail(arena, wtrace.first_foreign, "in an explored world", world_oracle, "a process other than the subject performed a state-directory operation in an explored world"), .class_wall);
         // A world may take a branch the recording run did not (the kill changes what the
         // target sees), so an unmodellable in-scope operation can first appear here.
         if (wtrace.first_unsupported) |name|
@@ -2392,6 +2350,23 @@ fn phaseExploration(run: *Run) void {
             else => unknown(.baseline_run_failed, "the un-killed baseline world did not exit normally", .run_by_hand_signalled),
         };
 
+        const world_move: ?[]const u8 = if (world_oracle) |wo| moved: {
+            oracle_worlds += 1;
+            break :moved witness.checkWorld(.{
+                .gpa = gpa,
+                .k = k,
+                .n = n,
+                .capture_path = wo,
+                .state_abs = state_abs,
+                .state_alt = if (run.define.alt_differs) state_alt else "",
+                .cwd = run.define.effective_cwd orelse "",
+                .children_admitted = children_admitted,
+                .cg = wcg_ptr,
+                .observe = args.observe,
+                .keep = arena,
+            }, &wtrace);
+        } else null;
+
         var crashed = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot a crashed state");
         // Kept past this world when it becomes a saved exhibit and a recovery was declared (#606),
         // or when it is the case's world under --leave-crash-state; this is the only copy.
@@ -2413,12 +2388,13 @@ fn phaseExploration(run: *Run) void {
         // operation. The sampling below still arms on it.
         if (!crossed_boundary and wtrace.needsOracle()) {
             boundary.boundary_ev.world_only = true;
-            unknown(.boundary_without_oracle, if (wtrace.crossedProcessBoundary())
-                "a process boundary appeared in an explored world that the recording never crossed; explored worlds run without an oracle, so nothing accounts for what the other process did"
+            const why = if (args.oracle != null) "; the recording admitted no other process, so no crash point numbers what followed and no world explores it" else "; explored worlds run without an oracle, so nothing accounts for what followed";
+            unknown(.boundary_without_oracle, std.fmt.allocPrint(arena, "{s}{s}", .{ if (wtrace.crossedProcessBoundary())
+                "a process boundary appeared in an explored world that the recording never crossed"
             else if (wtrace.subject_detached)
-                "the subject left its process group in an explored world that the recording never did; explored worlds run without an oracle, so nothing accounts for what followed"
+                "the subject left its process group in an explored world that the recording never did"
             else
-                "the subject replaced its own image in an explored world that the recording never did; explored worlds run without an oracle, so nothing accounts for the chain across that change", .class_wall);
+                "the subject replaced its own image in an explored world that the recording never did", why }) catch "a boundary appeared in an explored world that the recording never crossed", .class_wall);
         }
         var world_capture_first: ?capture.CaptureObservation = null;
         if (world_armed) {
@@ -2547,6 +2523,7 @@ fn phaseExploration(run: *Run) void {
         // ended it. And nothing ran at or past the crash point.
         if (wcg_ptr) |cg| {
             containment.afterRun(arena, cg, &wtrace, " in an explored world", k > n);
+            if (world_move) |what| unknown(.child_process_detected, what, .class_wall);
             if (k <= n) containment.pastCrashPoint(arena, &wtrace, k);
         }
 
@@ -2607,6 +2584,7 @@ fn phaseExploration(run: *Run) void {
             leave_snap = crashed;
             crashed_kept = true;
         }
+        if (world_oracle) |wo| removeFile(wo);
     }
 
     if (report.l1_configured) {
@@ -2615,6 +2593,10 @@ fn phaseExploration(run: *Run) void {
             "marker observed in {d} of {d} crash worlds; the post-success invariant was enforced there",
             .{ marker_worlds, n },
         ) catch "marker configured";
+    }
+    if (args.oracle != null) {
+        report.oracle_worlds = oracle_worlds;
+        report.oracle_note = std.fmt.allocPrint(arena, "{s}; and agreed in each of {d} explored world(s)", .{ report.oracle_note, oracle_worlds }) catch report.oracle_note;
     }
     if (check_argv != null) {
         report.checker_note = std.fmt.allocPrint(
