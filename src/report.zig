@@ -640,12 +640,17 @@ fn buildL0NoteBase(arena: std.mem.Allocator, plan: engine.L0Plan) []const u8 {
 /// strings where an allocation failure has nowhere to go. The tables cost nothing at
 /// runtime.
 const not_tested_always = [_][]const u8{ "power loss (a missing fsync cannot fail this run)", "torn writes", "concurrent processes" };
+const not_tested_interleave = [_][]const u8{ "power loss (a missing fsync cannot fail this run)", "torn writes", "a process kill (every paused copy was resumed)", "more than two copies, or a pause inside the second copy" };
+pub const Interleave = struct { wait_s: u32, second_past_wait: u32 = 0, second_failed: u32 = 0 };
+pub var interleave: ?Interleave = null;
+
 const not_tested_history = "appended tails (files under the history form)";
 const not_tested_l1 = "post-only file contents (L1 checks existence only; post-only link targets are judged)";
 const not_tested_scratch = "declared scratch paths (neither bytes nor presence judged)";
 
 const not_tested_conditions = [_][]const u8{ not_tested_history, not_tested_l1, not_tested_scratch };
-const not_tested_variants = 1 << not_tested_conditions.len;
+const not_tested_interleave_bit = 1 << not_tested_conditions.len;
+const not_tested_variants = 1 << (not_tested_conditions.len + 1);
 
 /// Go all refuse". A `\xNN` escape in a Zig literal reaches this directly, so without
 /// this clause an item could build clean and ship a JSON document no parser accepts --
@@ -668,7 +673,7 @@ comptime {
 
 fn notTestedList(comptime variant: usize) []const []const u8 {
     comptime {
-        var out: []const []const u8 = &not_tested_always;
+        var out: []const []const u8 = if (variant & not_tested_interleave_bit != 0) &not_tested_interleave else &not_tested_always;
         for (not_tested_conditions, 0..) |item, i| {
             if (variant & (@as(usize, 1) << i) != 0) out = out ++ [_][]const u8{item};
         }
@@ -717,6 +722,7 @@ fn notTestedVariant() usize {
     inline for (0..not_tested_conditions.len) |i| {
         if (notTestedCondition(i)) v |= @as(usize, 1) << i;
     }
+    if (interleave != null) v |= not_tested_interleave_bit;
     return v;
 }
 
@@ -1041,7 +1047,7 @@ fn withField(comptime field: ArgsField) cli.Args {
         &.{"x"}
     else if (T == []const config.Control)
         &.{.{ .leg = "a", .command = "x" }}
-    else if (T == ?u8 or T == ?u32)
+    else if (T == ?u8 or T == ?u32 or T == u32)
         3
     else if (T == contract.ObserveMode)
         .syscalls
@@ -1279,6 +1285,7 @@ pub fn sayAccount(arena: std.mem.Allocator, of: AccountOf, points: usize) void {
         say("evidence    {s}\n", .{evidenceCommand(arena, evidence_note)});
     }
     say("processes   {s}\n", .{boundary.boundaryAccount()});
+    if (interleave) |il| say("interleave  a second copy ran at each crash point, waited on for {d}s; it ran past the wait in {d} world(s) and did not succeed in {d}\n", .{ il.wait_s, il.second_past_wait, il.second_failed });
     say("not tested  {s}\n", .{notTestedText()});
 }
 
@@ -1734,7 +1741,16 @@ fn buildJson(
     try jsonString(w, arena, verdict);
     try w.appendSlice(arena, ",\n  \"exit_code\": ");
     try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{exit_code}));
-    try w.appendSlice(arena, ",\n  \"crash_model\": \"process-kill\"");
+    try w.appendSlice(arena, if (interleave != null) ",\n  \"crash_model\": \"interleave\"" else ",\n  \"crash_model\": \"process-kill\"");
+    if (interleave) |il| {
+        try w.appendSlice(arena, ",\n  \"interleave\": {\"wait_seconds\": ");
+        try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{il.wait_s}));
+        try w.appendSlice(arena, ", \"second_copy_ran_past_wait\": ");
+        try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{il.second_past_wait}));
+        try w.appendSlice(arena, ", \"second_copy_failed\": ");
+        try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{il.second_failed}));
+        try w.appendSlice(arena, "}");
+    }
     try w.appendSlice(arena, ",\n  \"oracle_verified\": ");
     try w.appendSlice(arena, if (oracle_verified) "true" else "false");
     // Emitted only when it is true, so every report a v14 consumer has seen is
@@ -2481,7 +2497,17 @@ test "the l0 note neutralises control bytes in target-chosen file names" {
     try std.testing.expect(std.mem.indexOf(u8, note, "evil?name?.log") != null);
 }
 
-test "the not-tested list renders eight strings, the three always-present items first and the declared ones after" {
+test "an interleaved run's not-tested list names a process kill and not concurrent processes" {
+    interleave = .{ .wait_s = 5 };
+    defer interleave = null;
+    const text = notTestedText();
+    try std.testing.expect(std.mem.startsWith(u8, text, "power loss (a missing fsync cannot fail this run), torn writes, a process kill (every paused copy was resumed)"));
+    try std.testing.expect(std.mem.indexOf(u8, text, "concurrent processes") == null);
+    interleave = null;
+    try std.testing.expect(std.mem.indexOf(u8, notTestedText(), "concurrent processes") != null);
+}
+
+test "the not-tested list renders sixteen strings, the crash model's always-present items first and the declared ones after" {
     const want_text = [4][]const u8{
         "power loss (a missing fsync cannot fail this run), torn writes, concurrent processes",
         "power loss (a missing fsync cannot fail this run), torn writes, concurrent processes, appended tails (files under the history form)",
@@ -2507,7 +2533,9 @@ test "the not-tested list renders eight strings, the three always-present items 
         try std.testing.expect(std.mem.startsWith(u8, got, w[0 .. w.len - 1]));
         try std.testing.expectEqualStrings(", \"" ++ scratch_item ++ "\"]", got[w.len - 1 ..]);
     }
-    try std.testing.expectEqual(@as(usize, 8), not_tested_text_by_variant.len);
+    try std.testing.expectEqual(@as(usize, 16), not_tested_text_by_variant.len);
+    for (not_tested_text_by_variant[8..]) |t|
+        try std.testing.expect(std.mem.startsWith(u8, t, "power loss (a missing fsync cannot fail this run), torn writes, a process kill (every paused copy was resumed), more than two copies, or a pause inside the second copy"));
 }
 
 test "the two renderings read the variant once, so they cannot describe different runs (#280)" {

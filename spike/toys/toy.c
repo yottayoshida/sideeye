@@ -439,6 +439,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/file.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -2086,12 +2087,76 @@ static void entropy_gather(const char *const *tags, size_t count) {
 }
 #endif
 
+static int cmd_count_init(void) {
+    char path[4096];
+    join_path(path, sizeof path, "counter");
+    if (write_file(path, "0\n") != 0) return 1;
+    join_path(path, sizeof path, "counter.lock");
+    return write_file(path, "") != 0;
+}
+
+/* The lock lives on a file the rename never replaces: a lock taken on the counter itself would stay
+ * on the inode the first rename retires, and two copies would both hold it. */
+static int count_body(void) {
+    char path[4096], tmp[4096], buf[64];
+    int lock = -1;
+    if (getenv("TOY_LOCK")) {
+        join_path(path, sizeof path, "counter.lock");
+        lock = open(path, O_RDONLY);
+        if (lock < 0 || flock(lock, LOCK_EX) != 0) return 1;
+    }
+    join_path(path, sizeof path, "counter");
+    int fd = open(path, O_RDONLY);
+    if (fd < 0) return 1;
+    ssize_t r = read(fd, buf, sizeof buf - 1);
+    close(fd);
+    if (r <= 0) return 1;
+    buf[r] = '\0';
+    long n = strtol(buf, NULL, 10);
+    join_path(tmp, sizeof tmp, "counter.XXXXXX");
+    fd = mkstemp(tmp);
+    if (fd < 0) return 1;
+    int len = snprintf(buf, sizeof buf, "%ld\n", n + 1);
+    if (write(fd, buf, (size_t)len) != len || fsync(fd) != 0 || close(fd) != 0) return 1;
+    if (rename(tmp, path) != 0) return 1;
+    if (lock >= 0) close(lock);
+    return 0;
+}
+
+static int count_rc = 1;
+static void *count_thread(void *arg) { (void)arg; count_rc = count_body(); return NULL; }
+
+static int cmd_count(void) {
+    if (!getenv("TOY_COUNT_THREAD")) return count_body();
+    pthread_t t;
+    if (pthread_create(&t, NULL, count_thread, NULL) != 0) return 1;
+    pthread_join(t, NULL);
+    return count_rc;
+}
+
+static int cmd_count_check(void) {
+    char path[4096], buf[64];
+    join_path(path, sizeof path, "counter");
+    int fd = open(path, O_RDONLY);
+    if (fd < 0) { fprintf(stderr, "no counter\n"); return 1; }
+    ssize_t r = read(fd, buf, sizeof buf - 1);
+    close(fd);
+    if (r <= 1 || buf[r - 1] != '\n') { fprintf(stderr, "counter is not a line\n"); return 1; }
+    for (ssize_t i = 0; i < r - 1; i++)
+        if (buf[i] < '0' || buf[i] > '9') { fprintf(stderr, "counter is not a number\n"); return 1; }
+    return 0;
+}
+
 int main(int argc, char **argv) {
     if (argc < 2) {
         fprintf(stderr, "usage: %s init|rotate|rotate-msg|rotate-quoted|doctor|load-key\n", argv[0]);
         return 2;
     }
     if (strcmp(argv[1], "init") == 0) return cmd_init();
+    if (strcmp(argv[1], "count-init") == 0) return cmd_count_init();
+    if (strcmp(argv[1], "count") == 0) return cmd_count();
+    if (strcmp(argv[1], "count-lock") == 0) { setenv("TOY_LOCK", "1", 1); return cmd_count(); }
+    if (strcmp(argv[1], "count-check") == 0) return cmd_count_check();
 #ifdef __linux__
     if (strcmp(argv[1], "entropy") == 0 && argc == 3) { entropy_write(argv[2]); return 0; }
     if (strcmp(argv[1], "relay") == 0 && argc == 3) {

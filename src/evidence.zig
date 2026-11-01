@@ -78,6 +78,7 @@ pub const Evidence = struct {
     case: []const u8,
     recovery: Recovery,
     caveats: []const []const u8,
+    crash_model: ?[]const u8 = null,
 };
 
 pub const Draft = struct {
@@ -313,6 +314,7 @@ pub fn save(
         .case = e.case_path,
         .recovery = .{ .result = if (e.recovery) |r| r.name() else "not_configured" },
         .caveats = cav,
+        .crash_model = if (report.interleave != null) "interleave" else null,
     });
 }
 
@@ -350,6 +352,10 @@ pub fn buildJson(arena: std.mem.Allocator, ev: Evidence) ![]const u8 {
     try w.appendSlice(arena, ",\n  \"sideeye_version\": ");
     try report.jsonString(w, arena, ev.sideeye_version);
     try w.print(arena, ",\n  \"contract_version\": {d}", .{ev.contract_version});
+    if (ev.crash_model) |m| {
+        try w.appendSlice(arena, ",\n  \"crash_model\": ");
+        try report.jsonString(w, arena, m);
+    }
     try w.appendSlice(arena, ",\n  \"target\": {\"operation\": ");
     try report.jsonString(w, arena, ev.target.operation);
     try w.appendSlice(arena, ", \"state_root\": ");
@@ -554,10 +560,14 @@ pub fn render(arena: std.mem.Allocator, ev: Evidence) error{OutOfMemory}![]const
     try w.appendSlice(arena, "## Where it was interrupted\n\n```\n");
     try w.print(arena, "{s: <8}{s}\n", .{ "after:", asText(arena, ev.boundary.after_op) });
     try w.print(arena, "        {s}\n", .{asText(arena, ev.boundary.after_path)});
-    try w.appendSlice(arena, "<-- the process was terminated here -->\n");
+    const interleaved = if (ev.crash_model) |m| std.mem.eql(u8, m, "interleave") else false;
+    try w.appendSlice(arena, if (interleaved) "<-- the process was paused here, and a second copy ran -->\n" else "<-- the process was terminated here -->\n");
     try w.print(arena, "{s: <8}{s}\n", .{ "before:", asText(arena, ev.boundary.before_op) });
     try w.print(arena, "        {s}\n", .{asText(arena, ev.boundary.before_path)});
-    try w.appendSlice(arena, "```\n\nThe operation named under `after` completed; the one under `before` never ran.\n\n");
+    try w.appendSlice(arena, if (interleaved)
+        "```\n\nThe operation named under `after` completed before the pause; the one under `before` ran after the resume.\n\n"
+    else
+        "```\n\nThe operation named under `after` completed; the one under `before` never ran.\n\n");
 
     try w.appendSlice(arena, "## Built-in invariant\n\n");
     try w.print(arena, "{s} — {s}: {s}\n\n", .{ asText(arena, ev.invariant), asText(arena, ev.subject), asText(arena, ev.observed) });
@@ -583,7 +593,10 @@ pub fn render(arena: std.mem.Allocator, ev: Evidence) error{OutOfMemory}![]const
     try w.appendSlice(arena, asText(arena, ev.replay));
     try w.appendSlice(arena, "\n```\n\n");
     try w.print(arena, "Saved case: `{s}`\n\n", .{asText(arena, ev.case)});
-    try w.appendSlice(arena, "With `--leave-crash-state` added, a replay whose report says `crash_state_left: true` ends with the state directory holding what that replay's kill left, before the checker ran.\n\n");
+    try w.appendSlice(arena, if (interleaved)
+        "An interleaved world leaves no crash state: both copies run to their end, and its replay refuses `--leave-crash-state`.\n\n"
+    else
+        "With `--leave-crash-state` added, a replay whose report says `crash_state_left: true` ends with the state directory holding what that replay's kill left, before the checker ran.\n\n");
 
     try w.appendSlice(arena, "## Recovery\n\n");
     if (std.mem.eql(u8, ev.recovery.result, "not_configured"))
@@ -723,6 +736,22 @@ test "the evidence path leaves the cases directory and the rule is idempotent" {
     // "nothing to attach to" rather than writing over the caller's own file.
     const c = try siblingPath(arena, "/w/hand-written.json");
     try std.testing.expectEqualStrings("/w/hand-written.json", c);
+}
+
+test "a bundle from an interleaved world reads its boundary as a pause, and carries the model through its JSON" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    var ev = testBundle(.{ .configured = false, .failed = null, .diagnostic = null });
+    const killed = try render(arena, ev);
+    try std.testing.expect(std.mem.indexOf(u8, killed, "the process was terminated here") != null);
+    ev.crash_model = "interleave";
+    const paused = try render(arena, ev);
+    try std.testing.expect(std.mem.indexOf(u8, paused, "the process was paused here, and a second copy ran") != null);
+    try std.testing.expect(std.mem.indexOf(u8, paused, "never ran") == null);
+    try std.testing.expect(std.mem.indexOf(u8, paused, "refuses `--leave-crash-state`") != null);
+    const back = try std.json.parseFromSlice(Evidence, arena, try buildJson(arena, ev), .{});
+    try std.testing.expectEqualStrings("interleave", back.value.crash_model.?);
 }
 
 test "a bundle round-trips through its own JSON" {

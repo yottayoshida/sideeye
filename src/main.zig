@@ -368,20 +368,22 @@ const Run = struct {
         crossed_boundary: bool,
     };
     const Firsts = struct {
-        first_failure: ?engine.WorldResult,
-        first_failure_l0: bool,
-        first_failure_l1: bool,
-        first_failure_l2: bool,
-        first_failure_path: [contract.max_path]u8,
-        first_failure_path_len: usize,
-        first_checker: ?engine.WorldResult,
-        first_checker_l0: bool,
-        first_checker_l1: bool,
-        first_checker_path: [contract.max_path]u8,
-        first_checker_path_len: usize,
-        first_failure_ev: ?evidence.Draft,
-        first_checker_ev: ?evidence.Draft,
-        marker_worlds: u32,
+        first_failure: ?engine.WorldResult = null,
+        first_failure_l0: bool = false,
+        first_failure_l1: bool = false,
+        first_failure_l2: bool = false,
+        first_failure_path: [contract.max_path]u8 = undefined,
+        first_failure_path_len: usize = 0,
+        first_checker: ?engine.WorldResult = null,
+        first_checker_l0: bool = false,
+        first_checker_l1: bool = false,
+        first_checker_path: [contract.max_path]u8 = undefined,
+        first_checker_path_len: usize = 0,
+        first_failure_ev: ?evidence.Draft = null,
+        first_checker_ev: ?evidence.Draft = null,
+        marker_worlds: u32 = 0,
+        serial_observed: []const u8 = "",
+        checker_serial_observed: []const u8 = "",
     };
 
     gpa: std.mem.Allocator,
@@ -394,7 +396,7 @@ const Run = struct {
     admitted: Admission = undefined,
     n: u32 = undefined,
     check_argv: ?[]const []const u8 = undefined,
-    firsts: Firsts = undefined,
+    firsts: Firsts = .{},
 };
 
 pub fn main(init: std.process.Init.Minimal) !void {
@@ -484,7 +486,7 @@ pub fn main(init: std.process.Init.Minimal) !void {
     phaseOracle(&run);
     phasePreflight(&run);
     phaseChecker(&run);
-    phaseExploration(&run);
+    if (run.parsed.args.interleave) phaseInterleave(&run) else phaseExploration(&run);
     phaseReport(&run);
 }
 
@@ -548,6 +550,11 @@ fn phaseDefine(run: *Run) void {
         // Not from a flag: `--apparatus` was refused above, so a case saved before it carried the
         // declaration replays with none checked.
         if (c.define.apparatus) |decl| args.apparatus = decl;
+        if (c.interleave_wait_seconds) |ws| {
+            args.interleave = true;
+            args.interleave_wait_s = ws;
+            report.interleave = .{ .wait_s = ws };
+        }
         // Mirrored into the report before any refusal below can fire: a contract
         // mismatch on a status-3 case must not report expected_status 0 (R1 finding).
         report.expected_status_val = c.define.expected_status orelse 0;
@@ -783,6 +790,10 @@ fn phaseDefine(run: *Run) void {
         if (state_created) _ = posix.rmdir(state_z.ptr);
         setupError(.define_invalid, "a recovery is declared as a pair: --recovery with --recovery-check, or `command` with `check` under [recovery]; one without the other would run a recovery nothing judges, or judge one nothing ran");
     }
+    if (args.interleave) if (interleaveRefusal(args)) |r| {
+        if (state_created) _ = posix.rmdir(state_z.ptr);
+        setupError(r.reason, r.text);
+    };
     // A value of spaces passes the empty-string check at the flag and the key and splits into
     // no words, and a child handed no argv dies before exec — which the gate would read as a
     // recovery that ran and ended, and every exhibit `fail` (review). Refused like `--check`.
@@ -2439,54 +2450,12 @@ fn phaseExploration(run: *Run) void {
 
         report.explored += 1;
 
-        var l2_failed = false;
-        var checker_out: ?[]const u8 = null;
-        if (check_argv) |cargv| {
-            var capture_opened = true;
-            const co = std.fmt.bufPrint(&checker_out_buf, "{s}/checker-output.txt", .{args.work}) catch
-                setupError(.define_invalid, "path too long");
-            // `exclusive` needs the removal, and without `O_EXCL` a FIFO planted at the name
-            // would block the parent's open — the pair `Capture.exclusive` asks for by name.
-            files.removeFile(co);
-            // stderr too, for the reason #483 gives on the setup capture: a checker reports
-            // through either stream, and capturing stdout alone would leave the file empty for
-            // the ordinary failure.
-            const ct = posix.runChildCapture(gpa, cargv, &controls_run.checkerEnv(state_abs, controls_run.unreadLegs(args.work)), .{ .path = co, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| switch (e) {
-                // The one failure that is about the capture and not about the child: since
-                // #469 the parent opens the file, so this arrives before any child exists.
-                // The checker still has to run — the verdict rests on its exit status — so
-                // it runs uncaptured and the bundle's diagnostic stays unknown. Refusing
-                // here would turn a FAIL into an UNKNOWN over an attachment.
-                error.CaptureUnavailable => blk_cap: {
-                    // Left null on this path deliberately, rather than relying on the
-                    // removal above to make the read come back empty: "there is no capture"
-                    // and "the capture is empty" are different answers, and only the first
-                    // is true here.
-                    capture_opened = false;
-                    break :blk_cap posix.runChild(gpa, cargv, &controls_run.checkerEnv(state_abs, controls_run.unreadLegs(args.work)), args.cwd) catch |e2| spawnFailure(e2, .exploring, "could not run --check");
-                },
-                else => spawnFailure(e, .exploring, "could not run --check"),
-            };
-            // Set whichever way the child ended: a checker killed by a signal has often
-            // written the line that says why, and the capture is what holds it.
-            if (capture_opened) {
-                checker_out = co;
-                // tells them apart as well, and says which world. `spike/acceptance.sh` counts
-                // gate lines, world lines and unmarked checker lines, which must be none.
-                if (capture.readFileAllocCapped(arena, co, 1024 * 1024, .{ .no_follow = true })) |text| {
-                    var lines = std.mem.splitScalar(u8, text, '\n');
-                    while (lines.next()) |line| {
-                        if (line.len == 0) continue;
-                        if (k > n) say("baseline: {s}\n", .{line}) else say("world {s}: {s}\n", .{ kstr, line });
-                    }
-                }
-            }
-            checks_run += 1;
-            l2_failed = switch (ct) {
-                .exited => |code| code != 0,
-                else => true,
-            };
-        }
+        var label_buf: [32]u8 = undefined;
+        const label = if (k > n) "baseline" else std.fmt.bufPrint(&label_buf, "world {s}", .{kstr}) catch "world";
+        const chk = runCheckerOnState(run, label, &checker_out_buf);
+        if (check_argv != null) checks_run += 1;
+        const l2_failed = chk.failed;
+        const checker_out = chk.out;
 
         const l0 = engine.judgeL0(l0_plan, crashed);
 
@@ -2688,6 +2657,337 @@ fn phaseExploration(run: *Run) void {
     }
 }
 
+const SecondCopy = struct {
+    argv: []const []const u8,
+    env: []const [2][]const u8,
+    stdout: []const u8,
+    budget_ms: u64,
+    cwd: ?[]const u8,
+    wait_ms: u64,
+    stopped: bool = false,
+    thread: ?std.Thread = null,
+    done: std.atomic.Value(bool) = .init(false),
+    term: ?posix.Term = null,
+    failed: ?(posix.ContainedSpawnError || error{TimedOut}) = null,
+    past_wait: bool = false,
+
+    fn body(self: *SecondCopy) void {
+        posix.registers_second = true;
+        if (posix.runChildCaptureWorld(std.heap.page_allocator, self.argv, self.env, .{ .path = self.stdout, .exclusive = true }, self.budget_ms, self.cwd, null)) |t| {
+            self.term = t;
+        } else |e| self.failed = e;
+        self.done.store(true, .release);
+    }
+
+    fn onStop(ctx: *anyopaque, pid: c_int) void {
+        const self: *SecondCopy = @ptrCast(@alignCast(ctx));
+        posix.stop_hook = null;
+        self.stopped = true;
+        self.thread = std.Thread.spawn(.{}, body, .{self}) catch null;
+        if (self.thread != null) {
+            const t0 = posix.monotonicMs();
+            while (!self.done.load(.acquire) and posix.monotonicMs() - t0 < self.wait_ms) {
+                const ts: std.c.timespec = .{ .sec = 0, .nsec = 10_000_000 };
+                _ = posix.nanosleep(&ts, null);
+            }
+            self.past_wait = !self.done.load(.acquire);
+        }
+        // Resumed whether or not the second copy ended: a copy blocked on the first's lock proceeds
+        // only once the first releases it, and killing it would read waiting as failing.
+        _ = posix.kill(pid, posix.SIGCONT);
+    }
+};
+
+fn exitedWith(term: posix.Term, status: u8) bool {
+    return switch (term) {
+        .exited => |code| code == status,
+        else => false,
+    };
+}
+
+fn termShown(arena: std.mem.Allocator, term: posix.Term) []const u8 {
+    return switch (term) {
+        .exited => |code| std.fmt.allocPrint(arena, "exited {d}", .{code}) catch "exited",
+        .signaled => |sig| std.fmt.allocPrint(arena, "was killed by signal {d}", .{sig}) catch "was killed by a signal",
+        else => "did not exit normally",
+    };
+}
+
+fn firstDifference(arena: std.mem.Allocator, expected: engine.Snapshot, got: engine.Snapshot, scratch: []const []const u8) ?[]const u8 {
+    var one: [1]engine.Difference = undefined;
+    const d = engine.diffSnapshotsExcept(expected, got, &one, scratch);
+    if (d.equal()) return null;
+    if (d.stored == 0) return "the state";
+    const how = switch (one[0].how) {
+        .only_in_first => "missing",
+        .only_in_second => "present but not expected",
+        .kind_differs => "of another kind",
+        .content_differs => "holding other bytes",
+    };
+    return std.fmt.allocPrint(arena, "{s} ({s})", .{ textShown(arena, one[0].rel), how }) catch one[0].rel;
+}
+
+fn runCheckerOnState(run: *Run, label: []const u8, out_buf: *[contract.max_path]u8) struct { failed: bool, out: ?[]const u8 } {
+    const cargv = run.check_argv orelse return .{ .failed = false, .out = null };
+    const args = run.parsed.args;
+    const co = std.fmt.bufPrint(out_buf, "{s}/checker-output.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
+    // `exclusive` needs the removal, and without `O_EXCL` a FIFO planted at the name would block
+    // the parent's open.
+    files.removeFile(co);
+    const env = controls_run.checkerEnv(run.define.state_abs, controls_run.unreadLegs(args.work));
+    // stderr too: a checker reports through either stream, and capturing stdout alone would leave
+    // the file empty for the ordinary failure.
+    const ct = posix.runChildCapture(run.gpa, cargv, &env, .{ .path = co, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| switch (e) {
+        // Not refused: the verdict rests on the checker's exit status, so it runs uncaptured, and
+        // the output stays null rather than empty — "no capture" and "an empty capture" differ.
+        error.CaptureUnavailable => return .{ .failed = switch (posix.runChild(run.gpa, cargv, &env, args.cwd) catch |e2| spawnFailure(e2, .exploring, "could not run --check")) {
+            .exited => |code| code != 0,
+            else => true,
+        }, .out = null },
+        else => spawnFailure(e, .exploring, "could not run --check"),
+    };
+    if (capture.readFileAllocCapped(run.arena, co, 1024 * 1024, .{ .no_follow = true })) |text| {
+        var lines = std.mem.splitScalar(u8, text, '\n');
+        while (lines.next()) |line| {
+            if (line.len != 0) say("{s}: {s}\n", .{ label, line });
+        }
+    }
+    return .{ .failed = switch (ct) {
+        .exited => |code| code != 0,
+        else => true,
+    }, .out = co };
+}
+
+fn phaseInterleave(run: *Run) void {
+    const gpa = run.gpa;
+    const args = run.parsed.args;
+    const arena = run.arena;
+    const only_k = run.define.only_k;
+    const expect_status = run.define.expect_status;
+    const state_abs = run.define.state_abs;
+    const state_alt = run.define.state_alt;
+    const initial = run.initial;
+    const op_argv = run.rec.op_argv;
+    const trace = run.rec.trace;
+    const l0_plan = run.rec.l0_plan;
+    const n = run.n;
+    const order = prefix.plan(arena, trace, n, initial, run.rec.final, state_abs, state_alt, args.scratch) catch setupError(.environment, "out of memory");
+    const budget_ms: u64 = @as(u64, args.world_timeout_s.?) * 1000;
+    const wait_s = args.interleave_wait_s;
+
+    if (trace.crossedProcessBoundary())
+        setupError(.setup_failed, "--interleave takes a single process (threads included): the recording run created another, which a pause at a crash point would leave running beside the second copy");
+
+
+    var stdout_buf: [contract.max_path]u8 = undefined;
+    const world_stdout = std.fmt.bufPrint(&stdout_buf, "{s}/stdout-world.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
+    var second_buf: [contract.max_path]u8 = undefined;
+    const second_stdout = std.fmt.bufPrint(&second_buf, "{s}/stdout-second.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
+    var checker_out_buf: [contract.max_path]u8 = undefined;
+    const plain_env = [_][2][]const u8{
+        .{ "TOY_STATE", state_abs },
+        .{ contract.env.state_dir, state_abs },
+        .{ contract.env.state_dir_alt, state_alt },
+        .{ preload_var, "" },
+    };
+
+    const s1 = blk: {
+        engine.restore(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not restore the state directory", state_abs);
+        var r = interleaveWorld(run, n + 1, false, world_stdout, budget_ms);
+        r.trace.deinit();
+        if (!exitedWith(r.term, expect_status))
+            unknown(.baseline_run_failed, std.fmt.allocPrint(arena, "the un-killed baseline run {s} where {d} was expected although the recording run of the same command succeeded", .{ termShown(arena, r.term), expect_status }) catch "the un-killed baseline run ended differently from the recording", .second_run_diverged);
+        report.explored += 1;
+        const snap = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot the baseline state");
+        refuse.refuseUnsupportedEntry(arena, snap, "left by the baseline re-run");
+        break :blk snap;
+    };
+    if (runCheckerOnState(run, "baseline", &checker_out_buf).failed)
+        unknown(.baseline_violates_invariant, "the checker rejected the state one run of the operation leaves from the initial state; an interleaved run compares against it", .run_checker_by_hand);
+
+    // Built twice: a target whose second run is not byte-repeatable is refused here, not failed in
+    // every world.
+    var s2: engine.Snapshot = undefined;
+    for (0..2) |round| {
+        engine.restore(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not restore the state directory", state_abs);
+        for (0..2) |_| {
+            removeFile(second_stdout);
+            const t = posix.runChildCaptureWorld(gpa, op_argv, &plain_env, .{ .path = second_stdout, .exclusive = true }, budget_ms, args.cwd, null) catch |e| switch (e) {
+                error.TimedOut => unknown(.child_timed_out, "a run of the operation for the two-runs-in-a-row state was still running after the --world-timeout budget; it was sent SIGKILL", .raise_world_timeout),
+                else => |se| spawnFailure(se, .exploring, "could not run --operation"),
+            };
+            if (!exitedWith(t, expect_status))
+                setupError(.setup_failed, std.fmt.allocPrint(arena, "--interleave compares against two runs of the operation in a row from the initial state, and the second {s} where {d} was expected", .{ termShown(arena, t), expect_status }) catch "--interleave: the operation does not succeed twice in a row");
+        }
+        const snap = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot the two-runs-in-a-row state");
+        if (round == 0) {
+            s2 = snap;
+        } else {
+            var again = snap;
+            defer again.deinit();
+            if (firstDifference(arena, s2, again, args.scratch)) |where|
+                unknown(.baseline_violates_invariant, std.fmt.allocPrint(arena, "two runs of the operation in a row from the initial state left different bytes on two tries, at {s}; an interleaved run needs that state to be one state", .{where}) catch "two runs in a row from the initial state left different bytes on two tries", .scratch_or_twice);
+        }
+    }
+    if (runCheckerOnState(run, "two runs in a row", &checker_out_buf).failed)
+        unknown(.baseline_violates_invariant, "the checker rejected the state two runs of the operation in a row leave from the initial state; an interleaved run compares against it", .run_checker_by_hand);
+
+    var checks_run: u32 = 0;
+    var k: u32 = 1;
+    while (k <= n) : (k += 1) {
+        if (only_k) |okk| if (k != okk) continue;
+        if (args.stop_when_orphaned and posix.getppid() != startup_ppid)
+            unknown(.parent_exited, "the process that launched this exploration is gone; stopping at a world boundary rather than continuing to run copies and rewrite the state directory with nobody to report to", .relaunch);
+        engine.restore(initial, state_abs) catch |e| refuse.restoreFailure(e, "could not restore the state directory", state_abs);
+        removeFile(second_stdout);
+
+        var second: SecondCopy = .{
+            .argv = op_argv,
+            .env = &plain_env,
+            .stdout = second_stdout,
+            .budget_ms = budget_ms,
+            .cwd = args.cwd,
+            .wait_ms = @as(u64, wait_s) * 1000,
+        };
+        posix.stop_hook = .{ .ctx = &second, .call = SecondCopy.onStop };
+        const r = interleaveWorld(run, k, true, world_stdout, budget_ms);
+        posix.stop_hook = null;
+        if (second.thread) |t| t.join();
+        if (!second.stopped)
+            unknown(.kill_did_not_land, "a world asked to pause before an operation ran without pausing", .kill_not_landed);
+        if (second.thread == null) setupError(.environment, "could not start the second copy's thread");
+        const b_term = second.term orelse switch (second.failed.?) {
+            error.TimedOut => unknown(.child_timed_out, "an interleaved world's second copy was still running after the --world-timeout budget expired; it was sent SIGKILL, and the remaining worlds cannot be judged", .raise_world_timeout),
+            else => |se| spawnFailure(se, .exploring, "could not run the second copy of --operation"),
+        };
+
+        var wtrace = r.trace;
+        defer wtrace.deinit();
+        if (wtrace.kill_landed_seq == null or wtrace.kill_landed_seq.? != k)
+            unknown(.kill_did_not_land, "a world was asked to pause before a given operation and did not", .kill_not_landed);
+        if (prefix.firstDivergence(&order, wtrace, k)) |d|
+            unknown(.kill_did_not_land, prefix.detail(arena, d, &order), .not_repeating);
+
+        report.explored += 1;
+        const a_ok = exitedWith(r.term, expect_status);
+        const b_ok = exitedWith(b_term, expect_status);
+        if (second.past_wait) report.interleave.?.second_past_wait += 1;
+        if (!b_ok) report.interleave.?.second_failed += 1;
+
+        var crashed = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot an interleaved world's state");
+        defer crashed.deinit();
+        refuse.refuseUnsupportedEntry(arena, crashed, "left in an interleaved world");
+        const expected = if (a_ok and b_ok) s2 else s1;
+        const serial_observed: ?[]const u8 = if (!a_ok and !b_ok)
+            std.fmt.allocPrint(arena, "neither copy succeeded: the paused copy {s} and the second {s}", .{ termShown(arena, r.term), termShown(arena, b_term) }) catch "neither copy succeeded"
+        else if (firstDifference(arena, expected, crashed, args.scratch)) |where|
+            (if (a_ok and b_ok)
+                std.fmt.allocPrint(arena, "both copies exited {d}, and the state differs from two runs in a row at {s}", .{ expect_status, where }) catch "the state differs from two runs in a row"
+            else
+                std.fmt.allocPrint(arena, "one copy succeeded (the paused copy {s}, the second {s}), and the state differs from one run at {s}", .{ termShown(arena, r.term), termShown(arena, b_term), where }) catch "the state differs from one run")
+        else
+            null;
+
+        var label_buf: [32]u8 = undefined;
+        const label = std.fmt.bufPrint(&label_buf, "world {d}", .{k}) catch "world";
+        const chk = runCheckerOnState(run, label, &checker_out_buf);
+        if (run.check_argv != null) checks_run += 1;
+
+        if (serial_observed != null or chk.failed) {
+            report.violations += 1;
+            const world: engine.WorldResult = .{ .k = k, .term = r.term, .landed = true, .violation = null };
+            const first = run.firsts.first_failure == null;
+            const first_checker = chk.failed and run.firsts.first_checker == null;
+            const ev = if (first or first_checker) evidence.measure(arena, initial, expected, crashed, l0_plan, .{
+                .configured = run.check_argv != null,
+                .failed = chk.failed,
+                .output_path = chk.out,
+            }) catch null else null;
+            if (first) {
+                run.firsts.first_failure = world;
+                run.firsts.first_failure_l2 = chk.failed;
+                run.firsts.serial_observed = serial_observed orelse "";
+                run.firsts.first_failure_ev = ev;
+            }
+            if (first_checker) {
+                run.firsts.first_checker = world;
+                run.firsts.checker_serial_observed = serial_observed orelse "";
+                run.firsts.first_checker_ev = ev;
+            }
+        }
+    }
+
+    if (run.check_argv != null) {
+        report.checker_note = std.fmt.allocPrint(arena, "{s}; ran in {d} world(s)", .{ report.checker_note, checks_run }) catch report.checker_note;
+        report.checker_worlds = checks_run;
+    }
+}
+
+const InterleavedRun = struct { term: posix.Term, trace: engine.TraceInfo };
+
+fn interleaveWorld(run: *Run, k: u32, pause: bool, world_stdout: []const u8, budget_ms: u64) InterleavedRun {
+    const gpa = run.gpa;
+    const args = run.parsed.args;
+    const arena = run.arena;
+    const state_abs = run.define.state_abs;
+    const state_alt = run.define.state_alt;
+    var kbuf: [16]u8 = undefined;
+    const kstr = std.fmt.bufPrint(&kbuf, "{d}", .{k}) catch unreachable;
+    var wt_buf: [contract.max_path]u8 = undefined;
+    const world_trace = std.fmt.bufPrint(&wt_buf, "{s}/trace-{d}.bin", .{ args.work, k }) catch setupError(.define_invalid, "path too long");
+    removeFile(world_trace);
+    removeFile(world_stdout);
+
+    var wcg = containment.spawn(true);
+    const wcg_ptr: ?*posix.CgroupSpawn = if (wcg) |*c| c else null;
+    const wsup = supervise.Spawn.start(gpa, arena, args.observe, run.rec.op_argv, world_trace, state_abs, state_alt, @intCast(k), containment.runName(wcg_ptr), containment.killName(wcg_ptr)) catch |e|
+        setupError(.environment, supervise.startFailure(e));
+    const term = posix.runChildCaptureWorld(gpa, wsup.argv, &.{
+        .{ "TOY_STATE", state_abs },
+        .{ contract.env.state_dir, state_abs },
+        .{ contract.env.state_dir_alt, state_alt },
+        .{ contract.env.trace_path, world_trace },
+        .{ contract.env.kill_at, kstr },
+        .{ contract.env.kill_group, "1" },
+        .{ contract.env.stop_at_kill, if (pause) "1" else "" },
+        .{ contract.env.seq_base, "" },
+        .{ contract.env.before_constructor, "" },
+        .{ contract.env.observe, args.observe.name() },
+        .{ contract.env.run_cgroup, containment.runName(wcg_ptr) },
+        .{ contract.env.kill_cgroup, containment.killName(wcg_ptr) },
+        .{ contract.env.kill_aside, containment.asideName(wcg_ptr) },
+        .{ preload_var, supervise.preloadFor(args.observe, run.define.shim) },
+    }, .{ .path = world_stdout, .exclusive = true }, budget_ms, args.cwd, wcg_ptr) catch |e| switch (e) {
+        error.TimedOut => unknown(.child_timed_out, "an interleaved world's paused copy was still running after the --world-timeout budget expired; it was sent SIGKILL, and the remaining worlds cannot be judged", .raise_world_timeout),
+        else => |se| spawnFailure(se, .exploring, "could not run --operation"),
+    };
+    if (supervise.handoverFailure(wsup.finish(), term, "a world's run")) |why| setupError(.environment, why);
+    const wtrace = refuse.readTraceOrRefuse(world_trace, trace_cap_world, .{ .root = state_abs, .alt = state_alt, .scratch = args.scratch, .initial = &run.initial }, "could not read a world trace");
+    refuse.answerForOversizedTrace(wtrace, "an explored world", trace_cap_world);
+    if (wtrace.foreign_kill_point and !run.admitted.children_admitted)
+        unknown(.child_touched_state_dir, boundary.foreignTouchDetail(arena, wtrace.first_foreign, "in an explored world", null, "a process other than the subject performed a state-directory operation in an explored world"), .class_wall);
+    if (wtrace.first_unsupported) |name|
+        unknown(.unsupported_syscall_observed, name, .class_wall);
+    if (wtrace.unresolved_refusing != null)
+        unknown(.unresolvable_path, boundary.unresolvedDetail(arena, wtrace.unresolved_refusing, " in an explored world", "an operation was observed in an explored world whose path could not be determined, so it cannot be placed among the crash points"), .class_wall);
+    if (wtrace.crossedProcessBoundary())
+        unknown(.child_process_detected, "a process boundary appeared in an interleaved world that the recording never crossed", .class_wall);
+    if (wtrace.hard_boundary) |hb| switch (hb) {
+        .exec => unknown(.child_process_detected, "the target replaced its own image in an explored world without an unbroken chain of observation", .class_wall),
+        else => {},
+    };
+    if (wtrace.detached != null and !containment.holds(wcg_ptr, &wtrace, false))
+        containment.refuseDetach(arena, wcg_ptr, " in an explored world");
+    if (wtrace.second_writer_thread) |op|
+        unknown(.multiple_threads_detected, boundary.threadDetail(arena, wtrace.first_writer_thread, op, wtrace.first_writer_thread_detached, " in an explored world"), boundary.threadsStep(args.observe, boundary.oneThreadSwitchSet(&envValue)));
+    if (wtrace.kill_records != wtrace.kill_point_count)
+        unknown(.sequence_numbering_broken, "the run's kill-point numbering has gaps or duplicates in an explored world; the world's crash-point address cannot be trusted", .class_wall);
+    // Not `k > n`: the paused copy runs to its end in every interleaved world, and a process it
+    // left is one nothing killed, as in the baseline.
+    if (wcg_ptr) |cg| containment.afterRun(arena, cg, &wtrace, " in an explored world", true);
+    return .{ .term = term, .trace = wtrace };
+}
+
 fn phaseReport(run: *Run) void {
     const mode = run.parsed.mode;
     const case_arg = run.parsed.case_arg;
@@ -2718,7 +3018,12 @@ fn phaseReport(run: *Run) void {
         const after_path = if (addr.after) |a| a.path else "";
         const before = if (addr.before) |b| b.class.name() else "(end)";
         const before_path = if (addr.before) |b| b.path else "";
-        const invariant = if (first_failure_l0 and first_failure_l2)
+        const serial = run.firsts.serial_observed.len > 0;
+        const invariant = if (serial and first_failure_l2)
+            "the serial result, and the checker"
+        else if (serial)
+            "the serial result (interleave)"
+        else if (first_failure_l0 and first_failure_l2)
             "built-in atomicity, and the checker"
         else if (first_failure_l0)
             "built-in atomicity (L0)"
@@ -2728,8 +3033,10 @@ fn phaseReport(run: *Run) void {
             "the post-success invariant (L1)"
         else
             "the checker (L2)";
-        const what = report.violationObserved(f.violation);
-        const path_shown = if (first_failure_path_len > 0)
+        const what = if (serial) run.firsts.serial_observed else report.violationObserved(f.violation);
+        const path_shown = if (serial)
+            "(the state, against the serial result)"
+        else if (first_failure_path_len > 0)
             first_failure_path[0..first_failure_path_len]
         else
             "(named by the checker, not by path)";
@@ -2741,7 +3048,7 @@ fn phaseReport(run: *Run) void {
             // state directory from any cwd, or the replay silently sets up elsewhere.
             var case_args = args;
             case_args.state = state_abs;
-            break :blk case.writeCase(arena, args.work, case_args, f.k, n, trace, if (f.violation) |v| @tagName(v) else "checker");
+            break :blk case.writeCase(arena, args.work, case_args, f.k, n, trace, if (f.violation) |v| @tagName(v) else if (serial) "serial" else "checker");
         } else null;
         const case_shown = saved_case orelse (if (mode == .replay) case_arg.? else "(not saved)");
         const replay_cmd = if (saved_case) |sc|
@@ -2783,7 +3090,9 @@ fn phaseReport(run: *Run) void {
         // explore-only condition as the first: a replay does not mint (ADR 0009).
         const checker_detail: ?report.CheckerEarliest = if (first_checker) |fc| blk: {
             const caddr = trace.logicalAddress(fc.k);
-            const cinvariant = if (first_checker_l0)
+            const cinvariant = if ((run.firsts.checker_serial_observed.len > 0))
+                "the serial result, and the checker"
+            else if (first_checker_l0)
                 "built-in atomicity, and the checker"
             else if (first_checker_l1)
                 "the post-success invariant, and the checker"
@@ -2795,7 +3104,7 @@ fn phaseReport(run: *Run) void {
             else if (only_k == null and saved_case != null) blk2: {
                 var case_args = args;
                 case_args.state = state_abs;
-                break :blk2 case.writeCase(arena, args.work, case_args, fc.k, n, trace, if (fc.violation) |v| @tagName(v) else "checker");
+                break :blk2 case.writeCase(arena, args.work, case_args, fc.k, n, trace, if (fc.violation) |v| @tagName(v) else if ((run.firsts.checker_serial_observed.len > 0)) "serial" else "checker");
             } else null;
             const ccase = if (same_world) case_shown else (csaved orelse "(not saved)");
             const creplay = if (same_world)
@@ -2823,7 +3132,7 @@ fn phaseReport(run: *Run) void {
                         first_checker_path[0..first_checker_path_len]
                     else
                         "(named by the checker, not by path)",
-                    .observed = report.violationObserved(fc.violation),
+                    .observed = if ((run.firsts.checker_serial_observed.len > 0)) run.firsts.checker_serial_observed else report.violationObserved(fc.violation),
                     .replay = creplay,
                     .case_path = ccase,
                     .draft = d,
@@ -2841,7 +3150,7 @@ fn phaseReport(run: *Run) void {
                         first_checker_path[0..first_checker_path_len]
                     else
                         "(named by the checker, not by path)",
-                    .observed = report.violationObserved(fc.violation),
+                    .observed = if ((run.firsts.checker_serial_observed.len > 0)) run.firsts.checker_serial_observed else report.violationObserved(fc.violation),
                     .invariant = cinvariant,
                 },
                 .case = ccase,
@@ -2896,7 +3205,9 @@ fn phaseReport(run: *Run) void {
         // crash point rather than the whole world. Replacing the `unset` with the variable
         // by hand reproduces the world exactly — from a shell you are willing to lose.
         say("\n", .{});
-        if (args.observe == .supervised)
+        if (report.interleave != null)
+            say("reproduce   {s}  (an interleaved world pauses the operation and runs a second copy; a hand-run line would kill it instead)\n", .{if (saved_case != null) replay_cmd else "this run again"})
+        else if (args.observe == .supervised)
             say("reproduce   {s}  (the crash point is the engine's, from outside the operation; there is no shim to preload)\n", .{if (saved_case != null) replay_cmd else "this run again, with --observe supervised"})
         else
             say("reproduce   {s}\n", .{report.reproduceLine(arena, .{
@@ -2930,7 +3241,9 @@ fn phaseReport(run: *Run) void {
     // replay, whose one world answers a different question.
     if (only_k == null) refuse.requireSomethingCouldFail(arena, run.rec.judgeable, run.check_argv != null, args.marker != null, run.firsts.marker_worlds);
 
-    say("{s}  {d}/{d} explored worlds satisfied the built-in atomicity invariant under a process kill{s}{s}\n", .{ report.paint("PASS"), report.explored, report.explored, report.singleCrashPointClause(n), report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged) });
+    if (report.interleave != null)
+        say("{s}  {d}/{d} crash point(s) left the serial result with a second copy run there{s}\n", .{ report.paint("PASS"), report.explored - 1, report.explored - 1, report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged) })
+    else say("{s}  {d}/{d} explored worlds satisfied the built-in atomicity invariant under a process kill{s}{s}\n", .{ report.paint("PASS"), report.explored, report.explored, report.singleCrashPointClause(n), report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged) });
     report.sayAccount(arena, .pass, n);
     if (args.json) |jp| report.writeJsonReport(arena, jp, "PASS", @backingInt(contract.ExitCode.pass), null, null, null, null, null, null);
     report.emitSeal();
@@ -3885,9 +4198,64 @@ test "toml paths resolve against the toml's directory, commands only when they n
     try std.testing.expectEqualStrings(" ./check.sh", spaced.argv[0]);
 }
 
+const InterleaveRefusal = struct { reason: contract.SetupErrorReason, text: []const u8 };
+
+fn interleaveRefusal(args: cli.Args) ?InterleaveRefusal {
+    if (builtin.os.tag != .linux)
+        return .{ .reason = .platform_unsupported, .text = "--interleave runs on Linux only: it pauses the operation at a crash point with a stop at the calling thread, which this platform does not deliver there" };
+    if (args.observe != .wrappers)
+        return .{ .reason = .platform_unsupported, .text = "--interleave runs under the default observation mode only; drop --observe" };
+    if (args.world_timeout_s == null)
+        return .{ .reason = .define_invalid, .text = "--interleave needs --world-timeout: a second copy that never ends would otherwise hold the run forever" };
+    if (args.interleave_wait_s >= args.world_timeout_s.?)
+        return .{ .reason = .define_invalid, .text = "--interleave waits on the second copy before resuming the first, so --world-timeout, which bounds the whole world, must be longer than that wait" };
+    if (args.recovery != null)
+        return .{ .reason = .define_invalid, .text = "--interleave does not run a recovery: an interleaved world ends with both copies finished, not in a crash state a recovery would start from" };
+    if (args.leave_crash_state)
+        return .{ .reason = .define_invalid, .text = "--leave-crash-state has no crash state to leave in an interleaved world: both copies run to their end" };
+    if (args.marker != null)
+        return .{ .reason = .define_invalid, .text = "--interleave does not take a success marker: a marker is about one run's output, and an interleaved world has two" };
+    if (pinning.asked(args.apparatus))
+        return .{ .reason = .define_invalid, .text = "--interleave does not take pin:random: the second copy would draw the first copy's numbers, or none of them" };
+    return null;
+}
+
 fn snapshotsEqual(a: engine.Snapshot, b: engine.Snapshot) bool {
     var one: [1]engine.Difference = undefined;
     return engine.diffSnapshots(a, b, &one).equal();
+}
+
+test "an interleaved run is refused where its pause or its yardstick cannot hold" {
+    const base: cli.Args = .{ .interleave = true, .world_timeout_s = 60 };
+    if (builtin.os.tag != .linux) {
+        try std.testing.expectEqual(contract.SetupErrorReason.platform_unsupported, interleaveRefusal(base).?.reason);
+        return;
+    }
+    try std.testing.expect(interleaveRefusal(base) == null);
+    const Case = struct { args: cli.Args, reason: contract.SetupErrorReason };
+    var syscalls = base;
+    syscalls.observe = .syscalls;
+    var no_budget = base;
+    no_budget.world_timeout_s = null;
+    var wait_not_shorter = base;
+    wait_not_shorter.world_timeout_s = contract.interleave_wait_default_s;
+    var with_recovery = base;
+    with_recovery.recovery = "fix";
+    var leave = base;
+    leave.leave_crash_state = true;
+    var pinned = base;
+    pinned.apparatus = &.{"pin:random"};
+    var marked = base;
+    marked.marker = "done";
+    for ([_]Case{
+        .{ .args = syscalls, .reason = .platform_unsupported },
+        .{ .args = no_budget, .reason = .define_invalid },
+        .{ .args = wait_not_shorter, .reason = .define_invalid },
+        .{ .args = with_recovery, .reason = .define_invalid },
+        .{ .args = leave, .reason = .define_invalid },
+        .{ .args = pinned, .reason = .define_invalid },
+        .{ .args = marked, .reason = .define_invalid },
+    }) |c| try std.testing.expectEqual(c.reason, interleaveRefusal(c.args).?.reason);
 }
 
 test "the shipped engine options carry the shipped values (#365)" {

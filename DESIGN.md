@@ -173,7 +173,7 @@ A directory a recorded `rename` moved into the judged tree from outside it is at
 
 ### Not in v0
 
-Network failure, clock manipulation, multi-process races, distributed systems, and partial remote effects are not goals for v0. They remain future possibilities — not before the first product value is proven.
+Network failure, clock manipulation, multi-process races, distributed systems, and partial remote effects are not goals for v0. They remain future possibilities — not before the first product value is proven. One of them has a first form since 1.x: two copies of one operation run at once, `explore --interleave` (ADR 0148); races between different programs remain outside.
 
 ## 10. Primary Users
 
@@ -338,7 +338,7 @@ This document still does not choose OS primitives or interception techniques. It
 - Arbitrary syscall fault injection in general.
 - Network fault injection.
 - Clock manipulation.
-- Thread scheduling control.
+- Thread scheduling control. (`--interleave` pauses a process at a crash point and resumes it; it schedules no threads.)
 - Full deterministic execution.
 - Distributed system verification.
 - Remote service consistency.
@@ -462,7 +462,7 @@ Ponytail is a sibling project by the same author; the pairing is a brand contras
 Only after process crash × persistent state proves real value does Sideeye consider its next malice. Candidates, in no committed order:
 
 - **Power failure and torn writes** — losing unsynced data, reordered writes; the natural deepening of the crash model. Considered after 1.0 and declined for now: ADR 0110 gives the reasons and what would reopen it.
-- Concurrent processes.
+- Concurrent processes — a first form exists: `explore --interleave` runs a second copy of the operation at each crash point (ADR 0148). More copies, other operations beside it and a pause inside the second copy remain candidates.
 - Network ambiguity.
 - Clock anomalies.
 - Partial remote execution.

@@ -238,6 +238,8 @@ pub fn stopLiveSidecar() posix.SidecarEnd {
 pub fn stopForSignal(sig: c_int) noreturn {
     posix.beginStopping();
     _ = stopLiveSidecar();
+    // A refusal ends the run; a second copy still running would go on writing the state.
+    posix.stopSecondChild();
     dropCapture();
     posix.writeStopLine(sig, 0);
     posix.dieBySignal(sig);
@@ -245,6 +247,7 @@ pub fn stopForSignal(sig: c_int) noreturn {
 
 pub fn unknown(reason: contract.UnknownReason, detail: []const u8, next: contract.NextStep) noreturn {
     _ = stopLiveSidecar();
+    posix.stopSecondChild();
     dropCapture();
     const next_step = next.render();
     if (json_path) |jp| if (json_arena) |ja|
@@ -483,6 +486,7 @@ test "cwdObservation names an argument found only under the toml's directory (#7
 /// reads the rest of that line as the detail.
 pub fn setupError(reason: contract.SetupErrorReason, detail: []const u8) noreturn {
     _ = stopLiveSidecar();
+    posix.stopSecondChild();
     dropCapture();
     if (json_path) |jp| if (json_arena) |ja|
         report.writeJsonReport(ja, jp, "SETUP_ERROR", @backingInt(contract.ExitCode.setup_error), null, null, null, reason, detail, null);

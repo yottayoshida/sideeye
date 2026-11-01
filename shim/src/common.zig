@@ -112,6 +112,7 @@ pub const DARWIN_RENAME_SWAP: c_uint = 0x2;
 pub const DARWIN_RENAME_EXCL: c_uint = 0x4;
 pub const ATTR_CMN_NAME: u32 = 0x00000001;
 const SIGKILL: c_int = 9;
+const SIGSTOP: c_int = if (is_darwin) 17 else 19;
 
 // These differ between the two platforms and getting them wrong is quiet: the trace
 // file would open with the wrong semantics — truncating instead of appending, or
@@ -459,6 +460,7 @@ var alt_dir_len: usize = 0;
 var trace_fd: c_int = -1;
 var kill_at: u32 = 0;
 var kill_group: bool = false;
+var stop_at_kill: bool = false;
 /// The run's cgroup as `/proc/self/cgroup` spells it (v17, #559): the path after `0::`, or
 /// empty when the engine gave this spawn no cgroup. Copied out of the environment at init,
 /// because the target owns its environment after that and the question is asked again at
@@ -1072,6 +1074,8 @@ pub fn init() void {
     // Only a run the engine put in its own process group may take the group down; see
     // `contract.env.kill_group` for why the shim cannot decide this for itself.
     kill_group = c.getenv(contract.env.kill_group) != null;
+    // By value, not presence: the engine pins it empty on a world it does not pause.
+    stop_at_kill = if (c.getenv(contract.env.stop_at_kill)) |v| v[0] != 0 else false;
 
     const ts = mine();
     if (c.getenv(contract.env.seq_base)) |b| ts.seq = parseU32(std.mem.span(b));
@@ -2014,6 +2018,14 @@ fn observe(ts: *ThreadState, op: contract.OpClass, raw_path: []const u8, raw_aux
             // before the k-th operation" would rest on the engine having set a variable,
             // not on anything the target actually did.
             writeRecord(ts, .kill_landed, s, path, aux);
+            // At the calling thread, not `kill(0, …)`: a process-directed stop may be taken by
+            // another thread, and this one would return and perform the k-th call before the
+            // group stops. Before the cgroup branch, which would kill the run it means to pause.
+            if (stop_at_kill) {
+                _ = c.raise(SIGSTOP);
+                writeRecord(ts, op, s, path, aux);
+                return;
+            }
             // A contained world (v17, #559) is killed twice over, so it loses nothing an
             // uncontained world's group kill took. This process first steps aside, from the
             // run's `work` cgroup up into the run's own; then `work`'s `cgroup.kill` takes every

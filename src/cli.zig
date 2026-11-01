@@ -81,6 +81,8 @@ pub const Args = struct {
     apparatus: []const []const u8 = &.{},
     scratch: []const []const u8 = &.{},
     stop_when_orphaned: bool = false,
+    interleave: bool = false,
+    interleave_wait_s: u32 = contract.interleave_wait_default_s,
 };
 
 pub const Carry = enum { printed, in_case, left_off, derived };
@@ -139,6 +141,9 @@ pub fn carried(comptime field: std.meta.FieldEnum(Args)) struct { replay: Carry,
         .twice => .{ .replay = .left_off, .next = .left_off },
         // Left off: a pasted line has a shell for a parent, not an MCP host that may vanish.
         .stop_when_orphaned => .{ .replay = .left_off, .next = .left_off },
+        // Not printed: a replay reads them from the case, and a line carrying them too would say it twice.
+        .interleave => .{ .replay = .in_case, .next = .left_off },
+        .interleave_wait_s => .{ .replay = .in_case, .next = .left_off },
         .has_oracle, .observe_named, .work_named => .{ .replay = .derived, .next = .derived },
     };
 }
@@ -162,8 +167,8 @@ const usage_fmt =
     \\  sideeye demo [--shim <lib>]
     \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace> | --no-oracle] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice] [--state-under <dir>]
     \\  sideeye preflight --config <sideeye.toml> [--shim <lib>] [--oracle <strace> | --no-oracle] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice] [--state-under <dir>]
-    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--recovery <cmd> --recovery-check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage | --no-oracle] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--state-under <dir>]
-    \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage | --no-oracle] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--state-under <dir>]
+    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--recovery <cmd> --recovery-check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage | --no-oracle] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--interleave] [--state-under <dir>]
+    \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage | --no-oracle] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--interleave] [--state-under <dir>]
     \\  sideeye replay <case.json> [--shim <lib>] [--recovery <cmd> --recovery-check <cmd>] [--fresh-state] [--leave-crash-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage | --no-oracle] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye evidence <case.json>
     \\  sideeye mcp
@@ -247,8 +252,8 @@ const usage_fmt =
     \\               terminal or pipe sideeye itself was started from
     \\  --setup      command that produces the initial state (run once)
     \\  --operation  command to explore; killed before each operation that can change state
-    \\  --expect-status  the exit status that means the operation completed (0..255,
-    \\               default 0). Governs the recording run and the un-killed baseline
+    \\  --expect-status  exit status of a completed operation (0..255, default 0).
+    \\               Governs the recording run and the un-killed baseline
     \\               world alike; killed worlds still require the kill signal itself
     \\  --shim       path to libsideeye_shim.so; when omitted it is looked for
     \\               beside this binary (its sibling, then ../lib — the tarball
@@ -377,6 +382,10 @@ const usage_fmt =
     \\               this flag is not a promise of a hang-free run. Setting it also
     \\               resets SIGCHLD to its default disposition for the whole run.
     \\               Not settable over MCP today.
+    \\  --interleave
+    \\               pause each crash point and run a second copy to its end.
+    \\               FAIL when the two leave other than the serial result. Linux,
+    \\               and --world-timeout over 5 s, only; the copy is waited on 5 s
     \\  --twice
     \\               (preflight only) observe the operation TWICE, each run from the
     \\               restored pre-state, the second at least two seconds after the
@@ -1550,6 +1559,13 @@ pub fn parse(argv: []const []const u8) Parsed {
         if (std.mem.eql(u8, argv[i], "--fresh-state")) {
             if (mode != .replay) setupError(.define_invalid, "--fresh-state applies to replay only (explore's state may be legitimately pre-populated)");
             args.fresh_state = true;
+            i += 1;
+            continue;
+        }
+        if (std.mem.eql(u8, argv[i], "--interleave")) {
+            if (mode != .explore) setupError(.define_invalid, "--interleave applies to explore; a replay takes it from the case");
+            args.interleave = true;
+            report.interleave = .{ .wait_s = args.interleave_wait_s };
             i += 1;
             continue;
         }

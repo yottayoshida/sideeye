@@ -420,7 +420,13 @@ stay the same.
    (`chacha20-v1`), written only for a define that asks for the pin, so that a replay draws the
    streams the counterexample was found with; a v8 file without the entry, without either key, with
    a malformed seed or a generator this binary does not have, and an older file carrying the entry
-   or either key, refuses as malformed. An earlier binary refuses a v8 file at parse. A future trace-contract bump is therefore *not* a
+   or either key, refuses as malformed. An earlier binary refuses a v8 file at parse. Version 9
+   (#961, ADR 0148, 2026-11-01) is version 7's shape with `observe` always `wrappers`, no pin, and a
+   top-level `interleave_wait_seconds` (1..86400), written only for a case an `explore --interleave`
+   saved: its world is a pause and a second copy, not a kill, so the wait is part of the question the
+   case asks and a replay takes it from the file. A v9 file without the key, with another mode, with
+   the pin, and an older file carrying the key, refuses as malformed; an earlier binary refuses a v9
+   file at parse. A future trace-contract bump is therefore *not* a
    broken promise: old cases refuse with the mismatch named, and that
    refusal is the promised behavior.
    **Read on 2026-10-10** (#756, ADR 0107): a case saved from a define whose checker rejects the

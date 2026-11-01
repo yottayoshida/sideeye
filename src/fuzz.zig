@@ -413,7 +413,7 @@ fn fuzzCase(_: void, smith: *std.testing.Smith) anyerror!void {
     switch (case.read(as.allocator(), text)) {
         .ok => |c| {
             try std.testing.expectEqualStrings("sideeye/case", c.schema);
-            try std.testing.expect(c.case_version >= 1 and c.case_version <= 8);
+            try std.testing.expect(c.case_version >= 1 and c.case_version <= 9);
             // main.zig reads the mode with `.?`: read must not accept one that does not parse.
             if (c.observe) |m| {
                 const mode = contract.ObserveMode.parse(m) orelse return error.ReadAcceptedAnUnknownMode;
