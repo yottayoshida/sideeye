@@ -3157,7 +3157,7 @@ else
 fi
 o=$(TOY_TWICE_COUNTER=/tmp/acc-710/w/count "$SIDEEYE" preflight --twice --state /tmp/acc-710/w/state \
     --setup "$OUT/toy-twice init" --operation "$OUT/toy-twice" --shim "$SHIM" --work /tmp/acc-710/w/work 2>&1)
-want710 "preflight --twice's second run ending differently names what the restore does not put back" "$o" $? 2 recording_run_failed "not their owners, set-id or sticky bits, or timestamps"
+want710 "preflight --twice's second run ending differently names what the restore does not put back" "$o" $? 2 recording_run_failed "not their owners, set-id or sticky bits, extended attributes or timestamps"
 o=$(TOY_THREAD_RACE=1 env $no_switches "$SIDEEYE" explore --state /tmp/acc-710/t/state --setup "$OUT/toy-bug init" \
     --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-710/t/work --oracle /usr/bin/strace 2>&1)
 rc=$?
@@ -5032,7 +5032,7 @@ o=$(env TOY_CHMOD=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/meta.json 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "ownership/permission/timestamp write(s) observed and excluded"; then
+if [ "$rc" = "0" ] && echo "$o" | grep -q "ownership/permission/timestamp/extended-attribute write(s) observed and excluded"; then
     echo "ok   a chmod on state is excluded from judgement and named in the text report"
 else
     echo "FAIL chmod: exit $rc (wanted PASS with the metadata note)"
@@ -9174,19 +9174,20 @@ for anon_mode in $anon_modes; do
         fails=$((fails + 1))
     fi
 done
-# The control (#684): the writing side of the same family is still a call the oracle has no
-# class for, and refuses by name. A list grown into "anything *xattr" would let it through.
-# `TOY_SETXATTR` is read by rotate only (cmd_rotate_body), so setup never issues it and the
-# line the oracle refuses on is the recording's own.
+# Not folded into the read list: grown into "anything *xattr", it would leave the write unnamed.
+# Not asserted on the call's result: tmpfs may answer EOPNOTSUPP, and the attempt is what the
+# oracle names.
+# `TOY_SETXATTR` is read by rotate only (cmd_rotate_body), so setup never issues it.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$(TOY_SETXATTR=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
-    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/xattr.json 2>&1)
 rc=$?
-if refused_uncredited unsupported_syscall_observed "$rc" "$o" && printf '%s\n' "$o" | sed -n 2p | grep -q 'setxattr'; then
-    echo "ok   setxattr on a state file still refuses unsupported_syscall_observed, naming the call"
+meta=$(field /tmp/acc/xattr.json metadata_writes)
+if [ "$rc" = "0" ] && case "$meta" in *"observed and excluded"*setxattr*) true ;; *) false ;; esac; then
+    echo "ok   setxattr on a state file is excluded from judgement and named in metadata_writes"
 else
-    echo "FAIL setxattr on a state file was not refused by name: exit $rc"
+    echo "FAIL setxattr on a state file: exit $rc (wanted PASS with setxattr named in metadata_writes)"
     echo "$o" | sed 's/^/     | /' | head -4
     fails=$((fails + 1))
 fi

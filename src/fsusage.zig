@@ -354,9 +354,9 @@ fn openIsWriteCapable(middle: []const u8) bool {
 fn isMetadataCall(call_in: []const u8) bool {
     const call = canonicalCall(call_in);
     const names = [_][]const u8{
-        "chmod",    "fchmod", "fchmodat", "chown",     "fchown",      "lchown",
-        "fchownat", "utimes", "futimes",  "utimensat", "setattrlist", "chflags",
-        "fchflags",
+        "chmod",    "fchmod",   "fchmodat",  "chown",       "fchown",       "lchown",
+        "fchownat", "utimes",   "futimes",   "utimensat",   "setattrlist",  "chflags",
+        "fchflags", "setxattr", "fsetxattr", "removexattr", "fremovexattr",
     };
     for (names) |n| if (std.mem.eql(u8, call, n)) return true;
     return false;
@@ -1749,6 +1749,33 @@ test "an unknown CALL inside the judged directory refuses rather than being igno
     switch (r.defect.?) {
         .unknown_call => {},
         else => return error.WrongDefect,
+    }
+}
+
+test "an extended-attribute write on a state file is reported as metadata, and one outside the state is not" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const Case = struct { line: []const u8, reported: bool };
+    const cases = [_]Case{
+        .{ .line = "05:18:09.027977  setxattr          /tmp/st/app.conf                   0.000003   gsed.6341\n", .reported = true },
+        .{ .line = "05:18:09.027977  removexattr       /tmp/st/app.conf                   0.000003   gsed.6341\n", .reported = true },
+        .{ .line = "05:18:09.027977  fsetxattr         F=3                                0.000003   gsed.6341\n", .reported = true },
+        .{ .line = "05:18:09.027977  fremovexattr      F=3                                0.000003   gsed.6341\n", .reported = true },
+        .{ .line = "05:18:09.027977  setxattr          /tmp/st/app.conf                   0.000003   mdworker_shared.41490\n", .reported = true },
+        .{ .line = "05:18:09.027977  setxattr          /etc/elsewhere                     0.000003   gsed.6341\n", .reported = false },
+    };
+    for (cases) |c| {
+        const text = try std.fmt.allocPrint(a, "05:18:09.000001  open              F=9   /work/trace.bin                       0.000100   gsed.6341\n" ++
+            "05:18:09.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   gsed.6341\n" ++
+            "05:18:09.000003  open              F=3        (R___________)  /tmp/st/app.conf  0.000072   gsed.6341\n" ++
+            "{s}" ++
+            "05:18:09.090000  open              F=2   /tmp/st/sentinel-b                    0.000100   gsed.6341\n", .{c.line});
+        const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{}, &.{});
+        try testing.expect(r.defect == null);
+        try testing.expectEqual(@as(usize, 0), r.parsed.classes.items.len);
+        try testing.expectEqual(@as(usize, 0), r.parsed.children);
+        try testing.expectEqual(@as(usize, @intFromBool(c.reported)), r.parsed.metadata_observed.items.len);
     }
 }
 

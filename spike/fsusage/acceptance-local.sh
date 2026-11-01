@@ -49,6 +49,7 @@ cat > "$WORK/libc_toy.c" <<'EOF'
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/xattr.h>
 #include <unistd.h>
 int main(void) {
     const char *d = getenv("PROBE_STATE"); if (!d) d = "./state";
@@ -61,6 +62,10 @@ int main(void) {
     int fd = open(p, O_CREAT | O_WRONLY, 0600); /* in place, over the bytes `keep` holds (ADR 0091) */
     if (fd < 0) { perror("open"); return 1; }
     if (write(fd, "ok\n", 3) != 3) { perror("write"); return 1; }
+    if (getenv("PROBE_XATTR")) {
+        if (setxattr(p, "org.sideeye.probe", "1", 1, 0, 0) != 0) { perror("setxattr"); return 1; }
+        if (fsetxattr(fd, "org.sideeye.probe", "2", 1, 0, 0) != 0) { perror("fsetxattr"); return 1; }
+    }
     if (close(fd) != 0) { perror("close"); return 1; }
     const char *linger = getenv("PROBE_LINGER_S"); /* in this image: an exec'd sleep is a boundary fs_usage refuses */
     if (linger) sleep((unsigned)atoi(linger));
@@ -796,8 +801,24 @@ for lang in rs go; do
         fi
     done
 done
+
+echo "=================================================================="
+echo "Check 16 — an extended-attribute write on a state file is set aside as metadata (#947)"
+echo "  predicate: with PROBE_XATTR the toy also calls setxattr and fsetxattr on keep; the run"
+echo "             PASSes oracle-verified and metadata_writes names both calls"
+echo "  control:   check 1's run, the same toy without PROBE_XATTR: metadata_writes names neither"
+seed_keep c16
+rc=$(PROBE_XATTR=1 run c16 libc_toy --oracle-fs-usage)
+echo "  control metadata_writes=$(field c1 metadata_writes)"
+echo "  xattr   exit=$rc oracle_verified=$(field c16 oracle_verified) metadata_writes=$(field c16 metadata_writes)"
+case "$(field c1 metadata_writes)" in *setxattr*) fail "check 16: the control names an attribute write it never made" ;; esac
+[ "$rc" = 0 ] || { sed -n '1,12p' "$WORK/c16.txt"; fail "check 16: the run with attribute writes did not PASS"; }
+[ "$(field c16 oracle_verified)" = True ] || fail "check 16: the PASS is not oracle-verified"
+case "$(field c16 metadata_writes)" in *"fsetxattr"*) ;; *) fail "check 16: metadata_writes does not name fsetxattr" ;; esac
+# Anchored on the separator: `fsetxattr x1` contains `setxattr x` too.
+case "$(field c16 metadata_writes)" in *": setxattr x"* | *", setxattr x"*) ;; *) fail "check 16: metadata_writes does not name setxattr" ;; esac
 echo "  PASS"
 
 echo "=================================================================="
-echo "all fifteen checks passed"
+echo "all sixteen checks passed"
 echo "artifacts: $WORK"

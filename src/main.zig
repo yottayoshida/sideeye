@@ -1565,7 +1565,7 @@ fn phaseStructural(run: *Run) void {
 
 /// One constant for both forms of the `metadata` line: two copies of a sentence drift. `docs/cli.md`
 /// quotes it.
-const restore_carries = "Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore";
+const restore_carries = "Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, extended attributes or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore";
 
 fn phaseOracle(run: *Run) void {
     const gpa = run.gpa;
@@ -1687,7 +1687,7 @@ fn phaseOracle(run: *Run) void {
             }
             break :blk std.fmt.allocPrint(
                 arena,
-                "{d} ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): {s}. " ++ restore_carries,
+                "{d} " ++ report.metadata_kinds ++ " write(s) observed and excluded from judgement — outside the judged state (#121, #190, #947): {s}. " ++ restore_carries,
                 .{ items.len, names.items },
             ) catch "observed (detail unavailable)";
         };
