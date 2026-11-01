@@ -298,6 +298,14 @@ stay the same.
    allowance rather than a break. No exit code moves and a saved case replays as it did;
    `contract_version` does not move.
 
+   **Five optional fields, 2026-11-01 (#959, ADR 0144).** `syncs` (string),
+   `renamed_without_fsync` and `renamed_without_dir_sync` (arrays of strings) with their two
+   `_omitted` counts state what the recording run did about syncs before and after its renames
+   into the judged state. They change neither the verdict nor the exit code, and are present on
+   a PASS and a FAIL only, `renamed_without_dir_sync` and its count only when the define
+   declared a marker; that presence is part of what 1.x keeps. The allowance covers all five
+   with no ruling of their own.
+
 3. **Exit codes.** When a run produces a verdict, that verdict's exit code is
    fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is never 0.
    The promise runs in that direction. **Exit 0 is not reserved to PASS**: it
