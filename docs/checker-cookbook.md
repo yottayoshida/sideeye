@@ -27,7 +27,7 @@ To adapt this: Swap `TOY` for your own binary and the two subcommands (`doctor`,
 # agree. Both directions are violations: claiming health while the key cannot be read,
 # and claiming trouble while it can.
 #
-# Runs after a restart, in a fresh process, exactly as DESIGN §12 requires. Exit 0
+# Runs after the crash, in a fresh process, exactly as DESIGN §12 requires. Exit 0
 # means the invariant holds.
 #
 # Environment:
@@ -268,6 +268,19 @@ after="$(legs) d=$d"; echo "checker(alembic) after recovery: $after"
 case "$after" in "a=ok b=ok c=ok d=ok") exit 0 ;; *) exit 1 ;; esac
 ```
 <!-- END generated: cookbook recipe 6 -->
+
+## Recipe 7 — show each leg failing, with `[controls]`
+
+A checker is trusted once each of its legs has been seen red, and seen red alone. The campaigns above wrote that proof by hand: one script per leg that builds a broken state, a loop that runs the checker over each, and a reader of the output (`spike/dogfood/2026-10-14-mechanisms/apparatus/controls.sh`). `sideeye preflight --config` runs it from the define instead (#943, [ADR 0143](adr/0143-a-define-declares-its-controls-and-preflight-reports-which-legs-each-turns-red.md)). Two things to add:
+
+- **One `[controls]` line per leg**, the key the leg's name, the value a command that breaks the state for that leg. It runs on the state the recording left — the completed state, as the hand-written controls built — so it breaks what the operation made, not the seed.
+- **One line per leg into `$SIDEEYE_LEGS`**, `<leg> ok` or `<leg> fail`, after the checker has decided each. Write every leg, not only the first red one: a checker that stops at its first red leg reads `legs_incomplete`, because a second red leg would be hidden. Fall back to the null device when `SIDEEYE_LEGS` is unset, so the checker still runs by hand.
+
+`spike/controls-943/apparatus/` is the 2026-10-14 Alembic define with its four hand-written controls declared that way. Preflight reports the baseline `none`, controls b, c and d `only_its_leg`, and control a — a second revision recorded beside the first — `more_than_its_leg`, red on a and d: the next `alembic upgrade head` refuses the doubled version table too. That is the coupling Recipe 6's "two things not to copy" describes, now named by the run rather than found by a reader. The same words were in the hand-written transcript (`spike/dogfood/2026-10-14-mechanisms/transcripts/controls.txt`), where nothing pointed at them.
+
+What `[controls]` cannot say is whether a leg asks what the target promises. In the 2026-10-15 authoring run (`spike/dogfood/2026-10-15-authoring/RESULTS.md`), yoyo's `control-record.sh` turned only its own leg red — and both graders still found it coupled, because the target's next run leaves the final schema wrong, which the subject's next-run leg did not check; and `control-schema.sh` turned its leg red over an extra index the card's legs do not forbid. Both are about the legs, not about which of them went red, and only someone who knows the target's contract can see them. The words are about the checker you wrote.
+
+To adapt this: Swap the four control scripts for one per leg of your checker, each breaking that leg's part of the completed state, and have your checker write each leg's line from the value it decided that leg by — the Python that judges legs a to c writes their lines, and the shell writes d's from its own variable. Not read back off the checker's printed `a=… b=…` line: a reason with a space or a `b=ok` inside it would be read as another leg. Writing from the decided value is the part to copy.
 
 ## Failure patterns, each with the run that taught it
 

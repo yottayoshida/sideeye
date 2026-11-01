@@ -42,8 +42,8 @@ over refusing it for good (2026-10-31).
 - **The restore does not carry attributes**, unlike permission bits (DESIGN, the rebuild; ADR 0118). Every run starts
   without the attributes the setup set, and the restore's sentence in the report now says it does not put them back.
   The state directory itself is not rebuilt, so an attribute on it stays as the last run left it — as its mode does.
-- **The ownership calls keep the subject's working directory for a child's relative path.** Not changed here; their
-  promise is #121's.
+- **A child's relative path is not placed by the subject's working directory**, for these calls as for the
+  ownership ones since #935: one that cannot be placed is named.
 
 ## Alternatives considered
 

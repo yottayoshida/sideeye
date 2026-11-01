@@ -1,0 +1,30 @@
+control baseline checker: checker(alembic) before recovery: app.db=20480 
+control baseline checker: checker(alembic) after recovery: a=ok b=ok c=ok d=ok
+control(a) checker: checker(alembic) before recovery: app.db=20480 
+control(a) checker: checker(alembic) after recovery: a=FAIL(alembic_version ['r1', 'r2']) b=ok c=ok d=FAIL(exit 255: FAILED: Requested revision r2 overlaps with other requested revisions r1)
+control(b) checker: checker(alembic) before recovery: app.db=20480 
+control(b) checker: checker(alembic) after recovery: a=ok b=FAIL([('id', 'INTEGER'), ('text', 'TEXT'), ('created', 'INTEGER'), ('extra', 'TEXT')] for ['r2']) c=ok d=ok
+control(c) checker: checker(alembic) before recovery: app.db=20480 
+control(c) checker: checker(alembic) after recovery: a=ok b=ok c=FAIL(99 rows) d=ok
+control(d) checker: checker(alembic) before recovery: app.db=20480 
+control(d) checker: checker(alembic) after recovery: a=ok b=ok c=ok d=FAIL(exit 1: (Background on this error at: https://sqlalche.me/e/20/e3q8))
+PREFLIGHT  recording accepted — 42 state-changing operation(s) observed
+
+cwd          /  (none declared: Sideeye's own)
+atomicity    0 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: app.db, app.db-journal)
+oracle       agreed on 42 operations (6174 syscall lines examined, 267 in scope of the judged state), witness strace
+processes    single process
+checker      run on the state the recording left, and after each [controls] command broke it
+controls     baseline none (exit 0)
+             a: more_than_its_leg (control exit 0, checker exit 1; red a, d)
+             b: only_its_leg (control exit 0, checker exit 1; red b)
+             c: only_its_leg (control exit 0, checker exit 1; red c)
+             d: only_its_leg (control exit 0, checker exit 1; red d)
+
+not checked  kill landing, world-side process boundaries, baseline behavior,
+             checker falsification, whether any world could fail — only a real
+             exploration runs these
+
+next         sideeye explore --config '/x/sideeye.toml' --work /tmp/w --shim /eng/lib/libsideeye_shim.so --oracle /usr/bin/strace
+sideeye: json sha256=24629fc69755dcbfb2d45ce4ec3cdbaa4e4f45bbd49b7842d105592f76da2111;
+exit 0

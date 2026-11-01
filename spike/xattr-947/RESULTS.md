@@ -30,5 +30,5 @@ renames, and the checker's leg b finds `app.log` gone in one world, which the ne
 successor is logrotate's design, and the recovery passes.
 
 Not measured: `--observe syscalls` and `supervised` (the oracle reads the same calls there; the
-change is in the oracle's reader), macOS (check 15 of `spike/fsusage/acceptance-local.sh` runs a
+change is in the oracle's reader), macOS (check 16 of `spike/fsusage/acceptance-local.sh` runs a
 `setxattr` and an `fsetxattr` under a real `fs_usage` in CI).

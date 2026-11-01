@@ -399,9 +399,12 @@ fn isReadOnlyCall(call_in: []const u8) bool {
     return false;
 }
 
-/// `<SETLK>` and `<GETFD>`. Excluding the whole class would let `F_FULLFSYNC` — which
-/// the shim does not record and which is a durability operation on the state — through
-/// the unknown-call gate that exists to catch exactly that.
+fn fcntlSyncs(middle: []const u8) bool {
+    return std.mem.indexOf(u8, middle, "<FULLFSYNC>") != null or std.mem.indexOf(u8, middle, "<BARRIERFSYNC>") != null;
+}
+
+// By command, not the whole of `fcntl`: excluding the class would let a command that changes
+// the state through the unknown-call gate that exists to catch exactly that.
 fn fcntlIsInert(middle: []const u8) bool {
     const inert = [_][]const u8{ "<GETPATH>", "<GETFL>", "<SETFL>", "<GETFD>", "<SETFD>", "<GETLK>", "<CHECK_OPENEVT>" };
     for (inert) |n| if (std.mem.indexOf(u8, middle, n) != null) return true;
@@ -481,9 +484,14 @@ fn physical(path: []const u8) []const u8 {
     return path;
 }
 
+fn classOfLine(ln: Line) ?contract.OpClass {
+    if (std.mem.eql(u8, canonicalCall(ln.call), "fcntl") and fcntlSyncs(ln.middle)) return .fsync;
+    return classOf(ln.call);
+}
+
 fn mutatingTouch(ln: Line) bool {
     if (isMetadataCall(ln.call)) return true;
-    const cls = classOf(ln.call) orelse return false;
+    const cls = classOfLine(ln) orelse return false;
     if (cls == .close) return false;
     if (cls == .open) return openIsWriteCapable(ln.middle);
     return true;
@@ -757,7 +765,7 @@ pub fn readWithStd(
         const in_subject_image = !std.mem.eql(u8, fd_tid, subject) and
             raw_at >= subject_first and raw_at <= subject_last and
             if (subject_cmd) |sc| std.mem.eql(u8, commandOf(raw), sc) else false;
-        const cls_opt = classOf(ln.call);
+        const cls_opt = classOfLine(ln);
         // Widened with `is_subject` for the same reason that predicate was (#544), and it
         // is a different set: `state_tids` is built in the pass above from lines that NAME
         // a path under the root, and a worker's `write F=5` / `fsync F=5` name none — so a
@@ -856,9 +864,8 @@ pub fn readWithStd(
                 continue;
             }
             if (fcntlIsInert(ln.middle)) continue;
-            // Any other command falls through to the scope decision below: `F_FULLFSYNC`
-            // on a state descriptor reaches the unknown-call refusal there, and the same
-            // command on a descriptor outside the root is nobody's business.
+            // Not passed over here: a command that is neither a sync nor inert may change the
+            // state, and only the scope decision below knows whether the descriptor is in it.
         }
 
         // Where does this line point? Resolved before anything can skip it, so a
@@ -954,8 +961,8 @@ pub fn readWithStd(
             // **The unwrap itself stays**, and a first draft of this change dropped it
             // together with the test — which was not behaviour-preserving and was caught
             // in review. A line `classOf` does not map returns null here and must go on
-            // falling through to `continue`: `fcntl`'s non-inert commands are deliberately
-            // outside that table (see the comment above the `fcntl` handling), and
+            // falling through to `continue`: `fcntl`'s commands other than its syncs are
+            // deliberately left unclassified (see the comment above the `fcntl` handling), and
             // refusing on one would make a single lock call from a thread that once
             // touched the judged directory refuse the whole run. Nothing pins the removal
             // of the test — the branch cannot be entered by a close, so mutating it
@@ -1687,27 +1694,45 @@ test "a second tid mutating the judged directory is recorded in the touch set" {
     try testing.expectEqual(contract.OpClass.write, r.parsed.classes.items[1]);
 }
 
-test "Spotlight checking how a state file was opened is not an operation, and a full sync on it still refuses" {
+test "Spotlight checking how a state file was opened is not an operation, and a full sync on it is another process touching the state" {
     var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    for ([_][]const u8{ "<CHECK_OPENEVT>", "<FULLFSYNC>" }) |cmd| {
+    for ([_][]const u8{ "<CHECK_OPENEVT>", "<FULLFSYNC>", "<BARRIERFSYNC>" }) |cmd| {
         const text = try std.fmt.allocPrint(a, "10:00:00.000001  open              F=9   /work/trace.bin                       0.000100   subj.111\n" ++
             "10:00:00.000002  open              F=1   /tmp/st/sentinel-a                    0.000100   subj.111\n" ++
             "10:00:00.000003  open              F=4        (R___________)  /tmp/st/keep      0.000072   mdworker_shared.41490\n" ++
             "10:00:00.000004  fcntl             F=4   {s}                                   0.000001   mdworker_shared.41490\n" ++
             "10:00:00.000005  open              F=2   /tmp/st/sentinel-b                    0.000100   subj.111\n", .{cmd});
         const r = try read(a, text, "/tmp/st", "", "/work/trace.bin", "/tmp/st/sentinel-a", "/tmp/st/sentinel-b", "", &.{}, &.{});
-        if (std.mem.eql(u8, cmd, "<CHECK_OPENEVT>")) {
-            try testing.expect(r.defect == null);
-        } else {
-            try testing.expect(r.defect != null);
-            switch (r.defect.?) {
-                .unknown_call => {},
-                else => return error.WrongDefect,
-            }
-        }
+        try testing.expect(r.defect == null);
+        try testing.expectEqual(@as(usize, 0), r.parsed.classes.items.len);
+        const touched: usize = if (std.mem.eql(u8, cmd, "<CHECK_OPENEVT>")) 0 else 1;
+        try testing.expectEqual(touched, r.parsed.children);
+        try testing.expectEqual(touched, r.parsed.mutations.items.len);
     }
+}
+
+test "a full sync and a barrier sync the subject issues on a state file each count as an fsync" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const r = try readStd(a, "10:00:00.000010  open              F=3        (_W__________)  /tmp/st/keep     0.000100   subj.111\n" ++
+        "10:00:00.000011  fcntl             F=3   <FULLFSYNC>                             0.000100   subj.111\n" ++
+        "10:00:00.000012  fcntl             F=3   <BARRIERFSYNC>                          0.000100   subj.111\n" ++
+        "10:00:00.000013  fcntl             F=3   <GETPATH>                               0.000001   subj.111\n", outside_std);
+    try testing.expect(r.defect == null);
+    try testing.expectEqualSlices(contract.OpClass, &.{ .open, .fsync, .fsync }, r.parsed.classes.items);
+}
+
+test "a full sync on a descriptor the capture never resolved refuses, where another uncounted fcntl on it does not" {
+    var arena_state = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const sync = try readStd(a, "10:00:00.000011  fcntl             F=12  <FULLFSYNC>                             0.000100   subj.111\n", outside_std);
+    try testing.expect(sync.defect != null and sync.defect.? == .unresolved_fd);
+    const other = try readStd(a, "10:00:00.000011  fcntl             F=12  <PREALLOCATE>                           0.000100   subj.111\n", outside_std);
+    try testing.expect(other.defect == null);
 }
 
 test "an unknown CALL inside the judged directory refuses rather than being ignored" {

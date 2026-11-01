@@ -7019,6 +7019,14 @@ else
     sed 's/^/     | /' "$SD/pfa.err" | head -4
     fails=$((fails + 1))
 fi
+# Not asserting the words here: check-controls.sh does; this keeps its document for the schema check.
+if SIDEEYE="$SIDEEYE" SHIM="$SHIM" CONTROLS_JSON_OUT="$SD/preflight-controls.json" sh "$ROOT/spike/check-controls.sh" > "$SD/pfc.out" 2>&1; then
+    echo "ok   preflight --config with [controls] reports each control by its own word"
+else
+    echo "FAIL preflight [controls]: spike/check-controls.sh did not pass"
+    sed 's/^/     | /' "$SD/pfc.out" | head -8
+    fails=$((fails + 1))
+fi
 TOY_STATE=$SD/pfs/state TOY_NONDET_REWRITE=1 "$SIDEEYE" preflight --state "$SD/pfs/state" \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" --shim "$SHIM" \
     --work "$SD/wpfs" --twice --json "$SD/preflight-split.json" >"$SD/pfs.out" 2>"$SD/pfs.err"
@@ -7072,7 +7080,7 @@ fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
     "$ROOT/src/report.zig" \
     "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/warnings.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/children.json" \
-    "$SD/preflight-accepted.json" "$SD/preflight-split.json" /tmp/acc-lcs/leave.json; then
+    "$SD/preflight-accepted.json" "$SD/preflight-split.json" "$SD/preflight-controls.json" /tmp/acc-lcs/leave.json; then
     echo "ok   the schema page, the generated reports and preflight documents, the contract enum and the JSON writers' shared values agree"
 else
     echo "FAIL the report schema page drifted from the reports (or the reports from the page)"
@@ -9041,19 +9049,31 @@ else
     echo "FAIL toy-fortify does not import __open_2: the compiler folded its flags, and no leg below reaches a fortified open"
     fails=$((fails + 1))
 fi
-for fo in "rotate:--observe wrappers" "rotate:--observe syscalls" "sweep:--observe wrappers" \
-    "sweep:--observe syscalls" "sweep-range:--observe wrappers"; do
-    fo_cmd=${fo%%:*}
-    fo_mode=${fo#*:}
+# Not the fortify toy's job: these are glibc's second names for the calls the shim records
+# (`__open`, `_IO_fopen`), which a program reaches only by naming them.
+aliases_imported=$(nm -D --undefined-only "$OUT/toy-aliases" 2>/dev/null)
+if printf '%s\n' "$aliases_imported" | grep -q " __open@" && printf '%s\n' "$aliases_imported" | grep -q " _IO_fopen@"; then
+    echo "ok   toy-aliases imports __open and _IO_fopen"
+else
+    echo "FAIL toy-aliases does not import the aliases it exists to call"
+    fails=$((fails + 1))
+fi
+for fo in "toy-fortify:rotate:--observe wrappers" "toy-fortify:rotate:--observe syscalls" \
+    "toy-fortify:sweep:--observe wrappers" "toy-fortify:sweep:--observe syscalls" \
+    "toy-fortify:sweep-range:--observe wrappers" "toy-aliases:rotate:" "toy-aliases:pwrite:" "toy-aliases:stdio:"; do
+    fo_toy=${fo%%:*}
+    fo_rest=${fo#*:}
+    fo_cmd=${fo_rest%%:*}
+    fo_mode=${fo_rest#*:}
     rm -rf /tmp/acc && mkdir -p /tmp/acc/state
     o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
-        --setup "$OUT/toy-fortify init" --operation "$OUT/toy-fortify $fo_cmd" \
+        --setup "$OUT/$fo_toy init" --operation "$OUT/$fo_toy $fo_cmd" \
         --shim "$SHIM" --work /tmp/acc/work $fo_mode --oracle /usr/bin/strace 2>&1)
     rc=$?
     if [ "$rc" = 1 ] && printf '%s\n' "$o" | grep -q "^oracle  *agreed on"; then
-        echo "ok   a fortified rewrite ($fo) is counted, and the oracle agrees: FAIL"
+        echo "ok   a rewrite through $fo_toy ($fo_rest) is counted, and the oracle agrees: FAIL"
     else
-        echo "FAIL a fortified rewrite ($fo): exit $rc, wanted FAIL with the oracle agreeing"
+        echo "FAIL a rewrite through $fo_toy ($fo_rest): exit $rc, wanted FAIL with the oracle agreeing"
         printf '%s\n' "$o" | sed 's/^/     | /' | head -4
         fails=$((fails + 1))
     fi
