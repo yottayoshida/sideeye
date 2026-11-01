@@ -40,7 +40,7 @@ and does nothing for a rename onto a new name, and other filesystems answer diff
   name, or a rename or removal of a directory above it — has touched the new name between the
   rename and *k*. Crash points are the trace's numbers, never positions in it.
 - **What is not recorded is not judged around.** The candidates come from the shim's record of
-  the syncs, so the flag needs `--oracle`, and refuses `--allow-unverified`. Under the flag strace
+  the syncs, so the flag needs strace as the witness (`--oracle`, or one found on `PATH`), and refuses `--no-oracle` and `--allow-unverified`. Under the flag strace
   also traces `sync`, `msync`, `io_submit`, `io_uring_setup` and `io_uring_enter`; a run in which
   strace saw any of those, `sync_file_range`, `syncfs`, an `O_SYNC` or `O_DSYNC` open that can write, a
   `pwritev2` with `RWF_DSYNC` or `RWF_SYNC`, or an `FS_IOC_FIEMAP` asking `FIEMAP_FLAG_SYNC`
@@ -57,7 +57,7 @@ and does nothing for a rename onto a new name, and other filesystems answer diff
   first. `checker_earliest` is drawn from the kill's worlds only.
 - **The case is version 8**, written only for such a FAIL: version 7's fields, every one spelled,
   and `crash_model`. Its crash point may be one past the last operation, for the world built after
-  it. Replay rebuilds the candidates from its own recording, and needs `--oracle` as explore does;
+  it. Replay rebuilds the candidates from its own recording, and needs strace as explore does;
   `--leave-crash-state` leaves the power-loss world.
 - Refused beside it: macOS, where an `fsync` does not reach the device and `F_FULLFSYNC` is a
   separate call; `--recovery`, because what a recovery is held to after power loss is not
@@ -89,4 +89,4 @@ and does nothing for a rename onto a new name, and other filesystems answer diff
   torn writes, a file synced partway through the run and written after, hard links of the renamed
   file, and a file renamed on again, which is judged only until its second rename. Each leaves out
   a world power loss can leave; none adds one it cannot, under the rule.
-- A replay without `--oracle` refuses: it could not tell a truncating open from another.
+- A replay without strace refuses: it could not tell a truncating open from another.

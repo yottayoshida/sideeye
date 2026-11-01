@@ -1,6 +1,8 @@
 const std = @import("std");
 const contract = @import("contract");
 
+pub const strace_trace_spec = "trace=%file,%desc,%process,setsid,setpgid,mprotect,?pkey_mprotect,mremap";
+
 pub const Finding = union(enum) {
     missed: struct { index: usize, class: contract.OpClass },
     unsupported: []const u8,

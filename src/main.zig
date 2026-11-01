@@ -258,8 +258,7 @@ fn runOperationObserved(
             // has no name for `pkey_mprotect` from refusing to start.
             // Not added without the rule: a run that asks nothing of these calls should not be
             // stopped by an strace too old to name one.
-            const traced = "trace=%file,%desc,%process,setsid,setpgid,mprotect,?pkey_mprotect,mremap";
-            const calls = if (power_loss) traced ++ "," ++ oracle.power_loss_extra_calls else traced;
+            const calls = if (power_loss) oracle.strace_trace_spec ++ "," ++ oracle.power_loss_extra_calls else oracle.strace_trace_spec;
             for ([_][]const u8{ "-f", "-y", "-e", calls, "-o", oracle_out }) |a|
                 list.append(arena, a) catch setupError(.environment, "out of memory");
             const pairs = [_][2][]const u8{
@@ -827,8 +826,8 @@ fn phaseDefine(run: *Run) void {
         const whose: []const u8 = if (mode == .replay) "this case was found under --power-loss, and its replay" else "--power-loss";
         const refusal: ?struct { contract.SetupErrorReason, []const u8 } = if (builtin.os.tag != .linux)
             .{ .platform_unsupported, "is Linux only: on macOS an fsync does not reach the device, so the rule would judge a world the platform's own sync does not prevent. For a Linux run, " ++ contract.ci_linux_run }
-        else if (args.oracle == null)
-            .{ .define_invalid, "needs --oracle <strace>: the worlds are built from the shim's record of the syncs, and only strace can say the run made none the shim does not record" }
+        else if (args.oracle == null and args.oracle_stance != .found)
+            .{ .define_invalid, power_loss_needs_strace }
         else if (args.allow_unverified)
             .{ .define_invalid, "cannot take --allow-unverified: a world built from a record nothing checked could be one the run never risked" }
         else if (args.recovery != null)
@@ -1207,7 +1206,7 @@ fn phaseApparatus(run: *Run) void {
 fn phaseRecording(run: *Run) void {
     const gpa = run.gpa;
     const arena_state = run.arena_state;
-    const args = run.parsed.args;
+    var args = run.parsed.args;
     const operation = run.define.operation;
     const expect_status = run.define.expect_status;
     const shim = run.define.shim;
@@ -1278,6 +1277,13 @@ fn phaseRecording(run: *Run) void {
         if (!posix.seccompTrapAvailable())
             setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe syscalls needs a kernel that accepts SECCOMP_RET_TRAP and this one does not (CONFIG_SECCOMP_FILTER); the default --observe wrappers works everywhere", .{mode_from});
     }
+
+    const probe_out = std.fmt.allocPrint(arena, "{s}/oracle-probe.txt", .{run.define.work_abs}) catch setupError(.environment, "out of memory");
+    removeFile(probe_out);
+    cli.settleFoundOracle(gpa, arena, &run.parsed.args, probe_out);
+    args = run.parsed.args;
+    if (args.power_loss != null and args.oracle == null)
+        setupErrorFmt(arena, .define_invalid, "--power-loss {s}", .{power_loss_needs_strace});
 
     // The macOS observer runs beside the recording rather than wrapping it, so it is
     // started here and stopped after — and both sentinels live inside the state root,
@@ -1581,7 +1587,10 @@ fn phaseStructural(run: *Run) void {
     // second witness — its writes reach the shim, which shares its process. The
     // sampling keeps `crossed_boundary`, which keeps every class.
     if (trace.needsOracle() and !args.has_oracle)
-        unknown(.boundary_without_oracle, if (builtin.os.tag == .macos) "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; on macOS no witness this engine reads can (#702)" else "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)", .account_boundary_or_unwrap);
+        unknown(.boundary_without_oracle, if (builtin.os.tag == .macos) "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; on macOS no witness this engine reads can (#702)" else switch (args.oracle_stance) {
+            .unusable => |why| std.fmt.allocPrint(arena, "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux) ({s})", .{why}) catch "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)",
+            else => "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)",
+        }, .account_boundary_or_unwrap);
     // The fs_usage oracle cannot account for other processes the way strace does, so a
     // boundary the shim saw is not tolerated under it. fs_usage excludes processes by
     // name — the man page lists Terminal, sshd and the shells, and `-e` does not lift
@@ -1850,7 +1859,8 @@ fn phaseOracle(run: *Run) void {
             // so they are appended in turn rather than chosen between. Both go AFTER
             // "witness strace" because two acceptance legs match `agreed on N operations`
             // as a substring, and a prefix would break them.
-            var note = std.fmt.allocPrint(arena, "{s}, witness strace", .{agreed}) catch agreed;
+            const found_at: []const u8 = if (args.oracle_stance == .found) std.fmt.allocPrint(arena, " found on PATH at {s} (--no-oracle leaves it out)", .{textShown(arena, args.oracle.?)}) catch "" else "";
+            var note = std.fmt.allocPrint(arena, "{s}, witness strace{s}", .{ agreed, found_at }) catch agreed;
             if (args.observe == .syscalls)
                 note = std.fmt.allocPrint(
                     arena,
@@ -1977,6 +1987,8 @@ fn phaseOracle(run: *Run) void {
     run.n = n;
 }
 
+const power_loss_needs_strace = "needs strace as the witness, --oracle <strace> or one found on PATH that can trace here: the worlds are built from the shim's record of the syncs, and only strace can say the run made none the shim does not record";
+
 fn planPowerLoss(run: *Run, text: []const u8) void {
     const arena = run.arena;
     const scan = oracle.powerLossScan(arena, text) catch setupError(.environment, "out of memory");
@@ -2069,7 +2081,7 @@ fn phasePreflight(run: *Run) void {
             for (args.controls, control_argvs) |c, *v| v.* = commandArgv(arena, .{ .str = c.command }) catch setupError(.environment, "out of memory");
             break :blk controls_run.run(gpa, arena, args, state_abs, final, refuse.checkerArgv(commandArgv(arena, args.check.?)), control_argvs);
         } else null;
-        preflightReport(arena, n, hint, .{ .work = if (args.work_named) args.work else null, .state_under = args.state_under, .shim = args.shim, .oracle = args.oracle }, .{
+        preflightReport(arena, n, hint, .{ .work = if (args.work_named) args.work else null, .state_under = args.state_under, .shim = args.shim, .oracle = args.oracle, .stance = args.oracle_stance }, .{
             .check = args.check != null,
             .marker = args.marker != null,
             .recovery = args.recovery != null,
@@ -2077,7 +2089,7 @@ fn phasePreflight(run: *Run) void {
     }
 
     if (n == 0) {
-        refuse.requireCompleteness(arena, args.has_oracle, args.allow_unverified);
+        refuse.requireCompleteness(arena, args.has_oracle, args.allow_unverified, args.oracle_stance);
         refuse.refuseNoCrashPoint(arena, args.has_oracle, refuse.cwdObservation(arena, op_argv));
     }
 }
@@ -3029,7 +3041,7 @@ fn phaseReport(run: *Run) void {
         std.process.exit(@backingInt(contract.ExitCode.fail));
     }
 
-    refuse.requireCompleteness(arena, args.has_oracle, args.allow_unverified);
+    refuse.requireCompleteness(arena, args.has_oracle, args.allow_unverified, args.oracle_stance);
     // #683, ADR 0091: after every world — a FAIL has already exited above — and not for a
     // replay, whose one world answers a different question.
     if (only_k == null) refuse.requireSomethingCouldFail(arena, run.rec.judgeable, run.check_argv != null, args.marker != null, run.firsts.marker_worlds);
@@ -3504,7 +3516,6 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, hint: PreflightHint, next_r
     // path, it is one installed version's, and a later upgrade deletes it.
     var run = next_run;
     run.observe = boundary.observe_mode;
-    if (run.oracle == null and builtin.os.tag != .macos) run.oracle_found = refuse.findStraceForHint(arena);
     const tail = report.nextRunWords(arena, run) catch setupError(.environment, "out of memory");
     switch (hint) {
         // Every word through `shellWord`, not double quotes: a `$` or a backquote in a path or a
@@ -3705,6 +3716,7 @@ test "every flag preflight takes is on its next line, or is preflight's own" {
         " --config t",
         try report.nextDefineWords(a, .{ .state = "s", .setup = "u", .cwd = "c", .operation = "o", .expect_status = 3, .apparatus = &.{"note:x"}, .scratch = &.{"k"} }),
         try report.nextRunWords(a, .{ .work = "w", .state_under = "b", .observe = .syscalls, .shim = "l", .oracle = "t" }),
+        try report.nextRunWords(a, .{ .stance = .declined }),
         " ",
     });
     var buf: [64][]const u8 = undefined;
@@ -3802,7 +3814,8 @@ fn runDemo(arena: std.mem.Allocator, rest: []const []const u8) noreturn {
         "--operation", op_cmd,
         "--check",     check_cmd,
         "--work",      work_dir,
-        "--shim",      shim,
+        "--no-oracle", "--shim",
+        shim,
     };
     // `--shim` only when the demo was given one: one it found itself would ride into the
     // report's replay line as one installed version's path.
