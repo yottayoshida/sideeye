@@ -34,7 +34,10 @@ stay the same.
    the code so the frozen surface and the accepted set stay the same list.
    `apparatus` and `scratch` take only the array form: double-quoted `kind:value` entries for the one, double-quoted paths relative to `state` for the other. Both command spellings: the string
    form with its split-on-spaces, no-quoting rule, and the argv form — one
-   line, double-quoted elements, passed verbatim (ADR 0019). Unknown keys,
+   line, double-quoted elements, passed verbatim (ADR 0019); since 2026-10-31 (#949) an element of
+   a command's argv form may also be a single-quoted literal string, under the same allowance —
+   a `'` element was refused until then, so no accepted spelling changed meaning, and the entries
+   of `apparatus` and `scratch` stay double-quoted. Unknown keys,
    malformed values and the array form on non-command keys refuse with named,
    line-numbered errors; relative paths resolve against the toml's directory
    (ADR 0007). Additive keys remain possible; changing the meaning of an

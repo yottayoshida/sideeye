@@ -166,7 +166,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
             .cmd => |p| {
                 if (p.* != null) return fault(line_no, "duplicate key");
                 if (is_array) {
-                    switch (try parseArrayValue(arena, rawv)) {
+                    switch (try parseArrayValue(arena, rawv, true)) {
                         .ok => |elems| p.* = .{ .argv = elems },
                         .bad => |msg| return fault(line_no, msg),
                     }
@@ -192,7 +192,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
                         .apparatus => "apparatus is empty; leave the key out to declare nothing",
                         .scratch => "scratch is empty; leave the key out to declare nothing",
                     });
-                switch (try parseArrayValue(arena, rawv)) {
+                switch (try parseArrayValue(arena, rawv, false)) {
                     .ok => |elems| l.p.* = switch (l.key) {
                         .apparatus => blk: {
                             for (elems) |e| if (apparatusFault(e)) |msg| return fault(line_no, msg);
@@ -442,7 +442,7 @@ const ArrayResult = union(enum) {
     bad: []const u8,
 };
 
-fn parseArrayValue(arena: std.mem.Allocator, v: []const u8) error{OutOfMemory}!ArrayResult {
+fn parseArrayValue(arena: std.mem.Allocator, v: []const u8, literal_elements: bool) error{OutOfMemory}!ArrayResult {
     var elems: std.ArrayList([]const u8) = .empty;
     var i: usize = 1; // v[0] == '['
     var expect_elem = true;
@@ -464,9 +464,12 @@ fn parseArrayValue(arena: std.mem.Allocator, v: []const u8) error{OutOfMemory}!A
             }
             return .{ .bad = "array elements are separated by commas" };
         }
-        if (v[i] != '"')
-            return .{ .bad = "every array element is one double-quoted string" };
-        const close = std.mem.indexOfScalarPos(u8, v, i + 1, '"') orelse
+        const quote = v[i];
+        if (quote == '\'' and !literal_elements)
+            return .{ .bad = "a single-quoted element is for a command's argv form (setup, operation, check); these entries are double-quoted strings" };
+        if (quote != '"' and quote != '\'')
+            return .{ .bad = if (literal_elements) "every array element is one double-quoted string, or one single-quoted literal string" else "every array element is one double-quoted string" };
+        const close = std.mem.indexOfScalarPos(u8, v, i + 1, quote) orelse
             return .{ .bad = "an array element's closing quote is missing" };
         const elem = v[i + 1 .. close];
         if (elem.len == 0) return .{ .bad = "an array element is empty" };
@@ -609,12 +612,13 @@ fn argvLine(arena: std.mem.Allocator, key: []const u8, words: []const []const u8
     try out.appendSlice(arena, key);
     try out.appendSlice(arena, " = [");
     for (words, 0..) |w, k| {
-        if (w.len == 0 or std.mem.indexOfAny(u8, w, "\"\\") != null) return null;
+        if (w.len == 0 or std.mem.indexOfScalar(u8, w, '\\') != null) return null;
+        const quote: u8 = if (std.mem.indexOfScalar(u8, w, '"') == null) '"' else if (std.mem.indexOfScalar(u8, w, '\'') == null) '\'' else return null;
         if (!std.mem.eql(u8, defang.textShown(arena, w), w)) return null;
         if (k > 0) try out.appendSlice(arena, ", ");
-        try out.append(arena, '"');
+        try out.append(arena, quote);
         try out.appendSlice(arena, w);
-        try out.append(arena, '"');
+        try out.append(arena, quote);
     }
     try out.append(arena, ']');
     return out.items;
@@ -644,7 +648,7 @@ pub fn shellWarning(arena: std.mem.Allocator, from: From, key: []const u8, raw: 
     } else if (sw.unterminated) switch (from) {
         .toml => "one of its quotes is never closed, so what it meant is not one argv; write the argv form, or put it in a script",
         .flags => "one of its quotes is never closed, so what it meant is not one argv; write the argv form in a sideeye.toml, or put it in a script",
-    } else "the argv form cannot spell one of its words (an empty word, a `\"` or `\\`, or a control byte), so put it in a script";
+    } else "the argv form cannot spell one of its words (an empty word, one holding both `\"` and `'`, a `\\`, or a control byte), so put it in a script";
     return try std.fmt.allocPrint(arena, "{s}: `{s}` is split on spaces and its quotes reach the program as written, grouping nothing; {s}", .{ key, shown, remedy });
 }
 
@@ -734,7 +738,7 @@ fn fixedLine(arena: std.mem.Allocator, key: []const u8, rawv: []const u8, comman
     if (comment.len != 0) line = try std.fmt.allocPrint(arena, "{s}  {s}", .{ line, comment });
     const nv = line[key.len + 3 ..];
     if (nv[0] == '[') {
-        switch (try parseArrayValue(arena, nv)) {
+        switch (try parseArrayValue(arena, nv, true)) {
             .ok => {},
             .bad => return null,
         }
@@ -843,6 +847,54 @@ test "the argv form refuses on its boundary, each with the line" {
     try t.expect(std.mem.indexOf(u8, multi.fault.what, "does not close") != null);
     const dup = parseFor(a, "[world]\nstate = \"s\"\n[define]\noperation = [\"a\"]\noperation = \"b\"\n");
     try t.expectEqualStrings("duplicate key", dup.fault.what);
+}
+
+test "a command's argv element may be a single-quoted literal, which carries a double quote verbatim" {
+    var as = std.heap.ArenaAllocator.init(t.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const r = parseFor(a,
+        \\[world]
+        \\state = "./state"
+        \\[define]
+        \\setup     = ['./seed.sh', "it's"]
+        \\operation = ["sops", "set", "f", '["k"] "v"']   # a literal and a basic string side by side
+        \\check     = ['./check.sh', 'a # and , and ] inside']
+    );
+    const op = r.ok.operation.argv;
+    try t.expectEqual(@as(usize, 4), op.len);
+    try t.expectEqualStrings("[\"k\"] \"v\"", op[3]);
+    try t.expectEqualStrings("./seed.sh", r.ok.setup.?.argv[0]);
+    try t.expectEqualStrings("it's", r.ok.setup.?.argv[1]);
+    try t.expectEqualStrings("a # and , and ] inside", r.ok.check.?.argv[1]);
+
+    const cases = [_]struct { line: []const u8, frag: []const u8 }{
+        .{ .line = "operation = ['']", .frag = "element is empty" },
+        .{ .line = "operation = ['a]", .frag = "closing quote" },
+        .{ .line = "operation = ['a\\b']", .frag = "escape sequences" },
+        .{ .line = "operation = ['a\tb']", .frag = "control bytes" },
+        .{ .line = "operation = ['a' 'b']", .frag = "separated by commas" },
+        .{ .line = "operation = [a]", .frag = "or one single-quoted literal string" },
+        .{ .line = "operation = \"o\"\napparatus = ['env:X']", .frag = "single-quoted element is for a command's argv form" },
+        .{ .line = "operation = \"o\"\nscratch = ['tmp']", .frag = "single-quoted element is for a command's argv form" },
+    };
+    for (cases) |c| {
+        const text = try std.fmt.allocPrint(a, "[world]\nstate = \"s\"\n[define]\n{s}\n", .{c.line});
+        try t.expect(std.mem.indexOf(u8, parseFor(a, text).fault.what, c.frag) != null);
+    }
+}
+
+test "the argv form a quoted string-form word is offered keeps its double quotes, in a literal" {
+    var as = std.heap.ArenaAllocator.init(t.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const line = "operation = [\"sops\", \"set\", \"f\", '[\"k\"] \"v\"']";
+    const w = (try shellWarning(a, .flags, "operation", "sops set f '[\"k\"] \"v\"'", false)).?;
+    try t.expect(std.mem.indexOf(u8, w, line) != null);
+    const r = parseFor(a, try std.fmt.allocPrint(a, "[world]\nstate = \"s\"\n[define]\n{s}\n", .{line}));
+    try t.expectEqualStrings("[\"k\"] \"v\"", r.ok.operation.argv[3]);
+    const both = (try shellWarning(a, .flags, "check", "./c.sh \"it's \\\"x\\\"\"", false)).?;
+    try t.expect(std.mem.indexOf(u8, both, "cannot spell one of its words") != null);
 }
 
 test "the non-command keys refuse the array form by name" {
@@ -1077,6 +1129,7 @@ test "a value that is not one double-quoted string is refused with the line it w
         .{ .text = head ++ "marker = done#1\n", .want = "; write it as: marker = \"done#1\"" },
         .{ .text = head ++ "[recovery]\ncommand = \"./fix \"a b\"\"\n", .want = "belongs in a script" },
         .{ .text = "[world]\nstate = \"s\"\n[define]\noperation = \"./kva put \"a b\"\"  # see \"docs\"\n", .want = "; write it as: operation = [\"./kva\", \"put\", \"a b\"]  # see \"docs\"" },
+        .{ .text = "[world]\nstate = \"s\"\n[define]\noperation = \"sops set f '[\"k\"]'\"\n", .want = "; write it as: operation = [\"sops\", \"set\", \"f\", '[\"k\"]']" },
         .{ .text = head ++ "marker = say \"done\"\n", .want = null },
         .{ .text = head ++ "check = ./c.sh 'unterminated\n", .want = null },
         .{ .text = "[world]\nstate = \"s\"\n[define]\noperation = \"a\" \"b\"\n", .want = null },
