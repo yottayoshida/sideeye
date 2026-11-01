@@ -276,7 +276,7 @@ const usage_fmt =
     \\  --marker     success marker: a byte string the operation prints on stdout when
     \\               it has committed. In worlds where it appeared before the kill,
     \\               the post-success invariant is enforced: the new state must
-    \\               survive (ADR 0008)
+    \\               still be there after the kill (ADR 0008)
     \\  --json       write the machine-readable report to this path; preflight writes
     \\               its own document unless it refuses (docs/report-schema.md)
     \\  --fresh-state

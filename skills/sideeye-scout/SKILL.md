@@ -58,7 +58,7 @@ state = "./state"                 # a throwaway copy the setup builds; every wor
 cwd       = "."                   # relative arguments resolve here
 setup     = "mytool init"         # builds the starting state
 operation = "mytool rotate-key"   # the one command Sideeye crashes
-check     = "./check.sh"          # exit 0 = the invariant holds after crash + restart
+check     = "./check.sh"          # exit 0 = the invariant holds; runs after the crash, in a fresh process
 ```
 
 - Commands split on spaces with no quoting; an argument with a space takes the argv form:

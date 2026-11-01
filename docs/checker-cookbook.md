@@ -27,7 +27,7 @@ To adapt this: Swap `TOY` for your own binary and the two subcommands (`doctor`,
 # agree. Both directions are violations: claiming health while the key cannot be read,
 # and claiming trouble while it can.
 #
-# Runs after a restart, in a fresh process, exactly as DESIGN §12 requires. Exit 0
+# Runs after the crash, in a fresh process, exactly as DESIGN §12 requires. Exit 0
 # means the invariant holds.
 #
 # Environment:

@@ -13,15 +13,15 @@ Sideeye deliberately removes software from the well-behaved world it was written
 
 Ordinary tests define inputs and expected outputs. Property-based testing defines properties instead of examples and generates many inputs. Sideeye is closer to the latter, but what it varies is not primarily the input — it is the world the program runs in.
 
-Developers do not write piles of failure scenarios ("kill here", "fail that write"). They declare invariants: *if the operation said it succeeded, this must still be true after a restart.* Sideeye searches for a world that breaks the invariant and, when it finds one, returns a minimal, reproducible counterexample.
+Developers do not write piles of failure scenarios ("kill here", "fail that write"). They declare invariants: *if the operation said it succeeded, this must still be true when the program runs again.* Sideeye searches for a world that breaks the invariant and, when it finds one, returns a minimal, reproducible counterexample.
 
 The long-term surface includes process crash, persistent state, network, clock, concurrency, and partial external effects. v0 deliberately learns exactly one kind of malice: **process crash against persistent state.** The philosophy stays broad; the first cruelty is narrow.
 
 ## 2. Problem
 
-AI coding agents write code faster than humans can understand its failure semantics. Happy paths, common error handling, and unit tests are generated in minutes; questions like *what is left on disk if we die halfway?* or *is the state actually consistent after a restart that follows a reported success?* still depend on human attention.
+AI coding agents write code faster than humans can understand its failure semantics. Happy paths, common error handling, and unit tests are generated in minutes; questions like *what is left on disk if we die halfway?* or *does a reported success still hold when the program runs again?* still depend on human attention.
 
-Outside databases and distributed systems, adversarial testing is not a normal part of development. Ordinary CLIs, developer tools, daemons, and desktop applications work fine for months, then fail at the first coincidence of a crash, a partial state update, and a restart.
+Outside databases and distributed systems, adversarial testing is not a normal part of development. Ordinary CLIs, developer tools, daemons, and desktop applications work fine for months, then fail at the first coincidence of a crash, a partial state update, and the next run.
 
 The problem Sideeye attacks is not "not enough tests." It is that **failure worlds the developer never imagined cannot be verified by enumerating them as test cases in advance.**
 
@@ -48,8 +48,8 @@ The central thing a user writes is not *how to break the software* but *what mus
 
 Invariants come in two shapes, and the distinction matters:
 
-- **Always-invariants (crash atomicity).** For every crash point: after restart, the persistent state is either the complete old state or the complete new state, and diagnostic commands must agree with reality. These hold unconditionally across every explored world. They are the workhorse of v0.
-- **Post-success invariants (durability).** In worlds where the operation reported success before dying, the new state must survive restart. Sideeye records what the program claimed on stdout up to the moment of the kill, and holds the program to its own words.
+- **Always-invariants (crash atomicity).** For every crash point: when the program runs again, the persistent state is either the complete old state or the complete new state, and diagnostic commands must agree with reality. These hold unconditionally across every explored world. They are the workhorse of v0.
+- **Post-success invariants (what a reported success promises).** In worlds where the operation reported success before dying, the new state must still be there when the program runs again. Sideeye records what the program claimed on stdout up to the moment of the kill, and holds the program to its own words.
 
 A conditional invariant of the form "if it succeeded, then…" is vacuously true in most crash worlds — the killed operation never reports success. Sideeye's defaults are therefore built on always-invariants; post-success invariants are the sharper, optional layer.
 
@@ -67,7 +67,7 @@ Bad output:
 
 Desired output:
 
-> For an execution where `rotate-key` reported success, killing the process at a specific point leaves no valid key after restart while `doctor` still reports healthy. Reproduce in 3 steps.
+> For an execution where `rotate-key` reported success, killing the process at a specific point leaves no valid key for the next run while `doctor` still reports healthy. Reproduce in 3 steps.
 
 "This might be dangerous" loses to "this actually broke, here is how."
 
@@ -92,7 +92,7 @@ PASS never means "crash-safe" as an unbounded claim. This vocabulary is enforced
 
 ### 4.6 Failure is part of product behavior
 
-Behavior under failure is product behavior, exactly like behavior under success. "Anything goes, it was an error path" is not accepted. In particular, three things are treated as explicit contracts: the state after a reported success, the state observed after a restart, and the state a diagnostic command reports.
+Behavior under failure is product behavior, exactly like behavior under success. "Anything goes, it was an error path" is not accepted. In particular, three things are treated as explicit contracts: the state after a reported success, the state the program finds when it runs again, and the state a diagnostic command reports.
 
 ### 4.7 The skeptic is not an LLM
 
@@ -121,7 +121,7 @@ Sideeye is not an AI-only tool. But it is designed, from v0, to be *callable by 
 Three differences are the point; none of them is a new primitive.
 
 1. **Ordinary software.** Adversarial testing for CLIs, local developer tools, and small daemons — not only for databases and distributed systems.
-2. **Invariants first.** Users write "if the operation succeeded, this property holds after restart" — never "SIGKILL here, then fail this write."
+2. **Invariants first.** Users write "if the operation succeeded, this property holds when the program runs again" — never "SIGKILL here, then fail this write."
 3. **Replayable counterexamples as the deliverable.** Evidence a developer (or an agent) can paste into an issue, a regression test, and a fix verification, unchanged.
 
 Whether Sideeye deserves to exist is decided by whether these three can be made *easy* for ordinary developers.
@@ -136,7 +136,7 @@ Someone else building on the same ideas would likely make a fault-injection fram
 
 v0 answers one question:
 
-> **If the process dies partway through a stateful operation, do the developer's declared invariants still hold after restart?**
+> **If the process dies partway through a stateful operation, do the developer's declared invariants still hold when the program runs again?**
 
 Typical targets: config updates, key rotation, state migration, index updates, cache metadata, audit state, anything around a local database.
 
@@ -187,7 +187,7 @@ The first human audience is OSS and developer-tool authors who:
 - build stateful CLIs or local applications,
 - have decent normal-path tests,
 - care about crash consistency but will never write tests for every failure point,
-- keep state in copyable files and can check it after a restart,
+- keep state in copyable files and can check it when the program runs again,
 - want reproductions, not warnings.
 
 The first dogfood target is **omamori**. Not a product requirement — but its author understands its internal state and failure semantics, and it already carries many hand-written adversarial tests, so it sets a deliberately high bar for whether Sideeye can beat existing human tests. (See §17 and §18 for the calibration risk this creates.)
@@ -206,7 +206,7 @@ When the developer in this story is a coding agent, nothing changes except that 
 
 Three verbs, nothing else: **Define. Explore. Explain.**
 
-- **Define** — the target operation and the property that must hold after it (or after a restart).
+- **Define** — the target operation and the property that must hold after it (or when the program runs again).
 - **Explore** — Sideeye searches crash worlds of that operation. Where to crash and what state survives are Sideeye's responsibility, not the user's.
 - **Explain** — on a violation, Sideeye shrinks the counterexample and returns the minimal conditions, the expected state, the observed state, and the measured reproducibility.
 
@@ -222,7 +222,7 @@ state = "./state"                 # the directory Sideeye snapshots and restores
 [define]
 setup     = "mytool init"         # produce the initial state
 operation = "mytool rotate-key"   # what Sideeye kills partway through
-check     = "./check.sh"          # runs after crash + restart, in a fresh process
+check     = "./check.sh"          # runs after the crash, in a fresh process
                                   # exit 0 = invariant holds
 ```
 
@@ -238,7 +238,7 @@ Faced a sixth time, for `scratch` (ADR 0043) — and this one reverses a ruling 
 
 Define has three levels; the lower ones are zero-effort:
 
-- **L0 — built-in invariants, zero config.** Sideeye ships general invariants it can judge without any checker. The first is **atomicity**, stated per file rather than per directory: for every file present in *both* the pre-operation snapshot and the post-operation result, the state after restart must still contain it, holding either the old content or the new one — never a mixture of the two. An agent can point `sideeye` at an operation and get value with no configuration at all.
+- **L0 — built-in invariants, zero config.** Sideeye ships general invariants it can judge without any checker. The first is **atomicity**, stated per file rather than per directory: for every file present in *both* the pre-operation snapshot and the post-operation result, when the program runs again, the state must still contain it, holding either the old content or the new one — never a mixture of the two. An agent can point `sideeye` at an operation and get value with no configuration at all.
 
   The obvious wording — "the state directory must equal the pre-operation snapshot or the post-operation result" — is stricter than it looks, and wrong. A program that writes atomically leaves `key.json.tmp` behind in every world killed between the `open` and the `rename`, so the directory equals neither snapshot and the *correct* program is reported as violating the built-in invariant. Files that appear in only one of the two snapshots are therefore left unconstrained.
 
@@ -255,7 +255,7 @@ loadable=$(mytool load-key >/dev/null 2>&1 && echo true || echo false)
 [ "$healthy" = "$loadable" ]   # FAIL when doctor's claim contradicts reality
 ```
 
-The check always runs **after a restart, in a fresh process.** In-memory state hides corruption; v0 never evaluates invariants inside the crashed process's lifetime.
+The check always runs **after the crash, in a fresh process.** In-memory state hides corruption; v0 never evaluates invariants inside the crashed process's lifetime.
 
 ## 13. Output Requirements
 
@@ -273,7 +273,7 @@ crash point: after unlink("state/key.json"),
 observed   : doctor: healthy=true / loadable key: none
 expected   : doctor's claim matches reality
 reproduce  : sideeye replay 000042        (reproduced 10/10)
-explored   : 5 crash points, 5 restarts, 5 checks
+explored   : 5 crash points, 5 checks
 not tested : power loss (a missing fsync cannot fail this run), torn writes, concurrent processes
 ```
 
@@ -315,9 +315,9 @@ The table maps **verdicts** to codes. Commands that reach no verdict are outside
 ## 14. Functional Requirements for v0
 
 1. Define one stateful operation as the verification target.
-2. Define invariants evaluated after the operation or after restart.
+2. Define invariants evaluated after the operation or when the program runs again.
 3. Explore execution worlds where the process crashes at multiple points of the operation — process crash only.
-4. Restart or re-evaluate the target from the crashed state.
+4. Run the target again, or evaluate the check, from the crashed state.
 5. Detect invariant violations.
 6. Save violations as reproducible cases.
 7. Shrink discovered cases by removing unnecessary conditions.
@@ -325,7 +325,7 @@ The table maps **verdicts** to codes. Commands that reach no verdict are outside
 9. Never treat an unverified or unjudgeable state as success.
 10. State explicitly, in every result, what Sideeye did and did not verify.
 11. Start every crash world, and the recording run they are counted against, from the same rebuild of the initial state; snapshot and restore the state directory; no leakage between worlds.
-12. Include exploration counts (crash points, restarts, check executions) in every report.
+12. Include exploration counts (crash points, check executions) in every report.
 13. Falsify the checker once before exploring: a deliberately corrupted state must make the check FAIL; otherwise the run is UNKNOWN, not PASS.
 14. Record crash landing context in every counterexample; on replay, report "case no longer applies" when the context no longer matches.
 15. Emit machine-readable output (JSON) alongside human-readable text, honoring the exit-code contract of §13.
