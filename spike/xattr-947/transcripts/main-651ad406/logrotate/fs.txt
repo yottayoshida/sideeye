@@ -1,0 +1,1 @@
+filesystem of /s/lr: ext2/ext3
