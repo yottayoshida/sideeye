@@ -4783,6 +4783,26 @@ unset TOY_SPAWN TOY_SPAWN_PATH TOY_WRITE_AFTER_UNLINK
 TOY_EXEC_PATH=$OUT/toy-fixed TOY_CLOSE_SWEEP=1023 export TOY_EXEC_PATH TOY_CLOSE_SWEEP
 st685 "unresolvable_path from an image a static one exec'd into, which closed the trace, names --observe supervised" unresolvable_path new "" "$OUT/toy-static" --allow-unverified
 unset TOY_EXEC_PATH TOY_CLOSE_SWEEP
+# Not a rewrite that changes the key's bytes: the state after must equal the rotate's, or another
+# detector refuses the run and the leg says nothing about the records the shim could not write.
+for rc_mode in wrappers syscalls; do
+    rm -rf /tmp/acc-rc && mkdir -p /tmp/acc-rc/state
+    rc_out=$(TOY_RAW_CLOSE_RANGE=0 "$SIDEEYE" explore --state /tmp/acc-rc/state \
+        --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --shim "$SHIM" \
+        --observe "$rc_mode" --allow-unverified --work /tmp/acc-rc/work 2>&1)
+    rc_rc=$?
+    if [ "$rc_rc" = 1 ] && printf '%s\n' "$rc_out" | head -1 | grep -q "^FAIL"; then
+        echo "ok   the in-place rewrite with nothing closed FAILs under --observe $rc_mode"
+    else
+        echo "FAIL the in-place rewrite with nothing closed under --observe $rc_mode: exit $rc_rc, wanted a FAIL"
+        printf '%s\n' "$rc_out" | sed 's/^/     | /' | head -6
+        fails=$((fails + 1))
+    fi
+    TOY_RAW_CLOSE_RANGE=1 export TOY_RAW_CLOSE_RANGE
+    st685 "the same rewrite after a raw close_range refuses as a closed trace under --observe $rc_mode, without an oracle" unresolvable_path closed "" "$OUT/toy-fixed" --observe "$rc_mode" --allow-unverified
+    unset TOY_RAW_CLOSE_RANGE
+done
+rm -rf /tmp/acc-rc
 # child_touched_state_dir on its shimmed-writer arm: the parent fork-execs a shell, which inherits
 # the preload and writes the state; the parent writes it too. Measured on this toy only.
 TOY_FORKEXEC=1 export TOY_FORKEXEC

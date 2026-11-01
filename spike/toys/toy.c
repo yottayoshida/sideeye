@@ -229,6 +229,11 @@
  *                  shim skipped fd <= 2 unconditionally, and every one of these writes
  *                  was invisible — the acceptance table pins each leg separately so a
  *                  fix for fd 1 alone cannot pass.
+ *   TOY_RAW_CLOSE_RANGE  Linux: after a whole rotate, close_range(3, ~0U, 0) as a raw system
+ *                     call no interposed entry point sees, then rewrite the key in place with
+ *                     the bytes it already holds. The state after equals the rotate's, and a
+ *                     crash between the truncate and the write empties the key. =0 is the
+ *                     control: the same rewrite with nothing closed.
  *   TOY_CLOSE_SWEEP=N  daemonize-style descriptor hygiene: close(3..N) before any
  *                  state work. A bound below the shim's trace-fd relocation floor
  *                  must leave the run's verdict untouched; a bound at or above it
@@ -2312,6 +2317,17 @@ int main(int argc, char **argv) {
             _exit(cmd_rotate() == 0 ? 0 : 1);
         }
         return reap_status(w);
+    }
+    if (strcmp(argv[1], "rotate") == 0 && getenv("TOY_RAW_CLOSE_RANGE")) {
+        int rc = cmd_rotate();
+        if (rc != 0) return rc;
+        char buf[4096], key[4096];
+        if (read_key(buf, sizeof buf) != 0) return 1;
+#if defined(__linux__) && defined(SYS_close_range)
+        if (strcmp(getenv("TOY_RAW_CLOSE_RANGE"), "0") != 0) (void)syscall(SYS_close_range, 3, ~0U, 0);
+#endif
+        join_path(key, sizeof key, KEY_NAME);
+        return write_file(key, buf) == 0 ? 0 : 1;
     }
     if (strcmp(argv[1], "rotate") == 0) return cmd_rotate();
     if (strcmp(argv[1], "doctor") == 0) return cmd_doctor();
