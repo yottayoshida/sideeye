@@ -208,6 +208,11 @@ jobs:
       - name: Every classified syscall is interposed or explained (#256)
         run: python3 spike/check-shim-coverage.py src/oracle.zig shim/src/linux.zig shim/src/syscalls.zig src/contract.zig
 
+      # The list above names syscalls; glibc's entry points are not syscall names (#900), so this
+      # reads the runner's own libc.so.6.
+      - name: Every function glibc exports is interposed or classified (#934)
+        run: python3 spike/check-glibc-exports.py shim/src/linux.zig spike/glibc-exports.tsv
+
       # The README is the one document the onboarding clock hands its driver, so what it keeps
       # is what that driver needed to reach a verdict; the bound keeps the record of each
       # decision on the page the decision lives on. Sunset 2026-12-04 (see the script).

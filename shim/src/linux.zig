@@ -121,4 +121,23 @@ comptime {
     @export(&ops.pthread_detach, .{ .name = "pthread_detach" });
     @export(&ops.setsid, .{ .name = "setsid" });
     @export(&ops.setpgid, .{ .name = "setpgid" });
+
+    // Not left to the plain names: these are the same functions under glibc's second names, and a
+    // program that names one binds past the wrapper for the plain one.
+    @export(&syscalls.sigaction, .{ .name = "__sigaction" });
+    @export(&syscalls.signal, .{ .name = "bsd_signal" });
+    @export(&syscalls.signal, .{ .name = "ssignal" });
+    @export(&ops.open, .{ .name = "__open" });
+    @export(&ops.open, .{ .name = "__open64" });
+    @export(&ops.write, .{ .name = "__write" });
+    @export(&ops.pwrite, .{ .name = "__pwrite64" });
+    @export(&ops.close, .{ .name = "__close" });
+    @export(&ops.fopen, .{ .name = "_IO_fopen" });
+    @export(&ops.fflush, .{ .name = "_IO_fflush" });
+    @export(&ops.fclose, .{ .name = "_IO_fclose" });
+    @export(&ops.fsetpos, .{ .name = "_IO_fsetpos" });
+    @export(&ops.fsetpos64, .{ .name = "_IO_fsetpos64" });
+    @export(&ops.fork, .{ .name = "__fork" });
+    @export(&ops.vfork, .{ .name = "__vfork" });
+    @export(&ops.setpgid, .{ .name = "__setpgid" });
 }
