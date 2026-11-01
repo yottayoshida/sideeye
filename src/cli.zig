@@ -59,6 +59,7 @@ pub const Args = struct {
     work_named: bool = false,
     fresh_state: bool = false,
     leave_crash_state: bool = false,
+    power_loss: ?PowerLoss = null,
     twice: bool = false,
     /// The per-world wall-clock budget in seconds (#263). Null — the default — means
     /// no budget anywhere: the flag is opt-in, and turning it on is the operator's
@@ -79,6 +80,27 @@ pub const Args = struct {
 };
 
 pub const Carry = enum { printed, in_case, left_off, derived };
+
+pub const PowerLoss = enum {
+    rename_before_data,
+
+    pub fn name(self: PowerLoss) []const u8 {
+        return switch (self) {
+            .rename_before_data => "rename-before-data",
+        };
+    }
+
+    pub fn says(self: PowerLoss) []const u8 {
+        return switch (self) {
+            .rename_before_data => "each file renamed with no sync of it holds what it held before the run, or nothing",
+        };
+    }
+
+    pub fn parse(s: []const u8) ?PowerLoss {
+        inline for (comptime std.enums.values(PowerLoss)) |v| if (std.mem.eql(u8, s, v.name())) return v;
+        return null;
+    }
+};
 
 // No `else`: a field added to `Args` must not compile until both lines have a class for it.
 // Referenced here and not only from the tests, which a plain `zig build` never analyses.
@@ -126,6 +148,8 @@ pub fn carried(comptime field: std.meta.FieldEnum(Args)) struct { replay: Carry,
         // Left off: a FAIL's run never made these choices, and explore does not take them.
         .fresh_state => .{ .replay = .left_off, .next = .left_off },
         .leave_crash_state => .{ .replay = .left_off, .next = .left_off },
+        // Not on the replay line, which refuses it: the case names the rule. Not on preflight's either.
+        .power_loss => .{ .replay = .in_case, .next = .left_off },
         // Carried, the file would receive the pasted run's report in place of this one's.
         .json => .{ .replay = .left_off, .next = .left_off },
         .twice => .{ .replay = .left_off, .next = .left_off },
@@ -153,8 +177,8 @@ const usage_fmt =
     \\  sideeye demo [--shim <lib>]
     \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice] [--state-under <dir>]
     \\  sideeye preflight --config <sideeye.toml> [--shim <lib>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice] [--state-under <dir>]
-    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--recovery <cmd> --recovery-check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--state-under <dir>]
-    \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--state-under <dir>]
+    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--recovery <cmd> --recovery-check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--state-under <dir>] [--power-loss <rule>]
+    \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--state-under <dir>] [--power-loss <rule>]
     \\  sideeye replay <case.json> [--shim <lib>] [--recovery <cmd> --recovery-check <cmd>] [--fresh-state] [--leave-crash-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye evidence <case.json>
     \\  sideeye mcp
@@ -252,8 +276,8 @@ const usage_fmt =
     \\  --oracle     path to strace; the recording run is compared against it (Linux;
     \\               refused on macOS, whose witness is --oracle-fs-usage)
     \\  --oracle-fs-usage
-    \\               macOS, as root: compare the recording run against fs_usage
-    \\               instead. sudo must already hold credentials (`sudo -v` first, in
+    \\               macOS, as root: check the recording against fs_usage.
+    \\               sudo must already hold credentials (`sudo -v` first, in
     \\               this terminal — the cache is per-terminal); the run refuses
     \\               rather than prompting. Narrower than strace: fs_usage prints
     \\               only a rename's old path and cuts long pathnames from the left,
@@ -349,6 +373,10 @@ const usage_fmt =
     \\               one candidate measured oracle-shaped, fs_usage, requires it —
     \\               which is what --oracle-fs-usage pays for. The report says which
     \\               claim was made, and this one is weaker.
+    \\  --power-loss <rule>
+    \\               (explore, Linux) also judge power loss under one rule. The rule,
+    \\               rename-before-data: each file renamed with no sync of it holds
+    \\               what it held before the run, or nothing. Needs --oracle
     \\  --stop-when-orphaned
     \\               stop at the next world boundary if the process that launched
     \\               this run exits (UNKNOWN, parent_exited). The MCP server passes
@@ -1590,6 +1618,13 @@ pub fn parse(argv: []const []const u8) Parsed {
             // Mirrored immediately: a refusal between here and the canonical binding
             // below must not report the declaration as 0 (R1 finding).
             report.expected_status_val = args.expect_status.?;
+        } else if (std.mem.eql(u8, argv[i], "--power-loss")) {
+            switch (mode) {
+                .explore => {},
+                .replay => setupError(.define_invalid, "--power-loss belongs to explore: a case found under it names its rule, and replay takes the rule from the case"),
+                .preflight => setupError(.define_invalid, "preflight judges no world; --power-loss belongs to explore"),
+            }
+            args.power_loss = PowerLoss.parse(v) orelse badValue(null, "--power-loss takes `rename-before-data`, the one rule there is", v, null);
         } else if (std.mem.eql(u8, argv[i], "--world-timeout")) {
             if (mode == .preflight) setupError(.define_invalid, "preflight explores no worlds; --world-timeout belongs to explore and replay");
             args.world_timeout_s = parseWorldTimeout(v);

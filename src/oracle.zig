@@ -1681,6 +1681,157 @@ pub fn compare(shim: []const contract.OpClass, oracle: []const contract.OpClass)
     return null;
 }
 
+const traced_for_power_loss = [_][]const u8{ "sync", "msync", "io_submit", "io_uring_setup", "io_uring_enter" };
+
+pub const power_loss_extra_calls = blk: {
+    var out: []const u8 = traced_for_power_loss[0];
+    for (traced_for_power_loss[1..]) |c| out = out ++ "," ++ c;
+    break :blk out;
+};
+
+const unrecorded_sync_calls = [_][]const u8{ "sync_file_range", "syncfs" } ++ traced_for_power_loss;
+
+pub const UnrecordedSync = struct { call: []const u8, file: []const u8 };
+
+pub const WriteOpen = struct { path: []const u8, truncates: bool };
+
+pub const PowerLossScan = struct {
+    unrecorded: []const UnrecordedSync,
+    opens: []const WriteOpen,
+    opens_unplaced: bool,
+};
+
+// Not only the calls named sync: each of these asks the kernel to write a file's data through, and the shim records it as a write or not at all.
+fn syncsThroughFlags(name: []const u8, raw: []const u8) bool {
+    if (std.mem.eql(u8, name, "pwritev2")) {
+        const flags = syscallArg(raw, 4) orelse return false;
+        return std.mem.indexOf(u8, flags, "RWF_DSYNC") != null or std.mem.indexOf(u8, flags, "RWF_SYNC") != null;
+    }
+    if (std.mem.eql(u8, name, "ioctl")) {
+        const arg = syscallArg(raw, 2) orelse return false;
+        return std.mem.indexOf(u8, arg, "FIEMAP_FLAG_SYNC") != null;
+    }
+    return false;
+}
+
+// Not the success of the call: a failed `O_SYNC` open still says the run syncs some way Sideeye does not count.
+pub fn powerLossScan(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!PowerLossScan {
+    var unrecorded: std.ArrayList(UnrecordedSync) = .empty;
+    var opens: std.ArrayList(WriteOpen) = .empty;
+    var unplaced = false;
+    var lines = std.mem.splitScalar(u8, text, '\n');
+    while (lines.next()) |raw| {
+        const name = syscallName(raw) orelse continue;
+        var fbuf: [contract.max_path]u8 = undefined;
+        const fd_file: []const u8 = if (syscallArg(raw, 0)) |a0| (argAnnotation(a0, &fbuf) orelse "-") else "-";
+        for (unrecorded_sync_calls) |c| if (std.mem.eql(u8, name, c)) {
+            try unrecorded.append(arena, .{ .call = c, .file = try arena.dupe(u8, fd_file) });
+        };
+        if (syncsThroughFlags(name, raw)) try unrecorded.append(arena, .{ .call = name, .file = try arena.dupe(u8, fd_file) });
+        if (!isOpenCall(name)) continue;
+        const is_creat = std.mem.eql(u8, name, "creat");
+        if (!is_creat and isReadOnlyOpen(name, raw)) continue;
+        const flags_at: usize = if (std.mem.eql(u8, name, "open")) 1 else 2;
+        const f = if (is_creat) OpenFlags{ .sync = false, .trunc = true } else openFlags(syscallArg(raw, flags_at) orelse "");
+        var pbuf: [contract.max_path]u8 = undefined;
+        const path = returnedPath(raw, &pbuf) orelse
+            (if (pathSpec(name)) |spec| resolvePath(raw, spec.args[0], null, &pbuf) else null) orelse "-";
+        const owned = try arena.dupe(u8, path);
+        if (f.sync) try unrecorded.append(arena, .{ .call = name, .file = owned });
+        if (owned[0] == '/') try opens.append(arena, .{ .path = owned, .truncates = f.trunc and !visiblyFailed(raw) }) else unplaced = true;
+    }
+    return .{ .unrecorded = unrecorded.items, .opens = opens.items, .opens_unplaced = unplaced };
+}
+
+const O_DSYNC_BIT: u64 = 0o10000;
+const O_SYNC_BIT: u64 = 0o4000000;
+const O_TRUNC_BIT: u64 = 0o1000;
+
+const OpenFlags = struct { sync: bool, trunc: bool };
+
+fn openFlags(arg: []const u8) OpenFlags {
+    var s = arg;
+    if (std.mem.indexOf(u8, s, "flags=")) |at| {
+        s = s[at + "flags=".len ..];
+        if (std.mem.indexOfAny(u8, s, ",}")) |end| s = s[0..end];
+    }
+    var sync = false;
+    var trunc = false;
+    var it = std.mem.tokenizeAny(u8, s, "| \t");
+    while (it.next()) |tok| {
+        if (std.mem.eql(u8, tok, "O_SYNC") or std.mem.eql(u8, tok, "O_DSYNC")) sync = true;
+        if (std.mem.eql(u8, tok, "O_TRUNC")) trunc = true;
+        const v = std.fmt.parseInt(u64, tok, 0) catch continue;
+        if (v & (O_DSYNC_BIT | O_SYNC_BIT) != 0) sync = true;
+        if (v & O_TRUNC_BIT != 0) trunc = true;
+    }
+    return .{ .sync = sync, .trunc = trunc };
+}
+
+test "the power-loss scan names each sync Sideeye does not record, and each open that can write, with whether it truncated" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const t = std.testing;
+    const text =
+        \\42    openat(AT_FDCWD</w>, "/s/k.tmp", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 3</s/k.tmp>
+        \\42    openat(AT_FDCWD</w>, "/s/log", O_WRONLY|O_APPEND) = 4</s/log>
+        \\42    openat(AT_FDCWD</w>, "/s/read", O_RDONLY) = 10</s/read>
+        \\42    write(3</s/k.tmp>, "x", 1) = 1
+        \\42    sync_file_range(3</s/k.tmp>, 0, 0, SYNC_FILE_RANGE_WRITE) = 0
+        \\[pid    43] sync() = 0
+        \\42    msync(0x7f0000000000, 4096, MS_SYNC) = 0
+        \\42    openat(AT_FDCWD</w>, "/s/d", O_WRONLY|O_DSYNC) = 5</s/d>
+        \\42    open("/s/raw", O_WRONLY|0x101000) = 6</s/raw>
+        \\42    openat2(AT_FDCWD</w>, "/s/two", {flags=O_WRONLY|O_TRUNC, mode=0644, resolve=0}, 24) = 7</s/two>
+        \\42    creat("/s/c", 0644) = 8</s/c>
+        \\42    openat(AT_FDCWD</w>, "/s/O_SYNC", O_WRONLY) = 9</s/O_SYNC>
+        \\42    pwritev2(4</s/log>, [{iov_base="x", iov_len=1}], 1, -1, RWF_DSYNC) = 1
+        \\42    pwritev2(4</s/log>, [{iov_base="x", iov_len=1}], 1, -1, RWF_APPEND) = 1
+        \\42    io_uring_setup(8, {flags=IORING_SETUP_SQPOLL, sq_thread_cpu=0}) = 11<anon_inode:[io_uring]>
+        \\42    openat(AT_FDCWD</w>, "/s/gone", O_WRONLY|O_TRUNC) = -1 ENOENT (No such file or directory)
+    ;
+    const s = try powerLossScan(a, text);
+    var calls: std.ArrayList(u8) = .empty;
+    for (s.unrecorded) |u| try calls.print(a, "{s}:{s} ", .{ u.call, u.file });
+    try t.expectEqualStrings("sync_file_range:/s/k.tmp sync:- msync:- openat:/s/d open:/s/raw pwritev2:/s/log io_uring_setup:- ", calls.items);
+    var got: std.ArrayList(u8) = .empty;
+    for (s.opens) |o| try got.print(a, "{s}{s} ", .{ o.path, if (o.truncates) "!" else "" });
+    try t.expectEqualStrings("/s/k.tmp! /s/log /s/d /s/raw /s/two! /s/c! /s/O_SYNC /s/gone ", got.items);
+    try t.expect(!s.opens_unplaced);
+    const relative = try powerLossScan(a, "42    openat(AT_FDCWD, \"k\", O_WRONLY|O_TRUNC <unfinished ...>\n");
+    try t.expect(relative.opens_unplaced);
+    const creat_split = try powerLossScan(a, "42    creat(\"/s/abs\", 0644 <unfinished ...>\n");
+    try t.expectEqualStrings("/s/abs", creat_split.opens[0].path);
+}
+
+test "the calls the power-loss rule adds to strace change nothing the oracle counts" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const t = std.testing;
+    const base =
+        \\9  execve("/work/tool", ["tool"], 0x0) = 0
+        \\9  openat(AT_FDCWD</repo>, "/repo/state/k.tmp", O_WRONLY|O_CREAT|O_TRUNC, 0644) = 3</repo/state/k.tmp>
+        \\9  write(3</repo/state/k.tmp>, "x", 1) = 1
+        \\9  rename("/repo/state/k.tmp", "/repo/state/k") = 0
+        \\
+    ;
+    const extra =
+        \\9  sync() = 0
+        \\9  msync(0x7f0000000000, 4096, MS_SYNC) = 0
+        \\9  io_submit(0x7f0000001000, 1, [{aio_data=0, aio_lio_opcode=IOCB_CMD_FSYNC, aio_fildes=3}]) = 1
+        \\9  io_uring_setup(8, {flags=IORING_SETUP_SQPOLL, sq_thread_cpu=0}) = 4<anon_inode:[io_uring]>
+        \\9  io_uring_enter(4<anon_inode:[io_uring]>, 1, 0, 0, NULL, 128) = 1
+        \\
+    ;
+    const without = try parse(a, base, "/repo/state", "", "/repo");
+    const with = try parse(a, try std.mem.concat(a, u8, &.{ base, extra }), "/repo/state", "", "/repo");
+    try t.expectEqualSlices(contract.OpClass, without.classes.items, with.classes.items);
+    try t.expectEqual(without.mutations.items.len, with.mutations.items.len);
+    try t.expect(with.unsupported == null);
+}
+
 test "a state path holding bytes strace escapes is counted as an ASCII one is" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();

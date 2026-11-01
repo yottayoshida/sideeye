@@ -12,6 +12,7 @@ pub const ReplayCase = struct {
     sideeye_version: []const u8,
     contract_version: u32,
     observe: ?[]const u8 = null,
+    crash_model: ?[]const u8 = null,
     define: struct {
         state: []const u8,
         setup: ?config.Command = null,
@@ -85,13 +86,15 @@ pub fn writeCase(
     ops_total: u32,
     trace: engine.TraceInfo,
     violation_name: []const u8,
+    crash_model: ?[]const u8,
 ) ?[]const u8 {
     var dbuf: [contract.max_path]u8 = undefined;
     const dz = std.mem.printSentinel(&dbuf, "{s}/cases", .{work}, 0) catch return null;
     _ = posix.mkdir(dz.ptr, 0o755); // EEXIST is fine; open below decides
     const addr = trace.logicalAddress(k);
     var hh: [16]u8 = undefined;
-    if (!prefixHash(trace, k, &hh)) return null;
+    // Not k itself after the operation: a power-loss world there has no operation k to hash.
+    if (!prefixHash(trace, @min(k, ops_total), &hh)) return null;
 
     var doc: std.ArrayList(u8) = .empty;
     const w = &doc;
@@ -115,7 +118,7 @@ pub fn writeCase(
     // cost ADR 0071 named for a version 6 falls only on the cases that need the field. A checked
     // apparatus entry is the top rung (ADR 0136) for cwd's reason: an older reader would drop it
     // and replay without the check.
-    const case_version: u32 = if (checksAnEntry(args.apparatus)) 7 else if (args.observe != .wrappers) 6 else if (args.scratch.len > 0) 5 else if (args.cwd != null) 4 else if (carries_argv) 3 else 2;
+    const case_version: u32 = if (crash_model != null) 8 else if (checksAnEntry(args.apparatus)) 7 else if (args.observe != .wrappers) 6 else if (args.scratch.len > 0) 5 else if (args.cwd != null) 4 else if (carries_argv) 3 else 2;
     w.appendSlice(arena, "{\n  \"schema\": \"sideeye/case\",\n  \"case_version\": ") catch return null;
     w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{case_version}) catch return null) catch return null;
     w.appendSlice(arena, ",\n  \"sideeye_version\": ") catch return null;
@@ -125,6 +128,10 @@ pub fn writeCase(
     if (case_version >= 6) {
         w.appendSlice(arena, ",\n  \"observe\": ") catch return null;
         report.jsonString(w, arena, args.observe.name()) catch return null;
+    }
+    if (crash_model) |m| {
+        w.appendSlice(arena, ",\n  \"crash_model\": ") catch return null;
+        report.jsonString(w, arena, m) catch return null;
     }
     w.appendSlice(arena, ",\n  \"define\": {\n    \"state\": ") catch return null;
     report.jsonString(w, arena, args.state.?) catch return null;
@@ -237,8 +244,8 @@ pub fn read(arena: std.mem.Allocator, text: []const u8) Read {
     const c = parsed.value;
     if (!std.mem.eql(u8, c.schema, "sideeye/case"))
         return .{ .invalid = "the file does not declare itself a sideeye case" };
-    if (c.case_version < 1 or c.case_version > 7)
-        return .{ .invalid = "this binary understands case schema versions 1, 2, 3, 4, 5, 6 and 7 only" };
+    if (c.case_version < 1 or c.case_version > 8)
+        return .{ .invalid = "this binary understands case schema versions 1, 2, 3, 4, 5, 6, 7 and 8 only" };
     const carries_argv = (c.define.operation == .argv) or
         (c.define.setup != null and c.define.setup.? == .argv) or
         (c.define.check != null and c.define.check.? == .argv);
@@ -252,7 +259,7 @@ pub fn read(arena: std.mem.Allocator, text: []const u8) Read {
     if (c.case_version == 1 and c.define.expected_status != null)
         return .{ .invalid = "a case_version 1 file cannot carry an expected_status declaration; it arrived with version 2" };
     if (c.case_version >= 2 and c.define.expected_status == null)
-        return .{ .invalid = "a case_version 2, 3, 4, 5, 6 or 7 file must carry define.expected_status; the case freezes the declaration" };
+        return .{ .invalid = "a case_version 2 or later file must carry define.expected_status; the case freezes the declaration" };
     if (c.case_version < 4 and c.define.cwd != null)
         return .{ .invalid = "a case_version 1, 2 or 3 file cannot carry a cwd declaration; it arrived with version 4" };
     if (c.case_version == 4 and c.define.cwd == null)
@@ -275,6 +282,16 @@ pub fn read(arena: std.mem.Allocator, text: []const u8) Read {
     }
     if (c.case_version < 7 and c.define.apparatus != null)
         return .{ .invalid = "a case_version 1, 2, 3, 4, 5 or 6 file cannot carry an apparatus declaration; it arrived with version 7" };
+    if (c.case_version < 8 and c.crash_model != null)
+        return .{ .invalid = "a case_version 1 to 7 file cannot carry a crash model; it arrived with version 8" };
+    if (c.case_version == 8) {
+        const m = c.crash_model orelse return .{ .invalid = "a case_version 8 file must carry crash_model; the version exists to freeze it" };
+        if (cli.PowerLoss.parse(m) == null) return .{ .invalid = "a case_version 8 file's crash_model names no rule this binary knows; it must be `rename-before-data`" };
+        const o = c.observe orelse return .{ .invalid = "a case_version 8 file must carry observe, `wrappers` included; from version 7 the mode is always spelled" };
+        if (contract.ObserveMode.parse(o) == null) return .{ .invalid = "a case_version 8 file's observe names no mode this binary knows; it must be `wrappers`, `syscalls` or `supervised`" };
+        const decl = c.define.apparatus orelse return .{ .invalid = "a case_version 8 file must carry define.apparatus, empty when none was declared" };
+        for (decl) |e| if (config.apparatusFault(e)) |why| return .{ .invalid = why };
+    }
     if (c.case_version == 7) {
         const m = c.observe orelse return .{ .invalid = "a case_version 7 file must carry observe, `wrappers` included; from version 7 the mode is always spelled" };
         if (contract.ObserveMode.parse(m) == null) return .{ .invalid = "a case_version 7 file's observe names no mode this binary knows; it must be `wrappers`, `syscalls` or `supervised`" };
@@ -298,7 +315,7 @@ pub fn read(arena: std.mem.Allocator, text: []const u8) Read {
             else => false,
         };
         if (!has_cwd)
-            return .{ .invalid = "a case_version 5, 6 or 7 file must spell define.cwd, as null when none was declared: from version 5 both cwd and scratch are explicit" };
+            return .{ .invalid = "a case_version 5 or later file must spell define.cwd, as null when none was declared: from version 5 both cwd and scratch are explicit" };
         // The typed parse reads an absent `scratch` and a JSON `null` alike, so the key and
         // its shape are asked of the untyped value. Version 5 already refused both through
         // the non-empty gate above; versions 6 and 7, where empty is allowed, need it here.
@@ -307,7 +324,7 @@ pub fn read(arena: std.mem.Allocator, text: []const u8) Read {
             else => false,
         };
         if (!scratch_is_array)
-            return .{ .invalid = "a case_version 6 or 7 file must spell define.scratch as an array, empty when none was declared: from version 5 both cwd and scratch are explicit" };
+            return .{ .invalid = "a case_version 6 or later file must spell define.scratch as an array, empty when none was declared: from version 5 both cwd and scratch are explicit" };
     }
     return .{ .ok = c };
 }
@@ -349,15 +366,15 @@ test "read refuses with replay's sentences, in replay's order" {
         .{ .text = "{", .says = "the case file could not be parsed as a sideeye case" },
         .{ .text = try testCaseWith(a, "\"k\":7,", "\"k\":7,\"extra\":1,"), .says = "the case file could not be parsed as a sideeye case" },
         .{ .text = try testCaseWith(a, "sideeye/case", "other/case"), .says = "the file does not declare itself a sideeye case" },
-        .{ .text = try testCaseWith(a, "\"case_version\":5,", "\"case_version\":8,"), .says = "this binary understands case schema versions 1, 2, 3, 4, 5, 6 and 7 only" },
+        .{ .text = try testCaseWith(a, "\"case_version\":5,", "\"case_version\":9,"), .says = "this binary understands case schema versions 1, 2, 3, 4, 5, 6, 7 and 8 only" },
         .{ .text = try testCaseWith(a, "\"case_version\":5,", "\"case_version\":6,"), .says = "a case_version 6 file must carry observe, `syscalls` or `supervised`; the version exists to freeze it" },
         .{ .text = try testCaseWith(a, "\"case_version\":5,", "\"case_version\":6,\"observe\":\"wrappers\","), .says = "a case_version 6 file's observe must be `syscalls` or `supervised`: a case counted under the default is written at the version its define asks for" },
-        .{ .text = try testCaseWith(a, "\"cwd\":null,", ""), .says = "a case_version 5, 6 or 7 file must spell define.cwd, as null when none was declared: from version 5 both cwd and scratch are explicit" },
+        .{ .text = try testCaseWith(a, "\"cwd\":null,", ""), .says = "a case_version 5 or later file must spell define.cwd, as null when none was declared: from version 5 both cwd and scratch are explicit" },
         .{ .text = try testCaseWith(a, "\"scratch\":[\"m.yaml\"],", ""), .says = "a case_version 5 file must carry define.scratch as a non-empty array; the version exists to freeze it" },
     };
     for (cases) |cs| try std.testing.expectEqualStrings(cs.says, read(a, cs.text).invalid);
 
-    const twice = try std.mem.replaceOwned(u8, a, try testCaseWith(a, "sideeye/case", "other/case"), "\"case_version\":5,", "\"case_version\":8,");
+    const twice = try std.mem.replaceOwned(u8, a, try testCaseWith(a, "sideeye/case", "other/case"), "\"case_version\":5,", "\"case_version\":9,");
     try std.testing.expectEqualStrings("the file does not declare itself a sideeye case", read(a, twice).invalid);
 }
 
@@ -379,10 +396,23 @@ test "a version-7 case carries the apparatus a replay checks, and every rung bel
         .{ .from = ",\"apparatus\":[\"env:XDG_DATA_HOME=/d\",\"note:x\"]", .to = "", .says = "a case_version 7 file must carry define.apparatus; the version exists to freeze it" },
         .{ .from = "\"env:XDG_DATA_HOME=/d\",", .to = "", .says = "a case_version 7 file's define.apparatus must hold an entry a replay checks (env, preload or pythonpath); a declaration of notes alone is written at the version its define asks for" },
         .{ .from = "\"env:XDG_DATA_HOME=/d\"", .to = "\"env:LD_PRELOAD\"", .says = "env: names a variable the engine sets for every child (LD_PRELOAD, DYLD_INSERT_LIBRARIES, TOY_STATE, SIDEEYE_*); the engine's own doing is not the define's apparatus" },
-        .{ .from = "\"scratch\":[],", .to = "", .says = "a case_version 6 or 7 file must spell define.scratch as an array, empty when none was declared: from version 5 both cwd and scratch are explicit" },
+        .{ .from = "\"scratch\":[],", .to = "", .says = "a case_version 6 or later file must spell define.scratch as an array, empty when none was declared: from version 5 both cwd and scratch are explicit" },
     };
     for (cases) |cs| {
         std.debug.assert(std.mem.indexOf(u8, v7, cs.from) != null);
         try std.testing.expectEqualStrings(cs.says, read(a, try std.mem.replaceOwned(u8, a, v7, cs.from, cs.to)).invalid);
     }
+}
+
+test "a version-8 case names its power-loss rule and spells every field below it, and no lower version carries a rule" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const t = std.testing;
+    const v8 = try std.mem.replaceOwned(u8, a, try testCaseWith(a, "\"case_version\":5,", "\"case_version\":8,\"observe\":\"wrappers\",\"crash_model\":\"rename-before-data\","), "\"scratch\":[\"m.yaml\"],", "\"scratch\":[],\"apparatus\":[],");
+    try t.expectEqualStrings("rename-before-data", read(a, v8).ok.crash_model.?);
+    try t.expectEqualStrings("a case_version 8 file's crash_model names no rule this binary knows; it must be `rename-before-data`", read(a, try std.mem.replaceOwned(u8, a, v8, "rename-before-data", "anything-unsynced-is-lost")).invalid);
+    try t.expectEqualStrings("a case_version 8 file must carry define.apparatus, empty when none was declared", read(a, try std.mem.replaceOwned(u8, a, v8, "\"apparatus\":[],", "")).invalid);
+    try t.expectEqualStrings("a case_version 8 file must carry crash_model; the version exists to freeze it", read(a, try std.mem.replaceOwned(u8, a, v8, "\"crash_model\":\"rename-before-data\",", "")).invalid);
+    try t.expectEqualStrings("a case_version 1 to 7 file cannot carry a crash model; it arrived with version 8", read(a, try testCaseWith(a, "\"case_version\":5,", "\"case_version\":5,\"crash_model\":\"rename-before-data\",")).invalid);
 }

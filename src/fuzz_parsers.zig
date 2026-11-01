@@ -7,3 +7,4 @@ pub const posix = @import("posix.zig");
 pub const oracle = @import("oracle.zig");
 pub const fsusage = @import("fsusage.zig");
 pub const evidence = @import("evidence.zig");
+pub const cli = @import("cli.zig");

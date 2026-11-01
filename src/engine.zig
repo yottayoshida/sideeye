@@ -79,6 +79,7 @@ pub const WorldResult = struct {
     term: posix.Term,
     landed: bool,
     violation: ?Violation,
+    power_loss: bool = false,
 };
 
 test "the three read error sets hold what their readers can raise (#376)" {
