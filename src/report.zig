@@ -2,6 +2,7 @@ const std = @import("std");
 const contract = @import("contract");
 const builtin = @import("builtin");
 const engine = @import("engine.zig");
+const syncs = @import("syncs.zig");
 const posix = @import("posix.zig");
 const config = @import("config.zig");
 const mcp = @import("mcp.zig");
@@ -226,6 +227,8 @@ pub var l1_configured: bool = false;
 pub var l0_note: []const u8 = "not classified (the run was refused before L0 classification)";
 
 pub var attributed_to_rename: usize = 0;
+pub var syncs_account: ?syncs.Account = null;
+pub var syncs_note: []const u8 = "";
 pub var l0_history_count: u32 = 0;
 pub var case_note: []const u8 = "(none)";
 
@@ -1266,6 +1269,7 @@ pub fn sayAccount(arena: std.mem.Allocator, of: AccountOf, points: usize) void {
     if (of != .unknown) {
         say("oracle      {s}\n", .{oracle_note});
         say("metadata    {s}\n", .{metadata_note});
+        if (syncs_account != null) say("syncs       {s}\n", .{syncs_note});
         say("checker     {s}\n", .{checker_note});
     }
     say("l1          {s}\n", .{l1_note});
@@ -1870,12 +1874,25 @@ fn buildJson(
     try w.appendSlice(arena, ",\n  \"not_tested\": ");
     try w.appendSlice(arena, notTestedJson());
     try appendFigures(w, arena);
+    // Not after the judged set, the other field that grows: a reader cut short should lose the longer one.
+    if (std.mem.eql(u8, verdict, "PASS") or std.mem.eql(u8, verdict, "FAIL")) if (syncs_account) |a| try appendSyncs(w, arena, a);
     try appendJudgedSet(w, arena);
     try w.appendSlice(arena, "\n}\n");
     return buf.items;
 }
 
 const W = *std.ArrayList(u8);
+
+fn appendSyncs(w: W, arena: std.mem.Allocator, a: syncs.Account) !void {
+    try w.appendSlice(arena, ",\n  \"syncs\": ");
+    try jsonString(w, arena, syncs_note);
+    try jsonArrayField(w, arena, "renamed_without_fsync", a.without_fsync, false);
+    try w.print(arena, ",\n  \"renamed_without_fsync_omitted\": {d}", .{a.without_fsync_omitted});
+    if (a.dir_checked) {
+        try jsonArrayField(w, arena, "renamed_without_dir_sync", a.without_dir_sync, false);
+        try w.print(arena, ",\n  \"renamed_without_dir_sync_omitted\": {d}", .{a.without_dir_sync_omitted});
+    }
+}
 
 fn appendCwd(w: W, arena: std.mem.Allocator) !void {
     if (command_cwd) |c| {

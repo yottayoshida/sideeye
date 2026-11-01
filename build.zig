@@ -593,6 +593,7 @@ pub fn build(b: *std.Build) void {
         // below was: main.zig imports it, and collection through an import is what stopped
         // silently once before. Its tests reach no declaration of main.zig's.
         "src/evidence.zig",
+        "src/syncs.zig",
         // The recovery phase (#606, ADR 0072), named for the same reason: main.zig imports it,
         // and a file whose tests are collected only through an import runs them nowhere the day
         // that import moves.

@@ -3292,11 +3292,11 @@ r711() {   # r711 <name> <toy> <flags...> — sets o711 (stdout), rc711
 }
 keys711() {   # the account keys a block prints, in order, joined by commas
     printf '%s\n' "$1" | awk '{ k = substr($0, 1, 12); sub(/ +$/, "", k); print k }' \
-        | grep -xE 'cwd|apparatus|warning|recovery|explored|expected|atomicity|oracle|metadata|checker|l1|case|replay|evidence|processes|not tested' \
+        | grep -xE 'cwd|apparatus|warning|recovery|explored|expected|atomicity|oracle|metadata|syncs|checker|l1|case|replay|evidence|processes|not tested' \
         | paste -sd, -
 }
-want711_fail="cwd,apparatus,warning,recovery,explored,expected,atomicity,oracle,metadata,checker,l1,case,replay,evidence,processes,not tested"
-want711_pass="cwd,apparatus,warning,recovery,explored,expected,atomicity,oracle,metadata,checker,l1,case,processes,not tested"
+want711_fail="cwd,apparatus,warning,recovery,explored,expected,atomicity,oracle,metadata,syncs,checker,l1,case,replay,evidence,processes,not tested"
+want711_pass="cwd,apparatus,warning,recovery,explored,expected,atomicity,oracle,metadata,syncs,checker,l1,case,processes,not tested"
 want711_unknown="cwd,apparatus,warning,recovery,expected,atomicity,l1,case,processes,not tested"
 for v711 in fail:toy-bug:1 pass:toy-fixed:0 unknown:toy-fixed:2; do
     name711=${v711%%:*}; rest711=${v711#*:}; toy711=${rest711%%:*}; want_rc711=${rest711#*:}
@@ -7177,6 +7177,17 @@ if ! grep -q '"oracle_verified": true' "$SD/observe.json" 2>/dev/null; then
     echo "FAIL the syscalls fixture does not carry oracle_verified: true, so its oracle did not watch the run it judged"
     fails=$((fails + 1))
 fi
+# Not left to the other fixtures: none declares a marker, the only case `renamed_without_dir_sync`
+# is written in.
+mkdir -p "$SD/smk"
+TOY_MARKER=1 TOY_STATE=$SD/smk "$SIDEEYE" explore --state "$SD/smk" \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --marker COMMITTED \
+    --shim "$SHIM" --work "$SD/wmk" --oracle /usr/bin/strace \
+    --json "$SD/marker.json" >/dev/null 2>&1
+if ! grep -q '"renamed_without_dir_sync"' "$SD/marker.json" 2>/dev/null; then
+    echo "FAIL the marker fixture does not carry renamed_without_dir_sync, so the schema check below cannot see that row"
+    fails=$((fails + 1))
+fi
 # …and the withdrawn field must not be in it. A report still carrying
 # `oracle_verified_across_runs` would mean the leading untrapped run came back, or that
 # the field outlived it — and the schema check below only sees the page, not the reports,
@@ -7278,7 +7289,7 @@ else
 fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
     "$ROOT/src/report.zig" \
-    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/warnings.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/children.json" \
+    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/warnings.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/marker.json" "$SD/children.json" \
     "$SD/preflight-accepted.json" "$SD/preflight-split.json" "$SD/preflight-controls.json" /tmp/acc-lcs/leave.json; then
     echo "ok   the schema page, the generated reports and preflight documents, the contract enum and the JSON writers' shared values agree"
 else
@@ -7317,6 +7328,38 @@ else
 fi
 
 echo ""
+echo "=========== check 4s: the syncs account names a rename with no sync, and changes no verdict (ADR 0144) ==========="
+# Not one writer: without the one that syncs, a line that named every rename would pass.
+SY=/tmp/acc-syncs
+rm -rf "$SY" && mkdir -p "$SY/nosync" "$SY/sync"
+for v in nosync sync; do
+    if [ "$v" = sync ]; then flush='os.fsync(f.fileno())'; else flush='pass'; fi
+    printf '%s\n' 'import os, sys' 'd = sys.argv[2]' 'p = os.path.join(d, "key.json")' \
+        'if sys.argv[1] == "init":' '    open(p, "w").write("{}\n")' '    sys.exit(0)' \
+        'f = open(p + ".tmp", "w")' 'f.write("{\"k\": 1}\n")' 'f.flush()' "$flush" 'f.close()' \
+        'os.replace(p + ".tmp", p)' > "$SY/$v.py"
+    "$SIDEEYE" explore --state "$SY/$v" --setup "python3 $SY/$v.py init $SY/$v" --operation "python3 $SY/$v.py rotate $SY/$v" \
+        --shim "$SHIM" --work "$SY/w-$v" --oracle /usr/bin/strace --json "$SY/$v.json" > "$SY/$v.txt" 2>&1
+    echo $? > "$SY/$v.rc"
+done
+sy_both=$(python3 -c 'import json,sys; print(" ".join(json.dumps(json.load(open(f)).get("renamed_without_fsync"), separators=(",", ":")) for f in sys.argv[1:]))' "$SY/nosync.json" "$SY/sync.json" 2>/dev/null)
+sy_n=${sy_both% *}; sy_s=${sy_both#* }
+TOY_STATE=$SY/bug "$SIDEEYE" explore --state "$SY/bug" --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work "$SY/w-bug" --oracle /usr/bin/strace > /dev/null 2>&1
+sy_case=$(ls "$SY/w-bug/cases/"*.json 2>/dev/null | head -1)
+TOY_STATE=$SY/bug "$SIDEEYE" replay "$sy_case" --shim "$SHIM" --oracle /usr/bin/strace --work "$SY/w-bug-r" > "$SY/replay.txt" 2>&1
+echo $? > "$SY/replay.rc"
+if [ -n "$sy_case" ] && [ "$(cat "$SY/replay.rc")" = 1 ] && grep -q '^syncs       ' "$SY/replay.txt" \
+    && [ "$(cat "$SY/nosync.rc")" = 0 ] && [ "$(cat "$SY/sync.rc")" = 0 ] && [ "$sy_n" = '["key.json"]' ] && [ "$sy_s" = '[]' ] \
+    && grep -q '^syncs       .*no fsync or fdatasync recorded for it between its last recorded write and the rename: key.json' "$SY/nosync.txt" \
+    && grep -q '^syncs       .*Each file with a write recorded was synced' "$SY/sync.txt"; then
+    echo "ok   the syncs account names the rename with no sync of its file, not the one that syncs, both PASS, and a FAIL's replay carries the line"
+else
+    echo "FAIL syncs: exits $(cat "$SY/nosync.rc") $(cat "$SY/sync.rc"), replay exit $(cat "$SY/replay.rc"), renamed_without_fsync $sy_n / $sy_s"
+    grep '^syncs\|^PASS\|^FAIL\|^UNKNOWN' "$SY/nosync.txt" "$SY/sync.txt" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
 echo "=========== check 4c: the second exhibit — the earliest checker-red world (#231) ==========="
 # The poetry shape, shrunk: TOY_SPLIT_REWRITE rewrites derived.txt then
 # primary.txt in place (four kill points), and check-split.sh judges only the

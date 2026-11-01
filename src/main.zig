@@ -22,6 +22,7 @@ const defang = @import("defang.zig");
 const capture = @import("capture.zig");
 const files = @import("files.zig");
 const report = @import("report.zig");
+const syncs = @import("syncs.zig");
 const refuse = @import("refuse.zig");
 const workdir = @import("workdir.zig");
 const prefix = @import("prefix.zig");
@@ -1385,6 +1386,10 @@ fn phaseRecording(run: *Run) void {
     }
 
     const trace = refuse.readTraceOrRefuse(rec_trace, trace_cap, .{ .root = state_abs, .alt = state_alt, .scratch = args.scratch, .initial = &initial }, "could not read the trace");
+    // Not under the oracle's branch, where the metadata account is set: a run with no oracle
+    // reaches a verdict too, and its report would carry no line.
+    report.syncs_account = syncs.account(arena_state.allocator(), trace.ops.items, state_abs, if (run.define.alt_differs) state_alt else "", args.scratch, args.marker != null) catch setupError(.environment, "out of memory");
+    report.syncs_note = syncs.note(arena_state.allocator(), report.syncs_account.?);
     if (end_deferred and boundary.heldEndStands(trace)) refuse.recordingEnd(arena, rec_term, expect_status, op_obs, exit_step, sig_step);
 
     const final = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot the final state");
