@@ -136,23 +136,23 @@ fn initialOracleNote(asked: OracleAsked) []const u8 {
 
 fn initialMetadataNote(asked: OracleAsked, supervised: bool) []const u8 {
     if (supervised) return switch (asked) {
-        .unparsed => "not established: this run stopped while its arguments were still being read; the supervising engine is not notified of ownership/permission/timestamp calls, so only a completed oracle account could show them",
+        .unparsed => "not established: this run stopped while its arguments were still being read; the supervising engine is not notified of " ++ metadata_kinds ++ " calls, so only a completed oracle account could show them",
         .named => |kind| switch (kind) {
-            .strace => "not established: --oracle was named, and this run stopped before its metadata account was completed; the supervising engine is not notified of ownership/permission/timestamp calls",
-            .fs_usage => "not established: --oracle-fs-usage was named, and this run stopped before its metadata account was completed; the supervising engine is not notified of ownership/permission/timestamp calls",
+            .strace => "not established: --oracle was named, and this run stopped before its metadata account was completed; the supervising engine is not notified of " ++ metadata_kinds ++ " calls",
+            .fs_usage => "not established: --oracle-fs-usage was named, and this run stopped before its metadata account was completed; the supervising engine is not notified of " ++ metadata_kinds ++ " calls",
         },
-        .none => "not observable (no oracle ran; the supervising engine is not notified of ownership/permission/timestamp calls)",
+        .none => "not observable (no oracle ran; the supervising engine is not notified of " ++ metadata_kinds ++ " calls)",
     };
     return switch (asked) {
-        .unparsed => "not established: this run stopped while its arguments were still being read; the shim does not interpose ownership/permission/timestamp calls, so only a completed oracle account could show them",
+        .unparsed => "not established: this run stopped while its arguments were still being read; the shim does not interpose " ++ metadata_kinds ++ " calls, so only a completed oracle account could show them",
         // "before its metadata account was completed", not "before its capture was read":
         // the comparison block reads the capture and can refuse on it before
         // `metadata_note` is assigned, and this wording has to stay true there too.
         .named => |kind| switch (kind) {
-            .strace => "not established: --oracle was named, and this run stopped before its metadata account was completed; the shim does not interpose ownership/permission/timestamp calls",
-            .fs_usage => "not established: --oracle-fs-usage was named, and this run stopped before its metadata account was completed; the shim does not interpose ownership/permission/timestamp calls",
+            .strace => "not established: --oracle was named, and this run stopped before its metadata account was completed; the shim does not interpose " ++ metadata_kinds ++ " calls",
+            .fs_usage => "not established: --oracle-fs-usage was named, and this run stopped before its metadata account was completed; the shim does not interpose " ++ metadata_kinds ++ " calls",
         },
-        .none => "not observable (no oracle ran; the shim does not interpose ownership/permission/timestamp calls)",
+        .none => "not observable (no oracle ran; the shim does not interpose " ++ metadata_kinds ++ " calls)",
     };
 }
 
@@ -2171,6 +2171,8 @@ test "the report's temporary file is always one this call created (#818)" {
     try std.testing.expectEqualStrings("keep too", t.read("taken-file", &rb));
 }
 
+pub const metadata_kinds = "ownership/permission/timestamp/extended-attribute";
+
 pub const PreflightDoc = struct {
     runs_differ: bool,
     operations: u32,
@@ -2538,7 +2540,7 @@ test "every OpClass name is its own tag, which is why the hand-written switch co
 test "the oracle account says no oracle was given only once the arguments were read to the end (#352)" {
     try std.testing.expectEqualStrings("not run (no --oracle given)", initialOracleNote(.none));
     try std.testing.expectEqualStrings(
-        "not observable (no oracle ran; the shim does not interpose ownership/permission/timestamp calls)",
+        "not observable (no oracle ran; the shim does not interpose " ++ metadata_kinds ++ " calls)",
         initialMetadataNote(.none, false),
     );
     const states = [_]OracleAsked{ .unparsed, .{ .named = .strace }, .{ .named = .fs_usage } };
@@ -2795,10 +2797,10 @@ test "under --observe supervised the metadata account names the engine's filter,
     }
     for ([_]OracleAsked{ .unparsed, .none, .{ .named = .strace }, .{ .named = .fs_usage } }) |asked| {
         const sup = initialMetadataNote(asked, true);
-        try std.testing.expect(std.mem.indexOf(u8, sup, "the supervising engine is not notified of ownership/permission/timestamp calls") != null);
+        try std.testing.expect(std.mem.indexOf(u8, sup, "the supervising engine is not notified of " ++ metadata_kinds ++ " calls") != null);
         try std.testing.expect(std.mem.indexOf(u8, sup, "shim") == null);
         const def = initialMetadataNote(asked, false);
-        try std.testing.expect(std.mem.indexOf(u8, def, "the shim does not interpose ownership/permission/timestamp calls") != null);
+        try std.testing.expect(std.mem.indexOf(u8, def, "the shim does not interpose " ++ metadata_kinds ++ " calls") != null);
     }
     noteOracle(.{ .named = .strace });
     try std.testing.expect(std.mem.indexOf(u8, metadata_note, "the shim does not interpose") != null);
