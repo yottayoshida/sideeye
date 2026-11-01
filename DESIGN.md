@@ -13,15 +13,15 @@ Sideeye deliberately removes software from the well-behaved world it was written
 
 Ordinary tests define inputs and expected outputs. Property-based testing defines properties instead of examples and generates many inputs. Sideeye is closer to the latter, but what it varies is not primarily the input — it is the world the program runs in.
 
-Developers do not write piles of failure scenarios ("kill here", "fail that write"). They declare invariants: *if the operation said it succeeded, this must still be true after a restart.* Sideeye searches for a world that breaks the invariant and, when it finds one, returns a minimal, reproducible counterexample.
+Developers do not write piles of failure scenarios ("kill here", "fail that write"). They declare invariants: *if the operation said it succeeded, this must still be true when the program runs again.* Sideeye searches for a world that breaks the invariant and, when it finds one, returns a minimal, reproducible counterexample.
 
 The long-term surface includes process crash, persistent state, network, clock, concurrency, and partial external effects. v0 deliberately learns exactly one kind of malice: **process crash against persistent state.** The philosophy stays broad; the first cruelty is narrow.
 
 ## 2. Problem
 
-AI coding agents write code faster than humans can understand its failure semantics. Happy paths, common error handling, and unit tests are generated in minutes; questions like *what is left on disk if we die halfway?* or *is the state actually consistent after a restart that follows a reported success?* still depend on human attention.
+AI coding agents write code faster than humans can understand its failure semantics. Happy paths, common error handling, and unit tests are generated in minutes; questions like *what is left on disk if we die halfway?* or *does a reported success still hold when the program runs again?* still depend on human attention.
 
-Outside databases and distributed systems, adversarial testing is not a normal part of development. Ordinary CLIs, developer tools, daemons, and desktop applications work fine for months, then fail at the first coincidence of a crash, a partial state update, and a restart.
+Outside databases and distributed systems, adversarial testing is not a normal part of development. Ordinary CLIs, developer tools, daemons, and desktop applications work fine for months, then fail at the first coincidence of a crash, a partial state update, and the next run.
 
 The problem Sideeye attacks is not "not enough tests." It is that **failure worlds the developer never imagined cannot be verified by enumerating them as test cases in advance.**
 
@@ -48,8 +48,8 @@ The central thing a user writes is not *how to break the software* but *what mus
 
 Invariants come in two shapes, and the distinction matters:
 
-- **Always-invariants (crash atomicity).** For every crash point: after restart, the persistent state is either the complete old state or the complete new state, and diagnostic commands must agree with reality. These hold unconditionally across every explored world. They are the workhorse of v0.
-- **Post-success invariants (durability).** In worlds where the operation reported success before dying, the new state must survive restart. Sideeye records what the program claimed on stdout up to the moment of the kill, and holds the program to its own words.
+- **Always-invariants (crash atomicity).** For every crash point: when the program runs again, the persistent state is either the complete old state or the complete new state, and diagnostic commands must agree with reality. These hold unconditionally across every explored world. They are the workhorse of v0.
+- **Post-success invariants (what a reported success promises).** In worlds where the operation reported success before dying, the new state must still be there when the program runs again. Sideeye records what the program claimed on stdout up to the moment of the kill, and holds the program to its own words.
 
 A conditional invariant of the form "if it succeeded, then…" is vacuously true in most crash worlds — the killed operation never reports success. Sideeye's defaults are therefore built on always-invariants; post-success invariants are the sharper, optional layer.
 
@@ -67,7 +67,7 @@ Bad output:
 
 Desired output:
 
-> For an execution where `rotate-key` reported success, killing the process at a specific point leaves no valid key after restart while `doctor` still reports healthy. Reproduce in 3 steps.
+> For an execution where `rotate-key` reported success, killing the process at a specific point leaves no valid key for the next run while `doctor` still reports healthy. Reproduce in 3 steps.
 
 "This might be dangerous" loses to "this actually broke, here is how."
 
@@ -92,7 +92,7 @@ PASS never means "crash-safe" as an unbounded claim. This vocabulary is enforced
 
 ### 4.6 Failure is part of product behavior
 
-Behavior under failure is product behavior, exactly like behavior under success. "Anything goes, it was an error path" is not accepted. In particular, three things are treated as explicit contracts: the state after a reported success, the state observed after a restart, and the state a diagnostic command reports.
+Behavior under failure is product behavior, exactly like behavior under success. "Anything goes, it was an error path" is not accepted. In particular, three things are treated as explicit contracts: the state after a reported success, the state the program finds when it runs again, and the state a diagnostic command reports.
 
 ### 4.7 The skeptic is not an LLM
 
@@ -121,7 +121,7 @@ Sideeye is not an AI-only tool. But it is designed, from v0, to be *callable by 
 Three differences are the point; none of them is a new primitive.
 
 1. **Ordinary software.** Adversarial testing for CLIs, local developer tools, and small daemons — not only for databases and distributed systems.
-2. **Invariants first.** Users write "if the operation succeeded, this property holds after restart" — never "SIGKILL here, then fail this write."
+2. **Invariants first.** Users write "if the operation succeeded, this property holds when the program runs again" — never "SIGKILL here, then fail this write."
 3. **Replayable counterexamples as the deliverable.** Evidence a developer (or an agent) can paste into an issue, a regression test, and a fix verification, unchanged.
 
 Whether Sideeye deserves to exist is decided by whether these three can be made *easy* for ordinary developers.
@@ -136,7 +136,7 @@ Someone else building on the same ideas would likely make a fault-injection fram
 
 v0 answers one question:
 
-> **If the process dies partway through a stateful operation, do the developer's declared invariants still hold after restart?**
+> **If the process dies partway through a stateful operation, do the developer's declared invariants still hold when the program runs again?**
 
 Typical targets: config updates, key rotation, state migration, index updates, cache metadata, audit state, anything around a local database.
 
@@ -151,7 +151,7 @@ This limitation is a focus, not a weakness. The bugs that surface under the proc
 - Targets must keep persistent state in **files or directories Sideeye can snapshot and restore.** State in system keychains or remote services is out of scope. Symlinks inside the state directory are snapshotted and restored as links.
 - **The recording run and every world start from the state Sideeye rebuilt from its snapshot, not the one the setup left** (#815, ADR 0118). The rebuild empties the state directory and writes the entries back in name order with their bytes, link targets and permission bits (a directory's owner always keeps rwx); it carries no owner, hard link, set-id or sticky bit, timestamp, extended attribute, ACL or file flag, and a state directory the setup removed comes back as an empty one. Until #815 only the worlds started there, so a target that read any of that — or listed its state, which tmpfs, btrfs and XFS were measured listing in another order once rebuilt than as the setup wrote it — could do one thing in the recording run and another in every world while the crash points stayed numbered by the recording. A target that depends on the setup's own copy now meets the rebuilt one from its recording on. The recording and the worlds start from the same rebuild, not from byte-for-byte the same directory: on tmpfs they list it alike (measured, acceptance check 27), and a filesystem that places a new entry by where earlier ones were removed can list two rebuilds differently. A state the engine cannot rebuild is refused before the operation runs. `preflight` rebuilds before its one run, and `--twice` before each of its two, so preflight starts where explore's recording does. Each command rebuilds once more than before — preflight from none to one — at the cost of one world's rebuild.
 - **A world is judged only when it reached its crash point through the operations the recording numbered** (#815, ADR 0119). Each crash point is a number in the recording's count, so a world killed at number k is held, for every operation before k, to the recording's: of the same class, and at the same path wherever the world names a path the recording or its two snapshots spell, or the recording named one the state started with — a rename's or a link's two paths each. A world that is not is refused `kill_did_not_land`, naming the first operation out of place in the world and in the recording, and its state is not judged. What is not compared: the bytes written, an operation that is not a crash point, an `fsync`, a `mkdir` on a directory that was there from the start, before anything in the run was removed or renamed, and a name the recording never spelled where the recording's own name was not one the state started with — a pid, a random suffix or a clock in a scratch name. So for a target whose order varies between runs, a verdict comes out only when the recording and every world before the baseline drew the same order, and it is a verdict about that order: on #815's shape — two files written in a Python set's order under a random `PYTHONHASHSEED`, with four crash worlds, the three after the first compared — 12 of 120 explorations reached one (4 PASS where the recording wrote beta first, 8 FAIL where it wrote alpha first, each with every compared world in the recording's order), and the other 108 were refused; before this, 7 of 30 PASSed, 6 of them with a compared world writing the other order and 4 having recorded alpha first, the order the checker fails in (`spike/dogfood/2026-10-11-order-815/`). Pinning the source of the order — `PYTHONHASHSEED` in the define's environment, declared as `apparatus` — makes every run reach the same verdict.
-- Under the default mode and `--observe syscalls`, Sideeye targets **dynamically linked executables.** macOS binaries with hardened runtime + library validation, and statically linked Linux binaries, cannot be observed by a preloaded shim; Sideeye refuses them (`no_shim_marker`, UNKNOWN) instead of pretending. A statically linked Linux target is observed under `--observe supervised` (Linux 5.19 or later, with a cgroup v2 the engine can create cgroups in), which counts its calls from outside the process with no shim loaded (ADR 0089); a hardened macOS binary has no such mode.
+- Under the default mode and `--observe syscalls`, Sideeye targets **dynamically linked executables.** macOS binaries with hardened runtime + library validation, and statically linked Linux binaries, cannot be observed by a preloaded shim; Sideeye refuses them (`no_shim_marker`, UNKNOWN) instead of pretending. A statically linked Linux target is observed under `--observe supervised` (Linux 5.19 or later), which counts its calls from outside the process with no shim loaded (ADR 0089); a hardened macOS binary has no such mode.
 - A target that **creates other processes** is explorable when an oracle can account for all of them. Until contract v15 the rule was that no process other than the subject touched the state directory; since then a run in which no two processes' state-directory operations interleave and every writing child is reaped by its parent is explored and judged, with the children's operations numbered in the run's own sequence and killed like any other crash point (ADR 0053). What still refuses is a run whose writers overlap, a writer nothing waited for, and a writer the shim never loaded. `--observe syscalls` refused the whole class until ADR 0054 gave that mode an oracle on the run its trace comes from; it is judged there now like any other mode. It requires `--oracle`, on Linux: macOS's `--oracle-fs-usage` cannot account for other processes, so a process boundary the shim saw is refused under it (`boundary_without_oracle`, ADR 0031). A single-threaded target that `exec`s over itself is judged under `--oracle` on Linux when the carried operation count survives the image change (since contract v10, ADR 0018), and refused when the chain breaks. On macOS, where the chain holds, the image change is refused as a boundary (`boundary_without_oracle`) under `--oracle-fs-usage` as with no oracle at all, and a target that writes on both sides of it is refused before that as two writing threads, because the thread that survives an `exec` there reports a new id (#571); where the chain breaks, it is refused as a broken chain there too. A process boundary or an image change in a run given no oracle is refused. A process that **leaves the process group** (`setsid`, `setpgid`) is judged where the engine held the run in a cgroup of its own (contract v17, ADR 0065): on Linux, where the engine can move processes within its own cgroup — a writable cgroup v2 delegated to its user, or root over a writable one — and every image the shim was loaded into said it was inside the run's cgroup before doing anything else, that process is stopped at the crash point and at cleanup with the rest of the run and judged by the rules any other child is. A world holding a record from after its crash point is refused, and so is a run with a process seen outside its cgroup or alive after the cgroup was stopped. What containment cannot see is a process that leaves both the cgroup and the process group where the shim does not ask — at no boundary, in no image the shim is loaded into — touches nothing in the state while its world runs, and writes afterwards, where a later world can take it in (ADR 0065). Everywhere else the detach is refused `child_process_detected`, with the environment as the next step on Linux and, on macOS, a step naming a Linux run where the engine can make cgroups. A target that **creates threads** is judged when every two of its state-directory writes within one process are ordered by a thread creation or a join the shim recorded, however many threads there are, and refused when any two are not (contract v16 admitted one writing thread per process, ADR 0055; contract v18 admits the ordered ones, ADR 0067) — decided from the trace, since every record names its thread and a thread's first record names its creator and where in the creator's own records the creation fell, so an explored world and preflight's second run answer it for themselves rather than inherit it, and it needs no oracle, because a thread's writes reach the shim that shares its process. What the shim sees of the thread API is `pthread_create`, `pthread_join` and `pthread_detach`; a thread's start is recorded by the thread itself, before its routine runs, and a join is resolved before the real call, while the handle is still the collected thread's (glibc reuses it the moment the join returns). Two threads a queue, a mutex or a condition variable orders are ordered by nothing the shim sees, and refuse — beets' pipeline stages are the measured case. Under `--oracle-fs-usage` the same rule decides it (ADR 0060). That oracle attributes a line to a thread id and knows no process for it (ADR 0031), so the map from thread to process comes from the side that has it: the trace names both on every record, and the subject's writing thread ids are handed to that reader, which counts their lines as the subject's. A single-process run that neither creates a child nor replaces its own image, and whose state-directory writes come from one thread the shim recorded — the main thread or a worker — is explored and judged there too, and a second writing thread of that process is judged or refused by the same order rule above, from the trace, as on any other platform. Whether that list holds a given writer turns on which of two records the shim missed, and the bullet below says which is which. A single-process target run with no oracle at all reaches PASS only under `--allow-unverified`, and the report says the weaker claim out loud.
 - **Two records can go missing, and they are not the same miss** (#543). If the shim missed the **creation** — a thread reached through a raw `clone`, which writes no `pthread_create` record — it still records every operation that thread performs through libc, because the wrappers are process-wide and each record names the thread that made it. Such a run is judged on those operations, under the same order rule as any other thread — a thread whose creation the shim missed has no creator to inherit an order from, so its writes are ordered with nobody's and a second writer refuses, whether the shim saw it created or not — and the account says that a thread the shim never saw created wrote in the judged directory. If the shim missed the **operations** — a writer going straight to syscalls — it has nothing to attribute, and the run is refused, naming the writer as an id rather than as a process: `multiple_threads_detected` where the shim recorded threads being created and no process boundary, `child_touched_state_dir` where it recorded neither, which is the raw-fork shape (#405). Which of the two the run can establish is decided from what the shim saw, because the oracle cannot see it at all. A writer that is both is the second case. Which case a target falls in can depend on the mode: `--observe syscalls` records the operations of a writer that goes straight to syscalls (#542), so a thread that misses both ways under the default mode is only a creation-miss under that one, and the one-writer rule decides the run as it would for any recorded thread. Two calls are exempt and stay an operations-miss in either mode — `copy_file_range` and `pwritev2`, for the reason the bullet on that mode gives below. A Go runtime's threads are the case to expect here. The consequence of the first is that **the count of threads the shim saw is a floor, and the two witnesses are never compared on it**: strace reads `CLONE_THREAD` off the line and takes the thread for the subject's, the shim has no record to offer, and nothing reconciles the difference. A thread that is neither recorded nor writes anything leaves the trace nothing at all, and no account can name it.
 - **A process that creates more than sixty-four threads is refused** (#543), counted over the whole run rather than by how many are alive at once. The shim's slot table holds that many and **never reclaims a thread's**: nothing in it observes a thread ending, so a target that starts a worker, joins it, and starts another has spent two slots. The sixty-fifth taker gets a shared reserve slot, the run records that once in front of that thread's first operation, and the engine refuses on the record. A pool that recycles work across more than sixty-four spawns is therefore refused even though it never has two threads running together — where its workers enter the shim's wrappers at all: a slot is claimed by a thread's first interposed call, and the start record a thread writes since v18 (ADR 0067) is written from its own stack and claims none, so seventy threads that write nothing and open nothing are judged. **On Linux, a child started through `vfork` gives back the slot it claimed when it execs** through `execve`, `execv` or `execvp` (#821, ADR 0127): it runs in its parent's memory and claims a slot there under its own thread id, so before this a single thread that started seventy children that way was refused like a pool of seventy threads. While it runs, the child holds that slot, so a process already at sixty-four threads is refused when it starts one. A `vfork` child that leaves another way — one whose every exec fails and that then exits, one that execs through `execvpe`, `execl` or `fexecve`, which the shim does not interpose, one that execs before the shim's constructor has run, one whose signal handler makes an interposed call between the give-back and the exec — keeps its slot while it lives, and once it has been reaped the slot is taken back when the table is next full (#901): a slot whose claimer `kill` reports gone is reclaimed before the reserve is handed out. A target that starts more than sixty-four such children before it reaps any is refused as before. macOS was not measured. This is a capacity limit rather than a third way of missing a thread — a target under it is unaffected, and a target over it is refused rather than mis-attributed.
@@ -187,7 +187,7 @@ The first human audience is OSS and developer-tool authors who:
 - build stateful CLIs or local applications,
 - have decent normal-path tests,
 - care about crash consistency but will never write tests for every failure point,
-- keep state in copyable files and can check it after a restart,
+- keep state in copyable files and can check it when the program runs again,
 - want reproductions, not warnings.
 
 The first dogfood target is **omamori**. Not a product requirement — but its author understands its internal state and failure semantics, and it already carries many hand-written adversarial tests, so it sets a deliberately high bar for whether Sideeye can beat existing human tests. (See §17 and §18 for the calibration risk this creates.)
@@ -206,7 +206,7 @@ When the developer in this story is a coding agent, nothing changes except that 
 
 Three verbs, nothing else: **Define. Explore. Explain.**
 
-- **Define** — the target operation and the property that must hold after it (or after a restart).
+- **Define** — the target operation and the property that must hold after it (or when the program runs again).
 - **Explore** — Sideeye searches crash worlds of that operation. Where to crash and what state survives are Sideeye's responsibility, not the user's.
 - **Explain** — on a violation, Sideeye shrinks the counterexample and returns the minimal conditions, the expected state, the observed state, and the measured reproducibility.
 
@@ -222,7 +222,7 @@ state = "./state"                 # the directory Sideeye snapshots and restores
 [define]
 setup     = "mytool init"         # produce the initial state
 operation = "mytool rotate-key"   # what Sideeye kills partway through
-check     = "./check.sh"          # runs after crash + restart, in a fresh process
+check     = "./check.sh"          # runs after the crash, in a fresh process
                                   # exit 0 = invariant holds
 ```
 
@@ -238,7 +238,7 @@ Faced a sixth time, for `scratch` (ADR 0043) — and this one reverses a ruling 
 
 Define has three levels; the lower ones are zero-effort:
 
-- **L0 — built-in invariants, zero config.** Sideeye ships general invariants it can judge without any checker. The first is **atomicity**, stated per file rather than per directory: for every file present in *both* the pre-operation snapshot and the post-operation result, the state after restart must still contain it, holding either the old content or the new one — never a mixture of the two. An agent can point `sideeye` at an operation and get value with no configuration at all.
+- **L0 — built-in invariants, zero config.** Sideeye ships general invariants it can judge without any checker. The first is **atomicity**, stated per file rather than per directory: for every file present in *both* the pre-operation snapshot and the post-operation result, when the program runs again, the state must still contain it, holding either the old content or the new one — never a mixture of the two. An agent can point `sideeye` at an operation and get value with no configuration at all.
 
   The obvious wording — "the state directory must equal the pre-operation snapshot or the post-operation result" — is stricter than it looks, and wrong. A program that writes atomically leaves `key.json.tmp` behind in every world killed between the `open` and the `rename`, so the directory equals neither snapshot and the *correct* program is reported as violating the built-in invariant. Files that appear in only one of the two snapshots are therefore left unconstrained.
 
@@ -255,7 +255,7 @@ loadable=$(mytool load-key >/dev/null 2>&1 && echo true || echo false)
 [ "$healthy" = "$loadable" ]   # FAIL when doctor's claim contradicts reality
 ```
 
-The check always runs **after a restart, in a fresh process.** In-memory state hides corruption; v0 never evaluates invariants inside the crashed process's lifetime.
+The check always runs **after the crash, in a fresh process.** In-memory state hides corruption; v0 never evaluates invariants inside the crashed process's lifetime.
 
 ## 13. Output Requirements
 
@@ -273,7 +273,7 @@ crash point: after unlink("state/key.json"),
 observed   : doctor: healthy=true / loadable key: none
 expected   : doctor's claim matches reality
 reproduce  : sideeye replay 000042        (reproduced 10/10)
-explored   : 5 crash points, 5 restarts, 5 checks
+explored   : 5 crash points, 5 checks
 not tested : power loss (a missing fsync cannot fail this run), torn writes, concurrent processes
 ```
 
@@ -315,9 +315,9 @@ The table maps **verdicts** to codes. Commands that reach no verdict are outside
 ## 14. Functional Requirements for v0
 
 1. Define one stateful operation as the verification target.
-2. Define invariants evaluated after the operation or after restart.
+2. Define invariants evaluated after the operation or when the program runs again.
 3. Explore execution worlds where the process crashes at multiple points of the operation — process crash only.
-4. Restart or re-evaluate the target from the crashed state.
+4. Run the target again, or evaluate the check, from the crashed state.
 5. Detect invariant violations.
 6. Save violations as reproducible cases.
 7. Shrink discovered cases by removing unnecessary conditions.
@@ -325,7 +325,7 @@ The table maps **verdicts** to codes. Commands that reach no verdict are outside
 9. Never treat an unverified or unjudgeable state as success.
 10. State explicitly, in every result, what Sideeye did and did not verify.
 11. Start every crash world, and the recording run they are counted against, from the same rebuild of the initial state; snapshot and restore the state directory; no leakage between worlds.
-12. Include exploration counts (crash points, restarts, check executions) in every report.
+12. Include exploration counts (crash points, check executions) in every report.
 13. Falsify the checker once before exploring: a deliberately corrupted state must make the check FAIL; otherwise the run is UNKNOWN, not PASS.
 14. Record crash landing context in every counterexample; on replay, report "case no longer applies" when the context no longer matches.
 15. Emit machine-readable output (JSON) alongside human-readable text, honoring the exit-code contract of §13.

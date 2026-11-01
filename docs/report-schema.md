@@ -366,7 +366,15 @@ has not been ruled on — the restore does not put attributes back, and nothing 
 such a write is judged or, like the ownership and permission calls #121 observes, set aside.
 The macOS fs_usage oracle keeps its own list (`src/fsusage.zig`), which already reads
 `getxattr`, `fgetxattr`, `listxattr`, `flistxattr` and `select` as reads; it was not measured
-for the rest.
+for the rest. The other path calls this reader neither classifies nor reads as reads — `mknod`,
+`mount`, `name_to_handle_at` and the rest strace prints a path for — are placed by their path the same
+way and refused inside the state through any spelling, a bind or move mount's source included (#935); `quotactl` and `fsconfig` are the
+exception, refused only when they quote an absolute path or name a descriptor inside the state:
+the first prints its
+command as `QCMD(…)`, whose comma this reader does not nest, and the second's path argument is a
+plain value for most of its commands. A child's ownership, permission or timestamp call whose
+relative path names no descriptor (`chmod`, `chown`, `utimes` and the like) is listed in
+`metadata_observed` wherever it points: a child's working directory is not followed.
 
 `setup_error_reason` values (closed set — added with #518, ADR 0057, held to the
 contract's enum by the same acceptance check, and carrying no version of its own: the
@@ -522,8 +530,7 @@ supervised` — a statically linked 64-bit ELF refused under
 `--observe wrappers` or `syscalls` takes the step naming `--observe supervised`,
 whether the operation names it by path or by a bare name found on the engine's
 `PATH`**: that mode counts such a target from outside it, and the sentence names
-its conditions (Linux 5.19 or later, aarch64 or x86_64, a cgroup v2 the engine can
-create cgroups in). A 32-bit static ELF, a static ELF off Linux or on a Linux build for
+its conditions (Linux 5.19 or later, aarch64 or x86_64). A 32-bit static ELF, a static ELF off Linux or on a Linux build for
 another architecture, a Mach-O not linked
 against dyld, and one whose code directory carries the library-validation or
 hardened-runtime flag without naming a platform take the class wall. One whose

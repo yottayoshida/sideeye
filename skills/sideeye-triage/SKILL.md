@@ -5,8 +5,8 @@ description: Take a Sideeye FAIL on code you can change to a fix — read the ev
 
 # From a Sideeye FAIL to a fix
 
-A FAIL means: Sideeye killed the tool just before one of its own file operations, restarted
-it, and the state left behind broke the invariant. The report names the earliest such
+A FAIL means: Sideeye killed the tool just before one of its own file operations, and the
+state it left behind broke the invariant. The report names the earliest such
 **crash point** and saves it as a **case** that replays exactly that crash.
 
 Hold to these throughout:
@@ -46,7 +46,7 @@ shapes, and what closes them:
   the old one;
 - two files that must agree updated one at a time — order the writes so every prefix is a
   state the tool can read, or make the second write carry what the first one meant;
-- a backup kept, but deleted before the new copy is durable — delete it last.
+- a backup kept, but deleted before the new copy is in place — delete it last.
 
 ## 4. Change the tool and rebuild it
 

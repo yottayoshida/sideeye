@@ -4339,7 +4339,7 @@ sup_field() {   # sup_field <json>: verdict, crash points, earliest, oracle_veri
 sup_explore() {   # sup_explore <dir> <toy> <mode flags...>
     sd=$1; st=$2; shift 2
     rm -rf "$sd" && mkdir -p "$sd/state"
-    TOY=$st "$SIDEEYE" explore --state "$sd/state" --setup "$st init" --operation "$st rotate" \
+    TOY=$st "${sup_engine:-$SIDEEYE}" explore --state "$sd/state" --setup "$st init" --operation "$st rotate" \
         --check "$ROOT/spike/check.sh" "$@" --oracle /usr/bin/strace --work "$sd/work" \
         --json "$sd/r.json" > "$sd/out.txt" 2>&1
 }
@@ -4629,18 +4629,87 @@ if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
     kill "$sd_sleeper" 2>/dev/null
     wait "$sd_sleeper" 2>/dev/null
     /bin/rm -f /tmp/acc-sd-pgid
-else
-    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
-    o=$("$SIDEEYE" explore --state /tmp/acc/state --operation "$OUT/toy-static rotate" \
-        --observe supervised --work /tmp/acc/work 2>&1)
-    rc=$?
-    if [ "$rc" = 3 ] && echo "$o" | grep -q "needs a cgroup v2 the engine can create cgroups in"; then
-        echo "ok   uncontained, --observe supervised is a setup error that names the cgroup it needs"
+fi
+
+# Not the shipped engine alone: on a host that contains runs it makes a cgroup and never takes the
+# path these legs are about.
+nc_refused() {   # nc_refused <name> <dir> <rc> <words the detail must carry>
+    nc_out=$(cat "$2/out.txt")
+    nc_step=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("next_step", ""))' "$2/r.json" 2>/dev/null)
+    if refused child_process_detected "$3" "$nc_out" && printf '%s\n' "$nc_out" | grep -qF -- "$4" \
+        && printf '%s\n' "$nc_step" | grep -qF "in the environment"; then
+        echo "ok   $1"
     else
-        echo "FAIL uncontained --observe supervised: exit $rc (wanted 3 naming the cgroup)"
-        echo "$o" | sed 's/^/     | /' | head -4
+        echo "FAIL $1: exit $3, wanted 2 child_process_detected with [$4] and the environment's step"
+        printf '%s\n' "$nc_out" | sed 's/^/     | /' | head -6
         fails=$((fails + 1))
     fi
+}
+if [ ! -x "$dt_refuser" ]; then
+    echo "FAIL --observe supervised without a cgroup: $dt_refuser is not built (zig build -Dtest-no-cgroup)"
+    fails=$((fails + 1))
+else
+    sup_engine=$dt_refuser
+    sup_explore /tmp/acc-nc "$OUT/toy-static" --observe supervised
+    nc_rc=$?
+    nc_v=$(sup_field /tmp/acc-nc/r.json)
+    if [ "$nc_rc" = 1 ] && [ "$nc_v" = "('FAIL', 5, 5, True)" ]; then
+        echo "ok   --observe supervised without a cgroup judges the static toy as it does with one: FAIL at crash point 5 of 5, the oracle agreeing ($(basename "$dt_refuser"))"
+    else
+        echo "FAIL --observe supervised without a cgroup on the static toy: exit $nc_rc $nc_v (wanted 1 and ('FAIL', 5, 5, True))"
+        sed 's/^/     | /' /tmp/acc-nc/out.txt | head -6
+        fails=$((fails + 1))
+    fi
+    TOY_DETACH=1 export TOY_DETACH
+    sup_explore /tmp/acc-nc "$OUT/toy-static" --observe supervised
+    nc_refused "--observe supervised without a cgroup refuses a child that leaves the process group" /tmp/acc-nc $? "left the containment group"
+    unset TOY_DETACH
+    TOY_SETSID=1 export TOY_SETSID
+    sup_explore /tmp/acc-nc "$OUT/toy-static" --observe supervised
+    nc_refused "--observe supervised without a cgroup refuses the subject's own setsid, which succeeds under strace" /tmp/acc-nc $? "left the containment group"
+    unset TOY_SETSID
+    # World-only, or the recording refuses first; a kill sent to the group alone would leave these
+    # worlds waiting until --world-timeout.
+    /bin/rm -f /tmp/acc-nc-pgid
+    python3 -c 'import os, time; os.setpgid(0, 0); open("/tmp/acc-nc-pgid", "w").write(str(os.getpgrp())); time.sleep(300)' &
+    nc_sleeper=$!
+    i=0
+    while [ ! -s /tmp/acc-nc-pgid ] && [ "$i" -lt 50 ]; do sleep 0.1; i=$((i + 1)); done
+    nc_pgid=$(cat /tmp/acc-nc-pgid 2>/dev/null)
+    if [ -n "$nc_pgid" ]; then
+        TOY_ESCAPE_WITNESS=/tmp/acc-nc-witness export TOY_ESCAPE_WITNESS
+        for nc_shape in TOY_SETPGID_OUT_WORLD TOY_SETPGID_OUT_PARENT_WORLD; do
+            /bin/rm -f /tmp/acc-nc-witness
+            export "$nc_shape=$nc_pgid"
+            sup_explore /tmp/acc-nc "$OUT/toy-static" --observe supervised --world-timeout 60
+            nc_rc=$?
+            unset "$nc_shape"
+            if ! grep -q "rc=0 \|rc=0$" /tmp/acc-nc-witness 2>/dev/null; then
+                echo "FAIL $nc_shape: the subject never left its group, so nothing was measured: $(head -2 /tmp/acc-nc-witness 2>/dev/null | tr '\n' ' ')"
+                fails=$((fails + 1))
+                continue
+            fi
+            if [ "$nc_shape" = TOY_SETPGID_OUT_WORLD ]; then
+                nc_refused "--observe supervised without a cgroup kills the subject that left its group, at its crash point, and refuses the world" /tmp/acc-nc $nc_rc "in an explored world"
+            # The child killed at the crash point is refused before the detach is asked about.
+            elif refused child_touched_state_dir "$nc_rc" "$(cat /tmp/acc-nc/out.txt)" && grep -qF "in an explored world" /tmp/acc-nc/out.txt; then
+                echo "ok   --observe supervised without a cgroup kills a subject that left its group while its child reached the crash point, and refuses the world"
+            else
+                echo "FAIL --observe supervised without a cgroup, a subject that left its group while its child reached the crash point: exit $nc_rc, wanted 2 child_touched_state_dir in an explored world"
+                sed 's/^/     | /' /tmp/acc-nc/out.txt | head -6
+                fails=$((fails + 1))
+            fi
+        done
+        unset TOY_ESCAPE_WITNESS
+        /bin/rm -f /tmp/acc-nc-witness
+    else
+        echo "FAIL the sleeper that holds a group outside the run never started, so nothing was measured"
+        fails=$((fails + 1))
+    fi
+    kill "$nc_sleeper" 2>/dev/null
+    wait "$nc_sleeper" 2>/dev/null
+    /bin/rm -f /tmp/acc-nc-pgid
+    unset sup_engine
 fi
 
 # ---- a static parent whose dynamic child carried the shim (#685, ADR 0108) ----

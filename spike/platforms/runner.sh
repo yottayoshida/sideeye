@@ -8,8 +8,9 @@
 # it (install-sideeye.sh: the asset picked by `uname`, its digest checked, GH_TOKEN used for the
 # API when the environment has one). Then measure.sh, the same define, in these places:
 #   host                the runner itself, as its own user, inside a cgroup delegated to that user —
-#                       a runner's shell sits in one root owns, where --observe supervised is a
-#                       setup error by design (spike/in-delegated-cgroup.sh). On Ubuntu 24.04 it is
+#                       a runner's shell sits in one root owns, where the engine makes no cgroup
+#                       and --observe supervised refuses a process that leaves its group
+#                       (spike/in-delegated-cgroup.sh). On Ubuntu 24.04 it is
 #                       the release target and the control the other legs are read against; on
 #                       22.04 and 26.04 it is that release's kernel and glibc (LEGS=host)
 # and, with LEGS=all (the default; the 24.04 runners):
