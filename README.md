@@ -23,7 +23,7 @@ not tested  power loss (a missing fsync cannot fail this run), torn writes, conc
 ```
 <!-- demo-output:end -->
 
-Counterexamples found: RuboCop, ImageMagick, the AWS CLI, [more](docs/found.md) — [four fixes](docs/case-studies.md). A target Sideeye cannot fully observe is UNKNOWN, never a silent PASS — except unrecorded writes under a directory a recorded `rename` moved in from outside, counted as `paths_attributed_to_rename` in every JSON report ([why](DESIGN.md#the-one-named-exception-a-directory-renamed-in-from-outside)).
+Counterexamples found: RuboCop, ImageMagick, the AWS CLI, [more](docs/found.md) — [four fixes](docs/case-studies.md). A target Sideeye cannot fully observe is UNKNOWN, never a silent PASS — except the [known windows](docs/silent-windows.md), each with the report field or test that shows it, or a note that nothing does.
 
 ## Installation
 
