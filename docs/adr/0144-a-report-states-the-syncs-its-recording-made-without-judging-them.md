@@ -56,9 +56,8 @@ terms it was recorded in.
 
 - `docs/faq.md`'s "Does it check my fsync?" no longer answers "No": it does not judge it, and the
   report says what it saw.
-- What "recorded" leaves out is a known gap the line inherits: an `fcntl(F_FULLFSYNC)` on macOS
-  (#948), an `O_SYNC` open, `sync`, `syncfs`, and a raw `syscall(SYS_fsync, …)` under
-  `--observe wrappers` are not recorded, so a tool syncing that way is named. Writes that are
+- What "recorded" leaves out is a known gap the line inherits: an `O_SYNC` open, `sync`,
+  `syncfs`, and a raw `syscall(SYS_fsync, …)` under `--observe wrappers` are not recorded, so a tool syncing that way is named. Writes that are
   not recorded — through a shared mapping, or a raw `syscall(SYS_write, …)` under `--observe
   wrappers` — leave a rename counted, not named, as do a file written outside the state
   directory and renamed in, and a rename through a symbolic link inside it (the write is

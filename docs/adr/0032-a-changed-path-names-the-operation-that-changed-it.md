@@ -1,6 +1,6 @@
 # ADR 0032 — A changed path names the operation that changed it, and the freeze is broken once to say so
 
-- **Status:** Accepted (2026-08-30; amended 2026-10-10 for #807; §2 narrowed by ADR 0121, 2026-10-11; §4's rename inside the root implemented by ADR 0137, 2026-10-16)
+- **Status:** Accepted (2026-08-30; amended 2026-10-10 for #807; §2 narrowed by ADR 0121, 2026-10-11; §4's rename inside the root implemented by ADR 0137, 2026-10-16; the README placement of the exception replaced by ADR 0145, 2026-11-01)
 - **Supersedes:** nothing. Generalises the detector ADR 0003 describes in passing and
   `src/contract.zig`'s `isMutation` doc comment defines.
 - **Scope:** the reconciliation of the judged state's differences against the recorded

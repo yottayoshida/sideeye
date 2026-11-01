@@ -1,0 +1,33 @@
+{
+  "schema": "sideeye/preflight",
+  "schema_status": "frozen",
+  "contract_version": 19,
+  "outcome": "recording_accepted",
+  "exit_code": 0,
+  "crash_points": 42,
+  "expected_status": 0,
+  "command_cwd": "/",
+  "command_cwd_declared": false,
+  "apparatus": ["env:PYTHONDONTWRITEBYTECODE=1"],
+  "scratch": ["app.db", "app.db-journal"],
+  "l0": "0 path(s) judged pre-or-post; 1 path(s) matched by scratch, not judged (declared: app.db, app.db-journal)",
+  "oracle": "agreed on 42 operations (6174 syscall lines examined, 267 in scope of the judged state), witness strace",
+  "processes": "single process",
+  "not_checked": ["kill landing", "world-side process boundaries", "baseline behavior", "checker falsification", "whether any world could fail"],
+  "controls": {"baseline": {"word": "none", "checker_exit": "exit 0", "red": []}, "legs": [
+    {"leg": "a", "word": "more_than_its_leg", "control_exit": "exit 0", "checker_exit": "exit 1", "red": ["a", "d"]},
+    {"leg": "b", "word": "only_its_leg", "control_exit": "exit 0", "checker_exit": "exit 1", "red": ["b"]},
+    {"leg": "c", "word": "only_its_leg", "control_exit": "exit 0", "checker_exit": "exit 1", "red": ["c"]},
+    {"leg": "d", "word": "only_its_leg", "control_exit": "exit 0", "checker_exit": "exit 1", "red": ["d"]}
+  ]},
+  "oracle_witness": "strace",
+  "oracle_operations_agreed": 42,
+  "checker_declared": true,
+  "processes_children_admitted": false,
+  "processes_image_changes": 0,
+  "processes_threads_created": 0,
+  "processes_writer_threads": 1,
+  "l0_judged_paths": [],
+  "l0_judged_paths_omitted": 0,
+  "l0_judged_paths_touched": 0
+}

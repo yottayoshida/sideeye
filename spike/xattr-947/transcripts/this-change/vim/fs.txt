@@ -1,0 +1,1 @@
+filesystem of /s/vim/state: ext2/ext3

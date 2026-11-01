@@ -137,23 +137,23 @@ fn initialOracleNote(asked: OracleAsked) []const u8 {
 
 fn initialMetadataNote(asked: OracleAsked, supervised: bool) []const u8 {
     if (supervised) return switch (asked) {
-        .unparsed => "not established: this run stopped while its arguments were still being read; the supervising engine is not notified of ownership/permission/timestamp calls, so only a completed oracle account could show them",
+        .unparsed => "not established: this run stopped while its arguments were still being read; the supervising engine is not notified of " ++ metadata_kinds ++ " calls, so only a completed oracle account could show them",
         .named => |kind| switch (kind) {
-            .strace => "not established: --oracle was named, and this run stopped before its metadata account was completed; the supervising engine is not notified of ownership/permission/timestamp calls",
-            .fs_usage => "not established: --oracle-fs-usage was named, and this run stopped before its metadata account was completed; the supervising engine is not notified of ownership/permission/timestamp calls",
+            .strace => "not established: --oracle was named, and this run stopped before its metadata account was completed; the supervising engine is not notified of " ++ metadata_kinds ++ " calls",
+            .fs_usage => "not established: --oracle-fs-usage was named, and this run stopped before its metadata account was completed; the supervising engine is not notified of " ++ metadata_kinds ++ " calls",
         },
-        .none => "not observable (no oracle ran; the supervising engine is not notified of ownership/permission/timestamp calls)",
+        .none => "not observable (no oracle ran; the supervising engine is not notified of " ++ metadata_kinds ++ " calls)",
     };
     return switch (asked) {
-        .unparsed => "not established: this run stopped while its arguments were still being read; the shim does not interpose ownership/permission/timestamp calls, so only a completed oracle account could show them",
+        .unparsed => "not established: this run stopped while its arguments were still being read; the shim does not interpose " ++ metadata_kinds ++ " calls, so only a completed oracle account could show them",
         // "before its metadata account was completed", not "before its capture was read":
         // the comparison block reads the capture and can refuse on it before
         // `metadata_note` is assigned, and this wording has to stay true there too.
         .named => |kind| switch (kind) {
-            .strace => "not established: --oracle was named, and this run stopped before its metadata account was completed; the shim does not interpose ownership/permission/timestamp calls",
-            .fs_usage => "not established: --oracle-fs-usage was named, and this run stopped before its metadata account was completed; the shim does not interpose ownership/permission/timestamp calls",
+            .strace => "not established: --oracle was named, and this run stopped before its metadata account was completed; the shim does not interpose " ++ metadata_kinds ++ " calls",
+            .fs_usage => "not established: --oracle-fs-usage was named, and this run stopped before its metadata account was completed; the shim does not interpose " ++ metadata_kinds ++ " calls",
         },
-        .none => "not observable (no oracle ran; the shim does not interpose ownership/permission/timestamp calls)",
+        .none => "not observable (no oracle ran; the shim does not interpose " ++ metadata_kinds ++ " calls)",
     };
 }
 
@@ -1012,6 +1012,8 @@ fn withField(comptime field: ArgsField) cli.Args {
         .{ .str = "x" }
     else if (T == []const []const u8)
         &.{"x"}
+    else if (T == []const config.Control)
+        &.{.{ .leg = "a", .command = "x" }}
     else if (T == ?u8 or T == ?u32)
         3
     else if (T == contract.ObserveMode)
@@ -1289,12 +1291,21 @@ fn saySingleCrashPointNote(n: usize) void {
 fn jsonArrayField(w: *std.ArrayList(u8), arena: std.mem.Allocator, name: []const u8, items: []const []const u8, only_unchecked: bool) !void {
     try w.appendSlice(arena, ",\n  \"");
     try w.appendSlice(arena, name);
-    try w.appendSlice(arena, "\": [");
-    var first = true;
-    for (items) |e| {
-        if (only_unchecked and !config.apparatusUnchecked(e)) continue;
-        if (!first) try w.appendSlice(arena, ", ");
-        first = false;
+    try w.appendSlice(arena, "\": ");
+    if (!only_unchecked) return jsonStringArray(w, arena, items);
+    var kept: std.ArrayList([]const u8) = .empty;
+    for (items) |e| if (config.apparatusUnchecked(e)) try kept.append(arena, e);
+    try jsonStringArray(w, arena, kept.items);
+}
+
+fn jsonOptString(w: *std.ArrayList(u8), arena: std.mem.Allocator, s: ?[]const u8) !void {
+    if (s) |v| try jsonString(w, arena, v) else try w.appendSlice(arena, "null");
+}
+
+fn jsonStringArray(w: *std.ArrayList(u8), arena: std.mem.Allocator, items: []const []const u8) !void {
+    try w.append(arena, '[');
+    for (items, 0..) |e, i| {
+        if (i > 0) try w.appendSlice(arena, ", ");
         try jsonString(w, arena, e);
     }
     try w.append(arena, ']');
@@ -1638,7 +1649,7 @@ pub fn violationObserved(v: ?engine.Violation) []const u8 {
         .hybrid => "holding neither the old nor the new content",
         .rewritten => "present, but its recorded history is no longer a prefix of its content",
         .not_durable => "the operation claimed success before the kill, and this part of the new state did not survive",
-    } else "the checker exited non-zero after restart";
+    } else "the checker exited non-zero in a fresh process after the crash";
 }
 
 const Earliest = struct {
@@ -2167,11 +2178,33 @@ test "the report's temporary file is always one this call created (#818)" {
     try std.testing.expectEqualStrings("keep too", t.read("taken-file", &rb));
 }
 
+pub const metadata_kinds = "ownership/permission/timestamp/extended-attribute";
+
 pub const PreflightDoc = struct {
     runs_differ: bool,
     operations: u32,
     marker_declared: bool,
     repeat: ?PreflightRepeat,
+    controls: ?PreflightControls = null,
+};
+
+pub const PreflightControl = struct {
+    leg: []const u8,
+    word: []const u8,
+    control_exit: ?[]const u8,
+    checker_exit: ?[]const u8,
+    red: []const []const u8,
+};
+
+pub const PreflightBaseline = struct {
+    word: []const u8,
+    checker_exit: []const u8,
+    red: []const []const u8,
+};
+
+pub const PreflightControls = struct {
+    baseline: PreflightBaseline,
+    controls: []const PreflightControl,
 };
 
 pub const PreflightRepeat = struct {
@@ -2245,6 +2278,29 @@ fn buildPreflightJson(arena: std.mem.Allocator, pd: PreflightDoc) ![]const u8 {
             try w.appendSlice(arena, "}");
         }
         try w.appendSlice(arena, if (r.diffs.len == 0) "]" else "\n  ]");
+    }
+    if (pd.controls) |c| {
+        try w.appendSlice(arena, ",\n  \"controls\": {\"baseline\": {\"word\": ");
+        try jsonString(w, arena, c.baseline.word);
+        try w.appendSlice(arena, ", \"checker_exit\": ");
+        try jsonString(w, arena, c.baseline.checker_exit);
+        try w.appendSlice(arena, ", \"red\": ");
+        try jsonStringArray(w, arena, c.baseline.red);
+        try w.appendSlice(arena, "}, \"legs\": [");
+        for (c.controls, 0..) |k, i| {
+            try w.appendSlice(arena, if (i == 0) "\n    {\"leg\": " else ",\n    {\"leg\": ");
+            try jsonString(w, arena, k.leg);
+            try w.appendSlice(arena, ", \"word\": ");
+            try jsonString(w, arena, k.word);
+            try w.appendSlice(arena, ", \"control_exit\": ");
+            try jsonOptString(w, arena, k.control_exit);
+            try w.appendSlice(arena, ", \"checker_exit\": ");
+            try jsonOptString(w, arena, k.checker_exit);
+            try w.appendSlice(arena, ", \"red\": ");
+            try jsonStringArray(w, arena, k.red);
+            try w.appendSlice(arena, "}");
+        }
+        try w.appendSlice(arena, if (c.controls.len == 0) "]}" else "\n  ]}");
     }
     try appendFigures(w, arena);
     try appendJudgedSet(w, arena);
@@ -2491,7 +2547,7 @@ test "every OpClass name is its own tag, which is why the hand-written switch co
 test "the oracle account says no oracle was given only once the arguments were read to the end (#352)" {
     try std.testing.expectEqualStrings("not run (no --oracle given)", initialOracleNote(.none));
     try std.testing.expectEqualStrings(
-        "not observable (no oracle ran; the shim does not interpose ownership/permission/timestamp calls)",
+        "not observable (no oracle ran; the shim does not interpose " ++ metadata_kinds ++ " calls)",
         initialMetadataNote(.none, false),
     );
     const states = [_]OracleAsked{ .unparsed, .{ .named = .strace }, .{ .named = .fs_usage } };
@@ -2748,10 +2804,10 @@ test "under --observe supervised the metadata account names the engine's filter,
     }
     for ([_]OracleAsked{ .unparsed, .none, .{ .named = .strace }, .{ .named = .fs_usage } }) |asked| {
         const sup = initialMetadataNote(asked, true);
-        try std.testing.expect(std.mem.indexOf(u8, sup, "the supervising engine is not notified of ownership/permission/timestamp calls") != null);
+        try std.testing.expect(std.mem.indexOf(u8, sup, "the supervising engine is not notified of " ++ metadata_kinds ++ " calls") != null);
         try std.testing.expect(std.mem.indexOf(u8, sup, "shim") == null);
         const def = initialMetadataNote(asked, false);
-        try std.testing.expect(std.mem.indexOf(u8, def, "the shim does not interpose ownership/permission/timestamp calls") != null);
+        try std.testing.expect(std.mem.indexOf(u8, def, "the shim does not interpose " ++ metadata_kinds ++ " calls") != null);
     }
     noteOracle(.{ .named = .strace });
     try std.testing.expect(std.mem.indexOf(u8, metadata_note, "the shim does not interpose") != null);

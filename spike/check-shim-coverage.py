@@ -303,7 +303,7 @@ def shim_exports(path):
     otherwise verify itself.
     """
     text = open(path).read()
-    return set(re.findall(r'@export\([^)]*\.name = "([a-z0-9_]+)"', text))
+    return set(re.findall(r'@export\([^)]*\.name = "([A-Za-z0-9_]+)"', text))
 
 
 def main(argv):
