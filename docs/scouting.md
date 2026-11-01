@@ -87,7 +87,8 @@ outcome is a refusal. Two spellings for the commands:
 - the string form, split on spaces — for invocations that fit it;
 - the argv form — `operation = ["tool", "-m", "a message with spaces"]` —
   for the argument a space-split string cannot spell (ADR 0019). One line,
-  every element one double-quoted string, passed to the executor verbatim.
+  every element one double-quoted string — or a single-quoted literal, which
+  carries a `"` as written — passed to the executor verbatim.
 
 Write the checker to **fail closed**: a missing store is a failure, an
 anchored exact match beats a substring, and every failure message names

@@ -32,9 +32,12 @@ stay the same.
    recorded in DESIGN §12's fourth facing, with no ADR of its own;
    `apparatus` with ADR 0041; `scratch` with ADR 0043), and named here rather than left to
    the code so the frozen surface and the accepted set stay the same list.
-   `apparatus` and `scratch` take only the array form: double-quoted `kind:value` entries for the one, double-quoted paths relative to `state` for the other. Both command spellings: the string
+   `apparatus` and `scratch` take only the array form: double-quoted `kind:value` entries for the one, double-quoted paths relative to `state` for the other. The kind `pin:random` joined the apparatus grammar on 2026-11-01 (#951, ADR 0146) under the same allowance: a `pin:` entry was refused until then, so no accepted spelling changed meaning. Both command spellings: the string
    form with its split-on-spaces, no-quoting rule, and the argv form — one
-   line, double-quoted elements, passed verbatim (ADR 0019). Unknown keys,
+   line, double-quoted elements, passed verbatim (ADR 0019); since 2026-10-31 (#949) an element of
+   a command's argv form may also be a single-quoted literal string, under the same allowance —
+   a `'` element was refused until then, so no accepted spelling changed meaning, and the entries
+   of `apparatus` and `scratch` stay double-quoted. Unknown keys,
    malformed values and the array form on non-command keys refuse with named,
    line-numbered errors; relative paths resolve against the toml's directory
    (ADR 0007). Additive keys remain possible; changing the meaning of an
@@ -46,6 +49,13 @@ stay the same.
    `--recovery` / `--recovery-check`, where no argv form exists; the argv form under
    `[recovery]` refuses by name. The config's `[world]`/`[define]` refusal message now
    names three sections, a prose change to an error the freeze does not cover.
+   **A second section, 2026-10-31 (#943, ADR 0143):** `[controls]`, under the same allowance
+   and for the same reason. Its keys are not a fixed set: each names a leg of the checker,
+   in letters, digits, `_` and `-`, at most 64, and its value is a command in the string form only, as
+   `[recovery]`'s are; the argv form refuses by name, and a define with `[controls]` and no
+   `check` refuses. The unknown-section message now names four sections. The checker's
+   environment gains `SIDEEYE_LEGS` (a file preflight reads under its controls, and one
+   nothing reads elsewhere), and a name under `SIDEEYE_` was already the engine's to set.
 2. **Report schema.** The fields, presence rules and `unknown_reason` closed
    set documented in `docs/report-schema.md`, held to the code by acceptance
    check 4 — `oracle_verified` included (#94). The account fields' prose may
@@ -267,7 +277,9 @@ stay the same.
    `schema` but `"sideeye/report"`, as the envelope says to, never reads the new one. The new
    document is held to this surface's rule from its first release — fields may be added, none
    removed or redefined — and says so in its own `schema_status`, `"frozen"`, since an MCP
-   tool hands it to agents from the same release.
+   tool hands it to agents from the same release. **Its first added field, 2026-10-31 (#943,
+   ADR 0143):** `controls`, present only when the define declares `[controls]`; `outcome` and
+   `exit_code` do not move with it.
 
    **Amended 2026-10-10: broken a sixth time, by owner ruling — the fourth addition to
    `unknown_reason`.** `checker_rejects_initial_state` takes the set from 35 members to 36 (#756,
@@ -353,6 +365,15 @@ stay the same.
    it was judged (0 or 1) unless the run had admitted a child, and then by class alone. A target
    whose order varies between runs reaches a verdict only when every crash world draws the
    recording's order. The verdict-to-code mapping is untouched and no reason is added.
+   **Which runs given no oracle flag reach which code moved on 2026-10-31** (#950, ADR 0141): on
+   Linux, a run given none of `--oracle`, `--oracle-fs-usage`, `--no-oracle` and `--allow-unverified`
+   takes a strace found on `PATH` as its oracle once that strace has traced this binary. Both
+   directions follow. A would-be PASS that was refused `completeness_not_verified` (exit 2) is verified
+   (exit 0) or refused under the oracle, and a run refused `boundary_without_oracle` (exit 2) can reach a
+   verdict; and a FAIL (exit 1) can become an UNKNOWN (exit 2) when the oracle's account disagrees with
+   the recording's. `--allow-unverified` alone attaches nothing, so its exit-0 passes stay exit 0, and
+   `--no-oracle` reaches the run every earlier flagless caller reached. The verdict-to-code mapping is
+   untouched and no reason is added.
 4. **Replay compatibility.** A saved case replays across 1.x or refuses
    honestly — `case_no_longer_applies`, whether the code changed underneath
    it or the trace contract did (the refusal message names which) — never a
@@ -386,7 +407,12 @@ stay the same.
    and `observe` whatever the mode, `wrappers` included; a v7 file without `observe`, without
    `apparatus`, with notes alone or with an entry the define grammar refuses, or an older file
    carrying an `apparatus` array, refuses as malformed, and an earlier binary refuses a v7 file as one it
-   cannot parse. A future trace-contract bump is therefore *not* a
+   cannot parse. Version 8 (#951, ADR 0146, 2026-11-01) is version 7 with `pin:random` in
+   `apparatus` and two top-level keys, `pin_seed` (64 lowercase hex digits) and `pin_generator`
+   (`chacha20-v1`), written only for a define that asks for the pin, so that a replay draws the
+   streams the counterexample was found with; a v8 file without the entry, without either key, with
+   a malformed seed or a generator this binary does not have, and an older file carrying the entry
+   or either key, refuses as malformed. An earlier binary refuses a v8 file at parse. A future trace-contract bump is therefore *not* a
    broken promise: old cases refuse with the mismatch named, and that
    refusal is the promised behavior.
    **Read on 2026-10-10** (#756, ADR 0107): a case saved from a define whose checker rejects the

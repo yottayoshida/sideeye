@@ -1,6 +1,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const contract = @import("contract");
+const pinning = @import("pinning.zig");
 const posix = @import("posix.zig");
 
 pub const exec_arg = "__filter-exec";
@@ -143,7 +144,7 @@ pub fn startFailure(e: StartError) []const u8 {
 }
 
 pub fn preloadFor(observe: contract.ObserveMode, shim: []const u8) []const u8 {
-    return if (observe == .supervised) "" else shim;
+    return if (observe == .supervised) "" else pinning.preload orelse shim;
 }
 
 pub fn observerName(observe: contract.ObserveMode) []const u8 {

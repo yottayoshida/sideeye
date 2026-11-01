@@ -23,7 +23,7 @@ not tested  power loss (a missing fsync cannot fail this run), torn writes, conc
 ```
 <!-- demo-output:end -->
 
-Counterexamples found: RuboCop, ImageMagick, the AWS CLI, [more](docs/found.md) — [four fixes](docs/case-studies.md). A target Sideeye cannot fully observe is UNKNOWN, never a silent PASS — except unrecorded writes under a directory a recorded `rename` moved in from outside, counted as `paths_attributed_to_rename` in every JSON report ([why](DESIGN.md#the-one-named-exception-a-directory-renamed-in-from-outside)).
+Counterexamples found: RuboCop, ImageMagick, the AWS CLI, [more](docs/found.md) — [four fixes](docs/case-studies.md). A target Sideeye cannot fully observe is UNKNOWN, never a silent PASS — except the [known windows](docs/silent-windows.md), each with the report field or test that shows it, or a note that nothing does.
 
 ## Installation
 
@@ -41,8 +41,7 @@ $ ./sideeye version
 ```
 $ sideeye demo
 $ sideeye preflight --state <dir> --operation "<cmd>"
-$ sideeye explore --config sideeye.toml --oracle /usr/bin/strace
-$ sideeye explore --config sideeye.toml --allow-unverified
+$ sideeye explore --config sideeye.toml
 ```
 
 - **`demo`** — sixty seconds, no compiler; one directory left under `$TMPDIR` (or `/tmp`) with the saved case. Exit 1, the bug found, is success.
@@ -60,7 +59,7 @@ operation = "mytool rotate-key" # the shim is inserted into this one, not into s
 check     = "./check.sh"        # exit 0 = invariant holds
 ```
 
-`operation` is the one command the shim is inserted into; command strings split on spaces, no quoting; an argument holding a space takes the argv form ([docs/cli.md](docs/cli.md#usage)). `--oracle` is a second witness, the kernel's account (Linux; on macOS, `--oracle-fs-usage`); without one, PASS needs `--allow-unverified`, and the report says so. `--shim` names the shim when it is not beside the binary; `--work` moves the scratch directory. Exit codes: **0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR**. A FAIL saves a replayable case, and `sideeye evidence <case>` renders it for an issue tracker. Run `explore --config` in CI ([docs/ci-quickstart.md](docs/ci-quickstart.md)). For agents there is `sideeye mcp`, and three skills (`npx skills@1.7.1 add yottayoshida/sideeye`): [docs/mcp.md](docs/mcp.md).
+`operation` is the one command the shim is inserted into; command strings split on spaces, no quoting; an argument holding a space takes the argv form ([docs/cli.md](docs/cli.md#usage)). `--oracle` is a second witness, the kernel's account (Linux; macOS: `--oracle-fs-usage`); Linux otherwise uses a strace on PATH that can trace, unless `--allow-unverified` or `--no-oracle`; without one, PASS needs `--allow-unverified`. `--shim` names the shim when it is not beside the binary; `--work` moves the scratch directory. Exit codes: **0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP ERROR**. A FAIL saves a replayable case, and `sideeye evidence <case>` renders it for an issue tracker. Run `explore --config` in CI ([docs/ci-quickstart.md](docs/ci-quickstart.md)). For agents there is `sideeye mcp`, and three skills (`npx skills@1.7.1 add yottayoshida/sideeye`): [docs/mcp.md](docs/mcp.md).
 
 ## Writing the check
 

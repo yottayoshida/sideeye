@@ -281,7 +281,7 @@ const no_oracle_macos = unchecked_shim ++ "; pass --oracle-fs-usage (run sudo -v
 const no_oracle_linux = unchecked_shim ++ "; pass --oracle, or --allow-unverified to accept the weaker claim";
 pub const no_oracle_messages = [_][]const u8{ no_oracle_supervised, no_oracle_macos, no_oracle_linux };
 
-pub fn requireCompleteness(arena: std.mem.Allocator, has_oracle: bool, allow_unverified: bool) void {
+pub fn requireCompleteness(arena: std.mem.Allocator, has_oracle: bool, allow_unverified: bool, stance: report.OracleStance) void {
     if (has_oracle or allow_unverified) return;
     const base = if (boundary.observe_mode == .supervised)
         no_oracle_supervised
@@ -289,13 +289,11 @@ pub fn requireCompleteness(arena: std.mem.Allocator, has_oracle: bool, allow_unv
         no_oracle_macos
     else
         no_oracle_linux;
-    // A discovered strace is only ever NAMED here, never attached: a second witness
-    // joining on its own would silently strengthen what a flagless verdict claims —
-    // and flip every caller that measured the no-oracle behavior (#78).
-    const msg = if (findStraceForHint(arena)) |s|
-        std.fmt.allocPrint(arena, "{s} (strace is on this machine: pass --oracle {s})", .{ base, s }) catch base
-    else
-        base;
+    const msg = switch (stance) {
+        .unusable => |why| std.fmt.allocPrint(arena, "{s} ({s})", .{ base, why }) catch base,
+        .declined => std.fmt.allocPrint(arena, "{s} (--no-oracle was given)", .{base}) catch base,
+        .given, .found => base,
+    };
     unknown(.completeness_not_verified, msg, .pass_oracle);
 }
 
@@ -522,6 +520,11 @@ const SpawnPhase = enum {
 /// say so — the same gap `answerForOversizedTrace` states for its own sites: caught in
 /// review, not by the compiler.
 pub var run_phase: SpawnPhase = .before_exploration;
+
+pub fn refuseSpacedDir(arena: std.mem.Allocator, dir: []const u8, section: []const u8, noun: []const u8, written: []const u8, resolved: []const u8) void {
+    if (resolved.ptr != written.ptr and std.mem.indexOfScalar(u8, dir, ' ') != null)
+        setupErrorFmt(arena, .define_invalid, "[{s}] takes the string form only, split on spaces, and {s}, the directory its relative command resolves against, holds a space: move the sideeye.toml to a path without one, or name the {s} by an absolute path without one", .{ section, defang.textShown(arena, dir), noun });
+}
 
 pub fn spawnFailure(e: posix.ContainedSpawnError, phase: SpawnPhase, doing: []const u8) noreturn {
     // The SETUP_ERROR class, decided once for the whole error set (#518): every member is

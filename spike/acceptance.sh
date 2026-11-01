@@ -288,7 +288,7 @@ fi
 # And the oracle-independent layer has to work on its own, because macOS may not have
 # an oracle at all. Same target, no --oracle: a different detector must catch it.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
-o=$("$SIDEEYE" explore --state /tmp/acc/state \
+o=$("$SIDEEYE" explore --no-oracle --state /tmp/acc/state \
     --setup "$OUT/toy-raw init" --operation "$OUT/toy-raw rotate" \
     --shim "$SHIM" --work /tmp/acc/work 2>&1)
 rc=$?
@@ -907,7 +907,7 @@ fi
 # that load it, and "was not seen" must never be read as "did nothing".
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 TOY_FORK=1 export TOY_FORK
-o=$("$SIDEEYE" explore --state /tmp/acc/state \
+o=$("$SIDEEYE" explore --no-oracle --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
     --shim "$SHIM" --work /tmp/acc/work 2>&1)
 rc=$?
@@ -1522,7 +1522,7 @@ echo "=========== check 2d: PASS is refused without an oracle ==========="
 # The corrected toy is genuinely correct, so this is the one place where the *only*
 # thing standing between the run and a PASS is the completeness requirement.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
-o=$("$SIDEEYE" explore --state /tmp/acc/state \
+o=$("$SIDEEYE" explore --no-oracle --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work /tmp/acc/work 2>&1)
 rc=$?
@@ -1594,7 +1594,7 @@ def argv_for(kind, json_path):
     toy = OUT + ("/toy-bug" if kind == "FAIL" else "/toy-fixed")
     a += ["--state", AREA + "/state", "--setup", toy + " init", "--operation", toy + " rotate",
           "--shim", SHIM, "--work", AREA + "/work"]
-    return a + (["--allow-unverified"] if kind in ("FAIL", "PASS") else [])
+    return a + (["--allow-unverified"] if kind in ("FAIL", "PASS") else ["--no-oracle"])
 
 def fresh():
     shutil.rmtree(AREA, ignore_errors=True)
@@ -1718,7 +1718,7 @@ echo "=========== check 2f: the zero-operation path is guarded too ==========="
 # count of zero is exactly the shape a target takes when the shim could not see it — so it
 # needs the same completeness requirement, and meets it first.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
-o=$("$SIDEEYE" explore --state /tmp/acc/state \
+o=$("$SIDEEYE" explore --no-oracle --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug doctor" \
     --shim "$SHIM" --work /tmp/acc/work 2>&1)
 rc=$?
@@ -3157,7 +3157,7 @@ else
 fi
 o=$(TOY_TWICE_COUNTER=/tmp/acc-710/w/count "$SIDEEYE" preflight --twice --state /tmp/acc-710/w/state \
     --setup "$OUT/toy-twice init" --operation "$OUT/toy-twice" --shim "$SHIM" --work /tmp/acc-710/w/work 2>&1)
-want710 "preflight --twice's second run ending differently names what the restore does not put back" "$o" $? 2 recording_run_failed "not their owners, set-id or sticky bits, or timestamps"
+want710 "preflight --twice's second run ending differently names what the restore does not put back" "$o" $? 2 recording_run_failed "not their owners, set-id or sticky bits, extended attributes or timestamps"
 o=$(TOY_THREAD_RACE=1 env $no_switches "$SIDEEYE" explore --state /tmp/acc-710/t/state --setup "$OUT/toy-bug init" \
     --operation "$OUT/toy-bug rotate" --shim "$SHIM" --work /tmp/acc-710/t/work --oracle /usr/bin/strace 2>&1)
 rc=$?
@@ -3300,7 +3300,7 @@ want711_pass="cwd,apparatus,warning,recovery,explored,expected,atomicity,oracle,
 want711_unknown="cwd,apparatus,warning,recovery,expected,atomicity,l1,case,processes,not tested"
 for v711 in fail:toy-bug:1 pass:toy-fixed:0 unknown:toy-fixed:2; do
     name711=${v711%%:*}; rest711=${v711#*:}; toy711=${rest711%%:*}; want_rc711=${rest711#*:}
-    if [ "$name711" = unknown ]; then r711 "$name711" "$toy711"; else r711 "$name711" "$toy711" --oracle /usr/bin/strace; fi
+    if [ "$name711" = unknown ]; then r711 "$name711" "$toy711" --no-oracle; else r711 "$name711" "$toy711" --oracle /usr/bin/strace; fi
     eval "want711=\$want711_$name711"
     got711=$(keys711 "$o711")
     old711=$(printf '%s\n' "$o711" | grep -cE '^      [a-z][a-z ]*: ' || true)
@@ -3474,7 +3474,7 @@ echo "=========== check 2o: nothing the target spawned outlives the run ========
 # would be measuring strace instead of containment. Measured, not assumed — see BUILDLOG.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 TOY_FORK_LATE=1 export TOY_FORK_LATE
-o=$("$SIDEEYE" explore --state /tmp/acc/state \
+o=$("$SIDEEYE" explore --no-oracle --state /tmp/acc/state \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
     --shim "$SHIM" --work /tmp/acc/work 2>&1)
 rc=$?
@@ -4940,7 +4940,7 @@ setsid-oracle|oracle|contained|p1 detached|TOY_SETSID=1"
             echo "     $ma_name not compared here: it detaches, which only a contained run judges"
             continue
         fi
-        if [ "$ma_orc" = oracle ]; then ma_flags="--oracle /usr/bin/strace"; else ma_flags=""; fi
+        if [ "$ma_orc" = oracle ]; then ma_flags="--oracle /usr/bin/strace"; else ma_flags="--no-oracle"; fi
         ma_pairs=""
         ma_ok=1
         for ma_mode in $ma_modes; do
@@ -5052,7 +5052,7 @@ o=$(env TOY_CHMOD=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/meta.json 2>&1)
 rc=$?
-if [ "$rc" = "0" ] && echo "$o" | grep -q "ownership/permission/timestamp write(s) observed and excluded"; then
+if [ "$rc" = "0" ] && echo "$o" | grep -q "ownership/permission/timestamp/extended-attribute write(s) observed and excluded"; then
     echo "ok   a chmod on state is excluded from judgement and named in the text report"
 else
     echo "FAIL chmod: exit $rc (wanted PASS with the metadata note)"
@@ -6193,7 +6193,7 @@ else
 fi
 # D (control): arguments read to the end, no oracle. The would-be PASS refuses as
 # completeness_not_verified and the account is the old string, compared whole.
-"$SIDEEYE" explore --state /tmp/acc-fe/state \
+"$SIDEEYE" explore --no-oracle --state /tmp/acc-fe/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work /tmp/acc-fe/work --json /tmp/acc-fe/d.json >/dev/null 2>&1
 rc=$?
@@ -6260,7 +6260,7 @@ fi
 # required` — after the parse loop and before the marker vet. The first cut of the
 # checker/marker fix settled "none" at the vet, so this run said "not established" about
 # arguments it had finished reading (review). All three accounts must say "none".
-"$SIDEEYE" explore --json /tmp/acc-fe/h.json --operation true --shim "$SHIM" >/dev/null 2>&1
+"$SIDEEYE" explore --no-oracle --json /tmp/acc-fe/h.json --operation true --shim "$SHIM" >/dev/null 2>&1
 rc=$?
 fe_h_o=$(field /tmp/acc-fe/h.json oracle)
 fe_h_chk=$(field /tmp/acc-fe/h.json checker)
@@ -6683,6 +6683,139 @@ else
 fi
 
 echo ""
+echo "=========== check 2pin: pin:random pins libc's randomness per process (#951, ADR 0146) ==========="
+# The toy under TOY_ENTROPY draws 48 bytes in itself and in children started nine ways, and
+# writes every draw into the state. Pinned, two runs of one invocation leave equal state and
+# every process drew its own bytes; unpinned, the two runs differ. A FAIL's case carries the
+# seed, and its replay draws the same bytes again — and other bytes with another seed. Where
+# the engine cannot make cgroups the pin is refused by name; the refusals that need no cgroup
+# and the absence of the pin from a run that did not ask are held on every host.
+pin_preflight() {   # pin_preflight <mode> <apparatus flags...> — sets o, rc
+    pm=$1; shift
+    rm -rf /tmp/acc-pin && mkdir -p /tmp/acc-pin/state /tmp/acc-pin/ent
+    o=$(TOY_ENTROPY=/tmp/acc-pin/ent TOY_STATE=/tmp/acc-pin/state "$SIDEEYE" preflight --twice --state /tmp/acc-pin/state \
+        --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --shim "$SHIM" --observe "$pm" \
+        --oracle /usr/bin/strace --work /tmp/acc-pin/work "$@" 2>&1)
+    rc=$?
+}
+if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
+    for pm in wrappers syscalls; do
+        pin_preflight "$pm" --apparatus pin:random
+        lines=$(wc -l < /tmp/acc-pin/state/entropy.txt 2>/dev/null)
+        uniq=$(cut -d' ' -f2 /tmp/acc-pin/state/entropy.txt 2>/dev/null | sort -u | wc -l)
+        if [ "$rc" = "0" ] && echo "$o" | grep -q "repeatability .*left equal state under --state" \
+            && [ "$lines" = "11" ] && [ "$uniq" = "11" ]; then
+            echo "ok   pin:random ($pm): two runs leave equal state, and the 11 processes drew 11 different streams"
+        else
+            echo "FAIL pin:random ($pm): exit $rc, $lines line(s), $uniq distinct"
+            echo "$o" | sed 's/^/     | /' | head -6
+            fails=$((fails + 1))
+        fi
+        pin_preflight "$pm"
+        if [ "$rc" = "1" ] && echo "$o" | grep -q "entropy.txt"; then
+            echo "ok   without pin:random ($pm) the same toy's two runs differ, at entropy.txt"
+        else
+            echo "FAIL pin:random control ($pm): exit $rc (wanted 1 naming entropy.txt)"
+            echo "$o" | sed 's/^/     | /' | head -6
+            fails=$((fails + 1))
+        fi
+    done
+    # An exec'd image under --observe syscalls inherits the seccomp filter before the shim has
+    # installed its handler; a library constructor that draws there must not meet a trapped call.
+    rm -rf /tmp/acc-pin && mkdir -p /tmp/acc-pin/state /tmp/acc-pin/ent
+    o=$(TOY_ENTROPY_CTOR="$OUT/toy-ctorrand" TOY_ENTROPY=/tmp/acc-pin/ent TOY_STATE=/tmp/acc-pin/state "$SIDEEYE" preflight \
+        --state /tmp/acc-pin/state --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --shim "$SHIM" \
+        --observe syscalls --oracle /usr/bin/strace --apparatus pin:random --work /tmp/acc-pin/work 2>&1)
+    rc=$?
+    if [ "$rc" = "0" ] && [ -s /tmp/acc-pin/ent/ctor ]; then
+        echo "ok   under --observe syscalls, an exec'd image whose library draws in its constructor runs pinned"
+    else
+        echo "FAIL pin:random with a constructor that draws, --observe syscalls: exit $rc"
+        echo "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    fi
+    # Two children of a static relay the pin is not loaded in are handed the one seed the relay
+    # was given. The first claims it; the second draws the real source, so the two never draw
+    # the same bytes — a shared stream would be a pinned run that agrees with itself.
+    rm -rf /tmp/acc-pin && mkdir -p /tmp/acc-pin/state /tmp/acc-pin/ent
+    TOY_ENTROPY_RELAY="$OUT/toy-static" TOY_ENTROPY=/tmp/acc-pin/ent TOY_STATE=/tmp/acc-pin/state "$SIDEEYE" preflight \
+        --state /tmp/acc-pin/state --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --shim "$SHIM" \
+        --oracle /usr/bin/strace --apparatus pin:random --work /tmp/acc-pin/work >/dev/null 2>&1
+    rl1=$(cat /tmp/acc-pin/ent/relay1 2>/dev/null); rl2=$(cat /tmp/acc-pin/ent/relay2 2>/dev/null)
+    if [ -n "$rl1" ] && [ -n "$rl2" ] && [ "$rl1" != "$rl2" ]; then
+        echo "ok   two children of a relay the pin is not loaded in never draw one stream: the second finds the seed claimed"
+    else
+        echo "FAIL pin:random through a static relay: relay1 [$rl1] relay2 [$rl2]"
+        fails=$((fails + 1))
+    fi
+    rm -rf /tmp/acc-pin && mkdir -p /tmp/acc-pin/state /tmp/acc-pin/ent
+    # Run from inside the state, as KeePassXC's define runs: strace prints AT_FDCWD with the working
+    # directory, and nothing the pin does may then read as a call on the state.
+    o=$(TOY_ENTROPY=/tmp/acc-pin/ent TOY_STATE=/tmp/acc-pin/state "$SIDEEYE" explore --state /tmp/acc-pin/state \
+        --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" --shim "$SHIM" --oracle /usr/bin/strace \
+        --apparatus pin:random --cwd /tmp/acc-pin/state --work /tmp/acc-pin/work 2>&1)
+    rc=$?
+    pcase=/tmp/acc-pin/work/cases/000001.json
+    pin_replay() {   # pin_replay <case> <copy-to>
+        rm -rf /tmp/acc-pin/ent && mkdir -p /tmp/acc-pin/ent
+        TOY_ENTROPY=/tmp/acc-pin/ent "$SIDEEYE" replay "$1" --fresh-state --shim "$SHIM" --oracle /usr/bin/strace \
+            --work /tmp/acc-pin/wr >/dev/null 2>&1
+        prc=$?
+        rm -rf "$2" && cp -r /tmp/acc-pin/ent "$2"
+    }
+    python3 -c 'import json,sys; c=json.load(open(sys.argv[1])); c["pin_seed"]="f"*64; json.dump(c, open(sys.argv[2],"w"))' "$pcase" /tmp/acc-pin/other.json 2>/dev/null
+    pin_replay "$pcase" /tmp/acc-pin/r1; r1=$prc
+    pin_replay "$pcase" /tmp/acc-pin/r2; r2=$prc
+    pin_replay /tmp/acc-pin/other.json /tmp/acc-pin/r3; r3=$prc
+    if [ "$rc" = "1" ] && grep -q '"case_version": 8' "$pcase" && grep -q '"pin_seed": "[0-9a-f]\{64\}"' "$pcase" \
+        && [ "$r1" = "1" ] && [ "$r2" = "1" ] && diff -r /tmp/acc-pin/r1 /tmp/acc-pin/r2 >/dev/null \
+        && ! diff -r /tmp/acc-pin/r1 /tmp/acc-pin/r3 >/dev/null; then
+        echo "ok   a pinned FAIL saves a v8 case with its seed; its replay draws the same bytes twice, and other bytes under another seed"
+    else
+        echo "FAIL pinned case and replay: explore $rc, replays $r1 $r2 $r3"
+        echo "$o" | sed 's/^/     | /' | head -6
+        fails=$((fails + 1))
+    fi
+else
+    rm -rf /tmp/acc-pin && mkdir -p /tmp/acc-pin/state
+    o=$("$SIDEEYE" explore --state /tmp/acc-pin/state --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+        --shim "$SHIM" --apparatus pin:random --work /tmp/acc-pin/work 2>&1)
+    rc=$?
+    if [ "$rc" = "3" ] && echo "$o" | grep -q "apparatus pin:random: needs a cgroup v2"; then
+        echo "ok   pin:random where the engine cannot make cgroups is a SETUP ERROR naming the cgroup"
+    else
+        echo "FAIL pin:random without cgroups: exit $rc"
+        echo "$o" | sed 's/^/     | /' | head -4
+        fails=$((fails + 1))
+    fi
+fi
+rm -rf /tmp/acc-pin && mkdir -p /tmp/acc-pin/state "/tmp/acc-pin/w d"
+o=$("$SIDEEYE" explore --state /tmp/acc-pin/state --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --apparatus pin:random --observe supervised --work /tmp/acc-pin/work 2>&1)
+rc=$?
+o2=$("$SIDEEYE" explore --state /tmp/acc-pin/state --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --apparatus pin:random --work "/tmp/acc-pin/w d" 2>&1)
+rc2=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "observe supervised loads nothing into the operation" \
+    && [ "$rc2" = "3" ] && echo "$o2" | grep -q "holds a space, a tab or a colon"; then
+    echo "ok   pin:random under --observe supervised, or with a work directory LD_PRELOAD would split, is refused by name"
+else
+    echo "FAIL pin:random refusals: supervised exit $rc, spaced work exit $rc2"
+    echo "$o" | sed 's/^/     | /' | head -3
+    echo "$o2" | sed 's/^/     | /' | head -3
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-pin && mkdir -p /tmp/acc-pin/state
+SIDEEYE_PIN_SEED=$(printf '%064d' 7) "$SIDEEYE" explore --state /tmp/acc-pin/state --operation /usr/bin/env \
+    --shim "$SHIM" --allow-unverified --work /tmp/acc-pin/work >/dev/null 2>&1
+if grep -qx 'SIDEEYE_PIN_SEED=' /tmp/acc-pin/work/stdout-record.txt 2>/dev/null \
+    && ! grep -q 'libsideeye_pin' /tmp/acc-pin/work/stdout-record.txt; then
+    echo "ok   a run that did not ask hands its operation an empty seed and no pin library, whatever the shell held"
+else
+    echo "FAIL a run that did not ask for the pin: $(grep -E 'SIDEEYE_PIN_SEED|LD_PRELOAD' /tmp/acc-pin/work/stdout-record.txt 2>/dev/null | tr '\n' ' ')"
+    fails=$((fails + 1))
+fi
+
 echo "=========== check 2ab: the argv form spells what split-on-space cannot (#95, ADR 0019) ==========="
 # The toy's rotate-msg demands ONE argv element "note with spaces". The negative
 # control runs first and from the same define material: the string form splits that
@@ -6755,6 +6888,52 @@ if [ "$rc3" = "3" ] && echo "$o3" | grep -q "cannot carry an argv-form command" 
 else
     echo "FAIL argv pairing gate: v2=$rc3 v1=$rc4 (wanted 3 + the named refusal, both)"
     echo "$o3" | sed 's/^/     | /' | head -2
+    fails=$((fails + 1))
+fi
+
+echo "=========== check 2ab2: a single-quoted argv element carries a double quote (#949) ==========="
+# The toy's rotate-quoted demands ONE argv element, the bytes ["k"] "v". The control is the
+# same element double-quoted: no escapes exist, so the parser refuses it before anything
+# runs. The literal spelling then reaches the toy verbatim — the buggy rotate explores to
+# FAIL — and the saved case replays it, so the bytes survived the JSON round trip too.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+cat > /tmp/acc/quoted-esc.toml <<TOML
+[world]
+state = "./state"
+[define]
+setup     = "$OUT/toy-bug init"
+operation = ["$OUT/toy-bug", "rotate-quoted", "[\"k\"] \"v\""]
+TOML
+o=$("$SIDEEYE" explore --config /tmp/acc/quoted-esc.toml \
+    --shim "$SHIM" --work /tmp/acc/work-esc --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "line 5: .*escape sequences"; then
+    echo "ok   a double-quoted element cannot spell the quote (SETUP ERROR, escape sequences)"
+else
+    echo "FAIL #949 double-quoted control: exit $rc (wanted 3 + escape sequences)"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc/state && mkdir -p /tmp/acc/state
+cat > /tmp/acc/quoted.toml <<TOML
+[world]
+state = "./state"
+[define]
+setup     = "$OUT/toy-bug init"
+operation = ["$OUT/toy-bug", "rotate-quoted", '["k"] "v"']
+TOML
+o=$("$SIDEEYE" explore --config /tmp/acc/quoted.toml \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+qcase=/tmp/acc/work/cases/000001.json
+o2=$("$SIDEEYE" replay "$qcase" --shim "$SHIM" --work /tmp/acc/work-r 2>&1)
+rc2=$?
+if [ "$rc" = "1" ] && grep -qF '"rotate-quoted", "[\"k\"] \"v\""' "$qcase" 2>/dev/null \
+    && [ "$rc2" = "1" ] && echo "$o2" | grep -q "the case reproduced"; then
+    echo "ok   the literal element reaches the toy verbatim, explores to FAIL, and its case replays"
+else
+    echo "FAIL #949 literal element: explore=$rc replay=$rc2"
+    echo "$o" | sed 's/^/     | /' | head -4
     fails=$((fails + 1))
 fi
 
@@ -6835,7 +7014,7 @@ TOY_STATE=$SD/s2 TOY=$OUT/toy-bug "$SIDEEYE" explore --state "$SD/s2" \
     --shim "$SHIM" --work "$SD/w2" --oracle /usr/bin/strace --json "$SD/fail.json" >/dev/null 2>&1
 # UNKNOWN needs the would-be-PASS path: a FAIL stands without the oracle, but a
 # PASS without completeness refuses — so the fixed toy, oracle-less, is the recipe.
-TOY_STATE=$SD/s3 "$SIDEEYE" explore --state "$SD/s3" \
+TOY_STATE=$SD/s3 "$SIDEEYE" explore --no-oracle --state "$SD/s3" \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
     --shim "$SHIM" --work "$SD/w3" --json "$SD/unknown.json" >/dev/null 2>&1
 TOY_STATE=$SD/s4 "$SIDEEYE" explore --state "$SD/s4" \
@@ -7039,7 +7218,15 @@ else
     sed 's/^/     | /' "$SD/pfa.err" | head -4
     fails=$((fails + 1))
 fi
-TOY_STATE=$SD/pfs/state TOY_NONDET_REWRITE=1 "$SIDEEYE" preflight --state "$SD/pfs/state" \
+# Not asserting the words here: check-controls.sh does; this keeps its document for the schema check.
+if SIDEEYE="$SIDEEYE" SHIM="$SHIM" CONTROLS_JSON_OUT="$SD/preflight-controls.json" sh "$ROOT/spike/check-controls.sh" > "$SD/pfc.out" 2>&1; then
+    echo "ok   preflight --config with [controls] reports each control by its own word"
+else
+    echo "FAIL preflight [controls]: spike/check-controls.sh did not pass"
+    sed 's/^/     | /' "$SD/pfc.out" | head -8
+    fails=$((fails + 1))
+fi
+TOY_STATE=$SD/pfs/state TOY_NONDET_REWRITE=1 "$SIDEEYE" preflight --no-oracle --state "$SD/pfs/state" \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" --shim "$SHIM" \
     --work "$SD/wpfs" --twice --json "$SD/preflight-split.json" >"$SD/pfs.out" 2>"$SD/pfs.err"
 rc=$?
@@ -7092,7 +7279,7 @@ fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
     "$ROOT/src/report.zig" \
     "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/warnings.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/children.json" \
-    "$SD/preflight-accepted.json" "$SD/preflight-split.json" /tmp/acc-lcs/leave.json; then
+    "$SD/preflight-accepted.json" "$SD/preflight-split.json" "$SD/preflight-controls.json" /tmp/acc-lcs/leave.json; then
     echo "ok   the schema page, the generated reports and preflight documents, the contract enum and the JSON writers' shared values agree"
 else
     echo "FAIL the report schema page drifted from the reports (or the reports from the page)"
@@ -7111,7 +7298,7 @@ TOY_STATE=$SD/s5 "$SIDEEYE" explore --state "$SD/s5" \
 # A FAIL needs no oracle and no flag — it exits before the PASS-side completeness
 # gate — and its report must still carry the bit, as false (R1: the schema's
 # Always=yes was otherwise pinned on no report of this exact shape).
-TOY_STATE=$SD/s6 "$SIDEEYE" explore --state "$SD/s6" \
+TOY_STATE=$SD/s6 "$SIDEEYE" explore --no-oracle --state "$SD/s6" \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
     --shim "$SHIM" --work "$SD/w6" --json "$SD/nooracle-fail.json" >/dev/null 2>&1
 ev_fails=0
@@ -8195,7 +8382,7 @@ fi
 # The grammar is one function for the flag and the key: a bad entry is refused before any
 # command runs, with the parser's words.
 ap_leg "an entry of an unknown kind is refused by the flag with the parser's words" 3 \
-    "kind is one of env, preload, pythonpath, note" -- --apparatus seccomp:enosys.json
+    "kind is one of env, preload, pythonpath, pin, note" -- --apparatus seccomp:enosys.json
 # An env: entry is checked before the setup runs: a setup run without the variable
 # writes wherever the tool falls back to — on a developer's machine, the real data. This
 # setup leaves a marker outside the state and generates a sitecustomize.py, then inits the
@@ -8847,7 +9034,7 @@ fi
 # below and the same define is judged rather than refused.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 printf '#!/bin/sh\nexec "$@"\n' > /tmp/acc/wrap-exec.sh && chmod 755 /tmp/acc/wrap-exec.sh
-"$SIDEEYE" explore --state /tmp/acc/state --setup "$OUT/toy-bug init" \
+"$SIDEEYE" explore --no-oracle --state /tmp/acc/state --setup "$OUT/toy-bug init" \
     --operation "/tmp/acc/wrap-exec.sh $OUT/toy-bug rotate" --shim "$SHIM" \
     --work /tmp/acc/work --json /tmp/acc/nooracle.json >/dev/null 2>&1
 nreason=$(python3 -c "import json;print(json.load(open('/tmp/acc/nooracle.json')).get('unknown_reason',''))" 2>/dev/null || echo "")
@@ -8900,9 +9087,9 @@ x894_line=$(sed -n 's/^replay      //p' /tmp/acc/x894.txt)
 case "$x894_line" in *" --oracle /tmp/acc/bin/strace"*) x894_has=yes ;; *) x894_has=no ;; esac
 ( eval "\"\$SIDEEYE\"${x894_line#sideeye} --work /tmp/acc/w894r --json /tmp/acc/r894.json" > /tmp/acc/r894.txt 2>&1 )
 r894_rc=$?
-"$SIDEEYE" replay "$(field /tmp/acc/x894.json case)" --fresh-state --shim "$SHIM" --work /tmp/acc/w894b --json /tmp/acc/b894.json > /dev/null 2>&1
+"$SIDEEYE" replay "$(field /tmp/acc/x894.json case)" --no-oracle --fresh-state --shim "$SHIM" --work /tmp/acc/w894b --json /tmp/acc/b894.json > /dev/null 2>&1
 b894_reason=$(field /tmp/acc/b894.json unknown_reason)
-"$SIDEEYE" explore --state /tmp/acc/state --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+"$SIDEEYE" explore --no-oracle --state /tmp/acc/state --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
     --shim "$SHIM" --work /tmp/acc/w894n > /tmp/acc/n894.txt 2>&1
 n894_rc=$?
 n894_line=$(sed -n 's/^replay      //p' /tmp/acc/n894.txt)
@@ -9140,19 +9327,20 @@ for anon_mode in $anon_modes; do
         fails=$((fails + 1))
     fi
 done
-# The control (#684): the writing side of the same family is still a call the oracle has no
-# class for, and refuses by name. A list grown into "anything *xattr" would let it through.
-# `TOY_SETXATTR` is read by rotate only (cmd_rotate_body), so setup never issues it and the
-# line the oracle refuses on is the recording's own.
+# Not folded into the read list: grown into "anything *xattr", it would leave the write unnamed.
+# Not asserted on the call's result: tmpfs may answer EOPNOTSUPP, and the attempt is what the
+# oracle names.
+# `TOY_SETXATTR` is read by rotate only (cmd_rotate_body), so setup never issues it.
 rm -rf /tmp/acc && mkdir -p /tmp/acc/state
 o=$(TOY_SETXATTR=1 "$SIDEEYE" explore --state /tmp/acc/state \
     --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
-    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/xattr.json 2>&1)
 rc=$?
-if refused_uncredited unsupported_syscall_observed "$rc" "$o" && printf '%s\n' "$o" | sed -n 2p | grep -q 'setxattr'; then
-    echo "ok   setxattr on a state file still refuses unsupported_syscall_observed, naming the call"
+meta=$(field /tmp/acc/xattr.json metadata_writes)
+if [ "$rc" = "0" ] && case "$meta" in *"observed and excluded"*setxattr*) true ;; *) false ;; esac; then
+    echo "ok   setxattr on a state file is excluded from judgement and named in metadata_writes"
 else
-    echo "FAIL setxattr on a state file was not refused by name: exit $rc"
+    echo "FAIL setxattr on a state file: exit $rc (wanted PASS with setxattr named in metadata_writes)"
     echo "$o" | sed 's/^/     | /' | head -4
     fails=$((fails + 1))
 fi
@@ -9444,33 +9632,105 @@ else
 fi
 
 echo ""
-echo "=========== check 10: strace is named, never attached (#78) ==========="
-# The refusal a would-be PASS gets without an oracle now NAMES the strace found on
-# PATH — and still refuses. Attaching it silently would flip this exit to 0, so the
-# rc pin here is also the not-attached proof.
-rm -rf /tmp/acc && mkdir -p /tmp/acc/state
-o=$("$SIDEEYE" explore --state /tmp/acc/state \
-    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
-    --shim "$SHIM" --work /tmp/acc/work 2>&1)
-rc=$?
-if [ "$rc" = "2" ] && echo "$o" | grep -q "strace is on this machine: pass --oracle /"; then
-    echo "ok   the no-oracle refusal names the discovered strace, and stays a refusal"
+echo "=========== check 10: a strace on PATH is the oracle when no flag names one (#950, ADR 0141) ==========="
+# Five legs over one would-be PASS (toy-fixed). With no oracle flag the strace on PATH is tried and
+# attached, and the PASS is verified; --no-oracle and a strace-less PATH both reach the refusal every
+# flagless run used to reach; --allow-unverified alone attaches nothing. Two forged straces put in
+# front of the real one pin the try: one that cannot trace at all leaves the run without an oracle
+# (exit 2, not 3), and one that traces the try and fails the recording is answered exactly as the
+# same file named with --oracle is — the try adds no path of its own past itself.
+acc950() { rm -rf /tmp/acc/state /tmp/acc/work /tmp/acc/950.json && mkdir -p /tmp/acc/state; "$@" "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --shim "$SHIM" --work /tmp/acc/work --json /tmp/acc/950.json ${ARGS950:+"$ARGS950"} 2>&1; }
+jfield() { python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get(sys.argv[2]))' /tmp/acc/950.json "$1" 2>/dev/null; }
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state /tmp/acc/hintless /tmp/acc/cannot /tmp/acc/half
+printf '#!/bin/sh\necho "strace: test_ptrace_get_syscall_info: PTRACE_TRACEME: Operation not permitted" >&2\nexit 1\n' > /tmp/acc/cannot/strace
+printf '#!/bin/sh\nfor a; do last=$a; done\n[ "$last" = version ] && exec /usr/bin/strace "$@"\necho "strace: refusing everything but the try" >&2\nexit 1\n' > /tmp/acc/half/strace
+chmod +x /tmp/acc/cannot/strace /tmp/acc/half/strace
+o=$(acc950 env); rc=$?
+w=$(jfield oracle_witness); v=$(jfield oracle_verified); n=$(jfield oracle)
+if [ "$rc" = "0" ] && [ "$v" = "True" ] && [ "$w" = "strace" ] && printf '%s' "$n" | grep -q "witness strace found on PATH at /usr/bin/strace"; then
+    echo "ok   #950: no oracle flag — the strace on PATH is tried, attached, and the PASS is verified"
 else
-    echo "FAIL oracle hint: exit $rc"
+    echo "FAIL #950 found strace: exit $rc verified=$v witness=$w oracle=[$n]"
     echo "$o" | sed 's/^/     | /' | head -4
     fails=$((fails + 1))
 fi
-
-# With no strace reachable the hint must vanish and the message is yesterday's.
-rm -rf /tmp/acc/state /tmp/acc/hintless && mkdir -p /tmp/acc/state /tmp/acc/hintless
-o=$(env PATH=/tmp/acc/hintless "$SIDEEYE" explore --state /tmp/acc/state \
-    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
-    --shim "$SHIM" --work /tmp/acc/work 2>&1)
-rc=$?
-if [ "$rc" = "2" ] && echo "$o" | grep -q "completeness_not_verified" && ! echo "$o" | grep -q "strace is on this machine"; then
-    echo "ok   a strace-less PATH drops the hint, nothing else changes"
+ARGS950=--no-oracle; o=$(acc950 env); rc=$?; ARGS950=
+if [ "$rc" = "2" ] && echo "$o" | grep -q "completeness_not_verified" && echo "$o" | grep -qF "(--no-oracle was given)" \
+    && ! echo "$o" | grep -q "strace is on this machine" && [ "$(jfield oracle_witness)" = "None" ]; then
+    echo "ok   #950: --no-oracle runs without one, and the refusal says it was given"
 else
-    echo "FAIL oracle hint absence: exit $rc"
+    echo "FAIL #950 --no-oracle: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+ARGS950=--allow-unverified; o=$(acc950 env); rc=$?; ARGS950=
+if [ "$rc" = "0" ] && [ "$(jfield oracle_verified)" = "False" ] && [ "$(jfield oracle_witness)" = "None" ]; then
+    echo "ok   #950: --allow-unverified alone attaches nothing, and its PASS stays unverified at exit 0"
+else
+    echo "FAIL #950 --allow-unverified: exit $rc verified=$(jfield oracle_verified) witness=$(jfield oracle_witness)"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+o=$(acc950 env PATH=/tmp/acc/hintless); rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "completeness_not_verified" && ! echo "$o" | grep -q "strace is on this machine" \
+    && [ "$(jfield oracle_witness)" = "None" ]; then
+    echo "ok   #950: a strace-less PATH reaches the refusal a flagless run always reached"
+else
+    echo "FAIL #950 strace-less PATH: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+o=$(acc950 env PATH="/tmp/acc/cannot:$PATH"); rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "completeness_not_verified" \
+    && echo "$o" | grep -qF "strace at /tmp/acc/cannot/strace is on this machine and could not trace here: strace: test_ptrace_get_syscall_info: PTRACE_TRACEME: Operation not permitted" \
+    && [ "$(jfield oracle_witness)" = "None" ]; then
+    echo "ok   #950: a strace that cannot trace here is left out — exit 2 with its complaint, not a SETUP ERROR"
+else
+    echo "FAIL #950 strace that cannot trace: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc/state /tmp/acc/work && mkdir -p /tmp/acc/state /tmp/acc/work && mkfifo /tmp/acc/work/oracle-probe.txt
+o=$(timeout 120 "$SIDEEYE" explore --state /tmp/acc/state --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work 2>&1); rc=$?
+if [ "$rc" = "0" ] && [ ! -p /tmp/acc/work/oracle-probe.txt ]; then
+    echo "ok   #950: a FIFO left where the try writes is removed, not opened — the run does not hang"
+else
+    echo "FAIL #950 FIFO at the try's capture: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc/state /tmp/acc/work && mkdir -p /tmp/acc/state
+o=$("$SIDEEYE" explore --state /tmp/acc/state --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work /tmp/acc/work 2>&1); rc=$?
+rl=$(printf '%s\n' "$o" | sed -n 's/^replay      //p')
+if [ "$rc" = "1" ] && [ -n "$rl" ] && ! printf '%s' "$rl" | grep -q -- "--oracle"; then
+    echo "ok   #950: a FAIL found with a strace from PATH prints a replay line that names no oracle"
+else
+    echo "FAIL #950 replay line under a found strace: exit $rc, replay [$rl]"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc/state /tmp/acc/work && mkdir -p /tmp/acc/state
+o=$(env PATH="/tmp/acc/cannot:$PATH" TOY_FORK=1 TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --shim "$SHIM" --work /tmp/acc/work 2>&1); rc=$?
+if [ "$rc" = "2" ] && echo "$o" | grep -q "boundary_without_oracle" && echo "$o" | grep -qF "could not trace here: strace: test_ptrace_get_syscall_info"; then
+    echo "ok   #950: a boundary refused for want of an oracle says why the strace on PATH was left out"
+else
+    echo "FAIL #950 boundary refusal under a strace that cannot trace: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+o=$(acc950 env PATH="/tmp/acc/half:$PATH"); rc=$?
+found_head=$(printf '%s\n' "$o" | grep -m1 -E '^(PASS|FAIL|UNKNOWN|SETUP ERROR) ' | cut -c1-40)
+o2=$(rm -rf /tmp/acc/state /tmp/acc/work && mkdir -p /tmp/acc/state && "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --shim "$SHIM" --work /tmp/acc/work --oracle /tmp/acc/half/strace 2>&1); rc2=$?
+named_head=$(printf '%s\n' "$o2" | grep -m1 -E '^(PASS|FAIL|UNKNOWN|SETUP ERROR) ' | cut -c1-40)
+if [ "$rc" = "$rc2" ] && [ "$rc" != "0" ] && [ -n "$found_head" ] && [ "$found_head" = "$named_head" ]; then
+    echo "ok   #950: a strace that passes the try and fails the recording is answered as --oracle naming it is ($found_head)"
+else
+    echo "FAIL #950 strace that fails after the try: found exit $rc [$found_head], named exit $rc2 [$named_head]"
     echo "$o" | sed 's/^/     | /' | head -4
     fails=$((fails + 1))
 fi
@@ -9774,7 +10034,7 @@ printf 'victim\n' > "$TOY_STATE/victim.txt"
 EOSETUP
     chmod 755 "$CLS/r-setup.sh"
     o=$(TOY_RAW_UNLINK_LIBC_CLOSE=1 TOY_STATE="$CLS/r-state" \
-        "$SIDEEYE" preflight --state "$CLS/r-state" \
+        "$SIDEEYE" preflight --no-oracle --state "$CLS/r-state" \
         --setup ""$CLS/r-setup.sh" $OUT/toy-bug" --operation "$OUT/toy-bug rotate" \
         --shim "$SHIM" --work "$CLS/r-work" 2>&1)
     rc=$?
@@ -9798,7 +10058,7 @@ if [ "$(uname -s)" = "Linux" ]; then
     for form in raw libc; do
         mkdir -p "$CLS/tw-$form-state" "$CLS/tw-$form-work"
         o=$(TOY_TRUNC_THEN_WRITE=$form TOY_STATE="$CLS/tw-$form-state" \
-            "$SIDEEYE" preflight --state "$CLS/tw-$form-state" \
+            "$SIDEEYE" preflight --no-oracle --state "$CLS/tw-$form-state" \
             --setup ""$CLS/r-setup.sh" $OUT/toy-bug" --operation "$OUT/toy-bug rotate" \
             --shim "$SHIM" --work "$CLS/tw-$form-work" 2>&1)
         rc=$?
@@ -12554,7 +12814,7 @@ ns_pair() {   # ns_pair <label> <text output> <json path>
 }
 rm -rf /tmp/acc-ns && mkdir -p /tmp/acc-ns/a/state /tmp/acc-ns/b/state
 # completeness_not_verified: the fixed toy with no oracle — a would-be PASS that refuses.
-o=$(TOY_STATE=/tmp/acc-ns/a/state "$SIDEEYE" explore --state /tmp/acc-ns/a/state --setup "$OUT/toy-fixed init" \
+o=$(TOY_STATE=/tmp/acc-ns/a/state "$SIDEEYE" explore --no-oracle --state /tmp/acc-ns/a/state --setup "$OUT/toy-fixed init" \
     --operation "$OUT/toy-fixed rotate" --shim "$SHIM" --work /tmp/acc-ns/a/work --json /tmp/acc-ns/a.json 2>&1)
 [ "$?" = "2" ] || { echo "FAIL next_step (oracle-less): the run did not refuse"; ns_fails=$((ns_fails + 1)); }
 ns_pair oracle-less "$o" /tmp/acc-ns/a.json

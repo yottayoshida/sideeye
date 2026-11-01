@@ -64,6 +64,12 @@ gcc $cc_flags -o "$out/toy-stdin" "$root/spike/toys/toy_stdin.c"
 echo "building toy-raw"
 gcc $cc_flags -o "$out/toy-raw" "$root/spike/toys/toy_raw.c"
 
+echo "building toy-ctorrand"
+# Linked to a library whose constructor draws randomness, kept as a dependency though nothing
+# of it is called, so an exec'd copy draws before any preloaded library's constructor has run.
+gcc $cc_flags -shared -fPIC -o "$out/libtoyctor.so" "$root/spike/toys/toy_ctorrand.c"
+gcc $cc_flags -o "$out/toy-ctorrand" "$root/spike/toys/toy.c" -L"$out" -Wl,--no-as-needed -ltoyctor -Wl,--as-needed -Wl,-rpath,"$out" -lpthread
+
 echo "building toy-static"
 # The static link is the point; the linker's warning about getpwnam-style lookups in
 # statically linked binaries does not apply to what this toy does.

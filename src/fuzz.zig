@@ -363,7 +363,7 @@ test "fuzz: sideeye.toml" {
         \\[define]
         \\setup     = ["./seed.sh", "two words"]
         \\operation = ["mytool", "commit", "-m", "a message with spaces"]   # argv form (ADR 0019)
-        \\check     = ["./check.sh", "has # and , and [ inside"]
+        \\check     = ["./check.sh", "has # and , and [ inside", '["k"] "v"']
         \\expected_status = "3"
         \\cwd = "work"
         ,
@@ -413,13 +413,13 @@ fn fuzzCase(_: void, smith: *std.testing.Smith) anyerror!void {
     switch (case.read(as.allocator(), text)) {
         .ok => |c| {
             try std.testing.expectEqualStrings("sideeye/case", c.schema);
-            try std.testing.expect(c.case_version >= 1 and c.case_version <= 7);
+            try std.testing.expect(c.case_version >= 1 and c.case_version <= 8);
             // main.zig reads the mode with `.?`: read must not accept one that does not parse.
             if (c.observe) |m| {
                 const mode = contract.ObserveMode.parse(m) orelse return error.ReadAcceptedAnUnknownMode;
-                try std.testing.expect(mode != .wrappers or c.case_version == 7);
+                try std.testing.expect(mode != .wrappers or c.case_version >= 7);
             }
-            try std.testing.expect((c.define.apparatus != null) == (c.case_version == 7));
+            try std.testing.expect((c.define.apparatus != null) == (c.case_version >= 7));
         },
         .invalid => |why| try std.testing.expect(why.len > 0),
     }

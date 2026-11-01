@@ -29,8 +29,10 @@ const cli = @import("cli.zig");
 const case = @import("case.zig");
 const evidence = @import("evidence.zig");
 const recovery = @import("recovery.zig");
+const controls_run = @import("controls_run.zig");
 const containment = @import("containment.zig");
 const supervise = @import("supervise.zig");
+const pinning = @import("pinning.zig");
 const sanitizeForReport = defang.sanitizeForReport;
 const textShown = defang.textShown;
 const appendSanitized = defang.appendSanitized;
@@ -59,7 +61,7 @@ else
 
 const preload_var = if (builtin.os.tag == .macos) "DYLD_INSERT_LIBRARIES" else "LD_PRELOAD";
 
-const child_env_names = [_][]const u8{ "TOY_STATE", contract.env.state_dir, contract.env.state_dir_alt, contract.env.trace_path, contract.env.seq_base, contract.env.before_constructor, contract.env.observe, contract.env.kill_group, contract.env.run_cgroup, contract.env.kill_cgroup, contract.env.kill_aside, preload_var };
+const child_env_names = [_][]const u8{ "TOY_STATE", contract.env.state_dir, contract.env.state_dir_alt, contract.env.trace_path, contract.env.seq_base, contract.env.before_constructor, contract.env.observe, contract.env.kill_group, contract.env.run_cgroup, contract.env.kill_cgroup, contract.env.kill_aside, contract.env.pin_seed, contract.env.pin_claims, preload_var };
 
 test "every variable the engine sets for a child is refused as apparatus" {
     for (child_env_names) |n| try std.testing.expect(config.engineOwnedEnv(n));
@@ -253,7 +255,7 @@ fn runOperationObserved(
             // 0098): they are how a state file mapped shared and read-only becomes writable or
             // moves, and a store through it has no call of its own. `?` keeps an strace that
             // has no name for `pkey_mprotect` from refusing to start.
-            for ([_][]const u8{ "-f", "-y", "-e", "trace=%file,%desc,%process,setsid,setpgid,mprotect,?pkey_mprotect,mremap", "-o", oracle_out }) |a|
+            for ([_][]const u8{ "-f", "-y", "-e", oracle.strace_trace_spec, "-o", oracle_out }) |a|
                 list.append(arena, a) catch setupError(.environment, "out of memory");
             const pairs = [_][2][]const u8{
                 .{ "TOY_STATE", state_abs },
@@ -272,6 +274,8 @@ fn runOperationObserved(
                 .{ contract.env.run_cgroup, containment.runName(cg) },
                 .{ contract.env.kill_cgroup, "" },
                 .{ contract.env.kill_aside, "" },
+                .{ contract.env.pin_seed, pinning.seed_hex },
+                .{ contract.env.pin_claims, pinning.claimsFor(arena) },
                 .{ preload_var, preload },
             };
             for (pairs) |kv| {
@@ -295,6 +299,8 @@ fn runOperationObserved(
             .{ contract.env.run_cgroup, containment.runName(cg) },
             .{ contract.env.kill_cgroup, "" },
             .{ contract.env.kill_aside, "" },
+            .{ contract.env.pin_seed, pinning.seed_hex },
+            .{ contract.env.pin_claims, pinning.claimsFor(arena) },
             .{ preload_var, preload },
         }, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation");
     };
@@ -626,12 +632,21 @@ fn phaseDefine(run: *Run) void {
                 args.scratch = d.scratch orelse &.{};
                 args.recovery = if (d.recovery) |r| resolveCommandAgainst(arena, dir, r) else null;
                 args.recovery_check = if (d.recovery_check) |r| resolveCommandAgainst(arena, dir, r) else null;
+                if (d.controls.len > 0) {
+                    if (d.check == null)
+                        setupError(.define_invalid, "[controls] needs [define] check: a control is read by the legs the checker reports on the state it broke");
+                    const resolved = arena.alloc(config.Control, d.controls.len) catch setupError(.environment, "out of memory");
+                    for (d.controls, resolved) |c, *r| {
+                        r.* = .{ .leg = c.leg, .command = resolveCommandAgainst(arena, dir, c.command) };
+                        refuse.refuseSpacedDir(arena, dir, "controls", "control", c.command, r.command);
+                    }
+                    args.controls = resolved;
+                }
                 // Not turned into argv as the define's commands are: a recovery is carried and printed on
                 // the replay line as one string, which splits on spaces wherever it is read again.
-                if (std.mem.indexOfScalar(u8, dir, ' ') != null) for ([_]?[]const u8{ d.recovery, d.recovery_check }, [_]?[]const u8{ args.recovery, args.recovery_check }) |written, resolved| {
-                    if (written != null and resolved.?.ptr != written.?.ptr)
-                        setupErrorFmt(arena, .define_invalid, "[recovery] takes the string form only, split on spaces, and {s}, the directory its relative command resolves against, holds a space: move the sideeye.toml to a path without one, or name the recovery by an absolute path without one", .{textShown(arena, dir)});
-                };
+                for ([_]?[]const u8{ d.recovery, d.recovery_check }, [_]?[]const u8{ args.recovery, args.recovery_check }) |written, resolved| {
+                    if (written) |w| refuse.refuseSpacedDir(arena, dir, "recovery", "recovery", w, resolved.?);
+                }
                 if (d.expected_status) |es| {
                     args.expect_status = config.parseExpectStatus(es) orelse setupError(.define_invalid, "expected_status must be an integer in 0..255 (one double-quoted string, as every value here)");
                     // Same mirror as the flag: refusals between here and the
@@ -999,7 +1014,7 @@ fn phaseDefine(run: *Run) void {
     }
     // Not after the setup: a setup run without a declared variable writes wherever the tool
     // falls back to, which on a developer's machine is the real data.
-    if (checkApparatus(setup_arena, args.apparatus, args.cwd, .before_setup)) |r| {
+    if (checkApparatus(setup_arena, args.apparatus, args.cwd, .before_setup, args.observe, run.define.work_abs)) |r| {
         // Not a directory the JSON report goes under: the report would have nowhere to land.
         // Compared through realpath, not by spelling: a /tmp on one side and /private/tmp on
         // the other is the same directory.
@@ -1153,7 +1168,11 @@ fn phaseApparatus(run: *Run) void {
         if (args.check) |c| if (refuse.unstartable(a, "check", commandArgv(a, c) catch none, cwd)) |m| setupError(.environment, m);
     }
 
-    if (checkApparatus(arena_state.allocator(), args.apparatus, args.cwd, .after_setup)) |r| setupError(r.reason, r.text);
+    if (checkApparatus(arena_state.allocator(), args.apparatus, args.cwd, .after_setup, args.observe, run.define.work_abs)) |r| setupError(r.reason, r.text);
+    if (pinning.asked(args.apparatus)) {
+        const case_seed = if (run.define.replay_case) |c| c.pin_seed else null;
+        if (pinning.prepare(arena_state.allocator(), "pin:random", run.define.work_abs, run.define.shim, case_seed)) |r| setupError(r.reason, r.text);
+    }
     // The scratch declaration is published here too (ADR 0043), at the same point as the
     // apparatus: the define is final, and every report from here on — a refusal raised
     // by the recording run included — carries it under the same presence rule.
@@ -1171,7 +1190,7 @@ fn phaseApparatus(run: *Run) void {
 fn phaseRecording(run: *Run) void {
     const gpa = run.gpa;
     const arena_state = run.arena_state;
-    const args = run.parsed.args;
+    var args = run.parsed.args;
     const operation = run.define.operation;
     const expect_status = run.define.expect_status;
     const shim = run.define.shim;
@@ -1242,6 +1261,11 @@ fn phaseRecording(run: *Run) void {
         if (!posix.seccompTrapAvailable())
             setupErrorFmt(arena_state.allocator(), .platform_unsupported, "{s}--observe syscalls needs a kernel that accepts SECCOMP_RET_TRAP and this one does not (CONFIG_SECCOMP_FILTER); the default --observe wrappers works everywhere", .{mode_from});
     }
+
+    const probe_out = std.fmt.allocPrint(arena, "{s}/oracle-probe.txt", .{run.define.work_abs}) catch setupError(.environment, "out of memory");
+    removeFile(probe_out);
+    cli.settleFoundOracle(gpa, arena, &run.parsed.args, probe_out);
+    args = run.parsed.args;
 
     // The macOS observer runs beside the recording rather than wrapping it, so it is
     // started here and stopped after — and both sentinels live inside the state root,
@@ -1540,7 +1564,10 @@ fn phaseStructural(run: *Run) void {
     // second witness — its writes reach the shim, which shares its process. The
     // sampling keeps `crossed_boundary`, which keeps every class.
     if (trace.needsOracle() and !args.has_oracle)
-        unknown(.boundary_without_oracle, if (builtin.os.tag == .macos) "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; on macOS no witness this engine reads can (#702)" else "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)", .account_boundary_or_unwrap);
+        unknown(.boundary_without_oracle, if (builtin.os.tag == .macos) "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; on macOS no witness this engine reads can (#702)" else switch (args.oracle_stance) {
+            .unusable => |why| std.fmt.allocPrint(arena, "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux) ({s})", .{why}) catch "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)",
+            else => "the target crossed a process boundary and no oracle was given, so nothing can account for what the other processes did; pass --oracle (Linux)",
+        }, .account_boundary_or_unwrap);
     // The fs_usage oracle cannot account for other processes the way strace does, so a
     // boundary the shim saw is not tolerated under it. fs_usage excludes processes by
     // name — the man page lists Terminal, sshd and the shells, and `-e` does not lift
@@ -1555,7 +1582,7 @@ fn phaseStructural(run: *Run) void {
 
 /// One constant for both forms of the `metadata` line: two copies of a sentence drift. `docs/cli.md`
 /// quotes it.
-const restore_carries = "Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore";
+const restore_carries = "Restore reproduces permission bits (read, write and execute; a directory's owner bits are added) but not ownership, set-id or sticky bits, extended attributes or timestamps: crash worlds start from the recorded permission bits, with timestamps assigned during restore";
 
 fn phaseOracle(run: *Run) void {
     const gpa = run.gpa;
@@ -1677,7 +1704,7 @@ fn phaseOracle(run: *Run) void {
             }
             break :blk std.fmt.allocPrint(
                 arena,
-                "{d} ownership/permission/timestamp write(s) observed and excluded from judgement — outside the judged state (#121, #190): {s}. " ++ restore_carries,
+                "{d} " ++ report.metadata_kinds ++ " write(s) observed and excluded from judgement — outside the judged state (#121, #190, #947): {s}. " ++ restore_carries,
                 .{ items.len, names.items },
             ) catch "observed (detail unavailable)";
         };
@@ -1808,7 +1835,8 @@ fn phaseOracle(run: *Run) void {
             // so they are appended in turn rather than chosen between. Both go AFTER
             // "witness strace" because two acceptance legs match `agreed on N operations`
             // as a substring, and a prefix would break them.
-            var note = std.fmt.allocPrint(arena, "{s}, witness strace", .{agreed}) catch agreed;
+            const found_at: []const u8 = if (args.oracle_stance == .found) std.fmt.allocPrint(arena, " found on PATH at {s} (--no-oracle leaves it out)", .{textShown(arena, args.oracle.?)}) catch "" else "";
+            var note = std.fmt.allocPrint(arena, "{s}, witness strace{s}", .{ agreed, found_at }) catch agreed;
             if (args.observe == .syscalls)
                 note = std.fmt.allocPrint(
                     arena,
@@ -1996,15 +2024,21 @@ fn phasePreflight(run: *Run) void {
             observeAgain(gpa, arena, initial, final, state_abs, state_alt, .{ .root = state_abs, .alt = state_alt, .scratch = args.scratch, .initial = &initial }, op_argv, shim, args.oracle, args.work, expect_status, rec_started_ms, args.cwd, args.observe, children_admitted)
         else
             null;
-        preflightReport(arena, n, hint, .{ .work = if (args.work_named) args.work else null, .state_under = args.state_under, .shim = args.shim, .oracle = args.oracle }, .{
+        // Not after two runs that split: they leave no one state for a control to break.
+        const ran_controls: ?report.PreflightControls = if (args.controls.len > 0 and (if (repeat) |r| r.count.equal() else true)) blk: {
+            const control_argvs = arena.alloc([]const []const u8, args.controls.len) catch setupError(.environment, "out of memory");
+            for (args.controls, control_argvs) |c, *v| v.* = commandArgv(arena, .{ .str = c.command }) catch setupError(.environment, "out of memory");
+            break :blk controls_run.run(gpa, arena, args, state_abs, final, refuse.checkerArgv(commandArgv(arena, args.check.?)), control_argvs);
+        } else null;
+        preflightReport(arena, n, hint, .{ .work = if (args.work_named) args.work else null, .state_under = args.state_under, .shim = args.shim, .oracle = args.oracle, .stance = args.oracle_stance }, .{
             .check = args.check != null,
             .marker = args.marker != null,
             .recovery = args.recovery != null,
-        }, repeat);
+        }, repeat, ran_controls);
     }
 
     if (n == 0) {
-        refuse.requireCompleteness(arena, args.has_oracle, args.allow_unverified);
+        refuse.requireCompleteness(arena, args.has_oracle, args.allow_unverified, args.oracle_stance);
         refuse.refuseNoCrashPoint(arena, args.has_oracle, refuse.cwdObservation(arena, op_argv));
     }
 }
@@ -2049,13 +2083,9 @@ fn phaseChecker(run: *Run) void {
         var fal_buf: [contract.max_path]u8 = undefined;
         const fal_out = std.fmt.bufPrint(&fal_buf, "{s}/falsify-check.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
         removeFile(fal_out);
-        const probe = posix.runChildCapture(gpa, cargv, &.{
-            .{ "TOY_STATE", state_abs },
-            .{ contract.env.state_dir, state_abs },
-            // reason it exists is on the field. `exclusive` for the same reason as the
-            // recording run's, and free for the same reason — `removeFile` is one line
-            // up.
-        }, .{ .path = fal_out, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check");
+        // `exclusive` for the same reason as the recording run's, and free for the same reason —
+        // `removeFile` is one line up.
+        const probe = posix.runChildCapture(gpa, cargv, &controls_run.checkerEnv(state_abs, controls_run.unreadLegs(args.work)), .{ .path = fal_out, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check");
 
         // Re-emitted before the verdict on the probe: unknown() exits the process,
         // and the gate's output is evidence in the refusal case too.
@@ -2089,10 +2119,7 @@ fn phaseChecker(run: *Run) void {
         var start_buf: [contract.max_path]u8 = undefined;
         const start_out = std.fmt.bufPrint(&start_buf, "{s}/start-check.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
         removeFile(start_out);
-        const start = posix.runChildCapture(gpa, cargv, &.{
-            .{ "TOY_STATE", state_abs },
-            .{ contract.env.state_dir, state_abs },
-        }, .{ .path = start_out, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check on the starting state");
+        const start = posix.runChildCapture(gpa, cargv, &controls_run.checkerEnv(state_abs, controls_run.unreadLegs(args.work)), .{ .path = start_out, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check on the starting state");
         switch (start) {
             .exited => |code| if (code != 0) {
                 // Marked `start: ` for the reason the falsification's lines are marked: this is
@@ -2231,6 +2258,8 @@ fn phaseExploration(run: *Run) void {
             .{ contract.env.run_cgroup, containment.runName(wcg_ptr) },
             .{ contract.env.kill_cgroup, containment.killName(wcg_ptr) },
             .{ contract.env.kill_aside, containment.asideName(wcg_ptr) },
+            .{ contract.env.pin_seed, pinning.seed_hex },
+            .{ contract.env.pin_claims, pinning.claimsFor(arena) },
             .{ preload_var, supervise.preloadFor(args.observe, shim) },
             // `exclusive` for the reason on `recordingCapture`, and free for the same
             // reason: `removeFile(world_stdout)` is two lines up and runs on every pass
@@ -2414,13 +2443,10 @@ fn phaseExploration(run: *Run) void {
             // `exclusive` needs the removal, and without `O_EXCL` a FIFO planted at the name
             // would block the parent's open — the pair `Capture.exclusive` asks for by name.
             files.removeFile(co);
-            const ct = posix.runChildCapture(gpa, cargv, &.{
-                .{ "TOY_STATE", state_abs },
-                .{ contract.env.state_dir, state_abs },
-                // stderr too, for the reason #483 gives on the setup capture: a checker
-                // reports through either stream, and capturing stdout alone would leave the
-                // file empty for the ordinary failure.
-            }, .{ .path = co, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| switch (e) {
+            // stderr too, for the reason #483 gives on the setup capture: a checker reports
+            // through either stream, and capturing stdout alone would leave the file empty for
+            // the ordinary failure.
+            const ct = posix.runChildCapture(gpa, cargv, &controls_run.checkerEnv(state_abs, controls_run.unreadLegs(args.work)), .{ .path = co, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| switch (e) {
                 // The one failure that is about the capture and not about the child: since
                 // #469 the parent opens the file, so this arrives before any child exists.
                 // The checker still has to run — the verdict rests on its exit status — so
@@ -2432,10 +2458,7 @@ fn phaseExploration(run: *Run) void {
                     // and "the capture is empty" are different answers, and only the first
                     // is true here.
                     capture_opened = false;
-                    break :blk_cap posix.runChild(gpa, cargv, &.{
-                        .{ "TOY_STATE", state_abs },
-                        .{ contract.env.state_dir, state_abs },
-                    }, args.cwd) catch |e2| spawnFailure(e2, .exploring, "could not run --check");
+                    break :blk_cap posix.runChild(gpa, cargv, &controls_run.checkerEnv(state_abs, controls_run.unreadLegs(args.work)), args.cwd) catch |e2| spawnFailure(e2, .exploring, "could not run --check");
                 },
                 else => spawnFailure(e, .exploring, "could not run --check"),
             };
@@ -2877,7 +2900,8 @@ fn phaseReport(run: *Run) void {
                 .state_alt = if (alt_differs) state_alt else null,
                 .trace = repro_trace,
                 .preload_var = preload_var,
-                .shim = shim,
+                .shim = pinning.preload orelse shim,
+                .pin_seed = pinning.seed_hex,
                 .kill_at = f.k,
                 .observe = args.observe.name(),
                 .argv = run.rec.op_argv,
@@ -2896,7 +2920,7 @@ fn phaseReport(run: *Run) void {
         std.process.exit(@backingInt(contract.ExitCode.fail));
     }
 
-    refuse.requireCompleteness(arena, args.has_oracle, args.allow_unverified);
+    refuse.requireCompleteness(arena, args.has_oracle, args.allow_unverified, args.oracle_stance);
     // #683, ADR 0091: after every world — a FAIL has already exited above — and not for a
     // replay, whose one world answers a different question.
     if (only_k == null) refuse.requireSomethingCouldFail(arena, run.rec.judgeable, run.check_argv != null, args.marker != null, run.firsts.marker_worlds);
@@ -3195,7 +3219,7 @@ const PreflightHint = union(enum) {
 
 const PreflightDeclared = struct { check: bool, marker: bool, recovery: bool };
 
-fn preflightReport(arena: std.mem.Allocator, n: u32, hint: PreflightHint, next_run: report.NextRun, declared: PreflightDeclared, repeat: ?Repeat) noreturn {
+fn preflightReport(arena: std.mem.Allocator, n: u32, hint: PreflightHint, next_run: report.NextRun, declared: PreflightDeclared, repeat: ?Repeat, ran_controls: ?report.PreflightControls) noreturn {
     const oracle_path = next_run.oracle;
     // Where the comparison and the rewrite of `--twice` happen, named the way the define named
     // it: byte for byte the old wording from the flags, which acceptance pins.
@@ -3212,7 +3236,7 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, hint: PreflightHint, next_r
             for (r.diffs, r.shapes, out) |d, sh, *o| o.* = .{ .path = d.rel, .how = @tagName(d.how), .shape = sh };
             break :rb .{ .gap_ms = r.gap_ms, .total = r.count.total, .diffs = out };
         } else null;
-        break :blk .{ .runs_differ = split, .operations = n, .marker_declared = declared.marker, .repeat = rep };
+        break :blk .{ .runs_differ = split, .operations = n, .marker_declared = declared.marker, .repeat = rep, .controls = ran_controls };
     } else null;
     if (split) {
         say("PREFLIGHT  not accepted — the two observed runs left different state\n\n", .{});
@@ -3267,7 +3291,26 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, hint: PreflightHint, next_r
     // what was not refused rather than that it will start — had something in the state to
     // corrupt, and was not run. A recovery is never started
     if (declared.marker) say("marker       observed in the recording run's output; preflight explores no crash world\n", .{});
-    if (declared.check) say(
+    if (ran_controls) |c| {
+        say("checker      run on the state the recording left, and after each [controls] command broke it\n", .{});
+        say("controls     baseline {s} ({s}{s}{s})\n", .{ c.baseline.word, c.baseline.checker_exit, if (c.baseline.red.len > 0) "; red " else "", std.mem.join(arena, ", ", c.baseline.red) catch "" });
+        for (c.controls) |k| {
+            const ctl_exit = k.control_exit orelse {
+                say("             {s}: {s} (not run)\n", .{ k.leg, k.word });
+                continue;
+            };
+            const red = std.mem.join(arena, ", ", k.red) catch "";
+            say("             {s}: {s} (control {s}{s}{s}{s}{s})\n", .{
+                k.leg,
+                k.word,
+                ctl_exit,
+                if (k.checker_exit != null) ", checker " else "",
+                k.checker_exit orelse "",
+                if (red.len > 0) "; red " else "",
+                red,
+            });
+        }
+    } else if (declared.check) say(
         \\checker      declared, not run: not refused as a command that cannot be
         \\             started, and the state holds something to corrupt
         \\
@@ -3352,7 +3395,6 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, hint: PreflightHint, next_r
     // path, it is one installed version's, and a later upgrade deletes it.
     var run = next_run;
     run.observe = boundary.observe_mode;
-    if (run.oracle == null and builtin.os.tag != .macos) run.oracle_found = refuse.findStraceForHint(arena);
     const tail = report.nextRunWords(arena, run) catch setupError(.environment, "out of memory");
     switch (hint) {
         // Every word through `shellWord`, not double quotes: a `$` or a backquote in a path or a
@@ -3553,6 +3595,7 @@ test "every flag preflight takes is on its next line, or is preflight's own" {
         " --config t",
         try report.nextDefineWords(a, .{ .state = "s", .setup = "u", .cwd = "c", .operation = "o", .expect_status = 3, .apparatus = &.{"note:x"}, .scratch = &.{"k"} }),
         try report.nextRunWords(a, .{ .work = "w", .state_under = "b", .observe = .syscalls, .shim = "l", .oracle = "t" }),
+        try report.nextRunWords(a, .{ .stance = .declined }),
         " ",
     });
     var buf: [64][]const u8 = undefined;
@@ -3650,7 +3693,8 @@ fn runDemo(arena: std.mem.Allocator, rest: []const []const u8) noreturn {
         "--operation", op_cmd,
         "--check",     check_cmd,
         "--work",      work_dir,
-        "--shim",      shim,
+        "--no-oracle", "--shim",
+        shim,
     };
     // `--shim` only when the demo was given one: one it found itself would ride into the
     // report's replay line as one installed version's path.
@@ -3671,7 +3715,7 @@ fn runDemo(arena: std.mem.Allocator, rest: []const []const u8) noreturn {
 /// report that carries one is a run whose declared devices were present when the engine
 /// looked (the schema page's promise). `cwd` is the define's, for a relative PYTHONPATH entry — the operation
 /// resolves it from there, so the check must too.
-fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[]const u8, phase: enum { before_setup, after_setup }) ?workdir.Refusal {
+fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[]const u8, phase: enum { before_setup, after_setup }, observe: contract.ObserveMode, work_abs: []const u8) ?workdir.Refusal {
     var preload_file: ?[]const u8 = null;
     for (entries) |e| {
         const parsed = switch (config.parseApparatusEntry(e)) {
@@ -3681,7 +3725,7 @@ fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[
         // Only env: before the setup: the setup may make what the other kinds look for (a
         // pythonpath: file, a preload line), and a define relying on that would be refused for
         // a device it was about to make.
-        if ((parsed == .env) != (phase == .before_setup)) continue;
+        if ((parsed == .env or parsed == .pin_random) != (phase == .before_setup)) continue;
         switch (parsed) {
             .env => |v| {
                 const got = envValue(v.name) orelse return workdir.Refusal.print(arena, .environment, "apparatus {s}: the environment the operation inherits has no {s} (under sideeye mcp, a variable of the server's reaches it only when SIDEEYE_MCP_CHILD_ENV names it)", .{ e, v.name });
@@ -3709,6 +3753,7 @@ fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[
                 if (!pythonpathHas(arena, pp, file, cwd))
                     return workdir.Refusal.print(arena, .environment, "apparatus {s}: no entry of PYTHONPATH ({s}) has {s} directly under it", .{ e, textShown(arena, pp), file });
             },
+            .pin_random => if (pinning.refusal(arena, e, observe, work_abs)) |r| return r,
             .note => {},
         }
     }
