@@ -1,0 +1,136 @@
+57    openat(AT_FDCWD</s/plakar-in>, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>
+57    openat(AT_FDCWD</s/plakar-in>, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3</proc/57/cgroup>
+57    openat(AT_FDCWD</s/plakar-in>, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3</proc/57/mountinfo>
+57    openat(AT_FDCWD</s/plakar-in>, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_CLOEXEC) = 3</sys/fs/cgroup/cpu.max>
+57    openat(AT_FDCWD</s/plakar-in>, "/opt/bin/plakar", O_RDONLY|O_CLOEXEC) = 4</opt/bin/plakar>
+57    openat(AT_FDCWD</s/plakar-in>, "/proc/self/auxv", O_RDONLY|O_CLOEXEC) = 4</proc/57/auxv>
+57    openat(AT_FDCWD</s/plakar-in>, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 4</etc/passwd>
+57    openat(AT_FDCWD</s/plakar-in>, "/var/lib/dbus/machine-id", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+57    openat(AT_FDCWD</s/plakar-in>, "/etc/machine-id", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+57    openat(AT_FDCWD</s/plakar-in>, "/s/aux/home/.config/plakar/sources.yml", O_RDONLY|O_CLOEXEC) = 4</s/aux/home/.config/plakar/sources.yml>
+57    openat(AT_FDCWD</s/plakar-in>, "/s/aux/home/.config/plakar/destinations.yml", O_RDONLY|O_CLOEXEC) = 4</s/aux/home/.config/plakar/destinations.yml>
+57    openat(AT_FDCWD</s/plakar-in>, "/s/aux/home/.config/plakar/stores.yml", O_RDONLY|O_CLOEXEC) = 4</s/aux/home/.config/plakar/stores.yml>
+57    openat(AT_FDCWD</s/plakar-in>, "/s/aux/home/.config/plakar/trust", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+57    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/cookies/1.0.0/.auth-token", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+57    openat(AT_FDCWD</s/plakar-in>, "/s/aux/data/plakar/plugins/v1.1.0", O_RDONLY|O_CLOEXEC) = 4</s/aux/data/plakar/plugins/v1.1.0>
+57    openat(AT_FDCWD</s/plakar-in>, "/s/plakar/repo/CONFIG", O_RDONLY|O_CLOEXEC) = 4</s/plakar/repo/CONFIG>
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=57, si_uid=0} ---
+57    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/store/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/state.db", O_RDONLY|O_LARGEFILE|O_NOFOLLOW|O_CLOEXEC) = 4</s/aux/cache/plakar/2.0.0/store/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/state.db>
+57    openat(AT_FDCWD</s/plakar-in>, "/dev/urandom", O_RDONLY|O_LARGEFILE|O_CLOEXEC) = 7</dev/urandom>
+57    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/store/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/state.db-wal", O_RDWR|O_CREAT|O_LARGEFILE|O_NOFOLLOW|O_CLOEXEC, 0644) = 7</s/aux/cache/plakar/2.0.0/store/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/state.db-wal>
+57    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/store/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/state.db-shm", O_RDWR|O_CREAT|O_LARGEFILE|O_NOFOLLOW|O_CLOEXEC, 0644) = 8</s/aux/cache/plakar/2.0.0/store/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/state.db-shm>
+59    write(9<socket:[13515]>, "\304\6", 2) = 2
+59    write(9<socket:[13515]>, "v1.1.7", 6) = 6
+59    write(9<socket:[13515]>, "\205", 1) = 1
+59    write(9<socket:[13515]>, "\246", 1) = 1
+59    write(9<socket:[13515]>, "Secret", 6) = 6
+59    write(9<socket:[13515]>, "\304 ", 2) = 2
+59    write(9<socket:[13515]>, "8\261l~\261'\317\350\204\tv~\205s=j\310\300\226\32\267:\3666M\244\247Q\2\317\346\251", 32) = 32
+59    write(9<socket:[13515]>, "\246", 1) = 1
+59    write(9<socket:[13515]>, "RepoID", 6) = 6
+59    write(9<socket:[13515]>, "\304\20", 2) = 2
+59    write(9<socket:[13515]>, "\317\305\266\340\331\246LV\242^\330^K\24\22\7", 16) = 16
+59    write(9<socket:[13515]>, "\253", 1) = 1
+59    write(9<socket:[13515]>, "StoreConfig", 11) = 11
+59    write(9<socket:[13515]>, "\201", 1) = 1
+59    write(9<socket:[13515]>, "\250", 1) = 1
+59    write(9<socket:[13515]>, "location", 8) = 8
+59    write(9<socket:[13515]>, "\263", 1) = 1
+59    write(9<socket:[13515]>, "fs:///s/plakar/repo", 19) = 19
+59    write(9<socket:[13515]>, "\255", 1) = 1
+59    write(9<socket:[13515]>, "FireAndForget", 13) = 13
+59    write(9<socket:[13515]>, "\302", 1) = 1
+59    write(9<socket:[13515]>, "\247", 1) = 1
+59    write(9<socket:[13515]>, "StateID", 7) = 7
+59    write(9<socket:[13515]>, "\304 ", 2) = 2
+59    write(9<socket:[13515]>, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 32) = 32
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository", O_RDONLY|O_CLOEXEC) = 9</s/aux/cache/plakar/2.0.0/repository>
+62    fsync(9</s/aux/cache/plakar/2.0.0/repository>) = 0
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207", O_RDONLY|O_CLOEXEC) = 9</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207", O_RDONLY|O_CLOEXEC) = 9</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/LOCK", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 10</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/LOCK>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207", O_RDONLY|O_CLOEXEC) = 11</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207", O_RDONLY|O_CLOEXEC) = 11</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207", O_RDONLY|O_CLOEXEC) = 12</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207", O_RDONLY|O_CLOEXEC) = 13</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/MANIFEST-000011", O_RDONLY|O_CLOEXEC) = 14</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/MANIFEST-000011>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207", O_RDONLY|O_CLOEXEC) = 14</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207", O_RDONLY|O_CLOEXEC) = 14</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/OPTIONS-000013", O_RDONLY|O_CLOEXEC) = 15</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/OPTIONS-000013>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/000012.log", O_RDONLY|O_CLOEXEC) = 15</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/000012.log>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/MANIFEST-000015", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0666) = 15</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/MANIFEST-000015>
+62    write(15</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/MANIFEST-000015>, "5\270o\5\230\1\1\1\32leveldb.BytewiseCompara"..., 428) = 428
+62    fsync(15</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/MANIFEST-000015>) = 0
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/marker.manifest.000004.MANIFEST-000015", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0666) = 16</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/marker.manifest.000004.MANIFEST-000015>
+62    unlinkat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/marker.manifest.000003.MANIFEST-000011", 0) = 0
+62    fsync(12</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207>) = 0
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/000016.log", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0666) = 16</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/000016.log>
+62    fsync(14</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207>) = 0
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/temporary.000017.dbtmp", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0666) = 17</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/temporary.000017.dbtmp>
+62    write(17</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/temporary.000017.dbtmp>, "[Version]\n  pebble_version=0.1\n\n"..., 2784) = 2784
+62    fsync(17</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/temporary.000017.dbtmp>) = 0
+62    renameat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/temporary.000017.dbtmp", AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/OPTIONS-000017") = 0
+62    fsync(9</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207>) = 0
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207", O_RDONLY|O_CLOEXEC) = 17</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/000010.sst", O_RDONLY|O_CLOEXEC) = 17</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/000010.sst>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/000005.sst", O_RDONLY|O_CLOEXEC) = 18</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/000005.sst>
+59    unlinkat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/000012.log", 0) = 0
+59    unlinkat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/MANIFEST-000006", 0) = 0
+59    unlinkat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/OPTIONS-000013", 0) = 0
+59    mkdirat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6", 0755) = 0
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/scan", O_RDONLY|O_CLOEXEC) = 19</s/aux/cache/plakar/2.0.0/scan>
+62    fsync(19</s/aux/cache/plakar/2.0.0/scan>) = 0
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6", O_RDONLY|O_CLOEXEC) = 19</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6", O_RDONLY|O_CLOEXEC) = 19</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6/LOCK", O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 20</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6/LOCK>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6", O_RDONLY|O_CLOEXEC) = 21</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6", O_RDONLY|O_CLOEXEC) = 21</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6", O_RDONLY|O_CLOEXEC) = 22</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6", O_RDONLY|O_CLOEXEC) = 23</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6/MANIFEST-000001", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0666) = 24</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6/MANIFEST-000001>
+62    write(24</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6/MANIFEST-000001>, "\241\27wJ \0\1\1\32leveldb.BytewiseCompara"..., 39) = 39
+62    fsync(24</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6/MANIFEST-000001>) = 0
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6/marker.manifest.000001.MANIFEST-000001", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0666) = 25</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6/marker.manifest.000001.MANIFEST-000001>
+62    fsync(22</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6>) = 0
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6", O_RDONLY|O_CLOEXEC) = 25</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6", O_RDONLY|O_CLOEXEC) = 25</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6/000002.log", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0666) = 26</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6/000002.log>
+62    fsync(25</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6>) = 0
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6/marker.format-version.000001.013", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0666) = 27</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6/marker.format-version.000001.013>
+62    fsync(21</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6>) = 0
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6/temporary.000003.dbtmp", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0666) = 27</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6/temporary.000003.dbtmp>
+62    write(27</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6/temporary.000003.dbtmp>, "[Version]\n  pebble_version=0.1\n\n"..., 2784) = 2784
+62    fsync(27</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6/temporary.000003.dbtmp>) = 0
+62    renameat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6/temporary.000003.dbtmp", AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6/OPTIONS-000003") = 0
+62    fsync(19</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6>) = 0
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6", O_RDONLY|O_CLOEXEC) = 27</s/aux/cache/plakar/2.0.0/scan/af306ab7a071153f5dc3ce7f168689f67159e21c36218114b706a846e58666e6>
+62    openat(AT_FDCWD</s/plakar-in>, "/s/plakar/repo/states/tmp.1765000056", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 27</s/plakar/repo/states/tmp.1765000056>
+62    write(27</s/plakar/repo/states/tmp.1765000056>, "_KLOSET_\3\0\0\0\0\1\1\0000\301\353v]\267\\\256\16\20\361K\236\323k\215"..., 56) = 56
+62    write(27</s/plakar/repo/states/tmp.1765000056>, "\261\200y\24\270\316\354$\340\246\225\346}\277\37\315\325#\27\216\203\f\32\201\312F\332ir\322\314E"..., 154) = 154
+62    write(27</s/plakar/repo/states/tmp.1765000056>, "N\33\206\356\215.\16\21\250l\t\"\344\307^\375*6\260l\335\2150\311]\340&\215DN\312\355", 32) = 32
+62    renameat(AT_FDCWD</s/plakar-in>, "/s/plakar/repo/states/tmp.1765000056", AT_FDCWD</s/plakar-in>, "/s/plakar/repo/states/8d/8db9d897b7741e3303eb4e5a3ea373c0795ab0e1d175e7573376cb82c3be1dd0") = 0
+62    write(1</out/plakar/op.log>, "info: rm: removal of 740bc92b co"..., 53) = 53
+62    openat(AT_FDCWD</s/plakar-in>, "/s/aux/cache/plakar/cookies/1.0.0/.auth-token", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+62    write(16</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/000016.log>, "\0\0\0\0\0\0\5\21\0\0\0", 11) = 11
+62    fdatasync(16</s/aux/cache/plakar/2.0.0/repository/cfc5b6e0-d9a6-4c56-a25e-d85e4b141207/000016.log>) = 0

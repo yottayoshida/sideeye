@@ -1,0 +1,6 @@
+state=/s/vd
+marker=no
+cwd=/
+op=vdirsyncer sync
+strace -- version 6.13
+aarch64

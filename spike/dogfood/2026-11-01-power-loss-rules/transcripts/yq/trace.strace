@@ -1,0 +1,8 @@
+19    openat(AT_FDCWD</s/yq>, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>
+19    openat(AT_FDCWD</s/yq>, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3</proc/19/cgroup>
+19    openat(AT_FDCWD</s/yq>, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3</proc/19/mountinfo>
+19    openat(AT_FDCWD</s/yq>, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_CLOEXEC) = 3</sys/fs/cgroup/cpu.max>
+19    openat(AT_FDCWD</s/yq>, "/s/aux/tmp/temp3355163071", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 4</s/aux/tmp/temp3355163071>
+19    openat(AT_FDCWD</s/yq>, "deploy.yaml", O_RDONLY|O_CLOEXEC) = 7</s/yq/deploy.yaml>
+19    write(4</s/aux/tmp/temp3355163071>, "# Production web tier. Replicas "..., 892) = 892
+19    renameat(AT_FDCWD</s/yq>, "/s/aux/tmp/temp3355163071", AT_FDCWD</s/yq>, "deploy.yaml") = 0

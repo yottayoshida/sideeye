@@ -1,0 +1,6 @@
+state=/s/aux/home/.config/kitty
+marker=no
+cwd=/s/kitten-in
+op=kitten themes --cache-age=-1 --reload-in=none Dracula
+strace -- version 6.13
+aarch64

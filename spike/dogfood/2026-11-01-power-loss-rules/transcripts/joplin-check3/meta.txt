@@ -1,0 +1,6 @@
+state=/s/joplin/jp
+marker=no
+cwd=/
+op=joplin --profile /s/joplin/jp mknote SecondNote
+strace -- version 6.13
+aarch64

@@ -1,0 +1,4 @@
+./scores.json
+./pins.json
+./search.json
+./settings.json

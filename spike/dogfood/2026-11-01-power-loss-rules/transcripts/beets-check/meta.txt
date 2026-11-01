@@ -1,0 +1,6 @@
+state=/s/beets/lib
+marker=no
+cwd=/
+op=beet -c /s/beets/config.yaml import -q /s/beets/in2
+strace -- version 6.13
+aarch64

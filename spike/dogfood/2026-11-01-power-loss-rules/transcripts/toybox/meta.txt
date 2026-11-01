@@ -1,0 +1,6 @@
+state=/s/tb
+marker=no
+cwd=/s/tb
+op=toybox sed -i s/foo/bar/ a.txt b.txt
+strace -- version 6.13
+aarch64

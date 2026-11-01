@@ -1,0 +1,6 @@
+[world]
+state = "/s/ctl"
+
+[define]
+cwd       = "/s/ctl"
+operation = "python3 /ap/controls/syncfile/op.py"

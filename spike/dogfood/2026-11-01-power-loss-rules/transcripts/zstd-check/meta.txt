@@ -1,0 +1,6 @@
+state=/s/zstd/state
+marker=no
+cwd=/s/zstd/state
+op=zstd -q --single-thread --no-asyncio --rm /s/zstd/state/f.bin
+strace -- version 6.13
+aarch64

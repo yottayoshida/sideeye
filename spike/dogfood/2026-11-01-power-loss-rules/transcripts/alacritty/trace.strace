@@ -1,0 +1,27 @@
+19    openat(AT_FDCWD</s/alac-in>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+19    openat(AT_FDCWD</s/alac-in>, "/lib/aarch64-linux-gnu/libfreetype.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libfreetype.so.6.20.2>
+19    openat(AT_FDCWD</s/alac-in>, "/lib/aarch64-linux-gnu/libfontconfig.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libfontconfig.so.1.12.1>
+19    openat(AT_FDCWD</s/alac-in>, "/lib/aarch64-linux-gnu/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libgcc_s.so.1>
+19    openat(AT_FDCWD</s/alac-in>, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libm.so.6>
+19    openat(AT_FDCWD</s/alac-in>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+19    openat(AT_FDCWD</s/alac-in>, "/lib/aarch64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libz.so.1.3.1>
+19    openat(AT_FDCWD</s/alac-in>, "/lib/aarch64-linux-gnu/libbz2.so.1.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libbz2.so.1.0.4>
+19    openat(AT_FDCWD</s/alac-in>, "/lib/aarch64-linux-gnu/libpng16.so.16", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpng16.so.16.48.0>
+19    openat(AT_FDCWD</s/alac-in>, "/lib/aarch64-linux-gnu/libbrotlidec.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libbrotlidec.so.1.1.0>
+19    openat(AT_FDCWD</s/alac-in>, "/lib/aarch64-linux-gnu/libexpat.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libexpat.so.1.12.3>
+19    openat(AT_FDCWD</s/alac-in>, "/lib/aarch64-linux-gnu/libbrotlicommon.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libbrotlicommon.so.1.1.0>
+19    openat(AT_FDCWD</s/alac-in>, "/proc/self/maps", O_RDONLY|O_CLOEXEC) = 3</proc/19/maps>
+19    openat(AT_FDCWD</s/alac-in>, "/s/alac/alacritty.toml", O_RDONLY|O_CLOEXEC) = 3</s/alac/alacritty.toml>
+19    openat(AT_FDCWD</s/alac-in>, "/s/alac/colors.toml", O_RDONLY|O_CLOEXEC) = 3</s/alac/colors.toml>
+19    write(1</out/alacritty/op.log>, "Successfully migrated import \"/s"..., 51) = 51
+19    openat(AT_FDCWD</s/alac-in>, "/s/alac/alacritty.toml", O_RDONLY|O_CLOEXEC) = 3</s/alac/alacritty.toml>
+19    openat(AT_FDCWD</s/alac-in>, "/s/alac/colors.toml", O_RDONLY|O_CLOEXEC) = 3</s/alac/colors.toml>
+19    openat(AT_FDCWD</s/alac-in>, "/s/alac/.tmpVtC4lq", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 3</s/alac/.tmpVtC4lq>
+19    openat(AT_FDCWD</s/alac-in>, "/s/alac/.tmpVtC4lq", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 4</s/alac/.tmpVtC4lq>
+19    write(4</s/alac/.tmpVtC4lq>, "\n[colors.primary]\nbackground = \""..., 102) = 102
+19    renameat(AT_FDCWD</s/alac-in>, "/s/alac/.tmpVtC4lq", AT_FDCWD</s/alac-in>, "/s/alac/colors.toml") = 0
+19    openat(AT_FDCWD</s/alac-in>, "/s/alac/.tmppcybFo", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 3</s/alac/.tmppcybFo>
+19    openat(AT_FDCWD</s/alac-in>, "/s/alac/.tmppcybFo", O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC, 0666) = 4</s/alac/.tmppcybFo>
+19    write(4</s/alac/.tmppcybFo>, "\n[terminal.shell]\nprogram = \"/bi"..., 186) = 186
+19    renameat(AT_FDCWD</s/alac-in>, "/s/alac/.tmppcybFo", AT_FDCWD</s/alac-in>, "/s/alac/alacritty.toml") = 0
+19    write(1</out/alacritty/op.log>, "Successfully migrated \"/s/alac/a"..., 47) = 47

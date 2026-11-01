@@ -1,0 +1,6 @@
+state=/s/podman
+marker=no
+cwd=/s/podman
+op=podman system connection default work
+strace -- version 6.13
+aarch64

@@ -1,0 +1,96 @@
+30    openat(AT_FDCWD</s/juju-in>, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>
+30    openat(AT_FDCWD</s/juju-in>, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3</proc/30/cgroup>
+30    openat(AT_FDCWD</s/juju-in>, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3</proc/30/mountinfo>
+30    openat(AT_FDCWD</s/juju-in>, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_CLOEXEC) = 3</sys/fs/cgroup/cpu.max>
+30    openat(AT_FDCWD</s/juju-in>, "/opt/bin/juju", O_RDONLY|O_CLOEXEC) = 4</opt/bin/juju>
+30    openat(AT_FDCWD</s/juju-in>, "/proc/self/auxv", O_RDONLY|O_CLOEXEC) = 4</proc/30/auxv>
+30    openat(AT_FDCWD</s/juju-in>, "/etc/machine-id", O_RDONLY|O_CLOEXEC) = 4</etc/machine-id>
+30    openat(AT_FDCWD</s/juju-in>, "/proc/self/cpuset", O_RDONLY|O_CLOEXEC) = 4</proc/30/cpuset>
+30    openat(AT_FDCWD</s/juju-in>, "/s/aux/home/.config/user-dirs.dirs", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+32    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+35    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    openat(AT_FDCWD</s/juju-in>, "/etc/os-release", O_RDONLY|O_CLOEXEC) = 4</usr/lib/os-release>
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+37    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+38    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    openat(AT_FDCWD</s/juju-in>, "FORCE-VERSION", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+36    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+36    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+37    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+36    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+32    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    openat(AT_FDCWD</s/juju-in>, "/s/juju/ssh", O_RDONLY|O_CLOEXEC) = 4</s/juju/ssh>
+30    openat(AT_FDCWD</s/juju-in>, "/s/juju/ssh/juju_id_rsa", O_RDONLY|O_CLOEXEC) = 4</s/juju/ssh/juju_id_rsa>
+30    openat(AT_FDCWD</s/juju-in>, "/s/juju/aliases", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+36    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+36    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+37    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+32    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+36    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+32    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+36    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+32    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+38    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+37    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+37    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+36    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+39    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+37    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+37    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+39    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+36    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+39    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+39    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+39    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+32    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+32    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+39    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+38    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+32    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+39    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+39    openat(AT_FDCWD</s/juju-in>, "/s/juju/clouds.yaml", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+39    openat(AT_FDCWD</s/juju-in>, "/s/juju/public-clouds.yaml", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+30    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+39    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+33    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+35    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+35    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=30, si_uid=0} ---
+36    write(6<anon_inode:[eventfd]>, "\1\0\0\0\0\0\0\0", 8) = 8
+33    write(2</out/juju/op.log>, "Found local cloud \"aws\" on this "..., 40) = 40
+33    openat(AT_FDCWD</s/juju-in>, "/s/juju/credentials.yaml", O_RDONLY|O_CLOEXEC) = 4</s/juju/credentials.yaml>
+33    openat(AT_FDCWD</s/juju-in>, "/s/aux/tmp/juju-store-lock-3539613137613035", O_RDONLY|O_CREAT|O_CLOEXEC, 0600) = 4</s/aux/tmp/juju-store-lock-3539613137613035>
+33    openat(AT_FDCWD</s/juju-in>, "/s/juju/credentials.yaml", O_RDONLY|O_CLOEXEC) = 7</s/juju/credentials.yaml>
+33    openat(AT_FDCWD</s/juju-in>, "/s/juju/credentials.yaml2892790386", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 7</s/juju/credentials.yaml2892790386>
+33    write(7</s/juju/credentials.yaml2892790386>, "credentials:\n  aws:\n    work:\n  "..., 132) = 132
+33    fsync(7</s/juju/credentials.yaml2892790386>) = 0
+33    renameat(AT_FDCWD</s/juju-in>, "/s/juju/credentials.yaml2892790386", AT_FDCWD</s/juju-in>, "/s/juju/credentials.yaml") = 0
+33    write(2</out/juju/op.log>, "Credential \"home\" for cloud \"aws"..., 60) = 60

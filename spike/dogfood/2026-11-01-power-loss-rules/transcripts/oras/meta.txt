@@ -1,0 +1,6 @@
+state=/s/oras
+marker=no
+cwd=/s/oras-in
+op=oras logout --registry-config /s/oras/config.json registry.example.com
+strace -- version 6.13
+aarch64

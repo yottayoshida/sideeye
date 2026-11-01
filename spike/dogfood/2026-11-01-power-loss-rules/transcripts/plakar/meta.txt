@@ -1,0 +1,6 @@
+state=/s/plakar/repo
+marker=no
+cwd=/s/plakar-in
+op=plakar at /s/plakar/repo rm -apply -tag old
+strace -- version 6.13
+aarch64

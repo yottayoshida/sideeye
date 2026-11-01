@@ -1,0 +1,13 @@
+./settings.yml
+./version.txt
+./migrations
+./migrations/2.4_1-migrate.py
+./p
+./p/cache.sqlite3
+./remotes.json
+./extensions
+./extensions/plugins
+./extensions/plugins/compatibility
+./extensions/plugins/compatibility/compatibility.py
+./extensions/plugins/profile.py
+./global.conf
