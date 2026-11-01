@@ -84,8 +84,9 @@ data", the condition is met** — the rule separates targets. "Anything unsynced
 back whole to the state before the operation, keeps 2 whole and leaves 7 stores with their own
 journal or WAL: it fails nearly none, so it meets the condition only in the letter. kitty, which
 this ADR counted as untraced, syncs its file and not its directory. The model is chosen in #960,
-taken up on 2026-11-01 as an opt-in mode under the second rule; python-dotenv#713 and its fix
-are still open.
+taken up on 2026-11-01 as an opt-in mode under the second rule
+([ADR 0147](0147-power-loss-is-judged-under-one-rule-when-asked.md)), narrowed to files the run
+never synced; python-dotenv#713 and its fix are still open.
 
 ## The rule a reopening starts from
 

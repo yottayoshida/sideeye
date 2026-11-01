@@ -229,6 +229,32 @@ pub var l0_note: []const u8 = "not classified (the run was refused before L0 cla
 pub var attributed_to_rename: usize = 0;
 pub var syncs_account: ?syncs.Account = null;
 pub var syncs_note: []const u8 = "";
+pub var power_loss_rule: ?[]const u8 = null;
+pub var power_loss_candidates: u32 = 0;
+pub var power_loss_unmatched: u32 = 0;
+pub var power_loss_worlds: u32 = 0;
+pub var power_loss_violations: u32 = 0;
+pub var power_loss_unjudged: ?[]const u8 = null;
+pub var power_loss_note: []const u8 = "";
+
+pub fn powerLossPassClause(arena: std.mem.Allocator) []const u8 {
+    const rule = power_loss_rule orelse return "";
+    if (power_loss_unjudged != null) return std.fmt.allocPrint(arena, "; no power-loss world ({s}) was judged: the run made a sync Sideeye does not record", .{rule}) catch "";
+    return std.fmt.allocPrint(arena, ", and {d}/{d} power-loss worlds ({s})", .{ power_loss_worlds, power_loss_worlds, rule }) catch "";
+}
+
+pub fn earliestPlace(arena: std.mem.Allocator, k: u32, n: u32, rule: ?cli.PowerLoss) []const u8 {
+    const r = rule orelse return std.fmt.allocPrint(arena, "crash point {d} of {d}", .{ k, n }) catch "crash point";
+    const at = if (k > n) "after the operation" else std.fmt.allocPrint(arena, "crash point {d} of {d}", .{ k, n }) catch "crash point";
+    return std.fmt.allocPrint(arena, "{s}, in its power-loss world ({s}: {s})", .{ at, r.name(), r.says() }) catch at;
+}
+
+pub fn powerLossNote(arena: std.mem.Allocator) []const u8 {
+    const rule = power_loss_rule orelse return "";
+    if (power_loss_unjudged) |why| return std.fmt.allocPrint(arena, "{s}: not judged, no power-loss world was built: the run made syncs Sideeye does not record ({s})", .{ rule, why }) catch "not judged";
+    const unmatched = if (power_loss_unmatched == 0) "" else std.fmt.allocPrint(arena, "; {d} more not judged: what the file held before the run was unknown, its opens not matched with strace's", .{power_loss_unmatched}) catch "";
+    return std.fmt.allocPrint(arena, "{s}: {d} rename(s) of a file with no fsync or fdatasync of it recorded in the run; {d} power-loss world(s) judged, {d} violated an invariant{s}", .{ rule, power_loss_candidates, power_loss_worlds, power_loss_violations, unmatched }) catch "judged";
+}
 pub var l0_history_count: u32 = 0;
 pub var case_note: []const u8 = "(none)";
 
@@ -640,6 +666,7 @@ fn buildL0NoteBase(arena: std.mem.Allocator, plan: engine.L0Plan) []const u8 {
 /// strings where an allocation failure has nowhere to go. The tables cost nothing at
 /// runtime.
 const not_tested_always = [_][]const u8{ "power loss (a missing fsync cannot fail this run)", "torn writes", "concurrent processes" };
+const not_tested_always_with_rule = [_][]const u8{ "power loss beyond the rename-before-data rule", "torn writes", "concurrent processes" };
 const not_tested_history = "appended tails (files under the history form)";
 const not_tested_l1 = "post-only file contents (L1 checks existence only; post-only link targets are judged)";
 const not_tested_scratch = "declared scratch paths (neither bytes nor presence judged)";
@@ -658,7 +685,7 @@ fn notTestedNeedsEscaping(s: []const u8) bool {
 // The JSON rendering quotes each item and does nothing else, which is correct only while
 // no item contains a quote, a backslash or a control byte. Rather than carry a second
 comptime {
-    for (not_tested_always) |item| {
+    for (not_tested_always ++ not_tested_always_with_rule) |item| {
         if (notTestedNeedsEscaping(item)) @compileError("not-tested item needs JSON escaping: " ++ item);
     }
     for (not_tested_conditions) |item| {
@@ -666,9 +693,9 @@ comptime {
     }
 }
 
-fn notTestedList(comptime variant: usize) []const []const u8 {
+fn notTestedList(comptime variant: usize, comptime rule: bool) []const []const u8 {
     comptime {
-        var out: []const []const u8 = &not_tested_always;
+        var out: []const []const u8 = if (rule) &not_tested_always_with_rule else &not_tested_always;
         for (not_tested_conditions, 0..) |item, i| {
             if (variant & (@as(usize, 1) << i) != 0) out = out ++ [_][]const u8{item};
         }
@@ -676,10 +703,10 @@ fn notTestedList(comptime variant: usize) []const []const u8 {
     }
 }
 
-fn notTestedJoined(comptime variant: usize, comptime quoted: bool) []const u8 {
+fn notTestedJoined(comptime variant: usize, comptime rule: bool, comptime quoted: bool) []const u8 {
     comptime {
         var out: []const u8 = if (quoted) "[" else "";
-        for (notTestedList(variant), 0..) |item, i| {
+        for (notTestedList(variant, rule), 0..) |item, i| {
             if (i != 0) out = out ++ ", ";
             out = out ++ if (quoted) "\"" ++ item ++ "\"" else item;
         }
@@ -689,17 +716,21 @@ fn notTestedJoined(comptime variant: usize, comptime quoted: bool) []const u8 {
 
 const not_tested_items_by_variant = blk: {
     var t: [not_tested_variants][]const []const u8 = undefined;
-    for (0..not_tested_variants) |v| t[v] = notTestedList(v);
+    for (0..not_tested_variants) |v| t[v] = notTestedList(v, false);
     break :blk t;
 };
 const not_tested_text_by_variant = blk: {
-    var t: [not_tested_variants][]const u8 = undefined;
-    for (0..not_tested_variants) |v| t[v] = notTestedJoined(v, false);
+    var t: [2][not_tested_variants][]const u8 = undefined;
+    for (0..2) |r| for (0..not_tested_variants) |v| {
+        t[r][v] = notTestedJoined(v, r == 1, false);
+    };
     break :blk t;
 };
 const not_tested_json_by_variant = blk: {
-    var t: [not_tested_variants][]const u8 = undefined;
-    for (0..not_tested_variants) |v| t[v] = notTestedJoined(v, true);
+    var t: [2][not_tested_variants][]const u8 = undefined;
+    for (0..2) |r| for (0..not_tested_variants) |v| {
+        t[r][v] = notTestedJoined(v, r == 1, true);
+    };
     break :blk t;
 };
 
@@ -721,11 +752,16 @@ fn notTestedVariant() usize {
 }
 
 pub fn notTestedText() []const u8 {
-    return not_tested_text_by_variant[notTestedVariant()];
+    return not_tested_text_by_variant[@intFromBool(powerLossJudged())][notTestedVariant()];
 }
 
 fn notTestedJson() []const u8 {
-    return not_tested_json_by_variant[notTestedVariant()];
+    return not_tested_json_by_variant[@intFromBool(powerLossJudged())][notTestedVariant()];
+}
+
+// Not the flag alone: a run that saw a sync Sideeye does not record, or stopped before its worlds, judged no rule.
+fn powerLossJudged() bool {
+    return power_loss_rule != null and power_loss_unjudged == null and power_loss_note.len > 0;
 }
 
 pub fn scratchNote(arena: std.mem.Allocator) []const u8 {
@@ -1045,6 +1081,8 @@ fn withField(comptime field: ArgsField) cli.Args {
         3
     else if (T == contract.ObserveMode)
         .syscalls
+    else if (T == ?cli.PowerLoss)
+        .rename_before_data
     else if (T == OracleStance)
         .declined
     else
@@ -1270,6 +1308,7 @@ pub fn sayAccount(arena: std.mem.Allocator, of: AccountOf, points: usize) void {
         say("oracle      {s}\n", .{oracle_note});
         say("metadata    {s}\n", .{metadata_note});
         if (syncs_account != null) say("syncs       {s}\n", .{syncs_note});
+        if (power_loss_rule != null) say("power loss  {s}\n", .{power_loss_note});
         say("checker     {s}\n", .{checker_note});
     }
     say("l1          {s}\n", .{l1_note});
@@ -1693,6 +1732,7 @@ pub fn violationObserved(v: ?engine.Violation) []const u8 {
 
 const Earliest = struct {
     k: u32,
+    crash_model: []const u8 = "process-kill",
     after: []const u8,
     after_path: []const u8,
     before: []const u8,
@@ -1796,6 +1836,8 @@ fn buildJson(
     if (detail) |d| {
         try w.appendSlice(arena, ",\n  \"earliest\": {\n    \"crash_point\": ");
         try w.appendSlice(arena, try std.fmt.bufPrint(&nb, "{d}", .{d.k}));
+        try w.appendSlice(arena, ",\n    \"crash_model\": ");
+        try jsonString(w, arena, d.crash_model);
         try w.appendSlice(arena, ",\n    \"invariant\": ");
         try jsonString(w, arena, d.invariant);
         try w.appendSlice(arena, ",\n    \"after\": {\"op\": ");
@@ -1875,7 +1917,10 @@ fn buildJson(
     try w.appendSlice(arena, notTestedJson());
     try appendFigures(w, arena);
     // Not after the judged set, the other field that grows: a reader cut short should lose the longer one.
-    if (std.mem.eql(u8, verdict, "PASS") or std.mem.eql(u8, verdict, "FAIL")) if (syncs_account) |a| try appendSyncs(w, arena, a);
+    if (std.mem.eql(u8, verdict, "PASS") or std.mem.eql(u8, verdict, "FAIL")) {
+        if (syncs_account) |a| try appendSyncs(w, arena, a);
+        if (power_loss_rule) |r| try appendPowerLoss(w, arena, r);
+    }
     try appendJudgedSet(w, arena);
     try w.appendSlice(arena, "\n}\n");
     return buf.items;
@@ -1892,6 +1937,14 @@ fn appendSyncs(w: W, arena: std.mem.Allocator, a: syncs.Account) !void {
         try jsonArrayField(w, arena, "renamed_without_dir_sync", a.without_dir_sync, false);
         try w.print(arena, ",\n  \"renamed_without_dir_sync_omitted\": {d}", .{a.without_dir_sync_omitted});
     }
+}
+
+fn appendPowerLoss(w: W, arena: std.mem.Allocator, rule: []const u8) !void {
+    try w.appendSlice(arena, ",\n  \"power_loss_rule\": ");
+    try jsonString(w, arena, rule);
+    try w.print(arena, ",\n  \"power_loss_worlds\": {d},\n  \"power_loss_violations\": {d}", .{ power_loss_worlds, power_loss_violations });
+    try w.appendSlice(arena, ",\n  \"power_loss\": ");
+    try jsonString(w, arena, power_loss_note);
 }
 
 fn appendCwd(w: W, arena: std.mem.Allocator) !void {
@@ -2494,20 +2547,21 @@ test "the not-tested list renders eight strings, the three always-present items 
         "[\"power loss (a missing fsync cannot fail this run)\", \"torn writes\", \"concurrent processes\", \"post-only file contents (L1 checks existence only; post-only link targets are judged)\"]",
         "[\"power loss (a missing fsync cannot fail this run)\", \"torn writes\", \"concurrent processes\", \"appended tails (files under the history form)\", \"post-only file contents (L1 checks existence only; post-only link targets are judged)\"]",
     };
-    for (want_text, 0..) |w, i| try std.testing.expectEqualStrings(w, not_tested_text_by_variant[i]);
-    for (want_json, 0..) |w, i| try std.testing.expectEqualStrings(w, not_tested_json_by_variant[i]);
+    for (want_text, 0..) |w, i| try std.testing.expectEqualStrings(w, not_tested_text_by_variant[0][i]);
+    for (want_json, 0..) |w, i| try std.testing.expectEqualStrings(w, not_tested_json_by_variant[0][i]);
     const scratch_item = "declared scratch paths (neither bytes nor presence judged)";
     for (want_text, 0..) |w, i| {
-        const got = not_tested_text_by_variant[4 + i];
+        const got = not_tested_text_by_variant[0][4 + i];
         try std.testing.expect(std.mem.startsWith(u8, got, w));
         try std.testing.expectEqualStrings(", " ++ scratch_item, got[w.len..]);
     }
     for (want_json, 0..) |w, i| {
-        const got = not_tested_json_by_variant[4 + i];
+        const got = not_tested_json_by_variant[0][4 + i];
         try std.testing.expect(std.mem.startsWith(u8, got, w[0 .. w.len - 1]));
         try std.testing.expectEqualStrings(", \"" ++ scratch_item ++ "\"]", got[w.len - 1 ..]);
     }
-    try std.testing.expectEqual(@as(usize, 8), not_tested_text_by_variant.len);
+    try std.testing.expectEqual(@as(usize, 8), not_tested_text_by_variant[0].len);
+    try std.testing.expectEqualStrings("power loss beyond the rename-before-data rule, torn writes, concurrent processes", not_tested_text_by_variant[1][0]);
 }
 
 test "the two renderings read the variant once, so they cannot describe different runs (#280)" {
@@ -2529,8 +2583,8 @@ test "the two renderings read the variant once, so they cannot describe differen
                 const want_v: usize = (if (h) @as(usize, 1) else 0) | (if (l) @as(usize, 2) else 0) | (if (s) @as(usize, 4) else 0);
                 const v = notTestedVariant();
                 try std.testing.expectEqual(want_v, v);
-                try std.testing.expectEqualStrings(not_tested_text_by_variant[v], notTestedText());
-                try std.testing.expectEqualStrings(not_tested_json_by_variant[v], notTestedJson());
+                try std.testing.expectEqualStrings(not_tested_text_by_variant[0][v], notTestedText());
+                try std.testing.expectEqualStrings(not_tested_json_by_variant[0][v], notTestedJson());
                 // Rebuilt from the item list, both forms, and compared for EQUALITY --
                 // review measured that an `indexOf` on the JSON side lets a ghost item ride
                 // along: appending one to the quoted rendering left the suite green.
