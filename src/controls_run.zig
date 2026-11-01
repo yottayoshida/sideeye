@@ -126,3 +126,52 @@ pub fn run(gpa: std.mem.Allocator, arena: std.mem.Allocator, args: cli.Args, sta
         .controls = out,
     };
 }
+
+pub const WorldChecker = struct { failed: bool, out: ?[]const u8 };
+
+pub fn runWorldChecker(gpa: std.mem.Allocator, arena: std.mem.Allocator, cargv: []const []const u8, state_abs: []const u8, work: []const u8, cwd: ?[]const u8, out_buf: *[contract.max_path]u8, label: []const u8) WorldChecker {
+    var out: ?[]const u8 = null;
+    var capture_opened = true;
+    const co = std.fmt.bufPrint(out_buf, "{s}/checker-output.txt", .{work}) catch
+        setupError(.define_invalid, "path too long");
+    // `exclusive` needs the removal, and without `O_EXCL` a FIFO planted at the name
+    // would block the parent's open — the pair `Capture.exclusive` asks for by name.
+    files.removeFile(co);
+    // stderr too, for the reason #483 gives on the setup capture: a checker reports
+    // through either stream, and capturing stdout alone would leave the file empty for
+    // the ordinary failure.
+    const ct = posix.runChildCapture(gpa, cargv, &checkerEnv(state_abs, unreadLegs(work)), .{ .path = co, .stderr_too = true, .exclusive = true }, cwd) catch |e| switch (e) {
+        // The one failure that is about the capture and not about the child: since
+        // #469 the parent opens the file, so this arrives before any child exists.
+        // The checker still has to run — the verdict rests on its exit status — so
+        // it runs uncaptured and the bundle's diagnostic stays unknown. Refusing
+        // here would turn a FAIL into an UNKNOWN over an attachment.
+        error.CaptureUnavailable => blk_cap: {
+            // Left null on this path deliberately, rather than relying on the
+            // removal above to make the read come back empty: "there is no capture"
+            // and "the capture is empty" are different answers, and only the first
+            // is true here.
+            capture_opened = false;
+            break :blk_cap posix.runChild(gpa, cargv, &checkerEnv(state_abs, unreadLegs(work)), cwd) catch |e2| spawnFailure(e2, .exploring, "could not run --check");
+        },
+        else => spawnFailure(e, .exploring, "could not run --check"),
+    };
+    // Set whichever way the child ended: a checker killed by a signal has often
+    // written the line that says why, and the capture is what holds it.
+    if (capture_opened) {
+        out = co;
+        // Not printed bare: `spike/acceptance.sh` counts gate lines, world lines and unmarked
+        // checker lines, which must be none.
+        if (capture.readFileAllocCapped(arena, co, 1024 * 1024, .{ .no_follow = true })) |text| {
+            var lines = std.mem.splitScalar(u8, text, '\n');
+            while (lines.next()) |line| {
+                if (line.len == 0) continue;
+                say("{s}: {s}\n", .{ label, line });
+            }
+        }
+    }
+    return .{ .out = out, .failed = switch (ct) {
+        .exited => |code| code != 0,
+        else => true,
+    } };
+}

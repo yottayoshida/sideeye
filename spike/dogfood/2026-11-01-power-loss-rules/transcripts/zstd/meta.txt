@@ -1,0 +1,6 @@
+state=/s/zstd/state
+marker=no
+cwd=/
+op=zstd -q --rm /s/zstd/state/a.bin
+strace -- version 6.13
+aarch64

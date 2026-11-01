@@ -1,0 +1,6 @@
+state=/s/opam
+marker=no
+cwd=/s/opam-in
+op=opam option jobs=3 --global
+strace -- version 6.13
+aarch64

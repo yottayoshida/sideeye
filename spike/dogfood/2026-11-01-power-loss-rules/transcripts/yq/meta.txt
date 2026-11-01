@@ -1,0 +1,6 @@
+state=/s/yq
+marker=no
+cwd=/s/yq
+op=yq -i '.spec.replicas = 3' deploy.yaml
+strace -- version 6.13
+aarch64

@@ -179,10 +179,10 @@ def main():
     # what catches that shape is the comptime table it now comes from. And `not_tested`
     # is appended directly rather than through `jsonString`, so it is outside this claim
     # entirely; acceptance check 2nt is what holds that field.
-    # Since #717 the report's shared parts live in four functions `buildJson` calls, and
-    # preflight's document is built beside it from the same ones; all six are read.
+    # Since #717 the report's shared parts live in functions `buildJson` calls, and
+    # preflight's document is built beside it from the same ones; every one listed is read.
     for fname in ("buildJson", "appendCwd", "appendDeclarations", "appendFigures",
-                  "appendJudgedSet", "buildPreflightJson"):
+                  "appendSyncs", "appendPowerLoss", "appendJudgedSet", "buildPreflightJson"):
         body = re.search(r"^fn %s\(.*?^\}$" % fname, zig_main, re.S | re.M)
         if not body:
             problems.append("could not find %s in %s" % (fname, zig_main_path))

@@ -1,0 +1,6 @@
+state=/s/stylelint/proj
+marker=no
+cwd=/s/stylelint/proj
+op=stylelint --fix a.css
+strace -- version 6.13
+aarch64

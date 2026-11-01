@@ -17,9 +17,15 @@ const setupError = refuse.setupError;
 
 // The engine's variables go to the target through `-E`, never through strace's own environment:
 // the shim in LD_PRELOAD would load into strace and count strace's writes as the target's.
-pub fn straceArgv(arena: std.mem.Allocator, strace_path: []const u8, out_path: []const u8, pairs: []const [2][]const u8, argv: []const []const u8) []const []const u8 {
+// Not added without the rule: a run that asks nothing of these calls should not be stopped by an
+// strace too old to name one.
+pub fn straceCalls(power_loss: bool) []const u8 {
+    return if (power_loss) oracle.strace_trace_spec ++ "," ++ oracle.power_loss_extra_calls else oracle.strace_trace_spec;
+}
+
+pub fn straceArgv(arena: std.mem.Allocator, strace_path: []const u8, calls: []const u8, out_path: []const u8, pairs: []const [2][]const u8, argv: []const []const u8) []const []const u8 {
     var list: std.ArrayList([]const u8) = .empty;
-    list.appendSlice(arena, &.{ strace_path, "-f", "-y", "-e", oracle.strace_trace_spec, "-o", out_path }) catch outOfMemory();
+    list.appendSlice(arena, &.{ strace_path, "-f", "-y", "-e", calls, "-o", out_path }) catch outOfMemory();
     for (pairs) |kv| {
         const joined = std.fmt.allocPrint(arena, "{s}={s}", .{ kv[0], kv[1] }) catch outOfMemory();
         list.appendSlice(arena, &.{ "-E", joined }) catch outOfMemory();

@@ -1,0 +1,17 @@
+18    openat(AT_FDCWD</>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+18    openat(AT_FDCWD</>, "/lib/aarch64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libz.so.1.3.1>
+18    openat(AT_FDCWD</>, "/lib/aarch64-linux-gnu/liblzma.so.5", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/liblzma.so.5.8.1>
+18    openat(AT_FDCWD</>, "/lib/aarch64-linux-gnu/liblz4.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/liblz4.so.1.10.0>
+18    openat(AT_FDCWD</>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+18    openat(AT_FDCWD</>, "/lib/aarch64-linux-gnu/libxxhash.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libxxhash.so.0.8.3>
+18    openat(AT_FDCWD</>, "/sys/devices/system/cpu/online", O_RDONLY|O_CLOEXEC) = 3</sys/devices/system/cpu/online>
+18    openat(AT_FDCWD</>, "/proc/cpuinfo", O_RDONLY) = 3</proc/cpuinfo>
+18    openat(AT_FDCWD</>, "/s/zstd/state/a.bin", O_RDONLY) = 3</s/zstd/state/a.bin>
+18    openat(AT_FDCWD</>, "/s/zstd/state/a.bin.zst", O_WRONLY|O_CREAT|O_TRUNC, 0600) = 4</s/zstd/state/a.bin.zst>
+18    write(4</s/zstd/state/a.bin.zst>, "(\265/\375\244\340\223\4\0\0\0\20\370cp\354m\224O\233\374]T\215\246\26\351}8\354\324x"..., 131072) = 131072
+18    write(4</s/zstd/state/a.bin.zst>, "\344\210\270\376l\273^\236\203\361h\354\0\0\20u\"\213\333\v\354Z\344\n\230\320\3\233\ne\344\301"..., 4096) = 4096
+18    write(4</s/zstd/state/a.bin.zst>, "\16\230\23\221\7.\277fU?\tM\1\234O\317\343\301\300\262\247\373\226\376\327'\253\222IB\360s"..., 126976) = 126976
+18    write(4</s/zstd/state/a.bin.zst>, "#\267\207C\31\312\247\270\210\270\30\205\177\325\255\1\237\0040\26\254\374\203<\351W\0\24\370(CN"..., 4096) = 4096
+18    write(4</s/zstd/state/a.bin.zst>, "\356\21\360b\f\300\nx\272\245 \3276\335\26w\0T\251\27.\330=\277\347\21\177\314\312\220\37\301"..., 32768) = 32768
+18    write(4</s/zstd/state/a.bin.zst>, "]\322\233j\234u}awZ\367\215\300\267\222\363qUD.3\261L\372\337\265\213\2\316\246p\26"..., 1014) = 1014
+18    unlinkat(AT_FDCWD</>, "/s/zstd/state/a.bin", 0) = 0

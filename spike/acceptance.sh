@@ -3292,11 +3292,11 @@ r711() {   # r711 <name> <toy> <flags...> — sets o711 (stdout), rc711
 }
 keys711() {   # the account keys a block prints, in order, joined by commas
     printf '%s\n' "$1" | awk '{ k = substr($0, 1, 12); sub(/ +$/, "", k); print k }' \
-        | grep -xE 'cwd|apparatus|warning|recovery|explored|expected|atomicity|oracle|metadata|checker|l1|case|replay|evidence|processes|not tested' \
+        | grep -xE 'cwd|apparatus|warning|recovery|explored|expected|atomicity|oracle|metadata|syncs|checker|l1|case|replay|evidence|processes|not tested' \
         | paste -sd, -
 }
-want711_fail="cwd,apparatus,warning,recovery,explored,expected,atomicity,oracle,metadata,checker,l1,case,replay,evidence,processes,not tested"
-want711_pass="cwd,apparatus,warning,recovery,explored,expected,atomicity,oracle,metadata,checker,l1,case,processes,not tested"
+want711_fail="cwd,apparatus,warning,recovery,explored,expected,atomicity,oracle,metadata,syncs,checker,l1,case,replay,evidence,processes,not tested"
+want711_pass="cwd,apparatus,warning,recovery,explored,expected,atomicity,oracle,metadata,syncs,checker,l1,case,processes,not tested"
 want711_unknown="cwd,apparatus,warning,recovery,expected,atomicity,l1,case,processes,not tested"
 for v711 in fail:toy-bug:1 pass:toy-fixed:0 unknown:toy-fixed:2; do
     name711=${v711%%:*}; rest711=${v711#*:}; toy711=${rest711%%:*}; want_rc711=${rest711#*:}
@@ -7177,6 +7177,27 @@ if ! grep -q '"oracle_verified": true' "$SD/observe.json" 2>/dev/null; then
     echo "FAIL the syscalls fixture does not carry oracle_verified: true, so its oracle did not watch the run it judged"
     fails=$((fails + 1))
 fi
+# Not left to the other fixtures: none declares a marker, the only case `renamed_without_dir_sync`
+# is written in.
+mkdir -p "$SD/smk"
+TOY_MARKER=1 TOY_STATE=$SD/smk "$SIDEEYE" explore --state "$SD/smk" \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" --marker COMMITTED \
+    --shim "$SHIM" --work "$SD/wmk" --oracle /usr/bin/strace \
+    --json "$SD/marker.json" >/dev/null 2>&1
+if ! grep -q '"renamed_without_dir_sync"' "$SD/marker.json" 2>/dev/null; then
+    echo "FAIL the marker fixture does not carry renamed_without_dir_sync, so the schema check below cannot see that row"
+    fails=$((fails + 1))
+fi
+# Not left to the other fixtures: none runs under --power-loss, the only report its fields are written in.
+mkdir -p "$SD/spl"
+"$SIDEEYE" explore --state "$SD/spl" --setup "python3 $ROOT/spike/toys/toy_power_loss.py replace init $SD/spl" \
+    --operation "python3 $ROOT/spike/toys/toy_power_loss.py replace run $SD/spl" --power-loss rename-before-data \
+    --shim "$SHIM" --work "$SD/wpl" --oracle /usr/bin/strace \
+    --json "$SD/power-loss.json" >/dev/null 2>&1
+if [ "$(field "$SD/power-loss.json" earliest.crash_model)" != rename-before-data ]; then
+    echo "FAIL the power-loss fixture's earliest is not its rule's, so the schema check below cannot see the power_loss rows"
+    fails=$((fails + 1))
+fi
 # …and the withdrawn field must not be in it. A report still carrying
 # `oracle_verified_across_runs` would mean the leading untrapped run came back, or that
 # the field outlived it — and the schema check below only sees the page, not the reports,
@@ -7278,7 +7299,7 @@ else
 fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
     "$ROOT/src/report.zig" \
-    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/warnings.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/children.json" \
+    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/warnings.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/marker.json" "$SD/power-loss.json" "$SD/children.json" \
     "$SD/preflight-accepted.json" "$SD/preflight-split.json" "$SD/preflight-controls.json" /tmp/acc-lcs/leave.json; then
     echo "ok   the schema page, the generated reports and preflight documents, the contract enum and the JSON writers' shared values agree"
 else
@@ -7317,6 +7338,108 @@ else
 fi
 
 echo ""
+echo "=========== check 4s: the syncs account names a rename with no sync, and changes no verdict (ADR 0144) ==========="
+# Not one writer: without the one that syncs, a line that named every rename would pass.
+SY=/tmp/acc-syncs
+rm -rf "$SY" && mkdir -p "$SY/nosync" "$SY/sync"
+for v in nosync sync; do
+    if [ "$v" = sync ]; then flush='os.fsync(f.fileno())'; else flush='pass'; fi
+    printf '%s\n' 'import os, sys' 'd = sys.argv[2]' 'p = os.path.join(d, "key.json")' \
+        'if sys.argv[1] == "init":' '    open(p, "w").write("{}\n")' '    sys.exit(0)' \
+        'f = open(p + ".tmp", "w")' 'f.write("{\"k\": 1}\n")' 'f.flush()' "$flush" 'f.close()' \
+        'os.replace(p + ".tmp", p)' > "$SY/$v.py"
+    "$SIDEEYE" explore --state "$SY/$v" --setup "python3 $SY/$v.py init $SY/$v" --operation "python3 $SY/$v.py rotate $SY/$v" \
+        --shim "$SHIM" --work "$SY/w-$v" --oracle /usr/bin/strace --json "$SY/$v.json" > "$SY/$v.txt" 2>&1
+    echo $? > "$SY/$v.rc"
+done
+sy_both=$(python3 -c 'import json,sys; print(" ".join(json.dumps(json.load(open(f)).get("renamed_without_fsync"), separators=(",", ":")) for f in sys.argv[1:]))' "$SY/nosync.json" "$SY/sync.json" 2>/dev/null)
+sy_n=${sy_both% *}; sy_s=${sy_both#* }
+TOY_STATE=$SY/bug "$SIDEEYE" explore --state "$SY/bug" --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" \
+    --shim "$SHIM" --work "$SY/w-bug" --oracle /usr/bin/strace > /dev/null 2>&1
+sy_case=$(ls "$SY/w-bug/cases/"*.json 2>/dev/null | head -1)
+TOY_STATE=$SY/bug "$SIDEEYE" replay "$sy_case" --shim "$SHIM" --oracle /usr/bin/strace --work "$SY/w-bug-r" > "$SY/replay.txt" 2>&1
+echo $? > "$SY/replay.rc"
+if [ -n "$sy_case" ] && [ "$(cat "$SY/replay.rc")" = 1 ] && grep -q '^syncs       ' "$SY/replay.txt" \
+    && [ "$(cat "$SY/nosync.rc")" = 0 ] && [ "$(cat "$SY/sync.rc")" = 0 ] && [ "$sy_n" = '["key.json"]' ] && [ "$sy_s" = '[]' ] \
+    && grep -q '^syncs       .*no fsync or fdatasync recorded for it between its last recorded write and the rename: key.json' "$SY/nosync.txt" \
+    && grep -q '^syncs       .*Each file with a write recorded was synced' "$SY/sync.txt"; then
+    echo "ok   the syncs account names the rename with no sync of its file, not the one that syncs, both PASS, and a FAIL's replay carries the line"
+else
+    echo "FAIL syncs: exits $(cat "$SY/nosync.rc") $(cat "$SY/sync.rc"), replay exit $(cat "$SY/replay.rc"), renamed_without_fsync $sy_n / $sy_s"
+    grep '^syncs\|^PASS\|^FAIL\|^UNKNOWN' "$SY/nosync.txt" "$SY/sync.txt" | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
+echo "=========== check 4p: --power-loss rename-before-data judges the world a rename with no sync can leave, and nothing else (#960) ==========="
+# Six writers, one toy: each flag-off run PASSes, so whatever the flag changes is the flag's.
+PL=/tmp/acc-power
+rm -rf "$PL" && mkdir -p "$PL"
+PLTOY="python3 $ROOT/spike/toys/toy_power_loss.py"
+pl_fails=0
+pl_explore() { # <variant> <flag|plain>
+    pl_v=$1; pl_f=$2
+    rm -rf "$PL/$pl_v-$pl_f" && mkdir -p "$PL/$pl_v-$pl_f"
+    pl_flag=""
+    [ "$pl_f" = flag ] && pl_flag="--power-loss rename-before-data"
+    # shellcheck disable=SC2086
+    "$SIDEEYE" explore --state "$PL/$pl_v-$pl_f" --setup "$PLTOY $pl_v init $PL/$pl_v-$pl_f" --operation "$PLTOY $pl_v run $PL/$pl_v-$pl_f" \
+        --check "$PLTOY $pl_v check $PL/$pl_v-$pl_f" --shim "$SHIM" --work "$PL/w-$pl_v-$pl_f" --oracle /usr/bin/strace \
+        --json "$PL/$pl_v-$pl_f.json" $pl_flag > "$PL/$pl_v-$pl_f.txt" 2>&1
+    echo $? > "$PL/$pl_v-$pl_f.rc"
+}
+pl_want() { # <label> <got> <want>
+    [ "$2" = "$3" ] || { echo "     $1: '$2', wanted '$3'"; pl_fails=$((pl_fails + 1)); }
+}
+for v in replace newname newname-lax sync range log; do
+    pl_explore "$v" plain
+    pl_want "$v without the flag: exit" "$(cat "$PL/$v-plain.rc")" 0
+    pl_want "$v without the flag: power_loss_rule" "$(field "$PL/$v-plain.json" power_loss_rule)" ""
+    pl_explore "$v" flag
+done
+# (i) a file replaced with no sync of its new content: the name empty, a FAIL its case replays.
+pl_want "replace: exit" "$(cat "$PL/replace-flag.rc")" 1
+pl_want "replace: earliest.crash_model" "$(field "$PL/replace-flag.json" earliest.crash_model)" rename-before-data
+pl_want "replace: crash_model" "$(field "$PL/replace-flag.json" crash_model)" process-kill
+grep -q '^earliest    .*in its power-loss world (rename-before-data' "$PL/replace-flag.txt" || { echo "     replace: no earliest line naming the rule"; pl_fails=$((pl_fails + 1)); }
+pl_case=$(field "$PL/replace-flag.json" case)
+pl_want "replace: case_version" "$(field "$pl_case" case_version)" 9
+pl_want "replace: case crash_model" "$(field "$pl_case" crash_model)" rename-before-data
+rm -rf "$PL/replace-flag" && mkdir -p "$PL/replace-flag"
+"$SIDEEYE" replay "$pl_case" --shim "$SHIM" --oracle /usr/bin/strace --work "$PL/w-replace-r" --leave-crash-state --json "$PL/replace-r.json" > "$PL/replace-r.txt" 2>&1
+pl_want "replace: replay exit" "$?" 1
+pl_want "replace: replay earliest.crash_model" "$(field "$PL/replace-r.json" earliest.crash_model)" rename-before-data
+pl_want "replace: replay left key.json's bytes" "$(wc -c < "$PL/replace-flag/key.json" 2>/dev/null | tr -d ' ')" 0
+"$SIDEEYE" replay "$pl_case" --shim "$SHIM" --work "$PL/w-replace-r2" --no-oracle > "$PL/replace-r2.txt" 2>&1
+pl_want "replace: replay with --no-oracle: exit" "$?" 3
+# (ii) a new name the checker reads: the checker decides, not L0.
+pl_want "newname: exit" "$(cat "$PL/newname-flag.rc")" 1
+pl_want "newname: earliest.invariant" "$(field "$PL/newname-flag.json" earliest.invariant)" "the checker (L2)"
+# (iii) the same, with a checker that takes an empty file: PASS, and worlds were judged.
+pl_want "newname-lax: exit" "$(cat "$PL/newname-lax-flag.rc")" 0
+case "$(field "$PL/newname-lax-flag.json" power_loss_worlds)" in ''|0) echo "     newname-lax: no power-loss world judged"; pl_fails=$((pl_fails + 1)) ;; esac
+# (iv) a file synced before its rename: no candidate, no world.
+pl_want "sync: exit" "$(cat "$PL/sync-flag.rc")" 0
+pl_want "sync: power_loss_worlds" "$(field "$PL/sync-flag.json" power_loss_worlds)" 0
+# (v) sync_file_range, a sync Sideeye does not record: no world, and the call named with its file.
+pl_want "range: exit" "$(cat "$PL/range-flag.rc")" 0
+pl_want "range: power_loss_worlds" "$(field "$PL/range-flag.json" power_loss_worlds)" 0
+grep -q "^power loss  rename-before-data: not judged.*sync_file_range on $PL/range-flag/key.json.tmp" "$PL/range-flag.txt" || { echo "     range: the power loss line does not name sync_file_range and its file"; pl_fails=$((pl_fails + 1)); }
+# (vi) a log appended to and renamed: the new name holds what the old one held before the run.
+pl_want "log: exit" "$(cat "$PL/log-flag.rc")" 1
+pl_lcase=$(field "$PL/log-flag.json" case)
+rm -rf "$PL/log-flag" && mkdir -p "$PL/log-flag"
+"$SIDEEYE" replay "$pl_lcase" --shim "$SHIM" --oracle /usr/bin/strace --work "$PL/w-log-r" --leave-crash-state > "$PL/log-r.txt" 2>&1
+pl_want "log: replay exit" "$?" 1
+pl_want "log: replay left app.log.1" "$(cat "$PL/log-flag/app.log.1" 2>/dev/null)" old
+grep -q '^crash state left in the state directory: the power-loss world' "$PL/log-r.txt" || { echo "     log: the crash state line does not say it is the power-loss world"; pl_fails=$((pl_fails + 1)); }
+if [ "$pl_fails" = 0 ]; then
+    echo "ok   with --power-loss, the unsynced replace and new name FAIL by the rule (L0, then the checker alone) and replay; the synced writer, the lax checker and sync_file_range PASS; without it, all six PASS"
+else
+    echo "FAIL --power-loss: $pl_fails expectation(s) missed"
+    grep -h '^PASS\|^FAIL\|^UNKNOWN\|^SETUP\|^power loss' "$PL"/*-flag.txt | sed 's/^/     | /'
+    fails=$((fails + 1))
+fi
+
 echo "=========== check 4c: the second exhibit — the earliest checker-red world (#231) ==========="
 # The poetry shape, shrunk: TOY_SPLIT_REWRITE rewrites derived.txt then
 # primary.txt in place (four kill points), and check-split.sh judges only the
@@ -10465,6 +10588,8 @@ acc_dummy() {
         # One of the two mode names: the value is checked at parse time, so the dummy
         # path below would make the flag read as refused by every synopsis line.
         --observe)        printf 'wrappers' ;;
+        # The one rule's name, for --observe's reason.
+        --power-loss)     printf 'rename-before-data' ;;
         *)                printf '%s' "$acc_nx.dummy" ;;
     esac
 }

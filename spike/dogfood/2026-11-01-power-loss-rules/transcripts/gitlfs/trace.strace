@@ -1,0 +1,130 @@
+18    openat(AT_FDCWD</s/glfs-in>, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>
+18    openat(AT_FDCWD</s/glfs-in>, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3</proc/18/cgroup>
+18    openat(AT_FDCWD</s/glfs-in>, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3</proc/18/mountinfo>
+18    openat(AT_FDCWD</s/glfs-in>, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_CLOEXEC) = 3</sys/fs/cgroup/cpu.max>
+18    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDONLY|O_CLOEXEC) = 4</dev/null>
+24    openat(AT_FDCWD</s/glfs-in>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+24    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.14.0>
+24    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libz.so.1.3.1>
+24    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+24    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDWR) = 3</dev/null>
+24    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 3</s/glfs/gitconfig>
+24    write(1<pipe:[14582]>, "git version 2.47.3\n", 19) = 19
+21    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=24, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+18    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDONLY|O_CLOEXEC) = 4</dev/null>
+25    openat(AT_FDCWD</s/glfs-in>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+25    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.14.0>
+25    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libz.so.1.3.1>
+25    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+25    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDWR) = 3</dev/null>
+25    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 3</s/glfs/gitconfig>
+25    write(2<pipe:[14586]>, "fatal: not a git repository (or "..., 69) = 69
+21    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=25, si_uid=0, si_status=128, si_utime=0, si_stime=0} ---
+18    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDONLY|O_CLOEXEC) = 8</dev/null>
+18    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_WRONLY|O_CLOEXEC) = 9</dev/null>
+26    openat(AT_FDCWD</s/glfs-in>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+26    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.14.0>
+26    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libz.so.1.3.1>
+26    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+26    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDWR) = 3</dev/null>
+26    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 3</s/glfs/gitconfig>
+26    write(2</dev/null>, "fatal: not a git repository (or "..., 69) = 69
+22    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=26, si_uid=0, si_status=128, si_utime=0, si_stime=0} ---
+21    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDONLY|O_CLOEXEC) = 4</dev/null>
+29    openat(AT_FDCWD</s/glfs-in>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+29    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.14.0>
+29    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libz.so.1.3.1>
+29    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+29    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDWR) = 3</dev/null>
+29    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 3</s/glfs/gitconfig>
+29    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 3</s/glfs/gitconfig>
+28    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=29, si_uid=0, si_status=1, si_utime=0, si_stime=0} ---
+28    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDONLY|O_CLOEXEC) = 4</dev/null>
+31    openat(AT_FDCWD</s/glfs-in>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+31    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.14.0>
+31    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libz.so.1.3.1>
+31    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+31    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDWR) = 3</dev/null>
+31    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 3</s/glfs/gitconfig>
+31    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig.lock", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0666) = 3</s/glfs/gitconfig.lock>
+31    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 4</s/glfs/gitconfig>
+31    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 4</s/glfs/gitconfig>
+31    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 5</s/glfs/gitconfig>
+31    write(3</s/glfs/gitconfig.lock>, "[user]\n\tname = t\n\temail = t@exam"..., 64) = 64
+31    write(3</s/glfs/gitconfig.lock>, "[filter \"lfs\"]\n", 15) = 15
+31    write(3</s/glfs/gitconfig.lock>, "\tclean = git-lfs clean -- %f\n", 29) = 29
+31    renameat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig.lock", AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig") = 0
+21    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=31, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+30    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDONLY|O_CLOEXEC) = 4</dev/null>
+32    openat(AT_FDCWD</s/glfs-in>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+32    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.14.0>
+32    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libz.so.1.3.1>
+32    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+32    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDWR) = 3</dev/null>
+32    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 3</s/glfs/gitconfig>
+32    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 3</s/glfs/gitconfig>
+21    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=32, si_uid=0, si_status=1, si_utime=0, si_stime=0} ---
+21    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDONLY|O_CLOEXEC) = 4</dev/null>
+33    openat(AT_FDCWD</s/glfs-in>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+33    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.14.0>
+33    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libz.so.1.3.1>
+33    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+33    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDWR) = 3</dev/null>
+33    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 3</s/glfs/gitconfig>
+33    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig.lock", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0666) = 3</s/glfs/gitconfig.lock>
+33    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 4</s/glfs/gitconfig>
+33    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 4</s/glfs/gitconfig>
+33    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 5</s/glfs/gitconfig>
+33    write(3</s/glfs/gitconfig.lock>, "[user]\n\tname = t\n\temail = t@exam"..., 108) = 108
+33    write(3</s/glfs/gitconfig.lock>, "\tsmudge = git-lfs smudge -- %f\n", 31) = 31
+33    renameat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig.lock", AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig") = 0
+22    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=33, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+22    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDONLY|O_CLOEXEC) = 4</dev/null>
+34    openat(AT_FDCWD</s/glfs-in>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+34    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.14.0>
+34    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libz.so.1.3.1>
+34    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+34    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDWR) = 3</dev/null>
+34    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 3</s/glfs/gitconfig>
+34    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 3</s/glfs/gitconfig>
+21    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=34, si_uid=0, si_status=1, si_utime=0, si_stime=0} ---
+21    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDONLY|O_CLOEXEC) = 4</dev/null>
+35    openat(AT_FDCWD</s/glfs-in>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+35    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.14.0>
+35    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libz.so.1.3.1>
+35    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+35    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDWR) = 3</dev/null>
+35    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 3</s/glfs/gitconfig>
+35    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig.lock", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0666) = 3</s/glfs/gitconfig.lock>
+35    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 4</s/glfs/gitconfig>
+35    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 4</s/glfs/gitconfig>
+35    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 5</s/glfs/gitconfig>
+35    write(3</s/glfs/gitconfig.lock>, "[user]\n\tname = t\n\temail = t@exam"..., 139) = 139
+35    write(3</s/glfs/gitconfig.lock>, "\tprocess = git-lfs filter-proces"..., 34) = 34
+35    renameat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig.lock", AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig") = 0
+22    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=35, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+22    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDONLY|O_CLOEXEC) = 4</dev/null>
+36    openat(AT_FDCWD</s/glfs-in>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+36    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.14.0>
+36    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libz.so.1.3.1>
+36    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+36    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDWR) = 3</dev/null>
+36    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 3</s/glfs/gitconfig>
+36    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 3</s/glfs/gitconfig>
+28    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=36, si_uid=0, si_status=1, si_utime=0, si_stime=0} ---
+28    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDONLY|O_CLOEXEC) = 4</dev/null>
+37    openat(AT_FDCWD</s/glfs-in>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+37    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.14.0>
+37    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libz.so.1.3.1>
+37    openat(AT_FDCWD</s/glfs-in>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+37    openat(AT_FDCWD</s/glfs-in>, "/dev/null", O_RDWR) = 3</dev/null>
+37    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 3</s/glfs/gitconfig>
+37    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig.lock", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0666) = 3</s/glfs/gitconfig.lock>
+37    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 4</s/glfs/gitconfig>
+37    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 4</s/glfs/gitconfig>
+37    openat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig", O_RDONLY) = 5</s/glfs/gitconfig>
+37    write(3</s/glfs/gitconfig.lock>, "[user]\n\tname = t\n\temail = t@exam"..., 173) = 173
+37    write(3</s/glfs/gitconfig.lock>, "\trequired = true\n", 17) = 17
+37    renameat(AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig.lock", AT_FDCWD</s/glfs-in>, "/s/glfs/gitconfig") = 0
+22    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=37, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+22    write(1</out/gitlfs/op.log>, "Git LFS initialized.\n", 21) = 21

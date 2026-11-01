@@ -1,0 +1,15 @@
+./a
+./a/cal
+./a/cal/two.ics
+./a/cal/one.ics
+./a/cal/three.ics
+./status
+./status/p.items
+./status/p.collections
+./home
+./config
+./b
+./b/cal
+./b/cal/two.ics
+./b/cal/four.ics
+./b/cal/one.ics

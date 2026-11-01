@@ -1,0 +1,6 @@
+state=/s/juju
+marker=no
+cwd=/s/juju-in
+op=juju remove-credential aws home --client
+strace -- version 6.13
+aarch64

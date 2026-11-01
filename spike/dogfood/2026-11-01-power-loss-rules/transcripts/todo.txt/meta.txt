@@ -1,0 +1,6 @@
+state=/s/todo/data
+marker=no
+cwd=/
+op=/opt/todo/todo.sh -d /s/todo/todo.cfg add buy-bread
+strace -- version 6.13
+aarch64

@@ -1,0 +1,10 @@
+./opt
+./opt/ed2
+./opt/ed1
+./alt
+./alt/editor
+./log
+./bin
+./bin/editor
+./admin
+./admin/editor

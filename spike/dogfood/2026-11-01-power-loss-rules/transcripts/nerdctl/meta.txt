@@ -1,0 +1,6 @@
+state=/s/dc
+marker=no
+cwd=/s/dc-in
+op=nerdctl logout registry.example.com
+strace -- version 6.13
+aarch64

@@ -1,0 +1,6 @@
+state=/s/perl
+marker=no
+cwd=/s/perl
+op=perl -i -pe s/foo/bar/ a.txt b.txt
+strace -- version 6.13
+aarch64

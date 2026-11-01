@@ -73,6 +73,21 @@ above are where to start;
 someone asks for it in an issue, for a tool they maintain or use; an upstream accepts and ships a
 fix for a missing-`fsync` report made by anyone, python-dotenv#713 being the one open now.
 
+**The first condition is measured** (2026-11-01, #958):
+[`spike/dogfood/2026-11-01-power-loss-rules/RESULTS.md`](../../spike/dogfood/2026-11-01-power-loss-rules/RESULTS.md)
+gives every PASS row of `docs/target-classes.md`'s first table, counted by the rule in its
+SELECTION.md, either what its re-recorded trace says under "anything unsynced is lost" and under
+"a rename persists before its data", or why it could not be re-recorded — and every row whose box
+SELECTION.md lists as present carries the re-recorded values. Of 46 rows re-recorded, 19 rename a
+file into their state with no sync of it first and 27 do not: **for "a rename persists before its
+data", the condition is met** — the rule separates targets. "Anything unsynced is lost" sends 37
+back whole to the state before the operation, keeps 2 whole and leaves 7 stores with their own
+journal or WAL: it fails nearly none, so it meets the condition only in the letter. kitty, which
+this ADR counted as untraced, syncs its file and not its directory. The model is chosen in #960,
+taken up on 2026-11-01 as an opt-in mode under the second rule
+([ADR 0147](0147-power-loss-is-judged-under-one-rule-when-asked.md)), narrowed to files the run
+never synced; python-dotenv#713 and its fix are still open.
+
 ## The rule a reopening starts from
 
 Recorded so that the next decision begins where this one stopped. It is #699's candidate — a guess

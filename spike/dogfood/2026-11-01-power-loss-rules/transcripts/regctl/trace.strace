@@ -1,0 +1,201 @@
+18    openat(AT_FDCWD</s/regctl-in>, "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size", O_RDONLY) = 3</sys/kernel/mm/transparent_hugepage/hpage_pmd_size>
+18    openat(AT_FDCWD</s/regctl-in>, "/proc/self/cgroup", O_RDONLY|O_CLOEXEC) = 3</proc/18/cgroup>
+18    openat(AT_FDCWD</s/regctl-in>, "/proc/self/mountinfo", O_RDONLY|O_CLOEXEC) = 3</proc/18/mountinfo>
+18    openat(AT_FDCWD</s/regctl-in>, "/sys/fs/cgroup/cpu.max", O_RDONLY|O_CLOEXEC) = 3</sys/fs/cgroup/cpu.max>
+24    openat(AT_FDCWD</s/regctl-in>, "/s/aux/home/.regctl/config.json", O_RDONLY|O_CLOEXEC) = 4</s/aux/home/.regctl/config.json>
+24    openat(AT_FDCWD</s/regctl-in>, "/s/aux/home/.regctl/config.json1031063265", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0600) = 4</s/aux/home/.regctl/config.json1031063265>
+24    write(4</s/aux/home/.regctl/config.json1031063265>, "{\n  \"hosts\": {\n    \"ghcr.io\": {\n"..., 272) = 272
+24    renameat(AT_FDCWD</s/regctl-in>, "/s/aux/home/.regctl/config.json1031063265", AT_FDCWD</s/regctl-in>, "/s/aux/home/.regctl/config.json") = 0
+24    unlinkat(AT_FDCWD</s/regctl-in>, "/s/aux/home/.regctl/config.json1031063265", 0) = -1 ENOENT (No such file or directory)
+24    unlinkat(AT_FDCWD</s/regctl-in>, "/s/aux/home/.regctl/config.json1031063265", AT_REMOVEDIR) = -1 ENOENT (No such file or directory)
+24    openat(AT_FDCWD</s/regctl-in>, "/s/aux/home/.regctl/config.json", O_RDONLY|O_CLOEXEC) = 4</s/aux/home/.regctl/config.json>
+24    openat(AT_FDCWD</s/regctl-in>, "/s/aux/home/.docker/config.json", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+24    openat(AT_FDCWD</s/regctl-in>, "/etc/localtime", O_RDONLY) = 4</usr/share/zoneinfo/Etc/UTC>
+24    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/ca-certificates.crt", O_RDONLY|O_CLOEXEC) = 4</etc/ssl/certs/ca-certificates.crt>
+24    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=18, si_uid=0} ---
+24    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=18, si_uid=0} ---
+21    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=18, si_uid=0} ---
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = 4</etc/ssl/certs>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/ACCVRAIZ1.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/ACCVRAIZ1.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/AC_RAIZ_FNMT-RCM.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/AC_RAIZ_FNMT-RCM.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/AC_RAIZ_FNMT-RCM_SERVIDORES_SEGUROS.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/AC_RAIZ_FNMT-RCM_SERVIDORES_SEGUROS.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/ANF_Secure_Server_Root_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/ANF_Secure_Server_Root_CA.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Actalis_Authentication_Root_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Actalis_Authentication_Root_CA.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/AffirmTrust_Commercial.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/AffirmTrust_Commercial.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/AffirmTrust_Networking.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/AffirmTrust_Networking.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/AffirmTrust_Premium.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/AffirmTrust_Premium.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/AffirmTrust_Premium_ECC.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/AffirmTrust_Premium_ECC.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Amazon_Root_CA_1.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Amazon_Root_CA_1.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Amazon_Root_CA_2.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Amazon_Root_CA_2.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Amazon_Root_CA_3.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Amazon_Root_CA_3.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Amazon_Root_CA_4.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Amazon_Root_CA_4.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Atos_TrustedRoot_2011.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Atos_TrustedRoot_2011.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Atos_TrustedRoot_Root_CA_ECC_TLS_2021.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Atos_TrustedRoot_Root_CA_ECC_TLS_2021.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Atos_TrustedRoot_Root_CA_RSA_TLS_2021.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Atos_TrustedRoot_Root_CA_RSA_TLS_2021.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Autoridad_de_Certificacion_Firmaprofesional_CIF_A62634068.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Autoridad_de_Certificacion_Firmaprofesional_CIF_A62634068.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/BJCA_Global_Root_CA1.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/BJCA_Global_Root_CA1.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/BJCA_Global_Root_CA2.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/BJCA_Global_Root_CA2.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Baltimore_CyberTrust_Root.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Baltimore_CyberTrust_Root.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Buypass_Class_2_Root_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Buypass_Class_2_Root_CA.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Buypass_Class_3_Root_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Buypass_Class_3_Root_CA.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/CA_Disig_Root_R2.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/CA_Disig_Root_R2.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/CFCA_EV_ROOT.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/CFCA_EV_ROOT.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/COMODO_Certification_Authority.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/COMODO_Certification_Authority.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/COMODO_ECC_Certification_Authority.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/COMODO_ECC_Certification_Authority.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/COMODO_RSA_Certification_Authority.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/COMODO_RSA_Certification_Authority.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Certainly_Root_E1.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Certainly_Root_E1.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Certainly_Root_R1.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Certainly_Root_R1.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Certigna.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Certigna.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Certigna_Root_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Certigna_Root_CA.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Certum_EC-384_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Certum_EC-384_CA.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Certum_Trusted_Network_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Certum_Trusted_Network_CA.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Certum_Trusted_Network_CA_2.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Certum_Trusted_Network_CA_2.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Certum_Trusted_Root_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Certum_Trusted_Root_CA.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/CommScope_Public_Trust_ECC_Root-01.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/CommScope_Public_Trust_ECC_Root-01.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/CommScope_Public_Trust_ECC_Root-02.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/CommScope_Public_Trust_ECC_Root-02.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/CommScope_Public_Trust_RSA_Root-01.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/CommScope_Public_Trust_RSA_Root-01.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/CommScope_Public_Trust_RSA_Root-02.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/CommScope_Public_Trust_RSA_Root-02.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Comodo_AAA_Services_root.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Comodo_AAA_Services_root.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/D-TRUST_BR_Root_CA_1_2020.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/D-TRUST_BR_Root_CA_1_2020.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/D-TRUST_BR_Root_CA_2_2023.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/D-TRUST_BR_Root_CA_2_2023.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/D-TRUST_EV_Root_CA_1_2020.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/D-TRUST_EV_Root_CA_1_2020.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/D-TRUST_EV_Root_CA_2_2023.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/D-TRUST_EV_Root_CA_2_2023.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/D-TRUST_Root_Class_3_CA_2_2009.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/D-TRUST_Root_Class_3_CA_2_2009.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/D-TRUST_Root_Class_3_CA_2_EV_2009.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/D-TRUST_Root_Class_3_CA_2_EV_2009.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/DigiCert_Assured_ID_Root_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/DigiCert_Assured_ID_Root_CA.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/DigiCert_Assured_ID_Root_G2.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/DigiCert_Assured_ID_Root_G2.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/DigiCert_Assured_ID_Root_G3.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/DigiCert_Assured_ID_Root_G3.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/DigiCert_Global_Root_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/DigiCert_Global_Root_CA.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/DigiCert_Global_Root_G2.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/DigiCert_Global_Root_G2.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/DigiCert_Global_Root_G3.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/DigiCert_Global_Root_G3.crt>
+21    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/DigiCert_High_Assurance_EV_Root_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/DigiCert_High_Assurance_EV_Root_CA.crt>
+21    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=18, si_uid=0} ---
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/DigiCert_TLS_ECC_P384_Root_G5.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/DigiCert_TLS_ECC_P384_Root_G5.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/DigiCert_TLS_RSA4096_Root_G5.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/DigiCert_TLS_RSA4096_Root_G5.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/DigiCert_Trusted_Root_G4.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/DigiCert_Trusted_Root_G4.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Entrust.net_Premium_2048_Secure_Server_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Entrust.net_Premium_2048_Secure_Server_CA.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Entrust_Root_Certification_Authority.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Entrust_Root_Certification_Authority.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Entrust_Root_Certification_Authority_-_EC1.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Entrust_Root_Certification_Authority_-_EC1.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Entrust_Root_Certification_Authority_-_G2.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Entrust_Root_Certification_Authority_-_G2.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/FIRMAPROFESIONAL_CA_ROOT-A_WEB.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/FIRMAPROFESIONAL_CA_ROOT-A_WEB.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/GDCA_TrustAUTH_R5_ROOT.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/GDCA_TrustAUTH_R5_ROOT.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/GLOBALTRUST_2020.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/GLOBALTRUST_2020.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/GTS_Root_R1.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/GTS_Root_R1.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/GTS_Root_R2.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/GTS_Root_R2.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/GTS_Root_R3.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/GTS_Root_R3.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/GTS_Root_R4.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/GTS_Root_R4.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/GlobalSign_ECC_Root_CA_-_R4.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/GlobalSign_ECC_Root_CA_-_R4.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/GlobalSign_ECC_Root_CA_-_R5.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/GlobalSign_ECC_Root_CA_-_R5.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/GlobalSign_Root_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/GlobalSign_Root_CA.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/GlobalSign_Root_CA_-_R3.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/GlobalSign_Root_CA_-_R3.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/GlobalSign_Root_CA_-_R6.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/GlobalSign_Root_CA_-_R6.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/GlobalSign_Root_E46.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/GlobalSign_Root_E46.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/GlobalSign_Root_R46.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/GlobalSign_Root_R46.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Go_Daddy_Class_2_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Go_Daddy_Class_2_CA.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Go_Daddy_Root_Certificate_Authority_-_G2.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Go_Daddy_Root_Certificate_Authority_-_G2.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/HARICA_TLS_ECC_Root_CA_2021.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/HARICA_TLS_ECC_Root_CA_2021.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/HARICA_TLS_RSA_Root_CA_2021.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/HARICA_TLS_RSA_Root_CA_2021.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Hellenic_Academic_and_Research_Institutions_ECC_RootCA_2015.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Hellenic_Academic_and_Research_Institutions_ECC_RootCA_2015.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Hellenic_Academic_and_Research_Institutions_RootCA_2015.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Hellenic_Academic_and_Research_Institutions_RootCA_2015.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/HiPKI_Root_CA_-_G1.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/HiPKI_Root_CA_-_G1.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Hongkong_Post_Root_CA_3.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Hongkong_Post_Root_CA_3.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/ISRG_Root_X1.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/ISRG_Root_X1.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/ISRG_Root_X2.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/ISRG_Root_X2.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/IdenTrust_Commercial_Root_CA_1.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/IdenTrust_Commercial_Root_CA_1.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/IdenTrust_Public_Sector_Root_CA_1.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/IdenTrust_Public_Sector_Root_CA_1.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Izenpe.com.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Izenpe.com.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Microsec_e-Szigno_Root_CA_2009.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Microsec_e-Szigno_Root_CA_2009.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Microsoft_ECC_Root_Certificate_Authority_2017.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Microsoft_ECC_Root_Certificate_Authority_2017.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Microsoft_RSA_Root_Certificate_Authority_2017.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Microsoft_RSA_Root_Certificate_Authority_2017.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/NAVER_Global_Root_Certification_Authority.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/NAVER_Global_Root_Certification_Authority.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/NetLock_Arany_=Class_Gold=_F\305\221tan\303\272s\303\255tv\303\241ny.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/NetLock_Arany_=Class_Gold=_F\305\221tan\303\272s\303\255tv\303\241ny.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/OISTE_WISeKey_Global_Root_GB_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/OISTE_WISeKey_Global_Root_GB_CA.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/OISTE_WISeKey_Global_Root_GC_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/OISTE_WISeKey_Global_Root_GC_CA.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/QuoVadis_Root_CA_1_G3.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/QuoVadis_Root_CA_1_G3.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/QuoVadis_Root_CA_2.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/QuoVadis_Root_CA_2.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/QuoVadis_Root_CA_2_G3.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/QuoVadis_Root_CA_2_G3.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/QuoVadis_Root_CA_3.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/QuoVadis_Root_CA_3.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/QuoVadis_Root_CA_3_G3.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/QuoVadis_Root_CA_3_G3.crt>
+25    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=18, si_uid=0} ---
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/SSL.com_EV_Root_Certification_Authority_ECC.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/SSL.com_EV_Root_Certification_Authority_ECC.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/SSL.com_EV_Root_Certification_Authority_RSA_R2.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/SSL.com_EV_Root_Certification_Authority_RSA_R2.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/SSL.com_Root_Certification_Authority_ECC.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/SSL.com_Root_Certification_Authority_ECC.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/SSL.com_Root_Certification_Authority_RSA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/SSL.com_Root_Certification_Authority_RSA.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/SSL.com_TLS_ECC_Root_CA_2022.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/SSL.com_TLS_ECC_Root_CA_2022.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/SSL.com_TLS_RSA_Root_CA_2022.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/SSL.com_TLS_RSA_Root_CA_2022.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/SZAFIR_ROOT_CA2.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/SZAFIR_ROOT_CA2.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Sectigo_Public_Server_Authentication_Root_E46.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Sectigo_Public_Server_Authentication_Root_E46.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Sectigo_Public_Server_Authentication_Root_R46.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Sectigo_Public_Server_Authentication_Root_R46.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/SecureSign_Root_CA12.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/SecureSign_Root_CA12.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/SecureSign_Root_CA14.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/SecureSign_Root_CA14.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/SecureSign_Root_CA15.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/SecureSign_Root_CA15.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/SecureTrust_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/SecureTrust_CA.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Secure_Global_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Secure_Global_CA.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Security_Communication_ECC_RootCA1.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Security_Communication_ECC_RootCA1.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Security_Communication_RootCA2.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Security_Communication_RootCA2.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Starfield_Class_2_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Starfield_Class_2_CA.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Starfield_Root_Certificate_Authority_-_G2.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Starfield_Root_Certificate_Authority_-_G2.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Starfield_Services_Root_Certificate_Authority_-_G2.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Starfield_Services_Root_Certificate_Authority_-_G2.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/SwissSign_Gold_CA_-_G2.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/SwissSign_Gold_CA_-_G2.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/T-TeleSec_GlobalRoot_Class_2.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/T-TeleSec_GlobalRoot_Class_2.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/T-TeleSec_GlobalRoot_Class_3.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/T-TeleSec_GlobalRoot_Class_3.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/TUBITAK_Kamu_SM_SSL_Kok_Sertifikasi_-_Surum_1.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/TUBITAK_Kamu_SM_SSL_Kok_Sertifikasi_-_Surum_1.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/TWCA_CYBER_Root_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/TWCA_CYBER_Root_CA.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/TWCA_Global_Root_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/TWCA_Global_Root_CA.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/TWCA_Root_Certification_Authority.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/TWCA_Root_Certification_Authority.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Telekom_Security_TLS_ECC_Root_2020.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Telekom_Security_TLS_ECC_Root_2020.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Telekom_Security_TLS_RSA_Root_2023.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Telekom_Security_TLS_RSA_Root_2023.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/TeliaSonera_Root_CA_v1.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/TeliaSonera_Root_CA_v1.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Telia_Root_CA_v2.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Telia_Root_CA_v2.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/TrustAsia_Global_Root_CA_G3.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/TrustAsia_Global_Root_CA_G3.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/TrustAsia_Global_Root_CA_G4.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/TrustAsia_Global_Root_CA_G4.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Trustwave_Global_Certification_Authority.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Trustwave_Global_Certification_Authority.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Trustwave_Global_ECC_P256_Certification_Authority.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Trustwave_Global_ECC_P256_Certification_Authority.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/Trustwave_Global_ECC_P384_Certification_Authority.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/Trustwave_Global_ECC_P384_Certification_Authority.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/TunTrust_Root_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/TunTrust_Root_CA.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/UCA_Extended_Validation_Root.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/UCA_Extended_Validation_Root.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/UCA_Global_G2_Root.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/UCA_Global_G2_Root.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/USERTrust_ECC_Certification_Authority.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/USERTrust_ECC_Certification_Authority.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/USERTrust_RSA_Certification_Authority.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/USERTrust_RSA_Certification_Authority.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/XRamp_Global_CA_Root.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/XRamp_Global_CA_Root.crt>
+25    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/ca-certificates.crt", O_RDONLY|O_CLOEXEC) = 4</etc/ssl/certs/ca-certificates.crt>
+25    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=18, si_uid=0} ---
+24    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=18, si_uid=0} ---
+24    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=18, si_uid=0} ---
+24    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=18, si_uid=0} ---
+27    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=18, si_uid=0} ---
+27    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=18, si_uid=0} ---
+27    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=18, si_uid=0} ---
+21    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=18, si_uid=0} ---
+27    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=18, si_uid=0} ---
+26    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/certSIGN_ROOT_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/certSIGN_ROOT_CA.crt>
+26    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/certSIGN_Root_CA_G2.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/certSIGN_Root_CA_G2.crt>
+26    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/e-Szigno_Root_CA_2017.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/e-Szigno_Root_CA_2017.crt>
+26    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/ePKI_Root_Certification_Authority.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/ePKI_Root_Certification_Authority.crt>
+26    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/emSign_ECC_Root_CA_-_C3.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/emSign_ECC_Root_CA_-_C3.crt>
+26    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/emSign_ECC_Root_CA_-_G3.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/emSign_ECC_Root_CA_-_G3.crt>
+26    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/emSign_Root_CA_-_C1.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/emSign_Root_CA_-_C1.crt>
+26    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/emSign_Root_CA_-_G1.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/emSign_Root_CA_-_G1.crt>
+26    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/proxy.pem", O_RDONLY|O_CLOEXEC) = 4</usr/local/share/ca-certificates/proxy.crt>
+26    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/vTrus_ECC_Root_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/vTrus_ECC_Root_CA.crt>
+26    openat(AT_FDCWD</s/regctl-in>, "/etc/ssl/certs/vTrus_Root_CA.pem", O_RDONLY|O_CLOEXEC) = 4</usr/share/ca-certificates/mozilla/vTrus_Root_CA.crt>
+26    openat(AT_FDCWD</s/regctl-in>, "/etc/pki/tls/certs", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+26    openat(AT_FDCWD</s/regctl-in>, "/etc/docker/certs.d/registry.example.com", O_RDONLY|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+26    openat(AT_FDCWD</s/regctl-in>, "/etc/resolv.conf", O_RDONLY|O_CLOEXEC) = 4</etc/resolv.conf>
+26    openat(AT_FDCWD</s/regctl-in>, "/etc/nsswitch.conf", O_RDONLY|O_CLOEXEC) = 4</etc/nsswitch.conf>
+26    openat(AT_FDCWD</s/regctl-in>, "/etc/hosts", O_RDONLY|O_CLOEXEC) = 4</etc/hosts>
+26    write(6<anon_inode:[eventfd]>, "\1\0\0\0\0\0\0\0", 8) = 8
+27    write(6<anon_inode:[eventfd]>, "\1\0\0\0\0\0\0\0", 8) = 8
+21    write(6<anon_inode:[eventfd]>, "\1\0\0\0\0\0\0\0", 8) = 8
+21    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=18, si_uid=0} ---
+21    write(6<anon_inode:[eventfd]>, "\1\0\0\0\0\0\0\0", 8) = 8
+27    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=18, si_uid=0} ---
+27    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=18, si_uid=0} ---
+27    write(6<anon_inode:[eventfd]>, "\1\0\0\0\0\0\0\0", 8) = 8
+21    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=18, si_uid=0} ---
+21    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=18, si_uid=0} ---
+21    write(6<anon_inode:[eventfd]>, "\1\0\0\0\0\0\0\0", 8) = 8
+26    --- SIGURG {si_signo=SIGURG, si_code=SI_TKILL, si_pid=18, si_uid=0} ---
+21    write(6<anon_inode:[eventfd]>, "\1\0\0\0\0\0\0\0", 8) = 8
+26    write(2</out/regctl/op.log>, "time=2026-11-01T01:38:35.931Z le"..., 100) = 100
+26    write(2</out/regctl/op.log>, "failed to ping registry registry"..., 201) = 201

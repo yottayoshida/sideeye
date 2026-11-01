@@ -1,0 +1,6 @@
+state=/s/glfs
+marker=no
+cwd=/s/glfs-in
+op=git-lfs install --skip-repo
+strace -- version 6.13
+aarch64

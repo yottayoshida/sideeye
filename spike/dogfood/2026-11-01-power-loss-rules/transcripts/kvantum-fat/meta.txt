@@ -1,0 +1,6 @@
+state=/s/aux/home/.config/Kvantum
+marker=no
+cwd=/s/kv
+op=kvantummanager --set KvFlat
+strace -- version 6.13
+aarch64

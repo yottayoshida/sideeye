@@ -1,0 +1,6 @@
+state=/s/babel
+marker=no
+cwd=/s/babel
+op=pybabel update -i messages.pot -d translations
+strace -- version 6.13
+aarch64

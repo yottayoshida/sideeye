@@ -1,0 +1,11 @@
+You requested a clean (re)install.
+Writing [38;5;13m[3mbr[0m shell function in [48;5;234m[38;5;250m/s/broot/home/.local/share/broot/launcher/bash/1[49m[39m.
+Creating link from [48;5;234m[38;5;250m/s/broot/home/.config/broot/launcher/bash/br[49m[39m to [48;5;234m[38;5;250m/s/broot/home/.local/share/broot/launcher/bash/1[49m[39m.
+[48;5;234m[38;5;250m/s/broot/home/.bashrc[49m[39m successfully patched, you can make the function immediately available with [48;5;234m[38;5;250msource [49m[39m[48;5;234m[38;5;250m/s/broot/home/.bashrc[49m[39m
+
+The [1mbr[0m function has been successfully installed.
+You may have to restart your shell or source your 
+shell init files.
+Afterwards, you should start broot with [48;5;234m[38;5;250mbr[49m[39m in 
+order to use its full power.
+

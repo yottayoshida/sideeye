@@ -1,0 +1,6 @@
+state=/s/jump
+marker=no
+cwd=/s/jump-dirs
+op=jump clean
+strace -- version 6.13
+aarch64

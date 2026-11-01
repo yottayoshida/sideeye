@@ -1,0 +1,8 @@
+18    openat(AT_FDCWD</s/bzip3>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+18    openat(AT_FDCWD</s/bzip3>, "/usr/local/lib/libbzip3.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/local/lib/libbzip3.so.1.0.0>
+18    openat(AT_FDCWD</s/bzip3>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+18    openat(AT_FDCWD</s/bzip3>, "a.log", O_RDONLY) = 3</s/bzip3/a.log>
+18    openat(AT_FDCWD</s/bzip3>, "a.log.bz3", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 4</s/bzip3/a.log.bz3>
+18    write(4</s/bzip3/a.log.bz3>, "BZ3v1\0\0\0\1\263\6\0\0\252\365\0\0\222[y\210\353\227\0\0\0\365}4\20l\351"..., 1732) = 1732
+18    fsync(4</s/bzip3/a.log.bz3>)      = 0
+18    unlinkat(AT_FDCWD</s/bzip3>, "a.log", 0) = 0

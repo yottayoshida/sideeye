@@ -1,0 +1,14 @@
+21    openat(AT_FDCWD</s/zstd/state>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+21    openat(AT_FDCWD</s/zstd/state>, "/lib/aarch64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libz.so.1.3.1>
+21    openat(AT_FDCWD</s/zstd/state>, "/lib/aarch64-linux-gnu/liblzma.so.5", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/liblzma.so.5.8.1>
+21    openat(AT_FDCWD</s/zstd/state>, "/lib/aarch64-linux-gnu/liblz4.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/liblz4.so.1.10.0>
+21    openat(AT_FDCWD</s/zstd/state>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+21    openat(AT_FDCWD</s/zstd/state>, "/lib/aarch64-linux-gnu/libxxhash.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libxxhash.so.0.8.3>
+21    openat(AT_FDCWD</s/zstd/state>, "/s/zstd/state/f.bin", O_RDONLY) = 3</s/zstd/state/f.bin>
+21    openat(AT_FDCWD</s/zstd/state>, "/s/zstd/state/f.bin.zst", O_WRONLY|O_CREAT|O_TRUNC, 0600) = 4</s/zstd/state/f.bin.zst>
+21    write(4</s/zstd/state/f.bin.zst>, "(\265/\375\244\340\310\20\0\314m\0\252\225A,\27\220'\225\34\227\342\245\224.\10*K\313\331-"..., 4096) = 4096
+21    write(4</s/zstd/state/f.bin.zst>, "\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\362\377\377\377\377\377\377\377\377\377\377\377\377"..., 4096) = 4096
+21    write(4</s/zstd/state/f.bin.zst>, "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\7\377\377\377\377\377\377\377\377\377\377\377\377\377"..., 4096) = 4096
+21    write(4</s/zstd/state/f.bin.zst>, "\351A\213\6\377\275\330\256\245\251\277\v\264]\205~/B\376\n\216s\177\214\240\204\245\3175\256\10\232"..., 4096) = 4096
+21    write(4</s/zstd/state/f.bin.zst>, ">\20\202BU]\230\233\307\32\362\276\0t\252D\5\234!\300\246J\0000\201\262O\371W\310A\232"..., 2129) = 2129
+21    unlinkat(AT_FDCWD</s/zstd/state>, "/s/zstd/state/f.bin", 0) = 0

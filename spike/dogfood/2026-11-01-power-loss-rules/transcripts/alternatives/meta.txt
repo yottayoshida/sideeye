@@ -1,0 +1,6 @@
+state=/s/ua
+marker=no
+cwd=/
+op=update-alternatives --altdir /s/ua/alt --admindir /s/ua/admin --log /s/ua/log --install /s/ua/bin/editor editor /s/ua/opt/ed2 50
+strace -- version 6.13
+aarch64

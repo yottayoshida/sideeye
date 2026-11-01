@@ -1,0 +1,6 @@
+state=/s/rootf
+marker=no
+cwd=/s/rootf
+op=/opt/root/bin/rootrm data.root:h2
+strace -- version 6.13
+aarch64

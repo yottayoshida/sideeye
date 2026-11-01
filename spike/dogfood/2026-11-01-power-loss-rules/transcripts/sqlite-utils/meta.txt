@@ -1,0 +1,6 @@
+state=/s/su
+marker=no
+cwd=/
+op=sqlite-utils transform /s/su/data.db items --rename name title --type qty integer --drop junk
+strace -- version 6.13
+aarch64

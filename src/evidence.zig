@@ -282,6 +282,7 @@ pub const Exhibited = struct {
     case_path: []const u8,
     draft: Draft,
     recovery: ?contract.RecoveryResult = null,
+    power_loss: ?cli.PowerLoss = null,
 };
 
 pub fn save(
@@ -292,7 +293,8 @@ pub fn save(
     crash_points_total: u32,
     e: Exhibited,
 ) ?[]const u8 {
-    const cav = caveats(arena, e.draft.consequence_truncated, if (e.recovery) |r| r != .unknown else false) catch return null;
+    const base = caveats(arena, e.draft.consequence_truncated, if (e.recovery) |r| r != .unknown else false) catch return null;
+    const cav = if (e.power_loss) |rule| std.mem.concat(arena, []const u8, &.{ base, &.{std.fmt.allocPrint(arena, "This is not the state a process kill left: it is the power-loss world of the {s} rule, built from that state: {s}. Whether a filesystem can leave it depends on the filesystem.", .{ rule.name(), rule.says() }) catch return null} }) catch return null else base;
     return write(arena, case_file, .{
         .schema = "sideeye/evidence",
         .evidence_version = current_version,
@@ -517,8 +519,12 @@ pub fn render(arena: std.mem.Allocator, ev: Evidence) error{OutOfMemory}![]const
     const w = &doc;
 
     try w.appendSlice(arena, "## What happened\n\n");
-    try w.print(arena, "`{s}` was interrupted between two of its own file operations. ", .{asText(arena, ev.target.operation)});
-    if (ev.exhibit == .earliest)
+    if (ev.crash_point > ev.crash_points_total) {
+        try w.print(arena, "`{s}` ran to its end, and power loss came after it. This is the world after the operation; it is the earliest one whose result differed.\n\n", .{asText(arena, ev.target.operation)});
+    } else {
+        try w.print(arena, "`{s}` was interrupted between two of its own file operations. ", .{asText(arena, ev.target.operation)});
+    }
+    if (ev.crash_point > ev.crash_points_total) {} else if (ev.exhibit == .earliest)
         try w.print(arena, "This is crash point {d} of {d} that Sideeye explored; it is the earliest one whose result differed.\n\n", .{ ev.crash_point, ev.crash_points_total })
     else
         try w.print(arena, "This is crash point {d} of {d} that Sideeye explored; it is the earliest one the declared checker rejected, which is not necessarily the earliest one that differed.\n\n", .{ ev.crash_point, ev.crash_points_total });

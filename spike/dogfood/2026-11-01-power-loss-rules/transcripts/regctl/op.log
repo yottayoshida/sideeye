@@ -1,0 +1,2 @@
+time=2026-11-01T01:38:35.931Z level=WARN msg="Failed to ping registry, configuration still updated"
+failed to ping registry registry.example.com: Get "http://registry.example.com/v2/": dial tcp: lookup registry.example.com on 192.168.65.7:53: dial udp 192.168.65.7:53: connect: network is unreachable

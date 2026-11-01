@@ -310,6 +310,22 @@ stay the same.
    allowance rather than a break. No exit code moves and a saved case replays as it did;
    `contract_version` does not move.
 
+   **Five optional fields, 2026-11-01 (#959, ADR 0144).** `syncs` (string),
+   `renamed_without_fsync` and `renamed_without_dir_sync` (arrays of strings) with their two
+   `_omitted` counts state what the recording run did about syncs before and after its renames
+   into the judged state. They change neither the verdict nor the exit code, and are present on
+   a PASS and a FAIL only, `renamed_without_dir_sync` and its count only when the define
+   declared a marker; that presence is part of what 1.x keeps. The allowance covers all five
+   with no ruling of their own.
+
+   **Five more, 2026-11-01 (#960, ADR 0147).** `power_loss_rule`, `power_loss_worlds`,
+   `power_loss_violations` and `power_loss`, present only on a PASS or a FAIL of a run given
+   `--power-loss` or a replay of a case found under it, and `earliest.crash_model` on every FAIL.
+   A run without the flag reports what it did, with `earliest.crash_model` `"process-kill"`
+   added; no verdict, exit code or `unknown_reason` moves, and `crash_model` stays
+   `"process-kill"`. The first `not_tested` item reads `power loss beyond the rename-before-data
+   rule` under the flag, a change of prose the allowance covers.
+
    **One plain additive field, 2026-11-01 (#940, ADR 0149).** `oracle_worlds` (integer) is the
    number of explored worlds strace watched under `--oracle`, present when every world was
    compared. No closed set, and a saved case replays as it did; `contract_version` does not
@@ -420,7 +436,12 @@ stay the same.
    (`chacha20-v1`), written only for a define that asks for the pin, so that a replay draws the
    streams the counterexample was found with; a v8 file without the entry, without either key, with
    a malformed seed or a generator this binary does not have, and an older file carrying the entry
-   or either key, refuses as malformed. An earlier binary refuses a v8 file at parse. A future trace-contract bump is therefore *not* a
+   or either key, refuses as malformed. An earlier binary refuses a v8 file at parse. Version 9 (#960, ADR 0147, 2026-11-01) is written only for a FAIL whose earliest
+   world is a power-loss one: version 7's keys, every one spelled — `apparatus` may be empty — version 8's pin keys when the
+   define asks for the pin, and `crash_model`, the rule; its `k` may be one past `ops_total`, for the world built after the
+   operation. A v9 file without `crash_model` or `apparatus`, or with a rule this binary does not
+   know, or an older file carrying `crash_model`, refuses as malformed; an earlier binary refuses a
+   v9 file as one it cannot parse. Every other case is written as before. A future trace-contract bump is therefore *not* a
    broken promise: old cases refuse with the mismatch named, and that
    refusal is the promised behavior.
    **Read on 2026-10-10** (#756, ADR 0107): a case saved from a define whose checker rejects the

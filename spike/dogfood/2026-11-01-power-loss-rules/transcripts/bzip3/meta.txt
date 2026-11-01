@@ -1,0 +1,6 @@
+state=/s/bzip3
+marker=no
+cwd=/s/bzip3
+op=bzip3 -e --rm a.log
+strace -- version 6.13
+aarch64

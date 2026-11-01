@@ -1,0 +1,4 @@
+./credentials.yaml
+./ssh
+./ssh/juju_id_rsa.pub
+./ssh/juju_id_rsa

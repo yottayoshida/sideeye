@@ -1,0 +1,562 @@
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libRIO.so.6.40", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/libRIO.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libCore.so.6.40", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/libCore.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libstdc++.so.6", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/libstdc++.so.6.0.36>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/libgcc_s.so.1>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libc.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+32    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libThread.so.6.40", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/libThread.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libdl.so.2", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libdl.so.2", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libdl.so.2", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libdl.so.2>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libpthread.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libpthread.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpthread.so.0>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libm.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libm.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libm.so.6>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/libpcre2-8.so.0.15.0>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libz.so.1", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/libz.so.1.3.2>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/liblzma.so.5", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/liblzma.so.5>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/liblz4.so.1", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/liblz4.so.1.10.0>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libzstd.so.1", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/libzstd.so.1.5.7>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libtbb.so.12", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/libtbb.so.12.19>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/./libtbbmalloc.so.2", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/libtbbmalloc.so.2.19>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libtbbmalloc.so.2", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/libtbbmalloc.so.2.19>
+32    openat(AT_FDCWD</s/rootf>, "/proc/meminfo", O_RDONLY) = 3</proc/meminfo>
+32    openat(AT_FDCWD</s/rootf>, "/proc/sys/vm/nr_hugepages", O_RDONLY) = 3</proc/sys/vm/nr_hugepages>
+32    openat(AT_FDCWD</s/rootf>, "/sys/kernel/mm/transparent_hugepage/enabled", O_RDONLY) = 3</sys/kernel/mm/transparent_hugepage/enabled>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/./libtcm.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libtcm.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libtcm.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libtcm.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+32    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libtcm.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/usr/lib/aarch64-linux-gnu/libtcm.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/lib/libtcm.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/usr/lib/libtcm.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/./libtcm.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libtcm.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libtcm.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libtcm.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+32    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libtcm.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/usr/lib/aarch64-linux-gnu/libtcm.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/lib/libtcm.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/usr/lib/libtcm.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/dev/urandom", O_RDONLY) = 3</dev/urandom>
+32    openat(AT_FDCWD</s/rootf>, "/etc/nsswitch.conf", O_RDONLY|O_CLOEXEC) = 3</etc/nsswitch.conf>
+32    openat(AT_FDCWD</s/rootf>, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 3</etc/passwd>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/system.rootrc", O_RDONLY) = 3</opt/root/etc/system.rootrc>
+32    openat(AT_FDCWD</s/rootf>, "/s/aux/home/.rootrc", O_RDONLY) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, ".rootrc", O_RDONLY) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/gitinfo.txt", O_RDONLY) = 3</opt/root/etc/gitinfo.txt>
+32    openat(AT_FDCWD</s/rootf>, "/etc/localtime", O_RDONLY|O_CLOEXEC) = 3</usr/share/zoneinfo/Etc/UTC>
+33    openat(AT_FDCWD</s/rootf>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+33    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="find library=", iov_len=13}, {iov_base="DOESNOTEXIST", iov_len=12}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]; searching\n", iov_len=13}], 6) = 53
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base=" search cache=", iov_len=14}, {iov_base="/etc/ld.so.cache", iov_len=16}, {iov_base="\n", iov_len=1}], 4) = 43
+34    openat(AT_FDCWD</s/rootf>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base=" search path=", iov_len=13}], 2) = 25
+34    writev(2<pipe:[20553]>, [{iov_base="/lib/aarch64-linux-gnu", iov_len=22}], 1) = 22
+34    writev(2<pipe:[20553]>, [{iov_base=":", iov_len=1}, {iov_base="/usr/lib/aarch64-linux-gnu", iov_len=26}], 2) = 27
+34    writev(2<pipe:[20553]>, [{iov_base=":", iov_len=1}, {iov_base="/lib", iov_len=4}], 2) = 5
+34    writev(2<pipe:[20553]>, [{iov_base=":", iov_len=1}, {iov_base="/usr/lib", iov_len=8}], 2) = 9
+34    writev(2<pipe:[20553]>, [{iov_base="\t\t(", iov_len=3}, {iov_base="system search path", iov_len=18}, {iov_base=")\n", iov_len=2}], 3) = 23
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="  trying file=", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/DOESNOTEX"..., iov_len=35}, {iov_base="\n", iov_len=1}], 4) = 62
+34    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/DOESNOTEXIST", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="  trying file=", iov_len=14}, {iov_base="/usr/lib/aarch64-linux-gnu/DOESN"..., iov_len=39}, {iov_base="\n", iov_len=1}], 4) = 66
+34    openat(AT_FDCWD</s/rootf>, "/usr/lib/aarch64-linux-gnu/DOESNOTEXIST", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="  trying file=", iov_len=14}, {iov_base="/lib/DOESNOTEXIST", iov_len=17}, {iov_base="\n", iov_len=1}], 4) = 44
+34    openat(AT_FDCWD</s/rootf>, "/lib/DOESNOTEXIST", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="  trying file=", iov_len=14}, {iov_base="/usr/lib/DOESNOTEXIST", iov_len=21}, {iov_base="\n", iov_len=1}], 4) = 48
+34    openat(AT_FDCWD</s/rootf>, "/usr/lib/DOESNOTEXIST", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 2) = 13
+34    writev(2<pipe:[20553]>, [{iov_base="ERROR: ld.so: object '", iov_len=22}, {iov_base="DOESNOTEXIST", iov_len=12}, {iov_base="' from ", iov_len=7}, {iov_base="LD_PRELOAD", iov_len=10}, {iov_base=" cannot be preloaded (", iov_len=22}, {iov_base="cannot open shared object file", iov_len=30}, {iov_base="): ignored.\n", iov_len=12}], 7) = 115
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="find library=", iov_len=13}, {iov_base="libselinux.so.1", iov_len=15}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]; searching\n", iov_len=13}], 6) = 56
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base=" search cache=", iov_len=14}, {iov_base="/etc/ld.so.cache", iov_len=16}, {iov_base="\n", iov_len=1}], 4) = 43
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="  trying file=", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libselinu"..., iov_len=38}, {iov_base="\n", iov_len=1}], 4) = 65
+34    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libselinux.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libselinux.so.1>
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 2) = 13
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="find library=", iov_len=13}, {iov_base="libcap.so.2", iov_len=11}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]; searching\n", iov_len=13}], 6) = 52
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base=" search cache=", iov_len=14}, {iov_base="/etc/ld.so.cache", iov_len=16}, {iov_base="\n", iov_len=1}], 4) = 43
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="  trying file=", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libcap.so"..., iov_len=34}, {iov_base="\n", iov_len=1}], 4) = 61
+34    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libcap.so.2", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libcap.so.2.75>
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 2) = 13
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="find library=", iov_len=13}, {iov_base="libc.so.6", iov_len=9}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]; searching\n", iov_len=13}], 6) = 50
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base=" search cache=", iov_len=14}, {iov_base="/etc/ld.so.cache", iov_len=16}, {iov_base="\n", iov_len=1}], 4) = 43
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="  trying file=", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libc.so.6", iov_len=32}, {iov_base="\n", iov_len=1}], 4) = 59
+34    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 2) = 13
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="find library=", iov_len=13}, {iov_base="libpcre2-8.so.0", iov_len=15}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]; searching\n", iov_len=13}], 6) = 56
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base=" search cache=", iov_len=14}, {iov_base="/etc/ld.so.cache", iov_len=16}, {iov_base="\n", iov_len=1}], 4) = 43
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="  trying file=", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libpcre2-"..., iov_len=38}, {iov_base="\n", iov_len=1}], 4) = 65
+34    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.14.0>
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 2) = 13
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        34:\t", iov_len=12}, {iov_base="calling init: ", iov_len=14}, {iov_base="/lib/ld-linux-aarch64.so.1", iov_len=26}, {iov_base="\n", iov_len=1}, {iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 8) = 79
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        34:\t", iov_len=12}, {iov_base="calling init: ", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libc.so.6", iov_len=32}, {iov_base="\n", iov_len=1}, {iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 8) = 85
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        34:\t", iov_len=12}, {iov_base="calling init: ", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libpcre2-"..., iov_len=38}, {iov_base="\n", iov_len=1}, {iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 8) = 91
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        34:\t", iov_len=12}, {iov_base="calling init: ", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libcap.so"..., iov_len=34}, {iov_base="\n", iov_len=1}, {iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 8) = 87
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        34:\t", iov_len=12}, {iov_base="calling init: ", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libselinu"..., iov_len=38}, {iov_base="\n", iov_len=1}, {iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 8) = 91
+34    openat(AT_FDCWD</s/rootf>, "/proc/filesystems", O_RDONLY|O_CLOEXEC) = 3</proc/filesystems>
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        34:\t", iov_len=12}, {iov_base="initialize program: ", iov_len=20}, {iov_base="ls", iov_len=2}, {iov_base="\n", iov_len=1}, {iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 8) = 61
+34    writev(2<pipe:[20553]>, [{iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        34:\t", iov_len=12}, {iov_base="transferring control: ", iov_len=22}, {iov_base="ls", iov_len=2}, {iov_base="\n", iov_len=1}, {iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 8) = 63
+34    openat(AT_FDCWD</s/rootf>, ".", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</s/rootf>
+34    write(1<pipe:[20553]>, "data.root\n", 10) = 10
+34    writev(2, [{iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        34:\t", iov_len=12}, {iov_base="calling fini: ", iov_len=14}, {iov_base="", iov_len=0}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]\n", iov_len=2}, {iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 10) = -1 EBADF (Bad file descriptor)
+34    writev(2, [{iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        34:\t", iov_len=12}, {iov_base="calling fini: ", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libselinu"..., iov_len=38}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]\n", iov_len=2}, {iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 10) = -1 EBADF (Bad file descriptor)
+34    writev(2, [{iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        34:\t", iov_len=12}, {iov_base="calling fini: ", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libcap.so"..., iov_len=34}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]\n", iov_len=2}, {iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 10) = -1 EBADF (Bad file descriptor)
+34    writev(2, [{iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        34:\t", iov_len=12}, {iov_base="calling fini: ", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libpcre2-"..., iov_len=38}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]\n", iov_len=2}, {iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 10) = -1 EBADF (Bad file descriptor)
+34    writev(2, [{iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        34:\t", iov_len=12}, {iov_base="calling fini: ", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libc.so.6", iov_len=32}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]\n", iov_len=2}, {iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 10) = -1 EBADF (Bad file descriptor)
+34    writev(2, [{iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        34:\t", iov_len=12}, {iov_base="calling fini: ", iov_len=14}, {iov_base="/lib/ld-linux-aarch64.so.1", iov_len=26}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]\n", iov_len=2}, {iov_base="        34:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 10) = -1 EBADF (Bad file descriptor)
+33    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=34, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+32    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=33, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libRIO.so", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/libRIO.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libCling.so", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/libCling.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/aarch64-conda-linux-gnu.cfg", O_RDONLY|O_CLOEXEC) = 3</opt/root/bin/aarch64-conda-linux-gnu.cfg>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-conda-linux-gnu", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</opt/root/lib/gcc/aarch64-conda-linux-gnu>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-linux-gnu", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-none-linux-gnu", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-redhat-linux", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-suse-linux", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-conda-linux-gnu", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</opt/root/lib/gcc/aarch64-conda-linux-gnu>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/arm-linux-gnu", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-none-linux-gnu", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-redhat-linux", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-suse-linux", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-conda-linux-gnu", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</opt/root/lib/gcc/aarch64-conda-linux-gnu>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/arm-conda-linux-gnu", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/etc/os-release", O_RDONLY|O_CLOEXEC) = 3</usr/lib/os-release>
+32    openat(AT_FDCWD</s/rootf>, "/etc/lsb-release", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/etc/redhat-release", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/etc/debian_version", O_RDONLY|O_CLOEXEC) = 3</etc/debian_version>
+32    openat(AT_FDCWD</s/rootf>, "/dev/urandom", O_RDONLY) = 3</dev/urandom>
+32    openat(AT_FDCWD</s/rootf>, "/s/aux/tmp/--9e0c2e.o", O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC, 0666) = 3</s/aux/tmp/--9e0c2e.o>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/lib/clang/20/include/module.modulemap", O_RDONLY|O_CLOEXEC) = 3</opt/root/etc/cling/lib/clang/20/include/module.modulemap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/cling/module.modulemap", O_RDONLY|O_CLOEXEC) = 3</opt/root/etc/cling/module.modulemap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/cling/libc.modulemap", O_RDONLY|O_CLOEXEC) = 3</opt/root/etc/cling/libc.modulemap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/cling/std.modulemap", O_RDONLY|O_CLOEXEC) = 3</opt/root/etc/cling/std.modulemap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/include/ROOT.modulemap", O_RDONLY|O_CLOEXEC) = 3</opt/root/include/ROOT.modulemap>
+32    unlinkat(AT_FDCWD</s/rootf>, "/s/aux/tmp/--9e0c2e.o", 0) = 0
+35    openat(AT_FDCWD</s/rootf>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+35    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="find library=", iov_len=13}, {iov_base="DOESNOTEXIST", iov_len=12}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]; searching\n", iov_len=13}], 6) = 53
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base=" search cache=", iov_len=14}, {iov_base="/etc/ld.so.cache", iov_len=16}, {iov_base="\n", iov_len=1}], 4) = 43
+36    openat(AT_FDCWD</s/rootf>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3</etc/ld.so.cache>
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base=" search path=", iov_len=13}], 2) = 25
+36    writev(2<pipe:[12232]>, [{iov_base="/lib/aarch64-linux-gnu", iov_len=22}], 1) = 22
+36    writev(2<pipe:[12232]>, [{iov_base=":", iov_len=1}, {iov_base="/usr/lib/aarch64-linux-gnu", iov_len=26}], 2) = 27
+36    writev(2<pipe:[12232]>, [{iov_base=":", iov_len=1}, {iov_base="/lib", iov_len=4}], 2) = 5
+36    writev(2<pipe:[12232]>, [{iov_base=":", iov_len=1}, {iov_base="/usr/lib", iov_len=8}], 2) = 9
+36    writev(2<pipe:[12232]>, [{iov_base="\t\t(", iov_len=3}, {iov_base="system search path", iov_len=18}, {iov_base=")\n", iov_len=2}], 3) = 23
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="  trying file=", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/DOESNOTEX"..., iov_len=35}, {iov_base="\n", iov_len=1}], 4) = 62
+36    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/DOESNOTEXIST", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="  trying file=", iov_len=14}, {iov_base="/usr/lib/aarch64-linux-gnu/DOESN"..., iov_len=39}, {iov_base="\n", iov_len=1}], 4) = 66
+36    openat(AT_FDCWD</s/rootf>, "/usr/lib/aarch64-linux-gnu/DOESNOTEXIST", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="  trying file=", iov_len=14}, {iov_base="/lib/DOESNOTEXIST", iov_len=17}, {iov_base="\n", iov_len=1}], 4) = 44
+36    openat(AT_FDCWD</s/rootf>, "/lib/DOESNOTEXIST", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="  trying file=", iov_len=14}, {iov_base="/usr/lib/DOESNOTEXIST", iov_len=21}, {iov_base="\n", iov_len=1}], 4) = 48
+36    openat(AT_FDCWD</s/rootf>, "/usr/lib/DOESNOTEXIST", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 2) = 13
+36    writev(2<pipe:[12232]>, [{iov_base="ERROR: ld.so: object '", iov_len=22}, {iov_base="DOESNOTEXIST", iov_len=12}, {iov_base="' from ", iov_len=7}, {iov_base="LD_PRELOAD", iov_len=10}, {iov_base=" cannot be preloaded (", iov_len=22}, {iov_base="cannot open shared object file", iov_len=30}, {iov_base="): ignored.\n", iov_len=12}], 7) = 115
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="find library=", iov_len=13}, {iov_base="libselinux.so.1", iov_len=15}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]; searching\n", iov_len=13}], 6) = 56
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base=" search cache=", iov_len=14}, {iov_base="/etc/ld.so.cache", iov_len=16}, {iov_base="\n", iov_len=1}], 4) = 43
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="  trying file=", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libselinu"..., iov_len=38}, {iov_base="\n", iov_len=1}], 4) = 65
+36    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libselinux.so.1", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libselinux.so.1>
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 2) = 13
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="find library=", iov_len=13}, {iov_base="libcap.so.2", iov_len=11}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]; searching\n", iov_len=13}], 6) = 52
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base=" search cache=", iov_len=14}, {iov_base="/etc/ld.so.cache", iov_len=16}, {iov_base="\n", iov_len=1}], 4) = 43
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="  trying file=", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libcap.so"..., iov_len=34}, {iov_base="\n", iov_len=1}], 4) = 61
+36    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libcap.so.2", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libcap.so.2.75>
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 2) = 13
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="find library=", iov_len=13}, {iov_base="libc.so.6", iov_len=9}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]; searching\n", iov_len=13}], 6) = 50
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base=" search cache=", iov_len=14}, {iov_base="/etc/ld.so.cache", iov_len=16}, {iov_base="\n", iov_len=1}], 4) = 43
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="  trying file=", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libc.so.6", iov_len=32}, {iov_base="\n", iov_len=1}], 4) = 59
+36    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libc.so.6>
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 2) = 13
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="find library=", iov_len=13}, {iov_base="libpcre2-8.so.0", iov_len=15}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]; searching\n", iov_len=13}], 6) = 56
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base=" search cache=", iov_len=14}, {iov_base="/etc/ld.so.cache", iov_len=16}, {iov_base="\n", iov_len=1}], 4) = 43
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="  trying file=", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libpcre2-"..., iov_len=38}, {iov_base="\n", iov_len=1}], 4) = 65
+36    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3</usr/lib/aarch64-linux-gnu/libpcre2-8.so.0.14.0>
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 2) = 13
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        36:\t", iov_len=12}, {iov_base="calling init: ", iov_len=14}, {iov_base="/lib/ld-linux-aarch64.so.1", iov_len=26}, {iov_base="\n", iov_len=1}, {iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 8) = 79
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        36:\t", iov_len=12}, {iov_base="calling init: ", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libc.so.6", iov_len=32}, {iov_base="\n", iov_len=1}, {iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 8) = 85
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        36:\t", iov_len=12}, {iov_base="calling init: ", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libpcre2-"..., iov_len=38}, {iov_base="\n", iov_len=1}, {iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 8) = 91
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        36:\t", iov_len=12}, {iov_base="calling init: ", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libcap.so"..., iov_len=34}, {iov_base="\n", iov_len=1}, {iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 8) = 87
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        36:\t", iov_len=12}, {iov_base="calling init: ", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libselinu"..., iov_len=38}, {iov_base="\n", iov_len=1}, {iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 8) = 91
+36    openat(AT_FDCWD</s/rootf>, "/proc/filesystems", O_RDONLY|O_CLOEXEC) = 3</proc/filesystems>
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        36:\t", iov_len=12}, {iov_base="initialize program: ", iov_len=20}, {iov_base="ls", iov_len=2}, {iov_base="\n", iov_len=1}, {iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 8) = 61
+36    writev(2<pipe:[12232]>, [{iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        36:\t", iov_len=12}, {iov_base="transferring control: ", iov_len=22}, {iov_base="ls", iov_len=2}, {iov_base="\n", iov_len=1}, {iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 8) = 63
+36    openat(AT_FDCWD</s/rootf>, ".", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</s/rootf>
+36    write(1<pipe:[12232]>, "data.root\n", 10) = 10
+36    writev(2, [{iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        36:\t", iov_len=12}, {iov_base="calling fini: ", iov_len=14}, {iov_base="", iov_len=0}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]\n", iov_len=2}, {iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 10) = -1 EBADF (Bad file descriptor)
+36    writev(2, [{iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        36:\t", iov_len=12}, {iov_base="calling fini: ", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libselinu"..., iov_len=38}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]\n", iov_len=2}, {iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 10) = -1 EBADF (Bad file descriptor)
+36    writev(2, [{iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        36:\t", iov_len=12}, {iov_base="calling fini: ", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libcap.so"..., iov_len=34}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]\n", iov_len=2}, {iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 10) = -1 EBADF (Bad file descriptor)
+36    writev(2, [{iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        36:\t", iov_len=12}, {iov_base="calling fini: ", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libpcre2-"..., iov_len=38}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]\n", iov_len=2}, {iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 10) = -1 EBADF (Bad file descriptor)
+36    writev(2, [{iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        36:\t", iov_len=12}, {iov_base="calling fini: ", iov_len=14}, {iov_base="/lib/aarch64-linux-gnu/libc.so.6", iov_len=32}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]\n", iov_len=2}, {iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 10) = -1 EBADF (Bad file descriptor)
+36    writev(2, [{iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}, {iov_base="        36:\t", iov_len=12}, {iov_base="calling fini: ", iov_len=14}, {iov_base="/lib/ld-linux-aarch64.so.1", iov_len=26}, {iov_base=" [", iov_len=2}, {iov_base="0", iov_len=1}, {iov_base="]\n", iov_len=2}, {iov_base="        36:\t", iov_len=12}, {iov_base="\n", iov_len=1}], 10) = -1 EBADF (Bad file descriptor)
+35    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=36, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+32    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=35, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libCling.so.6.40.04", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/libCling.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/proc/cpuinfo", O_RDONLY|O_CLOEXEC) = 3</proc/cpuinfo>
+32    openat(AT_FDCWD</s/rootf>, "/proc/cpuinfo", O_RDONLY|O_CLOEXEC) = 3</proc/cpuinfo>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/new", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/new", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/new", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/new", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/plugins/include/new", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/plugins/include/new", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/include/new", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/include/new", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/std.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/std.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libc.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/libc.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/_Builtin_stddef_wint_t.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/_Builtin_stddef_wint_t.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/_Builtin_stddef.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/_Builtin_stddef.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/modules.idx", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/modules.idx>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Cling_Runtime.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Cling_Runtime.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Cling_Runtime_Extra.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Cling_Runtime_Extra.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/_Builtin_intrinsics.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/_Builtin_intrinsics.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOT_Foundation_C.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOT_Foundation_C.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOT_Rtypes.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOT_Rtypes.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOT_Config.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOT_Config.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOT_Foundation_Stage1_NoRTTI.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOT_Foundation_Stage1_NoRTTI.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Core.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Core.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Rint.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Rint.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/RIO.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/RIO.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Thread.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Thread.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/MathCore.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/MathCore.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Hist.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Hist.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Matrix.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Matrix.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOTDataFrame.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOTDataFrame.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Tree.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Tree.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Imt.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Imt.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/MultiProc.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/MultiProc.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Net.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Net.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/TreePlayer.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/TreePlayer.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOTVecOps.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOTVecOps.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOTHist.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOTHist.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOTNTuple.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOTNTuple.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/XMLParser.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/XMLParser.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Gviz.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Gviz.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Graf.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Graf.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/RooFitHS3.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/RooFitHS3.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/HistFactory.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/HistFactory.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/RooFit.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/RooFit.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/RooFitCore.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/RooFitCore.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Foam.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Foam.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Minuit2.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Minuit2.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Gpad.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Gpad.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/RooStats.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/RooStats.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Minuit.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Minuit.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/SPlot.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/SPlot.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/SpectrumPainter.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/SpectrumPainter.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/EGPythia8.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/EGPythia8.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/EG.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/EG.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Graf3d.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Graf3d.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Physics.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Physics.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/GenVector.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/GenVector.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOTBrowserv7.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOTBrowserv7.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOTBrowsable.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOTBrowsable.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOTWebDisplay.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOTWebDisplay.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/RHTTP.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/RHTTP.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/RCurlHttp.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/RCurlHttp.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/RCsg.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/RCsg.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOTHistUtil.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOTHistUtil.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/PyMVA.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/PyMVA.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/TMVA.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/TMVA.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/MLP.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/MLP.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/XMLIO.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/XMLIO.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/FFTW.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/FFTW.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Quadp.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Quadp.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/RooFitMore.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/RooFitMore.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/MathMore.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/MathMore.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/GX11.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/GX11.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Postscript.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Postscript.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOTGraphicsPrimitives.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOTGraphicsPrimitives.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOTGpadv7.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOTGpadv7.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Genetic.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Genetic.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/RSQLite.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/RSQLite.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/FITSIO.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/FITSIO.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOTGeomViewer.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOTGeomViewer.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Geom.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Geom.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/GeomPainter.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/GeomPainter.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/GeomChecker.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/GeomChecker.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Fumili.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Fumili.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/FitPanel.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/FitPanel.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Gui.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Gui.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOTNTupleBrowse.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOTNTupleBrowse.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOTNTupleUtil.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOTNTupleUtil.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOTTreeMap.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOTTreeMap.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Smatrix.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Smatrix.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Spectrum.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Spectrum.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOTFitPanelv7.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOTFitPanelv7.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ASImageGui.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ASImageGui.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ASImage.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ASImage.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOTMLDataLoader.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOTMLDataLoader.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Gviz3d.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Gviz3d.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Ged.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Ged.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/RGL.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/RGL.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Eve.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Eve.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/WebGui6.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/WebGui6.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/TMVAUtils.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/TMVAUtils.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/GuiHtml.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/GuiHtml.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOTEve.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOTEve.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/RDAVIX.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/RDAVIX.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOTTPython.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOTTPython.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/HistPainter.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/HistPainter.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/TMVAGui.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/TMVAGui.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/TreeViewer.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/TreeViewer.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/GuiBld.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/GuiBld.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/RooFitCodegen.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/RooFitCodegen.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/NetxNG.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/NetxNG.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/RHTTPSniff.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/RHTTPSniff.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/RooFitXRooFit.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/RooFitXRooFit.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/SQLIO.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/SQLIO.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/GX11TTF.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/GX11TTF.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/RootAuth.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/RootAuth.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOTTMVASofie.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOTTMVASofie.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/X3d.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/X3d.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Recorder.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Recorder.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/Gdml.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/Gdml.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/ROOTTreeViewer.pcm", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/ROOTTreeViewer.pcm>
+32    openat(AT_FDCWD</s/rootf>, "/s/rootf/./TError.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "./TError.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/TError.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/TError.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/TError.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/TError.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/plugins/include/TError.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/plugins/include/TError.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/cassert", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/cassert", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/cassert", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/cassert", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/plugins/include/cassert", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/plugins/include/cassert", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/include/cassert", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/include/cassert", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-conda-linux-gnu/16.2.0/include/c++/cassert", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/gcc/aarch64-conda-linux-gnu/16.2.0/include/c++/cassert>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-conda-linux-gnu/16.2.0/include/c++/bits/c++config.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-conda-linux-gnu/16.2.0/include/c++/bits/c++config.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-conda-linux-gnu/16.2.0/include/c++/aarch64-conda-linux-gnu/bits/c++config.h", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/gcc/aarch64-conda-linux-gnu/16.2.0/include/c++/aarch64-conda-linux-gnu/bits/c++config.h>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/assert.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/assert.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/assert.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/assert.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/plugins/include/assert.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/plugins/include/assert.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/include/assert.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/include/assert.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-conda-linux-gnu/16.2.0/include/c++/assert.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-conda-linux-gnu/16.2.0/include/c++/assert.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-conda-linux-gnu/16.2.0/include/c++/aarch64-conda-linux-gnu/assert.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-conda-linux-gnu/16.2.0/include/c++/aarch64-conda-linux-gnu/assert.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-conda-linux-gnu/16.2.0/include/c++/backward/assert.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-conda-linux-gnu/16.2.0/include/c++/backward/assert.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/lib/clang/20/include/assert.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/lib/clang/20/include/assert.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/aarch64-conda-linux-gnu/sysroot/usr/include/assert.h", O_RDONLY|O_CLOEXEC) = 3</opt/root/aarch64-conda-linux-gnu/sysroot/usr/include/assert.h>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/features.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/features.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/features.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/features.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/plugins/include/features.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/plugins/include/features.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/include/features.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/include/features.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-conda-linux-gnu/16.2.0/include/c++/features.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-conda-linux-gnu/16.2.0/include/c++/features.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-conda-linux-gnu/16.2.0/include/c++/aarch64-conda-linux-gnu/features.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-conda-linux-gnu/16.2.0/include/c++/aarch64-conda-linux-gnu/features.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-conda-linux-gnu/16.2.0/include/c++/backward/features.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/gcc/aarch64-conda-linux-gnu/16.2.0/include/c++/backward/features.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/lib/clang/20/include/features.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc//cling/lib/clang/20/include/features.h", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libCling.so.6.40.04", O_RDONLY|O_CLOEXEC) = 3</opt/root/lib/libCling.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libCore.so.6.40.04", O_RDONLY) = 3</opt/root/lib/libCore.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libThread.so.6.40.04", O_RDONLY) = 3</opt/root/lib/libThread.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libRIO.so.6.40.04", O_RDONLY) = 3</opt/root/lib/libRIO.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/class.rules", O_RDONLY) = 3</opt/root/etc/class.rules>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/system.rootmap", O_RDONLY) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, "/s/aux/home/.rootmap", O_RDONLY) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, ".rootmap", O_RDONLY) = -1 ENOENT (No such file or directory)
+32    openat(AT_FDCWD</s/rootf>, ".", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</s/rootf>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</opt/root/lib>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libvectorDict.rootmap", O_RDONLY) = 4</opt/root/lib/libvectorDict.rootmap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libGenVector32.rootmap", O_RDONLY) = 4</opt/root/lib/libGenVector32.rootmap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libsetDict.rootmap", O_RDONLY) = 4</opt/root/lib/libsetDict.rootmap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libmap2Dict.rootmap", O_RDONLY) = 4</opt/root/lib/libmap2Dict.rootmap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libSmatrix32.rootmap", O_RDONLY) = 4</opt/root/lib/libSmatrix32.rootmap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libunordered_mapDict.rootmap", O_RDONLY) = 4</opt/root/lib/libunordered_mapDict.rootmap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libvalarrayDict.rootmap", O_RDONLY) = 4</opt/root/lib/libvalarrayDict.rootmap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/liblistDict.rootmap", O_RDONLY) = 4</opt/root/lib/liblistDict.rootmap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libforward_listDict.rootmap", O_RDONLY) = 4</opt/root/lib/libforward_listDict.rootmap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libmultimap2Dict.rootmap", O_RDONLY) = 4</opt/root/lib/libmultimap2Dict.rootmap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libcomplexDict.rootmap", O_RDONLY) = 4</opt/root/lib/libcomplexDict.rootmap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libmultimapDict.rootmap", O_RDONLY) = 4</opt/root/lib/libmultimapDict.rootmap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libunordered_multimapDict.rootmap", O_RDONLY) = 4</opt/root/lib/libunordered_multimapDict.rootmap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libmultisetDict.rootmap", O_RDONLY) = 4</opt/root/lib/libmultisetDict.rootmap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libdequeDict.rootmap", O_RDONLY) = 4</opt/root/lib/libdequeDict.rootmap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libunordered_setDict.rootmap", O_RDONLY) = 4</opt/root/lib/libunordered_setDict.rootmap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libmapDict.rootmap", O_RDONLY) = 4</opt/root/lib/libmapDict.rootmap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libunordered_multisetDict.rootmap", O_RDONLY) = 4</opt/root/lib/libunordered_multisetDict.rootmap>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</opt/root/etc/plugins/TFile>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P010_TWebFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P010_TWebFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P010_TWebFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P010_TWebFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P010_TWebFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P010_TWebFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P010_TWebFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P010_TWebFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P010_TWebFile.C", O_RDONLY|O_CLOEXEC) = 4</opt/root/etc/plugins/TFile/P010_TWebFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P040_TDCacheFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P040_TDCacheFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P040_TDCacheFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P040_TDCacheFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P040_TDCacheFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P040_TDCacheFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P040_TDCacheFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P040_TDCacheFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P040_TDCacheFile.C", O_RDONLY|O_CLOEXEC) = 4</opt/root/etc/plugins/TFile/P040_TDCacheFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P080_TXMLFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P080_TXMLFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P080_TXMLFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P080_TXMLFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P080_TXMLFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P080_TXMLFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P080_TXMLFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P080_TXMLFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P080_TXMLFile.C", O_RDONLY|O_CLOEXEC) = 4</opt/root/etc/plugins/TFile/P080_TXMLFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P100_TXNetFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P100_TXNetFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P100_TXNetFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P100_TXNetFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P100_TXNetFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P100_TXNetFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P100_TXNetFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P100_TXNetFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P100_TXNetFile.C", O_RDONLY|O_CLOEXEC) = 4</opt/root/etc/plugins/TFile/P100_TXNetFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P120_TNetFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P120_TNetFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P120_TNetFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P120_TNetFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P120_TNetFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P120_TNetFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P120_TNetFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P120_TNetFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P120_TNetFile.C", O_RDONLY|O_CLOEXEC) = 4</opt/root/etc/plugins/TFile/P120_TNetFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P130_TDavixFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P130_TDavixFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P130_TDavixFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P130_TDavixFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P130_TDavixFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P130_TDavixFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P130_TDavixFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P130_TDavixFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P130_TDavixFile.C", O_RDONLY|O_CLOEXEC) = 4</opt/root/etc/plugins/TFile/P130_TDavixFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P140_TCurlFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P140_TCurlFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P140_TCurlFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P140_TCurlFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P140_TCurlFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P140_TCurlFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P140_TCurlFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P140_TCurlFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P140_TCurlFile.C", O_RDONLY|O_CLOEXEC) = 4</opt/root/etc/plugins/TFile/P140_TCurlFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P150_TS3WebFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P150_TS3WebFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P150_TS3WebFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P150_TS3WebFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P150_TS3WebFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P150_TS3WebFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P150_TS3WebFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TFile/P150_TS3WebFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TFile/P150_TS3WebFile.C", O_RDONLY|O_CLOEXEC) = 4</opt/root/etc/plugins/TFile/P150_TS3WebFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/dev/urandom", O_RDONLY) = 3</dev/urandom>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TArchiveFile", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 3</opt/root/etc/plugins/TArchiveFile>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TArchiveFile/P010_TZIPFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TArchiveFile/P010_TZIPFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TArchiveFile/P010_TZIPFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TArchiveFile/P010_TZIPFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TArchiveFile/P010_TZIPFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TArchiveFile/P010_TZIPFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TArchiveFile/P010_TZIPFile.C", O_RDONLY) = 4</opt/root/etc/plugins/TArchiveFile/P010_TZIPFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TArchiveFile/P010_TZIPFile.C", O_RDONLY|O_CLOEXEC) = 4</opt/root/etc/plugins/TArchiveFile/P010_TZIPFile.C>
+32    openat(AT_FDCWD</s/rootf>, "/s/rootf/data.root", O_RDWR|O_CREAT, 0666) = 3</s/rootf/data.root>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TVirtualStreamerInfo", O_RDONLY|O_NONBLOCK|O_CLOEXEC|O_DIRECTORY) = 4</opt/root/etc/plugins/TVirtualStreamerInfo>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TVirtualStreamerInfo/P010_TStreamerInfo.C", O_RDONLY) = 5</opt/root/etc/plugins/TVirtualStreamerInfo/P010_TStreamerInfo.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TVirtualStreamerInfo/P010_TStreamerInfo.C", O_RDONLY) = 5</opt/root/etc/plugins/TVirtualStreamerInfo/P010_TStreamerInfo.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TVirtualStreamerInfo/P010_TStreamerInfo.C", O_RDONLY) = 5</opt/root/etc/plugins/TVirtualStreamerInfo/P010_TStreamerInfo.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TVirtualStreamerInfo/P010_TStreamerInfo.C", O_RDONLY) = 5</opt/root/etc/plugins/TVirtualStreamerInfo/P010_TStreamerInfo.C>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/etc/plugins/TVirtualStreamerInfo/P010_TStreamerInfo.C", O_RDONLY|O_CLOEXEC) = 5</opt/root/etc/plugins/TVirtualStreamerInfo/P010_TStreamerInfo.C>
+37    openat(AT_FDCWD</s/rootf>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 4</etc/ld.so.cache>
+37    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 4</usr/lib/aarch64-linux-gnu/libc.so.6>
+38    openat(AT_FDCWD</s/rootf>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 4</etc/ld.so.cache>
+38    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libtinfo.so.6", O_RDONLY|O_CLOEXEC) = 4</usr/lib/aarch64-linux-gnu/libtinfo.so.6.5>
+38    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 4</usr/lib/aarch64-linux-gnu/libc.so.6>
+38    openat(AT_FDCWD</s/rootf>, "/dev/tty", O_RDWR|O_NONBLOCK) = -1 ENXIO (No such device or address)
+38    openat(AT_FDCWD</s/rootf>, "/etc/nsswitch.conf", O_RDONLY|O_CLOEXEC) = 4</etc/nsswitch.conf>
+38    openat(AT_FDCWD</s/rootf>, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 4</etc/passwd>
+38    openat(AT_FDCWD</s/rootf>, "/usr/bin/ldd", O_RDONLY) = 4</usr/bin/ldd>
+40    writev(1<pipe:[19559]>, [{iov_base="ld.so (Debian GLIBC 2.41-12+deb1"..., iov_len=266}], 1) = 266
+39    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=40, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+38    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=39, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+41    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/rootrm", O_RDONLY|O_CLOEXEC) = 4</opt/root/bin/rootrm>
+38    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=41, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+44    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/rootrm", O_RDONLY|O_CLOEXEC) = 4</opt/root/bin/rootrm>
+44    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libRIO.so.6.40", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libRIO.so.6.40.04>
+44    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libCore.so.6.40", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libCore.so.6.40.04>
+44    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libstdc++.so.6", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libstdc++.so.6.0.36>
+44    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libgcc_s.so.1>
+44    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libc.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+44    openat(AT_FDCWD</s/rootf>, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 4</etc/ld.so.cache>
+44    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 4</usr/lib/aarch64-linux-gnu/libc.so.6>
+44    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libThread.so.6.40", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libThread.so.6.40.04>
+44    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libdl.so.2", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+44    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libdl.so.2", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+44    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libdl.so.2", O_RDONLY|O_CLOEXEC) = 4</usr/lib/aarch64-linux-gnu/libdl.so.2>
+44    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libpthread.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+44    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libpthread.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+44    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 4</usr/lib/aarch64-linux-gnu/libpthread.so.0>
+44    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libm.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+44    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libm.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+44    openat(AT_FDCWD</s/rootf>, "/lib/aarch64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 4</usr/lib/aarch64-linux-gnu/libm.so.6>
+44    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libpcre2-8.so.0.15.0>
+44    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libz.so.1", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libz.so.1.3.2>
+44    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/liblzma.so.5", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/liblzma.so.5>
+44    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/liblz4.so.1", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/liblz4.so.1.10.0>
+44    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libzstd.so.1", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libzstd.so.1.5.7>
+44    openat(AT_FDCWD</s/rootf>, "/opt/root/bin/../lib/libtbb.so.12", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libtbb.so.12.19>
+44    writev(1<pipe:[17607]>, [{iov_base="\t", iov_len=1}, {iov_base="linux-vdso.so.1", iov_len=15}, {iov_base=" (0x", iov_len=4}, {iov_base="0000ffff881fc000", iov_len=16}, {iov_base=")\n", iov_len=2}], 5) = 38
+44    writev(1<pipe:[17607]>, [{iov_base="\t", iov_len=1}, {iov_base="libRIO.so.6.40", iov_len=14}, {iov_base=" => ", iov_len=4}, {iov_base="/opt/root/bin/../lib/libRIO.so.6"..., iov_len=35}, {iov_base=" (0x", iov_len=4}, {iov_base="0000ffff87c30000", iov_len=16}, {iov_base=")\n", iov_len=2}], 7) = 76
+44    writev(1<pipe:[17607]>, [{iov_base="\t", iov_len=1}, {iov_base="libCore.so.6.40", iov_len=15}, {iov_base=" => ", iov_len=4}, {iov_base="/opt/root/bin/../lib/libCore.so."..., iov_len=36}, {iov_base=" (0x", iov_len=4}, {iov_base="0000ffff87700000", iov_len=16}, {iov_base=")\n", iov_len=2}], 7) = 78
+44    writev(1<pipe:[17607]>, [{iov_base="\t", iov_len=1}, {iov_base="libstdc++.so.6", iov_len=14}, {iov_base=" => ", iov_len=4}, {iov_base="/opt/root/bin/../lib/libstdc++.s"..., iov_len=35}, {iov_base=" (0x", iov_len=4}, {iov_base="0000ffff87460000", iov_len=16}, {iov_base=")\n", iov_len=2}], 7) = 76
+44    writev(1<pipe:[17607]>, [{iov_base="\t", iov_len=1}, {iov_base="libgcc_s.so.1", iov_len=13}, {iov_base=" => ", iov_len=4}, {iov_base="/opt/root/bin/../lib/libgcc_s.so"..., iov_len=34}, {iov_base=" (0x", iov_len=4}, {iov_base="0000ffff87420000", iov_len=16}, {iov_base=")\n", iov_len=2}], 7) = 74
+44    writev(1<pipe:[17607]>, [{iov_base="\t", iov_len=1}, {iov_base="libc.so.6", iov_len=9}, {iov_base=" => ", iov_len=4}, {iov_base="/lib/aarch64-linux-gnu/libc.so.6", iov_len=32}, {iov_base=" (0x", iov_len=4}, {iov_base="0000ffff87260000", iov_len=16}, {iov_base=")\n", iov_len=2}], 7) = 68
+44    writev(1<pipe:[17607]>, [{iov_base="\t", iov_len=1}, {iov_base="/lib/ld-linux-aarch64.so.1", iov_len=26}, {iov_base=" (0x", iov_len=4}, {iov_base="0000ffff881b0000", iov_len=16}, {iov_base=")\n", iov_len=2}], 5) = 49
+44    writev(1<pipe:[17607]>, [{iov_base="\t", iov_len=1}, {iov_base="libThread.so.6.40", iov_len=17}, {iov_base=" => ", iov_len=4}, {iov_base="/opt/root/bin/../lib/libThread.s"..., iov_len=38}, {iov_base=" (0x", iov_len=4}, {iov_base="0000ffff871d0000", iov_len=16}, {iov_base=")\n", iov_len=2}], 7) = 82
+44    writev(1<pipe:[17607]>, [{iov_base="\t", iov_len=1}, {iov_base="libdl.so.2", iov_len=10}, {iov_base=" => ", iov_len=4}, {iov_base="/lib/aarch64-linux-gnu/libdl.so."..., iov_len=33}, {iov_base=" (0x", iov_len=4}, {iov_base="0000ffff871a0000", iov_len=16}, {iov_base=")\n", iov_len=2}], 7) = 70
+44    writev(1<pipe:[17607]>, [{iov_base="\t", iov_len=1}, {iov_base="libpthread.so.0", iov_len=15}, {iov_base=" => ", iov_len=4}, {iov_base="/lib/aarch64-linux-gnu/libpthrea"..., iov_len=38}, {iov_base=" (0x", iov_len=4}, {iov_base="0000ffff87170000", iov_len=16}, {iov_base=")\n", iov_len=2}], 7) = 80
+44    writev(1<pipe:[17607]>, [{iov_base="\t", iov_len=1}, {iov_base="libm.so.6", iov_len=9}, {iov_base=" => ", iov_len=4}, {iov_base="/lib/aarch64-linux-gnu/libm.so.6", iov_len=32}, {iov_base=" (0x", iov_len=4}, {iov_base="0000ffff870c0000", iov_len=16}, {iov_base=")\n", iov_len=2}], 7) = 68
+44    writev(1<pipe:[17607]>, [{iov_base="\t", iov_len=1}, {iov_base="libpcre2-8.so.0", iov_len=15}, {iov_base=" => ", iov_len=4}, {iov_base="/opt/root/bin/../lib/libpcre2-8."..., iov_len=36}, {iov_base=" (0x", iov_len=4}, {iov_base="0000ffff86fe0000", iov_len=16}, {iov_base=")\n", iov_len=2}], 7) = 78
+44    writev(1<pipe:[17607]>, [{iov_base="\t", iov_len=1}, {iov_base="libz.so.1", iov_len=9}, {iov_base=" => ", iov_len=4}, {iov_base="/opt/root/bin/../lib/libz.so.1", iov_len=30}, {iov_base=" (0x", iov_len=4}, {iov_base="0000ffff86fa0000", iov_len=16}, {iov_base=")\n", iov_len=2}], 7) = 66
+44    writev(1<pipe:[17607]>, [{iov_base="\t", iov_len=1}, {iov_base="liblzma.so.5", iov_len=12}, {iov_base=" => ", iov_len=4}, {iov_base="/opt/root/bin/../lib/liblzma.so."..., iov_len=33}, {iov_base=" (0x", iov_len=4}, {iov_base="0000ffff86f40000", iov_len=16}, {iov_base=")\n", iov_len=2}], 7) = 72
+44    writev(1<pipe:[17607]>, [{iov_base="\t", iov_len=1}, {iov_base="liblz4.so.1", iov_len=11}, {iov_base=" => ", iov_len=4}, {iov_base="/opt/root/bin/../lib/liblz4.so.1", iov_len=32}, {iov_base=" (0x", iov_len=4}, {iov_base="0000ffff86ef0000", iov_len=16}, {iov_base=")\n", iov_len=2}], 7) = 70
+44    writev(1<pipe:[17607]>, [{iov_base="\t", iov_len=1}, {iov_base="libzstd.so.1", iov_len=12}, {iov_base=" => ", iov_len=4}, {iov_base="/opt/root/bin/../lib/libzstd.so."..., iov_len=33}, {iov_base=" (0x", iov_len=4}, {iov_base="0000ffff86dd0000", iov_len=16}, {iov_base=")\n", iov_len=2}], 7) = 72
+44    writev(1<pipe:[17607]>, [{iov_base="\t", iov_len=1}, {iov_base="libtbb.so.12", iov_len=12}, {iov_base=" => ", iov_len=4}, {iov_base="/opt/root/bin/../lib/libtbb.so.1"..., iov_len=33}, {iov_base=" (0x", iov_len=4}, {iov_base="0000ffff86d60000", iov_len=16}, {iov_base=")\n", iov_len=2}], 7) = 72
+43    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=44, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+43    write(1<pipe:[17607]>, "x", 1)    = 1
+42    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=43, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+42    write(1<pipe:[20554]>, "\tlinux-vdso.so.1 (0x0000ffff881f"..., 38) = 38
+42    write(1<pipe:[20554]>, "\tlibRIO.so.6.40 => /opt/root/bin"..., 76) = 76
+42    write(1<pipe:[20554]>, "\tlibCore.so.6.40 => /opt/root/bi"..., 78) = 78
+42    write(1<pipe:[20554]>, "\tlibstdc++.so.6 => /opt/root/bin"..., 150) = 150
+42    write(1<pipe:[20554]>, "\tlibc.so.6 => /lib/aarch64-linux"..., 117) = 117
+42    write(1<pipe:[20554]>, "\tlibThread.so.6.40 => /opt/root/"..., 152) = 152
+42    write(1<pipe:[20554]>, "\tlibpthread.so.0 => /lib/aarch64"..., 148) = 148
+42    write(1<pipe:[20554]>, "\tlibpcre2-8.so.0 => /opt/root/bi"..., 78) = 78
+42    write(1<pipe:[20554]>, "\tlibz.so.1 => /opt/root/bin/../l"..., 138) = 138
+42    write(1<pipe:[20554]>, "\tliblz4.so.1 => /opt/root/bin/.."..., 142) = 142
+42    write(1<pipe:[20554]>, "\tlibtbb.so.12 => /opt/root/bin/."..., 72) = 72
+38    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=42, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+37    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=38, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+32    --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=37, si_uid=0, si_status=0, si_utime=0, si_stime=0} ---
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libHist.so.6.40.04", O_RDONLY) = 4</opt/root/lib/libHist.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libHist.so.6.40.04", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libHist.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libMatrix.so.6.40", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libMatrix.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libMathCore.so.6.40", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libMathCore.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libImt.so.6.40", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libImt.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libMultiProc.so.6.40", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libMultiProc.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libNet.so.6.40", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libNet.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libssl.so.3", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libssl.so.3>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libcrypto.so.3", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libcrypto.so.3>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libNet.so.6.40.04", O_RDONLY) = 4</opt/root/lib/libNet.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libNet.so.6.40.04", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libNet.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/dev/urandom", O_RDONLY) = 4</dev/urandom>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libMultiProc.so.6.40.04", O_RDONLY) = 4</opt/root/lib/libMultiProc.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libMultiProc.so.6.40.04", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libMultiProc.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libImt.so.6.40.04", O_RDONLY) = 4</opt/root/lib/libImt.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libImt.so.6.40.04", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libImt.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libMathCore.so.6.40.04", O_RDONLY) = 4</opt/root/lib/libMathCore.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libMathCore.so.6.40.04", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libMathCore.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/dev/urandom", O_RDONLY) = 4</dev/urandom>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libMatrix.so.6.40.04", O_RDONLY) = 4</opt/root/lib/libMatrix.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libMatrix.so.6.40.04", O_RDONLY|O_CLOEXEC) = 4</opt/root/lib/libMatrix.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/dev/urandom", O_RDONLY) = 4</dev/urandom>
+32    openat(AT_FDCWD</s/rootf>, "/opt/root/lib/libHist.so.6.40.04", O_RDONLY) = 4</opt/root/lib/libHist.so.6.40.04>
+32    openat(AT_FDCWD</s/rootf>, "/dev/urandom", O_RDONLY) = 4</dev/urandom>
+32    write(3</s/rootf/data.root>, "\377\377\376\364", 4) = 4
+32    fsync(3</s/rootf/data.root>)      = 0
+32    write(3</s/rootf/data.root>, "\377\377\377h", 4) = 4
+32    write(3</s/rootf/data.root>, "\0\0\0u\0\4\0\0\0J~\302\31\264\0+\0\1\0\0\1\345\0\0\0d\5TFile"..., 121) = 121
+32    write(3</s/rootf/data.root>, "\0\5~\302\31\263~\302\31\264\0\0\0u\0\0\0006\0\0\0d\0\0\0\0\0\0\1\345\0\1"..., 60) = 60
+32    write(3</s/rootf/data.root>, "\210\312{\305", 4) = 4
+32    write(3</s/rootf/data.root>, "\0\0\0?\0\4\0\0\0\24~\302\31\264\0+\0\1\0\0\2Z\0\0\0d\5TFile"..., 67) = 67
+32    write(3</s/rootf/data.root>, "root\0\0\372\4\0\0\0d\0\0\17\306\0\0\2Z\0\0\0?\0\0\0\2\0\0\0006"..., 63) = 63
+32    fsync(3</s/rootf/data.root>)      = 0

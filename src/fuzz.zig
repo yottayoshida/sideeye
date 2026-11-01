@@ -224,6 +224,7 @@ const config = parsers.config;
 const engine = parsers.engine;
 const image = parsers.image;
 const case = parsers.case;
+const cli = parsers.cli;
 const mcp = parsers.mcp;
 
 /// Not std.testing.allocator: its DebugAllocator keeps a record of every allocation, so a long
@@ -413,7 +414,8 @@ fn fuzzCase(_: void, smith: *std.testing.Smith) anyerror!void {
     switch (case.read(as.allocator(), text)) {
         .ok => |c| {
             try std.testing.expectEqualStrings("sideeye/case", c.schema);
-            try std.testing.expect(c.case_version >= 1 and c.case_version <= 8);
+            try std.testing.expect(c.case_version >= 1 and c.case_version <= 9);
+            if (c.crash_model) |m| _ = cli.PowerLoss.parse(m) orelse return error.ReadAcceptedAnUnknownRule;
             // main.zig reads the mode with `.?`: read must not accept one that does not parse.
             if (c.observe) |m| {
                 const mode = contract.ObserveMode.parse(m) orelse return error.ReadAcceptedAnUnknownMode;

@@ -1,0 +1,6 @@
+state=/s/conan
+marker=no
+cwd=/s/conan-in
+op=conan remote disable conancenter
+strace -- version 6.13
+aarch64

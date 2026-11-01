@@ -1,0 +1,6 @@
+state=/s/jd
+marker=no
+cwd=/s/jd-in
+op=juliaup config versionsdbupdateinterval 0
+strace -- version 6.13
+aarch64

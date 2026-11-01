@@ -1,0 +1,4 @@
+./Artist1
+./Artist1/Album1
+./Artist1/Album1/00 Track1.mp3
+./library.db
