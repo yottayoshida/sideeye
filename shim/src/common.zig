@@ -2644,6 +2644,10 @@ pub inline fn callFsync(fd: c_int) c_int {
     const f = reach("fsync") orelse return optionalMissingInt();
     return f(fd);
 }
+pub inline fn callFcntl(fd: c_int, cmd: c_int, arg: usize) c_int {
+    if (is_darwin) return darwin.fcntl(fd, cmd, arg);
+    return optionalMissingInt();
+}
 pub inline fn callFdatasync(fd: c_int) c_int {
     // This used to say "Darwin has no fdatasync; fsync is the honest equivalent" and
     // forward to fsync. Measured 2026-08-26: the symbol IS in libSystem — no public

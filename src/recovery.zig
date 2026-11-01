@@ -158,11 +158,15 @@ fn runCaptured(ctx: Context, argv: []const []const u8, capture_name: []const u8,
     // `exclusive` needs the removal first, and a FIFO planted at the name would otherwise block
     // the parent's open (`Capture.exclusive`).
     files.removeFile(path);
+    // Not `/dev/null`, for the reason `unreadLegs` gives in main.zig.
+    const legs = try std.fmt.allocPrint(ctx.arena, "{s}/legs.unread.txt", .{ctx.work});
+    files.removeFile(legs);
     var cg = containment.spawn(false);
     const cg_ptr: ?*posix.CgroupSpawn = if (cg) |*c| c else null;
     const term = try posix.runChildCaptureWorld(ctx.gpa, argv, &.{
         .{ "TOY_STATE", ctx.state_abs },
         .{ contract.env.state_dir, ctx.state_abs },
+        .{ contract.env.legs, legs },
     }, .{ .path = path, .stderr_too = true, .exclusive = true }, ctx.budget_ms, ctx.cwd, cg_ptr);
     // Re-emitted with a label on every line, for #134's reason: output that reaches the
     // transcript unlabeled can be harvested as the world's, and this is not the world's.

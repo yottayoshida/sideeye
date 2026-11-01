@@ -69,7 +69,7 @@ const path_syscalls = [_]PathSpec{
     .{ .name = "rename", .args = &.{ .{ .dirfd = null, .path = 0 }, .{ .dirfd = null, .path = 1 } } },
     .{ .name = "link", .args = &.{ .{ .dirfd = null, .path = 0 }, .{ .dirfd = null, .path = 1 } } },
     // Not scoped by `touchesStateDir` like the rest of the unnamed calls: it sees absolute
-    // strings only, and a relative attribute write would be judged instead of refused.
+    // strings only, and a relative attribute write would go unreported in `metadata_writes`.
     .{ .name = "setxattr", .args = &.{.{ .dirfd = null, .path = 0 }} },
     .{ .name = "lsetxattr", .args = &.{.{ .dirfd = null, .path = 0 }} },
     .{ .name = "removexattr", .args = &.{.{ .dirfd = null, .path = 0 }} },
@@ -90,11 +90,42 @@ fn isXattrWrite(name: []const u8) bool {
     return false;
 }
 
-fn pathSpec(name: []const u8) ?PathSpec {
-    for (path_syscalls) |s| {
+fn specIn(table: []const PathSpec, name: []const u8) ?PathSpec {
+    for (table) |s| {
         if (std.mem.eql(u8, s.name, name)) return s;
     }
     return null;
+}
+
+fn pathSpec(name: []const u8) ?PathSpec {
+    return specIn(&path_syscalls, name);
+}
+
+// Calls refused inside the state, scoped by resolving their path rather than by
+// `touchesStateDir`, which sees absolute spellings only and passed a relative one into the state
+// by. Not in `path_syscalls`: an empty path there drops the line, and these name their
+// descriptor with one.
+const unclassified_path_syscalls = [_]PathSpec{
+    .{ .name = "mknod", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "mknodat", .args = &.{.{ .dirfd = 0, .path = 1 }} },
+    .{ .name = "acct", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "chroot", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "uselib", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "swapon", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "swapoff", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "umount2", .args = &.{.{ .dirfd = null, .path = 0 }} },
+    .{ .name = "mount", .args = &.{.{ .dirfd = null, .path = 1 }} },
+    .{ .name = "pivot_root", .args = &.{ .{ .dirfd = null, .path = 0 }, .{ .dirfd = null, .path = 1 } } },
+    .{ .name = "fanotify_mark", .args = &.{.{ .dirfd = 3, .path = 4 }} },
+    .{ .name = "fspick", .args = &.{.{ .dirfd = 0, .path = 1 }} },
+    .{ .name = "mount_setattr", .args = &.{.{ .dirfd = 0, .path = 1 }} },
+    .{ .name = "name_to_handle_at", .args = &.{.{ .dirfd = 0, .path = 1 }} },
+    .{ .name = "open_tree", .args = &.{.{ .dirfd = 0, .path = 1 }} },
+    .{ .name = "move_mount", .args = &.{ .{ .dirfd = 0, .path = 1 }, .{ .dirfd = 2, .path = 3 } } },
+};
+
+fn unclassifiedPathSpec(name: []const u8) ?PathSpec {
+    return specIn(&unclassified_path_syscalls, name);
 }
 
 const at_empty_path_linux: u64 = 0x1000;
@@ -121,7 +152,7 @@ fn emptyPathNamesNothing(spec: PathSpec, line: []const u8) bool {
 }
 
 // Flags that cannot be read are not taken for none: the attribute calls are recorded by
-// neither witness, so one passed over here would be refused by nothing.
+// neither witness, so one passed over here would be missing from `metadata_writes`.
 fn flagsLackEmptyPath(flags: ?[]const u8) bool {
     const f = flags orelse return false;
     if (std.mem.indexOf(u8, f, "AT_EMPTY_PATH") != null) return false;
@@ -151,10 +182,7 @@ const metadata_path_syscalls = [_]PathSpec{
 const metadata_fd_syscalls = [_][]const u8{ "fchown", "fchmod" };
 
 fn metadataPathSpec(name: []const u8) ?PathSpec {
-    for (metadata_path_syscalls) |s| {
-        if (std.mem.eql(u8, s.name, name)) return s;
-    }
-    return null;
+    return specIn(&metadata_path_syscalls, name);
 }
 
 fn isMetadataFd(name: []const u8) bool {
@@ -188,10 +216,8 @@ const read_only = [_][]const u8{
     // a touch. Measured on `pass mv`, whose `git -C <store> rev-parse
         "chdir",             "fchdir",     "faccessat2",
     "epoll_ctl",
-    // The writes — `setxattr`, `removexattr` and their `l`/`f` forms — are not here and keep
-    // refusing: what an attribute write does to the state has not been ruled on. The restore
-    // does not put attributes back, and nothing yet says whether such a write is judged or,
-    // like the ownership and permission calls #121 observes, set aside. Found by measurement: vim
+    // The writes — `setxattr`, `removexattr` and their `l`/`f` forms — are not here: they are
+    // set aside as metadata and named in the report, which a read would not be.
      "getxattr",   "lgetxattr",         "fgetxattr",  "listxattr",
     "llistxattr", "flistxattr", "inotify_add_watch", "preadv",     "preadv2",
     "poll",       "ppoll",      "select",            "pselect6",
@@ -534,13 +560,25 @@ fn isProcessSyscall(name: []const u8) bool {
 /// component-boundary containment test the shim uses, so `/tmp/state2` is not mistaken
 /// for something inside `/tmp/state`.
 fn touchesStateDir(line: []const u8, state_dir: []const u8, alt: []const u8) bool {
+    return namesStateDir(line, state_dir, alt, true);
+}
+
+fn quotesStateDir(line: []const u8, state_dir: []const u8, alt: []const u8) bool {
+    return namesStateDir(line, state_dir, alt, false);
+}
+
+// An annotation is still skipped whole when it is not tested: a `"` strace leaves inside one would
+// start a string there.
+fn namesStateDir(line: []const u8, state_dir: []const u8, alt: []const u8, comptime annotations: bool) bool {
     var i: usize = 0;
     while (i < line.len) : (i += 1) {
         if (line[i] != '"' and line[i] != '<') continue;
         const end = closingIndex(line, i) orelse break;
-        var buf: [contract.max_path]u8 = undefined;
-        if (unescape(line[i + 1 .. end], &buf)) |candidate| {
-            if (candidate.len > 0 and candidate[0] == '/' and insideEither(candidate, state_dir, alt)) return true;
+        if (line[i] == '"' or annotations) {
+            var buf: [contract.max_path]u8 = undefined;
+            if (unescape(line[i + 1 .. end], &buf)) |candidate| {
+                if (candidate.len > 0 and candidate[0] == '/' and insideEither(candidate, state_dir, alt)) return true;
+            }
         }
         i = end;
     }
@@ -819,10 +857,7 @@ fn cloneKind(name: []const u8, line: []const u8) ?CloneKind {
 
 fn cloneIntoState(line: []const u8, state_dir: []const u8, state_alt: []const u8) bool {
     // Not `false` when the destination cannot be read: that would let an unreadable clone through.
-    const arg = syscallArg(line, 0) orelse return true;
-    var abuf: [contract.max_path]u8 = undefined;
-    const p = argAnnotation(arg, &abuf) orelse return true;
-    return insideEither(p, state_dir, state_alt);
+    return descriptorScope(line, 0, state_dir, state_alt) != .outside;
 }
 
 /// Only an errno raised before anything is remapped lets a clone through: btrfs can fail a
@@ -1028,15 +1063,60 @@ fn resolveArg(line: []const u8, arg: PathArg, cwd: ?[]const u8, state: []const u
 }
 
 fn pathSyscallScope(spec: PathSpec, line: []const u8, cwd: ?[]const u8, state: []const u8, alt: []const u8) Scope {
+    return foldScope(spec, line, cwd, state, alt, resolveArg);
+}
+
+// Not resolution alone: an absolute path into the state at an argument the table does not name (a
+// `mount` source) was refused before these calls were resolved, and stays refused.
+fn unclassifiedPathScope(spec: PathSpec, line: []const u8, cwd: ?[]const u8, state: []const u8, alt: []const u8) Scope {
+    if (quotesStateDir(line, state, alt)) return .inside;
+    const scope = foldScope(spec, line, cwd, state, alt, unclassifiedArgScope);
+    if (std.mem.eql(u8, spec.name, "mount") and mountsAPath(line)) {
+        switch (unclassifiedArgScope(line, .{ .dirfd = null, .path = 0 }, cwd, state, alt)) {
+            .inside => return .inside,
+            .unresolvable => if (scope == .outside) return .unresolvable,
+            .outside => {},
+        }
+    }
+    return scope;
+}
+
+// Only a bind or a move: any other mount names a file system as its source ("none", "tmpfs"), and
+// resolving that against a cwd inside the state would refuse a mount made elsewhere.
+fn mountsAPath(line: []const u8) bool {
+    return argContains(line, 3, "MS_BIND") or argContains(line, 3, "MS_MOVE");
+}
+
+const ArgScope = fn ([]const u8, PathArg, ?[]const u8, []const u8, []const u8) Scope;
+
+fn foldScope(spec: PathSpec, line: []const u8, cwd: ?[]const u8, state: []const u8, alt: []const u8, comptime argScope: ArgScope) Scope {
     var any_unresolvable = false;
     for (spec.args) |a| {
-        switch (resolveArg(line, a, cwd, state, alt)) {
+        switch (argScope(line, a, cwd, state, alt)) {
             .inside => return .inside,
             .unresolvable => any_unresolvable = true,
             .outside => {},
         }
     }
     return if (any_unresolvable) .unresolvable else .outside;
+}
+
+// An empty or NULL path names the descriptor itself; resolved as a relative name it would refuse
+// the call wherever the descriptor points. Only those two: an address strace could not read is
+// unresolvable, not absent.
+fn unclassifiedArgScope(line: []const u8, a: PathArg, cwd: ?[]const u8, state: []const u8, alt: []const u8) Scope {
+    const path_arg = syscallArg(line, a.path) orelse "";
+    const names_descriptor = std.mem.eql(u8, path_arg, "\"\"") or std.mem.eql(u8, path_arg, "NULL");
+    if (!names_descriptor) return resolveArg(line, a, cwd, state, alt);
+    const di = a.dirfd orelse return .outside;
+    return descriptorScope(line, di, state, alt);
+}
+
+fn descriptorScope(line: []const u8, index: usize, state: []const u8, alt: []const u8) Scope {
+    const arg = syscallArg(line, index) orelse return .unresolvable;
+    var abuf: [contract.max_path]u8 = undefined;
+    const p = argAnnotation(arg, &abuf) orelse return .unresolvable;
+    return if (insideEither(p, state, alt)) .inside else .outside;
 }
 
 fn syscallSucceeded(line: []const u8) bool {
@@ -1085,10 +1165,7 @@ fn fdWriteArg(name: []const u8) usize {
 /// write buffer must not scope it in. Which argument that is comes from
 /// `fd_write_args` above; the default is argument 0.
 fn fdSyscallInScope(line: []const u8, name: []const u8, state: []const u8, alt: []const u8) bool {
-    const arg = syscallArg(line, fdWriteArg(name)) orelse return false;
-    var abuf: [contract.max_path]u8 = undefined;
-    const p = argAnnotation(arg, &abuf) orelse return false;
-    return insideEither(p, state, alt);
+    return descriptorScope(line, fdWriteArg(name), state, alt) == .inside;
 }
 
 pub const Event = struct { id: u64, at: usize };
@@ -1416,6 +1493,8 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             continue;
         }
 
+        const own_cwd = if (is_primary) cwd else null;
+
         // Ownership/permission metadata (#121, option b), decided BEFORE the generic
         // scope block because it must bypass both refusal routes below: the subject's
         // branch would call it `unsupported`, and the child branch would call it a
@@ -1425,13 +1504,21 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         // is the honest direction (the report says "excluded", never "did not
         // happen").
         if (metadataPathSpec(name)) |mspec| {
-            if (pathSyscallScope(mspec, line, cwd, state_dir, state_alt) != .outside)
+            if (pathSyscallScope(mspec, line, own_cwd, state_dir, state_alt) != .outside)
                 try out.metadata_observed.append(arena, try arena.dupe(u8, name));
             continue;
         }
         if (isMetadataFd(name)) {
             if (fdSyscallInScope(line, name, state_dir, state_alt))
                 try out.metadata_observed.append(arena, try arena.dupe(u8, name));
+            continue;
+        }
+        if (isXattrWrite(name)) {
+            const in = if (pathSpec(name)) |spec|
+                pathSyscallScope(spec, line, own_cwd, state_dir, state_alt) != .outside
+            else
+                fdSyscallInScope(line, name, state_dir, state_alt);
+            if (in) try out.metadata_observed.append(arena, try arena.dupe(u8, name));
             continue;
         }
 
@@ -1444,7 +1531,9 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
         // outside the judged state, silently, and a run with an unaccounted writer in it
         // would be judged.
         const scope: Scope = if (pathSpec(name)) |spec|
-            pathSyscallScope(spec, line, if (is_primary) cwd else null, state_dir, state_alt)
+            pathSyscallScope(spec, line, own_cwd, state_dir, state_alt)
+        else if (unclassifiedPathSpec(name)) |spec|
+            unclassifiedPathScope(spec, line, own_cwd, state_dir, state_alt)
         else if (isFdSyscall(name))
             (if (fdSyscallInScope(line, name, state_dir, state_alt)) .inside else .outside)
         else
@@ -1466,9 +1555,6 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
             // the v15 rule, and the stores through the mapping ride a PASS.
             if (is_shared_write_map and out.unsupported == null)
                 out.unsupported = try arena.dupe(u8, contract.shared_map_refusal.writable);
-            // Refused, not only counted as a touch, for the same reason.
-            if (isXattrWrite(name) and out.unsupported == null)
-                out.unsupported = try arena.dupe(u8, name);
             if (std.mem.eql(u8, name, "fallocate") and fallocateMode(line) == .other and out.unsupported == null)
                 out.unsupported = try fallocateRefusal(arena, line);
             if (cloneKind(name, line)) |kind| {
@@ -2386,7 +2472,7 @@ test "an empty path that names a file through its descriptor is still not passed
     };
     for (xattrs) |l| {
         const p = try parse(a, try std.mem.concat(a, u8, &.{ head, l }), "/repo/state", "", "/repo");
-        std.testing.expect(p.unsupported != null) catch |e| {
+        std.testing.expect(p.unsupported == null and p.metadata_observed.items.len == 1) catch |e| {
             std.debug.print("passed over: {s}", .{l});
             return e;
         };
@@ -2856,7 +2942,7 @@ test "faccessat2 and epoll_ctl on the state directory are reads, for the subject
     try std.testing.expectEqualStrings("frobnicate", r.unsupported.?);
 }
 
-test "extended-attribute reads, inotify_add_watch, preadv and the polls are reads; xattr writes still refuse (#684)" {
+test "extended-attribute reads, inotify_add_watch, preadv and the polls are reads; xattr writes are metadata, from the subject and a child" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
@@ -2893,8 +2979,6 @@ test "extended-attribute reads, inotify_add_watch, preadv and the polls are read
         }
         try std.testing.expectEqual(@as(usize, 1), q.children);
     }
-    // The writing side of the same family stays refused, for the subject and for a child —
-    // what the list added is reads, not a rule that waves through every `*xattr`. The first
     const writes = [_]Case{
         .{ .what = "setxattr (real: vim)", .line = "setxattr(\"/tmp/s/a.txt\", \"system.posix_acl_access\", \"\\2\\0\\0\\0\", 28, 0) = 0" },
         .{ .what = "lsetxattr", .line = "lsetxattr(\"/tmp/s/a.txt\", \"user.x\", \"1\", 1, 0) = 0" },
@@ -2907,61 +2991,86 @@ test "extended-attribute reads, inotify_add_watch, preadv and the polls are read
         const subject = try std.fmt.allocPrint(a, "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    {s}\n", .{c.line});
         const p = try parse(a, subject, "/tmp/s", "", "/work");
         const name = c.what[0 .. std.mem.indexOfScalar(u8, c.what, ' ') orelse c.what.len];
-        if (p.unsupported == null or !std.mem.eql(u8, p.unsupported.?, name)) {
-            std.debug.print("{s}: the subject was not refused on it\n", .{c.what});
+        if (p.unsupported != null or p.classes.items.len != 0 or p.metadata_observed.items.len != 1 or
+            !std.mem.eql(u8, p.metadata_observed.items[0], name))
+        {
+            std.debug.print("{s}: the subject's write was not reported as metadata\n", .{c.what});
             return error.TestUnexpectedResult;
         }
         const child = try std.fmt.allocPrint(a, "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242\n4242  {s}\n", .{c.line});
         const q = try parse(a, child, "/tmp/s", "", "/work");
         try std.testing.expectEqual(@as(usize, 1), q.children);
-        if (q.unsupported == null or !std.mem.eql(u8, q.unsupported.?, name) or !q.childTouched()) {
-            std.debug.print("{s}: a child's write was not refused\n", .{c.what});
+        if (q.unsupported != null or q.childTouched() or q.metadata_observed.items.len != 1 or
+            !std.mem.eql(u8, q.metadata_observed.items[0], name))
+        {
+            std.debug.print("{s}: a child's write was not reported as metadata\n", .{c.what});
             return error.TestUnexpectedResult;
         }
     }
 }
 
-test "an extended-attribute write refuses through a relative path as it does through an absolute one" {
+test "an extended-attribute write through a descriptor outside the state is not named, and one through an empty path is named wherever it points" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    const Case = struct { what: []const u8, lines: []const u8, refused: ?[]const u8 };
+    const head = "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n";
+    for ([_][]const u8{
+        "42    fsetxattr(3</etc/x>, \"user.k\", \"1\", 1, 0) = 0\n",
+        "42    fremovexattr(3</etc/x>, \"user.k\") = 0\n",
+    }) |l| {
+        const p = try parse(a, try std.mem.concat(a, u8, &.{ head, l }), "/tmp/s", "", "/work");
+        try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
+        try std.testing.expectEqual(@as(usize, 0), p.metadata_observed.items.len);
+    }
+    const empty = try parse(a, head ++ "42    setxattrat(5</etc>, \"\", AT_EMPTY_PATH, \"user.k\", {value=\"1\", size=1, flags=0}, 16) = 0\n", "/tmp/s", "", "/work");
+    try std.testing.expectEqual(@as(usize, 1), empty.metadata_observed.items.len);
+}
+
+test "an extended-attribute write is reported through a relative path as it is through an absolute one" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const Case = struct { what: []const u8, lines: []const u8, observed: ?[]const u8 };
     const cases = [_]Case{
-        .{ .what = "setxattr, relative to the cwd", .refused = "setxattr", .lines = "42    setxattr(\"s/key.json\", \"user.k\", \"1\", 1, 0) = 0\n" },
-        .{ .what = "lsetxattr, relative to the cwd", .refused = "lsetxattr", .lines = "42    lsetxattr(\"s/key.json\", \"user.k\", \"1\", 1, 0) = 0\n" },
-        .{ .what = "removexattr, relative to the cwd", .refused = "removexattr", .lines = "42    removexattr(\"s/key.json\", \"user.k\") = 0\n" },
-        .{ .what = "lremovexattr, relative to the cwd", .refused = "lremovexattr", .lines = "42    lremovexattr(\"s/key.json\", \"user.k\") = 0\n" },
-        .{ .what = "setxattrat through AT_FDCWD", .refused = "setxattrat", .lines = "42    setxattrat(AT_FDCWD</tmp>, \"s/key.json\", 0, \"user.k\", {value=\"1\", size=1, flags=0}, 16) = 0\n" },
-        .{ .what = "removexattrat through AT_FDCWD", .refused = "removexattrat", .lines = "42    removexattrat(AT_FDCWD</tmp>, \"s/key.json\", 0, \"user.k\") = 0\n" },
-        .{ .what = "setxattrat through a directory descriptor in the state", .refused = "setxattrat", .lines = "42    setxattrat(5</tmp/s>, \"key.json\", 0, \"user.k\", {value=\"1\", size=1, flags=0}, 16) = 0\n" },
-        .{ .what = "setxattr relative to a cwd the subject moved into the state", .refused = "setxattr", .lines = "42    chdir(\"/tmp/s\") = 0\n42    setxattr(\"key.json\", \"user.k\", \"1\", 1, 0) = 0\n" },
-        .{ .what = "control: setxattr relative to the cwd, outside the state", .refused = null, .lines = "42    setxattr(\"other/x\", \"user.k\", \"1\", 1, 0) = 0\n" },
-        .{ .what = "control: setxattr on an absolute path outside the state", .refused = null, .lines = "42    setxattr(\"/etc/x\", \"user.k\", \"1\", 1, 0) = 0\n" },
-        .{ .what = "control: the cwd moved out of the state before a relative write", .refused = null, .lines = "42    chdir(\"/tmp/s\") = 0\n42    chdir(\"..\") = 0\n42    setxattr(\"key.json\", \"user.k\", \"1\", 1, 0) = 0\n" },
+        .{ .what = "setxattr, relative to the cwd", .observed = "setxattr", .lines = "42    setxattr(\"s/key.json\", \"user.k\", \"1\", 1, 0) = 0\n" },
+        .{ .what = "lsetxattr, relative to the cwd", .observed = "lsetxattr", .lines = "42    lsetxattr(\"s/key.json\", \"user.k\", \"1\", 1, 0) = 0\n" },
+        .{ .what = "removexattr, relative to the cwd", .observed = "removexattr", .lines = "42    removexattr(\"s/key.json\", \"user.k\") = 0\n" },
+        .{ .what = "lremovexattr, relative to the cwd", .observed = "lremovexattr", .lines = "42    lremovexattr(\"s/key.json\", \"user.k\") = 0\n" },
+        .{ .what = "setxattrat through AT_FDCWD", .observed = "setxattrat", .lines = "42    setxattrat(AT_FDCWD</tmp>, \"s/key.json\", 0, \"user.k\", {value=\"1\", size=1, flags=0}, 16) = 0\n" },
+        .{ .what = "removexattrat through AT_FDCWD", .observed = "removexattrat", .lines = "42    removexattrat(AT_FDCWD</tmp>, \"s/key.json\", 0, \"user.k\") = 0\n" },
+        .{ .what = "setxattrat through a directory descriptor in the state", .observed = "setxattrat", .lines = "42    setxattrat(5</tmp/s>, \"key.json\", 0, \"user.k\", {value=\"1\", size=1, flags=0}, 16) = 0\n" },
+        .{ .what = "setxattr relative to a cwd the subject moved into the state", .observed = "setxattr", .lines = "42    chdir(\"/tmp/s\") = 0\n42    setxattr(\"key.json\", \"user.k\", \"1\", 1, 0) = 0\n" },
+        .{ .what = "control: setxattr relative to the cwd, outside the state", .observed = null, .lines = "42    setxattr(\"other/x\", \"user.k\", \"1\", 1, 0) = 0\n" },
+        .{ .what = "control: setxattr on an absolute path outside the state", .observed = null, .lines = "42    setxattr(\"/etc/x\", \"user.k\", \"1\", 1, 0) = 0\n" },
+        .{ .what = "control: the cwd moved out of the state before a relative write", .observed = null, .lines = "42    chdir(\"/tmp/s\") = 0\n42    chdir(\"..\") = 0\n42    setxattr(\"key.json\", \"user.k\", \"1\", 1, 0) = 0\n" },
     };
     for (cases) |c| {
         const text = try std.fmt.allocPrint(a, "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n{s}", .{c.lines});
         const p = try parse(a, text, "/tmp/s", "", "/tmp");
-        if (c.refused) |r| {
-            std.testing.expectEqualStrings(r, p.unsupported orelse "(none)") catch |e| {
+        try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
+        if (c.observed) |r| {
+            std.testing.expect(p.metadata_observed.items.len == 1 and std.mem.eql(u8, p.metadata_observed.items[0], r)) catch |e| {
                 std.debug.print("case: {s}\n", .{c.what});
                 return e;
             };
-        } else if (p.unsupported) |u| {
-            std.debug.print("case: {s} refused as {s}\n", .{ c.what, u });
+        } else if (p.metadata_observed.items.len != 0) {
+            std.debug.print("case: {s} reported as {s}\n", .{ c.what, p.metadata_observed.items[0] });
             return error.TestUnexpectedResult;
         }
     }
     const child = "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242\n4242  setxattr(\"s/key.json\", \"user.k\", \"1\", 1, 0) = 0\n";
     const q = try parse(a, child, "/tmp/s", "", "/tmp");
-    try std.testing.expectEqualStrings("setxattr", q.unsupported orelse "(none)");
-    try std.testing.expect(q.childTouched());
+    try std.testing.expectEqual(@as(?[]const u8, null), q.unsupported);
+    try std.testing.expect(!q.childTouched());
+    try std.testing.expectEqual(@as(usize, 1), q.metadata_observed.items.len);
     const child_outside = "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242\n4242  setxattr(\"/etc/x\", \"user.k\", \"1\", 1, 0) = 0\n";
     const r = try parse(a, child_outside, "/tmp/s", "", "/tmp");
     try std.testing.expectEqual(@as(?[]const u8, null), r.unsupported);
+    try std.testing.expectEqual(@as(usize, 0), r.metadata_observed.items.len);
     const no_cwd = "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    setxattr(\"s/key.json\", \"user.k\", \"1\", 1, 0) = 0\n";
     const u = try parse(a, no_cwd, "/tmp/s", "", "");
-    try std.testing.expectEqualStrings("setxattr", u.unsupported orelse "(none)");
+    try std.testing.expectEqual(@as(?[]const u8, null), u.unsupported);
+    try std.testing.expectEqual(@as(usize, 1), u.metadata_observed.items.len);
 }
 
 test "both of strace's -f pid prefixes are stripped" {
@@ -3811,4 +3920,334 @@ test "a target-chosen string cannot pass for strace's interrupted-call return (#
     ;
     const p = try parse(arena_state.allocator(), text, "/tmp/sg", "", "/work");
     try std.testing.expectEqual(@as(usize, 1), p.classes.items.len);
+}
+
+// Not extended past the strace the CI installs (6.8): calls a newer strace adds are not printed by
+// that one, so the reader never sees them.
+const strace_file_class = [_][]const u8{
+    "access",     "acct",              "chdir",             "chmod",        "chown",      "chroot",
+    "creat",      "execve",            "execveat",          "faccessat",    "faccessat2", "fanotify_mark",
+    "fchmodat",   "fchmodat2",         "fchownat",          "fsconfig",     "fspick",     "futimesat",
+    "getcwd",     "getxattr",          "inotify_add_watch", "lchown",       "lgetxattr",  "link",
+    "linkat",     "listxattr",         "llistxattr",        "lremovexattr", "lsetxattr",  "lstat",
+    "mkdir",      "mkdirat",           "mknod",             "mknodat",      "mount",      "mount_setattr",
+    "move_mount", "name_to_handle_at", "newfstatat",        "open",         "open_tree",  "openat",
+    "openat2",    "pivot_root",        "quotactl",          "readlink",     "readlinkat", "removexattr",
+    "rename",     "renameat",          "renameat2",         "rmdir",        "setxattr",   "stat",
+    "statfs",     "statx",             "swapoff",           "swapon",       "symlink",    "symlinkat",
+    "truncate",   "umount2",           "unlink",            "unlinkat",     "uselib",     "utime",
+    "utimensat",  "utimes",
+};
+
+const UnspelledCall = struct { name: []const u8, why: []const u8 };
+const unspelled_file_calls = [_]UnspelledCall{
+    .{ .name = "execve", .why = "a process call: its path names the image to run, and the reader decides on it before any scope" },
+    .{ .name = "execveat", .why = "the same, for the descriptor-relative form" },
+    .{ .name = "chdir", .why = "the call the relative spellings below are built from" },
+    .{ .name = "getcwd", .why = "no path argument: strace prints the result, not an argument" },
+    .{ .name = "fsconfig", .why = "its path argument holds a plain value (FSCONFIG_SET_STRING's \"tmpfs\", say) for every command but FSCONFIG_SET_PATH and FSCONFIG_SET_PATH_EMPTY, so resolving it would refuse calls made elsewhere" },
+    .{ .name = "quotactl", .why = "strace prints its command as QCMD(...), and syscallArg does not nest that comma, so no later argument can be read; ioctl's _IOC(...) is read through that same split" },
+};
+
+// Not read from `path_syscalls`: a position copied from the table would agree with the table's own
+// mistake.
+const SpelledCall = struct { name: []const u8, args: []const []const u8, result: []const u8 = " = 0" };
+const spelled_calls = [_]SpelledCall{
+    .{ .name = "open", .args = &.{ "@P0", "O_WRONLY|O_CREAT|O_TRUNC", "0644" }, .result = " = 3<@A0>" },
+    .{ .name = "creat", .args = &.{ "@P0", "0644" }, .result = " = 3<@A0>" },
+    .{ .name = "openat", .args = &.{ "@D0", "@P0", "O_WRONLY|O_CREAT|O_TRUNC", "0644" }, .result = " = 3<@A0>" },
+    .{ .name = "openat2", .args = &.{ "@D0", "@P0", "{flags=O_WRONLY|O_CREAT|O_TRUNC, mode=0644, resolve=0}", "24" }, .result = " = 3<@A0>" },
+    .{ .name = "open_tree", .args = &.{ "@D0", "@P0", "OPEN_TREE_CLONE" }, .result = " = 3<@A0>" },
+    .{ .name = "mkdir", .args = &.{ "@P0", "0755" } },
+    .{ .name = "mkdirat", .args = &.{ "@D0", "@P0", "0755" } },
+    .{ .name = "mknod", .args = &.{ "@P0", "S_IFREG|0644" } },
+    .{ .name = "mknodat", .args = &.{ "@D0", "@P0", "S_IFREG|0644" } },
+    .{ .name = "unlink", .args = &.{"@P0"} },
+    .{ .name = "unlinkat", .args = &.{ "@D0", "@P0", "0" } },
+    .{ .name = "rmdir", .args = &.{"@P0"} },
+    .{ .name = "rename", .args = &.{ "@P0", "@P1" } },
+    .{ .name = "renameat", .args = &.{ "@D0", "@P0", "@D1", "@P1" } },
+    .{ .name = "renameat2", .args = &.{ "@D0", "@P0", "@D1", "@P1", "0" } },
+    .{ .name = "link", .args = &.{ "@P0", "@P1" } },
+    .{ .name = "linkat", .args = &.{ "@D0", "@P0", "@D1", "@P1", "0" } },
+    .{ .name = "symlink", .args = &.{ "\"t\"", "@P0" } },
+    .{ .name = "symlinkat", .args = &.{ "\"t\"", "@D0", "@P0" } },
+    .{ .name = "truncate", .args = &.{ "@P0", "0" } },
+    .{ .name = "chmod", .args = &.{ "@P0", "0644" } },
+    .{ .name = "fchmodat", .args = &.{ "@D0", "@P0", "0644" } },
+    .{ .name = "fchmodat2", .args = &.{ "@D0", "@P0", "0644", "0" } },
+    .{ .name = "chown", .args = &.{ "@P0", "1000", "1000" } },
+    .{ .name = "lchown", .args = &.{ "@P0", "1000", "1000" } },
+    .{ .name = "fchownat", .args = &.{ "@D0", "@P0", "1000", "1000", "0" } },
+    .{ .name = "utime", .args = &.{ "@P0", "NULL" } },
+    .{ .name = "utimes", .args = &.{ "@P0", "NULL" } },
+    .{ .name = "futimesat", .args = &.{ "@D0", "@P0", "NULL" } },
+    .{ .name = "utimensat", .args = &.{ "@D0", "@P0", "NULL", "0" } },
+    .{ .name = "setxattr", .args = &.{ "@P0", "\"user.k\"", "\"1\"", "1", "0" } },
+    .{ .name = "lsetxattr", .args = &.{ "@P0", "\"user.k\"", "\"1\"", "1", "0" } },
+    .{ .name = "removexattr", .args = &.{ "@P0", "\"user.k\"" } },
+    .{ .name = "lremovexattr", .args = &.{ "@P0", "\"user.k\"" } },
+    .{ .name = "setxattrat", .args = &.{ "@D0", "@P0", "0", "\"user.k\"", "{value=\"1\", size=1, flags=0}", "16" } },
+    .{ .name = "removexattrat", .args = &.{ "@D0", "@P0", "0", "\"user.k\"" } },
+    .{ .name = "getxattr", .args = &.{ "@P0", "\"user.k\"", "NULL", "0" }, .result = " = 1" },
+    .{ .name = "lgetxattr", .args = &.{ "@P0", "\"user.k\"", "NULL", "0" }, .result = " = 1" },
+    .{ .name = "listxattr", .args = &.{ "@P0", "NULL", "0" }, .result = " = 7" },
+    .{ .name = "llistxattr", .args = &.{ "@P0", "NULL", "0" }, .result = " = 7" },
+    .{ .name = "stat", .args = &.{ "@P0", "{st_mode=S_IFREG|0644, st_size=2, ...}" } },
+    .{ .name = "lstat", .args = &.{ "@P0", "{st_mode=S_IFREG|0644, st_size=2, ...}" } },
+    .{ .name = "newfstatat", .args = &.{ "@D0", "@P0", "{st_mode=S_IFREG|0644, st_size=2, ...}", "0" } },
+    .{ .name = "statx", .args = &.{ "@D0", "@P0", "AT_STATX_SYNC_AS_STAT", "STATX_ALL", "{stx_mask=STATX_ALL, ...}" } },
+    .{ .name = "statfs", .args = &.{ "@P0", "{f_type=EXT2_SUPER_MAGIC, ...}" } },
+    .{ .name = "access", .args = &.{ "@P0", "F_OK" } },
+    .{ .name = "faccessat", .args = &.{ "@D0", "@P0", "F_OK" } },
+    .{ .name = "faccessat2", .args = &.{ "@D0", "@P0", "F_OK", "0" } },
+    .{ .name = "readlink", .args = &.{ "@P0", "\"t\"", "4096" }, .result = " = 1" },
+    .{ .name = "readlinkat", .args = &.{ "@D0", "@P0", "\"t\"", "4096" }, .result = " = 1" },
+    .{ .name = "inotify_add_watch", .args = &.{ "4<anon_inode:inotify>", "@P0", "IN_MODIFY" }, .result = " = 1" },
+    .{ .name = "fanotify_mark", .args = &.{ "4<anon_inode:[fanotify]>", "FAN_MARK_ADD", "FAN_MODIFY", "@D0", "@P0" } },
+    .{ .name = "name_to_handle_at", .args = &.{ "@D0", "@P0", "{handle_bytes=128 => 8, handle_type=1, f_handle=0x0102030405060708}", "[42]", "0" } },
+    .{ .name = "acct", .args = &.{"@P0"} },
+    .{ .name = "chroot", .args = &.{"@P0"} },
+    .{ .name = "uselib", .args = &.{"@P0"} },
+    .{ .name = "mount", .args = &.{ "\"none\"", "@P0", "\"tmpfs\"", "0", "NULL" } },
+    .{ .name = "umount2", .args = &.{ "@P0", "0" } },
+    .{ .name = "pivot_root", .args = &.{ "@P0", "@P1" } },
+    .{ .name = "move_mount", .args = &.{ "@D0", "@P0", "@D1", "@P1", "0" } },
+    .{ .name = "mount_setattr", .args = &.{ "@D0", "@P0", "0", "{attr_set=MOUNT_ATTR_RDONLY, attr_clr=0, propagation=0, userns_fd=0}", "32" } },
+    .{ .name = "fspick", .args = &.{ "@D0", "@P0", "FSPICK_CLOEXEC" }, .result = " = 3" },
+    .{ .name = "swapon", .args = &.{ "@P0", "0" } },
+    .{ .name = "swapoff", .args = &.{"@P0"} },
+};
+
+fn spelledCall(name: []const u8) ?SpelledCall {
+    for (spelled_calls) |c| if (std.mem.eql(u8, c.name, name)) return c;
+    return null;
+}
+
+fn spelledPosition(c: SpelledCall, token: []const u8) ?usize {
+    for (c.args, 0..) |a, i| if (std.mem.eql(u8, a, token)) return i;
+    return null;
+}
+
+const SpellingSlot = struct { dirfd: []const u8, path: []const u8, suffix: []const u8 };
+const spelling_slots = [2]SpellingSlot{
+    .{ .dirfd = "@D0", .path = "@P0", .suffix = "" },
+    .{ .dirfd = "@D1", .path = "@P1", .suffix = "2" },
+};
+
+fn isUnspelled(name: []const u8) bool {
+    for (unspelled_file_calls) |u| if (std.mem.eql(u8, u.name, name)) return true;
+    return false;
+}
+
+fn isStraceFileCall(name: []const u8) bool {
+    for (strace_file_class) |n| if (std.mem.eql(u8, n, name)) return true;
+    return false;
+}
+
+test "every call strace prints a path for is spelled below, or says why it is not" {
+    for (strace_file_class) |name| {
+        const spelled = spelledCall(name) != null;
+        const unspelled = isUnspelled(name);
+        if (spelled == unspelled) {
+            std.debug.print("{s}: spelled={}, unspelled={}\n", .{ name, spelled, unspelled });
+            return error.TestUnexpectedResult;
+        }
+    }
+    for (unspelled_file_calls) |u| try std.testing.expect(isStraceFileCall(u.name));
+}
+
+test "the reader's path tables name the argument strace prints the path in" {
+    var checked: usize = 0;
+    for (path_syscalls ++ metadata_path_syscalls ++ unclassified_path_syscalls) |spec| {
+        const c = spelledCall(spec.name) orelse {
+            std.debug.print("{s} is in a path table and spelled nowhere\n", .{spec.name});
+            return error.TestUnexpectedResult;
+        };
+        for (spec.args, spelling_slots[0..spec.args.len], 0..) |arg, slot, i| {
+            std.testing.expectEqual(spelledPosition(c, slot.path), arg.path) catch |e| {
+                std.debug.print("{s}: path {d}\n", .{ spec.name, i });
+                return e;
+            };
+            std.testing.expectEqual(spelledPosition(c, slot.dirfd), arg.dirfd) catch |e| {
+                std.debug.print("{s}: dirfd {d}\n", .{ spec.name, i });
+                return e;
+            };
+        }
+        checked += 1;
+    }
+    try std.testing.expect(checked > 20);
+}
+
+const SpellingPrefix = struct { raw: []const u8, quoted: []const u8, annotated: []const u8 };
+// Not produced by an escaper here: a second implementation of strace's escaping would read its own
+// mistakes as the reader's.
+const spelling_prefixes = [_]SpellingPrefix{
+    .{ .raw = "/tmp/p", .quoted = "/tmp/p", .annotated = "/tmp/p" },
+    .{ .raw = "/tmp/\xe3\x83\x87", .quoted = "/tmp/\\343\\203\\207", .annotated = "/tmp/\\343\\203\\207" },
+    .{ .raw = "/tmp/a\"b<c>", .quoted = "/tmp/a\\\"b<c>", .annotated = "/tmp/a\\\"b\\74c\\76" },
+    .{ .raw = "/tmp/a\\b", .quoted = "/tmp/a\\\\b", .annotated = "/tmp/a\\\\b" },
+    .{ .raw = "/tmp/a\x0bb", .quoted = "/tmp/a\\vb", .annotated = "/tmp/a\\vb" },
+    .{ .raw = "/tmp/a[b", .quoted = "/tmp/a[b", .annotated = "/tmp/a[b" },
+    .{ .raw = "/tmp/a{b", .quoted = "/tmp/a{b", .annotated = "/tmp/a{b" },
+};
+
+const SpellingPlace = struct { what: []const u8, base: []const u8, rel: []const u8, target: []const u8, outside: bool };
+const spelling_places = [_]SpellingPlace{
+    .{ .what = "from the state's parent", .base = "", .rel = "s/k", .target = "/s/k", .outside = false },
+    .{ .what = "from the state", .base = "/s", .rel = "k", .target = "/s/k", .outside = false },
+    .{ .what = "from inside the state", .base = "/s/d", .rel = "k", .target = "/s/d/k", .outside = false },
+    .{ .what = "out of the state by ..", .base = "/s", .rel = "../x", .target = "/x", .outside = true },
+    .{ .what = "beside the state", .base = "", .rel = "o/k", .target = "/o/k", .outside = true },
+};
+
+const Spelling = enum { absolute, cwd, dirfd, fchdir, first_absolute, second_absolute };
+
+const SpelledRun = struct {
+    unsupported: ?[]const u8,
+    classes: []const contract.OpClass,
+    metadata: []const []const u8,
+    mutations: usize,
+
+    fn counted(self: SpelledRun) bool {
+        return self.unsupported != null or self.classes.len > 0 or self.metadata.len > 0 or self.mutations > 0;
+    }
+
+    fn same(a: SpelledRun, b: SpelledRun) bool {
+        if (!std.mem.eql(u8, a.unsupported orelse "", b.unsupported orelse "")) return false;
+        if (!std.mem.eql(contract.OpClass, a.classes, b.classes)) return false;
+        if (a.metadata.len != b.metadata.len) return false;
+        for (a.metadata, b.metadata) |x, y| if (!std.mem.eql(u8, x, y)) return false;
+        return a.mutations == b.mutations;
+    }
+};
+
+fn spelledText(a: std.mem.Allocator, c: SpelledCall, pre: SpellingPrefix, at: SpellingPlace, how: Spelling, child: bool) ![]const u8 {
+    const who = if (child) "4242  " else "42    ";
+    const base_annot = try std.mem.concat(a, u8, &.{ pre.annotated, at.base });
+    const base_quoted = try std.mem.concat(a, u8, &.{ pre.quoted, at.base });
+    var lines: std.ArrayList(u8) = .empty;
+    try lines.appendSlice(a, "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n");
+    if (child) try lines.appendSlice(a, "42    clone(child_stack=NULL, flags=CLONE_CHILD_SETTID|SIGCHLD) = 4242\n");
+    switch (how) {
+        .absolute, .dirfd => {},
+        .cwd, .first_absolute, .second_absolute => try lines.print(a, "{s}chdir(\"{s}\") = 0\n", .{ who, base_quoted }),
+        .fchdir => try lines.print(a, "{s}fchdir(5<{s}>) = 0\n", .{ who, base_annot }),
+    }
+    const dir = try std.mem.concat(a, u8, &.{ if (how == .dirfd) "5<" else "AT_FDCWD<", base_annot, ">" });
+    var args: std.ArrayList([]const u8) = .empty;
+    for (c.args) |arg| {
+        var out = arg;
+        for (spelling_slots, 0..) |slot, i| {
+            const absolute = switch (how) {
+                .absolute => true,
+                .first_absolute => i == 0,
+                .second_absolute => i == 1,
+                else => false,
+            };
+            if (std.mem.eql(u8, arg, slot.dirfd)) out = if (absolute) "AT_FDCWD</work>" else dir;
+            if (std.mem.eql(u8, arg, slot.path)) out = if (absolute)
+                try std.mem.concat(a, u8, &.{ "\"", pre.quoted, at.target, slot.suffix, "\"" })
+            else
+                try std.mem.concat(a, u8, &.{ "\"", at.rel, slot.suffix, "\"" });
+        }
+        try args.append(a, out);
+    }
+    const result = try std.mem.replaceOwned(u8, a, c.result, "@A0", try std.mem.concat(a, u8, &.{ pre.annotated, at.target }));
+    try lines.print(a, "{s}{s}({s}){s}\n", .{ who, c.name, try std.mem.join(a, ", ", args.items), result });
+    return lines.items;
+}
+
+fn spelledRun(a: std.mem.Allocator, text: []const u8, state: []const u8) !SpelledRun {
+    const p = try parse(a, text, state, "", "/work");
+    return .{ .unsupported = p.unsupported, .classes = p.classes.items, .metadata = p.metadata_observed.items, .mutations = p.mutations.items.len };
+}
+
+test "a call is judged the same however strace spells its path: absolute, from the cwd, from a descriptor, escaped" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    var mismatches: usize = 0;
+    var compared: usize = 0;
+    for (spelled_calls) |c| {
+        const at_form = spelledPosition(c, spelling_slots[0].dirfd) != null;
+        const two_paths = spelledPosition(c, spelling_slots[1].path) != null;
+        for (spelling_prefixes) |pre| for (spelling_places) |place| for ([_]bool{ false, true }) |child| {
+            const state = try std.mem.concat(a, u8, &.{ pre.raw, "/s" });
+            const reference = try spelledRun(a, try spelledText(a, c, pre, place, .absolute, child), state);
+            if (!child and place.outside and reference.counted()) {
+                mismatches += 1;
+                std.debug.print("counted outside the state: {s}, prefix {s}, {s}: {?s}/{any}/{d}md/{d}m\n", .{
+                    c.name, pre.quoted, place.what, reference.unsupported, reference.classes, reference.metadata.len, reference.mutations,
+                });
+            }
+            for ([_]Spelling{ .cwd, .dirfd, .fchdir, .first_absolute, .second_absolute }) |how| {
+                if (how == .dirfd and !at_form) continue;
+                if ((how == .first_absolute or how == .second_absolute) and !two_paths) continue;
+                const run = try spelledRun(a, try spelledText(a, c, pre, place, how, child), state);
+                compared += 1;
+                // Not held to equality: a child's cwd is not followed, so its relative path that names
+                // no descriptor is counted wherever it points.
+                const agrees = if (child and !at_form)
+                    (!reference.counted() or run.counted())
+                else
+                    SpelledRun.same(reference, run);
+                if (!agrees) {
+                    mismatches += 1;
+                    std.debug.print("spelling mismatch: {s} {s}, prefix {s}, {s}, {s}: absolute {?s}/{any}/{d}md/{d}m, this {?s}/{any}/{d}md/{d}m\n", .{
+                        c.name,                @tagName(how),     pre.quoted,             place.what,          if (child) "child" else "subject",
+                        reference.unsupported, reference.classes, reference.metadata.len, reference.mutations, run.unsupported,
+                        run.classes,           run.metadata.len,  run.mutations,
+                    });
+                }
+            }
+        };
+    }
+    try std.testing.expect(compared > 1000);
+    std.testing.expectEqual(@as(usize, 0), mismatches) catch |e| {
+        std.debug.print("{d} of {d} spellings judged differently from the absolute one\n", .{ mismatches, compared });
+        return e;
+    };
+}
+
+test "a call that names its descriptor with an empty or NULL path is placed where the descriptor points, and one whose path strace could not read is refused" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const Case = struct { lines: []const u8, refused: ?[]const u8 };
+    const cases = [_]Case{
+        .{ .refused = "name_to_handle_at", .lines = "42    name_to_handle_at(5</tmp/s/k>, \"\", {handle_bytes=128 => 8, handle_type=1, f_handle=0x01}, [42], AT_EMPTY_PATH) = 0\n" },
+        .{ .refused = null, .lines = "42    name_to_handle_at(5</work/k>, \"\", {handle_bytes=128 => 8, handle_type=1, f_handle=0x01}, [42], AT_EMPTY_PATH) = 0\n" },
+        .{ .refused = "fanotify_mark", .lines = "42    fanotify_mark(4<anon_inode:[fanotify]>, FAN_MARK_ADD, FAN_MODIFY, 5</tmp/s>, NULL) = 0\n" },
+        .{ .refused = null, .lines = "42    fanotify_mark(4<anon_inode:[fanotify]>, FAN_MARK_ADD, FAN_MODIFY, 5</work>, NULL) = 0\n" },
+        .{ .refused = "open_tree", .lines = "42    open_tree(5</tmp/s>, \"\", AT_EMPTY_PATH|OPEN_TREE_CLONE) = 3\n" },
+        .{ .refused = null, .lines = "42    open_tree(5</work>, \"\", AT_EMPTY_PATH|OPEN_TREE_CLONE) = 3\n" },
+        .{ .refused = "mknod", .lines = "42    mknod(0x7ffd12345678, S_IFREG|0644) = 0\n" },
+        .{ .refused = "mknodat", .lines = "42    mknodat(5</work>, 0x7ffd12345678, S_IFREG|0644) = 0\n" },
+    };
+    for (cases) |c| {
+        const text = try std.fmt.allocPrint(a, "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n{s}", .{c.lines});
+        const p = try parse(a, text, "/tmp/s", "", "/work");
+        std.testing.expectEqualStrings(c.refused orelse "(none)", p.unsupported orelse "(none)") catch |e| {
+            std.debug.print("case: {s}", .{c.lines});
+            return e;
+        };
+    }
+}
+
+test "a bind or move mount whose source is inside the state is refused however it is spelled, and one naming a file system is not" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const header = "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n";
+    const bind = try parse(a, header ++ "42    mount(\"/tmp/s/x\", \"/mnt\", NULL, MS_BIND, NULL) = 0\n", "/tmp/s", "", "/work");
+    try std.testing.expectEqualStrings("mount", bind.unsupported orelse "(none)");
+    const tmpfs = try parse(a, header ++ "42    chdir(\"/tmp/s\") = 0\n42    mount(\"none\", \"/mnt\", \"tmpfs\", 0, NULL) = 0\n", "/tmp/s", "", "/work");
+    try std.testing.expectEqualStrings("(none)", tmpfs.unsupported orelse "(none)");
+    const relative_bind = try parse(a, header ++ "42    chdir(\"/tmp\") = 0\n42    mount(\"s/x\", \"/mnt\", NULL, MS_BIND, NULL) = 0\n", "/tmp/s", "", "/work");
+    try std.testing.expectEqualStrings("mount", relative_bind.unsupported orelse "(none)");
+    const relative_move = try parse(a, header ++ "42    chdir(\"/tmp/s\") = 0\n42    mount(\"x\", \"/mnt\", NULL, MS_MOVE, NULL) = 0\n", "/tmp/s", "", "/work");
+    try std.testing.expectEqualStrings("mount", relative_move.unsupported orelse "(none)");
+    const bind_elsewhere = try parse(a, header ++ "42    chdir(\"/tmp\") = 0\n42    mount(\"o/x\", \"/mnt\", NULL, MS_BIND, NULL) = 0\n", "/tmp/s", "", "/work");
+    try std.testing.expectEqualStrings("(none)", bind_elsewhere.unsupported orelse "(none)");
 }

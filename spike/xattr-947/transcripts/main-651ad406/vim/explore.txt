@@ -1,0 +1,16 @@
+UNKNOWN  unsupported_syscall_observed
+         setxattr
+next        This target does something Sideeye refuses by design: the unknown_reason above names the limit, https://github.com/yottayoshida/sideeye/blob/v1.17.0/docs/report-schema.md#refusals-by-reason says what each one stands at, and https://github.com/yottayoshida/sideeye/blob/v1.17.0/DESIGN.md#known-constraints-declared-not-hidden gives the reasons.
+cwd         /  (none declared: Sideeye's own)
+
+expected    exit 0
+atomicity   1 path(s) judged pre-or-post
+l1          no marker configured
+case        (none)
+processes   single process
+not tested  power loss, torn writes, concurrent processes
+
+Sideeye could not judge this run. That is not a pass: the exit code is 2 so a
+caller has to decide deliberately what to do with it.
+sideeye: json sha256=3ee15754193db4cd4b5c88b736769f3674867cad61d73229cc8a875e221ad586;
+exit 2

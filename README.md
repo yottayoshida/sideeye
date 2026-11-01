@@ -2,7 +2,7 @@
 [![CI](https://github.com/yottayoshida/sideeye/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/yottayoshida/sideeye/actions/workflows/ci.yml?query=branch%3Amain) [![Release](https://img.shields.io/github/v/release/yottayoshida/sideeye)](https://github.com/yottayoshida/sideeye/releases/latest)
 <p align="center"><img src="docs/sideeye.jpg" alt="Sideeye" width="360"></p>
 
-Sideeye finds out what your program leaves on disk when it dies at the worst possible moment. Declare an invariant — *"if this operation said it succeeded, this must still hold after a restart"* — and Sideeye kills your process before each state-changing operation, one crash world each, and brings back the earliest failing one as a replayable case.
+Sideeye finds out what your program leaves on disk when it dies at the worst possible moment. Declare an invariant — *"if this operation said it succeeded, this must still hold on the next run"* — and Sideeye kills your process before each state-changing operation, one crash world each, and brings back the earliest failing one as a replayable case.
 
 `sideeye demo`, trimmed, checked line by line in CI:
 
@@ -23,7 +23,7 @@ not tested  power loss (a missing fsync cannot fail this run), torn writes, conc
 ```
 <!-- demo-output:end -->
 
-Counterexamples found: RuboCop, ImageMagick, the AWS CLI, [more](docs/found.md) — [four fixes](docs/case-studies.md). A target Sideeye cannot fully observe is UNKNOWN, never a silent PASS — except unrecorded writes under a directory a recorded `rename` moved in from outside, counted as `paths_attributed_to_rename` in every JSON report ([why](DESIGN.md#the-one-named-exception-a-directory-renamed-in-from-outside)).
+Counterexamples found: RuboCop, ImageMagick, the AWS CLI, [more](docs/found.md) — [four fixes](docs/case-studies.md). A target Sideeye cannot fully observe is UNKNOWN, never a silent PASS — except the [known windows](docs/silent-windows.md), each with the report field or test that shows it, or a note that nothing does.
 
 ## Installation
 

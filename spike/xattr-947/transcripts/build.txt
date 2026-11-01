@@ -1,0 +1,58 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.49kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:trixie-slim
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/5] FROM docker.io/library/debian:trixie-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad
+#4 resolve docker.io/library/debian:trixie-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad done
+#4 CACHED
+
+#5 [internal] load build context
+#5 transferring context: 1.82kB done
+#5 DONE 0.0s
+
+#6 [2/5] COPY proxy-ca.pem /tmp/proxy-ca.pem
+#6 DONE 0.0s
+
+#7 [3/5] RUN printf '%s\n'       'Types: deb'       'URIs: http://snapshot.debian.org/archive/debian/20261014T000000Z'       'Suites: trixie trixie-updates'       'Components: main'       'Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg'       ''       'Types: deb'       'URIs: http://snapshot.debian.org/archive/debian-security/20261014T000000Z'       'Suites: trixie-security'       'Components: main'       'Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg'       > /etc/apt/sources.list.d/debian.sources &&     printf '%s\n' 'Acquire::Check-Valid-Until "false";' 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/99snapshot
+#7 DONE 0.1s
+
+#8 [4/5] RUN apt-get update && apt-get install -y --no-install-recommends       strace python3 ca-certificates procps vim logrotate libfaketime faketime acl attr > /tmp/apt.log 2>&1       && echo "OK packages" || { tail -5 /tmp/apt.log; exit 1; }
+#8 2.113 Get:1 http://snapshot.debian.org/archive/debian/20261014T000000Z trixie InRelease [140 kB]
+#8 2.168 Get:2 http://snapshot.debian.org/archive/debian/20261014T000000Z trixie-updates InRelease [47.3 kB]
+#8 2.191 Get:3 http://snapshot.debian.org/archive/debian-security/20261014T000000Z trixie-security InRelease [43.4 kB]
+#8 2.447 Get:4 http://snapshot.debian.org/archive/debian/20261014T000000Z trixie/main arm64 Packages [9614 kB]
+#8 3.032 Get:5 http://snapshot.debian.org/archive/debian/20261014T000000Z trixie-updates/main arm64 Packages [4424 B]
+#8 4.136 Get:6 http://snapshot.debian.org/archive/debian-security/20261014T000000Z trixie-security/main arm64 Packages [267 kB]
+#8 5.087 Fetched 10.1 MB in 7s (1438 kB/s)
+#8 5.087 Reading package lists...
+#8 48.65 OK packages
+#8 DONE 48.8s
+
+#9 [5/5] RUN dpkg-query -W -f '${Package} ${Version}\n' vim logrotate libfaketime strace acl > /versions.txt && cat /versions.txt
+#9 0.091 acl 2.3.2-2+b1
+#9 0.091 libfaketime 0.9.10+2024-06-05+gba9ed5b2-0.6
+#9 0.091 logrotate 3.22.0-1+b2
+#9 0.091 strace 6.13+ds-1
+#9 0.091 vim 2:9.1.1230-2
+#9 DONE 0.1s
+
+#10 exporting to image
+#10 exporting layers
+#10 exporting layers 2.6s done
+#10 exporting manifest sha256:16af9a3eed4edd4a6979e4fe3aeb5821f64c139ac861d07fe271b588e0c92890 done
+#10 exporting config sha256:a2f96a9b5af69e3c30cc79fc717bedf0de5cfad1b0bca3c8de24e805e830199e done
+#10 exporting attestation manifest sha256:58b4c20e000303ec782a9829f6a18d27b0d9b9752a649021951fb912fa6a4078 done
+#10 exporting manifest list sha256:e0cbe48eb2defeaed133fa34e43f79bc8c5dd13260d8762024720d53e435b260 done
+#10 naming to docker.io/library/sideeye-xattr947:latest done
+#10 unpacking to docker.io/library/sideeye-xattr947:latest
+#10 unpacking to docker.io/library/sideeye-xattr947:latest 0.6s done
+#10 DONE 3.2s
