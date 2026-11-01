@@ -156,9 +156,9 @@ const usage_fmt =
     \\               are still read against it
     \\  --apparatus  a device the operation's environment must carry, kind:value, repeatable:
     \\               env:NAME, env:NAME=VALUE, preload:LIB (a line of /etc/ld.so.preload),
-    \\               pythonpath:FILE, note:TEXT. env: is checked before setup runs, the rest
-    \\               after it; a missing one is a SETUP ERROR naming it. The report carries
-    \\               the list as declared (docs/apparatus.md). The engine applies nothing
+    \\               pythonpath:FILE, note:TEXT, pin:random. pin: the engine applies; env: is
+    \\               checked before setup, the rest after it; a missing one is a SETUP ERROR
+    \\               naming it. The report carries the list (docs/apparatus.md)
     \\  --scratch    a path under --state the built-in invariants leave alone, repeatable:
     \\               the path itself and everything beneath it, judged in no world — not
     \\               its bytes, not its presence. The report carries the declaration and

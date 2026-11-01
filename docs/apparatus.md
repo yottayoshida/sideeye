@@ -9,7 +9,8 @@ Every one of those lived in a launcher script or in `setup`, and the committed
 define said nothing about it.
 
 `[define] apparatus` is where the define says it (ADR 0041). Sideeye applies
-none of it. It checks that every entry it can check is present in the
+none of it — except `pin:random`, the one entry the engine applies itself (ADR 0146,
+[below](#pinrandom-the-one-entry-the-engine-applies)). It checks that every entry it can check is present in the
 environment the operation will inherit, and refuses the run as SETUP ERROR —
 naming the entry and what it looked at — when one is not. The `env:` entries
 are checked **before `setup` runs**, so a setup started without a declared
@@ -41,6 +42,59 @@ line, the same as the commands' argv form.)
 | `preload:LIB` | a line of `/etc/ld.so.preload` names a library whose basename starts with `LIB` | the launcher writes the line (needs root). Linux only |
 | `pythonpath:FILE` | some entry of `PYTHONPATH` has `FILE` directly under it. Existence only: the content is not judged | `setup` generates the file; the launcher exports `PYTHONPATH` |
 | `note:TEXT` | nothing — carried, listed as unchecked | wherever it lives (an hgrc line, a container's seccomp profile, a pin applied inside the operation's own command line) |
+| `pin:random` | nothing to check: the engine applies it (below) | the engine. Linux only, the default mode or `--observe syscalls`, where the engine can make cgroups |
+
+## `pin:random`: the one entry the engine applies
+
+**A define that writes `pin:random` has the bytes its operation and that operation's children
+receive from libc's `getrandom`, `getentropy` and `arc4random*`, and from reads of `/dev/urandom`
+and `/dev/random`, come out the same in every run of one invocation — the two runs of
+`--twice`, every explored world, and the replay of its case — and different in every process.**
+The engine writes a small library, `libsideeye_pin.so`, into the work directory and puts it ahead
+of the shim in the operation's `LD_PRELOAD`. Its seed is drawn from the real source once per
+`explore` or `preflight`, and kept in the case (`case_version` 8) for the replay; each process
+derives its own from its parent's and a count, carried in the environment every exec or spawn
+passes on, and claims it once per run with an exclusive create under the work directory's
+`pin-claims/`: a seed that reaches two processes — the two children of a relay the library is not
+loaded in, a static binary — is drawn from by the first, and the second draws the real source, so
+the two runs differ rather than agree on a shared stream. It is the hand-written `pin-random.c` of the dogfood records
+(`spike/dogfood/2026-10-12-shipped-v1120/apparatus/`) without the preload file and the root it
+needs. The clock is not pinned by this entry: libfaketime still goes in `/etc/ld.so.preload`,
+declared with `preload:libfaketime`, because the engine replaces `LD_PRELOAD`.
+
+**The pinned bytes are recomputable by anyone holding the case** — and the reproduce line, which
+prints the seed. Do not ask for the pin in a define whose operation touches real keys, a real
+`HOME`'s key stores or network credentials, and throw away any key the pinned run left in the
+state. A process the operation leaves behind — a daemon it starts — holds the pinned stream too,
+which is why the entry needs a cgroup: the engine stops such a process with the run. The
+reproduce line runs the operation outside any cgroup of the engine's, so a daemon it starts there
+outlives it with the pinned stream.
+
+Refused by name, as SETUP ERROR: under `--observe supervised`, which loads nothing into the
+operation; on macOS; on a Linux host where the engine cannot make cgroups; and with a work
+directory whose path holds a space, a tab or a colon, or that sits on a `noexec` mount, where the loader
+would skip the library without a word.
+
+What the pin does not reach. Each of these leaves the two runs different, which is refused as
+before — never a stream silently shared:
+
+- a statically linked binary (Go, for one), a raw `syscall(SYS_getrandom)`, the CPU's `RDRAND`
+  (Qt's `QRandomGenerator` uses it on x86_64: KeePassXC was measured on aarch64 only),
+  `/proc/sys/kernel/random/uuid`, the auxiliary vector's `AT_RANDOM`;
+- a child started through `execl`, `execle`, `execlp`, `fexecve`, `execveat`, `daemon`,
+  `forkpty`, a raw `clone`, `_Fork` or a raw `execve`: it receives an empty seed, or one already
+  claimed, and draws the real source;
+- what glibc draws inside itself (`tmpfile`, `mktemp`, `tmpnam`), and a descriptor of
+  `/dev/urandom` carried across an exec;
+- a process that cannot create its claim under `pin-claims/` — one that dropped to another user,
+  or runs in a chroot or a mount namespace the work directory is not in;
+- two threads of one process drawing, in an order that varies between runs, and two threads
+  calling `system` or `popen` at once;
+- a vfork child that calls `execv` or `execvp` rather than `execve`;
+- a stream from `fopen("/dev/urandom")`, whose `fileno` is `-1`; a descriptor duplicated from the
+  device's (`dup`), which reads the real device;
+- the temporary names the shim builds for `mkstemp` (time and pid).
+
 
 ## The one thing to know about `preload:`
 

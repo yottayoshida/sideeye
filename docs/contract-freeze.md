@@ -32,7 +32,7 @@ stay the same.
    recorded in DESIGN §12's fourth facing, with no ADR of its own;
    `apparatus` with ADR 0041; `scratch` with ADR 0043), and named here rather than left to
    the code so the frozen surface and the accepted set stay the same list.
-   `apparatus` and `scratch` take only the array form: double-quoted `kind:value` entries for the one, double-quoted paths relative to `state` for the other. Both command spellings: the string
+   `apparatus` and `scratch` take only the array form: double-quoted `kind:value` entries for the one, double-quoted paths relative to `state` for the other. The kind `pin:random` joined the apparatus grammar on 2026-11-01 (#951, ADR 0146) under the same allowance: a `pin:` entry was refused until then, so no accepted spelling changed meaning. Both command spellings: the string
    form with its split-on-spaces, no-quoting rule, and the argv form — one
    line, double-quoted elements, passed verbatim (ADR 0019). Unknown keys,
    malformed values and the array form on non-command keys refuse with named,
@@ -378,7 +378,12 @@ stay the same.
    and `observe` whatever the mode, `wrappers` included; a v7 file without `observe`, without
    `apparatus`, with notes alone or with an entry the define grammar refuses, or an older file
    carrying an `apparatus` array, refuses as malformed, and an earlier binary refuses a v7 file as one it
-   cannot parse. A future trace-contract bump is therefore *not* a
+   cannot parse. Version 8 (#951, ADR 0146, 2026-11-01) is version 7 with `pin:random` in
+   `apparatus` and two top-level keys, `pin_seed` (64 lowercase hex digits) and `pin_generator`
+   (`chacha20-v1`), written only for a define that asks for the pin, so that a replay draws the
+   streams the counterexample was found with; a v8 file without the entry, without either key, with
+   a malformed seed or a generator this binary does not have, and an older file carrying the entry
+   or either key, refuses as malformed. An earlier binary refuses a v8 file at parse. A future trace-contract bump is therefore *not* a
    broken promise: old cases refuse with the mismatch named, and that
    refusal is the promised behavior.
    **Read on 2026-10-10** (#756, ADR 0107): a case saved from a define whose checker rejects the
