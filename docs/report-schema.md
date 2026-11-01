@@ -193,7 +193,7 @@ holds this list to the enum.
 - `no_shim_marker` — The trace carries no shim marker, so the shim never loaded into the operation, as with a statically linked image or a macOS binary carrying hardened runtime, library validation or a platform marker. Under --observe supervised, the engine could not write its own start record. Why: DESIGN.md, the bullet beginning 'Under the default mode and'.
 - `state_changed_without_ops` — The state directory changed during the recording run, or preflight --twice's second run, while the trace holds zero mutating operations, so operations were missed.
 - `contract_version_mismatch` — The trace was written by a shim built against a different trace contract than this engine, in the recording run or preflight --twice's second run.
-- `unsupported_syscall_observed` — The shim or the oracle saw a call on the state directory that Sideeye does not model: a writable shared mapping of a state file, an extended-attribute write, a reflink clone, a swapping rename, a link by descriptor, or a call the oracle has no name for.
+- `unsupported_syscall_observed` — The shim or the oracle saw a call on the state directory that Sideeye does not model: a writable shared mapping of a state file, a reflink clone, a swapping rename, a link by descriptor, or a call the oracle has no name for.
 - `oracle_missed_operation` — The oracle's account of the subject's state-directory operations holds one the recorder did not record (or a different one) at the same position, such as a write libc issued from inside itself. Why: DESIGN.md, the bullet beginning 'Where a write is counted'.
 - `oracle_saw_phantom` — The recorder holds more state-directory operations for the subject than the oracle's account, so it recorded one the oracle never saw; this points at Sideeye itself.
 - `child_process_detected` — A process left Sideeye's reach: the target replaced its image and the observation chain broke, the oracle saw a clone sharing the working directory or an unshare, or a process left the process group or the run's cgroup, or outlived it, where the engine cannot stop it. Why: DESIGN.md, the bullet beginning 'A target that creates other'.
@@ -342,8 +342,8 @@ trapped first line under `--observe syscalls` is passed over as well. Not passed
 first path and an `*xattrat` call's when the flags hold `AT_EMPTY_PATH` or cannot be read. A
 `linkat` with an empty first path, called directly or under `--observe syscalls` or `supervised`,
 is still refused by the recording witnesses, which record it as a link by descriptor; the one glibc
-issues for `link(3)` under the default mode is recorded by nothing and passed over here; an ownership, permission or timestamp call given the empty path is still listed
-in `metadata_observed`, and any other call given one is read as it was before. **`fallocate` with `FALLOC_FL_KEEP_SIZE` alone
+issues for `link(3)` under the default mode is recorded by nothing and passed over here; an ownership, permission, timestamp or extended-attribute call given the empty path is still listed
+in `metadata_writes`, and any other call given one is read as it was before. **`fallocate` with `FALLOC_FL_KEEP_SIZE` alone
 is read as a read too, mode 0 is counted as a truncate, and any other mode is refused naming it** (#978,
 ADR 0140): libglnx and glib give every file they write its size first, in mode 0, which grows the file
 with zeros — a crash before the write leaves that file; `KEEP_SIZE` alone changes neither size nor
@@ -354,19 +354,21 @@ RocksDB's `ldb` issues it from its buffered reads; from a child it no longer cou
 write either. `posix_fadvise` (strace prints `fadvise64`) was already among the reads, and `madvise`
 names neither a descriptor nor a path, so this reader never places it in the state; the advice that
 could change a file needs a writable shared mapping, which is refused at the `mmap` or `mprotect` that
-made it. Extended-attribute writes (`setxattr`,
-`removexattr` and their `l`/`f` forms) still refuse, through a relative path as through an
-absolute one, from the subject and from every child. A path argument is resolved by its spelling, as
-this reader resolves every path argument, so a write naming a symbolic link outside the state that
-points into it is not seen — a content change through such a link still meets the snapshots, an
-attribute does not. The `f` forms are placed by the path the kernel resolved for the descriptor, and
-are seen.
-They refuse because what an attribute write does to the state
-has not been ruled on — the restore does not put attributes back, and nothing yet says whether
-such a write is judged or, like the ownership and permission calls #121 observes, set aside.
-The macOS fs_usage oracle keeps its own list (`src/fsusage.zig`), which already reads
-`getxattr`, `fgetxattr`, `listxattr`, `flistxattr` and `select` as reads; it was not measured
-for the rest. The other path calls this reader neither classifies nor reads as reads — `mknod`,
+made it. **Extended-attribute writes (`setxattr`, `removexattr` and their `l`/`f`/`at` forms) are set
+aside as the ownership and permission calls are** (#947, ADR 0142): named in `metadata_writes`
+and excluded from judgement, through a relative path as through an absolute one, from the subject
+and from every child, whose relative path is never placed by the subject's working directory — one
+that cannot be placed is named. A path argument is resolved by its spelling, as this reader resolves
+every path argument, so a write naming a symbolic link outside the state that points into it is not
+named; a content change through such a link still meets the snapshots. The `f` forms are placed by
+the path the kernel resolved for the descriptor. The rebuild carries no attribute, so every run
+starts without the ones the setup set on the entries under the state directory; one on the state
+directory itself is not rebuilt, so what the last run left there stays, as its mode does. The macOS fs_usage oracle keeps its own list (`src/fsusage.zig`), which reads `getxattr`,
+`fgetxattr`, `listxattr`, `flistxattr` and `select` as reads and names `setxattr`, `fsetxattr`,
+`removexattr` and `fremovexattr` as metadata — from any process whose line reaches the state, as it
+names the ownership and permission calls; like them, one whose path or descriptor it cannot place is
+passed over, where the strace reader names it. The `at` forms are named where the strace in use
+traces them. The other path calls this reader neither classifies nor reads as reads — `mknod`,
 `mount`, `name_to_handle_at` and the rest strace prints a path for — are placed by their path the same
 way and refused inside the state through any spelling, a bind or move mount's source included (#935); `quotactl` and `fsconfig` are the
 exception, refused only when they quote an absolute path or name a descriptor inside the state:
@@ -436,7 +438,7 @@ declared takes `run_then_expect_status` — run the operation by hand first, the
 (which `message` now names) `run_by_hand_signalled`; `preflight --twice`'s second run ending
 differently from the first takes `second_run_diverged`, which says the restore rebuilds the
 names, kinds, bytes and permission bits under `--state` (a directory with its owner's bits added) and not their owners, set-id or sticky
-bits, or timestamps (the permission bits since #678: the two records the step was written for,
+bits, extended attributes or timestamps (the permission bits since #678: the two records the step was written for,
 an executable bit and a `0600` key, met this refusal before then); `kill_did_not_land` takes `kill_not_landed` where no landing was
 recorded at the asked position and `not_repeating` where the world reached it through other
 operations — since #815 in every exploration, not only one with an admitted child: an operation of another class, or a path the recording spells at another position (ADR 0119), with `message` naming both; `multiple_threads_detected` raised from the run's own record of its threads takes
@@ -664,7 +666,7 @@ report refuses to be reassuring without an account.
 | `replay` | string | The exact replay command for the saved case; `"-"` when there is none. Through the MCP server it is a `sideeye_replay_case` call, or a sentence beginning `not offered:` when a case was saved that the server cannot hand back (docs/mcp.md). Each path in it is single-quoted where a shell would split or expand it (#711), so it pastes as written — an ordinary path reads as it always did. |
 | `evidence` | string | Path of the evidence bundle written beside the saved case (#607, ADR 0071) — the measured consequence, boundary, checker evidence and caveats, as a document `sideeye evidence` renders for a reader who has never used Sideeye ([docs/evidence.md](evidence.md)). The text report prints the command itself on its `evidence` line, `sideeye evidence <this path>` (#709); this field stays the path. `"-"` when none was written, which includes every run that saved no case and every replay. A path rather than a rule for deriving one from `case`: the two names are related today and a consumer that encoded that relation would be holding a copy of a rule only the engine should own. A field added after the v1.0 tag, under the additive allowance surface 2 of `docs/contract-freeze.md` keeps open. |
 | `oracle` | string | The completeness account, one of: how many operations the two witnesses agreed on; that the oracle ran and the comparison did not complete; that an oracle was named, or a strace found on `PATH` attached, and this run stopped before the comparison; that a strace was found on `PATH` and could not trace here; that nothing checked the shim's account (`--allow-unverified` with no oracle); that no oracle was named; or, on a run that stopped while its arguments were still being read, that nothing was established. The account describes what the run was asked to do, so a run that named an oracle never reads as one that did not (#352). |
-| `metadata_writes` | string | Ownership/permission/timestamp writes on the state directory (#121, #190): observed by the oracle and excluded from judgement — the chown/chmod and utime families change none of the judged state (names, bytes, link targets). Without an oracle the note says they are not observable at all (the shim does not interpose them); absence of a note is never absence of writes. Like `oracle`, the note says which state the run was in: no oracle named, an oracle named but the run stopped before its metadata account was completed, or the arguments not yet read to the end (#352). |
+| `metadata_writes` | string | Ownership/permission/timestamp/extended-attribute writes on the state directory (#121, #190, #947): observed by the oracle and excluded from judgement — the chown/chmod, utime and setxattr/removexattr families change none of the judged state (names, bytes, link targets). Without an oracle the note says they are not observable at all (the shim does not interpose them); absence of a note is never absence of writes. Like `oracle`, the note says which state the run was in: no oracle named, an oracle named but the run stopped before its metadata account was completed, or the arguments not yet read to the end (#352). |
 | `checker` | string | The declared invariant's account (`"none configured"` when unused). A run that declared a checker and stopped before it ran says so — a run with no crash point among them, which is refused `nothing_could_fail` whatever was declared (ADR 0091); a run that stopped while its arguments or define were still being read says nothing was established (#352). |
 | `recovery` | string | The declared recovery's account (#606, ADR 0072), **present only when the define declared one** and the run read it — a define without `[recovery]` gets no recovery field and no recovery line anywhere in its report (a FAIL's and a PASS's JSON and text reports were compared byte for byte against the build before this field existed, on macOS). Two refusal messages name the recovery whatever the define declares: `--config` beside the define-surface flags, and an unknown config section. Says whether the recovery checker was trusted — it must reject a probe that writes distinct junk to every file (so a checker comparing two files with each other is not handed two equal ones), and accept what the recovery leaves on the completed, uncrashed state — each saved exhibit's result with its reason and time, how many of the run's failing worlds that was (only the saved ones are recovered, and a saved world does not stand for the others), and the total time; when the controls did not trust the checker, why, `0 of N` failing worlds, and the controls' time. `configured; not run (no world was saved as a FAIL)` on a PASS and on every run that stopped before saving one, except `preflight`'s, which never starts a recovery: its refusals and its own document (below) carry `declared; preflight runs no recovery`. The recovery runs after the exploration, so the state directory afterwards holds what the last recovery left, not the baseline's result. |
 | `crash_state_left` | boolean | **Present only on a `replay` given `--leave-crash-state`.** `true` when the replay ended with the state directory rewritten to the crash state of the case's crash point — what the kill left, before the checker ran: names, kinds and contents, and permission bits (a directory with its owner's bits added; not set-id or sticky bits, and not the state directory's own mode), with restore-time timestamps and the engine's ownership, two names of one file coming back as two files. A directory the engine cannot read is snapshotted, and so rewritten, empty. Written after any recovery and whatever the verdict, so it is `true` beside a PASS and beside an UNKNOWN raised after the worlds (an unverified run's completeness refusal). `false` when the run stopped before a verdict after the define's state directory and recovery were resolved — a refusal inside the worlds, or a SETUP ERROR raised from there on — or when the rewrite failed. **Absent** from a report raised before that point: a case that cannot be read or parsed, `case_no_longer_applies` for a trace contract that differs, and a `--config`, working directory, state directory or recovery that cannot be resolved. A FAIL stays a FAIL when the rewrite fails. |
