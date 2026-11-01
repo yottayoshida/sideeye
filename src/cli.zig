@@ -5,7 +5,11 @@
 //! grammar of `--expect-status`, which is `config.parseExpectStatus` because the toml key
 //! `expected_status` shares it and rung 1 reads surface 1 out of `config.zig`.
 const std = @import("std");
+const builtin = @import("builtin");
 const contract = @import("contract");
+const capture = @import("capture.zig");
+const oracle = @import("oracle.zig");
+const mcp = @import("mcp.zig");
 const config = @import("config.zig");
 const posix = @import("posix.zig");
 const boundary = @import("boundary.zig");
@@ -47,6 +51,7 @@ pub const Args = struct {
     /// `--allow-unverified` — found a defect this shape produces: a second backend
     /// arrives and every site that asked the old question keeps answering it.
     has_oracle: bool = false,
+    oracle_stance: report.OracleStance = .given,
     check: ?config.Command = null,
     /// Declared as a pair or not at all; the pair is held in `phaseDefine`, after the case or
     /// the config has been read, so a mode's own first refusal still comes first.
@@ -108,6 +113,9 @@ pub fn carried(comptime field: std.meta.FieldEnum(Args)) struct { replay: Carry,
         .observe => .{ .replay = .printed, .next = .printed },
         .shim => .{ .replay = .printed, .next = .printed },
         .oracle => .{ .replay = .printed, .next = .printed },
+        // Printed as `--no-oracle` when it was given. A strace found on PATH is left off both lines:
+        // a flagless line on Linux finds it again, and its path would ride to macOS.
+        .oracle_stance => .{ .replay = .printed, .next = .printed },
         // Left off the replay line: it refuses every process boundary, so its FAIL replays without
         // a witness, and carrying it would ask the paste for `sudo -v`. Preflight refuses it.
         .oracle_fs_usage => .{ .replay = .left_off, .next = .left_off },
@@ -137,6 +145,7 @@ pub fn carried(comptime field: std.meta.FieldEnum(Args)) struct { replay: Carry,
 
 pub fn flagOf(comptime field: std.meta.FieldEnum(Args)) []const u8 {
     if (field == .world_timeout_s) return "--world-timeout";
+    if (field == .oracle_stance) return "--no-oracle";
     const spelled = comptime blk: {
         var name: [@tagName(field).len]u8 = @tagName(field)[0..].*;
         std.mem.replaceScalar(u8, &name, '_', '-');
@@ -151,11 +160,11 @@ const usage_fmt =
     \\
     \\usage:
     \\  sideeye demo [--shim <lib>]
-    \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice] [--state-under <dir>]
-    \\  sideeye preflight --config <sideeye.toml> [--shim <lib>] [--oracle <strace>] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice] [--state-under <dir>]
-    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--recovery <cmd> --recovery-check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--state-under <dir>]
-    \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--state-under <dir>]
-    \\  sideeye replay <case.json> [--shim <lib>] [--recovery <cmd> --recovery-check <cmd>] [--fresh-state] [--leave-crash-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
+    \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace> | --no-oracle] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice] [--state-under <dir>]
+    \\  sideeye preflight --config <sideeye.toml> [--shim <lib>] [--oracle <strace> | --no-oracle] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice] [--state-under <dir>]
+    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--recovery <cmd> --recovery-check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage | --no-oracle] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--state-under <dir>]
+    \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage | --no-oracle] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--state-under <dir>]
+    \\  sideeye replay <case.json> [--shim <lib>] [--recovery <cmd> --recovery-check <cmd>] [--fresh-state] [--leave-crash-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage | --no-oracle] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye evidence <case.json>
     \\  sideeye mcp
     \\  sideeye help [<command>]
@@ -249,8 +258,11 @@ const usage_fmt =
     \\               root, nor the owner of this binary. A path given here is
     \\               used as named and not checked
     \\  --work       scratch directory for traces (default /tmp/sideeye-work)
-    \\  --oracle     path to strace; the recording run is compared against it (Linux;
-    \\               refused on macOS, whose witness is --oracle-fs-usage)
+    \\  --oracle     path to strace, compared with the recording run (Linux; macOS
+    \\               uses --oracle-fs-usage). Left out on Linux, with no --no-oracle
+    \\               or --allow-unverified, a strace on PATH that can trace here is
+    \\               used instead, and the report says it was found
+    \\  --no-oracle  no oracle, not even a strace on PATH (Linux tries one)
     \\  --oracle-fs-usage
     \\               macOS, as root: compare the recording run against fs_usage
     \\               instead. sudo must already hold credentials (`sudo -v` first, in
@@ -1510,6 +1522,11 @@ pub fn parse(argv: []const []const u8) Parsed {
             i += 1;
             continue;
         }
+        if (std.mem.eql(u8, argv[i], "--no-oracle")) {
+            args.oracle_stance = .declined;
+            i += 1;
+            continue;
+        }
         if (std.mem.eql(u8, argv[i], "--oracle-fs-usage")) {
             // Parsed on every platform; refused on Linux further down, after the state
             // path has been resolved. spike/acceptance.sh's CLI self-description check
@@ -1631,6 +1648,13 @@ pub fn parse(argv: []const []const u8) Parsed {
 
     if (args.oracle != null and args.oracle_fs_usage)
         setupError(.define_invalid, "--oracle and --oracle-fs-usage both name a completeness oracle; pass one");
+    if (args.oracle_stance == .declined and (args.oracle != null or args.oracle_fs_usage))
+        setupError(.define_invalid, "--no-oracle asks for no completeness oracle, and --oracle or --oracle-fs-usage names one; pass one or the other");
+    // Searched here, before the setup runs, and never again: a setup can write to a directory
+    // on PATH, and a strace it put there would be the witness of its own run.
+    if (builtin.os.tag == .linux and args.oracle == null and !args.oracle_fs_usage and args.oracle_stance != .declined and !args.allow_unverified) {
+        if (refuse.findStraceForHint(argArena())) |found| args.oracle_stance = .{ .found = found };
+    }
     args.has_oracle = args.oracle != null or args.oracle_fs_usage;
     // Only now can "no --oracle given" be said: the whole argv has been read and no flag
     // named one. Before this line the account says nothing was established (#352).
@@ -1682,4 +1706,61 @@ test "the --config help names exactly the flags --config is refused beside" {
 fn insideUrl(s: []const u8, at: usize) bool {
     const start = std.mem.lastIndexOf(u8, s[0..at], "https://") orelse return false;
     return std.mem.indexOfScalar(u8, s[start..at], ' ') == null;
+}
+
+pub fn settleFoundOracle(gpa: std.mem.Allocator, arena: std.mem.Allocator, args: *Args, capture_path: []const u8) void {
+    const strace = switch (args.oracle_stance) {
+        .found => |p| p,
+        else => return,
+    };
+    if (straceCannotTrace(gpa, arena, strace, capture_path)) |why| {
+        args.oracle_stance = .{ .unusable = std.fmt.allocPrint(arena, "strace at {s} is on this machine and could not trace here: {s}", .{ defang.textShown(arena, strace), defang.textShown(arena, why) }) catch "a strace found on PATH could not trace here" };
+        report.noteOracle(.found_unusable);
+    } else {
+        args.oracle = strace;
+        args.has_oracle = true;
+        report.noteOracle(.found);
+        boundary.boundary_ev.witness = .{ .unread = .strace };
+    }
+    report.noteObserver(args.observe == .supervised);
+}
+
+const probe_budget_ms = 10_000;
+
+fn straceCannotTrace(gpa: std.mem.Allocator, arena: std.mem.Allocator, strace: []const u8, capture_path: []const u8) ?[]const u8 {
+    const tried = "tracing `sideeye version`";
+    const self_exe = arena.dupe(u8, mcp.canonicalSelf() orelse return "Sideeye could not read its own path to try it on") catch return "out of memory";
+    const argv = [_][]const u8{ strace, "-f", "-y", "-e", oracle.strace_trace_spec, "-o", "/dev/null", self_exe, "version" };
+    // SIGCHLD goes to its default for the budget's sake and back after: an ignored SIGCHLD,
+    // which survives exec, is the parent's to keep for the children that follow.
+    const before = posix.signal(posix.SIGCHLD, posix.SIG_DFL);
+    defer _ = posix.signal(posix.SIGCHLD, before);
+    const term = posix.runChildCaptureWorld(gpa, &argv, &.{}, .{ .path = capture_path, .stderr_too = true, .exclusive = true }, probe_budget_ms, null, null) catch |e| return switch (e) {
+        error.TimedOut => tried ++ " did not finish within ten seconds",
+        else => std.fmt.allocPrint(arena, "Sideeye could not start the try ({s})", .{@errorName(e)}) catch "Sideeye could not start the try",
+    };
+    if (term == .exited and term.exited == 0) return null;
+    if (straceComplaint(capture.readFileAllocCapped(arena, capture_path, 4096, .{}) orelse "")) |line| return line;
+    return std.fmt.allocPrint(arena, tried ++ " failed ({any})", .{term}) catch tried ++ " failed";
+}
+
+fn straceComplaint(said: []const u8) ?[]const u8 {
+    var lines = std.mem.splitScalar(u8, said, '\n');
+    while (lines.next()) |l| {
+        const at = std.mem.indexOf(u8, l, "strace: ") orelse continue;
+        return std.mem.trim(u8, l[at..], " \t\r");
+    }
+    return null;
+}
+
+test "the complaint of a strace that cannot trace is its first line, without the path it was run by" {
+    const measured =
+        \\/usr/bin/strace: test_ptrace_get_syscall_info: PTRACE_TRACEME: Operation not permitted
+        \\/usr/bin/strace: ptrace(PTRACE_TRACEME, ...): Operation not permitted
+        \\/usr/bin/strace: PTRACE_SETOPTIONS: Operation not permitted
+        \\
+    ;
+    try std.testing.expectEqualStrings("strace: test_ptrace_get_syscall_info: PTRACE_TRACEME: Operation not permitted", straceComplaint(measured).?);
+    try std.testing.expectEqualStrings("strace: bad", straceComplaint("sideeye 1.17.0\nstrace: bad\r\n").?);
+    try std.testing.expect(straceComplaint("sideeye 1.17.0\n") == null);
 }

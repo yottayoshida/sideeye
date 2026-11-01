@@ -34,7 +34,10 @@ stay the same.
    the code so the frozen surface and the accepted set stay the same list.
    `apparatus` and `scratch` take only the array form: double-quoted `kind:value` entries for the one, double-quoted paths relative to `state` for the other. The kind `pin:random` joined the apparatus grammar on 2026-11-01 (#951, ADR 0146) under the same allowance: a `pin:` entry was refused until then, so no accepted spelling changed meaning. Both command spellings: the string
    form with its split-on-spaces, no-quoting rule, and the argv form — one
-   line, double-quoted elements, passed verbatim (ADR 0019). Unknown keys,
+   line, double-quoted elements, passed verbatim (ADR 0019); since 2026-10-31 (#949) an element of
+   a command's argv form may also be a single-quoted literal string, under the same allowance —
+   a `'` element was refused until then, so no accepted spelling changed meaning, and the entries
+   of `apparatus` and `scratch` stay double-quoted. Unknown keys,
    malformed values and the array form on non-command keys refuse with named,
    line-numbered errors; relative paths resolve against the toml's directory
    (ADR 0007). Additive keys remain possible; changing the meaning of an
@@ -362,6 +365,15 @@ stay the same.
    it was judged (0 or 1) unless the run had admitted a child, and then by class alone. A target
    whose order varies between runs reaches a verdict only when every crash world draws the
    recording's order. The verdict-to-code mapping is untouched and no reason is added.
+   **Which runs given no oracle flag reach which code moved on 2026-10-31** (#950, ADR 0141): on
+   Linux, a run given none of `--oracle`, `--oracle-fs-usage`, `--no-oracle` and `--allow-unverified`
+   takes a strace found on `PATH` as its oracle once that strace has traced this binary. Both
+   directions follow. A would-be PASS that was refused `completeness_not_verified` (exit 2) is verified
+   (exit 0) or refused under the oracle, and a run refused `boundary_without_oracle` (exit 2) can reach a
+   verdict; and a FAIL (exit 1) can become an UNKNOWN (exit 2) when the oracle's account disagrees with
+   the recording's. `--allow-unverified` alone attaches nothing, so its exit-0 passes stay exit 0, and
+   `--no-oracle` reaches the run every earlier flagless caller reached. The verdict-to-code mapping is
+   untouched and no reason is added.
 4. **Replay compatibility.** A saved case replays across 1.x or refuses
    honestly — `case_no_longer_applies`, whether the code changed underneath
    it or the trace contract did (the refusal message names which) — never a

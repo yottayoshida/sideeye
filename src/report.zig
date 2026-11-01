@@ -117,6 +117,8 @@ var oracle_asked: OracleAsked = .unparsed;
 const OracleAsked = union(enum) {
     unparsed,
     named: boundary.BoundaryEvidence.Kind,
+    found,
+    found_unusable,
     none,
 };
 
@@ -130,6 +132,8 @@ fn initialOracleNote(asked: OracleAsked) []const u8 {
             .strace => "not compared: --oracle was named, and this run stopped before the comparison",
             .fs_usage => "not compared: --oracle-fs-usage was named, and this run stopped before the comparison",
         },
+        .found => "not compared: a strace found on PATH was attached, and this run stopped before the comparison",
+        .found_unusable => "not run: a strace was found on PATH and could not trace here",
         .none => "not run (no --oracle given)",
     };
 }
@@ -141,7 +145,8 @@ fn initialMetadataNote(asked: OracleAsked, supervised: bool) []const u8 {
             .strace => "not established: --oracle was named, and this run stopped before its metadata account was completed; the supervising engine is not notified of " ++ metadata_kinds ++ " calls",
             .fs_usage => "not established: --oracle-fs-usage was named, and this run stopped before its metadata account was completed; the supervising engine is not notified of " ++ metadata_kinds ++ " calls",
         },
-        .none => "not observable (no oracle ran; the supervising engine is not notified of " ++ metadata_kinds ++ " calls)",
+        .found => "not established: a strace found on PATH was attached, and this run stopped before its metadata account was completed; the supervising engine is not notified of " ++ metadata_kinds ++ " calls",
+        .found_unusable, .none => "not observable (no oracle ran; the supervising engine is not notified of " ++ metadata_kinds ++ " calls)",
     };
     return switch (asked) {
         .unparsed => "not established: this run stopped while its arguments were still being read; the shim does not interpose " ++ metadata_kinds ++ " calls, so only a completed oracle account could show them",
@@ -152,7 +157,8 @@ fn initialMetadataNote(asked: OracleAsked, supervised: bool) []const u8 {
             .strace => "not established: --oracle was named, and this run stopped before its metadata account was completed; the shim does not interpose " ++ metadata_kinds ++ " calls",
             .fs_usage => "not established: --oracle-fs-usage was named, and this run stopped before its metadata account was completed; the shim does not interpose " ++ metadata_kinds ++ " calls",
         },
-        .none => "not observable (no oracle ran; the shim does not interpose " ++ metadata_kinds ++ " calls)",
+        .found => "not established: a strace found on PATH was attached, and this run stopped before its metadata account was completed; the shim does not interpose " ++ metadata_kinds ++ " calls",
+        .found_unusable, .none => "not observable (no oracle ran; the shim does not interpose " ++ metadata_kinds ++ " calls)",
     };
 }
 
@@ -912,13 +918,20 @@ pub fn nextDefineWords(arena: std.mem.Allocator, d: NextDefine) error{OutOfMemor
     return out.items;
 }
 
+pub const OracleStance = union(enum) {
+    given,
+    declined,
+    found: []const u8,
+    unusable: []const u8,
+};
+
 pub const NextRun = struct {
     work: ?[]const u8 = null,
     state_under: ?[]const u8 = null,
     observe: contract.ObserveMode = .wrappers,
     shim: ?[]const u8 = null,
     oracle: ?[]const u8 = null,
-    oracle_found: ?[]const u8 = null,
+    stance: OracleStance = .given,
 };
 
 pub fn nextRunWords(arena: std.mem.Allocator, r: NextRun) error{OutOfMemory}![]const u8 {
@@ -930,10 +943,14 @@ pub fn nextRunWords(arena: std.mem.Allocator, r: NextRun) error{OutOfMemory}![]c
     // and nothing refuses to say so: the flag only narrows.
     if (r.state_under) |x| try out.appendSlice(arena, try flagWord(arena, "--state-under", x));
     try out.appendSlice(arena, observeFlags(arena, r.observe, r.shim));
-    if (r.oracle orelse r.oracle_found) |x|
-        try out.appendSlice(arena, try flagWord(arena, "--oracle", x))
-    else
-        try out.appendSlice(arena, if (builtin.os.tag == .macos) " --allow-unverified" else " --oracle <strace>");
+    switch (r.stance) {
+        .declined => try out.appendSlice(arena, " --no-oracle --allow-unverified"),
+        .found => {},
+        .given, .unusable => if (r.oracle) |x|
+            try out.appendSlice(arena, try flagWord(arena, "--oracle", x))
+        else
+            try out.appendSlice(arena, if (builtin.os.tag == .macos) " --allow-unverified" else " --oracle <strace>"),
+    }
     return out.items;
 }
 
@@ -950,7 +967,9 @@ test "the next line's words are the define's and the run's, each quoted only whe
         " --work /w --state-under /u --observe syscalls --shim /l.so --oracle /usr/bin/strace",
         try nextRunWords(a, .{ .work = "/w", .state_under = "/u", .observe = .syscalls, .shim = "/l.so", .oracle = "/usr/bin/strace" }),
     );
-    try t.expectEqualStrings(" --observe supervised --oracle '/o p'", try nextRunWords(a, .{ .observe = .supervised, .shim = "/l.so", .oracle_found = "/o p" }));
+    try t.expectEqualStrings(" --observe supervised --oracle '/o p'", try nextRunWords(a, .{ .observe = .supervised, .shim = "/l.so", .oracle = "/o p" }));
+    try t.expectEqualStrings(" --observe supervised --no-oracle --allow-unverified", try nextRunWords(a, .{ .observe = .supervised, .shim = "/l.so", .stance = .declined }));
+    try t.expectEqualStrings(" --observe supervised", try nextRunWords(a, .{ .observe = .supervised, .shim = "/l.so", .oracle = "/usr/bin/strace", .stance = .{ .found = "/usr/bin/strace" } }));
 }
 
 pub fn replayLine(arena: std.mem.Allocator, case_path: []const u8, args: cli.Args) []const u8 {
@@ -961,7 +980,13 @@ fn replayWords(arena: std.mem.Allocator, case_path: []const u8, args: cli.Args) 
     var out: std.ArrayList(u8) = .empty;
     try out.print(arena, "sideeye replay {s}", .{try shellWord(arena, case_path)});
     try out.appendSlice(arena, observeFlags(arena, args.observe, args.shim));
-    if (args.oracle) |o| try out.appendSlice(arena, try flagWord(arena, "--oracle", o));
+    // A strace found on PATH is not named: a flagless replay on Linux finds it again, and its path
+    // would ride to macOS, where --oracle is refused, and into an evidence bundle.
+    switch (args.oracle_stance) {
+        .found => {},
+        .declined => try out.appendSlice(arena, " --no-oracle"),
+        .given, .unusable => if (args.oracle) |o| try out.appendSlice(arena, try flagWord(arena, "--oracle", o)),
+    }
     if (args.recovery) |rc| if (args.recovery_check) |rcc|
         try out.print(arena, " --recovery {s} --recovery-check {s}", .{ try shellQuote(arena, rc), try shellQuote(arena, rcc) });
     // Only when named: a default written into the line would read as the operator's choice.
@@ -978,6 +1003,8 @@ test "a replay line names --shim only when the run was given one" {
     const a = as.allocator();
     const t = std.testing;
     try t.expectEqualStrings("sideeye replay /w/cases/000001.json", replayLine(a, "/w/cases/000001.json", .{}));
+    try t.expectEqualStrings("sideeye replay /w/c.json", replayLine(a, "/w/c.json", .{ .oracle = "/usr/bin/strace", .oracle_stance = .{ .found = "/usr/bin/strace" } }));
+    try t.expectEqualStrings("sideeye replay /w/c.json --no-oracle", replayLine(a, "/w/c.json", .{ .oracle_stance = .declined }));
     try t.expectEqualStrings("sideeye replay /w/cases/000001.json --shim /opt/lib/libsideeye_shim.so", replayLine(a, "/w/cases/000001.json", .{ .shim = "/opt/lib/libsideeye_shim.so" }));
     try t.expectEqualStrings("sideeye replay /w/c.json --observe syscalls", replayLine(a, "/w/c.json", .{ .observe = .syscalls }));
     try t.expectEqualStrings("sideeye replay /w/c.json --observe syscalls --shim /l.so --recovery 'r' --recovery-check 'c'", replayLine(a, "/w/c.json", .{ .observe = .syscalls, .shim = "/l.so", .recovery = "r", .recovery_check = "c" }));
@@ -1015,6 +1042,8 @@ fn withField(comptime field: ArgsField) cli.Args {
         3
     else if (T == contract.ObserveMode)
         .syscalls
+    else if (T == OracleStance)
+        .declined
     else
         @compileError("no off-default value for a field of this type: " ++ name);
     switch (field) {
@@ -1875,7 +1904,11 @@ fn appendFigures(w: W, arena: std.mem.Allocator) !void {
             try w.appendSlice(arena, ",\n  \"oracle_witness\": ");
             try jsonString(w, arena, kind.name());
         },
-        .unparsed, .none => {},
+        .found => {
+            try w.appendSlice(arena, ",\n  \"oracle_witness\": ");
+            try jsonString(w, arena, boundary.BoundaryEvidence.Kind.strace.name());
+        },
+        .unparsed, .none, .found_unusable => {},
     }
     if (oracle_operations_agreed) |n| try w.print(arena, ",\n  \"oracle_operations_agreed\": {d}", .{n});
     if (checker_declared) |d| try w.print(arena, ",\n  \"checker_declared\": {s}", .{if (d) "true" else "false"});
@@ -2557,6 +2590,16 @@ test "the oracle account says no oracle was given only once the arguments were r
     try std.testing.expect(std.mem.indexOf(u8, initialMetadataNote(.{ .named = .strace }, false), "capture was read") == null);
 }
 
+test "an oracle found on PATH is said to be found, whether it was attached or could not trace" {
+    for ([_]OracleAsked{ .found, .found_unusable }) |s| {
+        try std.testing.expect(std.mem.indexOf(u8, initialOracleNote(s), "found on PATH") != null);
+        try std.testing.expect(std.mem.indexOf(u8, initialOracleNote(s), "--oracle") == null);
+    }
+    try std.testing.expect(std.mem.startsWith(u8, initialOracleNote(.found), "not compared"));
+    try std.testing.expect(std.mem.startsWith(u8, initialOracleNote(.found_unusable), "not run"));
+    try std.testing.expectEqualStrings(initialMetadataNote(.none, false), initialMetadataNote(.found_unusable, false));
+}
+
 test "noteOracle assigns both accounts, and the initialiser is the unparsed state (#352)" {
     const saved_o = oracle_note;
     const saved_m = metadata_note;
@@ -2795,7 +2838,7 @@ test "under --observe supervised the metadata account names the engine's filter,
         metadata_note = saved;
         oracle_asked = saved_asked;
     }
-    for ([_]OracleAsked{ .unparsed, .none, .{ .named = .strace }, .{ .named = .fs_usage } }) |asked| {
+    for ([_]OracleAsked{ .unparsed, .none, .found, .found_unusable, .{ .named = .strace }, .{ .named = .fs_usage } }) |asked| {
         const sup = initialMetadataNote(asked, true);
         try std.testing.expect(std.mem.indexOf(u8, sup, "the supervising engine is not notified of " ++ metadata_kinds ++ " calls") != null);
         try std.testing.expect(std.mem.indexOf(u8, sup, "shim") == null);
