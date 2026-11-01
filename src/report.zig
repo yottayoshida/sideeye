@@ -1042,6 +1042,8 @@ fn withField(comptime field: ArgsField) cli.Args {
         3
     else if (T == contract.ObserveMode)
         .syscalls
+    else if (T == OracleStance)
+        .declined
     else
         @compileError("no off-default value for a field of this type: " ++ name);
     switch (field) {

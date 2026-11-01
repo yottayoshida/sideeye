@@ -113,6 +113,9 @@ pub fn carried(comptime field: std.meta.FieldEnum(Args)) struct { replay: Carry,
         .observe => .{ .replay = .printed, .next = .printed },
         .shim => .{ .replay = .printed, .next = .printed },
         .oracle => .{ .replay = .printed, .next = .printed },
+        // Printed as `--no-oracle` when it was given. A strace found on PATH is left off both lines:
+        // a flagless line on Linux finds it again, and its path would ride to macOS.
+        .oracle_stance => .{ .replay = .printed, .next = .printed },
         // Left off the replay line: it refuses every process boundary, so its FAIL replays without
         // a witness, and carrying it would ask the paste for `sudo -v`. Preflight refuses it.
         .oracle_fs_usage => .{ .replay = .left_off, .next = .left_off },
@@ -142,6 +145,7 @@ pub fn carried(comptime field: std.meta.FieldEnum(Args)) struct { replay: Carry,
 
 pub fn flagOf(comptime field: std.meta.FieldEnum(Args)) []const u8 {
     if (field == .world_timeout_s) return "--world-timeout";
+    if (field == .oracle_stance) return "--no-oracle";
     const spelled = comptime blk: {
         var name: [@tagName(field).len]u8 = @tagName(field)[0..].*;
         std.mem.replaceScalar(u8, &name, '_', '-');
