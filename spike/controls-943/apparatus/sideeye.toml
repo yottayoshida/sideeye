@@ -1,0 +1,17 @@
+# The 2026-10-14 mechanisms run's Alembic define (spike/dogfood/2026-10-14-mechanisms/apparatus/
+# defines/alembic/sideeye.toml), with its checker copied to report its legs and the run's four
+# hand-written controls (legs.sh's break_a..break_d) declared, one per leg.
+[world]
+state = "/s/al"
+
+[define]
+operation = ["python3", "-m", "alembic", "-c", "/s/al-aux/proj/alembic.ini", "upgrade", "head"]
+apparatus = ["env:PYTHONDONTWRITEBYTECODE=1"]
+scratch   = ["app.db", "app.db-journal"]
+check     = "./check.sh"
+
+[controls]
+a = "./control-a.sh"
+b = "./control-b.sh"
+c = "./control-c.sh"
+d = "./control-d.sh"

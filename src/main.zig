@@ -29,6 +29,7 @@ const cli = @import("cli.zig");
 const case = @import("case.zig");
 const evidence = @import("evidence.zig");
 const recovery = @import("recovery.zig");
+const controls_run = @import("controls_run.zig");
 const containment = @import("containment.zig");
 const supervise = @import("supervise.zig");
 const sanitizeForReport = defang.sanitizeForReport;
@@ -626,12 +627,21 @@ fn phaseDefine(run: *Run) void {
                 args.scratch = d.scratch orelse &.{};
                 args.recovery = if (d.recovery) |r| resolveCommandAgainst(arena, dir, r) else null;
                 args.recovery_check = if (d.recovery_check) |r| resolveCommandAgainst(arena, dir, r) else null;
+                if (d.controls.len > 0) {
+                    if (d.check == null)
+                        setupError(.define_invalid, "[controls] needs [define] check: a control is read by the legs the checker reports on the state it broke");
+                    const resolved = arena.alloc(config.Control, d.controls.len) catch setupError(.environment, "out of memory");
+                    for (d.controls, resolved) |c, *r| {
+                        r.* = .{ .leg = c.leg, .command = resolveCommandAgainst(arena, dir, c.command) };
+                        refuse.refuseSpacedDir(arena, dir, "controls", "control", c.command, r.command);
+                    }
+                    args.controls = resolved;
+                }
                 // Not turned into argv as the define's commands are: a recovery is carried and printed on
                 // the replay line as one string, which splits on spaces wherever it is read again.
-                if (std.mem.indexOfScalar(u8, dir, ' ') != null) for ([_]?[]const u8{ d.recovery, d.recovery_check }, [_]?[]const u8{ args.recovery, args.recovery_check }) |written, resolved| {
-                    if (written != null and resolved.?.ptr != written.?.ptr)
-                        setupErrorFmt(arena, .define_invalid, "[recovery] takes the string form only, split on spaces, and {s}, the directory its relative command resolves against, holds a space: move the sideeye.toml to a path without one, or name the recovery by an absolute path without one", .{textShown(arena, dir)});
-                };
+                for ([_]?[]const u8{ d.recovery, d.recovery_check }, [_]?[]const u8{ args.recovery, args.recovery_check }) |written, resolved| {
+                    if (written) |w| refuse.refuseSpacedDir(arena, dir, "recovery", "recovery", w, resolved.?);
+                }
                 if (d.expected_status) |es| {
                     args.expect_status = config.parseExpectStatus(es) orelse setupError(.define_invalid, "expected_status must be an integer in 0..255 (one double-quoted string, as every value here)");
                     // Same mirror as the flag: refusals between here and the
@@ -1996,11 +2006,17 @@ fn phasePreflight(run: *Run) void {
             observeAgain(gpa, arena, initial, final, state_abs, state_alt, .{ .root = state_abs, .alt = state_alt, .scratch = args.scratch, .initial = &initial }, op_argv, shim, args.oracle, args.work, expect_status, rec_started_ms, args.cwd, args.observe, children_admitted)
         else
             null;
+        // Not after two runs that split: they leave no one state for a control to break.
+        const ran_controls: ?report.PreflightControls = if (args.controls.len > 0 and (if (repeat) |r| r.count.equal() else true)) blk: {
+            const control_argvs = arena.alloc([]const []const u8, args.controls.len) catch setupError(.environment, "out of memory");
+            for (args.controls, control_argvs) |c, *v| v.* = commandArgv(arena, .{ .str = c.command }) catch setupError(.environment, "out of memory");
+            break :blk controls_run.run(gpa, arena, args, state_abs, final, refuse.checkerArgv(commandArgv(arena, args.check.?)), control_argvs);
+        } else null;
         preflightReport(arena, n, hint, .{ .work = if (args.work_named) args.work else null, .state_under = args.state_under, .shim = args.shim, .oracle = args.oracle }, .{
             .check = args.check != null,
             .marker = args.marker != null,
             .recovery = args.recovery != null,
-        }, repeat);
+        }, repeat, ran_controls);
     }
 
     if (n == 0) {
@@ -2049,13 +2065,9 @@ fn phaseChecker(run: *Run) void {
         var fal_buf: [contract.max_path]u8 = undefined;
         const fal_out = std.fmt.bufPrint(&fal_buf, "{s}/falsify-check.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
         removeFile(fal_out);
-        const probe = posix.runChildCapture(gpa, cargv, &.{
-            .{ "TOY_STATE", state_abs },
-            .{ contract.env.state_dir, state_abs },
-            // reason it exists is on the field. `exclusive` for the same reason as the
-            // recording run's, and free for the same reason — `removeFile` is one line
-            // up.
-        }, .{ .path = fal_out, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check");
+        // `exclusive` for the same reason as the recording run's, and free for the same reason —
+        // `removeFile` is one line up.
+        const probe = posix.runChildCapture(gpa, cargv, &controls_run.checkerEnv(state_abs, controls_run.unreadLegs(args.work)), .{ .path = fal_out, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check");
 
         // Re-emitted before the verdict on the probe: unknown() exits the process,
         // and the gate's output is evidence in the refusal case too.
@@ -2089,10 +2101,7 @@ fn phaseChecker(run: *Run) void {
         var start_buf: [contract.max_path]u8 = undefined;
         const start_out = std.fmt.bufPrint(&start_buf, "{s}/start-check.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
         removeFile(start_out);
-        const start = posix.runChildCapture(gpa, cargv, &.{
-            .{ "TOY_STATE", state_abs },
-            .{ contract.env.state_dir, state_abs },
-        }, .{ .path = start_out, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check on the starting state");
+        const start = posix.runChildCapture(gpa, cargv, &controls_run.checkerEnv(state_abs, controls_run.unreadLegs(args.work)), .{ .path = start_out, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| spawnFailure(e, .exploring, "could not run --check on the starting state");
         switch (start) {
             .exited => |code| if (code != 0) {
                 // Marked `start: ` for the reason the falsification's lines are marked: this is
@@ -2414,13 +2423,10 @@ fn phaseExploration(run: *Run) void {
             // `exclusive` needs the removal, and without `O_EXCL` a FIFO planted at the name
             // would block the parent's open — the pair `Capture.exclusive` asks for by name.
             files.removeFile(co);
-            const ct = posix.runChildCapture(gpa, cargv, &.{
-                .{ "TOY_STATE", state_abs },
-                .{ contract.env.state_dir, state_abs },
-                // stderr too, for the reason #483 gives on the setup capture: a checker
-                // reports through either stream, and capturing stdout alone would leave the
-                // file empty for the ordinary failure.
-            }, .{ .path = co, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| switch (e) {
+            // stderr too, for the reason #483 gives on the setup capture: a checker reports
+            // through either stream, and capturing stdout alone would leave the file empty for
+            // the ordinary failure.
+            const ct = posix.runChildCapture(gpa, cargv, &controls_run.checkerEnv(state_abs, controls_run.unreadLegs(args.work)), .{ .path = co, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| switch (e) {
                 // The one failure that is about the capture and not about the child: since
                 // #469 the parent opens the file, so this arrives before any child exists.
                 // The checker still has to run — the verdict rests on its exit status — so
@@ -2432,10 +2438,7 @@ fn phaseExploration(run: *Run) void {
                     // and "the capture is empty" are different answers, and only the first
                     // is true here.
                     capture_opened = false;
-                    break :blk_cap posix.runChild(gpa, cargv, &.{
-                        .{ "TOY_STATE", state_abs },
-                        .{ contract.env.state_dir, state_abs },
-                    }, args.cwd) catch |e2| spawnFailure(e2, .exploring, "could not run --check");
+                    break :blk_cap posix.runChild(gpa, cargv, &controls_run.checkerEnv(state_abs, controls_run.unreadLegs(args.work)), args.cwd) catch |e2| spawnFailure(e2, .exploring, "could not run --check");
                 },
                 else => spawnFailure(e, .exploring, "could not run --check"),
             };
@@ -3195,7 +3198,7 @@ const PreflightHint = union(enum) {
 
 const PreflightDeclared = struct { check: bool, marker: bool, recovery: bool };
 
-fn preflightReport(arena: std.mem.Allocator, n: u32, hint: PreflightHint, next_run: report.NextRun, declared: PreflightDeclared, repeat: ?Repeat) noreturn {
+fn preflightReport(arena: std.mem.Allocator, n: u32, hint: PreflightHint, next_run: report.NextRun, declared: PreflightDeclared, repeat: ?Repeat, ran_controls: ?report.PreflightControls) noreturn {
     const oracle_path = next_run.oracle;
     // Where the comparison and the rewrite of `--twice` happen, named the way the define named
     // it: byte for byte the old wording from the flags, which acceptance pins.
@@ -3212,7 +3215,7 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, hint: PreflightHint, next_r
             for (r.diffs, r.shapes, out) |d, sh, *o| o.* = .{ .path = d.rel, .how = @tagName(d.how), .shape = sh };
             break :rb .{ .gap_ms = r.gap_ms, .total = r.count.total, .diffs = out };
         } else null;
-        break :blk .{ .runs_differ = split, .operations = n, .marker_declared = declared.marker, .repeat = rep };
+        break :blk .{ .runs_differ = split, .operations = n, .marker_declared = declared.marker, .repeat = rep, .controls = ran_controls };
     } else null;
     if (split) {
         say("PREFLIGHT  not accepted — the two observed runs left different state\n\n", .{});
@@ -3267,7 +3270,26 @@ fn preflightReport(arena: std.mem.Allocator, n: u32, hint: PreflightHint, next_r
     // what was not refused rather than that it will start — had something in the state to
     // corrupt, and was not run. A recovery is never started
     if (declared.marker) say("marker       observed in the recording run's output; preflight explores no crash world\n", .{});
-    if (declared.check) say(
+    if (ran_controls) |c| {
+        say("checker      run on the state the recording left, and after each [controls] command broke it\n", .{});
+        say("controls     baseline {s} ({s}{s}{s})\n", .{ c.baseline.word, c.baseline.checker_exit, if (c.baseline.red.len > 0) "; red " else "", std.mem.join(arena, ", ", c.baseline.red) catch "" });
+        for (c.controls) |k| {
+            const ctl_exit = k.control_exit orelse {
+                say("             {s}: {s} (not run)\n", .{ k.leg, k.word });
+                continue;
+            };
+            const red = std.mem.join(arena, ", ", k.red) catch "";
+            say("             {s}: {s} (control {s}{s}{s}{s}{s})\n", .{
+                k.leg,
+                k.word,
+                ctl_exit,
+                if (k.checker_exit != null) ", checker " else "",
+                k.checker_exit orelse "",
+                if (red.len > 0) "; red " else "",
+                red,
+            });
+        }
+    } else if (declared.check) say(
         \\checker      declared, not run: not refused as a command that cannot be
         \\             started, and the state holds something to corrupt
         \\

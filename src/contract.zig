@@ -29,6 +29,7 @@ pub const magic = "SIDEEYE1";
 
 pub const env = struct {
     pub const state_dir = "SIDEEYE_STATE_DIR";
+    pub const legs = "SIDEEYE_LEGS";
     /// macOS resolves `/tmp` to `/private/tmp`. A target told its state is at
     /// `/tmp/x` passes `/tmp/x/key.json` to `unlink`, while `F_GETPATH` answers
     /// `/private/tmp/x/key.json` for the same file: one operation, two spellings, and

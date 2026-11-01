@@ -1013,6 +1013,9 @@ jobs:
           [ ! -f /tmp/ci3/state/key.json ] || { echo "key.json survived; the kill did not land"; exit 1; }
           [ -f /tmp/ci3/state/key.json.tmp ] || { echo "key.json.tmp missing; not the reported state"; exit 1; }
 
+      - name: Each [controls] outcome is reported by its own word (#943)
+        run: sh spike/check-controls.sh
+
       # The macOS coverage ratchet (#333): every watched write-capable kernel export
       # is interposed or excused with a reason, both sides parsed from the real
       # artifacts on this runner. Exit 2 is BROKEN (the parse failed), never a pass.
