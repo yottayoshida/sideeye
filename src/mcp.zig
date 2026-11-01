@@ -1203,7 +1203,7 @@ fn runExplore(gpa: std.mem.Allocator, arena: std.mem.Allocator, self: []const u8
             if (env_n >= env_buf.len)
                 return emitToolError(arena, id, "SIDEEYE_MCP_CHILD_ENV lists more than 16 variables; refusing rather than passing a truncated set");
             for (contract.env.removed_at_start) |removed| if (std.mem.eql(u8, name, removed))
-                return emitToolError(arena, id, std.fmt.allocPrint(arena, "SIDEEYE_MCP_CHILD_ENV names {s}, which Sideeye removes from its own environment when it starts; only a world, armed by Sideeye at its own crash point, carries it", .{name}) catch "SIDEEYE_MCP_CHILD_ENV names a variable Sideeye removes from its own environment when it starts");
+                return emitToolError(arena, id, std.fmt.allocPrint(arena, "SIDEEYE_MCP_CHILD_ENV names {s}, which Sideeye removes from its own environment when it starts; Sideeye sets it itself for the children it arms", .{name}) catch "SIDEEYE_MCP_CHILD_ENV names a variable Sideeye removes from its own environment when it starts");
             var name_z: [256]u8 = undefined;
             const nz = std.mem.printSentinel(&name_z, "{s}", .{name}, 0) catch
                 return emitToolError(arena, id, "a SIDEEYE_MCP_CHILD_ENV name is longer than 255 bytes");

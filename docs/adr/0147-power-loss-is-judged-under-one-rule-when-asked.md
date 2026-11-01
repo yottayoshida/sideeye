@@ -55,8 +55,9 @@ and does nothing for a rename onto a new name, and other filesystems answer diff
   apart, `earliest` says the world was a power-loss one, the JSON's `earliest.crash_model` carries
   the rule, and its `reproduce` line is the replay. At one crash point the kill's own world comes
   first. `checker_earliest` is drawn from the kill's worlds only.
-- **The case is version 8**, written only for such a FAIL: version 7's fields, every one spelled,
-  and `crash_model`. Its crash point may be one past the last operation, for the world built after
+- **The case is version 9** (version 8 is #951's pin), written only for such a FAIL: version 7's
+  fields, every one spelled, version 8's pin keys when the define asks for the pin, and
+  `crash_model`. Its crash point may be one past the last operation, for the world built after
   it. Replay rebuilds the candidates from its own recording, and needs strace as explore does;
   `--leave-crash-state` leaves the power-loss world.
 - Refused beside it: macOS, where an `fsync` does not reach the device and `F_FULLFSYNC` is a

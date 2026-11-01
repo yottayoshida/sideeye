@@ -183,7 +183,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8) error{OutOfMemory}!Resu
                 if (l.p.* != null) return fault(line_no, "duplicate key");
                 if (!is_array)
                     return fault(line_no, switch (l.key) {
-                        .apparatus => "apparatus takes the array form: one `[` ... `]` line of double-quoted `kind:value` entries (env:NAME, env:NAME=VALUE, preload:LIB, pythonpath:FILE, note:TEXT)",
+                        .apparatus => "apparatus takes the array form: one `[` ... `]` line of double-quoted `kind:value` entries (env:NAME, env:NAME=VALUE, preload:LIB, pythonpath:FILE, pin:random, note:TEXT)",
                         .scratch => "scratch takes the array form: one `[` ... `]` line of double-quoted paths relative to the state directory",
                     });
                 const inner = std.mem.trimStart(u8, rawv[1..], " \t");
@@ -276,6 +276,7 @@ pub const ApparatusEntry = union(enum) {
     env: struct { name: []const u8, value: ?[]const u8 },
     preload: []const u8,
     pythonpath: []const u8,
+    pin_random,
     note: []const u8,
 };
 
@@ -323,7 +324,7 @@ pub fn parseApparatusEntry(entry: []const u8) ApparatusParse {
     if (std.mem.indexOfScalar(u8, entry, '"') != null)
         return .{ .bad = "an apparatus entry cannot contain a double quote (the toml form could not spell it)" };
     const colon = std.mem.indexOfScalar(u8, entry, ':') orelse
-        return .{ .bad = "an apparatus entry is `kind:value`: env:NAME, env:NAME=VALUE, preload:LIB, pythonpath:FILE or note:TEXT" };
+        return .{ .bad = "an apparatus entry is `kind:value`: env:NAME, env:NAME=VALUE, preload:LIB, pythonpath:FILE, pin:random or note:TEXT" };
     const kind = entry[0..colon];
     const value = entry[colon + 1 ..];
     if (value.len == 0) return .{ .bad = "an apparatus entry has nothing after its `kind:`" };
@@ -347,8 +348,13 @@ pub fn parseApparatusEntry(entry: []const u8) ApparatusParse {
             return .{ .bad = "pythonpath: names a file directly under a PYTHONPATH entry (sitecustomize.py), not a path" };
         return .{ .ok = .{ .pythonpath = value } };
     }
+    if (std.mem.eql(u8, kind, "pin")) {
+        if (!std.mem.eql(u8, value, "random"))
+            return .{ .bad = "pin: takes `random` only; the engine pins what libc hands out as randomness, and nothing else" };
+        return .{ .ok = .pin_random };
+    }
     if (std.mem.eql(u8, kind, "note")) return .{ .ok = .{ .note = value } };
-    return .{ .bad = "an apparatus entry's kind is one of env, preload, pythonpath, note" };
+    return .{ .bad = "an apparatus entry's kind is one of env, preload, pythonpath, pin, note" };
 }
 
 pub fn apparatusFault(entry: []const u8) ?[]const u8 {
@@ -398,6 +404,12 @@ test "apparatus parses as an array of kind:value entries, stays optional, and re
     try t.expect(std.mem.indexOf(u8, kind.fault.what, "kind is one of") != null);
     const owned = parseFor(a, base ++ "apparatus = [\"env:LD_PRELOAD=/x.so\"]\n");
     try t.expect(std.mem.indexOf(u8, owned.fault.what, "the engine sets for every child") != null);
+}
+
+test "pin:random is an apparatus kind the engine applies, and pin: takes nothing else" {
+    try t.expect(parseApparatusEntry("pin:random").ok == .pin_random);
+    try t.expect(std.mem.indexOf(u8, apparatusFault("pin:clock").?, "takes `random` only") != null);
+    try t.expect(!apparatusUnchecked("pin:random"));
 }
 
 test "apparatusFault: the entry grammar, one case per refusal" {

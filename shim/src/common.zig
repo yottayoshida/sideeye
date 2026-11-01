@@ -1313,12 +1313,22 @@ fn canonical(out: []u8, path: []const u8) []const u8 {
 /// library exports. The shim's own output therefore never passes its own interposition
 /// and cannot appear in the trace as if the target had produced it.
 fn writeAll(bytes: []const u8) bool {
-    return writeAllTo(trace_fd, bytes);
+    const fd = trace_fd;
+    if (writeAllTo(fd, bytes)) return true;
+    if (fd >= 0) {
+        const saved_errno = std.c._errno().*;
+        defer std.c._errno().* = saved_errno;
+        traceWriteFailed(fd);
+    }
+    return false;
 }
 
 fn writeAllTo(fd: c_int, bytes: []const u8) bool {
     if (fd < 0) return false;
+    const saved_errno = std.c._errno().*;
+    defer std.c._errno().* = saved_errno;
     var off: usize = 0;
+    var interrupted: u8 = 0;
     while (off < bytes.len) {
         // Through the thunk when the filter is up: libc's `write` would trap, the
         // handler would record, and recording writes another record — recursion with
@@ -1327,10 +1337,34 @@ fn writeAllTo(fd: c_int, bytes: []const u8) bool {
             syscalls.traceWrite(fd, bytes[off..].ptr, bytes.len - off)
         else
             callWrite(fd, bytes[off..].ptr, bytes.len - off);
-        if (w <= 0) return false;
-        off += @intCast(w);
+        if (w > 0) {
+            off += @intCast(w);
+            continue;
+        }
+        const err: c_int = if (syscalls.armed) @intCast(-w) else std.c._errno().*;
+        // Not without a bound: a write that keeps being interrupted must not hold a signal
+        // handler, or the constructor, forever.
+        if (w < 0 and err == @backingInt(std.posix.E.INTR) and interrupted < 8) {
+            interrupted += 1;
+            continue;
+        }
+        return false;
     }
     return true;
+}
+
+// Not for a write refused while the descriptor still names the trace (`ENOSPC`, `EIO`, `EFBIG`, a
+// target's own seccomp filter):
+// the death says the target closed the channel, and its refusal sends the reader to a mode that
+// would not help. Not put back on its number either: the record that failed would have to be sent
+// again, and one cut part-way continued after another process's, where the engine stops reading.
+fn traceWriteFailed(fd: c_int) void {
+    if (is_darwin or traceIntact(fd)) return;
+    recoverTrace(c.getpid() == table_pid, false);
+}
+
+fn traceIntact(fd: c_int) bool {
+    return !descriptorClosed(fd) and (trace_identity == null or isTraceFile(fd));
 }
 
 fn writeRecord(ts: *ThreadState, op: contract.OpClass, s: u32, path: []const u8, aux: []const u8) void {
@@ -1432,9 +1466,12 @@ pub fn afterSweep() void {
     const owner = c.getpid() == table_pid;
     reinstateOrDrop(&kill_cgroup_fd, &kill_cgroup_path_buf, kill_cgroup_path_len, owner);
     reinstateOrDrop(&kill_aside_fd, &kill_aside_path_buf, kill_aside_path_len, owner);
-    if (trace_fd < 0) return;
+    if (trace_fd < 0 or traceIntact(trace_fd)) return;
+    recoverTrace(owner, true);
+}
+
+fn recoverTrace(owner: bool, may_restore: bool) void {
     const closed = descriptorClosed(trace_fd);
-    if (!closed and (trace_identity == null or isTraceFile(trace_fd))) return;
     const fresh = if (trace_path_len > 0) reopen(@ptrCast(&trace_path_buf), O_RDWR | O_APPEND | O_CLOEXEC | O_NOFOLLOW | O_NONBLOCK) else -1;
     defer if (fresh >= 0) {
         _ = callClose(fresh);
@@ -1442,7 +1479,7 @@ pub fn afterSweep() void {
     const same = fresh >= 0 and isTraceFile(fresh);
     // Not restored below the relocation floors, where the target's next open may take the number;
     // nor onto a number that already holds another file, which is the target's now.
-    if (same and closed and trace_fd >= relocation_floor and restoreOnto(trace_fd, fresh)) {
+    if (may_restore and same and closed and trace_fd >= relocation_floor and restoreOnto(trace_fd, fresh)) {
         if (otherThreadsHere()) writeDeathThrough(trace_fd);
         return;
     }
@@ -3900,6 +3937,86 @@ test "a trace number that now holds another file is dropped with a death, and no
     try std.testing.expect(!isTraceFile(950));
     try std.testing.expectEqualStrings("", fileHolds(sweep_other_path));
     try std.testing.expect(holdsTraceDeath(sweep_trace_path));
+}
+
+fn deathsIn(path: [*:0]const u8) usize {
+    return std.mem.count(u8, fileHolds(path), contract.unresolved_kind.trace_closed);
+}
+
+test "a record written after the trace was closed outside the shim leaves one death in the trace and silences the channel" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    _ = std.os.linux.close(950);
+    try std.testing.expect(!writeAll("record"));
+    try std.testing.expectEqual(@as(c_int, -1), trace_fd);
+    try std.testing.expectEqual(@as(usize, 1), deathsIn(sweep_trace_path));
+    try std.testing.expect(!writeAll("later"));
+    try std.testing.expectEqual(@as(usize, 1), deathsIn(sweep_trace_path));
+}
+
+test "a failed trace write leaves the target's errno as it was" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    _ = std.os.linux.close(950);
+    std.c._errno().* = 77;
+    _ = writeAll("record");
+    try std.testing.expectEqual(@as(c_int, 77), std.c._errno().*);
+}
+
+test "a trace write the descriptor refuses while it still names the trace writes no death and keeps the channel" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    defer _ = callClose(950);
+    const ro = callOpen(sweep_trace_path, O_RDONLY, 0);
+    if (ro < 0) return error.SkipZigTest;
+    defer _ = callClose(ro);
+    if (std.os.linux.errno(std.os.linux.dup3(ro, 950, @as(u32, @bitCast(O_CLOEXEC)))) != .SUCCESS) return error.SkipZigTest;
+    try std.testing.expect(!writeAll("record"));
+    try std.testing.expectEqual(@as(c_int, 950), trace_fd);
+    try std.testing.expectEqual(@as(usize, 0), deathsIn(sweep_trace_path));
+}
+
+test "a process sharing the table without owning it writes the death and leaves the shared trace number alone" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    table_pid = c.getpid() + 1;
+    _ = std.os.linux.close(950);
+    try std.testing.expect(!writeAll("record"));
+    try std.testing.expectEqual(@as(c_int, 950), trace_fd);
+    try std.testing.expectEqual(@as(usize, 1), deathsIn(sweep_trace_path));
+}
+
+test "a closed trace whose reopen fails leaves the target's errno as it was" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    keepName(&trace_path_buf, &trace_path_len, "/nonexistent-sideeye-trace/t");
+    _ = std.os.linux.close(950);
+    std.c._errno().* = 77;
+    try std.testing.expect(!writeAll("record"));
+    try std.testing.expectEqual(@as(c_int, 77), std.c._errno().*);
+    try std.testing.expectEqual(@as(c_int, -1), trace_fd);
+}
+
+test "a closed trace whose file cannot be reopened writes nothing and silences the channel" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    trace_path_len = 0;
+    _ = std.os.linux.close(950);
+    try std.testing.expect(!writeAll("record"));
+    try std.testing.expectEqual(@as(c_int, -1), trace_fd);
+    try std.testing.expectEqualStrings("", fileHolds(sweep_trace_path));
 }
 
 fn claimAndLeave() void {

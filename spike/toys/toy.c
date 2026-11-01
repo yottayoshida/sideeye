@@ -16,6 +16,9 @@
  *   TOY_PROJECT    if set, `rotate` refuses (exit 1) unless ./$TOY_PROJECT exists in its
  *                  current directory: a tool that only works inside its project (#647)
  *   TOY_FORK       if set, fork a trivial child before rotating (boundary case)
+ *   TOY_ENTROPY    a directory outside the state: before rotating, this process and nine
+ *                  children started nine ways draw randomness and the parent writes every
+ *                  draw into the state's entropy.txt (the pin's acceptance check)
  *   TOY_SELFEXEC   write one state file, then exec this same binary; the rotate runs
  *                  in the second image (#123's judged shape: a tail-exec chain)
  *   TOY_FORKEXEC   fork a child that execs /bin/sh and writes into the state
@@ -226,6 +229,11 @@
  *                  shim skipped fd <= 2 unconditionally, and every one of these writes
  *                  was invisible — the acceptance table pins each leg separately so a
  *                  fix for fd 1 alone cannot pass.
+ *   TOY_RAW_CLOSE_RANGE  Linux: after a whole rotate, close_range(3, ~0U, 0) as a raw system
+ *                     call no interposed entry point sees, then rewrite the key in place with
+ *                     the bytes it already holds. The state after equals the rotate's, and a
+ *                     crash between the truncate and the write empties the key. =0 is the
+ *                     control: the same rewrite with nothing closed.
  *   TOY_CLOSE_SWEEP=N  daemonize-style descriptor hygiene: close(3..N) before any
  *                  state work. A bound below the shim's trace-fd relocation floor
  *                  must leave the run's verdict untouched; a bound at or above it
@@ -1957,12 +1965,159 @@ static int escape_cgroup(void) {
     return 1;
 }
 
+#ifdef __linux__
+#include <sys/random.h>
+/* TOY_ENTROPY=<dir outside the state>: before rotating, this process and nine children, each
+ * started a different way, draw 48 bytes — getrandom, a read of /dev/urandom, a fread of it —
+ * and write them as hex to <dir>/<tag>. The parent then writes every line into the state's
+ * entropy.txt in one write, so the state holds them and only the subject writes the state. */
+static char entropy_self[4096];
+
+static void entropy_write(const char *tag) {
+    unsigned char b[48];
+    if (getrandom(b, 16, 0) != 16) _exit(90);
+    int fd = open("/dev/urandom", O_RDONLY);
+    if (fd < 0 || read(fd, b + 16, 16) != 16) _exit(91);
+    close(fd);
+    FILE *f = fopen("/dev/urandom", "r");
+    if (!f || fread(b + 32, 1, 16, f) != 16) _exit(92);
+    fclose(f);
+    char path[4200], hex[97];
+    for (int i = 0; i < 48; i++) snprintf(hex + 2 * i, 3, "%02x", b[i]);
+    snprintf(path, sizeof path, "%s/%s", getenv("TOY_ENTROPY"), tag);
+    int out = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (out < 0 || write(out, hex, 96) != 96) _exit(93);
+    close(out);
+}
+
+static void entropy_spawned(pid_t pid) {
+    int st;
+    if (pid < 0 || waitpid(pid, &st, 0) != pid || !WIFEXITED(st) || WEXITSTATUS(st) != 0) {
+        fprintf(stderr, "toy: an entropy child failed\n");
+        exit(1);
+    }
+}
+
+static void entropy_gather(const char *const *tags, size_t count);
+
+static void entropy_all(void) {
+    static const char *const tags[] = { "parent", "fork", "fexec", "vfork", "envcopy", "spawn", "system", "sh1", "sh2", "selfexec-a", "selfexec-b" };
+    ssize_t n = readlink("/proc/self/exe", entropy_self, sizeof entropy_self - 1);
+    if (n <= 0) exit(1);
+    entropy_self[n] = 0;
+    /* TOY_ENTROPY_RELAY=<a static build of this file>: the parent draws, then starts the static
+     * build, which starts this binary twice — two children of a process the pin is not loaded in. */
+    /* TOY_ENTROPY_CTOR=<toy-ctorrand>: the parent draws, then starts a copy whose own library
+     * draws in its constructor. */
+    const char *ctor = getenv("TOY_ENTROPY_CTOR");
+    if (ctor) {
+        static const char *const ctags[] = { "parent", "ctor" };
+        entropy_write("parent");
+        pid_t cp;
+        char *ca[] = { (char *)ctor, "entropy", "ctor", 0 };
+        if (posix_spawn(&cp, ctor, NULL, NULL, ca, environ) != 0) exit(1);
+        entropy_spawned(cp);
+        entropy_gather(ctags, 2);
+        return;
+    }
+    const char *relay = getenv("TOY_ENTROPY_RELAY");
+    if (relay) {
+        static const char *const rtags[] = { "parent", "relay1", "relay2" };
+        entropy_write("parent");
+        pid_t rp;
+        char *ra[] = { (char *)relay, "relay", entropy_self, 0 };
+        if (posix_spawn(&rp, relay, NULL, NULL, ra, environ) != 0) exit(1);
+        entropy_spawned(rp);
+        entropy_gather(rtags, 3);
+        return;
+    }
+    size_t envc = 0;
+    while (environ[envc]) envc++;
+    char **envcopy = calloc(envc + 1, sizeof *envcopy);
+    for (size_t i = 0; i < envc; i++) envcopy[i] = environ[i];
+    entropy_write("parent");
+    pid_t p = fork();
+    if (p == 0) { entropy_write("fork"); _exit(0); }
+    entropy_spawned(p);
+    p = fork();
+    if (p == 0) { char *a[] = { entropy_self, "entropy", "fexec", 0 }; execv(entropy_self, a); _exit(94); }
+    entropy_spawned(p);
+    char *va[] = { entropy_self, "entropy", "vfork", 0 };
+    p = vfork();
+    if (p == 0) { execve(entropy_self, va, environ); _exit(95); }
+    entropy_spawned(p);
+    p = fork();
+    if (p == 0) { char *a[] = { entropy_self, "entropy", "envcopy", 0 }; execve(entropy_self, a, envcopy); _exit(96); }
+    entropy_spawned(p);
+    char *sa[] = { entropy_self, "entropy", "spawn", 0 };
+    if (posix_spawn(&p, entropy_self, NULL, NULL, sa, environ) != 0) exit(1);
+    entropy_spawned(p);
+    char cmd[8400];
+    snprintf(cmd, sizeof cmd, "'%s' entropy system", entropy_self);
+    if (system(cmd) != 0) exit(1);
+    snprintf(cmd, sizeof cmd, "'%s' entropy sh1; '%s' entropy sh2", entropy_self, entropy_self);
+    char *sh[] = { "sh", "-c", cmd, 0 };
+    if (posix_spawn(&p, "/bin/sh", NULL, NULL, sh, environ) != 0) exit(1);
+    entropy_spawned(p);
+    p = fork();
+    if (p == 0) { char *a[] = { entropy_self, "entropy-exec", 0 }; execv(entropy_self, a); _exit(97); }
+    entropy_spawned(p);
+    entropy_gather(tags, sizeof tags / sizeof tags[0]);
+}
+
+static void entropy_gather(const char *const *tags, size_t count) {
+    char all[2048] = "";
+    for (size_t i = 0; i < count; i++) {
+        char path[4200], hex[97] = "";
+        snprintf(path, sizeof path, "%s/%s", getenv("TOY_ENTROPY"), tags[i]);
+        int fd = open(path, O_RDONLY);
+        if (fd < 0 || read(fd, hex, 96) != 96) { fprintf(stderr, "toy: no entropy from %s\n", tags[i]); exit(1); }
+        close(fd);
+        strncat(all, tags[i], sizeof all - strlen(all) - 1);
+        strncat(all, " ", sizeof all - strlen(all) - 1);
+        strncat(all, hex, sizeof all - strlen(all) - 1);
+        strncat(all, "\n", sizeof all - strlen(all) - 1);
+    }
+    char spath[4200];
+    snprintf(spath, sizeof spath, "%s/entropy.txt", state_dir());
+    int fd = open(spath, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd < 0 || write(fd, all, strlen(all)) != (ssize_t)strlen(all)) exit(1);
+    close(fd);
+}
+#endif
+
 int main(int argc, char **argv) {
     if (argc < 2) {
         fprintf(stderr, "usage: %s init|rotate|rotate-msg|rotate-quoted|doctor|load-key\n", argv[0]);
         return 2;
     }
     if (strcmp(argv[1], "init") == 0) return cmd_init();
+#ifdef __linux__
+    if (strcmp(argv[1], "entropy") == 0 && argc == 3) { entropy_write(argv[2]); return 0; }
+    if (strcmp(argv[1], "relay") == 0 && argc == 3) {
+        for (int i = 1; i <= 2; i++) {
+            char tag[16];
+            snprintf(tag, sizeof tag, "relay%d", i);
+            char *a[] = { argv[2], "entropy", tag, 0 };
+            pid_t rp;
+            if (posix_spawn(&rp, argv[2], NULL, NULL, a, environ) != 0) return 1;
+            int st;
+            if (waitpid(rp, &st, 0) != rp || !WIFEXITED(st) || WEXITSTATUS(st) != 0) return 1;
+        }
+        return 0;
+    }
+    if (strcmp(argv[1], "entropy-exec") == 0) {
+        entropy_write("selfexec-a");
+        char self[4096];
+        ssize_t n = readlink("/proc/self/exe", self, sizeof self - 1);
+        if (n <= 0) return 1;
+        self[n] = 0;
+        char *a[] = { self, "entropy", "selfexec-b", 0 };
+        execv(self, a);
+        return 98;
+    }
+    if (strcmp(argv[1], "rotate") == 0 && getenv("TOY_ENTROPY")) entropy_all();
+#endif
     /* TOY_PROJECT: the tool that only works inside its own project directory — git,
      * lefthook, overcommit, most build tools. When set, `rotate` refuses unless
      * `./$TOY_PROJECT` exists in its CURRENT directory, and exits 1 before touching the
@@ -2162,6 +2317,17 @@ int main(int argc, char **argv) {
             _exit(cmd_rotate() == 0 ? 0 : 1);
         }
         return reap_status(w);
+    }
+    if (strcmp(argv[1], "rotate") == 0 && getenv("TOY_RAW_CLOSE_RANGE")) {
+        int rc = cmd_rotate();
+        if (rc != 0) return rc;
+        char buf[4096], key[4096];
+        if (read_key(buf, sizeof buf) != 0) return 1;
+#if defined(__linux__) && defined(SYS_close_range)
+        if (strcmp(getenv("TOY_RAW_CLOSE_RANGE"), "0") != 0) (void)syscall(SYS_close_range, 3, ~0U, 0);
+#endif
+        join_path(key, sizeof key, KEY_NAME);
+        return write_file(key, buf) == 0 ? 0 : 1;
     }
     if (strcmp(argv[1], "rotate") == 0) return cmd_rotate();
     if (strcmp(argv[1], "doctor") == 0) return cmd_doctor();

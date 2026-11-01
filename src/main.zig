@@ -33,6 +33,7 @@ const recovery = @import("recovery.zig");
 const controls_run = @import("controls_run.zig");
 const containment = @import("containment.zig");
 const supervise = @import("supervise.zig");
+const pinning = @import("pinning.zig");
 const sanitizeForReport = defang.sanitizeForReport;
 const textShown = defang.textShown;
 const appendSanitized = defang.appendSanitized;
@@ -61,7 +62,7 @@ else
 
 const preload_var = if (builtin.os.tag == .macos) "DYLD_INSERT_LIBRARIES" else "LD_PRELOAD";
 
-const child_env_names = [_][]const u8{ "TOY_STATE", contract.env.state_dir, contract.env.state_dir_alt, contract.env.trace_path, contract.env.seq_base, contract.env.before_constructor, contract.env.observe, contract.env.kill_group, contract.env.run_cgroup, contract.env.kill_cgroup, contract.env.kill_aside, preload_var };
+const child_env_names = [_][]const u8{ "TOY_STATE", contract.env.state_dir, contract.env.state_dir_alt, contract.env.trace_path, contract.env.seq_base, contract.env.before_constructor, contract.env.observe, contract.env.kill_group, contract.env.run_cgroup, contract.env.kill_cgroup, contract.env.kill_aside, contract.env.pin_seed, contract.env.pin_claims, preload_var };
 
 test "every variable the engine sets for a child is refused as apparatus" {
     for (child_env_names) |n| try std.testing.expect(config.engineOwnedEnv(n));
@@ -278,6 +279,8 @@ fn runOperationObserved(
                 .{ contract.env.run_cgroup, containment.runName(cg) },
                 .{ contract.env.kill_cgroup, "" },
                 .{ contract.env.kill_aside, "" },
+                .{ contract.env.pin_seed, pinning.seed_hex },
+                .{ contract.env.pin_claims, pinning.claimsFor(arena) },
                 .{ preload_var, preload },
             };
             for (pairs) |kv| {
@@ -301,6 +304,8 @@ fn runOperationObserved(
             .{ contract.env.run_cgroup, containment.runName(cg) },
             .{ contract.env.kill_cgroup, "" },
             .{ contract.env.kill_aside, "" },
+            .{ contract.env.pin_seed, pinning.seed_hex },
+            .{ contract.env.pin_claims, pinning.claimsFor(arena) },
             .{ preload_var, preload },
         }, recordingCapture(stdout_path), cwd, cg) catch |e| spawnFailure(e, .exploring, "could not run --operation");
     };
@@ -1034,7 +1039,7 @@ fn phaseDefine(run: *Run) void {
     }
     // Not after the setup: a setup run without a declared variable writes wherever the tool
     // falls back to, which on a developer's machine is the real data.
-    if (checkApparatus(setup_arena, args.apparatus, args.cwd, .before_setup)) |r| {
+    if (checkApparatus(setup_arena, args.apparatus, args.cwd, .before_setup, args.observe, run.define.work_abs)) |r| {
         // Not a directory the JSON report goes under: the report would have nowhere to land.
         // Compared through realpath, not by spelling: a /tmp on one side and /private/tmp on
         // the other is the same directory.
@@ -1188,7 +1193,11 @@ fn phaseApparatus(run: *Run) void {
         if (args.check) |c| if (refuse.unstartable(a, "check", commandArgv(a, c) catch none, cwd)) |m| setupError(.environment, m);
     }
 
-    if (checkApparatus(arena_state.allocator(), args.apparatus, args.cwd, .after_setup)) |r| setupError(r.reason, r.text);
+    if (checkApparatus(arena_state.allocator(), args.apparatus, args.cwd, .after_setup, args.observe, run.define.work_abs)) |r| setupError(r.reason, r.text);
+    if (pinning.asked(args.apparatus)) {
+        const case_seed = if (run.define.replay_case) |c| c.pin_seed else null;
+        if (pinning.prepare(arena_state.allocator(), "pin:random", run.define.work_abs, run.define.shim, case_seed)) |r| setupError(r.reason, r.text);
+    }
     // The scratch declaration is published here too (ADR 0043), at the same point as the
     // apparatus: the define is final, and every report from here on — a refusal raised
     // by the recording run included — carries it under the same presence rule.
@@ -2307,6 +2316,8 @@ fn phaseExploration(run: *Run) void {
             .{ contract.env.run_cgroup, containment.runName(wcg_ptr) },
             .{ contract.env.kill_cgroup, containment.killName(wcg_ptr) },
             .{ contract.env.kill_aside, containment.asideName(wcg_ptr) },
+            .{ contract.env.pin_seed, pinning.seed_hex },
+            .{ contract.env.pin_claims, pinning.claimsFor(arena) },
             .{ preload_var, supervise.preloadFor(args.observe, shim) },
             // `exclusive` for the reason on `recordingCapture`, and free for the same
             // reason: `removeFile(world_stdout)` is two lines up and runs on every pass
@@ -2969,7 +2980,8 @@ fn phaseReport(run: *Run) void {
                 .state_alt = if (alt_differs) state_alt else null,
                 .trace = repro_trace,
                 .preload_var = preload_var,
-                .shim = shim,
+                .shim = pinning.preload orelse shim,
+                .pin_seed = pinning.seed_hex,
                 .kill_at = f.k,
                 .observe = args.observe.name(),
                 .argv = run.rec.op_argv,
@@ -3784,7 +3796,7 @@ fn runDemo(arena: std.mem.Allocator, rest: []const []const u8) noreturn {
 /// report that carries one is a run whose declared devices were present when the engine
 /// looked (the schema page's promise). `cwd` is the define's, for a relative PYTHONPATH entry — the operation
 /// resolves it from there, so the check must too.
-fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[]const u8, phase: enum { before_setup, after_setup }) ?workdir.Refusal {
+fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[]const u8, phase: enum { before_setup, after_setup }, observe: contract.ObserveMode, work_abs: []const u8) ?workdir.Refusal {
     var preload_file: ?[]const u8 = null;
     for (entries) |e| {
         const parsed = switch (config.parseApparatusEntry(e)) {
@@ -3794,7 +3806,7 @@ fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[
         // Only env: before the setup: the setup may make what the other kinds look for (a
         // pythonpath: file, a preload line), and a define relying on that would be refused for
         // a device it was about to make.
-        if ((parsed == .env) != (phase == .before_setup)) continue;
+        if ((parsed == .env or parsed == .pin_random) != (phase == .before_setup)) continue;
         switch (parsed) {
             .env => |v| {
                 const got = envValue(v.name) orelse return workdir.Refusal.print(arena, .environment, "apparatus {s}: the environment the operation inherits has no {s} (under sideeye mcp, a variable of the server's reaches it only when SIDEEYE_MCP_CHILD_ENV names it)", .{ e, v.name });
@@ -3822,6 +3834,7 @@ fn checkApparatus(arena: std.mem.Allocator, entries: []const []const u8, cwd: ?[
                 if (!pythonpathHas(arena, pp, file, cwd))
                     return workdir.Refusal.print(arena, .environment, "apparatus {s}: no entry of PYTHONPATH ({s}) has {s} directly under it", .{ e, textShown(arena, pp), file });
             },
+            .pin_random => if (pinning.refusal(arena, e, observe, work_abs)) |r| return r,
             .note => {},
         }
     }

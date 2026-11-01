@@ -171,3 +171,23 @@ sequences are unchanged.
   syscall is still outside the guard. The fortified opens glibc substitutes for `open` and
   `openat` under `_FORTIFY_SOURCE` (`__open_2`, `__open64_2`, `__openat_2`, `__openat64_2`) are
   interposed in the same change.
+- **Amended 2026-11-01 (#933): a record the shim cannot write because the trace was closed is not
+  dropped.** A raw `close` or `close_range` system call never passes a wrapper, so the shim learned
+  of it only by its next record failing, and a failed write left nothing behind: an account cut
+  short read as one that ended, and without an oracle a run could PASS over operations nobody
+  counted. Now a failed write to the trace, while its descriptor is closed or no longer names the
+  trace file, goes through the second half of the sweep above: the trace is opened again by name,
+  the death is written there when it is the same file, and an owner gives the channel up. The first
+  access after the close is usually the numbering's `lseek`, not a write, and it ends in a write
+  too, so one place catches it. The channel is not put back on its number here, as it is after a
+  sweep: the record that failed would have to be sent again, and one cut part-way continued after
+  another process's, where the engine stops reading. So the run refuses `unresolvable_path` (trace-closed-by-target)
+  rather than being judged. A write refused while the descriptor still names the trace (`ENOSPC`,
+  `EIO`, `EFBIG`, a target's own seccomp filter) writes no death: the death says the target closed
+  the channel, and its refusal would send the reader to `--observe supervised`, which would not
+  help. Linux only, as the sweep is. Three things stay open: a trace that cannot be opened again
+  (removed, `EACCES`), or one whose identity was never read at `init`, leaves no death; a refused
+  write as above is still lost; and a number the target took for a file of its own after the close takes the
+  shim's next records without an error, which the relocation floors keep from happening by
+  accident. A process that does not own the slot table writes a death at each failed record until
+  it execs, since it cannot give up its parent's channel; the first one refuses the run.
