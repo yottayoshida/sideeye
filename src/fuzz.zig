@@ -355,7 +355,7 @@ test "fuzz: sideeye.toml" {
         \\[define]
         \\setup     = "mytool init"         # produce the initial state
         \\operation = "mytool rotate-key"   # what Sideeye kills partway through
-        \\check     = "./check.sh"          # runs after crash + restart
+        \\check     = "./check.sh"          # runs after the crash, in a fresh process
         \\marker    = "Recorded"            # the operation's own success claim (L1)
         ,
         \\[world]

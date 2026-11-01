@@ -1180,14 +1180,15 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state \
 rc=$?
 hd=$(HEADLINE="$(echo "$o" | head -1)" python3 -c 'import json,os,re,sys
 h = os.environ["HEADLINE"]
-m = re.match(r"^PASS  ([0-9]+)/([0-9]+) explored worlds satisfied the built-in atomicity invariant$", h)
+m = re.match(r"^PASS  ([0-9]+)/([0-9]+) explored worlds satisfied the built-in atomicity invariant under a process kill$", h)
 if not m: sys.exit("headline shape: %r" % h)
 d = json.load(open("/tmp/acc/report.json"))
+if d.get("crash_model") != "process-kill": sys.exit("crash_model %r, wanted process-kill" % d.get("crash_model"))
 if int(m.group(1)) != d["explored"]: sys.exit("numerator %s != explored %r" % (m.group(1), d["explored"]))
 if int(m.group(2)) != d["explored"]: sys.exit("denominator %s != explored %r" % (m.group(2), d["explored"]))
 sys.stdout.write("ok")' 2>&1)
 if [ "$rc" = "0" ] && [ "${hd:-}" = "ok" ] && ! echo "$o" | grep -q "crash worlds satisfied"; then
-    echo "ok   PASS headline: both numbers==explored, old label absent"
+    echo "ok   PASS headline: both numbers==explored, the crash model named in the line and the JSON, old label absent"
 else
     echo "FAIL #150 PASS-side structural pin: rc=$rc ${hd:-}"
     echo "$o" | sed 's/^/     | /' | head -4
@@ -4338,7 +4339,7 @@ sup_field() {   # sup_field <json>: verdict, crash points, earliest, oracle_veri
 sup_explore() {   # sup_explore <dir> <toy> <mode flags...>
     sd=$1; st=$2; shift 2
     rm -rf "$sd" && mkdir -p "$sd/state"
-    TOY=$st "$SIDEEYE" explore --state "$sd/state" --setup "$st init" --operation "$st rotate" \
+    TOY=$st "${sup_engine:-$SIDEEYE}" explore --state "$sd/state" --setup "$st init" --operation "$st rotate" \
         --check "$ROOT/spike/check.sh" "$@" --oracle /usr/bin/strace --work "$sd/work" \
         --json "$sd/r.json" > "$sd/out.txt" 2>&1
 }
@@ -4628,18 +4629,87 @@ if [ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ]; then
     kill "$sd_sleeper" 2>/dev/null
     wait "$sd_sleeper" 2>/dev/null
     /bin/rm -f /tmp/acc-sd-pgid
-else
-    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
-    o=$("$SIDEEYE" explore --state /tmp/acc/state --operation "$OUT/toy-static rotate" \
-        --observe supervised --work /tmp/acc/work 2>&1)
-    rc=$?
-    if [ "$rc" = 3 ] && echo "$o" | grep -q "needs a cgroup v2 the engine can create cgroups in"; then
-        echo "ok   uncontained, --observe supervised is a setup error that names the cgroup it needs"
+fi
+
+# Not the shipped engine alone: on a host that contains runs it makes a cgroup and never takes the
+# path these legs are about.
+nc_refused() {   # nc_refused <name> <dir> <rc> <words the detail must carry>
+    nc_out=$(cat "$2/out.txt")
+    nc_step=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("next_step", ""))' "$2/r.json" 2>/dev/null)
+    if refused child_process_detected "$3" "$nc_out" && printf '%s\n' "$nc_out" | grep -qF -- "$4" \
+        && printf '%s\n' "$nc_step" | grep -qF "in the environment"; then
+        echo "ok   $1"
     else
-        echo "FAIL uncontained --observe supervised: exit $rc (wanted 3 naming the cgroup)"
-        echo "$o" | sed 's/^/     | /' | head -4
+        echo "FAIL $1: exit $3, wanted 2 child_process_detected with [$4] and the environment's step"
+        printf '%s\n' "$nc_out" | sed 's/^/     | /' | head -6
         fails=$((fails + 1))
     fi
+}
+if [ ! -x "$dt_refuser" ]; then
+    echo "FAIL --observe supervised without a cgroup: $dt_refuser is not built (zig build -Dtest-no-cgroup)"
+    fails=$((fails + 1))
+else
+    sup_engine=$dt_refuser
+    sup_explore /tmp/acc-nc "$OUT/toy-static" --observe supervised
+    nc_rc=$?
+    nc_v=$(sup_field /tmp/acc-nc/r.json)
+    if [ "$nc_rc" = 1 ] && [ "$nc_v" = "('FAIL', 5, 5, True)" ]; then
+        echo "ok   --observe supervised without a cgroup judges the static toy as it does with one: FAIL at crash point 5 of 5, the oracle agreeing ($(basename "$dt_refuser"))"
+    else
+        echo "FAIL --observe supervised without a cgroup on the static toy: exit $nc_rc $nc_v (wanted 1 and ('FAIL', 5, 5, True))"
+        sed 's/^/     | /' /tmp/acc-nc/out.txt | head -6
+        fails=$((fails + 1))
+    fi
+    TOY_DETACH=1 export TOY_DETACH
+    sup_explore /tmp/acc-nc "$OUT/toy-static" --observe supervised
+    nc_refused "--observe supervised without a cgroup refuses a child that leaves the process group" /tmp/acc-nc $? "left the containment group"
+    unset TOY_DETACH
+    TOY_SETSID=1 export TOY_SETSID
+    sup_explore /tmp/acc-nc "$OUT/toy-static" --observe supervised
+    nc_refused "--observe supervised without a cgroup refuses the subject's own setsid, which succeeds under strace" /tmp/acc-nc $? "left the containment group"
+    unset TOY_SETSID
+    # World-only, or the recording refuses first; a kill sent to the group alone would leave these
+    # worlds waiting until --world-timeout.
+    /bin/rm -f /tmp/acc-nc-pgid
+    python3 -c 'import os, time; os.setpgid(0, 0); open("/tmp/acc-nc-pgid", "w").write(str(os.getpgrp())); time.sleep(300)' &
+    nc_sleeper=$!
+    i=0
+    while [ ! -s /tmp/acc-nc-pgid ] && [ "$i" -lt 50 ]; do sleep 0.1; i=$((i + 1)); done
+    nc_pgid=$(cat /tmp/acc-nc-pgid 2>/dev/null)
+    if [ -n "$nc_pgid" ]; then
+        TOY_ESCAPE_WITNESS=/tmp/acc-nc-witness export TOY_ESCAPE_WITNESS
+        for nc_shape in TOY_SETPGID_OUT_WORLD TOY_SETPGID_OUT_PARENT_WORLD; do
+            /bin/rm -f /tmp/acc-nc-witness
+            export "$nc_shape=$nc_pgid"
+            sup_explore /tmp/acc-nc "$OUT/toy-static" --observe supervised --world-timeout 60
+            nc_rc=$?
+            unset "$nc_shape"
+            if ! grep -q "rc=0 \|rc=0$" /tmp/acc-nc-witness 2>/dev/null; then
+                echo "FAIL $nc_shape: the subject never left its group, so nothing was measured: $(head -2 /tmp/acc-nc-witness 2>/dev/null | tr '\n' ' ')"
+                fails=$((fails + 1))
+                continue
+            fi
+            if [ "$nc_shape" = TOY_SETPGID_OUT_WORLD ]; then
+                nc_refused "--observe supervised without a cgroup kills the subject that left its group, at its crash point, and refuses the world" /tmp/acc-nc $nc_rc "in an explored world"
+            # The child killed at the crash point is refused before the detach is asked about.
+            elif refused child_touched_state_dir "$nc_rc" "$(cat /tmp/acc-nc/out.txt)" && grep -qF "in an explored world" /tmp/acc-nc/out.txt; then
+                echo "ok   --observe supervised without a cgroup kills a subject that left its group while its child reached the crash point, and refuses the world"
+            else
+                echo "FAIL --observe supervised without a cgroup, a subject that left its group while its child reached the crash point: exit $nc_rc, wanted 2 child_touched_state_dir in an explored world"
+                sed 's/^/     | /' /tmp/acc-nc/out.txt | head -6
+                fails=$((fails + 1))
+            fi
+        done
+        unset TOY_ESCAPE_WITNESS
+        /bin/rm -f /tmp/acc-nc-witness
+    else
+        echo "FAIL the sleeper that holds a group outside the run never started, so nothing was measured"
+        fails=$((fails + 1))
+    fi
+    kill "$nc_sleeper" 2>/dev/null
+    wait "$nc_sleeper" 2>/dev/null
+    /bin/rm -f /tmp/acc-nc-pgid
+    unset sup_engine
 fi
 
 # ---- a static parent whose dynamic child carried the shim (#685, ADR 0108) ----
@@ -7082,6 +7152,14 @@ else
     sed 's/^/     | /' "$SD/pfa.err" | head -4
     fails=$((fails + 1))
 fi
+# Not asserting the words here: check-controls.sh does; this keeps its document for the schema check.
+if SIDEEYE="$SIDEEYE" SHIM="$SHIM" CONTROLS_JSON_OUT="$SD/preflight-controls.json" sh "$ROOT/spike/check-controls.sh" > "$SD/pfc.out" 2>&1; then
+    echo "ok   preflight --config with [controls] reports each control by its own word"
+else
+    echo "FAIL preflight [controls]: spike/check-controls.sh did not pass"
+    sed 's/^/     | /' "$SD/pfc.out" | head -8
+    fails=$((fails + 1))
+fi
 TOY_STATE=$SD/pfs/state TOY_NONDET_REWRITE=1 "$SIDEEYE" preflight --state "$SD/pfs/state" \
     --setup "$OUT/toy-bug init" --operation "$OUT/toy-bug rotate" --shim "$SHIM" \
     --work "$SD/wpfs" --twice --json "$SD/preflight-split.json" >"$SD/pfs.out" 2>"$SD/pfs.err"
@@ -7135,7 +7213,7 @@ fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
     "$ROOT/src/report.zig" \
     "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/warnings.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/children.json" \
-    "$SD/preflight-accepted.json" "$SD/preflight-split.json" /tmp/acc-lcs/leave.json; then
+    "$SD/preflight-accepted.json" "$SD/preflight-split.json" "$SD/preflight-controls.json" /tmp/acc-lcs/leave.json; then
     echo "ok   the schema page, the generated reports and preflight documents, the contract enum and the JSON writers' shared values agree"
 else
     echo "FAIL the report schema page drifted from the reports (or the reports from the page)"
@@ -8750,8 +8828,7 @@ fi
 # which is two — `open` and `write` are separate kill points.
 #
 # **Do not hand an anchored verdict-line matcher a define with one crash point.** The #150
-# structure pin — `^PASS  ([0-9]+)/([0-9]+) explored worlds satisfied the built-in atomicity
-# invariant$` against `head -1`, at line 557, some three thousand lines ABOVE this — drives
+# structure pin, which anchors the whole PASS line from `head -1` far above this, drives
 # toy-fixed at four crash points and would fail on this define, because the clause is part of
 # the line it anchors.
 #
@@ -9105,19 +9182,31 @@ else
     echo "FAIL toy-fortify does not import __open_2: the compiler folded its flags, and no leg below reaches a fortified open"
     fails=$((fails + 1))
 fi
-for fo in "rotate:--observe wrappers" "rotate:--observe syscalls" "sweep:--observe wrappers" \
-    "sweep:--observe syscalls" "sweep-range:--observe wrappers"; do
-    fo_cmd=${fo%%:*}
-    fo_mode=${fo#*:}
+# Not the fortify toy's job: these are glibc's second names for the calls the shim records
+# (`__open`, `_IO_fopen`), which a program reaches only by naming them.
+aliases_imported=$(nm -D --undefined-only "$OUT/toy-aliases" 2>/dev/null)
+if printf '%s\n' "$aliases_imported" | grep -q " __open@" && printf '%s\n' "$aliases_imported" | grep -q " _IO_fopen@"; then
+    echo "ok   toy-aliases imports __open and _IO_fopen"
+else
+    echo "FAIL toy-aliases does not import the aliases it exists to call"
+    fails=$((fails + 1))
+fi
+for fo in "toy-fortify:rotate:--observe wrappers" "toy-fortify:rotate:--observe syscalls" \
+    "toy-fortify:sweep:--observe wrappers" "toy-fortify:sweep:--observe syscalls" \
+    "toy-fortify:sweep-range:--observe wrappers" "toy-aliases:rotate:" "toy-aliases:pwrite:" "toy-aliases:stdio:"; do
+    fo_toy=${fo%%:*}
+    fo_rest=${fo#*:}
+    fo_cmd=${fo_rest%%:*}
+    fo_mode=${fo_rest#*:}
     rm -rf /tmp/acc && mkdir -p /tmp/acc/state
     o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
-        --setup "$OUT/toy-fortify init" --operation "$OUT/toy-fortify $fo_cmd" \
+        --setup "$OUT/$fo_toy init" --operation "$OUT/$fo_toy $fo_cmd" \
         --shim "$SHIM" --work /tmp/acc/work $fo_mode --oracle /usr/bin/strace 2>&1)
     rc=$?
     if [ "$rc" = 1 ] && printf '%s\n' "$o" | grep -q "^oracle  *agreed on"; then
-        echo "ok   a fortified rewrite ($fo) is counted, and the oracle agrees: FAIL"
+        echo "ok   a rewrite through $fo_toy ($fo_rest) is counted, and the oracle agrees: FAIL"
     else
-        echo "FAIL a fortified rewrite ($fo): exit $rc, wanted FAIL with the oracle agreeing"
+        echo "FAIL a rewrite through $fo_toy ($fo_rest): exit $rc, wanted FAIL with the oracle agreeing"
         printf '%s\n' "$o" | sed 's/^/     | /' | head -4
         fails=$((fails + 1))
     fi
