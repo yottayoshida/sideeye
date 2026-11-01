@@ -191,3 +191,28 @@ sequences are unchanged.
   shim's next records without an error, which the relocation floors keep from happening by
   accident. A process that does not own the slot table writes a death at each failed record until
   it execs, since it cannot give up its parent's channel; the first one refuses the run.
+- **Amended 2026-11-01 (#941): one rule for a lost descriptor of the shim's, and one liveness probe.**
+  On Linux a `close` or `fclose` of the trace, `cgroup.kill` or the step-aside descriptor is now
+  decided after the call by the function that decides a sweep: the trace goes back on its number when
+  it is the same file and the number is still free, and otherwise the death is written and an owner
+  gives the channel up. `close(2)` of the relocated number no longer refuses the run by itself, so a
+  target that closes every descriptor up to 1023 one at a time is judged. Three losses still refuse:
+  a `freopen` of the trace, since glibc puts the new file on the same number, so the number holds
+  another file when the shim looks; a write that finds the trace gone (#933's rule, which does not put
+  it back); and a loss while another thread of the process is alive, where the trace goes back and
+  the death is written too. The three numbers are taken back at most eight times between them per
+  process, counted by pid so that a `vfork` child sharing the memory does not spend its parent's — a
+  loop that closes until nothing is left to close would otherwise meet them on every pass — and with `F_DUPFD`
+  from that number, used only when it returns that number, where `dup3` replaced whatever held it.
+  A process that does not own the slot table writes the shared numbers on no path; on macOS, where
+  nothing is put back, a close of the trace writes the death and only an owner sets the number to -1.
+  What the target can tell: after `close(900)` the number answers `fcntl` again, as after a sweep. The
+  price is the case decision 4 named: a target that closes the trace number and then puts a file of
+  its own on it with `dup2` takes the shim's later records into that file, and under an oracle that
+  run is refused (`oracle_missed_operation`: strace sees the writes the shim's account lacks); without
+  one, the run already makes only the weaker claim. The races the sweep had now come with every close
+  of the trace: another thread that duplicates onto the number the reopen briefly holds, or a second
+  thread closing the trace at the same moment, ends in a refusal or in a descriptor of the target's
+  closed under it. Whether a process or thread is alive is asked one way, by `contract.probeSaysGone`:
+  a failed signal-0 probe means it is gone on `ESRCH` alone, in the shim's slot reclaim, its thread
+  check and the engine's work-directory lock alike.

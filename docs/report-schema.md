@@ -490,7 +490,7 @@ descriptor are refused under that mode too, as `supervise_linux.zig` reads; not 
 its own process, whose shim announces itself from the oracle's subject; `child_touched_state_dir`'s
 other arm. A replay keeps the mode its crash point was counted in and is not sent on.
 
-**A trace a process closed, whatever the image's linkage** (#988). The recording run's
+**A trace a process closed, whatever the image's linkage** (#988). On Linux a close of the trace is put back as a sweep's is (ADR 0013, amended 2026-11-01), so this arises where it could not be: below the relocation floors, after the number was taken, past the descriptor limit, after eight such returns in one process, through `freopen`, while another thread of the process is alive, or on macOS. The recording run's
 `unresolvable_path` whose refusing record's kind is `trace-closed-by-target` takes
 `observe_supervised_trace_closed` when the operation's image is a dynamically linked 64-bit ELF,
 under the conditions of the paragraph above — `--observe wrappers` or `--observe syscalls`, a

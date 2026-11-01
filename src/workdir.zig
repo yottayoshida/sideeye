@@ -50,7 +50,7 @@ pub fn lock(arena: std.mem.Allocator, work: []const u8) ?Refusal {
             _ = posix.close(fd);
             const written = if (n > 0) std.mem.trim(u8, pid_buf[0..@intCast(n)], " \n") else "";
             // Do not name a pid that has exited: the holder may not have written its own yet.
-            const alive = if (std.fmt.parseInt(i32, written, 10)) |pid| pid > 0 and (posix.kill(pid, 0) == 0 or std.c._errno().* == posix.EPERM) else |_| false;
+            const alive = if (std.fmt.parseInt(i32, written, 10)) |pid| pid > 0 and (posix.kill(pid, 0) == 0 or !contract.probeSaysGone(std.c._errno().*)) else |_| false;
             const holder = if (alive) written else "unknown";
             return refusal(arena, "--work {s} is in use by another sideeye run (pid {s}): two runs in one work directory read each other's traces and reports. Give each run its own --work", .{ shown, holder });
         }
