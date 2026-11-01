@@ -103,18 +103,15 @@ else bad "--shim or --work is gone"; fi
 if has 'tar xzf' && has './sideeye'; then ok "the release artifact can be started from the page"
 else bad "the untar-and-run path is gone; the onboarding box has no other way to start the tarball"; fi
 
-# 9. The one named exception to "never a silent PASS" sits in the sentence that makes that
-# promise (ADR 0032: a reader meets the exception where the promise is made). The sentence
-# runs from the phrase to the next ". " or the end of its line; the exception is named by the
-# field the JSON report counts it in. Not one of run 1's seven either: added when #714 shortened
-# the exception to a clause, so that a later edit cannot move it out of the sentence again.
+# 9. Not left to the page alone: the sentence that makes the "never a silent PASS" promise links
+# its exceptions (ADR 0145). The sentence runs from the phrase to the next ". " or the end of its line.
 promise_line=$(grep -F 'never a silent PASS' "$R" | head -1)
 promise_rest=${promise_line#*never a silent PASS}
 promise_sentence=$(printf '%s\n' "$promise_rest" | sed 's/\. .*//')
-if [ -n "$promise_line" ] && printf '%s\n' "$promise_sentence" | grep -qF 'paths_attributed_to_rename'; then
-    ok "the promise names its one exception in the same sentence"
+if [ -n "$promise_line" ] && printf '%s\n' "$promise_sentence" | grep -qF '(docs/silent-windows.md)'; then
+    ok "the promise links its known windows in the same sentence"
 else
-    bad "\"never a silent PASS\" is gone, or its sentence no longer names paths_attributed_to_rename"
+    bad "\"never a silent PASS\" is gone, or its sentence no longer links docs/silent-windows.md"
 fi
 
 # 10. The command that turns a saved FAIL into an upstream report (#709). Not one of run 1's seven:
