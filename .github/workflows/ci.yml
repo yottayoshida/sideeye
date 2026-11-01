@@ -1019,6 +1019,19 @@ jobs:
       - name: Every watched write-capable export is interposed or explained (#333)
         run: python3 spike/check-macos-coverage.py shim/src/macos.zig shim/src/darwin_libc.zig
 
+      # Not the diff alone: a shim that never loaded compares equal, so dyld's line is checked.
+      - name: The fcntl wrapper hands each command the argument the caller passed (#948)
+        run: |
+          set -eu
+          d=$(mktemp -d)
+          cc -Wall -Werror -o "$d/toy_fcntl" spike/toys/toy_fcntl.c
+          "$d/toy_fcntl" "$d/a.dat" > "$d/plain.txt"
+          DYLD_PRINT_LIBRARIES=1 DYLD_INSERT_LIBRARIES="$PWD/zig-out/lib/libsideeye_shim.dylib" \
+            "$d/toy_fcntl" "$d/a.dat" > "$d/shim.txt" 2> "$d/shim.err"
+          grep -q libsideeye_shim "$d/shim.err" || { echo "the shim was not loaded"; cat "$d/shim.err"; exit 1; }
+          diff "$d/plain.txt" "$d/shim.txt"
+          cat "$d/shim.txt"
+
       # The other direction, and a different question (#299): the step above compares
       # libsystem_kernel's exports against a curated set, which is a claim about a list;
       # this one compares the fs_usage oracle's classifier against the interpose table,
@@ -1381,6 +1394,15 @@ jobs:
           [ "$(points)" = "2" ] || { echo "swap-out: want 2 crash points and a verdict, got $(points)"; cat /tmp/ci-v12/r.json; exit 1; }
           ! grep -q 'unsupported_syscall_observed' /tmp/ci-v12/r.json || {
             echo "swap-out: an out-of-scope swap must not refuse as unsupported"; cat /tmp/ci-v12/r.json; exit 1; }
+
+      # Not left to the image: macos-26 has no Go, and check 15 fails rather than skip its Go toy.
+      - name: Install Go for the fs_usage acceptance's Go toy (#948)
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+          HOMEBREW_NO_INSTALL_CLEANUP: "1"
+        run: |
+          command -v go || brew install go
+          go version
 
       - name: "macOS oracle: fs_usage verifies a PASS, catches a missed op, refuses an unseen process (ADR 0031)"
         # The three falsifiable checks from the plan, against a real fs_usage. The
