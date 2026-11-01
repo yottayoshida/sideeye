@@ -90,3 +90,7 @@ and does nothing for a rename onto a new name, and other filesystems answer diff
   file, and a file renamed on again, which is judged only until its second rename. Each leaves out
   a world power loss can leave; none adds one it cannot, under the rule.
 - A replay without strace refuses: it could not tell a truncating open from another.
+
+## Residual windows
+
+None: the flag only adds worlds, and the report says what it left out — the `power loss` line counts the candidates it did not judge or says no world was built, and `not_tested` names power loss beyond the rule.

@@ -294,7 +294,7 @@ pub fn save(
     e: Exhibited,
 ) ?[]const u8 {
     const base = caveats(arena, e.draft.consequence_truncated, if (e.recovery) |r| r != .unknown else false) catch return null;
-    const cav = if (e.power_loss) |rule| std.mem.concat(arena, []const u8, &.{ base, &.{std.fmt.allocPrint(arena, "This is not the state a process kill left: it is the power-loss world of the {s} rule, built from that state: {s}. Whether a filesystem can leave it depends on the filesystem (ADR 0147).", .{ rule.name(), rule.says() }) catch return null} }) catch return null else base;
+    const cav = if (e.power_loss) |rule| std.mem.concat(arena, []const u8, &.{ base, &.{std.fmt.allocPrint(arena, "This is not the state a process kill left: it is the power-loss world of the {s} rule, built from that state: {s}. Whether a filesystem can leave it depends on the filesystem.", .{ rule.name(), rule.says() }) catch return null} }) catch return null else base;
     return write(arena, case_file, .{
         .schema = "sideeye/evidence",
         .evidence_version = current_version,

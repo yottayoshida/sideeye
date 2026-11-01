@@ -1654,7 +1654,29 @@ fn phaseOracle(run: *Run) void {
         else
             capture.readFileAlloc(arena, oracle_out) orelse setupError(.environment, "the oracle's capture file could not be read");
         refuse.dropCapture();
-        if (args.power_loss != null) planPowerLoss(run, text);
+        if (args.power_loss != null) plan: {
+            const scan = oracle.powerLossScan(arena, text) catch setupError(.environment, "out of memory");
+            const opens = arena.alloc(syncs.WriteOpen, scan.opens.len) catch setupError(.environment, "out of memory");
+            for (scan.opens, opens) |o, *w| w.* = .{ .path = o.path, .truncates = o.truncates };
+            const plan = syncs.candidates(arena, run.rec.trace.ops.items, run.define.state_abs, if (run.define.alt_differs) run.define.state_alt else "", run.parsed.args.scratch, &run.initial, .{ .list = opens, .unplaced = scan.opens_unplaced }) catch
+                setupError(.environment, "out of memory");
+            report.power_loss_candidates = std.math.cast(u32, plan.cands.len) orelse std.math.maxInt(u32);
+            report.power_loss_unmatched = plan.unmatched;
+            if (scan.unrecorded.len == 0) {
+                run.power_cands = plan.cands;
+                break :plan;
+            }
+            var out: std.ArrayList(u8) = .empty;
+            for (scan.unrecorded, 0..) |u, i| {
+                if (i == 8 or out.items.len > syncs.max_bytes) {
+                    out.print(arena, " and {d} more", .{scan.unrecorded.len - i}) catch break;
+                    break;
+                }
+                if (i > 0) out.appendSlice(arena, ", ") catch break;
+                out.print(arena, "{s} on {s}", .{ u.call, textShown(arena, u.file) }) catch break;
+            }
+            report.power_loss_unjudged = out.items;
+        }
         // This line is the whole reason `cwd` is not a one-line feature. The shim reads
         // the cwd inside the child, so it follows the chdir on its own; the oracle reads
         // a trace after the fact and has to be told. Left at the engine's cwd, the two
@@ -1989,31 +2011,6 @@ fn phaseOracle(run: *Run) void {
 
 const power_loss_needs_strace = "needs strace as the witness, --oracle <strace> or one found on PATH that can trace here: the worlds are built from the shim's record of the syncs, and only strace can say the run made none the shim does not record";
 
-fn planPowerLoss(run: *Run, text: []const u8) void {
-    const arena = run.arena;
-    const scan = oracle.powerLossScan(arena, text) catch setupError(.environment, "out of memory");
-    const opens = arena.alloc(syncs.WriteOpen, scan.opens.len) catch setupError(.environment, "out of memory");
-    for (scan.opens, opens) |o, *w| w.* = .{ .path = o.path, .truncates = o.truncates };
-    const plan = syncs.candidates(arena, run.rec.trace.ops.items, run.define.state_abs, if (run.define.alt_differs) run.define.state_alt else "", run.parsed.args.scratch, &run.initial, .{ .list = opens, .unplaced = scan.opens_unplaced }) catch
-        setupError(.environment, "out of memory");
-    report.power_loss_candidates = std.math.cast(u32, plan.cands.len) orelse std.math.maxInt(u32);
-    report.power_loss_unmatched = plan.unmatched;
-    if (scan.unrecorded.len == 0) {
-        run.power_cands = plan.cands;
-        return;
-    }
-    var out: std.ArrayList(u8) = .empty;
-    for (scan.unrecorded, 0..) |u, i| {
-        if (i == 8 or out.items.len > syncs.max_bytes) {
-            out.print(arena, " and {d} more", .{scan.unrecorded.len - i}) catch break;
-            break;
-        }
-        if (i > 0) out.appendSlice(arena, ", ") catch break;
-        out.print(arena, "{s} on {s}", .{ u.call, textShown(arena, u.file) }) catch break;
-    }
-    report.power_loss_unjudged = out.items;
-}
-
 fn phasePreflight(run: *Run) void {
     const gpa = run.gpa;
     const mode = run.parsed.mode;
@@ -2201,55 +2198,6 @@ fn phaseChecker(run: *Run) void {
     }
 
     run.check_argv = check_argv;
-}
-
-const WorldChecker = struct { failed: bool, out: ?[]const u8 };
-
-fn runWorldChecker(gpa: std.mem.Allocator, arena: std.mem.Allocator, cargv: []const []const u8, state_abs: []const u8, work: []const u8, cwd: ?[]const u8, out_buf: *[contract.max_path]u8, label: []const u8) WorldChecker {
-    var out: ?[]const u8 = null;
-    var capture_opened = true;
-    const co = std.fmt.bufPrint(out_buf, "{s}/checker-output.txt", .{work}) catch
-        setupError(.define_invalid, "path too long");
-    // `exclusive` needs the removal, and without `O_EXCL` a FIFO planted at the name
-    // would block the parent's open — the pair `Capture.exclusive` asks for by name.
-    files.removeFile(co);
-    // stderr too, for the reason #483 gives on the setup capture: a checker reports
-    // through either stream, and capturing stdout alone would leave the file empty for
-    // the ordinary failure.
-    const ct = posix.runChildCapture(gpa, cargv, &controls_run.checkerEnv(state_abs, controls_run.unreadLegs(work)), .{ .path = co, .stderr_too = true, .exclusive = true }, cwd) catch |e| switch (e) {
-        // The one failure that is about the capture and not about the child: since
-        // #469 the parent opens the file, so this arrives before any child exists.
-        // The checker still has to run — the verdict rests on its exit status — so
-        // it runs uncaptured and the bundle's diagnostic stays unknown. Refusing
-        // here would turn a FAIL into an UNKNOWN over an attachment.
-        error.CaptureUnavailable => blk_cap: {
-            // Left null on this path deliberately, rather than relying on the
-            // removal above to make the read come back empty: "there is no capture"
-            // and "the capture is empty" are different answers, and only the first
-            // is true here.
-            capture_opened = false;
-            break :blk_cap posix.runChild(gpa, cargv, &controls_run.checkerEnv(state_abs, controls_run.unreadLegs(work)), cwd) catch |e2| spawnFailure(e2, .exploring, "could not run --check");
-        },
-        else => spawnFailure(e, .exploring, "could not run --check"),
-    };
-    // Set whichever way the child ended: a checker killed by a signal has often
-    // written the line that says why, and the capture is what holds it.
-    if (capture_opened) {
-        out = co;
-        // Not printed bare: `spike/acceptance.sh` counts gate lines, world lines and unmarked
-        // checker lines, which must be none.
-        if (capture.readFileAllocCapped(arena, co, 1024 * 1024, .{ .no_follow = true })) |text| {
-            var lines = std.mem.splitScalar(u8, text, '\n');
-            while (lines.next()) |line| {
-                if (line.len == 0) continue;
-                say("{s}: {s}\n", .{ label, line });
-            }
-        }
-    }
-    return .{ .out = out, .failed = switch (ct) {
-        .exited => |code| code != 0,
-        else => true,
-    } };
 }
 
 fn phaseExploration(run: *Run) void {
@@ -2536,7 +2484,7 @@ fn phaseExploration(run: *Run) void {
         var l2_failed = false;
         var checker_out: ?[]const u8 = null;
         if (check_argv) |cargv| {
-            const cr = runWorldChecker(gpa, arena, cargv, state_abs, args.work, args.cwd, &checker_out_buf, if (k > n) "baseline" else std.fmt.allocPrint(arena, "world {s}", .{kstr}) catch "world");
+            const cr = controls_run.runWorldChecker(gpa, arena, cargv, state_abs, args.work, args.cwd, &checker_out_buf, if (k > n) "baseline" else std.fmt.allocPrint(arena, "world {s}", .{kstr}) catch "world");
             checker_out = cr.out;
             checks_run += 1;
             l2_failed = cr.failed;
@@ -2671,10 +2619,10 @@ fn phaseExploration(run: *Run) void {
         if (composed) |world| {
             report.power_loss_worlds += 1;
             // Not written out without a checker: the invariants read the snapshot, and the next world restores anyway.
-            const pc: WorldChecker = if (check_argv) |cargv| pcblk: {
+            const pc: controls_run.WorldChecker = if (check_argv) |cargv| pcblk: {
                 engine.restore(world, state_abs) catch |e| refuse.restoreFailure(e, "could not write a power-loss world into the state directory", state_abs);
                 checks_run += 1;
-                break :pcblk runWorldChecker(gpa, arena, cargv, state_abs, args.work, args.cwd, &checker_out_buf, if (k > n) "power-loss baseline" else std.fmt.allocPrint(arena, "power-loss world {s}", .{kstr}) catch "power-loss world");
+                break :pcblk controls_run.runWorldChecker(gpa, arena, cargv, state_abs, args.work, args.cwd, &checker_out_buf, if (k > n) "power-loss baseline" else std.fmt.allocPrint(arena, "power-loss world {s}", .{kstr}) catch "power-loss world");
             } else .{ .failed = false, .out = null };
             // Not left behind after the operation: the state directory is held to the baseline's result.
             if (k > n and check_argv != null) engine.restore(crashed, state_abs) catch |e| refuse.restoreFailure(e, "could not put the baseline's result back after its power-loss world", state_abs);
