@@ -52,3 +52,7 @@ not); it is a separate question.
   leaves the two runs different, which is refused as before.
 - The pinned bytes are recomputable from the case. The report and `docs/apparatus.md` say so, and that a define
   touching real keys or network credentials should not ask for it.
+
+## Residual windows
+
+None: the pin changes the bytes an operation reads, not which of its calls the shim and the oracle see, and what it does not reach leaves the two runs different, which is refused.
