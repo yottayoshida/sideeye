@@ -363,7 +363,7 @@ test "fuzz: sideeye.toml" {
         \\[define]
         \\setup     = ["./seed.sh", "two words"]
         \\operation = ["mytool", "commit", "-m", "a message with spaces"]   # argv form (ADR 0019)
-        \\check     = ["./check.sh", "has # and , and [ inside"]
+        \\check     = ["./check.sh", "has # and , and [ inside", '["k"] "v"']
         \\expected_status = "3"
         \\cwd = "work"
         ,

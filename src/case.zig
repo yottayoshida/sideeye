@@ -340,6 +340,17 @@ test "read returns a valid case whole" {
     try std.testing.expectEqualStrings("syscalls", read(a, v6_empty).ok.observe.?);
 }
 
+test "an argv element holding a double quote is written and read back byte for byte" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const elem = "[\"k\"] \"v\"";
+    var w: std.ArrayList(u8) = .empty;
+    try jsonCommand(&w, a, .{ .argv = &.{ "sops", "set", elem } });
+    const text = try testCaseWith(a, "[\"tool\",\"build\"]", w.items);
+    try std.testing.expectEqualStrings(elem, read(a, text).ok.define.operation.argv[2]);
+}
+
 test "read refuses with replay's sentences, in replay's order" {
     var as = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer as.deinit();

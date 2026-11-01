@@ -116,3 +116,25 @@ operation = ["mytool", "commit", "-m", "a message with spaces"]
   it: hnb, refused under the wrapper spelling in the #84 sweep, re-posed with
   an argv-form define. lbdb stays out of reach — a stdin redirect is not an
   argument, and no argv shape can carry it.
+
+## Amended 2026-10-31: a command's argv element may be a single-quoted literal (#949)
+
+Decision 1 left a `sideeye.toml` no way to pass an argument holding a `"`: a toml string ends at
+its first `"`, the argv form's elements were double-quoted with no escapes, and a script in between
+makes `sh` the operation. (A flag's string form could carry one, split on spaces, so an argument
+holding both a space and a `"` had no spelling anywhere.) `sops set`, whose path expression is
+`["k"]`, and fontforge stopped there (dogfood 2026-10-12).
+
+An element of a command's argv form (`setup`, `operation`, `check`) may now also be a TOML literal
+string, `'…'`: everything up to the next `'` is the element, verbatim. A literal has no escapes, so
+ADR 0007's "no escapes" holds, and the byte discipline is the same as for a double-quoted element
+— a `\` or a control byte is still refused, although TOML reads a `\` inside a literal as itself, so
+that `'a\nb'` cannot mean one thing to TOML and another to a reader who expects an escape. A `'`
+element was refused until now, so no accepted spelling changes meaning: this is the additive
+allowance of `docs/contract-freeze.md` surface 1, and not a new command shape for DESIGN §12 — the
+argv form is the one ADR 0019 added, with a second way to quote its elements. The entries of `apparatus` and `scratch` stay
+double-quoted, and a single-quoted one is refused by name.
+
+The warning a quoted string-form command earns (ADR 0095) offers a word holding a `"` as a literal
+element. A word holding both `"` and `'` still has no argv spelling, and is pointed at a script.
+The case format does not move: the element travels as a JSON string, as every element did.
