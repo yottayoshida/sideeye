@@ -105,7 +105,7 @@ docs/report-schema.md	a path the define declares `scratch` — is accounted for 
 0145	says "never a silent PASS — except the known windows	quotes the README promise this ADR writes
 0121	reaches neither witness at all	reconciliation-per-path-gap
 DESIGN.md	A directory a recorded `rename` moved into the judged tree from outside it is attributed to that one record	rename-in-from-outside
-0002	the residue is the unshimmed-and-relative	reconciliation-per-path-gap
+0002	the residue is the unshimmed-and-relative	refused: a child's relative write counts as its touch, and one the shim recorded nothing for is refused (v15, #935)
 0005	there is no oracle, so this net does not exist; the residue	past: macOS had no oracle then (ADR 0031)
 0028	3. **The named residue**, printed as unmeasured	a page's unmeasured clauses, not a run's verdict
 0028	named five paragraphs' worth of residue	a page's unmeasured clauses, not a run's verdict
@@ -117,3 +117,4 @@ DESIGN.md	A directory a recorded `rename` moved into the judged tree from outsid
 0042	residue is judged wrong, and deleting the tree	deleting the work tree safely, not a verdict
 0089	One residue runs the other way and is	an unrecorded setsid opens no gap: the group keeps it alive, or an earlier recorded call refused
 0089	escapes the kill unrecorded where the cgroup used to reach it	a compat call: the strace oracle sees it and refuses
+0143	The engine cannot see a card	the author's task card is outside the engine: authoring, not a run's verdict

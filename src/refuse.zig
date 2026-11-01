@@ -523,6 +523,11 @@ const SpawnPhase = enum {
 /// review, not by the compiler.
 pub var run_phase: SpawnPhase = .before_exploration;
 
+pub fn refuseSpacedDir(arena: std.mem.Allocator, dir: []const u8, section: []const u8, noun: []const u8, written: []const u8, resolved: []const u8) void {
+    if (resolved.ptr != written.ptr and std.mem.indexOfScalar(u8, dir, ' ') != null)
+        setupErrorFmt(arena, .define_invalid, "[{s}] takes the string form only, split on spaces, and {s}, the directory its relative command resolves against, holds a space: move the sideeye.toml to a path without one, or name the {s} by an absolute path without one", .{ section, defang.textShown(arena, dir), noun });
+}
+
 pub fn spawnFailure(e: posix.ContainedSpawnError, phase: SpawnPhase, doing: []const u8) noreturn {
     // The SETUP_ERROR class, decided once for the whole error set (#518): every member is
     // the engine needing something of the machine — a fork, memory, a descriptor, a capture,
