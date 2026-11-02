@@ -23,7 +23,7 @@ const removeFile = files.removeFile;
 
 pub const version = contract.sideeye_version;
 
-pub const define_surface_flags = [_][]const u8{ "--state", "--setup", "--operation", "--check", "--marker", "--expect-status", "--cwd", "--apparatus", "--scratch", "--recovery", "--recovery-check" };
+pub const define_surface_flags = [_][]const u8{ "--state", "--setup", "--operation", "--check", "--marker", "--expect-status", "--cwd", "--apparatus", "--scratch", "--invariant", "--recovery", "--recovery-check" };
 
 pub const define_surface_list = blk: {
     var out: []const u8 = "";
@@ -81,6 +81,7 @@ pub const Args = struct {
     cwd: ?[]const u8 = null,
     apparatus: []const []const u8 = &.{},
     scratch: []const []const u8 = &.{},
+    rerun: bool = false,
     stop_when_orphaned: bool = false,
     interleave: bool = false,
     interleave_wait_s: u32 = contract.interleave_wait_default_s,
@@ -124,6 +125,7 @@ pub fn carried(comptime field: std.meta.FieldEnum(Args)) struct { replay: Carry,
         .expect_status => .{ .replay = .in_case, .next = .printed },
         .apparatus => .{ .replay = .in_case, .next = .printed },
         .scratch => .{ .replay = .in_case, .next = .printed },
+        .rerun => .{ .replay = .in_case, .next = .in_case },
         .config => .{ .replay = .in_case, .next = .printed },
         // Not on preflight's line: its flags cannot carry them, and the toml the line names does.
         .check => .{ .replay = .in_case, .next = .in_case },
@@ -191,7 +193,7 @@ const usage_fmt =
     \\  sideeye demo [--shim <lib>]
     \\  sideeye preflight --state <dir> --operation <cmd> [--shim <lib>] [--setup <cmd>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--oracle <strace> | --no-oracle] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice] [--state-under <dir>]
     \\  sideeye preflight --config <sideeye.toml> [--shim <lib>] [--oracle <strace> | --no-oracle] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--twice] [--state-under <dir>]
-    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--recovery <cmd> --recovery-check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage | --no-oracle] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--interleave] [--state-under <dir>] [--power-loss <rule>]
+    \\  sideeye explore --state <dir> --operation <cmd> [--setup <cmd>] [--check <cmd>] [--recovery <cmd> --recovery-check <cmd>] [--marker <bytes>] [--expect-status <n>] [--cwd <dir>] [--apparatus <entry>] [--scratch <path>] [--invariant rerun] [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage | --no-oracle] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--interleave] [--state-under <dir>] [--power-loss <rule>]
     \\  sideeye explore --config <sideeye.toml> [--shim <lib>] [--work <dir>] [--oracle <strace> | --oracle-fs-usage | --no-oracle] [--observe wrappers|syscalls|supervised] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>] [--interleave] [--state-under <dir>] [--power-loss <rule>]
     \\  sideeye replay <case.json> [--shim <lib>] [--recovery <cmd> --recovery-check <cmd>] [--fresh-state] [--leave-crash-state] [--state-under <dir>] [--oracle <strace> | --oracle-fs-usage | --no-oracle] [--observe wrappers|syscalls|supervised] [--work <dir>] [--json <path>] [--allow-unverified] [--stop-when-orphaned] [--world-timeout <s>]
     \\  sideeye evidence <case.json>
@@ -252,13 +254,13 @@ const usage_fmt =
     \\When the recording no longer matches the case's landing context, the answer
     \\is "case no longer applies" (exit 2), never a verdict about a shifted point.
     \\
-    \\  --config     path to a sideeye.toml carrying the define surface (ADR 0007);
+    \\  --config     a sideeye.toml carrying the define surface (ADR 0007);
     \\               mutually exclusive with --state, --setup, --operation, --check,
     \\               --marker, --expect-status, --cwd, --apparatus, --scratch,
-    \\               --recovery and --recovery-check.
-    \\               Relative paths in the file resolve against its own directory
+    \\               --invariant, --recovery and --recovery-check. Relative paths in
+    \\               the file resolve against its own directory
     \\  --state      directory whose contents define the target's state
-    \\  --cwd        directory the define's commands run in (default: this process's).
+    \\  --cwd        directory the commands run in (default: this process's).
     \\               The engine's own cwd does not move: --work, --json and --state
     \\               are still read against it
     \\  --apparatus  a device the operation's environment must carry, kind:value, repeatable:
@@ -270,15 +272,16 @@ const usage_fmt =
     \\               the path itself and everything beneath it, judged in no world — not
     \\               its bytes, not its presence. The report carries the declaration and
     \\               counts what it matched; the saved case carries it too (ADR 0043)
+    \\  --invariant  rerun: run the operation again in each crash world
     \\  stdin        not a flag: every command sideeye runs (setup, operation, checker)
     \\               starts with its standard input at end-of-file, on the CLI and MCP
     \\               paths alike. A target that reads stdin sees EOF, never the
     \\               terminal or pipe sideeye itself was started from
     \\  --setup      command that produces the initial state (run once)
     \\  --operation  command to explore; killed before each operation that can change state
-    \\  --expect-status  exit status of a completed operation (0..255, default 0).
-    \\               Governs the recording run and the un-killed baseline
-    \\               world alike; killed worlds still require the kill signal itself
+    \\  --expect-status  the operation's success status (0..255, default 0). Governs the
+    \\               recording run and the un-killed baseline world alike; killed worlds
+    \\               still require the kill signal itself
     \\  --shim       path to libsideeye_shim.so; when omitted it is looked for
     \\               beside this binary (its sibling, then ../lib — the tarball
     \\               and zig-out layouts). Absence is a loud error naming both
@@ -304,7 +307,7 @@ const usage_fmt =
     \\               replacing its own image, is UNKNOWN under it.
     \\               Everything it cannot resolve refuses
     \\  --check      command run after each crash, in a fresh process; exit 0 = invariant holds
-    \\  --recovery   the target's own recovery (with --recovery-check; the two come together).
+    \\  --recovery   the target's own recovery, given with --recovery-check.
     \\               After the exploration has decided its verdict, each saved FAIL world's
     \\               crash state — names, kinds, contents and permission bits, not
     \\               timestamps or owners — is rebuilt in --state, this runs, and the
@@ -402,9 +405,9 @@ const usage_fmt =
     \\               processes and rewriting its state directory with nobody left to
     \\               report to. A run that hangs before a boundary is out of reach.
     \\  --world-timeout <s>
-    \\               wall-clock budget per explored world, in seconds (1..86400,
-    \\               off by default). A world's operation still running when the
-    \\               budget expires is sent SIGKILL and refused UNKNOWN
+    \\               wall-clock budget per world, in seconds (1..86400). Off by
+    \\               default. A world's operation still running when the budget
+    \\               expires is sent SIGKILL and refused UNKNOWN
     \\               child_timed_out, with the budget in the message. Worlds only: a
     \\               recording run, setup command or checker that hangs still hangs —
     \\               this flag is not a promise of a hang-free run. Setting it also
@@ -1646,7 +1649,10 @@ pub fn parse(argv: []const []const u8) Parsed {
             if (config.badBytes(v)) |msg| badValue(argv[i], msg, v, null);
             if (v.len == 0) badValue(argv[i], "a recovery command is empty", v, null);
             if (argv[i].len == "--recovery".len) args.recovery = v else args.recovery_check = v;
-        } else if (std.mem.eql(u8, argv[i], "--cwd")) args.cwd = v else if (std.mem.eql(u8, argv[i], "--apparatus")) appendApparatusFlag(&args, v) else if (std.mem.eql(u8, argv[i], "--scratch")) appendScratchFlag(&args, v) else if (std.mem.eql(u8, argv[i], "--expect-status")) {
+        } else if (std.mem.eql(u8, argv[i], "--cwd")) args.cwd = v else if (std.mem.eql(u8, argv[i], "--apparatus")) appendApparatusFlag(&args, v) else if (std.mem.eql(u8, argv[i], "--scratch")) appendScratchFlag(&args, v) else if (std.mem.eql(u8, argv[i], "--invariant")) {
+            if (config.invariantFault(v)) |m| badValue("--invariant", m, v, null);
+            args.rerun = true;
+        } else if (std.mem.eql(u8, argv[i], "--expect-status")) {
             args.expect_status = config.parseExpectStatus(v) orelse badValue(null, "--expect-status must be an integer in 0..255", v, null);
             // Mirrored immediately: a refusal between here and the canonical binding
             // below must not report the declaration as 0 (R1 finding).
@@ -1731,6 +1737,7 @@ pub fn parse(argv: []const []const u8) Parsed {
         if (args.config == null) {
             if (args.check != null) setupError(.define_invalid, "--check belongs to explore, which falsifies it before trusting it; a check declared in a sideeye.toml is read by preflight --config, which refuses it if it cannot be started or the state holds nothing to corrupt, and runs it only for the toml's [controls]");
             if (args.marker != null) setupError(.define_invalid, "--marker belongs to explore; a marker declared in a sideeye.toml is read by preflight --config, which confirms the recording run printed it");
+            if (args.rerun) setupError(.define_invalid, "--invariant belongs to explore and replay, which run the operation again from each crash state; preflight runs no crash world");
             if (args.recovery != null or args.recovery_check != null) setupError(.define_invalid, "--recovery and --recovery-check belong to explore and replay; preflight saves no FAIL for a recovery to be run against, and a recovery declared in a sideeye.toml is read by preflight --config without being run");
         }
         if (args.allow_unverified) setupError(.define_invalid, "preflight never claims PASS, so there is nothing --allow-unverified could weaken");

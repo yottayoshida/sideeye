@@ -414,7 +414,7 @@ fn fuzzCase(_: void, smith: *std.testing.Smith) anyerror!void {
     switch (case.read(as.allocator(), text)) {
         .ok => |c| {
             try std.testing.expectEqualStrings("sideeye/case", c.schema);
-            try std.testing.expect(c.case_version >= 1 and c.case_version <= 9);
+            try std.testing.expect(c.case_version >= 1 and c.case_version <= 10);
             if (c.crash_model) |m| if (!std.mem.eql(u8, m, case.interleave_model)) {
                 _ = cli.PowerLoss.parse(m) orelse return error.ReadAcceptedAnUnknownRule;
             };

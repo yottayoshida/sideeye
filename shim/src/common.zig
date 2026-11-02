@@ -458,6 +458,23 @@ var state_dir_len: usize = 0;
 var alt_dir_buf: [contract.max_path]u8 = undefined;
 var alt_dir_len: usize = 0;
 var trace_fd: c_int = -1;
+// Not without a bound: a loop that closes until nothing is left to close meets a number put back on
+// every pass, and would never end. Counted per pid, not per memory: a `vfork` child shares this
+// memory, and its puts-back would otherwise spend its parent's.
+const max_trace_restores = 8;
+var trace_restores: u8 = 0;
+var trace_restores_pid: c_int = 0;
+
+fn mayPutBack() bool {
+    const pid = c.getpid();
+    if (pid != trace_restores_pid) {
+        trace_restores_pid = pid;
+        trace_restores = 0;
+    }
+    if (trace_restores >= max_trace_restores) return false;
+    trace_restores += 1;
+    return true;
+}
 var kill_at: u32 = 0;
 var kill_group: bool = false;
 var stop_at_kill: bool = false;
@@ -660,7 +677,7 @@ fn reclaimDeparted(tid: u64) ?*ThreadState {
         if (self_pid == 0) self_pid = c.getpid();
         if (owner_pid == self_pid) continue;
         if (saved_errno == null) saved_errno = std.c._errno().*;
-        if (c.kill(owner_pid, 0) == 0 or std.c._errno().* != @backingInt(std.c.E.SRCH)) continue;
+        if (c.kill(owner_pid, 0) == 0 or !contract.probeSaysGone(std.c._errno().*)) continue;
         if (@cmpxchgStrong(c_int, &s.claimer_pid, owner_pid, reclaiming, .acq_rel, .acquire) != null) continue;
         s.busy = false;
         s.exec_carrying = false;
@@ -1422,18 +1439,26 @@ fn reopen(name: [*:0]const u8, flags: c_int) c_int {
 
 // Back onto the old number, never a new one: the old number is the value every process sharing
 // this memory reads, and a `vfork` child that wrote a new one would move its parent's channel to
-// a descriptor only the child has.
+// a descriptor only the child has. Not with `dup3`, which replaces whatever holds the number: a
+// thread that took it between the check and the call would lose its descriptor to the trace.
 fn restoreOnto(old: c_int, fresh: c_int) bool {
-    const rc = std.os.linux.dup3(fresh, old, @as(u32, @bitCast(O_CLOEXEC)));
-    return std.os.linux.errno(rc) == .SUCCESS;
+    if (fresh == old) return true;
+    const rc = std.os.linux.fcntl(fresh, std.os.linux.F.DUPFD_CLOEXEC, @as(usize, @intCast(old)));
+    if (std.os.linux.errno(rc) != .SUCCESS) return false;
+    const got: c_int = @intCast(rc);
+    if (got == old) return true;
+    _ = callClose(got);
+    return false;
 }
 
 // Not below the relocation floors, where the target's next open may take the number.
 fn reinstate(old: c_int, name: *const [contract.max_path + 1]u8, name_len: usize) bool {
-    if (old < relocation_floor or name_len == 0) return false;
+    if (old < relocation_floor or name_len == 0 or !mayPutBack()) return false;
     const fresh = reopen(@ptrCast(name), O_WRONLY | O_CLOEXEC);
     if (fresh < 0) return false;
-    defer _ = callClose(fresh);
+    defer if (fresh != old) {
+        _ = callClose(fresh);
+    };
     return restoreOnto(old, fresh);
 }
 
@@ -1477,13 +1502,15 @@ pub fn afterSweep() void {
 fn recoverTrace(owner: bool, may_restore: bool) void {
     const closed = descriptorClosed(trace_fd);
     const fresh = if (trace_path_len > 0) reopen(@ptrCast(&trace_path_buf), O_RDWR | O_APPEND | O_CLOEXEC | O_NOFOLLOW | O_NONBLOCK) else -1;
-    defer if (fresh >= 0) {
+    var kept = false;
+    defer if (fresh >= 0 and !kept) {
         _ = callClose(fresh);
     };
     const same = fresh >= 0 and isTraceFile(fresh);
     // Not restored below the relocation floors, where the target's next open may take the number;
     // nor onto a number that already holds another file, which is the target's now.
-    if (may_restore and same and closed and trace_fd >= relocation_floor and restoreOnto(trace_fd, fresh)) {
+    if (may_restore and same and closed and trace_fd >= relocation_floor and mayPutBack() and restoreOnto(trace_fd, fresh)) {
+        kept = fresh == trace_fd;
         if (otherThreadsHere()) writeDeathThrough(trace_fd);
         return;
     }
@@ -1500,7 +1527,8 @@ fn otherThreadsHere() bool {
         const tid = @atomicLoad(u64, &s.tid, .acquire);
         if (tid == 0 or tid == self or @atomicLoad(c_int, &s.claimer_pid, .acquire) != pid) continue;
         const rc = std.os.linux.syscall3(.tgkill, @as(usize, @bitCast(@as(isize, pid))), @intCast(tid), 0);
-        if (std.os.linux.errno(rc) != .SRCH) return true;
+        const err = std.os.linux.errno(rc);
+        if (err == .SUCCESS or !contract.probeSaysGone(@backingInt(err))) return true;
     }
     return false;
 }
@@ -1535,29 +1563,17 @@ pub fn callCloseRange(first: c_uint, last: c_uint, flags: c_int) c_int {
     return 0;
 }
 
-/// That is legal behaviour — descriptor-hygiene sweeps close numbers they never
-/// opened — but it ends observation, and the cost of ignoring it is measured: the
-/// number gets re-used for a target file, and the shim's later trace writes land
-/// inside it. So the channel announces its death while the descriptor still works
-/// (`unresolved`, which the engine refuses on) and then goes silent: with trace_fd
-/// at -1, `writeAll` drops everything, and nothing is ever written through a number
-/// the target now owns. Called from every wrapper that retires a descriptor —
-/// close, fclose, freopen — before the real call retires it.
-pub fn noteTraceClose(fd: c_int) void {
-    if (fd >= 0 and fd == kill_cgroup_fd) {
-        kill_cgroup_fd = -1;
-        return;
-    }
-    if (fd >= 0 and fd == kill_aside_fd) {
-        kill_aside_fd = -1;
-        return;
-    }
-    if (!active or fd < 0 or fd != trace_fd) return;
-    // The path is empty on purpose: nothing was named here. Before #485 the reason
-    // rode in the path field as "trace:closed-by-target", which the engine would
-    // now print as the name the file last had — a filename that never existed.
+// Not put back on macOS, where `fileIdentity` reads nothing a reopen could be matched against: the
+// channel says it died while the descriptor still works, never through a number the target may
+// re-use.
+pub fn noteTraceClose(fd: c_int) bool {
+    if (fd < 0 or !active) return false;
+    if (!is_darwin) return fd == kill_cgroup_fd or fd == kill_aside_fd or fd == trace_fd;
+    if (fd != trace_fd) return false;
+    // The path is empty on purpose: a path would be printed as the name the file last had.
     writeRecord(mine(), .unresolved, 0, "", contract.unresolved_kind.trace_closed);
-    trace_fd = -1;
+    if (c.getpid() == table_pid) trace_fd = -1;
+    return false;
 }
 
 const deleted_suffix = " (deleted)";
@@ -2450,7 +2466,7 @@ pub fn noteFdFromTrap(op: contract.OpClass, fd: c_int) void {
     // trace fd, whose number a target can close and re-use for a state file. The
     // trace channel protects itself instead of asking for an exemption here: its
     // descriptor is relocated above the hygiene-sweep range at init, and a close()
-    // of it announces the channel's death (noteTraceClose) so the engine refuses.
+    // of it puts it back on its number or announces the channel's death (recoverTrace).
     // Where a descriptor points is decided by asking the kernel, below, every time.
     if (fd < 0) return;
     const ts = mine();
@@ -3821,6 +3837,8 @@ const SweepTestState = struct {
     kill_cgroup_fd: c_int,
     kill_cgroup_path_len: usize,
     kill_aside_fd: c_int,
+    trace_restores: u8,
+    trace_restores_pid: c_int,
 
     fn save() SweepTestState {
         return .{
@@ -3831,6 +3849,8 @@ const SweepTestState = struct {
             .kill_cgroup_fd = kill_cgroup_fd,
             .kill_cgroup_path_len = kill_cgroup_path_len,
             .kill_aside_fd = kill_aside_fd,
+            .trace_restores = trace_restores,
+            .trace_restores_pid = trace_restores_pid,
         };
     }
 
@@ -3842,6 +3862,8 @@ const SweepTestState = struct {
         kill_cgroup_fd = s.kill_cgroup_fd;
         kill_cgroup_path_len = s.kill_cgroup_path_len;
         kill_aside_fd = s.kill_aside_fd;
+        trace_restores = s.trace_restores;
+        trace_restores_pid = s.trace_restores_pid;
         resetSlotsInChild();
     }
 };
@@ -3855,6 +3877,8 @@ fn openFileAt(path: [*:0]const u8, at: c_int) !void {
 
 fn armSweepTrace(at: c_int) !void {
     armForExecSlotTest();
+    trace_restores = 0;
+    trace_restores_pid = c.getpid();
     kill_cgroup_fd = -1;
     kill_aside_fd = -1;
     try openFileAt(sweep_trace_path, at);
@@ -3895,6 +3919,87 @@ test "a sweep that closed the trace puts the same file back on its number, and s
     try std.testing.expectEqual(@as(c_int, 950), trace_fd);
     try std.testing.expect(isTraceFile(950));
     try std.testing.expectEqualStrings("", fileHolds(sweep_trace_path));
+}
+
+test "a close of the trace number is decided as a sweep is: the same file goes back on its number, and nothing is said" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    defer _ = callClose(950);
+    try std.testing.expect(noteTraceClose(950));
+    _ = callClose(950);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, 950), trace_fd);
+    try std.testing.expect(isTraceFile(950));
+    try std.testing.expectEqualStrings("", fileHolds(sweep_trace_path));
+}
+
+test "a close of the trace number by a process that does not own the table leaves the shared number to its owner" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    const was = try withNofileSoftLimit(256);
+    defer std.posix.setrlimit(.NOFILE, was) catch {};
+    table_pid = c.getpid() + 1;
+    try std.testing.expect(noteTraceClose(950));
+    _ = callClose(950);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, 950), trace_fd);
+    try std.testing.expect(holdsTraceDeath(sweep_trace_path));
+}
+
+test "a trace closed again and again is put back a bounded number of times, and then the channel says it died" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    defer _ = callClose(950);
+    var pass: usize = 0;
+    while (pass < max_trace_restores) : (pass += 1) {
+        _ = callClose(950);
+        afterSweep();
+        try std.testing.expectEqual(@as(c_int, 950), trace_fd);
+    }
+    try std.testing.expect(!holdsTraceDeath(sweep_trace_path));
+    _ = callClose(950);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, -1), trace_fd);
+    try std.testing.expect(holdsTraceDeath(sweep_trace_path));
+}
+
+test "the bound on putting numbers back is counted per process, and cgroup.kill's put-backs count toward it" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    defer _ = callClose(950);
+    trace_restores = max_trace_restores;
+    trace_restores_pid = c.getpid() + 1;
+    _ = callClose(950);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, 950), trace_fd);
+    try std.testing.expectEqual(@as(u8, 1), trace_restores);
+
+    trace_restores = max_trace_restores;
+    try openFileAt(sweep_other_path, 951);
+    keepName(&kill_cgroup_path_buf, &kill_cgroup_path_len, sweep_other_path);
+    kill_cgroup_fd = 951;
+    _ = callClose(951);
+    afterSweep();
+    try std.testing.expectEqual(@as(c_int, -1), kill_cgroup_fd);
+    try std.testing.expect(descriptorClosed(951));
+}
+
+test "a close of a number that is not the shim's asks for nothing afterwards" {
+    if (is_darwin) return error.SkipZigTest;
+    const saved = SweepTestState.save();
+    defer saved.restore();
+    try armSweepTrace(950);
+    defer _ = callClose(950);
+    try std.testing.expect(!noteTraceClose(951));
+    try std.testing.expect(!noteTraceClose(-1));
 }
 
 test "a sweep whose restore fails says so through the reopened trace before it drops the channel" {

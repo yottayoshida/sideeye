@@ -17,7 +17,7 @@ Why it is not a verdict: Sideeye's crash is a process crash: the process is kill
 
 ## How long does it take?
 
-Crash points times the cost of a world, plus one baseline world; a world restores and re-reads the whole state directory. Measured on one laptop without an oracle or a checker: under 0.2 s per world plus 1.4 to 2.2 ms per file per world, and a thousand crash points took 4.2 s on a one-file state and 30 s on a 20 MB one ([DESIGN.md](../DESIGN.md#known-constraints-declared-not-hidden), the bullet on cost). Your checker runs once in every world and adds its own time. The cheapest lever is a small state directory.
+Crash points times the cost of a world, plus one baseline world; a world restores and re-reads the whole state directory. Measured on one laptop without an oracle or a checker: under 0.2 s per world plus 1.4 to 2.2 ms per file per world, and a thousand crash points took 4.2 s on a one-file state and 30 s on a 20 MB one ([DESIGN.md](../DESIGN.md#known-constraints-declared-not-hidden), the bullet on cost). Your checker runs once in every world and adds its own time, and under `--oracle` (or a strace found on `PATH`) every world runs under strace, 40 to 100 ms more per world; `--no-oracle` leaves a found one out. The cheapest lever is a small state directory.
 
 ## How do I call it from pytest, cargo test or go test?
 

@@ -590,10 +590,10 @@ else
     fails=$((fails + 1))
 fi
 # And the report says so rather than leaving a reader to infer it from the count. The
-# second half is the disclosure R1 asked for: a world runs without an oracle, so it
+# second half is the disclosure R1 asked for: a world does not re-ask the conditions, so it
 # inherits this finding instead of re-deciding it.
 if echo "$output" | grep -qF "those operations hold crash-point addresses" \
-    && echo "$output" | grep -qF "An explored world does not re-check that"; then
+    && echo "$output" | grep -qF "An explored world does not re-check the waits"; then
     echo "ok   the account says the child's operations were admitted, and what a world does not re-check"
 else
     echo "FAIL the account does not disclose the admitted children"
@@ -4764,11 +4764,11 @@ st685 "oracle_missed_operation from a static image that exec'd a dynamic one in 
 unset TOY_EXEC_PATH
 # The recording run's unresolvable_path (roswell): the dynamic child closes every descriptor,
 # the shim's trace among them, under a static parent. The twin is the same child run alone.
-TOY_SPAWN=1 TOY_SPAWN_PATH=$OUT/toy-fixed TOY_CLOSE_SWEEP=1023 export TOY_SPAWN TOY_SPAWN_PATH TOY_CLOSE_SWEEP
+TOY_SPAWN=1 TOY_SPAWN_PATH=$OUT/toy-fixed TOY_CLOSE_SWEEP=1023 TOY_SWEEP_LOWLIMIT=1 export TOY_SPAWN TOY_SPAWN_PATH TOY_CLOSE_SWEEP TOY_SWEEP_LOWLIMIT
 st685 "unresolvable_path from a child that closed the shim's trace under a static parent names --observe supervised" unresolvable_path new "" "$OUT/toy-static" --allow-unverified
 unset TOY_SPAWN TOY_SPAWN_PATH
 st685 "unresolvable_path's dynamic twin, closing its own trace, names --observe supervised in a step of its own (#988)" unresolvable_path closed "" "$OUT/toy-fixed" --allow-unverified
-unset TOY_CLOSE_SWEEP
+unset TOY_CLOSE_SWEEP TOY_SWEEP_LOWLIMIT
 # A step keyed on the image rather than on the record's kind would send this one on too.
 TOY_WRITE_AFTER_UNLINK=1 export TOY_WRITE_AFTER_UNLINK
 st685 "unresolvable_path of another kind (unlinked-fd) in a dynamic image keeps the class wall (#988)" unresolvable_path keep "refuses by design" "$OUT/toy-fixed" --allow-unverified
@@ -4780,9 +4780,9 @@ st685 "unresolvable_path of another kind (unlinked-fd) under a static parent kee
 unset TOY_SPAWN TOY_SPAWN_PATH TOY_WRITE_AFTER_UNLINK
 # The site reads the kind alone: a static image that exec'd toy-fixed in its own process, which
 # then closed the trace, takes the step too (ADR 0108 — under supervised the trace is the engine's).
-TOY_EXEC_PATH=$OUT/toy-fixed TOY_CLOSE_SWEEP=1023 export TOY_EXEC_PATH TOY_CLOSE_SWEEP
+TOY_EXEC_PATH=$OUT/toy-fixed TOY_CLOSE_SWEEP=1023 TOY_SWEEP_LOWLIMIT=1 export TOY_EXEC_PATH TOY_CLOSE_SWEEP TOY_SWEEP_LOWLIMIT
 st685 "unresolvable_path from an image a static one exec'd into, which closed the trace, names --observe supervised" unresolvable_path new "" "$OUT/toy-static" --allow-unverified
-unset TOY_EXEC_PATH TOY_CLOSE_SWEEP
+unset TOY_EXEC_PATH TOY_CLOSE_SWEEP TOY_SWEEP_LOWLIMIT
 # Not a rewrite that changes the key's bytes: the state after must equal the rotate's, or another
 # detector refuses the run and the leg says nothing about the records the shim could not write.
 for rc_mode in wrappers syscalls; do
@@ -7122,6 +7122,17 @@ if ! grep -q '"interleave": {' "$SD/interleave.json" 2>/dev/null; then
     echo "FAIL the interleave fixture carries no interleave field, so the schema check below cannot see the row it documents"
     fails=$((fails + 1))
 fi
+# A report carrying `invariants` and `rerun` (#942, ADR 0150), which appear only when the define declares
+# the rerun invariant.
+mkdir -p "$SD/srr"
+TOY_STATE=$SD/srr "$SIDEEYE" explore --state "$SD/srr" \
+    --setup "$OUT/toy-rerun init" --operation "$OUT/toy-rerun rename" --invariant rerun \
+    --shim "$SHIM" --work "$SD/wrr" --oracle /usr/bin/strace \
+    --json "$SD/rerun.json" >/dev/null 2>&1
+if ! grep -q '"rerun"' "$SD/rerun.json" 2>/dev/null; then
+    echo "FAIL the rerun fixture carries no rerun field, so the schema check below cannot see the rows it documents"
+    fails=$((fails + 1))
+fi
 # A report carrying define_warnings (#706, ADR 0095): an operation spelled with shell quotes.
 mkdir -p "$SD/sdw"
 TOY_STATE=$SD/sdw "$SIDEEYE" explore --state "$SD/sdw" \
@@ -7354,7 +7365,7 @@ else
 fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
     "$ROOT/src/report.zig" \
-    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/warnings.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/marker.json" "$SD/power-loss.json" "$SD/children.json" "$SD/interleave.json" \
+    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/rerun.json" "$SD/warnings.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/marker.json" "$SD/power-loss.json" "$SD/children.json" "$SD/interleave.json" \
     "$SD/preflight-accepted.json" "$SD/preflight-split.json" "$SD/preflight-controls.json" /tmp/acc-lcs/leave.json; then
     echo "ok   the schema page, the generated reports and preflight documents, the contract enum and the JSON writers' shared values agree"
 else
@@ -8469,7 +8480,7 @@ o=$("$SIDEEYE" explore --state /tmp/acc/state --operation x --scratch 'a/../b' 2
 o=$("$SIDEEYE" explore --config /dev/null --scratch x 2>&1); rc=$?
 [ "$rc" = "3" ] && echo "$o" | grep -q -- "--scratch[,)].*are mutually exclusive" && sc_ok "--scratch is exclusive with --config" || sc_fail "scratch config exclusivity" "$rc" "$o"
 o=$("$SIDEEYE" replay "$sc_case" --scratch x --shim "$SHIM" --work /tmp/acc/work-r4 2>&1); rc=$?
-[ "$rc" = "3" ] && echo "$o" | grep -q -- "--apparatus and --scratch included" && sc_ok "replay refuses --scratch: the case carries the declaration" || sc_fail "scratch replay exclusivity" "$rc" "$o"
+[ "$rc" = "3" ] && echo "$o" | grep -q -- "--apparatus, --scratch and --invariant included" && sc_ok "replay refuses --scratch: the case carries the declaration" || sc_fail "scratch replay exclusivity" "$rc" "$o"
 # (e) preflight --twice: the declared path is left out of the comparison and the report says
 # so, beside the split the same toy produces without the declaration (check 19).
 rm -rf /tmp/acc-sc && mkdir -p /tmp/acc-sc/state
@@ -9400,25 +9411,28 @@ else
     fails=$((fails + 1))
 fi
 
-# A sweep that does reach the trace fd ends observation, and the shim must say so
-# while it still can — never keep writing trace records through a number the target
-# now owns. Measured before the guard existed: rc=2 for the accidental reason
-# state_changed_without_ops, and the state file held the shim's binary trace records
-# spliced between its own bytes. The refusal must now name the channel, and the
+# A sweep that does reach the trace fd: the shim puts the channel back on its number, and
+# where it cannot — the number past the descriptor limit — it says so while it still can,
+# never writing trace records through a number the target now owns. Measured before the
+# guard existed: rc=2 for the accidental reason state_changed_without_ops, and the state
+# file held the shim's binary trace records spliced between its own bytes. Either way the
 # state file must hold exactly what the target wrote.
-rm -rf /tmp/acc && mkdir -p /tmp/acc/state
-o=$(TOY_CLOSE_SWEEP=1023 "$SIDEEYE" explore --state /tmp/acc/state \
-    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
-    --shim "$SHIM" --work /tmp/acc/work --allow-unverified 2>&1)
-rc=$?
-if [ "$rc" = "2" ] && echo "$o" | grep -q "unresolvable_path" \
-    && printf 'key=2\n' | cmp -s - /tmp/acc/state/key.json; then
-    echo "ok   a sweep that reaches the trace fd refuses, and never corrupts state"
-else
-    echo "FAIL sweep at the trace fd: exit $rc, key.json $(od -c /tmp/acc/state/key.json 2>/dev/null | head -1)"
-    echo "$o" | sed 's/^/     | /' | head -6
-    fails=$((fails + 1))
-fi
+for sw in "|0|" "TOY_SWEEP_LOWLIMIT=1|2|unresolvable_path"; do
+    sw_env=${sw%%|*}; sw_rest=${sw#*|}; sw_rc=${sw_rest%%|*}; sw_text=${sw_rest#*|}
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(env $sw_env TOY_CLOSE_SWEEP=1023 "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+        --shim "$SHIM" --work /tmp/acc/work --allow-unverified 2>&1)
+    rc=$?
+    if [ "$rc" = "$sw_rc" ] && { [ -z "$sw_text" ] || echo "$o" | grep -q "$sw_text"; } \
+        && printf 'key=2\n' | cmp -s - /tmp/acc/state/key.json; then
+        echo "ok   a sweep that reaches the trace fd ${sw_env:-with the number free} ends in exit $rc, and never corrupts state"
+    else
+        echo "FAIL sweep at the trace fd ${sw_env:-with the number free}: exit $rc, key.json $(od -c /tmp/acc/state/key.json 2>/dev/null | head -1)"
+        echo "$o" | sed 's/^/     | /' | head -6
+        fails=$((fails + 1))
+    fi
+done
 
 if nm -D --undefined-only "$OUT/toy-fortify" 2>/dev/null | grep -q "__open_2"; then
     echo "ok   toy-fortify reaches __open_2"
@@ -9455,6 +9469,121 @@ for fo in "toy-fortify:rotate:--observe wrappers" "toy-fortify:rotate:--observe 
         fails=$((fails + 1))
     fi
 done
+# Every explored world runs under the oracle too (#940): a write the shim never sees, made only in
+# world 2, is refused there; the same rotation without it agrees in every world, the baseline
+# included, in each mode — under supervised the crash point's own call is left without a result.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-worldbranch init" --operation "$OUT/toy-worldbranch rotate branch" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = 2 ] && printf '%s\n' "$o" | grep -q "oracle_missed_operation" && printf '%s\n' "$o" | grep -q "in explored world 2"; then
+    echo "ok   a write only explored world 2 makes, through syscall(2), is refused in world 2"
+else
+    echo "FAIL a write only explored world 2 makes, through syscall(2): exit $rc, wanted oracle_missed_operation naming world 2"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-worldbranch init" --operation "$OUT/toy-worldbranch rotate children branch" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = 2 ] && printf '%s\n' "$o" | grep -q "child_touched_state_dir" && printf '%s\n' "$o" | grep -q "recorded nothing of its own" && printf '%s\n' "$o" | grep -q "in explored world 2"; then
+    echo "ok   a child with no shim that writes only in explored world 2, beside an admitted child, is refused in world 2"
+else
+    echo "FAIL a child with no shim that writes only in explored world 2, beside an admitted child: exit $rc, wanted child_touched_state_dir naming world 2"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-worldbranch init" --operation "$OUT/toy-worldbranch rotate children" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = 0 ] && printf '%s\n' "$o" | grep -q "agreed in each of"; then
+    echo "ok   the same admitted child without the world-2 branch is PASS, every world agreeing"
+else
+    echo "FAIL the same admitted child without the world-2 branch: exit $rc, wanted PASS with every world agreeing"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+wb_modes="wrappers syscalls"
+[ "${SIDEEYE_EXPECT_CONTAINED:-}" = 1 ] && wb_modes="$wb_modes supervised"
+for wb_obs in $wb_modes; do
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-worldbranch init" --operation "$OUT/toy-worldbranch rotate" \
+        --shim "$SHIM" --work /tmp/acc/work --observe "$wb_obs" --oracle /usr/bin/strace --json /tmp/acc/r.json 2>&1)
+    rc=$?
+    wb=$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("verdict"), d.get("oracle_worlds") == d.get("crash_points", -9) + 1, d.get("oracle_worlds"))' /tmp/acc/r.json 2>/dev/null)
+    case "$rc:$wb" in
+    "0:PASS True "*) echo "ok   under --observe $wb_obs every explored world agrees with the oracle ($wb)" ;;
+    *)
+        echo "FAIL under --observe $wb_obs every explored world agrees with the oracle: exit $rc, $wb"
+        printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+        fails=$((fails + 1))
+        ;;
+    esac
+done
+# The built-in rerun invariant (#942): with no checker, a crash world fails when the operation,
+# run again there, ends as neither the run from the state before nor the run after it does.
+for rr in "lock:1:rerun: the operation, run again from this crash state" "rename:0:0 of them ended as neither the run from the state before nor the run after it" \
+    "temp:0:path(s) a crash left and the run did not touch were counted" "clock:2:baseline_run_failed"; do
+    rr_cmd=${rr%%:*}; rr_rest=${rr#*:}; rr_rc=${rr_rest%%:*}; rr_text=${rr_rest#*:}
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-rerun init" --operation "$OUT/toy-rerun $rr_cmd" --invariant rerun \
+        --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace --json /tmp/acc/r.json 2>&1)
+    rc=$?
+    if [ "$rc" = "$rr_rc" ] && printf '%s\n' "$o" | grep -qF "$rr_text"; then
+        echo "ok   --invariant rerun on toy-rerun $rr_cmd: exit $rc"
+    else
+        echo "FAIL --invariant rerun on toy-rerun $rr_cmd: exit $rc, wanted $rr_rc with '$rr_text'"
+        printf '%s\n' "$o" | sed 's/^/     | /' | head -8
+        fails=$((fails + 1))
+    fi
+    if [ "$rr_cmd" = lock ]; then
+        rr_case=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("case") or "")' /tmp/acc/r.json 2>/dev/null)
+        rr_v=$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d["case_version"], d["define"].get("invariant"))' "$rr_case" 2>/dev/null)
+        o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" replay "$rr_case" --shim "$SHIM" --work /tmp/acc/work2 --oracle /usr/bin/strace 2>&1)
+        rc=$?
+        if [ "$rc" = 1 ] && [ "$rr_v" = "10 ['rerun']" ]; then
+            echo "ok   the rerun FAIL's case is version 10, carries the invariant, and replays to FAIL"
+        else
+            echo "FAIL the rerun FAIL's case ($rr_v) replayed: exit $rc, wanted version 10 with the invariant, and FAIL"
+            printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+            fails=$((fails + 1))
+        fi
+    fi
+done
+# A close(2) of the trace number is decided as a sweep is, so a target that closes every descriptor
+# one at a time is judged; one that then puts a state file on those numbers with dup2 sends the
+# shim's records into it, which the oracle sees.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_CLOSE_SWEEP=1023 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = 0 ] && printf '%s\n' "$o" | grep -q "^oracle  *agreed on"; then
+    echo "ok   a target that closes 3..1023 one close(2) at a time is judged, the oracle agreeing (exit 0)"
+else
+    echo "FAIL a target that closes 3..1023 one close(2) at a time: exit $rc, wanted PASS with the oracle agreeing"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_CLOSE_SWEEP=1023 TOY_CLOSE_SWEEP_DUP=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = 2 ] && printf '%s\n' "$o" | head -1 | grep -q "oracle_missed_operation"; then
+    echo "ok   a target that then puts a state file on those numbers with dup2 is refused: oracle_missed_operation"
+else
+    echo "FAIL a target that puts a state file on the closed numbers with dup2: exit $rc, wanted a refusal"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
 for fo_cmd in sweep-lowlimit spawn-lowlimit; do
     rm -rf /tmp/acc && mkdir -p /tmp/acc/state
     o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \
@@ -10583,6 +10712,7 @@ acc_dummy() {
         --apparatus)      printf 'note:x' ;;
         # A well-formed relative path: the dummy below is absolute, which --scratch refuses.
         --scratch)        printf 'x' ;;
+        --invariant)      printf 'rerun' ;;
         # One of the two mode names: the value is checked at parse time, so the dummy
         # path below would make the flag read as refused by every synopsis line.
         --observe)        printf 'wrappers' ;;

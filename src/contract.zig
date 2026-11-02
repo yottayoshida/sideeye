@@ -855,6 +855,16 @@ pub fn decodeRecord(bytes: []const u8) DecodeError!Decoded {
     };
 }
 
+// Not any failure: EPERM answers for a live process owned by someone else.
+pub fn probeSaysGone(errno_after_failure: c_int) bool {
+    return errno_after_failure == @backingInt(std.posix.E.SRCH);
+}
+
+test "a failed signal-0 probe says gone only on ESRCH" {
+    try std.testing.expect(probeSaysGone(@backingInt(std.posix.E.SRCH)));
+    try std.testing.expect(!probeSaysGone(@backingInt(std.posix.E.PERM)));
+}
+
 /// A plain prefix test would put `/tmp/state2` inside `/tmp/state`, which would make
 /// the engine count operations belonging to an unrelated directory — and, worse,
 /// miscount the ones belonging to the real one. Both paths are expected to be

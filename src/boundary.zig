@@ -65,6 +65,7 @@ pub const BoundaryEvidence = struct {
     shim_process_boundary: bool = false,
     oracle_child_touched: bool = false,
     children_judged: bool = false,
+    worlds_witnessed: bool = false,
     oracle_boundary: ?[]const u8 = null,
     threads: u32 = 0,
     writer_threads: u32 = 0,
@@ -108,9 +109,11 @@ var boundary_buf: [1280]u8 = undefined;
 /// self-exec legs require "image replaced" in a FAIL that carried an image change.
 pub fn boundaryAccount() []const u8 {
     var scratch: [512]u8 = undefined;
+    var world_buf: [128]u8 = undefined;
+    const watched = if (boundary_ev.worlds_witnessed) ", which strace watched too" else ", which runs with no oracle";
     const world_proc = boundary_ev.world_process_boundary;
     const world: []const u8 = if (boundary_ev.world_foreign_touch and boundary_ev.children_judged)
-        "; a process other than the subject operated on the judged directory in an explored world too — the class the recording admitted, which a world inherits rather than re-deciding because it runs without an oracle"
+        "; a process other than the subject operated on the judged directory in an explored world too — the class the recording admitted, which a world inherits rather than re-deciding because the kill cuts short the waits it rests on"
     else if (boundary_ev.world_foreign_touch)
         "; a process other than the subject operated on the judged directory in an explored world"
     else if (boundary_ev.world_only and world_proc)
@@ -120,13 +123,13 @@ pub fn boundaryAccount() []const u8 {
     else if (boundary_ev.world_only)
         "; the subject replaced its own image in an explored world the recording never did — refused: the chain there is unaccounted for"
     else if (boundary_ev.world_boundary and world_proc)
-        "; a process boundary appeared in an explored world, which runs with no oracle"
+        std.fmt.bufPrint(&world_buf, "; a process boundary appeared in an explored world{s}", .{watched}) catch "; a process boundary appeared in an explored world"
     else if (boundary_ev.world_boundary and boundary_ev.world_thread_only)
         "; a thread was created in an explored world"
     else if (boundary_ev.world_boundary and boundary_ev.world_subject_detached)
-        "; the subject left its process group in an explored world, which runs with no oracle"
+        std.fmt.bufPrint(&world_buf, "; the subject left its process group in an explored world{s}", .{watched}) catch "; the subject left its process group in an explored world"
     else if (boundary_ev.world_boundary)
-        "; the subject replaced its own image in an explored world, which runs with no oracle"
+        std.fmt.bufPrint(&world_buf, "; the subject replaced its own image in an explored world{s}", .{watched}) catch "; the subject replaced its own image in an explored world"
     else
         "";
     const recording = blk: {
@@ -216,7 +219,7 @@ fn boundaryRecordingClause(scratch: []u8) []const u8 {
             "not established: the shim never announced itself in this run, so nothing observed process boundaries";
     if (ev.shim_foreign_touch or ev.oracle_child_touched)
         return if (ev.children_judged)
-            "a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check that — it runs without an oracle — so it inherits this finding, and what each world does check is that the operations before its crash point are the ones the recording numbered"
+            "a process other than the subject operated on the judged directory, and those operations hold crash-point addresses: no two processes' operations interleaved and every writing child was reaped (contract v15). An explored world does not re-check the waits — the kill cuts them short — so it inherits that part of this finding; under --oracle it does check that the two witnesses name the same writers there, and what each world does check is that the operations before its crash point are the ones the recording numbered"
         else if (!ev.shim_foreign_touch and switch (ev.witness) {
             .read => |r| r.kind == .fs_usage,
             else => false,
@@ -379,10 +382,21 @@ fn shimmedProcessOfThread(trace: engine.TraceInfo, shim_writers: []const engine.
     return null;
 }
 
-pub fn childrenMayBeJudged(
+pub fn childrenMayBeJudged(arena: std.mem.Allocator, trace: engine.TraceInfo, parsed: oracle.Parsed) ?ChildRefusal {
+    return judgeChildren(arena, trace, parsed, false);
+}
+
+// Not the waits a world: the crash point's kill cuts them short, so a world could fail them
+// where the recording, which ran to the end, held.
+pub fn worldWritersAgree(arena: std.mem.Allocator, trace: engine.TraceInfo, parsed: oracle.Parsed) ?ChildRefusal {
+    return judgeChildren(arena, trace, parsed, true);
+}
+
+fn judgeChildren(
     arena: std.mem.Allocator,
     trace: engine.TraceInfo,
     parsed: oracle.Parsed,
+    writers_only: bool,
 ) ?ChildRefusal {
     if (!trace.foreign_kill_point and !parsed.childTouched()) return null;
 
@@ -511,6 +525,7 @@ pub fn childrenMayBeJudged(
         };
     }
 
+    if (writers_only) return null;
     for (oracle_writers.items, recorded_ops) |o, recorded| {
         const w = parsed.mutations.items[o];
         const writer = owners[o] orelse w.id;

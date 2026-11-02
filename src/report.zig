@@ -183,6 +183,8 @@ pub var l1_note: []const u8 = l1NoteFor(.unparsed);
 pub var oracle_operations_agreed: ?usize = null;
 pub var checker_declared: ?bool = null;
 pub var checker_worlds: ?usize = null;
+pub var rerun_note: ?[]const u8 = null;
+pub var oracle_worlds: ?usize = null;
 /// Whether the recording run's process account is a measurement (#711): set once every check on
 /// the recording's trace has held, at the line `l0_judged_paths_touched` is set on, for that
 /// field's reason. A refusal on a trace cut short, renumbered or never announced carries counts
@@ -1324,6 +1326,7 @@ pub fn sayAccount(arena: std.mem.Allocator, of: AccountOf, points: usize) void {
         if (syncs_account != null) say("syncs       {s}\n", .{syncs_note});
         if (power_loss_rule != null) say("power loss  {s}\n", .{power_loss_note});
         say("checker     {s}\n", .{checker_note});
+        if (rerun_note) |rn| say("rerun       {s}\n", .{rn});
     }
     say("l1          {s}\n", .{l1_note});
     say("case        {s}\n", .{case_note});
@@ -1923,6 +1926,10 @@ fn buildJson(
     try jsonString(w, arena, metadata_note);
     try w.appendSlice(arena, ",\n  \"checker\": ");
     try jsonString(w, arena, checker_note);
+    if (rerun_note) |rn| {
+        try w.appendSlice(arena, ",\n  \"invariants\": [\"" ++ config.invariant_rerun ++ "\"],\n  \"rerun\": ");
+        try jsonString(w, arena, rn);
+    }
     if (recovery_note) |rn| {
         try w.appendSlice(arena, ",\n  \"recovery\": ");
         try jsonString(w, arena, rn);
@@ -2007,6 +2014,7 @@ fn appendFigures(w: W, arena: std.mem.Allocator) !void {
     if (oracle_operations_agreed) |n| try w.print(arena, ",\n  \"oracle_operations_agreed\": {d}", .{n});
     if (checker_declared) |d| try w.print(arena, ",\n  \"checker_declared\": {s}", .{if (d) "true" else "false"});
     if (checker_worlds) |n| try w.print(arena, ",\n  \"checker_worlds\": {d}", .{n});
+    if (oracle_worlds) |n| try w.print(arena, ",\n  \"oracle_worlds\": {d}", .{n});
     if (processes_measured) {
         const ev = boundary.boundary_ev;
         try w.print(arena, ",\n  \"processes_children_admitted\": {s}", .{if (ev.children_judged) "true" else "false"});
