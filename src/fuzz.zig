@@ -415,7 +415,9 @@ fn fuzzCase(_: void, smith: *std.testing.Smith) anyerror!void {
         .ok => |c| {
             try std.testing.expectEqualStrings("sideeye/case", c.schema);
             try std.testing.expect(c.case_version >= 1 and c.case_version <= 10);
-            if (c.crash_model) |m| _ = cli.PowerLoss.parse(m) orelse return error.ReadAcceptedAnUnknownRule;
+            if (c.crash_model) |m| if (!std.mem.eql(u8, m, case.interleave_model)) {
+                _ = cli.PowerLoss.parse(m) orelse return error.ReadAcceptedAnUnknownRule;
+            };
             // main.zig reads the mode with `.?`: read must not accept one that does not parse.
             if (c.observe) |m| {
                 const mode = contract.ObserveMode.parse(m) orelse return error.ReadAcceptedAnUnknownMode;

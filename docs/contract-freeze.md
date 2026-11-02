@@ -450,7 +450,12 @@ stay the same.
    define asks for the pin, and `crash_model`, the rule; its `k` may be one past `ops_total`, for the world built after the
    operation. A v9 file without `crash_model` or `apparatus`, or with a rule this binary does not
    know, or an older file carrying `crash_model`, refuses as malformed; an earlier binary refuses a
-   v9 file as one it cannot parse. Version 10 (#942, ADR 0150, 2026-11-01) is written for every
+   v9 file as one it cannot parse. A FAIL `explore --interleave` saved (#961, ADR 0148)
+   is version 9 as well, with `crash_model` `interleave`, `observe` always `wrappers`, no pin, and a
+   top-level `interleave_wait_seconds` (1..86400) beside it: its world is a pause and a second copy,
+   not a kill, so the wait is part of the question the case asks and a replay takes it from the
+   file. Such a file without the wait, with another mode or the pin, and any file carrying the wait
+   without `crash_model` `interleave`, refuses as malformed. Version 10 (#942, ADR 0150, 2026-11-01) is written for every
    case of a define declaring `invariant = ["rerun"]`: version 7's keys, the pin's and the crash
    model's where they apply, and `define.invariant`, an array holding `rerun`. A v10 file without
    it, or with another name, or an older file carrying it, refuses as malformed; an earlier binary

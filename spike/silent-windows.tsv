@@ -118,5 +118,7 @@ DESIGN.md	A directory a recorded `rename` moved into the judged tree from outsid
 0089	One residue runs the other way and is	an unrecorded setsid opens no gap: the group keeps it alive, or an earlier recorded call refused
 0089	escapes the kill unrecorded where the cgroup used to reach it	a compat call: the strace oracle sees it and refuses
 0143	The engine cannot see a card	the author's task card is outside the engine: authoring, not a run's verdict
+0148	Orders other than one pause at a crash point	not a window: not_tested names them, and a PASS claims one pause per crash point of the first copy
+0148	What the second copy does is judged only through	not a window: the claim is the state both copies leave, and a write undone leaves none to judge
 0149	Under `--oracle-fs-usage` an explored world still runs with no second witness	explored-worlds-no-oracle
 0149	A target that opens the run's step-aside `cgroup.procs` itself and moves the descriptor	adversarial: a target imitating the shim's own steps to leave the run, outside DESIGN's black-box premise

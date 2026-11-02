@@ -4803,6 +4803,52 @@ for rc_mode in wrappers syscalls; do
     unset TOY_RAW_CLOSE_RANGE
 done
 rm -rf /tmp/acc-rc
+# Both counters PASS a kill first: without that, an --interleave FAIL could be the counter's crash bug.
+il_run() {   # il_run <subcommand> <flags...> — sets il_rc, il_out
+    il_sub=$1; shift
+    rm -rf /tmp/acc-il && mkdir -p /tmp/acc-il/state
+    il_out=$("$SIDEEYE" explore --state /tmp/acc-il/state --setup "$OUT/toy-fixed count-init" \
+        --operation "$OUT/toy-fixed $il_sub" --check "$OUT/toy-fixed count-check" --shim "$SHIM" \
+        --no-oracle --allow-unverified --work /tmp/acc-il/work --json /tmp/acc-il/r.json "$@" 2>&1)
+    il_rc=$?
+}
+il_json() { python3 -c "import json;d=json.load(open('/tmp/acc-il/r.json'));print($1)" 2>/dev/null; }
+il_expect() {   # il_expect <label> <exit> <first word> [<python expression on d that must print True>]
+    if [ "$il_rc" = "$2" ] && printf '%s\n' "$il_out" | grep -q "^$3" &&
+        { [ -z "${4:-}" ] || [ "$(il_json "$4")" = True ]; }; then
+        echo "ok   $1"
+    else
+        echo "FAIL $1: exit $il_rc, wanted $2 ($3)${4:+ with $4}"
+        printf '%s\n' "$il_out" | sed 's/^/     | /' | head -8
+        fails=$((fails + 1))
+    fi
+}
+il_run count
+il_expect "the counter without its lock PASSes under a process kill" 0 PASS
+il_run count-lock
+il_expect "the counter with its lock PASSes under a process kill" 0 PASS
+il_run count --interleave --world-timeout 60
+il_expect "--interleave FAILs the counter without its lock: a second copy at a crash point loses an update" 1 FAIL \
+    "d['crash_model']=='interleave' and d['earliest']['invariant']=='the serial result (interleave)'"
+il_case=$(il_json "d['case']")
+il_replay=$("$SIDEEYE" replay "$il_case" --shim "$SHIM" --no-oracle --allow-unverified --world-timeout 60 --work /tmp/acc-il/work-replay 2>&1)
+il_rc=$?
+il_out=$il_replay
+il_expect "the interleaved case replays to the same FAIL" 1 FAIL
+il_run count-lock --interleave --world-timeout 60
+il_expect "--interleave PASSes the counter with its lock, the second copy waiting on it past the wait" 0 PASS \
+    "d['interleave']['second_copy_ran_past_wait']>=1 and d['interleave']['second_copy_failed']==0"
+TOY_COUNT_THREAD=1 export TOY_COUNT_THREAD
+il_run count --interleave --world-timeout 60
+il_expect "--interleave FAILs the counter without its lock when a worker thread writes it" 1 FAIL
+unset TOY_COUNT_THREAD
+il_run count --interleave
+il_expect "--interleave without --world-timeout is refused, as an interleaved run" 3 SETUP "d['setup_error_reason']=='define_invalid' and d['crash_model']=='interleave'"
+il_run count --interleave --world-timeout 60 --recovery "$OUT/toy-fixed count-check"
+il_expect "a refusal before the interleaved run's own checks still reports it as one" 3 SETUP "d['crash_model']=='interleave'"
+il_run count --interleave --world-timeout 60 --observe syscalls
+il_expect "--interleave under --observe syscalls is refused" 3 SETUP "d['setup_error_reason']=='platform_unsupported'"
+rm -rf /tmp/acc-il
 # child_touched_state_dir on its shimmed-writer arm: the parent fork-execs a shell, which inherits
 # the preload and writes the state; the parent writes it too. Measured on this toy only.
 TOY_FORKEXEC=1 export TOY_FORKEXEC
@@ -7067,6 +7113,15 @@ if ! grep -q '"apparatus_unchecked"' "$SD/apparatus.json" 2>/dev/null; then
     echo "FAIL the apparatus fixture carries no apparatus_unchecked field, so the schema check below cannot see the rows it documents"
     fails=$((fails + 1))
 fi
+mkdir -p "$SD/sil"
+TOY_STATE=$SD/sil "$SIDEEYE" explore --state "$SD/sil" \
+    --setup "$OUT/toy-fixed count-init" --operation "$OUT/toy-fixed count" \
+    --check "$OUT/toy-fixed count-check" --shim "$SHIM" --work "$SD/wil" --no-oracle --allow-unverified \
+    --interleave --world-timeout 60 --json "$SD/interleave.json" >/dev/null 2>&1
+if ! grep -q '"interleave": {' "$SD/interleave.json" 2>/dev/null; then
+    echo "FAIL the interleave fixture carries no interleave field, so the schema check below cannot see the row it documents"
+    fails=$((fails + 1))
+fi
 # A report carrying `invariants` and `rerun` (#942, ADR 0150), which appear only when the define declares
 # the rerun invariant.
 mkdir -p "$SD/srr"
@@ -7310,7 +7365,7 @@ else
 fi
 if python3 "$ROOT/spike/check-report-schema.py" "$ROOT/docs/report-schema.md" "$ROOT/src/contract.zig" \
     "$ROOT/src/report.zig" \
-    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/rerun.json" "$SD/warnings.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/marker.json" "$SD/power-loss.json" "$SD/children.json" \
+    "$SD/pass.json" "$SD/fail.json" "$SD/unknown.json" "$SD/setup.json" "$SD/setup-signal.json" "$SD/divergence.json" "$SD/apparatus.json" "$SD/rerun.json" "$SD/warnings.json" "$SD/scratch.json" "$SD/recovery.json" "$SD/observe.json" "$SD/marker.json" "$SD/power-loss.json" "$SD/children.json" "$SD/interleave.json" \
     "$SD/preflight-accepted.json" "$SD/preflight-split.json" "$SD/preflight-controls.json" /tmp/acc-lcs/leave.json; then
     echo "ok   the schema page, the generated reports and preflight documents, the contract enum and the JSON writers' shared values agree"
 else
