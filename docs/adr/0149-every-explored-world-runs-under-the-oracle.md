@@ -43,7 +43,9 @@ The owner ruled on the cost (2026-11-01): every world, whenever `--oracle` is gi
 4. **The shim's own opening of the run's cgroup files is not a move.** In a contained world the shim opens
    `cgroup.kill` and the step-aside `cgroup.procs` at start and moves the descriptor above the relocation floor at
    once (`F_DUPFD`). That pair is recognised; the same path opened by anything else, or opened and not moved on the
-   next line of that process, is a move, because the world's environment hands the path to the target too.
+   next line of that process, is a move, because the world's environment hands the path to the target too. Under
+   `--observe syscalls` the open is trapped and re-issued, so strace prints it twice (on x86_64 the trapped half
+   returns the syscall's own number); the same call printed again on the next line is taken as that re-issue.
 5. **The report** gains `oracle_worlds` (integer), the number of worlds compared, present when every world was;
    the `oracle` sentence adds "and agreed in each of N explored world(s)". Additive under surface 2 of
    `docs/contract-freeze.md`. The `processes` clauses about a world say "which strace watched too" under `--oracle`.
@@ -77,4 +79,4 @@ The owner ruled on the cost (2026-11-01): every world, whenever `--oracle` is gi
 ## Residual windows
 
 - Under `--oracle-fs-usage` an explored world still runs with no second witness, as before this decision.
-- A target that opens the run's step-aside `cgroup.procs` itself and moves the descriptor above the floor the way the shim does is taken for the shim, so a move it then makes out of the cgroup is not refused there.
+- A target that opens the run's step-aside `cgroup.procs` itself and moves the descriptor above the floor the way the shim does is taken for the shim, so a move it then makes out of the cgroup is not refused there. So is a target that opens it twice in a row with the same arguments and moves only the second descriptor: the first is taken for a trapped call's re-issue.
