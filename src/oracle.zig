@@ -1404,9 +1404,7 @@ pub fn parseWorld(arena: std.mem.Allocator, text: []const u8, state_dir: []const
                 if (opensShimFile(world.shim_cgroup_files, name, line)) {
                     try shim_opens.append(arena, pid orelse 0);
                     shim_open_line = line;
-                }
-                else
-                    out.cgroup_move = m;
+                } else out.cgroup_move = m;
             }
         }
 
