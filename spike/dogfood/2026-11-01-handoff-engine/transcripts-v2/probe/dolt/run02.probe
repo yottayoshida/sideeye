@@ -1,0 +1,2 @@
+handover seq=20 pid=340 w=340 w_nr=35 w_sys=98 w_state=S t=348 t_nr=56
+verdict seq=20 pid=340 tid=348 unordered

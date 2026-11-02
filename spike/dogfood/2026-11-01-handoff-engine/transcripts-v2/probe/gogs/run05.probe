@@ -1,0 +1,50 @@
+handover seq=26 pid=105 w=105 w_nr=82 w_sys=98 w_state=S t=108 t_nr=82
+handover seq=27 pid=105 w=108 w_nr=82 w_sys=98 w_state=S t=105 t_nr=68
+handover seq=28 pid=105 w=105 w_nr=68 w_sys=98 w_state=S t=108 t_nr=82
+handover seq=100 pid=105 w=108 w_nr=35 w_sys=98 w_state=S t=107 t_nr=56
+handover seq=119 pid=105 w=107 w_nr=82 w_sys=98 w_state=S t=108 t_nr=68
+handover seq=201 pid=105 w=108 w_nr=35 w_sys=98 w_state=S t=107 t_nr=56
+handover seq=217 pid=105 w=107 w_nr=82 w_sys=98 w_state=S t=108 t_nr=68
+handover seq=301 pid=105 w=108 w_nr=82 w_sys=98 w_state=S t=107 t_nr=68
+handover seq=417 pid=105 w=107 w_nr=35 w_sys=98 w_state=S t=108 t_nr=56
+handover seq=432 pid=105 w=108 w_nr=82 w_sys=98 w_state=S t=107 t_nr=68
+handover seq=433 pid=105 w=107 w_nr=68 w_sys=98 w_state=S t=108 t_nr=68
+handover seq=533 pid=105 w=108 w_nr=82 w_sys=98 w_state=S t=107 t_nr=68
+handover seq=776 pid=105 w=107 w_nr=82 w_sys=98 w_state=S t=108 t_nr=68
+handover seq=877 pid=105 w=108 w_nr=56 w_sys=98 w_state=S t=107 t_nr=68
+handover seq=1071 pid=105 w=107 w_nr=68 w_sys=98 w_state=S t=108 t_nr=68
+handover seq=1146 pid=105 w=108 w_nr=82 w_sys=98 w_state=S t=107 t_nr=68
+handover seq=1156 pid=105 w=107 w_nr=56 w_sys=98 w_state=S t=108 t_nr=68
+handover seq=1369 pid=105 w=108 w_nr=35 w_sys=98 w_state=S t=107 t_nr=56
+handover seq=1968 pid=105 w=107 w_nr=82 w_sys=98 w_state=S t=108 t_nr=68
+handover seq=2047 pid=105 w=108 w_nr=82 w_sys=98 w_state=S t=107 t_nr=68
+handover seq=2334 pid=105 w=107 w_nr=82 w_sys=98 w_state=S t=108 t_nr=68
+handover seq=2397 pid=105 w=108 w_nr=82 w_sys=98 w_state=S t=107 t_nr=68
+handover seq=2496 pid=105 w=107 w_nr=82 w_sys=98 w_state=S t=108 t_nr=68
+handover seq=2803 pid=105 w=108 w_nr=82 w_sys=98 w_state=S t=107 t_nr=68
+handover seq=2901 pid=105 w=107 w_nr=64 w_sys=98 w_state=S t=108 t_nr=56
+verdict seq=26 pid=105 tid=108 unordered
+verdict seq=27 pid=105 tid=105 same
+verdict seq=28 pid=105 tid=108 unordered
+verdict seq=100 pid=105 tid=107 unordered
+verdict seq=119 pid=105 tid=108 unordered
+verdict seq=201 pid=105 tid=107 unordered
+verdict seq=217 pid=105 tid=108 unordered
+verdict seq=301 pid=105 tid=107 unordered
+verdict seq=417 pid=105 tid=108 unordered
+verdict seq=432 pid=105 tid=107 unordered
+verdict seq=433 pid=105 tid=108 unordered
+verdict seq=533 pid=105 tid=107 unordered
+verdict seq=776 pid=105 tid=108 unordered
+verdict seq=877 pid=105 tid=107 unordered
+verdict seq=1071 pid=105 tid=108 unordered
+verdict seq=1146 pid=105 tid=107 unordered
+verdict seq=1156 pid=105 tid=108 unordered
+verdict seq=1369 pid=105 tid=107 unordered
+verdict seq=1968 pid=105 tid=108 unordered
+verdict seq=2047 pid=105 tid=107 unordered
+verdict seq=2334 pid=105 tid=108 unordered
+verdict seq=2397 pid=105 tid=107 unordered
+verdict seq=2496 pid=105 tid=108 unordered
+verdict seq=2803 pid=105 tid=107 unordered
+verdict seq=2901 pid=105 tid=108 unordered

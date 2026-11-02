@@ -1,0 +1,40 @@
+handover seq=119 pid=168 w=168 w_nr=82 w_sys=98 w_state=S t=171 t_nr=68
+handover seq=225 pid=168 w=171 w_nr=35 w_sys=98 w_state=S t=168 t_nr=56
+handover seq=336 pid=168 w=168 w_nr=82 w_sys=98 w_state=S t=171 t_nr=68
+handover seq=761 pid=168 w=171 w_nr=35 w_sys=98 w_state=S t=168 t_nr=56
+handover seq=781 pid=168 w=168 w_nr=82 w_sys=98 w_state=S t=171 t_nr=35
+handover seq=911 pid=168 w=171 w_nr=68 w_sys=98 w_state=S t=168 t_nr=68
+handover seq=974 pid=168 w=168 w_nr=68 w_sys=98 w_state=S t=171 t_nr=68
+handover seq=1184 pid=168 w=171 w_nr=35 w_sys=98 w_state=S t=168 t_nr=56
+handover seq=1289 pid=168 w=168 w_nr=68 w_sys=98 w_state=S t=171 t_nr=68
+handover seq=1484 pid=168 w=171 w_nr=35 w_sys=98 w_state=S t=168 t_nr=56
+handover seq=1615 pid=168 w=168 w_nr=82 w_sys=98 w_state=S t=171 t_nr=68
+handover seq=1670 pid=168 w=171 w_nr=82 w_sys=98 w_state=S t=168 t_nr=68
+handover seq=1898 pid=168 w=168 w_nr=68 w_sys=98 w_state=S t=171 t_nr=68
+handover seq=1996 pid=168 w=171 w_nr=35 w_sys=98 w_state=S t=168 t_nr=56
+handover seq=2068 pid=168 w=168 w_nr=82 w_sys=98 w_state=S t=171 t_nr=68
+handover seq=2620 pid=168 w=171 w_nr=68 w_sys=98 w_state=S t=168 t_nr=68
+handover seq=2698 pid=168 w=168 w_nr=82 w_sys=98 w_state=S t=171 t_nr=68
+handover seq=2741 pid=168 w=171 w_nr=82 w_sys=98 w_state=S t=168 t_nr=68
+handover seq=2829 pid=168 w=168 w_nr=82 w_sys=98 w_state=S t=171 t_nr=68
+handover seq=2931 pid=168 w=171 w_nr=64 w_sys=98 w_state=S t=168 t_nr=56
+verdict seq=119 pid=168 tid=171 unordered
+verdict seq=225 pid=168 tid=168 same
+verdict seq=336 pid=168 tid=171 unordered
+verdict seq=761 pid=168 tid=168 same
+verdict seq=781 pid=168 tid=171 unordered
+verdict seq=911 pid=168 tid=168 same
+verdict seq=974 pid=168 tid=171 unordered
+verdict seq=1184 pid=168 tid=168 same
+verdict seq=1289 pid=168 tid=171 unordered
+verdict seq=1484 pid=168 tid=168 same
+verdict seq=1615 pid=168 tid=171 unordered
+verdict seq=1670 pid=168 tid=168 same
+verdict seq=1898 pid=168 tid=171 unordered
+verdict seq=1996 pid=168 tid=168 same
+verdict seq=2068 pid=168 tid=171 unordered
+verdict seq=2620 pid=168 tid=168 same
+verdict seq=2698 pid=168 tid=171 unordered
+verdict seq=2741 pid=168 tid=168 same
+verdict seq=2829 pid=168 tid=171 unordered
+verdict seq=2931 pid=168 tid=168 same

@@ -1,0 +1,4 @@
+handover seq=5 pid=1851 w=1851 w_nr=68 w_sys=98 w_state=S t=1853 t_nr=68
+handover seq=6 pid=1851 w=1853 w_nr=68 w_sys=98 w_state=S t=1851 t_nr=68
+verdict seq=5 pid=1851 tid=1853 unordered
+verdict seq=6 pid=1851 tid=1851 same

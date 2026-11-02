@@ -1,0 +1,10 @@
+probe vmrestore run1: exit 3 SETUP_ERROR -
+probe vmrestore run2: exit 3 SETUP_ERROR -
+probe vmrestore run3: exit 3 SETUP_ERROR -
+probe vmrestore run4: exit 3 SETUP_ERROR -
+probe vmrestore run5: exit 3 SETUP_ERROR -
+probe vmrestore run6: exit 3 SETUP_ERROR -
+probe vmrestore run7: exit 3 SETUP_ERROR -
+probe vmrestore run8: exit 3 SETUP_ERROR -
+probe vmrestore run9: exit 3 SETUP_ERROR -
+probe vmrestore run10: exit 3 SETUP_ERROR -

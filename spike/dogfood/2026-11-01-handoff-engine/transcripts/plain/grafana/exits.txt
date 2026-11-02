@@ -1,0 +1,10 @@
+plain grafana run1: exit 2 UNKNOWN multiple_threads_detected
+plain grafana run2: exit 0 PASS -
+plain grafana run3: exit 0 PASS -
+plain grafana run4: exit 2 UNKNOWN multiple_threads_detected
+plain grafana run5: exit 0 PASS -
+plain grafana run6: exit 0 PASS -
+plain grafana run7: exit 0 PASS -
+plain grafana run8: exit 0 PASS -
+plain grafana run9: exit 0 PASS -
+plain grafana run10: exit 0 PASS -

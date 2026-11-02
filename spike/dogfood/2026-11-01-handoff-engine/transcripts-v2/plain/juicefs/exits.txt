@@ -1,0 +1,10 @@
+plain juicefs run1: exit 2 UNKNOWN baseline_violates_invariant
+plain juicefs run2: exit 2 UNKNOWN baseline_violates_invariant
+plain juicefs run3: exit 2 UNKNOWN baseline_violates_invariant
+plain juicefs run4: exit 2 UNKNOWN baseline_violates_invariant
+plain juicefs run5: exit 2 UNKNOWN baseline_violates_invariant
+plain juicefs run6: exit 2 UNKNOWN baseline_violates_invariant
+plain juicefs run7: exit 2 UNKNOWN baseline_violates_invariant
+plain juicefs run8: exit 2 UNKNOWN baseline_violates_invariant
+plain juicefs run9: exit 2 UNKNOWN baseline_violates_invariant
+plain juicefs run10: exit 2 UNKNOWN baseline_violates_invariant

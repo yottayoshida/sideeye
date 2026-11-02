@@ -1,0 +1,4 @@
+handover seq=3 pid=17 w=17 w_nr=64 w_sys=98 w_state=S t=18 t_nr=56
+handover seq=5 pid=17 w=18 w_nr=64 w_sys=98 w_state=S t=17 t_nr=56
+verdict seq=3 pid=17 tid=18 unordered
+verdict seq=5 pid=17 tid=17 same

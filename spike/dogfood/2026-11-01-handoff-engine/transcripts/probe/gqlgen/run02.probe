@@ -1,0 +1,6 @@
+handover seq=3 pid=164 w=164 w_nr=35 w_sys=98 w_state=S t=178 t_nr=56
+handover seq=5 pid=164 w=178 w_nr=64 w_sys=98 w_state=S t=164 t_nr=56
+handover seq=7 pid=164 w=164 w_nr=64 w_sys=98 w_state=S t=178 t_nr=56
+verdict seq=3 pid=164 tid=178 unordered
+verdict seq=5 pid=164 tid=164 same
+verdict seq=7 pid=164 tid=178 unordered

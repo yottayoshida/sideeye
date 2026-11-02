@@ -1,0 +1,64 @@
+handover seq=36 pid=63 w=63 w_nr=68 w_sys=98 w_state=S t=66 t_nr=82
+handover seq=51 pid=63 w=66 w_nr=82 w_sys=98 w_state=S t=63 t_nr=68
+handover seq=114 pid=63 w=63 w_nr=68 w_sys=98 w_state=S t=66 t_nr=68
+handover seq=205 pid=63 w=66 w_nr=68 w_sys=98 w_state=S t=63 t_nr=68
+handover seq=417 pid=63 w=63 w_nr=35 w_sys=98 w_state=S t=66 t_nr=56
+handover seq=610 pid=63 w=66 w_nr=35 w_sys=98 w_state=S t=63 t_nr=56
+handover seq=802 pid=63 w=63 w_nr=35 w_sys=98 w_state=S t=66 t_nr=56
+handover seq=815 pid=63 w=66 w_nr=68 w_sys=98 w_state=S t=63 t_nr=68
+handover seq=845 pid=63 w=63 w_nr=68 w_sys=98 w_state=S t=66 t_nr=82
+handover seq=931 pid=63 w=66 w_nr=68 w_sys=98 w_state=S t=63 t_nr=68
+handover seq=1039 pid=63 w=63 w_nr=68 w_sys=98 w_state=S t=66 t_nr=82
+handover seq=1267 pid=63 w=66 w_nr=68 w_sys=98 w_state=S t=63 t_nr=68
+handover seq=1345 pid=63 w=63 w_nr=35 w_sys=98 w_state=S t=66 t_nr=56
+handover seq=1432 pid=63 w=66 w_nr=82 w_sys=98 w_state=S t=63 t_nr=68
+handover seq=1546 pid=63 w=63 w_nr=82 w_sys=98 w_state=S t=66 t_nr=68
+handover seq=1593 pid=63 w=66 w_nr=82 w_sys=98 w_state=S t=63 t_nr=68
+handover seq=1673 pid=63 w=63 w_nr=68 w_sys=98 w_state=S t=66 t_nr=68
+handover seq=1716 pid=63 w=66 w_nr=82 w_sys=98 w_state=S t=63 t_nr=68
+handover seq=1800 pid=63 w=63 w_nr=68 w_sys=98 w_state=S t=66 t_nr=68
+handover seq=1823 pid=63 w=66 w_nr=82 w_sys=98 w_state=S t=63 t_nr=35
+handover seq=1843 pid=63 w=63 w_nr=68 w_sys=98 w_state=S t=66 t_nr=82
+handover seq=1918 pid=63 w=66 w_nr=82 w_sys=98 w_state=S t=63 t_nr=68
+handover seq=2019 pid=63 w=63 w_nr=68 w_sys=98 w_state=S t=66 t_nr=82
+handover seq=2115 pid=63 w=66 w_nr=35 w_sys=98 w_state=S t=63 t_nr=56
+handover seq=2261 pid=63 w=63 w_nr=68 w_sys=98 w_state=S t=66 t_nr=68
+handover seq=2452 pid=63 w=66 w_nr=82 w_sys=98 w_state=S t=63 t_nr=82
+handover seq=2498 pid=63 w=63 w_nr=82 w_sys=98 w_state=S t=66 t_nr=68
+handover seq=2571 pid=63 w=66 w_nr=82 w_sys=98 w_state=S t=63 t_nr=68
+handover seq=2674 pid=63 w=63 w_nr=82 w_sys=98 w_state=S t=66 t_nr=68
+handover seq=2713 pid=63 w=66 w_nr=68 w_sys=98 w_state=S t=63 t_nr=68
+handover seq=2761 pid=63 w=63 w_nr=68 w_sys=98 w_state=S t=66 t_nr=82
+handover seq=2839 pid=63 w=66 w_nr=68 w_sys=98 w_state=S t=63 t_nr=68
+verdict seq=36 pid=63 tid=66 unordered
+verdict seq=51 pid=63 tid=63 same
+verdict seq=114 pid=63 tid=66 unordered
+verdict seq=205 pid=63 tid=63 same
+verdict seq=417 pid=63 tid=66 unordered
+verdict seq=610 pid=63 tid=63 same
+verdict seq=802 pid=63 tid=66 unordered
+verdict seq=815 pid=63 tid=63 same
+verdict seq=845 pid=63 tid=66 unordered
+verdict seq=931 pid=63 tid=63 same
+verdict seq=1039 pid=63 tid=66 unordered
+verdict seq=1267 pid=63 tid=63 same
+verdict seq=1345 pid=63 tid=66 unordered
+verdict seq=1432 pid=63 tid=63 same
+verdict seq=1546 pid=63 tid=66 unordered
+verdict seq=1593 pid=63 tid=63 same
+verdict seq=1673 pid=63 tid=66 unordered
+verdict seq=1716 pid=63 tid=63 same
+verdict seq=1800 pid=63 tid=66 unordered
+verdict seq=1823 pid=63 tid=63 same
+verdict seq=1843 pid=63 tid=66 unordered
+verdict seq=1918 pid=63 tid=63 same
+verdict seq=2019 pid=63 tid=66 unordered
+verdict seq=2115 pid=63 tid=63 same
+verdict seq=2261 pid=63 tid=66 unordered
+verdict seq=2452 pid=63 tid=63 same
+verdict seq=2498 pid=63 tid=66 unordered
+verdict seq=2571 pid=63 tid=63 same
+verdict seq=2674 pid=63 tid=66 unordered
+verdict seq=2713 pid=63 tid=63 same
+verdict seq=2761 pid=63 tid=66 unordered
+verdict seq=2839 pid=63 tid=63 same

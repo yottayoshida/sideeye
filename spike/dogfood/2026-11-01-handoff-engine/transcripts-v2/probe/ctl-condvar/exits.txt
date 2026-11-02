@@ -1,0 +1,10 @@
+probe ctl-condvar run1: exit 2 UNKNOWN multiple_threads_detected
+probe ctl-condvar run2: exit 2 UNKNOWN multiple_threads_detected
+probe ctl-condvar run3: exit 2 UNKNOWN multiple_threads_detected
+probe ctl-condvar run4: exit 2 UNKNOWN multiple_threads_detected
+probe ctl-condvar run5: exit 2 UNKNOWN multiple_threads_detected
+probe ctl-condvar run6: exit 2 UNKNOWN multiple_threads_detected
+probe ctl-condvar run7: exit 2 UNKNOWN multiple_threads_detected
+probe ctl-condvar run8: exit 2 UNKNOWN multiple_threads_detected
+probe ctl-condvar run9: exit 2 UNKNOWN multiple_threads_detected
+probe ctl-condvar run10: exit 2 UNKNOWN multiple_threads_detected

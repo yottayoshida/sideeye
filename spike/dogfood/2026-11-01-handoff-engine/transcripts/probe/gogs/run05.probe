@@ -1,0 +1,40 @@
+handover seq=53 pid=105 w=107 w_nr=82 w_sys=98 w_state=S t=108 t_nr=68
+handover seq=119 pid=105 w=108 w_nr=82 w_sys=98 w_state=S t=107 t_nr=68
+handover seq=209 pid=105 w=107 w_nr=68 w_sys=98 w_state=S t=108 t_nr=68
+handover seq=403 pid=105 w=108 w_nr=68 w_sys=98 w_state=S t=107 t_nr=68
+handover seq=430 pid=105 w=107 w_nr=82 w_sys=98 w_state=S t=108 t_nr=68
+handover seq=508 pid=105 w=108 w_nr=68 w_sys=98 w_state=S t=107 t_nr=68
+handover seq=519 pid=105 w=107 w_nr=82 w_sys=98 w_state=S t=108 t_nr=35
+handover seq=1218 pid=105 w=108 w_nr=68 w_sys=98 w_state=S t=107 t_nr=68
+handover seq=1318 pid=105 w=107 w_nr=68 w_sys=98 w_state=S t=108 t_nr=82
+handover seq=1382 pid=105 w=108 w_nr=82 w_sys=98 w_state=S t=107 t_nr=68
+handover seq=1467 pid=105 w=107 w_nr=68 w_sys=98 w_state=S t=108 t_nr=68
+handover seq=1676 pid=105 w=108 w_nr=35 w_sys=98 w_state=S t=107 t_nr=56
+handover seq=1793 pid=105 w=107 w_nr=68 w_sys=98 w_state=S t=108 t_nr=82
+handover seq=2032 pid=105 w=108 w_nr=35 w_sys=98 w_state=S t=107 t_nr=56
+handover seq=2141 pid=105 w=107 w_nr=68 w_sys=98 w_state=S t=108 t_nr=82
+handover seq=2224 pid=105 w=108 w_nr=82 w_sys=98 w_state=S t=107 t_nr=68
+handover seq=2313 pid=105 w=107 w_nr=82 w_sys=98 w_state=S t=108 t_nr=68
+handover seq=2404 pid=105 w=108 w_nr=56 w_sys=98 w_state=S t=107 t_nr=68
+handover seq=2459 pid=105 w=107 w_nr=82 w_sys=98 w_state=S t=108 t_nr=35
+handover seq=2858 pid=105 w=108 w_nr=68 w_sys=98 w_state=S t=107 t_nr=68
+verdict seq=53 pid=105 tid=108 unordered
+verdict seq=119 pid=105 tid=107 same
+verdict seq=209 pid=105 tid=108 unordered
+verdict seq=403 pid=105 tid=107 same
+verdict seq=430 pid=105 tid=108 unordered
+verdict seq=508 pid=105 tid=107 same
+verdict seq=519 pid=105 tid=108 unordered
+verdict seq=1218 pid=105 tid=107 same
+verdict seq=1318 pid=105 tid=108 unordered
+verdict seq=1382 pid=105 tid=107 same
+verdict seq=1467 pid=105 tid=108 unordered
+verdict seq=1676 pid=105 tid=107 same
+verdict seq=1793 pid=105 tid=108 unordered
+verdict seq=2032 pid=105 tid=107 same
+verdict seq=2141 pid=105 tid=108 unordered
+verdict seq=2224 pid=105 tid=107 same
+verdict seq=2313 pid=105 tid=108 unordered
+verdict seq=2404 pid=105 tid=107 same
+verdict seq=2459 pid=105 tid=108 unordered
+verdict seq=2858 pid=105 tid=107 same

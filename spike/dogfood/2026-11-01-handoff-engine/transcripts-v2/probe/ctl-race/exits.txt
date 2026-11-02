@@ -1,0 +1,10 @@
+probe ctl-race run1: exit 2 UNKNOWN multiple_threads_detected
+probe ctl-race run2: exit 2 UNKNOWN multiple_threads_detected
+probe ctl-race run3: exit 2 UNKNOWN multiple_threads_detected
+probe ctl-race run4: exit 2 UNKNOWN multiple_threads_detected
+probe ctl-race run5: exit 2 UNKNOWN multiple_threads_detected
+probe ctl-race run6: exit 2 UNKNOWN multiple_threads_detected
+probe ctl-race run7: exit 2 UNKNOWN multiple_threads_detected
+probe ctl-race run8: exit 2 UNKNOWN multiple_threads_detected
+probe ctl-race run9: exit 2 UNKNOWN multiple_threads_detected
+probe ctl-race run10: exit 2 UNKNOWN multiple_threads_detected

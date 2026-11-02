@@ -1,0 +1,10 @@
+probe etcdutl run1: exit 2 UNKNOWN multiple_threads_detected
+probe etcdutl run2: exit 2 UNKNOWN multiple_threads_detected
+probe etcdutl run3: exit 2 UNKNOWN multiple_threads_detected
+probe etcdutl run4: exit 2 UNKNOWN multiple_threads_detected
+probe etcdutl run5: exit 2 UNKNOWN multiple_threads_detected
+probe etcdutl run6: exit 2 UNKNOWN multiple_threads_detected
+probe etcdutl run7: exit 2 UNKNOWN multiple_threads_detected
+probe etcdutl run8: exit 2 UNKNOWN multiple_threads_detected
+probe etcdutl run9: exit 2 UNKNOWN multiple_threads_detected
+probe etcdutl run10: exit 2 UNKNOWN multiple_threads_detected

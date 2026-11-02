@@ -1,0 +1,32 @@
+handover seq=9 pid=189 w=191 w_nr=68 w_sys=98 w_state=S t=189 t_nr=68
+handover seq=95 pid=189 w=189 w_nr=82 w_sys=98 w_state=S t=192 t_nr=68
+handover seq=173 pid=189 w=192 w_nr=82 w_sys=98 w_state=S t=189 t_nr=68
+handover seq=400 pid=189 w=189 w_nr=68 w_sys=98 w_state=S t=192 t_nr=68
+handover seq=493 pid=189 w=192 w_nr=68 w_sys=98 w_state=S t=189 t_nr=68
+handover seq=629 pid=189 w=189 w_nr=68 w_sys=98 w_state=S t=192 t_nr=82
+handover seq=737 pid=189 w=192 w_nr=35 w_sys=98 w_state=S t=189 t_nr=56
+handover seq=1043 pid=189 w=189 w_nr=82 w_sys=98 w_state=S t=192 t_nr=68
+handover seq=1340 pid=189 w=192 w_nr=82 w_sys=98 w_state=S t=189 t_nr=68
+handover seq=1405 pid=189 w=189 w_nr=82 w_sys=98 w_state=S t=192 t_nr=68
+handover seq=1701 pid=189 w=192 w_nr=68 w_sys=98 w_state=S t=189 t_nr=68
+handover seq=1951 pid=189 w=189 w_nr=68 w_sys=98 w_state=S t=192 t_nr=68
+handover seq=2045 pid=189 w=192 w_nr=82 w_sys=98 w_state=S t=189 t_nr=68
+handover seq=2110 pid=189 w=189 w_nr=82 w_sys=98 w_state=S t=192 t_nr=68
+handover seq=2508 pid=189 w=192 w_nr=68 w_sys=98 w_state=S t=189 t_nr=68
+handover seq=2785 pid=189 w=189 w_nr=82 w_sys=98 w_state=S t=192 t_nr=68
+verdict seq=9 pid=189 tid=189 unordered
+verdict seq=95 pid=189 tid=192 unordered
+verdict seq=173 pid=189 tid=189 unordered
+verdict seq=400 pid=189 tid=192 unordered
+verdict seq=493 pid=189 tid=189 unordered
+verdict seq=629 pid=189 tid=192 unordered
+verdict seq=737 pid=189 tid=189 unordered
+verdict seq=1043 pid=189 tid=192 unordered
+verdict seq=1340 pid=189 tid=189 unordered
+verdict seq=1405 pid=189 tid=192 unordered
+verdict seq=1701 pid=189 tid=189 unordered
+verdict seq=1951 pid=189 tid=192 unordered
+verdict seq=2045 pid=189 tid=189 unordered
+verdict seq=2110 pid=189 tid=192 unordered
+verdict seq=2508 pid=189 tid=189 unordered
+verdict seq=2785 pid=189 tid=192 unordered

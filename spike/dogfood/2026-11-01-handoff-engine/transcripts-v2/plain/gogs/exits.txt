@@ -1,0 +1,10 @@
+plain gogs run1: exit 2 UNKNOWN multiple_threads_detected
+plain gogs run2: exit 2 UNKNOWN multiple_threads_detected
+plain gogs run3: exit 2 UNKNOWN multiple_threads_detected
+plain gogs run4: exit 2 UNKNOWN multiple_threads_detected
+plain gogs run5: exit 2 UNKNOWN multiple_threads_detected
+plain gogs run6: exit 2 UNKNOWN multiple_threads_detected
+plain gogs run7: exit 2 UNKNOWN multiple_threads_detected
+plain gogs run8: exit 2 UNKNOWN multiple_threads_detected
+plain gogs run9: exit 2 UNKNOWN multiple_threads_detected
+plain gogs run10: exit 2 UNKNOWN multiple_threads_detected

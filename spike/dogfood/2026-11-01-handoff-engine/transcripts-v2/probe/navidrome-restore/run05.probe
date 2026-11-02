@@ -1,0 +1,2 @@
+handover seq=2 pid=2669 w=2673 w_nr=56 w_sys=98 w_state=S t=2674 t_nr=56
+verdict seq=2 pid=2669 tid=2674 unordered

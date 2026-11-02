@@ -1,0 +1,158 @@
+handover seq=20 pid=84 w=84 w_nr=68 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=33 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=41 pid=84 w=87 w_nr=68 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=164 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=250 pid=84 w=87 w_nr=68 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=437 pid=84 w=86 w_nr=35 w_sys=98 w_state=S t=87 t_nr=56
+handover seq=535 pid=84 w=87 w_nr=82 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=550 pid=84 w=86 w_nr=82 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=644 pid=84 w=87 w_nr=82 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=751 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=82
+handover seq=937 pid=84 w=87 w_nr=35 w_sys=98 w_state=S t=86 t_nr=56
+handover seq=1041 pid=84 w=86 w_nr=82 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=1144 pid=84 w=87 w_nr=82 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=1225 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=82
+handover seq=1228 pid=84 w=87 w_nr=68 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=1239 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=1296 pid=84 w=87 w_nr=82 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=1374 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=1388 pid=84 w=87 w_nr=68 w_sys=98 w_state=S t=86 t_nr=82
+handover seq=1404 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=82
+handover seq=1418 pid=84 w=87 w_nr=68 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=1423 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=1426 pid=84 w=87 w_nr=68 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=1432 pid=84 w=86 w_nr=82 w_sys=98 w_state=R t=87 t_nr=68
+handover seq=1448 pid=84 w=87 w_nr=68 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=1455 pid=84 w=86 w_nr=82 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=1462 pid=84 w=87 w_nr=82 w_sys=98 w_state=S t=86 t_nr=35
+handover seq=1472 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=1527 pid=84 w=87 w_nr=82 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=1554 pid=84 w=86 w_nr=35 w_sys=98 w_state=S t=87 t_nr=56
+handover seq=1559 pid=84 w=87 w_nr=68 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=1577 pid=84 w=86 w_nr=82 w_sys=98 w_state=S t=87 t_nr=35
+handover seq=1582 pid=84 w=87 w_nr=68 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=1583 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=1587 pid=84 w=87 w_nr=68 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=1598 pid=84 w=86 w_nr=82 w_sys=98 w_state=S t=87 t_nr=35
+handover seq=1645 pid=84 w=87 w_nr=68 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=1652 pid=84 w=86 w_nr=35 w_sys=98 w_state=S t=87 t_nr=56
+handover seq=1662 pid=84 w=87 w_nr=68 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=1672 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=1675 pid=84 w=87 w_nr=82 w_sys=98 w_state=S t=86 t_nr=35
+handover seq=1687 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=82
+handover seq=1689 pid=84 w=87 w_nr=82 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=1698 pid=84 w=86 w_nr=56 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=1713 pid=84 w=87 w_nr=68 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=1716 pid=84 w=86 w_nr=82 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=1734 pid=84 w=87 w_nr=68 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=1736 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=82
+handover seq=1746 pid=84 w=87 w_nr=35 w_sys=98 w_state=S t=86 t_nr=56
+handover seq=1768 pid=84 w=86 w_nr=56 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=1783 pid=84 w=87 w_nr=68 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=1819 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=1910 pid=84 w=87 w_nr=68 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=1927 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=2021 pid=84 w=87 w_nr=82 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=2039 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=2123 pid=84 w=87 w_nr=68 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=2201 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=2246 pid=84 w=87 w_nr=82 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=2249 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=2267 pid=84 w=87 w_nr=82 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=2278 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=2293 pid=84 w=87 w_nr=68 w_sys=98 w_state=S t=86 t_nr=82
+handover seq=2294 pid=84 w=86 w_nr=82 w_sys=98 w_state=S t=87 t_nr=35
+handover seq=2295 pid=84 w=87 w_nr=35 w_sys=98 w_state=S t=86 t_nr=56
+handover seq=2297 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=2299 pid=84 w=87 w_nr=68 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=2308 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=2311 pid=84 w=87 w_nr=82 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=2318 pid=84 w=86 w_nr=82 w_sys=98 w_state=S t=87 t_nr=35
+handover seq=2327 pid=84 w=87 w_nr=68 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=2335 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=2473 pid=84 w=87 w_nr=82 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=2560 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=2624 pid=84 w=87 w_nr=82 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=2700 pid=84 w=86 w_nr=68 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=2739 pid=84 w=87 w_nr=82 w_sys=98 w_state=S t=86 t_nr=68
+handover seq=2762 pid=84 w=86 w_nr=82 w_sys=98 w_state=S t=87 t_nr=68
+handover seq=2785 pid=84 w=87 w_nr=82 w_sys=98 w_state=S t=86 t_nr=68
+verdict seq=20 pid=84 tid=86 unordered
+verdict seq=33 pid=84 tid=87 unordered
+verdict seq=41 pid=84 tid=86 unordered
+verdict seq=164 pid=84 tid=87 unordered
+verdict seq=250 pid=84 tid=86 unordered
+verdict seq=437 pid=84 tid=87 unordered
+verdict seq=535 pid=84 tid=86 unordered
+verdict seq=550 pid=84 tid=87 unordered
+verdict seq=644 pid=84 tid=86 unordered
+verdict seq=751 pid=84 tid=87 unordered
+verdict seq=937 pid=84 tid=86 unordered
+verdict seq=1041 pid=84 tid=87 unordered
+verdict seq=1144 pid=84 tid=86 unordered
+verdict seq=1225 pid=84 tid=87 unordered
+verdict seq=1228 pid=84 tid=86 unordered
+verdict seq=1239 pid=84 tid=87 unordered
+verdict seq=1296 pid=84 tid=86 unordered
+verdict seq=1374 pid=84 tid=87 unordered
+verdict seq=1388 pid=84 tid=86 unordered
+verdict seq=1404 pid=84 tid=87 unordered
+verdict seq=1418 pid=84 tid=86 unordered
+verdict seq=1423 pid=84 tid=87 unordered
+verdict seq=1426 pid=84 tid=86 unordered
+verdict seq=1432 pid=84 tid=87 unordered
+verdict seq=1448 pid=84 tid=86 unordered
+verdict seq=1455 pid=84 tid=87 unordered
+verdict seq=1462 pid=84 tid=86 unordered
+verdict seq=1472 pid=84 tid=87 unordered
+verdict seq=1527 pid=84 tid=86 unordered
+verdict seq=1554 pid=84 tid=87 unordered
+verdict seq=1559 pid=84 tid=86 unordered
+verdict seq=1577 pid=84 tid=87 unordered
+verdict seq=1582 pid=84 tid=86 unordered
+verdict seq=1583 pid=84 tid=87 unordered
+verdict seq=1587 pid=84 tid=86 unordered
+verdict seq=1598 pid=84 tid=87 unordered
+verdict seq=1645 pid=84 tid=86 unordered
+verdict seq=1652 pid=84 tid=87 unordered
+verdict seq=1662 pid=84 tid=86 unordered
+verdict seq=1672 pid=84 tid=87 unordered
+verdict seq=1675 pid=84 tid=86 unordered
+verdict seq=1687 pid=84 tid=87 unordered
+verdict seq=1689 pid=84 tid=86 unordered
+verdict seq=1698 pid=84 tid=87 unordered
+verdict seq=1713 pid=84 tid=86 unordered
+verdict seq=1716 pid=84 tid=87 unordered
+verdict seq=1734 pid=84 tid=86 unordered
+verdict seq=1736 pid=84 tid=87 unordered
+verdict seq=1746 pid=84 tid=86 unordered
+verdict seq=1768 pid=84 tid=87 unordered
+verdict seq=1783 pid=84 tid=86 unordered
+verdict seq=1819 pid=84 tid=87 unordered
+verdict seq=1910 pid=84 tid=86 unordered
+verdict seq=1927 pid=84 tid=87 unordered
+verdict seq=2021 pid=84 tid=86 unordered
+verdict seq=2039 pid=84 tid=87 unordered
+verdict seq=2123 pid=84 tid=86 unordered
+verdict seq=2201 pid=84 tid=87 unordered
+verdict seq=2246 pid=84 tid=86 unordered
+verdict seq=2249 pid=84 tid=87 unordered
+verdict seq=2267 pid=84 tid=86 unordered
+verdict seq=2278 pid=84 tid=87 unordered
+verdict seq=2293 pid=84 tid=86 unordered
+verdict seq=2294 pid=84 tid=87 unordered
+verdict seq=2295 pid=84 tid=86 unordered
+verdict seq=2297 pid=84 tid=87 unordered
+verdict seq=2299 pid=84 tid=86 unordered
+verdict seq=2308 pid=84 tid=87 unordered
+verdict seq=2311 pid=84 tid=86 unordered
+verdict seq=2318 pid=84 tid=87 unordered
+verdict seq=2327 pid=84 tid=86 unordered
+verdict seq=2335 pid=84 tid=87 unordered
+verdict seq=2473 pid=84 tid=86 unordered
+verdict seq=2560 pid=84 tid=87 unordered
+verdict seq=2624 pid=84 tid=86 unordered
+verdict seq=2700 pid=84 tid=87 unordered
+verdict seq=2739 pid=84 tid=86 unordered
+verdict seq=2762 pid=84 tid=87 unordered
+verdict seq=2785 pid=84 tid=86 unordered

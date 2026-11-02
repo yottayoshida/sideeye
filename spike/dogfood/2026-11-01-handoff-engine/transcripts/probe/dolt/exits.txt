@@ -1,0 +1,10 @@
+probe dolt run1: exit 2 UNKNOWN multiple_threads_detected
+probe dolt run2: exit 2 UNKNOWN multiple_threads_detected
+probe dolt run3: exit 2 UNKNOWN multiple_threads_detected
+probe dolt run4: exit 2 UNKNOWN multiple_threads_detected
+probe dolt run5: exit 2 UNKNOWN multiple_threads_detected
+probe dolt run6: exit 2 UNKNOWN multiple_threads_detected
+probe dolt run7: exit 2 UNKNOWN multiple_threads_detected
+probe dolt run8: exit 2 UNKNOWN multiple_threads_detected
+probe dolt run9: exit 2 UNKNOWN multiple_threads_detected
+probe dolt run10: exit 2 UNKNOWN multiple_threads_detected
