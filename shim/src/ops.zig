@@ -346,7 +346,7 @@ pub fn guarded_writev_np(fd: c_int, guard: *const u64, iov: *const anyopaque, io
 /// in step: `noteFd` asks the kernel where a descriptor points every time.)
 pub fn guarded_close_np(fd: c_int, guard: *const u64) callconv(.c) c_int {
     common.noteFd(.close, fd);
-    common.noteTraceClose(fd);
+    _ = common.noteTraceClose(fd);
     return common.callGuardedCloseNp(fd, guard);
 }
 
@@ -682,10 +682,10 @@ pub fn close_range(first: c_uint, last: c_uint, flags: c_int) callconv(.c) c_int
 pub fn close(fd: c_int) callconv(.c) c_int {
     // Recorded before the call: afterwards the descriptor no longer resolves to a path.
     common.noteFd(.close, fd);
-    // The target may be retiring the shim's own trace descriptor; that has to be
-    // noticed while the descriptor still works (see noteTraceClose).
-    common.noteTraceClose(fd);
-    return common.callClose(fd);
+    const recover = common.noteTraceClose(fd);
+    const rc = common.callClose(fd);
+    if (recover) common.afterSweep();
+    return rc;
 }
 
 // Libc-internal calls never cross the PLT, so interposing `write` says nothing about
@@ -743,8 +743,10 @@ pub fn fclose(stream: *common.FILE) callconv(.c) c_int {
     common.noteStdioClose(stream);
     // Unconditional, unlike the stdio notes above: fdopen(N) + fclose retires the
     // descriptor whether or not stdio observation is armed.
-    common.noteTraceClose(common.c.fileno(stream));
-    return common.callFclose(stream);
+    const recover = common.noteTraceClose(common.c.fileno(stream));
+    const rc = common.callFclose(stream);
+    if (recover) common.afterSweep();
+    return rc;
 }
 
 // freopen issues [flush-write, close, open]. Recording all three and only then calling
@@ -763,12 +765,14 @@ fn freopenCommon(comptime call64: bool, path: ?[*:0]const u8, mode: [*:0]const u
         _ = common.callFflush(stream);
     }
     common.noteStdioClose(stream);
-    common.noteTraceClose(common.c.fileno(stream));
+    const recover = common.noteTraceClose(common.c.fileno(stream));
     if (path) |p| {
         if (common.stdioOpenRecorded(mode))
             common.note1(.open, AT_FDCWD, p);
     }
-    return if (call64) common.callFreopen64(path, mode, stream) else common.callFreopen(path, mode, stream);
+    const reopened = if (call64) common.callFreopen64(path, mode, stream) else common.callFreopen(path, mode, stream);
+    if (recover) common.afterSweep();
+    return reopened;
 }
 
 pub fn freopen(path: ?[*:0]const u8, mode: [*:0]const u8, stream: *common.FILE) callconv(.c) ?*common.FILE {

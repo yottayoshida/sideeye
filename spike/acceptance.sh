@@ -4764,11 +4764,11 @@ st685 "oracle_missed_operation from a static image that exec'd a dynamic one in 
 unset TOY_EXEC_PATH
 # The recording run's unresolvable_path (roswell): the dynamic child closes every descriptor,
 # the shim's trace among them, under a static parent. The twin is the same child run alone.
-TOY_SPAWN=1 TOY_SPAWN_PATH=$OUT/toy-fixed TOY_CLOSE_SWEEP=1023 export TOY_SPAWN TOY_SPAWN_PATH TOY_CLOSE_SWEEP
+TOY_SPAWN=1 TOY_SPAWN_PATH=$OUT/toy-fixed TOY_CLOSE_SWEEP=1023 TOY_SWEEP_LOWLIMIT=1 export TOY_SPAWN TOY_SPAWN_PATH TOY_CLOSE_SWEEP TOY_SWEEP_LOWLIMIT
 st685 "unresolvable_path from a child that closed the shim's trace under a static parent names --observe supervised" unresolvable_path new "" "$OUT/toy-static" --allow-unverified
 unset TOY_SPAWN TOY_SPAWN_PATH
 st685 "unresolvable_path's dynamic twin, closing its own trace, names --observe supervised in a step of its own (#988)" unresolvable_path closed "" "$OUT/toy-fixed" --allow-unverified
-unset TOY_CLOSE_SWEEP
+unset TOY_CLOSE_SWEEP TOY_SWEEP_LOWLIMIT
 # A step keyed on the image rather than on the record's kind would send this one on too.
 TOY_WRITE_AFTER_UNLINK=1 export TOY_WRITE_AFTER_UNLINK
 st685 "unresolvable_path of another kind (unlinked-fd) in a dynamic image keeps the class wall (#988)" unresolvable_path keep "refuses by design" "$OUT/toy-fixed" --allow-unverified
@@ -4780,9 +4780,9 @@ st685 "unresolvable_path of another kind (unlinked-fd) under a static parent kee
 unset TOY_SPAWN TOY_SPAWN_PATH TOY_WRITE_AFTER_UNLINK
 # The site reads the kind alone: a static image that exec'd toy-fixed in its own process, which
 # then closed the trace, takes the step too (ADR 0108 — under supervised the trace is the engine's).
-TOY_EXEC_PATH=$OUT/toy-fixed TOY_CLOSE_SWEEP=1023 export TOY_EXEC_PATH TOY_CLOSE_SWEEP
+TOY_EXEC_PATH=$OUT/toy-fixed TOY_CLOSE_SWEEP=1023 TOY_SWEEP_LOWLIMIT=1 export TOY_EXEC_PATH TOY_CLOSE_SWEEP TOY_SWEEP_LOWLIMIT
 st685 "unresolvable_path from an image a static one exec'd into, which closed the trace, names --observe supervised" unresolvable_path new "" "$OUT/toy-static" --allow-unverified
-unset TOY_EXEC_PATH TOY_CLOSE_SWEEP
+unset TOY_EXEC_PATH TOY_CLOSE_SWEEP TOY_SWEEP_LOWLIMIT
 # Not a rewrite that changes the key's bytes: the state after must equal the rotate's, or another
 # detector refuses the run and the leg says nothing about the records the shim could not write.
 for rc_mode in wrappers syscalls; do
@@ -9356,25 +9356,28 @@ else
     fails=$((fails + 1))
 fi
 
-# A sweep that does reach the trace fd ends observation, and the shim must say so
-# while it still can — never keep writing trace records through a number the target
-# now owns. Measured before the guard existed: rc=2 for the accidental reason
-# state_changed_without_ops, and the state file held the shim's binary trace records
-# spliced between its own bytes. The refusal must now name the channel, and the
+# A sweep that does reach the trace fd: the shim puts the channel back on its number, and
+# where it cannot — the number past the descriptor limit — it says so while it still can,
+# never writing trace records through a number the target now owns. Measured before the
+# guard existed: rc=2 for the accidental reason state_changed_without_ops, and the state
+# file held the shim's binary trace records spliced between its own bytes. Either way the
 # state file must hold exactly what the target wrote.
-rm -rf /tmp/acc && mkdir -p /tmp/acc/state
-o=$(TOY_CLOSE_SWEEP=1023 "$SIDEEYE" explore --state /tmp/acc/state \
-    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
-    --shim "$SHIM" --work /tmp/acc/work --allow-unverified 2>&1)
-rc=$?
-if [ "$rc" = "2" ] && echo "$o" | grep -q "unresolvable_path" \
-    && printf 'key=2\n' | cmp -s - /tmp/acc/state/key.json; then
-    echo "ok   a sweep that reaches the trace fd refuses, and never corrupts state"
-else
-    echo "FAIL sweep at the trace fd: exit $rc, key.json $(od -c /tmp/acc/state/key.json 2>/dev/null | head -1)"
-    echo "$o" | sed 's/^/     | /' | head -6
-    fails=$((fails + 1))
-fi
+for sw in "|0|" "TOY_SWEEP_LOWLIMIT=1|2|unresolvable_path"; do
+    sw_env=${sw%%|*}; sw_rest=${sw#*|}; sw_rc=${sw_rest%%|*}; sw_text=${sw_rest#*|}
+    rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+    o=$(env $sw_env TOY_CLOSE_SWEEP=1023 "$SIDEEYE" explore --state /tmp/acc/state \
+        --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+        --shim "$SHIM" --work /tmp/acc/work --allow-unverified 2>&1)
+    rc=$?
+    if [ "$rc" = "$sw_rc" ] && { [ -z "$sw_text" ] || echo "$o" | grep -q "$sw_text"; } \
+        && printf 'key=2\n' | cmp -s - /tmp/acc/state/key.json; then
+        echo "ok   a sweep that reaches the trace fd ${sw_env:-with the number free} ends in exit $rc, and never corrupts state"
+    else
+        echo "FAIL sweep at the trace fd ${sw_env:-with the number free}: exit $rc, key.json $(od -c /tmp/acc/state/key.json 2>/dev/null | head -1)"
+        echo "$o" | sed 's/^/     | /' | head -6
+        fails=$((fails + 1))
+    fi
+done
 
 if nm -D --undefined-only "$OUT/toy-fortify" 2>/dev/null | grep -q "__open_2"; then
     echo "ok   toy-fortify reaches __open_2"
@@ -9499,6 +9502,33 @@ for rr in "lock:1:rerun: the operation, run again from this crash state" "rename
         fi
     fi
 done
+# A close(2) of the trace number is decided as a sweep is, so a target that closes every descriptor
+# one at a time is judged; one that then puts a state file on those numbers with dup2 sends the
+# shim's records into it, which the oracle sees.
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_CLOSE_SWEEP=1023 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = 0 ] && printf '%s\n' "$o" | grep -q "^oracle  *agreed on"; then
+    echo "ok   a target that closes 3..1023 one close(2) at a time is judged, the oracle agreeing (exit 0)"
+else
+    echo "FAIL a target that closes 3..1023 one close(2) at a time: exit $rc, wanted PASS with the oracle agreeing"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc && mkdir -p /tmp/acc/state
+o=$(TOY_CLOSE_SWEEP=1023 TOY_CLOSE_SWEEP_DUP=1 "$SIDEEYE" explore --state /tmp/acc/state \
+    --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --work /tmp/acc/work --oracle /usr/bin/strace 2>&1)
+rc=$?
+if [ "$rc" = 2 ] && printf '%s\n' "$o" | head -1 | grep -q "oracle_missed_operation"; then
+    echo "ok   a target that then puts a state file on those numbers with dup2 is refused: oracle_missed_operation"
+else
+    echo "FAIL a target that puts a state file on the closed numbers with dup2: exit $rc, wanted a refusal"
+    printf '%s\n' "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
 for fo_cmd in sweep-lowlimit spawn-lowlimit; do
     rm -rf /tmp/acc && mkdir -p /tmp/acc/state
     o=$(TOY_STATE=/tmp/acc/state "$SIDEEYE" explore --state /tmp/acc/state \

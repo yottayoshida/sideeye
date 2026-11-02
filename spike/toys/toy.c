@@ -236,10 +236,17 @@
  *                     control: the same rewrite with nothing closed.
  *   TOY_CLOSE_SWEEP=N  daemonize-style descriptor hygiene: close(3..N) before any
  *                  state work. A bound below the shim's trace-fd relocation floor
- *                  must leave the run's verdict untouched; a bound at or above it
- *                  closes the shim's own trace channel, and the run must refuse —
- *                  never keep writing trace records into whatever file inherits
- *                  the number.
+ *                  must leave the run's verdict untouched; on Linux a bound at or
+ *                  above it closes the shim's own trace channel, which the shim puts
+ *                  back on its number, so the verdict is untouched too.
+ *   TOY_SWEEP_LOWLIMIT  Linux, with TOY_CLOSE_SWEEP: lower RLIMIT_NOFILE's soft value to
+ *                  150 first, below the shim's relocation floor, so the trace's number
+ *                  cannot be taken back whether the shim relocated it before or after:
+ *                  the run must refuse, never keep writing trace records into whatever
+ *                  file inherits the number.
+ *   TOY_CLOSE_SWEEP_DUP  Linux, with TOY_CLOSE_SWEEP: then put a state file named extra on
+ *                  every number from 200 to N with dup2, the numbers a target that
+ *                  believed them free may take.
  *   TOY_ANONFD     open and close descriptors that are provably not files: eventfd
  *                  and epoll on Linux (fstat type bits zero — the kernel's
  *                  anon-inode spelling), kqueue on macOS (stats as a FIFO). Must be
@@ -425,6 +432,7 @@
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
 #include <sys/inotify.h>
+#include <sys/resource.h>
 #include <sys/select.h>
 #include <sys/syscall.h>
 #include <sys/uio.h>
@@ -1259,7 +1267,25 @@ static int cmd_rotate_body(void) {
     /* Daemonize-style descriptor hygiene, first thing, the way a service would. */
     if (getenv("TOY_CLOSE_SWEEP")) {
         int hi = atoi(getenv("TOY_CLOSE_SWEEP"));
+#ifdef __linux__
+        if (getenv("TOY_SWEEP_LOWLIMIT")) {
+            struct rlimit rl;
+            if (getrlimit(RLIMIT_NOFILE, &rl) == 0) {
+                rl.rlim_cur = 150;
+                setrlimit(RLIMIT_NOFILE, &rl);
+            }
+        }
+#endif
         for (int fd = 3; fd <= hi; fd++) close(fd);
+#ifdef __linux__
+        if (getenv("TOY_CLOSE_SWEEP_DUP")) {
+            char extra[4096];
+            join_path(extra, sizeof extra, "extra");
+            int fd = open(extra, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+            for (int n = 200; fd >= 0 && n <= hi; n++)
+                if (n != fd) dup2(fd, n);
+        }
+#endif
     }
 
     /* Write through a descriptor whose file was unlinked while it was still open —
