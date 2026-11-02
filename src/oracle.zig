@@ -638,6 +638,10 @@ fn syscallArg(raw: []const u8, index: usize) ?[]const u8 {
         if (std.mem.lastIndexOf(u8, line, "<unfinished ...>")) |uf| {
             if (uf >= start) return std.mem.trim(u8, line[start..uf], " \t");
         }
+        // A call the crash point killed in its entry stop ends with its last argument and nothing
+        // after it, not even the marker; a one-argument `unlink` has no comma to end it either.
+        const rest = std.mem.trim(u8, line[start..], " \t\r");
+        if (rest.len > 1 and rest[0] == '"' and rest[rest.len - 1] == '"') return rest;
     }
     return null;
 }
@@ -1180,6 +1184,7 @@ pub const Parsed = struct {
     /// buffer alive for as long as it reads them (main does: same arena, same scope).
     lines: std.ArrayList([]const u8),
     unsupported: ?[]const u8 = null,
+    unsupported_line: ?[]const u8 = null,
     boundary: ?[]const u8 = null,
     detached: ?[]const u8 = null,
     cgroup_move: ?[]const u8 = null,
@@ -1273,6 +1278,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
 
 pub fn parseWorld(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, state_alt: []const u8, initial_cwd: []const u8, world: WorldScope) !Parsed {
     var shim_opens: std.ArrayList(u32) = .empty;
+    var shim_open_line: []const u8 = "";
     var out: Parsed = .{ .classes = .empty, .names = .empty, .lines = .empty, .metadata_observed = .empty, .mutations = .empty, .reaps = .empty, .spawns = .empty, .subject_tids = .empty };
     var child_pids: std.ArrayList(u32) = .empty;
     var launched = false;
@@ -1388,14 +1394,17 @@ pub fn parseWorld(arena: std.mem.Allocator, text: []const u8, state_dir: []const
 
         // A move between cgroups (v17, #559), from any process, and here rather than below
         // because the process-syscall branch `continue`s a clone3 away.
-        if (takePid(&shim_opens, pid) and !isShimRelocation(world.shim_cgroup_files, name, line) and out.cgroup_move == null)
-            out.cgroup_move = shim_open_unrelocated;
+        if (takePid(&shim_opens, pid) and !isShimRelocation(world.shim_cgroup_files, name, line) and
+            !reissuesTrappedOpen(world.shim_cgroup_files, shim_open_line, name, line) and out.cgroup_move == null)
+            out.cgroup_move = try std.fmt.allocPrint(arena, "{s}: it opened `{s}` and its next call was `{s}`", .{ shim_open_unrelocated, shown(shim_open_line), shown(line) });
         if (out.cgroup_move == null) {
             if (try cgroupMove(arena, name, line)) |m| {
                 // Not by the path alone: a world hands that path to the target's environment too, and
                 // the target opening it is a way out of the cgroup the crash point kills.
-                if (opensShimFile(world.shim_cgroup_files, name, line))
-                    try shim_opens.append(arena, pid orelse 0)
+                if (opensShimFile(world.shim_cgroup_files, name, line)) {
+                    try shim_opens.append(arena, pid orelse 0);
+                    shim_open_line = line;
+                }
                 else
                     out.cgroup_move = m;
             }
@@ -1592,8 +1601,10 @@ pub fn parseWorld(arena: std.mem.Allocator, text: []const u8, state_dir: []const
         }
 
         if (scope == .unresolvable) {
-            if (changesPersistentState(name, line) and out.unsupported == null)
+            if (changesPersistentState(name, line) and out.unsupported == null) {
                 out.unsupported = try arena.dupe(u8, name);
+                out.unsupported_line = line;
+            }
             continue;
         }
         out.lines_in_scope += 1;
@@ -1677,10 +1688,17 @@ pub fn parseWorld(arena: std.mem.Allocator, text: []const u8, state_dir: []const
         }
     }
     out.children = kept;
-    if (shim_opens.items.len > 0 and out.cgroup_move == null) out.cgroup_move = shim_open_unrelocated;
+    if (shim_opens.items.len > 0 and out.cgroup_move == null)
+        out.cgroup_move = try std.fmt.allocPrint(arena, "{s}: it opened `{s}` and made no other call", .{ shim_open_unrelocated, shown(shim_open_line) });
     if (world.killed_tid) |t| try dropKilledCall(arena, &out, text, t, &dead_ops, &dead_muts);
     try dropRetracted(arena, &out, dead_ops.items, dead_muts.items);
     return out;
+}
+
+// Cut, not escaped: strace already escapes what it prints, and a long write's buffer would bury the call.
+fn shown(line: []const u8) []const u8 {
+    const l = std.mem.trim(u8, line, " \t\r");
+    return l[0..@min(l.len, 240)];
 }
 
 const shim_open_unrelocated = "a process opened the run's own cgroup files for writing and did not move the descriptor out of the way as the shim does, so it may have used them to leave the cgroup the crash point kills";
@@ -1690,6 +1708,18 @@ fn opensShimFile(files: []const []const u8, name: []const u8, line: []const u8) 
     const i: usize = if (std.mem.eql(u8, name, "open")) 0 else if (std.mem.eql(u8, name, "openat")) 1 else return false;
     var buf: [contract.max_path]u8 = undefined;
     return listed(files, argPath(syscallArg(line, i) orelse return false, &buf) orelse return false);
+}
+
+// Not any second open of the file: only the same call again, as the SIGSYS handler re-issues a
+// trapped one, so a target's own second open with other flags is still a move.
+fn reissuesTrappedOpen(files: []const []const u8, first: []const u8, name: []const u8, line: []const u8) bool {
+    if (!opensShimFile(files, name, line) or !isTrapped(name, line)) return false;
+    return std.mem.eql(u8, callText(first), callText(line));
+}
+
+fn callText(line: []const u8) []const u8 {
+    const bare = stripPidPrefix(std.mem.trim(u8, line, " \t\r"));
+    return bare[0 .. std.mem.lastIndexOf(u8, bare, ") = ") orelse bare.len];
 }
 
 fn listed(files: []const []const u8, path: []const u8) bool {
@@ -4528,6 +4558,34 @@ test "in a killed world only the crash point's own call, left without a result, 
     try std.testing.expect((try parseWorld(a, child_killed, "/tmp/s", "", "/work", .{ .killed_tid = 42 })).childTouched());
 }
 
+test "a trapped open of the run's cgroup file and its re-issue are the shim's one open, and a different second open is not" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const files: []const []const u8 = &.{"/sys/fs/cgroup/sideeye-1-ab/cgroup.procs"};
+    const launch = "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n";
+    const trapped = "42    openat(AT_FDCWD</work>, \"/sys/fs/cgroup/sideeye-1-ab/cgroup.procs\", O_WRONLY|O_CLOEXEC) = 257\n";
+    const reissued = "42    openat(AT_FDCWD</work>, \"/sys/fs/cgroup/sideeye-1-ab/cgroup.procs\", O_WRONLY|O_CLOEXEC) = 3</sys/fs/cgroup/sideeye-1-ab/cgroup.procs>\n";
+    const relocate = "42    fcntl(3</sys/fs/cgroup/sideeye-1-ab/cgroup.procs>, F_DUPFD, 900) = 900</sys/fs/cgroup/sideeye-1-ab/cgroup.procs>\n";
+    const shim = try std.mem.concat(a, u8, &.{ launch, trapped, reissued, relocate });
+    try std.testing.expect((try parseWorld(a, shim, "/tmp/s", "", "/work", .{ .shim_cgroup_files = files })).cgroup_move == null);
+
+    const other = "42    openat(AT_FDCWD</work>, \"/sys/fs/cgroup/sideeye-1-ab/cgroup.procs\", O_RDWR|O_CLOEXEC) = 4</sys/fs/cgroup/sideeye-1-ab/cgroup.procs>\n";
+    const twice = try std.mem.concat(a, u8, &.{ launch, reissued, other, relocate });
+    try std.testing.expect((try parseWorld(a, twice, "/tmp/s", "", "/work", .{ .shim_cgroup_files = files })).cgroup_move != null);
+}
+
+test "a one-argument call the crash point killed in its entry stop is read and dropped, not refused as unsupported" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const a = arena_state.allocator();
+    const text = "42    execve(\"/work/toy\", [\"toy\"], 0x7ff) = 0\n42    unlink(\"/tmp/s/key.json\"\n42    +++ killed by SIGKILL +++\n";
+    const p = try parseWorld(a, text, "/tmp/s", "", "/work", .{ .killed_tid = 42 });
+    try std.testing.expectEqual(@as(?[]const u8, null), p.unsupported);
+    try std.testing.expectEqual(@as(usize, 0), p.classes.items.len);
+    try std.testing.expectEqualStrings("\"/tmp/s/key.json\"", syscallArg("42    unlink(\"/tmp/s/key.json\"", 0).?);
+}
+
 test "the shim's own opening of the run's cgroup files is not a move, and the target's opening of them is" {
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
@@ -4541,7 +4599,9 @@ test "the shim's own opening of the run's cgroup files is not a move, and the ta
     try std.testing.expect((try parse(a, shim, "/tmp/s", "", "/work")).cgroup_move != null);
 
     const used = try std.mem.concat(a, u8, &.{ launch, open, "42    write(5</sys/fs/cgroup/sideeye-1-ab/cgroup.procs>, \"42\", 2) = 2\n" });
-    try std.testing.expect((try parseWorld(a, used, "/tmp/s", "", "/work", .{ .shim_cgroup_files = files })).cgroup_move != null);
+    const refused = (try parseWorld(a, used, "/tmp/s", "", "/work", .{ .shim_cgroup_files = files })).cgroup_move.?;
+    try std.testing.expect(std.mem.indexOf(u8, refused, "O_WRONLY|O_CLOEXEC") != null);
+    try std.testing.expect(std.mem.indexOf(u8, refused, "next call was `42    write(5") != null);
     const put_back = try std.mem.concat(a, u8, &.{ launch, open, "42    dup3(5</sys/fs/cgroup/sideeye-1-ab/cgroup.procs>, 901, O_CLOEXEC) = 901</sys/fs/cgroup/sideeye-1-ab/cgroup.procs>\n" });
     try std.testing.expect((try parseWorld(a, put_back, "/tmp/s", "", "/work", .{ .shim_cgroup_files = files })).cgroup_move == null);
     const last = try std.mem.concat(a, u8, &.{ launch, open });

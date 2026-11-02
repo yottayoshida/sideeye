@@ -86,7 +86,7 @@ pub fn checkWorld(w: World, trace: *const engine.TraceInfo) ?[]const u8 {
     } else if (parsed.childTouched())
         unknown(.child_touched_state_dir, boundary.withOracleCapture(arena, std.fmt.allocPrint(arena, "the oracle saw a process other than the subject change the state directory{s}, and the recording admitted no child whose operations are crash points", .{where}) catch "the oracle saw a process other than the subject change the state directory in an explored world", w.capture_path, "a process other than the subject changed the state directory in an explored world"), .class_wall);
     if (parsed.unsupported) |name|
-        unknown(.unsupported_syscall_observed, name, .class_wall);
+        unknown(.unsupported_syscall_observed, if (parsed.unsupported_line) |l| std.fmt.allocPrint(arena, "{s}{s}, in `{s}`", .{ name, where, l }) catch name else name, .class_wall);
 
     compareOrRefuse(arena, trace, &parsed, w.observe, where);
     return if (parsed.cgroup_move) |what| std.fmt.allocPrint(w.keep, "{s}{s}", .{ what, where }) catch what else null;
