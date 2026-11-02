@@ -1,3 +1,4 @@
+const engine_build_options = @import("engine_build_options");
 const std = @import("std");
 const contract = @import("contract");
 const posix = @import("../posix.zig");
@@ -593,6 +594,16 @@ const ThreadOrder = struct {
     }
 };
 
+fn probeVerdict(seq: u32, pid: u32, tid: u64, verdict: []const u8) void {
+    const path = std.c.getenv("SIDEEYE_HANDOFF_PROBE") orelse return;
+    const fd = std.c.open(path, .{ .ACCMODE = .WRONLY, .CREAT = true, .APPEND = true, .CLOEXEC = true }, @as(std.c.mode_t, 0o644));
+    if (fd < 0) return;
+    defer _ = std.c.close(fd);
+    var buf: [128]u8 = undefined;
+    const line = std.fmt.bufPrint(&buf, "verdict seq={d} pid={d} tid={d} {s}\n", .{ seq, pid, tid, verdict }) catch return;
+    _ = std.c.write(fd, line.ptr, line.len);
+}
+
 pub fn readTrace(budget: *TraceBudget, path: []const u8) TraceReadError!TraceInfo {
     return readTraceCapped(budget, path, max_trace_bytes);
 }
@@ -854,7 +865,11 @@ fn readTraceCappedInner(budget: *TraceBudget, path: []const u8, max: usize, gate
             info.kill_records += 1;
             if (op.class.isMutation()) info.mutation_count += 1;
             const gate_exempt = if (gate_plan) |g| g.exempt(op, at) else false;
-            if (!gate_exempt) switch (try order.killPoint(arena, op.pid, op.tid, op)) {
+            if (!gate_exempt) switch (blk: {
+                const v = try order.killPoint(arena, op.pid, op.tid, op);
+                if (engine_build_options.handoff_probe) probeVerdict(op.seq, op.pid, op.tid, @tagName(v));
+                break :blk v;
+            }) {
                 .first, .same => {},
                 .turned => info.thread_turns += 1,
                 .unordered => |u| {

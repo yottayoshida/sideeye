@@ -1,0 +1,40 @@
+handover seq=95 pid=21 w=21 w_nr=82 w_sys=98 w_state=S t=23 t_nr=68
+handover seq=147 pid=21 w=23 w_nr=68 w_sys=98 w_state=S t=24 t_nr=68
+handover seq=382 pid=21 w=24 w_nr=68 w_sys=98 w_state=S t=23 t_nr=68
+handover seq=519 pid=21 w=23 w_nr=82 w_sys=98 w_state=S t=24 t_nr=35
+handover seq=699 pid=21 w=24 w_nr=68 w_sys=98 w_state=S t=23 t_nr=68
+handover seq=1189 pid=21 w=23 w_nr=68 w_sys=98 w_state=S t=24 t_nr=68
+handover seq=1200 pid=21 w=24 w_nr=68 w_sys=98 w_state=S t=23 t_nr=68
+handover seq=1226 pid=21 w=23 w_nr=82 w_sys=98 w_state=S t=24 t_nr=68
+handover seq=1319 pid=21 w=24 w_nr=82 w_sys=98 w_state=S t=23 t_nr=68
+handover seq=1440 pid=21 w=23 w_nr=68 w_sys=98 w_state=S t=24 t_nr=82
+handover seq=1572 pid=21 w=24 w_nr=82 w_sys=98 w_state=S t=23 t_nr=68
+handover seq=1795 pid=21 w=23 w_nr=35 w_sys=98 w_state=S t=24 t_nr=56
+handover seq=1873 pid=21 w=24 w_nr=35 w_sys=98 w_state=S t=23 t_nr=56
+handover seq=1986 pid=21 w=23 w_nr=68 w_sys=98 w_state=S t=24 t_nr=68
+handover seq=2074 pid=21 w=24 w_nr=35 w_sys=98 w_state=S t=23 t_nr=56
+handover seq=2185 pid=21 w=23 w_nr=35 w_sys=98 w_state=S t=24 t_nr=56
+handover seq=2466 pid=21 w=24 w_nr=68 w_sys=98 w_state=S t=23 t_nr=68
+handover seq=2597 pid=21 w=23 w_nr=68 w_sys=98 w_state=S t=24 t_nr=82
+handover seq=2829 pid=21 w=24 w_nr=82 w_sys=98 w_state=S t=23 t_nr=68
+handover seq=2843 pid=21 w=23 w_nr=68 w_sys=98 w_state=S t=24 t_nr=68
+verdict seq=95 pid=21 tid=23 unordered
+verdict seq=147 pid=21 tid=24 unordered
+verdict seq=382 pid=21 tid=23 unordered
+verdict seq=519 pid=21 tid=24 unordered
+verdict seq=699 pid=21 tid=23 unordered
+verdict seq=1189 pid=21 tid=24 unordered
+verdict seq=1200 pid=21 tid=23 unordered
+verdict seq=1226 pid=21 tid=24 unordered
+verdict seq=1319 pid=21 tid=23 unordered
+verdict seq=1440 pid=21 tid=24 unordered
+verdict seq=1572 pid=21 tid=23 unordered
+verdict seq=1795 pid=21 tid=24 unordered
+verdict seq=1873 pid=21 tid=23 unordered
+verdict seq=1986 pid=21 tid=24 unordered
+verdict seq=2074 pid=21 tid=23 unordered
+verdict seq=2185 pid=21 tid=24 unordered
+verdict seq=2466 pid=21 tid=23 unordered
+verdict seq=2597 pid=21 tid=24 unordered
+verdict seq=2829 pid=21 tid=23 unordered
+verdict seq=2843 pid=21 tid=24 unordered

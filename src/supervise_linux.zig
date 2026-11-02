@@ -522,6 +522,7 @@ const Tracer = struct {
     /// still in flight are dying, and a call of theirs let through now would land after the
     /// crash point the world claims to have stopped at.
     killed: bool = false,
+    probe: if (engine_build_options.handoff_probe) Probe else void = if (engine_build_options.handoff_probe) .{} else {},
     rec_buf: [contract.max_record_len]u8 = undefined,
     path_a: [contract.max_path]u8 = undefined,
     path_b: [contract.max_path]u8 = undefined,
@@ -549,6 +550,7 @@ const Tracer = struct {
         }
         // Numbered from 0, as every shim of the run is: the engine pins SIDEEYE_SEQ_BASE empty.
         var t: Tracer = .{ .cfg = cfg, .fd = fd, .primary = primary, .seq = 0 };
+        if (engine_build_options.handoff_probe) t.probe.open();
         const end = linux.lseek(fd, 0, linux.SEEK.END);
         if (linux.errno(end) == .SUCCESS and end == 0) {
             var head: [contract.header_len]u8 = undefined;
@@ -560,6 +562,9 @@ const Tracer = struct {
 
     fn close(self: *Tracer) void {
         _ = linux.close(self.fd);
+        if (engine_build_options.handoff_probe) {
+            if (self.probe.fd >= 0) _ = linux.close(self.probe.fd);
+        }
     }
 
     fn writeAll(self: *Tracer, bytes: []const u8) void {
@@ -634,6 +639,7 @@ const Tracer = struct {
         };
         const a = [6]u64{ req.data.arg0, req.data.arg1, req.data.arg2, req.data.arg3, req.data.arg4, req.data.arg5 };
         const sys: SYS = @fromBackingInt(@intCast(req.data.nr));
+        if (engine_build_options.handoff_probe) self.probe.cur_nr = @intCast(req.data.nr);
         var ctx: Call = .{ .t = self, .listener = listener, .id = req.id, .pid = pid, .tid = tid };
         return ctx.dispatch(sys, a);
     }
@@ -666,6 +672,7 @@ const Tracer = struct {
             if (!in_scope) return .@"continue";
             self.seq += 1;
             s = self.seq;
+            if (engine_build_options.handoff_probe) self.probe.handOver(s, pid, tid);
             if (self.cfg.kill_at != 0 and s == self.cfg.kill_at) {
                 self.record(.kill_landed, s, pid, tid, path, aux);
                 self.kill(s, pid, tid, path);
@@ -991,6 +998,84 @@ fn tgidOf(tid: i32) ?i32 {
     rest = std.mem.trimStart(u8, rest, " \t");
     const end = std.mem.indexOfScalar(u8, rest, '\n') orelse rest.len;
     return std.fmt.parseInt(i32, rest[0..end], 10) catch null;
+}
+
+const Probe = struct {
+    const Writer = struct { pid: i32, tid: i32, nr: u64 };
+    fd: i32 = -1,
+    cur_nr: u64 = 0,
+    // Per process, not one for the run: another process's write between two of this one's would
+    // otherwise hide the hand-over.
+    writers: [16]Writer = undefined,
+    n_writers: usize = 0,
+
+    fn open(self: *Probe) void {
+        const path = std.c.getenv("SIDEEYE_HANDOFF_PROBE") orelse return;
+        const rc = linux.open(path, .{ .ACCMODE = .WRONLY, .CREAT = true, .APPEND = true, .CLOEXEC = true }, 0o644);
+        if (linux.errno(rc) == .SUCCESS) self.fd = @intCast(rc);
+    }
+
+    fn handOver(self: *Probe, seq: u32, pid: i32, tid: i32) void {
+        const slot: *Writer = for (self.writers[0..self.n_writers]) |*w| {
+            if (w.pid == pid) break w;
+        } else blk: {
+            if (self.n_writers == self.writers.len) return;
+            self.writers[self.n_writers] = .{ .pid = pid, .tid = tid, .nr = self.cur_nr };
+            self.n_writers += 1;
+            break :blk &self.writers[self.n_writers - 1];
+        };
+        const w_tid = slot.tid;
+        const w_nr = slot.nr;
+        slot.tid = tid;
+        slot.nr = self.cur_nr;
+        if (self.fd < 0 or w_tid == tid) return;
+        var pb: [64]u8 = undefined;
+        var sys_buf: [256]u8 = undefined;
+        var stat_buf: [512]u8 = undefined;
+        const sys_path = std.mem.printSentinel(&pb, "/proc/{d}/task/{d}/syscall", .{ pid, w_tid }, 0) catch return;
+        const sys_text = readSmall(sys_path, &sys_buf);
+        var pb2: [64]u8 = undefined;
+        const stat_path = std.mem.printSentinel(&pb2, "/proc/{d}/task/{d}/stat", .{ pid, w_tid }, 0) catch return;
+        const stat_text = readSmall(stat_path, &stat_buf);
+        var line: [256]u8 = undefined;
+        const out = probeLine(&line, seq, pid, w_tid, w_nr, sys_text, stat_text, tid, self.cur_nr);
+        _ = linux.write(self.fd, out.ptr, out.len);
+    }
+};
+
+fn firstWord(text: ?[]const u8) []const u8 {
+    const t = text orelse return "unreadable";
+    var it = std.mem.tokenizeAny(u8, t, " \n");
+    return it.next() orelse "empty";
+}
+
+fn statState(text: ?[]const u8) []const u8 {
+    const t = text orelse return "unreadable";
+    const close = std.mem.lastIndexOfScalar(u8, t, ')') orelse return "unparsed";
+    var it = std.mem.tokenizeScalar(u8, t[close + 1 ..], ' ');
+    return it.next() orelse "unparsed";
+}
+
+fn probeLine(out: []u8, seq: u32, pid: i32, w_tid: i32, w_nr: u64, w_sys: ?[]const u8, w_stat: ?[]const u8, t_tid: i32, t_nr: u64) []const u8 {
+    return std.fmt.bufPrint(out, "handover seq={d} pid={d} w={d} w_nr={d} w_sys={s} w_state={s} t={d} t_nr={d}\n", .{
+        seq, pid, w_tid, w_nr, firstWord(w_sys), statState(w_stat), t_tid, t_nr,
+    }) catch out[0..0];
+}
+
+test "a hand-over line names where the earlier writer was, and says unreadable for what could not be read" {
+    var buf: [256]u8 = undefined;
+    try std.testing.expectEqualStrings(
+        "handover seq=7 pid=10 w=11 w_nr=68 w_sys=98 w_state=S t=12 t_nr=68\n",
+        probeLine(&buf, 7, 10, 11, 68, "98 0x1 0x2 0x3 0x4 0x5 0x6 0x7 0x8\n", "11 (go worker (x)) S 1 2", 12, 68),
+    );
+    try std.testing.expectEqualStrings(
+        "handover seq=1 pid=10 w=11 w_nr=64 w_sys=running w_state=R t=12 t_nr=64\n",
+        probeLine(&buf, 1, 10, 11, 64, "running\n", "11 (t) R 1", 12, 64),
+    );
+    try std.testing.expectEqualStrings(
+        "handover seq=2 pid=10 w=11 w_nr=64 w_sys=unreadable w_state=unreadable t=12 t_nr=64\n",
+        probeLine(&buf, 2, 10, 11, 64, null, null, 12, 64),
+    );
 }
 
 fn readSmall(path: [*:0]const u8, out: []u8) ?[]const u8 {

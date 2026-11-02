@@ -1,0 +1,10 @@
+probe grafana run1: exit 0 PASS -
+probe grafana run2: exit 2 UNKNOWN multiple_threads_detected
+probe grafana run3: exit 2 UNKNOWN multiple_threads_detected
+probe grafana run4: exit 2 UNKNOWN multiple_threads_detected
+probe grafana run5: exit 2 UNKNOWN multiple_threads_detected
+probe grafana run6: exit 0 PASS -
+probe grafana run7: exit 2 UNKNOWN multiple_threads_detected
+probe grafana run8: exit 0 PASS -
+probe grafana run9: exit 2 UNKNOWN multiple_threads_detected
+probe grafana run10: exit 2 UNKNOWN multiple_threads_detected

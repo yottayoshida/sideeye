@@ -1,0 +1,11 @@
+{"target": "dolt", "runs": 10, "counted": 10, "all_handovers": 10, "classes": {"A": 10, "B": 0, "C": 0, "D": 0}, "runs_all_returned": 10, "runs_with_c": 0}
+{"target": "grafana", "runs": 10, "counted": 2, "all_handovers": 2, "classes": {"A": 2, "B": 0, "C": 0, "D": 0}, "runs_all_returned": 2, "runs_with_c": 0}
+{"target": "gogs", "runs": 10, "counted": 149, "all_handovers": 212, "classes": {"A": 149, "B": 0, "C": 0, "D": 0}, "runs_all_returned": 10, "runs_with_c": 0}
+{"target": "gqlgen", "runs": 10, "counted": 14, "all_handovers": 16, "classes": {"A": 14, "B": 0, "C": 0, "D": 0}, "runs_all_returned": 10, "runs_with_c": 0}
+{"target": "juicefs", "runs": 10, "counted": 0, "all_handovers": 0, "classes": {"A": 0, "B": 0, "C": 0, "D": 0}, "runs_all_returned": 0, "runs_with_c": 0}
+{"target": "navidrome-restore", "runs": 10, "counted": 10, "all_handovers": 10, "classes": {"A": 10, "B": 0, "C": 0, "D": 0}, "runs_all_returned": 10, "runs_with_c": 0}
+{"target": "etcdutl", "runs": 10, "counted": 12, "all_handovers": 17, "classes": {"A": 12, "B": 0, "C": 0, "D": 0}, "runs_all_returned": 10, "runs_with_c": 0}
+{"target": "vmrestore", "runs": 0, "counted": 0, "all_handovers": 0, "classes": {"A": 0, "B": 0, "C": 0, "D": 0}, "runs_all_returned": 0, "runs_with_c": 0}
+{"target": "ctl-race", "runs": 10, "counted": 1000, "all_handovers": 1000, "classes": {"A": 10, "B": 0, "C": 990, "D": 0}, "runs_all_returned": 0, "runs_with_c": 10}
+{"target": "ctl-condvar", "runs": 10, "counted": 10, "all_handovers": 20, "classes": {"A": 10, "B": 0, "C": 0, "D": 0}, "runs_all_returned": 10, "runs_with_c": 0}
+{"conclusion": {"p": 0.99, "criterion_1": true, "measured": ["dolt", "grafana", "gogs", "gqlgen", "navidrome-restore"], "passing": ["dolt", "grafana", "gogs", "gqlgen", "navidrome-restore"], "criterion_2": true, "criterion_3": true, "build": true, "n_needed": 1}}

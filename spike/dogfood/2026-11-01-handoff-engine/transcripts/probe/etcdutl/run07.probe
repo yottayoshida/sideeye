@@ -1,0 +1,4 @@
+handover seq=8 pid=3208 w=3208 w_nr=83 w_sys=98 w_state=S t=3211 t_nr=46
+handover seq=9 pid=3208 w=3211 w_nr=46 w_sys=98 w_state=S t=3208 t_nr=82
+verdict seq=8 pid=3208 tid=3211 unordered
+verdict seq=9 pid=3208 tid=3208 same

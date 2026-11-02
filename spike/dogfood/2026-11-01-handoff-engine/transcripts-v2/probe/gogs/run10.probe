@@ -1,0 +1,22 @@
+handover seq=174 pid=210 w=210 w_nr=68 w_sys=98 w_state=S t=213 t_nr=68
+handover seq=266 pid=210 w=213 w_nr=35 w_sys=98 w_state=S t=210 t_nr=56
+handover seq=367 pid=210 w=210 w_nr=82 w_sys=98 w_state=S t=213 t_nr=68
+handover seq=1069 pid=210 w=213 w_nr=68 w_sys=98 w_state=S t=210 t_nr=82
+handover seq=1308 pid=210 w=210 w_nr=68 w_sys=98 w_state=S t=213 t_nr=68
+handover seq=1503 pid=210 w=213 w_nr=82 w_sys=98 w_state=S t=210 t_nr=68
+handover seq=1621 pid=210 w=210 w_nr=68 w_sys=98 w_state=S t=213 t_nr=82
+handover seq=1786 pid=210 w=213 w_nr=82 w_sys=98 w_state=S t=210 t_nr=68
+handover seq=1924 pid=210 w=210 w_nr=56 w_sys=98 w_state=S t=213 t_nr=68
+handover seq=2023 pid=210 w=213 w_nr=82 w_sys=98 w_state=S t=210 t_nr=68
+handover seq=2158 pid=210 w=210 w_nr=82 w_sys=98 w_state=S t=213 t_nr=68
+verdict seq=174 pid=210 tid=213 unordered
+verdict seq=266 pid=210 tid=210 same
+verdict seq=367 pid=210 tid=213 unordered
+verdict seq=1069 pid=210 tid=210 same
+verdict seq=1308 pid=210 tid=213 unordered
+verdict seq=1503 pid=210 tid=210 same
+verdict seq=1621 pid=210 tid=213 unordered
+verdict seq=1786 pid=210 tid=210 same
+verdict seq=1924 pid=210 tid=213 unordered
+verdict seq=2023 pid=210 tid=210 same
+verdict seq=2158 pid=210 tid=213 unordered

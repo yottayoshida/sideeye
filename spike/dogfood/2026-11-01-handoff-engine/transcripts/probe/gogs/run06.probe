@@ -1,0 +1,42 @@
+handover seq=39 pid=126 w=126 w_nr=56 w_sys=98 w_state=S t=129 t_nr=68
+handover seq=40 pid=126 w=129 w_nr=68 w_sys=98 w_state=S t=128 t_nr=68
+handover seq=181 pid=126 w=128 w_nr=35 w_sys=98 w_state=S t=126 t_nr=56
+handover seq=389 pid=126 w=126 w_nr=68 w_sys=98 w_state=S t=128 t_nr=82
+handover seq=401 pid=126 w=128 w_nr=68 w_sys=98 w_state=S t=126 t_nr=68
+handover seq=494 pid=126 w=126 w_nr=68 w_sys=98 w_state=S t=128 t_nr=68
+handover seq=519 pid=126 w=128 w_nr=82 w_sys=98 w_state=S t=126 t_nr=35
+handover seq=648 pid=126 w=126 w_nr=68 w_sys=98 w_state=S t=128 t_nr=68
+handover seq=665 pid=126 w=128 w_nr=82 w_sys=98 w_state=S t=126 t_nr=68
+handover seq=892 pid=126 w=126 w_nr=68 w_sys=98 w_state=S t=128 t_nr=68
+handover seq=979 pid=126 w=128 w_nr=35 w_sys=98 w_state=S t=126 t_nr=56
+handover seq=1207 pid=126 w=126 w_nr=68 w_sys=98 w_state=S t=128 t_nr=68
+handover seq=1414 pid=126 w=128 w_nr=68 w_sys=98 w_state=S t=126 t_nr=68
+handover seq=1531 pid=126 w=126 w_nr=68 w_sys=98 w_state=S t=128 t_nr=82
+handover seq=1623 pid=126 w=128 w_nr=35 w_sys=98 w_state=S t=126 t_nr=56
+handover seq=1902 pid=126 w=126 w_nr=82 w_sys=98 w_state=S t=128 t_nr=35
+handover seq=2233 pid=126 w=128 w_nr=35 w_sys=98 w_state=S t=126 t_nr=56
+handover seq=2335 pid=126 w=126 w_nr=68 w_sys=98 w_state=S t=128 t_nr=68
+handover seq=2639 pid=126 w=128 w_nr=68 w_sys=98 w_state=S t=126 t_nr=68
+handover seq=2698 pid=126 w=126 w_nr=82 w_sys=98 w_state=S t=128 t_nr=68
+handover seq=2720 pid=126 w=128 w_nr=68 w_sys=98 w_state=S t=126 t_nr=82
+verdict seq=39 pid=126 tid=129 unordered
+verdict seq=40 pid=126 tid=128 unordered
+verdict seq=181 pid=126 tid=126 same
+verdict seq=389 pid=126 tid=128 unordered
+verdict seq=401 pid=126 tid=126 same
+verdict seq=494 pid=126 tid=128 unordered
+verdict seq=519 pid=126 tid=126 same
+verdict seq=648 pid=126 tid=128 unordered
+verdict seq=665 pid=126 tid=126 same
+verdict seq=892 pid=126 tid=128 unordered
+verdict seq=979 pid=126 tid=126 same
+verdict seq=1207 pid=126 tid=128 unordered
+verdict seq=1414 pid=126 tid=126 same
+verdict seq=1531 pid=126 tid=128 unordered
+verdict seq=1623 pid=126 tid=126 same
+verdict seq=1902 pid=126 tid=128 unordered
+verdict seq=2233 pid=126 tid=126 same
+verdict seq=2335 pid=126 tid=128 unordered
+verdict seq=2639 pid=126 tid=126 same
+verdict seq=2698 pid=126 tid=128 unordered
+verdict seq=2720 pid=126 tid=126 same
