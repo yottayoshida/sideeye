@@ -4036,6 +4036,9 @@ test "the shipped engine options carry the shipped values (#365)" {
     // Not true in the shipped engine: an environment variable would then make its supervised
     // hand-over fail.
     try std.testing.expect(!engine_build_options.supervise_handover_fault);
+    // Not true in the shipped engine, or every supervised hand-over would read /proc and append to
+    // a file an environment variable names.
+    try std.testing.expect(!engine_build_options.handoff_probe);
 }
 
 test "the shipped trace caps fall back to the engine's constant (#365)" {
@@ -4050,11 +4053,11 @@ test "the shipped trace caps fall back to the engine's constant (#365)" {
     try std.testing.expectEqual(engine.max_trace_bytes_total, trace_budget_limit);
 }
 
-test "no eighth engine build option arrives unchecked (#365)" {
+test "no ninth engine build option arrives unchecked (#365)" {
     // The ratchet. Asserting five values says nothing about a SIXTH option arriving, and
     // the promise is universal: a `-Dtest-…` added later with no assertion above would
     // leave it false while CI stayed green. Pinning the count makes the next option fail
     // here until someone writes its line. Same instrument as the RestoreError arity pin
     const decls = @typeInfo(engine_build_options).@"struct".decl_names;
-    try std.testing.expectEqual(@as(usize, 7), decls.len);
+    try std.testing.expectEqual(@as(usize, 8), decls.len);
 }

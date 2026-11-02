@@ -1,0 +1,4 @@
+handover seq=8 pid=2863 w=2863 w_nr=83 w_sys=98 w_state=S t=2866 t_nr=46
+handover seq=9 pid=2863 w=2866 w_nr=46 w_sys=98 w_state=S t=2863 t_nr=82
+verdict seq=8 pid=2863 tid=2866 unordered
+verdict seq=9 pid=2863 tid=2863 same

@@ -1,0 +1,54 @@
+handover seq=122 pid=21 w=21 w_nr=68 w_sys=98 w_state=S t=24 t_nr=68
+handover seq=136 pid=21 w=24 w_nr=68 w_sys=98 w_state=S t=21 t_nr=68
+handover seq=152 pid=21 w=21 w_nr=35 w_sys=98 w_state=S t=24 t_nr=56
+handover seq=171 pid=21 w=24 w_nr=82 w_sys=98 w_state=S t=21 t_nr=68
+handover seq=185 pid=21 w=21 w_nr=68 w_sys=98 w_state=S t=24 t_nr=68
+handover seq=220 pid=21 w=24 w_nr=68 w_sys=98 w_state=S t=21 t_nr=68
+handover seq=307 pid=21 w=21 w_nr=56 w_sys=98 w_state=S t=24 t_nr=68
+handover seq=317 pid=21 w=24 w_nr=68 w_sys=98 w_state=S t=21 t_nr=68
+handover seq=413 pid=21 w=21 w_nr=68 w_sys=98 w_state=S t=24 t_nr=68
+handover seq=483 pid=21 w=24 w_nr=68 w_sys=98 w_state=S t=21 t_nr=68
+handover seq=533 pid=21 w=21 w_nr=82 w_sys=98 w_state=S t=24 t_nr=68
+handover seq=649 pid=21 w=24 w_nr=68 w_sys=98 w_state=S t=21 t_nr=68
+handover seq=738 pid=21 w=21 w_nr=56 w_sys=98 w_state=S t=24 t_nr=68
+handover seq=824 pid=21 w=24 w_nr=82 w_sys=98 w_state=S t=21 t_nr=68
+handover seq=1035 pid=21 w=21 w_nr=68 w_sys=98 w_state=S t=24 t_nr=68
+handover seq=1113 pid=21 w=24 w_nr=82 w_sys=98 w_state=S t=21 t_nr=68
+handover seq=1244 pid=21 w=21 w_nr=68 w_sys=98 w_state=S t=24 t_nr=68
+handover seq=1345 pid=21 w=24 w_nr=35 w_sys=98 w_state=S t=21 t_nr=56
+handover seq=1558 pid=21 w=21 w_nr=68 w_sys=98 w_state=S t=24 t_nr=68
+handover seq=1659 pid=21 w=24 w_nr=68 w_sys=98 w_state=S t=21 t_nr=68
+handover seq=1820 pid=21 w=21 w_nr=68 w_sys=98 w_state=S t=24 t_nr=68
+handover seq=2053 pid=21 w=24 w_nr=35 w_sys=98 w_state=S t=21 t_nr=56
+handover seq=2110 pid=21 w=21 w_nr=82 w_sys=98 w_state=S t=24 t_nr=68
+handover seq=2445 pid=21 w=24 w_nr=68 w_sys=98 w_state=S t=21 t_nr=68
+handover seq=2592 pid=21 w=21 w_nr=82 w_sys=98 w_state=S t=24 t_nr=68
+handover seq=2703 pid=21 w=24 w_nr=35 w_sys=98 w_state=S t=21 t_nr=56
+handover seq=2741 pid=21 w=21 w_nr=82 w_sys=98 w_state=S t=24 t_nr=68
+verdict seq=122 pid=21 tid=24 unordered
+verdict seq=136 pid=21 tid=21 same
+verdict seq=152 pid=21 tid=24 unordered
+verdict seq=171 pid=21 tid=21 same
+verdict seq=185 pid=21 tid=24 unordered
+verdict seq=220 pid=21 tid=21 same
+verdict seq=307 pid=21 tid=24 unordered
+verdict seq=317 pid=21 tid=21 same
+verdict seq=413 pid=21 tid=24 unordered
+verdict seq=483 pid=21 tid=21 same
+verdict seq=533 pid=21 tid=24 unordered
+verdict seq=649 pid=21 tid=21 same
+verdict seq=738 pid=21 tid=24 unordered
+verdict seq=824 pid=21 tid=21 same
+verdict seq=1035 pid=21 tid=24 unordered
+verdict seq=1113 pid=21 tid=21 same
+verdict seq=1244 pid=21 tid=24 unordered
+verdict seq=1345 pid=21 tid=21 same
+verdict seq=1558 pid=21 tid=24 unordered
+verdict seq=1659 pid=21 tid=21 same
+verdict seq=1820 pid=21 tid=24 unordered
+verdict seq=2053 pid=21 tid=21 same
+verdict seq=2110 pid=21 tid=24 unordered
+verdict seq=2445 pid=21 tid=21 same
+verdict seq=2592 pid=21 tid=24 unordered
+verdict seq=2703 pid=21 tid=21 same
+verdict seq=2741 pid=21 tid=24 unordered

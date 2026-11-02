@@ -1,0 +1,10 @@
+probe gogs run1: exit 2 UNKNOWN multiple_threads_detected
+probe gogs run2: exit 2 UNKNOWN multiple_threads_detected
+probe gogs run3: exit 2 UNKNOWN multiple_threads_detected
+probe gogs run4: exit 2 UNKNOWN multiple_threads_detected
+probe gogs run5: exit 2 UNKNOWN multiple_threads_detected
+probe gogs run6: exit 2 UNKNOWN multiple_threads_detected
+probe gogs run7: exit 2 UNKNOWN multiple_threads_detected
+probe gogs run8: exit 2 UNKNOWN multiple_threads_detected
+probe gogs run9: exit 2 UNKNOWN multiple_threads_detected
+probe gogs run10: exit 2 UNKNOWN multiple_threads_detected

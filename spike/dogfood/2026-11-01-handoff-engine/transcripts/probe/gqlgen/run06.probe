@@ -1,0 +1,4 @@
+handover seq=3 pid=661 w=661 w_nr=35 w_sys=98 w_state=S t=663 t_nr=56
+handover seq=8 pid=661 w=663 w_nr=56 w_sys=98 w_state=S t=661 t_nr=64
+verdict seq=3 pid=661 tid=663 unordered
+verdict seq=8 pid=661 tid=661 same

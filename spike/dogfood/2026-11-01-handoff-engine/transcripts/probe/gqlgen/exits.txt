@@ -1,0 +1,10 @@
+probe gqlgen run1: exit 2 UNKNOWN multiple_threads_detected
+probe gqlgen run2: exit 2 UNKNOWN multiple_threads_detected
+probe gqlgen run3: exit 2 UNKNOWN multiple_threads_detected
+probe gqlgen run4: exit 2 UNKNOWN multiple_threads_detected
+probe gqlgen run5: exit 2 UNKNOWN multiple_threads_detected
+probe gqlgen run6: exit 2 UNKNOWN multiple_threads_detected
+probe gqlgen run7: exit 2 UNKNOWN multiple_threads_detected
+probe gqlgen run8: exit 2 UNKNOWN multiple_threads_detected
+probe gqlgen run9: exit 2 UNKNOWN multiple_threads_detected
+probe gqlgen run10: exit 2 UNKNOWN multiple_threads_detected

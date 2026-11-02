@@ -96,3 +96,31 @@ another cause, #979).
   the environment Sideeye runs in.
 - Over MCP the engine's environment is what `SIDEEYE_MCP_CHILD_ENV` passed, so a set switch is one that reached the target.
 - Each new member has a server sentence in `src/mcp.zig`.
+
+## Amended 2026-11-02 (#1000): decision 2 made conditional on a rule that reads again
+
+Decision 2's first step was measured under the engine itself, without strace, by an engine built to
+write, before it answers a state-changing call from a thread other than its process's last writer,
+where that last writer is (`/proc/<pid>/task/<tid>/syscall`), with the verdict logic unchanged
+(`-Dtest-handoff-probe`; `spike/dogfood/2026-11-01-handoff-engine/`, rules fixed before the runs).
+The first measurement's text and its reader counted different runs, and the owner had it run again
+under rules fixed again rather than choose between them; that second measurement reads *revisit*.
+Of the hand-overs the thread-order reader does not order, every one in Grafana, Gogs, gqlgen and
+Navidrome (334 over their recordings and explored worlds) found the earlier writer out of its call —
+in `futex`, once in `epoll_pwait`; in Dolt 20 of 21 did, and one found it running; the race control found it in the same call
+or running in 990 of 1,000; the condition-variable control in `futex` in ten runs of ten.
+
+**Decision 2 now reads: build the rule only in a form that, at a hand-over, reads where the earlier
+writer is again, within a bound, until it is out of its call, and refuses as today when the bound
+runs out; measure that form under rules fixed before its runs, on these targets and controls, before
+it ships.** Not withdrawn (owner, 2026-11-02): one read already finds four of the five targets clean,
+and the one hand-over it could not place is one a reading again could settle either way.
+
+1. **Under the engine, not strace.** The targets hand over less than under strace — Grafana in three
+   recordings of ten, Navidrome mostly in explored worlds — so the rule's measurement counts its
+   hand-overs under the engine.
+2. **How the engine knows the earlier write returned.** One read separates the race control from the
+   targets but cannot tell running from still in the call, and the race control overlaps on nearly
+   every hand-over, so one read says little about a race that overlaps rarely. Hence the reading again.
+3. **Decision 1.** Unchanged, and still the rule's plan's to settle: a hand-over the earlier writer had
+   left says this run took turns, not that the next will.

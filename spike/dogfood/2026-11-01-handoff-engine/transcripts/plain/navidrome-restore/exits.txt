@@ -1,0 +1,10 @@
+plain navidrome-restore run1: exit 2 UNKNOWN multiple_threads_detected
+plain navidrome-restore run2: exit 2 UNKNOWN multiple_threads_detected
+plain navidrome-restore run3: exit 2 UNKNOWN multiple_threads_detected
+plain navidrome-restore run4: exit 2 UNKNOWN multiple_threads_detected
+plain navidrome-restore run5: exit 2 UNKNOWN multiple_threads_detected
+plain navidrome-restore run6: exit 2 UNKNOWN multiple_threads_detected
+plain navidrome-restore run7: exit 2 UNKNOWN multiple_threads_detected
+plain navidrome-restore run8: exit 2 UNKNOWN multiple_threads_detected
+plain navidrome-restore run9: exit 2 UNKNOWN multiple_threads_detected
+plain navidrome-restore run10: exit 2 UNKNOWN multiple_threads_detected
