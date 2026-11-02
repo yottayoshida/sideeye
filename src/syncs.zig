@@ -83,6 +83,170 @@ pub fn account(arena: std.mem.Allocator, ops: []const engine.Op, root: []const u
     return a;
 }
 
+pub const Before = union(enum) { initial: []const u8, empty };
+
+pub const WriteOpen = struct { path: []const u8, truncates: bool };
+
+pub const Opens = struct { list: []const WriteOpen, unplaced: bool };
+
+pub const Plan = struct { cands: []const Candidate, unmatched: u32 };
+
+pub const Candidate = struct {
+    seq: u32,
+    dst: []const u8,
+    before: Before,
+    until: u32 = std.math.maxInt(u32),
+
+    pub fn appliesAt(self: Candidate, k: u32) bool {
+        return self.seq < k and k <= self.until;
+    }
+};
+
+pub fn candidates(
+    arena: std.mem.Allocator,
+    ops: []const engine.Op,
+    root: []const u8,
+    alt: []const u8,
+    scratch: []const []const u8,
+    initial: *const engine.Snapshot,
+    opens: Opens,
+) error{OutOfMemory}!Plan {
+    var truncs: std.StringHashMapUnmanaged(std.ArrayList(bool)) = .empty;
+    for (opens.list) |o| {
+        const g = try truncs.getOrPut(arena, key(o.path, root, alt));
+        if (!g.found_existing) g.value_ptr.* = .empty;
+        try g.value_ptr.append(arena, o.truncates);
+    }
+    var recorded: std.StringHashMapUnmanaged(usize) = .empty;
+    for (ops) |op| if (op.class == .open) {
+        const g = try recorded.getOrPut(arena, key(op.path, root, alt));
+        g.value_ptr.* = if (g.found_existing) g.value_ptr.* + 1 else 1;
+    };
+
+    var synced: std.StringHashMapUnmanaged(void) = .empty;
+    var cut: std.StringHashMapUnmanaged(void) = .empty;
+    var moved: std.StringHashMapUnmanaged(void) = .empty;
+    var written: std.StringHashMapUnmanaged(void) = .empty;
+    var linked: std.StringHashMapUnmanaged(void) = .empty;
+    var opened: std.StringHashMapUnmanaged(usize) = .empty;
+    var out: std.ArrayList(Candidate) = .empty;
+    var unmatched: u32 = 0;
+    for (ops) |op| {
+        if (!op.class.isKillPoint()) continue;
+        const first = key(op.path, root, alt);
+        const second: ?[]const u8 = if (op.class.isTwoPath()) key(op.aux, root, alt) else null;
+        if (op.class == .rename and std.mem.eql(u8, first, second.?)) continue;
+        const truncating: Truncating = if (op.class == .open) blk: {
+            const g = try opened.getOrPut(arena, first);
+            const at = if (g.found_existing) g.value_ptr.* else 0;
+            g.value_ptr.* = at + 1;
+            break :blk openTruncates(truncs.get(first), recorded.get(first) orelse 0, at);
+        } else .no;
+        const changes = op.class != .open or truncating != .no;
+        const moves = op.class == .rename or op.class == .unlink or op.class == .rmdir;
+        if (changes) for (out.items) |*c| {
+            if (c.until != std.math.maxInt(u32)) continue;
+            if (touches(first, c.dst, moves) or (second != null and touches(second.?, c.dst, moves))) c.until = op.seq;
+        };
+        switch (op.class) {
+            .open => if (truncating == .yes) try cut.put(arena, first, {}),
+            .write => try written.put(arena, first, {}),
+            .fsync => try synced.put(arena, first, {}),
+            .unlink => {
+                try cut.put(arena, first, {});
+                _ = synced.remove(first);
+            },
+            .truncate, .link => try cut.put(arena, second orelse first, {}),
+            .symlink => try linked.put(arena, first, {}),
+            .rename => {
+                const dst = second.?;
+                const was_written = written.remove(first);
+                _ = written.remove(dst);
+                const was_synced = synced.remove(first);
+                _ = synced.remove(dst);
+                if (was_synced) try synced.put(arena, dst, {});
+                const was_cut = cut.contains(first) or isMoved(&moved, first);
+                try moved.put(arena, first, {});
+                try moved.put(arena, dst, {});
+                const rel = engine.relUnderRoot(op.aux, root, alt) orelse continue;
+                if (rel.len == 0 or engine.scratchMatches(scratch, rel)) continue;
+                if (!was_written or was_synced or linked.contains(first)) continue;
+                const init_entry: ?engine.Entry = if (engine.relUnderRoot(op.path, root, alt)) |r| initial.find(r) else null;
+                if (init_entry) |e| if (e.kind == .symlink) continue;
+                const keeps = if (init_entry) |e| e.kind == .file and !was_cut else false;
+                if (keeps and (opens.unplaced or unmatchedOpens(truncs.get(first), recorded.get(first) orelse 0))) {
+                    unmatched +|= 1;
+                    continue;
+                }
+                try out.append(arena, .{ .seq = op.seq, .dst = rel, .before = if (keeps) .{ .initial = init_entry.?.rel } else .empty });
+            },
+            else => {},
+        }
+    }
+    return .{ .cands = out.items, .unmatched = unmatched };
+}
+
+const Truncating = enum { no, yes, unknown };
+
+// Not matched by position across paths: strace and the shim interleave processes the same way only per path.
+fn openTruncates(list: ?std.ArrayList(bool), recorded: usize, at: usize) Truncating {
+    const l = list orelse return if (recorded == 0) .no else .unknown;
+    if (l.items.len != recorded or at >= l.items.len) return .unknown;
+    return if (l.items[at]) .yes else .no;
+}
+
+fn unmatchedOpens(list: ?std.ArrayList(bool), recorded: usize) bool {
+    const n = if (list) |l| l.items.len else 0;
+    return n != recorded;
+}
+
+// Not every operation on a directory above: a mkdir the shim records can fail on a name that exists, and a failed one
+// leaves the file below it as it was. Only a rename moves what is below.
+fn isMoved(moved: *const std.StringHashMapUnmanaged(void), p: []const u8) bool {
+    var at = p;
+    while (at.len > 0) {
+        if (moved.contains(at)) return true;
+        at = at[0 .. std.mem.lastIndexOfScalar(u8, at, '/') orelse return false];
+    }
+    return false;
+}
+
+fn byRel(rel: []const u8, e: engine.Entry) std.math.Order {
+    return std.mem.order(u8, rel, e.rel);
+}
+
+// Not a copy of the bytes: the world borrows `crashed`'s and `initial`'s, so `crashed` must outlive it.
+pub fn compose(gpa: std.mem.Allocator, crashed: engine.Snapshot, initial: *const engine.Snapshot, cands: []const Candidate, k: u32) error{OutOfMemory}!?engine.Snapshot {
+    var out: engine.Snapshot = .{ .arena = std.heap.ArenaAllocator.init(gpa), .entries = .empty };
+    errdefer out.deinit();
+    var entries: ?[]engine.Entry = null;
+    for (cands) |c| {
+        if (!c.appliesAt(k)) continue;
+        const at = std.sort.binarySearch(engine.Entry, crashed.entries.items, c.dst, byRel) orelse continue;
+        const e = crashed.entries.items[at];
+        if (e.kind != .file) continue;
+        const content = switch (c.before) {
+            .initial => |r| (initial.find(r) orelse continue).content,
+            .empty => "",
+        };
+        if (std.mem.eql(u8, content, e.content)) continue;
+        const list = entries orelse try out.arena.allocator().dupe(engine.Entry, crashed.entries.items);
+        list[at].content = content;
+        entries = list;
+    }
+    out.entries = .fromOwnedSlice(entries orelse {
+        out.deinit();
+        return null;
+    });
+    return out;
+}
+
+// Not every operation on a directory above the name: a sync of it leaves the name's data as unsynced as before.
+fn touches(p: []const u8, dst: []const u8, moves: bool) bool {
+    if (std.mem.eql(u8, p, dst)) return true;
+    return moves and p.len > 0 and std.mem.startsWith(u8, dst, p) and dst.len > p.len and dst[p.len] == '/';
+}
+
 fn parentOf(rel: []const u8) []const u8 {
     const cut = std.mem.lastIndexOfScalar(u8, rel, '/') orelse return "";
     return rel[0..cut];
@@ -100,11 +264,11 @@ fn capped(items: []const []const u8) struct { listed: []const []const u8, omitte
     return .{ .listed = items[0..listed], .omitted = if (rest > std.math.maxInt(u32)) std.math.maxInt(u32) else @intCast(rest) };
 }
 
-pub fn note(arena: std.mem.Allocator, a: Account) []const u8 {
-    return noteOrError(arena, a) catch "measured; the account could not be written (out of memory)";
+pub fn note(arena: std.mem.Allocator, a: Account, rule_judged: bool) []const u8 {
+    return noteOrError(arena, a, rule_judged) catch "measured; the account could not be written (out of memory)";
 }
 
-fn noteOrError(arena: std.mem.Allocator, a: Account) error{OutOfMemory}![]const u8 {
+fn noteOrError(arena: std.mem.Allocator, a: Account, rule_judged: bool) error{OutOfMemory}![]const u8 {
     var out: std.ArrayList(u8) = .empty;
     if (a.renames == 0) {
         try out.appendSlice(arena, "no rename into the judged state.");
@@ -128,7 +292,10 @@ fn noteOrError(arena: std.mem.Allocator, a: Account) error{OutOfMemory}![]const 
             }
         }
     }
-    try out.appendSlice(arena, " An account, not a verdict: a process crash keeps unsynced writes, and power loss is not tested.");
+    try out.appendSlice(arena, if (rule_judged)
+        " An account, not a verdict: a process crash keeps unsynced writes, and the power loss line says what the rule judged."
+    else
+        " An account, not a verdict: a process crash keeps unsynced writes, and power loss is not tested.");
     return out.items;
 }
 
@@ -142,7 +309,11 @@ fn listPaths(arena: std.mem.Allocator, out: *std.ArrayList(u8), listed: []const 
 
 fn opsFor(arena: std.mem.Allocator, spec: []const struct { contract.OpClass, []const u8, []const u8 }) ![]engine.Op {
     const out = try arena.alloc(engine.Op, spec.len);
-    for (spec, out, 0..) |s, *o, i| o.* = .{ .class = s[0], .seq = @intCast(i + 1), .pid = 7, .tid = 7, .path = s[1], .aux = s[2] };
+    var seq: u32 = 0;
+    for (spec, out) |s, *o| {
+        if (s[0].isKillPoint()) seq += 1;
+        o.* = .{ .class = s[0], .seq = if (s[0].isKillPoint()) seq else 0, .pid = 7, .tid = 7, .path = s[1], .aux = s[2] };
+    }
     return out;
 }
 
@@ -219,7 +390,7 @@ test "a rename over a name forgets that name's history, and the line stays withi
     const control: [100]u8 = @splat(1);
     for (&many, 0..) |*m, i| m.* = try std.fmt.allocPrint(a, "{d}{s}", .{ i, &control });
     const f = capped(&many);
-    const line = note(a, .{ .renames = max_listed + 1, .without_fsync = f.listed, .without_fsync_omitted = f.omitted, .dir_checked = true, .without_dir_sync = f.listed, .without_dir_sync_omitted = f.omitted });
+    const line = note(a, .{ .renames = max_listed + 1, .without_fsync = f.listed, .without_fsync_omitted = f.omitted, .dir_checked = true, .without_dir_sync = f.listed, .without_dir_sync_omitted = f.omitted }, false);
     try t.expect(f.omitted > 0);
     try t.expect(line.len < 32 * 1024);
 }
@@ -231,7 +402,7 @@ test "a rename onto its own name keeps the sync recorded before it, and a run of
     const t = std.testing;
     const same = try accountOf(a, &.{ .{ .write, "/s/k", "" }, .{ .fsync, "/s/k", "" }, .{ .rename, "/s/k", "/s/k" } }, false);
     try t.expectEqual(@as(usize, 0), same.without_fsync.len);
-    const unwritten = note(a, .{ .renames = 2, .unwritten = 2 });
+    const unwritten = note(a, .{ .renames = 2, .unwritten = 2 }, false);
     try t.expect(std.mem.indexOf(u8, unwritten, "Each file") == null);
     try t.expect(std.mem.indexOf(u8, unwritten, "2 of a file with no write recorded at the path it was renamed from, not judged.") != null);
 }
@@ -244,7 +415,157 @@ test "the state's other spelling is read as the state, and the account says what
     const ops = try opsFor(a, &.{ .{ .write, "/private/s/k.tmp", "" }, .{ .rename, "/private/s/k.tmp", "/private/s/k" } });
     const acc = try account(a, ops, "/s", "/private/s", &.{}, false);
     try t.expectEqualStrings("k", acc.without_fsync[0]);
-    try t.expect(std.mem.indexOf(u8, note(a, acc), "with no fsync or fdatasync recorded for it between its last recorded write and the rename: k.") != null);
-    try t.expect(std.mem.startsWith(u8, note(a, .{}), "no rename into the judged state."));
-    try t.expect(std.mem.indexOf(u8, note(a, .{ .renames = 2, .without_fsync = &.{"a"}, .without_fsync_omitted = 3 }), "a and 3 more not named") != null);
+    try t.expect(std.mem.indexOf(u8, note(a, acc, false), "with no fsync or fdatasync recorded for it between its last recorded write and the rename: k.") != null);
+    try t.expect(std.mem.startsWith(u8, note(a, .{}, false), "no rename into the judged state."));
+    try t.expect(std.mem.indexOf(u8, note(a, .{ .renames = 2, .without_fsync = &.{"a"}, .without_fsync_omitted = 3 }, false), "a and 3 more not named") != null);
+}
+
+fn candidatesOf(arena: std.mem.Allocator, spec: anytype, initial: *const engine.Snapshot, opens: []const WriteOpen) ![]const Candidate {
+    return (try candidates(arena, try opsFor(arena, spec), "/s", "", &.{"scratch"}, initial, .{ .list = opens, .unplaced = false })).cands;
+}
+
+test "a rename with no sync of its file is a candidate from the crash point after it, numbered by crash point and not by place in the trace" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const t = std.testing;
+    var initial = try engine.testSnapshot(std.testing.allocator, &.{.{ "k", "old" }});
+    defer initial.deinit();
+    const c = try candidatesOf(a, &.{ .{ .close, "/s/x", "" }, .{ .write, "/s/k.tmp", "" }, .{ .fork, "", "" }, .{ .close, "/s/k.tmp", "" }, .{ .rename, "/s/k.tmp", "/s/k" }, .{ .close, "/s/y", "" } }, &initial, &.{});
+    try t.expectEqual(@as(usize, 1), c.len);
+    try t.expectEqual(@as(u32, 2), c[0].seq);
+    try t.expectEqualStrings("k", c[0].dst);
+    try t.expect(c[0].before == .empty);
+    try t.expect(!c[0].appliesAt(2));
+    try t.expect(c[0].appliesAt(3));
+}
+
+test "a candidate stops applying once its new name is written, synced or moved, and a sync of its directory does not stop it" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const t = std.testing;
+    var initial = try engine.testSnapshot(std.testing.allocator, &.{});
+    defer initial.deinit();
+    const head = .{ .{ .write, "/s/d/k.tmp", "" }, .{ .rename, "/s/d/k.tmp", "/s/d/k" } };
+    inline for (.{
+        .{ .write, "/s/d/k", "" },
+        .{ .fsync, "/s/d/k", "" },
+        .{ .rename, "/s/d/k", "/s/d/j" },
+        .{ .unlink, "/s/d/k", "" },
+        .{ .rename, "/s/d", "/s/e" },
+    }) |later| {
+        const c = try candidatesOf(a, &(head ++ .{later}), &initial, &.{});
+        try t.expectEqual(@as(u32, 3), c[0].until);
+        try t.expect(c[0].appliesAt(3));
+        try t.expect(!c[0].appliesAt(4));
+    }
+    const dir_synced = try candidatesOf(a, &(head ++ .{.{ .fsync, "/s/d", "" }}), &initial, &.{});
+    try t.expect(dir_synced[0].appliesAt(4));
+    const written_before = try candidatesOf(a, &.{ .{ .write, "/s/d/k", "" }, .{ .write, "/s/d/k.tmp", "" }, .{ .rename, "/s/d/k.tmp", "/s/d/k" } }, &initial, &.{});
+    try t.expectEqual(@as(usize, 1), written_before.len);
+}
+
+test "a file synced anywhere in the run, a symbolic link, and a rename of nothing written are not candidates" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const t = std.testing;
+    var initial = try engine.testSnapshot(std.testing.allocator, &.{});
+    defer initial.deinit();
+    try t.expectEqual(@as(usize, 0), (try candidatesOf(a, &.{ .{ .write, "/s/k.tmp", "" }, .{ .fsync, "/s/k.tmp", "" }, .{ .write, "/s/k.tmp", "" }, .{ .rename, "/s/k.tmp", "/s/k" } }, &initial, &.{})).len);
+    try t.expectEqual(@as(usize, 0), (try candidatesOf(a, &.{ .{ .fsync, "/s/k.tmp", "" }, .{ .write, "/s/k.tmp", "" }, .{ .rename, "/s/k.tmp", "/s/k" } }, &initial, &.{})).len);
+    try t.expectEqual(@as(usize, 0), (try candidatesOf(a, &.{ .{ .symlink, "/s/k.tmp", "" }, .{ .write, "/s/k.tmp", "" }, .{ .rename, "/s/k.tmp", "/s/k" } }, &initial, &.{})).len);
+    try t.expectEqual(@as(usize, 0), (try candidatesOf(a, &.{.{ .rename, "/s/k.tmp", "/s/k" }}, &initial, &.{})).len);
+    try t.expectEqual(@as(usize, 0), (try candidatesOf(a, &.{ .{ .write, "/s/k.tmp", "" }, .{ .rename, "/s/k.tmp", "/s/scratch/k" } }, &initial, &.{})).len);
+    var linked = engine.Snapshot{ .arena = std.heap.ArenaAllocator.init(std.testing.allocator), .entries = .empty };
+    defer linked.deinit();
+    try linked.entries.append(linked.arena.allocator(), .{ .rel = "k.tmp", .kind = .symlink, .content = "elsewhere" });
+    try t.expectEqual(@as(usize, 0), (try candidatesOf(a, &.{ .{ .write, "/s/k.tmp", "" }, .{ .rename, "/s/k.tmp", "/s/k" } }, &linked, &.{})).len);
+}
+
+test "a candidate's file holds what it held before the run only when the run neither truncated nor replaced it" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const t = std.testing;
+    var initial = try engine.testSnapshot(std.testing.allocator, &.{.{ "log", "old lines\n" }});
+    defer initial.deinit();
+    const append = .{ .{ .open, "/s/log", "" }, .{ .write, "/s/log", "" }, .{ .rename, "/s/log", "/s/log.1" } };
+    const appended = try candidatesOf(a, &append, &initial, &.{.{ .path = "/s/log", .truncates = false }});
+    try t.expectEqualStrings("log", appended[0].before.initial);
+    const by_open = try candidatesOf(a, &append, &initial, &.{.{ .path = "/s/log", .truncates = true }});
+    try t.expect(by_open[0].before == .empty);
+    const by_call = try candidatesOf(a, &.{ .{ .truncate, "/s/log", "" }, .{ .write, "/s/log", "" }, .{ .rename, "/s/log", "/s/log.1" } }, &initial, &.{});
+    try t.expect(by_call[0].before == .empty);
+    const recreated = try candidatesOf(a, &.{ .{ .unlink, "/s/log", "" }, .{ .write, "/s/log", "" }, .{ .rename, "/s/log", "/s/log.1" } }, &initial, &.{});
+    try t.expect(recreated[0].before == .empty);
+    const replaced = try candidatesOf(a, &.{ .{ .write, "/s/n", "" }, .{ .rename, "/s/n", "/s/log" }, .{ .write, "/s/log", "" }, .{ .rename, "/s/log", "/s/log.1" } }, &initial, &.{});
+    try t.expect(replaced[1].before == .empty);
+    const rotated_twice = try candidatesOf(a, &.{ .{ .write, "/s/log", "" }, .{ .rename, "/s/log", "/s/log.1" }, .{ .write, "/s/log", "" }, .{ .rename, "/s/log", "/s/log.2" } }, &initial, &.{});
+    try t.expectEqualStrings("log", rotated_twice[0].before.initial);
+    try t.expect(rotated_twice[1].before == .empty);
+    var nested = try engine.testSnapshot(std.testing.allocator, &.{.{ "d/log", "old\n" }});
+    defer nested.deinit();
+    const dir_moved = try candidatesOf(a, &.{ .{ .rename, "/s/d", "/s/e" }, .{ .mkdir, "/s/d", "" }, .{ .write, "/s/d/log", "" }, .{ .rename, "/s/d/log", "/s/log.1" } }, &nested, &.{});
+    try t.expect(dir_moved[0].before == .empty);
+    const dir_made = try candidatesOf(a, &.{ .{ .mkdir, "/s/d", "" }, .{ .write, "/s/d/log", "" }, .{ .rename, "/s/d/log", "/s/log.1" } }, &nested, &.{});
+    try t.expectEqualStrings("d/log", dir_made[0].before.initial);
+    const later_trunc = try candidatesOf(a, &.{ .{ .open, "/s/log", "" }, .{ .write, "/s/log", "" }, .{ .rename, "/s/log", "/s/log.1" }, .{ .open, "/s/log", "" } }, &initial, &.{ .{ .path = "/s/log", .truncates = false }, .{ .path = "/s/log", .truncates = true } });
+    try t.expectEqualStrings("log", later_trunc[0].before.initial);
+}
+
+test "a file whose opens cannot be matched with strace's is left unjudged and counted, never given what it held before" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const t = std.testing;
+    var initial = try engine.testSnapshot(std.testing.allocator, &.{.{ "log", "old\n" }});
+    defer initial.deinit();
+    const ops = try opsFor(a, &.{ .{ .open, "/s/log", "" }, .{ .write, "/s/log", "" }, .{ .rename, "/s/log", "/s/log.1" } });
+    const missing = try candidates(a, ops, "/s", "", &.{}, &initial, .{ .list = &.{}, .unplaced = false });
+    try t.expectEqual(@as(usize, 0), missing.cands.len);
+    try t.expectEqual(@as(u32, 1), missing.unmatched);
+    const unplaced = try candidates(a, ops, "/s", "", &.{}, &initial, .{ .list = &.{.{ .path = "/s/log", .truncates = false }}, .unplaced = true });
+    try t.expectEqual(@as(u32, 1), unplaced.unmatched);
+    const fresh = try candidates(a, try opsFor(a, &.{ .{ .open, "/s/k.tmp", "" }, .{ .write, "/s/k.tmp", "" }, .{ .rename, "/s/k.tmp", "/s/k" } }), "/s", "", &.{}, &initial, .{ .list = &.{}, .unplaced = true });
+    try t.expect(fresh.cands[0].before == .empty);
+}
+
+test "a sync belongs to the file it synced, so a second file under the same temporary name is still a candidate" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const t = std.testing;
+    var initial = try engine.testSnapshot(std.testing.allocator, &.{});
+    defer initial.deinit();
+    const c = try candidatesOf(a, &.{ .{ .write, "/s/k.tmp", "" }, .{ .fsync, "/s/k.tmp", "" }, .{ .rename, "/s/k.tmp", "/s/a" }, .{ .write, "/s/k.tmp", "" }, .{ .rename, "/s/k.tmp", "/s/b" } }, &initial, &.{});
+    try t.expectEqual(@as(usize, 1), c.len);
+    try t.expectEqualStrings("b", c[0].dst);
+    const moved_then_renamed = try candidatesOf(a, &.{ .{ .write, "/s/x", "" }, .{ .fsync, "/s/x", "" }, .{ .rename, "/s/x", "/s/y" }, .{ .write, "/s/y", "" }, .{ .rename, "/s/y", "/s/z" } }, &initial, &.{});
+    try t.expectEqual(@as(usize, 0), moved_then_renamed.len);
+    try t.expectEqual(@as(usize, 0), (try candidatesOf(a, &.{ .{ .write, "/s/x", "" }, .{ .rename, "/s/x", "/s/x" } }, &initial, &.{})).len);
+    const opened_after = try candidatesOf(a, &.{ .{ .write, "/s/k.tmp", "" }, .{ .rename, "/s/k.tmp", "/s/k" }, .{ .open, "/s/k", "" } }, &initial, &.{.{ .path = "/s/k", .truncates = false }});
+    try t.expect(opened_after[0].appliesAt(4));
+}
+
+test "the power-loss world replaces only the applying candidates' contents, and is no world when it changes nothing" {
+    const t = std.testing;
+    var initial = try engine.testSnapshot(std.testing.allocator, &.{.{ "k", "old" }});
+    defer initial.deinit();
+    var crashed = try engine.testSnapshot(std.testing.allocator, &.{ .{ "j", "other" }, .{ "k", "new" } });
+    defer crashed.deinit();
+    const cands = [_]Candidate{.{ .seq = 2, .dst = "k", .before = .{ .initial = "k" } }};
+    var world = (try compose(std.testing.allocator, crashed, &initial, &cands, 3)).?;
+    defer world.deinit();
+    try t.expectEqualStrings("old", world.find("k").?.content);
+    try t.expectEqualStrings("other", world.find("j").?.content);
+    try t.expect((try compose(std.testing.allocator, crashed, &initial, &cands, 2)) == null);
+    const emptied = [_]Candidate{.{ .seq = 2, .dst = "k", .before = .empty }};
+    var empty_world = (try compose(std.testing.allocator, crashed, &initial, &emptied, 3)).?;
+    defer empty_world.deinit();
+    try t.expectEqualStrings("", empty_world.find("k").?.content);
+    var same = try engine.testSnapshot(std.testing.allocator, &.{.{ "k", "old" }});
+    defer same.deinit();
+    try t.expect((try compose(std.testing.allocator, same, &initial, &cands, 3)) == null);
 }

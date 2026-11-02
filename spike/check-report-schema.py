@@ -182,7 +182,7 @@ def main():
     # Since #717 the report's shared parts live in functions `buildJson` calls, and
     # preflight's document is built beside it from the same ones; every one listed is read.
     for fname in ("buildJson", "appendCwd", "appendDeclarations", "appendFigures",
-                  "appendSyncs", "appendJudgedSet", "buildPreflightJson"):
+                  "appendSyncs", "appendPowerLoss", "appendJudgedSet", "buildPreflightJson"):
         body = re.search(r"^fn %s\(.*?^\}$" % fname, zig_main, re.S | re.M)
         if not body:
             problems.append("could not find %s in %s" % (fname, zig_main_path))

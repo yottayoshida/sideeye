@@ -232,6 +232,7 @@ fn runOperationObserved(
     cwd: ?[]const u8,
     observe: contract.ObserveMode,
     cg: ?*posix.CgroupSpawn,
+    power_loss: bool,
 ) posix.Term {
     const sup = supervise.Spawn.start(gpa, arena, observe, op_argv, trace_path, state_abs, state_alt, 0, containment.runName(cg), containment.killName(cg)) catch |e|
         setupError(.environment, supervise.startFailure(e));
@@ -256,7 +257,10 @@ fn runOperationObserved(
             // 0098): they are how a state file mapped shared and read-only becomes writable or
             // moves, and a store through it has no call of its own. `?` keeps an strace that
             // has no name for `pkey_mprotect` from refusing to start.
-            for ([_][]const u8{ "-f", "-y", "-e", oracle.strace_trace_spec, "-o", oracle_out }) |a|
+            // Not added without the rule: a run that asks nothing of these calls should not be
+            // stopped by an strace too old to name one.
+            const calls = if (power_loss) oracle.strace_trace_spec ++ "," ++ oracle.power_loss_extra_calls else oracle.strace_trace_spec;
+            for ([_][]const u8{ "-f", "-y", "-e", calls, "-o", oracle_out }) |a|
                 list.append(arena, a) catch setupError(.environment, "out of memory");
             const pairs = [_][2][]const u8{
                 .{ "TOY_STATE", state_abs },
@@ -397,6 +401,7 @@ const Run = struct {
     n: u32 = undefined,
     check_argv: ?[]const []const u8 = undefined,
     firsts: Firsts = .{},
+    power_cands: []const syncs.Candidate = &.{},
 };
 
 pub fn main(init: std.process.Init.Minimal) !void {
@@ -560,6 +565,9 @@ fn phaseDefine(run: *Run) void {
         report.expected_status_val = c.define.expected_status orelse 0;
         replay_case = c;
         only_k = c.k;
+        if (c.crash_model) |m| if (!std.mem.eql(u8, m, case.interleave_model)) {
+            args.power_loss = cli.PowerLoss.parse(m).?; // not parsed again: the version gate refused any other rule
+        };
         // account block (a SETUP ERROR's text is its one sentence). Set before the contract
         // gate so the one refusal this block raises names it too.
         report.case_note = case_arg.?;
@@ -831,6 +839,24 @@ fn phaseDefine(run: *Run) void {
             "--oracle runs strace, which is Linux only; preflight on macOS answers without a second witness, so drop --oracle. To ask with strace as the witness, run preflight on Linux; " ++ contract.ci_linux_run
         else
             "--oracle runs strace, which is Linux only; drop it. On macOS the second witness is --oracle-fs-usage (run sudo -v first, in the same terminal), or accept the weaker claim with --allow-unverified; under sideeye mcp, leave SIDEEYE_MCP_ORACLE unset. To run with strace as the witness, run on Linux; " ++ contract.ci_linux_run);
+    }
+    if (args.power_loss) |rule| {
+        const whose: []const u8 = if (mode == .replay) "this case was found under --power-loss, and its replay" else "--power-loss";
+        const refusal: ?struct { contract.SetupErrorReason, []const u8 } = if (builtin.os.tag != .linux)
+            .{ .platform_unsupported, "is Linux only: on macOS an fsync does not reach the device, so the rule would judge a world the platform's own sync does not prevent. For a Linux run, " ++ contract.ci_linux_run }
+        else if (args.oracle == null and args.oracle_stance != .found)
+            .{ .define_invalid, power_loss_needs_strace }
+        else if (args.allow_unverified)
+            .{ .define_invalid, "cannot take --allow-unverified: a world built from a record nothing checked could be one the run never risked" }
+        else if (args.recovery != null)
+            .{ .define_invalid, "cannot take a recovery: what a recovery should be held to after power loss is not decided" }
+        else
+            null;
+        if (refusal) |r| {
+            if (state_created) _ = posix.rmdir(state_z.ptr);
+            setupErrorFmt(arena_state.allocator(), r[0], "{s} {s}", .{ whose, r[1] });
+        }
+        report.power_loss_rule = rule.name();
     }
 
     // This vet sits *before* --fresh-state's deletion below, and cleans up the one
@@ -1278,6 +1304,8 @@ fn phaseRecording(run: *Run) void {
     removeFile(probe_out);
     cli.settleFoundOracle(gpa, arena, &run.parsed.args, probe_out);
     args = run.parsed.args;
+    if (args.power_loss != null and args.oracle == null)
+        setupErrorFmt(arena, .define_invalid, "--power-loss {s}", .{power_loss_needs_strace});
 
     // The macOS observer runs beside the recording rather than wrapping it, so it is
     // started here and stopped after — and both sentinels live inside the state root,
@@ -1345,6 +1373,7 @@ fn phaseRecording(run: *Run) void {
         args.cwd,
         args.observe,
         if (run.rec.cgroup) |*cg| cg else null,
+        args.power_loss != null,
     );
 
     if (fsu_pid) |pid| {
@@ -1400,7 +1429,7 @@ fn phaseRecording(run: *Run) void {
     // Not under the oracle's branch, where the metadata account is set: a run with no oracle
     // reaches a verdict too, and its report would carry no line.
     report.syncs_account = syncs.account(arena_state.allocator(), trace.ops.items, state_abs, if (run.define.alt_differs) state_alt else "", args.scratch, args.marker != null) catch setupError(.environment, "out of memory");
-    report.syncs_note = syncs.note(arena_state.allocator(), report.syncs_account.?);
+    report.syncs_note = syncs.note(arena_state.allocator(), report.syncs_account.?, args.power_loss != null);
     if (end_deferred and boundary.heldEndStands(trace)) refuse.recordingEnd(arena, rec_term, expect_status, op_obs, exit_step, sig_step);
 
     const final = refuse.snapshotOrRefuse(gpa, state_abs, "could not snapshot the final state");
@@ -1647,6 +1676,29 @@ fn phaseOracle(run: *Run) void {
         else
             capture.readFileAlloc(arena, oracle_out) orelse setupError(.environment, "the oracle's capture file could not be read");
         refuse.dropCapture();
+        if (args.power_loss != null) plan: {
+            const scan = oracle.powerLossScan(arena, text) catch setupError(.environment, "out of memory");
+            const opens = arena.alloc(syncs.WriteOpen, scan.opens.len) catch setupError(.environment, "out of memory");
+            for (scan.opens, opens) |o, *w| w.* = .{ .path = o.path, .truncates = o.truncates };
+            const plan = syncs.candidates(arena, run.rec.trace.ops.items, run.define.state_abs, if (run.define.alt_differs) run.define.state_alt else "", run.parsed.args.scratch, &run.initial, .{ .list = opens, .unplaced = scan.opens_unplaced }) catch
+                setupError(.environment, "out of memory");
+            report.power_loss_candidates = std.math.cast(u32, plan.cands.len) orelse std.math.maxInt(u32);
+            report.power_loss_unmatched = plan.unmatched;
+            if (scan.unrecorded.len == 0) {
+                run.power_cands = plan.cands;
+                break :plan;
+            }
+            var out: std.ArrayList(u8) = .empty;
+            for (scan.unrecorded, 0..) |u, i| {
+                if (i == 8 or out.items.len > syncs.max_bytes) {
+                    out.print(arena, " and {d} more", .{scan.unrecorded.len - i}) catch break;
+                    break;
+                }
+                if (i > 0) out.appendSlice(arena, ", ") catch break;
+                out.print(arena, "{s} on {s}", .{ u.call, textShown(arena, u.file) }) catch break;
+            }
+            report.power_loss_unjudged = out.items;
+        }
         // This line is the whole reason `cwd` is not a one-line feature. The shim reads
         // the cwd inside the child, so it follows the chdir on its own; the oracle reads
         // a trace after the fact and has to be told. Left at the engine's cwd, the two
@@ -1939,10 +1991,10 @@ fn phaseOracle(run: *Run) void {
     if (replay_case) |rc| {
         if (rc.ops_total != n)
             unknown(.case_no_longer_applies, std.fmt.allocPrint(arena, "the recording now counts {d} state-changing operation(s); the case was recorded over {d}", .{ n, rc.ops_total }) catch "the operation count changed", .re_record);
-        if (rc.k < 1 or rc.k > n)
+        if (rc.k < 1 or rc.k > n + @intFromBool(rc.crash_model != null and rc.interleave_wait_seconds == null))
             unknown(.case_no_longer_applies, "the case's crash point is out of range for this recording", .re_record);
         var hh: [16]u8 = undefined;
-        if (!case.prefixHash(trace, rc.k, &hh))
+        if (!case.prefixHash(trace, @min(rc.k, n), &hh))
             unknown(.case_no_longer_applies, "the recording's operation numbering has a gap before the crash point; nothing can vouch that the recorded index still names the same operation", .re_record);
         if (!std.mem.eql(u8, &hh, rc.prefix_hash))
             unknown(.case_no_longer_applies, "the class sequence leading to the crash point changed; killing at the recorded index would address a different operation", .re_record);
@@ -1978,6 +2030,8 @@ fn phaseOracle(run: *Run) void {
 
     run.n = n;
 }
+
+const power_loss_needs_strace = "needs strace as the witness, --oracle <strace> or one found on PATH that can trace here: the worlds are built from the shim's record of the syncs, and only strace can say the run made none the shim does not record";
 
 fn phasePreflight(run: *Run) void {
     const gpa = run.gpa;
@@ -2207,6 +2261,7 @@ fn phaseExploration(run: *Run) void {
     var first_failure_snap: ?engine.Snapshot = null;
     var first_checker_snap: ?engine.Snapshot = null;
     var first_checker_ev: ?evidence.Draft = null;
+    var leave_is_power = false;
     var marker_worlds: u32 = 0;
     var checks_run: u32 = 0;
 
@@ -2450,12 +2505,14 @@ fn phaseExploration(run: *Run) void {
 
         report.explored += 1;
 
-        var label_buf: [32]u8 = undefined;
-        const label = if (k > n) "baseline" else std.fmt.bufPrint(&label_buf, "world {s}", .{kstr}) catch "world";
-        const chk = runCheckerOnState(run, label, &checker_out_buf);
-        if (check_argv != null) checks_run += 1;
-        const l2_failed = chk.failed;
-        const checker_out = chk.out;
+        var l2_failed = false;
+        var checker_out: ?[]const u8 = null;
+        if (check_argv) |cargv| {
+            const cr = controls_run.runWorldChecker(gpa, arena, cargv, state_abs, args.work, args.cwd, &checker_out_buf, if (k > n) "baseline" else std.fmt.allocPrint(arena, "world {s}", .{kstr}) catch "world");
+            checker_out = cr.out;
+            checks_run += 1;
+            l2_failed = cr.failed;
+        }
 
         const l0 = engine.judgeL0(l0_plan, crashed);
 
@@ -2575,11 +2632,59 @@ fn phaseExploration(run: *Run) void {
                 }
             }
         }
+        // Not before the kill's own world: at one crash point the process kill is the earlier.
+        // Not every world of a replay: the case names one, and the baseline's would be another question.
+        var composed: ?engine.Snapshot = if (run.power_cands.len > 0 and (only_k == null or k == only_k.?))
+            (syncs.compose(gpa, crashed, &initial, run.power_cands, k) catch setupError(.environment, "out of memory"))
+        else
+            null;
+        var composed_kept = false;
+        defer if (!composed_kept) if (composed) |*c| c.deinit();
+        if (composed) |world| {
+            report.power_loss_worlds += 1;
+            // Not written out without a checker: the invariants read the snapshot, and the next world restores anyway.
+            const pc: controls_run.WorldChecker = if (check_argv) |cargv| pcblk: {
+                engine.restore(world, state_abs) catch |e| refuse.restoreFailure(e, "could not write a power-loss world into the state directory", state_abs);
+                checks_run += 1;
+                break :pcblk controls_run.runWorldChecker(gpa, arena, cargv, state_abs, args.work, args.cwd, &checker_out_buf, if (k > n) "power-loss baseline" else std.fmt.allocPrint(arena, "power-loss world {s}", .{kstr}) catch "power-loss world");
+            } else .{ .failed = false, .out = null };
+            // Not left behind after the operation: the state directory is held to the baseline's result.
+            if (k > n and check_argv != null) engine.restore(crashed, state_abs) catch |e| refuse.restoreFailure(e, "could not put the baseline's result back after its power-loss world", state_abs);
+            const pl0 = engine.judgeL0(l0_plan, world);
+            const pl1 = if (marker_seen) engine.judgeL1(l0_plan, initial, final, world) else null;
+            if (pl0 != null or pl1 != null or pc.failed) {
+                report.power_loss_violations += 1;
+                if (first_failure == null) {
+                    const v = pl0 orelse pl1;
+                    first_failure = .{ .k = k, .term = term, .landed = landed, .violation = v, .power_loss = true };
+                    first_failure_l0 = pl0 != null;
+                    first_failure_l1 = pl1 != null;
+                    first_failure_l2 = pc.failed;
+                    if (v) |vv| {
+                        const p = report.violationPath(vv);
+                        @memcpy(first_failure_path[0..p.len], p);
+                        first_failure_path_len = p.len;
+                    }
+                    first_failure_ev = evidence.measure(arena, initial, final, world, l0_plan, .{
+                        .configured = check_argv != null,
+                        .failed = pc.failed,
+                        .output_path = pc.out,
+                    }) catch null;
+                }
+            }
+        }
         // Here, after every refusal this world can raise: kept earlier, a world refused for a
         // FIFO or a still-running writer would leave a state the run never judged.
         if (args.leave_crash_state and only_k != null and k == only_k.?) {
-            leave_snap = crashed;
-            crashed_kept = true;
+            if (composed != null) {
+                leave_snap = composed;
+                composed_kept = true;
+                crashed_kept = true;
+                leave_is_power = true;
+            } else {
+                leave_snap = crashed;
+                crashed_kept = true;
+            }
         }
     }
 
@@ -2611,6 +2716,7 @@ fn phaseExploration(run: *Run) void {
     run.firsts.first_failure_ev = first_failure_ev;
     run.firsts.first_checker_ev = first_checker_ev;
     run.firsts.marker_worlds = marker_worlds;
+    report.power_loss_note = report.powerLossNote(arena);
 
     // The recovery phase (#606, ADR 0072), after every world including the baseline: the
     // verdict is decided and nothing the recovery does can reach a world. `recovery.run` cannot
@@ -2653,7 +2759,10 @@ fn phaseExploration(run: *Run) void {
             break :leave;
         };
         report.crash_state_left = true;
-        report.crash_state_note = "left in the state directory: the kill's state, before the checker ran, whatever the verdict";
+        report.crash_state_note = if (leave_is_power)
+            "left in the state directory: the power-loss world built from the kill's state, before the checker ran, whatever the verdict"
+        else
+            "left in the state directory: the kill's state, before the checker ran, whatever the verdict";
     }
 }
 
@@ -2727,35 +2836,10 @@ fn firstDifference(arena: std.mem.Allocator, expected: engine.Snapshot, got: eng
     return std.fmt.allocPrint(arena, "{s} ({s})", .{ textShown(arena, one[0].rel), how }) catch one[0].rel;
 }
 
-fn runCheckerOnState(run: *Run, label: []const u8, out_buf: *[contract.max_path]u8) struct { failed: bool, out: ?[]const u8 } {
+fn checkInterleaved(run: *Run, label: []const u8, out_buf: *[contract.max_path]u8) controls_run.WorldChecker {
     const cargv = run.check_argv orelse return .{ .failed = false, .out = null };
     const args = run.parsed.args;
-    const co = std.fmt.bufPrint(out_buf, "{s}/checker-output.txt", .{args.work}) catch setupError(.define_invalid, "path too long");
-    // `exclusive` needs the removal, and without `O_EXCL` a FIFO planted at the name would block
-    // the parent's open.
-    files.removeFile(co);
-    const env = controls_run.checkerEnv(run.define.state_abs, controls_run.unreadLegs(args.work));
-    // stderr too: a checker reports through either stream, and capturing stdout alone would leave
-    // the file empty for the ordinary failure.
-    const ct = posix.runChildCapture(run.gpa, cargv, &env, .{ .path = co, .stderr_too = true, .exclusive = true }, args.cwd) catch |e| switch (e) {
-        // Not refused: the verdict rests on the checker's exit status, so it runs uncaptured, and
-        // the output stays null rather than empty — "no capture" and "an empty capture" differ.
-        error.CaptureUnavailable => return .{ .failed = switch (posix.runChild(run.gpa, cargv, &env, args.cwd) catch |e2| spawnFailure(e2, .exploring, "could not run --check")) {
-            .exited => |code| code != 0,
-            else => true,
-        }, .out = null },
-        else => spawnFailure(e, .exploring, "could not run --check"),
-    };
-    if (capture.readFileAllocCapped(run.arena, co, 1024 * 1024, .{ .no_follow = true })) |text| {
-        var lines = std.mem.splitScalar(u8, text, '\n');
-        while (lines.next()) |line| {
-            if (line.len != 0) say("{s}: {s}\n", .{ label, line });
-        }
-    }
-    return .{ .failed = switch (ct) {
-        .exited => |code| code != 0,
-        else => true,
-    }, .out = co };
+    return controls_run.runWorldChecker(run.gpa, run.arena, cargv, run.define.state_abs, args.work, args.cwd, out_buf, label);
 }
 
 fn phaseInterleave(run: *Run) void {
@@ -2802,7 +2886,7 @@ fn phaseInterleave(run: *Run) void {
         refuse.refuseUnsupportedEntry(arena, snap, "left by the baseline re-run");
         break :blk snap;
     };
-    if (runCheckerOnState(run, "baseline", &checker_out_buf).failed)
+    if (checkInterleaved(run, "baseline", &checker_out_buf).failed)
         unknown(.baseline_violates_invariant, "the checker rejected the state one run of the operation leaves from the initial state; an interleaved run compares against it", .run_checker_by_hand);
 
     // Built twice: a target whose second run is not byte-repeatable is refused here, not failed in
@@ -2829,7 +2913,7 @@ fn phaseInterleave(run: *Run) void {
                 unknown(.baseline_violates_invariant, std.fmt.allocPrint(arena, "two runs of the operation in a row from the initial state left different bytes on two tries, at {s}; an interleaved run needs that state to be one state", .{where}) catch "two runs in a row from the initial state left different bytes on two tries", .scratch_or_twice);
         }
     }
-    if (runCheckerOnState(run, "two runs in a row", &checker_out_buf).failed)
+    if (checkInterleaved(run, "two runs in a row", &checker_out_buf).failed)
         unknown(.baseline_violates_invariant, "the checker rejected the state two runs of the operation in a row leave from the initial state; an interleaved run compares against it", .run_checker_by_hand);
 
     var checks_run: u32 = 0;
@@ -2890,7 +2974,7 @@ fn phaseInterleave(run: *Run) void {
 
         var label_buf: [32]u8 = undefined;
         const label = std.fmt.bufPrint(&label_buf, "world {d}", .{k}) catch "world";
-        const chk = runCheckerOnState(run, label, &checker_out_buf);
+        const chk = checkInterleaved(run, label, &checker_out_buf);
         if (run.check_argv != null) checks_run += 1;
 
         if (serial_observed != null or chk.failed) {
@@ -3011,6 +3095,9 @@ fn phaseReport(run: *Run) void {
     const first_checker_l1 = run.firsts.first_checker_l1;
     const first_checker_path = &run.firsts.first_checker_path;
     const first_checker_path_len = run.firsts.first_checker_path_len;
+    const power_rule = report.power_loss_rule;
+    const earliest_power: ?cli.PowerLoss = if (first_failure != null and first_failure.?.power_loss) args.power_loss else null;
+    const earliest_rule: ?[]const u8 = if (earliest_power) |r| r.name() else null;
 
     if (first_failure) |f| {
         const addr = trace.logicalAddress(f.k);
@@ -3048,7 +3135,7 @@ fn phaseReport(run: *Run) void {
             // state directory from any cwd, or the replay silently sets up elsewhere.
             var case_args = args;
             case_args.state = state_abs;
-            break :blk case.writeCase(arena, args.work, case_args, f.k, n, trace, if (f.violation) |v| @tagName(v) else if (serial) "serial" else "checker");
+            break :blk case.writeCase(arena, args.work, case_args, f.k, n, trace, if (f.violation) |v| @tagName(v) else if (serial) "serial" else "checker", if (report.interleave != null) case.interleave_model else earliest_rule);
         } else null;
         const case_shown = saved_case orelse (if (mode == .replay) case_arg.? else "(not saved)");
         const replay_cmd = if (saved_case) |sc|
@@ -3078,6 +3165,7 @@ fn phaseReport(run: *Run) void {
                 .case_path = case_shown,
                 .draft = d,
                 .recovery = if (report.recovery_earliest) |r| r.result else null,
+                .power_loss = earliest_power,
             });
         } else null;
         report.evidence_note = saved_evidence orelse "-";
@@ -3098,13 +3186,13 @@ fn phaseReport(run: *Run) void {
                 "the post-success invariant, and the checker"
             else
                 "the checker (L2)";
-            const same_world = fc.k == f.k;
+            const same_world = fc.k == f.k and earliest_rule == null;
             const csaved: ?[]const u8 = if (same_world)
                 saved_case
             else if (only_k == null and saved_case != null) blk2: {
                 var case_args = args;
                 case_args.state = state_abs;
-                break :blk2 case.writeCase(arena, args.work, case_args, fc.k, n, trace, if (fc.violation) |v| @tagName(v) else if ((run.firsts.checker_serial_observed.len > 0)) "serial" else "checker");
+                break :blk2 case.writeCase(arena, args.work, case_args, fc.k, n, trace, if (fc.violation) |v| @tagName(v) else if ((run.firsts.checker_serial_observed.len > 0)) "serial" else "checker", if (report.interleave != null) case.interleave_model else null);
             } else null;
             const ccase = if (same_world) case_shown else (csaved orelse "(not saved)");
             const creplay = if (same_world)
@@ -3159,25 +3247,29 @@ fn phaseReport(run: *Run) void {
             };
         } else null;
         say("{s}", .{report.paint("FAIL")});
+        if (power_rule) |r|
+            say("  {d} of {d} explored worlds under a process kill and {d} of {d} power-loss worlds ({s}) violated an invariant\n", .{ report.violations, report.explored, report.power_loss_violations, report.power_loss_worlds, r })
+        else
+            say("  {d} of {d} explored worlds violated an invariant\n", .{ report.violations, report.explored });
         say(
-            \\  {d} of {d} explored worlds violated an invariant
             \\
             \\invariant   {s}
-            \\earliest    crash point {d} of {d}
+            \\earliest    {s}
             \\            after  {s}({s})
             \\            before {s}({s})
             \\path        {s}
             \\observed    {s}
             \\
         , .{
-            report.violations,             report.explored,
-            invariant,                     f.k,
-            n,
+            invariant,
+            report.earliestPlace(arena, f.k, n, earliest_power),
             // The three target-chosen operands go to the text defanged; the
             // JSON block below reads the raw variables (#26).
-                                        after,
-            textShown(arena, after_path),  before,
-            textShown(arena, before_path), textShown(arena, path_shown),
+            after,
+            textShown(arena, after_path),
+            before,
+            textShown(arena, before_path),
+            textShown(arena, path_shown),
             what,
         });
         if (checker_detail) |cd| {
@@ -3207,6 +3299,8 @@ fn phaseReport(run: *Run) void {
         say("\n", .{});
         if (report.interleave != null)
             say("reproduce   {s}  (an interleaved world pauses the operation and runs a second copy; a hand-run line would kill it instead)\n", .{if (saved_case != null) replay_cmd else "this run again"})
+        else if (earliest_rule != null)
+            say("reproduce   {s}  (a power-loss world is built by the engine from the kill's state; a kill alone does not leave it)\n", .{if (saved_case != null or mode == .replay) replay_cmd else "this run again, with --power-loss"})
         else if (args.observe == .supervised)
             say("reproduce   {s}  (the crash point is the engine's, from outside the operation; there is no shim to preload)\n", .{if (saved_case != null) replay_cmd else "this run again, with --observe supervised"})
         else
@@ -3224,6 +3318,7 @@ fn phaseReport(run: *Run) void {
             }) catch "(the line could not be built: out of memory)"});
         if (args.json) |jp| report.writeJsonReport(arena, jp, "FAIL", @backingInt(contract.ExitCode.fail), .{
             .k = f.k,
+            .crash_model = if (report.interleave != null) case.interleave_model else earliest_rule orelse "process-kill",
             .after = after,
             .after_path = after_path,
             .before = before,
@@ -3243,7 +3338,7 @@ fn phaseReport(run: *Run) void {
 
     if (report.interleave != null)
         say("{s}  {d}/{d} crash point(s) left the serial result with a second copy run there{s}\n", .{ report.paint("PASS"), report.explored - 1, report.explored - 1, report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged) })
-    else say("{s}  {d}/{d} explored worlds satisfied the built-in atomicity invariant under a process kill{s}{s}\n", .{ report.paint("PASS"), report.explored, report.explored, report.singleCrashPointClause(n), report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged) });
+    else say("{s}  {d}/{d} explored worlds satisfied the built-in atomicity invariant under a process kill{s}{s}{s}\n", .{ report.paint("PASS"), report.explored, report.explored, report.singleCrashPointClause(n), report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged), report.powerLossPassClause(arena) });
     report.sayAccount(arena, .pass, n);
     if (args.json) |jp| report.writeJsonReport(arena, jp, "PASS", @backingInt(contract.ExitCode.pass), null, null, null, null, null, null);
     report.emitSeal();
@@ -3370,7 +3465,7 @@ fn observeAgain(
     const started = posix.monotonicMs();
     var cg_b = containment.spawn(false);
     const cg_b_ptr: ?*posix.CgroupSpawn = if (cg_b) |*c| c else null;
-    const term = runOperationObserved(gpa, arena, op_argv, state_abs, state_alt, shim, attached, oracle_out_b, trace_b, stdout_b, cwd, observe, cg_b_ptr);
+    const term = runOperationObserved(gpa, arena, op_argv, state_abs, state_alt, shim, attached, oracle_out_b, trace_b, stdout_b, cwd, observe, cg_b_ptr, false);
 
     // split. `recording_run_failed` is the existing member for "the run this account
     // rests on did not complete" — no new closed-set name, which after the v1.0 tag
@@ -4213,6 +4308,8 @@ fn interleaveRefusal(args: cli.Args) ?InterleaveRefusal {
         return .{ .reason = .define_invalid, .text = "--interleave does not run a recovery: an interleaved world ends with both copies finished, not in a crash state a recovery would start from" };
     if (args.leave_crash_state)
         return .{ .reason = .define_invalid, .text = "--leave-crash-state has no crash state to leave in an interleaved world: both copies run to their end" };
+    if (args.power_loss != null)
+        return .{ .reason = .define_invalid, .text = "--interleave and --power-loss each name the run's crash model; run them separately" };
     if (args.marker != null)
         return .{ .reason = .define_invalid, .text = "--interleave does not take a success marker: a marker is about one run's output, and an interleaved world has two" };
     if (pinning.asked(args.apparatus))

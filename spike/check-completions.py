@@ -42,7 +42,7 @@ FILE_TAGS = {"<dir>", "<path>", "<lib>", "<case.json>", "<sideeye.toml>", "<stra
 # Zig side keeps its own copy of FILE_TAGS, and a new path tag both copies read as opaque
 # would agree here while the promise ("completed as a file where the usage names a path")
 # went quietly false. A new tag has to be put in one set or the other by hand.
-OPAQUE_TAGS = {"<cmd>", "<n>", "<s>", "<bytes>", "<entry>"}
+OPAQUE_TAGS = {"<cmd>", "<n>", "<s>", "<bytes>", "<entry>", "<rule>"}
 KNOWN = "known.json"
 
 

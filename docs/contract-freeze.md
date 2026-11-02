@@ -318,6 +318,14 @@ stay the same.
    declared a marker; that presence is part of what 1.x keeps. The allowance covers all five
    with no ruling of their own.
 
+   **Five more, 2026-11-01 (#960, ADR 0147).** `power_loss_rule`, `power_loss_worlds`,
+   `power_loss_violations` and `power_loss`, present only on a PASS or a FAIL of a run given
+   `--power-loss` or a replay of a case found under it, and `earliest.crash_model` on every FAIL.
+   A run without the flag reports what it did, with `earliest.crash_model` `"process-kill"`
+   added; no verdict, exit code or `unknown_reason` moves, and `crash_model` stays
+   `"process-kill"`. The first `not_tested` item reads `power loss beyond the rename-before-data
+   rule` under the flag, a change of prose the allowance covers.
+
 3. **Exit codes.** When a run produces a verdict, that verdict's exit code is
    fixed: 0 PASS, 1 FAIL, 2 UNKNOWN, 3 SETUP_ERROR — and UNKNOWN is never 0.
    The promise runs in that direction. **Exit 0 is not reserved to PASS**: it
@@ -420,13 +428,17 @@ stay the same.
    (`chacha20-v1`), written only for a define that asks for the pin, so that a replay draws the
    streams the counterexample was found with; a v8 file without the entry, without either key, with
    a malformed seed or a generator this binary does not have, and an older file carrying the entry
-   or either key, refuses as malformed. An earlier binary refuses a v8 file at parse. Version 9
-   (#961, ADR 0148, 2026-11-01) is version 7's shape with `observe` always `wrappers`, no pin, and a
-   top-level `interleave_wait_seconds` (1..86400), written only for a case an `explore --interleave`
-   saved: its world is a pause and a second copy, not a kill, so the wait is part of the question the
-   case asks and a replay takes it from the file. A v9 file without the key, with another mode, with
-   the pin, and an older file carrying the key, refuses as malformed; an earlier binary refuses a v9
-   file at parse. A future trace-contract bump is therefore *not* a
+   or either key, refuses as malformed. An earlier binary refuses a v8 file at parse. Version 9 (#960, ADR 0147, 2026-11-01) is written only for a FAIL whose earliest
+   world is a power-loss one: version 7's keys, every one spelled — `apparatus` may be empty — version 8's pin keys when the
+   define asks for the pin, and `crash_model`, the rule; its `k` may be one past `ops_total`, for the world built after the
+   operation. A v9 file without `crash_model` or `apparatus`, or with a rule this binary does not
+   know, or an older file carrying `crash_model`, refuses as malformed; an earlier binary refuses a
+   v9 file as one it cannot parse. Every other case is written as before. A FAIL `explore --interleave` saved (#961, ADR 0148)
+   is version 9 as well, with `crash_model` `interleave`, `observe` always `wrappers`, no pin, and a
+   top-level `interleave_wait_seconds` (1..86400) beside it: its world is a pause and a second copy,
+   not a kill, so the wait is part of the question the case asks and a replay takes it from the
+   file. Such a file without the wait, with another mode or the pin, and any file carrying the wait
+   without `crash_model` `interleave`, refuses as malformed. A future trace-contract bump is therefore *not* a
    broken promise: old cases refuse with the mismatch named, and that
    refusal is the promised behavior.
    **Read on 2026-10-10** (#756, ADR 0107): a case saved from a define whose checker rejects the
