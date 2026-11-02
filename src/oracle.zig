@@ -1180,6 +1180,7 @@ pub const Parsed = struct {
     /// buffer alive for as long as it reads them (main does: same arena, same scope).
     lines: std.ArrayList([]const u8),
     unsupported: ?[]const u8 = null,
+    unsupported_line: ?[]const u8 = null,
     boundary: ?[]const u8 = null,
     detached: ?[]const u8 = null,
     cgroup_move: ?[]const u8 = null,
@@ -1273,6 +1274,7 @@ pub fn parse(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, 
 
 pub fn parseWorld(arena: std.mem.Allocator, text: []const u8, state_dir: []const u8, state_alt: []const u8, initial_cwd: []const u8, world: WorldScope) !Parsed {
     var shim_opens: std.ArrayList(u32) = .empty;
+    var shim_open_line: []const u8 = "";
     var out: Parsed = .{ .classes = .empty, .names = .empty, .lines = .empty, .metadata_observed = .empty, .mutations = .empty, .reaps = .empty, .spawns = .empty, .subject_tids = .empty };
     var child_pids: std.ArrayList(u32) = .empty;
     var launched = false;
@@ -1389,13 +1391,15 @@ pub fn parseWorld(arena: std.mem.Allocator, text: []const u8, state_dir: []const
         // A move between cgroups (v17, #559), from any process, and here rather than below
         // because the process-syscall branch `continue`s a clone3 away.
         if (takePid(&shim_opens, pid) and !isShimRelocation(world.shim_cgroup_files, name, line) and out.cgroup_move == null)
-            out.cgroup_move = shim_open_unrelocated;
+            out.cgroup_move = try std.fmt.allocPrint(arena, "{s}: it opened `{s}` and its next call was `{s}`", .{ shim_open_unrelocated, shown(shim_open_line), shown(line) });
         if (out.cgroup_move == null) {
             if (try cgroupMove(arena, name, line)) |m| {
                 // Not by the path alone: a world hands that path to the target's environment too, and
                 // the target opening it is a way out of the cgroup the crash point kills.
-                if (opensShimFile(world.shim_cgroup_files, name, line))
-                    try shim_opens.append(arena, pid orelse 0)
+                if (opensShimFile(world.shim_cgroup_files, name, line)) {
+                    try shim_opens.append(arena, pid orelse 0);
+                    shim_open_line = line;
+                }
                 else
                     out.cgroup_move = m;
             }
@@ -1592,8 +1596,10 @@ pub fn parseWorld(arena: std.mem.Allocator, text: []const u8, state_dir: []const
         }
 
         if (scope == .unresolvable) {
-            if (changesPersistentState(name, line) and out.unsupported == null)
+            if (changesPersistentState(name, line) and out.unsupported == null) {
                 out.unsupported = try arena.dupe(u8, name);
+                out.unsupported_line = line;
+            }
             continue;
         }
         out.lines_in_scope += 1;
@@ -1677,10 +1683,17 @@ pub fn parseWorld(arena: std.mem.Allocator, text: []const u8, state_dir: []const
         }
     }
     out.children = kept;
-    if (shim_opens.items.len > 0 and out.cgroup_move == null) out.cgroup_move = shim_open_unrelocated;
+    if (shim_opens.items.len > 0 and out.cgroup_move == null)
+        out.cgroup_move = try std.fmt.allocPrint(arena, "{s}: it opened `{s}` and made no other call", .{ shim_open_unrelocated, shown(shim_open_line) });
     if (world.killed_tid) |t| try dropKilledCall(arena, &out, text, t, &dead_ops, &dead_muts);
     try dropRetracted(arena, &out, dead_ops.items, dead_muts.items);
     return out;
+}
+
+// Cut, not escaped: strace already escapes what it prints, and a long write's buffer would bury the call.
+fn shown(line: []const u8) []const u8 {
+    const l = std.mem.trim(u8, line, " \t\r");
+    return l[0..@min(l.len, 240)];
 }
 
 const shim_open_unrelocated = "a process opened the run's own cgroup files for writing and did not move the descriptor out of the way as the shim does, so it may have used them to leave the cgroup the crash point kills";
@@ -4541,7 +4554,9 @@ test "the shim's own opening of the run's cgroup files is not a move, and the ta
     try std.testing.expect((try parse(a, shim, "/tmp/s", "", "/work")).cgroup_move != null);
 
     const used = try std.mem.concat(a, u8, &.{ launch, open, "42    write(5</sys/fs/cgroup/sideeye-1-ab/cgroup.procs>, \"42\", 2) = 2\n" });
-    try std.testing.expect((try parseWorld(a, used, "/tmp/s", "", "/work", .{ .shim_cgroup_files = files })).cgroup_move != null);
+    const refused = (try parseWorld(a, used, "/tmp/s", "", "/work", .{ .shim_cgroup_files = files })).cgroup_move.?;
+    try std.testing.expect(std.mem.indexOf(u8, refused, "O_WRONLY|O_CLOEXEC") != null);
+    try std.testing.expect(std.mem.indexOf(u8, refused, "next call was `42    write(5") != null);
     const put_back = try std.mem.concat(a, u8, &.{ launch, open, "42    dup3(5</sys/fs/cgroup/sideeye-1-ab/cgroup.procs>, 901, O_CLOEXEC) = 901</sys/fs/cgroup/sideeye-1-ab/cgroup.procs>\n" });
     try std.testing.expect((try parseWorld(a, put_back, "/tmp/s", "", "/work", .{ .shim_cgroup_files = files })).cgroup_move == null);
     const last = try std.mem.concat(a, u8, &.{ launch, open });
