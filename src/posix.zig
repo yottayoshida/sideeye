@@ -109,6 +109,17 @@ pub const P_PID: c_int = 1;
 pub const WEXITED: c_int = 4;
 pub const WNOWAIT: c_int = if (builtin.os.tag == .linux) 0x01000000 else 0x00000020;
 pub const WNOHANG: c_int = 1;
+pub const WSTOPPED: c_int = 2;
+pub const SIGCONT: u8 = if (builtin.os.tag == .linux) 18 else 19;
+
+pub const StopHook = struct {
+    ctx: *anyopaque,
+    call: *const fn (ctx: *anyopaque, pid: c_int) void,
+};
+
+// Not a spawn parameter: only the interleaved world sets it, and the engine runs one world at a
+// time. Two worlds in flight at once would hand one world's stop to the other's hook.
+pub var stop_hook: ?StopHook = null;
 pub const CLOCK_MONOTONIC: c_int = if (builtin.os.tag == .linux) 1 else 6;
 pub const SIGCHLD: c_int = if (builtin.os.tag == .linux) 17 else 20;
 pub const SIG_DFL: usize = 0;
@@ -707,6 +718,49 @@ pub fn randomHex(out: *[16]u8) ?[]const u8 {
         out[2 * i + 1] = digits[b & 0x0f];
     }
     return out[0..];
+}
+
+test "a budgeted wait hands a child's stop to the stop hook once, and the resumed child's exit is the term" {
+    // Linux only, as the one caller is: macOS reports a stopped child to this wait differently.
+    if (builtin.os.tag != .linux) return error.SkipZigTest;
+    const Hook = struct {
+        var calls: u32 = 0;
+        fn call(_: *anyopaque, pid: c_int) void {
+            calls += 1;
+            _ = kill(pid, SIGCONT);
+        }
+    };
+    var ctx: u8 = 0;
+    stop_hook = .{ .ctx = &ctx, .call = Hook.call };
+    defer stop_hook = null;
+    const term = try runChildCaptureWorld(std.testing.allocator, &.{ "/bin/sh", "-c", "kill -STOP $$; exit 7" }, &.{}, .{ .path = "/dev/null" }, 10_000, null, null);
+    try std.testing.expectEqual(@as(u32, 1), Hook.calls);
+    try std.testing.expectEqual(@as(u8, 7), term.exited);
+}
+
+test "a refusal's stop reaches the second copy registered on its own thread" {
+    const Second = struct {
+        var term: ?Term = null;
+        fn run() void {
+            registers_second = true;
+            term = runChildCaptureWorld(std.heap.page_allocator, &.{ "/bin/sh", "-c", "sleep 30" }, &.{}, .{ .path = "/dev/null" }, 60_000, null, null) catch null;
+        }
+    };
+    const t = try std.Thread.spawn(.{}, Second.run, .{});
+    while (second_child.load(.seq_cst) == 0) {
+        const ts: std.c.timespec = .{ .sec = 0, .nsec = 1_000_000 };
+        _ = nanosleep(&ts, null);
+    }
+    try std.testing.expectEqual(@as(u64, 0), live_child.load(.seq_cst));
+    stopSecondChild();
+    t.join();
+    try std.testing.expectEqual(@as(u8, SIGKILL), Second.term.?.signaled);
+}
+
+test "a budgeted wait with no stop hook leaves a child that never stops alone" {
+    stop_hook = null;
+    const term = try runChildCaptureWorld(std.testing.allocator, &.{ "/bin/sh", "-c", "exit 3" }, &.{}, .{ .path = "/dev/null" }, 10_000, null, null);
+    try std.testing.expectEqual(@as(u8, 3), term.exited);
 }
 
 test "randomHex: sixteen lowercase hex digits, and two draws differ" {
@@ -1795,6 +1849,10 @@ var interrupt_hook: ?*const fn (c_int) noreturn = null;
 var interrupt_sig = std.atomic.Value(c_int).init(0);
 /// Cleared before every reaping wait: a reaped id may already name a stranger.
 var live_child = std.atomic.Value(u64).init(0);
+// A second slot, not the one: an interleaved world's second copy runs on another thread beside the
+// first, and in one slot it would unregister the first, which an interrupt would then leave running.
+var second_child = std.atomic.Value(u64).init(0);
+pub threadlocal var registers_second: bool = false;
 var sidecar_pgid = std.atomic.Value(c_int).init(0);
 var sidecar_watch_fd = std.atomic.Value(c_int).init(-1);
 var stopping_depth = std.atomic.Value(u32).init(0);
@@ -2029,6 +2087,7 @@ fn onInterrupt(s: std.c.SIG) callconv(.c) void {
     // No waiting on a second signal, even mid-stop: whoever sent it will not wait.
     if (!first) graceOver(interrupt_sig.load(.seq_cst), 0);
     if (stopping_depth.load(.seq_cst) != 0) return;
+    stopSecondChild();
     if (word != 0) {
         const pgid: c_int = @intCast(word >> 1);
         const to: c_int = if (word & 1 == @backingInt(ChildStop.forward)) sig else SIGKILL;
@@ -2054,6 +2113,7 @@ fn graceOver(sig: c_int, word: u64) noreturn {
     // relay that. Not releasing the watch: a SIGTERM this misses is sent again once the engine dies.
     const observer = sidecar_pgid.load(.seq_cst);
     if (observer != 0) _ = kill(-observer, SIGTERM);
+    stopSecondChild();
     writeStopLine(sig, if (word != 0) @intCast(word >> 1) else 0);
     dieBySignal(sig);
 }
@@ -2129,12 +2189,19 @@ fn childRestoreSignals(old: *const std.c.sigset_t) void {
     restoreMask(old);
 }
 
+pub fn stopSecondChild() void {
+    const second = second_child.load(.seq_cst);
+    if (second == 0) return;
+    const pg: c_int = @intCast(second >> 1);
+    if (interrupt_kill(-pg, SIGKILL) != 0 and std.c._errno().* == ESRCH) _ = interrupt_kill(pg, SIGKILL);
+}
+
 fn registerLiveChild(pid: c_int, stop: ChildStop) void {
-    live_child.store(liveChildWord(pid, stop), .seq_cst);
+    (if (registers_second) &second_child else &live_child).store(liveChildWord(pid, stop), .seq_cst);
 }
 
 fn clearLiveChild() void {
-    live_child.store(0, .seq_cst);
+    (if (registers_second) &second_child else &live_child).store(0, .seq_cst);
 }
 
 fn runChildImplWithOps(
@@ -2396,6 +2463,7 @@ fn runChildSpawnAndWait(
             var interval: u64 = 1;
             var eintr_streak: u32 = 0;
             var past_deadline = false;
+            var stop_seen = false;
             const outcome: enum { exited, timed_out, waitid_broke } = poll: while (true) {
                 var info: std.c.siginfo_t = std.mem.zeroes(std.c.siginfo_t);
                 const rc = Ops.waitidPoll(pid, &info, WEXITED | WNOWAIT | WNOHANG);
@@ -2419,6 +2487,15 @@ fn runChildSpawnAndWait(
                 }
                 eintr_streak = 0;
                 if (siPid(&info) == pid) break :poll .exited;
+                // Without WNOWAIT, so the stop is reported once; WEXITED stays with the call above,
+                // which must leave the child reapable.
+                if (stop_hook) |hook| if (!stop_seen) {
+                    var sinfo: std.c.siginfo_t = std.mem.zeroes(std.c.siginfo_t);
+                    if (Ops.waitidPoll(pid, &sinfo, WSTOPPED | WNOHANG) == 0 and siPid(&sinfo) == pid) {
+                        stop_seen = true;
+                        hook.call(hook.ctx, pid);
+                    }
+                };
                 const now = Ops.nowMs();
                 if (now >= deadline) {
                     // classifies toward the child. This is the measurement rule the

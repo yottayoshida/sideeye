@@ -44,6 +44,8 @@ UNKNOWN, a verdict, and this command produces none ([docs/contract-freeze.md](co
 | Recovery | `not configured`, or — when the define declared a recovery (#606, ADR 0072) — `pass`, `fail` or `unknown`: what the tool's own recovery did when handed this exhibit's crash state, with a caveat, on `pass` and `fail`, that the rebuilt state carried restore-time timestamps (since #678 it carries the crash's permission bits, a directory with its owner's bits added; not set-id or sticky bits) (not on `unknown`, which may be a recovery that never ran). The value, not a new field: `evidence_version` stays 1 |
 | What this did and did not establish | the run's own observation caveats |
 
+A bundle from an interleaved run (`crash_model` `"interleave"`, [docs/cli.md](cli.md#what-an-interleaved-run-judges)) reads three of these differently: the *completed* state is the serial result the world was compared with (two runs in a row when both copies succeeded, one run otherwise), the operation that "never ran" is the one the pause landed in front of, which ran after the resume, and its replay refuses `--leave-crash-state`, since an interleaved world leaves no crash state.
+
 The machine-readable form is the bundle file itself (`"schema": "sideeye/evidence"`,
 `evidence_version` 1). There is no `--format json`, because that would be a second way to
 ask for bytes already on disk. The MCP server's `sideeye_evidence` hands over the same bundle

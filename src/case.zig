@@ -14,6 +14,7 @@ pub const ReplayCase = struct {
     contract_version: u32,
     observe: ?[]const u8 = null,
     crash_model: ?[]const u8 = null,
+    interleave_wait_seconds: ?u32 = null,
     define: struct {
         state: []const u8,
         setup: ?config.Command = null,
@@ -82,6 +83,8 @@ pub fn prefixHash(trace: engine.TraceInfo, k: u32, out: *[16]u8) bool {
 
 /// case file. Returns null when nothing could be written — the FAIL report is the
 /// product and must not die for the sake of its attachment.
+pub const interleave_model = "interleave";
+
 pub fn writeCase(
     arena: std.mem.Allocator,
     work: []const u8,
@@ -137,6 +140,10 @@ pub fn writeCase(
     if (crash_model) |m| {
         w.appendSlice(arena, ",\n  \"crash_model\": ") catch return null;
         report.jsonString(w, arena, m) catch return null;
+        if (std.mem.eql(u8, m, interleave_model)) {
+            w.appendSlice(arena, ",\n  \"interleave_wait_seconds\": ") catch return null;
+            w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{args.interleave_wait_s}) catch return null) catch return null;
+        }
     }
     w.appendSlice(arena, ",\n  \"define\": {\n    \"state\": ") catch return null;
     report.jsonString(w, arena, args.state.?) catch return null;
@@ -296,10 +303,20 @@ pub fn read(arena: std.mem.Allocator, text: []const u8) Read {
         return .{ .invalid = "a case_version 1, 2, 3, 4, 5 or 6 file cannot carry an apparatus declaration; it arrived with version 7" };
     if (c.case_version < 9 and c.crash_model != null)
         return .{ .invalid = "a case_version 1 to 8 file cannot carry a crash model; it arrived with version 9" };
+    const interleaved = if (c.crash_model) |m| std.mem.eql(u8, m, interleave_model) else false;
     if (c.case_version == 9 and c.crash_model == null)
         return .{ .invalid = "a case_version 9 file must carry crash_model; the version exists to freeze it" };
-    if (c.crash_model) |m| if (cli.PowerLoss.parse(m) == null)
-        return .{ .invalid = "a case's crash_model names no rule this binary knows; it must be `rename-before-data`" };
+    if (c.crash_model) |m| if (!interleaved and cli.PowerLoss.parse(m) == null)
+        return .{ .invalid = "a case's crash_model names no rule this binary knows; it must be `rename-before-data` or `interleave`" };
+    if (interleaved != (c.interleave_wait_seconds != null))
+        return .{ .invalid = "interleave_wait_seconds belongs to a case whose crash_model is `interleave`, and such a case must carry it" };
+    if (c.interleave_wait_seconds) |ws| if (ws == 0 or ws > 86400)
+        return .{ .invalid = "a case's interleave_wait_seconds must be 1..86400" };
+    if (interleaved) {
+        if (c.observe == null or !std.mem.eql(u8, c.observe.?, "wrappers")) return .{ .invalid = "an interleaved case's observe must be `wrappers`; an interleaved run takes no other mode" };
+        if (c.pin_seed != null or c.pin_generator != null or (if (c.define.apparatus) |decl| pinning.asked(decl) else false))
+            return .{ .invalid = "an interleaved case cannot carry pin:random or its seed; an interleaved run refuses the pin" };
+    }
     if (c.case_version < 10 and c.define.invariant != null)
         return .{ .invalid = "a case_version 1 to 9 file cannot carry an invariant declaration; it arrived with version 10" };
     if (c.case_version == 10) {
@@ -408,6 +425,30 @@ test "a version-8 case carries pin:random with its seed, and no other version ca
     }
 }
 
+test "an interleaved case is version 9 with crash_model interleave and its wait, and nothing else carries the wait" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const v9 = try std.mem.replaceOwned(u8, a, try testCaseWith(a, "\"case_version\":5,", "\"case_version\":9,\"observe\":\"wrappers\",\"crash_model\":\"interleave\","), "\"scratch\":[\"m.yaml\"],", "\"scratch\":[],\"apparatus\":[],");
+    const good = try std.mem.replaceOwned(u8, a, v9, "\"violation\":\"checker\"}", "\"violation\":\"serial\",\"interleave_wait_seconds\":5}");
+    try std.testing.expectEqual(@as(u32, 5), read(a, good).ok.interleave_wait_seconds.?);
+    const cases = [_]struct { text: []const u8, says: []const u8 }{
+        .{ .text = v9, .says = "such a case must carry it" },
+        .{ .text = try std.mem.replaceOwned(u8, a, good, "\"crash_model\":\"interleave\"", "\"crash_model\":\"rename-before-data\""), .says = "belongs to a case whose crash_model is `interleave`" },
+        .{ .text = try std.mem.replaceOwned(u8, a, good, "\"interleave_wait_seconds\":5", "\"interleave_wait_seconds\":0"), .says = "must be 1..86400" },
+        .{ .text = try std.mem.replaceOwned(u8, a, good, "\"observe\":\"wrappers\"", "\"observe\":\"syscalls\""), .says = "observe must be `wrappers`" },
+        .{ .text = try std.mem.replaceOwned(u8, a, good, "\"apparatus\":[]", "\"apparatus\":[\"pin:random\"]"), .says = "cannot carry pin:random" },
+        .{ .text = try std.mem.replaceOwned(u8, a, good, "\"crash_model\":\"interleave\"", "\"crash_model\":\"interleaved\""), .says = "`rename-before-data` or `interleave`" },
+    };
+    for (cases) |c| {
+        const why = read(a, c.text).invalid;
+        std.testing.expect(std.mem.indexOf(u8, why, c.says) != null) catch |e| {
+            std.debug.print("wanted [{s}], got [{s}]\n", .{ c.says, why });
+            return e;
+        };
+    }
+}
+
 test "an argv element holding a double quote is written and read back byte for byte" {
     var as = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer as.deinit();
@@ -473,7 +514,7 @@ test "a version-9 case names its power-loss rule and spells every field below it
     const t = std.testing;
     const v8 = try std.mem.replaceOwned(u8, a, try testCaseWith(a, "\"case_version\":5,", "\"case_version\":9,\"observe\":\"wrappers\",\"crash_model\":\"rename-before-data\","), "\"scratch\":[\"m.yaml\"],", "\"scratch\":[],\"apparatus\":[],");
     try t.expectEqualStrings("rename-before-data", read(a, v8).ok.crash_model.?);
-    try t.expectEqualStrings("a case's crash_model names no rule this binary knows; it must be `rename-before-data`", read(a, try std.mem.replaceOwned(u8, a, v8, "rename-before-data", "anything-unsynced-is-lost")).invalid);
+    try t.expectEqualStrings("a case's crash_model names no rule this binary knows; it must be `rename-before-data` or `interleave`", read(a, try std.mem.replaceOwned(u8, a, v8, "rename-before-data", "anything-unsynced-is-lost")).invalid);
     try t.expectEqualStrings("a case_version 7 or later file must carry define.apparatus; the version exists to freeze it", read(a, try std.mem.replaceOwned(u8, a, v8, "\"apparatus\":[],", "")).invalid);
     try t.expectEqualStrings("a case_version 9 file must carry crash_model; the version exists to freeze it", read(a, try std.mem.replaceOwned(u8, a, v8, "\"crash_model\":\"rename-before-data\",", "")).invalid);
     try t.expectEqualStrings("a case_version 1 to 8 file cannot carry a crash model; it arrived with version 9", read(a, try testCaseWith(a, "\"case_version\":5,", "\"case_version\":5,\"crash_model\":\"rename-before-data\",")).invalid);
