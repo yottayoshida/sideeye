@@ -14,6 +14,7 @@ const posix = @import("posix.zig");
 const image = @import("image.zig");
 const oracle = @import("oracle.zig");
 const witness = @import("witness.zig");
+const rerun = @import("rerun.zig");
 const fsusage = @import("fsusage.zig");
 const config = @import("config.zig");
 const mcp = @import("mcp.zig");
@@ -360,11 +361,13 @@ const Run = struct {
         first_failure_l0: bool,
         first_failure_l1: bool,
         first_failure_l2: bool,
+        first_failure_rerun_only: bool,
         first_failure_path: [contract.max_path]u8,
         first_failure_path_len: usize,
         first_checker: ?engine.WorldResult,
         first_checker_l0: bool,
         first_checker_l1: bool,
+        first_checker_rerun_only: bool,
         first_checker_path: [contract.max_path]u8,
         first_checker_path_len: usize,
         first_failure_ev: ?evidence.Draft,
@@ -382,6 +385,7 @@ const Run = struct {
     admitted: Admission = undefined,
     n: u32 = undefined,
     check_argv: ?[]const []const u8 = undefined,
+    rerun: ?rerun.Declared = null,
     firsts: Firsts = undefined,
     power_cands: []const syncs.Candidate = &.{},
 };
@@ -488,8 +492,8 @@ fn phaseDefine(run: *Run) void {
     if (mode == .replay) {
         if (args.state != null or args.setup != null or args.operation != null or
             args.check != null or args.marker != null or args.expect_status != null or
-            args.cwd != null or args.config != null or args.apparatus.len != 0 or args.scratch.len != 0)
-            setupError(.define_invalid, "replay takes its define from the case file; the define-surface flags (--apparatus and --scratch included) and --config do not apply");
+            args.cwd != null or args.config != null or args.apparatus.len != 0 or args.scratch.len != 0 or args.rerun)
+            setupError(.define_invalid, "replay takes its define from the case file; the define-surface flags (--apparatus, --scratch and --invariant included) and --config do not apply");
         const rarena = arena_state.allocator();
         const ctext = capture.readFileAllocCapped(rarena, case_arg.?, 1024 * 1024, .{ .require_regular = true }) orelse setupError(
             .environment,
@@ -537,6 +541,7 @@ fn phaseDefine(run: *Run) void {
         // Not from a flag: `--apparatus` was refused above, so a case saved before it carried the
         // declaration replays with none checked.
         if (c.define.apparatus) |decl| args.apparatus = decl;
+        args.rerun = config.declaresRerun(c.define.invariant);
         // Mirrored into the report before any refusal below can fire: a contract
         // mismatch on a status-3 case must not report expected_status 0 (R1 finding).
         report.expected_status_val = c.define.expected_status orelse 0;
@@ -569,7 +574,7 @@ fn phaseDefine(run: *Run) void {
 
     var config_dir: ?[]const u8 = null;
     if (args.config) |cfg_path| {
-        if (args.state != null or args.setup != null or args.operation != null or args.check != null or args.marker != null or args.expect_status != null or args.cwd != null or args.apparatus.len != 0 or args.scratch.len != 0 or args.recovery != null or args.recovery_check != null)
+        if (args.state != null or args.setup != null or args.operation != null or args.check != null or args.marker != null or args.expect_status != null or args.cwd != null or args.apparatus.len != 0 or args.scratch.len != 0 or args.rerun or args.recovery != null or args.recovery_check != null)
             setupError(.define_invalid, "--config and the define-surface flags (" ++ cli.define_surface_list ++ ") are mutually exclusive: the define lives in one place or the other");
         const arena = arena_state.allocator();
         // Bounded, and the only reader that is. The path is operator-named and may
@@ -621,6 +626,7 @@ fn phaseDefine(run: *Run) void {
                 args.cwd = if (d.cwd) |c| resolvePathAgainst(arena, dir, c) else null;
                 args.apparatus = d.apparatus orelse &.{};
                 args.scratch = d.scratch orelse &.{};
+                args.rerun = config.declaresRerun(d.invariant);
                 args.recovery = if (d.recovery) |r| resolveCommandAgainst(arena, dir, r) else null;
                 args.recovery_check = if (d.recovery_check) |r| resolveCommandAgainst(arena, dir, r) else null;
                 if (d.controls.len > 0) {
@@ -2149,6 +2155,23 @@ fn phaseChecker(run: *Run) void {
     }
 
     run.check_argv = check_argv;
+    if (args.rerun) {
+        report.rerun_note = "declared; the operation's two runs from the state before did not complete";
+        const ctx: rerun.Context = .{
+            .gpa = gpa,
+            .arena = arena,
+            .op_argv = run.rec.op_argv,
+            .state_abs = state_abs,
+            .state_alt = run.define.state_alt,
+            .out_path = std.fmt.allocPrint(arena, "{s}/rerun-output.txt", .{args.work}) catch setupError(.environment, "out of memory"),
+            .cwd = args.cwd,
+            .budget_ms = if (args.world_timeout_s) |s| @as(u64, s) * 1000 else null,
+            .scratch = args.scratch,
+            .preload_var = preload_var,
+        };
+        run.rerun = .{ .ctx = ctx, .refs = rerun.prepare(ctx, initial) };
+        report.rerun_note = "declared; its account is written once every world has been judged";
+    }
 }
 
 fn phaseExploration(run: *Run) void {
@@ -2176,6 +2199,9 @@ fn phaseExploration(run: *Run) void {
     var first_failure_l0 = false;
     var first_failure_l1 = false;
     var first_failure_l2 = false;
+    var first_failure_rerun_only = false;
+    var first_checker_rerun_only = false;
+    var rerun_failed_worlds: u32 = 0;
     var first_failure_path_len: usize = 0;
     var first_checker: ?engine.WorldResult = null;
     var first_checker_l0 = false;
@@ -2192,6 +2218,9 @@ fn phaseExploration(run: *Run) void {
     var leave_is_power = false;
     var marker_worlds: u32 = 0;
     var checks_run: u32 = 0;
+    const l2_declared = check_argv != null or run.rerun != null;
+    var rerun_worlds: u32 = 0;
+    var rerun_leftovers: usize = 0;
     var oracle_worlds: u32 = 0;
 
     // Beside `world_stdout_buf` and not inside the checker block, although only that block
@@ -2473,7 +2502,6 @@ fn phaseExploration(run: *Run) void {
             checks_run += 1;
             l2_failed = cr.failed;
         }
-
         const l0 = engine.judgeL0(l0_plan, crashed);
 
         var marker_seen = false;
@@ -2500,6 +2528,22 @@ fn phaseExploration(run: *Run) void {
         // its own attribution instead of a fictitious crash (R1).
         refuse.refuseUnsupportedEntry(arena, crashed, if (k <= n) "left in a crashed world" else "left by the baseline re-run");
 
+        const checker_failed = l2_failed;
+        var rerun_mismatch: ?[]const u8 = null;
+        if (run.rerun) |declared| {
+            const verdict = rerun.judge(declared, crashed, initial);
+            // Not left as the run again left it: the state directory is held to the baseline's result.
+            if (k > n) engine.restore(crashed, state_abs) catch |e| refuse.restoreFailure(e, "could not put the baseline's result back after the rerun invariant", state_abs);
+            rerun_worlds += 1;
+            rerun_leftovers += verdict.leftovers;
+            if (verdict.mismatch) |m| {
+                rerun_mismatch = m;
+                l2_failed = true;
+                rerun_failed_worlds += 1;
+                if (k > n) say("baseline: rerun: {s}\n", .{m}) else say("world {s}: rerun: {s}\n", .{ kstr, m });
+            }
+        }
+
         if (marker_seen and k <= n) marker_worlds += 1;
         const l1 = if (marker_seen) engine.judgeL1(l0_plan, initial, final, crashed) else null;
 
@@ -2521,12 +2565,15 @@ fn phaseExploration(run: *Run) void {
             // #700 (ADR 0093): the checker layer alone, where a checker with a relative argument
             // read under the wrong directory rejects every state. The line above is pinned by
             // spike/acceptance.sh, so the step is replaced here rather than there.
-            const base_obs: ?[]const u8 = if (l0 == null and l1 == null) (if (check_argv) |c| refuse.cwdObservation(arena, c) else null) else null;
-            const base_step = refuse.cwdStep(base_obs, step);
+            const rerun_only = l0 == null and l1 == null and !checker_failed;
+            const base_obs: ?[]const u8 = if (l0 == null and l1 == null and !rerun_only) (if (check_argv) |c| refuse.cwdObservation(arena, c) else null) else null;
+            const base_step = if (rerun_only) contract.NextStep.second_run_diverged else refuse.cwdStep(base_obs, step);
             const what: []const u8 = if (l0) |v|
-                std.fmt.allocPrint(arena, "{s}{s}{s}", .{ report.baselineObserved(arena, v), report.baselineDiffers(arena, l0_plan, crashed, v), report.baselineAlsoFailed(l1 != null, l2_failed) }) catch "the re-run from the restored state did not leave the recorded bytes"
+                std.fmt.allocPrint(arena, "{s}{s}{s}", .{ report.baselineObserved(arena, v), report.baselineDiffers(arena, l0_plan, crashed, v), report.baselineAlsoFailed(l1 != null, checker_failed) }) catch "the re-run from the restored state did not leave the recorded bytes"
             else if (l1) |v|
-                std.fmt.allocPrint(arena, "the operation printed its success marker, and {s} did not hold the new state that marker promised{s}; check the marker and the operation against each other first", .{ textShown(arena, report.violationPath(v)), report.baselineAlsoFailed(false, l2_failed) }) catch "the success marker's promise did not hold in the un-killed re-run; check the marker and the operation against each other first"
+                std.fmt.allocPrint(arena, "the operation printed its success marker, and {s} did not hold the new state that marker promised{s}; check the marker and the operation against each other first", .{ textShown(arena, report.violationPath(v)), report.baselineAlsoFailed(false, checker_failed) }) catch "the success marker's promise did not hold in the un-killed re-run; check the marker and the operation against each other first"
+            else if (rerun_only)
+                std.fmt.allocPrint(arena, "the rerun invariant failed on the state the operation leaves on its own — {s} — so the operation does not end the same way when run again; declare what varies as scratch, or pin it as apparatus", .{rerun_mismatch.?}) catch "the rerun invariant failed on the state the operation leaves on its own"
             else
                 refuse.withObservation(arena, "the checker rejected the state the operation leaves on its own; check the operation and the checker against each other first", base_obs, base_step);
             unknown(.baseline_violates_invariant, std.fmt.allocPrint(arena, "{s}: {s}", .{ report.baseline_refusal_lead, what }) catch what, base_step);
@@ -2550,6 +2597,7 @@ fn phaseExploration(run: *Run) void {
                 first_failure_l0 = l0 != null;
                 first_failure_l1 = l1 != null;
                 first_failure_l2 = l2_failed;
+                first_failure_rerun_only = l2_failed and !checker_failed;
                 if (v) |vv| {
                     const p = report.violationPath(vv);
                     @memcpy(first_failure_path[0..p.len], p);
@@ -2562,7 +2610,7 @@ fn phaseExploration(run: *Run) void {
                 // the loop. Failing to measure loses the bundle, never the verdict.
                 first_failure_ev = evidence.measure(arena, initial, final, crashed, l0_plan, .{
                     .configured = check_argv != null,
-                    .failed = l2_failed,
+                    .failed = checker_failed,
                     .output_path = checker_out,
                 }) catch null;
                 if (args.recovery != null) {
@@ -2575,6 +2623,7 @@ fn phaseExploration(run: *Run) void {
                 first_checker = .{ .k = k, .term = term, .landed = landed, .violation = v };
                 first_checker_l0 = l0 != null;
                 first_checker_l1 = l1 != null;
+                first_checker_rerun_only = !checker_failed;
                 if (v) |vv| {
                     const p = report.violationPath(vv);
                     @memcpy(first_checker_path[0..p.len], p);
@@ -2582,7 +2631,7 @@ fn phaseExploration(run: *Run) void {
                 }
                 first_checker_ev = evidence.measure(arena, initial, final, crashed, l0_plan, .{
                     .configured = check_argv != null,
-                    .failed = l2_failed,
+                    .failed = checker_failed,
                     .output_path = checker_out,
                 }) catch null;
                 // Kept only when this world was not already kept as the earliest: one snapshot,
@@ -2609,18 +2658,28 @@ fn phaseExploration(run: *Run) void {
                 checks_run += 1;
                 break :pcblk controls_run.runWorldChecker(gpa, arena, cargv, state_abs, args.work, args.cwd, &checker_out_buf, if (k > n) "power-loss baseline" else std.fmt.allocPrint(arena, "power-loss world {s}", .{kstr}) catch "power-loss world");
             } else .{ .failed = false, .out = null };
+            const p_rerun: ?[]const u8 = if (run.rerun) |declared| pr: {
+                const verdict = rerun.judge(declared, world, initial);
+                rerun_worlds += 1;
+                rerun_leftovers += verdict.leftovers;
+                if (verdict.mismatch != null) rerun_failed_worlds += 1;
+                break :pr verdict.mismatch;
+            } else null;
+            if (p_rerun) |m| if (k > n) say("power-loss baseline: rerun: {s}\n", .{m}) else say("power-loss world {s}: rerun: {s}\n", .{ kstr, m });
+            const p_failed = pc.failed or p_rerun != null;
             // Not left behind after the operation: the state directory is held to the baseline's result.
-            if (k > n and check_argv != null) engine.restore(crashed, state_abs) catch |e| refuse.restoreFailure(e, "could not put the baseline's result back after its power-loss world", state_abs);
+            if (k > n and l2_declared) engine.restore(crashed, state_abs) catch |e| refuse.restoreFailure(e, "could not put the baseline's result back after its power-loss world", state_abs);
             const pl0 = engine.judgeL0(l0_plan, world);
             const pl1 = if (marker_seen) engine.judgeL1(l0_plan, initial, final, world) else null;
-            if (pl0 != null or pl1 != null or pc.failed) {
+            if (pl0 != null or pl1 != null or p_failed) {
                 report.power_loss_violations += 1;
                 if (first_failure == null) {
                     const v = pl0 orelse pl1;
                     first_failure = .{ .k = k, .term = term, .landed = landed, .violation = v, .power_loss = true };
                     first_failure_l0 = pl0 != null;
                     first_failure_l1 = pl1 != null;
-                    first_failure_l2 = pc.failed;
+                    first_failure_l2 = p_failed;
+                    first_failure_rerun_only = p_failed and !pc.failed;
                     if (v) |vv| {
                         const p = report.violationPath(vv);
                         @memcpy(first_failure_path[0..p.len], p);
@@ -2661,6 +2720,7 @@ fn phaseExploration(run: *Run) void {
         report.oracle_worlds = oracle_worlds;
         report.oracle_note = std.fmt.allocPrint(arena, "{s}; and agreed in each of {d} explored world(s)", .{ report.oracle_note, oracle_worlds }) catch report.oracle_note;
     }
+    if (run.rerun != null) report.rerun_note = rerun.note(arena, rerun_worlds, rerun_failed_worlds, rerun_leftovers);
     if (check_argv != null) {
         report.checker_note = std.fmt.allocPrint(
             arena,
@@ -2674,6 +2734,8 @@ fn phaseExploration(run: *Run) void {
     run.firsts.first_failure_l0 = first_failure_l0;
     run.firsts.first_failure_l1 = first_failure_l1;
     run.firsts.first_failure_l2 = first_failure_l2;
+    run.firsts.first_failure_rerun_only = first_failure_rerun_only;
+    run.firsts.first_checker_rerun_only = first_checker_rerun_only;
     run.firsts.first_failure_path_len = first_failure_path_len;
     run.firsts.first_checker = first_checker;
     run.firsts.first_checker_l0 = first_checker_l0;
@@ -2765,7 +2827,9 @@ fn phaseReport(run: *Run) void {
         const after_path = if (addr.after) |a| a.path else "";
         const before = if (addr.before) |b| b.class.name() else "(end)";
         const before_path = if (addr.before) |b| b.path else "";
-        const invariant = if (first_failure_l0 and first_failure_l2)
+        // Not "the checker" where none was declared: the layer's only member is then the rerun invariant.
+        const l2_name = if (run.firsts.first_failure_rerun_only) "the rerun invariant" else "the checker";
+        const invariant_spelled = if (first_failure_l0 and first_failure_l2)
             "built-in atomicity, and the checker"
         else if (first_failure_l0)
             "built-in atomicity (L0)"
@@ -2775,9 +2839,12 @@ fn phaseReport(run: *Run) void {
             "the post-success invariant (L1)"
         else
             "the checker (L2)";
-        const what = report.violationObserved(f.violation);
+        const invariant = std.mem.replaceOwned(u8, arena, invariant_spelled, "the checker", l2_name) catch invariant_spelled;
+        const what = if (run.firsts.first_failure_rerun_only and f.violation == null) rerun.observed else report.violationObserved(f.violation);
         const path_shown = if (first_failure_path_len > 0)
             first_failure_path[0..first_failure_path_len]
+        else if (run.firsts.first_failure_rerun_only)
+            rerun.subject
         else
             "(named by the checker, not by path)";
         var repro_buf: [contract.max_path]u8 = undefined;
@@ -2831,12 +2898,16 @@ fn phaseReport(run: *Run) void {
         // explore-only condition as the first: a replay does not mint (ADR 0009).
         const checker_detail: ?report.CheckerEarliest = if (first_checker) |fc| blk: {
             const caddr = trace.logicalAddress(fc.k);
-            const cinvariant = if (first_checker_l0)
+            const cinvariant_spelled = if (first_checker_l0)
                 "built-in atomicity, and the checker"
             else if (first_checker_l1)
                 "the post-success invariant, and the checker"
             else
                 "the checker (L2)";
+            const c_rerun = run.firsts.first_checker_rerun_only;
+            const cinvariant = std.mem.replaceOwned(u8, arena, cinvariant_spelled, "the checker", if (c_rerun) "the rerun invariant" else "the checker") catch cinvariant_spelled;
+            const csubject = if (first_checker_path_len > 0) first_checker_path[0..first_checker_path_len] else if (c_rerun) rerun.subject else "(named by the checker, not by path)";
+            const cobserved = if (c_rerun and fc.violation == null) rerun.observed else report.violationObserved(fc.violation);
             const same_world = fc.k == f.k and earliest_rule == null;
             const csaved: ?[]const u8 = if (same_world)
                 saved_case
@@ -2867,11 +2938,8 @@ fn phaseReport(run: *Run) void {
                         .before_path = if (caddr.before) |b| b.path else "",
                     },
                     .invariant = cinvariant,
-                    .subject = if (first_checker_path_len > 0)
-                        first_checker_path[0..first_checker_path_len]
-                    else
-                        "(named by the checker, not by path)",
-                    .observed = report.violationObserved(fc.violation),
+                    .subject = csubject,
+                    .observed = cobserved,
                     .replay = creplay,
                     .case_path = ccase,
                     .draft = d,
@@ -2885,11 +2953,8 @@ fn phaseReport(run: *Run) void {
                     .after_path = if (caddr.after) |a| a.path else "",
                     .before = if (caddr.before) |b| b.class.name() else "(end)",
                     .before_path = if (caddr.before) |b| b.path else "",
-                    .subject = if (first_checker_path_len > 0)
-                        first_checker_path[0..first_checker_path_len]
-                    else
-                        "(named by the checker, not by path)",
-                    .observed = report.violationObserved(fc.violation),
+                    .subject = csubject,
+                    .observed = cobserved,
                     .invariant = cinvariant,
                 },
                 .case = ccase,
@@ -2983,7 +3048,7 @@ fn phaseReport(run: *Run) void {
     refuse.requireCompleteness(arena, args.has_oracle, args.allow_unverified, args.oracle_stance);
     // #683, ADR 0091: after every world — a FAIL has already exited above — and not for a
     // replay, whose one world answers a different question.
-    if (only_k == null) refuse.requireSomethingCouldFail(arena, run.rec.judgeable, run.check_argv != null, args.marker != null, run.firsts.marker_worlds);
+    if (only_k == null) refuse.requireSomethingCouldFail(arena, run.rec.judgeable, run.check_argv != null or run.rerun != null, args.marker != null, run.firsts.marker_worlds);
 
     say("{s}  {d}/{d} explored worlds satisfied the built-in atomicity invariant under a process kill{s}{s}{s}\n", .{ report.paint("PASS"), report.explored, report.explored, report.singleCrashPointClause(n), report.untouchedClause(arena, run.rec.judgeable.touched, run.rec.judgeable.judged), report.powerLossPassClause(arena) });
     report.sayAccount(arena, .pass, n);

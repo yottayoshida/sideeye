@@ -56,6 +56,11 @@ stay the same.
    `check` refuses. The unknown-section message now names four sections. The checker's
    environment gains `SIDEEYE_LEGS` (a file preflight reads under its controls, and one
    nothing reads elsewhere), and a name under `SIDEEYE_` was already the engine's to set.
+   **A key added after the tag, 2026-11-01 (#942, ADR 0150):** `invariant` in `[define]`, under the
+   same allowance and in `apparatus`'s array form, with `rerun` its one value; any other refuses
+   by name, and `--invariant rerun` is the flag. The unknown-key message for `[define]` now names it.
+   Unlike `scratch`, it can decide a verdict where none was reached before, so a define that adds
+   it asks a different question; a define without it reads exactly as before.
 2. **Report schema.** The fields, presence rules and `unknown_reason` closed
    set documented in `docs/report-schema.md`, held to the code by acceptance
    check 4 — `oracle_verified` included (#94). The account fields' prose may
@@ -326,6 +331,10 @@ stay the same.
    `"process-kill"`. The first `not_tested` item reads `power loss beyond the rename-before-data
    rule` under the flag, a change of prose the allowance covers.
 
+   **Two plain additive fields, 2026-11-01 (#942, ADR 0150).** `invariants` (array of strings)
+   and `rerun` (string), present only when the define declared the rerun invariant. No exit code
+   moves for a define without it, and a saved case without it replays as it did.
+
    **One plain additive field, 2026-11-01 (#940, ADR 0149).** `oracle_worlds` (integer) is the
    number of explored worlds strace watched under `--oracle`, present when every world was
    compared. No closed set, and a saved case replays as it did; `contract_version` does not
@@ -441,7 +450,11 @@ stay the same.
    define asks for the pin, and `crash_model`, the rule; its `k` may be one past `ops_total`, for the world built after the
    operation. A v9 file without `crash_model` or `apparatus`, or with a rule this binary does not
    know, or an older file carrying `crash_model`, refuses as malformed; an earlier binary refuses a
-   v9 file as one it cannot parse. Every other case is written as before. A future trace-contract bump is therefore *not* a
+   v9 file as one it cannot parse. Version 10 (#942, ADR 0150, 2026-11-01) is written for every
+   case of a define declaring `invariant = ["rerun"]`: version 7's keys, the pin's and the crash
+   model's where they apply, and `define.invariant`, an array holding `rerun`. A v10 file without
+   it, or with another name, or an older file carrying it, refuses as malformed; an earlier binary
+   refuses a v10 file as one it cannot parse. Every other case is written as before. A future trace-contract bump is therefore *not* a
    broken promise: old cases refuse with the mismatch named, and that
    refusal is the promised behavior.
    **Read on 2026-10-10** (#756, ADR 0107): a case saved from a define whose checker rejects the

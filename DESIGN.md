@@ -244,7 +244,7 @@ Define has three levels; the lower ones are zero-effort:
 
   The obvious wording — "the state directory must equal the pre-operation snapshot or the post-operation result" — is stricter than it looks, and wrong. A program that writes atomically leaves `key.json.tmp` behind in every world killed between the `open` and the `rename`, so the directory equals neither snapshot and the *correct* program is reported as violating the built-in invariant. Files that appear in only one of the two snapshots are therefore left unconstrained.
 
-  This is deliberately narrower than the directory-equality reading, and the difference is worth naming: L0 does not catch a crash that leaves temporary files behind forever, or one that creates a file the operation never produces on a clean run. Those are real defects, and L0 stays quiet about them. They belong to a checker (L2), or to a future built-in invariant stated in terms the correct program can actually satisfy.
+  This is deliberately narrower than the directory-equality reading, and the difference is worth naming: L0 does not catch a crash that leaves temporary files behind forever, or one that creates a file the operation never produces on a clean run. Those are real defects, and L0 stays quiet about them. They belong to a checker (L2), or to a built-in invariant stated in terms the correct program can actually satisfy — the rerun invariant below is one, opted into.
 
   L0 carries a second per-file form, chosen from the snapshots alone (ADR 0004). A file whose post-operation content strictly extends its non-empty pre-operation content — the shape of logs, journals and audit chains, whose appended bytes may legitimately differ between runs (timestamps, HMAC chains) — is judged by **history preservation** instead: after the crash the file must still be a file whose content begins with everything it held before the operation. The appended tail is not judged; whether a torn tail is acceptable is the target's recovery semantics, and belongs to a checker. Every report names which files were judged by which form, and `not tested` grows "appended tails" whenever this form is in play. A file that is empty before the operation stays on the pre-or-post rule — the preserved history of an empty file would constrain nothing.
 - **L1 — the program's own words.** Declare a success marker (a pattern on stdout). In worlds where the marker appeared before the kill, Sideeye additionally enforces the post-success invariant (§4.1).
@@ -258,6 +258,8 @@ loadable=$(mytool load-key >/dev/null 2>&1 && echo true || echo false)
 ```
 
 The check always runs **after the crash, in a fresh process.** In-memory state hides corruption; v0 never evaluates invariants inside the crashed process's lifetime.
+
+- **The rerun invariant — a built-in L2, opted into** (ADR 0150). With `invariant = ["rerun"]`, a crash world fails when the operation, run again from its crash state without the shim, ends with an exit status or a state that neither of two reference runs ends with: one from the state before, and one from that run's result. A state is compared on names, kinds and contents, `scratch` excluded, and a path the crash left that the run did not touch is counted rather than compared — the terms a correct program can satisfy, which the paragraph on L0 above leaves for a future invariant. It is what the checkers of #861 and #873 did by hand, and it decides a verdict as a checker does.
 
 ## 13. Output Requirements
 
