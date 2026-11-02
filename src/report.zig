@@ -183,6 +183,7 @@ pub var l1_note: []const u8 = l1NoteFor(.unparsed);
 pub var oracle_operations_agreed: ?usize = null;
 pub var checker_declared: ?bool = null;
 pub var checker_worlds: ?usize = null;
+pub var oracle_worlds: ?usize = null;
 /// Whether the recording run's process account is a measurement (#711): set once every check on
 /// the recording's trace has held, at the line `l0_judged_paths_touched` is set on, for that
 /// field's reason. A refusal on a trace cut short, renumbered or never announced carries counts
@@ -1983,6 +1984,7 @@ fn appendFigures(w: W, arena: std.mem.Allocator) !void {
     if (oracle_operations_agreed) |n| try w.print(arena, ",\n  \"oracle_operations_agreed\": {d}", .{n});
     if (checker_declared) |d| try w.print(arena, ",\n  \"checker_declared\": {s}", .{if (d) "true" else "false"});
     if (checker_worlds) |n| try w.print(arena, ",\n  \"checker_worlds\": {d}", .{n});
+    if (oracle_worlds) |n| try w.print(arena, ",\n  \"oracle_worlds\": {d}", .{n});
     if (processes_measured) {
         const ev = boundary.boundary_ev;
         try w.print(arena, ",\n  \"processes_children_admitted\": {s}", .{if (ev.children_judged) "true" else "false"});

@@ -13,7 +13,8 @@
   oracle when the child does not load the shim — snapshots and the checker
   still observe the resulting state, but nothing accounts for the operations) —
   closing that means an oracle on all N+1 worlds, the cost already written
-  down there.
+  down there. **Closed under `--oracle` by ADR 0149 (2026-11-01)**: every explored world
+  runs under strace; it stays open under `--oracle-fs-usage`.
 - **Supersedes:** none. Narrows the "single-process only" limit stated in ADR 0001's
   interposition table and DESIGN §9
 - **Scope:** the trace contract (v2 → v3), the kill mechanism, and the conditions under

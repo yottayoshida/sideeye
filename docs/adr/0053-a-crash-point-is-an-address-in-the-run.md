@@ -1,6 +1,7 @@
 # ADR 0053 — A crash point is an address in the run, and a run whose writers take turns is judged
 
-- **Status:** Accepted (2026-09-08)
+- **Status:** Accepted (2026-09-08). Its alternative "Give the explored worlds an oracle" was taken
+  under `--oracle` by ADR 0149 (2026-11-01).
 - **Supersedes in part:** ADR 0002 decision 2 ("no cross-process counter is needed") and
   decision 4 ("only the subject can land the kill"); narrows ADR 0018's decline of the
   multi-process slice. Amendments on both pages point here.

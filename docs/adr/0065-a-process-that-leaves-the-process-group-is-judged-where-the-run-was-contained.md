@@ -1,6 +1,7 @@
 # 0065 — A process that leaves the process group is contained in a cgroup, and judged where the run was held
 
-- **Status:** Accepted (2026-09-13)
+- **Status:** Accepted (2026-09-13). Under `--oracle` every explored world runs under strace since
+  ADR 0149 (2026-11-01), which reads a move between cgroups in a world as it does in the recording.
 - **Amends:** ADR 0002 decision 1 (containment) and decision 5's row "leaving the process group";
   ADR 0053 decision 2 (the kill takes the process group). Amendment notes on both pages point here.
 - **Scope:** trace contract v17 (#581, the mechanism) and the refusal it lifts (#559's second half)
