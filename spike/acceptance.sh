@@ -6862,6 +6862,104 @@ else
     fails=$((fails + 1))
 fi
 
+echo "=========== check 2clock: pin:clock stops the wall clock and translates waits (#1025, ADR 0151) ==========="
+# toy-clock reads the real time past any preload, sleeps, then reads the wall clock through five
+# libc entry points. Pinned, every run reads one instant, taken after the setup ended and before
+# the operation started, the re-runs of the rerun invariant included; unpinned, the two
+# runs of --twice differ. Its waits run after a sleep longer than their deadline, so a pin that
+# stopped the clock without translating them would see every deadline already past.
+clock_run() {   # clock_run <command> <toy mode> <flags...> — sets o, rc
+    ccmd=$1; cmode=$2; shift 2
+    rm -rf /tmp/acc-clock && mkdir -p /tmp/acc-clock/state /tmp/acc-clock/log
+    o=$(TOY_CLOCK_LOG=/tmp/acc-clock/log "$SIDEEYE" "$ccmd" --state /tmp/acc-clock/state \
+        --setup "$OUT/toy-clock init /tmp/acc-clock/state" --operation "$OUT/toy-clock $cmode /tmp/acc-clock/state" \
+        --shim "$SHIM" --oracle /usr/bin/strace --work /tmp/acc-clock/work "$@" 2>&1)
+    rc=$?
+}
+clock_bounds() {   # every entry point read one instant, after the setup ended and before the operation began
+    python3 - /tmp/acc-clock <<'PY'
+import sys, glob
+d = sys.argv[1]
+seen = {}
+for line in open(d + "/state/time.txt"):
+    k, v = line.split()
+    seen[k] = float(v)
+setup = max(float(l.split()[1]) for l in open(d + "/log/setup"))
+start = min(float(l.split()[1]) for l in open(d + "/log/opstart"))
+t0 = seen["clock_gettime"]
+ok = len(seen) == 5 and setup <= t0 <= start
+ok = ok and seen["coarse"] == t0 and seen["timespec_get"] == t0 and seen["time"] == int(t0)
+ok = ok and abs(seen["gettimeofday"] - t0) < 1e-6
+print("t0 %.9f setup %.9f opstart %.9f %s" % (t0, setup, start, seen))
+sys.exit(0 if ok else 1)
+PY
+}
+clock_run preflight time --twice --apparatus pin:clock
+cb=""
+if [ "$rc" = "0" ] && echo "$o" | grep -q "repeatability .*left equal state under --state" && cb=$(clock_bounds); then
+    echo "ok   pin:clock: two runs read one instant through five entry points, between the setup's end and the operation's start"
+else
+    echo "FAIL pin:clock --twice: exit $rc; $cb"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+clock_run preflight time --twice
+if [ "$rc" = "1" ] && echo "$o" | grep -q "time.txt"; then
+    echo "ok   without pin:clock the same toy's two runs differ, at time.txt"
+else
+    echo "FAIL pin:clock control: exit $rc (wanted 1 naming time.txt)"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+clock_run explore time --apparatus pin:clock --invariant rerun
+reread=$(awk '{print $2}' /tmp/acc-clock/log/seen 2>/dev/null | sort -u | tr '\n' ' ')
+if [ "$rc" = "0" ] && [ "$(echo $reread | wc -w)" = "1" ] && [ "$(wc -l < /tmp/acc-clock/log/seen)" -gt 2 ]; then
+    echo "ok   pin:clock under explore: every world and every run of the rerun invariant reads one instant"
+else
+    echo "FAIL pin:clock explore with the rerun invariant: exit $rc, instants read: $reread"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+clock_run preflight waits --apparatus pin:clock
+bad=$(awk '($3=="woken-at-0.3" && ($4<0.2 || $4>0.8)) || ($3=="deadline-1" && ($4<0.8 || $4>1.5))' /tmp/acc-clock/log/waits 2>/dev/null)
+timed=$(grep -c . /tmp/acc-clock/log/waits 2>/dev/null)
+if [ "$rc" = "0" ] && [ -z "$bad" ] && [ "$timed" = "31" ] && [ "$(grep -c ' woken-at-0.3 woken$' /tmp/acc-clock/state/waits.txt)" = "15" ] \
+    && [ "$(grep -c ' deadline-1 timeout$' /tmp/acc-clock/state/waits.txt)" = "16" ]; then
+    echo "ok   pin:clock translates each listed wait: woken ones wake at 0.3 s, the others end at their 1 s deadline"
+else
+    echo "FAIL pin:clock waits: exit $rc"
+    sed 's/^/     | state /' /tmp/acc-clock/state/waits.txt 2>/dev/null | head -20
+    echo "$bad" | sed 's/^/     | took /' | head -10
+    echo "$o" | sed 's/^/     | /' | head -4
+    fails=$((fails + 1))
+fi
+# A migration kept with the time it was applied, killed after the first: the rerun invariant's run
+# from that state must read the instant the crashed run read, or it ends as neither reference run.
+clock_run explore migrate --apparatus pin:clock --invariant rerun
+if [ "$rc" = "0" ] && echo "$o" | grep -q "^PASS"; then
+    echo "ok   pin:clock: a migration kept with its time, killed between two, passes the rerun invariant"
+else
+    echo "FAIL pin:clock with a migration and the rerun invariant: exit $rc"
+    echo "$o" | sed 's/^/     | /' | head -6
+    fails=$((fails + 1))
+fi
+rm -rf /tmp/acc-clock && mkdir -p /tmp/acc-clock/state
+o=$("$SIDEEYE" explore --state /tmp/acc-clock/state --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --apparatus pin:clock --apparatus preload:libfaketime --work /tmp/acc-clock/work 2>&1)
+rc=$?
+o2=$("$SIDEEYE" explore --state /tmp/acc-clock/state --setup "$OUT/toy-fixed init" --operation "$OUT/toy-fixed rotate" \
+    --shim "$SHIM" --apparatus pin:clock --interleave --world-timeout 30 --work /tmp/acc-clock/work 2>&1)
+rc2=$?
+if [ "$rc" = "3" ] && echo "$o" | grep -q "a wall clock faked twice" \
+    && [ "$rc2" = "3" ] && echo "$o2" | grep -q "does not take pin:clock"; then
+    echo "ok   pin:clock beside preload:libfaketime, or under --interleave, is refused by name"
+else
+    echo "FAIL pin:clock refusals: libfaketime exit $rc, interleave exit $rc2"
+    echo "$o" | sed 's/^/     | /' | head -3
+    echo "$o2" | sed 's/^/     | /' | head -3
+    fails=$((fails + 1))
+fi
+
 echo "=========== check 2ab: the argv form spells what split-on-space cannot (#95, ADR 0019) ==========="
 # The toy's rotate-msg demands ONE argv element "note with spaces". The negative
 # control runs first and from the same define material: the string form splits that

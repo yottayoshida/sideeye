@@ -37,6 +37,7 @@ pub const ReplayCase = struct {
     violation: []const u8,
     pin_seed: ?[]const u8 = null,
     pin_generator: ?[]const u8 = null,
+    pin_clock: ?[]const u8 = null,
 };
 
 fn jsonCommand(w: *std.ArrayList(u8), arena: std.mem.Allocator, cmd: config.Command) !void {
@@ -126,7 +127,8 @@ pub fn writeCase(
     // apparatus entry is the top rung (ADR 0136) for cwd's reason: an older reader would drop it
     // and replay without the check.
     const pinned = pinning.asked(args.apparatus);
-    const case_version: u32 = if (args.rerun) 10 else if (crash_model != null) 9 else if (pinned) 8 else if (checksAnEntry(args.apparatus)) 7 else if (args.observe != .wrappers) 6 else if (args.scratch.len > 0) 5 else if (args.cwd != null) 4 else if (carries_argv) 3 else 2;
+    const clocked = pinning.askedClock(args.apparatus);
+    const case_version: u32 = if (clocked) 11 else if (args.rerun) 10 else if (crash_model != null) 9 else if (pinned) 8 else if (checksAnEntry(args.apparatus)) 7 else if (args.observe != .wrappers) 6 else if (args.scratch.len > 0) 5 else if (args.cwd != null) 4 else if (carries_argv) 3 else 2;
     w.appendSlice(arena, "{\n  \"schema\": \"sideeye/case\",\n  \"case_version\": ") catch return null;
     w.appendSlice(arena, std.fmt.bufPrint(&nb, "{d}", .{case_version}) catch return null) catch return null;
     w.appendSlice(arena, ",\n  \"sideeye_version\": ") catch return null;
@@ -212,6 +214,10 @@ pub fn writeCase(
         w.appendSlice(arena, ",\n  \"pin_generator\": ") catch return null;
         report.jsonString(w, arena, pinning.generator) catch return null;
     }
+    if (clocked) {
+        w.appendSlice(arena, ",\n  \"pin_clock\": ") catch return null;
+        report.jsonString(w, arena, pinning.clock_value) catch return null;
+    }
     w.appendSlice(arena, "\n}\n") catch return null;
 
     const EEXIST: c_int = 17; // same value on Linux and Darwin
@@ -248,7 +254,7 @@ pub fn writeCase(
 // check, and moving its case to version 7 would only stop earlier binaries replaying it.
 fn checksAnEntry(entries: []const []const u8) bool {
     for (entries) |e| switch (config.parseApparatusEntry(e)) {
-        .ok => |p| if (p != .note and p != .pin_random) return true,
+        .ok => |p| if (p != .note and p != .pin_random and p != .pin_clock) return true,
         .bad => {},
     };
     return false;
@@ -263,8 +269,8 @@ pub fn read(arena: std.mem.Allocator, text: []const u8) Read {
     const c = parsed.value;
     if (!std.mem.eql(u8, c.schema, "sideeye/case"))
         return .{ .invalid = "the file does not declare itself a sideeye case" };
-    if (c.case_version < 1 or c.case_version > 10)
-        return .{ .invalid = "this binary understands case schema versions 1 to 10 only" };
+    if (c.case_version < 1 or c.case_version > 11)
+        return .{ .invalid = "this binary understands case schema versions 1 to 11 only" };
     const carries_argv = (c.define.operation == .argv) or
         (c.define.setup != null and c.define.setup.? == .argv) or
         (c.define.check != null and c.define.check.? == .argv);
@@ -314,22 +320,31 @@ pub fn read(arena: std.mem.Allocator, text: []const u8) Read {
         return .{ .invalid = "a case's interleave_wait_seconds must be 1..86400" };
     if (interleaved) {
         if (c.observe == null or !std.mem.eql(u8, c.observe.?, "wrappers")) return .{ .invalid = "an interleaved case's observe must be `wrappers`; an interleaved run takes no other mode" };
-        if (c.pin_seed != null or c.pin_generator != null or (if (c.define.apparatus) |decl| pinning.asked(decl) else false))
-            return .{ .invalid = "an interleaved case cannot carry pin:random or its seed; an interleaved run refuses the pin" };
+        if (c.pin_seed != null or c.pin_generator != null or c.pin_clock != null or (if (c.define.apparatus) |decl| pinning.askedAny(decl) else false))
+            return .{ .invalid = "an interleaved case cannot carry pin:random, pin:clock or what they froze; an interleaved run refuses both pins" };
     }
     if (c.case_version < 10 and c.define.invariant != null)
         return .{ .invalid = "a case_version 1 to 9 file cannot carry an invariant declaration; it arrived with version 10" };
-    if (c.case_version == 10) {
-        const decl = c.define.invariant orelse return .{ .invalid = "a case_version 10 file must carry define.invariant; the version exists to freeze it" };
-        if (decl.len == 0) return .{ .invalid = "a case_version 10 file must carry define.invariant as a non-empty array" };
+    if (c.case_version == 10 and c.define.invariant == null)
+        return .{ .invalid = "a case_version 10 file must carry define.invariant; the version exists to freeze it" };
+    if (c.define.invariant) |decl| {
+        if (decl.len == 0) return .{ .invalid = "a case_version 10 or later file carries define.invariant as a non-empty array" };
         for (decl) |e| if (config.invariantFault(e)) |why| return .{ .invalid = why };
+    }
+    const clocks = if (c.define.apparatus) |decl| pinning.askedClock(decl) else false;
+    if (c.case_version < 11 and (clocks or c.pin_clock != null))
+        return .{ .invalid = "a case_version 1 to 10 file cannot carry pin:clock or its instant; the pin arrived with version 11" };
+    if (c.case_version == 11 and !clocks) return .{ .invalid = "a case_version 11 file's define.apparatus must hold pin:clock; the version exists to freeze the instant" };
+    if (clocks) {
+        const at = c.pin_clock orelse return .{ .invalid = "a case_version 11 file must carry pin_clock, the instant the pinned run's wall clock was stopped at" };
+        if (!pinning.validClock(at)) return .{ .invalid = "a case_version 11 file's pin_clock must be decimal seconds, a dot and nine digits of nanoseconds" };
     }
     const pins = if (c.define.apparatus) |decl| pinning.asked(decl) else false;
     if (c.case_version < 8 and (pins or c.pin_seed != null or c.pin_generator != null))
         return .{ .invalid = "a case_version 1 to 7 file cannot carry pin:random or its seed; the pin arrived with version 8" };
     if (c.case_version == 8 and !pins) return .{ .invalid = "a case_version 8 file's define.apparatus must hold pin:random; the version exists to freeze the pin's seed" };
     if (c.case_version >= 9 and !pins and (c.pin_seed != null or c.pin_generator != null))
-        return .{ .invalid = "a case_version 9 or 10 file carries pin_seed and pin_generator only beside pin:random" };
+        return .{ .invalid = "a case_version 9 or later file carries pin_seed and pin_generator only beside pin:random" };
     if (c.case_version >= 8 and pins) {
         const seed = c.pin_seed orelse return .{ .invalid = "a case_version 8 file must carry pin_seed, the seed the pinned run was given" };
         if (!pinning.validSeed(seed)) return .{ .invalid = "a case_version 8 file's pin_seed must be 64 lowercase hex digits" };
@@ -425,6 +440,31 @@ test "a version-8 case carries pin:random with its seed, and no other version ca
     }
 }
 
+test "a version-11 case carries pin:clock with its instant, and no earlier version carries the pin" {
+    var as = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer as.deinit();
+    const a = as.allocator();
+    const v11 = try std.mem.replaceOwned(u8, a, try testCaseWith(a, "\"case_version\":5,", "\"case_version\":11,\"observe\":\"wrappers\","), "\"scratch\":[\"m.yaml\"],", "\"scratch\":[],\"apparatus\":[\"pin:clock\"],");
+    const good = try std.mem.replaceOwned(u8, a, v11, "\"violation\":\"checker\"}", "\"violation\":\"checker\",\"pin_clock\":\"1793692576.123456789\"}");
+    try std.testing.expectEqualStrings("1793692576.123456789", read(a, good).ok.pin_clock.?);
+    const cases = [_]struct { text: []const u8, says: []const u8 }{
+        .{ .text = v11, .says = "must carry pin_clock" },
+        .{ .text = try std.mem.replaceOwned(u8, a, good, "1793692576.123456789", "1793692576.5"), .says = "nine digits of nanoseconds" },
+        .{ .text = try std.mem.replaceOwned(u8, a, good, "\"pin:clock\"", "\"env:X\""), .says = "must hold pin:clock" },
+        .{ .text = try std.mem.replaceOwned(u8, a, good, "\"case_version\":11,", "\"case_version\":8,"), .says = "the pin arrived with version 11" },
+        .{ .text = try std.mem.replaceOwned(u8, a, good, "\"case_version\":11,", "\"case_version\":12,"), .says = "versions 1 to 11 only" },
+        .{ .text = try std.mem.replaceOwned(u8, a, good, "\"apparatus\":[\"pin:clock\"],", "\"apparatus\":[\"pin:clock\"],\"invariant\":[\"typo\"],"), .says = "rerun" },
+        .{ .text = try std.mem.replaceOwned(u8, a, good, "\"apparatus\":[\"pin:clock\"],", "\"apparatus\":[\"pin:clock\"],\"invariant\":[],"), .says = "non-empty array" },
+    };
+    for (cases) |c| {
+        const why = read(a, c.text).invalid;
+        std.testing.expect(std.mem.indexOf(u8, why, c.says) != null) catch |e| {
+            std.debug.print("wanted [{s}], got [{s}]\n", .{ c.says, why });
+            return e;
+        };
+    }
+}
+
 test "an interleaved case is version 9 with crash_model interleave and its wait, and nothing else carries the wait" {
     var as = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer as.deinit();
@@ -469,7 +509,7 @@ test "read refuses with replay's sentences, in replay's order" {
         .{ .text = "{", .says = "the case file could not be parsed as a sideeye case" },
         .{ .text = try testCaseWith(a, "\"k\":7,", "\"k\":7,\"extra\":1,"), .says = "the case file could not be parsed as a sideeye case" },
         .{ .text = try testCaseWith(a, "sideeye/case", "other/case"), .says = "the file does not declare itself a sideeye case" },
-        .{ .text = try testCaseWith(a, "\"case_version\":5,", "\"case_version\":11,"), .says = "this binary understands case schema versions 1 to 10 only" },
+        .{ .text = try testCaseWith(a, "\"case_version\":5,", "\"case_version\":12,"), .says = "this binary understands case schema versions 1 to 11 only" },
         .{ .text = try testCaseWith(a, "\"case_version\":5,", "\"case_version\":6,"), .says = "a case_version 6 file must carry observe, `syscalls` or `supervised`; the version exists to freeze it" },
         .{ .text = try testCaseWith(a, "\"case_version\":5,", "\"case_version\":6,\"observe\":\"wrappers\","), .says = "a case_version 6 file's observe must be `syscalls` or `supervised`: a case counted under the default is written at the version its define asks for" },
         .{ .text = try testCaseWith(a, "\"cwd\":null,", ""), .says = "a case_version 5 or later file must spell define.cwd, as null when none was declared: from version 5 both cwd and scratch are explicit" },

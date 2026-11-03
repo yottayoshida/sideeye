@@ -32,7 +32,7 @@ stay the same.
    recorded in DESIGN §12's fourth facing, with no ADR of its own;
    `apparatus` with ADR 0041; `scratch` with ADR 0043), and named here rather than left to
    the code so the frozen surface and the accepted set stay the same list.
-   `apparatus` and `scratch` take only the array form: double-quoted `kind:value` entries for the one, double-quoted paths relative to `state` for the other. The kind `pin:random` joined the apparatus grammar on 2026-11-01 (#951, ADR 0146) under the same allowance: a `pin:` entry was refused until then, so no accepted spelling changed meaning. Both command spellings: the string
+   `apparatus` and `scratch` take only the array form: double-quoted `kind:value` entries for the one, double-quoted paths relative to `state` for the other. The kind `pin:random` joined the apparatus grammar on 2026-11-01 (#951, ADR 0146) under the same allowance: a `pin:` entry was refused until then, so no accepted spelling changed meaning; `pin:clock` joined on 2026-11-03 (#1025, ADR 0151) the same way, refused as an unknown `pin:` value until then. Both command spellings: the string
    form with its split-on-spaces, no-quoting rule, and the argv form — one
    line, double-quoted elements, passed verbatim (ADR 0019); since 2026-10-31 (#949) an element of
    a command's argv form may also be a single-quoted literal string, under the same allowance —
@@ -459,7 +459,11 @@ stay the same.
    case of a define declaring `invariant = ["rerun"]`: version 7's keys, the pin's and the crash
    model's where they apply, and `define.invariant`, an array holding `rerun`. A v10 file without
    it, or with another name, or an older file carrying it, refuses as malformed; an earlier binary
-   refuses a v10 file as one it cannot parse. Every other case is written as before. A future trace-contract bump is therefore *not* a
+   refuses a v10 file as one it cannot parse. Version 11 (#1025, ADR 0151, 2026-11-03) is written for every case
+   of a define asking for `pin:clock`: version 7's keys, the seed's, the crash model's and `define.invariant` where they
+   apply, and `pin_clock`, the instant the wall clock was stopped at (decimal seconds, a dot and nine digits). A v11
+   file without the entry or the key, with a malformed instant, or an older file carrying either, refuses as malformed;
+   an earlier binary refuses a v11 file as one it cannot parse. Every other case is written as before. A future trace-contract bump is therefore *not* a
    broken promise: old cases refuse with the mismatch named, and that
    refusal is the promised behavior.
    **Read on 2026-10-10** (#756, ADR 0107): a case saved from a define whose checker rejects the

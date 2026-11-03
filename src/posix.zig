@@ -121,6 +121,7 @@ pub const StopHook = struct {
 // time. Two worlds in flight at once would hand one world's stop to the other's hook.
 pub var stop_hook: ?StopHook = null;
 pub const CLOCK_MONOTONIC: c_int = if (builtin.os.tag == .linux) 1 else 6;
+pub const CLOCK_REALTIME: c_int = 0;
 pub const SIGCHLD: c_int = if (builtin.os.tag == .linux) 17 else 20;
 pub const SIG_DFL: usize = 0;
 

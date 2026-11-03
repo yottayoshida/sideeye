@@ -31,6 +31,8 @@ pub fn refusal(args: cli.Args) ?Refusal {
         return .{ .reason = .define_invalid, .text = "--interleave does not take a success marker: a marker is about one run's output, and an interleaved world has two" };
     if (pinning.asked(args.apparatus))
         return .{ .reason = .define_invalid, .text = "--interleave does not take pin:random: the second copy would draw the first copy's numbers, or none of them" };
+    if (pinning.askedClock(args.apparatus))
+        return .{ .reason = .define_invalid, .text = "--interleave does not take pin:clock: both copies would read one instant, and names or ids made from the time would collide as no two real runs' do" };
     return null;
 }
 

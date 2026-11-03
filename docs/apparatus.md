@@ -9,8 +9,8 @@ Every one of those lived in a launcher script or in `setup`, and the committed
 define said nothing about it.
 
 `[define] apparatus` is where the define says it (ADR 0041). Sideeye applies
-none of it — except `pin:random`, the one entry the engine applies itself (ADR 0146,
-[below](#pinrandom-the-one-entry-the-engine-applies)). It checks that every entry it can check is present in the
+none of it — except `pin:random` and `pin:clock`, the two entries the engine applies itself (ADR 0146,
+ADR 0151, [below](#pinrandom-randomness-the-engine-pins)). It checks that every entry it can check is present in the
 environment the operation will inherit, and refuses the run as SETUP ERROR —
 naming the entry and what it looked at — when one is not. The `env:` entries
 are checked **before `setup` runs**, so a setup started without a declared
@@ -43,8 +43,9 @@ line, the same as the commands' argv form.)
 | `pythonpath:FILE` | some entry of `PYTHONPATH` has `FILE` directly under it. Existence only: the content is not judged | `setup` generates the file; the launcher exports `PYTHONPATH` |
 | `note:TEXT` | nothing — carried, listed as unchecked | wherever it lives (an hgrc line, a container's seccomp profile, a pin applied inside the operation's own command line) |
 | `pin:random` | nothing to check: the engine applies it (below) | the engine. Linux only, the default mode or `--observe syscalls`, where the engine can make cgroups |
+| `pin:clock` | nothing to check: the engine applies it (below) | the engine. Linux only, the default mode or `--observe syscalls` |
 
-## `pin:random`: the one entry the engine applies
+## `pin:random`: randomness the engine pins
 
 **A define that writes `pin:random` has the bytes its operation and that operation's children
 receive from libc's `getrandom`, `getentropy` and `arc4random*`, and from reads of `/dev/urandom`
@@ -59,8 +60,7 @@ passes on, and claims it once per run with an exclusive create under the work di
 loaded in, a static binary — is drawn from by the first, and the second draws the real source, so
 the two runs differ rather than agree on a shared stream. It is the hand-written `pin-random.c` of the dogfood records
 (`spike/dogfood/2026-10-12-shipped-v1120/apparatus/`) without the preload file and the root it
-needs. The clock is not pinned by this entry: libfaketime still goes in `/etc/ld.so.preload`,
-declared with `preload:libfaketime`, because the engine replaces `LD_PRELOAD`.
+needs. The clock is not pinned by this entry: that is [`pin:clock`](#pinclock-the-wall-clock-the-engine-stops)'s.
 
 **The pinned bytes are recomputable by anyone holding the case** — and the reproduce line, which
 prints the seed. Do not ask for the pin in a define whose operation touches real keys, a real
@@ -94,6 +94,77 @@ before — never a stream silently shared:
 - a stream from `fopen("/dev/urandom")`, whose `fileno` is `-1`; a descriptor duplicated from the
   device's (`dup`), which reads the real device;
 - the temporary names the shim builds for `mkstemp` (time and pid).
+
+## `pin:clock`: the wall clock the engine stops
+
+**A define that writes `pin:clock` has the wall clock its operation and that operation's children
+read through libc's `clock_gettime`, `time`, `gettimeofday` and `timespec_get` stopped at one
+instant in every run of one invocation — the two runs of `--twice`, every explored world and every
+run of `invariant = ["rerun"]` — and each call to a wait this page lists,
+given a deadline on that clock, waits as long in real time as that deadline lies past the
+instant.** The instant is the real time, read once per `explore` or `preflight` after the setup and
+before the recording, and kept in the case (`case_version` 11, `pin_clock`) for the replay; the
+reproduce line prints it. The re-runs of the rerun invariant read the instant too: they are compared
+with runs from the starting state, and a target that keeps the time an earlier run wrote — a
+migration recorded with the time it was applied — ends as those runs do only if all of them read
+one clock. The library `pin:random`
+uses carries the instant, in `SIDEEYE_PIN_CLOCK`, to every process the operation starts. It does
+what libfaketime on `/etc/ld.so.preload` did for the dogfood records (KeePassXC,
+`spike/dogfood/2026-10-12-shipped-v1120/`), without a preload file that also fakes the clock of
+strace and of the engine's own shell. `clock_gettime` is stopped for `CLOCK_REALTIME` and
+`CLOCK_REALTIME_COARSE`; the monotonic clocks are left alone, and KeePassXC on FAT reaches PASS
+with only the wall clock stopped.
+
+The waits it translates — a deadline D on the stopped clock is waited until the real now plus
+D minus the instant: `pthread_cond_timedwait` (when the condition variable waits on the wall
+clock: one made with `pthread_condattr_setclock(CLOCK_MONOTONIC)` is left alone),
+`sem_timedwait`, `pthread_mutex_timedlock`, `pthread_rwlock_timedrdlock`,
+`pthread_rwlock_timedwrlock`, `pthread_timedjoin_np`, `mq_timedreceive`, `mq_timedsend`; and,
+when they name `CLOCK_REALTIME`, `pthread_cond_clockwait`, `sem_clockwait`,
+`pthread_mutex_clocklock`, `pthread_rwlock_clockrdlock`, `pthread_rwlock_clockwrlock`,
+`pthread_clockjoin_np` and `clock_nanosleep` with `TIMER_ABSTIME`. A clock stopped without them
+changes what a program does without a word: measured with the clock read but no wait translated,
+a wait to be woken after 0.3 seconds ended at once, the same way in every run, so the runs agreed
+and the verdict was PASS on a path the program does not take.
+
+Refused by name, as SETUP ERROR: under `--observe supervised`, on macOS, and with a work directory
+the loader would skip, as `pin:random` is; beside a `preload:libfaketime` entry, which would fake
+the clock twice; and under `--interleave`, whose two copies would read one instant. It does not
+need a cgroup: a process left behind holding a stopped clock reads a wrong time, not a key. A
+libc whose condition variables do not keep their clock in one bit the library can find stops the
+operation, saying so, rather than translate a wait it cannot place — at its start, or, before glibc
+2.34 in a process that had not loaded libpthread, at its first `pthread_cond_timedwait`, which a
+run may then judge as the way the operation ended. Neither was met on glibc 2.36 or 2.41.
+
+What the pin does not reach, refused. A read of the wall clock the pin does not stop leaves the two
+runs different, which is refused as before:
+
+- a statically linked binary (Go, for one), a raw `syscall(SYS_clock_gettime)` or a call into the
+  vDSO, `CLOCK_TAI`, `CLOCK_REALTIME_ALARM`, `ftime`;
+- a child whose environment lost `SIDEEYE_PIN_CLOCK` on a path the library does not wrap
+  (`execle`, `fexecve`, a raw `execve`).
+
+What the pin judges on another path — not refused: a PASS here is about the path the pinned run
+took, which is not the one the program takes unpinned:
+
+- a wait entered again with the same deadline — after a spurious wake-up, a broadcast meant for
+  another condition, or `EINTR` — waits its whole remainder again, because under a stopped clock
+  the program cannot see the time it already waited. Measured with `spike/toys/toy_clock.c`'s
+  `rewait`: a one-second deadline, with broadcasts every half second for three seconds, ended after
+  4.0 seconds, against 1.0 unpinned;
+- a deadline on the stopped clock handed to a wait the library does not translate —
+  `timer_settime` or `timerfd_settime` with an absolute time, C11's `cnd_timedwait` and
+  `mtx_timedlock`, a raw `futex`, io_uring — ends early by as long as the invocation has run so
+  far, and in a replay, whose instant is the case's, at once;
+- a loop that times itself by the wall clock alone never sees its period pass: a periodic flush
+  driven by `gettimeofday` is not done, and a loop waiting for the clock to pass a time does not
+  end (under `--world-timeout` that world is stopped and refused);
+- a re-run of the rerun invariant mints the names and ids a crashed run made from the time again —
+  a temporary name with nanoseconds, a UUIDv7 or a ULID drawn beside `pin:random` — which no real
+  second run could, and a target that refuses a duplicate is judged on that refusal;
+- the state's files carry the real time they were restored at, which is after the instant, so a
+  tool comparing a file's modification time with the clock sees a file from the future (`make`'s
+  clock-skew warning).
 
 
 ## The one thing to know about `preload:`
@@ -144,7 +215,7 @@ A byte-layer `baseline_violates_invariant` says where the two runs' bytes first 
 
 | what the stretch holds | what to check first | how the define says it |
 |---|---|---|
-| decimal digits, the same length in both runs | whether the tool writes the time, a counter, or its process id | a pinned clock (`preload:libfaketime` with `env:FAKETIME=...`), or the tool's own switch for it, in `apparatus` |
+| decimal digits, the same length in both runs | whether the tool writes the time, a counter, or its process id | `pin:clock`, or the tool's own switch for it, in `apparatus` |
 | hex digits | whether it is an id or a hash the tool draws fresh each run | a seeded or pinned source (`pythonpath:sitecustomize.py` pinning `os.urandom`) in `apparatus` |
 | any kind, in a file nothing reads back as state — a cache, a log, an editor's message file | whether anything the operation's user depends on reads that file | `scratch` for the path; the report then names it in `not tested` |
 | bytes outside printable text, inside a compressed or binary format | whether the format carries a time stamp or an id of its own (PNG text chunks, archive headers) | the tool's option that leaves it out, if it has one, on the operation's command line, and a `note:` saying so |

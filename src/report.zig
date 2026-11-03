@@ -1206,6 +1206,7 @@ pub const Reproduce = struct {
     observe: []const u8,
     argv: []const []const u8,
     pin_seed: []const u8 = "",
+    pin_clock: []const u8 = "",
 };
 
 /// It used to end in the placeholder `<operation>`, and still does, with no `cd`, when the line
@@ -1228,7 +1229,7 @@ pub fn reproduceLine(arena: std.mem.Allocator, r: Reproduce) error{OutOfMemory}!
         r.observe,                contract.env.run_cgroup,
         contract.env.kill_cgroup, contract.env.kill_aside,
     });
-    try env.print(arena, " {s}={s} {s}={s}", .{ contract.env.pin_seed, r.pin_seed, contract.env.pin_claims, if (r.pin_seed.len > 0) "$(mktemp -d)/" else "" });
+    try env.print(arena, " {s}={s} {s}={s} {s}={s}", .{ contract.env.pin_seed, r.pin_seed, contract.env.pin_claims, if (r.pin_seed.len > 0) "$(mktemp -d)/" else "", contract.env.pin_clock, r.pin_clock });
     const as_command = blk: {
         const c = r.cwd orelse break :blk false;
         if (r.argv.len == 0 or !std.mem.eql(u8, defang.textShown(arena, c), c)) break :blk false;
@@ -1257,7 +1258,7 @@ test "the reproduce line is a command in a subshell, or keeps the placeholder wh
     var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena_state.deinit();
     const a = arena_state.allocator();
-    const pins = " SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= SIDEEYE_PIN_SEED= SIDEEYE_PIN_CLAIMS=";
+    const pins = " SIDEEYE_RUN_CGROUP= SIDEEYE_KILL_CGROUP= SIDEEYE_KILL_ASIDE= SIDEEYE_PIN_SEED= SIDEEYE_PIN_CLAIMS= SIDEEYE_PIN_CLOCK=";
     const base: Reproduce = .{
         .cwd = "/w d",
         .state = "/s",
@@ -1294,7 +1295,7 @@ test "the reproduce line is a command in a subshell, or keeps the placeholder wh
     for ([_]Reproduce{ ctl, ctl_cwd, no_cwd, long }) |r| {
         const line = try reproduceLine(a, r);
         try std.testing.expect(std.mem.startsWith(u8, line, "SIDEEYE_STATE_DIR=/s "));
-        try std.testing.expect(std.mem.endsWith(u8, line, "SIDEEYE_KILL_ASIDE= SIDEEYE_PIN_SEED= SIDEEYE_PIN_CLAIMS= <operation>"));
+        try std.testing.expect(std.mem.endsWith(u8, line, "SIDEEYE_KILL_ASIDE= SIDEEYE_PIN_SEED= SIDEEYE_PIN_CLAIMS= SIDEEYE_PIN_CLOCK= <operation>"));
     }
     for ([_]Reproduce{ base, sys, ctl, no_cwd }) |r|
         try std.testing.expect(std.mem.indexOf(u8, try reproduceLine(a, r), "SIDEEYE_KILL_GROUP=") == null);
@@ -1399,10 +1400,14 @@ fn jsonStringArray(w: *std.ArrayList(u8), arena: std.mem.Allocator, items: []con
     try w.append(arena, ']');
 }
 
-fn isPin(e: []const u8) bool {
+fn pinNote(e: []const u8) ?[]const u8 {
     return switch (config.parseApparatusEntry(e)) {
-        .ok => |p| p == .pin_random,
-        .bad => false,
+        .ok => |p| switch (p) {
+            .pin_random => " (applied by the engine: a saved case carries the seed, from which what the operation drew is recomputable)",
+            .pin_clock => " (applied by the engine: a saved case carries the instant the wall clock was stopped at)",
+            else => null,
+        },
+        .bad => null,
     };
 }
 
@@ -1412,7 +1417,7 @@ fn apparatusNote(arena: std.mem.Allocator) []const u8 {
         if (i > 0) out.appendSlice(arena, ", ") catch return "(allocation failed)";
         out.appendSlice(arena, textShown(arena, e)) catch return "(allocation failed)";
         if (config.apparatusUnchecked(e)) out.appendSlice(arena, " (declared, not checked)") catch return "(allocation failed)";
-        if (isPin(e)) out.appendSlice(arena, " (applied by the engine: a saved case carries the seed, from which what the operation drew is recomputable)") catch return "(allocation failed)";
+        if (pinNote(e)) |n| out.appendSlice(arena, n) catch return "(allocation failed)";
     }
     return out.items;
 }
